@@ -13,7 +13,10 @@
  * field itself retired, and liveness lives in consumption, withdrawal, and the held session's own monotonic
  * patience); type-blind (a PersonaRef is
  * prefix + key-material, no branch); wax-seals-only (the grant is the persona's own signature). The B side keeps
- * its ephemeral SECRET on-device (the store, 0o600) and drops it the instant an open consumes it.
+ * its ephemeral SECRET on-device (the store, sealed under the vessel key) and drops it once the admission it
+ * enabled stands recorded. THE ADMISSION COMMITS A HOP on both sides: the pending entry drops after the record,
+ * an offer binds to the first grant that verifies against it and completes no other, and a drop that fails never
+ * costs the caller the acknowledgment the record already owes.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/persona-admit-flow
  */
@@ -35,7 +38,7 @@ import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import {
   recordAdmittedPersona, stashEnrollmentSecret, peekEnrollmentSecrets, takeEnrollmentSecret,
-  stashSentMemo, takeSentMemo, withdrawAdmitOffer, withdrawAdmitGrant,
+  peekSentMemo, stashSentMemo, takeSentMemo, withdrawAdmitOffer, withdrawAdmitGrant, bindEnrollmentToGrant,
 } from "./node-persona-admit-store.js";
 import { heldNexusKeyringEntries, installDeliveredKeyring, NexusKeyringConflict } from "./nexus-convergence-secret-store.js";
 import { qrCarriageToTerminalResilient } from "./qr-transport.js";
@@ -227,16 +230,12 @@ export async function makeLocalPersonaKelHeadAndSeqResolver(
  */
 export async function offerAdmitFlow(args: {
   readonly deviceVerifyingKey: string;
-  readonly dir?:               string;
   /** The pending-offer set's count bound (§2a) — omit to take the store's own named default. */
   readonly maxPendingOffers?:  number;
 }): Promise<{ offer: EnrollmentOffer } & HopRender> {
   const { offer, secret } = mintEnrollmentOffer({ targetVesselId: args.deviceVerifyingKey });
-  if (args.maxPendingOffers !== undefined) {
-    stashEnrollmentSecret(offer.ephemeralPubkey, secret, args.dir, args.maxPendingOffers);
-  } else {
-    stashEnrollmentSecret(offer.ephemeralPubkey, secret, args.dir);
-  }
+  if (args.maxPendingOffers !== undefined) await stashEnrollmentSecret(offer.ephemeralPubkey, secret, args.maxPendingOffers);
+  else await stashEnrollmentSecret(offer.ephemeralPubkey, secret);
   return { offer, ...(await render(toEnrollmentCarriage(offer))) };
 }
 
@@ -244,14 +243,14 @@ export async function offerAdmitFlow(args: {
  * WITHDRAW a pending offer this vessel minted (§2a) — the operator's own causal act when their own patience
  * for a hand-off ends (never a clock comparison inside the store). Pass `"all"` to drop every pending offer.
  */
-export function withdrawOfferFlow(target: string | "all", dir?: string): number {
-  return withdrawAdmitOffer(target, dir);
+export function withdrawOfferFlow(target: string | "all"): Promise<number> {
+  return withdrawAdmitOffer(target);
 }
 
 /** WITHDRAW a sent grant memo this vessel minted (§2a) — the granter's own causal act; a late ACK against the
  *  withdrawn nonce_A then refuses by name, exactly as a consumed one already does. */
-export function withdrawGrantFlow(nonceA: string, dir?: string): boolean {
-  return withdrawAdmitGrant(nonceA, dir);
+export function withdrawGrantFlow(nonceA: string): Promise<boolean> {
+  return withdrawAdmitGrant(nonceA);
 }
 
 /**
@@ -263,7 +262,6 @@ export async function grantAdmitFlow(args: {
   readonly offerCarriage: string;
   readonly personaRef:    PersonaRef;
   readonly personaSigner: AdmitSigner;
-  readonly dir?:          string;
 }): Promise<({ sealed: SealedGrant; keyringDelivered: boolean } & HopRender) | { error: string }> {
   const offer = parseEnrollmentCarriage(args.offerCarriage);
   if (!offer) return { error: "not a valid enrollment offer carriage — the QR did not arrive" };
@@ -281,7 +279,7 @@ export async function grantAdmitFlow(args: {
   } catch (err) {
     return { error: err instanceof Error ? err.message : String(err) };
   }
-  stashSentMemo(sent, args.dir);
+  await stashSentMemo(sent);
   // Append the SAME token the signed digest committed to (digest-what-you-carry — the two share one byte-image).
   const grantCarriage = toGrantCarriage(sealed);
   const carriage = keyring ? appendKeyringFragment(grantCarriage, keyring.token) : grantCarriage;
@@ -297,7 +295,6 @@ export async function openAdmitFlow(args: {
   readonly grantCarriage:    string;
   readonly resolveHeadOpKey: (prefix: string) => Promise<string | null> | string | null;
   readonly deviceSigner:     AdmitSigner;
-  readonly dir?:             string;
   /** OPTIONAL (M12) — resolve the SAME prefix's head KEL seq; rides into `JoinRecord.granterSeq` as an ADVISORY
    *  ordering hint for `recordAdmittedPersona`'s causal supersede. `makeLocalPersonaKelHeadSeqResolver` builds one
    *  off the same board `resolveHeadOpKey` reads. Omit it and the view falls back to its nonce-only tiebreak. */
@@ -310,11 +307,11 @@ export async function openAdmitFlow(args: {
    * believing it still stands pending while its secret has already been taken.
    */
   readonly onlyEphemeral?: string;
-}): Promise<({ joinRecord: JoinRecord; keyringEpochs: number; keyringConflict?: string } & HopRender) | { error: string }> {
+}): Promise<({ joinRecord: JoinRecord; keyringEpochs: number; keyringConflict?: string; pendingStands?: true } & HopRender) | { error: string }> {
   const sealed = parseGrantCarriage(args.grantCarriage);
   if (!sealed) return { error: "not a valid sealed-grant carriage — the QR did not arrive" };
 
-  const allPending = peekEnrollmentSecrets(args.dir);
+  const allPending = await peekEnrollmentSecrets();
   const pending = args.onlyEphemeral
     ? allPending.filter((p) => p.ephemeralPubkey === args.onlyEphemeral)
     : allPending;
@@ -346,14 +343,30 @@ export async function openAdmitFlow(args: {
     // committed a digest that the arriving token matches (a substituted / stripped / unbound fragment joins
     // nothing). Opened with the SAME ephemeral secret that opened the grant, joined by scoped name. No bound
     // keyring → carry-only (keyringEpochs 0). Different bytes under a held name join nothing and ride out named.
+    // ONE OFFER, ONE GRANT. The first grant that verifies against an enrollment BINDS it, before anything gets
+    // signed (`bindEnrollmentToGrant`, one custody hold). The same grant opens again to the same steps; any other
+    // grant sealed to that offer refuses for as long as the enrollment stands, so no second grant rides an offer
+    // whose first open died midway, and two commands at once never complete two grants for one offer.
+    const bound = await bindEnrollmentToGrant(ephemeralPubkey, verdict.accepted.transcript.nonceA);
+    if (bound === "absent") { lastReason = "no pending enrollment matched this grant"; continue; }
+    if (bound === "bound-other") {
+      return { error: "this offer stands bound to another grant — open that grant again, or withdraw the offer and mint a fresh one" };
+    }
     const adopted = await adoptDeliveredKeyring(args.grantCarriage, secret, verdict.accepted.transcript.keyringSealDigest);
-    // A matching enrollment: consume its secret (never re-usable) + record the join into the local view. The
-    // keyring joined FIRST: a keyring row that refuses leaves the enrollment pending, so the same grant opens again.
-    takeEnrollmentSecret(ephemeralPubkey, args.dir);
+    // THE ADMISSION COMMITS THE HOP. The keyring joins, the acknowledgment gets signed, the join gets recorded,
+    // and only then does the enrollment drop. An open that dies before the record leaves the enrollment pending;
+    // one that dies between the record and the drop leaves both, and the same grant opens again to the same
+    // acknowledgment (every step before the drop repeats to the same bytes). No order of deaths drops an
+    // enrollment that left no admission and no acknowledgment to carry back.
     const { ack, joinRecord } = await mintJoinAck({ accepted: verdict.accepted, secret, deviceSigner: args.deviceSigner });
-    recordAdmittedPersona(joinRecord, args.dir);
+    await recordAdmittedPersona(joinRecord);
+    // The record committed, so the acknowledgment travels whatever the drop does: a drop that fails leaves the
+    // enrollment standing (`pendingStands`), where it completes this same grant again and no other.
+    let pendingStands = false;
+    try { await takeEnrollmentSecret(ephemeralPubkey); } catch { pendingStands = true; }
     return {
       joinRecord, keyringEpochs: adopted.held, ...(adopted.conflict ? { keyringConflict: adopted.conflict } : {}),
+      ...(pendingStands ? { pendingStands: true as const } : {}),
       ...(await render(toAckCarriage(ack))),
     };
   }
@@ -366,18 +379,20 @@ export async function openAdmitFlow(args: {
  */
 export async function acceptAdmitFlow(args: {
   readonly ackCarriage: string;
-  readonly dir?:        string;
-}): Promise<{ joinRecord: JoinRecord } | { error: string }> {
+}): Promise<{ joinRecord: JoinRecord; pendingStands?: true } | { error: string }> {
   const ack: JoinAck | null = parseAckCarriage(args.ackCarriage);
   if (!ack) return { error: "not a valid ACK carriage — the QR did not arrive" };
-  const memo = takeSentMemo(ack.joinRecord.nonceA, args.dir);
+  // The memo stays standing while the ACK gets verified, so an ACK that fails verification costs the pending grant
+  // nothing. THE ADMISSION COMMITS THE HOP: the join gets recorded, and only then does the memo drop. An accept
+  // that dies between the two leaves both, and the same ACK accepts again.
+  const memo = await peekSentMemo(ack.joinRecord.nonceA);
   if (!memo) return { error: "no sent grant matches this ACK's nonce — the grant was never issued from this vessel (or already accepted)" };
   const verdict = await verifyJoinAck({ ack, sent: memo });
-  if (!verdict.ok) {
-    // Re-stash the memo: a transient bad ACK must not silently discard a legitimately-pending grant.
-    stashSentMemo(memo, args.dir);
-    return { error: verdict.reason };
-  }
-  recordAdmittedPersona(verdict.joinRecord, args.dir);
-  return { joinRecord: verdict.joinRecord };
+  if (!verdict.ok) return { error: verdict.reason };
+  await recordAdmittedPersona(verdict.joinRecord);
+  // The record committed: a drop that fails leaves the memo standing, where the same ACK accepts again to the
+  // same record. Two accepts of one ACK at once both record that one join, and the second drop finds nothing.
+  let pendingStands = false;
+  try { await takeSentMemo(ack.joinRecord.nonceA); } catch { pendingStands = true; }
+  return { joinRecord: verdict.joinRecord, ...(pendingStands ? { pendingStands: true as const } : {}) };
 }

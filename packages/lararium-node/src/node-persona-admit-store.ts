@@ -1,95 +1,76 @@
 /**
- * node-persona-admit-store — the node-fs PER-VESSEL multitude-view + the airgapped ceremony's pending state.
+ * node-persona-admit-store — this vessel's own MULTITUDE-VIEW and the airgapped ceremony's pending state: three
+ * rows under the identity home, each sealed under the vessel key and read through the custody seat.
  *
- * THE LOAD-BEARING INVARIANT: the admitted-persona list is PER-VESSEL and NEVER fleet-syncs / federates. A
- * synced "all my faces" record would be almost a global-now-of-the-self, and a captured vessel must spill only
- * the faces actually admitted TO IT. So this rides a LOCAL 0o600 JSON file under the identity home — never an
- * Automerge bag, never a board. The never-syncs wall is STRUCTURAL: no bag/relay/board write exists in this
- * shore, exactly as the circle-follow graph + the handle-book beside it. Separation is composed by WHERE a key is
- * admitted, never dissolved by a convenience sync.
+ * THE LOAD-BEARING INVARIANT: the admitted-persona list stays PER-VESSEL and NEVER fleet-syncs or federates. A
+ * synced "all my faces" record would come close to a global-now-of-the-self, and a captured vessel must spill only
+ * the faces actually admitted TO IT. The never-syncs wall stays STRUCTURAL: no bag, relay or board write exists in
+ * this shore. Separation gets composed by WHERE a key gets admitted, never dissolved by a convenience sync.
  *
- * TWO surfaces:
- *   · the MULTITUDE-VIEW — the mutually-signed `JoinRecord`s admitted to THIS vessel, keyed by persona prefix
- *     (a re-admission supersedes CAUSALLY — the granting op-key's KEL sequence, then the grant's nonce as a
- *     tiebreak; NEVER a wall-clock `expiry`, M12). BOTH the granting vessel (A) and the target vessel (B)
- *     record their matching copy — dual-admission, each into its own local view.
- *   · the PENDING state — the airgapped 3-hop runs as SEPARATE CLI invocations, so the on-device SECRET between
- *     hops persists here, 0o600, consume-ONCE: B's enrollment ephemeral secret (offer→open) and A's sent grant
- *     memo (grant→accept). The ephemeral X25519 secret NEVER leaves the device and is dropped the instant it is
- *     consumed (a completed or abandoned enrollment leaves no standing secret).
+ * ── THE THREE ROWS ──────────────────────────────────────────────────────────────────────────────
+ *   · `admissions`      the mutually-signed `JoinRecord`s admitted to THIS vessel, keyed by persona prefix. A
+ *                       re-admission supersedes CAUSALLY (the granting op-key's KEL sequence, then the grant's
+ *                       nonce as a tiebreak; NEVER a wall-clock field). Both the granting vessel and the target
+ *                       vessel record their matching copy, each into its own view.
+ *   · `enroll-pending`  the target vessel's on-device enrollment secrets between `offer` and `open`.
+ *   · `grant-pending`   the granting vessel's sent-grant memos between `grant` and `accept`.
+ * The 3-hop runs as SEPARATE commands, so the secret between hops rests here. The ephemeral X25519 secret never
+ * leaves the device.
  *
- * TRACK-CONTRACTS-NEVER-IDENTITIES: a JoinRecord holds prefixes + key-material + nonces only — no name, no email,
- * no device inventory. A user leaves no roster trace anywhere but its OWN vessel's local view.
+ * ── THE COMMIT POINT ────────────────────────────────────────────────────────────────────────────
+ * An act that completes a hop writes two rows, and `admissions` commits it. The flow records the admission FIRST
+ * and drops the pending entry SECOND (`persona-admit-flow`): an act that dies before the admission leaves the
+ * pending entry standing, and one that dies between the two leaves an admission beside a pending entry the same
+ * carriage completes again. No order of deaths leaves an entry dropped with no admission to show for it.
+ *
+ * ── AT REST ─────────────────────────────────────────────────────────────────────────────────────
+ * Every row passes through the custody seat (`custody-seat`). Nothing at a row's path reads as no admission, or
+ * as nothing pending: a vessel learns each from its own acts, and a lost row costs a hop run again. A row that
+ * stands and does not open (torn, bare, another key's), or opens to another shape, refuses
+ * `CustodyRowUnavailable`. No reader folds a refusal to empty, so nothing records or stashes over a row it could
+ * not read. Every change reads, decides and writes under ONE custody holder (`updateCustodyRow`), so two commands
+ * in two processes never drop each other's entry. At the floor every door refuses `CustodyLocked`.
+ *
+ * TRACK-CONTRACTS-NEVER-IDENTITIES: a JoinRecord holds prefixes, key-material and nonces only: no name, no email,
+ * no device inventory. A user leaves no roster trace anywhere but its OWN vessel's view.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/persona-admit-store
  */
-
-import {
-  readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, rmSync, renameSync,
-  openSync, fsyncSync, closeSync,
-} from "node:fs";
-import { join } from "node:path";
-import { randomBytes } from "node:crypto";
+import { mkdirSync } from "node:fs";
 import { hex, hexToBytes, type JoinRecord, type EnrollmentSecret, type SentGrantMemo } from "@lararium/mesh";
+import { CustodyRowUnavailable } from "./custody-holder.js";
+import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
-/** The per-vessel multitude-view file — the personas admitted to THIS vessel (0o600, never federated). */
-const ADMISSIONS_FILE = ".persona-admissions.json";
-/** B's pending enrollment secrets, keyed by ephemeral pubkey (0o600, consume-once). */
-const PENDING_ENROLL_FILE = ".persona-enroll-pending.json";
-/** A's pending sent-grant memos, keyed by nonce_A (0o600, consume-once). */
-const PENDING_GRANT_FILE = ".persona-grant-pending.json";
+/** The per-vessel multitude-view row: the personas admitted to THIS vessel. */
+export const ADMISSIONS_FILE = ".persona-admissions.json";
+/** The target vessel's pending enrollment secrets, keyed by ephemeral pubkey. */
+export const PENDING_ENROLL_FILE = ".persona-enroll-pending.json";
+/** The granting vessel's pending sent-grant memos, keyed by nonce_A. */
+export const PENDING_GRANT_FILE = ".persona-grant-pending.json";
 
 /**
- * The pending-offer set's named bound (M-shape, §2a): a FRESH offer past this count withdraws the OLDEST
- * standing offer by insertion order (never by age/clock — ordering rides the `order` array this store writes).
- * No clock reads this; it is a pure count. `stashEnrollmentSecret`'s `maxPending` arg overrides it per-call
- * (tests use a small K so the eviction proves without minting dozens of offers).
+ * The pending-offer set's named bound: a FRESH offer past this count withdraws the OLDEST standing offer by
+ * insertion order (never by age or clock; ordering rides the `order` list this store writes). No clock reads it.
+ * `stashEnrollmentSecret`'s `maxPending` overrides it per call.
  */
 export const PENDING_OFFER_LIMIT = 50;
+/** The sent-grant memos' named count bound, the same shape on the granting side. */
+export const SENT_MEMO_LIMIT = 50;
 
-function idDirOf(dir?: string): string { return dir ?? larIdentityDir(); }
+const utf8 = new TextEncoder();
+const encode = (value: unknown): Uint8Array => utf8.encode(JSON.stringify(value, null, 2));
+const bad = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+/** A map with no prototype: a key may spell any name, and none reaches an inherited slot. */
+const bare = <T>(): Record<string, T> => Object.create(null) as Record<string, T>;
 
-function readJson<T>(dir: string, file: string, fallback: T): T {
-  const path = join(dir, file);
-  if (!existsSync(path)) return fallback;
-  try { return JSON.parse(readFileSync(path, "utf8")) as T; }
-  catch { return fallback; }   // a torn file reads empty — the airgapped hop is simply re-run
-}
-
-/**
- * Write as temp-then-rename (M12), DURABLY (M12′'s remainder): a reader can never observe a half-written
- * admissions/pending file, because `rename` on the same filesystem is atomic — the path either still holds the
- * PRIOR complete bytes or the NEW complete bytes, never a torn mix. The temp name carries this process's pid + a
- * random suffix so two writers racing the SAME store dir never collide on the temp path itself.
- *
- * Before the rename, this `fsync`s the temp FILE's own fd, then the DIRECTORY's fd — both are needed on a
- * journaling filesystem for the rename itself to survive a crash (a renamed name with no durable directory
- * entry can vanish on recovery, even when the file's bytes landed). Best-effort: a filesystem/platform that
- * refuses `fsync` on a directory fd (documented on some, e.g. certain network mounts) must not block the write
- * it is meant to protect — the rename still lands, just without the extra durability guarantee on that mount.
- */
-function writeJson(dir: string, file: string, value: unknown): void {
-  mkdirSync(dir, { recursive: true });
-  const path = join(dir, file);
-  const tmp = join(dir, `.${file}.${process.pid}.${hex(randomBytes(4))}.tmp`);
-  writeFileSync(tmp, JSON.stringify(value, null, 2), { mode: 0o600, encoding: "utf8" });
-  try { chmodSync(tmp, 0o600); } catch { /* best-effort on a non-POSIX fs */ }
-  try {
-    const fd = openSync(tmp, "r+");
-    try { fsyncSync(fd); } finally { closeSync(fd); }
-  } catch { /* best-effort — a platform that refuses file fsync must not block the write */ }
-  renameSync(tmp, path);
-  try {
-    const dirFd = openSync(dir, "r");
-    try { fsyncSync(dirFd); } finally { closeSync(dirFd); }
-  } catch { /* best-effort — a platform that refuses directory fsync must not block the write */ }
+function parseJson(bytes: Uint8Array, file: string): unknown {
+  try { return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
+  catch { throw bad(file); }
 }
 
 // ── The multitude-view (never fleet-syncs) ──────────────────────────────────────────────────────────────────
-
-/** The vessel's local admitted-persona view: `personaPrefix -> the newest verified JoinRecord`. */
-type AdmissionsFile = { readonly admissions?: Record<string, JoinRecord> };
 
 /**
  * Causal supersede order for a re-admission (M12) — the granting op-key's KEL sequence number, then the
@@ -112,188 +93,219 @@ function supersedesCausally(prior: JoinRecord, next: JoinRecord): boolean {
   return next.nonceA > prior.nonceA;
 }
 
+const allStrings = (v: Record<string, unknown>, keys: readonly string[]): boolean => keys.every((k) => typeof v[k] === "string");
+/** A persona reference holds a prefix and its key material, both strings. */
+const refHolds = (v: unknown): v is Record<string, unknown> => isRecord(v) && allStrings(v, ["prefix", "verifyingKey"]);
+
+/** The admissions a row's plaintext carries; nothing standing reads as none, and every other shape refuses. */
+function parseAdmissions(bytes: Uint8Array | null): Record<string, JoinRecord> {
+  const out = bare<JoinRecord>();
+  if (bytes === null) return out;
+  const raw = parseJson(bytes, ADMISSIONS_FILE);
+  if (!isRecord(raw) || !isRecord(raw["admissions"])) throw bad(ADMISSIONS_FILE);
+  for (const [prefix, record] of Object.entries(raw["admissions"])) {
+    if (!isRecord(record) || !refHolds(record["personaRef"]) || record["personaRef"]["prefix"] !== prefix
+      || !allStrings(record, ["kind", "targetVesselId", "granterKey", "nonceA", "nonceB", "grantSig"])
+      || (record["granterSeq"] !== undefined && !Number.isInteger(record["granterSeq"]))) throw bad(ADMISSIONS_FILE);
+    out[prefix] = record as unknown as JoinRecord;
+  }
+  return out;
+}
+
+function identityHome(): void { mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 }); }
+
 /**
- * Record a mutually-signed JoinRecord into THIS vessel's local multitude-view. Keyed by persona prefix; a
- * re-admission that supersedes the standing one causally (M12 — `supersedesCausally`, never a clock) replaces
- * it, an older one is ignored. A pure LOCAL write — no bag, no board, no wire. Both A (on ACK-accept) and B
- * (on grant-open) call it. The write lands temp + rename (`writeJson`) — a reader never sees a torn view.
+ * Record a mutually-signed JoinRecord into THIS vessel's multitude-view: THE COMMIT POINT of a hop. Keyed by
+ * persona prefix; a re-admission that supersedes the standing one causally (`supersedesCausally`, never a clock)
+ * replaces it, an older one changes nothing and writes nothing. No bag, no board, no wire. Both the granting
+ * vessel (on ACK-accept) and the target vessel (on grant-open) call it.
  */
-export function recordAdmittedPersona(join: JoinRecord, dir?: string): void {
-  const d = idDirOf(dir);
-  const cur = readJson<AdmissionsFile>(d, ADMISSIONS_FILE, {}).admissions ?? {};
-  const prior = cur[join.personaRef.prefix];
-  if (prior && !supersedesCausally(prior, join)) return;   // a causally-older re-admission never rolls the view back
-  writeJson(d, ADMISSIONS_FILE, { admissions: { ...cur, [join.personaRef.prefix]: join } });
+export function recordAdmittedPersona(join: JoinRecord): Promise<void> {
+  identityHome();
+  return updateCustodyRow("identity", ADMISSIONS_FILE, (bytes) => {
+    const cur = parseAdmissions(bytes);
+    const prior = cur[join.personaRef.prefix];
+    if (prior && !supersedesCausally(prior, join)) return { plaintext: null, value: undefined };
+    cur[join.personaRef.prefix] = join;
+    return { plaintext: encode({ admissions: cur }), value: undefined };
+  });
 }
 
 /** Every persona admitted to THIS vessel, by prefix (the private multitude-view; read-only). */
-export function listAdmittedPersonas(dir?: string): JoinRecord[] {
-  const admissions = readJson<AdmissionsFile>(idDirOf(dir), ADMISSIONS_FILE, {}).admissions ?? {};
+export async function listAdmittedPersonas(): Promise<JoinRecord[]> {
+  const admissions = parseAdmissions(await readCustodyRow("identity", ADMISSIONS_FILE));
   return Object.values(admissions).sort((a, b) => a.personaRef.prefix.localeCompare(b.personaRef.prefix));
 }
 
-/** Is a persona (by prefix) admitted to THIS vessel? A pure local read. */
-export function isPersonaAdmitted(prefix: string, dir?: string): boolean {
-  const admissions = readJson<AdmissionsFile>(idDirOf(dir), ADMISSIONS_FILE, {}).admissions ?? {};
-  return prefix in admissions;
+/** Whether a persona (by prefix) stands admitted to THIS vessel. */
+export async function isPersonaAdmitted(prefix: string): Promise<boolean> {
+  return Object.hasOwn(parseAdmissions(await readCustodyRow("identity", ADMISSIONS_FILE)), prefix);
 }
 
-// ── The airgapped pending state (consume-once secrets) ──────────────────────────────────────────────────────
+// ── The airgapped pending state ─────────────────────────────────────────────────────────────────────────────
 
-/** An EnrollmentSecret with its ephemeral X25519 secret hex-encoded for at-rest JSON (decoded on take). */
-type StashedEnroll = { ephemeralSecretHex: string; targetVesselId: string; nonceB: string };
-/** `order` names INSERTION order explicitly (never relies on JS object key order) — the count-bound eviction's
- *  "oldest" reads off `order[0]`, never off any clock/expiry field. */
-type EnrollFile = { readonly order?: readonly string[]; readonly pending?: Record<string, StashedEnroll> };
+/** A pending set at rest: `order` names INSERTION order explicitly, so the count bound's "oldest" reads off
+ *  `order[0]` and never off a clock or an object's key order. */
+interface PendingSet<T> { order: string[]; pending: Record<string, T> }
 
-function readEnrollFile(dir: string): { order: string[]; pending: Record<string, StashedEnroll> } {
-  const file = readJson<EnrollFile>(dir, PENDING_ENROLL_FILE, {});
-  const pending = { ...(file.pending ?? {}) };
-  // A pre-existing file with no `order` (or a hand-edited one) falls back to key order — still deterministic,
-  // just not insertion-proven; every write from here on carries an explicit `order`.
-  const order = [...(file.order ?? Object.keys(pending))];
-  return { order, pending };
-}
-
-/**
- * Stash B's on-device enrollment secret between `offer` and `open` (0o600), keyed by the ephemeral pubkey, and
- * append it to the insertion-`order`. The pending-offer set is COUNT-bounded at `maxPending` (default
- * `PENDING_OFFER_LIMIT`, a NAMED parameter — never a clock): a stash past that count WITHDRAWS the OLDEST
- * standing offer by insertion order before writing the new one, exactly as an explicit `withdrawAdmitOffer`
- * would (dropped from both `order` and `pending` in the one atomic write).
- */
-export function stashEnrollmentSecret(
-  ephemeralPubkey: string, secret: EnrollmentSecret, dir?: string, maxPending: number = PENDING_OFFER_LIMIT,
-): void {
-  const d = idDirOf(dir);
-  const { order, pending } = readEnrollFile(d);
-  const stashed: StashedEnroll = {
-    ephemeralSecretHex: hex(secret.ephemeralSecret),
-    targetVesselId: secret.targetVesselId, nonceB: secret.nonceB,
-  };
-  const nextOrder = order.filter((k) => k !== ephemeralPubkey);
-  nextOrder.push(ephemeralPubkey);
-  pending[ephemeralPubkey] = stashed;
-  while (nextOrder.length > Math.max(1, maxPending)) {
-    const oldest = nextOrder.shift()!;
-    delete pending[oldest];
+/** The pending set a row's plaintext carries; nothing standing reads as nothing pending; every other shape refuses. */
+function parsePending<T>(bytes: Uint8Array | null, file: string, entryHolds: (v: Record<string, unknown>) => boolean): PendingSet<T> {
+  const pending = bare<T>();
+  if (bytes === null) return { order: [], pending };
+  const raw = parseJson(bytes, file);
+  if (!isRecord(raw) || !isRecord(raw["pending"]) || !Array.isArray(raw["order"]) || raw["order"].some((k) => typeof k !== "string")) throw bad(file);
+  for (const [key, entry] of Object.entries(raw["pending"])) {
+    if (!isRecord(entry) || !entryHolds(entry)) throw bad(file);
+    pending[key] = entry as unknown as T;
   }
-  writeJson(d, PENDING_ENROLL_FILE, { order: nextOrder, pending });
+  const order = raw["order"] as string[];
+  if (order.length !== Object.keys(pending).length || new Set(order).size !== order.length || order.some((k) => !Object.hasOwn(pending, k))) throw bad(file);
+  return { order: [...order], pending };
+}
+
+/** Read one pending row, decide, and write it, under one custody holder. `null` from `decide` writes nothing. */
+function updatePending<T, V>(
+  file: string, entryHolds: (v: Record<string, unknown>) => boolean,
+  decide: (set: PendingSet<T>) => { readonly next: PendingSet<T> | null; readonly value: V },
+): Promise<V> {
+  identityHome();
+  return updateCustodyRow("identity", file, (bytes) => {
+    const { next, value } = decide(parsePending<T>(bytes, file, entryHolds));
+    return { plaintext: next === null ? null : encode({ order: next.order, pending: next.pending }), value };
+  });
+}
+
+/** Add `key` as the newest entry and withdraw the oldest past `max`, by insertion order. */
+function stashInto<T>(set: PendingSet<T>, key: string, entry: T, max: number): PendingSet<T> {
+  const order = set.order.filter((k) => k !== key);
+  order.push(key);
+  set.pending[key] = entry;
+  while (order.length > Math.max(1, max)) delete set.pending[order.shift()!];
+  return { order, pending: set.pending };
+}
+
+/** Drop `key`; `null` when nothing stood under it. */
+function dropFrom<T>(set: PendingSet<T>, key: string): { next: PendingSet<T>; entry: T } | null {
+  if (!Object.hasOwn(set.pending, key)) return null;
+  const entry = set.pending[key]!;
+  delete set.pending[key];
+  return { next: { order: set.order.filter((k) => k !== key), pending: set.pending }, entry };
+}
+
+/** An EnrollmentSecret with its ephemeral X25519 secret hex-encoded at rest (decoded on the way out), and the
+ *  grant this offer got bound to, once an open verified one (`bindEnrollmentToGrant`). */
+type StashedEnroll = { ephemeralSecretHex: string; targetVesselId: string; nonceB: string; boundTo?: string };
+const enrollHolds = (v: Record<string, unknown>): boolean =>
+  typeof v["ephemeralSecretHex"] === "string" && /^[0-9a-f]{64}$/.test(v["ephemeralSecretHex"])
+  && typeof v["targetVesselId"] === "string" && typeof v["nonceB"] === "string"
+  && (v["boundTo"] === undefined || typeof v["boundTo"] === "string");
+const secretOf = (s: StashedEnroll): EnrollmentSecret =>
+  ({ ephemeralSecret: hexToBytes(s.ephemeralSecretHex), targetVesselId: s.targetVesselId, nonceB: s.nonceB });
+
+/**
+ * Stash the target vessel's on-device enrollment secret between `offer` and `open`, keyed by the ephemeral
+ * pubkey, as the newest entry. The pending-offer set stays COUNT-bounded at `maxPending` (a NAMED parameter,
+ * never a clock): a stash past that count WITHDRAWS the OLDEST standing offer by insertion order, in the same
+ * write.
+ */
+export function stashEnrollmentSecret(ephemeralPubkey: string, secret: EnrollmentSecret, maxPending: number = PENDING_OFFER_LIMIT): Promise<void> {
+  const stashed: StashedEnroll = { ephemeralSecretHex: hex(secret.ephemeralSecret), targetVesselId: secret.targetVesselId, nonceB: secret.nonceB };
+  return updatePending<StashedEnroll, void>(PENDING_ENROLL_FILE, enrollHolds, (set) =>
+    ({ next: stashInto(set, ephemeralPubkey, stashed, maxPending), value: undefined }));
 }
 
 /**
- * Take (consume-ONCE) B's stashed enrollment secret for an ephemeral pubkey — returns it and DROPS it from the
- * pending set AND the insertion order, so a secret never lingers past the one open it enables. Null when absent
- * (the hop is re-run, or the offer was withdrawn / evicted).
+ * BIND an offer to the one grant that completes it, before anything gets signed. The first grant an open verifies
+ * against this enrollment binds it, under one custody holder; the same grant binds again to the same answer (a
+ * retry), and any other grant reads `bound-other` for as long as the enrollment stands. So one offer yields one
+ * acknowledgment for one grant, whatever dies between the steps and whatever two commands attempt at once.
+ * `absent` when the enrollment left meanwhile (withdrawn, evicted, or completed).
  */
-export function takeEnrollmentSecret(ephemeralPubkey: string, dir?: string): EnrollmentSecret | null {
-  const d = idDirOf(dir);
-  const { order, pending } = readEnrollFile(d);
-  const s = pending[ephemeralPubkey];
-  if (!s) return null;
-  delete pending[ephemeralPubkey];
-  writeJson(d, PENDING_ENROLL_FILE, { order: order.filter((k) => k !== ephemeralPubkey), pending });   // consume
-  return { ephemeralSecret: hexToBytes(s.ephemeralSecretHex), targetVesselId: s.targetVesselId, nonceB: s.nonceB };
+export function bindEnrollmentToGrant(ephemeralPubkey: string, nonceA: string): Promise<"bound" | "bound-other" | "absent"> {
+  return updatePending<StashedEnroll, "bound" | "bound-other" | "absent">(PENDING_ENROLL_FILE, enrollHolds, (set) => {
+    if (!Object.hasOwn(set.pending, ephemeralPubkey)) return { next: null, value: "absent" };
+    const entry = set.pending[ephemeralPubkey]!;
+    if (entry.boundTo === nonceA) return { next: null, value: "bound" };
+    if (entry.boundTo !== undefined) return { next: null, value: "bound-other" };
+    set.pending[ephemeralPubkey] = { ...entry, boundTo: nonceA };
+    return { next: set, value: "bound" };
+  });
 }
 
 /**
- * WITHDRAW a pending offer (§2a) — the offerer's OWN causal act, triggered by its OWN monotonic liveness (the
- * CLI's `withdraw-offer`), never by a clock comparison here. `"all"` drops every pending offer at once (the
- * `reset` shape); a specific ephemeral pubkey drops only that one. Returns the count actually dropped (0 when
- * the target was already gone — consumed, evicted, or never stashed). Same take-shape as `takeEnrollmentSecret`,
- * minus a grant to show for it: once withdrawn, a sealed grant answering that offer finds no pending enrollment
- * to open against (the SAME "no pending enrollment matched" refusal a consumed offer already draws).
+ * Take the target vessel's stashed enrollment secret for an ephemeral pubkey: return it and DROP it from the
+ * pending set and the insertion order. Null when nothing stands under it (the offer got withdrawn, evicted, or
+ * taken already). The flow takes an enrollment only after its admission stands recorded.
  */
-export function withdrawAdmitOffer(target: string | "all", dir?: string): number {
-  const d = idDirOf(dir);
-  const { order, pending } = readEnrollFile(d);
-  if (target === "all") {
-    const n = order.length;
-    if (n > 0) writeJson(d, PENDING_ENROLL_FILE, { order: [], pending: {} });
-    return n;
-  }
-  if (!(target in pending)) return 0;
-  delete pending[target];
-  writeJson(d, PENDING_ENROLL_FILE, { order: order.filter((k) => k !== target), pending });
-  return 1;
-}
-
-/** PEEK (non-consuming) every stashed enrollment secret, OLDEST first (insertion order) — B's `open` tries each
- *  against a grant (it cannot know WHICH pending enrollment a grant answers until one decrypts), then consumes
- *  only the matching one. */
-export function peekEnrollmentSecrets(dir?: string): Array<{ ephemeralPubkey: string; secret: EnrollmentSecret }> {
-  const { order, pending } = readEnrollFile(idDirOf(dir));
-  return order
-    .filter((k) => k in pending)
-    .map((ephemeralPubkey) => {
-      const s = pending[ephemeralPubkey]!;
-      return {
-        ephemeralPubkey,
-        secret: { ephemeralSecret: hexToBytes(s.ephemeralSecretHex), targetVesselId: s.targetVesselId, nonceB: s.nonceB },
-      };
-    });
-}
-
-/** The sent-grant memos' named count bound (M8′/§2a's sibling on A's side) — same shape as `PENDING_OFFER_LIMIT`:
- *  a stash past this count withdraws the OLDEST standing sent memo by insertion order, never by age/clock. */
-export const SENT_MEMO_LIMIT = 50;
-
-/** `order` names INSERTION order explicitly — the count-bound eviction's "oldest" reads off `order[0]`. */
-type GrantFile = { readonly order?: readonly string[]; readonly pending?: Record<string, SentGrantMemo> };
-
-function readGrantFile(dir: string): { order: string[]; pending: Record<string, SentGrantMemo> } {
-  const file = readJson<GrantFile>(dir, PENDING_GRANT_FILE, {});
-  const pending = { ...(file.pending ?? {}) };
-  const order = [...(file.order ?? Object.keys(pending))];   // a pre-existing/hand-edited file falls back to key order
-  return { order, pending };
+export function takeEnrollmentSecret(ephemeralPubkey: string): Promise<EnrollmentSecret | null> {
+  return updatePending<StashedEnroll, EnrollmentSecret | null>(PENDING_ENROLL_FILE, enrollHolds, (set) => {
+    const dropped = dropFrom(set, ephemeralPubkey);
+    return dropped ? { next: dropped.next, value: secretOf(dropped.entry) } : { next: null, value: null };
+  });
 }
 
 /**
- * Stash A's sent-grant memo between `grant` and `accept` (0o600), keyed by nonce_A (the grant's fresh id), and
- * appended to the insertion-`order`. COUNT-bounded at `maxPending` (default `SENT_MEMO_LIMIT`, a NAMED
- * parameter — never a clock): a stash past that count withdraws the OLDEST standing sent memo before writing
- * the new one — "a stack of forgotten offers must never outlive the session that minted them" on A's side too.
+ * WITHDRAW a pending offer: the offerer's OWN causal act, triggered by its OWN liveness (the CLI's
+ * `withdraw-offer`), never by a clock comparison here. `"all"` drops every pending offer at once; a specific
+ * ephemeral pubkey drops only that one. Returns the count actually dropped. Once withdrawn, a sealed grant
+ * answering that offer finds no pending enrollment to open against.
  */
-export function stashSentMemo(memo: SentGrantMemo, dir?: string, maxPending: number = SENT_MEMO_LIMIT): void {
-  const d = idDirOf(dir);
-  const { order, pending } = readGrantFile(d);
-  const nonceA = memo.transcript.nonceA;
-  const nextOrder = order.filter((k) => k !== nonceA);
-  nextOrder.push(nonceA);
-  pending[nonceA] = memo;
-  while (nextOrder.length > Math.max(1, maxPending)) {
-    const oldest = nextOrder.shift()!;
-    delete pending[oldest];
-  }
-  writeJson(d, PENDING_GRANT_FILE, { order: nextOrder, pending });
+export function withdrawAdmitOffer(target: string | "all"): Promise<number> {
+  return updatePending<StashedEnroll, number>(PENDING_ENROLL_FILE, enrollHolds, (set) => {
+    if (target === "all") return set.order.length > 0 ? { next: { order: [], pending: bare<StashedEnroll>() }, value: set.order.length } : { next: null, value: 0 };
+    const dropped = dropFrom(set, target);
+    return dropped ? { next: dropped.next, value: 1 } : { next: null, value: 0 };
+  });
 }
 
-/** Take (consume-ONCE) A's sent memo for a nonce_A — returns it and DROPS it (from both the map and the
- *  insertion order). Null when absent (consumed, withdrawn, evicted by count, or never stashed). */
-export function takeSentMemo(nonceA: string, dir?: string): SentGrantMemo | null {
-  const d = idDirOf(dir);
-  const { order, pending } = readGrantFile(d);
-  const memo = pending[nonceA];
-  if (!memo) return null;
-  delete pending[nonceA];
-  writeJson(d, PENDING_GRANT_FILE, { order: order.filter((k) => k !== nonceA), pending });
-  return memo;
+/** PEEK (taking nothing) every stashed enrollment secret, OLDEST first. The target's `open` tries each against a
+ *  grant (it cannot know WHICH pending enrollment a grant answers until one decrypts). */
+export async function peekEnrollmentSecrets(): Promise<Array<{ ephemeralPubkey: string; secret: EnrollmentSecret }>> {
+  const { order, pending } = parsePending<StashedEnroll>(await readCustodyRow("identity", PENDING_ENROLL_FILE), PENDING_ENROLL_FILE, enrollHolds);
+  return order.map((ephemeralPubkey) => ({ ephemeralPubkey, secret: secretOf(pending[ephemeralPubkey]!) }));
+}
+
+const memoHolds = (v: Record<string, unknown>): boolean =>
+  typeof v["grantSig"] === "string" && isRecord(v["transcript"]) && refHolds(v["transcript"]["personaRef"])
+  && allStrings(v["transcript"], ["kind", "targetVesselId", "nonceA", "nonceB"]);
+
+/**
+ * Stash the granting vessel's sent-grant memo between `grant` and `accept`, keyed by nonce_A, as the newest
+ * entry. COUNT-bounded at `maxPending` (a NAMED parameter, never a clock): a stash past that count withdraws the
+ * OLDEST standing memo in the same write.
+ */
+export function stashSentMemo(memo: SentGrantMemo, maxPending: number = SENT_MEMO_LIMIT): Promise<void> {
+  return updatePending<SentGrantMemo, void>(PENDING_GRANT_FILE, memoHolds, (set) =>
+    ({ next: stashInto(set, memo.transcript.nonceA, memo, maxPending), value: undefined }));
+}
+
+/** PEEK (taking nothing) the sent memo for a nonce_A, or null. The accept verifies an ACK against it and takes
+ *  it only after the admission stands recorded. */
+export async function peekSentMemo(nonceA: string): Promise<SentGrantMemo | null> {
+  const { pending } = parsePending<SentGrantMemo>(await readCustodyRow("identity", PENDING_GRANT_FILE), PENDING_GRANT_FILE, memoHolds);
+  return Object.hasOwn(pending, nonceA) ? pending[nonceA]! : null;
+}
+
+/** Take the sent memo for a nonce_A: return it and DROP it. Null when nothing stands under it. */
+export function takeSentMemo(nonceA: string): Promise<SentGrantMemo | null> {
+  return updatePending<SentGrantMemo, SentGrantMemo | null>(PENDING_GRANT_FILE, memoHolds, (set) => {
+    const dropped = dropFrom(set, nonceA);
+    return dropped ? { next: dropped.next, value: dropped.entry } : { next: null, value: null };
+  });
 }
 
 /**
- * WITHDRAW a sent grant memo (§2a) — A's OWN causal act, triggered by its OWN monotonic liveness: "the same
- * take [as `takeSentMemo`], without a grant." Once withdrawn, a late ACK answering that nonce_A finds no sent
- * memo to verify against and refuses by name ("no sent grant matches"), the SAME refusal a consumed memo
- * already draws. Returns whether a memo actually stood there to withdraw.
+ * WITHDRAW a sent grant memo: the granter's OWN causal act. Once withdrawn, a late ACK answering that nonce_A
+ * finds no sent memo to verify against and refuses by name. Returns whether a memo stood there to withdraw.
  */
-export function withdrawAdmitGrant(nonceA: string, dir?: string): boolean {
-  return takeSentMemo(nonceA, dir) !== null;
+export async function withdrawAdmitGrant(nonceA: string): Promise<boolean> {
+  return (await takeSentMemo(nonceA)) !== null;
 }
 
-/** Drop every pending secret/memo (a `persona admit reset` — abandon an in-flight enrollment). */
-export function clearPersonaAdmitPending(dir?: string): void {
-  const d = idDirOf(dir);
-  for (const f of [PENDING_ENROLL_FILE, PENDING_GRANT_FILE]) {
-    try { rmSync(join(d, f), { force: true }); } catch { /* already gone */ }
-  }
+/** Drop every pending secret and memo (a `persona admit reset`: abandon every enrollment in flight). */
+export async function clearPersonaAdmitPending(): Promise<void> {
+  await updatePending<StashedEnroll, void>(PENDING_ENROLL_FILE, enrollHolds, (set) =>
+    ({ next: set.order.length > 0 ? { order: [], pending: bare<StashedEnroll>() } : null, value: undefined }));
+  await updatePending<SentGrantMemo, void>(PENDING_GRANT_FILE, memoHolds, (set) =>
+    ({ next: set.order.length > 0 ? { order: [], pending: bare<SentGrantMemo>() } : null, value: undefined }));
 }

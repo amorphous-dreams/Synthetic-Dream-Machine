@@ -17,11 +17,15 @@
  */
 import { afterAll, afterEach, beforeAll, describe, expect, test } from "vitest";
 import { spawn } from "node:child_process";
-import { mkdtempSync, rmSync, cpSync, readFileSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync, cpSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdVessel } from "../src/commands/vessel.js";
-import { grantAdmitFlow, openAdmitFlow } from "@lararium/node";
+import {
+  grantAdmitFlow, openAdmitFlow, FsCustodyIo, makeCustodyHolder, seatCustody, unseatCustody, vesselCustodyHomes, PENDING_ENROLL_FILE,
+  type CustodyHolder, type CustodyHomes,
+} from "@lararium/node";
+import { TEST_PASSPHRASE } from "./support/found-route.js";
 import { seatScratchCustody } from "./support/scratch-custody.js";
 import { ed25519SignerFromSeed } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
@@ -36,17 +40,35 @@ function identityDirOf(root: string): string {
   return join(root, "data", "lares", "identity");
 }
 
-function pendingCount(root: string): number {
-  const p = join(identityDirOf(root), ".persona-enroll-pending.json");
-  if (!existsSync(p)) return 0;
-  const f = JSON.parse(readFileSync(p, "utf8")) as { order?: string[] };
-  return (f.order ?? []).length;
+// The pending row rests sealed under the vessel key. Each case root gets ONE reader: a holder over that root's own
+// homes, opened once under the founding's test route, which reads the row the spawned command writes.
+const readers = new Map<string, CustodyHolder>();
+async function readerOf(root: string): Promise<CustodyHolder> {
+  const held = readers.get(root);
+  if (held) return held;
+  const prior = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = root;
+  let homes: CustodyHomes;
+  try { homes = vesselCustodyHomes(); }
+  finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
+  const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
+  const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+  if (opened.reading !== "opens") throw new Error(`the case root's custody reads ${opened.reading}`);
+  readers.set(root, holder);
+  return holder;
 }
 
-async function waitFor(pred: () => boolean, timeoutMs: number, label: string): Promise<void> {
+async function pendingCount(root: string): Promise<number> {
+  const row = await (await readerOf(root)).readRow("identity", PENDING_ENROLL_FILE);
+  if (row.reading === "absent") return 0;
+  if (row.reading !== "opens") throw new Error(`the pending row reads ${row.reading}`);
+  return (JSON.parse(new TextDecoder().decode(row.plaintext)) as { order: string[] }).order.length;
+}
+
+async function waitFor(pred: () => boolean | Promise<boolean>, timeoutMs: number, label: string): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
-    if (pred()) return;
+    if (await pred()) return;
     await new Promise((r) => setTimeout(r, 50));
   }
   throw new Error(`waitFor(${label}) timed out after ${timeoutMs}ms`);
@@ -87,6 +109,8 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     try {
       const rc = await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } });
       if (rc !== 0) throw new Error(`template founding failed (rc=${rc})`);
+      // The harness marker: a spawned command under a copy of this root opens the vessel key by the test route.
+      writeFileSync(join(template, ".lar-test-scratch"), "staged by a test\n");
     } finally {
       if (saved === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = saved;
     }
@@ -101,7 +125,8 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     roots.push(r);
     return r;
   }
-  afterEach(() => {
+  afterEach(async () => {
+    for (const [root, holder] of readers) { await holder.lock(); unseatCustody(holder); readers.delete(root); }
     for (const r of roots.splice(0)) rmSync(r, { recursive: true, force: true });
   });
 
@@ -115,7 +140,7 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     expect(code).toBe(0);
     expect(elapsed).toBeLessThan(5_000);
     expect(elapsed).toBeGreaterThanOrEqual(250);
-    expect(pendingCount(root)).toBe(0);
+    expect(await pendingCount(root)).toBe(0);
     const payload = JSON.parse(io.stdout().trim().split("\n").find((l) => l.startsWith("{")) ?? "{}") as Record<string, unknown>;
     expect((payload["data"] as Record<string, unknown> | undefined)?.["withdrawn"]).toBe(true);
   }, 15_000);
@@ -125,11 +150,11 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const child = spawnAdmit(root, ["offer", "--json", "--patience", "10m"]);
     const io = collect(child);
     await waitFor(() => carriageOf(io.stderr()) !== null, 10_000, "carriage printed");
-    await waitFor(() => pendingCount(root) === 1, 10_000, "offer pending");
+    await waitFor(async () => (await pendingCount(root)) === 1, 10_000, "offer pending");
     child.kill("SIGINT");
     const code = await waitExit(child);
     expect(code).toBe(0);
-    expect(pendingCount(root)).toBe(0);
+    expect(await pendingCount(root)).toBe(0);
   }, 15_000);
 
   test("CASE 3 — SIGTERM withdraws the offer (pending 1 → 0), process exits", async () => {
@@ -137,11 +162,11 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const child = spawnAdmit(root, ["offer", "--json", "--patience", "10m"]);
     const io = collect(child);
     await waitFor(() => carriageOf(io.stderr()) !== null, 10_000, "carriage printed");
-    await waitFor(() => pendingCount(root) === 1, 10_000, "offer pending");
+    await waitFor(async () => (await pendingCount(root)) === 1, 10_000, "offer pending");
     child.kill("SIGTERM");
     const code = await waitExit(child);
     expect(code).toBe(0);
-    expect(pendingCount(root)).toBe(0);
+    expect(await pendingCount(root)).toBe(0);
   }, 15_000);
 
   test("CASE 4 — --detach stays ONE-SHOT: exits immediately, offer stays pending, nothing held", async () => {
@@ -152,7 +177,7 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const elapsed = Date.now() - t0;
     expect(code).toBe(0);
     expect(elapsed).toBeLessThan(5_000);     // never waits out a patience window
-    expect(pendingCount(root)).toBe(1);       // nothing withdrew it — it stands pending, by design
+    expect(await pendingCount(root)).toBe(1);       // nothing withdrew it — it stands pending, by design
   }, 15_000);
 
   test("CASE 5 — a LATE grant after a patience withdrawal refuses: no pending enrollment", async () => {
@@ -163,7 +188,7 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const carriage = carriageOf(io.stderr())!;
     const code = await waitExit(child);
     expect(code).toBe(0);
-    expect(pendingCount(root)).toBe(0);   // withdrawn by patience end
+    expect(await pendingCount(root)).toBe(0);   // withdrawn by patience end
 
     // Mint a grant answering the NOW-WITHDRAWN offer (any persona signer — this proof never reaches the
     // head-check stage; it must refuse at "no pending enrollment" first).
@@ -176,14 +201,16 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const granterCustody = await seatScratchCustody();
     try {
       const grant = await grantAdmitFlow({
-        offerCarriage: carriage, personaRef, personaSigner: ed25519SignerFromSeed(personaSeed), dir: granterDir,
+        offerCarriage: carriage, personaRef, personaSigner: ed25519SignerFromSeed(personaSeed),
       });
       if ("error" in grant) throw new Error(`grant mint failed: ${grant.error}`);
 
       const deviceSigner = ed25519SignerFromSeed(new Uint8Array(32).fill(4));
+      // The open runs as the case root's own vessel: its root named, its custody seated.
+      process.env["LAR_ROOT"] = root;
+      seatCustody(await readerOf(root));
       const opened = await openAdmitFlow({
         grantCarriage: grant.carriage, resolveHeadOpKey: async () => null, deviceSigner,
-        dir: identityDirOf(root),
       });
       expect("error" in opened).toBe(true);
       if ("error" in opened) expect(opened.error).toContain("no pending enrollment");
@@ -199,7 +226,7 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const child = spawnAdmit(root, ["offer", "--json", "--patience", "10m"]);
     const io = collect(child);
     await waitFor(() => carriageOf(io.stderr()) !== null, 10_000, "carriage printed");
-    await waitFor(() => pendingCount(root) === 1, 10_000, "offer pending");
+    await waitFor(async () => (await pendingCount(root)) === 1, 10_000, "offer pending");
 
     // HOLE 3 CLOSED (same case): write garbage and leave the write side OPEN (never call `.end()`) — the
     // exact held-open-pipe shape the old code hung on (~30s+ observed). The fix (`finish` destroys stdin
@@ -211,6 +238,6 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
 
     expect(code).toBe(2);                          // UsageError -> exitFor("usage")
     expect(elapsed).toBeLessThan(5_000);            // HOLE 3: no multi-second hang on the still-open pipe
-    expect(pendingCount(root)).toBe(0);             // HOLE 1: the failed paste still withdrew this offer
+    expect(await pendingCount(root)).toBe(0);             // HOLE 1: the failed paste still withdrew this offer
   }, 15_000);
 });

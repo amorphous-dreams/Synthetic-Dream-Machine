@@ -216,7 +216,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           console.error(`awaiting the granter's QR#2 — paste the grant carriage and press enter (holds ${patienceMs}ms; Ctrl-C withdraws now).`);
           const pasted = await awaitNextHopOrPatience(patienceMs, aborted);
           if (!pasted) {
-            const withdrawn = withdrawOfferFlow(hop.offer.ephemeralPubkey);
+            const withdrawn = await withdrawOfferFlow(hop.offer.ephemeralPubkey);
             emit(args, {
               ok: true,
               data: { withdrawn: withdrawn > 0, ephemeralPubkey: hop.offer.ephemeralPubkey },
@@ -251,7 +251,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
             });
             return 0;
           } finally {
-            if (!consumed) withdrawOfferFlow(hop.offer.ephemeralPubkey);
+            if (!consumed) await withdrawOfferFlow(hop.offer.ephemeralPubkey);
           }
         } finally {
           disarm();
@@ -292,7 +292,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
           console.error(`awaiting the target's QR#3 (the ACK) — paste it and press enter (holds ${patienceMs}ms; Ctrl-C withdraws now).`);
           const pasted = await awaitNextHopOrPatience(patienceMs, aborted);
           if (!pasted) {
-            const withdrawn = withdrawGrantFlow(r.sealed.nonceA);
+            const withdrawn = await withdrawGrantFlow(r.sealed.nonceA);
             emit(args, {
               ok: true,
               data: { withdrawn, nonceA: r.sealed.nonceA },
@@ -300,10 +300,10 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
             });
             return 0;
           }
-          // M8 — mirrors the offer side: this sent grant is consumed ONLY on a successful accept.
-          // `acceptAdmitFlow` itself RE-STASHES its memo on a failed verify (so a transient bad ACK does
-          // not silently discard a legitimately-pending grant at the FLOW layer) — this session's own
-          // `finally` is what then decides the memo should not outlive THIS held session, and withdraws it.
+          // M8 — mirrors the offer side: this sent grant drops ONLY on a successful accept.
+          // `acceptAdmitFlow` leaves its memo standing through a failed verify (so a bad ACK never
+          // discards a pending grant at the FLOW layer) — this session's own
+          // `finally` then decides the memo should not outlive THIS held session, and withdraws it.
           let consumed = false;
           try {
             const closeR = await acceptAdmitFlow({ ackCarriage: pasted.trim() });
@@ -319,7 +319,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
             });
             return 0;
           } finally {
-            if (!consumed) withdrawGrantFlow(r.sealed.nonceA);
+            if (!consumed) await withdrawGrantFlow(r.sealed.nonceA);
           }
         } finally {
           disarm();
@@ -360,7 +360,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         return 0;
       }
       case "list": {
-        const admitted = listAdmittedPersonas();
+        const admitted = await listAdmittedPersonas();
         emit(args, {
           ok: true,
           data: { admitted: admitted.map((j) => ({ prefix: j.personaRef.prefix, targetVesselId: j.targetVesselId })) },
@@ -373,7 +373,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         return 0;
       }
       case "reset": {
-        clearPersonaAdmitPending();
+        await clearPersonaAdmitPending();
         emit(args, { ok: true, data: { reset: true }, human: () => console.log("dropped any in-flight pending enrollment / grant secrets.") });
         return 0;
       }
@@ -381,7 +381,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
         const all = args.flags["all"] === true;
         const ephemeral = String(args.options["ephemeral"] ?? "");
         if (!all && !ephemeral) throw new UsageError("withdraw-offer needs --ephemeral <pubkey> or --all");
-        const dropped = withdrawOfferFlow(all ? "all" : ephemeral);
+        const dropped = await withdrawOfferFlow(all ? "all" : ephemeral);
         emit(args, {
           ok: true,
           data: { withdrawn: dropped },
@@ -392,7 +392,7 @@ export async function cmdPersonaAdmit(args: ParsedArgs): Promise<number> {
       case "withdraw-grant": {
         const nonceA = String(args.options["nonce"] ?? "");
         if (!nonceA) throw new UsageError("withdraw-grant needs --nonce <nonceA> (the sent grant's own nonce)");
-        const withdrawn = withdrawGrantFlow(nonceA);
+        const withdrawn = await withdrawGrantFlow(nonceA);
         emit(args, {
           ok: true,
           data: { withdrawn },

@@ -41,8 +41,6 @@ const wire = (secretHex: string): KeyringEntryWire => ({ nexusAid: AID, epochCid
 
 let founder: SeatedScratchCustody;
 let joinee: SeatedScratchCustody;
-let aStore: string;
-let bStore: string;
 let storageDir: string;
 
 async function as<T>(vessel: SeatedScratchCustody, fn: () => Promise<T>): Promise<T> {
@@ -58,13 +56,11 @@ beforeEach(async () => {
   joinee = await seatScratchCustody("joinee");
   // Keep each fixture's root explicit; calls use as() and never depend on the ambient seat order.
   expect(founder.root).toBe(founderRoot);
-  aStore = mkdtempSync(join(tmpdir(), "lares-kr-astore-"));
-  bStore = mkdtempSync(join(tmpdir(), "lares-kr-bstore-"));
   storageDir = mkdtempSync(join(tmpdir(), "lares-kr-storage-"));
 });
 
 afterEach(async () => {
-  for (const d of [aStore, bStore, storageDir]) rmSync(d, { recursive: true, force: true });
+  rmSync(storageDir, { recursive: true, force: true });
   await joinee.drop();
   await founder.drop();
 });
@@ -90,8 +86,8 @@ async function ceremony(founderHasSecret = true) {
   const personaSigner = ed25519SignerFromSeed(A_PERSONA_SEED);
   const deviceSigner = ed25519SignerFromSeed(B_DEVICE_SEED);
   const resolveHeadOpKey = (p: string): string | null => p === PREFIX ? personaKey : null;
-  const offer = await offerAdmitFlow({ deviceVerifyingKey: deviceKey, dir: bStore });
-  const grant = await as(founder, () => grantAdmitFlow({ offerCarriage: offer.carriage, personaRef, personaSigner, dir: aStore }));
+  const offer = await as(joinee, () => offerAdmitFlow({ deviceVerifyingKey: deviceKey }));
+  const grant = await as(founder, () => grantAdmitFlow({ offerCarriage: offer.carriage, personaRef, personaSigner }));
   return { offer, grant, resolveHeadOpKey, deviceSigner };
 }
 
@@ -137,7 +133,7 @@ describe("recut custody delivery", () => {
     expect(grant.keyringDelivered).toBe(true);
     expect(grant.carriage).toContain("&keyring=");
     expect(grant.carriage.startsWith("#grant=")).toBe(true);
-    const opened = await as(joinee, () => openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey, deviceSigner, dir: bStore }));
+    const opened = await as(joinee, () => openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey, deviceSigner }));
     if ("error" in opened) throw new Error(opened.error);
     const heldFounder = await as(founder, heldNexusKeyringEntries);
     expect(opened.keyringEpochs).toBe(heldFounder.length);
@@ -154,7 +150,7 @@ describe("recut custody delivery", () => {
     const token = base64UrlEncode(utf8Bytes(JSON.stringify(attacker)));
     const swapped = grant.carriage.replace(/&keyring=[A-Za-z0-9_-]+/, `&keyring=${token}`);
     expect(swapped).not.toBe(grant.carriage);
-    const opened = await as(joinee, () => openAdmitFlow({ grantCarriage: swapped, resolveHeadOpKey, deviceSigner, dir: bStore }));
+    const opened = await as(joinee, () => openAdmitFlow({ grantCarriage: swapped, resolveHeadOpKey, deviceSigner }));
     if ("error" in opened) throw new Error(opened.error);
     expect(opened.keyringEpochs).toBe(0);
     expect(await as(joinee, () => loadNexusKeyring({ nexusAid: AID, headEpochCid: EPOCH }))).toBeNull();
@@ -167,7 +163,7 @@ describe("recut custody delivery", () => {
     if ("error" in grant) throw new Error(grant.error);
     const founderHex = (await as(founder, heldNexusKeyringEntries))[0]!.secretHex;
     expect(founderHex).not.toBe(localHex);
-    const opened = await as(joinee, () => openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey, deviceSigner, dir: bStore }));
+    const opened = await as(joinee, () => openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey, deviceSigner }));
     if ("error" in opened) throw new Error(opened.error);
     expect(opened.joinRecord).toBeDefined();
     expect(opened.keyringEpochs).toBe(0);
@@ -182,7 +178,7 @@ describe("recut custody delivery", () => {
     if ("error" in grant) throw new Error(grant.error);
     expect(grant.keyringDelivered).toBe(false);
     expect(grant.carriage).not.toContain("&keyring=");
-    const opened = await as(joinee, () => openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey, deviceSigner, dir: bStore }));
+    const opened = await as(joinee, () => openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey, deviceSigner }));
     if ("error" in opened) throw new Error(opened.error);
     expect(opened.joinRecord).toBeDefined();
     expect(opened.keyringEpochs).toBe(0);
@@ -192,12 +188,12 @@ describe("recut custody delivery", () => {
     await as(founder, async () => { await mintNexusEpochSecret({ nexusAid: AID, epochCid: EPOCH }); });
     const personaKey = await pubOf(A_PERSONA_SEED);
     const deviceKey = await pubOf(B_DEVICE_SEED);
-    const offer = await offerAdmitFlow({ deviceVerifyingKey: deviceKey, dir: bStore });
+    const offer = await as(joinee, () => offerAdmitFlow({ deviceVerifyingKey: deviceKey }));
     await founder.holder.lock();
     await expect(as(founder, () => grantAdmitFlow({
       offerCarriage: offer.carriage,
       personaRef: { prefix: PREFIX, verifyingKey: personaKey },
-      personaSigner: ed25519SignerFromSeed(A_PERSONA_SEED), dir: aStore,
+      personaSigner: ed25519SignerFromSeed(A_PERSONA_SEED),
     }))).rejects.toThrow(CustodyLocked);
   });
 });

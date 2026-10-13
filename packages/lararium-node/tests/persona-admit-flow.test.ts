@@ -1,239 +1,376 @@
 /**
- * persona-admit-flow.test.ts — the airgapped 3-hop between TWO simulated vessels, through the real flow
- * functions (ceremony + per-vessel store + QR render), each vessel a separate temp identity dir.
+ * persona-admit-flow — two custody-seated vessels walk the airgapped admission ceremony and its commit points.
  *
- * Proven:
- *   · THE FULL FLOW — B offers → A grants → B opens (records + ACKs) → A accepts (records); BOTH vessels' LOCAL
- *     multitude-views end holding the SAME persona join, each written to its OWN dir (per-vessel, never shared),
- *   · each hop renders a scannable terminal QR of its carriage,
- *   · B's ephemeral secret is CONSUMED on open (a second open finds no pending enrollment),
- *   · PHOTOGRAPH-INERT at the flow level — a captured grant carriage opened on a THIRD vessel (no pending
- *     enrollment / wrong ephemeral) records nothing,
- *   · ROTATE-NOT-RESURRECT — a grant refused by the head resolver records nothing on either side.
+ *   F0  the ported laws: the full flow; an enrollment dropped on open; photograph-inert on a third vessel;
+ *       rotate-not-resurrect; the two withdraw laws; L10; M8. Each carries its own control.
+ *   F1  THE ADMISSION COMMITS, AND THE ACKNOWLEDGMENT TRAVELS WHATEVER THE DROP DOES (target side). The drop of
+ *       the enrollment fails once after the record: the open still answers its acknowledgment and says the
+ *       enrollment stands; the admission holds; the SAME grant opens again to the same acknowledgment and the
+ *       enrollment drops; the granter accepts it.          control: F0's full flow, where no drop fails
+ *   F2  a death BEFORE the admission leaves the enrollment pending and records nothing; the same grant then opens.
+ *   F3  the granting side: the memo's drop fails once after the record; the accept still answers the join and
+ *       says the memo stands; the same ACK accepts again and the memo drops.
+ *   F4  an ACK that fails verification costs the grant nothing: no admission, the memo stands, the genuine ACK accepts.
+ *   F5  the floor: locked holders refuse the offer, the grant and the accept.
+ *   F6  ONE OFFER, ONE GRANT. Two grants ride one offer; the first commits and its enrollment's drop fails. The
+ *       SECOND grant then refuses by name, signs no acknowledgment and leaves the first admission standing; the
+ *       FIRST grant still opens again to its own acknowledgment and the enrollment drops.
+ *       The same holds where the first open died BEFORE its record: the offer stands bound to the first grant,
+ *       the second refuses, the first completes.
+ *                                                          control: an offer nothing opened takes the second of
+ *                                                          two grants sealed to it
  */
-import { afterEach, beforeEach, describe, test, expect } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import * as ed from "@noble/ed25519";
-import { ed25519SignerFromSeed, type PersonaRef } from "@lararium/mesh";
-import { hex } from "@lararium/mesh";
+import { ed25519SignerFromSeed, hex, type PersonaRef } from "@lararium/mesh";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { seatCustody } from "../src/custody-seat.js";
+import { CustodyLocked, type CustodyHolder } from "../src/custody-holder.js";
+import { parseAckCarriage, toAckCarriage } from "../src/persona-admit-carriage.js";
 import {
   offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
   withdrawOfferFlow, withdrawGrantFlow,
 } from "../src/persona-admit-flow.js";
-import { listAdmittedPersonas, peekEnrollmentSecrets } from "../src/node-persona-admit-store.js";
+import {
+  ADMISSIONS_FILE, PENDING_ENROLL_FILE, PENDING_GRANT_FILE,
+  listAdmittedPersonas, peekEnrollmentSecrets, peekSentMemo,
+} from "../src/node-persona-admit-store.js";
+
+vi.setConfig({ testTimeout: 120_000 });
 
 const A_PERSONA_SEED = new Uint8Array(32).fill(1);
-const B_DEVICE_SEED  = new Uint8Array(32).fill(2);
+const B_DEVICE_SEED = new Uint8Array(32).fill(2);
 const PREFIX = "EpersonaAID_flow_01";
 const pubOf = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 
-describe("persona-admit-flow — the airgapped 3-hop between two vessels", () => {
-  let aDir: string;   // vessel A (granter)
-  let bDir: string;   // vessel B (target)
-  beforeEach(() => {
-    aDir = mkdtempSync(join(tmpdir(), "lares-vessel-a-"));
-    bDir = mkdtempSync(join(tmpdir(), "lares-vessel-b-"));
+async function as<T>(vessel: SeatedScratchCustody, fn: () => Promise<T>): Promise<T> {
+  const prior = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = vessel.root;
+  try { return await fn(); }
+  finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
+}
+
+describe("persona-admit-flow — two custody-seated vessels", () => {
+  let a: SeatedScratchCustody;
+  let b: SeatedScratchCustody;
+
+  beforeEach(async () => {
+    a = await seatScratchCustody("admit-A");
+    b = await seatScratchCustody("admit-B");
   });
-  afterEach(() => { rmSync(aDir, { recursive: true, force: true }); rmSync(bDir, { recursive: true, force: true }); });
-  // A grant reads the granter's keyring row and an open joins a delivered one, so the flow stands on a seated custody.
-  // This custody holds no secret: every grant here rides carry-only (`keyring-delivery.test.ts` covers the delivery).
-  let custody: SeatedScratchCustody;
-  beforeEach(async () => { custody = await seatScratchCustody("admit-flow"); });
-  afterEach(async () => { await custody.drop(); });
+  afterEach(async () => {
+    await b.drop();
+    await a.drop();
+  });
 
   async function fixtures() {
     const personaKey = await pubOf(A_PERSONA_SEED);
-    const deviceKey  = await pubOf(B_DEVICE_SEED);
+    const deviceKey = await pubOf(B_DEVICE_SEED);
     const personaRef: PersonaRef = { prefix: PREFIX, verifyingKey: personaKey };
     const personaSigner = ed25519SignerFromSeed(A_PERSONA_SEED);
-    const deviceSigner  = ed25519SignerFromSeed(B_DEVICE_SEED);
-    const resolveHeadOpKey = (prefix: string): string | null => (prefix === PREFIX ? personaKey : null);
+    const deviceSigner = ed25519SignerFromSeed(B_DEVICE_SEED);
+    const resolveHeadOpKey = (prefix: string): string | null => prefix === PREFIX ? personaKey : null;
     return { personaKey, deviceKey, personaRef, personaSigner, deviceSigner, resolveHeadOpKey };
+  }
+
+  async function offer(f: Awaited<ReturnType<typeof fixtures>>) {
+    return as(b, () => offerAdmitFlow({ deviceVerifyingKey: f.deviceKey }));
+  }
+  async function grant(f: Awaited<ReturnType<typeof fixtures>>, offerCarriage: string) {
+    return as(a, () => grantAdmitFlow({ offerCarriage, personaRef: f.personaRef, personaSigner: f.personaSigner }));
+  }
+  async function open(f: Awaited<ReturnType<typeof fixtures>>, grantCarriage: string) {
+    return as(b, () => openAdmitFlow({ grantCarriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner }));
+  }
+  async function accept(ackCarriage: string) {
+    return as(a, () => acceptAdmitFlow({ ackCarriage }));
   }
 
   test("THE FULL FLOW: both vessels end holding the SAME join in their OWN local view", async () => {
     const f = await fixtures();
-
-    // HOP 1 (B): offer + a scannable QR; the secret stashes in B's dir.
-    const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    expect(offer.terminalQr.length).toBeGreaterThan(0);
-    expect(offer.carriage.startsWith("#enroll=")).toBe(true);
-
-    // HOP 2 (A): grant sealed to B's ephemeral, signed by the persona prefix key; memo stashes in A's dir.
-    const grant = await grantAdmitFlow({ offerCarriage: offer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
-    expect("error" in grant).toBe(false);
-    if ("error" in grant) return;
-    expect(grant.carriage.startsWith("#grant=")).toBe(true);
-
-    // HOP 3 (B): open + record + ACK.
-    const opened = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    const enrollment = await offer(f);
+    expect(enrollment.terminalQr.length).toBeGreaterThan(0);
+    expect(enrollment.carriage.startsWith("#enroll=")).toBe(true);
+    const granted = await grant(f, enrollment.carriage);
+    expect("error" in granted).toBe(false);
+    if ("error" in granted) return;
+    expect(granted.carriage.startsWith("#grant=")).toBe(true);
+    const opened = await open(f, granted.carriage);
     expect("error" in opened).toBe(false);
     if ("error" in opened) return;
     expect(opened.carriage.startsWith("#ack=")).toBe(true);
-
-    // HOP 3-close (A): accept + record.
-    const accepted = await acceptAdmitFlow({ ackCarriage: opened.carriage, dir: aDir });
+    const accepted = await accept(opened.carriage);
     expect("error" in accepted).toBe(false);
     if ("error" in accepted) return;
-
-    // BOTH local views hold the SAME persona join — dual-admission, each in its OWN per-vessel dir.
-    const aView = listAdmittedPersonas(aDir);
-    const bView = listAdmittedPersonas(bDir);
+    const aView = await as(a, listAdmittedPersonas);
+    const bView = await as(b, listAdmittedPersonas);
     expect(aView).toHaveLength(1);
     expect(bView).toHaveLength(1);
     expect(aView[0]!.personaRef.prefix).toBe(PREFIX);
-    expect(aView[0]).toEqual(bView[0]);                       // the matching mutually-signed record
+    expect(aView[0]).toEqual(bView[0]);
     expect(aView[0]!.targetVesselId).toBe(f.deviceKey);
   });
 
   test("B's ephemeral secret is CONSUMED on open (a replayed grant finds no pending enrollment)", async () => {
     const f = await fixtures();
-    const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const grant = await grantAdmitFlow({ offerCarriage: offer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
-    if ("error" in grant) throw new Error("grant failed");
-    const first = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    const first = await open(f, granted.carriage);
     expect("error" in first).toBe(false);
-
-    // A second open of the SAME grant — the secret is gone.
-    const second = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    const second = await open(f, granted.carriage);
     expect("error" in second).toBe(true);
   });
 
   test("PHOTOGRAPH-INERT: a captured grant opened on a THIRD vessel (no pending enrollment) records nothing", async () => {
     const f = await fixtures();
-    const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const grant = await grantAdmitFlow({ offerCarriage: offer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
-    if ("error" in grant) throw new Error("grant failed");
-
-    // A photographer's vessel (a fresh dir with no enrollment) tries the captured grant.
-    const thiefDir = mkdtempSync(join(tmpdir(), "lares-vessel-thief-"));
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    const thief = await seatScratchCustody("admit-thief");
     try {
-      const stolen = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: thiefDir });
+      const stolen = await as(thief, () => openAdmitFlow({ grantCarriage: granted.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner }));
       expect("error" in stolen).toBe(true);
-      expect(listAdmittedPersonas(thiefDir)).toEqual([]);
-    } finally {
-      rmSync(thiefDir, { recursive: true, force: true });
-    }
+      expect(await as(thief, listAdmittedPersonas)).toEqual([]);
+    } finally { await thief.drop(); }
   });
 
   test("§2a: a WITHDRAWN offer refuses a fresh grant (same refusal shape as consumed) — nothing that opened before stops opening", async () => {
     const f = await fixtures();
-
-    // CONTROL: without withdrawal, the SAME shape of grant opens fine (proves the refusal below is the
-    // withdrawal, not some unrelated breakage).
-    const controlOffer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const controlGrant = await grantAdmitFlow({ offerCarriage: controlOffer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    const controlOffer = await offer(f);
+    const controlGrant = await grant(f, controlOffer.carriage);
     if ("error" in controlGrant) throw new Error("control grant failed");
-    const controlOpened = await openAdmitFlow({ grantCarriage: controlGrant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    const controlOpened = await open(f, controlGrant.carriage);
     expect("error" in controlOpened).toBe(false);
-
-    // The withdrawn case: B offers, then withdraws its OWN offer by its OWN patience (no clock involved) BEFORE
-    // A's grant ever arrives to open against it.
-    const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const grant = await grantAdmitFlow({ offerCarriage: offer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
-    if ("error" in grant) throw new Error("grant failed");
-    expect(withdrawOfferFlow(offer.offer.ephemeralPubkey, bDir)).toBe(1);
-    expect(peekEnrollmentSecrets(bDir).find((p) => p.ephemeralPubkey === offer.offer.ephemeralPubkey)).toBeUndefined();
-
-    const opened = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    expect(await as(b, () => withdrawOfferFlow(enrollment.offer.ephemeralPubkey))).toBe(1);
+    expect((await as(b, peekEnrollmentSecrets)).find((p) => p.ephemeralPubkey === enrollment.offer.ephemeralPubkey)).toBeUndefined();
+    const opened = await open(f, granted.carriage);
     expect("error" in opened).toBe(true);
-    expect(listAdmittedPersonas(bDir)).toHaveLength(1);   // only the CONTROL's join — the withdrawn one records nothing
+    expect(await as(b, listAdmittedPersonas)).toHaveLength(1);
   });
 
   test("§2a: a WITHDRAWN grant refuses its own late ACK — nothing that accepted before stops accepting", async () => {
     const f = await fixtures();
-
-    // CONTROL: without withdrawal, the SAME shape accepts fine.
-    const controlOffer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const controlGrant = await grantAdmitFlow({ offerCarriage: controlOffer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    const controlOffer = await offer(f);
+    const controlGrant = await grant(f, controlOffer.carriage);
     if ("error" in controlGrant) throw new Error("control grant failed");
-    const controlOpened = await openAdmitFlow({ grantCarriage: controlGrant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    const controlOpened = await open(f, controlGrant.carriage);
     if ("error" in controlOpened) throw new Error("control open failed");
-    const controlAccepted = await acceptAdmitFlow({ ackCarriage: controlOpened.carriage, dir: aDir });
-    expect("error" in controlAccepted).toBe(false);
-
-    // The withdrawn case: A grants, B opens + ACKs — but A withdraws its OWN sent memo (its own patience ending)
-    // BEFORE B's ACK ever arrives to close the join on A's side.
-    const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const grant = await grantAdmitFlow({ offerCarriage: offer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
-    if ("error" in grant) throw new Error("grant failed");
-    const opened = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
+    expect("error" in await accept(controlOpened.carriage)).toBe(false);
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    const opened = await open(f, granted.carriage);
     if ("error" in opened) throw new Error("open failed");
-
-    const sealed = grant.sealed;
-    expect(withdrawGrantFlow(sealed.nonceA, aDir)).toBe(true);
-
-    // B's ACK is now LATE from A's point of view — A's accept finds no sent memo and refuses.
-    const accepted = await acceptAdmitFlow({ ackCarriage: opened.carriage, dir: aDir });
-    expect("error" in accepted).toBe(true);
-    expect(listAdmittedPersonas(aDir)).toHaveLength(1);   // only the CONTROL's join — the withdrawn one records nothing on A
-    // B still holds its own local record (B's own open+ACK never depended on A's memo) — dual-admission is
-    // per-vessel; A's withdrawal only closes A's OWN half of the join.
-    expect(listAdmittedPersonas(bDir)).toHaveLength(1);
+    expect(await as(a, () => withdrawGrantFlow(granted.sealed.nonceA)).then(Boolean)).toBe(true);
+    expect("error" in await accept(opened.carriage)).toBe(true);
+    expect(await as(a, listAdmittedPersonas)).toHaveLength(1);   // only the control's join: the withdrawn one records nothing on A
   });
 
   test("M8: onlyEphemeral scopes the match to THIS offer alone — a grant answering a DIFFERENT pending offer is NOT consumed", async () => {
     const f = await fixtures();
-    // Two pending offers stand on B at once (as a held X + a detached Y would).
-    const offerX = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const offerY = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    // A grants against Y.
-    const grantY = await grantAdmitFlow({ offerCarriage: offerY.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    const offerX = await offer(f);
+    const offerY = await offer(f);
+    const grantY = await grant(f, offerY.carriage);
     if ("error" in grantY) throw new Error("grant failed");
-
-    // CONTROL (no onlyEphemeral): B's open tries every pending offer and matches Y.
-    const controlOpen = await openAdmitFlow({ grantCarriage: grantY.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir });
-    expect("error" in controlOpen).toBe(false);
-    expect(peekEnrollmentSecrets(bDir).some((p) => p.ephemeralPubkey === offerX.offer.ephemeralPubkey)).toBe(true);   // X untouched
-    expect(peekEnrollmentSecrets(bDir).some((p) => p.ephemeralPubkey === offerY.offer.ephemeralPubkey)).toBe(false);  // Y consumed
-
-    // MUTATION proof, fresh pair: held session X scopes its open to ITS OWN ephemeral via onlyEphemeral — a
-    // grant that answers Y is REFUSED from X's held session, and Y's secret stands UNTOUCHED (X never spent
-    // someone else's secret on X's own behalf).
-    const offerX2 = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const offerY2 = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const grantY2 = await grantAdmitFlow({ offerCarriage: offerY2.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    expect("error" in await open(f, grantY.carriage)).toBe(false);
+    expect((await as(b, peekEnrollmentSecrets)).some((p) => p.ephemeralPubkey === offerX.offer.ephemeralPubkey)).toBe(true);
+    expect((await as(b, peekEnrollmentSecrets)).some((p) => p.ephemeralPubkey === offerY.offer.ephemeralPubkey)).toBe(false);
+    const offerX2 = await offer(f);
+    const offerY2 = await offer(f);
+    const grantY2 = await grant(f, offerY2.carriage);
     if ("error" in grantY2) throw new Error("grant failed");
-    const scopedOpen = await openAdmitFlow({
-      grantCarriage: grantY2.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, dir: bDir,
-      onlyEphemeral: offerX2.offer.ephemeralPubkey,
-    });
+    const scopedOpen = await as(b, () => openAdmitFlow({ grantCarriage: grantY2.carriage, resolveHeadOpKey: f.resolveHeadOpKey, deviceSigner: f.deviceSigner, onlyEphemeral: offerX2.offer.ephemeralPubkey }));
     expect("error" in scopedOpen).toBe(true);
-    expect(peekEnrollmentSecrets(bDir).some((p) => p.ephemeralPubkey === offerX2.offer.ephemeralPubkey)).toBe(true);   // X2 untouched
-    expect(peekEnrollmentSecrets(bDir).some((p) => p.ephemeralPubkey === offerY2.offer.ephemeralPubkey)).toBe(true);   // Y2 ALSO untouched — never consumed
+    const pending = await as(b, peekEnrollmentSecrets);
+    expect(pending.some((p) => p.ephemeralPubkey === offerX2.offer.ephemeralPubkey)).toBe(true);
+    expect(pending.some((p) => p.ephemeralPubkey === offerY2.offer.ephemeralPubkey)).toBe(true);
   });
 
   test("L10: a non-decrypt refusal (a real cause) is reported over a merely-unmatched offer's decrypt-failed", async () => {
     const f = await fixtures();
-    // Offer X stands pending alongside the offer the grant actually answers (Y) — X's attempt always reads
-    // decrypt-failed (wrong ephemeral), which must not mask Y's REAL refusal reason (a rotated head).
-    const offerX = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const offerY = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const grantY = await grantAdmitFlow({ offerCarriage: offerY.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
+    await offer(f);
+    const offerY = await offer(f);
+    const grantY = await grant(f, offerY.carriage);
     if ("error" in grantY) throw new Error("grant failed");
-
     const rotatedHead = await pubOf(new Uint8Array(32).fill(9));
-    const opened = await openAdmitFlow({ grantCarriage: grantY.carriage, resolveHeadOpKey: () => rotatedHead, deviceSigner: f.deviceSigner, dir: bDir });
+    const opened = await as(b, () => openAdmitFlow({ grantCarriage: grantY.carriage, resolveHeadOpKey: () => rotatedHead, deviceSigner: f.deviceSigner }));
     expect("error" in opened).toBe(true);
     if (!("error" in opened)) throw new Error("expected a refusal");
     expect(opened.error.startsWith("decrypt-failed")).toBe(false);
     expect(opened.error).toContain("rotated/superseded");
-    void offerX;   // X stands pending throughout — its decrypt-failed miss is the one being masked
   });
 
   test("ROTATE-NOT-RESURRECT: a grant the head resolver rejects records nothing on B", async () => {
     const f = await fixtures();
-    const offer = await offerAdmitFlow({ deviceVerifyingKey: f.deviceKey, dir: bDir });
-    const grant = await grantAdmitFlow({ offerCarriage: offer.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner, dir: aDir });
-    if ("error" in grant) throw new Error("grant failed");
-
-    // The persona rotated: the resolver returns a different head than the grant's op-key → refuse, record nothing.
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
     const rotatedHead = await pubOf(new Uint8Array(32).fill(9));
-    const opened = await openAdmitFlow({ grantCarriage: grant.carriage, resolveHeadOpKey: () => rotatedHead, deviceSigner: f.deviceSigner, dir: bDir });
+    const opened = await as(b, () => openAdmitFlow({ grantCarriage: granted.carriage, resolveHeadOpKey: () => rotatedHead, deviceSigner: f.deviceSigner }));
     expect("error" in opened).toBe(true);
-    expect(listAdmittedPersonas(bDir)).toEqual([]);
+    expect(await as(b, listAdmittedPersonas)).toEqual([]);
+  });
+
+  function failingHolder(vessel: SeatedScratchCustody, thenFile: string, firstFile?: string): CustodyHolder {
+    let sawFirst = false;
+    let failed = false;
+    const real = vessel.holder;
+    return {
+      ...real,
+      updateRow: async <T>(home: Parameters<CustodyHolder["updateRow"]>[0], file: string, decide: Parameters<CustodyHolder["updateRow"]>[2]) => {
+        if (firstFile && file === firstFile) sawFirst = true;
+        if (!failed && (!firstFile || sawFirst) && file === thenFile) { failed = true; throw new Error("the process died here"); }
+        return real.updateRow(home, file, decide) as Promise<T>;
+      },
+    };
+  }
+
+  test("F1: THE CRASH BETWEEN THE TWO WRITES RESUMES (target side)", async () => {
+    const f = await fixtures();
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    seatCustody(failingHolder(b, PENDING_ENROLL_FILE, ADMISSIONS_FILE));
+    const first = await open(f, granted.carriage);
+    if ("error" in first) throw new Error(`the committed open lost its acknowledgment: ${first.error}`);
+    expect(first.pendingStands).toBe(true);
+    const committed = await as(b, async () => {
+      seatCustody(b.holder);
+      return { admissions: await listAdmittedPersonas(), pending: await peekEnrollmentSecrets() };
+    });
+    expect(committed.admissions).toHaveLength(1);
+    expect(committed.pending.some((p) => p.ephemeralPubkey === enrollment.offer.ephemeralPubkey)).toBe(true);
+    const resumed = await open(f, granted.carriage);
+    expect("error" in resumed).toBe(false);
+    if ("error" in resumed) return;
+    expect(resumed.pendingStands).toBeUndefined();
+    expect(resumed.carriage).toBe(first.carriage);            // the same grant answers the same acknowledgment
+    expect((await as(b, peekEnrollmentSecrets)).some((p) => p.ephemeralPubkey === enrollment.offer.ephemeralPubkey)).toBe(false);
+    expect(await as(b, listAdmittedPersonas)).toHaveLength(1);
+    const accepted = await accept(resumed.carriage);
+    expect("error" in accepted).toBe(false);
+    expect(await as(a, listAdmittedPersonas)).toHaveLength(1);
+  });
+
+  test("F2: A DEATH BEFORE THE ADMISSION LEAVES THE ENROLLMENT PENDING", async () => {
+    const f = await fixtures();
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    seatCustody(failingHolder(b, ADMISSIONS_FILE));
+    await expect(open(f, granted.carriage)).rejects.toThrow("the process died here");
+    const state = await as(b, async () => {
+      seatCustody(b.holder);
+      return { admissions: await listAdmittedPersonas(), pending: await peekEnrollmentSecrets() };
+    });
+    expect(state.admissions).toEqual([]);
+    expect(state.pending.some((p) => p.ephemeralPubkey === enrollment.offer.ephemeralPubkey)).toBe(true);
+    expect("error" in await open(f, granted.carriage)).toBe(false);
+  });
+
+  test("F3: the granting side resumes after admission and before its memo drops", async () => {
+    const f = await fixtures();
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    const opened = await open(f, granted.carriage);
+    if ("error" in opened) throw new Error("open failed");
+    seatCustody(failingHolder(a, PENDING_GRANT_FILE, ADMISSIONS_FILE));
+    const firstAccept = await accept(opened.carriage);
+    if ("error" in firstAccept) throw new Error(`the committed accept lost its join: ${firstAccept.error}`);
+    expect(firstAccept.pendingStands).toBe(true);
+    const state = await as(a, async () => {
+      seatCustody(a.holder);
+      return { admissions: await listAdmittedPersonas(), memo: await peekSentMemo(granted.sealed.nonceA) };
+    });
+    expect(state.admissions).toHaveLength(1);
+    expect(state.memo).not.toBeNull();
+    expect("error" in await accept(opened.carriage)).toBe(false);
+    expect(await as(a, () => peekSentMemo(granted.sealed.nonceA))).toBeNull();
+    expect(await as(a, listAdmittedPersonas)).toHaveLength(1);
+  });
+
+  test("F4: AN ACK THAT FAILS VERIFICATION COSTS THE GRANT NOTHING", async () => {
+    const f = await fixtures();
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    const opened = await open(f, granted.carriage);
+    if ("error" in opened) throw new Error("open failed");
+    const parsed = parseAckCarriage(opened.carriage);
+    expect(parsed).not.toBeNull();
+    if (!parsed) throw new Error("ACK carriage did not parse");
+    expect(parsed.joinRecord.nonceA).toBe(granted.sealed.nonceA);
+    const replacement = parsed.ackSig[0] === "0" ? "1" : "0";
+    const tampered = toAckCarriage({ ...parsed, ackSig: replacement + parsed.ackSig.slice(1) });
+    expect(tampered).not.toBe(opened.carriage);
+    const refused = await accept(tampered);
+    expect("error" in refused).toBe(true);
+    expect(await as(a, listAdmittedPersonas)).toEqual([]);
+    expect(await as(a, () => peekSentMemo(granted.sealed.nonceA))).not.toBeNull();
+    expect("error" in await accept(opened.carriage)).toBe(false);
+  });
+
+  test("F5: THE FLOOR — locked holders refuse offer, grant, and accept", async () => {
+    const f = await fixtures();
+    const enrollment = await offer(f);
+    const granted = await grant(f, enrollment.carriage);
+    if ("error" in granted) throw new Error("grant failed");
+    const opened = await open(f, granted.carriage);
+    if ("error" in opened) throw new Error("open failed");
+    await b.holder.lock();
+    await expect(as(b, () => offerAdmitFlow({ deviceVerifyingKey: f.deviceKey }))).rejects.toThrow(CustodyLocked);
+    await a.holder.lock();
+    await expect(as(a, () => grantAdmitFlow({ offerCarriage: enrollment.carriage, personaRef: f.personaRef, personaSigner: f.personaSigner }))).rejects.toThrow(CustodyLocked);
+    await expect(as(a, () => acceptAdmitFlow({ ackCarriage: opened.carriage }))).rejects.toThrow(CustodyLocked);
+  });
+
+  test("F6: ONE OFFER, ONE GRANT — an offer binds to the first grant that verifies and completes no other", async () => {
+    const f = await fixtures();
+    const enrollment = await offer(f);
+    const g1 = await grant(f, enrollment.carriage);
+    const g2 = await grant(f, enrollment.carriage);
+    if ("error" in g1 || "error" in g2) throw new Error("grant failed");
+    seatCustody(failingHolder(b, PENDING_ENROLL_FILE, ADMISSIONS_FILE));
+    const committed = await open(f, g1.carriage);
+    if ("error" in committed) throw new Error("the first grant failed to commit");
+    expect(committed.pendingStands).toBe(true);
+    await as(b, async () => { seatCustody(b.holder); });
+    const standing = (await as(b, listAdmittedPersonas))[0]!;
+    expect(standing.nonceA).toBe(g1.sealed.nonceA);
+
+    const other = await open(f, g2.carriage);
+    expect("error" in other).toBe(true);
+    if ("error" in other) expect(other.error).toMatch(/stands bound to another grant/);
+    expect((await as(b, listAdmittedPersonas))[0]).toEqual(standing);            // the first admission stands, byte for byte
+    // the first grant still completes: its own carriage opens again to its own acknowledgment, and the enrollment drops
+    const again = await open(f, g1.carriage);
+    if ("error" in again) throw new Error(`the bound grant lost its retry: ${again.error}`);
+    expect(again.carriage).toBe(committed.carriage);
+    expect((await as(b, peekEnrollmentSecrets)).some((p) => p.ephemeralPubkey === enrollment.offer.ephemeralPubkey)).toBe(false);
+
+    // the same holds where the first open died BEFORE its record: bound, nothing recorded for it
+    const early = await offer(f);
+    const e1 = await grant(f, early.carriage);
+    const e2 = await grant(f, early.carriage);
+    if ("error" in e1 || "error" in e2) throw new Error("grant failed");
+    seatCustody(failingHolder(b, ADMISSIONS_FILE));
+    await expect(open(f, e1.carriage)).rejects.toThrow("the process died here");
+    await as(b, async () => { seatCustody(b.holder); });
+    const refused = await open(f, e2.carriage);
+    expect("error" in refused && /stands bound to another grant/.test(refused.error)).toBe(true);
+    expect("error" in await open(f, e1.carriage)).toBe(false);
+
+    // control: an offer nothing opened takes the second of two grants sealed to it
+    const liveOffer = await offer(f);
+    const unopened = await grant(f, liveOffer.carriage);
+    const second = await grant(f, liveOffer.carriage);
+    if ("error" in unopened || "error" in second) throw new Error("grant failed");
+    expect(second.sealed.nonceA).not.toBe(unopened.sealed.nonceA);
+    expect("error" in await open(f, second.carriage)).toBe(false);
   });
 });

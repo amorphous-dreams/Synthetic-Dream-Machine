@@ -293,14 +293,15 @@ export { makeNodePersonaPetnameStore, makeNodePublicHandleStore } from "./node-v
 export { makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
 
 // The IoC follow — the node-fs LOCAL adapters for the private circle-graph + the recogniser's handle-book.
-// Both under the identity home, 0o600, never federated (the `lares circle` door drives them via composeFollow).
-export { makeNodeCircleStore, loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
-// The persona-admission PER-VESSEL multitude-view (never fleet-syncs) + the airgapped ceremony's consume-once
-// pending state — the node-fs local store the `lares persona admit` door drives.
+// Both under the identity home, sealed under the vessel key, never federated (the `lares circle` door drives them via composeFollow).
+export { makeNodeCircleStore, loadNodeHandleBook, saveNodeHandleBook, CIRCLES_FILE, HANDLE_BOOK_FILE } from "./node-circle-store.js";
+// The persona-admission PER-VESSEL multitude-view (never fleet-syncs) and the airgapped ceremony's pending state:
+// three rows sealed under the vessel key, which the `lares persona admit` door drives.
 export {
   recordAdmittedPersona, listAdmittedPersonas, isPersonaAdmitted,
-  stashEnrollmentSecret, takeEnrollmentSecret, peekEnrollmentSecrets, stashSentMemo, takeSentMemo, clearPersonaAdmitPending,
-  withdrawAdmitOffer, withdrawAdmitGrant, PENDING_OFFER_LIMIT,
+  stashEnrollmentSecret, bindEnrollmentToGrant, takeEnrollmentSecret, peekEnrollmentSecrets, stashSentMemo, peekSentMemo, takeSentMemo, clearPersonaAdmitPending,
+  withdrawAdmitOffer, withdrawAdmitGrant, PENDING_OFFER_LIMIT, SENT_MEMO_LIMIT,
+  ADMISSIONS_FILE, PENDING_ENROLL_FILE, PENDING_GRANT_FILE,
 } from "./node-persona-admit-store.js";
 // QR transport — GENERATE a scannable carriage QR (terminal / PNG / SVG / matrix, ECC H) + DECODE a still PNG
 // through an injected decoder shore (the headless node scanner + the browser camera both plug in behind it).
