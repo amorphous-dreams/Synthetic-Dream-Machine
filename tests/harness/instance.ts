@@ -290,7 +290,8 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
   try {
     await (opts.found ?? foundHearth)(cli, root);
   } catch (err) {
-    removeStagedRoot(root);
+    // A root the caller handed in stays the caller's to remove, here as at a failed unlock below.
+    if (opts.root === undefined) removeStagedRoot(root);
     throw err;
   }
   const foundMs = since();

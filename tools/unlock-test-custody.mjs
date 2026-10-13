@@ -12,7 +12,8 @@
 //
 // Usage: node tools/unlock-test-custody.mjs <LAR_ROOT> [--lock | --status]
 //   rc 0  the vessel key opened (or already stood open) · the lock landed · the status printed
-//   rc 1  the daemon answered anything else (the answer prints as JSON on stdout)
+//   rc 1  the daemon answered anything else, a key that opened over a composition that refused among them
+//         (the answer prints as JSON on stdout)
 //   rc 2  the root carries no marker · bad usage
 //   rc 3  no daemon answers at the root's rendezvous name
 import { createConnection } from "node:net";
@@ -70,6 +71,18 @@ export async function unlockTestCustody(root, act = "unlock") {
   return await sendCustodyFrame(dir, frame);
 }
 
+/**
+ * Whether the daemon's answer says the act LANDED. An unlock lands when the key opened AND the vessel holds it: an
+ * answer that reads `opens` with `held: false` names a sovereign composition that refused, after which the vessel
+ * dropped the key and stands at the floor. That reads as a refusal here, as `lares vault unlock` reads it.
+ */
+export function custodyActLanded(act, answer) {
+  if (!answer || typeof answer !== "object") return false;
+  if (act === "unlock") return (answer.reading === "opens" && answer.held !== false) || answer.reading === "already-unlocked";
+  if (act === "lock") return answer.locked === true;
+  return typeof answer.unlocked === "boolean";
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname)) {
   const root = process.argv[2] && !process.argv[2].startsWith("--") ? process.argv[2] : "";
   const act = process.argv.includes("--lock") ? "lock" : process.argv.includes("--status") ? "status" : "unlock";
@@ -82,8 +95,5 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.
   }
   if (answer === null) { console.error(`unlock-test-custody: no daemon answers at ${resolve(root)}'s rendezvous name`); process.exit(3); }
   console.log(JSON.stringify(answer));
-  const ok = act === "unlock" ? (answer.reading === "opens" || answer.reading === "already-unlocked")
-    : act === "lock" ? answer.locked === true
-    : typeof answer.unlocked === "boolean";
-  process.exit(ok ? 0 : 1);
+  process.exit(custodyActLanded(act, answer) ? 0 : 1);
 }

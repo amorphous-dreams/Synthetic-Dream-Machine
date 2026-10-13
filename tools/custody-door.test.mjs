@@ -9,6 +9,8 @@
 //   K3  unlock, lock, unlock: each unlock stands a fresh composition and the vessel answers a verb after each.
 //   K4  three wrong credentials spend the boot's attempts: the right one then reads `attempts-spent`, and only a
 //       restart opens the door again.                        control: a fresh boot opens on the first right try
+//   K6  the door reads an unlock whose composition refused (`reading: "opens"`, `held: false`) as a refusal.
+//                                                            control: the same answer with `held: true` lands
 //   K5  the harness door refuses an unmarked root (rc 2) before any socket opens.
 //                                                            control: a marked root with no daemon reads rc 3
 import assert from "node:assert/strict";
@@ -21,7 +23,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
-import { sendCustodyFrame, unlockTestCustody } from "./unlock-test-custody.mjs";
+import { custodyActLanded, sendCustodyFrame, unlockTestCustody } from "./unlock-test-custody.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
@@ -242,4 +244,15 @@ test("the harness door refuses an unmarked root before any socket opens", () => 
     rmSync(bare, { recursive: true, force: true });
     rmSync(marked, { recursive: true, force: true });
   }
+});
+
+test("the door reads a key that opened over a refused composition as a refusal", () => {
+  const refused = { op: "unlock", reading: "opens", slot: "s", standing: "herm", refused: "the sovereign composition refused", held: false };
+  assert.equal(custodyActLanded("unlock", refused), false, "K6: held false reads as a refusal");
+  assert.equal(custodyActLanded("unlock", { ...refused, held: true, refused: undefined }), true, "K6 control: a held key lands");
+  assert.equal(custodyActLanded("unlock", { op: "unlock", reading: "already-unlocked" }), true);
+  assert.equal(custodyActLanded("unlock", { op: "unlock", reading: "no-slot-opens", attemptsLeft: 2 }), false);
+  assert.equal(custodyActLanded("unlock", null), false);
+  assert.equal(custodyActLanded("lock", { locked: true }), true);
+  assert.equal(custodyActLanded("status", { unlocked: false }), true);
 });
