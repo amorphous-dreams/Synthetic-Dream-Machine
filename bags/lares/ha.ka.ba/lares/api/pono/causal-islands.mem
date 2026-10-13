@@ -31,9 +31,9 @@ Authority MUST precede content — this invariant holds without exception.
 
 ''Authority has three structural axes plus one alignment plane'' (refined 2026-06-01
 against Frazee, //Practical Decentralization//, and prior-art research across ATProto,
-SSB, Holochain, Nostr, IPFS, ActivityPub, and the local-first lineage). The earlier
-single linear ability-ladder fused into one rope what are really independent axes;
-this version separates them.
+SSB, Holochain, Nostr, IPFS, ActivityPub, and the local-first lineage). A
+single linear ability-ladder fuses independent axes into one rope;
+this model separates them.
 
 <<~/ahu>>
 
@@ -50,7 +50,7 @@ this version separates them.
 
 ''Axis 1 — Access.'' Four levels, a 1:1 lexical mirror of Keyhive's native Access enum
 (`pull`, `read`, `edit`, `admin`). NOT a parallel Lararium-coined ladder — the live gate
-is `CapabilityVerifier.verify({ access: "read" | "admin" })`; the four-verb tuple gives
+uses `CapabilityVerifier.verify({ access: "read" | "admin" })`; the four-verb tuple gives
 the edge-island federation scaffolding a typed vocabulary for the same levels. The
 relay-law exception governs the bottom rung.
 
@@ -58,7 +58,7 @@ relay-law exception governs the bottom rung.
 `edit`-intent delegation — the POLA-correct grain for a surface a principal co-edits but
 should NOT re-delegate — currently rounds ''up'' to `admin`. Documented over-grant: e.g.
 delegating an operator's `@personal`/`@draft` view-state to their own PersonaGroup grants
-`admin` where `edit` is the true least-authority. Acceptable while the principal set is
+`admin` where `edit` gives the true least-authority. Acceptable while the principal set stays
 homogeneous-trust (those devices already hold `admin` on `@daemon`, so marginal authority
 ≈ 0). Adopt the true `edit` grain at the delegation call sites the moment
 `CapabilityVerifier.verify` accepts it. First live call site + ocap rationale:
@@ -75,9 +75,9 @@ names no registry and no canonical graph; it emerges as the transitive closure o
 under everyone's local stances. Neighborhood, city, nexus and DreamNet
 ride the INFRA shrine-tiers and join by treaty, never as delegation-nested WHO rings.
 
-''Axis 3 — Powers.'' The faculties of infrastructure are separable and each devolvable to
+''Axis 3 — Powers.'' The faculties of infrastructure admit separation, and each can devolve to
 a distinct provider: `host · relay · aggregate · address · moderate`. ''Host-independent''
-''`lar:///` addressing is the lever'' that makes them separable (a `lar:///` URI names content
+''`lar:///` addressing serves as the lever'' that makes them separable (a `lar:///` URI names content
 by identity, the resolver binds it to a doc at boot — no host appears in the address). The
 governing law, learned from ATProto's failures: ''every power you separate but make''
 ''expensive or central re-concentrates'' (their PLC ledger, their single capital-intensive
@@ -102,12 +102,12 @@ A peer MUST complete step 3 before requesting individual meme deltas.
 
 ''Relay-law'' (Access axis, bottom rung): `pull` does NOT imply `read`. A shrine relay holds
 `pull`; it carries ENCRYPTED offerings it cannot decrypt or render. All other access levels
-imply every level below them. (We are strictly stronger than ATProto here: their relay reads
+imply every level below them. (We stand strictly stronger than ATProto here: their relay reads
 a plaintext firehose; ours forwards ciphertext it cannot open — the correct boundary for a
 private mesh of households rather than a public broadcast medium.)
 
 ''Visibility gate'': ALL six conditions must hold for a meme to federate across an edge island.
-Stage band is a UX annotation — NOT a gate condition.
+Stage band serves as a UX annotation — NOT a gate condition.
 
 ''Shore law'' (Scale axis): joining a ''social'' ring (≤ Cabal) requires a capability delegation
 from that ring's Keyhive group. The delegation chain functions as the join-rule for the SOCIAL axis;
@@ -115,10 +115,10 @@ no central admission authority stands. ''Above the Cabal the INFRA axis takes ov
 `DreamNet` join by ''treaty / mutual-carriage contract'', never delegation-up (2026-06-29 cohere →
 dreamnet-architecture#two-axis-topology).
 
-''Alignment law'' (Plane 0): trust assertions are ordinary signed content, evaluated LOCALLY
+''Alignment law'' (Plane 0): trust assertions take the form of ordinary signed content, evaluated LOCALLY
 against a per-island root. No global consensus, no central registry, no global trust score.
-A valid-capability-holding lemure is refused by being ''starved of voluntary peering'', never
-by a central ban. See [[alignment-layer.md|lar:///ha.ka.ba/lares/api/pono/alignment-layer]].
+Peers refuse a valid-capability-holding lemure by leaving it ''starved of voluntary peering'', never
+through a central ban. See [[alignment-layer.md|lar:///ha.ka.ba/lares/api/pono/alignment-layer]].
 
 ''Exchange-island law'': the operator↔node exchange runs as a causal island of its own ---
 two logs, no global now across the turn boundary. The turn-frame syncs it: `yield … -> ?`
@@ -346,10 +346,10 @@ Named so the stack never grows them (each re-created the power problem its sourc
 meant to escape):
 
 * ✗ ''Central identity ledger'' (ATProto's `did:plc`). Resolve identity //within the island//
-  via Keyhive + Automerge causal history. `did:web`-style domain identity is acceptable ONLY
+  via Keyhive + Automerge causal history. `did:web`-style domain identity stays acceptable ONLY
   as an optional bridge at the external Kowloon web2.5 boundary.
 * ✗ ''Public plaintext firehose as backbone.'' Propagate encrypted, capability-gated
-  change-sets. A firehose is fine //inside// a consenting cabal; it terminates at the island boundary.
+  change-sets. A firehose works fine //inside// a consenting cabal; it terminates at the island boundary.
 * ✗ ''Capital-intensive single global index'' (ATProto's Appview monopoly). We hold no
   whole-network index to monopolize — reads project per-VM from locally-resident bags
   (island-owned residency: a two-state ʻōlelo thermal axis — `wela` (hot) / `anu` (cold) —
@@ -359,7 +359,7 @@ meant to escape):
 * ✗ ''Shared / highly-reused rotation keys.'' Per-operator, ideally per-bag rotation/admin
   capabilities — never a shared master key over a ring's members.
 * ✗ ''Global blocklists / global trust scores'' (EigenTrust-style). Sybil-vulnerable without
-  costly identity, and they imply a global "now" we do not have. Trust roots are plural and chosen.
+  costly identity, and they imply a global "now" we do not have. Trust roots stay plural and chosen.
 
 <<~/ahu>>
 
@@ -369,6 +369,6 @@ meant to escape):
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;JOdZir_hhGTIoE__6NaPY0N5CmSGao4niIFR1y5ujyQ
+<<^ code="&#x0003;">>ni:///sha-256;PlBbmobFmcS-UdprzIC4fZyo0RLlFbJgMWRvFNxMEYo
 
 <<^ code="&#x0004;" -> to="?">>

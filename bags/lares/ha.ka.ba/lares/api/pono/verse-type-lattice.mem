@@ -77,7 +77,7 @@ Function subtyping: `(T1)->R1 <: (T2)->R2` requires `T2 <: T1` and `R1 <: R2`.
 
 | Modifier | Effect on subtyping |
 |---|---|
-| `<unique>` | Class instances carry identity equality; are comparable |
+| `<unique>` | Class instances carry identity equality; instances support comparison |
 | `<castable>` | Enables runtime type checking (`Type(value)` casts) |
 | `<final>` | No subclasses allowed; required for `<persistable>` classes |
 | `<persistable>` | Marks a class/struct/enum for cross-session storage (see below) |
@@ -119,7 +119,7 @@ game sessions — Verse's equivalent of cross-session player storage.
 
 !! Effects System — Six Families
 
-Verse effects are a ''bit-vector'' propagated upward through call chains. Each
+Verse effects form a ''bit-vector'' propagated upward through call chains. Each
 function declares which effect bits it sets; callers must declare at least the same
 bits (or more). Six families:
 
@@ -127,18 +127,18 @@ bits (or more). Six families:
 |---|---|---|---|
 | Cardinality | `<decides>` | Can fail (zero or one result) | edge may not fire |
 | Heap | `<transacts>` | Reads/writes/allocates heap | edge has side effects |
-| Suspension | `<suspends>` | Async; may pause and resume | edge is async |
-| Divergence | `<converges>` | Guaranteed to terminate | edge is bounded |
-| Prediction | `<predicts>` | Deterministic/pure prediction | edge is reproducible |
-| Purity | `<computes>` | No side effects (composite of read-only) | edge is safe to parallelize |
+| Suspension | `<suspends>` | Async; may pause and resume | edge runs async |
+| Divergence | `<converges>` | Guaranteed to terminate | edge stays bounded |
+| Prediction | `<predicts>` | Deterministic/pure prediction | edge yields reproducible results |
+| Purity | `<computes>` | No side effects (composite of read-only) | edge permits safe parallel execution |
 
 ''Composition specifiers:''
 * `<computes>` — pure: no heap writes, no suspension, no failure, no divergence
 * `<transacts>` — default: heap reads + writes + allocation
 * `<reads>` — read-only heap access
 
-''Key rule:'' Functions ''without `<writes>`'' can be safely executed in parallel
-without locks. This is the Verse-native condition for safe concurrent edges.
+''Key rule:'' Functions ''without `<writes>`'' can safely execute in parallel
+without locks. This gives the Verse-native condition for safe concurrent edges.
 
 !!! Propagation and hiding
 
@@ -147,8 +147,8 @@ function requires marking the caller `<suspends>`. The effect bit flows up the c
 chain.
 
 ''Exception — `spawn` hides `<suspends>`:'' The `spawn` expression absorbs the
-`<suspends>` effect of the spawned function. The calling context does NOT need to be
-marked `<suspends>`. This is the formal mechanism that allows spawn to create a new
+`<suspends>` effect of the spawned function. The calling context does NOT need to carry
+`<suspends>`. This gives the formal mechanism that allows spawn to create a new
 task root independent of the calling scope. See `verse-task-tree` for the tree-topology
 consequence.
 
@@ -166,8 +166,8 @@ When Lararium models Verse function types in the graph, effects annotate the edg
 
 | Effect present | Edge annotation | Meaning |
 |---|---|---|
-| `<suspends>` | `reaction:subscribable` edge; `effects: suspends` | input handler is async |
-| `<decides>` | `reaction:subscribable` edge; `effects: decides` | handler is failable |
+| `<suspends>` | `reaction:subscribable` edge; `effects: suspends` | input handler runs async |
+| `<decides>` | `reaction:subscribable` edge; `effects: decides` | handler can fail |
 | `<transacts>` | `reaction:subscribable` edge; `effects: transacts` | handler participates in rollback |
 | `<computes>` | `aka` / observe-family edges | pure; frozen-read semantics |
 | `<converges>` | (future annotation) | handler guaranteed to terminate |
@@ -190,6 +190,6 @@ See `uefn-scene` for the `reaction:subscribable` edge format and `KumuSubscribab
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Sg5NOhbPNQDS5-a1oWFuPtEnuZ2xwlG7kx9X7ejBIn0
+<<^ code="&#x0003;">>ni:///sha-256;jIM2QdvLM0_Qk9x2S0N_9G1trJEFTMS2yJxKmnSmXkc
 
 <<^ code="&#x0004;" -> to="?">>
