@@ -1,7 +1,7 @@
 /**
  * `lares vessel seed` — plant the disk holdings into the vessel docs.
  *
- * A nameless entity composed of #has caps: disk-grant (bags/) · synced-tree · the two
+ * A nameless entity composed of #has caps: disk-grant (the bags dir) · synced-tree · the two
  * existing feed gestures, kind-routed per holding:
  *   - SYSTEM bags (lares, lararium — their docs mint at boot) → the diff-gated
  *     `ingest` gesture (disk-hash vs synced-hash vs island render-hash).
@@ -22,7 +22,7 @@ import { join } from "node:path";
 import { bagUri, LARES_DOC_URI, LARARIUM_DOC_URI, identitySlug } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
-import { larRoot } from "../env.js";
+import { larBagsDir } from "../env.js";
 import { cmdIngest } from "./ingest.js";
 import { cmdAct } from "./act.js";
 
@@ -43,15 +43,21 @@ export const SYSTEM_HOLDINGS = new Set(
 
 export interface SeedHolding {
   readonly holding: string;               // "lares"
-  readonly source: string;                // "<root>/bags/lares"
+  readonly source: string;                // "<bags dir>/lares"
   readonly toBag: string;                 // "lar:///ha.ka.ba/bags/lares"
   readonly gesture: "ingest" | "load";    // the kind-route taken
   readonly exitCode: number;              // the gesture's verdict for this holding
 }
 
-/** The holdings map — every `@*` dir under `<larRoot>/bags/`, discovered, never hardcoded. */
-export function discoverHoldings(root: string): Array<{ holding: string; source: string; toBag: string }> {
-  const bagsDir = join(root, "bags");
+/**
+ * The holdings map — every dir under the BAGS DIR, discovered, never hardcoded.
+ *
+ * THE BAGS DIR SITES ON ITS OWN CAP (`larBagsDir`: `LAR_BAGS`, else `<corpus>/bags`), the same cap the daemon's
+ * projection and the `ingest` and `act` gestures read. A vessel whose state and corpus rest on two mounts (the
+ * container: `LAR_ROOT=/state`, `LAR_BAGS=/workspace/bags`) holds its bags apart from its root, so a seed that
+ * joined `bags` onto the root read an empty map there and planted nothing.
+ */
+export function discoverHoldings(bagsDir: string): Array<{ holding: string; source: string; toBag: string }> {
   let names: string[] = [];
   try {
     // EVERY DIRECTORY UNDER bags/ IS A HOLDING. The kind-plane segment above already says these are bags,
@@ -121,19 +127,20 @@ export async function seedHolding(
  * caller reads per-holding exit codes.
  */
 export async function seedRun(args: ParsedArgs): Promise<SeedHolding[]> {
-  const holdings = discoverHoldings(larRoot());
+  const holdings = discoverHoldings(larBagsDir());
   const ledger: SeedHolding[] = [];
   for (const h of holdings) ledger.push(await seedHolding(args, h));
   return ledger;
 }
 
 export async function cmdSeed(args: ParsedArgs): Promise<number> {
-  const holdings = discoverHoldings(larRoot());
+  const bagsDir = larBagsDir();
+  const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
     emit(args, {
       ok: false,
-      error: { code: "not-found", message: `no holdings under ${join(larRoot(), "bags")}` },
-      human: () => console.error(`lares vessel seed: no holdings under ${join(larRoot(), "bags")}`),
+      error: { code: "not-found", message: `no holdings under ${bagsDir}` },
+      human: () => console.error(`lares vessel seed: no holdings under ${bagsDir}`),
     });
     return 3;
   }
