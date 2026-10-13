@@ -35,8 +35,9 @@ This room frames the HUD as the ''situational-awareness surface'' within the sig
 !! The HUD as the Signal Surface
 
 The turn HUD reads the node's situational awareness at glance-speed — the `aim`
-bearing vector, the `Aperture` and `OODA-HA` gauges, the `ward`, `confidence`, and the
-`syad` / `mu` lenses, all surfacing beside the prose before the Voice speaks.
+bearing vector, the `Aperture` and `OODA-HA` gauges, the `ward`, and the
+`syad` / `mu` lenses, all surfacing beside the prose before the Voice speaks. No gauge rates a claim:
+the sentence that makes it names its own ground (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`).
 
 Within this branch the HUD relates to its sibling SA surfaces:
 
@@ -62,6 +63,6 @@ The instrument grammar itself stays in the pair; this room holds only the signal
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lSz8BF98B7r9zyOj-B18sZGVQsKh8XRDz-6ZoxJ-fr0
+<<^ code="&#x0003;">>ni:///sha-256;EWevNiRi0L8mEQuSs7pjpDAc7xd-gPmbTu6n8kGy-Zc
 
 <<^ code="&#x0004;" -> to="?">>

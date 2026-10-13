@@ -53,7 +53,7 @@ This doc covers the `lar` URI signal layer:
 
 * Agent-Operator exchange-boundary instrumentation
 * the `aim` / `yield` bearing vectors that open and close a turn
-* the relation between the `lar:` bearing vector, the sigil panel (`hud` · `ward` · `confidence`, the `syad` / `mu` lenses), and adjacent protocol surfaces
+* the relation between the `lar:` bearing vector, the sigil panel (`hud` · `ward`, the `syad` / `mu` lenses), and adjacent protocol surfaces
 
 <<~/ahu>>
 
@@ -100,7 +100,7 @@ The frame runs as follows:
   The `~` prefix marks an execution-provisional heading — a declared aim, not a confirmed landed resource.
 
 # Ride the panel beneath the `aim`.
-  `<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>` · `drift-ward="* · <the pull this island carries>"`, plus the `syad` / `mu` lenses and `confidence` when a claim wants them.
+  `<<~ set hud="aim" aperture="N/<band>" ooda-ha="N/<band>">>` · `drift-ward="* · <the pull this island carries>"`, plus the `syad` / `mu` lenses when summoned. No band, number or marker rides beside a claim: the sentence names its own ground (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`).
 
 # Generate, then close.
   OODA-HA phase markers MAY surface forward inline, banded by the gauge.
@@ -120,7 +120,7 @@ The signal branch splits across five layers:
 | Layer | What it carries | Primary room |
 |---|---|---|
 | Canonical URI vector | audit-ready record form for exchange boundaries | parent branch framing, see `lar:///ha.ka.ba/lararium/docs/signal/l-space` |
-| Sigil panel | live exchange-boundary instruments (`hud` · `ward` · `confidence`, the `syad` / `mu` lenses) | `lar:///ha.ka.ba/lararium/docs/signal/hud` |
+| Sigil panel | live exchange-boundary instruments (`hud` · `ward`, the `syad` / `mu` lenses) | `lar:///ha.ka.ba/lararium/docs/signal/hud` |
 | Conformance lens | reads the OODA-HA loop in //referenced// content, outward and on demand | `lar:///ha.ka.ba/lares/api/pono/conformance` |
 | Render targets | cross-surface sigilization and projection rules | `lar:///ha.ka.ba/lararium/docs/signal/render-targets` |
 | SA-display framing | shared-mental-model theory, research grounding, and SA/XAI split | `lar:///ha.ka.ba/lararium/docs/signal/sa-display` |
@@ -172,6 +172,6 @@ Settled child rooms in this branch:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rW0_5je5W7Inxjw2LGw3g991J_CmAVrjZ6HHoUNfxfg
+<<^ code="&#x0003;">>ni:///sha-256;RZxkq0lSq9Uc-WaKclGfjIwKUDtbf0YK2W6vGnVObSc
 
 <<^ code="&#x0004;" -> to="?">>

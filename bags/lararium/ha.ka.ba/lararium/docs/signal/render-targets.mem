@@ -90,7 +90,7 @@ These are the glyph forms of the sigils' ASCII record (`syad` and `mu` carry an 
 
 Render targets carry the mapping between the sigils' ASCII input and their glyph display.
 It is not decoration.
-The glyph form carries the same semantic load as the ASCII sigil — standpoint, tool-carry, phase, confidence — rendered for human perception at the relevant surface.
+The glyph form carries the same semantic load as the ASCII sigil — standpoint, tool-carry, phase — rendered for human perception at the relevant surface.
 
 <<~/ahu>>
 
@@ -197,7 +197,7 @@ drift-ward="* · <the pull this island carries>"
 * `hud` — `Aperture` (attention range) and `OODA-HA` (loop visibility) on `0–20`
 * `ward` — the `L-Prime` copula gate; the Wand lights it at open (`* L-Prime`; the Stone `0 L-Prime` on an operator lift), the Sword draws it at close (`!` led, `⚠ N` breaches quoted, `↻` re-arm)
 * `syad` — invoked standpoints (optional `:` tool-carry); `mu` for tools alone
-* `confidence` — register-word + level, before a grounded claim
+* no band, number or marker rates a claim — the sentence names its own ground (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`)
 
 !!! `chat-log:post-header`
 
@@ -206,7 +206,6 @@ drift-ward="* · <the pull this island carries>"
 ```
 
 * the `lar:` bearing vector grounds heading before posture
-* `confidence` before the `syad` lens
 * the `syad` lens invokes one or more standpoints; `mu` for tools alone
 * Timestamp in in-world calendar when available
 
@@ -283,7 +282,7 @@ Do not conflate them.
 @handle@node — timestamp — lar:///w1.w2.w3/{optional/path/} <<~ stance …>>
 ```
 
-The `lar:` bearing vector placed before confidence and the lens — grounds heading before posture.
+The `lar:` bearing vector placed before the lens — grounds heading before posture.
 The `syad` lens invokes one or more standpoints, with optional `:` tool-carry.
 
 | ActivityPub handle | lar: URI authority | Underlying DID |
@@ -316,8 +315,8 @@ The `~crossroads` tilde prefix denotes a nomadic node — no fixed host, routes 
 *** Background or resting stance: `00` (balance).
 # Append the two-character pair directly to the stance emoji, no space.
 # Assemble all five as a single unspaced block.
-# Determine active voice name, target confidence, and `p` value.
-# Emit the sigil panel beneath the `aim` vector: `hud` (`Aperture`, `OODA-HA`), `ward`, the active Voice by name, `confidence` before a grounded claim, and the `syad` lens when summoned.
+# Determine the active voice name.
+# Emit the sigil panel beneath the `aim` vector: `hud` (`Aperture`, `OODA-HA`), `ward`, the active Voice by name, and the `syad` lens when summoned.
 
 ''Closed example:''
 
@@ -338,7 +337,7 @@ Lares (Scryer): the structure holds.
 # Set handle and node: `@handle@node` (no space, ActivityPub format).
 # Set timestamp: in-world calendar date when in Elyncia-space; ISO 8601 when Gaia-side.
 # Set the `lar:` bearing vector: `lar:///w1.w2.w3` with optional path segments.
-# Append the `confidence` sigil and, when summoned, the `syad` lens.
+# Append the `syad` lens when summoned.
 # Assemble: `@handle@node — {timestamp} — lar:///{territory} <<~ stance …>>`
 
 ''Closed example — Lindwyrm in Elyncia-space:''
@@ -349,8 +348,8 @@ Lares (Scryer): the structure holds.
 
 ''NPC / non-Lares post:''
 
-* the `confidence` and `syad` sigils may be omitted if the character carries no Lares HUD
-* if omitted: drop them whole; do not partial-emit a lens
+* a character that carries no Lares HUD may omit the `syad` sigil
+* if omitted: drop it whole; do not partial-emit a lens
 
 !!! Surface 3: `record:full`
 
@@ -360,7 +359,7 @@ Lares (Scryer): the structure holds.
 
 # No emoji. No glyphs. ASCII only.
 # URI form: `lar://alias:grant@host/w1.w2.w3/path/` — bearing only, no query. Session form names the speaker through the authority.
-# The URI carries no stance, confidence, or chronometer signal; those ride the sigils.
+# The URI carries no stance or chronometer signal; those ride the sigils.
 # Path holds the three-term root, zero-to-four segments, optional `#fragment`.
 
 ''Closed example:''
@@ -388,7 +387,6 @@ Before emitting any stance block on any surface:
 * Count stances in assembled block → must equal 5
 * Order: 🏛️ 🌊 🗡️ 🎭 🔮 — no deviation
 * Each stance has exactly one two-character tool-carry pair attached directly (no space)
-* Register bracket present and correct form: `[XX:N.NN]`
 * No emoji in `record:full`; tool-carry symbols (`* ? ! _ 0`) appear in both record and glyph surfaces unchanged
 
 <<~/ahu>>
@@ -414,6 +412,6 @@ Before emitting any stance block on any surface:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GjdkaBDtzV5TFOurQ83oMETWkx7lZztUvQ6OVG-jfik
+<<^ code="&#x0003;">>ni:///sha-256;BN1CERBtLIt9FU9sj-nx2hqNjIaMetk75CeC3uwHJZk
 
 <<^ code="&#x0004;" -> to="?">>

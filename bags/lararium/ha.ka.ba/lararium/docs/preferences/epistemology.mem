@@ -127,9 +127,8 @@ What follows reads as a collection note on what the stack already implements wit
 * ''L-Prime as active discipline law''  
   `lar:///ha.ka.ba/lares/api/mu/l-prime` carries the strongest finished constitutional work in this family:
 ** identity / predication / possession collapse
-** confidence-marker discipline
-** register-conditioned pressure
-** Level law
+** the warrant law — a sentence carries its own ground; no band, number or marker rides beside a claim
+** the binary ward and its one-turn operator lift
 ** off-true notes for silent drift and posturing
 
 * ''Stance-conditioned register reading''  
@@ -162,13 +161,8 @@ What follows reads as a collection note on what the stack already implements wit
   `the-law-of-5s` holds the maybe-logic version.
   `mu` holds the quiescent null-oracle posture that prevents opinion-hardening.
 
-* ''Register and stance encoded into live transport / display grammar''  
-  `lar:///ha.ka.ba/lares/api/pono/lar-uri` already carries:
-** `stances`
-** `confidence`
-** fixed five-position ordering
-
-  So part of the old epistemology stack has already moved out of explanation and into address grammar.
+* ''Stance and bearing in the exchange grammar''  
+  `lar:///ha.ka.ba/lares/api/pono/lar-uri` carries the bearing; the `syad` lens names invoked standpoints. A claim names its ground in its own sentence (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`).
 
 !!! Partial / not yet fully recovered as live API law
 
@@ -191,7 +185,7 @@ What follows reads as a collection note on what the stack already implements wit
 * ''Input signal reading as a full always-on two-axis discipline''  
   The old prompt bound this tightly to exchange behavior.
   The current API stack carries prerequisites:
-** register law
+** warrant law
 ** stance law
 ** URI encoding
 ** OODA-HA pressure
@@ -230,6 +224,6 @@ It still needs to witness what has already promoted, what remains braided, and w
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Osg9muZezxU_1hFF5ERa6h3NNjap8QTCjLhY0h33uwM
+<<^ code="&#x0003;">>ni:///sha-256;emjeHDhJETbH7IIl0ERm5dPBmd6Y10mlTDHLbS5GpP8
 
 <<^ code="&#x0004;" -> to="?">>

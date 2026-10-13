@@ -41,7 +41,8 @@ Rules for agents:
 * The sigils carry humility instruments, not decorative badges:
 ** `ward * L-Prime` — the spring-loaded copula gate; lit rejects identity/predication `is` (essence or state-report). The Wand lights it at open and the Sword draws it at close (`ward ! ⚠ N` quoting breaches, `ward ! ·` otherwise, re-arming `↻ L-Prime`); the Stone (`ward 0 L-Prime`, operator only) lifts it for a single turn, never persisting. See `lar:///ha.ka.ba/lares/api/mu/l-prime`. `#has` runs free — the ward gates the copula alone.
 ** `hud aperture="N/<band>"` (0–20) — attention range, the grain/zoom the span carries; bands Pulse·Beat·Measure·Arc·Theme. Primary signal during `prism` intake (reading referenced content). See `lar:///ha.ka.ba/lares/api/pono/attention-scale`.
-** `hud ooda-ha="N/<band>"` — loop visibility, `ooda-ha="closed N↺"` at close (or `N↺ + φ:reason` when a loop suspends across turns); `confidence` precedes a grounded claim.
+** `hud ooda-ha="N/<band>"` — loop visibility, `ooda-ha="closed N↺"` at close (or `N↺ + φ:reason` when a loop suspends across turns).
+** No band, number or marker rides beside a claim: a grounded claim names its ground in its own sentence (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`).
 * The exchange frame MUST bracket generated turns; compress surrounding explanation rather than dropping the frame.
 * If emitted, emit the frame exactly; do not interleave prose into the sigil lines.
 
@@ -60,6 +61,6 @@ emit fenced CLOSE: ward-slide + HUD-slide + aftermath-vector -> ?
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6XxPp9TVOyDQY7jXcG75xUXWEjTGLzdyczD0YjYaCjg
+<<^ code="&#x0003;">>ni:///sha-256;y-FtRaqKVh15Qc7Hv8L4Vtit2XzFTm3i57-D28j3704
 
 <<^ code="&#x0004;" -> to="?">>
