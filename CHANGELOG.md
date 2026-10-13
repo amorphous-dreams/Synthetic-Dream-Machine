@@ -91,6 +91,10 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **An admit hop survives a death midway.** A hop records its admission before it drops its pending entry, so it resumes from the same carriage, and an offer completes one grant: the first that verifies against it.
 - **The vessel-identity rows rest sealed.** The persona roster, roots, selector, pet-names, declarations, published-face record and next-key seed rest under the vessel key; the roster commits a root, and `lares persona list` names a root a stopped founding left, which `persona new` adopts. A vessel key mints only inside a held custody, and a boot at the floor reads no identity row.
 - **The custody write door and the rest door answer the daemon island alone.** A wiki island's ask refuses by name.
+- **A device its fleet root set aside halts at boot and gets no seat,** on node and in the browser. The daemon island asks the main thread for a device's standing through a door bound to that island.
+- **At the floor a vessel serves no fleet lane.** The sibling lane and the cleartext fetch door stay shut, and the floor folds only the fleet board its own device edge names.
+- **Broad sync ports drop an unreadable arrival** where it used to throw inside the owner.
+- **The node's circle store left.** The follow graph keeps one home, on the persona's circles plane; the sealed handle-book stays.
 - **A removed device or member loses sync, sorting and serve on a standing vessel.** The composers consult the edge shadow ring, and at the floor every fleet lane stays shut.
 - **An admitted leaf sends no change to its hearth's canon,** and the browser's plugin selection refuses a torn offerings field as the node does.
 - **A browser vessel keeps its keyhive Archives in its keystore.** A browser founded earlier refuses to boot until its site data gets cleared.
