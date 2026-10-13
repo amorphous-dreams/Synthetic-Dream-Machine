@@ -48,12 +48,13 @@ import {
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, foundingRoster, type NexusIdentityAt,
-  climbNexusBoards, sha256HexBytesSync,
+  climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
   genesisCasCidsFromOracle,
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlaneHolder } from "./realm-plane.js";
+import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import type { WikiActivationCap } from "@lararium/mesh";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
@@ -681,6 +682,11 @@ async function prepareNodeBootOn(
   // charter names a realm; INERT (null) on a vessel outside every relation. Its gate composes ATOP the
   // deterministic shelf: the realm doc and each steward-registered bag's doc federate to a MEMBER peer alone.
   let realmPlane: RealmPlaneHolder | null = null;
+  // THE EDGE SHADOW RING (kapae#/reach) — one live reading of this vessel's fleet board and realm boards, which
+  // the sorter, the share verdict, carriage serve and the realm's gates all consult. Stood beside the Repo,
+  // below. The ring itself answers fail-closed until its first fold lands; null (no Repo yet) sets nobody aside,
+  // and no peer holds a socket that early.
+  let edgeShadows: EdgeShadowRing | null = null;
   // The nexus-doc MEMBERSHIP consult — the carry-split's member gate (a cross-operator MEMBER blind-transits a
   // sealed plane; a STRANGER reaches only the public shelf). Forward-declared (the sharePolicy closes over
   // it) and STOOD once the operator's own nym is loaded, below. Null keeps every cross-operator STRANGER
@@ -758,6 +764,8 @@ async function prepareNodeBootOn(
         hostingDocs:     ownHostingDocs,
         peerId,
         documentId: documentId as DocumentId | undefined,
+        // A device the fleet root set aside reads nothing on any lane, the same-operator and sibling lanes included.
+        shadow:          edgeShadows,
       });
     }, wireProbe ?? undefined),
   });
@@ -852,11 +860,11 @@ async function prepareNodeBootOn(
   //   · the persona-KEL board the BINDING GATE walks CARRIES at the gate's own seam below
   //     (`carryPersonaKelUpTheGradient`) — that gate REFUSES a boot whose pinned identifier reaches no head,
   //     so a moved board took the vessel down rather than thinning it.
-  //   · the EDGE-KĀPAE and ANTIGEN boards CARRY, and the CROSSROADS board RE-ANNOUNCES, at the one door
-  //     `climbNexusBoards` opens beside that seam. Both carried boards fail OPEN when they mint blank (an
-  //     empty shadow board lowers every shadow; an empty antigen re-admits a Kapae'd presenter), which is why
-  //     "degrades gracefully" holds for neither.
-  //   · WHO · carriage · vouch stay exactly where they are — `nexus-board-climb`'s header states each reason.
+  //   · the ANTIGEN board CARRIES, and the CROSSROADS board RE-ANNOUNCES, at the one door `climbNexusBoards`
+  //     opens beside that seam. The antigen fails OPEN when it mints blank (an empty antigen re-admits a
+  //     Kapae'd presenter), so it never "degrades gracefully".
+  //   · WHO and carriage stay exactly where they are — `nexus-board-climb`'s header states each reason. A
+  //     realm's vouch board and edge board, and a fleet's edge board, ride no Nexus key, so no climb moves them.
   // All four acts read only the islands BELOW (`nexusIslandsBelow`) — climb-only, idempotent, reading no gate
   // one notch lower. The explicit DEPARTURE that would keep "I left" distinguishable from ③ on the wire stands
   // UNBUILT: a climb DERIVES from present state, and an absence cannot be derived, so it must be NAMED by an
@@ -988,6 +996,11 @@ async function prepareNodeBootOn(
       } catch (e) {
         console.log(`[nexus] after-roll refold failed (realm plane): ${e instanceof Error ? e.message : String(e)}`);
       }
+      try {
+        await edgeShadows?.refold();
+      } catch (e) {
+        console.log(`[nexus] after-roll refold failed (edge shadows): ${e instanceof Error ? e.message : String(e)}`);
+      }
       reverdict();
       try {
         await representIfMoved?.();
@@ -1013,11 +1026,33 @@ async function prepareNodeBootOn(
   const hostingLeafSeedFor = async (aid: string): Promise<Uint8Array | null> => {
     try { return (await wornNexusLeaf(aid))?.seed ?? null; } catch { return null; }
   };
+  // The ring reads this vessel's own faces as fleet roots, the realm of its charter, and every realm its ledger
+  // notes. A board that changes (a peer's act arriving by sync) refolds it, and the Repo re-reads its verdicts.
+  const shadowRing = makeEdgeShadowRing({
+    repo, vesselKey: vesselIdentity.verifyingKey, sealHome,
+    fleetRoots: async () => {
+      const roots: string[] = [];
+      for (const index of await listPersonaRoots()) {
+        const key = await loadPersonaGroupRootVerifyingKey(index);
+        if (key) roots.push(key);
+      }
+      return roots;
+    },
+    charterRealm:    () => realmIdOfCharter(readNexusDoc(sealHome)),
+    vesselKeyOfPeer: (peerId) => peerIdentifierMap.get(peerId)?.slice(-64).toLowerCase() ?? null,
+    realmNymOfPeer:  (peerId) => peerContractNymMap.get(peerId) ?? null,
+    onRefold:        () => { reverdict(); dropNoLongerHeld(); },
+  });
+  edgeShadows = shadowRing;
+  stood.push({ what: "the edge shadow ring", down: () => shadowRing.dispose() });
+  await shadowRing.refold();
   const socketSorter: SocketSorter = makeSocketSorter({
     readings: readEveryCarried,
     carrier:  (vesselKey) => membershipHolder.carriers().has(vesselKey.toLowerCase()),
     // The vessel's OWN place posture: a lararium reads its charter (absent → PRIVATE); a herm answers the knock.
     primaryPosture: () => ownPlacePosture(placeClass, readNexusDoc(sealHome)),
+    // A device set aside from the fleet never sorts same-operator, whatever its delegation proves.
+    deviceAside:    (vesselKey) => shadowRing.deviceAside(vesselKey),
     // THE WALKER ARMS read this hearth's hosting store and the leaf its hosting keys derive from.
     hosting: {
       storageDir,
@@ -1043,7 +1078,8 @@ async function prepareNodeBootOn(
   // (crossroads plane · WHO · kapae-antigen board — deny-by-default for every other doc), so a cross-operator
   // peer reaches exactly the always-carried public/infra planes and nothing private. No hand-maintained
   // allow-list; the private planes (catalog/personal/daemon/home/wikis) fall outside the set → DENY.
-  selfSlotFedGate = new DeterministicFederationGate(nexusPubkey);
+  // A realm's own vouch board and edge board cross to a peer that holds standing in that realm, and to nobody else.
+  selfSlotFedGate = new RealmBoardGate(new DeterministicFederationGate(nexusPubkey), shadowRing.realmBoards, shadowRing.standsInRealm);
   ownCarriageBoard = interpretAsDocumentId(carriageDocUrl(nexusPubkey)) as DocumentId;
   for (const aid of await carriedSet(sealHome).catch(() => new Set<string>())) {
     ownHostingDocs.add(interpretAsDocumentId(hostingDocUrl(aid, vesselIdentity.verifyingKey)) as DocumentId);
@@ -1096,6 +1132,13 @@ async function prepareNodeBootOn(
           membership: nexusMembership,
           antigen:    antigenRing,
           fedGate:    selfSlotFedGate,
+          shadow:     shadowRing,
+          // A member set aside from the realm a sealed block belongs to draws Mu ahead of the carry lane. The
+          // sealed set's own sidecar names the Nexus whose convergence secret sealed the block.
+          realmAside: (peerId, documentId) => {
+            const sealedUnder = sealRegistry.epochFor(documentId);
+            return sealedUnder ? shadowRing.memberAside(sealedUnder.nexusAid)(peerId) : false;
+          },
         },
         ...(opts.carriagePollIntervalMs !== undefined ? { pollIntervalMs: opts.carriagePollIntervalMs } : {}),
         // HEAL — on a RE-connect after a drop, re-fold the antigen + carried deny boards + posture the vessel read
@@ -1546,29 +1589,23 @@ async function prepareNodeBootOn(
         throw new Error(`[lararium] persona-KEL chain for the pinned identifier ${personaKelPrefix.slice(0, 20)}… absent from the local board replica — the Binding Gate cannot reach a head (fail-closed).`);
       }
     }
-    // ── THE REST OF THE CLIMB — the six boards the KEL carry left behind ──────────────────────────
-    // The docblock above reads "most of those boards DEGRADE across the move". Measured, TWO of them fail
-    // OPEN instead:
-    //   · EDGE-KĀPAE — an empty shadow board LOWERS EVERY SHADOW, so a relationship a hand deliberately set
-    //     aside stands re-admittable on the new island. And `edgeKapaeBoardDocUrl` sits OUTSIDE
-    //     `DeterministicFederationGate`'s list, so no peer's replica ever heals it. The boot must.
-    //   · ANTIGEN — "an empty antigen bans nobody" means a Kapae'd presenter is RE-ADMITTED. It federates
-    //     (MANDATORY tier), so an island with other members heals it by sync — bounded by sync-latency,
-    //     never instantly, and never at all for the vessel that climbs onto an island where it stands first.
-    // Both CARRY: their entries ARE the record, so the bytes move verbatim with their own signatures and the
+    // ── THE REST OF THE CLIMB — the boards the KEL carry leaves behind ───────────────────────────────
+    // The ANTIGEN fails OPEN when it mints blank: "an empty antigen bans nobody" means a Kapae'd presenter
+    // gets RE-ADMITTED. It federates (MANDATORY tier), so an island with other members heals it by sync,
+    // bounded by sync latency, and never for the vessel that climbs onto an island where it stands first. So
+    // it CARRIES: its entries ARE the record, the bytes move verbatim with their own signatures, and the
     // destination's own fold judges them exactly as the board below did. The crossroads board instead
-    // RE-ANNOUNCES: its rows are a PROJECTION of the realm doc's n-of-n-signed registrations and carry no
-    // signature a reader could re-check, so a copy would launder a stale, lapsed or foreign-realm row.
+    // RE-ANNOUNCES: its rows PROJECT the realm doc's n-of-n-signed registrations and carry no signature a
+    // reader could re-check, so a copy would launder a stale, lapsed or foreign-realm row.
     //
-    // WHO · carriage · vouch are REFUSED, and `nexus-board-climb`'s header carries the reason for each — a
-    // face DISCLOSED to strangers the operator never published to, a roster that IS a global invariant, and
-    // a partial replica that would read as a whole lineage. Passing a fourth board here compiles an
-    // about-set at a new address; read that header before adding one.
+    // WHO and carriage stay where they stand, and `nexus-board-climb`'s header carries the reason for each: a
+    // face DISCLOSED to strangers the operator never published to, and an allow that takes a fresh consent.
+    // An edge shadow rides a realm's board or a fleet's board, never a Nexus key, so no climb moves one.
     //
-    // UNCONDITIONAL, deliberately OUTSIDE the persona-KEL guard above: a faceless vessel holds shadows and
-    // an antigen too. Climb-only and idempotent by the same construction as the KEL carry — every source
-    // comes from `nexusIslandsBelow` (empty at the bottom, empty when torn), and every act writes only what
-    // the destination LACKS, so this runs every boot with one effect.
+    // UNCONDITIONAL, deliberately OUTSIDE the persona-KEL guard above: a faceless vessel holds an antigen
+    // too. Climb-only and idempotent by the same construction as the KEL carry — every source comes from
+    // `nexusIslandsBelow` (empty at the bottom, empty when torn), and every act writes only what the
+    // destination LACKS, so this runs every boot with one effect.
     await climbNexusBoards({
       repo, nexusPubkey,
       priorIslands: nexusIslandsBelow(nexusStandsAt),
@@ -1598,6 +1635,8 @@ async function prepareNodeBootOn(
         charter:          makeRealmCharterConsult({ sealHome, peerContractNymMap, charterHearthPeers }),
         // THE LEASE: a registration's `expiry` reads against the realm's own pace in rolls (0 = cannot judge).
         pace:             () => (realmPaceCell.read() > 0 ? realmPaceCell.read() : null),
+        // THE MEMBER SHADOW: a member set aside reads none of the realm's documents, by any lane.
+        memberAside:      (realmId) => shadowRing.memberAside(realmId),
         // THE REFOLD REVERDICT. The fold decides which documents the realm leg opens, and it moves on a change
         // ANOTHER member writes — a co-signature completing a proposal re-seats a registration this vessel
         // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the
@@ -1877,7 +1916,8 @@ async function prepareNodeBootOn(
         siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
       });
       if (selfSlotFedGate) selfSlotFedGate = ring.compose(selfSlotFedGate);
-      siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey));
+      // The fleet's own edge board rides the sibling lane beside the public boards, so a root's raise reaches every device.
+      siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey, edgeShadows?.fleetBoardUrls() ?? []));
     }
 
     // ── THE SIBLING CHANNEL (docs/pono/identity-slot-policy#/the-leaf-taxonomy) ─────────────────────

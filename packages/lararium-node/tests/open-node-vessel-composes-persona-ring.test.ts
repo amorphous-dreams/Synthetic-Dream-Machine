@@ -22,7 +22,7 @@ const CODE = SRC.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 describe("the boot composes the PersonaGroup identity-slot ring", () => {
   test("the strip left the file — the base arm survives (anti-vacuity)", () => {
     expect(CODE, "the comment strip ate the file — every assertion below would pass over ash")
-      .toMatch(/selfSlotFedGate\s*=\s*new DeterministicFederationGate/);
+      .toMatch(/selfSlotFedGate\s*=\s*new RealmBoardGate\(new DeterministicFederationGate\(nexusPubkey\)/);
   });
 
   test("it imports the ONE ring assembly from the shared package both shores compose from", () => {
@@ -41,7 +41,8 @@ describe("the boot composes the PersonaGroup identity-slot ring", () => {
   });
 
   test("the SAME ring stands the sibling gate by its sibling path, over the public boards and nothing wider", () => {
-    expect(CODE).toMatch(/siblingGate\s*=\s*ring\.composeSiblings\(new DeterministicFederationGate\(nexusPubkey\)\)/);
+    // The sibling path rides the public boards and the fleet's own edge board, and nothing wider.
+    expect(CODE).toMatch(/siblingGate\s*=\s*ring\.composeSiblings\(new DeterministicFederationGate\(nexusPubkey, edgeShadows\?\.fleetBoardUrls\(\) \?\? \[\]\)\)/);
     // The grant path reads only what this vessel's own gate proved — a sibling's key never stands in for it.
     expect(CODE).toMatch(/provenKeyOf:\s*\(peerId\)\s*=>\s*peerIdentifierMap\.get\(peerId\)\s*\?\?\s*null,/);
     expect(CODE).toMatch(/siblingKeyOf:\s*\(peerId\)\s*=>\s*siblings\?\.provenKeyOf\(peerId\)/);
