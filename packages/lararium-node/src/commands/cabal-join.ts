@@ -21,7 +21,7 @@
 import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  verifiedVouchesFromBoard, realmVouchBoardDocUrl, materializeSharedLarDoc,
+  readLedgeredVouches, materializeSharedLarDoc,
   vouchEdgeId, realmEdgeBoardDocUrl, memberEdgeId, realmEdgeAuthority, type EdgeKapaeVerdict,
   leaseEpochPrefix, effectiveLeaseEpoch, DAEMON_BAG_ID,
   DEFAULT_JOIN_POLICY, alphaFromHalfLife,
@@ -193,10 +193,10 @@ export async function runCabalJoin(
   try {
     // THE BOARDS KEY ON THE REALM, never on a Nexus: a vouch names its voucher in the clear and a removal names
     // a member, so both records stay among the parties to the realm (kapae#/four-edges).
-    const handle = await materializeSharedLarDoc(repo, realmVouchBoardDocUrl(realm), "board:vouch-registry");
-    // THE VERIFYING READ, the only read that stands. An unverified board carries edges whose
-    // signatures never cleared, and the fold would price a lineage partly made of noise.
-    const onBoard = await verifiedVouchesFromBoard(handle.doc(), realm, verifyOffline);
+    // THE VERIFYING READ, the only read that stands, taken through this vessel's own ledger: an unverified
+    // board carries edges whose signatures never cleared, and a vouch a hand deleted from the board still
+    // stands at a vessel that read it (kapae#/accretion).
+    const onBoard = [...(await readLedgeredVouches({ repo, realm, vesselKey })).invites];
     // WHO HOLDS EACH EDGE reads off what this vessel itself holds: a vouch edge answers to its voucher and to
     // the seat quorum; a member edge answers to the seat quorum alone (kapae#/edge-hands). An act signed by any
     // other hand drops before the fold.

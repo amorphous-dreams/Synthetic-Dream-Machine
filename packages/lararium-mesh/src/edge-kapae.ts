@@ -51,6 +51,10 @@ export const EDGE_KAPAE_PREFIX = "lar:///ha.ka.ba/dreamnet/edge-kapae/" as const
 export const EDGE_ROLL_ANCHOR_PREFIX = `${EDGE_KAPAE_PREFIX}roll/` as const;
 
 const CID_RE = /^[0-9a-f]{64}$/;
+/** How many signature records one signer may hold on one act or anchor. A true signer needs one. */
+const MAX_SIGNATURES_PER_SIGNER = 4;
+/** How many signature records one act or anchor may carry at all; a longer record reads as torn. */
+const MAX_SIGNATURES_PER_RECORD = 256;
 
 /** Which hand signs an act: the one key the edge id names, or the seat quorum of the realm's charter. */
 export type EdgeHand = "holder" | "quorum";
@@ -120,11 +124,18 @@ export function edgeKapaeKey(a: Pick<EdgeKapae, "edgeId" | "hand" | "raised" | "
 
 /** Distinct signature records, by signer AND bytes: a bad signature under a seat's name never displaces a good one. */
 function gatherSignatures(have: readonly QuorumSignature[], more: readonly QuorumSignature[]): QuorumSignature[] {
-  const seen = new Set(have.map((s) => `${s.signer.toLowerCase()}:${s.sig.toLowerCase()}`));
-  const out = [...have];
-  for (const s of more) {
-    const key = `${s.signer.toLowerCase()}:${s.sig.toLowerCase()}`;
+  const seen = new Set<string>();
+  const perSigner = new Map<string, number>();
+  const out: QuorumSignature[] = [];
+  for (const s of [...have, ...more]) {
+    const signer = s.signer.toLowerCase();
+    const key = `${signer}:${s.sig.toLowerCase()}`;
     if (seen.has(key)) continue;
+    // A FEW candidates per signer, and no more: a hand that floods one seat's name with false records buys a
+    // bounded number of verifies and displaces nothing a reader already kept (`have` reads first).
+    const n = perSigner.get(signer) ?? 0;
+    if (n >= MAX_SIGNATURES_PER_SIGNER) continue;
+    perSigner.set(signer, n + 1);
     seen.add(key);
     out.push(s);
   }
@@ -141,6 +152,10 @@ function gatherSignatures(have: readonly QuorumSignature[], more: readonly Quoru
 export function mergeEdgeActs(acts: Iterable<EdgeKapae>): EdgeKapae[] {
   const out = new Map<string, EdgeKapae>();
   for (const a of acts) {
+    // Only an act whose id derives from its own body joins a merge: a forged body that wears a true act's id
+    // must never become the record the true signatures land on.
+    const { signatures: _s, actCid, ...body } = a;
+    if (actCid !== edgeKapaeActCid(body)) continue;
     const have = out.get(a.actCid);
     if (!have) { out.set(a.actCid, a); continue; }
     const signatures = gatherSignatures(have.signatures, a.signatures);
@@ -193,7 +208,7 @@ export function writeEdgeKapae(draft: LarDoc, act: EdgeKapae): void {
 }
 
 function coerceSignatures(v: unknown): QuorumSignature[] | null {
-  if (!Array.isArray(v)) return null;
+  if (!Array.isArray(v) || v.length > MAX_SIGNATURES_PER_RECORD) return null;
   const out: QuorumSignature[] = [];
   for (const s of v) {
     if (typeof s !== "object" || s === null) return null;

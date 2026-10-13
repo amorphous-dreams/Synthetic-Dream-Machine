@@ -146,6 +146,36 @@ describe("one act per id — a second signature joins the first and never replac
     expect((await readEdgeBoard({ board: swapped, authorityFor })).readings.get(EDGE)?.verdict).toBe("withdrawn");
   });
 
+  test("★ a forged body that wears a true act's id never becomes the record its signatures land on ★", async () => {
+    const authorityFor = await both();
+    const real = await holderAct(EDGE, true);
+    const forged: EdgeKapae = { ...real, raised: false, signatures: [{ signer: real.signatures[0]!.signer, sig: "11".repeat(64) }] };
+    expect(mergeEdgeActs([forged, real])).toEqual([real]);
+    expect(mergeEdgeActs([forged])).toEqual([]);
+    for (const order of [[forged, real], [real, forged]]) {
+      expect(foldEdgeReadings((await countEdgeActs(order, [], authorityFor)).acts).get(EDGE)?.verdict).toBe("held");
+    }
+  });
+
+  test("★ a flood of false signatures under one seat's name stays bounded and displaces nothing kept ★", async () => {
+    const authorityFor = await both();
+    const real = await holderAct(EDGE, true);
+    const signer = real.signatures[0]!.signer;
+    const flood = (n: number): EdgeKapae => ({ ...real, signatures: Array.from({ length: n }, (_, i) => ({ signer, sig: i.toString(16).padStart(2, "0").repeat(64).slice(0, 128) })) });
+    // The vessel's kept copy reads first, so the true signature survives any flood that arrives on the board.
+    const merged = mergeEdgeActs([real, flood(40)]);
+    expect(merged[0]!.signatures.length).toBeLessThanOrEqual(4);
+    expect(merged[0]!.signatures).toContainEqual(real.signatures[0]);
+    const ledger = emptyLarDoc();
+    keepInLedger(ledger, SCOPE, { acts: [real], anchors: [] });
+    expect((await readEdgeBoard({ board: boardOf([flood(40)]), kept: keptFromLedger(ledger, SCOPE), authorityFor })).readings.get(EDGE)?.verdict).toBe("held");
+    // A record past the size a true act could reach reads as torn.
+    const huge = emptyLarDoc();
+    huge.tiddlers["x"] = mutableLarRecord("x", { text: JSON.stringify(flood(300)) }, "test");
+    expect(edgeKapaeActsFromBoard(huge)).toEqual([]);
+    expect(edgeKapaeActsFromBoard(boardOf([flood(4)]))).toHaveLength(1);   // CONTROL
+  });
+
   test("★ an anchor gathers its seats across separate writes ★", async () => {
     const { r0, r1, e1, lineage1 } = await rolled(1);
     const up = await quorumAct(EDGE, true, r0.sealEpochCid, G0.slice(0, 2));
@@ -461,44 +491,53 @@ describe("lineage standing — a path of standing vouches to the seed, and a cle
     const sa = await invite(SEED, A), ab = await invite(A, B), sc = await invite(SEED, C), cb = await invite(C, B);
     const [seedKey, a, b, c] = await Promise.all([SEED, A, B, C].map(pubOf));
     const none = () => false;
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [sa, ab], stands: none })).toEqual(new Set([seedKey, a, b]));
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [sa, ab], stands: none })).toEqual(new Set([seedKey, a, b]));
     const cut = (edgeId: string) => edgeId === vouchEdgeId(sa);
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [sa, ab], stands: cut })).toEqual(new Set([seedKey]));
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [sa, ab, sc, cb], stands: cut })).toEqual(new Set([seedKey, c, b]));
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [sa, ab], stands: cut })).toEqual(new Set([seedKey]));
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [sa, ab, sc, cb], stands: cut })).toEqual(new Set([seedKey, c, b]));
     // An invite into another realm lends no path here.
     const foreign = { ...sa, realmDocIdHex: "cd".repeat(32) };
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [foreign], stands: none }).size).toBe(0);
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [foreign], stands: none })).toEqual(new Set([seedKey]));
   });
 
-  test("★ a voucher nobody vouched for roots the lineage; the reader names no seed for it ★", async () => {
+  test("★ the roots arrive authenticated: a key that merely signs a vouch roots nothing ★", async () => {
     const sa = await invite(SEED, A), ab = await invite(A, B), ba = await invite(B, A);
     const [seedKey, a, b] = await Promise.all([SEED, A, B].map(pubOf));
     const none = () => false;
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [sa, ab], stands: none })).toEqual(new Set([seedKey, a, b]));
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [sa, ab], stands: none })).toEqual(new Set([seedKey, a, b]));
     // Withdrawn at the root's own vouch, the path below falls though no seed got named.
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [sa, ab], stands: (e) => e === vouchEdgeId(sa) })).toEqual(new Set([seedKey]));
-    // CONTROL: two hands that vouch only for each other root on nobody: neither entered by another road.
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [ab, ba], stands: none }).size).toBe(0);
-    expect(memberStandsAside({ realmDocIdHex: REALM, member: b!, invites: [sa, ab], stands: none })).toBe(false);
-    expect(memberStandsAside({ realmDocIdHex: REALM, member: b!, invites: [sa, ab], stands: (e) => e === vouchEdgeId(ab) })).toBe(true);
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [sa, ab], stands: (e) => e === vouchEdgeId(sa) })).toEqual(new Set([seedKey]));
+    // A hand nobody named as a root signs a vouch for a friend: valid signature, no standing for either.
+    const forged = await invite(OTHER, C);
+    const [stray, c] = await Promise.all([OTHER, C].map(pubOf));
+    const withForged = lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [sa, ab, forged], stands: none });
+    expect(withForged.has(stray!) || withForged.has(c!)).toBe(false);
+    expect(withForged).toEqual(new Set([seedKey, a, b]));
+    expect(memberStandsAside({ realmDocIdHex: REALM, member: c!, roots: [seedKey!], invites: [forged], stands: none })).toBe(true);
+    // CONTROL: two hands that vouch only for each other root on nobody; with no root named, nobody stands.
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [], invites: [ab, ba], stands: none }).size).toBe(0);
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [], invites: [sa, ab], stands: none }).size).toBe(0);
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: ["not-a-key", `0x${seedKey!.toUpperCase()}`], invites: [sa], stands: none })).toEqual(new Set([seedKey, a]));
+    expect(memberStandsAside({ realmDocIdHex: REALM, member: b!, roots: [seedKey!], invites: [sa, ab], stands: none })).toBe(false);
+    expect(memberStandsAside({ realmDocIdHex: REALM, member: b!, roots: [seedKey!], invites: [sa, ab], stands: (e) => e === vouchEdgeId(ab) })).toBe(true);
     // A root leaves only by a shadow over its own member edge; a face no vouch names reads no removal.
-    expect(memberStandsAside({ realmDocIdHex: REALM, member: seedKey!, invites: [sa], stands: (e) => e === vouchEdgeId(sa) })).toBe(false);
-    expect(memberStandsAside({ realmDocIdHex: REALM, member: seedKey!, invites: [sa], stands: (e) => e === memberEdgeId(REALM, seedKey!) })).toBe(true);
-    expect(memberStandsAside({ realmDocIdHex: REALM, member: await pubOf(OTHER), invites: [sa], stands: none })).toBe(false);
+    expect(memberStandsAside({ realmDocIdHex: REALM, member: seedKey!, roots: [seedKey!], invites: [sa], stands: (e) => e === vouchEdgeId(sa) })).toBe(false);
+    expect(memberStandsAside({ realmDocIdHex: REALM, member: seedKey!, roots: [seedKey!], invites: [sa], stands: (e) => e === memberEdgeId(REALM, seedKey!) })).toBe(true);
+    expect(memberStandsAside({ realmDocIdHex: REALM, member: await pubOf(OTHER), roots: [seedKey!], invites: [sa], stands: none })).toBe(false);
   });
 
   test("★ a shadow over the member edge holds against every vouch, a fresh one included ★", async () => {
     const sa = await invite(SEED, A), ab = await invite(A, B), sb = await invite(SEED, B), bc = await invite(B, C);
     const [seedKey, a, b] = await Promise.all([SEED, A, B].map(pubOf));
     const evicted = (edgeId: string) => edgeId === memberEdgeId(REALM, b!);
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [sa, ab, sb, bc], stands: evicted })).toEqual(new Set([seedKey, a]));
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [sa, ab, sb, bc], stands: evicted })).toEqual(new Set([seedKey, a]));
     expect(memberEdgeId(REALM, b!)).toBe(memberEdgeId(REALM.toUpperCase(), `0x${b!.toUpperCase()}`));
     expect(memberEdgeId(REALM, b!)).not.toBe(vouchEdgeId(ab));
     // One key, one spelling: a vouch re-minted under another spelling of the same keys names the same edge.
     expect(vouchEdgeId({ ...ab, voucherDid: `0x${ab.voucherDid.toUpperCase()}`, joinerIdentityHex: ab.joinerIdentityHex.toUpperCase(), realmDocIdHex: REALM.toUpperCase() })).toBe(vouchEdgeId(ab));
     expect(vouchEdgeId({ ...ab, joinerIdentityHex: seedKey! })).not.toBe(vouchEdgeId(ab));   // CONTROL
     // A shadow over the seed's own member edge leaves nobody standing.
-    expect(lineageStanding({ realmDocIdHex: REALM, invites: [sa], stands: (e) => e === memberEdgeId(REALM, seedKey!) }).size).toBe(0);
+    expect(lineageStanding({ realmDocIdHex: REALM, roots: [seedKey!], invites: [sa], stands: (e) => e === memberEdgeId(REALM, seedKey!) }).size).toBe(0);
   });
 
   test("★ a vouch edge answers to its voucher and to the quorum; a member edge to the quorum alone ★", async () => {

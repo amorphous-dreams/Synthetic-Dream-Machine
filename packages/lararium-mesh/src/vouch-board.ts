@@ -48,6 +48,7 @@ import { tiddlerText } from "./base-doc.js";
 import { CABAL_INVITE_DOMAIN, cabalInviteBytes, type CabalInvite } from "./cabal-invite.js";
 import { sha256HexSync, canonicalJson } from "./crypto.js";
 import { storedLarRecord } from "./stored-record.js";
+import type { StoredLarRecord } from "./stored-value.js";
 
 /**
  * The relationship id a vouch presents to the kāpae plane — the voucher→joiner edge inside one realm.
@@ -127,8 +128,18 @@ export async function verifiedVouchesFromBoard(
 ): Promise<CabalInvite[]> {
   const tiddlers = doc?.tiddlers;
   if (!tiddlers) return [];                                            // absent board → no lineage, fail-closed
+  return verifiedVouchesFromRecords(Object.values(tiddlers), realm, verify, shadowed);
+}
+
+/** The verifying read over some stored records — the board's own, or the rows a vessel kept in its ledger. */
+export async function verifiedVouchesFromRecords(
+  records: Iterable<StoredLarRecord>,
+  realm: string,
+  verify: (bytes: Uint8Array, sigHex: string, voucherDid: string) => Promise<boolean>,
+  shadowed: ReadonlySet<string> = new Set(),
+): Promise<CabalInvite[]> {
   const candidates: CabalInvite[] = [];
-  for (const record of Object.values(tiddlers)) {
+  for (const record of records) {
     const text = tiddlerText(record);
     if (text === null) continue;
     let parsed: unknown;

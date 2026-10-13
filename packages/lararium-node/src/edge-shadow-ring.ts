@@ -20,13 +20,10 @@ import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import {
   fleetEdgeBoardDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, materializeSharedLarDoc,
   fleetEdgeAuthority, deviceEdgeId, realmEdgeAuthority, memberEdgeId, memberStandsAside, lineageStanding,
-  verifiedVouchesFromBoard, canonicalIdentity, verifyEd25519, edgeLedgerDocUrl, ledgerRealms,
+  readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms,
   type CabalInvite, type EdgeReading, type LarDoc, type ShadowConsult,
 } from "@lararium/mesh";
 import { readVesselEdgeBoard, vesselEdgeCharter } from "./edge-board.js";
-
-const verifyOffline = (bytes: Uint8Array, sigHex: string, did: string): Promise<boolean> =>
-  Promise.resolve(verifyEd25519(sigHex, bytes, did));
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "").slice(-64);
 
@@ -51,6 +48,8 @@ export interface EdgeShadowRingDeps {
 /** What one fold read off one realm's two boards. */
 export interface RealmFold {
   readonly realm:    string;
+  /** The authenticated roots of this realm's lineage: the seats of the charter this vessel holds. */
+  readonly roots:    readonly string[];
   readonly invites:  readonly CabalInvite[];
   readonly readings: ReadonlyMap<string, EdgeReading>;
   /** The identities that hold lineage standing here, as this replica reads it. Never a whole set. */
@@ -102,6 +101,10 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
     if (watched.has(url) || disposed) return;
     const onChange = (): void => {
       if (disposed) return;
+      // THE READING GOES DARK THE MOMENT A BOARD MOVES. The last fold may predate the very act that just
+      // arrived, so every gate answers closed until the next fold lands; a peer asked in that gap draws the
+      // same Mu, and the standing vessel re-reads its verdicts when the fold completes.
+      last = null;
       // `refold` leaves NO reading behind a fold that fails, so every gate answers closed until one lands again.
       chain = chain.then(() => ring.refold()).catch(() => undefined).then(() => { if (!disposed) deps.onRefold?.(); });
     };
@@ -139,7 +142,7 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
         const at = realmFold(realm);
         if (!at) return false;                                   // a realm this vessel reads no board for
         return memberStandsAside({
-          realmDocIdHex: at.realm, member: nym, invites: at.invites,
+          realmDocIdHex: at.realm, member: nym, roots: at.roots, invites: at.invites,
           stands: (edgeId) => at.readings.get(edgeId)?.stands === true,
         });
       };
@@ -187,19 +190,24 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
         const vouchUrl = realmVouchBoardDocUrl(realm), edgeUrl = realmEdgeBoardDocUrl(realm);
         docs.set(interpretAsDocumentId(vouchUrl) as DocumentId, realm);
         docs.set(interpretAsDocumentId(edgeUrl) as DocumentId, realm);
-        const vouchBoard = await materializeSharedLarDoc(deps.repo, vouchUrl, "board:vouch-registry");
-        const invites = await verifiedVouchesFromBoard(vouchBoard.doc(), realm, verifyOffline);
+        // The vouches read through the vessel's own ledger: a vouch a hand deleted still names its joiner here.
+        const vouches = await readLedgeredVouches({ repo: deps.repo, realm, vesselKey: deps.vesselKey });
+        const invites = vouches.invites;
+        const charter = vesselEdgeCharter(realm, deps.sealHome);
         const read = await readVesselEdgeBoard({
           repo: deps.repo, scope: realm, kind: "realm", boardUrl: edgeUrl, label: "board:edge-kapae", vesselKey: deps.vesselKey,
           authorityFor: realmEdgeAuthority(invites),
-          charter: vesselEdgeCharter(realm, deps.sealHome),
+          charter,
         });
-        follow(vouchUrl, vouchBoard);
+        // THE LINEAGE'S ROOTS: the seats of the charter this vessel holds. Nothing else roots a lineage, so a
+        // vessel that holds no charter reads no joiner as standing.
+        const roots = charter?.head.keys ?? [];
+        follow(vouchUrl, vouches.handle);
         follow(edgeUrl, read.handle);
         const stands = (edgeId: string): boolean => read.readings.get(edgeId)?.stands === true;
         realms.push({
-          realm, invites, readings: read.readings,
-          standing: lineageStanding({ realmDocIdHex: realm, invites, stands }),
+          realm, roots, invites, readings: read.readings,
+          standing: lineageStanding({ realmDocIdHex: realm, roots, invites, stands }),
         });
       }
       last = { fleets, realms };

@@ -22,7 +22,10 @@
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
-import { edgeLedgerDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
+import { edgeLedgerDocUrl, materializeSharedLarDoc, realmVouchBoardDocUrl } from "./deterministic-doc.js";
+import type { CabalInvite } from "./cabal-invite.js";
+import { verifyEd25519 } from "./ed25519-door.js";
+import { verifiedVouchesFromBoard, verifiedVouchesFromRecords, vouchEdgeId, vouchEntryKey, writeVouch } from "./vouch-board.js";
 import { tiddlerText } from "./base-doc.js";
 import { storedLarRecord } from "./stored-record.js";
 import {
@@ -33,7 +36,7 @@ import {
 /** The tiddler-key prefix every ledger row rides under: `<prefix><scope>/<act|anchor|rolled>/<cid>`. */
 export const EDGE_LEDGER_PREFIX = "lar:///ha.ka.ba/dreamnet/edge-ledger/" as const;
 
-const rowKey = (scope: string, kind: "act" | "anchor" | "rolled" | "seen" | "realm", cid: string): string =>
+const rowKey = (scope: string, kind: "act" | "anchor" | "rolled" | "seen" | "realm" | "vouch", cid: string): string =>
   `${EDGE_LEDGER_PREFIX}${scope}/${kind}/${cid}`;
 
 /** The ledger's stored rows of one kind for one board. */
@@ -198,5 +201,54 @@ export async function readLedgeredEdgeBoard(opts: {
     handle.change((d) => { restored = restoreToBoard(d, read.missing); });
   }
   return { ...read, handle, ledger, restored };
+}
+
+/**
+ * Read one realm's vouch board as one vessel: the verifying read over the board replica AND over the vouches
+ * this vessel kept, with what it read kept in turn and a kept vouch written back onto a board that lost it.
+ *
+ * A VOUCH ACCRETES LIKE AN ACT (kapae#/accretion). A member's standing reads off the vouches that name it, so a
+ * hand that deleted a withdrawn vouch from the board would erase the very record that says its joiner entered
+ * by that vouch. At a vessel that once read the vouch, the delete changes nothing.
+ */
+export async function readLedgeredVouches(opts: {
+  readonly repo:      Repo;
+  readonly realm:     string;
+  readonly vesselKey: string;
+}): Promise<{ readonly invites: readonly CabalInvite[]; readonly handle: DocHandle<LarDoc>; readonly restored: number }> {
+  const realm = opts.realm.trim().toLowerCase();
+  // Each vouch reads through the house's one Ed25519 door, under the voucher key the vouch itself names.
+  const throughTheDoor = (bytes: Uint8Array, sigHex: string, voucherDid: string): Promise<boolean> =>
+    Promise.resolve(verifyEd25519(sigHex, bytes, voucherDid.replace(/^0x/, "")));
+  const handle = await materializeSharedLarDoc(opts.repo, realmVouchBoardDocUrl(realm), "board:vouch-registry");
+  const ledger = await materializeSharedLarDoc(opts.repo, edgeLedgerDocUrl(opts.vesselKey), "ledger:edge");
+  const onBoard = await verifiedVouchesFromBoard(handle.doc(), realm, throughTheDoor);
+  const prefix = `${EDGE_LEDGER_PREFIX}${realm}/vouch/`;
+  const keptRows = Object.entries(ledger.doc()?.tiddlers ?? {}).filter(([key]) => key.startsWith(prefix)).map(([, record]) => record);
+  const kept = await verifiedVouchesFromRecords(keptRows, realm, throughTheDoor);
+  const byEdge = new Map<string, CabalInvite>();
+  for (const i of [...onBoard, ...kept]) if (!byEdge.has(vouchEdgeId(i))) byEdge.set(vouchEdgeId(i), i);
+  const keptEdges = new Set(kept.map(vouchEdgeId)), boardEdges = new Set(onBoard.map(vouchEdgeId));
+  const toKeep = onBoard.filter((i) => !keptEdges.has(vouchEdgeId(i)));
+  const noted = !ledgerRealms(ledger.doc()).includes(realm);
+  if (toKeep.length > 0 || noted) {
+    ledger.change((d) => {
+      noteRealm(d, realm);
+      for (const i of toKeep) {
+        const key = rowKey(realm, "vouch", vouchEdgeId(i));
+        if (d.tiddlers[key] === undefined) d.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(i) }, realm);
+      }
+    });
+  }
+  const missing = kept.filter((i) => !boardEdges.has(vouchEdgeId(i)));
+  if (missing.length > 0) {
+    handle.change((d) => {
+      for (const i of missing) {
+        // Never overwrite a record standing at the vouch's own key: a re-issue by the same voucher lives there.
+        if (d.tiddlers[vouchEntryKey(i.realmDocIdHex, i.voucherDid, i.joinerIdentityHex)] === undefined) writeVouch(d, i);
+      }
+    });
+  }
+  return { invites: [...byEdge.values()], handle, restored: missing.length };
 }
 

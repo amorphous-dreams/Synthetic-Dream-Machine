@@ -28,8 +28,8 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   signEdgeKapae, writeEdgeKapae, edgeLineHeads,
-  realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
-  realmEdgeAuthority, verifiedVouchesFromBoard, materializeSharedLarDoc, verifyEd25519,
+  realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
+  realmEdgeAuthority, readLedgeredVouches,
   type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
 } from "@lararium/mesh";
 import {
@@ -162,10 +162,8 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   // edge's voucher, and the seat quorum holds every edge. A fleet's board: the signing root holds every edge.
   let authorityFor: (id: string) => EdgeAuthority | undefined;
   if (realm !== undefined) {
-    const vouchBoard = await materializeSharedLarDoc(repo, realmVouchBoardDocUrl(realm), "board:vouch-registry");
-    const vouches = await verifiedVouchesFromBoard(vouchBoard.doc(), realm,
-      (bytes, sigHex, did) => Promise.resolve(verifyEd25519(sigHex, bytes, did)));
-    authorityFor = realmEdgeAuthority(vouches);
+    const vouches = await readLedgeredVouches({ repo, realm, vesselKey });
+    authorityFor = realmEdgeAuthority(vouches.invites);
     if (hand === "holder") {
       const holder = authorityFor(acted)?.holder?.toLowerCase().replace(/^0x/, "");
       if (holder !== authority.holder) {

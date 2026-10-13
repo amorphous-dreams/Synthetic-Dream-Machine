@@ -13,7 +13,7 @@ import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import {
-  hex, DAEMON_BAG_ID, seedDaemonDoc, NEXUS_DOC_DOMAIN, genesisCharterEpoch,
+  hex, DAEMON_BAG_ID, seedDaemonDoc, NEXUS_DOC_DOMAIN, genesisCharterEpoch, materializeSharedLarDoc,
   RealmBoardGate, RealmBagGate, realmDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, fleetEdgeBoardDocUrl,
   deviceEdgeId, DeterministicFederationGate, crossroadsDocUrl,
   type FederationGate, type NexusMembership, type PlaneSeal, type AntigenRing,
@@ -59,6 +59,13 @@ afterEach(async () => {
   await new Promise((r) => setTimeout(r, 200));
   rmSync(root, { recursive: true, force: true });
 });
+
+/** Seat a charter over root 0 alone: the one seat whose key roots this vessel's lineage reads. */
+async function seatOwnCharter(): Promise<void> {
+  const key = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+  const e0 = genesisCharterEpoch([key], 1, "");
+  writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: e0.epochCid, sealLineage: [e0], kahu: [{ displayName: "Kahu 0", verifyingKey: key }] });
+}
 
 /** Stand a ring over this vessel's store for one read, and hand the caller the ring while the store stays held. */
 async function withRing<T>(
@@ -116,6 +123,32 @@ describe("a fold that fails leaves no reading", () => {
       fail = false;
       await ring.refold();
       expect(ring.deviceAside(phone)).toBe(false);
+    });
+  });
+});
+
+describe("the reading goes dark the moment a board moves", () => {
+  it("★ a change on a board this ring follows closes every gate until the next fold lands ★", async () => {
+    const phone = await nymOf(55);
+    const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+    const vesselKey = (await loadVesselVerifyingKey())!;
+    let refolds = 0;
+    await ownedStore(larDataDir(), async (repo) => {
+      const ring = makeEdgeShadowRing({
+        repo, vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot],
+        vesselKeyOfPeer: () => phone, realmNymOfPeer: () => null, onRefold: () => { refolds++; },
+      });
+      await ring.refold();
+      expect(ring.deviceAside(phone)).toBe(false);                                 // CONTROL
+      // Another hand's act arrives on the fleet board (here: any change to the document).
+      const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
+      board.change((d) => { (d.tiddlers as Record<string, unknown>)["a-foreign-row"] = { tiddler: { text: "noise" }, meta: {} }; });
+      expect(ring.fold()).toBeNull();
+      expect(ring.deviceAside(phone)).toBe(true);
+      for (let i = 0; i < 100 && refolds === 0; i++) await new Promise((r) => setTimeout(r, 20));
+      expect(refolds).toBeGreaterThan(0);
+      expect(ring.deviceAside(phone)).toBe(false);
+      ring.dispose();
     });
   });
 });
@@ -200,6 +233,7 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
 
 describe("a realm's members — the realm gate and the lane its boards cross by", () => {
   it("★ a withdrawn vouch sets its joiner aside at the realm's gate and closes the realm's boards to it ★", async () => {
+    await seatOwnCharter();
     const joiner = await nymOf(61), bystander = await nymOf(62);
     const vouch = await direct(runCabalVouch)({ joiner, realm: REALM });
     const peers = { "peer-j": { nym: joiner }, "peer-b": { nym: bystander }, "peer-root": { nym: vouch.voucherDid } };
@@ -224,7 +258,7 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
       expect(await at.realmDoc("peer-j")).toBe(true);                             // CONTROL: the member reads
       expect(await at.edgeBoard("peer-j")).toBe(true);
       expect(await at.vouchBoard("peer-j")).toBe(true);
-      expect(await at.edgeBoard("peer-root")).toBe(true);                         // the seed stands
+      expect(await at.edgeBoard("peer-root")).toBe(true);                         // a seat of the charter roots the lineage
       expect(await at.edgeBoard("peer-b")).toBe(false);                           // a face no vouch names holds no standing
       expect(await at.realmDoc("peer-b")).toBe(true);                             // and no shadow: the realm's other lanes decide
     });
@@ -249,6 +283,43 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
       expect(await at.edgeBoard("peer-root")).toBe(true);                         // CONTROL: the shadow scopes to one edge
       expect(await at.realmDoc("peer-b")).toBe(true);
       expect(ring.memberAside("b".repeat(64))("peer-j")).toBe(false);             // another realm reads nothing from this one
+    });
+
+    // ★ A hand deletes the withdrawn vouch from the realm's vouch board. This vessel read it once: the joiner
+    //   still reads aside, and the board regains the vouch at the next fold.
+    const vouchUrl = realmVouchBoardDocUrl(REALM);
+    await ownedStore(larDataDir(), async (repo) => {
+      const board = await materializeSharedLarDoc(repo, vouchUrl, "board:vouch-registry");
+      board.change((d) => { for (const key of Object.keys(d.tiddlers)) delete (d.tiddlers as Record<string, unknown>)[key]; });
+      await repo.flush();
+      expect(Object.keys(board.doc()!.tiddlers)).toEqual([]);
+    });
+    await withRing(peers, async (ring) => {
+      await ring.refold();
+      expect(ring.memberAside(REALM)("peer-j")).toBe(true);
+      expect(ring.standsInRealm("peer-j", REALM)).toBe(false);
+    });
+    await ownedStore(larDataDir(), async (repo) => {
+      const board = await materializeSharedLarDoc(repo, vouchUrl, "board:vouch-registry");
+      expect(Object.keys(board.doc()!.tiddlers)).toHaveLength(1);
+    });
+  });
+
+  it("★ a vessel that holds no charter reads no joiner as standing: nothing else roots a lineage ★", async () => {
+    const joiner = await nymOf(65);
+    await direct(runCabalVouch)({ joiner, realm: REALM });
+    await withRing({ "peer-j": { nym: joiner } }, async (ring) => {
+      const fold = await ring.refold();
+      expect(fold.realms[0]!.roots).toEqual([]);
+      expect(ring.standsInRealm("peer-j", REALM)).toBe(false);
+      expect(ring.memberAside(REALM)("peer-j")).toBe(true);
+    });
+    // CONTROL: with the voucher's key seated in this vessel's charter, the same vouch gives its joiner standing.
+    await seatOwnCharter();
+    await withRing({ "peer-j": { nym: joiner } }, async (ring) => {
+      await ring.refold();
+      expect(ring.standsInRealm("peer-j", REALM)).toBe(true);
+      expect(ring.memberAside(REALM)("peer-j")).toBe(false);
     });
   });
 

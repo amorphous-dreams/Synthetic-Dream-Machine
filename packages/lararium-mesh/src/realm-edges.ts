@@ -51,26 +51,24 @@ export function realmEdgeAuthority(
 /**
  * The identities that hold standing in one realm at this replica, as canonical keys.
  *
- * `invites` arrive VERIFIED for this realm (`verifiedVouchesFromBoard`). `stands(edgeId)` answers whether a
- * shadow stands over an edge (`readEdgeBoard`).
+ * `invites` arrive VERIFIED for this realm. `stands(edgeId)` answers whether a shadow stands over an edge
+ * (`readEdgeBoard`).
  *
- * THE ROOTS. A lineage roots on every voucher no vouch names as a joiner: a hand that vouches and that nobody
- * vouched for entered by another road (a founding, a charter seat), and the absence of a vouch proves no
- * removal. No reader names a root by its own word: a face that entered by a vouch stands or falls with that
- * vouch at every vessel, its own included. A root stands unless a shadow stands over its own member edge. A
+ * THE ROOTS ARRIVE AUTHENTICATED, never inferred. `roots` names the keys the reader can prove entered this
+ * realm by a road other than a vouch: the seats of the charter the realm stands under, read off the reader's
+ * own charter. A key that merely signs a vouch roots nothing, since anyone can sign one; and a missing vouch
+ * proves nothing about how a hand entered. A root stands unless a shadow stands over its own member edge. A
  * joiner stands when a standing vouch from a standing voucher names it and its member edge reads clear.
  */
 export function lineageStanding(input: {
   readonly realmDocIdHex: string;
+  readonly roots:         readonly string[];
   readonly invites:       readonly CabalInvite[];
   readonly stands:        (edgeId: string) => boolean;
 }): Set<string> {
   const realm = input.realmDocIdHex.trim().toLowerCase();
   const clear = (id: string) => !input.stands(memberEdgeId(realm, id));
   const here = input.invites.filter((i) => i.realmDocIdHex.trim().toLowerCase() === realm);
-  const vouched = new Set(here.map((i) => canonicalIdentity(i.joinerIdentityHex)));
-  const roots = new Set<string>();
-  for (const i of here) { const v = canonicalIdentity(i.voucherDid); if (!vouched.has(v)) roots.add(v); }
   const out = new Map<string, string[]>();
   for (const i of here) {
     if (input.stands(vouchEdgeId(i))) continue;
@@ -79,7 +77,13 @@ export function lineageStanding(input: {
   }
   const standing = new Set<string>();
   const queue: string[] = [];
-  for (const r of roots) if (clear(r)) { standing.add(r); queue.push(r); }
+  for (const named of input.roots) {
+    let root: string;
+    try { root = canonicalIdentity(named); } catch { continue; }   // a root this fold cannot read roots nothing
+    if (standing.has(root) || !clear(root)) continue;
+    standing.add(root);
+    queue.push(root);
+  }
   while (queue.length > 0) {
     const at = queue.shift()!;
     for (const joiner of out.get(at) ?? []) {
@@ -93,13 +97,15 @@ export function lineageStanding(input: {
 
 /**
  * Does a shadow set this member aside from one realm? True when a shadow stands over the member's own edge,
- * or when the member entered by a vouch and no path of standing vouches still reaches a root. A member no
- * vouch names (a root, a charter's own hearth) leaves only by a shadow over its member edge: absence of a
- * vouch proves no removal.
+ * or when the member entered by a vouch and no path of standing vouches still reaches a root. A root, and a
+ * peer no vouch names (a charter's own hearth), leave only by a shadow over the member edge: the absence of a
+ * vouch proves no removal. `invites` MUST come through the vessel's own ledger (`readLedgeredVouches`), so a
+ * vouch a hand deleted from the board still names its joiner here.
  */
 export function memberStandsAside(input: {
   readonly realmDocIdHex: string;
   readonly member:        string;
+  readonly roots:         readonly string[];
   readonly invites:       readonly CabalInvite[];
   readonly stands:        (edgeId: string) => boolean;
 }): boolean {
@@ -110,4 +116,3 @@ export function memberStandsAside(input: {
   const vouched = input.invites.some((i) => i.realmDocIdHex.trim().toLowerCase() === realm && canonicalIdentity(i.joinerIdentityHex) === member);
   return vouched && !lineageStanding(input).has(member);
 }
-
