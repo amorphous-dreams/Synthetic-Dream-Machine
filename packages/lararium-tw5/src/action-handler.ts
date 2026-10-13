@@ -1468,17 +1468,27 @@ async function landInBag(
   await writeIn(access, toBag, record, o);
 }
 
+/**
+ * THE CHANGE-ID NAMES A TITLE'S LINEAGE. A transfer (ADD, COPY, a live MOVE) carries the SOURCE record's
+ * id onto the destination: "same change, different bag". The gesture's own id names the ACT and rides the
+ * receipt and the effect record. A source that carries no id takes the gesture's as its first.
+ */
+function lineageOf(source: LarTiddlerRecord, gestureChangeId: string): string {
+  const own = source.meta?.changeId;
+  return typeof own === "string" && own !== "" ? own : gestureChangeId;
+}
+
 async function executeAdd(action: AddAction, access: BagAccess): Promise<Record<string, unknown>> {
   const source = await readFromBag(access, action.fromBag, action.title);
   if (!source) throw new Error(`ADD: source bag ${action.fromBag} does not hold ${action.title}`);
-  await landInBag(access, action.toBag, source, action.changeId, origin(action));
+  await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), origin(action));
   return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId };
 }
 
 async function executeCopy(action: CopyAction, access: BagAccess): Promise<Record<string, unknown>> {
   const source = await readFromBag(access, action.fromBag, action.title);
   if (!source) throw new Error(`COPY: source bag ${action.fromBag} does not hold ${action.title}`);
-  await landInBag(access, action.toBag, source, action.changeId, origin(action));
+  await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), origin(action));
   return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, mode: "overwrite" };
 }
 
@@ -1550,10 +1560,9 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
   for (const t of group) {
     const source = await readFromBag(access, action.fromBag, t);
     if (!source) continue;
-    // change-id identity survives the move: the root keys on the action's
-    // change-id (the operation), each child keeps its own (its record identity).
-    const changeId = t === action.title ? action.changeId : (source.meta?.changeId ?? action.changeId);
-    await landInBag(access, action.toBag, source, changeId, o);
+    // change-id identity survives the move: the root and each child keep their own (the record's
+    // lineage); the gesture's id names the act in the effect record.
+    await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), o);
   }
   for (const t of group) {
     // RETRACT (hard-remove → ABSENT), never a kāpae tombstone: a MOVE relocates,

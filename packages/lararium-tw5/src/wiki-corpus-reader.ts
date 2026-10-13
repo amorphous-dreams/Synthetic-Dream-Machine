@@ -22,7 +22,7 @@ export interface WikiCorpusReader {
   /** change subscription — fires when the corpus moves; returns the unsubscribe. */
   subscribe(listener: () => void): () => void;
   /** OPTIONAL per-title stalk supplier — a reader with its own cache law fills foldCorpus's stalkOf
-   *  shore (the composite face memos per changeId; the VM face rides getCacheForTiddler instead). */
+   *  shore (the composite face memos per title on the body; the VM face rides getCacheForTiddler instead). */
   stalkOf?: (doc: WikiSenseDoc) => DocStalk;
 }
 
@@ -40,11 +40,12 @@ export function senseDocOfEntry(e: CompositeEntry): WikiSenseDoc {
 }
 
 /** Stand the shore over one VM-less wiki island's composite — resolved, kāpae-honored, causal-stamped.
- *  Carries a PER-TITLE stalk memo keyed on the entry's changeId (the causal stamp): a refold after
- *  one write re-derives ONE stalk, not the whole corpus — the composite face's warm-refold cure
- *  (the VM face already rides TW5's getCacheForTiddler for the same law). */
+ *  Carries a PER-TITLE stalk memo keyed on the BODY the stalk came from: a refold after one write
+ *  re-derives ONE stalk, not the whole corpus — the composite face's warm-refold cure (the VM face
+ *  already rides TW5's getCacheForTiddler for the same law). A record's `changeId` names a title's
+ *  lineage and survives an edit, so it never keys derived text. */
 export function compositeCorpusReader(store: CompositeStore): WikiCorpusReader {
-  const memo = new Map<string, { changeId: string; stalk: DocStalk }>();
+  const memo = new Map<string, { body: string; stalk: DocStalk }>();
   return {
     async docs(): Promise<readonly WikiSenseDoc[]> {
       const entries = await store.entries();
@@ -56,13 +57,11 @@ export function compositeCorpusReader(store: CompositeStore): WikiCorpusReader {
     },
     subscribe: (listener) => store.subscribe(listener),
     stalkOf: (doc) => {
-      const changeId = doc.changeId ?? null;
-      if (changeId !== null) {
-        const hit = memo.get(doc.title);
-        if (hit && hit.changeId === changeId) return hit.stalk;
-      }
-      const stalk = deriveDocStalk(senseBodyOf(doc.fields));
-      if (changeId !== null) memo.set(doc.title, { changeId, stalk });
+      const body = senseBodyOf(doc.fields);
+      const hit = memo.get(doc.title);
+      if (hit && hit.body === body) return hit.stalk;
+      const stalk = deriveDocStalk(body);
+      memo.set(doc.title, { body, stalk });
       return stalk;
     },
   };

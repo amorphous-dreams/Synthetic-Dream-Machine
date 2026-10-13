@@ -76,14 +76,13 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
 # ''Change-id preservation'' (Anti-pattern #1 defense). ADD / COPY / live-source MOVE carry
    the source record's `change-id` into the destination Manifestation — the Work
    keeps its causal identity across bags.
-   ''What the code does, and the OPEN question.'' `landInBag`
-   (`packages/lararium-tw5/src/action-handler.ts`) writes the ACTION's `change-id` over the
-   `meta.changeId` the source record carried: ADD and COPY stamp it on the landed record, a
-   live-source MOVE stamps it on the group's root, and each moved child keeps its own.
-   `lares act` mints a fresh `change-id` where the caller passes none. Two readings stand and no
-   ruling picks one: (a) the arg names the Work, so preservation rests on a caller who carries the
-   source's value; (b) the arg names the operation, so the handler owes a read of the source
-   record's own `change-id`. <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns">>
+   ''The id names a title's lineage; the gesture's id names the act.'' The handler reads the source
+   record's own `meta.changeId` and lands it on the destination (`lineageOf`,
+   `packages/lararium-tw5/src/action-handler.ts`): ADD and COPY on the landed record, a live-source
+   MOVE on the root and on each child of the group. The `change-id` argument (`lares act` mints a
+   fresh one where the caller passes none) rides the receipt and the effect record, and lands on a
+   record only where the source carries none. Derived text never keys on this id: it survives an
+   edit (`wiki-corpus-reader.ts` memos on the body). <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns">>
 # ''Kāpae or retract, never silent delete'' (Anti-pattern #3 defense). CLEAR /
    DROP raise a ''kāpae'' tombstone (shadows lower bags — resurrection-prevention);
    A live-source MOVE ''retracts'' its source to //absent// (hard-remove → falls through, so the
@@ -134,6 +133,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w-L63Wm9QH14uPy6wbGa1xpcfgin_Ts6rSGNf-cPG_g
+<<^ code="&#x0003;">>ni:///sha-256;i04JgK9OtPSAciiGnIib-0Qat3TM5MEkR5yHqgCmipE
 
 <<^ code="&#x0004;" -> to="?">>
