@@ -551,8 +551,7 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
 
         // The DIAL is a boot reading — `LAR_JOIN_SYNC`/`LAR_JOIN_GATE` mount the client adapter as the vessel
         // opens, and no running verb seats one. So the place stands again on its own root, carrying the dial.
-        const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
-        if (!gateA) throw new Error(`fleet: A's log named no gate key:\n${A.bootLog().slice(-800)}`);
+        const gateA = await awaitOwnGateKey(A);
         await herm.stopDaemonOnly();
         herm = await openStaged({
           root: herm.root, port: portHerm, found: async () => { /* founded above; the store stands */ },
@@ -574,6 +573,33 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
   } catch (err) {
     await teardown();
     throw err;
+  }
+}
+
+/**
+ * The gate key a vessel's OWN `/ws` gate stands behind, read off its boot log: the `[lararium] gate key:` line a
+ * hearth prints once it composes. A vessel that also stands a carriage crossroads (`LAR_HERM_RELAY_PORT`) prints a
+ * second key under `[herm]   gate key:`, the RELAY's, and prints it first, because every boot rests at the floor
+ * before the unlock composes the hearth. A joiner handed the relay's key as `LAR_JOIN_GATE` resolves its Nexus
+ * island under that key, finds no board there, and halts at its Binding Gate. So the reader names the hearth's
+ * line and never the first `gate key:` in the log.
+ */
+export function ownGateKey(bootLog: string): string | null {
+  return /^\[lararium\] gate key: ([0-9a-f]{64})$/m.exec(bootLog)?.[1] ?? null;
+}
+
+/**
+ * A staged hearth's own gate key, once its log names it. The hearth prints the line a beat after it composes, so
+ * the read looks until the line stands, inside its own budget, and a hearth that never names a key throws by name:
+ * a joiner never boots dialing an empty or a borrowed gate.
+ */
+export async function awaitOwnGateKey(instance: LarInstance, timeoutMs = 60_000): Promise<string> {
+  const deadline = performance.now() + timeoutMs;
+  for (;;) {
+    const key = ownGateKey(instance.bootLog());
+    if (key) return key;
+    if (performance.now() > deadline) throw new Error(`the hearth's log named no gate key of its own:\n${instance.bootLog().slice(-800)}`);
+    await new Promise((r) => setTimeout(r, 250));
   }
 }
 
@@ -664,7 +690,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
     await opts.beforeB?.(A);
 
     // A's gate key off A's own log, A's lares doc off A's registry — B's env dial, or a suite's own read.
-    const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
+    const gateA = await awaitOwnGateKey(A);
     const { invokeLocal } = await import("../../packages/lares-cli/src/local-connector.js");
     const wl = await invokeLocal("list-wikis", {}, `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A) }) as
       { results?: { summary?: { output?: { wikis?: Array<{ slug: string; automergeUrl: string | null }> } } } };
