@@ -44,18 +44,18 @@ In neither: the description stands as a separate documentation artifact.
 ''Principle:'' System behavior descriptions and system runtime data occupy the same
 store, addressable by the same scheme.
 
-There is no "documentation tier" separate from "code tier." A meme that describes
+No "documentation tier" stands separate from "code tier." A meme that describes
 what a filter operator does SERVES AS the filter operator's source of truth. A tiddler
 that holds schema rules FUNCTIONS AS the schema used at runtime validation.
 
 ''Lararium expression:''
 * `lar:///ha.ka.ba/lares/api/lararium/schema/tiddler-record` — the schema meme
-  for tiddler records — is loaded by the same `resolveLarUri()` call used to load content
+  for tiddler records — loads through the same `resolveLarUri()` call that loads content
 * `lar:///ha.ka.ba/lares/api/mu/pattern-integrity` — this very set of principles
   — resides in the same namespace as runtime configuration
 
-''Violation pattern:'' A `README.md` that describes behavior that is not mirrored in a
-meme. Documentation that can drift from runtime reality violates P1.
+''Violation pattern:'' A `README.md` that describes behavior no
+meme mirrors. Documentation that can drift from runtime reality violates P1.
 
 ''Rule:'' Any documented invariant MUST have a corresponding meme with `invariant = true`.
 The meme CARRIES the documentation; the documentation INHABITS the meme.
@@ -70,7 +70,7 @@ The meme CARRIES the documentation; the documentation INHABITS the meme.
 cannot obtain through the same capability surfaces.
 
 In a quine, the self-reproduction step uses the same output mechanism as everything
-else. There is no "reflection API" that works differently from the "content API."
+else. No "reflection API" works differently from the "content API."
 
 ''Lararium expression:''
 * `filterTiddlers("[all[memes]]")` returns the same set whether called from a widget,
@@ -78,11 +78,11 @@ else. There is no "reflection API" that works differently from the "content API.
 * `resolveLarUri("lar:///ha.ka.ba/...")` works identically in browser, node, and worker
 * `VmDebugSurface` on every peer — no peer has privileged debug access the others lack
 
-''Violation pattern:'' A TypeScript-only introspection path that cannot be replicated
-inside the wiki. If the wiki cannot ask "what memes carry this capability?" using
-the same filter syntax as external code, P2 is violated.
+''Violation pattern:'' A TypeScript-only introspection path that nothing
+inside the wiki can replicate. If the wiki cannot ask "what memes carry this capability?" using
+the same filter syntax as external code, the system violates P2.
 
-''Rule:'' Any system introspection available to external TypeScript MUST be expressible
+''Rule:'' Any system introspection available to external TypeScript MUST admit expression
 as a `filterTiddlers()` call. The filter layer serves as the reflection API.
 
 <<~/ahu>>
@@ -91,24 +91,24 @@ as a `filterTiddlers()` call. The filter layer serves as the reflection API.
 
 !! P3 — Causal Closure
 
-''Principle:'' The system's behavior is fully determined by its content graph.
+''Principle:'' The content graph fully determines the system's behavior.
 No hidden out-of-band configuration determines runtime behavior.
 
-A quine's output is determined solely by its own text. If the output also depends on
-an environment variable, a hardcoded path, or an external service, the quine is
-not closed — it is partial.
+A quine's own text solely determines its output. If the output also depends on
+an environment variable, a hardcoded path, or an external service, the quine
+does not close — it stays partial.
 
 ''Lararium expression:''
-* Boot behavior is determined by the meme corpus (which memes have `invariant = true`,
+* The meme corpus determines boot behavior (which memes have `invariant = true`,
   which have `mana ≥ 18`, which carry Heleuma source-sha256 anchors)
-* The `lar:` URI resolver is the single gate — all content enters through it
+* The `lar:` URI resolver stands as the single gate — all content enters through it
 * FPI-2 (wave vs water): behavior MUST stay independent of physical filesystem layout
 
 ''Violation pattern:'' An environment variable that changes which schema the validator
 uses. A hardcoded hostname in a content reference. A feature flag outside the tiddler
 store that controls rendering behavior.
 
-''Rule:'' All runtime configuration MUST be representable as a tiddler with a `lar:` URI.
+''Rule:'' All runtime configuration MUST admit representation as a tiddler with a `lar:` URI.
 The only exception: infrastructure secrets (keys, tokens), which MUST stay outside
 the content graph for P3 reasons.
 
@@ -118,7 +118,7 @@ the content graph for P3 reasons.
 
 !! P4 — Live Feedback
 
-''Principle:'' Changes to the content graph are immediately reflected in system behavior,
+''Principle:'' System behavior immediately reflects changes to the content graph,
 without a build/deploy cycle.
 
 Smalltalk's live image: modifying a method changes the running system. TiddlyWiki's
@@ -128,16 +128,16 @@ save-to-self: editing a tiddler changes what the wiki renders, with no intermedi
 * `MemeSyncAdaptor.onChangeset()` pushes CRDT deltas into the live TW5 VM — tiddlers
   update in the running wiki without a full reload
 * Automerge's `DocHandle.on("change", ...)` event fires into `MemeProvider.handleChange()`
-  — the CRDT is the live image transport
+  — the CRDT serves as the live image transport
 * `ReactionEngine` re-runs projections on changeset — UI updates follow content changes
 
 ''Violation pattern:'' A filter operator that requires a server restart to pick up a
 new implementation. Schema rules that require a TypeScript rebuild before they apply.
 Any "reload required" path for content that could live in the tiddler store.
 
-''Rule:'' Any meme with `mana ≥ 18` and a Heleuma source-sha256 anchor MUST be loadable
+''Rule:'' Any meme with `mana ≥ 18` and a Heleuma source-sha256 anchor MUST stay loadable
 at runtime without a restart. The boot-time gate checks these fields; if they pass,
-the meme is preferred over the compiled TypeScript equivalent.
+the gate prefers the meme over the compiled TypeScript equivalent.
 
 <<~/ahu>>
 
@@ -155,7 +155,7 @@ the meme is preferred over the compiled TypeScript equivalent.
 | Self-description | Classes describe classes | Tiddlers describe tiddlers | Memes describe memes via `lar:` URIs |
 | Ephemeralization target | — | — | TypeScript → memes (Heleuma anchors) |
 
-Smalltalk's `doesUnderstand:` is the missing piece in TiddlyWiki. `[all[memes]]` is
+TiddlyWiki lacks Smalltalk's `doesUnderstand:`. `[all[memes]]` gives
 Lararium's answer: a filter expression that returns the self-describing layer.
 
 <<~/ahu>>
@@ -166,7 +166,7 @@ Lararium's answer: a filter expression that returns the self-describing layer.
 
 ''Every self-hosting system that survived runs a two-phase boot and keeps ONE kernel outside its own reach.'' Smalltalk lets a method redefine any method and never the dispatch algorithm that finds one. Emacs Lisp advises a primitive and never replaces the C body beneath it. Oberon versions a module interface and refuses a load that no longer matches. ''The mechanism that READS the extensible layer never sits inside the extensible layer'' — a system that lets itself rewrite its own reader has no way back from one bad write.
 
-''Lararium's kernel reads as `resolveLarUri()` plus the parse-dispatch engine.'' A meme supplies grammar patterns, family contracts and templates ''as data'', and modifies nothing about the mechanism that reads them. That boundary is what lets P1's unified store stay safe: everything may live in the wiki precisely because the thing that opens the wiki does not.
+''Lararium's kernel reads as `resolveLarUri()` plus the parse-dispatch engine.'' A meme supplies grammar patterns, family contracts and templates ''as data'', and modifies nothing about the mechanism that reads them. That boundary lets P1's unified store stay safe: everything may live in the wiki precisely because the thing that opens the wiki does not.
 
 ''And the shadow layer names the shape for `lares/`.'' TiddlyWiki's read-through gives a user tiddler the power to override a shadow at a different address and never to delete one, with the shadow layer regenerating from disk at every compile. A carrier under `lares/` takes the same posture: ''override at a new address, never unmake the address beneath.'' That rhymes exactly with the retirement law — an address MUST keep meaning what it meant (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/retirement">>).
 
@@ -176,18 +176,18 @@ Lararium's answer: a filter expression that returns the self-describing layer.
 
 !! The "If It CAN Live In The Wiki It MUST" Rule
 
-This is the operational enforcement of P1–P4 combined.
+This rule enforces P1–P4 combined, operationally.
 
-''Test:'' Can this logic be expressed as:
+''Test:'' Can this logic take the form of:
 # A self-contained tiddler with `type: application/javascript` or `text/memetic-wikitext`?
 # Accessible via `filterTiddlers()` or `renderTiddler()`?
 # Updatable at runtime via `MemeSyncAdaptor.onChangeset()`?
 
 If yes to all three: it MUST move to a meme. The TypeScript file becomes the
-fallback only (Heleuma Stage 4: meme is authoritative, TS is fallback).
+fallback only (Heleuma Stage 4: the meme holds authority, TS falls back).
 
 ''Current candidates (Stage 1):''
-* `packages/lararium-tw5/src/filters/all-memes.ts` — filter operator body is stable
+* `packages/lararium-tw5/src/filters/all-memes.ts` — filter operator body remains stable
 * `packages/lararium-tw5/src/filters/toml-field.ts` — stable
 
 Each has a small, well-defined body (< 30 lines). Each qualifies for a Heleuma anchor.
@@ -207,13 +207,13 @@ IPLD (InterPlanetary Linked Data) provides content-addressed data with:
 * Codecs — structured data (DAG-CBOR, DAG-JSON) linked by CID
 * Schema layer — IPLD Schema for typed data structures
 
-''Quine alignment:'' CID-addressed tiddlers are the fullest expression of P3 (causal
-closure). A tiddler addressed by its own content hash cannot be tampered with without
-changing its address. The content graph becomes self-certifying.
+''Quine alignment:'' CID-addressed tiddlers stand as the fullest expression of P3 (causal
+closure). Tampering with a tiddler addressed by its own content hash
+changes its address. The content graph becomes self-certifying.
 
-''Alignment with Keyhive:'' BeeKEM's capability tokens are self-certifying ("Documents
+''Alignment with Keyhive:'' BeeKEM's capability tokens certify themselves ("Documents
 identify themselves via public keys"). CID-addressed tiddlers in IPLD would complete
-this: the content is self-certifying at the data level, the capability is self-certifying
+this: the content certifies itself at the data level, the capability certifies itself
 at the access level.
 
 ''Migration path:''
@@ -234,7 +234,7 @@ The `lar:` URI resolver (FPI-5 trim tab) makes this migration transparent to all
 
 The Heleuma system tracks ephemeralization progress from TypeScript toward memes.
 
-A ''Heleuma anchor'' is a field in a TypeScript module's meme that creates a two-way
+A ''Heleuma anchor'' takes the form of a field in a TypeScript module's meme that creates a two-way
 link between the compiled artifact and its meme representation:
 
 ```toml
@@ -251,10 +251,10 @@ source-sha256   = "sha256:..."  # hash of the TypeScript source at time of meme 
 | 1 | TypeScript file has meme; meme has `heleuma = "ba"` and `source-sha256` |
 | 2 | Meme body contains compiled CJS; TypeScript fallback still active |
 | 3 | Boot-time gate checks `mana`, `confidence`, `source-sha256`; meme preferred if all pass |
-| 4 | Meme is authoritative; TypeScript is fallback only |
+| 4 | Meme holds authority; TypeScript falls back only |
 
 ''`heleuma = "ba"`'': "ba" (Hawaiian: to carry, to bear) — the meme serves as the carrier
-of the pattern. The TypeScript file is the material instantiation; the meme is the wave.
+of the pattern. The TypeScript file stands as the material instantiation; the meme stands as the wave.
 
 <<~/ahu>>
 
@@ -269,6 +269,6 @@ of the pattern. The TypeScript file is the material instantiation; the meme is t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jq4Bw1HHj7AluBEyEAVS1WX6W4-88T7ZaTMXQaqsjGY
+<<^ code="&#x0003;">>ni:///sha-256;sza9qjQ3PkZ3GryxoX57ECgYc9r0nJZpOjeobEHA-BI
 
 <<^ code="&#x0004;" -> to="?">>

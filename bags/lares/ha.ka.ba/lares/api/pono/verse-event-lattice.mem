@@ -48,7 +48,7 @@ A handle with a single capability: fire. No subscription, no await.
 Used when one system triggers another without coupling to the response.
 
 ''Lararium mapping:'' `dispatchEvent({type: "tm-verse-event", uri, listenable})` from
-`KukaliWidget` is a signalable call — fires into the TW5 wiki event bus and returns.
+`KukaliWidget` makes a signalable call — fires into the TW5 wiki event bus and returns.
 
 ---
 
@@ -60,13 +60,13 @@ awaitable(t:type) := interface:
 ```
 
 A handle with a single capability: suspend until a value arrives.
-`Await()` is a `<suspends>` callsite — it yields the current fiber cooperatively.
+A call to `Await()` makes a `<suspends>` callsite — it yields the current fiber cooperatively.
 
-''Critical distinction:'' `<suspends>` is an ''effect specifier'', not a return type modifier.
+''Critical distinction:'' `<suspends>` acts as an ''effect specifier'', not a return type modifier.
 It says the function //may// yield the calling fiber; it says nothing about whether the
-function returns a value. A function returning `void` can be `<suspends>`.
+function returns a value. A function returning `void` can carry `<suspends>`.
 
-''Lararium mapping:'' `MemeProjection.onChangeset()` is awaitable-shaped —
+''Lararium mapping:'' `MemeProjection.onChangeset()` takes the awaitable shape —
 the caller suspends (or schedules) until the changeset resolves.
 
 ---
@@ -100,10 +100,10 @@ The //user-instantiable// event type. Code creates `event(t)` instances with `ev
 It combines signalable + awaitable: a producer can `.Signal()` it;
 a consumer can `.Await()` it within a `<suspends>` context.
 
-Crucially: ''no `Subscribe()`''. Persistent multi-consumer callbacks are not
-available on user-instantiated events. Only the engine may vend `listenable`.
+Crucially: ''no `Subscribe()`''. User-instantiated events offer no
+persistent multi-consumer callbacks. Only the engine may vend `listenable`.
 
-''Lararium mapping:'' a KukaliWidget event is an `event(t)` — the widget fires it
+''Lararium mapping:'' a KukaliWidget event has type `event(t)` — the widget fires it
 (signalable); the ReactionEngine awaits it (awaitable) in a reaction fiber.
 
 ---
@@ -120,12 +120,12 @@ listenable(t:type) := interface:
 The persistent subscription type. Only the ''engine'' vends `listenable` handles.
 User code receives them; user code does not create them.
 
-This is the design-boundary invariant: if you can `Subscribe()` to it, the engine
-controls its lifecycle. If you can only `Await()` it, you are in a fiber.
+This states the design-boundary invariant: if you can `Subscribe()` to it, the engine
+controls its lifecycle. If you can only `Await()` it, you run in a fiber.
 
-''Lararium mapping:'' the `listenable` field on `ReactionBinding` is an engine-vended
+''Lararium mapping:'' the `listenable` field on `ReactionBinding` holds an engine-vended
 handle. `ReactionEngine` holds `listenable` references and subscribes to them
-(`tw5.wiki.addEventListener` is the `Subscribe()` equivalent in the TW5 host).
+(`tw5.wiki.addEventListener` serves as the `Subscribe()` equivalent in the TW5 host).
 
 <<~/ahu>>
 
@@ -133,7 +133,7 @@ handle. `ReactionEngine` holds `listenable` references and subscribes to them
 
 !! `<suspends>` — Effect Specifier
 
-`<suspends>` is not a return type. It is an ''effect annotation'' on a function or
+`<suspends>` names no return type. It works as an ''effect annotation'' on a function or
 expression that declares: "this callsite may suspend the current logical task."
 
 ```verse
@@ -146,18 +146,18 @@ SomeFunc()<suspends>:t
 
 !!! Rules
 
-# A function annotated `<suspends>` may only be called from within a `<suspends>` context
+# A call to a function annotated `<suspends>` may only occur within a `<suspends>` context
    or from a `spawn` expression (which creates a new fiber).
 # `<suspends>` propagates upward: calling a `<suspends>` function from a non-suspends
    function requires marking the caller `<suspends>`.
-# Fibers are cooperative: the runtime suspends at `Await()` callsites only.
+# Fibers cooperate: the runtime suspends at `Await()` callsites only.
    No preemptive suspension.
 
 !!! Lararium consequence
 
-`MemeProjection.onChangeset()` is typed `async` (TypeScript equivalent of `<suspends>`).
-Any sync path that calls it MUST be made async or moved to a scheduled microtask.
-The MemeSyncAdaptor properly awaits it inside an async wrapper — this is correct.
+`MemeProjection.onChangeset()` carries the `async` modifier (TypeScript equivalent of `<suspends>`).
+Any sync path that calls it MUST become async or move to a scheduled microtask.
+The MemeSyncAdaptor properly awaits it inside an async wrapper — the correct form.
 
 <<~/ahu>>
 
@@ -191,8 +191,8 @@ The compound type `listenable(agent)` functions as the canonical event type for 
 !! `@editable` — Design/Logic Boundary
 
 In Verse, `@editable` marks a property as configurable in the UEFN editor UI.
-It is the ''design boundary'': above `@editable` is visual/authoring-time configuration;
-below is runtime logic.
+It draws the ''design boundary'': above `@editable` sits visual/authoring-time configuration;
+below sits runtime logic.
 
 ```verse
 my_device := class(creative_prop):
@@ -209,10 +209,10 @@ The `@editable` boundary maps onto the distinction between:
 * ''React props / TW5 widget attributes'' (authoring-time; editable in the editor)
 * ''ReactionEngine subscriptions'' (runtime; wired at boot)
 
-A `KukaliWidget` accepts its `uri` and `listenable` attributes as props — these are
-the `@editable` surface. The internal `dispatchEvent` call is the runtime logic.
+A `KukaliWidget` accepts its `uri` and `listenable` attributes as props — these form
+the `@editable` surface. The internal `dispatchEvent` call constitutes the runtime logic.
 
-''Rule:'' Any URI or event handle that a device exposes to the room author is an
+''Rule:'' Any URI or event handle that a device exposes to the room author counts as an
 `@editable`-equivalent. It MUST stay author-editable, declared as data rather than hardcoded in runtime logic.
 
 <<~/ahu>>
@@ -226,19 +226,19 @@ using { /Verse.org/Verse }
 using { /EpicGames/Devices }
 ```
 
-`using` in Verse is a ''module namespace import''. It brings exported identifiers
+`using` in Verse performs a ''module namespace import''. It brings exported identifiers
 into scope from a module path. It has no relation to trait bounds, mixins, or
 interface composition.
 
 ''Common confusion:'' developers from Rust/Haskell backgrounds read `using` as
-`impl Trait for Type` or `derive`. It is not. It is closer to Python's
+`impl Trait for Type` or `derive`. It does neither. It sits closer to Python's
 `from module import *` scoped to a namespace path.
 
-''Lararium implication:'' When Verse code is cited in Lararium architecture docs as
-justification for an interface design, `using` lines are module imports — not
+''Lararium implication:'' When Lararium architecture docs cite Verse code as
+justification for an interface design, `using` lines perform module imports — not
 statements about structural subtyping. The type lattice (signalable/awaitable/
-subscribable/event/listenable) is the structural system; `using` is how you
-access it from a given file.
+subscribable/event/listenable) forms the structural system; `using` gives you
+access to it from a given file.
 
 <<~/ahu>>
 
@@ -246,7 +246,7 @@ access it from a given file.
 
 !! Lararium Device Model Alignment
 
-A `KukaliWidget` is a Verse creative_prop equivalent:
+A `KukaliWidget` stands as a Verse creative_prop equivalent:
 
 | Verse concept | Lararium equivalent |
 |---|---|
@@ -270,11 +270,11 @@ A `KukaliWidget` is a Verse creative_prop equivalent:
 ```
 
 Step 4 exists only because `onVerseEvent()` wired the subscribable side.
-Without it, the event fires and nobody hears it — the fiber is never spawned.
+Without it, the event fires and nobody hears it — the fiber never spawns.
 
 ''Law:'' `KukaliWidget` MUST use `dispatchEvent` (signalable). `ReactionEngine` MUST
-subscribe via `onVerseEvent` (subscribable). These are never the same call.
-The asymmetry is the point.
+subscribe via `onVerseEvent` (subscribable). The two never share a call.
+The asymmetry carries the point.
 
 <<~/ahu>>
 
@@ -321,8 +321,8 @@ Extends `event(t)` semantics with ''retained last signal'': after the first Sign
 all subsequent Await() calls receive the cached last value immediately without
 suspending. A subscriber who arrives after the event has fired still gets the result.
 
-Compare to `event(t)` which consumes each signal exactly once — if no awaiter is
-present when Signal() fires, the signal is dropped.
+Compare to `event(t)` which consumes each signal exactly once — if no awaiter waits
+when Signal() fires, the signal drops.
 
 ''Lararium implication:'' `sticky_event` maps to "remember last value" semantics —
 useful for device state that late-joining agents need to catch up to.
@@ -341,12 +341,12 @@ subscribable_event(t:type) := class<final>:
 Combines signalable + awaitable + subscribable. Subscribe() returns a `cancelable`
 (unsubscribe handle). Multiple subscribers receive every signal.
 
-''Critical:'' The `cancelable` returned by Subscribe() is an ''unsubscribe handle'',
+''Critical:'' The `cancelable` returned by Subscribe() serves as an ''unsubscribe handle'',
 NOT a `task(t)`. Same `cancelable` interface, different semantic role.
 
 ''Lararium implication:'' `subscribable_event` maps to the TW5
 `wiki.addEventListener("change", handler)` pattern exactly. The teardown function
-returned by `onVerseEvent()` is the cancelable equivalent.
+returned by `onVerseEvent()` serves as the cancelable equivalent.
 
 !!! Status guidance
 
@@ -367,6 +367,6 @@ via TW5's own event bus.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;X2Rtzf50-D-ixTZYXV0LCwvTXB-9vETKBjlwSqMP7X0
+<<^ code="&#x0003;">>ni:///sha-256;H6LjOxuHqvY-3aWu06gs2e1uargsxcfrOYCdouC7ppw
 
 <<^ code="&#x0004;" -> to="?">>
