@@ -42,6 +42,8 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **An unreadable archive refuses the stand by name.** So does an archive of another identity.
 - **A stand presents one contact card.** The card gets minted before the stand's Archive leaves, so every later stand opens what the card promised.
 - **The joinee rite dials the hearth's own gate.** A founder that also stands a carriage relay no longer hands a joiner the relay's key.
+- **A vessel seeds inside the container.** `vessel seed` reads the bags the container mounts, the fresh-build gate reads a tree that arrived built as fresh, and an ingest past the outcome cap reads its tally where it used to crash.
+- **The harnesses open a staged vessel through the test door.** The harbor walk, the mesh scenarios and the browser walks unlock after `up`, read a floor as a floor, and the realm steward walk reads green with `--join` and `--cosign`.
 - **One push yields one e2e verdict.** The CI workflow's E2E job calls the shard workflow and takes its merge gate's word, where a single runner used to time out. `node tools/ci-verdict.mjs --head <sha>` answers green, red or unread for a head, and a cancelled or running run never reads as green. The shard tool names a run it could not read, looks every thirty seconds, and names each failing case by file and name.
 - **The custody contention test holds its window by a handshake,** and the mesh coverage witness reads the phases the code holds.
 - **An island asks again when no peer stood behind an "unavailable".** A daemon whose main thread sat busy at an unlock no longer faults its own floor, which had killed a joinee mid-rite. The test door reads a refused composition as a refusal.
