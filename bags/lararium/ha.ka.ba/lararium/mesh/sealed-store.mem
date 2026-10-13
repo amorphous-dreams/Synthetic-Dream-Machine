@@ -8,7 +8,7 @@ cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/sealed-store.mem"
 hydrate   = true
 l-space   = "stable"
-role      = "the sealed store's one private-byte format as law — the household promise and its limits; the key table (who holds each key, what it seals, where it rests, what unlock needs, what a carrier holds, what removal and recovery do); the sealed value's bytes, its associated data and its named refusals; the address rule; the key version, lockbox, manifest, checkpoint and hand-over records; the lockbox store, the chunk index and the content-key holder; the epoch rule at removal and at admission; the sibling-branch rule; what a blind carrier holds and learns; what the code holds and what the later steps owe"
+role      = "the sealed store's one private-byte format as law — the household promise and its limits; the key table (who holds each key, what it seals, where it rests, what unlock needs, what a carrier holds, what removal and recovery do); the sealed value's bytes, its associated data and its named refusals; the address rule; the key version, lockbox, manifest, checkpoint, hand-over and memory-import records; the lockbox store, the chunk index and the content-key holder with its memory section and its import door; the epoch rule at removal and at admission, and the same-face reading at a recovery; the sibling-branch rule; what a blind carrier holds and learns; what the code holds and what the later steps owe"
 title     = "lar:///ha.ka.ba/lararium/mesh/sealed-store"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/sealed-store"
@@ -46,6 +46,7 @@ This carrier states that format: the keys, the sealed value, its address, the re
 * A carrier learns shape: how many sealed values a bag holds, their sizes and kinds, when they arrive, how they link, when a key rolls and when two key branches stand side by side. It learns no name, no title, no text and no writer's key. The links a manifest cites can still tell one writer's rhythm from another's, and a bag carried at two places shows the same locator and the same addresses at both.
 * A carrier may withhold a value or serve an earlier record. Withholding reads as absence and proves nothing; no reader takes a missing value as a deletion.
 * A content key opens every value sealed under its version. A key that leaks opens that whole version, and a roll alone ends the exposure for later writing.
+* ''A backup bundle carries content keys off the device.'' Whoever opens one reads every surviving value sealed under the versions it carries, values written after its cut included, until a roll ends that version's use (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/a-thief">>).
 * A capable writer may write nonsense, may sign a checkpoint that lies, and may hand any plaintext or key it holds to anyone. The signature names the writer; the format detects no lie a holder of the full history cannot recompute.
 * Present values may themselves quote text written long before. A fresh base drops the history of edits, never the words a page still shows.
 * A removed reader keeps every byte and every key it held. No act recalls them (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>).
@@ -63,7 +64,8 @@ This carrier states that format: the keys, the sealed value, its address, the re
 |! key |! who holds it |! what it seals or signs |! where it rests |! what unlock needs |! what a carrier holds |! what removal and recovery do |
 | ''Vessel key (VK)'' | one vessel, inside its keyslots | the custody root, the identity rows and the vessel's Keyhive archive | wrapped in each keyslot | a human route: passphrase or paper; embers where bound | nothing | an unbind offers a rotation; paper or passphrase recovers it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>) |
 | ''Keyhive member keys'' | each vessel seated in a bag's key group | the lockboxes that carry content keys to that group | inside the Keyhive archive, sealed under the VK on a node | the VK | nothing: a wrap's public operations name its readers and travel the member lane alone (#/the-records, the lockbox) | a counted raise revokes the seat; a lift seats afresh and returns no earlier key (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/re-admission">>) |
-| ''Content key, one per key version'' | every reader the bag's key group held when a lockbox for that version got wrapped | every sealed value of that version: changes, checkpoints, blobs and the private part of each record | wrapped in a lockbox; bare in the content-key holder's memory alone, and only while the vessel stands unlocked (#/the-store) | the VK, then the Keyhive seat, then the lockbox | the lockbox as ciphertext, and the version's opaque id | a removal mints a successor version; the removed reader keeps the versions it held; a recovered device receives lockboxes as any newcomer does |
+| ''Content key, one per key version'' | every reader the bag's key group held when a lockbox for that version got wrapped | every sealed value of that version: changes, checkpoints, blobs and the private part of each record | wrapped in a lockbox; bare in the content-key holder's memory alone, and only while the vessel stands unlocked (#/the-store); sealed inside a backup bundle's memory section wherever a person cut one | the VK, then the Keyhive seat, then the lockbox | the lockbox as ciphertext, and the version's opaque id | a removal mints a successor version; the removed reader keeps the versions it held; a recovered device receives lockboxes as any newcomer does, and imports the versions its own face's bundle carries (#/the-store) |
+| ''Bundle key, one per cut'' | the person who holds the bundle's route | one face's backup bundle: its root, its lines and its memory section | wrapped in the bundle's own slot tree, inside the bundle file | the bundle's route: passphrase or paper | nothing | a removal reaches no bundle; a lost route closes its bundle for good (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle">>) |
 | ''Body key, one per sealed value'' | nobody: each side derives it | the segments of one sealed value | nowhere | the content key | nothing | follows its content key |
 | ''Walker's carry key, one per carried document'' | the devices that hold one walker's per-Nexus leaf | one document that walker hands a hearth to carry | the leaf seed and the document's digest derive it, and that document's receipt in the walker's own walk store keeps a copy | the leaf seed, or the receipt | the sealed value alone | a fresh leaf opens a fresh carriage; no hearth act reaches a key, and one exposed receipt opens one document |
 | ''Session signing key'' | one live session, beneath its vessel's face-scoped key | manifests, checkpoints and key version records; it seals nothing | in the session's memory alone | a live session (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">>) | nothing: every signature rides inside a sealed part | a withdrawal ends the vessel's face-scoped key; a reader then refuses its later records |
@@ -202,6 +204,12 @@ A carrier names a bag by an opaque ''locator'': a keyed digest of the bag's id u
 * A hand-over record states that one holder handed one span's keys to one reader (#/epochs). ''Clear'': the locator, the key version id of the head it rides under, the span id, and the ids of the versions handed. ''Sealed'': the reader's Keyhive identifier, the certificate and the signature.
 * Every reader of that head verifies it as any record, and so learns who received the span's past and from whom. The record audits the act. It moves no reader's count of a version.
 
+!!! The memory-import record
+
+* A memory-import record states that one seat came to hold one key version by recovery: its vessel imported that version's key from its own face's backup bundle (#/the-store). ''Clear'': the locator and the key version id. ''Sealed'': the seat's identifier on the key shore, the certificate and the signature. It rides under the version it names, so every reader of that version verifies it as any record.
+* ''The record grants no standing and no version by itself.'' It tells readers of that version which seat holds it by recovery. A reader's count of the version moves by the lineage's own rules alone.
+* ''A hand-over record would misstate the act.'' A hand-over names a holder that handed a key on. A recovery names no such hand, so the import signs a kind of its own.
+
 <<~/ahu>>
 
 <<~ ahu #/the-store>>
@@ -220,13 +228,14 @@ A carrier names a bag by an opaque ''locator'': a keyed digest of the bag's id u
 
 !!! The content-key holder
 
-* ''One holder keeps bare content keys, in memory alone, and only while the vessel stands unlocked.'' It lives where the vessel's Keyhive seat lives. No bare key crosses a worker port or reaches disk, a log, a receipt or an answer: a caller hands the holder a body and takes back a sealed value, or hands it a reference and takes back the body.
+* ''One holder keeps bare content keys, in memory alone, and only while the vessel stands unlocked.'' It lives where the vessel's Keyhive seat lives. No bare key crosses a worker port or reaches disk, a log, a receipt or an answer: a caller hands the holder a body and takes back a sealed value, or hands it a reference and takes back the body. A cut takes back a memory section sealed under its bundle's key, and nothing else leaves (below).
 * ''At unlock the holder opens every lockbox its Keyhive seat opens.'' It reads each payload, and counts each key version record under the key that payload delivered. Nothing private rests for it: it rebuilds every bag id, locator and lineage from its lockboxes. ''At lock it overwrites every key and forgets every reading'', and every ask then refuses by name.
 * ''A key reaches rest before any value seals under it.'' A mint wraps and stores the lockbox, signs the key version record and counts the version, then stores the record. A stop before the record rests leaves a lockbox no record names: it delivers nothing, and the next mint draws a fresh key. No stop leaves a sealed value whose key no lockbox holds, and none leaves one key version stored twice.
 * ''The first key'' (house reading). A bag's first private value mints its founding version. The session that seals signs the founding record, and the caller declares the span's history at that moment. A founding with no declaration stands closed: no later act can add a declaration its writers never made.
 * ''A vessel under its own shadow performs no key act.'' It founds nothing, mints nothing, joins nothing, hands nothing over, hands no parcel on and serves no reader, so no wrap of its own ever seats it and no key leaves by its hand.
 * ''Which acts the shadow stops'' (house reading). A key act wraps a key or hands one on (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>). Four acts sit beside that line, and each takes its own answer.
 ** ''The parcels for a reader refuse by name'' (`own-edge-shadowed`). A parcel carries a lockbox to a reader, so a vessel that hands one on hands a key on.
+** ''A cut of the memory section and an import each refuse by name'' (`own-edge-shadowed`). The cut hands keys beyond the holder, and the import wraps a key for the vessel's own seat.
 ** ''A seal under a head the vessel already holds runs.'' It draws no key and wraps for nobody, and the readers it reaches stay the readers that head already served. Each reader's own standing check judges the manifest the seal signs. A seal that would found a bag or join heads mints, and so refuses.
 ** ''A receipt runs.'' The vessel rests what another hand wrapped for it and counts again. The hand that wrapped answered for whom it served, and a refusal here would withhold nothing the vessel does not already hold.
 ** ''The choice of a head runs.'' It moves the vessel's own notes and nothing else.
@@ -235,7 +244,27 @@ A carrier names a bag by an opaque ''locator'': a keyed digest of the bag's id u
 * ''Rival foundings'' (house reading). Two vessels may each found one bag before either reads the other. Each founding names a locator of its own, and the two lineages stay apart under those locators. A vessel that opens a lockbox of a founding it never counted keeps that lineage beside its own, reads what stands sealed under it, shows the rival founding at every door, and keeps writing under the founding it wrote under. Where it wrote under none, a person chooses. No clock, no arrival order and no id comparison picks one.
 * ''A removal rolls every founding a vessel holds a head in.'' The roll keys its work on the bag and the founding's locator. A founding that reaches a vessel after a raise settled still owes that raise its roll: the vessel hands its kept rolls to the content-key roll again whenever a lineage or a head arrives, and a roll already answered there settles as not owed.
 * ''Every sealed value enters a manifest.'' The session that seals signs a manifest for what it added, and the index takes that manifest's rows. A reader opens a value by its logical reference: it derives the entry locator, finds the row, verifies the manifest the row names, and opens the address that manifest authorizes.
-* ''A session signs, or nothing mints.'' A founding, a roll, a join, a manifest and a hand-over each take the signer of the session that acts. Where no session signer stands, the holder refuses by name: no vessel key and no daemon key signs in a session's place.
+* ''A session signs, or nothing mints.'' A founding, a roll, a join, a manifest, a hand-over and an import each take the signer of the session that acts. Where no session signer stands, the holder refuses by name: no vessel key and no daemon key signs in a session's place.
+
+!!! The memory section and the import door
+
+A face's backup bundle carries the content keys its vessel held, so a face that returns on a fresh device reads its own past (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle">>). Two acts of the holder serve it.
+
+* ''A cut seals the memory section inside the holder.'' The holder gathers each key it COUNTED AND HELD among the bags its face's composition names. It writes one entry per bag and key version: the bag's id, the bag's locator, the key version id and the key. It seals the section under the bundle key: to the public half of a key pair that key alone derives, which the cut names. It answers that ciphertext beside a list that names bags and versions and no key. No secret crosses the island's port at a cut.
+* ''The cut refuses under the vessel's own shadow'' (`own-edge-shadowed`), and reads that shadow once, at its entry. A raise the vessel counts while a cut runs binds its next act.
+* ''The island answers its own vessel alone.'' A cut and an import each carry the vessel key's signature over their own request, as the seat's duties do, so no other island, no session and no peer draws a section or lands one.
+* ''One door imports.'' The taking vessel hands its island the section and the pair's secret half, sealed to a public key the island named for that one import, so the secret opens inside the island alone. ''The door judges the act whole before any entry lands.'' A session signer stands (`signer-unavailable`). This vessel's own seat stands in the face's key group (`seat-not-standing`). The vessel reads no shadow over its own edge (`own-edge-shadowed`). The section opens to whole entries (`memory-malformed`).
+* ''The door then judges each entry apart'', in this order, and answers one outcome for each:
+** `key-forged`: the key does not recompute to the version id its entry names, under the bag it names. A forged or swapped key stops here.
+** `held`: this vessel already counts and holds that version. Nothing changes.
+** `record-unverified`: no key version record under that locator and id verifies under the key.
+** `version-conflicted`: two unlike verified records stand under that id, or the lineage holds it conflicted.
+** `transition-uncounted`: the record verifies, and the lineage does not count the version on this vessel's own evidence. The outcome names the lineage's own cause.
+** `imported`: the entry passed, and landed.
+* ''An entry that passes lands in three writes.'' The holder signs a `memory-import` record under the version and rests it (#/the-records). It wraps one lockbox for this vessel's own seat alone and rests it. It then reads its lockboxes afresh and counts again. A stop after the record and before the lockbox leaves a record of an import that never completed, and the same import runs again.
+* ''The import adds and never replaces.'' It writes no lockbox over another, removes no record and moves no head. A bundle older than the holder's own reading adds only what the holder lacks.
+* ''The import counts by the lineage's own rules'' (house reading). A removal's version counts where this vessel's own ledger counts its raise, and a join where a held parent proves it. A carried key whose transition this vessel cannot count stays out, by name. The bundle keeps that key, and the same import runs again once the vessel's own evidence stands.
+* ''The bundle's own seal never replaces these checks.'' A thief who knows a bundle's route seals a body of their own making, so every entry answers to the records and the lineage, whatever the bundle's tag says.
 
 <<~/ahu>>
 
@@ -255,6 +284,7 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 | ''join'' of sibling versions | one version mints, citing every sibling | siblings of one span continue it; siblings of unlike spans open a new span on a `fresh` checkpoint |
 
 * ''An inviter never widens the audience for another writer's past'' (operator ruling). A span declared closed admits newcomers from now alone. An inviter chooses between history the span already declared shareable and a present-state admission.
+* ''One face on a new device reads as the same audience'' (operator ruling). A replacement vessel of the SAME face, proven by a current re-admission, imports the versions that face already held, closed spans included (#/the-store). The ruling above forbids widening the AUDIENCE for another writer's past; a face that returns on a fresh device widens nothing. The import therefore asks for no history declaration, and no other reader gains a version by it.
 * ''A from-now admission mints only once its fresh base stands.'' The admitting vessel draws the new version's key, cuts the fresh base under it, and only then wraps a lockbox. Where no hand cuts that base, the admission refuses by name and mints nothing.
 * ''The hand-over stands as an explicit act'' (house reading). A holder names one reader and one head it holds. It wraps one lockbox for each version of that head's span to that reader alone, signs a hand-over record under the head (#/the-records), and hands the reader one parcel for each version. The act refuses by name: a span declared closed; a span whose opener the holder never counted; a head the holder cannot open; a reader that holds no seat in the bag's key group, or that the holder's own edge reading sets aside; and a vessel under its own shadow. The act reaches no version of an earlier span, and a holder that lacks a version's key hands over the versions it holds and names the rest.
 * ''The reader counts a handed span as it counts any version.'' It opens the parcels and counts each record under the key its parcel delivered, each cause against its own ledger and its own reading of the admission acts. The hand-over record states who handed the span and to whom, for every reader of that head; it licenses nothing.
@@ -321,6 +351,7 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 !! What the later steps owe
 
+* ''The memory section and the import door'': the holder's cut, its import and the `memory-import` record kind stand as law in #/the-store and #/the-records, and no code holds them.
 * ''The session proof'': the session open that hands the daemon island a signer and the chain check. Until a production path opens a session signer, no content key mints on a production vessel, and `cad-seal` seals nothing. Caller: the wire cutover's session open.
 * ''A removal that leaves out the founding vessel'': the vessel that founded a face's key group holds that group through an identity no device edge names, so a raise over it names no seat a roll can leave out, and it keeps receiving keys. The PersonaGroup as a Keyhive Group cures it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>; roadmap loop `K12`).
 * ''Step three'': the document store's own storage values sealed as `change` and `checkpoint` values, and hydration checked against the session's face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view">>). It takes from step two: the holder's seal and open, widened from a `blob` to a `change` and a `checkpoint` with their own logical references and parent addresses; one manifest for each write batch, citing every manifest its writer verified; the `fresh` checkpoint a from-now admission's span opens on, cut before any change seals under that version, and the `freshBase` port through which the seat hands that cut to the holder; and the cleartext-local tier, which a staged body and an opened one still rest in.
@@ -346,9 +377,10 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">> the face proof chains a session key beneath a face
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">> the session contract scopes what a session hydrates
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">> membership doctrine carries the walker's carriage
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody">> custody states the backup bundle, its cut and its restore
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zdjbfT4jPNWrCYyJeH9mDm5kIs-Cy3PIsnEMTERL1fA
+<<^ code="&#x0003;">>ni:///sha-256;WaUJ4DWDQhYi9Ojyr8MJB1PMu209sXaysD0Qo6dI0r8
 
 <<^ code="&#x0004;" -> to="?">>
