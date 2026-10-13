@@ -753,13 +753,27 @@ export class LarDiskProjector {
         }
         return null;
       })();
+      const diskHash = onDisk === null ? null : carrierHash(onDisk.body, onDisk.meta);
+      const base = this.syncedTree?.base(syncedTreeKey(bagId, tiddlerUri)) ?? null;
       const decision = decideProjection({
-        diskHash:    onDisk === null ? null : carrierHash(onDisk.body, onDisk.meta),
-        syncedHash:  this.syncedTree?.get(syncedTreeKey(bagId, tiddlerUri)) ?? null,
-        recordsHash: obsHash,
+        diskHash,
+        syncedHash:        base?.disk ?? null,
+        syncedRecordsHash: base?.records ?? null,
+        recordsHash:       obsHash,
         diskCanonicalHash,
       });
-      if (decision.kind === "noop") { this._leaveStandoff(bagId, tiddlerUri); return; }
+      if (decision.kind === "noop") {
+        // THE DISK AND THE RECORDS SAY THE SAME THING IN TWO FRAMINGS: the carrier stands unchanged, so
+        // no byte writes. The base pins at this agreement, the disk's bytes on one side and the records'
+        // render on the other, so the ingest scan reads the file `unchanged` and each gate still tells a
+        // later disk edit from a later record edit. A base that already names this agreement stays put.
+        if (decision.reason === "canonical-equivalent" && diskHash !== null
+            && !(base !== null && base.disk === diskHash && base.records === obsHash)) {
+          this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), diskHash, obsHash);
+        }
+        this._leaveStandoff(bagId, tiddlerUri);
+        return;
+      }
       if (decision.kind === "conflict") {
         // SURFACE, never overwrite. The write stops here; the divergence goes out on the
         // ward-alert rail (a durable ledger record + an alert in the operator's pinned VM),
@@ -767,7 +781,7 @@ export class LarDiskProjector {
         const reason = `the disk and the records both moved past the last projection (${decision.reason}) — the write stands down so neither edit is drowned`;
         // ONE SURFACING PER STANDOFF: the key names the bag, the carrier and the two states. A reconcile
         // that meets the standoff it already raised stays quiet; the write still stands down.
-        const standoff = sha256HexBytesSync(new TextEncoder().encode([mirror.bagId, tiddlerUri, onDisk === null ? "" : carrierHash(onDisk.body, onDisk.meta), obsHash].join("\n"))).slice(0, 24);
+        const standoff = sha256HexBytesSync(new TextEncoder().encode([mirror.bagId, tiddlerUri, diskHash ?? "", obsHash].join("\n"))).slice(0, 24);
         const key = sitedKey(mirror.bagId, tiddlerUri);
         if (this.standoffs.get(key) === standoff) return;
         // The states moved while the carrier still stands off: the standoff it left ends (its alert

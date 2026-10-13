@@ -240,6 +240,12 @@ export interface IngestCarrier {
    *  silent overwrite. null = the writer read nothing (never projected / never
    *  read) → the gate adopts. */
   readonly syncedHash: string | null;
+  /** THE BASE'S RECORDS SIDE. Disk and records co-project one carrier, each in its own grain, so the
+   *  last agreement holds two hashes: what the disk held (`syncedHash`) and what the records rendered.
+   *  The two differ where the disk stands in a framing the render would normalize. The gate reads the
+   *  disk side for its echo and this side for "the records stand where the base left them". Absent =
+   *  one hash names both sides (a text-writer's base, or a disk that held the canonical render). */
+  readonly syncedRecordsHash?: string;
   /** The carrier's file extension (".mem" / ".tid" / ".json" / ".md" …) as the
    *  gesture read it from disk. The island routes by it: a memetic carrier (SOH
    *  heading / `.mem`) decomposes at the memetic shore; any other legal TW5
@@ -434,7 +440,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
       for (const c of rawCarriers) {
         if (!c || typeof c !== "object") return null;
         const o = c as Record<string, unknown>;
-        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"];
+        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"];
         if (typeof uri !== "string" || !uri) return null;
         if (file !== undefined && typeof file !== "string") return null;
         // A verb NEVER inlines a body: a carrier rides EITHER an inline `text` OR a
@@ -444,11 +450,13 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         if (!hasText && !hasCid) return null;
         if (typeof diskHash !== "string" || !diskHash) return null;
         if (syncedHash !== null && typeof syncedHash !== "string") return null;
+        // The records side rides only beside a disk side: a base holds both or neither.
+        if (syncedRecordsHash !== undefined && (typeof syncedRecordsHash !== "string" || !syncedRecordsHash || syncedHash === null)) return null;
         if (ext !== undefined && typeof ext !== "string") return null;
         if (meta !== undefined && typeof meta !== "string") return null;
         if (size !== undefined && typeof size !== "number") return null;
         if (skinny !== undefined && typeof skinny !== "boolean") return null;
-        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}) });
+        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}) });
       }
     }
     const deletions: IngestDeletion[] = [];

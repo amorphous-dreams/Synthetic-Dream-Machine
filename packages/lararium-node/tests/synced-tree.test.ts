@@ -40,7 +40,86 @@ describe("synced-tree — observations persist atomically", () => {
     expect(t.size).toBe(0);
     expect(t.get("lar:///a")).toBeNull();
     t.set("lar:///a", "h1");                       // heals by re-persisting
-    expect(JSON.parse(readFileSync(p, "utf-8"))["lar:///a"]).toBe("h1");
+    expect(JSON.parse(readFileSync(p, "utf-8"))["lar:///a"]).toEqual({ disk: "h1", records: "h1" });
+    rmSync(dir, { recursive: true, force: true });
+  });
+});
+
+describe("synced-tree — the base holds two sides", () => {
+  const fresh = () => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-"));
+    return { dir, p: join(dir, "synced-tree.json") };
+  };
+
+  test("one hash names both sides: a projector write leaves the disk holding the render", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p, 0);
+    t.set("k", contentHash("render"));
+    expect(t.base("k")).toEqual({ disk: contentHash("render"), records: contentHash("render") });
+    expect(t.get("k")).toBe(contentHash("render"));
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a disk standing in another framing pins two hashes, and both survive a reload", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p, 0);
+    t.set("k", contentHash("disk bytes"), contentHash("the render"));
+    expect(t.get("k")).toBe(contentHash("disk bytes"));
+    const reopened = new SyncedTree(p, 0);
+    expect(reopened.base("k")).toEqual({ disk: contentHash("disk bytes"), records: contentHash("the render") });
+    expect(reopened.base("missing")).toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("the rename index keys on the disk side, never the records side", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p, 0);
+    const bag = "lar:///ha.ka.ba/bags/x";
+    t.set(syncedTreeKey(bag, "lar:///a"), contentHash("disk bytes"), contentHash("the render"));
+    expect(t.renameSourceUri(bag, contentHash("disk bytes"))).toBe("lar:///a");
+    expect(t.renameSourceUri(bag, contentHash("the render"))).toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("the rename index reads right before any persist: a coalescing tree answers from the set itself", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p, 60_000);   // the write waits; the index must not
+    const bag = "lar:///ha.ka.ba/bags/x";
+    t.set(syncedTreeKey(bag, "lar:///a"), contentHash("disk bytes"), contentHash("the render"));
+    expect(t.renameSourceUri(bag, contentHash("disk bytes"))).toBe("lar:///a");
+    expect(t.renameSourceUri(bag, contentHash("the render"))).toBeNull();
+    // A second set under the same key drops the earlier disk side from the index.
+    t.set(syncedTreeKey(bag, "lar:///a"), contentHash("later bytes"), contentHash("the render"));
+    expect(t.renameSourceUri(bag, contentHash("disk bytes"))).toBeNull();
+    expect(t.renameSourceUri(bag, contentHash("later bytes"))).toBe("lar:///a");
+    t.delete(syncedTreeKey(bag, "lar:///a"));
+    expect(t.renameSourceUri(bag, contentHash("later bytes"))).toBeNull();
+    t.flush();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a row in any other shape names no base: that carrier reads as never agreed", () => {
+    const { dir, p } = fresh();
+    writeFileSync(p, JSON.stringify({
+      whole: { disk: "d1", records: "r1" },
+      "a bare string": "h1",
+      "one side only": { disk: "d2" },
+      "an empty side": { disk: "d3", records: "" },
+      "an array": ["d4", "r4"],
+    }), "utf-8");
+    const said: string[] = [];
+    const warn = console.warn;
+    console.warn = (line: unknown) => { said.push(String(line)); };
+    let t: SyncedTree;
+    try { t = new SyncedTree(p, 0); } finally { console.warn = warn; }
+    // The forgotten bases speak once, by count and by file.
+    expect(said).toEqual([`[synced-tree] 4 row(s) of ${p} name no base in this tree's shape; each such carrier reads as never agreed`]);
+    expect(t.size).toBe(1);
+    expect(t.base("whole")).toEqual({ disk: "d1", records: "r1" });
+    for (const k of ["a bare string", "one side only", "an empty side", "an array"]) expect(t.base(k)).toBeNull();
+    // A write keeps the readable row and leaves the unreadable ones behind.
+    t.set("fresh", "d9");
+    expect(Object.keys(JSON.parse(readFileSync(p, "utf-8"))).sort()).toEqual(["fresh", "whole"]);
     rmSync(dir, { recursive: true, force: true });
   });
 });

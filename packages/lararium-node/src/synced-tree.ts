@@ -2,10 +2,14 @@
  * synced-tree — the per-carrier merge base (the Confluence's third leg; handoff
  * #pattern-integrities §6, the Nucleus triangle).
  *
- * For every carrier the projector writes, this tree persists the content
- * hash of the last-projected canonical bytes. The ingest gate compares a
- * disk read and the records' current render against THIS hash to decide
- * noop / ingest / conflict — three-way diffs, never timestamps, never
+ * For every carrier the two legs last agreed on, this tree persists the BASE: the
+ * hash of the bytes the disk held and the hash of the render the records carried.
+ * Disk and records co-project one carrier, each in its own grain, so an agreement
+ * names both. The two hashes read equal where the disk holds the canonical render
+ * (every projector write leaves them so) and differ where the disk stands in a
+ * framing the render would normalize. Each gate compares a disk read against the
+ * disk side and the records' current render against the records side to decide
+ * noop / ingest / project / conflict — three-way diffs, never timestamps, never
  * event windows (state-match law; Dropbox Nucleus, Syncthing #10351).
  *
  * Law: persist OBSERVATIONS, never work-queues — crash recovery = full
@@ -44,14 +48,44 @@ export function syncedTreeKey(bagId: string, uri: string): string {
   return `${bagId}\0${uri}`;
 }
 
+/** One carrier's base: what the disk held and what the records rendered at the last agreement. */
+export interface SyncedBase {
+  /** Whole-carrier hash of the bytes the disk held (body plus `.meta`). */
+  readonly disk: string;
+  /** Whole-carrier hash of the render the records carried. */
+  readonly records: string;
+}
+
+/** A persisted row reads as a base only in the one shape this tree writes; any other value names no base. */
+function baseOf(value: unknown): SyncedBase | null {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
+  const { disk, records } = value as Record<string, unknown>;
+  return typeof disk === "string" && disk !== "" && typeof records === "string" && records !== "" ? { disk, records } : null;
+}
+
+/** The persisted file as a map, keeping the rows that read as a base, and the count of rows that read as none.
+ *  An absent or torn file reads empty. */
+function readBases(filePath: string): { bases: Map<string, SyncedBase>; unread: number } {
+  const bases = new Map<string, SyncedBase>();
+  let unread = 0;
+  try {
+    const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<string, unknown>;
+    for (const [key, value] of Object.entries(raw)) {
+      const base = baseOf(value);
+      if (base) bases.set(key, base); else unread++;
+    }
+  } catch { /* absent or torn: every carrier reads as never agreed */ }
+  return { bases, unread };
+}
+
 export class SyncedTree {
-  private map = new Map<string, string>();   // `${bagId}\0${carrier-root URI}` → sha256 of last-projected bytes (a carrier may project to multiple mirrors)
+  private map = new Map<string, SyncedBase>();   // `${bagId}\0${carrier-root URI}` → the base (a carrier may project to multiple mirrors)
   private persistTimer: ReturnType<typeof setTimeout> | null = null;
 
   /** THIS instance's changes since its last persist — the merge delta laid over the
-   *  file's current contents. A hash records an observation, `null` records a removal
+   *  file's current contents. A base records an observation, `null` records a removal
    *  (so a delete lands instead of resurrecting from the sibling-written file). */
-  private journal = new Map<string, string | null>();
+  private journal = new Map<string, SyncedBase | null>();
 
   /**
    * R2 rename-index — the CONTENT-addressed reverse view: `${bagId}\0${canonical-hash}`
@@ -62,11 +96,11 @@ export class SyncedTree {
    * this index recovers the moved observation by CONTENT before the echo gate mis-reads
    * the new location as `new` and re-lands it (#46 content-addressing, deferred R2).
    *
-   * DERIVED, never persisted: rebuilt from `map` on load, so the on-disk format stays
-   * byte-identical (no migration) and a torn/absent tree degrades to fresh-adoption
-   * exactly as before. The hash canonicalizes through `tagDigest`, so every tagged
-   * spelling of one digest lands on ONE index key; a bare value parses as nothing and
-   * stays out of the index.
+   * DERIVED, never persisted: rebuilt from `map` on load, and a torn/absent tree degrades
+   * to fresh-adoption. The index keys on the base's DISK side: a rename moves a file, and
+   * the scan that looks a moved file up holds its bytes. The hash canonicalizes through
+   * `tagDigest`, so every tagged spelling of one digest lands on ONE index key; a bare
+   * value parses as nothing and stays out of the index.
    */
   private byHash = new Map<string, Set<string>>();
 
@@ -82,37 +116,48 @@ export class SyncedTree {
      */
     private readonly coalesceMs = 250,
   ) {
-    try {
-      if (existsSync(filePath)) {
-        const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<string, string>;
-        this.map = new Map(Object.entries(raw));
-      }
-    } catch {
-      // Corrupt tree = forgotten observations: every carrier reads as
-      // never-projected, the gate falls back to fresh-adoption — safe.
-      this.map = new Map();
+    // A corrupt tree, or a row in any shape but the one this tree writes, names no base: that
+    // carrier reads as never agreed and each gate falls back to its fresh-adoption answer.
+    if (existsSync(filePath)) {
+      const { bases, unread } = readBases(filePath);
+      this.map = bases;
+      // A FORGOTTEN BASE SPEAKS ONCE. A row this tree cannot read leaves its carrier with no merge base,
+      // and a projection or an ingest over that carrier then decides as a fresh adoption. The line names
+      // how many, so a hand that kept an earlier vessel's state reads why before the first write.
+      if (unread > 0) console.warn(`[synced-tree] ${unread} row(s) of ${filePath} name no base in this tree's shape; each such carrier reads as never agreed`);
     }
     this.rebuildIndex();
   }
 
+  /** The base's DISK side: the hash of the bytes the disk held at the last agreement, or null. */
   get(uri: string): string | null {
+    return this.map.get(uri)?.disk ?? null;
+  }
+
+  /** The whole base, both sides, or null where the two legs never agreed. */
+  base(uri: string): SyncedBase | null {
     return this.map.get(uri) ?? null;
   }
 
-  /** Record a projection observation; persistence coalesces per quiet window. */
-  set(uri: string, hash: string): void {
+  /**
+   * Record an agreement; persistence coalesces per quiet window. `diskHash` names the bytes the disk
+   * holds; `recordsHash` names the render the records carry, and equals `diskHash` where the disk holds
+   * that render (a projector write, a byte-identical skip).
+   */
+  set(uri: string, diskHash: string, recordsHash: string = diskHash): void {
     const prev = this.map.get(uri);
-    if (prev !== undefined) this.indexRemove(uri, prev);   // the prior value leaves the reverse view
-    this.map.set(uri, hash);
-    this.indexAdd(uri, hash);                              // the new content enters it
-    this.journal.set(uri, hash);
+    if (prev !== undefined) this.indexRemove(uri, prev.disk);   // the prior value leaves the reverse view
+    const base: SyncedBase = { disk: diskHash, records: recordsHash };
+    this.map.set(uri, base);
+    this.indexAdd(uri, diskHash);                               // the new content enters it
+    this.journal.set(uri, base);
     this.schedulePersist();
   }
 
   delete(uri: string): void {
     const prev = this.map.get(uri);
     if (this.map.delete(uri)) {
-      if (prev !== undefined) this.indexRemove(uri, prev);
+      if (prev !== undefined) this.indexRemove(uri, prev.disk);
       this.journal.set(uri, null);
       this.schedulePersist();
     }
@@ -170,11 +215,10 @@ export class SyncedTree {
     if (bucket.size === 0) this.byHash.delete(ik);
   }
 
-  /** Rebuild the reverse index from the primary map (load-time; the index never
-   *  persists, so the on-disk shape stays byte-identical across the R2 change). */
+  /** Rebuild the reverse index from the primary map (load-time; the index never persists). */
   private rebuildIndex(): void {
     this.byHash.clear();
-    for (const [key, hash] of this.map) this.indexAdd(key, hash);
+    for (const [key, base] of this.map) this.indexAdd(key, base.disk);
   }
 
   get size(): number {
@@ -205,11 +249,7 @@ export class SyncedTree {
   private persist(): void {
     const dir = dirname(this.filePath);
     mkdirSync(dir, { recursive: true });
-    const merged = new Map<string, string>();
-    try {
-      const raw = JSON.parse(readFileSync(this.filePath, "utf8")) as Record<string, string>;
-      for (const [k, v] of Object.entries(raw)) merged.set(k, v);
-    } catch { /* absent or torn — merge onto nothing */ }
+    const merged = readBases(this.filePath).bases;
     for (const [k, v] of this.journal) { if (v === null) merged.delete(k); else merged.set(k, v); }
     this.journal.clear();
     this.map = merged;

@@ -130,22 +130,52 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     await stop();
   });
 
-  test("the ORDINARY round trip WRITES — the streams say the same thing, so it normalizes", async () => {
+  test("the ORDINARY round trip writes NOTHING: the streams say the same thing, so the base pins", async () => {
     const { projector, stop, conflicts, abs, tree } = stand(DISK_FRAMED, { canonicalize: true });
 
     await reconcile(projector, URI);
 
-    // The write landed: the disk now carries the canonical framing.
-    expect(readFileSync(abs, "utf-8")).toBe(RECORDS_RENDER);
-    // AND the anchor advanced — which is the whole reason the verdict is a write and
-    // not a noop: only this closes the round trip in one cycle.
-    expect(tree.get(syncedTreeKey(BAG, URI))).toBe(carrierHash(RECORDS_RENDER));
+    // No byte moved: the disk keeps the framing a hand gave it.
+    expect(readFileSync(abs, "utf-8")).toBe(DISK_FRAMED);
+    // AND the base pinned at this agreement, the disk's bytes on one side and the records' render on
+    // the other: the ingest scan reads the file unchanged, and each gate still tells the two apart.
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
     expect(conflicts).toHaveLength(0);
 
-    // Idempotent: the second pass is the echo gate, not a second write.
+    // Idempotent: the second pass meets the same agreement and moves nothing.
     await reconcile(projector, URI);
-    expect(readFileSync(abs, "utf-8")).toBe(RECORDS_RENDER);
+    expect(readFileSync(abs, "utf-8")).toBe(DISK_FRAMED);
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
     expect(conflicts).toHaveLength(0);
+
+    await stop();
+  });
+
+  test("a hand edit to a file whose base holds two sides stands the projector DOWN: the records never moved", async () => {
+    // The agreement pinned earlier: the disk held DISK_FRAMED, the records rendered RECORDS_RENDER.
+    // Since then a hand changed the file's MEANING and the records stand where they stood.
+    const { projector, stop, conflicts, abs, tree } = stand(DISK_DIVERGED, { canonicalize: true });
+    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK_FRAMED), carrierHash(RECORDS_RENDER));
+
+    await reconcile(projector, URI);
+
+    // The ingest leg owns this state. No conflict surfaces, no byte moves, and the base keeps naming
+    // the last agreement so the ingest leg still sees the edit.
+    expect(conflicts).toHaveLength(0);
+    expect(readFileSync(abs, "utf-8")).toBe(DISK_DIVERGED);
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
+
+    await stop();
+  });
+
+  test("CONTROL — the same edit over a base that names the disk's bytes for both sides surfaces as a standoff", async () => {
+    const { projector, stop, conflicts, abs, tree } = stand(DISK_DIVERGED, { canonicalize: true });
+    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK_FRAMED));
+
+    await reconcile(projector, URI);
+
+    expect(conflicts).toHaveLength(1);
+    expect(readFileSync(abs, "utf-8")).toBe(DISK_DIVERGED);
 
     await stop();
   });

@@ -84,11 +84,11 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
   // `native-canonical.test.ts` and `foreign-title-projection.test.ts` already.
   const URI = "My JSON Doc";
 
-  test("★ RED-FIRST: a native both-move that only REFRAMED (reordered JSON keys) projects canonical-equivalent — NOT conflict ★", async () => {
+  test("★ RED-FIRST: a native both-move that only REFRAMED (reordered JSON keys) reads canonical-equivalent — NOT conflict ★", async () => {
     // The records' render (sorted, 2-space) — what the projector WOULD write.
     const records = { title: URI, type: "application/json", a: "1", b: "2" };
     const anchor = carrierHash(jsonDeserializer().renderCarrier(URI, { title: URI, type: "application/json", a: "0", b: "0" }).body, undefined);
-    const { projector, root } = rig(records, anchor);
+    const { projector, root, syncedTree } = rig(records, anchor);
     // The disk holds the SAME meaning, reordered + differently whitespaced —
     // NOT the anchor's bytes (so it reads as "moved" on the byte hashes alone).
     const diskPath = join(root, `${URI.replace(/[:/]/g, "_")}.json`);
@@ -97,9 +97,15 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
     const conflicts: string[] = [];
     (projector as unknown as { onConflict: (i: { reason: string }) => void }).onConflict = (i) => conflicts.push(i.reason);
     await projector.flush("wiki", URI);
-    // GREEN once wired: the write NORMALIZES the disk to the canonical form; no conflict fired.
+    // GREEN once wired: the disk and the records say the same thing, so no conflict fires, no byte
+    // moves, and the base pins at the agreement with the disk's bytes on one side.
     expect(conflicts).toEqual([]);
-    expect(readFileSync(diskPath, "utf-8")).toBe(JSON.stringify({ a: "1", b: "2", title: URI, type: "application/json" }, null, 2));
+    const reframed = `{"b":"2","type":"application/json","a":"1","title":"${URI}"}`;
+    expect(readFileSync(diskPath, "utf-8")).toBe(reframed);
+    expect(syncedTree.base(syncedTreeKey("wiki", URI))).toEqual({
+      disk: carrierHash(reframed, undefined),
+      records: carrierHash(JSON.stringify({ a: "1", b: "2", title: URI, type: "application/json" }, null, 2), undefined),
+    });
   });
 
   test("CONTROL — a genuine native both-move (real divergence, not reframing) STILL conflicts", async () => {

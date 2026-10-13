@@ -71,17 +71,32 @@ describe("the projection gate's decision law — clause for clause against the i
       .toEqual({ kind: "project", reason: "absent-on-disk" });
   });
 
-  test("3 — no merge base → project never-projected (ingest's fresh adoption, 4b)", () => {
+  test("3 — disk's canonical view == records → noop canonical-equivalent (the carrier stands unchanged)", () => {
+    // Ingest's rule 3, transposed: the two streams SAY the same thing, so nothing writes.
+    // The caller pins the base at this agreement; the gate itself writes nothing.
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C }))
+      .toEqual({ kind: "noop", reason: "canonical-equivalent" });
+  });
+
+  test("3 — the equivalence rides AHEAD of the base clauses: a first seed with no base writes nothing", () => {
+    expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B, diskCanonicalHash: B }))
+      .toEqual({ kind: "noop", reason: "canonical-equivalent" });
+    // CONTROL: with no base and a disk that says something else, the fresh adoption still projects.
+    expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B, diskCanonicalHash: C }))
+      .toEqual({ kind: "project", reason: "never-projected" });
+  });
+
+  test("4 — no merge base → project never-projected (ingest's fresh adoption, 4b)", () => {
     expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B }))
       .toEqual({ kind: "project", reason: "never-projected" });
   });
 
-  test("4 — disk == synced → project disk-unmoved (only the records moved)", () => {
+  test("5 — disk == the base's disk side → project disk-unmoved (only the records moved)", () => {
     expect(decideProjection({ diskHash: A, syncedHash: A, recordsHash: B }))
       .toEqual({ kind: "project", reason: "disk-unmoved" });
   });
 
-  test("5 — records == synced → noop records-unmoved (the INGEST leg owns that state)", () => {
+  test("6 — records == the base's records side → noop records-unmoved (the INGEST leg owns that state)", () => {
     // Ingest's rule 4 answers this state with INGEST — it ADOPTS the disk edit —
     // so the projecting leg must not race it. Two legs disagreeing about one
     // state is how a round trip eats an edit.
@@ -89,12 +104,37 @@ describe("the projection gate's decision law — clause for clause against the i
       .toEqual({ kind: "noop", reason: "records-unmoved" });
   });
 
-  test("6 — disk's canonical view == records → project canonical-equivalent", () => {
-    // Ingest's rule 3, transposed: the two streams SAY the same thing, so the
-    // write normalizes framing rather than drowning an edit. THE ORDINARY
-    // post-ingest round trip lands exactly here.
-    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C }))
-      .toEqual({ kind: "project", reason: "canonical-equivalent" });
+  describe("a base pinned over a disk standing in another framing holds two sides", () => {
+    // The agreement: the disk held bytes D, the records rendered R, and D says what R says.
+    const D = hash("the disk's bytes, in their own framing");
+    const R = hash("the records' render of the same carrier");
+    const E = hash("the disk after a hand edit");
+    const R2 = hash("the records after a wiki edit");
+
+    test("the records moved alone: the disk side reads unmoved, and the write applies", () => {
+      expect(decideProjection({ diskHash: D, syncedHash: D, syncedRecordsHash: R, recordsHash: R2, diskCanonicalHash: R }))
+        .toEqual({ kind: "project", reason: "disk-unmoved" });
+    });
+
+    test("the disk moved alone: the RECORDS side reads unmoved, and the projecting leg stands down", () => {
+      expect(decideProjection({ diskHash: E, syncedHash: D, syncedRecordsHash: R, recordsHash: R, diskCanonicalHash: hash("what E says") }))
+        .toEqual({ kind: "noop", reason: "records-unmoved" });
+    });
+
+    test("CONTROL: read against the disk side alone, the same state would read as a standoff", () => {
+      expect(decideProjection({ diskHash: E, syncedHash: D, recordsHash: R, diskCanonicalHash: hash("what E says") }))
+        .toEqual({ kind: "conflict", reason: "both-moved" });
+    });
+
+    test("both moved: the standoff surfaces", () => {
+      expect(decideProjection({ diskHash: E, syncedHash: D, syncedRecordsHash: R, recordsHash: R2, diskCanonicalHash: hash("what E says") }))
+        .toEqual({ kind: "conflict", reason: "both-moved" });
+    });
+
+    test("nothing moved: the equivalence holds and nothing writes", () => {
+      expect(decideProjection({ diskHash: D, syncedHash: D, syncedRecordsHash: R, recordsHash: R, diskCanonicalHash: R }))
+        .toEqual({ kind: "noop", reason: "canonical-equivalent" });
+    });
   });
 
   test("7 — all three differ, no canonical view → conflict both-moved", () => {
@@ -126,22 +166,20 @@ describe("the projection gate's decision law — clause for clause against the i
   test("the clause reads through digestsEqual — every tagged spelling matches, a bare hash never does", () => {
     // CONTROL: the SRI spelling of the same digest is the same digest.
     expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C.replace("sha256:", "sha256-") }))
-      .toEqual({ kind: "project", reason: "canonical-equivalent" });
+      .toEqual({ kind: "noop", reason: "canonical-equivalent" });
     // A bare hex names no algorithm: no equivalence stands, and the standoff surfaces.
     expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, diskCanonicalHash: C.slice("sha256:".length) }))
       .toEqual({ kind: "conflict", reason: "both-moved" });
   });
 
-  test("the `≈` clause NEVER outranks a clause that already stood down", () => {
-    // Placement is load-bearing: clause 6 rides one step ahead of the conflict, so it
-    // refines the STANDOFF and nothing else. `records-unmoved` (clause 5, the state the
-    // INGEST leg owns) keeps its noop even when the canonical view matches — two legs
-    // disagreeing about one state is how a round trip eats an edit.
+  test("the `≈` clause and `records-unmoved` agree where both hold: neither writes", () => {
+    // The disk moved in framing alone and the records stand at the base. Both clauses answer noop;
+    // the equivalence rides first, and the caller pins the base at the agreement the two legs share.
     expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: B, diskCanonicalHash: B }))
-      .toEqual({ kind: "noop", reason: "records-unmoved" });
-    // And the 46 anchor-less corpus carriers keep projecting as fresh adoptions.
-    expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B, diskCanonicalHash: B }))
-      .toEqual({ kind: "project", reason: "never-projected" });
+      .toEqual({ kind: "noop", reason: "canonical-equivalent" });
+    // CONTROL: the echo gate still rides ahead of the equivalence.
+    expect(decideProjection({ diskHash: B, syncedHash: A, recordsHash: B, diskCanonicalHash: B }))
+      .toEqual({ kind: "noop", reason: "disk-matches-records" });
   });
 
   test("★ a BARE anchor is no merge base: the disk it names reads as moved, and the standoff surfaces ★", () => {

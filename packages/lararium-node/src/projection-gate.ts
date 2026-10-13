@@ -1,27 +1,35 @@
 /**
  * projection-gate — THE CONFLUENCE, SECOND LEG: the pure three-way decision at
  * the heart of records→disk projection, where the same three streams
- * (records · last-synced · disk) meet and reconcile — a conflict SURFACES
+ * (records · the last agreement · disk) meet and reconcile — a conflict SURFACES
  * rather than one stream drowning another (Unison's law: surface, never
  * overwrite). The mirror of `@lararium/tw5`'s `ingest-gate`, which decides the
- * disk→records leg; BOTH legs of the round trip now reconcile, neither
+ * disk→records leg; BOTH legs of the round trip reconcile, neither
  * overwrites (the operator's ruling: "conflict-surfacing in BOTH legs").
  *
  * Three states meet per carrier — the SAME triangle the ingest leg reads, seen
  * from the other shore:
  *   - the RECORDS' canonical render (what the doc would write; the merge seat),
- *   - the SYNCED hash (last-projected canonical bytes — the merge base),
+ *   - the BASE (the last agreement: what the disk held and what the records rendered),
  *   - the DISK bytes (what the operator's hands left),
  * read through a fourth input that is not a stream but a LENS on the third — the
  * canonical text those disk bytes SAY (`render(parse(disk))`, the congruence `≈`).
  * Without it the gate can only ask "same bytes?"; with it, "same thing?".
  *
+ * DISK AND RECORDS CO-PROJECT, AND NEITHER STANDS AS CANON. A carrier whose disk
+ * bytes and whose records say the same thing stands UNCHANGED, whatever framing the
+ * bytes wear, and a projection of an unchanged carrier writes nothing. So the base
+ * holds TWO hashes: the disk side and the records side. They read equal where the
+ * disk holds the canonical render, and differ where the disk stands in another
+ * framing. "The disk stands where the base left it" reads the disk side; "the
+ * records stand where the base left them" reads the records side.
+ *
  * The gate decides; it never writes. `LarDiskProjector.flush` owns every I/O
  * and every alert — it consults this gate on every flush the byte-identity skip
- * does not already answer, and routes a `conflict` out on the ward-alert rail
- * (`onConflict`), named for the mechanism that stood down. Hashes arrive as
- * opaque strings — the gate compares, never computes, so it stays isomorphic
- * and hash-agnostic (ingest-gate's law).
+ * does not already answer, pins the base on an equivalence, and routes a
+ * `conflict` out on the ward-alert rail (`onConflict`), named for the mechanism
+ * that stood down. Hashes arrive as opaque strings — the gate compares, never
+ * computes, so it stays isomorphic and hash-agnostic (ingest-gate's law).
  *
  * Decision law (in order — each clause mirrors the ingest leg's):
  *   1. disk == records          → NOOP `disk-matches-records`
@@ -33,71 +41,55 @@
  *      (no coherent carrier stands there to lose — a missing content file, or a
  *       missing `.meta` beside a filetype that declares one. Restoring a
  *       sidecar the operator's hands never wrote loses no edit.)
- *   3. no synced anchor         → PROJECT `never-projected`
+ *   3. render(parse(disk)) == records → NOOP `canonical-equivalent`
+ *      (ingest's rule 3, transposed — the `≈` clause. The disk and the records
+ *       SAY THE SAME THING and differ only in framing: the carrier stands
+ *       unchanged, so nothing writes. The caller PINS THE BASE at this agreement
+ *       — the disk's bytes on one side, the records' render on the other — which
+ *       lets the ingest scan read the file `unchanged` and lets both gates still
+ *       tell a later disk edit from a later record edit. RIDES AHEAD OF THE BASE
+ *       CLAUSES: a first seed holds no base, and a fresh adoption that rewrote
+ *       every file standing in another framing would dirty a person's working
+ *       tree with edits no person made.)
+ *   4. no base                  → PROJECT `never-projected`
  *      (ingest's rule 4b: a carrier with no merge base reads as a fresh
  *       adoption — the same answer from either shore.)
- *   4. disk == synced           → PROJECT `disk-unmoved`
- *      (the operator's hands never touched the file since the last projection;
- *       only the records moved, so the write applies cleanly. Ingest's rule 4
- *       `current render == synced → INGEST`, transposed.)
- *   5. records == synced        → NOOP `records-unmoved`
+ *   5. disk == base's disk side → PROJECT `disk-unmoved`
+ *      (the operator's hands never touched the file since the last agreement;
+ *       only the records moved, so the write applies cleanly, and it writes the
+ *       canonical render: a real change normalizes the framing as it lands.
+ *       Ingest's rule 4 `current render == base → INGEST`, transposed.)
+ *   6. records == base's records side → NOOP `records-unmoved`
  *      (the disk moved ALONE. The ingest leg's answer for this exact state is
  *       INGEST — it ADOPTS the disk edit — so the projecting leg MUST stand
  *       down rather than race it. Deciding otherwise would make the two legs
  *       disagree about one state, which is how a round trip eats an edit.)
- *   6. render(parse(disk)) == records → PROJECT `canonical-equivalent`
- *      (ingest's rule 3, transposed — the `≈` clause. The disk and the records
- *       SAY THE SAME THING and differ only in framing, so the write NORMALIZES
- *       rather than drowning an edit. This is the ORDINARY post-ingest round
- *       trip: the projector lands a carrier, the operator edits the file,
- *       `lares ingest --apply` ADOPTS the edit, and all three streams now
- *       differ — which clause 7 alone would call a standoff. It is not one:
- *       the adoption IS the other leg agreeing.)
  *   7. both moved               → CONFLICT (surface, never overwrite)
  *
- * WHY CLAUSE 6 RIDES LAST, one step ahead of the conflict — placement reasoned,
- * and one candidate MEASURED AND REJECTED:
- *   - It is PRECISELY a refinement of the standoff. Riding here, it changes
- *     exactly one verdict (`conflict` → `project`) and leaves every other clause's
- *     answer byte-identical, including the 46 anchor-less `bags/sdm` carriers the
- *     corpus vectors measure at `never-projected`. The ingest leg puts its rule 3
- *     AHEAD of its clean-ingest clause because there the verdict it preempts is a
- *     RECORDS write and suppressing it is the gofmt-loop guard; there is no gofmt
- *     loop on this shore, because what the projector writes IS the canonical form,
- *     so its own output converges at clause 1 after a single write.
- *   - The verdict is PROJECT, not noop. MEASURED (2026-09-14): the noop reading —
- *     "they say the same thing, so leave the disk alone" — leaves the disk holding
- *     non-canonical bytes and the merge base pointing at the LAST projection, and
- *     the ingest scan's status reads `digestsEqual(diskHash, syncedHash)` and
- *     nothing else (lares-cli/src/ingest-core.ts). So a noop leaves the carrier
- *     reporting `changed` forever — e2e `wikis-ingest-back` WB2 red at
- *     `expected 1 to be +0`, the SAME red as leaving the clause out entirely. Only
- *     the write advances the anchor, and advancing the anchor is what closes the
- *     round trip in one cycle.
- *
- * THE AHU-FIDELITY GUARD RIDES — but inside the CANONICALIZER, not here. Ingest
+ * THE AHU-FIDELITY GUARD RIDES — inside the CANONICALIZER, not here. Ingest
  * guards its rule 3 with a structural-slot check because a lossy render makes an
- * edit inside a dropped slot read as framing-only and never land. Here the verdict
- * is a DISK WRITE, so a lossy render would not merely fail to land an edit — it
- * would replace the operator's bytes with a text that no longer carries the slot.
- * The guard therefore belongs where the text still exists: `canonicalizeCarrierText`
- * answers null on a lossy round trip, and this gate — which holds no text to scan
- * and must stay pure — reads that null as the standoff.
+ * edit inside a dropped slot read as framing-only and never land. Here an
+ * equivalence pins a base, and a base pinned over a lossy round trip would let a
+ * later write replace the operator's bytes with a text that no longer carries the
+ * slot. The guard therefore belongs where the text still exists:
+ * `canonicalizeCarrierText` answers null on a lossy round trip, and this gate —
+ * which holds no text to scan and must stay pure — reads that null as "no
+ * equivalence stands" and falls through to the base clauses.
  *
  * The ingest leg's fourth verdict, `refuse`, has NO analogue here and rides
  * ABSENT rather than dormant: `refuse` grades a PARSE of untrusted disk bytes,
  * and the RENDER this leg writes arrives from the VM registry, whose faults
  * surface as a null `CarrierFile` before the gate is ever consulted. The parse
- * of disk bytes that clause 6 now reads through is the CALLER's, and its own
- * error grade folds into a null `diskCanonicalHash` — which surfaces as the
- * standoff, never as a refusal of the projection itself.
+ * of disk bytes that clause 3 reads through is the CALLER's, and its own
+ * error grade folds into a null `diskCanonicalHash` — which never reads as an
+ * equivalence.
  */
 
 import { digestsEqual } from "@lararium/mesh";
 
 export type ProjectionDecision =
-  | { readonly kind: "noop"; readonly reason: "disk-matches-records" | "records-unmoved" }
-  | { readonly kind: "project"; readonly reason: "absent-on-disk" | "never-projected" | "disk-unmoved" | "canonical-equivalent" }
+  | { readonly kind: "noop"; readonly reason: "disk-matches-records" | "canonical-equivalent" | "records-unmoved" }
+  | { readonly kind: "project"; readonly reason: "absent-on-disk" | "never-projected" | "disk-unmoved" }
   | { readonly kind: "conflict"; readonly reason: "both-moved" };
 
 export interface ProjectionGateInput {
@@ -107,8 +99,11 @@ export interface ProjectionGateInput {
    * the caller. Null names an absent or incomplete on-disk carrier.
    */
   readonly diskHash: string | null;
-  /** Whole-carrier hash of the last-projected bytes (the Synced tree); null = never projected. */
+  /** THE BASE'S DISK SIDE: whole-carrier hash of the bytes the disk held at the last agreement; null = never agreed. */
   readonly syncedHash: string | null;
+  /** THE BASE'S RECORDS SIDE: whole-carrier hash of the render the records carried at that agreement.
+   *  Null/absent beside a standing `syncedHash` = that one hash names both sides. */
+  readonly syncedRecordsHash?: string | null;
   /** Whole-carrier hash of the render the projector would write — the merge seat's present view. */
   readonly recordsHash: string;
   /**
@@ -120,10 +115,9 @@ export interface ProjectionGateInput {
    * NULL/ABSENT STATES A FACT, and the fact is NOT equivalence: "no trustworthy canonical
    * view of these bytes exists". Three things fold into it — no canonicalizer was injected,
    * the family has none, or the round trip graded `error`/dropped a declared structural slot.
-   * All three mean the same thing to this gate: it cannot tell the two states apart, so the
-   * honest verdict is the standoff below, never a silent equivalence. A caller that simply
-   * FORGETS this field therefore gets the loud answer, not the quiet one — the null-as-default
-   * inversion runs the other way here by construction.
+   * All three mean the same thing to this gate: it cannot tell the two states apart, so no
+   * equivalence stands and the base clauses decide. A caller that simply FORGETS this field
+   * therefore never gains a quiet equivalence.
    */
   readonly diskCanonicalHash?: string | null;
 }
@@ -132,12 +126,12 @@ export interface ProjectionGateInput {
  * Decide ONE carrier's projection. Pure: no I/O, no clock, no hashing.
  *
  * Digest comparison rides `digestsEqual` throughout, as the ingest gate's does: every
- * tagged spelling of one digest reads equal, and a `syncedHash` resting bare in the
- * tree names no algorithm and matches nothing — the carrier reads as moved, and the
- * write (or the byte-skip's re-observation) records the tagged anchor.
+ * tagged spelling of one digest reads equal, and a base hash resting bare in the tree
+ * names no algorithm and matches nothing — the carrier reads as moved, and the write
+ * (or the byte-skip's re-observation) records the tagged base.
  */
 export function decideProjection(input: ProjectionGateInput): ProjectionDecision {
-  const { diskHash, syncedHash, recordsHash } = input;
+  const { diskHash, syncedHash, recordsHash, diskCanonicalHash } = input;
 
   // 1 — the echo gate: the disk already holds exactly what we would write.
   if (diskHash !== null && digestsEqual(diskHash, recordsHash)) {
@@ -149,31 +143,29 @@ export function decideProjection(input: ProjectionGateInput): ProjectionDecision
     return { kind: "project", reason: "absent-on-disk" };
   }
 
-  // 3 — no merge base: a fresh adoption, from either shore.
+  // 3 — the two streams SAY THE SAME THING: the carrier stands unchanged and nothing writes.
+  // Reads presence FIRST — an absent canonical view never reads as an equivalence.
+  if (diskCanonicalHash !== null && diskCanonicalHash !== undefined
+      && digestsEqual(diskCanonicalHash, recordsHash)) {
+    return { kind: "noop", reason: "canonical-equivalent" };
+  }
+
+  // 4 — no merge base: a fresh adoption, from either shore.
   if (syncedHash === null) {
     return { kind: "project", reason: "never-projected" };
   }
 
-  // 4 — the disk stands where the last projection left it; only the records moved.
+  // 5 — the disk stands where the last agreement left it; only the records moved.
   if (digestsEqual(diskHash, syncedHash)) {
     return { kind: "project", reason: "disk-unmoved" };
   }
 
-  // 5 — the records stand where the last projection left them; the disk moved
+  // 6 — the records stand where the last agreement left them; the disk moved
   // alone. The ingest leg owns this state (it adopts the disk edit); this leg
-  // stands down. No write, no observation — the anchor must keep pointing at the
-  // last projection so the ingest leg can still SEE the disk edit.
-  if (digestsEqual(recordsHash, syncedHash)) {
+  // stands down. No write, no observation — the base must keep naming the
+  // last agreement so the ingest leg can still SEE the disk edit.
+  if (digestsEqual(recordsHash, input.syncedRecordsHash ?? syncedHash)) {
     return { kind: "noop", reason: "records-unmoved" };
-  }
-
-  // 6 — the two streams SAY THE SAME THING: the write NORMALIZES, it does not overwrite.
-  // Reads presence FIRST — an absent canonical view falls through to the standoff, which is
-  // the whole reason the field is absent-tolerant without being fail-open.
-  const { diskCanonicalHash } = input;
-  if (diskCanonicalHash !== null && diskCanonicalHash !== undefined
-      && digestsEqual(diskCanonicalHash, recordsHash)) {
-    return { kind: "project", reason: "canonical-equivalent" };
   }
 
   // 7 — both moved since the merge base: surface, never overwrite.

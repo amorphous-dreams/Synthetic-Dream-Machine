@@ -130,7 +130,7 @@ tools/lares-container.sh meme list --recipe default --json
 
 The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key and composes with what the key opens. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag. `vessel rite founding` composes found, stand, and seed, but it does not create or wear the operator's persona, so this walk uses the shim's documented order.
 
-▢ ''OWED — the seed's fixed point.'' A first `vessel seed` re-renders some tracked carriers in the workspace checkout: the key order of a meta block, a blank line after the meta fence, a `[reference]` table flattened to `reference-*` keys, and two submission files renamed from `.md` to `.txt`. `git status` in the checkout then lists them. Leave those files uncommitted; the tracked carriers and the projection owe one fixed point.
+''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. A later change to a record writes that one carrier in its canonical render.
 
 ''See'': `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; the daemon recipe list returns seeded wiki entries.
 
@@ -338,6 +338,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;h7HdXq1bici5DzHDiu_-51paMvRxdJ5cF9h4k4FlwmU
+<<^ code="&#x0003;">>ni:///sha-256;tw1F215R6LtMFVLhGAq1ht0GCQMe3uJaCd79k2yIZW0
 
 <<^ code="&#x0004;" -> to="?">>

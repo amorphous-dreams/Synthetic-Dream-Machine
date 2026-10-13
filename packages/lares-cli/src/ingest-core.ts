@@ -3,8 +3,8 @@
  * one-shot CLI command AND the long-lived watcher daemon run the SAME path.
  *
  * Two legs live here; the third leg lives on the island:
- *   scan  — walk source for `.mem` carriers, derive each uri by the loci law,
- *           NFC-assert at the shore, hash, diff disk-hash vs synced-hash
+ *   scan  — walk source for carriers, derive each uri by the loci law,
+ *           NFC-assert at the shore, hash, diff the disk hash against the base's disk side
  *   submit — pack NEW+CHANGED carriers (hashes riding with the text) into one
  *            INGEST verb; the island's gate supplies currentRenderHash (leg 3)
  *
@@ -19,6 +19,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
 import { SyncedTree, syncedTreeKey, bagsFileToUri, mirrorDirFileToUri, larProjectionDir } from "@lararium/node";
+import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "./cas-stage.js";
@@ -52,6 +53,9 @@ export interface ScanRow {
   readonly text:       string;
   readonly diskHash:   string;
   readonly syncedHash: string | null;
+  /** The base's RECORDS side, where it differs from the disk side (`syncedHash`): the disk stood in a
+   *  framing the records' render would normalize. Absent = one hash names both sides. */
+  readonly syncedRecordsHash?: string;
   readonly status:     ScanStatus;
   /** The file's extension (".mem" / ".tid" / ".json" / ".md" …); rides the
    *  INGEST carrier so the island routes by TW5's own filetype registry. */
@@ -203,13 +207,18 @@ export function scanFiles(
       if (existsSync(metaPath)) meta = readFileSync(metaPath, "utf8");
     } catch { /* no readable sidecar — a self-contained filetype needs none */ }
     const diskHash   = carrierHash(text, meta);
-    const syncedHash = tree.get(syncedTreeKey(toBag, uri));
+    // THE BASE HOLDS TWO SIDES. The scan reads the disk side: a file whose bytes stand where the last
+    // agreement left them reads `unchanged`, whatever framing they wear. The records side rides the
+    // wave so the island's gate can tell "the records moved" from "the disk stands in another framing".
+    const base       = tree.base(syncedTreeKey(toBag, uri));
+    const syncedHash = base?.disk ?? null;
+    const syncedRecordsHash = base !== null && !digestsEqual(base.disk, base.records) ? base.records : undefined;
     // Both sides ride tagged now (`carrierHash` emits `sha256:…`; the tree stores
     // the same tagged form) — `digestsEqual` still normalizes the two spellings a
     // tagged digest can carry (canonical `:` vs legacy SRI `-`).
     const status: ScanStatus =
       syncedHash === null ? "new" : digestsEqual(diskHash, syncedHash) ? "unchanged" : "changed";
-    rows.push({ file, uri, text, diskHash, syncedHash, status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
+    rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
   }
   return { rows, skipped };
 }
@@ -221,11 +230,15 @@ export function scanFiles(
  * never projects back, so without the gesture's record the next scan reads every
  * landed carrier `new` and a vanished file never reads as a deletion.
  *
- * Records the candidate's disk hash for each result that decided `ingest` or `noop`
- * (a noop says the records already match the disk). Never records `conflict`,
- * `refuse`, or a result naming no candidate. Before recording, the file is hashed
- * as it stands NOW: where the disk moved since the scan, the projector wrote it and
- * owns that observation, so nothing records. Returns the count recorded; the caller
+ * Records a BASE for each result that decided `ingest` or `noop` (a noop says the
+ * records already say what the disk says): the candidate's disk hash on the disk
+ * side, and on the records side the hash the island answered for the render its
+ * records hold (`canonicalHash`). A row that names no render (an echo noop, a
+ * pointer) keeps the records side a standing base already holds for these same
+ * bytes, else the disk hash names both sides. Never records `conflict`, `refuse`,
+ * or a result naming no candidate. Before recording, the file is hashed as it
+ * stands NOW: where the disk moved since the scan, the projector wrote it and owns
+ * that observation, so nothing records. Returns the count recorded; the caller
  * flushes the tree.
  */
 export function recordLandedCarriers(
@@ -241,7 +254,12 @@ export function recordLandedCarriers(
     const cand = byUri.get(String(c["uri"]));
     if (!cand || cand.diskHash === "") continue;
     if (diskHashNow(cand.file) !== cand.diskHash) continue;
-    tree.set(syncedTreeKey(toBag, cand.uri), cand.diskHash);
+    const key = syncedTreeKey(toBag, cand.uri);
+    const standing = tree.base(key);
+    const answered = typeof c["canonicalHash"] === "string" && c["canonicalHash"] ? (c["canonicalHash"] as string) : null;
+    const recordsHash = answered
+      ?? (standing !== null && digestsEqual(standing.disk, cand.diskHash) ? standing.records : cand.diskHash);
+    tree.set(key, cand.diskHash, recordsHash);
     recorded++;
   }
   return recorded;
@@ -433,13 +451,30 @@ export function standingAfterWave(standing: StandingAsks, s: IngestSettlement): 
 }
 
 /**
+ * The records side the gesture can read for itself: a framed meme with no sidecar renders through the one
+ * pure door the projector reads (`canonicalizeCarrierText`), so both pin the same hash. A carrier beside a
+ * sidecar, a native filetype, a binary body and a carrier the door cannot read whole all answer null: the
+ * island's own row names their render.
+ */
+function ownRecordsSide(c: ScanRow): string | null {
+  if (c.meta !== undefined || c.binary) return null;
+  let canonical: string | null;
+  try { canonical = canonicalizeCarrierText(c.uri, c.text); } catch { canonical = null; }
+  return canonical === null ? null : carrierHash(canonical);
+}
+
+/**
  * THE WHOLE GESTURE: submit, read every row a person or the base needs, pin what landed.
  *
  * One wave carries every candidate. Under the audit cap its outcome names every row and the gesture ends
- * there. Past the cap the outcome holds a tally and the rows that ask for a hand. Where it leaves a refusal
- * unnamed (`heldMore` above zero), or its tally proves less than "every unnamed carrier landed", the gesture
- * asks again for every carrier the summary did not name, in waves under the cap, so each answers with its
- * row whole.
+ * there. Past the cap the outcome holds a tally and the rows that ask for a hand, and two readings may stay
+ * behind:
+ *
+ *   · A REFUSAL THE SUMMARY LEFT UNNAMED (`heldMore` above zero). The gesture asks again for every carrier
+ *     the summary did not name, in waves under the cap, so each answers with its row whole.
+ *   · A LANDED CARRIER'S RENDER. A base holds two sides, and the records side comes from the island's row.
+ *     Where the rows stayed behind the gesture reads that side through the pure door for a framed meme with
+ *     no sidecar, and asks again, in waves under the cap, for each carrier the door cannot read.
  *
  * A carrier asked again reads against the records the first wave left: a landed one answers `noop` and its
  * render, a refused one answers its refusal again. Nothing lands twice. Deletions ride the first wave alone.
@@ -491,7 +526,13 @@ export async function settleIngest(
       askAgain.push(...unnamed);
     } else {
       for (const c of unnamed) provenLanded.add(c.uri);
-      recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, unnamed.map((c) => ({ uri: c.uri, decision: "ingest" })));
+      const own: Array<Record<string, unknown>> = [];
+      for (const c of unnamed) {
+        const records = ownRecordsSide(c);
+        if (records === null) askAgain.push(c);
+        else own.push({ uri: c.uri, decision: "ingest", canonicalHash: records });
+      }
+      recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, own);
     }
     for (let at = 0; at < askAgain.length && pageError === undefined; at += INGEST_PAGE) {
       const page = askAgain.slice(at, at + INGEST_PAGE);
@@ -645,8 +686,11 @@ export function applyConfirmedRenames(
     const toUri   = String(r["toUri"]);
     const diskHash = diskHashByUri.get(toUri);
     if (diskHash === undefined) continue;   // a rename we did not submit — leave it be
+    // The records re-homed whole, so the base's records side travels with them where the moved file
+    // holds the bytes the source's base named.
+    const source = tree.base(syncedTreeKey(toBag, fromUri));
     tree.delete(syncedTreeKey(toBag, fromUri));
-    tree.set(syncedTreeKey(toBag, toUri), diskHash);
+    tree.set(syncedTreeKey(toBag, toUri), diskHash, source !== null && digestsEqual(source.disk, diskHash) ? source.records : diskHash);
     moved++;
   }
   return moved;
@@ -704,7 +748,8 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
       const type = declaredType(r.meta);
       const staged = stageBodyToCas(r.text, { ext: r.ext, flagged, binary: r.binary ?? false, ...(type ? { type } : {}) });
       return {
-        uri: r.uri, file: r.file, size: staged.size, diskHash: r.diskHash, syncedHash: r.syncedHash, ext: r.ext,
+        uri: r.uri, file: r.file, size: staged.size, diskHash: r.diskHash, syncedHash: r.syncedHash,
+        ...(r.syncedRecordsHash !== undefined ? { syncedRecordsHash: r.syncedRecordsHash } : {}), ext: r.ext,
         ...(staged.staged ? { textCid: staged.cid } : { text: r.text }),
         ...(staged.skinny ? { skinny: true } : {}),
         ...(r.meta !== undefined ? { meta: r.meta } : {}),

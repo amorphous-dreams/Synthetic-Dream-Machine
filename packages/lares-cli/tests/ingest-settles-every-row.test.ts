@@ -16,8 +16,9 @@ import { describe, test, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { VERB_RESULT_KEY } from "@lararium/mesh";
+import { VERB_RESULT_KEY, carrierHash } from "@lararium/mesh";
 import { SyncedTree, syncedTreeKey, bagsFileToUri } from "@lararium/node";
+import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { INGEST_PAGE, scanFiles, candidatesOf, listCarriers, readCarrierAnswer, settleIngest, ingestVerdict, standingAfterWave, standingAfterFault, standsClean, NO_STANDING_ASKS, type StandingAsks, type ScanRow, type SubmitIngestOpts } from "../src/ingest-core.js";
 import type { SubmitResult } from "../src/verb-result.js";
 
@@ -116,7 +117,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
     expect(asked.length).toBe(120 - AUDIT_ARRAY_CAP);
     expect(s.pages.map((p) => p.requestId)).toEqual(isl.waves.slice(1).map((_, i) => `req-${i + 2}`));
     // Nothing refused got pinned; every landed carrier did.
-    for (const c of candidates) expect(tree.get(syncedTreeKey(BAG, c.uri)) === null).toBe(bad.has(c.uri));
+    for (const c of candidates) expect(tree.base(syncedTreeKey(BAG, c.uri)) === null).toBe(bad.has(c.uri));
   });
 
   test("a conflict gets named beside the refusals and keeps its own count", async () => {
@@ -126,7 +127,7 @@ describe("every refused carrier gets named, however many rows the wave holds", (
     expect(s.conflicts.map((r) => r.uri)).toEqual([candidates[5]!.uri]);
     expect(s.conflicts[0]!.why).toContain("both moved");
     expect(s.refused.map((r) => r.uri)).toEqual([candidates[6]!.uri]);
-    expect(tree.get(syncedTreeKey(BAG, candidates[5]!.uri))).toBeNull();
+    expect(tree.base(syncedTreeKey(BAG, candidates[5]!.uri))).toBeNull();
   });
 
   test("CONTROL: under the cap one wave names every row, landed ones too", async () => {
@@ -175,7 +176,51 @@ describe("every refused carrier gets named, however many rows the wave holds", (
   });
 });
 
-describe("past the cap every landed carrier still pins its base", () => {
+describe("past the cap every landed carrier still pins both sides of its base", () => {
+  test("a framed meme with no sidecar pins the render the pure door reads, with no second wave", async () => {
+    const { tree, candidates } = seed(40);
+    const isl = island(landed);
+    await settleIngest(opts(candidates), tree, isl.submit);
+    expect(isl.waves.length).toBe(1);
+    for (const c of candidates) {
+      const own = carrierHash(canonicalizeCarrierText(c.uri, c.text)!);
+      expect(own).not.toBe(c.diskHash);   // the setup took: the bytes stand in another framing
+      expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ disk: c.diskHash, records: own });
+    }
+  });
+
+  test("a carrier the pure door cannot read goes again under the cap, and pins the render the island names", async () => {
+    const { tree, candidates } = seed(80, 4);   // 20 frameless notes among 80
+    const plain = candidates.filter((c) => canonicalizeCarrierText(c.uri, c.text) === null);
+    expect(plain.length).toBe(20);
+    const isl = island((c, wave) => (wave === 1 ? landed(c) : { decision: "noop", reason: "canonical-equivalent", canonicalHash: islandRender(c) }));
+    const s = await settleIngest(opts(candidates), tree, isl.submit);
+    expect(isl.waves.length).toBe(2);
+    expect(isl.waves[1]!.candidates.map((c) => c.uri).sort()).toEqual(plain.map((c) => c.uri).sort());
+    for (const c of plain) expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ disk: c.diskHash, records: islandRender(c) });
+    expect(s.recorded).toBe(80);
+    expect(s.refused).toEqual([]);
+  });
+
+  test("a carrier beside a sidecar goes again even where the pure door could read its body: the island names its render", async () => {
+    const { tree, candidates: memes } = seed(40);
+    // One more carrier: a body the pure door reads as a framed meme, beside a sidecar that declares its own type.
+    const dir = join(root, "bags", "@x", "ha.ka.ba", "lares", "api");
+    writeFileSync(join(dir, "note-900.md"), framed(900));
+    writeFileSync(join(dir, "note-900.md.meta"), `title: ${uriOf(900)}\ntype: text/markdown\n`);
+    const { rows } = scanFiles(root, listCarriers(join(root, "bags", "@x"))!, BAG, tree, bagsFileToUri);
+    const candidates = candidatesOf(rows);
+    expect(candidates.length).toBe(memes.length + 1);
+    const beside = candidates.find((c) => c.uri === uriOf(900))!;
+    expect(beside.meta).toBeDefined();
+    expect(canonicalizeCarrierText(beside.uri, beside.text)).not.toBeNull();   // the door COULD read it
+    const isl = island((c, wave) => (wave === 1 ? landed(c) : { decision: "noop", reason: "canonical-equivalent", canonicalHash: islandRender(c) }));
+    await settleIngest(opts(candidates), tree, isl.submit);
+    expect(isl.waves.length).toBe(2);
+    expect(isl.waves[1]!.candidates.map((c) => c.uri)).toEqual([uriOf(900)]);
+    expect(tree.base(syncedTreeKey(BAG, uriOf(900)))).toEqual({ disk: beside.diskHash, records: islandRender(beside) });
+  });
+
   test("a carrier the island re-homed from a vanished source rides the deletion summary: never asked again, never pinned here", async () => {
     const { tree, candidates } = seed(40);
     const moved = candidates[11]!;
@@ -190,7 +235,7 @@ describe("past the cap every landed carrier still pins its base", () => {
     const s = await settleIngest({ ...opts(candidates), deletions: [{ uri: "lar:///ha.ka.ba/lares/api/gone", syncedHash: moved.diskHash }] }, tree, submit);
     expect(waves.length).toBe(1);
     expect(s.recorded).toBe(39);
-    expect(tree.get(syncedTreeKey(BAG, moved.uri))).toBeNull();
+    expect(tree.base(syncedTreeKey(BAG, moved.uri))).toBeNull();
     expect(s.deletions?.["decision"]).toBe("apply");
   });
 
@@ -207,7 +252,7 @@ describe("past the cap every landed carrier still pins its base", () => {
     const s = await settleIngest(opts(candidates), tree, submit);
     expect(waves.length).toBe(1 + Math.ceil(40 / INGEST_PAGE));
     expect(s.named.size).toBe(40);
-    for (const c of candidates) expect(tree.get(syncedTreeKey(BAG, c.uri))).toBe(c.diskHash);
+    for (const c of candidates) expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ disk: c.diskHash, records: islandRender(c) });
   });
 
   test("deletions and the change id ride the first wave alone", async () => {

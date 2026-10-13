@@ -17,7 +17,8 @@
  *
  * Three states meet per carrier:
  *   - the DISK bytes (what the operator's hands left),
- *   - the SYNCED hash (last-projected canonical bytes — the merge base),
+ *   - the SYNCED base (the last agreement — what the disk held and what the records rendered;
+ *     one hash where the disk held the canonical render, two where it stood in another framing),
  *   - the RECORDS' current canonical render (the merge seat's view).
  *
  * The gate decides; it never writes. Callers (the `lares ingest` gesture,
@@ -46,8 +47,8 @@
  *      (the edit changed framing only; the gofmt-loop guard), UNLESS the round-trip
  *      drops a declared structural slot (the ahu-fidelity guard; native declares
  *       ∅ structure, so the guard is a no-op for it)
- *   4. current render == synced  → INGEST (records unmoved since last
- *      projection; the disk edit applies cleanly)
+ *   4. current render == the base's records side → INGEST (records unmoved since the last
+ *      agreement; the disk edit applies cleanly)
  *   5. both moved                → CONFLICT (surface, never overwrite —
  *      Unison's law; the CRDT diff-splice path refines this later)
  */
@@ -214,8 +215,12 @@ export interface IngestGateInput {
   readonly diskText: string;
   /** Hash of diskText, computed by the caller. */
   readonly diskHash: string;
-  /** Hash of the last-projected canonical bytes (the Synced tree); null = never projected. */
+  /** THE BASE'S DISK SIDE: the hash of the bytes the disk held at the last agreement (the Synced
+   *  tree); null = never agreed. A text-writer's base rides here too, naming both sides. */
   readonly syncedHash: string | null;
+  /** THE BASE'S RECORDS SIDE: the hash of the render the records carried at that agreement, where
+   *  the disk stood in a framing the render would normalize. Absent = `syncedHash` names both sides. */
+  readonly syncedRecordsHash?: string | null;
   /** Hash of render(current records) — the merge seat's present canonical view. */
   readonly currentRenderHash: string;
   /** The caller's hash function — applied to the candidate canonical render. */
@@ -313,9 +318,12 @@ function settle<R>(
   diagnostics: readonly MemeDiagnostic[],
 ): IngestDecision<R> {
   const { syncedHash, currentRenderHash } = input;
-  // 4 — clean ingest: the records stand where the last projection left them. A bare
-  // anchor never reads as that base (`digestsEqual` refuses it), so it lands in 5.
-  if (syncedHash !== null && digestsEqual(currentRenderHash, syncedHash)) {
+  // 4 — clean ingest: the records stand where the base left them. The base's RECORDS side answers
+  // this (the disk side answers only the echo at rule 1): a disk that stood in another framing at the
+  // agreement left a base whose two sides differ, and the records moved only when THEIR side moved.
+  // A bare anchor never reads as that base (`digestsEqual` refuses it), so it lands in 5.
+  const recordsBase = input.syncedRecordsHash ?? syncedHash;
+  if (syncedHash !== null && recordsBase !== null && digestsEqual(currentRenderHash, recordsBase)) {
     return { kind: "ingest", records, canonicalText, diagnostics };
   }
   // Never-projected carriers (syncedHash null) with no current-render match

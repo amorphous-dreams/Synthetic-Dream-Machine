@@ -63,7 +63,8 @@ import type { TW5Instance } from "./types/tiddlywiki.js";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { memeticWikitextDeserializer, QUOTEBLOCKED_FIELD, TORN_FIELD } from "./deserializer.js";
 import type { TiddlerFields } from "./deserializer.js";
-import { frameAlt } from "@lararium/memetic-frame";
+import { frameAlt, maskedExec } from "@lararium/memetic-frame";
+import { isCarrierType } from "@lararium/mesh/carrier-type";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { decideIngest } from "./ingest-gate.js";
 import { placeMeme } from "./place-meme.js";
@@ -739,6 +740,24 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
 const CARRIER_SOH = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
 
 /**
+ * A CARRIER'S DECLARATION DECIDES ITS FAMILY, and so its siting. Two declarations speak, in order:
+ *
+ *   · the `.meta` sidecar's `type`: the same word TW5's folder loader lets win over the extension. A
+ *     sidecar naming a type no carrier reader admits sends the body to TW5's own registry, whatever
+ *     the body shows; a sidecar naming the carrier type sends it to the memetic shore.
+ *   · a LIVE head: a SOH sigil standing outside every fence. A head SHOWN inside a fence opens
+ *     nothing, so a document that teaches the frame keeps its own filetype and its sidecar's fields.
+ *
+ * A host with no native bridge reads every carrier as memetic. The routing never reads the path.
+ */
+function readsAsMemetic(text: string, meta: string | undefined, tw5: Tw5Deserializer | undefined): boolean {
+  if (!tw5) return true;
+  const declared = meta ? tw5.parseFields(meta)["type"] : undefined;
+  if (typeof declared === "string" && declared) return isCarrierType(declared);
+  return maskedExec(text, CARRIER_SOH) !== null;
+}
+
+/**
  * THE BLOB LAW's island-side wall: a standalone content carrier whose declared type (the `.meta`
  * sidecar first, else TW5's registry by extension) rides as a POINTER never lands INLINE — its
  * bytes belong in the cid/ tier and the gesture stages them. An island holds no CAS write, so an
@@ -868,7 +887,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // lands through TW5's OWN deserializer registry, resolved from its extension.
     // Absent a native resolver (no booted $tw), every carrier falls back to memetic.
     let fieldsList: Array<Record<string, unknown>>;
-    if (!tw5 || CARRIER_SOH.test(carrierText)) {
+    if (!tw5 || readsAsMemetic(carrierText, carrier.meta, tw5)) {
       fieldsList = memeticWikitextDeserializer(carrierText, { title: carrier.title ?? "" });
     } else {
       // The extension routes to TW5's registry — it resolves the content-type + the right
@@ -948,6 +967,11 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
  * `IngestOps`); the refuse leg fires only where a family grades error (memetic), riding
  * dormant for native (a native deserialize throws rather than grading).
  */
+/** The row field naming the render the records hold after a decision (the base's records side). */
+function recordsSide(canonicalHash: string | undefined): { canonicalHash?: string } {
+  return canonicalHash ? { canonicalHash } : {};
+}
+
 /** True when a carrier's `.meta` sidecar text declares the per-record disk opt-out (`disk-projection: no`). */
 function declaresNoProjection(meta: string | undefined): boolean {
   return meta !== undefined && /^disk-projection:[ \t]*no[ \t]*$/m.test(meta);
@@ -1080,7 +1104,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     // legal TW5 filetype rides TW5's OWN deserializer registry, keyed by its
     // extension. The registry — not a CLI-side reimplementation — owns the
     // filetype routing; the island hands the bytes to it.
-    const memetic = !tw5 || CARRIER_SOH.test(carrierText);
+    const memetic = readsAsMemetic(carrierText, carrier.meta, tw5);
 
     // Records to land + the receipt this carrier rides. The memetic path grades
     // the recover; the native path leans on the registry + the echo gate.
@@ -1101,14 +1125,15 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
       // The gesture's Synced-tree hash rides as the base the gate merges against.
       const placed = await placeMeme(
-        { uri, text: carrierText, baseHash: carrier.syncedHash, hash: renderHash },
+        { uri, text: carrierText, baseHash: carrier.syncedHash, baseRecordsHash: carrier.syncedRecordsHash ?? null, hash: renderHash },
         bagMemeSink(access, action.toBag, action.changeId, o),
       );
       // An `ingest` receipt carries the placement's warnings — the quoteblock floor's account of a fence
-      // it laid, which a bag sink has no rail to raise.
+      // it laid, which a bag sink has no rail to raise. An `ingest` and a `noop` row each carry the hash
+      // of the render the records hold after the decision: the records side of the base the gesture pins.
       results.push(
-        placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned }, placed.warnings) :
-        placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason } :
+        placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned, ...recordsSide(placed.canonicalHash) }, placed.warnings) :
+        placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason, ...recordsSide(placed.canonicalHash) } :
         placed.decision === "refuse"  ? { uri, decision: "refuse", grade: placed.grade, warnings: [...placed.warnings] } :
                                         { uri, decision: "conflict", grade: placed.grade },
       );
@@ -1304,17 +1329,19 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       const currentRec = await readFromBag(access, action.toBag, uri);
       const currentRenderHash = currentRec
         ? renderHash(nativeRender(uri, [currentRec.tiddler as unknown as Record<string, unknown>]))
-        : (carrier.syncedHash ?? "");
+        : (carrier.syncedRecordsHash ?? carrier.syncedHash ?? "");
       const decision = decideIngest<Record<string, unknown>>({
         uri,
         diskText:          carrierText,
         diskHash:          carrier.diskHash,
         syncedHash:        carrier.syncedHash,
+        syncedRecordsHash: carrier.syncedRecordsHash ?? null,
         currentRenderHash,
         hash:              renderHash,
       }, nativeOps);
       if (decision.kind === "noop") {
-        results.push({ uri, decision: "noop", reason: decision.reason });
+        // The records already say what the disk says: their standing render names the base's records side.
+        results.push({ uri, decision: "noop", reason: decision.reason, ...(currentRec ? recordsSide(currentRenderHash) : {}) });
         continue;
       }
       if (decision.kind === "refuse") {
@@ -1328,7 +1355,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         continue;
       }
       freshRecords = decision.records as Array<Record<string, unknown>>;
-      receipt = withWarnings({ uri, decision: "ingest", filetype: carrier.ext || "text/plain" }, shoreWarnings(freshRecords));
+      receipt = withWarnings({ uri, decision: "ingest", filetype: carrier.ext || "text/plain", ...recordsSide(renderHash(decision.canonicalText)) }, shoreWarnings(freshRecords));
     }
 
     const freshTitles = new Set<string>();

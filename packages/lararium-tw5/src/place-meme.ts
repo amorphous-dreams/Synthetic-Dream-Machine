@@ -127,6 +127,9 @@ export interface PlaceMemeInput {
   readonly text: string;
   /** The canonical hash the writer last read (the merge base); null/absent = fresh adoption. */
   readonly baseHash?: string | null;
+  /** The base's RECORDS side, where a disk gesture's base holds two hashes (the disk stood in a
+   *  framing the render would normalize). Null/absent = `baseHash` names both sides. */
+  readonly baseRecordsHash?: string | null;
   /** The digest the gate compares by; defaults to the tagged sha256 every other shore uses. */
   readonly hash?: (text: string) => string;
 }
@@ -272,6 +275,7 @@ async function evaluate(
     diskText: text,
     diskHash: hash(text),
     syncedHash: baseHash,
+    syncedRecordsHash: input.baseRecordsHash ?? null,
     currentRenderHash,
     hash,
   });
