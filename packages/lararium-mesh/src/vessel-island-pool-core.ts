@@ -375,6 +375,15 @@ export class VesselIslandPoolCore {
     if (typeof wikiId === "string" && wikiId.startsWith(SURFACE_KEY_PREFIX)) throw new SurfaceMountError("wiki-id-reads-as-surface-key");
     // A pool that closes admits no mount: one that entered now could land after the close returned.
     if (this._disposing) throw new SurfaceMountError("pool-closing");
+    // AN ISLAND ON ITS WAY DOWN STANDS FOR NO MOUNT. Its slot reads live until the teardown handshake ends,
+    // so a mount that trusted the slot would answer success for an island that then leaves. The mount waits
+    // for the one handshake in flight, by its own answer and no clock, and then enters afresh: it mounts a
+    // new island, folds into another mount that waited beside it, or refuses where the pool closes.
+    const ending = this._ending.get(wikiId);
+    if (ending) {
+      await ending;
+      return this.mountWiki(wikiId, spec, opts);
+    }
     // Already live — done.
     const existing = this._slots.get(wikiId);
     if (existing && existing.temperature === "wela") {
@@ -424,6 +433,13 @@ export class VesselIslandPoolCore {
     if (this._disposing) throw new SurfaceMountError("pool-closing");
     const fenced = this._fenceOf(parts);
     if (fenced) throw new SurfaceMountError(fenced);
+    // An island on its way down stands for no mount (see `mountWiki`): wait for its handshake, then enter
+    // afresh, where the fences and the closing read again.
+    const ending = this._ending.get(key);
+    if (ending) {
+      await ending;
+      return this.mountSurface(mount, opts);
+    }
     const existing = this._slots.get(key);
     if (existing && existing.temperature === "wela") return key;
     const inFlight = this._activating.get(key);

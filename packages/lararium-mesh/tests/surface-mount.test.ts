@@ -578,6 +578,39 @@ describe("the island pool keys by the whole session key", () => {
     expect(pool.has(await pool.mountSurface({ sessionId: "session-2", generation: 0, surfaceId: "surface-b", recipe }))).toBe(true);   // control
   });
 
+  test("a surface mounted while its island tears down waits for the teardown's answer and stands on a fresh island", async () => {
+    const v = vessel();
+    v.writeRecipe("catalog", { wikiSlug: SLUG, libraryBags: [SHARED_BAG] });
+    const recipe = await resolved(inputOf(v, "player"));
+    const { pool, islands } = poolOver(v, { holdAck: true });
+    const mount = { sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe };
+    const key = await pool.mountSurface(mount);
+    expect(islands).toHaveLength(1);
+    const ending = pool.unmountWiki(key);
+    let again: string | null = null;
+    const mounting = pool.mountSurface(mount).then((k) => { again = k; });
+    for (let turn = 0; turn < 16; turn++) await Promise.resolve();
+    // The handshake still waits: the mount answered nothing and spawned nothing.
+    expect(again).toBeNull();
+    expect(islands).toHaveLength(1);
+    islands[0]!.reply(mkTeardownAck());
+    await ending;
+    await mounting;
+    expect(again).toBe(key);
+    expect(islands).toHaveLength(2);
+    expect(islands[0]!.terminated).toBe(true);
+    expect(pool.has(key)).toBe(true);
+    // A session that ended while the teardown waited refuses by its fence's name.
+    const down = pool.unmountWiki(key);
+    const late = pool.mountSurface(mount).then(() => "mounted", (err: Error) => err.message);
+    const closing = pool.closeSession("session-1");
+    for (let turn = 0; turn < 16; turn++) await Promise.resolve();
+    islands[1]!.reply(mkTeardownAck());
+    await down; await closing;
+    expect(await late).toContain("session-ended");
+    expect(islands).toHaveLength(2);
+  });
+
   test("a surface that lands after its session ended, or switched, never stands", async () => {
     const v = vessel();
     v.writeRecipe("catalog", { wikiSlug: SLUG, libraryBags: [SHARED_BAG] });
