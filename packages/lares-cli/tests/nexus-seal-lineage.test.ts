@@ -53,8 +53,10 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     rmSync(root, { recursive: true, force: true });
   });
   // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  // A founding derives a key from its route and every seat seals a row, so a test here takes seconds under a
+  // loaded suite: the room below belongs to that work, and no assertion reads a clock.
   let custody: ScratchCustody;
-  beforeEach(async () => { custody = await seatScratchCustody(); });
+  beforeEach(async () => { vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 }); custody = await seatScratchCustody(); });
   afterEach(async () => { await custody.drop(); });
 
   /** Seed the three founding kahu into the vault and return their verifying keys. Each persona carries a

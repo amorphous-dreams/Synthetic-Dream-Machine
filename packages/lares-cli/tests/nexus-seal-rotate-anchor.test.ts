@@ -90,8 +90,10 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     rmSync(root, { recursive: true, force: true });
   });
   // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  // A founding derives a key from its route and every seat seals a row, so a test here takes seconds under a
+  // loaded suite: the room below belongs to that work, and no assertion reads a clock.
   let custody: ScratchCustody;
-  beforeEach(async () => { custody = await seatScratchCustody(); });
+  beforeEach(async () => { vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 }); custody = await seatScratchCustody(); });
   afterEach(async () => { await custody.drop(); });
 
   /** Three personas stand for chairs; the genesis seats them armed for the same set. */
