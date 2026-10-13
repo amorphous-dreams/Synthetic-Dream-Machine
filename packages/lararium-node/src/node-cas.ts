@@ -11,7 +11,7 @@
  * Meme: lar:///ha.ka.ba/lararium/node/node-cas
  */
 
-import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readdirSync, statSync, unlinkSync } from "node:fs";
+import { mkdirSync, readFileSync, existsSync, copyFileSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import { join, dirname } from "node:path";
 import {
   casReferences, graceForTier, tiersByGraceDescending, realmPace, pinnedCids,
@@ -44,6 +44,9 @@ export function casDirFromIslandStorageDir(islandStorageDir: string): string {
  * Idempotent (content-addressed, immutable → a sound file stays as it stands). The build sink calls
  * this to lay down `genesis/cas/<cid>` from the artifact's casEntries. Returns count.
  *
+ * EVERY WRITE LANDS WHOLE AND FLUSHED: a temp file beside the entry, a flush, one rename onto the address, and a
+ * flush of the directory. No write opens an entry's own name.
+ *
  * A FILE ALTERED AT REST GETS REPLACED, AND ONLY BY BYTES THAT PROVE THEMSELVES. Where a file already stands
  * under the address and no longer recomputes to it, bytes that do recompute to it take its place by an atomic
  * write, so a holder that fetched a block again keeps it. Bytes that fail the address replace nothing.
@@ -62,7 +65,10 @@ export function writeCasEntriesFs(
       written += 1;
       continue;
     }
-    writeFileSync(path, bytes);
+    // A FIRST WRITE LANDS WHOLE AND FLUSHED, as a replacement does: a temp file, a flush, one rename, a flush of
+    // the directory. A sealed value in the `cad/` tier then rests as durably as the lockbox beside it, and no
+    // reader meets half an entry under its address.
+    atomicWriteFileSync(path, bytes);
     written += 1;
   }
   return written;
