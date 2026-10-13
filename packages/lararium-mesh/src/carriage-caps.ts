@@ -72,7 +72,8 @@ export function meshPalaceCap(deps: { repo: Repo; residency?: BagStowage; seed?:
       }
       assembly.composite.addLayer({
         bagId: MESH_PALACE_BAG, store: new AutomergeDocStore(handle, MESH_PALACE_BAG),
-        writable: true, defaultWritable: true,
+        // Written by NAME, never the default: the vessel alone names its working layer.
+        writable: true, defaultWritable: false,
       });
       await deps.residency?.pin(MESH_PALACE_BAG, "boot:meshpalace");
       return { handle };

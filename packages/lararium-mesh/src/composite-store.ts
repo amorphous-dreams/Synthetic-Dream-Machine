@@ -36,12 +36,11 @@ export interface CompositeLayer {
   readonly store:        LarTiddlerStore;
   readonly writable:     boolean;
   /**
-   * When true (default), this layer becomes the composite's default writable
-   * store on registration — unbagged writes route here. Set false for layers
-   * that accept explicit `record.bag` routing but shouldn't override the
-   * default. The projection layer uses this: writable=true so explicit
-   * writes targeting `bag: "projection"` route correctly, but the default
-   * writable stays draft/wiki.
+   * THE WORKING ROLE. When true (default), this layer takes the composite's working role on
+   * registration: a bagless write routes here. A vessel names ONE layer for that role (its wiki's
+   * working layer). Every other writable layer passes false: a substrate bag, a capability module's
+   * board, a named slot. Such a layer accepts a write that names its bag and never takes a bagless
+   * one; with no layer in the role a bagless write refuses by name (`NoWorkingLayerRefusal`).
    */
   readonly defaultWritable?: boolean;
   /**

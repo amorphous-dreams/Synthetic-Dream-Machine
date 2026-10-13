@@ -64,8 +64,10 @@ export function whoFaceCap(deps: {
       // crossroads doc (writable by every admitted peer) never steers where the board lives.
       const board = await materializeSharedLarDoc(deps.repo, whoBoardDocUrl(deps.nexusPubkey), "board:who-face");
       const bagId = nexusHandlesUri(deps.nexusPubkey);
+      // Written by NAME, never the default: the vessel alone names its working layer, and a capability's
+      // layer composed after it must not take a bagless write.
       assembly.composite.addLayer({
-        bagId, store: new AutomergeDocStore(board, bagId), writable: true, defaultWritable: true,
+        bagId, store: new AutomergeDocStore(board, bagId), writable: true, defaultWritable: false,
       });
       await deps.residency?.pin(bagId, "boot:who-face");
       return {

@@ -102,7 +102,7 @@ The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:/
 | `bags/oracle` | no | no | fleet · federatable | genesis |
 | `bags/catalog` | ''no'' | — | fleet (private) | catalog-url file |
 
-The host mounts the wiki's working layer as its default writable (`mountWikiSlot`, through `slotLayerFlags`) and mounts NO `personal` layer; the daemon's host composite takes `wikis/daemon/working` the same way (`mountHostWorkingLayer`, `packages/lararium-tw5/src/daemon-vm-core.ts`), after the worker answers its binding. A role cap composed alongside the core that registers `defaultWritable: true` may register AFTER the wiki cap in topo order and take the host composite's office — unmeasured.
+The host mounts the wiki's working layer as its default writable (`mountWikiSlot`, through `slotLayerFlags`) and mounts NO `personal` layer; the daemon's host composite takes `wikis/daemon/working` the same way (`mountHostWorkingLayer`, `packages/lararium-tw5/src/daemon-vm-core.ts`), after the worker answers its binding. A role cap composed alongside the core (the mesh palace, the WHO board) registers `writable:true, defaultWritable:false`: it takes a write that names its bag and never the working role, whatever order the caps compose in (`packages/lararium-mesh/tests/cap-layers-take-no-working-role.test.ts`). With no layer in the role a bagless write refuses by name.
 
 <<~/ahu>>
 
@@ -203,7 +203,6 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 * ''Per-vessel system pointers.'' The `bags/lares` and `bags/lararium` pointers still ride the shared oracle doc; bootstrap/catalog relocation remains owed.
 * ''Disk legs for non-meme files:'' the siting cascades ride (#/tw5-surfaces); binaries under `bags/` read OPEN (talk-story).
-* ''The host composite's office.'' A role cap's `defaultWritable: true` layer (meshpalace) may register after the wiki cap; nothing writes bagless through the host composite.
 
 <<~/ahu>>
 
@@ -309,6 +308,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TovuSMQQW59OhzEMCa-3b_9mWhXhuFcGJW9RoKYXyaY
+<<^ code="&#x0003;">>ni:///sha-256;hHAOR63t036PNhTINTUPEoS-uOu-yFgjtRMpSSiErng
 
 <<^ code="&#x0004;" -> to="?">>
