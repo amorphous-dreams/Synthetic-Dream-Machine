@@ -358,3 +358,39 @@ function filesUnder(root: string): string[] {
   }
   return out;
 }
+
+describe("a holder closes its adapter before it releases the store", () => {
+  const files = (dir: string): string[] => (existsSync(dir) ? readdirSync(dir, { recursive: true }).map(String).filter((n) => statSync(join(dir, n)).isFile()).sort() : []);
+
+  test("RED: a save that arrives after the close lands no byte and no temp, and counts as late", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-close-"));
+    const adapter = new DurableNodeFSStorageAdapter(dir);
+    await adapter.save(["abcdef", "snapshot", "one"], Uint8Array.from([1]));
+    await adapter.close();
+    const before = files(dir);
+    await adapter.save(["abcdef", "snapshot", "two"], Uint8Array.from([2]));
+    await adapter.remove(["abcdef", "snapshot", "one"]);
+    await adapter.removeRange(["abcdef"]);
+    expect(files(dir)).toEqual(before);
+    expect(adapter.lateWrites).toBe(3);
+    // CONTROL: an adapter nobody closed lands the same save.
+    const open = new DurableNodeFSStorageAdapter(dir);
+    await open.save(["abcdef", "snapshot", "two"], Uint8Array.from([2]));
+    expect(files(dir).length).toBe(before.length + 1);
+    expect(open.lateWrites).toBe(0);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("the close resolves only once a save already issued has landed whole", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "lares-durable-close-"));
+    const adapter = new DurableNodeFSStorageAdapter(dir);
+    const big = new Uint8Array(4 * 1024 * 1024).fill(7);
+    const saving = adapter.save(["abcdef", "snapshot", "big"], big);   // issued, unawaited
+    await adapter.close();
+    // The close's own answer names the landing: the whole file stands and no temp does, before `saving` gets read.
+    expect(files(dir).filter((n) => n.includes(".tmp"))).toEqual([]);
+    expect(statSync(join(dir, "ab", "cdef", "snapshot", "big")).size).toBe(big.length);
+    await saving;
+    rmSync(dir, { recursive: true, force: true });
+  });
+});

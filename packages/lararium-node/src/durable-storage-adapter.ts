@@ -25,6 +25,12 @@
  * last save of a key settles the adapter holds nothing for it, and every read follows the disk. The holding is
  * this adapter's own; it reads and writes no field of the base class.
  *
+ * A HOLDER CLOSES ITS ADAPTER BEFORE IT RELEASES THE STORE. `close()` waits until every save and removal this
+ * adapter issued has landed, and from then on the adapter writes nothing: a save or a removal that arrives later
+ * (a Repo's own debounced save, firing after its shutdown returned) lands no byte and counts in `lateWrites`. The
+ * holder that closes has already flushed its Repo, so a late save carries bytes that rest; a store whose claim
+ * stands released belongs to its next holder, and no temp file of this one appears in it.
+ *
  * It overrides every method that reads or writes; it borrows the base's disk listing (`loadRange`) and disk
  * removal, and holds its own copy of the base directory to recompute the shard path the base derives privately.
  */
@@ -103,7 +109,24 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
     return chunks;
   }
 
+  #closed = false;
+  #late = 0;
+  /** How many saves and removals arrived after `close()` and landed nothing. */
+  get lateWrites(): number { return this.#late; }
+
+  /**
+   * Close the adapter: no write starts from here on, and the call resolves once every write already issued has
+   * landed. A write's own fault stays with its own caller.
+   */
+  async close(): Promise<void> {
+    this.#closed = true;
+    while (this.#inFlight.size > 0 || this.#ranges.size > 0) {
+      await Promise.allSettled([...this.#inFlight.values(), ...[...this.#ranges].map(([, gone]) => gone)]);
+    }
+  }
+
   override async save(keyArray: StorageKey, binary: Uint8Array): Promise<void> {
+    if (this.#closed) { this.#late += 1; return; }
     const filePath = this.#pathOf(keyArray);
     let pending = this.#pending.get(filePath);
     if (pending) { pending.binary = binary; pending.saves++; }
@@ -133,12 +156,14 @@ export class DurableNodeFSStorageAdapter extends NodeFSStorageAdapter {
    * it lands after it.
    */
   override async remove(keyArray: string[]): Promise<void> {
+    if (this.#closed) { this.#late += 1; return; }
     const filePath = this.#pathOf(keyArray);
     this.#pending.delete(filePath);
     await this.#afterWritesOf([filePath], () => super.remove(keyArray));
   }
 
   override async removeRange(keyPrefix: string[]): Promise<void> {
+    if (this.#closed) { this.#late += 1; return; }
     const paths = new Set<string>();
     for (const [path, p] of this.#pending) {
       if (keyPrefix.every((part, i) => p.key[i] === part)) { this.#pending.delete(path); paths.add(path); }

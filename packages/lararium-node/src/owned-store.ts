@@ -389,6 +389,9 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
     } finally {
       // An act that failed keeps its own fault; a shutdown that fails after a clean act surfaces as the fault.
       await repo.shutdown().catch((err: unknown) => { if (done) throw err; });
+      // THE STORE RESTS BEFORE THE CLAIM RELEASES. The adapter closes: every write it issued lands, and a save the
+      // Repo's own debounce starts after its shutdown returned lands no byte in a store this holder gave up.
+      await storage.close();
     }
   } finally {
     await claim.release();
