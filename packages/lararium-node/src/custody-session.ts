@@ -23,10 +23,11 @@
 
 import { mkdirSync } from "node:fs";
 import {
-  bindSlot, commitSlotTree, decodeSlotTree, mintVk, openVk, readVkCarrier, settleRotation, unbindSlot,
+  bindSlot, commitSlotTree, decodeSlotTree, mintVk, openVk, readVkCarrier, settleRotation, unbindSlot, writeSealedCarrier,
   type Credential, type CustodyIo, type SlotSpec, type SlotTree, type VesselKey, type VkCarrierReading,
 } from "@lararium/mesh";
 import { mintCustodyRoot, sealCustodyRoot, type CustodyRoot } from "./custody-root.js";
+import { encodeNexusKeyringRow, NEXUS_KEYRING_FILE } from "./nexus-convergence-keyring.js";
 import {
   carrierCensus, rotateVesselVk, vkSealedCarriers, vkSlotsPath,
   type CarrierEntry, type CustodyHomes,
@@ -68,7 +69,8 @@ export async function custodyTreeStands(io: CustodyIo, homes: CustodyHomes): Pro
 }
 
 /**
- * Found the custody: mint the VK, bind every slot, commit the tree, mint and seal the custody root.
+ * Found the custody: mint the VK, bind every slot, commit the tree, seal a keyring row that holds no secret, then
+ * mint and seal the custody root.
  * Refuses an empty `slots`, and (via `commitSlotTree`) a store that already holds a carrier with no tree.
  */
 export async function foundCustody(args: {
@@ -84,6 +86,13 @@ export async function foundCustody(args: {
   for (const spec of args.slots) tree = bindSlot(tree, vk, spec);
   const path = vkSlotsPath(homes.identity);
   await commitSlotTree({ io, path, expected: null, vk, tree: tree!, carriers: vkSealedCarriers(homes) });
+  // The keyring row stands from the custody's birth, holding no secret, so a keyring row that goes missing later
+  // reads as a loss and never as a vessel that holds none. It lands BEFORE the custody root: every custody whose
+  // root opens also holds its keyring row.
+  await writeSealedCarrier({
+    io, vk, treePath: path, plaintext: encodeNexusKeyringRow([]),
+    carrier: { name: `identity/${NEXUS_KEYRING_FILE}`, path: `${homes.identity}/${NEXUS_KEYRING_FILE}`, keyClass: "relation" },
+  });
   const root = mintCustodyRoot();
   await sealCustodyRoot({ io, vk, treePath: path, root, identityDir: homes.identity });
   return { vk, tree: tree!, root };

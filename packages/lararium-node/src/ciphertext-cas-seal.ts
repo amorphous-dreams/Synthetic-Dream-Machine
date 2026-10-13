@@ -27,14 +27,16 @@ import { writeCasEntriesFs } from "./node-cas.js";
 import type { SealedPlaneRegistry } from "./plane-seal.js";
 import type { NexusEpochSecret } from "./nexus-convergence-keyring.js";
 
-/** The outcome of sealing one body into the cad store — the public verify-cap (cid + docId + epoch) and the caller-kept read-cap. */
+/** The outcome of sealing one body into the cad store — the public verify-cap (cid + docId + the name it sealed under) and the caller-kept read-cap. */
 export interface InstalledSealedBody {
   /** `blake3:<hex>` — the ciphertext content-address a relay recomputes secret-free (verify-cap). */
   readonly cid: string;
   /** The Automerge docId derived from the cid — the sealed-plane key the member lane gates on. */
   readonly docId: DocumentId;
-  /** The charter epoch this body sealed under — the sidecar a reader looks the keyring secret up by. */
-  readonly epoch: number;
+  /** The Nexus whose convergence secret sealed this body. */
+  readonly nexusAid: string;
+  /** The charter epoch CID this body sealed under — with the AID, the sidecar a reader looks the keyring secret up by. */
+  readonly epochCid: string;
   /** The message-locked read-cap (32 bytes) — rides the PRIVATE keyhive lane, NEVER the relay. */
   readonly readCap: Uint8Array;
 }
@@ -60,10 +62,11 @@ export function docIdForCiphertextCid(cid: string): DocumentId {
  * @param registry    the live sealed-plane registry the vessel sharePolicy holds (`registry.seal`).
  * @param casDir      the fs `cid/` CAS dir (casDirForStorage — the SAME dir a worker resolveByCid reads).
  * @param plaintext   the body bytes leaving the CRDT.
- * @param epochSecret the CURRENT per-Nexus convergence `{epoch, secret}` (from `keyring.current()`). The caller
- *                    with NO keyring MUST NOT reach here — `keyring.current()` throws on empty (fail-closed), so
- *                    the body stays local/unsealed. The seal message-locks to `secret`; the `epoch` records the
- *                    sidecar so a reader looks the matching keyring secret up. The epoch NEVER enters the cid.
+ * @param epochSecret the named convergence secret the charter head answers to (from `keyring.current()`). The
+ *                    caller with NO secret for the head MUST NOT reach here — `keyring.current()` throws
+ *                    (fail-closed), so the body stays local/unsealed. The seal message-locks to `secret`; the
+ *                    scoped name records the sidecar so a reader looks the matching keyring secret up. The name
+ *                    NEVER enters the cid.
  */
 export function installSealedBody(
   registry:    SealedPlaneRegistry,
@@ -74,6 +77,6 @@ export function installSealedBody(
   const sealed: SealedBody = sealBodyOnCas(plaintext, epochSecret.secret);   // throws fail-closed on a bad/absent secret
   writeCasEntriesFs([{ cid: sealed.cid, bytes: sealed.ciphertext }], casDir);
   const docId = docIdForCiphertextCid(sealed.cid);
-  registry.register(docId, epochSecret.epoch);                       // THE SIDE-EFFECT (set + epoch sidecar together)
-  return { cid: sealed.cid, docId, epoch: epochSecret.epoch, readCap: sealed.readCap };
+  registry.register(docId, epochSecret);                             // THE SIDE-EFFECT (set + name sidecar together)
+  return { cid: sealed.cid, docId, nexusAid: epochSecret.nexusAid, epochCid: epochSecret.epochCid, readCap: sealed.readCap };
 }

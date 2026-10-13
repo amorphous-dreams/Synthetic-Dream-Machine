@@ -18,6 +18,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { ed25519SignerFromSeed, type PersonaRef } from "@lararium/mesh";
 import { hex } from "@lararium/mesh";
+import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import {
   offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
   withdrawOfferFlow, withdrawGrantFlow,
@@ -37,6 +38,11 @@ describe("persona-admit-flow — the airgapped 3-hop between two vessels", () =>
     bDir = mkdtempSync(join(tmpdir(), "lares-vessel-b-"));
   });
   afterEach(() => { rmSync(aDir, { recursive: true, force: true }); rmSync(bDir, { recursive: true, force: true }); });
+  // A grant reads the granter's keyring row and an open joins a delivered one, so the flow stands on a seated custody.
+  // This custody holds no secret: every grant here rides carry-only (`keyring-delivery.test.ts` covers the delivery).
+  let custody: SeatedScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody("admit-flow"); });
+  afterEach(async () => { await custody.drop(); });
 
   async function fixtures() {
     const personaKey = await pubOf(A_PERSONA_SEED);

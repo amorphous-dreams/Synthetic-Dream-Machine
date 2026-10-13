@@ -23,7 +23,7 @@ import { pluginCidsFromIslandBlobs, type AntigenRing, type LarDoc, type Membersh
 import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
 import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
-import { standNexusKeyring } from "../src/nexus-convergence-secret-store.js";
+import { mintNexusSecret, makeNexusConvergenceKeyring, type NexusConvergenceKeyring } from "../src/nexus-convergence-keyring.js";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
 
 // L9 — this plane pins the repo's OWN tracked genesis dir (`<repo>/genesis`), derived from THIS
@@ -93,20 +93,28 @@ export interface SealedBodyFixture {
   readonly cleanup:   () => void;
 }
 
+/** A synthetic Nexus AID and head epoch CID for a test that seals with no charter standing. */
+export const TEST_NEXUS_AID = "epoch0-" + "ab".repeat(32);
+export const TEST_HEAD_EPOCH = TEST_NEXUS_AID;
+
+/** A one-secret keyring held in memory: the synthetic Nexus, its head epoch, a fresh secret. No row rests anywhere. */
+export function freshTestKeyring(): NexusConvergenceKeyring {
+  return makeNexusConvergenceKeyring({
+    nexusAid: TEST_NEXUS_AID, headEpochCid: TEST_HEAD_EPOCH,
+    entries: [mintNexusSecret({ nexusAid: TEST_NEXUS_AID, epochCid: TEST_HEAD_EPOCH })],
+  });
+}
+
 /**
- * Seal one `plaintext` into a temp cad dir under a fresh per-Nexus keyring (sealEpoch 0) —
+ * Seal one `plaintext` into a temp cad dir under a fresh in-memory keyring —
  * the registry + cadDir + InstalledSealedBody a wire test serves, plus the temp-dir cleanup.
  */
 export function sealABody(plaintext: Uint8Array): SealedBodyFixture {
   const storageDir = mkdtempSync(join(tmpdir(), "lares-caswire-store-"));
-  const idDir = mkdtempSync(join(tmpdir(), "lares-caswire-id-"));
   const registry = makeSealedPlaneRegistry();
-  const keyring = standNexusKeyring({ sealEpoch: 0, dir: idDir });
+  const keyring = freshTestKeyring();
   const cadDir = cadSealDir(storageDir);
   const installed = sealCarrierForFederation({ registry, cadDir, plaintext, keyring });
-  const cleanup = () => {
-    rmSync(storageDir, { recursive: true, force: true });
-    rmSync(idDir, { recursive: true, force: true });
-  };
+  const cleanup = () => { rmSync(storageDir, { recursive: true, force: true }); };
   return { registry, cadDir, installed, cleanup };
 }

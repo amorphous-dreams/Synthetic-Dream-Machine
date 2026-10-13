@@ -15,7 +15,9 @@
  * A wrong passphrase opens no VK, so it reaches no write at all; a VK the tree does not commit to replaces nothing.
  *
  * ONE HOLDER FROM CHECK TO RENAME. Every writer and the rotation run inside `io.exclusive`, so no write checks
- * against a tree a rotation then replaces before its rename lands.
+ * against a tree a rotation then replaces before its rename lands. A carrier whose next bytes depend on its
+ * standing ones (a set that gains or loses one entry) goes through `updateSealedCarrier`: the read, the decision
+ * and the write share one holder, so no other writer in any process lands between them.
  *
  * THE SHAPE OF A WRITE: seal → write a SIDECAR → read it back → compare the bytes and open them → rename over the
  * carrier. It never seals in place, and a sidecar that does not read back as written never lands.
@@ -204,6 +206,27 @@ export async function openSealedCarrier(args: { readonly io: CustodyIo; readonly
  */
 export async function writeSealedCarrier(args: WriteSealedCarrierArgs): Promise<void> {
   return args.io.exclusive(() => writeHeld(args));
+}
+
+/** What an update decides: the carrier's next plaintext, or `null` to leave it as it stands; and the caller's answer. */
+export interface SealedCarrierUpdate<T> { readonly plaintext: Uint8Array | null; readonly value: T }
+
+/**
+ * Read one sealed carrier, decide, and write it, as ONE custody holder. `decide` receives the carrier's standing
+ * reading under `vk` and answers its next plaintext (`null` writes nothing). A `decide` that throws writes nothing.
+ * The write holds both proofs of `writeSealedCarrier`.
+ */
+export async function updateSealedCarrier<T>(args: Omit<WriteSealedCarrierArgs, "plaintext"> & {
+  readonly decide: (standing: VkOpening) => SealedCarrierUpdate<T> | Promise<SealedCarrierUpdate<T>>;
+}): Promise<T> {
+  return args.io.exclusive(async () => {
+    const standing = openUnderVk(args.vk, args.carrier.name, await args.io.read(args.carrier.path));
+    const next = await args.decide(standing);
+    if (next.plaintext !== null) {
+      await writeHeld({ io: args.io, vk: args.vk, treePath: args.treePath, carrier: args.carrier, plaintext: next.plaintext, ...(args.rng ? { rng: args.rng } : {}) });
+    }
+    return next.value;
+  });
 }
 
 export interface WriteSealedCarrierArgs {

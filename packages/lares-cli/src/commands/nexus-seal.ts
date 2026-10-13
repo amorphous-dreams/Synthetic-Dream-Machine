@@ -33,7 +33,7 @@ import {
   listPersonaRoots, loadPersonaGroupRootVerifyingKey, makeNodePersonaDeclarationStore,
   loadPersonaGroupRootSeed, importCarriedCharter, carriedReadings, CarriedCharterError,
   sealReserveMineShare, writeCharterReserveState, readCharterReserveState, atomicWriteFileSync,
-  NexusContractError, type NexusRollAnchorResult,
+  NexusContractError, mintNexusEpochSecret, type NexusRollAnchorResult,
 } from "@lararium/node";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
@@ -41,7 +41,7 @@ import {
   defaultCryptoProvider, federationPostureFromDoc, ed25519SignerFromSeed,
   GUARDIAN_SLOT_CUSTODIAN, assembleQuorum, reconstructFromQuorum,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats,
-  type QuorumSignature, type CharterSealState, seatFingerprint,
+  type QuorumSignature, type CharterSealState, seatFingerprint, realmIdOfCharter,
 } from "@lararium/mesh";
 import {
   generateReserveSeed, deriveReserveKeySet, reserveNextKeyCommit, splitReserveSeed,
@@ -324,6 +324,21 @@ function resolveSeatThreshold(args: ParsedArgs, doc: NexusDoc, rosterSize: numbe
   return majorityThreshold(rosterSize);
 }
 
+/**
+ * THE SEAT MINTS THE KEYRING SECRET. A seat act that roots or rolls a charter epoch mints the convergence secret
+ * that epoch answers to, named by the Nexus AID and the epoch CID, and seals it in the vessel's keyring row. No
+ * boot and no reader mints one. It runs BEFORE the charter moves: a keyring row that refuses (the vessel key
+ * unopened, a row that stands and does not open) refuses the whole act, and nothing gets written. Under a name the
+ * vessel already holds a secret for, it changes nothing, so a seat run again keeps the secret its members hold.
+ * An act that refuses or dies AFTER the mint leaves a secret no epoch names yet, never an epoch no secret answers:
+ * the secret seals nothing until a charter head names it, and the same act run again adopts it.
+ */
+async function mintSeatKeyringSecret(charter: NexusDoc, epochCid: string): Promise<boolean> {
+  const nexusAid = realmIdOfCharter(charter);
+  if (!nexusAid) throw new UsageError("this charter roots an epoch and names no Nexus, so no convergence secret can answer to it — nothing written.");
+  return (await mintNexusEpochSecret({ nexusAid, epochCid })).minted;
+}
+
 async function sealSeat(args: ParsedArgs): Promise<number> {
   const sealHome = larSealHome();
   // A TORN CHARTER MUST NOT READ AS AN ABSENT ONE. `readNexusDoc` answers null for both, which suits every
@@ -380,6 +395,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   const next: NexusDoc = sealLineage
     ? { kind: doc.kind, threshold, sealEpochCid, sealLineage, kahu }
     : { kind: doc.kind, threshold, sealEpochCid, kahu };
+  const keyringMinted = sealLineage && sealEpochCid ? await mintSeatKeyringSecret(next, sealEpochCid) : null;
   // A seat moves TWO joints — the roster it seats and the genesis epoch it establishes — so it writes both
   // narrowly rather than re-emitting the practice dials it never touched.
   writeNexusKahu(sealHome, { threshold: next.threshold, kahu: next.kahu }, next);
@@ -395,6 +411,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
     data: {
       path, threshold: next.threshold, sealEpochCid, quorumSeated: quorum,
       rotationArmed: armed, reserveArmed, nextKeyCommit: nextKeyCommit || null,
+      keyring: keyringMinted === null ? null : { minted: keyringMinted },
       kahu: kahu.map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey), verifyingKey: k.verifyingKey,
         fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null })),
     },
@@ -416,6 +433,9 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
       const seatStanding = rosterStanding({ seated: seatedKeys.length, threshold: next.threshold });
       if (seatStanding.fragile) console.log(`  ⚠ survives:  ${seatStanding.reading}`);
       console.log(`  epoch0:     ${sealEpochCid ?? "(unestablished — seat a quorum first)"}`);
+      if (keyringMinted !== null) {
+        console.log(`  keyring:    ${keyringMinted ? "a convergence secret minted for this epoch, sealed under the vessel key" : "this epoch's convergence secret stands already; none minted"}`);
+      }
       if (quorum) {
         console.log(`  quorum STANDS — the antigen now reads a live roster rooted on the genesis epoch.`);
         console.log(`  rotation:   ${reserveArmed ? reserveArmedReading(1) : armed ? "ARMED (next key-set pre-committed)" : "UNARMED — supply --next-key-commit <digest> to arm pre-rotation"}`);
@@ -653,6 +673,9 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   const sealEpochCid = result.epoch.epochCid;
   const next: NexusDoc = { kind: doc.kind, threshold, sealEpochCid, sealLineage, kahu };
 
+  // The new epoch's convergence secret mints before anything lands: a keyring row that refuses stops the roll here.
+  const keyringMinted = await mintSeatKeyringSecret(doc, sealEpochCid);
+
   // THE ROLL ANCHOR LANDS FIRST. The new quorum signs the closing head, its key-set and the board's causal
   // heads, so an admit already in those heads carries across the roll; one the closing keys mint afterwards
   // does not. It lands BEFORE the charter moves: a roll whose anchor cannot land writes nothing, and an anchor
@@ -692,6 +715,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       path, sealEpochCid, prevEpochCid: result.epoch.prevEpochCid,
       chainDepth: sealLineage.length, rotationArmed: armed, nextKeyCommit: nextKeyCommit || null,
       quorumSeated: foundingQuorumSeated(next),
+      keyring: { minted: keyringMinted },
       rollAnchor: anchored ? { cid: anchored.anchorCid, parents: anchored.parents.length } : null,
     },
     human: () => {
@@ -699,6 +723,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       console.log(`  reveal VERIFIED against the prior epoch's pre-commitment; the revealed hands SIGNED the roll.`);
       console.log(`  head epoch: ${sealEpochCid}`);
       console.log(`  prev link:  ${result.epoch.prevEpochCid}`);
+      console.log(`  keyring:    ${keyringMinted ? "a convergence secret minted for the new epoch, sealed under the vessel key" : "the new epoch's convergence secret stands already; none minted"}`);
       console.log(anchored
         ? `  anchor:     ${anchored.anchorCid.slice(0, 16)}… over ${anchored.parents.length} board head(s) — admits in its past carry to the new head`
         : `  anchor:     none — the closing head rooted no roster, so no admit stood to carry`);

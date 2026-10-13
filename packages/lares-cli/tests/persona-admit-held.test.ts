@@ -22,6 +22,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdVessel } from "../src/commands/vessel.js";
 import { grantAdmitFlow, openAdmitFlow } from "@lararium/node";
+import { seatScratchCustody } from "./support/scratch-custody.js";
 import { ed25519SignerFromSeed } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
 
@@ -169,6 +170,10 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const personaSeed = new Uint8Array(32).fill(3);
     const personaRef = { prefix: "EpersonaAID_held_test", verifyingKey: await ed.getPublicKeyAsync(personaSeed).then((b) => Buffer.from(b).toString("hex")) };
     const granterDir = mkdtempSync(join(tmpdir(), "lares-admit-held-granter-"));
+    // The granter reads its own keyring row to seal a delivery, so it stands on its own founded custody.
+    const savedRoot = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = granterDir;
+    const granterCustody = await seatScratchCustody();
     try {
       const grant = await grantAdmitFlow({
         offerCarriage: carriage, personaRef, personaSigner: ed25519SignerFromSeed(personaSeed), dir: granterDir,
@@ -183,6 +188,8 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
       expect("error" in opened).toBe(true);
       if ("error" in opened) expect(opened.error).toContain("no pending enrollment");
     } finally {
+      await granterCustody.drop();
+      if (savedRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = savedRoot;
       rmSync(granterDir, { recursive: true, force: true });
     }
   }, 15_000);

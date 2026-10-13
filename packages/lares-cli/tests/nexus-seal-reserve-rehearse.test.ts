@@ -31,6 +31,7 @@ import {
   assembleQuorum, confirmationPhrase, declarePersonaHandle, reconstructFromQuorum, renameOwnPersona,
   sealKeySetHash, standForKahuSeat,
 } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const KAHU = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
 const args = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
@@ -82,6 +83,10 @@ describe("seal reserve rehearse", () => {
     await new Promise((resolve) => setTimeout(resolve, 200));
     rmSync(root, { recursive: true, force: true });
   });
+  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  let custody: ScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
 
   const stage = (): void => writeFileSync(join(root, ".lar-test-scratch"), "staged by a test\n");
 

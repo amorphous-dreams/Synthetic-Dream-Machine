@@ -115,6 +115,7 @@ describe("CustodyHolder", () => {
     const h = await found(); await h.unlock([pass(RIGHT)]); await h.lock();
     expect(await h.readRow("identity", ".circles-follow.json")).toEqual({ reading: "locked" });
     await expect(h.writeRow("identity", ".circles-follow.json", new Uint8Array())).rejects.toBeInstanceOf(CustodyLocked);
+    await expect(h.updateRow("identity", ".circles-follow.json", () => ({ plaintext: new Uint8Array(), value: 1 }))).rejects.toBeInstanceOf(CustodyLocked);
     expect((await h.unlock([pass(RIGHT)])).reading).toBe("opens");
   });
 

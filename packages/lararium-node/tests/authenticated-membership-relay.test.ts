@@ -26,7 +26,6 @@ import {
   buildAuthResponse, ed25519SignerFromSeed, mintLeafNonce, knockedUrl, isLarChallengeMsg, isLarAuthOkMsg, mkLarSessionMsg,
   type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
-import { standNexusKeyring } from "../src/nexus-convergence-secret-store.js";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { serveCasWire, type CasWireServerDeps } from "../src/cas-wire.js";
@@ -34,7 +33,7 @@ import {
   startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel,
   type AuthenticatedMembershipRelay,
 } from "../src/authenticated-membership-relay.js";
-import { membershipOf, antigenOf } from "./cas-test-setup.js";
+import { membershipOf, antigenOf, freshTestKeyring } from "./cas-test-setup.js";
 import * as net from "node:net";
 import { request as httpRequest, Agent } from "node:http";
 import {
@@ -68,9 +67,8 @@ async function driveFetch(args: {
 describe("authenticated-membership-relay — cas-wire over a live authenticated WS hop", () => {
   let relay: AuthenticatedMembershipRelay;
   let storageDir: string;
-  let idDir: string;
-  beforeEach(() => { storageDir = mkdtempSync(join(tmpdir(), "lares-ws-store-")); idDir = mkdtempSync(join(tmpdir(), "lares-ws-id-")); });
-  afterEach(async () => { await relay?.close(); rmSync(storageDir, { recursive: true, force: true }); rmSync(idDir, { recursive: true, force: true }); });
+  beforeEach(() => { storageDir = mkdtempSync(join(tmpdir(), "lares-ws-store-")); });
+  afterEach(async () => { await relay?.close(); rmSync(storageDir, { recursive: true, force: true }); });
 
   test("an admitted MEMBER carries + reads over the wire; a NON-member draws Mu; a forged `from` is defeated", async () => {
     // Seeds → proven keys (the relay stamps `from` with these; the cas-wire gate reads them).
@@ -81,7 +79,7 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
 
     // Seal a body into the cad store.
     const registry = makeSealedPlaneRegistry();
-    const keyring = standNexusKeyring({ sealEpoch: 0, dir: idDir });
+    const keyring = freshTestKeyring();
     const cadDir = cadSealDir(storageDir);
     const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, keyring });
 

@@ -17,7 +17,8 @@ import { makeBagTracker, noteInstalledBody } from "../src/bag-tracker.js";
 import type { NexusEpochSecret } from "../src/nexus-convergence-keyring.js";
 
 const casDir = mkdtempSync(join(tmpdir(), "lar-cad-tracker-"));
-const epochSecret: NexusEpochSecret = { epoch: 0, secret: new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN)) };
+const NAME = { nexusAid: "epoch0-" + "cd".repeat(32), epochCid: "epoch0-" + "cd".repeat(32) };
+const epochSecret: NexusEpochSecret = { ...NAME, secret: new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN)) };
 
 describe("the bag-tracker indexes announced holders — DHT-free discovery", () => {
   test("an empty tracker is an honest miss (fail-closed until a body announces)", () => {

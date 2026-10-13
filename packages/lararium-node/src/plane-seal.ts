@@ -20,6 +20,7 @@
 
 import type { DocumentId } from "@automerge/automerge-repo";
 import type { PlaneSeal } from "@lararium/mesh";
+import type { NexusEpochName } from "./nexus-convergence-keyring.js";
 
 /**
  * The fail-closed floor: NO plane is provably sealed, so nothing blind-transits (the whole private surface
@@ -47,14 +48,14 @@ export interface SealedPlaneRegistry {
   /** The oracle the sharePolicy holds — reads the CURRENT sealed set (live; reflects post-open seals). */
   readonly seal: PlaneSeal;
   /**
-   * Record a docId as sealed AT a named charter epoch — the SOLE caller is the encrypt-on-CAS installer, always
-   * AFTER a successful seal. The `sealEpoch` is the SIDECAR: it names WHICH per-Nexus convergence epoch sealed the
-   * body, so a reader looks up the matching keyring secret. The epoch NEVER enters the cid (the cid stays pure
-   * `BLAKE3(ciphertext)`, an immutable content-address); it rides beside the sealed set as a per-doc annotation.
+   * Record a docId as sealed UNDER a named secret — the SOLE caller is the encrypt-on-CAS installer, always
+   * AFTER a successful seal. The name is the SIDECAR: the Nexus AID and the charter epoch CID whose convergence
+   * secret sealed the body, so a reader looks up the matching keyring secret. The name NEVER enters the cid (the
+   * cid stays pure `BLAKE3(ciphertext)`, an immutable content-address); it rides beside the sealed set.
    */
-  register(documentId: DocumentId, sealEpoch: number): void;
-  /** The charter epoch a sealed body sealed under, or `undefined` for an unsealed / unknown doc (fail-closed read). */
-  epochFor(documentId: DocumentId): number | undefined;
+  register(documentId: DocumentId, sealedUnder: NexusEpochName): void;
+  /** The scoped name a sealed body sealed under, or `undefined` for an unsealed / unknown doc (fail-closed read). */
+  epochFor(documentId: DocumentId): NexusEpochName | undefined;
   /** How many sealed docIds stand (audit / test). */
   readonly size: number;
 }
@@ -62,18 +63,18 @@ export interface SealedPlaneRegistry {
 /**
  * Stand a live sealed-plane registry. Empty at birth ⇒ fail-closed (DENY-ALL) until the encrypt path seals a body.
  * The seal-set and the epoch sidecar move together: `register` adds both, so a docId is NEVER in the sealed set
- * without a known seal epoch (a reader that finds a sealed doc always finds its epoch).
+ * without the name it sealed under (a reader that finds a sealed doc always finds its epoch).
  */
 export function makeSealedPlaneRegistry(): SealedPlaneRegistry {
   const sealed = new Set<DocumentId>();
-  const epochOf = new Map<DocumentId, number>();
+  const epochOf = new Map<DocumentId, NexusEpochName>();
   return {
     seal: { isSealedPlane(documentId: DocumentId): boolean { return sealed.has(documentId); } },
-    register(documentId: DocumentId, sealEpoch: number): void {
+    register(documentId: DocumentId, sealedUnder: NexusEpochName): void {
       sealed.add(documentId);
-      epochOf.set(documentId, sealEpoch);
+      epochOf.set(documentId, { nexusAid: sealedUnder.nexusAid, epochCid: sealedUnder.epochCid });
     },
-    epochFor(documentId: DocumentId): number | undefined { return epochOf.get(documentId); },
+    epochFor(documentId: DocumentId): NexusEpochName | undefined { return epochOf.get(documentId); },
     get size(): number { return sealed.size; },
   };
 }

@@ -23,6 +23,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, nexusCharterDocPath, readNexusDoc } from "@lararium/node";
 import { declarePersonaHandle, renameOwnPersona, sealKeySetHash, standForKahuSeat } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const KAHU = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
 const args = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
@@ -54,6 +55,10 @@ describe("seal reserve armed heads", () => {
     await new Promise((resolve) => setTimeout(resolve, 200));
     rmSync(root, { recursive: true, force: true });
   });
+  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  let custody: ScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
 
   async function standThree(): Promise<string[]> {
     const petnames = await makeNodePersonaPetnameStore();

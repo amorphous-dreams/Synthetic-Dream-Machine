@@ -31,14 +31,13 @@ import { knockedUrl,
   DeterministicFederationGate, openBodyOnCas, verifyCiphertextCid, utf8Bytes, hex,
   type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
-import { standNexusKeyring } from "../src/nexus-convergence-secret-store.js";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { CAS_WANT_BLOCK, CAS_BLOCK, CAS_MU, muWireBytes, type CasWireServerDeps } from "../src/cas-wire.js";
 import { AuthenticatedWSMembershipChannel } from "../src/authenticated-membership-relay.js";
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "../src/carriage-relay.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "../src/carriage-serve-loop.js";
-import { membershipOf, antigenOf, bytesFromPayload } from "./cas-test-setup.js";
+import { membershipOf, antigenOf, bytesFromPayload, freshTestKeyring } from "./cas-test-setup.js";
 
 const BODY = utf8Bytes("a family body one hearth seals and another carries over the Herm's crossroads");
 const pubOf = (seed: Uint8Array): Promise<string> => ed.getPublicKeyAsync(seed).then(hex);
@@ -83,9 +82,8 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
 
   function sealBody(): { cadDir: string; installed: ReturnType<typeof sealCarrierForFederation>; registry: ReturnType<typeof makeSealedPlaneRegistry> } {
     const storageDir = mkDir("store");
-    const idDir = mkDir("id");
     const registry = makeSealedPlaneRegistry();
-    const keyring = standNexusKeyring({ sealEpoch: 0, dir: idDir });
+    const keyring = freshTestKeyring();
     const cadDir = cadSealDir(storageDir);
     const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, keyring });
     return { cadDir, installed, registry };

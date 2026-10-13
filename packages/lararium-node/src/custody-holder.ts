@@ -29,7 +29,7 @@
  * Node-main only: a worker never imports this module.
  */
 import {
-  openSealedCarrier, writeSealedCarrier,
+  openSealedCarrier, writeSealedCarrier, updateSealedCarrier,
   type Credential, type CustodyIo, type VesselKey,
 } from "@lararium/mesh";
 import { custodyDerive, custodyRootFromBytes, custodyVeil, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
@@ -50,6 +50,9 @@ export type RowReading =
   | { readonly reading: "absent" }
   | { readonly reading: "locked" }
   | { readonly reading: "unavailable"; readonly why: string };
+
+/** What `updateRow`'s decision answers: the row's next plaintext (`null` writes nothing) and the caller's answer. */
+export interface RowUpdate<T> { readonly plaintext: Uint8Array | null; readonly value: T }
 
 export class CustodyLocked extends Error {
   override readonly name = "CustodyLocked";
@@ -83,6 +86,11 @@ export interface CustodyHolder {
   openedSlot(): string | null;
   readRow(home: CustodyHome, file: string): Promise<RowReading>;
   writeRow(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void>;
+  /**
+   * Read a hot row, decide, and write it as ONE custody holder: no other writer in any process lands between the
+   * read and the write. `decide` answers the row's next plaintext, or `null` to leave it as it stands.
+   */
+  updateRow<T>(home: CustodyHome, file: string, decide: (standing: RowReading) => RowUpdate<T>): Promise<T>;
   openColdRow<T>(home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T): Promise<T>;
   derive(domain: string): Uint8Array;
   /** The dyad veil for `groupTag`, derived from the custody root. */
@@ -199,6 +207,18 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
       const { row, path, name } = address(home, file, true);
       const key = vk;
       return operation(() => writeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass }, plaintext }));
+    },
+    async updateRow(home, file, decide) {
+      if (vk === null || !accepting) throw new CustodyLocked();
+      const { row, path, name } = address(home, file, false);
+      const key = vk;
+      return operation(() => updateSealedCarrier({
+        io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass },
+        decide: (standing) => decide(
+          standing.reading === "opens" ? { reading: "opens", plaintext: standing.plaintext }
+            : standing.reading === "absent" ? { reading: "absent" }
+              : { reading: "unavailable", why: standing.reading }),
+      }));
     },
     async openColdRow(home, file, act) {
       if (vk === null || !accepting) throw new CustodyLocked();

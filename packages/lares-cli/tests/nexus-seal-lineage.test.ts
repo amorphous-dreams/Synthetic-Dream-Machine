@@ -27,6 +27,7 @@ import {
 import {
   renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage,
 } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const KAHU = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
 const saved: Record<string, string | undefined> = {};
@@ -51,6 +52,10 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
   });
+  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  let custody: ScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
 
   /** Seed the three founding kahu into the vault and return their verifying keys. Each persona carries a
    *  private label AND declares the Handle its chair names, then stands for the seat — the seal joins on the

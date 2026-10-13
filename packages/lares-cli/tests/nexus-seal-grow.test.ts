@@ -22,6 +22,7 @@ import {
   renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead,
   type ReserveTransition,
 } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const KAHU = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
 const saved: Record<string, string | undefined> = {};
@@ -46,6 +47,10 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
   });
+  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  let custody: ScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
 
   /** Stand personas 0..n-1 as seated kahu; return their verifying keys. */
   async function stand(names: readonly string[], startAt = 0): Promise<string[]> {

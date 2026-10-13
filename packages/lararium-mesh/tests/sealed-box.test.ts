@@ -164,7 +164,7 @@ describe("THE LIVE DOMAINS — each protocol's constant pinned by LITERAL, from 
 
   test("the keyring envelope derives under KEYRING_ENVELOPE_SEAL_INFO and NOT under the grant-seal domain", () => {
     const { recipientSecret, recipientPubkey } = mintKeyringRecipient();
-    const env = sealKeyringEnvelope([{ epoch: 0, secretHex: "ab".repeat(32) }], recipientPubkey);
+    const env = sealKeyringEnvelope([{ nexusAid: "epoch0-" + "a1".repeat(32), epochCid: "epoch0-" + "a1".repeat(32), secretHex: "ab".repeat(32) }], recipientPubkey);
     const box = {
       senderEphemeralPub: hexToBytes(env.senderEphemeralPubkey),
       aeadNonce:          hexToBytes(env.aeadNonce),

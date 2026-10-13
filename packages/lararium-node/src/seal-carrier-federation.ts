@@ -39,7 +39,7 @@ export function cadSealDir(storageDir: string): string {
 /**
  * Seal one carrier body's PLAINTEXT into the cad federation plane. Wraps the encrypt-on-CAS installer (the SOLE
  * door into the sealed-plane registry) + the bag-tracker announce, so a cid reaches BOTH the seal set AND the
- * discovery index ONLY through the encrypt path. Returns the installed sealed body (cid + docId + epoch + read-cap);
+ * discovery index ONLY through the encrypt path. Returns the installed sealed body (cid + docId + scoped name + read-cap);
  * the read-cap stays with the caller (the private keyring), NEVER the relay. Additive: writes only the ciphertext
  * `cad/` tier + the registry + the tracker — the cleartext corpus CAS the wake reads is untouched.
  */
@@ -52,7 +52,7 @@ export function sealCarrierForFederation(args: {
   readonly tracker?:  BagTracker;
   readonly self?:     CasHolder;
 }): InstalledSealedBody {
-  // keyring.current() throws fail-closed on an empty keyring — the caller keeps the body cleartext-local only.
+  // keyring.current() throws fail-closed when the head names no held secret — the caller keeps the body cleartext-local only.
   const installed = installSealedBody(args.registry, args.cadDir, args.plaintext, args.keyring.current());
   if (args.tracker && args.self) noteInstalledBody(args.tracker, installed, args.self);
   return installed;

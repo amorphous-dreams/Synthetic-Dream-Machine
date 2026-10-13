@@ -48,11 +48,12 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc,
-  nexusCharterDocPath, NexusContractError,
+  nexusCharterDocPath, NexusContractError, heldNexusKeyringEntries,
 } from "@lararium/node";
 import {
   renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead,
 } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const KAHU = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
 const args = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
@@ -88,6 +89,10 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     await new Promise((r) => setTimeout(r, 200));
     rmSync(root, { recursive: true, force: true });
   });
+  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  let custody: ScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
 
   /** Three personas stand for chairs; the genesis seats them armed for the same set. */
   async function seatedGenesis(): Promise<string[]> {
@@ -117,12 +122,17 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const data = r.out["data"] as { rollAnchor: { cid: string; parents: number } | null; sealEpochCid: string };
     expect(data.rollAnchor, "the rotate wrote a head with no anchor").not.toBeNull();
     expect(data.sealEpochCid).toBe(head.epochCid);
+    // the control for the refusals below: a roll that lands mints the new head's secret itself
+    expect((r.out["data"] as unknown as { keyring: { minted: boolean } }).keyring).toEqual({ minted: true });
+    expect((await heldNexusKeyringEntries()).map((e) => e.epochCid)).toEqual([genesis.epochCid, head.epochCid]);
   });
 
   test("★ an anchor that cannot be signed or does not count leaves the charter UNWRITTEN ★", async () => {
     const keys = await seatedGenesis();
     const path = nexusCharterDocPath(larSealHome());
     const before = readFileSync(path);
+    const heldBefore = await heldNexusKeyringEntries();
+    expect(heldBefore.length).toBe(1);
 
     anchorStep.fault = () => new NexusContractError("refusing to write: the roll anchor does not count under the new roster (fail-closed).");
     const r = await run(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
@@ -130,16 +140,33 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the step was reached …
     expect(readFileSync(path).equals(before)).toBe(true);           // … and the charter never moved
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(1);
+    // … and the secret the roll minted stands under an epoch no charter names yet, beside the genesis secret,
+    // which never moved. It seals nothing: the charter head still names the genesis epoch.
+    const stranded = await heldNexusKeyringEntries();
+    expect(stranded.length).toBe(2);
+    expect(stranded[0]).toEqual(heldBefore[0]);
+    expect(stranded[1]!.epochCid).not.toBe(sealLineageHead(readNexusDoc(larSealHome()))!.epochCid);
+
+    // THE SAME ROLL RUN AGAIN ADOPTS IT: the epoch CID content-addresses its own fields, so the roll derives the
+    // very name the secret stands under, mints nothing, and the head it lands answers to that secret.
+    anchorStep.fault = null;
+    const again = await run(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    expect(again.code).toBe(0);
+    expect((again.out["data"] as { keyring: { minted: boolean } }).keyring).toEqual({ minted: false });
+    expect(sealLineageHead(readNexusDoc(larSealHome()))!.epochCid).toBe(stranded[1]!.epochCid);
+    expect(await heldNexusKeyringEntries()).toEqual(stranded);
   });
 
   test("CONTROL — a fault of any other kind throws through the anchor step and still writes no head", async () => {
     const keys = await seatedGenesis();
     const path = nexusCharterDocPath(larSealHome());
     const before = readFileSync(path);
+    const heldBefore = await heldNexusKeyringEntries();
 
     anchorStep.fault = () => new Error("the board store faulted");
     const r = await run(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
     expect(r.code).not.toBe(0);
     expect(readFileSync(path).equals(before)).toBe(true);
+    expect((await heldNexusKeyringEntries())[0]).toEqual(heldBefore[0]);   // the genesis secret never moved
   });
 });

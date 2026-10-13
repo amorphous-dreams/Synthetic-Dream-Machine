@@ -47,7 +47,7 @@ import {
   ENGINE_CORE_ID, BagStowage,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
-  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, type NexusIdentityAt,
+  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync,
   genesisCasCidsFromOracle,
 }                                       from "@lararium/mesh";
@@ -113,7 +113,7 @@ import { hermRealmShoreBooks, publicCasShore } from "./bulb-read-face.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
 import type { NexusConvergenceKeyring } from "./nexus-convergence-keyring.js";
-import { standNexusKeyring } from "./nexus-convergence-secret-store.js";
+import { loadNexusKeyring } from "./nexus-convergence-secret-store.js";
 import { cadSealDir, sealCarrierForFederation } from "./seal-carrier-federation.js";
 import { makeBagTracker } from "./bag-tracker.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve-loop.js";
@@ -361,7 +361,9 @@ export interface SovereignReaders {
   readonly wornMount: (storageDir: string) => ReturnType<typeof readWornPersonaMount>;
   readonly personaRoots: () => ReturnType<typeof listPersonaRoots>;
   readonly walkRecords: (storageDir: string) => ReturnType<typeof listWalkRecords>;
-  readonly keyring: (a: { sealEpoch: number }) => NexusConvergenceKeyring;
+  /** One Nexus's convergence keyring, or null when this vessel holds no secret for it. Mints nothing; a row that
+   *  stands and does not open throws. */
+  readonly keyring: (a: { nexusAid: string; headEpochCid: string | null }) => Promise<NexusConvergenceKeyring | null>;
   /** The vessel's own keyhive archive, or null when none stands. A row that stands and does not open throws. */
   readonly archive: () => Promise<Uint8Array | null>;
   /** One face's veil archive, or null when none stands. */
@@ -377,7 +379,7 @@ export interface SovereignReaders {
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
 export function seatedSovereignReaders(): SovereignReaders {
   return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
-    keyring: standNexusKeyring, archive: loadIdentityArchive, veilArchive: loadVeilArchive, veil: custodyVeilKeys,
+    keyring: loadNexusKeyring, archive: loadIdentityArchive, veilArchive: loadVeilArchive, veil: custodyVeilKeys,
     writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive };
 }
 
@@ -697,21 +699,6 @@ async function prepareNodeBootOn(
     ?? (process.env["LAR_WIRE_LOG"] === "1"
       ? (v: ShareVerdictRecord) => console.log(`[wire] verdict ${v.hook} peer=${v.peerId} doc=${v.documentId ?? "-"} → ${v.verdict}`)
       : null);
-  // THE PER-NEXUS CONVERGENCE KEYRING — the SOURCE the cad seal message-locks against (fork-② = A2, operator-
-  // ruled 2026-07-21). Forward-declared null and STOOD once the operator's own nym + the charter epoch are known:
-  // the private-lane admission handoff (the SAME lane the read-caps ride, below) delivers the `{epoch → secret}`
-  // keyring; `makeNexusConvergenceKeyring(entries)` stands it here. A null keyring keeps the boot window — and any
-  // member never handed a keyring — FAIL-CLOSED: `installSealedBody` reads `keyring.current()`, which throws on an
-  // absent/empty keyring, so the body stays local/unsealed (never a plaintext body registered sealed). The
-  // custody + distribution of that keyring over the private lane is the admission shore this name marks; it does
-  // NOT stand a Nexus-scope CGKA group (the exporter north-star, deferred — see nexus-convergence-keyring.ts).
-  // The admission-delivery wiring RIDES THE PERSISTED STORE: `openAdmitFlow` (persona-admit) opens the founder's
-  // sealed keyring envelope and `installDeliveredKeyring` writes the founder's `{epoch → secret}` set into THIS
-  // vessel's identity home AUTHORITATIVELY (the delivered secret supersedes a self-minted phantom). `standNexusKeyring`
-  // below reads that persisted set FIRST (minting only an absent head epoch), so the delivered keyring becomes the
-  // one BOTH `cad-seal` (the seal producer) and any keyring-read path resolve — every path threads this ONE variable.
-  // NO-GLOBAL-NOW: an admission that lands out-of-process reaches THIS running vessel at its next stand of the store.
-  let nexusConvergenceKeyring: NexusConvergenceKeyring | null = null;
   const repo = new Repo({
     storage,
     network: [network],
@@ -1039,23 +1026,15 @@ async function prepareNodeBootOn(
     },
   });
 
-  const nexusDocForBoot = readNexusDoc(sealHome);
-
   // Read the bulb off the genesis dir — the ALL-PUBLIC seed + CAS a Herm serves so a stranger kindles their OWN
   // sovereign hearth (serve fire, never key). Null when the genesis is absent (nothing to hand). It pins no epoch
   // and carries no bootstrap: the charter's freshness rides the corm-lease pointer on the read-face breath.
   const bulb: BulbArtifact | null = readBulbArtifact(genesisDir ?? defaultGenesisDir());
 
-  // STAND THE cad CONVERGENCE KEYRING — the cad seal's key source, minted for THIS vessel's charter-head epoch
-  // (genesis = 0 when unseated) and persisted local (read-all). This fills the forward-declared shore: the vessel
-  // now HOLDS a keyring, so the seal producer (`cad-seal`) can message-lock a carrier body's ciphertext. It seals
-  // the vessel's OWN staged bodies for the FEDERATION plane; STAGE-2 admission delivery hands this keyring to a
-  // joinee so a member reads too. FAIL-CLOSED elsewhere holds: absent this stand, `keyring.current()` throws and
-  // the seal producer keeps a body cleartext-local (never plaintext sealed).
-  // The head's place in the lineage IS its depth along the hash links — genesis 0 — so the keyring reads the
-  // chain itself rather than a counter any epoch record carries.
-  const sealHeadEpoch = Math.max(0, (nexusDocForBoot?.sealLineage?.length ?? 0) - 1);
-  nexusConvergenceKeyring = sovereign ? sovereign.keyring({ sealEpoch: sealHeadEpoch }) : null;
+  // THE cad CONVERGENCE KEYRING STANDS AT THE ACT, NEVER AT THE BOOT. A boot reads no keyring row and mints no
+  // secret: the seat's own act mints one under (Nexus AID, epoch CID), an admission joins a delivered one, and
+  // the seal producer (`cad-seal`) reads the row through the sovereign seam when it seals. A vessel that holds
+  // no secret for its charter head seals nothing, and its bodies stay cleartext-local.
   // The relay-side discovery index the seal producer announces a sealed cid onto (DHT-free; hint → peers → tracker).
   const casBagTracker = makeBagTracker();
 
@@ -2456,10 +2435,19 @@ async function prepareNodeBootOn(
     // untouched. The body arrives as a staged `cid` (resolved cleartext from the corpus CAS) or inline `text`.
     // The seal registers the ciphertext docId into the live sealRegistry → the member blind-transit lane opens
     // for exactly that body; a member reads NOTHING (carry ⊥ read — the read-cap rides the keyring, never here).
-    // FAIL-CLOSED: no keyring (an empty stand) → `keyring.current()` throws → the body stays cleartext-local only.
+    // The keyring row reads HERE, at the act, through the sovereign seam: the charter names the Nexus and its head
+    // epoch, and the secret that name answers to seals the body. FAIL-CLOSED: at the floor, with no seated charter,
+    // or with no secret held for the head, the act refuses by name and the body stays cleartext-local only.
     registry.register("cad-seal", async (args) => {
-      const keyring = nexusConvergenceKeyring;
-      if (!keyring) throw new Error("cad-seal: no convergence keyring on this vessel — cannot seal (the body stays cleartext-local)");
+      if (!sovereign) throw new Error("cad-seal: this vessel rests at the floor, so its keyring row stays shut — open it with `lares vault unlock` (the body stays cleartext-local)");
+      // The head comes off the VERIFIED lineage (`foundingRoster`): a charter whose chain does not verify, or whose
+      // head does not bind its seated keys, names no head, so no secret answers and nothing seals.
+      const charter = readNexusDoc(sealHome);
+      const nexusAid = realmIdOfCharter(charter);
+      const headEpochCid = foundingRoster(charter).sealEpochCid || null;
+      if (!nexusAid || !headEpochCid) throw new Error("cad-seal: no verified charter epoch stands here, so no Nexus names a convergence secret — seat one with `lares nexus seal seat` (the body stays cleartext-local)");
+      const keyring = await sovereign.keyring({ nexusAid, headEpochCid });
+      if (!keyring) throw new Error("cad-seal: this vessel holds no convergence secret for its Nexus — the seat mints one and an admission delivers it (the body stays cleartext-local)");
       const cid  = typeof args["cid"]  === "string" ? (args["cid"]  as string) : "";
       const text = typeof args["text"] === "string" ? (args["text"] as string) : "";
       let plaintext: Uint8Array;
@@ -2480,8 +2468,8 @@ async function prepareNodeBootOn(
         tracker:   casBagTracker,
         self:      vesselIdentity.verifyingKey,
       });
-      // Return the PUBLIC verify-cap only (cid + docId + epoch) — the read-cap NEVER crosses this boundary.
-      return { verb: "cad-seal", cid: installed.cid, docId: installed.docId, epoch: installed.epoch, sealed: sealRegistry.seal.isSealedPlane(installed.docId) };
+      // Return the PUBLIC verify-cap only (cid + docId + the name it sealed under) — the read-cap NEVER crosses this boundary.
+      return { verb: "cad-seal", cid: installed.cid, docId: installed.docId, nexusAid: installed.nexusAid, epochCid: installed.epochCid, sealed: sealRegistry.seal.isSealedPlane(installed.docId) };
     });
 
     // ── The wiki-SWITCHER surface (the FACE over the activation cap) ──────────────

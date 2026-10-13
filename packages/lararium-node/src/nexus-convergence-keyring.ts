@@ -1,125 +1,147 @@
 /**
  * nexus-convergence-keyring — the per-Nexus convergence-secret SOURCE the cad seal message-locks against.
  *
- * THE SALT, NOT A CONTENT KEY. A Nexus holds ONE convergence secret per charter epoch. That secret is a
- * dedup-domain + GPA salt — it keys `messageKey = BLAKE3(plaintext, key = nexusSecret)` so (a) the same body
- * seals to the same cid ONLY within one Nexus (per-Nexus dedup; no cross-Nexus confirmation-of-file), and (b)
- * an outsider lacking the secret cannot precompute a suspected plaintext's cid. It is NOT the content read-cap:
- * content confidentiality rides the per-bag read-cap (the messageKey) on the private keyhive lane. So the
- * secret's compromise grants only the INSIDER confirmation-of-file already accepted (fork-② = A, 2026-07-21).
+ * THE SALT, NOT A CONTENT KEY. A Nexus holds ONE convergence secret per charter epoch. That secret salts the
+ * dedup domain: it keys `messageKey = BLAKE3(plaintext, key = nexusSecret)` so (a) the same body seals to the same
+ * cid ONLY within one Nexus (no cross-Nexus confirmation-of-file), and (b) an outsider lacking the secret cannot
+ * precompute a suspected plaintext's cid. Content confidentiality rides the per-bag read-cap on the private keyhive
+ * lane, so the secret's compromise grants only the insider confirmation-of-file the tier already accepts.
  *
- * SOURCE = A2 (operator-ruled 2026-07-21): an independent high-entropy 32-byte secret, minted at Nexus genesis
- * and on each charter-epoch bump, VERSIONED by the wax-sealed charter epoch, DISTRIBUTED to each member over the
- * private keyhive lane at admission (the same lane the read-caps ride). A member holds the WHOLE `{epoch → secret}`
- * keyring, so it reads every body regardless of its own join epoch (the read-all invariant — a shared CAS must let
- * every current member read every body). Forward-secrecy for THIS salt is a MISFEATURE, not a goal: a late joiner
- * gets every past epoch's secret, never re-derives-forward-only.
+ * ── THE NAME ────────────────────────────────────────────────────────────────────────────────────
+ * A secret answers to (Nexus AID, `epochCid`): the charter's genesis epoch CID names the Nexus, and the seal
+ * lineage's own epoch CID names the epoch. No counter names a secret. Two vessels that read one charter derive one
+ * name with no shared clock and no agreed numbering, and a secret for one Nexus never answers for another.
  *
- * NO-GLOBAL-NOW: the keyring is a member-LOCAL replica read as-of-last-admission-sync; `current()` names the
- * highest epoch THIS member has been handed, never a global present. A charter-epoch bump reaches a member only
- * when its admission material refolds — the member reads its own keyring, never a global truth.
+ * ── ONE NEXUS PER KEYRING ───────────────────────────────────────────────────────────────────────
+ * A keyring holds one Nexus's secrets and refuses an entry that names another. `current()` answers the secret the
+ * charter HEAD names, as this vessel reads its own charter; `forEpoch` answers any held epoch, so a body sealed
+ * before this member joined still opens (read-all: a shared CAS lets every current member read every body).
  *
- * NORTH-STAR (documented, NOT built now): once a Nexus-scope CGKA group stands for other reasons, the secret
- * could derive as an MLS-style EXPORTER off that group's epoch state (`BLAKE3(nexusGroupRoot_e, "…nexus-
- * convergence")`) — member-re-derivable, zero separate custody. But CGKA is forward-only, so a late joiner must
- * STILL be backfilled a past-epoch keyring to preserve read-all — the exporter path converges on THIS keyring
- * shape anyway (RFC 9420 §8 exporter_secret; MLS resumption-PSK: a member joined after epoch N cannot re-derive
- * epoch N). A2 ships that keyring directly; A1 only adds a derivation layer the low-sensitivity salt never needs.
+ * FAIL-CLOSED: a keyring that holds no secret for the head has NO `current()` → the seal installer throws → the
+ * body stays local and unsealed (never a plaintext body registered as sealed). A `forEpoch` miss returns
+ * `undefined` → the read helper throws by name → never a silent wrong-key derivation.
  *
- * FAIL-CLOSED: an empty keyring has NO `current()` → the seal installer throws → the body stays local/unsealed
- * (never a plaintext body registered as sealed). A `forEpoch` miss on read returns `undefined` → the read helper
- * throws an EXPLICIT missing-epoch error → never a silent wrong-key decrypt.
+ * NO-GLOBAL-NOW: the keyring reads as a member-LOCAL replica; the head names this vessel's own reading of the
+ * charter, never a global present.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/nexus-convergence-keyring
  */
 
 import { randomBytes } from "node:crypto";
-import { require32, deriveMessageKey, CONVERGENCE_SECRET_LEN } from "@lararium/mesh";
+import { require32, deriveMessageKey, canonicalKeyringEntry, keyringEntryName, hex, CONVERGENCE_SECRET_LEN } from "@lararium/mesh";
 
-/** One charter-epoch's convergence secret: the integer epoch it versions on + its 32-byte salt. */
-export interface NexusEpochSecret {
-  /** The wax-sealed charter epoch this secret versions on (a non-negative integer; genesis = 0). */
-  readonly epoch: number;
-  /** The 32-byte per-Nexus convergence salt for that epoch (width-guarded at every boundary). */
+/** The scoped name of one convergence secret: the Nexus it salts and the charter epoch it belongs to. */
+export interface NexusEpochName {
+  /** The Nexus AID: the charter's genesis epoch CID, lower-cased. */
+  readonly nexusAid: string;
+  /** The seal lineage's CID for this epoch, lower-cased. */
+  readonly epochCid: string;
+}
+
+/** One named convergence secret: its scoped name and its 32-byte salt (width-guarded at every boundary). */
+export interface NexusEpochSecret extends NexusEpochName {
   readonly secret: Uint8Array;
 }
 
-/**
- * A member's local view of its Nexus's convergence secrets — a `{epoch → secret}` keyring handed over the private
- * lane at admission. `current()` seals under the newest epoch the member holds; `forEpoch` reads any past epoch so
- * a body sealed before this member joined still opens (read-all).
- */
+/** One Nexus's convergence secrets as this member holds them. */
 export interface NexusConvergenceKeyring {
-  /** The newest `{epoch, secret}` this member holds — the seal-time epoch. THROWS on an empty keyring (fail-closed). */
+  /** The Nexus every secret here salts. */
+  readonly nexusAid: string;
+  /** The secret the charter head names: the seal-time secret. THROWS when the head names none held (fail-closed). */
   current(): NexusEpochSecret;
-  /** The salt for a specific past/present epoch, or `undefined` when this member never received it (fail-closed read). */
-  forEpoch(epoch: number): Uint8Array | undefined;
-  /** Every epoch the member holds, ascending — audit / read-all proofs. */
-  readonly epochs: readonly number[];
+  /** The salt for one epoch of this Nexus, or `undefined` when this member never received it (fail-closed read). */
+  forEpoch(epochCid: string): Uint8Array | undefined;
+  /** Every epoch CID held for this Nexus, in the order the entries arrived. */
+  readonly epochCids: readonly string[];
 }
 
-/** Reject a non-integer / negative epoch — a charter epoch is a monotone non-negative integer (genesis = 0). */
-function requireEpoch(epoch: number): number {
-  if (!Number.isInteger(epoch) || epoch < 0) {
-    throw new TypeError(`nexus-convergence-keyring: epoch MUST be a non-negative integer, got ${epoch}`);
-  }
-  return epoch;
+/** The canonical spelling of a scoped name; THROWS on a part that carries no printable token. */
+export function requireEpochName(name: NexusEpochName): NexusEpochName {
+  const c = canonicalKeyringEntry({ ...name, secretHex: "00".repeat(CONVERGENCE_SECRET_LEN) });
+  if (!c) throw new TypeError("nexus-convergence-keyring: a secret answers to a Nexus AID and an epoch CID, each one printable token");
+  return { nexusAid: c.nexusAid, epochCid: c.epochCid };
+}
+
+/** The store key of a scoped name. */
+export function epochNameKey(name: NexusEpochName): string {
+  return keyringEntryName(requireEpochName(name));
+}
+
+/** The keyring row's file under the identity home (the carrier table's `keyring` row). */
+export const NEXUS_KEYRING_FILE = ".nexus-convergence-secrets.json";
+
+/** The keyring row's plaintext for a set of held secrets, in the order given. */
+export function encodeNexusKeyringRow(entries: readonly NexusEpochSecret[]): Uint8Array {
+  const secrets = entries.map((e) => ({ nexusAid: e.nexusAid, epochCid: e.epochCid, secretHex: hex(e.secret) }));
+  return new TextEncoder().encode(JSON.stringify({ secrets }, null, 2));
 }
 
 /**
- * Mint a FRESH per-Nexus convergence secret for a charter epoch — 32 CSPRNG bytes tagged with the epoch. Called at
- * Nexus GENESIS and on a CHARTER-EPOCH BUMP ONLY (never per-body, never per-session): rotation resets the dedup
- * domain deliberately, so it costs a charter act. The minted secret then rides the private lane to every member.
+ * Mint a FRESH convergence secret under a scoped name: 32 CSPRNG bytes. The seat alone calls this, when its act
+ * roots or rolls a charter epoch (never a boot, never per body, never per session): a new secret resets the dedup
+ * domain, so it costs a charter act. The secret then rides the private lane to every member.
  */
-export function mintNexusSecret(sealEpoch: number): NexusEpochSecret {
-  requireEpoch(sealEpoch);
-  return { epoch: sealEpoch, secret: new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN)) };
+export function mintNexusSecret(name: NexusEpochName): NexusEpochSecret {
+  return { ...requireEpochName(name), secret: new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN)) };
 }
 
 /**
- * Stand a member's convergence keyring from the `{epoch → secret}` entries it was handed at admission. Each secret
- * is width-guarded through the ONE seal boundary (`require32`); a duplicate epoch reads torn (never a silent
- * last-wins that could mask a distribution fault). `current()` names the HIGHEST epoch held — an empty keyring
- * fails closed (no seal). The keyring is immutable; a charter bump stands a NEW keyring on the next admission fold.
+ * Stand one Nexus's keyring from the secrets a member holds for it. Each secret passes the ONE width guard
+ * (`require32`); an entry that names another Nexus refuses, and so does one epoch named twice (a torn
+ * distribution never settles by last-wins). `headEpochCid` names the charter head as this vessel reads it, or
+ * `null` when it reads none. The keyring stays immutable.
  */
-export function makeNexusConvergenceKeyring(entries: Iterable<NexusEpochSecret>): NexusConvergenceKeyring {
-  const byEpoch = new Map<number, Uint8Array>();
-  for (const { epoch, secret } of entries) {
-    requireEpoch(epoch);
-    require32(secret, `nexusSecret@epoch ${epoch}`);
-    if (byEpoch.has(epoch)) {
-      throw new TypeError(`nexus-convergence-keyring: duplicate secret for epoch ${epoch} — a torn distribution, refuse it`);
+export function makeNexusConvergenceKeyring(args: {
+  readonly nexusAid:     string;
+  readonly headEpochCid: string | null;
+  readonly entries:      Iterable<NexusEpochSecret>;
+}): NexusConvergenceKeyring {
+  const head = args.headEpochCid === null ? null : requireEpochName({ nexusAid: args.nexusAid, epochCid: args.headEpochCid });
+  const nexusAid = requireEpochName({ nexusAid: args.nexusAid, epochCid: args.headEpochCid ?? "-" }).nexusAid;
+  const byEpoch = new Map<string, Uint8Array>();
+  for (const entry of args.entries) {
+    const name = requireEpochName(entry);
+    if (name.nexusAid !== nexusAid) {
+      throw new TypeError(`nexus-convergence-keyring: an entry names Nexus ${name.nexusAid}; this keyring holds ${nexusAid} alone`);
     }
-    byEpoch.set(epoch, secret);
+    require32(entry.secret, `nexusSecret@${name.epochCid}`);
+    if (byEpoch.has(name.epochCid)) {
+      throw new TypeError(`nexus-convergence-keyring: duplicate secret for epoch ${name.epochCid} — a torn distribution, refuse it`);
+    }
+    byEpoch.set(name.epochCid, entry.secret);
   }
-  const epochs = [...byEpoch.keys()].sort((a, b) => a - b);
+  const epochCids = Object.freeze([...byEpoch.keys()]);
   return {
+    nexusAid,
     current(): NexusEpochSecret {
-      if (epochs.length === 0) {
-        throw new Error("nexus-convergence-keyring: EMPTY keyring — no convergence secret to seal under (fail-closed)");
+      if (head === null) {
+        throw new Error("nexus-convergence-keyring: the charter names no head epoch — no convergence secret to seal under (fail-closed)");
       }
-      const epoch = epochs[epochs.length - 1]!;
-      return { epoch, secret: byEpoch.get(epoch)! };
+      const secret = byEpoch.get(head.epochCid);
+      if (secret === undefined) {
+        throw new Error(`nexus-convergence-keyring: no secret held for the head epoch ${head.epochCid} — nothing seals until the seat's secret arrives (fail-closed)`);
+      }
+      return { nexusAid, epochCid: head.epochCid, secret };
     },
-    forEpoch(epoch: number): Uint8Array | undefined { return byEpoch.get(epoch); },
-    epochs,
+    forEpoch(epochCid: string): Uint8Array | undefined { return byEpoch.get(epochCid.trim().toLowerCase()); },
+    epochCids,
   };
 }
 
 /**
- * Re-derive the message-locked read-cap for a body sealed at a NAMED epoch — the epoch-gated operation. Looks up
- * the epoch's salt (`forEpoch`) and re-derives `messageKey = BLAKE3(plaintext, key = nexusSecret_epoch)`. A member
- * MISSING that epoch's secret throws an EXPLICIT missing-epoch error — never a silent wrong-key derivation. This
- * is the path a member walks to CONFIRM/dedup a body it already holds the plaintext for, or to re-seal on rotation.
+ * Re-derive the message-locked read-cap for a body sealed at a NAMED epoch. Looks up the epoch's salt and
+ * re-derives `messageKey = BLAKE3(plaintext, key = nexusSecret_epoch)`. A member MISSING that epoch's secret throws
+ * by name — never a silent wrong-key derivation. A member walks this path to confirm or dedup a body whose
+ * plaintext it already holds.
  */
 export function readCapForEpoch(
   plaintext: Uint8Array,
-  epoch: number,
-  keyring: NexusConvergenceKeyring,
+  epochCid:  string,
+  keyring:   NexusConvergenceKeyring,
 ): Uint8Array {
-  const secret = keyring.forEpoch(requireEpoch(epoch));
+  const secret = keyring.forEpoch(epochCid);
   if (secret === undefined) {
-    throw new Error(`nexus-convergence-keyring: no secret for epoch ${epoch} — this member cannot re-derive that body's read-cap (fail-closed)`);
+    throw new Error(`nexus-convergence-keyring: no secret for epoch ${epochCid} of Nexus ${keyring.nexusAid} — this member cannot re-derive that body's read-cap (fail-closed)`);
   }
   return deriveMessageKey(plaintext, secret);
 }

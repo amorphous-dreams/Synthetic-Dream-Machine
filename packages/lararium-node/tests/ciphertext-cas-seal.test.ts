@@ -29,7 +29,8 @@ const MEMBER = "peer-member", STRANGER = "peer-stranger";
 const relayPeers = new Set([MEMBER, STRANGER]);
 const membership: NexusMembership = { holdsCarriagePeer: (p) => p === MEMBER };
 const casDir = mkdtempSync(join(tmpdir(), "lar-cad-seal-"));
-const epochSecret: NexusEpochSecret = { epoch: 3, secret: new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN)) };
+const NAME = { nexusAid: "epoch0-" + "cd".repeat(32), epochCid: "epoch0-" + "cd".repeat(32) };
+const epochSecret: NexusEpochSecret = { ...NAME, secret: new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN)) };
 
 describe("the seal-producer registers a sealed body AS A SIDE-EFFECT and lights the member lane", () => {
   test("installing a sealed body registers its docId; a MEMBER blind-transits it, a STRANGER is denied", async () => {
@@ -41,8 +42,8 @@ describe("the seal-producer registers a sealed body AS A SIDE-EFFECT and lights 
     expect(registry.size).toBe(1);                                         // the SIDE-EFFECT fired
     expect(registry.seal.isSealedPlane(installed.docId)).toBe(true);
     // The epoch sidecar rides beside the seal set — the cid stays pure BLAKE3(ct), the epoch keys the read-lookup.
-    expect(installed.epoch).toBe(epochSecret.epoch);
-    expect(registry.epochFor(installed.docId)).toBe(epochSecret.epoch);
+    expect({ nexusAid: installed.nexusAid, epochCid: installed.epochCid }).toEqual(NAME);
+    expect(registry.epochFor(installed.docId)).toEqual(NAME);
 
     // The member lane — the read-cap is NOT among carrierShareDecision's arguments (structurally cannot cross).
     expect(await carrierShareDecision(relayPeers, fedGate, null, null, membership, registry.seal, MEMBER, installed.docId)).toBe(true);

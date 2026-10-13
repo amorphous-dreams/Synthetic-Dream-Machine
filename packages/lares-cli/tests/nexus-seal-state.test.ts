@@ -25,6 +25,7 @@ import {
   renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash,
   charterSealState, emptyFoundingCharterDoc, genesisCharterEpoch, type NexusDoc,
 } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const args = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
   ({ command: "nexus", positional, options, flags: { json: true } });
@@ -86,6 +87,10 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
     await new Promise((r) => setTimeout(r, 200));
     rmSync(root, { recursive: true, force: true });
   });
+  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  let custody: ScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
 
   test("★ a charter with no epoch reads UNSEALED, and rotate says so ★", async () => {
     writeUnsealedCharter();

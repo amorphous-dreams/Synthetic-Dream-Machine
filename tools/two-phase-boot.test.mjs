@@ -9,10 +9,14 @@
 //   T2  a composition handed `sovereign: null` (the floor) reaches no hot or cold carrier row in this process and
 //       leaves every private row of the three custody homes byte-identical and mints none.
 //                                                                 control: holding the vessel key and handed the
-//                                                                 seated readers, the composition runs each reader,
-//                                                                 reads the archive and the keyring rows, lands the
-//                                                                 island's archive exports through the custody write
-//                                                                 door, and both archives rest sealed afterward
+//                                                                 seated readers, the composition runs each boot
+//                                                                 reader, reads the archive rows, lands the island's
+//                                                                 archive exports through the custody write door, and
+//                                                                 both archives rest sealed afterward
+//   T5  no boot touches the keyring: the composition that holds the key never runs the keyring reader, never reads
+//       the keyring row, and leaves the row its custody founded byte-identical.
+//                                                                 control: the seat's mint moves the row, and the
+//                                                                 same seated reader, asked by an act, answers it
 //   T3  a boot that refuses frees its store name, whether the refusal lands while the prep stands the Repo or
 //       later while the caps compose.                             control: a standing composition holds the name
 //                                                                 against a second claim
@@ -181,13 +185,14 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     const archiveAt = join(homes.identity, "keyhive-archive.bin");
     const veilAt = join(homes.identity, "veil-archive-h0.bin");
     const restBefore = { archive: readFileSync(archiveAt), veil: readFileSync(veilAt) };
+    const keyringBorn = readFileSync(join(homes.identity, node.NEXUS_KEYRING_FILE));
     phases.length = 0;
     const first = counting(node.seatedSovereignReaders());
     const sovereignly = await recordingReads(() => open({ floor, sovereign: first.readers }));
     const one = sovereignly.value;
     assert.equal(phases.at(-1), "live", "T1: a composition reaches live on the floor a torn-down one stood on");
     await one.daemon.workerEa;
-    for (const name of ["wornMount", "walkRecords", "keyring", "archive", "veilArchive", "veil", "writeArchive", "writeVeilArchive"]) {
+    for (const name of ["wornMount", "walkRecords", "archive", "veilArchive", "veil", "writeArchive", "writeVeilArchive"]) {
       assert.ok(first.calls[name] >= 1, `T2 control: the ${name} reader ran (${first.calls[name]})`);
     }
     // The island's exports landed through the custody write door: both rows moved, and both rest sealed.
@@ -197,7 +202,13 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
       assert.equal(now.equals(restBefore[name]), false, `T2 control: the island's ${name} export replaced the row`);
     }
     const rowsRead = new Set(sovereignly.seen.map(privateRow).filter(Boolean));
-    assert.ok(rowsRead.has("keyring"), `T2 control: the sovereign composition reaches the keyring row (reached: ${[...rowsRead].join(", ") || "none"})`);
+    assert.ok(rowsRead.has("keyhive-archive"), `T2 control: the sovereign composition reaches the archive row (reached: ${[...rowsRead].join(", ") || "none"})`);
+    // ── T5: the boot leaves the keyring alone ─────────────────────────────────────────────────────────────────
+    const keyringRows = () => Object.keys(homesDigest(homes)).filter((p) => privateRow(p) === "keyring");
+    assert.equal(first.calls.keyring, 0, "T5: a boot never runs the keyring reader");
+    assert.equal(rowsRead.has("keyring"), false, "T5: a boot never reads the keyring row");
+    assert.equal(keyringRows().length, 1, "T5: the custody's founding left one keyring row");
+    assert.equal(readFileSync(keyringRows()[0]).equals(keyringBorn), true, "T5: a boot mints nothing into the keyring row");
     assert.notEqual(one.repo, zero.repo, "T1: a fresh Repo");
     assert.notEqual(one.daemon, zero.daemon, "T1: a fresh daemon island");
     assert.ok(wss.listenerCount("connection") > baseline, "T4 control: a standing composition listens on the server");
@@ -209,7 +220,14 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.equal(wss.listenerCount("connection"), baseline, "T4: the teardown removes every listener it added");
     assert.equal(existsSync(floor.storeClaim.socketPath), true, "T1: the floor's name stands between compositions");
     assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "T1: the floor's name answers between compositions");
-    assert.ok(Object.keys(homesDigest(homes)).some((p) => privateRow(p) === "keyring"), "T2 control: the keyring row stands once a sovereign composition ran");
+    assert.equal(readFileSync(keyringRows()[0]).equals(keyringBorn), true, "T5: a whole composition, stood and torn down, leaves the keyring row byte-identical");
+    // T5 control: the seat's mint writes the row, and the same seated reader then answers an act that asks.
+    const aid = "epoch0-" + "ab".repeat(32);
+    assert.equal(await first.readers.keyring({ nexusAid: aid, headEpochCid: aid }), null, "T5 control: no secret held reads null");
+    assert.equal((await node.mintNexusEpochSecret({ nexusAid: aid, epochCid: aid })).minted, true);
+    assert.equal(readFileSync(keyringRows()[0]).equals(keyringBorn), false, "T5 control: the seat's mint moves the keyring row");
+    assert.equal(mesh.readVkCarrier(readFileSync(keyringRows()[0])), "sealed", "T5 control: the keyring row rests sealed under the vessel key");
+    assert.equal((await first.readers.keyring({ nexusAid: aid, headEpochCid: aid })).current().epochCid, aid, "T5 control: the seated reader answers the minted secret");
 
     // A third composition stands on the same floor: the teardown left nothing a later stand trips on.
     const three = await open({ floor, sovereign: null });

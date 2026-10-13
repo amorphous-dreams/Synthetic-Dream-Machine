@@ -23,11 +23,14 @@
  *                      Locked refuses `CustodyLocked`. A row that stands and does not open (torn, bare, an
  *                      earlier shape, another key's) refuses `CustodyRowUnavailable` naming what stands.
  *   `writeCustodyRow`  the one sealed writer, under the key the seat holds.
+ *   `updateCustodyRow` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
+ *                      on its standing ones. The decision receives the row's plaintext (`null` when nothing stands)
+ *                      and every other reading refuses before it runs, so it decides over the row itself or not at all.
  * No reader folds a refusal to empty, so no caller mints over a row it could not read.
  *
  * Node-main only: a worker never imports this module.
  */
-import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder } from "./custody-holder.js";
+import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type RowUpdate } from "./custody-holder.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -106,6 +109,21 @@ export async function readCustodyRow(home: CustodyHome, file: string): Promise<U
 /** Seal `plaintext` as one row, through the one sealed writer, under the key the seat holds. */
 export async function writeCustodyRow(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void> {
   await (await openedCustody()).writeRow(home, file, plaintext);
+}
+
+/**
+ * Read one sealed row, decide, and write it, as one custody holder. `decide` receives the row's plaintext, or `null`
+ * when nothing stands there, and answers its next plaintext (`null` writes nothing) beside the caller's answer.
+ */
+export async function updateCustodyRow<T>(
+  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
+): Promise<T> {
+  return (await openedCustody()).updateRow(home, file, (r) => {
+    if (r.reading === "opens") return decide(r.plaintext);
+    if (r.reading === "absent") return decide(null);
+    if (r.reading === "locked") throw new CustodyLocked();
+    throw new CustodyRowUnavailable(home, file, r.why);
+  });
 }
 
 /** The dyad veil for `groupTag`, derived from the custody root the seat holds. */

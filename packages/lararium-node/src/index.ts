@@ -255,9 +255,11 @@ export {
 export type {
   NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener, DialPresentation,
 } from "./nexus-carriage.js";
-// The cad seal's key custody (per-Nexus convergence secrets, minted-per-epoch, persisted read-all) + its FIRST
+// The cad seal's key custody (per-Nexus convergence secrets, named by Nexus AID and epoch CID, sealed at rest) + its FIRST
 // live producer (seal a staged carrier body into the ciphertext federation plane, additive to the cleartext wake).
-export { standNexusKeyring, loadNexusKeyring, installDeliveredKeyring } from "./nexus-convergence-secret-store.js";
+export {
+  loadNexusKeyring, mintNexusEpochSecret, installDeliveredKeyring, heldNexusKeyringEntries, NexusKeyringConflict, NEXUS_KEYRING_FILE,
+} from "./nexus-convergence-secret-store.js";
 export { cadSealDir, sealCarrierForFederation } from "./seal-carrier-federation.js";
 // The cad WIRE CONSUMER — a member carries a sealed body peer-to-peer over the request-response hop, gated by the
 // member blind-transit lane; a stranger / Kapae'd presenter draws Mu (byte-identical to caught-up satiety).
@@ -483,7 +485,8 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
-export { seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, custodyVeilKeys } from "./custody-seat.js";
+export { seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, custodyVeilKeys } from "./custody-seat.js";
+export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";

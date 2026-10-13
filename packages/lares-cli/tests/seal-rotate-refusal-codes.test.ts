@@ -7,6 +7,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, nexusCharterDocPath } from "@lararium/node";
 import { renameOwnPersona, sealKeySetHash, standForKahuSeat } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const args = (positional: string[], options: Record<string, string> = {}): ParsedArgs => ({ command: "nexus", positional, options, flags: { json: true } });
 async function run(a: ParsedArgs): Promise<{ code: number; out: Record<string, any> }> {
@@ -24,6 +25,10 @@ describe("seal rotate refusal codes", () => {
     vi.spyOn(console, "log").mockImplementation(() => {}); vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => { vi.restoreAllMocks(); if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; rmSync(root, { recursive: true, force: true }); });
+  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  let custody: ScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
   async function roster(): Promise<string[]> {
     const petnames = await makeNodePersonaPetnameStore(); const declarations = await makeNodePersonaDeclarationStore(); const keys: string[] = [];
     for (let i = 0; i < 3; i++) { const face = await generateOrLoadPersonaGroupRoot(i); await renameOwnPersona(petnames, i, `veil-${i}`); await standForKahuSeat(declarations, i, true); keys.push(face.verifyingKey); }
