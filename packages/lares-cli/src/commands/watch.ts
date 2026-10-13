@@ -31,11 +31,10 @@
 import { watch as fsWatch, writeFileSync, rmSync, type FSWatcher } from "node:fs";
 import { join, isAbsolute } from "node:path";
 import type { ParsedArgs } from "../parse-args.js";
-import { emit } from "../render.js";
-import { summaryOutput } from "../verb-result.js";
+import { exitFor, emit } from "../render.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
 import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
-import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, submitIngest, recordLandedCarriers, applyConfirmedRenames, type ArmedDeletion } from "../ingest-core.js";
+import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
 const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well under this
@@ -133,6 +132,8 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   let rerun = false;
   let timer: NodeJS.Timeout | null = null;
   let waveNo = 0;
+  /** What still asks for a hand across the waves: read at the stop for the exit. */
+  let standing: StandingAsks = NO_STANDING_ASKS;
 
   const drain = async (): Promise<void> => {
     const now = performance.now();   // MONOTONIC — the grace is this watcher's own patience, never a wall reading
@@ -186,30 +187,36 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     }
 
     try {
-      const result = await submitIngest({ source, toBag, candidates, did, deletions: ride, massDeleteFraction });
+      // The settling gesture reads every row the wave needs, asking again under the outcome's row cap
+      // where a flood crossed it, and pins what landed.
+      const settled = await settleIngest({ source, toBag, candidates, did, deletions: ride, massDeleteFraction }, tree);
+      standing = standingAfterWave(standing, settled);
+      const result = settled.first;
       if (result.status === "error") {
         console.error(`  wave ${n}: INGEST failed — ${result.errorMessage ?? "unknown"}`);
         return;
       }
-      const summary  = summaryOutput(result) ?? {};
-      const carriers = (summary as { carriers?: Array<Record<string, unknown>> })["carriers"] ?? [];
-      const del      = (summary as { deletions?: Record<string, unknown> })["deletions"];
-      // The gesture records what it landed; the projector records what it projects;
-      // both write the same key and the same hash where they agree.
+      const carriers = [...settled.named.values()];
+      const del      = settled.deletions;
+      // The gesture pins what it landed; the projector pins what it projects;
+      // both write the same key and the same base where they agree.
       // R2: a confirmed rename moves its observation to the new location, so a moved
       // carrier reads `unchanged` next settle instead of re-landing (echo-survival).
-      const carriersRecorded = recordLandedCarriers(tree, toBag, candidates, carriers);
       const renamesMoved  = applyConfirmedRenames(tree, toBag, candidates, del);
-      if (carriersRecorded + renamesMoved > 0) tree.flush();
+      if (settled.recorded + renamesMoved > 0) tree.flush();
       console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} deletion(s) submitted · audit lar:///ha.ka.ba/bags/daemon/outcomes/${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
+      for (const r of [...settled.refused, ...settled.conflicts]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
+      if (settled.pageError !== undefined) console.error(`    ⚠ a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
       // A file at an address whose records never project refuses by name; the hand removes the file.
       for (const c of carriers) if (c["code"] === "never-projected-path") console.error(`    ⚠ ${String(c["reason"] ?? c["uri"])}`);
       if (del && (del as { decision?: string })["decision"] === "suspend") {
         console.error(`    ⚠ mass-delete brake TRIPPED — ${String((del as { reason?: string })["reason"] ?? "")}; nothing applied, re-run to confirm.`);
       }
     } catch (err) {
-      console.error(`  wave ${n}: ${err instanceof Error ? err.message : String(err)}`);
+      const message = err instanceof Error ? err.message : String(err);
+      standing = standingAfterFault(standing, { asked: candidates.map((c) => c.uri), askedDeletions: ride.map((d) => d.uri) }, message);
+      console.error(`  wave ${n}: ${message}`);
     }
   };
 
@@ -271,6 +278,14 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   });
 
   console.log(`\nlares watch: stopped after ${waveNo} wave(s).`);
+  // WHAT STAYS OWED ENDS THE WATCHER NON-ZERO. A carrier a later wave landed left the set, and so did a
+  // deletion a later wave applied; what remains never reached the records, and the exit says so beside the
+  // lines each wave already printed.
+  if (!standsClean(standing)) {
+    for (const [uri, why] of standing.owed) console.error(`  ⚠ still owed: ${uri}: ${why}`);
+    for (const [uri, why] of standing.owedDeletions) console.error(`  ⚠ deletion still owed: ${uri}: ${why}`);
+    return exitFor("verb-error");
+  }
   return 0;
 }
 

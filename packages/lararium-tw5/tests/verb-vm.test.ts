@@ -5,6 +5,7 @@ import {
   OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest,
 } from "@lararium/mesh";
 import {
+  AUDIT_ARRAY_CAP,
   boundOutcomeOutput,
   copyEffectOutcome,
   dispatchVerb,
@@ -181,6 +182,65 @@ describe("verb-vm", () => {
       expect(Array.isArray(big["items"])).toBe(false);
       expect((big["items"] as { boundedArrayCount: number }).boundedArrayCount).toBe(33);
       expect(big["note"]).toBe("x"); // non-array fields untouched
+    });
+
+    // ── A ROW A PERSON MUST ACT ON STAYS NAMED ──────────────────────────────────────────────────────
+    type Summary = { boundedArrayCount: number; tallies: Record<string, number>; held: Array<Record<string, unknown>>; heldMore: number; sample: unknown[] };
+    const row = (i: number, decision: string): Record<string, unknown> =>
+      ({ uri: `lar:///ha.ka.ba/bags/x/carrier-${i}`, decision, ...(decision === "refuse" ? { warnings: [`carrier-${i}: torn frame refused`] } : {}) });
+
+    test("a summary HOLDS every refuse and conflict row whole, and says it left none unnamed", () => {
+      const rows = Array.from({ length: 214 }, (_, i) => row(i, i === 7 || i === 150 ? "refuse" : i === 90 ? "conflict" : "ingest"));
+      const summary = boundOutcomeOutput({ carriers: rows })["carriers"] as Summary;
+      expect(summary.boundedArrayCount).toBe(214);
+      expect(summary.tallies).toEqual({ ingest: 211, refuse: 2, conflict: 1 });
+      expect(summary.held).toEqual([rows[7], rows[90], rows[150]]);
+      expect(summary.heldMore).toBe(0);
+      // The landed rows stay behind: the summary names no `ingest` row beyond its sample.
+      expect(summary.held.some((r) => r["decision"] === "ingest")).toBe(false);
+    });
+
+    test("past the cap of held rows the summary states how many it leaves unnamed, never silence", () => {
+      const rows = Array.from({ length: 100 }, (_, i) => row(i, i < 50 ? "refuse" : "ingest"));
+      const summary = boundOutcomeOutput({ carriers: rows })["carriers"] as Summary;
+      expect(summary.held.length).toBe(AUDIT_ARRAY_CAP);
+      expect(summary.held).toEqual(rows.slice(0, AUDIT_ARRAY_CAP));
+      expect(summary.heldMore).toBe(50 - AUDIT_ARRAY_CAP);
+      expect(summary.tallies).toEqual({ refuse: 50, ingest: 50 });
+    });
+
+    test("CONTROL: a wave where nothing asks for a hand holds no row", () => {
+      const summary = boundOutcomeOutput({ carriers: Array.from({ length: 40 }, (_, i) => row(i, i % 2 ? "ingest" : "noop")) })["carriers"] as Summary;
+      expect(summary.held).toEqual([]);
+      expect(summary.heldMore).toBe(0);
+    });
+
+    test("an array whose rows carry no decision tallies nothing: LOAD's titles never read `unknown`", () => {
+      const titles = Array.from({ length: 40 }, (_, i) => `lar:///ha.ka.ba/bags/x/title-${i}`);
+      const summary = boundOutcomeOutput({ titles, count: 40 })["titles"] as Summary;
+      expect(summary.boundedArrayCount).toBe(40);
+      expect(summary.tallies).toEqual({});
+      expect(summary.held).toEqual([]);
+      expect(summary.heldMore).toBe(0);
+      expect(summary.sample).toEqual(titles.slice(0, 3));
+      // A mixed array tallies the rows that carry a decision and invents none for the rest.
+      const mixed = boundOutcomeOutput({ items: [...titles, { decision: "ingest" }, { nothing: 1 }, null] })["items"] as Summary;
+      expect(mixed.tallies).toEqual({ ingest: 1 });
+      expect(mixed.boundedArrayCount).toBe(43);
+    });
+
+    test("the stored outcome stays bounded whatever the wave refuses", async () => {
+      const daemon = new FakeDaemonStore();
+      const carriers = Array.from({ length: 2000 }, (_, i) => row(i, "refuse"));
+      await writeOutcome(daemon as unknown as CompositeStore, { invocation: makeInvocation(), status: "done", result: { carriers } });
+      const stored = String(daemon.writes[0]?.tiddler.results);
+      const output = (JSON.parse(stored) as Record<string, { output?: Record<string, unknown> }>)[VERB_RESULT_KEY]?.output;
+      expect((output?.["carriers"] as Summary).held.length).toBe(AUDIT_ARRAY_CAP);
+      expect((output?.["carriers"] as Summary).heldMore).toBe(2000 - AUDIT_ARRAY_CAP);
+      // Bounded by the cap, never by the wave: the same store size as a wave of 200 refusals.
+      const daemon2 = new FakeDaemonStore();
+      await writeOutcome(daemon2 as unknown as CompositeStore, { invocation: makeInvocation(), status: "done", result: { carriers: carriers.slice(0, 200) } });
+      expect(Math.abs(stored.length - String(daemon2.writes[0]?.tiddler.results).length)).toBeLessThan(64);
     });
   });
 

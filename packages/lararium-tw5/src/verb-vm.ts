@@ -37,36 +37,59 @@ export const EFFECT_URI_PREFIX = `${DAEMON_BAG_ID}/effects/`;
 // Read-path note: the co-located CLI (`lararium-node/src/uds-channel.ts`) reads this SAME durable
 // `results` field back as its own printed/returned answer — there is no separate "live response"
 // distinct from the stored doc for that path. So capping the durable field also caps what a
-// large-batch CLI invocation prints; that is the intended trade (a durable receipt the mesh must
-// carry forever cannot hold an unbounded per-run body) — the CLI still gets faithful detail for any
-// outcome at or under the cap, and a bounded summary + verifiable hash above it, never silence.
+// large-batch CLI invocation reads; that is the intended trade (a durable receipt the mesh must
+// carry forever cannot hold an unbounded per-run body).
+//
+// A ROW A PERSON MUST ACT ON STAYS NAMED. A summary that counted refusals and named none would leave a
+// refused carrier unfindable, and a refusal nobody can find stays unfixable. So the summary HOLDS every
+// row whose decision applied nothing and asks for a hand (`refuse`, `conflict`), whole, up to the cap,
+// and states how many more such rows it leaves unnamed (`heldMore`). Zero says the summary names every
+// one. A caller that reads `heldMore` above zero asks again in waves under the cap, where every row
+// rides whole (the ingest gesture pages so: `lares-cli/src/ingest-core.ts` `settleIngest`).
 
-const AUDIT_ARRAY_CAP = 32;
+/** Past this many entries a top-level array of an outcome's output rides as a bounded summary. */
+export const AUDIT_ARRAY_CAP = 32;
+
+/** The decisions that apply nothing and ask a person to act: each such row stays named in a summary. */
+const HELD_DECISIONS: ReadonlySet<string> = new Set(["refuse", "conflict"]);
 
 /** The bounded stand-in for an oversized array field — a summary, not the body. */
 export interface BoundedArraySummary {
   readonly boundedArrayCount: number;
+  /** Rows per `decision`, over the rows that carry one. An array whose rows carry none (titles, plain
+   *  strings) tallies nothing, so the tally never invents a decision nobody made. */
   readonly tallies: Readonly<Record<string, number>>;
   readonly sha256: string;
   readonly sample: readonly unknown[];
+  /** Every row whose decision reads `refuse` or `conflict`, whole, in wave order, up to the cap. */
+  readonly held: readonly unknown[];
+  /** How many `refuse` and `conflict` rows `held` leaves unnamed; zero says it names every one. */
+  readonly heldMore: number;
 }
 
-function tallyBy(items: readonly unknown[], key: string): Record<string, number> {
+function decisionOf(item: unknown): string | null {
+  const raw = item !== null && typeof item === "object" ? (item as Record<string, unknown>)["decision"] : undefined;
+  return typeof raw === "string" ? raw : null;
+}
+
+function tallyByDecision(items: readonly unknown[]): Record<string, number> {
   const out: Record<string, number> = {};
   for (const item of items) {
-    const raw = item && typeof item === "object" ? (item as Record<string, unknown>)[key] : undefined;
-    const k = typeof raw === "string" ? raw : "unknown";
-    out[k] = (out[k] ?? 0) + 1;
+    const k = decisionOf(item);
+    if (k !== null) out[k] = (out[k] ?? 0) + 1;
   }
   return out;
 }
 
-function boundArray(items: readonly unknown[]): BoundedArraySummary {
+function boundArray(items: readonly unknown[], cap: number): BoundedArraySummary {
+  const asks = items.filter((item) => HELD_DECISIONS.has(decisionOf(item) ?? ""));
   return {
     boundedArrayCount: items.length,
-    tallies: tallyBy(items, "decision"),
+    tallies: tallyByDecision(items),
     sha256:  sha256HexBytesSync(canonicalJsonBytes(items)),
     sample:  items.slice(0, 3),
+    held:    asks.slice(0, cap),
+    heldMore: Math.max(0, asks.length - cap),
   };
 }
 
@@ -80,7 +103,7 @@ export function boundOutcomeOutput(
 ): Record<string, unknown> {
   const bounded: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(result)) {
-    bounded[key] = Array.isArray(value) && value.length > cap ? boundArray(value) : value;
+    bounded[key] = Array.isArray(value) && value.length > cap ? boundArray(value, cap) : value;
   }
   return bounded;
 }

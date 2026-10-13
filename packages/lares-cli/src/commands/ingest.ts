@@ -22,7 +22,7 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, submitIngest, readCarrierAnswer, recordLandedAnswer, refusedCount, applyConfirmedRenames } from "../ingest-core.js";
+import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 
@@ -138,14 +138,16 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     return exitFor("not-found");
   }
   // ── submit — one line over the daemon's sock (the lares↔lararium binding) ──
-  let result;
+  // The settling gesture sends the wave, reads every row a person or the base needs (asking again in waves
+  // under the outcome's row cap where the first answer left one behind), and pins what landed.
+  let settled;
   try {
-    result = await submitIngest({
+    settled = await settleIngest({
       source, toBag, candidates, did,
       inWiki: Boolean(args.flags["in-wiki"]),
       ...(renameDeletions.length > 0 ? { deletions: renameDeletions } : {}),
       ...(args.options["change-id"] ? { changeId: args.options["change-id"] } : {}),
-    });
+    }, tree);
   } catch (err) {
     // M3′: a LOCAL WAIT ENDING (`submitIngest`'s `runVerb` throws `LocalWaitExpired` exactly like
     // `act.ts`'s own submit) was folded wholesale into `daemon-unreachable` — telling an operator
@@ -159,6 +161,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     });
     return exitFor(f.code);
   }
+  const result = settled.first;
   if (result.status === "error") {
     const msg = result.errorMessage ?? "unknown";
     const code = /^cap-denied/.test(msg) ? "cap-denied" : /conflict/i.test(msg) ? "conflict" : "verb-error";
@@ -167,55 +170,57 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   }
   const summary = summaryOutput(result) ?? {};
 
-  // The gesture records what it landed; the projector records what it projects;
-  // both write the same key and the same hash where they agree. An unchanged
-  // carrier then noops on the next scan instead of re-landing.
-  // Past the outcome's audit cap the rows stay behind and a tally answers in their place (`readCarrierAnswer`).
-  const answer = readCarrierAnswer((summary as { carriers?: unknown }).carriers);
-  const carriersRecorded = recordLandedAnswer(tree, toBag, candidates, answer);
+  // The gesture pinned what it landed (`settleIngest`); the projector pins what it projects; both write
+  // the same key and the same base where they agree. An unchanged carrier then reads `unchanged` on the
+  // next scan instead of re-landing.
   // R2 — a confirmed rename moves its observation to the new location (delete old key,
   // set new), so the moved carrier reads `unchanged` next scan instead of re-landing.
-  const renamesMoved = applyConfirmedRenames(tree, toBag, candidates, (summary as { deletions?: Record<string, unknown> }).deletions);
-  if (carriersRecorded + renamesMoved > 0) tree.flush();
+  const renamesMoved = applyConfirmedRenames(tree, toBag, candidates, settled.deletions);
+  if (settled.recorded + renamesMoved > 0) tree.flush();
 
   const auditUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
-  // A REFUSED FILE ENDS THE RUN NON-ZERO. Every row still prints, the landed carriers stay landed and
-  // recorded; the exit and the envelope say that the run did not take everything it was handed.
-  const refused = refusedCount(answer);
-  const refusedNames = refusedCarriers(answer.rows);
-  const answered = answer.bounded ? answer.bounded.count : answer.rows.length;
-  // Past the cap the outcome names a sample alone, so the message says how many refused and how to read which.
-  const refusedMessage = answer.bounded
-    ? `INGEST refused ${refused} of ${answered} carrier(s); the outcome keeps a tally past its row cap and names none beyond its sample: ingest a narrower --source to read each row`
-    : `INGEST refused ${refused} of ${answered} carrier(s): ${refusedNames.join(", ")}`;
-  const data = { verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary, audit: auditUri };
+  // A REFUSED FILE ENDS THE RUN NON-ZERO, AND EVERY REFUSED FILE GETS NAMED WITH ITS REFUSAL, however many
+  // rows the wave held. The landed carriers stay landed and pinned; the exit and the envelope say that the
+  // run did not take everything it was handed. A conflict gets named the same way and leaves the exit alone.
+  const { refused, conflicts } = settled;
+  const pageError = settled.pageError;
+  const { failed, braked, message: refusedMessage } = ingestVerdict(settled);
+  const data = {
+    verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
+    tallies: settled.tallies, refused, conflicts,
+    ...(settled.pages.length > 0 ? { pages: settled.pages.map((p) => p.requestId) } : {}),
+    audit: auditUri,
+  };
   emit(args, {
-    ...(refused === 0
-      ? { ok: true as const }
-      : { ok: false as const, error: { code: "verb-error", message: refusedMessage } }),
+    ...(failed
+      ? { ok: false as const, error: { code: "verb-error", message: refusedMessage ?? "INGEST refused" } }
+      : { ok: true as const }),
     requestId: result.requestId,
     data,
     human: () => {
-      console.log(refused === 0
+      console.log(braked !== null
+        ? `INGEST ✗ nothing applied: the mass-delete brake tripped (req ${result.requestId.slice(0, 8)})`
+        : pageError !== undefined
+        ? `INGEST ✗ ${refused.length} refusal(s) read, then a later wave failed; ${pageError.unread} carrier(s) stay unread (req ${result.requestId.slice(0, 8)})`
+        : refused.length === 0
         ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
-        : `INGEST ✗ ${refused} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
-      if (answer.bounded) {
-        for (const [decision, n] of Object.entries(answer.bounded.tallies)) console.log(`  ${decision.toUpperCase().padEnd(10)} × ${n}`);
-        console.log(`  ${answer.bounded.count} row(s) answered; the outcome keeps a tally past its row cap. A sample:`);
-      }
-      for (const c of answer.rows) {
+        : `INGEST ✗ ${refused.length} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
+      for (const [decision, n] of Object.entries(settled.tallies)) console.log(`  ${decision.toUpperCase().padEnd(10)} × ${n}`);
+      // Under the row cap every row prints. Past it the landed rows ride the tally above, and each row
+      // that asks for a hand prints below with its reason.
+      const asking = new Set([...refused, ...conflicts].map((r) => r.uri));
+      for (const c of settled.named.values()) {
+        if (asking.has(String(c["uri"]))) continue;
         const extra = c["reason"] ?? (Array.isArray(c["tombstoned"]) && (c["tombstoned"] as unknown[]).length ? `tombstoned ${(c["tombstoned"] as unknown[]).length}` : "");
         console.log(`  ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}${extra ? `  (${extra})` : ""}`);
-        if (c["code"] === "never-projected-path") console.error(`  ⚠ ${String(c["reason"] ?? c["uri"])}`);
       }
-      if (refused > 0 && answer.bounded) console.error(`  ⚠ ${refusedMessage}`);
+      for (const r of [...refused, ...conflicts]) {
+        console.error(`  ${r.decision.toUpperCase().padEnd(10)} ${r.uri}${r.file !== undefined ? `  (${r.file})` : ""}`);
+        console.error(`    ⚠ ${r.why}`);
+      }
+      if (pageError !== undefined || braked !== null) console.error(`  ⚠ ${refusedMessage}`);
       console.log(`\n  audit: ${auditUri}`);
     },
   });
-  return refused === 0 ? 0 : exitFor("verb-error");
-}
-
-/** The carriers an INGEST refused, by uri: each row whose decision reads `refuse`. */
-export function refusedCarriers(carriers: ReadonlyArray<Record<string, unknown>>): string[] {
-  return carriers.filter((c) => c["decision"] === "refuse").map((c) => String(c["uri"] ?? "(carrier)"));
+  return failed ? exitFor("verb-error") : 0;
 }

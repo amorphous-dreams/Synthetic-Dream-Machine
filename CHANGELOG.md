@@ -7,6 +7,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **Every refused carrier gets named.** `lares ingest --apply` prints each refused or conflicting carrier with its reason, however many carriers the wave holds, and asks the island again in pages where one answer cannot hold every row. A tripped mass-delete brake ends the run non-zero under its own name, `lares watch` ends non-zero while any carrier or deletion it carried stays unsettled, and `lares act LOAD` reports no `unknown` tally.
 - **A frameless meme put reads back whole.** `lares meme put` of a body with no frame lands it as bare data, and `lares meme get` answers the same bytes under the hash the put reported. A put of no bytes refuses under `empty-body`, and a read of a pointer whose body rests in the content tier refuses under `pointer-body`.
 - **Wiki deletes leave canon intact.** Deleting a canon title writes a tombstone into the working layer, where it hides the title; a later save replaces that tombstone. A composition without a working layer refuses the delete by name.
 - **The wiki follows its bag composition.** It shows the topmost resolved record, including a working tombstone or copy-up, when canon changes beneath it.

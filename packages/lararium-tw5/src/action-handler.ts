@@ -994,6 +994,16 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // A re-link never re-homes a record onto an address whose records never project: that carrier falls to
       // the gate below and refuses by name, and its vanished source stands as it stood.
       renames = renames.filter((r) => !neverProjects(r.toUri));
+      // A RE-LINK RE-HOMES RECORDS THAT STAND. A vanished source that holds no live record leaves nothing
+      // to re-home: answered as a rename, the target would skip its own ingest, land no record, and the
+      // gesture would still pin a base for it. So such a pair reads as no rename, and the target carrier
+      // falls to the gate below and lands as itself.
+      // The vanished source still rides the wave as a deletion: its group holds nothing live, so the
+      // tombstone removes nothing and the summary names the deletion applied.
+      const sources = liveTitles.filter((t) => !neverProjects(t));
+      const hollow = renames.filter((r) => groupOf(sources, r.fromUri).length === 0);
+      renames = renames.filter((r) => !hollow.includes(r));
+      tombstoneUris = [...tombstoneUris, ...hollow.map((r) => r.fromUri)];
       for (const r of renames) renameTargets.add(r.toUri);
     }
   }

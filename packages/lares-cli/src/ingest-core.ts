@@ -19,7 +19,7 @@ import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
 import { SyncedTree, syncedTreeKey, bagsFileToUri, mirrorDirFileToUri, larProjectionDir } from "@lararium/node";
-import type { SubmitResult } from "./verb-result.js";
+import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "./cas-stage.js";
 
@@ -251,14 +251,15 @@ export function recordLandedCarriers(
  * The island's per-carrier answer, as an outcome carries it.
  *
  * AN OUTCOME KEEPS EVERY ROW ONLY UNDER ITS AUDIT CAP. Past the cap (`boundOutcomeOutput`, `@lararium/tw5`
- * `verb-vm.ts`) the durable outcome holds a count, a tally per decision, a hash and a short sample in place of
- * the rows, and the CLI reads that same outcome as its answer. A whole-bag seed crosses the cap, so every reader
- * of `carriers` reads through here: `rows` holds what the outcome names (all rows under the cap, the sample past
- * it), and `bounded` holds the count and the tally where the rows stayed behind.
+ * `verb-vm.ts`) the durable outcome holds a count, a tally per decision, a hash, a short sample, and every
+ * `refuse` and `conflict` row up to the cap (`held`, with `heldMore` counting the ones it leaves unnamed), and
+ * the CLI reads that same outcome as its answer. A whole-bag seed crosses the cap, so every reader of
+ * `carriers` reads through here: `rows` holds what the outcome names (all rows under the cap; past it, the held
+ * rows), and `bounded` holds the count, the tally and `heldMore` where the rest stayed behind.
  */
 export interface CarrierAnswer {
   readonly rows:    ReadonlyArray<Record<string, unknown>>;
-  readonly bounded: { readonly count: number; readonly tallies: Readonly<Record<string, number>> } | null;
+  readonly bounded: { readonly count: number; readonly tallies: Readonly<Record<string, number>>; readonly heldMore: number } | null;
 }
 
 export function readCarrierAnswer(carriers: unknown): CarrierAnswer {
@@ -267,44 +268,282 @@ export function readCarrierAnswer(carriers: unknown): CarrierAnswer {
     const o = carriers as Record<string, unknown>;
     const count = o["boundedArrayCount"];
     const tallies = o["tallies"];
-    if (typeof count === "number" && tallies !== null && typeof tallies === "object" && !Array.isArray(tallies)) {
+    const held = o["held"];
+    const heldMore = o["heldMore"];
+    if (typeof count === "number" && tallies !== null && typeof tallies === "object" && !Array.isArray(tallies)
+        && Array.isArray(held) && typeof heldMore === "number") {
       const clean: Record<string, number> = {};
       for (const [k, v] of Object.entries(tallies as Record<string, unknown>)) if (typeof v === "number") clean[k] = v;
-      const sample = Array.isArray(o["sample"]) ? (o["sample"] as Array<Record<string, unknown>>) : [];
-      return { rows: sample, bounded: { count, tallies: clean } };
+      return { rows: held as Array<Record<string, unknown>>, bounded: { count, tallies: clean, heldMore } };
     }
   }
   return { rows: [], bounded: null };
 }
 
-/** How many carriers the answer says the island refused: the tally past the cap, the rows under it. */
-export function refusedCount(answer: CarrierAnswer): number {
-  if (answer.bounded) return answer.bounded.tallies["refuse"] ?? 0;
-  return answer.rows.filter((c) => c["decision"] === "refuse").length;
+/** A wave under this many carriers answers with every row whole. It never exceeds the outcome's audit cap
+ *  (`AUDIT_ARRAY_CAP`, `@lararium/tw5` `verb-vm.ts`); `tests/ingest-settles-every-row.test.ts` welds the two. */
+export const INGEST_PAGE = 32;
+
+/** One refused or conflicting carrier, as a person reads it: where, what the island decided, and why. */
+export interface AskingCarrier {
+  readonly uri:      string;
+  readonly file?:    string;
+  readonly decision: string;
+  readonly why:      string;
 }
 
-/** The decisions that leave every submitted carrier landed or already matching (a tombstone row names no candidate). */
-const LANDED_DECISIONS: ReadonlySet<string> = new Set(["ingest", "noop", "tombstone"]);
+/** Why the island refused or stood off, in its own words: every warning it gave, else its reason, else its code. */
+function whyOf(row: Record<string, unknown>): string {
+  const warnings = Array.isArray(row["warnings"]) ? (row["warnings"] as unknown[]).filter((w): w is string => typeof w === "string" && w !== "") : [];
+  if (warnings.length > 0) return warnings.join("; ");
+  if (typeof row["reason"] === "string" && row["reason"]) return row["reason"];
+  if (typeof row["code"] === "string" && row["code"]) return row["code"];
+  return row["decision"] === "conflict"
+    ? "the disk and the records both moved past the base this file last agreed on"
+    : "the island named no reason";
+}
+
+/** What an INGEST gesture settled: every wave it sent, and every row those waves named. */
+export interface IngestSettlement {
+  /** The first wave: its request id names the gesture's audit record, and its error ends the gesture. */
+  readonly first:    SubmitResult;
+  /** Every later wave the gesture sent to read a row the first answer left behind. */
+  readonly pages:    readonly SubmitResult[];
+  /** How many carriers the gesture submitted. */
+  readonly submitted: number;
+  /** Every carrier address the gesture submitted, and every vanished address it sent as a deletion. */
+  readonly asked:    readonly string[];
+  readonly askedDeletions: readonly string[];
+  /** The carriers the answer proves landed or already matching: a row that says so, a tally that proves
+   *  every unnamed carrier landed, or a rename the island confirmed. */
+  readonly landed:   ReadonlySet<string>;
+  /** The carriers no answer accounts for: neither landed, refused, nor standing in a conflict. A wave the
+   *  island answered without their rows, or a later wave that failed before reaching them. */
+  readonly unanswered: readonly string[];
+  /** The decision the island gave each carrier it NAMED, by uri. Past the cap a landed carrier may go unnamed. */
+  readonly named:    ReadonlyMap<string, Record<string, unknown>>;
+  /** Every carrier the island refused, each with its refusal. Complete: no refusal stays unnamed. */
+  readonly refused:  readonly AskingCarrier[];
+  /** Every carrier that stood off in a conflict, each named. Complete. */
+  readonly conflicts: readonly AskingCarrier[];
+  /** Carriers per decision over the whole gesture. */
+  readonly tallies:  Readonly<Record<string, number>>;
+  /** The first wave's deletion summary (renames, tombstones, a tripped brake). */
+  readonly deletions: Record<string, unknown> | undefined;
+  /** How many bases the gesture pinned. */
+  readonly recorded: number;
+  /** A later wave that ended in an error: the gesture stops there and names what stays unread. */
+  readonly pageError?: { readonly message: string; readonly unread: number };
+}
+
+/** What a settled gesture says of itself: whether the run took everything it was handed, and why it did not. */
+export interface IngestVerdict {
+  /** True where the run refused a carrier, a later wave failed, or the mass-delete brake applied nothing. */
+  readonly failed:  boolean;
+  /** The brake's own reason where it tripped; null otherwise. */
+  readonly braked:  string | null;
+  /** The sentence a person reads where the run failed; null where it took everything. */
+  readonly message: string | null;
+}
 
 /**
- * Record the observations an answer proves. Under the cap each row decides its own carrier
- * (`recordLandedCarriers`). Past the cap the rows stayed behind, so the tally must prove the whole wave: every
- * decision reads `ingest`, `noop` or `tombstone`, and the `ingest` and `noop` counts together equal the
- * submitted candidates. Then each candidate records as landed (its file still hashed as it stands now). Any
- * other decision in the tally (`refuse`, `conflict`, a rename row) names carriers this reader cannot tell
- * apart, so nothing records and the next scan reads them again; the island's own gate then noops what landed.
+ * A REFUSAL NEVER READS AS APPLIED. Four states end a run non-zero: a refused carrier (each one named), a
+ * later wave that failed (the count that stays unread named), a carrier no answer accounts for, and a
+ * tripped mass-delete brake, which applies nothing and answers no carrier row at all. A conflict gets named and leaves the verdict alone: the island
+ * surfaced it for a hand, and the run took every carrier it could decide.
  */
-export function recordLandedAnswer(
+export function ingestVerdict(s: IngestSettlement): IngestVerdict {
+  const braked = s.deletions?.["decision"] === "suspend"
+    ? String(s.deletions["reason"] ?? "the wave would remove more carriers than the brake allows")
+    : null;
+  if (braked !== null) {
+    return { failed: true, braked, message: `INGEST applied nothing: the mass-delete brake tripped (${braked}); ${s.submitted} carrier(s) and the wave's deletions stand unapplied` };
+  }
+  if (s.pageError !== undefined) {
+    return { failed: true, braked, message: `INGEST read ${s.refused.length} refusal(s) and then a later wave failed (${s.pageError.message}); ${s.pageError.unread} carrier(s) stay unread: run the ingest again` };
+  }
+  if (s.refused.length > 0) {
+    return { failed: true, braked, message: `INGEST refused ${s.refused.length} of ${s.submitted} carrier(s): ${s.refused.map((r) => r.uri).join(", ")}` };
+  }
+  if (s.unanswered.length > 0) {
+    return { failed: true, braked, message: `INGEST drew no answer for ${s.unanswered.length} of ${s.submitted} carrier(s): ${s.unanswered.join(", ")}; run the ingest again` };
+  }
+  return { failed: false, braked, message: null };
+}
+
+/**
+ * What a watcher still owes across its waves: each carrier that did not land, and each vanished address
+ * whose deletion did not apply, by address, with the reason in the island's or the wave's own words.
+ */
+export interface StandingAsks {
+  readonly owed:          ReadonlyMap<string, string>;
+  readonly owedDeletions: ReadonlyMap<string, string>;
+}
+
+export const NO_STANDING_ASKS: StandingAsks = { owed: new Map(), owedDeletions: new Map() };
+
+/** True where nothing stays owed. */
+export function standsClean(standing: StandingAsks): boolean {
+  return standing.owed.size === 0 && standing.owedDeletions.size === 0;
+}
+
+/** A wave that never answered (a thrown fault, a wait that ended): everything it carried stays owed. */
+export function standingAfterFault(
+  standing: StandingAsks, wave: { readonly asked: readonly string[]; readonly askedDeletions: readonly string[] }, message: string,
+): StandingAsks {
+  const owed = new Map(standing.owed);
+  const owedDeletions = new Map(standing.owedDeletions);
+  for (const uri of wave.asked) owed.set(uri, message);
+  for (const uri of wave.askedDeletions) owedDeletions.set(uri, message);
+  return { owed, owedDeletions };
+}
+
+/**
+ * Fold one settled wave into what stays owed, BY ADDRESS. A debt clears only where a wave proves that very
+ * carrier landed, or that very deletion applied: a later wave over other files clears nothing.
+ *
+ *   · a carrier the wave refused, or that drew no answer, stands owed with the reason;
+ *   · a carrier the answer proves landed (a row, a proving tally, a confirmed rename) leaves the set;
+ *   · a wave the island answered with an error, or that the brake stopped, leaves everything it carried
+ *     owed, its deletions too;
+ *   · a deletion the summary names applied (a tombstone, a rename's source) leaves the set.
+ *
+ * A conflict stays out: the island surfaced it for a hand, and the wave took every carrier it could decide.
+ * A long-lived watcher reads this at its stop and ends non-zero where anything stays owed.
+ */
+export function standingAfterWave(standing: StandingAsks, s: IngestSettlement): StandingAsks {
+  if (s.first.status === "error") return standingAfterFault(standing, s, s.first.errorMessage ?? "the daemon refused and named no reason");
+  const verdict = ingestVerdict(s);
+  if (verdict.braked !== null) return standingAfterFault(standing, s, `the mass-delete brake tripped (${verdict.braked})`);
+  const owed = new Map(standing.owed);
+  const owedDeletions = new Map(standing.owedDeletions);
+  for (const uri of s.landed) owed.delete(uri);
+  for (const r of s.refused) owed.set(r.uri, r.why);
+  const unread = s.pageError !== undefined ? `a later wave failed (${s.pageError.message})` : "the island answered the wave without this carrier's row";
+  for (const uri of s.unanswered) owed.set(uri, unread);
+  // The deletions the summary names applied. A summary that names none leaves each asked deletion owed.
+  const applied = new Set<string>();
+  if (s.deletions?.["decision"] === "apply") {
+    for (const uri of Array.isArray(s.deletions["tombstoned"]) ? (s.deletions["tombstoned"] as unknown[]) : []) applied.add(String(uri));
+    for (const r of Array.isArray(s.deletions["renames"]) ? (s.deletions["renames"] as Array<Record<string, unknown>>) : []) applied.add(String(r["fromUri"]));
+  }
+  for (const uri of applied) owedDeletions.delete(uri);
+  for (const uri of s.askedDeletions) if (!applied.has(uri)) owedDeletions.set(uri, "the wave's deletion summary names no tombstone and no rename for it");
+  return { owed, owedDeletions };
+}
+
+/**
+ * THE WHOLE GESTURE: submit, read every row a person or the base needs, pin what landed.
+ *
+ * One wave carries every candidate. Under the audit cap its outcome names every row and the gesture ends
+ * there. Past the cap the outcome holds a tally and the rows that ask for a hand. Where it leaves a refusal
+ * unnamed (`heldMore` above zero), or its tally proves less than "every unnamed carrier landed", the gesture
+ * asks again for every carrier the summary did not name, in waves under the cap, so each answers with its
+ * row whole.
+ *
+ * A carrier asked again reads against the records the first wave left: a landed one answers `noop` and its
+ * render, a refused one answers its refusal again. Nothing lands twice. Deletions ride the first wave alone.
+ */
+export async function settleIngest(
+  opts: SubmitIngestOpts,
   tree: SyncedTree,
-  toBag: string,
-  candidates: readonly ScanRow[],
-  answer: CarrierAnswer,
-): number {
-  if (!answer.bounded) return recordLandedCarriers(tree, toBag, candidates, answer.rows);
-  const { tallies } = answer.bounded;
-  for (const decision of Object.keys(tallies)) if (!LANDED_DECISIONS.has(decision)) return 0;
-  if ((tallies["ingest"] ?? 0) + (tallies["noop"] ?? 0) !== candidates.length) return 0;
-  return recordLandedCarriers(tree, toBag, candidates, candidates.map((c) => ({ uri: c.uri, decision: "ingest" })));
+  submit: (o: SubmitIngestOpts) => Promise<SubmitResult> = submitIngest,
+): Promise<IngestSettlement> {
+  const first = await submit(opts);
+  const asked = opts.candidates.map((c) => c.uri);
+  const askedDeletions = (opts.deletions ?? []).map((d) => d.uri);
+  if (first.status === "error") {
+    return {
+      first, pages: [], submitted: asked.length, asked, askedDeletions, landed: new Set(), unanswered: asked,
+      named: new Map(), refused: [], conflicts: [], tallies: {}, deletions: undefined, recorded: 0,
+    };
+  }
+
+  const summary = summaryOutput(first) ?? {};
+  const deletions = (summary as { deletions?: Record<string, unknown> }).deletions;
+  const answer = readCarrierAnswer((summary as { carriers?: unknown }).carriers);
+  const byUri = new Map(opts.candidates.map((c) => [c.uri, c] as const));
+  const named = new Map<string, Record<string, unknown>>();
+  for (const row of answer.rows) named.set(String(row["uri"]), row);
+  const pages: SubmitResult[] = [];
+  let recorded = 0;
+  let pageError: IngestSettlement["pageError"];
+  /** Carriers a tally proves landed though no row names them. */
+  const provenLanded = new Set<string>();
+  // A carrier the island re-homed from a vanished source rides the deletion summary and pins there
+  // (`applyConfirmedRenames`).
+  const rehomed = new Set<string>();
+  if (deletions?.["decision"] === "apply" && Array.isArray(deletions["renames"])) {
+    for (const r of deletions["renames"] as Array<Record<string, unknown>>) rehomed.add(String(r["toUri"]));
+  }
+
+  if (!answer.bounded) {
+    recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, answer.rows);
+  } else {
+    // Who stays unread. Each unnamed carrier landed only where the answer PROVES it: no refusal stays
+    // unnamed, and the tally's landed count equals the unnamed carriers. Where the tally proves less (a row
+    // this reader cannot place, a row short), every unnamed carrier gets asked again and its own row decides.
+    const unnamed = opts.candidates.filter((c) => !named.has(c.uri) && !rehomed.has(c.uri));
+    const { tallies: told, heldMore } = answer.bounded;
+    const proven = heldMore === 0 && (told["ingest"] ?? 0) + (told["noop"] ?? 0) === unnamed.length;
+    const askAgain: ScanRow[] = [];
+    if (!proven) {
+      askAgain.push(...unnamed);
+    } else {
+      for (const c of unnamed) provenLanded.add(c.uri);
+      recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, unnamed.map((c) => ({ uri: c.uri, decision: "ingest" })));
+    }
+    for (let at = 0; at < askAgain.length && pageError === undefined; at += INGEST_PAGE) {
+      const page = askAgain.slice(at, at + INGEST_PAGE);
+      const { deletions: _first, changeId: _id, ...rest } = opts;
+      const result = await submit({ ...rest, candidates: page });
+      pages.push(result);
+      if (result.status === "error") {
+        pageError = { message: result.errorMessage ?? "the daemon refused and named no reason", unread: askAgain.length - at };
+        break;
+      }
+      const rows = readCarrierAnswer((summaryOutput(result) as { carriers?: unknown } | undefined)?.carriers).rows;
+      for (const row of rows) named.set(String(row["uri"]), row);
+      recorded += recordLandedCarriers(tree, opts.toBag, page, rows);
+    }
+  }
+
+  const asking = (decision: string): AskingCarrier[] => [...named.values()]
+    .filter((row) => row["decision"] === decision)
+    .map((row) => {
+      const uri = String(row["uri"] ?? "(carrier)");
+      const file = byUri.get(uri)?.file;
+      return { uri, ...(file !== undefined ? { file } : {}), decision, why: whyOf(row) };
+    });
+  const refused = asking("refuse");
+  const conflicts = asking("conflict");
+  // The tally over the whole gesture: the rows where every carrier got named, else the first wave's own
+  // count with the asking decisions corrected to what the later waves named.
+  const tallies: Record<string, number> = {};
+  if (!answer.bounded) {
+    for (const row of answer.rows) { const d = String(row["decision"]); tallies[d] = (tallies[d] ?? 0) + 1; }
+  } else {
+    Object.assign(tallies, answer.bounded.tallies);
+    if (pageError === undefined) {
+      if (refused.length > 0) tallies["refuse"] = refused.length; else delete tallies["refuse"];
+      if (conflicts.length > 0) tallies["conflict"] = conflicts.length; else delete tallies["conflict"];
+    }
+  }
+  // What the answer accounts for. A row that says a carrier landed, a tally that proves it, a rename the
+  // island confirmed; a refusal and a conflict each named. Every other carrier drew no answer.
+  const landed = new Set<string>([...provenLanded, ...rehomed].filter((uri) => byUri.has(uri)));
+  for (const [uri, row] of named) {
+    const decision = String(row["decision"]);
+    if (decision === "ingest" || decision === "noop" || decision === "rename-target" || decision === "rename") landed.add(uri);
+    else landed.delete(uri);
+  }
+  const askingUris = new Set([...refused, ...conflicts].map((r) => r.uri));
+  const unanswered = asked.filter((uri) => !landed.has(uri) && !askingUris.has(uri));
+  return {
+    first, pages, submitted: asked.length, asked, askedDeletions, landed, unanswered,
+    named, refused, conflicts, tallies, deletions, recorded,
+    ...(pageError !== undefined ? { pageError } : {}),
+  };
 }
 
 /** The observation hash of a carrier file as it stands now (body plus `.meta` pairing), or null where unreadable. */
