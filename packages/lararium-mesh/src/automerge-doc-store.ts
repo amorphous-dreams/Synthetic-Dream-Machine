@@ -31,7 +31,7 @@ import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin 
 import type { MemeProjection } from "./meme-provider.js";
 import { MemeProvider } from "./meme-provider.js";
 import type { LarDoc } from "./base-doc.js";
-import { readParallelDrafts, readsParallelDrafts, type ParallelDraftsChange } from "./parallel-drafts.js";
+import { parallelDraftTitle, readParallelDrafts, readsParallelDrafts, type ParallelDraftsChange } from "./parallel-drafts.js";
 import { headsEqual } from "./wiki-recipe.js";
 import { plainField, plainRecord, plainValue, storedDeleted, type StoredLarRecord } from "./stored-value.js";
 import { storedRecord, storedValue } from "./stored-record.js";
@@ -350,6 +350,19 @@ export class AutomergeDocStore implements LarTiddlerStore {
     if (moved.length === 0 && movedTombstones.length === 0) return;
 
     const based = requestedBase !== undefined && currentHeads !== null && !headsEqual(requestedBase, currentHeads);
+    // A REMOVAL COUNTS AS A CHANGE. A based write removes, at its base, each field the hand's record no
+    // longer carries. Automerge keeps a concurrent SET of that field and records no conflict, so the
+    // removal would vanish without a word: note what this write removes, and after the change read which
+    // of those fields still stand.
+    const removing = new Map<string, { record: LarTiddlerRecord; fields: string[] }>();
+    if (based) {
+      for (const record of moved) {
+        const atBaseRecord = current?.[record.tiddler.title] as { tiddler?: Record<string, unknown> } | undefined;
+        if (!atBaseRecord?.tiddler || record.meta?.deleted === true) continue;
+        const fields = Object.keys(atBaseRecord.tiddler).filter((key) => key !== "$origin-bag" && !(key in record.tiddler));
+        if (fields.length > 0) removing.set(record.tiddler.title, { record, fields });
+      }
+    }
     const change = (doc: LarDoc) => {
       const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       for (const record of moved) {
@@ -392,6 +405,40 @@ export class AutomergeDocStore implements LarTiddlerStore {
     for (const record of moved) fired.push({ title: record.tiddler.title, record: tiddlersNow?.[record.tiddler.title] ? _freezeRecord(tiddlersNow[record.tiddler.title]!) : null, ...envelope });
     for (const title of movedTombstones) fired.push({ title, record: tiddlersNow?.[title] ? _freezeRecord(tiddlersNow[title]!) : _tombstoneRecord(title), ...envelope });
     this.provider.fireFamily(fired);
+    for (const [title, { record, fields }] of removing) {
+      const standing = tiddlersNow?.[title];
+      if (!standing || storedDeleted(standing)) continue;
+      const kept = fields.filter((field) => plainField(standing, field) !== undefined);
+      if (kept.length > 0) this._surfaceRemoval(title, record, kept, origin, madeAt);
+    }
+  }
+
+  /**
+   * A hand removed fields a concurrent writer set. The merged record keeps the concurrent values (the
+   * store decides nothing); the hand's record, WITHOUT those fields, surfaces as one attributed draft in
+   * the parallel-draft shape, so a reader keeps it beside the live record until a person settles it.
+   * `lar-conflict-removed` names the fields the hand removed; none of them reads live.
+   */
+  private _surfaceRemoval(title: string, record: LarTiddlerRecord, fields: readonly string[], origin: ChangeOrigin, madeAt: readonly string[] | undefined): void {
+    if (this._draftListeners.size === 0) return;
+    const by = origin.kind === "tw-local" ? origin.instanceId : origin.kind;
+    const modifier = (record.tiddler as Record<string, unknown>)["modifier"];
+    const who = typeof modifier === "string" && modifier !== "" ? modifier : by;
+    const draft: LarTiddlerRecord = Object.freeze({
+      tiddler: Object.freeze({
+        ...(plainValue(record.tiddler) as Record<string, unknown>),
+        title: parallelDraftTitle(title, who),
+        "draft.of": title,
+        "draft.title": title,
+        "lar-conflict-actor": by,
+        "lar-conflict-ops": (madeAt ?? []).join(" "),
+        "lar-conflict-fields": fields.join(" "),
+        "lar-conflict-live": "",
+        "lar-conflict-removed": fields.join(" "),
+      }),
+    });
+    const change: ParallelDraftsChange = { title, bag: this.bagId, drafts: [draft] };
+    for (const fn of this._draftListeners) fn(change);
   }
 
   /** A tombstone is a family of one: one change marking the title deleted, one tombstone fire. */

@@ -30,6 +30,9 @@
  *   - `lar-conflict-live`   — the conflicted fields whose live value is THIS actor's, space-separated
  *     (`*` when its whole record reads live; empty when none does). Last-writer-wins resolves each
  *     key on its own, so the live record can be a mosaic of several actors' values.
+ * A REMOVAL surfaces beside these (`AutomergeDocStore`): a hand that removed a field a concurrent writer
+ * set leaves no conflict op, so the store raises the hand's record without the field as one draft whose
+ * `lar-conflict-removed` names the removed fields; none of them reads live.
  * `<who>` reads the actor's own `modifier` value when it wrote one, else the actor id; colliding names
  * gain actor and operation identity so titles remain unique even for one actor.
  */
