@@ -72,9 +72,19 @@ describe("open", () => {
     const o = openVk(tree, [{ kind: "paper", sheets: [words.join(" ")] }]);
     expect(o.reading).toBe("no-slot-opens");
     expect(o.reading === "no-slot-opens" && o.notes.some((n) => /a paper credential reads no secret: its sheets fail their own check/.test(n))).toBe(true);
-    // The note names the fault and quotes no word of the sheet.
-    const spoken = o.reading === "no-slot-opens" ? o.notes.join("\n") : "";
-    for (const word of new Set(words)) if (word.length > 5) expect(spoken).not.toContain(word);
+    // The note names the fault and quotes no word of the sheet: it reads the same, byte for byte, over an unrelated
+    // sheet that fails the same way, so nothing in it varies with what a person typed. (A word hunt over the note would
+    // misread: the note's own fixed words, "secret" among them, sit in the paper wordlist.)
+    const other = confirmedPaper().draft.sheets[0]!.split(" ");
+    expect(other.join(" ")).not.toBe(draft.sheets[0]);
+    other[6] = other[6] === "academic" ? "acid" : "academic";
+    const o2 = openVk(tree, [{ kind: "paper", sheets: [other.join(" ")] }]);
+    const notesOf = (r: typeof o) => (r.reading === "no-slot-opens" ? r.notes : null);
+    expect(notesOf(o)).toHaveLength(1);
+    expect(notesOf(o2)).toEqual(notesOf(o));
+    // CONTROL: the same comparison catches a note that quotes its sheet.
+    const quoting = (sheet: string[]) => [`${notesOf(o)![0]} (${sheet.slice(8).join(" ")})`];
+    expect(quoting(other)).not.toEqual(quoting(words));
   });
 });
 
