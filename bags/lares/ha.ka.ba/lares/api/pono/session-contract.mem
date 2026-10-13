@@ -142,6 +142,10 @@ The resolver keys bindings by `prefix/fingerprint` and stores them through `daem
 
 ''The first test of this contract'': ask a session island's sync path for an arbitrary document. One byte of another face's plane, or one catalog name from it, breaks the contract.
 
+''The view rides the carrier.'' A peer names its own id, so a verdict keyed by peer id protects nothing from an island that announces another's. The view mints the island's peer id and judges every message that crosses the island's own port, in both directions; an island that announces any other id loses its channel. A fetch the view refuses answers as absence does, so a refusal tells an island nothing about what stands.
+
+> ''Three house readings, marked as such.'' ''A bag reaches a session read-only'': a session writes its wiki's working, personal and draft layers and its face's own planes, and a move into a bag runs as an owner-side verb, never as an island's sync write. ''One table of profile against layer decides a write'': a seat writes the working layer alone, and the watcher writes the working layer and surfaces drafts. ''Content opens by reference'': a session reads the content its recipe names and the content a document it may read references, and a string that names no content address reaches no store.
+
 <<~/ahu>>
 
 <<~ ahu #/the-effective-recipe>>
@@ -257,10 +261,15 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 * ''A CLI over the local socket'' with caller-generated request ids and durable outcomes (`packages/lares-cli/src/local-connector.ts`, `packages/lararium-node/src/uds-channel.ts`); no socket binds a session to a face.
 * ''A watcher that names its own destination.'' `lares watch --source <dir> --to <bagUri>` takes the bag from its caller and submits each wave under the vessel's identity (`packages/lares-cli/src/commands/watch.ts`); no lease and no face stands between a disk edit and its signature.
 
+''What stands specified in code.'' Each names a module and its vectors. No production path calls any of them, so none reads as built (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/wiring-an-unreached-module">>).
+
+* ''The hands' profiles.'' `face`, `verb`, `ingest` and `seat` (`packages/lararium-mesh/src/session-contract.ts`). A session carries one from its open to its end, and a switch of face keeps it.
+* ''The scoped document view'' (`packages/lararium-mesh/src/session-document-view.ts` over `gated-sync-leg.ts`). It answers announcements, fetches, writes, catalog names and content reads from the session's own facets.
+
 ''OWED ~ twelve debts, each resting on the one before it.'' A builder closes each with its callers and its own proof, so the tree keeps a runnable contract at every step.
 
 # ''The contract in mesh.'' The session type, its validators, the port and socket binding, and refusal of a stale owner epoch or generation.
-# ''Scoped document access.'' The session-scoped view over announcements, fetches, writes, catalog and content-addressed reads; no durable per-island store.
+# ''Scoped document access.'' The session-scoped view over announcements, fetches, writes, catalog and content-addressed reads; no durable per-island store. The view and its sync leg stand specified in code, and no island rides them. The debt closes when every interactive surface mounts under the view in place of the broad port, which waits on a verified face (debt three) and on callers that hold a session (debts five and seven). Three hunks close with it: the share verdict's caller keeps an owner from offering a session island a document beyond its facets, the leaf's relay adapter wears the one-way gate over its hearth's canon, and the hearth wears that gate's twin toward its leaves.
 # ''The face proof and its grants.'' Two faces on one vessel present different proof subjects, and a copied id or an own-hand claim gains no plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>).
 # ''The recipe resolver and the pool's identity.'' The working-layer binding follows #/the-working-layer; two same-face sessions take two islands, a repeated exact mount opens one, and a recipe write reaches the next mount by sync without changing a live mount.
 # ''Node callers move to sessions.'' Two CLI sessions wear different faces at once over one Repo; a copied socket and a cross-face receipt read both refuse; a same-face receipt reads after the CLI that asked has exited.
@@ -295,6 +304,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;otFqEmM31AkrnE14YCaLPLRAiN7aDSF5mGswrY7If4w
+<<^ code="&#x0003;">>ni:///sha-256;OalIo50KVP1nxH86Lr9Jy8aGbz9KlgoxZ60qqtybLvQ
 
 <<^ code="&#x0004;" -> to="?">>

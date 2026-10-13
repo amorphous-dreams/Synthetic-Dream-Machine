@@ -16,7 +16,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, test, expect } from "vitest";
 import {
-  SESSION_SCHEMA_VERSION, SessionContractError, SessionTable, sessionBinding,
+  CAPABILITY_PROFILES, HAND_PROFILES, SESSION_SCHEMA_VERSION, SessionContractError, isCapabilityProfile, refuseBeyondProfile, SessionTable, sessionBinding,
   sessionTransitionLegal, validateSessionEnvelope, validateSessionFace,
   type SessionFace, type SessionState,
 } from "../src/session-contract.js";
@@ -28,7 +28,7 @@ const face = (suffix = "a"): SessionFace => ({
 });
 const envelope = (sessionId: string, ownerEpoch = "epoch-a", generation = 0) => ({ schemaVersion: SESSION_SCHEMA_VERSION, ownerEpoch, sessionId, generation });
 const opened = (table: SessionTable, binding = sessionBinding("port"), wearing: SessionFace = face()) => {
-  const result = table.open(binding, wearing);
+  const result = table.open(binding, wearing, "face");
   if (!result.ok) throw new Error(result.refusal);
   return result.session;
 };
@@ -101,7 +101,7 @@ describe("session contract", () => {
     expect(validateSessionFace({ ...face(), admitRef: "" })).toBeNull();
     // A session opens on no such face, and what a lawful open hands back carries exactly the face's own keys.
     const table = new SessionTable("epoch-a");
-    expect(table.open(sessionBinding("port"), rooted)).toEqual({ ok: false, refusal: "face-malformed" });
+    expect(table.open(sessionBinding("port"), rooted, "face")).toEqual({ ok: false, refusal: "face-malformed" });
     expect(table.size).toBe(0);
     const session = opened(table);
     expect(Object.keys(session.face).sort()).toEqual(["admitRef", "causalRevision", "personaGroup", "planes", "proofSubject"]);
@@ -172,7 +172,7 @@ describe("session contract", () => {
     expect(opened(table).sessionId).toBe("session-b");
     const stuck = new SessionTable("epoch-a", () => "session-a");
     opened(stuck);
-    expect(() => stuck.open(sessionBinding("port"), face())).toThrow(SessionContractError);
+    expect(() => stuck.open(sessionBinding("port"), face(), "face")).toThrow(SessionContractError);
     expect(stuck.size).toBe(1);
     const a = opened(new SessionTable("epoch-a")), b = opened(new SessionTable("epoch-a"));
     expect(a.sessionId).not.toBe(b.sessionId);
@@ -203,7 +203,7 @@ describe("session contract", () => {
     for (const hostile of [thrower, getter]) {
       expect(validateSessionFace(hostile)).toBeNull();
       expect(validateSessionEnvelope(hostile)).toBeNull();
-      expect(table.open(sessionBinding("port"), hostile)).toEqual({ ok: false, refusal: "face-malformed" });
+      expect(table.open(sessionBinding("port"), hostile, "face")).toEqual({ ok: false, refusal: "face-malformed" });
       expect(table.check(hostile, sessionBinding("port"))).toEqual({ ok: false, refusal: "malformed-message" });
     }
     // A face whose getter answers lawfully gets COPIED by value: what the session wears never re-reads its source.
@@ -215,13 +215,37 @@ describe("session contract", () => {
     expect(table.size).toBe(0);
   });
 
+  test("hands differ by profile: the owner names one at the open, and a switch of face keeps it", () => {
+    // Every hand the law names carries a profile the law names, and no two hands share one.
+    expect(Object.keys(HAND_PROFILES).sort()).toEqual(["cli", "seat", "tab", "watcher"]);
+    expect([...new Set(Object.values(HAND_PROFILES))].sort()).toEqual([...CAPABILITY_PROFILES].sort());
+    const table = new SessionTable("epoch-a", (() => { let id = 0; return () => `session-${++id}`; })());
+    for (const profile of CAPABILITY_PROFILES) {
+      const result = table.open(sessionBinding("socket"), face(), profile);
+      expect(result).toMatchObject({ ok: true, session: { profile } });
+    }
+    // A profile the law does not name opens nothing: a nonsense word, an absent one, an object, a wider-sounding one.
+    for (const unknown of ["root", "", undefined, null, { profile: "face" }, "face ", "FACE"]) {
+      expect(isCapabilityProfile(unknown)).toBe(false);
+      expect(table.open(sessionBinding("socket"), face(), unknown)).toEqual({ ok: false, refusal: "profile-unknown" });
+    }
+    expect(table.size).toBe(CAPABILITY_PROFILES.length);
+    // A seat that switches its face stays a seat.
+    const seat = table.open(sessionBinding("socket"), face("a"), HAND_PROFILES.seat);
+    if (!seat.ok) throw new Error(seat.refusal);
+    table.transition(seat.session.sessionId, "switching");
+    expect(table.advance(seat.session.sessionId, 0, face("b"))).toMatchObject({ ok: true, session: { profile: "seat", generation: 1, face: face("b") } });
+    // A verb beyond a profile refuses by a name that carries both.
+    expect(refuseBeyondProfile("seat", "write")).toEqual({ ok: false, refusal: "beyond-profile", profile: "seat", verb: "write" });
+  });
+
   test("one binding holds one session and can reopen after close", () => {
     const table = new SessionTable("epoch-a", (() => { let id = 0; return () => `session-${++id}`; })());
     const binding = sessionBinding("port");
     const first = opened(table, binding);
-    expect(table.open(binding, face("b"))).toEqual({ ok: false, refusal: "binding-already-bound" });
+    expect(table.open(binding, face("b"), "face")).toEqual({ ok: false, refusal: "binding-already-bound" });
     table.close(first.sessionId);
-    expect(table.open(binding, face("b")).ok).toBe(true);
+    expect(table.open(binding, face("b"), "face").ok).toBe(true);
   });
 
   test.each(["switching", "revoked", "closing"] as const)("check refuses %s sessions", (state) => {

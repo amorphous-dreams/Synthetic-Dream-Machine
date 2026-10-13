@@ -11,7 +11,7 @@
  */
 
 import { Repo } from "@automerge/automerge-repo";
-import type { StorageAdapterInterface } from "@automerge/automerge-repo";
+import type { PeerId, StorageAdapterInterface } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 
 export interface IslandRepoConfig {
@@ -23,6 +23,9 @@ export interface IslandRepoConfig {
   documentScope?: string;
   /** Refuse this document while carrying all other documents on the crossing. */
   denyDocument?: string;
+  /** The peer ID the vessel's owner named for this island. An island under a session-scoped document view
+   *  announces this ID and no other; absent, the Repo names its own. */
+  peerId?: string;
 }
 
 function documentIdOf(url: string): string {
@@ -33,6 +36,7 @@ function documentIdOf(url: string): string {
 export function makeIslandRepo(cfg: IslandRepoConfig): Repo {
   return new Repo({
     ...(cfg.storage ? { storage: cfg.storage } : {}),
+    ...(cfg.peerId ? { peerId: cfg.peerId as PeerId } : {}),
     network: [new MessageChannelNetworkAdapter(cfg.syncPort)],
     ...((cfg.documentScope || cfg.denyDocument) ? { shareConfig: {
           announce: async (_peerId, documentId) => cfg.documentScope

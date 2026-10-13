@@ -441,7 +441,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `W11` Keyhive as the private-authority substrate: a narrow probe before the build. House. W.
 
 !!! ONE FACE
-* `F1` The scoped document view replaces the broad sync port (`island-protocol.ts`); it also stops an admitted leaf's Repo sync from writing the hearth's canon documents both ways (`hearth-canon.ts`, `open-browser-vessel.ts`). O1.
+* `F1` The scoped document view stands specified in mesh (`session-document-view.ts` over `gated-sync-leg.ts`), and no island rides it. Owed: every interactive surface mounts under it in place of the broad sync port, which waits on a verified face (train W) and on callers that hold a session (`F4`, `F6`); the share verdict's caller keeps an owner from offering a session island a document beyond its facets; an admitted leaf's relay adapter wears the one-way gate over its hearth's canon documents, and the hearth wears that gate's twin toward its leaves (`hearth-canon.ts`, `open-browser-vessel.ts`, `open-node-vessel.ts`). O1.
 * `F2` One recipe resolver; the pool keyed by the whole session key; one vessel-level proof that a recipe naming an offering resolves through a vessel path. O1.
 * `F3` One working document per (face, wiki, slot kind) at a face-secret address. O1.
 * `F4` Node callers move to sessions; receipts bind to the face; verb outcomes and the effect index follow the working layer with their reader (`verb-vm.ts`, `uds-channel.ts`). O1.
@@ -587,8 +587,8 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 ''Riskiest'': the design may turn out to need a signed shape, since the removal act rides the face's log.
 
 !!! O1 ~ ONE FACE's sessions (its contract landed; the working address onward waits on W's cutover)
-# ''Landed ahead'': the session contract in mesh (`session-contract.ts`).
-# The scoped document view.
+# ''Landed ahead'': the session contract in mesh (`session-contract.ts`); the scoped document view (`session-document-view.ts`), specified in code and reached by no production caller.
+# The scoped document view's compose hunks: the share verdict's caller, the leaf's one-way gate and the hearth's twin.
 # One recipe resolver and the pool's key.
 # The working document's address.
 # Node callers move to sessions.
@@ -759,6 +759,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Xb_0ZWb1dKT5zQ6ikeMk1BaRYvASDLkWHG9ODSYiYQc
+<<^ code="&#x0003;">>ni:///sha-256;8ajQVc-geISbE_zZdHxNztZpaGENhMH9TutjEYwe-0A
 
 <<^ code="&#x0004;" -> to="?">>

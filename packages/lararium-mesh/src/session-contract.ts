@@ -17,6 +17,9 @@
  *     hold a persona root, a seed, a signer or any bytes, in the type or at the validator.
  *   · NO ROSTER. The table lives in memory, hands out frozen copies, and offers no serializer and no
  *     enumeration: a list of live sessions would record which faces one vessel wore together.
+ *   · HANDS DIFFER BY PROFILE, NEVER BY KEY. Every hand that reaches a vessel opens a session, and a session
+ *     carries one capability profile for its whole life. The owner names the profile from the hand it
+ *     verified; no message claims one, and a switch of face keeps it.
  *   · A CLOSED ID NEVER ROUTES AGAIN. Within one owner epoch no id serves two sessions, so an envelope kept
  *     from a closed session opens nothing. The table keeps a closed session's id for that, and nothing else
  *     of it: no face, no binding.
@@ -35,13 +38,42 @@ export type SessionState = "opening" | "live" | "switching" | "revoked" | "closi
 /** Every named refusal the table answers. A refusal never mutates the table. */
 export const SESSION_REFUSALS = [
   "malformed-message", "stale-owner-epoch", "unknown-session", "unbound-session", "stale-generation",
-  "session-not-live", "session-not-switching", "binding-already-bound", "face-malformed",
+  "session-not-live", "session-not-switching", "binding-already-bound", "face-malformed", "profile-unknown",
 ] as const;
 export type SessionRefusal = (typeof SESSION_REFUSALS)[number];
 
 /** A programming fault against the contract: an illegal state step, an unknown id handed to `transition`,
  *  or a mint that yields no fresh id. Its message leads with the fault's name. */
 export class SessionContractError extends Error {}
+
+// ── The hands and their profiles ────────────────────────────────────────────────────────────────
+
+/**
+ * The capability profiles, one per hand: `face` (a person in a live wiki: the face's own reach), `verb` (a
+ * person at the CLI: the reach of the verb the run names), `ingest` (the disk watcher: ingest for the wikis
+ * it leases) and `seat` (a spirit: narrower than the face's, its writes landing in the working layer alone).
+ */
+export const CAPABILITY_PROFILES = ["face", "verb", "ingest", "seat"] as const;
+export type CapabilityProfile = (typeof CAPABILITY_PROFILES)[number];
+
+/** Each hand's profile. A hand names WHO moved; the face names the relation the move speaks in. */
+export const HAND_PROFILES = Object.freeze({ tab: "face", cli: "verb", watcher: "ingest", seat: "seat" } as const);
+export type Hand = keyof typeof HAND_PROFILES;
+
+export function isCapabilityProfile(value: unknown): value is CapabilityProfile {
+  return typeof value === "string" && (CAPABILITY_PROFILES as readonly string[]).includes(value);
+}
+
+/** A verb beyond a profile refuses by name: the refusal carries the profile and the verb it refused. */
+export interface ProfileRefusal {
+  readonly ok:      false;
+  readonly refusal: "beyond-profile";
+  readonly profile: CapabilityProfile;
+  readonly verb:    string;
+}
+export function refuseBeyondProfile(profile: CapabilityProfile, verb: string): ProfileRefusal {
+  return Object.freeze({ ok: false, refusal: "beyond-profile", profile, verb });
+}
 
 /** The absolute ids of a face's four planes. */
 export interface SessionFacePlanes {
@@ -118,6 +150,7 @@ export interface Session {
   readonly ownerEpoch: string;                    // the minting owner's boot epoch
   readonly generation: number;                    // advances by one at each switch
   readonly face:       SessionFace;
+  readonly profile:    CapabilityProfile;         // the hand's bound, fixed for the session's whole life
   readonly caps:       readonly string[];         // facet LABELS; the facets rest with the sovereign worker
   readonly state:      SessionState;
   readonly surfaces:   readonly SessionSurface[];
@@ -245,13 +278,15 @@ export class SessionTable {
   get size(): number { return this.#records.size; }
 
   /**
-   * Open a session on `binding` wearing `face`. One binding holds at most one session. The session stands
-   * `live` at generation 0 under a freshly minted id.
+   * Open a session on `binding` wearing `face` under `profile`, the bound of the hand the owner verified.
+   * One binding holds at most one session. The session stands `live` at generation 0 under a freshly
+   * minted id.
    */
-  open(binding: SessionBinding, face: unknown, caps: readonly string[] = []): SessionOpenResult {
+  open(binding: SessionBinding, face: unknown, profile: unknown, caps: readonly string[] = []): SessionOpenResult {
     if (this.#bound.has(binding)) return { ok: false, refusal: "binding-already-bound" };
     const worn = validateSessionFace(face);
     if (!worn) return { ok: false, refusal: "face-malformed" };
+    if (!isCapabilityProfile(profile)) return { ok: false, refusal: "profile-unknown" };
     if (!Array.isArray(caps) || !caps.every(nonEmptyString)) return { ok: false, refusal: "malformed-message" };
     let sessionId: string | null = null;
     for (let i = 0; i < MINT_TRIES && sessionId === null; i++) {
@@ -260,7 +295,7 @@ export class SessionTable {
     }
     if (sessionId === null) throw new SessionContractError("session-id-mint-exhausted");
     const session = frozenSession({
-      sessionId, ownerEpoch: this.#ownerEpoch, generation: 0, face: worn, caps, state: "live", surfaces: [],
+      sessionId, ownerEpoch: this.#ownerEpoch, generation: 0, face: worn, profile, caps, state: "live", surfaces: [],
     });
     this.#records.set(sessionId, { session, binding });
     this.#bound.set(binding, sessionId);
