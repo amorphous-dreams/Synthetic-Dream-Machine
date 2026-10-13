@@ -32,7 +32,7 @@ import {
   type HandleCard,
 } from "@lararium/mesh";
 import { parseHandleCardCarriage } from "../handle-carriage.js";
-import { loadHandleBook, saveHandleBook } from "../sealed-rows.js";
+import { loadHandleBook, saveHandleBook, wornFaceKey } from "../sealed-rows.js";
 import { makeDaemonCircleStore } from "../daemon-circle-store.js";
 import { vesselDid } from "../env.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
@@ -94,11 +94,13 @@ async function circleAdd(args: ParsedArgs): Promise<number> {
 
   const circles = makeDaemonCircleStore(await vesselDid());
   const book    = await loadHandleBook();
+  const by      = await wornFaceKey();
 
   let result;
   try {
     result = await composeFollow({
       book, circles, nym, circleId,
+      ...(by ? { by } : {}),
       ...(petname && petname.length > 0 ? { petname } : {}),
       ...(card ? { card } : {}),
     });
@@ -152,7 +154,7 @@ async function circleCard(args: ParsedArgs): Promise<number> {
   if (!card) throw new UsageError("no self-certifying HandleCard in the carriage — the card did not arrive (re-carry a `#card=<base64url>` token).");
 
   const book    = await loadHandleBook();
-  const verdict = await book.ingest(card);
+  const verdict = await book.ingest(card, undefined, await wornFaceKey());
   if (!verdict.ok) throw new UsageError(`handle-card refused (${verdict.reject}) — the book holds this nym to its own lineage (anti-rollback / anti-fork).`);
   await saveHandleBook(book);   // persist the recogniser's memory — the nym is now known, ready to follow
 

@@ -52,6 +52,16 @@ export function sealedDeclarationStore(): PersonaDeclarationStore {
   };
 }
 
+/**
+ * The root key of the face this vessel wears, or undefined where it wears none it holds a root for. A recognition
+ * made while a face stands worn rests under that face's tag in the handle-book, so that face's backup bundle
+ * carries it; made under no worn face, it rests untagged and stays on this vessel.
+ */
+export async function wornFaceKey(): Promise<string | undefined> {
+  const roster = await readPersonaRoots();
+  return roster.active === null ? undefined : roster.roots.find((r) => r.handleIndex === roster.active)?.verifyingKey;
+}
+
 /** Load the recogniser's handle-book: the snapshot crosses the recogniser's own verification on the way in. */
 export async function loadHandleBook(): Promise<HandleBook> {
   const { snapshot } = await sealedAct<{ snapshot: HandleBookSnapshot }>("handle-book.load");

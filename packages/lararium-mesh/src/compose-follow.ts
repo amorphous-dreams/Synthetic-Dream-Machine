@@ -102,6 +102,8 @@ export async function composeFollow(args: {
   readonly petname?: string | null;
   /** A self-certifying HandleCard to TOFU-admit an unmet nym. Absent → the nym must already be known. */
   readonly card?:    HandleCard;
+  /** The face that follows: its root key tags the record and its label in the handle-book. */
+  readonly by?:      string;
 }): Promise<FollowResult> {
   const { book, circles, nym, circleId } = args;
 
@@ -112,7 +114,7 @@ export async function composeFollow(args: {
     if (args.card.nym !== nym) {
       throw new FollowRefused("card-rejected", `follow: card names ${args.card.nym.slice(0, 12)}…, not the followed nym`);
     }
-    const verdict = await book.ingest(args.card);
+    const verdict = await book.ingest(args.card, undefined, args.by);
     if (!verdict.ok) {
       throw new FollowRefused("card-rejected", `follow: handle-card refused (${verdict.reject})`, verdict);
     }
@@ -127,7 +129,7 @@ export async function composeFollow(args: {
 
   // 2. LABEL (optional). The private petname rides the handle-book, per-nym, and never on the wire.
   if (args.petname !== undefined && args.petname !== null) {
-    book.setPetname(nym, args.petname);
+    book.setPetname(nym, args.petname, args.by);
   }
 
   // 3. FOLLOW. Adding to the circle IS the follow — a LOCAL write, never a board announce.
