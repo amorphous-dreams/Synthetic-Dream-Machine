@@ -70,7 +70,8 @@ describe("meshpalace cap — a writable meshpalace FLOW-map layer + residency pi
     expect(added).toHaveLength(1);
     expect(added[0]!.bagId).toBe(MESH_PALACE_BAG);
     expect(added[0]!.writable).toBe(true);
-    expect(added[0]!.defaultWritable).toBe(true);
+    // Written by name: the vessel alone names its working layer, so the cap claims no working role.
+    expect(added[0]!.defaultWritable).toBe(false);
     expect(pins).toContain(MESH_PALACE_BAG);
     expect((v.get(CAP.meshpalace) as { handle: unknown }).handle).toBeDefined();
 

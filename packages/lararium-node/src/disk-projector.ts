@@ -443,10 +443,13 @@ export class LarDiskProjector {
       return;
     }
     const fields = tiddler.fields as Record<string, string | string[] | undefined>;
-    if (fields["disk-projection"] === "no") return;
+    // A carrier that stopped projecting, or left for another bag, leaves every standoff it stood in
+    // where it no longer projects: the alert names a conflict this projector no longer weighs.
+    if (fields["disk-projection"] === "no") { this._leaveStandoffsExcept(rootUri); return; }
     // The host's provenance stamp (nalu-engine) names the mirror; `bag` is the author's field.
     const bagId = typeof fields["$origin-bag"] === "string" ? fields["$origin-bag"] : undefined;
-    if (!bagId || !this.mirrors.some((m) => m.bagId === bagId)) return;
+    if (!bagId || !this.mirrors.some((m) => m.bagId === bagId)) { this._leaveStandoffsExcept(rootUri); return; }
+    this._leaveStandoffsExcept(rootUri, bagId);
     await this.flush(bagId, rootUri);
   }
 
@@ -525,6 +528,12 @@ export class LarDiskProjector {
     if (standoff === undefined) return;
     this.standoffs.delete(key);
     this.onConflictResolved?.({ bagId, uri, standoff });
+  }
+
+  /** Leave the standoff this carrier stands in under every mirror but `keepBag` (none kept when absent). */
+  private _leaveStandoffsExcept(uri: string, keepBag?: string): void {
+    if (this.standoffs.size === 0) return;
+    for (const mirror of this.mirrors) if (mirror.bagId !== keepBag) this._leaveStandoff(mirror.bagId, uri);
   }
 
   private async _scheduleUnlinkByTitle(title: string): Promise<void> {
@@ -761,6 +770,9 @@ export class LarDiskProjector {
         const standoff = sha256HexBytesSync(new TextEncoder().encode([mirror.bagId, tiddlerUri, onDisk === null ? "" : carrierHash(onDisk.body, onDisk.meta), obsHash].join("\n"))).slice(0, 24);
         const key = sitedKey(mirror.bagId, tiddlerUri);
         if (this.standoffs.get(key) === standoff) return;
+        // The states moved while the carrier still stands off: the standoff it left ends (its alert
+        // clears) and this one enters under its own key.
+        this._leaveStandoff(mirror.bagId, tiddlerUri);
         this.standoffs.set(key, standoff);
         console.error(`[confluence] projection conflict (${mirror.bagId} <- ${tiddlerUri}): ${reason}`);
         this.onConflict?.({ bagId: mirror.bagId, uri: tiddlerUri, reason, standoff });

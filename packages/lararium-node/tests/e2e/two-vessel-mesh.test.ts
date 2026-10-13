@@ -50,7 +50,7 @@ import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js"
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { foundDirect, sealTestCustody } from "../found-route.js";
-import { tiddlerText } from "@lararium/mesh";
+import { plainEntries, tiddlerText } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // Test isolation directories
@@ -133,7 +133,8 @@ async function openDaemonDocTiddlers(storageDir: string, daemonUrl: string): Pro
       setTimeout(() => reject(new Error(`bag doc unavailable within 8s: ${daemonUrl}`)), 8000)),
   ]);
   const doc      = handle.doc() as Record<string, unknown> | null;
-  const tiddlers = (doc?.["tiddlers"] ?? {}) as Record<string, unknown>;
+  // Every record unwrapped through the one read door: a document rests its strings as immutable scalars.
+  const tiddlers = Object.fromEntries(plainEntries((doc?.["tiddlers"] ?? {}) as never)) as Record<string, unknown>;
   await repo.flush();
   return tiddlers;
 }
