@@ -131,7 +131,7 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 * `packages/lararium-browser/src/open-browser-vessel.ts` — Browser repo, share gate, KEL reads, and outbound transport.
 * `packages/lararium-mesh/src/lar-ws-client-adapter.ts` and `auth-wire.ts` — Browser-to-gate handshake direction and proof contents.
 * `packages/lararium-keyhive/src/face-grant-record.ts` — shared grant verification.
-* `bags/lares/ha.ka.ba/lares/docs/codex-crew-emergency-handoff.mem#/vessel-parity` — active handoff boundary.
+* `bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem` #/the-loops, the carried lanes — where the open half of this question rests.
 
 !! Outside engineering sources
 
@@ -144,5 +144,5 @@ No code deletion, browser import, inbound transport, grant format change, or enf
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;f9dPc7zH8Gkl9v1EKWAp_WPOU1QjhFZW3G1OEhIr6R0
+<<^ code="&#x0003;">>ni:///sha-256;w9k9PLLCw26J_Od985Dpd-NCG153Ihxan6BNtiVosGw
 <<^ code="&#x0004;" -> to="?">>

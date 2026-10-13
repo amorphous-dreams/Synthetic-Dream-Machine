@@ -121,7 +121,7 @@ Fetch-on-read keeps the road light and the absence honest, which reads as the po
 
 !! 3 · The shared bag — two operators keep one ledger through a relation
 
-''The tension.'' Two operators each found their own `lar:///ha.ka.ba/bags/lares` doc, `nexus contract` writes the members board and never a bag, and B's `meme get --bag lares` answers `not-found` (`bags/lares/ha.ka.ba/lares/docs/pono/seal-and-seat-handoff.mem:83`). A relation-carried bag needs one doc id both sides name and a place it REGISTERS: each vessel's private `@catalog`, the realm's shared CRDT, or the public `@crossroads` (`seal-and-seat-handoff.mem:86`). The law under it: a cabal holds NO name of its own; the realm holds the shared CRDT and resources; the nexus federates hardware; "fusing cabal and realm once made feeding a realm stale its own invites" (`seal-and-seat-handoff.mem:90`). The read and the write each need a cap-tier — PERSONAGROUP and CONTRACT "ride the SAME mechanism — keyring-delivery to a recipient set — differing ONLY in which set" (`bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem:55`).
+''The tension.'' Two operators each found their own `lar:///ha.ka.ba/bags/lares` doc, `nexus contract` writes the members board and never a bag, and B's `meme get --bag lares` answers `not-found` (measured over `tools/mesh-scenarios.sh meme`; `realm-bag-brief.mem` #/ground). A relation-carried bag needs one doc id both sides name and a place it REGISTERS: each vessel's private `@catalog`, the realm's shared CRDT, or the public `@crossroads` (`realm-bag-brief.mem` #/what-a-relation-bag-needs). The law under it: a cabal holds NO name of its own; the realm holds the shared CRDT and resources; the nexus federates hardware; "fusing cabal and realm once made feeding a realm stale its own invites" (`realm-bag-brief.mem` #/ground). The read and the write each need a cap-tier — PERSONAGROUP and CONTRACT "ride the SAME mechanism — keyring-delivery to a recipient set — differing ONLY in which set" (`bags/lararium/ha.ka.ba/lararium/mesh/cap-tier.mem:55`).
 
 !!! At the human / household scale
 
@@ -173,7 +173,7 @@ That owed design stands: <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">>
 
 !! 4 · The later grant — a companion admitted after the oath
 
-''The tension.'' A joinee that joins a PersonaGroup AFTER founding mints its wiki binding on its own vessel key — `"face-reach": seated ? "face" : "vessel-only"` (`packages/lararium-keyhive/src/resolve-binding.ts:156`) — and keeps it forever; a later `runFaceJoin` (`packages/lararium-keyhive/src/face-join.ts:197`) re-grants `daemonAuth.registerBags` and never re-delegates those earlier bindings (`seal-and-seat-handoff.mem:68`). The joinee-side gap reads wider: "no CLI verb, no daemon verb and no doc-relay path lands a later face-join grant ON THE JOINEE — the grant returns to the founder's caller" (`seal-and-seat-handoff.mem:68`). The door has two shapes: a daemon verb the founder's caller invokes on the joinee, or a doc the joinee watches for grants (`seal-and-seat-handoff.mem:76`, fork 1). Beneath both sits the membership doctrine: "the face carries the credential, the group holds no list, and verification runs OFFLINE against a published key" (`bags/lararium/ha.ka.ba/lararium/mesh/membership-doctrine.mem:122`).
+''The tension.'' A joinee that joins a PersonaGroup AFTER founding mints its wiki binding on its own vessel key — `"face-reach": seated ? "face" : "vessel-only"` (`packages/lararium-keyhive/src/resolve-binding.ts:156`) — and keeps it forever; a later `runFaceJoin` (`packages/lararium-keyhive/src/face-join.ts:197`) re-grants `daemonAuth.registerBags` and never re-delegates those earlier bindings (`packages/lararium-keyhive/src/face-join.ts`). The joinee-side gap reads wider: "no CLI verb, no daemon verb and no doc-relay path lands a later face-join grant ON THE JOINEE — the grant returns to the founder's caller" (`packages/lararium-keyhive/src/face-join.ts`). The door has two shapes: a daemon verb the founder's caller invokes on the joinee, or a doc the joinee watches for grants (`packages/lararium-keyhive/src/face-grant-record.ts` holds the door that got built). Beneath both sits the membership doctrine: "the face carries the credential, the group holds no list, and verification runs OFFLINE against a published key" (`bags/lararium/ha.ka.ba/lararium/mesh/membership-doctrine.mem:122`).
 
 !!! At the human / household scale
 
@@ -197,7 +197,7 @@ The Elf-wildmage reads it so. ''The cap flows DOWN by delegation; the standing f
 
 !!! What the stories reveal
 
-* ''Kalani-of-the-Ledger:'' the vessel stands admin of the bindings it minted, so the re-seat itself needs no founder signature (`seal-and-seat-handoff.mem:72`); what the joinee lacks reads as //the knowledge that a seat now stands//, never the authority to take it.
+* ''Kalani-of-the-Ledger:'' the vessel stands admin of the bindings it minted, so the re-seat itself needs no founder signature (`packages/lararium-keyhive/src/resolve-binding.ts`); what the joinee lacks reads as //the knowledge that a seat now stands//, never the authority to take it.
 * ''The Stranger:'' a board that ACTS when read reads, from outside, as a written command channel; a board that merely NAMES and a kit that decides read as membership doctrine kept.
 * ''Council:'' the two doors answer two failures — a cut road and a forged slip — and a company on the Hebros road meets both in one season.
 
@@ -355,7 +355,7 @@ One bundle with the caps deciding what rings reads as the pono lean; two bundles
 
 The operator read the eight slots and ruled on 2026-09-11 ("Approve all, OODA-HA forwards"):
 
-<<~ moolelo held="the bridge rides Road B with the five-clause contract pinned as reds both roads must pass, the reach plane stays locked · the fetch door enacts makeCidResolver(localRead, casTransit, cacheWriteThrough) over Socket B with fetch-on-read the default, prefetch a per-peer cap, public blobs re-share via the Herm · the shared bag registers in the realm's shared CRDT, @crossroads names only that it exists, read at CONTRACT · the later grant lands as a record on the PersonaGroup doc and the joinee's own kit takes the seat against the published seal, reading never re-cuts · grace runs per tier against the realm's ahi-kā baseline, PIN at CID grain, the seven-day clock a reported floor · the phone seat explains and offers the install, projection stays the node's, PRF wraps beside and never mints, a synced passkey counts as a cloud, every key names its class in vault status, Mudlet probes the bulb face, Unreal builds against 5.x · the two doors compose: refuse a bare root at the native door naming /memes/, the adaptor rides the plugin the client already loads, a backstop re-stamps and logs · one bundle, the caps decide what rings (operator)">>enacted from this floor by tasked spirits; the eight slots above stay as told<<~/moolelo>> The seal-and-seat floor at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> carries the plans and forks these stories serve.
+<<~ moolelo held="the bridge rides Road B with the five-clause contract pinned as reds both roads must pass, the reach plane stays locked · the fetch door enacts makeCidResolver(localRead, casTransit, cacheWriteThrough) over Socket B with fetch-on-read the default, prefetch a per-peer cap, public blobs re-share via the Herm · the shared bag registers in the realm's shared CRDT, @crossroads names only that it exists, read at CONTRACT · the later grant lands as a record on the PersonaGroup doc and the joinee's own kit takes the seat against the published seal, reading never re-cuts · grace runs per tier against the realm's ahi-kā baseline, PIN at CID grain, the seven-day clock a reported floor · the phone seat explains and offers the install, projection stays the node's, PRF wraps beside and never mints, a synced passkey counts as a cloud, every key names its class in vault status, Mudlet probes the bulb face, Unreal builds against 5.x · the two doors compose: refuse a bare root at the native door naming /memes/, the adaptor rides the plugin the client already loads, a backstop re-stamps and logs · one bundle, the caps decide what rings (operator)">>enacted from this floor by tasked spirits; the eight slots above stay as told<<~/moolelo>> The plans these stories serve read at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">> and <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>.
 
 <<~/ahu>>
 
@@ -379,7 +379,7 @@ Seven of the eight slots had a carrier that inherited their ruling; slot 8 stood
 |#/the-bridge |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> — its `status-why` reads //The stories that set the intent ride at `scale-stories-basket-one#/the-bridge`//, RULED and BUILT on Road B (`b2fd7af55`) |a pointer; the inheriting carrier already names this floor, so the fold reverses one sentence |
 |#/the-fetch-door |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">> for the law, with the enactment cited in code at `packages/lararium-mesh/tests/cas-transit.test.ts:97` (//THE FETCH DOOR (scale-stories-basket-one #/the-fetch-door, ruled 2026-09-11)//) |a pointer, plus a decision about whether the code comment re-aims at `blob-carriage` or keeps naming a burned floor |
 |#/the-shared-bag |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">> (the registration ruling) and <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">> (the 2026-09-12 Face ruling, quoted verbatim under quote license) |''the hard one'' — both inheritors QUOTE this slot rather than absorb it; see the shape below |
-|#/the-later-grant |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> — the floor that carries the plans and forks these stories serve, named in #/exit |a pointer |
+|#/the-later-grant |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">> and <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">> — the carriers that hold the relation bag's brief and the re-grant law these stories serve |a pointer |
 |#/grace-and-pin |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>, with `packages/lararium-mesh/tests/stowage-clock.test.ts:9` citing `#/grace-and-pin` by address |a pointer, plus the same code-comment decision |
 |#/the-phone-seat |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> |a pointer |
 |#/the-two-doors |<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">> holds the measurement and the outcome; <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> holds the argument |⚠ ''that second carrier sits in the retirement queue itself'', blocked on seam (b) — a fold pointing there points at something that may burn |
@@ -425,7 +425,7 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
@@ -447,6 +447,6 @@ Six code sites cite this carrier: `packages/lararium-mesh/src/realm-bag.ts:4` an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zp9AhKEN8SpYRe13VU0Yyld7dZ8dG7Y0NdAfaFHQE2E
+<<^ code="&#x0003;">>ni:///sha-256;PSDFKZigGYGwxbQbDN072Dq58z13Wupey28tjE8F4eU
 
 <<^ code="&#x0004;" -> to="?">>

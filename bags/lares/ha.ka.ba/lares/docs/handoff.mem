@@ -28,10 +28,9 @@ written   = "2026-06-19"
 
 This carrier hands on the GRAMMAR watch and the procedures every watch reuses. It ranks no wound and counts no suite.
 
-* ''Open wounds'' read in <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff#/wounds">>, ranked HIGH, MEDIUM and LOW, each beside the road path that closes it. The rulings the operator still owes read there under ''Pending operator rulings'' and ''Needs the operator''.
-* ''Vitals'' read in `er-handoff#/vitals`, which names the instrument behind each reading and carries no count: run the instrument fresh before trusting a number. The warning against standing the operator's live `~/.lares` vessel on this build rides there too.
+* ''Open loops'' read in <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>, one line each beside the train that closes it. What the operator still owns reads in `stable-founding-road#/open`.
+* ''Instruments'' read in <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">>, which names the instrument behind each reading and carries no count: run the instrument fresh before trusting a number. The warning against standing the operator's live `~/.lares` vessel on this build rides there too.
 * ''The road'' reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>: six paths in the order a builder walks them — GROUND, SUBSTRATE, HARBOR, KAHU PLANE, ONE FACE, TWO HEARTHS — with the shore's rungs beside them. The one train that moves identity bytes reads there alone, under KAHU PLANE.
-* ''The Codex crew's roadmap'' reconciles against the code at <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled">>.
 
 <<~/ahu>>
 
@@ -343,7 +342,7 @@ here still gates a build.
 
 !! The ground you stand on
 
-No reading of the live ground rests here. `lar:///ha.ka.ba/lares/docs/er-handoff#/vitals` names the instrument
+No reading of the live ground rests here. `lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start` names the instrument
 behind each one — branch, unit suites, typecheck, witness fleet, e2e, CI, docker mesh — and carries no count.
 `disk-projection` carries the co-projection law; `sovereign-kernel` carries the breath and watchdog law.
 
@@ -380,6 +379,46 @@ Still open, wake condition carried forward:
 <<~/ahu>>
 
 
+<<~ ahu #/traps>>
+
+!! Traps this tree paid for ~ each one measured
+
+Each trap names an instrument that read green while it reported something false, or a habit that cost
+hours. The eight red-first moves and the first instrument list read in #/shift-founding-watch.
+
+!!! Test design
+* ''A control set made only of negatives reads satisfied by inertness.'' An empty input killed a carry outright while every behavioural vector stayed green. Pin the call's own arguments.
+* ''A red that proves the hole proves no fix.'' Add a pin that bites a WEAKENING: a census of the calls, the named argument, the boards asserted absent, the nesting.
+* ''An ordering assertion over an absent call passes vacuously'': `indexOf` answers −1, and −1 sits below everything. An ordering clause wants a presence clause beside it.
+* ''A fixture that DECLARES reads as a carrier.'' The finder reads the DOCTYPE or `type` line, never the path; assemble the declaration at read time, and control that the finder reads false.
+
+!!! Source-reading welds
+* ''A source-reading weld proves no behaviour.'' One weld went green over a loop that only warns, because its text window reached past the loop's close.
+* ''Strip comments first, and pin the strip'': a docblock that names an old spelling to explain it reads to a raw-source weld exactly like the defect. Assert the strip left something.
+* ''Prefer a census'': a rename cannot green `calls.length === N`; it can green a token match.
+
+!!! Reading and reasoning
+* ''A law whose stated reason measurement refutes erodes'': the next reader corrects the reason and keeps the conclusion. Re-ground the law, or retire it on a named condition.
+* ''A conjunction argues; it measures nothing.'' Name the samples and their provenance, and let the test re-derive the figure.
+* ''The pin-reader law'': null means "no default owed", never "something went wrong". Ask of every default whether it STATES a fact or LOSES one.
+* ''Measure both sides of a boundary.'' A wire that drops a field may not lose it, since the receiver re-derives; under a first-writer-wins store, read order carries load.
+* ''A commit subject claims; it proves nothing.'' A reader stricter than the parser still lies.
+* ''Derive, never enumerate'': a quoted count drifts.
+
+!!! Tree and run
+* ''`lares vessel stand` detaches.'' Readiness reads from the node's own log: `phase → vessel-ready`, or `fatal:` on a boot fault. Read `<lares>/vessel/stand.log` from the byte offset the run starts at, never the launcher's pipe.
+* ''`witness-all`'s last line misleads; capture `$?`.'' The held-out roster prints after the per-witness runs, and a pipe's status belongs to its last stage.
+* ''A revert-verify that swaps source alone reads vacuous against an e2e'', which runs `dist`. `@lararium/mesh` resolves to source under the node package's test aliases and to `dist` under the CLI's.
+* ''`LAR_ROOT` alone isolates every XDG home''; it leaves `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin` and the harness homes untouched. Never touch `~/.local/share/lares`, and never read the passphrase file.
+* ''Check `pgrep -af vitest` and `pgrep -af witness` before a run that stages vessels''; bisect a red in a worktree, never by guessing.
+
+!!! Characters and renames
+* ''Weld test before any rename'': grep the signing domains first, since a rename that moves a signing domain changes bytes every peer verifies.
+* ''A tamper probe moves DECODED bytes'': assert the encoding changed first.
+* ''A character sweep hits four classes'': fence the relation, and re-stamp the block checks afterward.
+
+<<~/ahu>>
+
 <<~ ahu #/ways-of-working>>
 
 !! How this operator works (hard-won, honor it)
@@ -410,6 +449,6 @@ Still open, wake condition carried forward:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XqL9cOsgX5UbHL7wVsoNngQpslH6teogTqpyTs-qvyk
+<<^ code="&#x0003;">>ni:///sha-256;kvMx8MHElW7z54RQmRCAigYNAPvXwUk5ZeR400Mz6wA
 
 <<^ code="&#x0004;" -> to="?">>

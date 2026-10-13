@@ -235,20 +235,27 @@ keeper's hand, never as a consensus.
 two faces, and a guardian set recovers a face's key lineage, never its memory
 (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 
+!!! RULED for the first ceremony (operator ruling)
+
+Each line reads whole at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>.
+
+* ''At two seats no seat signs any Kahu act alone.''
+* ''An operator's own herm'' takes one signature, scoped to one place and one Nexus, and falls with a kapae of the operator's own admit.
+* ''A seat gets ADDED, never replaced'': the standing Kahu add a holder to both cabals, and the founders keep their chairs.
+* ''Paper'': the cold-key card takes the house format — 64 hex plus a checksum, in groups of four — and prints its purpose, its chair label, its generation and a short charter fingerprint.
+* ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by a rotation on the face's own log.
+* ''A per-Nexus key mints at random'', and the face's lineage re-issues one by a signed hand-over the gate verifies. `packages/lararium-node/src/nexus-leaf.ts` and #/nexus-scale still derive a Nexus-scope leaf from the persona seed; the charter train owes the move.
+
 !!! OPEN ~ what the operator still owns
 
 Each item below stands unruled. Nothing in code decides one.
 
-* ''Single-seat Kahu acts.'' Whether any Kahu act other than admission, kapae and rolls may ride one seat at two seats. Options: none · a named ordinary class. Admission stands closed above.
-* ''An operator's own herm.'' Whether an operator may contract their OWN herm with one signature. Options: yes, scoped to one place and one Nexus, falling with a kapae of the operator's own admit · no, the quorum signs each place. Lean: yes, scoped. Cost: a stolen leaf places herms until a denial arrives.
-* ''Guardian count and threshold.'' 2-of-3 survives one lost guardian and forms the impersonation quorum; 2-of-2 ends recovery at one loss.
+* ''Guardian count and threshold at enrolment.'' 2-of-3 survives one lost guardian and forms the impersonation quorum; 2-of-2 ends recovery at one loss.
 * ''Guardian request authentication.'' Options: an agreed channel and a live voice · in person · a device-derived event plus a short string, named a byte check and never an identity proof.
 * ''The veto.'' Options: keep it as a house fork rule and specify it · drop it.
 * ''Death and succession of a person.'' Options: guardian recovery under the same lineage · a separate succession object · no path.
-* ''Paper.'' The format (SLIP-39 · Codex32 · a house format), and whether a cold-key card names its Nexus or its commitment. Until ruled, a card prints its purpose, its chair label and its generation only.
 * ''The backup bundle.'' What it holds and which verb imports it. A bundle per face keeps faces unlinked on the backup medium.
 * ''The catastrophe rite and any third key.'' Options: no rite · an opt-in, charter-native seat-recovery rite with named witnesses · an outsider's third cold key. At alpha no rite stands, and LOSS AT ALPHA governs.
-* ''How a per-Nexus face key gets minted.'' Two carriers disagree: `face-proof#/the-key-hierarchy` mints it at random on the root-holding vessel, while #/nexus-scale and `packages/lararium-node/src/nexus-leaf.ts` derive a Nexus-scope leaf from the persona seed.
 
 !!! The surface ~ where each part reads
 
@@ -266,8 +273,8 @@ Each item below stands unruled. Nothing in code decides one.
 produce, and seated keys it cannot (`nexus-phase.ts`) — and claims no proof of two humans; a
 seat claim takes no Handle and carries a private chair label; `nexus seal export` carries fingerprints and
 no label. ''Owed in code'': chairs sign with persona ROOT keys; every chair of a charter comes from one
-vault; the quorum rite forges a shared reserve seed and prints three cards; no co-founding verb, no
-cross-vault countersign and no cold-key card stand.
+vault; the quorum rite forges a shared reserve seed and prints three cards; no co-founding verb and no
+cross-vault countersign stand; the cold-key card's codec stands in mesh with no caller (`cold-key-card.ts`).
 
 <<~/ahu>>
 
@@ -543,6 +550,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;s7b8cKlg5tpp5fSlkpfL9zjc_gZHANtIYE9XaaBZdrU
+<<^ code="&#x0003;">>ni:///sha-256;_GW4FQJntKvNDIgPl1hxWIAWpNNvMdAky5M82qIfkcs
 
 <<^ code="&#x0004;" -> to="?">>

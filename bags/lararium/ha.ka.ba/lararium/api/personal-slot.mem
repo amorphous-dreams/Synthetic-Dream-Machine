@@ -486,7 +486,6 @@ Q11 (`@draft` per-fingerprint vs boot draft) ✅ resolved 2026-06-03 — ''slice
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/keyhive/persona-group">>
 <<~ loulou "lar:///ha.ka.ba/lararium/config/bag-paths">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
 
@@ -503,6 +502,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2yHV0aV59dTn1XFdK-pDUzDUputeESJq5ZEZfyziPMs
+<<^ code="&#x0003;">>ni:///sha-256;LqPI3dPnEV15o9QodUTI8UCWSrkkXLN5cCouKE31AQA
 
 <<^ code="&#x0004;" -> to="?">>

@@ -443,9 +443,9 @@ Physical access defeats confidentiality and forward integrity of a box outright 
 * ''Cross-Nexus gossip DEFERRED to post-founding'' (operator ruling). When it comes, the herm carries it as its own voice (#/under-every-lararium). Keys run per-Nexus and no //act as a visitor// path stands, so a tender walking to another Nexus arrives carrying nothing and contracts in from zero; that contract-in joins its daemon's carried set as one more Nexus id (#/head).
 * ''Nothing in the field welds place-anchored authority to term-bounded office.'' The nearest misses: CT's `previous_operators` (resolves the office-holder ''at the time of the act'', yet only to attribute), Kubernetes bound ServiceAccount tokens (term = the life of a place, no succession), DNSSEC root TCRs (real term-bounded office, ''procedural and legal, never cryptographic''), and SPKI §7.7 (held the whole vocabulary in 1999, shipped nothing).
 
-!!! OPEN ~ an operator's own herm
+!!! RULED ~ an operator's own herm
 
-Whether an operator may contract their OWN herm with one signature stands unruled. Options: yes, scoped to one place and one Nexus, falling with a kapae of the operator's own admit · no, the seat quorum signs each place. Lean: yes, scoped. Cost: a stolen leaf places herms until a denial arrives (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
+An operator contracts their OWN herm with one signature, scoped to one place and one Nexus, and it falls with a kapae of the operator's own admit (operator ruling; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). Cost, accepted: a stolen leaf places herms until a denial arrives. The verb that carries it stays owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
 
 <<~/ahu>>
 
@@ -455,6 +455,6 @@ Whether an operator may contract their OWN herm with one signature stands unrule
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VI_Tv7rcy86WY96TOe8Njd_3nkUAg0P0265pXHAz04k
+<<^ code="&#x0003;">>ni:///sha-256;dh-ruO3foaXibea8DFauz-42DZxXXSqfLLAqUGl1SRY
 
 <<^ code="&#x0004;" -> to="?">>

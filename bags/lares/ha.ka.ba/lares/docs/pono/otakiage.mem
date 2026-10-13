@@ -392,7 +392,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 | ''`standing` × `build`'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">> | "ruled 2026-09-11 and ENACTED — all seven clauses … stand in code with a red-first witness each" — and it names what still has no production caller, which is what an honest witness looks like |
 | ''`standing` × `reading`'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> | "read 2026-09-11 against the field as it stands that day" — it cannot go wrong, only stale. Its ending reads as a re-date, never a fire |
 | ''`standing` × `rite`'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/talk-story">> | `status = "rite"`, `status-why = "the talk-story floor, convened rather than built"`. It will never advance and will never burn — the clearest evidence the KIND axis exists |
-| ''`standing` × `floor`, with open leans — BLOCKED from folding'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">> | four forks; three closed by ruling, "fork 4 (the floor stand) stays at the operator's hand". One open lean holds the whole carrier on the shelf, and correctly |
+| ''`floor`, every fork closed — folded and welded'' | `docs/pono/seal-and-seat-handoff` | four forks, each ruled or enacted. One open lean held the whole carrier on the shelf, and correctly; the last ruling freed it, and its content folded to `realm-bag-brief`, `personal-slot`, `waking-floor` and the roadmap |
 | ''`standing` × `floor`, nearly foldable'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">> | every phase enacted; ''one'' ruling outstanding (seam (b): a child's save grading against its own text). One lean from `folded` |
 | ''`standing` × `floor`, QUOTED OUT — a shape the transitions table does not yet grade'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> | six inbound carriers, and ''four of them QUOTE its moʻolelo verbatim under licence'' rather than lean on it for argument — `realm-bag-brief`, `heraldry` (three sites), `syncer-seams-roundtable`. A quote already carries the ruling whole, so those four read as ''the fold already done'' and want confirming, never welding: re-aiming a licence rewrites the citation and leaves it naming a hole. Two bare edges remain (`hearths:131`, `offering:449`). ''And one tie no rite can cut'' — `packages/lararium-mesh/tests/ahi-ka.test.ts:141` reads the file off disk and asserts its quoted ratios against `AHI_KA_500YR`, so deletion reds a test. The fold table stands measured at that carrier's `#/fold-readiness` |
 | ''`folded`'' | ''`docs/handback-stale-rooms`'', the first carrier to spell the stage — described here and NEVER linked, under the law above | it stood folded at ''`7d3b3bf5c`'' (poured `428550a92`), and the shape it held reads: `tags = ["docs/pono/ledger", "lifecycle/folded"]` · ''zero'' inbound `loulou` (two bare prose mentions, no edge) · ''zero'' open leans, each of its four measurements re-derived against the tree before a word got rewritten · ''every'' slot carrying a fold target, six of them, in one table naming five addresses. Its `status-why` named the one precondition no hand there could supply — the operator's call — and its body carried three laws its own enactment found: a stale room inside a verbatim register gets a room ''beside'' it and never a rewrite · a suggestion offering two tags has not read the rite that grades them · a hold entry carries two facts and its CONTROL can only check one. ''Proof that `folded` names something real, spelled once and walked through to the fire'' |
@@ -462,7 +462,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-seams-roundtable">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-prime">>
 <<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
@@ -474,6 +473,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;12zSJe563otANPP-rByj-OhyzGyzK94EFqjAG6Zxefs
+<<^ code="&#x0003;">>ni:///sha-256;twLrSvY53oHmR5zFe8KZiS245y6CtmaW4wltOV27nHI
 
 <<^ code="&#x0004;" -> to="?">>
