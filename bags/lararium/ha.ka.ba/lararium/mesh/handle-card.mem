@@ -223,15 +223,32 @@ a claim made under a key-state says nothing about the state that replaced it.
 
 The chain answers at two assurance depths, and they cross different ground:
 
-* ''Tier-1 — self-contained'' (`verifyHandleKel`): sequence, hash-link, prefix, owner-binding, membership,
-burn-terminality, and cid all recompute from the chain's OWN bytes. No injection, no board, no network — a
-recogniser holding the chain settles structure alone. `verifyHandleCard` rides here, reached live from `handle-book`. ''`verifyAttestation` stands READY and unreached'' — it belongs to this tier by shape and no production caller holds it yet, so a reader auditing an attestation finds a check that runs nowhere. Named rather than implied, because the two sat in one sentence and the live half vouched for the unwired one.
-* ''Tier-2 — board-checked presentation authority'' (`verifyHandleKelFull`): every rotation and graft
-`authSig` must verify AND its signer must stand as the named member's authoritative head, per the injected
-`OwnerHeadResolver` — a presentation signed by a SUPERSEDED member key refuses HERE. That resolver typically
-walks each member's persona-KEL to its verified head; a verifier holding the members' chain snapshots
-(carried beside the card) resolves reader-locally, one without them needs the members' boards. ''The
-resolver NAMES that dependency instead of hiding it.''
+* ''Tier-1 — what a chain proves by itself'' (`verifyHandleKel`, `headWithoutResolver`): sequence, hash-link,
+prefix, owner-binding, membership, burn-terminality, pre-rotation and cid all recompute from the chain's OWN
+bytes. No injection, no board, no network. ''Structure proves the INCEPTION and nothing past it.'' The owners
+stand in the chain as persona PREFIXES, and which key speaks for a prefix lives on the persona board, so a
+rotation, a graft and an owner-burn each name a member key the chain cannot vouch for: a stranger who names
+their own key "the owner's head", under any bytes for a signature, builds a chain that reads structurally
+whole. So a reader with no resolver trusts the inception's Handle key alone. A chain carrying any later step
+answers `handle-rotation-unverified`: at `verifyHandleCard`, at `recognizeHandle`, at `acceptHandleUpdate`, at
+the card fold, at `HandleBook`, at `verifyAttestation`, at `headHandleKey` and `currentOwnerSet`. No such
+reader ever falls back to the inception key either, since a later step may lawfully have retired it. One step
+carries its own proof and reads `burned` here: a self-burn standing directly on the inception, which the
+inception's own Handle key signed.
+* ''Tier-2 — board-checked presentation authority'' (`verifyHandleKelFull`, `resolvedHeadHandleKey`,
+`resolvedOwnerSet`): every rotation and graft `authSig` must verify AND its signer must stand as the named
+member's authoritative head, per the injected `OwnerHeadResolver` — a presentation signed by a SUPERSEDED
+member key refuses HERE. That resolver typically walks each member's persona-KEL to its verified head; a
+verifier holding the members' chain snapshots (carried beside the card) resolves reader-locally, one without
+them needs the members' boards. ''The resolver NAMES that dependency instead of hiding it.'' A writer
+extending its own Handle hands in the heads it presents under (`headsThisCallerPresents`).
+
+''Every Handle incepts ARMED for rotation.'' A Handle stands as a rotating identifier: its inception commits
+the digest of the NEXT Handle key (`handleKeyDigestOf`), each rotation reveals that key and commits a FRESH
+one, and the commitment a rotation just revealed never carries forward. An inception that commits none
+refuses at the mint and at every read, `handle-inception-unarmed`; a rotation that re-commits its spent
+digest refuses `handle-rotation-unarmed`. Pre-rotation alone stops no stranger who learned the next public
+key, which stays why tier-1 trusts the inception alone.
 
 Both fail CLOSED on the first break. The tiers are the ONE seam where the sibling grammar touches the persona
 plane, kept as an interface so this module never imports the persona-KEL.
@@ -280,6 +297,6 @@ forgery rides it too and dies at the recogniser, and the writer's arity itself s
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
 
-<<^ code="&#x0003;">>ni:///sha-256;seYYY5gG1CcLYQ1yS8eMIywJa5IxMe3GXXkfFWf8wYg
+<<^ code="&#x0003;">>ni:///sha-256;ngWkxY-7FVGVqbj7uDXwutw79ncKoXjowIuUNK2V3Ik
 
 <<^ code="&#x0004;" -> to="?">>
