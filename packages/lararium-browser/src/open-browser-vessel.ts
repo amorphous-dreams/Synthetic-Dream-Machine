@@ -21,8 +21,7 @@ import {
   emptyLarDoc, storedLarRecord, storedRecord,
   CATALOG_DOC_URI, DAEMON_BAG_ID,
   ENGINE_CORE_ID,
-  bootSetPluginCids, bootSetIds, verifyCasBytesAsync,
-  selectPluginBlobs, selectedPluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
+  resolveRecipePluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
   personaMultitudeView, renameOwnPersona,
   DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
   GatedSyncLeg, oneWayDocumentsGate,
@@ -408,21 +407,10 @@ export async function resolveBrowserIslandPluginCids(opts: {
   readonly recipe: WikiRecipe;
   readonly lookup: OfferingLookup;
 }): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
-  const floorCids = bootSetPluginCids(opts.islandBlobs);
-  const bootIds   = bootSetIds(opts.islandBlobs);
-  const offerings = opts.recipe.pluginOfferings ?? [];
-  const selection = await selectPluginBlobs(offerings, opts.lookup, bootIds);
-  if (!selection.ok) {
-    return { ok: false, error: `${opts.recipe.wikiSlug}: offering selection ${JSON.stringify(selection.failure)}` };
-  }
-  const selectedCids = selectedPluginCids(selection.blobs);
-  const bytesVerdict = await verifyCasBytesAsync(selectedCids, readCasBlobFromOpfs, (b) => sha256HexBytesSync(b));
-  if (!bytesVerdict.ok) {
-    return { ok: false, error: `${opts.recipe.wikiSlug}: ${JSON.stringify(bytesVerdict.failure)}` };
-  }
-  // Dedup: a selected offering's CID coinciding with a floor CID would need a raw sha256 collision
-  // (practically disjoint namespaces), but a Set keeps the manifest from ever naming one CID twice.
-  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids])] };
+  // The selection itself stands in mesh (`resolveRecipePluginCids`), the one function the node door and the
+  // surface mount's resolver read too; this door hands it the browser's own inputs: the island document's
+  // blobs, the Crossroads lookup and the origin's OPFS content store.
+  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: readCasBlobFromOpfs });
 }
 
 /** Build the browser Crossroads board's offering lookup (R4): a verified selection re-verifies

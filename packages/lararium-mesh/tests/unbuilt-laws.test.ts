@@ -365,7 +365,7 @@ describe("⑪ one face's sessions", () => {
     expect(pool).not.toMatch(/attachMessageChannelSync\(/);
   });
 
-  test.skip("THE BROWSER SELECTS PLUGINS THROUGH THE ONE FUNCTION — DEFERRED: `resolveBrowserIslandPluginCids` (`open-browser-vessel.ts`) still runs its own selection beside mesh's `resolveRecipePluginCids`, which the node door and the surface resolver already share. Lands with the compose hunk that folds the browser's door into the one function.", () => {
+  test("the browser selects plugins through the one function", () => {
     const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
     expect(browser).not.toMatch(/selectPluginBlobs\(/);
     expect(browser).toMatch(/resolveRecipePluginCids\(/);
