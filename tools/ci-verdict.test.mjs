@@ -119,7 +119,9 @@ test("the shard lane's push door ends on the line that names this reader", async
   assert.match(HALF_VERDICT, /node tools\/ci-verdict\.mjs --head$/);
   const src = readFileSync(join(HERE, "e2e-shards.mjs"), "utf8");
   const push = src.slice(src.indexOf("async function cliPush("), src.indexOf("\n}\n", src.indexOf("async function cliPush(")));
-  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} /, "the push door stopped printing where the other half of green gets read");
+  assert.match(push, /console\.log\(`\$\{HALF_VERDICT\} \$\{result\.headSha\.slice\(0, 9\)\}`\)/,
+    "the push door stopped naming the head it pushed (the checkout's head moves while the run goes)");
+  assert.match(src, /return \{ ok, runId, headSha, /);
 });
 
 test("the shard lane names a run whose verdict it could not read, and the command that reads it", async () => {

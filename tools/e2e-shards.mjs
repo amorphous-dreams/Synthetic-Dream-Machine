@@ -137,7 +137,14 @@ export function evaluateMergeGate({ shardCount, shardReports, trackedFiles }) {
         `zero-test shard: shard ${shard} reported zero passing tests (total=${nTotal}, pending=${Number(r.numPendingTests ?? 0)})`,
       );
     }
-    if (nFailed > 0 || !success) problems.push(`red shard: shard ${shard} failed (${nFailed} failing test(s))`);
+    if (nFailed > 0 || !success) {
+      // THE RED NAMES ITS TEST. A shard writes its report as JSON alone, so its job log names no failing case;
+      // without the names here a reader downloads the artifact to learn which file went red.
+      const named = (r.testResults ?? []).flatMap((tr) => (tr.assertionResults ?? [])
+        .filter((t) => t.status === "failed")
+        .map((t) => `${typeof tr.name === "string" ? relativeToE2eDir(tr.name) : "?"} :: ${t.fullName ?? t.title ?? "?"}`));
+      problems.push(`red shard: shard ${shard} failed (${nFailed} failing test(s))${named.length > 0 ? `: ${named.join(" | ")}` : ""}`);
+    }
     totalTests += nTotal;
     for (const tr of r.testResults ?? []) {
       if (typeof tr.name !== "string") continue;
@@ -355,7 +362,7 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   }
 
   const ok = watchOk && viewed.conclusion === "success";
-  return { ok, runId, verdictLine, verdictLines, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
+  return { ok, runId, headSha, verdictLine, verdictLines, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
 }
 
 /** Seconds between the watch's looks at a run. */
@@ -388,7 +395,8 @@ async function cliPush(args, repoRoot) {
   }
   // ONE HALF OF GREEN. This lane runs the e2e sets alone; the package suites, the witness fleet and the tool
   // self-tests answer only in the full CI workflow, where a newer push cancels a run before it reports.
-  console.log(`${HALF_VERDICT} ${execFileSync("git", ["-C", repoRoot, "rev-parse", "--short=9", "HEAD"], { encoding: "utf8" }).trim()}`);
+  // The head this lane PUSHED, never the checkout's head at print time: other hands commit while the run goes.
+  console.log(`${HALF_VERDICT} ${result.headSha.slice(0, 9)}`);
   assertNotBare(repoRoot);
   process.exitCode = result.ok ? 0 : 1;
 }

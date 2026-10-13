@@ -102,6 +102,29 @@ test("RED — a failing test in one shard refuses the whole gate", () => {
   assert.ok(verdict.problems.some((p) => p.includes("red shard: shard 2")), verdict.problems.join("; "));
 });
 
+test("RED — a red shard names each failing test by file and name, and a report without case rows still reads red", () => {
+  // The shape a shard's JSON report carries (vitest's json reporter): one row per file, one per case.
+  const red = {
+    numTotalTests: 2, numPassedTests: 1, numFailedTests: 1, success: false,
+    testResults: [{
+      name: "/home/runner/work/x/x/tests/e2e/beta.test.ts", status: "failed",
+      assertionResults: [
+        { status: "passed", fullName: "the floor stands" },
+        { status: "failed", fullName: "the floor R1 — a herm reaches live" },
+      ],
+    }],
+  };
+  const verdict = evaluateMergeGate({
+    shardCount: 2,
+    shardReports: shardReportsFor({ 1: { report: goodReport(["/runner/a/tests/e2e/alpha.test.ts"]) }, 2: { report: red } }),
+    trackedFiles: TRACKED,
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.problems.includes("red shard: shard 2 failed (1 failing test(s)): beta.test.ts :: the floor R1 — a herm reaches live"),
+    verdict.problems.join("; "));
+  assert.ok(!verdict.problems.join("; ").includes("the floor stands"), "a passing case got named as a red");
+});
+
 // ── RED 5a: zero total across every shard combined ─────────────────────────────────────────────
 test("RED — every shard present but the combined total reads zero", () => {
   const verdict = evaluateMergeGate({
