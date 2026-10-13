@@ -287,7 +287,7 @@ seal: it owns the compose hunk.
 Build order: the realm and signer shapes against the rulings; then R-CHARTER, the one train that moves
 identity bytes; then R-WIRE, so every pin changes once.
 
-* ''Realms'': a vessel stands one plane per realm, and a verb names its realm (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/many-realms">>). A cabal reads as its relation closure and takes no key or roster of its own. The planes, the cabal lane, the per-realm pins and the island's reading stand in code; the composing vessel hands the planes its ledger and the standing reading, and its `nexus realm-bag` verbs take `--realm`, through the compose owner's hand. A cabal realm's documents cross between two operators once the realm's member consult answers for a peer.
+* ''Realms'': a vessel stands one plane per realm, and a verb names its realm (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/many-realms">>). A cabal reads as its relation closure and takes no key or roster of its own. A cabal realm's documents cross between two operators once the realm's member consult answers for a peer.
 * ''The steward signer'': the worn face or a quorum Handle, never the root (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer">>). The seal, the fold and the steward door stand in code; the composing vessel's `realm-bag` verb takes the door through the compose owner's hand. The docker `meme` scenario then proves it by hand at "B edits, promotes", in the asker's order: B asks to keep the bag with her worn face, and A consents.
 * ''Thresholded admission and promotion'': the four chartered classes and exact-bytes promotion of #/rulings; chartered Kahu-cabal admission as its own authority act, where a vouch alone admits nobody.
 
@@ -425,7 +425,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `N4` The roll that ADDS a seat, the new holder's carriage contract, and a passed chair as a later act. N.
 * `N5` A long-dormant node rejoins: a catch-up walk by re-import, and its witness. House. N, X.
 * `P1` The steward signer: the composing vessel's `realm-bag` verb calls the steward door (`realm-steward.ts`); the docker `meme` scenario by hand, in the asker's order; a door for a collective Handle's seal waits on the chartered classes; the vouch door, the feed's writer and an edge's holder hand still sign under a persona root. P.
-* `P3` Many realms: the composing vessel hands the realm planes its ledger's realms, the standing reading and the ledger's note, and the `nexus realm-bag` and `realm-bags` verbs take `--realm` (`realm-plane.ts`, `realm-steward.ts`); the cross-operator member consult of a cabal realm waits on the face-scoped proof subject and on the vouch door naming a worn face's key. P, W.
+* `P3` Many realms: the cross-operator member consult of a cabal realm waits on the face-scoped proof subject and on the vouch door naming a worn face's key. P, W.
 * `P4` The four chartered classes and exact-bytes promotion. P.
 * `P5` Kahu-cabal admission as its own act; the cabal's access path to shared canon. P.
 * `P6` R-KAHU: seats on different vessels; the realm root map from the co-signed `keptBy`. P.
@@ -573,7 +573,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 
 !!! P ~ the Kahu plane around the train (its steps before N take no identity bytes and may run beside S and K)
 # The steward signer.
-# Realms and selected-realm routing: the planes stand in code, and the composing vessel's wiring follows.
+# Realms and selected-realm routing: the member consult of a cabal realm, after W.
 # ''After N'': the chartered classes and exact-bytes promotion; Kahu-cabal admission and the cabal access path; R-KAHU.
 # The cadence offers, which may follow the ceremony.
 ''Riskiest'': the steward signer, proven by the docker `meme` scenario by hand as well as by a shard.
@@ -770,6 +770,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-ZENcgPoW4XTInn8qTNnupyZsbn2mzBjBFwDMQqd9kQ
+<<^ code="&#x0003;">>ni:///sha-256;A_npeQ2LlhwRco5YmDqEoXG0e5xelgYqAKFAHKSM24E
 
 <<^ code="&#x0004;" -> to="?">>

@@ -107,16 +107,20 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
  * A name enters a record by its own hand first. `--join` ASKS to keep a bag another hand keeps: this vessel's
  * worn face seals a record that names the standing stewards and itself. `--cosign` CONSENTS to a record that
  * names this vessel's steward. `--steward <key>` names a hand that already sealed a record of this realm.
+ *
+ * A verb names its realm. `--realm <id>` names a cabal realm (64 hex) or the charter-derived realm; with none
+ * named the act lands in the charter-derived realm. An act in a cabal realm stands the vessel there.
  */
 async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   const bag = args.positional[1];
-  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--join | --cosign [--with <key>]] [--steward <key>…] [--tier <t>] [--expiry <rolls>] [--charter <key>=<realm-id>]"); return 2; }
+  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--realm <id>] [--join | --cosign [--with <key>]] [--steward <key>…] [--tier <t>] [--expiry <rolls>] [--charter <key>=<realm-id>]"); return 2; }
   // `--steward` names a keeping hand by the key her worn face presents to this Nexus, and the vessel refuses a
   // key that sealed nothing in this realm: a hand that would keep the bag asks from her own vessel (`--join`).
   // The record is n-of-n: it counts nothing until every hand it names has sealed it.
   const stewards = (args.options["steward"] ?? "").split(",")
     .map((v) => v.trim().replace(/^0x/i, "").toLowerCase()).filter((v) => v.length > 0);
   const cosign = args.flags["cosign"] === true;
+  const realm = typeof args.options["realm"] === "string" ? args.options["realm"].trim().toLowerCase() : "";
   const join = args.flags["join"] === true;
   // `--with <key>` names the hand a co-sign consents WITH, where several different proposals wait on this steward.
   const withName = typeof args.options["with"] === "string" ? args.options["with"].trim().replace(/^0x/i, "").toLowerCase() : "";
@@ -134,6 +138,7 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
     const r = await runVerb("realm-bag", {
       bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, stewards, cosign, join,
       ...(withName ? { with: withName } : {}),
+      ...(realm ? { realm } : {}),
       ...(tier ? { tier } : {}),
       ...(expiry === undefined || !Number.isFinite(expiry) ? {} : { expiry }),
       ...(Object.keys(charters).length > 0 ? { charters } : {}),
@@ -168,10 +173,12 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   }
 }
 
-/** `lares nexus realm-bags` — the standing registrations the realm carries, as of this vessel's last sync. */
+/** `lares nexus realm-bags [--realm <id>]` — the standing registrations a realm carries, as of this vessel's
+ *  last sync: the realm the verb names, or the charter-derived realm. A listing never enters a realm. */
 async function cmdRealmBags(args: ParsedArgs): Promise<number> {
   try {
-    const r = await runVerb("realm-bags", {}, await vesselDid());
+    const realm = typeof args.options["realm"] === "string" ? args.options["realm"].trim().toLowerCase() : "";
+    const r = await runVerb("realm-bags", realm ? { realm } : {}, await vesselDid());
     if (r.status === "error") {
       emit(args, { ok: false, error: { code: "error", message: r.errorMessage ?? "realm-bags failed" },
                    human: () => console.error(`lares nexus realm-bags: ${r.errorMessage ?? "failed"}`) });

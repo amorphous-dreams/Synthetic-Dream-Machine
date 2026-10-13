@@ -53,7 +53,8 @@ import {
 }                                       from "@lararium/mesh";
 import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-resolution.js";
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
-import { makeRealmPlane, type RealmPlaneHolder } from "./realm-plane.js";
+import { makeRealmPlane, type RealmPlanesHolder } from "./realm-plane.js";
+import { noteVesselRealm, readVesselRealms } from "./edge-board.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
 import { floorShadowRing, noFleetAtTheFloor } from "./floor-fleet-lanes.js";
 import type { WikiActivationCap } from "@lararium/mesh";
@@ -691,7 +692,7 @@ async function prepareNodeBootOn(
   // The REALM plane — the relation's shared CRDT (realm-bag-brief). Stood once the oracle plane loads and a
   // charter names a realm; INERT (null) on a vessel outside every relation. Its gate composes ATOP the
   // deterministic shelf: the realm doc and each steward-registered bag's doc federate to a MEMBER peer alone.
-  let realmPlane: RealmPlaneHolder | null = null;
+  let realmPlane: RealmPlanesHolder | null = null;
   // THE EDGE SHADOW RING (kapae#/reach) — one live reading of this vessel's fleet board and realm boards, which
   // the sorter, the share verdict, carriage serve and the realm's gates all consult. Stood beside the Repo,
   // below. The ring itself answers fail-closed until its first fold lands; null (no Repo yet) sets nobody aside,
@@ -1684,6 +1685,12 @@ async function prepareNodeBootOn(
         stewardGuard:     stewardGuard(),
         // THE HANDLE BOOK: a Handle steward's seal reads against the chain this vessel's own book holds for it.
         sealReading:      nodeHandleBookReading(),
+        // MANY REALMS. The planes stand each cabal realm this vessel's own ledger notes, read a peer's lineage
+        // standing in a realm off the edge shadow ring, and note a realm the moment an act enters it. A cabal
+        // takes no key and no roster: the ledger holds this vessel's own memory of where it acted.
+        realms:           () => readVesselRealms(repo, vesselIdentity.verifyingKey),
+        standsInRealm:    shadowRing.standsInRealm,
+        noteRealm:        (realm) => noteVesselRealm(repo, vesselIdentity.verifyingKey, realm),
         // THE REFOLD REVERDICT. The fold decides which documents the realm leg opens, and it moves on a change
         // ANOTHER member writes — a co-signature completing a proposal re-seats a registration this vessel
         // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the
@@ -2411,14 +2418,16 @@ async function prepareNodeBootOn(
     // record `{ bagUri, docUrl, keptBy, readTier }` sealed by the key this vessel's WORN face presents to the
     // realm's Nexus, landed on the realm doc, and announced on @crossroads as `{ bagUri, keptBy }` alone. The
     // steward door holds the whole verb (`realm-steward`): it picks the signer, and it never reaches a root.
+    // The verb names its realm (`args.realm`); an act in a cabal realm stands the vessel there.
     registry.register("realm-bag", (args) => runRealmBag({
       plane: realmPlane, args,
       registryDocs: () => [assembly.islandHandle.doc(), assembly.catalogHandle.doc()],
       reverdict,   // the realm gate's standing set grew — a member peer's cached verdict on that bag's doc moves
     }));
-    // realm-bags — the STANDING registrations this vessel's realm carries (counted and folded; an equivocal
-    // bag never lists). Verdict-free: it reads the realm doc as-of-last-sync.
-    registry.register("realm-bags", () => runRealmBags({ plane: realmPlane }));
+    // realm-bags — the STANDING registrations a realm carries (counted and folded; an equivocal bag never
+    // lists): the realm the verb names, or the charter-derived realm with none named. Verdict-free: it reads
+    // the realm doc as-of-last-sync, and a read never enters a realm.
+    registry.register("realm-bags", (args) => runRealmBags({ plane: realmPlane, args }));
 
     // nexus-rekey — the immune keel's RE-KEY tooth at the Herm's OWN tier: roll a resource's LEASE EPOCH
     // forward on the live daemon board, staling every grant bound below the new epoch. It writes the

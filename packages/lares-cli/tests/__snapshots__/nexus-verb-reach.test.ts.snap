@@ -45,6 +45,7 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition
   realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);
                                             the WORN face's key for this Nexus seals it (\`lares persona wear N\` first)
+            [--realm <id>]                  the realm the act lands in: a cabal realm (64 hex) or the charter-derived realm (the default)
             [--join]                        ASK to keep a bag another hand keeps — the record waits on each standing steward
             [--cosign [--with <key>]]       consent as a named steward to a record that waits on this hand;
                                             \`--with\` names the asker where several records wait
@@ -55,7 +56,7 @@ lares nexus — the Nexus relation doors: charter ceremony, admission, carriage,
   publish <plugins>                         THE OFFERING DOOR — what THIS operator publishes for others to take;
                                             held apart from \`kahuli\`, which overturns what the MESH shares
   offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install
-  realm-bags                                the bags the realm carries, and who keeps each
+  realm-bags [--realm <id>]                 the bags a realm carries, and who keeps each; a listing never enters a realm
 
 Examples:
   lares nexus rite quorum

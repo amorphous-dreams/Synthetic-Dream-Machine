@@ -158,7 +158,7 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 | ''the charter-derived realm'' | the Nexus's own AID, the charter's genesis epoch | the charter's hearth, the registration's own hands, and each contracted member of the Nexus |
 | ''a cabal realm'' | 64 hex, the name its vouch board and its feed already wear | a peer that holds lineage standing in that realm, and nobody else |
 
-* ''A verb names its realm.'' The meme verbs take `--realm <id>`, and the steward door reads a realm for `realm-bag` and `realm-bags`. With none named, a verb routes to the charter-derived realm. A verb that names a realm reads that realm alone: no other realm's registration answers, and the vessel's own bag of that name never stands in.
+* ''A verb names its realm.'' `lares nexus realm-bag`, `realm-bags` and the meme verbs take `--realm <id>`. With none named, a verb routes to the charter-derived realm. A verb that names a realm reads that realm alone: no other realm's registration answers, and the vessel's own bag of that name never stands in.
 * ''A write to one realm never appears in another's plane.'' Each realm keeps its own shared doc, its own standing registrations, its own steward pin and its own gate.
 * ''An act stands the vessel in a realm; a read never does.'' Registering, asking and consenting in a cabal realm stand its plane and note the realm in the vessel's own ledger. Naming a realm the vessel never entered reads empty.
 * ''A cabal takes no key and no roster.'' Standing in a cabal realm reads as a live query over its vouch lineage (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/reach">>). The plane holds no member list, and a steward's key there derives against the Nexus the realm stands under.
@@ -167,7 +167,7 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 * ''A registration widens who reads a book and never narrows it.'' Whatever the vessel already carries to every peer, its public and infrastructure planes, stays carried once a realm registers it.
 * ''The daemon island reads its own vessel's verdict.'' The plane folds each realm's standing registrations and rests the verdict on the vessel's own plane; the island reads that and folds nothing. A Nexus the vessel leaves takes every realm's pins and verdict along, a stand that fails leaves none, and a verdict with no doc pin beside it answers nothing.
 
-''OWED.'' The composing vessel hands the planes its ledger's realms, the standing reading and the ledger's note, and its `lares nexus realm-bag` and `realm-bags` verbs take `--realm <id>`, through the compose owner's hand; until that lands, a vessel stands its charter-derived realm alone and those two verbs name no realm. A cabal realm's documents cross between two operators only once the realm's member consult answers for a peer, and that consult reads the node's root map, which nothing fills. It waits on three things: the vouch door and the member edge naming the key a worn face presents to the Nexus, where they name a persona root; a seat that proves that key per Nexus (the wire train's face-scoped proof subject); and how a seat-holder's face stands in a realm once chairs sign with seat keys.
+''OWED.'' A cabal realm's documents cross between two operators only once the realm's member consult answers for a peer, and that consult reads the node's root map, which nothing fills. It waits on three things: the vouch door and the member edge naming the key a worn face presents to the Nexus, where they name a persona root; a seat that proves that key per Nexus (the wire train's face-scoped proof subject); and how a seat-holder's face stands in a realm once chairs sign with seat keys.
 
 <<~/ahu>>
 
@@ -300,6 +300,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;EZ9kPrxu2XmxtAZlO0XpLyaO9dh61Wy87knml03jZbA
+<<^ code="&#x0003;">>ni:///sha-256;x3SZqzVCi4JMuObBRRsTlVEy1gVQBIpYxL81euyk4Ec
 
 <<^ code="&#x0004;" -> to="?">>
