@@ -81,12 +81,12 @@ Something ''in front of'' the vessel earns the trusted origin: the certificate l
 * ''ONE SETTING NAMES THE REACH FACE.'' `LAR_PUBLIC_URL` holds the one name a browser or a peer dials. Every URL the vessel prints about itself derives from that setting: the relay address an admit carries, the crossing URL, the boot banner (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor#/household-https">>).
 * ''NOTHING A REQUEST SAYS NAMES THE VESSEL.'' `Host`, `X-Forwarded-Proto`, `X-Forwarded-Host` and every other header arrive from whoever sent the request. A vessel that built its own name from them would hand the pen to any caller: one forged `Host` would steer an admit's address or a relay URL toward a stranger's machine. The terminator may forward such headers; the vessel reads them as a description of one request and never as its own name.
 * ''THE SCHEME TRAVELS WITH THE SETTING.'' An `https` reach face carries `wss` for the relay, since a page served over the earned origin cannot open `ws:` (#/the-wall names the cascade). The scheme comes from the setting's own scheme, never from a forwarded header. A served page dials the relay at the origin its own address bar holds, which a browser reports and no request header supplies.
-* ''A MISMATCH LOGS ONCE.'' When a request arrives under a host other than the one the setting names, the vessel logs that mismatch once per boot and keeps serving under the setting. The line tells the operator that a resolver, a terminator or the setting itself fell out of step.
-* ''NO SETTING EARNS A LOUD NOTICE AT BOOT.'' A vessel standing without `LAR_PUBLIC_URL` says so at boot, in one loud line that names the loopback address it will print in its place. A household then learns of the gap from the log, never from a phone that cannot connect.
+* ''A MISMATCH LOGS ONCE.'' When a request arrives under a host other than the one the setting names, the vessel logs that mismatch once per boot and keeps serving under the setting. The line tells the operator that a resolver, a terminator or the setting itself fell out of step. The watch reads the request's own `Host` and no forwarded header, and it reads a socket upgrade as it reads a request. A loopback host draws no line and spends none: the vessel publishes on loopback by this law, and the operator's own machine and a container's health probe dial it there.
+* ''NO SETTING EARNS A LOUD NOTICE AT BOOT.'' A vessel standing without `LAR_PUBLIC_URL` says so at boot, in one loud line that names the loopback address it will print in its place. A household then learns of the gap from the log, never from a phone that cannot connect. A setting that names a loopback host leaves the same gap and earns a line of its own, and so does a setting that names no bare http origin: another scheme, a path, a query or credentials.
 
 ⚠ ''The failure survives testing by its shape.'' Loopback development runs no terminator and knows one name, so a wrong or missing setting runs green on the desk and breaks on the LAN, the crossing this whole carrier exists to make. The boot notice and the mismatch line guard that crossing.
 
-▢ ''OWED'' (the code half): the node entry reads `LAR_PUBLIC_URL` and derives no self-URL from a request header; it falls back to loopback without a word when the setting stands absent. The once-logged mismatch and the loud boot notice stand unbuilt, as does a test that a forged `Host` and a forged `X-Forwarded-Proto` change no printed URL.
+''The notice, the watch and the forged-header test stand'' (`packages/lararium-node/src/reach-face-watch.ts`, seated by the node entry). The entry reads `LAR_PUBLIC_URL` and derives no self-URL from a request header. One test holds a forged `Host`, `X-Forwarded-Host`, `X-Forwarded-Proto` and `Forwarded` to change no byte of four public answers (the arrival page with its members, the descriptor, the readiness answer, the closed door) and no URL the vessel derives about itself, and it holds every node source file to read none of those headers, by the spellings it knows, outside the watch. The entry binds every interface; the loopback publication of the first bullet rests with the compose file that publishes the port.
 
 <<~/ahu>>
 
@@ -296,6 +296,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sw433aFInZxj-j-sTex2nemKfO2_JBBoF7-JSqDlHdI
+<<^ code="&#x0003;">>ni:///sha-256;NfyFRUukV9Ms_4J9xP4ptqryvzxPpwQIaxAPyO7FRVw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -74,6 +74,7 @@ import type { AutomergeUrl }            from "@automerge/automerge-repo";
 import { join } from "path";
 import { existsSync, mkdirSync, writeFileSync, rmSync, readFileSync } from "fs";
 import { REPO_ROOT }   from "./node-host.js";
+import { mountReachFaceWatch, reachFaceBootNotice } from "./reach-face-watch.js";
 import { loadLaresConfig, originDeclaration, hermWaymarkDeclared } from "./lares-config.js";
 import { composePronaosFromEnv } from "./pronaos-composition.js";
 import { houseOriginsOf } from "./pronaos-adapter.js";
@@ -243,6 +244,10 @@ async function main(): Promise<void> {
     declaredUrl: process.env["LAR_PUBLIC_URL"] ?? null,
     interfaces:  networkInterfaces() as unknown as InterfaceTable,
   });
+  // NO SETTING EARNS A LOUD NOTICE AT BOOT (secure-context#/behind-the-terminator). A vessel that names itself
+  // by loopback says so before any face listens, so a household learns of the gap from the log.
+  const reachNotice = reachFaceBootNotice(process.env["LAR_PUBLIC_URL"], `http://localhost:${port}`);
+  if (reachNotice !== null) console.log(`[lararium] ${reachNotice}`);
   // The composition reads the asked standing, so it runs only where its origins are read. A lararium
   // composes relay + read + Web per face before listen, because its crossing banner speaks all three.
   // A herm's boot reads no composed origin (it serves no Web surface and prints no crossing), so it
@@ -260,6 +265,9 @@ async function main(): Promise<void> {
   const httpServer = createServer();
   let lanSocket: LanDatagramSocket | null = null;
   const dispatcher = mountHttpFaceDispatcher(httpServer);
+  // A MISMATCH LOGS ONCE. The watch observes each request and each upgrade and answers neither: nothing a
+  // request says names the vessel, and the first one that arrives under another host earns one line per boot.
+  mountReachFaceWatch({ httpServer, declaredUrl: process.env["LAR_PUBLIC_URL"], log: (line) => console.log(`[lararium] ${line}`) });
   const wss = new WebSocket.Server({ noServer: true });
   // Health names only the local boot posture. It carries no peer, document,
   // Oracle, Pronaos, or causal truth and begins unavailable until setup stands.

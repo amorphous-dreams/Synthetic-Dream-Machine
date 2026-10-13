@@ -46,6 +46,24 @@ describe("main's explicit origin composition weld", () => {
   });
 });
 
+// THE REACH FACE'S TWO LINES (secure-context#/behind-the-terminator). `reach-face-watch.test.ts` proves what each
+// says; this weld holds the entry to saying them: the notice before any face listens, the watch on the one server.
+describe("main says the reach face's two lines", () => {
+  test("the boot notice reads the setting and prints before the listener; the watch seats on the http server", () => {
+    const notice = SOURCE.indexOf("reachFaceBootNotice(process.env[\"LAR_PUBLIC_URL\"], `http://localhost:${port}`)");
+    const watch = SOURCE.indexOf("mountReachFaceWatch({ httpServer, declaredUrl: process.env[\"LAR_PUBLIC_URL\"]");
+    expect(notice).toBeGreaterThan(-1);
+    expect(watch).toBeGreaterThan(-1);
+    expect(notice).toBeLessThan(SOURCE.indexOf("httpServer.listen"));
+    expect(watch).toBeLessThan(SOURCE.indexOf("httpServer.listen"));
+    const said = SOURCE.indexOf("if (reachNotice !== null) console.log(`[lararium] ${reachNotice}`);");
+    expect(said).toBeGreaterThan(notice);
+    expect(said).toBeLessThan(SOURCE.indexOf("httpServer.listen"));
+    // Nothing a request says names the vessel: the entry reads no host and no forwarded header.
+    expect(SOURCE).not.toMatch(/headers\s*(?:\.\s*host\b|\[\s*["'`](?:host|x-forwarded-[a-z]+|forwarded)["'`]\s*\])/i);
+  });
+});
+
 // A REFUSAL ABOVE THE FLOOR LEAVES THE FLOOR STANDING: the boot's own source composes at the floor when a
 // composition handed the sovereign rows refuses, and ends the process only when the floor itself refuses. The
 // first boot and every custody recomposition take the same road.
