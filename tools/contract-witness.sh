@@ -337,7 +337,7 @@ async function reading() {
     const board   = await M.materializeSharedLarDoc(repo, M.carriageDocUrl(island), "board:carriage-contracts");
     const antigen = await M.materializeSharedLarDoc(repo, M.kapaeAntigenDocUrl(island), "board:kapae-antigen");
     // The anchors are the PRESENTER's read; the verdict reads the board as a deny board and nothing more.
-    return { aid: M.realmIdOfCharter(doc), roster, sealLineage: doc?.sealLineage ?? [], boardDoc: board.doc(),
+    return { aid: M.realmIdOfCharter(doc), doc, roster, sealLineage: doc?.sealLineage ?? [], boardDoc: board.doc(),
              denyBoard: M.carriageEntriesFromBoard(board.doc()), anchors: M.rollAnchorsFromBoard(board.doc()),
              antigen: M.antigenEntriesFromBoard(antigen.doc()), antigenRoster: roster };
   } finally { await repo.flush().catch(() => {}); }
@@ -416,7 +416,13 @@ switch (mode) {
   case "raise": {              // the door's verifier route over this replica's reading
     const live = json(a1);
     const grant = json(a2);
-    const r = await M.verifyRaiseGrant({ grant, live, readings: [await reading()],
+    // THE DOOR READS A HELD ROOT, built where the vessel builds its own (`vessel-raise.ts`): from the charter this
+    // vessel keeps for the Nexus, never from a roster a caller assembled by hand.
+    const at = await reading();
+    const root = M.heldNexusRoot({ nexus: at.aid, charter: at.doc, denyBoard: at.denyBoard, antigen: at.antigen,
+      antigenVerifier: M.makeMultiSigQuorumVerifier() });
+    if ("absent" in root) { console.log(`refused no-held-root ${root.absent}`); break; }
+    const r = await M.verifyRaiseGrant({ grant, live, readings: [root],
       verify: (nym, bytes, sig) => M.ed25519VerifyHex(sig, bytes, nym) });
     console.log(r.ok ? `raised by=${r.caps.byNym}` : `refused ${r.why} ${r.detail}`);
     break;
