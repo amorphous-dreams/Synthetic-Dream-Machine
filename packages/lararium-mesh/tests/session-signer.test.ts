@@ -9,11 +9,11 @@
 import * as ed25519 from "@noble/ed25519";
 import { describe, expect, test } from "vitest";
 import { hex, utf8Bytes } from "../src/crypto.js";
-import { checkFaceChain, foldWithdrawals, type VesselFaceKeyCustody } from "../src/face-authority.js";
+import { checkVesselChain, foldWithdrawals, type VesselFaceKeyCustody } from "../src/face-authority.js";
 import { readSessionCertificate, readSessionSignature, sessionSignatureImage } from "../src/face-proof-subjects.js";
 import { SessionTable, sessionBinding, type CapabilityProfile, type Session, type SessionBinding, type SessionFace } from "../src/session-contract.js";
 import { supplySessionFace } from "../src/session-face.js";
-import { SessionSigner, mintSessionSigner } from "../src/session-signer.js";
+import { SessionSigner, mintSessionSigner, openSignedSession } from "../src/session-signer.js";
 import { chain, pair, stringLeaves, type Chain, type Pair } from "./face-proof-fixture.js";
 
 const NEXUS_A = "nexus-a.synthetic";
@@ -27,7 +27,7 @@ const custodyOf = (by: Pair): VesselFaceKeyCustody => ({ signAsVesselFace: (_sco
 function faceOf(c: Chain, group: string): SessionFace {
   const fold = foldWithdrawals(c.scope);
   if (!("memory" in fold)) throw new Error(fold.refusal);
-  const verdict = checkFaceChain({ admitted: c.scope, certificate: c.certificate, sessionCertificate: c.sessionCertificate, frontier: fold.memory.frontier, carried: [], memory: fold.memory });
+  const verdict = checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory: fold.memory });
   if (verdict.verdict !== "verified") throw new Error(verdict.verdict);
   const supply = supplySessionFace({
     chain: verdict.chain, vesselFaceKey: c.vessel.key,
@@ -299,5 +299,55 @@ describe("two faces of one vessel share nothing a signer shows", () => {
     }
     // CONTROL: the binding, which never crosses, does hold the shared owner epoch.
     expect(signerA.binding.ownerEpoch).toBe(signerB.binding.ownerEpoch);
+  });
+});
+
+describe("a session opens before its certificate, and never stands live without its signer", () => {
+  test("CONTROL: one door opens the session on the supplied face and mints its signer", async () => {
+    const c = await chain("open-signed", NEXUS_A);
+    const table = new SessionTable(OWNER_EPOCH);
+    const binding = sessionBinding("socket");
+    const opened = await openSignedSession({ table, binding, face: faceOf(c, GROUP_ONE), profile: "verb", certificate: c.certificate, apart: [], custody: custodyOf(c.vessel) });
+    if (!("signer" in opened)) throw new Error(opened.refusal);
+    expect(opened.session.state).toBe("live");
+    expect(opened.signer.binding.sessionId).toBe(opened.session.sessionId);
+    expect(opened.signer.certificate.profile).toBe("verb");
+    expect(table.size).toBe(1);
+    expect("signature" in await opened.signer.sign("act", PAYLOAD)).toBe(true);
+  });
+
+  test("RED: a mint that refuses or throws closes the session it opened: no session stands live with a face and no signer", async () => {
+    const c = await chain("open-unsigned", NEXUS_A);
+    const other = await chain("open-unsigned other", NEXUS_A);
+    const table = new SessionTable(OWNER_EPOCH);
+    const args = { table, face: faceOf(c, GROUP_ONE), profile: "face" as const, certificate: c.certificate, apart: [] };
+    // The custody door signs under another key: the certificate fails its own reading.
+    const astray = sessionBinding("socket");
+    expect(await openSignedSession({ ...args, binding: astray, custody: custodyOf(other.vessel) })).toEqual({ refusal: "custody-astray", cause: expect.anything() });
+    expect(table.size).toBe(0);
+    // The custody door throws: the open still gets undone, and the fault leaves by its own name.
+    const thrown = sessionBinding("socket");
+    await expect(openSignedSession({ ...args, binding: thrown, custody: { signAsVesselFace: () => { throw new Error("custody locked"); } } })).rejects.toThrow(/custody locked/);
+    expect(table.size).toBe(0);
+    // A certificate under another face: the session never wears a face its signer cannot sign for.
+    expect(await openSignedSession({ ...args, binding: sessionBinding("socket"), certificate: other.certificate, custody: custodyOf(other.vessel) })).toEqual({ refusal: "session-other-face" });
+    expect(table.size).toBe(0);
+    // The bindings stand free again: a later open on the same binding takes it.
+    const again = await openSignedSession({ ...args, binding: astray, custody: custodyOf(c.vessel) });
+    expect("signer" in again).toBe(true);
+    expect(table.size).toBe(1);
+  });
+
+  test("RED: a face the table refuses opens nothing and mints nothing", async () => {
+    const c = await chain("open-refused", NEXUS_A);
+    const table = new SessionTable(OWNER_EPOCH);
+    let asked = 0;
+    const custody = { signAsVesselFace: (...a: Parameters<VesselFaceKeyCustody["signAsVesselFace"]>) => { asked++; return custodyOf(c.vessel).signAsVesselFace(...a); } };
+    expect(await openSignedSession({ table, binding: sessionBinding("socket"), face: { ...faceOf(c, GROUP_ONE), root: "bytes" }, profile: "face", certificate: c.certificate, apart: [], custody }))
+      .toEqual({ refusal: "session-malformed", open: "face-malformed" });
+    expect(await openSignedSession({ table, binding: sessionBinding("socket"), face: faceOf(c, GROUP_ONE), profile: "carriage", certificate: c.certificate, apart: [], custody }))
+      .toEqual({ refusal: "session-malformed", open: "profile-unknown" });
+    expect(asked).toBe(0);
+    expect(table.size).toBe(0);
   });
 });

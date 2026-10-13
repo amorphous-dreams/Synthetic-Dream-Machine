@@ -7,7 +7,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries
  */
 import { describe, expect, test } from "vitest";
-import { checkFaceChain, foldWithdrawals, type VerifiedFaceChain } from "../src/face-authority.js";
+import { checkFaceChain, checkVesselChain, foldWithdrawals, type VerifiedVesselChain } from "../src/face-authority.js";
 import { faceProofSubjectRef, genesisFrontier } from "../src/face-proof-subjects.js";
 import { personaScopedBagIds } from "../src/persona-scope.js";
 import { SessionTable, sessionBinding, validateSessionFace } from "../src/session-contract.js";
@@ -19,11 +19,12 @@ const NEXUS_B = "nexus-b.synthetic";
 const GROUP_ONE = "b7f1c2a9d4e60381";
 const GROUP_TWO = "3e5a90cc17bd4f22";
 
-async function verified(c: Chain, withdrawn: readonly string[] = []): Promise<VerifiedFaceChain> {
+/** This vessel's own chain: its certificate against the history it holds. No session certificate stands in it. */
+async function verified(c: Chain, withdrawn: readonly string[] = []): Promise<VerifiedVesselChain> {
   const events = await history(c, withdrawn);
   const fold = foldWithdrawals(c.scope, events);
   if (!("memory" in fold)) throw new Error(fold.refusal);
-  const verdict = checkFaceChain({ admitted: c.scope, certificate: c.certificate, sessionCertificate: c.sessionCertificate, frontier: fold.memory.frontier, carried: [], memory: fold.memory });
+  const verdict = checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory: fold.memory });
   if (verdict.verdict !== "verified") throw new Error(verdict.verdict);
   return verdict.chain;
 }
@@ -57,6 +58,18 @@ describe("the session face supplier", () => {
       expect(supplySessionFace({ chain: impostor, vesselFaceKey: c.vessel.key, admit: admitOf(c), grant: grantOf(c, GROUP_ONE) })).toEqual({ refusal: "chain-unverified" });
     }
     expect("face" in supplySessionFace({ chain: real, vesselFaceKey: c.vessel.key, admit: admitOf(c), grant: grantOf(c, GROUP_ONE) })).toBe(true);   // CONTROL
+  });
+
+  test("RED: a chain a gate's check minted, session certificate and all, supplies no face: a session opens before its certificate", async () => {
+    const c = await chain("gate-chain", NEXUS_A);
+    const fold = foldWithdrawals(c.scope);
+    if (!("memory" in fold)) throw new Error(fold.refusal);
+    const gates = checkFaceChain({ admitted: c.scope, certificate: c.certificate, sessionCertificate: c.sessionCertificate, frontier: fold.memory.frontier, carried: [], memory: fold.memory });
+    if (gates.verdict !== "verified") throw new Error(gates.verdict);
+    expect(supplySessionFace({ chain: gates.chain, vesselFaceKey: c.vessel.key, admit: admitOf(c), grant: grantOf(c, GROUP_ONE) })).toEqual({ refusal: "chain-unverified" });
+    const supply = supplySessionFace({ chain: await verified(c), vesselFaceKey: c.vessel.key, admit: admitOf(c), grant: grantOf(c, GROUP_ONE) });   // CONTROL
+    expect("face" in supply && stringLeaves(supply.face).has(c.session.key)).toBe(false);
+    expect("face" in supply).toBe(true);
   });
 
   test("a chain another vessel presented supplies no face here, though it verifies", async () => {

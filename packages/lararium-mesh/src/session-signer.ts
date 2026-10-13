@@ -209,3 +209,32 @@ export async function mintSessionSigner(args: {
     if (!kept) secret.fill(0);
   }
 }
+
+/**
+ * THE ONE DOOR that opens a session and mints its signer, in that order.
+ *
+ * The session opens first, wearing the face the supplier answered; the signer then mints the session's key
+ * and its certificate under the vessel's face-scoped key. The owner answers its caller only when this
+ * returns, so no message routes to a session that holds a face and no signer: a mint that refuses, or a
+ * custody door that throws, closes the session this door opened before anything else hears of it.
+ */
+export async function openSignedSession(args: {
+  table: SessionTable; binding: SessionBinding; face: unknown; profile: unknown; caps?: readonly string[];
+  certificate: unknown; apart: KeysHeldApart; custody: VesselFaceKeyCustody; random?: RandomProvider;
+}): Promise<{ readonly session: Session; readonly signer: SessionSigner } | SessionSignerRefusal | { readonly refusal: "session-malformed"; readonly open: string }> {
+  if (!(args.table instanceof SessionTable)) return { refusal: "table-foreign" };
+  const opened = args.table.open(args.binding, args.face, args.profile, args.caps ?? []);
+  if (!opened.ok) return { refusal: "session-malformed", open: opened.refusal };
+  let kept = false;
+  try {
+    const minted = await mintSessionSigner({
+      table: args.table, binding: args.binding, session: opened.session, certificate: args.certificate, apart: args.apart, custody: args.custody,
+      ...(args.random ? { random: args.random } : {}),
+    });
+    if (!own(minted, "signer")) return minted;
+    kept = true;
+    return { session: opened.session, signer: minted.signer };
+  } finally {
+    if (!kept) args.table.close(opened.session.sessionId);
+  }
+}

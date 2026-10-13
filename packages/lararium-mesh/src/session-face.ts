@@ -6,8 +6,9 @@
  * (`session-contract`). This module builds that value from one verified chain and three readings it joins
  * to that chain, or refuses by name:
  *
- *   · a VERIFIED CHAIN, minted by `checkFaceChain` alone: the face key, the vessel's face-scoped key and a
- *     session key, with no learned denial of the vessel's key;
+ *   · THIS VESSEL'S VERIFIED CHAIN, minted by `checkVesselChain` alone: the face key's certificate over the
+ *     vessel's face-scoped key, with no learned denial of that key. It holds no session key: a session
+ *     opens on the face this supplier answers, and its signer mints the session's key after the open;
  *   · THIS VESSEL'S OWN KEY for that face, as its custody row names it: a chain another vessel presented
  *     verifies as well as this vessel's own, and only this vessel's chain opens a session here;
  *   · the ADMIT'S VERDICT, as the one presenter-verifier reads it (`carriage-registry`): the Nexus's quorum
@@ -32,7 +33,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries
  */
 import type { PresentedAdmitVerdict } from "./carriage-registry.js";
-import { isVerifiedFaceChain, type VerifiedFaceChain } from "./face-authority.js";
+import { isVerifiedVesselChain, type VerifiedVesselChain } from "./face-authority.js";
 import { faceProofSubjectRef } from "./face-proof-subjects.js";
 import { personaScopedBagIds } from "./persona-scope.js";
 import { validateSessionFace, type SessionFace } from "./session-contract.js";
@@ -60,7 +61,7 @@ export interface FaceGrantReading {
 }
 
 export const SESSION_FACE_REFUSALS = [
-  "chain-unverified",       // no value `checkFaceChain` minted
+  "chain-unverified",       // no value `checkVesselChain` minted
   "chain-other-vessel",     // the chain's vessel key names another key than this vessel's custody row
   "admit-malformed",
   "admit-not-held",         // the admit reads denied, unsettled, rejected or at a wrong epoch; `state` names which
@@ -113,7 +114,7 @@ function readGrant(value: unknown): FaceGrantReading | null {
  * the withdrawal frontier the chain got checked at. One string, three references: a session opened at
  * another position of any of the three wears another revision.
  */
-export function sessionFaceRevision(chain: VerifiedFaceChain, admit: Pick<FaceAdmitReading, "revision">, grant: Pick<FaceGrantReading, "revision">): string {
+export function sessionFaceRevision(chain: VerifiedVesselChain, admit: Pick<FaceAdmitReading, "revision">, grant: Pick<FaceGrantReading, "revision">): string {
   return `admit:${admit.revision}|grant:${grant.revision}|withdrawal:${chain.frontier.position}:${chain.frontier.head}`;
 }
 
@@ -131,7 +132,7 @@ export function supplySessionFace(input: { chain: unknown; vesselFaceKey: unknow
   try { taken = { chain: input.chain, vesselFaceKey: input.vesselFaceKey, admit: input.admit, grant: input.grant }; }
   catch { return { refusal: "chain-unverified" }; }
   const { chain } = taken;
-  if (!isVerifiedFaceChain(chain)) return { refusal: "chain-unverified" };
+  if (!isVerifiedVesselChain(chain)) return { refusal: "chain-unverified" };
   if (typeof taken.vesselFaceKey !== "string" || taken.vesselFaceKey !== chain.vesselFaceKey) return { refusal: "chain-other-vessel" };
 
   const admit = readAdmit(taken.admit);

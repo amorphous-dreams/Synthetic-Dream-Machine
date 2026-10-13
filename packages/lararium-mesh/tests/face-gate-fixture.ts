@@ -15,14 +15,14 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import type { CarriageEntry } from "../src/carriage-registry.js";
 import { hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
-import { checkFaceChain, foldWithdrawals, type VesselFaceKeyCustody, type WithdrawalMemory } from "../src/face-authority.js";
+import { checkVesselChain, foldWithdrawals, type VesselFaceKeyCustody, type WithdrawalMemory } from "../src/face-authority.js";
 import { dialFaceGate, type DialSocket, type FaceDialArgs, type FaceDialOutcome } from "../src/face-dial.js";
 import {
   makeFaceGate, memoryBackedWithdrawals, presentedAdmitReader, type FaceGate, type GateOutcome, type GateSession,
   type GateShadowReading, type GateSocket, type GateSortInput, type GateSortVerdict, type GateWithdrawalMemory,
   type HeldNexusRoot,
 } from "../src/face-gate.js";
-import { sessionCertificateImage, type FaceScope, type NexusAid, type VesselFaceCertificate } from "../src/face-proof-subjects.js";
+import type { FaceScope, NexusAid, VesselFaceCertificate } from "../src/face-proof-subjects.js";
 import { classifySocket, type FederationPosture } from "../src/federation-gate.js";
 import { deriveGateBundle, gateKnock, gatePrologue, type GateBundle, type GateBundlePin, type GateBundleRoot } from "../src/gate-bundle.js";
 import {
@@ -285,9 +285,8 @@ export function memoryOf(scope: FaceScope, events: unknown = []): WithdrawalMemo
  * face comes from the one supplier, and the signer from the one mint, as a vessel's own session open does.
  */
 async function seat(c: Chain, vessel: Pair, certificate: VesselFaceCertificate, profile: CapabilityProfile, admitRef: string): Promise<{ signer: SessionSigner; table: SessionTable; sessionId: string }> {
-  const own: Chain = vessel === c.vessel ? c : { ...(await chainUnder(c, vessel, certificate, profile)) };
-  const memory = memoryOf(c.scope);
-  const verdict = checkFaceChain({ admitted: c.scope, certificate, sessionCertificate: own.sessionCertificate, frontier: memory.frontier, carried: [], memory });
+  // The order of acts: the vessel's chain verifies, the supplier answers the face, the session opens, the signer mints.
+  const verdict = checkVesselChain({ admitted: c.scope, certificate, memory: memoryOf(c.scope) });
   if (verdict.verdict !== "verified") throw new Error(`the vessel's own chain reads ${verdict.verdict}`);
   const supply = supplySessionFace({
     chain: verdict.chain, vesselFaceKey: vessel.key,
@@ -302,13 +301,6 @@ async function seat(c: Chain, vessel: Pair, certificate: VesselFaceCertificate, 
   const minted = await mintSessionSigner({ table, binding, session: opened.session, certificate, apart: [], custody: custodyOf(vessel) });
   if (!("signer" in minted)) throw new Error(`no signer minted: ${minted.refusal}`);
   return { signer: minted.signer, table, sessionId: opened.session.sessionId };
-}
-
-/** A throwaway session certificate under another vessel of the same face: what the supplier's chain check reads. */
-async function chainUnder(c: Chain, vessel: Pair, certificate: VesselFaceCertificate, profile: CapabilityProfile): Promise<Chain> {
-  const image = sessionCertificateImage(c.scope, certificate.vesselFaceKey, c.sessionCertificate.sessionKey, profile);
-  const signature = hex(await ed25519.signAsync(image, vessel.secret));
-  return { ...c, vessel, certificate, sessionCertificate: { ...c.sessionCertificate, vesselFaceKey: certificate.vesselFaceKey, profile, signature: signature as never } };
 }
 
 /** A face admitted at `w`'s Nexus, its first vessel, a live session and that session's signer. */
