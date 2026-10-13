@@ -309,6 +309,8 @@ identity bytes; then R-WIRE, so every pin changes once.
 
 !!! The sealed store ~ five steps threaded through the paths (operator-approved model; unbuilt)
 * ''The model'': cleartext lives in the live wiki and in the operator's projected files alone. A private bag rests as authenticated ciphertext chunks, the same bytes at rest and in a blind carrier's hands; a node that holds the capability and stands locked rests sealed. Private bytes take randomized authenticated encryption addressed over the ciphertext, so convergent sealing leaves the private tier. A bag's content key rolls at a causal removal act, never by a clock.
+* ''Scope'' (operator ruling): the sealing covers the wiki content stores, node and browser, and the content-addressed store, in carriage as well as at rest. The memory palace, the sensorium, receipts and logs stand outside it. Public and crossroads content stays readable to whoever holds the public keys or lookups.
+* ''Faces stand as facets of one operator'' (operator steer): no per-face projection root. Each kind of reader gets named — own vessel, own facet, a friend's face, a hosted guest, a carrier that holds none — before any admission-history rule gets written.
 * ''Step 1, after SUBSTRATE's seal'': the one private-byte format (chunk envelope, ciphertext address, key-version manifest, lockbox) and the amendments to `content-resolution.mem`, `blob-carriage.mem` and `cap-tier.mem`. The format changes ONCE, here. It also defines shareable-history epochs and authenticated checkpoint frontiers.
 * ''Step 2'': durable, sealed bag lockboxes and a chunk index; the provider's tracked chunks rest in memory alone today.
 * ''Step 3, after ONE FACE'': sealed storage values and hydration scoped by the session's face.
@@ -747,6 +749,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pyg4onOXmJs8RzNf9vRmvtWum2jNJd0eQXyaIhoKlzs
+<<^ code="&#x0003;">>ni:///sha-256;EvmmpgTLeo3-2DETKX9tuRyy-HhE-UFezhegcucqRg8
 
 <<^ code="&#x0004;" -> to="?">>
