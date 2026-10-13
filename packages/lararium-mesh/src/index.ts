@@ -294,6 +294,9 @@ export type { FaceScope, FaceWithdrawal } from "./face-proof-subjects.js";
 // door and the custody seat the custody root's. The bundle itself stays out of the barrel until the socket cutover.
 export { floorKeyDoor, custodyRootDoor } from "./gate-bundle.js";
 export type { FloorKeyDoor, CustodyRootDoor, GateRootDoor } from "./gate-bundle.js";
+// THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-rows`).
+export { GATE_MEMORY_ROW_MAX_BYTES } from "./gate-withdrawal-store.js";
+export type { GateMemoryRows } from "./gate-withdrawal-store.js";
 export * from "./device-removal.js";
 export * from "./re-anchoring.js";
 export * from "./lineage-rank.js";

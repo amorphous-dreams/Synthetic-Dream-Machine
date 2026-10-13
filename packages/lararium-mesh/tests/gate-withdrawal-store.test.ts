@@ -131,3 +131,32 @@ describe("a gate's memory rests in its own store", () => {
     expect(await storedWithdrawals(rows.reopen()).read(c.scope)).toBeNull();
   }, 240_000);
 });
+
+describe("a write the vessel's door refuses", () => {
+  test("RED: the store drops its view, and a read in flight across the drop seats nothing — CONTROL: a later read answers the row", async () => {
+    const c = await chain("refused write", NEXUS);
+    const keys = [(await chain("refused one", NEXUS)).vessel.key, (await chain("refused two", NEXUS)).vessel.key];
+    const line = await history(c, keys);                                  // e1, e2
+    const name = faceProofSubjectRef(c.scope);
+    let held = canonicalJsonBytes([line[0]]);
+    let park: Promise<void> | null = null, refuse = false;
+    const rows = {
+      read: async () => { const bytes = Uint8Array.from(held); if (park) { const wait = park; park = null; await wait; } return bytes; },
+      write: async (_name: string, bytes: Uint8Array) => { if (refuse) throw new Error("the door refuses: the row moved"); held = Uint8Array.from(bytes); },
+    };
+    const store = storedWithdrawals(rows);
+    let release!: () => void;
+    park = new Promise<void>((resolve) => { release = resolve; });
+    const inFlight = store.read(c.scope);                                 // holds the row as it stood at [e1], parked
+    // Another writer moves the row to [e1, e2]; this store's keep then meets the door's refusal.
+    refuse = true;
+    await expect(store.keep(memoryOf(c.scope, line))!).rejects.toThrow(/the door refuses/);
+    held = canonicalJsonBytes(line);
+    release();
+    expect((await inFlight)!.frontier.position).toBe(1);                   // the parked read answers its own caller …
+    const after = (await store.read(c.scope))!;                           // … and seats nothing: the next read verifies the row
+    expect(after.frontier.position).toBe(2);
+    expect(after.frontier.head).toBe(withdrawalHead(line[1]!));
+    expect(name.length).toBe(64);
+  });
+});

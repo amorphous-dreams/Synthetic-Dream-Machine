@@ -14,7 +14,8 @@
  *   · ONE ROW PER FACE KEY, NAMED BY A DIGEST. The name binds one face key to one Nexus
  *     (`faceProofSubjectRef`). The store reads one row for one presenter and offers no walk of its rows.
  *   · IT ONLY ACCRETES. A keep joins what the row holds with what arrives, under one writer per row, and
- *     writes only where the join holds an event the row lacked. An older view never replaces a later one.
+ *     writes only where the join holds an event the row lacked. An older view never replaces a later one:
+ *     where the vessel's door refuses a write, this store drops its view of that row and verifies it again.
  *     Every adapter over one set of rows shares that one writer; across processes the vessel's one store
  *     door keeps one holder (lar:///ha.ka.ba/lararium/mesh/harbor).
  *   · A ROW HOLDS AT MOST 1024 EVENTS. A join that would pass the bound writes nothing, and the row keeps
@@ -55,14 +56,17 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
   // Two adapters over one set of rows share one writer queue and one verified view: a second adapter never
   // joins against a row the first already moved.
   let shared = SHARED.get(rows);
-  if (shared === undefined) { shared = { verified: new Map(), writing: new Map() }; SHARED.set(rows, shared); }
+  if (shared === undefined) { shared = { verified: new Map(), writing: new Map(), dropped: new Map() }; SHARED.set(rows, shared); }
   /** What this process already verified, by row name: a row verifies once per process, and again after a restart. */
-  const { verified, writing } = shared;
+  const { verified, writing, dropped } = shared;
 
   async function load(scope: FaceScope): Promise<WithdrawalMemory | null> {
     const name = faceProofSubjectRef(scope);
     const known = verified.get(name);
     if (known !== undefined) return known;
+    // A read that began before a refused write dropped this row's view may hold bytes the row no longer holds:
+    // it answers its own caller and seats nothing.
+    const drops = dropped.get(name) ?? 0;
     const bytes = await rows.read(name);
     if (bytes === null) return null;
     const torn = (): null => { try { opts.onTorn?.(name); } catch { /* a log never decides */ } return null; };
@@ -72,7 +76,7 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
     // The fold reads every event through the withdrawal's own reader and holds each to this scope.
     const fold = foldWithdrawals(scope, events);
     if (!own(fold, "memory")) return torn();
-    verified.set(name, fold.memory);
+    if ((dropped.get(name) ?? 0) === drops) verified.set(name, fold.memory);
     return fold.memory;
   }
 
@@ -89,7 +93,10 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
         const held = heldWithdrawals(joined.memory);
         if (standing !== null && held.length === heldWithdrawals(standing).length) return;      // nothing new: nothing to write
         if (held.length === 0) return;
-        await rows.write(name, canonicalJsonBytes(held));
+        // A write the vessel's door refuses (another writer moved the row since this view verified it) drops the
+        // view: the next read verifies the row again, and never answers from what the row no longer holds.
+        try { await rows.write(name, canonicalJsonBytes(held)); }
+        catch (refused) { verified.delete(name); dropped.set(name, (dropped.get(name) ?? 0) + 1); throw refused; }
         verified.set(name, joined.memory);
       });
       const settled = turn.catch(() => undefined);
@@ -101,7 +108,7 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
 }
 
 /** What every adapter over one set of rows shares: one writer per row, and what this process verified of each. */
-const SHARED = new WeakMap<GateMemoryRows, { verified: Map<string, WithdrawalMemory>; writing: Map<string, Promise<void>> }>();
+const SHARED = new WeakMap<GateMemoryRows, { verified: Map<string, WithdrawalMemory>; writing: Map<string, Promise<void>>; dropped: Map<string, number> }>();
 
 /**
  * Rows kept in this process alone: a stand-in for a vessel's store, for suites and for nothing else.

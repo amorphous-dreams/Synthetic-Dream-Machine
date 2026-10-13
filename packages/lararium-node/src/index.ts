@@ -486,6 +486,7 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
+export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused, GATE_MEMORY_DIR } from "./gate-memory-rows.js";
 export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow, custodyVeilKeys } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";

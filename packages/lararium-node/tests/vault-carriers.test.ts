@@ -93,6 +93,7 @@ const SOWN: Record<string, string> = {
   [`vessel/hosting/${HOST}/carry/guest/record.json`]: "{}",
   [`vessel/hosting/${HOST}/carry/guest/blobs/abc`]:   "sealed",
   [`vessel/walk/${HOST}.json`]:                 "{}",
+  [`vessel/gate-memory/${"ef".repeat(32)}.bin`]: "x",
   "nexus/founding-roster.mem":                  "charter",
   "nexus/carried/AID1/founding-roster.mem":     "charter",
   "nexus/nexus/carriage-consent/AID1.json":     "{}",
@@ -110,7 +111,7 @@ const RULED: Record<string, CustodyClass> = {
   "enroll-pending": "hot", "grant-pending": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
   "public-handles": "hot", "handle-book": "hot", "reserve-state": "hot", "seal-day": "hot",
-  "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot",
+  "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot", "gate-memory": "hot",
   "transition-pending": "hot", "transitions": "hot",
   "vessel-next": "cold", "persona-root": "cold", "device-share": "cold", "reserve-share": "cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).

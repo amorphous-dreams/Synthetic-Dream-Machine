@@ -84,6 +84,11 @@ export function seatedCustody(): CustodyHolder | null {
   return seatOfThisHome()?.holder ?? null;
 }
 
+/** The holder that already sits for this home, or null. Opens nothing and builds nothing. */
+export function standingCustody(): CustodyHolder | null {
+  return seats.get(larIdentityDir())?.holder ?? null;
+}
+
 /** Whether a holder sits for this home and holds its key right now. Opens nothing and builds nothing. */
 export function custodyHeld(): boolean {
   return seats.get(larIdentityDir())?.holder.isUnlocked() === true;

@@ -14,7 +14,7 @@
  *
  * ── ROWS SPAN HOMES, NOT ONE DIRECTORY ──────────────────────────────────────────────────────────
  * A row names its home (`identity` · `storage` · `seal`), the subtree it lives under, and a matcher over the
- * path relative to that home. The storage directory's `hosting/` and `walk/` subtrees and the seal home's
+ * path relative to that home. The storage directory's `hosting/`, `walk/` and `gate-memory/` subtrees and the seal home's
  * charters, consents and admits stand here beside the identity home's keys, so the census sees what a
  * stolen disk would. The census walks only the subtrees some row names: the Automerge store's own chunks
  * never enter it.
@@ -220,6 +220,10 @@ function buildTable(): readonly CarrierRow[] {
           custody: "hot", keyClass: null, writer: "hosting-carry" }),
     row({ row: "walk", home: "storage", under: "walk", match: /^walk\/[^/]+\.json$/,
           custody: "hot", keyClass: null, writer: "node-walk-store" }),
+    // A sovereign gate's withdrawal memory, one row per face key named by its proof-subject digest
+    // (`gate-memory-rows`). It belongs to its vessel: no face's bundle carries it.
+    row({ row: "gate-memory", home: "storage", under: "gate-memory", match: /^gate-memory\/[0-9a-f]{64}\.bin$/,
+          custody: "hot", keyClass: null, writer: "gate-memory-rows" }),
     row({ row: "transition-pending", home: "seal", under: "", match: file("transition-pending.json"),
           custody: "hot", keyClass: null, writer: "nexus seal" }),
     row({ row: "transitions", home: "seal", under: "", match: file("transitions.json"),
