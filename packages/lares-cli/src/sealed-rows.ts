@@ -80,16 +80,15 @@ export async function provisionReserve(share: RecoveryShare, state: SealReserveS
 }
 
 /**
- * A hand of the seal ceremony: it signs as the persona root held at one index, and the seed stays behind the
- * custody door. The door reads each image and signs a charter roll or a crossing record alone.
+ * A hand of the seal ceremony's ROLL: it signs as the persona root held at one index, and the seed stays behind
+ * the custody door. The door reads the charter that stands and signs only a roll its standing head licenses; it
+ * signs no other image. (A crossing's marks ride the rite's own acts, which take no image at all.)
  */
 export interface SealHand {
   /** The root's public key, lower-case hex. */
   readonly signer: string;
-  /** Sign a charter roll's bytes or a crossing record's bytes; answers the signature as lower-case hex. */
+  /** Sign a charter roll's bytes; answers the signature as lower-case hex. */
   readonly sign: (bytes: Uint8Array) => Promise<string>;
-  /** Sign a crossing record with a witness's note after it; `record` holds the crossing record's own bytes. */
-  readonly signWitness: (record: Uint8Array, note: string) => Promise<string>;
 }
 
 /** The seal hand for the root at `handleIndex`. Refuses when this vessel holds no root there. */
@@ -98,7 +97,8 @@ export async function sealHand(handleIndex: number): Promise<SealHand> {
   if (!signer) {
     throw new Error(`[persona-vault] no persona-root at h${handleIndex} — mint it via the founding ceremony first (founder-only; a joining vessel never holds the root seed)`);
   }
-  const ask = async (bytes: Uint8Array, note?: string): Promise<string> =>
-    (await sealedAct<{ sig: string }>("seal.sign", { handleIndex, image: Buffer.from(bytes).toString("hex"), ...(note !== undefined ? { note } : {}) })).sig;
-  return { signer, sign: (bytes) => ask(bytes), signWitness: (record, note) => ask(record, note) };
+  return {
+    signer,
+    sign: async (bytes) => (await sealedAct<{ sig: string }>("seal.sign", { handleIndex, image: Buffer.from(bytes).toString("hex") })).sig,
+  };
 }

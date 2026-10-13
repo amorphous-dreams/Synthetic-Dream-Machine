@@ -5,10 +5,10 @@
  *       refuses `bad-args`; both refuse BEFORE any row opens (a locked seat would otherwise answer first).
  *                                                                 control: a sound call at a locked seat reads CustodyLocked
  *   T2  no row takes a credential: no act's shape names one, and a credential handed in refuses by its key's name.
- *   T3  the roster reads as one answer and opens no root. `seal.sign` signs the seal ceremony's two images alone (a
- *       charter roll; a crossing record, with a witness's note after it) and every other image refuses: bytes
- *       that spell no record, a record of another name, a record out of its canonical spelling, a note on a roll.
- *                                                                 control: each lawful signature verifies under the roster's key
+ *   T3  the roster reads as one answer and opens no root. `seal.sign` signs no image a caller hands it on the
+ *       image's form alone: with no charter standing a well-formed roll refuses, and so does every other image
+ *       (bytes that spell no record, a record of another name, a crossing record, a roll out of its canonical
+ *       spelling). The license itself, and the lawful signature, read in `seal-ceremony.test.ts`.
  *   T4  NO ACT HANDS OUT A SEED, and none hands out what rebuilds one: every answer of every act that takes no
  *       carriage, searched whole, holds neither the persona root seed nor the vessel's signing seed, and the table
  *       names no recovery split.                                  control: the search finds a seed laid in on purpose
@@ -18,7 +18,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, hex, readVkCarrier, sealRollBytes, verifyEd25519 } from "@lararium/mesh";
+import { RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, hex, readVkCarrier, sealRollBytes } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { HANDLE_BOOK_FILE } from "../src/node-circle-store.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootSeed, loadVesselSigningSeed } from "../src/node-vessel-identity.js";
@@ -27,7 +27,7 @@ import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fi
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
-const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null };
+const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null, hosting: null };
 const drops: SeatedScratchCustody[] = [];
 async function vessel(label: string): Promise<SeatedScratchCustody> {
   const c = await seatScratchCustody(label);
@@ -79,37 +79,28 @@ describe("the sealed-act table", () => {
     }
   });
 
-  test("T3 — the roster reads as one answer, and persona.sign signs under the key it names", async () => {
+  test("T3 — the roster reads as one answer, and seal.sign signs no image on its form alone", async () => {
     await vessel("acts-t3");
     const root = await generateOrLoadPersonaGroupRoot(0);
     const roots = await runSealedAct("persona.roots", {}, ctx);
     expect(roots).toEqual({ roots: [{ handleIndex: 0, verifyingKey: root.verifyingKey }], active: null, orphans: [] });
     const sign = (args: Record<string, unknown>) => runSealedAct("seal.sign", { handleIndex: 0, ...args }, ctx) as Promise<{ signer: string; sig: string }>;
-    // A charter roll, as the roll itself spells it.
+    // A WELL-FORMED ROLL SIGNS ONLY UNDER A CHARTER THAT LICENSES IT (`seal-ceremony.test.ts` walks the license).
+    // No charter stands here: the roll the parent commit's row signed for any caller refuses.
     const roll = sealRollBytes({ prevEpochCid: "epoch0-" + "ab".repeat(32), keys: [root.verifyingKey], threshold: 1, nextKeyCommit: "cd".repeat(32) });
-    const rolled = await sign({ image: hex(roll) });
-    expect(rolled.signer).toBe(root.verifyingKey);
-    expect(verifyEd25519(rolled.sig, roll, rolled.signer)).toBe(true);
-    // A crossing record, and a witness's mark over it with a note.
+    expect(await reasonOf(sign({ image: hex(roll) }))).toBe("act-refused");
+    // EVERY OTHER IMAGE REFUSES TOO, a crossing record among them: the crossing's hands mark through the rite's own acts.
     const crossing = canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN, fromEpochCid: "a", toEpochCid: "b" });
-    expect(verifyEd25519((await sign({ image: hex(crossing) })).sig, crossing, root.verifyingKey)).toBe(true);
-    const note = "what stood observed";
-    const marked = Uint8Array.from([...crossing, ...new TextEncoder().encode(note)]);
-    const witness = await sign({ image: hex(crossing), note });
-    expect(verifyEd25519(witness.sig, marked, root.verifyingKey)).toBe(true);
-    expect(verifyEd25519(witness.sig, crossing, root.verifyingKey)).toBe(false);            // CONTROL: the note rides the signed bytes
-    // EVERY OTHER IMAGE REFUSES, and nothing signs.
     const foreign: Array<[string, Record<string, unknown>]> = [
       ["bytes that spell no record", { image: hex(new TextEncoder().encode("a synthetic image to sign")) }],
       ["a record of another name", { image: hex(canonicalJsonBytes({ kind: "lar:///ha.ka.ba/api/v0.1/pono/persona-grant", personaRef: {} })) }],
       ["a record with no name", { image: hex(canonicalJsonBytes({ prevEpochCid: "x" })) }],
+      ["a crossing record", { image: hex(crossing) }],
       ["a list", { image: hex(canonicalJsonBytes([{ domain: RESERVE_TRANSITION_DOMAIN }])) }],
       ["a roll out of its canonical spelling", { image: hex(new TextEncoder().encode(new TextDecoder().decode(roll).replace("{", "{ "))) }],
-      ["a crossing record with bytes after it", { image: hex(Uint8Array.from([...crossing, 0x20])) }],
-      ["a record that claims both names", { image: hex(canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN, kind: "lar:///ha.ka.ba/api/v0.1/pono/seal-roll" })) }],
-      ["a note on a roll", { image: hex(roll), note }],
     ];
     for (const [why, args] of foreign) expect(await reasonOf(sign(args)), why).toBe("act-refused");
+    expect(await reasonOf(sign({ image: hex(roll), note: "what stood observed" }))).toBe("bad-args");   // the roll row takes no note
     expect(await reasonOf(runSealedAct("seal.sign", { handleIndex: 3, image: hex(roll) }, ctx))).toBe("act-refused");   // no root held there
     await runSealedAct("persona.wear", { handleIndex: 0 }, ctx);
     expect((await runSealedAct("persona.roots", {}, ctx))["active"]).toBe(0);
@@ -127,7 +118,7 @@ describe("the sealed-act table", () => {
     const answers: Record<string, unknown> = {};
     const calls: Array<[Parameters<typeof runSealedAct>[0], Record<string, unknown>]> = [
       ["persona.roots", {}], ["persona.wear", { handleIndex: 0 }],
-      ["seal.sign", { handleIndex: 0, image: hex(canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN })) }],
+      ["crossing.state", {}],
       ["petname.entries", {}], ["declaration.entries", {}], ["admit.offer", {}], ["admit.list", {}], ["admit.reset", {}],
       ["admit.withdraw-offer", { target: "all" }], ["handle-book.load", {}],
     ];

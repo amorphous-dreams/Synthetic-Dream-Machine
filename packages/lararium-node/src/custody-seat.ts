@@ -140,10 +140,11 @@ export async function updateCustodyRow<T>(
 /**
  * Remove one sealed row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
  * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays, so a removal never
- * destroys bytes this vessel's key did not seal.
+ * destroys bytes this vessel's key did not seal. `when`, where given, reads the standing plaintext under the same
+ * hold: a row it declines stays, and the removal answers false.
  */
-export async function removeCustodyRow(home: CustodyHome, file: string): Promise<boolean> {
-  return (await openedCustody()).removeRow(home, file);
+export async function removeCustodyRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
+  return (await openedCustody()).removeRow(home, file, when);
 }
 
 /**

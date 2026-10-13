@@ -38,7 +38,10 @@ describe("the custody seat's removal door", () => {
     await writeCustodyRow("storage", SIBLING, text("n three four"));
     const sibling = readFileSync(at(c, SIBLING));
     writeFileSync(`${at(c, ROW)}${SEALING_SUFFIX}`, "a write that never committed");
-    expect(await removeCustodyRow("storage", ROW)).toBe(true);
+    // A removal that reads the row first leaves a row it declines, and takes the one it accepts, under one hold.
+    expect(await removeCustodyRow("storage", ROW, (plaintext) => new TextDecoder().decode(plaintext) === "n another row")).toBe(false);
+    expect(existsSync(at(c, ROW))).toBe(true);
+    expect(await removeCustodyRow("storage", ROW, (plaintext) => new TextDecoder().decode(plaintext) === "n one two")).toBe(true);
     expect(existsSync(at(c, ROW))).toBe(false);
     expect(existsSync(`${at(c, ROW)}${SEALING_SUFFIX}`)).toBe(false);
     expect(await readCustodyRow("storage", ROW)).toBeNull();

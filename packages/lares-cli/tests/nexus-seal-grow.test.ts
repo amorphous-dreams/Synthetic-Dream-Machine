@@ -5,7 +5,7 @@
  * pre-commits the successor and rotates (the existing succession door); `grow bind` fixes the record's
  * far side to the new head; hands SIGN (a key seated in both sets counts in both quorums); a witness —
  * a key seated in NEITHER — attests with a note; `grow seal` verifies the crossing whole and keeps the
- * record beside the charter. This is the verb that makes a second operator's arrival an event with an
+ * record sealed beside the charter. This is the verb that makes a second operator's arrival an event with an
  * artifact instead of an improvisation.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
@@ -16,11 +16,11 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome, larDataDir } from "../src/env.js";
 import {
-  generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc,
+  generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, readCustodyRow,
+  type ReserveTransition,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead,
-  type ReserveTransition,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, readVkCarrier,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
@@ -108,7 +108,9 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     // ── SEAL: the crossing verifies whole and lands beside the charter.
     expect((await cmdNexus(args(["seal", "grow", "seal"])))).toBe(0);
 
-    const kept = JSON.parse(readFileSync(join(larSealHome(), "transitions.json"), "utf8")) as ReserveTransition[];
+    // The record rests SEALED beside the charter: the file reads as no JSON, and the custody seat opens it.
+    expect(readVkCarrier(readFileSync(join(larSealHome(), "transitions.json")))).toBe("sealed");
+    const kept = JSON.parse(new TextDecoder().decode((await readCustodyRow("seal", "transitions.json"))!)) as ReserveTransition[];
     expect(kept).toHaveLength(1);
     expect(kept[0]!.fromEpochCid).toBe(fromHead.epochCid);
     expect(kept[0]!.toEpochCid).toBe(toHead.epochCid);

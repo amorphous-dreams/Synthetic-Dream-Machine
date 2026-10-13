@@ -159,8 +159,20 @@ export class OldShapeRefusal extends Error {
   }
 }
 
+/**
+ * THE FOUNDING'S OWN CHECK, AS A READ. Throws `OldShapeRefusal` when any carrier of `carriers` stands while no slot
+ * tree stands at `treePath`, or when an unlisted file bears the VK seal's magic. It reads and lists alone: it takes
+ * no custody claim and writes nothing, so a command may ask it before it gathers a human route. The founding runs
+ * the same check again under its claim (`commitSlotTree`).
+ */
+export async function assertNoOldCustodyShape(args: {
+  readonly io: Pick<CustodyIo, "read" | "list">; readonly treePath: string; readonly carriers: readonly SealedCarrier[];
+}): Promise<void> {
+  return refuseOldShape(args.io, args.treePath, args.carriers);
+}
+
 /** Read the store for the old shape. Throws `OldShapeRefusal` when any carrier stands with no tree; writes nothing. */
-async function refuseOldShape(io: CustodyIo, treePath: string, carriers: readonly SealedCarrier[]): Promise<void> {
+async function refuseOldShape(io: Pick<CustodyIo, "read" | "list">, treePath: string, carriers: readonly SealedCarrier[]): Promise<void> {
   const standing: StandingCarrier[] = [];
   for (const carrier of carriers) {
     const reading = readVkCarrier(await io.read(carrier.path));
@@ -233,15 +245,22 @@ export async function updateSealedCarrier<T>(args: Omit<WriteSealedCarrierArgs, 
  * Remove one sealed carrier, as ONE custody holder. The tree at `treePath` must commit to `vk`, and the carrier
  * must hold nothing or bytes `vk` opens: a holder removes only what its own key sealed, so bytes another key
  * sealed, torn bytes and bare bytes each refuse `CustodyRefusal` and stay. A stray sidecar of the carrier leaves
- * with it. Answers whether a carrier stood.
+ * with it. Answers whether a carrier left. `when`, where given, reads the standing plaintext under the same hold:
+ * a carrier it declines stays, and the removal answers false.
  */
-export async function removeSealedCarrier(args: Omit<WriteSealedCarrierArgs, "plaintext" | "rng">): Promise<boolean> {
+export async function removeSealedCarrier(args: Omit<WriteSealedCarrierArgs, "plaintext" | "rng"> & {
+  readonly when?: (plaintext: Uint8Array) => boolean;
+}): Promise<boolean> {
   const { io, vk, carrier } = args;
   return io.exclusive(async () => {
     await proveAgainstTree(io, args.treePath, vk);
     const standing = openUnderVk(vk, carrier.name, await io.read(carrier.path));
     if (standing.reading !== "absent" && standing.reading !== "opens") throw new CustodyRefusal(standing.reading, carrier);
-    if (standing.reading === "opens") standing.plaintext.fill(0);
+    let wanted = true;
+    if (standing.reading === "opens") {
+      try { wanted = args.when ? args.when(standing.plaintext) : true; } finally { standing.plaintext.fill(0); }
+    }
+    if (!wanted) return false;
     await io.remove(`${carrier.path}${SEALING_SUFFIX}`);
     if (standing.reading === "absent") return false;
     await io.remove(carrier.path);

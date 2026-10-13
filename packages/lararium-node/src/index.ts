@@ -332,6 +332,12 @@ export {
   reserveMineSharePath, reserveStatePath,
 } from "./seal-reserve-store.js";
 export type { SealReserveState } from "./seal-reserve-store.js";
+// The crossing record's own library (its bytes, its cid, its mint and its verdict): a pure module the seal
+// ceremony's rows call, and the one a reader of a carried record verifies it with.
+export {
+  reserveTransitionBytes, witnessSignBytes, reserveTransitionCidOf, mintReserveTransition, transitionSignerFromSeed, verifyReserveTransition,
+} from "./reserve-transition.js";
+export type { ReserveTransition, ReserveTransitionCore, TransitionWitness, TransitionSigner, TransitionVerdict } from "./reserve-transition.js";
 export { VerbDispatcher, VerbTable } from "@lararium/tw5";
 export type { VerbReactor, VerbContext, VerbDispatcherOptions } from "@lararium/tw5";
 export { heedSummons } from "@lararium/tw5";

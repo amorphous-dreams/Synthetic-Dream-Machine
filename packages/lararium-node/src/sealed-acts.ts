@@ -21,13 +21,14 @@
  *     never an argument, an answer or a refusal's own words.
  *   · No row hands out a root seed, a vessel key, the vessel's key session, or anything that rebuilds one: the
  *     recovery split, whose shares rebuild a root, runs in a command's own process alone and never here.
- *   · No row signs whatever it gets handed. The one row that signs as a persona root (`seal.sign`) reads the
- *     image first and signs only the seal ceremony's own two images: a charter roll and a crossing record.
+ *   · No row signs whatever it gets handed. The row that signs a charter roll as a persona root (`seal.sign`)
+ *     reads the charter that stands and signs only a roll its standing head licenses; the crossing rows take no
+ *     image at all, and sign the crossing that stands open.
  *
  * Node-main only: a worker never imports this module.
  */
 import {
-  HandleBook, RESERVE_TRANSITION_DOMAIN, SEAL_ROLL_DOMAIN, canonicalJsonBytes, ed25519SignerFromSeed,
+  HandleBook, ed25519SignerFromSeed,
   type HandleBookSnapshot, type PersonaDeclaration, type PersonaRef, type RecoveryShare,
 } from "@lararium/mesh";
 import { carriedReadings } from "./carried-set.js";
@@ -48,6 +49,9 @@ import {
 import type { Repo } from "@automerge/automerge-repo";
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
+import {
+  SealCeremonyRefusal, bindCrossing, openCrossing, readCrossing, sealCrossing, signCrossing, signLicensedSealRoll, witnessCrossing,
+} from "./seal-ceremony.js";
 import { larSealHome } from "./vessel-paths.js";
 
 /** What an act reads from the composition it runs beside. */
@@ -233,6 +237,12 @@ async function walkOrRefuse<T>(run: Promise<T>): Promise<T> {
   catch (err) { if (err instanceof WalkRefusal) throw refuse(err.message); throw err; }
 }
 
+/** The seal ceremony's own refusal keeps its words and crosses as the act's refusal. */
+async function ceremonyOrRefuse<T>(run: Promise<T>): Promise<T> {
+  try { return await run; }
+  catch (err) { if (err instanceof SealCeremonyRefusal) throw refuse(err.message); throw err; }
+}
+
 /** A hosting door's own refusal keeps its words and crosses as the act's refusal. */
 async function hostOrRefuse<T>(run: Promise<T>): Promise<T> {
   try { return await run; }
@@ -250,8 +260,11 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *
  *   persona.roots         the roster: each held handle-index with its root's public key, the worn index, the orphans
  *   persona.wear          wear the face at an index this vessel holds a root for
- *   seal.sign             sign one image of the seal ceremony as the persona root at an index: a charter roll or a
- *                         crossing record (with a witness's note, where a witness marks it); every other image refuses
+ *   seal.sign             sign one charter roll as the persona root at an index, when the charter that stands
+ *                         licenses it: the roll steps from the standing head and seats the key-set that head
+ *                         pre-committed, and the root holds a seat in it; every other image refuses by name
+ *   crossing.*            the growth rite's steps over the crossing that stands open: state, open, bind, sign,
+ *                         witness, seal. A hand names itself; the row reads what it signs off its own sealed row
  *   carriage.accept       sign this operator's own consent to one Nexus's carriage, under the face's leaf for it
  *   carriage.readings     one reading per charter this vessel holds: whether a kept consent or a seated chair carries it
  *   petname.*             this vessel's own private labels for its faces
@@ -287,29 +300,27 @@ export const SEALED_ACTS = Object.freeze({
     await wearPersona(handleIndex);
     return { active: handleIndex };
   }),
-  "seal.sign": act({ handleIndex: index, image, note: optional(label) }, async (a) => {
-    const line = (await listPersonaRosterLines()).find((l) => l.handleIndex === a.handleIndex);
-    if (!line) throw refuse(`this vessel holds no persona root at h${a.handleIndex}, so nothing signs there`);
-    // THE ROW READS WHAT IT SIGNS. The image must spell, in its one canonical form, a record that leads with a
-    // name of the seal ceremony: a charter roll, or a crossing record. A witness's mark signs the crossing
-    // record with its own note after it, so a note rides a crossing record alone. The row bounds WHICH images a
-    // root signs, and no other protocol's verifier reads either one. Whether a roll or a crossing fits the
-    // charter that stands gets checked by the ceremony's own verbs, which move behind this door with the seal rows.
-    const bytes = Uint8Array.from(Buffer.from(a.image, "hex"));
-    let record: unknown;
-    try { record = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { record = null; }
-    const fields = record !== null && typeof record === "object" && !Array.isArray(record) ? record as Record<string, unknown> : null;
-    const roll = fields?.["kind"] === SEAL_ROLL_DOMAIN && fields["domain"] === undefined;
-    const crossing = fields?.["domain"] === RESERVE_TRANSITION_DOMAIN && fields["kind"] === undefined;
-    if (!fields || (!roll && !crossing) || Buffer.compare(Buffer.from(canonicalJsonBytes(fields)), Buffer.from(bytes)) !== 0) {
-      throw refuse("this row signs a charter roll or a crossing record in its canonical spelling, and no other image");
-    }
-    if (a.note !== undefined && !crossing) throw refuse("a witness's note rides a crossing record alone");
-    const signed = a.note === undefined ? bytes : Uint8Array.from([...bytes, ...new TextEncoder().encode(a.note)]);
-    const seed = await loadPersonaGroupRootSeed(a.handleIndex);
-    try { return { signer: line.verifyingKey, sig: await ed25519SignerFromSeed(seed)(signed) }; }
-    finally { seed.fill(0); }
+  // THE SEAL CEREMONY'S HANDS (`seal-ceremony`). A persona root signs a roll only when the charter that stands
+  // licenses it, and marks a crossing only through the rite's own steps, which read the crossing that stands open.
+  // No row takes a crossing record's bytes from its caller, and the roll row reads the standing head before it signs.
+  "seal.sign": act({ handleIndex: index, image }, async (a) => ({
+    ...(await ceremonyOrRefuse(signLicensedSealRoll(a.handleIndex, Uint8Array.from(Buffer.from(a.image, "hex"))))),
+  })),
+  "crossing.state": act({}, async () => {
+    const { pending, kept } = await readCrossing();
+    return {
+      kept,
+      open: pending === null ? null : {
+        fromEpochCid: pending.fromEpochCid, toEpochCid: pending.toEpochCid ?? null,
+        oldSigs: pending.oldSigs.length, newSigs: pending.newSigs.length, witnesses: pending.witnesses.length,
+      },
+    };
   }),
+  "crossing.open": act({}, async () => ({ ...(await ceremonyOrRefuse(openCrossing())) })),
+  "crossing.bind": act({}, async () => ({ ...(await ceremonyOrRefuse(bindCrossing())) })),
+  "crossing.sign": act({ handleIndex: index }, async (a) => ({ ...(await ceremonyOrRefuse(signCrossing(a.handleIndex))) })),
+  "crossing.witness": act({ handleIndex: index, note: label }, async (a) => ({ ...(await ceremonyOrRefuse(witnessCrossing(a.handleIndex, a.note))) })),
+  "crossing.seal": act({}, async () => ({ ...(await ceremonyOrRefuse(sealCrossing())) })),
   "carriage.accept": act({ handleIndex: index, aid: optional(text) }, async (a) => {
     try {
       return { ...(await runNexusAcceptCarriage({ handleIndex: a.handleIndex, sealHome: larSealHome(), ...(a.aid !== undefined ? { aid: a.aid } : {}) })) };

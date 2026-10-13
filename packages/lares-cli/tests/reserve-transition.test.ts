@@ -11,7 +11,7 @@ import * as ed from "@noble/ed25519";
 import { hex, sealKeySetHash } from "@lararium/mesh";
 import {
   reserveTransitionBytes, mintReserveTransition, verifyReserveTransition,
-} from "../src/reserve-transition.js";
+} from "@lararium/node";
 
 const S = {
   old1: new Uint8Array(32).fill(1), old2: new Uint8Array(32).fill(2), old3: new Uint8Array(32).fill(3),

@@ -218,10 +218,11 @@ function buildTable(): readonly CarrierRow[] {
     // (`gate-memory-rows`). It belongs to its vessel: no face's bundle carries it.
     row({ row: "gate-memory", home: "storage", under: "gate-memory", match: /^gate-memory\/[0-9a-f]{64}\.bin$/,
           custody: "hot", keyClass: null, writer: "gate-memory-rows" }),
+    // The growth rite's two rows (`seal-ceremony`): the first prepares a crossing, the second commits its record.
     row({ row: "transition-pending", home: "seal", under: "", match: file("transition-pending.json"),
-          custody: "hot", keyClass: null, writer: "nexus seal" }),
+          custody: "hot", keyClass: null, writer: "seal-ceremony" }),
     row({ row: "transitions", home: "seal", under: "", match: file("transitions.json"),
-          custody: "hot", keyClass: null, writer: "nexus seal" }),
+          custody: "hot", keyClass: null, writer: "seal-ceremony" }),
 
     // ── cold: sealed under the VK, opened per act ──────────────────────────────────────────────
     id({ row: "vessel-next", match: loginKeyed("vessel-next"), custody: "cold", keyClass: "device-minted",

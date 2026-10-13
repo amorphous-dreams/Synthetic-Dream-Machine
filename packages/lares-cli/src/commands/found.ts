@@ -17,10 +17,10 @@
  *   --admit FILE     Apply a device-admit/v1 JSON payload instead of founding a new Nexus.
  */
 
-import { OldShapeRefusal, bindSlot, commitSlotTree, mintVk, type CustodyIo, type SlotSpec } from "@lararium/mesh";
+import { OldShapeRefusal, assertNoOldCustodyShape, type SlotSpec } from "@lararium/mesh";
 import {
   runInit, ownedStore, StoreHeld, CustodyFoundingRefused, FsCustodyIo, custodyTreeStands,
-  CustodyLockRefused, NameTooLong, vkSealedCarriers, vkSlotsPath, type CustodyHomes,
+  CustodyLockRefused, NameTooLong, vkSealedCarriers, vkSlotsPath,
 } from "@lararium/node";
 import { larDataDir, larGenesisDir, larIdentityDir, larSealHome } from "../env.js";
 import { CredentialTtyRefusal, gatherFoundingRoute } from "../custody-prompt.js";
@@ -37,35 +37,6 @@ import type { ParsedArgs } from "../parse-args.js";
 export type FoundingRoute = () => Promise<readonly SlotSpec[]>;
 let gatherRoute: FoundingRoute = gatherFoundingRoute;
 export function setFoundingRoute(gather: FoundingRoute): void { gatherRoute = gather; }
-
-/** Thrown by the dry census's write, so a census that finds no old shape stops before any byte lands. */
-class CensusClean extends Error {}
-
-/**
- * THE STORE'S SHAPE, READ BEFORE ANY ROUTE IS ASKED. A founding over a store that holds a carrier and no tree refuses
- * `OldShapeRefusal`; asked after the route, the operator types a passphrase twice and then meets the refusal. This runs
- * the sealed writer's own founding check (`commitSlotTree` with `expected: null`) over a read-only view of the store:
- * the check throws `OldShapeRefusal` before its first write, and a store that passes reaches the view's `write`, which
- * stops the act with `CensusClean`. Nothing lands (it takes no custody claim either: the claim's lock file would land
- * in the identity home) and the check stays the writer's own; the founding itself re-runs the check under the claim.
- */
-async function assertNoOldShape(io: CustodyIo, homes: CustodyHomes): Promise<void> {
-  const vk = mintVk();
-  const tree = bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "census-only" }] });
-  const readOnly: CustodyIo = {
-    read: (p) => io.read(p),
-    list: () => io.list(),
-    exclusive: (fn) => fn(),     // a read takes no custody claim (the claim's lock file would land in the identity home)
-    write: () => Promise.reject(new CensusClean()),
-    rename: () => Promise.reject(new CensusClean()),
-    remove: () => Promise.reject(new CensusClean()),
-  };
-  try {
-    await commitSlotTree({ io: readOnly, path: vkSlotsPath(homes.identity), expected: null, vk, tree, carriers: vkSealedCarriers(homes) });
-  } catch (err) {
-    if (!(err instanceof CensusClean)) throw err;
-  }
-}
 
 /** The refusals a founding names on one line each, with their advice; every other error keeps its own voice. */
 function foundingRefusal(err: unknown): { name: string; advice: string } | null {
@@ -101,7 +72,10 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
     // A standing tree needs no new route and no census; otherwise the store's shape is read FIRST, the route second.
     let slots: readonly SlotSpec[] = [];
     if (!(await custodyTreeStands(io, homes))) {
-      await assertNoOldShape(io, homes);
+      // THE STORE'S SHAPE, READ BEFORE ANY ROUTE GETS ASKED: the sealed writer's own founding check, as a read. A
+      // store that holds a carrier and no tree refuses `OldShapeRefusal` here, before the operator types anything;
+      // the founding itself runs the same check again under its custody claim.
+      await assertNoOldCustodyShape({ io, treePath: vkSlotsPath(homes.identity), carriers: vkSealedCarriers(homes) });
       slots = await gatherRoute();
     }
     await ownedStore(storageDir, (repo) => runInit({

@@ -16,7 +16,7 @@
  */
 
 import { join } from "node:path";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import {
   archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase,
   repairSplitKek, weakPassphraseWarning,
@@ -108,29 +108,6 @@ function warnIfWeak(pass: string): void {
 
 /** Where the seal-day rides — NON-SECRET, beside the identity it belongs to. */
 function sealDayPath(): string { return join(larIdentityDir(), ".archive-seal-day.json"); }
-
-/**
- * Record the seal-day in the clear — a STAMP ON the passphrase, never a PART of it (operator ruling).
- *
- * ── WHY IT STAMPS RATHER THAN COMPOSES ───────────────────────────────────────────────────────────
- * An earlier shape concatenated the day INTO the passphrase. It would have added no strength — the
- * Discordian date is PUBLIC, computable by anyone for any day, so an attacker who knows roughly when a
- * vault was sealed knows that component outright. And it would have added a whole new way to lose the
- * vault: with the day inside the secret, losing the RECORD locks the operator out even holding the correct
- * secret. Zero entropy bought at the price of a second single point of failure reads as a bad trade in
- * both directions.
- *
- * Stamping keeps everything the ceremony was for and costs nothing. The passphrase stays exactly what the
- * operator typed; the vault carries the day it was founded as a memory-anchor beside it; losing the stamp
- * loses a nice fact and no access at all.
- *
- * The stamp is the COMPUTED form, never `ddate`'s prose — that binary's output shape varies by invocation
- * (measured), and a record meant to read back identically cannot ride a moving string.
- */
-function writeSealDay(stamp: string, prose: string, source: string): void {
-  mkdirSync(larIdentityDir(), { recursive: true });
-  writeFileSync(sealDayPath(), `${JSON.stringify({ stamp, prose, source }, null, 2)}\n`, { mode: 0o600, encoding: "utf8" });
-}
 
 /** Read the recorded seal-day, or null when this vault was sealed without one. */
 function readSealDay(): { stamp: string; prose: string; source: string } | null {
@@ -290,12 +267,9 @@ async function vaultSeal(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   const { output, via } = await throughStoreDoor({ verb: "vault-seal", args: { passphrase: pass }, direct: () => ({ ...sealArchiveWithPassphrase(pass) }), daemonUp });
   const sealed = (output["sealed"] ?? []) as string[];
 
-  // THE STAMP RECORDS A SEAL THAT HAPPENED, never one that was attempted. Written ahead of the call it
-  // described, it dated a vault that sealed NOTHING — so a no-op left behind a record claiming today's
-  // work, and `vault passphrase` would read that date back as fact. A day nobody sealed on is worse than
-  // no day at all: an operator recovering a vault trusts the stamp to narrow what they typed and when.
-  if (sealed.length > 0) writeSealDay(erisian.stamp, erisian.prose, erisian.source);
-
+  // NO STAMP GETS WRITTEN HERE. No carrier answers the passphrase lifecycle, so this seal seals none, and a day
+  // nobody sealed on never gets recorded. `stamped` therefore reads false; `vault passphrase` reads back a stamp
+  // an earlier seal left, where one stands.
   emit(args, {
     ok: true, data: { ...output, via, sealedCount: sealed.length, stamped: sealed.length > 0 },
     human: () => {
