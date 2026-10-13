@@ -184,8 +184,11 @@ export {
   makeCircleReactors, makeCircleAddReactor, makeCircleRemoveReactor, makeCircleListReactor,
 } from "./circle-verbs.js";
 export type { CircleVerbOptions, ResolveCirclesStore } from "./circle-verbs.js";
-// The OWN-PERSONA name verbs over @persona — the fleet-riding pet-name + declared Handle (the `seat` claim
-// stays local to whichever node holds it).
+// The OWN-PERSONA names on the persona plane — the fleet-riding pet-name + declared Handle (the `seat` claim
+// stays local to whichever node holds it). Store-level moves alone: no verb answers them, and the vessel's main
+// thread calls them from its custody door.
+export { readPersonaSelves, writePersonaSelfName } from "./persona-selves-plane.js";
+export type { PersonaSelfRow } from "./persona-selves-plane.js";
 export { makePersonaSelvesReactors } from "./persona-selves-verbs.js";
 export type { PersonaSelvesVerbOptions, ResolvePersonaStore } from "./persona-selves-verbs.js";
 // The CABAL-REALM verbs over @daemon — the OFFERING that feeds a realm, and the verdict-free capture-clock.
