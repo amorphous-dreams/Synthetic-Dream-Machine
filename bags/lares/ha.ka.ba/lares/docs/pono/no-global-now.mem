@@ -101,7 +101,7 @@ the direction and the boundary, not those fields.
 
 ''The high-signal filter'' (dropping `lease`·`itc`·`fence` and the bare `supersede`) left ''225 operator turns'' and ''456 node turns''. Many of the 177 `no global now` hits ride the boot seed re-served inside a system reminder or a standing spirit-prompt template; the operator sentences quoted at #/no-global-now survive that filter by hand.
 
-''The carriers.'' `git grep -il` over `bags/**/*.mem` for the tight term set answered ''92 carriers''. The load-bearing ones read whole: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> (the supersession law) · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> (the accrual impossibility) · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> (the clockless-verdict fork, ruled) · <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> (the realm idle clock, closed) · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>.
+''The carriers.'' `git grep -il` over `bags/**/*.mem` for the tight term set answered ''92 carriers''. The load-bearing ones read whole: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> (the supersession law) · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters">> (the accrual impossibility) · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> (the clockless-verdict fork, ruled) · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>.
 
 ''The memory.'' `project_clockless_lease_model.md` (the Fork-4 resolution, verbatim at #/the-ruling) · `project_cap_stack_taxonomy_research.md` · `project_turn_decompose_architecture.md` · `project_worldline_rewind_fork_rhizome.md` · `project_talk_story_hoike_layer.md`.
 
@@ -222,7 +222,7 @@ The operator asked (2026-08-16, quote license): //"Does this read 'no global now
 
 !!! ③ The NAMED-FLOOR spelling — when a wall clock rides, the code says so
 
-`bag-residency.ts:126-132`, `:182`, `:195` — `BagStowage` takes an optional realm `clock` (rolls, `DEFAULT_IDLE_ROLLS = 8`, matching ahi kā's `ambientFloor`); absent one it //"falls to the wall floor and names it"// as `clockKind: "realm" | "wall-floor"`. <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> `:533` records the close (2026-09-12): the fallback gets named //"rather than claiming a clocklessness it does not hold. The browser vessel wires no realm clock and stays on the named floor — ''a declared partial, not a silent one''."//
+`bag-residency.ts:126-132`, `:182`, `:195` — `BagStowage` takes an optional realm `clock` (rolls, `DEFAULT_IDLE_ROLLS = 8`, matching ahi kā's `ambientFloor`); absent one it //"falls to the wall floor and names it"// as `clockKind: "realm" | "wall-floor"`. The close (2026-09-12) reads: the fallback gets named //"rather than claiming a clocklessness it does not hold. The browser vessel wires no realm clock and stays on the named floor — ''a declared partial, not a silent one''."//
 
 !!! What the ORACLE POINTER carried, against those three — RETIRED
 
@@ -271,7 +271,7 @@ Each row names what the house built, how it rhymes with the lease, and where it 
 
 | the rhyme | what it does | rhymes with the lease | breaks against it |
 |---|---|---|---|
-| ''the stowage clock'' (`bag-residency.ts:126-195`) | cools a bag after `idle` in the realm's ROLLS when a clock rides in; else the wall floor, ''named'' `clockKind: "wall-floor"` | the same two-tier shape the lease wants: logical unit first, wall as a declared fallback; and it cites the lamplighters ban in its own comment | nowhere. It even keeps the RESIDENCY sense (a vessel's own RAM pressure, a legitimate local wall reading) apart from a STANDING verdict — the cross-plane leak `handoff:533` closed |
+| ''the stowage clock'' (`bag-residency.ts:126-195`) | cools a bag after `idle` in the realm's ROLLS when a clock rides in; else the wall floor, ''named'' `clockKind: "wall-floor"` | the same two-tier shape the lease wants: logical unit first, wall as a declared fallback; and it cites the lamplighters ban in its own comment | nowhere. It even keeps the RESIDENCY sense (a vessel's own RAM pressure, a legitimate local wall reading) apart from a STANDING verdict — the cross-plane leak that close ended |
 | ''the CAS sweep'' (`node-cas.ts:222-338`, `cas-caps.ts`) | sweeps at a cadence paced by the realm's roll rate, ''abstaining under two rolls'' — //"a realm nobody feeds never sweeps — never a calendar"// | supersession's own temper: no motion, no ageing. Grace counts ROLLS, so //"a day of silence ages nothing"// | one honest seam its own hand named: the pace reader ''derives'' ms-per-roll from observed rolls over elapsed wall time — a wall reading feeding a cadence (liveness), never a verdict (safety). Lawful under the quarantine, worth watching |
 | ''the ahi-kā reading'' (`ahi-ka.ts`) | renders standing as a RATIO of a realm's own pace against an ''independent ambient'' it cannot drive, with an `abstain` floor | the escape from the accrual impossibility, and the ruling's quarantine honored exactly: a reading, never an ordering | it delivers what the ruling assigned to φ-accrual by a different mechanism. The ledger line //"LIVENESS = φ-accrual"// now names a shape the house superseded by ruling (2026-09-11) |
 | ''the realm registration `expiry`'' (`realm-bag.ts:114-142`, `:348-352`) | a lease in ROLLS; past it the WRITE side lapses and ''the read side never moves'' | the PIN-shaped `expiry` the charge asks about: an `expiry` field that survives by changing its UNIT, not by leaving | nowhere. And it fails OPEN — a reader naming no pace //"cannot judge, so it never narrows"// — the opposite polarity to the pointer's `nowMs >= expiry` fail-closed-on-a-local-clock |
@@ -350,10 +350,9 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/ffz-clock">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RnStH1OUs2obcsTTJ1k8whsn9-M0Po6PT_Vka7wXZac
+<<^ code="&#x0003;">>ni:///sha-256;hXeBVuq1HuM464hnCrIdus7RaGLetRyewAOU4w6l92w
 
 <<^ code="&#x0004;" -> to="?">>

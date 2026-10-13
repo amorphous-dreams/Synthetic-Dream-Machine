@@ -1,0 +1,105 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/grammar-watch.mem"
+hydrate   = true
+l-space   = "stable"
+role      = "grammar watch — what a hand reads before it touches the highlighting grammars: the law a verdict stands on, how to rebuild the host corpus, the instruments of grammar testing that read green while they report something false, and the paths that stay open"
+title     = "lar:///ha.ka.ba/lares/docs/pono/grammar-watch"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/grammar-watch"
+```
+
+<<~ ahu #/the-law>>
+
+!! The law the grammar work stands on
+
+''A verdict may stand only where TiddlyWiki REFUSES.'' Its parser raises no error — what it cannot read
+falls through as text — so the only honest test reads what it BUILDS:
+
+* the parser returns a ''node'': the construct works, and ''no verdict may stand'' there. A verdict on it reads as an INVENTION.
+* the parser yields ''plain text'': the author reached for markup and missed, and the verdict earns its place.
+
+An invention surfaces by asking the host — its regexes, its parser, its own shipped wikis — and never by
+reasoning about what the grammar ought to say. The fork the house builds reads as the intent reader; the
+pinned release serves as the compatibility witness, and a split between them records as a reader
+divergence.
+
+''Two models, one overlap.'' The tree-sitter grammar (`packages/tree-sitter-memetic-wikitext`) models
+memetic-wikitext's BLOCK STRUCTURE: fences, quotes, pragmas, tables, typed and style blocks. The TextMate
+grammar (the `VSCode-TW5-Syntax` submodule) models its LEXICON: carriers, `lar:` addresses, the block
+check, sigils, bearings, anchors. They overlap at the sigil family alone, so a green from one says little
+about the other.
+
+''One unreleased version carries accumulated work'' (operator ruling): a version bump waits for a release
+and never rides a commit.
+
+<<~/ahu>>
+
+<<~ ahu #/the-host-corpus>>
+
+!! The host corpus ~ rebuild it, never look for it
+
+Measuring a grammar against TiddlyWiki's own wikis needs a corpus, and a corpus kept in a session's
+scratch directory does not survive that session. Rebuilding costs one command each:
+
+```
+# unbiased: every 14th tiddler across editions, core, plugins, themes
+find TiddlyWiki5/{editions,core,plugins,themes} -name '*.tid' | sort | awk 'NR % 14 == 0' | head -400 > wide.txt
+i=0; while read f; do i=$((i+1)); awk 'BEGIN{b=0} /^$/{if(!b){b=1;next}} b{print}' "$f" > "D/w$(printf '%03d' $i).tw"; done < wide.txt
+paste -d'\t' <(seq -f 'w%03g' 1 400) wide.txt > manifest.tsv   # maps specimen back to source file
+```
+
+Then `source ./grammars.sh` and `npx vscode-tmgrammar-snap "${ARGS[@]}" -s text.html.tiddlywiki5 -u D/*.tw`,
+and tally with `grep -o 'invalid[a-z.-]*' D/*.snap | sort | uniq -c`. ''The manifest matters'': a hit
+means little until it names the file it came from.
+
+''A slicer comes before any fix on a host hit.'' A specimen rebuilt by hand reproduces the host's reading
+poorly, because the surrounding file supplies the parse state and a hand-made shape strips it away. Map a
+snapshot hit to its file and line through the manifest, slice the REAL bytes around it, and assert on
+those. Some hits fall in TiddlyWiki's own malformed fixtures (`editions/test/tiddlers/tests/data/`), where
+a verdict likely earns its place; a cure that silences every hit silences a true reading.
+
+<<~/ahu>>
+
+<<~ ahu #/instruments-that-lie>>
+
+!! Instruments of grammar testing that read GREEN while they report something false
+
+# ''A prose `#` line in a spec file reaches the grammar as WIKITEXT.'' `vscode-tmgrammar-test` treats only `#` lines carrying `^` or `<-` as assertions; every other one parses as source. A comment containing `@@` opens a style block and swallows the construct asserted below it, and the negative assertion then PASSES because the scope vanished. Spec prose admits no `@@`, no leading `!`, no pipe, no backtick, no `<tag`, no `{{` and no `[[`. Audit: `grep '^#' <spec> | grep -v '\^' | grep -E '@@|\||`|<[a-z$]'`.
+# ''A negative assertion passes VACUOUSLY'' where the scope name or the column misses. ''Make every negative go RED once on purpose.'' Calibrate a column by asserting PRESENCE at several indices; the snapshot format's caret convention differs from the test format's by one, so a column read off a `.snap` misses.
+# ''A grep over sigils written with `[^>]` stops at the bearing arrow.'' Use `(?:[^>\n]|>(?!>))`, and fence the boundary the claim names — a space before `?`, never a bare `?`.
+# ''A corpus file ending on an unterminated construct swallows everything appended after it.'' Specimens appended below a bare `{{` registered no new scopes while firing correctly in a fresh file. The containment gate catches the reverse leak; suspicion catches this one.
+# ''`snapshot-check`'s drift output truncates both sides at one width'', so a diff of its `pinned` and `now` lines can compare identical prefixes and report a vacuous match. Verify a re-pin with `git diff -U0` over the `.snap` files.
+# ''A `git ls-files '*.mem'` sweep reaches frozen fixtures.'' `packages/tree-sitter-memetic-wikitext/fixtures/specimens/` holds pinned parity inputs, and `packages/lararium-sensorium/scripts/fixtures/` belongs to another campaign. A sweep breaks both gates.
+
+<<~/ahu>>
+
+<<~ ahu #/open-paths>>
+
+!! Paths that stay open
+
+* ''The weld between the two grammars.'' A weld GATE that fails when a scope family holds no node kind turns the gap into a number that cannot drift back; teaching tree-sitter the lexicon stands behind it. The whole regeneration of the tree-sitter grammar against the released TextMate grammar reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/side-lanes">>.
+* ''The seam gate, generalized.'' `packages/lararium-tw5/tests/seed-definition-matches-example.test.ts` welds ONE procedure of the boot seed, `~lares`, to the worked examples printed beside it. The seed defines more procedures, and nothing says whether the others agree with their examples.
+* ''Embedded-language scopes stand dark'': fenced-code branches no corpus file exercises. Fixture debt falls due before a coverage number there carries meaning.
+* ''Constructs a line-at-a-time grammar keeps out of reach on purpose'': emphasis and inline code across lines, and html start tags across blank lines. A whole-document reader carries them; the submodule's own ceiling record holds each.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> the house's general test and wiring procedures
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/parser">> the parser law the memetic grammar rides
+<<~ loulou "lar:///ha.ka.ba/lares/docs/wikitext-paint-research">> how a TextMate grammar paints, measured
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;GjEePBv5gaX1XjwGzDU2BPePk3XG0gqknMu8jIU5ke0
+
+<<^ code="&#x0004;" -> to="?">>

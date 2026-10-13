@@ -43,7 +43,7 @@ its own carrier, and this carrier points there.
 !!! Read, in this order
 # <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>, the boot seed; then this carrier, top to bottom.
 # <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> before the first commit: which session holds which ground, and the commit isolation that guards hands inside one session.
-# <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> before the first test or wire: the red-first procedure in eight moves, the ladder for wiring a module that stands unreached, the traps this tree paid for, and the grammar watch before any grammar, frame or ingest work.
+# <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> before the first test or wire: the red-first procedure in eight moves, the ladder for wiring a module that stands unreached, the instruments that read green while they lie, and the working agreements. Before any grammar work, <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>.
 # Bring every ruling #/open names to the operator before a lane builds against it.
 
 !!! Instruments ~ run each fresh before trusting a reading
@@ -54,6 +54,7 @@ its own carrier, and this carrier points there.
 * ''E2E'': every set rides the CI shards (`tools/e2e-shards.mjs`, `.github/workflows/e2e-shards.yml`; `E2E_SETS` names the sets and the merge gate checks each set's union). `node tools/e2e-shards.mjs push <lane>` pushes HEAD to a throwaway `ci/<lane>` branch. A local run of one file proves that file alone.
 * ''CI'' (`.github/workflows/ci.yml`): `gh run list --branch feature/lararium-node-5` names the run for the pushed head; a later commit waits for the next push. `held-out.yml` runs weekly or by hand, and a hosted run of it that reads green stays owed.
 * ''The docker mesh'' (by hand): `crossing-witness`; `node tools/mesh-pins.mjs --up` stands the mesh pinned; `herm-mesh-witness` carries `node/alpha` across three hops; `mesh-scenarios nexus`. The mesh publishes `MESH_PORT_*` on loopback, every node service requires `LARES_HARNESS_IMAGE`, and `tools/harness-image.sh` checks its digest. A hearth whose log carries a `[lararium] fatal:` line reads as not stood.
+* ''The red register'': `packages/lararium-mesh/tests/unbuilt-laws.test.ts` declares each law the models imply and no code enforces; `tools/unbuilt-laws-witness.sh` reports a declared red that greened.
 * ''Known environmental reds'': `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` fail where no browser or server socket stands; the browser suite reads `no tests` under a `HOME` that holds no Playwright Chromium.
 * ''The operator's live `~/.lares` vessel'' holds an earlier shape that this build refuses. Never stand it here; it takes the fresh start, by hand (#/fresh-start).
 
@@ -76,6 +77,7 @@ its own carrier, and this carrier points there.
 * ''The quoteblock floor fences at two grains'': the whole chunk inside the deserializer, and a child's body in place at the child gate (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>).
 * ''An admit carries across a seal roll only through its roll anchors.'' The gate reads the presented admit against the carriage board's counted revokes and the kapae antigen, and folds no allow roster (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>).
 * ''No global now'' and ''the fence'': #/rulings.
+* ''Grounds before wins'': rank work by what inherits shape from what, never by confidence in the next wire (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/grounds-before-wins">>).
 * ''One holder per store, one Lararium per human'': a second holder meets `StoreHeld` across containers and namespaces (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">>).
 * ''Fragments'': every `lar:` fragment roots at `#/…`, one raw `#`, `/` nests, `$` reserved (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>).
 * ''Grammar lives in the tiddlers'' (`packages/lararium-tw5/tiddlers/sigil-*.tid` generate `grammar-table.generated.ts`); sigil heads stay core ASCII; `aka` pins as information, `kanawai` pins as binding, `kahea` transcludes live.
@@ -480,19 +482,26 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 !!! Carried lanes ~ designed or measured, on no train
 * A floor read carries no as-of stamp: `standAs` returns a bare class (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>).
 * The boot's order holds four named reds nobody wrote, and they gate any split of the boot by region (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/vessel-regions">>).
-* The Handle surface adapters: four surfaces stand as type and vocabulary; loopback first, then DNS control (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>). The `rotate`, `graft` and `attest` verbs stand as stubs over built mints; the antigen's ban-`nym` move stays untouched.
+* The Handle surface adapters: four surfaces stand as type and vocabulary; loopback first, then DNS control (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>). The `rotate`, `graft` and `attest` verbs stand as stubs over built mints; the antigen's ban-`nym` move stays untouched; the browser's publish surface and a phone summons that presents the veil card stay owed. Flagged, unbuilt: a Handle's presenting cabal may also serve as its recovery cabal.
 * The hostful code half: `carrierBaseRelPath` discards a hostful URI (`bag-paths.ts`), so a hostful title never sites; one carrier claims otherwise (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace">>).
 * Title-to-path persistence: the title-to-base map lives in memory alone (`disk-projector.ts`).
 * Wikis-first writes: `meme promote` holds no in-wiki path, and the hand-edit weld stays unbuilt, landing last (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>).
 * Live equivocation's prerequisites: `detectDuplicity` runs in tests alone; no watcher plane, no feed adapter, no durable telemetry (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/live-equivocation">>).
 * The crossing record's production membrane around the agent worldline (<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>); its two forks read in #/open.
 * Whether the browser shore serves its worn face plane, decided against the typed verified-peer seam that stands (<<~ loulou "lar:///ha.ka.ba/lares/docs/research/browser-persona-ring-parity">>).
-* Fleet gathering must batch: the one-road delegation cost grows faster than its batch. The petname switcher and the cabal quorum surface for an outward crossing stand behind it.
+* Fleet gathering must batch: the one-road delegation cost grows faster than its batch. The petname switcher, the cabal quorum surface for an outward crossing, the browser tier door and the compartment-collector check stand behind it; no live path gathers a fleet yet.
 * The self-slot inner ring: it narrows alone, and wiring it freezes a naming (#/open).
 * No SES or Compartment realm gate stands in the tree; it gates any live authoring of unpinned code.
 * Operator power reaches no browser vessel: a seam enforced by disk access, never a capability. Co-hosted sovereignty between same-uid peers stands claimed and unenforced.
 * The crossing rail's three requirements (both ends as presented capabilities, a saga shape, declared deletion semantics) and a realm tally's move onto the shared substrate both stand researched and unbuilt.
 * A deny-only antigen share wants provenance and a merge rule before two lists ever merge.
+* Observer-local hardening by silence must BOUND its wait, or a withheld update freezes a victim (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>).
+* One charter per vessel rests on a single seal home (`larSealHome`), a guard on one file and never a law; a vessel that carries a second Nexus wants a second seal home, and the charter train names none.
+* Whether realm standing crosses operators wants a fresh measure against the realm's shared substrate.
+* The bag-tier reader takes the hearth's manifest alone; a repository-homed manifest reads VEIL, tighter and never looser.
+* A startup module inside the VM, wiring whatever the projection environment lacks, stands held; the off-main-thread engine research may answer it.
+* Builds held on purpose, each on the operator's word: the lease cure, the docker partition scenario, WebTransport, the `<<~?` sigil, the SOURCE tiddler.
+* Smaller threads: the tombstone and whiteout verb, reserved; Automerge history growth; `lares wiki` subcommands that print for humans alone; an engine-swap reconcile that answered `current` against a stale engine; the NFC assertion at the ingest shore; the parser's retired typed-edge emission plane (`kumu-device.ts`); a `TimeoutNegativeWarning` in e2e runs, unlocalized; the house's register names ahi kā Hawaiian where its documented home reads Māori, and a primary source should settle it.
 
 <<~/ahu>>
 
@@ -652,7 +661,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 * ''Sealed-store step 1'': after the seal (#/the-road, the sealed store).
 
 !!! Off this road, held by name
-* ''Grammar'': tangle, the putback law and the tongue fold wait on a real return trip and a whole regeneration of `packages/tree-sitter-memetic-wikitext` against the released grammar; that regeneration also unlocks publication. A relay-stream profile (the SYN-framed batch), a carrier seal with a computed check, and EOT targeting stay held in reserve. The grammar watch reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff#/shift-grammar-watch">>.
+* ''Grammar'': tangle, the putback law and the tongue fold wait on a real return trip and a whole regeneration of `packages/tree-sitter-memetic-wikitext` against the released grammar; that regeneration also unlocks publication. A relay-stream profile (the SYN-framed batch), a carrier seal with a computed check, and EOT targeting stay held in reserve. The grammar watch reads in <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">>.
 * ''Publication'': the `text/markdown; variant=memetic-markdown` registration, the provisional `lar` scheme after `lar-uri` gains its Security section, the vendor media type, and the drafts. The standalone plugin artifact ships from `packages/lararium-tw5/plugins/standalone/`.
 * ''The live wiki's floors'': exercise the quoteblock floor at both grains, the child gate and the persisted parallel drafts against real concurrent browser saves, and turn every surprise into a test.
 * ''A standing whole-tree gate'' runs as a spirit pass, never as a CLI verb or a trigger.
@@ -710,11 +719,11 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 # ''Ruling-gated mesh modules'' (listed in the header of `packages/lararium-mesh/src/index.ts`): `recipe`, `readiness`, `reaction-graph`, `pronaos`, `offering-inspection`. Each moves or stays by ruling alone.
 # ''The capture cell'' sits apart for review in `packages/lararium-mesh/src/capture/`, `packages/lararium-node/src/capture/`, `packages/lararium-tw5/src/capture/` and `packages/lares-cli/src/commands/capture/`. Canon places capture in Python per stream with the TS daemon coordinating alone (<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>), while the TS cell carries the live path. Rule: retire it to Python, or re-home it.
 # ''Receipt names and verb capabilities.'' Whether a receipt's address follows the house's own kind nouns or the content-addressed surface; and the table that maps each routed verb to its capability, where `deriveRoutedCap` answers for every routed verb today (`packages/lararium-tw5/src/verb-local-dispatch.ts`).
+# ''Rulings that rest in their own carriers'': the promotion receipt's fields (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>), the one-of-one mantle (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>), the lease's questions (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/realm-bag-brief">>), and the offering's questions (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/heraldry">>).
 # ''Two Kairoses.'' The fiction names KAIROS as a watcher that speaks unasked; the code's Kairos pet-names an unbuilt entity that refreshes an OAuth grant at the right moment (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>). One entity, or two that share a name?
 # ''The disk watcher's reach.'' Whether the watcher may tombstone a carrier whose file vanished, by itself; today a wall-clock grace decides (#/side-lanes, the clock cures).
 # ''Alerts and shadows.'' Whether a disk conflict that arrives while no wiki stands pinned raises its alert at the next pin; whether a hand that deletes its override of a shadow leaves a delete, where today the shadow's text gets saved as a record; whether the page warns when a browser has joined no face.
 # ''The confirm door upstream.'' The fork asks its questions through the wiki itself (`$tw.utils.confirm`, `tm-confirm`). Owed before a donation: the order of actions after a confirm, a switch for a blocking prompt, and one squashed change. The withdrawn render boundary's upstream pull request, if it still stands open, advertises a design the fork backed out.
-# ''The shift ledger's fate.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> declares itself never archived, and the CLI's `meme` help names it. Retiring it needs a law carrier for its four procedure blocks and the operator's word.
 # ''One sentence for the `CLAUDE.md` adapter note'', the operator's to place: the CLI's ingest, watch and REPACK derive against `LAR_BAGS` and `LAR_WIKIS`, so "read neither" holds for the daemon's projection mirrors alone.
 
 <<~/ahu>>
@@ -722,7 +731,8 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">> the boot seed a cold session reads before this carrier
-<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> the shift ledger carries the red-first procedure, the traps and the grammar watch
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> working procedures carries the red-first moves, the wiring ladder and the instruments that lie
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">> the grammar watch carries the verdict law and the grammar test traps
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> the hearths ledger names which session holds which ground
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">> pattern integrities carries the recovery research base
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">> causal island carries the worker storage contract and typed authority evidence
@@ -746,6 +756,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qtSnd0TDFFf1BsT1vYzOBkUNk--g8M9FFL_Et3aezWM
+<<^ code="&#x0003;">>ni:///sha-256;nG6J466zUmK8n64jG4TUTw0lP9mmJAi3Pn17kD48XMM
 
 <<^ code="&#x0004;" -> to="?">>

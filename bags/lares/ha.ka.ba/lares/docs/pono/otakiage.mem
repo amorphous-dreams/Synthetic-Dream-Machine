@@ -304,7 +304,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 # ''Anything under kapu, or sealed above the reader's tier.'' A sweep that cannot read a carrier cannot judge it. The rating ladder's own words: "cannot be overridden by lower tiers."
 # ''The CHANGELOG.'' It holds the record the fire depends on. A burn that erased its own record would leave the house exactly where the 198 dangling edges already leave it.
 # ''Genesis.'' `node-cas.ts:210` already refuses to sweep the genesis manifest's blobs; the same refusal rides up to the carrier layer. The founding artifacts stand outside every grace.
-# ''`docs/handoff.mem`.'' It declares its own exemption in its `role` (`:13`): "updated at each phase boundary, ''never archived in place''; history lives in git". A carrier may author its own permanence, as NARA's schedules do at creation: "Permanent – Permanent records that contain historically significant materials."
+# ''A carrier that authors its own permanence'', until the operator's word unsays it. The shift ledger declared its exemption in its `role` — "updated at each phase boundary, ''never archived in place''; history lives in git" — and held the shelf on that line until the operator ended it and its procedures took a carrier of their own. A carrier may author its own permanence, as NARA's schedules do at creation: "Permanent – Permanent records that contain historically significant materials."
 # ''Any floor with an open lean.'' The standing gate, already ruled: a floor whose leans have not all been ruled stays. ''An unresolved argument holds a claim on the shelf that no tidiness outranks.''
 # ''Anything a hoike contests.'' `hoike.mem:74` keeps a dissent re-openable, and "a later court may depend on the kept words". Burning the record a dissent hangs on would close the re-entry key by deletion.
 
@@ -398,7 +398,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 | ''`folded`'' | ''`docs/handback-stale-rooms`'', the first carrier to spell the stage — described here and NEVER linked, under the law above | it stood folded at ''`7d3b3bf5c`'' (poured `428550a92`), and the shape it held reads: `tags = ["docs/pono/ledger", "lifecycle/folded"]` · ''zero'' inbound `loulou` (two bare prose mentions, no edge) · ''zero'' open leans, each of its four measurements re-derived against the tree before a word got rewritten · ''every'' slot carrying a fold target, six of them, in one table naming five addresses. Its `status-why` named the one precondition no hand there could supply — the operator's call — and its body carried three laws its own enactment found: a stale room inside a verbatim register gets a room ''beside'' it and never a rewrite · a suggestion offering two tags has not read the rite that grades them · a hold entry carries two facts and its CONTROL can only check one. ''Proof that `folded` names something real, spelled once and walked through to the fire'' |
 | ''`gone`'' | `bags/lares-history/lares_research/skill-pono-template.mem` (burned `07241e981`) | "It comes down whole and gets raised again." The commit carries the reason, the weld and the witnesses; git carries the bytes |
 | ''`gone`, self-authored ending'' | `bags/lares/ha.ka.ba/lares/docs/handoff/iam-paper-red-doc.mem` (burned `cc3f85022`) | "The work-order's own frontmatter ruled this end: retain = false, enact-then-delete" — the only shelf precedent for a disposition attached at creation |
-| ''NEVER burns, self-declared'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> | its `role` reads "updated at each phase boundary, ''never archived in place''; history lives in git". A carrier authoring its own permanence |
+| ''self-declared permanence, unsaid by the operator — folded and welded'' | `docs/handoff` | its `role` read "updated at each phase boundary, ''never archived in place''; history lives in git". The operator's word ended that; its procedures stand at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">> and its grammar watch at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/grammar-watch">> |
 | ''NEVER burns, canon'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">> | the law that governs every other carrier, including the retirement law this one extends |
 | ''`kapu` sibling'' | <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapu">> | "above-namespace authority law; kernel/sacred tier capability; trust boundary root". No hand but the grant-holder's ends what it governs |
 | ''`tombstone` sibling'' | <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/tiddler-carriage">> | carries PIN, RELEASE and the sweep — the grammar for a record leaving a live group, which the lifecycle never touches |
@@ -454,7 +454,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/RFC-2119">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>
@@ -473,6 +473,6 @@ uri-path          = "ha.ka.ba/lares/docs/pono/otakiage"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_KuZz1JCZGf8WaB5H6NAPtGirsdP4G_JB7OyXlSkuSc
+<<^ code="&#x0003;">>ni:///sha-256;ug0KiYhwxienV-jWxWBAcW0KjH0xCyarrD8x7pmdh6A
 
 <<^ code="&#x0004;" -> to="?">>

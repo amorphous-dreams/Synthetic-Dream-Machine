@@ -123,7 +123,7 @@ The admin↔hot-wiki bridge today (postMessage event → main translates → pla
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
 <<~ loulou "lar:///ha.ka.ba/lararium/api/island-isomorphism">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">>
@@ -134,6 +134,6 @@ The admin↔hot-wiki bridge today (postMessage event → main translates → pla
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;boXUvhtRtrzb0SGseERwnvfLnoDgP8qL66s2IHFSJm8
+<<^ code="&#x0003;">>ni:///sha-256;Xg-T0JvbMqvHx9doRedgZyLde70o7cmXffdeh9VUmwc
 
 <<^ code="&#x0004;" -> to="?">>
