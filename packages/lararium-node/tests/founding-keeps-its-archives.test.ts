@@ -72,7 +72,14 @@ beforeAll(async () => {
   archiveAbsentBefore = !existsSync(archivePath());
   await foundDirect({ storageDir: larDataDir(), genesisDir: join(root, "genesis") });
 });
+/** Every provider a case stands, so the file hands each back before it returns. */
+const providers: KeyhiveProvider[] = [];
+const standing = (p: KeyhiveProvider): KeyhiveProvider => { providers.push(p); return p; };
+
 afterAll(async () => {
+  // THE FILE LEAVES NOTHING STANDING: each provider disposes before the custody locks, so no line prints after
+  // the last assertion.
+  for (const p of providers.splice(0)) await p.dispose();
   const holder = seatedCustody();
   if (holder) { await holder.lock(); unseatCustody(holder); }
   if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
@@ -86,7 +93,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     const bytes = await loadIdentityArchive();
     expect(bytes && bytes.length).toBeGreaterThan(0);
     // The archive restores the vessel's own individual.
-    const p = new KeyhiveProvider();
+    const p = standing(new KeyhiveProvider());
     await p.init({ seed: await loadVesselSigningSeed(), eventStore: new InMemoryEventStore(), archiveBytes: bytes! });
     expect((await p.whoami()).length).toBeGreaterThan(0);
   });
@@ -131,16 +138,16 @@ describe("a founding keeps its archives, sealed per face", () => {
   test("F4 the creator re-stands from its sealed archive and seats a member", async () => {
     const anchors = (await loadIdentityAnchors(1))!;
     const veil = await seatedCustody()!.veil(anchors.veilTag!);
-    const restood = new KeyhiveProvider();
+    const restood = standing(new KeyhiveProvider());
     await restood.init({ seed: hexToBytes(veil.signingKey), eventStore: new InMemoryEventStore(), archiveBytes: (await loadVeilArchive(1))! });
-    const guest = new KeyhiveProvider();
+    const guest = standing(new KeyhiveProvider());
     await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: new InMemoryEventStore() });
     const { id: guestId } = await restood.receiveContactCard(await guest.contactCard());
     await restood.addSentinelMember(guestId, anchors.personaGroupDocIdHex);
     expect(await restood.sentinelCgkaMembers(anchors.personaGroupDocIdHex)).toContain(guestId);
 
     // control: the same seed with no archive and no events holds no such group
-    const bare = new KeyhiveProvider();
+    const bare = standing(new KeyhiveProvider());
     await bare.init({ seed: hexToBytes(veil.signingKey), eventStore: new InMemoryEventStore() });
     await expect(bare.addSentinelMember(guestId, anchors.personaGroupDocIdHex)).rejects.toThrow();
   });
@@ -202,7 +209,7 @@ describe("a founding keeps its archives, sealed per face", () => {
       await foundDirect({ storageDir: larDataDir(), genesisDir });
       const seed = await loadVesselSigningSeed();
       const stand = async (archiveBytes?: Uint8Array): Promise<KeyhiveProvider> => {
-        const p = new KeyhiveProvider();
+        const p = standing(new KeyhiveProvider());
         await p.init({ seed, eventStore: new InMemoryEventStore(), ...(archiveBytes ? { archiveBytes } : {}) });
         return p;
       };
