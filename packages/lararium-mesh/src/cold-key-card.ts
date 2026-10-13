@@ -26,6 +26,7 @@ import { canonicalJson, defaultCryptoProvider, hex, hexToBytes, sha256HexSync, t
 import { COLD_KEY_CARD_DOMAIN, SEAT_NEXT_KEY_DOMAIN } from "./domains.js";
 import { confirmationPhrase } from "./guardian-card.js";
 
+import { acceptEd25519Key, type Ed25519KeyRefusal } from "./ed25519-door.js";
 export class ColdKeyCardError extends Error {}
 
 /** A cold key in hand: its seed, its verifying key (lowercase hex), and the digest a charter commits. */
@@ -41,17 +42,23 @@ const CHECK_HEX = 8;
 const CODE_HEX = SEED_HEX + CHECK_HEX;
 const GROUPS_PER_ROW = 6;
 
-function unreadable(fault: "length" | "character" | "checksum" | "key"): ColdKeyCardError {
+function unreadable(fault: "length" | "character" | "checksum" | "key" | Ed25519KeyRefusal): ColdKeyCardError {
   return new ColdKeyCardError(`cold-key-card-unreadable: ${fault}`);
 }
 
 /**
  * The digest a charter commits for one seat's cold key: a hash of the verifying key under the seat-next
- * domain. One-way: a reader tests a REVEALED key against it and recovers no key from it. Case-blind.
+ * domain. One-way: a reader tests a REVEALED key against it and recovers no key from it.
+ *
+ * THE KEY PASSES THE ED25519 DOOR BEFORE IT HIDES. A commitment conceals its key until the reveal, and a roll
+ * whose reveal names a key the door refuses refuses WHOLE, so a weak key committed here would brick the seat's
+ * charter at its next roll. It refuses now, by the door's own name, and in its one spelling (bare lower-case hex).
  */
 export function seatNextDigest(coldVerifyingKey: string): string {
-  if (typeof coldVerifyingKey !== "string" || !/^[0-9a-fA-F]{64}$/.test(coldVerifyingKey)) throw unreadable("key");
-  return sha256HexSync(canonicalJson({ kind: SEAT_NEXT_KEY_DOMAIN, key: coldVerifyingKey.toLowerCase() }));
+  if (typeof coldVerifyingKey !== "string" || !/^[0-9a-f]{64}$/.test(coldVerifyingKey)) throw unreadable("key");
+  const accepted = acceptEd25519Key(coldVerifyingKey);
+  if (!accepted.ok) throw unreadable(accepted.refusal);
+  return sha256HexSync(canonicalJson({ kind: SEAT_NEXT_KEY_DOMAIN, key: coldVerifyingKey }));
 }
 
 /** The cold key a 32-byte seed holds. The returned seed is a copy the caller owns. */

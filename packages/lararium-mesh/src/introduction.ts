@@ -130,6 +130,18 @@ export function newcomerKeyOf(secret: Uint8Array): string {
   finally { key.fill(0); }
 }
 
+/**
+ * Does a newcomer key name somebody an answer can seal to? The seven low-order points of Curve25519 name
+ * nobody: every secret agrees on one shared value with them, so X25519 refuses them and no sealed answer could
+ * ever leave. The key enters a SIGNED record here, so it refuses at the signing and at the reading, by name.
+ * The probe scalar holds no secret: any scalar asks the same question.
+ */
+const NEWCOMER_PROBE = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
+function newcomerKeyStands(newcomerKey: string): boolean {
+  try { x25519.getSharedSecret(NEWCOMER_PROBE, hexToBytes(newcomerKey)); return true; }
+  catch { return false; }
+}
+
 /** The bytes a guest signs: the four fields under the introduction's own name and part. */
 export function introductionBytes(fields: IntroductionFields): Uint8Array {
   return canonicalJsonBytes({
@@ -151,13 +163,15 @@ export async function signIntroduction(
 ): Promise<Introduction> {
   const read = fieldsOf(fields);
   if (read === null) throw new IntroductionError("introduction-malformed");
+  if (!newcomerKeyStands(read.newcomerKey)) throw new IntroductionError("introduction-newcomer-key-refused");
   const signature = await sign(introductionBytes(read));
   if (typeof signature !== "string" || !HEX_128.test(signature)) throw new IntroductionError("introduction-signature-malformed");
   return Object.freeze({ kind: HOSTING_INTRODUCTION_DOMAIN, ...read, signature });
 }
 
 export type IntroductionRefusal =
-  | "introduction-malformed" | "introduction-nexus-foreign" | "introduction-epoch-dead" | "introduction-unsigned";
+  | "introduction-malformed" | "introduction-nexus-foreign" | "introduction-epoch-dead" | "introduction-unsigned"
+  | "introduction-newcomer-key-refused";
 /** A lawful verdict hands back the frozen copy it verified: the caller shows and answers THAT, never the value it
  *  was handed. */
 export type IntroductionVerdict =
@@ -187,6 +201,8 @@ export function verifyIntroduction(
       signed = verifyEd25519(read.signature, introductionBytes(read), read.introducer);
     } catch { signed = false; }
     if (!signed) return { ok: false, refusal: "introduction-unsigned" };
+    // A lawful guest signed a key nobody can hold: no answer could seal to it, so the introduction refuses here.
+    if (!newcomerKeyStands(read.newcomerKey)) return { ok: false, refusal: "introduction-newcomer-key-refused" };
     VERIFIED.add(read);
     return { ok: true, introduction: read };
   } catch {

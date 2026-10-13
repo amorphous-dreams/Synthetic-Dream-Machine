@@ -18,7 +18,7 @@ import * as ed from "@noble/ed25519";
 import { ed25519 as curveEd } from "@noble/curves/ed25519.js";
 import { hex, hexToBytes, sha256Hex, utf8Bytes, defaultCryptoProvider } from "../src/crypto.js";
 import { acceptEd25519Key, readEd25519 } from "../src/ed25519-door.js";
-import { DEVICE_DELEGATION_DOMAIN, ORACLE_POINTER_DOMAIN } from "../src/domains.js";
+import { DEVICE_DELEGATION_DOMAIN, HOSTING_INTRODUCTION_DOMAIN, ORACLE_POINTER_DOMAIN } from "../src/domains.js";
 import { realmBagRegistrationCounts, signRealmBagRegistration } from "../src/realm-bag.js";
 import {
   carriageEntryCounts, signCarriageContract, signCarriageQuorum, signCarrierContract, verifyCarriageConsent, verifyCarrierContract,
@@ -35,15 +35,16 @@ import { mintPersonaInception, mintPersonaRotation, verifyPersonaKelFull, person
 import { attestAndRotate, provisionThresholdRecoveryAtFounding } from "../src/recovery-keel-core.js";
 import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
 import { inceptVesselKel, verifyVesselKelInception } from "../src/vessel-kel.js";
-import { handleKeyFault, mintHandleInception, mintHandleRotation, verifyHandleKel, verifyHandleKelFull } from "../src/handle-kel.js";
+import { handleKeyDigestOf, handleKeyFault, mintHandleInception, mintHandleRotation, verifyHandleKel, verifyHandleKelFull } from "../src/handle-kel.js";
 import { signHandleCard, verifyHandleCard } from "../src/handle-card.js";
 import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
 import { mintEnrollmentOffer, mintJoinAck, openPersonaGrant, sealPersonaGrant, verifyJoinAck, type PersonaRef } from "../src/persona-admit.js";
 import { mintHostingAct, verifyHostingAct } from "../src/hosting.js";
 import { sealGroupSecret } from "../src/persona-group-secret.js";
 import { authProofBytes, ed25519VerifyHex, verifyAuthProof } from "../src/auth-wire.js";
-import { newcomerKeyOf, signIntroduction, verifyIntroduction, type IntroductionFields } from "../src/introduction.js";
-import { IDENTITY_KEY, NOBODYS_SIGNATURE, torsionHand } from "./ed25519-torsion.js";
+import { introductionBytes, newcomerKeyOf, signIntroduction, verifyIntroduction, type IntroductionFields } from "../src/introduction.js";
+import { seatNextDigest } from "../src/cold-key-card.js";
+import { IDENTITY_KEY, MIXED_ORDER_KEY, NOBODYS_SIGNATURE, torsionHand } from "./ed25519-torsion.js";
 
 interface Hand { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }
 const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -225,7 +226,7 @@ describe("vessel KEL (verifyVesselKelInception)", () => {
 describe("Handle KEL and Handle card", () => {
   const RECOVERY = "ab".repeat(32);
   const cardOf = async (hand: Hand) => {
-    const did = `0x${hand.key}`, chain = [mintHandleInception(did, did, RECOVERY)];
+    const did = `0x${hand.key}`, chain = [mintHandleInception(did, did, RECOVERY, `hkeynext-${"cd".repeat(32)}`)];
     return signHandleCard({ nym: chain[0]!.prefix, chain, glamour: "FastJack", parents: [], standing: null, fleetProof: null }, hand.sign);
   };
   test("CONTROL: the Handle key's card verifies", async () => { expect((await verifyHandleCard(await cardOf(await honestHand(41)))).ok).toBe(true); });
@@ -234,9 +235,10 @@ describe("Handle KEL and Handle card", () => {
   });
   const rotateBy = async (owner: Hand) => {
     const ownerDid = `0x${owner.key}`, persona = mintPersonaInception(ownerDid, RECOVERY);
-    const inception = mintHandleInception(`0x${(await honestHand(42)).key}`, persona.prefix, RECOVERY);
+    const fresh = `0x${(await honestHand(43)).key}`;
+    const inception = mintHandleInception(`0x${(await honestHand(42)).key}`, persona.prefix, RECOVERY, handleKeyDigestOf(fresh));
     const minted = await mintHandleRotation({
-      head: inception, freshHandleKeyDid: `0x${(await honestHand(43)).key}`,
+      head: inception, freshHandleKeyDid: fresh, nextHandleKeyDigest: `hkeynext-${"ef".repeat(32)}`,
       ownerAuthMemberPrefix: persona.prefix, ownerHeadOpKeyDid: ownerDid, sign: owner.sign,
     });
     return { inception, minted };
@@ -252,9 +254,9 @@ describe("Handle KEL and Handle card", () => {
   });
   test("a Handle key the door refuses incepts nothing, and a log that seats one refuses by name", async () => {
     const owner = `0x${(await honestHand(41)).key}`;
-    expect(() => mintHandleInception(`0x${IDENTITY_KEY}`, owner, RECOVERY)).toThrow(/Handle key refuses at the Ed25519 door \(key-small-order\)/);
+    expect(() => mintHandleInception(`0x${IDENTITY_KEY}`, owner, RECOVERY, `hkeynext-${"cd".repeat(32)}`)).toThrow(/Handle key refuses at the Ed25519 door \(key-small-order\)/);
     expect(handleKeyFault(owner)).toBeNull();
-    const lawful = mintHandleInception(owner, owner, RECOVERY);
+    const lawful = mintHandleInception(owner, owner, RECOVERY, `hkeynext-${"cd".repeat(32)}`);
     const forged = { ...lawful, handleKeyDid: `0x${IDENTITY_KEY}` };
     expect(verifyHandleKel([lawful])).toBe(true);                                               // CONTROL
     expect(verifyHandleKel([forged])).toBe(false);
@@ -343,6 +345,19 @@ describe("group secret seal (sealGroupSecret)", () => {
   });
 });
 
+describe("a cold key committed for a seat (seatNextDigest)", () => {
+  test("CONTROL: a lawful cold key commits", async () => {
+    expect(seatNextDigest((await honestHand(71)).key)).toMatch(/^[0-9a-f]{64}$/);
+  });
+  test("a key the door refuses never gets hidden inside a commitment, by name", async () => {
+    // A commitment hides its key until the reveal, where the roll refuses whole. So the weak key refuses HERE, before it hides.
+    expect(() => seatNextDigest(IDENTITY_KEY)).toThrow(/cold-key-card-unreadable: key-small-order/);
+    expect(() => seatNextDigest(MIXED_ORDER_KEY)).toThrow(/cold-key-card-unreadable: key-mixed-order/);
+    const upper = (await honestHand(71)).key.toUpperCase();
+    expect(() => seatNextDigest(upper)).toThrow(/cold-key-card-unreadable: key/);                  // one key, one spelling
+  });
+});
+
 // ── HOSTING ──────────────────────────────────────────────────────────────────────────────────────────────────
 describe("hosting act (verifyHostingAct)", () => {
   const act = async () => (await mintHostingAct({ leafSeed: seed(5), nexusAid: EPOCH, prev: null, cap: 2 })).act;
@@ -350,6 +365,32 @@ describe("hosting act (verifyHostingAct)", () => {
   test("nobody signs a hosting act for a small-order hearth leaf", async () => {
     // No cid binds the leaf beyond the signed bytes themselves, which the verifier re-reads over the forged act.
     expect(await verifyHostingAct({ ...(await act()), hearthLeaf: IDENTITY_KEY, sig: NOBODYS_SIGNATURE })).toBe(false);
+  });
+});
+
+describe("an introduction's newcomer key (signIntroduction, verifyIntroduction)", () => {
+  // The seven low-order u-coordinates of Curve25519: a key nobody holds a secret for, so no answer seals to it.
+  const LOW_ORDER_U = [
+    "00".repeat(32), `01${"00".repeat(31)}`, "e0eb7a7c3b41b8ae1656e3faf19fc46ada098deb9c32b1fd866205165f49b800",
+    "5f9c95bca3508c24b1d0b1559c83ef5b04445cc4581c8e86d8224eddd09f1157", `ec${"ff".repeat(30)}7f`, `ed${"ff".repeat(30)}7f`, `ee${"ff".repeat(30)}7f`,
+  ];
+  const standing = async () => {
+    const hearth = await mintHostingAct({ leafSeed: seed(40), nexusAid: EPOCH, prev: null, cap: 3 });
+    const guest = await honestHand(41);
+    const fields: IntroductionFields = { nexus: EPOCH, epoch: hearth.cid, newcomerKey: newcomerKeyOf(seed(9)), introducer: guest.key };
+    return { guest, fields, live: { nexus: EPOCH, epochs: [hearth.cid] } };
+  };
+  test("CONTROL: a newcomer key a friend holds verifies", async () => {
+    const { guest, fields, live } = await standing();
+    expect(verifyIntroduction(await signIntroduction(fields, guest.sign), live).ok).toBe(true);
+  });
+  test.each(LOW_ORDER_U)("a low-order newcomer key %s refuses at the signing and at the reading, by name", async (newcomerKey) => {
+    const { guest, fields, live } = await standing();
+    await expect(signIntroduction({ ...fields, newcomerKey }, guest.sign)).rejects.toThrow("introduction-newcomer-key-refused");
+    // Hand-built past the signer, honestly signed by the guest: the reader still refuses the key.
+    const bytes = introductionBytes({ ...fields, newcomerKey });
+    const wire = { kind: HOSTING_INTRODUCTION_DOMAIN, ...fields, newcomerKey, signature: await guest.sign(bytes) };
+    expect(verifyIntroduction(wire, live)).toEqual({ ok: false, refusal: "introduction-newcomer-key-refused" });
   });
 });
 

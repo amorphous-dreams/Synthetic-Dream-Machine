@@ -312,11 +312,10 @@ describe("the answer consumes the introduction", () => {
     const withShifting = openAnswer(answerIntroduction(intro, true, () => shiftingToken), FRIEND_SECRET);
     expect(tokenReads).toBe(1);
     expect(withShifting?.token).toEqual(STUB_TOKEN);
-    // A key nobody holds: a guest signs an all-zero newcomer key, it verifies, and the seal refuses to address nobody.
-    const { fields, live } = await standing();
-    const toNobody = verifyIntroduction(await signIntroduction({ ...fields, newcomerKey: "00".repeat(32) }, signerOf(GUEST)), live);
-    if (!toNobody.ok) throw new Error("the all-zero key should verify by shape and signature");
-    expect(() => answerIntroduction(toNobody.introduction, false)).toThrow("newcomer-key-malformed");
+    // A key nobody holds: an all-zero newcomer key refuses at the signing, and a hand-built copy at the reading
+    // (`ed25519-door-families.test.ts` walks all seven low-order points).
+    const { fields } = await standing();
+    await expect(signIntroduction({ ...fields, newcomerKey: "00".repeat(32) }, signerOf(GUEST))).rejects.toThrow("introduction-newcomer-key-refused");
     expect(opened(answerIntroduction(intro, false)).admitted).toBe(false);     // CONTROL
   });
 

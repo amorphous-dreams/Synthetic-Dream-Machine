@@ -112,7 +112,7 @@ describe("the seat digest — a key committed under its own domain", () => {
     const a = await coldKeyFromSeed(SEED), b = await coldKeyFromSeed(OTHER);
     expect(a.digest).not.toBe(b.digest);
     expect(seatNextDigest(a.verifyingKey)).toBe(a.digest);
-    expect(seatNextDigest(a.verifyingKey.toUpperCase())).toBe(a.digest);
+    expect(() => seatNextDigest(a.verifyingKey.toUpperCase())).toThrow(ColdKeyCardError);   // one key, one spelling
     expect(() => seatNextDigest("g".repeat(64))).toThrow(ColdKeyCardError);
     expect(() => seatNextDigest("a".repeat(62))).toThrow(ColdKeyCardError);
     expect(() => seatNextDigest("")).toThrow(ColdKeyCardError);
