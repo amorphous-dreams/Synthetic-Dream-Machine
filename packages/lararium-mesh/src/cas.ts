@@ -13,6 +13,7 @@
  */
 
 import { ENGINE_CORE_ID } from "./base-doc.js";
+import { plainValue } from "./stored-value.js";
 import { cidFromUri } from "./lar-uris.js";
 
 /** A blob entry shape the CAS reads — id + sha256 (the CID) + the raw bytes. */
@@ -215,7 +216,8 @@ export function casCidOfRecord(fields: Record<string, unknown>): string | null {
 export function casReferences(entries: Iterable<CasReferenceEntry>): Map<string, Set<string>> {
   const refs = new Map<string, Set<string>>();
   for (const e of entries) {
-    const cid = casCidOfRecord(e.record.tiddler);
+    // A caller may hand a record straight off a document: unwrap before reading, so no pointer goes unseen.
+    const cid = casCidOfRecord(plainValue(e.record.tiddler) as typeof e.record.tiddler);
     if (!cid) continue;
     const address = e.bagId ? `${e.bagId} ${e.title}` : e.title;
     const set = refs.get(cid) ?? new Set<string>();

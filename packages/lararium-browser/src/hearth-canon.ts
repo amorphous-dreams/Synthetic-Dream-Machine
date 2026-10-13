@@ -21,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/hearth-canon
  */
 import { interpretAsDocumentId, isValidAutomergeUrl, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, mutableLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
+import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, storedLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
 
 /** The canon titles an admit may name: the bags a leaf's wiki reads from its hearth. */
 export const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -132,6 +132,6 @@ export function seatHearthCanon(oracle: OracleReplica, named: HearthCanonDocs): 
     .filter(([title, url]) => tiddlerText(oracle.doc()?.tiddlers?.[title]) !== url);
   if (owed.length === 0) return;
   oracle.change((doc) => {
-    for (const [title, url] of owed) doc.tiddlers[title] = mutableLarRecord(title, { text: url }, "hearth-canon");
+    for (const [title, url] of owed) doc.tiddlers[title] = storedLarRecord(title, { text: url }, "hearth-canon");
   });
 }

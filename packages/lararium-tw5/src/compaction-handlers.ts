@@ -19,10 +19,10 @@
  */
 
 import type { Repo, AutomergeUrl } from "@lararium/mesh";
-import type { LarTiddlerRecord } from "@lararium/mesh";
+import { plainEntries, plainRecordOrNull, storedRecord } from "@lararium/mesh";
 import {
   type LarDoc,
-  emptyLarDoc, mutableLarRecord, mkDaemonResidencyOp, mkDaemonWikiAlert,
+  emptyLarDoc, storedLarRecord, mkDaemonResidencyOp, mkDaemonWikiAlert,
   wikiBagUri, recipeUri,
 } from "@lararium/mesh";
 import { bagStackFromRec } from "@lararium/mesh";
@@ -77,7 +77,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
     const oldHandle = await opts.repo.find<LarDoc>(oldDocUrl as AutomergeUrl);
     await oldHandle.whenReady();
     const oldDoc   = oldHandle.doc();
-    const oldEntry = (oldDoc?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
+    const oldEntry = plainEntries(oldDoc?.tiddlers);
 
     let tiddlerCount   = 0;
     let tombstoneCount = 0;
@@ -86,11 +86,10 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
     const newHandle = opts.repo.create<LarDoc>(emptyLarDoc());
     await newHandle.whenReady();
     newHandle.change((doc) => {
-      const target = doc.tiddlers as Record<string, LarTiddlerRecord>;
-      for (const [title, rec] of Object.entries(oldEntry)) {
+      for (const [title, rec] of oldEntry) {
         // Honor the Cassandra rule: tombstones survive Epochs as first-class
         // state. Carry deleted flag forward unchanged.
-        target[title] = { ...rec };
+        doc.tiddlers[title] = storedRecord(rec);
         if (rec.meta?.deleted) tombstoneCount++;
         else             tiddlerCount++;
       }
@@ -100,9 +99,8 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
     // same pattern as wiki-init's oracle write.
     const catalogHandle = await opts.catalog.handle();
     catalogHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
-      const existing = tiddlers[bagUrl];
-      tiddlers[bagUrl] = {
+      const existing = plainRecordOrNull(doc.tiddlers[bagUrl]);
+      doc.tiddlers[bagUrl] = storedRecord({
         tiddler: {
           ...(existing?.tiddler ?? { title: bagUrl }),
           title: bagUrl,
@@ -114,7 +112,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
           ...(existing?.meta ?? {}),
           authority: existing?.meta?.authority ?? "lares-cli:bag-compact",
         },
-      };
+      });
     });
 
     // No live-composite layer swap, no residency re-pin: the oracle change syncs;
@@ -205,9 +203,9 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
     // Update catalog: wiki oracle → new URL; previous-canon oracle → old URL.
     const catalogHandle = await opts.catalog.handle();
     catalogHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
-      const existingWiki = tiddlers[wikiKey];
-      tiddlers[wikiKey] = {
+      const tiddlers = doc.tiddlers;
+      const existingWiki = plainRecordOrNull(tiddlers[wikiKey]);
+      tiddlers[wikiKey] = storedRecord({
         tiddler: {
           ...(existingWiki?.tiddler ?? { title: wikiKey }),
           title: wikiKey,
@@ -220,8 +218,8 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
           ...(existingWiki?.meta ?? {}),
           authority: existingWiki?.meta?.authority ?? "lares-cli:rotate-recipe",
         },
-      };
-      tiddlers[previousCanonUri] = mutableLarRecord(previousCanonUri, {
+      });
+      tiddlers[previousCanonUri] = storedLarRecord(previousCanonUri, {
         text: oldDocUrl,
         kind: "previous-canon",
         rotation: String(nextGen),
@@ -237,8 +235,7 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
       : [...stack, previousCanonUri, wikiKey];
 
     catalogHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
-      tiddlers[recipeTitle] = {
+      doc.tiddlers[recipeTitle] = storedRecord({
         tiddler: {
           ...recipeRec.tiddler,
           title: recipeTitle,
@@ -250,7 +247,7 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
           ...(recipeRec.meta ?? {}),
           authority: recipeRec.meta?.authority ?? "lares-cli:rotate-recipe",
         },
-      };
+      });
     });
 
     // No live-composite layer swap (oracle + recipe changes sync; islands reconcile),
@@ -292,9 +289,8 @@ async function alertWikisUsingBag(
   cause: string,
 ): Promise<string[]> {
   const cat = await opts.catalog.handle();
-  const tiddlers = (cat.doc()?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
   const slugs: string[] = [];
-  for (const [title, rec] of Object.entries(tiddlers)) {
+  for (const [title, rec] of plainEntries(cat.doc()?.tiddlers)) {
     if (!title.startsWith(RECIPE_PREFIX)) continue;
     if (rec.meta?.deleted) continue;
     const slug = title.slice(RECIPE_PREFIX.length);

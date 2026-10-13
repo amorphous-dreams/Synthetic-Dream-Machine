@@ -24,10 +24,11 @@ import {
 } from "./mesh-palace.js";
 import { pullAndVerifyOracle } from "./oracle-read-client.js";
 import type { LeafIdentity } from "./auth-wire.js";
-import type { LarTiddlerRecord } from "./tiddler-store.js";
+import { plainRecord, sameStoredRecord, type StoredTiddlers } from "./stored-value.js";
 import type { LarDoc } from "./base-doc.js";
 import type { VesselCoreAssembly } from "./open-vessel-core.js";
 import type { BagStowage } from "./bag-residency.js";
+import { storedRecord } from "./stored-record.js";
 
 /**
  * The carriage cap-ids. A vessel's #has-cap-stack names these to wire the meshpalace FLOW-map + carriage.
@@ -60,11 +61,11 @@ export function meshPalaceCap(deps: { repo: Repo; residency?: BagStowage; seed?:
         handle.change((d) => {
           for (const e of deps.seed!) {
             const rec = dialEntryToRecord(e, "herm-self-announce");
-            d.tiddlers[rec.tiddler.title] = rec;
+            d.tiddlers[rec.tiddler.title] = storedRecord(rec);
             if (deps.selfCoord) {
               const slot: RoutingSlot = { bearing: e.bearing, r: deps.selfCoord.r, theta: deps.selfCoord.theta };
               const srec = routingSlotToRecord(slot, "herm-self-announce");
-              d.tiddlers[srec.tiddler.title] = srec;
+              d.tiddlers[srec.tiddler.title] = storedRecord(srec);
             }
           }
         });
@@ -136,7 +137,7 @@ export function parseMeshPeer(entry: string): MeshPeer | null {
  * chart drives WHICH dials to carry, nearest first; the embedding's re-rank stage, native side).
  */
 export function discoverPeers(
-  doc: { tiddlers: Record<string, LarTiddlerRecord> } | undefined,
+  doc: { tiddlers: StoredTiddlers } | undefined,
   bootstrap: readonly MeshPeer[], selfEndpoint: string | undefined, maxFanout: number,
   selfCoord?: Coord,
 ): MeshPeer[] {
@@ -296,8 +297,8 @@ export function carriageCap(deps: {
             // — the deadband already limits HOW OFTEN this fires, but a content check costs nothing and
             // closes the case where damping settles back to a value already on the doc.
             const existing = mp.handle.doc()?.tiddlers[rec.tiddler.title];
-            if (existing === undefined || JSON.stringify(existing) !== JSON.stringify(rec)) {
-              mp.handle.change((d) => { d.tiddlers[rec.tiddler.title] = rec; });
+            if (!sameStoredRecord(existing, rec)) {
+              mp.handle.change((d) => { d.tiddlers[rec.tiddler.title] = storedRecord(rec); });
               deps.onLog?.(`carriage: standing → r=${rCurrent.toFixed(2)} (degree ${peers.length}, past the band)`);
             }
           }
@@ -324,12 +325,13 @@ export function carriageCap(deps: {
           const stored = mp.handle.doc()?.tiddlers ?? {};
           const changedTitles = titles.filter((t) => {
             const existing = stored[t];
-            return existing === undefined || JSON.stringify(existing) !== JSON.stringify(incoming[t]);
+            const arriving = incoming[t];
+            return arriving !== undefined && !sameStoredRecord(existing, arriving);
           });
           if (changedTitles.length > 0) {
             mp.handle.change((d) => {
-              // cross-doc copy → clone to plain values (Automerge refuses a value linked in another doc)
-              for (const t of changedTitles) d.tiddlers[t] = JSON.parse(JSON.stringify(incoming[t])) as LarTiddlerRecord;
+              // A cross-doc copy unwraps and wraps again: Automerge refuses a value linked in another doc.
+              for (const t of changedTitles) d.tiddlers[t] = storedRecord(plainRecord(incoming[t]!));
             });
             merged += changedTitles.length;
             deps.onLog?.(`carriage: merged ${changedTitles.length} FLOW records from ${peer}`);

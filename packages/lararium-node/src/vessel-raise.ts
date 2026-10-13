@@ -56,6 +56,7 @@ import {
   type RaiseChallenge, type RaiseGrant, type RaiseRefused, type RaisedCaps, type VesselClass,
   type RaiseNexusReading, type LarDoc,
 } from "@lararium/mesh";
+import { tiddlerText } from "@lararium/mesh";
 import type { DocHandle } from "@automerge/automerge-repo";
 import type { BoardOpener, CarriedNexusReading } from "./nexus-carriage.js";
 import { charterHomeFor, primaryNexusAid, readCarriedCharters } from "./carried-set.js";
@@ -160,8 +161,7 @@ export function effectiveLeaseEpochOnBoard(handle: DocHandle<LarDoc>, resource: 
   const slots: (string | null | undefined)[] = [];
   for (const key of Object.keys(tids)) {
     if (key.startsWith(prefix)) {
-      const t = tids[key] as { text?: unknown } | undefined;
-      slots.push(typeof t?.text === "string" ? t.text : null);
+      slots.push(tiddlerText(tids[key]));
     }
   }
   return effectiveLeaseEpoch(slots);

@@ -36,6 +36,7 @@ import {
   canonicalJsonBytes, casReferences, publicRealmBooksFromDoc,
   type CasReferenceEntry, type CapTier, type LarDoc,
 } from "@lararium/mesh";
+import { plainRecord } from "@lararium/mesh";
 import { readCasBlobFromFs } from "./node-cas.js";
 import { buildBulb, type BulbArtifact } from "./bulb.js";
 import { ARRIVAL_WELL_KNOWN_ROUTE, WELL_KNOWN_LAR_ROUTE_KEY } from "./pronaos-adapter.js";
@@ -84,7 +85,7 @@ export async function announcedRealmBooks(opts: {
     books.push({
       bagUri: announced.bagUri, readTier: "public",
       entries: Object.entries(doc.tiddlers ?? {}).map(([title, record]) => ({
-        title, bagId: announced.bagUri, record: record as { tiddler: Record<string, unknown> },
+        title, bagId: announced.bagUri, record: plainRecord(record),
       })),
     });
   }
@@ -118,7 +119,7 @@ export async function hermRealmShoreBooks(opts: {
     books.push({
       bagUri: rec.bagUri, readTier: rec.readTier,
       entries: Object.entries(doc.tiddlers ?? {})
-        .map(([title, record]) => ({ title, bagId: rec.bagUri, record: record as { tiddler: Record<string, unknown> } })),
+        .map(([title, record]) => ({ title, bagId: rec.bagUri, record: plainRecord(record) })),
     });
   }
   const announced = await announcedRealmBooks({

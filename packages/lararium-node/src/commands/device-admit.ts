@@ -212,10 +212,9 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     ),
   ]);
   const daemonDoc    = daemonHandle.doc();
-  const tiddlerMap  = ((daemonDoc as Record<string,unknown>)?.["tiddlers"] ?? {}) as Record<string, unknown>;
+  const tiddlerMap  = (daemonDoc as LarDoc | undefined)?.tiddlers ?? {};
 
-  const agentEntry         = tiddlerMap[PERSONA_GROUP_AGENT_ID_TIDDLER] as Record<string,unknown> | undefined;
-  const personaGroupAgentIdHex = (agentEntry?.["tiddler"] as Record<string,unknown> | undefined)?.["text"] as string | null ?? null;
+  const personaGroupAgentIdHex = tiddlerText(tiddlerMap[PERSONA_GROUP_AGENT_ID_TIDDLER]);
   if (!personaGroupAgentIdHex) {
     throw new Error(`[lares device-admit] PersonaGroup agent ID missing from daemon doc — run \`lares vessel found --force\`.`);
   }
@@ -226,8 +225,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // the snapshot into its local board so it boots to a head with no sync wait (no-global-now). Fail-closed:
   // a founding always seats an inception, so a prefix + a chain always stand — their absence names a torn
   // founding, refuse to admit.
-  const kelPrefixEntry = tiddlerMap[PERSONA_KEL_PREFIX_TIDDLER] as Record<string,unknown> | undefined;
-  const personaKelPrefix = (kelPrefixEntry?.["tiddler"] as Record<string,unknown> | undefined)?.["text"] as string | null ?? null;
+  const personaKelPrefix = tiddlerText(tiddlerMap[PERSONA_KEL_PREFIX_TIDDLER]);
   if (!personaKelPrefix) {
     throw new Error(`[lares device-admit] persona-KEL prefix missing from daemon doc — run \`lares vessel found --force\`.`);
   }
@@ -282,7 +280,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const leaseSlotValues: string[] = [];
   for (const [title, entry] of Object.entries(tiddlerMap)) {
     if (!title.startsWith(leasePrefix)) continue;
-    const text = ((entry as Record<string, unknown> | undefined)?.["tiddler"] as Record<string, unknown> | undefined)?.["text"];
+    const text = tiddlerText(entry);
     if (typeof text === "string") leaseSlotValues.push(text);
   }
   const boundEpoch = effectiveLeaseEpoch(leaseSlotValues);

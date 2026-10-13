@@ -18,17 +18,20 @@ import type { Repo, DocHandle, DocumentId } from "@automerge/automerge-repo";
 import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import { load as automergeLoad } from "@automerge/automerge";
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, ENGINE_CORE_ID } from "./base-doc.js";
+import { ENGINE_CORE_ID } from "./base-doc.js";
+import { plainField } from "./stored-value.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "./lar-uris.js";
 import {
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   materializeGenesisDoc, oracleGenesisDocUrl, type GenesisSeed,
 } from "./genesis-doc.js";
 import { resolveBootDoc } from "./boot-resolver.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /** Read a region content-CID recorded in a live/incoming island doc, or null when absent. */
 function regionCid(handle: DocHandle<LarDoc>, title: string): string | null {
-  return (handle.doc()?.tiddlers?.[title]?.tiddler?.["cid"] as string | undefined) ?? null;
+  const cid = plainField(handle.doc()?.tiddlers?.[title], "cid");
+  return typeof cid === "string" ? cid : null;
 }
 const short = (c: string | null): string => c?.slice(0, 12) ?? "none";
 
@@ -242,15 +245,15 @@ export function reconcileGenesisCid(
   liveHandle.merge(incomingHandle);
   liveHandle.change((doc) => {
     if (incomingEngineCid !== null) {
-      doc.tiddlers[GENESIS_CID_ENGINE_TIDDLER] = mutableLarRecord(
+      doc.tiddlers[GENESIS_CID_ENGINE_TIDDLER] = storedLarRecord(
         GENESIS_CID_ENGINE_TIDDLER, { cid: incomingEngineCid }, "genesis-reconcile");
     }
     if (incomingGrammarCid !== null) {
-      doc.tiddlers[GENESIS_CID_GRAMMAR_TIDDLER] = mutableLarRecord(
+      doc.tiddlers[GENESIS_CID_GRAMMAR_TIDDLER] = storedLarRecord(
         GENESIS_CID_GRAMMAR_TIDDLER, { cid: incomingGrammarCid }, "genesis-reconcile");
     }
     if (incomingPluginsCid !== null) {
-      doc.tiddlers[GENESIS_CID_PLUGINS_TIDDLER] = mutableLarRecord(
+      doc.tiddlers[GENESIS_CID_PLUGINS_TIDDLER] = storedLarRecord(
         GENESIS_CID_PLUGINS_TIDDLER, { cid: incomingPluginsCid }, "genesis-reconcile");
     }
   });

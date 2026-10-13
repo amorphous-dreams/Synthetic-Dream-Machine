@@ -7,6 +7,11 @@ import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
 import { AutomergeDocStore, CompositeStore, emptyLarDoc, type LarDoc, type LarTiddlerRecord, type Repo as RepoType, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { plainEntries } from "@lararium/mesh";
+
+/** A document as a test reads it: every record unwrapped through the one door. */
+const plainDoc = (doc: unknown): { tiddlers: Record<string, LarTiddlerRecord> } =>
+  ({ tiddlers: Object.fromEntries(plainEntries((doc as LarDoc | undefined)?.tiddlers)) });
 import { IslandAdaptor, LandingDoorUnavailableError } from "../src/island-adaptor.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { HandGate, type ShoreTimers } from "../src/hand-gate.js";
@@ -101,7 +106,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
     await new Promise((resolve) => setTimeout(resolve, 60));
     expect(r.save).toHaveBeenCalledTimes(1);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("hand");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("hand");
     r.unbridge();
     await r.adaptor.stop();
     await r.repo.shutdown();
@@ -124,7 +129,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await turns();
     expect(r.save).toHaveBeenCalledTimes(0);
     expect(r.workingHandle.heads()).toEqual(heads);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[title]?.meta?.changeId).toBe("n-change");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[title]?.meta?.changeId).toBe("n-change");
     r.wiki.addTiddler(new r.Tiddler({ ...landed.getFieldStrings(), text: "changed control" }));
     await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
     expect(r.save).toHaveBeenCalledTimes(1);
@@ -181,7 +186,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed" }));
     await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
     expect(writes.filter((title) => title === control)).toHaveLength(1);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("changed");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed");
     r.unbridge();
     await r.adaptor.stop();
     await r.repo.shutdown();
@@ -215,7 +220,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     acknowledge();
     await stopping;
     expect(stopped).toBe(true);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[title]?.tiddler.text).toBe("pending");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler.text).toBe("pending");
     await r.repo.shutdown();
 
     let releaseDrain!: () => void;
@@ -305,7 +310,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await turns(1);
     while ([...timers.tasks.values()].some((task) => task.ms === 400)) timers.fire(400);
     for (let turn = 0; turn < 80 && !writeTitles.includes(control); turn++) await turns(1);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("control changed");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("control changed");
     expect(writeTitles.filter((writtenTitle) => writtenTitle === control)).toHaveLength(1);
     r.unbridge();
     await r.adaptor.stop();
@@ -340,7 +345,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await turns();
     timers.fire(400);
     await turns();
-    const saved = (r.workingHandle.doc() as LarDoc).tiddlers[title]?.tiddler;
+    const saved = plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler;
     expect(writes).toHaveLength(1);
     expect(writes[0]).toEqual(landedHeads);
     expect(saved?.text).toBe("hand text");
@@ -388,7 +393,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(sameWrites).toEqual([staleBase]);
     expect((await second.working.parallelDrafts(sameBase)).map((draft) => draft.tiddler.text).sort()).toEqual(["hand value", "remote value"]);
     expect(sameWriteTitles.filter((writtenTitle) => writtenTitle === sameControl)).toHaveLength(1);
-    expect((second.workingHandle.doc() as LarDoc).tiddlers[sameControl]?.tiddler.text).toBe("ordinary hand");
+    expect(plainDoc(second.workingHandle.doc()).tiddlers[sameControl]?.tiddler.text).toBe("ordinary hand");
     holdSameField = false;
     releaseSameField();
     await settleTurns(second, [sameBase], () => sameWrites.length);
@@ -402,7 +407,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await turns(1);
     timers.fire(400);
     await turns();
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("changed");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed");
     r.unbridge();
     await r.adaptor.stop();
     await r.repo.shutdown();
@@ -471,7 +476,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     // The hand write's own store-return wave mutates the wiki once; the stale wave never reaches the applier.
     expect(r.wiki.getChangeCount(title) - wikiChangesBeforeHand).toBe(2);
     expect(doorCalls).not.toContainEqual({ title, text: "stale wave" });
-    const record = (r.workingHandle.doc() as LarDoc).tiddlers[title];
+    const record = plainDoc(r.workingHandle.doc()).tiddlers[title];
     expect(record?.tiddler.text).toBe("hand wins");
     expect(r.workingHandle.heads()).not.toEqual(before);
     expect((r.wiki.getTiddler(title) as { fields: Record<string, unknown> }).fields.text).toBe("hand wins");
@@ -482,7 +487,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed field" }));
     delayedChange?.({ [control]: {} });
     await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("changed field");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed field");
     releaseBridge();
     rawWiki.addEventListener = nativeAdd;
     rawWiki.removeEventListener = nativeRemove;
@@ -523,7 +528,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     release();
     await turns(20);
     expect(writtenTexts).toEqual(["hand first", "hand latest"]);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[title]?.tiddler.text).toBe("hand latest");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler.text).toBe("hand latest");
     expect((r.wiki.getTiddler(title) as { fields: Record<string, unknown> }).fields.text).toBe("hand latest");
     r.unbridge();
     await r.adaptor.stop();
@@ -668,7 +673,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     release();
     await Promise.all([first, second, stopping]);
     expect(writes).toBe(2);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[title]?.tiddler.text).toBe("second");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler.text).toBe("second");
     await r.repo.shutdown();
   }, 120_000);
 
@@ -716,10 +721,10 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await seedDrained(engine);
     expect(wiki.getTiddler("lar:///t/shore/hydration-400")).toBeTruthy();
     expect(save).toHaveBeenCalledTimes(0);
-    expect(Object.keys(workingHandle.doc().tiddlers)).toEqual([]);
+    expect(Object.keys(plainDoc(workingHandle.doc()).tiddlers)).toEqual([]);
     wiki.addTiddler(new Tiddler({ title: "lar:///t/shore/hydration-control", text: "hand" }));
     await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
-    expect(workingHandle.doc().tiddlers["lar:///t/shore/hydration-control"]?.tiddler.text).toBe("hand");
+    expect(plainDoc(workingHandle.doc()).tiddlers["lar:///t/shore/hydration-control"]?.tiddler.text).toBe("hand");
     unbridge();
     await adaptor.stop();
     expect(stores.length).toBeGreaterThan(0);
@@ -736,13 +741,13 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await new Promise((resolve) => setTimeout(resolve, 60));
     await r.adaptor.armSeedCheckpoint();
     expect((r.wiki.getTiddler(title) as { fields: Record<string, unknown> }).fields.text).toBe("canon content");
-    expect(Object.keys((r.workingHandle.doc() as LarDoc).tiddlers)).toEqual([]);
+    expect(Object.keys(plainDoc(r.workingHandle.doc()).tiddlers)).toEqual([]);
     expect(r.save).toHaveBeenCalledTimes(0);
 
     const control = "lar:///t/shore/M-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "hand" }));
     await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("hand");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("hand");
     r.unbridge();
     await r.adaptor.stop();
     await r.repo.shutdown();
@@ -940,10 +945,10 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     while ([...timers.tasks.values()].some((task) => task.ms === 400)) timers.fire(400);
     await settleTurns(r, [title, control], () => writes.length);
     expect(writes.filter((written) => written === control)).toHaveLength(1);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("ordinary hand");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("ordinary hand");
     expect({
       titleWrites: writes.filter((written) => written === title),
-      storeRecord: (r.workingHandle.doc() as LarDoc).tiddlers[title] ?? null,
+      storeRecord: plainDoc(r.workingHandle.doc()).tiddlers[title] ?? null,
       wikiText: (r.wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields?.text ?? null,
     }).toEqual({ titleWrites: [], storeRecord: null, wikiText: null });
     r.unbridge(); await r.adaptor.stop(); await r.repo.shutdown();
@@ -972,10 +977,10 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     while ([...timers.tasks.values()].some((task) => task.ms === 400)) timers.fire(400);
     await settleTurns(r, [title, control], () => writes.length);
     expect(writes.filter((written) => written === control)).toHaveLength(1);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("ordinary hand");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("ordinary hand");
     expect({
       titleWrites: writes.filter((written) => written === title),
-      storeText: (r.workingHandle.doc() as LarDoc).tiddlers[title]?.tiddler.text ?? null,
+      storeText: plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler.text ?? null,
       wikiText: (r.wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields?.text ?? null,
     }).toEqual({ titleWrites: [], storeText: "a", wikiText: "a" });
     r.unbridge(); await r.adaptor.stop(); await r.repo.shutdown();
@@ -1014,7 +1019,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await settleTurns(r, [title], () => texts.length);
     expect({
       texts,
-      storeText: (r.workingHandle.doc() as LarDoc).tiddlers[title]?.tiddler.text ?? null,
+      storeText: plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler.text ?? null,
       wikiText: (r.wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields?.text ?? null,
     }).toEqual({ texts: ["b", "a"], storeText: "a", wikiText: "a" });
     r.unbridge(); await r.adaptor.stop(); await r.repo.shutdown();
@@ -1051,8 +1056,8 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(writes.filter((written) => written === control)).toHaveLength(1);
     expect({
       titleWrites: writes.filter((written) => written === title),
-      storeRecord: (r.workingHandle.doc() as LarDoc).tiddlers[title] ?? null,
-      storeDeleted: (r.workingHandle.doc() as LarDoc).tiddlers[title]?.meta?.deleted ?? false,
+      storeRecord: plainDoc(r.workingHandle.doc()).tiddlers[title] ?? null,
+      storeDeleted: plainDoc(r.workingHandle.doc()).tiddlers[title]?.meta?.deleted ?? false,
       wikiText: (r.wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields?.text ?? null,
     }).toMatchObject({ titleWrites: [], storeRecord: { tiddler: { text: "keep" } }, storeDeleted: false, wikiText: "keep" });
     r.unbridge(); await r.adaptor.stop(); await r.repo.shutdown();
@@ -1087,7 +1092,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     expect(writes.filter((writtenTitle) => writtenTitle === control)).toHaveLength(1);
     expect({
       draftWrites: writes.filter((writtenTitle) => writtenTitle === title),
-      storeRecord: (r.workingHandle.doc() as LarDoc).tiddlers[title] ?? null,
+      storeRecord: plainDoc(r.workingHandle.doc()).tiddlers[title] ?? null,
       wikiTitle: r.wiki.getTiddler(title) ?? null,
     }).toEqual({ draftWrites: [], storeRecord: null, wikiTitle: null });
     r.unbridge(); await r.adaptor.stop(); await r.repo.shutdown();
@@ -1113,7 +1118,7 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     const control = "lar:///t/shore/lazy-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed" }));
     await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("changed");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed");
     removeLazy();
     r.unbridge();
     await r.adaptor.stop();
@@ -1142,12 +1147,12 @@ describe.skipIf(wikiSkip)(`wiki shore stage-one vectors${skipNote}`, () => {
     await turns();
     const drafts = await r.working.parallelDrafts(title);
     expect(drafts.map((draft) => draft.tiddler.text).sort()).toEqual(["hand value", "remote value"]);
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[title]?.tiddler.text).toBeTruthy();
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[title]?.tiddler.text).toBeTruthy();
     expect(r.save).toHaveBeenCalledTimes(1);
     const control = "lar:///t/shore/H-control";
     r.wiki.addTiddler(new r.Tiddler({ title: control, text: "changed field" }));
     await new Promise((resolve) => setTimeout(resolve, HandGate.TRAILING_MS + 80));
-    expect((r.workingHandle.doc() as LarDoc).tiddlers[control]?.tiddler.text).toBe("changed field");
+    expect(plainDoc(r.workingHandle.doc()).tiddlers[control]?.tiddler.text).toBe("changed field");
     r.unbridge();
     await r.adaptor.stop();
     await r.repo.shutdown();

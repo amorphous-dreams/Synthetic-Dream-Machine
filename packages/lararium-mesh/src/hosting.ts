@@ -57,7 +57,7 @@ import { ristretto255_oprf } from "@noble/curves/ed25519.js";
 import * as ed25519 from "@noble/ed25519";
 import { base64UrlDecode, base64UrlEncode, canonicalJsonBytes, hex, hexToBytes, sha256HexBytesSync, webGetRandomValues } from "./crypto.js";
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
 import {
   HOSTING_ACT_DOMAIN, HOSTING_CARRY_DOMAIN, HOSTING_GRANT_DOMAIN, HOSTING_KEY_DOMAIN, HOSTING_SPEND_DOMAIN, HOSTING_TOKEN_DOMAIN,
   WALK_CARRY_SEAL_INFO,
@@ -65,6 +65,7 @@ import {
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { verifyEd25519 } from "./ed25519-door.js";
+import { storedLarRecord } from "./stored-record.js";
 
 const KEY_RE   = /^[0-9a-f]{64}$/;
 const SIG_RE   = /^[0-9a-f]{128}$/;
@@ -178,7 +179,7 @@ export function hostingActKey(act: HostingAct): string {
 /** Land a hosting act on a hosting-doc draft. Call INSIDE a `handle.change()` callback. */
 export function writeHostingAct(draft: LarDoc, act: HostingAct): void {
   const key = hostingActKey(act);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(act) }, hostingActCid(act));
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(act) }, hostingActCid(act));
 }
 
 /** Every well-formed hosting act a hosting doc carries, by `hearthLeaf` when named. Shape only; extra fields drop. */

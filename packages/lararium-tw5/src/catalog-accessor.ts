@@ -32,6 +32,7 @@ import {
   type LarTiddlerRecord,
   type LarTiddlerStore,
 } from "@lararium/mesh";
+import { plainRecordOrNull } from "@lararium/mesh";
 
 export interface CatalogAccessor {
   /** The `catalog` registry doc itself, resolved + cached. */
@@ -83,7 +84,7 @@ export function makeCatalogAccessor(repo: Repo, catalogUrl: string): CatalogAcce
 
   const recordOf = async (title: string): Promise<LarTiddlerRecord | null> => {
     const cat = await handle();
-    return (cat.doc()?.tiddlers?.[title] as LarTiddlerRecord | undefined) ?? null;
+    return plainRecordOrNull(cat.doc()?.tiddlers?.[title]);
   };
 
   const find = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {

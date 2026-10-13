@@ -24,8 +24,10 @@ import { save, getHeads, type Doc } from "@automerge/automerge";
 import { pinnedDoc } from "./pinned-doc.js";
 import type { GenesisSeed } from "./genesis-doc.js";
 import type { LarDoc } from "./base-doc.js";
+import { plainRecord, type StoredLarRecord } from "./stored-value.js";
 import { hex, sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
 import { verifyEd25519 } from "./ed25519-door.js";
+import { storedRecord } from "./stored-record.js";
 
 export { ORACLE_POINTER_DOMAIN } from "./domains.js";
 const HEX64_RE = /^[0-9a-f]{64}$/;   // sha256 hex / ed25519 verifying-key hex / automerge head
@@ -81,11 +83,12 @@ function plainCopy(v: unknown): unknown {
  *  doc holds for them. Every other key stays home. A blob row crosses as its descriptor fields; a `blob`
  *  bytes field never crosses (the bytes ride the content-addressed store). */
 export function publicOracleFloor(doc: LarDoc, seed: GenesisSeed): LarDoc {
-  const live = doc as unknown as { tiddlers?: Record<string, unknown>; blobs?: Record<string, Record<string, unknown>> };
-  const tiddlers: Record<string, unknown> = {};
+  const live = doc as unknown as { blobs?: Record<string, Record<string, unknown>> };
+  const tiddlers: Record<string, StoredLarRecord> = {};
   for (const title of Object.keys(seed.tiddlers).sort()) {
-    const rec = live.tiddlers?.[title];
-    if (rec !== undefined) tiddlers[title] = plainCopy(rec);
+    const rec = doc.tiddlers?.[title];
+    // The floor carries each record as a document rests it: unwrapped, then wrapped anew for the snapshot.
+    if (rec !== undefined) tiddlers[title] = storedRecord(plainRecord(rec));
   }
   const blobs: Record<string, unknown> = {};
   for (const key of Object.keys(seed.blobs).sort()) {
@@ -94,7 +97,8 @@ export function publicOracleFloor(doc: LarDoc, seed: GenesisSeed): LarDoc {
     const { blob: _bytes, ...descriptor } = row;
     blobs[key] = plainCopy(descriptor);
   }
-  return { schemaVersion: (doc as { schemaVersion: string }).schemaVersion, blobs, tiddlers } as unknown as LarDoc;
+  const floor: LarDoc = { schemaVersion: doc.schemaVersion, blobs: blobs as NonNullable<LarDoc["blobs"]>, tiddlers };
+  return floor;
 }
 
 /** The floor as a content-addressed snapshot: a pure function of the floor's content, carrying no history.

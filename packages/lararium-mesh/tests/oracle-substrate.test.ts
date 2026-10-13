@@ -8,6 +8,7 @@ import {
 } from "../src/oracle-substrate.js";
 import type { GenesisSeed } from "../src/genesis-doc.js";
 import type { LarDoc } from "../src/base-doc.js";
+import { tiddlerText } from "../src/index.js";
 
 const SEED  = Uint8Array.from({ length: 32 }, (_, i) => i + 1);
 const OTHER = Uint8Array.from({ length: 32 }, (_, i) => 200 - i);
@@ -142,7 +143,7 @@ describe("oracle public floor", () => {
     const floor = publicOracleFloor(live, FLOOR_SEED) as any;
     expect(Object.keys(floor.tiddlers)).toEqual(["lar:///seeded"]);
     expect(Object.keys(floor.blobs)).toEqual(["lar:///core"]);
-    expect(floor.tiddlers["lar:///seeded"].tiddler.text).toBe("advanced value");
+    expect(tiddlerText(floor.tiddlers["lar:///seeded"])).toBe("advanced value");
     expect("blob" in floor.blobs["lar:///core"]).toBe(false);
     expect(floor.blobs["lar:///core"].sha256).toBe("c".repeat(64));
   });

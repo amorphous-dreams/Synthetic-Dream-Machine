@@ -29,6 +29,7 @@ import {
   realmLeaseSlotsFromBoard, realmFeedWrite, realmFeedSlotValue, cabalRealmMaintenanceProvenance,
   type LarTiddlerStore, type LarTiddlerRecord, type LarDoc,
 } from "@lararium/mesh";
+import { storedRecord, type StoredTiddlers } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
 /** Resolve a read+write store over the daemon doc — where the per-writer lease slots live. */
@@ -57,10 +58,10 @@ function realmArg(args: Record<string, unknown>, verb: string): string {
  * (access≠load) rather than reaching for a document the registry never named.
  */
 async function leaseSlotsOf(store: LarTiddlerStore, realm: string): Promise<Map<string, string>> {
-  const tiddlers: Record<string, LarTiddlerRecord> = {};
+  const tiddlers: StoredTiddlers = {};
   for (const title of await store.listVisible()) {
     const record = await store.get(title);
-    if (record) tiddlers[title] = record;
+    if (record) tiddlers[title] = storedRecord(record);
   }
   const doc: LarDoc = { schemaVersion: "lar/1", tiddlers };
   return realmLeaseSlotsFromBoard(doc, realm);

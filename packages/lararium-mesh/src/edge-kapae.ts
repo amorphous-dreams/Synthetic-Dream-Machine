@@ -36,8 +36,9 @@
 
 import { EDGE_KAPAE_DOMAIN } from "./domains.js";
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
+import { storedLarRecord } from "./stored-record.js";
 
 export { EDGE_KAPAE_DOMAIN } from "./domains.js";
 /** The tiddler-key prefix every kāpae act rides under. */
@@ -100,7 +101,7 @@ export function edgeKapaeKey(edgeId: string, raised: boolean, actCid: string): s
 /** Land an act on a board draft. Call INSIDE a `handle.change()` callback. */
 export function writeEdgeKapae(draft: LarDoc, act: EdgeKapae): void {
   const key = edgeKapaeKey(act.edgeId, act.raised, act.actCid);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(act) }, act.epochCid);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(act) }, act.epochCid);
 }
 
 /** A parsed payload reads as an act only at the exact FLOOR shape — extra fields drop. */

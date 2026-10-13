@@ -13,7 +13,9 @@ import {
   type PluginOffering,
   type OfferingVerdict,
 } from "./plugin-offering.js";
-import { mutableLarRecord, type LarDoc } from "./base-doc.js";
+import { type LarDoc } from "./base-doc.js";
+import { plainField, type StoredLarRecord } from "./stored-value.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /** The public Crossroads namespace for immutable offering records. */
 export const PLUGIN_OFFERING_ANNOUNCE_PREFIX = "lar:///ha.ka.ba/dreamnet/plugin-offering-announces/" as const;
@@ -43,7 +45,7 @@ export function pluginOfferingAnnounceOf(offering: PluginOffering): PluginOfferi
 export function writeOfferingAnnounce(draft: LarDoc, offering: PluginOffering): void {
   const announce = pluginOfferingAnnounceOf(offering);
   const key = offeringAnnounceKey(announce.offeringCid);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(announce) }, "plugin-offering");
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(announce) }, "plugin-offering");
 }
 
 function shapeOfferingAnnounce(value: unknown): PluginOfferingAnnounce | null {
@@ -75,7 +77,7 @@ function safeTiddlerText(record: unknown): string | null {
   if (typeof record !== "object" || record === null) return null;
   const tiddler = (record as { tiddler?: unknown }).tiddler;
   if (typeof tiddler !== "object" || tiddler === null) return null;
-  const text = (tiddler as { text?: unknown }).text;
+  const text = plainField(record as StoredLarRecord, "text");
   return typeof text === "string" ? text : null;
 }
 

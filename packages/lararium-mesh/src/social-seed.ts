@@ -16,14 +16,14 @@ import {
   emptyIdentitiesDoc,
   emptyCirclesDoc,
   emptySessionsDoc,
-  mutableLarRecord,
+  storedLarRecord,
   circleTiddlerUri,
 } from "@lararium/mesh";
 
 export function seedIdentitiesDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
   const handle = repo.create<LarDoc>(emptyIdentitiesDoc());
   handle.change((doc) => {
-    doc.tiddlers[bagId] = mutableLarRecord(bagId, { text: handle.url }, "lararium-seed");
+    doc.tiddlers[bagId] = storedLarRecord(bagId, { text: handle.url }, "lararium-seed");
   });
   console.log(`[social-seed] IdentitiesDoc seeded  url=${handle.url}`);
   return handle;
@@ -44,13 +44,13 @@ const SYSTEM_CIRCLES: Array<{ id: string; displayName: string }> = [
 export function seedCirclesDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
   const handle = repo.create<LarDoc>(emptyCirclesDoc());
   handle.change((doc) => {
-    doc.tiddlers[bagId] = mutableLarRecord(bagId, { text: handle.url }, "lararium-seed");
+    doc.tiddlers[bagId] = storedLarRecord(bagId, { text: handle.url }, "lararium-seed");
     // The SELF-POINTER answers to the plane's own bag id; every record INSIDE it spells the NAMESPACE.
     // A title resolves verbatim within its own document, so one internal shape serves every face and a
     // reader never has to know which face it stands on to name a circle.
     for (const { id, displayName } of SYSTEM_CIRCLES) {
       const uri = circleTiddlerUri(id);
-      doc.tiddlers[uri] = mutableLarRecord(uri, {
+      doc.tiddlers[uri] = storedLarRecord(uri, {
         text: "",
         id,
         displayName,
@@ -66,7 +66,7 @@ export function seedCirclesDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
 export function seedSessionsDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
   const handle = repo.create<LarDoc>(emptySessionsDoc());
   handle.change((doc) => {
-    doc.tiddlers[bagId] = mutableLarRecord(bagId, { text: handle.url }, "lararium-seed");
+    doc.tiddlers[bagId] = storedLarRecord(bagId, { text: handle.url }, "lararium-seed");
   });
   console.log(`[social-seed] SessionsDoc seeded  url=${handle.url}`);
   return handle;
@@ -75,7 +75,7 @@ export function seedSessionsDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
 export function seedDaemonDoc(repo: Repo): DocHandle<LarDoc> {
   const handle = repo.create<LarDoc>(emptyLarDoc());
   handle.change((doc) => {
-    doc.tiddlers[DAEMON_BAG_ID] = mutableLarRecord(DAEMON_BAG_ID, { text: handle.url, kind: "oracle" }, "lararium-seed");
+    doc.tiddlers[DAEMON_BAG_ID] = storedLarRecord(DAEMON_BAG_ID, { text: handle.url, kind: "oracle" }, "lararium-seed");
   });
   console.log(`[social-seed] DaemonDoc seeded  url=${handle.url}`);
   return handle;
@@ -92,7 +92,7 @@ export function seedDaemonDoc(repo: Repo): DocHandle<LarDoc> {
 export function seedPersonaDoc(repo: Repo, personaBagId: string): DocHandle<LarDoc> {
   const handle = repo.create<LarDoc>(emptyLarDoc());
   handle.change((doc) => {
-    doc.tiddlers[personaBagId] = mutableLarRecord(personaBagId, { text: handle.url, kind: "oracle" }, "lararium-seed");
+    doc.tiddlers[personaBagId] = storedLarRecord(personaBagId, { text: handle.url, kind: "oracle" }, "lararium-seed");
   });
   console.log(`[social-seed] PersonaDoc seeded url=${handle.url}`);
   return handle;

@@ -19,7 +19,7 @@
 
 import type { DocHandle } from "@automerge/automerge-repo";
 import {
-  mutableLarRecord, tiddlerText,
+  storedLarRecord, tiddlerText,
   leaseEpochPrefix, leaseEpochSlotUri, effectiveLeaseEpoch, rolledLeaseEpoch,
   type LarDoc,
 } from "@lararium/mesh";
@@ -60,7 +60,7 @@ export function rollLeaseEpochOnBoard(
   const rolled    = rolledLeaseEpoch(effective);
   const slot      = leaseEpochSlotUri(resource, writerId);
   handle.change((doc) => {
-    doc.tiddlers[slot] = mutableLarRecord(slot, { text: String(rolled) }, "lease-roll");
+    doc.tiddlers[slot] = storedLarRecord(slot, { text: String(rolled) }, "lease-roll");
   });
   return { resource, writer: writerId, effective, rolled, slot };
 }

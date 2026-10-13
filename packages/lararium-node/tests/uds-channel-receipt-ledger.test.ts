@@ -25,6 +25,7 @@ import { Repo, type DocHandle } from "@automerge/automerge-repo";
 import { emptyLarDoc, NoWorkingLayerRefusal, buildReceiptFact, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc } from "@lararium/mesh";
 import { FactLedger, startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
+import { plainRecord } from "@lararium/mesh";
 
 interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string; }
 
@@ -366,7 +367,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
         expect(receipt2["state"]).toBe("done");
       }
       await v.restart();
-      const seqs = ids.map((id) => Number((v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${id}`]!.tiddler as Record<string, unknown>)["seq"]));
+      const seqs = ids.map((id) => Number((plainRecord(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${id}`]!).tiddler as Record<string, unknown>)["seq"]));
       expect(seqs).toEqual([0, 1, 2, 3]);
       expect((await sendLine(v.socketPath, { op: "receipt", requestId: ids[0] }))["state"]).toBe("evicted");
     } finally { await v.teardown(); }
@@ -407,7 +408,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       expect(v.claim.bootEpoch).toBeGreaterThan(firstEpoch);
 
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("interrupted");
-      const stored = v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      const stored = plainRecord(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("interrupted");
       expect(stored["boot-epoch"]).toBe(String(firstEpoch));
 
@@ -442,7 +443,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       });
       await waitForSocket(v.claim.socketPath);
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("committed");
-      const stored = v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      const stored = plainRecord(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("committed");
     } finally { await v.teardown(); }
   });
@@ -484,7 +485,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
         v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
       });
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
-      const stored = v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!.tiddler as Record<string, unknown>;
+      const stored = plainRecord(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("done");
     } finally { await v.teardown(); }
   });

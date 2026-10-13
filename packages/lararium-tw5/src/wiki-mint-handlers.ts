@@ -6,7 +6,7 @@ import {
   LARES_DOC_URI,
   LARARIUM_DOC_URI,
   emptyLarDoc,
-  mutableLarRecord,
+  storedLarRecord,
   mkDaemonWikiAlert,
   recipeRecordFields,
   recipeUri,
@@ -73,15 +73,15 @@ export function makeInitWikiReactor(opts: WikiMintHandlerOptions): VerbReactor {
       const catalogHandle = await opts.catalog.handle();
       const updatedAt = new Date().toISOString();
       catalogHandle.change((doc) => {
-        const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
-        tiddlers[wikiKey] = mutableLarRecord(wikiKey, {
+        const tiddlers = doc.tiddlers;
+        tiddlers[wikiKey] = storedLarRecord(wikiKey, {
           text: wikiHandle.url,
           kind: "oracle",
           "path-filter": "lar-bag-path[wiki-shadow]",
           "mirror-root": `wikis/${slug}`,
         }, "lares-cli:wiki-init");
         if (!existingRecipeRec) {
-          tiddlers[recipeTitle] = mutableLarRecord(recipeTitle, {
+          tiddlers[recipeTitle] = storedLarRecord(recipeTitle, {
             ...recipeRecordFields({ wikiSlug: slug, libraryBags: [LARES_DOC_URI, LARARIUM_DOC_URI] }),
             "updated-at": updatedAt,
           }, "lares-cli:wiki-init");

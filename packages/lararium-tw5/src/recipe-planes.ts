@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/recipe-planes
  */
 
-import { recipeUri, type LarTiddlerRecord } from "@lararium/mesh";
+import { plainRecordOrNull, recipeUri, type LarTiddlerRecord, type StoredLarRecord } from "@lararium/mesh";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 
 /** The planes a wiki's recipe record may stand in, the vessel's own composition first. */
@@ -26,15 +26,16 @@ export interface EffectiveRecipe {
 const standing = (rec: LarTiddlerRecord | null | undefined): rec is LarTiddlerRecord =>
   !!rec && rec.meta?.deleted !== true;
 
-/** The recipe a wiki stands on. `read` answers one plane's record or nothing; a tombstoned record
- *  (`meta.deleted`) counts as nothing. Synchronous, so the boot mount and the live watch share it. */
+/** The recipe a wiki stands on. `read` answers one plane's record or nothing, straight off the plane's
+ *  document or already unwrapped; this reader unwraps it. A tombstoned record (`meta.deleted`) counts as
+ *  nothing. Synchronous, so the boot mount and the live watch share it. */
 export function effectiveRecipe(
   slug: string,
-  read: (plane: RecipePlane, title: string) => LarTiddlerRecord | null | undefined,
+  read: (plane: RecipePlane, title: string) => StoredLarRecord | null | undefined,
 ): EffectiveRecipe | null {
   for (const plane of RECIPE_PLANES) {
     const title = recipeUri(plane, slug);
-    const record = read(plane, title);
+    const record = plainRecordOrNull(read(plane, title));
     if (standing(record)) return { record, plane, title };
   }
   return null;

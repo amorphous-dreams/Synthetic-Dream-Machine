@@ -25,6 +25,7 @@ import { join } from "node:path";
 import { readFileSync } from "node:fs";
 import { targetInstance, bootDocUrl, vesselStorageDir, type LarInstance } from "../harness/instance.js";
 import { memeticWikitextDeserializer } from "../../packages/lararium-tw5/src/deserializer.js";
+import { plainRecord } from "../../packages/lararium-mesh/src/stored-value.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
@@ -72,7 +73,7 @@ async function untilOracleHolds(instance: LarInstance, oracleUrl: string, title:
     try {
       const isle = await repo.find(oracleUrl as never);
       const rec = (isle.doc() as { tiddlers?: Record<string, OracleRecord> })?.tiddlers?.[title];
-      if (rec) return rec;
+      if (rec) return plainRecord(rec as never) as OracleRecord;
     } catch { /* the stored doc is not yet loadable — the next read sees what has landed since */ }
     finally { await repo.shutdown().catch(() => {}); }
     if (Date.now() > deadline) throw new Error(`the stored oracle doc ${oracleUrl} never held ${title} within ${ceilingMs}ms`);

@@ -45,8 +45,9 @@
 
 import { RE_ANCHORING_DOMAIN } from "./domains.js";
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
 import { canonicalJsonBytes } from "./crypto.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /** The domain a re-anchoring signs over — a signature without its domain says nothing. */
 export { RE_ANCHORING_DOMAIN } from "./domains.js";
@@ -132,7 +133,7 @@ export function reAnchoringKey(dweller: string, realm: string, epochCid: string)
 /** Land a record on a board draft. Call INSIDE a `handle.change()` callback. */
 export function writeReAnchoring(draft: LarDoc, r: ReAnchoring): void {
   const key = reAnchoringKey(r.dweller, r.realm, r.epochCid);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(r) }, r.epochCid);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(r) }, r.epochCid);
 }
 
 /** A parsed payload reads as a record only at the exact FLOOR shape — extra fields drop. */

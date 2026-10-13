@@ -68,8 +68,9 @@ export class MemeProvider {
   });
 
   constructor(
-    /** Returns the current full document state. Called at debounce-fire time, not patch time. */
-    private readonly _getDoc: () => Record<string, unknown>,
+    /** Reads one title's current record, unwrapped, or null where the document holds none. Called at
+     *  debounce-fire time, never at patch time. */
+    private readonly _getRecord: (title: string) => LarTiddlerRecord | null,
     /** Optional bag context for projections that need source-bag awareness. */
     private readonly _getBag: (() => string | undefined) | undefined,
     /** Synchronous heads snapshot paired with document reads. */
@@ -237,15 +238,13 @@ export class MemeProvider {
     const acc = this._changesetPending.get(bagId);
     if (!acc || acc.touched.size === 0) return;
     this._changesetPending.delete(bagId);
-    const doc = this._getDoc();
     const bag = this._getBag?.();
     const heads = this._getHeads() ?? undefined;
     const changes: LarTiddlerChange[] = [];
     for (const [uri, origin] of acc.touched) {
-      const raw = doc[uri] as LarTiddlerRecord | undefined;
       changes.push({
         title: uri,
-        record: raw ? Object.freeze({ tiddler: Object.freeze({ ...raw.tiddler }), ...(raw.meta ? { meta: Object.freeze({ ...raw.meta }) } : {}) }) : null,
+        record: this._getRecord(uri),
         origin,
         ...(bag !== undefined ? { bag } : {}),
         ...(heads !== undefined ? { heads } : {}),
@@ -260,11 +259,7 @@ export class MemeProvider {
   }
 
   private _fire(uri: string, origin: ChangeOrigin): void {
-    const doc = this._getDoc();
-    const raw = doc[uri] as LarTiddlerRecord | undefined;
-    const record: LarTiddlerRecord | null = raw
-      ? Object.freeze({ tiddler: Object.freeze({ ...raw.tiddler }), ...(raw.meta ? { meta: Object.freeze({ ...raw.meta }) } : {}) })
-      : null;
+    const record = this._getRecord(uri);
     const bag = this._getBag?.();
     const heads = this._getHeads() ?? undefined;
     const change: LarTiddlerChange = { title: uri, record, origin, ...(bag !== undefined && { bag }), ...(heads !== undefined && { heads }) };

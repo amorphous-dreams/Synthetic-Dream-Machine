@@ -29,7 +29,8 @@ let wikiUri = "";
 function emitVerbEvents(doc) {
   const tiddlers = doc?.tiddlers ?? {};
   for (const [uri, record] of Object.entries(tiddlers)) {
-    const fields = record?.tiddler ?? {};
+    // A record off a document rests its strings as immutable scalars: unwrap each value (JSON reads it plain).
+    const fields = JSON.parse(JSON.stringify(record?.tiddler ?? {}));
     if (typeof fields.verb !== "string") continue;
     if (!fields["lares-dispatch"]) continue;   // router-inert without the dispatch marker
     const args = {};

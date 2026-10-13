@@ -11,8 +11,10 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/cabal-realm-nexus-planes · persona-scoped-face-planes
  */
 import { tiddlerText } from "./base-doc.js";
+
 import type { LarDoc } from "./base-doc.js";
 import type { CabalRealm } from "./cabal-realm.js";
+import { storedRecord } from "./stored-record.js";
 
 /** The per-face index root — a plain local key (no `lar:///`, no board root), since the index stays a
  *  holder-local resolution table rather than anything that travels a board. */
@@ -33,12 +35,12 @@ export function recordFaceRealm(
   doc: LarDoc, personaTag: string, realmDocIdHex: string, substrateUrl: string,
 ): void {
   const uri = slotUri(personaTag, realmDocIdHex);
-  (doc.tiddlers as Record<string, unknown>)[uri] = { tiddler: { title: uri, text: substrateUrl } };
+  doc.tiddlers[uri] = storedRecord({ tiddler: { title: uri, text: substrateUrl } });
 }
 
 /** Open the substrate a face keyed for a realm id, or null where it keyed none — it fabricates no address. */
 export function resolveFaceRealm(doc: LarDoc, personaTag: string, realmDocIdHex: string): string | null {
-  const value = tiddlerText((doc.tiddlers ?? {})[slotUri(personaTag, realmDocIdHex)] as never);
+  const value = tiddlerText((doc.tiddlers ?? {})[slotUri(personaTag, realmDocIdHex)]);
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 

@@ -30,6 +30,7 @@ import { mountBulbReadFace } from "../src/bulb-read-face.js";
 import { pullBulb, kindleFromBulb, httpBulbTransport, type KindleResult } from "../src/kindle.js";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { readGenesisSeed, genesisCasDir, genesisSeedFileBytes, genesisSeedCid } from "../src/genesis-artifact.js";
+import { plainField } from "@lararium/mesh";
 
 /** A fixture bulb — a fake core blob + a plugin under the Lares plugin id (validateGenesisBytes requires both). */
 function fixtureBulb(actorSeed = "abc123"): BulbArtifact {
@@ -154,8 +155,8 @@ describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire,
     // The ceremony seeded the identity under THAT did in the device's OWN fresh social doc.
     const idHandle = await repo.find<LarDoc>(k.identitiesUrl as Parameters<typeof repo.find>[0]);
     const idTiddler = idHandle.doc()?.tiddlers?.[identityTiddlerUri(k.did)];
-    expect(idTiddler?.tiddler?.["did"]).toBe(k.did);
-    expect(idTiddler?.tiddler?.["verifyingKey"]).toBe(k.deviceVerifyingKey);
+    expect(plainField(idTiddler, "did")).toBe(k.did);
+    expect(plainField(idTiddler, "verifyingKey")).toBe(k.deviceVerifyingKey);
   }, 30_000);
 
   test("SERVE FIRE, NEVER KEY (KAPU): two devices kindle the SAME bulb → two DISTINCT sovereigns", async () => {

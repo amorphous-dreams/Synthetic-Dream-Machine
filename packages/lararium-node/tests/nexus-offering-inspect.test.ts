@@ -23,6 +23,7 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { direct } from "./direct-store.js";
+import { tiddlerText } from "@lararium/mesh";
 
 let root: string;
 let priorRoot: string | undefined;
@@ -147,7 +148,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
     const key = offeringAnnounceKey(offered.offeringCid);
-    const prior = board.doc()?.tiddlers[key]?.tiddler.text;
+    const prior = tiddlerText(board.doc()?.tiddlers[key]);
     expect(typeof prior).toBe("string");
     board.change((doc) => {
       doc.tiddlers[key] = {

@@ -10,6 +10,7 @@ import { AutomergeDocStore } from "../src/automerge-doc-store.js";
 import { CompositeStore } from "../src/composite-store.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import type { ChangeOrigin, LarTiddlerRecord } from "../src/tiddler-store.js";
+import { tiddlerText } from "../src/index.js";
 
 const ROOT = "lar:///t/family";
 const origin: ChangeOrigin = { kind: "tw-local", instanceId: "test" };
@@ -34,8 +35,8 @@ describe("★ a meme family lands as ONE change ★", () => {
     await store.writeFamily([rec(ROOT, "<<~ kahea ahu #/new>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
 
     expect(changes() - before).toBe(1);
-    expect(doc().tiddlers[ROOT]!.tiddler.text).toBe("<<~ kahea ahu #/new>>");
-    expect(doc().tiddlers[`${ROOT}#/new`]!.tiddler.text).toBe("fresh");
+    expect(tiddlerText(doc().tiddlers[ROOT])).toBe("<<~ kahea ahu #/new>>");
+    expect(tiddlerText(doc().tiddlers[`${ROOT}#/new`])).toBe("fresh");
     expect(doc().tiddlers[`${ROOT}#/old`]!.meta?.deleted).toBe(true);
   });
 

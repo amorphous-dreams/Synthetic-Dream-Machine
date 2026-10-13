@@ -17,9 +17,10 @@
 import { addReadOnlyLayer } from "./vessel-steps.js";
 import {
   CATALOG_CORPUS_PREFIX, parseMeshScale, resolveBootDoc, isStillJoining,
-  corpusBagId, corpusLarUri, catalogCorpusEntryUri, mutableLarRecord, tiddlerText,
+  corpusBagId, corpusLarUri, catalogCorpusEntryUri, storedLarRecord, tiddlerText,
   type MeshScale, type Repo, type DocHandle, type LarDoc, type AutomergeUrl, type CompositeStore,
 } from "@lararium/mesh";
+import { plainField } from "@lararium/mesh";
 
 export interface CorpusLoaderDeps {
   readonly repo: Repo;
@@ -40,7 +41,7 @@ export async function loadCatalogCorpora(deps: CorpusLoaderDeps, composite: Comp
       id:    uri.slice(CATALOG_CORPUS_PREFIX.length),
       docUrl: tiddlerText(t),
       // a corpus entry MAY declare its federation scale (the residency-bag layer); absent → local.
-      scale: parseMeshScale((t.tiddler as Record<string, unknown> | undefined)?.["scale"] as string | undefined),
+      scale: parseMeshScale(plainField(t, "scale") as string | undefined),
     }))
     .filter((e): e is { id: string; docUrl: string; scale: MeshScale | undefined } => Boolean(e.docUrl));
 
@@ -60,11 +61,11 @@ export async function loadCatalogCorpora(deps: CorpusLoaderDeps, composite: Comp
 
     const cu = corpusLarUri(entry.id);
     if (tiddlerText(h.doc()?.tiddlers?.[cu]) !== h.url) {
-      h.change((doc) => { doc.tiddlers[cu] = mutableLarRecord(cu, { text: h.url }, source); });
+      h.change((doc) => { doc.tiddlers[cu] = storedLarRecord(cu, { text: h.url }, source); });
     }
     const ru = catalogCorpusEntryUri(entry.id);
     if (tiddlerText(catalogHandle.doc()?.tiddlers?.[ru]) !== entry.docUrl) {
-      catalogHandle.change((doc) => { doc.tiddlers[ru] = mutableLarRecord(ru, { text: entry.docUrl }, source); });
+      catalogHandle.change((doc) => { doc.tiddlers[ru] = storedLarRecord(ru, { text: entry.docUrl }, source); });
     }
   }));
 }

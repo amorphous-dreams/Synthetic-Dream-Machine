@@ -18,11 +18,12 @@
  * Canon: lar:///ha.ka.ba/lararium/docs/crossroads (the public plane); persona-circle#the-vault (the WHO model).
  */
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
-import { mutableLarRecord, tiddlerText, type LarDoc } from "./base-doc.js";
+import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { CROSSROADS_DOC_URI } from "./lar-uris.js";
 import { writeHandleAnnounce } from "./handle-announce.js";
 import { crossroadsDocUrl, materializeSharedLarDoc } from "./deterministic-doc.js";
 import type { HandleCard } from "./handle-card.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /**
  * Announce a card onto a resolved WHO board. Each semantic act receives its own key, so concurrent
@@ -49,7 +50,7 @@ export async function registerCrossroadsInOracle(
   await materializeSharedLarDoc(repo, url, "board:crossroads");
   if (tiddlerText(oracleHandle.doc()?.tiddlers?.[CROSSROADS_DOC_URI]) !== url) {
     oracleHandle.change((doc) => {
-      doc.tiddlers[CROSSROADS_DOC_URI] = mutableLarRecord(CROSSROADS_DOC_URI, { text: url }, "vessel-boot");
+      doc.tiddlers[CROSSROADS_DOC_URI] = storedLarRecord(CROSSROADS_DOC_URI, { text: url }, "vessel-boot");
     });
   }
   return url;

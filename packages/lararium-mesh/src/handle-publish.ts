@@ -31,7 +31,7 @@ export async function publishHandleFromDaemonDoc(opts: {
   store: OwnPublicHandleStore;
 }): Promise<HandleCard> {
   const prefix = tiddlerText(
-    (opts.daemonDoc as { tiddlers?: Record<string, unknown> }).tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER] as never,
+    opts.daemonDoc.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER],
   );
   if (!prefix) {
     throw new Error(

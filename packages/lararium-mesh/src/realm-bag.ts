@@ -40,12 +40,13 @@ import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import { canonicalJsonBytes } from "./crypto.js";
 import { deterministicDocUrl } from "./deterministic-doc.js";
 import { bagUri } from "./lar-uris.js";
-import { mutableLarRecord, tiddlerText, type LarDoc } from "./base-doc.js";
+import { tiddlerText, type LarDoc } from "./base-doc.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import type { NexusDoc } from "./nexus-seal-seed.js";
 import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
 import { verifyEd25519 } from "./ed25519-door.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /** The realm plane's registry name on a vessel's oracle plane — the pointer a boot writes to the realm doc. */
 export const REALM_DOC_URI = bagUri("realm");
@@ -257,7 +258,7 @@ export function realmBagKey(bagUri: string, steward: string): string {
  *  completes rather than over it — the fold, never a write, adjudicates. Call INSIDE `handle.change()`. */
 export function writeRealmBagRegistration(draft: LarDoc, rec: RealmBagRegistration, by?: string): void {
   const key = realmBagKey(rec.bagUri, by ?? rec.keptBy[0] ?? "");
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(rec) }, rec.realmId);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(rec) }, rec.realmId);
 }
 
 function coerceSignature(raw: unknown): QuorumSignature | null {
@@ -422,7 +423,7 @@ export function publicRealmBooksFromDoc(doc: LarDoc | undefined | null): PublicR
 /** Land the announce on the crossroads draft. Call INSIDE a `handle.change()` callback. */
 export function writeRealmBagAnnounce(draft: LarDoc, rec: RealmBagRegistration): void {
   const key = realmBagAnnounceKey(rec.bagUri);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(crossroadsAnnounceOf(rec)) }, "realm-bag");
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(crossroadsAnnounceOf(rec)) }, "realm-bag");
 }
 
 // ── THE WIRE GATE ────────────────────────────────────────────────────────────────────────────────

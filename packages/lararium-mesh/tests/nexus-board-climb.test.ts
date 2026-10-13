@@ -38,6 +38,7 @@ import {
   mutableLarRecord,
 } from "../src/index.js";
 import { hex, hexToBytes } from "../src/crypto.js";
+import { plainField } from "../src/index.js";
 
 // ── THE GRADIENT, three rungs ───────────────────────────────────────────────────────────────────────
 const OWN      = "ab".repeat(32);
@@ -429,6 +430,6 @@ describe("⑤ the climb runs every boot, and ratchets on INTENT alone", () => {
     });
     expect(shadows.landed, "the destination's own bytes stand — a migration never adjudicates").toBe(0);
     const doc = (await board(r, edgeKapaeBoardDocUrl(CHARTER))).doc();
-    expect(doc!.tiddlers[key]!.tiddler["text"]).toBe("{torn}");
+    expect(plainField(doc!.tiddlers[key], "text")).toBe("{torn}");
   }, 30_000);
 });

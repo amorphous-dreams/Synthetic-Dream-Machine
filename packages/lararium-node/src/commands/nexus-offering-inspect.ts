@@ -20,6 +20,7 @@ import {
   type PluginOfferingAnnounce,
   resolveBootDoc,
 } from "@lararium/mesh";
+import { tiddlerText, type StoredLarRecord } from "@lararium/mesh";
 import { larDataDir } from "../vessel-paths.js";
 import { casDirForStorage, readCasBlobFromFs } from "../node-cas.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -73,12 +74,12 @@ function parseAnnounce(raw: unknown, cid: string): PluginOfferingAnnounce {
   if (typeof raw !== "object" || raw === null) {
     throw new NexusOfferingInspectError(`offering ${cid} is malformed on the Crossroads board`);
   }
-  const record = raw as { tiddler?: { text?: unknown } };
-  if (typeof record.tiddler?.text !== "string") {
+  const text = tiddlerText(raw as StoredLarRecord);
+  if (text === null) {
     throw new NexusOfferingInspectError(`offering ${cid} is malformed on the Crossroads board`);
   }
   let parsed: unknown;
-  try { parsed = JSON.parse(record.tiddler.text); } catch {
+  try { parsed = JSON.parse(text); } catch {
     throw new NexusOfferingInspectError(`offering ${cid} is malformed on the Crossroads board`);
   }
   if (typeof parsed !== "object" || parsed === null) {

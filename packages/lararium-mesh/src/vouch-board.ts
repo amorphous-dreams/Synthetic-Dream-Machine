@@ -44,9 +44,10 @@
 
 import { VOUCH_EDGE_DOMAIN } from "./domains.js";
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
 import { CABAL_INVITE_DOMAIN, cabalInviteBytes, type CabalInvite } from "./cabal-invite.js";
 import { sha256HexSync, canonicalJson } from "./crypto.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /**
  * The relationship id a vouch presents to the kāpae plane — the voucher→joiner edge inside one realm.
@@ -83,7 +84,7 @@ export function vouchEntryKey(realmDocIdHex: string, voucherDid: string, joinerI
  */
 export function writeVouch(draft: LarDoc, invite: CabalInvite): void {
   const key = vouchEntryKey(invite.realmDocIdHex, invite.voucherDid, invite.joinerIdentityHex);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(invite) }, invite.realmDocIdHex);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(invite) }, invite.realmDocIdHex);
 }
 
 /** A parsed payload reads as an invite only at the exact FLOOR shape — else null. Extra fields are dropped. */

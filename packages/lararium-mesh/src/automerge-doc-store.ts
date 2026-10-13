@@ -33,6 +33,8 @@ import { MemeProvider } from "./meme-provider.js";
 import type { LarDoc } from "./base-doc.js";
 import { readParallelDrafts, readsParallelDrafts, type ParallelDraftsChange } from "./parallel-drafts.js";
 import { headsEqual } from "./wiki-recipe.js";
+import { plainField, plainRecord, plainValue, storedDeleted, type StoredLarRecord } from "./stored-value.js";
+import { storedRecord, storedValue } from "./stored-record.js";
 
 type MutableLarTiddlerRecord = {
   tiddler: Record<string, unknown> & { title: string };
@@ -48,32 +50,37 @@ function _canonicalJson(value: unknown): string {
       : v);
 }
 
-function _storedValue(value: unknown): unknown {
-  return value instanceof Date ? value.toISOString() : value;
+/** A hand's value as content compares it: a Date reads as its ISO form, an immutable scalar as its string. */
+function _contentOf(value: unknown): unknown {
+  return value instanceof Date ? value.toISOString() : plainValue(value);
 }
 
-function _contentValue(record: LarTiddlerRecord): unknown {
-  const tiddler = Object.fromEntries(Object.entries(record.tiddler)
+function _contentValue(record: StoredLarRecord): unknown {
+  const raw = record as { tiddler: Record<string, unknown>; meta?: { deleted?: unknown } };
+  const tiddler = Object.fromEntries(Object.entries(raw.tiddler)
     .filter(([key]) => key !== "$origin-bag")
-    .map(([key, value]) => [key, _storedValue(value)]));
-  return { tiddler, deleted: record.meta?.deleted === true };
+    .map(([key, value]) => [key, _contentOf(value)]));
+  return { tiddler, deleted: raw.meta?.deleted === true };
 }
 
-function _contentEquals(cur: LarTiddlerRecord, rec: LarTiddlerRecord): boolean {
+function _contentEquals(cur: StoredLarRecord, rec: LarTiddlerRecord): boolean {
   return _canonicalJson(_contentValue(cur)) === _canonicalJson(_contentValue(rec));
 }
 
-/** Same value in the doc's medium — a list or map compares by its JSON form. */
-function _sameValue(current: unknown, next: unknown): boolean {
-  if (current === next) return true;
-  if (current === null || next === null || typeof current !== "object" || typeof next !== "object") return false;
-  return _canonicalJson(current) === _canonicalJson(next);
+/** Same value in the doc's medium: the stored side unwraps first, a list or map compares by its JSON form. */
+function _sameValue(stored: unknown, next: unknown): boolean {
+  const current = _contentOf(stored);
+  const wanted = _contentOf(next);
+  if (current === wanted) return true;
+  if (current === null || wanted === null || typeof current !== "object" || typeof wanted !== "object") return false;
+  return _canonicalJson(current) === _canonicalJson(wanted);
 }
 
 /**
  * Merge a record into the doc's copy field by field. A field whose value did not move is left
  * unassigned: an assignment supersedes every concurrent op on that key, so re-sending the live value
- * would erase a concurrent value this writer never saw.
+ * would erase a concurrent value this writer never saw. Every assigned string rests as an immutable
+ * scalar (`stored-value.ts`).
  */
 function _mergeRecord(target: MutableLarTiddlerRecord, record: LarTiddlerRecord): void {
   const t = target.tiddler;
@@ -81,49 +88,25 @@ function _mergeRecord(target: MutableLarTiddlerRecord, record: LarTiddlerRecord)
     if (key !== "$origin-bag" && !(key in record.tiddler)) delete t[key];
   }
   for (const [key, raw] of Object.entries(record.tiddler)) {
-    const value = _storedValue(raw);
-    if (key in t && _sameValue(t[key], value)) continue;
-    t[key] = value;
+    if (key in t && _sameValue(t[key], raw)) continue;
+    t[key] = storedValue(raw);
   }
 
   const nextMeta = record.meta ?? {};
   if (!target.meta) target.meta = {};
   const m = target.meta;
   for (const [key, value] of Object.entries(nextMeta)) {
-    if (key !== "deleted") m[key] = value;
+    if (key === "deleted" || value === undefined) continue;
+    if (key in m && _sameValue(m[key], value)) continue;
+    m[key] = storedValue(value);
   }
-  m.deleted = nextMeta.deleted === true;
+  const deleted = nextMeta.deleted === true;
+  if (m.deleted !== deleted) m.deleted = deleted;
   if (Object.keys(m).length === 0) delete target.meta;
 }
 
-function _cloneRecord(record: LarTiddlerRecord): LarTiddlerRecord {
-  const { created: rawCreated, modified: rawModified, ...rest } = record.tiddler;
-  const created = rawCreated instanceof Date ? rawCreated.toISOString() : rawCreated;
-  const modified = rawModified instanceof Date ? rawModified.toISOString() : rawModified;
-  return {
-    tiddler: {
-      ...rest,
-      ...(created !== undefined ? { created } : {}),
-      ...(modified !== undefined ? { modified } : {}),
-    },
-    ...(record.meta !== undefined ? { meta: { ...record.meta } } : {}),
-  };
-}
-
-function _isDeleted(record: LarTiddlerRecord): boolean {
-  return record.meta?.deleted === true;
-}
-
-function _titleOf(record: LarTiddlerRecord): string {
-  return record.tiddler.title;
-}
-
-function _freezeRecord(raw: LarTiddlerRecord): LarTiddlerRecord {
-  return Object.freeze({
-    tiddler: Object.freeze({ ...raw.tiddler }),
-    ...(raw.meta !== undefined ? { meta: Object.freeze({ ...raw.meta }) } : {}),
-  });
-}
+/** A stored record as every reader past this shore holds it: frozen, every value unwrapped. */
+const _freezeRecord = plainRecord;
 
 /** Mark a title deleted inside a change — the kāpae tombstone, minted when no record stands. */
 function _markDeleted(tiddlers: Record<string, MutableLarTiddlerRecord>, title: string): void {
@@ -132,7 +115,7 @@ function _markDeleted(tiddlers: Record<string, MutableLarTiddlerRecord>, title: 
     if (!existing.meta) existing.meta = {};
     existing.meta.deleted = true;
   } else {
-    tiddlers[title] = { tiddler: { title }, meta: { deleted: true } };
+    tiddlers[title] = storedRecord({ tiddler: { title }, meta: { deleted: true } }) as unknown as MutableLarTiddlerRecord;
   }
 }
 
@@ -151,7 +134,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     this.bagId   = bagId;
     // MemeProvider gets the tiddlers submap — keeps MemeProvider path-agnostic.
     this.provider = new MemeProvider(
-      () => (handle.doc()?.tiddlers ?? {}) as Record<string, unknown>,
+      (title) => { const raw = handle.doc()?.tiddlers?.[title]; return raw ? plainRecord(raw) : null; },
       () => this.bagId,
       () => this._headsForEnvelope() ?? null,
     );
@@ -221,12 +204,14 @@ export class AutomergeDocStore implements LarTiddlerStore {
     if (!tiddlers) return;
     const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: this.bagId ?? "automerge" };
     const heads = this._headsForEnvelope();
-    for (const raw of Object.values(tiddlers) as LarTiddlerRecord[]) {
-      if (!raw || !raw.tiddler?.title) continue;
-      const title = raw.tiddler.title;
+    for (const raw of Object.values(tiddlers)) {
+      if (!raw) continue;
+      const record = _freezeRecord(raw);
+      const title = record.tiddler.title;
+      if (!title) continue;
       this.provider.fireImmediate({
         title,
-        record: _freezeRecord(raw),
+        record,
         origin,
         ...(this.bagId !== undefined ? { bag: this.bagId } : {}),
         ...(heads !== undefined ? { heads } : {}),
@@ -237,16 +222,20 @@ export class AutomergeDocStore implements LarTiddlerStore {
   async listVisible(): Promise<string[]> {
     const tiddlers = this.handle.doc()?.tiddlers;
     if (!tiddlers) return [];
-    return (Object.values(tiddlers) as LarTiddlerRecord[])
-      .filter((r) => r?.tiddler && !_isDeleted(r) && _titleOf(r) && !_titleOf(r).startsWith("$:/temp/"))
-      .map((r) => _titleOf(r));
+    const titles: string[] = [];
+    for (const raw of Object.values(tiddlers)) {
+      if (!raw || storedDeleted(raw)) continue;
+      const title = plainField(raw, "title");
+      if (typeof title === "string" && title && !title.startsWith("$:/temp/")) titles.push(title);
+    }
+    return titles;
   }
 
   /** The titles this bag holds as tombstones: what a residency move that carries a tombstone reads. */
   listTombstoned(): string[] {
     const tiddlers = this.handle.doc()?.tiddlers;
     if (!tiddlers) return [];
-    return Object.entries(tiddlers as Record<string, LarTiddlerRecord>).filter(([, r]) => r && _isDeleted(r)).map(([title]) => title);
+    return Object.entries(tiddlers).filter(([, r]) => r && storedDeleted(r)).map(([title]) => title);
   }
 
   async get(title: string): Promise<LarTiddlerRecord | null> {
@@ -357,23 +346,20 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const existing = current?.[r.tiddler.title];
       return !(existing && _contentEquals(existing, r));
     });
-    const movedTombstones = tombstones.filter((title) => current?.[title]?.meta?.deleted !== true);
+    const movedTombstones = tombstones.filter((title) => !storedDeleted(current?.[title]));
     if (moved.length === 0 && movedTombstones.length === 0) return;
 
     const based = requestedBase !== undefined && currentHeads !== null && !headsEqual(requestedBase, currentHeads);
     const change = (doc: LarDoc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarTiddlerRecord>;
+      const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       for (const record of moved) {
         const title = record.tiddler.title;
         const existing = tiddlers[title];
         if (existing) _mergeRecord(existing, record);
         else {
-          const created = _cloneRecord(record) as MutableLarTiddlerRecord;
-          if (based) {
-            if (!created.meta) created.meta = {};
-            created.meta.deleted = record.meta?.deleted === true;
-          }
-          tiddlers[title] = created;
+          // A based create states its liveness, so a concurrent delete of the title reads as a conflict.
+          const meta = based ? { ...(record.meta ?? {}), deleted: record.meta?.deleted === true } : record.meta;
+          tiddlers[title] = storedRecord({ tiddler: record.tiddler, ...(meta !== undefined ? { meta } : {}) }) as unknown as MutableLarTiddlerRecord;
         }
       }
       for (const title of movedTombstones) _markDeleted(tiddlers, title);
@@ -413,7 +399,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
    *  the cascade), never a kāpae tombstone. The MOVE/promotion source retract. */
   async remove(title: string, origin: ChangeOrigin): Promise<void> {
     this.handle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, MutableLarTiddlerRecord>;
+      const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       delete tiddlers[title];
     });
     // Fire record:null — absence; the adaptor's cross-bag resolution surfaces

@@ -17,7 +17,7 @@ import type { LarDoc }               from "@lararium/mesh";
 import {
   LARES_DOC_URI,
   LARARIUM_DOC_URI,
-  mutableLarRecord,
+  storedLarRecord,
   tiddlerText,
   emptyLarDoc,
   materializeGenesisIsland,
@@ -201,7 +201,7 @@ export function mintLaresIfAbsent(repo: Repo, islandHandle: DocHandle<LarDoc>): 
   if (existing) return existing;
   const minted = repo.create<LarDoc>(emptyLarDoc());
   islandHandle.change((d) => {
-    d.tiddlers[LARES_DOC_URI] = mutableLarRecord(LARES_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
+    d.tiddlers[LARES_DOC_URI] = storedLarRecord(LARES_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
   });
   // Two node homes federating one oracle doc may still race; LWW settles
   // it — re-read and adopt the winner (an orphaned empty mint costs nothing).
@@ -221,7 +221,7 @@ export function mintLarariumIfAbsent(repo: Repo, islandHandle: DocHandle<LarDoc>
   if (existing) return existing;
   const minted = repo.create<LarDoc>(emptyLarDoc());
   islandHandle.change((d) => {
-    d.tiddlers[LARARIUM_DOC_URI] = mutableLarRecord(LARARIUM_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
+    d.tiddlers[LARARIUM_DOC_URI] = storedLarRecord(LARARIUM_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
   });
   return tiddlerText(islandHandle.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? minted.url;
 }
@@ -235,9 +235,9 @@ export function reconcileWellKnownTiddlers(
   laresUrl?: string,
 ): void {
   const tiddlers = handle.doc()?.tiddlers ?? {};
-  if (!laresUrl || tiddlers[LARES_DOC_URI]?.tiddler.text === laresUrl) return;
+  if (!laresUrl || tiddlerText(tiddlers[LARES_DOC_URI]) === laresUrl) return;
   handle.change((d) => {
-    d.tiddlers[LARES_DOC_URI] = mutableLarRecord(LARES_DOC_URI, { text: laresUrl, kind: "oracle" }, "lararium-seed");
+    d.tiddlers[LARES_DOC_URI] = storedLarRecord(LARES_DOC_URI, { text: laresUrl, kind: "oracle" }, "lararium-seed");
   });
   console.log("[genesis-artifact] oracle tiddlers  lares=patched");
 }

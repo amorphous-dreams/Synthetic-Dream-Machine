@@ -15,6 +15,7 @@
  */
 
 import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
+import { plainEntries, storedDeleted } from "@lararium/mesh";
 import { ACTIVE_WIKI_URI } from "./active-wiki.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
@@ -47,7 +48,7 @@ export interface RegistryReach {
 function listRegisteredDocUris(doc: LarDoc | undefined): string[] {
   const out: string[] = [];
   for (const [title, rec] of Object.entries(doc?.tiddlers ?? {})) {
-    const text = tiddlerText(rec as LarTiddlerRecord);
+    const text = tiddlerText(rec);
     if (text && text.startsWith("automerge:")) out.push(title);
   }
   return out;
@@ -102,8 +103,8 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
         // A draft FLOOR doc (`wikis/<slug>/drafts/<did>`) answers under its slot name below, never its key.
         if (!mounted && !isDraftFloorKey(bagUri)) {
           const h   = await accessor.find(bagUri).catch(() => null);
-          const rec = h?.doc()?.tiddlers?.[tiddler] as LarTiddlerRecord | undefined;
-          if (rec && !rec.meta?.deleted) holding.add(bagUri);
+          const rec = h?.doc()?.tiddlers?.[tiddler];
+          if (rec && !storedDeleted(rec)) holding.add(bagUri);
         }
         // A registered WIKI's live instance slots — the docs THE ONE slot-doc resolver names (the
         // same docs its island mounts), reached by access, never mounted here. This probe must still
@@ -115,8 +116,8 @@ export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReac
           const url = await reach.slotDocUrl(slug, kind, { mint: false }).catch(() => null);
           if (!url) continue;
           const sh  = await findOrThrow(reach.repo, url, `${wikiSlotUri(slug, kind)}`).catch(() => null);
-          const sr  = sh?.doc()?.tiddlers?.[tiddler] as LarTiddlerRecord | undefined;
-          if (sr && !sr.meta?.deleted) holding.add(wikiSlotUri(slug, kind));
+          const sr  = sh?.doc()?.tiddlers?.[tiddler];
+          if (sr && !storedDeleted(sr)) holding.add(wikiSlotUri(slug, kind));
         }
       }
     }
@@ -149,7 +150,7 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
   return async () => {
     const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean }> = [];
     const cat = await catalog.handle();
-    const catTiddlers = (cat.doc()?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
+    const catTiddlers: Record<string, LarTiddlerRecord> = Object.fromEntries(plainEntries(cat.doc()?.tiddlers));
     // System wikis — oracle-plane recipes (the lares/lararium quine system bags) carry the DEFAULT.
     // The vessel's own catalog record for the same slug is its composition: the row lists ONCE, as
     // the system row, and reads `composition: "own"` with whether the own stack differs from the default.
@@ -157,7 +158,7 @@ export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: Catalo
     if (sysPlane) {
       const sys = await sysPlane.handle();
       const recipePrefix = recipeUri("oracle", "");
-      for (const [title, rec] of Object.entries((sys.doc()?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>)) {
+      for (const [title, rec] of plainEntries(sys.doc()?.tiddlers)) {
         if (!title.startsWith(recipePrefix)) continue;
         if (rec.meta?.deleted) continue;
         const slug = title.slice(recipePrefix.length);

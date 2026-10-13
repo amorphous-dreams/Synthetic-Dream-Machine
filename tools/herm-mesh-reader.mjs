@@ -7,6 +7,7 @@
 // without standing a mesh.
 
 import { pullAndVerifyOracle } from "../packages/lararium-mesh/dist/oracle-read-client.js";
+import { plainField } from "../packages/lararium-mesh/dist/stored-value.js";
 
 /** The reader's identity, loaded once from its founded root. Throws when `LAR_ROOT` holds no founded vessel. */
 let identityPromise = null;
@@ -33,7 +34,9 @@ export async function pullHop(hop) {
 export function dialsOf(doc) {
   const out = [];
   for (const [title, entry] of Object.entries(doc?.tiddlers ?? {})) {
-    if (title.includes("bags/meshpalace/dial/") && typeof entry?.tiddler?.bearing === "string") out.push(entry.tiddler.bearing);
+    // A record read off a document rests its strings as immutable scalars: unwrap through the one door.
+    const bearing = plainField(entry, "bearing");
+    if (title.includes("bags/meshpalace/dial/") && typeof bearing === "string") out.push(bearing);
   }
   return out;
 }

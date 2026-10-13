@@ -17,10 +17,24 @@ uri-path    = "ha.ka.ba/lararium/mesh/automerge-doc-store"
 
 <<~ ahu #/contract>>
 
-TODO: describe the load-bearing surface this file owns.
+`AutomergeDocStore` stands as the one `LarTiddlerStore` over an Automerge document: the shore where a record crosses into the CRDT's medium.
+
+!! A field value rests as an immutable scalar
+
+Every string of a record rests in the document as an Automerge immutable scalar: one operation per field. A plain string handed to Automerge rests as a Text object, one operation per character, and every peer that receives the document pays that cost again. A tiddler stands as an invariant and every write replaces a field whole, so nothing in the house edits a value at character grain.
+
+Two doors hold the crossing. `stored-record.ts` wraps on the way in (`storedRecord`, `storedLarRecord`). `stored-value.ts` unwraps on the way out (`plainRecord`, `plainField`, `plainEntries`, `tiddlerText`) and imports no CRDT engine, so the wiki's packed modules read through it. `LarDoc.tiddlers` holds the type `StoredLarRecord`, which exposes no field: a reader that skips the read door does not compile, and `stored-value-census.test.ts` scans every source file for a cast that would talk past the type. The store hands every reader past the shore a frozen plain record, which crosses a worker port whole; a raw record does not.
+
+!! Field grain
+
+A write merges a record field by field at its base. A field whose value did not move takes no assignment, and Automerge writes no operation for a scalar set to an equal value. Two writers that set one field to different values leave a multi-value conflict that `parallel-drafts.ts` surfaces as attributed drafts; two writers that set different fields both land.
+
+!! One change per family
+
+`writeFamily` lands its puts and tombstones in one Automerge change, so a peer receives a root, its children and its orphans' tombstones together. LOAD hands the store a slice of whole carriers per call, so a LOAD slice lands as one change.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;B563HqFGu9g3Ebq1XijNMX78WDXOBlQiQmqq9sunizY
+<<^ code="&#x0003;">>ni:///sha-256;bPc8CNjvf78qaUIXTL1774xYn3d4lbiu_pT0mciOuCc
 
 <<^ code="&#x0004;" -> to="?">>

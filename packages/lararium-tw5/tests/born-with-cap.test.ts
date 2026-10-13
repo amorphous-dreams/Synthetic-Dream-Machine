@@ -16,6 +16,7 @@ import { CompositeStore, emptyLarDoc, AutomergeDocStore, effectRecordUri, isVerb
 import type { Repo, DocHandle, LarDoc, Verb } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
+import { plainEntries, plainRecord, tiddlerText } from "@lararium/mesh";
 
 const CATALOG_URL = "automerge:catalog-doc";
 
@@ -254,7 +255,7 @@ describe("M13 — a retired bag refuses writes by name and CREATE strands nothin
     const dst = "lar:///ha.ka.ba/bags/m13-dst";
     await r("CREATE")({ bag: src }, ctxFor("CREATE", "c1"));
     const first = await r("CREATE")({ bag: dst }, ctxFor("CREATE", "c2"));
-    const srcHandle = await repo.find(String((await (await repo.find(CATALOG_URL)).doc()!.tiddlers[src]!.tiddler as any).text) as any);
+    const srcHandle = await repo.find(String(tiddlerText((await repo.find(CATALOG_URL)).doc()!.tiddlers[src])) as any);
     await new AutomergeDocStore(srcHandle as any, src).put(
       { tiddler: { title: "carrier", text: "body" }, meta: {} } as any, { kind: "lares-verb", requestId: "seed" } as any);
     return { repo, opts, r, src, dst, first, mintedUrls };
@@ -272,7 +273,7 @@ describe("M13 — a retired bag refuses writes by name and CREATE strands nothin
 
     // The refusal landed nothing in the retired doc: its only live content is the tombstoned one.
     const retiredDoc = (await repo.find(first.docUrl as string)).doc()!;
-    const accessions = Object.values(retiredDoc.tiddlers).filter((t: any) => t.tiddler?.["archival-verb"] === "accession");
+    const accessions = plainEntries(retiredDoc.tiddlers).filter(([, t]) => t.tiddler["archival-verb"] === "accession");
     expect(accessions.length).toBe(1); // the CONTROL copy only
 
     const fresh = await r("CREATE")({ bag: dst }, ctxFor("CREATE", "c3"));
@@ -291,11 +292,11 @@ describe("M13 — a retired bag refuses writes by name and CREATE strands nothin
     const marker = effectRecordUri(dst, "retired");
     expect((await repo.find(first.docUrl as string)).doc()!.tiddlers[marker]).toBeUndefined();
     await r("DROP")({ bag: dst }, ctxFor("DROP", "d1"));
-    const rec: any = (await repo.find(first.docUrl as string)).doc()!.tiddlers[marker];
+    const rec: any = plainRecord((await repo.find(first.docUrl as string)).doc()!.tiddlers[marker]!);
     expect(rec.tiddler.disposition).toBe("bag-retired");
     // A second DROP keeps the FIRST retirement record.
     await r("DROP")({ bag: dst }, ctxFor("DROP", "d2"));
-    const again: any = (await repo.find(first.docUrl as string)).doc()!.tiddlers[marker];
+    const again: any = plainRecord((await repo.find(first.docUrl as string)).doc()!.tiddlers[marker]!);
     expect(again.tiddler["request-id"]).toBe(rec.tiddler["request-id"]);
   });
 

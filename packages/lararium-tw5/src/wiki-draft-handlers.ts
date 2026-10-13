@@ -1,4 +1,5 @@
 import type { AutomergeUrl } from "@lararium/mesh";
+import { plainEntries } from "@lararium/mesh";
 import type { ChangeOrigin, LarTiddlerRecord } from "@lararium/mesh";
 import { type LarDoc, wikiSlotUri } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -82,12 +83,11 @@ export function makePruneStaleReactor(opts: PruneStaleOptions): VerbReactor {
     const handle = await opts.repo.find<LarDoc>(draft.url as AutomergeUrl);
     await handle.whenReady();
     const docState = handle.doc();
-    const tiddlers = (docState?.tiddlers ?? {}) as Record<string, LarTiddlerRecord>;
 
     const cutoffMs = Date.now() - daysThreshold * 86_400_000;
     const stale: Array<{ title: string; lastUpdate: string | null; daysIdle: number }> = [];
     let scanned = 0;
-    for (const [title, rec] of Object.entries(tiddlers)) {
+    for (const [title, rec] of plainEntries(docState?.tiddlers)) {
       if (rec.meta?.deleted) continue;
       scanned++;
       const lastUpdate = (typeof rec.tiddler["synced-at"] === "string" ? rec.tiddler["synced-at"] : undefined)

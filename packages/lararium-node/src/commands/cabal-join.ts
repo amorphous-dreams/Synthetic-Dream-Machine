@@ -18,6 +18,7 @@ import {
   DEFAULT_JOIN_POLICY, alphaFromHalfLife,
   type CabalInvite, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
+import { tiddlerText, type LarDoc } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -66,7 +67,7 @@ export function daemonDocUrlFromBootstrap(): string | null {
  * The realm's OWN epoch is its maintenance feed, which lives in a separate space (`realmFeedPrefix`).
  */
 export function cabalAdmissionEpoch(doc: unknown, realmDocIdHex: string): number {
-  const tiddlers = (doc as { tiddlers?: Record<string, unknown> } | null)?.tiddlers;
+  const tiddlers = (doc as LarDoc | null)?.tiddlers;
   if (!tiddlers) return 0;
   const prefix = leaseEpochPrefix(realmDocIdHex);
   const slots: string[] = [];
@@ -75,7 +76,7 @@ export function cabalAdmissionEpoch(doc: unknown, realmDocIdHex: string): number
     // A LAR RECORD NESTS ITS TIDDLER. `rollLeaseEpochOnBoard` writes `mutableLarRecord`, which carries
     // `{ tiddler: { text }, meta }` — a reader reaching for `rec.text` finds undefined on every slot,
     // folds an empty set, and reads epoch 0 forever. The daemon's own lease read takes `.tiddler.text`.
-    const text = (rec as { tiddler?: { text?: unknown } } | undefined)?.tiddler?.text;
+    const text = tiddlerText(rec);
     if (typeof text === "string") slots.push(text);
   }
   return effectiveLeaseEpoch(slots);

@@ -35,6 +35,7 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord } from "./base-doc.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
+import { plainField, plainRecord, type StoredLarRecord } from "./stored-value.js";
 import { bagUri, MESH_SCALES, MESH_SCALE_FEDERATES, type MeshScale } from "./lar-uris.js";
 import { isPersonaPlaneSlug } from "./persona-scope.js";
 import {
@@ -43,6 +44,7 @@ import {
   type PointerVerdict,
   exportOracleSnapshot,
 } from "./oracle-substrate.js";
+import { storedRecord } from "./stored-record.js";
 
 // ── The cap vocabulary (canon: mesh/vessel-caps) ──────────────────────────
 // Five capability verbs in two families crossing AUTHORITY ⊥ FLOW. A vessel
@@ -206,19 +208,19 @@ export function routingSlotToRecord(s: RoutingSlot, authority: string): LarTiddl
 
 // ── Decode ← LarDoc tiddler records (hardened: never throws, returns null) ──
 
-function strField(rec: LarTiddlerRecord, key: string): string | undefined {
-  const v = (rec.tiddler as Record<string, unknown>)[key];
+function strField(rec: StoredLarRecord, key: string): string | undefined {
+  const v = plainField(rec, key);
   return typeof v === "string" && v !== "" ? v : undefined;
 }
 
-function numField(rec: LarTiddlerRecord, key: string): number | undefined {
+function numField(rec: StoredLarRecord, key: string): number | undefined {
   const s = strField(rec, key);
   if (s === undefined) return undefined;
   const n = Number(s);
   return Number.isFinite(n) ? n : undefined;
 }
 
-export function recordToDialEntry(rec: LarTiddlerRecord | null | undefined): DialEntry | null {
+export function recordToDialEntry(rec: StoredLarRecord | null | undefined): DialEntry | null {
   if (!rec || strField(rec, "kind") !== "dial") return null;
   const bearing = strField(rec, "bearing");
   const verifyingKeyHex = strField(rec, "verifyingKey");
@@ -235,7 +237,7 @@ export function recordToDialEntry(rec: LarTiddlerRecord | null | undefined): Dia
   };
 }
 
-export function recordToVesselCapStack(rec: LarTiddlerRecord | null | undefined): VesselCapStack | null {
+export function recordToVesselCapStack(rec: StoredLarRecord | null | undefined): VesselCapStack | null {
   if (!rec || strField(rec, "kind") !== "vessel") return null;
   const vesselId = strField(rec, "vesselId");
   if (!vesselId) return null;
@@ -246,7 +248,7 @@ export function recordToVesselCapStack(rec: LarTiddlerRecord | null | undefined)
   return { vesselId, held, expressed: expressedCapsBackedByHeld(held, expressed) };
 }
 
-export function recordToRoutingSlot(rec: LarTiddlerRecord | null | undefined): RoutingSlot | null {
+export function recordToRoutingSlot(rec: StoredLarRecord | null | undefined): RoutingSlot | null {
   if (!rec || strField(rec, "kind") !== "route") return null;
   const bearing = strField(rec, "bearing");
   const r = numField(rec, "r");
@@ -505,7 +507,7 @@ export function hermCanRead(uri: string): boolean {
 // hand-typed 3-of-5 subset that could drift out of step with MESH_SCALE_FEDERATES.
 const PUBLIC_SCALES: readonly MeshScale[] = MESH_SCALES.filter((s) => MESH_SCALE_FEDERATES[s]);
 
-function crossesShore(rec: LarTiddlerRecord): boolean {
+function crossesShore(rec: StoredLarRecord): boolean {
   const kind = strField(rec, "kind");
   if (kind === "route") return true;                       // routing coords are coarse public by design
   if (kind === "dial") {
@@ -521,9 +523,9 @@ function crossesShore(rec: LarTiddlerRecord): boolean {
  * the private territory (vessel-local dial-records, held caps) never enters it.
  */
 export function publicFlowMap(doc: LarDoc): LarDoc {
-  const tiddlers: Record<string, LarTiddlerRecord> = {};
+  const tiddlers: Record<string, StoredLarRecord> = {};
   for (const [title, rec] of Object.entries(doc.tiddlers)) {
-    if (crossesShore(rec)) tiddlers[title] = rec;
+    if (crossesShore(rec)) tiddlers[title] = storedRecord(plainRecord(rec));
   }
   return { schemaVersion: doc.schemaVersion, tiddlers };
 }
@@ -577,7 +579,7 @@ export class MeshPalace {
   }
 
   private write(rec: LarTiddlerRecord): void {
-    this.handle.change((d) => { d.tiddlers[rec.tiddler.title] = rec; });
+    this.handle.change((d) => { d.tiddlers[rec.tiddler.title] = storedRecord(rec); });
   }
 
   /** Register/refresh a dial-record (a bearing → key + endpoint resolution). */

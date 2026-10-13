@@ -25,7 +25,7 @@
  */
 
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
 import {
   CARRIAGE_ENTRY_DOMAIN,
   carriageEntryActCid,
@@ -44,6 +44,7 @@ import {
   type RollAnchor,
 } from "./carriage-registry.js";
 import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /**
  * The tiddler-key prefix every carriage entry rides under — namespaced apart from the board's other content.
@@ -70,7 +71,7 @@ export function carriageEntryKey(entry: Pick<CarriageEntry, "kind" | "nym" | "ac
  */
 export function writeCarriageEntry(draft: LarDoc, entry: CarriageEntry): void {
   const key = carriageEntryKey(entry);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(entry) }, entry.sealEpochCid);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(entry) }, entry.sealEpochCid);
 }
 
 /** Coerce one signature-record, or null when a required field is missing / mis-typed (the whole sig drops). */
@@ -154,7 +155,7 @@ export function rollAnchorKey(anchor: RollAnchor): string {
  */
 export function writeRollAnchor(draft: LarDoc, anchor: RollAnchor): void {
   const key = rollAnchorKey(anchor);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(anchor) }, anchor.sealEpochCid);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(anchor) }, anchor.sealEpochCid);
 }
 
 /**

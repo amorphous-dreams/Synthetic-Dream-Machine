@@ -65,7 +65,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
   // composition (catalog) shadows a system wiki's default (oracle), the same two planes, own first.
   const loadRecipeRec = (): LarTiddlerRecord | undefined =>
     effectiveRecipe(slug, (plane, title) =>
-      (plane === "oracle" ? sysHandle : catHandle)?.doc()?.tiddlers?.[title] as LarTiddlerRecord | undefined,
+      (plane === "oracle" ? sysHandle : catHandle)?.doc()?.tiddlers?.[title],
     )?.record;
 
   // Slots the recipe model owns structurally (`structuralSlots` — the ONE spelling the record

@@ -38,6 +38,9 @@ import {
 import { recipeRecordFields, type WikiRecipe } from "./wiki-recipe.js";
 import type { LarDoc, LarBlobEntry } from "./base-doc.js";
 import { ENGINE_CORE_ID, blobDescriptorUri } from "./base-doc.js";
+import { plainField } from "./stored-value.js";
+import type { LarTiddlerRecord } from "./tiddler-store.js";
+import { storedRecord } from "./stored-record.js";
 
 // ---------------------------------------------------------------------------
 // Shared attestation contract
@@ -680,8 +683,9 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
     const blobs: Record<string, unknown> = {};
     for (const k of Object.keys(seed.blobs).sort()) blobs[k] = seed.blobs[k];
     r["blobs"] = blobs;
+    // The seed stands as plain data; the document rests every record's strings as immutable scalars.
     const tiddlers: Record<string, unknown> = {};
-    for (const k of Object.keys(seed.tiddlers).sort()) tiddlers[k] = seed.tiddlers[k];
+    for (const k of Object.keys(seed.tiddlers).sort()) tiddlers[k] = storedRecord(seed.tiddlers[k] as LarTiddlerRecord);
     r["tiddlers"] = tiddlers;
   });
   return automergeSave(doc);
@@ -746,8 +750,8 @@ export function verifyGenesisArtifact(
   }
 
   const readWitness = (title: string): string => {
-    const cid = (doc.tiddlers?.[title] as { tiddler?: { cid?: string } } | undefined)?.tiddler?.cid;
-    if (!cid || cid.length < 10) {
+    const cid = plainField(doc.tiddlers?.[title], "cid");
+    if (typeof cid !== "string" || cid.length < 10) {
       throw new Error(`[genesis] verify FAILED: witness tiddler ${title} absent or empty — stored=${cid}`);
     }
     return cid;

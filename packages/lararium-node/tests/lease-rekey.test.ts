@@ -16,6 +16,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { init as amInit, from as amFrom, clone as amClone, change as amChange, merge as amMerge, getConflicts, type Doc } from "@automerge/automerge";
 import { emptyLarDoc, effectiveLeaseEpoch, leaseEpochPrefix, leaseEpochSlotUri, type LarDoc } from "@lararium/mesh";
 import { rollLeaseEpochOnBoard } from "../src/lease-rekey.js";
+import { tiddlerText } from "@lararium/mesh";
 
 const RESOURCE = "carriage-relay/crossroads-1";
 const WRITER_A = "0x" + "aa".repeat(32);
@@ -27,7 +28,7 @@ function effectiveOn(doc: LarDoc | undefined, resource: string): number {
   const tids = doc?.tiddlers ?? {};
   const vals: (string | undefined)[] = [];
   for (const k of Object.keys(tids)) {
-    if (k.startsWith(prefix)) vals.push((tids[k] as { tiddler?: { text?: string } })?.tiddler?.text);
+    if (k.startsWith(prefix)) vals.push(tiddlerText(tids[k]) ?? undefined);
   }
   return effectiveLeaseEpoch(vals);
 }

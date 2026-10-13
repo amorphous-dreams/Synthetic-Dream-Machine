@@ -26,6 +26,7 @@ import { NEXUS_DOC_DOMAIN, type NexusDoc } from "../src/nexus-seal-seed.js";
 import type { LarDoc } from "../src/base-doc.js";
 import type { FederationGate, NexusMembership } from "../src/federation-gate.js";
 import { seatedCharter } from "./charter-fixture.js";
+import { tiddlerText } from "../src/index.js";
 
 const REALM = "epoch-cid-genesis";
 const A = new Uint8Array(32).fill(1);
@@ -139,13 +140,13 @@ describe("realm-bag — what @crossroads carries", () => {
     });
     const cross = emptyDoc();
     writeRealmBagAnnounce(cross, pub);
-    expect((cross.tiddlers[realmBagAnnounceKey(BAG)]!.tiddler as { text: string }).text).toContain(DOC_A);
+    expect(tiddlerText(cross.tiddlers[realmBagAnnounceKey(BAG)])).toContain(DOC_A);
     expect(publicRealmBooksFromDoc(cross)).toEqual([{ bagUri: BAG, docUrl: DOC_A }]);
   });
   test("CONTROL: a CONTRACT-tier announce carries no doc url and the fold names no book", async () => {
     const cross = emptyDoc();
     writeRealmBagAnnounce(cross, await registrationByA());
-    const text = (cross.tiddlers[realmBagAnnounceKey(BAG)]!.tiddler as { text: string }).text;
+    const text = tiddlerText(cross.tiddlers[realmBagAnnounceKey(BAG)]);
     expect(text).toBe(JSON.stringify({ kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: BAG, keptBy: [await pubOf(A)] }));
     expect(publicRealmBooksFromDoc(cross)).toEqual([]);
   });
@@ -161,7 +162,7 @@ describe("realm-bag — what @crossroads carries", () => {
     expect(ann).toEqual({ kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: BAG, keptBy: [await pubOf(A)] });
     const cross = emptyDoc();
     writeRealmBagAnnounce(cross, rec);
-    const text = (cross.tiddlers[realmBagAnnounceKey(BAG)]!.tiddler as { text: string }).text;
+    const text = tiddlerText(cross.tiddlers[realmBagAnnounceKey(BAG)]);
     expect(text).not.toContain(DOC_A);           // CONTROL: the doc url never rides the public plane
     expect(text).not.toContain("automerge:");
     expect(Object.keys(cross.tiddlers)).toHaveLength(1);

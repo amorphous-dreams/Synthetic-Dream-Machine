@@ -41,6 +41,7 @@ import {
   emptyLarDoc, IDENTITIES_NAMESPACE,
   type LarDoc,
 } from "@lararium/mesh";
+import { storedRecord } from "@lararium/mesh";
 import { assembleBulb, bulbSeed, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
 import { parseGenesisSeed } from "./genesis-artifact.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
@@ -181,7 +182,7 @@ export async function kindleFromBulb(args: {
     const handle = t.bag === IDENTITIES_NAMESPACE ? identitiesHandle : circlesHandle;
     handle.change((doc) => {
       if (!doc.tiddlers[t.title]) {
-        doc.tiddlers[t.title] = { tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } };
+        doc.tiddlers[t.title] = storedRecord({ tiddler: { title: t.title, ...t.fields }, meta: { authority: t.authority } });
       }
     });
   }

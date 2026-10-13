@@ -34,9 +34,10 @@ import {
   DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
   pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers,
 } from "@lararium/mesh";
+import { plainRecordOrNull, storedRecord } from "@lararium/mesh";
 import type {
   ActivationPool, WikiActivationCap, ResolveWikiSpec,
-  LarDoc, DocHandle, LarTiddlerRecord,
+  LarDoc, DocHandle,
 } from "@lararium/mesh";
 import { buildWikiMountSpec } from "./vessel-steps.js";
 import type { DaemonVmCore } from "./daemon-vm-core.js";
@@ -134,7 +135,7 @@ export interface VesselResidency {
 export function writePinTiddler(daemonHandle: DocHandle<LarDoc>, bagUrl: string, reason?: string): void {
   const record = pinTiddlerRecord(bagUrl, reason);
   daemonHandle.change((doc) => {
-    (doc.tiddlers as Record<string, LarTiddlerRecord>)[record.tiddler.title] = record;
+    doc.tiddlers[record.tiddler.title] = storedRecord(record);
   });
 }
 
@@ -144,7 +145,7 @@ export function writePinTiddler(daemonHandle: DocHandle<LarDoc>, bagUrl: string,
 export function removePinTiddler(daemonHandle: DocHandle<LarDoc>, bagUrl: string): void {
   const title = pinTiddlerUri(bagUrl);
   daemonHandle.change((doc) => {
-    delete (doc.tiddlers as Record<string, LarTiddlerRecord>)[title];
+    delete doc.tiddlers[title];
   });
 }
 
@@ -205,7 +206,7 @@ export function makeVesselResidency(
       if (!wikiUrl || !wikiUrl.startsWith("automerge:")) return null;   // unknown → park/drop
       // The libraries AND the plugin offerings the wiki's recipe record names lay at boot
       // (`recipeFromRecord`) — R3: this grain's OWN recipe, never the vessel-wide floor.
-      const rec = catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)] as LarTiddlerRecord | undefined;
+      const rec = plainRecordOrNull(catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)]);
       const grainRecipe = rec ? recipeFromRecord(rec, slug) : undefined;
       const libraryBags = grainRecipe?.libraryBags;
       const pluginOfferings = grainRecipe?.pluginOfferings;

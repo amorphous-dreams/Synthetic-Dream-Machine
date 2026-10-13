@@ -20,9 +20,10 @@
  */
 
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import { PERSONA_KEL_DOMAIN, type PersonaKelEvent, type PersonaKelFold, foldPersonaContests } from "./persona-kel.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /**
  * The tiddler-key prefix every persona-KEL event rides under — so the log events namespace apart from a
@@ -55,7 +56,7 @@ export function personaKelEntryKey(prefix: string, seq: number, eventCid?: strin
  */
 export function writePersonaKelEvent(draft: LarDoc, event: PersonaKelEvent): void {
   const key = personaKelEntryKey(event.prefix, event.seq, event.eventCid);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(event) }, event.eventCid);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(event) }, event.eventCid);
 }
 
 /** Coerce one signature-record, or null when a required field is missing / mis-typed (the whole sig drops). */

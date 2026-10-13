@@ -19,6 +19,7 @@ import {
   writeOfferingAnnounce,
 } from "../src/offering-announce.js";
 import { emptyLarDoc, mutableLarRecord, type LarDoc } from "../src/base-doc.js";
+import { tiddlerText } from "../src/index.js";
 
 // Provenance strictness: every offered blob requires one (plugin-offering.ts).
 const PROV: PluginProvenance = { source: "https://example.test/upstream", commit: "0".repeat(40), path: "p", licence: "MIT" };
@@ -111,10 +112,10 @@ describe("immutable plugin offering announcement", () => {
     const doc = emptyDoc();
     writeOfferingAnnounce(doc, first);
     const key = offeringAnnounceKey(pluginOfferingCid(first));
-    const firstText = (doc.tiddlers[key]!.tiddler as { text: string }).text;
+    const firstText = tiddlerText(doc.tiddlers[key]);
 
     writeOfferingAnnounce(doc, first);
-    const secondText = (doc.tiddlers[key]!.tiddler as { text: string }).text;
+    const secondText = tiddlerText(doc.tiddlers[key]);
     expect(secondText).toBe(firstText);
     expect(offeringAnnouncesFromDoc(doc)[0]).toEqual(pluginOfferingAnnounceOf(first));
   });

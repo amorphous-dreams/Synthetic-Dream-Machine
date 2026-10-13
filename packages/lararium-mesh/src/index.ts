@@ -35,6 +35,9 @@ export {
 } from "@automerge/automerge";
 export type { Heads, Doc as AutomergeDoc } from "@automerge/automerge";
 export * from "./base-doc.js";
+export * from "./stored-value.js";
+export * from "./stored-record.js";
+export * from "./oracle-doc.js";
 export * from "./cas.js";
 export * from "./resolver.js";
 export * from "./bag-residency.js";

@@ -16,7 +16,7 @@
 
 import type { Repo, DocHandle, AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  materializeSharedLarDoc, mutableLarRecord, tiddlerText, type LarDoc,
+  materializeSharedLarDoc, storedLarRecord, tiddlerText, type LarDoc,
   type NexusDoc, type FederationGate, type NexusMembership, type CapTier,
   REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, realmIdOfCharter, realmDocUrl, RealmBagGate,
   signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
@@ -102,7 +102,7 @@ export function makeRealmPlane(opts: {
   const pinSteward = (nym: string): void => {
     const doc = oracleHandle.doc();
     if (tiddlerText(doc?.tiddlers?.[REALM_STEWARD_TIDDLER]) === nym) return;
-    oracleHandle.change((d) => { d.tiddlers[REALM_STEWARD_TIDDLER] = mutableLarRecord(REALM_STEWARD_TIDDLER, { text: nym }, "realm-bag"); });
+    oracleHandle.change((d) => { d.tiddlers[REALM_STEWARD_TIDDLER] = storedLarRecord(REALM_STEWARD_TIDDLER, { text: nym }, "realm-bag"); });
   };
 
   const detach = (): void => {
@@ -128,8 +128,8 @@ export function makeRealmPlane(opts: {
     if (tiddlerText(doc?.tiddlers?.[REALM_DOC_URI]) !== realmUrl || tiddlerText(doc?.tiddlers?.[REALM_ID_TIDDLER]) !== id) {
       const url = realmUrl;
       oracleHandle.change((d) => {
-        d.tiddlers[REALM_DOC_URI]   = mutableLarRecord(REALM_DOC_URI,   { text: url }, "vessel-boot");
-        d.tiddlers[REALM_ID_TIDDLER] = mutableLarRecord(REALM_ID_TIDDLER, { text: id },  "vessel-boot");
+        d.tiddlers[REALM_DOC_URI]   = storedLarRecord(REALM_DOC_URI,   { text: url }, "vessel-boot");
+        d.tiddlers[REALM_ID_TIDDLER] = storedLarRecord(REALM_ID_TIDDLER, { text: id },  "vessel-boot");
       });
     }
     log(`realm ${id.slice(0, 16)}… stands — doc ${realmUrl}`);

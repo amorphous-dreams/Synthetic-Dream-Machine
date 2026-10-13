@@ -24,6 +24,7 @@
 import { DAEMON_BAG_ID } from "./lar-uris.js";
 import { mutableLarRecord, tiddlerText } from "./base-doc.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
+import { storedDeleted, type StoredTiddlers } from "./stored-value.js";
 
 /** A bag's URL — Automerge doc URL, e.g. "automerge:abc123…". */
 export type BagUrl = string;
@@ -537,12 +538,12 @@ export function pinTiddlerRecord(bagUrl: BagUrl, reason?: string): LarTiddlerRec
  *  the READ half of that durability; `pinTiddlerRecord` + the tw5-layer `writePinTiddler` are the
  *  WRITE half. */
 export function scanPinTiddlers(
-  tiddlers: Readonly<Record<string, LarTiddlerRecord>> | undefined,
+  tiddlers: Readonly<StoredTiddlers> | undefined,
 ): readonly { url: BagUrl; reason?: string }[] {
   const out: { url: BagUrl; reason?: string }[] = [];
   if (!tiddlers) return out;
   for (const [title, record] of Object.entries(tiddlers)) {
-    if (record?.meta?.deleted) continue;
+    if (storedDeleted(record)) continue;
     const url = parsePinBagUrl(title);
     if (!url) continue;
     const reason = tiddlerText(record) ?? undefined;

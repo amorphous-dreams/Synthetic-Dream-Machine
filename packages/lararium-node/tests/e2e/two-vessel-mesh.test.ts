@@ -50,6 +50,7 @@ import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js"
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { foundDirect, sealTestCustody } from "../found-route.js";
+import { tiddlerText } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
 // Test isolation directories
@@ -138,8 +139,7 @@ async function openDaemonDocTiddlers(storageDir: string, daemonUrl: string): Pro
 }
 
 function daemonTiddlerText(tiddlers: Record<string, unknown>, key: string): string | null {
-  const entry = tiddlers[key] as Record<string,unknown> | undefined;
-  return (entry?.["tiddler"] as Record<string,unknown> | undefined)?.["text"] as string ?? null;
+  return tiddlerText(tiddlers[key] as never);
 }
 
 const HEX_RE = /^(0x)?[0-9a-f]{60,}$/;

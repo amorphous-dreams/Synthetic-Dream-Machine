@@ -19,13 +19,14 @@
  */
 
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
 import {
   KAPAE_ANTIGEN_DOMAIN,
   type KapaeAntigenEntry,
   type KapaeAction,
   type QuorumSignature,
 } from "./kapae-antigen.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /**
  * The tiddler-key prefix every antigen entry rides under — so the ban/lift entries namespace apart from a
@@ -53,7 +54,7 @@ export function antigenEntryKey(nym: string, action: KapaeAction, actCid: string
  */
 export function writeAntigenEntry(draft: LarDoc, entry: KapaeAntigenEntry): void {
   const key = antigenEntryKey(entry.nym, entry.action, entry.actCid);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(entry) }, entry.sealEpochCid);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(entry) }, entry.sealEpochCid);
 }
 
 /** Coerce one signature-record, or null when a required field is missing / mis-typed (the whole sig drops). */

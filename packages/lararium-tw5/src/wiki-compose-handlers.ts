@@ -1,4 +1,5 @@
 import type { LarTiddlerRecord } from "@lararium/mesh";
+import { storedRecord } from "@lararium/mesh";
 import {
   bagStackFromRec,
   mutableLarRecord,
@@ -90,7 +91,7 @@ export function makeAddBagReactor(opts: WikiComposeOptions): VerbReactor {
       },
     };
     const catalogHandle = await opts.catalog.handle();
-    catalogHandle.change((doc) => { (doc.tiddlers as Record<string, LarTiddlerRecord>)[recipeTitle] = updated; });
+    catalogHandle.change((doc) => { doc.tiddlers[recipeTitle] = storedRecord(updated); });
 
     // Pono: no live-layer mount. The recipe change syncs; each island mounts the bag
     // when it reconciles its own stack. Command main to pin the bag's residency.
@@ -154,7 +155,7 @@ export function makeRemoveBagReactor(opts: WikiComposeOptions): VerbReactor {
       },
     };
     const catalogHandle = await opts.catalog.handle();
-    catalogHandle.change((doc) => { (doc.tiddlers as Record<string, LarTiddlerRecord>)[recipeTitle] = updated; });
+    catalogHandle.change((doc) => { doc.tiddlers[recipeTitle] = storedRecord(updated); });
 
     // Pono: no live-layer unmount from daemon. The recipe change syncs; each island
     // drops the bag itself (recipe-watch). Command main to release the bag's pin.

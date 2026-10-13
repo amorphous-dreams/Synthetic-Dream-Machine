@@ -35,10 +35,11 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane (the read-open plane the card
  * publishes on); lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault (the publication model).
  */
-import { mutableLarRecord, tiddlerText, type LarDoc } from "./base-doc.js";
+import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { HANDLE_CARD_DOMAIN, type HandleCard } from "./handle-card.js";
 import { HandleBook } from "./handle-book.js";
 import type { CardVerdict } from "./handle-card.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /** The tiddler-key prefix announced handle-cards ride under, so they namespace apart from a doc's other content.
  *  On the DreamNet plane, not one lararium's `lares` API — an announced Handle is a super-mesh-wide face. */
@@ -57,7 +58,7 @@ export function handleAnnounceKey(nym: string, actCid: string): string {
  */
 export function writeHandleAnnounce(draft: LarDoc, card: HandleCard): void {
   const key = handleAnnounceKey(card.nym, card.actCid);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(card) }, card.nym);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(card) }, card.nym);
 }
 
 /**

@@ -11,6 +11,7 @@ import { makeAddBagReactor, makeRemoveBagReactor } from "../src/wiki-compose-han
 import { makeListWikisReactor, makeWikiPinReactor, makeWikiUnpinReactor } from "../src/worker-data-verbs.js";
 import type { CatalogAccessor } from "../src/catalog-accessor.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
+import { plainField, plainRecord, plainRecordOrNull, tiddlerText } from "@lararium/mesh";
 
 type Tiddlers = Record<string, LarTiddlerRecord>;
 const rec = (title: string, fields: Record<string, string>): LarTiddlerRecord => ({ tiddler: { title, ...fields } });
@@ -20,8 +21,8 @@ function plane(url: string, tiddlers: Tiddlers) {
   const handle = { url, doc: () => ({ tiddlers }), change: (fn: (d: { tiddlers: Tiddlers }) => void) => fn({ tiddlers }), whenReady: async () => {} } as unknown as DocHandle<LarDoc>;
   const accessor: CatalogAccessor = {
     handle: async () => handle,
-    urlOf: async (k) => (tiddlers[k]?.tiddler["text"] as string | undefined) ?? null,
-    recordOf: async (t) => tiddlers[t] ?? null,
+    urlOf: async (k) => tiddlerText(tiddlers[k]),
+    recordOf: async (t) => plainRecordOrNull(tiddlers[t]),
     find: async () => null,
     storeOf: async () => null,
   };
@@ -70,7 +71,7 @@ describe("a system slug composes through the vessel's own record", () => {
     const oracleBefore = JSON.stringify(r.oracle.tiddlers);
     const add = makeAddBagReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post });
     const first = await add({ slug: "lares", bagUrl: X }, ctx);
-    const own = r.catalog.tiddlers[recipeUri("catalog", "lares")]!;
+    const own = plainRecord(r.catalog.tiddlers[recipeUri("catalog", "lares")]!);
     expect(first).toMatchObject({ status: "added", adopted: true, recipePlane: "catalog" });
     expect(own.tiddler["bag-stack"]).toBe(`${DEFAULT_STACK} ${X}`);
     expect(own.tiddler["composed-from"]).toBe(recipeUri("oracle", "lares"));
@@ -91,7 +92,7 @@ describe("a system slug composes through the vessel's own record", () => {
     const list = makeListWikisReactor(r.catalog.accessor, r.oracle.accessor);
     expect((await list({}, ctx))["wikis"]).toEqual([expect.objectContaining({ slug: "lares", kind: "system", composition: "own", defaultDiffers: true })]);
     await makeRemoveBagReactor(opts)({ slug: "lares", bagUrl: X }, ctx);
-    expect(r.catalog.tiddlers[recipeUri("catalog", "lares")]!.tiddler["bag-stack"]).toBe(DEFAULT_STACK);
+    expect(plainField(r.catalog.tiddlers[recipeUri("catalog", "lares")], "bag-stack")).toBe(DEFAULT_STACK);
     expect((await list({}, ctx))["wikis"]).toEqual([expect.objectContaining({ slug: "lares", kind: "system", composition: "own", defaultDiffers: false })]);
   });
 
@@ -141,7 +142,7 @@ describe("a system slug composes through the vessel's own record", () => {
       const added = await makeAddBagReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "elyncia", bagUrl: X }, ctx);
       expect(added).toMatchObject({ status: "added", recipePlane: "catalog" });
       expect(added).not.toHaveProperty("adopted");
-      expect(String(r.catalog.tiddlers[recipeUri("catalog", "elyncia")]!.tiddler["bag-stack"]).endsWith(X)).toBe(true);
+      expect(String(plainField(r.catalog.tiddlers[recipeUri("catalog", "elyncia")], "bag-stack")).endsWith(X)).toBe(true);
     });
   });
 });

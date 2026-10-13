@@ -22,9 +22,9 @@
 
 import {
   DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, WORKING_BINDINGS_PREFIX,
-  computeRecipeFingerprint, emptyLarDoc, mutableLarRecord, resolveSlotDoc, tiddlerText,
+  computeRecipeFingerprint, emptyLarDoc, storedLarRecord, resolveSlotDoc, tiddlerText,
   SYSTEM_BAGS, wikiBagUri, wikiDraftDocKey, requireLarDid,
-  type CompositeStore, type LarDoc, type LarTiddlerRecord, type SlotReach, type WikiSlotKind,
+  type CompositeStore, type LarDoc, type SlotReach, type WikiSlotKind,
 } from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
 import type { CapabilityProvider } from "./capability-provider.js";
@@ -125,7 +125,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     await args.repo.flush([handle.documentId]);
     const catalogHandle = await catalog.handle();
     catalogHandle.change((doc) => {
-      (doc.tiddlers as Record<string, LarTiddlerRecord>)[key] = mutableLarRecord(key, {
+      doc.tiddlers[key] = storedLarRecord(key, {
         text: handle.url,
         kind: "oracle",
         "face-reach": "vessel-only",

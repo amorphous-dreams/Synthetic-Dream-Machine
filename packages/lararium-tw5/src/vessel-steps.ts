@@ -127,7 +127,7 @@ export function recipeRecordOf(
   slug: string,
 ): LarTiddlerRecord | null {
   return effectiveRecipe(slug, (plane, title) =>
-    ((plane === "oracle" ? planes.islandHandle : planes.catalogHandle).doc()?.tiddlers?.[title] as LarTiddlerRecord | undefined),
+    (plane === "oracle" ? planes.islandHandle : planes.catalogHandle).doc()?.tiddlers?.[title],
   )?.record ?? null;
 }
 

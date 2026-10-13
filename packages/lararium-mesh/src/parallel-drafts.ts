@@ -36,6 +36,7 @@
 
 import { getConflicts } from "@automerge/automerge";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
+import { plainValue } from "./stored-value.js";
 
 /** What a doc store raises when a change leaves concurrent values standing on a record. */
 export interface ParallelDraftsChange {
@@ -83,10 +84,12 @@ function actorOf(opId: string): string {
   return at < 0 ? opId : opId.slice(at + 1);
 }
 
-/** A plain copy of a conflict value — Automerge hands back live proxies for maps and lists. */
+/** A plain copy of a conflict value: Automerge hands back live proxies for maps and lists, and an
+ *  immutable scalar as its wrapper. The JSON round trip detaches the proxies; the one read door
+ *  (`stored-value.ts`) unwraps every scalar. */
 function plain(value: unknown): unknown {
   if (value === null || typeof value !== "object") return value;
-  return JSON.parse(JSON.stringify(value)) as unknown;
+  return plainValue(JSON.parse(JSON.stringify(plainValue(value))) as unknown);
 }
 
 function same(a: unknown, b: unknown): boolean {

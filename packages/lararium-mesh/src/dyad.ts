@@ -49,13 +49,14 @@ import * as ed25519 from "@noble/ed25519";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { derivePersonaKeypair } from "./persona-hd.js";
 import type { LarDoc } from "./base-doc.js";
-import { mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
 import { sha256HexSync, canonicalJson, hex } from "./crypto.js";
 import {
   signDelegationEdge, verifyDelegationEdge, DELEGATION_DOMAIN, type DelegationEdge,
 } from "./delegation-edge.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { LarDid } from "./lar-did.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /** The domain a dyad id hashes under — so an id never collides with another content-address in the tree. */
 export { DYAD_ID_DOMAIN } from "./domains.js";
@@ -150,7 +151,7 @@ export function dyadSlotKey(id: string): string {
  */
 export function writeDyad(draft: LarDoc, record: DyadRecord): void {
   const key = dyadSlotKey(record.dyadId);
-  draft.tiddlers[key] = mutableLarRecord(key, { text: JSON.stringify(record) }, record.dyadId);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(record) }, record.dyadId);
 }
 
 /** A parsed payload reads as a dyad only at the exact FLOOR shape, and only when its id RE-DERIVES. */

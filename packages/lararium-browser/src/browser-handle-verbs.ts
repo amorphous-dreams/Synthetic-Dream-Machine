@@ -14,6 +14,7 @@ import {
   type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
   type PersonaPublicHandleRecord,
 } from "@lararium/mesh";
+import { tiddlerText } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 import { makeBrowserIdbPersonaVault, makeBrowserPublicHandleStore } from "./browser-vessel-identity.js";
 
@@ -129,8 +130,7 @@ export async function burnFaceBrowser(opts: {
     if (!opts.kelBoard) {
       throw new Error("[browser handle burn --from-persona] the persona-KEL board is required to resolve the owner head; use a self-burn.");
     }
-    const prefixEntry = (opts.daemonDoc as { tiddlers?: Record<string, unknown> }).tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER] as { tiddler?: { text?: string } } | undefined;
-    const personaKelPrefix = prefixEntry?.tiddler?.text ?? null;
+    const personaKelPrefix = tiddlerText(opts.daemonDoc.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]);
     if (!personaKelPrefix) {
       throw new Error("[browser handle burn --from-persona] no persona-KEL prefix on the daemon doc — cannot prove the owner; use a self-burn.");
     }

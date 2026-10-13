@@ -12,6 +12,7 @@ import {
   AutomergeDocStore, CompositeStore, emptyLarDoc,
   type LarDoc, type LarTiddlerRecord, type Repo as RepoType, wikiSlotUri,
 } from "@lararium/mesh";
+import { plainEntries } from "@lararium/mesh";
 import { IslandAdaptor } from "../src/island-adaptor.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import type { ShoreTimers } from "../src/hand-gate.js";
@@ -25,6 +26,12 @@ export const draftBag = wikiSlotUri("shore-road", "draft");
 export const personalBag = wikiSlotUri("shore-road", "personal");
 export const tempBag = wikiSlotUri("shore-road", "temp");
 export const remote = { kind: "crdt-remote", edgeIsland: "shore-road-peer" } as const;
+
+/** A document as a test reads it: `tiddlers` holds plain records, every stored value unwrapped. */
+export interface PlainDoc { readonly tiddlers: Record<string, LarTiddlerRecord> }
+export function plainDoc(doc: LarDoc | undefined): PlainDoc {
+  return { tiddlers: Object.fromEntries(plainEntries(doc?.tiddlers)) };
+}
 
 const meshRequire = createRequire(import.meta.resolve("@lararium/mesh"));
 export const Repo = meshRequire("@automerge/automerge-repo").Repo as new (options: { network: unknown[] }) => RepoType;
@@ -147,7 +154,8 @@ export async function shoreRig(opts: RigOptions = {}) {
     saved: () => ({
       canon: automerge.save(canonHandle.doc()), working: automerge.save(workingHandle.doc()), draft: automerge.save(draftHandle.doc()),
     }),
-    doc: (bag: string): LarDoc => (({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle, [personalBag]: personalHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc,
+    // A bag's document as a test reads it: every record unwrapped through the one door (`plainEntries`).
+    doc: (bag: string): PlainDoc => plainDoc((({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle, [personalBag]: personalHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc),
     changes: (bag: string): number => automerge.getAllChanges((({ [canonBag]: canonHandle, [workingBag]: workingHandle, [draftBag]: draftHandle, [personalBag]: personalHandle } as Record<string, typeof canonHandle>)[bag]!).doc() as LarDoc).length,
     stop: async (): Promise<void> => {
       unbridge();

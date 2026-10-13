@@ -43,10 +43,11 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
+import { plainRecordOrNull } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
   parseResidencyAction, withEffectRecord, sha256HexBytesSync, carrierHash, digestsEqual,
-  emptyLarDoc, mutableLarRecord, CATALOG_DOC_URI, ORACLE_DOC_URI,
+  emptyLarDoc, storedLarRecord, CATALOG_DOC_URI, ORACLE_DOC_URI,
   ORIGINAL_TIDDLER_PATHS, parseProvenance, serializeProvenance, recordPack, membersOfPack,
   ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
@@ -192,9 +193,10 @@ export function makeTw5Deserializer(engine: { readonly $tw: TW5Instance }): Tw5D
 }
 
 /**
- * How many records a LOAD lands before it hands the thread back to the host. A count, never a
- * duration: it bounds how long a vessel message or an operator's invocation waits behind a bulk
- * LOAD to one slice of landings, whatever one landing costs.
+ * How many records a LOAD slice gathers before it closes at the next carrier boundary. A slice lands as
+ * ONE store change and LOAD hands the thread back to the host between slices. A count, never a duration:
+ * it bounds how long a vessel message or an operator's invocation waits behind a bulk LOAD to one slice
+ * of landings, whatever one landing costs.
  */
 export const LOAD_YIELD_QUANTUM = 25;
 
@@ -642,7 +644,7 @@ async function storeIsRetired(store: LarTiddlerStore, bag: string): Promise<bool
  */
 async function bagRetiredDisposition(repo: Repo, bagUri: string, docUrl: string): Promise<boolean> {
   const handle = await findOrThrow(repo, docUrl, `bag ${bagUri} (retirement check)`).catch(() => null);
-  const raw = handle?.doc()?.tiddlers?.[effectRecordUri(bagUri, RETIRED_EVENT_ID)] as LarTiddlerRecord | undefined;
+  const raw = plainRecordOrNull(handle?.doc()?.tiddlers?.[effectRecordUri(bagUri, RETIRED_EVENT_ID)]);
   return isRetirementMarker(raw?.tiddler as Record<string, unknown> | undefined, bagUri);
 }
 
@@ -708,8 +710,7 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
     await opts.registerBag?.(action.bag);
     const regHandle = await registry.handle();
     regHandle.change((doc) => {
-      const tiddlers = doc.tiddlers as Record<string, LarTiddlerRecord>;
-      tiddlers[action.bag] = mutableLarRecord(action.bag, { text: docUrl, kind: "oracle" }, "lares-verb:CREATE");
+      doc.tiddlers[action.bag] = storedLarRecord(action.bag, { text: docUrl, kind: "oracle" }, "lares-verb:CREATE");
     });
     return { bag: action.bag, plane: action.plane, docUrl, count: 0 };
   });
@@ -764,10 +765,10 @@ function refuseInlinePointerKind(label: string, ext: string | undefined, meta: s
  * over any stale copy the sidecar carries (a projected `.meta` carries them as ordinary fields).
  * THE BLOB LAW, content-handle.ts.
  */
-async function landSkinnyHandle(
-  access: BagAccess, toBag: string, title: string, cid: string, size: number,
-  ext: string | undefined, changeId: string, o: ChangeOrigin, tw5?: Tw5Deserializer, meta?: string,
-): Promise<void> {
+function skinnyHandleRecord(
+  toBag: string, title: string, cid: string, size: number,
+  ext: string | undefined, changeId: string, tw5?: Tw5Deserializer, meta?: string,
+): LarTiddlerRecord {
   const metaFields: Record<string, unknown> = meta && tw5 ? { ...tw5.parseFields(meta) } : {};
   delete metaFields["title"];
   delete metaFields["text"];
@@ -777,7 +778,14 @@ async function landSkinnyHandle(
   // A sidecar's `_canonical_uri` never survives onto a base64-family pointer (the handle omits it by law).
   if (!("_canonical_uri" in handle)) delete metaFields["_canonical_uri"];
   const tiddler = { ...metaFields, ...handle, bag: toBag } as unknown as LarTiddlerRecord["tiddler"];
-  await writeIn(access, toBag, { tiddler, meta: { changeId } }, o);
+  return { tiddler, meta: { changeId } };
+}
+
+async function landSkinnyHandle(
+  access: BagAccess, toBag: string, title: string, cid: string, size: number,
+  ext: string | undefined, changeId: string, o: ChangeOrigin, tw5?: Tw5Deserializer, meta?: string,
+): Promise<void> {
+  await writeIn(access, toBag, skinnyHandleRecord(toBag, title, cid, size, ext, changeId, tw5, meta), o);
 }
 
 /**
@@ -824,7 +832,8 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
   const warnings: string[] = [];
   // REFUSE BEFORE ANY WRITE. Every carrier reads and every refusal fires first; only a LOAD whose every
   // carrier stands sound lands, so a refused carrier never leaves its siblings half-landed.
-  const landings: Array<() => Promise<void>> = [];
+  // ONE FAMILY PER CARRIER: the records a carrier decomposes into, in order. A family never splits.
+  const families: LarTiddlerRecord[][] = [];
   for (const carrier of carriers) {
     // Scenario B: an OVERSIZED RAW shard rides a skinny handle — the body stays in the cid/
     // tier, never entering the CRDT (nor RAM here — the gesture flags it, so we honor the flag
@@ -833,11 +842,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
       const title = carrier.title;
       if (!title) throw new Error("LOAD: a skinny carrier needs a title (its loci URI) — the handle names the body");
       if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
-      const cid = carrier.textCid;
-      landings.push(async () => {
-        await landSkinnyHandle(access, action.toBag, title, cid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
-        titles.push(title);
-      });
+      families.push([skinnyHandleRecord(action.toBag, title, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, tw5, carrier.meta)]);
       continue;
     }
     // The verb rode a reference, never a body: resolve the carrier body from the
@@ -848,10 +853,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     if (carrier.textCid && !CARRIER_SOH.test(carrierText) && isOversizedBody(carrier.size ?? carrierText.length) && carrier.title) {
       const title = carrier.title, cid = carrier.textCid;
       if (neverProjects(title) || declaresNoProjection(carrier.meta)) throw new NeverProjectedPathRefusal(title, title);
-      landings.push(async () => {
-        await landSkinnyHandle(access, action.toBag, title, cid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
-        titles.push(title);
-      });
+      families.push([skinnyHandleRecord(action.toBag, title, cid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, tw5, carrier.meta)]);
       continue;
     }
     // The ungated-large-inline wall (the second wall — the TARGET bag doc, not the daemon bag): past
@@ -896,29 +898,40 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
       throw new NeverProjectedPathRefusal(carrier.title ?? title, title);
     }
     warnings.push(...shoreWarnings(fieldsList));
+    const family: LarTiddlerRecord[] = [];
     for (const fields of fieldsList) {
       const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
       const title = own || (carrier.title ?? "");
       if (!title) {
         throw new Error("LOAD: carrier produced a record without a title — supply carrier.title or an meta uri-path");
       }
-      const tiddler = { ...fields, title } as LarTiddlerRecord["tiddler"];
-      const record: LarTiddlerRecord = { tiddler, meta: {} };
-      landings.push(async () => {
-        await landInBag(access, action.toBag, record, action.changeId, origin(action));
-        titles.push(title);
-      });
+      family.push({ tiddler: { ...fields, title } as LarTiddlerRecord["tiddler"], meta: { changeId: action.changeId } });
     }
+    if (family.length > 0) families.push(family);
   }
-  // A LOAD YIELDS TO THE HOST BETWEEN SLICES. A chain of promises never lets a host task in, so a bulk
-  // LOAD would hold the island's thread until its last record landed. LOAD decides nothing between its
-  // landings (it reads no standing record and removes none), so a hand edit or another verb that takes
-  // the slice in between cannot be overwritten by a decision made before the yield. The executors that
-  // DO decide before they write (INGEST's Confluence gate, MOVE's read-then-retract) take no yield.
-  for (let i = 0; i < landings.length; i++) {
-    if (i > 0 && i % LOAD_YIELD_QUANTUM === 0) await yieldHostTask();
-    await landings[i]!();
+  // A SLICE LANDS AS ONE STORE CHANGE, AND LOAD YIELDS TO THE HOST BETWEEN SLICES. A slice gathers whole
+  // families and closes at the first family boundary at or past the quantum, so a carrier's root and its
+  // children ride one change and a peer receives them together. A chain of promises never lets a host task
+  // in, so a bulk LOAD would hold the island's thread until its last record landed. LOAD decides nothing
+  // between its slices (it reads no standing record and removes none), so a hand edit or another verb that
+  // takes the turn in between cannot be overwritten by a decision made before the yield. The executors
+  // that DO decide before they write (INGEST's Confluence gate, MOVE's read-then-retract) take no yield.
+  const o = origin(action);
+  let slice: LarTiddlerRecord[] = [];
+  let landedSlices = 0;
+  const landSlice = async (): Promise<void> => {
+    if (slice.length === 0) return;
+    if (landedSlices > 0) await yieldHostTask();
+    await writeFamilyIn(access, action.toBag, slice, o);
+    for (const record of slice) titles.push(record.tiddler.title);
+    landedSlices++;
+    slice = [];
+  };
+  for (const family of families) {
+    slice.push(...family);
+    if (slice.length >= LOAD_YIELD_QUANTUM) await landSlice();
   }
+  await landSlice();
   return withWarnings({ sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId, count: titles.length, titles }, warnings);
 }
 
@@ -1396,6 +1409,16 @@ async function writeIn(access: BagAccess, bag: string, record: LarTiddlerRecord,
   const store = await access.write(bag);
   if (!store) throw new Error(`action-handler: target bag "${bag}" unreachable — no writable store (no silent misroute).`);
   await store.put(record, o);
+}
+
+/** Write whole families into the target bag's store as ONE change where the store writes atomically
+ *  (`writeFamily`); a store that holds no family write takes the records one by one, in order. Fails
+ *  loud when the bag has no writable store. */
+async function writeFamilyIn(access: BagAccess, bag: string, records: readonly LarTiddlerRecord[], o: ChangeOrigin): Promise<void> {
+  const store = await access.write(bag);
+  if (!store) throw new Error(`action-handler: target bag "${bag}" unreachable — no writable store (no silent misroute).`);
+  if (typeof store.writeFamily === "function") { await store.writeFamily(records, [], o); return; }
+  for (const record of records) await store.put(record, o);
 }
 
 /** Tombstone (KĀPAE hide — shadows lower bags) a title in the bag's own store.

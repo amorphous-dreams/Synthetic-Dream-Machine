@@ -106,7 +106,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/nexus-identity
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
-import { type LarDoc, mutableLarRecord, tiddlerText } from "./base-doc.js";
+import { type LarDoc, tiddlerText } from "./base-doc.js";
 import {
   kapaeAntigenDocUrl, edgeKapaeBoardDocUrl, crossroadsDocUrl, materializeSharedLarDoc,
 } from "./deterministic-doc.js";
@@ -115,6 +115,7 @@ import { EDGE_KAPAE_PREFIX } from "./edge-kapae.js";
 import {
   crossroadsAnnounceOf, foldRealmBags, realmBagAnnounceKey, realmDocUrl,
 } from "./realm-bag.js";
+import { storedLarRecord } from "./stored-record.js";
 
 /** What one act of the climb did. `from` names the islands actually READ, so a caller can say where it looked. */
 export interface BoardClimbResult {
@@ -194,7 +195,7 @@ async function carryAccretiveBoard(opts: {
   if (incoming.size > 0) {
     destination.change((draft) => {
       for (const [key, text] of incoming) {
-        draft.tiddlers[key] = mutableLarRecord(key, { text }, `board-climb:${nexusPubkey.slice(0, 18)}`);
+        draft.tiddlers[key] = storedLarRecord(key, { text }, `board-climb:${nexusPubkey.slice(0, 18)}`);
       }
     });
     console.log(`[${board}] carried ${incoming.size} entr${incoming.size === 1 ? "y" : "ies"} up the gradient — `
@@ -296,7 +297,7 @@ export async function reAnnounceRealmBooksAtIsland(opts: {
   if (owed.size > 0) {
     board.change((draft) => {
       for (const [key, text] of owed) {
-        draft.tiddlers[key] = mutableLarRecord(key, { text }, "board-climb:re-announce");
+        draft.tiddlers[key] = storedLarRecord(key, { text }, "board-climb:re-announce");
       }
     });
     console.log(`[crossroads] re-announced ${owed.size} book(s) of realm ${realmId.slice(0, 18)}… onto island `

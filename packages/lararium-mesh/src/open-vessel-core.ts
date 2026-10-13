@@ -23,13 +23,15 @@ import { CompositeStore } from "./composite-store.js";
 import type { LarTiddlerStore } from "./tiddler-store.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
 import { DOCUMENT_HANG_BOUND_MS, findOrThrow, WorkingDocumentUnavailableRefusal } from "./find-or-throw.js";
-import { emptyLarDoc, mutableLarRecord, tiddlerText, resolveOracleDoc, type LarDoc } from "./base-doc.js";
+import { emptyLarDoc, tiddlerText, type LarDoc } from "./base-doc.js";
 import { personaSiblingBagIds } from "./persona-scope.js";
 import { BAG_IDS, DAEMON_BAG_ID, ORACLE_DOC_URI, LARES_DOC_URI, LARARIUM_DOC_URI } from "./lar-uris.js";
 import type { PersonaPlaneRef } from "./persona-planes.js";
 import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
 import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
+import { storedLarRecord } from "./stored-record.js";
+import { resolveOracleDoc } from "./oracle-doc.js";
 
 /**
  * The doc URLs a vessel's bootstrap resolves.
@@ -216,7 +218,7 @@ export async function assembleVessel(keel: VesselKeel): Promise<VesselCoreAssemb
   const existingRef = tiddlerText(catalogHandle.doc()?.tiddlers?.[ORACLE_DOC_URI]) ?? null;
   if (existingRef !== islandHandle.url) {
     catalogHandle.change((doc) => {
-      doc.tiddlers[ORACLE_DOC_URI] = mutableLarRecord(ORACLE_DOC_URI, { text: islandHandle.url }, "vessel-boot");
+      doc.tiddlers[ORACLE_DOC_URI] = storedLarRecord(ORACLE_DOC_URI, { text: islandHandle.url }, "vessel-boot");
     });
   }
   // The lares bag does NOT register in the catalog registry: it rides the protocol-invariant

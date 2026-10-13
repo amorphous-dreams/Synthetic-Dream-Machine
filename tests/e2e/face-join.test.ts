@@ -41,6 +41,7 @@ import {
 } from "../../packages/lararium-keyhive/src/face-grant-record.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "../../packages/lararium-mesh/src/crypto.js";
 import { personaBagIdFor } from "../../packages/lararium-mesh/src/persona-scope.js";
+import { plainField } from "../../packages/lararium-mesh/src/stored-value.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 import type { DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
 
@@ -78,14 +79,14 @@ async function recordOffPlane(title: string, group: string, heads: UrlHeads): Pr
     const repo = new Repo({ storage: new NodeFSStorageAdapter(vesselStorageDir(lar)) });
     try {
       const cat = await repo.find<PlaneDoc>(catalogUrl as AutomergeUrl);
-      const planeUrl = cat.doc()?.tiddlers?.[personaBagIdFor(group)]?.tiddler?.text;
+      const planeUrl = plainField(cat.doc()?.tiddlers?.[personaBagIdFor(group)] as never, "text") as string | undefined;
       if (!planeUrl) { why = `the catalog names no plane for ${personaBagIdFor(group)}`; }
       else {
         const plane = await repo.find<PlaneDoc>(planeUrl as AutomergeUrl);
         const missing = heads.filter((h) => plane.metadata(h) === undefined);
         if (missing.length > 0) throw new Error(`${missing.length} of ${heads.length} head(s) not yet in the stored history`);
         const row = plane.view(heads).doc()?.tiddlers?.[title];
-        const text = row && !row.meta?.deleted ? row.tiddler?.text : undefined;
+        const text = row && !row.meta?.deleted ? plainField(row as never, "text") : undefined;
         return { rec: typeof text === "string" ? JSON.parse(text) as FaceGrantRecord : null, why: "read at the reported heads" };
       }
     } catch (err) {

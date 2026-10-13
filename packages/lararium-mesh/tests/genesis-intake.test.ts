@@ -30,6 +30,7 @@ import {
   type LarDoc,
 } from "../src/index.js";
 import { GENESIS_SEED_FORMAT, oracleGenesisDocUrl } from "../src/genesis-doc.js";
+import { plainField, plainMeta } from "../src/index.js";
 
 const CORE_BYTES = new TextEncoder().encode("fake-tw5-core");
 
@@ -143,9 +144,9 @@ describe("genesis-intake — the one intake core", () => {
     expect(first.incomingPluginsCid).toBe(pluginsCid);
     expect(live.doc()?.blobs?.[ENGINE_CORE_ID]).toBeTruthy();             // merge landed
     const engRec = live.doc()?.tiddlers?.[GENESIS_CID_ENGINE_TIDDLER];
-    expect(engRec?.tiddler?.["cid"]).toBe(engineCid);                     // engine cid recorded
-    expect(engRec?.meta?.["authority"]).toBe("genesis-reconcile");        // ONE record shape
-    expect(live.doc()?.tiddlers?.[GENESIS_CID_PLUGINS_TIDDLER]?.tiddler?.["cid"]).toBe(pluginsCid);
+    expect(plainField(engRec, "cid")).toBe(engineCid);                    // engine cid recorded
+    expect(plainMeta(engRec, "authority")).toBe("genesis-reconcile");     // ONE record shape
+    expect(plainField(live.doc()?.tiddlers?.[GENESIS_CID_PLUGINS_TIDDLER], "cid")).toBe(pluginsCid);
 
     // Equality: second pass reads current → no-op.
     const second = reconcileGenesisCid(live, incoming);
@@ -173,13 +174,13 @@ describe("genesis-intake — the one intake core", () => {
     const live = repo.create<LarDoc>(emptyLarDoc());
     const before = await importGenesisIsland(repo, await genesisBytes(withRegions(grammarWas)), "grammar-was");
     expect(reconcileGenesisCid(live, before).updated, "the first intake records all three regions").toBe(true);
-    expect(live.doc()?.tiddlers?.[GENESIS_CID_GRAMMAR_TIDDLER]?.tiddler?.["cid"]).toBe(grammarWas);
+    expect(plainField(live.doc()?.tiddlers?.[GENESIS_CID_GRAMMAR_TIDDLER], "cid")).toBe(grammarWas);
 
     // THE OVERTURN: the grammar moves, the engine true-name and this operator's collection stand.
     const after = await importGenesisIsland(repo, await genesisBytes(withRegions(grammarNow)), "grammar-now");
     const moved = reconcileGenesisCid(live, after);
     expect(moved.updated, "a grammar-only overturn must land").toBe(true);
-    expect(live.doc()?.tiddlers?.[GENESIS_CID_GRAMMAR_TIDDLER]?.tiddler?.["cid"], "the new grammar epoch is recorded").toBe(grammarNow);
+    expect(plainField(live.doc()?.tiddlers?.[GENESIS_CID_GRAMMAR_TIDDLER], "cid"), "the new grammar epoch is recorded").toBe(grammarNow);
 
     // CONTROL — with every region stable the reconcile still no-ops (the guard is not simply disabled).
     expect(reconcileGenesisCid(live, after).updated).toBe(false);

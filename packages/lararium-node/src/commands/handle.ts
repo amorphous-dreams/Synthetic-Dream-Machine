@@ -21,6 +21,7 @@ import {
   type LarDoc, type HandleCard, type HandleKelEvent, type HandleAttestation, type HandleClaim,
   type PersonaPublicHandleRecord,
 } from "@lararium/mesh";
+import { tiddlerText } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 import { larBootstrapPath } from "../vessel-paths.js";
 import {
@@ -222,8 +223,7 @@ export async function runHandleBurn(opts: HandleBurnOptions): Promise<HandleCard
   if (opts.fromPersona) {
     // OWNER-burn: the owning persona buries the face from above. Resolve its verified head op-key off the
     // per-Nexus persona-KEL board, then the pure hand-resolver decides whether the root seed may sign.
-    const prefixEntry = (face.daemonDoc as { tiddlers?: Record<string, unknown> }).tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER] as { tiddler?: { text?: string } } | undefined;
-    const personaKelPrefix = prefixEntry?.tiddler?.text ?? null;
+    const personaKelPrefix = tiddlerText(face.daemonDoc.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]);
     if (!personaKelPrefix) throw new Error("[lares handle burn] no persona-KEL prefix on the daemon doc — cannot prove the owner; use `--self`.");
     const nexusPubkey  = await loadVesselVerifyingKey();
     const boardIsland  = nodeNexusIsland({ ownVesselKey: nexusPubkey });
@@ -269,8 +269,7 @@ export async function runHandleRotate(opts: HandleRotateOptions): Promise<Handle
   const face = await openOwnFace("rotate", opts.repo, opts.handleIndex);
 
   // The OWNING PERSONA authorizes rotation. Resolve its verified head op-key off the per-Nexus persona-KEL board.
-  const prefixEntry = (face.daemonDoc as { tiddlers?: Record<string, unknown> }).tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER] as { tiddler?: { text?: string } } | undefined;
-  const personaKelPrefix = prefixEntry?.tiddler?.text ?? null;
+  const personaKelPrefix = tiddlerText(face.daemonDoc.tiddlers?.[PERSONA_KEL_PREFIX_TIDDLER]);
   if (!personaKelPrefix) throw new Error("[lares handle rotate] no persona-KEL prefix on the daemon doc — a face is owned by its persona; cannot authorize a rotation.");
   const nexusPubkey  = await loadVesselVerifyingKey();
   const boardIsland  = nodeNexusIsland({ ownVesselKey: nexusPubkey });

@@ -30,6 +30,7 @@ import {
 } from "@lararium/mesh";
 import type { DocHandle } from "@automerge/automerge-repo";
 import { resolveOrMintBinding, type CapabilityProvider, type DelegateArgs } from "@lararium/keyhive";
+import { plainRecordOrNull } from "@lararium/mesh";
 
 const AGENT_HEX  = "0xfeedface";
 const MINTED_BY  = "0xdeadbeef";
@@ -101,7 +102,7 @@ describe("resolveOrMintBinding", () => {
 
     // Binding tiddler recorded in the daemon doc under the personal prefix.
     const key = `${PERSONAL_BINDINGS_PREFIX}/${FINGERPRINT}`;
-    const rec = daemonHandle.doc()?.tiddlers?.[key];
+    const rec = plainRecordOrNull(daemonHandle.doc()?.tiddlers?.[key]);
     expect(tiddlerText(rec)).toBe(result.url);
     expect(rec?.tiddler.kind).toBe("personal-binding");
     expect(rec?.tiddler.fingerprint).toBe(FINGERPRINT);
@@ -186,7 +187,7 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     expect(delegations, "a faceless vessel delegated to somebody — to whom?").toHaveLength(0);
 
     const key = `${WORKING_BINDINGS_PREFIX}/${FINGERPRINT}`;
-    expect(daemonHandle.doc()?.tiddlers?.[key]?.tiddler?.["text"], "the binding was not recorded, so the next boot re-mints").toBe(result.url);
+    expect(tiddlerText(daemonHandle.doc()?.tiddlers?.[key]), "the binding was not recorded, so the next boot re-mints").toBe(result.url);
   });
 
   /** Reuse-on-present must not depend on a face either — a Herm reboots and finds its own doc. */
