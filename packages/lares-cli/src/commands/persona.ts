@@ -26,7 +26,7 @@
  */
 
 import {
-  loadPersonaGroupRootVerifyingKey, wearPersona, listPersonaRoots, loadActivePersonaIndex,
+  loadPersonaGroupRootVerifyingKey, wearPersona, listPersonaRoots, loadActivePersonaIndex, orphanPersonaRoots,
   makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
   faceStands, armRecoveryAtFounding, type FoundFaceResult,
 } from "@lararium/node";
@@ -244,6 +244,9 @@ async function personaWear(args: ParsedArgs): Promise<number> {
 async function personaList(args: ParsedArgs): Promise<number> {
   const held = await listPersonaRoots();
   const active = await loadActivePersonaIndex();
+  // A root row the roster never recorded: an act stopped between its two writes. No reader holds it, so it reads
+  // here by name, with the act that adopts it.
+  const orphans = await orphanPersonaRoots();
   const { petnames, declarations } = await fleetStores();
 
   const rows = await Promise.all(
@@ -260,8 +263,12 @@ async function personaList(args: ParsedArgs): Promise<number> {
 
   emit(args, {
     ok: true,
-    data: { active: active ?? null, personas: rows },
+    data: { active: active ?? null, personas: rows, orphans },
     human: () => {
+      for (const index of orphans) {
+        console.log(`persona root h${index} stands with no roster line (a founding stopped between its two writes) — nothing reads it as held.`);
+        console.log(`  adopt it:  lares persona new ${index} --name '<label>'   (the root loads; nothing mints over it)`);
+      }
       if (rows.length === 0) {
         console.log("no personas held — stand the founder with `lares vessel stand --install`, then name each persona and add a seat claim with `--seat` (no --handle needed).");
         return;

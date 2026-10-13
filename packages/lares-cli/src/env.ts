@@ -146,7 +146,9 @@ export async function vesselDid(): Promise<string> {
  * DID plus a signed edge instead of a root, and an unfounded vessel holds neither.
  */
 export async function personaRootDid(handleIndex = 0): Promise<string> {
-  const vk = await loadPersonaGroupRootVerifyingKey(handleIndex).catch(() => undefined);
+  // A custody refusal (a locked vessel key, a roster that stands and does not open) keeps its own name: only a
+  // roster that holds no line here reads as no root.
+  const vk = await loadPersonaGroupRootVerifyingKey(handleIndex);
   if (!vk) {
     throw new Error(
       `no persona root h${handleIndex} under ${larDataDir()} — this vessel custodies no operator root ` +

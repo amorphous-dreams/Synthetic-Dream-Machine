@@ -45,6 +45,7 @@ import { storedRecord } from "@lararium/mesh";
 import { assembleBulb, bulbSeed, bulbSeedInventory, type BulbArtifact } from "./bulb.js";
 import { parseGenesisSeed } from "./genesis-artifact.js";
 import { generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
+import { openedCustody } from "./custody-seat.js";
 import { writeCasEntriesFs, casDirForStorage } from "./node-cas.js";
 
 /** The HTTP transport a pull rides — injected so a test drives it in-process (no real socket needed). */
@@ -157,6 +158,11 @@ export async function kindleFromBulb(args: {
 }): Promise<KindleResult> {
   const { bulb, repo, storageDir } = args;
   const seed = bulbSeed(bulb);
+
+  // 0. THE CUSTODY STANDS OPEN BEFORE THE FIRST BYTE LANDS. A kindle mints this device's vessel key, and a vessel
+  //    key mints only inside a held custody (its next-key seed seals under the vessel key). A device with no open
+  //    custody refuses here, by name, with no blob mirrored and no island materialized.
+  await openedCustody();
 
   // 1. VALIDATE the genesis the bulb carries (Automerge-loadable, TW5 core + packed Lares plugin present).
   const bytes = materializeGenesisDoc(seed);

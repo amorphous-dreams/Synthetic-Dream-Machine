@@ -65,7 +65,7 @@ import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { mountOracleReadFace }          from "./oracle-read-face.js";
-import { loadVesselSigningSeed, generateOrLoadVesselIdentity } from "./node-vessel-identity.js";
+import { loadVesselSigningSeed, loadVesselIdentity } from "./node-vessel-identity.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
 import type { AutomergeUrl }            from "@automerge/automerge-repo";
@@ -684,7 +684,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   // The gate arms with this vessel's operator verifying key, so this vessel already HOLDS the one thing a
   // crossing leaf cannot obtain for itself. Printing it turns an unperformable ritual into an instruction.
   // The load runs idempotent — the same identity the gate armed with, read back, never a second one.
-  const gateIdentity = await generateOrLoadVesselIdentity();
+  const gateIdentity = await loadVesselIdentity();
   console.log(`[lararium] gate key: ${gateIdentity.verifyingKey}`);
   console.log("[lararium] browser crossing — open one of these on the device that crosses:");
   const crossings = reachFaces.map((face, i) => ({ face, composition: originCompositions[i]! }));

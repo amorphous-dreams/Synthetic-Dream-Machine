@@ -12,7 +12,9 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
+import { readVkCarrier } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
+import { openColdCustodyRow } from "../src/custody-seat.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 
 const freshDataDir = (): string => join(mkdtempSync(join(tmpdir(), "lares-prerot-")), ".lararium");
@@ -53,7 +55,12 @@ describe("vessel-identity pre-rotation commitment (KERI n hook)", () => {
       expect(nextName, "next-seed written at generation").toBeTruthy();
 
       const kel  = JSON.parse(readFileSync(join(idDir, kelName!), "utf8"));
-      const next = JSON.parse(readFileSync(join(idDir, nextName!), "utf8"));
+      // The next-key seed rests COLD, sealed under the vessel key: the file carries a seal and no key hex, and it
+      // opens for one act through the custody seat.
+      expect(readVkCarrier(readFileSync(join(idDir, nextName!)))).toBe("sealed");
+      const next = await openColdCustodyRow("identity", nextName!, (plain) =>
+        JSON.parse(new TextDecoder().decode(plain)) as { nextVerifyingKey: string; nextSigningKey: string });
+      expect(readFileSync(join(idDir, nextName!)).includes(Buffer.from(next.nextVerifyingKey))).toBe(false);
       expect(kel.t).toBe("icp");
       expect(kel.s).toBe("0");
       expect(kel.k[0]).toBe(verifyingKey);          // current key revealed

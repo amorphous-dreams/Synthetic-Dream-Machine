@@ -287,6 +287,18 @@ const { readNexusDoc }            = await import(`${D}/nexus-doc.js`);
 const { nodeNexusIsland }         = await import(`${D}/nexus-standing.js`);
 const { heldNexusLeaves }         = await import(`${D}/nexus-leaf.js`);
 const { loadVesselVerifyingKey, loadPersonaGroupRootSeed } = await import(`${D}/node-vessel-identity.js`);
+// The persona roster and each root rest sealed under the vessel key. This helper stands where a command stands with
+// no vessel answering it: it seats its own holder and opens it, under the staged root's published test route, at the
+// first sealed row a mode reads.
+const { FsCustodyIo, makeCustodyHolder, seatCustodyWhenNeeded, vesselCustodyHomes } = await import(`${D}/index.js`);
+const { TEST_PASSPHRASE } = await import(`${process.env.REPO_ROOT}/tools/test-custody-route.mjs`);
+seatCustodyWhenNeeded(
+  () => { const homes = vesselCustodyHomes(); return makeCustodyHolder({ io: new FsCustodyIo(homes), homes }); },
+  async (holder) => {
+    const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+    if (opened.reading !== "opens" && opened.reading !== "already-unlocked") throw new Error(`the staged custody reads ${opened.reading} under the test route`);
+  },
+);
 
 /** This vessel's reading of the Nexus at its primary charter: roster head, board as deny board, antigen. */
 async function reading() {

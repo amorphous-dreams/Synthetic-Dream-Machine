@@ -26,7 +26,7 @@ import {
   persistVeilArchive, loadVeilArchive, veilArchivePath, archivePath, type IdentityAnchors,
 } from "../src/identity-anchors.js";
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
-import { seatCustody, unseatCustody } from "../src/custody-seat.js";
+import { seatCustody } from "../src/custody-seat.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -104,8 +104,8 @@ describe("the identity home's sealed family", () => {
     ["anchors-h0.json", "anchor-roster.json", "keyhive-archive.bin", "veil-archive-h0.bin"].forEach((f, i) => {
       expect(readFileSync(at(f)).equals(before[i]!), f).toBe(true);
     });
-    // no seat at all reads the same floor
-    unseatCustody(c.holder);
+    // no seat at all reads the same floor: every seat cleared, the suites' when-needed seat among them
+    seatCustody(null);
     await expect(loadIdentityArchive()).rejects.toThrow(CustodyLocked);
     seatCustody(c.holder);
   });

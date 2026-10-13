@@ -99,6 +99,18 @@ export const heavy = [
  */
 export const mainExclude = ["tests/e2e/**", ...heavy];
 
+/**
+ * The suites' custody: a when-needed seat that founds or opens a scratch custody at the first sealed row a suite
+ * touches under its own temp root (`tests/support/scratch-custody-setup.ts`). Both projects load it.
+ */
+const setupFiles = ["tests/support/scratch-custody-setup.ts"];
+/**
+ * Room for a founding. A vector that reaches a sealed row under a fresh root founds that root's custody first, and
+ * the founding derives a key from a passphrase (about half a second alone, several under a loaded run). The default
+ * five seconds then measures the box, never the vector, so every vector here gets this much.
+ */
+const testTimeout = 30_000;
+
 export default defineConfig({
   resolve: { alias },
   test: {
@@ -117,6 +129,8 @@ export default defineConfig({
           name: "heavy",
           environment: "node",
           include: heavy,
+          setupFiles,
+          testTimeout,
           // Serial: one live WS server / nested island at a time — no cross-file resource storm.
           fileParallelism: false,
         },
@@ -127,6 +141,8 @@ export default defineConfig({
           name: "main",
           environment: "node",
           include: ["tests/**/*.test.ts"],
+          setupFiles,
+          testTimeout,
           exclude: mainExclude,
         },
       },

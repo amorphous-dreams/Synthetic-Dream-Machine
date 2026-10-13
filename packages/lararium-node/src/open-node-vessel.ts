@@ -153,7 +153,7 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { generateOrLoadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
+import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
 import { DaemonAuthGate, type SocketSorter }       from "./daemon-auth-gate.js";
 import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers, ownPlacePosture, type PlaceClass } from "./socket-sorter.js";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
@@ -579,6 +579,11 @@ async function prepareNodeBootOn(
   // mask was on. A worn non-founding face carries its own mount material in its anchors — the pins below
   // default to it. Null means no switch is owed (h0, nothing worn, or anchors without the material).
   const wornMount = sovereign ? await sovereign.wornMount(storageDir) : null;
+  // THE ROSTER READS WHOLE BEFORE ANYTHING STANDS ON IT. Every reading of what this vessel carries by persona (a
+  // seated chair, a kept consent, the worn leaf) answers off the persona roster, and those readings answer empty
+  // when they cannot read. So a sovereign composition reads the roster here, once, with no catch: a roster that
+  // stands and does not open refuses this composition by row name, and the vessel stands at the floor naming it.
+  if (sovereign) await sovereign.personaRoots();
   if (wornMount) {
     console.log(`[persona] worn h${wornMount.handleIndex} — the mount re-pins from its OWN anchors; the founding face's pins name h0`);
   }
@@ -819,7 +824,8 @@ async function prepareNodeBootOn(
   emit("catalog-ready");
 
   // ── Operator identity (node-held) ──────────────────────────────────────────
-  const vesselIdentity = await generateOrLoadVesselIdentity();
+  // Load-only: a boot mints no key. A vessel with no key file refuses here by name and points at the founding.
+  const vesselIdentity = await loadVesselIdentity();
   const vesselSeed     = await loadVesselSigningSeed();
 
   // ── The #59 antigen ring — STOOD now the island this vessel stands in is resolved ─────────────
@@ -1028,11 +1034,15 @@ async function prepareNodeBootOn(
   };
   // The ring reads this vessel's own faces as fleet roots, the realm of its charter, and every realm its ledger
   // notes. A board that changes (a peer's act arriving by sync) refolds it, and the Repo re-reads its verdicts.
-  const shadowRing = makeEdgeShadowRing({
+  // THE FLEET ROOTS REST SEALED. The roots this vessel serves read off the persona roster, a row under the vessel
+  // key, so a composition at the floor cannot name one. It folds no fleet board and, below, reads EVERY device as
+  // set aside: a floor serves no fleet lane, and the first unlock stands a composition that reads the roster.
+  const builtRing = makeEdgeShadowRing({
     repo, vesselKey: vesselIdentity.verifyingKey, sealHome,
     fleetRoots: async () => {
+      if (!sovereign) return [];
       const roots: string[] = [];
-      for (const index of await listPersonaRoots()) {
+      for (const index of await sovereign.personaRoots()) {
         const key = await loadPersonaGroupRootVerifyingKey(index);
         if (key) roots.push(key);
       }
@@ -1043,6 +1053,14 @@ async function prepareNodeBootOn(
     realmNymOfPeer:  (peerId) => peerContractNymMap.get(peerId) ?? null,
     onRefold:        () => { reverdict(); dropNoLongerHeld(); },
   });
+  // AT THE FLOOR EVERY FLEET LANE STAYS SHUT. The sorter reads each device as set aside, so no socket sorts
+  // same-operator; and the share verdict's own consult (`aside`, read first on every lane) sets a proven sibling
+  // aside too, so the sibling lane carries nothing. A peer that rides neither lane keeps the public shelf.
+  const shadowRing: EdgeShadowRing = sovereign ? builtRing : {
+    ...builtRing,
+    deviceAside: () => true,
+    aside: (peerId) => Boolean(siblings?.provenKeyOf(peerId as PeerId)) || builtRing.aside(peerId),
+  };
   edgeShadows = shadowRing;
   stood.push({ what: "the edge shadow ring", down: () => shadowRing.dispose() });
   await shadowRing.refold();

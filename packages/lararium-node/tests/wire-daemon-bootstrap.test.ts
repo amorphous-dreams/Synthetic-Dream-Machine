@@ -15,6 +15,7 @@
  *
  * The file stands real boots (tool processes, a store claim, a Repo), so it sits in the serial `heavy` project.
  */
+import { generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { execFileSync } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
@@ -58,7 +59,7 @@ const priorAmbient = new Map<string, string | undefined>();
 let boots = 0;
 let seeds = 0;
 
-beforeAll(() => {
+beforeAll(async () => {
   priorRoot = process.env["LAR_ROOT"];
   for (const name of AMBIENT) { priorAmbient.set(name, process.env[name]); delete process.env[name]; }
   root = mkdtempSync(join(tmpdir(), "wire-daemon-bootstrap-"));
@@ -66,6 +67,9 @@ beforeAll(() => {
     execFileSync("node", [join(repoRoot, "tools", tool), root], { env: { ...process.env, LAR_ROOT: root }, stdio: "pipe" });
   }
   process.env["LAR_ROOT"] = root;
+  // A boot loads its vessel key and never mints one, so the staged root gets its key here, inside the custody the
+  // seeding founded (the suites' scratch custody opens it under the published test route).
+  await generateOrLoadVesselIdentity();
 }, TIMEOUT_MS);
 
 afterAll(async () => {

@@ -31,7 +31,7 @@
  * hearth's board directly off its own store, so it proves the CONTRACT, not the wire's refold latency.
  */
 import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -191,6 +191,10 @@ async function countsQuorumOnly(entry: CarriageEntry, roster: KahuQuorumSeats): 
   }
   return counted.size >= roster.threshold;   // NO verifyContractIn — the conscripting count
 }
+
+// Each hearth founds its own custody at its first sealed row (a key derivation apiece), so a vector that stands two
+// hearths and walks both founding rites takes more room than the default.
+vi.setConfig({ testTimeout: 60_000 });
 
 describe("LIVE-WIRE B4 — two hearths write each other into membership (the bilateral genesis contract)", () => {
   it("BOTH sides fold the OTHER operator in: A names B a MEMBER, B names A a MEMBER", async () => {

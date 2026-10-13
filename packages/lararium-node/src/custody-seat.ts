@@ -26,6 +26,8 @@
  *   `updateCustodyRow` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
  *                      on its standing ones. The decision receives the row's plaintext (`null` when nothing stands)
  *                      and every other reading refuses before it runs, so it decides over the row itself or not at all.
+ *   `openColdCustodyRow` / `updateColdCustodyRow`  the same two doors for a COLD row: its plaintext lives for one
+ *                      act and zero-fills when the act settles.
  * No reader folds a refusal to empty, so no caller mints over a row it could not read.
  *
  * Node-main only: a worker never imports this module.
@@ -119,6 +121,34 @@ export async function updateCustodyRow<T>(
   home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
 ): Promise<T> {
   return (await openedCustody()).updateRow(home, file, (r) => {
+    if (r.reading === "opens") return decide(r.plaintext);
+    if (r.reading === "absent") return decide(null);
+    if (r.reading === "locked") throw new CustodyLocked();
+    throw new CustodyRowUnavailable(home, file, r.why);
+  });
+}
+
+/**
+ * Open one COLD row for one act. `act` receives the row's plaintext, which zero-fills when the act settles, so the
+ * act copies out what it keeps. A row with nothing at its path refuses `CustodyRowUnavailable` reading `absent`,
+ * as every reading but a whole one does: a cold row holds a secret some act already counted on.
+ */
+export async function openColdCustodyRow<T>(
+  home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T,
+): Promise<T> {
+  return (await openedCustody()).openColdRow(home, file, act);
+}
+
+/**
+ * Read one COLD row, decide, and write it, as one custody holder. `decide` receives the row's plaintext, or `null`
+ * when nothing stands there, and answers its next plaintext (`null` writes nothing) beside the caller's answer.
+ * The plaintext handed in zero-fills once `decide` returns. A row that stands and does not open refuses by name
+ * before `decide` runs, so a mint never lands over a secret it could not read.
+ */
+export async function updateColdCustodyRow<T>(
+  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
+): Promise<T> {
+  return (await openedCustody()).updateColdRow(home, file, (r) => {
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
     if (r.reading === "locked") throw new CustodyLocked();

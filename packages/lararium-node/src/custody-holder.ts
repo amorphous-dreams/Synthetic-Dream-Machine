@@ -92,6 +92,13 @@ export interface CustodyHolder {
    */
   updateRow<T>(home: CustodyHome, file: string, decide: (standing: RowReading) => RowUpdate<T>): Promise<T>;
   openColdRow<T>(home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T): Promise<T>;
+  /**
+   * Read a cold row, decide, and write it as ONE custody holder, for a cold row whose mint must never land over a
+   * standing one. `decide` receives the row's standing reading and answers its next plaintext, or `null` to leave
+   * it as it stands. The standing plaintext zero-fills once the decision returns, so the decision keeps a copy of
+   * what it needs and nothing else.
+   */
+  updateColdRow<T>(home: CustodyHome, file: string, decide: (standing: RowReading) => RowUpdate<T>): Promise<T>;
   derive(domain: string): Uint8Array;
   /** The dyad veil for `groupTag`, derived from the custody root. */
   veil(groupTag: string): Promise<{ signingKey: string; verifyingKey: string }>;
@@ -218,6 +225,29 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
           standing.reading === "opens" ? { reading: "opens", plaintext: standing.plaintext }
             : standing.reading === "absent" ? { reading: "absent" }
               : { reading: "unavailable", why: standing.reading }),
+      }));
+    },
+    async updateColdRow(home, file, decide) {
+      if (vk === null || !accepting) throw new CustodyLocked();
+      const { row, path, name } = address(home, file, true);
+      if (row.custody !== "cold") throw new CustodyRowUnknown(home, file, "updateColdRow requires a cold row");
+      const key = vk;
+      return operation(() => updateSealedCarrier({
+        io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass },
+        decide: (standing) => {
+          try {
+            const next = decide(
+              standing.reading === "opens" ? { reading: "opens", plaintext: standing.plaintext }
+                : standing.reading === "absent" ? { reading: "absent" }
+                  : { reading: "unavailable", why: standing.reading });
+            // A decision that hands the standing buffer back as the next plaintext gets its own copy, so the
+            // zero-fill below never reaches the bytes about to seal.
+            return next.plaintext !== null && standing.reading === "opens" && next.plaintext.buffer === standing.plaintext.buffer
+              ? { ...next, plaintext: Uint8Array.from(next.plaintext) } : next;
+          } finally {
+            if (standing.reading === "opens") standing.plaintext.fill(0);
+          }
+        },
       }));
     },
     async openColdRow(home, file, act) {

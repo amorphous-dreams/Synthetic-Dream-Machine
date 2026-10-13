@@ -61,6 +61,21 @@ function stage(tag, { found }) {
     mkdirSync(dir, { recursive: true });
     cpSync(join(repo, "genesis", "seed.json"), join(dir, "seed.json"));
     symlinkSync(join(repo, "genesis", "cas"), join(dir, "cas"));
+    // A vessel key, minted inside the staged custody (its next-key seed seals under the vessel key, so a boot at
+    // the floor mints none): the boot then reaches its caps and refuses there, over the bootstrap.
+    const mint = spawnSync(process.execPath, ["--input-type=module", "-e", `
+      import { generateOrLoadVesselIdentity } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/node-vessel-identity.js"))};
+      import { FsCustodyIo, makeCustodyHolder, seatCustody, vesselCustodyHomes } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/index.js"))};
+      import { TEST_PASSPHRASE } from ${JSON.stringify(join(repo, "tools/test-custody-route.mjs"))};
+      const homes = vesselCustodyHomes();
+      const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
+      const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+      if (opened.reading !== "opens") throw new Error("the staged custody reads " + opened.reading);
+      seatCustody(holder);
+      await generateOrLoadVesselIdentity();
+      await holder.lock();
+    `], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root } });
+    assert.equal(mint.status, 0, `vessel key mint: ${mint.stderr}`);
   }
   return root;
 }
@@ -163,12 +178,10 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.equal(phases.at(-1), "live", "T1 control: one composition reaches live");
     await zero.daemon.workerEa;
     assert.ok(atFloor.seen.length > 0, "the read recorder saw this process read (a silent recorder proves nothing)");
-    // ONE FAMILY the floor still reaches: the carried-Nexus reading lists the persona roster and reads each listed
-    // root's public key (`carried-set`). Both rows belong to the vessel-identity family, which rests outside the
-    // sovereign seam until that family moves behind the custody holder.
+    // The floor reaches NO private row. The carried-Nexus reading asks for the persona roster (`carried-set`), the
+    // roster rests sealed behind the custody seat, and a floor holds no key: the seat refuses before any file opens.
     const reached = [...new Set(atFloor.seen.map(privateRow).filter(Boolean))];
-    const identityFamily = new Set(["persona-roster", "persona-root"]);
-    assert.deepEqual(reached.filter((row) => !identityFamily.has(row)), [], "T2: the floor reads, probes and writes no hot or cold row");
+    assert.deepEqual(reached, [], "T2: the floor reads, probes and writes no hot or cold row");
     await zero.teardown();
     assert.deepEqual(privateRows(), before, "T2: the floor leaves every private row byte-identical and mints none");
     assert.equal(wss.listenerCount("connection"), baseline);
@@ -192,7 +205,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     const one = sovereignly.value;
     assert.equal(phases.at(-1), "live", "T1: a composition reaches live on the floor a torn-down one stood on");
     await one.daemon.workerEa;
-    for (const name of ["wornMount", "walkRecords", "archive", "veilArchive", "veil", "writeArchive", "writeVeilArchive"]) {
+    for (const name of ["wornMount", "personaRoots", "walkRecords", "archive", "veilArchive", "veil", "writeArchive", "writeVeilArchive"]) {
       assert.ok(first.calls[name] >= 1, `T2 control: the ${name} reader ran (${first.calls[name]})`);
     }
     // The island's exports landed through the custody write door: both rows moved, and both rest sealed.
