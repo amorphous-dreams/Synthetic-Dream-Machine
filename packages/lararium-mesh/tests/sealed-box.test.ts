@@ -8,9 +8,9 @@
  * can catch is not a law the harness holds.
  *
  * THE LAWS, and the guard each one gets below:
- *   ① RANDOMIZED, on purpose — a fresh ephemeral and a fresh AEAD nonce every call (semantic security). This is the
- *     half of the deterministic/randomized pair that had no guard; `ciphertext-cas.test.ts` already holds the cad
- *     seal's DETERMINISM. The two must never fuse behind one flag, so both ends now have a witness.
+ *   ① RANDOMIZED, on purpose — a fresh ephemeral and a fresh AEAD nonce every call (semantic security). The sealed
+ *     value draws fresh too (`sealed-chunk.test.ts`, `ciphertext-cas.test.ts`); the two seals differ in who may
+ *     open and in what they bind, and no flag folds them into one.
  *   ② The HKDF `info` carries the protocol domain and NEVER defaults — it alone keeps a grant-seal key and a
  *     keyring-seal key from deriving identically out of one ECDH between the same device pair at admission.
  *   ③ SEAL THROWS, OPEN WITHHOLDS — addressing nobody must never read as delivery; and every open failure draws the

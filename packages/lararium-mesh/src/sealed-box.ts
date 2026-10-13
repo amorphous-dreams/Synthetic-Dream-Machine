@@ -20,10 +20,11 @@
  * something to nobody. Opening returns `null` on ANY failure (wrong key, tampered ciphertext, malformed frame) —
  * withhold, never forge, and never leak WHICH check failed.
  *
- * THIS IS NOT THE cad SEAL. `sealBodyOnCas` is DETERMINISTIC on purpose (same content + same secret ⇒ same cid,
- * which is the whole per-Nexus dedup property). This primitive is RANDOMIZED on purpose (a fresh ephemeral and a
- * fresh AEAD nonce every call, which is semantic security). The two must never fuse behind one flag: one wrong flag
- * would destroy dedup on one path or semantic security on the other, and a round-trip test would catch neither.
+ * THIS IS NOT THE SEALED VALUE. A sealed value (`sealed-chunk`) seals under a symmetric content key a bag's readers
+ * share, binds a bag, a key version, a role and a reference, and takes an address over its ciphertext. This
+ * primitive seals to ONE recipient's public key under a fresh ephemeral and a fresh AEAD nonce, and binds a
+ * protocol domain and a session. Both draw fresh randomness on every call (semantic security); they differ in who
+ * may open and in what they bind, so neither stands in for the other and no flag folds them into one seal.
  *
  * BYTES IN, BYTES OUT. No hex, no base64url, no JSON — every carriage encoding stays caller-side, so the wire shapes
  * (`SealedGrant`, `KeyringEnvelope`) keep their own guards and never fuse.
