@@ -12,7 +12,7 @@ mana       = 14
 manao      = 14
 manaoio    = 13
 role       = "WORK HANDOFF, addressed — the loops the founding hearth handed to the lares(Codex) nakama-crew invited 2026-09-14, and the crew's own roadmap after it. Per item: what it names, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. #/reconciled reads every item against the code as landed, superseded or open; the sections after it keep their dated measurements as the record. NEVER a shift ledger (docs/handoff carries that), NEVER the hearth ledger (docs/pono/hearths carries that)."
-status-why = "RETIRING: folded to `lar:///ha.ka.ba/lares/docs/stable-founding-road` (#/the-loops, #/the-trains, #/decisions, #/open), `lar:///ha.ka.ba/lararium/mesh/causal-island#/selected-contracts` and `lar:///ha.ka.ba/lares/docs/handoff#/traps`, welded, nothing points here"
+status-why = "RETIRING: folded to `lar:///ha.ka.ba/lares/docs/stable-founding-road` (#/the-loops, #/the-trains, #/decisions, #/open), `lar:///ha.ka.ba/lararium/mesh/causal-island#/selected-contracts` and `lar:///ha.ka.ba/lares/docs/handoff#/traps`, welded, nothing points here. It keeps the shelf while the operator still owns leans it carried: the Offering Antigen scope with the charter-inception identity under it, the crossing record's emission threshold and destination receipts, the ungated slot child, and DNS custody past the credential; each now reads in `lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`, and the fire waits on the controller's word"
 tags       = ["docs/handoff", "lifecycle/retiring"]
 title      = "lar:///ha.ka.ba/lares/docs/crew-handoff-codex"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -1578,6 +1578,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;veBnQg5z9zAjZ-hgJydHo5tpoJ1Zg0mX0FFC4d9I0cw
+<<^ code="&#x0003;">>ni:///sha-256;kDLjFq2wmqY1zOXxsTEoEOR2Gt0NAFzB1Azxrq1h7-8
 
 <<^ code="&#x0004;" -> to="?">>

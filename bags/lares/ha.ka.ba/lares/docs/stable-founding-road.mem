@@ -378,7 +378,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 !!! HARBOR
 * `A1` The reach face's code half: nothing a request header says names the vessel; a mismatch logs once; no setting prints a loud notice at boot; a forged-header test (`main.ts`). A.
 * `A2` The renewal verb with its terminator reload, and a first live issuance. The operator supplies the domain and the two credential files. A.
-* `A3` Per-name resolver records (two hearths, two addresses); the terminator sets its header buffer by name, and a walk measures a large `Sec-WebSocket-Protocol` token through it. A.
+* `A3` Per-name resolver records (two hearths, two addresses); the resolver answers one address for the whole zone today (`docker-compose.surface.yml`). A.
 * `A4` LAN discovery's network mode and one run on the real LAN. Operator's hands. A.
 * `A5` The release: a real multi-arch index, its push and signature, after the last re-bake and the last wire change. Operator's hands. A.
 * `A6` One whole `mesh-scenarios all` run and one `harbor-walk-witness` run on the current image. A.
@@ -603,7 +603,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 !!! A ~ HARBOR's tail (waits on nothing but the operator's hands for its live steps)
 # ''Landed ahead'': the issuer slot and its witness against a test authority.
 # The reach face's code half.
-# Per-name resolver records and the header buffer.
+# Per-name resolver records.
 # Renewal.
 # LAN discovery's network mode.
 # One run of the mesh scenarios and the harbor walk on the current image.
@@ -747,6 +747,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cNuuB9tLe5KBjrSvHS_f2lEpzFxEaR8OW_fmYMbnRJ0
+<<^ code="&#x0003;">>ni:///sha-256;pyg4onOXmJs8RzNf9vRmvtWum2jNJd0eQXyaIhoKlzs
 
 <<^ code="&#x0004;" -> to="?">>

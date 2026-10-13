@@ -11,7 +11,7 @@ mana       = 18
 manao      = 18
 manaoio    = 18
 role       = "emergency-room transfer for the Codex crew; records the observed repository boundary, current wounds, committed repairs, operator-held forks, and a cold-start triage order"
-status-why = "RETIRING: folded to `lar:///ha.ka.ba/lares/docs/stable-founding-road` (#/the-loops, #/open) and `lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record`, welded, nothing points here"
+status-why = "RETIRING: folded to `lar:///ha.ka.ba/lares/docs/stable-founding-road` (#/the-loops, #/open) and `lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record`, welded, nothing points here. It keeps the shelf while the operator still owns leans it carried: the Offering Antigen scope with the charter-inception identity under it; each now reads in `lar:///ha.ka.ba/lares/docs/stable-founding-road#/open`, and the fire waits on the controller's word"
 tags       = ["docs/handoff", "lifecycle/retiring", "triage/emergency-room", "mesh/offering-antigen"]
 title      = "lar:///ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -201,5 +201,5 @@ A context-free reviewer read the preceding revision of this carrier against the 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bscQhlv6qQIoZno03ve9v_LwvjBM9OWWIhu-UJz7tU0
+<<^ code="&#x0003;">>ni:///sha-256;rWtzSTxaw0nflE2tAaN5Xlo_gRtmPw04OrIKQAE-NoI
 <<^ code="&#x0004;" -> to="?">>
