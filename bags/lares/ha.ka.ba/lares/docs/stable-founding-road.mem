@@ -407,6 +407,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `K9` The cadence inception record, cited once by the founding act. House (shape). K; the offers in P.
 * `K10` An earlier charter shape refuses by name (`nexus-doc.ts` reads it torn). K.
 * `K11` The registry's entry count walks anchored ancestry, where it compares `sealEpochCid` by equality. K.
+* `K12` A PersonaGroup stands as a Keyhive GROUP (house reading; it changes the group's own identifier, so it lands with the identity bytes of this train). Measured on Keyhive 0.3.0-alpha.1: a revocation travels down to the documents a Group reaches and to nothing a sentinel Document reaches, so a revoked device still opens content sealed afterwards into a bag delegated to today's PersonaGroup (`packages/lararium-keyhive/tests/seat-roll-substrate.probe.test.ts`). Until the move, the gates' shadow consult carries a removal and the sealed store's content-key roll does the rolling. Revoke authority follows the seating lineage, so a seat whose seating hand left, and the founder's own seat, leave only by a fresh group. K.
 * `N1` Co-founding across two vaults (`cofound open`, `join`, `seal`); inception signatures from every seated key. N.
 * `N2` The partial and cosign door for admit, revoke, kapae and the roll anchor, crossing a relay with no clock. N.
 * `N3` The founders' self-contracts, both seats signing. N.
@@ -544,6 +545,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 # The floor key commits no next key.
 # Edges and scopes commit to the Nexus AID; the sentinel re-keys.
 # Per-Nexus keys mint at random, with the signed hand-over.
+# A PersonaGroup founds as a Keyhive Group, so a revocation rolls the keys of every bag the group reaches.
 # The keyring commits inside the seat's act.
 # ''The Stable founding act'' for a hearth; the herm and joiner rites stay.
 # Canon and the runbook.
@@ -761,6 +763,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kbfLuvoaf1Gvw4Wn9eBBFSln8JPMM5U0lB8XVW9Q3Xw
+<<^ code="&#x0003;">>ni:///sha-256;X5aB-RsNVcO8TGreTbBPmyxWV4P8iUzpQwWEucpwNS0
 
 <<^ code="&#x0004;" -> to="?">>
