@@ -1,6 +1,6 @@
 /**
- * node-circle-store — the follow-graph and the handle-book, each one row sealed under the vessel key and read
- * through the custody seat.
+ * node-circle-store — the recogniser's handle-book, one row sealed under the vessel key and read through the
+ * custody seat. The follow graph holds ONE home, the persona-scoped circles plane, and no row of this module.
  *
  *   C1  a saved handle-book seals at rest and restores whole; the file carries the vessel key's seal and none of
  *       the nym.                                              control: before the save it reads as an empty book
@@ -13,18 +13,14 @@
  *       its shape) refuses `malformed` at the load AND at a save, which moves no byte over it.
  *                                                             control: this era's empty snapshot restores empty,
  *                                                             and a save lands over it
- *   C5  the follow-graph seals at rest and round-trips: add, add again, remove, members, circles. An unfollow of
- *       an edge nobody holds moves no byte, and a circle named for an inherited slot keeps its own edges.
- *                                                             control: before the first add it reads no circle
- *   C6  a graph row that does not open, or opens to another shape, refuses at every op and no byte moves.
- *                                                             control: the intact graph takes the same add
- *   C7  at the floor every door of both stores refuses `CustodyLocked` and no file moves.
- *   C8  TAMPER PROBE. Under a holder that kept a RETIRED key (the custody rotated under another hand), every read
- *       and every write of both rows refuses `key-fails`, real from the holder's own door to the sealed writer, and
- *       no byte moves. A stranger key handed straight to the sealed writer refuses `TreeVkRefusal` over both rows.
- *                                                             control: a holder over the new key reads both rows
- *   C9  TWO HOLDERS OVER ONE TREE NEVER DROP AN EDGE: the seated store and a second holder over the same homes add
- *       to one circle at once, and every edge lands.          control: the second holder reads the whole set
+ *   C7  at the floor both doors refuse `CustodyLocked` and no file moves.
+ *   C8  TAMPER PROBE. Under a holder that kept a RETIRED key (the custody rotated under another hand), the load and
+ *       the save refuse `key-fails`, real from the holder's own door to the sealed writer, and no byte moves. A
+ *       stranger key handed straight to the sealed writer refuses `TreeVkRefusal`.
+ *                                                             control: a holder over the new key reads the row
+ *   C10 THE FOLLOW GRAPH HOLDS ONE HOME. The carrier table names no `circles` row, the node barrel and this module
+ *       export no circle store, and a file spelled `.circles-follow.json` in the identity home enters no census and
+ *       no custody door.                                      control: the handle-book row stands in all three
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -33,12 +29,13 @@ import {
   HandleBook, HANDLE_BOOK_SNAPSHOT_ERA, mintPersonaGlamour, mintVk, readVkCarrier, writeSealedCarrier, TreeVkRefusal,
   type LarDoc,
 } from "@lararium/mesh";
-import { makeNodeCircleStore, loadNodeHandleBook, saveNodeHandleBook, CIRCLES_FILE, HANDLE_BOOK_FILE } from "../src/node-circle-store.js";
-import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
-import { FsCustodyIo } from "../src/custody-io.js";
+import * as circleStoreModule from "../src/node-circle-store.js";
+import { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE } from "../src/node-circle-store.js";
+import * as nodeBarrel from "../src/index.js";
+import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
-import { vkSlotsPath } from "../src/vault-carriers.js";
+import { carrierCensus, carrierTable, vkSlotsPath } from "../src/vault-carriers.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -145,147 +142,65 @@ describe("the handle-book row", () => {
   });
 });
 
-describe("the follow-graph row", () => {
-  test("C5 the graph seals at rest and round-trips", async () => {
-    const circles = makeNodeCircleStore();
-    expect(await circles.circles()).toEqual([]);
-    expect(await circles.members("following")).toEqual([]);
-    expect(existsSync(at(CIRCLES_FILE))).toBe(false);
-    await circles.add("following", "nym-b");
-    await circles.add("following", "nym-a");
-    expect(readVkCarrier(readFileSync(at(CIRCLES_FILE)))).toBe("sealed");
-    expect(readFileSync(at(CIRCLES_FILE)).includes(Buffer.from("nym-a"))).toBe(false);
-    const standing = readFileSync(at(CIRCLES_FILE));
-    await circles.add("following", "nym-a");                       // a second add of a held edge moves no byte
-    expect(readFileSync(at(CIRCLES_FILE)).equals(standing)).toBe(true);
-    await circles.add("kin", "nym-c");
-    expect(await circles.members("following")).toEqual(["nym-a", "nym-b"]);
-    expect(await circles.circles()).toEqual(["following", "kin"]);
-    await circles.remove("following", "nym-b");
-    expect(await circles.members("following")).toEqual(["nym-a"]);
-    expect(await circles.members("kin")).toEqual(["nym-c"]);
-    // an unfollow of an edge nobody holds moves no byte and names no circle
-    const settled = readFileSync(at(CIRCLES_FILE));
-    await circles.remove("strangers", "nym-q");
-    await circles.remove("kin", "nym-q");
-    expect(readFileSync(at(CIRCLES_FILE)).equals(settled)).toBe(true);
-    expect(await circles.circles()).toEqual(["following", "kin"]);
-    // a circle may carry ANY name: one that names an inherited slot keeps its own edges, and its neighbours keep theirs
-    await circles.add("__proto__", "nym-p");
-    await circles.add("constructor", "nym-k");
-    await circles.add("kin", "nym-d");
-    expect(await circles.members("__proto__")).toEqual(["nym-p"]);
-    expect(await circles.members("constructor")).toEqual(["nym-k"]);
-    expect(await circles.members("kin")).toEqual(["nym-c", "nym-d"]);
-    expect(await circles.circles()).toEqual(["__proto__", "constructor", "following", "kin"]);
-  });
-
-  test("C6 a graph row that does not open, or opens to another shape, refuses at every op", async () => {
-    const circles = makeNodeCircleStore();
-    await circles.add("following", "nym-a");
-    const intact = readFileSync(at(CIRCLES_FILE));
-    const ops: Array<[string, () => Promise<unknown> | unknown]> = [
-      ["add", () => circles.add("following", "nym-z")], ["remove", () => circles.remove("following", "nym-a")],
-      ["members", () => circles.members("following")], ["circles", () => circles.circles()],
-    ];
-    const tampered = Buffer.from(intact);
-    tampered[tampered.length - 7] = tampered[tampered.length - 7]! ^ 0x01;
-    for (const [label, bytes, reads] of [
-      ["tampered", tampered, /reads (key-fails|torn)/], ["bare", Buffer.from(JSON.stringify({ circles: { following: ["nym-a"] } })), /reads bare/],
-    ] as const) {
-      writeFileSync(at(CIRCLES_FILE), bytes);
-      for (const [op, run] of ops) await expect(Promise.resolve().then(run), `${label} · ${op}`).rejects.toThrow(reads);
-      expect(readFileSync(at(CIRCLES_FILE)).equals(bytes)).toBe(true);
-    }
-    writeFileSync(at(CIRCLES_FILE), intact);
-    for (const shape of ["not json", JSON.stringify({ circles: [] }), JSON.stringify({ circles: { following: "nym-a" } }), JSON.stringify({ circles: { following: [7] } }), "null"]) {
-      await c.holder.writeRow("identity", CIRCLES_FILE, new TextEncoder().encode(shape));
-      const standing = readFileSync(at(CIRCLES_FILE));
-      for (const [op, run] of ops) await expect(Promise.resolve().then(run), `${shape} · ${op}`).rejects.toThrow(/\.circles-follow\.json reads malformed/);
-      expect(readFileSync(at(CIRCLES_FILE)).equals(standing)).toBe(true);
-    }
-    writeFileSync(at(CIRCLES_FILE), intact);
-    await circles.add("following", "nym-z");                       // control
-    expect(await circles.members("following")).toEqual(["nym-a", "nym-z"]);
-  });
-});
-
 describe("the key and the floor", () => {
-  test("C7 at the floor every door refuses CustodyLocked and no file moves", async () => {
-    const circles = makeNodeCircleStore();
-    await circles.add("following", "nym-a");
+  test("C7 at the floor both doors refuse CustodyLocked and no file moves", async () => {
     const { book } = await bookOf(1);
     await saveNodeHandleBook(book);
-    const before = [CIRCLES_FILE, HANDLE_BOOK_FILE].map((f) => readFileSync(at(f)));
+    const before = readFileSync(at(HANDLE_BOOK_FILE));
     await c.holder.lock();
     await expect(loadNodeHandleBook()).rejects.toThrow(CustodyLocked);
     await expect(saveNodeHandleBook(book)).rejects.toThrow(CustodyLocked);
-    await expect(Promise.resolve().then(() => circles.add("following", "nym-b"))).rejects.toThrow(CustodyLocked);
-    await expect(Promise.resolve().then(() => circles.remove("following", "nym-a"))).rejects.toThrow(CustodyLocked);
-    await expect(Promise.resolve().then(() => circles.members("following"))).rejects.toThrow(CustodyLocked);
-    await expect(Promise.resolve().then(() => circles.circles())).rejects.toThrow(CustodyLocked);
-    [CIRCLES_FILE, HANDLE_BOOK_FILE].forEach((f, i) => expect(readFileSync(at(f)).equals(before[i]!), f).toBe(true));
+    expect(readFileSync(at(HANDLE_BOOK_FILE)).equals(before)).toBe(true);
   });
 
   test("C8 TAMPER PROBE: a retired key and a stranger key each land no write; the standing bytes open under the tree's key", async () => {
-    const circles = makeNodeCircleStore();
-    await circles.add("following", "nym-a");
     const { book, nyms } = await bookOf(1);
     await saveNodeHandleBook(book);
 
-    // The custody rotates under another hand: both rows re-seal under a fresh key, and the seated holder still
+    // The custody rotates under another hand: the row re-seals under a fresh key, and the seated holder still
     // holds the key the rotation retired. It stands real from its own door to the one sealed writer.
     const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
-    const standing = [CIRCLES_FILE, HANDLE_BOOK_FILE].map((f) => readFileSync(at(f)));
+    const standing = readFileSync(at(HANDLE_BOOK_FILE));
     await expect(loadNodeHandleBook()).rejects.toThrow(/reads key-fails/);
     await expect(saveNodeHandleBook(new HandleBook())).rejects.toThrow(/reads key-fails/);
-    await expect(Promise.resolve().then(() => circles.add("following", "nym-b"))).rejects.toThrow(/reads key-fails/);
-    await expect(Promise.resolve().then(() => circles.remove("following", "nym-a"))).rejects.toThrow(/reads key-fails/);
-    await expect(Promise.resolve().then(() => circles.members("following"))).rejects.toThrow(/reads key-fails/);
 
     // A stranger key the slot tree never committed to, handed straight to the one sealed writer.
     const keyB = mintVk();
-    for (const f of [CIRCLES_FILE, HANDLE_BOOK_FILE]) {
-      await expect(writeSealedCarrier({
-        io: c.io, vk: keyB, treePath: vkSlotsPath(c.homes.identity),
-        carrier: { name: `identity/${f}`, path: at(f), keyClass: null }, plaintext: enc({ under: "B" }),
-      })).rejects.toThrow(TreeVkRefusal);
-    }
-    [CIRCLES_FILE, HANDLE_BOOK_FILE].forEach((f, i) => {
-      expect(readFileSync(at(f)).equals(standing[i]!), `${f} never moved`).toBe(true);
-      expect(existsSync(`${at(f)}.vk-sealing`)).toBe(false);
-    });
+    await expect(writeSealedCarrier({
+      io: c.io, vk: keyB, treePath: vkSlotsPath(c.homes.identity),
+      carrier: { name: `identity/${HANDLE_BOOK_FILE}`, path: at(HANDLE_BOOK_FILE), keyClass: null }, plaintext: enc({ under: "B" }),
+    })).rejects.toThrow(TreeVkRefusal);
+    expect(readFileSync(at(HANDLE_BOOK_FILE)).equals(standing), "the row never moved").toBe(true);
+    expect(existsSync(`${at(HANDLE_BOOK_FILE)}.vk-sealing`)).toBe(false);
 
     // control: a holder over the key the tree commits to reads what the first key sealed, and takes a write
     const fresh = makeCustodyHolder({ io: c.io, homes: c.homes });
     await fresh.adopt(rotated.vk);
     seatCustody(fresh);
-    expect(await circles.members("following")).toEqual(["nym-a"]);
     expect((await loadNodeHandleBook()).nyms()).toEqual(nyms);
-    await circles.add("following", "nym-b");
-    expect(await circles.members("following")).toEqual(["nym-a", "nym-b"]);
+    await saveNodeHandleBook(new HandleBook());
+    expect((await loadNodeHandleBook()).nyms()).toEqual([]);
     await fresh.lock();
     seatCustody(c.holder);
   });
+});
 
-  test("C9 two holders over one tree never drop an edge", async () => {
-    const circles = makeNodeCircleStore();
-    const other = makeCustodyHolder({ io: new FsCustodyIo(c.homes), homes: c.homes });
-    await other.adopt(c.vk);
-    const viaOther = (nym: string): Promise<void> => other.updateRow("identity", CIRCLES_FILE, (standing) => {
-      if (standing.reading === "unavailable" || standing.reading === "locked") throw new Error(`the row reads ${standing.reading}`);
-      const map = standing.reading === "opens"
-        ? (JSON.parse(new TextDecoder().decode(standing.plaintext)) as { circles: Record<string, string[]> }).circles : {};
-      map["following"] = [...new Set([...(map["following"] ?? []), nym])].sort();
-      return { plaintext: enc({ circles: map }), value: undefined };
-    });
-    await Promise.all([
-      circles.add("following", "nym-0"), viaOther("nym-1"), circles.add("following", "nym-2"),
-      viaOther("nym-3"), circles.add("following", "nym-4"), viaOther("nym-5"),
-    ]);
-    expect(await circles.members("following")).toEqual(["nym-0", "nym-1", "nym-2", "nym-3", "nym-4", "nym-5"]);
-    const seen = await other.readRow("identity", CIRCLES_FILE);   // control
-    expect(seen.reading).toBe("opens");
-    await other.lock();
+describe("the follow graph holds one home", () => {
+  test("C10 no carrier row, no export and no custody door names a follow-graph file", async () => {
+    const FOLLOW = ".circles-follow.json";
+    // control: the handle-book stands as a row, as an export and behind the custody door
+    expect(carrierTable().filter((r) => r.writer === "node-circle-store").map((r) => r.row)).toEqual(["handle-book"]);
+    expect(typeof nodeBarrel.loadNodeHandleBook).toBe("function");
+    await c.holder.writeRow("identity", HANDLE_BOOK_FILE, enc({ era: HANDLE_BOOK_SNAPSHOT_ERA, records: [] }));
+    expect(carrierCensus(c.homes).map((e) => e.row)).toContain("handle-book");
+
+    expect(carrierTable().some((r) => r.row === "circles")).toBe(false);
+    expect(Object.keys(circleStoreModule).sort()).toEqual(["HANDLE_BOOK_FILE", "loadNodeHandleBook", "saveNodeHandleBook"]);
+    expect("makeNodeCircleStore" in nodeBarrel).toBe(false);
+    expect("CIRCLES_FILE" in nodeBarrel).toBe(false);
+    writeFileSync(at(FOLLOW), "{}");
+    expect(carrierCensus(c.homes).some((e) => e.file === FOLLOW)).toBe(false);
+    await expect(c.holder.readRow("identity", FOLLOW)).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(c.holder.writeRow("identity", FOLLOW, enc({}))).rejects.toBeInstanceOf(CustodyRowUnknown);
   });
 });

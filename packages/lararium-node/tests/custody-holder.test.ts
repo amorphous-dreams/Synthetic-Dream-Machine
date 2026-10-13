@@ -77,7 +77,7 @@ describe("CustodyHolder", () => {
     const b = stage("h3-b");
     await foundCustody({ io: b.io, homes: b.homes, slots: [{ t: 1, pins: [pass(RIGHT)] }] });
     await h.unlock([pass(RIGHT)]);
-    const file = ".circles-follow.json";
+    const file = ".handle-book.json";
     const first = new TextEncoder().encode('{"first":true}');
     await h.writeRow("identity", file, first);
     const path = join(homes.identity, file);
@@ -113,9 +113,9 @@ describe("CustodyHolder", () => {
 
   test("H5 lock drops access and permits another successful unlock", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]); await h.lock();
-    expect(await h.readRow("identity", ".circles-follow.json")).toEqual({ reading: "locked" });
-    await expect(h.writeRow("identity", ".circles-follow.json", new Uint8Array())).rejects.toBeInstanceOf(CustodyLocked);
-    await expect(h.updateRow("identity", ".circles-follow.json", () => ({ plaintext: new Uint8Array(), value: 1 }))).rejects.toBeInstanceOf(CustodyLocked);
+    expect(await h.readRow("identity", ".handle-book.json")).toEqual({ reading: "locked" });
+    await expect(h.writeRow("identity", ".handle-book.json", new Uint8Array())).rejects.toBeInstanceOf(CustodyLocked);
+    await expect(h.updateRow("identity", ".handle-book.json", () => ({ plaintext: new Uint8Array(), value: 1 }))).rejects.toBeInstanceOf(CustodyLocked);
     expect((await h.unlock([pass(RIGHT)])).reading).toBe("opens");
   });
 

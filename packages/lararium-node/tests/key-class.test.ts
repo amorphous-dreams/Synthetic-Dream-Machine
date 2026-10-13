@@ -203,10 +203,10 @@ describe("the relation class — a secret only the other party re-issues", () =>
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
-  test("CONTROL: a non-relation hot row (the circles file) names no key at all", () => {
+  test("CONTROL: a non-relation hot row (the handle-book) names no key at all", () => {
     const dir = mkdtempSync(join(tmpdir(), "lar-relation-"));
     try {
-      writeFileSync(join(dir, ".circles-follow.json"), "{}");
+      writeFileSync(join(dir, ".handle-book.json"), "{}");
       expect(vesselKeyCensus(dir)).toEqual([]);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });

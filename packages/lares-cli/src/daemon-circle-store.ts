@@ -1,16 +1,15 @@
 /**
  * daemon-circle-store — the circles-backed CircleStore adapter (the follow-graph's SOURCE OF TRUTH).
  *
- * The CircleStore shore composeFollow consumes (mesh/compose-follow). Where the node-fs adapter wrote a LOCAL
- * private JSON file (Build 2a — per-device, never fleet-synced), THIS adapter drives the daemon FOLLOW-GRAPH
+ * The CircleStore shore composeFollow consumes (mesh/compose-follow). This adapter drives the daemon FOLLOW-GRAPH
  * verbs (circle-add / circle-remove / circle-list) over the pono sock: the follow lands in the sovereign
  * circles Automerge doc, which the self-slot FLEET-syncs to the operator's OWN device fleet (PRIVATE-but-
- * same-operator, matching the catalog registry) and NEVER federates to a stranger. One graph, every device of the human.
+ * same-operator, matching the catalog registry) and NEVER federates to a stranger. One graph, every device of the
+ * human, and ONE HOME: no file under the identity home carries an edge.
  *
- * The INTERFACE never moved — composeFollow still RECOGNISES a nym in the LOCAL handle-book (fail-closed on an
- * unknown nym) BEFORE the membership write reaches the circles doc; only the graph's BACKING moved from a local file
- * to the daemon-held circles doc. NEVER-FEDERATES, STRUCTURALLY: the adapter reaches ONLY the three circle-*
- * verbs; no crossroads-plane / board / announce verb is on it, so a follow leaves no central trace.
+ * composeFollow RECOGNISES a nym in the LOCAL handle-book (fail-closed on an unknown nym) BEFORE the membership
+ * write reaches the circles doc. NEVER-FEDERATES, STRUCTURALLY: the adapter reaches ONLY the three circle-*
+ * verbs; no crossroads-plane / board / announce verb rides it, so a follow leaves no central trace.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
  */

@@ -298,7 +298,7 @@ export { makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
 
 // The IoC follow — the node-fs LOCAL adapters for the private circle-graph + the recogniser's handle-book.
 // Both under the identity home, sealed under the vessel key, never federated (the `lares circle` door drives them via composeFollow).
-export { makeNodeCircleStore, loadNodeHandleBook, saveNodeHandleBook, CIRCLES_FILE, HANDLE_BOOK_FILE } from "./node-circle-store.js";
+export { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE } from "./node-circle-store.js";
 // The persona-admission PER-VESSEL multitude-view (never fleet-syncs) and the airgapped ceremony's pending state:
 // three rows sealed under the vessel key, which the `lares persona admit` door drives.
 export {

@@ -10,7 +10,7 @@
  *   `hot`         — sealed under the VK, opened once at unlock and held for the process life.
  *   `cold`        — sealed under the VK, opened for one act and then dropped.
  * A private file the floor never reads rides `hot`: sealing costs it nothing and closes the social graph
- * at rest (petnames, circles, the handle book, the anchors).
+ * at rest (petnames, the handle book, the anchors).
  *
  * ── ROWS SPAN HOMES, NOT ONE DIRECTORY ──────────────────────────────────────────────────────────
  * A row names its home (`identity` · `storage` · `seal`), the subtree it lives under, and a matcher over the
@@ -209,8 +209,6 @@ function buildTable(): readonly CarrierRow[] {
     // names the row). It stays on its vessel: no bundle carries it.
     id({ row: "vessel-face-key", match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
          writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
-    id({ row: "circles", match: file(".circles-follow.json"), custody: "hot", keyClass: null,
-         writer: "node-circle-store" }),
     id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
          writer: "node-circle-store" }),
     id({ row: "reserve-state", match: file("seal-reserve-state.json"), custody: "hot", keyClass: null,
