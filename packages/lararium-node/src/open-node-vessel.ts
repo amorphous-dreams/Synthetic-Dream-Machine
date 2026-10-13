@@ -55,6 +55,7 @@ import { resolveNodeIslandPluginCids, nodeOfferingLookup } from "./node-plugin-r
 import { makeDurableMailbox, type DurableMailbox } from "./vessel-mailbox.js";
 import { makeRealmPlane, type RealmPlaneHolder } from "./realm-plane.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "./edge-shadow-ring.js";
+import { floorShadowRing, noFleetAtTheFloor } from "./floor-fleet-lanes.js";
 import type { WikiActivationCap } from "@lararium/mesh";
 import type { MountManifest } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, composeCasTransits, hermCasTransitFromEnv } from "./node-cas.js";
@@ -1053,14 +1054,9 @@ async function prepareNodeBootOn(
     realmNymOfPeer:  (peerId) => peerContractNymMap.get(peerId) ?? null,
     onRefold:        () => { reverdict(); dropNoLongerHeld(); },
   });
-  // AT THE FLOOR EVERY FLEET LANE STAYS SHUT. The sorter reads each device as set aside, so no socket sorts
-  // same-operator; and the share verdict's own consult (`aside`, read first on every lane) sets a proven sibling
-  // aside too, so the sibling lane carries nothing. A peer that rides neither lane keeps the public shelf.
-  const shadowRing: EdgeShadowRing = sovereign ? builtRing : {
-    ...builtRing,
-    deviceAside: () => true,
-    aside: (peerId) => Boolean(siblings?.provenKeyOf(peerId as PeerId)) || builtRing.aside(peerId),
-  };
+  // AT THE FLOOR EVERY FLEET LANE STAYS SHUT (`floor-fleet-lanes`): the sorter reads each device as set aside, and
+  // the share verdict's own consult sets a proven sibling aside too. A peer on neither lane keeps the public shelf.
+  const shadowRing: EdgeShadowRing = sovereign ? builtRing : floorShadowRing(builtRing, (peerId) => Boolean(siblings?.provenKeyOf(peerId as PeerId)));
   edgeShadows = shadowRing;
   stood.push({ what: "the edge shadow ring", down: () => shadowRing.dispose() });
   await shadowRing.refold();
@@ -1145,7 +1141,9 @@ async function prepareNodeBootOn(
         deps: {
           cadDir:     cadSealDir(storageDir),
           cidDir:     casDirForStorage(storageDir),
-          fleet:      isFleetPeer,
+          // A floor composition reads no peer as fleet (`floor-fleet-lanes`): the cleartext tier serves nobody
+          // until a person unlocks, the pinned join gate's key included.
+          fleet:      sovereign ? isFleetPeer : noFleetAtTheFloor,
           seal:       sealRegistry.seal,
           membership: nexusMembership,
           antigen:    antigenRing,
