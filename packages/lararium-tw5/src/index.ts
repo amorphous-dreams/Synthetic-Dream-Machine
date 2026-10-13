@@ -189,8 +189,6 @@ export type { CircleVerbOptions, ResolveCirclesStore } from "./circle-verbs.js";
 // thread calls them from its custody door.
 export { readPersonaSelves, writePersonaSelfName } from "./persona-selves-plane.js";
 export type { PersonaSelfRow } from "./persona-selves-plane.js";
-export { makePersonaSelvesReactors } from "./persona-selves-verbs.js";
-export type { PersonaSelvesVerbOptions, ResolvePersonaStore } from "./persona-selves-verbs.js";
 // The CABAL-REALM verbs over @daemon — the OFFERING that feeds a realm, and the verdict-free capture-clock.
 export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
 export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";

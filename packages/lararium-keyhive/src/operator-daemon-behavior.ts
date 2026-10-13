@@ -26,7 +26,6 @@ import {
   makePersonaStateReactor,
   makeCircleStateReactor,
   makeCircleReactors,
-  makePersonaSelvesReactors,
   makeCabalRealmReactors,
 } from "@lararium/tw5";
 import { ACTION_VERBS, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, computeRecipeFingerprint, wikiBagUri, wikiSlotUri, mutableLarRecord, type ChangeOrigin } from "@lararium/mesh";
@@ -530,22 +529,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           replica: didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
         });
 
-        // The OWN-PERSONA name verbs over the sovereign persona doc — the human's labels for their OWN faces
-        // (the private pet-name + the declared Handle), riding the same PRIVATE tier one plane over: the
-        // self-slot FLEET-syncs the persona plane same-operator so a rename lands on ALL the operator's own devices,
-        // and the DeterministicFederationGate never volunteers it to a cross-operator. The `seat` claim does
-        // NOT ride — a Kahu chair names a seat on a PARTICULAR node, so each node keeps its own. No board
-        // shore is reachable here: only a publicly announced Handle binds a persona to a public glamour.
-        // The plane is reached by the name its own PersonaGroup derives — the same string the registry
-        // entry, the composite layer and the capability ring use. `daemonAuth` already carries the group's
-        // doc id, so the resolution happens here rather than travelling as a second parameter.
-        // A FACELESS PLACE OFFERS NO PERSONA VERBS.
+        // A FACE'S OWN NAMES ANSWER NO VERB. The private pet-name and the declared Handle ride the persona plane, and
+        // the vessel's main thread writes them there from its custody door (the node package's `sealed-acts`, rows
+        // `selves.read` and `selves.carry`). A verb's outcome rests in the daemon's document in the clear and the
+        // digest of its arguments rests in a receipt, so this island registers no verb that takes or answers a
+        // pet-name or a declared Handle.
+        // A FACELESS PLACE OFFERS NO FACE VERBS.
         //
         // A founding stands a PLACE first — carrying, serving the public shelf — and lights a FACE after. In
-        // that window `faceGroup()` names nothing, and reaching for it HERE would throw during the wiring pass
-        // itself, taking the whole boot with it. So these register only where they can act, the gate the vault
-        // verbs already keep: absent the thing they need, they never register at all. A caller then meets an
-        // unknown verb rather than a verb that throws, which is the honest answer to "this place holds no face".
+        // that window `faceGroup()` names nothing, so the follow verbs register only where they can act; absent
+        // a face each answers with the act that lights one.
         if (daemonAuth.personaGroupDocIdHex) {
           // THE FOLLOW-GRAPH RIDES THE FACE, so it registers on the same fact the persona verbs do.
           // Founding writes the circles doc in the same breath as the PersonaGroup plane and its sentinel — a
@@ -556,31 +549,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           registry.register("circle-add",    circleReactors.add);
           registry.register("circle-remove", circleReactors.remove);
           registry.register("circle-list",   circleReactors.list);
-
-          // A PERSONA PLANE IS A USER BAG, SO IT RESOLVES FROM THE CATALOG REGISTRY.
-          //
-          // Three registries stand and each answers its own question. the oracle plane names the SYSTEM bags — the
-          // universal floor every vessel carries. the catalog registry names the operator's own bags under their OCAP
-          // grants. the crossroads plane names what a stranger may mount. A PersonaGroup's plane belongs to a person,
-          // so it lives in the middle one; reaching for it on the system floor asks the wrong plane a
-          // question it was never given to answer, and the refusal reads as a missing document.
-          const personaBagId = personaBagIdFor(faceGroup());
-          const resolvePersonaStore = async () => {
-            if (!facePlane) throw new Error("persona-selves-verb: this island carries no catalog plane — a user bag has no registry to resolve from");
-            const store = await facePlane.storeOf(personaBagId);
-            if (!store) throw new Error(`persona-selves-verb: the PersonaGroup plane is unresolved — the catalog registry names no ${personaBagId}`);
-            return store;
-          };
-          const selvesReactors = makePersonaSelvesReactors({ resolveStore: resolvePersonaStore });
-          registry.register("persona-label",  selvesReactors.label);
-          registry.register("persona-handle", selvesReactors.handle);
-          registry.register("persona-selves", selvesReactors.selves);
         } else {
-          // Leaving these unregistered answers a caller "no handler registered for persona-selves" — true,
+          // Leaving these unregistered answers a caller "no handler registered for circle-list" — true,
           // and it hands a human nothing to act on. Every verb that needs a face answers with the lift.
-          registry.register("persona-label",  lightAFace("persona-label"));
-          registry.register("persona-handle", lightAFace("persona-handle"));
-          registry.register("persona-selves", lightAFace("persona-selves"));
           registry.register("circle-add",     lightAFace("circle-add"));
           registry.register("circle-remove",  lightAFace("circle-remove"));
           registry.register("circle-list",    lightAFace("circle-list"));

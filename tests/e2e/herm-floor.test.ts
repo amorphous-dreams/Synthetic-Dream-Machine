@@ -272,12 +272,8 @@ describe("the herm — the floor of the lararium cap stack", () => {
   test("R4 — a herm refuses a hearth-scoped act LEGIBLY, never by stack trace", async () => {
     // Either an unknown verb or a named refusal — both say "light a face". Neither may be a raw throw, and
     // neither may be the hang guard firing: a cutoff names no lift, so a refusal that never arrived reads red.
-    const r = await askVerb("persona-selves", {}, R4_CEILING_MS);
-    expect(r, `\`persona-selves\` on the floor did not refuse by naming the lift:\n${r.slice(0, 400)}\n${standLogTail(root)}`)
-      .toMatch(/light a face|unknown verb|no face|waking floor/i);
-
-    // EVERY face-scoped verb, not just the persona ones. The circles plane arrives with the FACE — a PLACE
-    // bootstrap carries the daemon bag alone — so a follow verb on this floor must name the lift too. Answering
+    // The circles plane arrives with the FACE — a PLACE bootstrap carries the daemon bag alone — so a follow
+    // verb on this floor names the lift. (A face's own names answer no verb at all: they ride the custody door.) Answering
     // "circles-<tag> unresolved: the oracle registry names no such plane" is true and useless: it reads
     // as a broken registry to the one human who could fix it by lighting a face.
     const c = await askVerb("circle-list", { circle: "following" }, R4_CEILING_MS);
@@ -312,7 +308,7 @@ describe("the herm — the floor of the lararium cap stack", () => {
 
     const dir = sockStands(root) ? substrateDir(root) : null;
     expect(dir, "the lifted hearth bound no UDS door — nothing to ask, and no fallback that would be this hearth").not.toBeNull();
-    const r = await askVerb("persona-selves", {}, R5_CEILING_MS);
-    expect(r, `the lifted hearth still refuses its own face-scoped \`persona-selves\`:\n${r.slice(0, 400)}\n${standLogTail(root)}`).toMatch(/"status":"done"/);
+    const r = await askVerb("circle-list", { circle: "following" }, R5_CEILING_MS);
+    expect(r, `the lifted hearth still refuses its own face-scoped \`circle-list\`:\n${r.slice(0, 400)}\n${standLogTail(root)}`).toMatch(/"status":"done"/);
   }, R5_BUDGET_MS);
 });

@@ -64,7 +64,7 @@ describe("the faceless floor refuses content verbs by name", () => {
 
   test("V2b — the floor's refusal is a VerbRefusal named waking-floor, so a caller routes on the reason", async () => {
     const registry = wire(false);
-    for (const v of [...ACTION_VERBS, "REPACK", "init-wiki", "persona-label", "circle-add"]) {
+    for (const v of [...ACTION_VERBS, "REPACK", "init-wiki", "circle-list", "circle-add"]) {
       const err = await registry.get(v)!({}, verbCtx()).catch((e: unknown) => e);
       expect(isVerbRefusal(err), v).toBe(true);
       expect((err as { reason: string }).reason, v).toBe("waking-floor");

@@ -67,7 +67,7 @@ describe("a faceless place stands", () => {
 
   test("V2 — a face-scoped verb the floor CANNOT run refuses by naming the lift", async () => {
     // Absent a face these once went unregistered, and a caller met "no handler registered for
-    // persona-selves" — true, and nothing a human can act on. The floor is a state a vessel LIFTS out of,
+    // circle-list" — true, and nothing a human can act on. The floor is a state a vessel LIFTS out of,
     // so the name stands and the refusal carries the act that lifts it.
     const registry = new VerbTable();
     const seen: string[] = [];
@@ -78,14 +78,14 @@ describe("a faceless place stands", () => {
     operatorDaemonOptions(manifest(false)).wireWorkerVerbs?.(registry, fakeCtx());
     expect(seen.length, "the wiring pass never ran").toBeGreaterThan(0);
 
-    for (const v of ["persona-label", "persona-handle", "persona-selves"]) {
+    for (const v of ["circle-add", "circle-remove", "circle-list"]) {
       expect(seen, `${v} must stand so its refusal can speak`).toContain(v);
       await expect(registry.get(v)!({}, {} as never)).rejects.toThrow(/waking floor|persona new 0/i);
     }
   });
 
   test("V2b — face-join stays unregistered: a floor seats nobody, and no message changes that", () => {
-    // Distinct from the read verbs above. `persona-selves` refuses an act this vessel could perform once
+    // Distinct from the read verbs above. `circle-list` refuses an act this vessel could perform once
     // lifted; `face-join` would seat another device into a group that does not exist, so it holds no
     // lifted form to describe and stands as an unknown verb rather than a refusal that implies one.
     expect(wire(false)).not.toContain("face-join");
@@ -96,10 +96,20 @@ describe("a faceless place stands", () => {
     for (const v of ["where", "resolve"]) expect(names).toContain(v);
   });
 
-  test("V4 — with a face, the persona verbs return", () => {
+  test("V4 — with a face, the face verbs return", () => {
     const names = wire(true);
-    for (const v of ["persona-label", "persona-handle", "persona-selves", "face-join"]) {
+    for (const v of ["circle-add", "circle-remove", "circle-list", "face-join"]) {
       expect(names).toContain(v);
+    }
+  });
+
+  test("V5 — no verb takes or answers a face's own names, lit or faceless: they ride the custody door", () => {
+    // A verb's outcome rests in the daemon's document in the clear and the digest of its arguments rests in a
+    // receipt. The pet-name and the declared Handle ride the persona plane by the custody door's `selves` acts.
+    for (const face of [true, false]) {
+      const names = wire(face);
+      expect(names).toContain("circle-list");                                  // control: the pass ran and registered
+      for (const v of ["persona-label", "persona-handle", "persona-selves"]) expect(names, `${v} (face ${face})`).not.toContain(v);
     }
   });
 });

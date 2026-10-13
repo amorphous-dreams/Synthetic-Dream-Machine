@@ -20,7 +20,7 @@
  *     own ruling, not this cut.
  *   · PERSONA-SELVES NAMING — `PERSONA_SELVES_PREFIX`, `personaSelfTiddlerUri` and
  *     `handleIndexFromSelfTiddlerUri` (in `lar-uris.ts`) carry the self-tiddler naming scheme tw5's
- *     `persona-selves`/`persona-selves-verbs` build on directly, and keyhive's ceremony core reads
+ *     `persona-selves`/`persona-selves-plane` build on directly, and keyhive's ceremony core reads
  *     the same `lar-uris` namespace constants alongside it.
  */
 
