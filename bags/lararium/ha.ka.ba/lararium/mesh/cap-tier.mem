@@ -99,7 +99,7 @@ Tightening runs free — a bag may always self-tighten, and a tightening cascade
 
 !! Key delivery ~ the member read-cap, delivered AUTHENTICATED
 
-The member tiers (PERSONAGROUP / CONTRACT) become concrete through ''delivery to the recipient set''. ''A member reads a private body through its bag's content key'': a lockbox carries each key version to the bag's key group, and the sealed store states that road (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records">>). The durable lockbox store stands owed there.
+The member tiers (PERSONAGROUP / CONTRACT) become concrete through ''delivery to the recipient set''. The road below states the ruled model, and no production path delivers a content key yet. ''A member reads a private body through its bag's content key'': a lockbox carries each key version to the bag's key group, and the sealed store states that road (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records">>). The durable lockbox store stands owed there.
 
 ''No per-Nexus secret opens a body, and no keyring stands in the model'' (operator ruling). A private body takes a random content key for its bag, so nothing derives from a per-Nexus convergence secret: the Stable founding act yields no keyring, no seat act commits to a keyring secret, and no admission delivers one (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). ''Owed in code'': a seat act mints such a secret and the persona-admit grant hop carries one to a joinee (`packages/lararium-node/src/nexus-convergence-keyring.ts`, `nexus-convergence-secret-store.ts`, `persona-admit-flow.ts`). No sealed value derives from it and no private body opens with it; those modules leave.
 
@@ -160,6 +160,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YbdHP0B1cjixCmogrb6M0tsUbWNJ_Urr-iVo2xwHxKA
+<<^ code="&#x0003;">>ni:///sha-256;9urQHIXEU8GQFyTimZxJP5dsz-xm7GmeLzIQNT4zSHU
 
 <<^ code="&#x0004;" -> to="?">>

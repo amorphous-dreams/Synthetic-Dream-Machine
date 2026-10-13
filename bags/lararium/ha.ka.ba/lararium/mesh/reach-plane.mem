@@ -167,7 +167,7 @@ That asymmetry reads as honest rather than broken — it names precisely what ho
 
 The vessel already holds two at-rest secret carriers under a two-file ratify discipline, and both stay ''per-device by design'' — the archive and the device-share never replicate. A reach credential declared PERSONAGROUP must reach the ''fleet'', so it cannot ride that discipline at all.
 
-Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-on-the-wire already runs universal, the declared∧floor gate already stands, a bag's key reaches its recipient set by one mechanism (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>), fleet-sync already syncs.
+Read as a ''cap-tiered bag'' instead and almost nothing new gets built: sealing-on-the-wire already runs universal, the declared∧floor gate already stands, a bag's key reaches its recipient set by one ruled mechanism, its store owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>), fleet-sync already syncs.
 
 ''THE TRUNCATION FALLS OUT OF A FLOOR, NEVER A CEILING'' — which reads as the tell that the framing lands right. The keystone already computes `meet(declared, floor)`, so a credential bag floored at CONTRACT meets any PUBLIC declaration back down on its own. Publishing a credential becomes ''mechanically impossible'' rather than merely forbidden, and no new enforcement carries it.
 
@@ -283,6 +283,6 @@ The privacy tension evaporates because the object it needed dissolves: ''no per-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mrhB1LKt-Wv4C5nMpptPDF4IvpwH7hWoaDyXMvkvdYA
+<<^ code="&#x0003;">>ni:///sha-256;M3WMbrIMkPwMRAz7VSNU6j5aK8x6gH5DahhZUpLYe1g
 
 <<^ code="&#x0004;" -> to="?">>
