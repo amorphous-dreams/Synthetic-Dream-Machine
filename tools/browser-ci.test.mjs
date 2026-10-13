@@ -23,6 +23,7 @@ printf '%s\\n' "$*" >> "$CALL_LOG"
 case "$*" in
   *"ps -a -q"*) [ "$STAND" = "yes" ] && echo cid123 ;;
   *"ps -q"*) echo cid123 ;;
+  *"unlock-test-custody.mjs"*) echo '{"op":"unlock","reading":"opens","held":true}'; exit "\${DOOR_RC:-0}" ;;
   *"printenv LAR_PORT"*) echo 4321 ;;
   *"persona list --json"*) echo '{"ok":true,"data":{"personas":[]}}' ;;
   *"persona new 0"*) echo '{"verifyingKey":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' ;;
@@ -113,6 +114,32 @@ test("restart restarts the node and waits healthy, and removes no volume", async
   assert.match(r.calls, /restart lares/);
   assert.match(r.calls, /up -d --wait lares/);
   assert.doesNotMatch(r.calls, /down|-v\b|volume/);
+});
+
+// Every boot rests at the floor holding no vessel key, so each start this driver performs ends at the test door.
+const UNLOCK = "exec cid123 node tools/unlock-test-custody.mjs /state";
+
+test("up opens the staged node's key after each start: before the face lights, and after the restart", async () => {
+  const r = await run(["up"]);
+  assert.equal(r.status, 0, r.stderr);
+  const first = r.calls.indexOf(UNLOCK), last = r.calls.lastIndexOf(UNLOCK);
+  assert.ok(first >= 0 && last > first, "two unlocks ride one up");
+  assert.ok(first > r.calls.indexOf("up -d --wait lares") && first < r.calls.search(/persona new 0/), "the first unlock stands between the first healthy wait and the face");
+  assert.ok(last > r.calls.lastIndexOf("restart lares") && last > r.calls.lastIndexOf("up -d --wait lares"), "the last unlock follows the restart's healthy wait");
+  // The door's files ride in by `docker cp`; no mount changes and no argv carries the Docker socket.
+  assert.match(r.calls, /^cp \S+\/tools cid123:\/app\/$/m);
+  assert.doesNotMatch(r.calls, /docker\.sock/);
+});
+
+test("restart opens the staged node's key after its healthy wait", async () => {
+  const r = await run(["restart"]);
+  assert.ok(r.calls.indexOf(UNLOCK) > r.calls.indexOf("up -d --wait lares"));
+});
+
+test("a door that answers no open key stops the driver by name", async () => {
+  const r = await run(["restart"], { DOOR_RC: "1" });
+  assert.equal(r.status, 2);
+  assert.match(r.stderr, /did not open its vessel key through the test door/);
 });
 
 test("bag creates a bag through act CREATE and prints its URI", async () => {

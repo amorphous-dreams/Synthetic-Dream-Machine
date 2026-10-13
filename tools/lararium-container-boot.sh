@@ -128,11 +128,17 @@ if [ -n "${LAR_STAGE_DIR:-}" ]; then
   (
     _n=0
     while [ "$_n" -lt 600 ]; do
-      node tools/unlock-test-custody.mjs "$LAR_ROOT" >/dev/null 2>&1; _rc=$?
+      # THE CODE IS READ, NEVER OBEYED. This script runs under `set -e`, and a bare failing command ends the
+      # subshell at its first non-zero exit: a door that ran before the daemon's socket stood (rc 3) ended the
+      # loop it was meant to continue, printed nothing, and left the vessel at the floor for the whole run.
+      # The `&&`/`||` list keeps the exit code as a value this loop reads.
+      node tools/unlock-test-custody.mjs "$LAR_ROOT" >/dev/null 2>&1 && _rc=0 || _rc=$?
       # rc 3 = no daemon answers yet; any other code settles it (0 opened, 1 the daemon said otherwise, 2 unmarked).
       if [ "$_rc" -ne 3 ]; then echo "[boot] staged custody unlock: door rc $_rc"; break; fi
       _n=$((_n + 1)); sleep 0.5
     done
+    # A loop that drained without an answer says so: a silent floor reads like a vessel nobody tried to open.
+    if [ "$_n" -ge 600 ]; then echo "[boot] staged custody unlock: no daemon answered the door"; fi
   ) &
 fi
 

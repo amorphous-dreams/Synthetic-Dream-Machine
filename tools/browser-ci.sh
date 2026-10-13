@@ -1,10 +1,11 @@
 #!/bin/sh
 # browser-ci — the HOST driver for docker-compose.browser-ci.yml (a node plus a disposable Playwright runner).
 #
-#   browser-ci.sh up                        build, seed through the test door, stand the node, light one synthetic face
-#                                           (`persona new 0`) and WEAR it (`persona wear 0`), restart so the vessel stands as a Lararium, wait healthy.
+#   browser-ci.sh up                        build, seed through the test door, stand the node, open its key through the test
+#                                           door, light one synthetic face (`persona new 0`) and WEAR it (`persona wear 0`),
+#                                           restart so the vessel stands as a Lararium, wait healthy, open its key again.
 #                                           Refuses by name when the port already answers or the project already stands.
-#   browser-ci.sh restart                   restart the node container WITHOUT removing its volumes; wait healthy
+#   browser-ci.sh restart                   restart the node container WITHOUT removing its volumes; wait healthy; open its key
 #   browser-ci.sh admit [--fragment] <key>  `lares device-admit --joinee-key …` inside the node; prints the carriage
 #                                           payload. --fragment prints ONLY the `#admit=…` line, for a script to hand the page
 #   browser-ci.sh bag <name>                stand a writable scratch bag (`lares act CREATE --bag … --yes`); prints its URI.
@@ -43,6 +44,10 @@
 # Two surfaces with distinct values share no container, network, volume or image tag. Give each builder its own.
 # BROWSER_CI_WIKI overrides the wiki slug that `recipe` and `get` address (default: the node's one live wiki).
 #
+# EVERY BOOT RESTS AT THE FLOOR holding no vessel key, and every sovereign verb waits there. This surface stages
+# its own scratch vessel, so after each start the driver opens the key through the test door
+# (tools/unlock-staged-container.sh; the door refuses any root without the scratch marker the seed wrote).
+#
 # The host script alone touches Docker. No container receives the Docker socket; the qa runner cannot issue an
 # admit. Face names are synthetic.
 set -eu
@@ -60,6 +65,12 @@ export BROWSER_CI_PORT="$PORT"
 die() { printf 'browser-ci: %s\n' "$*" >&2; exit 2; }
 compose() { docker compose -p "$PROJECT" -f "$FILE" "$@"; }
 lares() { compose exec -T lares node "$CLI" "$@"; }
+# Open the standing node's key through the test door; a door that answers anything but an open key stops the driver.
+unlock() {
+  if ! out=$("$HERE/unlock-staged-container.sh" "$(compose ps -q lares)" 2>&1); then
+    printf '%s\n' "$out" >&2; die "the staged node did not open its vessel key through the test door"
+  fi
+}
 
 case "$PORT" in
   54[0-9][0-9]) ;;
@@ -123,14 +134,17 @@ case "$verb" in
     compose --profile seed run --rm seed
     compose up -d lares
     compose up -d --wait lares
+    unlock
     lares persona new 0 --name "$FACE"
     # The face stands WORN: `persona wear` records the worn index and the restart below puts the vessel on it.
     lares persona wear 0
     compose restart lares
-    compose up -d --wait lares ;;
+    compose up -d --wait lares
+    unlock ;;
   restart)
     compose restart lares
-    compose up -d --wait lares ;;
+    compose up -d --wait lares
+    unlock ;;
   admit)
     frag=0
     if [ "${1:-}" = "--fragment" ]; then frag=1; shift; fi
