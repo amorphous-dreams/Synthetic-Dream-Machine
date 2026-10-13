@@ -122,7 +122,7 @@ import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./carriage-relay.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
 import { loadLeafIdentity } from "./leaf-identity.js";
-import { readCasBlobFromFs } from "./node-cas.js";
+import { readCasBlobFromFs, readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.js";
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
 import { runFlow } from "./flow-run.js";
@@ -1205,7 +1205,7 @@ async function prepareNodeBootOn(
         composeCasTransits(carriageLoop.transit(fleetHolders), hermCasTransitFromEnv()),   // the fleet first; the Herm's public shore (`LAR_HERM_SHORE`) after — a dark peer's public bytes still arrive by the crossroads
         (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidDir); },
       )
-    : async (cid: string) => readCasBlobFromFs(cid, cidDir);
+    : async (cid: string) => readVerifiedCasBlobFromFs(cid, cidDir);
   setCasDoor(resolveCidThroughDoor);
   if (carriageLoop) console.log(`[carriage] fetch door open — fleet holders ${fleetHolders().length} · cid/ ${cidDir}`);
 
