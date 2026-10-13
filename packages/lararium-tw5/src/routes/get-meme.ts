@@ -24,7 +24,7 @@ module-type: route
  * witnesses it over a live fork server and a staged island.
  */
 
-import { readMeme, wikiMemeSink, MEME_PATH, memeUriOfParams } from "../place-meme.js";
+import { holdsUnreadPointer, POINTER_BODY_CODE, readMeme, wikiMemeSink, MEME_PATH, memeUriOfParams } from "../place-meme.js";
 import { containerRefusal, digestHeaders, refuseContainer } from "./plain-server.js";
 import type { TW5Wiki } from "../types/tiddlywiki.js";
 
@@ -37,6 +37,9 @@ interface RouteResponse {
   writeHead(status: number, headers: Record<string, string>): void;
   end(body?: string): void;
 }
+
+/** The marker the handler threads for a pointer whose body this wiki holds none of. */
+const POINTER = "unread-pointer" as const;
 
 export const methods = ["GET"];
 
@@ -56,7 +59,16 @@ export function handler(_request: unknown, response: RouteResponse, state: Route
     response.end("malformed meme path");
     return;
   }
-  readMeme(uri, wikiMemeSink(state.wiki)).then((meme) => {
+  const sink = wikiMemeSink(state.wiki);
+  // A pointer whose body never reached this wiki holds no text to serve: the door says so by name.
+  const read = async (): Promise<typeof POINTER | Awaited<ReturnType<typeof readMeme>>> =>
+    (await holdsUnreadPointer(uri, sink)) ? POINTER : readMeme(uri, sink);
+  read().then((meme) => {
+    if (meme === POINTER) {
+      response.writeHead(422, { "Content-Type": "text/plain" });
+      response.end(`${POINTER_BODY_CODE}: ${uri} holds a pointer whose body rests in the content tier; this door reads no pointer body`);
+      return;
+    }
     if (!meme) {
       response.writeHead(404, { "Content-Type": "text/plain" });
       response.end();

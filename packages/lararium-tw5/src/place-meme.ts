@@ -36,7 +36,7 @@ module-type: library
 
 import { decideIngest, QUOTEBLOCKED_CODE } from "./ingest-gate.js";
 import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
-import { gradeOf } from "./meme-ast/diagnostics.js";
+import { gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { TiddlerFields } from "./deserializer.js";
 import { expandMemeRefs } from "./deserializer.js";
 import type { TW5Wiki } from "./types/tiddlywiki.js";
@@ -213,8 +213,37 @@ async function currentRender(
     const fields = await sink.read(title);
     if (fields) current.set(title, fields);
   }
-  return { group, text: expandMemeRefs((t) => current.get(t), uri) ?? "" };
+  return { group, text: expandMemeRefs((t) => current.get(t), uri) ?? heldText(current.get(uri)) };
 }
+
+/**
+ * A HELD RECORD RENDERS AS ITS OWN BYTES. The recompose answers a carrier alone; a record under the URI
+ * that no frame reads as a meme (bare data, the gate's verbatim hold) carries nothing to recompose, and
+ * its text stands as its canonical render. The gate's bare leg compares the arriving bytes against this
+ * render, a writer's base hashes it, and the read half answers it: one reading for all three, so the
+ * bytes a person put read back as the bytes a person gets.
+ */
+function heldText(root: TiddlerFields | undefined): string {
+  return typeof root?.text === "string" ? root.text : "";
+}
+
+/**
+ * A POINTER'S BODY RESTS ELSEWHERE. True where the record under the URI names its bytes by content address
+ * and holds none of them in this sink. `readMeme` stays total over such a record (the gate, the listing
+ * and the backstop read through it); a door that hands a person the TEXT asks here first and refuses by
+ * name, since an empty answer would state bytes nobody wrote.
+ */
+export async function holdsUnreadPointer(uri: string, sink: Pick<MemeSink, "read">): Promise<boolean> {
+  const root = await sink.read(uri);
+  return root !== undefined && typeof root.text !== "string"
+    && (root["_is_skinny"] === "yes" || typeof root["textCid"] === "string");
+}
+
+/** The code a read of an unread pointer refuses under. */
+export const POINTER_BODY_CODE = "pointer-body";
+
+/** The code a put that carries no bytes refuses under. */
+export const EMPTY_BODY_CODE = "empty-body";
 
 /** The Confluence gate's own verdict, read once — shared by `placeMeme` (which lands it) and
  *  `evaluateMeme` (which never does). Internal: callers get the two typed entry points below. */
@@ -227,6 +256,16 @@ async function evaluate(
 
   const { group, text: currentText } = await currentRender(uri, sink);
   const currentRenderHash = hash(currentText);
+
+  // A PUT THAT CARRIES NO BYTES REFUSES BY NAME. An empty text and an address nothing holds hash alike,
+  // so the bare leg would answer "the records already say this" over a title that holds no record.
+  if (text === "") {
+    const wall: MemeDiagnostic = {
+      from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: EMPTY_BODY_CODE,
+      message: `${uri}: the put carries no bytes; nothing lands (a removal rides the delete verb)`,
+    };
+    return { group, decision: { kind: "refuse", warnings: [wall.message], diagnostics: [wall] }, currentRenderHash };
+  }
 
   const decision = decideIngest({
     uri,

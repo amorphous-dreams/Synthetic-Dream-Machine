@@ -94,7 +94,9 @@ Both container kinds read the same records on a plain server; on an island `--re
 | `401` | the principal table refused — anonymous under `readers=(authenticated)`, a reader-only principal writing | stock's, with `WWW-Authenticate` |
 | `404` | no root stands under the URI · no such recipe or bag (the one-line body names it) · DELETE under `/recipes/` | empty, or the one line |
 | `412` | the records moved past the writer's `If-Match` · a record stands where `If-None-Match: *` asked for none | `{uri, decision: "conflict", reason, canonicalHash}` + the live `ETag` |
-| `422` | PUT of a meme grading `error` (a carrier that stopped round-tripping); nothing lands · the native door met a framed root | the receipt with `diagnostics` · `{uri, door, reason}` |
+| `422` | PUT of a meme grading `error` (a carrier that stopped round-tripping); nothing lands · PUT of no bytes (`empty-body`) · GET of a pointer whose body rests in the content tier (`pointer-body`) · the native door met a framed root | the receipt with `diagnostics` · the one line naming the code · `{uri, door, reason}` |
+
+''A put lands the bytes a person gave, or refuses by name.'' A body no frame stands in lands as bare data, never as a meme: one record holds the bytes verbatim, the receipt grades `warning` under `bare-data`, and every read door answers those same bytes under the hash the put reported. A second put of the same bytes reads `noop`, and a delete under that hash removes the hold. A body of no bytes refuses under `empty-body` and lands nothing. A read or a projection of a pointer whose body rests in the content tier refuses under `pointer-body`, since an empty answer would state bytes nobody wrote. Any live frame mark makes the text a carrier: the envelope re-mints, every authored line survives, and the read answers the canonical render. Witness: `packages/lararium-tw5/tests/bare-body-round-trip.test.ts`.
 
 <<~/ahu>>
 
@@ -224,6 +226,6 @@ The CLI walk names its container on each store verb: `lares meme put lar:///t/x 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4b-ZxJXWwJxg9Bc8yhwDS16qwos2pIW148KRCB_t4ls
+<<^ code="&#x0003;">>ni:///sha-256;SBw9qaEb7Wfwh_A94eyWRz_0DSFKcLJBEAewPHseL14
 
 <<^ code="&#x0004;" -> to="?">>

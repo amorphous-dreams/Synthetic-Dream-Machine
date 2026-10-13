@@ -28,7 +28,7 @@ module-type: startup
 
 import type { LaresMemeFace, LaresTw5Extension } from "../types/lares-globals.js";
 import type { TW5Instance } from "../types/tiddlywiki.js";
-import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink } from "../place-meme.js";
+import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink, holdsUnreadPointer, POINTER_BODY_CODE } from "../place-meme.js";
 import { normalizeMemeSource, readCarrierEdges, readCarrierShape } from "../meme-laws.js";
 import { bccOf, headUriOf, verdict, verifyBcc } from "@lararium/memetic-frame";
 import { projectMeme, recomposeMeme } from "../meme-project.js";
@@ -49,7 +49,11 @@ export function memeFaceOf(wiki: TW5Instance["wiki"]): LaresMemeFace {
   const sink = wikiMemeSink(wiki);
   return {
     place: (uri, text, base) => placeMeme({ uri, text, baseHash: base ?? null }, sink),
-    read: (uri) => readMeme(uri, sink),
+    // The face hands a wiki-side caller the meme's TEXT: a pointer whose body this wiki holds none of refuses by name.
+    read: async (uri) => {
+      if (await holdsUnreadPointer(uri, sink)) throw new Error(`${POINTER_BODY_CODE}: ${uri} holds a pointer whose body rests in the content tier; the meme face reads no pointer body`);
+      return readMeme(uri, sink);
+    },
     list: (opts) => listMemes(sink, opts),
     remove: (uri, base) => removeMeme({ uri, baseHash: base ?? null }, sink),
     normalize: (text) => normalizeMemeSource(text),

@@ -7,6 +7,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **A frameless meme put reads back whole.** `lares meme put` of a body with no frame lands it as bare data, and `lares meme get` answers the same bytes under the hash the put reported. A put of no bytes refuses under `empty-body`, and a read of a pointer whose body rests in the content tier refuses under `pointer-body`.
 - **Wiki deletes leave canon intact.** Deleting a canon title writes a tombstone into the working layer, where it hides the title; a later save replaces that tombstone. A composition without a working layer refuses the delete by name.
 - **The wiki follows its bag composition.** It shows the topmost resolved record, including a working tombstone or copy-up, when canon changes beneath it.
 - **Draft actions land as one act.** Save, rename, and cancel carry the base from when the draft opened; opening an editor and discarding or saving immediately leaves no stray draft, and returning to the landed value writes nothing. An untouched draft reads unmodified, and Cancel asks nothing.

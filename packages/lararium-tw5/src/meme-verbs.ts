@@ -58,7 +58,7 @@ import {
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { IslandContext } from "./island-context.js";
-import { listMemes, placeMeme, readMeme, removeMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
+import { holdsUnreadPointer, listMemes, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
 import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import { pinTargetsOf, profileOf } from "./weave/index.js";
@@ -318,6 +318,10 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
     const { bag, sink } = await resolveSink(opts, target, origin, "get");
     const proof = await ctx.cap("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    // The read hands a person the meme's TEXT: a pointer whose body rests in the content tier refuses by name.
+    if (await holdsUnreadPointer(target.uri, sink)) {
+      throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-get reads no pointer body.`);
+    }
     return { uri: target.uri, meme: await readMeme(target.uri, sink) };
   };
 }
@@ -362,6 +366,10 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
     const { bag, sink, anchor } = await resolveSink(opts, target, origin, "get");
     const proof = await ctx.cap("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    // A projection renders the meme's TEXT: the same pointer refusal the read gives, at every seat.
+    if (await holdsUnreadPointer(target.uri, sink)) {
+      throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-project renders no pointer body.`);
+    }
     if (anchor) {
       const face = (opts.tw5.$tw as LaresTw5Extension).lares?.meme;
       if (!face) throw new Error("meme-project: the anchor wiki publishes no $tw.lares.meme (the meme-face startup module is absent)");
