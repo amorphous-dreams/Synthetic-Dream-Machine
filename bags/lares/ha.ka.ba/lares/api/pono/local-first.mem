@@ -11,8 +11,8 @@ mana        = 18
 manao       = 18
 manaoio     = 17
 namespace   = "&#x2299;"
-role        = "invariant doctrine: 7 local-first ideals (Ink & Switch) + Keyhive/Beelay alignment matrix; server-as-peer law; Fuller non-simultaneous Universe = causal island"
-status-date = "2026-05-02"
+role        = "invariant doctrine: 7 local-first ideals (Ink & Switch), each graded against what the house stands built; the Keyhive/Beelay target stack named as design; server-as-peer law; Fuller non-simultaneous Universe = causal island"
+status-date = "2026-10-12"
 tags        = ["api/pono/meme"]
 title       = "lar:///ha.ka.ba/lares/api/pono/local-first"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -25,7 +25,10 @@ uri-path    = "ha.ka.ba/lares/api/pono/local-first"
 
 The seven ideals from Kleppmann et al. (Ink & Switch, 2019) define the design target.
 Keyhive (convergent capabilities + BeeKEM) and Beelay (RIBLT sync + sedimentree) form
-the current prior-art stack closest to satisfying all seven simultaneously.
+the prior-art stack this carrier measures against, the closest to satisfying all seven
+simultaneously as read 2026-05-02. The house binds Keyhive behind `KeyhiveProvider`
+(`packages/lararium-keyhive`) and runs no Beelay; it syncs through
+`@automerge/automerge-repo` over WebSocket.
 
 ''Scale ladder (canonical 2026-05-06):''
 * ''Lararium'' — one operator's infrastructure: a `lararium-node` process + browser peers + devices.
@@ -58,13 +61,21 @@ this ideal. Cache locally; sync asynchronously.
 Data lives on all devices, not just in a cloud. Sync runs automatically and bidirectionally.
 A device holds first-class standing; the cloud serves as an optional relay.
 
-''Lararium:'' GAP. No cross-device sync architecture implemented. Automerge + Beelay
-is the target stack. Beelay's RIBLT-based set reconciliation (nested Rateless Invertible
-Bloom Lookup Tables) handles the "what does this peer need?" question without a
-central coordinator.
+''Lararium:'' SATISFIED between node vessels; a browser device stands built in code
+with no e2e witness. A second device mints its OWN key and joins by a signed
+device-delegation edge (`lares device-admit` → `runDeviceAdmitEdge`,
+`packages/lararium-keyhive/src/ceremony-core.ts`), and its boot proves that edge at the
+Binding Gate (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts`). The e2e set carries
+the witness: two vessels of one operator sync a bag both ways
+(`tests/e2e/meme-two-vessel-bag.test.ts`), and two devices of one PersonaGroup sync
+through a herm that reads none of it (`tests/e2e/leaf-sibling-sync.test.ts`). The browser
+vessel persists its Repo through `IndexedDBStorageAdapter` and carries its own admit path
+(`packages/lararium-browser/src/open-browser-vessel.ts` · `admit-carriage.ts`). The model
+stands whole at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>.
 
-''Sprint 6 target:'' `BrowserLarPeer` wires `IndexedDBStorageAdapter` +
-`BroadcastChannelNetworkAdapter` from `@automerge/automerge-repo`.
+''UNBUILT:'' Beelay's RIBLT-based set reconciliation (nested Rateless Invertible Bloom
+Lookup Tables), which answers the "what does this peer need?" question without a central
+coordinator, stays design (#/beelay-sedimentree).
 
 ---
 
@@ -73,8 +84,12 @@ central coordinator.
 Full read/write capability without a network connection. The system treats offline as the normal mode,
 not a degraded fallback.
 
-''Lararium:'' PARTIALLY SATISFIED. TW5 works offline by construction (in-process VM).
-Lararium Node server mode adds a network dependency for initial content load.
+''Lararium:'' PARTIALLY SATISFIED. TW5 works offline by construction (in-process VM). The
+browser vessel persists its Repo to IndexedDB and founds a leaf offline, at a private nexus
+of one (`open-browser-vessel.ts`); its genesis materializes from the seed or reloads from
+IndexedDB (`packages/lararium-browser/src/browser-genesis.ts`). The engine and plugin bytes
+reach the browser over HTTP into its OPFS store, so a first boot that lacks those bytes needs
+a CAS source, and no test witnesses a browser boot with no server present.
 
 ''Law:'' The browser peer MUST support booting, reading, and writing from IndexedDB without
 any server present. The server functions as a sync accelerator, not a boot requirement.
@@ -86,8 +101,13 @@ any server present. The server functions as a sync accelerator, not a boot requi
 Real-time and asynchronous collaboration with conflict-free concurrent edits.
 CRDTs provide the enabling mechanism — not operational transforms, not last-write-wins.
 
-''Lararium:'' GAP. Automerge is chosen (CRDT); MemeProvider / MemeStoreDoc define
-the change model. Active integration incomplete.
+''Lararium:'' SATISFIED for shared and cross-operator sync; the concurrent same-meme
+witness stays OWED. `AutomergeDocStore` wires each document's change event into
+`MemeProvider.handleChange` (`packages/lararium-mesh/src/automerge-doc-store.ts` ·
+`meme-provider.ts`). Two operators share a realm bag under a charter and a contract, with a
+non-member refused (`tests/e2e/meme-realm-bag.test.ts`). No e2e test found here drives two
+peers to edit the SAME meme concurrently and asserts the convergence the law below demands;
+Automerge supplies that property, and the house owes its own witness of it.
 
 ''Law:'' Concurrent edits to the same meme from two peers MUST converge to the same
 state on both peers without manual conflict resolution. CRDTs enforce this mechanically.
@@ -100,12 +120,16 @@ Software created today remains accessible without the vendor. Data in open forma
 readable independently of the application.
 
 ''Lararium:'' SATISFIED. TW5 format — HTML + JS in a single file or tiddler store —
-remains readable from 2004 archives. The `text/memetic-wikitext` format consists of
-plain text with TOML headers; readable by any text editor.
+remains readable from 2004 archives. The `text/memetic-wikitext+tiddlywiki` carrier format
+consists of plain text with TOML headers; readable by any text editor. For mirrored bags,
+`LarDiskProjector` writes memetic carriers as `.mem` files and other carriers in their native
+formats (`packages/lararium-node/src/disk-projector.ts`).
 
-''Law:'' No binary-only storage for meme content. `MutableLarRecord.text` always holds a
-UTF-8 string. Blobs (`LarariumDoc.blobs`) stay reserved for truly binary assets
-(TW5 core JS, plugin bundles) — never for meme content.
+''Law:'' No binary-only storage for meme content. Inline meme content rides as UTF-8
+text; a pointer carrier holds a content reference in place of `text`. The `cid/` blob tier
+carries binary and pointer-kind bodies; a utf8 body rides inline unless an operator flags it
+out on purpose
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>).
 
 ---
 
@@ -114,9 +138,29 @@ UTF-8 string. Blobs (`LarariumDoc.blobs`) stay reserved for truly binary assets
 The service provider cannot read user data. End-to-end encryption by default.
 Servers hold only encrypted bytes; they see membership info but not document content.
 
-''Lararium:'' GAP. Content is plaintext at rest and in transit (TLS only at transport).
+''Lararium:'' PARTIAL. Document content rests in cleartext; sealing lands by the custody
+train.
 
-''Keyhive target stack:''
+* ''Stands built:'' the custody slot tree and the custody root seal from birth
+  (`packages/lararium-node/src/custody-root.ts`). The identity archive seals under an
+  operator passphrase where one stands (scrypt + AES-256-GCM,
+  `packages/lararium-node/src/archive-seal.ts`) and rests cleartext where none does. Sibling
+  devices sync through a herm over a sealed channel the herm cannot read
+  (`packages/lararium-mesh/src/leaf-peer-proof.ts`). The sealed-box and ciphertext-CAS
+  primitives stand (`sealed-box.ts` · `ciphertext-cas.ts`).
+* ''Rests in cleartext:'' Automerge document content in the node store
+  (`DurableNodeFSStorageAdapter`); the vessel key file (a 0o600 JSON file,
+  `packages/lararium-node/src/node-vessel-identity.ts`); the browser's device key and persona
+  roots in IndexedDB (`packages/lararium-browser/src/browser-vessel-identity.ts`); and
+  vessel-to-vessel sync on the wire, which rides an auth-gated plain WebSocket (this tree
+  binds no TLS).
+* ''OWED:'' the operator ruling of 2026-06-23 — every surface encrypts from the first write
+  (`lararium-identity#/encrypt-from-start`, a carrier that stands PROPOSED) — stays unbuilt
+  for document content. Sealing of the remaining hot and cold rows lands by the custody
+  train. A WebAuthn-PRF wrap for a browser seed stands as a primitive
+  (`packages/lararium-browser/src/seed-wrap-prf.ts`) with no production caller.
+
+''Keyhive target stack (design; BeeKEM content keying stays outside the built path):''
 ```
 Layer 1 — Convergent Capabilities (concap tokens):
   Self-certifying capability chains. "Documents identify themselves via public
@@ -132,9 +176,7 @@ Layer 3 — BeeKEM:
   Requires only causal order — no total order needed. (Fuller-consistent.)
 ```
 
-''Sprint 6 scope:'' `LarPeer.keyhive` slot typed to accept the three-layer interface
-as optional depth. Interface designed now; implementations fill in as Keyhive API
-stabilizes. Browser agent: `SubtleCrypto` non-exportable keys. Node agent: filesystem.
+No non-exportable `SubtleCrypto` key guards a browser seed: each rests as listed above.
 
 ---
 
@@ -146,9 +188,10 @@ a tool, not a custodian.
 ''Lararium:'' SATISFIED for single-user. The `lar:` URI namespace forms an open addressing
 scheme; the tiddler store admits inspection and export.
 
-''Multi-user gap:'' shared lararium-node wiki islands need a capability model for access
-control. The Orichalcum `ABILITY_LADDER` provides the vocabulary;
-Keyhive provides the cryptographic enforcement.
+''Multi-user:'' capability gating stands. A realm bag admits a member and refuses a
+non-member (`tests/e2e/meme-realm-bag.test.ts`); Orichalcum supplies the vocabulary
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>) and the residency
+ACTION verbs carry the acts (`ACTION_VERBS`, `packages/lararium-mesh/src/residency-actions.ts`).
 
 <<~/ahu>>
 
@@ -167,6 +210,9 @@ It does NOT have:
 * Ability to decrypt content it relays (Ideal 6 target)
 * Override capability for user-controlled data
 
+As built, a herm cannot decrypt the sibling-channel content it carries, while a hearth still
+relays cleartext document sync; the second line states the Ideal 6 target, owed there.
+
 ''Law:'' A lararium-node MUST keep its decisions within its peer role.
 Routing, relay, and projection count as peer capabilities; adjudication does not.
 
@@ -178,10 +224,9 @@ and deadlocks every storage-miss resolve while the vessel sits peerless.
 its //client// adapter force-readies on a timer — the vessel corrects the server
 side with `ListeningWSServerAdapter`.)
 
-The VmPool model enforces this isomorphically: the browser peer and the node peer
-run the same VmPool interface. The browser boots pool slot 0 (local wiki); additional
-slots serve cross-realm projections. The node boots multiple slots simultaneously —
-one per wiki island, one per connected realm. Same model, different capability set.
+One composition enforces this isomorphically: the browser vessel and the node vessel both
+compose through `composeCoreVessel` (`composeBrowser` · `composeLararium`), the one keel
+both substrates walk. Same model, different capability set.
 
 <<~/ahu>>
 
@@ -216,7 +261,8 @@ not "current globally." A lararium-node MUST present its view as local — curre
 
 !! Beelay Sync Model
 
-Beelay provides the sync protocol for Automerge repos. Key mechanisms:
+''UNBUILT in this house: design only.'' Beelay provides a sync protocol for Automerge repos.
+Key mechanisms:
 
 ''RIBLT (Rateless Invertible Bloom Lookup Tables):''
 Nested set reconciliation at three levels — membership operations, document states,
@@ -228,25 +274,26 @@ The commit DAG compressed with geological layering: older chunks compressed more
 aggressively ("deeper = older = denser"). Solves the long-document history problem.
 A fresh peer can sync efficiently even against a document with years of history.
 
-''Lararium integration point:'' `AutomergeDocStore` (base class for `NodeLarPeer` and
-`BrowserLarPeer`) wires the `DocHandle.on("change", ...)` event into `MemeProvider.handleChange()`.
-Beelay's sync protocol operates below this boundary — transparent to the meme layer.
+''Lararium integration point:'' `AutomergeDocStore` wires the `DocHandle.on("change", ...)`
+event into `MemeProvider.handleChange()`. Any sync protocol operates below this boundary —
+transparent to the meme layer — so Beelay would slot in beneath it, where
+`@automerge/automerge-repo`'s own sync runs.
 
 <<~/ahu>>
 
 <<~ ahu #/alignment-matrix>>
 
-!! Alignment Matrix (current)
+!! Alignment Matrix (measured 2026-10-12)
 
-| Ideal | State | Blocker |
+| Ideal | State | What stays owed |
 |---|---|---|
 | Fast | ✓ SATISFIED | — |
-| Multi-device | ✗ GAP | Beelay sync + `AutomergeDocStore` |
-| Offline | ⚠ PARTIAL | IndexedDB boot path |
-| Collaboration | ✗ GAP | Automerge integration |
+| Multi-device | ✓ SATISFIED (node) | an e2e witness for a browser device |
+| Offline | ⚠ PARTIAL | a browser first boot with no server |
+| Collaboration | ✓ SATISFIED | a concurrent same-meme convergence witness |
 | Longevity | ✓ SATISFIED | — |
-| Privacy | ✗ GAP | Keyhive `LarPeer.keyhive` slot |
-| User control | ✓ / ⚠ | Multi-user needs Orichalcum + Keyhive |
+| Privacy | ⚠ PARTIAL | document content sealed at rest and on the wire; the custody train |
+| User control | ✓ SATISFIED | — |
 
 <<~/ahu>>
 
@@ -262,6 +309,6 @@ Beelay's sync protocol operates below this boundary — transparent to the meme 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WbKIMTnkw3oZ_TOrPsmr0LsyZjut3We0Ag2S7vHvb18
+<<^ code="&#x0003;">>ni:///sha-256;jo1_fpEr3ai5D1OmqYZTXADzDMgU-GiZesKkV_vNpLA
 
 <<^ code="&#x0004;" -> to="?">>

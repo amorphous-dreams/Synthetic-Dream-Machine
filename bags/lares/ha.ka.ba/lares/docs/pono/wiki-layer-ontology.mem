@@ -56,11 +56,11 @@ The OCI column carries structure only. Our layers sync as CRDT coordinates, not 
 
 ''The name names the bag; a wiki reads as that bag opened through a recipe'' — write layer + library list + instance mounts. `lares`-the-wiki and `lares`-the-bag never compete for the name: the wiki projects the bag, the way a git repo and its checkout share a name without confusion.
 
-''The write layer rides live; the canon rides below (operator ruling, 2026-06-18).'' A wiki's saved edits land in its ''`@working`'' layer — a typed instance mount (Law 2), persisted, projecting to the live surface (`wikis/{slug}`), distinct from `@draft`'s //unsaved// drafts — never straight into canon. The wiki's `@{slug}` bag mounts ''read-only as a library member''; its canon (`bags/{slug}`) is reached only by a cap-gated promotion `MOVE` (`@working → @{slug}`, the working↔canon shore — #shore-law). ''No wiki writes into its own canon'', system or user alike: write layer and canon stay distinct coordinates, so saved content lives where a save lands and canon publishes only on promotion. A quine wiki obeys the same split as every other — standing as its own bag grants it no shortcut through the shore. The checkout/repo image holds: `@working` reads as the working tree, `@{slug}` as the committed canon, promotion as the commit.
+''The write layer rides live; the canon rides below (operator ruling, 2026-06-18).'' A wiki's saved edits land in its ''`@working`'' layer — a typed instance mount (Law 2), persisted, projecting to the live surface (`wikis/{slug}`), distinct from `@draft`'s //unsaved// drafts — never straight into canon. The wiki's `@{slug}` bag mounts ''read-only as a library member''; its canon (`bags/{slug}`) takes a write only through a cap-gated promotion `MOVE` (`@working → @{slug}`, the working↔canon shore — #shore-law). ''No wiki writes into its own canon'', system or user alike: write layer and canon stay distinct coordinates, so saved content lives where a save lands and canon publishes only on promotion. A quine wiki obeys the same split as every other — standing as its own bag grants it no shortcut through the shore. The checkout/repo image holds: `@working` reads as the working tree, `@{slug}` as the committed canon, promotion as the commit.
 
 The pattern runs fractal on purpose: `sdm` mounts into `elyncia`, `elyncia` into `@caverns-of-neo-thracia` — every wiki's write layer can serve as another wiki's library layer. Healthy prior art carries the same quine property: every TiddlyWiki can act as another's plugin library; every OCI image can base another.
 
-The quine governs ''every'' wiki — user and system alike. `@oracle` //alone// stands //below// as the protocol-invariant floor every recipe inherits structurally (`expandRecipe` hardcodes `@oracle` — the sole universal slot, ''operator ruling 2026-06-16''). `lares` and `lararium` are ''DreamNet system bags'', each opening as its own ''quine wiki'' carrying a wiki-recipe of its own — `lares` wiki = `@oracle` + `lararium` + `lares`; `lararium` wiki = `@oracle` + `lararium`. They ride a recipe as library/identity members, never as hardcoded floor slots; their oracle pointers ''and'' their wiki-recipes live in the ''`@oracle` system plane'', never `@catalog` (#/oracle-planes).
+The quine governs ''every'' wiki — user and system alike. `@oracle` //alone// stands //below// as the protocol-invariant floor every recipe inherits structurally (`expandRecipe` hardcodes `@oracle` — the sole universal slot, ''operator ruling 2026-06-16''). `lares` and `lararium` stand as ''DreamNet system bags'', each opening as its own ''quine wiki'' carrying a wiki-recipe of its own — `lares` wiki = `@oracle` + `lararium` + `lares`; `lararium` wiki = `@oracle` + `lararium`. They ride a recipe as library/identity members, never as hardcoded floor slots; their oracle pointers ''and'' their wiki-recipes live in the ''`@oracle` system plane'', never `@catalog` (#/oracle-planes).
 
 ''The default seat (operator ruling, 2026-06-10; recipe revised 2026-06-16):'' the vessel's default pinned primary wiki = `lares`-as-wiki — slug `lares` seats the operator-minted system doc itself as the write layer. The `lares` wiki-recipe (seeded in the `@oracle` system plane, not `@catalog`) carries `lararium` as a live library, so the doctrine corpus composes into the hearth; the recipe dedupes the coinciding wiki slot against the `@oracle` floor. The operator tends the personality at the hearth by default, and the disk-mirror designation carries those edits back to `bags/lares` as `.md` memes.
 
@@ -70,30 +70,30 @@ The quine governs ''every'' wiki — user and system alike. `@oracle` //alone// 
 
 <<~ ahu #/bag-as-cap>>
 
-!! A Bag Is a Capability, Not a Format
+!! A Bag Answers by Capability, Never by Format
 
 ''A bag names any collection of tiddlers from a pet-named source.'' The cap reads //enumerate your
 tiddlers//, and its concrete forms stay open: a directory of `.mem` carriers, an Automerge doc, a
 content-addressed shelf, or a plugin.
 
-''A plugin IS a bag'' — packed or unpacked. Packed, it rides as one tiddler holding JSON-data-of-other-
+''A plugin CONSTITUTES a bag'' — packed or unpacked. Packed, it rides as one tiddler holding JSON-data-of-other-
 tiddlers, the shape TW5 has always used; unpacked, its tiddlers stand as ordinary members. Either way it
-answers the same cap, which is why the Rosetta row reads //plugin ↔ image layer ↔ lower bag//.
+answers the same cap, which explains why the Rosetta row reads //plugin ↔ image layer ↔ lower bag//.
 
-''And a plugin rides in other bags.'' A packed plugin inside `lares` is a bag held inside a bag — the
-cap is recursive, so one of the tiddlers a bag enumerates may itself answer the cap. Healthy prior art
+''And a plugin rides in other bags.'' A packed plugin inside `lares` stands as a bag held inside a bag — the
+same cap applies recursively, so one of the tiddlers a bag enumerates may itself answer the cap. Healthy prior art
 carries the same property: every TiddlyWiki can act as another's plugin library.
 
 ''What the recipe adds, the bag never holds.'' Priority comes from the recipe's order; kāpae comes from a
-tombstone in a higher layer. Neither is a field on a meme, which is how one meme stands shadowed in one
-wiki and lives in another without knowing either.
+tombstone in a higher layer. Neither rides as a field on a meme, which lets one meme stand shadowed in one
+wiki and live in another without knowing either.
 
 !!! Kāpae completes the shadow pattern
 
 TW5 lets a real tiddler ''override'' a shadow and gives no verb for removing one — no way to say //this
-default should not appear here//. `tombstone()` is that verb: it marks deletion in live wiki state ''and
+default should not appear here//. `tombstone()` supplies that verb: it marks deletion in live wiki state ''and
 shadows lower-priority bags in the cascade''. The shadow stays whole in its own bag; this composition
-simply stops seeing it. A deletion that shadows rather than destroys, which is why it belongs to the
+simply stops seeing it. A deletion that shadows rather than destroys, which explains why it belongs to the
 composition and never to the meme.
 
 <<~/ahu>>
@@ -149,7 +149,7 @@ Shareability reads off //where a name lives//, not off a flag:
 
 ''Instance mounts MUST NOT enter `@catalog`.'' Minting a registry stub for a private slot makes the private addressable — a capability leak waiting for a confused deputy. A display string for HUD/admin projections derives at render time (`{slug}/draft`) and never stores as a resolvable name. Petname doctrine grounds this: the AutomergeUrl holds the global unguessable key, `@catalog` holds the human edge-names, and an instance mount needs no edge-name because nobody else ever addresses it.
 
-''The draft FLOOR stands as no instance mount, and it registers.'' Where a vessel holds no seat in a PersonaGroup, the draft slot binds to the device floor doc, keyed by the vessel's own DID (`wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`) — a doc the VESSEL holds, delegated to nobody, reached by access across its own restarts. It MUST register in `@catalog` because the catalog is the vessel's registry of the docs it holds by access, and the floor belongs to no group binding the daemon doc could carry (a binding record names a PersonaGroup × fingerprint; the floor names a device). The key names the device, never a person; it federates nothing an unseated vessel does not already hold; and `where` presents it under its slot name (`wikis/{slug}/draft`), never its key. The instance mount of a SEATED vessel — the PersonaGroup × fingerprint binding — stays where this law puts it: in the daemon doc, never the catalog. One resolver reads both (`resolveSlotDoc`, recipe-layer-model#/as-mounted).
+''The draft FLOOR stands as no instance mount, and it registers.'' Where a vessel holds no seat in a PersonaGroup, the draft slot binds to the device floor doc, keyed by the vessel's own DID (`wikis/{slug}/drafts/{did}`, `face-reach: vessel-only`) — a doc the VESSEL holds, delegated to nobody, reached by access across its own restarts. It MUST register in `@catalog` because the catalog serves as the vessel's registry of the docs it holds by access, and the floor belongs to no group binding the daemon doc could carry (a binding record names a PersonaGroup × fingerprint; the floor names a device). The key names the device, never a person; it federates nothing an unseated vessel does not already hold; and `where` presents it under its slot name (`wikis/{slug}/draft`), never its key. The instance mount of a SEATED vessel — the PersonaGroup × fingerprint binding — stays where this law puts it: in the daemon doc, never the catalog. One resolver reads both (`resolveSlotDoc`, recipe-layer-model#/as-mounted).
 
 > Same law Docker operators carry in their hands without naming it: images get repository names; a container's writable layer never does. — Map-Wisp
 
@@ -309,11 +309,11 @@ When `@caverns-of-neo-thracia` mounts `elyncia`, does it inherit `elyncia`'s lib
 The multi-tiddler ''pack'' (hold-a-set) crossing rides the same //working ↔ canon// law: a member edit shadows UP into `@working`, the pack file stays one file on disk (projection SUPPRESSED for pack members by `isPackMember`), and a deliberate ''REPACK'' re-renders. ''Built'': the in-VM deserializer, `$:/`-aside provenance (`OriginalTiddlerPaths`), REPACK, and the projection-suppress loop-stopper. FOUR refinements stay owed, each read off external precedent (Git · OCI · Nix · Unison · matview · overlayfs):
 
 * ''One descriptor·kind'' — the three //what-belongs// mechanisms (title-nesting · aside-JSON · plugin payload) collapse to ONE aside descriptor `{member content-DIGEST, kind, annotations}`, never an in-band member edit (OCI: layers[] vs subject = one shape, differ by relationship-kind).
-* ''Filter-seed matview'' — `OriginalTiddlerPaths` today is a materialized view with its definition thrown away. Store the filter-SEED beside the snapshot; REPACK = `REFRESH MATERIALIZED VIEW`; add a sync-audit (snapshot provably re-derivable FROM the seed, or the pair flags drift). full-REFRESH (REPACK) vs incremental-REFRESH (delta) = two verbs.
-* ''COW-overlay PACK/UNPACK + atomic PROMOTE'' — LOWER (canon, read-only) + UPPER (`@working`) + WORK; copy-up-on-first-write IS UNPACK; overlay never destroys lower = //working shadows canon// in fs primitives. PACK = ONE atomic reconcile (shadow-paging root-swap) coalescing MOVE's two halves — the missing verb. VCS vocab NOT adopted (''rite not drift'').
+* ''Filter-seed matview'' — `OriginalTiddlerPaths` stands as a materialized view with its definition thrown away. Store the filter-SEED beside the snapshot; REPACK = `REFRESH MATERIALIZED VIEW`; add a sync-audit (snapshot provably re-derivable FROM the seed, or the pair flags drift). full-REFRESH (REPACK) vs incremental-REFRESH (delta) = two verbs.
+* ''COW-overlay PACK/UNPACK + atomic PROMOTE'' — LOWER (canon, read-only) + UPPER (`@working`) + WORK; copy-up-on-first-write CONSTITUTES UNPACK; overlay never destroys lower = //working shadows canon// in fs primitives. PACK = ONE atomic reconcile (shadow-paging root-swap) coalescing MOVE's two halves — the missing verb. VCS vocab NOT adopted (''rite not drift'').
 * ''Agile algorithm-tagged digest'' — identity = `algorithm:hex` content digest, SRI strongest-wins (no flag-day), identity-hash SEPARATED from location/attestation (referrers OVER digests, the chain links digests never re-hashes locations).
 
-Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired (content-addressing reframe); the Confluence is already ONE gate over a semantic congruence `≈`.
+Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired (content-addressing reframe); the Confluence already stands as ONE gate over a semantic congruence `≈`.
 
 <<~/ahu>>
 
@@ -343,6 +343,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0d1BJROrgmacadHKClW-TunOEETHRFzaslewdtZdN-U
+<<^ code="&#x0003;">>ni:///sha-256;28xTq_rCLYyCMgnRJ3BnXnUMWMW80UiEuUIqu1_8YaY
 
 <<^ code="&#x0004;" -> to="?">>
