@@ -132,10 +132,10 @@ file, a browser agent takes the carrier pasted in.
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///lararium-node/ROADMAP">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> the one roadmap
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;e65ItM-4YMC2CcHABcIOcTv9IbDA_xnenxU-gD4TdI8
+<<^ code="&#x0003;">>ni:///sha-256;-oyOrltRLzJUAJ-u0VLef5dIx8ahB6VLCaEgFZieXdc
 
 <<^ code="&#x0004;" -> to="?">>
