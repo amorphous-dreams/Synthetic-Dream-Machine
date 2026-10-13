@@ -133,6 +133,11 @@ ADMISSION'' — the word //admit// names this relation and no other, and the adm
 (#/the-operator-contract). ''Seating reads as SUCCESSION'' — a member joins the quorum that admits, and
 the seal lineage records it as keys and a threshold, never as a roster.
 
+''Removal follows the relation.'' Each relation that takes a marker names the hands that may set it aside,
+the gates that read the shadow and the keys that follow it
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/four-edges">>). A removal's record stays among the parties to
+the relation it ends and never joins a Nexus board.
+
 The cadence threshold rides none of the three as a base relation: it seats operators who already
 contract, by its own lineage (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>).
 
@@ -497,6 +502,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mnZrtAiftmZm62wmXxUzA6VC4_Xb8tokvJpETrgPYjs
+<<^ code="&#x0003;">>ni:///sha-256;rZ7i_qC9HMTo_NpjvBowNsQDN6haaIFXwNNX3OEVjFk
 
 <<^ code="&#x0004;" -> to="?">>

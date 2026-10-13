@@ -209,7 +209,9 @@ independent reviews.
 Lamplighter invites, another limit on 'user' friend invites sounds pono."//). Admitting a Kahu — a roll
 that adds a seat — and admitting a Lamplighter — a countersigned carriage contract for an operator or a
 place — each take the charter's seat quorum. No single-seat class covers either. Kapae and rolls take the
-quorum too. At two seats the quorum means both.
+quorum too. At two seats the quorum means both. A quorum's act over a vouch or a member edge takes the same
+quorum, and a voucher's own withdrawal takes the voucher's one signature
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands">>).
 
 ''THE USER ROAD STANDS SEPARATE.'' A hosted friend's leaf under an operator's own household takes no Kahu
 quorum and carries its own bound: a user introduces, an operator admits, and the answer consumes the
@@ -550,6 +552,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_GW4FQJntKvNDIgPl1hxWIAWpNNvMdAky5M82qIfkcs
+<<^ code="&#x0003;">>ni:///sha-256;hBmzEXRVLBr8KPow2tWBRAWns5_K6uPP1JOWrnDCNH4
 
 <<^ code="&#x0004;" -> to="?">>
