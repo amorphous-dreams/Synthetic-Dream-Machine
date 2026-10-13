@@ -206,7 +206,7 @@ still on the road.
 * ''The carriage verifier holds the root'': it checks the epoch, the signature AND a subject root it holds locally, and refuses by name without that root.
 * ''Guardian placement'' reads as advice the house names at enrolment, never a refusal. ''QR pairing'' shows a check string on both screens after the channel opens.
 * ''The floor vessel key drops its next-key commitment'', inside the one identity train. It changes the vessel's signed inception bytes; the operator may overturn it.
-* ''A long-silent fleet device'' (lean, to ONE FACE's plan): each certificate presentation carries the frontier of the withdrawal history its presenter saw; a gate holding a later frontier asks the device to catch up first, and until then the device reads `unconfirmed` and acts on nothing shared. A gate that learned nothing newer may accept. No clock.
+* ''A long-silent fleet device'' catches up before it acts: a presentation carries its presenter's frontier of the face's withdrawal history, and a gate that holds a later one answers `unconfirmed` and hands over what the device lacks. No clock (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof">>).
 * ''The strangers' dial drops the NEWEST arrival'' when its slots fill; a slot frees by the operator's answer or a roll.
 * ''Every browser leaf counts as evictable'': `storage.persist()` refuses in a plain tab, so no leaf holds the only copy of anything, and no passkey slot stands as the only way in (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>).
 * ''A restarted always-on node serves no hosted phone until a human unlocks.'' The resolver and the terminator keep answering, so the page loads and the sync waits; the page says so in one line, until the ember lands.
@@ -760,6 +760,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YGrE7OBT4WEOeHeuTRu-14fCwq0fL_rMYo4KxR6p-yU
+<<^ code="&#x0003;">>ni:///sha-256;zT4jzwW6Mc1E_iBvJCgoCIV6WmXOJFQIoq7zh7P2Ea4
 
 <<^ code="&#x0004;" -> to="?">>

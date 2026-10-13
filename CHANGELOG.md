@@ -47,6 +47,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A shadow carries across a seal roll.** An edge anchor chains from the charter head, so a lift at the new head cites the earlier raise. A vessel keeps every act, anchor and vouch it counted and returns it to a board that lost it.
 - **Vouch and edge boards key on the realm, and a device's edge board on its fleet root.** A vessel re-founds; nothing migrates. `lares cabal join` names a shadow over a vouch, over its voucher, and over the applicant.
 - **A session-scoped document view and a whole-key surface mount stand in mesh.** One function resolves a session's recipe; a session carries a capability profile; no production surface mounts through them yet.
+- **The face proof stands specified in mesh.** Proof subjects, private authority, the session signer and the session face supplier rest out of the barrel until the gate and the fleet-join door call them, with ten signing domains of their own. A withdrawal rides one deny-only history per face key, and a gate answers one of six named states. Keyhive keeps a PersonaGroup's private membership; the house keeps its own signed chain.
 
 **Added**
 - **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki. Every daemon-door meme verb and MCP meme tool likewise requires one container.
