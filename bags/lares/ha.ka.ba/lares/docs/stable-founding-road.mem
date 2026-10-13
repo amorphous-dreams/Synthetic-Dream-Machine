@@ -351,7 +351,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 !!! GROUND
 * `G1` Outcome-doc rotation: the receipt ring bounds count (`uds-channel.ts`); bounding bytes stays owed. G.
 * `G2` The herm route for cancel and the three receipts: the mesh → node → CLI relay leg. G.
-* `G3` `KeyhiveIdentitySlot` wants a production caller. House. G.
+* `G3` `KeyhiveIdentitySlot` wants a production caller, and rides its package barrel without one. House. G.
 * `G4` The quiet doors: REPACK's refusal sites sit outside the one hint helper and its synchronous refusal drops the request id (`act.ts`); the accepts walk misses computed flag reads (`stand.ts`, `meme.ts`); the CLI entry accepts an unread `--debug`; `stand.ts` documents `--init` and `--install` as synonyms where the vessel door rules no aliases; store refusals reach JSON under a generic code. G.
 * `G5` Retired bags: the write gate enumerates its verbs by hand (`action-handler.ts`); the refusal's `error.code` reads generic where its message names `bag-retired`; CLEAR on a retired bag still writes into the retired doc; a fresh CREATE of an empty bag stamps `count: 1`; the ingest preview ignores retirement; a wiki-island save and the watcher's ingest-back into a retired bag stand unprobed. Canon owes `action-handler.mem` the refusal that follows DROP. G.
 * `G6` The evergreen sweep. Stale prose in source: `open-node-vessel.ts` and `node-cas.ts` ("read fresh … never cached" over a captured boot epoch); `persona-admit-flow.ts` (an offer may have "expired"); `cabal-vouch.ts` ("an expiry already past"); `lares.ts` (reboot-to-switch, `--expires`); `custody-prompt.ts` (the test door "refuses a root outside scratch"); `realm-plane.ts` (advises a `nexus refresh` no door answers); lane labels in test titles. Back-compat wording or tolerant readers: `index.ts` (node), `open-browser-vessel.ts`, `residency-actions.ts`, `daemon-vm-core.ts`, `nexus-publish.ts`, `ingest-core.ts`, `device-delegation.ts`, `lar-uris.ts`, `seal-reserve.ts`, `mesh-palace.ts` (a carried `expiry` field), `cleanup-days.ts`, `nexus-seal-seed.ts`, `archive-envelope.ts`. G; the false source comments ride the code lane of #/side-lanes.
@@ -482,7 +482,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 !!! Carried lanes ~ designed or measured, on no train
 * A floor read carries no as-of stamp: `standAs` returns a bare class (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>).
 * The boot's order holds four named reds nobody wrote, and they gate any split of the boot by region (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/vessel-regions">>).
-* The Handle surface adapters: four surfaces stand as type and vocabulary; loopback first, then DNS control (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>). The `rotate`, `graft` and `attest` verbs stand as stubs over built mints; the antigen's ban-`nym` move stays untouched; the browser's publish surface and a phone summons that presents the veil card stay owed. Flagged, unbuilt: a Handle's presenting cabal may also serve as its recovery cabal.
+* The Handle surface adapters: four surfaces stand as type and vocabulary; loopback first, then DNS control (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/handle-card">>). `lares handle graft` stands as a stub over a built mint, where `publish`, `rotate`, `burn` and `attest` run live; the antigen's ban-`nym` move stays untouched; the browser's publish surface and a phone summons that presents the veil card stay owed. Flagged, unbuilt: a Handle's presenting cabal may also serve as its recovery cabal.
 * The hostful code half: `carrierBaseRelPath` discards a hostful URI (`bag-paths.ts`), so a hostful title never sites; one carrier claims otherwise (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri-namespace">>).
 * Title-to-path persistence: the title-to-base map lives in memory alone (`disk-projector.ts`).
 * Wikis-first writes: `meme promote` holds no in-wiki path, and the hand-edit weld stays unbuilt, landing last (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>).
@@ -494,10 +494,11 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * No SES or Compartment realm gate stands in the tree; it gates any live authoring of unpinned code.
 * Operator power reaches no browser vessel: a seam enforced by disk access, never a capability. Co-hosted sovereignty between same-uid peers stands claimed and unenforced.
 * The crossing rail's three requirements (both ends as presented capabilities, a saga shape, declared deletion semantics) and a realm tally's move onto the shared substrate both stand researched and unbuilt.
-* A deny-only antigen share wants provenance and a merge rule before two lists ever merge.
+* A deny-only antigen share wants entries that can lapse, carried provenance and a merge rule before two lists ever merge.
 * Observer-local hardening by silence must BOUND its wait, or a withheld update freezes a victim (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">>).
 * One charter per vessel rests on a single seal home (`larSealHome`), a guard on one file and never a law; a vessel that carries a second Nexus wants a second seal home, and the charter train names none.
-* Whether realm standing crosses operators wants a fresh measure against the realm's shared substrate.
+* Realm standing does not cross operators: a feed slot lands in its writer's own daemon bag. The cure points the realm verbs' store at the realm's shared substrate and requires the seal on a foreign slot; the seal verifier holds no caller yet (`packages/lararium-mesh/src/cabal-realm-clock.ts`).
+* The bag plane still carries its creator's identifier in the clear on every carried event, where the WHO plane's veil-born group hides it; a fresh measure should confirm it.
 * The bag-tier reader takes the hearth's manifest alone; a repository-homed manifest reads VEIL, tighter and never looser.
 * A startup module inside the VM, wiring whatever the projection environment lacks, stands held; the off-main-thread engine research may answer it.
 * Builds held on purpose, each on the operator's word: the lease cure, the docker partition scenario, WebTransport, the `<<~?` sigil, the SOURCE tiddler.
@@ -756,6 +757,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nG6J466zUmK8n64jG4TUTw0lP9mmJAi3Pn17kD48XMM
+<<^ code="&#x0003;">>ni:///sha-256;AcwEfwTtil40-69PUlPwMnIpaojdSRrjjQ5N0QsZOVA
 
 <<^ code="&#x0004;" -> to="?">>
