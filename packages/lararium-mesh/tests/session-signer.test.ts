@@ -148,6 +148,11 @@ describe("minting a session's signer", () => {
     const throwing: VesselFaceKeyCustody = { signAsVesselFace: () => Promise.reject(new Error("custody closed")) };
     await expect(mintSessionSigner({ ...at, certificate: c.certificate, apart: [], custody: throwing, random: keeping })).rejects.toThrow("custody closed");
     expect(hex(kept[0]!)).toBe("00".repeat(32));
+    // A source that fills the array and then throws leaves no bytes in it either.
+    const failing = { getRandomValues: <T extends Uint8Array<ArrayBuffer>>(array: T): T => { array.fill(9); kept.push(array); throw new Error("source failed"); }, randomUUID: () => "unused" };
+    await expect(mintSessionSigner({ ...at, certificate: c.certificate, apart: [], custody: custodyOf(c.vessel), random: failing })).rejects.toThrow("source failed");
+    expect(kept.length).toBe(2);
+    expect(hex(kept[1]!)).toBe("00".repeat(32));
   });
 });
 
@@ -192,12 +197,39 @@ describe("what a signer signs, and for whom", () => {
     expect(await signer.sign("act", PAYLOAD)).toEqual({ refusal: "signer-dropped" });
   });
 
-  test("a session in the middle of its switch signs nothing", async () => {
+  test("a session frozen for its switch signs nothing, and a refused preflight returns its signer whole", async () => {
     const c = await chain("switching", NEXUS_A);
     const table = new SessionTable(OWNER_EPOCH);
     const at = open(table, c, GROUP_ONE, "face");
     const signer = await signerFor(c, at);
     table.transition(at.session.sessionId, "switching");
+    expect(await signer.sign("act", PAYLOAD)).toEqual({ refusal: "session-not-live" });
+    expect(signer.dropped).toBe(false);                                // frozen, never fallen: the old generation may yet stand
+    table.transition(at.session.sessionId, "live");                     // the preflight refused; the same generation lives on
+    const signed = await signer.sign("act", PAYLOAD);
+    if (!("signature" in signed)) throw new Error(signed.refusal);
+    expect(readSessionSignature(signer.certificate, "act", PAYLOAD, signed.signature)).toEqual({ read: "act" });
+  });
+
+  test("a freeze that lands while the key signs lets no signature leave, and drops nothing", async () => {
+    const c = await chain("freeze-race", NEXUS_A);
+    const table = new SessionTable(OWNER_EPOCH);
+    const at = open(table, c, GROUP_ONE, "face");
+    const signer = await signerFor(c, at);
+    const pending = signer.sign("act", PAYLOAD);
+    table.transition(at.session.sessionId, "switching");
+    expect(await pending).toEqual({ refusal: "session-not-live" });
+    expect(signer.dropped).toBe(false);
+  });
+
+  test("a revoked session signs nothing, and its close drops the signer", async () => {
+    const c = await chain("revoked", NEXUS_A);
+    const table = new SessionTable(OWNER_EPOCH);
+    const at = open(table, c, GROUP_ONE, "face");
+    const signer = await signerFor(c, at);
+    table.transition(at.session.sessionId, "revoked");
+    expect(await signer.sign("act", PAYLOAD)).toEqual({ refusal: "session-not-live" });
+    table.transition(at.session.sessionId, "closed");
     expect(await signer.sign("act", PAYLOAD)).toEqual({ refusal: "session-not-live" });
     expect(signer.dropped).toBe(true);
   });

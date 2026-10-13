@@ -13,8 +13,11 @@
  *   · A SIGNER SERVES ONE SESSION AT ONE GENERATION, AND THE OWNER'S TABLE SAYS WHETHER IT STILL STANDS.
  *     A signer keeps the owner's table and the binding its session opened on, and asks the table before
  *     every signature. No caller hands it a record: a record kept from before a close or a switch proves
- *     nothing. A session the table no longer holds live at the signer's generation DROPS the signer: the
- *     close or the switch already happened, and this key outlived it by one call at most.
+ *     nothing. A session the table no longer holds at the signer's generation DROPS the signer: the close
+ *     or the switch already happened, and this key outlived it by one call at most. A session the table
+ *     holds FROZEN (mid-switch, revoked, closing) signs nothing and keeps its signer: a refused preflight
+ *     returns the old generation to `live` with its facets whole, and the owner drops the signer itself
+ *     when it fences that generation.
  *   · THE BINDING NEVER CROSSES. A session id and an owner epoch belong to the vessel, and one owner epoch
  *     serves every face. Neither enters a signed image or a certificate; the certificate names the face,
  *     the Nexus, two keys and the profile.
@@ -79,13 +82,20 @@ function readSession(value: unknown): SessionRecord | null {
   } catch { return null; }
 }
 
-/** Ask the owner's table for the session it holds LIVE under this id, epoch and generation, on this binding. */
+/**
+ * Ask the owner's table for the session it holds LIVE under this id, epoch and generation, on this binding.
+ * A refusal says whether the session has GONE (closed, moved a generation on, another owner's, another
+ * binding's) or merely stands frozen in a state that may return to `live`.
+ */
 function standing(table: SessionTable, binding: SessionBinding, at: Pick<SessionSignerBinding, "sessionId" | "ownerEpoch" | "generation">):
-  { readonly record: SessionRecord } | { readonly refusal: "stale-generation" | "session-not-live" } {
+  { readonly record: SessionRecord } | { readonly refusal: "stale-generation" | "session-not-live"; readonly gone: boolean } {
   const checked = table.check({ schemaVersion: SESSION_SCHEMA_VERSION, ownerEpoch: at.ownerEpoch, sessionId: at.sessionId, generation: at.generation }, binding);
-  if (!checked.ok) return { refusal: checked.refusal === "stale-generation" ? "stale-generation" : "session-not-live" };
+  if (!checked.ok) {
+    if (checked.refusal === "stale-generation") return { refusal: "stale-generation", gone: true };
+    return { refusal: "session-not-live", gone: checked.refusal !== "session-not-live" };
+  }
   const record = readSession(checked.session);
-  return record === null ? { refusal: "session-not-live" } : { record };
+  return record === null ? { refusal: "session-not-live", gone: true } : { record };
 }
 
 /**
@@ -121,12 +131,13 @@ export class SessionSigner {
 
   /**
    * Sign `payload` under `purpose`. The owner's table decides whether the session still stands: a session
-   * it holds no longer live, or one generation on, or under another face or profile, drops this signer.
+   * it holds no longer, or one generation on, or under another face or profile, drops this signer; a
+   * session it holds frozen signs nothing and keeps it.
    */
   async sign(purpose: unknown, payload: unknown): Promise<{ readonly signature: Signature } | SessionSignerRefusal> {
     if (this.#dropped) return { refusal: "signer-dropped" };
     const now = standing(this.#table, this.#port, this.binding);
-    if (!own(now, "record")) { this.drop(); return { refusal: now.refusal }; }
+    if (!own(now, "record")) { if (now.gone) this.drop(); return { refusal: now.refusal }; }
     if (now.record.profile !== this.binding.profile) { this.drop(); return { refusal: "session-not-live" }; }
     if (now.record.proofSubject !== faceProofSubjectRef(this.certificate.scope)) { this.drop(); return { refusal: "session-other-face" }; }
     if (!isSessionSigningPurpose(purpose)) return { refusal: "purpose-unknown" };
@@ -137,7 +148,7 @@ export class SessionSigner {
     // A close, a switch or a drop that landed while the key signed: the signature never leaves.
     if (this.#dropped) return { refusal: "signer-dropped" };
     const after = standing(this.#table, this.#port, this.binding);
-    if (!own(after, "record")) { this.drop(); return { refusal: after.refusal }; }
+    if (!own(after, "record")) { if (after.gone) this.drop(); return { refusal: after.refusal }; }
     const reading = readSessionSignature(this.certificate, purpose, payload, signature);
     return own(reading, "read") ? { signature } : { refusal: "signer-dropped", cause: reading };
   }
@@ -173,9 +184,15 @@ export async function mintSessionSigner(args: {
   const { scope, vesselFaceKey } = certificate.read;
   if (record.proofSubject !== faceProofSubjectRef(scope)) return { refusal: "session-other-face" };
 
-  const drawn = (args.random ?? defaultCryptoProvider).getRandomValues(new Uint8Array(32));
-  const secret = Uint8Array.from(drawn);
-  drawn.fill(0);
+  // The source fills an array this function owns and overwrites, whether the draw returns or throws.
+  const drawn = new Uint8Array(32);
+  let secret: Uint8Array;
+  try {
+    (args.random ?? defaultCryptoProvider).getRandomValues(drawn);
+    secret = Uint8Array.from(drawn);
+  } finally {
+    drawn.fill(0);
+  }
   let kept = false;
   try {
     const sessionKey = hex(await ed25519.getPublicKeyAsync(secret)) as SessionKey;
