@@ -309,6 +309,27 @@ export const SESSION_CERTIFICATE_DOMAIN = mint("session-certificate");
 export const SESSION_FINISH_DOMAIN = mint("session-finish");
 export const SESSION_ACT_DOMAIN = mint("session-act");
 export const SESSION_AUTHORITY_DOMAIN = mint("session-authority");
+// ── THE GATE: one bundle per (Nexus, route), and the exchange it answers ────────────────────────
+// Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange. A gate derives its keys and never
+// stores them; each name below separates one derivation, one digest or one signed image from the rest.
+/** The custody root's CHILD every gate bundle of a vessel derives from: an HKDF `info`, asked of the custody
+ *  seat once per derivation. Apart from every other child of that root. */
+export const GATE_BUNDLE_INFO = mint("gate-bundle");
+/** A bundle's TRANSPORT key: the HKDF `info`, over the Nexus and the route, of the X25519 key that answers a
+ *  dialer's first flight. */
+export const GATE_TRANSPORT_KEY_INFO = mint("gate-transport-key");
+/** A bundle's SIGNING key: the HKDF `info`, over the Nexus and the route, of the Ed25519 key that signs the
+ *  gate's verdict and the floor's announcement. Apart from the transport key: neither derives the other. */
+export const GATE_SIGNING_KEY_INFO = mint("gate-signing-key");
+/** The digest that names a bundle's PIN (the Nexus, the route and both public keys) wherever a handshake or a
+ *  signature binds it. A digest name, signed by nobody. */
+export const GATE_BUNDLE_PIN_DOMAIN = mint("gate-bundle-pin");
+/** The handshake's PROLOGUE: both ends mix the pin's digest under this name, so a first flight decrypts only
+ *  at the gate whose pin its dialer held. */
+export const GATE_HANDSHAKE_DOMAIN = mint("gate-handshake");
+/** The gate's VERDICT: its signing key signs the handshake's hash, the bundle's digest and a digest of its
+ *  answer under this name, so a dialer reads an answer only from the gate it pinned, for the dial it made. */
+export const GATE_VERDICT_DOMAIN = mint("gate-verdict");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");
