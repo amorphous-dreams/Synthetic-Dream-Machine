@@ -115,7 +115,7 @@ the membership sense stands ''built at the edge grain'' (`edge-kapae`). Acts acc
 
 !! The four marked edges
 
-> ''House reading, marked as such; the operator may overturn it.'' The membership stack holds four relations that take a marker. A seat in a charter takes none: a seat leaves by a roll (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle">>).
+> ''Operator ruling, approved as presented.'' The membership stack holds four relations that take a marker. A seat in a charter takes none: a seat leaves by a roll (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle">>).
 
 |! edge |! its two ends |! what names it |! the board that carries its acts |
 | ''dyad'' | a device and a face | `deviceEdgeId`: the fleet root and the device key | the fleet's edge board, read by one PersonaGroup |
@@ -137,7 +137,7 @@ A dyad's slot id hashes a veil key that never leaves its device, so the marker n
 
 !! Who holds an edge ~ two hands, and a lower lifts only its own hand's raises
 
-> ''House reading, marked as such; the operator may overturn it.'' A vouch edge answers to its voucher AND to a chartered quorum of the realm it crosses, never to one realm key.
+> ''Operator ruling, approved as presented.'' A vouch edge answers to its voucher AND to a chartered quorum of the realm it crosses, never to one realm key.
 
 Two hands act on an edge. The ''holder'' hand signs with the one key the edge's own id names. The ''quorum'' hand signs with the seat quorum of the charter the realm stands under, at the seal epoch the act names. The four chartered classes read at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
 
@@ -162,7 +162,7 @@ Two hands act on an edge. The ''holder'' hand signs with the one key the edge's 
 
 !! Rolls carry shadows
 
-> ''House reading, marked as such; the operator may overturn it.'' A seal roll carries every shadow, and a lift may cite a raise from an earlier epoch through the roll's own anchors.
+> ''Operator ruling, approved as presented.'' A seal roll carries every shadow, and a lift may cite a raise from an earlier epoch through the roll's own anchors.
 
 * ''Citation alone orders acts.'' An act cites its parents by content id, and a parent may root on any epoch. No scalar, clock or arrival order ranks.
 * ''The epoch names a roster and ranks nothing.'' A quorum act counts under the roster of the seal epoch it names. A holder act carries an epoch and no reader checks it. The charter's own lineage names each rolled epoch's seats, and a hash binds the first epoch's seats.
@@ -193,7 +193,7 @@ A board holds documents that any writer may edit, so a hand can delete a raise f
 
 !! A standing shadow reaches every gate
 
-> ''House reading, marked as such; the operator may overturn it.'' A standing shadow drives the share verdict, the sync gate and a Keyhive revocation, and the sealed store's key roll follows that revocation.
+> ''Operator ruling, approved as presented.'' A standing shadow drives the share verdict, the sync gate and a Keyhive revocation, and the sealed store's key roll follows that revocation.
 
 ''One rule serves every gate.'' A shadow stands over an edge that reads //held//, //unsettled//, //unavailable// or //rejected//. Only //withdrawn// lifts it, and //absent// never shadows. A gate that reads a standing shadow answers as though the relation never stood. ''The peer draws Mu'': the same answer a peer with no relation draws, with no refusal that names a cause (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen">>). The operator's own doors name the reading, a fork included.
 
@@ -264,7 +264,7 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 * ''The settle on every fold.'' A person runs `lares edge settle`; no vessel runs it by itself when its board moves.
 * ''A realm identity at the wire.'' The realm's gate and its board lane ask which identity a peer holds standing under. No socket proves one: a root never travels, and a leaf never links to a root. Both answer an honest nothing across operators until a socket proves the face key a vouch names.
 * ''A realm's key group.'' No production path seats a member in a realm's group, so a member edge moves no key yet; the plan and the executor serve it the day one does.
-* ''The PersonaGroup as a group'', and with it a revocation that rolls a bag's key (#/keys). The move changes the group's own id.
+* ''The PersonaGroup as a Keyhive group'' (operator ruling), and with it a revocation that rolls a bag's key (#/keys). The move changes the group's own id, so it lands with the seat train's identity bytes (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>).
 * ''A fresh group for a seat no hand can revoke'' (#/keys).
 * ''The content-key roll'': the sealed store's subscriber to the roll. It reads the rolls each vessel kept, and then stands for the ones that follow.
 * ''The explicit hand-over'' of a missed span to a device that returned (#/re-admission).
@@ -296,6 +296,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pKsE3xW0cglxUxC2E1Qz37hG-8qNnBuxMeIFMnzJebw
+<<^ code="&#x0003;">>ni:///sha-256;KTG0pbumvywrcD84XINxt86VHzDQAUFuHre7K6dlWY0
 
 <<^ code="&#x0004;" -> to="?">>
