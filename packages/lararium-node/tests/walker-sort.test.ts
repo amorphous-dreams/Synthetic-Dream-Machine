@@ -25,7 +25,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   hex, genesisSealEpochCid, hostingActCid, issueGrant, mintHostToken, mintHostingAct, evaluateToken,
-  redeemClaim, lineageOf, signAntigenEntry,
+  redeemClaim, lineageOf, signAntigenEntry, makeMultiSigQuorumVerifier,
   type KahuQuorumSeats, type HostingGrant, type InviteToken, type KapaeAntigenEntry, type Presented,
 } from "@lararium/mesh";
 import { makeSocketSorter } from "../src/socket-sorter.js";
@@ -55,7 +55,7 @@ async function rosterAt(): Promise<KahuQuorumSeats> {
 }
 async function reading(aid = AID, antigen: KapaeAntigenEntry[] = []): Promise<CarriedNexusReading> {
   const roster = await rosterAt();
-  return { aid, via: "consent", island: aid, roster, sealLineage: [], denyBoard: [], antigen, antigenRoster: roster, posture: "private" };
+  return { nexus: aid, aid, revision: "fixture", via: "consent", island: aid, roster, sealLineage: [], denyBoard: [], antigen, antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
 }
 function sorter(readings: CarriedNexusReading[], counts: number[] = []) {
   return makeSocketSorter({

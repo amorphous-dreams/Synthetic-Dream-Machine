@@ -33,7 +33,7 @@ import {
   type FederationPosture, type PeerClass, type PresentedGrantArm, type PresentedTokenArm, type HostingGrant, type NexusDoc,
 } from "@lararium/mesh";
 import type { SocketSorter, SortInput, SortVerdict } from "./daemon-auth-gate.js";
-import { leafStandingFor, type CarriedNexusReading, type SocketBinding } from "./nexus-carriage.js";
+import { leafReadingFor, type CarriedNexusReading, type SocketBinding } from "./nexus-carriage.js";
 import { readHostingState, liveEpochs, spendToken, redeemedCount } from "./hosting-store.js";
 import { noteContact } from "./hosting-carry.js";
 
@@ -57,6 +57,12 @@ export interface SocketSorterDeps {
   readonly primaryPosture: () => FederationPosture;
   /** The hosting store and leaf the walker arms read. Absent → no socket stands as a walker here. */
   readonly hosting?:       HostingSorterDeps;
+  /**
+   * THE LOCAL NAME OF A REFUSED ADMIT. The seat reads each presented admit FIRST, so the name surfaces here:
+   * `no-held-root`, `leaf-proof-failed`, `admit-<state>:<reason>` (`leafReadingFor`). The socket hears nothing
+   * of it: the verdict it draws stays the class alone, or silence. Absent → one line on this vessel's own log.
+   */
+  readonly onRefuse?:      (vesselKey: string, refusal: string) => void;
   /**
    * THE DYAD'S SHADOW (kapae#/reach): does a standing shadow set this device aside from the fleet this vessel
    * serves? A device set aside never sorts same-operator, whatever its delegation proves; it sorts by what else
@@ -147,6 +153,12 @@ export function gateAnswersStrangers(primary: FederationPosture, readings: reado
   return answersStrangers([primary, ...readings.map((r) => r.posture)]);
 }
 
+/** The seat's own log line for a refused admit: the refusal's name and the wire key's head, for this vessel's
+ *  operator alone. */
+function logRefusedAdmit(vesselKey: string, refusal: string): void {
+  console.warn(`[lar-seat] a presented admit refused (${refusal}) — wire key ${vesselKey.slice(0, 12)}…${refusal === "no-held-root" ? " — this vessel holds no charter for that Nexus (`lares nexus seal import --carry`)" : ""}`);
+}
+
 /** Stand the vessel's sorter over its carried readings. */
 export function makeSocketSorter(deps: SocketSorterDeps): SocketSorter {
   return async (input) => {
@@ -164,8 +176,12 @@ export function makeSocketSorter(deps: SocketSorterDeps): SocketSorter {
         presentedAdmit: presented, nonce: input.challenge.nonce,
         gatePubKey: input.challenge.gatePubKey, vesselKey: input.vesselKey,
       };
-      const held = await leafStandingFor(binding, readings);
-      if (held) standing = { nym: held.nym, aid: held.aid };
+      const read = await leafReadingFor(binding, readings);
+      if ("standing" in read) standing = { nym: read.standing.nym, aid: read.standing.aid };
+      else {
+        // A NAME FOR THE OPERATOR NEVER DECIDES THE SORT: a callback that throws changes no verdict.
+        try { (deps.onRefuse ?? logRefusedAdmit)(input.vesselKey, read.refusal); } catch { /* the sort goes on */ }
+      }
     }
     const cls = classifySocket({
       sameOperator: false,

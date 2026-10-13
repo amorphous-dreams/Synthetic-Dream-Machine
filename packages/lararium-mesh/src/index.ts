@@ -188,6 +188,12 @@ export * from "./kapae-antigen.js";
 export { antigenEntriesFromBoard, writeAntigenEntry, antigenEntryKey, ANTIGEN_ENTRY_PREFIX } from "./antigen-board.js";
 // The operator MEMBERS-registry — the Kapae-antigen's ALLOW-twin (members{} ⊥ blocked{}); contracts, never identities.
 export * from "./carriage-registry.js";
+// The root of one Nexus as a vessel holds it, and the one door a presented admit reads through: the socket
+// seat, the raise and the admit bundle hand the verifier a held root, never a roster of their own making.
+export {
+  heldNexusRoot, heldRootFor, heldRootRevision, readAdmitAtHeldRoot, NO_HELD_ROOT,
+  type HeldNexusRoot, type HeldRootAbsence, type HeldAdmitReading,
+} from "./held-nexus-root.js";
 export {
   carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX,
   rollAnchorsFromBoard, writeRollAnchor, rollAnchorKey, presentationFromBoardDoc,

@@ -24,11 +24,10 @@
  * the challenge with that admit's LEAF. The leaf's signature over `raiseChallengeBytes` (vessel, Nexus,
  * lease epoch, single-use nonce) IS the leaf's proof over the raise nonce; no second domain rides beside it.
  *
- * The vessel supplies what it reads off its own replica for each Nexus it carries (`RaiseNexusReading`: the
- * roster at the held charter head, the carriage board read as a DENY board, the Kapae antigen). The grant
+ * The vessel supplies the held root it reads off its own replica for each Nexus it carries. The grant
  * raises only when the admit roots on the challenge's Nexus — at its head epoch, or at an ancestor epoch its
- * lineage's roll anchors carry to the head (walked against the reading's `sealLineage`, every roll of which
- * the revealed keys signed) — `verifyPresentedAdmit`
+ * lineage's roll anchors carry to the head (walked against the held root's `sealLineage`, every roll of which
+ * the revealed keys signed) — the held-root door
  * reads it `held` there, that Nexus is the one the challenge names, the signer IS the admit's leaf, and the leaf's
  * signature verifies. A persona ROOT signing beside the same admit names a key the admit does not, and
  * refuses: the root never reaches a raise.
@@ -42,11 +41,8 @@
 
 import { RAISE_CHALLENGE_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes } from "./crypto.js";
-import {
-  verifyPresentedAdmit, type CarriageEntry, type PresentedAdmitState, type PresentedLineageAct,
-} from "./carriage-registry.js";
-import type { SealEpoch } from "./wax-stamp.js";
-import { makeMultiSigQuorumVerifier, type KahuQuorumSeats, type KapaeAntigenEntry } from "./kapae-antigen.js";
+import { type CarriageEntry, type PresentedAdmitState, type PresentedLineageAct } from "./carriage-registry.js";
+import { NO_HELD_ROOT, readAdmitAtHeldRoot, type HeldNexusRoot } from "./held-nexus-root.js";
 import type { RaisedCaps } from "./vessel-standing.js";
 
 /** Domain separation — a raise signature can never be replayed as any other act this house signs. */
@@ -87,29 +83,12 @@ export interface RaiseGrant {
   readonly presentedAdmit: RaisePresentedAdmit;
 }
 
-/**
- * One Nexus the vessel carries for, read off its own replica: what a grant's admit is judged against.
- * Structurally the subset of the node's `CarriedNexusReading` the raise needs.
- */
-export interface RaiseNexusReading {
-  /** The Nexus's AID — what `RaiseChallenge.nexus` names. */
-  readonly aid:           string;
-  /** The Nexus's membership roster at the head of the charter the vessel holds for it. */
-  readonly roster:        KahuQuorumSeats;
-  /** The Nexus's carriage board, read as a DENY board (counted revokes only). */
-  readonly denyBoard:     readonly CarriageEntry[];
-  /** The Nexus's Kapae antigen entries. */
-  readonly antigen:       readonly KapaeAntigenEntry[];
-  /** The ANTIGEN quorum's roster, held apart from the membership roster. */
-  readonly antigenRoster: KahuQuorumSeats;
-  /** The charter's epoch lineage, genesis first — what an admit at a rolled epoch is walked against. A lineage
-   *  whose rolls do not verify reads no ancestor. Absent → only an admit at the head reads held. */
-  readonly sealLineage?:  readonly SealEpoch[];
-}
+/** A raise reads the admit against the root the vessel holds for the challenge's Nexus (`nexus` names it). */
+export type RaiseNexusReading = HeldNexusRoot;
 
 /**
  * Why a grant did not stand. A reason, never a throw — untrusted input crosses this shore. The last four
- * are `verifyPresentedAdmit`'s own refusals, read against the challenge's Nexus.
+ * are the held-root door's verdicts, read against the challenge's Nexus.
  */
 export type RaiseRefusal =
   | "wrong-vessel"      // the grant answers a challenge some other vessel emitted
@@ -148,15 +127,15 @@ function refused(why: RaiseRefusal, detail: string): RaiseRefused {
 }
 
 /**
- * Read a grant against the challenge this vessel actually emitted, and mint the caps it earns.
+ * Read a grant against the held root for the challenge this vessel actually emitted, and mint the caps it earns.
  *
  * Every check FAILS CLOSED and names its refusal, in this order:
  *   1. the challenge: a live one exists, names this vessel and this Nexus, and carries the live nonce and
  *      epoch (`stale-challenge`, `wrong-vessel`, `wrong-nexus`);
- *   2. the challenge's Nexus stands in `readings` (`wrong-nexus`);
+ *   2. the held root for the challenge's Nexus stands in `readings` (`wrong-nexus`);
  *   3. an admit rooted on ANOTHER carried Nexus's head epoch refuses `wrong-nexus`; an admit at any other
  *      epoch passes on to the verifier, which walks its roll anchors to the head or reads it `wrong-epoch`;
- *   4. `verifyPresentedAdmit` reads the admit against the challenge's Nexus: its roster head, its charter
+ *   4. the held-root door reads the admit against the challenge's Nexus: its roster head, its charter
  *      lineage (for an admit at an ancestor epoch), its deny board and its antigen. Anything but `held` refuses with the verifier's own state;
  *   5. the signer is the admit's leaf (`rejected`, detail `signer-is-not-the-admit-leaf`);
  *   6. the leaf's signature over `raiseChallengeBytes` verifies (`bad-signature`).
@@ -184,8 +163,8 @@ export async function verifyRaiseGrant(args: {
     return refused("stale-challenge", "nonce-or-epoch-not-live");
   }
 
-  const reading = args.readings.find((r) => r.aid === live.nexus && r.roster.sealEpochCid.length > 0);
-  if (!reading) return refused("wrong-nexus", "challenge-nexus-not-carried");
+  const reading = args.readings.find((r) => r.nexus === live.nexus && r.roster.sealEpochCid.length > 0);
+  if (!reading) return refused("wrong-nexus", NO_HELD_ROOT);
 
   const presented = grant.presentedAdmit as RaisePresentedAdmit | undefined;
   const admit = presented?.admit;
@@ -193,20 +172,13 @@ export async function verifyRaiseGrant(args: {
   const rootsOn = typeof admit?.sealEpochCid === "string"
     ? args.readings.find((r) => r.roster.sealEpochCid.length > 0 && r.roster.sealEpochCid === admit.sealEpochCid)
     : undefined;
-  if (rootsOn && rootsOn.aid !== reading.aid) return refused("wrong-nexus", "admit-for-another-nexus");
+  if (rootsOn && rootsOn.nexus !== reading.nexus) return refused("wrong-nexus", "admit-for-another-nexus");
 
   let verdict;
   try {
-    verdict = await verifyPresentedAdmit({
-      admit:           admit as CarriageEntry,
-      lineage:         presented?.lineage as readonly PresentedLineageAct[],
-      roster:          reading.roster,
-      ...(reading.sealLineage ? { sealLineage: reading.sealLineage } : {}),
-      denyBoard:       reading.denyBoard,
-      antigen:         reading.antigen,
-      antigenRoster:   reading.antigenRoster,
-      antigenVerifier: makeMultiSigQuorumVerifier(),
-    });
+    const answer = await readAdmitAtHeldRoot({ admit: admit as CarriageEntry, lineage: presented?.lineage as readonly PresentedLineageAct[] }, reading);
+    if ("refusal" in answer) return refused("wrong-nexus", NO_HELD_ROOT);
+    verdict = answer.verdict;
   } catch {
     return refused("rejected", "presented-admit-unreadable");
   }

@@ -16,6 +16,7 @@ import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
   hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract,
+  makeMultiSigQuorumVerifier,
   type CarriageEntry, type KahuQuorumSeats, type FederationPosture, type PeerClass,
 } from "@lararium/mesh";
 import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers } from "../src/socket-sorter.js";
@@ -42,7 +43,7 @@ async function admitAt(epoch: string): Promise<CarriageEntry> {
   return signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: epoch }, kahu, await signCarriageContract(nym, epoch, signerOf(LEAF_SEED)));
 }
 function reading(roster: KahuQuorumSeats, posture: FederationPosture = "private"): CarriedNexusReading {
-  return { aid: "N", via: "consent", island: "island-N", roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, posture };
+  return { nexus: "N", aid: "N", revision: "fixture", via: "consent", island: "island-N", roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture };
 }
 /** A sort input for a proven vessel key, optionally presenting `admit` with its leaf's proof over this socket. */
 async function input(opts: { sameOperator?: boolean; admit?: CarriageEntry; vessel?: Uint8Array; proofVessel?: Uint8Array } = {}): Promise<SortInput> {

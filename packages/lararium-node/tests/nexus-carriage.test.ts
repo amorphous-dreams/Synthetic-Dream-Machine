@@ -57,7 +57,7 @@ async function act(action: "admit" | "revoke", parents: readonly string[], epoch
   return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch }, await kahu(), seal);
 }
 function reading(aid: string, roster: KahuQuorumSeats, denyBoard: CarriageEntry[] = [], antigen: KapaeAntigenEntry[] = []): CarriedNexusReading {
-  return { aid, via: "consent", island: `island-${aid}`, roster, sealLineage: [], denyBoard, antigen, antigenRoster: roster };
+  return { nexus: aid, aid, revision: "fixture", via: "consent", island: `island-${aid}`, roster, sealLineage: [], denyBoard, antigen, antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier() };
 }
 async function bind(admit: CarriageEntry, opts: { lineage?: CarriageEntry[]; signer?: Uint8Array; vessel?: Uint8Array; wireVessel?: Uint8Array } = {}): Promise<SocketBinding> {
   const vesselKey = await pubOf(opts.vessel ?? VESSEL_SEED);

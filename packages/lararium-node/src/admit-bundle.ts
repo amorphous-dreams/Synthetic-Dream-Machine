@@ -48,8 +48,8 @@
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  foundingRoster, isPresentedAdmit, verifyPresentedAdmit, makeMultiSigQuorumVerifier, carriageEntryActCid,
-  realmIdOfCharter, type CarriageEntry, type KahuQuorumSeats, type PresentedLineageAct, type SealEpoch,
+  isPresentedAdmit, makeMultiSigQuorumVerifier, carriageEntryActCid, heldNexusRoot, readAdmitAtHeldRoot,
+  type CarriageEntry, type PresentedLineageAct, type NexusDoc,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { readNexusDoc } from "./nexus-doc.js";
@@ -116,19 +116,17 @@ function normalized(b: AdmitBundle): AdmitBundle {
 }
 
 /**
- * Does the bundle's admit hold at `roster` on its own: counted, its lineage closed and tight, rooted on the
- * head epoch or on an ancestor of it in `sealLineage` that its roll anchors carry to the head? Read with an
- * EMPTY deny board and antigen — an offline check of the act itself, never of any standing. Never throws.
+ * Does the bundle's admit hold under an offline root built from `charter` alone? The charter must name the
+ * bundle's own Nexus. This checks the act itself, never any standing. Never throws.
  */
 export async function admitBundleHolds(
-  bundle: AdmitBundle, roster: KahuQuorumSeats, sealLineage: readonly SealEpoch[],
+  bundle: AdmitBundle, charter: NexusDoc | null | undefined,
 ): Promise<boolean> {
   try {
-    const verdict = await verifyPresentedAdmit({
-      admit: bundle.admit, lineage: bundle.lineage, roster, sealLineage,
-      denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(),
-    });
-    return verdict.state === "held";
+    const root = heldNexusRoot({ nexus: bundle.aid, charter, denyBoard: [], antigen: [], antigenVerifier: makeMultiSigQuorumVerifier() });
+    if ("absent" in root) return false;
+    const read = await readAdmitAtHeldRoot({ admit: bundle.admit, lineage: bundle.lineage }, root);
+    return "verdict" in read && read.verdict.state === "held";
   } catch { return false; }
 }
 
@@ -161,12 +159,13 @@ export async function takeAdmitBundle(opts: {
   }
   const bundle = normalized(parsed);
   const home = charterHomeFor(opts.sealHome, bundle.aid);
-  if (!home || realmIdOfCharter(readNexusDoc(home)) !== bundle.aid) {
-    throw new AdmitBundleError(`this vessel holds no charter for ${bundle.aid.slice(0, 18)}… — import it (\`lares nexus seal import\`) before taking its admit.`);
+  const doc = home ? readNexusDoc(home) : null;
+  const root = heldNexusRoot({ nexus: bundle.aid, charter: doc, denyBoard: [], antigen: [], antigenVerifier: makeMultiSigQuorumVerifier() });
+  if ("absent" in root) {
+    throw new AdmitBundleError(`no-held-root (${root.absent}): this vessel holds no charter for ${bundle.aid.slice(0, 18)}… — import it (\`lares nexus seal import\`) before taking its admit.`);
   }
-  const doc = readNexusDoc(home);
-  const roster = foundingRoster(doc);
-  if (roster.sealEpochCid.length === 0 || !(await admitBundleHolds(bundle, roster, doc?.sealLineage ?? []))) {
+  const read = await readAdmitAtHeldRoot({ admit: bundle.admit, lineage: bundle.lineage }, root);
+  if (!("verdict" in read) || read.verdict.state !== "held") {
     throw new AdmitBundleError(
       "the admit does not hold at the charter this vessel holds — it does not count under the seated quorum, its " +
       "lineage does not chain, or it roots on an epoch no roll anchor it carries reaches the head from. Nothing was kept.",

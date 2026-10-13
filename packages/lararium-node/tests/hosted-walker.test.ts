@@ -29,7 +29,7 @@ import * as ed from "@noble/ed25519";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import {
-  hex, genesisSealEpochCid, ed25519SignerFromSeed, encodeInvite, mintHostToken,
+  hex, genesisSealEpochCid, ed25519SignerFromSeed, encodeInvite, mintHostToken, makeMultiSigQuorumVerifier,
   takeInvite, walkIdentity, walkOver, popInvite, hostingActCid, decodeInvite,
   type KahuQuorumSeats, type LarWSClientAdapter, type LeafIdentity, type WalkRecord, type WalkStore, type HostingAct,
 } from "@lararium/mesh";
@@ -78,7 +78,7 @@ describe("a newcomer walks in at the hearth's own gate", () => {
     gatePub = await pubOf(GATE_SEED);
     const keys = await Promise.all(SEEDS.map(pubOf));
     const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
-    const reading: CarriedNexusReading = { aid: AID, via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, posture: "private" };
+    const reading: CarriedNexusReading = { nexus: AID, aid: AID, revision: "fixture", via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
     http = createServer();
     wss = new WebSocketServer({ server: http });
     const gate = standGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });

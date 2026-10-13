@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 
 import {
   hex, genesisCharterEpoch, signCarriageQuorum, signCarriageContract, signCarrierContract, carriageEntryActCid,
-  signRaiseGrant, emptyLarDoc, writeCarriageEntry, carriageDocUrl, NEXUS_DOC_DOMAIN,
+  signRaiseGrant, emptyLarDoc, writeCarriageEntry, carriageDocUrl, NEXUS_DOC_DOMAIN, makeMultiSigQuorumVerifier,
   type RaiseChallenge, type RaiseNexusReading, type CarriageEntry, type KahuQuorumSeats, type LarDoc, type NexusDoc,
 } from "@lararium/mesh";
 import {
@@ -66,7 +66,7 @@ async function door(over: Partial<RaiseDoorOptions> = {}) {
   const admit = await act("admit");
   const r = await roster();
   let denyBoard: CarriageEntry[] = [admit];
-  const readings = (): RaiseNexusReading[] => [{ aid: NEXUS, roster: r, denyBoard, antigen: [], antigenRoster: r }];
+  const readings = (): RaiseNexusReading[] => [{ nexus: NEXUS, aid: NEXUS, revision: "fixture", roster: r, sealLineage: [], denyBoard, antigen: [], antigenRoster: r, antigenVerifier: makeMultiSigQuorumVerifier() }];
   const d = standRaiseDoor({
     vesselId:   VESSEL,
     nexus:      NEXUS,
@@ -272,9 +272,9 @@ describe("★ a PLACE carries a Nexus by its own counted carrier seal ★", () =
 describe("unionReadings", () => {
   test("a Nexus carried both ways reads once, first set first", async () => {
     const r = await roster();
-    const a: CarriedNexusReading = { aid: "n", via: "consent", island: "i-1", roster: r, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: r };
+    const a: CarriedNexusReading = { nexus: "n", aid: "n", revision: "fixture", via: "consent", island: "i-1", roster: r, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: r, antigenVerifier: makeMultiSigQuorumVerifier() };
     const b: CarriedNexusReading = { ...a, via: "carrier-seal", island: "i-2" };
-    const c: CarriedNexusReading = { ...a, via: "carrier-seal", aid: "q" };
+    const c: CarriedNexusReading = { ...a, via: "carrier-seal", aid: "q", nexus: "q" };
     expect(unionReadings([a], [b, c]).map((x) => [x.aid, x.island, x.via])).toEqual([["n", "i-1", "consent"], ["q", "i-1", "carrier-seal"]]);
   });
 });

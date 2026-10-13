@@ -30,7 +30,7 @@ import * as ed from "@noble/ed25519";
 import {
   sealPrivateBody, openPrivateBody, authorizeAddress, readContentKey, ciphertextCid, walkCarriageBagId, walkCarryDocumentKey, sha256HexBytesSync,
   walkCarrySecret, carryRecordKey, hex, genesisSealEpochCid, deriveNexusScopedKey,
-  hexToBytes, PERSONA_GLAMOUR_CONTEXT, mintHostToken, redeemClaim, utf8Bytes,
+  hexToBytes, PERSONA_GLAMOUR_CONTEXT, mintHostToken, redeemClaim, utf8Bytes, makeMultiSigQuorumVerifier,
   HOSTING_NOTICE_SESSION_KIND, type KahuQuorumSeats, type UnsignedPresented,
 } from "@lararium/mesh";
 import { depositCarried, noteContact, fetchCarried, readCarryRecord, type CarryLimits } from "../src/hosting-carry.js";
@@ -214,7 +214,7 @@ describe("through the sorter", () => {
   async function readingNow(): Promise<CarriedNexusReading> {
     const keys = await Promise.all(SEEDS.map((s) => ed.getPublicKeyAsync(s).then(hex)));
     const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
-    return { aid: AID, via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, posture: "private" };
+    return { nexus: AID, aid: AID, revision: "fixture", via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
   }
 
   async function stand() {

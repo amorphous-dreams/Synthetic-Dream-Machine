@@ -221,6 +221,32 @@ subject stamp's nexus-scoped leaf and the gate's shape stand at
 
 <<~/ahu>>
 
+<<~ ahu #/the-held-root>>
+
+!! The held root ~ the verifier reads an admit against a root this vessel holds
+
+''The carriage verifier checks an admit's epoch, its signatures and a root this vessel holds locally, and refuses by name without that root.'' A verifier that took its roster from the presenter would believe any admit that presenter signed for itself. So no door hands the verifier a roster: each door hands in a held root.
+
+''A held root comes from one place'': the charter this vessel keeps for that Nexus, read off its own store (`packages/lararium-mesh/src/held-nexus-root.ts`). The root binds three things where it gets built:
+
+* the charter's seal lineage verifies, link by link;
+* the lineage's genesis epoch names the very Nexus the vessel filed the charter under, so a charter kept under one name never answers for another;
+* the seated key-set hashes to the lineage's head.
+
+A charter that fails any of the three names no root.
+
+''Every door reads through it, and every door names one refusal'', `no-held-root`:
+
+|! door |! what it reads |! where the name surfaces |
+| the socket seat | a dial's presented admit, against the root whose head or lineage holds the admit's epoch | the vessel's own log; the peer draws silence |
+| the raise | a recogniser's grant, against the root of the challenge's Nexus | the refusal's detail, under `wrong-nexus` |
+| the admit bundle | a joiner's take, against the charter alone with empty boards | the operator's own door |
+| the gate of the face-proof exchange | one arm, against the root of the gate's own Nexus | the gate's local refusal; the presenter draws silence |
+
+''A reading names its causal position.'' A held root wears a revision over its head epoch, its deny board's acts and its antigen's acts, so a moved board wears another revision. Every reading stands as of the vessel's last sync.
+
+<<~/ahu>>
+
 <<~ ahu #/the-invite>>
 
 !! The invite ~ a hosted grant the guest carries, burned by its host, about no one
@@ -506,6 +532,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pkeB_UYwdHzC7F6ecfQ0miATlepyKFvhZtnA8kuNGIM
+<<^ code="&#x0003;">>ni:///sha-256;rty1G9N92CgAUAiRqz4Nslt90psafwQJbHEQtvgjV80
 
 <<^ code="&#x0004;" -> to="?">>

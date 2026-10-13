@@ -425,7 +425,6 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `N4` The roll that ADDS a seat, the new holder's carriage contract, and a passed chair as a later act. N.
 * `N5` A long-dormant node rejoins: a catch-up walk by re-import, and its witness. House. N, X.
 * `P1` The steward signer: the composing vessel's `realm-bag` verb calls the steward door (`realm-steward.ts`); the docker `meme` scenario by hand, in the asker's order; a door for a collective Handle's seal waits on the chartered classes; the vouch door, the feed's writer and an edge's holder hand still sign under a persona root. P.
-* `P2` The carriage verifier's held-root check (`carriage-registry.ts`). P.
 * `P3` Many cabal realms per Nexus, with selected-realm routing. P.
 * `P4` The four chartered classes and exact-bytes promotion. P.
 * `P5` Kahu-cabal admission as its own act; the cabal's access path to shared canon. P.
@@ -572,9 +571,8 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 # Canon.
 ''Riskiest'': the sealing step, which makes inception signatures a law every fixture meets.
 
-!!! P ~ the Kahu plane around the train (its first three take no identity bytes and may run beside S and K)
+!!! P ~ the Kahu plane around the train (its steps before N take no identity bytes and may run beside S and K)
 # The steward signer.
-# The carriage verifier holds the root.
 # Realms and selected-realm routing.
 # ''After N'': the chartered classes and exact-bytes promotion; Kahu-cabal admission and the cabal access path; R-KAHU.
 # The cadence offers, which may follow the ceremony.
@@ -772,6 +770,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XL_rSg8YSFMYslSpUq0B9JK-Bnr9mNkHx-Q2nx-mPVE
+<<^ code="&#x0003;">>ni:///sha-256;QS7IxZ1IOVRmq0WjcNzAghh86zcTDTO1wJKaWMePRZA
 
 <<^ code="&#x0004;" -> to="?">>

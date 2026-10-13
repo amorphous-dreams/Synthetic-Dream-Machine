@@ -45,7 +45,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */
 import {
-  carriageEntryActCid, carriageEntryCounts, isCarriageDescendant, verifyPresentedAdmit,
+  carriageEntryActCid, carriageEntryCounts, isCarriageDescendant,
   type CarriageEntry, type PresentedAdmitVerdict, type PresentedLineageAct,
 } from "./carriage-registry.js";
 import { verifyEd25519 } from "./ed25519-door.js";
@@ -64,11 +64,13 @@ import {
   type ReadPlacePresentation,
 } from "./gate-exchange.js";
 import type { PeerClass } from "./island-protocol.js";
-import { foldAntigenVerdicts, type KahuQuorumSeats, type KapaeAntigenEntry, type QuorumVerifier } from "./kapae-antigen.js";
+import { foldAntigenVerdicts } from "./kapae-antigen.js";
 import type { NoiseTransport } from "./noise-ik.js";
 import { PLACE_PROFILE, type SeatProfile } from "./session-contract.js";
 import type { FaceAdmitReading, FaceGrantReading } from "./session-face.js";
-import type { SealEpoch } from "./wax-stamp.js";
+import { NO_HELD_ROOT, readAdmitAtHeldRoot } from "./held-nexus-root.js";
+import type { HeldNexusRoot } from "./held-nexus-root.js";
+export type { HeldNexusRoot } from "./held-nexus-root.js";
 
 // ── The socket and the deadline ─────────────────────────────────────────────────────────────────
 
@@ -111,20 +113,6 @@ export interface PlaceContractReading {
   readonly revision:    string;
 }
 
-/** The root of one Nexus as this vessel holds it locally: what a presented admit gets read against. */
-export interface HeldNexusRoot {
-  /** The Nexus this root belongs to, in the spelling the gate's own scope uses. */
-  readonly nexus:           string;
-  /** The causal position this reading stands at: the heads the verifier folds. */
-  readonly revision:        string;
-  readonly roster:          KahuQuorumSeats;
-  readonly sealLineage?:    readonly SealEpoch[];
-  readonly denyBoard:       Iterable<CarriageEntry>;
-  readonly antigen:         Iterable<KapaeAntigenEntry>;
-  readonly antigenRoster:   KahuQuorumSeats;
-  readonly antigenVerifier: QuorumVerifier;
-}
-
 /**
  * The admit reader over the house's one presenter-verifier. `held` answers the root this vessel holds for
  * the gate's Nexus, read fresh for each admit, or null where it holds none: an admit then refuses by name,
@@ -133,18 +121,11 @@ export interface HeldNexusRoot {
 export function presentedAdmitReader(held: () => HeldNexusRoot | null | Promise<HeldNexusRoot | null>): GateAdmitReader {
   return {
     async read(arm) {
-      const root = await held();
-      if (root === null) return { refusal: "no-held-root" };
-      const verdict = await verifyPresentedAdmit({
-        admit: arm.admit, lineage: arm.lineage, roster: root.roster, denyBoard: root.denyBoard,
-        antigen: root.antigen, antigenRoster: root.antigenRoster, antigenVerifier: root.antigenVerifier,
-        ...(root.sealLineage ? { sealLineage: root.sealLineage } : {}),
-      });
-      return { verdict, nexus: root.nexus, admitRef: carriageEntryActCid(arm.admit), revision: root.revision };
+      return readAdmitAtHeldRoot(arm, await held());
     },
     async readPlace(arm) {
       const root = await held();
-      if (root === null) return { refusal: "no-held-root" };
+      if (root === null) return { refusal: NO_HELD_ROOT };
       return { verdict: await verifyPresentedCarry(arm, root), nexus: root.nexus, contractRef: carriageEntryActCid(arm.contract), revision: root.revision };
     },
   };

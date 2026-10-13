@@ -17,6 +17,8 @@ import {
 } from "../src/raise-challenge.js";
 import { raiseStands, standingClass } from "../src/vessel-standing.js";
 import { carriageEntryActCid, type CarriageEntry } from "../src/carriage-registry.js";
+import { heldRootRevision } from "../src/held-nexus-root.js";
+import { makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
 import { ed25519VerifyHex } from "../src/auth-wire.js";
 import { pubOf, signerOf, kahuRoster, carriageAct } from "./fixtures/carriage.js";
 
@@ -49,7 +51,7 @@ const cid = (e: CarriageEntry) => carriageEntryActCid(e);
 /** The vessel's reading of one carried Nexus: a roster at `epoch`, and the board read as a deny board. */
 async function reading(aid: string, epoch: string, denyBoard: readonly CarriageEntry[] = []): Promise<RaiseNexusReading> {
   const roster = await kahuRoster([SEEDS.k0, SEEDS.k1, SEEDS.k2], 2, epoch);
-  return { aid, roster, denyBoard, antigen: [], antigenRoster: roster };
+  return { nexus: aid, revision: heldRootRevision(epoch, denyBoard, []), roster, denyBoard, antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier() };
 }
 
 /** A grant: signed by `signer` under the name `byNym`, carrying `presented`. Defaults to the honest leaf. */
@@ -182,7 +184,7 @@ describe("★ the admit is read against the challenge's Nexus ★", () => {
     const { presented } = await world();
     const c = challenge();
     const r = await read(await grantFor(c, presented), c, [await reading(OTHER, EPOCH_Q)]);
-    expect(r).toMatchObject({ ok: false, why: "wrong-nexus", detail: "challenge-nexus-not-carried" });
+    expect(r).toMatchObject({ ok: false, why: "wrong-nexus", detail: "no-held-root" });
   });
 
   test("★ a tampered admit (a quorum signature cut) refuses ★", async () => {
@@ -266,5 +268,15 @@ describe("the signed bytes", () => {
     const text = Buffer.from(raiseChallengeBytes(challenge())).toString("utf8");
     const fields = Object.keys(JSON.parse(text) as Record<string, unknown>).sort();
     expect(fields).toEqual(["epoch", "kind", "nexus", "nonce", "vesselId"]);
+  });
+});
+
+describe("the held root names one Nexus", () => {
+  test("a grant for a Nexus this vessel holds no root for refuses wrong-nexus with the shared name", async () => {
+    const { presented } = await world();
+    const c = challenge();
+    const grant = await grantFor(c, presented);
+    expect(await read(grant, c, [])).toMatchObject({ ok: false, why: "wrong-nexus", detail: "no-held-root" });
+    expect(await read(grant, c, [await reading(NEXUS, EPOCH_N)])).toMatchObject({ ok: true });
   });
 });

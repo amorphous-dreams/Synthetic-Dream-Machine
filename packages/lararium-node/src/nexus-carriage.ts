@@ -13,7 +13,7 @@
  *     the socket it stands on PRESENTED an admit and ALL of these hold, checked here at the seat:
  *       (a) the admit's leaf signed this socket's nonce, this gate's key, the wire vessel key and the admit's
  *           act CID (`verifyLeafProof`);
- *       (b) `verifyPresentedAdmit` reads the admit `held` against its Nexus N — N's roster off the charter this
+ *       (b) `readAdmitAtHeldRoot` reads the admit `held` against its Nexus N — N's held root built from the charter this
  *           vessel holds for N, N's carriage board read as a DENY board (counted revokes only), and N's
  *           antigen through its own roster and verifier;
  *       (c) N stands in this vessel's carried set.
@@ -33,7 +33,7 @@
  * meet the leaf map: a place is not an operator (heraldry#/the-herm-card).
  *
  * ── REFOLD ────────────────────────────────────────────────────────────────────────────────────────
- * Three steps, swapped whole: re-read the carried Nexuses' deny boards and antigens, re-verify every standing
+ * Three steps, swapped whole: re-read the carried Nexuses' held roots, re-verify every standing
  * presentation against them, replace the leaf map, fire `onRefold` (the caller re-verdicts its Repo). A
  * revoke descending from a presented admit drops that peer to STRANGER on the refold that reads it.
  *
@@ -49,7 +49,7 @@
 
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type {
-  NexusMembership, LarDoc, RealmCharterConsult, PresentedAdmit, CarriageEntry, KapaeAntigenEntry, KahuQuorumSeats,
+  NexusMembership, LarDoc, RealmCharterConsult, PresentedAdmit,
   LeafIdentity, SealEpoch, FederationPosture,
 } from "@lararium/mesh";
 import {
@@ -65,7 +65,7 @@ import {
   materializeSharedLarDoc,
   makeMultiSigQuorumVerifier,
   verifyLeafProof,
-  verifyPresentedAdmit,
+  heldNexusRoot, heldRootFor, readAdmitAtHeldRoot,
   presentationFromBoardDoc,
   presentationFindingLine,
   ed25519SignerFromSeed,
@@ -77,6 +77,7 @@ import {
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { DeviceDelegationTiddler } from "@lararium/mesh";
 import { readNexusDoc } from "./nexus-doc.js";
+import type { HeldNexusRoot } from "@lararium/mesh";
 import { carriedReadings, charterHomeFor } from "./carried-set.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import { heldNexusLeaves, type NexusLeaf } from "./nexus-leaf.js";
@@ -104,25 +105,19 @@ export interface SocketBinding {
  */
 export type CarriedVia = "consent" | "seat" | "carrier-seal";
 
-/** One Nexus this vessel carries for, read off its own replica: what a presented admit is judged against. */
-export interface CarriedNexusReading {
+/** One Nexus this vessel carries for, read off its own replica: what a presented admit is judged against.
+ * The inherited root holds the charter roster and lineage, its carriage board as a DENY board whose counted
+ * revokes affect verdicts, the antigen entries, and the antigen quorum seated from that charter roster.
+ */
+export interface CarriedNexusReading extends HeldNexusRoot {
+  readonly nexus: string;
   readonly aid:           string;
   /** Why this vessel carries for N. A reading for display and diagnosis; no verdict reads it. */
   readonly via:           CarriedVia;
   /** The island N's per-Nexus boards key on. */
   readonly island:        string;
-  /** N's membership roster at the head of the charter this vessel holds for N. */
-  readonly roster:        KahuQuorumSeats;
-  /** The epoch lineage of that charter, genesis first, its last epoch the roster's head — what an admit at a
-   *  rolled epoch is walked against (`verifyPresentedAdmit`). Empty for a charter with no pre-rotated chain. */
+  /** The epoch lineage of that charter, genesis first, its last epoch the roster's head. */
   readonly sealLineage:   readonly SealEpoch[];
-  /** N's carriage board, read as a DENY board: the verifier reads its counted revokes and nothing else. */
-  readonly denyBoard:     readonly CarriageEntry[];
-  /** N's Kapae antigen entries. */
-  readonly antigen:       readonly KapaeAntigenEntry[];
-  /** The ANTIGEN quorum's roster, passed as its own input. `readCarriedNexuses` reads it off N's charter
-   *  roster, exactly as the antigen ring folds its own board. */
-  readonly antigenRoster: KahuQuorumSeats;
   /** N's federation posture off the charter this vessel holds for N (PRIVATE when absent or torn). The gate
    *  answers strangers iff some carried Nexus reads OPEN (`answersStrangers`). */
   readonly posture:       FederationPosture;
@@ -157,14 +152,11 @@ export async function readCarriedNexuses(opts: {
     try { island = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: home }); } catch { continue; }
     const denyDoc    = await opts.open(carriageDocUrl(island), "board:carriage-contracts");
     const antigenDoc = await opts.open(kapaeAntigenDocUrl(island), "board:kapae-antigen");
-    out.push({
-      aid, via: consented ? "consent" : "seat", island, roster,
-      sealLineage:   doc?.sealLineage ?? [],
-      denyBoard:     carriageEntriesFromBoard(denyDoc),
-      antigen:       antigenEntriesFromBoard(antigenDoc),
-      antigenRoster: roster,
-      posture:       federationPostureFromDoc(doc),
-    });
+    const root = heldNexusRoot({ nexus: aid, charter: doc, denyBoard: carriageEntriesFromBoard(denyDoc),
+      antigen: antigenEntriesFromBoard(antigenDoc), antigenVerifier: makeMultiSigQuorumVerifier() });
+    if ("absent" in root) continue;
+    out.push({ ...root, sealLineage: root.sealLineage ?? [], aid, via: consented ? "consent" : "seat", island,
+      posture: federationPostureFromDoc(doc) });
   }
   return out;
 }
@@ -205,33 +197,35 @@ export interface LeafStanding {
  *
  *   (a) the leaf proof must verify for this socket's nonce, gate key and wire vessel key;
  *   (b) the admit must root on an epoch of a Nexus in `readings` — its head, or an epoch on its charter
- *       lineage the presentation's roll anchors carry to the head — and `verifyPresentedAdmit` must read it
+ *       lineage the presentation's roll anchors carry to the head — and `readAdmitAtHeldRoot` must read it
  *       `held` against that Nexus's charter lineage, deny board and antigen;
  *   (c) `readings` holds carried Nexuses only, so an admit for any other Nexus finds no reading.
  * The nym returned is the verdict's own.
  */
-export async function leafStandingFor(binding: SocketBinding, readings: readonly CarriedNexusReading[]): Promise<LeafStanding | null> {
+export async function leafReadingFor(binding: SocketBinding, readings: readonly CarriedNexusReading[]): Promise<{ readonly standing: LeafStanding } | { readonly refusal: string }> {
+  // Each way out wears a name the vessel's own operator may read; the peer draws silence whichever one fires:
+  // `leaf-proof-failed` · `no-held-root` (the admit names no Nexus this vessel holds a root for) ·
+  // `admit-<state>:<reason>` (the verifier's own verdict) · `admit-nym-unreadable` · `unreadable` (a throw).
   try {
     if (!(await verifyLeafProof({
       presented: { kind: "admit", ...binding.presentedAdmit }, nonce: binding.nonce,
       gatePubKey: binding.gatePubKey, vesselKey: binding.vesselKey,
-    }))) return null;
+    }))) return { refusal: "leaf-proof-failed" };
     const admit = binding.presentedAdmit.admit;
-    const reading = readings.find((r) => r.roster.sealEpochCid.length > 0 && r.roster.sealEpochCid === admit.sealEpochCid)
-      ?? readings.find((r) => r.roster.sealEpochCid.length > 0 && r.sealLineage.some((e) => e.epochCid === admit.sealEpochCid));
-    if (!reading) return null;
-    const verdict = await verifyPresentedAdmit({
-      admit,
-      lineage:         binding.presentedAdmit.lineage,
-      roster:          reading.roster,
-      sealLineage:     reading.sealLineage,
-      denyBoard:       reading.denyBoard,
-      antigen:         reading.antigen,
-      antigenRoster:   reading.antigenRoster,
-      antigenVerifier: makeMultiSigQuorumVerifier(),
-    });
-    return verdict.state === "held" && NYM_RE.test(verdict.nym) ? { nym: verdict.nym, aid: reading.aid } : null;
-  } catch { return null; }
+    const root = heldRootFor(admit, readings);
+    if (!root) return { refusal: "no-held-root" };
+    const read = await readAdmitAtHeldRoot({ admit, lineage: binding.presentedAdmit.lineage }, root);
+    if ("refusal" in read) return read;
+    if (read.verdict.state !== "held") return { refusal: `admit-${read.verdict.state}:${read.verdict.reason}` };
+    if (!NYM_RE.test(read.verdict.nym)) return { refusal: "admit-nym-unreadable" };
+    return { standing: { nym: read.verdict.nym, aid: root.nexus } };
+  } catch { return { refusal: "unreadable" }; }
+}
+
+/** The leaf standing a socket's presentation earns, or null (STRANGER): `leafReadingFor` with its refusal's name dropped. */
+export async function leafStandingFor(binding: SocketBinding, readings: readonly CarriedNexusReading[]): Promise<LeafStanding | null> {
+  const result = await leafReadingFor(binding, readings);
+  return "standing" in result ? result.standing : null;
 }
 
 /** What a dial presents: the dialed island's admit head for one held leaf, its lineage, and that leaf. */
@@ -327,7 +321,7 @@ async function ownPresentationFor(opts: {
 
     const kept = readKeptAdmitBundle(opts.sealHome, aid);
     const keptLeaf = kept ? held.find((l) => l.verifyingKey.toLowerCase() === kept.admit.nym.toLowerCase()) : undefined;
-    if (kept && keptLeaf && (await admitBundleHolds(kept, roster, doc?.sealLineage ?? []))) {
+    if (kept && keptLeaf && (await admitBundleHolds(kept, doc))) {
       const head = await present(board, keptLeaf.verifyingKey, roster);
       const keptCid = carriageEntryActCid(kept.admit);
       const extends_ = head !== null &&
@@ -389,7 +383,7 @@ export interface NexusMembershipHolder {
   /** Record what a peer's socket presented (null when it presented no admit), verify it against the current
    *  readings, and swap the leaf map. Fires `onRefold` when the peer's standing moved. */
   present(peerId: string, binding: SocketBinding | null): Promise<void>;
-  /** Re-read the carried Nexuses' deny boards and antigens, re-verify every standing presentation, swap the
+  /** Re-read the carried Nexuses' held roots, re-verify every standing presentation, swap the
    *  leaf map whole, and fire `onRefold`. Refolds the carrier set off this vessel's own board beside it. */
   refold(): Promise<void>;
   /** The carried readings the last refold judged against — what the after-roll refold reports per Nexus. */
@@ -414,8 +408,12 @@ export function makeNexusMembership(opts: {
   /** Fires after the leaf map swaps. The Repo caches a share verdict per (doc, peer) at admission, so the
    *  caller re-verdicts (`repo.shareConfigChanged()`). */
   readonly onRefold?:    () => void;
+  /** THE LOCAL NAME OF A REFUSAL, for a caller that wants it: a presentation this holder reads and refuses
+   *  names why (`leafReadingFor`). The peer draws silence. The socket seat reads each admit first and logs the
+   *  name itself (`socket-sorter`), so this holder logs nothing of its own. A refold re-verifies quietly. */
+  readonly onRefuse?:    (peerId: string, refusal: string) => void;
 }): NexusMembershipHolder {
-  const { sealHome, readCarried, repo, nexusPubkey, onRefold } = opts;
+  const { sealHome, readCarried, repo, nexusPubkey, onRefold, onRefuse } = opts;
 
   // The standing presentations, keyed by peer — the input every refold re-verifies.
   const bindings = new Map<string, SocketBinding>();
@@ -455,8 +453,8 @@ export function makeNexusMembership(opts: {
   const verifyAll = async (readings: readonly CarriedNexusReading[]): Promise<Map<string, LeafStanding>> => {
     const next = new Map<string, LeafStanding>();
     for (const [peerId, binding] of bindings) {
-      const standing = await leafStandingFor(binding, readings);
-      if (standing) next.set(peerId, standing);
+      const result = await leafReadingFor(binding, readings);
+      if ("standing" in result) next.set(peerId, result.standing);
     }
     return next;
   };
@@ -488,7 +486,13 @@ export function makeNexusMembership(opts: {
     if (binding) bindings.set(peerId, binding); else bindings.delete(peerId);
     if (!binding && before === null) return;            // nothing presented, nothing standing — no move
     if (binding && current.length === 0) current = await readCurrent();
-    const standing = binding ? await leafStandingFor(binding, current) : null;
+    const result = binding ? await leafReadingFor(binding, current) : null;
+    const standing = result && "standing" in result ? result.standing : null;
+    if (result && "refusal" in result) {
+      const refusal = result.refusal;
+      // A name for the operator never decides the fold: a callback that throws leaves the leaf map's swap whole.
+      try { onRefuse?.(peerId, refusal); } catch { /* the fold goes on */ }
+    }
     const next = new Map(leafMap);
     if (standing) next.set(peerId, standing); else next.delete(peerId);
     leafMap = next;

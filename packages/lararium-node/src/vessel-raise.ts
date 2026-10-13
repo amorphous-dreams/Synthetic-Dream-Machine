@@ -51,7 +51,7 @@
 import {
   mintRaiseChallenge, verifyRaiseGrant, raiseStands, standingClass,
   leaseEpochPrefix, effectiveLeaseEpoch,
-  foundingRoster, foldCarrierSet, carriageEntriesFromBoard, antigenEntriesFromBoard,
+  foundingRoster, foldCarrierSet, carriageEntriesFromBoard, antigenEntriesFromBoard, heldNexusRoot, makeMultiSigQuorumVerifier,
   carriageDocUrl, kapaeAntigenDocUrl, federationPostureFromDoc,
   type RaiseChallenge, type RaiseGrant, type RaiseRefused, type RaisedCaps, type VesselClass,
   type RaiseNexusReading, type LarDoc,
@@ -198,12 +198,11 @@ export async function placeCarriedNexuses(opts: {
       if (roster.sealEpochCid.length === 0) continue;
       const island    = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: home });
       const denyBoard = carriageEntriesFromBoard(await opts.open(carriageDocUrl(island), "board:carriage-contracts"));
-      if (!(await foldCarrierSet(denyBoard, roster)).has(self)) continue;
       const antigen = antigenEntriesFromBoard(await opts.open(kapaeAntigenDocUrl(island), "board:kapae-antigen"));
-      out.push({
-        aid, via: "carrier-seal", island, roster, sealLineage: doc?.sealLineage ?? [],
-        denyBoard, antigen, antigenRoster: roster, posture: federationPostureFromDoc(doc),
-      });
+      const root = heldNexusRoot({ nexus: aid, charter: doc, denyBoard, antigen, antigenVerifier: makeMultiSigQuorumVerifier() });
+      if ("absent" in root) continue;
+      if (!(await foldCarrierSet(root.denyBoard, root.roster)).has(self)) continue;
+      out.push({ ...root, sealLineage: root.sealLineage ?? [], aid, via: "carrier-seal", island, posture: federationPostureFromDoc(doc) });
     } catch { continue; }
   }
   return out;

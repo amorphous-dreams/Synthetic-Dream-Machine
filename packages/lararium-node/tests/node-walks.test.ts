@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, encodeInvite, mintHostToken, takeInvite, walkIdentity, deriveNexusScopedKey,
+  hex, genesisSealEpochCid, encodeInvite, mintHostToken, takeInvite, walkIdentity, deriveNexusScopedKey, makeMultiSigQuorumVerifier,
   hexToBytes, PERSONA_GLAMOUR_CONTEXT, type KahuQuorumSeats, type Presented, type WalkStore, type WalkRecord,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
@@ -56,7 +56,7 @@ async function hearth(): Promise<{ sort: ReturnType<typeof makeSocketSorter>; in
   await rollHosting({ storageDir: hearthStore, nexusAid: AID, leafSeed: HEARTH_LEAF });
   const keys = await Promise.all(SEEDS.map(pubOf));
   const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
-  const reading: CarriedNexusReading = { aid: AID, via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, posture: "private" };
+  const reading: CarriedNexusReading = { nexus: AID, aid: AID, revision: "fixture", via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
   const sort = makeSocketSorter({
     readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
     hosting: { storageDir: hearthStore, leafSeedFor: async () => HEARTH_LEAF },

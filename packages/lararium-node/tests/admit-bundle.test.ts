@@ -22,7 +22,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  NEXUS_DOC_DOMAIN, hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
+  NEXUS_DOC_DOMAIN, hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract, makeMultiSigQuorumVerifier,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, foundingRoster,
   genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
   type NexusDoc, type CarriageEntry, type LarDoc,
@@ -208,8 +208,8 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const nonce = "cd".repeat(32);
     // THE HEARTH's side: P carried (its own charter), its deny board empty. No board ever crosses to the joinee.
     const hearthReading: CarriedNexusReading = {
-      aid: w.aidP, via: "seat", island: w.aidP, roster: foundingRoster(w.P), sealLineage: [], denyBoard: [], antigen: [],
-      antigenRoster: foundingRoster(w.P),
+      nexus: w.aidP, aid: w.aidP, revision: "fixture", via: "seat", island: w.aidP, roster: foundingRoster(w.P), sealLineage: [], denyBoard: [], antigen: [],
+      antigenRoster: foundingRoster(w.P), antigenVerifier: makeMultiSigQuorumVerifier(),
     };
     const hearth = makeNexusMembership({ readCarried: async () => [hearthReading] });
     await hearth.refold();
