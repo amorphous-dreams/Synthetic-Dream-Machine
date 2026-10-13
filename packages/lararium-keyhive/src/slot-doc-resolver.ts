@@ -129,7 +129,6 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
         text: handle.url,
         kind: "oracle",
         "face-reach": "vessel-only",
-        "minted-on": new Date().toISOString(),
         "minted-by": args.mintedByHex(),
       }, "slot-doc:floor");
     });

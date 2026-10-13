@@ -218,13 +218,12 @@ text:         "automerge:abcdef..."   # the @personal doc URL
 kind:         "personal-binding"
 fingerprint:  "${fingerprintHex}"
 recipe-trace: { wikiDocId, libraryBagDocIds }  # optional audit field, for diff/inspection
-minted-on:    "2026-05-31T20:00:00Z"
 minted-by:    "<vesselIndividualHex>"
 face-reach:   "vessel-only" | "face"
 keyhive-doc-id: "<Keyhive DocumentId>"
 ```
 
-The text field carries the authoritative docUrl. The `kind` field tags the tiddler for filter queries (`[kind[personal-binding]]` returns all). The `fingerprint` field duplicates the title suffix for filter convenience. The `recipe-trace` field stores the inputs that produced the fingerprint — operator-facing diagnostic when a binding's recipe context needs inspection. The `minted-on` + `minted-by` fields support audit of which device first instantiated the binding. `face-reach` records `vessel-only` or `face`. `keyhive-doc-id` holds the Keyhive DocumentId; a later process restores the provider's bag-to-document registration from this value before reusing the binding. A re-grant by a stand that holds no hand in that document (a document minted by a stand whose Archive nobody kept, as a vessel at the floor mints one) mints a fresh Keyhive document for the same docUrl and writes its DocumentId here: cap events carry a document's membership and never its creator's key agreement state, and a `vessel-only` binding gave nobody else reach through the document it replaces.
+The text field carries the authoritative docUrl. The `kind` field tags the tiddler for filter queries (`[kind[personal-binding]]` returns all). The `fingerprint` field duplicates the title suffix for filter convenience. The `recipe-trace` field stores the inputs that produced the fingerprint — operator-facing diagnostic when a binding's recipe context needs inspection. The `minted-by` field names the device that first instantiated the binding. A mint writes no moment into the record: no wall clock decides anything a binding carries. `face-reach` records `vessel-only` or `face`. `keyhive-doc-id` holds the Keyhive DocumentId; a later process restores the provider's bag-to-document registration from this value before reusing the binding. A re-grant by a stand that holds no hand in that document (a document minted by a stand whose Archive nobody kept, as a vessel at the floor mints one) mints a fresh Keyhive document for the same docUrl and writes its DocumentId here: cap events carry a document's membership and never its creator's key agreement state, and a `vessel-only` binding gave nobody else reach through the document it replaces.
 
 !!! Per-fingerprint pair, not per-bag
 
@@ -313,7 +312,6 @@ await keyhive.delegate({ bagUrl: handle.url, audience: personGroupAgentIdHex, ac
 await composite.put(mutableLarRecord(key, {
   text: handle.url, kind, fingerprint,
   "recipe-trace": canonicalJson({ wikiDocId, libraryBagDocIds }),  // Q5 keep — audit-only, never parsed back
-  "minted-on": new Date().toISOString(),
   "minted-by": await keyhive.vesselIdentifierHex(),
 }, "personal-bindings"), { bag: ADMIN_BAG_ID });
 return { url: handle.url };
@@ -504,6 +502,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jMS1DTMNRaWDxjt_9ve3za3ObHgW-InH1S388UbZRJg
+<<^ code="&#x0003;">>ni:///sha-256;II763Mg7C4Qh0of6PN7Q4kzoU-SQSDl2mSh2nS71wJk
 
 <<^ code="&#x0004;" -> to="?">>

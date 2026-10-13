@@ -65,7 +65,12 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     expect(doc.reach).toBe("vessel-only");
     const catalog = makeCatalogAccessor(r.repo, r.catalogUrl);
     expect(await catalog.urlOf(wikiDraftDocKey("garden", DID)), "the floor registers under the per-DID key").toBe(doc.url);
-    expect((await catalog.recordOf(wikiDraftDocKey("garden", DID)))?.tiddler["face-reach"]).toBe("vessel-only");
+    const floorRecord = (await catalog.recordOf(wikiDraftDocKey("garden", DID)))!.tiddler;
+    expect(floorRecord["face-reach"]).toBe("vessel-only");
+    // The floor record names its doc, its reach and the device that minted it, and no moment.
+    expect(Object.keys(floorRecord).filter((k) => k !== "title").sort()).toEqual(["face-reach", "kind", "minted-by", "text"]);
+    expect(floorRecord["minted-by"]).toBe("0x" + "a".repeat(64));
+    expect(floorRecord["kind"]).toBe("oracle");
     // No binding record minted for the draft — the floor is the ONE truth while no seat stands.
     const fp = await computeRecipeFingerprint({ wikiDocId: r.wikiUrl, libraryBagDocIds: [] });
     expect(await r.daemon.get(`${DRAFT_BINDINGS_PREFIX}/${fp}`)).toBeNull();

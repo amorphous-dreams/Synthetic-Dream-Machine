@@ -112,6 +112,32 @@ describe("resolveOrMintBinding", () => {
     expect(typeof rec?.tiddler["recipe-trace"]).toBe("string");
   });
 
+  test("★ a binding and its mint row name no moment: every field reads the same from any clock ★", async () => {
+    const repo = new Repo();
+    const { daemonStore, daemonHandle } = makeDaemonStore(repo);
+    const { provider } = makeFakeKeyhive();
+    const result = await resolveOrMintBinding({
+      ...commonArgs(repo, daemonStore, provider),
+      kind: "personal-binding", prefix: PERSONAL_BINDINGS_PREFIX,
+    });
+    const rows = Object.entries(daemonHandle.doc()?.tiddlers ?? {}).map(([title, stored]) => ({ title, record: plainRecordOrNull(stored)! }));
+    const binding = rows.find((r) => r.title === `${PERSONAL_BINDINGS_PREFIX}/${FINGERPRINT}`)!;
+    const mint = rows.find((r) => r.title.includes("-minted/"))!;
+    // The fields a binding carries, whole: what it names, who minted it, whom it reaches. No field holds a time.
+    expect(Object.keys(binding.record.tiddler).filter((k) => k !== "title").sort()).toEqual(
+      ["face-reach", "fingerprint", "keyhive-doc-id", "kind", "minted-by", "recipe-trace", "text"]);
+    expect(Object.keys(mint.record.tiddler).filter((k) => k !== "title").sort()).toEqual(
+      ["binding-kind", "fingerprint", "kind", "minted-by", "text"]);
+    const moment = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+    for (const { record } of [binding, mint]) {
+      for (const value of Object.values(record.tiddler)) expect(moment.test(String(value))).toBe(false);
+    }
+    // CONTROL: the audit a binding keeps stands whole, and the pattern reads a moment where one stands.
+    expect(binding.record.tiddler["minted-by"]).toBe(MINTED_BY);
+    expect(tiddlerText(binding.record)).toBe(result.url);
+    expect(moment.test(new Date(0).toISOString())).toBe(true);
+  });
+
   test("reuse-on-present: returns the stored url, mints/delegates nothing", async () => {
     const repo = new Repo();
     const { daemonStore, daemonHandle } = makeDaemonStore(repo);

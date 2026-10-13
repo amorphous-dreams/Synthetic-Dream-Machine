@@ -189,7 +189,6 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     kind:          args.kind,
     fingerprint:   args.fingerprint,
     "recipe-trace": canonicalJson(args.recipeTrace),
-    "minted-on":   new Date().toISOString(),
     "minted-by":   args.mintedByHex,
     "face-reach":  seated ? "face" : "vessel-only",
     "keyhive-doc-id": keyhiveDocId,
