@@ -30,7 +30,7 @@ async function card(seedByte: number, glamour: string) {
   const { signingKey, verifyingKey } = await derivePersonaKeypair(new Uint8Array(32).fill(seedByte), [0]);
   const did = `0x${verifyingKey}`;
   // the personal 1-of-1 handle-KEL — the veiled key is the Handle key AND its sole owner (nym on the chain)
-  const chain = [mintHandleInception(did, did, "ab".repeat(32))];
+  const chain = [mintHandleInception(did, did, "ab".repeat(32), `hkeynext-${"cd".repeat(32)}`)];
   const nym = chain[0]!.prefix;
   const c = await signHandleCard(
     { nym, chain, glamour, parents: [], standing: null },

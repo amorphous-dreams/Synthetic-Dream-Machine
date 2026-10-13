@@ -81,7 +81,8 @@ describe("the browser burn twin — a phone vessel closes its own name", () => {
     expect(burned.parents, "the burned card names the published act").toEqual([published.actCid]);
     expect(burned.nym, "the name is unchanged — the same face is buried").toBe(published.nym);
     // The genesis owner still binds — a burn changes no set.
-    const owners = currentOwnerSet(burned.chain as HandleKelEvent[])!;
+    // The genesis set stands in the inception alone; past it a reader with no resolver trusts no set.
+    const owners = currentOwnerSet([(burned.chain as HandleKelEvent[])[0]!])!;
     expect(owners.members).toEqual([OWNER]);
   });
 

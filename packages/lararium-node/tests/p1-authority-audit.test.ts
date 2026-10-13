@@ -136,7 +136,7 @@ describe("P1 authority relations — characterization witness", () => {
   test("records handle recognition from a self-certifying causal act", async () => {
     const handleSeed = new Uint8Array(32).fill(35);
     const handleKey = `0x${await pubOf(handleSeed)}`;
-    const chain = [mintHandleInception(handleKey, handleKey, "ab".repeat(32))];
+    const chain = [mintHandleInception(handleKey, handleKey, "ab".repeat(32), `hkeynext-${"cd".repeat(32)}`)];
     const card = await signHandleCard({
       nym: chain[0]!.prefix,
       chain,

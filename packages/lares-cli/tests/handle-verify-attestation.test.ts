@@ -24,7 +24,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  mintHandleInception, mintHandleRotation, mintHandleBurn, attestUnderHead,
+  mintHandleInception, mintHandleRotation, mintHandleBurn, attestUnderHead, handleKeyDigestOf,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, sealKeySetHash,
   HANDLE_CLAIM_SURFACES,
   type HandleKelEvent, type HandleAttestation, type HandleClaim,
@@ -57,7 +57,7 @@ const DNS_CLAIM: HandleClaim = { surface: "dns-control", domain: "example.net" }
 async function foundFace() {
   const handleKeyDid    = `0x${await ed25519VerifyingKeyFromSeed(HANDLE_SEED_A)}`;
   const recoverySetHash = sealKeySetHash([await ed25519VerifyingKeyFromSeed(RECOVERY_SEED)], 1);
-  const inception       = mintHandleInception(handleKeyDid, OWNER_PREFIX, recoverySetHash);
+  const inception       = mintHandleInception(handleKeyDid, OWNER_PREFIX, recoverySetHash, handleKeyDigestOf(`0x${await ed25519VerifyingKeyFromSeed(HANDLE_SEED_B)}`));
   return { inception, signA: ed25519SignerFromSeed(HANDLE_SEED_A) };
 }
 
@@ -94,7 +94,7 @@ describe("★ lares handle verify-attestation — the READER-LOCAL chain-verify 
     const rot = await mintHandleRotation({
       head: inception, freshHandleKeyDid: `0x${await ed25519VerifyingKeyFromSeed(HANDLE_SEED_B)}`,
       ownerAuthMemberPrefix: OWNER_PREFIX, ownerHeadOpKeyDid: `0x${await ed25519VerifyingKeyFromSeed(OWNER_SEED)}`,
-      sign: ed25519SignerFromSeed(OWNER_SEED),
+      sign: ed25519SignerFromSeed(OWNER_SEED), nextHandleKeyDigest: `hkeynext-${"ef".repeat(32)}`,
     });
     expect(rot.ok, rot.ok ? "" : rot.reason).toBe(true);
     if (!rot.ok) return;

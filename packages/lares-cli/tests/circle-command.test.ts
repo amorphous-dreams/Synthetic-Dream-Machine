@@ -70,7 +70,7 @@ async function cardFile(dir: string, seedByte: number, glamour: string): Promise
   // (identity-classes#the-handle-chain). The 1-of-1 SELF-OWNED inception: the handle key is its own sole
   // owner, and the STABLE nym is the chain's prefix (not the raw key). Head key = the seated inception key.
   const did = `0x${verifyingKey}`;
-  const chain = [mintHandleInception(did, did, "ab".repeat(32))];
+  const chain = [mintHandleInception(did, did, "ab".repeat(32), `hkeynext-${"cd".repeat(32)}`)];
   const nym = chain[0]!.prefix;
   const card = await signHandleCard(
     { nym, chain, glamour, version: 1, prev: null, expiry: Date.now() + 86_400_000, standing: null },

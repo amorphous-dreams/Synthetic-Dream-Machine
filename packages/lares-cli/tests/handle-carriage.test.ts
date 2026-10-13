@@ -14,7 +14,7 @@ import { describe, test, expect } from "vitest";
 import {
   HandleBook, signHandleCard, ed25519SignerFromSeed,
   composeFollow, FollowRefused,
-  mintHandleInception, mintHandleRotation,
+  mintHandleInception, mintHandleRotation, handleKeyDigestOf,
   hex,
   type CircleStore, type HandleCard, type HandleKelEvent,
 } from "@lararium/mesh";
@@ -34,7 +34,7 @@ function spyCircleStore(): CircleStore {
 }
 
 const RECOVERY = "ab".repeat(32);
-function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY, `hkeynext-${"cd".repeat(32)}`)]; }
 
 async function makeCard(seed: Uint8Array, glamour: string): Promise<{ nym: string; card: HandleCard }> {
   const chain = chainOf(await ed.getPublicKeyAsync(seed).then(hex));
@@ -105,10 +105,14 @@ describe("★ THE QR CARRIAGE CEILING — a NAMED boundary, not one discovered a
   async function chainOfLength(seed: Uint8Array, n: number): Promise<HandleKelEvent[]> {
     const pub = await ed.getPublicKeyAsync(seed).then(hex);
     const did = `0x${pub}`;
-    const chain: HandleKelEvent[] = [mintHandleInception(did, did, "ab".repeat(32))];
+    // Every event arms the next key, and a rotation reveals exactly the key its predecessor committed: the
+    // chain alternates between the owner's key and a second one, each rotation committing the other.
+    const other = `0x${await ed.getPublicKeyAsync(Uint8Array.from(seed, (b) => b ^ 0xff)).then(hex)}`;
+    const chain: HandleKelEvent[] = [mintHandleInception(did, did, "ab".repeat(32), handleKeyDigestOf(other))];
     for (let i = 1; i < n; i++) {
+      const fresh = i % 2 === 1 ? other : did;
       const rot = await mintHandleRotation({
-        head: chain[chain.length - 1]!, freshHandleKeyDid: did,
+        head: chain[chain.length - 1]!, freshHandleKeyDid: fresh, nextHandleKeyDigest: handleKeyDigestOf(i % 2 === 1 ? did : other),
         ownerAuthMemberPrefix: did, ownerHeadOpKeyDid: did,
         sign: (b) => ed.signAsync(b, seed).then(hex),
       });
