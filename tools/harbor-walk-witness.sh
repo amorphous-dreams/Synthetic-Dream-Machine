@@ -90,8 +90,8 @@ result 'leg 1: the working layer attaches'                      contains "$log" 
 result 'leg 1: the engine restarted nothing'                    test "$(docker inspect -f '{{.RestartCount}}' "$(compose ps -q lares)")" = 0
 # A carrier ingested into a canon bag projects under the workspace mount.
 mkdir -p "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs"
-sed -e 's#ha.ka.ba/lares/docs/er-handoff#ha.ka.ba/lares/docs/harbor-walk-probe#g' -e 's#docs/er-handoff.mem#docs/harbor-walk-probe.mem#' \
-  "$ROOT/bags/lares/ha.ka.ba/lares/docs/er-handoff.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
+sed -e 's#ha.ka.ba/lares/docs/stable-founding-road#ha.ka.ba/lares/docs/harbor-walk-probe#g' -e 's#docs/stable-founding-road.mem#docs/harbor-walk-probe.mem#' \
+  "$ROOT/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem" > "$SCRATCH_WORKSPACE/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
 lares meme normalize /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem >/dev/null
 lares ingest --source /workspace/wikis/inbox/ha.ka.ba/lares/docs/harbor-walk-probe.mem --to lar:///ha.ka.ba/bags/lares --apply --yes >/dev/null
 projected="$SCRATCH_WORKSPACE/bags/lares/ha.ka.ba/lares/docs/harbor-walk-probe.mem"
