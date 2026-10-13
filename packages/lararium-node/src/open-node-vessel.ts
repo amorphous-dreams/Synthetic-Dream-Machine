@@ -147,6 +147,8 @@ import { loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVe
 import { custodyHeld, custodyVeilKeys } from "./custody-seat.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
+import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
+import type { PersonaSelvesPlane }         from "./sealed-acts.js";
 import {
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
@@ -429,6 +431,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   siblingChannel: () => SiblingChannelStatus | null;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
   storeClaim: StoreClaim & { readonly holder: "vessel" };
+  /** The mounted face's persona plane off this thread's Repo, for the custody door's `selves` acts; null where no face stands lit. */
+  personaSelves: PersonaSelvesPlane | null;
   /** M15: which social planes mounted live vs degraded vs PENDING (probe answered no verdict at all —
    *  distinct from a real condemn). `degraded` already logs its own line live (`quarantineDoc`
    *  above); `pending` entries carried NO log line at all until this field threaded them out here for
@@ -455,6 +459,8 @@ export interface NodeHermResult {
   socketSorter:     SocketSorter;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
   storeClaim:       StoreClaim & { readonly holder: "vessel" };
+  /** The mounted face's persona plane off this thread's Repo; null where no face stands lit. */
+  personaSelves:    PersonaSelvesPlane | null;
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
   mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
@@ -483,6 +489,8 @@ interface NodeBootPrep {
   /** The HEARTH this vessel asks for a seat — null when it holds its own face and IS the hearth. A thunk for
    *  the same reason. */
   hearthDaemonUrl:  () => string | null;
+  /** The mounted face's persona plane off this Repo, or null where the bootstrap names no face. A thunk, as above. */
+  personaSelves:    () => PersonaSelvesPlane | null;
   /** This PLACE's own 32-byte signing seed — the substrate key, never the human's. The two-key atom keeps it
    *  distinct from the persona root a device-delegation edge signs under (`device-delegation.vesselSeed`). */
   vesselSeed:     Uint8Array;
@@ -1246,6 +1254,7 @@ async function prepareNodeBootOn(
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
   let crossroadsOfferingsHandle: DocHandle<LarDoc> | undefined;
   let bootstrap!: VesselBootstrap;         // captured in loadGenesis
+  let personaSelves: PersonaSelvesPlane | null = null;   // the mounted face's plane, built at its first ask
   let slotActiveWikiId = "";               // captured in wikiSlot
   let activeWikiSource: "boot-arg" | "daemon-marker" = "boot-arg";
   // The recall FORM leg holder — opened ONCE, lazily, shared by BOTH the dual recall fuse and the
@@ -2774,6 +2783,8 @@ async function prepareNodeBootOn(
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
+    personaSelves:   () => (personaSelves ??= bootstrap?.personaUrl && bootstrap.personaBagId
+      ? repoPersonaSelvesPlane(repo, bootstrap.personaUrl, bootstrap.personaBagId) : null),
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
@@ -2870,6 +2881,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     // A node hearth carries and serves its own face; when it was ADMITTED instead, its bootstrap names the
     // hearth it asks. Null here reads "this vessel IS the hearth", never "unknown".
     hearthDaemonUrl:  p.hearthDaemonUrl(),
+    personaSelves:    p.personaSelves(),
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase: "live",
@@ -2992,6 +3004,7 @@ async function composeNodeHermOn(
     carriageRelayGatePubKey: p.carriageRelay?.gatePubKey ?? null,
     socketSorter:     p.socketSorter,
     storeClaim:       p.storeClaim,
+    personaSelves:    p.personaSelves(),
     mountManifest:    herm.assembly.mountManifest,
     dispose,
     teardown: async () => {

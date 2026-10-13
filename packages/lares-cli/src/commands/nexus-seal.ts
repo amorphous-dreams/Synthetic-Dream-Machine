@@ -58,7 +58,6 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node
 import { join } from "node:path";
 import { larSealHome } from "../env.js";
 import { storeVerb, pokeSealHomeRefold } from "../store-door.js";
-import { makeFleetDeclarationStore, fleetPeerDid } from "../daemon-persona-store.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
@@ -276,12 +275,7 @@ async function seatKahuFromVault(
   const roots = await readPersonaRoots();
   const held = new Set(roots.roots.map((r) => r.handleIndex));
   // The seat claim and private chair label stay local to this node.
-  const localDeclarations = sealedDeclarationStore();
-  const fleetDid = await fleetPeerDid();
-  const declarations = fleetDid === null
-    ? localDeclarations                                                  // no vessel key = no fleet to read
-    : makeFleetDeclarationStore(localDeclarations, fleetDid);
-  const standing = await personasStandingForSeat(declarations);
+  const standing = await personasStandingForSeat(sealedDeclarationStore());
 
   // A doc already carrying chairs keeps them under "keep" — a re-seat before genesis fills keys rather than
   // re-writing who sits. Under "drop" (rotation) the roster becomes exactly what stands, which is how a kahu

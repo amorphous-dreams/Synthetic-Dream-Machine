@@ -31,8 +31,13 @@ import { storeVerb } from "./store-door.js";
 /** Where an act ran: inside the standing vessel, or in this process. */
 export type SealedActVia = "vessel" | "direct";
 
-/** What an act reads from its surroundings when it runs in this process: the KEL head comes off the store's one holder. */
+/**
+ * What an act reads from its surroundings when it runs in this process: the KEL head comes off the store's one
+ * holder, and no persona plane stands (a command mounts no face's plane, so a name stays on its sealed row until
+ * a vessel carries it).
+ */
 const directContext: SealedActContext = {
+  personaSelves: null,
   kelHead: async (prefix) => {
     const out = (await storeVerb("persona-kel-head", { prefix })).output;
     return { head: typeof out["head"] === "string" ? out["head"] : null, seq: typeof out["seq"] === "number" ? out["seq"] : null };

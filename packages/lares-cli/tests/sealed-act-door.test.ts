@@ -18,9 +18,15 @@
  *   D5  RED: a root split never rides a standing vessel: `persona new --split-root` beside one, unlocked or locked,
  *       refuses before anything founds, and the vessel hears a `custody` probe and nothing else.
  *                                 control: the table names no act that answers a share
+ *   D6  RED: THE FLEET MIRROR SENDS NO VERB. A pet-name set and a Handle declared through the fleet-mirroring stores
+ *       beside a standing vessel reach it as act frames alone, and the carry frames hold a face's index and which
+ *       name, never the name. No source file of the command line names a verb that takes or answers a face's own
+ *       name.                     control: the sealed write's own frame holds the name (the search finds it there),
+ *                                 and with no vessel standing the carry refuses by name while the sealed row keeps
+ *                                 the name
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import type { Socket } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -32,6 +38,8 @@ import {
 import { dispatch } from "../src/bin/lares.js";
 import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_SCRATCH_MARKER } from "../src/offline-custody.js";
 import { sealedActVia } from "../src/sealed-act-door.js";
+import { carryOwnName, makeFleetDeclarationStore, makeFleetPetnameStore, readFleetSelves } from "../src/daemon-persona-store.js";
+import { sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-rows.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -209,5 +217,49 @@ describe("a command beside a standing vessel", () => {
       seatCustody(null);
     }
     expect(SEALED_ACT_NAMES.filter((n) => /recover|share|split/i.test(n))).toEqual([]);   // CONTROL: no act could have answered one
+  });
+
+  test("D6 — the fleet mirror sends act frames alone, and its carry frames hold no name", async () => {
+    await stage();
+    const PETNAME = `the-quiet-compartment-${Math.random().toString(36).slice(2)}`;
+    const HANDLE = `The Lindwyrm ${Math.random().toString(36).slice(2)}`;
+    const vessel = await standVessel({ unlocked: true, table: (act) => (act === "selves.read" ? { selves: [] } : act.endsWith(".entries") ? { entries: [] } : {}) });
+    await makeFleetPetnameStore(sealedPetnameStore()).set(0, PETNAME);
+    await makeFleetDeclarationStore(sealedDeclarationStore()).set(0, { handle: HANDLE, seat: true, chair: "a private chair" });
+    await makeFleetPetnameStore(sealedPetnameStore()).clear(0);
+    expect(await readFleetSelves()).toEqual({ reached: true, selves: [] });
+    const frames = vessel.frames as Array<Record<string, unknown>>;
+    // RED: nothing rode a verb. Every frame names `op: "act"`, and none carries a verb, a requester or a request id.
+    for (const frame of frames) {
+      expect(frame["op"]).toBe("act");
+      expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);
+    }
+    expect(frames.map((f) => f["act"])).toEqual(["petname.set", "selves.carry", "declaration.set", "selves.carry", "petname.clear", "selves.carry", "selves.read"]);
+    const carries = frames.filter((f) => f["act"] === "selves.carry");
+    expect(carries.map((f) => f["args"])).toEqual([{ handleIndex: 0, name: "petname" }, { handleIndex: 0, name: "handle" }, { handleIndex: 0, name: "petname" }]);
+    for (const text of [PETNAME, HANDLE, "a private chair"]) expect(JSON.stringify(carries).includes(text)).toBe(false);
+    // CONTROL: the search finds a name where one rides: the sealed write's own frame holds it.
+    expect(JSON.stringify(frames.filter((f) => f["act"] === "petname.set")).includes(PETNAME)).toBe(true);
+    await vessel.down();
+
+    // No source file of the command line names a verb that takes or answers a face's own name.
+    const SRC = new URL("../src/", import.meta.url).pathname;
+    const files: string[] = [];
+    const walk = (dir: string): void => { for (const e of readdirSync(dir)) { const p = join(dir, e); if (statSync(p).isDirectory()) walk(p); else if (p.endsWith(".ts")) files.push(p); } };
+    walk(SRC);
+    expect(files.length).toBeGreaterThan(50);
+    const naming = files.filter((f) => /["'`]persona-(?:label|handle|selves)["'`]/.test(readFileSync(f, "utf8")));
+    expect(naming.map((f) => f.slice(SRC.length))).toEqual([]);
+    expect(/["'`]persona-(?:label|handle|selves)["'`]/.test('runVerb("persona-label", {})')).toBe(true);   // CONTROL: the pattern bites
+
+    // CONTROL: with no vessel standing the carry refuses by name, a mirror reports and never throws, and the sealed row keeps the name.
+    seatCustody(null);
+    vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    seatOfflineCustody();
+    const alone = makeFleetPetnameStore(sealedPetnameStore());
+    await alone.set(1, PETNAME);
+    expect(await carryOwnName(1, "petname")).toMatch(/no persona plane stands here/);
+    expect(await readFleetSelves()).toMatchObject({ reached: false });
+    expect(await alone.get(1)).toBe(PETNAME);
   });
 });

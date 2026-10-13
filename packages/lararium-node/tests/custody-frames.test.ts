@@ -209,7 +209,7 @@ describe("the custody door's act frame", () => {
   });
 
   test("A3 — an act the table does not name refuses by name, and the caller's text reaches no log", async () => {
-    const h = harness({ runAct: (act, args) => runSealedAct(act, args, { kelHead: null }) });
+    const h = harness({ runAct: (act, args) => runSealedAct(act, args, { kelHead: null, personaSelves: null }) });
     await h.send(unlockFrame(RIGHT)).answer;
     const a = await h.send({ op: "act", act: "vault.export-everything-CALLER-TEXT", args: {} }).answer;
     expect(a).toMatchObject({ op: "act", status: "error", refusal: { reason: "unknown-act" } });
@@ -235,7 +235,7 @@ describe("the custody door's act frame", () => {
   });
 
   test("A5 — arguments outside an act's own shape refuse bad-args before any row opens", async () => {
-    const h = harness({ runAct: (act, args) => runSealedAct(act, args, { kelHead: null }) });
+    const h = harness({ runAct: (act, args) => runSealedAct(act, args, { kelHead: null, personaSelves: null }) });
     await h.send(unlockFrame(RIGHT)).answer;
     for (const args of [{ handleIndex: 0, petname: "x", passphrase: "an-argument-no-row-named" }, { handleIndex: -1, petname: "x" }, { handleIndex: 0 }, "not-a-record", [1]]) {
       expect(await h.send({ op: "act", act: "petname.set", args }).answer).toMatchObject({ op: "act", status: "error", refusal: { reason: "bad-args" } });

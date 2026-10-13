@@ -486,7 +486,7 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
-export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason } from "./sealed-acts.js";
+export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
 export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused, GATE_MEMORY_DIR } from "./gate-memory-rows.js";
 export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow, custodyVeilKeys } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";

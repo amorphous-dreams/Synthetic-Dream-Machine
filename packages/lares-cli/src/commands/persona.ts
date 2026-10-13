@@ -40,7 +40,7 @@ import { vesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
 import { readPersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
 import {
-  makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, fleetPeerDid,
+  makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, carryOwnName,
 } from "../daemon-persona-store.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
@@ -113,25 +113,18 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * The two own-persona name stores, FLEET-MIRRORED. Each write lands on the local fs floor first (a founding
- * runs before any daemon breathes) and rides up to the persona plane when the sock answers; each read prefers the
- * fleet. The `seat` claim stays local by construction — the declaration store splits it out.
+ * The two own-persona name stores, FLEET-MIRRORED. Each write lands on the sealed row first (a founding runs
+ * before any vessel breathes) and gets carried up to the persona plane when a vessel with a lit face answers the
+ * custody door; each read prefers the fleet. The `seat` claim stays local by construction: the declaration
+ * store splits it out.
  */
-async function fleetStores(): Promise<{
+function fleetStores(): {
   petnames: ReturnType<typeof sealedPetnameStore>;
   declarations: ReturnType<typeof sealedDeclarationStore>;
-  did: string | null;
-}> {
-  const did = await fleetPeerDid();
-  const petnames     = sealedPetnameStore();
-  const declarations = sealedDeclarationStore();
-  // No vessel key = no place = no fleet. The pure local floor stands, and `persona sync` carries the names up
-  // once the vessel does.
-  if (did === null) return { petnames, declarations, did };
+} {
   return {
-    petnames:     makeFleetPetnameStore(petnames, did),
-    declarations: makeFleetDeclarationStore(declarations, did),
-    did,
+    petnames:     makeFleetPetnameStore(sealedPetnameStore()),
+    declarations: makeFleetDeclarationStore(sealedDeclarationStore()),
   };
 }
 
@@ -152,7 +145,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
       "Stop the vessel (`lares vessel stop`), run this command again, then stand the vessel.",
     );
   }
-  const { petnames, declarations, did } = await fleetStores();
+  const { petnames, declarations } = fleetStores();
   if (!stands && chair.length > 0 && (await declarations.get(index))?.seat !== true) {
     throw new UsageError("--chair labels a seat claim: pass it with --seat");
   }
@@ -201,9 +194,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   } else if (splitRoot) {
     console.log(`  root split already stands for h${index}.`);
   }
-  const fleetRead = did === null
-    ? { reached: false as const, why: "this vessel stands no key yet" }
-    : await readFleetSelves(did);
+  const fleetRead = await readFleetSelves();
 
   emit(args, {
     ok: true,
@@ -258,7 +249,7 @@ async function personaList(args: ParsedArgs): Promise<number> {
   const held = roster.roots.map(({ handleIndex }) => handleIndex);
   const active = roster.active;
   const orphans = roster.orphans;
-  const { petnames, declarations } = await fleetStores();
+  const { petnames, declarations } = fleetStores();
 
   const rows = await Promise.all(
     held.map(async (handleIndex) => ({
@@ -298,8 +289,8 @@ async function personaList(args: ParsedArgs): Promise<number> {
 /**
  * personaSync — carry this node's own-persona names UP to the persona plane, so the fleet reads what this device knows.
  *
- * A vessel founds before it breathes, so names set pre-boot live only in the local fs floor. This walks that
- * floor and re-writes each name through the fleet-mirroring store; the verb's own stamp rule decides the rest
+ * A vessel founds before it breathes, so names set pre-boot rest on the sealed rows alone. This walks those
+ * rows and carries each held name through the custody door; the plane's own stamp rule decides the rest
  * (a name a fleet-mate set LATER stands, and this device's stale copy loses without a clobber). The `seat`
  * claim never rides — a Kahu chair belongs to the node that holds it.
  *
@@ -307,18 +298,12 @@ async function personaList(args: ParsedArgs): Promise<number> {
  * name carries its own stamp and the later one reads.
  */
 async function personaSync(args: ParsedArgs): Promise<number> {
-  const did = await fleetPeerDid();
-  if (did === null) {
-    throw new UsageError("this install stands no vessel key — run `lares vessel found` before carrying names to a fleet");
-  }
-  const read = await readFleetSelves(did);
+  const read = await readFleetSelves();
   if (!read.reached) {
-    throw new UsageError(`the fleet did not answer (${read.why}) — start the node (\`lares vessel stand --foreground\`) so the persona plane can carry these names`);
+    throw new UsageError(`the fleet did not answer (${read.why}) — stand the vessel (\`lares vessel stand --foreground\`) and open it (\`lares vault unlock\`) so the persona plane can carry these names`);
   }
   const localPetnames     = sealedPetnameStore();
   const localDeclarations = sealedDeclarationStore();
-  const petnames     = makeFleetPetnameStore(localPetnames, did);
-  const declarations = makeFleetDeclarationStore(localDeclarations, did);
 
   const carried: Array<{ handleIndex: number; petname: string | null; handle: string | null }> = [];
   const indices = new Set<number>([
@@ -328,8 +313,10 @@ async function personaSync(args: ParsedArgs): Promise<number> {
   for (const handleIndex of [...indices].sort((a, b) => a - b)) {
     const petname = await localPetnames.get(handleIndex);
     const handle  = (await localDeclarations.get(handleIndex))?.handle;
-    if (petname) await petnames.set(handleIndex, petname);
-    if (handle)  await declarations.set(handleIndex, { ...(await localDeclarations.get(handleIndex) ?? {}), handle });
+    // A carry names the face and which name; the vessel reads the name off its own sealed row.
+    const refused = [petname ? await carryOwnName(handleIndex, "petname") : null, handle ? await carryOwnName(handleIndex, "handle") : null]
+      .find((why) => why !== null);
+    if (refused) throw new Error(`the persona plane refused the names of h${handleIndex}: ${refused}`);
     carried.push({ handleIndex, petname: petname ?? null, handle: handle ?? null });
   }
 

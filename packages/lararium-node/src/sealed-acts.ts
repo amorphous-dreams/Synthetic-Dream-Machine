@@ -50,6 +50,34 @@ export interface SealedActContext {
    * board holds no such KEL. `null` where no board stands to read (a vessel at its herm floor).
    */
   readonly kelHead: ((prefix: string) => Promise<{ readonly head: string | null; readonly seq: number | null }>) | null;
+  /**
+   * The mounted face's own persona plane, as this thread's Repo holds it: the fleet-riding half of a face's two
+   * own names. `null` where no plane stands to write: a vessel with no face lit, a herm floor, or a command
+   * running an act in its own process.
+   */
+  readonly personaSelves: PersonaSelvesPlane | null;
+}
+
+/** One own persona as the persona plane holds it: the two names that ride a face's fleet. */
+export interface PersonaSelfLine {
+  readonly handleIndex: number;
+  readonly petname?: string;
+  readonly handle?: string;
+}
+
+/** The two names of a face that ride its persona plane. The seat claim and the chair label never ride. */
+export type PersonaSelfNameKind = "petname" | "handle";
+
+/**
+ * The mounted face's persona plane, read and written by the vessel's MAIN THREAD through its own Repo. The plane
+ * private-federates across that face's vessels and reaches no published or federating surface. A write here leaves
+ * the record on the plane and nothing else anywhere: it never becomes an invocation.
+ */
+export interface PersonaSelvesPlane {
+  /** Every own persona the plane names, ascending. */
+  read(): Promise<readonly PersonaSelfLine[]>;
+  /** Write one name; an empty value clears it. `written` false where the plane already holds a newer write. */
+  write(handleIndex: number, name: PersonaSelfNameKind, value: string): Promise<{ readonly written: boolean }>;
 }
 
 export type SealedActRefusalReason = "unknown-act" | "bad-args" | "act-refused";
@@ -110,6 +138,10 @@ const snapshot: Kind<HandleBookSnapshot> = {
     return spelled.length <= SNAPSHOT_ARG_LIMIT ? (v as HandleBookSnapshot) : undefined;
   },
 };
+const selfName: Kind<PersonaSelfNameKind> = {
+  label: `one of the two names that ride a face's plane ("petname" or "handle")`,
+  read: (v) => (v === "petname" || v === "handle" ? v : undefined),
+};
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
 
 type Shape = Readonly<Record<string, Kind<unknown>>>;
@@ -130,6 +162,12 @@ const act = <S extends Shape>(shape: S, run: (args: ArgsOf<S>, ctx: SealedActCon
 /** A row's own refusal: what the act found, in words its caller prints. */
 const refuse = (message: string): SealedActRefused => new SealedActRefused("act-refused", message);
 
+/** The persona plane an act writes, or the refusal that names why no plane stands. A plane stands before any row opens. */
+function planeOf(ctx: SealedActContext): PersonaSelvesPlane {
+  if (!ctx.personaSelves) throw refuse("no persona plane stands here: the names rest on this vessel alone until a vessel with a lit face stands unlocked");
+  return ctx.personaSelves;
+}
+
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
 function orRefuse<T extends object>(r: T | { readonly error: string }): T {
   if ("error" in r && typeof (r as { error: unknown }).error === "string") throw refuse((r as { error: string }).error);
@@ -147,6 +185,9 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   carriage.readings     one reading per charter this vessel holds: whether a kept consent or a seated chair carries it
  *   petname.*             this vessel's own private labels for its faces
  *   declaration.*         each face's declared Handle, seat claim and chair label
+ *   selves.read           the mounted face's persona plane: each own persona the face's fleet names
+ *   selves.carry          carry ONE name of one face from its sealed row up to that plane; the frame names the face
+ *                         and which name, and never the name itself, so the plane takes only what a sealed row holds
  *   admit.*               the persona admission's hops and its pending rows
  *   handle-book.load|save the recogniser's private memory, as one snapshot
  */
@@ -216,6 +257,22 @@ export const SEALED_ACTS = Object.freeze({
   "declaration.clear": act({ handleIndex: index }, async (a) => {
     await (await makeNodePersonaDeclarationStore()).clear(a.handleIndex);
     return {};
+  }),
+
+  // THE FLEET MIRROR. A face's two own names rest sealed on this vessel and ride that face's persona plane to its
+  // other vessels. The plane's document lives in this thread's own Repo, so the write needs no vessel key and no
+  // worker; it rides THIS door because a pet-name on a store verb would rest in the daemon's document as an
+  // outcome and a receipt digest, and because a locked vessel shuts every fleet lane. The carry reads the name
+  // off its sealed row itself: a frame carries a face's index and which name, and no name.
+  "selves.read": act({}, async (_a, ctx) => ({ selves: (await planeOf(ctx).read()).map((s) => ({ ...s })) })),
+  "selves.carry": act({ handleIndex: index, name: selfName }, async (a, ctx) => {
+    const plane = planeOf(ctx);
+    const held = a.name === "petname"
+      ? await (await makeNodePersonaPetnameStore()).get(a.handleIndex)
+      : (await (await makeNodePersonaDeclarationStore()).get(a.handleIndex))?.handle;
+    // A row that holds no such name carries its absence: the plane's copy clears, so a cleared name clears fleet-wide.
+    const { written } = await plane.write(a.handleIndex, a.name, held ?? "");
+    return { carried: written, held: held !== undefined };
   }),
 
   "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({
