@@ -8,7 +8,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/verb-vm.mem"
 l-space     = "lararium"
 mana        = 3
-role        = "self-documentation: TODO describe verb-vm.ts"
+role        = "verb-vm — the verb VM's durable outcome and its bound: an outcome rests in the daemon bag and never shrinks, so an array past the cap rides as a summary that still names every refused or conflicting row; the reader asks again in waves under the cap; a rename re-homes only records that stand"
 source-file = "packages/lararium-tw5/src/verb-vm.ts"
 title       = "lar:///ha.ka.ba/lararium/tw5/verb-vm"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -29,6 +29,6 @@ Witnesses: `packages/lararium-tw5/tests/verb-vm.test.ts` · `packages/lararium-t
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BeFx32sDr5ZVBNHbSU7qBFi1JYFuGSnOlJaAQJFOMtI
+<<^ code="&#x0003;">>ni:///sha-256;o9Odjo--MTX7ZUcwT1P9GNjB9NbynS1RACwHvgpDroE
 
 <<^ code="&#x0004;" -> to="?">>
