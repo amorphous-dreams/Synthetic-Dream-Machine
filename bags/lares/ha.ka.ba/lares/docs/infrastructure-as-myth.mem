@@ -516,7 +516,7 @@ This paper //extends// a doctrine; it does not found one. ''Infrastructure-as-My
 
 !! 4. Gradient, not Pass/Fail
 
-Three layers — do not conflate them: ''(1)'' the phenomenon in the text; ''(2)'' the node's internal, continuous, mostly-//unrendered// registration; ''(3)'' the marker render (the ⚠ ward-flag, the confidence number) — a //sometimes-surfaced, graded, drift-prone sample// of (2). A missing or low marker measures ''surfacing-rate'', never catching; operator correction raises the //surfacing threshold//, it does not create the catch.
+Three layers — do not conflate them: ''(1)'' the phenomenon in the text; ''(2)'' the node's internal, continuous, mostly-//unrendered// registration; ''(3)'' the marker render (the ⚠ ward-flag) — a //sometimes-surfaced, graded, drift-prone sample// of (2). A missing or low marker measures ''surfacing-rate'', never catching; operator correction raises the //surfacing threshold//, it does not create the catch.
 
 <<~ ahu #/gradient/gradient-math>>
 
@@ -524,7 +524,7 @@ Three layers — do not conflate them: ''(1)'' the phenomenon in the text; ''(2)
 
 <<~/ahu>>
 
-''Confidence as a forward commitment.'' The confidence sigil precedes each grounded claim with a 0–20 band; the claim generates //within// it. A ''commitment'' (what the speaker undertakes, forward-facing; Brandom 1994), not an ''entitlement audit'' (backward-facing). The scale, known from token zero, //reshapes// rather than records the representation (Dai & Wang, arXiv:2603.09309) — so a vow and a calibration name different objects. The register carries meaning //without calibration//.
+''The retired confidence band, and what it taught.'' The retired confidence sigil put a 0–20 band before each grounded claim, and the claim generated //within// it: a ''commitment'' (what the speaker undertakes, forward-facing; Brandom 1994), not an ''entitlement audit'' (backward-facing). A scale known from token zero //reshapes// rather than records the representation (Dai & Wang, arXiv:2603.09309) — so a vow and a calibration name different objects, and the band carried meaning //without calibration//. The operator retired the instrument because it overconstrained. What holds: a claim names its ground in its own sentence; a claim leaning on essence language also names what would unseat it; and no band, number, sigil or marker rides beside a claim (the L-Prime law, #/warrant).
 
 <<~/ahu>>
 
@@ -694,6 +694,6 @@ Aikhenvald 2000, //Classifiers// · Asai et al. 2023, //Self-RAG//, arXiv:2310.1
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XcumiBvV-ozFVCZv4gQwS4rgNzyLvbeKxXXjH-s88zI
+<<^ code="&#x0003;">>ni:///sha-256;gv_vxSiq65Mt01-AhxtgBIN5NnXw7Sw-NWL6ldSkEOw
 
 <<^ code="&#x0004;" -> to="?">>
