@@ -35,14 +35,14 @@
 # its exemptions: a reason that prints every run, where the next reader meets it, rather than an
 # absence somebody has to rediscover.
 #
-# ── AND IT STANDS OUTSIDE `witness-all`, DELIBERATELY ───────────────────────────────────────────
-# Ten cells are UNBUILT rather than unreachable, so this exits non-zero today. Folding that into the
-# suite would leave a permanently-red witness, and this house names that failure explicitly: "a
-# permanently-red witness trains a reader to skip it." Declaring the gap exempt would be the other
-# half of the same failure — a silent allow-list nobody audits.
+# ── A DECLARATION AND A CLAIM NEVER SHARE A CELL ────────────────────────────────────────────────
+# A cell declared unreachable names the door whose absence makes it so. The day a scenario claims that
+# cell, the door stands, and the declaration reads RED until a hand removes it: a reason that outlives
+# its door hides the same hole a missing scenario does.
 #
-# So it runs on its own and prints the work list. It joins `witness-all` the day the list empties,
-# and it is the thing that will say when.
+# ── IT RUNS IN `witness-all`, BY THE GLOB ───────────────────────────────────────────────────────
+# Every cell reads claimed or declared, so the fleet runs this witness with the rest and any drift
+# between the axes and the claims reads red there.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -75,20 +75,20 @@ claims = set(re.findall(r'#\s*COVERS:\s*([a-z-]+/[a-z-]+/[a-z-]+)', text))
 
 # A cell nothing can reach states WHY, and prints every run. An absence with no reason is how a gap
 # becomes permanent: the next reader cannot tell "impossible" from "nobody got to it".
+# A cell belongs here when nothing CAN reach it, never when nobody has. Each reason names the door a
+# later reader can check, and the claim check below overturns the entry the day that door stands.
+#
+# A CONTRACT MOVES NO PHASE, so no contracted partner makes a NEXUS cell: every scenario that contracts
+# two operators walks a SEED cell, however many chairs the founder seats.
+NO_JOINT_FOUNDING = (
+    "a NEXUS stands when two operators each seat their own key in one FRESH charter "
+    "(lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus). No CLI verb founds that joint genesis: "
+    "`seal seat` refuses a foreign seat by fingerprint (`foreignSeats`, packages/lares-cli/src/seal-import.ts), "
+    "and the Nexus founding act stands in the roadmap's R-CHARTER train "
+    "(bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem)"
+)
 UNREACHABLE: dict[str, str] = {
-    # EMPTY, and it stays a table rather than a deleted idea. The quorum cells sat here on a reading
-    # that a Nexus counts one relation per operator a vessel ADMITS, so two operators could never
-    # make two.
-    #
-    # THE FLOOR IS PERSONAS, AND THAT IS A KEY-LAYER LAW RATHER THAN A HARNESS CONVENIENCE. Neither a
-    # human's base VEIL key nor the vessel-veil-dyad root signs anything above the PersonaGroup layer,
-    # so a face is the only thing that CAN take a seat — a quorum counts faces because it has nothing
-    # else to count. Quorum wants 2 operators and 4 personas, which `lararium-a` (three) and
-    # `lararium-b` (one) reach between them, so `run_quorum_realm` walks all six on the two vessels
-    # the fleet already stands. A third vessel would add operators, never seats.
-    #
-    # A cell belongs here when nothing CAN reach it, never when nobody has.
-    # Adding one costs a reason a later reader can check and overturn, exactly as this was overturned.
+    f"{p}/nexus/{r}": NO_JOINT_FOUNDING for p in posture for r in realms if "nexus" in phases
 }
 
 # A SCENARIO THAT DECLARES NOTHING IS AMBIGUOUS, and the ambiguity is the hazard: a reader cannot
@@ -100,17 +100,26 @@ declared  = re.findall(r'#\s*COVERS:[^\n]*\n(?:#[^\n]*\n)*run_([a-z_]+)\(\)', te
 silent    = sorted(set(scenarios) - set(declared))
 
 unknown = sorted(c for c in claims if c not in cells)
+overturned = sorted(c for c in claims if c in UNREACHABLE)
+stale_decl = sorted(c for c in UNREACHABLE if c not in cells)
 missing = sorted(c for c in cells if c not in claims and c not in UNREACHABLE)
 
 print(f"[mesh-coverage] axes: posture {posture} · phase {phases} · realm {realms}")
-print(f"[mesh-coverage] {len(cells)} reachable cell(s) · {len(claims)} claimed · {len(UNREACHABLE)} declared unreachable "
+print(f"[mesh-coverage] {len(cells)} cell(s) · {len(claims)} claimed · {len(UNREACHABLE)} declared unreachable "
       f"· {len(scenarios)} scenario(s)")
-for c, why in UNREACHABLE.items():
-    print(f"      unreachable {c}: {why}")
+for why in dict.fromkeys(UNREACHABLE.values()):
+    print(f"      unreachable {' · '.join(c for c, w in UNREACHABLE.items() if w == why)}")
+    print(f"        {why}")
 
 if unknown:
     print("[mesh-coverage] a scenario CLAIMS a cell the axes do not contain:")
     for c in unknown: print(f"      {c}")
+if overturned:
+    print("[mesh-coverage] a scenario CLAIMS a cell DECLARED UNREACHABLE — the door stands; remove the declaration:")
+    for c in overturned: print(f"      {c}")
+if stale_decl:
+    print("[mesh-coverage] a cell DECLARED UNREACHABLE sits outside the axes — the declaration outlived its axis:")
+    for c in stale_decl: print(f"      {c}")
 if missing:
     print("[mesh-coverage] NO SCENARIO WALKS THESE:")
     for c in missing: print(f"      {c}")
@@ -118,7 +127,7 @@ if missing:
 if silent:
     print("[mesh-coverage] a scenario DECLARES NO CELL — say which one it walks, even if another scenario shares it:")
     for s in silent: print(f"      run_{s}")
-if unknown or missing or silent:
+if unknown or overturned or stale_decl or missing or silent:
     sys.exit(1)
-print("[mesh-coverage] every reachable cell is walked")
+print("[mesh-coverage] every reachable cell is claimed, and every other cell declares its reason")
 PY

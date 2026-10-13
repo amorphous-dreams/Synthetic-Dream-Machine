@@ -437,9 +437,9 @@ run_leaf() {
 #
 # The reading that must hold: a posture flip is not an admission and not a revocation. A's member set
 # and B's own standing are UNCHANGED across it — the flip widens what crosses, never who is party.
-# COVERS: open/multisig/unfed
-# COVERS: open/multisig/visit
-# COVERS: open/multisig/many-faces
+# COVERS: open/seed/unfed
+# COVERS: open/seed/visit
+# COVERS: open/seed/many-faces
 run_open_relation() {
   say "OPEN ACROSS A RELATION — the flip widens what carries, never who is party"
   clear_all
@@ -507,7 +507,7 @@ run_open_relation() {
 # THAT IS THE ASSERTION, not the sum: feeding a realm must not move the phase, and contracting an
 # operator must not move the realm. A harness that only ever walked one axis could not tell an
 # orthogonal pair from a coupled one.
-# COVERS: private/multisig/visit
+# COVERS: private/seed/visit
 run_crossing() {
   say "CROSSING — a relation and a fed realm, each holding its own reading"
   clear_all
@@ -653,7 +653,7 @@ run_realm() {
   clear_all
 }
 
-# COVERS: private/multisig/unfed
+# COVERS: private/seed/unfed
 run_relation() {
   say "RELATION — a contract admits a carrier and moves no phase"
   clear_all
@@ -747,7 +747,7 @@ run_nexus() {
 # can see a realm at all: the lease slots ride the DAEMON bag, and `daemonDocUrlFromBootstrap` reads
 # that URL "off the social bootstrap THIS VESSEL already holds".
 #
-# COVERS: private/multisig/many-faces
+# COVERS: private/seed/many-faces
 run_realm_crossing() {
   say "REALM CROSSING — two contracted operators feed ONE realm, and A reads for B's face"
   clear_all
@@ -874,12 +874,12 @@ run_realm_crossing() {
 # The realm ladder rides along under BOTH postures, because posture and dwelling run on orthogonal
 # axes and a quorum changes neither. Six cells close here.
 #
-# COVERS: private/quorum/unfed
-# COVERS: private/quorum/visit
-# COVERS: private/quorum/many-faces
-# COVERS: open/quorum/unfed
-# COVERS: open/quorum/visit
-# COVERS: open/quorum/many-faces
+# COVERS: private/seed/unfed
+# COVERS: private/seed/visit
+# COVERS: private/seed/many-faces
+# COVERS: open/seed/unfed
+# COVERS: open/seed/visit
+# COVERS: open/seed/many-faces
 run_quorum_realm() {
   say "THREE CHAIRS PLUS A CONTRACTED PARTNER — the founder still reads SEED"
   clear_all
@@ -982,7 +982,7 @@ run_quorum_realm() {
 # The browser leg rides `browser-a`: its probe boots a REAL island in Chromium and calls the in-VM face
 # (`$tw.lares.meme`) inside the island's own worker — place · read · check · project — and its exit
 # code is the verdict (0: the floor AND the face; 1: no floor; 3: the face refused).
-# COVERS: private/multisig/unfed
+# COVERS: private/seed/unfed
 run_meme() {
   say "MEME — an author's bag crosses two contracted operators, and the browser island speaks the laws"
   clear_all
@@ -1190,7 +1190,7 @@ run_meme() {
   clear_all
 }
 
-# COVERS: private/multisig/unfed
+# COVERS: private/seed/unfed
 # A LEG, NOT A SCENARIO OF ITS OWN. `run_meme` calls this on both its paths, so it walks that
 # scenario's cell and claims it by name — the coverage witness reads claims per `run_*()`, and a leg
 # that declares nothing reads as a walk nobody described.
@@ -1772,7 +1772,7 @@ run_conflict() {
 #   (b) charter seated      → `(charter, shared)` — the genesis epoch, shared
 #   (c) charter unreadable  → TORN                — refuses; `nexusScopeOrThrow` throws rather than
 #                                                   handing back anything a `??` could absorb
-# COVERS: private/multisig/unfed
+# COVERS: private/seed/unfed
 run_board() {
   say "BOARD — one charter, one board; different charters, different boards; a torn one, neither"
   clear_all
