@@ -38,6 +38,7 @@ import {
   handleClaimFrom, HANDLE_CLAIM_SURFACES,
   nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, admittedJoineeIsland, type NexusIdentityAt,
   climbNexusBoards, carryPersonaKelUpTheGradient,
+  readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, type EdgeReading,
   type CapModule,
   type LarDoc, type LarariumVesselOptions, type VesselResult,
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
@@ -479,6 +480,16 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // ONE SOCKET, ONE RING. The PersonaGroup identity ring composes ONTO `fedGate` itself (the assembly
   // below, once the daemon island boots), so the share verdict reads one gate and the ring has no second
   // socket to stand empty in.
+  // The fleet's shadows as this leaf last read them. Null until the first read lands: a sibling then reads as
+  // aside (fail closed), and no sibling channel stands that early.
+  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading> } | null = null;
+  let fleetBoardFollowed = false;
+  const siblingAside = (peerId: string): boolean => {
+    const key = siblings?.provenKeyOf(peerId as PeerId);
+    if (!key) return false;                       // no sibling behind this id: the sibling lane never reads it
+    if (!fleetShadows) return true;
+    return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
+  };
   const repo = new Repo({
     storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
     // The verdict seats on announce AND access (the announce-only lie the node measured in
@@ -487,6 +498,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     shareConfig: browserShareConfig(relayPeers, () => fedGate, {
       isSibling: (peerId) => Boolean(siblings?.provenKeyOf(peerId as PeerId)),
       gate: () => siblingGate,
+      // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
+      aside: (peerId) => siblingAside(peerId),
     }),
   });
   emit("repo-open");
@@ -574,13 +587,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   }
 
   // ── THE CLIMB, at the leaf — the boards a moved island would otherwise leave behind ──────────────────
-  // `climbNexusBoards` lives in `@lararium/mesh` precisely so both shores share it, and its header already
-  // vowed this: "a browser leaf climbing from its own island to the anchor it dials composes the identical
-  // call." Measured, no leaf composed it. Two of the boards fail OPEN when they mint blank:
-  //   · EDGE-KĀPAE — an empty shadow board LOWERS EVERY SHADOW, so a relationship a hand deliberately set
-  //     aside stands re-admittable on the island this leaf now dials. It sits OUTSIDE
-  //     `DeterministicFederationGate`'s list, so no peer's replica ever heals it. The boot must.
-  //   · ANTIGEN — "an empty antigen bans nobody" means a Kapae'd presenter is RE-ADMITTED.
+  // `climbNexusBoards` lives in `@lararium/mesh` so both shores share it: a browser leaf climbing from its own
+  // island to the anchor it dials composes the identical call. The ANTIGEN fails OPEN when it mints blank —
+  // "an empty antigen bans nobody" means a Kapae'd presenter gets RE-ADMITTED — so the boot carries it.
+  // An edge shadow rides no Nexus key (a realm's board, a fleet's board), so a climb re-keys none of them.
   //
   // THE CROSSROADS RE-ANNOUNCE STANDS INERT HERE, and that reads as the leaf's shape rather than a gap:
   // `realmIdOfCharter(readNexusDoc(sealHome))` has no analogue, because a leaf keeps no seal home and so
@@ -589,7 +599,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // fact. Borrowing some other id would announce ANOTHER realm's books onto this island, which is exactly
   // the foreign-realm laundering the re-announce exists to refuse.
   //
-  // WHO · carriage · vouch stay exactly where they are — `nexus-board-climb`'s header carries each reason,
+  // WHO and carriage stay exactly where they are — `nexus-board-climb`'s header carries each reason,
   // and the first is sharpest AT A LEAF: a leaf's own island IS a private nexus of one, so re-landing a card
   // announced there would DISCLOSE a face to strangers the operator never published to. Passing a fourth
   // board here compiles an about-set at a new address; read that header before adding one.
@@ -1191,7 +1201,22 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
           siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
         });
         if (fedGate && ringRelay) fedGate = ring.compose(fedGate);
-        siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey));
+        // THE FLEET'S EDGE BOARD rides the sibling lane beside the public boards, so the root's raise reaches every
+        // device; this leaf reads it through the read every shore shares, and re-reads it whenever it changes.
+        const fleetBoardUrl = fleetEdgeBoardDocUrl(ringRoot);
+        const readFleet = async (): Promise<void> => {
+          const read = await readLedgeredEdgeBoard({
+            repo, scope: ringRoot.toLowerCase().replace(/^0x/, ""), kind: "fleet", boardUrl: fleetBoardUrl, label: "board:edge-kapae",
+            vesselKey: vesselIdentity.verifyingKey, authorityFor: fleetEdgeAuthority(ringRoot),
+          });
+          fleetShadows = { root: ringRoot, readings: read.readings };
+          if (!fleetBoardFollowed) {
+            fleetBoardFollowed = true;
+            read.handle.on("change", () => { void readFleet().then(() => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }); });
+          }
+        };
+        await readFleet();
+        siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey, [fleetBoardUrl]));
       }
 
       // ── THE SIBLING CHANNEL (leaf kind 3, docs/pono/identity-slot-policy#/the-leaf-taxonomy) ────────
@@ -1645,5 +1670,6 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
  * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
 export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null) {
+  // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
   return shareConfigOf((peerId, documentId) => federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null));
 }
