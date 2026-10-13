@@ -80,6 +80,64 @@ describe("socket-claim — claimName (M6)", () => {
   });
 });
 
+describe("socket-claim — claimName under `await`", () => {
+  test("RED: each look at a live holder takes ONE wait from the pace port, and the claim lands once the holder lets go", async () => {
+    // No clock: the port hands back a wait this case alone releases, and the holder counts its own callers.
+    const path = scratchSocketPath();
+    const pollMs = 37, looks = 4;
+    let callers = 0;
+    let onCaller: () => void = () => undefined;
+    const holder = await claimName(path, { onConnection: (sock) => { callers += 1; try { sock.end(); } catch { /* gone */ } onCaller(); } });
+    const callersReach = (n: number) => new Promise<void>((res) => { if (callers >= n) res(); else onCaller = () => { if (callers >= n) res(); }; });
+    const asks: { pollMs: number; release: () => void }[] = [];
+    let onAsk: () => void = () => undefined;
+    const pace = (ms: number) => new Promise<void>((release) => { asks.push({ pollMs: ms, release }); onAsk(); });
+    const asksReach = (n: number) => new Promise<void>((res) => { if (asks.length >= n) res(); else onAsk = () => { if (asks.length >= n) res(); }; });
+
+    const order: string[] = [];
+    const waiting = claimName(path, { await: true, pollMs, pace }).then((claim) => { order.push("claimed"); return claim; });
+    for (let look = 1; look <= looks; look++) {
+      await asksReach(look);
+      // A look reaches the holder four times: the bind's ask and the waiter's ask find it live, one connection
+      // watches for its release, and one more ask after the hang-up sees that it still answers. The holder hung
+      // up on all four, and the waiter still holds its one wait: a hang-up alone ends no look.
+      await callersReach(4 * look);
+      expect(asks.length).toBe(look);
+      expect(callers).toBe(4 * look);
+      expect(order).toEqual(Array.from({ length: look - 1 }, (_, k) => `released-${k + 1}`));
+      if (look < looks) { order.push(`released-${look}`); asks[look - 1]!.release(); }
+    }
+    expect(asks.map((a) => a.pollMs)).toEqual(Array(looks).fill(pollMs));
+    // The holder lets go while the last wait still stands; the wait's release then lets the waiter claim.
+    await holder.release();
+    order.push(`released-${looks}`);
+    asks[looks - 1]!.release();
+    const claim = await waiting;
+    expect(order).toEqual([...Array.from({ length: looks }, (_, k) => `released-${k + 1}`), "claimed"]);
+    expect(asks.length).toBe(looks);                 // no wait asked once the name went quiet
+    expect(callers).toBe(4 * looks);                 // and the holder heard nothing more
+    await expect(claimName(path)).rejects.toBeInstanceOf(NameHeld);   // CONTROL: the waiter holds the name
+    await claim.release();
+  });
+
+  test("a look whose holder let go before the hang-up ends early, with its wait still unreleased", async () => {
+    const path = scratchSocketPath();
+    // This holder answers each caller by leaving: the caller's hang-up and the name's release arrive together.
+    // (It lets go once the claim's own listener has taken the caller's connection, so the release closes it.)
+    let holder!: Awaited<ReturnType<typeof claimName>>;
+    let callers = 0;
+    let leave!: (released: Promise<void>) => void;
+    const left = new Promise<void>((res) => { leave = (released) => { void released.then(res); }; });
+    holder = await claimName(path, { onConnection: () => { callers += 1; if (callers === 3) setImmediate(() => leave(holder.release())); } });
+    const asks: (() => void)[] = [];
+    const claim = await claimName(path, { await: true, pace: () => new Promise<void>((release) => { asks.push(release); }) });
+    expect(asks.length).toBe(1);                     // one wait asked, never released: the name stopped answering
+    expect(claim.path).toBe(path);
+    await left;
+    await claim.release();
+  });
+});
+
 describe("socket-claim — anchoredName", () => {
   test("a claim under a directory past sun_path binds, refuses a second, and releases", async () => {
     const base = mkdtempSync(join(tmpdir(), "socket-claim-"));

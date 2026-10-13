@@ -80,6 +80,12 @@ export interface ClaimNameOptions {
   /** Wait out the current holder rather than refusing: retries once the name goes quiet (the
    *  holder released, or a corpse got reaped), forever. Default false (refuse at once). */
   readonly await?: boolean;
+  /** Milliseconds one look waits while a holder still answers, under `await`. Default 50. Pacing only: no look
+   *  decides anything by elapsed time. */
+  readonly pollMs?: number;
+  /** The wait one look takes against a live holder, under `await`. Default: a timer of `pollMs`. A port, so a
+   *  test counts looks and reads no clock. */
+  readonly pace?: (pollMs: number) => Promise<void>;
 }
 
 const uidOf = (): number => process.getuid?.() ?? 0;
@@ -176,6 +182,8 @@ async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld): Pr
  */
 export async function claimName(path: string, opts: ClaimNameOptions = {}): Promise<ClaimedName> {
   const refuse = opts.refuse ?? (() => new NameHeld(`${path} already has a holder answering — nothing claimed`));
+  const pollMs = opts.pollMs ?? 50;
+  const pace = opts.pace ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   let reaping = 0;
   for (;;) {
     try { return await bindName(path, opts, refuse); }
@@ -187,7 +195,12 @@ export async function claimName(path: string, opts: ClaimNameOptions = {}): Prom
         continue;
       }
       reaping = 0;
-      await letGo(path);
+      // ONE WAIT PER LOOK. A holder hangs up on every caller at once, so a closed connection alone says nothing:
+      // a look that returned on the hang-up would bind, link and connect again at the kernel's own speed for as
+      // long as the holder worked. The look ends early only when the name stopped answering.
+      const paced = pace(pollMs);
+      await Promise.race([letGo(path), paced]);
+      if (await answers(path)) await paced;
     }
   }
 }
