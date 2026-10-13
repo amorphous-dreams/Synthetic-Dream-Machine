@@ -25,7 +25,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { freePort, stageDir, unlockStaged } from "../harness/instance.js";
 import { seedTestCustody } from "../harness/test-door.js";
@@ -276,9 +276,22 @@ describe("the herm — the floor of the lararium cap stack", () => {
   }, R4_BUDGET_MS);
 
   test("R5 — a herm LIFTS into a lararium: light the face, re-wake, the hearth verbs stand", async () => {
-    execFileSync(process.execPath, [CLI, "persona", "new", "0", "--name", "the lift"], {
-      env: { ...process.env, LAR_ROOT: root }, cwd: REPO, stdio: "ignore",
-    });
+    const lightFace = (): { code: number; said: string } => {
+      const r = spawnSync(process.execPath, [CLI, "persona", "new", "0", "--name", "the lift"], {
+        env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8",
+      });
+      return { code: r.status ?? -1, said: `${r.stdout}\n${r.stderr}`.trim().split("\n").slice(-3).join("\n") };
+    };
+    // CONTROL — THE FLOOR HOLDS NO VESSEL KEY, SO NO FACE LIGHTS ON IT. A face founding seals its anchors and its
+    // veil archive under the vessel key; the standing vessel rests locked, and the founding refuses by naming the
+    // unlock, with nothing landed. A lift that passed here would have lit a face under no key.
+    const locked = lightFace();
+    expect(locked.code, `a locked floor lit a face:\n${locked.said}`).not.toBe(0);
+    expect(locked.said).toMatch(/lares vault unlock/);
+    // The human opens the vessel, then lights the face.
+    unlockStaged(root);
+    const lit = lightFace();
+    expect(lit.code, `the opened floor refused its first face:\n${lit.said}`).toBe(0);
     await stopVessel();
     const { live, log } = await standHerm(root);
     // CARRY THE BOOT INTO THE FAILURE. A bare `expected false to be true` names a vessel that did not
