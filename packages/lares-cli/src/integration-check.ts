@@ -64,12 +64,13 @@ export function mempalaceStanding(checks: readonly IntegrationCheck[]): Mempalac
 }
 
 /**
- * WHAT `ok` MEANS ON A STAND: the vessel stands, and no organ a hand installed stands broken. An absent
- * memory library leaves a standing vessel `ok`; a half-installed one does not, and neither does a node
- * that fails to answer.
+ * WHAT `ok` MEANS ON A STAND: the vessel stands, no organ a hand installed stands broken, and the stand
+ * refused no act its caller asked for. An absent memory library leaves a standing vessel `ok`; a
+ * half-installed one does not, neither does a node that fails to answer, and neither does a re-stand the
+ * host alone may perform (`refused`): the daemon answers there, and the act asked for did not happen.
  */
-export function standOk(nodeUp: boolean, standing: MempalaceStanding): boolean {
-  return nodeUp && standing !== "incomplete";
+export function standOk(nodeUp: boolean, standing: MempalaceStanding, refused = false): boolean {
+  return nodeUp && standing !== "incomplete" && !refused;
 }
 
 /** Cheap, every-stand-safe: file presence + a light `find_spec` (never a full import). */

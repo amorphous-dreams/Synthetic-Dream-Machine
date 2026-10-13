@@ -399,7 +399,9 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   // 3. Emit the live-delta frame (dual output). Graceful: never hard-fail the wake.
   // The vessel's stand answers for the vessel. The memory library keeps its own door, so its absence reads
   // as absent and never as a failed stand; a half-installed one reads as a fault (`standOk`).
-  const ok = standOk(nodeUp, integration.standing);
+  // A re-stand the host alone may perform reads `ok: false` beside its named refusal; the standing verdict
+  // still rides `data.standing` for the host's shim.
+  const ok = standOk(nodeUp, integration.standing, hostRefusal !== undefined);
   emit(args, {
     ok,
     ...(hostRefusal !== undefined ? { error: hostRefusal } : {}),

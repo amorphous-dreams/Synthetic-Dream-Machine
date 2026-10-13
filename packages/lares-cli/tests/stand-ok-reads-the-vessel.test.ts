@@ -61,4 +61,12 @@ describe("what `ok` means on a stand", () => {
   test("CONTROL: a node that fails to answer fails the stand, whatever the library says", () => {
     for (const standing of ["absent", "integrated", "incomplete"] as const) expect(standOk(false, standing)).toBe(false);
   });
+
+  test("a stand that refused the act its caller asked for reads false, whatever else stands", () => {
+    for (const standing of ["absent", "integrated"] as const) {
+      expect(standOk(true, standing, true)).toBe(false);
+      // CONTROL: the same vessel with no refusal reads ok.
+      expect(standOk(true, standing, false)).toBe(true);
+    }
+  });
 });

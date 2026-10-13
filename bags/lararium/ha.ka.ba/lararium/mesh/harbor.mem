@@ -87,7 +87,7 @@ The daemon and the CLI meet at a Unix socket in the container's own `/tmp`, a tm
 
 ''The app never receives the docker socket.'' No container of this house mounts it, and no shim passes it. A process holding that socket holds the host.
 
-So every act on the engine belongs to the host shim: standing the vessel, stopping it, restarting it, reading its log. When a vessel's standing no longer matches its state on disk (a face lit after boot), the CLI inside the container reports that verdict and the host shim performs the restart. The image declares that the host holds the engine (`LAR_ENGINE=host`), and under that setting every CLI door that would stop, signal or spawn a daemon refuses `EngineHeldByHost`.
+So every act on the engine belongs to the host shim: standing the vessel, stopping it, restarting it, reading its log. When a vessel's standing no longer matches its state on disk (a face lit after boot), the CLI inside the container reports that verdict and the host shim performs the restart. The image declares that the host holds the engine (`LAR_ENGINE=host`), and under that setting every CLI door that would stop, signal or spawn a daemon refuses `EngineHeldByHost`. An acting `vessel stand` that meets that refusal answers `ok: false` and exit 3, since the act asked for did not happen, and still carries the standing verdict the shim reads (`data.standing.act`).
 
 ''A vessel stands holding no key, and the shim says so.'' Every start returns a vessel to the floor. After each stand and each restart it performs, the shim runs `vault unlock` attached when its shell holds a terminal, and otherwise names that one command; a refused or abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. `vault lock` passes through: the standing vessel drops its key and stands at the floor again. The shim reads no credential and carries none.
 
@@ -169,6 +169,6 @@ No verb of the host shim and no service of the compose file removes a state dire
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;11XLRK4fp9v1iI8eCHw-3Y4lx6vaE4Jl-M-Gc2yDOFY
+<<^ code="&#x0003;">>ni:///sha-256;C9rR-1VAVScpN5m1sh3y6kzrsWD36QzaxvbZk28V4Gw
 
 <<^ code="&#x0004;" -> to="?">>

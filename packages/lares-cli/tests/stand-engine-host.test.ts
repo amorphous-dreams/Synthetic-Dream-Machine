@@ -71,6 +71,9 @@ describe("vessel stand and the host-held engine", () => {
     const { cmdStand } = await import("../src/commands/stand.js");
     expect(await cmdStand(parseArgs(["vessel", "stand", "--observe", "--json"])) ).toBe(0);
     expect(emitted.at(-1)?.data).toMatchObject({ standing: { act: "restand", reason: "face lit after boot" } });
+    // CONTROL: an observing stand refuses nothing, so `ok` answers for the vessel alone.
+    expect(emitted.at(-1)).toMatchObject({ ok: true });
+    expect(emitted.at(-1)).not.toHaveProperty("error");
     expect(stopIncumbent).not.toHaveBeenCalled();
     expect(spawn).not.toHaveBeenCalled();
   });
@@ -79,7 +82,10 @@ describe("vessel stand and the host-held engine", () => {
     vi.stubEnv("LAR_ENGINE", "host");
     const { cmdStand } = await import("../src/commands/stand.js");
     expect(await cmdStand(parseArgs(["vessel", "stand", "--json"])) ).toBe(3);
+    // The act the caller asked for did not happen: the host must perform the re-stand, so `ok` reads false
+    // beside the named refusal. The standing verdict still rides the payload for the host's shim.
     expect(emitted.at(-1)).toMatchObject({
+      ok: false,
       error: { code: "EngineHeldByHost", message: "face lit after boot — restart the vessel from the host: lares-container.sh vessel stand" },
       data: { standing: { act: "restand", reason: "face lit after boot" } },
     });
