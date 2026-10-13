@@ -9,6 +9,7 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { makeNodePersonaDeclarationStore, nexusCharterDocPath, parseNexusDoc, readNexusDoc } from "@lararium/node";
 import { seatFingerprint } from "@lararium/mesh";
+import { sealRite, type SealRite } from "./seal-rite-fixture.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -27,6 +28,9 @@ const output = (spy: { mock: { calls: unknown[][] } }, index = -1): Record<strin
 
 describe("a seat claim needs no Handle and exports no chair label", () => {
   let root: string;
+  // One rite per charter: the helper alone spells how a seat or a rotate arms the head it writes.
+  let rite: SealRite;
+  beforeEach(() => { rite = sealRite(); });
   beforeEach(async () => {
     vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
     root = mkdtempSync(join(tmpdir(), "lares-seat-no-handle-"));
@@ -51,7 +55,7 @@ describe("a seat claim needs no Handle and exports no chair label", () => {
     expect(output(wire).data.chair).toBe("first-chair");
     expect(await cmdPersona(personaArgs("2", "veil-three", {}, { handle: "outward" }))).toBe(0);
 
-    expect(await cmdNexus(nexusArgs(["seal", "seat"], { "next-key-commit": "a".repeat(64) }))).toBe(0);
+    expect((await rite.seat("nobody")).code).toBe(0);
     const standing = readNexusDoc(larSealHome())!;
     const fingerprints = standing.kahu.map((k) => seatFingerprint(k.verifyingKey!));
     const seatPayload = output(wire).data.kahu;

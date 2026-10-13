@@ -20,9 +20,10 @@ import {
   type ReserveTransition,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, readVkCarrier,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealLineageHead, readVkCarrier,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
+import { sealRite, type SealRite } from "./seal-rite-fixture.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -57,6 +58,9 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
   let custody: ScratchCustody;
   beforeEach(async () => { vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 }); custody = await seatScratchCustody(); });
   afterEach(async () => { await custody.drop(); });
+  // One rite per charter: the helper alone spells how a seat or a rotate arms the head it writes.
+  let rite: SealRite;
+  beforeEach(() => { rite = sealRite(); });
 
   /** Stand personas 0..n-1 as seated kahu; return their verifying keys. */
   async function stand(names: readonly string[], startAt = 0): Promise<string[]> {
@@ -77,11 +81,11 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
   test("★ THE CROSSING WALKS — open before the rotate, bind after, sign both quorums, witness, seal ★", async () => {
     // Three found; the fourth chair (the arriving operator) pre-commits into the successor set.
     const founders = await stand(KAHU);
-    expect((await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(founders, 2) }))) ).toBe(0);
+    expect((await rite.seat({ keys: founders, threshold: 2 })).code).toBe(0);
     // Arm the succession: the four-key set, pre-committed an epoch ahead.
     const rt3 = await generateOrLoadPersonaGroupRoot(3);
     const fourKeys = [...founders, rt3.verifyingKey];
-    expect((await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(fourKeys, 2) })))).toBe(0);
+    expect((await rite.rotate({ keys: fourKeys, threshold: 2 })).code).toBe(0);
     const fromHead = sealLineageHead(readNexusDoc(larSealHome()))!;
 
     // ── OPEN: capture the standing hands BEFORE anything moves.
@@ -89,7 +93,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
 
     // The fourth stands; the succession rotate seats the four (matching the armed pre-commit).
     await stand(["Kahu Freyja"], 3);
-    expect((await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(fourKeys, 2) })))).toBe(0);
+    expect((await rite.rotate({ keys: fourKeys, threshold: 2 })).code).toBe(0);
     const toHead = sealLineageHead(readNexusDoc(larSealHome()))!;
     expect(toHead.epochCid).not.toBe(fromHead.epochCid);
 
@@ -120,10 +124,10 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
 
   test("★ AN UNSIGNED CROSSING REFUSES TO SEAL — and writes nothing ★", async () => {
     const founders = await stand(KAHU);
-    await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(founders, 2) }));
-    await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(founders, 2) }));
+    await rite.seat({ keys: founders, threshold: 2 });
+    await rite.rotate({ keys: founders, threshold: 2 });
     expect((await cmdNexus(args(["seal", "grow", "open"])))).toBe(0);
-    await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(founders, 2) }));
+    await rite.rotate({ keys: founders, threshold: 2 });
     expect((await cmdNexus(args(["seal", "grow", "bind"])))).toBe(0);
 
     expect((await cmdNexus(args(["seal", "grow", "seal"])))).not.toBe(0);

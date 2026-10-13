@@ -22,10 +22,11 @@ import {
   writeNexusKahu, writeNexusSeal, nexusCharterDocPath,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash,
-  charterSealState, emptyFoundingCharterDoc, genesisCharterEpoch, type NexusDoc,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat,
+  charterSealState, emptyFoundingCharterDoc, type NexusDoc,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
+import { heldCharter, sealRite, type SealRite } from "./seal-rite-fixture.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -68,9 +69,7 @@ describe("the charter's seal reading — pure", () => {
   test("CONTROL — a doc carrying a lineage reads SEALED", () => {
     // Real verifying keys (RFC 8032 §7.1 TEST 1 and 2): a charter seats only a key the Ed25519 door accepts.
     const keys = ["d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c"];
-    const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 2));
-    const doc: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-      kahu: keys.map((k, i) => ({ displayName: `K${i}`, verifyingKey: k })) };
+    const doc = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 2 } }).doc({ labels: ["K0", "K1"] });
     expect(charterSealState(doc)).toBe("sealed");
   });
 });
@@ -97,6 +96,9 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
   let custody: ScratchCustody;
   beforeEach(async () => { vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 }); custody = await seatScratchCustody(); });
   afterEach(async () => { await custody.drop(); });
+  // One rite per charter: the helper alone spells how a seat or a rotate arms the head it writes.
+  let rite: SealRite;
+  beforeEach(() => { rite = sealRite(); });
 
   test("★ a charter with no epoch reads UNSEALED, and rotate says so ★", async () => {
     writeUnsealedCharter();
@@ -106,7 +108,7 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
     expect(show.code).toBe(0);
     expect((show.out["data"] as { seal: string }).seal).toBe("unsealed");
 
-    const rotate = await run(args(["seal", "rotate"], { "next-key-commit": "0".repeat(64) }));
+    const rotate = await rite.rotate("nobody");
     expect(rotate.code).not.toBe(0);
     expect(message(rotate.out)).toMatch(/UNSEALED/);
     expect(message(rotate.out)).toMatch(/seal seat/);
@@ -123,7 +125,7 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
     const show = await run(args(["seal", "show"]));
     expect((show.out["data"] as { seal: string; present: boolean }).seal).toBe("absent");
 
-    const rotate = await run(args(["seal", "rotate"], { "next-key-commit": "0".repeat(64) }));
+    const rotate = await rite.rotate("nobody");
     expect(rotate.code).not.toBe(0);
     expect(message(rotate.out)).toMatch(/no charter stands/);
     expect(message(rotate.out)).not.toMatch(/UNSEALED/);
@@ -134,7 +136,7 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, "not a charter\n");
     expect(readCharterSeal(larSealHome()).state).toBe("torn");
-    const rotate = await run(args(["seal", "rotate"], { "next-key-commit": "0".repeat(64) }));
+    const rotate = await rite.rotate("nobody");
     expect(rotate.code).not.toBe(0);
     expect(message(rotate.out)).toMatch(/TORN/);
   });
@@ -150,11 +152,11 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
       await standForKahuSeat(declarations, i, true);
       keys.push(rt.verifyingKey);
     }
-    expect((await run(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }))).code).toBe(0);
+    expect((await rite.seat({ keys, threshold: 2 })).code).toBe(0);
     expect(readCharterSeal(larSealHome()).state).toBe("sealed");
     const show = await run(args(["seal", "show"]));
     expect((show.out["data"] as { seal: string }).seal).toBe("sealed");
-    const rotate = await run(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    const rotate = await rite.rotate({ keys, threshold: 2 });
     expect(rotate.code, message(rotate.out)).toBe(0);
   });
 });

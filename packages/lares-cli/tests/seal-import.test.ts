@@ -30,8 +30,9 @@ import {
   parseNexusDoc,
 } from "@lararium/node";
 import {
-  NEXUS_DOC_DOMAIN, hex, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, realmIdOfCharter, type NexusDoc,
+  hex, realmIdOfCharter, type NexusDoc,
 } from "@lararium/mesh";
+import { heldCharter } from "./seal-rite-fixture.js";
 import { sealImportVerdict } from "../src/seal-import.js";
 
 const A = "epoch0-" + "a".repeat(64);
@@ -86,19 +87,16 @@ function partnerHands(keys: readonly string[]): { signer: string; sign: (b: Uint
   });
 }
 
-/** A charter over `keys` with a pre-rotated, signed lineage `rotations` epochs past genesis. */
+/**
+ * A charter over `keys` with a signed lineage `rotations` epochs past genesis. The lineage alternates its
+ * quorum between two and three over the same seats, and the seats' own hands sign each roll.
+ */
 async function charter(keys: string[], rotations = 0): Promise<NexusDoc> {
-  const lineage = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
-  let threshold = 2;
+  let standing = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
   for (let i = 0; i < rotations; i++) {
-    const revealed = threshold === 2 ? 3 : 2;
-    const r = await rotateSealEpoch(lineage[lineage.length - 1]!, { keys, threshold: revealed }, sealKeySetHash(keys, threshold), partnerHands(keys));
-    if (!r.ok) throw new Error(r.reason);
-    lineage.push(r.epoch);
-    threshold = revealed;
+    standing = await standing.roll(partnerHands(keys), { keys, threshold: standing.threshold });
   }
-  return { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: lineage[lineage.length - 1]!.epochCid, sealLineage: lineage,
-           kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })) };
+  return standing.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
 }
 
 async function foreignKeys(salt: number): Promise<string[]> {

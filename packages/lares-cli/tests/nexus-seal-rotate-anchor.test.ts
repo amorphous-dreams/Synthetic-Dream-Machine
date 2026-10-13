@@ -43,36 +43,22 @@ vi.mock("../src/store-door.js", async (importOriginal) => {
   };
 });
 
-import { cmdNexus } from "../src/commands/nexus.js";
-import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc,
   nexusCharterDocPath, NexusContractError,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealLineageHead,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
+import { sealRite, type SealRite } from "./seal-rite-fixture.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
 vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 const KAHU = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
-const args = (positional: string[], options: Record<string, string> = {}): ParsedArgs =>
-  ({ command: "nexus", positional, options, flags: { json: true } });
-
-/** Run a verb and capture the one JSON payload it emits. */
-async function run(a: ParsedArgs): Promise<{ code: number; out: Record<string, unknown> }> {
-  const lines: string[] = [];
-  const out = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { lines.push(String(chunk)); return true; });
-  try {
-    const code = await cmdNexus(a);
-    const json = lines.find((l) => l.trim().startsWith("{"));
-    return { code, out: json ? JSON.parse(json) as Record<string, unknown> : {} };
-  } finally { out.mockRestore(); }
-}
 
 describe("lares nexus seal rotate — the anchor lands before the head, or nothing lands", () => {
   let root: string;
@@ -99,6 +85,9 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
   let custody: ScratchCustody;
   beforeEach(async () => { vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 }); custody = await seatScratchCustody(); });
   afterEach(async () => { await custody.drop(); });
+  // One rite per charter: the helper alone spells how a seat or a rotate arms the head it writes.
+  let rite: SealRite;
+  beforeEach(() => { rite = sealRite(); });
 
   /** Three personas stand for chairs; the genesis seats them armed for the same set. */
   async function seatedGenesis(): Promise<string[]> {
@@ -112,7 +101,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
       await standForKahuSeat(declarations, i, true);
       keys.push(rt.verifyingKey);
     }
-    expect((await run(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }))).code).toBe(0);
+    expect((await rite.seat({ keys, threshold: 2 })).code).toBe(0);
     return keys;
   }
 
@@ -120,7 +109,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const keys = await seatedGenesis();
     const genesis = sealLineageHead(readNexusDoc(larSealHome()))!;
 
-    const r = await run(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    const r = await rite.rotate({ keys, threshold: 2 });
     expect(r.code).toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the anchor step ran against the closing head
     const head = sealLineageHead(readNexusDoc(larSealHome()))!;
@@ -138,7 +127,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const before = readFileSync(path);
 
     anchorStep.fault = () => new NexusContractError("refusing to write: the roll anchor does not count under the new roster (fail-closed).");
-    const r = await run(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    const r = await rite.rotate({ keys, threshold: 2 });
     expect(r.code).not.toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the step was reached …
     expect(readFileSync(path).equals(before)).toBe(true);           // … and the charter never moved
@@ -146,7 +135,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
 
     // THE SAME ROLL RUN AGAIN LANDS: the refusal left nothing behind that a second run trips on.
     anchorStep.fault = null;
-    const again = await run(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    const again = await rite.rotate({ keys, threshold: 2 });
     expect(again.code).toBe(0);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
   });
@@ -157,7 +146,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const before = readFileSync(path);
 
     anchorStep.fault = () => new Error("the board store faulted");
-    const r = await run(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    const r = await rite.rotate({ keys, threshold: 2 });
     expect(r.code).not.toBe(0);
     expect(readFileSync(path).equals(before)).toBe(true);
   });
