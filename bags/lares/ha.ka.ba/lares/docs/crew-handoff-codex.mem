@@ -12,8 +12,8 @@ mana       = 14
 manao      = 14
 manaoio    = 13
 role       = "WORK HANDOFF, addressed — the loops the founding hearth handed to the lares(Codex) nakama-crew invited 2026-09-14, and the crew's own roadmap after it. Per item: what it names, where the evidence lives (file:line · commit · carrier section), what stands RULED against what stands OPEN, the precondition that blocks it, and the traps a fresh hand otherwise pays for. #/reconciled reads every item against the code as landed, superseded or open; the sections after it keep their dated measurements as the record. NEVER a shift ledger (docs/handoff carries that), NEVER the hearth ledger (docs/pono/hearths carries that)."
-status-why = "the crew's session ended and its hold closed; the Lares hearth carries the items #/reconciled marks open, and a taken item moves by an edit to #/reconciled naming the commit that took it"
-tags       = ["docs/handoff", "lifecycle/standing"]
+status-why = "RETIRING: folded to `lar:///ha.ka.ba/lares/docs/stable-founding-road` (#/the-loops, #/the-trains, #/decisions, #/open), `lar:///ha.ka.ba/lararium/mesh/causal-island#/selected-contracts` and `lar:///ha.ka.ba/lares/docs/handoff#/traps`, welded, nothing points here"
+tags       = ["docs/handoff", "lifecycle/retiring"]
 title      = "lar:///ha.ka.ba/lares/docs/crew-handoff-codex"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/crew-handoff-codex"
@@ -1558,7 +1558,7 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 ! Codex crew reboot — Astra research + Terra main work
 
-''Transfer state.'' This hand records only a local observation at the reboot boundary. The offering source and exact local receiver inspection stand committed at `507e9c391`, `9f9395307`, and `17c99b6c6`; later memetic-frame/TW5 work advanced `HEAD` without changing that receipt. The full triage packet is <<~ loulou "lar:///ha.ka.ba/lares/docs/codex-crew-emergency-handoff">>.
+''Transfer state.'' This hand records only a local observation at the reboot boundary. The offering source and exact local receiver inspection stand committed at `507e9c391`, `9f9395307`, and `17c99b6c6`; later memetic-frame/TW5 work advanced `HEAD` without changing that receipt. The full triage packet is `docs/codex-crew-emergency-handoff`.
 
 ''Active uncommitted witness.'' `tests/harness/instance.ts` lets B request A's deterministic Crossroads document; `tests/e2e/nexus-offering-replication.test.ts` tests partial, complete, and corrupt receiver-local evidence without fetching or writing authority state. Its first run halts before assertions because daemon Keyhive reports the current lease frontier unavailable. The next hand must diagnose the worker/Oracle causal context with a narrow test-only observation before changing a gate. Missing authority stays unavailable; an empty, readable lease set alone may read zero.
 
@@ -1578,6 +1578,6 @@ Each phase begins with a discriminating red test, ends with exact package/typech
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0evAe5EaI7jGRzEYTxC_rfMXwZhJ0DxU_W6bf9UMhjo
+<<^ code="&#x0003;">>ni:///sha-256;veBnQg5z9zAjZ-hgJydHo5tpoJ1Zg0mX0FFC4d9I0cw
 
 <<^ code="&#x0004;" -> to="?">>

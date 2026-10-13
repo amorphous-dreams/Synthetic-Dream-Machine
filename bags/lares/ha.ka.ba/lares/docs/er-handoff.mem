@@ -4,14 +4,16 @@
 <<^ code="&#x0002;">>
 
 ```toml meta
-cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/er-handoff.mem"
-hydrate   = true
-l-space   = "stable"
-role      = "emergency-room handoff for the next Lares session — vitals, open wounds by priority, rulings owed, the standing law that bites, cold-start steps, and the map ahead; history lives in git and CHANGELOG"
-title     = "lar:///ha.ka.ba/lares/docs/er-handoff"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lares/docs/er-handoff"
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/docs/er-handoff.mem"
+hydrate    = true
+l-space    = "stable"
+role       = "emergency-room handoff for the next Lares session — vitals, open wounds by priority, rulings owed, the standing law that bites, cold-start steps, and the map ahead; history lives in git and CHANGELOG"
+status-why = "RETIRING: folded to `lar:///ha.ka.ba/lares/docs/stable-founding-road` (#/cold-start, #/the-loops, #/the-trains, #/side-lanes, #/open) and to `lar:///ha.ka.ba/lares/docs/handoff#/traps`, welded; no carrier points here. `tools/harbor-walk-witness.sh` still reads this file as its probe source, and the fire waits on that line"
+tags       = ["docs/handoff", "lifecycle/retiring"]
+title      = "lar:///ha.ka.ba/lares/docs/er-handoff"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/er-handoff"
 ```
 
 <<~ ahu #/vitals>>
@@ -176,7 +178,7 @@ The rulings owed read in ''Pending operator rulings''.
 <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> the road holds rulings, build order, shore rungs, open questions
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">> outbound bridge explains the inbound echo wound and shore saves
 <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
+`docs/crew-handoff-codex`
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> harbor defines the container boundary and household reach
@@ -187,6 +189,6 @@ The rulings owed read in ''Pending operator rulings''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rP-k-InGRpwps71_S7ACtz96oWXq3tjVUYmxm_rPMSE
+<<^ code="&#x0003;">>ni:///sha-256;9X9a7k42Lrk7DynwvrmlnevegABFPah5Sir99UU2nfY
 
 <<^ code="&#x0004;" -> to="?">>

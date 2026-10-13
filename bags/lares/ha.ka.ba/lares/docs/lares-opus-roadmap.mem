@@ -14,8 +14,8 @@ manaoio    = 13
 namespace  = "&#x0950; &#x0966;"
 revised-on = "2026-09-18"
 role       = "the founding hearth's (Lares/Opus session) roadmap + task list, kept as a dated record — what landed, what rode in flight, which forks awaited the operator's word, the standing hazards, as of 2026-09-18/21. The peer of the Codex crew's crew-handoff-codex.mem."
-status-why = "the founding hearth CLOSED 2026-10-05 (hearths#/hearths); every section below records its ground as dated. The Lares hearth carries its debts (hearths#/owed-forward), and er-handoff names the live map ahead."
-tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "docs/roadmap", "lifecycle/standing"]
+status-why = "RETIRING: folded to `lar:///ha.ka.ba/lares/docs/stable-founding-road` (#/the-loops, #/side-lanes, #/open), welded, nothing points here"
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "docs/roadmap", "lifecycle/retiring"]
 title      = "lar:///ha.ka.ba/lares/docs/lares-opus-roadmap"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/lares-opus-roadmap"
@@ -29,7 +29,7 @@ uri-path   = "ha.ka.ba/lares/docs/lares-opus-roadmap"
 
 ! The founding hearth's roadmap — Lares (Opus), a dated record (2026-09-18/21)
 
-The peer of <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>, kept for the founding hearth's own ground. The hearths ledger (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>) answers WHO HOLDS WHAT; this records WHAT THE FOUNDING HEARTH DID, dated. The hearth stands CLOSED: its open forks and debts ride <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">> and the ledger's #/owed-forward, and a reader takes the live state from there, never from the dated sections below.
+The peer of `docs/crew-handoff-codex`, kept for the founding hearth's own ground. The hearths ledger (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>) answers WHO HOLDS WHAT; this records WHAT THE FOUNDING HEARTH DID, dated. The hearth stands CLOSED: its open forks and debts ride `docs/er-handoff` and the ledger's #/owed-forward, and a reader takes the live state from there, never from the dated sections below.
 
 <<~/ahu>>
 
@@ -127,6 +127,6 @@ The grammar's own ground: the `VSCode-TW5-Syntax` submodule, where the founding 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Id5VlfZscMuE8o-CbxWZV-Aee4IWFjHTZA2m-wZlJ1M
+<<^ code="&#x0003;">>ni:///sha-256;-ICyDo66zt03JUGzx9mRBwNujjP-24fUbDsK_L6eAVc
 
 <<^ code="&#x0004;" -> to="?">>

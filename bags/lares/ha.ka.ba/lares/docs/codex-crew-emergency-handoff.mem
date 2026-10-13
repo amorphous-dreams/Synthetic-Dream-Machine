@@ -11,8 +11,8 @@ mana       = 18
 manao      = 18
 manaoio    = 18
 role       = "emergency-room transfer for the Codex crew; records the observed repository boundary, current wounds, committed repairs, operator-held forks, and a cold-start triage order"
-status-why = "the Codex crew's session ended and its hold closed; #/reconciled marks this transfer's red board and seats against the code, and the Lares hearth carries what stays open through `crew-handoff-codex#/reconciled`"
-tags       = ["docs/handoff", "lifecycle/standing", "triage/emergency-room", "mesh/offering-antigen"]
+status-why = "RETIRING: folded to `lar:///ha.ka.ba/lares/docs/stable-founding-road` (#/the-loops, #/open) and `lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record`, welded, nothing points here"
+tags       = ["docs/handoff", "lifecycle/retiring", "triage/emergency-room", "mesh/offering-antigen"]
 title      = "lar:///ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/docs/codex-crew-emergency-handoff"
@@ -32,8 +32,8 @@ updated    = "2026-10-06"
 # <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">> — house law, OODA-HA, personas, and yield form.
 # <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> — red-first procedure and shared-tree hazards.
 # <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> — active crossings and held paths.
-# <<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">> — the instruments that read the whole tree's vitals, the open wounds ranked by the road path that closes each, and the cold-start build rules.
-# <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">> — the longer Codex roadmap and operator-held forks.
+# `docs/er-handoff` — the instruments that read the whole tree's vitals, the open wounds ranked by the road path that closes each, and the cold-start build rules.
+# `docs/crew-handoff-codex` — the longer Codex roadmap and operator-held forks.
 # This carrier — the bounded Codex offering/admission transfer below.
 
 ''Working agreement.'' Research hands publish evidence separately. An enactment hand turns only a selected policy into the smallest red-first cut. A commit names its files, its receipts, and what it does not prove. An unresolved CRDT or policy conflict goes to Talk Story; no hand picks its semantic result.
@@ -44,7 +44,7 @@ updated    = "2026-10-06"
 
 ! Reconciled — this transfer, read against the code
 
-''The crew's session has ended and its hold stands closed'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>). The sections after this one keep the transfer as written; this one reads it against the tree that stands. The whole Codex roadmap reconciles at <<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex#/reconciled">>.
+''The crew's session has ended and its hold stands closed'' (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>). The sections after this one keep the transfer as written; this one reads it against the tree that stands. The whole Codex roadmap reconciles at `docs/crew-handoff-codex` #/reconciled.
 
 * ''Landed.'' The presented-admit cut-over and its contract witness (`0730dd41b`; one presenter reads acts and roll anchors off one board doc, `f4f1c9a6e`); the CLI seal seam (seal rolls signed by the keys they reveal, `83445b41a`); the receiver witness, committed with its harness option (`750bf21fe`); vessel parity, the PersonaGroup ring composed on both shores by one function (`3384b183c`) — the Browser's typed verified-peer seam reads the relay adapter's `provenKeyOf`, and the gate signs its verdict (`e08f210c1`).
 * ''Open, the operator's.'' The Offering Antigen scope and the charter-inception identity under it; generic adoption stays deferred, and enforcement and the receiver's consultation cap wait on the scope ruling.
@@ -194,12 +194,12 @@ A context-free reviewer read the preceding revision of this carrier against the 
 
 <<~ ahu #/edges>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/er-handoff">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/crew-handoff-codex">>
+`docs/er-handoff`
+`docs/crew-handoff-codex`
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Eb9UV6EJ3a1pyLzv6wsE-qjY13A37jFCX6IjLyeRnRE
+<<^ code="&#x0003;">>ni:///sha-256;bscQhlv6qQIoZno03ve9v_LwvjBM9OWWIhu-UJz7tU0
 <<^ code="&#x0004;" -> to="?">>
