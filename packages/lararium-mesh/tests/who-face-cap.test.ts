@@ -24,7 +24,7 @@ const NEXUS = "abcdef0123456789";
 const signer = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
 const rawPub = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const RECOVERY = "ab".repeat(32);
-function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY, `hkeynext-${"cd".repeat(32)}`)]; }
 /** The identity a recogniser keys on — the handle-KEL PREFIX (the nym retired onto the chain). */
 const pubOf  = async (seed: Uint8Array): Promise<string> => chainOf(await rawPub(seed))[0]!.prefix;
 

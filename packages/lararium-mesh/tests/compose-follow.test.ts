@@ -37,7 +37,7 @@ function spyCircleStore() {
 }
 
 const RECOVERY = "ab".repeat(32);
-function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY, `hkeynext-${"cd".repeat(32)}`)]; }
 
 async function makeCard(seed: Uint8Array, glamour: string): Promise<{ nym: string; card: HandleCard }> {
   const chain = chainOf(await ed.getPublicKeyAsync(seed).then(hex));

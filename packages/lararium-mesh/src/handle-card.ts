@@ -27,7 +27,7 @@ import {
   signDelegationEdge, verifyDelegationEdge, DELEGATION_DOMAIN, type DelegationEdge,
 } from "./delegation-edge.js";
 import {
-  verifyHandleKel, verifyHandleKelFull, headHandleKey, isBurned,
+  verifyHandleKel, headWithoutResolver, resolvedHeadHandleKey,
   type HandleKelEvent, type OwnerHeadResolver,
 } from "./handle-kel.js";
 import { verifyEd25519 } from "./ed25519-door.js";
@@ -162,6 +162,7 @@ export type CardRejection =
   | "wrong-domain"       // not a handle-card
   | "malformed"          // a field is the wrong shape (nym not a handle-prefix, sig not hex, chain absent, etc.)
   | "chain-invalid"      // the carried handle-KEL fails structural verification — a broken lineage seats no head
+  | "handle-rotation-unverified"   // the chain carries a step past its inception, and this reader holds no owner-head resolver to verify it
   | "nym-mismatch"       // the presented nym is not the chain's own prefix — the name does not match its chain
   | "burned"             // the Handle's chain ends in a burn — recognition ENDS at the burn, forever
   | "bad-signature"      // the card was not signed by the chain's CURRENT head Handle key — it certifies nothing
@@ -224,10 +225,14 @@ export async function verifyHandleCard(
   // BEFORE the signature (a sig over a broken chain proves nothing about a live Handle).
   if (!verifyHandleKel(card.chain))            return { ok: false, reject: "chain-invalid" };
   if (card.nym !== card.chain[0]!.prefix)      return { ok: false, reject: "nym-mismatch" };
-  // A burned name refuses whatever its signature says — recognition ends at the burn, structurally.
-  if (isBurned(card.chain))                    return { ok: false, reject: "burned" };
-  const headKey = headHandleKey(card.chain);   // non-null: the chain verified and stands unburned
-  if (headKey === null)                        return { ok: false, reject: "chain-invalid" };
+  // WHICH KEY SIGNS THIS CARD. A chain cannot vouch for the member key its own rotation, graft or owner-burn
+  // names, so a reader with no resolver trusts the inception alone: any later step answers
+  // `handle-rotation-unverified`, and no key seated past the inception ever checks a card here. A reader WITH a
+  // resolver walks EVERY step against the owners' heads before it believes anything the chain says, a burial
+  // included: a forged owner-burn reads `owner-head-refused`, never `burned`.
+  const trusted = ownerHeadResolver ? await resolvedHeadHandleKey(card.chain, ownerHeadResolver) : headWithoutResolver(card.chain);
+  if (!trusted.ok) return { ok: false, reject: trusted.refusal };
+  const headKey = trusted.key;
   const { sig } = card;
   let ok = false;
   try {
@@ -236,11 +241,6 @@ export async function verifyHandleCard(
     return { ok: false, reject: "malformed" };
   }
   if (!ok) return { ok: false, reject: "bad-signature" };
-  // TIER 2 — the strict walk of presentation authority against the persona board (opt-in via the resolver).
-  if (ownerHeadResolver) {
-    const full = await verifyHandleKelFull(card.chain, ownerHeadResolver);
-    if (!full.ok) return { ok: false, reject: "owner-head-refused" };
-  }
   return { ok: true, nym: card.nym, headKey, tier };
 }
 
@@ -263,8 +263,10 @@ function cardUnsigned(card: HandleCard): Omit<HandleCard, "sig"> {
 export async function recognizeHandle(
   card: HandleCard,
   expectedNym: string,
+  /** The owners' heads. Absent, only a card over a chain that holds its inception alone can read recognised. */
+  ownerHeadResolver?: OwnerHeadResolver,
 ): Promise<boolean> {
-  const v = await verifyHandleCard(card);
+  const v = await verifyHandleCard(card, ownerHeadResolver);
   return v.ok && v.nym === expectedNym;
 }
 
@@ -289,9 +291,11 @@ export async function acceptHandleUpdate(
     readonly expectedNym:       string;
     readonly knownActCids?: readonly string[];
     readonly heldHeadActCids?: readonly string[];
+    /** The owners' heads. Absent, a card over a chain past its inception answers `handle-rotation-unverified`. */
+    readonly ownerHeadResolver?: OwnerHeadResolver;
   },
 ): Promise<CardVerdict> {
-  const self = await verifyHandleCard(card);
+  const self = await verifyHandleCard(card, opts.ownerHeadResolver);
   if (!self.ok) return self;
   if (card.nym !== opts.expectedNym) return { ok: false, reject: "wrong-nym" };
 
@@ -321,13 +325,18 @@ export interface HandleCardFoldResult {
  * graph with exactly one head. A missing parent, cross-nym edge, self-parent, invalid signature, or invalid
  * semantic CID leaves the fold unrecognised.
  */
-export async function foldHandleCardsDetailed(cards: readonly HandleCard[]): Promise<HandleCardFoldResult> {
+export async function foldHandleCardsDetailed(
+  cards: readonly HandleCard[],
+  /** The owners' heads. Absent, the fold trusts each chain's inception alone and rejects a set holding any
+   *  card whose chain carries a later step: a chain cannot vouch for the member key its own rotation names. */
+  ownerHeadResolver?: OwnerHeadResolver,
+): Promise<HandleCardFoldResult> {
   if (cards.length === 0) return { status: "unavailable", cards: [], card: null, heads: [] };
 
   const verified: HandleCard[] = [];
   let rejected = false;
   for (const card of cards) {
-    const verdict = await verifyHandleCard(card);
+    const verdict = await verifyHandleCard(card, ownerHeadResolver);
     if (!verdict.ok) { rejected = true; continue; }
     verified.push(card);
   }
@@ -363,6 +372,6 @@ export async function foldHandleCardsDetailed(cards: readonly HandleCard[]): Pro
 }
 
 /** Fold a nym's locally observed publication acts without arrival-order choice. */
-export async function foldHandleCards(cards: readonly HandleCard[]): Promise<HandleCardFold> {
-  return (await foldHandleCardsDetailed(cards)).status;
+export async function foldHandleCards(cards: readonly HandleCard[], ownerHeadResolver?: OwnerHeadResolver): Promise<HandleCardFold> {
+  return (await foldHandleCardsDetailed(cards, ownerHeadResolver)).status;
 }

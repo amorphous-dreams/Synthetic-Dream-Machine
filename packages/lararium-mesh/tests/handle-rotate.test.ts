@@ -32,7 +32,7 @@ import { mintPersonaGlamour, PERSONA_GLAMOUR_CONTEXT, type OwnPublicHandleStore,
 import { rotateOwnHandle } from "../src/handle-orchestration.js";
 import {
   mintHandleInception, mintHandleRotation, handleKeyDigestOf,
-  verifyHandleKel, verifyHandleKelFull, headHandleKey, currentOwnerSet,
+  verifyHandleKel, verifyHandleKelFull, headHandleKey, resolvedHeadHandleKey, resolvedOwnerSet,
   type HandleKelEvent, type OwnerHeadResolver,
 } from "../src/handle-kel.js";
 import { HANDLE_CARD_DOMAIN, type HandleCard } from "../src/handle-card.js";
@@ -94,14 +94,16 @@ describe("handle-kel — KERI pre-rotation: the next-handle-key pre-commitment",
     const ownerPrefix = "persona-" + "ab".repeat(32);
     const recoverySetHash = sealKeySetHash([inceptionKeyDid], 1);
     const armed   = mintHandleInception(inceptionKeyDid, ownerPrefix, recoverySetHash, handleKeyDigestOf(ctx1Did));
-    const unarmed = mintHandleInception(inceptionKeyDid, ownerPrefix, recoverySetHash);
+    // Every inception arms: an inception that commits no next key mints nothing (`handle-takeover.test.ts`).
+    // `unarmed` here commits ANOTHER next key, so the two inceptions differ by the commitment alone.
+    const unarmed = mintHandleInception(inceptionKeyDid, ownerPrefix, recoverySetHash, `hkeynext-${"cd".repeat(32)}`);
     expect(armed.nextHandleKeyDigest).toBe(handleKeyDigestOf(ctx1Did));
-    expect(unarmed.nextHandleKeyDigest).toBe("");
+    expect(() => mintHandleInception(inceptionKeyDid, ownerPrefix, recoverySetHash, "")).toThrow(/handle-inception-unarmed/);
     // The commitment rides the cid (a moved commitment moves the cid) but NOT the prefix (stable identifier).
     expect(armed.prefix).toBe(unarmed.prefix);
     expect(armed.eventCid).not.toBe(unarmed.eventCid);
     expect(verifyHandleKel([armed])).toBe(true);
-    expect(verifyHandleKel([unarmed])).toBe(true);   // an unarmed chain still verifies (opt-in per chain)
+    expect(verifyHandleKel([unarmed])).toBe(true);   // another commitment, the same law
   });
 
   test("★ a rotation revealing a WRONG next-key REFUSES — mint-side and verify-side ★", async () => {
@@ -161,11 +163,12 @@ describe("handle-orchestration — rotateOwnHandle: the context ladder end-to-en
     expect(chain[1]!.prefix).toBe(chain[0]!.prefix);               // the prefix never moves
     // THE HEAD ADVANCES to the context-1 key.
     const ctx1Did = didFromVerifyingKey((await deriveVeiledUserKey(SEED, 0, 1)).verifyingKey);
-    expect(headHandleKey(chain)).toBe(ctx1Did);
+    expect(headHandleKey(chain)).toBeNull();                        // no resolver: the inception alone earns trust
+    expect(await resolvedHeadHandleKey(chain, resolver)).toEqual({ ok: true, key: ctx1Did });
     expect(chain[1]!.handleKeyDid).not.toBe(chain[0]!.handleKeyDid);
     expect(verifyHandleKel(chain)).toBe(true);
     expect((await verifyHandleKelFull(chain, resolver)).ok).toBe(true);
-    expect(currentOwnerSet(chain)!.members).toEqual([ownerPrefix]);
+    expect((await resolvedOwnerSet(chain, resolver))!.members).toEqual([ownerPrefix]);
   });
 
   test("★ a SECOND rotation rides context 2; the head re-derives from (seed, handleIndex, rotation-count) ★", async () => {
@@ -194,7 +197,7 @@ describe("handle-orchestration — rotateOwnHandle: the context ladder end-to-en
     const c2 = r2.card.chain as HandleKelEvent[];
     expect(c2.length).toBe(3);
     const ctx2Did = didFromVerifyingKey((await deriveVeiledUserKey(SEED, 0, 2)).verifyingKey);
-    expect(headHandleKey(c2)).toBe(ctx2Did);   // rotation 2 → context 2, re-derivable from the count
+    expect(await resolvedHeadHandleKey(c2, headsAre({ [ownerPrefix]: ownerOpKeyDid }))).toEqual({ ok: true, key: ctx2Did });   // rotation 2 → context 2, re-derivable from the count
     expect(verifyHandleKel(c2)).toBe(true);
     expect((await verifyHandleKelFull(c2, headsAre({ [ownerPrefix]: ownerOpKeyDid }))).ok).toBe(true);
   });

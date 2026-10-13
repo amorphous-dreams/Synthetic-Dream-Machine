@@ -2,6 +2,7 @@
 import {
   foldHandleCardsDetailed, verifyHandleCard, type HandleCard, type CardVerdict,
 } from "./handle-card.js";
+import type { OwnerHeadResolver } from "./handle-kel.js";
 
 export interface HandleRecord {
   readonly nym: string;
@@ -34,7 +35,7 @@ export class HandleBook {
   }
 
   /** Rehydrate only records whose accepted closure and projection verify afresh. */
-  static async restore(snapshot: HandleBookSnapshot | unknown): Promise<HandleBook> {
+  static async restore(snapshot: HandleBookSnapshot | unknown, ownerHeadResolver?: OwnerHeadResolver): Promise<HandleBook> {
     const book = new HandleBook();
     if (!snapshot || typeof snapshot !== "object") return book;
     const candidate = snapshot as Partial<HandleBookSnapshot>;
@@ -47,7 +48,7 @@ export class HandleBook {
       const accepted = record.accepted.filter((card): card is HandleCard =>
         !!card && typeof card === "object" && (card as HandleCard).nym === record.nym);
       if (accepted.length !== record.accepted.length) continue;
-      const folded = await foldHandleCardsDetailed(accepted);
+      const folded = await foldHandleCardsDetailed(accepted, ownerHeadResolver);
       if (folded.status === "rejected" || folded.status === "unavailable") continue;
       book.records.set(record.nym, {
         nym: record.nym,
@@ -60,12 +61,17 @@ export class HandleBook {
     return book;
   }
 
-  async ingest(card: HandleCard): Promise<CardVerdict> {
+  /**
+   * Take a card into the book. `ownerHeadResolver` names the owners' heads: without it the book trusts a
+   * chain's inception alone, and a card over a chain carrying any later step answers
+   * `handle-rotation-unverified` (a stranger's appended rotation reads structurally whole, so structure proves nothing).
+   */
+  async ingest(card: HandleCard, ownerHeadResolver?: OwnerHeadResolver): Promise<CardVerdict> {
     const held = this.records.get(card.nym);
-    const self = await verifyHandleCard(card);
+    const self = await verifyHandleCard(card, ownerHeadResolver);
     if (!self.ok) return self;
     const accepted = [...(held?.accepted ?? []), card];
-    const folded = await foldHandleCardsDetailed(accepted);
+    const folded = await foldHandleCardsDetailed(accepted, ownerHeadResolver);
     if (folded.status === "rejected") return { ok: false, reject: "rejected" };
     // A descendant with an absent ancestor must not be retained as if it were recognition. The caller can
     // retry it after the missing parent arrives; this keeps persistence and arrival order equivalent.

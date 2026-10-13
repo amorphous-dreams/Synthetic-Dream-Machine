@@ -34,7 +34,7 @@ const RECOVERY = "cd".repeat(32);
 
 const signer = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
 const rawPub = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY, `hkeynext-${"cd".repeat(32)}`)]; }
 
 async function strangerCard(over: Partial<HandleCard> = {}): Promise<HandleCard> {
   const chain = chainOf(await rawPub(STRANGER_SEED));

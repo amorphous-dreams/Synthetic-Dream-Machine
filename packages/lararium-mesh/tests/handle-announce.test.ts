@@ -11,7 +11,7 @@ import { hex } from "../src/crypto.js";
 const SEED = new Uint8Array(32).fill(9), signer = (b: Uint8Array) => ed.signAsync(b, SEED).then(hex);
 async function publish(glamour: string, parents: readonly string[] = []): Promise<HandleCard> {
   const did = `0x${await ed.getPublicKeyAsync(SEED).then(hex)}`;
-  const chain: HandleKelEvent[] = [mintHandleInception(did, did, "ab".repeat(32))];
+  const chain: HandleKelEvent[] = [mintHandleInception(did, did, "ab".repeat(32), `hkeynext-${"cd".repeat(32)}`)];
   return signHandleCard({ nym: chain[0]!.prefix, chain, glamour, parents, standing: null, fleetProof: null }, signer);
 }
 function wire(doc: Doc<LarDoc>): Doc<LarDoc> { return load<LarDoc>(save(doc)); }

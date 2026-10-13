@@ -29,7 +29,7 @@ import {
   mintHandleInception, mintHandleInceptionSet, mintHandleRotation, mintHandleGraft, mintHandleBurn,
   handlePrefixOf, handleRotationSigningBytes, handleEventCidOf,
   verifyHandleKel, verifyHandleKelFull, currentOwnerSet,
-  attestUnderHead, verifyAttestation, headHandleKey, isBurned,
+  attestUnderHead, verifyAttestation, headHandleKey, isBurned, handleKeyDigestOf, resolvedHeadHandleKey, resolvedOwnerSet,
   handleAttestationBytes, handleClaimSubject, HANDLE_CLAIM_SURFACES,
   type HandleKelEvent, type OwnerHeadResolver, type HandleClaim,
 } from "../src/handle-kel.js";
@@ -38,6 +38,8 @@ import { mintPersonaInception } from "../src/persona-kel.js";
 // Fixed seeds → deterministic run. hA/hB/hC seat the Handle's own keys; westley/roberts2/guildX/guildY
 // stand the presenting personas' op-keys; ownerA/ownerB stand ONE persona across an owner rotation
 // (A superseded by B); g1 arms the recovery pre-commit.
+/** The fresh commitment a test rotation makes: well formed, naming a key no test reveals. */
+const NEXT_AFTER = `hkeynext-${"ef".repeat(32)}`;
 const SEEDS = {
   hA:      new Uint8Array(32).fill(51),
   hB:      new Uint8Array(32).fill(52),
@@ -61,7 +63,7 @@ async function foundedHandle() {
   // Westley's persona AID owns the name; its op-key A signs presentations.
   const westleyOpKeyA   = await didOf(SEEDS.westley);
   const westley         = mintPersonaInception(westleyOpKeyA, recoverySetHash);
-  const inception       = mintHandleInception(handleKeyDid, westley.prefix, recoverySetHash);
+  const inception       = mintHandleInception(handleKeyDid, westley.prefix, recoverySetHash, handleKeyDigestOf(await didOf(SEEDS.hB)));
   return { handleKeyDid, recoverySetHash, westleyPrefix: westley.prefix, westleyOpKeyA, inception };
 }
 
@@ -74,7 +76,7 @@ describe("handle-kel — armed inception + the owner-SET binding", () => {
   test("inception incepts ARMED — an empty recovery pre-commit refuses at the mint", async () => {
     const handleKeyDid = await didOf(SEEDS.hA);
     const ownerPrefix  = "persona-" + "ab".repeat(32);
-    expect(() => mintHandleInception(handleKeyDid, ownerPrefix, "")).toThrow(/unarmed/);
+    expect(() => mintHandleInception(handleKeyDid, ownerPrefix, "", `hkeynext-${"cd".repeat(32)}`)).toThrow(/unarmed/);
   });
 
   test("inception binds (handle key + GENESIS owner-set digest + recovery digest) into the prefix; structural verify accepts", async () => {
@@ -114,6 +116,7 @@ describe("handle-kel — 1-of-1 is the degenerate personal face (unbroken)", () 
     const { inception, westleyPrefix, westleyOpKeyA } = await foundedHandle();
     const freshHandleKeyDid = await didOf(SEEDS.hB);
     const res = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid,
       ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: westleyOpKeyA, sign: signerOf(SEEDS.westley),
     });
@@ -126,9 +129,11 @@ describe("handle-kel — 1-of-1 is the degenerate personal face (unbroken)", () 
     expect(verifyHandleKel(chain)).toBe(true);
     const full = await verifyHandleKelFull(chain, headsAre({ [westleyPrefix]: westleyOpKeyA }));
     expect(full.ok, full.ok ? "" : full.reason).toBe(true);
-    expect(headHandleKey(chain)).toBe(freshHandleKeyDid);
+    // A reader with no resolver trusts the inception alone; the owners' heads prove the rotated key.
+    expect(headHandleKey(chain)).toBeNull();
+    expect(await resolvedHeadHandleKey(chain, headsAre({ [westleyPrefix]: westleyOpKeyA }))).toEqual({ ok: true, key: freshHandleKeyDid });
     // handleRotationSigningBytes recomputes the exact bytes the mint signed.
-    const bytes = handleRotationSigningBytes(inception, freshHandleKeyDid, westleyPrefix, westleyOpKeyA);
+    const bytes = handleRotationSigningBytes(inception, freshHandleKeyDid, westleyPrefix, westleyOpKeyA, undefined, NEXT_AFTER);
     expect(await ed.verifyAsync(hexToBytes(res.event.authSig!), bytes, hexToBytes(westleyOpKeyA.replace(/^0x/, "")))).toBe(true);
   });
 
@@ -136,6 +141,7 @@ describe("handle-kel — 1-of-1 is the degenerate personal face (unbroken)", () 
     const { inception, westleyPrefix } = await foundedHandle();
     const claimedButNotSigner = await didOf(SEEDS.succ);
     const res = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: claimedButNotSigner, sign: signerOf(SEEDS.westley),   // signs as westley, claims succ's key
     });
@@ -147,6 +153,7 @@ describe("handle-kel — 1-of-1 is the degenerate personal face (unbroken)", () 
   test("a tampered rotation (re-seated key under the old signature) refuses structurally", async () => {
     const { inception, westleyPrefix, westleyOpKeyA } = await foundedHandle();
     const res = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: westleyOpKeyA, sign: signerOf(SEEDS.westley),
     });
@@ -181,15 +188,16 @@ describe("handle-kel — ★ THE DREAD PIRATE ROBERTS: succession by graft", () 
     expect(graft.event.ownerSetHash).toBe(sealKeySetHash([succPrefix], 1));        // the CURRENT set turned over
 
     expect(verifyHandleKel(chain)).toBe(true);
-    expect(currentOwnerSet(chain)!.members).toEqual([succPrefix]);
-
     // The successor's persona-KEL head walks; Westley's key is no longer consulted for presentation.
     const resolver = headsAre({ [succPrefix]: succOpKey, [westleyPrefix]: westleyOpKeyA });
+    expect(currentOwnerSet(chain)).toBeNull();                          // a graft no resolver verified turns nothing over
+    expect((await resolvedOwnerSet(chain, resolver))!.members).toEqual([succPrefix]);
     expect((await verifyHandleKelFull(chain, resolver)).ok).toBe(true);
 
     // THE NEW HOLDER PRESENTS VALIDLY against the current set.
     const rot = await mintHandleRotation({
-      head: graft.event, freshHandleKeyDid: await didOf(SEEDS.hC),
+      nextHandleKeyDigest: NEXT_AFTER,
+      head: graft.event, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: succPrefix, ownerHeadOpKeyDid: succOpKey, sign: signerOf(SEEDS.succ),
     });
     expect(rot.ok, rot.ok ? "" : rot.reason).toBe(true);
@@ -200,7 +208,8 @@ describe("handle-kel — ★ THE DREAD PIRATE ROBERTS: succession by graft", () 
 
     // ★ THE OLD HOLDER NO LONGER PRESENTS — Westley left the set; his presentation refuses structurally.
     const westleyTries = await mintHandleRotation({
-      head: graft.event, freshHandleKeyDid: await didOf(SEEDS.hC),
+      nextHandleKeyDigest: NEXT_AFTER,
+      head: graft.event, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: westleyOpKeyA, sign: signerOf(SEEDS.westley),
     });
     expect(westleyTries.ok).toBe(true);   // the mint signs against the claimed key…
@@ -232,7 +241,7 @@ describe("handle-kel — a 2-member Handle: either member presents; a non-member
     const mAKey = await didOf(SEEDS.westley), mBKey = await didOf(SEEDS.memberY);
     const mA = mintPersonaInception(mAKey, recoverySetHash).prefix;
     const mB = mintPersonaInception(mBKey, recoverySetHash).prefix;
-    const inception = mintHandleInceptionSet(handleKeyDid, [mA, mB], 1, recoverySetHash);
+    const inception = mintHandleInceptionSet(handleKeyDid, [mA, mB], 1, recoverySetHash, handleKeyDigestOf(await didOf(SEEDS.hB)));
     expect(verifyHandleKel([inception])).toBe(true);
     expect(new Set(currentOwnerSet([inception])!.members)).toEqual(new Set([mA, mB]));
 
@@ -240,6 +249,7 @@ describe("handle-kel — a 2-member Handle: either member presents; a non-member
 
     // Member A presents.
     const rotA = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
     });
@@ -249,7 +259,8 @@ describe("handle-kel — a 2-member Handle: either member presents; a non-member
 
     // Member B presents (a DIFFERENT hand, the same name — the cabal refuses "which member signed").
     const rotB = await mintHandleRotation({
-      head: inception, freshHandleKeyDid: await didOf(SEEDS.hC),
+      nextHandleKeyDigest: NEXT_AFTER,
+      head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: mB, ownerHeadOpKeyDid: mBKey, sign: signerOf(SEEDS.memberY),
     });
     expect(rotB.ok).toBe(true);
@@ -259,6 +270,7 @@ describe("handle-kel — a 2-member Handle: either member presents; a non-member
     // A NON-member presents → refuses structurally (never in the current set).
     const outsiderPrefix = mintPersonaInception(await didOf(SEEDS.outside), recoverySetHash).prefix;
     const rotX = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: outsiderPrefix, ownerHeadOpKeyDid: await didOf(SEEDS.outside), sign: signerOf(SEEDS.outside),
     });
@@ -277,11 +289,12 @@ describe("handle-kel — a SUPERSEDED member key refuses (the resolver)", () => 
     const recoverySetHash = inception.recoverySetHash;
     const memberPrefix = mintPersonaInception(oldKey, recoverySetHash).prefix;
     const handleKeyDid = await didOf(SEEDS.hA);
-    const inc = mintHandleInception(handleKeyDid, memberPrefix, recoverySetHash);
+    const inc = mintHandleInception(handleKeyDid, memberPrefix, recoverySetHash, handleKeyDigestOf(await didOf(SEEDS.hB)));
     void westleyPrefix;
 
     // A thief holds the SUPERSEDED key (A) and mints a rotation naming it as authority.
     const res = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inc, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: memberPrefix, ownerHeadOpKeyDid: oldKey, sign: signerOf(SEEDS.ownerA),
     });
@@ -309,6 +322,7 @@ describe("handle-kel — the BURN is terminal, forever (Option C: either hand)",
 
     // No successor mints — even one a current member's live head signs.
     const after = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: burn.event, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: westleyOpKeyA, sign: signerOf(SEEDS.westley),
     });
@@ -367,6 +381,7 @@ describe("handle-kel — attestation, reader-local, no board", () => {
 
     // A rotation moves the head — the OLD attestation reads stale against the NEW head (re-attest to renew).
     const rot = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: westleyOpKeyA, sign: signerOf(SEEDS.westley),
     });
@@ -375,7 +390,8 @@ describe("handle-kel — attestation, reader-local, no board", () => {
     expect((await verifyAttestation([inception, rot.event], stmt)).ok).toBe(false);
     // And the NEW head attests afresh under the fresh key.
     const stmt2 = await attestUnderHead([inception, rot.event], { surface: "dns-control", domain: "example.net" }, signerOf(SEEDS.hB));
-    expect((await verifyAttestation([inception, rot.event], stmt2)).ok).toBe(true);
+    expect((await verifyAttestation([inception, rot.event], stmt2)).reason).toMatch(/handle-rotation-unverified/);   // no resolver: the rotated head stays unproven
+    expect((await verifyAttestation([inception, rot.event], stmt2, headsAre({ [westleyPrefix]: westleyOpKeyA }))).ok).toBe(true);
   });
 
   test("★ A BURN BURIES THE PAST CLAIMS — an attestation that held before the burn refuses after it ★", async () => {
@@ -498,7 +514,7 @@ describe("handle-kel — TRUE k-of-n graft governance (a guild's membership chan
     const mAKey = await didOf(SEEDS.westley), mBKey = await didOf(SEEDS.memberY);
     const mA = mintPersonaInception(mAKey, recoverySetHash).prefix;
     const mB = mintPersonaInception(mBKey, recoverySetHash).prefix;
-    const inception = mintHandleInceptionSet(handleKeyDid, [mA, mB], 2, recoverySetHash);
+    const inception = mintHandleInceptionSet(handleKeyDid, [mA, mB], 2, recoverySetHash, handleKeyDigestOf(await didOf(SEEDS.hB)));
     const succPrefix = mintPersonaInception(await didOf(SEEDS.succ), recoverySetHash).prefix;
     return { inception, mA, mB, mAKey, mBKey, succPrefix };
   }
@@ -529,8 +545,8 @@ describe("handle-kel — TRUE k-of-n graft governance (a guild's membership chan
     if (!graft.ok) return;
     const chain: HandleKelEvent[] = [inception, graft.event];
     expect(verifyHandleKel(chain)).toBe(true);                          // two distinct prior members consent
-    expect(currentOwnerSet(chain)!.members).toEqual([succPrefix]);      // the set turned over
     const resolver = headsAre({ [mA]: mAKey, [mB]: mBKey, [succPrefix]: await didOf(SEEDS.succ) });
+    expect((await resolvedOwnerSet(chain, resolver))!.members).toEqual([succPrefix]);      // the set turned over
     expect((await verifyHandleKelFull(chain, resolver)).ok).toBe(true);  // both signatures + heads check
   });
 
@@ -577,7 +593,7 @@ describe("handle-kel — ★ THE WITNESS THRESHOLD: rotation + owner-burn are QU
     const mAKey = await didOf(SEEDS.westley), mBKey = await didOf(SEEDS.memberY);
     const mA = mintPersonaInception(mAKey, recoverySetHash).prefix;
     const mB = mintPersonaInception(mBKey, recoverySetHash).prefix;
-    const inception = mintHandleInceptionSet(handleKeyDid, [mA, mB], 2, recoverySetHash);
+    const inception = mintHandleInceptionSet(handleKeyDid, [mA, mB], 2, recoverySetHash, handleKeyDigestOf(await didOf(SEEDS.hB)));
     return { inception, mA, mB, mAKey, mBKey, recoverySetHash };
   }
 
@@ -585,6 +601,7 @@ describe("handle-kel — ★ THE WITNESS THRESHOLD: rotation + owner-burn are QU
     const { inception, mA, mB, mAKey, mBKey } = await found2of2Movement();
     // A single defector rotates the handle's own signing key — thereafter it would attest AS the movement.
     const solo = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
     });
@@ -595,6 +612,7 @@ describe("handle-kel — ★ THE WITNESS THRESHOLD: rotation + owner-burn are QU
 
     // CONTROL — both members co-sign the SAME rotation bytes → the quorum consents, the rotation stands.
     const quorum = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
       coSigners: [{ memberPrefix: mB, keyDid: mBKey, sign: signerOf(SEEDS.memberY) }],
@@ -603,8 +621,8 @@ describe("handle-kel — ★ THE WITNESS THRESHOLD: rotation + owner-burn are QU
     if (!quorum.ok) return;
     const chain: HandleKelEvent[] = [inception, quorum.event];
     expect(verifyHandleKel(chain)).toBe(true);
-    expect(headHandleKey(chain)).toBe(await didOf(SEEDS.hB));
     const resolver = headsAre({ [mA]: mAKey, [mB]: mBKey });
+    expect(await resolvedHeadHandleKey(chain, resolver)).toEqual({ ok: true, key: await didOf(SEEDS.hB) });
     expect((await verifyHandleKelFull(chain, resolver)).ok).toBe(true);
   });
 
@@ -639,6 +657,7 @@ describe("handle-kel — ★ THE WITNESS THRESHOLD: rotation + owner-burn are QU
     const { inception, mA, mAKey } = await found2of2Movement();
     const outsiderPrefix = mintPersonaInception(await didOf(SEEDS.outside), inception.recoverySetHash).prefix;
     const rot = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: mA, ownerHeadOpKeyDid: mAKey, sign: signerOf(SEEDS.westley),
       coSigners: [{ memberPrefix: outsiderPrefix, keyDid: await didOf(SEEDS.outside), sign: signerOf(SEEDS.outside) }],
@@ -653,6 +672,7 @@ describe("handle-kel — ★ THE WITNESS THRESHOLD: rotation + owner-burn are QU
     const { inception, westleyPrefix, westleyOpKeyA } = await foundedHandle();
     // threshold 1 → the sole owner presents alone, exactly as before the witness threshold.
     const rot = await mintHandleRotation({
+      nextHandleKeyDigest: NEXT_AFTER,
       head: inception, freshHandleKeyDid: await didOf(SEEDS.hB),
       ownerAuthMemberPrefix: westleyPrefix, ownerHeadOpKeyDid: westleyOpKeyA, sign: signerOf(SEEDS.westley),
     });

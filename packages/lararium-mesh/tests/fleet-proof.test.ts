@@ -32,7 +32,7 @@ const pubOf  = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const verify = (b: Uint8Array, sig: string, did: string) =>
   ed.verifyAsync(hexToBytes(sig), b, hexToBytes(did)).catch(() => false);
 const RECOVERY = "ab".repeat(32);
-function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY)]; }
+function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY, `hkeynext-${"cd".repeat(32)}`)]; }
 /** The FACE's STABLE nym — its handle-KEL prefix (the fleet-proof binds root→this identifier). */
 const nymOf = async (seed: Uint8Array): Promise<string> => chainOf(await pubOf(seed))[0]!.prefix;
 

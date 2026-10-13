@@ -97,7 +97,7 @@ export interface HandleKelEvent {
   readonly ownerSetThreshold:   number;              // the graft threshold of the current set — REVEALED with the members; 0 on presentation
   readonly recoverySetHash:     string;              // the GENESIS recovery digest — folded into the prefix, fixed (anti-swap)
   readonly nextRecoverySetHash: string;              // the ROLLING recovery commitment — armed at inception like every prefix now is
-  readonly nextHandleKeyDigest: string;              // the ROLLING next-HANDLE-KEY pre-commitment (KERI pre-rotation) — bound per-event, NOT in the prefix; "" = unarmed
+  readonly nextHandleKeyDigest: string;              // the ROLLING next-HANDLE-KEY pre-commitment (KERI pre-rotation) — bound per-event, NOT in the prefix; every event carries one
   readonly prevEventCid:        string | null;       // hash-link to the predecessor (null at inception)
   readonly ownerAuthMemberPrefix: string | null;     // presentation/graft: WHICH member presents; null at inception
   readonly ownerAuthKeyDid:     string | null;       // presentation/graft: that member's head op-key; null at inception + self-burn
@@ -122,6 +122,12 @@ type HandleEventCore = Pick<
  */
 export function handleKeyDigestOf(handleKeyDid: string): string {
   return `hkeynext-${sha256HexSync(canonicalJson({ domain: HANDLE_KEL_DOMAIN, kind: "next-handle-key", key: handleKeyDid }))}`;
+}
+
+/** Does `v` read as a next-Handle-key commitment (the shape `handleKeyDigestOf` writes)? A Handle stands as a
+ *  rotating identifier, so every inception and every rotation carries one: pre-rotation never stays optional. */
+export function isHandleKeyDigest(v: unknown): v is string {
+  return typeof v === "string" && /^hkeynext-[0-9a-f]{64}$/.test(v);
 }
 
 /** The canonical bytes an event's cid commits AND the authorizing key signs over. Binding the seq +
@@ -188,6 +194,15 @@ export function handlePrefixOf(inceptionHandleKeyDid: string, genesisOwnerSetHas
  * seats reads through the door the moment the event names it: a small-order key holds no secret, so everyone
  * signs that Handle's cards. A log that seats one refuses whole.
  */
+function handleEventCoreOf(e: HandleKelEvent): HandleEventCore {
+  return {
+    seq: e.seq, kind: e.kind, prefix: e.prefix, handleKeyDid: e.handleKeyDid,
+    genesisOwnerSetHash: e.genesisOwnerSetHash, ownerSetHash: e.ownerSetHash,
+    recoverySetHash: e.recoverySetHash, nextRecoverySetHash: e.nextRecoverySetHash, nextHandleKeyDigest: e.nextHandleKeyDigest,
+    prevEventCid: e.prevEventCid, ownerAuthMemberPrefix: e.ownerAuthMemberPrefix, ownerAuthKeyDid: e.ownerAuthKeyDid,
+  };
+}
+
 export function handleKeyFault(handleKeyDid: unknown): string | null {
   const read = acceptEd25519Key(typeof handleKeyDid === "string" ? handleKeyDid.replace(/^0x/, "").toLowerCase() : handleKeyDid);
   return read.ok ? null : `the Handle key refuses at the Ed25519 door (${read.refusal})`;
@@ -195,18 +210,22 @@ export function handleKeyFault(handleKeyDid: unknown): string | null {
 
 /**
  * Seat the INCEPTION over a GENESIS OWNER-SET (seq 0, no predecessor): the Handle's own key + its
- * founding owner quorum (members + graft threshold) + a rolling recovery pre-commitment. INCEPTS ARMED
- * — an empty `recoverySetHash`, an empty owner set, or a threshold out of `[1, members.length]` THROWS:
- * no Handle prefix ever incepts unarmed, unowned, or with an unsatisfiable graft rule. Self-certified by
+ * founding owner quorum (members + graft threshold) + a rolling recovery pre-commitment + the digest of the
+ * NEXT Handle key. INCEPTS ARMED — an empty `recoverySetHash`, an empty owner set, a threshold out of
+ * `[1, members.length]`, or a `nextHandleKeyDigest` that reads as no commitment THROWS
+ * (`handle-inception-unarmed`): no Handle prefix ever incepts unarmed, unowned, or with an unsatisfiable graft rule. Self-certified by
  * the prefix derivation, like the persona inception. The genesis set fills BOTH the prefix wall
  * (`genesisOwnerSetHash`) and the rolling slot (`ownerSetHash`).
  */
 export function mintHandleInceptionSet(
   handleKeyDid: string, ownerSetMembers: readonly string[], ownerSetThreshold: number, recoverySetHash: string,
-  /** The KERI pre-rotation commitment — H(the next handle key). "" (default) incepts UNARMED for handle-key
-   *  pre-rotation; a face founding path (mintPersonaGlamour) arms it from its own (seed, handleIndex). */
-  nextHandleKeyDigest: string = "",
+  /** The KERI pre-rotation commitment — `handleKeyDigestOf(the next Handle key)`. REQUIRED: a face founding
+   *  path (mintPersonaGlamour) arms it from its own (seed, handleIndex). */
+  nextHandleKeyDigest: string,
 ): HandleKelEvent {
+  if (!isHandleKeyDigest(nextHandleKeyDigest)) {
+    throw new Error("handle-inception-unarmed — an inception commits the digest of its next Handle key; none stands here");
+  }
   const weak = handleKeyFault(handleKeyDid);
   if (weak) throw new Error(`handle inception — ${weak}`);
   if (recoverySetHash.length === 0) {
@@ -240,7 +259,7 @@ export function mintHandleInceptionSet(
  * threshold is 1. The common single-owner path stays ergonomic and unchanged in shape.
  */
 export function mintHandleInception(
-  handleKeyDid: string, ownerPrefix: string, recoverySetHash: string, nextHandleKeyDigest: string = "",
+  handleKeyDid: string, ownerPrefix: string, recoverySetHash: string, nextHandleKeyDigest: string,
 ): HandleKelEvent {
   if (ownerPrefix.length === 0) {
     throw new Error("handle inception unowned — the owner-set binding is the identifier's whole proof");
@@ -258,7 +277,8 @@ export function handleRotationSigningBytes(
   head: HandleKelEvent, freshHandleKeyDid: string,
   ownerAuthMemberPrefix: string, ownerHeadOpKeyDid: string,
   nextRecoverySetHash: string = head.nextRecoverySetHash,
-  nextHandleKeyDigest: string = head.nextHandleKeyDigest,
+  /** The FRESH commitment this rotation makes. No default: the head's own digest stands spent by this reveal. */
+  nextHandleKeyDigest: string,
 ): Uint8Array {
   return handleEventBytes({
     seq:                   head.seq + 1,
@@ -347,9 +367,9 @@ export async function mintHandleRotation(input: {
   /** The NEXT recovery-set digest this rotation commits. Absent, the standing commitment carries
    *  forward: a set change is always an explicit act, never a silent drop. */
   readonly nextRecoverySetHash?: string;
-  /** The NEXT handle-key digest this rotation commits (KERI pre-rotation). Absent, the standing commitment
-   *  carries forward. When the HEAD armed a commitment, `freshHandleKeyDid` MUST reveal a key matching it. */
-  readonly nextHandleKeyDigest?: string;
+  /** The NEXT handle-key digest this rotation commits (KERI pre-rotation). REQUIRED and FRESH: this rotation
+   *  reveals the key the head committed, so that commitment stands spent and never carries forward. */
+  readonly nextHandleKeyDigest: string;
 }): Promise<HandleMintResult> {
   const { head, freshHandleKeyDid, ownerAuthMemberPrefix, ownerHeadOpKeyDid } = input;
   if (head.kind === "burn") {
@@ -357,11 +377,16 @@ export async function mintHandleRotation(input: {
   }
   // KERI pre-rotation: when the head armed a commitment, the fresh key MUST reveal the pre-committed preimage.
   // A thief of the current key seats a key the seed never pre-committed, so its digest misses and the mint refuses.
-  if (head.nextHandleKeyDigest.length > 0 && handleKeyDigestOf(freshHandleKeyDid) !== head.nextHandleKeyDigest) {
+  if (handleKeyDigestOf(freshHandleKeyDid) !== head.nextHandleKeyDigest) {
     return { ok: false, reason: "rotation reveal does not match the prior next-handle-key pre-commitment — a dead key cannot rotate the name" };
   }
+  const weak = handleKeyFault(freshHandleKeyDid);
+  if (weak) return { ok: false, reason: weak };
   const nextRecoverySetHash = input.nextRecoverySetHash ?? head.nextRecoverySetHash;
-  const nextHandleKeyDigest = input.nextHandleKeyDigest ?? head.nextHandleKeyDigest;
+  const nextHandleKeyDigest = (input as { nextHandleKeyDigest?: unknown }).nextHandleKeyDigest;
+  if (!isHandleKeyDigest(nextHandleKeyDigest) || nextHandleKeyDigest === head.nextHandleKeyDigest) {
+    return { ok: false, reason: "handle-rotation-unarmed — a rotation commits a FRESH next Handle key; the commitment it just revealed stands spent" };
+  }
   const core: HandleEventCore = {
     seq:                   head.seq + 1,
     kind:                  "rotation",
@@ -544,6 +569,7 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
   if (g.seq !== 0 || g.kind !== "inception" || g.prevEventCid !== null) return false;
   if (chain.some((e) => handleKeyFault(e.handleKeyDid) !== null)) return false;                 // every seated Handle key passes the door
   if (g.recoverySetHash.length === 0)                                    return false;   // armed, from birth
+  if (!isHandleKeyDigest(g.nextHandleKeyDigest))                         return false;   // and armed for ROTATION, from birth
   if (g.ownerSetMembers.length === 0)                                    return false;   // owned, from birth
   if (g.ownerSetThreshold < 1 || g.ownerSetThreshold > g.ownerSetMembers.length) return false;
   if (g.genesisOwnerSetHash !== sealKeySetHash(g.ownerSetMembers, g.ownerSetThreshold)) return false;   // the reveal matches the genesis digest
@@ -578,7 +604,9 @@ export function verifyHandleKel(chain: readonly HandleKelEvent[]): boolean {
       if (!reachesWitnessThreshold(e.ownerAuthMemberPrefix, e.coSigs, curMembers, curThreshold)) return false;
       // ★ KERI pre-rotation: an ARMED predecessor pins WHICH key rotates next — the reveal must match the
       // pre-commitment. A thief holding only the dead current key seats a key the seed never committed → refuse.
-      if (prev.nextHandleKeyDigest.length > 0 && handleKeyDigestOf(e.handleKeyDid) !== prev.nextHandleKeyDigest) return false;
+      if (handleKeyDigestOf(e.handleKeyDid) !== prev.nextHandleKeyDigest) return false;
+      // ...and the rotation re-arms: a fresh commitment, never the one it just spent.
+      if (!isHandleKeyDigest(e.nextHandleKeyDigest) || e.nextHandleKeyDigest === prev.nextHandleKeyDigest) return false;
     } else if (e.kind === "graft") {
       if (e.ownerAuthMemberPrefix === null || e.ownerAuthKeyDid === null || !e.authSig) return false;
       if (e.handleKeyDid !== prev.handleKeyDid)           return false;   // a graft seats no fresh Handle key
@@ -665,17 +693,15 @@ export async function verifyHandleKelFull(
     const weak = handleKeyFault(e.handleKeyDid);
     if (weak) return { ok: false, reason: `${e.kind} seq ${e.seq}: ${weak}` };
   }
+  if (chain.length > 0 && chain[0]!.kind === "inception" && !isHandleKeyDigest(chain[0]!.nextHandleKeyDigest)) {
+    return { ok: false, reason: "inception seq 0: the inception commits no next Handle key (handle-inception-unarmed)" };
+  }
   if (!verifyHandleKel(chain)) {
-    return { ok: false, reason: "structural integrity failed (sequence / hash-link / prefix / owner-binding / membership / burn-terminality / cid)" };
+    return { ok: false, reason: "structural integrity failed (sequence / hash-link / prefix / owner-binding / membership / burn-terminality / pre-rotation / cid)" };
   }
   for (let i = 1; i < chain.length; i++) {
     const e = chain[i]!;
-    const core: HandleEventCore = {
-      seq: e.seq, kind: e.kind, prefix: e.prefix, handleKeyDid: e.handleKeyDid,
-      genesisOwnerSetHash: e.genesisOwnerSetHash, ownerSetHash: e.ownerSetHash,
-      recoverySetHash: e.recoverySetHash, nextRecoverySetHash: e.nextRecoverySetHash, nextHandleKeyDigest: e.nextHandleKeyDigest,
-      prevEventCid: e.prevEventCid, ownerAuthMemberPrefix: e.ownerAuthMemberPrefix, ownerAuthKeyDid: e.ownerAuthKeyDid,
-    };
+    const core = handleEventCoreOf(e);
     if (e.kind === "rotation" || e.kind === "graft") {
       if (!e.authSig || e.ownerAuthMemberPrefix === null || e.ownerAuthKeyDid === null) {
         return { ok: false, reason: `${e.kind} seq ${e.seq}: unsigned or unnamed presenter` };
@@ -720,32 +746,75 @@ export function isBurned(chain: readonly HandleKelEvent[]): boolean {
 }
 
 /**
- * The authoritative Handle key — the LATEST head's `handleKeyDid`, IFF the chain verifies structurally
- * AND does not end burned. A buried name seats NO key (null), and a broken chain seats none either (a
- * reader MUST NOT trust a head off a broken lineage).
+ * WHAT A CHAIN PROVES BY ITSELF. A Handle's owners stand in its chain as persona PREFIXES; which key speaks for
+ * a prefix today lives on the persona board. So a rotation, a graft and an owner-burn each name a member key the
+ * chain cannot vouch for: a stranger who names their own key "the owner's head" builds a chain that reads
+ * structurally whole. A reader holding no owner-head resolver therefore trusts the INCEPTION alone:
+ *   · the inception alone                → its Handle key stands;
+ *   · a self-burn directly on the inception, signed by that inception key (the one step a chain proves) → `burned`;
+ *   · anything else past the inception   → `handle-rotation-unverified`. Never the inception key in its place:
+ *     a later step may lawfully have retired it.
  */
-export function headHandleKey(chain: readonly HandleKelEvent[]): string | null {
-  if (!verifyHandleKel(chain)) return null;
-  if (isBurned(chain))         return null;
-  return chain[chain.length - 1]!.handleKeyDid;
+export type HeadWithoutResolver =
+  | { readonly ok: true;  readonly key: string }
+  | { readonly ok: false; readonly refusal: "chain-invalid" | "burned" | "handle-rotation-unverified" };
+export function headWithoutResolver(chain: readonly HandleKelEvent[]): HeadWithoutResolver {
+  if (!verifyHandleKel(chain)) return { ok: false, refusal: "chain-invalid" };
+  const inception = chain[0]!;
+  if (chain.length === 1) return { ok: true, key: inception.handleKeyDid };
+  const second = chain[1]!;
+  if (chain.length === 2 && second.kind === "burn" && second.ownerAuthMemberPrefix === null && typeof second.authSig === "string"
+      && verifyEd25519(second.authSig, handleEventBytes(handleEventCoreOf(second)), inception.handleKeyDid.replace(/^0x/, ""))) {
+    return { ok: false, refusal: "burned" };
+  }
+  return { ok: false, refusal: "handle-rotation-unverified" };
+}
+
+/** The head a reader WITH an owner-head resolver may trust: every step verified, the name unburned. */
+export type ResolvedHead =
+  | { readonly ok: true;  readonly key: string }
+  | { readonly ok: false; readonly refusal: "chain-invalid" | "burned" | "owner-head-refused"; readonly reason?: string };
+export async function resolvedHeadHandleKey(chain: readonly HandleKelEvent[], ownerHeadResolver: OwnerHeadResolver): Promise<ResolvedHead> {
+  if (!verifyHandleKel(chain)) return { ok: false, refusal: "chain-invalid" };
+  const full = await verifyHandleKelFull(chain, ownerHeadResolver);
+  if (!full.ok) return { ok: false, refusal: "owner-head-refused", ...(full.reason ? { reason: full.reason } : {}) };
+  if (isBurned(chain)) return { ok: false, refusal: "burned" };
+  return { ok: true, key: chain[chain.length - 1]!.handleKeyDid };
 }
 
 /**
- * The CURRENT presenting owner-set — the members + threshold + digest standing at the chain's head,
- * IFF the chain verifies structurally. The genesis set unless a graft turned it over; a later graft
- * wins. NULL on a broken chain. A reader tests "may this persona present as this Handle" against the
- * returned members; the degenerate 1-of-1 returns its single member.
+ * The Handle key a reader with NO resolver may check a card or a statement against: the inception's, and only
+ * while the chain holds nothing past it. NULL for a broken chain, a buried name, and any chain carrying a step
+ * this reader cannot verify. A reader holding a resolver asks `resolvedHeadHandleKey`.
  */
-export function currentOwnerSet(
-  chain: readonly HandleKelEvent[],
-): { readonly members: readonly string[]; readonly threshold: number; readonly hash: string } | null {
-  if (!verifyHandleKel(chain)) return null;
+export function headHandleKey(chain: readonly HandleKelEvent[]): string | null {
+  const head = headWithoutResolver(chain);
+  return head.ok ? head.key : null;
+}
+
+interface OwnerSet { readonly members: readonly string[]; readonly threshold: number; readonly hash: string }
+function ownerSetAtHead(chain: readonly HandleKelEvent[]): OwnerSet {
   const g = chain[0]!;
   let members = g.ownerSetMembers, threshold = g.ownerSetThreshold, hash = g.genesisOwnerSetHash;
   for (const e of chain) {
     if (e.kind === "graft") { members = e.ownerSetMembers; threshold = e.ownerSetThreshold; hash = e.ownerSetHash; }
   }
   return { members, threshold, hash };
+}
+
+/**
+ * The presenting owner-set a reader with NO resolver may trust: the GENESIS set, and only while the chain holds
+ * nothing past its inception (a graft names a member key the chain cannot vouch for). NULL otherwise. A reader
+ * tests "may this persona present as this Handle" against the returned members.
+ */
+export function currentOwnerSet(chain: readonly HandleKelEvent[]): OwnerSet | null {
+  return headWithoutResolver(chain).ok ? ownerSetAtHead(chain) : null;
+}
+
+/** The CURRENT presenting owner-set, every graft verified against the owners' heads. NULL on any refusal. */
+export async function resolvedOwnerSet(chain: readonly HandleKelEvent[], ownerHeadResolver: OwnerHeadResolver): Promise<OwnerSet | null> {
+  if (!verifyHandleKel(chain) || !(await verifyHandleKelFull(chain, ownerHeadResolver)).ok) return null;
+  return ownerSetAtHead(chain);
 }
 
 // ── ATTESTATION — a signed statement, never an event kind ───────────────────────────────────────
@@ -911,19 +980,34 @@ export async function attestUnderHead(
 export async function verifyAttestation(
   chain: readonly HandleKelEvent[],
   statement: HandleAttestation,
+  /** The owners' heads. Absent, the reader trusts the inception alone: a chain carrying any later step refuses
+   *  `handle-rotation-unverified`, since a chain cannot vouch for the member key its own rotation names. */
+  ownerHeadResolver?: OwnerHeadResolver,
 ): Promise<{ ok: boolean; reason?: string }> {
   if (!verifyHandleKel(chain)) return { ok: false, reason: "the chain fails structural verification" };
-  if (isBurned(chain))         return { ok: false, reason: "the Handle is burned — a buried name claims nothing" };
+  // WHICH KEY may this reader check the signature against? Never a head it did not verify.
+  const trusted = ownerHeadResolver ? await resolvedHeadHandleKey(chain, ownerHeadResolver) : headWithoutResolver(chain);
+  // A PROVEN burn buries every claim, whatever head a statement bound.
+  if (!trusted.ok && trusted.refusal === "burned") return { ok: false, reason: "the Handle is burned — a buried name claims nothing" };
+  // What the statement BINDS reads off structure alone, and a mismatch refuses whoever stands behind the tail:
+  // a statement naming another Handle, or a head the chain moved past, claims nothing here.
   const head = chain[chain.length - 1]!;
   if (statement.prefix !== head.prefix)             return { ok: false, reason: "the statement names a different Handle" };
   if (statement.headEventCid !== head.eventCid)     return { ok: false, reason: "stale — the head moved since this attestation; the fresh head re-attests" };
+  if (!trusted.ok) {
+    if (trusted.refusal === "handle-rotation-unverified") {
+      return { ok: false, reason: "the chain carries a step this reader cannot verify without the owners' heads (handle-rotation-unverified)" };
+    }
+    if (trusted.refusal === "owner-head-refused") return { ok: false, reason: `a step of the chain does not verify against its owners' heads (${trusted.reason ?? "owner-head-refused"})` };
+    return { ok: false, reason: "the chain fails structural verification" };
+  }
   // FAIL CLOSED ON THE STRUCTURE BEFORE THE SIGNATURE — a claim that does not read as a structured edge
   // names no surface for the other half to reach, so no signature over it could mean anything.
   if (!normalizeHandleClaim(statement.claim)) {
     return { ok: false, reason: "the claim does not read as a structured edge — an unknown surface, a blank subject, or a field the signature never bound" };
   }
   const bytes = handleAttestationBytes(statement.prefix, statement.headEventCid, statement.claim);
-  if (!(await verifySig(statement.sig, bytes, head.handleKeyDid))) {
+  if (!(await verifySig(statement.sig, bytes, trusted.key))) {
     return { ok: false, reason: "the signature does not verify against the head Handle key" };
   }
   return { ok: true };

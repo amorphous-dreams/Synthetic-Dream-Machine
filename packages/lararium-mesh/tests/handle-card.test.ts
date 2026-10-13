@@ -12,7 +12,7 @@ const RECOVERY = "ab".repeat(32);
 
 async function chain(seed = SEED): Promise<HandleKelEvent[]> {
   const did = `0x${await pub(seed)}`;
-  return [mintHandleInception(did, did, RECOVERY)];
+  return [mintHandleInception(did, did, RECOVERY, `hkeynext-${"cd".repeat(32)}`)];
 }
 async function publish(glamour: string, parents: readonly string[] = [], seed = SEED, over: Partial<HandleCard> = {}): Promise<HandleCard> {
   const c = await chain(seed);

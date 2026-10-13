@@ -16,7 +16,7 @@ function board(): LarDoc { return { schemaVersion: "0.1", tiddlers: {} }; }
 
 async function rootCard(seed = SEED, glamour = "root"): Promise<HandleCard> {
   const did = `0x${await ed.getPublicKeyAsync(seed).then(hex)}`;
-  const chain: HandleKelEvent[] = [mintHandleInception(did, did, RECOVERY)];
+  const chain: HandleKelEvent[] = [mintHandleInception(did, did, RECOVERY, `hkeynext-${"cd".repeat(32)}`)];
   return signHandleCard({ nym: chain[0]!.prefix, chain, glamour, parents: [], standing: null, fleetProof: null }, signer(seed));
 }
 

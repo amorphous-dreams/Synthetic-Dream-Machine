@@ -17,7 +17,7 @@
 import type { DocHandle } from "@automerge/automerge-repo";
 import { readHandleAnnounces, writeHandleAnnounce } from "./handle-announce.js";
 import { foldHandleCardsDetailed } from "./handle-card.js";
-import { mintHandleBurn, mintHandleGraft, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult, type HandleCoSigner } from "./handle-kel.js";
+import { mintHandleBurn, mintHandleGraft, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult, type HandleCoSigner, type OwnerHeadResolver } from "./handle-kel.js";
 import { deriveVeiledUserKey } from "./persona-identity.js";
 import { didFromVerifyingKey } from "./lar-did.js";
 import { ed25519SignerFromSeed } from "./auth-wire.js";
@@ -26,17 +26,36 @@ import { PERSONA_GLAMOUR_CONTEXT } from "./persona-glamour.js";
 import type { HandleCard } from "./handle-card.js";
 import type { LarDoc } from "./base-doc.js";
 
-/** Resolve one settled verified chain from a board doc through the causal fixed point. */
-export async function resolveOwnHandleChain(boardDoc: LarDoc, nym: string): Promise<HandleKelEvent[] | null> {
+/**
+ * The heads a caller ITSELF stands behind: the presenting member and each co-signer, with the op-key each
+ * presents under. A writer extending its own Handle read those heads off its own persona logs before it
+ * called; this turns them into the resolver the chain's earlier steps get verified against. A member or key
+ * the call never named answers false.
+ */
+export function headsThisCallerPresents(
+  presenter: { readonly memberPrefix: string; readonly keyDid: string },
+  coSigners: readonly HandleCoSigner[] = [],
+): OwnerHeadResolver {
+  const heads = new Map<string, string>([[presenter.memberPrefix.toLowerCase(), presenter.keyDid.toLowerCase()]]);
+  for (const c of coSigners) heads.set(c.memberPrefix.toLowerCase(), c.keyDid.toLowerCase());
+  return async (memberPrefix, authKeyDid) => heads.get(memberPrefix.toLowerCase()) === authKeyDid.toLowerCase();
+}
+
+/**
+ * Resolve one settled verified chain from a board doc through the causal fixed point. `ownerHeadResolver`
+ * names the owners' heads; without it the fold trusts each chain's inception alone, so a Handle that rotated,
+ * grafted or took an owner-burn resolves to nothing here (`handle-rotation-unverified` at each card).
+ */
+export async function resolveOwnHandleChain(boardDoc: LarDoc, nym: string, ownerHeadResolver?: OwnerHeadResolver): Promise<HandleKelEvent[] | null> {
   const cards = readHandleAnnounces(boardDoc).filter((c) => c.nym === nym);
-  const folded = await foldHandleCardsDetailed(cards);
+  const folded = await foldHandleCardsDetailed(cards, ownerHeadResolver);
   if (folded.status !== "held" || !folded.card) return null;
   return folded.card.chain as HandleKelEvent[];
 }
 
 /** The head event CID of the verified settled board projection for a nym. */
-export async function boardHeadCid(boardDoc: LarDoc, nym: string): Promise<string | null> {
-  const chain = await resolveOwnHandleChain(boardDoc, nym);
+export async function boardHeadCid(boardDoc: LarDoc, nym: string, ownerHeadResolver?: OwnerHeadResolver): Promise<string | null> {
+  const chain = await resolveOwnHandleChain(boardDoc, nym, ownerHeadResolver);
   if (!chain || chain.length === 0) return null;
   return chain[chain.length - 1]!.eventCid;
 }
@@ -54,10 +73,12 @@ export async function extendOwnHandle(opts: {
   expectedHeadCid: string;
   mintNext:        (currentChain: HandleKelEvent[]) => Promise<HandleMintResult>;
   buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
+  /** The owners' heads the board's chain gets verified against. Absent, a chain past its inception resolves to nothing. */
+  ownerHeadResolver?: OwnerHeadResolver;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
   const doc = opts.board.doc();
   if (!doc) return { ok: false, reason: "the board doc is not ready — the WHO board resolved to nothing (fail-closed)" };
-  const chain = await resolveOwnHandleChain(doc as LarDoc, opts.nym);
+  const chain = await resolveOwnHandleChain(doc as LarDoc, opts.nym, opts.ownerHeadResolver);
   if (!chain || chain.length === 0) {
     return { ok: false, reason: `no chain on the board for ${opts.nym.slice(0, 16)}… — publish the Handle first` };
   }
@@ -100,6 +121,9 @@ export async function burnOwnHandle(opts: {
    *  consent has confused the two gestures. */
   coSigners?:      readonly HandleCoSigner[];
   buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
+  /** The owners' heads. An owner-burn defaults to the heads this call presents; a self-burn of a Handle past
+   *  its inception needs them named, since the seated key alone proves no earlier rotation. */
+  ownerHeadResolver?: OwnerHeadResolver;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
   if ((opts.sign === undefined) === (opts.ownerBurn === undefined)) {
     return { ok: false, reason: "a burn strikes with EXACTLY ONE hand — pass `sign` (self) or `ownerBurn` (owner), never neither nor both" };
@@ -120,6 +144,7 @@ export async function burnOwnHandle(opts: {
         : { head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn!, ...(opts.coSigners ? { coSigners: opts.coSigners } : {}) },   // the one-hand guard above proved it set
     ),
     buildCard:       opts.buildCard,
+    ...resolverOf(opts.ownerHeadResolver, opts.ownerBurn ? { memberPrefix: opts.ownerBurn.ownerAuthMemberPrefix, keyDid: opts.ownerBurn.ownerAuthKeyDid } : null, opts.coSigners),
   });
 }
 
@@ -149,6 +174,8 @@ export async function graftOwnHandle(opts: {
   coSigners?:            readonly HandleCoSigner[];
   nextRecoverySetHash?:  string;
   buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
+  /** The owners' heads; defaults to the heads this call presents (the presenter and its co-signers). */
+  ownerHeadResolver?: OwnerHeadResolver;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
   return extendOwnHandle({
     board:           opts.board,
@@ -165,7 +192,16 @@ export async function graftOwnHandle(opts: {
       ...(opts.nextRecoverySetHash ? { nextRecoverySetHash: opts.nextRecoverySetHash } : {}),
     }),
     buildCard:       opts.buildCard,
+    ...resolverOf(opts.ownerHeadResolver, { memberPrefix: opts.ownerAuthMemberPrefix, keyDid: opts.ownerHeadOpKeyDid }, opts.coSigners),
   });
+}
+
+/** The resolver an owner-authorized verb hands the shared core: the caller's own, else the heads the call presents. */
+function resolverOf(
+  given: OwnerHeadResolver | undefined, presenter: { memberPrefix: string; keyDid: string } | null, coSigners: readonly HandleCoSigner[] | undefined,
+): { ownerHeadResolver?: OwnerHeadResolver } {
+  if (given) return { ownerHeadResolver: given };
+  return presenter ? { ownerHeadResolver: headsThisCallerPresents(presenter, coSigners ?? []) } : {};
 }
 
 /** Count the rotations already in a chain — the context-ladder rung the NEXT rotation seats a key at. */
@@ -202,6 +238,8 @@ export async function rotateOwnHandle(opts: {
   /** ROTATION co-signers — DISTINCT current members BEYOND the presenter, toward the current witness
    *  threshold: seating a fresh key on a SHARED (k-of-n) name is a quorum act. A 1-of-1 needs none. */
   coSigners?:            readonly HandleCoSigner[];
+  /** The owners' heads; defaults to the heads this call presents (the presenter and its co-signers). */
+  ownerHeadResolver?: OwnerHeadResolver;
   /** Build the renewed card; the mint yields the FRESH head handle key's signer to sign it under. */
   buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[], freshHandleSign: (bytes: Uint8Array) => Promise<string>) => HandleCard | Promise<HandleCard>;
 }): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
@@ -230,5 +268,6 @@ export async function rotateOwnHandle(opts: {
       });
     },
     buildCard:       (event, newChain) => opts.buildCard(event, newChain, freshSign!),
+    ...resolverOf(opts.ownerHeadResolver, { memberPrefix: opts.ownerAuthMemberPrefix, keyDid: opts.ownerHeadOpKeyDid }, opts.coSigners),
   });
 }
