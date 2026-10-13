@@ -6,7 +6,8 @@
  *    answers its word.
  * R2 BOTH CONSULTS PASS THROUGH IT (a source weld, comments stripped, strip pinned). The behavior calls
  *    `requireDyadReader(` exactly twice, once per gate; no consult defaults a missing reader to `clear`; and no
- *    site asks the raw `dyadReading` option without the guard.
+ *    site asks the raw `dyadReading` option without the guard. The content-key seat's two readings (a seat's
+ *    standing, the vessel's own shadow) pass through it too.
  */
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
@@ -21,6 +22,7 @@ describe("the island's dyad consults take a reader or refuse", () => {
     expect(() => requireDyadReader(undefined, "the join gate")).toThrow(/DyadReaderAbsent/);
     expect(() => requireDyadReader(undefined, "the join gate")).toThrow(/the join gate/);
     expect(() => requireDyadReader(undefined, "the Binding Gate")).toThrow(/the Binding Gate/);
+    expect(() => requireDyadReader(undefined, "the content-key seat")).toThrow(/the content-key seat/);
   });
 
   test("R2 both consults pass through the guard and none defaults to clear", () => {
@@ -29,6 +31,8 @@ describe("the island's dyad consults take a reader or refuse", () => {
     expect(code, "the comment strip ate the file").toMatch(/runFaceJoin\(/);
     expect((code.match(/requireDyadReader\(dyadReading, "the join gate"\)\(/g) ?? []).length).toBe(1);
     expect((code.match(/requireDyadReader\(dyadReading, "the Binding Gate"\)\(/g) ?? []).length).toBe(1);
+    // The content-key seat reads a seat's standing and its own shadow through the same guard.
+    expect((code.match(/requireDyadReader\(dyadReading, "the content-key seat"\)\(/g) ?? []).length).toBe(2);
     expect(code).not.toMatch(/dyadReading\s*\?(?!:)/);     // no ternary over the reader: no optional consult, no default
     expect(code).toMatch(/dyadReading\?: DyadReader;/);     // control for the line above: the option's own declaration stands
     expect(code).not.toMatch(/await dyadReading\(/);       // no raw ask around the guard
