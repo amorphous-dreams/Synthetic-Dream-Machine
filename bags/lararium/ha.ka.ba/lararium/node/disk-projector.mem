@@ -33,13 +33,22 @@ top of that law, and nothing the law already states.
 filetype as bytes plus extension, and the projector only sites the result at `<uri-path><ext>` (plus
 a `.meta` sidecar where the type calls for one). A null answer skips the write. The VM registry
 decides type and bytes; the projector decides nothing about either.
-# ''The reads compare, never source.'' The projector opens files to answer //do these bytes already
-match// and for no other purpose. A missing or unreadable file reads as UNEQUAL, so the caller writes
-rather than assuming.
-# ''An unlink needs a holding answer.'' A cross-mirror stale-unlink fires only where `bagsHolding`
-reports the carrier gone from that bag — a true MOVE or promotion. A carrier still held there, a
-working edit SHADOWING its canon copy, keeps its file. Without that answer the unlink clears every
-other mirror by path, so absence of the callback widens the sweep rather than narrowing it.
+# ''The reads compare, never source.'' The projector opens files to answer two questions: //do these
+bytes already match//, and //may this file leave//. No byte it reads reaches a record. A file that
+fails to read never reads as equal: the byte skip falls through to the gate, which decides, and at an
+unlink the file stays.
+# ''An unlink needs a holding answer and a reading.'' A cross-mirror unlink weighs a file only where
+`bagsHolding` reports the carrier gone from that bag — a true MOVE or promotion. A carrier still held
+there, a working edit SHADOWING its canon copy, keeps its file. Without that callback every other
+mirror's files get weighed by path, so its absence widens the sweep. Every file weighed, at every
+unlink, then meets one judge (`judgeHome`, under `settleHomes`): it leaves only where its bytes stand
+agreed, and a file that holds a hand's words stays while the carrier stands off (the law:
+`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`, an unlink reads the file first).
+# ''A base names a home only where its mirror may write.'' The base's `path` remembers an earlier
+home across a restart, and the ingest gesture pins a base at whatever source it read. `basedHome`
+passes that path through the mirror's own ward (`confineMirrorWrite`: the mirror's root, or a file
+directly in the bags root under `allowBagsRootFiles`): a path the ward would refuse names no home, so a source kept
+in a holding directory beside the mirror never meets the judge and never leaves.
 # ''A stem match binds the WHOLE stem.'' `carrierDiskFiles` resolves a carrier's actual files by the
 full extension-less stem plus one extension segment, so a sibling carrier sharing only a prefix never
 gets swept. A missing directory reads as no files.
@@ -74,6 +83,6 @@ This section, anchored `#/the-servo`, holds the disk shore's level-triggered rec
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/guards">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
 
-<<^ code="&#x0003;">>ni:///sha-256;A6Uw-T20Y6KMJpViAVfZEeTYf3fU6yENv4IheE0F9k8
+<<^ code="&#x0003;">>ni:///sha-256;4JPzrfaUlMF5wZ-dJWPgMO0vRJPf9qao7uQucM8klKM
 
 <<^ code="&#x0004;" -> to="?">>

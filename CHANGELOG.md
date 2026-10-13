@@ -7,6 +7,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **An ingest from a directory beside the mirror keeps its source files.** `lares ingest --source <dir>` from a holding directory outside the bag's mirror once lost each source file to the projector's unlink after the carrier landed; the vessel removes only files its mirror may write.
 - **`lares vessel stand` reads `ok: false` where the host must restart the vessel.** Inside a container, a stand that asks for a restart answers `EngineHeldByHost` with `ok: false` and exit 3; the standing verdict still rides the answer for the host shim.
 - **A wiki opened while it shuts down opens.** A mount that arrives while its island tears down waits for the teardown to finish and then stands on a fresh island; it once answered success for an island that then left.
 - **The vessel removes a file only after reading it.** A file a hand edited stays where it stands when a siting rule or a filetype change moves its carrier, when the carrier leaves that bag, and when the records drop the carrier. The carrier stands off under one alert that names the paths; `lares ingest` of the edited file or `lares shore take-records` settles it. A pointer's sidecar meets the same gate, so a hand's edit to it stands off too.

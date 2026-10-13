@@ -391,6 +391,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `G27` The shore verb reaches the active wiki's island alone (`wiki-act`). A standoff or a pending removal that the daemon island's projector holds, or a wiki island that stands live and unpinned, surfaces its alert and takes no `lares shore` answer; a person settles those by bringing the two sides to say the same. The daemon door's shape rests as a patch for that file's owner (`operator-daemon-behavior.ts`, `node-daemon-island.ts`). G or S.
 * `G28` The Synced tree's read-merge-write holds no lock across its writers (`synced-tree.ts`, `persist`): two that write in one window can drop a row. A dropped row reads as never agreed, which surfaces a standoff where the sides differ and pins anew where they agree; a serialized write closes it. G.
 * `G29` The ingest leg adopts a file that holds no base over records that say something else (`ingest-gate.ts`, `settle`). A person's `lares ingest` names that act; a watcher's wave takes it with no person. And the island's delete gate keeps a tombstone leg and a fraction brake that no gesture reaches. House, then G: both sit in the plugin bundle, so a cure rides a bake.
+* `G30` The Synced tree holds one row per carrier, and the ingest gesture pins that row at the source it read (`ingest-core.ts`, `recordLandedCarriers`). An ingest from a holding directory beside the mirror displaces the base the projector pinned at the mirror's file; a record change that follows meets `no-base` there and stands off, and each later scan of the holding file reads `new`. A row per path closes it, which moves the tree's stored shape. Measured in the node suite's harness; no vector stands. G.
 * `G21` The crossroads mirror projects a boot's WHO-board pointer with no filter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>); a scratch `LAR_ROOT` keeps it off the tracked tree. Lean: project the pointer for a charter island alone. Operator. G.
 
 !!! SUBSTRATE (its state reads in #/the-road's own block)
@@ -775,6 +776,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C6Onh1A3cyfZEcfdWUnV-U80OuxmeWGT8F8YLrtlsyo
+<<^ code="&#x0003;">>ni:///sha-256;0bEHsgRsRhQrcqtd82XIl27CH4h0YJZah-SjohQJNgY
 
 <<^ code="&#x0004;" -> to="?">>

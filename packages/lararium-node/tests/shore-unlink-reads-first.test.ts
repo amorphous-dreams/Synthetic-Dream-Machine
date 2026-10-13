@@ -19,7 +19,8 @@ import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { LarDiskProjector } from "../src/disk-projector.js";
-import { SyncedTree } from "../src/synced-tree.js";
+import { SyncedTree, syncedTreeKey, syncedPath } from "../src/synced-tree.js";
+import { carrierHash } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
 
 let root = "";
@@ -257,6 +258,62 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     s.owner.bag = null; s.holding.clear(); s.holding.add(OTHER);   // the first bag dropped it; the second holds it
     await s.projector.sense([URI]);
     expect(read(s.at("a/note.md"))).toBe(BODY);
+    expect(s.conflicts).toEqual([]);
+  });
+});
+
+/**
+ * THE INGEST GESTURE READS A SOURCE WHEREVER A PERSON KEEPS IT, and pins the base at the file it read. A
+ * holding directory beside the mirror lies outside every mirror root: the projector's ward would refuse a
+ * write there, so no unlink may reach it either. The walk: a person ingests a note from a holding directory
+ * and keeps the source.
+ */
+describe("a base that names a file outside the mirror names no home of it", () => {
+  /** The gesture's own pin: a sibling writer over the same tree file, as `lares ingest` holds one. */
+  function ingestedFromBeside(): string {
+    const held = join(root, "holding", "a", "note.md");
+    mkdirSync(dirname(held), { recursive: true });
+    writeFileSync(held, BODY, "utf-8");
+    writeFileSync(`${held}.meta`, META, "utf-8");
+    const gesture = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
+    gesture.set(syncedTreeKey(BAG, URI), syncedPath(held), carrierHash(BODY, META));
+    gesture.flush();
+    return held;
+  }
+
+  test("the source a person ingested from beside the mirror stays whole while the mirror takes its file", async () => {
+    const s = stand();
+    await s.projector.idle();
+    await s.projector.stop();
+    const held = ingestedFromBeside();
+    await s.reboot();
+    await s.projector.sense([URI]);
+    expect(read(held)).toBe(BODY);
+    expect(read(`${held}.meta`)).toBe(META);
+    expect(read(s.at("a/note.md"))).toBe(BODY);
+    expect(s.conflicts).toEqual([]);
+  });
+
+  test("the records drop the carrier: the source beside the mirror still stays", async () => {
+    const s = stand();
+    await s.projector.idle();
+    await s.projector.stop();
+    const held = ingestedFromBeside();
+    s.owner.bag = null; s.holding.clear();
+    await s.reboot();
+    await s.projector.sense([URI]);
+    expect(read(held)).toBe(BODY);
+    expect(read(`${held}.meta`)).toBe(META);
+    expect(s.conflicts).toEqual([]);
+  });
+
+  test("CONTROL: a base that names a ruled path inside the mirror still gets read and unlinked after a restart", async () => {
+    const s = stand();
+    await s.projector.idle();
+    s.file = { ...s.file, relPath: "b/note.md" };
+    await s.reboot();
+    expect(existsSync(s.at("a/note.md"))).toBe(false);
+    expect(read(s.at("b/note.md"))).toBe(BODY);
     expect(s.conflicts).toEqual([]);
   });
 });
