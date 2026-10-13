@@ -80,7 +80,16 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
     type: "event",
     wikiUri: ctx.wikiUri,
     listenable: "confluence:conflict",
-    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason },
+    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff },
+  }),
+  // The standoff the projector surfaced stands resolved: the same rail carries its key with `resolved`,
+  // and the alert that key raised clears. No audit row rides a resolution.
+  onConflictResolved: (info) => ctx.post({
+    schema_version: 1,
+    type: "event",
+    wikiUri: ctx.wikiUri,
+    listenable: "confluence:resolved",
+    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: "resolved", standoff: info.standoff, resolved: true },
   }),
   // WHAT THE DISK BYTES SAY — `render(parse(disk))`, the `≈` seat the projecting leg of
   // the Confluence has no parse of its own to compute. ONE door, the pure subpath (the

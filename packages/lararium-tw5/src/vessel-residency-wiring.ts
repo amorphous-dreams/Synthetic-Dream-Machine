@@ -266,11 +266,12 @@ export function makeVesselResidency(
     //    (a dropped verb stays observable, never nowhere — the Akka /deadLetters lesson); browser
     //    holds no durable mailbox, so an un-activatable grain is a best-effort drop, warned LOUD.
     //    Every failure path routes to the vessel's undeliverable hook, reason-named. ──
-    daemon.onWikiAlert((wikiSlug, message, cause, kind) => {
+    daemon.onWikiAlert((wikiSlug, message, cause, kind, instance) => {
       const wikiId = wikiSlug;
       const verbOpts: VesselAlertVerbOpts = {
         verb: "system-alert",
-        args: { message, cause: cause ?? "", ...(hooks.alertArgs?.(kind) ?? {}) },
+        // A keyed alert (a projection standoff) carries its key, and its clear, to the wiki that shows it.
+        args: { message, cause: cause ?? "", ...(hooks.alertArgs?.(kind) ?? {}), ...(instance?.key ? { key: instance.key } : {}), ...(instance?.clear === true ? { clear: true } : {}) },
         requestedBy: "daemon",
       };
       void wikiActivation.ensureActive(wikiId)

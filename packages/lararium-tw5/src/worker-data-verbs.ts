@@ -290,23 +290,36 @@ export async function fileWardRefusal(
       ? `Disk ward refused a write (${bagId})`
       : `${wardKind} refused a write (${bagId})`;
     const ts     = new Date().toISOString();
-
-    // (a) Durable audit in the composite's default writable working layer — append-only, never coalesced.
-    const auditTitle = `${WARD_AUDIT_URI_PREFIX}${crypto.randomUUID()}`;
-    await composite.put(
-      { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, "disk-projection": "no" }, meta: { authority: "disk-ward" } },
-      { kind: "lares-verb", requestId: `ward-${ts}` },
-    );
-
-    // (b) Alert the operator's currently pinned VM (the active wiki marker in the daemon bag).
+    // A STANDOFF CARRIES ITS KEY (bag, carrier and the two hashes, folded by the projector). The key names
+    // the audit row and the live alert, so one standoff files one row however often the rail hears of it,
+    // two standoffs show two alerts, and a resolution clears exactly its own.
+    const standoff = typeof args["standoff"] === "string" && /^[0-9a-f]{8,64}$/.test(args["standoff"]) ? args["standoff"] : null;
     const marker = await composite.get(ACTIVE_WIKI_URI);
     const slug   = tiddlerText(marker) ?? null;
+
+    if (standoff !== null && args["resolved"] === true) {
+      if (slug) post(mkDaemonWikiAlert({ wikiSlug: slug, message: `${headline}: resolved`, cause: "disk-ward", kind: "disk-ward", key: standoff, clear: true }));
+      return { cleared: standoff, alerted: slug ?? "none", bagId, uri };
+    }
+
+    // (a) Durable audit in the composite's default writable working layer: append-only, never coalesced.
+    // A standoff's row carries its key as its title and lands on ENTERING the standoff, once.
+    const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
+    if (standoff === null || (await composite.get(auditTitle)) === null) {
+      await composite.put(
+        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}), "disk-projection": "no" }, meta: { authority: "disk-ward" } },
+        { kind: "lares-verb", requestId: `ward-${ts}` },
+      );
+    }
+
+    // (b) Alert the operator's currently pinned VM (the active wiki marker in the daemon bag).
     if (slug) {
       post(mkDaemonWikiAlert({
         wikiSlug: slug,
         message:  `${headline}: ${reason}`,
         cause:    "disk-ward",
         kind:     "disk-ward",
+        ...(standoff !== null ? { key: standoff } : {}),
       }));
     }
     return { audited: auditTitle, alerted: slug ?? "none", bagId, uri };

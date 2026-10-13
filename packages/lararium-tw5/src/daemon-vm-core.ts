@@ -293,7 +293,7 @@ export interface DaemonVmCore {
    * `system-alert` verb into that wiki's live island (skip if not mounted). Set after
    * the pool exists. Fire-and-forget; absent → alerts silently dropped.
    */
-  onWikiAlert: (fn: (wikiSlug: string, message: string, cause?: string, kind?: string) => void) => void;
+  onWikiAlert: (fn: (wikiSlug: string, message: string, cause?: string, kind?: string, instance?: { key?: string; clear?: boolean }) => void) => void;
   /**
    * Projection surfacing — the daemon inherits the wiki render cap (hasProjection); once a worker entry wires
    * onBoot (mountProjection), the daemon emits PROJECTION_FRAME like any wiki island. This forwards those
@@ -337,7 +337,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
   // Residency-op mechanism — set via onResidencyOp() after the manager exists.
   let _residencyHandler: ((op: "pin" | "unpin" | "register-cold", bagId: string, reason?: string) => Promise<void>) | null = null;
   // Wiki-alert delivery — set via onWikiAlert() after the pool exists.
-  let _wikiAlertHandler: ((wikiSlug: string, message: string, cause?: string, kind?: string) => void) | null = null;
+  let _wikiAlertHandler: ((wikiSlug: string, message: string, cause?: string, kind?: string, instance?: { key?: string; clear?: boolean }) => void) | null = null;
   // Projection-frame forwarding — set via onProjection() after the boot sink exists.
   let _projectionHandler: ((frame: { html: string; css: string; rev: number }) => void) | null = null;
   // Verb OUT-path forwarding — set via onVerbEvent() after the vessel's placeVerb exists.
@@ -566,7 +566,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       // the affected wiki; main delivers the alert into that wiki's live island (the
       // handler skips unmounted ones). Fire-and-forget — no result back to the worker.
       const msg = raw as DaemonMsg_WikiAlert;
-      _wikiAlertHandler?.(msg.wikiSlug, msg.message, msg.cause, msg.kind);
+      _wikiAlertHandler?.(msg.wikiSlug, msg.message, msg.cause, msg.kind, { ...(msg.key ? { key: msg.key } : {}), ...(msg.clear === true ? { clear: true } : {}) });
       return;
     }
 
@@ -727,7 +727,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
     onResidencyOp: (fn: (op: "pin" | "unpin" | "register-cold", bagId: string, reason?: string) => Promise<void>) => {
       _residencyHandler = fn;
     },
-    onWikiAlert: (fn: (wikiSlug: string, message: string, cause?: string) => void) => {
+    onWikiAlert: (fn: (wikiSlug: string, message: string, cause?: string, kind?: string, instance?: { key?: string; clear?: boolean }) => void) => {
       _wikiAlertHandler = fn;
     },
     onProjection: (fn: (frame: { html: string; css: string; rev: number }) => void) => {

@@ -20,6 +20,7 @@ import {
   type Verb,
   type ChangeOrigin,
 } from "@lararium/mesh";
+import type { CompositeStore } from "@lararium/mesh";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
 import { VerbTable } from "./verb-dispatcher.js";
 import { composeIsland } from "./island-caps.js";
@@ -33,6 +34,53 @@ import type { IslandBehavior, IslandContext } from "./island-context.js";
  *  what applies the pending change; the operator may also dismiss it (TW5's close
  *  button deletes the tiddler). */
 export const REBOOT_ALERT_TITLE = "$:/temp/lares/alert/reboot-pending";
+
+/**
+ * The title an alert stands at. A kind holds ONE coalescing alert; a KEY names one instance of a kind
+ * (a projection standoff), which stands at its own title so two instances show two alerts.
+ */
+export function systemAlertTitle(kind: string, key?: string): string {
+  if (kind === "reboot-pending") return REBOOT_ALERT_TITLE;
+  return key ? `$:/temp/lares/alert/${kind}/${key}` : `$:/temp/lares/alert/${kind}`;
+}
+
+/**
+ * Place, or clear, an alert in a wiki's OWN temp layer (volatile; gone at reboot). `clear` removes the
+ * keyed alert: the condition it named stands resolved.
+ */
+export async function placeSystemAlert(
+  composite: Pick<CompositeStore, "put" | "tombstoneInBag">,
+  wikiSlug: string,
+  args: Readonly<Record<string, unknown>>,
+): Promise<Record<string, unknown>> {
+  const message = typeof args["message"] === "string" ? args["message"] : "A change requires a reboot to apply.";
+  const cause   = typeof args["cause"]   === "string" ? args["cause"]   : "";
+  const kind    = typeof args["kind"] === "string" && args["kind"] ? args["kind"] : "reboot-pending";
+  const key     = typeof args["key"] === "string" && /^[0-9a-f]{8,64}$/.test(args["key"]) ? args["key"] : undefined;
+  const title   = systemAlertTitle(kind, key);
+  const bag     = wikiSlotUri(wikiSlug, "temp");
+  const origin: ChangeOrigin = { kind: "lares-verb", requestId: `alert-${Date.now()}` };
+  if (args["clear"] === true) {
+    if (key === undefined) return { cleared: false, title };
+    await composite.tombstoneInBag(bag, title, origin);
+    return { cleared: true, title };
+  }
+  await composite.put(
+    {
+      tiddler: {
+        title,
+        text:        message,
+        tags:        TW5_ALERT_TAG,   // surfaces in TW5's native alert area
+        "alert-kind": kind,
+        cause,
+        ts:          new Date().toISOString(),
+      },
+    },
+    origin,
+    { bag },
+  );
+  return { seeded: true, title };
+}
 /** TW5's built-in alert tag — tiddlers carrying it surface in the alerts area. */
 const TW5_ALERT_TAG = "$:/tags/Alert";
 
@@ -77,30 +125,7 @@ export function makeWikiBehavior(opts: WikiBehaviorOptions = {}): IslandBehavior
       // system-alert — the daemon worker (via main → pool.placeWikiVerb) delivers a
       // reboot-pending notice; the island writes it into its OWN temp (volatile,
       // self-clearing on reboot). The daemon never reaches into this composite directly.
-      registry.register("system-alert", async (args) => {
-        const message = typeof args["message"] === "string" ? args["message"] : "A change requires a reboot to apply.";
-        const cause   = typeof args["cause"]   === "string" ? args["cause"]   : "";
-        // Alert kind selects the (stable, coalescing) alert tiddler. Default stays
-        // the reboot-pending title; other kinds (e.g. "disk-ward") get their own.
-        const kind    = typeof args["kind"] === "string" && args["kind"] ? args["kind"] : "reboot-pending";
-        const title   = kind === "reboot-pending" ? REBOOT_ALERT_TITLE : `$:/temp/lares/alert/${kind}`;
-        const origin: ChangeOrigin = { kind: "lares-verb", requestId: `alert-${Date.now()}` };
-        await ctx.composite.put(
-          {
-            tiddler: {
-              title,
-              text:        message,
-              tags:        TW5_ALERT_TAG,   // surfaces in TW5's native alert area
-              "alert-kind": kind,
-              cause,
-              ts:          new Date().toISOString(),
-            },
-          },
-          origin,
-          { bag: wikiSlotUri(ctx.recipe.wikiSlug, "temp") },
-        );
-        return { seeded: true, title: REBOOT_ALERT_TITLE };
-      });
+      registry.register("system-alert", (args) => placeSystemAlert(ctx.composite, ctx.recipe.wikiSlug, args));
       _registry = registry;
       return () => {
         _registry = null;

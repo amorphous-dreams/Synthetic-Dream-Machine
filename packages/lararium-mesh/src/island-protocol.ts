@@ -708,6 +708,11 @@ export interface DaemonMsg_WikiAlert {
   cause?: string;
   /** Alert kind — selects the alert tiddler ("reboot-pending" default; "disk-ward" etc.). */
   kind?: string;
+  /** One instance of a kind: a projection standoff's key. A keyed alert stands at its own title, so two
+   *  standoffs show two alerts. Absent = the kind's one coalescing alert. */
+  key?: string;
+  /** Remove the keyed alert: the condition it named stands resolved. */
+  clear?: boolean;
 }
 
 /**
@@ -1417,6 +1422,8 @@ export function mkDaemonWikiAlert(opts: {
   message:  string;
   cause?:   string;
   kind?:    string;
+  key?:     string;
+  clear?:   boolean;
 }): DaemonMsg_WikiAlert {
   const msg: DaemonMsg_WikiAlert = {
     schema_version: ISLAND_PROTOCOL_VERSION,
@@ -1424,6 +1431,8 @@ export function mkDaemonWikiAlert(opts: {
     wikiSlug: opts.wikiSlug,
     message:  opts.message,
     ...(opts.kind ? { kind: opts.kind } : {}),
+    ...(opts.key ? { key: opts.key } : {}),
+    ...(opts.clear === true ? { clear: true } : {}),
   };
   if (opts.cause !== undefined) msg.cause = opts.cause;
   return msg;

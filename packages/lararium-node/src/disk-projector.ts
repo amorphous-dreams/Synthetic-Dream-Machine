@@ -109,8 +109,19 @@ export interface LarDiskProjectorOptions {
    * `fileWardRefusal` takes a `wardKind` and names the ward that actually refused.
    * Absent → the conflict still suppresses the write (fail-closed) and logs; the operator
    * simply learns of it from the console rather than the daemon ledger.
+   *
+   * ONCE PER STANDOFF. A standoff names one carrier in one bag at one pair of states (the disk's
+   * hash and the records' hash); `standoff` carries that key. The reconcile runs level-triggered
+   * and meets a standing standoff at every nudge: this fires on ENTERING one and stays quiet while
+   * it stands. A standoff whose states moved reads as a new one.
    */
-  readonly onConflict?: (info: { bagId: string; uri: string; reason: string }) => void;
+  readonly onConflict?: (info: { bagId: string; uri: string; reason: string; standoff: string }) => void;
+  /**
+   * Fired once when a reconcile finds a surfaced standoff gone: the streams agree again, one leg
+   * owns the state, or the carrier left. Carries the key `onConflict` carried, so the alert that
+   * key raised can clear.
+   */
+  readonly onConflictResolved?: (info: { bagId: string; uri: string; standoff: string }) => void;
   /**
    * WHAT THE DISK BYTES SAY — `render(parse(diskText))` for the memetic-wikitext family
    * (`@lararium/tw5/carrier-canonical`, the ONE door; the pure subpath, no wasm). Feeds
@@ -271,7 +282,10 @@ export class LarDiskProjector {
   private readonly resolveByCid: ((cid: string) => Promise<Uint8Array | null>) | undefined;
   private readonly bagsHolding: ((tiddlerUri: string) => Promise<readonly string[]>) | undefined;
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
-  private readonly onConflict: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
+  private readonly onConflict: ((info: { bagId: string; uri: string; reason: string; standoff: string }) => void) | undefined;
+  private readonly onConflictResolved: ((info: { bagId: string; uri: string; standoff: string }) => void) | undefined;
+  /** The standoff each (bag, carrier) stands in right now, by key. Memory only: a fresh boot enters anew. */
+  private readonly standoffs = new Map<string, string>();
   private readonly canonicalizeFn: ((uri: string, diskText: string) => string | null) | undefined;
   private readonly canonicalizeNativeFn:
     | ((uri: string, ext: string, diskBody: string, diskMeta: string | undefined) => { readonly body: string; readonly metaBody?: string } | null)
@@ -287,6 +301,7 @@ export class LarDiskProjector {
     this.bagsHolding  = opts.bagsHolding;
     this.onRefusal    = opts.onRefusal;
     this.onConflict   = opts.onConflict;
+    this.onConflictResolved = opts.onConflictResolved;
     this.canonicalizeFn = opts.canonicalizeFn;
     this.canonicalizeNativeFn = opts.canonicalizeNativeFn;
     this.readinessMap = opts.readinessMap;
@@ -503,6 +518,15 @@ export class LarDiskProjector {
    *  mirror whose bag STILL HOLDS the carrier keeps its file (a carrier hidden
    *  from the resolved view by a shadowing tombstone still lives in its lower
    *  bag; each mirror reflects its OWN bag's content, never the resolved view). */
+  /** A reconcile found no standoff for this carrier: clear the one it surfaced, if any, and say so once. */
+  private _leaveStandoff(bagId: string, uri: string): void {
+    const key = sitedKey(bagId, uri);
+    const standoff = this.standoffs.get(key);
+    if (standoff === undefined) return;
+    this.standoffs.delete(key);
+    this.onConflictResolved?.({ bagId, uri, standoff });
+  }
+
   private async _scheduleUnlinkByTitle(title: string): Promise<void> {
     if (this.bagsHolding) this.measure.holdsSinceChange++;
     const holdingBags = this.bagsHolding ? new Set(await this.bagsHolding(title)) : null;
@@ -519,6 +543,7 @@ export class LarDiskProjector {
         }
         this.syncedTree?.delete(syncedTreeKey(mirror.bagId, title));   // the observation leaves with the file(s)
         this.sited.delete(sitedKey(mirror.bagId, title));
+        this._leaveStandoff(mirror.bagId, title);
       } catch { /* best-effort — operator can clean up manually */ }
     }
   }
@@ -684,6 +709,7 @@ export class LarDiskProjector {
         : contentHash(readFileSync(candidate, "utf-8")) === outputHash);
       if (bodyInSync && metaInSync) {
         this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
+        this._leaveStandoff(bagId, tiddlerUri);
         return;
       }
       if (bodyPending && metaInSync) return;
@@ -724,17 +750,24 @@ export class LarDiskProjector {
         recordsHash: obsHash,
         diskCanonicalHash,
       });
-      if (decision.kind === "noop") return;
+      if (decision.kind === "noop") { this._leaveStandoff(bagId, tiddlerUri); return; }
       if (decision.kind === "conflict") {
         // SURFACE, never overwrite. The write stops here; the divergence goes out on the
         // ward-alert rail (a durable ledger record + an alert in the operator's pinned VM),
         // named for the mechanism that actually stood down — never as a disk-ward refusal.
         const reason = `the disk and the records both moved past the last projection (${decision.reason}) — the write stands down so neither edit is drowned`;
+        // ONE SURFACING PER STANDOFF: the key names the bag, the carrier and the two states. A reconcile
+        // that meets the standoff it already raised stays quiet; the write still stands down.
+        const standoff = sha256HexBytesSync(new TextEncoder().encode([mirror.bagId, tiddlerUri, onDisk === null ? "" : carrierHash(onDisk.body, onDisk.meta), obsHash].join("\n"))).slice(0, 24);
+        const key = sitedKey(mirror.bagId, tiddlerUri);
+        if (this.standoffs.get(key) === standoff) return;
+        this.standoffs.set(key, standoff);
         console.error(`[confluence] projection conflict (${mirror.bagId} <- ${tiddlerUri}): ${reason}`);
-        this.onConflict?.({ bagId: mirror.bagId, uri: tiddlerUri, reason });
+        this.onConflict?.({ bagId: mirror.bagId, uri: tiddlerUri, reason, standoff });
         return;
       }
     }
+    this._leaveStandoff(bagId, tiddlerUri);
 
     this.writing.add(tiddlerUri);
     try {
