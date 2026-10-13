@@ -23,7 +23,7 @@
  *   R5 — a herm LIFTS into a lararium                  · the cap-stack transition the runbook's rite performs
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
@@ -217,11 +217,21 @@ describe("the herm — the floor of the lararium cap stack", () => {
     // Every vector below reads as "the floor carries / refuses / lifts", and each of those is a
     // different verdict on a hearth. A rig that quietly lit a face would turn R5's LIFT green by
     // having nothing to lift — the shape `founding-witness` already refuses on the place half.
-    const held = execFileSync(process.execPath, [CLI, "persona", "list", "--json"], {
+    //
+    // The roster rests sealed, and this vessel stands locked, so no command reads it here: a face's rows prove
+    // themselves by their NAMES instead. A face founding lands a persona root and its anchors in the identity
+    // home, each under a name the carrier table spells; a floor that never lit a face holds neither.
+    const rowsNamed = (dir: string, name: RegExp): string[] => readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? rowsNamed(join(dir, e.name), name) : name.test(e.name) ? [join(dir, e.name)] : []);
+    expect(rowsNamed(root, /^vk-slots\.bin$/).length, "the walk found no founded identity home to read").toBe(1);   // CONTROL: the walk reads the founded custody
+    expect(rowsNamed(root, /persona-group-root|^anchors-h\d+\.json$/), "a face stands on the floor rig — every vector below measures a hearth, not a floor").toEqual([]);
+    // And the locked floor says so when asked: a sealed read beside it refuses and names the unlock, where it
+    // once opened a second key session of its own.
+    const asked = spawnSync(process.execPath, [CLI, "persona", "list", "--json"], {
       env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8",
     });
-    expect(held, `a face stands on the floor rig — every vector below measures a hearth, not a floor:\n${held.slice(0, 400)}`)
-      .not.toMatch(/"index"\s*:\s*\d/);
+    expect(asked.status, `a locked floor answered a sealed read:\n${asked.stdout.slice(0, 400)}`).not.toBe(0);
+    expect(`${asked.stdout}\n${asked.stderr}`).toMatch(/lares vault unlock/);
   }, 200_000);
 
   test("R2 — a herm serves its map to a proven peer, and a stranger meets the closed door", async () => {
