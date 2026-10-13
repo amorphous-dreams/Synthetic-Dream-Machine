@@ -4,7 +4,7 @@
  * Scenario (the charge): a joinee generates its card, a founder admits it + encrypts content, the joinee
  * REBOOTS (fresh Keyhive.init with the SAME seed → NEW random prekeys), then must decrypt.
  *
- * Tests three readings against alpha.6 running code:
+ * Tests three readings against running code:
  *   (0) live joinee-A decrypts the content it was admitted to           → baseline (expect SUCCESS)
  *   (1) rebooted joinee-B (same seed, fresh prekeys) WITHOUT import      → expect "Key not found" (the gap)
  *   (2) rebooted joinee-B AFTER importPrekeySecrets(A's export)          → expect SUCCESS (the cure)
@@ -35,7 +35,7 @@ async function publicEventsFor(kh: KH.Keyhive, agent: KH.Agent): Promise<unknown
 async function tryDecrypt(kh: KH.Keyhive, docBytes: Uint8Array, encBytes: Uint8Array): Promise<string> {
   const doc = await kh.getDocument(new KH.DocumentId(docBytes));
   if (!doc) return "‹no-doc-resolved›";
-  const out = await kh.tryDecrypt(doc, KH.Encrypted.fromBytes(encBytes));
+  const out = await kh.tryDecrypt(doc.docId, KH.Encrypted.fromBytes(encBytes));
   return new TextDecoder().decode(out);
 }
 
@@ -52,13 +52,14 @@ async function main(): Promise<void> {
   // Founder admits card-A, then encrypts (order load-bearing: add BEFORE encrypt).
   const indivA = await founder.receiveContactCard(cardA);
   await joineeA.receiveContactCard(await founder.contactCard());
-  const doc = await founder.generateDocument([], changeId(0), []);
-  const docBytes = doc.id.toBytes();
+  const docId = await founder.generateDocument([], changeId(0), []);
+  const docBytes = docId.toBytes();
   const access = KH.Access.tryFromString("read")!;
-  const agentA = await founder.getAgent(indivA.id);
-  await founder.addMember(agentA!, doc.toMembered(), access, []);
-  const encBytes = (await founder.tryEncrypt(doc, changeId(50), [], new TextEncoder().encode(PLAINTEXT))).encrypted_content().serialize();
-  const pub = await publicEventsFor(founder, agentA!);
+  const agentA = await founder.getAgent(indivA.toIdentifier());
+  if (!agentA) throw new Error("founder cannot resolve the introduced joinee agent");
+  await founder.addMember(indivA.toIdentifier(), KH.MemberedId.document(docId), access, []);
+  const encBytes = (await founder.tryEncrypt(docId, changeId(50), [], new TextEncoder().encode(PLAINTEXT))).encryptedContent().toBytes();
+  const pub = await publicEventsFor(founder, agentA);
   console.log(`[probe] founder admitted card-A + encrypted; ${pub.length} public events captured`);
 
   // ── EXPORT A's prekey secrets BEFORE reboot (this is the material we claim must persist) ──
@@ -98,17 +99,17 @@ async function main(): Promise<void> {
   try { existingJson = (await joineeB.getExistingContactCard()).toJson(); } catch (e) { existingJson = `THREW: ${(e as Error).message}`; }
   try { freshJson = (await joineeB.contactCard()).toJson(); } catch (e) { freshJson = `THREW: ${(e as Error).message}`; }
   console.log(`[probe] Q3 getExistingContactCard == card-A ? ${existingJson === cardAJson ? "YES (same card re-exposed)" : "NO"}`);
-  console.log(`[probe] Q3 fresh contactCard()  == card-A ? ${freshJson === cardAJson ? "YES" : "NO (a fresh card differs — PR#205 gap)"}`);
+  console.log(`[probe] Q3 fresh contactCard()  == card-A ? ${freshJson === cardAJson ? "YES" : "NO (the reboot exposes a fresh card)"}`);
 
   // ── Q1b: the ARCHIVE path — serialize the WHOLE identity, restore into a fresh Keyhive ──
   // NOTE: archive taken from the LIVE joineeA (after it ingested the founder's ops + card).
   let arcDecrypt = "‹threw›", arcCardSame = "n/a";
   try {
-    const archive = await joineeA.intoArchive();
+    const archive = await joineeA.toArchive();
     const restored = await archive.tryToKeyhive(KH.CiphertextStore.newInMemory(), KH.Signer.memorySignerFromBytes(seed(100)), () => {});
     try { arcDecrypt = await tryDecrypt(restored, docBytes, encBytes); } catch (e) { arcDecrypt = `THREW: ${(e as Error).message}`; }
     try { arcCardSame = (await restored.getExistingContactCard()).toJson() === cardAJson ? "YES (same card re-exposed)" : "NO"; } catch (e) { arcCardSame = `THREW: ${(e as Error).message}`; }
-  } catch (e) { arcDecrypt = `intoArchive/tryToKeyhive THREW: ${(e as Error).message}`; }
+  } catch (e) { arcDecrypt = `toArchive/tryToKeyhive THREW: ${(e as Error).message}`; }
   console.log(`[probe] Q1b ARCHIVE restore decrypt: ${arcDecrypt === PLAINTEXT ? "SUCCESS" : "FAIL → " + arcDecrypt}`);
   console.log(`[probe] Q1b ARCHIVE restore card == card-A ? ${arcCardSame}`);
 

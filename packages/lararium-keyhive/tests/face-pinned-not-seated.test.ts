@@ -77,7 +77,7 @@ describe("a face pinned is not a face seated", () => {
     const key = "lar:///ha.ka.ba/bags/daemon/draft-bindings/" + "f".repeat(64);
     const stored: Record<string, Record<string, unknown>> = {
       [key]: { tiddler: { title: key, text: "automerge:earlierBinding", kind: "draft-binding", "face-reach": "vessel-only",
-                          "keyhive-doc-id": "d1".repeat(16),
+                          "keyhive-doc-id": "d1".repeat(32),
                           "minted-by": "0x" + "a".repeat(64) }, meta: { authority: "personal-bindings" } },
     };
     const put: Record<string, unknown>[] = [];
@@ -102,6 +102,9 @@ describe("a face pinned is not a face seated", () => {
     expect(fields?.["face-reach"], "the record moves to the spelling a seated mint writes").toBe("face");
     expect(fields?.["text"], "the url stands").toBe("automerge:earlierBinding");
     expect(fields?.["kind"]).toBe("draft-binding");
+    expect(fields?.["keyhive-doc-id"], "a document this stand holds no hand in gives way to a fresh one, and the record names it")
+      .toMatch(/^(0x)?[0-9a-f]{64}$/);
+    expect(fields?.["keyhive-doc-id"]).not.toBe("d1".repeat(32));
     await joinee.dispose();
   });
 
@@ -240,6 +243,71 @@ describe("a face pinned is not a face seated", () => {
     expect(thirdGrants, "a face binding is not re-granted on the third process").toBe(0);
     await first.dispose(); await second.dispose(); await third.dispose(); await audience.dispose();
     rmSync(root, { recursive: true, force: true });
+  });
+
+  test("H3-2 — a binding minted by a stand whose Archive nobody kept gets a fresh Keyhive document at the seat", async () => {
+    // The shape a vessel lives: its founding keeps an Archive; every boot rests at the floor, where a provider
+    // stands from the seed alone, mints the working binding on the vessel's own key and keeps no Archive; then an
+    // unlock stands the provider again from the FOUNDING's Archive with the face seated.
+    const audience = await vessel(16);
+    const agent = await audience.vesselIdentifierHex();
+    const events: Array<{ hash: string; variant: string; bytes: Uint8Array; island?: string }> = [];
+    const eventStore = {
+      put: async (rec: { hash: string; variant: string; bytes: Uint8Array; island?: string }) => { if (!events.some((e) => e.hash === rec.hash)) events.push(rec); },
+      list: async () => [...events],
+    };
+    const records = new Map<string, Record<string, unknown>>();
+    const daemonStore = {
+      get: async (title: string) => records.get(title),
+      put: async (record: unknown) => {
+        const row = record as Record<string, unknown>;
+        records.set(String((row.tiddler as Record<string, unknown>).title), row);
+      },
+    } as never;
+    const bindingUrl = "automerge:working-binding-h3-2";
+    const key = "lar:///ha.ka.ba/bags/daemon/working-bindings/" + "e".repeat(64);
+    const args = (provider: KeyhiveProvider, faceSeated: boolean) => ({
+      kind: "working-binding" as const, prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings",
+      fingerprint: "e".repeat(64), repo: { create: () => ({ url: bindingUrl, documentId: "binding" }), flush: async () => {} },
+      daemonStore, keyhive: provider, personaGroupAgentIdHex: agent, faceSeated: async () => faceSeated,
+      mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
+    });
+    const docIdAt = (): unknown => (records.get(key) as { tiddler?: Record<string, unknown> } | undefined)?.tiddler?.["keyhive-doc-id"];
+
+    const founding = new KeyhiveProvider();
+    await founding.init({ seed: seedOf(17), eventStore });
+    await founding.settleEvents();
+    const foundingArchive = await founding.exportArchive();
+    await founding.dispose();
+
+    const floor = new KeyhiveProvider();
+    await floor.init({ seed: seedOf(17), eventStore });
+    await floor.hydrateFromEventStore();
+    await resolveOrMintBinding(args(floor, false));
+    const floorDocId = docIdAt();
+    expect(floorDocId).toEqual(expect.any(String));
+    expect(await floor.holdsHand(bindingUrl), "CONTROL: the minting stand holds its hand while it lives").toBe(true);
+    await floor.settleEvents();
+    await floor.dispose();
+
+    const lit = new KeyhiveProvider();
+    await lit.init({ seed: seedOf(17), eventStore, archiveBytes: foundingArchive });
+    await lit.hydrateFromEventStore();
+    await lit.receiveContactCard(await audience.contactCard());
+    lit.adoptBag(bindingUrl, floorDocId as string);
+    expect(await lit.holdsHand(bindingUrl), "the floor's document reads known and handless to the lit stand").toBe(false);
+    await expect(lit.delegate({ bagUrl: bindingUrl, audience: agent, access: "admin" }),
+      "CONTROL: a grant on the floor's document refuses, so the re-mint below measures something").rejects.toThrow(/Cgka is not initialized/);
+
+    await expect(resolveOrMintBinding(args(lit, true))).resolves.toEqual({ url: bindingUrl, minted: false });
+    const litDocId = docIdAt();
+    expect(litDocId, "the record names the document that serves").toEqual(expect.any(String));
+    expect(litDocId).not.toBe(floorDocId);
+    expect((records.get(key) as { tiddler?: Record<string, unknown> }).tiddler?.["face-reach"]).toBe("face");
+    expect(await lit.holdsHand(bindingUrl)).toBe(true);
+    expect(await lit.verify({ presenter: agent, bagUrl: bindingUrl, access: "admin" })).toEqual({ ok: true });
+    expect((await lit.encryptContent(bindingUrl, new Uint8Array([1]))).byteLength, "the lit stand seals into it").toBeGreaterThan(0);
+    await lit.dispose(); await audience.dispose();
   });
 
   test("H3 CONTROL — a face-first binding delegates once and same-process reuse does not re-grant", async () => {

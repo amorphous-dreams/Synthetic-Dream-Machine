@@ -16,12 +16,13 @@ export function registerWorkerErrorRelay(label: string): void {
 
 /**
  * Instantiate the keyhive WASM BEFORE the island chain evaluates. The slim build does NOT
- * auto-init (its `new URL(_bg.wasm, import.meta.url)` would mis-resolve in a worker bundle), so we
- * feed the wasm as base64 content here, off the module graph.
+ * auto-init (its `new URL(_bg.wasm, import.meta.url)` would mis-resolve in a worker bundle), so the
+ * wasm rides as CONTENT, off the module graph: the package's base64 export, decoded here and handed
+ * to `initSync`. The provider's own feed later finds this instance live and agrees with it.
  */
 export async function initKeyhiveWasm(): Promise<void> {
   const KH = await import("@keyhive/keyhive/slim");
-  // @ts-expect-error — keyhive's base64 .d.ts is a `declare module` augmentation, not a module
-  const { wasmBase64 } = await import("@keyhive/keyhive/keyhive_wasm.base64.js");
-  (KH as unknown as { initFromBase64Wasm: (s: string) => void }).initFromBase64Wasm(wasmBase64);
+  const { wasmBase64 } = await import("@keyhive/keyhive/wasm-base64");
+  const bytes = Uint8Array.from(atob(wasmBase64), (character) => character.charCodeAt(0));
+  (KH as unknown as { initSync: (input: { module: Uint8Array }) => unknown }).initSync({ module: bytes });
 }

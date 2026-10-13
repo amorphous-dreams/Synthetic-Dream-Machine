@@ -28,7 +28,7 @@
 import { performance } from "node:perf_hooks";
 import * as KH from "@keyhive/keyhive";
 
-console.log(`[probe] @keyhive/keyhive version assumed 0.0.0-alpha.56c`);
+console.log(`[probe] @keyhive/keyhive API surface`);
 console.log(`[probe] exports surface: ${Object.keys(KH).sort().join(", ")}`);
 
 // ---------------------------------------------------------------------------
@@ -71,17 +71,17 @@ async function main(): Promise<void> {
   console.log(`[probe] operator contact card type: ${operatorCard.constructor.name}`);
 
   // Operator learns about device's identity via the contact card.
-  const deviceIndividual = await operator.receiveContactCard(deviceCard);
-  console.log(`[probe] operator received device card; deviceIndividual id = ${deviceIndividual.id?.toString()}`);
+  const deviceIndividualId = await operator.receiveContactCard(deviceCard);
+  console.log(`[probe] operator received device card; deviceIndividual id = ${deviceIndividualId.toString()}`);
   // Device also learns operator's identity (mirrors).
   await device.receiveContactCard(operatorCard);
 
   console.log("[probe] === Q3: operator generates a document and adds device as member ===");
   // The membership model: a Document is a membered principal; addMember
   // grants the device an Access role over that document.
-  // generateDocument signature: (coparents: Peer[], initial_content_ref_head: ChangeId, more: ChangeId[])
+  // generateDocument signature: (coparents: Identifier[], initial_content_ref_head: ChangeId, more: ChangeId[])
   // We need a ChangeId; lacking docs, try a smoke value first.
-  let doc: KH.Document | null = null;
+  let docId: KH.DocumentId | null = null;
   try {
     // ChangeId construction unknown — try empty array of coparents and see what error we get.
     // Many WASM types in this surface have private constructors; we'll have to discover.
@@ -89,29 +89,27 @@ async function main(): Promise<void> {
     const cidBytes = new Uint8Array(32);
     for (let i = 0; i < 32; i++) cidBytes[i] = i;
     const cid = new KH.ChangeId(cidBytes);
-    doc = await operator.generateDocument([], cid, []);
-    console.log(`[probe] doc generated; id type=${doc.id?.constructor?.name}`);
+    docId = await operator.generateDocument([], cid, []);
+    console.log(`[probe] doc generated; id=${docId.toString()}`);
   } catch (err) {
     console.log(`[probe] generateDocument failed: ${err instanceof Error ? err.message : String(err)}`);
   }
 
-  if (doc) {
+  if (docId) {
     console.log("[probe] === Q3: addMember(device, doc, access=admin) ===");
     const access = KH.Access.tryFromString("admin");
     if (!access) {
       console.log(`[probe] Access.tryFromString("admin") returned undefined`);
     } else {
       try {
-        // addMember signature: (to_add: Agent, membered: Membered, access: Access, other_relevant_docs: Document[])
-        // Need Membered from the doc; the doc itself may BE membered (need to convert).
-        // Try passing the doc directly; if API rejects, we learn the shape.
-        const deviceAgent = await operator.getAgent(deviceIndividual.id);
+        // Membership addresses an Identifier and an explicit MemberedId.
+        const deviceAgent = await operator.getAgent(deviceIndividualId.toIdentifier());
         if (!deviceAgent) {
           console.log(`[probe] could not fetch device agent`);
         } else {
           const signedDelegation = await operator.addMember(
-            deviceAgent,
-            doc.toMembered(),  // Document → Membered conversion
+            deviceIndividualId.toIdentifier(),
+            KH.MemberedId.document(docId),
             access,
             [],
           );

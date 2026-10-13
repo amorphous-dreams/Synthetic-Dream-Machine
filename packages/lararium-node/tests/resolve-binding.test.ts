@@ -42,6 +42,8 @@ function makeFakeKeyhive() {
   const delegations: DelegateArgs[] = [];
   const provider = {
     adoptBag() {},
+    async holdsHand() { return true; },
+    async remintBag(bagUrl: string) { return { docId: `doc-again-${bagUrl}` }; },
     async registerBag(bagUrl: string) {
       registered.push(bagUrl);
       return { docId: `doc-${bagUrl}` };

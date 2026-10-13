@@ -66,25 +66,14 @@ export type ArchiveFloorCarrier = "archive" | "veil";
 /**
  * The shore-injected writers. Absent → that carrier simply never persists.
  *
- * ── WHY THE BROWSER SHORE INJECTS NEITHER, on the ground that actually holds ─────────────────────
- * Not "a browser vessel holds no fs" — measured, that reason reads FALSE. OPFS *is* a filesystem and
- * the browser shore already writes it (`browser-genesis.ts` lands CAS blobs by CID through
- * `navigator.storage.getDirectory()`, and the sovereign island resolves reads back out of it), with
- * IndexedDB beside it declaring itself the node-fs twin. The multi-writer hazard is solved too
- * (`vessel-lock.ts` Web Locks, one SharedWorker holder per origin).
- *
- * The ground that holds is CUSTODY, not substrate: the browser shore holds NO AT-REST SEAL for
- * self-sovereign secrets. `exportArchive()` materialises the founding DAG, the hydrated
- * membership/capability ring and the PREKEY SECRETS; landing those in OPFS or IDB today would write
- * them CLEARTEXT, with strictly LESS protection than node's sealed store — the same downgrade
- * `browser-vessel-identity.ts` already refuses by returning `recovery: null` rather than persisting
- * share material unsealed. So the omission is a RULED custody refusal that retires the day the
- * WebCrypto seal leg lands, never a claim about what the platform can write.
- *
- * ⚠ THE LATENT EDGE, named where the writer would be injected: the browser entry hard-codes
- * `archiveOpens: true` (its archive is `no-seal-expected`, so the reading is vacuously open), and this
- * door gates on THAT BOOLEAN ALONE. The pairing is inert only while the writers stay absent — inject
- * one before the seal leg exists and it writes unconditionally, unsealed. The seal leg comes FIRST.
+ * ── WHY THE BROWSER SHORE INJECTS NEITHER ─────────────────────────────────────────────────────────
+ * The browser shore holds no at-rest seal for self-sovereign secrets, and this door gates on one boolean: the
+ * browser entry answers `archiveOpens: true` (no seal stands there that could hold it shut), so a writer
+ * injected on that shore would land every boot's export with nothing judging it. The browser therefore keeps
+ * the Archive each FOUNDING ACT hands out (its founding, its admit) in its keystore beside the device seed
+ * (`browser-keyhive-archive.ts`), written by the act that minted it, and this per-boot door stays without a
+ * writer there. Both rows leave the clear together when browser custody wraps the keystore; the writers get
+ * injected with that seal, never before it.
  */
 export interface ArchiveFloorWriters {
   readonly persistArchive?: (bytes: Uint8Array) => void | Promise<void>;

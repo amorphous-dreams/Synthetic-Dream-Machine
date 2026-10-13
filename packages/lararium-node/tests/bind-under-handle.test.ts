@@ -86,7 +86,7 @@ describe("two vessels bind under one Handle", () => {
     const tag = tiddlerText((daemonHandle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
     const veilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: hexToBytes(veilKeys.signingKey), eventStore: await replayCapEvents(daemonHandle as never) });
+    await seat.init({ seed: hexToBytes(veilKeys.signingKey), eventStore: await replayCapEvents(daemonHandle as never), archiveBytes: cer.veilArchive });
     await seat.hydrateFromEventStore();
     const bundle = await packPersonaCrossing(founder, joineeCard, pg,
       [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("shared under the Handle") }], seat);

@@ -118,7 +118,8 @@ export class BindingRegistrationRefusal extends Error {
  *
  * Reuse-on-present returns the stored URL without minting. A vessel-only record
  * may re-grant after the face seats; its recorded Keyhive document ID restores
- * the process-local bag mapping before delegation. Reuse MUST NOT block boot on
+ * the process-local bag mapping before delegation, and a stand that holds no hand
+ * in that document mints a fresh one and records it. Reuse MUST NOT block boot on
  * a doc not yet decryptable on this device (the two-phase Keyhive window): the
  * caller mounts the URL and the island surfaces it when sync delivers the BeeKEM
  * key. See personal-slot#lifecycle "authorized-but-undecryptable window".
@@ -245,7 +246,15 @@ async function regrantOnSeat(
   if (!args.personaGroupAgentIdHex) return;
   const seated = await (args.faceSeated?.() ?? Promise.resolve(true));
   if (!seated) return;
-  restoreBagRegistration(args, key, url, fields);
+  let keyhiveDocId = restoreBagRegistration(args, key, url, fields);
+  // THE RECORDED DOCUMENT SERVES ONLY A STAND THAT STILL HOLDS ITS HAND IN IT. The stand that minted this binding
+  // held the document's key agreement state in its own provider; a vessel at the floor keeps no Archive, so that
+  // state left with it, and no later stand can add a member to the document or seal into it. The binding stood
+  // vessel-only, so nobody else ever held reach through that document: this stand mints a fresh Keyhive document
+  // for the same Automerge document, grants the face on it, and the record names the one that serves.
+  if (!(await args.keyhive.holdsHand(url))) {
+    keyhiveDocId = (await args.keyhive.remintBag(url)).docId;
+  }
   if (args.delegateToFace) {
     await args.delegateToFace(url, "admin");
   } else {
@@ -261,19 +270,21 @@ async function regrantOnSeat(
     ...carried,
     text:         url,
     "face-reach": "face",
+    "keyhive-doc-id": keyhiveDocId,
   }, "personal-bindings"), origin, { bag: DAEMON_BAG_ID });
 }
 
-/** A reused binding carries its Keyhive document identity beside its Automerge URL. */
+/** A reused binding carries its Keyhive document identity beside its Automerge URL; returns that identity. */
 function restoreBagRegistration(
   args: ResolveBindingArgs,
   key: string,
   url: string,
   fields: Record<string, unknown> | undefined,
-): void {
+): string {
   const keyhiveDocId = fields?.["keyhive-doc-id"];
   if (typeof keyhiveDocId !== "string" || keyhiveDocId.length === 0) {
     throw new BindingRegistrationRefusal(key, url);
   }
   args.keyhive.adoptBag(url, keyhiveDocId);
+  return keyhiveDocId;
 }

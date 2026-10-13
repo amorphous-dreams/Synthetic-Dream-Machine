@@ -23,7 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@keyhive/keyhive": "0.1.0-alpha.8",
+    "@keyhive/keyhive": "0.3.0-alpha.1",
     "@lararium/mesh": "workspace:*",
     "@lararium/tw5": "workspace:*"
   },

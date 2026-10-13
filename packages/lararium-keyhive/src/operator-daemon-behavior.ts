@@ -791,8 +791,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           ...(persistArchive     ? { persistArchive }     : {}),
           ...(persistVeilArchive ? { persistVeilArchive } : {}),
         },
-        exportArchive: () => keyhive.exportArchive(),
-        ...(veilKh ? { exportVeilArchive: () => veilKh!.exportArchive() } : {}),
+        // EACH STAND'S CARD MINTS BEFORE ITS ARCHIVE LEAVES. Every later ask in this boot (a binding's
+        // two-handed delegation, a face-join, a crossing) presents that same card, so the Archive that
+        // lands here holds the secret behind every prekey this boot presents.
+        exportArchive: () => keyhive.exportArchiveAfterTheCard(),
+        ...(veilKh ? { exportVeilArchive: () => veilKh!.exportArchiveAfterTheCard() } : {}),
       });
       // Archive refusal records use the daemon wiki's default writable layer, so attachment precedes them.
       await attachDaemonWorking(ctx);

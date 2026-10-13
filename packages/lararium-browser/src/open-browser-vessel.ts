@@ -70,6 +70,9 @@ import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 import { composeBrowser }                    from "./browser-caps.js";
 import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
 import { runFoundingCeremony, runApplyAdmitPayload, assemblePersonaGroupRing, mintDeviceMintedKey, veilFromDeviceKey } from "@lararium/keyhive";
+import {
+  loadBrowserKeyhiveArchive, requireBrowserKeyhiveArchive, saveBrowserKeyhiveArchive, saveBrowserVeilArchive,
+} from "./browser-keyhive-archive.js";
 import { vesselDyads } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
@@ -608,6 +611,10 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // can admit that key — so the admit ALWAYS arrives at a vessel that already founded its own group. The
   // anon founding is not a competing state; it is the FLOOR the admit lifts the vessel from. Gating the
   // admit behind `!bootstrap` therefore ignores every admit that will ever arrive.
+  // A FOUNDED VESSEL STANDS ONLY OVER ITS ARCHIVE. A bootstrap with no Archive beside it names a vessel whose
+  // individual could seal nothing into what it created; the boot refuses by row name before anything composes.
+  // An admit replaces the bootstrap and writes the row itself, so it passes.
+  if (bootstrap && !admit) await requireBrowserKeyhiveArchive(idbName);
   if (admit) {
     // JOIN. The founder's root already signed this vessel's edge, so the ceremony here ADOPTS a binding
     // rather than minting one: `runApplyAdmitPayload` seeds this vessel's OWN sovereign social docs and
@@ -617,6 +624,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     // The payload arrived as DATA — carried, never fetched — so this path runs with no network, no clock
     // and no server, which is also what makes it a pure function of its bytes and therefore testable.
     // It fails closed on a missing binding field: a half-bound daemon doc is the confused-deputy hole.
+    const keptArchive = await loadBrowserKeyhiveArchive(idbName);
     const a = await runApplyAdmitPayload({
       repo,
       vesselSeed,
@@ -628,7 +636,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       nexusPubkey,
       // A browser leaf holds no sealed custody root: its veil root is its device-minted key.
       deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
+      // AN ADMIT OVER A KEPT ARCHIVE RESTORES FROM IT. The vessel founded on its own before any admit could
+      // reach it, so an Archive already rests here; the individual stands again from it and what the admit
+      // hands back still holds every prekey secret the kept one held.
+      ...(keptArchive ? { archiveBytes: keptArchive } : {}),
     });
+    // The Archive rests before the bootstrap that names this admit: a boot that finds the bootstrap finds it.
+    await saveBrowserKeyhiveArchive(idbName, a.archive);
     bootstrap = {
       identitiesUrl: a.identitiesUrl, circlesUrl: a.circlesUrl, sessionsUrl: a.sessionsUrl,
       daemonUrl: a.daemonUrl, personaUrl: a.personaUrl, personaBagId: a.personaBagId,
@@ -671,6 +685,12 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // A browser leaf holds no sealed custody root: its veil root is its device-minted key.
       deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
     });
+    // THE FOUNDING'S ARCHIVES REST BEFORE ITS BOOTSTRAP. The ceremony's providers left with the act; the key
+    // agreement state of what they created lives in these bytes alone. Veil first, then the vessel's own, then
+    // (later, with the boot keys) the bootstrap that commits the founding: a founding that stops before its
+    // bootstrap runs again whole and replaces both rows.
+    await saveBrowserVeilArchive(idbName, FOUNDING_PERSONA_INDEX, f.veilArchive);
+    await saveBrowserKeyhiveArchive(idbName, f.archive);
     bootstrap = {
       identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
       personaPlanes: [{ personaGroupId: f.personaGroupDocIdHex, url: f.personaUrl }],
@@ -1077,12 +1097,18 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       if (!personaKelChain || personaKelChain.length === 0) {
         throw new Error(`[lararium-browser] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from the local board — the Binding Gate cannot reach a head (fail-closed).`);
       }
+      const standingArchive = await requireBrowserKeyhiveArchive(idbName);
       const daemonAuth = {
         seed: vesselSeed, vesselVerifyingKey: vesselIdentity.verifyingKey,
+        // THE VESSEL'S OWN ARCHIVE, as its founding or its admit left it in the keystore. The island's keyhive
+        // restores from it and then replays the cap events, so this individual still seals into every
+        // document it created.
+        archiveBytes: standingArchive,
         // A BROWSER VESSEL HOLDS NO SEALED IDENTITY HOME, so the archive-write door's reading is
         // vacuously open here: no seal stands that could hold it shut.
         // It stays INERT regardless: this entry injects no `persistArchive`/`persistVeilArchive`, so
-        // the door has no writer to call ("the archive floor simply never persists"). The field rides
+        // the door has no writer to call and the island's per-boot export never lands; the keystore keeps
+        // the Archive each founding act handed out. The field rides
         // REQUIRED so a populator that answers nothing fails at the compiler rather than at review.
         archiveOpens: true,
         personaGroupDocIdHex: wornMount?.personaGroupDocIdHex   ?? social.personaGroupDocIdHex,

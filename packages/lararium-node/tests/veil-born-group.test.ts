@@ -50,10 +50,11 @@ describe("the veil-born group", () => {
     const tag = tiddlerText(doc.tiddlers[DYAD_VEIL_TAG_TIDDLER]);
     expect(tag).toBeTruthy();
 
-    // Stand the veil identity exactly as boot will: derive the seed, hydrate over the daemon doc.
+    // Stand the veil identity exactly as boot will: derive the seed, restore the Archive the founding handed
+    // out (the creator's key agreement state rests there and nowhere else), hydrate over the daemon doc.
     const veil = await deriveDyadVeil(FOUNDER_SEED, tag!);
     const veilKh = new KeyhiveProvider();
-    await veilKh.init({ seed: hexToBytes(veil.signingKey), eventStore: await replayCapEvents(handle as never) });
+    await veilKh.init({ seed: hexToBytes(veil.signingKey), eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
     await veilKh.hydrateFromEventStore();
     const vesselKh = new KeyhiveProvider();
     await vesselKh.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });
@@ -99,7 +100,7 @@ describe("the veil-born group", () => {
     const tag = tiddlerText((handle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
     const founderVeilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: hexToBytes(founderVeilKeys.signingKey), eventStore: await replayCapEvents(handle as never) });
+    await seat.init({ seed: hexToBytes(founderVeilKeys.signingKey), eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
     await seat.hydrateFromEventStore();
 
     const founderVessel = new KeyhiveProvider();
@@ -145,7 +146,7 @@ describe("the veil-born group", () => {
     const tag = tiddlerText((handle.doc() as unknown as LarDoc).tiddlers[DYAD_VEIL_TAG_TIDDLER])!;
     const founderVeilKeys = await deriveDyadVeil(FOUNDER_SEED, tag);
     const seat = new KeyhiveProvider();
-    await seat.init({ seed: hexToBytes(founderVeilKeys.signingKey), eventStore: await replayCapEvents(handle as never) });
+    await seat.init({ seed: hexToBytes(founderVeilKeys.signingKey), eventStore: await replayCapEvents(handle as never), archiveBytes: f.veilArchive });
     await seat.hydrateFromEventStore();
     const founderVessel = new KeyhiveProvider();
     await founderVessel.init({ seed: FOUNDER_SEED, eventStore: await replayCapEvents(handle as never) });

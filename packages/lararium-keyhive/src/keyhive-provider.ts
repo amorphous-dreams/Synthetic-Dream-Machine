@@ -1,6 +1,7 @@
+/// <reference path="./keyhive-wasm-base64.d.ts" />
 /**
  * KeyhiveProvider — CapabilityProvider implementation atop @keyhive/keyhive
- * (0.1.0-alpha.6).
+ * (@keyhive/keyhive 0.3.0-alpha.1).
  *
  * Mapping:
  *   - Lararium bag URL ↔ Keyhive Document, 1:1
@@ -13,8 +14,8 @@
  *
  * Caveats (pre-alpha):
  *   - No security audit; not for adversarial multi-peer use
- *   - Wire format may rev between alpha versions; pin @keyhive/keyhive
- *     and treat upgrades as planned breaking changes
+ *   - Archives and events carry no format tag: bytes one keyhive version wrote do not open under
+ *     another. Pin @keyhive/keyhive exactly; a version move is a planned re-founding
  *   - PREKEY_ROTATED fires often; production EventStore should batch
  */
 
@@ -23,10 +24,9 @@
 // and kills the module at evaluation. The slim build does NOT auto-init on import; we feed
 // its wasm as CONTENT (off the module graph), the same law the engine bytes obey.
 import * as KH from "@keyhive/keyhive/slim";
-// @ts-expect-error — keyhive's base64 .d.ts is a `declare module` augmentation, not a module
-// (TS2306); the runtime export `wasmBase64` (a base64 string) resolves fine in node + vite.
-import { wasmBase64 } from "@keyhive/keyhive/keyhive_wasm.base64.js";
+import { wasmBase64 } from "@keyhive/keyhive/wasm-base64";
 import { adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, webDigest } from "@lararium/mesh";
+import { base64ToBytes } from "./bytes-base64.js";
 import { ingestTolerant } from "./ingest-tolerant.js";
 import { inSelfSlice } from "./event-store.js";
 import type {
@@ -46,25 +46,16 @@ function ensurePanicHook(): void {
 }
 
 /** The keyhive WASM must instantiate before ANY KH call (including setPanicHook). The slim
- *  build is fed content, never an asset URL — default the inlined base64; a host MAY feed
- *  content-addressed bytes (CID/CAS, the engine-bytes law) via setKeyhiveWasmBytes() first. */
-let keyhiveWasmReady = false;
+ *  build is fed content, never an asset URL — default the package's inlined base64; a host MAY feed
+ *  content-addressed bytes (CID/CAS, the engine-bytes law) via setKeyhiveWasmBytes() first.
+ *  `initSync` answers a second call with the instance already live, so a worker entry that
+ *  instantiated this same module first (init-before-chain-eval) and this call agree; a wasm that
+ *  fails to instantiate throws here, where the caller sees it. */
 let keyhiveWasmBytesOverride: Uint8Array | undefined;
 export function setKeyhiveWasmBytes(bytes: Uint8Array): void { keyhiveWasmBytesOverride = bytes; }
 export function ensureKeyhiveWasm(): void {
-  if (keyhiveWasmReady) return;
-  keyhiveWasmReady = true; // set first — re-entry + double-init are both no-ops
-  try {
-    if (keyhiveWasmBytesOverride) {
-      (KH as unknown as { initSync: (o: { module: Uint8Array }) => void }).initSync({ module: keyhiveWasmBytesOverride });
-    } else {
-      KH.initFromBase64Wasm(wasmBase64);
-    }
-  } catch {
-    // The worker entry may have already instantiated this same bundled wasm instance
-    // (init-before-chain-eval). A second init throws ("already initialized") — harmless;
-    // the module's wasm is live either way.
-  }
+  (KH as unknown as { initSync: (o: { module: Uint8Array }) => unknown })
+    .initSync({ module: keyhiveWasmBytesOverride ?? base64ToBytes(wasmBase64) });
 }
 
 function bytesToHex(bytes: Uint8Array): string {
@@ -74,8 +65,7 @@ function bytesToHex(bytes: Uint8Array): string {
 /**
  * eventIsland (CIV-3) — self-attribute a cap-event's island (the target Document's id hex, the
  * same key-space bagToDocId + list(islandId) route on) off the event's OWN bytes. DELEGATED reads
- * `subjectId`; REVOKED reads `delegation.subject_id` (snake_case here — a real casing split from
- * the delegation's camelCase `subjectId`, load-bearing). The subject is the Document the op acts
+ * `subjectId`; REVOKED reads `delegation.subjectId`. The subject is the Document the op acts
  * ON (e.g. the MeshCabal a persona is added INTO), so the founding cross-island edges self-stamp
  * for free. CGKA_OPERATION / PREKEY_ROTATED expose no docId at the JS boundary → undefined, and an
  * unattributed event co-loads into every island's slice — exactly the reach a per-principal prekey
@@ -83,10 +73,10 @@ function bytesToHex(bytes: Uint8Array): string {
  */
 function eventIsland(e: KH.Event): string | undefined {
   try {
-    const sd = e.tryIntoSignedDelegation();
+    const sd = e.asSignedDelegation();
     if (sd) return bytesToHex(sd.subjectId.toBytes());
-    const sr = e.tryIntoSignedRevocation();
-    if (sr) return bytesToHex(sr.delegation.subject_id.toBytes());
+    const sr = e.asSignedRevocation();
+    if (sr) return bytesToHex(sr.delegation.subjectId.toBytes());
   } catch { /* a variant without a recoverable subject stays cross-cutting */ }
   return undefined;
 }
@@ -140,13 +130,16 @@ export class KeyhiveProvider implements CapabilityProvider {
   private readonly delegations = new Map<string, Uint8Array>();
   /** delegationId → audience DID (so revoke can rebuild the addMember target). */
   private readonly delegationAudience = new Map<string, string>();
-  /** delegationId → bag URL (so revoke knows which Document.toMembered() to use). */
+  /** delegationId → bag URL (so revoke knows which document's membership to close). */
   private readonly delegationBag = new Map<string, string>();
   /** bagUrl → (contentRef hex → its latest ciphertext). A re-key re-seals these to the current membership:
    *  keyhive reads FORWARD-ONLY, so a member seated after a chunk was sealed reaches it only once the holder
    *  re-encrypts it at the member's epoch (`reSealBag`). Only ciphertext is held — this holder already decrypts
    *  its own chunks, so plaintext never rests here. */
   private readonly bagChunks = new Map<string, Map<string, Uint8Array>>();
+  /** The one contact card this stand mints (see `contactCard`): the mint itself, in flight or settled; null until
+   *  the first ask. */
+  private standCard: Promise<Uint8Array> | null = null;
   /** CIV-2b — islands whose events already sit in keyhive memory: the self slice seeded eagerly at boot,
    *  every island this vessel minted/adopted live, plus any foreign island a first-access materialized.
    *  A resident island's lazy-load noops. */
@@ -165,7 +158,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     const signer = KH.Signer.memorySignerFromBytes(opts.seed);
     const store  = KH.CiphertextStore.newInMemory();
     // The identity a boot stands is the SEED's — an Individual's Identifier IS its signer's verifying key
-    // (`whoami.bytes` === `signer.verifyingKey`). An archive that restores a DIFFERENT identity is a cache
+    // (`whoami.toBytes()` === `signer.verifyingKey`). An archive that restores a DIFFERENT identity is a cache
     // of some other founding, never this seed's identity.
     const seedIdentity = bytesToHex(signer.verifyingKey);
 
@@ -210,8 +203,8 @@ export class KeyhiveProvider implements CapabilityProvider {
       // and standing fresh in its place would let the next export land an empty identity over the kept row. The
       // row and the seed disagree: the fault names itself, the provider holds nothing, and whoever founds a face
       // anew writes that face's own archive in the act that founds it.
-      if (bytesToHex(this.kh.whoami.bytes) !== seedIdentity) {
-        const restored = bytesToHex(this.kh.whoami.bytes).slice(0, 20);
+      if (bytesToHex(this.kh.whoami.toBytes()) !== seedIdentity) {
+        const restored = bytesToHex(this.kh.whoami.toBytes()).slice(0, 20);
         this.kh = null;
         throw new ArchiveIdentityMismatch(restored, seedIdentity.slice(0, 20));
       }
@@ -250,21 +243,49 @@ export class KeyhiveProvider implements CapabilityProvider {
     // NOT idString — that formatter trims per-byte leading zeros and
     // produces strings of inconsistent length (~60 chars vs the canonical
     // 64). Use the raw bytes via `whoami: IndividualId` and our own hex.
-    return bytesToHex(this.requireKh().whoami.bytes);
+    return bytesToHex(this.requireKh().whoami.toBytes());
   }
 
+  /**
+   * This stand's contact card. ONE CARD PER STAND: the first call mints it and every later call answers the same
+   * bytes.
+   *
+   * Minting a card mints a prekey, and a prekey's secret rests in this provider and in whatever Archive leaves
+   * AFTER the mint. A stand that minted a card per ask would hand peers prekeys no kept Archive holds: the peer
+   * adds this identity under one, the stand ends, and the next stand reads `Key not found`. So a stand mints once,
+   * the shore takes the Archive after that mint (`exportArchiveAfterTheCard`), and every prekey this identity ever
+   * presented stays openable from the Archive lineage.
+   */
   async contactCard(): Promise<Uint8Array> {
-    // ContactCard serializes as JSON (toJson / fromJson) in alpha.56c.
-    // We wrap it in a UTF-8 byte form so transport layers stay byte-uniform.
-    const card = await this.requireKh().contactCard();
-    return new TextEncoder().encode(card.toJson());
+    // THE MINT IN FLIGHT IS THE CARD. Two asks that arrive together await one mint: the promise rests here before
+    // the wasm answers, so a second ask never passes an empty slot and mints a second prekey.
+    this.standCard ??= (async () => {
+      // ContactCard serializes as JSON (toJson / fromJson).
+      // We wrap it in a UTF-8 byte form so transport layers stay byte-uniform.
+      const card = await this.requireKh().contactCard();
+      return new TextEncoder().encode(card.toJson());
+    })();
+    const minting = this.standCard;
+    try {
+      return (await minting).slice();
+    } catch (err) {
+      // A mint that refused leaves no card: the next ask mints again.
+      if (this.standCard === minting) this.standCard = null;
+      throw err;
+    }
+  }
+
+  /** The Archive of this stand WITH its card's prekey inside: mints the stand's card first when none stands yet. */
+  async exportArchiveAfterTheCard(): Promise<Uint8Array> {
+    await this.contactCard();
+    return this.exportArchive();
   }
 
   async receiveContactCard(bytes: Uint8Array): Promise<{ id: PeerDID }> {
     const json = new TextDecoder().decode(bytes);
     const card = KH.ContactCard.fromJson(json);
     const individual = await this.requireKh().receiveContactCard(card);
-    const idBytes = individual.id.toBytes();
+    const idBytes = individual.toBytes();
     return { id: bytesToHex(idBytes) };
   }
 
@@ -273,12 +294,44 @@ export class KeyhiveProvider implements CapabilityProvider {
     if (cached) return { docId: cached };
 
     const cid = await changeIdForBag(bagUrl);
-    const doc = await this.requireKh().generateDocument([], cid, []);
-    const docIdHex = bytesToHex(doc.id.toBytes());
+    const docId = await this.requireKh().generateDocument([], cid, []);
+    const docIdHex = bytesToHex(docId.toBytes());
     this.bagToDocId.set(bagUrl, docIdHex);
     this.docIdToBag.set(docIdHex, bagUrl);
     this.hydratedIslands.add(docIdHex);   // CIV-2b — a freshly-minted island is live in memory, never deferred
     return { docId: docIdHex };
+  }
+
+  /**
+   * Whether this provider still holds its hand in a bag's document: the document resolves and this identity rides
+   * its key agreement. It reads KEY AGREEMENT, never access grade: a true answer says this stand can derive the
+   * document's keys, and `delegate` still judges whether its grant admits the act. Cap events carry a document's membership lattice and never a member's key agreement
+   * state, so a document known from replayed events alone, created by a stand whose Archive nobody kept, reads
+   * with no member here and answers false; `delegate` and `encryptContent` both refuse on it.
+   */
+  async holdsHand(bagUrl: string): Promise<boolean> {
+    const docIdHex = this.bagToDocId.get(bagUrl);
+    if (!docIdHex) return false;
+    await this.ensureIsland(docIdHex);
+    const kh = this.requireKh();
+    // An identity that names no document (bytes that parse as none) holds nobody's hand, this provider's included.
+    let docId: KH.DocumentId;
+    try { docId = new KH.DocumentId(hexToBytes(docIdHex)); } catch { return false; }
+    const doc = await kh.getDocument(docId);
+    if (!doc) return false;
+    const self = bytesToHex(kh.whoami.toBytes());
+    const members = await doc.cgkaMembers();
+    return members.some((id) => bytesToHex(id.toBytes()) === self);
+  }
+
+  /** Mint a fresh document for `bagUrl`, replacing whatever mapping stood (see `holdsHand`). */
+  async remintBag(bagUrl: string): Promise<{ docId: string }> {
+    const prior = this.bagToDocId.get(bagUrl);
+    if (prior) { this.bagToDocId.delete(bagUrl); this.docIdToBag.delete(prior); }
+    // Ciphertext this process remembered for the bag belongs to the document that leaves; a later re-seal reads
+    // the chunk cache through the bag's CURRENT document and would refuse on every one of them.
+    this.bagChunks.delete(bagUrl);
+    return this.registerBag(bagUrl);
   }
 
   /**
@@ -301,19 +354,19 @@ export class KeyhiveProvider implements CapabilityProvider {
     const docId = new KH.DocumentId(hexToBytes(docIdHex));
 
     const access = KH.Access.tryFromString(args.access);
-    if (!access) throw new Error(`invalid access: ${args.access} (Keyhive accepts only "read" or "admin")`);
+    if (!access) throw new Error(`invalid access: ${args.access} (Keyhive accepts only "relay", "read", "edit", or "admin")`);
 
     const audienceId = new KH.Identifier(hexToBytes(args.audience));
     const audienceAgent = await this.requireKh().getAgent(audienceId);
     if (!audienceAgent) throw new Error(`audience not known to this provider — exchange contact cards first`);
 
-    // Need the actual Document, not just its id, to call toMembered().
+    // A grant names a document this provider holds; an id it cannot resolve refuses here, by bag.
     const doc = await this.requireKh().getDocument(docId);
     if (!doc) throw new Error(`document not in scope (lost from local state?): ${args.bagUrl}`);
 
     // addMember returns the SignedDelegation directly (the group re-keys to the new reader's own prekey).
     const signedDelegation = await this.withActiveIsland(docIdHex, () => this.requireKh().addMember(
-      audienceAgent, doc.toMembered(), access, [],
+      audienceAgent.id, KH.MemberedId.document(docId), access, [],
     ));
 
     // SignedDelegation exposes .signature: Uint8Array (unique per delegation) — we use
@@ -358,8 +411,8 @@ export class KeyhiveProvider implements CapabilityProvider {
     const cid = new KH.ChangeId(refBytes);
     const preds = (opts?.predRefs ?? []).map((r) => new KH.ChangeId(r));
     const docIdHex = this.bagToDocId.get(bagUrl)!; // requireDoc guaranteed it (throws when absent)
-    const result = await this.withActiveIsland(docIdHex, () => this.requireKh().tryEncrypt(doc, cid, preds, content));
-    const ciphertext = result.encrypted_content().serialize();
+    const result = await this.withActiveIsland(docIdHex, () => this.requireKh().tryEncrypt(doc.docId, cid, preds, content));
+    const ciphertext = result.encryptedContent().toBytes();
     // Remember the chunk by its ref so a later re-key can RE-SEAL it — the pre-seat chunk a re-delegate cannot
     // reach on its own (forward-only read). A re-seal overwrites this same entry with the fresh ciphertext.
     let chunks = this.bagChunks.get(bagUrl);
@@ -398,7 +451,7 @@ export class KeyhiveProvider implements CapabilityProvider {
    */
   async decryptContent(bagUrl: string, encryptedBytes: Uint8Array): Promise<Uint8Array> {
     const doc = await this.requireDoc(bagUrl);
-    return this.requireKh().tryDecrypt(doc, KH.Encrypted.fromBytes(encryptedBytes));
+    return this.requireKh().tryDecrypt(doc.docId, KH.Encrypted.fromBytes(encryptedBytes));
   }
 
   /**
@@ -447,7 +500,9 @@ export class KeyhiveProvider implements CapabilityProvider {
     const audienceAgent = await this.requireKh().getAgent(audienceId);
     if (!audienceAgent) throw new Error(`revoke(): audience agent not known: ${audience.slice(0, 16)}…`);
 
-    const revocations = await this.withActiveIsland(docIdHex, () => this.requireKh().revokeMember(audienceAgent, true, doc.toMembered()));
+    const revocations = await this.withActiveIsland(docIdHex, () => this.requireKh().revokeMember(
+      audienceAgent.id, true, KH.MemberedId.document(docId),
+    ));
     if (!revocations || revocations.length === 0) {
       throw new Error("revoke(): revokeMember produced no revocation events");
     }
@@ -474,7 +529,7 @@ export class KeyhiveProvider implements CapabilityProvider {
       return { ok: false, reason: "no access granted" };
     }
     const grantedStr = granted.toString().toLowerCase();
-    // admin satisfies read; read does NOT satisfy admin.
+    // The gate is binary: ANY grant answers a read, and only an admin grant answers admin.
     if (args.access === "read")  return { ok: true };
     if (args.access === "admin" && grantedStr === "admin") return { ok: true };
     return { ok: false, reason: `granted=${grantedStr}, required=${args.access}` };
@@ -502,8 +557,10 @@ export class KeyhiveProvider implements CapabilityProvider {
    */
   async createSentinelDoc(sentinelUri: string): Promise<{ docIdHex: string; agentIdHex: string }> {
     const cid = await changeIdForBag(sentinelUri);
-    const doc = await this.requireKh().generateDocument([], cid, []);
-    const docIdHex   = bytesToHex(doc.doc_id.toBytes());
+    const docId = await this.requireKh().generateDocument([], cid, []);
+    const doc = await this.requireKh().getDocument(docId);
+    if (!doc) throw new Error("[keyhive] generated sentinel document is not available");
+    const docIdHex   = bytesToHex(docId.toBytes());
     const agentIdHex = bytesToHex(doc.id.toBytes());
     return { docIdHex, agentIdHex };
   }
@@ -528,7 +585,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     const access  = KH.Access.tryFromString("admin");
     if (!access) throw new Error("[keyhive] Access.tryFromString('admin') returned undefined");
 
-    await this.withActiveIsland(sentinelDocIdHex, () => this.requireKh().addMember(agent, doc.toMembered(), access, []));
+    await this.withActiveIsland(sentinelDocIdHex, () => this.requireKh().addMember(agent.id, KH.MemberedId.document(docId), access, []));
   }
 
   /**
@@ -556,7 +613,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     const agent   = await this.requireKh().getAgent(agentId);
     if (!agent) throw new Error(`[keyhive] agent not found for sentinel revoke: ${memberIdentifierHex.slice(0, 16)}…`);
 
-    const revocations = await this.withActiveIsland(sentinelDocIdHex, () => this.requireKh().revokeMember(agent, true, doc.toMembered()));
+    const revocations = await this.withActiveIsland(sentinelDocIdHex, () => this.requireKh().revokeMember(agent.id, true, KH.MemberedId.document(docId)));
     if (!revocations || revocations.length === 0) {
       throw new Error("[keyhive] revokeSentinelMember produced no revocation events");
     }
@@ -618,7 +675,7 @@ export class KeyhiveProvider implements CapabilityProvider {
    * Used during init to wire the founding vessel into the PersonaGroup sentinel.
    */
   async vesselIdentifierHex(): Promise<string> {
-    const individual = await this.requireKh().individual;
+    const individual = await this.requireKh().individual();
     return bytesToHex(individual.id.toBytes());
   }
 
@@ -719,6 +776,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     await this.settleEvents();
     // Keyhive WASM types support Symbol.dispose; rely on JS GC otherwise.
     this.kh = null;
+    this.standCard = null;
     this.bagToDocId.clear();
     this.docIdToBag.clear();
     this.delegations.clear();

@@ -75,6 +75,7 @@ export function fakeAdmitResult(): Record<string, unknown> {
     identitiesUrl: generateAutomergeUrl(), circlesUrl: generateAutomergeUrl(), sessionsUrl: generateAutomergeUrl(),
     daemonUrl: generateAutomergeUrl(), personaUrl: generateAutomergeUrl(), personaBagId: "persona-wire-rig",
     contactCardJson: "{\"wire\":\"rig\"}", hearthDaemonUrl: null,
+    archive: new Uint8Array([0x77, 0x69, 0x72, 0x65]),
   };
 }
 

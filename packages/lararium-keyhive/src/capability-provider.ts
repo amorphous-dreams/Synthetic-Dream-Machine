@@ -93,6 +93,15 @@ export interface CapabilityProvider extends CapabilityVerifier {
   /** Restore the process-local mapping for a document whose identity is carried by a binding record. */
   adoptBag(bagUrl: string, docIdHex: string): void;
 
+  /** Whether this provider can still act as a member of the bag's Keyhive document: add a member to it, or seal
+   *  into it. A document it knows from replayed events alone, created by a stand whose Archive nobody kept,
+   *  answers false: its key agreement state left with that stand. */
+  holdsHand(bagUrl: string): Promise<boolean>;
+
+  /** Mint a FRESH Keyhive document for a bag this provider holds no hand in, replacing the process-local
+   *  mapping. The caller records the returned identity wherever it recorded the one it replaces. */
+  remintBag(bagUrl: string): Promise<{ docId: string }>;
+
   delegate(args: DelegateArgs): Promise<DelegateResult>;
   revoke(delegationId: string): Promise<{ bytes: Uint8Array }>;
   verify(args: VerifyArgs): Promise<VerifyResult>;
