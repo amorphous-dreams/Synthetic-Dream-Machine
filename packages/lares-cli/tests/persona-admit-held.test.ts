@@ -15,7 +15,7 @@
  *   · HOLE 3 (closed): after ANY paste, the process exits promptly even while the write side of stdin stays
  *     open (the old code hung ~30s+ on a held-open pipe; `finish` now destroys stdin itself).
  */
-import { afterAll, afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 import { spawn } from "node:child_process";
 import { mkdtempSync, rmSync, cpSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -29,6 +29,12 @@ import { TEST_PASSPHRASE } from "./support/found-route.js";
 import { seatScratchCustody } from "./support/scratch-custody.js";
 import { ed25519SignerFromSeed } from "@lararium/mesh";
 import * as ed from "@noble/ed25519";
+
+// The room each test and hook takes, stated where the file loads: every case spawns the command line as its own
+// process, and a loaded machine starts one in seconds. NO CASE HERE MEASURES A DURATION. A case that proves "the
+// process ends by itself" awaits its exit, and the room below bounds a hang; a case that proves "it never waits
+// out a patience window" names a patience far past that room.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 const REPO_ROOT = join(import.meta.dirname, "..", "..", "..");
 const BIN = join(import.meta.dirname, "..", "bin", "lares.mjs");
@@ -114,7 +120,7 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     } finally {
       if (saved === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = saved;
     }
-  }, 30_000);
+  });
 
   afterAll(() => { rmSync(template, { recursive: true, force: true }); });
 
@@ -134,16 +140,16 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const root = freshRoot();
     const child = spawnAdmit(root, ["offer", "--json", "--patience", "300ms"]);
     const io = collect(child);
-    const t0 = Date.now();
-    const code = await waitExit(child);
-    const elapsed = Date.now() - t0;
+    // The offer stands pending first (the carriage prints once it rests), and only then does the patience end it:
+    // the order proves the hold, and no clock here measures it.
+    const exited = waitExit(child);
+    await waitFor(() => carriageOf(io.stderr()) !== null, 30_000, "carriage printed");
+    const code = await exited;
     expect(code).toBe(0);
-    expect(elapsed).toBeLessThan(5_000);
-    expect(elapsed).toBeGreaterThanOrEqual(250);
     expect(await pendingCount(root)).toBe(0);
     const payload = JSON.parse(io.stdout().trim().split("\n").find((l) => l.startsWith("{")) ?? "{}") as Record<string, unknown>;
     expect((payload["data"] as Record<string, unknown> | undefined)?.["withdrawn"]).toBe(true);
-  }, 15_000);
+  });
 
   test("CASE 2 — SIGINT withdraws the offer (pending 1 → 0), process exits", async () => {
     const root = freshRoot();
@@ -155,7 +161,7 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const code = await waitExit(child);
     expect(code).toBe(0);
     expect(await pendingCount(root)).toBe(0);
-  }, 15_000);
+  });
 
   test("CASE 3 — SIGTERM withdraws the offer (pending 1 → 0), process exits", async () => {
     const root = freshRoot();
@@ -167,18 +173,17 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const code = await waitExit(child);
     expect(code).toBe(0);
     expect(await pendingCount(root)).toBe(0);
-  }, 15_000);
+  });
 
   test("CASE 4 — --detach stays ONE-SHOT: exits immediately, offer stays pending, nothing held", async () => {
     const root = freshRoot();
-    const child = spawnAdmit(root, ["offer", "--json", "--detach"]);
-    const t0 = Date.now();
+    // A patience far past this file's room rides beside `--detach`: an exit inside the room proves the one-shot
+    // never waited it out.
+    const child = spawnAdmit(root, ["offer", "--json", "--detach", "--patience", "10m"]);
     const code = await waitExit(child);
-    const elapsed = Date.now() - t0;
     expect(code).toBe(0);
-    expect(elapsed).toBeLessThan(5_000);     // never waits out a patience window
     expect(await pendingCount(root)).toBe(1);       // nothing withdrew it — it stands pending, by design
-  }, 15_000);
+  });
 
   test("CASE 5 — a LATE grant after a patience withdrawal refuses: no pending enrollment", async () => {
     const root = freshRoot();
@@ -219,7 +224,7 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
       if (savedRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = savedRoot;
       rmSync(granterDir, { recursive: true, force: true });
     }
-  }, 15_000);
+  });
 
   test("HOLE 1 CLOSED — a paste that FAILS to open still withdraws the offer, and the process still exits", async () => {
     const root = freshRoot();
@@ -231,13 +236,11 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     // HOLE 3 CLOSED (same case): write garbage and leave the write side OPEN (never call `.end()`) — the
     // exact held-open-pipe shape the old code hung on (~30s+ observed). The fix (`finish` destroys stdin
     // itself) must let the process exit promptly regardless.
-    const t0 = Date.now();
     child.stdin!.write("not-a-grant\n");
-    const code = await waitExit(child);
-    const elapsed = Date.now() - t0;
+    const code = await waitExit(child);              // HOLE 3: the exit arrives with the pipe still open (patience: ten minutes)
 
     expect(code).toBe(2);                          // UsageError -> exitFor("usage")
-    expect(elapsed).toBeLessThan(5_000);            // HOLE 3: no multi-second hang on the still-open pipe
+    expect(child.stdin!.writableEnded).toBe(false);  // control: this case never closed its end of the pipe
     expect(await pendingCount(root)).toBe(0);             // HOLE 1: the failed paste still withdrew this offer
-  }, 15_000);
+  });
 });

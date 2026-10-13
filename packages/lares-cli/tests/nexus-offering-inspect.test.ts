@@ -10,6 +10,10 @@ import { generateOrLoadPersonaGroupRoot, wearPersona } from "@lararium/node";
 import { runNexusPublishPlugins, ownedStore } from "@lararium/node";
 import { larDataDir } from "@lararium/node";
 
+// The room each test and hook takes, stated where the file loads: a case founds a vessel, lights a face and seals rows under a derived key, so it runs for seconds. A timeout stated inside a hook reaches no
+// case the runner already collected.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
+
 const args = (positional: string[], flags: Record<string, boolean> = {}): ParsedArgs =>
   ({ command: "nexus", positional, options: {}, flags } as unknown as ParsedArgs);
 

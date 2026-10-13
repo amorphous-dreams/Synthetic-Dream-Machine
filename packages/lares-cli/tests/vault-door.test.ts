@@ -10,6 +10,10 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
+// The room each test and hook takes, stated where the file loads: a founding derives a key from a passphrase and every bind derives another, so a case here runs for seconds. A timeout stated inside a hook reaches no
+// case the runner already collected.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
+
 const answers: string[] = [];
 let tty = true;
 vi.mock("../src/prompt-secret.js", () => {

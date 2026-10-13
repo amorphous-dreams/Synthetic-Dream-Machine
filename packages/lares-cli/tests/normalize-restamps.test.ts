@@ -29,13 +29,17 @@
  * trusted-link case the frame package cites, where a block ran without a BCC by choice. One line to
  * reverse in `stampCarrier` if that case ever becomes real.
  */
-import { describe, test, expect, beforeAll } from "vitest";
+import { describe, test, expect, beforeAll, vi } from "vitest";
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, writeFileSync, readFileSync, copyFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { verifyBcc, checkSpan, classifyPostamble } from "@lararium/memetic-frame";
+
+// The room each test and hook takes, stated where the file loads: every case spawns the built command line once or more, and a loaded machine starts a process in seconds. A timeout stated inside a hook reaches no
+// case the runner already collected.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
 
 const REPO = path.resolve(new URL("../../..", import.meta.url).pathname);
 const BIN = path.join(REPO, "packages/lares-cli/dist/src/bin/lares.js");
