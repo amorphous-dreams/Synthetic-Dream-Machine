@@ -24,6 +24,22 @@ import { casDirForStorage, readVerifiedCasBlobFromFs, writeCasEntriesFs } from "
 import { cadSealDir } from "./seal-carrier-federation.js";
 import { fsProviderChunkRest, fsSealedStoreRest, sealedStoreDir } from "./sealed-store-fs.js";
 
+/**
+ * The daemon island's own storage directory, as its manifest names it: the island's Repo store where it keeps
+ * one, else the store of the document it owns. A vessel's daemon island owns its document and keeps no other
+ * store, so the owned document's directory names where this island rests; either directory stands as a child of
+ * the vessel's storage root, which the shore below reads. Null for an island with no directory of its own.
+ */
+export function islandStorageDirOf(manifest: {
+  readonly storage?: { readonly type: string; readonly dir?: string };
+  readonly ownedDocument?: { readonly storage?: { readonly type: string; readonly dir?: string } };
+}): string | null {
+  for (const storage of [manifest.storage, manifest.ownedDocument?.storage]) {
+    if (storage?.type === "nodefs" && typeof storage.dir === "string" && storage.dir.length > 0) return storage.dir;
+  }
+  return null;
+}
+
 /** The sealed store's shore for a daemon island whose own storage directory reads `islandStorageDir`. */
 export function nodeSealedStoreShore(islandStorageDir: string): SealedStoreShore {
   const storageDir = dirname(islandStorageDir);

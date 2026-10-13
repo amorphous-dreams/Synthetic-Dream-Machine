@@ -14,7 +14,7 @@ import { runVaultVerb } from "./archive-passphrase.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import { HULLS_FULL } from "@lararium/mesh";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
-import { nodeSealedStoreShore } from "./sealed-store-island.js";
+import { islandStorageDirOf, nodeSealedStoreShore } from "./sealed-store-island.js";
 
 // The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that lands the
 // keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes
@@ -32,6 +32,7 @@ const sealOnVessel = parentPort ? vesselCustodyWriter(parentPort) : null;
 const dyadOnVessel = parentPort ? vesselDyadAsker(parentPort) : null;
 
 runSovereignWorker((manifest) => {
+  const islandStorageDir = islandStorageDirOf(manifest);
   // THE ISOMORPHIC SEED LIFT: a NODE vessel reaches py/R, so it passes HULLS_FULL — makeDaemonBehavior's
   // ONE cap-gated seedDaemonProtocol (onEa) then seeds this vessel's FULL enactable flow-set (all three)
   // plus the Ui/Persona/Circle seeds, from the single site. This entry no longer re-seeds (the two-site
@@ -46,7 +47,7 @@ runSovereignWorker((manifest) => {
     // THE SEALED STORE'S SHORE: the content-key holder stands in this island, beside its Keyhive identities, over
     // the vessel's own `sealed/`, `cad/` and cleartext-local tiers. An island with no directory of its own gets
     // none, and its `sealed-*` verbs refuse by name.
-    ...(manifest.storage?.type === "nodefs" ? { sealedStore: nodeSealedStoreShore(manifest.storage.dir) } : {}),
+    ...(islandStorageDir !== null ? { sealedStore: nodeSealedStoreShore(islandStorageDir) } : {}),
     ...(sealOnVessel ? {
       persistArchive:     (bytes: Uint8Array) => sealOnVessel("archive", bytes),
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
