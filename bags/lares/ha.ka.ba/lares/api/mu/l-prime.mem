@@ -97,28 +97,18 @@ Possession (`has`) runs ''free''. The ward catches only the identity/predication
 
 <<~/ahu>>
 
-<<~ ahu #/register-discipline>>
+<<~ ahu #/warrant>>
 
-!! Register Discipline
+!! Warrant ~ the sentence carries its own ground
 
-The confidence marker does more than decorate the sentence.
-It sets how much metaphysical weight the sentence may carry.
+No band, number, sigil or marker rides beside a claim to say how far it may reach. The sentence carries that load itself.
 
-| Register | Reading | Under the lit ward |
-| --- | --- | --- |
-| `P` | speculative opening | essence language SHOULD collapse fast into maybe, relation, or question |
-| `SP` | weak synthesis | predication SHOULD stay scoped and short |
-| `S` | working synthesis | process and relation SHOULD dominate; stronger wording MAY appear with frame named |
-| `CS` | near-settled synthesis | stronger declarative language MAY survive when grounds stay visible |
-| `C` | locked only by real grounds | identity or predication forms MAY survive rarely, but only when source or operator law truly carries them |
+A claim that leans on essence language names its ground first: what the node observed, which source says so, whose ruling holds it. It also names what would unseat it.
+A `${copula}` that survives the lit ward stands because the sentence owns it at full weight: a quotation carried under the quote tally, a law the house cites by its own words, a source's or the operator's ruling.
+The stronger the wording, the more of its ground the sentence MUST show.
+Thin ground calls for a question, a relation or a scoped observation. A hedge word sprayed across a confident sentence supplies no ground.
 
-Low register does not authorize big essence claims.
-High register does not excuse lazy essence claims.
-
-Register tightens what kind of sentence can pass cleanly.
-The higher the declared weight, the more the wording MUST earn it.
-
-For stance-conditioned reading of the register itself, see:
+For stance-conditioned reading, see:
 
 * `lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`
 * `lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives`
@@ -152,6 +142,6 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DunEhvmvgoQCTqGaPjGD5sEjjbvNALLvKpvIGavQjC0
+<<^ code="&#x0003;">>ni:///sha-256;u9km2vg_Biuen6QsDoAeW6TD8WNsZZ-xYTPFrZMksUs
 
 <<^ code="&#x0004;" -> to="?">>

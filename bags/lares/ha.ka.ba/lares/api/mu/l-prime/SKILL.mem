@@ -47,7 +47,7 @@ A request to scan, flag, compare before/after, or correct ''already-settled'' wo
 
 ''A mechanical pre-pass MAY lead the read, and it NEVER grades.'' Scan for `\b(is|are|was|were|am|be|been|being)\b` plus the `it's` · `that's` · `there's` · `he's` · `she's` contractions; skip every fenced code block and any line carrying `<!-- eprime-ok -->`; and DEMOTE a hit whose next one or two tokens end in `-ing` or `-ed` to //likely-auxiliary//, since a progressive or a passive auxiliary reads as tense rather than as identity. ''The scan flags for a human read.'' It cannot tell a pattern integrity from a live instance-claim, which is the whole judgement this loop exists to make.
 
-''✶ Observe'' --- read the requested span, or the smallest obvious local one. Flag each `${copula}` left standing and each counterfeit closure (a confident claim wearing no marker). The token is the ''English instrument'', not the basin: the ward guards ''identity-predication'' (map fused to territory), and in another tongue the auditor targets that tongue's identity-predication constructions by function, never by token (transposition law, Perec — `lar:///ha.ka.ba/lares/api/mu/l-prime`). Leave already-lawful uncertainty alone. `has` runs free --- never flag it.
+''✶ Observe'' --- read the requested span, or the smallest obvious local one. Flag each `${copula}` left standing and each counterfeit closure (a confident claim that names no ground). The token is the ''English instrument'', not the basin: the ward guards ''identity-predication'' (map fused to territory), and in another tongue the auditor targets that tongue's identity-predication constructions by function, never by token (transposition law, Perec — `lar:///ha.ka.ba/lares/api/mu/l-prime`). Leave already-lawful uncertainty alone. `has` runs free --- never flag it.
 
 ''⏿ Orient'' --- sort each hit:
 * `lawful` --- passes; leave it.
@@ -55,11 +55,11 @@ A request to scan, flag, compare before/after, or correct ''already-settled'' wo
 * `Hoʻoko-required` --- the wording turns, not just collects a warning.
 * `ambiguous` --- quotation, code, literal example, or house-style exception clouds the call.
 
-''◇ Decide'' --- the lightest lawful turn carries. Mark-only unless the user asked for correction or the sentence cannot pass honestly. Surface ambiguity; never guess it closed. A surviving `${copula}` MUST name what it rests on --- own the copula at full weight, or turn it.
+''◇ Decide'' --- the lightest lawful turn carries. Mark-only unless the user asked for correction or the sentence cannot pass honestly. Surface ambiguity; never guess it closed. A surviving `${copula}` MUST name what it rests on in its own sentence --- own the copula at full weight, or turn it. No sigil, band, number or marker stands in for that ground; none gets added. A `${copula}` inside a quotation, a sigil body, code, or a law the house cites by its own words stays standing under the quote tally (`lar:///ha.ka.ba/lares/api/mu/l-prime#/warrant`): list it, never turn it silently.
 
 ''▶ Act'' --- emit one surface below. One bad sentence MUST NOT widen into a document rewrite. Quotations, code, and literal examples MUST NOT normalize silently.
 
-''↺ Aftermath'' --- recheck the turn: marker and sentence force still read clean. Name what cleared, what stands flagged (`⚠ N`, each span quoted), and any ground that still wants the operator's eye.
+''↺ Aftermath'' --- recheck the turn: the warrant and the sentence's force still read clean. Name what cleared, what stands flagged (`⚠ N`, each span quoted), and any ground that still wants the operator's eye.
 
 <<~/ahu>>
 
@@ -96,6 +96,6 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tdaFdSHFsE8_k_XmLfYDFbJxZRpQjzP-kfgklaNzFfA
+<<^ code="&#x0003;">>ni:///sha-256;EksIkf3oEUTJdaJ3dOxtPaSxdDGCOofirua4gh0VI-I
 
 <<^ code="&#x0004;" -> to="?">>
