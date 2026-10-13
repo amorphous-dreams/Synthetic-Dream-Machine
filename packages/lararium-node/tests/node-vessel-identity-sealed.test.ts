@@ -15,6 +15,7 @@
  * V14 A NO-OP ROOT MINT WRITES NOTHING. Control: the first mint lands both root and roster.
  * V15 TWO VESSEL-KEY MINTS RACE AND ONE COMMITS. Both acts answer one key; the KEL names that key and commits to the seed the cold row holds; a mint over a commitment whose key went missing rewrites the commitment. Control: a standing key ends a later mint with no byte moved.
  * V16 AN ORPHAN'S NAME READS CANONICAL. A root file spelled `h01` names no orphan. Control: `h1` does.
+ * V17 TWO ACTS CROSS AT THE MINT'S STEP BOUNDARY, IN BOTH ORDERS. Two module graphs, each with its own seat, holder and custody io over one tree, share one runtime and nothing else but the files and the cross-process claim (a two-graph race, never two operating-system processes). Both acts seal a seed while no key stands; one commits; the other reaches step two after that key landed, writes nothing and answers the standing key. The vector runs once with each graph committing first. Control: each act ran both of its steps, so the vector crossed the boundary it names.
  */
 import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
@@ -332,6 +333,58 @@ describe("sealed vessel identity family", () => {
     const standing = [".vessel-key.json", ".vessel-kel.json", ".vessel-next.json"].map(read);
     expect((await generateOrLoadVesselIdentity()).verifyingKey).toBe(again.verifyingKey);
     [".vessel-key.json", ".vessel-kel.json", ".vessel-next.json"].forEach((f, i) => expect(read(f).equals(standing[i]!), f).toBe(true));
+  });
+
+  test.each([["a", "b"], ["b", "a"]] as const)("V17 two graphs cross at the step boundary: %s commits first and %s's step two writes nothing", async (first, later) => {
+    // Each act's holder counts its cold updates and waits at a gate, so the order reads: both step ones (each seals
+    // a seed while no key stands), the first act's step two (commits), the later act's step two (meets that key).
+    let release = (): void => undefined;
+    const laterSealed = new Promise<void>((r) => { release = r; });
+    let landed = (): void => undefined;
+    const firstCommitted = new Promise<void>((r) => { landed = r; });
+    const steps = { a: 0, b: 0 };
+    type Holder = typeof c.holder;
+    const gated = (holder: Holder, who: "a" | "b"): Holder => ({
+      ...holder,
+      async updateColdRow(home, file, decide) {
+        const step = (steps[who] += 1);
+        if (who === first && step === 2) await laterSealed;
+        if (who === later && step === 2) await firstCommitted;
+        try { return await holder.updateColdRow(home, file, decide); }
+        finally {
+          if (who === later && step === 1) release();
+          if (who === first && step === 2) landed();
+        }
+      },
+    });
+    seatCustody(gated(c.holder, "a"));
+    // THE SECOND GRAPH: fresh modules. Its seat map, its holder and its custody io share no object with the first
+    // graph's; the files and the claim socket alone join them.
+    vi.resetModules();
+    const seatB = await import("../src/custody-seat.js");
+    const holderB = await import("../src/custody-holder.js");
+    const ioB = await import("../src/custody-io.js");
+    const identityB = await import("../src/node-vessel-identity.js");
+    expect(seatB.seatCustody).not.toBe(seatCustody);                         // the setup took: two graphs
+    const second = holderB.makeCustodyHolder({ io: new ioB.FsCustodyIo(c.homes), homes: c.homes });
+    await second.adopt(c.vk);
+    seatB.seatCustody(gated(second as unknown as Holder, "b") as unknown as Parameters<typeof seatB.seatCustody>[0]);
+    try {
+      const [a, b] = await Promise.all([generateOrLoadVesselIdentity(), identityB.generateOrLoadVesselIdentity()]);
+      expect(steps).toEqual({ a: 2, b: 2 });                                  // control: both acts ran both steps
+      const key = JSON.parse(read(".vessel-key.json").toString()) as { verifyingKey: string };
+      const kel = JSON.parse(read(".vessel-kel.json").toString()) as { k: string[]; n: string[] };
+      const next = await cold<{ nextVerifyingKey: string }>(".vessel-next.json");
+      expect(b.verifyingKey).toBe(a.verifyingKey);                            // both acts answer the one standing key
+      expect(key.verifyingKey).toBe(a.verifyingKey);
+      expect(kel.k).toEqual([a.verifyingKey]);
+      expect(kel.n[0]).toBe(createHash("sha256").update(Buffer.from(next.nextVerifyingKey, "hex")).digest("hex"));
+      expect(readdirSync(c.homes.identity).filter((f) => f.endsWith(".landing"))).toEqual([]);
+    } finally {
+      await second.lock();
+      seatB.seatCustody(null);
+      seatCustody(c.holder);
+    }
   });
 
   test("V16 an orphan root reads by its canonical name alone", async () => {
