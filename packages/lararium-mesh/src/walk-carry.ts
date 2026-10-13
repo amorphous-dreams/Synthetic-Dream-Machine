@@ -36,7 +36,7 @@ import { base64UrlEncode, base64UrlDecode, hex, hexToBytes, sha256HexBytesSync }
 import { WALK_CARRY_DOCUMENT_INFO } from "./domains.js";
 import { walkCarrySecret } from "./hosting.js";
 import type { LarSessionMsg } from "./auth-wire.js";
-import type { WalkStore, WalkLeaf, WalkTransport, CarryReceipt } from "./walk-client.js";
+import { tellWalkFault, type WalkStore, type WalkLeaf, type WalkTransport, type CarryReceipt, type WalkFault } from "./walk-client.js";
 
 const REF = /^[0-9a-f]{64}$/;
 
@@ -82,14 +82,20 @@ export const HOSTING_NOTICE_SESSION_KIND  = "hosting/notice";
 
 type CarryTransport = Pick<WalkTransport, "sendSession" | "onSession">;
 
-/** Wait for the first session frame of `kind` whose body names `cid`, or null after `withinMs`. */
+/**
+ * Wait for the first session frame of `kind` whose body names `cid`, or null after `withinMs`. An `accept` that
+ * rejects (a store that refuses its read) rejects the wait, so the refusal reaches the caller that awaits it.
+ */
 function answerFor(transport: CarryTransport, kind: string, cid: string, withinMs: number, accept: (msg: LarSessionMsg) => Promise<boolean>): Promise<LarSessionMsg | null> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let off: () => void = () => {};
     const timer = setTimeout(() => { off(); resolve(null); }, withinMs);
     off = transport.onSession((msg) => {
       if (msg.kind !== kind || (msg.body as { cid?: unknown } | null)?.cid !== cid) return;
-      void accept(msg).then((ok) => { if (ok) { clearTimeout(timer); off(); resolve(msg); } });
+      void accept(msg).then(
+        (ok) => { if (ok) { clearTimeout(timer); off(); resolve(msg); } },
+        (error: unknown) => { clearTimeout(timer); off(); reject(error); },
+      );
     });
   });
 }
@@ -131,11 +137,15 @@ async function carryInTurn(opts: {
   const sealed = sealPrivateBody(opts.plaintext, { bagId: walkCarriageBagId(held.nexusAid, ref), key });
   if (!("body" in sealed)) return null;
   const { cid, ciphertext } = sealed.body;
-  // Read the record again at the write: the fetch above may have waited, and another hand may have moved it.
-  // The receipt for a value the hearth no longer serves leaves with the write that names its replacement.
-  const now = (await opts.store.read(gate)) ?? held;
-  const kept = (now.carried ?? []).filter((r) => r.ref !== ref);
-  await opts.store.write(gate, { ...now, carried: [...kept, { cid, ref, key: hex(key) }] });
+  // The receipt lands over the record as it stands at the write: the fetch above may have waited, and another
+  // hand may have moved it. The receipt for a value the hearth no longer serves leaves with the write that names
+  // its replacement. A record that left, or lost its grant, meanwhile carries nothing: no earlier reading returns.
+  const kept = await opts.store.update(gate, (now) => {
+    if (!now?.grant || now.nexusAid !== held.nexusAid) return null;
+    const others = (now.carried ?? []).filter((r) => r.ref !== ref);
+    return { ...now, carried: [...others, { cid, ref, key: hex(key) }] };
+  });
+  if (!kept) return null;
   const answered = answerFor(opts.transport, HOSTING_CARRIED_SESSION_KIND, cid, opts.withinMs, async (msg) => {
     const body = msg.body as { held?: unknown; refused?: unknown };
     return body.held === true || typeof body.refused === "string";
@@ -185,15 +195,16 @@ export async function fetchDocument(opts: {
 
 /**
  * Keep the hearth's notice: a `hosting/notice` marks the record at risk. (The renewed grant `walkOver` keeps
- * clears the mark in the same write, since a contact in a later epoch is what clears it at the hearth.)
+ * clears the mark in the same write, since a contact in a later epoch is what clears it at the hearth.) A store
+ * that refuses the mark drops that one notice and tells `onFault`.
  */
-export function watchCarryNotice(transport: Pick<WalkTransport, "onSession">, store: WalkStore, gatePubKey: string): () => void {
+export function watchCarryNotice(
+  transport: Pick<WalkTransport, "onSession">, store: WalkStore, gatePubKey: string, onFault: (fault: WalkFault) => void,
+): () => void {
   const gate = gatePubKey.toLowerCase();
   return transport.onSession((msg) => {
     if (msg.kind !== HOSTING_NOTICE_SESSION_KIND) return;
-    void (async () => {
-      const held = await store.read(gate);
-      if (held && !held.atRisk) await store.write(gate, { ...held, atRisk: true });
-    })();
+    void store.update(gate, (held) => (held && !held.atRisk ? { ...held, atRisk: true } : null))
+      .catch((error: unknown) => tellWalkFault(onFault, "notice", error));
   });
 }

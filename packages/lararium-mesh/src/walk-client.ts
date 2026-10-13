@@ -20,13 +20,22 @@
  * the same claim earns the identical grant, so a lost push, a dropped socket or a corrupted grant never strands
  * the newcomer — the next dial recovers it. Once a grant-bearing dial stands, the invite is gone.
  *
+ * ONE RECORD, ONE HAND AT A TIME. Every change to a record runs as ONE store `update`: the store reads the standing
+ * record, the client decides over it, and the store writes, with no other hand between. The client holds no
+ * snapshot across an await and writes none back, so a grant that lands while an invite leaves the wallet keeps
+ * both changes. A hand-out answers the token its own update removed.
+ *
+ * A STORE THAT REFUSES COSTS ONE MESSAGE. A session frame or a proven peer starts work nobody awaits. A store that
+ * refuses there (a vessel whose key rests locked, a record that does not open) drops that one message and says so
+ * through the `onFault` port; the next presentation recovers a lost grant by its token.
+ *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
 import type { LeafIdentity, UnsignedPresented, LarSessionMsg } from "./auth-wire.js";
 import { ed25519SignerFromSeed } from "./auth-wire.js";
 import {
-  decodeInvite, encodeInvite, redeemClaim, isHostingGrant, allowance, hostingActCid, blindWalkerBatch, finalizeWalkerBatch,
+  decodeInvite, encodeInvite, redeemClaim, isHostingGrant, isInviteToken, allowance, hostingActCid, blindWalkerBatch, finalizeWalkerBatch,
   hostingActsFromBoard, verifyHostingAct,
   type HostingAct, type HostingGrant, type InviteToken, type PendingMint,
 } from "./hosting.js";
@@ -70,10 +79,69 @@ export interface CarryReceipt {
   readonly key: string;
 }
 
-/** Where a walker keeps its records — IndexedDB in a browser, a file on a node. Keyed by the hearth's gate key. */
+const DIGEST = /^[0-9a-f]{64}$/;
+const BLAKE3_CID = /^blake3:[0-9a-f]{64}$/;
+const RECORD_FIELDS: ReadonlySet<string> = new Set(["nexusAid", "relay", "invite", "grant", "wallet", "pending", "carried", "atRisk"]);
+
+function plainObject(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+/** Thirty-two bytes as lower-case hex: a nonce, a blind, a blinded element, a tweaked key, an epoch, a digest. */
+const digest = (v: unknown): v is string => typeof v === "string" && DIGEST.test(v);
+
+/**
+ * Whether `v` reads as ONE whole walk record: every field it holds wears its own shape, and it holds no field this
+ * record does not name. A store checks what it read with this before it hands a record to the client, so a wallet
+ * that holds anything but tokens, a pending batch missing its blinds or a receipt missing its key never reaches a
+ * hand-out or a dial.
+ */
+export function isWalkRecord(v: unknown): v is WalkRecord {
+  if (!plainObject(v)) return false;
+  for (const field of Object.keys(v)) if (!RECORD_FIELDS.has(field)) return false;
+  if (typeof v["nexusAid"] !== "string" || v["nexusAid"].length === 0) return false;
+  if (v["relay"] !== undefined && (typeof v["relay"] !== "string" || v["relay"].length === 0)) return false;
+  if (v["invite"] !== undefined && (typeof v["invite"] !== "string" || decodeInvite(v["invite"]) === null)) return false;
+  if (v["grant"] !== undefined && !isHostingGrant(v["grant"])) return false;
+  if (v["atRisk"] !== undefined && typeof v["atRisk"] !== "boolean") return false;
+  const wallet = v["wallet"];
+  if (wallet !== undefined && !(Array.isArray(wallet) && wallet.every((w: unknown) =>
+    plainObject(w) && Object.keys(w).length === 2 && typeof w["epoch"] === "string" && DIGEST.test(w["epoch"]) && isInviteToken(w["token"])))) return false;
+  const pending = v["pending"];
+  if (pending !== undefined && !(plainObject(pending) && Object.keys(pending).length === 3 &&
+    typeof pending["epoch"] === "string" && DIGEST.test(pending["epoch"]) && digest(pending["tweakedKey"]) &&
+    Array.isArray(pending["items"]) && pending["items"].length > 0 && pending["items"].every((it: unknown) =>
+      plainObject(it) && Object.keys(it).length === 3 && digest(it["n"]) && digest(it["blind"]) && digest(it["blinded"])))) return false;
+  const carried = v["carried"];
+  if (carried !== undefined && !(Array.isArray(carried) && carried.every((r: unknown) =>
+    plainObject(r) && Object.keys(r).length === 3 && typeof r["cid"] === "string" && BLAKE3_CID.test(r["cid"]) &&
+    typeof r["ref"] === "string" && DIGEST.test(r["ref"]) && typeof r["key"] === "string" && DIGEST.test(r["key"])))) return false;
+  return true;
+}
+
+/**
+ * Where a walker keeps its records — IndexedDB in a browser, a sealed row on a node. Keyed by the hearth's gate key.
+ * The store holds no bare write: a record changes through `update` alone.
+ */
 export interface WalkStore {
   read(gatePubKey: string): Promise<WalkRecord | null>;
-  write(gatePubKey: string, record: WalkRecord): Promise<void>;
+  /**
+   * Read the standing record, decide, and write, as ONE act: no other hand lands between the read and the write.
+   * `decide` runs once, synchronously, over the standing record (`null` when none stands) and answers the record
+   * to keep, or `null` to leave the store as it stands. Resolves with the record it wrote, or `null` when it wrote
+   * none. A store that cannot read the standing record whole rejects before `decide` runs.
+   */
+  update(gatePubKey: string, decide: (held: WalkRecord | null) => WalkRecord | null): Promise<WalkRecord | null>;
+}
+
+/** Where the walk client's unawaited work failed: the message it dropped, and the store's (or the transport's) refusal. */
+export interface WalkFault {
+  readonly at:    "grant" | "settle" | "minted" | "notice";
+  readonly error: unknown;
+}
+
+/** Tell the fault port; a port that throws costs nothing further. */
+export function tellWalkFault(onFault: (fault: WalkFault) => void, at: WalkFault["at"], error: unknown): void {
+  try { onFault({ at, error }); } catch { /* the port's own fault stays with the port */ }
 }
 
 /** The walker's per-Nexus leaf: its verifying key and its signing seed (kept nowhere by this module). */
@@ -83,24 +151,30 @@ export interface WalkLeaf {
 }
 
 /**
- * Take a carried invite for the hearth it names: write it DURABLY before any dial. An invite for another gate, a
- * torn string, or a hearth this walker already holds a settled grant for leaves the store untouched. Returns
- * the record a dial should present from, or null when there is nothing to walk with.
+ * Take a carried invite for the hearth it names: write it DURABLY before any dial. A torn string, a hearth this
+ * walker already holds a settled grant for, or a hearth it walks at in another Nexus leaves the store untouched.
+ * Returns the record a dial should present from, or null when there is nothing to walk with.
  */
 export async function takeInvite(store: WalkStore, carried: string): Promise<{ readonly gatePubKey: string; readonly record: WalkRecord } | null> {
   const invite = decodeInvite(carried);
   if (!invite) return null;
   const gatePubKey = invite.gatePubKey.toLowerCase();
-  const held = await store.read(gatePubKey);
-  if (held?.grant && !held.invite) return { gatePubKey, record: held };          // already walking here
-  // A walker walking back in keeps its grant until the new one lands, and its carriage receipts.
-  const relay = invite.relay ?? held?.relay;
-  const record: WalkRecord = {
-    nexusAid: invite.nexusAid, invite: carried, ...(relay ? { relay } : {}), ...(held?.grant ? { grant: held.grant } : {}),
-    ...(held?.carried ? { carried: held.carried } : {}), ...(held?.atRisk ? { atRisk: held.atRisk } : {}),
-  };
-  await store.write(gatePubKey, record);
-  return { gatePubKey, record };
+  const out: { stands: WalkRecord | null } = { stands: null };
+  await store.update(gatePubKey, (held) => {
+    // One record serves one hearth in one Nexus: an invite for another Nexus at a hearth already walked at
+    // keeps nothing, since a grant and receipts of one Nexus never ride a record that names another.
+    if (held && held.nexusAid.toLowerCase() !== invite.nexusAid.toLowerCase()) return null;
+    if (held?.grant && !held.invite) { out.stands = held; return null; }             // already walking here
+    // A walker walking back in keeps its grant until the new one lands, and its carriage receipts.
+    const relay = invite.relay ?? held?.relay;
+    const record: WalkRecord = {
+      nexusAid: invite.nexusAid, invite: carried, ...(relay ? { relay } : {}), ...(held?.grant ? { grant: held.grant } : {}),
+      ...(held?.carried ? { carried: held.carried } : {}), ...(held?.atRisk ? { atRisk: held.atRisk } : {}),
+    };
+    out.stands = record;
+    return record;
+  });
+  return out.stands ? { gatePubKey, record: out.stands } : null;
 }
 
 /**
@@ -149,38 +223,45 @@ export function walkOver(opts: {
   readonly base:       LeafIdentity;
   /** The hearth's signed hosting act named by an epoch, read off the hearth's hosting doc. Absent → no wallet fills. */
   readonly actFor?:    (epochCid: string) => Promise<HostingAct | null>;
+  /** Told each message this walk dropped because its store, its act read or its transport refused. */
+  readonly onFault:    (fault: WalkFault) => void;
 }): () => void {
   const gate = opts.gatePubKey.toLowerCase();
   const leafKey = opts.leaf.verifyingKey.toLowerCase();
+  /** Start work nobody awaits; its refusal reaches the fault port and no farther. */
+  const unawaited = (at: WalkFault["at"], work: () => Promise<void>): void => {
+    void (async () => { await work(); })().catch((error: unknown) => tellWalkFault(opts.onFault, at, error));
+  };
   const offSession = opts.transport.onSession((msg) => {
-    if (msg.kind === HOSTING_MINTED_SESSION_KIND) { void finalize(msg.body); return; }
+    if (msg.kind === HOSTING_MINTED_SESSION_KIND) { unawaited("minted", () => finalize(msg.body)); return; }
     if (msg.kind !== HOSTING_GRANT_SESSION_KIND) return;
     const grant = (msg.body as { grant?: unknown } | null)?.grant;
     if (!isHostingGrant(grant) || grant.leaf.toLowerCase() !== leafKey) return;
-    void (async () => {
-      const held = await opts.store.read(gate);
-      if (!held || held.nexusAid.toLowerCase() !== grant.nexusAid.toLowerCase()) return;
-      const { atRisk: _renewed, ...kept } = held;                               // a renewed grant clears the notice
-      await opts.store.write(gate, { ...kept, grant });
+    unawaited("grant", async () => {
+      const kept = await opts.store.update(gate, (held) => {
+        if (!held || held.nexusAid.toLowerCase() !== grant.nexusAid.toLowerCase()) return null;
+        const { atRisk: _renewed, ...rest } = held;                             // a renewed grant clears the notice
+        return { ...rest, grant };
+      });
+      if (!kept) return;
       // Re-present under the grant: the dial that stands on it is the one that settles the invite.
       opts.transport.represent({
         contactCard: opts.base.contactCard, peerPubKey: opts.base.peerPubKey, sign: opts.base.sign,
         presented: { kind: "grant", grant }, leafSign: ed25519SignerFromSeed(opts.leaf.seed),
       });
-    })();
+    });
   });
   opts.transport.on("peer-candidate", () => {
     const presented = opts.transport.identity.presented;
     if (presented?.kind !== "grant") return;
-    void (async () => {
-      const held = await opts.store.read(gate);
-      if (!held) return;
-      if (held.invite) {
+    unawaited("settle", async () => {
+      await opts.store.update(gate, (held) => {
+        if (!held?.invite) return null;
         const { invite: _settled, ...rest } = held;
-        await opts.store.write(gate, rest);
-      }
+        return rest;
+      });
       await fill();
-    })();
+    });
   });
 
   /**
@@ -189,44 +270,56 @@ export function walkOver(opts: {
    * epoch the hearth no longer holds can only meet silence, so the wallet never keeps one to hand out.
    */
   async function fill(): Promise<void> {
-    let held = await opts.store.read(gate);
-    const grant = held?.grant;
-    if (!held || !grant || !opts.actFor) return;
+    if (!opts.actFor) return;
+    const grant = (await opts.store.read(gate))?.grant;
+    if (!grant) return;
     const act = await opts.actFor(grant.epoch);
     if (!act || hostingActCid(act) !== grant.epoch) return;
     const live = new Set([grant.epoch, ...(act.prev ? [act.prev] : [])]);
-    if (held.wallet?.some((w) => !live.has(w.epoch))) {
-      held = { ...held, wallet: held.wallet.filter((w) => live.has(w.epoch)) };
-      await opts.store.write(gate, held);
-    }
-    if (held.pending?.epoch === grant.epoch) {
-      opts.transport.sendSession(HOSTING_MINT_SESSION_KIND, { blinded: held.pending.items.map((i) => i.blinded) });
-      return;
-    }
-    if (held.wallet?.some((w) => w.epoch === grant.epoch)) return;            // this epoch's batch already stands
-    const count = allowance(grant, act.cap);
-    if (count === 0) return;
-    const pending = blindWalkerBatch(act, count);
-    await opts.store.write(gate, { ...held, pending });                       // durable before it is sent
-    opts.transport.sendSession(HOSTING_MINT_SESSION_KIND, { blinded: pending.items.map((i) => i.blinded) });
+    const out: { send: PendingMint | null } = { send: null };
+    await opts.store.update(gate, (held) => {
+      // The act read above waited; a record whose grant moved to another epoch meanwhile fills on its own dial.
+      if (!held?.grant || held.grant.epoch !== grant.epoch) return null;
+      const stale = held.wallet?.some((w) => !live.has(w.epoch)) === true;
+      const pruned: WalkRecord = stale ? { ...held, wallet: held.wallet!.filter((w) => live.has(w.epoch)) } : held;
+      const keep = stale ? pruned : null;
+      if (pruned.pending?.epoch === grant.epoch) { out.send = pruned.pending; return keep; }
+      if (pruned.wallet?.some((w) => w.epoch === grant.epoch)) return keep;     // this epoch's batch already stands
+      const count = allowance(held.grant, act.cap);
+      if (count === 0) return keep;
+      out.send = blindWalkerBatch(act, count);
+      return { ...pruned, pending: out.send };                                      // durable before it is sent
+    });
+    if (out.send) opts.transport.sendSession(HOSTING_MINT_SESSION_KIND, { blinded: out.send.items.map((i) => i.blinded) });
   }
 
-  /** Finalize the hearth's answer into the wallet; an answer that does not finalize keeps the batch pending. */
+  /**
+   * Finalize the hearth's answer into the wallet; an answer that does not finalize keeps the batch pending. The
+   * tokens land only while the batch they finalize still stands pending, so a second answer to one batch adds none.
+   */
   async function finalize(body: unknown): Promise<void> {
-    const held = await opts.store.read(gate);
-    const pending = held?.pending;
-    if (!held || !pending || !opts.actFor) return;
+    if (!opts.actFor) return;
     const answer = body as { evaluated?: unknown; proof?: unknown } | null;
     if (!Array.isArray(answer?.evaluated) || typeof answer?.proof !== "string") return;
+    const pending = (await opts.store.read(gate))?.pending;
+    if (!pending) return;
     const act = await opts.actFor(pending.epoch);
     if (!act) return;
     let tokens: InviteToken[];
     try { tokens = finalizeWalkerBatch(act, pending, { evaluated: answer.evaluated as string[], proof: answer.proof }); }
     catch { return; }
-    const { pending: _done, ...rest } = held;
-    await opts.store.write(gate, { ...rest, wallet: [...(held.wallet ?? []), ...tokens.map((token) => ({ epoch: pending.epoch, token }))] });
+    await opts.store.update(gate, (held) => {
+      if (!held?.pending || !sameBatch(held.pending, pending)) return null;
+      const { pending: _done, ...rest } = held;
+      return { ...rest, wallet: [...(held.wallet ?? []), ...tokens.map((token) => ({ epoch: pending.epoch, token }))] };
+    });
   }
   return offSession;
+}
+
+/** Whether two pending batches name the same blinded nonces at the same epoch. */
+function sameBatch(a: PendingMint, b: PendingMint): boolean {
+  return a.epoch === b.epoch && a.items.length === b.items.length && a.items.every((it, i) => it.blinded === b.items[i]!.blinded);
 }
 
 /** The slice of a document handle `hostingActOn` reads: its current doc, and its change events. */
@@ -260,23 +353,29 @@ export async function hostingActOn(handle: HostingDocHandle, epochCid: string, w
       handle.off("change", onChange);
       resolve(act);
     };
-    const onChange = (): void => { void find().then((act) => { if (act) done(act); }); };
+    // A read that throws answers nothing for that change; the patience above still ends the wait.
+    const look = (): void => { void find().then((act) => { if (act) done(act); }, () => undefined); };
+    const onChange = (): void => look();
     const timer = setTimeout(() => done(null), withinMs);
     handle.on("change", onChange);
-    void find().then((act) => { if (act) done(act); });
+    look();
   });
 }
 
 /**
  * Hand one invite out of the wallet: the NEWEST unspent token — the one minted at the latest epoch, which stays
- * live longest — removed before it is returned, carried with the hearth's gate key and Nexus. Null when the
- * wallet holds none.
+ * live longest — removed by the same store update that reads it, carried with the hearth's gate key and Nexus.
+ * Null when the wallet holds none; a store that refuses the update rejects, and no token leaves.
  */
 export async function popInvite(store: WalkStore, gatePubKey: string, relay?: string): Promise<string | null> {
   const gate = gatePubKey.toLowerCase();
-  const held = await store.read(gate);
-  const next = held?.wallet?.[held.wallet.length - 1];
-  if (!held || !next) return null;
-  await store.write(gate, { ...held, wallet: held.wallet!.slice(0, -1) });
-  return encodeInvite({ nexusAid: held.nexusAid, gatePubKey: gate, token: next.token, ...(relay ? { relay } : {}) });
+  const out: { handed: { readonly nexusAid: string; readonly token: InviteToken } | null } = { handed: null };
+  await store.update(gate, (held) => {
+    const next = held?.wallet?.[held.wallet.length - 1];
+    if (!held || !next) return null;
+    out.handed = { nexusAid: held.nexusAid, token: next.token };
+    return { ...held, wallet: held.wallet!.slice(0, -1) };
+  });
+  const { handed } = out;
+  return handed ? encodeInvite({ nexusAid: handed.nexusAid, gatePubKey: gate, token: handed.token, ...(relay ? { relay } : {}) }) : null;
 }

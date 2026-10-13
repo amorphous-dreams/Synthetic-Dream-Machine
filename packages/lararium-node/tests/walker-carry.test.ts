@@ -36,7 +36,12 @@ afterEach(() => { rmSync(storageDir, { recursive: true, force: true }); });
 
 function memoryStore(): WalkStore & { map: Map<string, WalkRecord> } {
   const map = new Map<string, WalkRecord>();
-  return { map, async read(g) { return map.get(g) ?? null; }, async write(g, r) { map.set(g, structuredClone(r)); } };
+  return {
+    map,
+    async read(g) { return map.get(g) ?? null; },
+    // Reads, decides and writes with no await between: this store's own lock.
+    async update(g, decide) { const next = decide(map.get(g) ?? null); if (next) map.set(g, structuredClone(next)); return next; },
+  };
 }
 
 /** One walker socket at the hearth's carriage service, standing on `grant()`. */
@@ -68,7 +73,7 @@ describe("the walker's carriage over the session verbs", () => {
     await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
     const grant = await grantAtCurrent("1".repeat(64));
     const store = memoryStore();
-    await store.write(GATE, { nexusAid: AID, grant });
+    await store.update(GATE, () => ({ nexusAid: AID, grant }));
     const { transport, served } = wire(() => grant);
     const plaintext = utf8Bytes("field notes the hearth carries and cannot read");
     const carried = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 });
@@ -85,7 +90,7 @@ describe("the walker's carriage over the session verbs", () => {
     await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
     let grant = await grantAtCurrent("1".repeat(64));
     const store = memoryStore();
-    await store.write(GATE, { nexusAid: AID, grant });
+    await store.update(GATE, () => ({ nexusAid: AID, grant }));
     const { transport } = wire(() => grant);
     const plaintext = utf8Bytes("kept across a lapse");
     const carried = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 });
@@ -95,14 +100,15 @@ describe("the walker's carriage over the session verbs", () => {
     const invite = encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current) });
     await takeInvite(store, invite);
     grant = await grantAtCurrent("2".repeat(64));
-    await store.write(GATE, { ...(await store.read(GATE))!, grant });
+    await store.update(GATE, (held) => ({ ...held!, grant }));
     const back = await fetchDocument({ transport, store, gatePubKey: GATE, cid: carried!.cid, withinMs: 2_000 });
     expect(back && hex(back)).toBe(hex(plaintext));
     // CONTROL (the stolen-key probe): another leaf's grant, holding the victim's receipt, asks for the same
     // document — silence.
     const thiefStore = memoryStore();
     grant = await grantAtCurrent("3".repeat(64), OTHER_LEAF.verifyingKey);
-    await thiefStore.write(GATE, { nexusAid: AID, grant, carried: (await store.read(GATE))!.carried! });
+    const lifted = (await store.read(GATE))!.carried!;
+    await thiefStore.update(GATE, () => ({ nexusAid: AID, grant, carried: lifted }));
     expect(await fetchDocument({ transport, store: thiefStore, gatePubKey: GATE, cid: carried!.cid, withinMs: 300 })).toBeNull();
   });
 
@@ -119,7 +125,7 @@ describe("the walker's carriage over the session verbs", () => {
     await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
     const grant = await grantAtCurrent("1".repeat(64));
     const store = memoryStore();
-    await store.write(GATE, { nexusAid: AID, grant });
+    await store.update(GATE, () => ({ nexusAid: AID, grant }));
     return { store, ...wire(() => grant) };
   }
 
@@ -160,7 +166,7 @@ describe("the walker's carriage over the session verbs", () => {
     const held = carriedFiles();
     const secondBytes = held.find((f) => f.path.endsWith(fileOf(second!.cid)))!.bytes;
     const thief = memoryStore();
-    await thief.write(GATE, { nexusAid: AID, carried: [{ cid: second!.cid, ref: r2!.ref, key: r1!.key }] });
+    await thief.update(GATE, () => ({ nexusAid: AID, carried: [{ cid: second!.cid, ref: r2!.ref, key: r1!.key }] }));
     expect(await openCarried(thief, GATE, { cid: second!.cid, ciphertext: base64UrlEncode(secondBytes) })).toBeNull();
     // CONTROL: the second receipt opens it.
     expect(hex((await openCarried(store, GATE, { cid: second!.cid, ciphertext: base64UrlEncode(secondBytes) }))!)).toBe(hex(utf8Bytes("the second page")));
@@ -210,13 +216,13 @@ describe("the walker's carriage over the session verbs", () => {
     // An address the walker wrote no receipt for opens nothing, whatever bytes ride it.
     const foreign = bytesOf(second!.cid);
     const stranger = memoryStore();
-    await stranger.write(GATE, { nexusAid: AID, carried: [] });
+    await stranger.update(GATE, () => ({ nexusAid: AID, carried: [] }));
     expect(verifyCiphertextCid(foreign, second!.cid)).toBe(true);
     expect(await openCarried(stranger, GATE, answer(second!.cid, foreign))).toBeNull();
     // A receipt whose digest names another document opens nothing: the sealed value binds its own document.
     const crossed = memoryStore();
     const receipts = (await store.read(GATE))!.carried!;
-    await crossed.write(GATE, { nexusAid: AID, carried: [{ ...receipts[0]!, ref: receipts[1]!.ref }] });
+    await crossed.update(GATE, () => ({ nexusAid: AID, carried: [{ ...receipts[0]!, ref: receipts[1]!.ref }] }));
     expect(await openCarried(crossed, GATE, answer(first!.cid, bytesOf(first!.cid)))).toBeNull();
     // The stored file altered on the hearth's own disk: the fetch door answers nothing that opens.
     const victim = held.find((f) => f.path.endsWith(fileOf(first!.cid)))!;
@@ -245,7 +251,7 @@ describe("the walker's carriage over the session verbs", () => {
 
   test("walking back in keeps the receipts", async () => {
     const store = memoryStore();
-    await store.write(GATE, { nexusAid: AID, carried: [{ cid: "blake3:" + "d".repeat(64), ref: "c".repeat(64), key: "e".repeat(64) }] });
+    await store.update(GATE, () => ({ nexusAid: AID, carried: [{ cid: "blake3:" + "d".repeat(64), ref: "c".repeat(64), key: "e".repeat(64) }] }));
     await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
     await takeInvite(store, encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current) }));
     expect(await store.read(GATE)).toMatchObject({ carried: [{ cid: "blake3:" + "d".repeat(64), ref: "c".repeat(64), key: "e".repeat(64) }] });
@@ -253,11 +259,16 @@ describe("the walker's carriage over the session verbs", () => {
 
   test("a hearth's notice marks the record at risk", async () => {
     const store = memoryStore();
-    await store.write(GATE, { nexusAid: AID });
+    await store.update(GATE, () => ({ nexusAid: AID }));
     const listeners: Array<(m: LarSessionMsg) => void> = [];
-    watchCarryNotice({ onSession: (l) => { listeners.push(l); return () => {}; } }, store, GATE);
+    watchCarryNotice({ onSession: (l) => { listeners.push(l); return () => {}; } }, store, GATE, (fault) => { throw fault.error; });
+    // The store says when the notice's update returned: a handshake, no clock.
+    const marked = new Promise<void>((done) => {
+      const update = store.update.bind(store);
+      store.update = async (g, decide) => { try { return await update(g, decide); } finally { done(); } };
+    });
     for (const l of listeners) l({ type: "lar:session", kind: HOSTING_NOTICE_SESSION_KIND, body: { pending: true } });
-    await new Promise((r) => setTimeout(r, 10));
+    await marked;
     expect((await store.read(GATE))?.atRisk).toBe(true);
   });
 });

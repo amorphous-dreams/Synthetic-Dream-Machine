@@ -106,7 +106,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     const store = nodeWalkStore(larDataDir());
     const second = await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: epoch.cid, cap: 3 });
     const older = mintHostToken(epoch), newer = mintHostToken(second);
-    await store.write(GATE, { ...(await store.read(GATE))!, wallet: [{ epoch: epoch.cid, token: older }, { epoch: second.cid, token: newer }] });
+    await store.update(GATE, (held) => ({ ...held!, wallet: [{ epoch: epoch.cid, token: older }, { epoch: second.cid, token: newer }] }));
     const out = await runWalkInvite();
     const handed = decodeInvite(out.invite)!;
     expect(handed).toMatchObject({ nexusAid: AID, gatePubKey: GATE, relay: RELAY });

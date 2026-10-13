@@ -44,7 +44,7 @@ import {
   type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
   type GenesisSeed,
   takeInvite, walkIdentity, walkOver, popInvite, watchCarryNotice, carryDocument, fetchDocument, hostingActOn, hostingDocUrl,
-  type WalkRecord, type HostingAct, type CarryOutcome,
+  type WalkRecord, type WalkFault, type HostingAct, type CarryOutcome,
 }                                            from "@lararium/mesh";
 import { relayPinFor } from "./browser-relay-pin.js";
 import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
@@ -805,8 +805,12 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         const doc = await materializeSharedLarDoc(repo, walkDoc, "hosting").catch(() => null);
         return doc ? hostingActOn(doc, epochCid, 15_000) : null;
       };
-      walkOver({ transport: adapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, base, actFor });
-      watchCarryNotice(adapter, walkStore, relayPin.gatePubKey);
+      // A store that refuses under the walk costs that one message; the next presentation recovers a lost grant.
+      const onFault = (fault: WalkFault): void => {
+        console.warn(`[lararium-browser] the walk dropped one ${fault.at} message: ${fault.error instanceof Error ? fault.error.message : String(fault.error)}`);
+      };
+      walkOver({ transport: adapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, base, actFor, onFault });
+      watchCarryNotice(adapter, walkStore, relayPin.gatePubKey, onFault);
     }
     // Tag the relay ring: every peer reached through this adapter enters `relayPeers`, so the
     // sharePolicy gates them while the in-process island peers keep sharing freely. Listeners

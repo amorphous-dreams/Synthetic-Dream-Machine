@@ -50,7 +50,11 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function memoryStore(): WalkStore & { readonly records: Map<string, WalkRecord> } {
   const records = new Map<string, WalkRecord>();
-  return { records, read: async (g) => records.get(g) ?? null, write: async (g, r) => { records.set(g, r); } };
+  return {
+    records, read: async (g) => records.get(g) ?? null,
+    // Reads, decides and writes with no await between: this store's own lock.
+    update: async (g, decide) => { const next = decide(records.get(g) ?? null); if (next) records.set(g, next); return next; },
+  };
 }
 
 async function newcomer(fill: number): Promise<{ base: LeafIdentity; leaf: { verifyingKey: string; seed: Uint8Array } }> {
@@ -106,7 +110,7 @@ describe("a newcomer walks in at the hearth's own gate", () => {
   async function dial(identity: LeafIdentity, walk?: { store: WalkStore; leaf: { verifyingKey: string; seed: Uint8Array }; base: LeafIdentity }): Promise<LarWSClientAdapter> {
     const adapter = dialGate({ url: `ws://127.0.0.1:${port}/ws`, identity, aud: AUD, gatePubKey: gatePub, retryInterval: 50 });
     adapters.push(adapter);
-    if (walk) walkOver({ transport: adapter, store: walk.store, gatePubKey: gatePub, leaf: walk.leaf, base: walk.base, actFor });
+    if (walk) walkOver({ transport: adapter, store: walk.store, gatePubKey: gatePub, leaf: walk.leaf, base: walk.base, actFor, onFault: (fault) => { throw fault.error; } });
     repos.push(new Repo({ network: [adapter], peerId: `walker-${adapters.length}` as PeerId }));
     return adapter;
   }

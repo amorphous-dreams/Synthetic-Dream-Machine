@@ -15,7 +15,7 @@ import {
   type WalkLeaf, type WalkRecord, type WalkStore,
 } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
-import { openVesselIdb, idbGet, idbPut, WALK_STORE, loadBrowserPersonaRootSeed } from "./browser-vessel-identity.js";
+import { openVesselIdb, idbGet, WALK_STORE, loadBrowserPersonaRootSeed } from "./browser-vessel-identity.js";
 
 /**
  * A face join must follow the island the issuing hearth resolved when it minted admission. Earlier
@@ -42,16 +42,38 @@ export function requireAdmittedFaceIsland<
   }
 }
 
-/** The walk store over this vessel's own IndexedDB, keyed by the hearth's gate key. */
+/**
+ * The walk store over this vessel's own IndexedDB, keyed by the hearth's gate key. An `update` reads, decides and
+ * writes inside ONE read-write transaction, which IndexedDB runs alone over the store: no other tab or callback of
+ * this origin lands between the read and the write. A decision that throws aborts the transaction and writes nothing.
+ */
 export function browserWalkStore(idbName: string): WalkStore {
   return {
     async read(gatePubKey) {
       const db = await openVesselIdb(idbName);
       try { return (await idbGet<WalkRecord>(db, WALK_STORE, gatePubKey.toLowerCase())) ?? null; } finally { db.close(); }
     },
-    async write(gatePubKey, record) {
+    async update(gatePubKey, decide) {
       const db = await openVesselIdb(idbName);
-      try { await idbPut(db, WALK_STORE, gatePubKey.toLowerCase(), record); } finally { db.close(); }
+      try {
+        return await new Promise<WalkRecord | null>((resolve, reject) => {
+          const key = gatePubKey.toLowerCase();
+          const tx = db.transaction(WALK_STORE, "readwrite");
+          const rows = tx.objectStore(WALK_STORE);
+          let wrote: WalkRecord | null = null;
+          let refused: { readonly error: unknown } | null = null;
+          const get = rows.get(key);
+          get.onsuccess = () => {
+            try {
+              wrote = decide((get.result as WalkRecord | undefined) ?? null);
+              if (wrote) rows.put(wrote, key);
+            } catch (error) { refused = { error }; tx.abort(); }
+          };
+          tx.oncomplete = () => resolve(wrote);
+          tx.onerror = () => reject(tx.error);
+          tx.onabort = () => reject(refused ? refused.error : (tx.error ?? new Error("the walk store's transaction aborted")));
+        });
+      } finally { db.close(); }
     },
   };
 }

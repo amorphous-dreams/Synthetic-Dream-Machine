@@ -35,14 +35,21 @@ function readWalkFile(path: string): WalkFile | null {
   } catch { return null; }
 }
 
-/** The walk store over this vessel's own disk. */
+/**
+ * The walk store over this vessel's own disk. An `update` reads, decides and writes with no await between, so no
+ * other callback of this process lands between the read and the write.
+ */
 export function nodeWalkStore(storageDir: string): WalkStore {
   return {
     async read(gatePubKey) { return readWalkFile(recordPath(storageDir, gatePubKey))?.record ?? null; },
-    async write(gatePubKey, record) {
+    async update(gatePubKey, decide) {
+      const path = recordPath(storageDir, gatePubKey);
+      const record = decide(readWalkFile(path)?.record ?? null);
+      if (record === null) return null;
       ownerOnlyDir(walkDir(storageDir));
       const file: WalkFile = { gatePubKey: gatePubKey.toLowerCase(), record };
-      atomicWriteFileSync(recordPath(storageDir, gatePubKey), JSON.stringify(file));
+      atomicWriteFileSync(path, JSON.stringify(file));
+      return record;
     },
   };
 }

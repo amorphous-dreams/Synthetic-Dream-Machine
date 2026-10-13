@@ -79,7 +79,11 @@ async function realIdentity(fill: number): Promise<LeafIdentity> {
 
 function memoryStore(): WalkStore & { readonly records: Map<string, WalkRecord> } {
   const records = new Map<string, WalkRecord>();
-  return { records, read: async (g) => records.get(g) ?? null, write: async (g, r) => { records.set(g, structuredClone(r)); } };
+  return {
+    records, read: async (g) => records.get(g) ?? null,
+    // Reads, decides and writes with no await between: this store's own lock.
+    update: async (g, decide) => { const next = decide(records.get(g) ?? null); if (next) records.set(g, structuredClone(next)); return next; },
+  };
 }
 
 /** Read a door's answer the way a hand reads it: the count A keeps for its current epoch. */
@@ -106,6 +110,7 @@ function dialW(identity: LeafIdentity, walk: { store: WalkStore; leaf: { verifyi
         const handle = await materializeSharedLarDoc(repo, doc, "hosting").catch(() => null);
         return handle ? hostingActOn(handle, epochCid, 15_000) : null;
       },
+      onFault: (fault) => { throw fault.error; },
     });
   }
   return { adapter, repo };

@@ -1813,6 +1813,9 @@ async function prepareNodeBootOn(
               const doc = await materializeSharedLarDoc(repo, walkDoc, "hosting").catch(() => null);
               return doc ? hostingActOn(doc, epochCid, WALK_ACT_PATIENCE_MS) : null;
             },
+            // A store that refuses under the walk (a key that locks while a grant arrives) costs that one message;
+            // the next presentation recovers a lost grant by its token.
+            onFault: (fault) => console.log(`[nexus-join] the walk dropped one ${fault.at} message: ${fault.error instanceof Error ? fault.error.message : String(fault.error)}`),
           });
           // A fresh invite taken for this same hearth while the dial stands re-presents at once: the token of the
           // new invite, under the same worn leaf.

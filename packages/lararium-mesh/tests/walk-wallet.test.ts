@@ -24,9 +24,24 @@ const HEARTH = new Uint8Array(32).fill(51);
 const LEAF = { verifyingKey: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", seed: new Uint8Array(32).fill(52) };
 const BASE: LeafIdentity = { contactCard: "d".repeat(64), peerPubKey: "d".repeat(64), sign: async () => "00".repeat(64) };
 
-function memoryStore(): WalkStore & { map: Map<string, WalkRecord> } {
+/** An in-memory store; `until` resolves at the first update that leaves a record `holds` accepts (a handshake, no clock). */
+function memoryStore(): WalkStore & { map: Map<string, WalkRecord>; until(holds: (r: WalkRecord) => boolean): Promise<void> } {
   const map = new Map<string, WalkRecord>();
-  return { map, async read(g) { return map.get(g) ?? null; }, async write(g, r) { map.set(g, structuredClone(r)); } };
+  const waiting: Array<{ readonly holds: (r: WalkRecord) => boolean; readonly open: () => void }> = [];
+  return {
+    map,
+    async read(g) { return map.get(g) ?? null; },
+    // Reads, decides and writes with no await between: this store's own lock.
+    async update(g, decide) {
+      const next = decide(map.get(g) ?? null);
+      if (next) {
+        map.set(g, structuredClone(next));
+        for (const w of waiting.splice(0)) { if (w.holds(next)) w.open(); else waiting.push(w); }
+      }
+      return next;
+    },
+    until(holds) { return new Promise((open) => { waiting.push({ holds, open }); }); },
+  };
 }
 
 /** Three hosting epochs, each rolling from the one before. */
@@ -38,7 +53,7 @@ async function chain(): Promise<[HostingEpoch, HostingEpoch, HostingEpoch]> {
 }
 
 /** Ride a transport whose hearth evaluates every blind batch at `current`; fire one grant-bearing dial. */
-async function fillAt(store: WalkStore, current: HostingEpoch, acts: readonly HostingAct[]): Promise<void> {
+async function fillAt(store: ReturnType<typeof memoryStore>, current: HostingEpoch, acts: readonly HostingAct[]): Promise<void> {
   const sessionListeners: Array<(m: LarSessionMsg) => void> = [];
   const candidates: Array<(e: { peerId: unknown }) => void> = [];
   const grant = (await store.read(GATE))!.grant!;
@@ -58,11 +73,11 @@ async function fillAt(store: WalkStore, current: HostingEpoch, acts: readonly Ho
   walkOver({
     transport, store, gatePubKey: GATE, leaf: LEAF, base: BASE,
     actFor: async (cid) => acts.find((a) => hostingActCid(a) === cid) ?? null,
+    onFault: (fault) => { throw fault.error; },
   });
+  const filled = store.until((r) => r.wallet?.some((w) => w.epoch === current.cid) === true);
   for (const l of candidates) l({ peerId: "hearth" });
-  for (let i = 0; i < 100 && !(await store.read(GATE))?.wallet?.some((w) => w.epoch === current.cid); i++) {
-    await new Promise((r) => setTimeout(r, 5));
-  }
+  await filled;
 }
 
 describe("the wallet never hands out a dead invite", () => {
@@ -70,10 +85,10 @@ describe("the wallet never hands out a dead invite", () => {
     const [e0, e1, e2] = await chain();
     const store = memoryStore();
     const grant = issueGrant(e2, { leaf: LEAF.verifyingKey, lineage: "1".repeat(64), survived: 0, from: "host" });
-    await store.write(GATE, {
+    await store.update(GATE, () => ({
       nexusAid: AID, grant,
       wallet: [{ epoch: e0.cid, token: mintHostToken(e0) }, { epoch: e1.cid, token: mintHostToken(e1) }],
-    });
+    }));
     await fillAt(store, e2, [e0.act, e1.act, e2.act]);
     const wallet = (await store.read(GATE))!.wallet!;
     expect(wallet.map((w) => w.epoch)).not.toContain(e0.cid);
@@ -87,7 +102,7 @@ describe("the wallet never hands out a dead invite", () => {
     const store = memoryStore();
     const grant = issueGrant(e2, { leaf: LEAF.verifyingKey, lineage: "2".repeat(64), survived: 0, from: "host" });
     const liveOld = mintHostToken(e1);
-    await store.write(GATE, { nexusAid: AID, grant, wallet: [{ epoch: e1.cid, token: liveOld }] });
+    await store.update(GATE, () => ({ nexusAid: AID, grant, wallet: [{ epoch: e1.cid, token: liveOld }] }));
     await fillAt(store, e2, [e0.act, e1.act, e2.act]);
     const wallet = (await store.read(GATE))!.wallet!;
     expect(wallet[0]).toEqual({ epoch: e1.cid, token: liveOld });

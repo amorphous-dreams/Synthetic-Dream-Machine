@@ -343,6 +343,15 @@ never identifies the minting walker. One burn marker per lineage per epoch keeps
 so a retry finds its marker and burns nothing new. Every fill drops the wallet's tokens from any epoch the
 host does not hold live, and a hand-out takes the newest, so a walker never hands out a dead invite.
 
+''ONE RECORD, ONE HAND AT A TIME.'' A walker's record for a hearth holds its invite, its grant, its wallet,
+its pending batch and its receipts together, and a grant, a settling, a fill, an answer, a receipt, a notice
+and a hand-out each change it. Each change runs as one store `update`: the store reads the standing record,
+the walk client decides over it, and the store writes, with no other hand between. The client keeps no
+record across a wait and writes none back, so a hand-out answers the token its own update removed, and one
+invite leaves the wallet once. A store that refuses under work nobody awaits (a vessel whose key rests
+locked, a record that does not open) costs that one message and tells the walk's fault port; the next
+presentation recovers a lost grant by its token.
+
 ''NO ONE CAN COMPUTE WHO INVITED WHOM.'' The blinded batch stays unlinkable to the tokens it becomes, so the
 hearth learns that some walker it hosts minted some number of invites this epoch, and never whose invite
 a newcomer redeemed. The operator sees a redemption COUNT per epoch: a number, never a row. The CLI keeps the
@@ -532,6 +541,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rty1G9N92CgAUAiRqz4Nslt90psafwQJbHEQtvgjV80
+<<^ code="&#x0003;">>ni:///sha-256;CRG3L05p2wVZeoVgK09wF0iZwM-xmtAuhanr09l1sAI
 
 <<^ code="&#x0004;" -> to="?">>
