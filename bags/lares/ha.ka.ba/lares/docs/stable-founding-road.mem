@@ -8,7 +8,7 @@ cacheable = true
 file-path = "bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem"
 hydrate   = true
 l-space   = "stable"
-role      = "the road to STABLE FOUNDING and the two-hearth live test — the operator's rulings that bind it, the design decisions that still shape unbuilt work, the unbuilt slices in the one order a builder walks, the fresh start, and the questions still owed to the operator"
+role      = "THE PONO ROADMAP — the one carrier that holds the house's road to STABLE FOUNDING and the two-hearth live test: what a cold session reads, runs and obeys, the operator's rulings, the design decisions that still shape unbuilt work, the six paths in the one order a builder walks, every open loop beside the train that closes it, the sealed-store thread, the side lanes, the fresh start, and what the operator still owns"
 title     = "lar:///ha.ka.ba/lares/docs/stable-founding-road"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/stable-founding-road"
@@ -16,18 +16,72 @@ uri-path  = "ha.ka.ba/lares/docs/stable-founding-road"
 
 <<~ ahu #/the-attractor>>
 
-!! The attractor ~ STABLE FOUNDING
+!! The Pono Roadmap ~ the attractor reads STABLE FOUNDING
 
 ''STABLE FOUNDING'' names the state the house grows toward (operator-ruled). Once a Lararium stands, its
 base state reads STABLE: a PRIVATE household SEED (its own charter, one seat) for the operator's own devices, and a FOUNDED PERSONA
 ZERO. Everything else flows downstream of it — contracting into other Nexuses and founding a Nexus with a second operator, inviting the operator's own
 PersonaGroup devices, and hosting guests who walk.
 
-This carrier holds the road there and ONLY what still binds or stays unbuilt: the rulings (#/rulings), the
-design decisions that still shape unbuilt work (#/decisions), the unbuilt slices in one order (#/the-road),
-the fresh start (#/fresh-start), and the questions the operator still owns (#/open). Landed work reads in
-git and the CHANGELOG, never here. The live wounds and the vitals read in
-`lar:///ha.ka.ba/lares/docs/er-handoff`.
+This carrier holds the house's ONE roadmap, and ONLY what still binds or stays owed. A cold session that
+reads the boot seed and then this carrier can pick up any thread: the instruments and the law that bites
+(#/cold-start), the rulings (#/rulings), the design decisions that still shape unbuilt work (#/decisions),
+the six paths in one order (#/the-road), every open loop beside the train that closes it (#/the-loops),
+each train's commits in order (#/the-trains), the lanes that run beside the road (#/side-lanes), the fresh
+start (#/fresh-start), and what the operator still owns (#/open). Landed work reads in git and the
+CHANGELOG, never here. No count rests here: each reading names the instrument that takes it. Law lives in
+its own carrier, and this carrier points there.
+
+<<~/ahu>>
+
+<<~ ahu #/cold-start>>
+
+!! Cold start ~ what a cold session reads, runs and obeys
+
+!!! Read, in this order
+# <<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>, the boot seed; then this carrier, top to bottom.
+# <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> before the first commit: which session holds which ground, and the commit isolation that guards hands inside one session.
+# <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> before the first test or wire: the red-first procedure in eight moves, the ladder for wiring a module that stands unreached, the traps this tree paid for, and the grammar watch before any grammar, frame or ingest work.
+# Bring every ruling #/open names to the operator before a lane builds against it.
+
+!!! Instruments ~ run each fresh before trusting a reading
+* ''Branch'': `feature/lararium-node-5`. `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits. The operator pushes, and pushes a head whose shard run read green. Never a lane's to move, commit, stash or revert: `.worktrees/`, `.claude/worktrees/`, the `mempalace` submodule pointer, and the `VSCode-TW5-Syntax` pointer, which the operator pins at the released grammar while the grammar's own head stands ahead of that pin.
+* ''Unit suites'': each package's own, under a scratch `LAR_ROOT` with `LAR_BAGS` unset; `node --test tools/*.test.mjs` for the tools. An import failure reads as zero tests, so read the file count beside the test count. `pnpm -r test` skips the root `tests/` directory by design.
+* ''Typecheck'': `tools/typecheck-witness.sh`. Typecheck reads source and the binary reads `dist`, so run the built binary after any change that crosses packages.
+* ''Witness fleet'': `bash tools/witness-all.sh`, the whole fleet, one run at a time; a hand-picked subset reads greener than the tree. It holds out the witnesses its own `HELD_OUT` table names (the docker, browser and tree-clean ones). Capture its exit code directly, never through a pipe; `git status --porcelain` reads identical before and after a sound run.
+* ''E2E'': every set rides the CI shards (`tools/e2e-shards.mjs`, `.github/workflows/e2e-shards.yml`; `E2E_SETS` names the sets and the merge gate checks each set's union). `node tools/e2e-shards.mjs push <lane>` pushes HEAD to a throwaway `ci/<lane>` branch. A local run of one file proves that file alone.
+* ''CI'' (`.github/workflows/ci.yml`): `gh run list --branch feature/lararium-node-5` names the run for the pushed head; a later commit waits for the next push. `held-out.yml` runs weekly or by hand, and a hosted run of it that reads green stays owed.
+* ''The docker mesh'' (by hand): `crossing-witness`; `node tools/mesh-pins.mjs --up` stands the mesh pinned; `herm-mesh-witness` carries `node/alpha` across three hops; `mesh-scenarios nexus`. The mesh publishes `MESH_PORT_*` on loopback, every node service requires `LARES_HARNESS_IMAGE`, and `tools/harness-image.sh` checks its digest. A hearth whose log carries a `[lararium] fatal:` line reads as not stood.
+* ''Known environmental reds'': `lararium-tw5` `tests/syncer-back-parity.e2e.test.ts` (Chromium legs) and `tests/meme-routes.e2e.test.ts` fail where no browser or server socket stands; the browser suite reads `no tests` under a `HOME` that holds no Playwright Chromium.
+* ''The operator's live `~/.lares` vessel'' holds an earlier shape that this build refuses. Never stand it here; it takes the fresh start, by hand (#/fresh-start).
+
+!!! Steps
+# `export LAR_ROOT=/tmp/lar-scratch-<you>` before any in-tree boot or any `lares` command that touches the store. `LAR_ROOT` moves the store, the bags root and every projection mirror root; `LAR_BAGS` alone moves only the bags root, and the projection still writes the tracked `bags/` and `wikis/`. A staged e2e vessel takes its own scratch `LAR_ROOT` and no global `LAR_BAGS`. One `lares meme normalize|check` reads files and needs only a scratch `LAR_BAGS`.
+# `LAR_ROOT` leaves these homes where they stand: `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin`, and the harness homes `~/.claude`, `~/.codex`, `~/.copilot`. A `vessel stand --codex` under a scratch root still writes the operator's real harness home.
+# Build: `pnpm install --frozen-lockfile` only where a lead approved an install, then `pnpm -r build`, then `pnpm --filter @lararium/tw5 build:tw5-vendor` (the TW5 core blob that `head-parity` and the plugin smoke need), then `node tools/stamp-build.mjs`. A fresh `git worktree` holds empty submodules; populate them before building there.
+# ''A founding wants a human route on a TTY.'' With no TTY it refuses `CredentialTtyRefusal`, and no flag or environment variable carries a credential. A harness founds through the test door: `tools/test-scratch-marker.mjs` stages the root, `tools/seed-test-custody.mjs` names the published test route, then `lares vessel found --skip-build`; `tools/unlock-test-custody.mjs` opens a marked scratch root. An agent may read vessel state and hand the operator the next founding command as text; the operator performs each founding and custody act.
+# ''Every boot rests at the floor.'' A verb that needs sovereign state refuses at a standing floor and names `lares vault unlock`. A harness that reads the first `gate key:` line of a log reads the carriage relay's key where a relay stands.
+# ''The container'': `tools/lares-container.sh` offers `up`, `down`, `found` and `logs` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">>). ''The browser surface'': `tools/browser-ci.sh` over `docker-compose.browser-ci.yml`, one project and image tag per builder (`BROWSER_CI_PROJECT`, `BROWSER_CI_IMAGE`).
+# The tw5 plugin bundle (`packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, `plugins/standalone/*`, `src/plugin-tiddler.generated.ts`) rides in git and must equal a fresh build: rebuild after any tw5 source or tiddler change and commit it with the change. CI's `build-freshness` job checks it.
+# `lares-cli` `tests/pour-repave.test.ts` needs the dev-root marker (`LAR_DEV_REPO_ROOT=1` or the ignored `lar-dev-root.json`).
+# Crew shape, by standing grant: one Opus lead drives two Luna builders and one Sol reviewer, five rounds per set at most; builders commit on the feature branch with `git commit -F <msg> --only -- <paths>`.
+
+!!! The standing law that bites ~ read the carrier before arguing with it
+* ''The frame stands as canon'': DOCTYPE, the SOH bearing, STX, `toml meta` first in the body, the body, ETX with its `ni:///sha-256;…` check, EOT. One span per carrier; a spelling outside the frame grammar tears the frame (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>).
+* ''The frame's `?` and the gate's unechoed key stay distinct.'' `from="?"` declares an unresolved bearing at the grammar layer; the gate withholds a known key at the transport layer. Their one shared law reads at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>.
+* ''Ingest decides from a parse and a verdict.'' The deserializer stands as the pure meme-to-tiddlers function; `verdict()` (Match · Stale · Absent · Torn · Bare) lives in `@lararium/memetic-frame`; checks live in `carrier-check.ts`, repairs in normalize, policy at each door. A stale check on a human edit warns; a torn frame refuses; text with no frame reads as bare data, never a meme.
+* ''Never refuse on the stock syncer path''; surface on the alert rail (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/syncer-back-parity">>).
+* ''The quoteblock floor fences at two grains'': the whole chunk inside the deserializer, and a child's body in place at the child gate (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>).
+* ''An admit carries across a seal roll only through its roll anchors.'' The gate reads the presented admit against the carriage board's counted revokes and the kapae antigen, and folds no allow roster (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>).
+* ''No global now'' and ''the fence'': #/rulings.
+* ''One holder per store, one Lararium per human'': a second holder meets `StoreHeld` across containers and namespaces (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">>).
+* ''Fragments'': every `lar:` fragment roots at `#/…`, one raw `#`, `/` nests, `$` reserved (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>).
+* ''Grammar lives in the tiddlers'' (`packages/lararium-tw5/tiddlers/sigil-*.tid` generate `grammar-table.generated.ts`); sigil heads stay core ASCII; `aka` pins as information, `kanawai` pins as binding, `kahea` transcludes live.
+* ''Early alpha'': no back-compat, no shims, no legacy recovery; a stale thing aligns to the current frame and grammar, and the fence (#/rulings) ends that line (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wild-bytes">>). Derive, never enumerate. One function, one relation.
+* ''A registry compiled about subjects refuses at any scope'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
+* ''A relation's evidence keeps its type'' and ''a worker keeps its own storage scope'': <<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island#/selected-contracts">>.
+* ''Shared tree'': never `git stash`; commit only your paths; never `--no-verify`; a spirit spawns no helper and never juggles another hand's uncommitted hunks; read an exit code directly; prove a zero with a known positive (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths#/law">>).
+* ''The node side routes nothing into the shore's files'' while a shore lane holds them: `packages/lararium-browser/**`, `packages/lararium-web/**`, `tw5-host-bridge.ts`, `tw5-projection.ts`.
 
 <<~/ahu>>
 
@@ -102,6 +156,21 @@ git and the CHANGELOG, never here. The live wounds and the vitals read in
 * ''A boot follows `LAR_ROOT`.'' A vessel isolated under `LAR_ROOT` projects into that root, never into the tracked tree; the mirror roots never read `LAR_BAGS`, so the isolation instruction names `LAR_ROOT`.
 * ''Compartments outrank admission control.'' A walker reads its own hearth's hosting doc, never the carriage board: the carrier set stays a contract ledger read by those who hold contracts.
 
+!!! The first ceremony, and the acts around it (operator ruling)
+* ''Guests'': the first ceremony runs with the host's own invites only. Guest introductions stay off until the hosted road's re-cut lands; the hosting act's new bytes still land before the fence.
+* ''Reach on the day'': LAN only. The public domain's Handle table comes later.
+* ''At two seats no seat signs any Kahu act alone.''
+* ''An operator's own herm'': an operator contracts their own herm with one signature, scoped to one place and one Nexus, and it falls with a kapae of the operator's admit.
+* ''The hosting key'': the operator's seat signs ONE delegation to a hosting key; that key signs each hosting act and seeds each epoch. A session wearing any other face signs nothing for the hearth.
+* ''The cold-key card'': the house format — 64 hex plus a checksum, in groups of four — printing its purpose, chair label, generation and a short charter fingerprint.
+* ''The DNS credential'': the registrar's credential rests as two files on the first operator's always-on node, outside both mounts, read by the one-shot issuer. That node issues one wildcard per machine, and the second machine receives its certificate by hand.
+* ''A browser leaf holds a passphrase or paper slot before it holds a persona root''; the mint refuses without one.
+* ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by a rotation on the face's own log.
+* ''Shore saves, as built'': a rename onto a standing title proceeds as an ordinary write at field grain; a tombstone moved into a bag that lacks the title refuses unless the hand asks to shadow.
+* ''A seat gets ADDED, never replaced.'' The long-span act adds a holder to BOTH cabals — a Kahu seat and a Lamplighter contract — and the founders keep their chairs; one founding Kahu may hold seats across many Nexuses. The road proves the roll that adds a seat, and the new holder's carriage contract, first. A passed chair stays a possible act. A Kahu who works far from the other seats needs a co-signature for every quorum act, so the partial-and-cosign door carries a partial act across a relay and back with no clock.
+* ''Per-Nexus identifiers'': an admit names a per-Nexus identifier, a random leaf no other Nexus can link. The face's lineage may re-issue it by a signed hand-over the gate verifies, and per-Nexus keys mint at random, never from the persona seed.
+* ''Every boot rests at the floor until a human unlocks'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>). A bounded ember stays design input: it raises to SERVING alone, never signs or admits, runs on a count and never a clock, needs the device's own unlock plus a second signal, records each raise, and any other device of the human removes it.
+
 !!! The fresh start
 * ''No pave or wipe command'' — such a command carries too much risk. See #/fresh-start.
 
@@ -124,6 +193,22 @@ still on the road.
 * ''No hearth-local deny set.'' Kapae and the roll suffice; a deny set would make a seizable list.
 * ''No node carriage.'' A node serves as its own durable store and no story walks its carriage; ruling N holds as a sorter property and W as the hearth's service. Node carry would open a new user story, never owed by N or W.
 * ''Hosting stays on the worn persona leaf.'' ROOT-ON-FOUNDER keeps a persona root on one vessel, so one face cannot host from two stores unseen; the first-roll rail surfaces the remaining case. The face-switch act inherits it.
+* ''A cliff takes a funnel, then one assembled commit.'' Where one shape change crosses three packages, the fixtures funnel through one helper first; narrow builders each write one patch against a fixed contract; one lander proves them together in a scratch worktree and commits once, so the main tree never holds half a flip. Three cliffs stand on the road: the charter flip, the Nexus rename and the socket cutover.
+* ''Who signs changes before how the next keys get committed.'' The seats take their own keys under the standing charter shape; the per-seat cold digests follow in the flip. Between those two commits a seat's next key rests on the same disk as its current one, so pre-rotation protects nothing there, and no vessel that matters gets founded in that span.
+* ''The socket's handshake changes once.'' R-WIRE and the face proof build as ONE wire train: the signed admit, then the fleet-join door, then one socket cutover (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>). The tree between those steps reads no earlier shape; it stands as a build order, never a compatibility mode.
+* ''A pure library names its caller.'' A module built ahead of its consumer stays out of the package barrel until the commit that consumes it. Until a production path calls it, a module stands specified in code, never built.
+* ''`vessel found` keeps a charterless road.'' The Stable founding act becomes the HEARTH's rite; a herm still founds as a place with no face, and a joiner still founds through an admit.
+* ''An earlier charter shape refuses by name''; today it reads torn, and torn reads PRIVATE.
+* ''The carriage verifier holds the root'': it checks the epoch, the signature AND a subject root it holds locally, and refuses by name without that root.
+* ''Guardian placement'' reads as advice the house names at enrolment, never a refusal. ''QR pairing'' shows a check string on both screens after the channel opens.
+* ''The floor vessel key drops its next-key commitment'', inside the one identity train. It changes the vessel's signed inception bytes; the operator may overturn it.
+* ''A long-silent fleet device'' (lean, to ONE FACE's plan): each certificate presentation carries the frontier of the withdrawal history its presenter saw; a gate holding a later frontier asks the device to catch up first, and until then the device reads `unconfirmed` and acts on nothing shared. A gate that learned nothing newer may accept. No clock.
+* ''The strangers' dial drops the NEWEST arrival'' when its slots fill; a slot frees by the operator's answer or a roll.
+* ''Every browser leaf counts as evictable'': `storage.persist()` refuses in a plain tab, so no leaf holds the only copy of anything, and no passkey slot stands as the only way in (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>).
+* ''A restarted always-on node serves no hosted phone until a human unlocks.'' The resolver and the terminator keep answering, so the page loads and the sync waits; the page says so in one line, until the ember lands.
+* ''A crossing gets recorded, never interior life.'' Only an authority, vessel, federation or externally meaningful crossing becomes distributed canon (<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>).
+* ''A package names no vessel.'' Every entity starts at the herm floor; a seated persona lights the Lararium stack over it. Only a lararium lights a Pronaos, and a herm mirrors a house's published bytes by CID (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-placement">>).
+* ''Deferred by the house'': realm feeding (two carriers disagree on max over per-writer slots against a blank merge; it waits for the first-realm arc), community exit, and funding, where payment may buy capacity and never standing.
 
 <<~/ahu>>
 
@@ -302,6 +387,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;px7pBnIj87VmJPStmtTcP7xvfhMiUEFvKFhyG4eakmQ
+<<^ code="&#x0003;">>ni:///sha-256;ylCw-nVBE-9PoCX3IekkeHr8k4xLFd6lN0wLheAPRbw
 
 <<^ code="&#x0004;" -> to="?">>
