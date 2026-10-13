@@ -132,10 +132,7 @@ learns nothing of its standing (#/the-breaks (c): an unsigned announcement targe
 ''It signs under the domain `waking-floor-announce`'', which mints into the domain registry only when the
 announcement gets built, at the re-found.
 
-''It signs with the per-Nexus wire key'' owed to the re-found, derived from the vessel seed and the Nexus AID
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>). NEVER the vessel key in public:
-the vessel key also signs carry seals, so one public signature under it would correlate the place with every
-Nexus it carries. Each Nexus therefore reads an announcement it can verify and no other Nexus can link.
+''It signs with the floor bundle's signing key for that Nexus'': a key derived from the floor key, the Nexus and the announcement's own floor route, so a locked vessel signs it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange">>). NEVER the vessel key in public: the vessel key also signs carry seals, so one public signature under it would correlate the place with every Nexus it carries. Each Nexus therefore reads an announcement it can verify and no other Nexus can link.
 
 <<~/ahu>>
 
@@ -401,6 +398,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GcW1hiMprT6Nufqiv1vQcXZRNxMb1iZSMtaoX_53juA
+<<^ code="&#x0003;">>ni:///sha-256;d6PzXb26LBYRTDGxwZbgG9yQR8wO5MwAQlPFFHLeE0w
 
 <<^ code="&#x0004;" -> to="?">>

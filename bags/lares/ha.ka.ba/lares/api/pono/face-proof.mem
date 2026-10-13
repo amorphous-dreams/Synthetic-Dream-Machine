@@ -47,7 +47,7 @@ written           = "2026-10-11"
 | Session signer, one per (session, Nexus) | the vessel's daemon mints it; the vessel's face-scoped key certifies it for a dial | a session-bound handle; it drops when the session closes or switches | a gate sees its public half and its certificate inside the encrypted exchange |
 | Per-dial transport keys | the dialer mints fresh X25519 static and ephemeral pairs | one dial's memory | a gate sees the initiator's static after decryption; a passive observer sees the ephemeral |
 | Herm relay identity | the dialer mints a separate fresh signer for each herm dial | one dial's memory | the herm sees this key and a face-scoped channel tag |
-| Gate bundle | the gate derives separate, domain-separated transport and signing keys from its sealed per-Nexus custody | the gate's custody; a dialer pins it per (Nexus, route) | the dialer, and anyone handed the pin |
+| Gate bundle | the gate derives separate, domain-separated transport and signing keys per (tier, Nexus, route): a floor route's from the floor key, a sovereign route's from the sealed custody root (#/the-gate-exchange) | nowhere: a bundle lives in memory from a derivation to a drop; a dialer pins it per (Nexus, route) | the dialer, and anyone handed the pin |
 
 ''A vessel's face-scoped key never derives from, and never equals, a vessel root.'' It stands independently random per (PersonaGroup, Nexus, vessel), so no key and no certificate field repeats across two faces of one vessel. The types forbid a vessel-root key and any cross-face field in a proof.
 
@@ -77,7 +77,7 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 # ''The gate answers the upgrade only after that flight decrypts.'' A flight that decrypts shows the dialer knows the gate's pinned key, which silence toward strangers protects. The gate then sends its 101 and selects the fixed protocol name alone. A wrong knock or a flight that fails to decrypt draws no answer.
 # ''The first flight buys provisional work and nothing more.'' IK's first flight can replay, so the gate performs no application operation on its strength.
 # ''The gate completes the handshake.'' Its reply carries no verdict.
-# ''The presentation follows in the first encrypted frames.'' It carries the face's public key, the vessel's face-scoped key with its certificate, the session key with its certificate, ONE presentation arm (an admit, a hosting grant, or an invite claim) and that arm's causal lineage, and the presenter's withdrawal frontier with any events the gate may lack (#/the-withdrawal-proof). An admit's `nym` MUST equal the face key. No ContactCard, no vessel key, no persona root, no root edge, no identifier shared across faces, and by default no Handle rides it.
+# ''The presentation follows in the first encrypted frames.'' A face's presentation carries the face's public key, the vessel's face-scoped key with its certificate, the session key with its certificate, ONE presentation arm (an admit, a hosting grant, or an invite claim) and that arm's causal lineage, and the presenter's withdrawal frontier with any events the gate may lack (#/the-withdrawal-proof). An admit's `nym` MUST equal the face key. No ContactCard, no vessel key, no persona root, no root edge, no identifier shared across faces, and by default no Handle rides it.
 
 ''The admit's signed bytes carry its canon-document list and gate key.'' The signature MUST bind both fields, and verification MUST check them before accepting either value. A canon title names a carried canon document, never a derivable system plane (`packages/lararium-browser/src/hearth-canon.ts`). The device-admit command adds `hearthGatePubKey` and `hearthCanonDocs` after `runDeviceAdmitEdge` returns the signed edge (`packages/lararium-node/src/commands/device-admit.ts`); the signing and verification path owes these fields.
 # ''The gate checks, still provisionally.'' It checks the pinned route and audience, the chain, the presentation's signatures, the quorum's signatures, the causal parents, the deny events and withdrawals it has learned (#/causal-withdrawal), and the roll anchors. Where the asked planes need it, the ring checks the PersonaGroup grant. Missing required history, a known fork or an incomplete board brings abstention. The gate reveals no differentiated refusal.
@@ -92,7 +92,7 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 * ''The knock derives from the bundle's digest'', and the handshake's prologue holds that digest. So a gate's knock, its pin, its verdict and its posture all read per Nexus exactly, and a first flight decrypts only at the gate whose pin its dialer held.
 * ''The first flight carries an empty payload.'' A flight that carries more draws no answer.
 * ''No collaborator hears of a dial before its finish verifies.'' The admit reader, the rings, the sorter and the gate's memory act on no first flight.
-* ''Every arm's subject key names the face key, and an arm that does not hold draws silence.'' A presenter never falls to a lower class over an arm that failed.
+* ''Every arm a face presents names the face key as its subject, and an arm that does not hold draws silence.'' A presenter never falls to a lower class over an arm that failed.
 * ''The sorter runs once, after the shadow ring and before any answer of any kind'', a named state included. A class never outgrows the arm that earned it, and the session's profile comes from its certificate alone.
 * ''A gate learns and keeps withdrawal events only under a face key whose admit it just read held'', and a named state goes to no other presenter. A face no quorum admitted makes a gate hold nothing.
 * ''An OPEN gate answers a stranger.'' A sound chain under a face no quorum admitted, presenting no arm, sorts as a stranger where this Nexus reads OPEN: the gate answers `verified`, seats it at the public shelf and keeps nothing of that face's history. Where the Nexus reads PRIVATE the same presenter draws silence. The four states that refuse (`unconfirmed`, `withdrawn`, `incomplete`, `forked`) go to a presenter of an admitted face alone.
@@ -103,6 +103,39 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 * ''One presentation rides one dial.'' A presenter that reads `unconfirmed` or `incomplete` folds what it received and dials again.
 * ''A dialer carries its whole line unless its caller names less'', so the first honest vessel of a face ends a gate's partition in one dial.
 * ''A refused socket gets cut when the gate's one deadline lapses, and never before.'' The gate draws that deadline at accept, before it reads a byte.
+
+!!! Two tiers of gate ~ the floor answers locked, the sovereign gate answers raised
+
+> ''House reading, marked as such; it touches custody at rest, and the operator may overturn it.''
+
+''A route names its tier, and a tier names its root.'' A ''floor route'' answers at a locked vessel: the public shelf, the oracle's read face, the floor's announcement, and a herm's blind relay of bytes it cannot open. Its bundle derives from the floor key. A ''sovereign route'' seats a face's session, syncs a private document or serves a lane whose bytes this vessel can open. Its bundle derives from the sealed custody root, and it exists only while the vessel stands unlocked. A route's typed name carries its tier, the pin states it and the pin's digest binds it: no route asks the other tier's root, a root asked for the wrong tier refuses by name, and a dialer that pinned one tier believes no gate of the other.
+
+''Each derivation takes the tier, the Nexus and the route under its own name.'' No pin, key, digest or knock of one tier, one Nexus or one route links to another for an outsider: one vessel's floor pin and its sovereign pin for one Nexus share nothing.
+
+''A dialer names the tier it means to reach'', and a pin of the other tier dials nothing: a floor gate's `verified` seats the floor alone, so no caller mistakes it for a sovereign seat.
+
+''What each tier costs.'' A thief who holds the disk and no passphrase holds the floor key: that thief can stand the floor gates, and can speak as the PLACE wherever the place's own key speaks (its carrier seal, a place arm), which reaches the public floor and the blind carriage of bytes it cannot open. That thief can never stand a sovereign gate, seat a face or open a sealed byte.
+
+''A floor gate seats no fleet lane.'' It asks no private grant and sorts nobody same-operator, it reads no withdrawal memory and answers no refusing state, and it marks every seat it opens as the floor's, so that seat reaches the public shelf and what the floor serves, and nothing this vessel can open. A presenter that asks more dials the sovereign route, and finds no gate there while the vessel rests locked.
+
+!!! The place arm ~ a faceless place proves its own key, outside the face proof
+
+> ''House reading, marked as such; the operator may overturn it.''
+
+''A herm or a carrier holds no face'', so it holds no face key, no certificate and no session certificate. It still dials gates. The presentation therefore takes a fourth arm, the ''place arm'', and that arm stands OUTSIDE the face proof: no chain rides it and no withdrawal history answers it.
+
+* ''The place proves its place key inside the handshake'': the place key signs the finish, under the finish's own name for a place, over the same handshake hash, bundle digest, presentation and audience.
+* ''It presents the contract that names that key and this gate's Nexus'': the quorum's `carry` act with the place's own carrier seal. The gate reads it through the same held-root door an admit passes, against the board's counted `uncarry` acts and the antigen, and consults the edge shadow ring for the carriage edge.
+* ''It sorts contracted and never same-operator'', and it seats under the `carriage` profile: a seat that carries bytes it cannot open and signs no act of a face. Nothing a face's withdrawal took away returns through it.
+* ''A place key serves the place alone.'' It stands among the keys held apart (#/the-withdrawal-proof): no face key signs a certificate over it, and a finish signed for one arm verifies for no other, since each arm's finish signs under its own name.
+* ''A standing names the presenter's own key.'' Where the sorter names a standing, for a place or for a face, it stands under the key that proved in this dial and at this gate's Nexus, or the dial draws silence.
+* ''A place arm hears `verified` or nothing.'' It holds no face, so no named withdrawal answer reaches it, and every failure draws silence.
+* ''One arm rides one dial.'' A presentation that carries a place arm beside a certificate, or a face's arm with no chain, reads as none.
+* ''A place with no contract'' that dials a floor route draws what a proven stranger draws there.
+
+''Why it shares the exchange.'' One handshake keeps one silence: a place and a face meet the same knock, the same first flight, the same deadline and the same quiet, so a watcher of the wire tells neither from the other, and the socket's handshake still changes once.
+
+▢ ''OWED'': an operator's contract over their own herm (one signature, one place, one Nexus) names bytes no code holds yet; the arm reads the quorum's `carry` act until it does.
 
 <<~/ahu>>
 
@@ -179,6 +212,20 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 
 ''The vessel's own reading follows the same history.'' A vessel folds the events it receives against its own key: it reads //standing//, //withdrawn// or //forked//, and between a gate's ask and its own fold it reads `unconfirmed` and acts on nothing shared.
 
+!!! Where a gate's memory rests ~ in the gate's own store, as acts each face key signed
+
+> ''House reading, marked as such; the operator may overturn it.''
+
+''A gate that forgets a denial admits the withdrawn vessel again'', so what a sovereign gate learned outlives a restart. It rests in the gate's own vessel store, sealed under the vessel key behind the vessel's one store door, and on no board another operator reads.
+
+* ''It holds signed events alone.'' Each row carries the withdrawal events one face key signed. A reader verifies every event again as it loads, so a row that holds one event the face key never signed teaches nothing.
+* ''One row per face key'', named by the digest that binds that face key to this Nexus, and at most 1024 events in it; a 1025th refuses. The gate reads one row for one presenter and never walks the rows. One writer moves a row at a time, and one vessel holds its store, so no two keeps lose each other's event.
+* ''The gate writes a row only after a presentation under a held admit.'' The row itself proves who signed each event and never how it arrived: a hand that can write this vessel's sealed store can add an event the face key signed, and such an event denies only what that face key denied.
+* ''It passes the registry test'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter#/the-test">>): each event stands authored by its subject's own hand, the gate reads it as of its own last learning, and the store offers no enumeration.
+* ''Who may read it'': the unlocked vessel's own sovereign gate, and through that gate a presenter whose chain verified under that face key. A locked vessel reads none of it, and a floor gate asks none of it.
+* ''A fresh vessel knows nothing'', and accepts as a gate that learned nothing accepts (#/named-leaks), until the first honest vessel of a face dials it.
+* ''A store rolled back forgets.'' Every event in an older copy of a row still verifies, so a hand that restores one makes the gate forget what it learned since. No fence here stops that hand; the next honest vessel of the face teaches the gate again.
+
 !!! What a partition costs
 
 |! Who stands cut off |! What it costs |! What ends it |
@@ -206,6 +253,8 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 !!! What a session's key signs
 
 ''A session's certificate names its hand's profile, and the profile bounds the key.'' A session key signs under three purposes, each with its own domain: the dial's signed finish, an ordinary act, and an act that changes who holds authority. A person's tab and a person's CLI run sign all three. The disk watcher and a spirit's seat sign the first two, and no verifier reads an authority act under their key (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). The watcher's row reads as the house's own: the ruling names the seat.
+
+''A session opens before its certificate'' (house reading). The vessel's own chain verifies first: the face key, its certificate, this vessel's face-scoped key, with no learned denial. The face supplier joins THAT to the admit and the private grant, and the owner opens the session wearing the face. Only then does the signer mint the session's key and its certificate under the vessel's face-scoped key. The owner answers no caller between the two acts: one door opens the session and mints its signer, and a mint that fails closes the session it opened before any message routes to it. No session ever stands live with a face and no signer.
 
 ''A signer serves one session at one generation.'' It mints at random when the session opens, its certificate carries no session id and no owner epoch, and it drops when the session closes or switches. It asks the owner's own table before every signature and again before a signature leaves, so a record kept from before a close proves nothing and a close that lands mid-signature releases none.
 
@@ -260,12 +309,13 @@ The design names that unavailability and does not cure it. A recovery authority 
 ''What stands specified in code.'' Each names a module and its vectors, and no production path calls any of them, so none reads as built (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures#/wiring-an-unreached-module">>). Each stays out of its package's barrel until its caller lands.
 
 * ''The subjects'' (`packages/lararium-mesh/src/face-proof-subjects.ts`): the typed keys, the scope, the certificate and its request, the withdrawal event, the frontier, the session certificate, every signed image, and a reader for each. Every key and signature passes the one door (`ed25519-door.ts`); the purposes stand in the domain table (`domains.ts`).
-* ''Private authority'' (`packages/lararium-mesh/src/face-authority.ts`): minting, the request, the certificate, the withdrawal, the fold of a reader's memory, and the chain check with its six verdicts. Its callers: the fleet-join door, the removal door and the gate.
-* ''The session signer'' (`packages/lararium-mesh/src/session-signer.ts`). Its callers: the node's session open on the local socket, and the browser holder.
-* ''The gate bundle'' (`packages/lararium-mesh/src/gate-bundle.ts`): the pin, its digest, the knock, the prologue, and the transport and signing keys one gate derives per (Nexus, route) from one child of a root it never reads. Nothing rests. Its caller: the vessel's gate composer.
+* ''Private authority'' (`packages/lararium-mesh/src/face-authority.ts`): minting, the request, the certificate, the withdrawal, the fold of a reader's memory, and the chain check with its six verdicts. Its callers: the fleet-join door, the removal door and the gate. It also reads a vessel's OWN chain with no session key in it (`checkVesselChain`), which a session opens on.
+* ''The session signer'' (`packages/lararium-mesh/src/session-signer.ts`). Its callers: the node's session open on the local socket, and the browser holder. One door opens a session and mints its signer (`openSignedSession`), so no session stands live without one.
+* ''The gate bundle'' (`packages/lararium-mesh/src/gate-bundle.ts`): the two tiers with their typed routes and roots, the pin, its digest, the knock, the prologue, and the transport and signing keys one gate derives per (tier, Nexus, route). Nothing rests. Its caller: the vessel's gate composer.
 * ''The exchange's subjects'' (`packages/lararium-mesh/src/gate-exchange.ts`): the presentation and the answer with their readers, the image of the finish, the image of the verdict, and a provisional frame layout.
 * ''The gate'' (`packages/lararium-mesh/src/face-gate.ts`): the whole exchange against a socket and the collaborators it asks: a deadline source, an admit reader over the one presenter-verifier, the shadow ring, the grant ring, the sorter, a withdrawal memory and a session table. Its caller: the socket cutover.
-* ''The dialer'' (`packages/lararium-mesh/src/face-dial.ts`): the other half of the exchange, one function for a node and a browser. Its callers: both client transports, at the cutover.
+* ''The dialers'' (`packages/lararium-mesh/src/face-dial.ts`): the other half of the exchange, for a face and for a faceless place, one function each for a node and a browser. Their callers: both client transports, at the cutover.
+* ''The gate's stored memory'' (`packages/lararium-mesh/src/gate-withdrawal-store.ts`): one row of signed events per face key, verified again at every load, accreting under one writer. Its caller: the gate composer, over rows the vessel seals.
 * ''The session face supplier'' (`packages/lararium-mesh/src/session-face.ts`): it joins a verified chain, this vessel's own key for the face, the admit's verdict and the private grant into the face a session wears, and verifies none of the last three itself (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries">>). Its callers: the same two.
 
 ''What those modules need that nothing supplies yet'':
@@ -273,8 +323,9 @@ The design names that unavailability and does not cure it. A recovery authority 
 * ''Two custody rows.'' The face proof key rests cold with the root holder, one per (PersonaGroup, Nexus); a vessel's face-scoped key rests hot on its own vessel, one per (PersonaGroup, Nexus). Each holds 32 secret bytes and reads whole or refuses by name. The modules name the rows and the two signing doors they ask of the custody seat, and write no row.
 * ''The admit's own mark.'' The supplier reads the presenter-verifier's verdict over an admit and checks it against the chain. That verdict carries no mark a caller cannot spell by hand until the admit signs what it carries. A chain another vessel presented verifies as well as this vessel's own, so the session opener also owes the supplier the key its own custody row names.
 * ''The private grant's reader.'' The record that binds a face key to its PersonaGroup at one Nexus rests in the group's private causal state, and the ring reads it by vessel key today.
-* ''Where a gate's memory rests'', and where a face's own history rests on its vessels: the first with the gate's store, the second in the face's private causal state. Until then the gate holds what it learned in memory, and a restart forgets it.
-* ''The bundle's root.'' The bundle asks one derive door for one child. The road names the sealed custody root behind that door (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>); the floor's announcement names the vessel seed (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement">>), and a vessel at its floor holds no opened custody. Which root answers at the floor stays open; the bundle reads whichever door its composer hands it.
+* ''Where a face's own history rests on its vessels'': in the face's private causal state. A gate's own memory rests in its vessel store (#/the-withdrawal-proof).
+* ''The two roots' doors.'' A floor bundle asks the floor key's derive door and a sovereign bundle the custody seat's; the bundle refuses a door of the other tier. The composer owes both doors.
+* ''Sealed rows for the gate's memory.'' The store asks a door for one row of bytes by name; the vessel's custody owes that door, sealed under the vessel key.
 * ''A held Nexus root per gate'': the roster, the charter lineage, the deny board and the antigen that the admit reader folds, with the causal position it read them at. A gate that holds no root refuses every admit by name.
 * ''The rings by face key.'' The shadow ring owes a reading over one presenter (set aside at this gate; set aside from this vessel's own fleet), and the grant ring owes the private record by face key. Both read by vessel key today.
 * ''The sorter over proven facts'': a class from a held admit, a private grant, the fleet reading and the arm as presented, over ONE Nexus's posture.
@@ -311,6 +362,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;czraYL2E38mpeDVffYv0Olc7n688POLiYeSzoGf_E28
+<<^ code="&#x0003;">>ni:///sha-256;tbV9gk9L8JdkwvAkCx_t-iMXYU3O8dWY-IRpTqgrZSM
 
 <<^ code="&#x0004;" -> to="?">>

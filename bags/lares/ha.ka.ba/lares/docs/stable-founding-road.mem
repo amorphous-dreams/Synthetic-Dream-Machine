@@ -288,7 +288,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 * The staging harness founds through the one act inside the train, because the e2e set reads red from the first charter-byte change until the founding lands.
 
 ''R-WIRE, the per-Nexus wire key'' (waits on R-CHARTER).
-* A per-Nexus wire key derived from the sealed custody root and the Nexus AID; one gate per (Nexus, route), so knock, pin, verdict and posture read per Nexus exactly.
+* A per-Nexus wire key in two tiers (house reading): a floor route's bundle derives from the floor key and answers at a locked vessel; a sovereign route's bundle derives from the sealed custody root and stands only while the vessel stands unlocked. One gate per (Nexus, route), so knock, pin, verdict and posture read per Nexus exactly (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange">>).
 * ''Noise IK, proof-first'': the gate emits nothing before a valid first message; the knock becomes the IK pre-message. It retires the `lar:challenge` frame.
 * The floor announcement signs under the wire key, folded in here, so gate and announce never sign under two keys.
 * One client dial per (hearth, Nexus), so a vessel walks at more than one hearth; until then a second walk hearth refuses aloud.
@@ -431,10 +431,10 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `P16` Re-anchoring sorts dwellings by an injected `epochOrder` (`re-anchoring.ts`); it should keep `epochCid` as a fence and surface concurrent records. May follow.
 
 !!! THE WIRE
-* `W1` A per-Nexus gate key, one gate per (Nexus, route). The bundle stands specified in code (`gate-bundle.ts`): two keys per (Nexus, route), derived from one child of the custody seat's derive door, resting nowhere. Owed: the composer that stands one gate per bundle, the dispatcher's knock per bundle, and which root answers at the floor (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/owed">>). W.
-* `W2` Noise IK, proof first; `lar:challenge` retires (`auth-wire.ts`). The gate and the dialer stand specified in code behind interfaces (`face-gate.ts`, `face-dial.ts`), proven against each other in one process. Owed: the cutover that wires them. House (byte layout, provisional in `gate-exchange.ts`). W.
+* `W1` A per-Nexus gate key in two tiers, one gate per (Nexus, route). The bundle stands specified in code (`gate-bundle.ts`): a floor route's keys derive from the floor key and a sovereign route's from the sealed custody root, each per (tier, Nexus, route), resting nowhere. Owed: the composer that stands one gate per bundle and hands each tier its own door, and the dispatcher's knock per bundle. W.
+* `W2` Noise IK, proof first; `lar:challenge` retires (`auth-wire.ts`). The gate and both dialers stand specified in code behind interfaces (`face-gate.ts`, `face-dial.ts`), proven against each other in one process: a face's chain, a faceless place's arm, and a withdrawal memory that rests in the gate's own store (`gate-withdrawal-store.ts`). Owed: the cutover that wires them. House (byte layout, provisional in `gate-exchange.ts`). W.
 * `W3` The dialer's ContactCard rides the clear (`LarAuthMsg`). The specified exchange carries no card at all; the leak closes at the cutover. W.
-* `W4` The face-scoped proof chain: face key, the vessel's face key, the session key. The subjects, private authority, the session signer and the session face supplier stand specified in code, and the withdrawal proof reads as a house model the operator may overturn (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof">>). Owed: the two custody rows the chain's keys rest in, the gate around the chain check, and the callers. House. W.
+* `W4` The face-scoped proof chain: face key, the vessel's face key, the session key. The subjects, private authority, the session signer and the session face supplier stand specified in code, and the withdrawal proof reads as a house model the operator may overturn (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof">>). The two custody rows stand in node (`face-key-custody.ts`), the gate around the chain check stands specified in code (`face-gate.ts`), and a session opens before its certificate through one door (`openSignedSession`). Owed: the callers (the fleet-join door, the node's session open, the browser holder, the cutover). House. W.
 * `W5` The admit signature covers the canon list and the gate key (`device-admit.ts` carries them beside it). W.
 * `W6` One fleet-join door replaces `device-admit` and `persona admit`. W.
 * `W7` One dial per (hearth, Nexus). W.
@@ -762,6 +762,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zzRbXEAh1JjLN0OkEZZDttO2PK_mDhv7QSX0cA6lXWQ
+<<^ code="&#x0003;">>ni:///sha-256;ajFdTDlvcBoy9o5xLmuwg6Iv5anxbh6qr-tnvNB_FoA
 
 <<^ code="&#x0004;" -> to="?">>
