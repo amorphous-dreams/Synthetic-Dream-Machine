@@ -509,20 +509,18 @@ export async function verifyPersonaKelFull(chain: readonly PersonaKelEvent[]): P
 }
 
 /**
- * The authoritative operational key — the LATEST head's `opKeyDid`, IFF the KEL verifies structurally.
- * Returns null on a broken chain (a gate MUST NOT trust a head off a broken lineage). Pass
- * `{ verifyQuorums: true }` to additionally require every rotation's guardian quorum before returning a
- * head (fail-closed to null otherwise) — the strict read a live gate wants.
+ * The authoritative operational key — the LATEST head's `opKeyDid`, IFF every step of the KEL verifies: the
+ * structural walk AND each rotation's guardian quorum, each veto's signature, each enrolment's seal. Null on
+ * anything less (a gate MUST NOT trust a head off an unverified lineage). EVERY read verifies: a rotation
+ * carries its own proof (the revealed roster against the predecessor's commitment, and the guardians'
+ * signatures), and a junk rotation reads structurally whole, so structure alone never seats a head.
+ * `verifyQuorums` selects nothing and stands only while callers still name it.
  */
 export async function headOpKey(
   chain: readonly PersonaKelEvent[],
   opts: { verifyQuorums?: boolean; acceptProvisional?: boolean } = {},
 ): Promise<string | null> {
-  if (opts.verifyQuorums) {
-    if (!(await verifyPersonaKelFull(chain)).ok) return null;
-  } else if (!verifyPersonaKel(chain)) {
-    return null;
-  }
+  if (!(await verifyPersonaKelFull(chain)).ok) return null;
   // A provisional head confers nothing by default (the walked clause ①): the prior key stays head
   // until THE OBSERVER accepts — its own silence-across-K-local-epochs policy, passed here as a
   // verdict, never computed from a clock. NOT accepting is the resting state (clause ④).
