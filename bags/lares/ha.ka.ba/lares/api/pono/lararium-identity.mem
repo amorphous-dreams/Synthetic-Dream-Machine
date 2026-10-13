@@ -100,11 +100,11 @@ do not stack between operators. The earlier plane-list-vs-group-scale
 question closes with the ruling above — no numbered plane survives to reconcile; the group-scale
 (nameless `#has`-stacks) stands, Circles stay orthogonal to it.
 
-''A PersonaGroup is PER-HANDLE, and the human's collection of handles is a private VAULT — never a''
+''A PersonaGroup stands PER-HANDLE, and the human's collection of handles forms a private VAULT — never a''
 ''published scale.'' One handle (one veiled-user pseudonym) owns one PersonaGroup of the human's own devices.
 A human runs MANY handles, collected in a ''Vault'' (a private namespace — the master seed), and holds MANY
 vaults as deliberately-unlinkable compartments (Senior-Engineer ⊥ Guru ⊥ Telarus-KSC). The vault does NOT
-appear on the five-scale group axis: a scale is a //published// principal, and a collector that names its
+appear on the five-scale group axis: a scale constitutes a //published// principal, and a collector that names its
 handles would link them (the merge failure). The vault stays off-roster, on the human's own device, the
 only join their meat-brain. Full ontology: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault">>.
 
@@ -163,8 +163,8 @@ confused-deputy guard).
 
 Revocation rides ''Keyhive concap'' — delegation + revocation as ''convergent CRDT membership-graph''
 ''state'' (an observed-remove op that converges offline, no bolted-on blocklist) — the model Ink&Switch
-moved //to//, away from UCAN's external-state revocation. The standing edge carries no clock: `boundEpoch` against the PersonaGroup lease epoch records causal supersession. Quiet never lapses standing; departure, relation-scoped kapae, or renewal supersession records lapse. An epoch bump stays the heavy hammer for re-founding only. Revocation is first-class and
-convergent, never the deferred afterthought.
+moved //to//, away from UCAN's external-state revocation. The standing edge carries no clock: `boundEpoch` against the PersonaGroup lease epoch records causal supersession. Quiet never lapses standing; departure, relation-scoped kapae, or renewal supersession records lapse. An epoch bump stays the heavy hammer for re-founding only. Revocation holds first-class standing and
+converges, never the deferred afterthought.
 
 <<~/ahu>>
 
@@ -175,20 +175,20 @@ convergent, never the deferred afterthought.
 The base model ''rules Goblins/OCapN: a capability IS the identity.'' No account to look up — a
 ''reference reaches a place and carries its grant in one'' ("capability not account", the Elyncia
 lore made literal). A Lar binds to a place ''reached by a capability'', never a row in a registry.
-The per-vessel key (#/vessel-key) is //what holds and signs// capabilities; a ''delegation edge''
-''(#/delegation-edge) IS a capability grant''; compromise heals by ''revoking the capability'' — the
+The per-vessel key (#/vessel-key) //holds and signs// capabilities; a ''delegation edge''
+''(#/delegation-edge) CONSTITUTES a capability grant''; compromise heals by ''revoking the capability'' — the
 per-vessel-key + delegation + revocation lineage we already hold — not by rotating a global identity.
 
-''The offline-correct form of capability-is-identity is Keyhive CONCAP'' — every Goblins primitive
-becomes a signed CRDT edge in a membership graph (classic ocap/CapTP is fail-stop on partition; concap
+''Keyhive CONCAP constitutes the offline-correct form of capability-is-identity'' — every Goblins primitive
+becomes a signed CRDT edge in a membership graph (classic ocap/CapTP enters a fail-stop state on partition; concap
 converges). We ''ride Keyhive's membership graph'' (already a `keyhive` dep) for delegation + revocation,
-not a hand-rolled or UCAN-modeled chain. ''UCAN was inspiration, not the model'' — the delegation/use
-split and the walk-the-chain-at-use discipline are worth stealing, but Ink&Switch moved away from UCAN
+not a hand-rolled or UCAN-modeled chain. ''UCAN supplied inspiration, not the model'' — the delegation/use
+split and the walk-the-chain-at-use discipline merit stealing, but Ink&Switch moved away from UCAN
 (certificate-cap revocation needs external state); we follow their concap. KERI pre-rotation rides
 orthogonally as the rare root-rotation sub-lever (#/provenance).
 
 ''Wire-C (Keyhive 0.1.0 scout, 2026-06-24) — the two layers COMPOSE, not duplicate.'' Keyhive's
-''membership graph is authoritative'' for the operator↔device binding + revocation: the operator
+''membership graph serves as the authority'' for the operator↔device binding + revocation: the operator
 PersonaGroup sentinel (`addSentinelMember`/`accessForDoc` LIVE; `revokeMember` live in Keyhive's WASM,
 our wrapper's `revoke()` the open D.3 bridge to convergent revocation). The ''`device-delegation` edge''
 ''stands beside it as the OFFLINE projection'' — verifiable against the pinned operator root with no
@@ -196,9 +196,9 @@ Keyhive boot (the light leaf path), place-bound, synchronously `exp`-bounded; a 
 of the authoritative graph, never a parallel authority. (Group still can't round-trip in 0.1.0-alpha.3
 → a Document-sentinel stands in; the Beelay JS ciphertext transport still blocks full multi-vessel.)
 
-''Petnames are the human/place layer'' — a vessel's //local// name for a reference it holds, resolving
+''Petnames form the human/place layer'' — a vessel's //local// name for a reference it holds, resolving
 Zooko's triangle by layering (the unforgeable capability stays the root; the petname rides locally,
-no global registry). The petname namespace ''needs no new infrastructure — it IS the `lar:` grammar''
+no global registry). The petname namespace ''needs no new infrastructure — it STANDS AS the `lar:` grammar''
 ''already in code'' (`STABLE_L_SPACE = "ha.ka.ba"`, `lar-uris.ts`):
 
 <<~ has Petname Stable "region/lar:///ha.ka.ba/'' holds/canonical · permanent · shared · persistable ~ the well-known @oracle·@lares·@catalog·@lararium ARE stable petnames already">>''
@@ -208,8 +208,8 @@ no global registry). The petname namespace ''needs no new infrastructure — it 
 
 So the whole space sits in one grammar — ''{stable · unstable} × {bare-name · capability-bearing}'':
 stable+bare = the canonical public names; unstable+bare = a living local handle; the authority chunk
-turns either into a capability-bearing reference (the sturdyref itself). ''The petname IS a `lar:`''
-''address; the capability IS a `lar:` address that carries a grant.'' Two regions of l-space, a place
+turns either into a capability-bearing reference (the sturdyref itself). ''The petname STANDS AS a `lar:`''
+''address; the capability STANDS AS a `lar:` address that carries a grant.'' Two regions of l-space, a place
 for stable and unstable petnames both.
 
 <<~/ahu>>
@@ -397,22 +397,22 @@ The leaf's own gate opens exactly the canon documents its admit names. It never 
 
 !! Publish a Face ~ recognition without a registry
 
-''A handle PUBLISHES so others RECOGNISE it.'' A `handle-card` (`handle-card.ts`) is the public face of ONE
+''A handle PUBLISHES so others RECOGNISE it.'' A `handle-card` (`handle-card.ts`) stands as the public face of ONE
 handle: its verifying key (`nym`), a display glamour, a
 monotone `version`, a `prev` lineage link, a freshness lease, and an optional pointer to its reputation
 thread — ''signed by the handle's own key'', riding the @oracle plane's signed-content-addressed-pointer
 discipline (#/the-oracle-plane). Publishing a face reveals ''nothing'' of the vault or the human's other faces
 (persona-circle#the-vault): no shared key, no collector pointer, the seed never on the wire.
 
-''Recognition is SELF-CERTIFYING — the name contains the key.'' The signing key rides IN the card, so a
-recogniser verifies the signature against the embedded key and consults ''no registry.'' This is Mazières'
+''Recognition rests on a SELF-CERTIFYING name — the name contains the key.'' The signing key rides IN the card, so a
+recogniser verifies the signature against the embedded key and consults ''no registry.'' This implements Mazières'
 Self-certifying File System (1999) — `HostID = hash(pubkey)`, so the name carries the key and needs no PKI —
-restated with Ed25519; did:key and a Nostr `npub` are the same core. ''Zooko's triangle resolves:'' the
-identifier is secure-and-decentralised //because it IS the key//, memorable //because each recogniser keeps a//
+with Ed25519; did:key and a Nostr `npub` share the same core. ''Zooko's triangle resolves:'' the
+identifier stays secure-and-decentralised //because it IS the key//, memorable //because each recogniser keeps a//
 //LOCAL petname//. No SIN, no directory to capture.
 
 ''Two steps, never conflated:'' a card certifies ITSELF (a valid signature by the key it names), THEN the
-petname check asks whether that key is the one you know. A valid card can still be a stranger; only the local
+petname check asks whether that key matches the one you know. A valid card can still come from a stranger; only the local
 petname turns a key into "the mover who healed Neo-Thracia". ''Recognition rests on the key, never the''
 ''glamour'' — impersonation by display name fails.
 
@@ -459,7 +459,7 @@ holds ''two keys'' — Ed25519 (identity/sign) + X25519 (KEM/seal), cross-certif
 one welded to both. Every wrap ''rides a signed delegation edge'' (a sealed box authenticates
 no sender; an unsigned wrap invites key-substitution). The content layer mandates
 ''XChaCha20-Poly1305 with a random nonce'', each DEK minted ''once'' by a deterministic owner
-— a CRDT merges concurrent writes, so a counter nonce or per-replica DEK mint is a reuse bomb.
+— a CRDT merges concurrent writes, so a counter nonce or per-replica DEK mint plants a reuse bomb.
 
 ''Tier gate'' — the temporary layer serves ''PersonaGroup'' + a ''Cabal that''
 ''DEK-encrypts content''; an untrusted-relay tier never rides a plaintext path. The bond
@@ -494,12 +494,12 @@ real stack slots in piecewise:
 
 ''Honest posture.'' This layer has ''no forward-secrecy and no''
 ''retroactive revocation'' — and on an append-only CRDT that fact ''IS the security posture'',
-not a tradeoff to mitigate. A leaked vessel key reads ''all history it was ever granted'',
+not a tradeoff to mitigate. A leaked vessel key reads ''all history its grants ever covered'',
 permanently: the old wrapped DEKs and old ciphertext persist in the log (Automerge never
 deletes), so no rotation reaches back to destroy them. ''Rotation buys future writes only'' —
-never claim "rotate-on-loss" heals the past. The honest forward lever is ''epoch group-key''
+never claim "rotate-on-loss" heals the past. The honest forward lever lies in ''epoch group-key''
 ''rotation'' (BeeKEM, when its JS binding lands — FS on //future// chunks only); the retroactive-FS
-gap stays a ''documented invariant''. Two tempting escapes stand ''refuted'': ''puncturable encryption'' is a single-holder tool that does not fit a replicated-key
+gap stays a ''documented invariant''. Two tempting escapes stand ''refuted'': ''puncturable encryption'' serves a single holder and does not fit a replicated-key
 mesh (one replica puncturing leaves the others + backups open; no-global-now makes "all replicas
 punctured" unprovable), and ''threshold does not touch the encryption-history gap at all''. Root
 rotation/recovery rides ''KERI-style pre-rotation'' + ''Kintsugi-style'' guardian-threshold
@@ -555,6 +555,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hd_aMbvDat6_OBRzh0PlUFl7L-Asd_y1oty3CMuTp_4
+<<^ code="&#x0003;">>ni:///sha-256;n0Jr3EJ-40ZN3wUBfNE8f2UIqQYHAx4n_ObqU_M_qV0
 
 <<^ code="&#x0004;" -> to="?">>

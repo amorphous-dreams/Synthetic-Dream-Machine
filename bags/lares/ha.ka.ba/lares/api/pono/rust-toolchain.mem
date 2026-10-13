@@ -23,9 +23,9 @@ uri-path          = "ha.ka.ba/lares/api/pono/rust-toolchain"
 
 <<~ ahu #/head>>
 
-! Rust Toolchain ~ so a fix can be proven rather than awaited
+! Rust Toolchain ~ so the house can prove a fix rather than await it
 
-Three of the four nakama forks are ''Rust crates that emit wasm'': `keyhive`, `subduction`, `onomancy`. Their npm packages are ''prebuilt artefacts'' — consuming them means a fix reaches us only when upstream publishes. ''`66a6632 Fixes for CGKA access (#216)` stands in our keyhive fork's main and in no published release'': it limits transitive authority to the weakest link on the best path and stops Relay access transitively granting membership in a document's CGKA tree. A version pin cannot reach that. A ''build'' can.
+Three of the four nakama forks ship as ''Rust crates that emit wasm'': `keyhive`, `subduction`, `onomancy`. Their npm packages arrive as ''prebuilt artefacts'' — consuming them means a fix reaches us only when upstream publishes. ''`66a6632 Fixes for CGKA access (#216)` stands in our keyhive fork's main and in no published release'': it limits transitive authority to the weakest link on the best path and stops Relay access transitively granting membership in a document's CGKA tree. A version pin cannot reach that. A ''build'' can.
 
 The toolchain therefore serves as more than a convenience. It marks ''the difference between reading a fix and running it'', and between filing an issue and sending a patch that compiles.
 
@@ -40,9 +40,9 @@ The toolchain therefore serves as more than a convenience. It marks ''the differ
 |`subduction` |''1.91.0'' |`rust-toolchain.toml` |`clippy`, `rustfmt` |
 |`onomancy` |''1.91.0'' |`rust-toolchain.toml` |`clippy`, `rustfmt` |
 
-''TWO CHANNELS, AND THAT IS FINE.'' `rust-toolchain.toml` is honoured ''per directory'' — entering each fork selects its own channel with no manual switch and no global default to keep straight. Their own comments say the pin is kept in lockstep with the workspace `rust-version` and the flake's `rustVersion`; ''bump all three or none''.
+''TWO CHANNELS, AND NO HARM IN IT.'' `rust-toolchain.toml` takes effect ''per directory'' — entering each fork selects its own channel with no manual switch and no global default to keep straight. Their own comments say the pin stays in lockstep with the workspace `rust-version` and the flake's `rustVersion`; ''bump all three or none''.
 
-''All three carry a `flake.nix`.'' Nix is the environment upstream itself stands in.
+''All three carry a `flake.nix`.'' Upstream itself stands in the Nix environment.
 
 <<~/ahu>>
 
@@ -59,7 +59,7 @@ wasm-pack build --out-dir pkg-web  --target web     --release
 node build_slim.js
 ```
 
-''Three targets are not redundancy'' — `pkg-node` serves the daemon, `pkg` serves a bundler, `pkg-web` serves a browser vessel, and the ''slim'' step emits the base64-embedded variant a page can load without a second fetch. This house already consumes all of those shapes.
+''Three targets carry no redundancy'' — `pkg-node` serves the daemon, `pkg` serves a bundler, `pkg-web` serves a browser vessel, and the ''slim'' step emits the base64-embedded variant a page can load without a second fetch. This house already consumes all of those shapes.
 
 ⚠ ''`onomancy_wasm` declares NO build scripts.'' It builds through cargo/wasm-pack directly or through the flake. Do not read the empty script block as //not buildable//; read it as //no npm-side convenience//.
 
@@ -69,26 +69,26 @@ node build_slim.js
 
 <<~ ahu #/two-paths>>
 
-!! Two paths, and they are for different purposes
+!! Two paths, and they serve different purposes
 
-* ''RUSTUP — the working path.'' `rustup` plus the `wasm32-unknown-unknown` target plus `wasm-pack`. Each fork's `rust-toolchain.toml` selects its own channel on entry, so nothing is pinned by hand and nothing drifts globally. Lightest thing that builds.
+* ''RUSTUP — the working path.'' `rustup` plus the `wasm32-unknown-unknown` target plus `wasm-pack`. Each fork's `rust-toolchain.toml` selects its own channel on entry, so no one pins a channel by hand and nothing drifts globally. Lightest thing that builds.
 * ''NIX — the donation-parity path.'' `nix develop` inside a fork stands ''the environment upstream's own CI stands''. A patch built there carries no environment-specific breakage into a pull request. Heavier to install; earns its cost at the moment we send code back rather than at the moment we read it.
 
-''RECOMMENDED: rustup to work, nix to donate.'' Neither is installed today (`rustc`, `cargo`, `wasm-pack`, `nix` all absent), so this is a standing plan rather than a description.
+''RECOMMENDED: rustup to work, nix to donate.'' The house machine carries neither (`rustc`, `cargo`, `wasm-pack`, `nix` all absent), so this section holds a standing plan rather than a description.
 
 <<~/ahu>>
 
 <<~ ahu #/the-divergence-law>>
 
-!! The law ~ a locally-built wasm is a FLAG-DAY
+!! The law ~ a locally-built wasm declares a FLAG-DAY
 
-''A wasm we build ourselves that differs in behaviour from the published package declares a flag-day against our own mesh.'' This reads #213 back at us: BeeKEM replacing path ratcheting with independently sampled secrets meant alpha.6 and alpha.8 peers could not key with each other, and a locally-built keyhive carrying #216 would do exactly that against a vessel running published alpha.8 — ''#216 changes authorization VERDICTS, so a patched and an unpatched node disagree about who is in a CGKA tree''. A split-brain, not a desync, and nastier for it.
+''A wasm we build ourselves that differs in behaviour from the published package declares a flag-day against our own mesh.'' This reads #213 back at us: BeeKEM replacing path ratcheting with independently sampled secrets meant alpha.6 and alpha.8 peers could not key with each other, and a locally-built keyhive carrying #216 would do exactly that against a vessel running published alpha.8 — ''#216 changes authorization VERDICTS, so a patched and an unpatched node disagree about who sits in a CGKA tree''. A split-brain, not a desync, and nastier for it.
 
 So, MUST:
 
 * ''Every vessel in a mesh runs the SAME build.'' Not the same version string — the same artefact. A version string proves nothing when one side built its own.
 * ''A local build carries its provenance.'' The fork's commit sha, the channel, the wasm-pack version, and the digest of the emitted `.wasm`, recorded where a vessel can read them. This house already binds a built blob's sha256 into `hearthTrueName` for TiddlyWiki5; the same instinct applies.
-* ''Consuming published npm stays the DEFAULT'' until a build is reproducible and recorded. Standing a toolchain buys the ability to build; it does not oblige us to ship what we build.
+* ''Consuming published npm stays the DEFAULT'' until we can reproduce and record a build. Standing a toolchain buys the ability to build; it does not oblige us to ship what we build.
 * ''The house consumes Ink & Switch libraries from npm, and a library becomes a source-built workspace member ONLY when it enters the engine'' (operator ruling, 2026-10-11). Entering the engine costs a pinned Rust/WASM stage in the container image and in CI, and the built bytes then bind into the engine's content address, so a re-pin of that library counts as an epoch act, as TiddlyWiki5's already does. A reading copy's re-pin changes nothing that runs.
 * ''A patch we intend to donate gets proven in the fork FIRST'' — upstream's tests, upstream's environment — before it reaches a vessel here. A fix that only passes in our tree makes a fork, not a contribution.
 
@@ -98,13 +98,13 @@ So, MUST:
 
 !! The order
 
-# ''Stand rustup + `wasm32-unknown-unknown` + wasm-pack.'' Verify by building ONE crate — `keyhive_wasm --target nodejs` — and reading the emitted `.wasm` size against the published `@keyhive/keyhive` artefact (2,289,235 bytes at alpha.8). A wildly different size is the first signal that the build is not the same build.
+# ''Stand rustup + `wasm32-unknown-unknown` + wasm-pack.'' Verify by building ONE crate — `keyhive_wasm --target nodejs` — and reading the emitted `.wasm` size against the published `@keyhive/keyhive` artefact (2,289,235 bytes at alpha.8). A wildly different size gives the first signal that the build differs from the published build.
 # ''Run the fork's OWN tests before trusting anything built from it'': `cargo test` in each, and the wasm-bindgen tests where they stand. A green local build over a red upstream suite proves the compiler works and nothing else.
 # ''Reproduce alpha.8 from the tag before building main.'' If we cannot rebuild the artefact we already run, we cannot claim a build carrying #216 differs only by #216.
 # ''Then, and only then, build main'' and measure what #216 changes in behaviour against our own cap-tier and face-join suites.
-# ''Nix when the first patch is ready to send'', not before.
+# ''Nix when the first patch stands ready to send'', not before.
 
-⚠ Machine note: this stands under ''WSL2''. `rustup` works; a Nix install there wants the daemon-less single-user mode or a systemd-enabled distro, and that choice is its own small ceremony.
+⚠ Machine note: this stands under ''WSL2''. `rustup` works; a Nix install there wants the daemon-less single-user mode or a systemd-enabled distro, and that choice calls for its own small ceremony.
 
 <<~/ahu>>
 
@@ -112,30 +112,30 @@ So, MUST:
 
 !! Open loops ~ deferred, not dropped
 
-''Held here because they were deferred in the same breath the toolchain was approved.'' None is blocked on the toolchain; each is blocked on a hand.
+''Held here because the same breath that approved the toolchain deferred them.'' None waits on the toolchain; each waits on a hand.
 
 !!! The testing architecture (scouted 2026-09-02, plan in hand)
 
-# ''ONE SERIALIZATION, BOTH PLACES — CLOSED.'' Root `package.json` reads `pnpm -r --workspace-concurrency=1 test`, and CI's `test` job runs ''`pnpm test`'' — the root script itself, so the serialization travels rather than being re-spelled. The law rides in the workflow's own comment: packages share a build tree and a rendezvous directory, so a parallel run ''measures a different repository than the one an operator measures locally'', and its flakes stay unreproducible by construction. The standing invariant: CI invokes the ROOT SCRIPT, never a hand-copied command.
-# ''ONE RUNNER STANDS UNINVOKED, and two ride CI. Measured, and here is how to re-derive each'':
+# ''ONE SERIALIZATION, BOTH PLACES — CLOSED.'' Root `package.json` reads `pnpm -r --workspace-concurrency=1 test`, and CI's `test` job runs ''`pnpm test`'' — the root script itself, so the serialization travels rather than getting re-spelled. The law rides in the workflow's own comment: packages share a build tree and a rendezvous directory, so a parallel run ''measures a different repository than the one an operator measures locally'', and its flakes stay unreproducible by construction. The standing invariant: CI invokes the ROOT SCRIPT, never a hand-copied command.
+# ''ONE RUNNER STANDS UNINVOKED, and two ride CI. Measured, and here follows how to re-derive each'':
 #* ''`witness-all` RUNS in CI, under its own job.'' `.github/workflows/ci.yml` seats a `witnesses` job that calls `tools/witness-all.sh` and then ''asserts the roll call'' — it greps the log for `held out of this run` and fails if the fleet's own naming of its hold-outs goes silent. Re-derive: `grep -n "witness-all" .github/workflows/ci.yml`.
 #* ''The fleet counts 34 files and RUNS 29.'' `witness-all.sh` globs `tools/*witness*.sh` rather than keeping a hand list, so a new witness enrols by existing. `ls tools/*witness*.sh | wc -l` reads ''34''; `HELD_OUT` declares six names with a reason each, and ''five of them match the glob'' (civic · crossing · herm-mesh · browser-weld · witness-all itself) — leaving ''29 that run''. The sixth, `mesh-scenarios`, carries no `witness` in its filename and so sits outside the glob entirely; the script's second loop reports it anyway, because a hold-out that stops naming itself has become a silent skip.
 #* ''`gate:fold-ts` HAS an invoker.'' The `grammar-artifact` job runs it as its own step (//fold + parity gates (ts host)//) beside `gate:fold` for the py host, deliberately unchained so a red in one host cannot hide a red in the other. Re-derive: `grep -n "gate:fold" .github/workflows/ci.yml`.
 #* ⚠ ''The SENSORIUM python suite runs under no CI step.'' `pyproject.toml` `testpaths` names two trees; collect them and the split reads ''1016 tests'' total — `packages/tree-sitter-memetic-wikitext/host-py` contributes ''27'' and rides CI through `gate:fold` (`python -m pytest -q`), while `packages/lararium-sensorium/scripts` contributes ''989 across 96 files'' and no workflow step reaches them. Re-derive: `~/.venv/bin/python3 -m pytest --collect-only -q <path>`, once per testpath. ⚠ Expect red when lit: wire first, triage as its own stage, and ''never delete a red to make a stage green''.
-# ''THE MOVE'' — `tests/` to `packages/lararium-tests/`. The trap is NOT that `pnpm -r test` would pick it up: `pnpm -r` recurses over ''workspace members'', and `tests` is already one, so the move changes its path and not its membership. ''The only fence is the script name `test:e2e`'' — keep it, and say so on the manifest. ⚠ The REAL trap is `typecheck-witness.sh`, which iterates `packages/*/` and ''silently skips any directory without a tsconfig''. The harness has none, so post-move its 218 lines vanish from the witness ''at the very address the witness claims to sweep''. Land a `tsconfig.typecheck.json` with the move.
-# ''D2 — `invokeLocal` falls back to the operator's home vessel'' (`local-connector.ts`: `dataDir ?? larDataDir()`). A null dataDir reaches a live vessel. It made `herm-floor` R4 a FALSE GREEN and means ''R5's failure is not evidence about the lift''. It should refuse, never default.
+# ''THE MOVE'' — `tests/` to `packages/lararium-tests/`. The trap does NOT lie in `pnpm -r test` picking it up: `pnpm -r` recurses over ''workspace members'', and `tests` already counts as one, so the move changes its path and not its membership. ''The script name `test:e2e` makes the only fence'' — keep it, and say so on the manifest. ⚠ The REAL trap lies in `typecheck-witness.sh`, which iterates `packages/*/` and ''silently skips any directory without a tsconfig''. The harness has none, so post-move its 218 lines vanish from the witness ''at the very address the witness claims to sweep''. Land a `tsconfig.typecheck.json` with the move.
+# ''D2 — `invokeLocal` falls back to the operator's home vessel'' (`local-connector.ts`: `dataDir ?? larDataDir()`). A null dataDir reaches a live vessel. It made `herm-floor` R4 a FALSE GREEN and means ''R5's failure gives no evidence about the lift''. It should refuse, never default.
 # ''D3 — the meme projector stamps a `bag` key the corpus never carries.'' `tw5-file-info.ts` excludes `bag` from `.tid`/`.json`/`.meta`; the memetic projection does not. Only 9 corpus files carry an authored `bag =`. Operator call, and it only became visible when a stale fence label stopped masking it.
 # ''Seven socket failures'' await deriving the rendezvous path in the harness rather than hunting a filename.
 
-!!! What must NOT be collapsed when that work fires
+!!! What must NOT collapse when that work fires
 
-''The serialization'' — fix CI up to it, never the root script down. ''`lararium-node`'s two-project split and its THRASHERS list'' — one authoritative statement the roster reader imports; an earlier shape stated the classes twice and they drifted. ''The four out-of-band witnesses'' — `mesh-coverage` is permanently red BY DESIGN and reads claims never passes; three others need docker. ''Duplicate-named test files are WELDS, not duplicates'' — node≡browser agreement IS the island-isomorphism proof, and `seal-reserve`'s own weld pair (`seal-reserve-split.test.ts` against pure crypto in `lares-cli/src/seal-reserve.ts`, `seal-reserve.test.ts` against the on-disk ceremony in `lararium-node/src/seal-reserve-store.ts`) splits pure crypto from on-disk ceremony the same way. ''Source vs dist vs packed-plugin splits'' are the half-build instrument; collapsing one converts a weld into a tautology.
+''The serialization'' — fix CI up to it, never the root script down. ''`lararium-node`'s two-project split and its THRASHERS list'' — one authoritative statement the roster reader imports, so the classes cannot drift between two statements. ''The four out-of-band witnesses'' — `mesh-coverage` stays permanently red BY DESIGN and reads claims never passes; three others need docker. ''Duplicate-named test files stand as WELDS, not duplicates'' — node≡browser agreement CONSTITUTES the island-isomorphism proof, and `seal-reserve`'s own weld pair (`seal-reserve-split.test.ts` against pure crypto in `lares-cli/src/seal-reserve.ts`, `seal-reserve.test.ts` against the on-disk ceremony in `lararium-node/src/seal-reserve-store.ts`) splits pure crypto from on-disk ceremony the same way. ''Source vs dist vs packed-plugin splits'' form the half-build instrument; collapsing one converts a weld into a tautology.
 
 <<~/ahu>>
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/two-integrities">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
 
-<<^ code="&#x0003;">>ni:///sha-256;b3oIT9KBe7v-mTGY7pYoK031B8Jc78dX30k0WfRgTu0
+<<^ code="&#x0003;">>ni:///sha-256;UG1Wuwfl9jhOx3_loGJ7ZCMpAxagyCPTjJY8k_wS88U
 
 <<^ code="&#x0004;" -> to="?">>
