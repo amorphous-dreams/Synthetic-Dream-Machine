@@ -31,7 +31,9 @@ uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
 
 ! Residency Tiers — One Island-Owned Thermal Model
 
-The lararium node holds ''one'' residency model, owned by the ''Island Pool''. The ''island'' (one TW5 VM, one causal island, one wiki) forms the unit of residency. A bag does NOT carry an independent tier; ''a bag's residency is DERIVED'' — it is `wela` if any island whose recipe references it is `wela`, else `anu`.
+The lararium node holds ''one'' residency model, owned by the ''Island Pool''. The ''island'' (one TW5 VM, one causal island, one wiki) forms the unit of residency. A bag does NOT carry an independent tier; ''a bag's residency DERIVES'' — it reads `wela` if any island whose recipe references it reads `wela`, else `anu`.
+
+''As built, ONE collector records the state.'' `BagStowage` (`packages/lararium-mesh/src/bag-residency.ts`) holds registered grains — bags or wiki islands — in one map. It heats a grain on touch, cools it on idle or cap pressure, and drives the pool through two hooks (heat → `ensureWiki`, cool → `unmountWiki`); the pool stays a pure mount mechanism. The derivation rule stands as a tested function, `deriveBagTemperature`, that no production path calls: UNBUILT as wiring.
 
 Residency decomposes into two orthogonal dimensions, the thermal axis named in ʻōlelo Hawaiʻi:
 
@@ -40,11 +42,11 @@ Residency decomposes into two orthogonal dimensions, the thermal axis named in �
 
 `pinned` therefore does NOT rank among `wela`/`anu` — it crosses a separate axis. The always-resident set (identity, admin, active wiki, Session Wiki) reads as ''pinned-wela'': live islands the cooler never touches.
 
-''Two states, not three (revised 2026-06-01).'' A `warm` (mahana) middle tier was proposed and then ''cut'' the same day after an adversarial + kupono + YIN research pass — see #warm-cut. The model is `wela | anu` + pin.
+''Two states, not three'' (ruled 2026-06-01, after an adversarial + kupono + YIN research pass). A `warm` (mahana) middle tier stands ''cut'': a suspended Worker keeps its heap, so warm sheds none of the memory this model bounds. The model reads `wela | anu` + pin; #/third-tier-gate holds the reopening condition.
 
 Bag residency lives in the Island Pool concepts (operator ruling): one manager --- the `VesselIslandPool` --- holds the residency tiers.
 
-''"bag" stays a term.'' The collapse touches residency //authority//, not the TW5 vocabulary. A ''bag'' remains the TW5 layer/coordinate — one Automerge document, one axis of the recipe query plan (residency-model, linked in #edges). What collapses is the standalone //residency manager// down to ONE authority, never a second collector: the methods that pin, hydrate, and cool docs live in `bag-residency.ts` (`BagStowage`), a named-separate module the Island Pool DRIVES — see #/derived-bag-residency for the 2026-09-18 keep-separate ruling that closed the file-location question a 2026-06-01 clause once left open.
+''"bag" stays a term.'' The collapse touches residency //authority//, not the TW5 vocabulary. A ''bag'' remains the TW5 layer/coordinate — one Automerge document, one axis of the recipe query plan (residency-model, linked in #edges). The collapse leaves ONE residency authority and never a second collector: the methods that pin, hydrate, and cool docs live in `bag-residency.ts` (`BagStowage`), a module that keeps its own name and file (#/derived-bag-residency, ruled 2026-09-18).
 
 <<~/ahu>>
 
@@ -54,10 +56,10 @@ Bag residency lives in the Island Pool concepts (operator ruling): one manager -
 
 | Tier | ʻŌlelo | Island state | Bag (handle-cache) consequence | Resume cost |
 |---|---|---|---|---|
-| ''wela'' | "hot" | live Worker thread; TW5Engine + ReactionEngine running; `Enable()`d; reacting | referenced docs held in handle-cache | none — already live |
-| ''anu'' | "cold" | no thread, no engine; CRDT bytes only; URL known | handle MAY be dropped (no wela island references it) | dear — ''spawn + `ea`'' full re-boot (`hoʻowela`) |
+| ''wela'' | "hot" | live Worker thread; the TW5 engine and its reaction router running; reacting | referenced docs held in handle-cache | none — already live |
+| ''anu'' | "cold" | no thread, no engine; CRDT bytes only; URL known | handle MAY drop (no wela island references it) | dear — ''spawn + `ea`'' full re-boot (`hoʻowela`) |
 
-Two states. An island is live (`wela`) or torn down (`anu`); a bag's handle is held while any `wela` island references it, droppable otherwise. The defining contrast: ''a `wela` island RUNS live; an `anu` island RESUMES by spawn.''
+Two states. An island runs live (`wela`) or stands torn down (`anu`). UNBUILT: reachability wiring would hold a bag's handle while any `wela` island references it and permit a drop otherwise. The defining contrast: ''a `wela` island RUNS live; an `anu` island RESUMES by spawn.''
 
 <<~/ahu>>
 
@@ -65,15 +67,17 @@ Two states. An island is live (`wela`) or torn down (`anu`); a bag's handle is h
 
 !! Pin — the orthogonal sticky flag
 
-`pinned` crosses the temperature axis at right angles. A pinned island is ''exempt from the cooler'' — it stays `wela` regardless of idle time or cap pressure. `unpinned` islands are subject to LRU + idle-sweep cooling. (Kupono-aligned with Orleans `[KeepAlive]` and Android foreground-service — a flag orthogonal to the importance/age ranking.)
+`pinned` crosses the temperature axis at right angles. A pinned island stands ''exempt from the cooler'' — it stays `wela` regardless of idle time or cap pressure. `unpinned` islands face LRU + idle-sweep cooling. (Kupono-aligned with Orleans `[KeepAlive]` and Android foreground-service — a flag orthogonal to the importance/age ranking.)
 
 The always-hot set (system-pinned):
 
 * ''identity / admin'' — the operator's sovereign authority surface; the admin VM.
 * ''active wiki'' — the PrimaryWiki the operator currently works in.
-* ''Session Wiki'' — the coordinator `lar_playspace`; pinned-wela, always first in recipe order.
+* ''Session Wiki'' — UNBUILT: the proposed `lar_playspace` coordinator would stay pinned-wela and lead recipe order.
 
-Operator pin/unpin gestures move the flag; they do not carry a Hawaiian transition-verb name (the state change describes itself). Pin is durable: pin state lives as tiddlers in the admin doc and federates to operator devices via the existing admin-doc sync surface (no RPC — web2 smell test holds). ''Wired 2026-09-18'' (`d8f3c7a7a`) — `pinTiddlerUri` had built this URI shape with no writer or reader behind it; `writePinTiddler`/`removePinTiddler` (`vessel-residency-wiring.ts`, driven off `onResidencyOp`'s pin/unpin branches) now persist the tiddler, and `replayPinsFromDaemonDoc` restores it at boot, before the sweeper starts.
+As built, each vessel pins at boot the catalog, the oracle, the daemon bag, the lares corpus when it holds one, the worn face's identities, circles and sessions planes, and its home wiki; the node also pins the lararium corpus (`open-node-vessel.ts`, `open-browser-vessel.ts`).
+
+Operator pin/unpin gestures move the flag; they do not carry a Hawaiian transition-verb name (the state change describes itself). Pin holds durable: pin state lives as tiddlers under the daemon bag and rides to operator devices on that doc's own sync surface (no RPC — web2 smell test holds). `writePinTiddler`/`removePinTiddler` (`packages/lararium-tw5/src/vessel-residency-wiring.ts`, driven off the daemon's residency-op pin/unpin branches) persist the tiddler, and `replayPinsFromDaemonDoc` begins restoring pins at boot, ahead of the sweeper's start; neither vessel awaits that replay.
 
 <<~/ahu>>
 
@@ -81,26 +85,24 @@ Operator pin/unpin gestures move the flag; they do not carry a Hawaiian transiti
 
 !! Derived bag residency — the collapse
 
-Bags do not run their own tier manager. Residency flows DOWN from islands to the bags their recipes reference — this is ''reachability'' (a bag is live while reachable from a live island root):
+Bags do not run their own tier manager. Residency flows DOWN from islands to the bags their recipes reference — the rule names ''reachability'' (a bag stays live while reachable from a live island root):
 
 > ''A bag is `wela` if any island whose recipe references it is `wela`; otherwise `anu`.''
 
-Consequences:
+Consequences (the rule's design, UNBUILT as wiring — no production path derives a bag's temperature from its islands):
 
-* A bag referenced by ANY `wela` island is ''`wela`'' — its handle stays in cache.
-* A bag referenced by NO `wela` island is ''`anu`'' — its handle MAY drop (the eviction `automerge-repo` does not do on its own; see [[issue #358|https://github.com/automerge/automerge-repo/issues/358]]).
-* ''Referenced bags inherit liveness.'' `lares` / `lararium` corpus and the session event-bus bag ride in multiple recipes; a wiki's own per-wiki live slots (`wikis/{slug}/{personal,draft,working}`) each bind one recipe. Either way, referenced by the pinned admin/primary/Session islands, they are ''`wela` by derivation'', never dropped while a pinned island holds them.
+* A bag referenced by ANY `wela` island reads ''`wela`'' — its handle stays in cache.
+* A bag referenced by NO `wela` island reads ''`anu`'' — its handle MAY drop (the eviction `automerge-repo` does not do on its own; see [[issue #358|https://github.com/automerge/automerge-repo/issues/358]]).
+* ''Referenced bags inherit liveness.'' `lares` / `lararium` corpus and the session event-bus bag ride in multiple recipes; a wiki's own per-wiki live slots (`wikis/{slug}/{personal,draft,working}`) each bind one recipe. Either way, referenced by the pinned admin/primary/Session islands, they would read ''`wela` by derivation'' and keep their handles while a pinned island holds them. As built, the boot pins each such bag directly.
 
 Two disciplines survive the collapse as bag-level mechanism (driven by the pool, not an independent authority):
 
-* ''Stub-on-oracle-traversal.'' A URL found in `tiddler.text` during traversal does NOT force `find()`/hydration. The bag lands cold (URL known, doc not loaded) until something reads through it. Lazy hydration stays a bag concern; the //tier// is the island's to set.
-* ''Don't drop while syncing.'' A bag mid-replication is unsafe to evict even if its referencing island cooled. The handle-drop on island cool MUST check `syncActive` before releasing.
+* ''Stub-on-oracle-traversal.'' A URL found in `tiddler.text` during traversal does NOT force `find()`/hydration. The bag lands cold (URL known, doc not loaded) until something reads through it. Lazy hydration stays a bag concern; the //tier// belongs to the island.
+* ''Don't drop while syncing.'' No vessel may safely evict a bag mid-replication, even after its referencing island cooled. The handle-drop on island cool MUST check `syncActive` before releasing. As built, `BagStowage.cool` refuses a grain whose `syncActive` flag reads true, and no production caller sets that flag. The bag handle-drop itself reads UNBUILT: the bag grain's evict hook only reports the cool, pending a public eviction API in `automerge-repo` (issue #358).
 
-''Code homing (operator ruling 2026-06-01, CLOSED 2026-09-18 — see below).'' The residency methods — pin / unpin / hydrate / cool / handle-drop / `ChunkStore` — were ruled to move OUT of the standalone `bag-residency.ts` side-file (which predates the causal-islands model) and INTO the ''causal-island code'' (`causal-island.ts` for the model + contracts; the Island Pool for the Worker-lifecycle mechanism). Measured 2026-09-18: `packages/lararium-mesh/src/bag-residency.ts` stands live at 538 lines, imported by `cabal-realm.ts`, `carriage-caps.ts`, `who-face-cap.ts`, `vessel-island-pool-core.ts` (all `packages/lararium-mesh/src/`), and `cabal-realm-ceremony.ts` (`packages/lararium-keyhive/src/`) — five real importers, up from the two-importer count measured 2026-09-13. No `causal-island.ts` exists in the tree (the nearest name still reads `worldline-causal.ts`).
+''Code homing — KEEP-SEPARATE'' (operator ruling 2026-09-18, closing the relocation clause of 2026-06-01). `packages/lararium-mesh/src/bag-residency.ts` stays a module under its own name. It answers ONE question — how a vessel STOWS what it holds — and never folds into the pool. The file names the hazard in its own words: //"A federation-authority doctrine once shared its file and shared none of its types, functions, or imports — a single name over two unrelated questions, which is the shape that lets a reader carry an assumption from one half into the other."// The pool's source states the matching boundary: "the ONE residency collector (BagStowage + per-grain-type dials) owns reachability + the wiki cap... so the pool stays a pure mount mechanism — one authority, no second collector" (`packages/lararium-mesh/src/vessel-island-pool-core.ts`).
 
-''The counter-argument the code carries, in its own words — and the RULING it won.'' `bag-residency.ts:12-18` opens ONE FILE, ONE QUESTION and names the hazard it already survived: //"A federation-authority doctrine once shared its file and shared none of its types, functions, or imports — a single name over two unrelated questions, which is the shape that lets a reader carry an assumption from one half into the other."// Folding `BagStowage` into `vessel-island-pool-core.ts` would re-open exactly that hazard: that file's own header states its boundary in the same register — "the ONE residency collector (BagStowage + per-grain-type dials) owns reachability + the wiki cap... so the pool stays a pure mount mechanism — one authority, no second collector" (`vessel-island-pool-core.ts:265-270`) — a single-responsibility claim a relocation would violate from the other side.
-
-''RULED 2026-09-18: the relocation clause is CLOSED as SUPERSEDED — KEEP-SEPARATE.'' The un-braiding this ruling actually asked for — give the stowage axis its own name, so a reader never carries an assumption from one half of a shared file into the other — already landed: `BagStowage` / `bag stats` (`4d8ae4a7f`), one of the three lawful moves `one-name-one-relation#/the-unbraiding` names. That satisfies the ruling's INTENT without satisfying its literal FILE-LOCATION clause, and the file-location clause is the half this closes: `bag-residency.ts` stays a named-separate module the Island Pool DRIVES (onHydrate → mount, onEvict → unmount; `vessel-residency-wiring.ts` wires both), never a second collector folded into the pool. Alpha/no-back-compat license — no migration owed; nothing moves. A future relocation reopens only on a fresh, dated ruling, not on this clause reviving unread.
+''The stowage axis carries its own name'' (`BagStowage`, `lares bag stats`), one of the three lawful moves `one-name-one-relation#/the-unbraiding` names. The collector reaches the pool through two hooks (onHydrate → mount, onEvict → unmount; `packages/lararium-tw5/src/vessel-residency-wiring.ts` wires both). No `causal-island.ts` stands in the tree, and no residency method lives in causal-island code. A relocation reopens only on a fresh, dated ruling.
 
 <<~/ahu>>
 
@@ -115,7 +117,7 @@ The two transitions across the `wela`/`anu` axis wear Hawaiian per the lararium 
 | ''hoʻoanu'' | "to cool" | wela → anu | `IslandMsg_HooAnu` worker signal (`island-protocol.ts`); `cool()` bookkeeping |
 | ''hoʻowela'' | "to heat" | anu → wela | `touch()` heats a bag back to live; resume = `repo.find()` + island `ea` handshake |
 
-Pin/unpin gestures carry no verb name (the state change describes itself). `hoʻoanu` releases the thread and — subject to `syncActive` + the reachability rule — the handles. No warm tier exists yet; `mahana` / `hoʻomahana` stay undefined (see #third-tier-gate).
+Pin/unpin gestures carry no verb name (the state change describes itself). `hoʻoanu` releases the thread and — subject to `syncActive` + the reachability rule — the handles. No warm tier exists; `mahana` / `hoʻomahana` stay undefined (see #third-tier-gate).
 
 <<~/ahu>>
 
@@ -123,7 +125,7 @@ Pin/unpin gestures carry no verb name (the state change describes itself). `hoʻ
 
 !! Third tier — the gate
 
-The model holds two tiers (`wela` live / `anu` torn down). A third (warm / frozen) tier enters ONLY when BOTH hold: (a) a //measured// island resume-latency problem under real focus-rotation, AND (b) a definition that genuinely ''sheds memory'' — isolate evicted, handle-cache retained, resume re-instantiates the engine against still-warm handles and skips the `ea` handshake (the bfcache lineage done right). At that point adopt bfcache vocabulary (freeze / resume / evict), a freeze-disqualifier discipline (mid-replication may not freeze), and a second-chance reference bit on the sweeper (pure-age LRU today).
+The model holds two tiers (`wela` live / `anu` torn down). A third (warm / frozen) tier enters ONLY when BOTH hold: (a) a //measured// island resume-latency problem under real focus-rotation, AND (b) a definition that genuinely ''sheds memory'' — isolate evicted, handle-cache retained, resume re-instantiates the engine against still-warm handles and skips the `ea` handshake (the bfcache lineage done right). At that point adopt bfcache vocabulary (freeze / resume / evict), a freeze-disqualifier discipline (mid-replication may not freeze), and a second-chance reference bit on the sweeper (as built, the sweeper trims by pure age).
 
 <<~/ahu>>
 
@@ -150,6 +152,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0v-1DxT4aQguSO9w1WRWxU6nwDX0byI5A4nJlL0fwUA
+<<^ code="&#x0003;">>ni:///sha-256;9-MKPTSQAbibdMFiUtKg7QI38S7u0nYQk1EOrT1KncE
 
 <<^ code="&#x0004;" -> to="?">>

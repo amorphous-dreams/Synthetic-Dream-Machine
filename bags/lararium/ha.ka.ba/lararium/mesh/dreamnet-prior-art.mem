@@ -76,7 +76,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 ''Design Decisions:''
 * ''Causal ordering via vector clocks'' (Lamport counters embedded in actor IDs): No wall clock trust required.
 * ''Conflict representation, not resolution'': Automerge retains both concurrent values as a conflict object. Application chooses which to display; the CRDT never silently drops writes.
-* ''Actor IDs'': Each Automerge peer carries a unique actor ID. This forms the primitive from which DreamNet's operator keypairs can be derived.
+* ''Actor IDs'': Each Automerge peer carries a unique actor ID. The built `KeyhiveIdentitySlot.deriveActorId` derives an actor ID from its identity's DID, and no production call site invokes it; nothing derives a key from an actor ID (`packages/lararium-keyhive/src/keyhive-identity-slot.ts`).
 * ''automerge-repo'': Higher-level layer providing storage adapters (IndexedDB, filesystem) and network adapters (BroadcastChannel, WebSocket, WebRTC).
 
 ''Contrast with DreamNet:''
@@ -127,7 +127,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 # ''Group membership as CRDT'': Rather than a central server managing membership, group state replicates as a CRDT across all members.
 # ''Device admission via out-of-band ceremony'': Adding a new device to a PersonaGroup does not require any server. A signed message from an existing device provides sufficient proof. This follows the "Seitan token exchange" pattern.
 # ''Sentinel documents as group anchors'': Each group level (person, cabal, nexus) carries a sentinel document — a CID-addressed genesis artifact that defines the group's charter.
-# ''Capability delegation through the group hierarchy'': A Keyhive PersonaGroup grants capabilities that can be delegated to devices. A MeshCabal grants capabilities to PersonaGroups.
+# ''Capability delegation through the group hierarchy'': A Keyhive PersonaGroup grants capabilities eligible for delegation to devices. A MeshCabal grants capabilities to PersonaGroups.
 
 ''Design Decisions:''
 * ''Local-first membership'': Group state replicates via the same CRDT mechanism as application data. No separate membership server.
@@ -143,7 +143,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 
 ''Core Golden Principles:''
 
-# ''State synchronization as a first-class HTTP primitive'': Braid extends HTTP to be a state //synchronization// protocol, with versioning, subscriptions, patches, and merge types.
+# ''State synchronization as a first-class HTTP primitive'': Braid extends HTTP into a state //synchronization// protocol, with versioning, subscriptions, patches, and merge types.
 # ''Interoperability across merge algorithms'': Different CRDTs and OT implementations speak the same Braid message format. No single algorithm gets mandated.
 # ''P2P semantics levels'': Level 0 = today's HTTP. Level 1 = subscriptions. Level 2 = patches/versions/merges. Levels 3–4 = P2P semantics.
 
@@ -196,7 +196,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 
 ''Core Golden Principles (reconstructed from secondary references):''
 
-# ''The Small Web'': Decentralization fails if users must run servers. Sovereignty requires that the user's device IS the server.
+# ''The Small Web'': Decentralization fails if users must run servers. Sovereignty requires that the user's device ACT as the server.
 # ''Noosphere'': Protocol for a user-sovereign note graph. Content-addressed (CID), user-keyed (DID), linked (URI).
 # ''Permissionless composition'': Any app can link to any note by its CID without requesting permission.
 # ''Shared language, not shared data'': Interoperability across networks comes from agreeing on vocabulary (ontology), not from centralizing data.
@@ -213,14 +213,14 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 ''Core Golden Principles:''
 
 # ''Object capabilities support distributed programming'': In OCapN/Goblins, sending a message to a networked object looks identical to calling a local method.
-# ''Capabilities ARE references'': In a pure ocap system, having a reference to an object IS having permission to use it.
-# ''Promise pipelining'': Results of remote calls can be passed as arguments to the next call without waiting for the network round-trip.
+# ''Capabilities take the form of references'': In a pure ocap system, holding a reference to an object grants permission to use it.
+# ''Promise pipelining'': Results of remote calls can pass as arguments to the next call without waiting for the network round-trip.
 # ''3rd-party handoffs'': A peer can introduce two other peers to each other by passing a capability reference.
 # ''CRDTs + capabilities compose cleanly'' (Nov 2025 Spritely blog): "Composing capability security and conflict-free replicated data types" — direct prior art for DreamNet's combination of Automerge + ABILITY_LADDER.
 
 ''Design Decisions:''
 * ''Netlayers as transport abstraction'': OCapN runs over Tor, libp2p, TCP+TLS, IBC. Transport-independent.
-* ''Confinement via reference discipline'': Capabilities cannot be forged.
+* ''Confinement via reference discipline'': Nobody can forge a capability.
 
 ''Contrast with DreamNet:''
 * OCapN provides live object capabilities (call semantics). DreamNet uses certificate capabilities (UCAN-style bearer tokens). Different points in the capability design space:
@@ -261,9 +261,9 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 
 ''Core Golden Principles:''
 
-# ''Logical clocks over system time'': System clocks cannot be trusted. Lamport counters and Hybrid Logical Clocks (HLCs) provide causally correct ordering.
+# ''Logical clocks over system time'': System clocks earn no trust. Lamport counters and Hybrid Logical Clocks (HLCs) provide causally correct ordering.
 # ''Two-timestamp pattern'': For efficient delta sync, retain both `row_time` (merge semantics) and `local_row_time` (peer-seen state). Conflation causes proxy divergence.
-# ''Deterministic tie-breaking'': Concurrent edits at the same logical time must be resolved by a deterministic, total-order comparator.
+# ''Deterministic tie-breaking'': A deterministic, total-order comparator must resolve concurrent edits at the same logical time.
 # ''CRDTs work in centralized systems too'': Git provides the canonical example.
 # ''Performance no longer blocks adoption'': Modern CRDTs handle 100KB documents efficiently. 6 million text edits/second in Rust (Diamond Types).
 
@@ -281,7 +281,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 # ''Capabilities as the only access mechanism'': In a pure ocap system, the only way to affect an object comes through a reference (capability). No ambient authority.
 # ''No separation of authority from reference'': Possession of the capability carries authorization. This eliminates confused deputy attacks by construction.
 # ''Composability'': Capability systems compose without interference.
-# ''Attenuation by wrapping'': Any capability can be wrapped in a facet that attenuates its powers.
+# ''Attenuation by wrapping'': A facet can wrap any capability and attenuate its powers.
 # ''Principle of Least Authority (POLA)'': Grant only the minimum capability needed for a task.
 # ''The Structure of Authority (Miller et al.)'': Treating security as a separate concern failed repeatedly. Security requires integration with knowledge of what constitutes least authority.
 
@@ -298,7 +298,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 ''Core Golden Principles:''
 
 # ''One writer, many readers'': A Hypercore provides an append-only log with a single writer (keypair) and unlimited readers.
-# ''Reading IS authorization'': Possessing the Hypercore `key` (public key) authorizes reading.
+# ''Reading carries authorization'': Possessing the Hypercore `key` (public key) authorizes reading.
 # ''Sparse replication'': Peers can replicate only the blocks they need.
 # ''Autobase = multi-writer CRDT'': Multi-writer layer that merges contributions from multiple per-user Hypercores.
 # ''Hyperswarm = topic-based peer discovery'': No central server required.
@@ -329,7 +329,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 # ''Range-verify small slices from an untrusted peer'': The `bao` verified-streaming format ships each ≤16KiB range beside its Merkle proof. A holder who never trusts its source still accepts or rejects each slice on its own proof — trust rides the hash, not the peer.
 # ''Blob / document split'': Documents store the //hash//, never the payload. Mutable structure stays small and syncs cheaply; the heavy bytes live in the content-addressed blob store, fetched lazily by hash.
 # ''The reference carries its own discovery'': A `BlobTicket` bundles `hash + NodeAddr` — the //what// and a //where-to-start// travel together, so resolution needs no separate lookup step for the first hop.
-# ''Collections without a container format'': A `HashSeq` (a blob whose bytes are a sequence of child hashes) names a set of blobs as one addressable thing — a Merkle-DAG collection built from the same primitive.
+# ''Collections without a container format'': A `HashSeq` (a blob whose bytes hold a sequence of child hashes) names a set of blobs as one addressable thing — a Merkle-DAG collection built from the same primitive.
 
 ''Design Decisions:''
 * ''Outboard proof'': The BLAKE3 outboard (the tree nodes minus the data) rides beside the blob, so range-verification costs proof-bytes, not a re-hash of the whole body.
@@ -350,12 +350,12 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 
 ''Core Golden Principles:''
 
-# ''The identifier answers what/where; the token answers who-may'': A CID says //what the bytes are and where to find them//; a UCAN says //who may act on them//. WNFS holds both as one coherent surface — content-addressing and capability fused, never one substituting for the other.
+# ''The identifier answers what/where; the token answers who-may'': A CID names //the bytes and where to find them//; a UCAN says //who may act on them//. WNFS holds both as one coherent surface — content-addressing and capability fused, never one substituting for the other.
 # ''Private-forest indirection'': A private WNFS node lives behind a HAMT (hash-array-mapped trie) keyed by a stable name; the name maps to the //current// encrypted CID. The name survives while the CID underneath re-keys — a stable logical handle over shifting ciphertext.
 # ''Encrypted-at-rest, structure-preserving'': The forest structure replicates and syncs while every node stays encrypted; a holder routes and stores without reading.
 
 ''Design Decisions:''
-* ''HAMT as the indirection map'': The stable-name → current-CID mapping is itself small mutable metadata, so it rides the mutable structure layer (the Automerge doc in DreamNet), not the blob store.
+* ''HAMT as the indirection map'': The stable-name → current-CID mapping itself amounts to small mutable metadata, so it rides the mutable structure layer (the Automerge doc in DreamNet), not the blob store.
 
 ''Contrast with DreamNet:''
 * DreamNet lifts WNFS's private-forest indirection directly: the skinny handle names a //stable logical name//, resolved through an indirection map (logical name → current cid) so a content re-key survives without breaking the handle. WNFS's what/where ∧ who-may fusion maps onto the three-gate split DreamNet keeps un-fused (address vs. cap vs. decrypt). <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
@@ -373,8 +373,8 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 
 # ''Scoped convergence secret — dedup without a confirmation oracle'': The encryption key derives from `hash(convergence-secret + plaintext)`. Identical plaintext under the //same// secret converges to the same ciphertext (dedup); under a //different// secret it does not (no cross-tenant confirmation-of-file leak). Global convergent encryption leaks file-presence (the CFA / learn-remaining-information attack); Tahoe's //scoped// secret closes that leak while keeping dedup within a trust boundary.
 # ''Verify-cap ⊥ read-cap'': A verify capability lets a holder check and repair a share //without// the read capability. An untrusted storage holder repairs corrupted ciphertext blind — it proves the bytes intact against the verify-cap, never decrypting them.
-# ''Cap hierarchy'': write-cap ⊇ read-cap ⊇ verify-cap — each strictly attenuates the last, so a holder is handed exactly the authority its role needs.
-# ''Provider-independent security'': Confidentiality and integrity hold even if every storage server is hostile; trust rides the caps, never the servers.
+# ''Cap hierarchy'': write-cap ⊇ read-cap ⊇ verify-cap — each strictly attenuates the last, so a holder receives exactly the authority its role needs.
+# ''Provider-independent security'': Confidentiality and integrity hold even if every storage server acts maliciously; trust rides the caps, never the servers.
 
 ''Contrast with DreamNet:''
 * DreamNet's `@cad` key = `hash(per-operator convergence-secret + plaintext)` lifts Tahoe's scoped-convergence secret verbatim — dedup within one operator's `@cad`, zero cross-operator leak, beating both global-convergent (leaks) and random-key (no dedup). And ciphertext-addressing (`cid = BLAKE3(ciphertext)`) enacts verify-cap ⊥ read-cap: an untrusted peer verifies/pins/repairs against the cid without the decryption key (node routes ciphertext, never decrypts — the MLS Delivery-Service keel). <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
@@ -390,7 +390,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/dreamnet-prior-art"
 
 ''Core Golden Principles:''
 
-# ''Skinny blob_ref — hash-if-big, inline-if-tiny'': A reference carries the //bytes// when they are small enough to be cheaper inline, and carries a //hash// when they are large. The threshold decides representation; the reference stays uniform to its reader either way.
+# ''Skinny blob_ref — hash-if-big, inline-if-tiny'': A reference carries the //bytes// when they run small enough to cost less inline, and carries a //hash// when they run large. The threshold decides representation; the reference stays uniform to its reader either way.
 # ''Sedimentree — layered, compactable history'': Change history settles into strata — recent fine-grained ops over compacted older layers — so the log stays bounded without losing merge ability (history-pruning applied to the sync layer itself).
 # ''Ciphertext-only relay'': The sync server relays and stores //ciphertext// alone. It coordinates delivery and never holds a decryption key — the relay carries sealed bytes, sovereignty stays with the endpoints.
 
@@ -587,7 +587,7 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 ''Description'': DreamNet specifies CRDT semantics for intra-vessel and intra-cabal sync, but not the wire protocol for nexusGroup ↔ nexusGroup communication. Needs:
 * A specified transport envelope for inter-cabal sync (Braid-HTTP stays a candidate)
 * A merge-type negotiation mechanism for cross-cabal interoperability
-* An explicit anti-entropy protocol (how do nexusGroups discover what they're missing?)
+* An explicit anti-entropy protocol (how do nexusGroups discover what they lack?)
 
 ''Prior art'': Braid-HTTP (IETF draft); Matrix Server-Server API; Hyperswarm (topic-based peer discovery); Set reconciliation
 
@@ -625,9 +625,9 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 ''Source'': UCAN §Attenuation, E language capability theory
 
 ''Description'': The ABILITY_LADDER gets described, but the //attenuation rules// still lack formal specification:
-* Can a `write` holder delegate `read`? (Yes, by attenuation — should be explicit)
+* Can a `write` holder delegate `read`? (Yes, by attenuation — the specification should say so)
 * Can an `admin` delegate `revoke` to a vessel that only holds `write`? (Likely no — needs specification)
-* What does attenuation look like at the nexusGroup layer where inner vessels may not be visible?
+* What does attenuation look like at the nexusGroup layer when that layer may not see inner vessels?
 
 ''Prior art'': UCAN §Attenuation + §Authority + §Command hierarchy; E language `Facet` pattern; OCapN attenuated forwarders
 
@@ -670,6 +670,6 @@ The UCAN spec explicitly flags the confinement problem: certificate capabilities
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
 
-<<^ code="&#x0003;">>ni:///sha-256;_hQIxFkVXZQst1OwsC7y0OwS7yEby1Gx4W5BO7mlOsk
+<<^ code="&#x0003;">>ni:///sha-256;8PlLckGmLQ9uab5wfwBiTfk8lefsVcElb_CQtqRrxog
 
 <<^ code="&#x0004;" -> to="?">>
