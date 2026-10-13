@@ -120,20 +120,37 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
   const holderChild = (path: string) => spawn(process.execPath, [join(__dirname, "holder-child.mjs"), path], { stdio: ["ignore", "pipe", "inherit"] });
   const heldBy = (child: ReturnType<typeof holderChild>) => new Promise<void>((res, rej) => { child.stdout!.once("data", () => res()); child.once("error", rej); });
   const gone = (child: ReturnType<typeof holderChild>) => new Promise((r) => child.once("exit", r));
+  /** Resolves once callers reached the holder `times` times: the holder itself says so, each time one does. */
+  const askedOf = (child: ReturnType<typeof holderChild>, times: number) => new Promise<void>((res) => {
+    let seen = 0;
+    const onData = (chunk: Buffer): void => {
+      seen += chunk.toString().split("asked").length - 1;
+      if (seen >= times) { child.stdout!.off("data", onData); res(); }
+    };
+    child.stdout!.on("data", onData);
+  });
 
+  // THE WINDOW RESTS ON A HANDSHAKE, NEVER ON THE CLOCK. The first process says it holds; the second starts its wait;
+  // the first says each time a contender reaches it, and gets told to leave once the contender has come back past
+  // two whole looks (a look reaches the holder three times). The look budget plays no part here (the next case
+  // pins it), so the budget stands past any count a machine reaches while the first process leaves.
   test("two PROCESSES contend: the second waits, and enters only after the first leaves", async () => {
-    const io = new FsCustodyIo(homes, { maxWaits: 200, pollMs: 25 });
+    const io = new FsCustodyIo(homes, { maxWaits: Number.MAX_SAFE_INTEGER, pollMs: 25 });
     const child = holderChild(io.claimPath());
     try {
       await heldBy(child);
-      let entered = false;
-      const second = io.exclusive(async () => { entered = true; });
-      await new Promise((r) => setTimeout(r, 300));
-      expect(entered).toBe(false);                 // the live holder keeps it
+      const looked = askedOf(child, 7);
+      let told = false;
+      let entered: "no" | "while-held" | "after-told" = "no";
+      const second = io.exclusive(async () => { entered = told ? "after-told" : "while-held"; });
+      // A contender that seized the claim would stop asking: its own entry settles the race before the looks do.
+      await Promise.race([looked, second]);
+      expect(entered).toBe("no");                  // the live holder keeps it, look after look
+      told = true;
       child.kill("SIGTERM");
       await gone(child);
       await second;
-      expect(entered).toBe(true);                  // CONTROL: it enters once the first leaves
+      expect(entered).toBe("after-told");          // CONTROL: it enters once the first leaves
     } finally { child.kill("SIGKILL"); }
   });
 
