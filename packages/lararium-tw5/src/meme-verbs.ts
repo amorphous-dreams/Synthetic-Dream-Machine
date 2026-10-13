@@ -52,7 +52,7 @@
 
 import {
   AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
-  REALM_DOC_URI, REALM_ID_TIDDLER, REALM_STEWARD_TIDDLER, foldRealmBags, mayWriteRealmBag, tiddlerText,
+  REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
@@ -74,11 +74,11 @@ export interface MemeVerbOptions {
   /** A wiki's recipe record by slug, or null when no plane holds one. Absent = no named recipes. */
   readonly recipeOf?: (slug: string) => Promise<LarTiddlerRecord | null>;
   /** A registered bag's own store by its registry KEY, presented as `bag`; null = unregistered. */
-  readonly reach?: (key: string, bag: string) => Promise<LarTiddlerStore | null>;
+  readonly reach?: (key: string, bag: string, realm?: string) => Promise<LarTiddlerStore | null>;
   /** THE STEWARD WRITE PATH. A bag the REALM carries, as a WRITABLE store, when this vessel's own steward
    *  nym stands in the standing registration's `keptBy`. Null for every other hand and every other bag, so
    *  the put falls through to the path it walked before the realm carried anything. */
-  readonly realmWritable?: (bag: string) => Promise<LarTiddlerStore | null>;
+  readonly realmWritable?: (bag: string, realm?: string) => Promise<LarTiddlerStore | null>;
   /** A wiki's INSTANCE slot (draft · working · personal) as a store over the doc THE ONE slot-doc
    *  resolver names — the doc the wiki island mounts. `mint` false reads what stands (a get), true
    *  mints on absent (a put). Absent = instance slots resolve by their bare key only. */
@@ -105,13 +105,14 @@ export function memeVerbOptions(
     },
     // The vessel's own composition shadows a system wiki's default: the one reader, own first.
     recipeOf: async (slug) => (await effectiveRecipeOf(slug, { catalog, oracle }))?.record ?? null,
-    reach: async (key, bag) => {
+    reach: async (key, bag, namedRealm) => {
       // THE REALM PLANE FIRST. A bag the relation carries (registered on the realm's shared CRDT by its
       // stewards' own signatures) shadows this vessel's own bag of the same name: the ford's one book,
       // never the two chests. Absent a realm, or a registration that fails to count, the walk falls
       // through unchanged.
-      const realm = await realmReach(key, bag);
+      const realm = await realmReach(key, bag, namedRealm);
       if (realm) return realm;
+      if (namedRealm) return null;
       for (const accessor of planes) {
         const handle = await accessor.find(key).catch(() => null);
         if (handle) return new AutomergeDocStore(handle, bag);
@@ -119,10 +120,10 @@ export function memeVerbOptions(
       return null;
     },
     // The realm's WRITE answer: the standing registration's doc as a writable store, for a steward alone.
-    realmWritable: async (bag) => {
-      const standing = await realmStanding();
+    realmWritable: async (bag, namedRealm) => {
+      const standing = await realmStanding(namedRealm);
       if (!standing) return null;
-      const nym = tiddlerText(await oracle!.recordOf(REALM_STEWARD_TIDDLER).catch(() => null));
+      const nym = tiddlerText(await oracle!.recordOf(realmStewardPointer(standing.realmId)).catch(() => null));
       if (!mayWriteRealmBag(standing.bags, bag, nym)) return null;
       const rec = standing.bags.get(bag)!;
       const handle = await findOrThrow(ctx.repo, rec.docUrl, `${bag} (realm bag)`).catch(() => null);
@@ -132,19 +133,21 @@ export function memeVerbOptions(
 
   /** The realm this vessel stands in, and the registrations its doc carries as of the last sync. Null when
    *  no oracle plane, no realm id, or no realm doc has arrived — each a vessel outside every realm. */
-  async function realmStanding(): Promise<{ realmId: string; bags: ReadonlyMap<string, import("@lararium/mesh").RealmBagRegistration> } | null> {
+  async function realmStanding(namedRealm?: string): Promise<{ realmId: string; bags: ReadonlyMap<string, import("@lararium/mesh").RealmBagRegistration> } | null> {
     if (!oracle) return null;
-    const realmId = tiddlerText(await oracle.recordOf(REALM_ID_TIDDLER).catch(() => null));
+    const realmId = namedRealm?.trim().toLowerCase() || tiddlerText(await oracle.recordOf(REALM_ID_TIDDLER).catch(() => null));
     if (!realmId) return null;
-    const realmHandle = await oracle.find(REALM_DOC_URI).catch(() => null);
-    if (!realmHandle) return null;
-    return { realmId, bags: await foldRealmBags(realmHandle.doc(), realmId) };
+    // A realm this vessel stands in pins its doc on the vessel's own plane: with no such pin the vessel stands
+    // outside that realm, and no verdict a departed plane left behind answers for it.
+    if (tiddlerText(await oracle.recordOf(realmDocPointer(realmId)).catch(() => null)) !== realmDocUrl(realmId)) return null;
+    const text = tiddlerText(await oracle.recordOf(realmStandingPointer(realmId)).catch(() => null));
+    return { realmId, bags: readRealmStanding(text) };
   }
 
   /** The realm plane's answer for a bag: the STANDING registration's doc, by access. Null when this vessel
    *  stands in no realm, the realm doc has not arrived, or no counted registration names the bag. */
-  async function realmReach(key: string, bag: string): Promise<LarTiddlerStore | null> {
-    const standing = (await realmStanding())?.bags.get(key);
+  async function realmReach(key: string, bag: string, namedRealm?: string): Promise<LarTiddlerStore | null> {
+    const standing = (await realmStanding(namedRealm))?.bags.get(key);
     if (!standing) return null;
     const handle = await findOrThrow(ctx.repo, standing.docUrl, `${bag} (realm bag)`).catch(() => null);
     return handle ? new AutomergeDocStore(handle, bag) : null;
@@ -160,6 +163,7 @@ interface MemeArgs {
   readonly uri: string;
   readonly recipe: string | null;
   readonly bag: string | null;
+  readonly realm: string | null;
 }
 
 function readTarget(args: Readonly<Record<string, unknown>>, verb: string): MemeArgs {
@@ -178,11 +182,13 @@ function readTarget(args: Readonly<Record<string, unknown>>, verb: string): Meme
 function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
   const recipe = optionalStringArg(args, "recipe");
   const bag = optionalStringArg(args, "bag");
+  const realm = optionalStringArg(args, "realm")?.trim().toLowerCase() || null;
+  if (realm && recipe) throw new VerbRefusal("no-container", `no-container: ${verb} --realm names a bag's realm; it cannot accompany args.recipe.`);
   if (recipe && bag) throw new VerbRefusal("no-container", `no-container: ${verb} names both args.recipe and args.bag; name one of them, never both.`);
   if (!recipe && !bag) {
     throw new VerbRefusal("no-container", `no-container: ${verb} names no container; pass args.recipe (a wiki, e.g. "lares"; the daemon's own wiki answers to "default") or args.bag (that one bag). No default wiki exists.`);
   }
-  return { recipe: recipe ?? null, bag: bag ?? null };
+  return { recipe: recipe ?? null, bag: bag ?? null, realm };
 }
 
 /** A bag's own store, by the three reaches in order: a mounted layer (writable for a put), an
@@ -248,6 +254,17 @@ function anchorBagOf(opts: MemeVerbOptions): string {
 async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> & { readonly uri?: string }, origin: ChangeOrigin, mode: "put" | "get"): Promise<Resolved> {
   if (target.bag) {
     const bag = bagUriOf(target.bag);
+    if (target.realm) {
+      if (WIKI_SLOT_BAG_RE.test(bag)) throw new VerbRefusal("no-container", `no-container: ${mode === "put" ? "meme-put" : "meme-get"} --realm names a bag's realm; a wiki slot lives in no realm.`);
+      if (mode === "put") {
+        const steward = await opts.realmWritable?.(bag, target.realm);
+        if (!steward) throw new Error(`meme: bag "${bag}" holds no steward's write in realm ${target.realm}`);
+        return { bag, sink: storeMemeSink(steward, bag, origin), anchor: false };
+      }
+      const store = await opts.reach?.(bag, bag, target.realm);
+      if (!store) throw new Error(`meme: bag "${bag}" holds no layer in this island and nothing reaches it by access in realm ${target.realm}`);
+      return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
+    }
     // A NAMED WIKI'S INSTANCE SLOT, addressed as a bag. `--bag lar:///ha.ka.ba/wikis/<slug>/working` names the
     // doc THE ONE slot-doc resolver mints — the same doc `--recipe <slug>` walks and a `LOAD --to` that bag
     // lands in. The three reaches answer it (`storeOfBag`), and `temp` refuses there: it lives in the wiki

@@ -27,6 +27,23 @@ describe("containerArgs", () => {
     expect(containerArgs(args({ bag: " sd m " }), "meme put", "write")).toEqual({ bag: "sd m" });
   });
 
+  test("a realm rides beside a bag and names that bag's realm; control: with none named the bag stands alone", () => {
+    const realm = "C1AB".repeat(16);
+    expect(containerArgs(args({ bag: "lares", realm: ` ${realm} ` }), "meme get")).toEqual({ bag: "lares", realm: realm.toLowerCase() });
+    expect(containerArgs(args({ bag: "lares" }), "meme get")).toEqual({ bag: "lares" });
+    expect(containerArgs(args({ bag: "lares", realm: "  " }), "meme get")).toEqual({ bag: "lares" });
+  });
+
+  test("a realm beside a recipe refuses by name: a wiki lives in no realm", () => {
+    try {
+      containerArgs(args({ recipe: "lares", realm: "a".repeat(64) }), "meme get");
+      throw new Error("expected no-container refusal");
+    } catch (err) {
+      expect(err).toMatchObject({ code: "no-container" });
+      expect((err as Error).message).toContain("--realm names a BAG's realm");
+    }
+  });
+
   test("the same named refusal rejects two containers", () => {
     try {
       containerArgs(args({ recipe: "lares", bag: "sdm" }), "meme get");

@@ -22,6 +22,8 @@ import type { VerbContext } from "../src/verb-dispatcher.js";
 
 const URI = "lar:///t/ford";
 const LARES = bagUri("lares");
+const DEFAULT_REALM = "default-realm";
+const REALM_B = "b".repeat(64);
 const meme = (slot: string): string =>
   `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n` +
   `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/ford"\n\`\`\`\n\n<<~ ahu #${slot}>>\n\n! ${slot}\n\n<<~/ahu>>\n\n` +
@@ -36,17 +38,22 @@ const ctx = (): VerbContext => ({
 /** B's island: her own writable DAEMON layer and no layer at all for the relation-carried bag, plus a realm
  *  that carries `bags/lares` kept by `keptBy`. `caller` is the nym this vessel pinned when its hand signed. */
 function rig(keptBy: readonly string[], caller: string | null) {
-  const realmDoc = new MemoryTiddlerStore(LARES);
+  const realmDocs = new Map([[DEFAULT_REALM, new MemoryTiddlerStore(LARES)], [REALM_B, new MemoryTiddlerStore(LARES)]]);
+  const realmDoc = realmDocs.get(DEFAULT_REALM)!;
   const composite = new CompositeStore();
   composite.addLayer({ bagId: bagUri("daemon"), store: new MemoryTiddlerStore(bagUri("daemon")), writable: true });
   const opts: MemeVerbOptions = {
     composite,
     tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"],
-    reach: async (key): Promise<LarTiddlerStore | null> => (key === LARES ? realmDoc : null),
-    realmWritable: async (bag): Promise<LarTiddlerStore | null> =>
-      bag === LARES && caller !== null && keptBy.includes(caller) ? realmDoc : null,
+    reach: async (key, _bag, realm): Promise<LarTiddlerStore | null> =>
+      key === LARES ? realmDocs.get(realm ?? DEFAULT_REALM) ?? null : null,
+    realmWritable: async (bag, realm): Promise<LarTiddlerStore | null> => {
+      const realmId = realm ?? DEFAULT_REALM;
+      const steward = realmId === DEFAULT_REALM ? caller === "nym-a" || caller === "nym-b" || caller === "nym-c" : caller === "nym-b";
+      return bag === LARES && steward && keptBy.includes(caller!) ? realmDocs.get(realmId) ?? null : null;
+    },
   };
-  return { opts, composite, realmDoc };
+  return { opts, composite, realmDoc, realmDocs };
 }
 
 const refusalOf = async (opts: MemeVerbOptions, bag = "lares"): Promise<string> => {
@@ -82,5 +89,43 @@ describe("meme-put --bag — a bag the realm carries", () => {
     await makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", text: meme("/a") }, ctx());
     const got = await makeMemeGetReactor(r.opts)({ uri: URI, bag: "lares" }, ctx());
     expect((got["meme"] as { text: string } | null)?.text).toContain("#/a");
+  });
+
+  test("two realms on one vessel keep the same bag name on separate docs", async () => {
+    const r = rig(["nym-a", "nym-b"], "nym-b");
+    await makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", text: meme("/realm-a") }, ctx());
+    await makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", realm: REALM_B, text: meme("/realm-b") }, ctx());
+    const defaultGet = await makeMemeGetReactor(r.opts)({ uri: URI, bag: "lares" }, ctx());
+    const realmGet = await makeMemeGetReactor(r.opts)({ uri: URI, bag: "lares", realm: REALM_B }, ctx());
+    expect((defaultGet["meme"] as { text: string }).text).toContain("#/realm-a");
+    expect((realmGet["meme"] as { text: string }).text).toContain("#/realm-b");
+    // THE RED: a write to realm B never appears in the default realm's doc, and the default's never in B's.
+    const textIn = async (realm: string): Promise<string> => JSON.stringify(await r.realmDocs.get(realm)!.get(URI));
+    expect(await textIn(REALM_B)).toContain("#/realm-b");
+    expect(await textIn(REALM_B)).not.toContain("#/realm-a");
+    expect(await textIn(DEFAULT_REALM)).toContain("#/realm-a");
+    expect(await textIn(DEFAULT_REALM)).not.toContain("#/realm-b");
+  });
+
+  test("named realm refuses an unkept hand and recipe container", async () => {
+    const r = rig(["nym-a"], "nym-a");
+    await expect(makeMemePutReactor(r.opts)({ uri: URI, bag: "lares", realm: REALM_B, text: meme("/no") }, ctx()))
+      .rejects.toThrow(`meme: bag "${LARES}" holds no steward's write in realm ${REALM_B}`);
+    expect(await r.realmDocs.get(REALM_B)!.get(URI)).toBeNull();
+    // CONTROL: the same hand, a steward of the DEFAULT realm, lands its put where no realm gets named.
+    expect(await refusalOf(r.opts)).toBe("(landed)");
+    await expect(makeMemeGetReactor(r.opts)({ uri: URI, recipe: "lares", realm: REALM_B }, ctx()))
+      .rejects.toThrow(/^no-container: /);
+  });
+
+  test("a realm with no folded standing plane reads not-found", async () => {
+    const r = rig(["nym-a"], "nym-a");
+    await expect(makeMemeGetReactor(r.opts)({ uri: URI, bag: "lares", realm: "c".repeat(64) }, ctx()))
+      .rejects.toThrow("holds no layer in this island and nothing reaches it by access in realm");
+  });
+  test("a wiki slot reads in no realm; control: the same slot with no realm named draws another answer", async () => {
+    const r = rig(["nym-a"], "nym-a"), slot = "lar:///ha.ka.ba/wikis/lares/working";
+    await expect(makeMemeGetReactor(r.opts)({ uri: URI, bag: slot, realm: REALM_B }, ctx())).rejects.toThrow(/^no-container: .*a wiki slot lives in no realm/);
+    await expect(makeMemeGetReactor(r.opts)({ uri: URI, bag: slot }, ctx())).rejects.not.toThrow(/lives in no realm/);
   });
 });

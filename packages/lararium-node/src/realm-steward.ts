@@ -34,6 +34,7 @@
 
 import {
   ed25519SignerFromSeed, signerClass, stewardClassOf, tiddlerText,
+  CABAL_REALM_RE,
   type CapTier, type HeldKeys, type LarDoc, type RealmBagFoldOptions, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
 import { heldNexusLeaves, wornNexusLeaf } from "./nexus-leaf.js";
@@ -41,9 +42,13 @@ import { loadNodeHandleBook } from "./node-circle-store.js";
 import {
   listPersonaRoots, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "./node-vessel-identity.js";
-import { StewardRefused, type RealmPlaneHolder, type StewardGuard } from "./realm-plane.js";
+import { StewardRefused, type RealmPlanesHolder, type RealmPlaneHolder, type StewardGuard } from "./realm-plane.js";
 
 export { StewardRefused, type StewardGuard, type StewardRefusal } from "./realm-plane.js";
+
+/** The planes a door acts through: the charter-derived realm's own plane, and, where the holder stands many
+ *  realms, the doors to them. A holder that stands one realm alone still answers every verb that names none. */
+export type RealmDoorPlanes = RealmPlaneHolder & Partial<Pick<RealmPlanesHolder, "realms" | "plane" | "enter">>;
 
 /** What the door reads of this vessel's own keys. A test hands a fake; the standing vessel reads its vault. */
 export interface StewardVault {
@@ -153,7 +158,7 @@ const normalizedName = (name: string): string => name.trim().toLowerCase().repla
  * a record of this realm.
  */
 export async function runRealmBag(opts: {
-  readonly plane: RealmPlaneHolder | null;
+  readonly plane: RealmDoorPlanes | null;
   readonly args: Record<string, unknown>;
   /** The registry planes this vessel names a bag's doc on, in reading order. */
   readonly registryDocs: () => ReadonlyArray<LarDoc | undefined | null>;
@@ -162,7 +167,15 @@ export async function runRealmBag(opts: {
   readonly vault?: StewardVault;
 }): Promise<RealmBagVerbResult> {
   const { plane, args, vault = nodeStewardVault } = opts;
-  if (!plane || !plane.realmId() || !plane.nexusAid()) throw refusedNoRealm();
+  const requested = typeof args["realm"] === "string" ? (args["realm"] as string).trim().toLowerCase() : "";
+  let target: RealmPlaneHolder | null = plane;
+  if (requested && plane) {
+    if (requested === plane.realmId()) target = plane;
+    // AN ACT STANDS THE VESSEL IN A REALM: a cabal realm it never entered gets entered here, and noted.
+    else if (CABAL_REALM_RE.test(requested)) target = plane.plane?.(requested) ?? (await plane.enter?.(requested)) ?? null;
+    else throw new StewardRefused("realm-unreadable", `realm "${requested}" does not read as a stood realm or cabal realm id`);
+  }
+  if (!target || !target.realmId() || !target.nexusAid()) throw refusedNoRealm();
   const bagUri = typeof args["bag"] === "string" ? (args["bag"] as string).trim() : "";
   if (!bagUri) throw new Error("realm-bag: `bag` required (the bag's lar: URI, e.g. lar:///ha.ka.ba/bags/lares)");
   const cosign = args["cosign"] === true;
@@ -170,7 +183,7 @@ export async function runRealmBag(opts: {
   if (cosign && join) throw new Error("realm-bag: `join` asks to keep and `cosign` consents — one act per call");
   const docUrl = opts.registryDocs().map((doc) => tiddlerText(doc?.tiddlers?.[bagUri])).find((text): text is string => !!text) ?? "";
   if (!docUrl && !cosign && !join) throw new Error(`realm-bag: "${bagUri}" names no doc on this vessel's registry planes — nothing to register`);
-  const aid = plane.nexusAid()!;
+  const aid = target.nexusAid()!;
   const held = await readVault("own keys", () => vault.heldKeys(aid));
   const propose = Array.isArray(args["stewards"]) ? (args["stewards"] as unknown[]).filter((item): item is string => typeof item === "string").map(normalizedName) : [];
   for (const name of propose) {
@@ -184,7 +197,7 @@ export async function runRealmBag(opts: {
     }
     // A NAME ENTERS BY ITS OWN HAND FIRST: this vessel cannot class a key that belongs to another hand, so it
     // writes such a name only where that name's holder already sealed a record of this realm.
-    if (!(await plane.sealedHere(name))) {
+    if (!(await target.sealedHere(name))) {
       throw new StewardRefused("steward-name-unproven", `"${name}" sealed nothing in this realm, so no hand but its own may write it here — that hand asks to keep the bag from its own vessel (\`lares nexus realm-bag <bag> --join\`), and each standing steward consents (\`--cosign\`)`);
     }
   }
@@ -194,23 +207,28 @@ export async function runRealmBag(opts: {
   const charters = typeof args["charters"] === "object" && args["charters"] !== null ? args["charters"] as Record<string, string> : undefined;
   const withName = typeof args["with"] === "string" && (args["with"] as string).trim().length > 0 ? normalizedName(args["with"] as string) : undefined;
   const rec = cosign
-    ? await plane.coSign({ bagUri, ...signer, ...(withName === undefined ? {} : { withName }) })
-    : join ? await plane.join({ bagUri, ...signer })
-    : await plane.register({ bagUri, docUrl, signers: [signer], propose, ...(tier ? { readTier: tier } : {}), ...(expiry === undefined ? {} : { expiry }), ...(charters ? { charters } : {}) });
+    ? await target.coSign({ bagUri, ...signer, ...(withName === undefined ? {} : { withName }) })
+    : join ? await target.join({ bagUri, ...signer })
+    : await target.register({ bagUri, docUrl, signers: [signer], propose, ...(tier ? { readTier: tier } : {}), ...(expiry === undefined ? {} : { expiry }), ...(charters ? { charters } : {}) });
   opts.reverdict?.();
   // THE REPORT READS VERIFIED SEALS: a name a record lists, and a seal that fails, each still read as awaited.
-  const { counts, sealedBy } = await plane.reading(rec);
+  const { counts, sealedBy } = await target.reading(rec);
   return { verb: "realm-bag", realm: rec.realmId, bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy,
     readTier: rec.readTier, signedBy: sealedBy, counts, awaiting: rec.keptBy.filter((name) => !sealedBy.includes(name)) };
 }
 
 /** THE VERB `realm-bags`: the standing registrations this vessel's realm carries, counted and folded. */
-export async function runRealmBags(opts: { readonly plane: RealmPlaneHolder | null }): Promise<{
+export async function runRealmBags(opts: { readonly plane: RealmDoorPlanes | null; readonly args?: Record<string, unknown> }): Promise<{
   readonly verb: "realm-bags"; readonly realm: string | null; readonly realmDoc: string | null;
+  readonly realms: readonly string[];
   readonly bags: ReadonlyArray<{ readonly bag: string; readonly doc: string; readonly keptBy: readonly string[]; readonly readTier: CapTier }>;
 }> {
   const { plane } = opts;
-  const standing = plane ? await plane.standing() : new Map<string, RealmBagRegistration>();
-  return { verb: "realm-bags", realm: plane?.realmId() ?? null, realmDoc: plane?.realmUrl() ?? null,
+  const requested = typeof opts.args?.["realm"] === "string" ? (opts.args["realm"] as string).trim().toLowerCase() : "";
+  // A READ NEVER ENTERS A REALM: a realm this vessel stands no plane for lists nothing.
+  const selected = !requested || requested === plane?.realmId() ? plane : plane?.plane?.(requested) ?? null;
+  const standing = selected ? await selected.standing() : new Map<string, RealmBagRegistration>();
+  return { verb: "realm-bags", realm: (requested || selected?.realmId()) ?? null, realmDoc: selected?.realmUrl() ?? null,
+    realms: plane?.realms?.() ?? (plane?.realmId() ? [plane.realmId()!] : []),
     bags: [...standing.values()].map((rec) => ({ bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy, readTier: rec.readTier })) };
 }

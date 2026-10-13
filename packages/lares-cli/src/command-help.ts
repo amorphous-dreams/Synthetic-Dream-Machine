@@ -287,7 +287,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "reach; `put` · `get` · `list` · `delete` · `project` to any other target, or from a `lar:` uri, ride " +
       "the daemon verb. Store-backed verbs require `(--recipe <slug> | --bag <slug>)`; `--recipe` edits AS " +
       "the named wiki; " +
-      "`--bag` places into that bag and REFUSES when this island cannot write it. `--base` carries the " +
+      "`--bag` places into that bag and REFUSES when this island cannot write it; `--realm <id>` beside " +
+      "`--bag` names the realm whose registration that bag resolves through, and reads that realm alone. " +
+      "`--base` carries the " +
       "canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
     examples: [
       "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # text on stdout, the base on stderr",

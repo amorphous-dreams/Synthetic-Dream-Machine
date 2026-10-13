@@ -142,7 +142,32 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 
 ''The session carries the recipe.'' A session wears one face and holds that face's EFFECTIVE recipe (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>), so a player session and a referee session may stand at once over one vessel, each reading through its own composition. Two devices of one human may likewise wear different faces at once.
 
-''OWED'': no leaf yet honours a session's effective recipe; an admitted leaf reads its hearth's default recipe. Cabal realms, many per Nexus, stand unbuilt beside the one Nexus realm a vessel stands today.
+''OWED'': no leaf yet honours a session's effective recipe; an admitted leaf reads its hearth's default recipe. A table's own realm stands as a cabal realm beside the Nexus's (#/many-realms).
+
+<<~/ahu>>
+
+<<~ ahu #/many-realms>>
+
+!! Many realms under one Nexus ~ a verb names its realm
+
+> ''Operator ruling.'' CABAL names the collective, REALM holds shared resources, NEXUS names the federated hardware mesh. An operator's offering to a book club belongs in that club's realm, signed by the face worn there.
+
+''A vessel stands one plane per realm.'' Two kinds stand:
+
+|! realm |! its name |! who reads its documents |
+| ''the charter-derived realm'' | the Nexus's own AID, the charter's genesis epoch | the charter's hearth, the registration's own hands, and each contracted member of the Nexus |
+| ''a cabal realm'' | 64 hex, the name its vouch board and its feed already wear | a peer that holds lineage standing in that realm, and nobody else |
+
+* ''A verb names its realm.'' The meme verbs take `--realm <id>`, and the steward door reads a realm for `realm-bag` and `realm-bags`. With none named, a verb routes to the charter-derived realm. A verb that names a realm reads that realm alone: no other realm's registration answers, and the vessel's own bag of that name never stands in.
+* ''A write to one realm never appears in another's plane.'' Each realm keeps its own shared doc, its own standing registrations, its own steward pin and its own gate.
+* ''An act stands the vessel in a realm; a read never does.'' Registering, asking and consenting in a cabal realm stand its plane and note the realm in the vessel's own ledger. Naming a realm the vessel never entered reads empty.
+* ''A cabal takes no key and no roster.'' Standing in a cabal realm reads as a live query over its vouch lineage (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/reach">>). The plane holds no member list, and a steward's key there derives against the Nexus the realm stands under.
+* ''A Nexus member outside a cabal reads nothing of its realm.'' The Nexus lane and the charter-hearth lane answer for the charter-derived realm alone. A contracted carrier still carries a cabal realm's PUBLIC-tier book by hash.
+* ''Wire access attaches to the document, never to the record that named it.'' Where the vessel's own steward keeps a book in some realm, those realms alone answer for it: a record another hand wrote in another realm neither opens that book nor shuts it. A book two answering realms both hold crosses to a peer every one of them admits. The vessel's own hand in a realm reads as the name its steward pin holds there, the face it last sealed with.
+* ''A registration widens who reads a book and never narrows it.'' Whatever the vessel already carries to every peer, its public and infrastructure planes, stays carried once a realm registers it.
+* ''The daemon island reads its own vessel's verdict.'' The plane folds each realm's standing registrations and rests the verdict on the vessel's own plane; the island reads that and folds nothing. A Nexus the vessel leaves takes every realm's pins and verdict along, a stand that fails leaves none, and a verdict with no doc pin beside it answers nothing.
+
+''OWED.'' The composing vessel hands the planes its ledger's realms, the standing reading and the ledger's note, and its `lares nexus realm-bag` and `realm-bags` verbs take `--realm <id>`, through the compose owner's hand; until that lands, a vessel stands its charter-derived realm alone and those two verbs name no realm. A cabal realm's documents cross between two operators only once the realm's member consult answers for a peer, and that consult reads the node's root map, which nothing fills. It waits on three things: the vouch door and the member edge naming the key a worn face presents to the Nexus, where they name a persona root; a seat that proves that key per Nexus (the wire train's face-scoped proof subject); and how a seat-holder's face stands in a realm once chairs sign with seat keys.
 
 <<~/ahu>>
 
@@ -275,6 +300,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;rQidFfavpLA5pQTympHeG82lDLgBu59J2q74RtF9Hio
+<<^ code="&#x0003;">>ni:///sha-256;IE06_qXR2JDL8VBsixUC3LHGNlnoDYGgUoZmWFyVR8c
 
 <<^ code="&#x0004;" -> to="?">>

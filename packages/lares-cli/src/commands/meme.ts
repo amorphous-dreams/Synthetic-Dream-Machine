@@ -27,6 +27,7 @@
  *                        the records to the top bag as an in-wiki edit would.
  *   · --recipe <slug>  — an edit AS that wiki: its designated writable bag, write-then-sync.
  *   · --bag <slug>     — a residency placement into that bag; a bag the island cannot write refuses.
+ *   · --realm <id>     — beside --bag: the realm whose registration that bag resolves through; it reads that realm alone.
  *   · --base <hash>    — (put) the canonical hash the writer read (`meme get` reports it); records that
  *                        moved past it read as a CONFLICT and nothing lands.
  *   · --if-match <hash>— (delete) the same base, spelled as the route's header: stale → CONFLICT, nothing moves.

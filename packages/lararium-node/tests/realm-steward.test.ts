@@ -211,7 +211,7 @@ describe("the realm steward door", () => {
     const opts = { args: { bag: BAG }, registryDocs: () => [registryDoc()], vault: a.vault };
     await expect(runRealmBag({ plane: null, ...opts })).rejects.toMatchObject({ refusal: "no-realm" });
     await expect(runRealmBag({ plane: unstood, ...opts })).rejects.toMatchObject({ refusal: "no-realm" });
-    expect(await runRealmBags({ plane: null })).toEqual({ verb: "realm-bags", realm: null, realmDoc: null, bags: [] });
+    expect(await runRealmBags({ plane: null })).toEqual({ verb: "realm-bags", realm: null, realmDoc: null, realms: [], bags: [] });
     plane.dispose(); unstood.dispose();
   });
 

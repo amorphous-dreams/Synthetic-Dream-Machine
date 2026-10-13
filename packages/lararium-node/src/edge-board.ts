@@ -37,3 +37,9 @@ export async function noteVesselRealm(repo: Repo, vesselKey: string, realm: stri
   const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
   if (!ledgerRealms(ledger.doc()).includes(realm.trim().toLowerCase())) ledger.change((d) => { noteRealm(d, realm); });
 }
+
+/** The realms this vessel's own ledger notes. */
+export async function readVesselRealms(repo: Repo, vesselKey: string): Promise<readonly string[]> {
+  const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
+  return ledgerRealms(ledger.doc());
+}

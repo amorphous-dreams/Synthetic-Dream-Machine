@@ -6,7 +6,7 @@
  * (cabal-realm#six-joints): the CABAL is the collective, the REALM its shared CRDT and resources, the NEXUS the
  * hardware. A bag two households keep is stuff held in common — it belongs to the REALM plane.
  *
- * THE REALM DOC. Its id DERIVES from the charter both stewards hold: the GENESIS epoch of the seal lineage
+ * THE REALM DOC. `REALM_DOC_URI` names the pointer namespace; each realm uses its own doc pointer there. Its id DERIVES from the charter both stewards hold: the GENESIS epoch of the seal lineage
  * (the inception, fixed across every rotation — the realm's NAME), so every member computes one address from
  * the charter alone and no registry has to be consulted to find it (`realmDocUrl`). Every vessel that stands
  * in the charter materializes it at boot and on its after-write refold; a vessel that never held the charter never
@@ -57,17 +57,41 @@ import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
 import { storedLarRecord } from "./stored-record.js";
 
-/** The realm plane's registry name on a vessel's oracle plane — the pointer a boot writes to the realm doc. */
+/** The realm plane's pointer namespace on a vessel's oracle plane. */
 export const REALM_DOC_URI = bagUri("realm");
 
 /** The oracle-plane tiddler carrying the realm id the pointer stands for — read off the vessel's OWN plane,
  *  never off the realm doc (a member who could rewrite the id there could make a foreign record count). */
 export const REALM_ID_TIDDLER = `${REALM_DOC_URI}/realm-id`;
 
-/** The oracle-plane tiddler carrying THIS vessel's own steward nym — pinned the moment its own hand signs a
- *  registration (a proposal, or a co-sign of one). The write path reads stewardship off this pin, never off
- *  the realm doc's `keptBy` alone: a member who could rewrite a nym there could route a foreign put. */
-export const REALM_STEWARD_TIDDLER = `${REALM_DOC_URI}/steward-nym`;
+/** A cabal realm's id: 64 lower-case hex. The charter-derived realm wears its Nexus's AID, any other token. */
+export const CABAL_REALM_RE = /^[0-9a-f]{64}$/;
+/** The oracle-plane key that names one realm's shared doc. */
+export function realmDocPointer(realmId: string): string { return `${REALM_DOC_URI}/doc/${encodeURIComponent(realmId)}`; }
+/** The oracle-plane key that names THIS vessel's own steward in one realm. */
+export function realmStewardPointer(realmId: string): string { return `${REALM_DOC_URI}/steward/${encodeURIComponent(realmId)}`; }
+/** The oracle-plane key that carries one realm's STANDING registrations as this vessel's own plane folded them. */
+export function realmStandingPointer(realmId: string): string { return `${REALM_DOC_URI}/standing/${encodeURIComponent(realmId)}`; }
+/** Land a realm's standing registrations on the vessel's OWN plane draft: a JSON array sorted by bagUri.
+ *  Returns false and writes nothing when the stored text already equals it. Call INSIDE `handle.change()`. */
+export function writeRealmStanding(draft: LarDoc, realmId: string, standing: ReadonlyMap<string, RealmBagRegistration>): boolean {
+  const key = realmStandingPointer(realmId);
+  const text = JSON.stringify([...standing.values()].sort((a, b) => a.bagUri < b.bagUri ? -1 : a.bagUri > b.bagUri ? 1 : 0));
+  if (tiddlerText(draft.tiddlers[key]) === text) return false;
+  draft.tiddlers[key] = storedLarRecord(key, { text }, realmId);
+  return true;
+}
+/** Read standing registrations back from that text: each element coerced at the registration's exact floor shape
+ *  (reuse the module's own `coerceRegistration`), keyed by bagUri; a torn text, a non-array, and a torn element read as nothing. */
+export function readRealmStanding(text: string | null | undefined): ReadonlyMap<string, RealmBagRegistration> {
+  if (typeof text !== "string") return new Map();
+  let parsed: unknown;
+  try { parsed = JSON.parse(text); } catch { return new Map(); }
+  if (!Array.isArray(parsed)) return new Map();
+  const out = new Map<string, RealmBagRegistration>();
+  for (const item of parsed) { const rec = coerceRegistration(item); if (rec) out.set(rec.bagUri, rec); }
+  return out;
+}
 
 /** The signing / content domain of a realm-bag registration — minted in the registry (`domains.ts`). */
 export { REALM_BAG_DOMAIN };
@@ -558,6 +582,8 @@ export class RealmBagGate implements FederationGate {
   readonly #pace: (() => number | null) | null;
   readonly #sealReading: RealmBagFoldOptions | undefined;
   readonly #memberAside: ((peerId: string) => boolean) | null;
+  readonly #stands: ((peerId: string) => boolean) | null;
+  readonly #nexusLane: boolean;
 
   constructor(
     private readonly base: FederationGate,
@@ -578,6 +604,8 @@ export class RealmBagGate implements FederationGate {
        * alike — and the peer draws the same denial any private plane gives. Absent → no member reads as aside.
        */
       readonly memberAside?: (peerId: string) => boolean;
+      readonly stands?: (peerId: string) => boolean;
+      readonly nexusLane?: boolean;
     },
   ) {
     this.#realmDocId = interpretAsDocumentId(realmUrl) as DocumentId;
@@ -585,6 +613,8 @@ export class RealmBagGate implements FederationGate {
     this.#pace = opts?.pace ?? null;
     this.#sealReading = opts?.sealReading;
     this.#memberAside = opts?.memberAside ?? null;
+    this.#stands = opts?.stands ?? null;
+    this.#nexusLane = opts?.nexusLane !== false;
   }
 
   /** Re-fold the standing registrations off a realm doc snapshot — the docs the realm and member lanes open for. */
@@ -634,6 +664,13 @@ export class RealmBagGate implements FederationGate {
     if (await this.base.mayFederate(documentId, peerId)) return true;
     if (!peerId) return false;
     if (!ofRealm) return false;
+    // A standing consult that throws answers NO: the gate never opens, and never rejects, on a failed reading.
+    let stands = false;
+    try { stands = this.#stands?.(peerId) === true; } catch { stands = false; }
+    if (stands) return true;
+    if (!this.#nexusLane) {
+      return !isRealmDoc && this.#charter?.carrierPeer?.(peerId) === true && this.#byDocId.get(documentId)?.readTier === "public";
+    }
     // THE REALM LEG — the registration's own hands and charters, ahead of any board.
     if (this.#charter?.holdsCharterPeer?.(peerId)) return true;     // the charter's own hearth — the return lane
     const nym = this.#charter?.contractNymOfPeer(peerId)?.toLowerCase() ?? null;
