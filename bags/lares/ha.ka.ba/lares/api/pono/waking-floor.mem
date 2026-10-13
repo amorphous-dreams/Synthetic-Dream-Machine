@@ -76,7 +76,7 @@ floor reads as real structure rather than as a special case either occasion inve
 
 <<~ has Wake Stand "at/the-minimum-reachable-cap-stack ~ never a refusal">>
 <<~ has Wake Serve "what/needs-no-secret ~ the public shelf serves without opening anything">>
-<<~ has Wake Hold "closed/every-sovereign-act ~ a locked vessel signs nothing">>
+<<~ has Wake Hold "closed/every-sovereign-act ~ a locked vessel gives no sovereign signature">>
 <<~ has Wake Announce "loudly/what-it-cannot-do signed/always ~ an unsigned announcement spoofs and targets">>
 <<~ has Wake Stamp "every-read/as-of-my-last-sync ~ a bare answer from the floor opens split-brain">>
 <<~ has Wake Raise "by/recognition on/a-nonce-THIS-vessel-emitted ~ never a pre-baked blob">>
@@ -398,6 +398,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d6PzXb26LBYRTDGxwZbgG9yQR8wO5MwAQlPFFHLeE0w
+<<^ code="&#x0003;">>ni:///sha-256;FBWGhUCNOe8PolvF4xEIT28K4t_LqmlbjNxpkqKrD00
 
 <<^ code="&#x0004;" -> to="?">>

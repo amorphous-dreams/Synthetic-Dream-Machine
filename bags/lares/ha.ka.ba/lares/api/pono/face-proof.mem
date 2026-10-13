@@ -106,7 +106,7 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 
 !!! Two tiers of gate ~ the floor answers locked, the sovereign gate answers raised
 
-> ''House reading, marked as such; it touches custody at rest, and the operator may overturn it.''
+> ''Operator ruling, approved as presented; it touches custody at rest.''
 
 ''A route names its tier, and a tier names its root.'' A ''floor route'' answers at a locked vessel: the public shelf, the oracle's read face, the floor's announcement, and a herm's blind relay of bytes it cannot open. Its bundle derives from the floor key. A ''sovereign route'' seats a face's session, syncs a private document or serves a lane whose bytes this vessel can open. Its bundle derives from the sealed custody root, and it exists only while the vessel stands unlocked. A route's typed name carries its tier, the pin states it and the pin's digest binds it: no route asks the other tier's root, a root asked for the wrong tier refuses by name, and a dialer that pinned one tier believes no gate of the other.
 
@@ -120,7 +120,7 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 
 !!! The place arm ~ a faceless place proves its own key, outside the face proof
 
-> ''House reading, marked as such; the operator may overturn it.''
+> ''Operator ruling, approved as presented'': a faceless place takes its own arm at the gate, outside the face proof.
 
 ''A herm or a carrier holds no face'', so it holds no face key, no certificate and no session certificate. It still dials gates. The presentation therefore takes a fourth arm, the ''place arm'', and that arm stands OUTSIDE the face proof: no chain rides it and no withdrawal history answers it.
 
@@ -254,7 +254,7 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 
 ''A session's certificate names its hand's profile, and the profile bounds the key.'' A session key signs under three purposes, each with its own domain: the dial's signed finish, an ordinary act, and an act that changes who holds authority. A person's tab and a person's CLI run sign all three. The disk watcher and a spirit's seat sign the first two, and no verifier reads an authority act under their key (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). The watcher's row reads as the house's own: the ruling names the seat.
 
-''A session opens before its certificate'' (house reading). The vessel's own chain verifies first: the face key, its certificate, this vessel's face-scoped key, with no learned denial. The face supplier joins THAT to the admit and the private grant, and the owner opens the session wearing the face. Only then does the signer mint the session's key and its certificate under the vessel's face-scoped key. The owner answers no caller between the two acts: one door opens the session and mints its signer, and a mint that fails closes the session it opened before any message routes to it. No session ever stands live with a face and no signer.
+''A session opens before its certificate'' (operator ruling, approved as presented). The vessel's own chain verifies first: the face key, its certificate, this vessel's face-scoped key, with no learned denial. The face supplier joins THAT to the admit and the private grant, and the owner opens the session wearing the face. Only then does the signer mint the session's key and its certificate under the vessel's face-scoped key. The owner answers no caller between the two acts: one door opens the session and mints its signer, and a mint that fails closes the session it opened before any message routes to it. No session ever stands live with a face and no signer.
 
 ''A signer serves one session at one generation.'' It mints at random when the session opens, its certificate carries no session id and no owner epoch, and it drops when the session closes or switches. It asks the owner's own table before every signature and again before a signature leaves, so a record kept from before a close proves nothing and a close that lands mid-signature releases none.
 
@@ -362,6 +362,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tbV9gk9L8JdkwvAkCx_t-iMXYU3O8dWY-IRpTqgrZSM
+<<^ code="&#x0003;">>ni:///sha-256;3RKxIe06I6KNv3Hb86-o5f0Xxi0Wx9_9fH7G5VSng5M
 
 <<^ code="&#x0004;" -> to="?">>
