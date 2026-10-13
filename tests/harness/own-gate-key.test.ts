@@ -11,6 +11,10 @@ import { ownGateKey } from "./instance.js";
 const RELAY_KEY  = "2868ea9823a13a3edbc4c3dbcb94fd4e0a2b1d1fe0e026d16139239dac4c3fe3";
 const HEARTH_KEY = "57fef7a8190ed6f729755a6a7e74cc0173edc5cd0c881f552456294676500423";
 
+// The address a founder prints carries whatever port its OS handed it. The reader under test reads no port, so
+// this process's own pid stands in for one: the fixture names no seat a second run could contend for.
+const ADDR = `localhost:${process.pid}`;
+
 const FLOOR_THEN_HEARTH = [
   "[herm] phase → live",
   "[herm] carriage crossroads (Socket B) — hearths dial this to carry sealed cad bodies:",
@@ -18,7 +22,7 @@ const FLOOR_THEN_HEARTH = [
   "[custody] unlocked: slot 03e2d54c919ae4f2ecbfadb17fcbd8dd opened the vessel key",
   "[lararium] phase → live",
   `[lararium] gate key: ${HEARTH_KEY}`,
-  `[lararium]   http://localhost:46291/?relay=ws://localhost:46291/ws&gate=${HEARTH_KEY}   (loopback)`,
+  `[lararium]   http://${ADDR}/?relay=ws://${ADDR}/ws&gate=${HEARTH_KEY}   (loopback)`,
 ].join("\n");
 
 describe("ownGateKey — the hearth's own line", () => {
