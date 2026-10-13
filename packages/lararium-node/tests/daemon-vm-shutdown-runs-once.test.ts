@@ -13,7 +13,6 @@
  */
 
 import { describe, test, expect, afterEach, vi } from "vitest";
-import { MessageChannel, type MessagePort as NodeMessagePort } from "worker_threads";
 import { Repo } from "@automerge/automerge-repo";
 import { emptyLarDoc, mkTeardownAck, type LarDoc, type IslandMsg_Manifest } from "@lararium/mesh";
 import { openDaemonVmCore, type DaemonVmHost } from "@lararium/tw5";
@@ -49,7 +48,8 @@ describe("the daemon VM's shutdown handshake runs once", () => {
     const repo = new Repo({ sharePolicy: async () => true });
     const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
     const island = scriptedIsland();
-    const ports: NodeMessagePort[] = [];
+    // The global channel: this vector stands no worker of any kind, only a scripted handle.
+    const ports: MessagePort[] = [];
     const host: DaemonVmHost = {
       spawnWorker: () => island.handle,
       newSyncChannel: () => {
