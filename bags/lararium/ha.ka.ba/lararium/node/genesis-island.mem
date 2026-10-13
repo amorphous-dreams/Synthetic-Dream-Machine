@@ -34,35 +34,38 @@ attestations off the filesystem and assembles `GenesisInputs`.
 # ''B builds.'' `buildGenesisDoc(inputs)` in mesh constructs the Automerge doc. Platform-neutral by
 construction — it takes bytes and returns a document, so a browser vessel and a node vessel fold the
 SAME artifact from the same inputs.
-# ''C writes.'' The runner lands the artifact bytes, the CAS entries and the three region CIDs.
+# ''C writes.'' The runner lands the plain-data seed (`seed.json`) and the CAS entries. The three
+region CIDs ride inside the seed as witness tiddlers, and the Automerge bytes stay an in-memory
+verification witness.
 
-''The split is the portability.'' A build step that reached for `fs` inside layer B would bind the
-artifact's shape to one host, and the artifact is the one thing every host must agree on exactly.
+''The split carries the portability.'' A build step that reached for `fs` inside layer B would bind the
+artifact's shape to one host, and every host must agree on the artifact exactly.
 
 ''What does NOT belong here.'' Corpus memes load at runtime through the bag store's recipe stack, and
 oracle tiddlers (runtime DocUrls) write after `repo.import()` in `reconcileWellKnownTiddlers`. Neither
-is genesis material: one is content the vessel carries, the other is state it discovers.
+counts as genesis material: the vessel carries the first as content and discovers the second as state.
 
 <<~/ahu>>
 
 <<~ ahu #/the-declaration>>
 
-!! A blob's class is DECLARED at the mint, never read off its path
+!! A blob's class gets DECLARED at the mint, never read off its path
 
 Each vendored file arrives as one of three classes, and `collectPlugins` decides which by READING it:
 
 * ''grammar'' — the required memetic-wikitext plugin, matched by its own URI. One file, and the whole
 of kāhuli's fast ratchet.
-* ''plugin'' — a file whose JSON envelope declares a `title`. This operator's own collection.
+* ''plugin'' — a file whose JSON envelope declares a `title`. The checked-in plugin directory holds the boot set alone, and the collector packs every top-level JSON it
+finds there; an operator's own collection travels as a signed offering through `nexus publish`, never baked in.
 * ''base'' — the default, and what an envelope-less tiddler array or an unparseable file stands as.
 The `lararium-boot-shadows` seed lives here, beside the lares/lararium bags.
 
-''The default is base, and that is the safe direction.'' A file that declares nothing gets the class
-that ratchets nothing; only a file that SAYS it is a plugin becomes one. An unparseable blob takes the
+''The default falls to base, the safe direction.'' A file that declares nothing gets the class
+that ratchets nothing; only a file that DECLARES a plugin envelope becomes a plugin. An unparseable blob takes the
 same road rather than failing the build, because it declared nothing either.
 
 ''The class rides INTO the descriptor,'' so verification classifies exactly as the mint did. A gate
-that re-derived the class from a path would be a second reader, free to disagree with the first — the
+that re-derived the class from a path would stand as a second reader, free to disagree with the first — the
 [[carrier gradient|lar:///ha.ka.ba/lares/api/pono/carrier-gradient]] lesson, one layer down.
 
 <<~/ahu>>
@@ -71,16 +74,17 @@ that re-derived the class from a path would be a second reader, free to disagree
 
 !! Three regions, two ratchets
 
-The build prints and lands three CIDs, and they are not three tiers of one thing:
+The build prints three CIDs and seals each into the seed as a witness tiddler, and they never read as
+three tiers of one thing:
 
 |!Region |!What it folds |!What advancing it means |
 |`engineCid` |the TW5 core — the hearth true-name |the SLOW ratchet; it re-binds membership mesh-wide and rides inside every signed device-delegation preimage |
 |`grammarCid` |the required grammar ALONE |marked to RETIRE — the grammar holds no versions (kahu#/contract); retirement owed in code, pending a scout's measurement of its consumers |
-|`pluginsCid` |this operator's own collection |a REGION, never a kāhuli tier — any operator offers their own, and plugin drift is not grammar drift |
+|`pluginsCid` |the plugin-class blobs the bake packs — neither the grammar nor the base seed |a REGION, never a kāhuli tier — an operator's own offerings travel by `nexus publish`, and plugin drift never counts as grammar drift |
 
-''The engine's preimage is not a region fold.'' `computeEngineCid` takes `(version, sha)` and excludes
-the version label deliberately; the other two fold their entries under their OWN domain literal. Three
-hand-written folds read like an inconsistency and are the separation.
+''The engine's preimage follows no region fold.'' `computeEngineCid` takes the core digest alone, so no
+version label can reach the preimage; the other two fold their sorted `{id, sha256}` pairs under their OWN
+domain literal. Three hand-written folds read like an inconsistency and enact the separation.
 
 <<~/ahu>>
 
@@ -88,8 +92,8 @@ hand-written folds read like an inconsistency and are the separation.
 
 !! The actor seed makes two builds the same build
 
-`actorSeed = sha256hex` over the inputs the bake packs, each labelled by its path within the repo, so
-two builds of one commit, from any checkout location, produce an identical `island.sha256`. Automerge
+`actorSeed = sha256hex` over the inputs the bake packs, each plugin blob labelled by its path within the
+repo, so two builds of one commit, from any checkout location, produce identical seed and CAS bytes. Automerge
 would otherwise stamp a fresh actor per build, and two byte-identical inputs would fold to two different
 artifacts, leaving the artifact useless as a name.
 
@@ -103,7 +107,7 @@ packed set (`genesisPackedPluginFiles`), and the bake's collector and the seed b
 cannot drift.
 
 ''An attestation that disagrees with its blob ABORTS the build.'' A plugin whose recorded
-`pluginJsonSha256` misses the bytes on disk throws rather than vendoring; a half-true genesis is worse
+`pluginJsonSha256` misses the bytes on disk throws rather than vendoring; a half-true genesis costs more
 than none, because every vessel downstream would carry the lie by hash.
 
 <<~/ahu>>
@@ -118,6 +122,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
 <<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
 
-<<^ code="&#x0003;">>ni:///sha-256;K1MBjqEeHj2DNEOlOIqQ6d4skaf0Sqe7w6LLHXTvgkA
+<<^ code="&#x0003;">>ni:///sha-256;Ws1XPI2quFyod7gxoUx6gB2gi2i-mjSgjAQTFXcsEvU
 
 <<^ code="&#x0004;" -> to="?">>

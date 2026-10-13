@@ -29,7 +29,7 @@ The vessel stands on ''two orthogonal planes, soft-coupled at the `@oracle`'' �
 
 <<~ scale plane "cid@immutable-FLOW-rhizome -> crdt@epoch-ratchet-STATE-tuber">>
 
-The genesis is ''not'' an Automerge binary carrying bytes. Its complete immutable production bundle is plain-data `genesis/seed.json` plus exact CAS blobs at `genesis/cas/<cid>`. The seed deterministically materializes the first `@oracle` doc and strictly derives the logical CAS inventory; the `@oracle` carries metadata and pointers, never bytes or an independent byte allowlist.
+The shipped genesis ''never'' takes the form of an Automerge binary carrying bytes. Its complete immutable production bundle comprises plain-data `genesis/seed.json` plus exact CAS blobs at `genesis/cas/<cid>`. The seed deterministically materializes the first `@oracle` doc and strictly derives the logical CAS inventory; the `@oracle` carries metadata and pointers, never bytes or an independent byte allowlist.
 
 <<~ ahu #/two-planes>>
 
@@ -78,11 +78,11 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 | engine + plugin descriptors | `{id, version, sha256}` in `.blobs` (NO bytes); the bytes ride `genesis/cas/<cid>` and the immutable seed derives their exact inventory |
 | system bag descriptors | `ROOT_BAGS`: `@oracle`, `lararium`, `@catalog`, `lares` — the universal floor, and nothing else |
 | system wiki-recipes | the ''`lares` wiki'' (`@oracle`+`lararium`+`lares`) and the ''`lararium` wiki'' — DreamNet system bags as quine wikis |
-| genesis-cid | `lar:///ha.ka.ba/bags/oracle/genesis-cid` (two-pass CID witness, GD-4) |
+| region witnesses | three tiddlers under the oracle doc URI — `genesis-cid-engine`, `genesis-cid-grammar`, `genesis-cid-plugins` — written in one pass (GD-4) |
 
-''GD-7 — genesis declares only the floor it stands.'' A FACE'S PLANES ARE NOT DECLARED HERE. `@persona-<tag>`, `@circles-<tag>`, `@identities-<tag>` and `@sessions-<tag>` each derive their id from the tag their PersonaGroup mints, so no name for them exists when this seed gets built, and a genesis every vessel shares can describe no plane belonging to one person. They describe themselves at founding, where the knowledge lives, and resolve from `@catalog` — `@oracle` names what every vessel carries, and a person's relations reach no such universality.
+''GD-7 — genesis declares only the floor it stands.'' NO FACE'S PLANE GETS DECLARED HERE. `@persona-<tag>`, `@circles-<tag>`, `@identities-<tag>` and `@sessions-<tag>` each derive their id from the tag their PersonaGroup mints, so no name for them exists when this seed gets built, and a genesis every vessel shares can describe no plane belonging to one person. They describe themselves at founding, where the knowledge lives, and resolve from `@catalog` — `@oracle` names what every vessel carries, and a person's relations reach no such universality.
 
-''GD-6 — system recipes are substrate; user recipes are not (operator ruling 2026-06-16).'' Genesis seeds the ''system'' wiki-recipes (`lares`, `lararium`); user recipes mint into `@catalog` by init-wiki. A user recipe in genesis, or a system recipe in `@catalog`, reads as a plane-leak.
+''GD-6 — system recipes serve as substrate; user recipes do not (operator ruling 2026-06-16).'' Genesis seeds the ''system'' wiki-recipes (`lares`, `lararium`); user recipes mint into `@catalog` by init-wiki. A user recipe in genesis, or a system recipe in `@catalog`, reads as a plane-leak.
 
 <<~/ahu>>
 
@@ -92,9 +92,9 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 | Type | Role |
 |---|---|
-| `GenesisInputs` | Caller-assembled bag: `actorSeed` (hex), `coreBlob`, `coreVersion`, optional `coreSha256`, `plugins`, `systemTitles`. |
-| `GenesisArtifact` | Build witness: deterministic thin-doc `bytes`, `sha256`, `cid`, `preSha256`, and `casEntries` written at `genesis/cas/`. |
-| `GenesisCasManifest` | A strict in-memory projection of `seed.blobs`: `engineCid` + `pluginsCid` + sorted entries (id → cid). It is never a second file, boot input, or authority. |
+| `GenesisInputs` | Caller-assembled bag: `actorSeed` (hex), `coreBlob`, `coreVersion`, optional `coreSha256`, `plugins`. |
+| `GenesisArtifact` | Build witness: deterministic Automerge verification `bytes` (never a shipped boot file), `sha256`, `cid`, the three region CIDs, the plain-data `seed`, the `casManifest`, and `casEntries` written at `genesis/cas/`. |
+| `GenesisCasManifest` | A strict in-memory projection of `seed.blobs`: `engineCid` + `grammarCid` + `pluginsCid` + sorted entries (id → cid). It never serves as a second file, boot input, or authority. |
 | `GenesisPluginEntry` | One plugin descriptor + optional `PluginBuildAttestation` (`lararium-tw5-plugin-build/v1`). |
 
 <<~/ahu>>
@@ -103,13 +103,13 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 !! Invariants
 
-''GD-1 — No platform dependencies.'' `buildGenesisDoc()` imports only `@automerge/automerge` + mesh-internal. Zero `fs`/`path`/`worker_threads`/DOM/`@lararium/tw5`.
+''GD-1 — No platform dependencies.'' `buildGenesisDoc()` imports only the Automerge packages + mesh-internal. Zero `fs`/`path`/`worker_threads`/DOM/`@lararium/tw5`.
 
 ''GD-2 — Caller owns byte acquisition.'' `coreBlob`/`plugins[*].blob` arrive as `Uint8Array` (readFileSync / fetch / bundler / fixture — a platform concern).
 
-''GD-3 — Caller owns systemTitles.'' No TW5Engine boot in mesh; the caller passes the title list.
+''GD-3 — No TW5 engine boots in mesh.'' The builder takes bytes and descriptors alone; `GenesisInputs` carries no title list.
 
-''GD-4 — Two-pass CID injection stays honest, not a fixpoint.'' Pass 1: serialize without the self-ref → `preSha256`. Pass 2: inject the genesis-cid tiddler. Strip it + hash → `preSha256`. Verifiable.
+''GD-4 — The region CIDs enter as INPUTS, in one write pass.'' Each derives from content (the core digest; the sorted `{id, sha256}` pairs of its region), never from the saved bytes, so the witness tiddlers land in a single pass with no self-referential fixpoint. `verifyGenesisArtifact` recomputes all three and matches them.
 
 ''GD-5 — Determinism via actorSeed.'' `actorSeed = sha256hex` over the inputs every Lararium shares and boots alike (the kupono law): the engine core, the packed plugin blobs and the attestation the bake reads, each labelled by its path within the repo. No working copy under `bags/` and no per-place file folds in. One commit → one seed-derived Oracle witness and one exact CAS inventory, from any checkout. (Note: the TW5 core itself must render deterministically — a non-deterministic vendor build skews the engine CID; resolving the engine via CAS keeps the byte plane explicit, but a reproducible core remains the clean target.)
 
@@ -121,7 +121,7 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 ''GD-9 — THE INVITE AUTHENTICATES THE SOFTWARE, never the reverse.'' A vessel arrives over one channel (a public repository, a package registry) and its introduction over another (a QR, a file, a spoken code). The device-pairing literature names that arrangement ''out-of-band channel authentication over a location-limited channel'' — //demonstrative identification// in Balfanz, Smetters, Stewart & Wong, //Talking to Strangers: Authentication in Ad-Hoc Wireless Networks// (NDSS 2002) — and the property it buys reads as ''multi-channel authentication'': an adversary must compromise BOTH channels, and the out-of-band channel needs authenticity alone, never confidentiality.
 
-''AND THE SPLIT DOES NOT HOLD WHERE THE SOFTWARE CHANNEL GOES UNVERIFIED.'' An adversary controlling the package controls the client that scans the code, so the code's authenticity buys nothing — the client simply ignores it. The dependency therefore inverts: the invite carries an ''expected release fingerprint'', and the freshly-fetched vessel verifies ITSELF against the invite before it ever handshakes. The supporting machinery already carries names — ''reproducible builds'' (GD-5's //reproducible core is the clean target// states the same target from the determinism side), ''binary transparency'' (a public append-only log of what shipped), and ''TUF'', whose threat model addresses precisely a compromised repository. Until one of those seats, `coreSha256` and the CAS manifest certify ''provenance, never behaviour'' (#/the-shared-model).
+''AND THE SPLIT DOES NOT HOLD WHERE THE SOFTWARE CHANNEL GOES UNVERIFIED.'' An adversary controlling the package controls the client that scans the code, so the code's authenticity buys nothing — the client simply ignores it. The dependency therefore inverts: the invite carries an ''expected release fingerprint'', and the freshly-fetched vessel verifies ITSELF against the invite before it ever handshakes. The supporting machinery already carries names — ''reproducible builds'' (GD-5's //a reproducible core remains the clean target// states the same target from the determinism side), ''binary transparency'' (a public append-only log of what shipped), and ''TUF'', whose threat model addresses precisely a compromised repository. Until one of those seats, `coreSha256` and the CAS manifest certify ''provenance, never behaviour'' (#/the-shared-model).
 
 <<~/ahu>>
 
@@ -131,7 +131,7 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 | Layer | Concern | Lives in |
 |---|---|---|
-| A | Read blobs (disk/fetch/bundler); derive actorSeed; boot TW5Engine for systemTitles | `@lararium/node` build script · browser build tool · test harness |
+| A | Read blobs (disk/fetch/bundler); derive actorSeed | `@lararium/node` build script · browser build tool · test harness |
 | B | Construct the deterministic plain-data seed + CAS entries; derive the logical inventory only where a local wire needs it | `@lararium/mesh` (`genesis-doc.ts`) |
 | C | Write `genesis/seed.json` and `genesis/cas/<cid>`; at boot, materialize or reload the Oracle, then mirror/verify CAS → the runtime CAS (`mirrorGenesisCasFs` / OPFS), kernel resolves by CID | Layer A caller (`node-cas.ts` · `browser-genesis.ts`) |
 
@@ -143,13 +143,13 @@ The genesis doc seeds the ''`@oracle` runtime system island'' — the protocol s
 
 ''The grammar reads as the frame's realization for the semantic plane.'' Two parties holding identical bytes under a different `grammarCid` parse the same `lar:` URI, the same sigil, the same gradient position into ''different structures'' — so a comparison between them means nothing, exactly as a coordinate means nothing without its datum.
 
-''THE HAZARD BELONGS TO THE GRAMMAR ALONE, AND SAYING SO TOOK A THIRD REGION.'' While one `pluginsCid` once folded the required grammar together with whatever plugins an operator happened to vendor into genesis itself, this warning had to be stated over the whole composition — over-broad in exactly the way that matters, since an operator's own plugin collection moves the digest and changes NOBODY's reading. Three regions now stand, and only two of them ratchet:
+''THE HAZARD BELONGS TO THE GRAMMAR ALONE, AND SAYING SO TAKES A THIRD REGION.'' A single `pluginsCid` that folded the required grammar together with whatever plugins an operator vendored would force this warning over the whole composition — over-broad in exactly the way that matters, since an operator's own plugin collection would move the digest and change NOBODY's reading. So three regions stand, and only two of them ratchet:
 
 * ''`engineCid`'' — the TW5 core; the hearth true-name, the SLOW ratchet, and the one that binds membership because it rides inside every signed delegation preimage.
-* ''`grammarCid`'' — the REQUIRED memetic-wikitext grammar ALONE, the region whose roll can make two readers parse one carrier differently; at most it hints which formal-register snapshot a carrier was written against. Marked to RETIRE as a ratchet: the grammar holds no versions and lives by use (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>), so its retirement stands owed in code, pending a scout's measurement of its consumers.
-* ''`pluginsCid`'' — STREAMS RETIREMENT (2026-10-10 operator ruling): genesis now bakes `pluginsCid` over the BOOT SET ALONE (the required grammar plus boot shadows; no optional plugin ever rides it again), so this region's fold is the SAME empty-over-optional value for every Lararium, forever — a region, never a tier, that moves with no ratchet act because it names nothing operator-specific anymore. An operator's own collection travels a DIFFERENT road entirely: a signed `PluginOffering` announced on the Crossroads board (`plugin-offering.ts`, `offering-announce.ts`) and selected per wiki RECIPE (`wiki-recipe.ts`'s `pluginOfferings`, R3 — "plugins load by recipe"), verified and byte-checked at mount, never baked into the immutable seed at all.
+* ''`grammarCid`'' — the REQUIRED memetic-wikitext grammar ALONE, the region whose roll can make two readers parse one carrier differently; at most it hints which formal-register snapshot a carrier's author wrote against. Marked to RETIRE as a ratchet: the grammar holds no versions and lives by use (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>), so its retirement stands owed in code, pending a scout's measurement of its consumers.
+* ''`pluginsCid`'' — a region, never a tier (STREAMS RETIREMENT, operator ruling 2026-10-10). The checked-in seed packs the BOOT SET ALONE — the required grammar plus the boot shadows. `computePluginsCid` folds the packed entries that stand neither as grammar nor as base seed, so that seed's `pluginsCid` folds no optional entry, and the region moves with no ratchet act because it names nothing operator-specific. UNBUILT: a guard that enforces boot-set-only inputs — the collector accepts every top-level JSON file, and the builder ships every plugin it receives. An operator's own collection travels a DIFFERENT road entirely: a signed `PluginOffering` announced on the Crossroads board (`plugin-offering.ts`, `offering-announce.ts`) and selected per wiki RECIPE (`wiki-recipe.ts`'s `pluginOfferings`, R3 — "plugins load by recipe"), verified and byte-checked at mount, never baked into the immutable seed at all.
 
-The base seed (the lararium API/shadow tiddlers riding beside the lares + lararium bags) stands in NEITHER ratchet: it ships as a required blob attested by its manifest sha, and a change to it moves the ISLAND, never an epoch. Each region folds under its OWN domain, so two regions holding the same entries can never mint one digest, and the class a blob belongs to is DECLARED rather than read off the path it sits on.
+The base seed (the lararium API/shadow tiddlers riding beside the lares + lararium bags) stands in NEITHER ratchet: it ships as a required blob attested by its manifest sha, and a change to it moves the ISLAND, never an epoch. Each region folds under its OWN domain, so two regions holding the same entries can never mint one digest, and the bake classifies each packed JSON by its content and the grammar URI, records the class on the entry, and never infers it from a file path.
 
 That makes `engineCid` ⊥ `grammarCid` the artifact a merge-time model agreement needs, and it already stands:
 
@@ -158,7 +158,7 @@ That makes `engineCid` ⊥ `grammarCid` the artifact a merge-time model agreemen
 * ''shared'' — witness tiddlers on the @oracle plane, the always-carried tier.
 * ''held, never fetched'' — a vessel carries it or cannot boot.
 
-''And the two rates match what a dynamic frame independently needed'': a SLOW secular ratchet (the engine — a plugin change must never perturb it) beside a FAST local one (the plugins), so a violent local change updates a patch rather than forcing a global re-declaration.
+''And the two rates match what a dynamic frame independently needed'': a SLOW secular ratchet (the engine — a plugin change must never perturb it) beside a FAST shared grammar ratchet; a grammar change moves `grammarCid` without moving `engineCid`.
 
 ''AND THE PAIR DOES NOT NAME A NEXUS — that reading got tested and broke.'' Identifying a confederation by an implementation hash pins the ''intension'' (what a peer RUNS) where the property wanted reads ''extensional'' (what a peer ACCEPTS). The pin sits neither necessary — five independent clients hold one chain between them, by design — nor sufficient: two nodes ran the same intended rules and split anyway on an undocumented resource ceiling. ''A hash of source certifies provenance, never behaviour.''
 
@@ -166,7 +166,7 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 ''So the pair names the HEARTH'' — this place's own true-name and its own composition — and a Nexus reads off the PARSE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>).
 
-''AND THE VERSION LABELS LEFT BOTH PREIMAGES.'' Folding a version string in beside the digest made a pure RE-TAG — identical bytes, renamed — mint a fresh true-name, which manufactures a schism out of an editorial act and reads identical to a real change. The sha256 already binds every byte the label could describe. ''A false difference and no true one'', now cut; the label rides the blob descriptor for a human to read, where a wrong one misleads nobody's identity.
+''NO VERSION LABEL ENTERS AN ENGINE OR REGION CID PREIMAGE.'' Folding a version string in beside the digest would make a pure RE-TAG — identical bytes, renamed — mint a fresh true-name, manufacturing a schism out of an editorial act that reads identical to a real change. The sha256 already binds every byte the label could describe: ''a false difference and no true one''. The label rides the blob descriptor for a human to read, where a wrong one misleads nobody's identity.
 
 ''Two stretches stay open.'' The model version binds at FOUNDING (a device delegation names the genesis `engineCid`) and nothing consults it ''when two replicas merge'' — precisely where the law bites. And this doc's own deferred case, two peers materializing fresh from different engine versions, ''names the disjoint-station-set break'': where two frames share no co-observed points, no transformation exists at all, only translation by assertion.
 
@@ -178,8 +178,8 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~ scale commit "cid-plane@9c90b390 -> slice-1-blob-strip@940a023e -> structurepalace-instance@991bfbe7 -> daemon-lifecycle@7fb1c3bb">>
 
-* ''9c90b390 — CID plane:'' kernel resolves engine/plugins CAS-only by CID; the byte-blob left the `@oracle` CRDT (where the merge-into-stale had made it an unresolved actor conflict — the boot-skew root).
-* ''940a023e — slice 1:'' blob bytes left the genesis doc for the CID plane. The later seed-canonical collapse removed every binary and sidecar carrier; the complete bundle is now `seed.json` + `cas/<cid>`. Merge-conflict-on-bytes class is gone structurally. Isomorphic (node fs · browser OPFS).
+* ''CID plane:'' the kernel resolves engine/plugins CAS-only by CID; no byte-blob rides the `@oracle` CRDT, where a merge into a stale persisted doc would leave an unresolved actor conflict (the boot-skew root).
+* ''Seed-canonical bundle:'' no binary and no sidecar carrier ships; the complete bundle comprises `seed.json` + `cas/<cid>`. The merge-conflict-on-bytes class cannot arise, by structure. Isomorphic (node fs · browser OPFS).
 
 * ''Genesis materializes the floor from its seed:'' the seed names the exact rows and CAS inventory. The read-face projects those rows alone without Automerge history. The frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. A seedless restart uses only already-held, hash-valid CAS.
 
@@ -203,6 +203,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bX-UBJWG7UPZezYWu8oHscvZ6SbOjRq2xZNXNrzA0Qs
+<<^ code="&#x0003;">>ni:///sha-256;eVRRb_N8O6kuVzsMqYGsH4fDbrjJ1Gsr2j4h2KpVZsc
 
 <<^ code="&#x0004;" -> to="?">>

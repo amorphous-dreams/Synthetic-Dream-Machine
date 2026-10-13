@@ -29,7 +29,7 @@ it three times, and never once in a protocol document:
 
 * in ''Nostr'' it appeared as a '''checkmark''' — NIP-05 states the severability law outright ("clients must
   always follow public keys, not NIP-05 addresses"), and clients drew a badge anyway. The spec held; the
-  render policy captured. Nostr was then OFFERED the CA-shaped chain (NIP-85) and REFUSED it.
+  render policy captured. Nostr then met an OFFER of the CA-shaped chain (NIP-85) and REFUSED it.
 * in ''Bluesky'' it appeared as an '''AppView allowlist''' — any domain may serve as a handle, and 98.9% took
   the default; `did:web` sat fully specified at six accounts in five million. Then Verification arrived, and
   nine months later a verified `@icegov` became the third most-blocked account on the service.
@@ -78,9 +78,10 @@ visible'' reads as a property of the ontology rather than a rule bolted onto it.
 making the argument.'' The most-refuted claim across every sweep: Bluesky opened custom domains to all and
 98.9% stayed on the default; Handshake reserved ~80,000 names free for rights-holders and ~7.5% ever claimed.
 
-The measurable here reads: ''what fraction of humans hold dyads across MORE THAN ONE Nexus?'' `fleetSpan`
-computes it per fleet. A fleet gathered on one vessel — or inside one Nexus — provides no continuity when
-that place dies or turns hostile, so the span IS the exit right, measured.
+The measurable here reads: ''what fraction of humans hold dyads across MORE THAN ONE Nexus?'' As built,
+`fleetSpan` (`packages/lararium-mesh/src/dyad.ts`) counts the distinct vessels of one fleet, and no production
+caller reads it; the cross-Nexus count reads UNBUILT. A fleet gathered on one vessel — or inside one Nexus —
+provides no continuity when that place dies or turns hostile, so cross-Nexus span names the exit right to measure.
 
 ''No retroactive baseline exists anywhere in the field'' (nobody has re-measured Bluesky since April 2024).
 Instrument at founding or lose the baseline permanently.
@@ -97,7 +98,7 @@ The hand holding the infrastructure power does NOT hold the blessing power.
 Why it matters more than hygiene — ''whoever RESOLVES holds final say regardless of who attests.'' OpenNIC
 voted 13–2 to drop `.bit`, and a namespace with no attestor at all got adjudicated by the only party who
 could still say no. Adjudication relocates; it never vanishes. Keeping the resolving hand and the attesting
-hand apart is free today and impossible later.
+hand apart costs nothing at founding, and no price buys it later.
 
 ''THE ACHIEVABLE FORM — SUBSTRATES, NOT HANDS'' (sixth sweep, 2026-08-08). A sweep across ICANN, AT Proto,
 Matrix, Nostr, CT, ENS, Tor and OpenNIC found ''no live system'' that separated the attesting hand from the
@@ -115,7 +116,7 @@ prior art for quorum custody of a registration, and this meme does not carry it 
 so `.well-known` delegation relocates the HOST and never the NAME, and the domain owner holds every identity
 on it. Bluesky and Nostr took the other road for the price of one spec page each — the graph stores KEYS,
 never handles. ''Any arrangement where a contracted operator's users carry a host-scoped address as IDENTITY
-rather than as ADDRESS repeats Matrix exactly'', which is why ruling 1's severability law rides normative.
+rather than as ADDRESS repeats Matrix exactly'', and so ruling 1's severability law rides normative.
 
 ''The guild vouch law holds here too'' — an attesting operator stakes its own standing, and the lineage
 prices concentration among attestors exactly as it prices it among vouchers (`admission-on-a-lineage`).
@@ -153,8 +154,8 @@ and retain others. ''Budget the move honestly'' — Mastodon's asset transfer to
 months with a willing founder and zero dispute.
 
 ''AND THE SHELL'S OWN FAILURE MODES, kept lit:'' the sponsor that CREATED a project later petitioned to cancel
-its trademark (SFLC v. SFC); the `.ORG` registry nearly converted to private-equity ownership and what stopped
-it was ICANN — ''the resolving hand, never the nonprofit form''; and a personally-held registration exposes an
+its trademark (SFLC v. SFC); the `.ORG` registry nearly converted to private-equity ownership, and ICANN
+stopped it — ''the resolving hand, never the nonprofit form''; and a personally-held registration exposes an
 insolvency administrator who may pull the domain back into the estate even after transfer.
 
 !!! 5 · An append-only attestation log, with a NAMED OBLIGED WATCHER
@@ -176,9 +177,10 @@ which asserts a global instant — un-pono under no-global-now. The value surviv
 timestamp bought reads as non-repudiable ORDERING, surgical SCOPING, and third-party WITNESS, and all three
 want a ''witnessed partial order'' rather than a shared now. So: ''distrust everything bound at or after
 charter-epoch E'' — a content-addressed link in the hash-linked chain, locally verifiable by walking it.
-Liveness reads stay LOCAL (`persona-admit`: "no global now; read against a local clock"); ordering rides the
-chain. The instrument therefore stands mostly BUILT — `charterChain`, `charterEpochCid`, `boundEpoch`,
-persona-KEL `seq`, and HandleCard `actCid`/`parents` already carry it.
+Liveness reads stay LOCAL; ordering rides the
+chain. The attestation-log instrument itself reads UNBUILT. Its ordering primitives stand: the charter's hash-linked
+seal epochs (`sealEpochCid`, `verifySealLineage`) order the chain; `boundEpoch` tracks a separate
+device-delegation lease; persona-KEL `seq` and HandleCard `actCid`/`parents` order their own records.
 
 ''OPEN:'' an attestation issued BETWEEN epochs wants a rule — the chain orders epochs, not the acts inside one.
 
@@ -236,7 +238,7 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
   different acts with four different blast radii. The antigen bans a nym; WHICH one? Ostrom P5 (graduated
   sanctions) reads violated while the board runs binary, and the fediverse measured the cost (of 1,807
   instances only 20.1% publish a blocklist; 46.4% of those state a reason; no appeals machinery anywhere).
-* ''What is the unit of COLLECTIVE CHOICE?'' Ostrom P3 reads violated — a 2-of-3 signing quorum makes
+* ''Which unit carries COLLECTIVE CHOICE?'' Ostrom P3 reads violated — a 2-of-3 signing quorum makes
   operators rule-takers. Keyed to vessels, a human with five vessels casts five votes. Keyed to the Handle,
   only public faces vote. Keyed to the fleet, membership must prove WITHOUT linking the dyads.
 
@@ -244,8 +246,8 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
   ''CONTRACT to one operator'' — bilateral, leased, attenuating, held and presented by its holder — never a
   list of who counts. Verification runs peer-local against the Nexus key, so no node needs the set and no
   writer decides what //current// means. ''A list IS a global now'', and the field's own case makes the cost
-  concrete: the one identity layer that stayed single-writer for years against stated intent was the one
-  built as a DIRECTORY. Revocation without a list rides ''non-renewal of the lease'' plus the append-only
+  concrete: the one identity layer built as a DIRECTORY stayed single-writer for years against stated
+  intent. Revocation without a list rides ''non-renewal of the lease'' plus the append-only
   witness of #5, which stays monotone — a revocation not yet seen means an island not yet synced, which reads
   honest, where a stale list silently reads as the wrong answer.
 
@@ -261,8 +263,8 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
   equivalent capability ''as a new place.''
 
   ''THE ISOMORPHISM CARRIES IT.'' A fork that leaves the leased resources falls back to a ''local rhizome''
-  exactly as a vessel-veil identity falls back to the ''anon floor'' — same law, two planes. Nothing is seized
-  and nothing is destroyed; the departing party simply arrives holding what it brought, which reads as the
+  exactly as a vessel-veil identity falls back to the ''anon floor'' — same law, two planes. Nobody seizes anything
+  and nothing gets destroyed; the departing party simply arrives holding what it brought, which reads as the
   honest reading of leaving rather than a penalty imposed on it. The lease chain stands pono: a leased resource
   never becomes a possession, so losing it on the way out costs a capability and never a self.
 
@@ -298,6 +300,6 @@ boundary (#/1) holds absolutely: ''lease the address, never the self.''
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gTFkHuAXQzbaFM2FoOwm9GoXoELEQggxOlLpY6g-NY4
+<<^ code="&#x0003;">>ni:///sha-256;xKndZyoTbrbeVmTHGwPu9xv5VnF-AL_1WPURjTEnTDU
 
 <<^ code="&#x0004;" -> to="?">>
