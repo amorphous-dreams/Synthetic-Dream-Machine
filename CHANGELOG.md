@@ -74,6 +74,9 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **Every boot rests at the floor.** Nothing stored lifts it; `lares vault unlock` raises the vessel.
 - **Founding seals its archives under the vessel key.** The keyhive archive, each face's veil archive and each face's anchors rest sealed from the first write. `lares vault export` no longer exists.
 - **The house runs `@keyhive/keyhive` 0.3.0-alpha.1.** A vessel founded on an earlier Keyhive re-founds.
+- **A Nexus convergence secret answers to its Nexus and its epoch.** The seat's act mints it, named by (Nexus AID, epochCid); no boot mints one. `nexus seal seat` and `nexus seal rotate` need the vessel key and report `keyring: { minted }`, and `cad-seal` answers `nexusAid` and `epochCid` and refuses on an unseated vessel. A vessel founded on the earlier keyring shape re-founds.
+- **The keyring, the follow graph, the handle-book and the admit rows rest sealed under the vessel key.** A missing or unreadable keyring row refuses by name. A delivered keyring joins by scoped name and refuses different bytes under a held name. The `circle` and `persona admit` verbs need the key.
+- **An admit hop survives a death midway.** A hop records its admission before it drops its pending entry, so it resumes from the same carriage, and an offer completes one grant: the first that verifies against it.
 - **A browser vessel keeps its keyhive Archives in its keystore.** A browser founded earlier refuses to boot until its site data gets cleared.
 - **Stores written before immutable values do not read.** Found anew; the genesis seed itself carries on unchanged.
 - **A capability layer takes a write by name alone.** The WHO board and the mesh palace refuse a bagless write.
