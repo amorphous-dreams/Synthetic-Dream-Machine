@@ -21,8 +21,6 @@ import { hex, hexToBytes } from "../src/crypto.js";
 const seedOf = (n: number) => new Uint8Array(32).fill(n);
 const signer = (s: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, s).then(hex);
 const pubOf  = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
-const verify = (b: Uint8Array, sig: string, signerHex: string) =>
-  ed.verifyAsync(hexToBytes(sig), b, hexToBytes(signerHex)).catch(() => false);
 
 /** A build the pipeline would emit — every digest present, nobody standing behind it yet. */
 const BUILD: Omit<PluginBuildAttestation, "builder"> = {
@@ -41,19 +39,19 @@ describe("the signature names who stood behind the build", () => {
   test("★ a signed attestation reads back its signer, OFFLINE — no reachable builder, no clock ★", async () => {
     const key = await pubOf(seedOf(7));
     const signed = await signPluginAttestation(BUILD, key, signer(seedOf(7)));
-    expect(await verifyPluginAttestation(signed, verify)).toEqual({ signer: key });
+    expect(await verifyPluginAttestation(signed)).toEqual({ signer: key });
   });
 
   test("★ UNSIGNED reads as its own answer, never as invalid ★", async () => {
     // An unsigned build still carries usable diff handles. Folding it into "forged" would make the
     // reader's policy unstatable — they could no longer tell "nobody signed" from "someone lied".
-    expect(await verifyPluginAttestation(BUILD as PluginBuildAttestation, verify)).toBe("unsigned");
+    expect(await verifyPluginAttestation(BUILD as PluginBuildAttestation)).toBe("unsigned");
   });
 
   test("a FORGED signature reads forged — and the read still returns rather than throwing", async () => {
     const key = await pubOf(seedOf(7));
     const forged: PluginBuildAttestation = { ...BUILD, builder: { signer: key, sig: "00".repeat(64) } };
-    expect(await verifyPluginAttestation(forged, verify)).toBe("forged");
+    expect(await verifyPluginAttestation(forged)).toBe("forged");
   });
 
   test("★ a TAMPERED digest breaks the signature — the hashes ride INSIDE the signed bytes ★", async () => {
@@ -61,7 +59,7 @@ describe("the signature names who stood behind the build", () => {
     // preimage. A signature beside the digests rather than over them would certify nothing.
     const signed = await signPluginAttestation(BUILD, await pubOf(seedOf(7)), signer(seedOf(7)));
     const tampered: PluginBuildAttestation = { ...signed, pluginJsonSha256: "d".repeat(64) };
-    expect(await verifyPluginAttestation(tampered, verify)).toBe("forged");
+    expect(await verifyPluginAttestation(tampered)).toBe("forged");
   });
 
   test("a signature by ANOTHER key reads forged — the signer field never speaks for itself", async () => {
@@ -69,7 +67,7 @@ describe("the signature names who stood behind the build", () => {
     const swapped: PluginBuildAttestation = {
       ...signed, builder: { signer: await pubOf(seedOf(9)), sig: signed.builder!.sig },
     };
-    expect(await verifyPluginAttestation(swapped, verify)).toBe("forged");
+    expect(await verifyPluginAttestation(swapped)).toBe("forged");
   });
 });
 
@@ -133,8 +131,9 @@ describe("what the genesis build reads off an attestation", () => {
     // here would add a literal the function never consults — and the one I first typed was both wrong and
     // shaped like a domain, which the registry witness caught. A fixture states what the code reads.
     const unsigned = { pluginJsonSha256: "aa", moduleCount: 1, moduleManifestSha256: "bb" };
-    await expect(verifyPluginAttestation(unsigned as never, async () => true)).resolves.toBe("unsigned");
+    await expect(verifyPluginAttestation(unsigned as never)).resolves.toBe("unsigned");
+    // A builder whose key and signature name nothing the Ed25519 door reads: forged, reported, never thrown.
     const signed = { ...unsigned, builder: { signer: "cc", sig: "dd" } };
-    await expect(verifyPluginAttestation(signed as never, async () => false)).resolves.toBe("forged");
+    await expect(verifyPluginAttestation(signed as never)).resolves.toBe("forged");
   });
 });

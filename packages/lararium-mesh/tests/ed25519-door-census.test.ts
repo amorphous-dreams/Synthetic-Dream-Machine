@@ -1,8 +1,8 @@
 /**
  * ed25519-door-census.test — no source file verifies an Ed25519 signature but through the one door.
  *
- * The census DERIVES its ground: every source file under `packages/<package>/src`, `tools/` and the sensorium's
- * Python scripts. A file reads red when it
+ * The census DERIVES its ground: every source file under `packages/<package>/src` and `packages/<package>/scripts`,
+ * `tools/` and the sensorium's Python scripts. A file reads red when it
  *   · calls `verify` or `verifyAsync` on a binding it imported from a curve library (`@noble/ed25519`,
  *     `@noble/curves`), or imports either name from one;
  *   · loads a curve library dynamically and calls any `.verify(` / `.verifyAsync(`;
@@ -85,8 +85,10 @@ function censusGround(): string[] {
   const code = (name: string): boolean => /\.(?:ts|tsx|mts|js|mjs|cjs|sh)$/.test(name) && !/\.test\.[cm]?[jt]sx?$/.test(name) && !name.endsWith(".d.ts");
   const files: string[] = [];
   for (const pkg of readdirSync(join(REPO, "packages"))) {
-    const src = join(REPO, "packages", pkg, "src");
-    try { if (statSync(src).isDirectory()) walk(src, code, files); } catch { /* a package with no src holds no source */ }
+    for (const part of ["src", "scripts"]) {
+      const dir = join(REPO, "packages", pkg, part);
+      try { if (statSync(dir).isDirectory()) walk(dir, code, files); } catch { /* a package with no such directory holds no source there */ }
+    }
   }
   walk(join(REPO, "tools"), code, files);
   walk(join(REPO, "packages", "lararium-sensorium", "scripts"), (name) => name.endsWith(".py"), files);
@@ -127,6 +129,36 @@ describe("the census of Ed25519 verifiers", () => {
     for (const f of callers) {
       expect(readFileSync(join(REPO, f), "utf8"), f).toMatch(/import\s*\{[^}]*\bverifyEd25519\b[^}]*\}\s*from\s*["'](?:\.\/ed25519-door\.js|@lararium\/mesh)["']/);
     }
+  });
+});
+
+/**
+ * A VERIFIER HANDED IN verifies as leniently as its caller chose. No function takes a signature verifier as a
+ * parameter where it can call the door itself. The files below still take one, each fed today by a caller
+ * that hands in the door; the list may only SHRINK: a new file reads red, and so does a name that no longer
+ * takes one.
+ */
+const STILL_TAKES_A_VERIFIER: readonly string[] = [
+  "packages/lararium-keyhive/src/keyhive-identity-slot.ts",   // a token SEAL (sign and verify under one held key): no public key rides the call
+  "packages/lararium-mesh/src/cabal-invite.ts",
+  "packages/lararium-mesh/src/edge-kapae.ts",
+  "packages/lararium-mesh/src/raise-challenge.ts",
+  "packages/lararium-mesh/src/vouch-board.ts",
+  "packages/lararium-node/src/realm-admission.ts",
+  "packages/lararium-node/src/vessel-raise.ts",
+];
+/** A parameter or option named `verify` whose type takes signature-shaped arguments (bytes and hex strings). */
+const TAKES_A_VERIFIER = /\bverify\??:\s*\(\s*\w+:\s*(?:Uint8Array|string)\b[^)]*\)\s*=>\s*(?:boolean|Promise<boolean>)/;
+
+describe("no verifier rides in as a parameter", () => {
+  test("★ the files that still take a signature verifier stand exactly as listed, and the list only shrinks ★", () => {
+    const takers = censusGround().filter((f) => TAKES_A_VERIFIER.test(readFileSync(join(REPO, f), "utf8")));
+    expect(takers).toEqual([...STILL_TAKES_A_VERIFIER].sort());
+  });
+  test("CONTROL: a planted verifier parameter reads, and a door call does not", () => {
+    expect(TAKES_A_VERIFIER.test("export function f(edge: Edge, verify: (bytes: Uint8Array, sigHex: string, did: string) => Promise<boolean>) {}")).toBe(true);
+    expect(TAKES_A_VERIFIER.test("readonly verify: (nym: string, bytes: Uint8Array, sig: string) => boolean | Promise<boolean>;")).toBe(true);
+    expect(TAKES_A_VERIFIER.test("export function f(edge: Edge) { return verifyEd25519(edge.sig, bytes, edge.signer); }")).toBe(false);
   });
 });
 

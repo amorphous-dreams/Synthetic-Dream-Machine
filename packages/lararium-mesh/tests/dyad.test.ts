@@ -31,8 +31,6 @@ const ROOT_MASKED_SEED = new Uint8Array(32).fill(8);
 let GROUP_ME = "", GROUP_MASKED = "";
 
 const bsigner = (seed: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, seed).then(hex);
-const bverify = (b: Uint8Array, sig: string, did: string) =>
-  ed.verifyAsync(hexToBytes(sig), b, hexToBytes(did)).catch(() => false);
 
 /** A dyad carrying a REAL edge signed by the named root. */
 async function bound(vessel: string, veil: string, rootSeed: Uint8Array, epochCid = "epoch0-aaa") {
@@ -165,7 +163,7 @@ describe("the fleet closes over a PRESENTED EDGE, never over a pointer", () => {
   test("★ the group gathers locally-unique dyads across vessels — the bridge the infra layer refuses ★", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const away = await bound(VESSEL_B, VEIL_AWAY, ROOT_ME_SEED);
-    const stood = await verifiedFleetOfGroup([work, away], GROUP_ME, bverify);
+    const stood = await verifiedFleetOfGroup([work, away], GROUP_ME);
     expect(stood).toHaveLength(2);
     expect(new Set(stood.map((d) => d.ref.veilDid))).toEqual(new Set([VEIL_WORK, VEIL_AWAY]));
   });
@@ -178,44 +176,48 @@ describe("the fleet closes over a PRESENTED EDGE, never over a pointer", () => {
       await signDyadBinding(ref, GROUP_ME, "epoch0-aaa", bsigner(ROOT_MASKED_SEED)));
 
     expect(fleetOfGroup([honest, forged], GROUP_ME)).toHaveLength(2);                       // the CLAIM passes …
-    expect(await verifiedFleetOfGroup([honest, forged], GROUP_ME, bverify)).toHaveLength(1); // … the EDGE does not
+    expect(await verifiedFleetOfGroup([honest, forged], GROUP_ME)).toHaveLength(1); // … the EDGE does not
   });
 
   test("an edge cannot be LIFTED onto another relationship — it covers BOTH ends", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const lifted = rec(VESSEL_B, VEIL_AWAY, work.binding);   // same edge, different dyad
-    expect(await verifiedFleetOfGroup([lifted], GROUP_ME, bverify)).toEqual([]);
+    expect(await verifiedFleetOfGroup([lifted], GROUP_ME)).toEqual([]);
   });
 
   test("a stale EPOCH still verifies as a signature — scoping stays the caller's, and stays positive", async () => {
     const old = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED, "epoch0-aaa");
-    expect(await verifiedFleetOfGroup([old], GROUP_ME, bverify)).toHaveLength(1);
+    expect(await verifiedFleetOfGroup([old], GROUP_ME)).toHaveLength(1);
     expect(old.binding!.epochCid).toBe("epoch0-aaa");   // the caller compares against its own head
   });
 
   test("a second root on the SAME vessel stays a separate fleet", async () => {
     const work   = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const masked = await bound(VESSEL_A, VEIL_PLAY, ROOT_MASKED_SEED);
-    expect(await verifiedFleetOfGroup([work, masked], GROUP_MASKED, bverify)).toHaveLength(1);
+    expect(await verifiedFleetOfGroup([work, masked], GROUP_MASKED)).toHaveLength(1);
   });
 
   test("an UNBOUND dyad joins no fleet — absence never reads as default membership", async () => {
     const loose = rec(VESSEL_B, VEIL_PLAY);
     expect(loose.binding).toBeNull();
-    expect(await verifiedFleetOfGroup([loose], GROUP_ME, bverify)).toEqual([]);
-    expect(await verifiedFleetOfGroup([loose], GROUP_ME, bverify)).toEqual([]);
+    expect(await verifiedFleetOfGroup([loose], GROUP_ME)).toEqual([]);
+    expect(await verifiedFleetOfGroup([loose], GROUP_ME)).toEqual([]);
   });
 
-  test("a verify that THROWS reads as refusal — an unreachable check never WIDENS a fleet", async () => {
+  test("a torn edge reads as refusal — nothing unreadable ever WIDENS a fleet", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
-    const boom = async () => { throw new Error("unreachable"); };
-    await expect(verifiedFleetOfGroup([work], GROUP_ME, boom)).resolves.toEqual([]);
+    // The door never throws: a signature that names no bytes, and a signer that names no key, each read false.
+    const tornSig    = { ...work, binding: { ...work.binding!, sig: "not-hex" } };
+    const tornSigner = { ...work, binding: { ...work.binding!, signer: "zz".repeat(32) } };
+    await expect(verifiedFleetOfGroup([tornSig], GROUP_ME)).resolves.toEqual([]);
+    await expect(verifiedFleetOfGroup([tornSigner], GROUP_ME)).resolves.toEqual([]);
+    await expect(verifiedFleetOfGroup([work], GROUP_ME)).resolves.toHaveLength(1);       // CONTROL
   });
 
   test("fleetSpan counts DISTINCT vessels — the reach that makes leaving cheap", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const away = await bound(VESSEL_B, VEIL_AWAY, ROOT_ME_SEED);
-    expect(fleetSpan(await verifiedFleetOfGroup([work, away], GROUP_ME, bverify))).toBe(2);
+    expect(fleetSpan(await verifiedFleetOfGroup([work, away], GROUP_ME))).toBe(2);
   });
 
   // One primitive now signs both this and the fleet-proof, so the DOMAIN carries the separation an edge
@@ -298,7 +300,7 @@ describe("membership binds at the DYAD grain", () => {
   test("★ two faces on one vessel gather INDEPENDENTLY — one may come, the other stay behind ★", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);          // the root signed this one
     const play = rec(VESSEL_A, VEIL_PLAY);                 // and never signed this one
-    const stood = await verifiedFleetOfGroup([work, play], GROUP_ME, bverify);
+    const stood = await verifiedFleetOfGroup([work, play], GROUP_ME);
     expect(stood.map((d) => d.ref.veilDid)).toEqual([VEIL_WORK]);
   });
 });
@@ -309,11 +311,11 @@ describe("a kāpae over the relationship stands aside a VALID edge", () => {
     const away = await bound(VESSEL_B, VEIL_AWAY, ROOT_ME_SEED);
 
     // no shadow → both stand
-    expect(await verifiedFleetOfGroup([work, away], GROUP_ME, bverify)).toHaveLength(2);
+    expect(await verifiedFleetOfGroup([work, away], GROUP_ME)).toHaveLength(2);
 
     // the marker goes up over ONE relationship; its signature stays as valid as it ever was
     const shadowed = new Set([work.dyadId]);
-    const stood = await verifiedFleetOfGroup([work, away], GROUP_ME, bverify, shadowed);
+    const stood = await verifiedFleetOfGroup([work, away], GROUP_ME, shadowed);
     expect(stood.map((d) => d.dyadId)).toEqual([away.dyadId]);
   });
 
@@ -323,13 +325,13 @@ describe("a kāpae over the relationship stands aside a VALID edge", () => {
     const work  = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const again = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED, "epoch1-bbb");   // fresh edge, later epochCid
     expect(again.dyadId).toBe(work.dyadId);                                        // same relationship
-    expect(await verifiedFleetOfGroup([again], GROUP_ME, bverify, new Set([work.dyadId]))).toEqual([]);
+    expect(await verifiedFleetOfGroup([again], GROUP_ME, new Set([work.dyadId]))).toEqual([]);
   });
 
   test("the shadow scopes to ONE relationship — a sibling on the same vessel stands untouched", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const play = await bound(VESSEL_A, VEIL_PLAY, ROOT_ME_SEED);
-    const stood = await verifiedFleetOfGroup([work, play], GROUP_ME, bverify, new Set([work.dyadId]));
+    const stood = await verifiedFleetOfGroup([work, play], GROUP_ME, new Set([work.dyadId]));
     expect(stood.map((d) => d.ref.veilDid)).toEqual([VEIL_PLAY]);
   });
 });

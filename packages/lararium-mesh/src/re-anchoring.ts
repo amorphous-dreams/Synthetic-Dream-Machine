@@ -43,6 +43,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/re-anchoring-record
  */
 
+import { verifyEdgeSignature } from "./delegation-edge.js";
 import { RE_ANCHORING_DOMAIN } from "./domains.js";
 import type { LarDoc } from "./base-doc.js";
 import { tiddlerText } from "./base-doc.js";
@@ -196,14 +197,10 @@ export function reAnchoringsFromBoard(doc: LarDoc | undefined | null): ReAnchori
  * A mark that fails its signature DROPS rather than throwing: a forged attestation must never make a
  * re-anchoring read stronger, and a torn one must never make it unreadable.
  */
-export async function verifiedAttestors(
-  r: ReAnchoring,
-  verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
-): Promise<string[]> {
+export async function verifiedAttestors(r: ReAnchoring): Promise<string[]> {
   const bytes = reAnchoringBytes(r);
-  const verdicts = await Promise.all(
-    r.attestors.map((a) => verify(bytes, a.sig, a.attestor).catch(() => false)),
-  );
+  // Each mark reads through the house's one Ed25519 door; no caller hands in a verifier.
+  const verdicts = r.attestors.map((a) => verifyEdgeSignature(bytes, a.sig, a.attestor));
   const held: string[] = [];
   for (let i = 0; i < r.attestors.length; i++) if (verdicts[i]) held.push(r.attestors[i]!.attestor);
   return [...new Set(held)];                      // one attestor marking twice counts once
@@ -225,13 +222,12 @@ export async function dwellingHistory(
   doc: LarDoc | undefined | null,
   dweller: string,
   realm: string,
-  verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
   epochOrder: (epochCid: string) => number | null,
 ): Promise<{ epochCid: string; attestors: string[] }[]> {
   const mine = reAnchoringsFromBoard(doc).filter((r) => r.dweller === dweller && r.realm === realm);
   const out: { epochCid: string; attestors: string[] }[] = [];
   for (const r of mine) {
-    const attestors = await verifiedAttestors(r, verify);
+    const attestors = await verifiedAttestors(r);
     if (attestors.length > 0) out.push({ epochCid: r.epochCid, attestors });   // an unattested record deposits nothing
   }
   return out.sort((a, b) => (epochOrder(a.epochCid) ?? -1) - (epochOrder(b.epochCid) ?? -1));

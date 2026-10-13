@@ -25,6 +25,7 @@
 import { DYAD_BINDING_DOMAIN, FLEET_PROOF_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes } from "./crypto.js";
 
+import { verifyEd25519 } from "./ed25519-door.js";
 /** A signer's vouch for one subject, at one epochCid. The only delegation shape this stack mints. */
 export interface DelegationEdge {
   /** "0x"+hex or raw hex — the key that signed, and all a verifier needs beside the edge itself. */
@@ -63,7 +64,7 @@ export async function signDelegationEdge(
 }
 
 /**
- * Does this edge hold? One verify, offline — no lookup, no clock, no pairing.
+ * Does this edge hold? One verify through the Ed25519 door, offline — no lookup, no clock, no pairing.
  *
  * An ABSENT edge reads false without reading dishonest: a subject that claims no binding fails no claim.
  * A caller separates "unbound" from "refuted" by checking for the edge itself.
@@ -72,11 +73,18 @@ export async function verifyDelegationEdge(
   domain: string,
   subject: Readonly<Record<string, string>>,
   edge: DelegationEdge | null | undefined,
-  verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
 ): Promise<boolean> {
   if (!edge?.signer || !edge.sig || !edge.epochCid) return false;
-  return verify(delegationBytes(domain, subject, edge.signer, edge.epochCid), edge.sig, edge.signer)
-    .catch(() => false);
+  return verifyEdgeSignature(delegationBytes(domain, subject, edge.signer, edge.epochCid), edge.sig, edge.signer);
+}
+
+/**
+ * One signature under a signer's key, read through the house's one Ed25519 door. The signer rides bare
+ * lower-case hex or as a `0x` did. No caller hands in a verifier: a function handed its verifier verifies as
+ * leniently as its caller chose. Never throws.
+ */
+export function verifyEdgeSignature(bytes: Uint8Array, sigHex: string, signer: string): boolean {
+  return typeof signer === "string" && verifyEd25519(sigHex, bytes, signer.replace(/^0x/, ""));
 }
 
 /** The domains this stack mints edges under. A new use adds a string here, never a second primitive. */

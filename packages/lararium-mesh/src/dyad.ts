@@ -239,13 +239,12 @@ export function fleetOfGroup(dyads: readonly DyadRecord[], groupRootDid: LarDid)
  * co-members hold the wider graph. The membership-CRDT family cannot offer that split — it buys convergence
  * by replicating the op graph to everyone, handing each member the roster and the device-to-human linkage.
  *
- * A verify that THROWS reads as refusal rather than as an exception: an unreachable check must never WIDEN a
- * fleet, so absence of an answer lands closed.
+ * Each binding reads through the house's one Ed25519 door, which never throws: a torn edge reads as refusal,
+ * so nothing unreadable ever WIDENS a fleet.
  */
 export async function verifiedFleetOfGroup(
   dyads: readonly DyadRecord[],
   groupRootDid: LarDid,
-  verify: (bytes: Uint8Array, sigHex: string, signerDid: LarDid) => Promise<boolean>,
   shadowed: ReadonlySet<string> = new Set(),
 ): Promise<DyadRecord[]> {
   // A SHADOWED relationship stands aside before any signature runs. The edge it presents may verify
@@ -253,7 +252,7 @@ export async function verifiedFleetOfGroup(
   // an expiry. Checking here rather than after keeps a raised marker unconditional.
   const claimed = fleetOfGroup(dyads, groupRootDid).filter((d) => !shadowed.has(d.dyadId));
   const verdicts = await Promise.all(claimed.map((d) =>
-    verifyDelegationEdge(DELEGATION_DOMAIN.dyadBinding, dyadBindingSubject(d.ref), d.binding, verify)));
+    verifyDelegationEdge(DELEGATION_DOMAIN.dyadBinding, dyadBindingSubject(d.ref), d.binding)));
   return claimed.filter((_, i) => verdicts[i] === true);
 }
 

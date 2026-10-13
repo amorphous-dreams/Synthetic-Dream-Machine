@@ -20,7 +20,8 @@ import type { LarSessionMsg, LeafIdentity } from "../src/auth-wire.js";
 const AID = "epoch0-" + "a".repeat(64);
 const GATE = "ee".repeat(32);
 const HEARTH = new Uint8Array(32).fill(51);
-const LEAF = { verifyingKey: "c".repeat(64), seed: new Uint8Array(32).fill(52) };
+// A REAL verifying key (RFC 8032 §7.1): a grant names only a walker leaf the Ed25519 door accepts.
+const LEAF = { verifyingKey: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", seed: new Uint8Array(32).fill(52) };
 const BASE: LeafIdentity = { contactCard: "d".repeat(64), peerPubKey: "d".repeat(64), sign: async () => "00".repeat(64) };
 
 function memoryStore(): WalkStore & { map: Map<string, WalkRecord> } {

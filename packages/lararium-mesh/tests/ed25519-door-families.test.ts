@@ -18,7 +18,7 @@ import * as ed from "@noble/ed25519";
 import { ed25519 as curveEd } from "@noble/curves/ed25519.js";
 import { hex, hexToBytes, sha256Hex, utf8Bytes, defaultCryptoProvider } from "../src/crypto.js";
 import { acceptEd25519Key, readEd25519 } from "../src/ed25519-door.js";
-import { DEVICE_DELEGATION_DOMAIN, HOSTING_INTRODUCTION_DOMAIN, ORACLE_POINTER_DOMAIN } from "../src/domains.js";
+import { DEVICE_DELEGATION_DOMAIN, DYAD_ID_DOMAIN, HOSTING_INTRODUCTION_DOMAIN, ORACLE_POINTER_DOMAIN, RE_ANCHORING_DOMAIN } from "../src/domains.js";
 import { realmBagRegistrationCounts, signRealmBagRegistration } from "../src/realm-bag.js";
 import {
   carriageEntryCounts, signCarriageContract, signCarriageQuorum, signCarrierContract, verifyCarriageConsent, verifyCarrierContract,
@@ -36,10 +36,13 @@ import { attestAndRotate, provisionThresholdRecoveryAtFounding } from "../src/re
 import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
 import { inceptVesselKel, verifyVesselKelInception } from "../src/vessel-kel.js";
 import { handleKeyDigestOf, handleKeyFault, mintHandleInception, mintHandleRotation, verifyHandleKel, verifyHandleKelFull } from "../src/handle-kel.js";
-import { signHandleCard, verifyHandleCard } from "../src/handle-card.js";
+import { signFleetProof, signHandleCard, verifyFleetProof, verifyHandleCard } from "../src/handle-card.js";
+import { dyadId, signDyadBinding, verifiedFleetOfGroup, type DyadRecord, type DyadRef } from "../src/dyad.js";
+import { signAttestation, verifiedAttestors } from "../src/re-anchoring.js";
+import { signPluginAttestation, verifyPluginAttestation } from "../src/genesis-doc.js";
 import { buildDeviceDelegation, verifyDeviceDelegation, type DeviceDelegationTiddler } from "../src/device-delegation.js";
 import { mintEnrollmentOffer, mintJoinAck, openPersonaGrant, sealPersonaGrant, verifyJoinAck, type PersonaRef } from "../src/persona-admit.js";
-import { mintHostingAct, verifyHostingAct } from "../src/hosting.js";
+import { grantVerifiesAt, hostingEpochOf, issueGrant, mintHostingAct, verifyHostingAct } from "../src/hosting.js";
 import { sealGroupSecret } from "../src/persona-group-secret.js";
 import { authProofBytes, ed25519VerifyHex, verifyAuthProof } from "../src/auth-wire.js";
 import { introductionBytes, newcomerKeyOf, signIntroduction, verifyIntroduction, type IntroductionFields } from "../src/introduction.js";
@@ -358,6 +361,43 @@ describe("a cold key committed for a seat (seatNextDigest)", () => {
   });
 });
 
+// ── NO VERIFIER RIDES IN AS A PARAMETER ──────────────────────────────────────────────────────────────────────
+// These four once took `verify` from their caller, and verified as leniently as that caller chose. Each now
+// calls the door itself, so the torsion hand stands nowhere whoever calls.
+bothHands("fleet proof (verifyFleetProof)", async (root) => {
+  const face = await honestHand(81), did = `0x${face.key}`;
+  const chain = [mintHandleInception(did, did, "ab".repeat(32), `hkeynext-${"cd".repeat(32)}`)];
+  const fleetProof = await signFleetProof({ nym: chain[0]!.prefix, rootDid: root.key, epochCid: EPOCH }, root.sign);
+  const card = await signHandleCard({ nym: chain[0]!.prefix, chain, glamour: "FastJack", parents: [], standing: null, fleetProof }, face.sign);
+  return verifyFleetProof(card);
+});
+
+bothHands("dyad binding (verifiedFleetOfGroup)", async (root) => {
+  const ref = { vesselDid: `0x${(await honestHand(82)).key}`, veilDid: `0x${(await honestHand(83)).key}` } as DyadRef;
+  const groupRoot = `0x${root.key}` as DyadRef["veilDid"];
+  const binding = await signDyadBinding(ref, groupRoot, EPOCH, root.sign);
+  const record = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(ref), ref, edge: null, binding } as unknown as DyadRecord;
+  return (await verifiedFleetOfGroup([record], groupRoot)).length === 1;
+});
+
+bothHands("re-anchoring attestor (verifiedAttestors)", async (attestor) => {
+  const subject = { kind: RE_ANCHORING_DOMAIN, dweller: "dweller-1", realm: "realm-1", epochCid: EPOCH } as const;
+  const mark = await signAttestation(subject, attestor.key, attestor.sign);
+  return (await verifiedAttestors({ ...subject, attestors: [mark] })).length === 1;
+});
+
+bothHands("plugin build attestation (verifyPluginAttestation)", async (builder) => {
+  const build = {
+    format: "lararium-tw5-plugin-build/v1", canonicalTitle: "$:/plugins/lares/memetic-wikitext",
+    moduleManifestPath: "dist-plugin/module-manifest.json", moduleManifestSha256: "a".repeat(64),
+    packTranscriptPath: "dist-plugin/pack-transcript.json", packTranscriptSha256: "b".repeat(64),
+    moduleCount: 23, packedTiddlerCount: 115, pluginJsonSha256: "c".repeat(64),
+  };
+  const read = await verifyPluginAttestation(await signPluginAttestation(build as never, builder.key, builder.sign));
+  if (read === "unsigned") throw new Error("the attestation lost its builder");
+  return read !== "forged";
+});
+
 // ── HOSTING ──────────────────────────────────────────────────────────────────────────────────────────────────
 describe("hosting act (verifyHostingAct)", () => {
   const act = async () => (await mintHostingAct({ leafSeed: seed(5), nexusAid: EPOCH, prev: null, cap: 2 })).act;
@@ -391,6 +431,27 @@ describe("an introduction's newcomer key (signIntroduction, verifyIntroduction)"
     const bytes = introductionBytes({ ...fields, newcomerKey });
     const wire = { kind: HOSTING_INTRODUCTION_DOMAIN, ...fields, newcomerKey, signature: await guest.sign(bytes) };
     expect(verifyIntroduction(wire, live)).toEqual({ ok: false, refusal: "introduction-newcomer-key-refused" });
+  });
+});
+
+describe("a hosting grant's walker leaf (issueGrant)", () => {
+  const epochOf = async () => {
+    const minted = await mintHostingAct({ leafSeed: seed(5), nexusAid: EPOCH, prev: null, cap: 2 });
+    const epoch = hostingEpochOf(minted.act, seed(5));
+    if (!epoch) throw new Error("the hearth's own seed derives its epoch");
+    return epoch;
+  };
+  test("CONTROL: a grant names a lawful walker leaf and verifies at its epoch", async () => {
+    const epoch = await epochOf();
+    const grant = issueGrant(epoch, { leaf: (await honestHand(91)).key, lineage: "ab".repeat(32), survived: 0, from: "host" });
+    expect(grantVerifiesAt(epoch, grant)).toBe(true);
+  });
+  test("a leaf the door refuses earns no grant, by name, and a grant naming one verifies nowhere", async () => {
+    const epoch = await epochOf();
+    expect(() => issueGrant(epoch, { leaf: IDENTITY_KEY, lineage: "ab".repeat(32), survived: 0, from: "host" })).toThrow(/hosting-grant-leaf-refused.*key-small-order/);
+    expect(() => issueGrant(epoch, { leaf: MIXED_ORDER_KEY, lineage: "ab".repeat(32), survived: 0, from: "walker" })).toThrow(/hosting-grant-leaf-refused.*key-mixed-order/);
+    const lawful = issueGrant(epoch, { leaf: (await honestHand(91)).key, lineage: "ab".repeat(32), survived: 0, from: "host" });
+    expect(grantVerifiesAt(epoch, { ...lawful, leaf: IDENTITY_KEY })).toBe(false);
   });
 });
 

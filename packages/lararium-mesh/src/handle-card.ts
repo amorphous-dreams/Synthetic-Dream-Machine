@@ -133,17 +133,13 @@ export function signFleetProof(
 }
 
 /**
- * Does this card PROVE it speaks for the fleet it names? One Ed25519 verify beside the card's own.
+ * Does this card PROVE it speaks for the fleet it names? One Ed25519 verify, through the door, beside the card's own.
  *
  * A card carrying NO proof reads false without reading dishonest: an unbound face claims no fleet, so it
  * fails no claim. A caller distinguishes unbound from refuted by checking `fleetProof` for absence.
  */
-export function verifyFleetProof(
-  card: HandleCard,
-  verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
-): Promise<boolean> {
-  return verifyDelegationEdge(
-    DELEGATION_DOMAIN.fleetProof, fleetProofSubject(card.nym), card.fleetProof, verify);
+export function verifyFleetProof(card: HandleCard): Promise<boolean> {
+  return verifyDelegationEdge(DELEGATION_DOMAIN.fleetProof, fleetProofSubject(card.nym), card.fleetProof);
 }
 
 /** Sign a handle-card. The caller supplies the handle's own signer; this module holds no key. */

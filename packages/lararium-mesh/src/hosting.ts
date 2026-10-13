@@ -64,7 +64,7 @@ import {
 } from "./domains.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { verifyEd25519 } from "./ed25519-door.js";
+import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 import { storedLarRecord } from "./stored-record.js";
 
 const KEY_RE   = /^[0-9a-f]{64}$/;
@@ -322,6 +322,10 @@ export function issueGrant(epoch: HostingEpoch, parts: {
   readonly leaf: string; readonly lineage: string; readonly survived: number; readonly from: "host" | "walker";
 }): HostingGrant {
   const nexusAid = normAid(epoch.act.nexusAid);
+  // The walker's leaf enters a durable record HERE: it proves over every socket the grant rides, so a leaf the
+  // Ed25519 door refuses (a key anyone signs for, or nobody) earns no grant. `grantVerifiesAt` reads the same refusal as false.
+  const leaf = acceptEd25519Key(typeof parts.leaf === "string" ? parts.leaf.toLowerCase() : parts.leaf);
+  if (!leaf.ok) throw new Error(`hosting-grant-leaf-refused — the walker leaf refuses at the Ed25519 door (${leaf.refusal})`);
   const fields = { nexusAid, leaf: parts.leaf.toLowerCase(), lineage: parts.lineage.toLowerCase(), survived: parts.survived, from: parts.from };
   const tag = hex(ristretto255_oprf.poprf(grantInfo(nexusAid, epoch.cid)).evaluate(epoch.secretKey, grantInput(fields)));
   return { ...fields, epoch: epoch.cid, tag };

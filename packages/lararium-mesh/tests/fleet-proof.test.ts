@@ -29,8 +29,6 @@ const EPOCH = "epoch0-abc123";
 
 const signer = (seed: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, seed).then(hex);
 const pubOf  = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-const verify = (b: Uint8Array, sig: string, did: string) =>
-  ed.verifyAsync(hexToBytes(sig), b, hexToBytes(did)).catch(() => false);
 const RECOVERY = "ab".repeat(32);
 function chainOf(pub: string): HandleKelEvent[] { const d = `0x${pub}`; return [mintHandleInception(d, d, RECOVERY, `hkeynext-${"cd".repeat(32)}`)]; }
 /** The FACE's STABLE nym — its handle-KEL prefix (the fleet-proof binds root→this identifier). */
@@ -51,15 +49,15 @@ describe("the edge turns a convention into a proof", () => {
     const root = await pubOf(ROOT_SEED);
     const c = await card({ fleetProof: await signFleetProof({ nym, rootDid: root, epochCid: EPOCH }, signer(ROOT_SEED)) });
 
-    expect(await verifyFleetProof(c, verify)).toBe(true);
-    expect((await verifyHandleCard(c, verify)).ok).toBe(true);   // and the card still certifies itself
+    expect(await verifyFleetProof(c)).toBe(true);
+    expect((await verifyHandleCard(c)).ok).toBe(true);   // and the card still certifies itself
   });
 
   test("★ a FORGED claim on someone else's fleet REFUSES ★", async () => {
     const nym = await nymOf(FACE_SEED);
     // the forger names a root it does not hold, and signs with its own key
     const forged = await signFleetProof({ nym, rootDid: await pubOf(OTHER_ROOT), epochCid: EPOCH }, signer(FACE_SEED));
-    expect(await verifyFleetProof(await card({ fleetProof: forged }), verify)).toBe(false);
+    expect(await verifyFleetProof(await card({ fleetProof: forged }))).toBe(false);
   });
 
   test("an edge cannot be LIFTED from one card onto another — it covers the nym it speaks for", async () => {
@@ -74,7 +72,7 @@ describe("the edge turns a convention into a proof", () => {
       nym: otherChain[0]!.prefix, chain: otherChain, glamour: "FastJack", parents: [], standing: null, fleetProof: honest,
     } as Omit<HandleCard, "kind" | "sig">, signer(otherFace));
 
-    expect(await verifyFleetProof(stolen, verify)).toBe(false);
+    expect(await verifyFleetProof(stolen)).toBe(false);
   });
 
   test("an edge bound at a DIFFERENT epochCid refuses — the epochCid orders the binding", async () => {
@@ -82,15 +80,15 @@ describe("the edge turns a convention into a proof", () => {
     const root = await pubOf(ROOT_SEED);
     const p = await signFleetProof({ nym, rootDid: root, epochCid: EPOCH }, signer(ROOT_SEED));
     const moved = await card({ fleetProof: { ...p, epochCid: "epoch1-deadbeef" } });
-    expect(await verifyFleetProof(moved, verify)).toBe(false);
+    expect(await verifyFleetProof(moved)).toBe(false);
   });
 
   // An unbound face claims no fleet, so it fails no claim. A caller separates the two by reading the field.
   test("an UNBOUND card reads unbound, never refuted", async () => {
     const c = await card();
     expect(c.fleetProof).toBeNull();
-    expect(await verifyFleetProof(c, verify)).toBe(false);
-    expect((await verifyHandleCard(c, verify)).ok).toBe(true);   // still a wholly valid card
+    expect(await verifyFleetProof(c)).toBe(false);
+    expect((await verifyHandleCard(c)).ok).toBe(true);   // still a wholly valid card
   });
 
   test("the card never carries a device key or a member list — the privacy rests on absence", async () => {
@@ -107,7 +105,7 @@ describe("the edge turns a convention into a proof", () => {
 describe("identity and signature answer different questions, so they cover different bytes", () => {
   test("★ causal verification accepts without a wall-clock input ★", async () => {
     const c = await card();
-    expect((await verifyHandleCard(c, verify)).ok).toBe(true);
+    expect((await verifyHandleCard(c)).ok).toBe(true);
   });
 
   test("semantic identity is the causal act, independent of wall-clock state", async () => {

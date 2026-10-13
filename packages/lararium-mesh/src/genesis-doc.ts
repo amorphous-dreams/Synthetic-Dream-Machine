@@ -17,6 +17,7 @@ import {
   save   as automergeSave,
   load   as automergeLoad,
 } from "@automerge/automerge";
+import { verifyEd25519 } from "./ed25519-door.js";
 import { PLUGIN_ATTESTATION_DOMAIN } from "./domains.js";
 import { stringifyAutomergeUrl } from "@automerge/automerge-repo";
 import { canonicalJsonBytes } from "./crypto.js";
@@ -112,14 +113,12 @@ export type PluginAttestationRead = "unsigned" | "forged" | { readonly signer: s
  * It reports and never refuses: whether an unsigned or foreign-signed build may seed a hearth stays the
  * reader's policy, because a rule baked here would decide every operator's trust from one seat.
  */
-export async function verifyPluginAttestation(
-  a: PluginBuildAttestation,
-  verify: (bytes: Uint8Array, sigHex: string, signerHex: string) => Promise<boolean>,
-): Promise<PluginAttestationRead> {
+export async function verifyPluginAttestation(a: PluginBuildAttestation): Promise<PluginAttestationRead> {
   const builder = a.builder;
   if (!builder) return "unsigned";
   const { builder: _covered, ...covered } = a;
-  return await verify(pluginAttestationBytes(covered), builder.sig, builder.signer)
+  // The builder's signature reads through the house's one Ed25519 door; no caller hands in a verifier.
+  return verifyEd25519(builder.sig, pluginAttestationBytes(covered), builder.signer)
     ? { signer: builder.signer }
     : "forged";
 }

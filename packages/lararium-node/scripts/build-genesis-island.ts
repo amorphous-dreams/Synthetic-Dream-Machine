@@ -30,7 +30,6 @@ import {
   buildGenesisDoc,
   verifyGenesisArtifact,
   verifyPluginAttestation,
-  ed25519VerifyHex,
   type GenesisInputs,
   type GenesisPluginEntry,
   type GenesisBlobKind,
@@ -125,11 +124,8 @@ async function collectPlugins(attestations: Map<string, PluginBuildAttestation>)
       // one thing a reader could not have recomputed alone, so the build reads it and SAYS what it found.
       // It reports and never refuses: whether an unsigned or foreign-signed build may seed a hearth stays
       // the operator's policy, and a rule baked into a bake would decide every operator's trust from here.
-      // The shore's arg order reads (sig, bytes, key); the verify asks for (bytes, sig, signer). Adapted
-      // explicitly rather than passed straight — the two happen to take three strings-and-bytes each, so
-      // a direct pass would typecheck in a looser world and verify the wrong thing.
-      const provenance = await verifyPluginAttestation(att,
-        (bytes, sigHex, signerHex) => ed25519VerifyHex(sigHex, bytes, signerHex));
+      // The read verifies through the house's one Ed25519 door; no caller hands it a verifier.
+      const provenance = await verifyPluginAttestation(att);
       const stood = provenance === "unsigned" ? "UNSIGNED (no builder stood behind it)"
                   : provenance === "forged"   ? "FORGED (a builder signature that does not verify)"
                   : `signed by ${provenance.signer.slice(0, 16)}…`;
