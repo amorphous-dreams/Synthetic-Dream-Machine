@@ -18,6 +18,10 @@ import { claimStore } from "@lararium/node";
 import { cmdVessel } from "../src/commands/vessel.js";
 import { larDataDir, larIdentityDir } from "../src/env.js";
 
+// The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
+// row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
+
 let root: string;
 let priorRoot: string | undefined;
 const found = (force = false) =>

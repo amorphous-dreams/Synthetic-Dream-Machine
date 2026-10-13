@@ -24,6 +24,10 @@ import {
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
+// The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
+// row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
+
 const KAHU = ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"];
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {

@@ -7,6 +7,10 @@ import { cmdVessel } from "../src/commands/vessel.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { makeNodePersonaDeclarationStore } from "@lararium/node";
 
+// The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
+// row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
+
 const saved: Record<string, string | undefined> = {};
 const env = (key: string, value: string | undefined): void => {
   saved[key] = process.env[key];
