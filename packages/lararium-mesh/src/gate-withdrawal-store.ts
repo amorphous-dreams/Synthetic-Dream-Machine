@@ -8,9 +8,13 @@
  * The invariants:
  *   · A ROW HOLDS SIGNED EVENTS AND NOTHING ELSE. Each row carries the withdrawal events one face key
  *     signed, in one canonical encoding. No certificate, no vessel's key, no time and no count rides it.
- *   · EVERY EVENT VERIFIES AGAIN AT LOAD. A row passes the fold before the gate believes it: one event the
- *     face key never signed, one event of another face, a row past its bound or a torn row loads as NOTHING,
- *     and `onTorn` hears its name. The row proves who signed each event and never how the event arrived.
+ *   · EVERY EVENT VERIFIES AGAIN AT LOAD. A row passes the fold before the gate believes it. A row that STANDS
+ *     and does not fold (one event the face key never signed, one event of another face, a row past its bound,
+ *     bytes that read as no list) REFUSES by name (`GateMemoryRowTorn`), and `onTorn` hears its name. It never
+ *     loads as nothing: a gate that read a standing row as unlearned would start a fresh memory over it and
+ *     admit a vessel the row once denied. The asking gate falls silent, no keep writes over the row, and a
+ *     person repairs it by hand. Only a row with nothing at its name reads as nothing learned. The row proves
+ *     who signed each event and never how the event arrived.
  *   · ONE ROW PER FACE KEY, NAMED BY A DIGEST. The name binds one face key to one Nexus
  *     (`faceProofSubjectRef`). The store reads one row for one presenter and offers no walk of its rows.
  *   · IT ONLY ACCRETES. A keep joins what the row holds with what arrives, under one writer per row, and
@@ -45,12 +49,20 @@ export interface GateMemoryRows {
   write(name: string, bytes: Uint8Array): void | Promise<void>;
 }
 
-/** The most bytes one row may hold: 1024 events, each under a kilobyte. A longer row loads as nothing. */
+/** The most bytes one row may hold: 1024 events, each under a kilobyte. A longer row refuses as torn. */
 export const GATE_MEMORY_ROW_MAX_BYTES = 1 << 20;
 
+/** A row that stands and does not fold whole. The gate that asked falls silent; nothing writes over the row. */
+export class GateMemoryRowTorn extends Error {
+  override readonly name = "GateMemoryRowTorn";
+  constructor(readonly row: string) {
+    super(`the gate memory row ${row} stands and does not fold whole, so the gate reads nothing off it and writes nothing over it`);
+  }
+}
+
 /**
- * A gate's withdrawal memory over a vessel's rows. `onTorn` hears the name of a row that loaded as nothing
- * although it stood: the vessel's own log may say so; the wire never does.
+ * A gate's withdrawal memory over a vessel's rows. `onTorn` hears the name of a row that stands and refused to
+ * load: the vessel's own log may say so; the wire never does.
  */
 export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?: (name: string) => void } = {}): GateWithdrawalMemory {
   // Two adapters over one set of rows share one writer queue and one verified view: a second adapter never
@@ -69,7 +81,9 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
     const drops = dropped.get(name) ?? 0;
     const bytes = await rows.read(name);
     if (bytes === null) return null;
-    const torn = (): null => { try { opts.onTorn?.(name); } catch { /* a log never decides */ } return null; };
+    // A STANDING ROW THAT DOES NOT FOLD REFUSES. It reports its name and throws: the read answers nobody, and a
+    // keep that reads first writes nothing over what the row holds.
+    const torn = (): never => { try { opts.onTorn?.(name); } catch { /* a log never decides */ } throw new GateMemoryRowTorn(name); };
     if (!(bytes instanceof Uint8Array) || bytes.length > GATE_MEMORY_ROW_MAX_BYTES) return torn();
     let events: unknown;
     try { events = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { return torn(); }

@@ -3,7 +3,9 @@
  *
  * Proven, each beside its control:
  *   · a gate learns a denial, the process restarts, and the gate still denies the withdrawn vessel;
- *   · a row that holds one event the face key never signed, or another face's event, teaches nothing;
+ *   · a standing row that does not fold (an event the face key never signed, another face's event, no list,
+ *     a row past its bound) refuses by name, reports its name, and takes no write over it; only a face with no
+ *     row reads as nothing learned;
  *   · the store only accretes, across interleaved checks and across a restart;
  *   · one row holds at most 1024 events: a 1025th refuses, and the row keeps what it held;
  *   · a row names its face by a digest and gets read one at a time: the store offers no walk of its rows;
@@ -13,7 +15,7 @@ import { describe, expect, test } from "vitest";
 import { canonicalJsonBytes } from "../src/crypto.js";
 import { WITHDRAWAL_HISTORY_BOUND, heldWithdrawals } from "../src/face-authority.js";
 import { faceProofSubjectRef, genesisFrontier, withdrawalHead, type FaceWithdrawal } from "../src/face-proof-subjects.js";
-import { memoryRows, storedWithdrawals } from "../src/gate-withdrawal-store.js";
+import { GateMemoryRowTorn, memoryRows, storedWithdrawals } from "../src/gate-withdrawal-store.js";
 import { dial, memoryOf, presenter, sibling, world } from "./face-gate-fixture.js";
 import { chain, history, pair, withdrawal } from "./face-proof-fixture.js";
 
@@ -41,7 +43,33 @@ describe("a gate's memory rests in its own store", () => {
     expect(JSON.parse(new TextDecoder().decode(rows.peek(faceProofSubjectRef(honest.scope))!))).toEqual(events);
   });
 
-  test("RED: a forged event, another face's event, or a torn row teaches nothing", async () => {
+  test("RED: a gate over a torn row falls silent and writes nothing, where a fresh memory would admit the withdrawn vessel", async () => {
+    const rows = memoryRows();
+    const before = await world({ withdrawals: storedWithdrawals(rows) });
+    const honest = await presenter(before, "torn gate");
+    const gone = await sibling(honest, "torn gate gone");
+    honest.history = memoryOf(honest.scope, await history(honest.chain, [gone.vessel.key]));
+    await dial(before, honest);                                                            // the gate learns the denial
+    const name = faceProofSubjectRef(honest.scope);
+    // The row's bytes move: its one event gains a field its signature never covered.
+    const [event] = JSON.parse(new TextDecoder().decode(rows.peek(name)!)) as Array<Record<string, unknown>>;
+    const torn = canonicalJsonBytes([{ ...event, position: 2 }]);
+    await rows.write(name, torn);
+    const heard: string[] = [];
+    const after = await world({ withdrawals: storedWithdrawals(rows.reopen(), { onTorn: (at) => heard.push(at) }) });
+    const writes = rows.writes;
+    // The withdrawn vessel carries no denial of its own. The gate reads its own row, the row refuses, the gate says nothing.
+    expect((await dial(after, gone)).gate.outcome).toBe("silence");
+    expect((await dial(after, honest)).gate.outcome).toBe("silence");                      // nor does an honest presenter's history write over it
+    expect(heard.every((at) => at === name) && heard.length >= 2).toBe(true);
+    expect(rows.writes).toBe(writes);
+    expect(Buffer.from(rows.peek(name)!).equals(Buffer.from(torn))).toBe(true);
+    // CONTROL: the leak this closes. A gate that reads the row as nothing learned admits the withdrawn vessel.
+    const forgetful = await world({ withdrawals: storedWithdrawals(memoryRows()) });
+    expect((await dial(forgetful, gone)).gate).toEqual({ outcome: "attached", class: "contracted" });
+  });
+
+  test("RED: a standing row that does not fold refuses by name and reports, and no keep writes over it", async () => {
     const c = await chain("forged", NEXUS);
     const other = await chain("forged other", NEXUS);
     const [real] = await history(c, [(await chain("forged gone", NEXUS)).vessel.key]);
@@ -50,18 +78,27 @@ describe("a gate's memory rests in its own store", () => {
       const rows = memoryRows();
       await rows.write(name, row instanceof Uint8Array ? row : canonicalJsonBytes(row));
       const torn: string[] = [];
-      const memory = await storedWithdrawals(rows, { onTorn: (at) => torn.push(at) }).read(c.scope);
-      return memory === null ? `nothing:${torn.length}` : memory.frontier.position;
+      const store = storedWithdrawals(rows, { onTorn: (at) => torn.push(at) });
+      const memory = await Promise.resolve(store.read(c.scope)).catch((e: unknown) => e);
+      if (!(memory instanceof GateMemoryRowTorn)) return memory === null ? "nothing" : (memory as { frontier: { position: number } }).frontier.position;
+      // THE ROW STANDS UNTOUCHED: a keep of a sound memory reads the row first, refuses the same way and writes nothing.
+      const standing = Uint8Array.from(rows.peek(name)!);
+      const kept = await Promise.resolve(store.keep(memoryOf(c.scope, [real!]))).then(() => "kept", (e: unknown) => e);
+      expect(kept).toBeInstanceOf(GateMemoryRowTorn);
+      expect(rows.writes).toBe(1);                                                         // the staging write alone
+      expect(Buffer.from(rows.peek(name)!).equals(Buffer.from(standing))).toBe(true);
+      expect(memory.row).toBe(name);
+      return `refused:${torn.filter((at) => at === name).length}`;
     };
     expect(await read([real])).toBe(1);                                                    // CONTROL: the face key's own event loads
     const forged = await withdrawal(c.scope, 1, genesisFrontier(c.scope).head, other.vessel.key, other.face);   // another key signed it
-    expect(await read([forged])).toBe("nothing:1");
-    expect(await read([real, forged])).toBe("nothing:1");                                  // one bad event spoils the row
+    expect(await read([forged])).toBe("refused:2");
+    expect(await read([real, forged])).toBe("refused:2");                                  // one bad event spoils the row
     const [foreign] = await history(other, [c.vessel.key]);                                // a sound event of another face
-    expect(await read([foreign])).toBe("nothing:1");
-    expect(await read({ events: [real] })).toBe("nothing:1");
-    expect(await read(new Uint8Array([1, 2, 3]))).toBe("nothing:1");
-    expect(await read([{ ...real!, position: 2 }])).toBe("nothing:1");                      // a decoded field moved: the signature no longer covers it
+    expect(await read([foreign])).toBe("refused:2");
+    expect(await read({ events: [real] })).toBe("refused:2");
+    expect(await read(new Uint8Array([1, 2, 3]))).toBe("refused:2");
+    expect(await read([{ ...real!, position: 2 }])).toBe("refused:2");                      // a decoded field moved: the signature no longer covers it
     expect(await storedWithdrawals(memoryRows()).read(c.scope)).toBeNull();                // no row: nothing, and nothing torn
   });
 
@@ -126,9 +163,9 @@ describe("a gate's memory rests in its own store", () => {
     const kept = (await storedWithdrawals(rows.reopen()).read(c.scope))!;
     expect(heldWithdrawals(kept).length).toBe(WITHDRAWAL_HISTORY_BOUND);
     expect(heldWithdrawals(kept).some((event) => event.signature === extra.signature)).toBe(false);
-    // A row somebody wrote past the bound loads as nothing.
+    // A row somebody wrote past the bound refuses by name.
     await rows.write(faceProofSubjectRef(c.scope), canonicalJsonBytes([...full, extra]));
-    expect(await storedWithdrawals(rows.reopen()).read(c.scope)).toBeNull();
+    await expect(Promise.resolve(storedWithdrawals(rows.reopen()).read(c.scope))).rejects.toBeInstanceOf(GateMemoryRowTorn);
   }, 240_000);
 });
 
