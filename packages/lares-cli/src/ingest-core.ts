@@ -247,6 +247,66 @@ export function recordLandedCarriers(
   return recorded;
 }
 
+/**
+ * The island's per-carrier answer, as an outcome carries it.
+ *
+ * AN OUTCOME KEEPS EVERY ROW ONLY UNDER ITS AUDIT CAP. Past the cap (`boundOutcomeOutput`, `@lararium/tw5`
+ * `verb-vm.ts`) the durable outcome holds a count, a tally per decision, a hash and a short sample in place of
+ * the rows, and the CLI reads that same outcome as its answer. A whole-bag seed crosses the cap, so every reader
+ * of `carriers` reads through here: `rows` holds what the outcome names (all rows under the cap, the sample past
+ * it), and `bounded` holds the count and the tally where the rows stayed behind.
+ */
+export interface CarrierAnswer {
+  readonly rows:    ReadonlyArray<Record<string, unknown>>;
+  readonly bounded: { readonly count: number; readonly tallies: Readonly<Record<string, number>> } | null;
+}
+
+export function readCarrierAnswer(carriers: unknown): CarrierAnswer {
+  if (Array.isArray(carriers)) return { rows: carriers as Array<Record<string, unknown>>, bounded: null };
+  if (carriers !== null && typeof carriers === "object") {
+    const o = carriers as Record<string, unknown>;
+    const count = o["boundedArrayCount"];
+    const tallies = o["tallies"];
+    if (typeof count === "number" && tallies !== null && typeof tallies === "object" && !Array.isArray(tallies)) {
+      const clean: Record<string, number> = {};
+      for (const [k, v] of Object.entries(tallies as Record<string, unknown>)) if (typeof v === "number") clean[k] = v;
+      const sample = Array.isArray(o["sample"]) ? (o["sample"] as Array<Record<string, unknown>>) : [];
+      return { rows: sample, bounded: { count, tallies: clean } };
+    }
+  }
+  return { rows: [], bounded: null };
+}
+
+/** How many carriers the answer says the island refused: the tally past the cap, the rows under it. */
+export function refusedCount(answer: CarrierAnswer): number {
+  if (answer.bounded) return answer.bounded.tallies["refuse"] ?? 0;
+  return answer.rows.filter((c) => c["decision"] === "refuse").length;
+}
+
+/** The decisions that leave every submitted carrier landed or already matching (a tombstone row names no candidate). */
+const LANDED_DECISIONS: ReadonlySet<string> = new Set(["ingest", "noop", "tombstone"]);
+
+/**
+ * Record the observations an answer proves. Under the cap each row decides its own carrier
+ * (`recordLandedCarriers`). Past the cap the rows stayed behind, so the tally must prove the whole wave: every
+ * decision reads `ingest`, `noop` or `tombstone`, and the `ingest` and `noop` counts together equal the
+ * submitted candidates. Then each candidate records as landed (its file still hashed as it stands now). Any
+ * other decision in the tally (`refuse`, `conflict`, a rename row) names carriers this reader cannot tell
+ * apart, so nothing records and the next scan reads them again; the island's own gate then noops what landed.
+ */
+export function recordLandedAnswer(
+  tree: SyncedTree,
+  toBag: string,
+  candidates: readonly ScanRow[],
+  answer: CarrierAnswer,
+): number {
+  if (!answer.bounded) return recordLandedCarriers(tree, toBag, candidates, answer.rows);
+  const { tallies } = answer.bounded;
+  for (const decision of Object.keys(tallies)) if (!LANDED_DECISIONS.has(decision)) return 0;
+  if ((tallies["ingest"] ?? 0) + (tallies["noop"] ?? 0) !== candidates.length) return 0;
+  return recordLandedCarriers(tree, toBag, candidates, candidates.map((c) => ({ uri: c.uri, decision: "ingest" })));
+}
+
 /** The observation hash of a carrier file as it stands now (body plus `.meta` pairing), or null where unreadable. */
 function diskHashNow(file: string): string | null {
   try {

@@ -22,7 +22,7 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, submitIngest, recordLandedCarriers, applyConfirmedRenames } from "../ingest-core.js";
+import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, submitIngest, readCarrierAnswer, recordLandedAnswer, refusedCount, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 
@@ -170,8 +170,9 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // The gesture records what it landed; the projector records what it projects;
   // both write the same key and the same hash where they agree. An unchanged
   // carrier then noops on the next scan instead of re-landing.
-  const landedCarriers = (summary as { carriers?: Array<Record<string, unknown>> }).carriers ?? [];
-  const carriersRecorded = recordLandedCarriers(tree, toBag, candidates, landedCarriers);
+  // Past the outcome's audit cap the rows stay behind and a tally answers in their place (`readCarrierAnswer`).
+  const answer = readCarrierAnswer((summary as { carriers?: unknown }).carriers);
+  const carriersRecorded = recordLandedAnswer(tree, toBag, candidates, answer);
   // R2 — a confirmed rename moves its observation to the new location (delete old key,
   // set new), so the moved carrier reads `unchanged` next scan instead of re-landing.
   const renamesMoved = applyConfirmedRenames(tree, toBag, candidates, (summary as { deletions?: Record<string, unknown> }).deletions);
@@ -180,28 +181,38 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   const auditUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
   // A REFUSED FILE ENDS THE RUN NON-ZERO. Every row still prints, the landed carriers stay landed and
   // recorded; the exit and the envelope say that the run did not take everything it was handed.
-  const refused = refusedCarriers(landedCarriers);
+  const refused = refusedCount(answer);
+  const refusedNames = refusedCarriers(answer.rows);
+  const answered = answer.bounded ? answer.bounded.count : answer.rows.length;
+  // Past the cap the outcome names a sample alone, so the message says how many refused and how to read which.
+  const refusedMessage = answer.bounded
+    ? `INGEST refused ${refused} of ${answered} carrier(s); the outcome keeps a tally past its row cap and names none beyond its sample: ingest a narrower --source to read each row`
+    : `INGEST refused ${refused} of ${answered} carrier(s): ${refusedNames.join(", ")}`;
   const data = { verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary, audit: auditUri };
   emit(args, {
-    ...(refused.length === 0
+    ...(refused === 0
       ? { ok: true as const }
-      : { ok: false as const, error: { code: "verb-error", message: `INGEST refused ${refused.length} of ${landedCarriers.length} carrier(s): ${refused.join(", ")}` } }),
+      : { ok: false as const, error: { code: "verb-error", message: refusedMessage } }),
     requestId: result.requestId,
     data,
     human: () => {
-      console.log(refused.length === 0
+      console.log(refused === 0
         ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
-        : `INGEST ✗ ${refused.length} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
-      const carriers = (summary as { carriers?: Array<Record<string, unknown>> })["carriers"] ?? [];
-      for (const c of carriers) {
+        : `INGEST ✗ ${refused} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
+      if (answer.bounded) {
+        for (const [decision, n] of Object.entries(answer.bounded.tallies)) console.log(`  ${decision.toUpperCase().padEnd(10)} × ${n}`);
+        console.log(`  ${answer.bounded.count} row(s) answered; the outcome keeps a tally past its row cap. A sample:`);
+      }
+      for (const c of answer.rows) {
         const extra = c["reason"] ?? (Array.isArray(c["tombstoned"]) && (c["tombstoned"] as unknown[]).length ? `tombstoned ${(c["tombstoned"] as unknown[]).length}` : "");
         console.log(`  ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}${extra ? `  (${extra})` : ""}`);
         if (c["code"] === "never-projected-path") console.error(`  ⚠ ${String(c["reason"] ?? c["uri"])}`);
       }
+      if (refused > 0 && answer.bounded) console.error(`  ⚠ ${refusedMessage}`);
       console.log(`\n  audit: ${auditUri}`);
     },
   });
-  return refused.length === 0 ? 0 : exitFor("verb-error");
+  return refused === 0 ? 0 : exitFor("verb-error");
 }
 
 /** The carriers an INGEST refused, by uri: each row whose decision reads `refuse`. */
