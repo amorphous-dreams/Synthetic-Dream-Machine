@@ -86,6 +86,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# EACH VESSEL DECLARES ITS ORIGIN COMPOSITION. A lararium composes its relay, read and Web origins before it
+# listens and refuses an undeclared one by name; both witness vessels serve every surface from the one loopback
+# face, so both declare `sameOrigin`.
+export LAR_SAME_ORIGIN=true
+
 # Each vessel runs in its OWN environment. A subshell per call keeps A's LAR_ROOT from leaking into B's —
 # a single exported root would silently make this a one-vessel test again, which is the exact failure the
 # harness exists to rule out.
@@ -210,17 +215,38 @@ assert_founded "$B_ROOT" B
 # "joiner" matched "zero-width joiner" inside vendored engine text and read A's root as leaking B's
 # key. A probe that can appear by accident measures the corpus, never the boundary.
 B_PROBE="bjoiner-$$-xqz"
-run_b "B mints its own persona"               persona new 0 --name "$B_PROBE" --handle 'Independent Operator'
+step "B mints its own persona"
+if B_MINT=$(as_b persona new 0 --name "$B_PROBE" --handle 'Independent Operator' --json 2>&1); then
+  ok; B_PERSONA_KEY=$(printf '%s' "$B_MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+else bad "$?"; printf '%s\n' "$B_MINT" | tail -4 | sed 's/^/      /'; B_PERSONA_KEY=""; fi
 
 step "★ B's key is FOREIGN to A — no shared seed on disk ★"
 # The whole ceremony defends one boundary; measure it rather than assume it. If any of B's persona
 # material sat under A's root, every signature below would verify for the wrong reason.
 #
-# THE PROBE MUST BE FINDABLE FIRST. An absence claim over a name nothing ever wrote reads green by
-# vacancy, so B's own root answers for the grep before A's root answers for the boundary.
-if ! grep -rqs "$B_PROBE" "$B_ROOT" 2>/dev/null; then bad "the probe names nothing under B — the absence below would measure the grep"
+# THE PROBE MUST BE FINDABLE FIRST, THROUGH THE DOOR THAT HOLDS IT. A pet-name rests sealed under its vessel's
+# own key, so no grep of a root finds one, on either vessel. B's own `persona list` opens B's custody and names
+# the probe; an absence claim over a name nothing ever wrote would read green by vacancy. Then A answers, and its
+# answer must read as an answer: a `persona list` that faulted names nothing either. A's custody names no such
+# persona, A's root holds the name in no cleartext file, the key B's mint printed sits among none of the kahu
+# keys A minted, and the two vessels' own floor keys differ.
+# UNMEASURED HERE: whether a sealed copy of B's seed rests under A's root. Nothing in this run carries one there,
+# and no reading of A's sealed rows by this harness could tell B's seed from A's own.
+vessel_key_of() { cat "$1"/data/lares/identity/.vessel-key*.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
+A_LIST=$(as_a persona list --json 2>/dev/null); B_LIST=$(as_b persona list --json 2>/dev/null)
+A_VESSEL=$(vessel_key_of "$A_ROOT"); B_VESSEL=$(vessel_key_of "$B_ROOT")
+if ! printf '%s' "$B_LIST" | grep -qs '"ok":true'; then bad "B's persona list gave no answer"
+elif ! printf '%s' "$B_LIST" | grep -qs "$B_PROBE"; then bad "the probe names nothing under B — the absence below would measure the grep"
+elif ! printf '%s' "$A_LIST" | grep -qs '"ok":true'; then bad "A's persona list gave no answer — an absence read off it would measure a fault"
+elif printf '%s' "$A_LIST" | grep -qs "$B_PROBE"; then bad "A's custody names B's persona"
+elif [ -z "$B_PERSONA_KEY" ] || [ -z "$KAHU_KEYS" ]; then bad "a persona key went unread — the key comparison would measure nothing"
+elif printf '%s' "$KAHU_KEYS" | grep -qs "$B_PERSONA_KEY"; then bad "B's persona key stands among A's kahu keys"
+elif [ -z "$A_VESSEL" ] || [ -z "$B_VESSEL" ]; then bad "a vessel key went unread"
+elif [ "$A_VESSEL" = "$B_VESSEL" ]; then bad "the two vessels share one floor key"
 elif [ -d "$A_ROOT" ] && ! grep -rqs "$B_PROBE" "$A_ROOT" 2>/dev/null; then ok
 else bad "B's material reachable from A's root"; fi
+step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root"
+if grep -rqs "$B_PROBE" "$B_ROOT" 2>/dev/null; then bad "B's pet-name reads in the clear at rest"; else ok; fi
 
 # ── ③ THE PREREQUISITE — carry A's public charter to B ───────────────────────────────────────────
 say "③ the prerequisite the one-vessel run hid"
