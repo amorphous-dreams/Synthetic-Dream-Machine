@@ -178,12 +178,20 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   if (carriersRecorded + renamesMoved > 0) tree.flush();
 
   const auditUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
+  // A REFUSED FILE ENDS THE RUN NON-ZERO. Every row still prints, the landed carriers stay landed and
+  // recorded; the exit and the envelope say that the run did not take everything it was handed.
+  const refused = refusedCarriers(landedCarriers);
+  const data = { verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary, audit: auditUri };
   emit(args, {
-    ok: true,
+    ...(refused.length === 0
+      ? { ok: true as const }
+      : { ok: false as const, error: { code: "verb-error", message: `INGEST refused ${refused.length} of ${landedCarriers.length} carrier(s): ${refused.join(", ")}` } }),
     requestId: result.requestId,
-    data: { verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary, audit: auditUri },
+    data,
     human: () => {
-      console.log(`INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`);
+      console.log(refused.length === 0
+        ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
+        : `INGEST ✗ ${refused.length} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
       const carriers = (summary as { carriers?: Array<Record<string, unknown>> })["carriers"] ?? [];
       for (const c of carriers) {
         const extra = c["reason"] ?? (Array.isArray(c["tombstoned"]) && (c["tombstoned"] as unknown[]).length ? `tombstoned ${(c["tombstoned"] as unknown[]).length}` : "");
@@ -193,5 +201,10 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       console.log(`\n  audit: ${auditUri}`);
     },
   });
-  return 0;
+  return refused.length === 0 ? 0 : exitFor("verb-error");
+}
+
+/** The carriers an INGEST refused, by uri: each row whose decision reads `refuse`. */
+export function refusedCarriers(carriers: ReadonlyArray<Record<string, unknown>>): string[] {
+  return carriers.filter((c) => c["decision"] === "refuse").map((c) => String(c["uri"] ?? "(carrier)"));
 }
