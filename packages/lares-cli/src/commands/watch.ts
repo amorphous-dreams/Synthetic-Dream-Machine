@@ -63,23 +63,39 @@ function isNoise(rel: string): boolean {
 
 /**
  * Which vanished addresses ride THIS wave as a rename's source: PAIRED BY CONTENT, and by nothing else.
- * A vanished address pairs where exactly one vanished address holds its base hash and exactly one of the
- * wave's candidates holds that same hash. Every other vanished address rides nowhere: no span of waiting
- * turns a vanish into a deletion. Pulled out of `cmdWatch`'s closure so it stands as one weldable fact.
+ * A vanished address pairs where exactly one vanished address holds its base hash, exactly one of the
+ * wave's candidates holds that same hash, and that candidate ARRIVED (a file at an address that held no
+ * base: `new`). A standing carrier a hand edited into the vanished one's bytes names no move, so it pairs
+ * with nothing. Every other vanished address rides nowhere: no span of waiting turns a vanish into a
+ * deletion. Pulled out of `cmdWatch`'s closure so it stands as one weldable fact.
  */
 export function pairedDeletions(
   vanished:   ReadonlyMap<string, { readonly syncedHash: string; readonly file: string }>,
-  candidates: ReadonlyArray<{ readonly diskHash: string }>,
+  candidates: ReadonlyArray<{ readonly diskHash: string; readonly status: string }>,
 ): ArmedDeletion[] {
   const gone = new Map<string, number>();
   for (const v of vanished.values()) gone.set(v.syncedHash, (gone.get(v.syncedHash) ?? 0) + 1);
-  const arrived = new Map<string, number>();
-  for (const c of candidates) arrived.set(c.diskHash, (arrived.get(c.diskHash) ?? 0) + 1);
+  // Every candidate counts toward ambiguity (the island's delete gate reads them all); only an arrival pairs.
+  const holding = new Map<string, { count: number; arrived: boolean }>();
+  for (const c of candidates) {
+    const h = holding.get(c.diskHash) ?? { count: 0, arrived: false };
+    holding.set(c.diskHash, { count: h.count + 1, arrived: h.arrived || c.status === "new" });
+  }
   const ride: ArmedDeletion[] = [];
   for (const [uri, v] of vanished) {
-    if (gone.get(v.syncedHash) === 1 && arrived.get(v.syncedHash) === 1) ride.push({ uri, syncedHash: v.syncedHash, file: v.file });
+    const pair = holding.get(v.syncedHash);
+    if (gone.get(v.syncedHash) === 1 && pair !== undefined && pair.count === 1 && pair.arrived) ride.push({ uri, syncedHash: v.syncedHash, file: v.file });
   }
   return ride;
+}
+
+/** The vanished sources a settled wave's deletion summary names as re-linked. */
+export function confirmedRenames(deletions: Record<string, unknown> | undefined): Set<string> {
+  const from = new Set<string>();
+  if (deletions?.["decision"] === "apply" && Array.isArray(deletions["renames"])) {
+    for (const r of deletions["renames"] as Array<Record<string, unknown>>) from.add(String(r["fromUri"]));
+  }
+  return from;
 }
 
 function printUsage(): void {
@@ -169,11 +185,13 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
 
     // Which vanished addresses ride THIS wave: only a rename's source, paired by content, unique on both
     // sides. The island re-links the records; nothing here tombstones.
+    // A paired source stays in the vanished set until the island confirms its re-link: a wave that fails or
+    // declines the pair leaves it vanished, and the files it carried scan again at the next drain.
     const ride = pairedDeletions(vanished, candidates);
-    for (const d of ride) vanished.delete(d.uri);
     const rode = new Set(ride.map((d) => d.uri));
+    const unpaired = (): void => { if (ride.length > 0) for (const c of candidates) buffer.add(c.file); };
     for (const uri of moved) if (!rode.has(uri)) unsensed.add(uri);
-    const nowGone = moved.filter((uri) => vanished.has(uri));
+    const nowGone = moved.filter((uri) => vanished.has(uri) && !rode.has(uri));
 
     if (candidates.length === 0 && ride.length === 0) {
       if (nowGone.length > 0) console.log(`  ${nowGone.length} carrier(s) vanished from disk · nothing tombstones (${vanished.size} stand vanished in all)`);
@@ -201,11 +219,19 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       const result = settled.first;
       if (result.status === "error") {
         console.error(`  wave ${n}: INGEST failed — ${result.errorMessage ?? "unknown"}`);
+        unpaired();
         await tellShore();
         return;
       }
       const carriers = [...settled.named.values()];
       const del      = settled.deletions;
+      // Each source the island re-linked leaves the vanished set; one it declined stays vanished, and the
+      // shore hears of it like any other vanish.
+      const relinked = confirmedRenames(del);
+      for (const d of ride) {
+        if (relinked.has(d.uri)) vanished.delete(d.uri);
+        else { unsensed.add(d.uri); buffer.add(d.file); }
+      }
       // The gesture pins what it landed; the projector pins what it projects;
       // both write the same key and the same base where they agree.
       // R2: a confirmed rename moves its observation to the new location, so a moved
@@ -223,6 +249,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       const message = err instanceof Error ? err.message : String(err);
       standing = standingAfterFault(standing, { asked: candidates.map((c) => c.uri), askedDeletions: ride.map((d) => d.uri) }, message);
       console.error(`  wave ${n}: ${message}`);
+      unpaired();
     }
     await tellShore();
   };

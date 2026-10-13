@@ -3,7 +3,8 @@
  *
  * The render shore (`exportCarrierFile`) hands back `relPath` ONLY when a siting rule reached the
  * title; the projector then writes there, remembers the siting per mirror (the stock adaptor's
- * `$tw.boot.files` memory), unlinks the previous files when a rule moves a carrier, and unlinks
+ * `$tw.boot.files` memory), unlinks the previous files when a rule moves a carrier (each read first:
+ * `shore-unlink-reads-first.test.ts`), and unlinks
  * at the remembered path on delete — when the tiddler is gone and no rule can be re-run. With no
  * rule the loci law sites `lar:///w.w.w/…` at its uri-path, as before.
  *

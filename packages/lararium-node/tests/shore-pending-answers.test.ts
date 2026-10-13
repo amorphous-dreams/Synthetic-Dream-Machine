@@ -190,3 +190,84 @@ describe("the shore verb answers pending removals", () => {
     expect(bare.pendingRemovals().map((p) => p.uri)).toEqual([A]);
   });
 });
+
+describe("a sidecar standing alone", () => {
+  const URI = uriOf("pointer");
+  const META = "title: lar:///ha.ka.ba/probe/pointer\ntype: image/png\n";
+  const pointer = (meta = META): CarrierFile => ({ ext: ".png", body: "", metaBody: meta, encoding: "base64", pointerCid: "ab".repeat(32) });
+
+  test("a pending pointer's sidecar that a hand edited stands off: no write replaces it unread", async () => {
+    const s = stand([URI]);
+    s.files.set(URI, pointer());
+    await s.projector.idle();
+    const sidecar = join(root, BAG, "ha.ka.ba/probe/pointer.png.meta");
+    expect(readFileSync(sidecar, "utf-8")).toBe(META);
+    expect(existsSync(join(root, BAG, "ha.ka.ba/probe/pointer.png"))).toBe(false);
+
+    // The records' sidecar moves while the disk's stands where the base left it: the write applies.
+    s.files.set(URI, pointer(`${META}caption: from the records\n`));
+    await s.projector.sense([URI]);
+    expect(readFileSync(sidecar, "utf-8")).toContain("caption: from the records");
+    expect(s.conflicts).toEqual([]);
+
+    // A hand edits the sidecar, and the records move again: both moved, so nothing writes.
+    writeFileSync(sidecar, `${META}caption: A HAND'S OWN CAPTION\n`, "utf-8");
+    s.files.set(URI, pointer(`${META}caption: the records, later\n`));
+    await s.projector.sense([URI]);
+    expect(readFileSync(sidecar, "utf-8")).toContain("A HAND'S OWN CAPTION");
+    expect(s.conflicts).toEqual([URI]);
+  });
+
+  test("a resolved pointer whose body a hand deleted stays deleted while its bytes fail to resolve, and pends once they return", async () => {
+    const s = stand([URI]);
+    const BYTES = Buffer.from("the pointer's own bytes");
+    const { sha256HexBytesSync } = await import("@lararium/mesh");
+    const cid = sha256HexBytesSync(BYTES);
+    let tierHolds = true;
+    const resolved: CarrierFile = { ext: ".txt", body: "", metaBody: META, encoding: "utf8", pointerCid: cid };
+    await s.projector.stop();
+    const projector = new LarDiskProjector({
+      mirrors: [{ bagId: BAG, mirrorRoot: join(root, BAG) }],
+      carrierFileFn: async () => resolved,
+      resolveByCid: async () => (tierHolds ? new Uint8Array(BYTES) : null),
+      syncedTree: s.tree,
+    });
+    projector.start({ $tw: { wiki: { getTiddler: (t: string) => (t === URI ? { fields: { title: t, "$origin-bag": BAG } } : undefined), allTitles: () => [URI], addEventListener: () => {}, removeEventListener: () => {} } } } as unknown as TW5Engine);
+    await projector.idle();
+    const body = join(root, BAG, "ha.ka.ba/probe/pointer.txt");
+    expect(readFileSync(body, "utf-8")).toBe("the pointer's own bytes");
+
+    rmSync(body);                       // a hand deletes the body; its sidecar stays
+    tierHolds = false;                  // and the content tier loses the bytes for a while
+    await projector.sense([URI]);
+    expect(existsSync(body)).toBe(false);
+    tierHolds = true;                   // the bytes return
+    await projector.sense([URI]);
+    // No write brought the deleted body back: the carrier pends for its person.
+    expect(existsSync(body)).toBe(false);
+    expect(projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
+  });
+
+  test("a lone sidecar a hand left at a path the carrier leaves stays; one the projector wrote under a pending pointer leaves", async () => {
+    const s = stand([URI]);
+    s.files.set(URI, pointer());
+    await s.projector.idle();
+    const sidecar = join(root, BAG, "ha.ka.ba/probe/pointer.png.meta");
+    // CONTROL: the records drop the carrier while its sidecar stands as the projector wrote it.
+    s.live.delete(URI);
+    await s.projector.sense([URI]);
+    expect(existsSync(sidecar)).toBe(false);
+
+    // A body-bearing carrier whose body vanished leaves a sidecar no base can vouch for alone.
+    const MD = uriOf("lone");
+    s.files.set(MD, { ext: ".md", body: "# body\n", metaBody: "title: lone\n", encoding: "utf8" });
+    s.live.set(MD, BAG);
+    await s.projector.sense([MD]);
+    const md = join(root, BAG, "ha.ka.ba/probe/lone.md");
+    rmSync(md);
+    writeFileSync(`${md}.meta`, "title: lone\nnote: A HAND WROTE THIS\n", "utf-8");
+    s.live.delete(MD);
+    await s.projector.sense([MD]);
+    expect(readFileSync(`${md}.meta`, "utf-8")).toContain("A HAND WROTE THIS");
+  });
+});

@@ -57,15 +57,21 @@
  *
  * A PERSON ANSWERS A STANDOFF BY ITS KEY (`takeRecords`): the answer admits one write of the
  * records' render over the very states the key names, and no other.
+ *
+ * AN UNLINK READS THE FILE FIRST (`judgeHome`). The projector removes a file only where its bytes
+ * equal the disk side of the base that stands at that path, or say what the records render. A file
+ * that fails the proof stays where a hand left it, and the carrier stands off under a key that names
+ * the paths. One judge serves every unlink: a carrier's earlier siting, a sibling at an earlier
+ * extension, a mirror the carrier left, and the file of a carrier the records dropped.
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, renameSync } from "fs";
-import { dirname, basename } from "path";
+import { dirname, basename, extname, resolve as resolvePath } from "path";
 import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
 import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
-import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, KeyedReconcileGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
+import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual } from "@lararium/mesh";
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
@@ -179,7 +185,8 @@ export interface LarDiskProjectorOptions {
   ) => { readonly body: string; readonly metaBody?: string } | null;
   /** Optional readiness map — lights `disk-projector` after first flush. */
   readonly readinessMap?: ReadinessMap;
-  /** Write a .json sidecar next to each .md for peek debugging. */
+  /** Write a `.json` peek beside each carrier for debugging. Off unless asked. The peek stands as the
+   *  projector's own artifact, rewritten whole at every write: it carries no hand's words and meets no gate. */
   readonly debugJson?: boolean;
   /**
    * The Synced tree (Confluence merge base): records the content hash of every
@@ -306,8 +313,12 @@ export class LarDiskProjector {
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
   private readonly onConflict: ((info: { bagId: string; uri: string; reason: string; standoff: string }) => void) | undefined;
   private readonly onConflictResolved: ((info: { bagId: string; uri: string; standoff: string }) => void) | undefined;
-  /** The standoff each (bag, carrier) stands in right now, by key. Memory only: a fresh boot enters anew. */
-  private readonly standoffs = new Map<string, string>();
+  /**
+   * The standoff each (bag, carrier) stands in right now, by key. Memory only: a fresh boot enters anew.
+   * `sides` names a standoff between the disk and the records at the carrier's own path; `home` names a
+   * file at a path the carrier left (or of a carrier the records dropped) that holds bytes no agreement covers.
+   */
+  private readonly standoffs = new Map<string, { readonly standoff: string; readonly kind: "sides" | "home" }>();
   /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
   private readonly answered = new Map<string, string>();
   /** Every carrier whose file vanished from the path its base names, by (bag, carrier). Memory only: a boot's mount scan finds each anew. */
@@ -461,9 +472,9 @@ export class LarDiskProjector {
 
   /** Every standoff this projector stands in right now: the bag, the carrier and the key a person answers by. */
   standing(): Array<{ readonly bagId: string; readonly uri: string; readonly standoff: string }> {
-    return [...this.standoffs].map(([key, standoff]) => {
+    return [...this.standoffs].map(([key, entry]) => {
       const cut = key.indexOf("\n");
-      return { bagId: key.slice(0, cut), uri: key.slice(cut + 1), standoff };
+      return { bagId: key.slice(0, cut), uri: key.slice(cut + 1), standoff: entry.standoff };
     });
   }
 
@@ -475,7 +486,7 @@ export class LarDiskProjector {
    */
   async takeRecords(bagId: string, uri: string, standoff: string): Promise<{ readonly took: boolean; readonly why?: string }> {
     const key = sitedKey(bagId, uri);
-    const stands = this.standoffs.get(key);
+    const stands = this.standoffs.get(key)?.standoff;
     if (stands === undefined) return { took: false, why: `no standoff stands for ${uri} in ${bagId}` };
     if (stands !== standoff) return { took: false, why: `the standoff for ${uri} stands under key ${stands}; the answer names ${standoff}` };
     this.answered.set(key, standoff);
@@ -484,7 +495,7 @@ export class LarDiskProjector {
     } finally {
       this.answered.delete(key);
     }
-    const after = this.standoffs.get(key);
+    const after = this.standoffs.get(key)?.standoff;
     return after === undefined ? { took: true } : { took: false, why: `the states moved while the answer travelled; the standoff stands under key ${after}` };
   }
 
@@ -551,6 +562,12 @@ export class LarDiskProjector {
     return carrierDiskFiles(gate.path);
   }
 
+  /** The carrier files standing at one extension-less mirror-relative base, or null where the ward refuses it. */
+  private mirrorCarrierFilesAt(mirror: BagMirrorConfig, base: string): string[] | null {
+    const gate = confineMirrorWrite(mirror.mirrorRoot, base, mirror.allowBagsRootFiles);
+    return gate.ok ? carrierDiskFiles(gate.path) : null;
+  }
+
   /**
    * THE UNIQUIFIER — TW5's `title`, `title_1`, `title_2` … walk (filesystem.js:382-390), with its
    * one memory-bound step replaced.
@@ -586,32 +603,140 @@ export class LarDiskProjector {
     return { reason: `no free-or-mine path for "${title}" within 1000 tries at ${base}${ext}` };
   }
 
-  /** Unlink the files a carrier left at a base it no longer sites at (a siting rule moved it). */
-  private async _unlinkSited(mirror: BagMirrorConfig, base: string): Promise<void> {
-    const gate = confineMirrorWrite(mirror.mirrorRoot, base, mirror.allowBagsRootFiles);
-    if (!gate.ok) return;
-    for (const f of carrierDiskFiles(gate.path)) {
-      try { if (existsSync(f)) unlinkSync(f); } catch { /* best-effort — operator can clean up manually */ }
-    }
-  }
-
   /** Unlink by trying all mirrors whose path strategy resolves the URI — but a
    *  mirror whose bag STILL HOLDS the carrier keeps its file (a carrier hidden
    *  from the resolved view by a shadowing tombstone still lives in its lower
    *  bag; each mirror reflects its OWN bag's content, never the resolved view). */
   /** A reconcile found no standoff for this carrier: clear the one it surfaced, if any, and say so once. */
-  private _leaveStandoff(bagId: string, uri: string): void {
+  private _leaveStandoff(bagId: string, uri: string, kind?: "sides" | "home"): void {
     const key = sitedKey(bagId, uri);
-    const standoff = this.standoffs.get(key);
-    if (standoff === undefined) return;
+    const entry = this.standoffs.get(key);
+    if (entry === undefined || (kind !== undefined && entry.kind !== kind)) return;
     this.standoffs.delete(key);
-    this.onConflictResolved?.({ bagId, uri, standoff });
+    this.onConflictResolved?.({ bagId, uri, standoff: entry.standoff });
   }
 
-  /** Leave the standoff this carrier stands in under every mirror but `keepBag` (none kept when absent). */
+  /**
+   * Enter a standoff, once per key: a reconcile that meets the standoff it already raised stays quiet. A
+   * standoff whose states moved ends (its alert clears) and the new one enters under its own key.
+   */
+  private _enterStandoff(bagId: string, uri: string, standoff: string, kind: "sides" | "home", reason: string): void {
+    const key = sitedKey(bagId, uri);
+    if (this.standoffs.get(key)?.standoff === standoff) return;
+    this._leaveStandoff(bagId, uri);
+    this.standoffs.set(key, { standoff, kind });
+    console.error(`[confluence] projection conflict (${bagId} <- ${uri}): ${reason}`);
+    this.onConflict?.({ bagId, uri, reason, standoff });
+  }
+
+  /**
+   * Leave the SIDES standoff this carrier stands in under every mirror but `keepBag` (none kept when
+   * absent): a carrier that stopped projecting there leaves a conflict nobody weighs. A HOME standoff
+   * names a file that still stands on disk, so it leaves only when that file settles.
+   */
   private _leaveStandoffsExcept(uri: string, keepBag?: string): void {
     if (this.standoffs.size === 0) return;
-    for (const mirror of this.mirrors) if (mirror.bagId !== keepBag) this._leaveStandoff(mirror.bagId, uri);
+    for (const mirror of this.mirrors) if (mirror.bagId !== keepBag) this._leaveStandoff(mirror.bagId, uri, "sides");
+  }
+
+  /** The content file a listed carrier file belongs to: a `.meta` sidecar names the file it rides beside. */
+  private static contentOf(file: string): string {
+    return file.endsWith(".meta") ? file.slice(0, -".meta".length) : file;
+  }
+
+  /**
+   * THE ONE JUDGE EVERY UNLINK ASKS. Reads the carrier standing at `contentPath` (body plus its `.meta`
+   * where one sits beside it) and answers whether the projector may remove it:
+   *
+   *   absent   no content file stands there (a sidecar may, alone and unproven: it stays);
+   *   agreed   its bytes equal the disk side of the base standing AT THAT PATH, or say what the records
+   *            render: byte for byte, or through the family's congruence. Nothing a hand added rests there;
+   *   held     anything else, with the hash of what stands. The file stays.
+   *
+   * `recordsHash` names the render the records carry, or null where the records hold no such carrier:
+   * then the base alone can vouch.
+   */
+  private judgeHome(bagId: string, uri: string, contentPath: string, recordsHash: string | null): "absent" | "agreed" | { readonly held: string } {
+    let body: string, meta: string | undefined, binary: boolean;
+    try {
+      if (!existsSync(contentPath)) {
+        // A SIDECAR ALONE. Where the base (or the records, under a pending pointer) names exactly that state,
+        // the empty body beside these very sidecar bytes, the projector wrote it and may take it back.
+        const sidecar = `${contentPath}.meta`;
+        if (existsSync(sidecar)) {
+          const lone = carrierHash("", readFileSync(sidecar, "utf-8"));
+          const stood = this.syncedTree.baseAt(syncedTreeKey(bagId, uri), contentPath);
+          if ((stood !== null && digestsEqual(lone, stood.disk)) || (recordsHash !== null && digestsEqual(lone, recordsHash))) return "agreed";
+        }
+        return "absent";
+      }
+      const bytes = readFileSync(contentPath);
+      const text = bytes.toString("utf8");
+      binary = !Buffer.from(text, "utf8").equals(bytes);
+      body = binary ? bytes.toString("base64") : text;
+      meta = existsSync(`${contentPath}.meta`) ? readFileSync(`${contentPath}.meta`, "utf-8") : undefined;
+    } catch { return { held: "unreadable" }; }
+    const hash = carrierHash(body, meta);
+    const base = this.syncedTree.baseAt(syncedTreeKey(bagId, uri), contentPath);
+    if (base !== null && digestsEqual(hash, base.disk)) return "agreed";
+    if (recordsHash !== null) {
+      if (digestsEqual(hash, recordsHash)) return "agreed";
+      const ext = extname(contentPath);
+      let canonical: string | null = null;
+      if (ext === MEME_EXT) {
+        const text = this.canonicalizeFn ? this.canonicalizeFn(uri, body) : null;
+        canonical = text === null ? null : carrierHash(text, meta);
+      } else if (!binary && this.canonicalizeNativeFn) {
+        const view = this.canonicalizeNativeFn(uri, ext, body, meta);
+        canonical = view === null ? null : carrierHash(view.body, view.metaBody);
+      }
+      if (canonical !== null && digestsEqual(canonical, recordsHash)) return "agreed";
+    }
+    return { held: hash };
+  }
+
+  /** Remove one carrier home the judge agreed to: the content file and its sidecar; the base that stood there leaves with it. */
+  private unlinkHome(bagId: string, uri: string, contentPath: string): void {
+    this.writing.add(uri);
+    try {
+      for (const f of [contentPath, `${contentPath}.meta`]) {
+        try { if (existsSync(f)) unlinkSync(f); } catch { /* best-effort — a hand can clean up */ }
+      }
+    } finally { this.writing.delete(uri); }
+    const key = syncedTreeKey(bagId, uri);
+    if (this.syncedTree.baseAt(key, contentPath) !== null) this.syncedTree.delete(key);
+  }
+
+  /**
+   * SETTLE THE HOMES A CARRIER LEFT, reading each before anything unlinks. Agreed homes leave. Where one
+   * holds bytes no agreement covers, nothing unlinks and nothing writes: the carrier stands off under a key
+   * that names every held path (and `toward`, the path the carrier would take), and this answers false.
+   * A person who named that key and took the records' side removes the held files. The caller leaves the
+   * standoff once every home it weighs has settled. A sidecar standing with no body beside it stays: its
+   * bytes alone match no base, so nothing can prove it holds no hand's edit.
+   */
+  private settleHomes(bagId: string, uri: string, homes: readonly string[], recordsHash: string | null, toward: string | null, why: string): boolean {
+    const agreed: string[] = [];
+    const held: Array<{ readonly path: string; readonly hash: string }> = [];
+    for (const home of [...new Set(homes)].sort()) {
+      const verdict = this.judgeHome(bagId, uri, home, recordsHash);
+      if (verdict === "agreed") agreed.push(home);
+      else if (verdict === "absent") continue;   // no body stands there; a sidecar left alone proves nothing and stays
+      else held.push({ path: home, hash: verdict.held });
+    }
+    if (held.length > 0) {
+      const standoff = sha256HexBytesSync(new TextEncoder().encode([bagId, uri, "home", toward ?? "", ...held.map((h) => `${h.path}\n${h.hash}`), recordsHash ?? ""].join("\n"))).slice(0, 24);
+      if (this.answered.get(sitedKey(bagId, uri)) !== standoff) {
+        const where = held.map((h) => h.path).join(", ");
+        this._enterStandoff(bagId, uri, standoff, "home",
+          `${why}: the file at ${where} holds bytes no agreement covers, so it stays${toward !== null ? ` and nothing writes at ${toward}` : ""}. Ingest that file, or take the records' side under key ${standoff} (the file then leaves)`);
+        return false;
+      }
+      // The person named this very state and took the records' side: the held files give way.
+      for (const h of held) agreed.push(h.path);
+    }
+    for (const home of agreed) this.unlinkHome(bagId, uri, home);
+    return true;
   }
 
   /** This carrier's file vanished from the path its base names: it stands pending until a person answers or the file returns. */
@@ -747,21 +872,31 @@ export class LarDiskProjector {
   private async _scheduleUnlinkByTitle(title: string): Promise<void> {
     if (this.bagsHolding) this.measure.holdsSinceChange++;
     const holdingBags = this.bagsHolding ? new Set(await this.bagsHolding(title)) : null;
+    // A MIRROR ROOT A HOLDING BAG SHARES STAYS WHOLE. Two mirrors over one root resolve one carrier to one
+    // file; the bag that dropped the carrier proves nothing about a file its neighbour still owns.
+    const keptRoots = new Set<string>();
+    for (const mirror of this.mirrors) {
+      if (!holdingBags?.has(mirror.bagId)) continue;
+      // A carrier shadowed from the resolved view no longer projects here: the standoff between its sides
+      // names a conflict nobody weighs.
+      this._leaveStandoff(mirror.bagId, title, "sides");
+      keptRoots.add(resolvePath(mirror.mirrorRoot));
+    }
     for (const mirror of this.mirrors) {
       if (holdingBags?.has(mirror.bagId)) continue;
-      const files = this.mirrorCarrierFiles(mirror, title);
-      if (files === null) continue;
-      try {
-        for (const f of files) {
-          if (existsSync(f)) {
-            this.writing.add(title);
-            try { unlinkSync(f); } finally { this.writing.delete(title); }
-          }
-        }
-        this.syncedTree.delete(syncedTreeKey(mirror.bagId, title));   // the observation leaves with the file(s)
-        this.sited.delete(sitedKey(mirror.bagId, title));
-        this._leaveStandoff(mirror.bagId, title);
-      } catch { /* best-effort — operator can clean up manually */ }
+      this._leaveStandoff(mirror.bagId, title, "sides");
+      if (keptRoots.has(resolvePath(mirror.mirrorRoot))) continue;
+      // A title the loci law sites nowhere (a foreign title) names no file by itself; the base still may.
+      const homes = (this.mirrorCarrierFiles(mirror, title) ?? []).map((f) => LarDiskProjector.contentOf(f));
+      // The base names the content file its agreement stood at, across a restart: a carrier a siting rule
+      // or the flattened default placed elsewhere gets read there too.
+      const basedAt = this.syncedTree.base(syncedTreeKey(mirror.bagId, title))?.path;
+      if (basedAt !== undefined) homes.push(basedAt);
+      // The records hold no such carrier, so the base alone can vouch for a file. A held one stays.
+      if (!this.settleHomes(mirror.bagId, title, homes, null, null, `the records dropped ${title}`)) continue;
+      this._leaveStandoff(mirror.bagId, title);
+      this.syncedTree.delete(syncedTreeKey(mirror.bagId, title));   // the observation leaves with the file(s)
+      this.sited.delete(sitedKey(mirror.bagId, title));
     }
   }
 
@@ -874,10 +1009,6 @@ export class LarDiskProjector {
       base = sited.base;
     }
     if (!base) return;
-    const key = sitedKey(bagId, tiddlerUri);
-    const previous = this.sited.get(key);
-    if (previous !== undefined && previous !== base) await this._unlinkSited(mirror, previous);
-    this.sited.set(key, base);
     const relPath  = base + file.ext;
     const metaBody = file.metaBody;
     const isBinary  = file.encoding === "base64";
@@ -917,6 +1048,22 @@ export class LarDiskProjector {
     const obsHash    = carrierHash(output, metaBody);             // whole-carrier, for the Synced tree
     const metaPath   = metaBody !== undefined ? candidate + ".meta" : null;
     const metaInSync = metaPath === null || (existsSync(metaPath) && safeReadEquals(metaPath, metaBody!));
+
+    // ── THE HOMES THIS CARRIER LEFT ─────────────────────────────────────────
+    // A siting rule that moved the carrier leaves its files at the earlier path. Two memories name that
+    // path: this session's own siting, and the base, which stands at the content file its agreement held
+    // and so remembers across a restart. Each earlier home gets READ before anything unlinks or writes.
+    const earlier: string[] = [];
+    const previous = this.sited.get(sitedKey(bagId, tiddlerUri));
+    if (previous !== undefined && previous !== base) {
+      const was = confineMirrorWrite(mirror.mirrorRoot, previous, mirror.allowBagsRootFiles);
+      if (was.ok) for (const f of carrierDiskFiles(was.path)) earlier.push(LarDiskProjector.contentOf(f));
+    }
+    const basedAt = this.syncedTree.base(syncedTreeKey(bagId, tiddlerUri))?.path;
+    if (basedAt !== undefined) earlier.push(basedAt);
+    const left = earlier.filter((home) => home !== candidate);
+    if (left.length > 0 && !this.settleHomes(bagId, tiddlerUri, left, bodyPending ? null : obsHash, candidate, `a siting moves ${tiddlerUri}`)) return;
+    this.sited.set(sitedKey(bagId, tiddlerUri), base);
     try {
       // The body-skip reads BYTES for a binary file (a utf8 read would mangle the
       // raw bytes and never match), else hashes the utf8 text against the carrier.
@@ -930,18 +1077,28 @@ export class LarDiskProjector {
         this._leavePending(bagId, tiddlerUri);
         return;
       }
-      if (bodyPending && metaInSync) return;
-    } catch { /* unreadable existing file — fall through to the write */ }
+    } catch { /* unreadable existing file — fall through to the gate */ }
+    // A pointer whose bytes the tier lacks, and which declares no sidecar, holds nothing to write.
+    if (bodyPending && metaPath === null) return;
 
     // ── THE CONFLUENCE, PROJECTING LEG ──────────────────────────────────────
     // The byte-skip above answers only the cheap identity (disk bytes == would-write
     // bytes). Everything it did not answer now meets the three-way gate: the records'
     // render, the merge base, and WHAT THE OPERATOR'S HANDS LEFT. The gate decides and
     // never writes; this shore owns every I/O and every alert (projection-gate's law).
-    // A pointer whose bytes the tier lacks has nothing to write and nothing to compare,
-    // so it never reaches the gate.
-    if (!bodyPending) {
-      const onDisk  = this.diskCarrierText(candidate, metaPath, isBinary);
+    // A POINTER WHOSE BYTES THE TIER LACKS projects its sidecar alone, and that sidecar meets the same gate:
+    // the carrier it weighs holds an empty body beside the `.meta`, on both sides. So a hand's edit to that
+    // sidecar stands off like any other, and no sidecar gets replaced unread.
+    const gateRecords = bodyPending ? carrierHash("", metaBody) : obsHash;
+    {
+      const onDisk  = bodyPending ? null : this.diskCarrierText(candidate, metaPath, isBinary);
+      // A SIDECAR STANDING WITH NO BODY BESIDE IT. It names a disk state of its own (the empty body and the
+      // sidecar's bytes) in two places: under a pending pointer, and where the base itself names such a
+      // state, or none stands. Where the base names a carrier that held a body, the body vanished.
+      const loneHash = (() => {
+        if (onDisk !== null || metaPath === null) return null;
+        try { return existsSync(metaPath) ? carrierHash("", readFileSync(metaPath, "utf-8")) : null; } catch { return null; }
+      })();
       // WHAT THE DISK SAYS, folded exactly as `obsHash` folds the render — so the gate's
       // `≈` compares like with like. TWO congruences, ONE clause: a `.mem` carrier reads
       // through the MEMETIC family's view (`canonicalizeFn`); every other TEXT filetype
@@ -962,30 +1119,40 @@ export class LarDiskProjector {
         }
         return null;
       })();
-      const diskHash = onDisk === null ? null : carrierHash(onDisk.body, onDisk.meta);
+      const key = sitedKey(mirror.bagId, tiddlerUri);
       // A BASE STANDS AT ONE PATH: an agreement this carrier reached at another path names no base here.
       let base = this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate);
-      // ONE STANDOFF, ONE KEY: the bag, the carrier and the two states. A person's answer names this key,
-      // and the gate hears the answer only where the states that stand now fold to the key the person named.
-      const standoff = sha256HexBytesSync(new TextEncoder().encode([mirror.bagId, tiddlerUri, diskHash ?? "", obsHash].join("\n"))).slice(0, 24);
-      const key = sitedKey(mirror.bagId, tiddlerUri);
-      const gateInput = (): Parameters<typeof decideProjection>[0] => ({
-        diskHash,
-        syncedHash:        base?.disk ?? null,
-        syncedRecordsHash: base?.records ?? null,
-        recordsHash:       obsHash,
-        diskCanonicalHash,
-        ...(this.answered.get(key) === standoff ? { answer: "take-records" as const }
-          : this.restoreAsked.has(key) ? { answer: "restore" as const } : {}),
-      });
-      let decision = decideProjection(gateInput());
+      /** Weigh the carrier against the base as it stands: the disk's hash, the standoff those states fold to, and the gate's answer. */
+      const weigh = (): { diskHash: string | null; standoff: string; decision: ReturnType<typeof decideProjection> } => {
+        const diskHash = onDisk !== null ? carrierHash(onDisk.body, onDisk.meta)
+          : loneHash !== null && (bodyPending || base === null || digestsEqual(base.disk, loneHash)) ? loneHash
+          : null;
+        // ONE STANDOFF, ONE KEY: the bag, the carrier, the path, the two states and the base they stand
+        // against. A person's answer names this key, and the gate hears the answer only where everything
+        // that stands now folds to the key the person named.
+        const standoff = sha256HexBytesSync(new TextEncoder().encode(
+          [mirror.bagId, tiddlerUri, candidate, diskHash ?? "", gateRecords, base?.disk ?? "", base?.records ?? ""].join("\n"))).slice(0, 24);
+        const decision = decideProjection({
+          diskHash,
+          syncedHash:        base?.disk ?? null,
+          syncedRecordsHash: base?.records ?? null,
+          recordsHash:       gateRecords,
+          diskCanonicalHash,
+          ...(this.answered.get(key) === standoff ? { answer: "take-records" as const }
+            : this.restoreAsked.has(key) ? { answer: "restore" as const } : {}),
+        });
+        return { diskHash, standoff, decision };
+      };
+      let weighed = weigh();
       // A SIBLING MAY HAVE MOVED THE BASE since this projector loaded the tree (another island, the ingest
-      // gesture). Before anything writes, surfaces or pends, the tree reads afresh and the gate decides again.
-      if (decision.kind !== "noop") {
+      // gesture). Before the carrier's own files write, surface or pend, the tree reads afresh and the gate
+      // decides again.
+      if (weighed.decision.kind !== "noop") {
         this.syncedTree.reread();
         base = this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate);
-        decision = decideProjection(gateInput());
+        weighed = weigh();
       }
+      const { diskHash, standoff, decision } = weighed;
       if (decision.kind === "pending-removal") {
         // THE FILE VANISHED WHERE A BASE STANDS. Nothing writes back and nothing tombstones; the base stays,
         // and the carrier stands pending until a person answers or the file returns.
@@ -1000,8 +1167,14 @@ export class LarDiskProjector {
         // render on the other, so the ingest scan reads the file `unchanged` and each gate still tells a
         // later disk edit from a later record edit. A base that already names this agreement stays put.
         if (decision.reason === "canonical-equivalent" && diskHash !== null
-            && !(base !== null && base.disk === diskHash && base.records === obsHash)) {
-          this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash, obsHash);
+            && !(base !== null && base.disk === diskHash && base.records === gateRecords)) {
+          this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash, gateRecords);
+        }
+        // A PENDING POINTER'S SIDECAR STANDS AS THE RECORDS RENDER IT, and no base stands here: that
+        // agreement holds a sidecar alone, and its base says so. A base that already stands stays: where
+        // it names a body, that body vanished, and the carrier pends once its bytes resolve.
+        if (bodyPending && base === null && diskHash !== null && decision.reason === "disk-matches-records") {
+          this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash);
         }
         this._leaveStandoff(bagId, tiddlerUri);
         return;
@@ -1015,16 +1188,17 @@ export class LarDiskProjector {
           : `the disk and the records both moved past the last projection (${decision.reason}) — the write stands down so neither edit is drowned (key ${standoff})`;
         // ONE SURFACING PER STANDOFF: the key names the bag, the carrier and the two states. A reconcile
         // that meets the standoff it already raised stays quiet; the write still stands down.
-        if (this.standoffs.get(key) === standoff) return;
-        // The states moved while the carrier still stands off: the standoff it left ends (its alert
-        // clears) and this one enters under its own key.
-        this._leaveStandoff(mirror.bagId, tiddlerUri);
-        this.standoffs.set(key, standoff);
-        console.error(`[confluence] projection conflict (${mirror.bagId} <- ${tiddlerUri}): ${reason}`);
-        this.onConflict?.({ bagId: mirror.bagId, uri: tiddlerUri, reason, standoff });
+        this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason);
         return;
       }
     }
+
+    // ── A SIBLING AT AN EARLIER EXTENSION ───────────────────────────────────
+    // A filetype change re-sites the carrier at a new extension (`.md` → `.tid`), and the file at the
+    // earlier one would orphan beside the fresh write. It gets READ before this write lands: agreed, it
+    // leaves; holding a hand's bytes, it stays, nothing writes, and the carrier stands off.
+    const siblings = (this.mirrorCarrierFilesAt(mirror, base) ?? []).map((f) => LarDiskProjector.contentOf(f)).filter((home) => home !== candidate);
+    if (siblings.length > 0 && !this.settleHomes(bagId, tiddlerUri, siblings, bodyPending ? null : obsHash, candidate, `a filetype change moves ${tiddlerUri}`)) return;
     this._leaveStandoff(bagId, tiddlerUri);
 
     this.writing.add(tiddlerUri);
@@ -1038,8 +1212,8 @@ export class LarDiskProjector {
       // it lands beside the body, atomic too, so a reader never pairs a fresh
       // body with a stale sidecar.
       if (metaPath !== null) this.atomicWrite(metaPath, metaBody!);
-      // The observation names the WHOLE carrier — a pending body leaves no observation to name.
-      if (!bodyPending) this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, obsHash);
+      // The observation names the WHOLE carrier; under a pending body it names the sidecar alone.
+      this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, gateRecords);
       if (this.debugJson && this._tw5) {
         const jsonStr = (this._tw5.$tw.wiki as { getTiddlerAsJson?: (t: string) => string })
           .getTiddlerAsJson?.(tiddlerUri);
@@ -1060,21 +1234,6 @@ export class LarDiskProjector {
       this.writing.delete(tiddlerUri);
     }
 
-    // Same-mirror straggler sweep: a FILETYPE change re-sites the carrier at a
-    // NEW extension (`.md` → `.tid`), so the old-extension file (+ its `.meta`)
-    // would orphan beside the fresh one. Remove any sibling of THIS carrier's
-    // base that the current write did not produce — the extension moved, the
-    // name did not.
-    for (const f of this.mirrorCarrierFiles(mirror, tiddlerUri) ?? []) {
-      if (f === candidate || (metaPath !== null && f === metaPath)) continue;
-      try {
-        if (existsSync(f)) {
-          this.writing.add(tiddlerUri);
-          try { unlinkSync(f); } finally { this.writing.delete(tiddlerUri); }
-        }
-      } catch { /* best-effort */ }
-    }
-
     // After writing the current mirror, unlink stale files from OTHER mirrors —
     // but ONLY where the carrier has genuinely LEFT that bag (a true MOVE, e.g.
     // promotion wiki-bag → lares-bag, cleaning the old scratch file). A carrier
@@ -1086,24 +1245,24 @@ export class LarDiskProjector {
     if (this.bagsHolding) this.measure.holdsSinceChange++;
     const holdingBags = this.bagsHolding ? new Set(await this.bagsHolding(tiddlerUri)) : null;
     for (const otherMirror of this.mirrors) {
+      // This flush's own mirror settled its homes above.
+      if (otherMirror.bagId === bagId) continue;
       // The carrier still lives in this bag (shadowed, not moved) → keep its file.
       if (holdingBags?.has(otherMirror.bagId)) continue;
       const staleFiles = this.mirrorCarrierFiles(otherMirror, tiddlerUri);
       if (staleFiles === null) continue;
-      for (const stale of staleFiles) {
-        // Never unlink what THIS flush just wrote. Path identity — not bag
-        // identity — marks the live file: the base derives from the URI alone,
-        // so the current bag, AND any mirror sharing this mirrorRoot, resolves to
-        // the SAME files. The path guard closes the co-rooted self-deletion
-        // structurally — no mirror config can trigger it (the `.meta` sidecar
-        // rides beside the body under the same guard).
-        if (stale === candidate || (metaPath !== null && stale === metaPath)) continue;
-        try {
-          if (existsSync(stale)) {
-            this.writing.add(tiddlerUri);
-            try { unlinkSync(stale); } finally { this.writing.delete(tiddlerUri); }
-          }
-        } catch { /* best-effort */ }
+      // Never unlink what THIS flush just wrote. Path identity — not bag
+      // identity — marks the live file: the base derives from the URI alone,
+      // so the current bag, AND any mirror sharing this mirrorRoot, resolves to
+      // the SAME files. The path guard closes the co-rooted self-deletion
+      // structurally — no mirror config can trigger it (the `.meta` sidecar
+      // rides beside the body under the same guard).
+      const homes = staleFiles.map((f) => LarDiskProjector.contentOf(f)).filter((home) => home !== candidate);
+      // The carrier left this mirror's bag: each file it left there gets read first. One that says what the
+      // records render (or stands where its base left it) leaves; one a hand edited stays and stands off.
+      if (this.settleHomes(otherMirror.bagId, tiddlerUri, homes, bodyPending ? null : obsHash, null, `${tiddlerUri} left ${otherMirror.bagId} for ${bagId}`)) {
+        this.sited.delete(sitedKey(otherMirror.bagId, tiddlerUri));
+        this._leaveStandoff(otherMirror.bagId, tiddlerUri, "home");
       }
     }
   }
