@@ -325,7 +325,10 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   // Watches to completion; a red run makes `gh run watch --exit-status` itself exit non-zero, so
   // the watch result alone already answers "red or not" — this helper still reads the log line
   // below for the shard counts and totals the report asks for.
-  const watch = spawnSync("gh", ["run", "watch", String(runId), "--exit-status"], { cwd: repoRoot, encoding: "utf8" });
+  // ONE LOOK EVERY HALF MINUTE. `gh run watch` polls every three seconds by default, and each poll spends
+  // several calls of the 5000 an hour every lane, lead and tool on this account shares: a few lanes watching
+  // at once spend the hour's whole budget, and then every `gh` read refuses, this one included.
+  const watch = spawnSync("gh", ["run", "watch", String(runId), "--exit-status", "--interval", WATCH_INTERVAL_S], { cwd: repoRoot, encoding: "utf8" });
   const watchOk = watch.status === 0;
 
   // The run exists on the remote and MUST be deleted whether or not reading its log succeeds — a
@@ -354,6 +357,9 @@ export async function pushLaneAndWatch({ repoRoot, lane, findBudgetMs = 120_000,
   const ok = watchOk && viewed.conclusion === "success";
   return { ok, runId, verdictLine, verdictLines, conclusion: viewed.conclusion, url: viewed.url, createdAt: viewed.createdAt, updatedAt: viewed.updatedAt };
 }
+
+/** Seconds between the watch's looks at a run. */
+export const WATCH_INTERVAL_S = "30";
 
 /** What `push` says when it pushed a run and could not read its verdict: neither green nor red. */
 export const unreadVerdict = (runId) =>
