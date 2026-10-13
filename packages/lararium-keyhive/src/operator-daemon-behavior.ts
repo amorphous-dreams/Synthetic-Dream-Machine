@@ -130,8 +130,8 @@ import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
 import { announceSeatRoll } from "./seat-duty-executor.js";
 import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
-import { base64ToBytes } from "./bytes-base64.js";
-import { ed25519SignerFromSeed, seatDutiesAskRefusal, type LarTiddlerRecord } from "@lararium/mesh";
+import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
+import { ed25519SignerFromSeed, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type LarTiddlerRecord, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat, type SessionProof } from "./content-key-seat.js";
@@ -842,6 +842,56 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const served = await holderFor("sealed-serve").holder.serveUnserved();
         if ("refusal" in served) return refusedBy("sealed-serve", served);
         return { verb: "sealed-serve", outbox: await parcelsOut(null, served.parcels), owed: served.owed };
+      });
+      // ── A BACKUP BUNDLE'S MEMORY SECTION (sealed-store#/the-store; custody#/the-bundle) ────────────────────
+      // The section leaves and enters the holder SEALED: a cut takes a public key and answers ciphertext, and an
+      // import takes the section and its pair's secret half sealed to a key this island named for that one import.
+      // No bare content key crosses the port, and no outcome names one. Each verb answers its own vessel's main
+      // thread alone: the ask carries the vessel key's signature over this request and what it hands in.
+      // ONE SIGNED ASK RUNS ONCE. This island keeps each request it answered for its own life, so the same signed
+      // invocation placed again refuses. A replay after a restart gains nothing either way: a cut seals to the
+      // key its own ask named, a door stands for an import its replayer cannot seal to, and an import meets no door.
+      const memoryAsked = new Set<string>();
+      const memoryAsk = (verb: string, act: MemoryAct, facts: unknown, args: Record<string, unknown>, requestId: unknown): void => {
+        const unlicensed = memoryAskRefusal({ requestId, act, facts, ask: args["ask"], vesselVerifyingKey: daemonAuth.vesselVerifyingKey });
+        if (unlicensed) throw new VerbRefusal("memory-ask-unlicensed", `[daemon] ${verb}: ${unlicensed}`);
+        if (memoryAsked.has(requestId as string)) throw new VerbRefusal("memory-ask-spent", `[daemon] ${verb}: this island already answered that request; a fresh ask carries a fresh request id.`);
+        memoryAsked.add(requestId as string);
+      };
+      /** The pair this island named for ONE import. The next `sealed-memory-door` replaces it; an import spends it. */
+      let memoryDoor: MemoryKeypair | null = null;
+      registry.register("sealed-memory-cut", async (args, context) => {
+        const to = typeof args["to"] === "string" && /^[0-9a-f]{64}$/.test(args["to"]) ? args["to"] : null;
+        memoryAsk("sealed-memory-cut", "cut", { to }, args, context.invocation.requestId);
+        if (to === null) throw new Error("[daemon] sealed-memory-cut: `to` (the section pair's public half, 64 lower hex) required.");
+        const cut = await holderFor("sealed-memory-cut").holder.cutMemory({ bags: daemonAuth.registerBags, to: meshHexToBytes(to) });
+        if ("refusal" in cut) return refusedBy("sealed-memory-cut", cut);
+        return { verb: "sealed-memory-cut", section: bytesToBase64(cut.section), holds: cut.holds.map((one) => ({ ...one })) };
+      });
+      registry.register("sealed-memory-door", async (args, context) => {
+        memoryAsk("sealed-memory-door", "door", {}, args, context.invocation.requestId);
+        holderFor("sealed-memory-door");
+        memoryDoor?.secret.fill(0);
+        memoryDoor = mintMemoryKeypair();
+        return { verb: "sealed-memory-door", door: memoryHex(memoryDoor.public) };
+      });
+      registry.register("sealed-memory-import", async (args, context) => {
+        const section = typeof args["section"] === "string" ? args["section"] : null;
+        const sealedSecret = typeof args["secret"] === "string" ? args["secret"] : null;
+        memoryAsk("sealed-memory-import", "import", { section, secret: sealedSecret }, args, context.invocation.requestId);
+        const seat = holderFor("sealed-memory-import");
+        if (section === null || sealedSecret === null) throw new Error("[daemon] sealed-memory-import: `section` and `secret` (each base64) required.");
+        const door = memoryDoor;
+        memoryDoor = null;   // one door, one import
+        if (door === null) throw new VerbRefusal("memory-door-unnamed", "[daemon] sealed-memory-import: this island named no door for this import — ask `sealed-memory-door` first; nothing imported.");
+        let secret: Uint8Array | null = null;
+        try {
+          secret = openMemorySecret(base64ToBytes(sealedSecret), door.secret);
+          if (secret === null) throw new VerbRefusal("memory-malformed", "[daemon] sealed-memory-import: the section's key did not open under this import's door — nothing imported.");
+          const imported = await seat.holder.importMemory({ section: base64ToBytes(section), secret, signer: signerNow() });
+          if ("refusal" in imported) return refusedBy("sealed-memory-import", imported);
+          return { verb: "sealed-memory-import", results: imported.results.map((one) => ({ ...one })) };
+        } finally { secret?.fill(0); door.secret.fill(0); }
       });
       // The vessel hands back the rolls it kept (`keptSeatRolls`), each under its own receipt: a founding or a
       // head that arrived after a raise settled still takes its roll, and a forged roll moves nothing.

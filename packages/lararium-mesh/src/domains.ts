@@ -241,6 +241,18 @@ export const SEALED_INDEX_ROW_DOMAIN = mint("sealed-index-row");
 export const SEALED_HAND_OVER_DOMAIN = mint("sealed-hand-over");
 /** A KEY PARCEL: one lockbox, its key version record and the wrap's public operations, for one reader. */
 export const SEALED_KEY_PARCEL_DOMAIN = mint("sealed-key-parcel");
+/** A MEMORY-IMPORT RECORD: its clear part hashes to the record id under this name. */
+export const SEALED_MEMORY_IMPORT_DOMAIN = mint("sealed-memory-import");
+/** A backup bundle's MEMORY SECTION: the image of its entries, each a bag's id, its locator, a key version
+ *  id and that version's content key. */
+export const SEALED_MEMORY_SECTION_DOMAIN = mint("sealed-memory-section");
+/** The seal a MEMORY SECTION rides under: sealed to the public half of the pair its bundle key derives. */
+export const SEALED_MEMORY_BOX_INFO = mint("sealed-memory-box");
+/** The seal the section pair's SECRET half rides under to the one island that imports: sealed to a public
+ *  key that island named for one import. */
+export const SEALED_MEMORY_DOOR_INFO = mint("sealed-memory-door");
+/** What a vessel's MAIN THREAD signs when it asks its own daemon island to cut or import a memory section. */
+export const MEMORY_ASK_DOMAIN = mint("memory-ask");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
 /** The V3 PROOF OF POSSESSION a peer signs at the wire's gate: nonce, gate key, own key, audience and

@@ -68,6 +68,8 @@ export interface Vessel {
   readonly ingested: Set<string>;
   readonly shore: LockboxWrapShore;
   shadowed: boolean;
+  /** Does this vessel's own seat stand in its face's key group? */
+  seated: boolean;
   /** Does this vessel's document store cut a fresh base? True: it cuts one. False: it refuses. Null: none stands. */
   cutsBase: boolean | null;
   /** The versions a fresh base got cut under, in order, each with how many lockboxes rested at that moment. */
@@ -110,7 +112,7 @@ export async function vessel(w: World, name: string, over: { standing?: WriterSt
     async self() { return [id]; },
   };
   const v: Vessel = {
-    id, chain: c, signer, rest, store, values, cards, ingested, shore, shadowed: false, cutsBase: true, bases: [],
+    id, chain: c, signer, rest, store, values, cards, ingested, shore, shadowed: false, seated: true, cutsBase: true, bases: [],
     holder: undefined as unknown as ContentKeyHolder,
     restart() { v.holder = stand(); return v.holder; },
   };
@@ -124,6 +126,7 @@ export async function vessel(w: World, name: string, over: { standing?: WriterSt
     standing: over.standing ?? { holdsWrite: () => true },
     evidenceOf,
     ownEdgeShadowed: async () => v.shadowed,
+    ownSeat: async () => (v.seated ? id : null),
     ...(v.cutsBase === null ? {} : { freshBase: async ({ keyVersion }: { keyVersion: string }) => {
       v.bases.push({ keyVersion, lockboxes: [...rest.values.keys()].filter((k) => k.startsWith("lockbox/")).length });
       return v.cutsBase === true;

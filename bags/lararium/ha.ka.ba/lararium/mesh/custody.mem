@@ -211,10 +211,12 @@ Every refusal lands before the commit row, so before any row moves.
 ''Built: a production path reaches each.''
 * ''The carrier table'', its census and the rotation's list (`packages/lararium-node/src/vault-carriers.ts`).
 
+''Specified in code: the suites run it, and no production path reaches it.''
+* The memory section's cut and its import door, inside the key island (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/what-the-code-holds">>). Caller: the custody door's `backup` frame and the restore's import act.
+
 ''Owed: the law above stands, and no code holds it.''
 * The bundle's format, the cut, the restore, the custody door's `backup` frame and the `lares vault backup` and `restore` commands.
 * The handle-book's tag for the recognising face.
-* The memory section's cut and its import door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
 * A witness that derives from the table and refuses any private file or seal outside it.
 
 <<~/ahu>>
@@ -229,6 +231,6 @@ Every refusal lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-mqAxcpldj5Dfn46TfH3ynH_FqoL7FPpRKkxQfYy4wA
+<<^ code="&#x0003;">>ni:///sha-256;28G7pRjVtL71dpwJwY36f6cErSWmvgZCiIM_M9-zHiw
 
 <<^ code="&#x0004;" -> to="?">>

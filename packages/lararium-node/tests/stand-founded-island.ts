@@ -68,5 +68,9 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
   };
-  return { ctx, daemonAuth, daemonHandle, vesselRepo };
+  // The face's creator-veil, as a shore that derives it hands it to the island: the key the founding derived under
+  // its tag, and the Archive that veil left. A suite that needs the veil standing adds both to `daemonAuth`.
+  const veilKeys = await veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED))(cer.veilTag);
+  const veil = { dyadVeil: { tag: cer.veilTag, signingKey: veilKeys.signingKey }, veilArchiveBytes: cer.veilArchive };
+  return { ctx, daemonAuth, daemonHandle, vesselRepo, veil };
 }

@@ -15,6 +15,9 @@
  *   · WHICH RAISES COUNT. A raise counts where this island's own count of the fleet's acts answered it (every
  *     roll this seat took, and every kept roll the vessel handed back under its own receipt), or where the
  *     vessel's ledger reading says so.
+ *   · WHERE THIS VESSEL SITS. Its own seat reads as the one of its identities the face's key group holds and
+ *     still seats on this replica. A vessel with no face, or whose identities hold no seat there, names none, and
+ *     an import of a bundle's memory section then refuses: it would wrap a key for no seat.
  *   · WHO SIGNS. The session whose act asks. No session proof composed: every mint refuses by name, and this
  *     vessel reads no writer as capable, so it counts no record. No vessel key and no daemon key signs in a
  *     session's place.
@@ -134,6 +137,19 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       return { raiseCounts: (act) => answered.has(act) || counted.has(act), admissionVerifies: (act) => admitted.has(act) };
     },
     ownEdgeShadowed: async () => (input.ownEdgeShadowed === undefined ? false : (await input.ownEdgeShadowed()) === true),
+    ownSeat: async () => {
+      if (input.group === null) return null;
+      const own = (await shore.self()).map(bare);
+      for (const provider of input.providers) {
+        let members: string[];
+        try { members = (await provider.sentinelCgkaMembers(input.group.docIdHex)).map(bare); } catch { continue; }   // this identity holds no replica of the group
+        for (const id of own) {
+          if (members.includes(id) && (await provider.verifySentinelMembership(id, input.group.docIdHex)).ok) return id;
+        }
+        return null;
+      }
+      return null;
+    },
     values: input.values,
     ...(session.apart ? { apart: session.apart } : {}),
   });

@@ -468,3 +468,4 @@ export * from "./content-key-lineage.js";
 export * from "./sealed-store-rest.js";
 export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
+export * from "./memory-section.js";

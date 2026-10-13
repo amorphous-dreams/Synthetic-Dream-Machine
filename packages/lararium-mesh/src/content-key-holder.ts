@@ -42,6 +42,13 @@
  * A LOCK ENDS AN ACT IN FLIGHT. Every write to rest passes one door that checks the lock first (`#rest`), and
  * every answer checks it again, so a locked holder rests nothing further and answers `holder-locked`.
  *
+ * A BACKUP BUNDLE'S MEMORY SECTION LEAVES AND ENTERS HERE, SEALED. `cutMemory` seals the keys this holder counted
+ * and holds, for the bags its caller names, to a public key the cut hands in, and answers ciphertext beside a
+ * list that names no key. `importMemory` opens a section inside the holder, judges each entry apart, and lands
+ * what passes as a lockbox for this vessel's own seat under a `memory-import` record. A cut hands keys beyond
+ * the holder and an import wraps one for the vessel's own seat, so each refuses under the vessel's own shadow.
+ * An import adds and never replaces (sealed-store#/the-store, the memory section and the import door).
+ *
  * Platform-blind: it asks a store, a key shore and its vessel's readings through ports.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
@@ -49,17 +56,18 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
 import { openPrivateBody, sealPrivateBody, type SealedPrivateBody } from "./ciphertext-cas.js";
 import {
-  KeyLineage, factOfPlan, planAdmissionFromNow, planFounding, planJoin, planRemovalRolls, sameFact, versionsToHandOver, writeHead,
+  KeyLineage, LINEAGE_REFUSALS, factOfPlan, planAdmissionFromNow, planFounding, planJoin, planRemovalRolls, sameFact, versionsToHandOver, writeHead,
   type HistoryDeclaration, type KeyRollPlan, type KeyVersionFact, type RollerPorts, type RollOutcome,
 } from "./content-key-lineage.js";
 import type { KeysHeldApart } from "./face-proof-subjects.js";
+import { openMemorySection, sealMemorySection, type MemoryEntry } from "./memory-section.js";
 import { wrapLockbox, openLockbox, type KeyParcel, type LockboxWrapShore, type ReaderId } from "./lockbox-wrap.js";
 import {
-  isWellFormedText, keyVersionIdOf, mintContentKey, readKeyVersionId,
+  isWellFormedText, keyVersionIdOf, mintContentKey, readContentKey, readKeyVersionId,
   type ContentKey, type KeyVersionId, type SealContext, type SealedAddress,
 } from "./sealed-chunk.js";
 import {
-  authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexRowsOf, joinProofOf, joinProven, readRecord,
+  authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexRowsOf, joinProofOf, joinProven, readBagLocator, readRecord,
   recordIdOf, signRecord,
   type BagLocator, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody,
   type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type SealedRecord, type VerifiedRecord,
@@ -93,6 +101,8 @@ export const HOLDER_REFUSALS = [
   "reader-not-standing",      // the reader holds no seat in the bag's key group, or stands set aside
   "reader-unreached",         // this vessel holds no contact card for the reader
   "fresh-base-unavailable",   // a new span opens on a fresh base, and no hand here cuts one
+  "seat-not-standing",        // this vessel's own seat stands in no key group of its face: an import wraps for nobody
+  "memory-malformed",         // a memory section does not open, or opens to no whole entries
 ] as const;
 export type HolderRefusalName = (typeof HOLDER_REFUSALS)[number];
 /** A refusal names what stopped the act. `cause` carries another module's own refusal name, never a key. */
@@ -119,6 +129,9 @@ export interface ContentKeyHolderPorts {
   evidenceOf(bagId: string): Promise<BagEvidence>;
   /** Does this vessel read a shadow over its own edge in the bag's scope? */
   ownEdgeShadowed(bagId: string): Promise<boolean>;
+  /** This vessel's own seat in its face's key group: its identifier on the key shore where that seat stands,
+   *  null where it stands in none. An import names it in the record it signs. */
+  ownSeat(): Promise<ReaderId | null>;
   /** The sealed values' own rest: bytes by address. */
   readonly values: {
     read(address: SealedAddress): Promise<Uint8Array | null>;
@@ -155,6 +168,27 @@ export interface BagReading {
   readonly rival:     boolean;
 }
 export interface MintOutcome { readonly keyVersion: KeyVersionId; readonly founding: BagLocator; readonly unserved: readonly ReaderId[] }
+
+// ── The memory section ──────────────────────────────────────────────────────────────────────────
+/** One version a memory section carries, as a cut names it for a person: no key. */
+export interface MemoryHolding { readonly bagId: string; readonly founding: BagLocator; readonly keyVersion: KeyVersionId }
+/** What the import door answers for one entry. Each entry draws exactly one. */
+export const MEMORY_OUTCOMES = [
+  "imported",               // the entry passed every check and landed: a record, then a lockbox for this seat
+  "held",                   // this vessel already counts and holds that version: nothing changed
+  "key-forged",             // the key does not recompute to the version id its entry names, under the bag it names
+  "record-unverified",      // no key version record under that locator and id verifies under the key
+  "version-conflicted",     // two unlike verified records stand under that id, or the lineage holds it conflicted
+  "transition-uncounted",   // the record verifies, and the lineage does not count the version on this vessel's evidence
+] as const;
+export type MemoryOutcome = (typeof MEMORY_OUTCOMES)[number];
+export interface MemoryImportResult {
+  readonly bagId:      string;
+  readonly keyVersion: string;
+  readonly outcome:    MemoryOutcome;
+  /** Another module's own refusal name, never a key: what stopped a record or a transition. */
+  readonly cause?:     string;
+}
 export interface SealedBlob extends MintlessSeal { readonly founded?: MintOutcome; readonly joined?: MintOutcome }
 interface MintlessSeal { readonly body: SealedPrivateBody; readonly manifest: RecordId; readonly founding: BagLocator }
 
@@ -698,20 +732,148 @@ export class ContentKeyHolder {
       const bags = await this.#reload();
       // A manifest enters the index once this vessel verified it under a version it counted: each manifest that
       // just arrived, and each resting manifest of a version this reading counted for the first time.
-      const resting = await store.records("manifest");
-      for (const bag of bags.values()) for (const line of bag.lines.values()) {
-        for (const carried of resting) {
-          const version = carried.body.keyVersion;
-          const key = carried.body.bag === line.locator && line.lineage.has(version) ? line.keys.get(version) : undefined;
-          if (key === undefined) continue;
-          const id = recordIdOf("manifest", carried.body);
-          if (!arrived.has(id) && before.has(version)) continue;
-          const manifest = await this.#manifest(bag, line, key, id);
-          if (manifest !== null) await this.#rest(() => store.putIndexRows(indexRowsOf(manifest)));
-        }
-      }
+      await this.#indexAfter(bags, before, arrived);
       return { bags: [...bags.values()].map((bag) => this.#reading(bag, null)) };
     });
+  }
+
+  // ── The memory section: the cut and the import door ───────────────────────────────────────────
+  /**
+   * Seal the memory section of a backup bundle: every key this vessel COUNTED AND HOLDS among `bags`, one entry
+   * per bag and key version, sealed to `to` (the public half of the pair the bundle key derives). Answers the
+   * ciphertext and a list that names bags and versions and no key. A cut hands keys beyond the holder, so it
+   * refuses under the vessel's own shadow; it reads that shadow once, here, before it gathers anything.
+   */
+  cutMemory(args: { readonly bags: readonly string[]; readonly to: Uint8Array }): Promise<{ readonly section: Uint8Array; readonly holds: readonly MemoryHolding[] } | HolderRefusal> {
+    return this.#inTurn<{ readonly section: Uint8Array; readonly holds: readonly MemoryHolding[] }>(async () => {
+      const named = [...new Set(args.bags)].sort(ascending);
+      if (!named.every((bagId) => isWellFormedText(bagId))) return refuse("bag-malformed");
+      for (const bagId of named) if (await this.#ports.ownEdgeShadowed(bagId)) return refuse("own-edge-shadowed");
+      const bags = await this.#loaded();
+      const entries: MemoryEntry[] = [];
+      const holds: MemoryHolding[] = [];
+      for (const bagId of named) for (const line of [...(bags.get(bagId)?.lines.values() ?? [])].sort((a, b) => ascending(a.locator, b.locator))) {
+        for (const keyVersion of [...this.#usable(line)].sort(ascending)) {
+          // The entry borrows the holder's own key for the moment of the seal: the seal copies it into its image.
+          entries.push({ bagId, locator: line.locator, keyVersion, key: line.keys.get(keyVersion)! });
+          holds.push({ bagId, founding: line.locator, keyVersion });
+        }
+      }
+      if (this.#locked) return refuse("holder-locked");
+      let section: Uint8Array;
+      try { section = sealMemorySection(entries, args.to); } catch (err) { return refuse("seal-refused", said(err)); }
+      return { section, holds };
+    });
+  }
+
+  /**
+   * THE IMPORT DOOR. Open a memory section inside the holder (`secret`: the section pair's secret half) and land
+   * what passes. The act refuses whole, before any entry lands: no session signer, no seat of this vessel's own,
+   * its own shadow over a bag an entry names, a section that does not open. Each entry then draws one outcome
+   * (`MEMORY_OUTCOMES`). An entry that passes rests a `memory-import` record signed under its version, then one
+   * lockbox for this vessel's own seat alone. The holder then reads its lockboxes afresh and counts again.
+   *
+   * THE DOOR COUNTS BY THE LINEAGE'S OWN RULES: it counts the vessel's own keys beside the entries on a scratch
+   * reading, against this vessel's own evidence, and lands only a version that reading counts. It asks for no
+   * history declaration: one face on a new device reads as the same audience (sealed-store#/epochs).
+   *
+   * IT ADDS AND NEVER REPLACES: it writes no lockbox over another, removes no record and moves no head.
+   */
+  importMemory(args: { readonly section: Uint8Array; readonly secret: Uint8Array; readonly signer: RecordSigner | null }): Promise<{ readonly results: readonly MemoryImportResult[] } | HolderRefusal> {
+    return this.#inTurn<{ readonly results: readonly MemoryImportResult[] }>(async () => {
+      if (args.signer === null) return refuse("signer-unavailable");
+      const seat = await this.#ports.ownSeat();
+      if (seat === null) return refuse("seat-not-standing");
+      const entries = openMemorySection(args.section, args.secret);
+      if (entries === null) return refuse("memory-malformed");
+      try {
+        const { store, shore, random } = this.#ports;
+        for (const bagId of [...new Set(entries.map((entry) => entry.bagId))].sort(ascending)) {
+          if (await this.#ports.ownEdgeShadowed(bagId)) return refuse("own-edge-shadowed");
+        }
+        const bags = await this.#loaded();
+        const results: (MemoryImportResult | null)[] = entries.map(() => null);
+        const say = (at: number, outcome: MemoryOutcome, cause?: string): void => {
+          const entry = entries[at]!;
+          results[at] = { bagId: entry.bagId, keyVersion: entry.keyVersion, outcome, ...(cause === undefined ? {} : { cause }) };
+        };
+        // THE KEY FIRST, THEN WHAT THE VESSEL ALREADY HOLDS. Neither reading opens a record.
+        const live = new Map<string, number[]>();   // `${bagId}\n${locator}` → the entries still to judge
+        entries.forEach((entry, at) => {
+          const key = readContentKey(entry.key);
+          const version = readKeyVersionId(entry.keyVersion), locator = readBagLocator(entry.locator);
+          if (key === null || version === null || locator === null || keyVersionIdOf(key, entry.bagId) !== version) { say(at, "key-forged"); return; }
+          const line = bags.get(entry.bagId)?.lines.get(locator);
+          if (line && line.keys.has(version) && line.lineage.has(version)) { say(at, "held"); return; }
+          const name = `${entry.bagId}\n${locator}`;
+          live.set(name, [...(live.get(name) ?? []), at]);
+        });
+        // A SCRATCH READING per founding: the keys this vessel holds beside the entries, counted as any reload
+        // counts, against this vessel's own evidence. Nothing of it reaches the holder's own lines.
+        const carried = live.size > 0 ? await store.records("key-version") : [];
+        const landing: { at: number; bag: Bag; locator: BagLocator; version: KeyVersionId; key: ContentKey }[] = [];
+        const lands = new Set<string>();
+        for (const [name, indexes] of live) {
+          const bagId = name.slice(0, name.indexOf("\n")), locator = name.slice(name.indexOf("\n") + 1) as BagLocator;
+          const bag: Bag = bags.get(bagId) ?? { bagId, lines: new Map() };
+          const standing = bag.lines.get(locator);
+          const scratch: Line = { locator, lineage: KeyLineage.empty(), keys: new Map(standing?.keys ?? []), records: new Map(), carried: new Map(), why: new Map(), manifests: new Map() };
+          for (const at of indexes) {
+            const version = entries[at]!.keyVersion as KeyVersionId;
+            if (!scratch.keys.has(version)) scratch.keys.set(version, entries[at]!.key as ContentKey);
+          }
+          this.#count(bag, scratch, carried, await this.#ports.evidenceOf(bagId));
+          for (const at of indexes) {
+            const version = entries[at]!.keyVersion as KeyVersionId;
+            const why = scratch.why.get(version);
+            // One version lands once, however many entries name it.
+            if (scratch.lineage.has(version)) { if (lands.has(`${name}\n${version}`)) say(at, "held"); else { lands.add(`${name}\n${version}`); landing.push({ at, bag, locator, version, key: entries[at]!.key as ContentKey }); } }
+            else if (scratch.lineage.conflicted(version) || why === "version-conflict") say(at, "version-conflicted");
+            else if (why === undefined) say(at, "record-unverified");
+            else if ((LINEAGE_REFUSALS as readonly string[]).includes(why)) say(at, "transition-uncounted", why);
+            else say(at, "record-unverified", why);
+          }
+        }
+        // WHAT PASSED LANDS: the record first, then the lockbox for this vessel's own seat alone.
+        const reader = bare(seat);
+        for (const { at, bag, locator, version, key } of landing) {
+          if (this.#locked) return refuse("holder-locked");
+          const signed = await this.#sign("memory-import", { bag: locator, keyVersion: version }, { seat: reader }, bag.bagId, locator, key, args.signer);
+          if (isRefusal(signed)) return signed;
+          const wrapped = await wrapLockbox({ payload: { bagId: bag.bagId, locator, keyVersion: version, key }, readers: [], shore, ...(random ? { random } : {}) });
+          if (!("lockbox" in wrapped)) return refuse("wrap-failed", wrapped.cause ?? wrapped.refusal);
+          await this.#rest(() => store.putRecord(signed.carried));
+          await this.#rest(() => store.putLockbox(wrapped.lockbox));
+          say(at, "imported");
+        }
+        if (landing.length > 0) {
+          const before = new Set<KeyVersionId>();
+          for (const bag of bags.values()) for (const line of bag.lines.values()) for (const version of this.#usable(line)) before.add(version);
+          await this.#indexAfter(await this.#reload(), before, new Set());
+        }
+        return { results: results.map((one) => one!) };
+      } finally {
+        for (const entry of entries) entry.key.fill(0);
+      }
+    });
+  }
+
+  /** Index each resting manifest this vessel verifies under a version it counts: every manifest in `arrived`, and
+   *  every manifest of a version outside `before` (a version this reading counted for the first time). */
+  async #indexAfter(bags: Map<string, Bag>, before: ReadonlySet<KeyVersionId>, arrived: ReadonlySet<RecordId>): Promise<void> {
+    const { store } = this.#ports;
+    const resting = await store.records("manifest");
+    for (const bag of bags.values()) for (const line of bag.lines.values()) {
+      for (const carried of resting) {
+        const version = carried.body.keyVersion;
+        const key = carried.body.bag === line.locator && line.lineage.has(version) ? line.keys.get(version) : undefined;
+        if (key === undefined) continue;
+        const id = recordIdOf("manifest", carried.body);
+        if (!arrived.has(id) && before.has(version)) continue;
+        const manifest = await this.#manifest(bag, line, key, id);
+        if (manifest !== null) await this.#rest(() => store.putIndexRows(indexRowsOf(manifest)));
+      }
+    }
   }
 
   /**
