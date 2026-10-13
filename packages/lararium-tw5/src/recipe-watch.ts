@@ -45,6 +45,9 @@ import type { IslandContext } from "./island-context.js";
  * or undefined when the island carries no catalog access.
  */
 export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void) | undefined> {
+  // A mounted island never hot-swaps: a session surface lays the recipe the one resolver returned at its
+  // mount, and a recipe written later reaches the next mount. No watch stands over a resolved mount.
+  if (ctx.resolvedMount) return undefined;
   if (!ctx.catalogUrl && !ctx.oracleUrl) return undefined;
   const slug        = ctx.recipe.wikiSlug;
 

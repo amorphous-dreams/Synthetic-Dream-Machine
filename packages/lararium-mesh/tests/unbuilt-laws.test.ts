@@ -341,6 +341,43 @@ describe("⑦ the daemon wiki, held to the laws every other wiki obeys", () => {
 });
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
+// ⑪ ONE FACE'S SESSIONS — a view and a resolver that stand specified, and the doors that still bypass them
+// ════════════════════════════════════════════════════════════════════════════════════════════════
+// The session-scoped document view, the one recipe resolver and the pool's surface door stand in code
+// (`session-document-view.ts`, `surface-recipe.ts`, `mountSurface`). No production caller mounts a surface:
+// each waits on a session that wears a verified face. Until then every wiki island rides a broad port.
+describe("⑪ one face's sessions", () => {
+  const stripped = (path: string[]): string => {
+    const source = readFileSync(join(import.meta.dirname, "..", "..", ...path), "utf8");
+    const code = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    expect(code.length, "the strip left the module's code standing").toBeGreaterThan(source.length / 10);
+    return code;
+  };
+
+  test("the surface door stands, and it attaches through the view", () => {
+    const pool = stripped(["lararium-mesh", "src", "vessel-island-pool-core.ts"]);
+    expect(pool).toMatch(/async mountSurface\(/);
+    expect(pool).toMatch(/view\.attach\(this\._mainRepo, mainPort\)/);
+  });
+
+  test.skip("NO ISLAND RIDES A BROAD PORT INTO A SESSION — DEFERRED: the pool's wiki door (`mountWiki`) still attaches its island's port with `attachMessageChannelSync`, and every production wiki mounts through it (`mountPrimaryWiki`, the residency collector's `ensureWiki`). Lands when a session wears a verified face (session-contract debt three) and the node and browser callers hold sessions (debts five and seven): each interactive surface then mounts through `mountSurface`, and the wiki door's broad attach leaves the pool. The vessel's own face-blind daemon keeps its broad port through `daemon-vm-core`, which stays outside this pool.", () => {
+    const pool = stripped(["lararium-mesh", "src", "vessel-island-pool-core.ts"]);
+    expect(pool).not.toMatch(/attachMessageChannelSync\(/);
+  });
+
+  test.skip("THE BROWSER SELECTS PLUGINS THROUGH THE ONE FUNCTION — DEFERRED: `resolveBrowserIslandPluginCids` (`open-browser-vessel.ts`) still runs its own selection beside mesh's `resolveRecipePluginCids`, which the node door and the surface resolver already share. Lands with the compose hunk that folds the browser's door into the one function.", () => {
+    const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
+    expect(browser).not.toMatch(/selectPluginBlobs\(/);
+    expect(browser).toMatch(/resolveRecipePluginCids\(/);
+  });
+
+  test.skip("AN ADMITTED LEAF NEVER SENDS A CHANGE TO ITS HEARTH'S CANON — DEFERRED: the one-way gate stands in mesh (`oneWayDocumentsGate`, `gated-sync-leg.ts`) and no vessel wears it: the leaf's relay adapter reaches its Repo bare (`open-browser-vessel.ts`), so sync still carries a leaf's change to a canon document toward the hearth. Lands with the compose hunk that wraps the leaf's relay adapter, and its twin on the hearth's socket.", () => {
+    const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
+    expect(browser).toMatch(/oneWayDocumentsGate\(/);
+  });
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════
 // ⑥ THE INDEPENDENT OPERATOR — a principal class the fleet has never stood
 // ════════════════════════════════════════════════════════════════════════════════════════════════
 describe("⑥ the node runner without grammar caps", () => {

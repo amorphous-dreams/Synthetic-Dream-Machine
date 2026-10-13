@@ -29,11 +29,7 @@
  */
 
 import type { LarDoc, WikiRecipe, OfferingLookup } from "@lararium/mesh";
-import {
-  bootSetIds, bootSetPluginCids, verifyCasBytes,
-  selectPluginBlobs, selectedPluginCids,
-  offeringAnnouncesFromDoc, sha256HexBytesSync,
-} from "@lararium/mesh";
+import { offeringAnnouncesFromDoc, resolveRecipePluginCids } from "@lararium/mesh";
 
 export type NodePluginResolutionVerdict =
   | { readonly ok: true; readonly pluginCids: readonly string[] }
@@ -46,28 +42,16 @@ export interface ResolveNodeIslandPluginCidsOpts {
   readonly readBytes: (cid: string) => Uint8Array | null;
 }
 
-/** @see the module docblock. */
-export async function resolveNodeIslandPluginCids(
+/**
+ * The node vessel's plugin selection for one recipe. The selection itself stands in mesh
+ * (`resolveRecipePluginCids`), the one function the surface mount's resolver and the browser read too; this
+ * door hands it the node's own inputs: the island document's blobs, the Crossroads lookup and the filesystem
+ * content store.
+ */
+export function resolveNodeIslandPluginCids(
   opts: ResolveNodeIslandPluginCidsOpts,
 ): Promise<NodePluginResolutionVerdict> {
-  if (opts.recipe.pluginOfferingsFault) {
-    return { ok: false, error: `${opts.recipe.wikiSlug}: malformed-offerings-field: ${opts.recipe.pluginOfferingsFault}` };
-  }
-  const floorCids  = bootSetPluginCids(opts.islandBlobs);
-  const bootIds    = bootSetIds(opts.islandBlobs);
-  const offerings  = opts.recipe.pluginOfferings ?? [];
-  const selection  = await selectPluginBlobs(offerings, opts.lookup, bootIds);
-  if (!selection.ok) {
-    return { ok: false, error: `${opts.recipe.wikiSlug}: offering selection ${JSON.stringify(selection.failure)}` };
-  }
-  const selectedCids = selectedPluginCids(selection.blobs);
-  const bytesVerdict = verifyCasBytes(selectedCids, opts.readBytes, (b) => sha256HexBytesSync(b));
-  if (!bytesVerdict.ok) {
-    return { ok: false, error: `${opts.recipe.wikiSlug}: ${JSON.stringify(bytesVerdict.failure)}` };
-  }
-  // Dedup: a selected offering's CID coinciding with a floor CID would need a raw sha256 collision
-  // (practically disjoint namespaces), but a Set keeps the manifest from ever naming one CID twice.
-  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids])] };
+  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: opts.readBytes });
 }
 
 /** @see the module docblock. */

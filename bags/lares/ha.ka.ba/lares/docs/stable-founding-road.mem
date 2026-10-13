@@ -441,8 +441,8 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `W11` Keyhive as the private-authority substrate: a narrow probe before the build. House. W.
 
 !!! ONE FACE
-* `F1` The scoped document view stands specified in mesh (`session-document-view.ts` over `gated-sync-leg.ts`), and no island rides it. Owed: every interactive surface mounts under it in place of the broad sync port, which waits on a verified face (train W) and on callers that hold a session (`F4`, `F6`); the share verdict's caller keeps an owner from offering a session island a document beyond its facets; an admitted leaf's relay adapter wears the one-way gate over its hearth's canon documents, and the hearth wears that gate's twin toward its leaves (`hearth-canon.ts`, `open-browser-vessel.ts`, `open-node-vessel.ts`). O1.
-* `F2` One recipe resolver; the pool keyed by the whole session key; one vessel-level proof that a recipe naming an offering resolves through a vessel path. O1.
+* `F1` The scoped document view stands specified in mesh (`session-document-view.ts` over `gated-sync-leg.ts`); the pool's surface door (`mountSurface`) and the island kernel's half ride it, and no production caller mounts a surface. Owed: every interactive surface mounts under it in place of the broad sync port, which waits on a verified face (train W) and on callers that hold a session (`F4`, `F6`); the share verdict's caller keeps an owner from offering a session island a document beyond its facets; an admitted leaf's relay adapter wears the one-way gate over its hearth's canon documents, and the hearth wears that gate's twin toward its leaves (`hearth-canon.ts`, `open-browser-vessel.ts`, `open-node-vessel.ts`); a wiki island's verbs that read the catalog document move to the view's catalog ask. O1.
+* `F2` One recipe resolver (`surface-recipe.ts`) and the pool keyed by the whole session key (`mountSurface`) stand specified in mesh, with one proof through the node vessel's own parts that a recipe naming an offering resolves. Owed: the node and browser compose sites resolve through the one function at surface mount; the browser's plugin selection folds into `resolveRecipePluginCids`, and its pool hands the content door its OPFS reader; the wiki door (`mountWiki`), its retained mount specs and the recipe watch retire with the last caller; a surface island's events reach a verb gate bound to its session (`onSurfaceEvent`) when the node callers move (`F4`). O1.
 * `F3` One working document per (face, wiki, slot kind) at a face-secret address. O1.
 * `F4` Node callers move to sessions; receipts bind to the face; verb outcomes and the effect index follow the working layer with their reader (`verb-vm.ts`, `uds-channel.ts`). O1.
 * `F5` The durability receipt, rung 2's node half. O1.
@@ -587,9 +587,9 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 ''Riskiest'': the design may turn out to need a signed shape, since the removal act rides the face's log.
 
 !!! O1 ~ ONE FACE's sessions (its contract landed; the working address onward waits on W's cutover)
-# ''Landed ahead'': the session contract in mesh (`session-contract.ts`); the scoped document view (`session-document-view.ts`), specified in code and reached by no production caller.
+# ''Landed ahead'': the session contract in mesh (`session-contract.ts`); the scoped document view (`session-document-view.ts`), the one recipe resolver (`surface-recipe.ts`) and the pool's surface door (`mountSurface`), each specified in code and reached by no production caller.
 # The scoped document view's compose hunks: the share verdict's caller, the leaf's one-way gate and the hearth's twin.
-# One recipe resolver and the pool's key.
+# The recipe resolver's compose hunks: both platforms resolve at surface mount, and the browser's plugin selection folds into the one function.
 # The working document's address.
 # Node callers move to sessions.
 # The durability receipt.
@@ -759,6 +759,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8ajQVc-geISbE_zZdHxNztZpaGENhMH9TutjEYwe-0A
+<<^ code="&#x0003;">>ni:///sha-256;awxCIEOVKxzNodY7lJTLDH_dAAeCAP7UNhvXwRR1FwM
 
 <<^ code="&#x0004;" -> to="?">>

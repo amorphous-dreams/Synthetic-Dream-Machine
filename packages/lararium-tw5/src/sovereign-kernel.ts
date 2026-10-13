@@ -57,6 +57,7 @@ import {
   isVesselToIslandMsg,
   mkTeardownAck,
   makeIslandRepo,
+  replicaHeads,
   sha256HexBytesSync,
   type Repo,
   type DocHandle,
@@ -72,6 +73,7 @@ import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { makeCatalogAccessor } from "./catalog-accessor.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
+import { makeViewChannel, type ViewChannel } from "./view-channel.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
 
 // ── The host shore — platform divergence as composition ──────────────────────
@@ -128,6 +130,8 @@ export function runSovereignKernel(
   let _bridgeUnsub: (() => void) | null = null;   // the outbound bridge (Road B) — one listener, cancelled at teardown
   let _adaptor: import("./island-adaptor.js").IslandAdaptor | null = null;
   let _activeWikiUri                    = "";
+  // A session island's two asked gates (catalog names, content addresses) ride this channel; null outside a session.
+  let _view: ViewChannel | null         = null;
 
   // Live CRDT patches flow through AutomergeDocStore.handle.on("change") →
   // MemeProvider → IslandAdaptor → the shore queue. The packed engine is a synchronous applier;
@@ -137,6 +141,7 @@ export function runSovereignKernel(
 
   host.listen((raw: unknown) => {
     if (!isVesselToIslandMsg(raw)) return;
+    if (_view?.settleAnswer(raw)) return;
 
     if (raw.type === "manifest") {
       void _handleManifest(raw as IslandMsg_Manifest);
@@ -282,12 +287,22 @@ export function runSovereignKernel(
     // tap whichever face the platform holds (both coexist with the adapter's own).
     if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("message", _markSyncHeard);
     else tapPort.on?.("message", _markSyncHeard);
-    const storageAdapter = host.storage(msg);
+    // A SESSION ISLAND (`msg.view`) holds an EPHEMERAL replica on every platform: no storage adapter stands
+    // behind its Repo whatever the host would offer, and its Repo announces the one peer ID its scoped view
+    // admits. The vessel's owner alone persists.
+    _view = msg.view ? makeViewChannel(_post) : null;
+    const storageAdapter = msg.view ? undefined : host.storage(msg);
     _repo = makeIslandRepo({
       ...(storageAdapter ? { storage: storageAdapter } : {}),
       syncPort: msg.syncPort,
+      ...(msg.view ? { peerId: msg.view.peerId } : {}),
       ...(msg.ownedDocument ? { denyDocument: msg.ownedDocument.documentUrl } : {}),
     });
+    // A SESSION ISLAND HOLDS NO CONTENT STORE: every content read asks its view, and the vessel's owner answers
+    // with the bytes or a refusal. The host's own resolver never gets asked. Each caller below re-checks the
+    // bytes against the address, as it does for bytes from any store.
+    const view = _view;
+    const resolveByCid: IslandHostShore["resolveByCid"] = view ? (cid) => view.content(cid) : host.resolveByCid;
     if (msg.ownedDocument) {
       const ownedManifest = msg.ownedDocument.storage
         ? { ...msg, storage: msg.ownedDocument.storage, syncPort: msg.ownedDocument.syncPort }
@@ -312,7 +327,10 @@ export function runSovereignKernel(
     // catalog registry ACCESS (never layered) — the island resolves library bags from
     // the user registry ITSELF: boot runs the same resolution path recipe-watch
     // runs live (boot = first reconcile).
-    const catalogUrl = msg.grants.catalogUrl ?? null;
+    // A RESOLVED mount carries every slot's absolute id and reaches no catalog at all: the one mesh resolver
+    // answered at surface mount, and this island lays what it names.
+    const resolved   = msg.resolved ?? null;
+    const catalogUrl = resolved ? null : msg.grants.catalogUrl ?? null;
     const catalog    = catalogUrl ? makeCatalogAccessor(_repo, catalogUrl) : null;
 
     // Three oracle planes, three authorities: system bags (lares, lararium)
@@ -322,6 +340,7 @@ export function runSovereignKernel(
     // grants.
     const slug = msg.recipe.wikiSlug;
     const slotUrl = async (slot: SlotUri): Promise<string | null> => {
+      if (resolved) return slot === ORACLE_BAG ? msg.grants.islandUrl : resolved[slot] ?? null;
       if (slot === wikiSlotUri(slug, "draft"))    return msg.grants.draftUrl    ?? null;
       if (slot === wikiSlotUri(slug, "working"))  return msg.grants.workingUrl  ?? null;
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
@@ -370,17 +389,17 @@ export function runSovereignKernel(
     const coreVersion = String(laraiumHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.version ?? "");
     const pluginTiddlers: Record<string, unknown>[] = [];
 
-    if (!host.resolveByCid || !msg.coreHash) {
+    if (!resolveByCid || !msg.coreHash) {
       _post(mkFault(msg.wikiUri, `island cannot resolve the TW5 core — the CID plane needs a local CAS resolver and a coreHash`));
       return;
     }
-    const coreBytes = await host.resolveByCid(msg.coreHash);
+    const coreBytes = await resolveByCid(msg.coreHash);
     if (!coreBytes) {
       _post(mkFault(msg.wikiUri, `island cannot resolve TW5 core by CID ${msg.coreHash.slice(0, 12)}… from the local CAS`));
       return;
     }
     for (const cid of msg.pluginCids ?? []) {
-      const bytes = await host.resolveByCid(cid);
+      const bytes = await resolveByCid(cid);
       if (!bytes) {
         _post(mkFault(msg.wikiUri, `island cannot resolve plugin tiddler by CID ${cid.slice(0, 12)}… from the local CAS`));
         return;
@@ -439,13 +458,13 @@ export function runSovereignKernel(
     // reconciling the SAME path boot just walked.
     // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
     // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, ...(host.resolveByCid ? { resolveByCid: host.resolveByCid } : {}) };
+    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
     // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
     // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
     // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
     // splice runs through the guarded nalu rail, so a rehydrated body never echoes back to the CRDT
-    // (content-resolution.mem #tw5-shore). Off when the island exposes no CAS resolver.
-    if (host.resolveByCid) _lazyUnsub = installLazyResolver(tw5, host.resolveByCid);
+    // (content-resolution.mem #tw5-shore). The boot above already refused an island with no CAS resolver.
+    _lazyUnsub = installLazyResolver(tw5, resolveByCid);
     tick("behavior");
     await behavior.onEa(_ctx);
 
@@ -479,11 +498,23 @@ export function runSovereignKernel(
       try { await _repo.flush(); }
       catch (err) { console.warn(`[sovereign-kernel] teardown flush failed: ${String(err)}`); }
     }
+    // A SESSION ISLAND KEEPS NO STORE, so the flush above rests nothing. What it wrote lives on only once the
+    // vessel's owner holds it: the island names the heads of every document it laid and waits for the owner's
+    // word before it acks. A view that closed first answers at once, and the vessel's own handshake budget
+    // bounds the wait.
+    if (_view) {
+      const heads: Record<string, string[]> = {};
+      for (const handle of _handles.values()) heads[handle.url] = replicaHeads(handle);
+      try { await _view.settle(heads); }
+      catch (err) { console.warn(`[sovereign-kernel] teardown settle failed: ${String(err)}`); }
+    }
     if (_ownedRepo) {
       try { await _ownedRepo.flush(); }
       catch (err) { console.warn(`[sovereign-kernel] owned-document flush failed: ${String(err)}`); }
     }
 
+    _view?.close();
+    _view = null;
     _handles.clear();
     _composite = null;
     _ctx       = null;

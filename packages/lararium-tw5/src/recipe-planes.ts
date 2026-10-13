@@ -10,36 +10,13 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/recipe-planes
  */
 
-import { plainRecordOrNull, recipeUri, type LarTiddlerRecord, type StoredLarRecord } from "@lararium/mesh";
+import { RECIPE_PLANES, effectiveRecipe, recipeRecordStands as standing, recipeUri, type EffectiveRecipe, type RecipePlane } from "@lararium/mesh";
 import type { CatalogAccessor } from "./catalog-accessor.js";
 
-/** The planes a wiki's recipe record may stand in, the vessel's own composition first. */
-export const RECIPE_PLANES = ["catalog", "oracle"] as const;
-export type RecipePlane = typeof RECIPE_PLANES[number];
-
-export interface EffectiveRecipe {
-  readonly record: LarTiddlerRecord;
-  readonly plane:  RecipePlane;
-  readonly title:  string;
-}
-
-const standing = (rec: LarTiddlerRecord | null | undefined): rec is LarTiddlerRecord =>
-  !!rec && rec.meta?.deleted !== true;
-
-/** The recipe a wiki stands on. `read` answers one plane's record or nothing, straight off the plane's
- *  document or already unwrapped; this reader unwraps it. A tombstoned record (`meta.deleted`) counts as
- *  nothing. Synchronous, so the boot mount and the live watch share it. */
-export function effectiveRecipe(
-  slug: string,
-  read: (plane: RecipePlane, title: string) => StoredLarRecord | null | undefined,
-): EffectiveRecipe | null {
-  for (const plane of RECIPE_PLANES) {
-    const title = recipeUri(plane, slug);
-    const record = plainRecordOrNull(read(plane, title));
-    if (standing(record)) return { record, plane, title };
-  }
-  return null;
-}
+// The reader itself stands in mesh, where the surface mount's resolver reads it too; this module keeps the
+// one name every tw5 site already imports.
+export { RECIPE_PLANES, effectiveRecipe };
+export type { EffectiveRecipe, RecipePlane };
 
 /** The same walk over accessors (`recordOf`), for verb handlers. */
 export async function effectiveRecipeOf(

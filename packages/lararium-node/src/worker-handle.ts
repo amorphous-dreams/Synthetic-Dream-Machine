@@ -17,6 +17,12 @@ let casDoor: CasDoor | null = null;
 /** Stand (or drop) the vessel's fetch door. Set once the transport stands; cleared at close. */
 export function setCasDoor(door: CasDoor | null): void { casDoor = door; }
 
+/** Ask the vessel's fetch door for the bytes a cid names. No door standing, or a faulting one, reads as a miss. */
+export function fetchThroughCasDoor(cid: string): Promise<Uint8Array | null> {
+  const door = casDoor;
+  return door ? door(cid).catch(() => null) : Promise.resolve(null);
+}
+
 /** Answer a worker's `cas:want` on the same requestId — through the door when one stands, else a miss. */
 function attachCasDoor(w: Worker): void {
   w.on("message", (raw: unknown) => {
@@ -95,10 +101,17 @@ function attachRestDoor(w: Worker): void {
   });
 }
 
-export function nodeWorkerHandle(w: Worker): VesselWorkerHandle {
-  attachCasDoor(w);
-  attachRestDoor(w);
-  attachCustodyWriteDoor(w);
+/**
+ * Wrap a worker as a handle. `doors: false` names a SESSION's island: it takes none of the vessel's own doors
+ * (the fetch door, the rest door, the custody write door), so nothing it posts reaches the vessel's content
+ * fleet, its store or its custody. A session island asks through its scoped view alone.
+ */
+export function nodeWorkerHandle(w: Worker, opts: { readonly doors?: boolean } = {}): VesselWorkerHandle {
+  if (opts.doors !== false) {
+    attachCasDoor(w);
+    attachRestDoor(w);
+    attachCustodyWriteDoor(w);
+  }
   const post = w.postMessage.bind(w) as (msg: unknown, transfer?: unknown[]) => void;
   return {
     post:      (msg, transfer) => post(msg, transfer),
@@ -118,4 +131,9 @@ export function nodeNewSyncChannel(): { mainPort: MessagePort; syncPort: Message
 
 export function nodeSpawnWorker(url: string | URL, workerData?: unknown): VesselWorkerHandle {
   return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined));
+}
+
+/** Spawn a SESSION's island: a worker that takes none of the vessel's own doors. */
+export function nodeSpawnSessionWorker(url: string | URL): VesselWorkerHandle {
+  return nodeWorkerHandle(new Worker(url), { doors: false });
 }

@@ -19,7 +19,23 @@ import {
   type IslandStorageConfig,
   type WikiRecipe,
 } from "@lararium/mesh";
-import { nodeNewSyncChannel, nodeSpawnWorker } from "./worker-handle.js";
+import { fetchThroughCasDoor, nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWorker } from "./worker-handle.js";
+import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
+
+/**
+ * The vessel's content store, as a session island's scoped view reads it: the runtime CID plane beside the
+ * islands' storage root, then the corpus store, then the vessel's fetch door. A session island holds no
+ * store of its own, so every content read it makes arrives here, after its view has passed the address.
+ */
+export function nodeContentReader(storageRoot: string | null): (cid: string) => Promise<Uint8Array | null> {
+  const runtime = storageRoot ? casDirFromIslandStorageDir(join(storageRoot, "island")) : null;
+  return async (cid) => {
+    const corpus = process.env["LAR_CAS"] ?? (process.env["LAR_ROOT"] ? join(process.env["LAR_ROOT"], "cas") : null);
+    return (runtime ? readCasBlobFromFs(cid, runtime) : null)
+      ?? (corpus ? readCasBlobFromFs(cid, corpus) : null)
+      ?? fetchThroughCasDoor(cid);
+  };
+}
 
 /** Node's default live-wiki activation cap — the vessel advertises this as the
  *  `wiki` typeCap on the ONE residency collector (the collector, not the pool, now
@@ -67,12 +83,13 @@ export class VesselIslandPool extends VesselIslandPoolCore {
     const storageRoot = options.storageRoot ?? null;
     super({
       host: {
-        spawnWorker: () => nodeSpawnWorker(workerUrl),
+        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl) : nodeSpawnWorker(workerUrl)),
         newSyncChannel: nodeNewSyncChannel,
         storage: (wikiId): IslandStorageConfig | undefined =>
           storageRoot ? { type: "nodefs", dir: join(storageRoot, _sanitizeWikiId(wikiId)) } : undefined,
       },
       mainRepo: options.mainRepo ?? null,
+      readContent: nodeContentReader(storageRoot),
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       resolvePluginCids: options.resolvePluginCids,
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),

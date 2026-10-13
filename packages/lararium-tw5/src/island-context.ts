@@ -71,6 +71,17 @@ export interface IslandContext {
    * `cid == hash(bytes)` — content-addressed trust, never host trust.
    */
   resolveByCid?: (cid: string) => Promise<Uint8Array | null>;
+  /**
+   * True when this island mounted from a RESOLVED recipe (a session surface): every slot arrived with its
+   * absolute id, the island reaches no catalog, and its composition never changes while it stands. A recipe
+   * write reaches the next mount (session-contract#/the-effective-recipe), so no watch reconciles this one.
+   */
+  resolvedMount?: boolean;
+  /**
+   * Resolve a catalog name through the session's scoped document view: the document, or null when the view
+   * refuses. Present only on a session island, which holds no catalog document of its own.
+   */
+  viewCatalog?: (name: string) => Promise<string | null>;
 }
 
 /**

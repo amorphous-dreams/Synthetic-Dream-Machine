@@ -51,6 +51,8 @@ export const heavy = [
   "tests/repo-in-island.test.ts",
   "tests/vessel-island-pool.test.ts",
   "tests/pool-mount-intensity.test.ts",
+  "tests/surface-mount-vessel-path.test.ts",
+  "tests/surface-mount-real-island.test.ts",
   "tests/verb-tiddler-dispatch.test.ts",
   // Surfaced by `tests/heavy-roster-is-complete.test.ts`, which applies the criteria above to every
   // suite in the directory. These four stood a live listener or a nested island while running in the

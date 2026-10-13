@@ -11,6 +11,7 @@
  */
 
 import { Repo } from "@automerge/automerge-repo";
+import { getHeads } from "@automerge/automerge";
 import type { PeerId, StorageAdapterInterface } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 
@@ -26,6 +27,14 @@ export interface IslandRepoConfig {
   /** The peer ID the vessel's owner named for this island. An island under a session-scoped document view
    *  announces this ID and no other; absent, the Repo names its own. */
   peerId?: string;
+}
+
+/** The heads a replica holds of one document, as hex change hashes; empty while the document has not loaded. */
+export function replicaHeads(handle: { doc(): unknown }): string[] {
+  try {
+    const doc = handle.doc();
+    return doc ? [...getHeads(doc as Parameters<typeof getHeads>[0])] : [];
+  } catch { return []; }
 }
 
 function documentIdOf(url: string): string {

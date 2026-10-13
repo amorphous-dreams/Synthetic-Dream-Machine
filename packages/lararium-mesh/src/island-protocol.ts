@@ -5,7 +5,11 @@
  *
  * ## Island Sovereignty Law (isomorphic across all vessel types)
  *
- *   1. Every island boots a Repo-in-island via a transferred `syncPort` (MessagePort).
+ *   1. Every island boots a Repo-in-island via a transferred `syncPort` (MessagePort). A SESSION's island
+ *      (a manifest that carries `view`) reaches the vessel's Repo through that session's scoped document
+ *      view: the port carries the documents its recipe resolved and no other, its replica stays ephemeral,
+ *      it asks the vessel for a catalog name or for content by address over `view:catalog` / `view:content`,
+ *      and before it tears down it waits on `view:settle` until the vessel holds what it wrote.
  *   2. The island derives tiddler state from its own CRDT doc — never from vessel oracle deltas.
  *   3. The island owns its timing. The wiki shore lands inbound changes from ONE ordered queue
  *      across all bags, in slices paced by host tasks (`host-task.ts`); the in-wiki nalu engine
@@ -86,6 +90,11 @@ export interface IslandOwnedDocumentScope {
   documentUrl: string;
   syncPort: MessagePort;
   storage?: IslandStorageConfig;
+}
+
+/** What a session island holds of its scoped document view: the one peer ID its Repo announces. */
+export interface IslandViewStanding {
+  readonly peerId: string;
 }
 
 // ── Recipe + bag resolution ────────────────────────────────────────────────
@@ -202,6 +211,19 @@ export interface IslandMsg_Manifest {
   ownedDocument?: IslandOwnedDocumentScope;
   /** MessagePort for island-side Repo ↔ vessel Repo sync. MUST be transferred. */
   syncPort: MessagePort;
+  /**
+   * A SESSION ISLAND's standing under its scoped document view (session-contract#/the-document-view). Present:
+   * the island's Repo announces `peerId` and no other (the view's leg admits that ID alone), holds no durable
+   * store, and lays the slots `resolved` names without resolving any name itself. Absent: the island stands
+   * outside any session (the vessel's own face-blind daemon).
+   */
+  view?: IslandViewStanding;
+  /**
+   * The absolute id of every slot that holds a document, by slot name: the session's effective recipe as the
+   * one mesh resolver returned it at surface mount (session-contract#/the-effective-recipe). An island that
+   * carries it lays exactly these documents and never re-resolves: a recipe write reaches the next mount.
+   */
+  resolved?: Readonly<Record<string, string>>;
   /**
    * Serializable disk mirror configs for island-hosted LarDiskProjector.
    * Each entry carries `bagId`, `mirrorRoot` (absolute path), and `scope`
@@ -761,7 +783,10 @@ export type VesselToIslandMsg =
   | WikiMsg_SensoriumSignal
   | IslandMsg_CasBlock
   | IslandMsg_DocRested
-  | IslandMsg_CustodyWritten;
+  | IslandMsg_CustodyWritten
+  | IslandMsg_ViewCatalogResult
+  | IslandMsg_ViewContentResult
+  | IslandMsg_ViewSettled;
 
 // ── Island → vessel ──────────────────────────────────────────────────────────
 
@@ -851,6 +876,69 @@ export interface IslandMsg_CasBlock {
   type: "cas:block";
   requestId: string;
   bytes: Uint8Array | null;
+}
+
+/**
+ * Island → vessel: a session island asks its scoped document view to resolve a catalog name. The view answers
+ * from the session's own facets on the same `requestId`: the document, or null with the refusal's name.
+ */
+export interface IslandMsg_ViewCatalog {
+  schema_version: ProtocolVersion;
+  type: "view:catalog";
+  requestId: string;
+  name: string;
+}
+
+/** Vessel → island: the view's answer to `view:catalog`. */
+export interface IslandMsg_ViewCatalogResult {
+  schema_version: ProtocolVersion;
+  type: "view:catalog-result";
+  requestId: string;
+  documentUrl: string | null;
+  refusal?: string;
+}
+
+/**
+ * Island → vessel: a session island asks its scoped document view for the content at `cid`. A session island
+ * holds no content store of its own; the view decides, and the vessel's owner reads its own store and answers
+ * with the bytes on the same `requestId`. The island re-checks the bytes against the address it asked for.
+ */
+export interface IslandMsg_ViewContent {
+  schema_version: ProtocolVersion;
+  type: "view:content";
+  requestId: string;
+  cid: string;
+}
+
+/** Vessel → island: the view's answer to `view:content`: the bytes, or null with the refusal's name. */
+export interface IslandMsg_ViewContentResult {
+  schema_version: ProtocolVersion;
+  type: "view:content-result";
+  requestId: string;
+  bytes: Uint8Array | null;
+  refusal?: string;
+}
+
+/**
+ * Island → vessel: a session island, about to tear down, names the heads of the documents it holds. A session
+ * island keeps no store, so a write that has not yet crossed its port would end with it. The vessel's owner
+ * answers `view:settled` once its own replica holds every named head of every document the session may write
+ * and that replica rests in the owner's store; the island acks its teardown only then.
+ */
+export interface IslandMsg_ViewSettle {
+  schema_version: ProtocolVersion;
+  type: "view:settle";
+  requestId: string;
+  /** Document URL → the heads the island holds, as hex change hashes. */
+  heads: Record<string, string[]>;
+}
+
+/** Vessel → island: the answer to `view:settle`. `settled: false` names a view that closed first. */
+export interface IslandMsg_ViewSettled {
+  schema_version: ProtocolVersion;
+  type: "view:settled";
+  requestId: string;
+  settled: boolean;
 }
 
 /**
@@ -1012,7 +1100,10 @@ export type IslandToVesselMsg =
   | DaemonMsg_WikiAlert
   | IslandMsg_CasWant
   | IslandMsg_DocRest
-  | IslandMsg_CustodyWrite;
+  | IslandMsg_CustodyWrite
+  | IslandMsg_ViewCatalog
+  | IslandMsg_ViewContent
+  | IslandMsg_ViewSettle;
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -1031,13 +1122,13 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   // kernel's listen). Refusing here means no behavior, no cap, and no TW5 handler ever sees an unbounded
   // string: an over-long arrival vanishes exactly as a malformed one does, and the island keeps running.
   if (v.type === "wiki:dom-input" && boundedDomInputValue((v as Record<string, unknown>)["value"]) === null) return false;
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "doc:rested", "custody:written"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType>) || isSensoriumSignalType(v.type);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasVersion(v)) return false;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "doc:rest", "custody:write"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as IslandToVesselMsg["type"],
   );
 }
@@ -1077,6 +1168,8 @@ export function mkManifest(
     diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
+    view?:           IslandViewStanding;
+    resolved?:       Readonly<Record<string, string>>;
   },
 ): IslandMsg_Manifest {
   const msg: IslandMsg_Manifest = {
@@ -1093,6 +1186,8 @@ export function mkManifest(
   if (opts?.diskMirrors?.length) msg.diskMirrors = opts.diskMirrors;
   if (opts?.daemonAuth)           msg.daemonAuth   = opts.daemonAuth;
   if (opts?.pluginCids?.length)  msg.pluginCids  = opts.pluginCids;
+  if (opts?.view)                msg.view        = opts.view;
+  if (opts?.resolved)            msg.resolved    = opts.resolved;
   return msg;
 }
 

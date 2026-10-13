@@ -144,7 +144,7 @@ The resolver keys bindings by `prefix/fingerprint` and stores them through `daem
 
 ''The view rides the carrier.'' A peer names its own id, so a verdict keyed by peer id protects nothing from an island that announces another's. The view mints the island's peer id and judges every message that crosses the island's own port, in both directions; an island that announces any other id loses its channel. A fetch the view refuses answers as absence does, so a refusal tells an island nothing about what stands.
 
-> ''Three house readings, marked as such.'' ''A bag reaches a session read-only'': a session writes its wiki's working, personal and draft layers and its face's own planes, and a move into a bag runs as an owner-side verb, never as an island's sync write. ''One table of profile against layer decides a write'': a seat writes the working layer alone, and the watcher writes the working layer and surfaces drafts. ''Content opens by reference'': a session reads the content its recipe names and the content a document it may read references, and a string that names no content address reaches no store.
+> ''Four house readings, marked as such.'' ''A bag reaches a session read-only'': a session writes its wiki's working, personal and draft layers and its face's own planes, and a move into a bag runs as an owner-side verb, never as an island's sync write. ''One table of profile against layer decides a write'': a seat writes the working layer alone, and the watcher writes the working layer and surfaces drafts. ''Content opens by reference'': a session reads the content its recipe names and the content a document it may read references; the owner's store answers, and bytes that fail to recompute to their address never leave. ''An island settles before it goes'': a session island keeps no store, so at an orderly close it names the heads it holds and waits until the owner holds them; a switch or a revocation closes its channel first.
 
 <<~/ahu>>
 
@@ -155,6 +155,10 @@ The resolver keys bindings by `prefix/fingerprint` and stores them through `daem
 ''One mesh function resolves a session's effective recipe when a surface mounts.'' It takes the vessel's recipe records, the session's verified face plane, the bags that face may read, the plugin inputs and the capability profile; it returns absolute ids and a recipe revision. A grant decides what a face CAN read and a recipe decides what a session DOES mount (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-house-table">>).
 
 ''A mounted island never hot-swaps.'' A recipe change gets written, sync carries it, and the next mount reads it. Node and browser share the one function; neither platform resolves a recipe of its own.
+
+''The revision names what a mount lays'': the slots with the documents they resolved to, the engine core and the plugin selection. Two mounts share a revision exactly when they would lay the same island.
+
+> ''A house reading, marked as one.'' A recipe that names a bag its face holds no grant to read refuses the mount by that bag's name. The house table rules that a recipe narrows a view and never widens a grant; the refusal, where a silent skip could also have kept that law, belongs to the house: a mount that quietly lays less than its recipe names would read as the whole wiki.
 
 <<~/ahu>>
 
@@ -254,8 +258,8 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 ''What stands in code'':
 
 * ''One vessel-wide selector.'' `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) moves one active pointer; the node and browser openers (`packages/lararium-node/src/open-node-vessel.ts`, `packages/lararium-browser/src/open-browser-vessel.ts`) each resolve one worn face at vessel boot.
-* ''A broad sync port.'' Every island boots a Repo over a transferred `syncPort` (`packages/lararium-mesh/src/island-protocol.ts`), which carries unrestricted Repo sync.
-* ''A pool keyed by wiki alone.'' The island pool keys its slots by `wikiId` (`packages/lararium-mesh/src/vessel-island-pool-core.ts`).
+* ''A broad sync port, on every production mount.'' Every wiki island mounts through the pool's wiki door (`mountWiki`, `packages/lararium-mesh/src/vessel-island-pool-core.ts`) and boots a Repo over a transferred `syncPort`, which carries unrestricted Repo sync.
+* ''A wiki door keyed by wiki alone.'' That door keys its slots by `wikiId`, so two tabs of one wiki fold into one island.
 * ''A holder that broadcasts.'' The shared holder forwards each island message to every attached port (`packages/lararium-browser/src/shared-holder-core.ts`).
 * ''Two DOM return kinds.'' `wiki:dom-event` and `wiki:dom-input` carry acts by render id (`packages/lararium-mesh/src/island-protocol.ts`).
 * ''A CLI over the local socket'' with caller-generated request ids and durable outcomes (`packages/lares-cli/src/local-connector.ts`, `packages/lararium-node/src/uds-channel.ts`); no socket binds a session to a face.
@@ -265,13 +269,16 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 * ''The hands' profiles.'' `face`, `verb`, `ingest` and `seat` (`packages/lararium-mesh/src/session-contract.ts`). A session carries one from its open to its end, and a switch of face keeps it.
 * ''The scoped document view'' (`packages/lararium-mesh/src/session-document-view.ts` over `gated-sync-leg.ts`). It answers announcements, fetches, writes, catalog names and content reads from the session's own facets.
+* ''The one recipe resolver'' (`packages/lararium-mesh/src/surface-recipe.ts`). It returns absolute ids and a revision at surface mount.
+* ''The pool's surface door'' (`mountSurface`). It keys an island by the whole session key, opens the view over exactly what the recipe resolved, and hands the island no store, no catalog, no disk mirror and none of the vessel's own doors. A surface island's events take a door of their own and never the one that places vessel verbs. `closeSession` ends a session in good order and `fenceSession` closes its views first; from either, the session mounts nothing again.
+* ''The island's half'' (`packages/lararium-tw5/src/sovereign-kernel.ts`, `view-channel.ts`). An island whose manifest carries a view stands under the minted peer id, lays the resolved slots, asks its view for catalog names and content, runs no recipe watch, and settles its writes before it acks a teardown.
 
 ''OWED ~ twelve debts, each resting on the one before it.'' A builder closes each with its callers and its own proof, so the tree keeps a runnable contract at every step.
 
 # ''The contract in mesh.'' The session type, its validators, the port and socket binding, and refusal of a stale owner epoch or generation.
-# ''Scoped document access.'' The session-scoped view over announcements, fetches, writes, catalog and content-addressed reads; no durable per-island store. The view and its sync leg stand specified in code, and no island rides them. The debt closes when every interactive surface mounts under the view in place of the broad port, which waits on a verified face (debt three) and on callers that hold a session (debts five and seven). Three hunks close with it: the share verdict's caller keeps an owner from offering a session island a document beyond its facets, the leaf's relay adapter wears the one-way gate over its hearth's canon, and the hearth wears that gate's twin toward its leaves.
+# ''Scoped document access.'' The session-scoped view over announcements, fetches, writes, catalog and content-addressed reads; no durable per-island store. The view, the pool's surface door and the island's half stand specified in code. The debt closes when every interactive surface mounts through that door, which waits on a verified face (debt three) and on callers that hold a session (debts five and seven). Four hunks close with it: the share verdict's caller reads the pool's view for an island's peer, the leaf's relay adapter wears the one-way gate over its hearth's canon, the hearth wears that gate's twin toward its leaves, and a wiki island's verbs that read the catalog document move to the view's catalog ask.
 # ''The face proof and its grants.'' Two faces on one vessel present different proof subjects, and a copied id or an own-hand claim gains no plane (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>).
-# ''The recipe resolver and the pool's identity.'' The working-layer binding follows #/the-working-layer; two same-face sessions take two islands, a repeated exact mount opens one, and a recipe write reaches the next mount by sync without changing a live mount.
+# ''The recipe resolver and the pool's identity.'' The working-layer binding follows #/the-working-layer; two same-face sessions take two islands, a repeated exact mount opens one, and a recipe write reaches the next mount by sync without changing a live mount. The resolver and the whole-key pool stand specified in code, with one proof through the node vessel's own parts that a recipe naming an offering resolves. The working-layer binding stays owed and waits on the join door, where the face secret arrives. The callers stay owed too: the compose sites resolve through the one function at surface mount, the browser's plugin selection folds into it, and the wiki door, its retained mount specs and the recipe watch retire with the last caller.
 # ''Node callers move to sessions.'' Two CLI sessions wear different faces at once over one Repo; a copied socket and a cross-face receipt read both refuse; a same-face receipt reads after the CLI that asked has exited.
 # ''The browser holder as owner.'' Two tabs show one backing Repo and one held lock; a failed daemon boot refuses both, releases the lock and permits a retry.
 # ''Browser surfaces.'' Two tabs mount one wiki under separate sessions; frames and control answers reach their source surface alone; no wiki engine runs on the page's main thread.
@@ -304,6 +311,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OalIo50KVP1nxH86Lr9Jy8aGbz9KlgoxZ60qqtybLvQ
+<<^ code="&#x0003;">>ni:///sha-256;H2lQqusVyzNnPe86mkrw31gpWQ79QHsmcBS-_DfiCpE
 
 <<^ code="&#x0004;" -> to="?">>
