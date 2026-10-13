@@ -41,7 +41,7 @@ import {
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
-  type RealmBagRegistration, ed25519SignerFromSeed,
+  type RealmBagRegistration, ed25519SignerFromSeed, MEMORY_CUT_SHADOW_READ,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
@@ -151,7 +151,9 @@ import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
-import { askSeatDuties, type IslandAsk }    from "./island-verb-ask.js";
+import { askIslandMemory, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
+import type { BackupDoor }                from "./face-bundle-cut.js";
+import { readLocalPersonaKelChain }       from "./persona-admit-flow.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 
@@ -448,6 +450,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   walkDial: WalkDialReading;
   /** This vessel's own Repo and its after-roll refold, for the custody door's `host` acts. */
   hostingDoor: HostingDoor;
+  /** What this composition lends a backup bundle's cut: the worn face, its own edge's shadow, the island's memory section and the board's key history. */
+  backupDoor: BackupDoor;
   /** M15: which social planes mounted live vs degraded vs PENDING (probe answered no verdict at all —
    *  distinct from a real condemn). `degraded` already logs its own line live (`quarantineDoc`
    *  above); `pending` entries carried NO log line at all until this field threaded them out here for
@@ -480,6 +484,8 @@ export interface NodeHermResult {
   walkDial:         WalkDialReading;
   /** This vessel's own Repo and its after-roll refold, for the custody door's `host` acts. */
   hostingDoor:      HostingDoor;
+  /** What this composition lends a backup bundle's cut: the worn face, its own edge's shadow, the island's memory section and the board's key history. */
+  backupDoor:      BackupDoor;
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
   mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
@@ -514,6 +520,8 @@ interface NodeBootPrep {
   walkDial:         WalkDialReading;
   /** The store a hosting roll lands on, and the refold a landed roll owes. */
   hostingDoor:      HostingDoor;
+  /** What this composition lends a backup bundle's cut: the worn face, its own edge's shadow, the island's memory section and the board's key history. */
+  backupDoor:      BackupDoor;
   /** This PLACE's own 32-byte signing seed — the substrate key, never the human's. The two-key atom keeps it
    *  distinct from the persona root a device-delegation edge signs under (`device-delegation.vesselSeed`). */
   vesselSeed:     Uint8Array;
@@ -1075,6 +1083,8 @@ async function prepareNodeBootOn(
   // reads there (the dyad door, below), and a device its fleet root set aside binds nothing even at the floor.
   // The lanes a floor serves stay shut whatever that board reads (`floor-fleet-lanes`).
   let wornFleetRoot: string | null = null;
+  /** The face this composition mounts LIT (a sovereign composition presenting that face's signed edge), by handle-index; null where none stands. */
+  let litFace: number | null = null;
   const builtRing = makeEdgeShadowRing({
     repo, vesselKey: vesselIdentity.verifyingKey, sealHome,
     fleetRoots: async () => {
@@ -1936,6 +1946,7 @@ async function prepareNodeBootOn(
     // row the island's export lands in. The veil's key derives HERE, from the sealed custody root: the island
     // receives it derived and holds no root.
     const mountedFace = wornMount?.handleIndex ?? 0;
+    litFace = sovereign && deviceEdge ? mountedFace : null;
     const archiveBytes = sovereign ? await sovereign.archive() : null;
     const dyadVeil = sovereign && dyadVeilTag
       ? { tag: dyadVeilTag, signingKey: (await sovereign.veil(dyadVeilTag)).signingKey }
@@ -2860,6 +2871,36 @@ async function prepareNodeBootOn(
     walkDial: { dialGate: () => joinGatePubKey?.toLowerCase() ?? null, get represent() { return representWalk; } },
     // A roll lands on THIS Repo, the replica this hearth's walkers sync, and the refold serves the hosting doc it opened.
     hostingDoor: { withRepo: (act) => act(repo), rolled: async (nexusAid) => { await awaitOnRolled(afterRoll(nexusAid)); } },
+    // THE CUT'S FOUR READS (custody#/the-cut). Each reads live when a cut asks: the face this composition mounts
+    // lit, this vessel's own edge on that face's fleet board (the reading the dyad door serves the island), the
+    // island's memory section under the vessel's own signed ask, and the face's key history off the local board.
+    backupDoor: {
+      wornFace: () => litFace,
+      ownEdgeShadowed: async () => {
+        if (!wornFleetRoot) return false;
+        for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
+          try { await shadowRing.refold(); } catch { return true; }
+        }
+        return shadowRing.deviceStanding(wornFleetRoot, vesselIdentity.verifyingKey) === "aside";
+      },
+      // Null while no daemon island stands, so a cut there refuses `memory-unavailable` by name.
+      get cutMemory() {
+        if (!daemonVm) return null;
+        const vm = daemonVm;
+        return async (to: Uint8Array) => {
+          // The cut read this vessel's shadow at its entry; the ask says so, and the holder reads none of its own.
+          const out = await askIslandMemory({
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "cut",
+            facts: { to: Buffer.from(to).toString("hex"), shadow: MEMORY_CUT_SHADOW_READ },
+            vesselKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+          }).answer;
+          const holds = Array.isArray(out["holds"]) ? out["holds"] as Array<{ bagId: string; founding: string; keyVersion: string }> : [];
+          if (typeof out["section"] !== "string") throw new Error("the island answered no memory section");
+          return { section: out["section"], holds };
+        };
+      },
+      kel: (prefix) => readLocalPersonaKelChain(repo, prefix),
+    },
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
@@ -2959,6 +3000,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     personaSelves:    p.personaSelves(),
     walkDial:         p.walkDial,
     hostingDoor:      p.hostingDoor,
+    backupDoor:      p.backupDoor,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase: "live",
@@ -3084,6 +3126,7 @@ async function composeNodeHermOn(
     personaSelves:    p.personaSelves(),
     walkDial:         p.walkDial,
     hostingDoor:      p.hostingDoor,
+    backupDoor:      p.backupDoor,
     mountManifest:    herm.assembly.mountManifest,
     dispose,
     teardown: async () => {

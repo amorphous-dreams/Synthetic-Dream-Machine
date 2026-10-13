@@ -253,6 +253,17 @@ export const SEALED_MEMORY_BOX_INFO = mint("sealed-memory-box");
 export const SEALED_MEMORY_DOOR_INFO = mint("sealed-memory-door");
 /** What a vessel's MAIN THREAD signs when it asks its own daemon island to cut or import a memory section. */
 export const MEMORY_ASK_DOMAIN = mint("memory-ask");
+
+// ── THE BACKUP BUNDLE ───────────────────────────────────────────────────────────────────────────
+// Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle.
+/** The BACKUP BUNDLE's own name: its SHA-256 prefix stands as the format mark, and it leads the associated
+ *  data of the bundle's sealed body. A changed format takes a new name. */
+export const FACE_BUNDLE_DOMAIN = mint("face-bundle");
+/** The HKDF `info` a bundle's BODY KEY derives under, from the bundle key. */
+export const FACE_BUNDLE_BODY_INFO = mint("face-bundle-body");
+/** The HKDF `info` a bundle's MEMORY SECTION key pair derives under, from the bundle key. Apart from the
+ *  body key's name, so the pair's secret half never equals the key that opens the body. */
+export const FACE_BUNDLE_MEMORY_INFO = mint("face-bundle-memory");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
 /** The V3 PROOF OF POSSESSION a peer signs at the wire's gate: nonce, gate key, own key, audience and

@@ -160,3 +160,67 @@ describe("CustodyHolder", () => {
     expect((await h.unlock([pass(RIGHT)])).reading, "CONTROL: the holder opens again afterward").toBe("opens");
   });
 });
+
+describe("CustodyHolder.proves — a person stands at an unlocked vessel", () => {
+  test("P1 the vessel's own route proves, opens nothing new and spends no attempt", async () => {
+    const h = await found(); await h.unlock([pass(RIGHT)]);
+    const before = hashes(root);
+    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves" });
+    expect(h.attemptsLeft()).toBe(3);
+    expect(h.isUnlocked()).toBe(true);
+    expect(hashes(root)).toEqual(before);
+  });
+
+  test("P2 a route that opens no slot spends one of the boot's attempts, and spent attempts refuse before any derivation", async () => {
+    const h = await found(); await h.unlock([pass(RIGHT)]);
+    expect(await h.proves([pass("holder-wrong-P2-a")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
+    expect(await h.proves([pass("holder-wrong-P2-b")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 1 });
+    expect(await h.proves([pass("holder-wrong-P2-c")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 0 });
+    const target = vkSlotsPath(homes.identity);
+    let reads = 0;
+    const read = io.read.bind(io);
+    io.read = async (path) => { if (path === target) reads++; return read(path); };
+    // The right route, after the attempts stand spent: refused, and the tree never gets read.
+    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "attempts-spent" });
+    expect(reads).toBe(0);
+    expect(h.isUnlocked(), "a spent proof drops nothing the vessel holds").toBe(true);
+  });
+
+  test("P3 a proof and an unlock share the one bound", async () => {
+    const h = await found();
+    await h.unlock([pass("holder-wrong-P3-a")]);
+    await h.unlock([pass("holder-wrong-P3-b")]);
+    expect((await h.unlock([pass(RIGHT)])).reading).toBe("opens");
+    expect(await h.proves([pass("holder-wrong-P3-c")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 0 });
+    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "attempts-spent" });
+  });
+
+  test("P4 a locked holder proves nothing and spends nothing", async () => {
+    const h = await found();
+    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "locked" });
+    expect(h.attemptsLeft()).toBe(3);
+    expect(h.isUnlocked(), "a proof never opens the key").toBe(false);
+  });
+
+  test("P5 a route that opens ANOTHER vessel's tree proves nothing here and spends an attempt", async () => {
+    const h = await found(); await h.unlock([pass(RIGHT)]);
+    // Another vessel's tree, founded under another route, laid over this vessel's tree file.
+    const other = stage("p5-other");
+    await foundCustody({ ...other, slots: [{ t: 1, pins: [pass("the-other-vessels-route")] }] });
+    const mine = readFileSync(vkSlotsPath(homes.identity));
+    writeFileSync(vkSlotsPath(homes.identity), readFileSync(vkSlotsPath(other.homes.identity)));
+    // THE BYTES MOVED: the tree at this vessel's path now reads as the other vessel's.
+    expect(readFileSync(vkSlotsPath(homes.identity)).equals(mine)).toBe(false);
+    expect(await h.proves([pass("the-other-vessels-route")])).toEqual({ reading: "no-slot-opens", attemptsLeft: 2 });
+    // CONTROL: with its own tree back, its own route proves.
+    writeFileSync(vkSlotsPath(homes.identity), mine);
+    expect(await h.proves([pass(RIGHT)])).toEqual({ reading: "proves" });
+  });
+
+  test("P6 a proof's answer carries no credential", async () => {
+    const h = await found(); await h.unlock([pass(RIGHT)]);
+    const text = JSON.stringify([await h.proves([pass(RIGHT)]), await h.proves([pass("holder-wrong-P6")])]);
+    expect(text).not.toContain(RIGHT);
+    expect(text).not.toContain("holder-wrong-P6");
+  });
+});

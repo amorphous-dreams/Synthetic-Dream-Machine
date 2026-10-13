@@ -1,5 +1,6 @@
 /**
- * custody-frames — THE CUSTODY DOOR on the vessel's owner-only verb socket: `unlock`, `lock`, `custody` and `act`.
+ * custody-frames — THE CUSTODY DOOR on the vessel's owner-only verb socket: `unlock`, `lock`, `custody`, `act` and
+ * `backup`.
  *
  * ── A CREDENTIAL NEVER RIDES A VERB ─────────────────────────────────────────────────────────────
  * A verb's arguments get hashed into a durable receipt fact, handed to the daemon island and recorded with its
@@ -20,6 +21,17 @@
  *   custody  read: unlocked or not, the slot that opened, attempts left, what stands. Opens nothing.
  *   act      run one act of the sealed-act table (`sealed-acts`) against the key a person already opened, and
  *            answer its caller alone. A locked vessel refuses `custody-locked`: an act never opens a key.
+ *   backup   cut one face's backup bundle body (`face-bundle-cut`) and answer it SEALED under the bundle key the
+ *            frame carries. The frame also carries the vessel's own route: see below.
+ *
+ * ── A BACKUP ASKS THE VESSEL'S ROUTE AGAIN ──────────────────────────────────────────────────────
+ * An unlocked vessel's door answers any process of its own user, and no act of the table hands out a root. A
+ * bundle rebuilds a face's root for whoever holds its route, so the cut rides a frame of its own, apart from the
+ * act table: it carries the vessel's own route, and the holder proves that route opens the key it holds before
+ * any row opens (`CustodyHolder.proves`). A route that opens no slot spends one of the boot's unlock attempts and
+ * refuses `no-slot-opens`; spent attempts refuse `attempts-spent`. The frame carries `op`, `credentials`, `face`
+ * and `key`, and nothing beside them. The door logs how the cut ended, by name, and nothing of the route, the
+ * key, the face's rows or the sealed body.
  *
  * ── A SEALED ROW'S ACT RIDES THIS DOOR, NEVER A STORE VERB ──────────────────────────────────────
  * A store verb's output rests in the daemon's document as an outcome, in the clear, and the digest of its
@@ -33,13 +45,16 @@
 import type { Socket } from "node:net";
 import type { Credential } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
+import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SealedActRefused, isSealedActName } from "./sealed-acts.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[] }
   | { readonly op: "lock" }
   | { readonly op: "custody" }
-  | { readonly op: "act"; readonly act: string; readonly args?: Readonly<Record<string, unknown>> };
+  | { readonly op: "act"; readonly act: string; readonly args?: Readonly<Record<string, unknown>> }
+  /** Cut face `face`'s bundle body, sealed under `key` (a bundle key, 64 lower hex), once `credentials` prove the vessel's own route. */
+  | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string };
 
 /** What stands after a custody act: the composition's standing, or the fault that left the floor standing. */
 export interface CustodyStanding {
@@ -53,7 +68,8 @@ export type CustodyAnswer =
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked" } & Partial<CustodyStanding>)
   | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly testScratch: boolean }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
-  | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string } };
+  | { readonly op: "backup"; readonly sealedBody: string; readonly holds: FaceBundleCut["holds"]; readonly face: FaceBundleCut["face"]; readonly carries: FaceBundleCut["carries"] }
+  | { readonly op: string; readonly status: "error"; readonly errorMessage: string; readonly refusal: { readonly reason: string; readonly home?: string; readonly file?: string; readonly reading?: string; readonly attemptsLeft?: number } };
 
 export interface CustodyFrameDeps {
   readonly holder: CustodyHolder;
@@ -69,9 +85,17 @@ export interface CustodyFrameDeps {
    * composition lends an act). Absent, every `act` frame refuses `acts-unavailable`.
    */
   readonly runAct?: (act: string, args: unknown) => Promise<Record<string, unknown>>;
+  /**
+   * Cut one face's bundle body under the bundle key handed in (`cutFaceBundle`, bound to what the standing
+   * composition lends a cut). Absent, every `backup` frame refuses `backup-unavailable`.
+   */
+  readonly backup?: (face: number, bundleKey: Uint8Array) => Promise<FaceBundleCut>;
 }
 
-const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act"]);
+const OPS: ReadonlySet<string> = new Set(["unlock", "lock", "custody", "act", "backup"]);
+/** The keys a `backup` frame may carry. */
+const BACKUP_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "credentials", "face", "key"]);
+const BUNDLE_KEY_HEX = /^[0-9a-f]{64}$/;
 /** The keys an `act` frame may carry. Any other key refuses the frame, so nothing rides beside an act's own arguments. */
 const ACT_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "act", "args"]);
 
@@ -165,11 +189,50 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): (parsed: unknown, s
     }
   };
 
+  /** One cut, run on the door's one chain. The route proves first; nothing of a row opens before it does. */
+  const runBackup = (credentials: readonly Credential[], face: number, keyHex: string) => async (): Promise<CustodyAnswer> => {
+    const refuse = (reason: string, errorMessage: string, extra: object = {}): CustodyAnswer => {
+      deps.onLog(`backup: refused (${reason})`);
+      return { op: "backup", status: "error", errorMessage, refusal: { reason, ...extra } };
+    };
+    if (!deps.backup) return refuse("backup-unavailable", "this vessel's custody door cuts no bundle");
+    if (!holder.isUnlocked()) return refuse("custody-locked", new CustodyLocked().message);
+    const proof = await holder.proves(credentials);
+    if (proof.reading !== "proves") {
+      if (proof.reading === "locked") return refuse("custody-locked", new CustodyLocked().message);
+      if (proof.reading === "no-slot-opens") return refuse("no-slot-opens", `no slot of this vessel opens under what was presented; nothing was cut (${proof.attemptsLeft} attempt(s) left this boot)`, { attemptsLeft: proof.attemptsLeft });
+      if (proof.reading === "attempts-spent") return refuse("attempts-spent", "this vessel's unlock attempts for this boot stand spent; nothing was cut");
+      return refuse(proof.reading, `the vessel's slot tree reads ${proof.reading}; nothing was cut`);
+    }
+    const bundleKey = Uint8Array.from(Buffer.from(keyHex, "hex"));
+    try {
+      const cut = await deps.backup(face, bundleKey);
+      deps.onLog("backup: done");
+      return { op: "backup", sealedBody: Buffer.from(cut.sealedBody).toString("base64"), holds: cut.holds, face: cut.face, carries: cut.carries };
+    } catch (e) {
+      if (e instanceof BackupRefused) return refuse(e.reason, e.message);
+      const fault = actFault(e);
+      return refuse(fault.reason === "act-failed" ? "backup-failed" : fault.reason, e instanceof Error ? e.message : String(e), fault.extra);
+    } finally { bundleKey.fill(0); }
+  };
+
   return (parsed, sock) => {
     if (!isCustodyFrame(parsed)) return false;
     const op = parsed.op;
     let act: () => Promise<CustodyAnswer>;
-    if (op === "act") {
+    if (op === "backup") {
+      const frame = parsed as Record<string, unknown>;
+      const stray = Object.keys(frame).find((k) => !BACKUP_FRAME_KEYS.has(k));
+      const credentials = credentialsOf(frame["credentials"]);
+      const face = frame["face"];
+      const key = frame["key"];
+      if (stray !== undefined || !credentials || !Number.isSafeInteger(face) || (face as number) < 0 || typeof key !== "string" || !BUNDLE_KEY_HEX.test(key)) {
+        deps.onLog("backup: refused (bad-custody-frame)");
+        answer(sock, { op, status: "error", errorMessage: "a backup frame carries `op`, the vessel's own `credentials`, a `face` (a handle-index) and a `key` (a bundle key, 64 lower hex), and nothing beside them", refusal: { reason: "bad-custody-frame" } });
+        return true;
+      }
+      act = runBackup(credentials, face as number, key);
+    } else if (op === "act") {
       const frame = parsed as Record<string, unknown>;
       const stray = Object.keys(frame).find((k) => !ACT_FRAME_KEYS.has(k));
       if (stray !== undefined || typeof frame["act"] !== "string") {

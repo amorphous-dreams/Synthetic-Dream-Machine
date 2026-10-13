@@ -447,7 +447,7 @@ export type {
 } from "./sealed-writer.js";
 export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper } from "./keyslot.js";
 export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";
-export { mintVk } from "./vk.js";
+export { mintVk, vkEquals } from "./vk.js";
 export type { VesselKey, VkOpening } from "./vk.js";
 // The VK's sealed-carrier frame: the magic that names the scheme, with no version byte — see `vk-envelope`.
 export { VK_SEAL_MAGIC, VK_SEAL_NONCE_LENGTH, VK_SEAL_TAG_LENGTH, VK_SEAL_MIN_LENGTH, readVkCarrier, splitVkFrame, joinVkFrame } from "./vk-envelope.js";
@@ -469,3 +469,4 @@ export * from "./sealed-store-rest.js";
 export * from "./lockbox-wrap.js";
 export * from "./content-key-holder.js";
 export * from "./memory-section.js";
+export * from "./face-bundle.js";

@@ -122,6 +122,53 @@ export async function storeVesselFaceKey(scope: FaceKeyScope, secret: Uint8Array
   });
 }
 
+/**
+ * Every face proof key this vessel holds for face `handleIndex`, each beside its scope's own name, for that face's
+ * backup bundle. Each cold row opens for the length of this one read; the caller owns the bytes and zero-fills them.
+ */
+export async function listFaceProofKeys(handleIndex: number): Promise<Array<{ readonly scope: string; readonly secret: Uint8Array }>> {
+  let names: string[];
+  try { names = readdirSync(larIdentityDir()); } catch { names = []; }
+  const out: Array<{ scope: string; secret: Uint8Array }> = [];
+  for (const file of names.sort()) {
+    const m = FACE_PROOF_KEY_FILE.exec(file);
+    if (!m || Number(m[1]) !== handleIndex) continue;
+    out.push({ scope: m[2]!, secret: await openColdCustodyRow("identity", file, (secret) => {
+      if (secret.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
+      return Uint8Array.from(secret);
+    }) });
+  }
+  return out;
+}
+
+/** What stands for one carried face proof key at `handleIndex`: nothing, the same bytes, or a conflict. Opens the row and writes nothing. */
+export async function faceProofKeyStanding(scope: string, secret: Uint8Array, handleIndex: number): Promise<"absent" | "same" | "conflict"> {
+  assertSecret(secret);
+  if (!/^[0-9a-f]{32}$/.test(scope)) throw new RangeError("face-key-custody: a scope's name reads as 32 lower hex");
+  let names: string[];
+  try { names = readdirSync(larIdentityDir()); } catch { names = []; }
+  const standing = names.find((n) => FACE_PROOF_KEY_FILE.exec(n)?.[2] === scope) ?? null;
+  if (standing === null) return "absent";
+  if (standing !== `face-proof-key-h${handleIndex}-${scope}.bin`) return "conflict";
+  return openColdCustodyRow("identity", standing, (bytes) => (sameBytes(bytes, secret) ? "same" : "conflict"));
+}
+
+/**
+ * Land one CARRIED face proof key as face `handleIndex`'s row for the scope named `scope` (a restore). Nothing
+ * standing takes the key, the same key again changes nothing, and any other standing bytes refuse untouched.
+ */
+export async function landFaceProofKey(scope: string, secret: Uint8Array, handleIndex: number): Promise<void> {
+  assertSecret(secret);
+  if (!/^[0-9a-f]{32}$/.test(scope) || !Number.isSafeInteger(handleIndex) || handleIndex < 0) throw new RangeError("face-key-custody: a carried key names a scope (32 lower hex) and a handle-index");
+  const file = `face-proof-key-h${handleIndex}-${scope}.bin`;
+  mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
+  await updateColdCustodyRow("identity", file, (bytes) => {
+    if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
+    if (!sameBytes(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    return { plaintext: null, value: undefined };
+  });
+}
+
 /** The custody seat's door for a face proof key (`FaceKeyCustody`): the cold row opens for this one signature. */
 export const nodeFaceKeyCustody = {
   async signAsFace(scope: FaceKeyScope, image: Uint8Array): Promise<Uint8Array> {

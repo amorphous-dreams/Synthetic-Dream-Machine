@@ -85,6 +85,13 @@ export type CarrierName = string;
 /** Whose a carrier is: one face's own (its handle-index), or the vessel's (every face, or none). */
 export type CarrierFace = number | "vessel";
 
+/**
+ * How a face's backup bundle treats a row (custody#/the-table): `whole`, the row rides as it rests; `lines`, the
+ * one face's own lines ride and nothing of another face; `stays`, the row never leaves its vessel.
+ */
+export const BUNDLE_TREATMENTS = ["whole", "lines", "stays"] as const;
+export type BundleTreatment = (typeof BUNDLE_TREATMENTS)[number];
+
 /** One row of the table. */
 export interface CarrierRow {
   /** The row's own name; unique across the table. */
@@ -108,6 +115,11 @@ export interface CarrierRow {
    * handle-index; every other row answers `"vessel"`. A bundle of one face's custody derives from this column.
    */
   readonly face:     (m: RegExpExecArray) => CarrierFace;
+  /**
+   * How a face's backup bundle treats this row. A row that names none `stays`. The bundle's cut and the restore's
+   * check both derive from this column (`bundleRows`), so no hand picks the rows a bundle carries.
+   */
+  readonly bundle:   BundleTreatment;
 }
 
 /** One carrier standing on disk, named by the row it matched. */
@@ -137,11 +149,14 @@ const file = (name: string): RegExp => new RegExp(`^${escape(name)}$`);
 /** A hosting directory: `hosting/<the 32-hex digest of a Nexus AID>/`. */
 const HOSTING = "hosting/[0-9a-f]{32}/";
 
-type RowSpec = Omit<CarrierRow, "name" | "lifecycle" | "face"> & Partial<Pick<CarrierRow, "name" | "lifecycle" | "face">>;
+type RowSpec = Omit<CarrierRow, "name" | "lifecycle" | "face" | "bundle"> & Partial<Pick<CarrierRow, "name" | "lifecycle" | "face" | "bundle">>;
 
 function row(spec: RowSpec): CarrierRow {
-  return Object.freeze({ name: () => spec.row, lifecycle: null, face: () => "vessel" as const, ...spec });
+  return Object.freeze({ name: () => spec.row, lifecycle: null, face: () => "vessel" as const, bundle: "stays" as const, ...spec });
 }
+
+/** The restore's commit row: what one restore still owes this vessel (`face-bundle-restore`). */
+export const RESTORE_PENDING_FILE = ".restore-pending.json";
 
 /** The face a per-face filename names: its first capture, a handle-index. */
 const faceOf = (m: RegExpExecArray): CarrierFace => Number(m[1]);
@@ -183,17 +198,17 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "admissions", match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
          writer: "node-persona-admit-store" }),
     id({ row: "anchors", match: /^anchors-h(\d+)\.json$/, custody: "hot", keyClass: null,
-         writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf }),
+         writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf, bundle: "lines" }),
     id({ row: "anchor-roster", match: file("anchor-roster.json"), custody: "hot", keyClass: null,
          writer: "identity-anchors" }),
     id({ row: "persona-roster", match: loginKeyed("persona-roster"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity" }),
+         writer: "node-vessel-identity", bundle: "lines" }),
     id({ row: "active-persona", match: loginKeyed("active-persona"), custody: "hot", keyClass: null,
          writer: "node-vessel-identity" }),
     id({ row: "persona-petnames", match: loginKeyed("persona-petnames"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity" }),
+         writer: "node-vessel-identity", bundle: "lines" }),
     id({ row: "persona-declarations", match: loginKeyed("persona-declarations"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity" }),
+         writer: "node-vessel-identity", bundle: "lines" }),
     id({ row: "public-handles", match: loginKeyed("persona-public-handles"), custody: "hot", keyClass: null,
          writer: "node-vessel-identity" }),
     // This vessel's own face-scoped key under one face at one Nexus (`face-key-custody`, the face proof's library
@@ -201,7 +216,7 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "vessel-face-key", match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
          writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
     id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
-         writer: "node-circle-store" }),
+         writer: "node-circle-store", bundle: "lines" }),
     id({ row: "reserve-state", match: file("seal-reserve-state.json"), custody: "hot", keyClass: null,
          writer: "seal-reserve-store" }),
     id({ row: "seal-day", match: file(".archive-seal-day.json"), custody: "hot", keyClass: null,
@@ -228,11 +243,15 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "vessel-next", match: loginKeyed("vessel-next"), custody: "cold", keyClass: "device-minted",
          writer: "node-vessel-identity (founding)" }),
     id({ row: "persona-root", match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
-         writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf }),
+         writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
     // the face, so that face's bundle carries it.
     id({ row: "face-proof-key", match: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
-         writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf }),
+         writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf, bundle: "whole" }),
+    // A restore's own commit row: everything one restore will land, sealed in ONE write before any row moves. It
+    // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
+    id({ row: "restore-pending", match: file(RESTORE_PENDING_FILE), custody: "cold", keyClass: "seed",
+         writer: "face-bundle-restore" }),
     id({ row: "device-share", match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf }),
     id({ row: "reserve-share", match: exact(reserveMineSharePath()), custody: "cold", keyClass: "seed",
@@ -241,6 +260,11 @@ function buildTable(): readonly CarrierRow[] {
 }
 
 let table: readonly CarrierRow[] | null = null;
+
+/** The rows a face's backup bundle carries, each beside its treatment: every row the column names anything but `stays`. */
+export function bundleRows(): ReadonlyArray<{ readonly row: string; readonly bundle: Exclude<BundleTreatment, "stays"> }> {
+  return carrierTable().flatMap((r) => (r.bundle === "stays" ? [] : [{ row: r.row, bundle: r.bundle }]));
+}
 
 /** The one carrier table. */
 export function carrierTable(): readonly CarrierRow[] {

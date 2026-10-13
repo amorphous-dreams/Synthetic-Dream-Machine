@@ -21,12 +21,23 @@
  *   A7  an act's fault answers its caller by name (a row that reads torn carries its home, file and reading) and the
  *       door serves the next frame.
  *   A8  an act waits its turn behind an unlock in flight, and a lock that follows waits behind the act.
+ *
+ * The `backup` frame: one face's bundle body, cut once the frame's own route proves.
+ *   B1  a backup at an unlocked holder proves the vessel's route FIRST, then cuts, and answers the body sealed.
+ *   B2  a locked vessel refuses `custody-locked`: no proof runs and nothing gets cut.
+ *   B3  a route that opens no slot refuses `no-slot-opens` with the attempts left, and nothing gets cut; spent
+ *       attempts refuse `attempts-spent`.                                     control: the right route cuts
+ *   B4  a frame that misses its shape, or carries any key beside its four, refuses whole before the holder hears.
+ *   B5  a cut that refuses answers its own name; a custody fault answers the row it met.
+ *   B6  the door logs how the cut ended and never the route, the bundle key or the sealed body.
+ *   B7  a door with no cut wired refuses `backup-unavailable`.
  */
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
 import { describe, expect, test } from "vitest";
 import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
-import { CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "../src/custody-holder.js";
+import { CustodyRowUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
+import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
 
 const RIGHT = "frames-test-passphrase-right";
@@ -38,11 +49,15 @@ function fakeSock(): { sock: Socket; answer: Promise<Record<string, unknown>> } 
   return { sock, answer };
 }
 
-function harness(opts: { recomposeThrows?: boolean; recomposeRefuses?: boolean; slowMs?: number; runAct?: (act: string, args: unknown) => Promise<Record<string, unknown>> } = {}) {
+function harness(opts: {
+  recomposeThrows?: boolean; recomposeRefuses?: boolean; slowMs?: number; runAct?: (act: string, args: unknown) => Promise<Record<string, unknown>>;
+  backup?: (face: number, bundleKey: Uint8Array) => Promise<FaceBundleCut>;
+} = {}) {
   let unlocked = false;
   let spent = 0;
   const heard: unknown[] = [];
-  const holder: CustodyHolder = {
+  const proved: unknown[] = [];
+  const holder = {
     unlock: async (creds): Promise<HolderUnlock> => {
       heard.push(creds);
       if (unlocked) return { reading: "already-unlocked" };
@@ -50,6 +65,14 @@ function harness(opts: { recomposeThrows?: boolean; recomposeRefuses?: boolean; 
       if (!ok) { spent += 1; return { reading: "no-slot-opens", attemptsLeft: 3 - spent }; }
       unlocked = true;
       return { reading: "opens", slot: "slot-1" };
+    },
+    proves: async (creds): Promise<HolderProof> => {
+      proved.push(creds);
+      if (!unlocked) return { reading: "locked" };
+      if (spent >= 3) return { reading: "attempts-spent" };
+      if (creds.some((c) => c.kind === "passphrase" && c.passphrase === RIGHT)) return { reading: "proves" };
+      spent += 1;
+      return { reading: "no-slot-opens", attemptsLeft: 3 - spent };
     },
     lock: async () => { unlocked = false; },
     isUnlocked: () => unlocked,
@@ -59,7 +82,7 @@ function harness(opts: { recomposeThrows?: boolean; recomposeRefuses?: boolean; 
     writeRow: async () => {},
     openColdRow: async () => { throw new Error("unused"); },
     derive: () => new Uint8Array(),
-  };
+  } as unknown as CustodyHolder;
   const recomposed: boolean[] = [];
   const logs: string[] = [];
   const handle = custodyFrameHandler({
@@ -74,13 +97,14 @@ function harness(opts: { recomposeThrows?: boolean; recomposeRefuses?: boolean; 
     },
     onLog: (line) => logs.push(line),
     ...(opts.runAct ? { runAct: opts.runAct } : {}),
+    ...(opts.backup ? { backup: opts.backup } : {}),
   });
   const send = (frame: unknown, gone = false): { consumed: boolean; answer: Promise<Record<string, unknown>> } => {
     const { sock, answer } = fakeSock();
     if (gone) (sock as unknown as { destroyed: boolean }).destroyed = true;
     return { consumed: handle(frame, sock), answer };
   };
-  return { send, recomposed, logs, heard, holder };
+  return { send, recomposed, logs, heard, proved, holder };
 }
 
 const unlockFrame = (passphrase: string) => ({ op: "unlock", credentials: [{ kind: "passphrase", passphrase }] });
@@ -278,5 +302,107 @@ describe("the custody door's act frame", () => {
     expect(await locking.answer).toMatchObject({ op: "lock", was: "unlocked" });
     expect(order).toEqual(["act-start", "act-end"]);
     expect(h.recomposed).toEqual([true, false]);                                      // the lock recomposed after the act ended
+  });
+});
+
+describe("the custody door's backup frame", () => {
+  const KEY = "5a".repeat(32);
+  const BODY = Uint8Array.from({ length: 48 }, (_, i) => 0xc0 ^ i);
+  const cut: FaceBundleCut = {
+    sealedBody: BODY, holds: [{ bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) }],
+    face: { handleIndex: 2, verifyingKey: "ab".repeat(32) },
+    carries: { keyEvents: 1, faceProofKeys: 0, handleBookRecords: 0, petname: false, handle: false },
+  };
+  const backupFrame = (passphrase: string, over: Record<string, unknown> = {}) => ({ op: "backup", credentials: [{ kind: "passphrase", passphrase }], face: 2, key: KEY, ...over });
+  function cutting(run?: (face: number, bundleKey: Uint8Array) => Promise<FaceBundleCut>) {
+    const cuts: Array<{ face: number; key: string }> = [];
+    const h = harness({ backup: async (face, bundleKey) => { cuts.push({ face, key: Buffer.from(bundleKey).toString("hex") }); return run ? run(face, bundleKey) : cut; } });
+    return { ...h, cuts };
+  }
+
+  test("B1 — a backup proves the vessel's route first, then cuts, and answers the body sealed", async () => {
+    const h = cutting();
+    await h.send(unlockFrame(RIGHT)).answer;
+    const a = await h.send(backupFrame(RIGHT)).answer;
+    expect(a).toEqual({ op: "backup", sealedBody: Buffer.from(BODY).toString("base64"), holds: cut.holds, face: cut.face, carries: cut.carries });
+    expect(h.proved.length).toBe(1);
+    expect(h.cuts).toEqual([{ face: 2, key: KEY }]);
+    expect(h.heard.length, "a backup never asks the holder to open").toBe(1);
+    expect(h.recomposed).toEqual([true]);
+  });
+
+  test("B1 — the bundle key handed to the cut reads zero once the cut settles", async () => {
+    let held!: Uint8Array;
+    const h = cutting(async (_face, bundleKey) => { held = bundleKey; expect(bundleKey.some((b) => b !== 0)).toBe(true); return cut; });
+    await h.send(unlockFrame(RIGHT)).answer;
+    await h.send(backupFrame(RIGHT)).answer;
+    expect(held.every((b) => b === 0)).toBe(true);
+  });
+
+  test("B2 — a locked vessel refuses custody-locked: no proof runs and nothing gets cut", async () => {
+    const h = cutting();
+    expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "custody-locked" } });
+    expect(h.proved).toEqual([]);
+    expect(h.cuts).toEqual([]);
+    await h.send(unlockFrame(RIGHT)).answer;                              // CONTROL: unlocked, the same frame cuts
+    expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", face: cut.face });
+  });
+
+  test("B3 — a route that opens no slot refuses with the attempts left and cuts nothing; spent attempts refuse by name", async () => {
+    const h = cutting();
+    await h.send(unlockFrame(RIGHT)).answer;
+    expect(await h.send(backupFrame("frames-wrong-1")).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "no-slot-opens", attemptsLeft: 2 } });
+    await h.send(backupFrame("frames-wrong-2")).answer;
+    await h.send(backupFrame("frames-wrong-3")).answer;
+    expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "attempts-spent" } });
+    expect(h.cuts).toEqual([]);
+    const control = cutting();                                            // CONTROL: the right route, first, cuts
+    await control.send(unlockFrame(RIGHT)).answer;
+    expect(await control.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", face: cut.face });
+  });
+
+  test("B4 — a frame that misses its shape or carries a stray key refuses whole before the holder hears", async () => {
+    const h = cutting();
+    await h.send(unlockFrame(RIGHT)).answer;
+    const bent: Record<string, unknown>[] = [
+      backupFrame(RIGHT, { out: "/tmp/elsewhere" }), backupFrame(RIGHT, { act: "persona.roots" }),
+      backupFrame(RIGHT, { key: "5A".repeat(32) }), backupFrame(RIGHT, { key: KEY.slice(2) }), backupFrame(RIGHT, { key: 7 }),
+      backupFrame(RIGHT, { face: -1 }), backupFrame(RIGHT, { face: "2" }), backupFrame(RIGHT, { face: 1.5 }),
+      backupFrame(RIGHT, { credentials: [] }), backupFrame(RIGHT, { credentials: [{ kind: "passphrase" }] }),
+    ];
+    for (const frame of bent) expect(await h.send(frame).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "bad-custody-frame" } });
+    expect(h.proved).toEqual([]);
+    expect(h.cuts).toEqual([]);
+  });
+
+  test("B5 — a cut that refuses answers its own name; a custody fault answers the row it met; the door serves on", async () => {
+    let fault: Error = new BackupRefused("face-not-worn", "this vessel wears h0");
+    const h = cutting(async () => { throw fault; });
+    await h.send(unlockFrame(RIGHT)).answer;
+    expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", status: "error", errorMessage: "this vessel wears h0", refusal: { reason: "face-not-worn" } });
+    fault = new CustodyRowUnavailable("identity", ".persona-roster.json", "torn");
+    expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ refusal: { reason: "row-unavailable", home: "identity", file: ".persona-roster.json", reading: "torn" } });
+    fault = new Error("the port closed");
+    expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ refusal: { reason: "backup-failed" } });
+    expect(await h.send({ op: "custody" }).answer).toMatchObject({ op: "custody", unlocked: true });
+  });
+
+  test("B6 — the door logs how a cut ended and never the route, the bundle key or the sealed body", async () => {
+    const h = cutting();
+    await h.send(unlockFrame(RIGHT)).answer;
+    const done = await h.send(backupFrame(RIGHT)).answer;
+    const missed = await h.send(backupFrame("frames-wrong-canary")).answer;
+    const logged = h.logs.join("\n");
+    expect(logged).toContain("backup: done");
+    expect(logged).toContain("backup: refused (no-slot-opens)");
+    for (const secret of [RIGHT, "frames-wrong-canary", KEY, Buffer.from(BODY).toString("base64"), "garden-notes", "ab".repeat(32)]) expect(logged).not.toContain(secret);
+    for (const secret of [RIGHT, "frames-wrong-canary", KEY]) expect(JSON.stringify([done, missed])).not.toContain(secret);
+  });
+
+  test("B7 — a door with no cut wired refuses backup-unavailable", async () => {
+    const h = harness();
+    await h.send(unlockFrame(RIGHT)).answer;
+    expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "backup-unavailable" } });
+    expect(h.proved).toEqual([]);
   });
 });

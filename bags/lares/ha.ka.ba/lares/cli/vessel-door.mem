@@ -195,6 +195,17 @@ moved.
 ''NOT the noun-doors.'' `nexus`, `persona`, `vault`, `library`, `circle`, `cabal`, `hooks`, `sense`,
 `mempalace`, `sensorium` already obey the law. Touching them spends risk for nothing.
 
+''THE `vault` DOOR CARRIES A FACE'S BACKUP.'' `lares vault backup --face <N> --out <file>` cuts one face's
+backup bundle through the standing vessel's custody door: it reads the vessel's own route and the bundle's new
+route on a terminal, and no flag, environment variable or pipe carries either
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>). The verb lives on `vault` because it opens
+nothing of the vessel's substrate: it asks the custody door, as `unlock` and `lock` do.
+
+''ONE FLAG ASKS FOR KEYHIVE'S OWN TRACE, BY NAME.'' `--keyhive-trace` on any command sets `LAR_KEYHIVE_TRACE=1`
+for that command's process, and the same variable set in a daemon's environment asks it of the daemon. Keyhive's
+tracing installs a global dispatcher, so it stands off unless this name asks for it
+(`packages/lararium-keyhive/src/keyhive-provider.ts` `KEYHIVE_TRACE_ENV`).
+
 ''NOT the content verbs.'' `bag`, `wiki`, `ingest`, `act`, `edge`, `draft`, `normalize`, `repack` name the
 corpus island rather than the vessel island. They may want their own door one day; that is a separate
 reading and it does not belong in this act.
@@ -249,6 +260,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hF1EZNnRap1j2pwvPavpDA_ALkW3L7Ma1XqvUnJxics
+<<^ code="&#x0003;">>ni:///sha-256;n2cf3HAn3YDNKBkhoduCHDKkRyfWsOAOVNJ75plrIH0
 
 <<^ code="&#x0004;" -> to="?">>

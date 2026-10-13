@@ -29,7 +29,7 @@
  * Node-main only: a worker never imports this module.
  */
 import {
-  openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal,
+  openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, vkEquals,
   type Credential, type CustodyIo, type VesselKey,
 } from "@lararium/mesh";
 import { custodyDerive, custodyRootFromBytes, custodyVeil, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
@@ -44,6 +44,15 @@ export type HolderUnlock =
   | { readonly reading: "tree-absent" }
   | { readonly reading: "tree-unreadable"; readonly why: string }
   | { readonly reading: "root-unopenable"; readonly why: string };
+
+/** What `proves` answers: whether a person presented a route of the tree this holder's own key rests in. */
+export type HolderProof =
+  | { readonly reading: "proves" }
+  | { readonly reading: "locked" }
+  | { readonly reading: "no-slot-opens"; readonly attemptsLeft: number }
+  | { readonly reading: "attempts-spent" }
+  | { readonly reading: "tree-absent" }
+  | { readonly reading: "tree-unreadable"; readonly why: string };
 
 export type RowReading =
   | { readonly reading: "opens"; readonly plaintext: Uint8Array }
@@ -78,6 +87,13 @@ export interface CustodyHolder {
   /** The homes this holder's rows rest in. */
   readonly homes: CustodyHomes;
   unlock(credentials: readonly Credential[]): Promise<HolderUnlock>;
+  /**
+   * PROVE A PERSON STANDS HERE, on a holder that already holds its key: the credentials open a slot of this
+   * vessel's tree, and the key that slot yields equals the key held. An act that hands a face's root off the
+   * vessel asks this first. A miss spends one of the boot's unlock attempts, exactly as an unlock's miss does,
+   * and spent attempts refuse before any key derivation runs. Opens nothing new and holds nothing new.
+   */
+  proves(credentials: readonly Credential[]): Promise<HolderProof>;
   /** Hold a vessel key the caller already opened (a founding's own mint). Refuses a key the custody root does not open under. */
   adopt(vk: VesselKey): Promise<void>;
   lock(): Promise<void>;
@@ -148,6 +164,22 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     slot = result.slot;
     return { reading: "opens", slot };
   };
+  const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
+    if (vk === null || !accepting) return { reading: "locked" };
+    if (spent >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent" };
+    const result = await unlockCustody({ io: a.io, homes: a.homes, credentials });
+    if (result.reading === "no-slot-opens") {
+      spent++;
+      return { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
+    }
+    if (result.reading !== "opens") return result;
+    // A route that opens a tree whose key differs from the one held proves nothing about this vessel.
+    const same = vk !== null && vkEquals(result.vk, vk);
+    result.vk.fill(0);
+    if (same) return { reading: "proves" };
+    spent++;
+    return { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
+  };
   const operation = <T>(fn: () => Promise<T>): Promise<T> => {
     if (!accepting || vk === null) return Promise.reject(new CustodyLocked());
     let tracked!: Promise<T>;
@@ -179,6 +211,11 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   return {
     homes: a.homes,
     unlock: enqueueUnlock,
+    proves(credentials) {
+      const run = unlockChain.then(() => doProve(credentials), () => doProve(credentials));
+      unlockChain = run.catch(() => undefined);
+      return run;
+    },
     adopt(handed) {
       const run = unlockChain.then(() => doAdopt(handed), () => doAdopt(handed));
       unlockChain = run.catch(() => undefined);

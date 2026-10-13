@@ -1,5 +1,5 @@
 /**
- * custody-door — the CLI's side of the vessel's custody door: one `unlock`, `lock`, `custody` or `act` frame on the
+ * custody-door — the CLI's side of the vessel's custody door: one `unlock`, `lock`, `custody`, `act` or `backup` frame on the
  * owner-only verb socket, and its one answer.
  *
  * A credential rides this frame and nothing else. A verb's arguments get hashed into a durable receipt the daemon
@@ -15,7 +15,9 @@ export type CustodyFrame =
   | { readonly op: "lock" }
   | { readonly op: "custody" }
   /** One act of the sealed-act table and its typed arguments; nothing rides beside them. */
-  | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> };
+  | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> }
+  /** One face's backup cut: the vessel's own route, the face's handle-index and the bundle key (64 lower hex). */
+  | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string };
 
 /** The daemon's answer, as the door spells it (`custody-frames` in the node package). */
 export type CustodyDoorAnswer = Record<string, unknown> & { readonly op?: string };

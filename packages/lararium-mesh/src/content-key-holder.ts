@@ -743,12 +743,16 @@ export class ContentKeyHolder {
    * per bag and key version, sealed to `to` (the public half of the pair the bundle key derives). Answers the
    * ciphertext and a list that names bags and versions and no key. A cut hands keys beyond the holder, so it
    * refuses under the vessel's own shadow; it reads that shadow once, here, before it gathers anything.
+   *
+   * `shadowRead`: the caller read this vessel's own shadow at the entry of the act this cut belongs to, and read
+   * none. The holder then reads none of its own: an act reads its shadow ONCE, so a raise the vessel counts
+   * while the act runs binds its next act and never this one (custody#/the-cut).
    */
-  cutMemory(args: { readonly bags: readonly string[]; readonly to: Uint8Array }): Promise<{ readonly section: Uint8Array; readonly holds: readonly MemoryHolding[] } | HolderRefusal> {
+  cutMemory(args: { readonly bags: readonly string[]; readonly to: Uint8Array; readonly shadowRead?: boolean }): Promise<{ readonly section: Uint8Array; readonly holds: readonly MemoryHolding[] } | HolderRefusal> {
     return this.#inTurn<{ readonly section: Uint8Array; readonly holds: readonly MemoryHolding[] }>(async () => {
       const named = [...new Set(args.bags)].sort(ascending);
       if (!named.every((bagId) => isWellFormedText(bagId))) return refuse("bag-malformed");
-      for (const bagId of named) if (await this.#ports.ownEdgeShadowed(bagId)) return refuse("own-edge-shadowed");
+      if (args.shadowRead !== true) for (const bagId of named) if (await this.#ports.ownEdgeShadowed(bagId)) return refuse("own-edge-shadowed");
       const bags = await this.#loaded();
       const entries: MemoryEntry[] = [];
       const holds: MemoryHolding[] = [];

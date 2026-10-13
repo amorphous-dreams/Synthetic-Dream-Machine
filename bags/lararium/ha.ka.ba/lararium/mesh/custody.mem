@@ -125,7 +125,7 @@ The body carries the face's root and the lines that let the face stand again: th
 
 ''The cut asks the vessel's own route again'' (house reading). An unlocked vessel's custody door answers any process of its own user, and no act of its table hands out a root. A bundle rebuilds a root for whoever holds its route, so the cut rides a frame of its own that carries the vessel's route. A route that opens no slot spends one of the boot's unlock attempts.
 
-''The cut refuses under the vessel's own edge shadow'' (`own-edge-shadowed`). A cut hands keys beyond the holder, and a vessel under its own shadow performs no key act (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>). ''The cut reads the shadow once, at its entry.'' A raise the vessel counts while a cut runs binds its next act: the bundle that cut produced stands, and the next cut refuses.
+''The cut refuses under the vessel's own edge shadow'' (`own-edge-shadowed`). A cut hands keys beyond the holder, and a vessel under its own shadow performs no key act (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>). ''The cut reads the shadow once, at its entry.'' A raise the vessel counts while a cut runs binds its next act: the bundle that cut produced stands, and the next cut refuses. The vessel's main thread takes that one reading before any row opens, and says so inside the ask it signs for the memory section; the island's holder then reads none of its own.
 
 !!! The cut's refusals
 
@@ -135,9 +135,15 @@ The body carries the face's root and the lines that let the face stand again: th
 | `face-not-held` | this vessel holds no root at that handle-index |
 | `face-not-worn` | the vessel wears another face, so its holder counts no key for this one |
 | `own-edge-shadowed` | the vessel reads a shadow over its own edge |
-| `memory-unavailable` | no content-key holder stands in this vessel's island |
+| `key-history-unread` | this vessel's board holds no key history for the face that verifies whole from its inception |
+| `memory-unavailable` | no content-key holder stands in this vessel's island, or the holder refused the section |
+| `out-exists` | a file already stands at the path the person named |
 
-A cut that refuses writes no file.
+A cut that refuses writes no file, and a cut never writes over one: a standing file refuses before any frame leaves the command.
+
+''The vessel checks in a fixed order.'' The custody door reads the frame's shape, then the lock, then the route. The cut then reads its own shadow and refuses under it before any row opens. It reads the roster, the worn face, each row the table's column names, the key history, and last the island's memory section. A refusal at any step answers its name alone.
+
+''A vessel whose holder counts no key cuts a bundle with an empty memory section.'' The section still rides, sealed to the pair the bundle key derives, and the command says that it holds no content key.
 
 <<~/ahu>>
 
@@ -209,14 +215,19 @@ Every refusal lands before the commit row, so before any row moves.
 !! What the code holds
 
 ''Built: a production path reaches each.''
-* ''The carrier table'', its census and the rotation's list (`packages/lararium-node/src/vault-carriers.ts`).
+* ''The carrier table'', its census, the rotation's list and its bundle column (`packages/lararium-node/src/vault-carriers.ts`; `bundleRows` names every row a bundle carries).
+* ''The bundle's bytes'' (`packages/lararium-mesh/src/face-bundle.ts`): the format mark, the slot tree, the sealed body under a key the bundle key derives, the memory pair that key derives under another name, and a body reader that refuses any part the shape does not name.
+* ''The cut'' (`packages/lararium-node/src/face-bundle-cut.ts`): one extractor for each row the table's column names, the shadow read once at the entry, and each refusal of #/the-cut. A test holds the extractors equal to the column.
+* ''The custody door's `backup` frame'' (`packages/lararium-node/src/custody-frames.ts`) and the holder's route proof (`custody-holder.ts` `proves`): the frame carries the vessel's own route, a face and a bundle key, and nothing beside them.
+* ''The memory section's cut'': the vessel's main thread signs one ask of its daemon island (`packages/lararium-node/src/island-verb-ask.ts` `askIslandMemory`), and the island seals the section to the pair the bundle key derives (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/what-the-code-holds">>). No content key mints on a production vessel until a session signer stands, so a production cut carries an empty section.
+* ''`lares vault backup --face <N> --out <file>`'' (`packages/lares-cli/src/vault-backup.ts`, `commands/vault.ts`): the command reads the vessel's route and the bundle's new route on a terminal, binds the slot tree in its own process and writes the file owner-only. The test door for marked scratch roots (`tools/backup-test-custody.mjs`) runs the same cut under the published test route.
+* ''The handle-book's tag for the recognising face'' (`packages/lararium-mesh/src/handle-book.ts`): a recognition made while a face stands worn tags that face's root key, `snapshotFor` answers one face's own records under that face's own labels, and a record no face tagged enters no bundle. The node command line tags; a browser vessel cuts no bundle and tags nothing.
 
 ''Specified in code: the suites run it, and no production path reaches it.''
-* The memory section's cut and its import door, inside the key island (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/what-the-code-holds">>). Caller: the custody door's `backup` frame and the restore's import act.
+* The memory section's import door, inside the key island (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/what-the-code-holds">>). Caller: the restore's import act.
 
 ''Owed: the law above stands, and no code holds it.''
-* The bundle's format, the cut, the restore, the custody door's `backup` frame and the `lares vault backup` and `restore` commands.
-* The handle-book's tag for the recognising face.
+* The restore, its commit row's writer and the `lares vault restore` command.
 * A witness that derives from the table and refuses any private file or seal outside it.
 
 <<~/ahu>>
@@ -231,6 +242,6 @@ Every refusal lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;28G7pRjVtL71dpwJwY36f6cErSWmvgZCiIM_M9-zHiw
+<<^ code="&#x0003;">>ni:///sha-256;zmkYGM8llUO1mptYLaJ2P-j-XT-xUWz8ez4CATbqJVE
 
 <<^ code="&#x0004;" -> to="?">>

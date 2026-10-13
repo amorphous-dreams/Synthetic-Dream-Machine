@@ -194,6 +194,13 @@ describe("the cut: the section seals inside the holder", () => {
     // CONTROL: the same cut runs once the shadow lifts.
     old.shadowed = false;
     expect("section" in await old.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public })).toBe(true);
+    // AN ACT READS ITS SHADOW ONCE. A caller that read the shadow at its own act's entry says so, and the holder
+    // reads none of its own: a raise that lands while that act runs binds the next act, never this cut.
+    old.shadowed = true;
+    expect("section" in await old.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public, shadowRead: true })).toBe(true);
+    // CONTROL: the same holder, asked with no such word, reads its own shadow and refuses.
+    expect(said(await old.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public }))).toBe("own-edge-shadowed");
+    old.shadowed = false;
   });
 
   it("a locked holder refuses the cut and the import by name", async () => {

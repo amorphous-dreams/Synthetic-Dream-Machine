@@ -61,6 +61,7 @@ import { makeCustodyHolder } from "./custody-holder.js";
 import { seatCustody } from "./custody-seat.js";
 import { custodyFrameHandler } from "./custody-frames.js";
 import { runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
+import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./persona-admit-flow.js";
 import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
@@ -443,6 +444,10 @@ async function main(): Promise<void> {
       kelHead: composition?.kelHead ?? null, personaSelves: composition?.personaSelves ?? null, walk: composition?.walk ?? null,
       hosting: composition?.hosting ?? null,
     }),
+    // A BACKUP'S CUT RUNS HERE TOO, against the same seated holder, once the frame's own route proves: the
+    // standing composition lends it the worn face, its own edge's shadow, the island's memory section and the
+    // board's key history (custody#/the-cut).
+    backup: (face, bundleKey) => cutFaceBundle({ face, bundleKey, door: composition?.backup ?? null }),
     standing: () => composition?.standing ?? "recomposing",
     onLog: (line) => console.log(`[custody] ${line}`),
   });
@@ -509,6 +514,8 @@ interface StandingComposition {
   readonly walk?: SealedActContext["walk"];
   /** The store this composition lends a hosting roll, and the refold a landed roll owes. */
   readonly hosting?: SealedActContext["hosting"];
+  /** What this composition lends a backup bundle's cut. */
+  readonly backup?: BackupDoor;
 }
 
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
@@ -667,6 +674,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     personaSelves: herm.personaSelves,
     walk: herm.walkDial,
     hosting: herm.hostingDoor,
+    backup: herm.backupDoor,
   };
 }
 
@@ -941,6 +949,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     personaSelves: result.personaSelves,
     walk: result.walkDial,
     hosting: result.hostingDoor,
+    backup: result.backupDoor,
   };
 }
 

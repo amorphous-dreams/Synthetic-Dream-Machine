@@ -15,15 +15,18 @@
  * (`sealed-acts`).
  */
 import type { DocHandle } from "@automerge/automerge-repo";
-import { AutomergeDocStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, VERB_RESULT_KEY, newRequestId, signSeatDutiesAsk, type LarDoc } from "@lararium/mesh";
+import {
+  AutomergeDocStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, VERB_RESULT_KEY, newRequestId, signMemoryAsk, signSeatDutiesAsk,
+  type LarDoc, type MemoryAct,
+} from "@lararium/mesh";
 
 /** The island's direct channel, as the daemon VM hands it out. */
 export type PlaceIslandVerb = (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string }) => void;
 
-/** An island verb that ended in an error, with the island's own words. */
+/** An island verb that ended in an error, with the island's own words and, where it refused by name, that name. */
 export class IslandVerbRefused extends Error {
   override readonly name = "IslandVerbRefused";
-  constructor(readonly verb: string, message: string) { super(message); }
+  constructor(readonly verb: string, message: string, readonly reason: string | null = null) { super(message); }
 }
 
 /** An ask whose caller left before the island answered. */
@@ -40,7 +43,7 @@ export interface IslandAsk {
 }
 
 /** The terminal outcome of one request, read through the daemon document's own store door, or null while none stands. */
-async function outcomeOf(store: AutomergeDocStore, requestId: string): Promise<{ readonly status: "done" | "error"; readonly output: Record<string, unknown>; readonly errorMessage?: string } | null> {
+async function outcomeOf(store: AutomergeDocStore, requestId: string): Promise<{ readonly status: "done" | "error"; readonly output: Record<string, unknown>; readonly errorMessage?: string; readonly refusal?: string } | null> {
   const record = await store.get(`${OUTCOME_URI_PREFIX}${requestId}`);
   if (!record || record.meta?.deleted) return null;
   const fields = record.tiddler as Record<string, unknown>;
@@ -53,7 +56,11 @@ async function outcomeOf(store: AutomergeDocStore, requestId: string): Promise<{
       if (summary && typeof summary === "object" && !Array.isArray(summary)) output = summary as Record<string, unknown>;
     } catch { /* an outcome whose results read as no JSON answers nothing */ }
   }
-  return { status, output, ...(typeof fields["error-message"] === "string" ? { errorMessage: fields["error-message"] } : {}) };
+  return {
+    status, output,
+    ...(typeof fields["error-message"] === "string" ? { errorMessage: fields["error-message"] } : {}),
+    ...(typeof fields["refusal"] === "string" ? { refusal: fields["refusal"] } : {}),
+  };
 }
 
 /** One store door per daemon document for this process's life: a door follows its document, so asks share it. */
@@ -90,7 +97,7 @@ export function askIslandVerb(opts: {
       const outcome = await outcomeOf(store, opts.requestId);
       if (!outcome) return;
       if (outcome.status === "done") settle(() => resolve(outcome.output));
-      else settle(() => reject(new IslandVerbRefused(opts.verb, outcome.errorMessage ?? `${opts.verb} ended in an error`)));
+      else settle(() => reject(new IslandVerbRefused(opts.verb, outcome.errorMessage ?? `${opts.verb} ended in an error`, outcome.refusal ?? null)));
     };
     const fault = (err: unknown): void => settle(() => reject(err instanceof Error ? err : new Error(String(err))));
     function onChange(): void { void check().catch(fault); }
@@ -127,6 +134,41 @@ export function askSeatDuties(opts: {
     inner = askIslandVerb({
       daemonHandle: opts.daemonHandle, placeVerb: opts.placeVerb,
       verb: "seat-duties", args: { facts, ask }, requestedBy: `0x${opts.vesselKey}`, requestId,
+    });
+    return inner.answer;
+  });
+  return { answer, abandon: () => { abandoned = true; inner?.abandon(); } };
+}
+
+/** The island verb each memory act names. */
+const MEMORY_VERBS: Readonly<Record<MemoryAct, string>> = { cut: "sealed-memory-cut", door: "sealed-memory-door", import: "sealed-memory-import" };
+
+/**
+ * ASK ONE OF THE ISLAND'S THREE MEMORY VERBS AS THE VESSEL (custody#/the-bundle). Each answers its own vessel's
+ * main thread alone: the ask carries the vessel key's signature over its own request id and the facts it hands in
+ * (`signMemoryAsk`), and this function holds the one place that signature gets made. A cut hands in a public key
+ * and draws ciphertext; a door draws a public key; an import hands in a section and its pair's secret half sealed
+ * to that door. No bare content key rides this road in either direction, so an outcome that rests in the daemon's
+ * document names bags, versions and ciphertext alone.
+ */
+export function askIslandMemory(opts: {
+  readonly daemonHandle: DocHandle<LarDoc>;
+  readonly placeVerb:    PlaceIslandVerb;
+  readonly act:          MemoryAct;
+  /** What the act hands in: `{ to }` for a cut, `{}` for a door, `{ section, secret }` for an import. */
+  readonly facts:        Readonly<Record<string, unknown>>;
+  readonly vesselKey:    string;
+  readonly sign:         (bytes: Uint8Array) => Promise<string>;
+}): IslandAsk {
+  const requestId = newRequestId();
+  const verb = MEMORY_VERBS[opts.act];
+  let inner: IslandAsk | null = null;
+  let abandoned = false;
+  const answer = signMemoryAsk({ requestId, act: opts.act, facts: opts.facts, sign: opts.sign }).then((ask) => {
+    if (abandoned) throw new IslandAskAbandoned(verb);
+    inner = askIslandVerb({
+      daemonHandle: opts.daemonHandle, placeVerb: opts.placeVerb,
+      verb, args: { ...opts.facts, ask }, requestedBy: `0x${opts.vesselKey}`, requestId,
     });
     return inner.answer;
   });

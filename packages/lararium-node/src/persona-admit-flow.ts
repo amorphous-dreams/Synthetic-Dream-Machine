@@ -24,7 +24,7 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   mintEnrollmentOffer, sealPersonaGrant, openPersonaGrant, mintJoinAck, verifyJoinAck,
-  headOpKey, personaKelChainForPrefix, personaKelBoardDocUrl, materializeSharedLarDoc,
+  headOpKey, personaKelChainForPrefix, personaKelBoardDocUrl, materializeSharedLarDoc, type PersonaKelEvent,
   type PersonaRef, type AdmitSigner, type JoinRecord, type EnrollmentOffer, type SealedGrant, type JoinAck,
 } from "@lararium/mesh";
 import {
@@ -65,6 +65,16 @@ async function localPersonaKelBoard(repo: Repo) {
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
   return materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
+}
+
+/**
+ * One face's key event log as THIS vessel's local persona-KEL board holds it, inception first; empty where the
+ * board holds no event under `prefix`. A face's backup bundle carries this log, and a restore reads it beside the
+ * log a bundle carried (custody#/the-bundle). Reads the board; verifies nothing.
+ */
+export async function readLocalPersonaKelChain(repo: Repo, prefix: string): Promise<PersonaKelEvent[]> {
+  const board = await localPersonaKelBoard(repo);
+  return [...(personaKelChainForPrefix(board.doc(), prefix) ?? [])];
 }
 
 /**

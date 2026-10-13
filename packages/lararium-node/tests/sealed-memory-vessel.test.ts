@@ -42,13 +42,13 @@ async function proof(): Promise<SessionProof> {
 }
 
 /** Boot the real daemon options over one founded island whose composition names `BAG`; answer its verbs. */
-async function stand(over: { veil?: boolean } = {}) {
+async function stand(over: { veil?: boolean; dyad?: () => "clear" | "aside" } = {}) {
   const root = mkdtempSync(join(tmpdir(), "memory-vessel-"));
   teardown.push(() => rmSync(root, { recursive: true, force: true }));
   const st = await standFoundedIsland(teardown);
   const daemonAuth = { ...st.daemonAuth, registerBags: [...st.daemonAuth.registerBags, BAG], ...(over.veil === false ? {} : st.veil) };
   const opts = operatorDaemonOptions({ daemonAuth } as never, {
-    dyadReading: () => "clear", sealedStore: nodeSealedStoreShore(join(root, "daemon")), persistArchive: () => {}, persistVeilArchive: () => {}, sessionProof: await proof(),
+    dyadReading: () => (over.dyad ? over.dyad() : "clear"), sealedStore: nodeSealedStoreShore(join(root, "daemon")), persistArchive: () => {}, persistVeilArchive: () => {}, sessionProof: await proof(),
   });
   const kh = await opts.verifierFactory!(st.ctx) as { dispose?: () => Promise<void> };
   teardown.push(() => { void kh.dispose?.(); });
@@ -110,6 +110,24 @@ describe("a memory section leaves and enters a real founded vessel's island seal
     const door = await run("sealed-memory-door", {}, { act: "door", facts: {} });
     const args = { section: String(cut["section"]), secret: b64(sealMemorySecret(pair.secret, hexToBytes(String(door["door"])))) };
     expect(await refusal(run("sealed-memory-import", args, { act: "import", facts: args }))).toBe("seat-not-standing");
+  }, 120_000);
+
+  test("AN ACT READS ITS SHADOW ONCE: a cut whose signed ask says the vessel read its shadow draws a section under a shadow that landed since; an ask that says nothing refuses", async () => {
+    let shadow: "clear" | "aside" = "clear";
+    const { run } = await stand({ dyad: () => shadow });
+    await run("sealed-seal", { bag: BAG, text: "a private note" });
+    shadow = "aside";   // a raise lands after the cut's own entry read
+    const to = hex(mintMemoryKeypair().public);
+    const carried = { to, shadow: "read-clear" };
+    const cut = await run("sealed-memory-cut", carried, { act: "cut", facts: carried });
+    expect((cut["holds"] as unknown[]).length).toBe(1);
+    // CONTROL: the same island under the same shadow, asked with no word of a read, refuses.
+    expect(await refusal(run("sealed-memory-cut", { to }, { act: "cut", facts: { to } }))).toBe("own-edge-shadowed");
+    // The word rides inside the signed facts: slipped in beside an ask signed without it, the ask refuses.
+    expect(await refusal(run("sealed-memory-cut", carried, { act: "cut", facts: { to } }))).toBe("memory-ask-unlicensed");
+    // Any other spelling of the word reads as no word.
+    const bent = { to, shadow: "clear" };
+    expect(await refusal(run("sealed-memory-cut", bent, { act: "cut", facts: { to } }))).toBe("own-edge-shadowed");
   }, 120_000);
 
   test("THE ISLAND ANSWERS ITS OWN VESSEL ALONE: no ask, another key's ask, another request's ask and another act's ask each refuse", async () => {

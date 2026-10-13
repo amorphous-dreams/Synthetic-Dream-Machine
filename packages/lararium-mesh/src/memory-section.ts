@@ -161,6 +161,11 @@ export function openMemorySecret(sealed: unknown, doorSecret: unknown): Uint8Arr
 
 // ── The vessel's own ask ────────────────────────────────────────────────────────────────────────
 export const MEMORY_ACTS = ["cut", "door", "import"] as const;
+/**
+ * What a cut's ask says where the vessel's main thread already read its own edge's shadow, at the entry of the
+ * act the cut belongs to, and read none. The word rides inside the facts the vessel signs.
+ */
+export const MEMORY_CUT_SHADOW_READ = "read-clear";
 export type MemoryAct = (typeof MEMORY_ACTS)[number];
 
 /** The bytes a vessel signs for one ask of its island: the act, this request's own id, and a digest of what it hands in. */

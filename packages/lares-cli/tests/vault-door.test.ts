@@ -197,3 +197,22 @@ describe("vault door — status, unlock, bind, unbind", () => {
     expect(tree(root)).toBe(before);
   });
 });
+
+describe("vault door — backup asks the standing vessel", () => {
+  it("backup with no vessel standing refuses `no-vessel`, reads no credential and writes no file", async () => {
+    const before = tree(root);
+    answers.push("p", PW, "n", "p", "a-bundle-route");
+    expect(await run("backup", "--face", "0", "--out", join(root, "face.bundle"))).toBe(1);
+    expect(out.join("")).toMatch(/"code":\s*"no-vessel"/);
+    expect(answers.length, "no prompt opened: every scripted answer still waits").toBe(5);
+    expect(tree(root)).toBe(before);
+  });
+
+  it("backup without a face or without a file refuses as a usage error", async () => {
+    for (const argv of [["backup"], ["backup", "--face", "0"], ["backup", "--out", join(root, "x")], ["backup", "--face", "-1", "--out", join(root, "x")], ["backup", "--face", "one", "--out", join(root, "x")]]) {
+      out.length = 0;
+      expect(await run(...argv)).toBe(2);
+      expect(out.join("")).toMatch(/"code":\s*"usage"/);
+    }
+  });
+});

@@ -28,7 +28,8 @@ import {
 } from "@lararium/node";
 import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
-import { gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
+import { gatherBundleRoute, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
+import { backupLines, cutBundleToFile } from "../vault-backup.js";
 import { discordianReading } from "@lararium/node";
 import { throughStoreDoor } from "../store-door.js";
 import { udsAlive } from "../local-connector.js";
@@ -160,6 +161,7 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "lock":       return await vaultLock(args, daemonUp);
       case "bind":       return await vaultBind(args);
       case "unbind":     return await vaultUnbind(args);
+      case "backup":     return await vaultBackup(args, daemonUp);
       case "passphrase": return vaultPassphrase(args);
       case "seal":    return await vaultSeal(args, daemonUp);
       case "rotate":  return await vaultRotate(args, daemonUp);
@@ -417,6 +419,35 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   emit(args, { ok: true, data: a, human: () => console.log(a["was"] === "unlocked"
     ? `locked: the vessel dropped its key and stands as ${String(a["standing"])}; every sovereign act waits on \`lares vault unlock\`.`
     : `already locked: the vessel holds no key and stands as ${String(a["standing"])}.`) });
+  return 0;
+}
+
+/**
+ * `vault backup --face <N> --out <file>`: cut one face's backup bundle. The standing vessel, unlocked and wearing
+ * that face, builds the body behind its custody door; this command reads the vessel's own route and then the
+ * bundle's new route on a terminal, binds the bundle's slot tree in its own process and writes the file.
+ */
+async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  const faceRaw = args.options["face"];
+  const out = args.options["out"];
+  if (typeof faceRaw !== "string" || !/^(0|[1-9]\d*)$/.test(faceRaw) || !Number.isSafeInteger(Number(faceRaw))) {
+    throw new UsageError("backup needs the face's handle-index: `lares vault backup --face <N> --out <file>` (indices print under `lares persona list`)");
+  }
+  if (typeof out !== "string" || out.length === 0) throw new UsageError("backup needs a file to write: `lares vault backup --face <N> --out <file>`");
+  if (!daemonUp) {
+    const why = "a cut needs the standing vessel, unlocked, wearing that face: its island holds the content keys. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then cut.";
+    emit(args, { ok: false, error: { code: "no-vessel", message: why }, human: () => console.error(`lares vault backup: ${why}`) });
+    return 1;
+  }
+  if (!wantsJson(args)) console.log("First this vessel's own route: it proves a person stands at this cut.");
+  const vesselCredentials = await gatherCredentials("lares vault backup", routeFlag(args));
+  const bundleRoutes = await gatherBundleRoute("lares vault backup");
+  const result = await cutBundleToFile({ face: Number(faceRaw), out, vesselCredentials, bundleRoutes, send: (frame) => sendCustodyFrame(frame) });
+  if (!result.ok) {
+    emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason, ...(result.attemptsLeft !== undefined ? { attemptsLeft: result.attemptsLeft } : {}) }, human: () => console.error(`lares vault backup: ${result.reason}: ${result.message}`) });
+    return 1;
+  }
+  emit(args, { ok: true, data: { ...result }, human: () => { for (const line of backupLines(result)) console.log(line); } });
   return 0;
 }
 

@@ -130,6 +130,21 @@ export async function gatherFoundingRoute(): Promise<SlotSpec[]> {
 }
 
 /**
+ * A NEW BUNDLE'S ROUTE, for `vault backup`: one slot per chosen route, each opening the bundle on its own. A new
+ * passphrase gets typed twice; a new paper sheet reads back word for word. Refuses by name with no TTY.
+ */
+export async function gatherBundleRoute(verb: string): Promise<SlotSpec[]> {
+  requireTty(verb);
+  say();
+  say("The BUNDLE takes a route of its own, apart from this vessel's: whoever holds the file and that route");
+  say("restores this face. Choose a NEW passphrase, a NEW paper sheet, or both.");
+  const routes = await askRoute("seal the bundle under", true);
+  const slots: SlotSpec[] = [];
+  for (const r of routes) slots.push({ t: 1, pins: [await newPin(r)] });
+  return slots;
+}
+
+/**
  * For `vault unbind --rotate`: the spec of a slot that STAYS, re-read from the human so the new VK can re-bind it.
  * A passphrase pin re-reads the passphrase; a paper pin re-reads its sheets (`confirmHeldPaper`). The caller proves
  * each spec opens its slot BEFORE any byte moves, so a typo never rotates a vessel into a lockout.

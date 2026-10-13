@@ -131,7 +131,7 @@ import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.
 import { announceSeatRoll } from "./seat-duty-executor.js";
 import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
 import { base64ToBytes, bytesToBase64 } from "./bytes-base64.js";
-import { ed25519SignerFromSeed, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type LarTiddlerRecord, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
+import { MEMORY_CUT_SHADOW_READ, ed25519SignerFromSeed, memoryAskRefusal, mintMemoryKeypair, openMemorySecret, seatDutiesAskRefusal, hex as memoryHex, type LarTiddlerRecord, type MemoryAct, type MemoryKeypair } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat, type SessionProof } from "./content-key-seat.js";
@@ -862,9 +862,14 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       let memoryDoor: MemoryKeypair | null = null;
       registry.register("sealed-memory-cut", async (args, context) => {
         const to = typeof args["to"] === "string" && /^[0-9a-f]{64}$/.test(args["to"]) ? args["to"] : null;
-        memoryAsk("sealed-memory-cut", "cut", { to }, args, context.invocation.requestId);
+        // THE ACT'S ONE SHADOW READ. The vessel's main thread reads its own edge's shadow at the entry of a
+        // backup's cut, before any row opens, and says so inside the ask it signs. The holder then reads none of
+        // its own, so a raise that lands while the cut runs binds the next act. An ask that says nothing of a
+        // read leaves the holder to read at its own entry.
+        const shadowRead = args["shadow"] === MEMORY_CUT_SHADOW_READ;
+        memoryAsk("sealed-memory-cut", "cut", shadowRead ? { to, shadow: MEMORY_CUT_SHADOW_READ } : { to }, args, context.invocation.requestId);
         if (to === null) throw new Error("[daemon] sealed-memory-cut: `to` (the section pair's public half, 64 lower hex) required.");
-        const cut = await holderFor("sealed-memory-cut").holder.cutMemory({ bags: daemonAuth.registerBags, to: meshHexToBytes(to) });
+        const cut = await holderFor("sealed-memory-cut").holder.cutMemory({ bags: daemonAuth.registerBags, to: meshHexToBytes(to), ...(shadowRead ? { shadowRead: true } : {}) });
         if ("refusal" in cut) return refusedBy("sealed-memory-cut", cut);
         return { verb: "sealed-memory-cut", section: bytesToBase64(cut.section), holds: cut.holds.map((one) => ({ ...one })) };
       });
