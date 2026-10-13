@@ -7,7 +7,7 @@
  *
  * Sealing-on-the-wire stays UNIVERSAL (everything leaving a vessel travels ciphertext); cleartext
  * lives ONLY inside a vessel (VEIL) or is world-readable (PUBLIC). PERSONAGROUP and CONTRACT ride
- * the SAME mechanism — keyring-delivery to a recipient set — differing only in WHICH set.
+ * the SAME mechanism — a content key delivered by lockbox to a recipient set — differing only in WHICH set.
  *
  * ── ISOMORPHIC TO FederationPosture (by composition, not interface) ──────────────────────────────
  * `FederationPosture` (federation-gate.ts) models a per-Nexus stance as a self-describing datum: a
@@ -33,8 +33,8 @@
  * SMALLER holder-set (fewer readers → more restrictive).
  *
  *   · "veil"         — {this-vessel}. Cleartext-local; NOTHING crosses a vessel boundary in the clear.
- *   · "personagroup" — {your-fleet}. Keyring-delivered to the operator's own persona fleet.
- *   · "contract"     — {your-fleet ∪ a-cabal}. Keyring-delivered to the fleet PLUS a contracted cabal.
+ *   · "personagroup" — {your-fleet}. Delivered by lockbox to the operator's own persona fleet.
+ *   · "contract"     — {your-fleet ∪ a-cabal}. Delivered by lockbox to the fleet PLUS a contracted cabal.
  *   · "public"       — {world}. World-readable (the deterministically-federatable public shelf).
  */
 export type CapTier = "veil" | "personagroup" | "contract" | "public";

@@ -13,12 +13,11 @@
  * another digest than the one asked for.
  *
  * NO CONVERGENT SEAL. Sealing one body twice yields two unlike values under two unlike addresses. No key
- * derives from content or from a Nexus secret, so no holder confirms a guessed body against a held address.
+ * derives from content, so no holder confirms a guessed body against a held address.
  *
  * Platform-blind: `@noble/hashes`, `@noble/ciphers`.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store · lar:///ha.ka.ba/lararium/mesh/content-resolution#/cad-storage
  */
-import { blake3 } from "@noble/hashes/blake3.js";
 import { digestsEqual } from "./agile-digest.js";
 import { hexToBytes, sha256HexBytesSync, type RandomProvider } from "./crypto.js";
 import {
@@ -29,30 +28,6 @@ import {
 
 /** The multihash algorithm tag a ciphertext address carries (agile-digest canonical form `blake3:<hex>`). */
 export const CIPHERTEXT_CID_ALGO = SEALED_ADDRESS_ALGO;
-
-/** A per-Nexus convergence secret rides exactly 32 bytes. */
-export const CONVERGENCE_SECRET_LEN = 32 as const;
-
-/**
- * Guard a 32-byte secret: a stray width never passes (fail-closed at the boundary). A per-Nexus convergence
- * keyring guards every epoch secret through this ONE width check, never two drifting copies.
- */
-export function require32(bytes: Uint8Array, what: string): Uint8Array {
-  if (!(bytes instanceof Uint8Array) || bytes.length !== CONVERGENCE_SECRET_LEN) {
-    throw new TypeError(`ciphertext-cas: ${what} MUST be exactly ${CONVERGENCE_SECRET_LEN} bytes, got ${bytes?.length}`);
-  }
-  return bytes;
-}
-
-/**
- * A keyed digest of a body under a per-Nexus convergence secret: `BLAKE3(plaintext, key = nexusSecret)`.
- * NOTHING SEALS OR OPENS WITH IT. No sealed value derives from a convergence secret; this digest stands for
- * the convergence keyring's own `readCapForEpoch` alone and leaves the tree with that reader.
- */
-export function deriveMessageKey(plaintext: Uint8Array, nexusSecret: Uint8Array): Uint8Array {
-  require32(nexusSecret, "nexusSecret");
-  return blake3(plaintext, { key: nexusSecret, dkLen: CONVERGENCE_SECRET_LEN });
-}
 
 /** The address of ciphertext bytes: `blake3:<hex>` over every byte. A carrier recomputes it holding no key. */
 export function ciphertextCid(ciphertext: Uint8Array): string {

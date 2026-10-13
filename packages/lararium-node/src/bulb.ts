@@ -10,7 +10,7 @@
  * its own sovereign self-certifying key from first breath (`kindleFromBulb`).
  *
  * ALL-PUBLIC → the PUBLIC FLOOR ONLY. The bulb rides the read-face (oracle-substrate) EXCLUSIVELY — NEVER the cad
- * carriage (Socket B). Routing a public artifact through the seal/keyring lane would collapse the OPEN path into
+ * carriage (Socket B). Routing a public artifact through the seal lane would collapse the OPEN path into
  * CLOSED (crypto-spine ledger #1: the cad seal ⊥ the ECDH box). Bulb ⊥ stolon: the bulb is the OPEN path (a stranger
  * births their own sovereign hearth); the stolon is the CLOSED path (invite a device into YOUR fleet).
  *

@@ -87,7 +87,7 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
     await new Promise((r) => setTimeout(r, 200));
     rmSync(root, { recursive: true, force: true });
   });
-  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  // The seat reads the persona roster under the vessel key, so each test stands on a founded custody.
   // A founding derives a key from its route and every seat seals a row, so a test here takes seconds under a
   // loaded suite: the room below belongs to that work, and no assertion reads a clock.
   let custody: ScratchCustody;

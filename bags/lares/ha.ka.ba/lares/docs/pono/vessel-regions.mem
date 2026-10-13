@@ -41,7 +41,7 @@ The browser's counterpart (`packages/lararium-browser/src/open-browser-vessel.ts
 
 !!! ① The boot window · ''MUST NOT MOVE''
 
-The sovereign seam read · `readHearthDialPin` · the worn mount, read through the seam (`sovereign.wornMount`) · `emit("boot")`, and then ''the forward declarations whose initial values ENACT the denial'': `antigenRing = null` · `selfSlotFedGate = null` · `realmPlane = null` · `nexusMembership = null` · `sealRegistry = makeSealedPlaneRegistry()` — empty, so DENY-ALL · `nexusConvergenceKeyring = null`, beside the sibling cells `siblings = null` and `siblingGate = null`.
+The sovereign seam read · `readHearthDialPin` · the worn mount, read through the seam (`sovereign.wornMount`) · `emit("boot")`, and then ''the forward declarations whose initial values ENACT the denial'': `antigenRing = null` · `selfSlotFedGate = null` · `realmPlane = null` · `nexusMembership = null` · `sealRegistry = makeSealedPlaneRegistry()` — empty, so DENY-ALL, beside the sibling cells `siblings = null` and `siblingGate = null`.
 
 The closure constructs the Repo (`new Repo`) after those declarations, and the holders that fill the cells stand later in the closure. ''The window between stays deliberately inert for the outside lanes'': the unarmed federation and sibling gates deny their lanes until their holders stand, while the antigen ring and the in-process island lane keep their own rules (a null antigen ring denies nobody). Posture holds no cell here; `ownPlacePosture` (`socket-sorter.ts`) reads it fresh.
 
@@ -144,6 +144,6 @@ A tasked spirit's walk at this codebase's grain, never a human's; the hours stan
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;An3Qy17TXuSnjMSaATYFlGUE5mdVc3w1qXPn1_fJ2Z0
+<<^ code="&#x0003;">>ni:///sha-256;_3QxEZjYYC7rCY50LzFP4qK3pkTlezWwBAgkuP8YnsA
 
 <<^ code="&#x0004;" -> to="?">>

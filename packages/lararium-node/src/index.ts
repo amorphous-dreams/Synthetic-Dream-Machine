@@ -259,11 +259,7 @@ export {
 export type {
   NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener, DialPresentation,
 } from "./nexus-carriage.js";
-// The cad seal's key custody (per-Nexus convergence secrets, named by Nexus AID and epoch CID, sealed at rest) + its FIRST
-// live producer (seal a staged carrier body into the ciphertext federation plane, additive to the cleartext wake).
-export {
-  loadNexusKeyring, mintNexusEpochSecret, installDeliveredKeyring, heldNexusKeyringEntries, NexusKeyringConflict, NEXUS_KEYRING_FILE,
-} from "./nexus-convergence-secret-store.js";
+// The cad seal's first live producer (seal a staged carrier body into the ciphertext federation plane, additive to the cleartext wake).
 export { cadSealDir, sealCarrierForFederation, ContentKeyUnavailable } from "./seal-carrier-federation.js";
 // The cad WIRE CONSUMER — a member carries a sealed body peer-to-peer over the request-response hop, gated by the
 // member blind-transit lane; a stranger / Kapae'd presenter draws Mu (byte-identical to caught-up satiety).

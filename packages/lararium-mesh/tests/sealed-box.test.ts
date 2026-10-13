@@ -11,25 +11,21 @@
  *   ① RANDOMIZED, on purpose — a fresh ephemeral and a fresh AEAD nonce every call (semantic security). The sealed
  *     value draws fresh too (`sealed-chunk.test.ts`, `ciphertext-cas.test.ts`); the two seals differ in who may
  *     open and in what they bind, and no flag folds them into one.
- *   ② The HKDF `info` carries the protocol domain and NEVER defaults — it alone keeps a grant-seal key and a
- *     keyring-seal key from deriving identically out of one ECDH between the same device pair at admission.
+ *   ② The HKDF `info` carries the protocol domain and NEVER defaults — it alone keeps two protocols' keys from
+ *     deriving identically out of one ECDH between the same device pair.
  *   ③ SEAL THROWS, OPEN WITHHOLDS — addressing nobody must never read as delivery; and every open failure draws the
  *     SAME `null`, so a caller learns nothing about which check refused.
  *   ④ The salt binds `senderPub ‖ recipientPub` ALWAYS, then the caller's session challenges — so a mismatched
  *     `extraSalt` cannot open a box.
  *
- * THE LIVE DOMAINS ARE PINNED BY LITERAL, deliberately. The two protocol constants sit module-private
- * (`persona-admit.ts:62`, `keyring-envelope.ts:35`), so the final describe seals through each protocol's PUBLIC
- * ceremony and then re-opens the raw box at a hard-coded `info` string. That pins each constant from OUTSIDE its
- * module: change either one and this file reds. A test that imported the constants would move with them and prove
- * only that a variable equals itself — which is the shape that let `kapae-antigen.test.ts` call a domain "ridden"
- * while never testing that it SEPARATES.
+ * THE LIVE DOMAINS: the final describe seals through the persona grant's PUBLIC ceremony and re-opens the raw box
+ * under its own domain and under another live one, so a grant key that derived under a neighbour's name reds here.
  *
  * THIS FILE RIDES `lararium-mesh` AND MUST STAY HERE. `packages/lararium-browser/vitest.config.ts` aliases
  * `node:crypto` to a stub; a randomness property written in the browser hull could go deterministic and pass
  * BECAUSE the property under test had been removed. The randomness guards below need the real platform RNG.
  */
-import { KEYRING_ENVELOPE_SEAL_INFO, PERSONA_ADMIT_SEAL_INFO } from "../src/domains.js";
+import { PERSONA_ADMIT_SEAL_INFO, SEED_WRAP_PRF_INFO } from "../src/domains.js";
 import { describe, test, expect } from "vitest";
 import { x25519 } from "@noble/curves/ed25519.js";
 import * as ed from "@noble/ed25519";
@@ -37,12 +33,11 @@ import {
   sealToRecipient, openFromSender, SEALED_BOX_AEAD_NONCE_LEN,
 } from "../src/sealed-box.js";
 import { hex, hexToBytes, utf8Bytes, base64UrlDecode } from "../src/crypto.js";
-import { sealKeyringEnvelope, mintKeyringRecipient } from "../src/keyring-envelope.js";
 import { mintEnrollmentOffer, sealPersonaGrant } from "../src/persona-admit.js";
 
 const INFO_A = utf8Bytes("lar-test/protocol-a");
 const INFO_B = utf8Bytes("lar-test/protocol-b");
-const PLAINTEXT = utf8Bytes("the keyring rides the private lane, never the relay");
+const PLAINTEXT = utf8Bytes("the grant rides the private lane, never the relay");
 
 /** A fresh recipient — the secret stays here, the pubkey is what a sender addresses. */
 function recipient(): { secret: Uint8Array; pub: Uint8Array } {
@@ -78,7 +73,7 @@ describe("① RANDOMIZED on purpose — the half of the seal pair that the cad s
       const box = sealToRecipient({ recipientPub: r.pub, plaintext: PLAINTEXT, info: INFO_A });
       const out = openFromSender({ recipientSecret: r.secret, ...box, info: INFO_A });
       expect(out).not.toBeNull();
-      expect(new TextDecoder().decode(out!)).toBe("the keyring rides the private lane, never the relay");
+      expect(new TextDecoder().decode(out!)).toBe("the grant rides the private lane, never the relay");
     }
   });
 });
@@ -156,25 +151,11 @@ describe("④ the salt binds the pubkey pair ALWAYS, then the session challenges
   });
 });
 
-describe("THE LIVE DOMAINS — each protocol's constant pinned by LITERAL, from outside its module", () => {
-  // Hard-coded on purpose. Importing the constants would let a fused pair pass, because both sides of the
-  // assertion would move together. These strings are the contract; changing one must red this file.
+describe("THE LIVE DOMAINS — each protocol's constant pinned from outside its module", () => {
   const PERSONA_GRANT_SEAL_INFO = utf8Bytes(PERSONA_ADMIT_SEAL_INFO);
-  const KEYRING_ENVELOPE_INFO   = utf8Bytes(KEYRING_ENVELOPE_SEAL_INFO);
+  const SEED_WRAP_INFO          = utf8Bytes(SEED_WRAP_PRF_INFO);
 
-  test("the keyring envelope derives under KEYRING_ENVELOPE_SEAL_INFO and NOT under the grant-seal domain", () => {
-    const { recipientSecret, recipientPubkey } = mintKeyringRecipient();
-    const env = sealKeyringEnvelope([{ nexusAid: "epoch0-" + "a1".repeat(32), epochCid: "epoch0-" + "a1".repeat(32), secretHex: "ab".repeat(32) }], recipientPubkey);
-    const box = {
-      senderEphemeralPub: hexToBytes(env.senderEphemeralPubkey),
-      aeadNonce:          hexToBytes(env.aeadNonce),
-      ciphertext:         base64UrlDecode(env.ciphertext),
-    };
-    expect(openFromSender({ recipientSecret, ...box, info: KEYRING_ENVELOPE_INFO })).not.toBeNull();
-    expect(openFromSender({ recipientSecret, ...box, info: PERSONA_GRANT_SEAL_INFO })).toBeNull();
-  });
-
-  test("the persona grant derives under PERSONA_ADMIT_SEAL_INFO and NOT under the keyring domain", async () => {
+  test("the persona grant derives under PERSONA_ADMIT_SEAL_INFO and NOT under another live domain", async () => {
     const deviceSeed = new Uint8Array(32).fill(9);
     const targetVesselId = hex(await ed.getPublicKeyAsync(deviceSeed));
     const { offer, secret } = mintEnrollmentOffer({ targetVesselId });
@@ -193,16 +174,15 @@ describe("THE LIVE DOMAINS — each protocol's constant pinned by LITERAL, from 
       ciphertext:         base64UrlDecode(sealed.ciphertext),
     };
     // The grant additionally salts with the session challenges. This replicates the private `grantSaltParts`
-    // (persona-admit.ts:175) ON PURPOSE — a change to the salt SHAPE must be mirrored here consciously, not
-    // absorbed silently, which is exactly the drift an imported helper would hide.
+    // of `persona-admit.ts` ON PURPOSE: a change to the salt SHAPE must be mirrored here consciously, never
+    // absorbed silently, which an imported helper would hide.
     const salt = [hexToBytes(secret.nonceB), hexToBytes(sealed.nonceA)];
 
     expect(openFromSender({ recipientSecret: secret.ephemeralSecret, ...box, info: PERSONA_GRANT_SEAL_INFO, extraSalt: salt })).not.toBeNull();
-    expect(openFromSender({ recipientSecret: secret.ephemeralSecret, ...box, info: KEYRING_ENVELOPE_INFO,   extraSalt: salt })).toBeNull();
+    expect(openFromSender({ recipientSecret: secret.ephemeralSecret, ...box, info: SEED_WRAP_INFO,          extraSalt: salt })).toBeNull();
   });
 
-  test("the two live domains are not the same string", () => {
-    // The blunt statement of the law, so a reader sees it without reconstructing it from the two tests above.
-    expect(hex(KEYRING_ENVELOPE_INFO)).not.toBe(hex(PERSONA_GRANT_SEAL_INFO));
+  test("two live domains never read as the same string", () => {
+    expect(hex(SEED_WRAP_INFO)).not.toBe(hex(PERSONA_GRANT_SEAL_INFO));
   });
 });

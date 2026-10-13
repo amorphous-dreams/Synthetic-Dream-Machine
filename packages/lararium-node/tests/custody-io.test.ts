@@ -191,7 +191,7 @@ async function found(io: CustodyIo): Promise<{ vk: VesselKey; treePath: string; 
   const treePath = vkSlotsPath(homes.identity);
   await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes) });
   const sealed: SealedCarrier[] = [
-    { name: "identity/.nexus-convergence-secrets.json", path: join(homes.identity, ".nexus-convergence-secrets.json"), keyClass: "relation" },
+    { name: "identity/.persona-enroll-pending.json", path: join(homes.identity, ".persona-enroll-pending.json"), keyClass: "relation" },
     { name: "identity/custody-root.bin", path: join(homes.identity, "custody-root.bin"), keyClass: "device-minted" },
     { name: "storage/walk/AID.json", path: join(homes.storage, "walk", "AID.json") },
     { name: "seal/transitions.json", path: join(homes.seal, "transitions.json") },
@@ -276,9 +276,9 @@ describe("PROOF 2 — the floor guard: an overwrite the floor cannot open refuse
 });
 
 describe("PROOF 3 — the old-shape refusal fires before any write", () => {
-  test("a standing cleartext keyring and no slot tree: the founding refuses as the old shape, and every byte stands", async () => {
+  test("a standing cleartext pending-enrollment row and no slot tree: the founding refuses as the old shape, and every byte stands", async () => {
     const io = new FsCustodyIo(homes);
-    writeFileSync(join(homes.identity, ".nexus-convergence-secrets.json"), "{\"cleartext\":true}");
+    writeFileSync(join(homes.identity, ".persona-enroll-pending.json"), "{\"cleartext\":true}");
     writeFileSync(join(homes.identity, "custody-root.bin"), "bare-root");
     const before = treeHash(root);
     const vk = mintVk();
@@ -287,7 +287,7 @@ describe("PROOF 3 — the old-shape refusal fires before any write", () => {
       tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes),
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(OldShapeRefusal);
-    expect((err as OldShapeRefusal).standing.map((s) => s.carrier.name).sort()).toEqual(["identity/.nexus-convergence-secrets.json", "identity/custody-root.bin"]);
+    expect((err as OldShapeRefusal).standing.map((s) => s.carrier.name).sort()).toEqual(["identity/.persona-enroll-pending.json", "identity/custody-root.bin"]);
     expect((err as OldShapeRefusal).standing.find((s) => s.carrier.keyClass === "relation")).toBeDefined();   // the table's class rides the list
     expect(treeHash(root)).toBe(before);
     expect(existsSync(vkSlotsPath(homes.identity))).toBe(false);
@@ -327,23 +327,23 @@ describe("PROOF 3 — the old-shape refusal fires before any write", () => {
 });
 
 describe("the relation refusal — no rotation regenerates it", () => {
-  test("a write over a keyring the VK cannot open says only the other party re-issues it; a non-relation carrier says nothing of the kind", async () => {
+  test("a write over a relation row the VK cannot open says only the other party re-issues it; a non-relation carrier says nothing of the kind", async () => {
     const io = new FsCustodyIo(homes);
     const f = await found(io);
-    const [keyring, , walk] = f.sealed as [SealedCarrier, SealedCarrier, SealedCarrier];
+    const [pending, , walk] = f.sealed as [SealedCarrier, SealedCarrier, SealedCarrier];
     // Replace both with bytes sealed under a DIFFERENT vk (same carrier name, so only the key differs).
     const altRoot = join(root, "alt");
     const altIo = new FsCustodyIo({ identity: join(altRoot, "i"), storage: join(altRoot, "s"), seal: join(altRoot, "n") });
     const other = mintVk();
     const altTree = join(altRoot, "i", "vk-slots.bin");
     await commitSlotTree({ io: altIo, path: altTree, expected: null, vk: other, tree: bindSlot(null, other, { t: 1, pins: [pass] }), carriers: [] });
-    for (const c of [keyring, walk]) {
+    for (const c of [pending, walk]) {
       const alt = { ...c, path: join(altRoot, "c", c.name.replace(/\//g, "_")) };
       await writeSealedCarrier({ io: altIo, vk: other, treePath: altTree, carrier: alt, plaintext: text("alien") });
       await io.write(c.path, (await altIo.read(alt.path))!);
     }
 
-    const relation = await writeSealedCarrier({ io, vk: f.vk, treePath: f.treePath, carrier: keyring, plaintext: text("x") }).catch((e: unknown) => e);
+    const relation = await writeSealedCarrier({ io, vk: f.vk, treePath: f.treePath, carrier: pending, plaintext: text("x") }).catch((e: unknown) => e);
     expect(relation).toBeInstanceOf(CustodyRefusal);
     expect((relation as Error).message).toMatch(/only the other party can re-issue it/);
     const plain = await writeSealedCarrier({ io, vk: f.vk, treePath: f.treePath, carrier: walk, plaintext: text("x") }).catch((e: unknown) => e);

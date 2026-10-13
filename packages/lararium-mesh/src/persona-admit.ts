@@ -61,10 +61,8 @@ import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 export {
   PERSONA_ENROLL_DOMAIN, PERSONA_GRANT_DOMAIN, PERSONA_SEALED_DOMAIN, PERSONA_JOIN_DOMAIN,
 } from "./domains.js";
-/** The HKDF `info` — domain-separates THIS seal's key-derivation from every other X25519 use, and above
- *  all from the keyring-envelope delivery: both protocols run between the same device pair at admission,
- *  so one shared `info` would let their key material fuse. It carries its OWN name in the registry
- *  rather than a version digit, because separation belongs to the name. */
+/** The HKDF `info` — domain-separates THIS seal's key-derivation from every other X25519 use. It carries its
+ *  OWN name in the registry rather than a version digit, because separation belongs to the name. */
 const HKDF_INFO = utf8Bytes(PERSONA_ADMIT_SEAL_INFO);
 /** A nonce (challenge) rides 16 bytes; the AEAD nonce rides XChaCha's 24. */
 const CHALLENGE_LEN = 16;
@@ -142,14 +140,6 @@ export interface GrantTranscript {
   readonly targetVesselId: string;
   readonly nonceB:         string;   // echoes the offer — binds this grant to THIS enrollment
   readonly nonceA:         string;   // fresh — A's own anti-replay
-  /**
-   * OPTIONAL — a lowercase-hex sha256 that COMMITS the persona signature to a sibling payload the grant CARRIES
-   * out-of-band (the STAGE-2 convergence-keyring envelope: a read-key gating who reads every sealed body). The
-   * digest rides IN the signed transcript, so a substituted / stripped sibling breaks the binding at the receiver;
-   * mesh stays decoupled from the node convergence secret — only this opaque digest string crosses. Omitted →
-   * the grant commits to no sibling, and the receiver installs none (a fragment arriving unbound is an injection).
-   */
-  readonly keyringSealDigest?: string;
 }
 
 /** The sealed grant QR#2 carries: A's ephemeral pubkey + the AEAD frame + the sealed {transcript, grantSig}. */
@@ -196,12 +186,6 @@ export async function sealPersonaGrant(args: {
   readonly offer:         EnrollmentOffer;
   readonly personaRef:    PersonaRef;
   readonly personaSigner: AdmitSigner;   // signs under personaRef.verifyingKey (the persona-prefix op-key)
-  /**
-   * OPTIONAL commitment — a lowercase-hex sha256 over an out-of-band sibling payload the caller CARRIES with this
-   * grant (the convergence-keyring envelope). Folded INTO the transcript BEFORE signing, so the persona signature
-   * covers it; a receiver that opens the grant then binds the arriving sibling to this digest. Omitted → no commit.
-   */
-  readonly keyringSealDigest?: string;
 }): Promise<{ sealed: SealedGrant; sent: SentGrantMemo }> {
   const { offer, personaRef } = args;
   if (offer.kind !== PERSONA_ENROLL_DOMAIN) throw new Error("persona-admit: not an enrollment offer");
@@ -217,9 +201,6 @@ export async function sealPersonaGrant(args: {
     targetVesselId: offer.targetVesselId.toLowerCase(),
     nonceB:         offer.nonceB,
     nonceA,
-    // Fold the sibling commitment in BEFORE signing when present; omit it otherwise, so a keyring-free grant keeps
-    // the exact canonical byte-image it always signed (canonicalJson sorts keys, so placement here is immaterial).
-    ...(args.keyringSealDigest ? { keyringSealDigest: args.keyringSealDigest.toLowerCase() } : {}),
   };
   const grantSig = await args.personaSigner(canonicalJsonBytes(transcript));
 

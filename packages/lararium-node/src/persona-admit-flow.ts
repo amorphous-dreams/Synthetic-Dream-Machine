@@ -25,10 +25,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   mintEnrollmentOffer, sealPersonaGrant, openPersonaGrant, mintJoinAck, verifyJoinAck,
   headOpKey, personaKelChainForPrefix, personaKelBoardDocUrl, materializeSharedLarDoc,
-  sealKeyringEnvelope, openKeyringEnvelope, KEYRING_ENVELOPE_DOMAIN,
-  base64UrlEncode, base64UrlDecode, utf8Bytes, sha256HexSync,
   type PersonaRef, type AdmitSigner, type JoinRecord, type EnrollmentOffer, type SealedGrant, type JoinAck,
-  type KeyringEnvelope, type EnrollmentSecret,
 } from "@lararium/mesh";
 import {
   toEnrollmentCarriage, parseEnrollmentCarriage, toGrantCarriage, parseGrantCarriage,
@@ -40,96 +37,7 @@ import {
   recordAdmittedPersona, stashEnrollmentSecret, peekEnrollmentSecrets, takeEnrollmentSecret,
   peekSentMemo, stashSentMemo, takeSentMemo, withdrawAdmitOffer, withdrawAdmitGrant, bindEnrollmentToGrant,
 } from "./node-persona-admit-store.js";
-import { heldNexusKeyringEntries, installDeliveredKeyring, NexusKeyringConflict } from "./nexus-convergence-secret-store.js";
 import { qrCarriageToTerminalResilient } from "./qr-transport.js";
-
-/**
- * The per-Nexus convergence keyring rides the SAME grant hop as the persona grant, under its OWN `&keyring=`
- * fragment on the grant carriage — the grant proves the delegation, the keyring hands the joinee the cad READ-key.
- * Both seal to the SAME recipient (the offer's ephemeral X25519 key B keeps on-device), domain-separated by their
- * HKDF `info`s (grant-seal vs keyring-envelope), so one carriage delivers BOTH with no second keypair minted. The
- * mesh grant parser already tolerates an `&`-joined fragment (`#grant=…&keyring=…`), so the grant carriage stays
- * verbatim; only THIS node leg reads the keyring sibling.
- *
- * AUTHENTICATED, NEVER MERELY SEALED. The recipient pubkey rode PUBLIC in the offer, so a sealed-only fragment
- * carries no proof the FOUNDER authored it — an active paster could substitute their own keyring sealed to that
- * same public key. The founder therefore folds a sha256 over the EXACT carried token INTO the signed grant
- * transcript (`keyringSealDigest`); the joinee installs a keyring ONLY when the signed digest and the arriving
- * token agree. Digest the token, carry the token — one canonical byte-image, so the two can never drift.
- * WITHHOLD-not-forge: any garble / mismatch / strip reads carry-only, never a throw.
- */
-const KEYRING_CARRIAGE_KEY = "keyring" as const;
-
-/** Read the raw `&keyring=<token>` b64url token off a grant carriage — the EXACT bytes the digest commits to. */
-function extractKeyringToken(carriage: string): string | null {
-  const m = new RegExp(`(?:[#&?])${KEYRING_CARRIAGE_KEY}=([A-Za-z0-9_-]+)`).exec(carriage);
-  return m?.[1] ?? null;
-}
-
-/** Decode a keyring token → the sealed envelope, or `null` when garbled / not a keyring envelope. */
-function decodeKeyringToken(token: string): KeyringEnvelope | null {
-  try {
-    const parsed = JSON.parse(new TextDecoder().decode(base64UrlDecode(token))) as Record<string, unknown>;
-    return parsed?.["kind"] === KEYRING_ENVELOPE_DOMAIN ? (parsed as unknown as KeyringEnvelope) : null;
-  } catch {
-    return null;
-  }
-}
-
-/** The founder's sealed keyring as {token to carry, digest to sign} — or `null` when the founder holds no keyring. */
-interface KeyringCarriage { readonly token: string; readonly digest: string; }
-
-/**
- * Seal the FOUNDER's convergence secrets to the offer's ephemeral recipient pubkey — the STAGE-2 delivery. Reads
- * every secret the founder's vessel holds, each under its (Nexus AID, epoch CID) name, through the custody seat
- * (never MINTS one — a granter that holds none delivers no read-key, and the joinee stays carry-only). Returns the
- * carried token + the sha256 the grant must SIGN over it, or `null` when the founder holds none. A row that stands
- * and does not open refuses the grant by name. The digest reads over the EXACT token the fragment carries.
- */
-async function sealFounderKeyringCarriage(recipientEphemeralPubkey: string): Promise<KeyringCarriage | null> {
-  const entries = await heldNexusKeyringEntries();
-  if (entries.length === 0) return null;   // the founder's seat minted no convergence secret — nothing to deliver
-  const envelope = sealKeyringEnvelope(entries, recipientEphemeralPubkey);
-  const token = base64UrlEncode(utf8Bytes(JSON.stringify(envelope)));
-  return { token, digest: sha256HexSync(token) };   // digest what we carry — the one byte-image both sides read
-}
-
-/** Append the founder's keyring token to a grant carriage as its `&keyring=<token>` sibling fragment. */
-function appendKeyringFragment(grantCarriage: string, token: string): string {
-  return `${grantCarriage}&${KEYRING_CARRIAGE_KEY}=${token}`;
-}
-
-/**
- * Open + JOIN a keyring the founder sealed to THIS enrollment's ephemeral recipient — the joinee's adopt step,
- * gated on the SIGNED grant. JOIN ONLY when the signed transcript COMMITTED a keyring digest AND the arriving
- * token hashes to it: an unbound fragment (no digest in the signed grant) reads as an injection and joins NOTHING;
- * a stripped fragment (digest committed, none arrives) refuses; a substituted fragment (digest ≠ token hash)
- * refuses. Only past that binding does it open with the SAME on-device ephemeral secret that opened the grant and
- * join by scoped name through the custody seat (`installDeliveredKeyring`). `held` counts the delivered names this
- * vessel now holds, `0` on every carry-only path. A garbled delivery never throws (WITHHOLD-not-forge). A bound,
- * opened delivery that carries different bytes under a held name answers `conflict` and joins nothing: the held
- * secrets stay, and the join names the fault. A keyring row that stands and does not open throws by name.
- */
-async function adoptDeliveredKeyring(
-  grantCarriage:  string,
-  secret:         EnrollmentSecret,
-  expectedDigest: string | undefined,   // the SIGNED transcript's keyringSealDigest (signature-covered)
-): Promise<{ readonly held: number; readonly conflict?: string }> {
-  if (!expectedDigest) return { held: 0 };               // the founder committed no keyring → ignore any fragment
-  const token = extractKeyringToken(grantCarriage);
-  if (!token) return { held: 0 };                        // committed a keyring but none arrived → stripped, refuse
-  if (sha256HexSync(token) !== expectedDigest.toLowerCase()) return { held: 0 };   // substituted keyring → the binding breaks
-  const envelope = decodeKeyringToken(token);
-  if (!envelope) return { held: 0 };                     // the committed token decodes to garbage → refuse
-  const delivered = openKeyringEnvelope(envelope, secret.ephemeralSecret);
-  if (!delivered || delivered.length === 0) return { held: 0 };   // wrong recipient / tamper → carry-only (fail-closed)
-  try {
-    return { held: (await installDeliveredKeyring(delivered)).held };
-  } catch (err) {
-    if (err instanceof NexusKeyringConflict) return { held: 0, conflict: err.message };
-    throw err;
-  }
-}
 
 /** A flow result carrying the hop's carriage + a terminal QR of it (a tabletop hand-off). */
 export interface HopRender {
@@ -262,28 +170,18 @@ export async function grantAdmitFlow(args: {
   readonly offerCarriage: string;
   readonly personaRef:    PersonaRef;
   readonly personaSigner: AdmitSigner;
-}): Promise<({ sealed: SealedGrant; keyringDelivered: boolean } & HopRender) | { error: string }> {
+}): Promise<({ sealed: SealedGrant } & HopRender) | { error: string }> {
   const offer = parseEnrollmentCarriage(args.offerCarriage);
   if (!offer) return { error: "not a valid enrollment offer carriage — the QR did not arrive" };
-  // Seal the founder's cad read-key FIRST — the recipient is the offer's ephemeral pubkey (the same key B keeps
-  // on-device for the grant), so no second keypair mints. Its digest rides the signed transcript BELOW, so the
-  // persona signature COMMITS to the exact keyring token; a founder holding no keyring delivers none (carry-only).
-  const keyring = await sealFounderKeyringCarriage(offer.ephemeralPubkey);
   let sealed: SealedGrant;
   let sent;
   try {
-    ({ sealed, sent } = await sealPersonaGrant({
-      offer, personaRef: args.personaRef, personaSigner: args.personaSigner,
-      ...(keyring ? { keyringSealDigest: keyring.digest } : {}),   // fold the commitment IN before signing
-    }));
+    ({ sealed, sent } = await sealPersonaGrant({ offer, personaRef: args.personaRef, personaSigner: args.personaSigner }));
   } catch (err) {
     return { error: err instanceof Error ? err.message : String(err) };
   }
   await stashSentMemo(sent);
-  // Append the SAME token the signed digest committed to (digest-what-you-carry — the two share one byte-image).
-  const grantCarriage = toGrantCarriage(sealed);
-  const carriage = keyring ? appendKeyringFragment(grantCarriage, keyring.token) : grantCarriage;
-  return { sealed, keyringDelivered: keyring !== null, ...(await render(carriage)) };
+  return { sealed, ...(await render(toGrantCarriage(sealed))) };
 }
 
 /**
@@ -307,7 +205,7 @@ export async function openAdmitFlow(args: {
    * believing it still stands pending while its secret has already been taken.
    */
   readonly onlyEphemeral?: string;
-}): Promise<({ joinRecord: JoinRecord; keyringEpochs: number; keyringConflict?: string; pendingStands?: true } & HopRender) | { error: string }> {
+}): Promise<({ joinRecord: JoinRecord; pendingStands?: true } & HopRender) | { error: string }> {
   const sealed = parseGrantCarriage(args.grantCarriage);
   if (!sealed) return { error: "not a valid sealed-grant carriage — the QR did not arrive" };
 
@@ -339,10 +237,6 @@ export async function openAdmitFlow(args: {
       if (informativeReason === null && !verdict.reason.startsWith("decrypt-failed")) informativeReason = verdict.reason;
       continue;
     }
-    // ADOPT the founder's cad keyring riding this SAME grant carriage — but ONLY when the now-VERIFIED transcript
-    // committed a digest that the arriving token matches (a substituted / stripped / unbound fragment joins
-    // nothing). Opened with the SAME ephemeral secret that opened the grant, joined by scoped name. No bound
-    // keyring → carry-only (keyringEpochs 0). Different bytes under a held name join nothing and ride out named.
     // ONE OFFER, ONE GRANT. The first grant that verifies against an enrollment BINDS it, before anything gets
     // signed (`bindEnrollmentToGrant`, one custody hold). The same grant opens again to the same steps; any other
     // grant sealed to that offer refuses for as long as the enrollment stands, so no second grant rides an offer
@@ -352,8 +246,7 @@ export async function openAdmitFlow(args: {
     if (bound === "bound-other") {
       return { error: "this offer stands bound to another grant — open that grant again, or withdraw the offer and mint a fresh one" };
     }
-    const adopted = await adoptDeliveredKeyring(args.grantCarriage, secret, verdict.accepted.transcript.keyringSealDigest);
-    // THE ADMISSION COMMITS THE HOP. The keyring joins, the acknowledgment gets signed, the join gets recorded,
+    // THE ADMISSION COMMITS THE HOP. The acknowledgment gets signed, the join gets recorded,
     // and only then does the enrollment drop. An open that dies before the record leaves the enrollment pending;
     // one that dies between the record and the drop leaves both, and the same grant opens again to the same
     // acknowledgment (every step before the drop repeats to the same bytes). No order of deaths drops an
@@ -365,7 +258,7 @@ export async function openAdmitFlow(args: {
     let pendingStands = false;
     try { await takeEnrollmentSecret(ephemeralPubkey); } catch { pendingStands = true; }
     return {
-      joinRecord, keyringEpochs: adopted.held, ...(adopted.conflict ? { keyringConflict: adopted.conflict } : {}),
+      joinRecord,
       ...(pendingStands ? { pendingStands: true as const } : {}),
       ...(await render(toAckCarriage(ack))),
     };

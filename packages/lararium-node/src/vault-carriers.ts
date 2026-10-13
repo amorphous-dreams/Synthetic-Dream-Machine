@@ -47,7 +47,6 @@ import { readdirSync, type Dirent } from "node:fs";
 import { basename, join } from "node:path";
 import { rotateVk, type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type VesselKey } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
-import { NEXUS_KEYRING_FILE } from "./nexus-convergence-keyring.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { reserveMineSharePath } from "./seal-reserve-store.js";
 import { deviceSharePath } from "./recovery-share-store.js";
@@ -183,8 +182,6 @@ function buildTable(): readonly CarrierRow[] {
          writer: "identity-anchors" }),
     id({ row: "veil-archive", match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-h${m[1]}`, face: faceOf }),
-    id({ row: "keyring", match: file(NEXUS_KEYRING_FILE), custody: "hot", keyClass: "relation",
-         writer: "nexus-convergence-secret-store" }),
     id({ row: "enroll-pending", match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
          writer: "node-persona-admit-store" }),
     id({ row: "grant-pending", match: file(".persona-grant-pending.json"), custody: "hot", keyClass: "relation",

@@ -1,14 +1,13 @@
 /**
  * sealed-box — the ONE X25519-ECDH → HKDF-SHA256 → XChaCha20-Poly1305 seal-to-a-recipient primitive.
  *
- * THE SUBTRACTION. Two protocols hand-rolled this same assembly independently: the persona-admit grant seal and the
- * keyring envelope. Their ECDH, their HKDF call shape and their AEAD ran byte-for-byte alike, differing only in what
- * they salted with and which domain they derived in. This module holds the assembly once; the DIFFERENCES that
- * carried meaning ride as required parameters, so composing here can never quietly erase them.
+ * ONE ASSEMBLY, MANY PROTOCOLS. A protocol that seals to a recipient (the persona-admit grant seal first among
+ * them) composes this module and hand-rolls none of it. What differs between two protocols, their salt and their
+ * domain, rides as required parameters, so composing here can never quietly erase a difference that carries meaning.
  *
- * THE DOMAIN RIDES REQUIRED AND UN-DEFAULTED (`info`). The HKDF `info` is what keeps a grant-seal key and a
- * keyring-seal key from deriving IDENTICALLY out of one ECDH output — and both protocols run between the same device
- * pair at admission time, so that separation carries real weight. A defaulted or optional `info` would invite a call
+ * THE DOMAIN RIDES REQUIRED AND UN-DEFAULTED (`info`). The HKDF `info` keeps two protocols' keys from
+ * deriving IDENTICALLY out of one ECDH output, and two protocols may run between the same device pair, so that
+ * separation carries real weight. A defaulted or optional `info` would invite a call
  * site to omit it and fuse two protocols' key material; this signature refuses to let that happen silently.
  *
  * THE SALT IS A SUPERSET, NEVER A REPLACEMENT. It binds `senderPub ‖ recipientPub` ALWAYS, then appends whatever
@@ -27,7 +26,7 @@
  * may open and in what they bind, so neither stands in for the other and no flag folds them into one seal.
  *
  * BYTES IN, BYTES OUT. No hex, no base64url, no JSON — every carriage encoding stays caller-side, so the wire shapes
- * (`SealedGrant`, `KeyringEnvelope`) keep their own guards and never fuse.
+ * (`SealedGrant` first among them) keep their own guards and never fuse.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-box
  */

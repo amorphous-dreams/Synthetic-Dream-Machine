@@ -28,8 +28,8 @@
  *
  * ── A NAME, NEVER A VERSION ─────────────────────────────────────────────────────────────────────
  * A version digit that carries separation fuses on the first reset: two purposes told apart by `/v1` and
- * `/v2` collapse the moment a reset renumbers them. So `keyring-envelope`'s SIGNING domain and its HKDF
- * `info` each carry their own NAME, and separation belongs to the name alone. A change
+ * `/v2` collapse the moment a reset renumbers them. So a SIGNING domain and an HKDF `info` each carry their
+ * own NAME, and separation belongs to the name alone. A change
  * of protocol mints a NEW name; it never bumps a counter, because a counter claims an ordering — a global
  * now — that no two vessels share.
  *
@@ -191,11 +191,6 @@ export const RE_ANCHORING_DOMAIN = frozen("re-anchoring");
 export const GUARDIAN_CONFIRM_DOMAIN = frozen("guardian-confirm");
 
 // ── SEALED CONTENT + TRANSPORT ──────────────────────────────────────────────────────────────────
-/** The keyring delivery envelope — the signed wire shape. */
-export const KEYRING_ENVELOPE_DOMAIN = frozen("keyring-envelope");
-/** Its HKDF `info`. A NAME of its own, held apart from the signing domain above: a version digit doing a
- *  domain's job fuses the two on the first reset. */
-export const KEYRING_ENVELOPE_SEAL_INFO = frozen("keyring-envelope-seal");
 // ── THE SEALED STORE: the one private-byte format ───────────────────────────────────────────────
 // Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store. Every derivation and every signed image takes a name
 // of its own, so a body key never equals a commitment, an id never equals a locator, and no record of one
@@ -379,7 +374,7 @@ export const OFFERING_KAPAE_DOMAIN = frozen("offering-kapae");
 export const REALM_BAG_ANNOUNCE_DOMAIN = frozen("realm-bag-announce");
 /** The persona-root seed WRAPPED at rest under a passkey PRF output (browser, opt-in). A NAME of its own,
  *  apart from every seal above: the PRF output is a cloud-synced-class secret and the wrap must never
- *  derive into an admit seal or a keyring envelope. */
+ *  derive into an admit seal. */
 export const SEED_WRAP_PRF_INFO = frozen("seed-wrap-prf");
 
 // ── PLANES + SCOPES (HMAC name derivations) ─────────────────────────────────────────────────────

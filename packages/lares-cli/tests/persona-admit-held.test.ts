@@ -195,7 +195,7 @@ describe("persona-admit-held — the held session never leaks, and never hangs p
     const personaSeed = new Uint8Array(32).fill(3);
     const personaRef = { prefix: "EpersonaAID_held_test", verifyingKey: await ed.getPublicKeyAsync(personaSeed).then((b) => Buffer.from(b).toString("hex")) };
     const granterDir = mkdtempSync(join(tmpdir(), "lares-admit-held-granter-"));
-    // The granter reads its own keyring row to seal a delivery, so it stands on its own founded custody.
+    // The granter signs with a persona root that rests under the vessel key, so it stands on its own founded custody.
     const savedRoot = process.env["LAR_ROOT"];
     process.env["LAR_ROOT"] = granterDir;
     const granterCustody = await seatScratchCustody();

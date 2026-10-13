@@ -9,8 +9,6 @@
  *     reader to move to; it stays the floor they compose on.
  *   · TRANSPORT LAW — `mu-void` states the deny-void law the transport itself must hold, true for
  *     every platform that speaks it, never one reader's concern.
- *   · TEST-PINNED DOMAIN SEPARATION — `keyring-envelope` carries a signing-domain split a weld test
- *     pins directly; moving it would require moving the pin with it.
  *   · MEME-NAMED — a canon meme already names the module as its own mesh source-file: `offering-antigen`,
  *     `quorum-entry`, `kumu-device`, `bag-copy-plan`, `signer-class`, `cert-expiry-gauge`,
  *     `crossroads-cry`, `holdings-witness`, `projection-registry`, `parallel-ingest`.
@@ -154,10 +152,10 @@ export {
   refineBagTierWithTiddlers, mayDeclareTier, mayDeclassify, structuralFloorFor, resolveTierForDoc,
   tierPermitsRelayPeer, makeTierFloorOracle,
 } from "./cap-tier.js";
-// The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap, per-Nexus message-lock.
+// The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap.
 export {
-  ciphertextCid, verifyCiphertextCid, deriveMessageKey, sealPrivateBody, openPrivateBody,
-  CIPHERTEXT_CID_ALGO, CONVERGENCE_SECRET_LEN, OPEN_PRIVATE_BODY_REFUSALS, require32,
+  ciphertextCid, verifyCiphertextCid, sealPrivateBody, openPrivateBody,
+  CIPHERTEXT_CID_ALGO, OPEN_PRIVATE_BODY_REFUSALS,
 } from "./ciphertext-cas.js";
 export type {
   PrivateBodyKey, SealedPrivateBody, SealPrivateBodyResult, OpenPrivateBodyResult, OpenPrivateBodyRefusalName,
@@ -308,9 +306,6 @@ export * from "./handle-book.js";
 // The type-blind PERSONA-ADMISSION ceremony (airgapped device-to-device persona handoff) — the 3-hop ECDH-sealed
 // choreography + its carried QR envelopes. A photographed tabletop stays inert; the join writes per-vessel only.
 export * from "./persona-admit.js";
-// STAGE 2 (A1-①): the per-Nexus convergence keyring delivered to a joinee at admission via a sealed envelope
-// (the persona-admit sealed-box shape). An admitted device opens it + reads sealed bodies; a carry-only peer cannot.
-export * from "./keyring-envelope.js";
 // The IoC follow — composeFollow braids the three LOCAL stores (handle-book · petname · circle) into one
 // gesture; the CircleStore shore stays local-only, so a follow leaves NO central trace (membership-doctrine).
 export * from "./compose-follow.js";

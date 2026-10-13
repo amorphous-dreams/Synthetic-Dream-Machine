@@ -27,7 +27,7 @@ import { installSealedBody, type InstalledSealedBody } from "./ciphertext-cas-se
 import { noteInstalledBody } from "./bag-tracker.js";
 import type { BagTracker } from "./bag-tracker.js";
 import type { SealedPlaneRegistry } from "./plane-seal.js";
-import type { NexusEpochName } from "./nexus-convergence-keyring.js";
+import type { NexusEpochName } from "./plane-seal.js";
 
 /** The cad ciphertext CAS tier — a DISTINCT dir from the cleartext `cas` tier, so the cleartext wake read
  *  (corpus / runtime CAS) is never touched by a sealed body. A member serves + `cas-transit resolveByCid`

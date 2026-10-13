@@ -114,8 +114,6 @@ import { readBulbArtifact, type BulbArtifact } from "./bulb.js";
 import { hermRealmShoreBooks, publicCasShore } from "./bulb-read-face.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
-import type { NexusConvergenceKeyring } from "./nexus-convergence-keyring.js";
-import { loadNexusKeyring } from "./nexus-convergence-secret-store.js";
 import { cadSealDir, sealCarrierForFederation } from "./seal-carrier-federation.js";
 import { makeBagTracker } from "./bag-tracker.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve-loop.js";
@@ -363,9 +361,6 @@ export interface SovereignReaders {
   readonly wornMount: (storageDir: string) => ReturnType<typeof readWornPersonaMount>;
   readonly personaRoots: () => ReturnType<typeof listPersonaRoots>;
   readonly walkRecords: (storageDir: string) => ReturnType<typeof listWalkRecords>;
-  /** One Nexus's convergence keyring, or null when this vessel holds no secret for it. Mints nothing; a row that
-   *  stands and does not open throws. */
-  readonly keyring: (a: { nexusAid: string; headEpochCid: string | null }) => Promise<NexusConvergenceKeyring | null>;
   /** The vessel's own keyhive archive, or null when none stands. A row that stands and does not open throws. */
   readonly archive: () => Promise<Uint8Array | null>;
   /** One face's veil archive, or null when none stands. */
@@ -381,7 +376,7 @@ export interface SovereignReaders {
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
 export function seatedSovereignReaders(): SovereignReaders {
   return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
-    keyring: loadNexusKeyring, archive: loadIdentityArchive, veilArchive: loadVeilArchive, veil: custodyVeilKeys,
+    archive: loadIdentityArchive, veilArchive: loadVeilArchive, veil: custodyVeilKeys,
     writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive };
 }
 
@@ -1085,10 +1080,6 @@ async function prepareNodeBootOn(
   // and carries no bootstrap: the charter's freshness rides the corm-lease pointer on the read-face breath.
   const bulb: BulbArtifact | null = readBulbArtifact(genesisDir ?? defaultGenesisDir());
 
-  // THE cad CONVERGENCE KEYRING STANDS AT THE ACT, NEVER AT THE BOOT. A boot reads no keyring row and mints no
-  // secret: the seat's own act mints one under (Nexus AID, epoch CID), an admission joins a delivered one, and
-  // the seal producer (`cad-seal`) reads the row through the sovereign seam when it seals. A vessel that holds
-  // no secret for its charter head seals nothing, and its bodies stay cleartext-local.
   // The relay-side discovery index the seal producer announces a sealed cid onto (DHT-free; hint → peers → tracker).
   const casBagTracker = makeBagTracker();
 
@@ -1155,7 +1146,7 @@ async function prepareNodeBootOn(
           fedGate:    selfSlotFedGate,
           shadow:     shadowRing,
           // A member set aside from the realm a sealed block belongs to draws Mu ahead of the carry lane. The
-          // sealed set's own sidecar names the Nexus whose convergence secret sealed the block.
+          // sealed set's own sidecar names the Nexus the block belongs to.
           realmAside: (peerId, documentId) => {
             const sealedUnder = sealRegistry.epochFor(documentId);
             return sealedUnder ? shadowRing.memberAside(sealedUnder.nexusAid)(peerId) : false;
@@ -1174,7 +1165,7 @@ async function prepareNodeBootOn(
   // A running crossroads a family's HEARTHS dial (`ws://<host>:<port>`) to carry sealed cad bodies between each
   // other — the Herm's Lares-Viales role. The relay CARRIES opaque ciphertext envelopes, stamps each `from` with the
   // sender's PROVEN Ed25519 key, and holds the DHT-free bag-tracker HINT index — it reads NO plaintext, holds NO
-  // read-cap / keyring / roster (carry ⊥ read ⊥ contract), so a compromised crossroads leaks nothing. Its gate seed
+  // read-cap / content key / roster (carry ⊥ read ⊥ contract), so a compromised crossroads leaks nothing. Its gate seed
   // derives from the vessel's OWN identity seed (or a configured seed) — STABLE across restarts, NEVER fresh-random,
   // so hearths keep dialing the same key. This CROSSROADS (a stood WS server) SEPARATES from both the Automerge `/ws`
   // relay (Socket A, cleartext CRDT) and the client-side carriage serve-loop dial above. ABSENT the port → this
@@ -2519,7 +2510,7 @@ async function prepareNodeBootOn(
     // The body arrives as a staged `cid` (resolved cleartext from the corpus CAS) or inline `text`. The body
     // seals as one sealed value under its BAG's content key (lar:///ha.ka.ba/lararium/mesh/sealed-store); the
     // charter names only the SCOPE the sealed block registers under, which the carry lane's own gates read.
-    // No convergence secret seals anything, so this verb reads no keyring. FAIL-CLOSED: at the floor, with no
+    // FAIL-CLOSED: at the floor, with no
     // seated charter, or with no content key for the bag, the act refuses by name and the body stays
     // cleartext-local only. The content-key holder arrives with the sealed store's lockbox store; until a
     // composition seats one, `under` stays absent and the producer answers `ContentKeyUnavailable`.

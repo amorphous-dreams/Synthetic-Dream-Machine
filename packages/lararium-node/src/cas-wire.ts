@@ -10,7 +10,7 @@
  * THE GATE (carry ⊥ read ⊥ contract). On a `want-block`, the server consults `carrierShareDecision` over the
  * cid's docId (`docIdForCiphertextCid`): a proven Nexus MEMBER over a PROVABLY-sealed plane opens the carry lane
  * and the server serves the CIPHERTEXT; a STRANGER, a NON-member, or a KAPAE'd presenter draws Mu. The server
- * serves ciphertext only — the read-cap NEVER rides this shore (it stays on the private keyring), so a member
+ * serves ciphertext only — the read-cap NEVER rides this shore (a bag's content key reaches its readers through the sealed store's lockboxes), so a member
  * carries what it may not be able to read (carry ⊥ read), and the requester re-verifies `BLAKE3(ciphertext)==cid`
  * SECRET-FREE (verify-cap) before trusting a byte.
  *
@@ -169,7 +169,7 @@ export interface CasWireFetch {
  * FETCH a sealed cid over the hop: offer a `want-block`, run the server a turn, poll the response. On a `cas-block`
  * the requester re-verifies `BLAKE3(ciphertext)==cid` SECRET-FREE before trusting it (a mis-verifying block is
  * rejected → null); on `cas-mu` it drew the void (denied or nothing — indistinguishable). The read-cap is NOT used
- * here: this returns CIPHERTEXT (the carry). Reading (decrypt) is a SEPARATE step, only for a keyring-holder.
+ * here: this returns CIPHERTEXT (the carry). Reading (decrypt) is a SEPARATE step, only for a holder of the bag's content key.
  */
 export async function fetchSealedCidOverWire(args: {
   readonly channel:    MembershipChannel;

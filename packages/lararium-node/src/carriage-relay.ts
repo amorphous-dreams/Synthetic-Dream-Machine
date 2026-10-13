@@ -5,7 +5,7 @@
  * WHAT IT CARRIES, WHAT IT NEVER HOLDS. The carriage relay moves opaque ciphertext envelopes (want-block / cas-block
  * / cas-mu) that ride verify-cap only, stamps each envelope's `from` with the sender's PROVEN Ed25519 key, and holds
  * the bag-tracker HINT index (cids + holder handles, secret-free). It carries NO read-cap, reads NO plaintext, keeps
- * NO charter / keyring / roster — a compromised carriage leaks nothing (carry ⊥ read ⊥ contract). It stands from a
+ * NO charter / content key / roster — a compromised carriage leaks nothing (carry ⊥ read ⊥ contract). It stands from a
  * 32-byte gate seed + a bound port and nothing else, so a bare hearth stands one with a single call.
  *
  * TWO SOCKETS STAY TWO. This carriage (Socket B) SEPARATES from the Automerge `/ws` doc relay (Socket A, cleartext

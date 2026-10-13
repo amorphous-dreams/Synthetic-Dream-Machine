@@ -182,7 +182,6 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
 
 describe("the relation class — a secret only the other party re-issues", () => {
   const RELATION_ROWS: Record<string, string> = {
-    ".nexus-convergence-secrets.json": "keyring",
     ".persona-enroll-pending.json":    "enroll-pending",
     ".persona-grant-pending.json":     "grant-pending",
     ".persona-admissions.json":        "admissions",
@@ -211,9 +210,9 @@ describe("the relation class — a secret only the other party re-issues", () =>
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
-  test("every relation row in the table is exactly the four, and each VK-sealed carrier carries its row's class", () => {
+  test("every relation row in the table is exactly the three, and each VK-sealed carrier carries its row's class", () => {
     const rows = carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort();
-    expect(rows).toEqual(["admissions", "enroll-pending", "grant-pending", "keyring"]);
+    expect(rows).toEqual(["admissions", "enroll-pending", "grant-pending"]);
   });
 });
 

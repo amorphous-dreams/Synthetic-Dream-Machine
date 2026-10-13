@@ -30,7 +30,7 @@ import {
 import { sealPrivateBody, parseDigest, hexToBytes, type PrivateBodyKey, type KeyVersionId } from "@lararium/mesh";
 import { writeCasEntriesFs } from "./node-cas.js";
 import type { SealedPlaneRegistry } from "./plane-seal.js";
-import type { NexusEpochName } from "./nexus-convergence-keyring.js";
+import type { NexusEpochName } from "./plane-seal.js";
 
 /** The outcome of sealing one body into the cad store. Every field may cross to a caller; none holds a key. */
 export interface InstalledSealedBody {

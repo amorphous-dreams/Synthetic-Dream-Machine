@@ -47,7 +47,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
   });
-  // The seat mints its epoch's keyring secret under the vessel key, so each test stands on a founded custody.
+  // The seat reads the persona roster under the vessel key, so each test stands on a founded custody.
   // A founding derives a key from its route and every seat seals a row, so a test here takes seconds under a
   // loaded suite: the room below belongs to that work, and no assertion reads a clock.
   let custody: ScratchCustody;

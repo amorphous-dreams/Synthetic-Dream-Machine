@@ -20,7 +20,6 @@
 
 import type { DocumentId } from "@automerge/automerge-repo";
 import type { PlaneSeal } from "@lararium/mesh";
-import type { NexusEpochName } from "./nexus-convergence-keyring.js";
 
 /**
  * The fail-closed floor: NO plane is provably sealed, so nothing blind-transits (the whole private surface
@@ -44,6 +43,14 @@ export const DENY_ALL_PLANE_SEAL: PlaneSeal = {
  * FAIL-CLOSED: empty registry ⇒ `isSealedPlane` is `false` for every doc ⇒ behaves EXACTLY as
  * `DENY_ALL_PLANE_SEAL` (the read-lane-untouched floor) until the first body seals.
  */
+/** The scope a sealed block registers under: the Nexus it belongs to and the charter epoch that scope stood at. It names no key. */
+export interface NexusEpochName {
+  /** The Nexus AID: the charter's genesis epoch CID, lower-cased. */
+  readonly nexusAid: string;
+  /** The seal lineage's CID for this epoch, lower-cased. */
+  readonly epochCid: string;
+}
+
 export interface SealedPlaneRegistry {
   /** The oracle the sharePolicy holds — reads the CURRENT sealed set (live; reflects post-open seals). */
   readonly seal: PlaneSeal;

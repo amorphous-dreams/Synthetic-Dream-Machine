@@ -27,7 +27,7 @@ import {
 import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
 import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
-import { mintNexusSecret, makeNexusConvergenceKeyring, type NexusConvergenceKeyring, type NexusEpochName } from "../src/nexus-convergence-keyring.js";
+import type { NexusEpochName } from "../src/plane-seal.js";
 import type { InstalledSealedBody } from "../src/ciphertext-cas-seal.js";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
 
@@ -103,14 +103,6 @@ export interface SealedBodyFixture {
 /** A synthetic Nexus AID and head epoch CID for a test that seals with no charter standing. */
 export const TEST_NEXUS_AID = "epoch0-" + "ab".repeat(32);
 export const TEST_HEAD_EPOCH = TEST_NEXUS_AID;
-
-/** A one-secret keyring held in memory: the synthetic Nexus, its head epoch, a fresh secret. No row rests anywhere. */
-export function freshTestKeyring(): NexusConvergenceKeyring {
-  return makeNexusConvergenceKeyring({
-    nexusAid: TEST_NEXUS_AID, headEpochCid: TEST_HEAD_EPOCH,
-    entries: [mintNexusSecret({ nexusAid: TEST_NEXUS_AID, epochCid: TEST_HEAD_EPOCH })],
-  });
-}
 
 /** The synthetic bag a fixture body belongs to, and the Nexus scope its sealed block registers under. */
 export const TEST_BAG_ID = "lar:///ha.ka.ba/@test/bags/sealed-fixture";
