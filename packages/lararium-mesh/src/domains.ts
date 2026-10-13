@@ -183,6 +183,10 @@ export const MEMBER_EDGE_DOMAIN = mint("member-edge");
 /** A vessel's own receipt for one seat roll: its daemon island signs what the key group answered, and the
  *  vessel's ledger keeps a roll only under that signature (kapae#/keys). It crosses to nobody. */
 export const SEAT_ROLL_DOMAIN = mint("seat-roll");
+/** A vessel's own ASK of its daemon island's `seat-duties` verb: the vessel key signs one request id and a digest
+ *  of the facts it hands in, so the island answers its own vessel's main thread and no other asker (kapae#/keys).
+ *  Apart from `seat-roll`: an ask must never verify as a receipt. It crosses to nobody. */
+export const SEAT_DUTIES_ASK_DOMAIN = mint("seat-duties-ask");
 /** One hand's own stake on a joiner — a vouch admits nobody. */
 export const VOUCH_EDGE_DOMAIN = frozen("vouch-edge");
 /** The record that a re-anchoring happened, never what made it valid. */

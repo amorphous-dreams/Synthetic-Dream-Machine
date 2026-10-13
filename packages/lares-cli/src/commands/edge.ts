@@ -27,9 +27,6 @@ import type { ParsedArgs } from "../parse-args.js";
 import { storeVerb } from "../store-door.js";
 import { refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { vesselDid } from "../env.js";
-import { runVerb } from "../verb-call.js";
-import { summaryOutput } from "../verb-result.js";
 
 function usage(args: ParsedArgs, detail?: string): number {
   return refuseUsage(args, "edge", helpLines("edge"), detail);
@@ -68,9 +65,11 @@ async function cmdSettle(args: ParsedArgs): Promise<number> {
     for (const f of facts) {
       console.log(`fleet ${f.fleetRoot}`);
       if (f.edges.length === 0 && !f.selfAside) { console.log("  no raise counts on this fleet's board — nothing owed."); continue; }
-      const r = await runVerb("seat-duties", { facts: { fleetRoot: f.fleetRoot, acts: f.acts, rolled: f.rolled } }, await vesselDid());
-      if (r.status === "error") { console.error(`  refused: ${r.errorMessage ?? "seat-duties failed"}`); owed++; continue; }
-      const answer = (summaryOutput(r) ?? {}) as SeatAnswer;
+      // The island's `seat-duties` verb answers the vessel's main thread alone: the store door's row reads this
+      // fleet's facts itself and asks it there.
+      let answer: SeatAnswer;
+      try { answer = (await storeVerb("edge-seat-duties", { fleetRoot: f.fleetRoot }, EdgeSeatError)).output as SeatAnswer; }
+      catch (err) { console.error(`  refused: ${err instanceof Error ? err.message : String(err)}`); owed++; continue; }
       if (answer.ran !== true) { console.log(`  not run: ${answer.reason ?? "the island answered nothing"}`); owed++; continue; }
       const outcomes = answer.outcomes ?? [];
       if (outcomes.length === 0) console.log("  every counted raise stands answered — nothing owed.");

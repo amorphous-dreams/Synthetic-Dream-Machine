@@ -131,7 +131,7 @@ import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.
 import { announceSeatRoll } from "./seat-duty-executor.js";
 import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
 import { base64ToBytes } from "./bytes-base64.js";
-import { ed25519SignerFromSeed, type LarTiddlerRecord } from "@lararium/mesh";
+import { ed25519SignerFromSeed, seatDutiesAskRefusal, type LarTiddlerRecord } from "@lararium/mesh";
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import type { ProviderChunkRest } from "./capability-provider.js";
 import { seatContentKeys, type ContentKeySeat, type SessionProof } from "./content-key-seat.js";
@@ -592,7 +592,15 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           // live, counts them again under the root its own edge pins, reads each seat, plans what the counted
           // raises owe, and answers through the VEIL (the identity that holds the group). It returns what it did
           // and the rolls the vessel keeps in its own ledger.
-          registry.register("seat-duties", async (args) => {
+          // WHO MAY ASK. The verb recounts signed acts and mints key epochs, so it answers its own vessel's main
+          // thread alone: the ask carries the vessel key's signature over this request id and these facts. A
+          // wiki island's surface, a session island and a peer's summons hold no such key, whatever requester
+          // they name. The check runs before any read of the facts.
+          registry.register("seat-duties", async (args, context) => {
+            const unlicensed = seatDutiesAskRefusal({
+              requestId: context.invocation.requestId, facts: args["facts"], ask: args["ask"], vesselVerifyingKey: daemonAuth.vesselVerifyingKey,
+            });
+            if (unlicensed) throw new Error(`[daemon] seat-duties: ${unlicensed}`);
             if (!veilKh) return { verb: "seat-duties", ran: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
             const ownEdge = daemonAuth.deviceEdge;
             if (!ownEdge) throw new Error("[daemon] seat-duties: this vessel carries no device edge of its own, so it names no fleet.");

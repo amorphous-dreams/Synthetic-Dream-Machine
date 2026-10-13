@@ -28,8 +28,8 @@
  * Platform-blind: rides ./crypto + ./ed25519-door. NO node: imports.
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
-import { SEAT_ROLL_DOMAIN } from "./domains.js";
-import { canonicalJsonBytes } from "./crypto.js";
+import { SEAT_DUTIES_ASK_DOMAIN, SEAT_ROLL_DOMAIN } from "./domains.js";
+import { canonicalJson, canonicalJsonBytes, sha256HexSync } from "./crypto.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 
 /** One seat in one key group: the group's own id and the member's agent id, both as the key shore names them. */
@@ -182,4 +182,38 @@ export function planSeatDuties(input: SeatDutyInput): SeatDuty[] {
     }
   }
   return duties;
+}
+
+// ── who may ask ───────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * THE ASK'S OWN PROOF. The island's `seat-duties` verb recounts signed acts and mints key epochs for a face, so it
+ * answers ONE asker: its own vessel's main thread (the fold's settle, and the operator's `lares edge settle`
+ * through the store door). A verb's requester field names whoever the caller says, and an invocation reaches a
+ * daemon island from a wiki island's surface, a session island or a peer's summons as easily as from the main
+ * thread. So the asker signs: the vessel key over this image, which binds one request id and the facts handed in.
+ * No island but the daemon's, and no peer, holds that key.
+ */
+export function seatDutiesAskBytes(parts: { readonly requestId: string; readonly facts: unknown }): Uint8Array {
+  return canonicalJsonBytes({ domain: SEAT_DUTIES_ASK_DOMAIN, requestId: parts.requestId, facts: sha256HexSync(canonicalJson(parts.facts)) });
+}
+
+/** Sign one ask as the vessel: the proof the `seat-duties` verb reads before it does anything. */
+export async function signSeatDutiesAsk(parts: {
+  readonly requestId: string; readonly facts: unknown; readonly sign: (bytes: Uint8Array) => Promise<string>;
+}): Promise<{ readonly sig: string }> {
+  return { sig: await parts.sign(seatDutiesAskBytes(parts)) };
+}
+
+/** Why an ask may not run; null when the vessel's own key signed exactly this request id over exactly these facts. */
+export function seatDutiesAskRefusal(parts: {
+  readonly requestId: string; readonly facts: unknown; readonly ask: unknown; readonly vesselVerifyingKey: string;
+}): string | null {
+  const only = "the seat-duties verb answers this vessel's own main thread alone (the fold's settle, and `lares edge settle` through the store door)";
+  const ask = parts.ask;
+  if (ask === null || typeof ask !== "object" || Array.isArray(ask) || typeof (ask as { sig?: unknown }).sig !== "string") return `${only}; this ask carries no proof`;
+  if (typeof parts.requestId !== "string" || parts.requestId.length === 0) return `${only}; this ask names no request`;
+  let holds = false;
+  try { holds = verifyEd25519((ask as { sig: string }).sig, seatDutiesAskBytes(parts), parts.vesselVerifyingKey.replace(/^0x/, "").toLowerCase()); } catch { holds = false; }
+  return holds ? null : `${only}; this ask's proof does not hold under the vessel's key for this request and these facts`;
 }

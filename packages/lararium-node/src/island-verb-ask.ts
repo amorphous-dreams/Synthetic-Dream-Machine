@@ -15,7 +15,7 @@
  * (`sealed-acts`).
  */
 import type { DocHandle } from "@automerge/automerge-repo";
-import { AutomergeDocStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, VERB_RESULT_KEY, type LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, VERB_RESULT_KEY, newRequestId, signSeatDutiesAsk, type LarDoc } from "@lararium/mesh";
 
 /** The island's direct channel, as the daemon VM hands it out. */
 export type PlaceIslandVerb = (o: { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string }) => void;
@@ -102,4 +102,33 @@ export function askIslandVerb(opts: {
     }, fault);
   });
   return { answer, abandon: () => abandon() };
+}
+
+/**
+ * ASK THE ISLAND'S `seat-duties` VERB AS THE VESSEL. The verb answers its own vessel's main thread alone
+ * (kapae#/what-the-code-holds): each ask carries the vessel key's signature over its own request id and the facts
+ * it hands in, and this function holds the one place that signature gets made. Its two callers stand on the main
+ * thread: the settle a fold sets off, and the store door's row for `lares edge settle`.
+ */
+export function askSeatDuties(opts: {
+  readonly daemonHandle: DocHandle<LarDoc>;
+  readonly placeVerb:    PlaceIslandVerb;
+  readonly facts:        { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] };
+  /** The vessel's own key and its signer: the proof the island reads, and the requester it names. */
+  readonly vesselKey:    string;
+  readonly sign:         (bytes: Uint8Array) => Promise<string>;
+}): IslandAsk {
+  const requestId = newRequestId();
+  const facts = { fleetRoot: opts.facts.fleetRoot, acts: opts.facts.acts, rolled: opts.facts.rolled };
+  let inner: IslandAsk | null = null;
+  let abandoned = false;
+  const answer = signSeatDutiesAsk({ requestId, facts, sign: opts.sign }).then((ask) => {
+    if (abandoned) throw new IslandAskAbandoned("seat-duties");
+    inner = askIslandVerb({
+      daemonHandle: opts.daemonHandle, placeVerb: opts.placeVerb,
+      verb: "seat-duties", args: { facts, ask }, requestedBy: `0x${opts.vesselKey}`, requestId,
+    });
+    return inner.answer;
+  });
+  return { answer, abandon: () => { abandoned = true; inner?.abandon(); } };
 }

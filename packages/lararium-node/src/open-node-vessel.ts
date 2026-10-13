@@ -151,8 +151,7 @@ import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
-import { askIslandVerb }                   from "./island-verb-ask.js";
-import { newRequestId }                    from "@lararium/mesh";
+import { askSeatDuties, type IslandAsk }    from "./island-verb-ask.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 
@@ -1100,6 +1099,16 @@ async function prepareNodeBootOn(
   // the fleet its device edge names reads no facts for it, exactly as `lares edge settle` refuses there, and says
   // so once.
   let rootlessSaid = false;
+  // THE ONE ASKER OF `seat-duties`: this main thread, signing each ask as the vessel. The fold's settle below and
+  // the store door's row for `lares edge settle` share it; no other road reaches the verb with a proof.
+  const askSeatDutiesAsVessel = (facts: { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] }): IslandAsk => {
+    if (!daemonVm) throw new Error("the daemon island does not stand yet");
+    const vm = daemonVm;
+    return askSeatDuties({
+      daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), facts,
+      vesselKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+    });
+  };
   const seatSettler = sovereign ? makeSeatSettler({
     wornFleetRoot: () => wornFleetRoot,
     fold:          () => builtRing.fold(),
@@ -1113,10 +1122,7 @@ async function prepareNodeBootOn(
     },
     answer: (facts) => {
       if (!daemonVm) throw new Error("the daemon island does not stand yet");
-      const ask = askIslandVerb({
-        daemonHandle: daemonVm.daemonHandle, placeVerb: (o) => daemonVm.placeVerb(o),
-        verb: "seat-duties", args: { facts }, requestedBy: `0x${vesselIdentity.verifyingKey}`, requestId: newRequestId(),
-      });
+      const ask = askSeatDutiesAsVessel(facts);
       return { answer: ask.answer as Promise<unknown> as Promise<SeatDutiesAnswer>, abandon: () => ask.abandon() };
     },
     mark:       (fleetRoot, rolls) => runEdgeSeatMarks({ repo, fleetRoot, rolls }),
@@ -2466,6 +2472,9 @@ async function prepareNodeBootOn(
     const doors = storeDoorReactors({
       storageDir, sealHome, repo,
       onRolled: afterRoll,
+      // The key side of a removal answers a SOVEREIGN vessel alone: the facts read the sealed roster, and a
+      // floor's island holds no veil.
+      ...(sovereign ? { seatDuties: (facts) => askSeatDutiesAsVessel(facts).answer } : {}),
     });
     for (const [verb, reactor] of Object.entries(doors)) registry.register(verb, reactor);
 

@@ -91,6 +91,12 @@ export interface StoreDoorDeps {
    * `ON_ROLLED_BUDGET_MS` and never lets a slow or rejected refold throw through the row that triggered it.
    */
   readonly onRolled?:  (nexusAid?: string) => boolean | void | Promise<boolean | void>;
+  /**
+   * Ask the daemon island's `seat-duties` verb as the vessel, with the facts handed in: the standing vessel's main
+   * thread signs the ask (`askSeatDuties`). Absent where no sovereign vessel stands: a direct act holds no
+   * island, and a floor's island holds no veil.
+   */
+  readonly seatDuties?: (facts: { readonly fleetRoot: string; readonly acts: readonly unknown[]; readonly rolled: readonly string[] }) => Promise<Record<string, unknown>>;
 }
 
 /** How long a row waits for `onRolled`'s own truthful answer before reporting the refold `"pending"`. The
@@ -122,7 +128,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-roll-anchor", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
-  "edge-kapae", "edge-seat-facts", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "device-admit",
+  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "device-admit",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
 ] as const;
@@ -245,6 +251,19 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "edge-seat-facts": (args) => answer("edge-seat-facts", async () => ({
       ...(await runEdgeSeatFacts({ repo, ...opt("fleetRoot", str(args["fleetRoot"])) })),
     })),
+    // THE OPERATOR'S ROAD TO `seat-duties`. The island's verb answers the vessel's main thread alone, so
+    // `lares edge settle` asks through this row. THE ROW TAKES NO FACTS FROM ITS CALLER: it names one fleet, and
+    // the row reads that fleet's facts off this vessel's own ledger and board before the main thread signs the
+    // ask. So whoever reaches this row, the vessel signs only what the vessel itself read, which the fold's own
+    // settle would ask in the same words.
+    "edge-seat-duties": (args) => answer("edge-seat-duties", async () => {
+      const fleetRoot = str(args["fleetRoot"]);
+      if (!fleetRoot || Object.keys(args).some((k) => k !== "fleetRoot")) throw new EdgeSeatError("edge-seat-duties names one fleet and nothing else: { fleetRoot }");
+      if (!deps.seatDuties) throw new EdgeSeatError("no unlocked vessel stands here to answer on the key side: stand the vessel, unlock it, then settle");
+      const facts = (await runEdgeSeatFacts({ repo, fleetRoot })).fleets[0];
+      if (!facts) throw new EdgeSeatError("this vessel reads no facts for that fleet");
+      return { ...(await deps.seatDuties({ fleetRoot: facts.fleetRoot, acts: facts.acts, rolled: facts.rolled })) };
+    }),
     "edge-seat-marks": (args) => answer("edge-seat-marks", async () => ({
       ...(await runEdgeSeatMarks({ repo, fleetRoot: str(args["fleetRoot"]) ?? "", rolls: Array.isArray(args["rolls"]) ? args["rolls"] : [] })),
     })),
