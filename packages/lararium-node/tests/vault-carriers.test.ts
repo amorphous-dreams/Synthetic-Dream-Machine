@@ -72,6 +72,8 @@ const SOWN: Record<string, string> = {
   "identity/veil-archive-h0.bin":               "x",
   "identity/.persona-group-root-joshua-h0.json": "{}",
   "identity/recovery-device-share-h0.bin":      "x",
+  [`identity/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
+  [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
   "identity/seal-reserve-mine-share.bin":       "x",
   "identity/seal-reserve-state.json":           "{}",
   "identity/.nexus-convergence-secrets.json":   "{}",
@@ -113,6 +115,8 @@ const RULED: Record<string, CustodyClass> = {
   "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot",
   "transition-pending": "hot", "transitions": "hot",
   "vessel-next": "cold", "persona-root": "cold", "device-share": "cold", "reserve-share": "cold",
+  // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
+  "vessel-face-key": "hot", "face-proof-key": "cold",
 };
 
 describe("the carrier table", () => {

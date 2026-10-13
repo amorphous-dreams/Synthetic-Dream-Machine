@@ -205,6 +205,10 @@ function buildTable(): readonly CarrierRow[] {
          writer: "node-vessel-identity" }),
     id({ row: "public-handles", match: loginKeyed("persona-public-handles"), custody: "hot", keyClass: null,
          writer: "node-vessel-identity" }),
+    // This vessel's own face-scoped key under one face at one Nexus (`face-key-custody`, the face proof's library
+    // names the row). It stays on its vessel: no bundle carries it.
+    id({ row: "vessel-face-key", match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
+         writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
     id({ row: "circles", match: file(".circles-follow.json"), custody: "hot", keyClass: null,
          writer: "node-circle-store" }),
     id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
@@ -231,6 +235,10 @@ function buildTable(): readonly CarrierRow[] {
          writer: "node-vessel-identity (founding)" }),
     id({ row: "persona-root", match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf }),
+    // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
+    // the face, so that face's bundle carries it.
+    id({ row: "face-proof-key", match: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
+         writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf }),
     id({ row: "device-share", match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf,
          lifecycle: (m) => (Number.isSafeInteger(Number(m[1])) ? deviceShareName(Number(m[1])) : null) }),
