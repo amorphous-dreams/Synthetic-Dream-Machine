@@ -336,9 +336,18 @@ export async function openStaged(opts: StageOptions = {}): Promise<LarInstance> 
     try {
       unlockStaged(root);
     } catch (err) {
+      // THE DAEMON'S OWN WORDS RIDE THE REFUSAL. The looks above hold this process's event loop, so the daemon's
+      // pipe and its exit both wait unread until a turn passes: give one, then say how the daemon stands and what
+      // it last said. A door that reads "no daemon answers" names a symptom; the log names the fault.
+      await new Promise((r) => setTimeout(r, 500));
+      const stands = daemon.exitCode !== null ? `exited ${daemon.exitCode}`
+        : daemon.signalCode !== null ? `died on ${daemon.signalCode}` : "still stands";
       await stopChild(daemon);
-      removeStagedRoot(root);
-      throw err;
+      // A root the caller handed in stays the caller's to remove: its own teardown owns it, and a suite that reads
+      // what a founding left there still finds it.
+      if (opts.root === undefined) removeStagedRoot(root);
+      const why = err instanceof Error ? err.message : String(err);
+      throw new Error(`${why}\n  the daemon ${stands}; its log ends:\n${log.slice(-6000)}`);
     }
     recordTimeline({ vessel: name, event: "unlocked", unlockMs: since() });
   }
@@ -713,7 +722,10 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         if (!(await awaitRendezvous(B))) throw new Error(`B reached live but bound no rendezvous:\n${B.bootLog().slice(-800)}`);
       } catch (err) {
         const text = err instanceof Error ? err.message : String(err);
-        joinGate = (text.split("\n").find((l) => /nexus-join|fatal|ANERGIZED/.test(l)) ?? text.slice(-300)).trim();
+        // A stand that never unlocked carries the daemon's log tail: keep it whole, since one matched line would hide the fault.
+        joinGate = text.includes("never unlocked")
+          ? text.slice(-6500).trim()
+          : (text.split("\n").find((l) => /nexus-join|fatal|ANERGIZED/.test(l)) ?? text.slice(-300)).trim();
         if (B) { await B.stop(); stood.pop(); }
         B = null;
       }
