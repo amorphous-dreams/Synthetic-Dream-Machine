@@ -32,6 +32,8 @@ start (#/fresh-start), and what the operator still owns (#/open). Landed work re
 CHANGELOG, never here. No count rests here: each reading names the instrument that takes it. Law lives in
 its own carrier, and this carrier points there.
 
+''Three bearings'' (a house reading, marked as one). ''Near'': a house one person trusts alone — the custody seal whole, a green pushed head, one dockerized Lararium founded fresh and walked by hand. The ruling "a working Lararium comes first" (#/rulings) names this bearing. ''Middle'': the table — two operators, two machines, one Nexus founded at two seats, an edit crossing both ways (TWO HEARTHS). ''Far'': the DreamNet — friends invited by hand, a public shelf on the house's own domains, spirits sitting in the vessel's seat, private bags carried sealed by neighbours who cannot read them. The road below reaches the middle bearing; the sealed store and the hosted road reach toward the far one.
+
 <<~/ahu>>
 
 <<~ ahu #/cold-start>>
@@ -45,10 +47,10 @@ its own carrier, and this carrier points there.
 # Bring every ruling #/open names to the operator before a lane builds against it.
 
 !!! Instruments ~ run each fresh before trusting a reading
-* ''Branch'': `feature/lararium-node-5`. `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits. The operator pushes, and pushes a head whose shard run read green. Never a lane's to move, commit, stash or revert: `.worktrees/`, `.claude/worktrees/`, the `mempalace` submodule pointer, and the `VSCode-TW5-Syntax` pointer, which the operator pins at the released grammar while the grammar's own head stands ahead of that pin.
+* ''Branch'': `feature/lararium-node-5`. `git rev-list --count origin/feature/lararium-node-5..HEAD` reads the unpushed commits. The controlling session pushes, and only a head whose shard run read green (`git push origin <sha>:refs/heads/feature/lararium-node-5`); no lane pushes. Never a lane's to move, commit, stash or revert: `.worktrees/`, `.claude/worktrees/`, the `mempalace` submodule pointer, and the `VSCode-TW5-Syntax` pointer, which the operator pins at the released grammar while the grammar's own head stands ahead of that pin.
 * ''Unit suites'': each package's own, under a scratch `LAR_ROOT` with `LAR_BAGS` unset; `node --test tools/*.test.mjs` for the tools. An import failure reads as zero tests, so read the file count beside the test count. `pnpm -r test` skips the root `tests/` directory by design.
 * ''Typecheck'': `tools/typecheck-witness.sh`. Typecheck reads source and the binary reads `dist`, so run the built binary after any change that crosses packages.
-* ''Witness fleet'': `bash tools/witness-all.sh`, the whole fleet, one run at a time; a hand-picked subset reads greener than the tree. It holds out the witnesses its own `HELD_OUT` table names (the docker, browser and tree-clean ones). Capture its exit code directly, never through a pipe; `git status --porcelain` reads identical before and after a sound run.
+* ''Witness fleet'': `bash tools/witness-all.sh`, the whole fleet, one run at a time, by the controlling session and never by a lane that works beside other hands; a hand-picked subset reads greener than the tree. It holds out the witnesses its own `HELD_OUT` table names (the docker, browser and tree-clean ones). Capture its exit code directly, never through a pipe; `git status --porcelain` reads identical before and after a sound run.
 * ''E2E'': every set rides the CI shards (`tools/e2e-shards.mjs`, `.github/workflows/e2e-shards.yml`; `E2E_SETS` names the sets and the merge gate checks each set's union). `node tools/e2e-shards.mjs push <lane>` pushes HEAD to a throwaway `ci/<lane>` branch. A local run of one file proves that file alone.
 * ''CI'' (`.github/workflows/ci.yml`): `gh run list --branch feature/lararium-node-5` names the run for the pushed head; a later commit waits for the next push. `held-out.yml` runs weekly or by hand, and a hosted run of it that reads green stays owed.
 * ''The docker mesh'' (by hand): `crossing-witness`; `node tools/mesh-pins.mjs --up` stands the mesh pinned; `herm-mesh-witness` carries `node/alpha` across three hops; `mesh-scenarios nexus`. The mesh publishes `MESH_PORT_*` on loopback, every node service requires `LARES_HARNESS_IMAGE`, and `tools/harness-image.sh` checks its digest. A hearth whose log carries a `[lararium] fatal:` line reads as not stood.
@@ -64,7 +66,7 @@ its own carrier, and this carrier points there.
 # ''The container'': `tools/lares-container.sh` offers `up`, `down`, `found` and `logs` (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">>). ''The browser surface'': `tools/browser-ci.sh` over `docker-compose.browser-ci.yml`, one project and image tag per builder (`BROWSER_CI_PROJECT`, `BROWSER_CI_IMAGE`).
 # The tw5 plugin bundle (`packages/lararium-tw5/plugins/lares-memetic-wikitext.json`, `plugins/standalone/*`, `src/plugin-tiddler.generated.ts`) rides in git and must equal a fresh build: rebuild after any tw5 source or tiddler change and commit it with the change. CI's `build-freshness` job checks it.
 # `lares-cli` `tests/pour-repave.test.ts` needs the dev-root marker (`LAR_DEV_REPO_ROOT=1` or the ignored `lar-dev-root.json`).
-# Crew shape, by standing grant: one Opus lead drives two Luna builders and one Sol reviewer, five rounds per set at most; builders commit on the feature branch with `git commit -F <msg> --only -- <paths>`.
+# Crew shape, by standing grant: one Opus lead drives two Luna builders and one Sol reviewer, five rounds per set at most, and at most two crews run at once: the solo chain and one side lane. A builder returns a patch on a narrow one-module brief; the lead applies, builds, tests and commits in its own worktree, then lands whole commits with `git commit -F <msg> --only -- <paths>` after rebuilding the touched `dist`, since the commit hook runs the built CLI. A lead copies its resume sheet out of the session scratch directory after each commit: a restart empties that directory.
 
 !!! The standing law that bites ~ read the carrier before arguing with it
 * ''The frame stands as canon'': DOCTYPE, the SOH bearing, STX, `toml meta` first in the body, the body, ETX with its `ni:///sha-256;…` check, EOT. One span per carrier; a spelling outside the frame grammar tears the frame (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>).
@@ -310,10 +312,10 @@ identity bytes; then R-WIRE, so every pin changes once.
 !!! The sealed store ~ five steps threaded through the paths (operator-approved model; unbuilt)
 * ''The model'': cleartext lives in the live wiki and in the operator's projected files alone. A private bag rests as authenticated ciphertext chunks, the same bytes at rest and in a blind carrier's hands; a node that holds the capability and stands locked rests sealed. Private bytes take randomized authenticated encryption addressed over the ciphertext, so convergent sealing leaves the private tier. A bag's content key rolls at a causal removal act, never by a clock.
 * ''Scope'' (operator ruling): the sealing covers the wiki content stores, node and browser, and the content-addressed store, in carriage as well as at rest. The memory palace, the sensorium, receipts and logs stand outside it. Public and crossroads content stays readable to whoever holds the public keys or lookups.
-* ''Faces stand as facets of one operator'' (operator steer): no per-face projection root. Each kind of reader gets named — own vessel, own facet, a friend's face, a hosted guest, a carrier that holds none — before any admission-history rule gets written.
-* ''Step 1, after SUBSTRATE's seal'': the one private-byte format (chunk envelope, ciphertext address, key-version manifest, lockbox) and the amendments to `content-resolution.mem`, `blob-carriage.mem` and `cap-tier.mem`. The format changes ONCE, here. It also defines shareable-history epochs and authenticated checkpoint frontiers.
+* ''Faces stand as facets of one operator'' (operator steer): no per-face projection root. Each kind of reader gets named — own vessel, own facet, a friend's face, a hosted guest, a carrier that holds none — before any admission-history rule gets written. One tree on disk serves the person: a projected wiki stands as a surface a session leases, and an edit from disk returns under that session's face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). Whoever holds the disk reads every facet's projection and may link them.
+* ''Step 1, after SUBSTRATE's seal'': the one private-byte format (chunk envelope, ciphertext address, key-version manifest, lockbox) and the amendments to `content-resolution.mem`, `blob-carriage.mem` and `cap-tier.mem`. The format changes ONCE, here. It also defines shareable-history epochs and authenticated checkpoint frontiers. The envelope binds bag, key version and reference, which closes a hole that stands today: the content-addressed opener returns bytes with no authentication of the plaintext (`packages/lararium-mesh/src/ciphertext-cas.ts`).
 * ''Step 2'': durable, sealed bag lockboxes and a chunk index; the provider's tracked chunks rest in memory alone today.
-* ''Step 3, after ONE FACE'': sealed storage values and hydration scoped by the session's face.
+* ''Step 3, after ONE FACE'': sealed storage values and hydration scoped by the session's face; every fetch, write, catalog lookup and content-addressed read gets checked against that face, since a key alone cannot stop a trusted daemon handing one face another's document.
 * ''Step 4, after the KAHU PLANE's seats and wire'': sealed history published to and fetched from a blind carrier by the house's own carriage protocol, with a causal index. A carrier never joins document sync.
 * ''Step 5, after ONE FACE'': a public bag served at the floor of a locked node; today the floor serves the oracle snapshot alone.
 * ''History at admission'' (operator ruling): sharing a bag's past with a newcomer must have stood declared when those edits got written. An inviter chooses between history the realm already marked shareable and a present-state admission, and never widens the audience for another writer's past. The design target keeps one logical bag name whose key rolls mark epochs: a removal rolls, a from-now admission rolls, and a with-its-past admission hands over the earlier epochs' keys.
@@ -342,7 +344,7 @@ Each row names what stays owed, the train of #/the-trains that closes it, and wh
 (''operator'', ''house'', or nobody). A row names its file so a builder reads the code before leaning on
 the row; a line number drifts, so none rests here. Train letters: ''S'' the custody seal · ''G'' ground ·
 ''K'' the seat · ''N'' the Nexus founding act · ''P'' the Kahu plane · ''W'' the wire and the face proof ·
-''E'' the ember · ''C'' the browser's confirm · ''O1'' ONE FACE's sessions · ''H'' the hosted road ·
+''E'' the ember · ''O1'' ONE FACE's sessions · ''H'' the hosted road ·
 ''A'' HARBOR's tail · ''V'' recovery's verbs · ''B'' the browser and the phones · ''X'' TWO HEARTHS.
 
 !!! GROUND
@@ -354,14 +356,12 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `G6` The evergreen sweep. Stale prose in source: `open-node-vessel.ts` and `node-cas.ts` ("read fresh … never cached" over a captured boot epoch); `persona-admit-flow.ts` (an offer may have "expired"); `cabal-vouch.ts` ("an expiry already past"); `lares.ts` (reboot-to-switch, `--expires`); `custody-prompt.ts` (the test door "refuses a root outside scratch"); `realm-plane.ts` (advises a `nexus refresh` no door answers); lane labels in test titles. Back-compat wording or tolerant readers: `index.ts` (node), `open-browser-vessel.ts`, `residency-actions.ts`, `daemon-vm-core.ts`, `nexus-publish.ts`, `ingest-core.ts`, `device-delegation.ts`, `lar-uris.ts`, `seal-reserve.ts`, `mesh-palace.ts` (a carried `expiry` field), `cleanup-days.ts`, `nexus-seal-seed.ts`, `archive-envelope.ts`. G; the false source comments ride the code lane of #/side-lanes.
 * `G7` Custody's edges: the floor guard reads a carrier cut inside its 13-byte magic as `bare`; a short seat can write a charter that boots torn (`nexus-seal.ts`); a floor-class carrier standing alone founds; `setFoundingRoute` stands as a test seam in source (`found.ts`); the custody wait can refuse falsely where no holder answers; `readTty` drops a pasted second line; `NameTooLong` did not fire on a root 150 bytes deep. G.
 * `G8` Measures: the full-corpus per-verb flush re-measure; pack-PIN recursion; a production `assertBodyIndexTier` caller. G.
-* `G9` The pause after a corpus LOAD: something holds the wiki island for seconds after a LOAD returns, with carriers still owed to the disk mirror. The witness names the trail (`tests/e2e/corpus-feed.test.ts`), and the projector prints the interval with its `bagsHolding` count. Measure the time from the last change event to the first file write; suspects in order: one coalesced gate waiting on all roots, a per-root `bagsHolding` lookup, a CRDT load pause (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>). G.
 * `G10` The wiki shore's echo law: every leaked change routes as a save. Verify at the shore lane's close. G.
 * `G11` The readerless `minted-on` stamp leaves the binding record (`packages/lararium-keyhive/src/resolve-binding.ts`). G.
 * `G12` A ten-title change lands without its bag stamp (`island-adaptor.ts`). G.
 * `G13` Summons: no check of who wrote one; a consume tombstones every layer; dedup lives in memory (`verb-dispatcher.ts`, `verb-summons.ts`). Owed: a writer check, a working-layer tombstone alone, durable dedup, lease and fence, and honouring `aud`. House. G.
-* `G14` The daemon verb and the MCP tool accept a missing container where the CLI refuses (`meme-verbs.ts`). Lean: refuse. House. G.
 * `G15` Refold answers may overclaim: `represented:true` survives a re-presentation that found no dial, and `after-roll-awaited.test.ts` reads source shape alone; an unbounded `afterRollChain` stage can stall later rolls; `pokeSealHomeRefold` maps a failed refold to `none`; `tw5BinPath` records a constant, never a measured path. G.
-* `G16` The shore's small leans, each to verify against the tree: the modified-compare ignores envelope fields, so an untouched draft asks nothing; receipts, ward audits and summons close by path with a named refusal; a refused boot releases its store claim on refusal and on any throw; a hand-edited write-layer pointer steers nothing; a save lands where its title lives when that layer sits at or above working; titles TiddlyWiki's own sync filter excludes never persist, the view state persists in personal alone, and `lar-kind` matches the palette choice exactly; a landing that fails twice raises a named alert; a root edit that drops its last child slot tombstones the orphan by the one router. Kept as built: the draft-open base rides the store record alone; a draft discard refuses by name where no working layer mounts; one shore per engine. G.
+* `G16` The shore's small leans, each to verify against the tree: the modified-compare ignores envelope fields, so an untouched draft asks nothing; `lar-kind` matches the palette choice exactly. Kept as built: the draft-open base rides the store record alone; a draft discard refuses by name where no working layer mounts; one shore per engine. G.
 * `G17` Tests only: the mutation survivors a closing review named; the sealed suite's coverage of each place the harness's root split changes behaviour; a detached render id that still fires a handler (`tw5-projection.ts`). G.
 * `G18` The shore: the web defaults name port 8080 and the mode row never moves; the shared holder caches a refused lock for the worker's whole life. G or B.
 * `G19` Canon sweeps owed: the shore surface's carriers; wherever the test door's "scratch" reads as a temp-dir test; the browser surface's secure-context law beside `docker-compose.mesh.yml`'s; `secure-context.mem#/behind-the-terminator` to harbor's law; `peer-coordination.mem` on the Keyhive pin; `vessel-door.mem` on `vessel unbound`; `harbor.mem` on the shim's unlock and `vault lock`; `kahu.mem` and `lamplighters.mem` on what the code holds. G.
@@ -444,7 +444,6 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `F4` Node callers move to sessions; receipts bind to the face; verb outcomes and the effect index follow the working layer with their reader (`verb-vm.ts`, `uds-channel.ts`). O1.
 * `F5` The durability receipt, rung 2's node half. O1.
 * `F6` The browser holder as owner, with unicast replies (`shared-holder-core.ts` broadcasts). O1.
-* `F7` The browser cannot confirm: toolbar Delete and a typed draft's Discard never complete, and a navigator message with no DOM event throws on node and in the worker (`tw5-host-bridge.ts`). C.
 * `F8` One control-event leg retires `wiki:dom-event` and `wiki:dom-input`, and carries keys, files and drops, so Escape, Ctrl-Enter and import work in the browser; the four page-sink faults of `page-controls.mem` close with it. O1.
 * `F9` The switch; the vessel-wide selector retires. O1.
 * `F10` A person's fleet view and removal; the long-silent device rule of #/decisions. O1.
@@ -576,12 +575,6 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 # Canon.
 ''Riskiest'': the design may turn out to need a signed shape, since the removal act rides the face's log.
 
-!!! C ~ the browser's confirm (waits on the shore lane's close; it alone rebuilds the plugin and re-bakes genesis in its span)
-# The worker side: thin wrappers around the core's confirming handlers, one parked question, the frame carrying it whole.
-# The labelled genesis re-bake.
-# The page side: a native modal dialog.
-''Riskiest'': two genesis re-bakes must never overlap; K's re-bake rides this one where C lands first.
-
 !!! O1 ~ ONE FACE's sessions (its contract landed; the working address onward waits on W's cutover)
 # ''Landed ahead'': the session contract in mesh (`session-contract.ts`).
 # The scoped document view.
@@ -632,7 +625,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 ''Riskiest'': paper. One mis-copied card freezes a two-seat Nexus at its first roll; the read-back and the rehearsal answer it.
 
 !!! By hand, the operator's, each with the moment it falls due
-* Push the branch and read CI: at every shard point.
+* Read CI at every shard point; the controlling session pushes the green head.
 * The registrar key limited to the one domain, API access switched on for it, the two files placed: before the first live issuance.
 * The router hands out the resolver's address; ports 53 and 443 free on the node's LAN interface: before the phone's walk.
 * The tablet and a phone in hand for the capability probe: before browser custody hardens.
@@ -651,6 +644,8 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 * ''The clock cures.'' `lares watch --delete-grace` lets a wall clock decide a tombstone (`packages/lares-cli/src/commands/watch.ts`); the audit of each remaining contract, Cabal and Handle door runs relation by relation, never as a blind sweep (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island#/selected-contracts">>).
 * ''The code lane.'' False source comments (`G6` of #/the-loops); a bug in the module trust gate (`packages/lararium-tw5/src/tw5-module-gate.ts`) and its missing positive-path vector; callers that still mount a layer default-writable (`operator-daemon-behavior.ts`, `daemon-vm-core.ts`); mesh tests that sit outside the type-check.
 * ''The Harbor tail'': train A.
+* ''Early starts beside the chain'': the Kahu plane's first three steps take no identity bytes (the steward signer, the carriage verifier's held root, realms with selected-realm routing); the handshake funnel and the proof subjects of train W; the node, CLI and tool fixtures funnel of train K.
+* ''The small sweep.'' The memetic-wikitext plugin still ships `$:/config/ResilientRender`, a flag nothing reads; retiring it rebuilds the plugin and takes a labelled genesis re-bake. Two e2e files read the first `gate key:` line of a log (`tests/e2e/meme-realm-bag.test.ts`, `tests/e2e/arrival-surfaces.e2e.test.ts`), and the `awaitRendezvous` docblock in `tests/harness/instance.ts` describes an earlier boot order. Three source comments name a carrier that left (`packages/lararium-keyhive/src/face-grant-record.ts`, `packages/lararium-keyhive/tests/archive-floor-write.test.ts`, `tests/e2e/meme-realm-bag.test.ts`); its law rests at <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>.
 * ''Band-ladder residue'': one five-band ladder, the measure-servo aliases in `ffz-project.ts`, the `lar_feedback` output field name. It rides the Sensorium's wait, and a frame inside it may heal at any time.
 * ''The capture lane's era ruling'': #/open.
 * ''Sealed-store step 1'': after the seal (#/the-road, the sealed store).
@@ -692,6 +687,7 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 !!! Order
 # ''The sealed store against the ceremony.'' Whether any of the sealed store's five steps land before the first ceremony.
 # ''The hosted road against the ceremony.'' The ceremony runs with the host's own invites alone (#/rulings); whether the rest of the hosted road's re-cut moves after it.
+# ''The working Lararium against the chain.'' The ruling puts a working Lararium first, under manual QA on one machine, and its browser half (rung 2's node side, the durability receipt) rides ONE FACE, fifth in the order behind the seat, the Nexus and the wire. Options: walk the near bearing on the CLI, the disk and the live wiki once the seal closes, and let the browser half wait; or pull the durability receipt and the working address forward of the wire. Lean: walk first, then decide with the walk's findings in hand.
 
 !!! Seats, custody and recovery
 # ''Guardians and recovery.'' Guardian count and threshold at enrolment, request authentication, the veto, a person's death and succession, the catastrophe rite and any third key, and a Handle's DNS binding stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
@@ -718,6 +714,10 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 # ''The capture cell'' sits apart for review in `packages/lararium-mesh/src/capture/`, `packages/lararium-node/src/capture/`, `packages/lararium-tw5/src/capture/` and `packages/lares-cli/src/commands/capture/`. Canon places capture in Python per stream with the TS daemon coordinating alone (<<~ loulou "lar:///ha.ka.ba/lararium/api/capture-annotation-model">>), while the TS cell carries the live path. Rule: retire it to Python, or re-home it.
 # ''Receipt names and verb capabilities.'' Whether a receipt's address follows the house's own kind nouns or the content-addressed surface; and the table that maps each routed verb to its capability, where `deriveRoutedCap` answers for every routed verb today (`packages/lararium-tw5/src/verb-local-dispatch.ts`).
 # ''Two Kairoses.'' The fiction names KAIROS as a watcher that speaks unasked; the code's Kairos pet-names an unbuilt entity that refreshes an OAuth grant at the right moment (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>). One entity, or two that share a name?
+# ''The disk watcher's reach.'' Whether the watcher may tombstone a carrier whose file vanished, by itself; today a wall-clock grace decides (#/side-lanes, the clock cures).
+# ''Alerts and shadows.'' Whether a disk conflict that arrives while no wiki stands pinned raises its alert at the next pin; whether a hand that deletes its override of a shadow leaves a delete, where today the shadow's text gets saved as a record; whether the page warns when a browser has joined no face.
+# ''The confirm door upstream.'' The fork asks its questions through the wiki itself (`$tw.utils.confirm`, `tm-confirm`). Owed before a donation: the order of actions after a confirm, a switch for a blocking prompt, and one squashed change. The withdrawn render boundary's upstream pull request, if it still stands open, advertises a design the fork backed out.
+# ''The shift ledger's fate.'' <<~ loulou "lar:///ha.ka.ba/lares/docs/handoff">> declares itself never archived, and the CLI's `meme` help names it. Retiring it needs a law carrier for its four procedure blocks and the operator's word. Two retiring carriers (`crew-handoff-codex`, `codex-crew-emergency-handoff`) stand folded and welded and wait on the same word.
 # ''One sentence for the `CLAUDE.md` adapter note'', the operator's to place: the CLI's ingest, watch and REPACK derive against `LAR_BAGS` and `LAR_WIKIS`, so "read neither" holds for the daemon's projection mirrors alone.
 
 <<~/ahu>>
@@ -749,6 +749,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EvmmpgTLeo3-2DETKX9tuRyy-HhE-UFezhegcucqRg8
+<<^ code="&#x0003;">>ni:///sha-256;5-g2jT9v7Jag8pOjHcdZf9IGwoCJ4j3EAXE_cEKzADo
 
 <<^ code="&#x0004;" -> to="?">>
