@@ -224,12 +224,14 @@ describe("a session surface through the node vessel's own parts", () => {
       ];
       for (const ask of asks) expect(await v.probe(key, "door", ask)).toEqual({ answered: false });
       expect(reached).toEqual([]);
-      // KNOWN POSITIVE: the same asks from an island mounted through the wiki door reach every door.
+      // KNOWN POSITIVE: the same asks from an island mounted through the wiki door each draw an answer. A wiki
+      // island reaches the FETCH door alone; its rest ask and its custody write refuse by name and reach no door
+      // (the daemon island alone reaches those two: `island-doors-by-class.test.ts`).
       await pool.mountWiki(WIKI, { coreHash: null, recipe: { wikiSlug: SLUG }, grants: { islandUrl: v.oracle.url } });
       expect(await v.probe(WIKI, "door", asks[0]!)).toEqual({ answered: true, type: "cas:block", bytes: 3 });
       expect(await v.probe(WIKI, "door", asks[1]!)).toMatchObject({ answered: true, type: "doc:rested" });
       expect(await v.probe(WIKI, "door", asks[2]!)).toMatchObject({ answered: true, type: "custody:written" });
-      expect(reached).toEqual([`cas:${"ab".repeat(32)}`, `rest:${v.faces.referee.working.documentId}`, "custody:archive"]);
+      expect(reached).toEqual([`cas:${"ab".repeat(32)}`]);
     } finally {
       setCasDoor(null); setRestDoor(null); setCustodyWriteDoor(null);
     }

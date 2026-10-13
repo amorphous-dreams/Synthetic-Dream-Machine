@@ -33,7 +33,7 @@ import {
   type DaemonVmCore,
 } from "@lararium/tw5";
 import { resolveBootDoc } from "./repo-helpers.js";
-import { nodeNewSyncChannel, nodeSpawnWorker } from "./worker-handle.js";
+import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 
@@ -127,7 +127,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   const host: DaemonVmHost = {
     newSyncChannel: nodeNewSyncChannel,
     ...(ownedDocument ? { newOwnedSyncChannel: nodeNewSyncChannel } : {}),
-    spawnWorker:    (url) => nodeSpawnWorker(url),
+    spawnWorker:    (url) => nodeSpawnDaemonWorker(url),
   };
 
   // The wrapper IS the shore — host pieces + recipe/storage + merge-on-arrival daemonHandle;

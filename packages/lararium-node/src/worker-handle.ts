@@ -9,8 +9,8 @@ import { ISLAND_PROTOCOL_VERSION, type VesselWorkerHandle, type IslandMsg_CasWan
 /** The vessel's answer to a worker's `cas:want` — verified bytes, or null (a miss stays a miss). */
 export type CasDoor = (cid: string) => Promise<Uint8Array | null>;
 
-// THE FETCH DOOR, vessel side. ONE cid plane per vessel, so ONE door: every worker this process spawns (the
-// daemon island and each wiki island) asks through it. `null` (the boot default) answers every ask with a
+// THE FETCH DOOR, vessel side. ONE cid plane per vessel, so ONE door: the daemon island and each wiki island ask
+// through it (a session island reaches no vessel door). `null` (the boot default) answers every ask with a
 // miss at once — a worker's resolver then degenerates to its local read, exactly as before the door stood.
 let casDoor: CasDoor | null = null;
 
@@ -62,7 +62,8 @@ export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "
 /** The vessel's answer to a worker's `custody:write` — seals the bytes under the vessel key. */
 export type CustodyWriteDoor = (carrier: CustodyWriteCarrier, bytes: Uint8Array) => Promise<void>;
 
-// THE CUSTODY WRITE DOOR, vessel side. Workers hold bytes but never the vessel key; the main thread seals them.
+// THE CUSTODY WRITE DOOR, vessel side. The daemon island holds bytes but never the vessel key; the main thread seals
+// them. The DAEMON island's channel alone carries the ask (`IslandClass`): a wiki island's ask refuses by name.
 let custodyWriteDoor: CustodyWriteDoor | null = null;
 
 /** Stand (or drop) the vessel's custody write door. */
@@ -102,15 +103,61 @@ function attachRestDoor(w: Worker): void {
 }
 
 /**
- * Wrap a worker as a handle. `doors: false` names a SESSION's island: it takes none of the vessel's own doors
- * (the fetch door, the rest door, the custody write door), so nothing it posts reaches the vessel's content
- * fleet, its store or its custody. A session island asks through its scoped view alone.
+ * THE CLASS OF ISLAND A WORKER STANDS AS, named at its spawn. Each class reaches the vessel doors it owns and no other:
+ *
+ *   daemon   the vessel's own immune core. It reaches all three: the fetch door, the rest door (it mints the
+ *            binding documents the vessel's store saves) and the custody write door (its keyhive archive exports
+ *            cross to the main thread, which alone holds the vessel key and seals them).
+ *   wiki     an island that runs a wiki's content and plugins. It reaches the fetch door alone, for the blobs its
+ *            own tiddlers name. Its custody write and its rest ask each refuse BY NAME on the same request id, and
+ *            each refusal logs once per worker: code a wiki loads never writes a row under the vessel key and
+ *            never drives the vessel's store.
+ *   session  a session's island. It reaches none of the three and draws no answer: it asks through its scoped
+ *            view alone.
+ *
+ * The class binds at the spawn and never moves: a worker carries no way to name itself another class.
  */
-export function nodeWorkerHandle(w: Worker, opts: { readonly doors?: boolean } = {}): VesselWorkerHandle {
-  if (opts.doors !== false) {
+export type IslandClass = "daemon" | "wiki" | "session";
+
+/** Answer a door a wiki island may not use: the same reply shape the door gives, refused by name, logged once. */
+function attachRefusals(w: Worker): void {
+  const logged = new Set<string>();
+  const once = (name: string, door: string): void => {
+    if (logged.has(name)) return;
+    logged.add(name);
+    console.warn(`[vessel-door] ${name}: a wiki island asked the ${door}; only the daemon island reaches it. The ask refused and nothing ran.`);
+  };
+  const reply = (msg: unknown): void => { try { w.postMessage(msg); } catch { /* the worker went away */ } };
+  w.on("message", (raw: unknown) => {
+    const m = raw as { type?: unknown; requestId?: unknown } | null;
+    if (!m || typeof m !== "object" || typeof m.requestId !== "string") return;
+    if (m.type === "custody:write") {
+      once("CustodyDoorRefused", "custody write door");
+      const refused: IslandMsg_CustodyWritten = {
+        schema_version: ISLAND_PROTOCOL_VERSION, type: "custody:written", requestId: m.requestId, written: false,
+        why: "CustodyDoorRefused: only the daemon island reaches the custody write door",
+      };
+      reply(refused);
+    } else if (m.type === "doc:rest") {
+      once("RestDoorRefused", "rest door");
+      const refused: IslandMsg_DocRested = {
+        schema_version: ISLAND_PROTOCOL_VERSION, type: "doc:rested", requestId: m.requestId, rested: false,
+        why: "RestDoorRefused: only the daemon island reaches the rest door",
+      };
+      reply(refused);
+    }
+  });
+}
+
+/** Wrap a worker as a handle, attaching the vessel doors its class owns ({@link IslandClass}). */
+export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass }): VesselWorkerHandle {
+  if (opts.island === "daemon") {
     attachCasDoor(w);
     attachRestDoor(w);
     attachCustodyWriteDoor(w);
+  } else if (opts.island === "wiki") {
+    attachCasDoor(w);
+    attachRefusals(w);
   }
   const post = w.postMessage.bind(w) as (msg: unknown, transfer?: unknown[]) => void;
   return {
@@ -129,11 +176,17 @@ export function nodeNewSyncChannel(): { mainPort: MessagePort; syncPort: Message
   return { mainPort: port1 as unknown as MessagePort, syncPort: port2 as unknown as MessagePort };
 }
 
-export function nodeSpawnWorker(url: string | URL, workerData?: unknown): VesselWorkerHandle {
-  return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined));
+/** Spawn the vessel's DAEMON island: the one worker that reaches every vessel door. */
+export function nodeSpawnDaemonWorker(url: string | URL, workerData?: unknown): VesselWorkerHandle {
+  return nodeWorkerHandle(new Worker(url, workerData !== undefined ? { workerData } : undefined), { island: "daemon" });
+}
+
+/** Spawn a WIKI island: a worker that reaches the fetch door alone. */
+export function nodeSpawnWikiWorker(url: string | URL): VesselWorkerHandle {
+  return nodeWorkerHandle(new Worker(url), { island: "wiki" });
 }
 
 /** Spawn a SESSION's island: a worker that takes none of the vessel's own doors. */
 export function nodeSpawnSessionWorker(url: string | URL): VesselWorkerHandle {
-  return nodeWorkerHandle(new Worker(url), { doors: false });
+  return nodeWorkerHandle(new Worker(url), { island: "session" });
 }

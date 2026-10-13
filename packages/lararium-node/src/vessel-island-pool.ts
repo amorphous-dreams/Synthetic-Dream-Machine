@@ -19,7 +19,7 @@ import {
   type IslandStorageConfig,
   type WikiRecipe,
 } from "@lararium/mesh";
-import { fetchThroughCasDoor, nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWorker } from "./worker-handle.js";
+import { fetchThroughCasDoor, nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
 import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
 
 /**
@@ -83,7 +83,7 @@ export class VesselIslandPool extends VesselIslandPoolCore {
     const storageRoot = options.storageRoot ?? null;
     super({
       host: {
-        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl) : nodeSpawnWorker(workerUrl)),
+        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl) : nodeSpawnWikiWorker(workerUrl)),
         newSyncChannel: nodeNewSyncChannel,
         storage: (wikiId): IslandStorageConfig | undefined =>
           storageRoot ? { type: "nodefs", dir: join(storageRoot, _sanitizeWikiId(wikiId)) } : undefined,
