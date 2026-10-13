@@ -12,7 +12,10 @@
  *     — no board / announce / crossroads artifact anywhere in the tree (never-federates),
  *   · `circle list` reads the follow back through circle-list (circles.memberDids) under the OWN names,
  *   · `circle remove` dispatches circle-remove (drops the circles edge),
- *   · FAIL-CLOSED — following an UNMET nym with NO --card returns non-zero AND dispatches NO circle-add.
+ *   · FAIL-CLOSED — following an UNMET nym with NO --card returns non-zero AND dispatches NO circle-add,
+ *   · THE HANDLE-BOOK RESTS SEALED — the row a follow writes carries the vessel key's seal and none of the petname,
+ *   · THE FLOOR — with the vessel key unopened, `circle add` and `circle list` refuse and name `lares vault unlock`, the daemon
+ *     sees no follow and no byte of the book moves (control: the same add on an opened key lands).
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync, readdirSync } from "node:fs";
@@ -53,7 +56,8 @@ vi.mock("../src/env.js", async (orig) => ({
 import { cmdCircle } from "../src/commands/circle.js";
 import { larIdentityDir } from "../src/env.js";
 import type { ParsedArgs } from "../src/parse-args.js";
-import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception } from "@lararium/mesh";
+import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception, readVkCarrier } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
@@ -102,6 +106,15 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
   });
+  // The handle-book rests sealed under the vessel key, so each test stands on a founded custody.
+  let custody: ScratchCustody;
+  beforeEach(async () => { custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
+  const openBook = async (): Promise<{ records: Array<{ nym: string; petname?: string }> }> => {
+    const row = await custody.holder.readRow("identity", ".handle-book.json");
+    if (row.reading !== "opens") throw new Error(`the handle-book reads ${row.reading}`);
+    return JSON.parse(new TextDecoder().decode(row.plaintext));
+  };
 
   test("add with a card follows: membership → the circles doc (daemon verb), only the handle-book lands locally", async () => {
     const { nym, path } = await cardFile(root, 3, "Discordia");
@@ -118,8 +131,10 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
     expect(foot).not.toContain(".circles-follow.json");
     expect(foot.some((f) => /crossroad|board|announce|glamour|public/i.test(f))).toBe(false);
 
-    const book = JSON.parse(readFileSync(join(larIdentityDir(), ".handle-book.json"), "utf8"));
-    expect(book.records.find((r: { nym: string }) => r.nym === nym)?.petname).toBe("my-eris");
+    const atRest = readFileSync(join(larIdentityDir(), ".handle-book.json"));
+    expect(readVkCarrier(atRest)).toBe("sealed");
+    expect(atRest.includes(Buffer.from("my-eris"))).toBe(false);
+    expect((await openBook()).records.find((r) => r.nym === nym)?.petname).toBe("my-eris");
   });
 
   test("list reads the follow back from the circles doc; remove drops the circles edge", async () => {
@@ -140,5 +155,21 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
     // Recognition fails CLIENT-side before any membership write — the daemon never saw a follow.
     expect(verbsSent()).not.toContain("circle-add");
     expect(h.graph.get("following") ?? new Set()).toEqual(new Set());
+  });
+
+  test("THE FLOOR — with the vessel key unopened the follow and the list refuse, and nothing moves", async () => {
+    const { nym, path } = await cardFile(root, 9, "Floor");
+    expect(await cmdCircle(circleArgs(["add", nym], { to: "following", card: path }))).toBe(0);   // control
+    const standing = readFileSync(join(larIdentityDir(), ".handle-book.json"));
+    h.calls.length = 0;
+    await custody.holder.lock();
+    const other = await cardFile(root, 11, "Other");
+    const wire = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    expect(await cmdCircle(circleArgs(["add", other.nym], { to: "following", card: other.path }))).not.toBe(0);
+    expect(await cmdCircle(circleArgs(["list"], { to: "following" }))).not.toBe(0);
+    const said = [...wire.mock.calls.map((c) => String(c[0])), ...(console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.map((c) => String(c[0]))].join("\n");
+    expect(said).toMatch(/lares vault unlock/);
+    expect(verbsSent()).not.toContain("circle-add");
+    expect(readFileSync(join(larIdentityDir(), ".handle-book.json")).equals(standing)).toBe(true);
   });
 });

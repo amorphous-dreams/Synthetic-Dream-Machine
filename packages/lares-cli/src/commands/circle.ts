@@ -106,7 +106,7 @@ async function circleAdd(args: ParsedArgs): Promise<number> {
     if (err instanceof FollowRefused) throw new UsageError(err.message);   // fail-closed → clean usage error
     throw err;
   }
-  saveNodeHandleBook(book);   // persist the recogniser's memory (a card ingest / petname landed on it)
+  await saveNodeHandleBook(book);   // persist the recogniser's memory (a card ingest / petname landed on it)
 
   emit(args, {
     ok: true,
@@ -154,7 +154,7 @@ async function circleCard(args: ParsedArgs): Promise<number> {
   const book    = await loadNodeHandleBook();
   const verdict = await book.ingest(card);
   if (!verdict.ok) throw new UsageError(`handle-card refused (${verdict.reject}) — the book holds this nym to its own lineage (anti-rollback / anti-fork).`);
-  saveNodeHandleBook(book);   // persist the recogniser's memory — the nym is now known, ready to follow
+  await saveNodeHandleBook(book);   // persist the recogniser's memory — the nym is now known, ready to follow
 
   const rec = book.get(card.nym);
   emit(args, {

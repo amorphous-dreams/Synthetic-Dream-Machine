@@ -19,8 +19,8 @@
  *   · a Handle the reader never met refuses NOT-FOUND rather than guessing a chain,
  *   · every refusal rides `emit`, so an agent under `--json` reads a verdict and never bare prose.
  */
-import { describe, test, expect, vi, afterEach } from "vitest";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { describe, test, expect, vi, afterEach, beforeEach } from "vitest";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -30,8 +30,26 @@ import {
   type HandleKelEvent, type HandleAttestation, type HandleClaim,
 } from "@lararium/mesh";
 import { dispatch } from "../src/bin/lares.js";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 afterEach(() => vi.restoreAllMocks());
+
+// With no card carried, the reader's own handle-book supplies the chain, and that book rests sealed under the
+// vessel key: each test stands on a scratch root with a founded custody.
+let root: string;
+let priorRoot: string | undefined;
+let custody: ScratchCustody;
+beforeEach(async () => {
+  root = mkdtempSync(join(tmpdir(), "lares-handle-verify-"));
+  priorRoot = process.env["LAR_ROOT"];
+  process.env["LAR_ROOT"] = root;
+  custody = await seatScratchCustody();
+});
+afterEach(async () => {
+  await custody.drop();
+  if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
+  rmSync(root, { recursive: true, force: true });
+});
 
 /** Capture what an AGENT reads: stdout alone. Prose on stderr is the human's channel and never parsed. */
 function captureJson(): { lines: string[] } {
