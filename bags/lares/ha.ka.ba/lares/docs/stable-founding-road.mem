@@ -32,7 +32,7 @@ start (#/fresh-start), and what the operator still owns (#/open). Landed work re
 CHANGELOG, never here. No count rests here: each reading names the instrument that takes it. Law lives in
 its own carrier, and this carrier points there.
 
-''Three bearings'' (a house reading, marked as one). ''Near'': a house one person trusts alone — the custody seal whole, a green pushed head, one dockerized Lararium founded fresh and walked by hand. The ruling "a working Lararium comes first" (#/rulings) names this bearing. ''Middle'': the table — two operators, two machines, one Nexus founded at two seats, an edit crossing both ways (TWO HEARTHS). ''Far'': the DreamNet — friends invited by hand, a public shelf on the house's own domains, spirits sitting in the vessel's seat, private bags carried sealed by neighbours who cannot read them. The road below reaches the middle bearing; the sealed store and the hosted road reach toward the far one.
+''Full models land early'' (operator ruling; quote license: //"Full caps now … Full models in early, so we don't code churn later."//). The road takes no staging by milestone: a slice builds its whole model, with its whole capability reach, in the place the order gives it, and no slice ships a narrower interim that a later slice must re-cut.
 
 <<~/ahu>>
 
@@ -309,7 +309,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 * The fresh start by hand (#/fresh-start) on both machines, on the re-found build.
 * The ceremony: both found their seeds through the Stable act and stand; both found the Nexus fresh through the Nexus founding act; each signs a contract the two seats countersign; both join one shared cabal realm beside others; each wears a face; an edit crosses both ways and reads back after a restart on each machine. Probes use synthetic names; no fixture forges a cast persona's key or Handle.
 
-!!! The sealed store ~ five steps threaded through the paths (operator-approved model; unbuilt)
+!!! The sealed store ~ five steps threaded through the paths (operator-approved model; unbuilt; each step lands in its place before the fence, under #/the-attractor's ruling)
 * ''The model'': cleartext lives in the live wiki and in the operator's projected files alone. A private bag rests as authenticated ciphertext chunks, the same bytes at rest and in a blind carrier's hands; a node that holds the capability and stands locked rests sealed. Private bytes take randomized authenticated encryption addressed over the ciphertext, so convergent sealing leaves the private tier. A bag's content key rolls at a causal removal act, never by a clock.
 * ''Scope'' (operator ruling): the sealing covers the wiki content stores, node and browser, and the content-addressed store, in carriage as well as at rest. The memory palace, the sensorium, receipts and logs stand outside it. Public and crossroads content stays readable to whoever holds the public keys or lookups.
 * ''Faces stand as facets of one operator'' (operator steer): no per-face projection root. Each kind of reader gets named — own vessel, own facet, a friend's face, a hosted guest, a carrier that holds none — before any admission-history rule gets written. One tree on disk serves the person: a projected wiki stands as a surface a session leases, and an edit from disk returns under that session's face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). Whoever holds the disk reads every facet's projection and may link them.
@@ -638,7 +638,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 
 !! Side lanes ~ queued beside the road, each on its own files
 
-* ''The shadow at the gates.'' An edge-kapae shadow stops one door, the crossing verdict of `lares cabal join`. No sync gate, share verdict or Keyhive membership consults it; the fleet closure (`verifiedFleetOfGroup`, `dyad.ts`) holds no production caller; `KeyhiveProvider.revoke` holds none either; and a board writer may delete a raise, so "acts only accrete" holds by convention. The build waits on the rulings of #/open (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>).
+* ''The shadow at the gates.'' An edge-kapae shadow stops one door, the crossing verdict of `lares cabal join`. No sync gate, share verdict or Keyhive membership consults it; the fleet closure (`verifiedFleetOfGroup`, `dyad.ts`) holds no production caller; `KeyhiveProvider.revoke` holds none either; and a board writer may delete a raise, so "acts only accrete" holds by convention. The full reach builds as one model: #/open, removal's reach (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>).
 * ''Handle resolver wiring and cross-log order.'' A Handle reader that holds no owner-head resolver trusts the inception alone. Owed: the resolver's wiring, where it must answer "the current, unsuperseded, un-vetoed head" and never "a key that once stood as head", and the order between a Handle's log and its owner's log.
 * ''The clock cures.'' `lares watch --delete-grace` lets a wall clock decide a tombstone (`packages/lares-cli/src/commands/watch.ts`); the audit of each remaining contract, Cabal and Handle door runs relation by relation, never as a blind sweep (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island#/selected-contracts">>).
 * ''The code lane.'' False source comments (`G6` of #/the-loops); a bug in the module trust gate (`packages/lararium-tw5/src/tw5-module-gate.ts`) and its missing positive-path vector; callers that still mount a layer default-writable (`operator-daemon-behavior.ts`, `daemon-vm-core.ts`); mesh tests that sit outside the type-check.
@@ -684,9 +684,7 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 !! Open ~ what the operator still owns
 
 !!! Order
-# ''The sealed store against the ceremony.'' Whether any of the sealed store's five steps land before the first ceremony.
-# ''The hosted road against the ceremony.'' The ceremony runs with the host's own invites alone (#/rulings); whether the rest of the hosted road's re-cut moves after it.
-# ''The working Lararium against the chain.'' The ruling puts a working Lararium first, under manual QA on one machine, and its browser half (rung 2's node side, the durability receipt) rides ONE FACE, fifth in the order behind the seat, the Nexus and the wire. Options: walk the near bearing on the CLI, the disk and the live wiki once the seal closes, and let the browser half wait; or pull the durability receipt and the working address forward of the wire. Lean: walk first, then decide with the walk's findings in hand.
+# ''The hosted road against the ceremony.'' The ceremony runs with the host's own invites alone (#/rulings), and every byte the hosted road signs lands before the fence. Whether its doors (the introduction's answer, the strangers' dial) open before the ceremony stays the operator's.
 
 !!! Seats, custody and recovery
 # ''Guardians and recovery.'' Guardian count and threshold at enrolment, request authentication, the veto, a person's death and succession, the catastrophe rite and any third key, and a Handle's DNS binding stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
@@ -705,7 +703,7 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 # ''Grammar submissions'': whether the Nexus Kahu or the corpus-kahu receive them.
 # ''DNS custody past the credential'': delegated `_acme-challenge`, record custody, the ACME account and CAA travel as one question (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>). With it: whether a host timer or a hand runs renewal, and the answer for a phone that forces encrypted DNS.
 # ''The crossroads mirror's filter'' (`G21` of #/the-loops).
-# ''Removal's reach.'' Three questions the kapae cure met. Who holds a vouch edge: the voucher alone, as built, so a cabal cannot set aside a member whose voucher refuses; or the voucher and a chartered quorum (lean: voucher today, the quorum as the eviction road; never one realm key). Whether a seal roll carries or clears shadows: a lower in a later epoch cannot cite a raise in an earlier one, so the shadow stays up across a roll. Whether a standing shadow drives a share-gate denial and a Keyhive revocation; today nothing does, and the sealed store's key roll at removal rests on the answer.
+# ''Removal's reach'' (operator: full capability reach, early; the three readings below belong to the house and the operator may overturn any). A vouch edge answers to its voucher AND to a chartered quorum of the realm it crosses, never to one realm key. A seal roll carries every shadow, and a lift may cite a raise from an earlier epoch through the roll's own anchors. A standing shadow drives the share verdict, the sync gate and a Keyhive revocation, and the sealed store's key roll follows that revocation.
 # ''The self-slot inner ring.'' Wiring it freezes a naming: a bag URL through a live ring hashes to seed its document, and a re-name costs a re-founding. Lean: widen the bridge first, and wire the ring on an explicit ruling alone.
 
 !!! Shore, grammar and code
@@ -749,6 +747,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yNKgIkRls8eXm3Sv_fyR0fHr0-ATXcG98Ehg5iZiD9c
+<<^ code="&#x0003;">>ni:///sha-256;Yb-cqShGX6Pyb0HwL06SW_2IoxNRXm9x_479agNqNFc
 
 <<^ code="&#x0004;" -> to="?">>
