@@ -13,14 +13,12 @@
 import { describe, test, expect } from "vitest";
 import {
   joinPolicyFromDoc, federationPostureFromDoc, admissionDialsFromDoc,
-  NEXUS_DOC_DOMAIN, type NexusDoc,
+  emptyFoundingCharterDoc, type NexusDoc,
 } from "../src/nexus-seal-seed.js";
 
 /** A minimal seated charter — the fields under test ride on top per-case. */
 function joinCharter(extra: Partial<NexusDoc> = {}): NexusDoc {
-  return {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: null, kahu: [], ...extra,
-  } as NexusDoc;
+  return { ...emptyFoundingCharterDoc(), threshold: 2, ...extra };
 }
 
 describe("joinPolicyFromDoc — the stranger dial, fail-closed", () => {

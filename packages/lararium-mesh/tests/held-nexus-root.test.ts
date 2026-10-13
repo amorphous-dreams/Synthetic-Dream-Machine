@@ -6,18 +6,13 @@ import { carriageEntryActCid, signCarriageQuorum, signCarriageContract, verifyPr
 import { heldNexusRoot, heldRootFor, heldRootRevision, NO_HELD_ROOT, readAdmitAtHeldRoot } from "../src/held-nexus-root.js";
 import { presentedAdmitReader } from "../src/face-gate.js";
 import { makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
-import { NEXUS_DOC_DOMAIN } from "../src/domains.js";
 import { seatedCharter, type SeatedCharter } from "./charter-fixture.js";
 import { carriageAct, pubOf, signerOf } from "./fixtures/carriage.js";
 
 const subject = new Uint8Array(32).fill(41);
 
 async function docOf(charter: SeatedCharter) {
-  return {
-    kind: NEXUS_DOC_DOMAIN, threshold: charter.threshold, sealEpochCid: charter.head.epochCid,
-    sealLineage: charter.chain,
-    kahu: charter.keys.map((verifyingKey, i) => ({ displayName: `seat-${i}`, verifyingKey })),
-  };
+  return charter.doc({ labels: charter.keys.map((_, i) => `seat-${i}`) });
 }
 
 async function rootOf(charter: SeatedCharter, denyBoard: readonly CarriageEntry[] = []) {

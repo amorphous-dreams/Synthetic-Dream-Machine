@@ -7,13 +7,12 @@
  *   · a roll may add a seat, drop a seat or change the threshold, and still verifies;
  *   · the fixture reads deterministic in its seed and never re-seats a key;
  *   · an unarmed genesis verifies and refuses to roll; a roll never mutates the charter it grew from;
- *   · the funnel holds: no mesh test outside this helper and the roll law's own test builds an epoch by hand
- *     or names how an epoch commits its successors.
+ *   · a charter over keys the caller holds reads the exact epochs the constructors mint, at genesis and
+ *     across its rolls, and refuses a shape no quorum could meet;
+ *   · a fixture's charter doc carries the head, the whole lineage, every seat and the dials beside them.
+ * The funnel itself (no test outside this helper builds a charter by hand) reads in `charter-funnel.test.ts`.
  */
 import { describe, test, expect } from "vitest";
-import { readdirSync, readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { basename, dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import { genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, verifySealLineage, verifySealRoll } from "../src/wax-stamp.js";
@@ -256,48 +255,5 @@ describe("the charter doc a fixture hands out", () => {
     expect(doc.sealLineage).toHaveLength(1);
     expect(foundingRoster(doc).keys).toEqual([]);
     expect(doc.kahu).toEqual([]);
-  });
-});
-
-describe("the funnel holds across the mesh tests", () => {
-  const testsDir = dirname(fileURLToPath(import.meta.url));
-  /** The hand-built epoch: the two constructors, and every field an epoch commits its successors under,
-   *  one digest for the whole next set or one digest per seat with its threshold. */
-  const HAND_BUILT = [/\bgenesisCharterEpoch\(/, /\brotateSealEpoch\(/, /\bnextKeyCommit\b/, /\bnextKeyDigests\b/, /\bnextThreshold\b/];
-  /** The helper, its own test, and the roll law's own test: the only files that may build an epoch by hand. */
-  const MAY_BUILD = new Set(["charter-fixture.ts", "charter-fixture.test.ts", "wax-stamp.test.ts"].map((name) => join(testsDir, name)));
-
-  function sources(dir: string, out: string[] = []): string[] {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name === "node_modules") continue;
-      const path = join(dir, entry.name);
-      if (entry.isDirectory()) sources(path, out);
-      else if (entry.isFile() && entry.name.endsWith(".ts")) out.push(path);
-    }
-    return out;
-  }
-
-  test("★ no other mesh test builds an epoch by hand ★", () => {
-    const files = sources(testsDir);
-    expect(files.length).toBeGreaterThan(100);
-    const strays = files
-      .filter((file) => !MAY_BUILD.has(file))
-      .filter((file) => { const text = readFileSync(file, "utf8"); return HAND_BUILT.some((p) => p.test(text)); })
-      .map((file) => basename(file));
-    expect(strays).toEqual([]);
-  });
-
-  test("KNOWN POSITIVE: the same scan sees every pattern where the roll law's own test spells it", () => {
-    const law = readFileSync(join(testsDir, "wax-stamp.test.ts"), "utf8");
-    for (const pattern of HAND_BUILT.slice(0, 3)) expect(pattern.test(law)).toBe(true);
-    const helper = readFileSync(join(testsDir, "charter-fixture.ts"), "utf8");
-    expect(HAND_BUILT[0]!.test(helper) && HAND_BUILT[1]!.test(helper)).toBe(true);
-    // A neighbouring word never trips the scan: a key log's own `nextKeyCommitted` is another relation.
-    expect(HAND_BUILT[2]!.test("nextKeyCommitted(inception, key)")).toBe(false);
-    expect(HAND_BUILT[2]!.test("{ nextKeyCommit: \"\" }")).toBe(true);
-    expect(HAND_BUILT[3]!.test("{ nextKeyDigests: [], nextThreshold: 0 }")).toBe(true);
-    expect(HAND_BUILT[4]!.test("{ nextKeyDigests: [], nextThreshold: 0 }")).toBe(true);
-    // The exemption reads a whole path: a namesake in another directory stays under the scan.
-    expect(MAY_BUILD.has(join(testsDir, "fixtures", "wax-stamp.test.ts"))).toBe(false);
   });
 });

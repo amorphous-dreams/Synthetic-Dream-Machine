@@ -22,7 +22,7 @@ import {
   crossroadsAnnounceOf, writeRealmBagAnnounce, realmBagAnnounceKey, publicRealmBooksFromDoc, RealmBagGate,
 } from "../src/realm-bag.js";
 import { deterministicDocUrl } from "../src/deterministic-doc.js";
-import { NEXUS_DOC_DOMAIN, type NexusDoc } from "../src/nexus-seal-seed.js";
+import { emptyFoundingCharterDoc, type NexusDoc } from "../src/nexus-seal-seed.js";
 import type { LarDoc } from "../src/base-doc.js";
 import type { FederationGate, NexusMembership } from "../src/federation-gate.js";
 import { seatedCharter } from "./charter-fixture.js";
@@ -48,22 +48,17 @@ describe("realm-bag — the realm's name", () => {
   test("the realm id reads the charter's GENESIS epoch, fixed across a rotation", async () => {
     const genesis = await seatedCharter({ seats: 2, threshold: 2 });
     const rolled = await genesis.roll();
-    const doc: NexusDoc = {
-      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: rolled.head.epochCid, kahu: [],
-      sealLineage: [...rolled.chain],
-    };
+    const doc: NexusDoc = { ...rolled.doc(), kahu: [] };
     expect(realmIdOfCharter(doc)).toBe(genesis.aid);
     expect(realmDocUrl(genesis.aid)).toBe(realmDocUrl(genesis.aid));
     expect(realmDocUrl(genesis.aid)).not.toBe(realmDocUrl(rolled.head.epochCid));
   });
   test("CONTROL: an unseated charter names no realm", () => {
     expect(realmIdOfCharter(null)).toBeNull();
-    expect(realmIdOfCharter({ kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: null, kahu: [] })).toBeNull();
+    expect(realmIdOfCharter({ ...emptyFoundingCharterDoc(), threshold: 2 })).toBeNull();
   });
   test("a NON-NULL bare sealEpochCid with NO sealLineage never roots a realm (the retired legacy inception path)", () => {
-    const legacy: NexusDoc = {
-      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: "legacy-bare-epoch", kahu: [],
-    };
+    const legacy: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 2, sealEpochCid: "legacy-bare-epoch" };
     expect(realmIdOfCharter(legacy)).toBeNull();
   });
 });
