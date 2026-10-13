@@ -12,7 +12,7 @@ import {
   taskUri, receiptUri, taskContentId, TASK_KIND, RECEIPT_KIND,
   buildVerb, summon, parseVerb, concludeVerb,
   buildReceiptFact, parseReceiptFact, verbInputDigest,
-  RECEIPT_RING_DEFAULT, ratedReceiptRing, RECEIPT_FACT_URI_PREFIX,
+  RECEIPT_RING_DEFAULT, ratedReceiptRing, RECEIPT_RING_BYTES_DEFAULT, ratedReceiptRingBytes, outcomeBytesOf, RECEIPT_FACT_URI_PREFIX,
 } from "../src/verb-tiddler.js";
 import { larRoot, isStableLarUri } from "../src/lar-uris.js";
 import { mkDaemonPlaceVerb, isVesselToIslandMsg } from "../src/island-protocol.js";
@@ -79,9 +79,10 @@ describe("task/receipt URI ontology (seed)", () => {
 
 describe("receipt facts — single-writer ledger codec (D1)", () => {
   test("buildReceiptFact / parseReceiptFact round-trip every field", () => {
-    const fact = { requestId: "r1", inputDigest: "sha256:aa", effectKey: "sha256:bb", state: "done" as const, terminal: "done" as const, seq: 7 };
+    const fact = { requestId: "r1", inputDigest: "sha256:aa", effectKey: "sha256:bb", state: "done" as const, terminal: "done" as const, seq: 7, outcomeBytes: 412 };
     const record = buildReceiptFact(fact);
     expect(record.tiddler.title).toBe(`${RECEIPT_FACT_URI_PREFIX}r1`);
+    expect(record.tiddler["outcome-bytes"]).toBe("412");
     const parsed = parseReceiptFact(record.tiddler as Record<string, unknown>);
     expect(parsed).toEqual(fact);
   });
@@ -118,8 +119,37 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
       expect(parseReceiptFact(record.tiddler as Record<string, unknown>)).toEqual(fact);
     }
     // CONTROL: a settled fact needs no boot-epoch.
-    expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r6`, "request-id": "r6", "input-digest": "sha256:ee", state: "done", seq: "2" }))
-      .toEqual({ requestId: "r6", inputDigest: "sha256:ee", state: "done", seq: 2 });
+    expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r6`, "request-id": "r6", "input-digest": "sha256:ee", state: "done", seq: "2", "outcome-bytes": "0" }))
+      .toEqual({ requestId: "r6", inputDigest: "sha256:ee", state: "done", seq: 2, outcomeBytes: 0 });
+  });
+
+  test("★ a landed fact (`done` or `error`) names the bytes of the outcome it keeps; none on the wire reads as torn ★", () => {
+    for (const state of ["done", "error"] as const) {
+      const bag = { title: `${RECEIPT_FACT_URI_PREFIX}r7`, "request-id": "r7", "input-digest": "sha256:ff", state, terminal: state, seq: "4" };
+      expect(parseReceiptFact(bag), state).toBeNull();
+      for (const unreadable of ["", "-1", "1.5", "many", -1, 1.5, null, "9".repeat(400), "9007199254740993", Number.POSITIVE_INFINITY, Number.NaN]) {
+        expect(parseReceiptFact({ ...bag, "outcome-bytes": unreadable }), `${state} ${String(unreadable)}`).toBeNull();
+      }
+      const fact = { requestId: "r7", inputDigest: "sha256:ff", state, terminal: state, seq: 4, outcomeBytes: 9_001 };
+      const record = buildReceiptFact(fact);
+      expect(record.tiddler["outcome-bytes"]).toBe("9001");
+      expect(parseReceiptFact(record.tiddler as Record<string, unknown>)).toEqual(fact);
+    }
+    // CONTROL: the states that keep no outcome carry no measure, and need none.
+    const evicted = { requestId: "r8", inputDigest: "sha256:ab", state: "evicted" as const, terminal: "done" as const, seq: 5 };
+    expect(buildReceiptFact(evicted).tiddler["outcome-bytes"]).toBeUndefined();
+    expect(parseReceiptFact(buildReceiptFact(evicted).tiddler as Record<string, unknown>)).toEqual(evicted);
+    const committed = { requestId: "r9", inputDigest: "sha256:cd", state: "committed" as const, seq: 6, bootEpoch: 1 };
+    expect(buildReceiptFact(committed).tiddler["outcome-bytes"]).toBeUndefined();
+  });
+
+  test("outcomeBytesOf measures an outcome record in UTF-8 bytes of its canonical form: field order moves nothing, a body moves it byte for byte", () => {
+    const small = { title: "t", status: "done", results: "{}" };
+    const base = outcomeBytesOf(small);
+    expect(base).toBeGreaterThan(0);
+    expect(outcomeBytesOf({ results: "{}", status: "done", title: "t" })).toBe(base);
+    expect(outcomeBytesOf({ ...small, results: `{}${"x".repeat(100)}` })).toBe(base + 100);
+    expect(outcomeBytesOf({ ...small, results: "{}é" })).toBe(base + 2);        // a two-byte character counts two
   });
 
   test("a torn fact (bad state, non-numeric seq) parses to null, never throws", () => {
@@ -147,6 +177,15 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     expect(RECEIPT_RING_DEFAULT).toBe(43_456);
     expect(ratedReceiptRing()).toBe(43_456);
     expect(ratedReceiptRing({ ratePerMin: 2, horizonDays: 1, burst: 0 })).toBe(2 * 60 * 24);
+  });
+
+  test("RECEIPT_RING_BYTES_DEFAULT is derived (the ring's count × a 2 KiB mean per kept outcome = 88,997,888)", () => {
+    expect(RECEIPT_RING_BYTES_DEFAULT).toBe(43_456 * 2_048);
+    expect(ratedReceiptRingBytes()).toBe(88_997_888);
+    // The byte bound follows the count it rides beside, and takes its own dial.
+    expect(ratedReceiptRingBytes({ ratePerMin: 2, horizonDays: 1, burst: 0 })).toBe(2 * 60 * 24 * 2_048);
+    expect(ratedReceiptRingBytes({ bytesPerOutcome: 512 })).toBe(43_456 * 512);
+    expect(ratedReceiptRing({ bytesPerOutcome: 512 } as never)).toBe(43_456);    // CONTROL: the count ignores the byte dial
   });
 });
 

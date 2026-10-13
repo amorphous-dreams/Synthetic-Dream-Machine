@@ -16,7 +16,7 @@
  * design banks on) and the same on-disk store directory. Anything the second channel answers
  * correctly, it answers from the FACT, never from memory the first channel happened to keep warm.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, onTestFinished } from "vitest";
 import { mkdtempSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -25,7 +25,7 @@ import { Repo, type DocHandle } from "@automerge/automerge-repo";
 import { emptyLarDoc, NoWorkingLayerRefusal, buildReceiptFact, concludeVerb, verbInputDigest, RECEIPT_FACT_URI_PREFIX, OUTCOME_URI_PREFIX, DAEMON_BAG_ID, AutomergeDocStore, CompositeStore, wikiSlotUri, type LarDoc } from "@lararium/mesh";
 import { FactLedger, startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
-import { plainRecord } from "@lararium/mesh";
+import { plainRecord, outcomeBytesOf } from "@lararium/mesh";
 
 interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string; }
 
@@ -66,6 +66,24 @@ function doneWorker(counter: { n: number }) {
   };
 }
 
+/** A worker that lands a `done` outcome whose results carry a body of `bodyOf(requestId)` bytes. */
+function bodyWorker(counter: { n: number }, bodyOf: (requestId: string) => number) {
+  return (p: Placed, daemonHandle: ReturnType<Repo["create"]>) => {
+    counter.n++;
+    const outcome = concludeVerb({
+      requestId: p.requestId, verb: p.verb, status: "done",
+      requestedBy: p.requestedBy, cause: "test-worker", batchMode: "best-effort",
+      results: { summary: { ok: true }, body: "b".repeat(bodyOf(p.requestId)) },
+    });
+    daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+  };
+}
+
+/** The measure of the outcome record a vessel holds for `requestId`, read off the store. */
+function storedOutcomeBytes(v: { daemonHandle: ReturnType<Repo["create"]> }, requestId: string): number {
+  return outcomeBytesOf(plainRecord((v.daemonHandle.doc() as LarDoc).tiddlers[`${OUTCOME_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>);
+}
+
 /** A fixture carrying what a real vessel carries across a restart: the Automerge repo/doc + the
  *  on-disk store dir. Only the CLAIM and the CHANNEL are torn down and re-made — the shape of an
  *  orderly `main.ts` shutdown + reboot, never a bare in-memory reset. */
@@ -79,6 +97,7 @@ class Vessel {
     readonly dir: string,
     readonly placeVerbImpl: (p: Placed, daemonHandle: ReturnType<Repo["create"]>) => void,
     readonly ring?: number,
+    readonly ringBytes?: number,
   ) {}
 
   compositeForBoot(): CompositeStore {
@@ -91,6 +110,7 @@ class Vessel {
   static async boot(opts: {
     placeVerbImpl: (p: Placed, daemonHandle: ReturnType<Repo["create"]>) => void;
     ring?: number;
+    ringBytes?: number;
     dir?: string;
     repo?: Repo;
     daemonHandle?: ReturnType<Repo["create"]>;
@@ -99,7 +119,7 @@ class Vessel {
     const daemonHandle = opts.daemonHandle ?? repo.create<LarDoc>(emptyLarDoc());
     const workingHandle = repo.create<LarDoc>(emptyLarDoc());
     const dir = opts.dir ?? mkdtempSync(join(tmpdir(), "uds-receipt-ledger-"));
-    const v = new Vessel(repo, daemonHandle, workingHandle, dir, opts.placeVerbImpl, opts.ring);
+    const v = new Vessel(repo, daemonHandle, workingHandle, dir, opts.placeVerbImpl, opts.ring, opts.ringBytes);
     await v.start();
     return v;
   }
@@ -126,6 +146,7 @@ class Vessel {
       claim: this.claim,
       repo: this.repo,
       ...(this.ring !== undefined && { ring: this.ring }),
+      ...(this.ringBytes !== undefined && { ringBytes: this.ringBytes }),
       timeoutMs: 1_000,
     });
     await waitForSocket(this.claim.socketPath);
@@ -321,7 +342,7 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
     const v = await Vessel.boot({ placeVerbImpl: () => {} });
     try {
       const requestId = "receipt-in-the-daemon-bag";
-      const daemonBagReceipt = buildReceiptFact({ requestId, state: "done", seq: 41, inputDigest: "old-digest" });
+      const daemonBagReceipt = buildReceiptFact({ requestId, state: "done", seq: 41, inputDigest: "old-digest", outcomeBytes: 0 });
       v.daemonHandle.change((doc) => { doc.tiddlers[daemonBagReceipt.tiddler.title] = daemonBagReceipt as unknown as LarDoc["tiddlers"][string]; });
       await v.repo.flush();
       expect(v.daemonHandle.doc()!.tiddlers[daemonBagReceipt.tiddler.title]).toBeDefined();
@@ -487,6 +508,8 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
       const stored = plainRecord(v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`]!).tiddler as Record<string, unknown>;
       expect(stored["state"]).toBe("done");
+      // The seed's settle measures the outcome it found, as a live observation does.
+      expect(stored["outcome-bytes"]).toBe(String(storedOutcomeBytes(v, requestId)));
     } finally { await v.teardown(); }
   });
 
@@ -585,5 +608,350 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
       expect(placed).toHaveLength(2);
       expect(placed[1]!.effectKey).toBeUndefined();
     } finally { await v.teardown(); }
+  });
+});
+
+describe("the receipt ring bounds BYTES as well as count", () => {
+  const ORIGIN = { kind: "lares-verb", requestId: "bytes-fixture" } as const;
+  const ID = (n: number): string => `req-bytes-${n}`;
+  const DIGEST = (n: number): string => `sha256:${String(n).padStart(64, "0")}`;
+  const BODY = 600;
+
+  /** The stores a ledger reads and writes, and a fresh ledger over them per boot: the durable floor a restart keeps. */
+  function stores() {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const workingHandle = repo.create<LarDoc>(emptyLarDoc());
+    const composite = (): CompositeStore => {
+      const c = new CompositeStore();
+      c.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+      c.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(workingHandle as never, wikiSlotUri("daemon", "working")), writable: true });
+      return c;
+    };
+    let boot = 0;
+    const ledgerAt = (ringBytes: number, ring = 100) => { const c = composite(); return { ledger: new FactLedger(c, repo, ring, ++boot, ringBytes), composite: c }; };
+    return { repo, daemonHandle, workingHandle, ledgerAt };
+  }
+  type Booted = ReturnType<ReturnType<typeof stores>["ledgerAt"]>;
+
+  /** The outcome a worker lands for request `n`, with a body of `body` bytes. Ids of one length weigh the same. */
+  const outcomeOf = (n: number, body = BODY) => concludeVerb({
+    requestId: ID(n), verb: "nexus-kapae", status: "done", requestedBy: "did:key:test", cause: "test-worker",
+    batchMode: "best-effort", results: { summary: { ok: true }, body: "b".repeat(body) },
+  });
+  const WEIGHT = outcomeBytesOf(outcomeOf(1).tiddler as Record<string, unknown>);
+
+  /** One request, whole: the ledger commits it, the worker's outcome lands in the daemon bag, the ledger observes it. */
+  async function land(b: Booted, n: number, body = BODY): Promise<void> {
+    expect((await b.ledger.arbitrate(ID(n), DIGEST(n))).verdict).toBe("run");
+    const outcome = outcomeOf(n, body);
+    await b.composite.put(outcome, ORIGIN, { bag: DAEMON_BAG_ID });
+    await b.ledger.observeOutcome(ID(n), "done", DIGEST(n), outcomeBytesOf(outcome.tiddler as Record<string, unknown>));
+  }
+  const stateOf = async (b: Booted, n: number): Promise<string> => {
+    const fact = await b.ledger.get(ID(n));
+    return fact === null ? "absent" : fact === "torn" ? "torn" : fact.state;
+  };
+  const keptOutcome = async (b: Booted, n: number): Promise<boolean> => (await b.composite.getLive(`${OUTCOME_URI_PREFIX}${ID(n)}`)) !== null;
+
+  test("★ an outcome that pushes the kept bodies past the bound evicts the oldest body, and never itself ★", async () => {
+    expect(WEIGHT).toBeGreaterThan(BODY);
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 2.5));           // room for two bodies and half a third
+    await land(b, 1);
+    await land(b, 2);
+    expect([await stateOf(b, 1), await stateOf(b, 2)]).toEqual(["done", "done"]);   // two bodies fit
+    await land(b, 3);
+    expect([await stateOf(b, 1), await stateOf(b, 2), await stateOf(b, 3)]).toEqual(["evicted", "done", "done"]);
+    // The evicted body left the store; its fact keeps the claim and its terminal, and drops the measure.
+    expect([await keptOutcome(b, 1), await keptOutcome(b, 2), await keptOutcome(b, 3)]).toEqual([false, true, true]);
+    const evicted = plainRecord(s.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ID(1)}`]!).tiddler as Record<string, unknown>;
+    expect(evicted["terminal"]).toBe("done");
+    expect(evicted["input-digest"]).toBe(DIGEST(1));
+    expect(evicted["outcome-bytes"]).toBeUndefined();
+    const kept = plainRecord(s.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ID(3)}`]!).tiddler as Record<string, unknown>;
+    expect(kept["outcome-bytes"]).toBe(String(WEIGHT));
+    // A same-id dispatch of the evicted request answers the gap.
+    expect(await b.ledger.arbitrate(ID(1), DIGEST(1))).toEqual({ verdict: "refuse", reason: "retention-gap" });
+    // The next body pushes the next-oldest out: the ring keeps moving.
+    await land(b, 4);
+    expect([await stateOf(b, 2), await stateOf(b, 3), await stateOf(b, 4)]).toEqual(["evicted", "done", "done"]);
+    await s.repo.shutdown();
+  });
+
+  test("CONTROL: the same four outcomes under a bound that holds them all evict nothing; one byte less evicts one", async () => {
+    const s = stores();
+    const b = s.ledgerAt(WEIGHT * 4);
+    for (const n of [1, 2, 3, 4]) await land(b, n);
+    expect(await Promise.all([1, 2, 3, 4].map((n) => stateOf(b, n)))).toEqual(["done", "done", "done", "done"]);
+    await s.repo.shutdown();
+    const t = stores();
+    const tight = t.ledgerAt(WEIGHT * 4 - 1);
+    for (const n of [1, 2, 3, 4]) await land(tight, n);
+    expect(await Promise.all([1, 2, 3, 4].map((n) => stateOf(tight, n)))).toEqual(["evicted", "done", "done", "done"]);
+    await t.repo.shutdown();
+  });
+
+  test("a heavy outcome spends many slots: it pushes out every older body it must, and a light one pushes out none", async () => {
+    const s = stores();
+    const b = s.ledgerAt(WEIGHT * 4);
+    for (const n of [1, 2, 3]) await land(b, n);
+    await land(b, 4, BODY + WEIGHT * 2);                      // three bodies' weight in one
+    expect(await Promise.all([1, 2, 3, 4].map((n) => stateOf(b, n)))).toEqual(["evicted", "evicted", "done", "done"]);
+    await land(b, 5, 0);                                      // CONTROL: a bare receipt fits beside them
+    expect(await Promise.all([3, 4, 5].map((n) => stateOf(b, n)))).toEqual(["evicted", "done", "done"]);
+    await s.repo.shutdown();
+  });
+
+  test("a lone outcome heavier than the whole bound stays for its caller, and leaves when the next body lands", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT / 2));
+    await land(b, 1);
+    expect(await stateOf(b, 1)).toBe("done");                 // never evicted on arrival
+    expect(await keptOutcome(b, 1)).toBe(true);
+    await land(b, 2);
+    expect([await stateOf(b, 1), await stateOf(b, 2)]).toEqual(["evicted", "done"]);
+    await s.repo.shutdown();
+  });
+
+  test("★ the tally survives a restart: a fresh ledger reads what the kept bodies weigh off their facts ★", async () => {
+    const s = stores();
+    const first = s.ledgerAt(Math.floor(WEIGHT * 2.5));
+    await land(first, 1);
+    await land(first, 2);
+    const second = s.ledgerAt(Math.floor(WEIGHT * 2.5));       // a fresh ledger over the same stores
+    expect([await stateOf(second, 1), await stateOf(second, 2)]).toEqual(["done", "done"]);   // CONTROL: a restart alone evicts nothing
+    await land(second, 3);
+    expect([await stateOf(second, 1), await stateOf(second, 2), await stateOf(second, 3)]).toEqual(["evicted", "done", "done"]);
+    await s.repo.shutdown();
+  });
+
+  test("a boot under a tighter bound brings the kept bodies down to it, oldest first, before it answers", async () => {
+    const s = stores();
+    const wide = s.ledgerAt(WEIGHT * 10);
+    for (const n of [1, 2, 3]) await land(wide, n);
+    const tight = s.ledgerAt(Math.floor(WEIGHT * 1.5));
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(tight, n)))).toEqual(["evicted", "evicted", "done"]);
+    expect(await Promise.all([1, 2, 3].map((n) => keptOutcome(tight, n)))).toEqual([false, false, true]);
+    await s.repo.shutdown();
+  });
+
+  test("byte pressure drops BODIES: a request still in flight weighs nothing and keeps its fact", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 1.5));
+    expect((await b.ledger.arbitrate(ID(1), DIGEST(1))).verdict).toBe("run");   // committed; its outcome never lands
+    await land(b, 2);
+    await land(b, 3);
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["committed", "evicted", "done"]);
+    // An outcome that lands late for the oldest request counts from then on, and its own body stays this pass.
+    const late = outcomeOf(1);
+    await b.composite.put(late, ORIGIN, { bag: DAEMON_BAG_ID });
+    await b.ledger.observeOutcome(ID(1), "done", DIGEST(1), WEIGHT);
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["done", "evicted", "evicted"]);
+    await s.repo.shutdown();
+  });
+
+  test("a body that landed late leaves by its request's place in the order, never by when it landed", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 2.5));
+    expect((await b.ledger.arbitrate(ID(1), DIGEST(1))).verdict).toBe("run");   // the oldest request, still in flight
+    await land(b, 2);
+    const late = outcomeOf(1);
+    await b.composite.put(late, ORIGIN, { bag: DAEMON_BAG_ID });
+    await b.ledger.observeOutcome(ID(1), "done", DIGEST(1), WEIGHT);            // two bodies fit: nothing leaves
+    expect([await stateOf(b, 1), await stateOf(b, 2)]).toEqual(["done", "done"]);
+    await land(b, 3);
+    // The oldest REQUEST's body leaves, though it landed after the second's.
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["evicted", "done", "done"]);
+    await s.repo.shutdown();
+  });
+
+  test("an outcome that lands again under another verdict counts once, at its latest measure", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 2.5));
+    await land(b, 1);
+    await b.ledger.observeOutcome(ID(1), "error", DIGEST(1), WEIGHT);           // the same request, a second verdict
+    expect(await stateOf(b, 1)).toBe("error");
+    await land(b, 2);
+    expect([await stateOf(b, 1), await stateOf(b, 2)]).toEqual(["error", "done"]);   // two bodies' weight, and two fit
+    await land(b, 3);
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["evicted", "done", "done"]);   // CONTROL: a third does not
+    await s.repo.shutdown();
+  });
+
+  test("a body re-written under the same verdict gets measured again: the tally reads what the store holds", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 2.5));
+    await land(b, 1);
+    const heavier = outcomeOf(1, BODY + WEIGHT * 2);
+    await b.composite.put(heavier, ORIGIN, { bag: DAEMON_BAG_ID });
+    await b.ledger.observeOutcome(ID(1), "done", DIGEST(1), outcomeBytesOf(heavier.tiddler as Record<string, unknown>));
+    const fact = plainRecord(s.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ID(1)}`]!).tiddler as Record<string, unknown>;
+    expect(fact["outcome-bytes"]).toBe(String(WEIGHT * 3));
+    expect(await stateOf(b, 1)).toBe("done");                 // it just landed: it stays this pass
+    await land(b, 2);
+    expect([await stateOf(b, 1), await stateOf(b, 2)]).toEqual(["evicted", "done"]);   // three bodies' weight leaves for one
+    // CONTROL: the same two requests at one body's weight each both stay.
+    const t = stores();
+    const c = t.ledgerAt(Math.floor(WEIGHT * 2.5));
+    await land(c, 1);
+    await c.ledger.observeOutcome(ID(1), "done", DIGEST(1), WEIGHT);
+    await land(c, 2);
+    expect([await stateOf(c, 1), await stateOf(c, 2)]).toEqual(["done", "done"]);
+    await s.repo.shutdown(); await t.repo.shutdown();
+  });
+
+  test("★ acts that arrive together take turns: the facts, the bodies and the tally agree, and a fresh ledger reads the same ★", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 1.5));
+    // Five requests commit and land with no act awaited before the next begins.
+    await Promise.all([1, 2, 3, 4, 5].map((n) => land(b, n)));
+    const states = await Promise.all([1, 2, 3, 4, 5].map((n) => stateOf(b, n)));
+    const kept = await Promise.all([1, 2, 3, 4, 5].map((n) => keptOutcome(b, n)));
+    // Exactly one body fits the bound. Every fact that reads landed keeps its body, and every evicted one lost it.
+    expect(states.filter((state) => state === "done")).toHaveLength(1);
+    expect(states.filter((state) => state === "evicted")).toHaveLength(4);
+    expect(kept).toEqual(states.map((state) => state === "done"));
+    // The store says what the ledger's own cache says: a ledger that seeds from it answers the same.
+    const again = s.ledgerAt(Math.floor(WEIGHT * 1.5));
+    expect(await Promise.all([1, 2, 3, 4, 5].map((n) => stateOf(again, n)))).toEqual(states);
+    // And two dispatches of one id that arrive together read one winner.
+    const twice = await Promise.all([b.ledger.arbitrate(ID(9), DIGEST(9)), b.ledger.arbitrate(ID(9), DIGEST(9))]);
+    expect(twice.map((v) => v.verdict).sort()).toEqual(["refuse", "run"]);
+    await s.repo.shutdown();
+  });
+
+  test("a stop between the body's leaving and its fact's flip leaves a landed fact the next pass finishes", async () => {
+    const s = stores();
+    const first = s.ledgerAt(Math.floor(WEIGHT * 2.5));
+    await land(first, 1);
+    await land(first, 2);
+    // The stop: the oldest body left the store, and its fact still reads landed.
+    await first.composite.tombstoneInBag(DAEMON_BAG_ID, `${OUTCOME_URI_PREFIX}${ID(1)}`, ORIGIN);
+    const second = s.ledgerAt(Math.floor(WEIGHT * 2.5));
+    expect(await stateOf(second, 1)).toBe("done");            // its receipt still answers its verdict
+    expect(await keptOutcome(second, 1)).toBe(false);
+    await land(second, 3);                                    // the pass reaches it, and finishes the eviction
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(second, n)))).toEqual(["evicted", "done", "done"]);
+    expect(await second.ledger.arbitrate(ID(1), DIGEST(1))).toEqual({ verdict: "refuse", reason: "retention-gap" });
+    await s.repo.shutdown();
+  });
+
+  test("★ no fact reads evicted while its body still stands: an eviction that fails at the body leaves the fact landed ★", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 2.5));
+    await land(b, 1);
+    await land(b, 2);
+    // The store refuses the body's removal once.
+    const tombstone = b.composite.tombstoneInBag.bind(b.composite);
+    let refused = 0;
+    b.composite.tombstoneInBag = async (...args: Parameters<typeof tombstone>) => {
+      if (refused++ === 0) throw new Error("a synthetic store fault");
+      return tombstone(...args);
+    };
+    await expect(land(b, 3)).rejects.toThrow("a synthetic store fault");
+    expect(refused).toBe(1);
+    // The oldest body still stands, so its fact still reads landed, in the store as in the ledger.
+    expect(await keptOutcome(b, 1)).toBe(true);
+    const stored = plainRecord(s.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ID(1)}`]!).tiddler as Record<string, unknown>;
+    expect(stored["state"]).toBe("done");
+    expect(await stateOf(b, 1)).toBe("done");
+    // The fault ended one act and no more: the next act takes its turn, and its pass finishes the eviction.
+    await land(b, 4);
+    expect(await Promise.all([1, 2, 3, 4].map((n) => stateOf(b, n)))).toEqual(["evicted", "evicted", "done", "done"]);
+    expect(await Promise.all([1, 2, 3, 4].map((n) => keptOutcome(b, n)))).toEqual([false, false, true, true]);
+    await s.repo.shutdown();
+  });
+
+  test("the count bound takes a failed eviction up again: the victim stays at the ring's head until it left whole", async () => {
+    const s = stores();
+    const b = s.ledgerAt(WEIGHT * 100, 2);                    // bytes wide, count two
+    await land(b, 1);
+    await land(b, 2);
+    const tombstone = b.composite.tombstoneInBag.bind(b.composite);
+    let refused = 0;
+    b.composite.tombstoneInBag = async (...args: Parameters<typeof tombstone>) => {
+      if (refused++ === 0) throw new Error("a synthetic store fault");
+      return tombstone(...args);
+    };
+    // The third request commits, and the count pass it starts fails at the oldest body.
+    await expect(b.ledger.arbitrate(ID(3), DIGEST(3))).rejects.toThrow("a synthetic store fault");
+    expect([await stateOf(b, 1), await keptOutcome(b, 1)]).toEqual(["done", true]);
+    // The next act's pass takes the same victim up, and the ring comes down to its count.
+    expect((await b.ledger.arbitrate(ID(4), DIGEST(4))).verdict).toBe("run");
+    expect(await Promise.all([1, 2, 3, 4].map((n) => stateOf(b, n)))).toEqual(["evicted", "evicted", "committed", "committed"]);
+    expect([await keptOutcome(b, 1), await keptOutcome(b, 2)]).toEqual([false, false]);
+    await s.repo.shutdown();
+  });
+
+  test("an outcome this ledger never arbitrated (a summons from another vessel) weighs as any other", async () => {
+    const s = stores();
+    const b = s.ledgerAt(Math.floor(WEIGHT * 1.5));
+    for (const n of [1, 2]) {
+      const outcome = outcomeOf(n);
+      await b.composite.put(outcome, ORIGIN, { bag: DAEMON_BAG_ID });
+      await b.ledger.observeOutcome(ID(n), "done", DIGEST(n), outcomeBytesOf(outcome.tiddler as Record<string, unknown>));
+    }
+    expect([await stateOf(b, 1), await stateOf(b, 2)]).toEqual(["evicted", "done"]);
+    expect([await keptOutcome(b, 1), await keptOutcome(b, 2)]).toEqual([false, true]);
+    await s.repo.shutdown();
+  });
+
+  test("the count bound still holds beside the byte bound, and each evicts by its own measure", async () => {
+    const s = stores();
+    const b = s.ledgerAt(WEIGHT * 100, 2);                    // bytes wide, count two
+    for (const n of [1, 2, 3]) await land(b, n);
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(b, n)))).toEqual(["evicted", "done", "done"]);
+    await s.repo.shutdown();
+  });
+
+  test("a landed fact that names no measure reads torn; CONTROL: the same fact with its measure reads landed", async () => {
+    const s = stores();
+    const measured = buildReceiptFact({ requestId: ID(1), state: "done", terminal: "done", seq: 0, inputDigest: DIGEST(1), outcomeBytes: 0 });
+    const { "outcome-bytes": _measure, ...unmeasuredFields } = measured.tiddler as Record<string, unknown>;
+    const unmeasured = { ...measured, tiddler: { ...unmeasuredFields, title: `${RECEIPT_FACT_URI_PREFIX}${ID(2)}`, "request-id": ID(2), seq: "1" } };
+    const seed = s.ledgerAt(WEIGHT * 10);
+    await seed.composite.put(measured, ORIGIN);
+    await seed.composite.put(unmeasured as never, ORIGIN);
+    const b = s.ledgerAt(WEIGHT * 10);
+    expect(await stateOf(b, 1)).toBe("done");
+    expect(await stateOf(b, 2)).toBe("torn");
+    expect(await b.ledger.arbitrate(ID(2), DIGEST(2))).toEqual({ verdict: "refuse", reason: "receipt-fact-torn" });
+    expect(await b.ledger.arbitrate(ID(1), DIGEST(1))).toEqual({ verdict: "refuse", reason: "already-committed" });
+    await s.repo.shutdown();
+  });
+
+  test("★ over the socket: the channel measures the outcome it observes, and an evicted body leaves the vessel's store ★", async () => {
+    /** Resolve once the working doc's fact for `requestId` reads `state`: a handshake on the doc's own change. */
+    const factReads = (v: Vessel, requestId: string, state: string): Promise<Record<string, unknown>> => new Promise((resolve) => {
+      const read = (): boolean => {
+        const stored = v.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${requestId}`];
+        const fields = stored ? plainRecord(stored).tiddler as Record<string, unknown> : null;
+        if (fields?.["state"] !== state) return false;
+        v.workingHandle.off("change", onChange);
+        resolve(fields);
+        return true;
+      };
+      const onChange = (): void => { read(); };
+      v.workingHandle.on("change", onChange);
+      read();
+    });
+    const inv = (requestId: string) => ({ verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId });
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: bodyWorker(counter, () => BODY), ring: 100, ringBytes: Math.floor(WEIGHT * 1.5) });
+    // The runner tears the vessel down, whatever ends the test: a handshake that never answers must not hold the suite open.
+    onTestFinished(() => v.teardown());
+    expect((await sendLine(v.socketPath, inv(ID(1))))["status"]).toBe("done");
+    const first = await factReads(v, ID(1), "done");
+    expect(first["outcome-bytes"]).toBe(String(storedOutcomeBytes(v, ID(1))));
+    expect(Number(first["outcome-bytes"])).toBeGreaterThan(BODY);
+    expect((await sendLine(v.socketPath, inv(ID(2))))["status"]).toBe("done");
+    await factReads(v, ID(1), "evicted");
+    expect((await sendLine(v.socketPath, { op: "receipt", requestId: ID(1) }))["state"]).toBe("evicted");
+    expect(v.daemonHandle.doc()!.tiddlers[`${OUTCOME_URI_PREFIX}${ID(1)}`]?.meta?.deleted).toBe(true);
+    expect((await factReads(v, ID(2), "done"))["outcome-bytes"]).toBe(String(storedOutcomeBytes(v, ID(2))));
+    const again = await sendLine(v.socketPath, inv(ID(1)));
+    expect((again["refusal"] as { reason?: string } | undefined)?.reason).toBe("retention-gap");
+    expect(counter.n).toBe(2);
   });
 });

@@ -64,6 +64,17 @@ describe("main says the reach face's two lines", () => {
   });
 });
 
+// THE RECEIPT RING'S TWO BOUNDS. `uds-channel-receipt-ledger.test.ts` proves what each bound evicts; this weld
+// holds the entry to handing both to every channel it opens, from the one config block.
+describe("main hands the receipt ring's count and its bytes to each channel", () => {
+  test("one config block sizes both bounds, and both compositions pass both", () => {
+    expect(SOURCE).toContain("{ count: ratedReceiptRing(receiptsCfg.receipts.ring), bytes: ratedReceiptRingBytes(receiptsCfg.receipts.ring) }");
+    expect(SOURCE.match(/\.\.\.\(receiptRing !== undefined && \{ ring: receiptRing\.count, ringBytes: receiptRing\.bytes \}\),/g)).toHaveLength(2);
+    expect(SOURCE.match(/front\.attach\(makeUdsSeat\(\{/g)).toHaveLength(2);
+    expect(SOURCE).not.toMatch(/ring: receiptRing\b(?!\.count)/);
+  });
+});
+
 // A REFUSAL ABOVE THE FLOOR LEAVES THE FLOOR STANDING: the boot's own source composes at the floor when a
 // composition handed the sovereign rows refuses, and ends the process only when the floor itself refuses. The
 // first boot and every custody recomposition take the same road.

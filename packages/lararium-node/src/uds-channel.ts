@@ -42,7 +42,7 @@ import {
   CompositeStore,
   NoWorkingLayerRefusal, newRequestId, OUTCOME_URI_PREFIX, type LarDoc,
   wikiSlotUri,
-  RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, buildReceiptFact, parseReceiptFact,
+  RECEIPT_FACT_URI_PREFIX, RECEIPT_RING_DEFAULT, RECEIPT_RING_BYTES_DEFAULT, buildReceiptFact, parseReceiptFact, outcomeBytesOf,
   verbInputDigest, type ReceiptFact, type ReceiptFactDraft,
 } from "@lararium/mesh";
 // The adaptive-timeout SERVO (fail on a GRADIENT, never a cliff): a per-verb wait that GROWS with the
@@ -82,6 +82,13 @@ export interface UdsChannelOptions {
    * (`receipts.ring {ratePerMin, horizonDays, burst}`) when present.
    */
   readonly ring?: number;
+  /**
+   * Override {@link RECEIPT_RING_BYTES_DEFAULT} — the ring's bound on what the kept outcomes WEIGH. Each landed
+   * fact names the bytes of the outcome record it keeps; past this many bytes across them, the channel evicts the
+   * oldest kept body (lowest `seq`) exactly as the count bound does, and never the body that just landed. `main.ts`
+   * resolves this from the same vessel config (`receipts.ring {…, bytesPerOutcome}`).
+   */
+  readonly ringBytes?: number;
   /** Per-verb await budget (default 30s — recall cold-starts chromadb). */
   readonly timeoutMs?: number;
   readonly onLog?: (line: string) => void;
@@ -169,10 +176,15 @@ export class VesselWaitExpired extends Error {
  * surviving one — closes because the fact this ledger reads back IS the fact a prior process wrote,
  * never a process-local Map that a restart wiped.
  *
- * The ring (M1): past `ring` tracked requests (any state, oldest `seq` first), the ledger evicts —
- * flips the fact to `evicted` (keeping digest, effect key, terminal) and tombstones the full durable
- * outcome. An evicted id answers `retention-gap`, never a silent re-run and never a bare "unknown"
- * that would invite one.
+ * The ring (M1) holds two bounds, and either evicts: it flips a fact to `evicted` (keeping digest, effect
+ * key, terminal) and tombstones the full durable outcome. An evicted id answers `retention-gap`, never a
+ * silent re-run and never a bare "unknown" that would invite one.
+ *   · COUNT: past `ring` tracked requests (any state), the oldest `seq` leaves first.
+ *   · BYTES: every landed fact names what its kept outcome weighs, and the ledger holds their sum. Past
+ *     `ringBytes`, the oldest KEPT BODY leaves first. A fact that keeps no body (in flight, abandoned,
+ *     interrupted) weighs nothing and stays, and the body that just landed stays for the caller awaiting it:
+ *     a lone outcome heavier than the whole bound leaves when the next body lands.
+ * The sum seeds from the facts themselves, so a restart reads the same weight a prior boot left.
  */
 export class FactLedger {
   private readonly cache = new Map<string, ReceiptFact>();
@@ -184,6 +196,12 @@ export class FactLedger {
   /** requestIds in ascending `seq` order — the eviction queue. Seeded from the store at first use,
    *  then kept current by every `record()` this process makes. */
   private readonly order: string[] = [];
+  /** requestIds whose fact keeps an outcome body, in ascending `seq` order — the byte bound's eviction queue. */
+  private readonly bodied: string[] = [];
+  /** What each kept body weighs and where its fact sits in the order: the tally's own book, read by no other state. */
+  private readonly weights = new Map<string, { readonly seq: number; readonly bytes: number }>();
+  /** What the kept bodies weigh, summed: every entry of `weights`. */
+  private heldBytes = 0;
   private nextSeq = 0;
   private seeded: Promise<void> | null = null;
 
@@ -192,7 +210,45 @@ export class FactLedger {
     private readonly repo: Pick<Repo, "flush">,
     private readonly ring: number,
     private readonly bootEpoch: number,
+    private readonly ringBytes: number = RECEIPT_RING_BYTES_DEFAULT,
   ) {}
+
+  /** The end of the last write this ledger began. Every act that changes a fact, a body or the tally takes its
+   *  turn behind it. */
+  private turn: Promise<unknown> = Promise.resolve();
+
+  /**
+   * ONE WRITER, ONE WRITE AT A TIME. An act reads a fact, writes it, flushes, and then moves the cache and the
+   * tally; each of those awaits. Two acts that interleaved there could both read one prior fact, or let an
+   * eviction land between another act's write and its cache update. So every public act that writes runs whole
+   * before the next begins, in the order the calls arrived.
+   */
+  private inTurn<T>(act: () => Promise<T>): Promise<T> {
+    const run = this.turn.then(act);
+    this.turn = run.catch(() => { /* the caller reads the refusal; the next act still takes its turn */ });
+    return run;
+  }
+
+  /** Count a fact's kept body into the tally, in `seq` order. A fact that keeps none adds nothing. */
+  private hold(fact: ReceiptFact): void {
+    if (fact.state !== "done" && fact.state !== "error") return;
+    this.release(fact.requestId);
+    let at = this.bodied.length;
+    while (at > 0 && this.weights.get(this.bodied[at - 1]!)!.seq > fact.seq) at--;
+    this.bodied.splice(at, 0, fact.requestId);
+    this.weights.set(fact.requestId, { seq: fact.seq, bytes: fact.outcomeBytes });
+    this.heldBytes += fact.outcomeBytes;
+  }
+
+  /** Take a request's body back out of the tally, whatever its fact reads: every pass of the byte bound that
+   *  names a victim ends with that victim out of the queue, so the pass always ends. */
+  private release(requestId: string): void {
+    const held = this.weights.get(requestId);
+    if (!held) return;
+    this.weights.delete(requestId);
+    this.bodied.splice(this.bodied.indexOf(requestId), 1);
+    this.heldBytes -= held.bytes;
+  }
 
   private static factTitle(requestId: string): string {
     return `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
@@ -244,16 +300,18 @@ export class FactLedger {
         if (fact.state !== "committed" || fact.bootEpoch >= this.bootEpoch) continue;
         const landed = await this.composite.get(`${OUTCOME_URI_PREFIX}${fact.requestId}`);
         const status = landed && !landed.meta?.deleted ? (landed.tiddler as Record<string, unknown>)["status"] : undefined;
-        const settled: ReceiptFact = status === "done" || status === "error"
-          ? { ...fact, state: status, terminal: status }
+        const settled: ReceiptFact = landed && (status === "done" || status === "error")
+          ? { ...fact, state: status, terminal: status, outcomeBytes: outcomeBytesOf(landed.tiddler as Record<string, unknown>) }
           : { ...fact, state: "interrupted" };
         await this.composite.put(buildReceiptFact(settled), { kind: "lares-verb", requestId: fact.requestId });
         facts[i] = settled;
         settledAny = true;
       }
       if (settledAny) await this.repo.flush();
-      for (const fact of facts) { this.cache.set(fact.requestId, fact); this.order.push(fact.requestId); }
+      for (const fact of facts) { this.cache.set(fact.requestId, fact); this.order.push(fact.requestId); this.hold(fact); }
       this.nextSeq = maxRawSeq + 1;
+      // A boot under tighter bounds than the last brings the ledger down to them before it answers anything.
+      await this.evictIfNeeded();
     })();
     return this.seeded;
   }
@@ -285,7 +343,8 @@ export class FactLedger {
     await this.repo.flush();
     this.cache.set(fact.requestId, full);
     this.order.push(fact.requestId);
-    await this.evictIfNeeded();
+    this.hold(full);
+    await this.evictIfNeeded(fact.requestId);
     return full;
   }
 
@@ -305,17 +364,19 @@ export class FactLedger {
   async arbitrate(requestId: string, inputDigest: string):
     | Promise<{ readonly verdict: "run" }
       | { readonly verdict: "refuse"; readonly reason: "abandoned" | "interrupted" | "already-committed" | "request-id-reused-with-changed-input" | "retention-gap" | "receipt-fact-torn" }> {
-    const existing = await this.get(requestId);
-    if (existing === "torn") return { verdict: "refuse", reason: "receipt-fact-torn" };
-    if (existing) {
-      if (existing.state === "evicted") return { verdict: "refuse", reason: "retention-gap" };
-      if (existing.state === "abandoned") return { verdict: "refuse", reason: "abandoned" };
-      if (existing.state === "interrupted") return { verdict: "refuse", reason: "interrupted" };
-      if (existing.inputDigest !== inputDigest) return { verdict: "refuse", reason: "request-id-reused-with-changed-input" };
-      return { verdict: "refuse", reason: "already-committed" };
-    }
-    await this.record({ requestId, inputDigest, state: "committed", bootEpoch: this.bootEpoch });
-    return { verdict: "run" };
+    return this.inTurn(async () => {
+      const existing = await this.get(requestId);
+      if (existing === "torn") return { verdict: "refuse", reason: "receipt-fact-torn" };
+      if (existing) {
+        if (existing.state === "evicted") return { verdict: "refuse", reason: "retention-gap" };
+        if (existing.state === "abandoned") return { verdict: "refuse", reason: "abandoned" };
+        if (existing.state === "interrupted") return { verdict: "refuse", reason: "interrupted" };
+        if (existing.inputDigest !== inputDigest) return { verdict: "refuse", reason: "request-id-reused-with-changed-input" };
+        return { verdict: "refuse", reason: "already-committed" };
+      }
+      await this.record({ requestId, inputDigest, state: "committed", bootEpoch: this.bootEpoch });
+      return { verdict: "run" };
+    });
   }
 
   /** The causal EOF-drop: this vessel never read the invocation in time to arbitrate it. A no-op
@@ -323,9 +384,11 @@ export class FactLedger {
    *  already made. Flushes durably before this returns (the drop itself never answers the caller —
    *  its socket is already gone — but a LATER read-back under the same id must find this fact). */
   async abandonDrop(requestId: string, inputDigest: string): Promise<void> {
-    const existing = await this.get(requestId);
-    if (existing) return;
-    await this.record({ requestId, inputDigest, state: "abandoned" });
+    return this.inTurn(async () => {
+      const existing = await this.get(requestId);
+      if (existing) return;
+      await this.record({ requestId, inputDigest, state: "abandoned" });
+    });
   }
 
   /** An explicit `{op:"cancel"}` (M8) — withdraws WITHOUT recording a digest at all (no content
@@ -334,9 +397,11 @@ export class FactLedger {
    *  already won refuses to un-dispatch it, and a cancel racing a prior cancel/abandon leaves that
    *  fact exactly as it was. */
   async cancel(requestId: string): Promise<void> {
-    const existing = await this.get(requestId);
-    if (existing) return;
-    await this.record({ requestId, state: "abandoned" });
+    return this.inTurn(async () => {
+      const existing = await this.get(requestId);
+      if (existing) return;
+      await this.record({ requestId, state: "abandoned" });
+    });
   }
 
   /**
@@ -352,58 +417,90 @@ export class FactLedger {
    * is a real content claim, never fabricated. With neither side holding one, this observation is
    * refused by name rather than minting an ill-typed claim.
    */
-  async observeOutcome(requestId: string, status: "done" | "error", inputDigest: string | undefined): Promise<void> {
-    const existing = await this.get(requestId);
-    if (existing === "torn") return; // never write over an unreadable fact — leave it torn, not guessed
-    if (existing) {
-      if (existing.terminal === status || existing.state === "evicted") return; // already recorded / already dropped
-      const digest = existing.inputDigest ?? inputDigest;
-      if (digest === undefined) {
-        // No digest on the standing fact (the `cancel`-abandoned shape) and none on the outcome
-        // either — nothing to promote. Leave the abandoned verdict standing rather than mint an
-        // ill-typed claim.
+  async observeOutcome(requestId: string, status: "done" | "error", inputDigest: string | undefined, outcomeBytes: number): Promise<void> {
+    return this.inTurn(async () => {
+      const existing = await this.get(requestId);
+      if (existing === "torn") return; // never write over an unreadable fact — leave it torn, not guessed
+      if (existing) {
+        if (existing.state === "evicted") return; // already dropped
+      // Already recorded, at this verdict and this measure. A body re-written under the same verdict gets
+      // measured again, so the tally reads what the store holds.
+      if (existing.state === status && existing.outcomeBytes === outcomeBytes) return;
+        const digest = existing.inputDigest ?? inputDigest;
+        if (digest === undefined) {
+          // No digest on the standing fact (the `cancel`-abandoned shape) and none on the outcome
+          // either — nothing to promote. Leave the abandoned verdict standing rather than mint an
+          // ill-typed claim.
+          return;
+        }
+        const updated: ReceiptFact = {
+          requestId, seq: existing.seq, inputDigest: digest, state: status, terminal: status, outcomeBytes,
+          ...(existing.effectKey !== undefined && { effectKey: existing.effectKey }),
+          ...("bootEpoch" in existing && existing.bootEpoch !== undefined && { bootEpoch: existing.bootEpoch }),
+        };
+        await this.composite.put(buildReceiptFact(updated), { kind: "lares-verb", requestId });
+        await this.repo.flush();
+        this.cache.set(requestId, updated);
+        this.hold(updated);
+        await this.evictIfNeeded(requestId);
         return;
       }
-      const updated: ReceiptFact = { ...existing, inputDigest: digest, state: status, terminal: status };
-      await this.composite.put(buildReceiptFact(updated), { kind: "lares-verb", requestId });
-      await this.repo.flush();
-      this.cache.set(requestId, updated);
-      return;
-    }
-    if (inputDigest === undefined) {
-      // No prior fact and the outcome itself carries no digest to mint one from — this early-alpha
-      // vessel never writes a done/error outcome without one, so a gap here reads as torn, not as
-      // "unverifiable"; refuse the mint by name rather than fabricate a claim.
-      return;
-    }
-    await this.record({ requestId, state: status, terminal: status, inputDigest });
+      if (inputDigest === undefined) {
+        // No prior fact and the outcome itself carries no digest to mint one from — this early-alpha
+        // vessel never writes a done/error outcome without one, so a gap here reads as torn, not as
+        // "unverifiable"; refuse the mint by name rather than fabricate a claim.
+        return;
+      }
+      await this.record({ requestId, state: status, terminal: status, inputDigest, outcomeBytes });
+    });
   }
 
-  /** Past `ring` tracked requests, drop the OLDEST (lowest `seq`) to `evicted` — keep its digest,
-   *  effect key and terminal (a dedup/replay reader still needs those), but tombstone the full
-   *  durable outcome body so the ring actually bounds storage, not just lookups. `evicted` is a
-   *  digest-REQUIRED state (it names a claim this ledger arbitrated or observed) — a victim that
-   *  never arbitrated one (the one `cancel`-abandoned, no-digest shape) carries nothing to tombstone
-   *  either, so it drops out of the ring untouched, its `abandoned` verdict left standing. */
-  private async evictIfNeeded(): Promise<void> {
+  /** Drop one fact to `evicted` — keep its digest, effect key and terminal (a dedup/replay reader still needs
+   *  those), tombstone the full durable outcome body, and take its weight out of the tally. `evicted` is a
+   *  digest-REQUIRED state (it names a claim this ledger arbitrated or observed): a victim that never
+   *  arbitrated one (the one `cancel`-abandoned, no-digest shape) carries nothing to tombstone either, so it
+   *  leaves untouched, its `abandoned` verdict left standing. Answers whether it wrote. */
+  private async evict(victimId: string): Promise<boolean> {
+    const victim = this.cache.get(victimId);
+    if (!victim || victim.state === "evicted" || victim.inputDigest === undefined) return false;
+    const evicted: ReceiptFact = {
+      requestId: victim.requestId, state: "evicted", seq: victim.seq, inputDigest: victim.inputDigest,
+      ...(victim.effectKey !== undefined && { effectKey: victim.effectKey }),
+      ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
+    };
+    // THE BODY LEAVES FIRST, THEN THE FACT SAYS SO. A stop between the two leaves a landed fact with no body: its
+    // receipt still answers its verdict, its weight still counts, and the next pass that reaches it finishes
+    // the eviction. The other order would leave a body no fact answers for, outside every bound.
+    const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
+    for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
+      await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
+    }
+    await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
+    this.release(victimId);
+    this.cache.set(victimId, evicted);
+    return true;
+  }
+
+  /**
+   * Hold both bounds. COUNT: past `ring` tracked requests, the OLDEST (lowest `seq`) leaves the ring, so the
+   * ring bounds storage and never lookups alone. BYTES: while the kept bodies weigh more than `ringBytes`, the
+   * oldest kept body leaves. `justLanded` names the request whose fact this call follows: its body stays
+   * through this pass, since its caller reads the outcome it just wrote.
+   */
+  private async evictIfNeeded(justLanded?: string): Promise<void> {
     let evictedAny = false;
     while (this.order.length > this.ring) {
-      const victimId = this.order.shift();
+      // The victim leaves the ring once its eviction ran whole: one that failed midway stays at the head, and
+      // the next pass takes it up again.
+      const victimId = this.order[0]!;
+      if (await this.evict(victimId)) evictedAny = true;
+      this.order.shift();
+    }
+    while (this.heldBytes > this.ringBytes) {
+      const victimId = this.bodied.find((id) => id !== justLanded);
       if (victimId === undefined) break;
-      const victim = this.cache.get(victimId);
-      if (!victim || victim.state === "evicted" || victim.inputDigest === undefined) continue;
-      const evicted: ReceiptFact = {
-        requestId: victim.requestId, state: "evicted", seq: victim.seq, inputDigest: victim.inputDigest,
-        ...(victim.effectKey !== undefined && { effectKey: victim.effectKey }),
-        ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
-      };
-      await this.composite.put(buildReceiptFact(evicted), { kind: "lares-verb", requestId: victimId });
-      const outcomeTitle = `${OUTCOME_URI_PREFIX}${victimId}`;
-      for (const bagId of await this.composite.listBagsHolding(outcomeTitle)) {
-        await this.composite.tombstoneInBag(bagId, outcomeTitle, { kind: "lares-verb", requestId: victimId });
-      }
-      this.cache.set(victimId, evicted);
-      evictedAny = true;
+      if (await this.evict(victimId)) evictedAny = true;
+      this.release(victimId);   // evicted or not, the victim left the queue: the pass ends
     }
     if (evictedAny) await this.repo.flush();
   }
@@ -535,7 +632,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process
   // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
   // abandonment not surviving one).
-  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch);
+  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT);
 
   const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${requestId}`);
@@ -664,7 +761,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     const status = fields["status"];
     if (status !== "done" && status !== "error") return;
     const inputDigest = typeof fields["input-digest"] === "string" ? fields["input-digest"] : undefined;
-    void ledger.observeOutcome(requestId, status, inputDigest).catch(
+    void Promise.resolve().then(() => ledger.observeOutcome(requestId, status, inputDigest, outcomeBytesOf(fields))).catch(
       (e) => log(`receipt-fact observation failed for ${requestId}: ${e instanceof Error ? e.message : String(e)}`),
     );
   });

@@ -54,7 +54,7 @@ import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { faceStands } from "./commands/init.js";
 import { deriveMeshSelf } from "./node-caps.js";
 import { parseMeshPeer, snapshotPublicOracle, type LarDoc } from "@lararium/mesh";
-import { ratedReceiptRing } from "@lararium/mesh";
+import { ratedReceiptRing, ratedReceiptRingBytes } from "@lararium/mesh";
 import { makeUdsSeat, serveUdsFront, type UdsFront } from "./uds-channel.js";
 import type { Socket } from "node:net";
 import { makeCustodyHolder } from "./custody-holder.js";
@@ -195,12 +195,13 @@ function logPendingPlanes(prefix: string, manifest: MountManifest): void {
   }
 }
 
-/** The `receipts.ring {ratePerMin, horizonDays, burst}` shape an operator may override in
+/** The `receipts.ring {ratePerMin, horizonDays, burst, bytesPerOutcome}` shape an operator may override in
  *  `~/.lares/config.json` (D1, P2.5 iter 4) — read loosely here rather than widening
  *  `LaresConfig`'s own interface, since this lane touches only `uds-channel.ts` and this one
- *  pass-through site in `main.ts`. Absent entirely → `startUdsChannel`'s own default
- *  (`RECEIPT_RING_DEFAULT`). */
-interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number } } }
+ *  pass-through site in `main.ts`. The first three dials size the ring's count, and `bytesPerOutcome` the mean
+ *  weight a kept outcome may take, so one block sets both bounds. Absent entirely → `startUdsChannel`'s own
+ *  defaults (`RECEIPT_RING_DEFAULT`, `RECEIPT_RING_BYTES_DEFAULT`). */
+interface ReceiptsRingConfig { readonly receipts?: { readonly ring?: { readonly ratePerMin?: number; readonly horizonDays?: number; readonly burst?: number; readonly bytesPerOutcome?: number } } }
 
 async function main(): Promise<void> {
   const { port, storageDir, genesisDir, wikiId, rootDir, catalogUrl, askedStanding, origins } = parseArgs();
@@ -211,7 +212,9 @@ async function main(): Promise<void> {
     throw new Error(`[lararium] LAR_LAN_DISCOVERY refuses value ${JSON.stringify(lanDiscoveryMode)}; supported value: announce`);
   }
   const receiptsCfg = loadLaresConfig() as unknown as ReceiptsRingConfig;
-  const receiptRing = receiptsCfg.receipts?.ring !== undefined ? ratedReceiptRing(receiptsCfg.receipts.ring) : undefined;
+  const receiptRing = receiptsCfg.receipts?.ring !== undefined
+    ? { count: ratedReceiptRing(receiptsCfg.receipts.ring), bytes: ratedReceiptRingBytes(receiptsCfg.receipts.ring) }
+    : undefined;
   // ORIGIN CUSTODY STAYS WITH A PRESENT KEEPER. A herm is a waystone: it carries for peers, informs
   // readers, and serves no arrival page, so a Web origin or a Pronaos input handed to it refuses here,
   // before any face listens.
@@ -479,7 +482,7 @@ interface BootContext {
   readonly meshSelf: ReturnType<typeof deriveMeshSelf>;
   readonly reachFaces: ReturnType<typeof deriveReachFaces>;
   readonly originCompositions: ReturnType<typeof originCompositionForFace>[] | null;
-  readonly receiptRing: number | undefined;
+  readonly receiptRing: { readonly count: number; readonly bytes: number } | undefined;
   readonly readinessState: ReturnType<typeof createReadinessState>;
   readonly readinessFace: ReturnType<typeof mountReadinessFace>;
   readonly pronaos: ReturnType<typeof composePronaosFromEnv>;
@@ -640,7 +643,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     placeVerb:    (o) => herm.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         herm.repo,
-    ...(receiptRing !== undefined && { ring: receiptRing }),
+    ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[herm] ${line}`),
   }));
   console.log(`[herm] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
@@ -791,7 +794,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     placeVerb:    (o) => result.daemon.placeVerb(o),
     claim:        floor.storeClaim,
     repo:         result.repo,
-    ...(receiptRing !== undefined && { ring: receiptRing }),
+    ...(receiptRing !== undefined && { ring: receiptRing.count, ringBytes: receiptRing.bytes }),
     onLog: (line) => console.log(`[lararium] ${line}`),
   }));
   console.log(`[lararium] uds verb-channel on ${floor.storeClaim.socketPath} (perms 0600)`);
