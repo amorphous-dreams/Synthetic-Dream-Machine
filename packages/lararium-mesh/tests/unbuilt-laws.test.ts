@@ -352,3 +352,25 @@ describe("⑥ the node runner without grammar caps", () => {
     expect(Object.keys(mesh)).toContain("independentOperatorBoot");
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════════
+// ⑩ REMOVAL'S REACH — the parts of kapae#/reach and #/keys no code enforces
+// ══════════════════════════════════════════════════════════════════════════
+describe("⑩ removal's reach, past the gates that stand built", () => {
+  test.skip("A SEAT WITHOUT STANDING GETS REVOKED — DEFERRED: kapae#/keys. A pure planner reads a fold of the edge boards and names each Keyhive seat that outlived its standing (a device set aside, a member set aside, a joiner whose last vouch path fell), and each counted raise that still owes one roll of the seat it names; an executor on the keyhive shore answers it through `revokeSentinelMember`, and a revocation that finds the party gone reads as done. Lands with the daemon island's verb for it.", () => {
+    expect(Object.keys(mesh)).toContain("planSeatDuties");
+  });
+
+  test.skip("A LIFT SEATS AFRESH AND RETURNS NO EARLIER KEY — DEFERRED: kapae#/re-admission. After a lift the same planner names a fresh seat for a party that holds standing and no seat, and the content key rolls at the revocation before it. Lands after the planner above and the sealed store's key-version manifest.", () => {
+    expect(Object.keys(mesh)).toContain("planSeatDuties");
+  });
+
+  test.skip("A VESSEL UNDER ITS OWN SHADOW MINTS NO KEY EPOCH, AND EVERY DOOR SHOWS THE FORK — DEFERRED: kapae#/keys, mutual removal. The fold already reports a shadow over this vessel's own device edge (`selfAside`); no reader stops a key act on it, and no door prints the fork. Lands with the planner above.", () => {
+    expect(Object.keys(mesh)).toContain("forkStandsOver");
+  });
+
+  test.skip("A QUORUM ACT CROSSES BETWEEN VESSELS AS A PARTIAL — DEFERRED: kapae#/what-the-code-holds, the cosign door. `mergeEdgeActs` gathers seats' signatures on a board, and a partial act counts for nothing until the threshold meets; no door hands one seat's signature to the next seat's vessel. Lands with the roadmap's partial-and-cosign door for admit, revoke and kapae.", () => {
+    expect(Object.keys(mesh)).toContain("edgeActPartial");
+  });
+});
+

@@ -118,12 +118,12 @@ the membership sense stands ''built at the edge grain'' (`edge-kapae`). Acts acc
 > ''House reading, marked as such; the operator may overturn it.'' The membership stack holds four relations that take a marker. A seat in a charter takes none: a seat leaves by a roll (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle">>).
 
 |! edge |! its two ends |! what names it |! the board that carries its acts |
-| ''dyad'' | a device and a face | `dyadId`: the vessel key and the veil key | the fleet's edge board, read by one PersonaGroup |
+| ''dyad'' | a device and a face | `deviceEdgeId`: the fleet root and the device key | the fleet's edge board, read by one PersonaGroup |
 | ''vouch'' | a voucher and a joiner, inside one realm | `vouchEdgeId`: realm, voucher, joiner | the realm's edge board, read by that realm's own members |
 | ''member'' | a member and a realm | `memberEdgeId`: realm, member | the realm's edge board, read by that realm's own members |
 | ''carriage'' | a presenter (an operator, a place, a hosted leaf) and a Nexus | the presenter's nym at that Nexus | the carriage board (revoke, uncarry) and the antigen (kapae), on the always-carried tier |
 
-A vouch names one voucher's stake. A member edge names the joiner's whole relation to the realm, whoever vouched: a marker over it holds against a fresh vouch from a hand that never saw the removal. A member who leaves by their own hand signs a departure and raises no kapae (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>).
+A dyad's slot id hashes a veil key that never leaves its device, so the marker names the same relationship by the two ends every device of the fleet reads: the fleet root and the device key. A vouch names one voucher's stake. A member edge names the joiner's whole relation to the realm, whoever vouched: a marker over it holds against a fresh vouch from a hand that never saw the removal. A member who leaves by their own hand signs a departure and raises no kapae (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>).
 
 ''Name the board and its scope before reading it'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>). An edge board holds acts signed by the edge's own holders. It holds no roster, and no read of it may claim a whole set.
 
@@ -150,6 +150,7 @@ Two hands act on an edge. The ''holder'' hand signs with the one key the edge's 
 
 * ''Each hand folds its own causal heads, and the shadow stands while either hand's reading stands.'' A lower takes the authority of the raise it lifts: a voucher's lower never lifts a quorum's raise, and a quorum's lower never returns a stake its voucher withdrew.
 * ''A quorum act counts under the seated threshold of its own epoch.'' No edge act uses the emergency class. A shadow strikes no seat's signature: a seat leaves by a roll alone.
+* ''A door reads authority the way every reader does.'' A root that holds no vouch under the edge it names meets a refusal and writes nothing.
 * ''A person signs.'' A raise or a lower changes who holds authority, so a seat never signs one (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>).
 * ''At two seats the quorum means both.'' Neither founder removes the other by quorum. Each withdraws their own vouches, and the exit runs through a fork (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-unswept-corner">>).
 * ''The dyad marker reaches as far as the root's custody.'' A device that holds the fleet root's key can lift its own shadow.
@@ -163,9 +164,11 @@ Two hands act on an edge. The ''holder'' hand signs with the one key the edge's 
 > ''House reading, marked as such; the operator may overturn it.'' A seal roll carries every shadow, and a lift may cite a raise from an earlier epoch through the roll's own anchors.
 
 * ''Citation alone orders acts.'' An act cites its parents by content id, and a parent may root on any epoch. No scalar, clock or arrival order ranks.
-* ''The epoch names a roster and ranks nothing.'' A quorum act counts under the roster of the seal epoch it names. A holder act carries an epoch and no reader checks it.
+* ''The epoch names a roster and ranks nothing.'' A quorum act counts under the roster of the seal epoch it names. A holder act carries an epoch and no reader checks it. The charter's own lineage names each rolled epoch's seats, and a hash binds the first epoch's seats.
 * ''Every roll writes an edge anchor.'' The quorum of the epoch the roll opens signs the closed epoch's id, the closed epoch's seated keys and threshold, the causal heads of the quorum acts that counted at the closed epoch, and the anchor that opened it. The closed keys never sign an anchor, since they may stand as the reason for the roll. The anchor follows the carriage board's roll anchor in shape and law (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>).
-* ''A quorum act at an earlier epoch counts through the anchors.'' A chain of anchors must carry that epoch to the reader's charter head: each anchor counts under the roster it opens, each carries the key-set the charter lineage binds, and the next cites each. The act must also sit in the causal past of the anchor that closed its epoch. A retired key-set therefore mints nothing after its roll: no raise and no lift.
+* ''The anchors chain from the head down.'' An anchor counts under the roster it opens, and below the head it must sit in the causal past of the anchor that closed that roster's own epoch. A key-set that retired therefore signs no anchor after its roll, exactly as it signs no act.
+* ''A quorum act at an earlier epoch counts through the anchors.'' The act must sit in the causal past of a counted anchor that closed its epoch. A retired key-set mints nothing after its roll: no raise and no lift.
+* ''A vessel keeps counting a raise it counted at its head.'' A roller anchors the boards it reads. Where no anchor carries a raise, each vessel that counted it while its epoch still stood as that vessel's charter head keeps counting it. A lift never rides that road: it waits for an anchor.
 * ''An act that does not count drops.'' A counted act that cites a dropped or missing parent reads //unavailable//, and the shadow stands.
 * ''A lift after many rolls'' roots on the head epoch, cites the old raise by id, and counts under the head's roster. The old raise counts through the anchors between.
 
@@ -178,6 +181,7 @@ Two hands act on an edge. The ''holder'' hand signs with the one key the edge's 
 A board holds documents that any writer may edit, so a hand can delete a raise from the board. ''Every vessel keeps each act and each anchor it has counted, in a ledger of its own that never crosses to another operator.'' A reader folds the board together with its ledger, and it writes a kept act back onto a board that lost it.
 
 * A delete changes no reading at a vessel that once counted the raise, and the board regains the act at that vessel's next read.
+* One act holds one id, and its signatures gather: a second hand's signature joins the first, and a false signature under a true signer's name displaces nothing. A vessel keeps the signatures that verified and returns them to a board copy that lost one.
 * A vessel that never read the raise cannot tell a delete from a withheld act. Withholding buys a delay; it proves no lift.
 * The ledger holds signed acts and nothing compiled about anyone. No signed board head and no per-writer chain stands beside it: the first would seat a keeper over the board, and the second would list the board's writers.
 
@@ -198,10 +202,10 @@ A board holds documents that any writer may edit, so a hand can delete a raise f
 | carriage serve | fleet blocks close | | the realm's blocks close for that member | sealed carriage closes |
 | the browser's federation floor | the sibling lane closes | | | |
 | `lares cabal join` | | the vouch leaves the crossing | the crossing refuses, whatever vouches | |
-| realm standing and the realm's own boards | | that path to the seed breaks | no standing; the edge board and the vouch board close for that member | |
+| lineage standing and the realm's own boards | | that path to a root breaks | no standing; the edge board and the vouch board close for that member | |
 | a face-grant seat and the Binding Gate | no seat, no bind; a lease roll skips the dyad | | | |
 
-''Realm standing reads as a live query'': a member stands in a realm while some path of standing vouches reaches the realm's seed and no shadow stands over the member edge. A voucher who withdraws leaves the joiner standing wherever another path holds.
+''Lineage standing reads as a live query'': a member stands in a realm while some path of standing vouches reaches a root and no shadow stands over the member edge. A root names a voucher that no vouch names as a joiner; such a hand entered by another road, and it leaves only by a shadow over its own member edge. A voucher who withdraws leaves the joiner standing wherever another path holds.
 
 <<~/ahu>>
 
@@ -209,7 +213,7 @@ A board holds documents that any writer may edit, so a hand can delete a raise f
 
 !! The key side ~ keys never outrun standing
 
-* ''A seat without standing gets revoked.'' A device whose dyad stands shadowed leaves its PersonaGroup. A member leaves the realm's key group when a shadow stands over the member edge, or when no path of standing vouches reaches the seed. An //unavailable// or //rejected// reading closes the gates like any other, and it moves a key only once a raise counts.
+* ''A seat without standing gets revoked.'' A device whose dyad stands shadowed leaves its PersonaGroup. A member leaves the realm's key group when a shadow stands over the member edge, or when the member entered by a vouch and no path of standing vouches reaches a root. An //unavailable// or //rejected// reading closes the gates like any other, and it moves a key only once a raise counts.
 * ''Every counted raise owes one roll of the seat it names, whatever acts follow it.'' A vessel that reads a raise and its lift together still revokes the earlier seat. Where standing holds after the lift, the vessel then seats the party afresh. A lift therefore never leaves an earlier key epoch in place at one vessel and a later one at another.
 * ''Forward only.'' The removed party keeps what it read. A bag's content key rolls at the revocation, a causal act and never a clock (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>).
 * ''No coordinator.'' Every vessel that reads the shadow, holds revoke authority in that key group, and stands under no shadow of its own in that scope performs the revocation. Each acts once for each raise it counted and remembers that in its own ledger. A revocation that finds the party gone reads as done. Keyhive's removal converges across replicas (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/two-revocation-modes">>).
@@ -230,9 +234,19 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 !! What the code holds
 
-`lares cabal join` consults the shadow over every vouch in the realm, under the voucher's key, and names each vouch it left out with its reading. `lares edge kapae` and `un-kapae` write holder acts to a board keyed by the Nexus and report whether the shadow stands. The fleet closure takes a shadowed set and no built door calls it.
+''The acts and their fold'' (`edge-kapae`, `edge-ledger`, `realm-edges`): two hands, the member edge, the device edge, the edge anchor with its chain, the count across epochs, the ledger with its restore, and lineage standing.
 
-▢ ''OWED'': the quorum hand and the member edge; the edge anchor and the cross-epoch count; the ledger; the two edge boards' crossing lanes; the consult at the sorter, the share verdict, carriage serve, the browser floor, the face-grant seat and the Binding Gate; the revocation and the key roll behind it; the fork door; a live multi-keeper partition witness.
+''The doors.'' `lares edge kapae` and `un-kapae` act by an edge id, by `--member` with `--realm`, or by `--device`; `--quorum` signs with the seats this vessel holds. `lares cabal vouch` and `lares cabal join` read and write the realm's own boards, and a crossing names each shadow it met: over a vouch, over a voucher, over the applicant. A seal roll anchors every realm edge board whose quorum acts the rolling vessel keeps.
+
+''The gates'', each through its own entry point: the socket sorter, the share verdicts, carriage serve, the realm's gate and the lane the realm's boards cross by. One live reading feeds them (`edge-shadow-ring`). It answers closed until its first fold lands, and closed again behind a fold that fails.
+
+▢ ''OWED'':
+* ''The composers.'' Neither vessel seats the ring, the board lanes or the sibling lane's fleet board; the hunks wait on the composers' owner. Until they land, the gates stand built and no standing vessel consults them.
+* ''A realm identity at the wire.'' The realm's gate and its board lane ask which identity a peer holds standing under. No seat proves one today, so both answer an honest nothing across operators.
+* ''The key side'': the revocation, the fresh seat after a lift, the content-key roll behind it, and the fork door (#/keys).
+* ''The face-grant seat and the Binding Gate'': neither reads the dyad's shadow, and a lease roll re-admits a device set aside.
+* ''The cosign door'': a quorum act takes every seat it needs from one vessel's vault; seats on separate vessels gather their signatures on the board, and no door carries a partial act between them.
+* A live multi-keeper partition witness.
 
 <<~/ahu>>
 
@@ -259,6 +273,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gA6K_smH8xZATDuMUThVsfqi7SwH8MsJvkYZdAlYWxg
+<<^ code="&#x0003;">>ni:///sha-256;0lzXdLD0SmJAarNNVaBEGJYuHTGP6DFLdqRW_uzrBm8
 
 <<^ code="&#x0004;" -> to="?">>
