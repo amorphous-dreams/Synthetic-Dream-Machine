@@ -371,7 +371,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 !!! GROUND
 * `G2` The herm route for cancel and the three receipts: the mesh → node → CLI relay leg. G.
 * `G3` `KeyhiveIdentitySlot` wants a production caller, and rides its package barrel without one. House. G.
-* `G4` The quiet doors: the accepts walk misses computed flag reads (`stand.ts`, `meme.ts`); the CLI entry accepts an unread `--debug`; store refusals reach JSON under a generic code. G.
+* `G4` The quiet doors: store refusals reach JSON under a generic code. G.
 * `G5` Retired bags: the write gate enumerates its verbs by hand (`action-handler.ts`); the refusal's `error.code` reads generic where its message names `bag-retired`; a wiki-island save and the watcher's ingest-back into a retired bag stand unprobed. Canon owes `action-handler.mem` the refusal that follows DROP. G.
 * `G6` The evergreen sweep. Stale prose in source: `open-node-vessel.ts` and `node-cas.ts` ("read fresh … never cached" over a captured boot epoch); `cabal-vouch.ts` ("an expiry already past"); lane labels in test titles. Back-compat wording or tolerant readers: `index.ts` (node), `open-browser-vessel.ts`, `residency-actions.ts`, `daemon-vm-core.ts`, `nexus-publish.ts`, `ingest-core.ts`, `device-delegation.ts`, `lar-uris.ts`, `seal-reserve.ts`, `mesh-palace.ts` (a carried `expiry` field), `cleanup-days.ts`, `nexus-seal-seed.ts`, `archive-envelope.ts`. G; the false source comments ride the code lane of #/side-lanes.
 * `G7` Custody's edges: the floor guard reads a carrier cut inside its 13-byte magic as `bare`; a short seat can write a charter that boots torn (`nexus-seal.ts`); a floor-class carrier standing alone founds; `setFoundingRoute` stands as a test seam in source (`found.ts`); the custody wait can refuse falsely where no holder answers; `readTty` drops a pasted second line. G.
@@ -771,6 +771,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Rjlk5IBGVrk6g45emDtOEA5pCGCyVstDDl3FZqc0LKI
+<<^ code="&#x0003;">>ni:///sha-256;_nNFlcBamj_n0z1IRQPk_sRrjh6QpjSTEaWCpCStwxA
 
 <<^ code="&#x0004;" -> to="?">>
