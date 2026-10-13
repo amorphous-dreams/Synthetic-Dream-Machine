@@ -13,7 +13,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex, hexToBytes } from "../src/crypto.js";
 import {
-  dyadId, dyadSlotKey, writeDyad, dyadsFromDoc,
+  dyadId, deviceEdgeId, dyadSlotKey, writeDyad, dyadsFromDoc,
   dyadsOnVessel, fleetOfGroup, fleetSpan,
   nameFleet, unnameFleet, fleetPetnameResolver,
   verifiedFleetOfGroup, signDyadBinding, dyadBindingSubject, delegationBytes, DELEGATION_DOMAIN,
@@ -314,7 +314,7 @@ describe("a kāpae over the relationship stands aside a VALID edge", () => {
     expect(await verifiedFleetOfGroup([work, away], GROUP_ME)).toHaveLength(2);
 
     // the marker goes up over ONE relationship; its signature stays as valid as it ever was
-    const shadowed = new Set([work.dyadId]);
+    const shadowed = new Set([deviceEdgeId(GROUP_ME, work.ref.vesselDid)]);
     const stood = await verifiedFleetOfGroup([work, away], GROUP_ME, shadowed);
     expect(stood.map((d) => d.dyadId)).toEqual([away.dyadId]);
   });
@@ -325,13 +325,15 @@ describe("a kāpae over the relationship stands aside a VALID edge", () => {
     const work  = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
     const again = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED, "epoch1-bbb");   // fresh edge, later epochCid
     expect(again.dyadId).toBe(work.dyadId);                                        // same relationship
-    expect(await verifiedFleetOfGroup([again], GROUP_ME, new Set([work.dyadId]))).toEqual([]);
+    expect(await verifiedFleetOfGroup([again], GROUP_ME, new Set([deviceEdgeId(GROUP_ME, work.ref.vesselDid)]))).toEqual([]);
   });
 
-  test("the shadow scopes to ONE relationship — a sibling on the same vessel stands untouched", async () => {
+  test("the shadow scopes to ONE fleet — the same device under another fleet's root stands untouched", async () => {
     const work = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED);
-    const play = await bound(VESSEL_A, VEIL_PLAY, ROOT_ME_SEED);
-    const stood = await verifiedFleetOfGroup([work, play], GROUP_ME, new Set([work.dyadId]));
+    const play = await bound(VESSEL_A, VEIL_PLAY, ROOT_MASKED_SEED);
+    const shadowed = new Set([deviceEdgeId(GROUP_ME, VESSEL_A)]);
+    expect(await verifiedFleetOfGroup([work, play], GROUP_ME, shadowed)).toEqual([]);
+    const stood = await verifiedFleetOfGroup([work, play], GROUP_MASKED, shadowed);
     expect(stood.map((d) => d.ref.veilDid)).toEqual([VEIL_PLAY]);
   });
 });

@@ -15,11 +15,11 @@ import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   hex, signCabalInvite, signEdgeKapae, writeEdgeKapae, vouchEdgeId, CABAL_INVITE_DOMAIN,
-  DAEMON_BAG_ID, seedDaemonDoc, edgeKapaeBoardDocUrl, materializeSharedLarDoc, type CabalInvite,
+  DAEMON_BAG_ID, seedDaemonDoc, realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, materializeSharedLarDoc, type CabalInvite,
 } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
-  loadPersonaGroupRootSeed, loadVesselVerifyingKey,
+  loadPersonaGroupRootSeed,
 } from "../src/node-vessel-identity.js";
 import { larDataDir, larBootstrapPath } from "../src/vessel-paths.js";
 import { ownedStore } from "../src/owned-store.js";
@@ -32,7 +32,6 @@ let root: string;
 let priorLarRoot: string | undefined;
 
 const REALM = "a".repeat(64);
-const EPOCH = "epoch0-aaa";
 
 beforeEach(async () => {
   root = mkdtempSync(join(tmpdir(), "lares-shadow-"));
@@ -64,9 +63,10 @@ const edgeOf = (v: { realm: string; voucherDid: string; joiner: string }) => vou
 
 /** Land an act on the shadow board signed by a seed this vessel does NOT hold as the vouch's voucher. */
 async function writeForeignAct(edgeId: string, raised: boolean, parents: string[], seed: Uint8Array): Promise<void> {
-  const act = await signEdgeKapae({ edgeId, raised, parents, epochCid: EPOCH }, (b) => ed.signAsync(b, seed).then(hex));
+  const signer = await ed.getPublicKeyAsync(seed).then(hex);
+  const act = await signEdgeKapae({ edgeId, raised, hand: "holder", parents, epochCid: "no-charter" }, [{ signer, sign: (b) => ed.signAsync(b, seed).then(hex) }]);
   await ownedStore(larDataDir(), async (repo) => {
-    const handle = await materializeSharedLarDoc(repo, edgeKapaeBoardDocUrl(await loadVesselVerifyingKey()), "board:edge-kapae");
+    const handle = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
     handle.change((d) => writeEdgeKapae(d, act));
     await repo.flush();
   });
@@ -74,10 +74,11 @@ async function writeForeignAct(edgeId: string, raised: boolean, parents: string[
 
 describe("lares edge kapae — the verb reports what a standing reader will read", () => {
   it("★ a lower racing the raise leaves the shadow STANDING, and the verb says so ★", async () => {
-    const edge = "dyad-".padEnd(20, "c");
-    const up   = await direct(runEdgeKapae)({ edgeId: edge, raised: true,  epochCid: EPOCH });
+    const edge = "c".repeat(64);
+    const up   = await direct(runEdgeKapae)({ edgeId: edge, raised: true });
+    expect(up.boardUrl).toBe(fleetEdgeBoardDocUrl(up.signers[0]!));
     // `parents: []` writes the lower from the EMPTY frontier — the act a partitioned hand that never saw the raise writes.
-    const race = await direct(runEdgeKapae)({ edgeId: edge, raised: false, epochCid: EPOCH, parents: [] });
+    const race = await direct(runEdgeKapae)({ edgeId: edge, raised: false, parents: [] });
     expect(up.shadowStands).toBe(true);
     expect(race.parents).toEqual([]);
     expect(race.shadowStands).toBe(true);
@@ -85,48 +86,49 @@ describe("lares edge kapae — the verb reports what a standing reader will read
   });
 
   it("CONTROL — a lower that cites the raise lifts, and a later lower citing BOTH contested heads settles", async () => {
-    const edge = "dyad-".padEnd(20, "d");
-    const up   = await direct(runEdgeKapae)({ edgeId: edge, raised: true,  epochCid: EPOCH });
-    const down = await direct(runEdgeKapae)({ edgeId: edge, raised: false, epochCid: EPOCH });
+    const edge = "d".repeat(64);
+    const up   = await direct(runEdgeKapae)({ edgeId: edge, raised: true });
+    expect(up.boardUrl).toBe(fleetEdgeBoardDocUrl(up.signers[0]!));
+    const down = await direct(runEdgeKapae)({ edgeId: edge, raised: false });
     expect(down.parents).toEqual([up.actCid]);
     expect(down.shadowStands).toBe(false);
 
-    const edge2 = "dyad-".padEnd(20, "e");
-    const up2   = await direct(runEdgeKapae)({ edgeId: edge2, raised: true,  epochCid: EPOCH });
-    const race2 = await direct(runEdgeKapae)({ edgeId: edge2, raised: false, epochCid: EPOCH, parents: [] });
-    const settle = await direct(runEdgeKapae)({ edgeId: edge2, raised: false, epochCid: EPOCH });   // the default cites every head
+    const edge2 = "e".repeat(64);
+    const up2   = await direct(runEdgeKapae)({ edgeId: edge2, raised: true });
+    const race2 = await direct(runEdgeKapae)({ edgeId: edge2, raised: false, parents: [] });
+    const settle = await direct(runEdgeKapae)({ edgeId: edge2, raised: false });   // the default cites every head
     expect(settle.parents).toEqual([up2.actCid, race2.actCid].sort());
     expect(settle.shadowStands).toBe(false);
   });
 });
 
 describe("lares cabal join — the crossing reads the shadow board", () => {
-  it("★ a vouch its voucher set aside no longer carries the crossing, and the result names what stood aside ★", async () => {
+  it("★ a withdrawn vouch is absent from the crossing, and the result names what stood aside ★", async () => {
     const joiner = await foreignNym(31);
     const vouch  = await direct(runCabalVouch)({ joiner, realm: REALM });
     expect((await direct(runCabalJoin)({ realm: REALM, applicant: joiner })).admitted).toBe(true);   // CONTROL: no shadow → admitted
 
-    await direct(runEdgeKapae)({ edgeId: edgeOf(vouch), raised: true, epochCid: EPOCH });
+    await direct(runEdgeKapae)({ edgeId: edgeOf(vouch), realm: REALM, raised: true });
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
     expect(v.admitted).toBe(false);
     expect(v.refusal).toBe("set-aside");
-    expect((v as { setAside?: readonly { edgeId: string; verdict: string }[] }).setAside)
-      .toEqual([expect.objectContaining({ edgeId: edgeOf(vouch), verdict: "held", joinerIdentityHex: joiner })]);
+    expect((v as { setAside?: readonly { edgeId: string; verdict: string; over: string }[] }).setAside)
+      .toEqual([expect.objectContaining({ edgeId: edgeOf(vouch), verdict: "held", joinerIdentityHex: joiner, over: "vouch" })]);
   });
 
   it("★ a lower RACING the raise leaves the vouch aside; a lower that FOLLOWS it returns the crossing ★", async () => {
     const joiner = await foreignNym(32);
     const vouch  = await direct(runCabalVouch)({ joiner, realm: REALM });
     const edge   = edgeOf(vouch);
-    await direct(runEdgeKapae)({ edgeId: edge, raised: true,  epochCid: EPOCH });
-    await direct(runEdgeKapae)({ edgeId: edge, raised: false, epochCid: EPOCH, parents: [] });
+    await direct(runEdgeKapae)({ edgeId: edge, raised: true,  realm: REALM });
+    await direct(runEdgeKapae)({ edgeId: edge, raised: false, realm: REALM, parents: [] });
 
     const contested = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
     expect(contested.admitted).toBe(false);
     expect((contested as { setAside?: readonly { verdict: string }[] }).setAside?.[0]?.verdict).toBe("unsettled");
 
     // The deliberate hand: a lower citing the whole frontier. Order by causality still lifts.
-    await direct(runEdgeKapae)({ edgeId: edge, raised: false, epochCid: EPOCH });
+    await direct(runEdgeKapae)({ edgeId: edge, raised: false, realm: REALM });
     const lifted = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
     expect(lifted.admitted).toBe(true);
     expect((lifted as { setAside?: readonly unknown[] }).setAside).toEqual([]);
@@ -139,12 +141,12 @@ describe("lares cabal join — the crossing reads the shadow board", () => {
 
     // A stranger, and this vessel's OTHER root, each raise over a vouch root 0 made: neither holds it.
     await writeForeignAct(edge, true, [], foreignSeed(41));
-    await direct(runEdgeKapae)({ edgeId: edge, raised: true, epochCid: EPOCH, handleIndex: 1 });
+    await expect(direct(runEdgeKapae)({ edgeId: edge, raised: true, realm: REALM, handleIndex: 1 })).rejects.toThrow();
     expect((await direct(runCabalJoin)({ realm: REALM, applicant: joiner })).admitted).toBe(true);
 
-    const up = await direct(runEdgeKapae)({ edgeId: edge, raised: true, epochCid: EPOCH, handleIndex: 0 });
+    const up = await direct(runEdgeKapae)({ edgeId: edge, raised: true, realm: REALM, handleIndex: 0 });
     await writeForeignAct(edge, false, [up.actCid], foreignSeed(41));                    // a forged causal lower
-    await direct(runEdgeKapae)({ edgeId: edge, raised: false, epochCid: EPOCH, handleIndex: 1 });   // another root's lower
+    await expect(direct(runEdgeKapae)({ edgeId: edge, raised: false, realm: REALM, handleIndex: 1 })).rejects.toThrow();
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner });
     expect(v.admitted).toBe(false);
     expect((v as { setAside?: readonly { verdict: string }[] }).setAside?.[0]?.verdict).toBe("held");
@@ -156,9 +158,10 @@ describe("lares cabal join — the crossing reads the shadow board", () => {
     const seed = await loadPersonaGroupRootSeed(0);
     const invite = await signCabalInvite(
       { realmDocIdHex: REALM, joinerIdentityHex: joiner, voucherDid, boundEpoch: "0" }, (b) => ed.signAsync(b, seed).then(hex));
+    await direct(runCabalVouch)({ joiner, realm: REALM });
     expect((await direct(runCabalJoin)({ realm: REALM, applicant: joiner, invite })).admitted).toBe(true);   // CONTROL
 
-    await direct(runEdgeKapae)({ edgeId: vouchEdgeId(invite), raised: true, epochCid: EPOCH });
+    await direct(runEdgeKapae)({ edgeId: vouchEdgeId(invite), raised: true, realm: REALM });
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, invite });
     expect(v.admitted).toBe(false);
     expect(v.refusal).toBe("set-aside");
@@ -205,11 +208,11 @@ describe("lares cabal join — the crossing reads the shadow board", () => {
     expect((await direct(runCabalJoin)({ realm: REALM, applicant: face0 })).admitted).toBe(true);   // CONTROL
     expect((await direct(runCabalJoin)({ realm: REALM, applicant: face1 })).admitted).toBe(true);
 
-    await direct(runEdgeKapae)({ edgeId: edgeOf(v01), raised: true, epochCid: EPOCH, handleIndex: 0 });   // 0 removes 1
-    await direct(runEdgeKapae)({ edgeId: edgeOf(v10), raised: true, epochCid: EPOCH, handleIndex: 1 });   // 1 removes 0
-    // Each tries to lift the shadow over ITSELF — the edge belongs to the other hand.
-    await direct(runEdgeKapae)({ edgeId: edgeOf(v01), raised: false, epochCid: EPOCH, handleIndex: 1 });
-    await direct(runEdgeKapae)({ edgeId: edgeOf(v10), raised: false, epochCid: EPOCH, handleIndex: 0 });
+    await direct(runEdgeKapae)({ edgeId: edgeOf(v01), raised: true, realm: REALM, handleIndex: 0 });   // 0 removes 1
+    await direct(runEdgeKapae)({ edgeId: edgeOf(v10), raised: true, realm: REALM, handleIndex: 1 });   // 1 removes 0
+    // Each tries to lift the shadow over ITSELF. The edge belongs to the other hand, so the door refuses.
+    await expect(direct(runEdgeKapae)({ edgeId: edgeOf(v01), raised: false, realm: REALM, handleIndex: 1 })).rejects.toThrow(/another voucher/);
+    await expect(direct(runEdgeKapae)({ edgeId: edgeOf(v10), raised: false, realm: REALM, handleIndex: 0 })).rejects.toThrow(/another voucher/);
 
     const a = await direct(runCabalJoin)({ realm: REALM, applicant: face0 });
     const b = await direct(runCabalJoin)({ realm: REALM, applicant: face1 });
@@ -218,6 +221,7 @@ describe("lares cabal join — the crossing reads the shadow board", () => {
       expect(v.refusal).toBe("set-aside");
       // Both shadows surface at either crossing: no authority stands, and the reader sees the whole fork.
       expect(v.setAside.map((s) => s.edgeId).sort()).toEqual([edgeOf(v01), edgeOf(v10)].sort());
+      expect(v.setAside.every((s) => s.over === "vouch")).toBe(true);
       // Each self-lift came from a hand that holds no authority over that edge, so each shadow reads plainly held.
       expect(v.setAside.map((s) => s.verdict)).toEqual(["held", "held"]);
     }

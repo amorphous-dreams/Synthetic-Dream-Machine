@@ -74,6 +74,9 @@ export function makeRealmPlane(opts: {
   readonly charter?: RealmCharterConsult;
   /** The realm's pace in rolls (`realmPace`) — the lease a registration's `expiry` reads against. */
   readonly pace?: () => number | null;
+  /** The member shadow for THIS realm (kapae#/reach): a member set aside reads none of the realm's documents.
+   *  The standing vessel supplies it from its edge-shadow ring, bound to the realm id it hands in. */
+  readonly memberAside?: (realmId: string) => (peerId: string) => boolean;
   /**
    * Fired after EVERY fold of the standing registrations — the stand, a verb this vessel ran, and (the one
    * that matters) a change ANOTHER member wrote onto the shared realm doc. The fold decides which documents
@@ -118,6 +121,7 @@ export function makeRealmPlane(opts: {
     realmGate = new RealmBagGate(base, membership, realmUrl, {
       ...(opts.charter ? { charter: opts.charter } : {}),
       ...(opts.pace    ? { pace:    opts.pace }    : {}),
+      ...(opts.memberAside ? { memberAside: opts.memberAside(id) } : {}),
     });
     onChange = () => { void refold(); };
     realmHandle.on("change", onChange);

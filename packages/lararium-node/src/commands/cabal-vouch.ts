@@ -21,14 +21,14 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites, vouchEdgeId,
-  vouchBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
+  realmVouchBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
   type CabalInvite,
 } from "@lararium/mesh";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
-import { nodeNexusIsland } from "../nexus-standing.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
+import { noteVesselRealm } from "../edge-board.js";
 import { verifyEd25519 } from "@lararium/mesh";
 
 /** A nym reads valid only at the exact ed25519 verifying-key shape — a stray value never becomes an edge. */
@@ -99,7 +99,7 @@ async function resolveBoundEpoch(realm: string, repo: Repo): Promise<number> {
 }
 
 /**
- * Mint one vouch and land it on the Nexus's vouch board.
+ * Mint one vouch and land it on the realm's own vouch board.
  *
  * Takes no `now`: a causal island holds no global now, and nothing here ever decided on the wall clock —
  * the fence that actually gates is `boundEpoch`, the realm's own lease epoch (evergreen sweep, G3).
@@ -147,9 +147,9 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
     ed25519SignerFromSeed(seed),
   );
 
-  const nexusPubkey = await loadVesselVerifyingKey();
-  const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
-  const boardUrl    = vouchBoardDocUrl(boardIsland);
+  // THE BOARD KEYS ON THE REALM, never on a Nexus: a vouch names its voucher in the clear, so its record
+  // stays among the parties to the realm it crosses (kapae#/four-edges).
+  const boardUrl    = realmVouchBoardDocUrl(realm);
   const repo        = opts.repo;
   const verify      = (bytes: Uint8Array, sigHex: string, did: string) =>
     Promise.resolve(verifyEd25519(sigHex, bytes, did));
@@ -160,6 +160,9 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
     const reMinted = before.some((i) => i.voucherDid === voucherDid && i.joinerIdentityHex === joiner);
 
     handle.change((d) => writeVouch(d, invite));
+    // This vessel reads this realm's boards from here on: its gates consult every shadow raised there.
+    const vesselKey = await loadVesselVerifyingKey().catch(() => "");
+    if (vesselKey) await noteVesselRealm(repo, vesselKey, realm);
     await repo.flush();
 
     // NEVER leave a vouch the fold would drop. Read it BACK through the verifying read — the only read that

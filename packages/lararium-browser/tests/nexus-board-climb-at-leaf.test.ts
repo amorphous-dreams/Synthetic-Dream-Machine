@@ -45,14 +45,12 @@ import * as ed from "@noble/ed25519";
 import {
   climbNexusBoards, carryPersonaKelUpTheGradient,
   nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt,
-  materializeSharedLarDoc, mutableLarRecord,
-  kapaeAntigenDocUrl, edgeKapaeBoardDocUrl, crossroadsDocUrl,
-  personaKelBoardDocUrl, whoBoardDocUrl, carriageDocUrl, vouchBoardDocUrl,
+  materializeSharedLarDoc,
+  kapaeAntigenDocUrl, crossroadsDocUrl,
+  personaKelBoardDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
-  writeEdgeKapae, signEdgeKapae, shadowSetFromBoard, type EpochOrder,
   writePersonaKelEvent, personaKelChainForPrefix, mintPersonaInception,
   publicRealmBooksFromDoc,
-  HANDLE_ANNOUNCE_PREFIX, CARRIAGE_ENTRY_PREFIX, VOUCH_ENTRY_PREFIX,
   hex,
 } from "@lararium/mesh";
 // The boot's own source — the fault-pin's only reachable witness. `?raw` because this suite runs in a
@@ -62,14 +60,6 @@ import bootSrc from "../src/open-browser-vessel.ts?raw";
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const signer = (s: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, s).then(hex);
 const pubOf  = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
-const verify = (b: Uint8Array, sig: string, did: string) =>
-  ed.verifyAsync(hexToBytesLocal(sig), b, hexToBytesLocal(did)).catch(() => false);
-function hexToBytesLocal(s: string): Uint8Array {
-  const out = new Uint8Array(s.length / 2);
-  for (let i = 0; i < out.length; i++) out[i] = Number.parseInt(s.slice(i * 2, i * 2 + 2), 16);
-  return out;
-}
-
 const repo = () => new Repo({ sharePolicy: async () => true });
 const board = (r: Repo, url: AutomergeUrl) => materializeSharedLarDoc(r, url, "test:board");
 async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
@@ -78,7 +68,6 @@ async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
 
 /** The epoch a leaf's acts rooted on while it stood alone — ranked BELOW anything the island knows. */
 const PRE_EPOCH = `epoch0-${"11".repeat(32)}`;
-const ORDER: EpochOrder = (e) => (e === PRE_EPOCH ? 0 : null);
 
 /**
  * THE LEAF BOOT'S OWN COMPOSITION — `open-browser-vessel.ts`'s `nexusStandsAt`, verbatim in shape.
@@ -196,37 +185,6 @@ describe("★ RED — the LEAF BRICKS: the Binding Gate's own read goes blank wh
     expect(carried![0]!.prefix).toBe(prefix);
   }, 30_000);
 
-  test("RED — a leaf's SHADOW board re-admits a relationship a hand set aside, until the climb carries it", async () => {
-    const r      = repo();
-    const own    = await pubOf(seedOf(112));
-    const anchor = await pubOf(seedOf(212));
-    const auth   = await pubOf(seedOf(21));
-
-    // A hand sets one relationship aside while the leaf stands alone.
-    const raise = await signEdgeKapae(
-      { edgeId: "edge-leaf-set-aside", raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
-    (await board(r, edgeKapaeBoardDocUrl(own))).change((d) => writeEdgeKapae(d, raise));
-
-    const at     = leafStandsAt(own, anchor);
-    const island = nexusScopeOrThrow(nexusIdentity(at));
-
-    // THE HARM: on the island the leaf now reads, the shadow reads LOWERED — the resurrection the
-    // residency model names as anti-pattern #3. And nothing heals it: the shadow board stands OUTSIDE
-    // `DeterministicFederationGate`'s list, so no peer replica ever re-supplies it.
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify, ORDER))
-      .toEqual(new Set());
-
-    const climb   = await leafClimb(r, at);
-    const shadows = climb.acts.find((a) => a.board === "edge-kapae")!;
-    expect(shadows.act).toBe("carry");
-    expect(shadows.landed).toBe(1);
-    expect(shadows.from).toEqual([own]);
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify, ORDER))
-      .toEqual(new Set(["edge-leaf-set-aside"]));
-  }, 30_000);
-
   test("RED — the leaf's antigen reaches the island it dials, verbatim and unjudged", async () => {
     const r      = repo();
     const own    = await pubOf(seedOf(113));
@@ -248,33 +206,6 @@ describe("★ RED — the LEAF BRICKS: the Binding Gate's own read goes blank wh
     const carried = antigenEntriesFromBoard((await board(r, kapaeAntigenDocUrl(island))).doc());
     expect(carried).toHaveLength(1);
     expect(carried[0]!.nym).toBe(victim);
-  }, 30_000);
-
-  test("★ RED — a leaf carrying an INVITE climbs TWO rungs at once, unioning both boards below", async () => {
-    const r        = repo();
-    const own      = await pubOf(seedOf(114));
-    const anchor   = await pubOf(seedOf(214));
-    const explicit = await pubOf(seedOf(314));
-    const auth     = await pubOf(seedOf(21));
-
-    // One act on each island below — the accretive SET unions, it does not take the first match.
-    for (const [island, edgeId] of [[own, "edge-from-own"], [anchor, "edge-from-anchor"]] as const) {
-      const raise = await signEdgeKapae(
-        { edgeId, raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
-      (await board(r, edgeKapaeBoardDocUrl(island))).change((d) => writeEdgeKapae(d, raise));
-    }
-
-    const at     = leafStandsAt(own, anchor, explicit);
-    const island = nexusScopeOrThrow(nexusIdentity(at));
-    expect(island).toBe(explicit);
-
-    const climb   = await leafClimb(r, at);
-    const shadows = climb.acts.find((a) => a.board === "edge-kapae")!;
-    expect(shadows.landed, "an accretive set UNIONS every island below").toBe(2);
-    expect(shadows.from, "both rungs read, high to low").toEqual([anchor, own]);
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify, ORDER))
-      .toEqual(new Set(["edge-from-own", "edge-from-anchor"]));
   }, 30_000);
 
   test("the crossroads RE-ANNOUNCE stands INERT at a leaf — it holds no charter, so no realm", async () => {
@@ -300,15 +231,8 @@ describe("the gradient law holds AT THE LEAF", () => {
   test("CONTROL — a TORN anchor re-keys nothing: the leaf HALTS rather than falling to its own board", async () => {
     const r    = repo();
     const own  = await pubOf(seedOf(121));
-    const auth = await pubOf(seedOf(21));
-
-    // A shadow and a chain stand on the leaf's own board — the content a silent descent would abandon.
-    const raise = await signEdgeKapae(
-      { edgeId: "edge-untouched", raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
-    (await board(r, edgeKapaeBoardDocUrl(own))).change((d) => writeEdgeKapae(d, raise));
     const inception = mintPersonaInception(await pubOf(seedOf(52)), "cd".repeat(32));
     (await board(r, personaKelBoardDocUrl(own))).change((d) => writePersonaKelEvent(d, inception));
-    const beforeShadows = await keysOn(r, edgeKapaeBoardDocUrl(own));
     const beforeKel     = await keysOn(r, personaKelBoardDocUrl(own));
 
     // An admission RECORD stands at this leaf and the anchor key it names reads as no key at all.
@@ -325,11 +249,7 @@ describe("the gradient law holds AT THE LEAF", () => {
     expect(nexusIslandsBelow(at), "a torn standing names no island, so it offers no source").toEqual([]);
 
     // Nothing moved, and the leaf's own boards stand exactly as they stood.
-    expect(await keysOn(r, edgeKapaeBoardDocUrl(own))).toEqual(beforeShadows);
     expect(await keysOn(r, personaKelBoardDocUrl(own))).toEqual(beforeKel);
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(own))).doc(), () => auth, verify, ORDER))
-      .toEqual(new Set(["edge-untouched"]));
   }, 30_000);
 
   test("CONTROL — a leaf that never climbs writes nothing, on either carry", async () => {
@@ -344,35 +264,30 @@ describe("the gradient law holds AT THE LEAF", () => {
     expect(climb.landed).toBe(0);
     for (const act of climb.acts) expect(act.from).toEqual([]);
     expect(carry).toEqual({ carried: 0, from: null });
-    for (const url of [kapaeAntigenDocUrl(own), edgeKapaeBoardDocUrl(own),
-                       crossroadsDocUrl(own), personaKelBoardDocUrl(own)]) {
+    for (const url of [kapaeAntigenDocUrl(own), crossroadsDocUrl(own), personaKelBoardDocUrl(own)]) {
       expect(await keysOn(r, url)).toEqual([]);
     }
   }, 30_000);
 
-  test("CONTROL — three boots, ONE effect (both carries run every boot)", async () => {
+  test("CONTROL — three boots, ONE effect (the board and KEL carries run every boot)", async () => {
     const r      = repo();
     const own    = await pubOf(seedOf(123));
     const anchor = await pubOf(seedOf(223));
 
-    const raise = await signEdgeKapae(
-      { edgeId: "edge-thrice", raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
     const entry = await signAntigenEntry(
       { nym: "ea".repeat(32), action: "kapae", version: 1, sealEpochCid: PRE_EPOCH },
       [{ signer: await pubOf(seedOf(1)), sign: signer(seedOf(1)) }]);
     const inception = mintPersonaInception(await pubOf(seedOf(54)), "12".repeat(32));
-    (await board(r, edgeKapaeBoardDocUrl(own))).change((d) => writeEdgeKapae(d, raise));
     (await board(r, kapaeAntigenDocUrl(own))).change((d) => writeAntigenEntry(d, entry));
     (await board(r, personaKelBoardDocUrl(own))).change((d) => writePersonaKelEvent(d, inception));
 
     const at     = leafStandsAt(own, anchor);
     const island = nexusScopeOrThrow(nexusIdentity(at));
 
-    expect((await leafClimb(r, at)).landed, "one entry per carried board").toBe(2);
+    expect((await leafClimb(r, at)).landed, "the antigen entry carries").toBe(1);
     expect((await leafKelCarry(r, at, inception.prefix)).carried).toBe(1);
     const after = {
       antigen: await keysOn(r, kapaeAntigenDocUrl(island)),
-      shadows: await keysOn(r, edgeKapaeBoardDocUrl(island)),
       kel:     await keysOn(r, personaKelBoardDocUrl(island)),
     };
     for (const pass of [2, 3]) {
@@ -380,72 +295,15 @@ describe("the gradient law holds AT THE LEAF", () => {
       expect((await leafKelCarry(r, at, inception.prefix)).carried, `boot ${pass}: the KEL carry too`).toBe(0);
     }
     expect(await keysOn(r, kapaeAntigenDocUrl(island))).toEqual(after.antigen);
-    expect(await keysOn(r, edgeKapaeBoardDocUrl(island))).toEqual(after.shadows);
     expect(await keysOn(r, personaKelBoardDocUrl(island))).toEqual(after.kel);
   }, 45_000);
 
-  test("CONTROL — the island BELOW keeps its content: a carry copies", async () => {
-    const r      = repo();
-    const own    = await pubOf(seedOf(124));
-    const anchor = await pubOf(seedOf(224));
-    const auth   = await pubOf(seedOf(21));
-
-    const raise = await signEdgeKapae(
-      { edgeId: "edge-copied", raised: true, version: 1, epochCid: PRE_EPOCH }, signer(seedOf(21)));
-    (await board(r, edgeKapaeBoardDocUrl(own))).change((d) => writeEdgeKapae(d, raise));
-    const inception = mintPersonaInception(await pubOf(seedOf(55)), "34".repeat(32));
-    (await board(r, personaKelBoardDocUrl(own))).change((d) => writePersonaKelEvent(d, inception));
-    const beforeShadows = await keysOn(r, edgeKapaeBoardDocUrl(own));
-    const beforeKel     = await keysOn(r, personaKelBoardDocUrl(own));
-
-    const at = leafStandsAt(own, anchor);
-    await leafClimb(r, at);
-    await leafKelCarry(r, at, inception.prefix);
-
-    expect(await keysOn(r, edgeKapaeBoardDocUrl(own))).toEqual(beforeShadows);
-    expect(await keysOn(r, personaKelBoardDocUrl(own))).toEqual(beforeKel);
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(own))).doc(), () => auth, verify, ORDER))
-      .toEqual(new Set(["edge-copied"]));
-  }, 30_000);
 });
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════════
-// ④ ★ THE THREE REFUSALS SURVIVE THE LEAF WIRING — a leaf is exactly where WHO looks harmless
+// ④ THE OTHER BOARDS STAY OUT OF THE LEAF CLIMB
 // ════════════════════════════════════════════════════════════════════════════════════════════════════
-describe("★ WHO · carriage · vouch stay where they are, at the LEAF", () => {
-  test("CONTROL — a leaf boot moves NOTHING onto the WHO, carriage or vouch boards it dials", async () => {
-    const r      = repo();
-    const own    = await pubOf(seedOf(131));
-    const anchor = await pubOf(seedOf(231));
-
-    // Content stands on all three boards of the island below, each under its own live prefix. A card
-    // announced at a PRIVATE NEXUS OF ONE reached nobody; re-landing it on the anchor would DISCLOSE a
-    // face to strangers the operator never published to — the sharpest of the three at a leaf, because a
-    // leaf's own island IS a private nexus of one by default.
-    const seeded: Array<[AutomergeUrl, string]> = [
-      [whoBoardDocUrl(own),   `${HANDLE_ANNOUNCE_PREFIX}${await pubOf(seedOf(41))}`],
-      [carriageDocUrl(own),   `${CARRIAGE_ENTRY_PREFIX}${await pubOf(seedOf(42))}/admit/1`],
-      [vouchBoardDocUrl(own), `${VOUCH_ENTRY_PREFIX}${PRE_EPOCH}/voucher/joiner`],
-    ];
-    for (const [url, key] of seeded) {
-      (await board(r, url)).change((d) => { d.tiddlers[key] = mutableLarRecord(key, { text: "{}" }, "test"); });
-    }
-
-    const at     = leafStandsAt(own, anchor);
-    const island = nexusScopeOrThrow(nexusIdentity(at));
-    await leafClimb(r, at);
-
-    expect(await keysOn(r, whoBoardDocUrl(island)),
-      "a card announced at a private nexus of one must not be DISCLOSED by a boot side-effect").toEqual([]);
-    expect(await keysOn(r, carriageDocUrl(island)),
-      "an allow wants a FRESH CONSENT — the operator re-contracts by an act at the new epoch").toEqual([]);
-    expect(await keysOn(r, vouchBoardDocUrl(island)),
-      "the vouch board is unfederated; a carried PARTIAL replica would read as the whole lineage").toEqual([]);
-    // A refusal is not a deletion — the island below keeps what it held.
-    for (const [url, key] of seeded) expect(await keysOn(r, url)).toEqual([key]);
-  }, 30_000);
-
+describe("the leaf climb stays scoped to antigen and crossroads", () => {
   // ══════════════════════════════════════════════════════════════════════════════════════════════════
   // ★ THE FAULT-PIN — it bites a WEAKENING, not only an absence
   // ══════════════════════════════════════════════════════════════════════════════════════════════════
@@ -488,15 +346,15 @@ describe("★ WHO · carriage · vouch stay where they are, at the LEAF", () => 
 
     // ④ THE THREE REFUSALS. A hand passing one more board here would compile a COMPILED ABOUT-SET at a
     //    new address — `nexus-board-climb`'s header carries the reason for each.
-    for (const forbidden of ["whoBoardDocUrl", "carriageDocUrl", "vouchBoardDocUrl"]) {
+    for (const forbidden of ["whoBoardDocUrl", "carriageDocUrl", "realmVouchBoardDocUrl"]) {
       for (const [name, call] of [["climb", climbCall], ["KEL carry", kelCall]] as const) {
         expect(call, `the leaf's ${name} reached for ${forbidden}`).not.toContain(forbidden);
       }
     }
 
     // ⑤ NESTING + ORDER. The board climb rides at the boot function's own depth (2 spaces) so a FACELESS
-    //    leaf still carries its shadows and its antigen — "a faceless vessel holds shadows and an antigen
-    //    too". The KEL carry rides inside `openDaemon`, which is the only place the pinned prefix is known.
+    //    leaf still carries its antigen. The KEL carry rides inside `openDaemon`, which is the only place
+    //    the pinned prefix is known.
     expect(bootSrc, "a climb nested under a face guard would stop a FACELESS leaf from carrying")
       .toMatch(/\n {2}await climbNexusBoards\(\{/);
     expect(bootSrc, "the KEL carry rides where the pinned prefix is read")

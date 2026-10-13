@@ -42,12 +42,21 @@ describe("verifyNymSignature reads the strict door", () => {
 describe("the commands' verifiers hand the door their hex unread", () => {
   // Each command builds one verifier closure and injects it into the mesh fold. The closure passes the hex
   // strings straight to the door, which reads lower-case hex alone and never throws.
-  const COMMANDS = ["cabal-join.ts", "cabal-vouch.ts", "edge-kapae-cmd.ts"];
+  const COMMANDS = ["cabal-join.ts", "cabal-vouch.ts"];
   test.each(COMMANDS)("%s", (file) => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "commands", file), "utf8");
     expect(source).toMatch(/Promise\.resolve\(verifyEd25519\(sigHex, bytes, \w+\)\)/);
     expect(source).toMatch(/import \{[^}]*\bverifyEd25519\b[^}]*\} from "@lararium\/mesh";/);   // the door, by name
     expect(source).not.toMatch(/@noble\//);                                                     // and no curve library at all
+  });
+  test("the edge doors hold no verifier of their own: the mesh fold reads each signature through the door", () => {
+    for (const file of ["edge-kapae-cmd.ts", "edge-roll-anchor.ts"]) {
+      const source = readFileSync(join(import.meta.dirname, "..", "src", "commands", file), "utf8");
+      expect(source, file).not.toMatch(/@noble\//);
+      expect(source, file).not.toMatch(/\bverify\w*\s*[:=]\s*\(/);     // no verifier closure built here
+    }
+    const fold = readFileSync(join(import.meta.dirname, "..", "..", "lararium-mesh", "src", "edge-kapae.ts"), "utf8");
+    expect(fold).toMatch(/import \{ verifyEd25519 \} from "\.\/ed25519-door\.js";/);
   });
   test("the door they call refuses the torsion hand", async () => {
     const hand = torsionHand(3);

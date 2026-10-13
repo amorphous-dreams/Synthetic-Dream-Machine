@@ -132,7 +132,8 @@ export * from "./leaf-peer-proof.js";
 export * from "./sibling-channel.js";
 export * from "./persona-group-secret.js";
 export * from "./persona-kel-drop.js";
-export type { FederationGate, SiblingShare } from "./federation-gate.js";
+export type { FederationGate, SiblingShare, ShadowConsult } from "./federation-gate.js";
+export { presenterStandsAside } from "./federation-gate.js";
 export { DeterministicFederationGate, federationShareDecision, identityShareDecision, siblingShareDecision, shareConfigOf } from "./federation-gate.js";
 export type { SharePolicyFn, ShareConfigOf, ShareVerdictRecord, ShareVerdictSink } from "./federation-gate.js";
 export type { IdentityRing } from "./federation-gate.js";
@@ -264,6 +265,8 @@ export * from "./independence-reading.js";
 export * from "./delegation-edge.js";
 export * from "./dyad.js";
 export * from "./edge-kapae.js";
+export * from "./edge-ledger.js";
+export * from "./realm-edges.js";
 export * from "./re-anchoring.js";
 export * from "./lineage-rank.js";
 export * from "./admission-price.js";
@@ -384,9 +387,9 @@ export * from "./crossroads-cry.js";
 
 export { nexusIdentity, nexusScopeOrThrow, nexusScopeMoved, nexusIslandsBelow, admittedJoineeIsland,
          type NexusIdentity, type NexusIdentityAt } from "./nexus-identity.js";
-// The boards a CLIMB moves. THREE of the seven are deliberately absent from this surface — WHO, carriage
-// and vouch — and `nexus-board-climb`'s header carries the reason for each refusal.
-export { climbNexusBoards, carryAntigenUpTheGradient, carryEdgeShadowsUpTheGradient,
+// The boards a CLIMB moves. WHO and carriage stay deliberately absent from this surface, and
+// `nexus-board-climb`'s header carries the reason for each refusal.
+export { climbNexusBoards, carryAntigenUpTheGradient,
          reAnnounceRealmBooksAtIsland,
          type NexusBoardClimb, type BoardClimbResult } from "./nexus-board-climb.js";
 // The FOURTH board the climb moves, held in its own module because it REFUSES rather than degrades — and

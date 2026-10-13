@@ -7,11 +7,12 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import { ownedStore } from "../src/owned-store.js";
-import { larDataDir } from "../src/vessel-paths.js";
+import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 
+/** A door that reads the charter takes `sealHome`; a suite that names none gets this root's own, as the CLI supplies it. */
 export function direct<O extends { readonly repo: Repo }, R, X extends unknown[]>(
   run: (opts: O, ...rest: X) => Promise<R>,
-): (opts: Omit<O, "repo"> & { readonly storageDir?: string }, ...rest: X) => Promise<R> {
+): (opts: Omit<O, "repo" | "sealHome"> & { readonly storageDir?: string; readonly sealHome?: string }, ...rest: X) => Promise<R> {
   return (opts, ...rest) =>
-    ownedStore(opts.storageDir ?? larDataDir(), (repo) => run({ ...opts, repo } as unknown as O, ...rest));
+    ownedStore(opts.storageDir ?? larDataDir(), (repo) => run({ sealHome: larSealHome(), ...opts, repo } as unknown as O, ...rest));
 }

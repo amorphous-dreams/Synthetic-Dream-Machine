@@ -1,7 +1,7 @@
 /**
  * vouch-board — the DOC face of the JOIN axis: the issued `CabalInvite`s a realm has minted, from which the
- * seed-rooted lineage folds. Sibling to `carriage-board` (who carries) and `antigen-board` (who stands
- * banned) under one nexus-pubkey; this board answers WHO VOUCHED FOR WHOM.
+ * seed-rooted lineage folds. The board keys on the realm's own id (`realmVouchBoardDocUrl`) and crosses to
+ * that realm's members alone; it answers WHO VOUCHED FOR WHOM inside one realm.
  *
  * A vouch RIDES a board precisely because it carries attribution — a cabal-invite names its `voucherDid` in
  * the clear, and an invite nobody can attribute holds nobody to anything. The hosting invite draws the
@@ -57,11 +57,14 @@ import { storedLarRecord } from "./stored-record.js";
  * aside, so re-minting the same edge cannot resurrect the standing it once carried.
  */
 export function vouchEdgeId(invite: CabalInvite): string {
+  // ONE KEY, ONE SPELLING. Each end reads lower-case with no `0x`, so an invite re-minted under another spelling
+  // of the same keys names the SAME edge and meets the shadow that stands over it.
+  const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
   return sha256HexSync(canonicalJson({
     kind: VOUCH_EDGE_DOMAIN,
-    realmDocIdHex:     invite.realmDocIdHex,
-    voucherDid:        invite.voucherDid,
-    joinerIdentityHex: invite.joinerIdentityHex,
+    realmDocIdHex:     bare(invite.realmDocIdHex),
+    voucherDid:        bare(invite.voucherDid),
+    joinerIdentityHex: bare(invite.joinerIdentityHex),
   }));
 }
 

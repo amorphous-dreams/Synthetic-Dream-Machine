@@ -509,29 +509,35 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   edge: {
-    usage: "usage: lares edge <kapae | un-kapae> <edge-id> --epoch-cid <cid> [--as <root-index>]",
+    usage: "usage: lares edge <kapae | un-kapae> (<edge-id> | --member <key> | --device <key>) [--realm <realm-id>] [--quorum] [--as <root-index>]",
     synopsis:
       "Set one RELATIONSHIP aside, or take the marker back down — the kāpae raised over an EDGE rather than " +
       "over a party. Scoped under `edge` to mirror `nexus kapae` / `nexus un_kapae` and stay apart from " +
-      "them: that pair shadows a PRESENTER under a kahu quorum, this pair shadows one RELATIONSHIP under " +
-      "whichever key holds it. Setting a relation aside says NOTHING about either end — the vessel keeps " +
-      "standing, the face keeps standing, only that relation stops counting. RAISING WINS A TIE: a lower " +
-      "lifts the shadow only when it causally follows every raise, so a lower racing a raise leaves the " +
-      "shadow up and shows a fork for people to settle, and an eviction never quietly reverses when a " +
-      "partition heals. Each act cites the heads this vessel reads, so running the verb again settles a " +
-      "fork. The write asserts no authority: whether the signing root holds the edge gets decided by " +
-      "whichever reader consults the shadow. `lares cabal join` consults it for a vouch (the edge id " +
-      "`lares cabal vouch` prints), under the voucher's key.",
+      "them: that pair shadows a PRESENTER at a Nexus, this pair shadows one RELATIONSHIP. TWO HANDS ACT. The " +
+      "HOLDER signs with the one key the edge names: a voucher over their own vouch (`--realm`), or a fleet " +
+      "root over a device of its fleet (`--device`, on the fleet's own board). The QUORUM (`--quorum`) signs " +
+      "with the seats of this vessel's charter, at the charter's head epoch: it strikes a vouch, or sets a " +
+      "MEMBER's whole relation to a realm aside (`--member`), which holds against a fresh vouch. A lower " +
+      "lifts only its own hand's raises. RAISING WINS A TIE: a lower lifts the shadow only when it causally " +
+      "follows every raise, so a lower racing a raise leaves the shadow up and shows a fork for people to " +
+      "settle. Each act cites the heads this vessel counts, at whatever epoch they root on, so a lift after " +
+      "a seal roll cites the raise it lifts, and running the verb again settles a fork. The write asserts no " +
+      "authority: whether a hand holds the edge gets decided by whichever reader consults the shadow. A lift " +
+      "restores standing alone; a fresh crossing seats fresh keys.",
     examples: [
-      "lares edge kapae <edge-id> --epoch-cid <cid>              # shadow that relation",
-      "lares edge un-kapae <edge-id> --epoch-cid <cid>           # re-admit it — a deliberate signed act",
-      "lares edge kapae <edge-id> --epoch-cid <cid> --as 1       # sign with a named persona root",
+      "lares edge kapae <vouch-edge-id> --realm <realm-id>               # a voucher withdraws their own vouch",
+      "lares edge kapae --member <key> --realm <realm-id> --quorum       # the seat quorum sets a member aside",
+      "lares edge un-kapae --member <key> --realm <realm-id> --quorum    # the quorum lifts its own shadow",
+      "lares edge kapae --device <device-key> --as 1                     # a fleet root sets a lost device aside",
     ],
     flags: [
-      "--epoch-cid <cid>  the charter epoch the marker rides",
-      "--as <root-index>  which held persona root signs (default: the active one)",
+      "--realm <realm-id> the realm whose own edge board carries the act (absent: the fleet's board)",
+      "--member <key>     name a member's whole relation to the realm (the quorum's edge)",
+      "--device <key>     name a device's relation to the signing root's fleet",
+      "--quorum           sign with this vessel's held seats of the charter's quorum",
+      "--as <root-index>  which held persona root signs as the holder (default: the active one)",
     ],
-    next: ["lares nexus kapae --list   # the PRESENTER board — a different kind of setting-aside"],
+    next: ["lares cabal join --realm <realm-id>   # reads every shadow the crossing meets", "lares nexus kapae --list   # the PRESENTER board — a different kind of setting-aside"],
   },
 
   raise: {

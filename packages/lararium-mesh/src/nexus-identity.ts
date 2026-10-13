@@ -230,7 +230,7 @@ export function admittedJoineeIsland(opts: {
  * ── CONNECTING MOVES THE BOARD, so a connect is a MIGRATION and never a field assignment ────────
  *
  * A vessel that climbs from a private nexus of one to a seated charter re-keys every per-Nexus board
- * it stands on — crossroads, WHO, persona-KEL, antigen, carriage, vouch, edge-kāpae. Nothing carries
+ * it stands on — crossroads, WHO, persona-KEL, antigen, carriage. Nothing carries
  * across on its own: the old board keeps every announce it ever held and the new one mints blank, so
  * books announced before the connect stay invisible to the island, and any peer still dialling the old
  * address reads a silence that looks exactly like a vessel going dark.
@@ -240,21 +240,18 @@ export function admittedJoineeIsland(opts: {
  * 3, a partition. An explicit departure is what makes "I left" distinguishable from "I cannot read my
  * island", which is the whole reason state 3 refuses instead of falling.
  *
- * THE CLIMB STANDS BUILT, and it took THREE acts rather than one (`nexus-board-climb`; `nexusIslandsBelow`
- * names every source). "Degrades gracefully" was the wrong reading for two of the seven boards:
+ * THE CLIMB STANDS BUILT, as three acts (`nexus-board-climb`; `nexusIslandsBelow` names every source):
  *   · CARRY, verbatim — persona-KEL (`carryPersonaKelUpTheGradient`, `persona-kel-climb`: the gate REFUSES
- *     rather than degrades, so a moved board took the vessel down rather than thinning it) · antigen (an
- *     empty deny set RE-ADMITS a Kapae'd presenter; the quorum epoch check
- *     makes the carry self-limiting) · edge-kāpae (an empty shadow board LOWERS EVERY SHADOW, and the board
- *     sits outside the federation gate, so no peer replica heals it).
+ *     rather than degrades, so a moved board would take the vessel down) · antigen (an empty deny set
+ *     RE-ADMITS a Kapae'd presenter; the quorum epoch check makes the carry self-limiting).
  *   · RE-ANNOUNCE, re-derived — the crossroads realm-bag announce. It carries no signature a reader could
  *     re-check, so a copied row would launder a lapsed, equivocated or FOREIGN-REALM registration; the
- *     projection is recomputed from the realm doc's counted registrations instead.
+ *     projection recomputes from the realm doc's counted registrations instead.
  *   · DELIBERATELY NEITHER — WHO (a boot-time announce would DISCLOSE a face the operator published only to
- *     a private nexus of one; disclosure stays an act) · carriage (an allow wants a fresh consent at the new
- *     epoch, and a roster of who belongs is the one register the laws forbid) · vouch (unfederated, so a
- *     carried PARTIAL replica would become the whole board and price crossings off one vessel's view — the
- *     honest cure is federating it). `nexus-board-climb`'s header carries each reason in full.
+ *     a private nexus of one; disclosure stays an act) · carriage (an allow takes a fresh consent at the new
+ *     epoch). `nexus-board-climb`'s header carries each reason in full.
+ * A realm's vouch board and edge board, and a fleet's edge board, key on the realm or the fleet and never on
+ * a Nexus, so a climb re-keys none of them (kapae#/four-edges).
  * BOTH SHORES NOW COMPOSE IT. The node boot wired it first; the browser leaf composed neither carry for as
  * long as the platform-blindness vow stood unmeasured, and a leaf halts at the SAME fail-closed gate on a
  * walk no less ordinary (found offline at a private nexus of one → configure the hearth the page dials →

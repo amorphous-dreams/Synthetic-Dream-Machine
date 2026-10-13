@@ -487,6 +487,7 @@ export class RealmBagGate implements FederationGate {
   readonly #realmDocId: DocumentId;
   readonly #charter: RealmCharterConsult | null;
   readonly #pace: (() => number | null) | null;
+  readonly #memberAside: ((peerId: string) => boolean) | null;
 
   constructor(
     private readonly base: FederationGate,
@@ -497,11 +498,19 @@ export class RealmBagGate implements FederationGate {
       readonly charter?: RealmCharterConsult;
       /** The realm's pace in rolls (`realmPace`) — the lease the write side reads against. */
       readonly pace?: () => number | null;
+      /**
+       * THE MEMBER SHADOW (kapae#/reach): true when a shadow stands over this peer's own edge to the realm, or
+       * no path of standing vouches reaches it. Every lane onto the realm's documents and bags then closes for
+       * that peer — the charter's own hearth, the write side, CONTRACT, the carrier leg and the Nexus lane
+       * alike — and the peer draws the same denial any private plane gives. Absent → no member reads as aside.
+       */
+      readonly memberAside?: (peerId: string) => boolean;
     },
   ) {
     this.#realmDocId = interpretAsDocumentId(realmUrl) as DocumentId;
     this.#charter = opts?.charter ?? null;
     this.#pace = opts?.pace ?? null;
+    this.#memberAside = opts?.memberAside ?? null;
   }
 
   /** Re-fold the standing registrations off a realm doc snapshot — the docs the realm and member lanes open for. */
@@ -532,16 +541,25 @@ export class RealmBagGate implements FederationGate {
     return this.#registrations;
   }
 
+  /** Does this document belong to the realm's own plane: the realm doc, or a standing registered bag's doc? */
+  holdsDoc(documentId: DocumentId): boolean {
+    return documentId === this.#realmDocId || this.#standing.has(documentId);
+  }
+
   /** The realm doc id plus the docs of standing registrations — for a caller that lists what the lane opens. */
   standingDocIds(): ReadonlySet<DocumentId> {
     return new Set<DocumentId>([this.#realmDocId, ...this.#standing]);
   }
 
   async mayFederate(documentId: DocumentId, peerId?: PeerId): Promise<boolean> {
+    const isRealmDoc = documentId === this.#realmDocId;
+    const ofRealm = isRealmDoc || this.#standing.has(documentId);
+    // THE MEMBER SHADOW reads FIRST for the realm's own documents, ahead of the base gate and every lane below:
+    // a member set aside reads nothing of the realm, whichever gate would have opened it.
+    if (ofRealm && peerId && this.#memberAside?.(peerId)) return false;
     if (await this.base.mayFederate(documentId, peerId)) return true;
     if (!peerId) return false;
-    const isRealmDoc = documentId === this.#realmDocId;
-    if (!isRealmDoc && !this.#standing.has(documentId)) return false;
+    if (!ofRealm) return false;
     // THE REALM LEG — the registration's own hands and charters, ahead of any board.
     if (this.#charter?.holdsCharterPeer?.(peerId)) return true;     // the charter's own hearth — the return lane
     const nym = this.#charter?.contractNymOfPeer(peerId)?.toLowerCase() ?? null;
@@ -559,5 +577,31 @@ export class RealmBagGate implements FederationGate {
     }
     // THE NEXUS LANE, unchanged — the members board answers for every peer the realm does not name.
     return this.membership.holdsCarriagePeer(peerId);
+  }
+}
+
+/**
+ * RealmBoardGate — the crossing lane of a realm's OWN boards: its vouch board and its edge board
+ * (kapae#/four-edges). A removal's record stays among the parties to the relation it ends, so these two
+ * documents cross to a peer that holds standing in that realm and to nobody else — never the public shelf, never
+ * the Nexus lane, never a walker or a faceless carrier. A member under a standing shadow holds no standing, so
+ * the boards close for that member too: the removed party reads neither the raise nor a later lift, and draws
+ * the denial any private plane gives.
+ *
+ * `boards()` names the board documents this vessel reads and the realm each belongs to; `stands(peerId, realm)`
+ * answers from the vessel's own lineage read. Both arrive from the composing vessel; this gate holds no key.
+ */
+export class RealmBoardGate implements FederationGate {
+  constructor(
+    private readonly base:   FederationGate,
+    private readonly boards: () => ReadonlyMap<DocumentId, string>,
+    private readonly stands: (peerId: string, realm: string) => boolean,
+  ) {}
+
+  async mayFederate(documentId: DocumentId, peerId?: PeerId): Promise<boolean> {
+    // A realm's board answers to standing ALONE: no base gate opens it, whatever that gate would say.
+    const realm = this.boards().get(documentId);
+    if (realm !== undefined) return peerId ? this.stands(peerId, realm) : false;
+    return this.base.mayFederate(documentId, peerId);
   }
 }

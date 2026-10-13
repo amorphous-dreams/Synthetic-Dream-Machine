@@ -33,6 +33,7 @@ import {
   type AntigenRing, type FederationGate, type NexusMembership, type PlaneSeal,
 } from "@lararium/mesh";
 import type { DocumentId } from "@automerge/automerge-repo";
+import type { ShadowConsult } from "@lararium/mesh";
 import { docIdForCiphertextCid } from "./ciphertext-cas-seal.js";
 import { readCasBlobFromFs } from "./node-cas.js";
 
@@ -66,6 +67,13 @@ export interface CasWireServerDeps {
    *  vessel that dialed in under a signed device edge)? Absent → nobody is fleet → a cleartext ask draws Mu. A
    *  CONTRACT member is NOT fleet: it fetches `@cad` only. */
   readonly fleet?:     (peerId: string) => boolean | Promise<boolean>;
+  /** The edge-shadow consult (kapae#/reach): a device set aside from the fleet draws Mu on the fetch door and
+   *  on the sealed lane alike. Absent → nobody reads as aside. */
+  readonly shadow?:    ShadowConsult;
+  /** The MEMBER shadow at the sealed lane (kapae#/reach): does a shadow set this peer aside from the realm this
+   *  document belongs to? A member set aside fetches none of the realm's blocks, sealed or not, and draws the
+   *  same Mu a miss draws. Absent → no document reads as closed to anyone by a realm's shadow. */
+  readonly realmAside?: (peerId: string, documentId: DocumentId) => boolean;
 }
 
 /**
@@ -82,6 +90,8 @@ export async function decideAndServeWantBlock(
   // THE FETCH DOOR — a CLEARTEXT cid (bare sha256 / `sha256:`) rides the FLEET gate, never the member lane: a
   // same-operator device fetches the `cid/` blob its pointer names; a CONTRACT member / a stranger draws the
   // SAME Mu (a contracted cabal reaches `@cad` ciphertext only — cleartext never crosses an operator boundary).
+  // THE EDGE SHADOW reads FIRST: a device set aside draws the same Mu a miss draws, on either tier.
+  if (deps.shadow?.aside(peerId)) return { kind: CAS_MU, bytes: muVoidBytes() };
   if (cidDigestClass(cid) === "cleartext") {
     if (!deps.cidDir || !deps.fleet) return { kind: CAS_MU, bytes: muVoidBytes() };   // door shut → Mu
     if (!(await deps.fleet(peerId)))  return { kind: CAS_MU, bytes: muVoidBytes() };   // not fleet → Mu (≡ satiety)
@@ -91,6 +101,8 @@ export async function decideAndServeWantBlock(
   }
   let docId: DocumentId;
   try { docId = docIdForCiphertextCid(cid); } catch { return { kind: CAS_MU, bytes: muVoidBytes() }; }
+  // A member set aside from the realm this block belongs to draws Mu, ahead of the carry lane.
+  if (deps.realmAside?.(peerId, docId)) return { kind: CAS_MU, bytes: muVoidBytes() };
   // The carry-lane gate: a proven MEMBER over a PROVABLY-sealed plane, not Kapae'd. A relay peer is gated (in the
   // relayPeers set); a STRANGER / non-member / Kapae'd draws `false` — the SAME `false` a caught-up peer draws.
   const mayCarry = await carrierShareDecision(
@@ -102,6 +114,7 @@ export async function decideAndServeWantBlock(
     deps.seal,                   // PROVABLY-sealed only
     peerId,
     docId,
+    deps.shadow ?? null,         // a device set aside → Mu
   );
   if (!mayCarry) return { kind: CAS_MU, bytes: muVoidBytes() };            // DENY → Mu (byte-identical to satiety)
   const bytes = readCasBlobFromFs(cid, deps.cadDir);

@@ -33,8 +33,8 @@
  * Meme: lar:///ha.ka.ba/lararium/node/self-slot-share
  */
 import type { DocumentId } from "@automerge/automerge-repo";
-import { carryContractShareDecision, carrierShareDecision, presenterIsKapaed, siblingShareDecision } from "@lararium/mesh";
-import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal } from "@lararium/mesh";
+import { carryContractShareDecision, carrierShareDecision, presenterIsKapaed, presenterStandsAside, siblingShareDecision } from "@lararium/mesh";
+import type { AntigenRing, FederationGate, NexusMembership, PeerClass, PlaneSeal, ShadowConsult } from "@lararium/mesh";
 
 /** A same-operator peer + every in-process island peer ride this empty relay ring → shared freely. */
 const NO_RELAY_PEERS: ReadonlySet<string> = new Set<string>();
@@ -66,6 +66,9 @@ export interface SelfSlotShareInput {
   readonly carriageBoard?: DocumentId | null;
   /** This hearth's own hosting docs — a contracted peer replicates them. */
   readonly hostingDocs?: ReadonlySet<DocumentId>;
+  /** The edge-shadow consult (kapae#/reach): a device set aside from the fleet draws Mu on EVERY lane, the
+   *  same-operator and sibling lanes included. Null sets nobody aside. */
+  readonly shadow?: ShadowConsult | null;
 }
 
 /**
@@ -75,6 +78,9 @@ export interface SelfSlotShareInput {
  * presenter draws Mu regardless. The self-slot INNER capability ring stays inert (identity = null).
  */
 export async function selfSlotShareDecision(input: SelfSlotShareInput): Promise<boolean> {
+  // THE EDGE SHADOW reads FIRST. A socket admitted before the shadow arrived keeps its class until the gate
+  // re-sorts it; this verdict never waits for that, so a device set aside reads nothing from its next ask on.
+  if (presenterStandsAside(input.shadow, input.peerId)) return false;
   // A SIBLING never shares freely: it arrives on no WS socket, yet it is no house member. Sibling-ness decides
   // FIRST, so a sibling's id never reads the house or WS verdict; an id that both a sibling and a WS socket claim
   // reads as neither (one id names one carrier) and denies. The sibling gate holds its whole verdict (the face's

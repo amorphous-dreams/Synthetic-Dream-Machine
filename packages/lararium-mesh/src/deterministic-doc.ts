@@ -73,27 +73,47 @@ export function hostingDocUrl(nexusAid: string, hearthKey: string): AutomergeUrl
   return deterministicDocUrl(`${nexusRegistryUri(nexusAid.trim().toLowerCase())}#hosting/${hearthKey.trim().toLowerCase()}`);
 }
 
+/** The address family of the boards a REALM keeps among its own members — never under a Nexus key. */
+const REALM_BOARD_URI = "lar:///ha.ka.ba/dreamnet/realm-board" as const;
+/** The address family of the board a FLEET keeps among one face's own devices. */
+const FLEET_BOARD_URI = "lar:///ha.ka.ba/dreamnet/fleet-board" as const;
+/** The address family of a vessel's OWN edge ledger — a document that never crosses to another operator. */
+const EDGE_LEDGER_URI = "lar:///ha.ka.ba/dreamnet/edge-ledger" as const;
+
 /**
- * The Nexus's VOUCH board URL — deterministic, so every vessel folds the lineage from the SAME issued
- * invites. Sibling to the carriage + antigen boards under one nexus-pubkey: carriage says who carries,
- * antigen says who stands banned, and this says WHO VOUCHED FOR WHOM — the seed-rooted DAG the admission
- * price walks. A vouch is board-tracked precisely because it is attributable (cabal-invite names its
- * voucher in the clear); a hosting invite names no voucher, and no invite ever gains a board record.
+ * One REALM's VOUCH board URL — deterministic over the realm's own id, so every member folds the lineage from
+ * the same issued invites. It says WHO VOUCHED FOR WHOM inside that one realm and nothing about any other: a
+ * vouch names its voucher in the clear, so its record stays among the parties to the realm it crosses
+ * (registry-filter#/the-private-room). It rides no Nexus board and no public shelf.
  */
-export function vouchBoardDocUrl(nexusPubkey: string): AutomergeUrl {
-  return deterministicDocUrl(`${nexusRegistryUri(nexusPubkey)}#vouch`);
+export function realmVouchBoardDocUrl(realmId: string): AutomergeUrl {
+  return deterministicDocUrl(`${REALM_BOARD_URI}/${realmId.trim().toLowerCase()}#vouch`);
 }
 
 /**
- * The Nexus's EDGE-KĀPAE board URL — deterministic, so every vessel folds the same shadows. The fifth
- * sibling under one nexus-pubkey: carriage says who carries, antigen who stands banned, vouch who vouched
- * for whom, KEL who a persona is over time — and this one says WHICH RELATIONSHIPS STAND SET ASIDE.
- *
- * A shadow federates precisely because a raised marker must reach the peers who would otherwise re-admit;
- * unlike a revocation LIST it carries no negative fact about any party, only a mark over one edge.
+ * One REALM's EDGE board URL — the acts that set a vouch or a member edge aside, and the anchors each seal roll
+ * writes beside them (`edge-kapae`). A removal's record stays among the parties to the relation it ends: it
+ * crosses to a peer that holds standing in the realm and to nobody else (kapae#/four-edges).
  */
-export function edgeKapaeBoardDocUrl(nexusPubkey: string): AutomergeUrl {
-  return deterministicDocUrl(`${nexusRegistryUri(nexusPubkey)}#edge-kapae`);
+export function realmEdgeBoardDocUrl(realmId: string): AutomergeUrl {
+  return deterministicDocUrl(`${REALM_BOARD_URI}/${realmId.trim().toLowerCase()}#edge-kapae`);
+}
+
+/**
+ * One FLEET's EDGE board URL — the acts that set a device's dyad aside, keyed by the fleet root that bound it.
+ * It crosses to the face's own devices alone (the sibling channel, same-operator sync): a dyad shown as set
+ * aside on a Nexus board would tell that Nexus one device left one person.
+ */
+export function fleetEdgeBoardDocUrl(fleetRootDid: string): AutomergeUrl {
+  return deterministicDocUrl(`${FLEET_BOARD_URI}/${fleetRootDid.trim().toLowerCase().replace(/^0x/, "")}#edge-kapae`);
+}
+
+/**
+ * A vessel's OWN edge ledger URL — what this vessel has counted on the edge boards it reads, kept so a
+ * deleted act still stands here and returns to its board (kapae#/accretion). No federation gate names it.
+ */
+export function edgeLedgerDocUrl(vesselKey: string): AutomergeUrl {
+  return deterministicDocUrl(`${EDGE_LEDGER_URI}/${vesselKey.trim().toLowerCase().replace(/^0x/, "")}`);
 }
 
 /**

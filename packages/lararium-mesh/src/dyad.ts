@@ -43,7 +43,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/persona-circle · lar:///ha.ka.ba/lares/api/pono/group-as-closure
  */
 
-import { DYAD_ID_DOMAIN, DYAD_VEIL_INFO } from "./domains.js";
+import { DEVICE_EDGE_DOMAIN, DYAD_ID_DOMAIN, DYAD_VEIL_INFO } from "./domains.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import * as ed25519 from "@noble/ed25519";
 import { sha256 } from "@noble/hashes/sha2.js";
@@ -138,6 +138,29 @@ export function dyadId(ref: DyadRef): string {
     vesselDid: normalizeDid(ref.vesselDid),
     veilDid:   normalizeDid(ref.veilDid),
   }));
+}
+
+/**
+ * The id a dyad's MARKER rides under on the fleet's edge board (kapae#/four-edges) — the same relationship,
+ * named by the two ends every device of the fleet can read: the fleet root and the device key.
+ *
+ * `dyadId` hashes the veil, and a veil key never leaves its device, so no other device and no gate could name
+ * a dyad by it. A gate proves a device key and knows the fleet root it serves; the person who sets a lost
+ * device aside knows the same two. One device holds one such edge per fleet.
+ */
+export function deviceEdgeId(fleetRootDid: LarDid | string, deviceDid: LarDid | string): string {
+  const bare = (did: string) => did.trim().toLowerCase().replace(/^0x/, "").slice(-64);
+  return sha256HexSync(canonicalJson({
+    kind:      DEVICE_EDGE_DOMAIN,
+    fleetRoot: bare(fleetRootDid),
+    device:    bare(deviceDid),
+  }));
+}
+
+/** Who holds every edge on one fleet's edge board: the fleet root, and no quorum (kapae#/edge-hands). */
+export function fleetEdgeAuthority(fleetRootDid: LarDid | string): () => { readonly holder: string } {
+  const holder = fleetRootDid.trim().toLowerCase().replace(/^0x/, "");
+  return () => ({ holder });
 }
 
 /** The tiddler key one dyad rides under. Keyed by ID, so a key list never enumerates a human's faces. */
@@ -249,8 +272,10 @@ export async function verifiedFleetOfGroup(
 ): Promise<DyadRecord[]> {
   // A SHADOWED relationship stands aside before any signature runs. The edge it presents may verify
   // perfectly — a valid edge set aside stays set aside, which is the whole difference between a kāpae and
-  // an expiry. Checking here rather than after keeps a raised marker unconditional.
-  const claimed = fleetOfGroup(dyads, groupRootDid).filter((d) => !shadowed.has(d.dyadId));
+  // an expiry. Checking here rather than after keeps a raised marker unconditional. The set holds the ids
+  // the fleet's edge board reads (`deviceEdgeId`): the fleet root and the device key.
+  const claimed = fleetOfGroup(dyads, groupRootDid)
+    .filter((d) => !shadowed.has(deviceEdgeId(groupRootDid, d.ref.vesselDid)));
   const verdicts = await Promise.all(claimed.map((d) =>
     verifyDelegationEdge(DELEGATION_DOMAIN.dyadBinding, dyadBindingSubject(d.ref), d.binding)));
   return claimed.filter((_, i) => verdicts[i] === true);

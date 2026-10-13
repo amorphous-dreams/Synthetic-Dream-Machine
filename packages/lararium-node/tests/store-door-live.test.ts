@@ -21,13 +21,13 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
   NEXUS_DOC_DOMAIN, genesisCharterEpoch, antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
-  edgeKapaeBoardDocUrl, vouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
+  fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   realmIdOfCharter, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
   type NexusDoc, type LarDoc, type GenesisSeed,
 } from "@lararium/mesh";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, loadVesselVerifyingKey,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey,
   loadPersonaGroupRootSeed,
 } from "../src/node-vessel-identity.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
@@ -129,7 +129,8 @@ interface Writer {
   readonly verb: StoreDoorVerb;
   readonly args: Record<string, unknown>;
   /** The board the act lands on, by this vessel's island, and the label the vessel materializes it under. */
-  readonly board: (island: string) => string;
+  /** The board the act lands on: keyed on the island, or (the fleet's edge board) on the vessel's first held root. */
+  readonly board: (island: string, fleetRoot: string) => string;
   readonly label: string;
   /** The act's content id as the row reports it. */
   readonly id: (out: Record<string, unknown>) => string;
@@ -150,14 +151,14 @@ const WRITERS: readonly Writer[] = [
     carries: (doc, id) => antigenEntriesFromBoard(doc).some((e) => e.actCid === id),
   },
   {
-    verb: "edge-kapae", args: { edgeId: "edge-" + "e".repeat(16), raised: true, epochCid: "epoch-one" },
-    board: (i) => edgeKapaeBoardDocUrl(i), label: "board:edge-kapae",
+    verb: "edge-kapae", args: { edgeId: "e".repeat(64), raised: true },
+    board: (_island, fleetRoot) => fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     id: (o) => String(o["actCid"]),
     carries: (doc, id) => edgeKapaeActsFromBoard(doc).some((a) => a.actCid === id),
   },
   {
     verb: "cabal-vouch", args: { joiner: JOINER, realm: REALM },
-    board: (i) => vouchBoardDocUrl(i), label: "board:vouch-registry",
+    board: () => realmVouchBoardDocUrl(REALM), label: "board:vouch-registry",
     // A vouch reports no content id of its own; its signature over the invite bytes names it.
     id: () => "",
     carries: async (doc) => (await vouchSigOf(doc)) !== undefined,
@@ -191,7 +192,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
       let liveSig: string | undefined;
       try {
         // The running vessel already holds the board in its replica, and its peer already syncs it.
-        const boardUrl = w.board(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() }));
+        const boardUrl = w.board(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() }), (await loadPersonaGroupRootVerifyingKey(0)) ?? "");
         await materializeSharedLarDoc(live, boardUrl as AutomergeUrl, w.label);
         await materializeSharedLarDoc(peer, boardUrl as AutomergeUrl, w.label);
         const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });

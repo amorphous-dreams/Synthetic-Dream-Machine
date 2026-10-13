@@ -16,11 +16,11 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  hex, hexToBytes, vouchBoardDocUrl, verifiedVouchesFromBoard, materializeSharedLarDoc, vouchDagFromInvites,
+  hex, hexToBytes, realmVouchBoardDocUrl, verifiedVouchesFromBoard, materializeSharedLarDoc, vouchDagFromInvites,
   decideCabalJoin, DEFAULT_JOIN_POLICY,
 } from "@lararium/mesh";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
   loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
@@ -54,7 +54,7 @@ afterEach(async () => {
 /** Read the board back the way any consumer must — through the verifying read. */
 async function boardVouches(realm = REALM) {
   const repo   = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
-  const handle = await materializeSharedLarDoc(repo, vouchBoardDocUrl(await loadVesselVerifyingKey()), "board:vouch-registry");
+  const handle = await materializeSharedLarDoc(repo, realmVouchBoardDocUrl(realm), "board:vouch-registry");
   const out    = await verifiedVouchesFromBoard(handle.doc(), realm, verify);
   await repo.flush();
   return out;

@@ -12,10 +12,7 @@
  *
  *     own (a private nexus of one) → charter (the genesis epoch of a seated charter)
  *
- * and that walk moves BOTH boards that fail OPEN. A shadow raised before the charter was seated would read
- * LOWERED on the island the next boot resolves — the resurrection the residency model names as anti-pattern
- * #3 — and nothing re-supplies it, because `edgeKapaeBoardDocUrl` stands absent from
- * `DeterministicFederationGate`'s list. No peer replica heals this one. The boot must.
+ * and that walk carries the antigen and re-announces crossroads books onto the resolved island.
  *
  * ── THE HALT IS THE OTHER HALF ─────────────────────────────────────────────────────────────────────
  * A charter that STANDS on disk and reads TORN must not re-key anything, and must not skip quietly either:
@@ -28,7 +25,7 @@
  * constraint). The wiring's red therefore reads the boot file: one call, at the boot's own nesting depth,
  * over the boot's own gradient, naming none of the three refused boards. It bites a WEAKENING — a fourth
  * board passed in, a `priorIslands: []` that would leave every vector here green while the carry died, or a
- * climb nested under the persona-KEL guard so a faceless vessel stopped carrying its shadows.
+ * climb nested under the persona-KEL guard so a faceless vessel stopped carrying its antigen.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/nexus-identity
  */
@@ -42,13 +39,10 @@ import {
   climbNexusBoards,
   nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt,
   realmIdOfCharter, realmDocUrl,
-  materializeSharedLarDoc, mutableLarRecord,
-  kapaeAntigenDocUrl, edgeKapaeBoardDocUrl, crossroadsDocUrl,
-  whoBoardDocUrl, carriageDocUrl, vouchBoardDocUrl,
+  materializeSharedLarDoc,
+  kapaeAntigenDocUrl, crossroadsDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
-  writeEdgeKapae, signEdgeKapae, shadowSetFromBoard,
   signRealmBagRegistration, writeRealmBagRegistration, publicRealmBooksFromDoc,
-  HANDLE_ANNOUNCE_PREFIX, CARRIAGE_ENTRY_PREFIX, VOUCH_ENTRY_PREFIX,
   NEXUS_DOC_DOMAIN, genesisCharterEpoch,
   hex,
 } from "@lararium/mesh";
@@ -57,15 +51,6 @@ import { readNexusDoc, nexusCharterStands, writeNexusDoc, nexusCharterDocPath } 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const signer = (s: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, s).then(hex);
 const pubOf  = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
-const verify = (b: Uint8Array, sig: string, did: string) =>
-  ed.verifyAsync(hexToBytesLocal(sig), b, hexToBytesLocal(did)).catch(() => false);
-/** Local hex→bytes so this vector depends on no crypto helper's export surface. */
-function hexToBytesLocal(s: string): Uint8Array {
-  const out = new Uint8Array(s.length / 2);
-  for (let i = 0; i < out.length; i++) out[i] = Number.parseInt(s.slice(i * 2, i * 2 + 2), 16);
-  return out;
-}
-
 const repo = (): Repo => new Repo({ sharePolicy: async () => true });
 const board = (r: Repo, url: AutomergeUrl) => materializeSharedLarDoc(r, url, "test:board");
 async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
@@ -127,48 +112,6 @@ function bootClimb(r: Repo, at: NexusIdentityAt) {
 // THE RED — a boot whose island climbs carries onto the island the boot RESOLVED
 // ════════════════════════════════════════════════════════════════════════════════════════════════════
 describe("the boot's own climb — own → charter, the founding walk", () => {
-  test("RED — a shadow raised before the charter STANDS on the island the post-charter boot resolves", async () => {
-    const r      = repo();
-    const ownKey = await pubOf(seedOf(11));
-    const auth   = await pubOf(seedOf(21));
-    const home   = sealHomeAt();
-
-    // ① the vessel stands alone. A hand sets one relationship aside; the marker lands on the OWN board.
-    const before = bootStandsAt(home, ownKey);
-    expect(nexusIdentity(before).kind, "a fresh hearth stands a PRIVATE NEXUS OF ONE").toBe("own");
-    expect(nexusScopeOrThrow(nexusIdentity(before))).toBe(ownKey);
-    const raise = await signEdgeKapae(
-      { edgeId: "edge-set-aside", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
-    (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
-
-    // ② `nexus rite quorum` seats a charter. The next boot reads a DIFFERENT island off the same disk.
-    await seatCharter(home);
-    const at     = bootStandsAt(home, ownKey);
-    const island = nexusScopeOrThrow(nexusIdentity(at));
-    expect(nexusIdentity(at).kind).toBe("charter");
-    expect(island).not.toBe(ownKey);
-    expect(nexusIslandsBelow(at), "the island the vessel DID stand at is the carry's source").toEqual([ownKey]);
-
-    // THE HARM, measured on the board the boot now reads: the shadow reads LOWERED — a resurrection.
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify))
-      .toEqual(new Set());
-
-    // ③ the boot climbs.
-    const climb = await bootClimb(r, at);
-    expect(climb.acts.map((a) => a.board), "three boards move; three are refused")
-      .toEqual(["antigen", "edge-kapae", "crossroads"]);
-    const shadows = climb.acts.find((a) => a.board === "edge-kapae")!;
-    expect(shadows.act).toBe("carry");
-    expect(shadows.landed).toBe(1);
-    expect(shadows.from, "the carry names the island it read").toEqual([ownKey]);
-
-    // ④ and the marker HOLDS at the island the boot resolved — the content stands where the boot looks.
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(island))).doc(), () => auth, verify))
-      .toEqual(new Set(["edge-set-aside"]));
-  }, 30_000);
-
   test("RED — the antigen's bytes reach the resolved island too, verbatim and unjudged", async () => {
     const r      = repo();
     const ownKey = await pubOf(seedOf(12));
@@ -230,13 +173,6 @@ describe("the gradient law holds AT THE BOOT", () => {
     const r      = repo();
     const ownKey = await pubOf(seedOf(14));
     const home   = sealHomeAt();
-    const auth   = await pubOf(seedOf(21));
-
-    // A shadow stands on the vessel's own board — the content a silent descent would abandon.
-    const raise = await signEdgeKapae(
-      { edgeId: "edge-untouched", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
-    (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
-    const beforeOwn = await keysOn(r, edgeKapaeBoardDocUrl(ownKey));
 
     // A charter RECORD stands on disk and reads torn — a half-written seat.
     writeFileSync(nexusCharterDocPath(home), "half a charter and no fence at all\n", "utf8");
@@ -255,11 +191,6 @@ describe("the gradient law holds AT THE BOOT", () => {
       .toThrow(/torn/i);
     expect(nexusIslandsBelow(at), "a torn standing names no island, so it offers no source").toEqual([]);
 
-    // Nothing moved anywhere on the failure, and the vessel's own board stands exactly as it stood.
-    expect(await keysOn(r, edgeKapaeBoardDocUrl(ownKey))).toEqual(beforeOwn);
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(ownKey))).doc(), () => auth, verify))
-      .toEqual(new Set(["edge-untouched"]));
   }, 30_000);
 
   test("CONTROL — a vessel that never climbs calls the climb with EMPTY sources and writes nothing", async () => {
@@ -275,7 +206,7 @@ describe("the gradient law holds AT THE BOOT", () => {
     const climb = await bootClimb(r, at);
     expect(climb.landed).toBe(0);
     for (const act of climb.acts) expect(act.from).toEqual([]);
-    for (const url of [kapaeAntigenDocUrl(ownKey), edgeKapaeBoardDocUrl(ownKey), crossroadsDocUrl(ownKey)]) {
+    for (const url of [kapaeAntigenDocUrl(ownKey), crossroadsDocUrl(ownKey)]) {
       expect(await keysOn(r, url)).toEqual([]);
     }
   }, 30_000);
@@ -285,12 +216,9 @@ describe("the gradient law holds AT THE BOOT", () => {
     const ownKey = await pubOf(seedOf(16));
     const home   = sealHomeAt();
 
-    const raise = await signEdgeKapae(
-      { edgeId: "edge-thrice", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
     const entry = await signAntigenEntry(
       { nym: "ea".repeat(32), action: "kapae", parents: [], sealEpochCid: PRE_EPOCH },
       [{ signer: await pubOf(seedOf(1)), sign: signer(seedOf(1)) }]);
-    (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
     (await board(r, kapaeAntigenDocUrl(ownKey))).change((d) => writeAntigenEntry(d, entry));
 
     await seatCharter(home);
@@ -298,74 +226,21 @@ describe("the gradient law holds AT THE BOOT", () => {
     const island = nexusScopeOrThrow(nexusIdentity(at));
 
     const first = await bootClimb(r, at);
-    expect(first.landed, "one entry per carried board").toBe(2);
-    const after = {
-      antigen: await keysOn(r, kapaeAntigenDocUrl(island)),
-      shadows: await keysOn(r, edgeKapaeBoardDocUrl(island)),
-    };
+    expect(first.landed, "the antigen entry carries").toBe(1);
+    const after = await keysOn(r, kapaeAntigenDocUrl(island));
     for (const pass of [2, 3]) {
       const again = await bootClimb(r, at);
       expect(again.landed, `boot ${pass} must write nothing`).toBe(0);
     }
-    expect(await keysOn(r, kapaeAntigenDocUrl(island))).toEqual(after.antigen);
-    expect(await keysOn(r, edgeKapaeBoardDocUrl(island))).toEqual(after.shadows);
+    expect(await keysOn(r, kapaeAntigenDocUrl(island))).toEqual(after);
   }, 45_000);
 
-  test("CONTROL — the island BELOW keeps its content: a carry copies", async () => {
-    const r      = repo();
-    const ownKey = await pubOf(seedOf(17));
-    const home   = sealHomeAt();
-    const auth   = await pubOf(seedOf(21));
-
-    const raise = await signEdgeKapae(
-      { edgeId: "edge-copied", raised: true, parents: [], epochCid: PRE_EPOCH }, signer(seedOf(21)));
-    (await board(r, edgeKapaeBoardDocUrl(ownKey))).change((d) => writeEdgeKapae(d, raise));
-    const beforeKeys = await keysOn(r, edgeKapaeBoardDocUrl(ownKey));
-
-    await seatCharter(home);
-    await bootClimb(r, bootStandsAt(home, ownKey));
-
-    expect(await keysOn(r, edgeKapaeBoardDocUrl(ownKey))).toEqual(beforeKeys);
-    expect(await shadowSetFromBoard(
-      (await board(r, edgeKapaeBoardDocUrl(ownKey))).doc(), () => auth, verify))
-      .toEqual(new Set(["edge-copied"]));
-  }, 30_000);
 });
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════════
-// ★ THE REFUSALS SURVIVE THE WIRING — a wiring is exactly where a fourth board gets "helpfully" passed
+// ★ THE OTHER BOARDS STAY OUT OF THE CLIMB
 // ════════════════════════════════════════════════════════════════════════════════════════════════════
-describe("★ WHO · carriage · vouch stay where they are, at the BOOT", () => {
-  test("CONTROL — a boot moves NOTHING onto the WHO, carriage or vouch boards of the resolved island", async () => {
-    const r      = repo();
-    const ownKey = await pubOf(seedOf(18));
-    const home   = sealHomeAt();
-
-    // Content stands on all three boards of the island below, each under its own live prefix.
-    const seeded: Array<[AutomergeUrl, string]> = [
-      [whoBoardDocUrl(ownKey),   `${HANDLE_ANNOUNCE_PREFIX}${await pubOf(seedOf(41))}`],
-      [carriageDocUrl(ownKey),   `${CARRIAGE_ENTRY_PREFIX}${await pubOf(seedOf(42))}/admit/1`],
-      [vouchBoardDocUrl(ownKey), `${VOUCH_ENTRY_PREFIX}${CHARTER}/voucher/joiner`],
-    ];
-    for (const [url, key] of seeded) {
-      (await board(r, url)).change((d) => { d.tiddlers[key] = mutableLarRecord(key, { text: "{}" }, "test"); });
-    }
-
-    await seatCharter(home);
-    const at     = bootStandsAt(home, ownKey);
-    const island = nexusScopeOrThrow(nexusIdentity(at));
-    await bootClimb(r, at);
-
-    expect(await keysOn(r, whoBoardDocUrl(island)),
-      "a card announced at a private nexus of one must not be DISCLOSED to a shared island by a boot").toEqual([]);
-    expect(await keysOn(r, carriageDocUrl(island)),
-      "an allow wants a FRESH CONSENT — the operator re-contracts by an act at the new epoch").toEqual([]);
-    expect(await keysOn(r, vouchBoardDocUrl(island)),
-      "the vouch board is unfederated; a carried PARTIAL replica would read as the whole lineage").toEqual([]);
-    // A refusal is not a deletion — every island below keeps what it held.
-    for (const [url, key] of seeded) expect(await keysOn(r, url)).toEqual([key]);
-  }, 30_000);
-
+describe("the boot climb stays scoped to antigen and crossroads", () => {
   test("FAULT-PIN — the BOOT calls the climb ONCE, over its own gradient, naming no refused board", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
 
@@ -384,12 +259,12 @@ describe("★ WHO · carriage · vouch stay where they are, at the BOOT", () => 
 
     // ③ THE THREE REFUSALS, at the boot. A hand passing one more board here would be compiling a
     //    COMPILED ABOUT-SET at a new address — read `nexus-board-climb`'s header before adding one.
-    for (const forbidden of ["whoBoardDocUrl", "carriageDocUrl", "vouchBoardDocUrl"]) {
+    for (const forbidden of ["whoBoardDocUrl", "carriageDocUrl", "realmVouchBoardDocUrl"]) {
       expect(call, `the boot's climb reached for ${forbidden}`).not.toContain(forbidden);
     }
 
     // ④ NESTING. The climb sits at the boot's own depth (4 spaces), not inside the `if (personaKelPrefix)`
-    //    guard (6) — a faceless vessel holds shadows and an antigen too, and must still carry them.
+    //    guard (6) — a faceless vessel holds an antigen too, and must still carry it.
     expect(src, "a climb nested under the persona-KEL guard would stop a FACELESS vessel from carrying")
       .toMatch(/\n {4}await climbNexusBoards\(\{/);
 

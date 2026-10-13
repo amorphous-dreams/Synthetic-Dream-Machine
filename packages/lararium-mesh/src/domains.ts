@@ -167,8 +167,16 @@ export const CARRIAGE_CARRIER_DOMAIN = frozen("carriage-carrier");
  *  across the roll. Its own name: an anchor must never verify as a carriage act, nor an act as an anchor. */
 export const CARRIAGE_ROLL_ANCHOR_DOMAIN = mint("carriage-roll-anchor");
 export const MEMBERSHIP_RELAY_DOMAIN = frozen("membership-relay");
-/** The kāpae raised over one RELATIONSHIP rather than over a party. */
-export const EDGE_KAPAE_DOMAIN = frozen("edge-kapae");
+/** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
+export const EDGE_KAPAE_DOMAIN = mint("edge-act");
+/** A SEAL ROLL's anchor on an edge board: the NEW epoch's quorum names the epoch it closes, that epoch's
+ *  key-set, and the heads of the quorum acts that counted there, so a shadow carries across the roll. */
+export const EDGE_ROLL_ANCHOR_DOMAIN = mint("edge-roll-anchor");
+/** One device's relation to one fleet, named by the two ends every fleet device can read: the fleet root
+ *  and the device key. The id a dyad's marker rides under on the fleet's edge board. */
+export const DEVICE_EDGE_DOMAIN = mint("device-edge");
+/** A member's whole relation to one realm, whoever vouched — the id a quorum's removal names. */
+export const MEMBER_EDGE_DOMAIN = mint("member-edge");
 /** One hand's own stake on a joiner — a vouch admits nobody. */
 export const VOUCH_EDGE_DOMAIN = frozen("vouch-edge");
 /** The record that a re-anchoring happened, never what made it valid. */

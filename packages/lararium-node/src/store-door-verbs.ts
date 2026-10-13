@@ -60,6 +60,7 @@ import { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./command
 import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusRollAnchor, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
+import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 import { runDeviceAdmit } from "./commands/device-admit.js";
@@ -134,7 +135,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
-  HostRefusal, WalkRefusal, NexusKapaeError, NexusContractError, EdgeKapaeError, CabalVouchError, CabalJoinError,
+  HostRefusal, WalkRefusal, NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, CabalVouchError, CabalJoinError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError,
 ] as const;
 
@@ -200,12 +201,12 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       return { ...r };
     }),
     "nexus-roll-anchor": (args) => answer("nexus-roll-anchor", async () => {
-      const r = await runNexusRollAnchor({
-        sealHome, repo,
-        closing: args["closing"] as KahuQuorumSeats, opened: args["opened"] as KahuQuorumSeats,
-      });
+      const closing = args["closing"] as KahuQuorumSeats, opened = args["opened"] as KahuQuorumSeats;
+      const r = await runNexusRollAnchor({ sealHome, repo, closing, opened });
+      // The same roll anchors every realm edge board this vessel keeps quorum acts for (kapae#/rolls).
+      const edgeAnchors = await runEdgeRollAnchors({ sealHome, repo, closing, opened });
       await awaitOnRolled(deps.onRolled?.());
-      return { ...r };
+      return { ...r, edgeAnchors };
     }),
     "nexus-members-list": (args) => answer("nexus-members-list", async () => ({
       ...(await runNexusMembersList({ sealHome, repo, ...opt("aid", str(args["aid"])) })),
@@ -254,7 +255,9 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
 
     "edge-kapae": (args) => answer("edge-kapae", async () => ({
       ...(await runEdgeKapae({
-        edgeId: str(args["edgeId"]) ?? "", raised: args["raised"] !== false, epochCid: str(args["epochCid"]) ?? "", repo,
+        raised: args["raised"] !== false, sealHome, repo,
+        ...opt("edgeId", str(args["edgeId"])), ...opt("member", str(args["member"])), ...opt("device", str(args["device"])),
+        ...(args["hand"] === "quorum" ? { hand: "quorum" as const } : {}), ...opt("realm", str(args["realm"])),
         ...opt("handleIndex", int(args["handleIndex"])), ...opt("parents", strs(args["parents"])),
       })),
     })),
@@ -266,7 +269,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     "cabal-join": (args) => answer("cabal-join", async () => ({
       ...(await runCabalJoin({
-        realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", repo,
+        realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", sealHome, repo,
         ...opt("maxVouchesPerVoucher", int(args["maxVouchesPerVoucher"])),
       })),
     })),

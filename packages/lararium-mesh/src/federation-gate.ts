@@ -107,6 +107,27 @@ export class DeterministicFederationGate implements FederationGate {
 }
 
 /**
+ * ShadowConsult — the edge-shadow consult every share verdict runs FIRST (kapae#/reach).
+ *
+ * `aside(peerId)` answers true when a standing shadow sets this peer's DEVICE aside from the fleet this vessel
+ * serves: its dyad reads `held`, `unsettled`, `unavailable` or `rejected` on the fleet's own edge board. A gate
+ * then answers as though the relation never stood. The peer draws the same `false` a caught-up peer draws — the
+ * Mu of `./mu-void` — and no refusal names a cause.
+ *
+ * PURELY SUBTRACTIVE: a null consult, and a peer the consult cannot name, deny nothing here. The fail-closed
+ * discipline sits in the consult itself, which answers `true` until its first fold lands (`edge-shadow-ring`).
+ * A MEMBER's shadow scopes to one realm's documents, so it rides the realm's own gate (`RealmBagGate`), never this.
+ */
+export interface ShadowConsult {
+  aside(peerId: string): boolean;
+}
+
+/** Does a standing shadow set this peer aside? A null consult sets nobody aside. */
+export function presenterStandsAside(shadow: ShadowConsult | null | undefined, peerId: string): boolean {
+  return shadow ? shadow.aside(peerId) : false;
+}
+
+/**
  * SiblingShare — how a share policy reads the peers a SIBLING CHANNEL yielded (`sibling-channel`). A sibling is a
  * device of the face's own PersonaGroup, proven over the sibling session: it holds STANDING, never the vessel. It
  * is neither a house member nor the operator's own node, so it never shares freely: every doc it asks for passes
@@ -118,14 +139,19 @@ export interface SiblingShare {
   isSibling(peerId: string): boolean;
   /** The gate a sibling's every doc passes. Null before it stands → deny-by-default. */
   gate(): FederationGate | null;
+  /** True when a standing shadow sets this sibling's device aside from the fleet (kapae#/reach). Absent → none. */
+  aside?(peerId: string): boolean;
 }
 
-/** The sibling verdict: deny-by-default, and only what the sibling gate federates crosses. */
+/** The sibling verdict: deny-by-default, and only what the sibling gate federates crosses. A sibling whose
+ *  dyad stands shadowed reaches nothing (kapae#/reach). */
 export async function siblingShareDecision(
   gate:        FederationGate | null,
   peerId:      string,
   documentId?: DocumentId,
+  shadow?:     ShadowConsult | null,
 ): Promise<boolean> {
+  if (presenterStandsAside(shadow, peerId)) return false;
   if (!gate || !documentId) return false;
   return gate.mayFederate(documentId, peerId as PeerId);
 }
@@ -149,9 +175,14 @@ export async function federationShareDecision(
   peerId:     string,
   documentId?: DocumentId,
   siblings?:  SiblingShare | null,
+  shadow?:    ShadowConsult | null,
 ): Promise<boolean> {
+  // THE EDGE SHADOW reads FIRST, on every lane: a device set aside from the fleet draws Mu whether it arrives as
+  // a sibling, as a same-operator relay or as a gated one.
+  if (presenterStandsAside(shadow, peerId)) return false;
   if (siblings?.isSibling(peerId)) {
     if (relayPeers.has(peerId)) return false;  // two carriers claim one id → deny, whichever announced last
+    if (siblings.aside?.(peerId)) return false; // the sibling's own dyad stands shadowed → the lane closes
     return siblingShareDecision(siblings.gate(), peerId, documentId);
   }
   if (!relayPeers.has(peerId)) {
@@ -226,9 +257,10 @@ export async function identityShareDecision(
   peerId:     string,
   documentId?: DocumentId,
   siblings?:  SiblingShare | null,
+  shadow?:    ShadowConsult | null,
 ): Promise<boolean> {
   // OUTER ring — the #49 federation gate (and the sibling gate for a sibling). Its deny-by-default holds first.
-  const fedAllows = await federationShareDecision(relayPeers, fedGate, peerId, documentId, siblings);
+  const fedAllows = await federationShareDecision(relayPeers, fedGate, peerId, documentId, siblings, shadow);
   if (!fedAllows)               return false;   // outer ring denies → done (AND semantics)
   if (!identity)                return true;    // no inner ring wired → fed gate is the whole verdict
   if (!relayPeers.has(peerId))  return true;    // in-process peer, or a sibling the sibling gate already judged
@@ -334,12 +366,14 @@ export async function carryContractShareDecision(
   identity:   IdentityRing | null,
   peerId:     string,
   documentId?: DocumentId,
+  shadow?:    ShadowConsult | null,
 ): Promise<boolean> {
   // ANTIGEN peer-consult FIRST — a Kapae'd presenter draws Mu (an in-process island peer never reaches a
   // relay antigen; the ring's presenterNym returns null for a house member, so this is a no-op there).
   if (presenterIsKapaed(antigen, peerId)) return false;
-  // Then the #58 composition, UNCHANGED. The self-slot inner ring stays inert (see the surfaced fork).
-  return identityShareDecision(relayPeers, fedGate, identity, peerId, documentId);
+  // Then the #58 composition. The edge shadow rides down to the federation floor, which reads it FIRST
+  // (kapae#/reach); the self-slot inner ring stays inert (see the surfaced fork).
+  return identityShareDecision(relayPeers, fedGate, identity, peerId, documentId, null, shadow);
 }
 
 /**
@@ -410,9 +444,12 @@ export async function carrierShareDecision(
   seal:       PlaneSeal | null,
   peerId:     string,
   documentId?: DocumentId,
+  shadow?:    ShadowConsult | null,
 ): Promise<boolean> {
+  // 0. THE EDGE SHADOW — a device set aside from the fleet reaches neither the floor nor the sealed lane.
+  if (presenterStandsAside(shadow, peerId)) return false;
   // 1. The FLOOR, verbatim — antigen-first (Kapae'd → Mu), then the federatable-public set (#58/#59).
-  const floor = await carryContractShareDecision(relayPeers, fedGate, antigen, identity, peerId, documentId);
+  const floor = await carryContractShareDecision(relayPeers, fedGate, antigen, identity, peerId, documentId, shadow);
   if (floor) return true;                                   // federatable/public/house already crosses — done
   // 2. The MEMBER blind-transit lane — additive, over a plane the floor DENIED.
   if (!membership || !seal)              return false;      // no consult / no seal oracle → fail-closed (stranger)
@@ -519,9 +556,10 @@ export async function capTierShareDecision(
   capTiers:   CapTierRing | null,
   peerId:     string,
   documentId?: DocumentId,
+  shadow?:    ShadowConsult | null,
 ): Promise<boolean> {
   // 1. The STRUCTURAL floor, verbatim. Its deny is absolute — a tier never loosens it.
-  const base = await carrierShareDecision(relayPeers, fedGate, antigen, identity, membership, seal, peerId, documentId);
+  const base = await carrierShareDecision(relayPeers, fedGate, antigen, identity, membership, seal, peerId, documentId, shadow);
   if (!base)                    return false;   // structural deny stands (tier tightens only, never loosens)
   if (!capTiers)                return true;    // no declared-tier ring → the base verdict is whole (inert shore)
   if (!relayPeers.has(peerId))  return true;    // in-process house member — tier not consulted (full sync)

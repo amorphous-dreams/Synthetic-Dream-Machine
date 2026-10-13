@@ -1,12 +1,13 @@
 /**
- * cabal-join — the applicant crosses, or learns which gate refused. End-to-end through the node.
+ * cabal-join — the applicant crosses through the realm's shared vouch board, or learns which gate refused.
  *
  * THE LAST TEST CARRIES THE WEIGHT. `admitToRealm` takes a vouch DAG already folded, so the
  * per-voucher cap — the choke on how much mass one hand injects into a lineage — falls to whoever
  * assembled the edges. `admitOnLineage` folds inside the gate, where it cannot be left out. A door
  * onto the wrong one of those two passes every test here except that one.
  *
- * A refused applicant ANERGIZES: it stays at the floor, and nothing is written on either outcome.
+ * A refused applicant ANERGIZES: it stays at the floor. Vouch and join resolve their records by realm id,
+ * including when the vessel stands under a seated charter.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
@@ -19,14 +20,12 @@ import {
 } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc, NEXUS_DOC_DOMAIN } from "../src/nexus-doc.js";
-import { nodeNexusIsland } from "../src/nexus-standing.js";
-import { loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
 import { direct } from "./direct-store.js";
-
 import { fixtureKey } from "./fixture-keys.js";
+
 let root: string;
 let priorLarRoot: string | undefined;
 
@@ -196,23 +195,14 @@ describe("cabal join — the crossing, and what it refuses", () => {
     expect(Array.isArray(v.capped)).toBe(true);
   });
 
-  it("★ a CLIMBED vessel's join reads the board its vouch wrote — both key on the NEXUS island ★", async () => {
-    // A charter seated at the seal home moves the island off the vessel key to the genesis AID. The vouch
-    // writes the island's board; a join keyed on the vessel key reads a board nobody wrote.
-    // The retired bare-`sealEpochCid` legacy path carries no lineage; a "the charter STANDS" fixture
-    // needs a real, verifiable genesis to raise a live roster.
-    const genesis = genesisCharterEpoch([fixtureKey(0xb2)], 1, "");
+  it("a climbed vessel's join reads the realm board its vouch wrote", async () => {
+    // Vouch and join resolve the board from the same realm id even while a charter is seated.
+    const steward = fixtureKey(0xb2);
+    const genesis = genesisCharterEpoch([steward], 1, "");
     writeNexusDoc(larSealHome(), {
-      kind: NEXUS_DOC_DOMAIN,
-      threshold: 1,
-      sealEpochCid: genesis.epochCid,
-      sealLineage: [genesis],
-      kahu: [{ displayName: "steward", verifyingKey: fixtureKey(0xb2) }],
+      kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: genesis.epochCid,
+      sealLineage: [genesis], kahu: [{ displayName: "steward", verifyingKey: steward }],
     });
-    const vesselKey = await loadVesselVerifyingKey();
-    // CONTROL: the rig moved the island, or the assertion below greens on the defect.
-    expect(nodeNexusIsland({ ownVesselKey: vesselKey })).not.toBe(vesselKey);
-
     const joiner = await foreignNym(18);
     await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, now: NOW });

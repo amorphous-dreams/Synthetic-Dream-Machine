@@ -224,7 +224,7 @@ async function cmdJoin(args: ParsedArgs): Promise<number> {
 
     emit(args, {
       ok: true,
-      data: { admitted: v.admitted, refusal: v.refusal, voucherDid: v.voucherDid, capped: v.capped.length, setAside: v.setAside },
+      data: { admitted: v.admitted, refusal: v.refusal, voucherDid: v.voucherDid, capped: v.capped.length, setAside: v.setAside, memberSetAside: v.memberSetAside },
       human: () => {
         if (v.admitted) {
           console.log("ADMITTED");
@@ -240,11 +240,15 @@ async function cmdJoin(args: ParsedArgs): Promise<number> {
         // The fold's budget, stated rather than trusted.
         if (v.capped.length > 0) console.log(`  capped:    ${v.capped.length} edge(s) the per-voucher choke turned away`);
         // The shadows this crossing met, each with its reading — a fork shows as a fork, for people to settle.
+        const reading = (verdict: string, who: string): string => verdict === "held" ? `${who} set it aside`
+          : verdict === "unsettled" ? `FORK — a raise and a lower stand unordered; the shadow holds until ${who} decides`
+          : "its record reads incomplete here; no lift stands proven";
         for (const s of v.setAside) {
-          const why = s.verdict === "held" ? "its voucher set it aside"
-            : s.verdict === "unsettled" ? "FORK — a raise and a lower stand unordered; the shadow holds until its voucher decides"
-            : "its record reads incomplete here; no lift stands proven";
-          console.log(`  set aside: ${s.edgeId}  voucher ${s.voucherDid.slice(0, 16)}… → joiner ${s.joinerIdentityHex.slice(0, 16)}…  (${why})`);
+          const who = s.over === "vouch" ? "a hand that holds the vouch" : "the seat quorum (over the voucher's own place in the realm)";
+          console.log(`  set aside: ${s.edgeId}  voucher ${s.voucherDid.slice(0, 16)}… → joiner ${s.joinerIdentityHex.slice(0, 16)}…  (${reading(s.verdict, who)})`);
+        }
+        if (v.memberSetAside) {
+          console.log(`  member:    ${v.memberSetAside.edgeId}  the applicant's own place in this realm stands aside (${reading(v.memberSetAside.verdict, "the seat quorum")}); no vouch lifts it`);
         }
       },
     });

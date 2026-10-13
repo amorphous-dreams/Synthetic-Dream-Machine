@@ -1,7 +1,8 @@
 /**
  * socket-sorter — the ONE sorter a vessel's gates arm with: every proven socket is classed before any verdict.
  *
- *   · same-operator — the keyholder worker vouched it (cap=admin@daemon, or a KEL-pinned device edge);
+ *   · same-operator — the keyholder worker vouched it (cap=admin@daemon, or a KEL-pinned device edge), and no
+ *                     standing shadow sets its device aside from the fleet (`deviceAside`);
  *   · contracted    — it presented an admit, and `leafStandingFor` reads that admit HELD against a Nexus this
  *                     vessel carries (its leaf proof over this socket, its charter lineage, the deny board, the
  *                     antigen); or it is a faceless PLACE whose vessel key this vessel's own board counts a
@@ -56,6 +57,12 @@ export interface SocketSorterDeps {
   readonly primaryPosture: () => FederationPosture;
   /** The hosting store and leaf the walker arms read. Absent → no socket stands as a walker here. */
   readonly hosting?:       HostingSorterDeps;
+  /**
+   * THE DYAD'S SHADOW (kapae#/reach): does a standing shadow set this device aside from the fleet this vessel
+   * serves? A device set aside never sorts same-operator, whatever its delegation proves; it sorts by what else
+   * it proves, and with nothing else it meets what a stranger meets. Absent → no device reads as aside.
+   */
+  readonly deviceAside?:   (vesselKey: string) => boolean;
 }
 
 /** The kind of place a vessel stands as: a hearth (a lararium, with a face) or a crossroads (a herm). */
@@ -143,7 +150,8 @@ export function gateAnswersStrangers(primary: FederationPosture, readings: reado
 /** Stand the vessel's sorter over its carried readings. */
 export function makeSocketSorter(deps: SocketSorterDeps): SocketSorter {
   return async (input) => {
-    if (input.sameOperator) return { class: "same-operator" };
+    // A valid delegation set aside stays set aside: the shadow reads before the class the delegation earned.
+    if (input.sameOperator && !deps.deviceAside?.(input.vesselKey)) return { class: "same-operator" };
     const readings = await deps.readings();
     let standing: SortVerdict["standing"];
     const presented = input.presented;

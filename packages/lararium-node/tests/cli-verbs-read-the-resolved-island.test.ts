@@ -1,9 +1,7 @@
 /**
- * The 12 CLI-verb sites (7 files) that address a per-Nexus board through the vessel's OWN key instead
- * of the resolved island - the same defect class `device-admit.ts` already cured (`91ce09afb` +
- * `5251f49b2`, see `device-admit-reads-the-resolved-island.test.ts`), left standing at the CLI layer.
+ * CLI-verb sites that address per-Nexus boards through the island resolved at boot.
  *
- * WHAT THIS PINS. A structural WELD sweep, mirroring the device-admit weld: for each of the six files,
+ * WHAT THIS PINS. A structural WELD sweep for each island-scoped board call,
  * strip comments (docblocks NAME the old spelling to explain why it was wrong - a token-only sweep over
  * raw source would match the prose and red over code that is already correct), then assert every
  * board-door call's ARGUMENT reads the RESOLVED island rather than a bare vessel-key variable.
@@ -36,19 +34,17 @@ function read(rel: string): string {
   return readFileSync(new URL(rel, ROOT), "utf8");
 }
 
-/** Every door name in the 12-site table, keyed by the file that calls it. Captures the ARGUMENT. */
+/** Every island-scoped door name, keyed by the file that calls it. Captures the ARGUMENT. */
 const SITES: Array<{ file: string; door: RegExp; count: number }> = [
   { file: "commands/handle.ts",         door: /whoBoardDocUrl\(([^)]*)\)/g,        count: 2 },
   { file: "commands/handle.ts",         door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 2 },
   { file: "persona-admit-flow.ts",      door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
   { file: "commands/nexus-kapae.ts",    door: /kapaeAntigenDocUrl\(([^)]*)\)/g,    count: 2 },
-  { file: "commands/cabal-vouch.ts",    door: /vouchBoardDocUrl\(([^)]*)\)/g,      count: 1 },
-  { file: "commands/edge-kapae-cmd.ts", door: /edgeKapaeBoardDocUrl\(([^)]*)\)/g,  count: 1 },
   { file: "commands/nexus-contract.ts", door: /carriageDocUrl\(([^)]*)\)/g,        count: 3 },
 ];
 
 
-describe("the 12 CLI-verb sites resolve the island the boot resolved, not the raw vessel key", () => {
+describe("CLI island-scoped board sites use the island resolved at boot", () => {
   for (const { file, door, count } of SITES) {
     test(`WELD - ${file} :: ${door.source} composes the resolved island, never a bare vessel-key read`, () => {
       const raw  = read(file);
@@ -70,9 +66,17 @@ describe("the 12 CLI-verb sites resolve the island the boot resolved, not the ra
 
   test("CONTROL - the module composes `nodeNexusIsland`, imported from nexus-standing", () => {
     for (const file of ["commands/handle.ts", "persona-admit-flow.ts", "commands/nexus-kapae.ts",
-                         "commands/cabal-vouch.ts", "commands/edge-kapae-cmd.ts", "commands/nexus-contract.ts"]) {
+                         "commands/nexus-contract.ts"]) {
       const src = read(file);
       expect(src, `${file} does not import nodeNexusIsland`).toMatch(/nodeNexusIsland/);
+    }
+  });
+
+  test("vouch, join, and edge-kapae commands address realm or fleet boards", () => {
+    for (const file of ["commands/cabal-vouch.ts", "commands/cabal-join.ts", "commands/edge-kapae-cmd.ts"]) {
+      const code = stripComments(read(file));
+      expect(code, `${file} resolves no Nexus island`).not.toMatch(/nodeNexusIsland/);
+      expect(code, `${file} names its realm or fleet board`).toMatch(/realmVouchBoardDocUrl|realmEdgeBoardDocUrl|fleetEdgeBoardDocUrl/);
     }
   });
 
