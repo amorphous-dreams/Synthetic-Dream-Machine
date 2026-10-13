@@ -64,18 +64,26 @@ import { makeCatalogAccessor } from "@lararium/tw5";
 // imports ITS OWN package from `dist/` — matching the harness note "e2e loads dist, not src" — so the
 // worker path resolves inside dist/src/ end to end. `@lararium/mesh|keyhive|tw5` stay on the vitest
 // alias (src); none of them spawn a worker off their own `import.meta.url`.
+//
+// ONE MODULE INSTANCE HOLDS THE CUSTODY SEAT. A founding seats the holder that keeps the vessel key in its own
+// module's seat (`custody-seat.ts`), and every sealed row reads through that seat. `dist/` and `src/` each carry
+// their own copy of the seat, so the founding runs from `dist/` too: a place founded through the `src/` `runInit`
+// seats a key the `dist/` face founding, anchor read and boot below can never reach, and each refuses
+// `CustodyLocked`.
 import {
-  runFoundTheFace, loadIdentityAnchors, openNodeVessel, loadVesselSigningSeed,
+  runInit, runFoundTheFace, loadIdentityAnchors, openNodeVessel, loadVesselSigningSeed,
   larSealHome, writeNexusDoc,
 } from "../../dist/src/index.js";
 import { generateOrLoadVesselIdentity } from "../../dist/src/node-vessel-identity.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
 // The charter's genesis epoch, built the way a real founding builds it: a charter that names a seal epoch
-// carries the lineage that proves it (the lineage law reads a bare `sealEpochCid` as torn).
-const CHARTER_GENESIS = genesisCharterEpoch(["a".repeat(64)], 1, "");
+// carries the lineage that proves it (the lineage law reads a bare `sealEpochCid` as torn). Its one seat names a
+// real Ed25519 key: a founding seat passes the strict door, and `"a".repeat(64)` names a mixed-order point.
+const CHARTER_GENESIS = genesisCharterEpoch([fixtureKey(0xaa)], 1, "");
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
-import { foundDirect } from "../found-route.js";
+import { TEST_CUSTODY } from "../found-route.js";
+import { fixtureKey } from "../fixture-keys.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation
@@ -165,7 +173,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
 
   beforeAll(async () => {
     // ── Found + wear a face ──────────────────────────────────────────────────────────────────
-    await withLarRoot(FOUNDER.root, () => foundDirect({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
+    await withLarRoot(FOUNDER.root, () => direct(runInit)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis, custody: TEST_CUSTODY }));
     await withLarRoot(FOUNDER.root, () => direct(runFoundTheFace)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
 
     const anchors = await withLarRoot(FOUNDER.root, async () => loadIdentityAnchors(0));
