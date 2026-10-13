@@ -150,6 +150,10 @@ import { custodyHeld, custodyVeilKeys } from "./custody-seat.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
 import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
+import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
+import { askIslandVerb }                   from "./island-verb-ask.js";
+import { newRequestId }                    from "@lararium/mesh";
+import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane }         from "./sealed-acts.js";
 import {
   makeResidencyStatsReactor,
@@ -1062,8 +1066,42 @@ async function prepareNodeBootOn(
     charterRealm:    () => realmIdOfCharter(readNexusDoc(sealHome)),
     vesselKeyOfPeer: (peerId) => peerIdentifierMap.get(peerId)?.slice(-64).toLowerCase() ?? null,
     realmNymOfPeer:  (peerId) => peerContractNymMap.get(peerId) ?? null,
-    onRefold:        () => { reverdict(); dropNoLongerHeld(); },
+    onRefold:        () => { reverdict(); dropNoLongerHeld(); seatSettler?.onFold(); },
   });
+  // THE SETTLE ON EVERY FOLD (kapae#/keys). A counted raise owes one key roll, and the fold itself sets the answer
+  // off: no person types a verb and no timer runs. The settler reads the fold, hands the facts to the daemon
+  // island's `seat-duties` verb (where the face's group keys live) and awaits its answer on the daemon's
+  // document, then keeps the signed rolls in this vessel's own ledger. It stands with a SOVEREIGN composition
+  // alone: the facts read the sealed roster, and a floor's island holds no veil. A vessel that holds no root of
+  // the fleet its device edge names reads no facts for it, exactly as `lares edge settle` refuses there, and says
+  // so once.
+  let rootlessSaid = false;
+  const seatSettler = sovereign ? makeSeatSettler({
+    wornFleetRoot: () => wornFleetRoot,
+    fold:          () => builtRing.fold(),
+    facts: async (fleetRoot) => {
+      try { return (await runEdgeSeatFacts({ repo, fleetRoot })).fleets[0] ?? null; }
+      catch (err) {
+        if (!(err instanceof EdgeSeatError)) throw err;
+        if (!rootlessSaid) { rootlessSaid = true; console.log(`[edge-seats] no settle runs here for this vessel's own fleet: ${err.message}`); }
+        return null;
+      }
+    },
+    answer: (facts) => {
+      if (!daemonVm) throw new Error("the daemon island does not stand yet");
+      const ask = askIslandVerb({
+        daemonHandle: daemonVm.daemonHandle, placeVerb: (o) => daemonVm.placeVerb(o),
+        verb: "seat-duties", args: { facts }, requestedBy: `0x${vesselIdentity.verifyingKey}`, requestId: newRequestId(),
+      });
+      return { answer: ask.answer as Promise<unknown> as Promise<SeatDutiesAnswer>, abandon: () => ask.abandon() };
+    },
+    mark:       (fleetRoot, rolls) => runEdgeSeatMarks({ repo, fleetRoot, rolls }),
+    // The marks moved the ledger and no board: the ring folds again so every gate reads the roll, and the Repo
+    // re-reads its verdicts. This fold sets off no further settle.
+    afterMarks: async () => { await builtRing.refold(); reverdict(); },
+    onLog:      (line) => console.log(`[edge-seats] ${line}`),
+  }) : null;
+  if (seatSettler) stood.push({ what: "the seat settler", down: () => seatSettler.dispose() });
   // AT THE FLOOR EVERY FLEET LANE STAYS SHUT (`floor-fleet-lanes`): the sorter reads each device as set aside, and
   // the share verdict's own consult sets a proven sibling aside too. A peer on neither lane keeps the public shelf.
   const shadowRing: EdgeShadowRing = sovereign ? builtRing : floorShadowRing(builtRing, (peerId) => Boolean(siblings?.provenKeyOf(peerId as PeerId)));
@@ -2609,6 +2647,10 @@ async function prepareNodeBootOn(
         handle: (req, socket, head) => wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req)),
       });
     }
+
+    // A raise this vessel counted before it last stopped still owes its roll: once the island answers verbs, the
+    // settler reads the fold that landed at boot.
+    if (seatSettler) void daemonVm.workerEa.then(() => seatSettler.onFold(), () => undefined);
 
     // Keep the oracle's lares pointer current.
     reconcileWellKnownTiddlers(assembly.islandHandle, assembly.laresHandle?.url);
