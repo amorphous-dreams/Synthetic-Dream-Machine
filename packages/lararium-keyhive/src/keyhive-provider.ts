@@ -4,7 +4,7 @@
  * (@keyhive/keyhive 0.3.0-alpha.1).
  *
  * Mapping:
- *   - Lararium bag URL ↔ Keyhive Document, 1:1
+ *   - Lararium bag URL ↔ Keyhive Document, 1:1; wrap documents name no bag
  *   - Operator ed25519 seed → Signer.memorySignerFromBytes
  *   - Peer DID = hex-encoded Identifier bytes (matches Keyhive.idString)
  *   - Access "read" / "admin" passes through verbatim
@@ -33,6 +33,7 @@ import type {
   CapabilityProvider, CapabilityProviderInitOpts,
   DelegateArgs, DelegateResult, VerifyArgs, VerifyResult,
   PeerDID,
+  ProviderChunkRest,
 } from "./capability-provider.js";
 
 /** setPanicHook installs a global Rust→JS error translator. Calling it twice
@@ -110,6 +111,8 @@ export class ArchiveIdentityMismatch extends Error {
 export class KeyhiveProvider implements CapabilityProvider {
   private kh:         KH.Keyhive | null = null;
   private eventStore: CapabilityProviderInitOpts["eventStore"] | null = null;
+  /** Durable rest for the tracked chunks (`bagChunks`). Absent: they rest in memory alone. */
+  private chunkRest: ProviderChunkRest | undefined;
   /** CIV-3 — the island (target Document hex) a doc-scoped op is CURRENTLY re-keying. The
    *  fire-and-forget handler reads it to attribute CGKA_OPERATION events, which carry no docId of
    *  their own. Safe because keyhive fires the handler SYNCHRONOUSLY within the op (proven) and the
@@ -121,6 +124,11 @@ export class KeyhiveProvider implements CapabilityProvider {
    *  write lands. `settleEvents` awaits these; a first-writer-wins store makes that ordering load-bearing
    *  (a record written ahead of the handler's masks the variant it would have stamped). */
   private pendingWrites: Promise<unknown>[] = [];
+  /** How many of the handler's store writes failed. A wrap reads it on both sides of its own operations: a
+   *  wrap whose operations never rested could not open again, so it answers nothing. */
+  private failedWrites = 0;
+  /** What leaves when this provider disposes (`whenDisposed`). */
+  private readonly leaving: (() => void)[] = [];
   /** bagUrl → DocumentId bytes (hex). DocumentId class wraps bytes; we
    *  keep the hex form to use as a stable string key. */
   private readonly bagToDocId = new Map<string, string>();
@@ -135,7 +143,9 @@ export class KeyhiveProvider implements CapabilityProvider {
   /** bagUrl → (contentRef hex → its latest ciphertext). A re-key re-seals these to the current membership:
    *  keyhive reads FORWARD-ONLY, so a member seated after a chunk was sealed reaches it only once the holder
    *  re-encrypts it at the member's epoch (`reSealBag`). Only ciphertext is held — this holder already decrypts
-   *  its own chunks, so plaintext never rests here. */
+   *  its own chunks, so plaintext never rests here. Where a `chunkRest` stands, each chunk writes through to it
+   *  before `encryptContent` answers, and a provider that stands again finds what it held. A lockbox never
+   *  enters this map: it wraps into a document of its own (`wrapToReaders`). */
   private readonly bagChunks = new Map<string, Map<string, Uint8Array>>();
   /** The one contact card this stand mints (see `contactCard`): the mint itself, in flight or settled; null until
    *  the first ask. */
@@ -154,6 +164,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     ensureKeyhiveWasm();
     ensurePanicHook();
     this.eventStore = opts.eventStore;
+    this.chunkRest = opts.chunkRest;
 
     const signer = KH.Signer.memorySignerFromBytes(opts.seed);
     const store  = KH.CiphertextStore.newInMemory();
@@ -177,8 +188,10 @@ export class KeyhiveProvider implements CapabilityProvider {
         // safe); PREKEY_ROTATED stays unattributed (per-principal → co-loaded across every slice).
         const island  = eventIsland(e) ?? (variant === "CGKA_OPERATION" ? this._activeIsland : undefined);
         const put = this.eventStore?.put({ hash, variant, bytes, ...(island !== undefined ? { island } : {}) });
-        if (put) this.pendingWrites.push(put.catch(() => {}));
+        if (put) this.pendingWrites.push(put.catch(() => { this.failedWrites += 1; }));
       } catch (err) {
+        // A capture that throws lost its operation as surely as a write that rejects: a wrap reads this count.
+        this.failedWrites += 1;
         console.error("[keyhive] event capture failed:", err);
       }
     };
@@ -331,6 +344,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     // Ciphertext this process remembered for the bag belongs to the document that leaves; a later re-seal reads
     // the chunk cache through the bag's CURRENT document and would refuse on every one of them.
     this.bagChunks.delete(bagUrl);
+    if (prior && this.chunkRest) await this.chunkRest.drop(await this.chunkShelf(bagUrl, prior));
     return this.registerBag(bagUrl);
   }
 
@@ -418,6 +432,7 @@ export class KeyhiveProvider implements CapabilityProvider {
     let chunks = this.bagChunks.get(bagUrl);
     if (!chunks) { chunks = new Map(); this.bagChunks.set(bagUrl, chunks); }
     chunks.set(bytesToHex(refBytes), ciphertext);
+    if (this.chunkRest) await this.chunkRest.put(await this.chunkShelf(bagUrl, docIdHex), bytesToHex(refBytes), ciphertext);
     return ciphertext;
   }
 
@@ -431,7 +446,17 @@ export class KeyhiveProvider implements CapabilityProvider {
    * persists and ships the fresh ciphertext. Empty when this holder tracks no chunk for the bag.
    */
   async reSealBag(bagUrl: string): Promise<{ contentRef: Uint8Array; ciphertext: Uint8Array }[]> {
-    const chunks = this.bagChunks.get(bagUrl);
+    let chunks = this.bagChunks.get(bagUrl);
+    if ((!chunks || chunks.size === 0) && this.chunkRest) {
+      const docId = this.bagToDocId.get(bagUrl);
+      if (docId) {
+        const rows = await this.chunkRest.list(await this.chunkShelf(bagUrl, docId));
+        if (rows.length) {
+          chunks = new Map(rows.map(({ refHex, ciphertext }) => [refHex, Uint8Array.from(ciphertext)]));
+          this.bagChunks.set(bagUrl, chunks);
+        }
+      }
+    }
     if (!chunks || chunks.size === 0) return [];
     const out: { contentRef: Uint8Array; ciphertext: Uint8Array }[] = [];
     // Snapshot the entries — encryptContent overwrites this same map as it re-seals each chunk.
@@ -442,6 +467,66 @@ export class KeyhiveProvider implements CapabilityProvider {
       out.push({ contentRef: refBytes, ciphertext: fresh });
     }
     return out;
+  }
+
+  /** The opaque name a bag's tracked chunks rest under: a digest of the bag URL and its document, so the URL
+   *  never reaches the rest. A reminted bag takes a fresh shelf, and the old one gets dropped. */
+  private async chunkShelf(bagUrl: string, docIdHex: string): Promise<string> {
+    return hexEncode(await webDigest("SHA-256", new TextEncoder().encode(`${bagUrl}\n${docIdHex}`)));
+  }
+
+  /**
+   * WRAP a payload into a FRESH document that seats exactly `readers` beside this identity: the lockbox wrap
+   * (lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records).
+   *
+   * A wrap document belongs to one lockbox. It takes its members here and never again, seals this one payload
+   * under `contentRef` with no predecessor, and names no bag: it never enters the bag maps or the tracked
+   * chunks. A removal therefore never has to reach it, and a later seat finds no earlier key in it
+   * (`tests/seat-roll-substrate.probe.test.ts` 8 measures why a wrap through a bag's own document fails both).
+   *
+   * A reader this identity holds no contact card for goes `unreached`, and no member gets added for it. A
+   * failure after the document minted throws: no half-wrapped answer leaves.
+   *
+   * THE WRAP'S OWN OPERATIONS REACH THE EVENT STORE BEFORE IT ANSWERS, and a write that failed there fails the
+   * wrap. This identity still opens the wrap only from an Archive taken AFTER it (`lockbox-wrap.test.ts`), so
+   * the caller rests that Archive before it rests the lockbox (`keyhive-lockbox`).
+   */
+  async wrapToReaders(args: { readonly readers: readonly string[]; readonly contentRef: Uint8Array; readonly payload: Uint8Array }):
+    Promise<{ docIdHex: string; ciphertext: Uint8Array; served: string[]; unreached: string[] }> {
+    if (!(args.contentRef instanceof Uint8Array) || args.contentRef.length !== 32) throw new TypeError("[keyhive] a wrap's content reference rides exactly 32 bytes");
+    const kh = this.requireKh();
+    const self = bytesToHex(kh.whoami.toBytes());
+    const readers = [...new Set(args.readers.map((id) => bytesToHex(hexToBytes(id))))].filter((id) => id !== self);
+    const known: { id: string; agent: KH.Agent }[] = [];
+    const unreached: string[] = [];
+    for (const id of readers) {
+      const agent = await kh.getAgent(new KH.Identifier(hexToBytes(id)));
+      if (agent) known.push({ id, agent }); else unreached.push(id);
+    }
+    const read = KH.Access.tryFromString("read");
+    if (!read) throw new Error("[keyhive] Access.tryFromString('read') returned undefined");
+    await this.settleEvents();
+    const failedBefore = this.failedWrites;
+    const docId = await kh.generateDocument([], new KH.ChangeId(args.contentRef), []);
+    const docIdHex = bytesToHex(docId.toBytes());
+    this.hydratedIslands.add(docIdHex);   // minted here: live in memory, never deferred
+    const encrypted = await this.withActiveIsland(docIdHex, async () => {
+      for (const { agent } of known) await kh.addMember(agent.id, KH.MemberedId.document(docId), read, []);
+      return kh.tryEncrypt(docId, new KH.ChangeId(args.contentRef), [], args.payload);
+    });
+    await this.settleEvents();
+    if (this.failedWrites !== failedBefore) throw new Error("[keyhive] the wrap's own operations did not reach the event store, so no lockbox leaves");
+    return { docIdHex, ciphertext: encrypted.encryptedContent().toBytes(), served: known.map(({ id }) => id), unreached };
+  }
+
+  /**
+   * OPEN what a wrap document sealed. Throws where this identity holds no seat in it or cannot name it. A
+   * wrapper that booted with the document's island deferred materializes it first.
+   */
+  async unwrapFromDocument(docIdHex: string, ciphertext: Uint8Array): Promise<Uint8Array> {
+    const hexId = bytesToHex(hexToBytes(docIdHex));
+    await this.ensureIsland(hexId);
+    return this.requireKh().tryDecrypt(new KH.DocumentId(hexToBytes(hexId)), KH.Encrypted.fromBytes(ciphertext));
   }
 
   /**
@@ -809,7 +894,12 @@ export class KeyhiveProvider implements CapabilityProvider {
     }
   }
 
+  /** Run `leave` when this provider disposes: whatever stands over its identity (a content-key holder, a
+   *  subscription) leaves with it, so nothing keeps asking an identity that no longer stands. */
+  whenDisposed(leave: () => void): void { this.leaving.push(leave); }
+
   async dispose(): Promise<void> {
+    for (const leave of this.leaving.splice(0)) { try { leave(); } catch { /* one leaver's fault never keeps the next standing */ } }
     await this.settleEvents();
     // Keyhive WASM types support Symbol.dispose; rely on JS GC otherwise.
     this.kh = null;

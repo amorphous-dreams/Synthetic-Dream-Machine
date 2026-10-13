@@ -9,6 +9,12 @@ export type {
 } from "./capability-provider.js";
 
 export { KeyhiveProvider, ArchiveIdentityMismatch, ensureKeyhiveWasm, setKeyhiveWasmBytes } from "./keyhive-provider.js";
+export { keyhiveLockboxShore, encodeLockboxBox, readLockboxBox } from "./keyhive-lockbox.js";
+export type { LockboxProvider } from "./keyhive-lockbox.js";
+export { seatContentKeys } from "./content-key-seat.js";
+export type { ContentKeySeat, ContentKeySeatInput, ContentKeyProvider, SessionProof } from "./content-key-seat.js";
+export type { ProviderChunkRest } from "./capability-provider.js";
+export { memoryProviderChunkRest } from "./capability-provider.js";
 export { KeyhiveIdentitySlot } from "./keyhive-identity-slot.js";
 export type { KeyhiveIdentitySlotOpts } from "./keyhive-identity-slot.js";
 export { packPersonaCrossing, applyPersonaCrossing } from "./persona-crossing.js";

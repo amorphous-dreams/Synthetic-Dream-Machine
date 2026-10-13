@@ -49,6 +49,29 @@ export interface CapabilityProviderInitOpts {
    * the caller persists it ENCRYPTED-AT-REST.
    */
   readonly archiveBytes?: Uint8Array;
+  /** Durable rest for the Keyhive ciphertext the provider tracks per bag. Absent: it rests in memory alone. */
+  readonly chunkRest?: ProviderChunkRest;
+}
+
+/** Durable rest for the Keyhive ciphertext a provider tracks per bag. It holds ciphertext under opaque names:
+ *  `shelf` reads as a digest of the bag URL and its document, and the URL itself never reaches the port. */
+export interface ProviderChunkRest {
+  put(shelf: string, refHex: string, ciphertext: Uint8Array): Promise<void>;
+  list(shelf: string): Promise<{ refHex: string; ciphertext: Uint8Array }[]>;
+  drop(shelf: string): Promise<void>;
+}
+
+export function memoryProviderChunkRest(): ProviderChunkRest {
+  const shelves = new Map<string, Map<string, Uint8Array>>();
+  return {
+    async put(shelf, refHex, ciphertext) {
+      let chunks = shelves.get(shelf);
+      if (!chunks) { chunks = new Map(); shelves.set(shelf, chunks); }
+      chunks.set(refHex, Uint8Array.from(ciphertext));
+    },
+    async list(shelf) { return [...(shelves.get(shelf) ?? new Map()).entries()].map(([refHex, ciphertext]) => ({ refHex, ciphertext: Uint8Array.from(ciphertext) })); },
+    async drop(shelf) { shelves.delete(shelf); },
+  };
 }
 
 /** Lightweight reference shape so this file doesn't depend on event-store.ts.

@@ -20,7 +20,7 @@
  */
 
 import { KeyhiveProvider } from "./keyhive-provider.js";
-import type { CapabilityProviderInitOpts } from "./capability-provider.js";
+import type { CapabilityProviderInitOpts, ProviderChunkRest } from "./capability-provider.js";
 import { verifyEdgeAgainstPersonaKel, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
 
 export interface BootDaemonKeyhiveInput {
@@ -71,6 +71,9 @@ export interface BootDaemonKeyhiveInput {
    *  admitted into a PersonaGroup restores from it so its prekeys match the card the founder minted-to —
    *  without it, a fresh boot regenerates prekeys and the shared content reads "Key not found". */
   readonly archiveBytes?: Uint8Array;
+  /** Durable rest for the Keyhive chunks this identity tracks per bag (`KeyhiveProvider` `chunkRest`). Absent:
+   *  they rest in memory alone, and a restart finds none. */
+  readonly chunkRest?: ProviderChunkRest;
 }
 
 export interface BootDaemonKeyhiveResult {
@@ -96,6 +99,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   await keyhive.init({
     seed: input.seed, eventStore: input.eventStore,
     ...(input.archiveBytes ? { archiveBytes: input.archiveBytes } : {}),
+    ...(input.chunkRest ? { chunkRest: input.chunkRest } : {}),
   });
 
   // Re-ingest cap events the founding ceremony (or a prior boot) persisted to
