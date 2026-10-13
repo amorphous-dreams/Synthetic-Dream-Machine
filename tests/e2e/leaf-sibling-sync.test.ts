@@ -98,7 +98,7 @@ async function standLeaf(
     retryInterval: 500,
   });
   const ring = makePersonaGroupIdentityRing({
-    governs: (id) => planes.has(id), provenVesselKey: () => null,
+    governs: (id) => planes.has(id), provenVesselKey: () => null, deviceAside: () => false,
     siblingKeyOf: (peerId) => adapter.provenKeyOf(peerId), grants: { records: () => [], verify: async () => false },
   });
   const gate = ring.composeSiblings(new DeterministicFederationGate(NEXUS));

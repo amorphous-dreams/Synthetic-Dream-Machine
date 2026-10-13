@@ -26,6 +26,9 @@ import { writeNexusDoc } from "../src/nexus-doc.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
+import { runEdgeSeatMarks } from "../src/commands/edge-seats.js";
+import { signSeatRoll, ed25519SignerFromSeed } from "@lararium/mesh";
+import { loadVesselSigningSeed } from "../src/node-vessel-identity.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "../src/edge-shadow-ring.js";
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
@@ -97,6 +100,47 @@ describe("the ring fails closed until its first fold lands", () => {
       expect(ring.deviceAside(phone)).toBe(false);
       expect(ring.aside("p")).toBe(false);
       expect(ring.memberAside(REALM)("p")).toBe(false);
+    });
+  });
+});
+
+describe("device standing names the fleet edge", () => {
+  it("reads aside before a fold, and clear for an unnamed device after a fold", async () => {
+    const device = await nymOf(71);
+    await withRing({}, async (ring) => {
+      const fleet = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+      expect(ring.deviceStanding(fleet, device)).toBe("aside");
+      await ring.refold();
+      expect(ring.deviceStanding(fleet, device)).toBe("clear");
+    });
+  });
+
+  it("reads aside after a raise, owing after its lower, and returned once the raise got answered", async () => {
+    const device = await nymOf(72);
+    const fleet = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+    const raised = await direct(runEdgeKapae)({ device, raised: true });
+    await withRing({}, async (ring) => { await ring.refold(); expect(ring.deviceStanding(fleet, device)).toBe("aside"); });
+    await direct(runEdgeKapae)({ device, raised: false });
+    // The lift stands and the raise still owes its roll: the reading says so until this vessel answers it.
+    await withRing({}, async (ring) => { await ring.refold(); expect(ring.deviceStanding(fleet, device)).toBe("owing"); });
+    const receipt = async (how: "revoked" | "no-authority", cid: string, edgeId: string) =>
+      signSeatRoll({ kind: "seat-roll", scope: fleet.toLowerCase(), edgeId, raiseCids: [cid], how }, ed25519SignerFromSeed(await loadVesselSigningSeed()));
+    await direct(runEdgeSeatMarks)({ fleetRoot: fleet, rolls: [await receipt("revoked", raised.actCid, raised.edgeId)] });
+    await withRing({}, async (ring) => { await ring.refold(); expect(ring.deviceStanding(fleet, device)).toBe("returned"); });
+    // A raise this vessel answered with NO AUTHORITY left its seat standing under another hand: it reads owing still.
+    const other = await nymOf(74);
+    const up = await direct(runEdgeKapae)({ device: other, raised: true });
+    await direct(runEdgeKapae)({ device: other, raised: false });
+    await direct(runEdgeSeatMarks)({ fleetRoot: fleet, rolls: [await receipt("no-authority", up.actCid, up.edgeId)] });
+    await withRing({}, async (ring) => { await ring.refold(); expect(ring.deviceStanding(fleet, other)).toBe("owing"); });
+    expect(raised.shadowStands).toBe(true);
+  });
+
+  it("reads aside for a fleet this vessel does not follow", async () => {
+    const device = await nymOf(73);
+    await withRing({}, async (ring) => {
+      await ring.refold();
+      expect(ring.deviceStanding("ff".repeat(32), device)).toBe("aside");
     });
   });
 });

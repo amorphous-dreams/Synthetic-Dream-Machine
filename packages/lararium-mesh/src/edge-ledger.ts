@@ -28,6 +28,7 @@ import { verifyEd25519 } from "./ed25519-door.js";
 import { verifiedVouchesFromBoard, verifiedVouchesFromRecords, vouchEdgeId, vouchEntryKey, writeVouch } from "./vouch-board.js";
 import { tiddlerText } from "./base-doc.js";
 import { storedLarRecord } from "./stored-record.js";
+import type { SeatRoll } from "./seat-duties.js";
 import {
   edgeKapaeActsFromRecords, edgeRollAnchorsFromRecords, edgeRollAnchorCid, writeEdgeKapae, writeEdgeRollAnchor, mergeEdgeActs, mergeEdgeRollAnchors,
   readEdgeBoard, type CountedEdgeBoard, type EdgeAuthority, type EdgeBoardRead, type EdgeCharter, type EdgeKapae, type EdgeRollAnchor, type KeptEdgeRows,
@@ -149,10 +150,55 @@ export function rolledRaises(ledger: LarDoc | undefined | null, scope: string): 
   return new Set(marksOf(ledger, scope, "rolled").keys());
 }
 
-/** Remember that this vessel answered one raise on the key side. Call INSIDE a `handle.change()` callback. */
-export function markRaiseRolled(draft: LarDoc, scope: string, raiseCid: string): void {
+/**
+ * Remember that this vessel answered one raise on the key side, and HOW. The row holds the roll itself, so the
+ * ledger doubles as the roll's durable record: a subscriber that stands later reads every roll this vessel kept
+ * (`keptSeatRolls`), whether or not anyone listened when the key act ran. Call INSIDE a `handle.change()` callback.
+ */
+export function markRaiseRolled(draft: LarDoc, scope: string, raiseCid: string, roll?: Pick<SeatRoll, "edgeId" | "how" | "seat">): void {
   const key = rowKey(scope, "rolled", raiseCid);
-  if (draft.tiddlers[key] === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: "rolled" }, scope);
+  if (draft.tiddlers[key] !== undefined) {
+    // The first answer stands, with one step up: a seat this vessel could not revoke may leave later under the
+    // hand that seated it, and the row then takes that later answer.
+    const had = tiddlerText(draft.tiddlers[key]!) ?? "";
+    const stoodUnderAnotherHand = had.includes('"how":"no-authority"');
+    if (!stoodUnderAnotherHand || !roll || roll.how === "no-authority") return;
+  }
+  const text = roll ? JSON.stringify({ edgeId: roll.edgeId, how: roll.how, ...(roll.seat ? { seat: roll.seat } : {}) }) : "rolled";
+  draft.tiddlers[key] = storedLarRecord(key, { text }, scope);
+}
+
+/**
+ * The raises whose seat this vessel SAW LEAVE, for one board: revoked here, or gone already. A raise it answered
+ * with no authority over the seat stays out: that seat may still stand, so the raise stays owed here, and this
+ * vessel tries it again at each settle until it sees the seat leave.
+ */
+export function raisesSeenThrough(ledger: LarDoc | undefined | null, scope: string): Set<string> {
+  const out = new Set<string>();
+  for (const [raiseCid, text] of marksOf(ledger, scope, "rolled")) if (!text.includes('"how":"no-authority"')) out.add(raiseCid);
+  return out;
+}
+
+/**
+ * Every roll this vessel kept for one board, one per raise, sorted by raise. THE CONTENT-KEY SEAM'S DURABLE HALF
+ * (kapae#/keys): a subscriber catches up from here, and a row marked with no roll beside it reads as answered
+ * with nothing known of how.
+ */
+export function keptSeatRolls(ledger: LarDoc | undefined | null, scope: string): SeatRoll[] {
+  const out: SeatRoll[] = [];
+  for (const [raiseCid, text] of [...marksOf(ledger, scope, "rolled")].sort(([a], [b]) => a.localeCompare(b))) {
+    let parsed: unknown = null;
+    try { parsed = JSON.parse(text); } catch { parsed = null; }
+    const r = (typeof parsed === "object" && parsed !== null ? parsed : {}) as Record<string, unknown>;
+    const how = r["how"] === "revoked" || r["how"] === "gone" || r["how"] === "no-authority" ? r["how"] : null;
+    if (how === null || typeof r["edgeId"] !== "string") continue;
+    const seat = r["seat"] as Record<string, unknown> | undefined;
+    out.push({
+      kind: "seat-roll", scope, edgeId: r["edgeId"], raiseCids: [raiseCid], how,
+      ...(seat && typeof seat["group"] === "string" && typeof seat["member"] === "string" ? { seat: { group: seat["group"], member: seat["member"] } } : {}),
+    });
+  }
+  return out;
 }
 
 /** One read of one edge board as one vessel, with the handles a door goes on to write through. */

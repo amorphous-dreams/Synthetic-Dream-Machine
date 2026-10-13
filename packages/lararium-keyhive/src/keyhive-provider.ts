@@ -621,6 +621,43 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /**
+   * Answer one seat on a sentinel Document for the key side of a removal (kapae#/keys), and say HOW it answered.
+   *
+   *   · `gone`         — the party holds no access here: it left already, or never sat. A revocation that finds
+   *                      the party gone reads as done, so this never throws and writes nothing.
+   *   · `revoked`      — this identity revoked the seat. The removal converges across replicas.
+   *   · `no-authority` — the seat stands, and this identity holds no hand over it. REVOKE AUTHORITY FOLLOWS THE
+   *                      SEATING LINEAGE: the hand that seated a party revokes it, and so does a hand upstream of
+   *                      that seat; a peer seated beside the party holds none, admin or not. A party seated by
+   *                      two hands leaves only under a hand upstream of both, and the refusal covers the whole
+   *                      call (`tests/seat-roll-substrate.probe.test.ts` measures each).
+   *
+   * WHAT A REVOCATION HERE DOES NOT REACH. It closes the lattice and removes the party's leaf from THIS
+   * document's key agreement. A bag delegated to this sentinel keeps the party's leaf: the removal travels down
+   * to the documents a Keyhive Group reaches and to nothing a Document reaches (the same probe, 8 and 9). A
+   * bag's own content key rolls by the subscriber to the seat's roll, never by this call.
+   */
+  async revokeSentinelSeat(
+    memberIdentifierHex: string,
+    sentinelDocIdHex:    string,
+  ): Promise<{ how: "revoked" | "gone" | "no-authority" }> {
+    const kh = this.requireKh();
+    const docId = new KH.DocumentId(hexToBytes(sentinelDocIdHex));
+    if (!(await kh.getDocument(docId))) throw new Error(`[keyhive] sentinel doc not found for seat revoke: ${sentinelDocIdHex.slice(0, 16)}…`);
+    const identifier = new KH.Identifier(hexToBytes(memberIdentifierHex));
+    // Standing reads FIRST: a second revocation of a seat already gone produces no event and would throw.
+    if (!(await kh.getAgent(identifier)) || !(await kh.accessForDoc(identifier, docId))) return { how: "gone" };
+    try {
+      await this.revokeSentinelMember(memberIdentifierHex, sentinelDocIdHex);
+    } catch (err) {
+      const said = err instanceof Error ? err.message : String(err);
+      if (/proof missing/i.test(said)) return { how: "no-authority" };
+      throw err;
+    }
+    return { how: "revoked" };
+  }
+
+  /**
    * ENUMERATE the individuals reaching a sentinel Document, from its CGKA tree.
    *
    * `verifySentinelMembership` answers "does THIS hex hold access" and so needs a

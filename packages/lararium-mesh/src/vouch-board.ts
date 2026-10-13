@@ -57,7 +57,7 @@ import type { StoredLarRecord } from "./stored-value.js";
  * expired vouch simply no longer stands and a fresh one may replace it, while a withdrawn one stays set
  * aside, so re-minting the same edge cannot resurrect the standing it once carried.
  */
-export function vouchEdgeId(invite: CabalInvite): string {
+export function vouchEdgeId(invite: Pick<CabalInvite, "realmDocIdHex" | "voucherDid" | "joinerIdentityHex">): string {
   // ONE KEY, ONE SPELLING. Each end reads lower-case with no `0x`, so an invite re-minted under another spelling
   // of the same keys names the SAME edge and meets the shadow that stands over it.
   const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");

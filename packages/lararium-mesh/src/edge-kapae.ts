@@ -258,6 +258,13 @@ export function edgeKapaeActsFromRecords(records: Iterable<BoardRecord>): EdgeKa
   return out;
 }
 
+/** Every well-formed act among some parsed JSON values: acts a verb carried as plain data. Shape only. */
+export function edgeKapaeActsFromJson(values: Iterable<unknown>): EdgeKapae[] {
+  const out: EdgeKapae[] = [];
+  for (const v of values) { const act = coerceAct(v); if (act !== null) out.push(act); }
+  return out;
+}
+
 /** Every well-formed act a document carries. Shape only. */
 export function edgeKapaeActsFromBoard(doc: LarDoc | undefined | null): EdgeKapae[] {
   return edgeKapaeActsFromRecords(Object.values(doc?.tiddlers ?? {}));
@@ -689,4 +696,28 @@ export function edgeLineHeads(counted: readonly EdgeKapae[], edgeId: string, han
   }
   const covered = new Set(line.flatMap((a) => a.parents));
   return line.map((a) => a.actCid).filter((cid) => !covered.has(cid)).sort();
+}
+
+/**
+ * What one relationship reads for a door that seats or binds its far end (kapae#/reach · #/re-admission):
+ *   · `clear`    — no shadow stands and no counted raise ever named it;
+ *   · `aside`    — a shadow stands: the door answers as though the relation never stood;
+ *   · `owing`    — a counted raise once set it aside, its lift stands, and this vessel has not yet seen the
+ *                  seat leave for every raise: an earlier seat still owes its roll;
+ *   · `returned` — the lift stands and every raise got answered. Standing holds again, and the seat that
+ *                  follows stands FRESH: no key and no content of the span it missed returns with it.
+ */
+export type EdgeStanding = "clear" | "aside" | "owing" | "returned";
+
+/**
+ * Read one edge's standing off its fold. An edge no counted act names reads `clear`: absent never shadows.
+ * `rolled` names the raises whose seat this vessel saw LEAVE: revoked here, or gone already (`raisesSeenThrough`).
+ * A raise it answered with no authority over the seat stays out, since that seat may still stand. A reader
+ * that holds no ledger passes none, and reads every lifted raise as answered.
+ */
+export function edgeStandingOf(reading: EdgeReading | undefined, rolled?: ReadonlySet<string>): EdgeStanding {
+  if (reading === undefined) return "clear";
+  if (reading.stands) return "aside";
+  if (reading.raiseCids.length === 0) return "clear";
+  return rolled !== undefined && reading.raiseCids.some((cid) => !rolled.has(cid)) ? "owing" : "returned";
 }

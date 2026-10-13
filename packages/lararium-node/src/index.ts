@@ -231,6 +231,8 @@ export { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 export type { EdgeKapaeOptions, EdgeKapaeResult } from "./commands/edge-kapae-cmd.js";
 export { runEdgeRollAnchors, EdgeRollAnchorError, type EdgeRollAnchorLanded } from "./commands/edge-roll-anchor.js";
 export { readVesselEdgeBoard, vesselEdgeCharter, type VesselEdgeBoardRead } from "./edge-board.js";
+export { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError, type EdgeSeatFacts } from "./commands/edge-seats.js";
+export { runEdgePartial, runEdgeCosign, EdgeCosignError, type EdgePartialResult, type EdgeCosignResult } from "./commands/edge-cosign.js";
 export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch.js";
 export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js";
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";

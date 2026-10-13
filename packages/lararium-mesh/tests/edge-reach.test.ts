@@ -12,9 +12,9 @@ import {
   countEdgeActs, foldEdgeReadings, readEdgeBoard, shadowedEdges, edgeShadowStands, edgeLineHeads,
   signEdgeRollAnchor, edgeRollAnchorCid, edgeRollAnchorCounts, edgeRollAnchorParents, writeEdgeRollAnchor, mergeEdgeRollAnchors,
   edgeRollAnchorsFromBoard, EDGE_KAPAE_DOMAIN,
-  keepInLedger, keptFromLedger, restoreToBoard, rolledRaises, markRaiseRolled, ledgerScopes,
+  keepInLedger, keptFromLedger, restoreToBoard, rolledRaises, markRaiseRolled, ledgerScopes, keptSeatRolls, raisesSeenThrough,
   memberEdgeId, realmEdgeAuthority, lineageStanding, memberStandsAside,
-  signCabalInvite, vouchEdgeId, deviceEdgeId, fleetEdgeAuthority,
+  signCabalInvite, vouchEdgeId, deviceEdgeId, fleetEdgeAuthority, edgeStandingOf,
   emptyLarDoc, mutableLarRecord,
   type EdgeKapae, type EdgeRollAnchor, type EdgeCharter, type EdgeAuthority, type EdgeHand, type LarDoc, type CabalInvite,
 } from "../src/index.js";
@@ -576,5 +576,58 @@ describe("the fleet's edge — named by the fleet root and the device key", () =
     expect((await countEdgeActs([byRoot], [], authority)).acts).toHaveLength(1);
     const byDevice = await holderAct(edge, false, [byRoot.actCid], OTHER);
     expect(foldEdgeReadings((await countEdgeActs([byRoot, byDevice], [], authority)).acts).get(edge)?.verdict).toBe("held");
+  });
+});
+
+
+describe("edge standing", () => {
+  test("an absent edge reads clear, a raise reads aside, and its lower reads returned", async () => {
+    const up = await holderAct(EDGE, true);
+    const down = await holderAct(EDGE, false, [up.actCid]);
+    expect(edgeStandingOf(await reading([], [], null))).toBe("clear");
+    expect(edgeStandingOf(await reading([up], [], null))).toBe("aside");
+    expect(edgeStandingOf(await reading([up, down], [], null))).toBe("returned");
+  });
+
+  test("a raise beside a lower from one frontier remains aside", async () => {
+    const up = await holderAct(EDGE, true), down = await holderAct(EDGE, false);
+    expect(edgeStandingOf(await reading([up, down], [], null))).toBe("aside");
+  });
+});
+
+describe("the ledger keeps each roll beside its mark", () => {
+  test("a marked raise reads back as the roll the vessel kept, and the first answer stands", async () => {
+    const up = await holderAct(EDGE, true), other = await holderAct("e2".repeat(32), true);
+    const ledger = emptyLarDoc();
+    const seat = { group: "0xgroup", member: "0xmember" };
+    markRaiseRolled(ledger, SCOPE, up.actCid, { edgeId: EDGE, how: "revoked", seat });
+    markRaiseRolled(ledger, SCOPE, up.actCid, { edgeId: EDGE, how: "gone" });
+    markRaiseRolled(ledger, SCOPE, other.actCid, { edgeId: "e2".repeat(32), how: "no-authority" });
+    const kept = keptSeatRolls(ledger, SCOPE);
+    expect(kept).toHaveLength(2);
+    expect(kept.find((r) => r.raiseCids[0] === up.actCid)).toEqual({ kind: "seat-roll", scope: SCOPE, edgeId: EDGE, raiseCids: [up.actCid], how: "revoked", seat });
+    expect(kept.find((r) => r.raiseCids[0] === other.actCid)?.how).toBe("no-authority");
+    // One step up: a raise answered with no authority takes the later answer once its seat leaves, and reads
+    // as owed until then.
+    expect(raisesSeenThrough(ledger, SCOPE)).toEqual(new Set([up.actCid]));
+    markRaiseRolled(ledger, SCOPE, other.actCid, { edgeId: "e2".repeat(32), how: "gone" });
+    expect(raisesSeenThrough(ledger, SCOPE)).toEqual(new Set([up.actCid, other.actCid]));
+    markRaiseRolled(ledger, SCOPE, other.actCid, { edgeId: "e2".repeat(32), how: "no-authority" });
+    expect(keptSeatRolls(ledger, SCOPE).find((r) => r.raiseCids[0] === other.actCid)?.how).toBe("gone");
+    // CONTROL: another board's rolls stay apart, and a bare mark names a raise as answered with no roll to read.
+    expect(keptSeatRolls(ledger, "cd".repeat(32))).toEqual([]);
+    const bare = emptyLarDoc();
+    markRaiseRolled(bare, SCOPE, up.actCid);
+    expect(rolledRaises(bare, SCOPE)).toEqual(new Set([up.actCid]));
+    expect(keptSeatRolls(bare, SCOPE)).toEqual([]);
+  });
+
+  test("a lifted raise this vessel has not answered reads owing, and returned once it has", async () => {
+    const up = await holderAct(EDGE, true), down = await holderAct(EDGE, false, [up.actCid]);
+    const lifted = await reading([up, down], [], null);
+    expect(edgeStandingOf(lifted, new Set())).toBe("owing");
+    expect(edgeStandingOf(lifted, new Set([up.actCid]))).toBe("returned");
+    expect(edgeStandingOf(lifted)).toBe("returned");                 // a reader with no ledger
+    expect(edgeStandingOf(await reading([up], [], null), new Set([up.actCid]))).toBe("aside");   // CONTROL: a mark lifts nothing
   });
 });

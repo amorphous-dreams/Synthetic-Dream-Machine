@@ -56,7 +56,7 @@ const ctxFor = (rootDid: string, pg: { docIdHex: string; agentIdHex: string }): 
   hearthTrueName:         "",          // the fleet names no place
   personaGroupDocIdHex:   pg.docIdHex,
   personaGroupAgentIdHex: pg.agentIdHex,
-  leaseEpoch:             0,
+  dyad: () => "clear", leaseEpoch:             0,
 });
 
 /** Take a grant and become a member — what a leaf's own boot does with an outcome it reads back. */

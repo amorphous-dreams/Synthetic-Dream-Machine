@@ -41,6 +41,7 @@ describe("a sibling reaches its face's own planes and nothing else", () => {
     let x: Leaf | null = null;
     const ring = makePersonaGroupIdentityRing({
       governs: (id) => faceA.has(id),
+      deviceAside: () => false,
       provenVesselKey: () => null,
       siblingKeyOf: (peerId) => x?.adapter.provenKeyOf(peerId) ?? null,
       grants: { records: () => [], verify: async () => false },

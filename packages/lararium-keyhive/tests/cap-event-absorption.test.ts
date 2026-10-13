@@ -70,7 +70,7 @@ async function crossing(): Promise<{ joineeSeed: Uint8Array; capEvents: readonly
     hearthTrueName:         "",
     personaGroupDocIdHex:   pg.docIdHex,
     personaGroupAgentIdHex: pg.agentIdHex,
-    leaseEpoch:             0,
+    dyad: () => "clear", leaseEpoch:             0,
   };
   const out = await runFaceJoin(phone, {
     kind:        "face-join/v1",

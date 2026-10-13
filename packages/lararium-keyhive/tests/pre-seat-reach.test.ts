@@ -45,7 +45,7 @@ const ctxFor = (rootDid: string, pg: { docIdHex: string; agentIdHex: string }, r
   hearthTrueName: "",
   personaGroupDocIdHex: pg.docIdHex,
   personaGroupAgentIdHex: pg.agentIdHex,
-  leaseEpoch: 0,
+  dyad: () => "clear", leaseEpoch: 0,
   ...(regrant ? { regrant } : {}),
 });
 
@@ -92,6 +92,22 @@ describe("a binding minted vessel-only, before the seat", () => {
 
     // WHY the re-seal is needed: the ORIGINAL pre-seat bytes stay keyed to an epoch the member is outside of.
     await expect(laptop.decryptContent(BAG, preSeatSealed)).rejects.toThrow(/key not found/i);
+  }, 60_000);
+
+  test("a device that returns after a lift takes a fresh seat and opens nothing sealed before it", async () => {
+    const phone = await leaf(87), ROOT = seedOf(234);
+    const pg = await faceOf(phone, "lar:///ha.ka.ba/sentinel/pg-returned");
+    const BAG = "lar:///ha.ka.ba/bags/catalog/returned";
+    const { docId } = await phone.registerBag(BAG); await phone.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    const preSeat = await phone.encryptContent(BAG, new TextEncoder().encode("before lift"));
+    const laptop = await leaf(88), edge = await leafEdge(ROOT, laptop);
+    const ctx = { ...ctxFor(edge.personaRootDid, pg, [{ bagUrl: BAG, access: "read" }]), dyad: () => "returned" as const };
+    const out = await runFaceJoin(phone, await summonsFor(laptop, edge), ctx); expect(out.ok).toBe(true); if (!out.ok) return;
+    expect(out.grant.reSealed).toEqual([]); await absorb(laptop, out.grant, { bagUrl: BAG, docIdHex: docId });
+    await expect(laptop.decryptContent(BAG, preSeat)).rejects.toThrow(/key not found/i);
+    const postSeat = await phone.encryptContent(BAG, new TextEncoder().encode("after seat"));
+    await laptop.ingestPeerEvents(await phone.eventsForPeer(out.grant.joineeAgentIdHex)); laptop.adoptBag(BAG, docId);
+    expect(new TextDecoder().decode(await laptop.decryptContent(BAG, postSeat))).toBe("after seat");
   }, 60_000);
 
   test("REGRESSION GUARD — a pre-seat bag left OUT of the re-grant reaches nothing, visibly", async () => {

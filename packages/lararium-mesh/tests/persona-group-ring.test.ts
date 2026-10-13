@@ -42,6 +42,7 @@ const grantFor = (key: string) => ({ kind: "face-join-grant/v1", joineeAgentIdHe
 function ring(opts?: { records?: unknown[]; verifyFails?: boolean }) {
   return makePersonaGroupIdentityRing({
     governs: (doc) => doc === PLANE,
+    deviceAside: () => false,
     isOwnHand: (peer) => peer === OWN,
     provenVesselKey: (peer) => (peer === MEMBER ? MEMBER_KEY : peer === STRANGER ? STRANGER_KEY : null),
     grants: {
@@ -95,11 +96,55 @@ describe("the PersonaGroup ring — the face's grant records decide, and nothing
     let asked = 0;
     const r = makePersonaGroupIdentityRing({
       governs: () => true,
+      deviceAside: () => false,
       isOwnHand: (peer) => peer === OWN,
       provenVesselKey: () => { asked += 1; return null; },
       grants: { records: () => [], verify: async () => false },
     });
     expect(await r.admitsPeer(PLANE, OWN)).toBe(true);
     expect(asked, "the ring read the peer's key for its own hand — the own-hand class must short-circuit").toBe(0);
+  });
+});
+
+
+describe("a set-aside device has no face admission", () => {
+  test("a valid grant does not admit a peer whose proven key stands aside; a clear key admits", async () => {
+    let aside = true;
+    let consulted = "";
+    const r = makePersonaGroupIdentityRing({
+      governs: (doc) => doc === PLANE, isOwnHand: (peer) => peer === OWN,
+      provenVesselKey: () => MEMBER_KEY,
+      deviceAside: (key) => { consulted = key; return aside; },
+      grants: { records: () => [grantFor(MEMBER_KEY)], verify: async (record, key) => (record as { joineeAgentIdHex: string }).joineeAgentIdHex === `agent-${key}` },
+    });
+    expect(await r.admitsPeer(PLANE, MEMBER)).toBe(false);
+    expect(consulted).toBe(MEMBER_KEY);
+    aside = false;
+    expect(await r.admitsPeer(PLANE, MEMBER)).toBe(true);
+  });
+
+  test("a sibling whose proven key stands aside has no sibling admission; a clear key admits", () => {
+    let aside = true;
+    let consulted = "";
+    const r = makePersonaGroupIdentityRing({
+      governs: (doc) => doc === PLANE, provenVesselKey: () => null, siblingKeyOf: () => MEMBER_KEY,
+      deviceAside: (key) => { consulted = key; return aside; },
+      grants: { records: () => [], verify: async () => false },
+    });
+    expect(r.admitsSibling(PLANE, MEMBER)).toBe(false);
+    expect(consulted).toBe(MEMBER_KEY);
+    aside = false;
+    expect(r.admitsSibling(PLANE, MEMBER)).toBe(true);
+  });
+
+  test("the own hand stays admitted without asking the device consult", async () => {
+    let asked = false;
+    const r = makePersonaGroupIdentityRing({
+      governs: () => true, isOwnHand: (peer) => peer === OWN, provenVesselKey: () => MEMBER_KEY,
+      deviceAside: () => { asked = true; return true; },
+      grants: { records: () => [], verify: async () => false },
+    });
+    expect(await r.admitsPeer(PLANE, OWN)).toBe(true);
+    expect(asked).toBe(false);
   });
 });

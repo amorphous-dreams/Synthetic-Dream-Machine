@@ -50,7 +50,7 @@ async function ctxFor(): Promise<FaceJoinContext> {
     hearthTrueName:       HEARTH,
     personaGroupDocIdHex: "ab".repeat(16),
     personaGroupAgentIdHex: "cd".repeat(16),
-    leaseEpoch:           0,          // an unfed resource — the epoch a founding's grants bind to
+    dyad: () => "clear", leaseEpoch:           0,          // an unfed resource — the epoch a founding's grants bind to
   };
 }
 
@@ -207,5 +207,89 @@ describe("the repeat — membership lives founder-side", () => {
     const out = await runFaceJoin(p, summons(await edgeFor({ seed: OTHER_SEED }), true), ctx);
     expect(out.ok).toBe(false);
     expect(p.calls.added).toEqual([]);
+  });
+});
+
+
+describe("the Binding Gate reads the dyad's shadow", () => {
+  test("an aside device draws the signature refusal", async () => {
+    const base = await ctxFor(), p = fakeProvider();
+    const refused = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "aside" });
+    // MU: word for word what an edge with a false signature draws at this door.
+    const forged = await runFaceJoin(fakeProvider(), summons({ ...(await edgeFor()), signature: "00".repeat(64) }), base);
+    expect(forged).toEqual({ ok: false, reason: "edge refused: signature mismatch" });
+    expect(refused).toEqual(forged);
+    expect(p.calls.received).toBe(0); expect(p.calls.added).toEqual([]);
+    const control = await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: () => "clear" });
+    expect(control.ok).toBe(true);
+  });
+  test("the shadow lookup receives the summons device key", async () => {
+    const base = await ctxFor(), seen: string[] = [];
+    await runFaceJoin(fakeProvider(), summons(await edgeFor()), { ...base, dyad: (key) => { seen.push(key); return "clear"; } });
+    expect(seen).toContain(JOINEE_KEY);
+  });
+  test("a returned device receives a fresh seat without resealing old bags", async () => {
+    const base = await ctxFor(), ctx = { ...base, dyad: () => "returned" as const, regrant: [{ bagUrl: "bag", access: "read" as const }] };
+    const p = fakeProvider() as ReturnType<typeof fakeProvider> & { reSealCalls: number; reSealBag: () => Promise<{ contentRef: Uint8Array; ciphertext: Uint8Array }[]> };
+    p.reSealCalls = 0; p.reSealBag = async () => { p.reSealCalls++; return []; };
+    const result = await runFaceJoin(p, summons(await edgeFor()), ctx);
+    expect(result.ok).toBe(true); expect(p.calls.regranted).toEqual(["bag"]); expect(p.reSealCalls).toBe(0);
+    if (result.ok) expect(result.grant.reSealed).toEqual([]);
+    const control = fakeProvider() as typeof p; control.reSealCalls = 0; control.reSealBag = async () => { control.reSealCalls++; return []; };
+    await runFaceJoin(control, summons(await edgeFor()), { ...base, dyad: () => "clear", regrant: [{ bagUrl: "bag", access: "read" }] });
+    expect(control.reSealCalls).toBe(1);
+  });
+});
+
+describe("a device that returns takes a fresh seat, and an earlier seat leaves first", () => {
+  type Rolling = ReturnType<typeof fakeProvider> & { revoked: string[]; revokeSentinelSeat: (a: string, d: string) => Promise<{ how: "revoked" | "gone" | "no-authority" }> };
+  const rolling = (how: "revoked" | "gone" | "no-authority", seated = true): Rolling => {
+    const p = fakeProvider({ seated }) as Rolling;
+    p.revoked = [];
+    p.revokeSentinelSeat = async (a) => { p.revoked.push(a); return { how }; };
+    return p;
+  };
+
+  test("an owing device that still holds its earlier seat gets that seat revoked, then a fresh one", async () => {
+    const base = await ctxFor(), p = rolling("revoked");
+    const out = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "owing" });
+    expect(out.ok).toBe(true);
+    expect(p.revoked).toHaveLength(1);
+    expect(p.calls.added).toHaveLength(1);
+    if (out.ok) expect(out.grant.reKeyed).toBe(true);
+  });
+
+  test("CONTROL: a returned device whose raises all got answered keeps the seat it holds", async () => {
+    const base = await ctxFor(), p = rolling("revoked");
+    const out = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "returned" });
+    expect(out.ok).toBe(true);
+    expect(p.revoked).toEqual([]);
+    expect(p.calls.added).toEqual([]);
+  });
+
+  test("where this hand holds no authority over the earlier seat, the join refuses and seats nobody", async () => {
+    const base = await ctxFor(), p = rolling("no-authority");
+    const out = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "owing" });
+    expect(out.ok).toBe(false);
+    if (!out.ok) expect(out.reason).toMatch(/roll stays owed/);
+    expect(p.calls.added).toEqual([]);
+  });
+
+  test("a provider with no revoke capability refuses the same join, forced or not", async () => {
+    const base = await ctxFor(), p = fakeProvider({ seated: true });
+    const out = await runFaceJoin(p, summons(await edgeFor(), true), { ...base, dyad: () => "owing" });
+    expect(out.ok).toBe(false);
+    expect(p.calls.added).toEqual([]);
+  });
+
+  test("an owing device with no seat left takes a fresh seat and no re-seal", async () => {
+    const base = await ctxFor(), p = rolling("revoked", false);
+    let reSeals = 0;
+    (p as Rolling & { reSealBag: () => Promise<never[]> }).reSealBag = async () => { reSeals++; return []; };
+    const out = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "owing", regrant: [{ bagUrl: "bag", access: "read" }] });
+    expect(out.ok).toBe(true);
+    expect(p.revoked).toEqual([]);
+    expect(p.calls.added).toHaveLength(1);
+    expect(reSeals).toBe(0);
   });
 });

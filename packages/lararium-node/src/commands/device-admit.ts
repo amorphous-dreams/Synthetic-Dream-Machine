@@ -29,7 +29,9 @@ import {
 import { daemonGenesisDir } from "../lares-config.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload, type CarriedAdmitPayload } from "@lararium/keyhive";
-import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { readVesselEdgeBoard } from "../edge-board.js";
+import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
@@ -123,6 +125,36 @@ export async function admitCanonDocs(repo: Repo): Promise<Readonly<Record<string
     if (url && isValidAutomergeUrl(url)) named[title] = url;
   }
   return named;
+}
+
+/** The root refuses to bind a device its own fleet board shows set aside. The reading names itself. */
+export class DeviceSetAside extends Error {
+  constructor(readonly verdict: string) {
+    super(
+      `[lares device-admit] REFUSED: that device stands SET ASIDE from this fleet (its edge reads ${verdict}). ` +
+      "A delegation binds nothing under a standing shadow. Lift it first, by the root's own hand " +
+      "(`lares edge un-kapae --device <key>`); the device then takes a fresh seat and no earlier key.",
+    );
+    this.name = "DeviceSetAside";
+  }
+}
+
+/**
+ * THE BIND SITE'S CONSULT. The root signs no delegation for a device its own fleet board shows set aside, so a
+ * fresh admit and a lease roll both skip that dyad. The read runs through this vessel's ledger: a raise a hand
+ * deleted from the board still refuses here. The operator's own door names the reading, and the lift stays a
+ * separate, deliberate act. A vessel that holds no root key reads no fleet and binds nothing by this door anyway.
+ */
+export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string): Promise<void> {
+  const fleetRoot = (await loadPersonaGroupRootVerifyingKey())?.toLowerCase().replace(/^0x/, "");
+  const ownKey = await loadVesselVerifyingKey();
+  if (!fleetRoot || !ownKey) return;
+  const fleet = await readVesselEdgeBoard({
+    repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
+    vesselKey: ownKey, authorityFor: fleetEdgeAuthority(fleetRoot),
+  });
+  const dyad = fleet.readings.get(deviceEdgeId(fleetRoot, joineeVerifyingKey.trim().toLowerCase().replace(/^0x/, "")));
+  if (dyad?.stands === true) throw new DeviceSetAside(dyad.verdict);
 }
 
 export interface DeviceAdmitOptions {
@@ -267,6 +299,8 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     throw new Error("[lares device-admit] --joinee-key <hex> required — the joining vessel's public verifying key.");
   }
   const signerSeed     = await loadPersonaGroupRootSeed();
+  // THE BINDING GATE READS THE DYAD'S SHADOW (kapae#/reach): no seat, no bind.
+  await assertDyadBinds(repo, opts.joineeVerifyingKey);
   const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
   if (!hearthTrueName) {
     throw new Error("[lares device-admit] hearth true-name (engine CID) absent — run `lares vessel found` first.");

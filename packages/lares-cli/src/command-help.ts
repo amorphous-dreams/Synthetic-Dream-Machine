@@ -509,7 +509,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   edge: {
-    usage: "usage: lares edge <kapae | un-kapae> (<edge-id> | --member <key> | --device <key>) [--realm <realm-id>] [--quorum] [--as <root-index>]",
+    usage: "usage: lares edge <kapae | un-kapae> (<edge-id> | --member <key> | --device <key>) [--realm <realm-id>] [--quorum] [--as <root-index>]\n       lares edge settle [--fleet <fleet-root>]\n       lares edge <kapae | un-kapae> (--member <key> | --voucher <key> --joiner <key>) --realm <realm-id> --quorum --partial\n       lares edge cosign (<partial-json> | --from <file>) [--act <act-cid>]",
     synopsis:
       "Set one RELATIONSHIP aside, or take the marker back down — the kāpae raised over an EDGE rather than " +
       "over a party. Scoped under `edge` to mirror `nexus kapae` / `nexus un_kapae` and stay apart from " +
@@ -523,12 +523,26 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "settle. Each act cites the heads this vessel counts, at whatever epoch they root on, so a lift after " +
       "a seal roll cites the raise it lifts, and running the verb again settles a fork. The write asserts no " +
       "authority: whether a hand holds the edge gets decided by whichever reader consults the shadow. A lift " +
-      "restores standing alone; a fresh crossing seats fresh keys.",
+      "restores standing alone; a fresh crossing seats fresh keys. `settle` answers, on the KEY side, every " +
+      "raise this vessel counts on its fleet's board: a device set aside leaves the face's key group, each " +
+      "counted raise owes one roll of the seat it names, and the vessel remembers what it answered. A seat " +
+      "leaves under the hand that seated it or a hand upstream of that seat; where this vessel holds neither, " +
+      "`settle` says so. A vessel that reads a shadow over its own edge performs no key act. SEATS ON SEPARATE " +
+      "VESSELS sign one quorum act in turn: `--quorum --partial` signs with the seats this vessel holds and " +
+      "prints a partial that carries the whole act and names its subject in plain keys; `cosign` judges it " +
+      "against this vessel's own charter and board and prints what it reads, signing nothing; with " +
+      "`--act <act-cid>`, the id that read printed, it adds this vessel's seats and lands the act once the threshold meets. The input holds " +
+      "ONE partial and nothing else, so no text beside it describes the act. A partial cut before the line moved or the roster rolled refuses as stale, and one whose act " +
+      "already counts here refuses as a replay. No clock decides either.",
     examples: [
       "lares edge kapae <vouch-edge-id> --realm <realm-id>               # a voucher withdraws their own vouch",
       "lares edge kapae --member <key> --realm <realm-id> --quorum       # the seat quorum sets a member aside",
       "lares edge un-kapae --member <key> --realm <realm-id> --quorum    # the quorum lifts its own shadow",
       "lares edge kapae --device <device-key> --as 1                     # a fleet root sets a lost device aside",
+      "lares edge settle                                                 # the device's seat leaves the face's key group",
+      "lares edge kapae --member <key> --realm <realm-id> --quorum --partial   # one seat signs its part",
+      "lares edge cosign '<partial-json>'                                # another seat's vessel reads the partial",
+      "lares edge cosign '<partial-json>' --act <act-cid>                # and then adds its part, for that act alone",
     ],
     flags: [
       "--realm <realm-id> the realm whose own edge board carries the act (absent: the fleet's board)",
@@ -536,6 +550,12 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--device <key>     name a device's relation to the signing root's fleet",
       "--quorum           sign with this vessel's held seats of the charter's quorum",
       "--as <root-index>  which held persona root signs as the holder (default: the active one)",
+      "--fleet <root>     (settle) one fleet root to settle (default: the root of every face this vessel holds)",
+      "--partial          with --quorum: sign with the seats held here and print a partial, landing nothing",
+      "--voucher <key>    (partial) with --joiner: name one vouch by its two ends",
+      "--joiner <key>     (partial) with --voucher: name one vouch by its two ends",
+      "--from <file>      (cosign) read the partial from a file",
+      "--act <act-cid>    (cosign) sign and land that act; absent, the verb only reads the partial",
     ],
     next: ["lares cabal join --realm <realm-id>   # reads every shadow the crossing meets", "lares nexus kapae --list   # the PRESENTER board — a different kind of setting-aside"],
   },

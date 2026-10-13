@@ -53,6 +53,11 @@ export interface PersonaGroupRingInput {
   /** The device key a sibling PROVED over this face's sibling session (`SiblingNetworkAdapter.provenKeyOf`).
    *  Such a peer holds standing and reaches the face's own planes through `composeSiblings`, nothing else. */
   readonly siblingKeyOf?: (peerId: RingPeerId) => string | null | undefined;
+  /**
+   * The dyad's shadow, off the vessel's one live reading of its fleet board (`EdgeShadowRing.deviceAside`). A
+   * device set aside holds no seat here. Absent means no reading stands composed, and the ring consults none.
+   */
+  readonly deviceAside?: (vesselKey: string) => boolean;
 }
 
 export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Promise<PersonaGroupIdentityRing> {
@@ -65,6 +70,7 @@ export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Pr
     governs: (documentId) => governedDocIds.has(documentId),
     ...(input.isOwnHand ? { isOwnHand: input.isOwnHand } : {}),
     provenVesselKey: (peerId) => provenVesselKeyOf(input.provenKeyOf(peerId)),
+    deviceAside: input.deviceAside ?? (() => false),
     ...(input.siblingKeyOf ? { siblingKeyOf: (peerId: RingPeerId) => provenVesselKeyOf(input.siblingKeyOf!(peerId)) } : {}),
     grants: {
       // The records resting on the face's own plane — the SAME store `takeFaceGrantIfPublished` reads.

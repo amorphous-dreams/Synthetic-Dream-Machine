@@ -20,8 +20,8 @@ import { interpretAsDocumentId } from "@automerge/automerge-repo";
 import {
   fleetEdgeBoardDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, materializeSharedLarDoc,
   fleetEdgeAuthority, deviceEdgeId, realmEdgeAuthority, memberEdgeId, memberStandsAside, lineageStanding,
-  readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms,
-  type CabalInvite, type EdgeReading, type LarDoc, type ShadowConsult,
+  readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms, edgeStandingOf, raisesSeenThrough,
+  type CabalInvite, type EdgeReading, type EdgeStanding, type LarDoc, type ShadowConsult,
 } from "@lararium/mesh";
 import { readVesselEdgeBoard, vesselEdgeCharter } from "./edge-board.js";
 
@@ -62,6 +62,8 @@ export interface FleetFold {
   readonly readings:  ReadonlyMap<string, EdgeReading>;
   /** True when a shadow stands over THIS vessel's own device edge in this fleet. */
   readonly selfAside: boolean;
+  /** The raises whose seat this vessel saw leave (revoked here, or gone already), for this fleet's board. */
+  readonly rolled:    ReadonlySet<string>;
 }
 
 export interface EdgeShadowFold {
@@ -79,6 +81,13 @@ export interface EdgeShadowRing extends ShadowConsult {
   fold(): EdgeShadowFold | null;
   /** THE SORTER'S CONSULT: does a standing shadow set this device aside from a fleet this vessel serves? */
   deviceAside(vesselKey: string): boolean;
+  /**
+   * THE BINDING GATE'S CONSULT: what one device's edge reads in one fleet (`edgeStandingOf`), against the raises
+   * this vessel already answered. `aside` until the first fold lands, and for a fleet this vessel reads no board
+   * for: a gate that binds or seats a device never reads an unfolded board as clear. A mark in the ledger moves
+   * no board, so the reading takes it at the next fold.
+   */
+  deviceStanding(fleetRoot: string, vesselKey: string): EdgeStanding;
   /** THE REALM GATE'S CONSULT, bound to one realm: does a shadow set this peer aside from it? */
   memberAside(realm: string): (peerId: string) => boolean;
   /** THE BOARD LANE'S CONSULT: does this peer hold lineage standing in this realm? */
@@ -130,6 +139,11 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
     },
     fold: () => last,
     deviceAside,
+    deviceStanding(fleetRoot, vesselKey) {
+      const at = last?.fleets.find((f) => f.fleetRoot === bare(fleetRoot));
+      if (!at) return "aside";                                   // no fold yet, or a fleet this vessel never read
+      return edgeStandingOf(at.readings.get(deviceEdgeId(at.fleetRoot, bare(vesselKey))), at.rolled);
+    },
     aside(peerId: string): boolean {
       const vesselKey = deps.vesselKeyOfPeer(peerId);
       return vesselKey === null ? false : deviceAside(vesselKey);   // a peer the wire has not named reads no fleet lane
@@ -179,6 +193,7 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
         fleets.push({
           fleetRoot, readings: read.readings,
           selfAside: read.readings.get(deviceEdgeId(fleetRoot, deps.vesselKey))?.stands === true,
+          rolled: raisesSeenThrough(read.ledger.doc(), fleetRoot),
         });
       }
       const realms: RealmFold[] = [];

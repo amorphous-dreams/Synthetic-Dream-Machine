@@ -29,8 +29,8 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   signEdgeKapae, writeEdgeKapae, edgeLineHeads,
   realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
-  realmEdgeAuthority, readLedgeredVouches,
-  type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
+  realmEdgeAuthority, readLedgeredVouches, withdrawForRemoval,
+  type DeviceCertificateHeld, type DeviceWithdrawalReport, type FaceWithdrawal, type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
 } from "@lararium/mesh";
 import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
@@ -63,6 +63,29 @@ export interface EdgeKapaeOptions {
   readonly sealHome:     string;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:         Repo;
+  /**
+   * THE DEVICE'S FACE CERTIFICATES, as this vessel's own private state holds them: for a device raise, the door
+   * signs one certificate withdrawal for each (`withdrawForRemoval`), beside the dyad marker. `keep` rests each
+   * signed event and its history where the face's own causal state lives. Absent: no reader of that state
+   * stands composed, the door signs the marker alone, and its result says so by name.
+   */
+  readonly faceCertificates?: {
+    readonly held: (fleetRoot: string, deviceKey: string) => Promise<readonly DeviceCertificateHeld[]>;
+    readonly keep: (signed: DeviceWithdrawalReport["signed"][number]) => Promise<void>;
+  };
+}
+
+/** What a device raise did about the device's face certificates (face-proof#/the-withdrawal-proof). */
+export interface DeviceWithdrawals {
+  /** How many withdrawals this call signed, and how many scopes already denied the key. */
+  readonly signed:   number;
+  readonly standing: number;
+  /** Each withdrawal this vessel could not sign, by face key, Nexus and reason. */
+  readonly unsigned: readonly { readonly faceKey: string; readonly nexus: string; readonly why: string }[];
+  /** Every withdrawal event this call signed, kept or not: the caller holds them for a retry. */
+  readonly events:   readonly FaceWithdrawal[];
+  /** Set where this vessel reads no record of the device's certificates at all: nothing got signed. */
+  readonly unread?:  string;
 }
 
 export interface EdgeKapaeResult {
@@ -85,6 +108,8 @@ export interface EdgeKapaeResult {
    * the act did not survive the counting fold.
    */
   readonly verdict?: EdgeKapaeVerdict;
+  /** A device RAISE alone: the second act of the removal, signed or reported by name. */
+  readonly withdrawals?: DeviceWithdrawals;
 }
 
 /** Land one kāpae act on its board. `now` never enters — an act carries an order, never an instant. */
@@ -200,7 +225,34 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     });
     await repo.flush();
     const reading = after.readings.get(edgeId);
+    // THE SECOND ACT (kapae#/reach). A dyad marker closes nothing at a Nexus gate, so a device raise signs one
+    // certificate withdrawal for each face key the device holds a certificate under, or reports by name each
+    // one it could not sign. The marker stands either way: a withdrawal this vessel cannot sign never holds
+    // the fleet's own removal back.
+    let withdrawals: DeviceWithdrawals | undefined;
+    if (device !== undefined && opts.raised) {
+      if (!opts.faceCertificates) {
+        withdrawals = { signed: 0, standing: 0, unsigned: [], events: [], unread: "this vessel reads no record of that device's face certificates, so it signed no withdrawal: a gate that holds no denial still accepts a certificate the device holds" };
+      } else {
+        // The marker already landed. Nothing below may lose it or hide what got signed: a read that fails and a
+        // save that fails each land in the report by name, and every signed event rides out for a retry.
+        let held: readonly DeviceCertificateHeld[] | null = null, unread: string | undefined;
+        try { held = await opts.faceCertificates.held(scope, device); }
+        catch (err) { unread = `this vessel could not read that device's face certificates (${err instanceof Error ? err.message : String(err)}), so it signed no withdrawal`; }
+        if (held === null) withdrawals = { signed: 0, standing: 0, unsigned: [], events: [], unread: unread! };
+        else {
+          const report = await withdrawForRemoval(held);
+          const unsigned = report.unsigned.map((u) => ({ faceKey: u.scope.faceKey, nexus: u.scope.nexus, why: u.why }));
+          for (const s of report.signed) {
+            try { await opts.faceCertificates.keep(s); }
+            catch (err) { unsigned.push({ faceKey: s.scope.faceKey, nexus: s.scope.nexus, why: `signed-and-not-kept: ${err instanceof Error ? err.message : String(err)}` }); }
+          }
+          withdrawals = { signed: report.signed.length, standing: report.standing.length, unsigned, events: report.signed.map((s) => s.event) };
+        }
+      }
+    }
     return {
+      ...(withdrawals ? { withdrawals } : {}),
       edgeId, raised: opts.raised, hand, actCid: act.actCid, parents, epochCid,
       signers: signers.map((s) => s.signer), board: realm !== undefined ? "realm" : "fleet", boardUrl,
       shadowStands: reading?.stands ?? false, ...(reading !== undefined ? { verdict: reading.verdict } : {}),

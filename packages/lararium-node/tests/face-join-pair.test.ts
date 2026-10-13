@@ -53,7 +53,7 @@ describe("face-join — the granting half, proven end to end", () => {
       hearthTrueName:         HEARTH,
       personaGroupDocIdHex:   pg.docIdHex,
       personaGroupAgentIdHex: pg.agentIdHex,
-      leaseEpoch:             0,
+      dyad: () => "clear", leaseEpoch:             0,
       now:                    NOW,
     };
 
@@ -117,7 +117,7 @@ describe("face-join — the granting half, proven end to end", () => {
     }, {
       personaRootDid: edge.personaRootDid, hearthTrueName: HEARTH,
       personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex,
-      leaseEpoch: 0, now: NOW,
+      dyad: () => "clear", leaseEpoch: 0, now: NOW,
     });
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
@@ -169,7 +169,7 @@ describe("face-join — the granting half, proven end to end", () => {
     });
     const ctx: FaceJoinContext = {
       personaRootDid: edge.personaRootDid, hearthTrueName: HEARTH,
-      personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex, leaseEpoch: 0, now: NOW,
+      personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex, dyad: () => "clear", leaseEpoch: 0, now: NOW,
     };
     const cardOf = async (v: KeyhiveProvider) => new TextDecoder().decode(await v.contactCard());
 
@@ -237,7 +237,7 @@ describe("face-join — the granting half, proven end to end", () => {
     const ctx: FaceJoinContext = {
       personaRootDid: edge.personaRootDid, hearthTrueName: HEARTH,
       personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex,
-      leaseEpoch: 0, now: NOW,
+      dyad: () => "clear", leaseEpoch: 0, now: NOW,
     };
     const summons = {
       kind: "face-join/v1" as const,

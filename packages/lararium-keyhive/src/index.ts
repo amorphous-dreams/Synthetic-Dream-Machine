@@ -22,6 +22,12 @@ export type { PersonaGroupRingInput } from "./persona-group-ring-assembly.js";
 export type {
   FaceJoinSummons, FaceJoinGrant, FaceJoinOutcome, FaceJoinRefusal, FaceJoinProvider, FaceJoinContext,
 } from "./face-join.js";
+// THE KEY SIDE OF A REMOVAL (kapae#/keys): the executor that answers a plan, the fleet's own answer, and the
+// seat-roll subscription a bag's content-key roll rides.
+export { runSeatDuties, keyhiveSeatShore, subscribeSeatRolls, announceSeatRoll } from "./seat-duty-executor.js";
+export type { SeatKeyShore, SeatShoreProvider, SeatDutyOutcome, SeatDutyDid } from "./seat-duty-executor.js";
+export { answerFleetSeatDuties } from "./fleet-seat-duties.js";
+export type { FleetSeatFacts, FleetSeatProvider, FleetSeatAnswer } from "./fleet-seat-duties.js";
 
 export { InMemoryEventStore, inIslandSlice, inSelfSlice } from "./event-store.js";
 export type { EventStore, EventRecord } from "./event-store.js";

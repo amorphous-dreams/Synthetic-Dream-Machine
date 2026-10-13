@@ -127,6 +127,14 @@ describe("bootDaemonKeyhive", () => {
     } finally { console.warn = warn; }
   });
 
+  test("a device set aside cannot boot, while clear and returned devices boot", async () => {
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0, dyad: "aside" })).rejects.toThrow(/SET ASIDE/);
+    const clear = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0, dyad: "clear" });
+    await clear.keyhive.dispose();
+    const returned = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0, dyad: "returned" });
+    await returned.keyhive.dispose();
+  });
+
   test("HALTs on identity drift (Gate A)", async () => {
     await expect(bootDaemonKeyhive({
       ...founded.bootArgs, vesselVerifyingKey: "deadbeefdeadbeef",

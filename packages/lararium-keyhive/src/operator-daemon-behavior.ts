@@ -61,6 +61,11 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  where `crossingDirection` prices a transfer by direction. Absent (a browser vessel, tests) →
    *  the gate fail-closes every bag to VEIL and prices every transfer lateral, as before. */
   bagTier?: (bagUrl: string) => import("@lararium/mesh").CapTier | null;
+  /** `dyadReading` — the SAME inversion for the dyad's shadow (kapae#/reach): the vessel folds its fleet's edge
+   *  board, and this island asks it what one device's edge reads before it binds or seats that device. The
+   *  reader answers `aside` until its first fold lands. Absent → no reader stands composed, and the Binding
+   *  Gate and the join gate consult none. */
+  dyadReading?: (fleetRootDid: string, deviceVerifyingKey: string) => import("@lararium/mesh").EdgeStanding | Promise<import("@lararium/mesh").EdgeStanding>;
 };
 import { verifyAuthProof, verifyEdgeAgainstPersonaKel } from "@lararium/mesh";
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
@@ -70,6 +75,8 @@ import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseFrontier, daemonLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "./slot-doc-resolver.js";
 import { runFaceJoin, type FaceJoinSummons } from "./face-join.js";
+import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
+import { announceSeatRoll } from "./seat-duty-executor.js";
 import { faceGrantTitle, faceGrantRecordCid, FACE_GRANT_PREFIX, signFaceGrantRecord, verifyFaceGrantRecord, type FaceGrantRecord } from "./face-grant-record.js";
 import { base64ToBytes } from "./bytes-base64.js";
 import { ed25519SignerFromSeed, type LarTiddlerRecord } from "@lararium/mesh";
@@ -115,7 +122,7 @@ const lightAFace = (verb: string): VerbReactor => async () => {
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
-  const { persistArchive, persistVeilArchive, vault, bagTier, restDocuments, ...daemonExtra } = extra;
+  const { persistArchive, persistVeilArchive, vault, bagTier, restDocuments, dyadReading, ...daemonExtra } = extra;
   const daemonAuth = manifest.daemonAuth;
   if (!daemonAuth) {
     return {
@@ -550,6 +557,29 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // a single device leaves by `revokeSentinelMember`).
         // The capability half of a join is persona-scoped too — a hearth with no face seats nobody.
         if (daemonAuth.personaGroupDocIdHex) {
+          // `seat-duties` — THE KEY SIDE OF A REMOVAL, for the face this island wears (kapae#/keys). The vessel
+          // folds its fleet's edge board and hands in the acts it counted; this island, where the group's keys
+          // live, counts them again under the root its own edge pins, reads each seat, plans what the counted
+          // raises owe, and answers through the VEIL (the identity that holds the group). It returns what it did
+          // and the rolls the vessel keeps in its own ledger.
+          registry.register("seat-duties", async (args) => {
+            if (!veilKh) return { verb: "seat-duties", ran: false, reason: "no veil identity stands — this doc predates the veil-born founding; re-found the face." };
+            const ownEdge = daemonAuth.deviceEdge;
+            if (!ownEdge) throw new Error("[daemon] seat-duties: this vessel carries no device edge of its own, so it names no fleet.");
+            const facts = args["facts"] as FleetSeatFacts | undefined;
+            if (!facts || typeof facts !== "object" || typeof facts.fleetRoot !== "string" || !Array.isArray(facts.acts) || !Array.isArray(facts.rolled)) {
+              throw new Error("[daemon] seat-duties: no facts in args — carry {fleetRoot, acts, rolled}.");
+            }
+            const answered = await answerFleetSeatDuties({
+              provider: veilKh, facts,
+              wornFleetRoot: ownEdge.personaRootDid,
+              groupDocIdHex: faceGroup(),
+              ownIdentifiers: [await veilKh.vesselIdentifierHex(), ...(kh ? [await kh.vesselIdentifierHex()] : []), daemonAuth.vesselVerifyingKey],
+              sink: announceSeatRoll,
+              signReceipt: ed25519SignerFromSeed(daemonAuth.seed),
+            });
+            return { verb: "seat-duties", ran: true, ...answered };
+          });
           registry.register("face-join", async (args) => {
             if (!kh) throw new Error("[daemon] face-join: keyhive unbooted");
             const ownEdge = daemonAuth.deviceEdge;
@@ -598,6 +628,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               },
               verifySentinelMembership: (a: string, d: string) => veil.verifySentinelMembership(a, d),
               addSentinelMember:        (a: string, d: string) => veil.addSentinelMember(a, d),
+              revokeSentinelSeat:       (a: string, d: string) => veil.revokeSentinelSeat(a, d),
               delegate:                 async (args: { bagUrl: string; audience: string; access: "read" | "admin" }) =>
                 delegateToFaceViaVeil(args.bagUrl, args.access),
               // The re-delegate re-keys the bag FORWARD only; the vessel holds the standing chunks it sealed and
@@ -610,12 +641,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               ],
               contactCard:              () => vessel.contactCard(),
             };
+            // THE DYAD'S READING, asked of the vessel once for the device this summons names: the gate reads it
+            // twice (before and after the card binds) and must read one answer.
+            const joineeKey = typeof summons.deviceEdge?.deviceVerifyingKey === "string" ? summons.deviceEdge.deviceVerifyingKey : "";
+            const joineeDyad = dyadReading ? await dyadReading(ownEdge.personaRootDid, joineeKey) : "clear";
             const outcome = await runFaceJoin(joinProvider, summons, {
               personaRootDid:         ownEdge.personaRootDid,
               hearthTrueName:         ownEdge.hearthTrueName,
               personaGroupDocIdHex:   faceGroup(),
               personaGroupAgentIdHex: faceAgent(),
               leaseEpoch:             lease.n,
+              dyad:                   () => joineeDyad,
               // The bags this vessel ALREADY delegated to its own face, re-granted so a fresh seat reaches them.
               // Naming only what we granted, at the access we granted, widens nobody's reach — it refreshes the
               // epoch on grants that already stand. `registerBags` IS that set, and `FACE_SEATS_AND_UNSEATS` IS the
@@ -749,6 +785,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         ...(daemonAuth.personaKel ? { personaKel: daemonAuth.personaKel } : {}),
         ...(daemonAuth.deviceEdge ? { deviceEdge: daemonAuth.deviceEdge } : {}),
         ...(bindingGateLease.kind === "epoch" ? { expectedEpoch: bindingGateLease.n } : {}),
+        // THE DYAD'S SHADOW over this vessel's own device edge, asked of the vessel's own fold of its fleet board.
+        ...(dyadReading && daemonAuth.deviceEdge
+          ? { dyad: await dyadReading(daemonAuth.deviceEdge.personaRootDid, daemonAuth.vesselVerifyingKey) } : {}),
         ...(daemonAuth.archiveBytes ? { archiveBytes: daemonAuth.archiveBytes } : {}),
       });
       kh = keyhive;

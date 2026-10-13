@@ -21,7 +21,7 @@
 
 import { KeyhiveProvider } from "./keyhive-provider.js";
 import type { CapabilityProviderInitOpts } from "./capability-provider.js";
-import { verifyEdgeAgainstPersonaKel, type DeviceDelegationTiddler, type PersonaKelEvent } from "@lararium/mesh";
+import { verifyEdgeAgainstPersonaKel, type DeviceDelegationTiddler, type EdgeStanding, type PersonaKelEvent } from "@lararium/mesh";
 
 export interface BootDaemonKeyhiveInput {
   /** 32-byte operator signing seed (delivered to the worker via the manifest). */
@@ -58,6 +58,14 @@ export interface BootDaemonKeyhiveInput {
    *  rolled stale — re-admit via a fresh face-join). A persona-bound boot without this frontier refuses; it
    *  cannot substitute a wall-clock window for causal authority. */
   readonly expectedEpoch?: number;
+  /**
+   * THE DYAD'S READING for THIS vessel's own device edge, off the fleet's edge board as the vessel itself folds
+   * it (kapae#/reach). `aside` HALTS a persona-bound boot: the fleet root set this device aside, so its
+   * delegation binds nothing, whatever the edge proves. `returned` and `clear` bind. Absent means no reader
+   * stands composed to ask, and the gate consults nothing; a composed reader answers `aside` until its first
+   * fold lands.
+   */
+  readonly dyad?: EdgeStanding;
   /** OPTIONAL prior-identity Archive (a previous `exportArchive()`), persisted encrypted-at-rest. A joinee
    *  admitted into a PersonaGroup restores from it so its prekeys match the card the founder minted-to —
    *  without it, a fresh boot regenerates prekeys and the shared content reads "Key not found". */
@@ -144,6 +152,13 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   }
   if (!binding.ok) {
     throw new Error(`[daemon-keyhive] Binding Gate: device-delegation edge failed verification against the persona-KEL head op-key. ${binding.reason ?? ""}`);
+  }
+  // THE DYAD'S SHADOW (kapae#/reach): no seat, no bind. The operator's own door names the reading.
+  if (input.dyad === "aside") {
+    throw new Error(
+      "[daemon-keyhive] Binding Gate: this device stands SET ASIDE from its fleet — a shadow stands over its own device edge, " +
+      "so its delegation binds nothing. The fleet root lifts it (`lares edge un-kapae --device <key>`), and the device then takes a fresh seat.",
+    );
   }
   // Bind-check: the edge MUST delegate to THIS vessel's key (designation carries authority —
   // a valid edge for a DIFFERENT vessel is not authority for this one).

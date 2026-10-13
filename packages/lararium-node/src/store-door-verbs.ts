@@ -19,6 +19,8 @@
  *   nexus-admit-take                             a carried admit bundle's offline take + live re-present
  *                                                (`admit-bundle`)
  *   edge-kapae                                   the edge shadow board (`commands/edge-kapae-cmd`)
+ *   edge-seat-facts · edge-seat-marks            the key side's facts and marks (`commands/edge-seats`)
+ *   edge-partial · edge-cosign                   a quorum edge act between seats on separate vessels (`commands/edge-cosign`)
  *   cabal-vouch · cabal-join                     the vouch board (`commands/cabal-vouch`, `commands/cabal-join`)
  *   device-admit                                 a device edge off the persona-KEL board (`commands/device-admit`)
  *   handle-publish · handle-burn · handle-rotate · handle-attest
@@ -61,6 +63,8 @@ import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/ne
 import { runNexusContract, runNexusRollAnchor, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-anchor.js";
+import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
+import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 import { runDeviceAdmit } from "./commands/device-admit.js";
@@ -125,7 +129,7 @@ export const STORE_DOOR_VERBS = [
   "host-state", "host-roll", "host-invite", "walk-state", "walk-take", "walk-invite",
   "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-roll-anchor", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
-  "edge-kapae", "cabal-vouch", "cabal-join", "device-admit",
+  "edge-kapae", "edge-seat-facts", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "device-admit",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
 ] as const;
@@ -135,7 +139,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
-  HostRefusal, WalkRefusal, NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, CabalVouchError, CabalJoinError,
+  HostRefusal, WalkRefusal, NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError,
 ] as const;
 
@@ -260,6 +264,23 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         ...(args["hand"] === "quorum" ? { hand: "quorum" as const } : {}), ...opt("realm", str(args["realm"])),
         ...opt("handleIndex", int(args["handleIndex"])), ...opt("parents", strs(args["parents"])),
       })),
+    })),
+    // THE KEY SIDE OF A REMOVAL, the vessel's two short acts around the island's `seat-duties` verb (kapae#/keys).
+    "edge-seat-facts": (args) => answer("edge-seat-facts", async () => ({
+      ...(await runEdgeSeatFacts({ repo, ...opt("fleetRoot", str(args["fleetRoot"])) })),
+    })),
+    "edge-seat-marks": (args) => answer("edge-seat-marks", async () => ({
+      ...(await runEdgeSeatMarks({ repo, fleetRoot: str(args["fleetRoot"]) ?? "", rolls: Array.isArray(args["rolls"]) ? args["rolls"] : [] })),
+    })),
+    // THE COSIGN DOOR: a quorum edge act between seats on separate vessels (`commands/edge-cosign`).
+    "edge-partial": (args) => answer("edge-partial", async () => ({
+      ...(await runEdgePartial({
+        realm: str(args["realm"]) ?? "", raised: args["raised"] !== false, sealHome, repo,
+        ...opt("member", str(args["member"])), ...opt("voucher", str(args["voucher"])), ...opt("joiner", str(args["joiner"])),
+      })),
+    })),
+    "edge-cosign": (args) => answer("edge-cosign", async () => ({
+      ...(await runEdgeCosign({ partial: args["partial"], sealHome, repo, ...opt("confirmActCid", str(args["confirmActCid"])) })),
     })),
     "cabal-vouch": (args) => answer("cabal-vouch", async () => ({
       ...(await runCabalVouch({

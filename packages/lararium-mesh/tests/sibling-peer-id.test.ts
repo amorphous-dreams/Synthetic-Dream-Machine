@@ -49,7 +49,7 @@ class OtherCarrier extends NetworkAdapter {
  *  reaches the face's planes alone. */
 function siblingVerdict(relayPeers: ReadonlySet<string>, planes: Set<DocumentId>, adapterOf: () => SiblingNetworkAdapter | null) {
   const ring = makePersonaGroupIdentityRing({
-    governs: (id) => planes.has(id), provenVesselKey: () => null,
+    governs: (id) => planes.has(id), provenVesselKey: () => null, deviceAside: () => false,
     siblingKeyOf: (peerId) => adapterOf()?.provenKeyOf(peerId) ?? null, grants: { records: () => [], verify: async () => false },
   });
   const gate = ring.composeSiblings(new DeterministicFederationGate(NEXUS));

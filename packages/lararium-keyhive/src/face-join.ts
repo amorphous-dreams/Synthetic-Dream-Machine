@@ -33,7 +33,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/face-join
  */
-import { verifyDeviceDelegation, type DeviceDelegationTiddler } from "@lararium/mesh";
+import { verifyDeviceDelegation, type DeviceDelegationTiddler, type EdgeStanding } from "@lararium/mesh";
 import { bytesToBase64 } from "./bytes-base64.js";
 
 /** The summons a joinee writes: what it holds (the card) and what licenses it (the edge). */
@@ -94,6 +94,9 @@ export interface FaceJoinProvider {
   receiveContactCard(bytes: Uint8Array): Promise<{ id: string }>;
   verifySentinelMembership(agentIdHex: string, sentinelDocIdHex: string): Promise<{ ok: boolean; reason?: string }>;
   addSentinelMember(memberIdentifierHex: string, sentinelDocIdHex: string): Promise<void>;
+  /** Roll one seat: revoke it and say how the key group answered (`KeyhiveProvider.revokeSentinelSeat`). A join
+   *  for a device that returns while its earlier seat stands runs this first. Absent, such a join refuses. */
+  revokeSentinelSeat?(memberIdentifierHex: string, sentinelDocIdHex: string): Promise<{ how: "revoked" | "gone" | "no-authority" }>;
   delegate(args: { bagUrl: string; audience: string; access: "read" | "admin" }): Promise<unknown>;
   /** Re-seal a bag's standing chunks to the re-keyed group, returning the fresh ciphertext per chunk — the
    *  step a re-delegate cannot do, because keyhive reads FORWARD-ONLY and a chunk sealed before the seat stays
@@ -138,6 +141,25 @@ export interface FaceJoinContext {
    * and admits the epoch-0 grants a founding issues.
    */
   readonly leaseEpoch: number;
+  /**
+   * THE DYAD'S READING for the device a summons names, off the fleet's own edge board (kapae#/reach).
+   *
+   *   · `aside`    — the fleet root set this device aside. The gate answers as though no delegation stood: the
+   *                  summons draws the refusal an edge with a false signature draws, word for word, and names
+   *                  no cause.
+   *   · `returned` — a raise once set the device aside and its lift stands. The seat lands FRESH: the group
+   *                  re-keys forward, and NOTHING the group sealed before this seat gets re-sealed to it. A lift
+   *                  restores standing, never keys (kapae#/re-admission); a holder hands the missed span over by
+   *                  a separate, explicit act alone.
+   *   · `owing`    — the same, and the vessel has not yet answered every raise: where the device's earlier seat
+   *                  still stands, the join rolls it first (revoke, then a fresh seat), or refuses where this
+   *                  hand holds no authority over that seat.
+   *   · `clear`    — no raise ever named the device.
+   *
+   * The caller reads it where the fleet board folds (`edgeStandingOf`), and answers `aside` while that fold has
+   * not landed.
+   */
+  readonly dyad: (deviceVerifyingKey: string) => EdgeStanding;
 }
 
 /**
@@ -164,6 +186,11 @@ export async function gateFaceJoin(args: {
   });
   if (!verdict.ok) {
     return { ok: false, reason: `edge refused: ${verdict.reason ?? "signature or window"}` };
+  }
+  // THE BINDING GATE READS THE DYAD'S SHADOW. A device the fleet root set aside binds nothing here, whatever its
+  // edge proves. It draws Mu: the words an edge with no relation behind it draws, and no cause.
+  if (ctx.dyad(edge.deviceVerifyingKey) === "aside") {
+    return { ok: false, reason: "edge refused: signature mismatch" };
   }
   // The binding IS (vessel × hearth) — an edge minted for another place carries no seat at this one.
   if (edge.hearthTrueName !== ctx.hearthTrueName) {
@@ -219,7 +246,25 @@ export async function runFaceJoin(
   //
   // A joinee whose group was re-founded holds no seat in the NEW sentinel, so the add genuinely runs.
   const seated = await provider.verifySentinelMembership(joineeAgentIdHex, ctx.personaGroupDocIdHex);
-  const mustAdd = summons.force === true || !seated.ok;
+  const addUnlessRolled = summons.force === true || !seated.ok;
+  // A DEVICE THAT RETURNS AFTER A LIFT TAKES A FRESH SEAT AND NO EARLIER KEY. The re-grant below re-keys each bag
+  // FORWARD; the re-seal that would carry the standing chunks across stays out, since those chunks hold the span
+  // the device missed.
+  const dyad = ctx.dyad(summons.deviceEdge.deviceVerifyingKey);
+  const returned = dyad === "returned" || dyad === "owing";
+  // THE EARLIER SEAT LEAVES FIRST. A device that returns while a raise still owes its roll may hold the very seat
+  // the raise names, and its earlier key epoch with it. So the join rolls the seat before it seats: revoke, then add.
+  // Where this hand holds no authority over the earlier seat, or no revoke capability at all, the join REFUSES:
+  // the raise still owes its roll, and the vessel that seated the device answers it first (kapae#/keys).
+  let rolledFirst = false;
+  if (dyad === "owing" && seated.ok) {
+    const how = provider.revokeSentinelSeat ? (await provider.revokeSentinelSeat(joineeAgentIdHex, ctx.personaGroupDocIdHex)).how : "no-authority";
+    if (how === "no-authority") {
+      return { ok: false, reason: "the earlier seat still stands and its roll stays owed — the vessel that seated this device answers the raise first, and the join then seats afresh" };
+    }
+    rolledFirst = true;
+  }
+  const mustAdd = addUnlessRolled || rolledFirst;
   let regranted = 0;
   const reSealed: { bagUrl: string; contentRefB64: string; ciphertextB64: string }[] = [];
   if (mustAdd) {
@@ -233,7 +278,7 @@ export async function runFaceJoin(
       // epoch the member stands outside of (forward-only read), so RE-SEAL each standing chunk to the re-keyed
       // group — the reach a re-delegate cannot confer alone. Absent a re-seal capability, or an empty bag, this
       // adds nothing and the pre-seat chunks stay unreached, visibly (an empty `reSealed`).
-      for (const chunk of (await provider.reSealBag?.(bag.bagUrl)) ?? []) {
+      for (const chunk of returned ? [] : ((await provider.reSealBag?.(bag.bagUrl)) ?? [])) {
         reSealed.push({
           bagUrl:        bag.bagUrl,
           contentRefB64: bytesToBase64(chunk.contentRef),

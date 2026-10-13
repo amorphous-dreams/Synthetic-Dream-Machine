@@ -67,6 +67,12 @@ export function makePersonaGroupIdentityRing(opts: {
   /** The device key a SIBLING proved over this face's sibling session — a device the face's own PersonaGroup
    *  delegated. Such a peer holds STANDING: the governed planes, and nothing else. Null for every other peer. */
   readonly siblingKeyOf?: (peerId: PeerId) => string | null;
+  /**
+   * THE DYAD'S SHADOW (kapae#/reach): does a standing shadow set this device key aside from the face's fleet?
+   * A device set aside holds no face-grant seat and no sibling standing, whatever record or session it proves.
+   * The ring answers it the `false` a peer with no relation draws. The own hand stays unquestioned.
+   */
+  readonly deviceAside: (vesselKey: string) => boolean;
   readonly grants: PersonaGroupGrantReading;
 }): PersonaGroupIdentityRing {
   const admitsPeer = async (documentId: DocumentId, peerId: PeerId): Promise<boolean> => {
@@ -76,6 +82,7 @@ export function makePersonaGroupIdentityRing(opts: {
     if (!opts.governs(documentId)) return false;
     const key = opts.provenVesselKey(peerId);
     if (!key) return false;                       // proved nothing → fail-closed
+    if (opts.deviceAside(key)) return false;      // set aside from the fleet → no seat
     for (const record of await opts.grants.records()) {
       let ok = false;
       try { ok = await opts.grants.verify(record, key); } catch { ok = false; }   // a torn record withholds
@@ -85,8 +92,11 @@ export function makePersonaGroupIdentityRing(opts: {
   };
   // A sibling's standing reaches the face's own planes alone: the sibling session proved its device under THIS
   // face's KEL and lease, so the ring reads the proof, and a plane it does not govern stays shut.
-  const admitsSibling = (documentId: DocumentId, peerId: PeerId): boolean =>
-    opts.governs(documentId) && Boolean(opts.siblingKeyOf?.(peerId));
+  const admitsSibling = (documentId: DocumentId, peerId: PeerId): boolean => {
+    if (!opts.governs(documentId)) return false;
+    const key = opts.siblingKeyOf?.(peerId);
+    return Boolean(key) && !opts.deviceAside(key!);
+  };
   return {
     admitsPeer,
     admitsSibling,

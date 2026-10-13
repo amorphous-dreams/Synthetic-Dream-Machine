@@ -399,20 +399,63 @@ describe("⑥ the node runner without grammar caps", () => {
 // ⑩ REMOVAL'S REACH — the parts of kapae#/reach and #/keys no code enforces
 // ══════════════════════════════════════════════════════════════════════════
 describe("⑩ removal's reach, past the gates that stand built", () => {
-  test.skip("A SEAT WITHOUT STANDING GETS REVOKED — DEFERRED: kapae#/keys. A pure planner reads a fold of the edge boards and names each Keyhive seat that outlived its standing (a device set aside, a member set aside, a joiner whose last vouch path fell), and each counted raise that still owes one roll of the seat it names; an executor on the keyhive shore answers it through `revokeSentinelMember`, and a revocation that finds the party gone reads as done. Lands with the daemon island's verb for it.", () => {
-    expect(Object.keys(mesh)).toContain("planSeatDuties");
+  test("A SEAT WITHOUT STANDING GETS REVOKED — kapae#/keys. A pure planner reads a fold of the edge boards and names each seat that outlived its standing, and each counted raise that still owes one roll of the seat it names; a seat no counted raise names owes nothing, and a reading with no counted raise behind it moves no key.", () => {
+    const seat = { group: "0xgroup", member: "0xmember" };
+    const row = { scope: "s", edgeId: "e", seat, aside: true, raiseCids: ["r1"], seatStands: true };
+    const plan = (rows: (typeof row)[], rolled: string[] = []) => mesh.planSeatDuties({ seats: rows, rolled: () => new Set(rolled), selfAside: () => false });
+    expect(plan([row])).toEqual([{ kind: "revoke", scope: "s", edgeId: "e", seat, raiseCids: ["r1"], then: "leave-out" }]);
+    expect(plan([{ ...row, raiseCids: [] }])).toEqual([]);
+    expect(plan([{ ...row, seatStands: false }])).toEqual([{ kind: "settled", scope: "s", edgeId: "e", seat, raiseCids: ["r1"] }]);
   });
 
-  test.skip("A LIFT SEATS AFRESH AND RETURNS NO EARLIER KEY — DEFERRED: kapae#/re-admission. After a lift the same planner names a fresh seat for a party that holds standing and no seat, and the content key rolls at the revocation before it. Lands after the planner above and the sealed store's key-version manifest.", () => {
-    expect(Object.keys(mesh)).toContain("planSeatDuties");
+  test("A LIFT SEATS AFRESH AND RETURNS NO EARLIER KEY — kapae#/re-admission. A raise and its lift read together still revoke the earlier seat and name a fresh one after it; a lifted raise reads `owing` until the vessel answers it, and `returned` from then on.", () => {
+    const seat = { group: "0xgroup", member: "0xmember" };
+    const lifted = { scope: "s", edgeId: "e", seat, aside: false, raiseCids: ["r1"], seatStands: true };
+    expect(mesh.planSeatDuties({ seats: [lifted], rolled: () => new Set(), selfAside: () => false }))
+      .toEqual([{ kind: "revoke", scope: "s", edgeId: "e", seat, raiseCids: ["r1"], then: "seat-afresh" }]);
+    const reading = { verdict: "withdrawn" as const, stands: false, raiseCids: ["r1"] };
+    expect(mesh.edgeStandingOf(reading, new Set())).toBe("owing");
+    expect(mesh.edgeStandingOf(reading, new Set(["r1"]))).toBe("returned");
   });
 
-  test.skip("A VESSEL UNDER ITS OWN SHADOW MINTS NO KEY EPOCH, AND EVERY DOOR SHOWS THE FORK — DEFERRED: kapae#/keys, mutual removal. The fold already reports a shadow over this vessel's own device edge (`selfAside`); no reader stops a key act on it, and no door prints the fork. Lands with the planner above.", () => {
+  test("A VESSEL UNDER ITS OWN SHADOW MINTS NO KEY EPOCH, AND THE FORK SURFACES — kapae#/keys, mutual removal. The plan holds one forked row for a scope where this vessel reads a shadow over its own edge, and `forkStandsOver` names two parties that each stand set aside under a raise the other signed.", () => {
+    const seat = { group: "0xgroup", member: "0xmember" };
+    const row = { scope: "s", edgeId: "e", seat, aside: true, raiseCids: ["r1"], seatStands: true };
+    expect(mesh.planSeatDuties({ seats: [row], rolled: () => new Set(), selfAside: () => true })).toEqual([{ kind: "forked", scope: "s" }]);
     expect(Object.keys(mesh)).toContain("forkStandsOver");
   });
 
-  test.skip("A QUORUM ACT CROSSES BETWEEN VESSELS AS A PARTIAL — DEFERRED: kapae#/what-the-code-holds, the cosign door. `mergeEdgeActs` gathers seats' signatures on a board, and a partial act counts for nothing until the threshold meets; no door hands one seat's signature to the next seat's vessel. Lands with the roadmap's partial-and-cosign door for admit, revoke and kapae.", () => {
-    expect(Object.keys(mesh)).toContain("edgeActPartial");
+  test("A QUORUM ACT CROSSES BETWEEN VESSELS AS A PARTIAL — kapae#/edge-hands, the cosign door. A partial carries the whole act and its subject in plain keys; a reader refuses one whose subject names another edge, and judges staleness and replay by causal position alone.", () => {
+    for (const name of ["edgeActPartial", "readEdgeActPartial", "judgeEdgeActPartial", "cosignEdgeActPartial"]) expect(Object.keys(mesh)).toContain(name);
+    expect(mesh.readEdgeActPartial({ kind: "edge-act-partial", scope: "ab".repeat(32), subject: { kind: "member", member: "cd".repeat(32) }, act: {} })).toBeNull();
+  });
+
+  test.skip("A BAG'S CONTENT KEY ROLLS AT THE SEAT'S ROLL — DEFERRED: kapae#/keys, the content-key seam. The executor hands one roll to its subscribers for each batch of raises a vessel answers, and the vessel keeps each roll in its ledger (`keptSeatRolls`); no subscriber stands, so no bag's key rolls. A sentinel document's revocation rolls no bag key by itself (`seat-roll-substrate`, probe 8). Lands with the sealed store's key-version manifest.", () => {
+    expect(Object.keys(mesh)).toContain("contentKeyRollOf");
+  });
+
+  test.skip("THE PERSONAGROUP STANDS AS A GROUP, AND ITS REVOCATION ROLLS EVERY BAG IT REACHES — DEFERRED: kapae#/keys. Keyhive carries a removal down to the documents a group reaches and to nothing a document reaches (`seat-roll-substrate`, probes 8 and 9); every principal stands as a sentinel document today. The move changes the group's own id, so it lands with a re-founding.", () => {
+    const provider = readFileSync(join(import.meta.dirname, "..", "..", "lararium-keyhive", "src", "keyhive-provider.ts"), "utf8");
+    expect(provider).toMatch(/generateGroup\(/);
+  });
+
+  test.skip("THE DAEMON ISLAND ASKS THE VESSEL FOR A DEVICE'S STANDING — DEFERRED: kapae#/reach. The join gate and the Binding Gate take a reading (`dyadReading`), and the face ring takes `deviceAside`; no composer hands either in, so those gates consult nothing. Lands with the composers' hunks and the island's ask door.", () => {
+    const island = readFileSync(join(import.meta.dirname, "..", "..", "lararium-node", "src", "node-daemon-island.ts"), "utf8");
+    expect(island).toMatch(/dyadReading/);
+  });
+
+  test.skip("A REALM'S KEY GROUP SEATS ITS MEMBERS, AND A MEMBER EDGE MOVES A KEY — DEFERRED: kapae#/keys. The plan and the executor serve any seat; no production path seats a member in a realm's group, so only a dyad's raise moves a key. Lands with the realm's own admission act.", () => {
+    expect(Object.keys(mesh)).toContain("realmSeatFacts");
+  });
+
+  test.skip("MUTUAL REMOVAL EXITS BY AN EXPLICIT FORK ACT — DEFERRED: kapae#/keys. The fork surfaces at every reading and no key moves under it; no door founds the fresh realm, with its own roots and a fresh key epoch, that an exit takes. Lands once a realm seats roots of its own.", () => {
+    expect(Object.keys(mesh)).toContain("signRealmFork");
+  });
+
+  test.skip("A HOLDER HANDS A MISSED SPAN OVER BY A SEPARATE ACT — DEFERRED: kapae#/re-admission. A device that returns takes a fresh seat with no re-seal; no door lets a holder re-seal the span it missed by a named, explicit act.", () => {
+    const join_ = readFileSync(join(import.meta.dirname, "..", "..", "lararium-keyhive", "src", "face-join.ts"), "utf8");
+    expect(join_).toMatch(/handOverPast/);
   });
 });
+
 
