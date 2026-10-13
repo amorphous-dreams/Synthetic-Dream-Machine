@@ -10,11 +10,12 @@ name: E2E shards
 # must read exactly as loud as a failing assertion. `tools/e2e-shards.mjs#evaluateMergeGate`
 # carries that law; this job's "Merge gate" step is its only caller in anger.
 #
-# THIS LANE NEVER FIRES FROM AN ORDINARY PUSH. It exists for `tools/e2e-shards.mjs`, which pushes
-# a throwaway `ci/<lane>` branch, watches the ONE run that push triggers, reads this workflow's
-# verdict, and deletes the branch — never a second `workflow_dispatch` on top of that push (see
-# the helper's docblock). `ci.yml`'s own push trigger excludes `ci/**` for the same reason: one
-# push, one verdict, never two matrices plus full CI for the same commit.
+# TWO DOORS, ONE MATRIX. `tools/e2e-shards.mjs` pushes a throwaway `ci/<lane>` branch, watches the ONE
+# run that push triggers here, reads this workflow's verdict, and deletes the branch — never a second
+# `workflow_dispatch` on top of that push (see the helper's docblock). `ci.yml` CALLS this workflow as
+# its `E2E` job (`workflow_call`), so a branch push takes its e2e verdict from this same matrix and
+# merge gate. `ci.yml`'s own push trigger excludes `ci/**`, so a lane push never raises full CI beside
+# its shards: one push, one e2e verdict.
 #
 # ONE BUILD PER SHARD. A single build shared across runners would need its own artifact-transfer
 # job this lane does not carry; four independent builds cost more CPU-minutes but no coordination,
@@ -24,7 +25,11 @@ on:
   push:
     branches: ["ci/**"]
   workflow_dispatch: {}
+  # `ci.yml`'s `E2E` job calls this workflow; it takes no input and hands back no output but its verdict.
+  workflow_call: {}
 
+# Called from `ci.yml`, this group reads under the CALLER's ref, beside the caller's own `ci-<ref>` group:
+# two names, so the pair never waits on itself.
 concurrency:
   group: e2e-shards-${{ github.ref }}
   cancel-in-progress: true

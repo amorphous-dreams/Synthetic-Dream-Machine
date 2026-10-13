@@ -15,7 +15,8 @@ name: CI
 #                     name so a red suite cannot swallow it; the docker/browser hold-outs are
 #                     named with their reasons in the job's log; beside it, every
 #                     `tools/*.test.mjs` self-test the instruments carry
-#   e2e             — the residency/ingest witnesses through the real CLI + vessels
+#   e2e             — every e2e set through the real CLI + vessels, sharded: this workflow calls
+#                     `e2e-shards.yml` and takes its merge gate's verdict
 #   boot-budget     — the cache-stable boot stays under its char ceiling
 #   pristine-upstream — the meme routes AND a stock single-file build meet a PUBLISHED tiddlywiki
 #                     (npm), not only the fork, against the COMMITTED standalone artifact (never a
@@ -275,37 +276,22 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: node --test tools/*.test.mjs
 
-  # ─── e2e (residency / ingest witnesses) ────────────────────────────────────
+  # ─── e2e (every e2e set, sharded, behind one merge gate) ───────────────────────────────────
+  # ONE E2E VERDICT, AND THE SHARDS GIVE IT. Every e2e set rides the shard matrix of `e2e-shards.yml`
+  # (the table `E2E_SETS` in tools/e2e-shards.mjs) and ends on its merge gate, which fails closed on a
+  # missing, empty, red or mismatched shard. This job CALLS that workflow, so a push to a branch and a
+  # lane push to `ci/<lane>` run the same matrix under the same gate, and the workflow file holds the
+  # one statement of it.
+  #
+  # A single runner walking the whole set one file at a time outgrew its own 45-minute ceiling and timed
+  # out; a job that cannot finish reports nothing about the code. MEASURED on the shard lane (run
+  # 38409777858): five shard runners at 15 + 11 + 10 + 10 + 2 minutes and a one-minute merge, about 48
+  # runner-minutes and 16 minutes of wall clock, against 45 runner-minutes spent on no verdict.
+  #
+  # The called jobs read on the run as `E2E / Shard <set> <k>/<n>` and `E2E / Merge shard reports`.
   e2e:
     name: E2E
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
-          # root. Without them the tw5 build cannot run, so every downstream job fails on an
-          # artifact the repo never had a chance to produce.
-          submodules: recursive
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      # Every staged vessel bakes its genesis island from the engine blob; see the `test` job.
-      - name: Render the TW5 core blob (genesis bakes from it)
-        run: pnpm --filter @lararium/tw5 build:tw5-vendor
-      - name: Build (vessels run from dist)
-        run: pnpm build
-      # MEASURED, NOT GUESSED. The whole set reads ~1540s (~26 min) on an operator desk, and files run
-      # one at a time (`fileParallelism: false`), so the wall clock grows with every suite added. The
-      # ceiling leaves the hosted runner ~1.7x that reading; a hung daemon still dies here, not at the
-      # job's six-hour default.
-      - name: Run e2e suite
-        run: pnpm test:e2e
-        timeout-minutes: 45
+    uses: ./.github/workflows/e2e-shards.yml
 
   # ─── boot budget (cache-stable boot ceiling) ───────────────────────────────
   boot-budget:

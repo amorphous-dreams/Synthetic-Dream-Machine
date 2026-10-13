@@ -472,3 +472,28 @@ test("e2e-shards.yml carries exactly one matrix row per (set, shard) of E2E_SETS
     Array.from({ length: s.shards }, (_, i) => `${s.name} ${s.dir} ${s.config} ${i + 1}/${s.shards}`)).sort();
   assert.deepEqual(rows, want);
 });
+
+// ── ONE E2E VERDICT PER PUSH: the full CI workflow CALLS the shard workflow ──────────────────────────────────
+test("ci.yml takes its e2e verdict from the shard workflow, and runs no unsharded e2e job of its own", () => {
+  const read = (name) => readFileSync(fileURLToPath(new URL(`../.github/workflows/${name}`, import.meta.url)), "utf8");
+  const ci = read("ci.yml");
+  // The e2e job's own block: from its key to the next top-level job key.
+  const at = ci.search(/^  e2e:\n/m);
+  assert.ok(at >= 0, "ci.yml carries no `e2e` job — the full workflow lost its e2e verdict");
+  const rest = ci.slice(at + 1);
+  const block = rest.slice(0, rest.search(/^  [a-z][\w-]*:\n/m));
+  assert.match(block, /^    uses: \.\/\.github\/workflows\/e2e-shards\.yml$/m, "the e2e job stopped calling the shard workflow");
+  assert.doesNotMatch(block, /^    steps:/m, "a job that calls a workflow carries no steps of its own");
+  // No job of the full workflow walks the whole e2e set on one runner (comments aside).
+  const code = ci.split("\n").filter((l) => !/^\s*#/.test(l)).join("\n");
+  assert.doesNotMatch(code, /test:e2e/, "ci.yml runs the unsharded e2e set beside the shards: two verdicts for one push");
+  // The callee declares the door, keeps its lane trigger, and keeps a concurrency group apart from the caller's.
+  const shards = read("e2e-shards.yml");
+  assert.match(shards, /^  workflow_call: \{\}$/m, "e2e-shards.yml declares no workflow_call: ci.yml's call would refuse at startup");
+  assert.match(shards, /^  push:\n    branches: \["ci\/\*\*"\]$/m, "the lane push trigger left");
+  const group = (yml) => /^concurrency:\n(?:\s*#.*\n)*  group: (\S+)-\$\{\{ github\.ref \}\}$/m.exec(yml)?.[1];
+  assert.equal(group(ci), "ci");
+  assert.equal(group(shards), "e2e-shards", "caller and callee sharing one concurrency group wait on each other");
+  // CONTROL: the comment filter left the workflow's real commands in place.
+  assert.match(code, /pnpm test\b/);
+});

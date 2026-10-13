@@ -310,6 +310,11 @@ test("every action every workflow uses is pinned by a full commit SHA, with its 
   for (const name of ["ci.yml", "held-out.yml", "notify-pages.yml"]) {
     const uses = [...readFileSync(join(ROOT, ".github/workflows", name), "utf8").matchAll(/^\s*(?:-\s+)?uses:\s*(.*)$/gm)].map((m) => m[1].trim());
     assert.ok(uses.length > 0, `${name} uses no action`);
-    for (const u of uses) assert.match(u, /^[\w.-]+\/[\w.-]+@[0-9a-f]{40} # v\d+\.\d+\.\d+$/, `${name}: "${u}" is not pinned by SHA with its tag`);
+    for (const u of uses) {
+      // A workflow of this repository called by path rides the caller's own commit: the checkout pins it, and
+      // the file must stand. Every other `uses` names an action by full SHA with its tag beside it.
+      if (u.startsWith("./")) { assert.ok(existsSync(join(ROOT, u)), `${name}: "${u}" names no file`); continue; }
+      assert.match(u, /^[\w.-]+\/[\w.-]+@[0-9a-f]{40} # v\d+\.\d+\.\d+$/, `${name}: "${u}" is not pinned by SHA with its tag`);
+    }
   }
 });
