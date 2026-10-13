@@ -43,10 +43,10 @@ import {
   kapaeAntigenDocUrl, crossroadsDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
   signRealmBagRegistration, writeRealmBagRegistration, publicRealmBooksFromDoc,
-  NEXUS_DOC_DOMAIN, genesisCharterEpoch,
   hex,
 } from "@lararium/mesh";
 import { readNexusDoc, nexusCharterStands, writeNexusDoc, nexusCharterDocPath } from "../src/nexus-doc.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const signer = (s: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, s).then(hex);
@@ -61,10 +61,9 @@ async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
  *  Ed25519 door reads lawful (no signature ever checks against it; its presence in `kahu` + the genesis
  *  lineage below matters to `foundingRoster`). */
 const CHARTER_KEY = Buffer.from(await ed.getPublicKeyAsync(new Uint8Array(32).fill(0x7a))).toString("hex");
-/** A real genesis seal lineage over that steward — there is no legacy bare-`sealEpochCid` path any
- *  more, so a "the charter STANDS" fixture must carry a verifiable one-epoch lineage. */
-const CHARTER_GENESIS = genesisCharterEpoch([CHARTER_KEY], 1, "");
-const CHARTER   = CHARTER_GENESIS.epochCid;
+/** A charter that STANDS carries a verifiable lineage: one seat, that steward, at genesis. */
+const STANDING  = heldCharter({ keys: [CHARTER_KEY], threshold: 1 });
+const CHARTER   = STANDING.aid;
 /** The epoch a vessel's acts rooted on while it stood alone — the reader ranks it BELOW the charter's. */
 const PRE_EPOCH = `epoch0-${"11".repeat(32)}`;
 
@@ -77,10 +76,7 @@ function sealHomeAt(): string {
 
 /** Seat a readable charter whose genesis epoch names the island — what `nexus rite quorum` leaves on disk. */
 async function seatCharter(sealHome: string): Promise<void> {
-  writeNexusDoc(sealHome, {
-    kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: CHARTER, sealLineage: [CHARTER_GENESIS],
-    kahu: [{ displayName: "steward", verifyingKey: CHARTER_KEY }],
-  });
+  writeNexusDoc(sealHome, STANDING.doc({ labels: ["steward"] }));
 }
 
 /**

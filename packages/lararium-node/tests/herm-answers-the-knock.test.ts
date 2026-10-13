@@ -18,7 +18,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { pullAndVerifyOracle, ORACLE_SOCKET_ROUTE, ed25519VerifyingKeyFromSeed, NEXUS_DOC_DOMAIN, type NexusDoc } from "@lararium/mesh";
+import { pullAndVerifyOracle, ORACLE_SOCKET_ROUTE, ed25519VerifyingKeyFromSeed, emptyFoundingCharterDoc, type NexusDoc } from "@lararium/mesh";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { exportOracleSnapshot } from "@lararium/mesh";
 import { mountOracleReadFace } from "../src/oracle-read-face.js";
@@ -87,7 +87,7 @@ describe("a herm answers the knock", () => {
   }, 30_000);
 
   test("the one reader: a herm reads OPEN by class; a lararium reads its charter and fails closed", () => {
-    const privateCharter: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: `epoch0-${"a".repeat(64)}`, kahu: [], federationPosture: "private" };
+    const privateCharter: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 1, sealEpochCid: `epoch0-${"a".repeat(64)}`, federationPosture: "private" };
     expect(ownPlacePosture("herm", null)).toBe("open");
     expect(ownPlacePosture("herm", privateCharter)).toBe("open");
     expect(ownPlacePosture("lararium", null)).toBe("private");

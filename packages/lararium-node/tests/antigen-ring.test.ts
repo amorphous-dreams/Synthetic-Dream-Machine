@@ -10,7 +10,6 @@
  *   · FAIL CLOSED: no charter on disk → empty roster → nothing Kapae'd (no quorum, no bans),
  *   · a cold ring (board unresolved) denies nobody (a denylist's absence = no bans).
  */
-import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -20,11 +19,12 @@ import { Repo } from "@automerge/automerge-repo";
 import {
   hex, signAntigenEntry, foldAntigenSet, makeMultiSigQuorumVerifier,
   foundingRoster, carryContractShareDecision,
-  genesisCharterEpoch, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord,
+  kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord,
   type KapaeAntigenEntry, type NexusDoc,
 } from "@lararium/mesh";
 import { makeAntigenRingHolder } from "../src/antigen-ring.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 // Three founding kahu — fixed seeds → deterministic keys.
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
@@ -36,16 +36,7 @@ const NEXUS_PUBKEY = "a1b2c3d4e5f6a7b8";   // the node's own gate key = its Nexu
 const VICTIM_SEED = new Uint8Array(32).fill(9);
 
 async function seatedCharter(keys: string[]): Promise<NexusDoc> {
-  const genesis = genesisCharterEpoch(keys, 2, "");
-  return {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2,
-    sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-    kahu: [
-      { displayName: "Kahu Alpha", verifyingKey: keys[0]! },
-      { displayName: "Kahu Beta",        verifyingKey: keys[1]! },
-      { displayName: "Kahu Gamma",        verifyingKey: keys[2]! },
-    ],
-  };
+  return heldCharter({ keys, threshold: 2 }).doc({ labels: ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"] });
 }
 
 async function banEntry(nym: string, epoch: string): Promise<KapaeAntigenEntry> {

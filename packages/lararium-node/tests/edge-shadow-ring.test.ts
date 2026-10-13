@@ -13,7 +13,7 @@ import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import {
-  hex, DAEMON_BAG_ID, seedDaemonDoc, NEXUS_DOC_DOMAIN, genesisCharterEpoch, materializeSharedLarDoc,
+  hex, DAEMON_BAG_ID, seedDaemonDoc, materializeSharedLarDoc,
   RealmBoardGate, RealmBagGate, realmDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, fleetEdgeBoardDocUrl,
   deviceEdgeId, DeterministicFederationGate, crossroadsDocUrl,
   type FederationGate, type NexusMembership, type PlaneSeal, type AntigenRing,
@@ -35,6 +35,7 @@ import { selfSlotShareDecision } from "../src/self-slot-share.js";
 import { decideAndServeWantBlock, type CasWireServerDeps } from "../src/cas-wire.js";
 import type { SortInput } from "../src/daemon-auth-gate.js";
 import { direct } from "./direct-store.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -66,8 +67,8 @@ afterEach(async () => {
 /** Seat a charter over root 0 alone: the one seat whose key roots this vessel's lineage reads. */
 async function seatOwnCharter(): Promise<void> {
   const key = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-  const e0 = genesisCharterEpoch([key], 1, "");
-  writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: e0.epochCid, sealLineage: [e0], kahu: [{ displayName: "Kahu 0", verifyingKey: key }] });
+  const charter = heldCharter({ keys: [key], threshold: 1 });
+  writeNexusDoc(larSealHome(), charter.doc({ labels: ["Kahu 0"] }));
 }
 
 /** Stand a ring over this vessel's store for one read, and hand the caller the ring while the store stays held. */
@@ -402,8 +403,8 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
   it("★ a member the quorum set aside reads nothing of the realm, though no vouch ever named it ★", async () => {
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const keys = roots.map((r) => r.verifyingKey);
-    const e0 = genesisCharterEpoch(keys, 2, "");
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, sealLineage: [e0], kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })) });
+    const charter = heldCharter({ keys, threshold: 2 });
+    writeNexusDoc(larSealHome(), charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
     const member = await nymOf(63);
     const peers = { "peer-m": { nym: member } };
     await withRing(peers, async (ring) => { await ring.refold(); expect(ring.memberAside(REALM)("peer-m")).toBe(false); });   // CONTROL

@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  NEXUS_DOC_DOMAIN, hex, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, signCarriageContract, ed25519SignerFromSeed,
+  hex, emptyFoundingCharterDoc, signCarriageContract, ed25519SignerFromSeed,
   realmIdOfCharter, type NexusDoc, type SealEpoch,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
@@ -28,6 +28,7 @@ import {
   carriageConsentPathFor, carriedCharterHome, hasContractedInto, CarriedCharterError,
 } from "../src/carried-set.js";
 import { runNexusAcceptCarriage } from "../src/commands/nexus-contract.js";
+import { heldCharter, type HeldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -66,41 +67,35 @@ function partnerHands(keys: readonly string[]): { signer: string; sign: (b: Uint
   });
 }
 
+const partnerLabels = (keys: readonly string[]): string[] => keys.map((_, i) => `Partner ${i}`);
+
+/** A partner charter at genesis: two of its seats sign, and it names the same seats at three for its first roll. */
+const partnerGenesis = (keys: string[]): HeldCharter => heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
+
 /** A partner Nexus at genesis only: one epoch, no roll. */
-function genesisCharter(keys: string[]): { doc: NexusDoc; lineage: SealEpoch[] } {
-  const kahu = keys.map((k, i) => ({ displayName: `Partner ${i}`, verifyingKey: k }));
-  const lineage: SealEpoch[] = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
-  return { doc: { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: lineage[0]!.epochCid, sealLineage: lineage, kahu }, lineage };
+function genesisCharter(keys: string[]): { doc: NexusDoc; lineage: readonly SealEpoch[] } {
+  const standing = partnerGenesis(keys);
+  return { doc: standing.doc({ labels: partnerLabels(keys) }), lineage: standing.chain };
 }
 
 /**
- * A partner Nexus with a pre-rotated lineage that alternates its quorum between 2 and 3, so each
- * rotation reveals the key-set its predecessor committed to, and the revealed hands sign each roll.
- * `fork` varies a rotation's next commit.
+ * A partner Nexus with a signed lineage that alternates its quorum between 2 and 3 over the same seats, so
+ * each rotation seats what its predecessor named, under those seats' hands. `fork` varies what the last
+ * rotation names for the roll after it.
  */
-async function lineageCharter(keys: string[], depth: number, fork = 0): Promise<{ doc: NexusDoc; lineage: SealEpoch[] }> {
-  const kahu = keys.map((k, i) => ({ displayName: `Partner ${i}`, verifyingKey: k }));
-  const lineage: SealEpoch[] = [...genesisCharter(keys).lineage];
-  let threshold = 2;
+async function lineageCharter(keys: string[], depth: number, fork = 0): Promise<{ doc: NexusDoc; lineage: readonly SealEpoch[] }> {
+  let standing = partnerGenesis(keys);
   for (let d = 1; d < depth; d++) {
-    const revealed = threshold === 2 ? 3 : 2;
-    const next     = d === depth - 1 && fork > 0 ? sealKeySetHash(keys, 1 + fork) : sealKeySetHash(keys, threshold);
-    const r = await rotateSealEpoch(lineage[lineage.length - 1]!, { keys, threshold: revealed }, next, partnerHands(keys));
-    if (!r.ok) throw new Error(r.reason);
-    lineage.push(r.epoch);
-    threshold = revealed;
+    const named = d === depth - 1 && fork > 0 ? 1 + fork : standing.threshold;
+    standing = await standing.roll(partnerHands(keys), { keys, threshold: named });
   }
-  const head = lineage[lineage.length - 1]!;
-  return { doc: { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: head.epochCid, sealLineage: lineage, kahu }, lineage };
+  return { doc: standing.doc({ labels: partnerLabels(keys) }), lineage: standing.chain };
 }
 
-/** A SECOND, DIFFERENT genesis over the same kahu (distinct pre-rotation commitment ⇒ a distinct
- *  AID) — the retired bare-`sealEpochCid` legacy path is gone, so this still carries a verified
- *  one-epoch lineage, just a different one than {@link genesisCharter} mints. */
+/** A SECOND, DIFFERENT genesis over the same kahu: another charter, so another AID, with a verified
+ *  one-epoch lineage of its own. */
 function genesisOnlyCharter(keys: string[], threshold: number): NexusDoc {
-  const kahu = keys.map((k, i) => ({ displayName: `Partner ${i}`, verifyingKey: k }));
-  const genesis = genesisCharterEpoch(keys, threshold, sealKeySetHash(keys, threshold + 2));
-  return { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: genesis.epochCid, sealLineage: [genesis], kahu };
+  return heldCharter({ keys, threshold, variant: 1 }).doc({ labels: partnerLabels(keys) });
 }
 
 /** This vessel's own founding: three held persona-roots seated in the primary charter. */
@@ -321,7 +316,7 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
   it("CONTROL — a torn or unseated charter refuses and writes nothing", async () => {
     await standJoiner();
     expect(() => importCarriedCharter(sealHome(), "not a charter")).toThrow(CarriedCharterError);
-    expect(() => importCarriedCharter(sealHome(), renderNexusDoc({ kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: null, kahu: [] })))
+    expect(() => importCarriedCharter(sealHome(), renderNexusDoc({ ...emptyFoundingCharterDoc(), threshold: 2 })))
       .toThrow(CarriedCharterError);
     expect(existsSync(join(sealHome(), "carried"))).toBe(false);
   });

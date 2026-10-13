@@ -12,7 +12,7 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, DAEMON_BAG_ID, seedDaemonDoc, NEXUS_DOC_DOMAIN, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash,
+  hex, DAEMON_BAG_ID, seedDaemonDoc,
   foundingRoster, memberEdgeId, materializeSharedLarDoc, realmEdgeBoardDocUrl, edgeRollAnchorsFromBoard,
   edgeKapaeActsFromBoard, ed25519SignerFromSeed,
 } from "@lararium/mesh";
@@ -27,13 +27,14 @@ import { runCabalJoin } from "../src/commands/cabal-join.js";
 import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeRollAnchors } from "../src/commands/edge-roll-anchor.js";
 import { direct } from "./direct-store.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
 const REALM = "a".repeat(64);
 
 const nymOf = (byte: number) => ed.getPublicKeyAsync(new Uint8Array(32).fill(byte)).then(hex);
-const kahu = (keys: readonly string[]) => keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
+const chairs = (keys: readonly string[]) => keys.map((_, i) => `Kahu ${i}`);
 
 /** The hands over `keys`, each a persona root this vessel holds. */
 async function heldHands(keys: readonly string[]) {
@@ -50,15 +51,12 @@ async function heldHands(keys: readonly string[]) {
 async function seatCharter() {
   const roots = await Promise.all([0, 1, 2, 3, 4, 5, 6].map((i) => generateOrLoadPersonaGroupRoot(i)));
   const oldKeys = roots.slice(0, 3).map((r) => r.verifyingKey), newKeys = roots.slice(4, 7).map((r) => r.verifyingKey);
-  const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
-  writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, sealLineage: [e0], kahu: kahu(oldKeys) });
-  const rolled = await rotateSealEpoch(e0, { keys: newKeys, threshold: 2 }, "", await heldHands(newKeys));
-  if (!rolled.ok) throw new Error(rolled.reason);
-  const opened = { keys: newKeys, threshold: 2, sealEpochCid: rolled.epoch.epochCid };
-  const roll = (): void => writeNexusDoc(larSealHome(), {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: rolled.epoch.epochCid, sealLineage: [e0, rolled.epoch], kahu: kahu(newKeys),
-  });
-  return { e0, opened, roll };
+  const genesis = heldCharter({ keys: oldKeys, threshold: 2, successors: { keys: newKeys, threshold: 2 } });
+  writeNexusDoc(larSealHome(), genesis.doc({ labels: chairs(oldKeys) }));
+  const rolled = await genesis.roll(await heldHands(newKeys));
+  const opened = rolled.roster;
+  const roll = (): void => writeNexusDoc(larSealHome(), rolled.doc({ labels: chairs(newKeys) }));
+  return { e0: genesis.head, opened, roll };
 }
 
 beforeEach(async () => {
@@ -141,8 +139,7 @@ describe("the quorum hand — the seats of the charter act on a realm's edges", 
     // A charter that seats ONE held root beside two foreign keys, at two of three: this vessel holds one seat.
     const held = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
     const keys = [held, await nymOf(21), await nymOf(22)];
-    const e0 = genesisCharterEpoch(keys, 2, "");
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, sealLineage: [e0], kahu: kahu(keys) });
+    writeNexusDoc(larSealHome(), heldCharter({ keys, threshold: 2 }).doc({ labels: chairs(keys) }));
     await expect(direct(runEdgeKapae)({ member: joiner, realm: REALM, raised: true, hand: "quorum" })).rejects.toThrow(/holds 1 seat/);
     expect((await edgeBoard()).acts).toEqual([]);
     // The quorum hand acts on a realm's board alone.

@@ -34,9 +34,10 @@ import { join, dirname } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, realmIdOfCharter, genesisCharterEpoch } from "@lararium/mesh";
+import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, realmIdOfCharter } from "@lararium/mesh";
 
-import { writeNexusDoc, readNexusDoc, nexusCharterStands, NEXUS_DOC_DOMAIN } from "../src/nexus-doc.js";
+import { writeNexusDoc, readNexusDoc, nexusCharterStands } from "../src/nexus-doc.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { nodeNexusIsland, nodeNexusStandsAt, nodeNexusStanding, admittedJoineeIsland } from "../src/nexus-standing.js";
 import { admitBoardIsland } from "../src/commands/device-admit.js";
 import { larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
@@ -45,10 +46,9 @@ import { hearthDialTiddlers, readHearthDialPin, HEARTH_ISLAND_KIND_TIDDLER } fro
 import { fixtureKey } from "./fixture-keys.js";
 /** A stand-in vessel verifying key — the spelling `loadVesselVerifyingKey` would hand back. */
 const OWN_KEY = "a1".repeat(32);
-/** A real genesis seal lineage over the "steward" key below — there is no legacy bare-`sealEpochCid`
- *  path any more, so a "the charter STANDS" fixture must carry a verifiable one-epoch lineage. */
-const CHARTER_GENESIS = genesisCharterEpoch([fixtureKey(0xb2)], 1, "");
-const CHARTER = CHARTER_GENESIS.epochCid;
+/** A charter that STANDS carries a verifiable lineage: one seat, the "steward" key, at genesis. */
+const STANDING = heldCharter({ keys: [fixtureKey(0xb2)], threshold: 1 });
+const CHARTER = STANDING.aid;
 
 const saved: Record<string, string | undefined> = {};
 function setEnv(k: string, v: string | undefined): void {
@@ -75,13 +75,7 @@ describe("device-admit resolves the island the boot resolved", () => {
 
   /** Seat a charter on disk — the CLIMB. The vessel now stands at the charter island, not its own key. */
   function climb(): void {
-    writeNexusDoc(larSealHome(), {
-      kind: NEXUS_DOC_DOMAIN,
-      threshold: 1,
-      sealEpochCid: CHARTER,
-      sealLineage: [CHARTER_GENESIS],
-      kahu: [{ displayName: "steward", verifyingKey: fixtureKey(0xb2) }],
-    });
+    writeNexusDoc(larSealHome(), STANDING.doc({ labels: ["steward"] }));
   }
 
   /** The island THE BOOT resolves, derived exactly as `open-node-vessel` derives it. */
@@ -124,12 +118,8 @@ describe("device-admit resolves the island the boot resolved", () => {
 
   test("RED — a charter that STANDS and reads TORN refuses rather than falling back to the vessel key", () => {
     // A charter file that stands but carries no readable epoch — the third state `91ce09afb` named.
-    writeNexusDoc(larSealHome(), {
-      kind: NEXUS_DOC_DOMAIN,
-      threshold: 1,
-      sealEpochCid: "not-an-epoch-cid",
-      kahu: [{ displayName: "steward", verifyingKey: fixtureKey(0xb2) }],
-    });
+    const { sealLineage: _lineage, ...unsealed } = STANDING.doc({ labels: ["steward"] });
+    writeNexusDoc(larSealHome(), { ...unsealed, sealEpochCid: "not-an-epoch-cid" });
     // The FALLBACK is the defect: keying a board on a name the boot never stands on. Fail closed.
     let fellBack: string | null = null;
     try { fellBack = admitBoardIsland(OWN_KEY); } catch { /* the refusal */ }
@@ -202,7 +192,7 @@ describe("device-admit resolves the island the boot resolved", () => {
 describe("device-admit carries the founder's RESOLVED island, not just its gate key", () => {
   const OWN_KEY  = "a1".repeat(32);
   const JOINEE   = "e5".repeat(32);
-  const CHARTER  = CHARTER_GENESIS.epochCid;
+  const CHARTER  = STANDING.aid;
 
   const saved: Record<string, string | undefined> = {};
   function setEnv(k: string, v: string | undefined): void {
@@ -225,13 +215,7 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
   });
 
   function climb(): void {
-    writeNexusDoc(larSealHome(), {
-      kind: NEXUS_DOC_DOMAIN,
-      threshold: 1,
-      sealEpochCid: CHARTER,
-      sealLineage: [CHARTER_GENESIS],
-      kahu: [{ displayName: "steward", verifyingKey: fixtureKey(0xb2) }],
-    });
+    writeNexusDoc(larSealHome(), STANDING.doc({ labels: ["steward"] }));
   }
 
   // ── RED ─────────────────────────────────────────────────────────────────────────────────────────

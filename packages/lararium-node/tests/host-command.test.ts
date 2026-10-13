@@ -14,14 +14,14 @@
  *     counts one redemption;
  *   · REFUSALS write nothing: no charter, a Nexus this hearth does not carry, an invite before any roll.
  */
-import { NEXUS_DOC_DOMAIN, HOSTING_ACT_DOMAIN, writeHostingAct, mintHostingAct } from "@lararium/mesh";
+import { HOSTING_ACT_DOMAIN, writeHostingAct, mintHostingAct } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisCharterEpoch, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
+  hex, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
   tokenVerifiesAt, redeemClaim, makeMultiSigQuorumVerifier, type NexusDoc, type Presented,
 } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
@@ -38,6 +38,7 @@ import { readHostingState, rollHosting, liveEpochs, hostingDir } from "../src/ho
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { direct } from "./direct-store.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -59,11 +60,7 @@ async function seatOwnCharter(): Promise<{ aid: string; doc: NexusDoc }> {
   await generateOrLoadVesselIdentity();
   const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
   const keys = roots.map((r) => r.verifyingKey);
-  const genesis = genesisCharterEpoch(keys, 2, "");
-  const doc: NexusDoc = {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-    kahu: keys.map((verifyingKey, i) => ({ displayName: `Kahu ${i}`, verifyingKey })),
-  };
+  const doc: NexusDoc = heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
   writeNexusDoc(sealHome(), doc);
   return { aid: doc.sealEpochCid!, doc };
 }

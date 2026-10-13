@@ -6,12 +6,13 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  DAEMON_BAG_ID, NEXUS_DOC_DOMAIN, genesisCharterEpoch, realmEdgeBoardDocUrl, materializeSharedLarDoc,
+  DAEMON_BAG_ID, realmEdgeBoardDocUrl, materializeSharedLarDoc,
   edgeKapaeActsFromBoard, foldEdgeReadings, countEdgeActs, hex,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { ownedStore } from "../src/owned-store.js";
 import { vesselEdgeCharter } from "../src/edge-board.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "../src/commands/edge-cosign.js";
@@ -19,15 +20,13 @@ import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "../src/commands/
 let roots: string[];
 let priorLarRoot: string | undefined;
 const REALM = "af".repeat(32), MEMBER = "bc".repeat(32);
-const kahu = (keys: readonly string[]) => keys.map((verifyingKey, i) => ({ displayName: `Seat ${i}`, verifyingKey }));
 
 async function stand(index: number, seatIndex: number, keys: string[]) {
   process.env["LAR_ROOT"] = roots[index]!;
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot(seatIndex);
   await generateOrLoadPersonaGroupRoot(8);
-  const epoch = genesisCharterEpoch(keys, 2, "");
-  writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: epoch.epochCid, sealLineage: [epoch], kahu: kahu(keys) });
+  writeNexusDoc(larSealHome(), heldCharter({ keys, threshold: 2 }).doc());
   await ownedStore(larDataDir(), async (repo) => {
     const daemon = await import("@lararium/mesh").then((m) => m.seedDaemonDoc(repo));
     const { mkdirSync, writeFileSync } = await import("node:fs");
@@ -128,22 +127,19 @@ describe("the cross-vessel quorum cosign door", () => {
   it("refuses a whole quorum and a vessel with no seated key", async () => {
     process.env["LAR_ROOT"] = roots[0]!;
     const own = (await loadPersonaGroupRootVerifyingKey(0))!;
-    const oneSeat = genesisCharterEpoch([own], 1, "");
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: oneSeat.epochCid, sealLineage: [oneSeat], kahu: kahu([own]) });
+    writeNexusDoc(larSealHome(), heldCharter({ keys: [own], threshold: 1 }).doc());
     await expect(partial(0)).rejects.toThrow(/whole quorum/);
     process.env["LAR_ROOT"] = roots[1]!;
     const outsiderKey = (await loadPersonaGroupRootVerifyingKey(1))!;
     process.env["LAR_ROOT"] = roots[0]!;
-    const noSeat = genesisCharterEpoch([outsiderKey], 1, "");
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: noSeat.epochCid, sealLineage: [noSeat], kahu: kahu([outsiderKey]) });
+    writeNexusDoc(larSealHome(), heldCharter({ keys: [outsiderKey], threshold: 1 }).doc());
     await expect(partial(0)).rejects.toThrow(/holds no seat/);
     // CONTROL: restoring the two-seat charter lets A produce a partial again.
     process.env["LAR_ROOT"] = roots[1]!;
     const keyB = (await loadPersonaGroupRootVerifyingKey(1))!;
     process.env["LAR_ROOT"] = roots[0]!;
     const keys = [(await generateOrLoadPersonaGroupRoot(0)).verifyingKey, keyB];
-    const restored = genesisCharterEpoch(keys, 2, "");
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: restored.epochCid, sealLineage: [restored], kahu: kahu(keys) });
+    writeNexusDoc(larSealHome(), heldCharter({ keys, threshold: 2 }).doc());
     await expect(partial(0)).resolves.toHaveProperty("signed");
   });
   it("refuses a partial cut before the edge's line moved, and one cut under a charter head this vessel rolled past", async () => {
@@ -169,8 +165,7 @@ describe("the cross-vessel quorum cosign door", () => {
     const underOldHead = await partial(0);
     process.env["LAR_ROOT"] = roots[1]!;
     const keys = [(await (async () => { process.env["LAR_ROOT"] = roots[0]!; const k = (await loadPersonaGroupRootVerifyingKey(0))!; process.env["LAR_ROOT"] = roots[1]!; return k; })()), (await loadPersonaGroupRootVerifyingKey(1))!];
-    const other = genesisCharterEpoch(keys, 2, "another-charter");
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: other.epochCid, sealLineage: [other], kahu: kahu(keys) });
+    writeNexusDoc(larSealHome(), heldCharter({ keys, threshold: 2, variant: 1 }).doc());
     await expect(withRepo(1, (repo) => cosign(repo, underOldHead.partial)))
       .rejects.toMatchObject({ verdict: "stale" });
   });
@@ -181,10 +176,10 @@ describe("the cross-vessel quorum cosign door", () => {
     process.env["LAR_ROOT"] = roots[1]!;
     const keyB = (await loadPersonaGroupRootVerifyingKey(1))!;
     const keys = [keyA, keyB, hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(0xc3)))];
-    const three = genesisCharterEpoch(keys, 3, "");
+    const three = heldCharter({ keys, threshold: 3 });
     for (const index of [0, 1]) {
       process.env["LAR_ROOT"] = roots[index]!;
-      writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 3, sealEpochCid: three.epochCid, sealLineage: [three], kahu: kahu(keys) });
+      writeNexusDoc(larSealHome(), three.doc());
     }
     const a = await partial(0);
     const atB = await withRepo(1, (repo) => cosign(repo, JSON.parse(JSON.stringify(a.partial))));

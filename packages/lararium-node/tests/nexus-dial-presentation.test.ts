@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  NEXUS_DOC_DOMAIN, hex, hexToBytes, genesisCharterEpoch, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
+  hex, hexToBytes, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc,
   type NexusDoc, type CarriageEntry, type LarDoc, type LeafIdentity, type DeviceDelegationTiddler,
 } from "@lararium/mesh";
@@ -26,6 +26,7 @@ import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome } from "../src/carried-set.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
 import { dialerDouble, gateDouble } from "./gate-dial-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
@@ -33,11 +34,7 @@ const seed = (n: number) => new Uint8Array(32).fill(n);
 
 async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
   const keys = await Promise.all(kahuSeeds.map(pubOf));
-  const genesis = genesisCharterEpoch(keys, 2, "");
-  return {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-    kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
-  };
+  return heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
 }
 
 async function admitOn(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, parents: string[] = []): Promise<CarriageEntry> {

@@ -14,12 +14,13 @@ import { mkdtempSync, rmSync, mkdirSync, writeFileSync, existsSync, unlinkSync }
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, hexToBytes, signCabalInvite, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc, genesisCharterEpoch } from "@lararium/mesh";
+import { hex, hexToBytes, signCabalInvite, DEFAULT_JOIN_POLICY, DAEMON_BAG_ID, seedDaemonDoc } from "@lararium/mesh";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
-import { writeNexusDoc, NEXUS_DOC_DOMAIN } from "../src/nexus-doc.js";
+import { writeNexusDoc } from "../src/nexus-doc.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
@@ -198,11 +199,7 @@ describe("cabal join — the crossing, and what it refuses", () => {
   it("a climbed vessel's join reads the realm board its vouch wrote", async () => {
     // Vouch and join resolve the board from the same realm id even while a charter is seated.
     const steward = fixtureKey(0xb2);
-    const genesis = genesisCharterEpoch([steward], 1, "");
-    writeNexusDoc(larSealHome(), {
-      kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: genesis.epochCid,
-      sealLineage: [genesis], kahu: [{ displayName: "steward", verifyingKey: steward }],
-    });
+    writeNexusDoc(larSealHome(), heldCharter({ keys: [steward], threshold: 1 }).doc({ labels: ["steward"] }));
     const joiner = await foreignNym(18);
     await direct(runCabalVouch)({ joiner, realm: REALM }, NOW);
     const v = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, now: NOW });

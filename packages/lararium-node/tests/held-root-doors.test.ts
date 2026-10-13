@@ -29,8 +29,8 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ed from "@noble/ed25519";
 import {
-  NEXUS_DOC_DOMAIN, hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract, signCarrierContract, makeMultiSigQuorumVerifier,
-  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, genesisCharterEpoch, heldNexusRoot,
+  hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract, signCarrierContract, makeMultiSigQuorumVerifier,
+  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, heldNexusRoot,
   type NexusDoc, type CarriageEntry, type LarDoc,
 } from "@lararium/mesh";
 import { takeAdmitBundle, admitBundleHolds, admitBundlePathFor, AdmitBundleError, type AdmitBundle } from "../src/admit-bundle.js";
@@ -43,6 +43,7 @@ import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const pubOf    = (s: Uint8Array) => ed.getPublicKeyAsync(s).then(hex);
 const signerOf = (s: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, s).then(hex);
@@ -54,11 +55,7 @@ const GATE = "ee".repeat(32), NONCE = "ab".repeat(32);
 
 async function charter(kahu: Uint8Array[]): Promise<NexusDoc> {
   const keys = await Promise.all(kahu.map(pubOf));
-  const genesis = genesisCharterEpoch(keys, 2, "");
-  return {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-    kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
-  };
+  return heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
 }
 async function act(doc: NexusDoc, kahu: Uint8Array[], action: "admit" | "revoke", parents: string[] = []): Promise<CarriageEntry> {
   const nym = await pubOf(LEAF), epoch = doc.sealEpochCid!;

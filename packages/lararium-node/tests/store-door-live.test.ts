@@ -19,7 +19,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  NEXUS_DOC_DOMAIN, genesisCharterEpoch, antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
+  antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
   fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
@@ -37,6 +37,7 @@ import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { admitBundlePathFor } from "../src/admit-bundle.js";
 import { storeDoorReactors, storeDoorDirect, type StoreDoorVerb } from "../src/store-door-verbs.js";
 import { claimStore, StoreHeld, ownedStore } from "../src/owned-store.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 let base: string;
 let priorLarRoot: string | undefined;
@@ -74,11 +75,8 @@ async function seatVessel(root: string): Promise<void> {
   writeFileSync(join(root, "genesis", "seed.json"), JSON.stringify(seed));
   await generateOrLoadVesselIdentity();
   const keys = (await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)))).map((r) => r.verifyingKey);
-  const genesis = genesisCharterEpoch(keys, 2, "");
-  const doc: NexusDoc = {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-    kahu: keys.map((verifyingKey, i) => ({ displayName: `Kahu ${i}`, verifyingKey })),
-  };
+  const charter = heldCharter({ keys, threshold: 2 });
+  const doc: NexusDoc = charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
   writeNexusDoc(sealHome(), doc);
   await wearPersona(0);
   // §2.1 — `cabal-vouch`'s `resolveBoundEpoch` reads the social bootstrap for a daemon doc URL

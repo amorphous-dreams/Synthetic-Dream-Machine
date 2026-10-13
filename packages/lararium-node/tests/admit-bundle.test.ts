@@ -22,9 +22,9 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  NEXUS_DOC_DOMAIN, hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract, makeMultiSigQuorumVerifier,
+  hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract, makeMultiSigQuorumVerifier,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, foundingRoster,
-  genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
+  signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
   type NexusDoc, type CarriageEntry, type LarDoc,
 } from "@lararium/mesh";
 import { takeAdmitBundle, readKeptAdmitBundle, admitBundlePathFor, dialedNexusAid, AdmitBundleError, type AdmitBundle } from "../src/admit-bundle.js";
@@ -33,6 +33,7 @@ import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome, carriageConsentPathFor } from "../src/carried-set.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
@@ -49,11 +50,7 @@ const GATE_Q = "b2".repeat(32);
 
 async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
   const keys = await Promise.all(kahuSeeds.map(pubOf));
-  const genesis = genesisCharterEpoch(keys, 2, "");
-  return {
-    kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-    kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
-  };
+  return heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
 }
 
 async function act(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, action: "admit" | "revoke", parents: string[] = []): Promise<CarriageEntry> {
@@ -245,12 +242,10 @@ describe("a bundle taken across a seal roll carries the anchor, and the dial pre
 
   test("★ an anchored bundle takes and presents at the new head; CONTROL: the same bundle without its anchor refuses ★", async () => {
     const [oldKeys, newKeys] = await Promise.all([Promise.all(OLD.map(pubOf)), Promise.all(NEW.map(pubOf))]);
-    const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
-    const r = await rotateSealEpoch(e0, { keys: newKeys, threshold: 2 }, "",
-      await Promise.all(NEW.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))));
-    if (!r.ok) throw new Error(r.reason);
-    const kahu = newKeys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
-    const rolled: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: r.epoch.epochCid, sealLineage: [e0, r.epoch], kahu };
+    const genesis = heldCharter({ keys: oldKeys, threshold: 2, successors: { keys: newKeys, threshold: 2 } });
+    const grown = await genesis.roll(await Promise.all(NEW.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))));
+    const e0 = genesis.head, e1 = grown.head;
+    const rolled: NexusDoc = grown.doc({ labels: newKeys.map((_, i) => `Kahu ${i}`) });
     const sealHome = join(root, "nexus");
     writeNexusDoc(sealHome, rolled);
     const aid = realmIdOfCharter(rolled)!;
@@ -258,10 +253,9 @@ describe("a bundle taken across a seal roll carries the anchor, and the dial pre
     const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
       a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
 
-    const atE0: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, kahu };
-    const admit = await act(atE0, OLD, LEAF, "admit");
+    const admit = await act(genesis.doc(), OLD, LEAF, "admit");
     const anchor = await signRollAnchor(
-      { prevEpochCid: e0.epochCid, sealEpochCid: r.epoch.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents: [carriageEntryActCid(admit)] },
+      { prevEpochCid: e0.epochCid, sealEpochCid: e1.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents: [carriageEntryActCid(admit)] },
       await Promise.all(NEW.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))),
     );
 
@@ -298,20 +292,19 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
   /** A charter rolled once, an admit minted before the roll, the anchor that carries it, and an orphan retry. */
   async function rolledWithFork() {
     const [oldKeys, newKeys] = await Promise.all([Promise.all(OLD.map(pubOf)), Promise.all(NEW.map(pubOf))]);
-    const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
+    const genesis = heldCharter({ keys: oldKeys, threshold: 2, successors: { keys: newKeys, threshold: 2 } });
     const newHands = await Promise.all(NEW.map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-    const r = await rotateSealEpoch(e0, { keys: newKeys, threshold: 2 }, "", newHands);
-    if (!r.ok) throw new Error(r.reason);
-    const kahu = newKeys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
-    const rolled: NexusDoc = { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: r.epoch.epochCid, sealLineage: [e0, r.epoch], kahu };
+    const grown = await genesis.roll(newHands);
+    const e0 = genesis.head, e1 = grown.head;
+    const rolled: NexusDoc = grown.doc({ labels: newKeys.map((_, i) => `Kahu ${i}`) });
     const sealHome = join(root, "nexus");
     writeNexusDoc(sealHome, rolled);
     const aid = realmIdOfCharter(rolled)!;
     const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
       a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
-    const admit = await act({ kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, kahu }, OLD, LEAF, "admit");
+    const admit = await act(genesis.doc(), OLD, LEAF, "admit");
     const anchorOf = async (parents: string[]) => signRollAnchor(
-      { prevEpochCid: e0.epochCid, sealEpochCid: r.epoch.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents },
+      { prevEpochCid: e0.epochCid, sealEpochCid: e1.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents },
       newHands.slice(0, 2),
     );
     const carrying = await anchorOf([carriageEntryActCid(admit)]);
@@ -322,7 +315,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
       for (const a of anchors) writeRollAnchor(board, a);
       return board;
     };
-    return { sealHome, aid, leaves, admit, carrying, orphan, anchorOf, epochCid: r.epoch.epochCid, boardWith };
+    return { sealHome, aid, leaves, admit, carrying, orphan, anchorOf, epochCid: e1.epochCid, boardWith };
   }
 
   const dial = async (w: Awaited<ReturnType<typeof rolledWithFork>>, board: LarDoc) => {

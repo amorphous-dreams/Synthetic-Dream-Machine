@@ -23,10 +23,10 @@ import {
   writeRealmBagRegistration, RealmBagGate, realmDocUrl, type RealmCharterConsult,
   deterministicDocUrl,
   emptyLarDoc, mutableLarRecord, type LarDoc,
-  type NexusDoc,
   type FederationGate, type NexusMembership,
 } from "@lararium/mesh";
 import { makeRealmPlane } from "../src/realm-plane.js";
+import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const REALM = "epoch-cid-genesis";
 const BAG   = "lar:///ha.ka.ba/bags/lares";
@@ -99,12 +99,8 @@ describe("the realm fold moves the wire verdict, and the caller must hear it", (
       base: denyAll,
       onRefold: () => refolds.push(Date.now()),
     });
-    // `realmIdOfCharter` reads `sealLineage[0].epochCid` alone now (the legacy bare-`sealEpochCid`
-    // path is gone) — this cast feeds it a lineage head naming REALM, nothing else.
-    await plane.refresh({
-      sealEpochCid: REALM,
-      sealLineage: [{ epochCid: REALM, keySetHash: "", nextKeyCommit: "", prevEpochCid: null }],
-    } as NexusDoc);
+    // The charter doc names REALM and carries no law for the plane to verify.
+    await plane.refresh(namedCharter(REALM));
     await new Promise((r) => setTimeout(r, 50));
     const standUp = refolds.length;
 

@@ -13,7 +13,6 @@ import {
   DeterministicFederationGate,
   carriageDocUrl,
   crossroadsDocUrl,
-  genesisCharterEpoch,
   kapaeAntigenDocUrl,
   materializeSharedLarDoc,
   nexusIdentity,
@@ -30,6 +29,7 @@ import { identityShareDecision } from "@lararium/mesh";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
 import { fixtureKey } from "./fixture-keys.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 const SHARED_GENESIS_SEED: GenesisSeed = {
   format: "lararium-genesis-seed/v1",
   actorSeed: "11".repeat(32),
@@ -38,8 +38,8 @@ const SHARED_GENESIS_SEED: GenesisSeed = {
   tiddlers: {},
 };
 
-const NEXUS_A = genesisCharterEpoch([fixtureKey(0xaa)], 1, "").epochCid;
-const NEXUS_B = genesisCharterEpoch([fixtureKey(0xbb)], 1, "").epochCid;
+const NEXUS_A = heldCharter({ keys: [fixtureKey(0xaa)], threshold: 1 }).aid;
+const NEXUS_B = heldCharter({ keys: [fixtureKey(0xbb)], threshold: 1 }).aid;
 const VESSEL_A = "a1".repeat(32);
 const VESSEL_B = "b1".repeat(32);
 const LEAF_B = "c1".repeat(32);

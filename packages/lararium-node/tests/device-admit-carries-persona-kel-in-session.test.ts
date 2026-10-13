@@ -40,12 +40,13 @@ import { Repo } from "@automerge/automerge-repo";
 import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import {
   hex, materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix,
-  nexusIdentity, nexusScopeOrThrow, genesisCharterEpoch,
+  nexusIdentity, nexusScopeOrThrow,
 } from "@lararium/mesh";
 import * as ed25519 from "@noble/ed25519";
 
 import { carryPersonaKelUpTheGradient } from "../src/persona-kel-ring.js";
-import { writeNexusDoc, NEXUS_DOC_DOMAIN } from "../src/nexus-doc.js";
+import { writeNexusDoc } from "../src/nexus-doc.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { admitBoardIsland } from "../src/commands/device-admit.js";
 import { nodeNexusIslandsBelow } from "../src/nexus-standing.js";
 import { larSealHome } from "../src/vessel-paths.js";
@@ -80,15 +81,9 @@ function climb(salt: number): string {
   // A charter seats only a key the Ed25519 door reads lawful, so the stand-in derives a REAL key from the salt.
   const pkcs8 = Buffer.concat([Buffer.from("302e020100300506032b657004220420", "hex"), Buffer.alloc(32, salt)]);
   const key = Buffer.from(createPublicKey(createPrivateKey({ key: pkcs8, format: "der", type: "pkcs8" })).export({ format: "jwk" }).x!, "base64url").toString("hex");
-  const genesis = genesisCharterEpoch([key], 1, "");
-  writeNexusDoc(larSealHome(), {
-    kind: NEXUS_DOC_DOMAIN,
-    threshold: 1,
-    sealEpochCid: genesis.epochCid,
-    sealLineage: [genesis],
-    kahu: [{ displayName: "steward", verifyingKey: key }],
-  });
-  return genesis.epochCid;
+  const charter = heldCharter({ keys: [key], threshold: 1 });
+  writeNexusDoc(larSealHome(), charter.doc({ labels: ["steward"] }));
+  return charter.aid;
 }
 
 describe("device-admit carries persona-KEL in-session, with no daemon boot between the climb and the admit", () => {

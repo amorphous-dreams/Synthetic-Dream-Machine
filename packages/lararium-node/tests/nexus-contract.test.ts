@@ -18,7 +18,7 @@
  *   · THE CARRIED ADMIT: an admit emits a bundle (entry · lineage · AID · this vessel's gate key) the joinee's
  *     take verifies offline and keeps; a revoke emits none.
  */
-import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
+import { emptyFoundingCharterDoc } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -28,8 +28,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
-  deriveNexusScopedKey, realmIdOfCharter, signerClass, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, PERSONA_GLAMOUR_CONTEXT,
-  type NexusDoc } from "@lararium/mesh";
+  deriveNexusScopedKey, realmIdOfCharter, signerClass, PERSONA_GLAMOUR_CONTEXT } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey,
   listPersonaRoots } from "../src/node-vessel-identity.js";
 
@@ -64,6 +63,7 @@ import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { takeAdmitBundle, readKeptAdmitBundle } from "../src/admit-bundle.js";
 import { carriageEntryActCid } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -95,21 +95,14 @@ async function leafOf(handleIndex: number): Promise<string> {
   return (await deriveNexusScopedKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT, aid)).verifyingKey.toLowerCase();
 }
 
-/** Seat a charter with a real, verifiable genesis lineage (the retired bare-`sealEpochCid` legacy
- *  path carries none) and return the seated epoch's cid. */
+/** A chair label per seat, in seat order. */
+const chairs = (keys: readonly string[]): string[] => keys.map((_, i) => `Kahu ${i}`);
+
+/** Seat a charter under a verifiable genesis lineage and return the seated epoch's cid. */
 function seatCharter(keys: string[], threshold = 2): string {
-  const genesis = genesisCharterEpoch(keys, threshold, "");
-  const doc: NexusDoc = {
-    kind: NEXUS_DOC_DOMAIN, threshold,
-    sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-    kahu: [
-      { displayName: "Kahu Alpha", verifyingKey: keys[0] ?? null },
-      { displayName: "Kahu Beta",        verifyingKey: keys[1] ?? null },
-      { displayName: "Kahu Gamma",        verifyingKey: keys[2] ?? null },
-    ],
-  };
-  writeNexusDoc(sealHome(), doc);
-  return genesis.epochCid;
+  const charter = heldCharter({ keys, threshold });
+  writeNexusDoc(sealHome(), charter.doc({ labels: ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"] }));
+  return charter.head.epochCid;
 }
 
 describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
@@ -332,15 +325,12 @@ describe("the subject stamps with its per-Nexus leaf — never its PersonaGroup 
 
   it("★ one Nexus across a seal ROTATION keeps one nym — the AID is the genesis epoch ★", async () => {
     const keys = await standKahu();
-    const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3));
-    const kahu = keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
-    writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis], kahu });
+    const genesis = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
+    writeNexusDoc(sealHome(), genesis.doc({ labels: chairs(keys) }));
     const before = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
 
-    const rotated = await rotateSealEpoch(genesis, { keys, threshold: 3 }, sealKeySetHash(keys, 2), await heldHands(keys));
-    if (!rotated.ok) throw new Error(rotated.reason);
-    writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 3, sealEpochCid: rotated.epoch.epochCid,
-      sealLineage: [genesis, rotated.epoch], kahu });
+    const rotated = await genesis.roll(await heldHands(keys), { keys, threshold: 2 });
+    writeNexusDoc(sealHome(), rotated.doc({ labels: chairs(keys) }));
     const after = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
 
     expect(after.sealEpochCid).not.toBe(before.sealEpochCid);   // the frontier moved …
@@ -456,19 +446,13 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
   /** The AID of the charter standing at the primary path. */
   const primaryAid = (): string => realmIdOfCharter(readNexusDoc(sealHome()))!;
 
-  /** A charter with a pre-rotated lineage, so a rotation moves the head and keeps the AID. */
+  /** A charter with a signed lineage that alternates its quorum between 2 and 3, so a rotation moves the head and keeps the AID. */
   async function seatLineage(keys: string[], rotations: number): Promise<void> {
-    const kahu = keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
-    const lineage = [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 3))];
-    let threshold = 2;
+    let standing = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
     for (let i = 0; i < rotations; i++) {
-      const revealed = threshold === 2 ? 3 : 2;
-      const r = await rotateSealEpoch(lineage[lineage.length - 1]!, { keys, threshold: revealed }, sealKeySetHash(keys, threshold), await heldHands(keys));
-      if (!r.ok) throw new Error(r.reason);
-      lineage.push(r.epoch);
-      threshold = revealed;
+      standing = await standing.roll(await heldHands(keys), { keys, threshold: standing.threshold });
     }
-    writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: lineage[lineage.length - 1]!.epochCid, sealLineage: lineage, kahu });
+    writeNexusDoc(sealHome(), standing.doc({ labels: chairs(keys) }));
   }
 
   it("★ a signed contract-in is KEPT per Nexus, bound to the epoch it consented under ★", async () => {
@@ -520,10 +504,7 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     seatCharter(keys);
     const aid = primaryAid();
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
-    writeNexusDoc(sealHome(), {
-      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: null,
-      kahu: [{ displayName: "Kahu Alpha", verifyingKey: null }],
-    });
+    writeNexusDoc(sealHome(), { ...emptyFoundingCharterDoc(), threshold: 2, kahu: [{ displayName: "Kahu Alpha", verifyingKey: null }] });
     expect(await hasContractedInto(sealHome(), aid)).toBe(false);
   });
 
@@ -569,16 +550,12 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     const roots = await Promise.all([0, 1, 2, 3, 4, 5, 6].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const oldKeys = roots.slice(0, 3).map((r) => r.verifyingKey);
     const newKeys = roots.slice(4, 7).map((r) => r.verifyingKey);
-    const e0 = genesisCharterEpoch(oldKeys, 2, sealKeySetHash(newKeys, 2));
-    const kahu = (keys: string[]) => keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k }));
-    writeNexusDoc(sealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: e0.epochCid, sealLineage: [e0], kahu: kahu(oldKeys) });
-    const rolled = await rotateSealEpoch(e0, { keys: newKeys, threshold: 2 }, "", await heldHands(newKeys));
-    if (!rolled.ok) throw new Error(rolled.reason);
-    const roll = (): void => writeNexusDoc(sealHome(), {
-      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: rolled.epoch.epochCid, sealLineage: [e0, rolled.epoch], kahu: kahu(newKeys),
-    });
-    const opened = { keys: newKeys, threshold: 2, sealEpochCid: rolled.epoch.epochCid };
-    return { roots, e0, opened, roll };
+    const genesis = heldCharter({ keys: oldKeys, threshold: 2, successors: { keys: newKeys, threshold: 2 } });
+    writeNexusDoc(sealHome(), genesis.doc({ labels: chairs(oldKeys) }));
+    const rolled = await genesis.roll(await heldHands(newKeys));
+    const roll = (): void => writeNexusDoc(sealHome(), rolled.doc({ labels: chairs(newKeys) }));
+    const opened = { keys: [...rolled.keys], threshold: rolled.threshold, sealEpochCid: rolled.head.epochCid };
+    return { roots, e0: genesis.head, opened, roll };
   }
 
   async function boardNow() {

@@ -33,6 +33,7 @@ import {
 import { makeRealmPlane, type RealmPlaneHolder } from "../src/realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "../src/edge-board.js";
 import { runRealmBag, runRealmBags, stewardGuard, type RealmDoorPlanes, type StewardVault } from "../src/realm-steward.js";
+import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const A = "a".repeat(64), B = "b".repeat(64);
 const BAG_A = "lar:///ha.ka.ba/bags/cabal-a", BAG_B = "lar:///ha.ka.ba/bags/cabal-b";
@@ -42,7 +43,7 @@ const noMembers: NexusMembership = { holdsCarriagePeer: () => false };
 const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const keyOf = async (s: Uint8Array): Promise<string> => hex(await ed.getPublicKeyAsync(s));
 const signOf = (s: Uint8Array) => (bytes: Uint8Array): Promise<string> => ed.signAsync(bytes, s).then(hex);
-const charter = (genesis: string): NexusDoc => ({ sealLineage: [{ epochCid: genesis, keySetHash: "", nextKeyCommit: "", prevEpochCid: null }] } as NexusDoc);
+const charter = (genesis: string): NexusDoc => namedCharter(genesis);
 
 interface Actor { readonly worn: string; readonly wornSeed: Uint8Array; readonly vault: StewardVault; }
 async function actor(n: number): Promise<Actor> {

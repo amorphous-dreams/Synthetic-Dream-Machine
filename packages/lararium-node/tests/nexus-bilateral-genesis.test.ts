@@ -30,7 +30,6 @@
  * running peer reads the new member at BOUNDED STALENESS, never instantly. This headless proof folds each
  * hearth's board directly off its own store, so it proves the CONTRACT, not the wire's refold latency.
  */
-import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -39,7 +38,7 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  hex, genesisCharterEpoch, foundingRoster, foldCarriageSet, holdsCarriage,
+  hex, foundingRoster, foldCarriageSet, holdsCarriage,
   carriageEntryBytes, signCarriageQuorum, ed25519SignerFromSeed,
   deriveNexusScopedKey, realmIdOfCharter, PERSONA_GLAMOUR_CONTEXT,
   type NexusDoc, type KahuQuorumSeats, type CarriageEntry,
@@ -58,6 +57,7 @@ import { nexusLeafFor } from "../src/nexus-leaf.js";
 import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 let rootA: string;
 let rootB: string;
@@ -108,16 +108,7 @@ async function standHearth(root: string, threshold = 2): Promise<Hearth> {
     const nexusPubkey = await loadVesselVerifyingKey();
     const keys = roots.map((r) => r.verifyingKey);
     const bags = join(root, "state", "nexus");
-    const genesis = genesisCharterEpoch(keys, threshold, "");
-    const doc: NexusDoc = {
-      kind: NEXUS_DOC_DOMAIN, threshold,
-      sealEpochCid: genesis.epochCid, sealLineage: [genesis],
-      kahu: [
-        { displayName: "Founder-0", verifyingKey: keys[0]! },
-        { displayName: "Founder-1", verifyingKey: keys[1]! },
-        { displayName: "Founder-2", verifyingKey: keys[2]! },
-      ],
-    };
+    const doc: NexusDoc = heldCharter({ keys, threshold }).doc({ labels: ["Founder-0", "Founder-1", "Founder-2"] });
     writeNexusDoc(bags, doc);
     const island = nodeNexusIsland({ ownVesselKey: nexusPubkey, sealHome: bags });
     return { root, bags, nexusPubkey, island, aid: realmIdOfCharter(doc)!, operatorNym: keys[0]!.toLowerCase(), epoch: doc.sealEpochCid! };

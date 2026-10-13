@@ -14,13 +14,12 @@
  * quorum with two of their OWN held roots (the real-cabal collect-signatures ceremony is the surfaced fork).
  */
 
-import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { hex, genesisCharterEpoch, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry, type NexusDoc } from "@lararium/mesh";
+import { hex, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
@@ -30,6 +29,7 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "../src/commands/nexus-kapae.js";
 import { direct } from "./direct-store.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const VICTIM = "beadfeed".repeat(8);   // the presenter nym a ban targets
 
@@ -51,24 +51,12 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-/** Seat a charter DOC binding the given verifying keys at 2-of-3 into `bags/nexus`, with a real,
- *  verifiable genesis lineage (the retired bare-`sealEpochCid` legacy path carries no lineage).
- *  Returns the seated genesis epoch's cid. */
+/** Seat the keys under a verifiable genesis lineage in `bags/nexus`; return its cid. */
 function seatCharter(keys: string[], threshold = 2): string {
-  const genesis = genesisCharterEpoch(keys, threshold, "");
-  const doc: NexusDoc = {
-    kind: NEXUS_DOC_DOMAIN,
-    threshold,
-    sealEpochCid: genesis.epochCid,
-    sealLineage: [genesis],
-    kahu: [
-      { displayName: "Kahu Alpha", verifyingKey: keys[0] ?? null },
-      { displayName: "Kahu Beta",        verifyingKey: keys[1] ?? null },
-      { displayName: "Kahu Gamma",        verifyingKey: keys[2] ?? null },
-    ],
-  };
+  const charter = heldCharter({ keys, threshold });
+  const doc = charter.doc({ labels: ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"] });
   writeNexusDoc(sealHome(), doc);
-  return genesis.epochCid;
+  return charter.head.epochCid;
 }
 
 describe("nexus kapae — the RAISE side end-to-end (#65)", () => {

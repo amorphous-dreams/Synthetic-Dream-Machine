@@ -46,11 +46,12 @@ import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
 import {
   deterministicDocUrl, emptyLarDoc, hex, mutableLarRecord, proposeRealmBagRegistration, signRealmBagRegistration, writeRealmBagRegistration,
-  realmBagKey, realmBagProposalKey, type FederationGate, type LarDoc, type NexusDoc,
+  realmBagKey, realmBagProposalKey, type FederationGate, type LarDoc,
   type NexusMembership, type StewardSigner,
 } from "@lararium/mesh";
 import { makeRealmPlane } from "../src/realm-plane.js";
 import { runRealmBag, runRealmBags, stewardGuard, StewardRefused, wornStewardSigner, type StewardVault } from "../src/realm-steward.js";
+import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const REALM = "epoch-cid-genesis";
 const AID = "nexus-genesis-aid";
@@ -62,7 +63,7 @@ const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const keyOf = async (s: Uint8Array): Promise<string> => hex(await ed.getPublicKeyAsync(s));
 const signOf = (s: Uint8Array) => (bytes: Uint8Array): Promise<string> => ed.signAsync(bytes, s).then(hex);
 const idOf = (key: string): string => key.toLowerCase();
-const charter = { sealLineage: [{ epochCid: REALM, keySetHash: "", nextKeyCommit: "", prevEpochCid: null }] } as NexusDoc;
+const charter = namedCharter(REALM);
 
 interface Actor {
   readonly rootSeed: Uint8Array; readonly root: string; readonly vessel: string;

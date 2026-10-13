@@ -16,7 +16,6 @@
  *   · ONE CHAIN — a `present()` reading old readings and a `refold()` landing a descending revoke, interleaved,
  *     end STRANGER; CONTROL: the same interleaving with no revoke ends MEMBER.
  */
-import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -33,6 +32,7 @@ import {
 } from "../src/nexus-carriage.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
 const LEAF_SEED   = new Uint8Array(32).fill(5);
@@ -207,10 +207,9 @@ describe("CONTROL B on the real carried set — a held charter this vessel never
 
   test("no consent and no seat → no reading, so every presented admit for it reads STRANGER", async () => {
     const keys = await Promise.all(SEEDS.map(pubOf));
-    const doc: NexusDoc = {
-      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2),
-      kahu: keys.map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
-    };
+    // The seats and their threshold, and a bare epoch name with no lineage under it.
+    const { sealLineage: _lineage, ...seats } = heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
+    const doc: NexusDoc = { ...seats, sealEpochCid: genesisSealEpochCid(keys, 2) };
     const bags = join(root, "nexus");
     writeNexusDoc(bags, doc);
     let opened = 0;
