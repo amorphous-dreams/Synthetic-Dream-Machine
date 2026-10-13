@@ -27,12 +27,12 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { WebSocketServer } from "ws";
-import { verifyAuthProof, ed25519SignerFromSeed, LarWSClientAdapter } from "@lararium/mesh";
-import type { AuthVerifierShore } from "@lararium/mesh";
+import { ed25519SignerFromSeed, type LarWSClientAdapter } from "@lararium/mesh";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
+import { type DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
+import { armGate, dialGate, provingShore, standGate as standAuthGate } from "./gate-dial-fixture.js";
 /** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
 const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
 import type { LeafIdentity } from "../src/leaf-identity.js";
@@ -66,21 +66,6 @@ function makeNodeIdentity(): { identity: LeafIdentity; seed: Uint8Array; pub: st
  * decision — a peer crosses only when its key sits in the admitted set (the daemon-bag grant). A valid
  * proof proves WHO, never WHETHER-GRANTED; an un-admitted node is turned away here.
  */
-function makeCapabilityShore(gatePubKey: string, admitted: ReadonlySet<string>): AuthVerifierShore {
-  return {
-    async verify(cardBytes, bagUrl, _access, proof) {
-      if (!proof) return { ok: false, reason: "V3 proof required" };
-      const card = JSON.parse(new TextDecoder().decode(cardBytes)) as { peerPubKey?: string };
-      const peerPubKey = card.peerPubKey;
-      if (!peerPubKey) return { ok: false, reason: "no peer key in card" };
-      const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey, peerPubKey, aud: bagUrl, sig: proof.sig });
-      if (!v.ok) return { ok: false, reason: v.reason ?? "proof failed" };
-      if (!admitted.has(peerPubKey)) return { ok: false, reason: "insufficient capability (not admitted to the daemon bag)" };
-      return { ok: true, identifier: peerPubKey };
-    },
-  };
-}
-
 /**
  * Node-side Automerge readiness override (mirrors the production ListeningWSServerAdapter): upstream's
  * NodeWSServerAdapter declares ready only on its FIRST client — un-pono for a local-first vessel whose
@@ -121,7 +106,7 @@ function standNodeVessel(opts: VesselOpts): Promise<Vessel> {
   return new Promise((resolve, reject) => {
     const http: Server = createServer();
     const wss  = new WebSocketServer({ server: http });
-    const gate = new DaemonAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
+    const gate = standAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
     const serverNetwork = new ReadyWSServerAdapter(gate as unknown as WebSocketServer);
 
     // The gate ring: a WS peer arriving on THIS vessel's own gate shares only once its socket carries an
@@ -140,7 +125,7 @@ function standNodeVessel(opts: VesselOpts): Promise<Vessel> {
     let client: LarWSClientAdapter | null = null;
     const network: (ReadyWSServerAdapter | LarWSClientAdapter)[] = [serverNetwork];
     if (opts.dialOut) {
-      client = new LarWSClientAdapter({
+      client = dialGate({
         url: opts.dialOut.url, identity: opts.dialOut.identity, aud: AUD, gatePubKey: opts.dialOut.peerGatePubKey,
       });
       network.push(client);
@@ -155,7 +140,7 @@ function standNodeVessel(opts: VesselOpts): Promise<Vessel> {
       },
     });
 
-    gate.arm(makeCapabilityShore(opts.gatePubKey, opts.admitted), AUD, gateKeyOf(opts.gatePubKey), admitProven);
+    armGate(gate, { gate: gateKeyOf(opts.gatePubKey), aud: AUD, sort: admitProven, shore: provingShore(opts.gatePubKey, { admits: (key) => opts.admitted.has(key) }) });
 
     http.listen(0, "127.0.0.1", () => {
       const addr = http.address();

@@ -51,11 +51,12 @@ import type { AddressInfo } from "node:net";
 import { WebSocketServer } from "ws";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  personaScopedBagIds, ed25519SignerFromSeed, genesisCharterEpoch, LarWSClientAdapter, DAEMON_BAG_ID, NEXUS_DOC_DOMAIN,
+  personaScopedBagIds, ed25519SignerFromSeed, genesisCharterEpoch, DAEMON_BAG_ID, NEXUS_DOC_DOMAIN,
   type LarDoc, type LeafIdentity, type NexusDoc,
 } from "@lararium/mesh";
 import { KeyhiveProvider, InMemoryEventStore, signFaceGrantRecord, faceGrantTitle } from "@lararium/keyhive";
 import { makeCatalogAccessor } from "@lararium/tw5";
+import { dialGate } from "../gate-dial-fixture.js";
 // THE WORKER-SPAWNING PATH IS DIST-ONLY. `open-daemon-vm.ts` resolves its worker script off its OWN
 // `import.meta.url`; under vitest's src-aliased dev loop that resolves to a `.js` sibling that never
 // exists beside the `.ts` source. Every OTHER e2e in this tree sidesteps a live daemon worker
@@ -268,7 +269,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
   test("★ a cross-operator peer holding a VALID face-join grant record reaches the face's persona-plane doc ★", async () => {
     const holder = await makePeerIdentity(grantHolderFill);
     expect(holder.rawKey).toBe(grantHolderRawKey);
-    const client = new LarWSClientAdapter({ url: `ws://127.0.0.1:${port}`, identity: holder.identity, aud: DAEMON_BAG_ID, gatePubKey });
+    const client = dialGate({ url: `ws://127.0.0.1:${port}`, identity: holder.identity, aud: DAEMON_BAG_ID, gatePubKey });
     const joineeRepo = new Repo({ network: [client] });
     try {
       const grantTitle = faceGrantTitle(personaGroupDocIdHex, `0x${holder.rawKey}`);
@@ -282,7 +283,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
 
   test("CONTROL: a stranger (real proof, no grant record) is REFUSED the same persona-plane doc", async () => {
     const stranger = await makePeerIdentity(strangerFill);
-    const client = new LarWSClientAdapter({ url: `ws://127.0.0.1:${port}`, identity: stranger.identity, aud: DAEMON_BAG_ID, gatePubKey });
+    const client = dialGate({ url: `ws://127.0.0.1:${port}`, identity: stranger.identity, aud: DAEMON_BAG_ID, gatePubKey });
     const strangerRepo = new Repo({ network: [client] });
     try {
       const outcome = await findWithin(strangerRepo, personaBagUrl, 4_000);
@@ -301,7 +302,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     await withLarRoot(FOUNDER.root, async () => { writeNexusDoc(larSealHome(), nexusPrivate); });
     try {
       const stranger = await makePeerIdentity(203);
-      const client = new LarWSClientAdapter({ url: `ws://127.0.0.1:${port}`, identity: stranger.identity, aud: DAEMON_BAG_ID, gatePubKey });
+      const client = dialGate({ url: `ws://127.0.0.1:${port}`, identity: stranger.identity, aud: DAEMON_BAG_ID, gatePubKey });
       const strangerRepo = new Repo({ network: [client] });
       try {
         client.connect("stranger-probe" as never);

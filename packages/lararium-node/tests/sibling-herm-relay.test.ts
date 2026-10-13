@@ -23,8 +23,8 @@ import * as ed from "@noble/ed25519";
 import WS, { type RawData } from "ws";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  hex, ed25519SignerFromSeed, dialSiblingHerm, siblingChannelTag, buildAuthResponse, mintLeafNonce, knockedUrl,
-  isLarChallengeMsg, isLarAuthOkMsg, mkLarSessionMsg, MEMBERSHIP_RELAY_DOMAIN, SIBLING_JOIN_KIND, SIBLING_FRAME_KIND,
+  hex, ed25519SignerFromSeed, dialSiblingHerm, siblingChannelTag, knockedUrl,
+  mkLarSessionMsg, MEMBERSHIP_RELAY_DOMAIN, SIBLING_JOIN_KIND, SIBLING_FRAME_KIND,
   SiblingNetworkAdapter, enrolDevice, leafStandingUnder, groupSecretOpenerFromSeed, base64UrlEncode,
   provisionThresholdRecoveryAtFounding, guardianRecoveryRegistrationCard, attestAndRotate,
   personaKelDropName, httpPersonaKelDropHerm, pullPersonaKelSuccessors,
@@ -32,6 +32,7 @@ import {
 } from "@lararium/mesh";
 import { startAuthenticatedMembershipRelay, type AuthenticatedMembershipRelay } from "../src/authenticated-membership-relay.js";
 import { carriedReads } from "../../lararium-mesh/tests/fixtures/sibling-fleet.js";
+import { dialerDouble } from "./gate-dial-fixture.js";
 
 const SECRET_1 = new Uint8Array(32).fill(0xa1);
 const SECRET_2 = new Uint8Array(32).fill(0xb2);
@@ -131,17 +132,13 @@ describe("the herm's relay carries sibling frames by channel and proven key, and
     const seed = new Uint8Array(32).fill(seedByte);
     const key = await pubOf(seed);
     const raw = new WS(knockedUrl(`ws://127.0.0.1:${relay!.port}`, relay!.gatePubKey));
+    const dialer = dialerDouble({ peerPubKey: key, gatePubKey: relay!.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(seed) });
     await new Promise<void>((resolve, reject) => {
       raw.on("error", reject);
       raw.on("message", (data: RawData) => {
-        const frame = JSON.parse(data.toString()) as Record<string, unknown>;
-        if (isLarChallengeMsg(frame)) void (async () => {
-          raw.send(JSON.stringify(await buildAuthResponse({
-            contactCard: key, nonce: frame.nonce, gatePubKey: relay!.gatePubKey, peerPubKey: key,
-            aud: MEMBERSHIP_RELAY_DOMAIN, leafNonce: mintLeafNonce(), sign: ed25519SignerFromSeed(seed),
-          })));
-        })();
-        else if (isLarAuthOkMsg(frame)) resolve();
+        const frame: unknown = JSON.parse(data.toString());
+        if (dialer.opens(frame)) void dialer.answer(frame).then((answer) => raw.send(JSON.stringify(answer)));
+        else if (dialer.admitted(frame)) resolve();
       });
     });
     return { key, raw };

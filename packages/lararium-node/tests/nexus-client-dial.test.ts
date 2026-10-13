@@ -26,13 +26,14 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { WebSocketServer } from "ws";
-import { verifyAuthProof, ed25519SignerFromSeed } from "@lararium/mesh";
-import type { AuthVerifierShore, LeafIdentity } from "@lararium/mesh";
+import { ed25519SignerFromSeed } from "@lararium/mesh";
+import type { LeafIdentity } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
-import { DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
+import { type DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
+import { armGate, provingShore, standGate as standAuthGate } from "./gate-dial-fixture.js";
 /** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
 const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
 import { startNexusClientDial, maybeStartNexusClientDial } from "../src/nexus-client-dial.js";
@@ -61,21 +62,6 @@ function makeNodeIdentity(): { identity: LeafIdentity; seed: Uint8Array; pub: st
 }
 
 /** The real shore a vessel's gate arms with: real V3 proof check, then the admitted-set capability decision. */
-function makeCapabilityShore(gatePubKey: string, admitted: ReadonlySet<string>): AuthVerifierShore {
-  return {
-    async verify(cardBytes, bagUrl, _access, proof) {
-      if (!proof) return { ok: false, reason: "V3 proof required" };
-      const card = JSON.parse(new TextDecoder().decode(cardBytes)) as { peerPubKey?: string };
-      const peerPubKey = card.peerPubKey;
-      if (!peerPubKey) return { ok: false, reason: "no peer key in card" };
-      const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey, peerPubKey, aud: bagUrl, sig: proof.sig });
-      if (!v.ok) return { ok: false, reason: v.reason ?? "proof failed" };
-      if (!admitted.has(peerPubKey)) return { ok: false, reason: "insufficient capability (not admitted to the daemon bag)" };
-      return { ok: true, identifier: peerPubKey };
-    },
-  };
-}
-
 /** Mirrors production's ListeningWSServerAdapter — ready from listen, not from the first client. */
 class ReadyWSServerAdapter extends NodeWSServerAdapter {
   override isReady(): boolean { return true; }
@@ -95,7 +81,7 @@ function standServerVessel(opts: { storageDir: string; gatePubKey: string; admit
   return new Promise((resolve, reject) => {
     const http: Server = createServer();
     const wss  = new WebSocketServer({ server: http });
-    const gate = new DaemonAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
+    const gate = standAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
     const serverNetwork = new ReadyWSServerAdapter(gate as unknown as WebSocketServer);
 
     const peerIdentifierMap = new Map<string, string>();
@@ -119,7 +105,7 @@ function standServerVessel(opts: { storageDir: string; gatePubKey: string; admit
       },
     });
 
-    gate.arm(makeCapabilityShore(opts.gatePubKey, opts.admitted), AUD, gateKeyOf(opts.gatePubKey), admitProven);
+    armGate(gate, { gate: gateKeyOf(opts.gatePubKey), aud: AUD, sort: admitProven, shore: provingShore(opts.gatePubKey, { admits: (key) => opts.admitted.has(key) }) });
 
     http.listen(0, "127.0.0.1", () => {
       const addr = http.address();

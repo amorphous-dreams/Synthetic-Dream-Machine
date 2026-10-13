@@ -18,14 +18,12 @@
 
 import { describe, test, expect, afterEach } from "vitest";
 import { createServer, type Server } from "node:http";
-import { randomBytes, generateKeyPairSync } from "node:crypto";
+import { generateKeyPairSync } from "node:crypto";
 import { WebSocketServer, type WebSocket as WsSocket } from "ws";
-import {
-  verifyAuthProof, ed25519SignerFromSeed, authOkBytes, knockPath,
-  mkLarChallenge, mkLarAuthOk, isLarAuthMsg,
-} from "@lararium/mesh";
+import { ed25519SignerFromSeed, knockPath } from "@lararium/mesh";
 import type { PeerId } from "@automerge/automerge-repo";
-import { LarWSClientAdapter } from "@lararium/mesh";
+import type { LarWSClientAdapter } from "@lararium/mesh";
+import { dialGate, gateDouble } from "./gate-dial-fixture.js";
 import type { LeafIdentity } from "../src/leaf-identity.js";
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
@@ -40,10 +38,6 @@ function genKey(): { seed: Uint8Array; pub: string } {
   return { seed, pub };
 }
 const SEED_OF = new Map<string, Uint8Array>();
-/** The gate's verdict, signed by the gate's own key over this exchange — the only pass a leaf reads. */
-async function signedOk(gatePubKey: string, nonce: string, leafNonce: string, peerPubKey: string) {
-  return mkLarAuthOk(await ed25519SignerFromSeed(SEED_OF.get(gatePubKey)!)(authOkBytes({ nonce, leafNonce, gatePubKey, peerPubKey, aud: AUD })));
-}
 
 interface GateProbe {
   port:        number;
@@ -56,8 +50,9 @@ interface GateProbe {
 
 // A raw WS gate: challenge → verify the relayed proof against the gate's OWN key
 // and the leaf's known key → auth-ok|denied, then await the Automerge join (binary).
-function makeGate(opts: { gatePubKey: string; peerPubKey: string; accept?: boolean }): Promise<GateProbe> {
+async function makeGate(opts: { gatePubKey: string; peerPubKey: string; accept?: boolean }): Promise<GateProbe> {
   const accept = opts.accept ?? true;
+  const playedGate = await gateDouble({ gateSeed: SEED_OF.get(opts.gatePubKey)!, aud: AUD, peerPubKey: opts.peerPubKey });
   return new Promise((resolve) => {
     const http: Server = createServer();
     const wss = new WebSocketServer({ server: http });
@@ -70,19 +65,14 @@ function makeGate(opts: { gatePubKey: string; peerPubKey: string; accept?: boole
 
     wss.on("connection", (ws: WsSocket, req: { url?: string }) => {
       resolvePath(req.url ?? "");
-      const nonce = randomBytes(32).toString("hex");
-      ws.send(JSON.stringify(mkLarChallenge(nonce)));
+      const exchange = playedGate.accept();
+      ws.send(exchange.opening);
       ws.on("message", (data: Buffer, isBinary: boolean) => {
         if (isBinary) { resolveHandoff(true); return; } // the Automerge join — handoff happened
-        let parsed: unknown;
-        try { parsed = JSON.parse(data.toString("utf8")); } catch { return; }
-        if (!isLarAuthMsg(parsed)) return;
-        void verifyAuthProof({
-          nonce, gatePubKey: opts.gatePubKey, peerPubKey: opts.peerPubKey,
-          aud: AUD, sig: parsed.sig,
-        }).then(async (v) => {
-          resolveAuth(v);
-          if (accept && v.ok) ws.send(JSON.stringify(await signedOk(opts.gatePubKey, nonce, parsed.leafNonce, opts.peerPubKey)));
+        void exchange.answer(data.toString("utf8")).then(({ read, proven, reason, verdict }) => {
+          if (!read) return;
+          resolveAuth({ ok: proven, ...(reason ? { reason } : {}) });
+          if (accept && verdict) ws.send(verdict);
           else ws.terminate();                                            // a refusal is silence, then the cut
         });
       });
@@ -123,7 +113,7 @@ describe("LarWSClientAdapter — V3 peer transport handshake", () => {
     const { identity, pub } = makeLeaf();
     gate = await makeGate({ gatePubKey: gatePub, peerPubKey: pub, accept: true });
 
-    adapter = new LarWSClientAdapter({
+    adapter = dialGate({
       url: `ws://127.0.0.1:${gate.port}`, identity, aud: AUD, gatePubKey: gatePub,
     });
     adapter.connect("smoke-peer" as PeerId);
@@ -138,7 +128,7 @@ describe("LarWSClientAdapter — V3 peer transport handshake", () => {
     const { identity, pub } = makeLeaf();
     gate = await makeGate({ gatePubKey: gatePub, peerPubKey: pub, accept: false });
 
-    adapter = new LarWSClientAdapter({
+    adapter = dialGate({
       url: `ws://127.0.0.1:${gate.port}`, identity, aud: AUD, gatePubKey: gatePub,
     });
     adapter.connect("smoke-peer" as PeerId);
@@ -165,11 +155,13 @@ interface ScriptedGate {
   close:       () => Promise<void>;
 }
 
-function makeScriptedGate(opts: {
+async function makeScriptedGate(opts: {
   gatePubKey: string;
   accept:     (ordinal: number) => boolean;
   dropAfterHandoff: (ordinal: number) => boolean;
 }): Promise<ScriptedGate> {
+  // The gate passes any well-formed answer: the reconnect loop stands under test, never the proof.
+  const playedGate = await gateDouble({ gateSeed: SEED_OF.get(opts.gatePubKey)!, aud: AUD, proof: "accept" });
   return new Promise((resolve) => {
     const http: Server = createServer();
     const wss = new WebSocketServer({ server: http });
@@ -179,21 +171,19 @@ function makeScriptedGate(opts: {
       count += 1;
       const ordinal = count;
       for (const w of waiters.splice(0)) { if (count >= w.n) w.done(true); else waiters.push(w); }
-      const nonce = randomBytes(32).toString("hex");
-      ws.send(JSON.stringify(mkLarChallenge(nonce)));
+      const exchange = playedGate.accept();
+      ws.send(exchange.opening);
       let dropped = false;
       ws.on("message", (data: Buffer, isBinary: boolean) => {
         if (isBinary) {
           if (!dropped && opts.dropAfterHandoff(ordinal)) { dropped = true; ws.close(1001, "gate drops the socket once"); }
           return;
         }
-        let parsed: unknown;
-        try { parsed = JSON.parse(data.toString("utf8")); } catch { return; }
-        if (!isLarAuthMsg(parsed)) return;
-        const auth = parsed;
-        if (!opts.accept(ordinal)) { ws.terminate(); return; }          // a refusal is silence, then the cut
-        const peerPubKey = (JSON.parse(auth.contactCard) as { peerPubKey: string }).peerPubKey;
-        void signedOk(opts.gatePubKey, nonce, auth.leafNonce, peerPubKey).then((ok) => ws.send(JSON.stringify(ok)));
+        void exchange.answer(data.toString("utf8")).then(({ read, verdict }) => {
+          if (!read) return;
+          if (!opts.accept(ordinal) || !verdict) { ws.terminate(); return; }          // a refusal is silence, then the cut
+          ws.send(verdict);
+        });
       });
     });
     http.listen(0, "127.0.0.1", () => {
@@ -232,7 +222,7 @@ describe("LarWSClientAdapter — re-presentation after anergy restores the recon
     const gatePub = genKey().pub;
     gate = await makeScriptedGate({ gatePubKey: gatePub, accept: (n) => n >= 2, dropAfterHandoff: (n) => n === 2 });
     const first = makeLeaf();
-    adapter = new LarWSClientAdapter({
+    adapter = dialGate({
       url: `ws://127.0.0.1:${gate.port}`, identity: first.identity, aud: AUD, gatePubKey: gatePub, retryInterval: RETRY_MS,
     });
     adapter.connect("anergy-peer" as PeerId);
@@ -254,7 +244,7 @@ describe("LarWSClientAdapter — re-presentation after anergy restores the recon
     const gatePub = genKey().pub;
     gate = await makeScriptedGate({ gatePubKey: gatePub, accept: () => false, dropAfterHandoff: () => false });
     const leaf = makeLeaf();
-    adapter = new LarWSClientAdapter({
+    adapter = dialGate({
       url: `ws://127.0.0.1:${gate.port}`, identity: leaf.identity, aud: AUD, gatePubKey: gatePub, retryInterval: RETRY_MS,
     });
     adapter.connect("anergy-peer" as PeerId);
@@ -271,7 +261,7 @@ describe("LarWSClientAdapter — re-presentation after anergy restores the recon
     await new Promise<void>((r) => http.listen(0, "127.0.0.1", r));
     const port = (http.address() as { port: number }).port;
     const gatePub = genKey().pub;
-    adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${port}`, identity: makeLeaf().identity, aud: AUD, gatePubKey: gatePub, retryInterval: RETRY_MS });
+    adapter = dialGate({ url: `ws://127.0.0.1:${port}`, identity: makeLeaf().identity, aud: AUD, gatePubKey: gatePub, retryInterval: RETRY_MS });
     adapter.connect("transport-peer" as PeerId);
     for (let i = 0; i < 200 && count < 3; i++) await new Promise((r) => setTimeout(r, 10));
     expect(count).toBeGreaterThanOrEqual(3);

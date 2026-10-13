@@ -23,7 +23,7 @@ import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   NEXUS_DOC_DOMAIN, hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
-  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, signLeafProof, foundingRoster,
+  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, foundingRoster,
   genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
   type NexusDoc, type CarriageEntry, type LarDoc,
 } from "@lararium/mesh";
@@ -32,6 +32,7 @@ import { dialPresentation, makeNexusMembership, type CarriedNexusReading } from 
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome, carriageConsentPathFor } from "../src/carried-set.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
+import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
@@ -215,7 +216,7 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const bindingOf = async () => {
       const p = await dialPresentation({ sealHome: w.sealHome, ownVesselKey: vessel, gatePubKey: GATE_P, open: async () => undefined, leaves: w.leaves });
       if (!p) return null;
-      const leafProof = await signLeafProof({ presented: { kind: "admit", admit: p.admit, lineage: [] }, nonce, gatePubKey: GATE_P, vesselKey: vessel, sign: signerOf(p.leaf.seed) });
+      const leafProof = await socketProof(socketUnderTest(vessel, { nonce, gatePubKey: GATE_P }), { kind: "admit", admit: p.admit, lineage: [] }, signerOf(p.leaf.seed));
       return { presentedAdmit: { admit: p.admit, lineage: p.lineage, leafProof }, nonce, gatePubKey: GATE_P, vesselKey: vessel };
     };
     // CONTROL first: no take → no presentation → STRANGER.

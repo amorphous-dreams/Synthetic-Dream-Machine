@@ -25,13 +25,14 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   hex, genesisSealEpochCid, hostingActCid, issueGrant, mintHostToken, mintHostingAct, evaluateToken,
-  redeemClaim, lineageOf, signLeafProof, signAntigenEntry,
+  redeemClaim, lineageOf, signAntigenEntry,
   type KahuQuorumSeats, type HostingGrant, type InviteToken, type KapaeAntigenEntry, type Presented,
 } from "@lararium/mesh";
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import { rollHosting, readHostingState, liveEpochs, hostingDir } from "../src/hosting-store.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import type { SortInput } from "../src/daemon-auth-gate.js";
+import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
 const HEARTH_LEAF = new Uint8Array(32).fill(61);
@@ -67,7 +68,7 @@ async function socket(arm: Presented | null, signer: Uint8Array = GUEST_SEED): P
   const vesselKey = await pubOf(VESSEL_SEED);
   const base = { identifier: `0x${vesselKey}`, vesselKey, sameOperator: false, challenge: { nonce: NONCE, gatePubKey: GATE } };
   if (!arm) return base;
-  const leafProof = await signLeafProof({ presented: arm, nonce: NONCE, gatePubKey: GATE, vesselKey, sign: signerOf(signer) });
+  const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce: NONCE, gatePubKey: GATE }), arm, signerOf(signer));
   return { ...base, presented: { ...arm, leafProof } as Presented };
 }
 async function liveNow() { return liveEpochs(readHostingState(storageDir, AID)!, HEARTH_LEAF)!; }

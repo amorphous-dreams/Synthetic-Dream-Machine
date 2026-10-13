@@ -12,9 +12,9 @@ import {
   pullAndVerifyOracle, oracleSocketUrl, ORACLE_POINTER_FRAME, ORACLE_SOCKET_ROUTE, type OracleChannel,
 } from "../src/oracle-read-client.js";
 import {
-  mkLarChallenge, mkLarAuthOk, isLarAuthMsg, authOkBytes, verifyAuthProof,
   ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, type LeafIdentity,
 } from "../src/auth-wire.js";
+import { gateDouble } from "./gate-dial-fixture.js";
 import { DAEMON_BAG_ID } from "../src/lar-uris.js";
 import { knockPath } from "../src/gate-knock.js";
 
@@ -53,9 +53,9 @@ function gateChannel(script: GateScript): { open: (url: string) => Promise<Oracl
   const open = async (url: string): Promise<OracleChannel> => {
     dialedUrl = url;
     const gateSeed = script.gateSeed ?? SEED;
-    const gatePub = await ed25519VerifyingKeyFromSeed(gateSeed);
-    const nonce = "ab".repeat(32);
-    const out: Array<string | Uint8Array | null> = [JSON.stringify(mkLarChallenge(nonce))];
+    const gate = await gateDouble({ gateSeed, aud: DAEMON_BAG_ID, proof: "check", ...(script.unsigned ? { verdictSeed: OTHER } : {}) });
+    const exchange = gate.accept();
+    const out: Array<string | Uint8Array | null> = [exchange.opening];
     let waiter: ((f: string | Uint8Array | null) => void) | null = null;
     const push = (f: string | Uint8Array | null): void => { if (waiter) { const w = waiter; waiter = null; w(f); } else out.push(f); };
     return {
@@ -63,15 +63,9 @@ function gateChannel(script: GateScript): { open: (url: string) => Promise<Oracl
       close: () => {},
       send: (text) => {
         void (async () => {
-          const msg = JSON.parse(text) as unknown;
-          if (!isLarAuthMsg(msg)) { push(null); return; }
-          const proof = msg.sig
-            ? await verifyAuthProof({ nonce, gatePubKey: gatePub, peerPubKey: msg.contactCard, aud: DAEMON_BAG_ID, sig: msg.sig })
-            : { ok: false };
-          if (script.deny || !proof.ok) { push(null); return; }   // a refusal is silence, then the cut
-          const signer = ed25519SignerFromSeed(script.unsigned ? OTHER : gateSeed);
-          const sig = await signer(authOkBytes({ nonce, leafNonce: msg.leafNonce, gatePubKey: gatePub, peerPubKey: msg.contactCard, aud: DAEMON_BAG_ID }));
-          push(JSON.stringify(mkLarAuthOk(sig)));
+          const result = await exchange.answer(text);
+          if (script.deny || !result.verdict) { push(null); return; }   // a refusal is silence, then the cut
+          push(result.verdict);
           if (!script.ptr) { push(null); return; }
           mapSent = true;
           push(JSON.stringify({ type: ORACLE_POINTER_FRAME, pointer: script.ptr }));

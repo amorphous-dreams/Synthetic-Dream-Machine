@@ -15,12 +15,13 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract, signLeafProof,
+  hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract,
   type CarriageEntry, type KahuQuorumSeats, type FederationPosture, type PeerClass,
 } from "@lararium/mesh";
 import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import type { SortInput } from "../src/daemon-auth-gate.js";
+import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
 const LEAF_SEED   = new Uint8Array(32).fill(5);
@@ -48,10 +49,9 @@ async function input(opts: { sameOperator?: boolean; admit?: CarriageEntry; vess
   const vesselKey = await pubOf(opts.vessel ?? VESSEL_SEED);
   const base = { identifier: `0x${vesselKey}`, vesselKey, sameOperator: opts.sameOperator ?? false, challenge: { nonce: NONCE, gatePubKey: GATE } };
   if (!opts.admit) return base;
-  const leafProof = await signLeafProof({
-    presented: { kind: "admit", admit: opts.admit, lineage: [] }, nonce: NONCE, gatePubKey: GATE,
-    vesselKey: await pubOf(opts.proofVessel ?? opts.vessel ?? VESSEL_SEED), sign: signerOf(LEAF_SEED),
-  });
+  const proofVesselKey = await pubOf(opts.proofVessel ?? opts.vessel ?? VESSEL_SEED);
+  const leafProof = await socketProof(socketUnderTest(proofVesselKey, { nonce: NONCE, gatePubKey: GATE }),
+    { kind: "admit", admit: opts.admit, lineage: [] }, signerOf(LEAF_SEED));
   return { ...base, presented: { kind: "admit", admit: opts.admit, lineage: [], leafProof } };
 }
 const sorter = (readings: CarriedNexusReading[], primary: FederationPosture = "private", carriers: string[] = []) =>

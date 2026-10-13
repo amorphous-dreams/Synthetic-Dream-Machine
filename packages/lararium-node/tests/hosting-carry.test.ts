@@ -30,12 +30,13 @@ import * as ed from "@noble/ed25519";
 import {
   sealPrivateBody, openPrivateBody, authorizeAddress, readContentKey, ciphertextCid, walkCarriageBagId, walkCarryDocumentKey, sha256HexBytesSync,
   walkCarrySecret, carryRecordKey, hex, genesisSealEpochCid, deriveNexusScopedKey,
-  hexToBytes, PERSONA_GLAMOUR_CONTEXT, mintHostToken, redeemClaim, signPresented, utf8Bytes,
+  hexToBytes, PERSONA_GLAMOUR_CONTEXT, mintHostToken, redeemClaim, utf8Bytes,
   HOSTING_NOTICE_SESSION_KIND, type KahuQuorumSeats, type UnsignedPresented,
 } from "@lararium/mesh";
 import { depositCarried, noteContact, fetchCarried, readCarryRecord, type CarryLimits } from "../src/hosting-carry.js";
 import { rollHosting, readHostingState, liveEpochs, hostingDir } from "../src/hosting-store.js";
 import { makeSocketSorter } from "../src/socket-sorter.js";
+import { presentOnSocket, socketUnderTest } from "./gate-dial-fixture.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 
 const AID = "epoch0-" + "a".repeat(64);
@@ -228,7 +229,7 @@ describe("through the sorter", () => {
     const vessel = await ed.getPublicKeyAsync(new Uint8Array(32).fill(63)).then(hex);
     const present = async (arm: UnsignedPresented) => sort({
       identifier: `0x${vessel}`, vesselKey: vessel, sameOperator: false,
-      presented: await signPresented({ presented: arm, nonce: NONCE, gatePubKey: GATE, vesselKey: vessel, sign: async (m) => hex(await ed.signAsync(m, leaf.seed)) }),
+      presented: await presentOnSocket(socketUnderTest(vessel, { nonce: NONCE, gatePubKey: GATE }), arm, async (m) => hex(await ed.signAsync(m, leaf.seed))),
       challenge: { nonce: NONCE, gatePubKey: GATE },
     });
     const token = mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current);
@@ -294,7 +295,7 @@ describe("through the sorter", () => {
     });
     const verdict = await sort({
       identifier: `0x${vessel}`, vesselKey: vessel, sameOperator: false,
-      presented: await signPresented({ presented: arm, nonce: NONCE, gatePubKey: GATE, vesselKey: vessel, sign: async (m) => hex(await ed.signAsync(m, other.seed)) }),
+      presented: await presentOnSocket(socketUnderTest(vessel, { nonce: NONCE, gatePubKey: GATE }), arm, async (m) => hex(await ed.signAsync(m, other.seed))),
       challenge: { nonce: NONCE, gatePubKey: GATE },
     });
     expect(verdict?.class).toBe("walker");

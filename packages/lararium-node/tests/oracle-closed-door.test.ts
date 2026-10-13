@@ -13,13 +13,14 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { exportOracleSnapshot, pullAndVerifyOracle, ORACLE_SOCKET_ROUTE, ORACLE_POINTER_FRAME, knockPath, ed25519VerifyingKeyFromSeed, verifyAuthProof } from "@lararium/mesh";
+import { exportOracleSnapshot, pullAndVerifyOracle, ORACLE_SOCKET_ROUTE, ORACLE_POINTER_FRAME, knockPath, ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
 import type { AuthVerifierShore } from "@lararium/mesh";
 import { CLOSED_DOOR } from "../src/bulb-routes.js";
 import { mountHttpFaceDispatcher } from "../src/http-face-dispatcher.js";
 import { mountOracleReadFace } from "../src/oracle-read-face.js";
 import { createReadinessState, mountReadinessFace } from "../src/readiness-face.js";
 import { provingShore, readerIdentity, openSorter, privateSorter } from "./oracle-proof-fixture.js";
+import { isGateOpening, provingShore as gateProvingShore, strayAnswerFrame } from "./gate-dial-fixture.js";
 
 const SEED   = new Uint8Array(32).fill(7);
 const READER = new Uint8Array(32).fill(9);
@@ -112,10 +113,10 @@ describe("the oracle face keeps silence", () => {
     expect(await framesOf(bare)).toEqual([]);
     // One WITH the knock that proves nothing hears the challenge and then nothing: no refusal, no map frame.
     const knocker = new WebSocket(`${origin.replace("http", "ws")}${knockPath(pin, ORACLE_SOCKET_ROUTE)}`);
-    knocker.onopen = () => knocker.send(JSON.stringify({ type: "lar:auth", contactCard: "x", nonce: "wrong" }));
+    knocker.onopen = () => knocker.send(strayAnswerFrame());
     const knockerFrames = await framesOf(knocker, 12_000);
     expect(knockerFrames).toHaveLength(1);
-    expect(knockerFrames[0]).toContain("lar:challenge");
+    expect(isGateOpening(knockerFrames[0]!)).toBe(true);
 
     // A dialer whose proof does not hold its claimed key reads nothing either.
     const forged = { ...(await readerIdentity(READER)), sign: (await readerIdentity(SEED)).sign };
@@ -138,15 +139,7 @@ describe("the oracle face keeps silence", () => {
     const OWN = new Uint8Array(32).fill(23);
     const ownKey = await ed25519VerifyingKeyFromSeed(OWN);
     // The worker's floor: every proof checked; the operator's own key is vouched same-operator, nothing else.
-    const shore: AuthVerifierShore = {
-      verify: async (cardBytes, bagUrl, _access, proof) => {
-        const peerPubKey = new TextDecoder().decode(cardBytes);
-        if (!proof) return { ok: false, reason: "V3 proof required" };
-        const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey: pin, peerPubKey, aud: bagUrl, sig: proof.sig });
-        if (!v.ok) return { ok: false };
-        return { ok: true, identifier: peerPubKey, proofVerified: true, ...(peerPubKey === ownKey ? { peerClass: "same-operator" as const } : {}) };
-      },
-    };
+    const shore: AuthVerifierShore = gateProvingShore(pin, { sameOperator: (peerPubKey) => peerPubKey === ownKey });
     const face = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore: shore, sort: privateSorter, dispatcher, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
     const origin = await listen(server);
 

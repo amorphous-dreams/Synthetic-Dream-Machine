@@ -17,13 +17,13 @@
 import { afterEach, describe, test, expect } from "vitest";
 import { WebSocketServer, WebSocket, type RawData } from "ws";
 import {
-  webGetRandomValues, hex, mkLarChallenge, mkLarAuthOk, authOkBytes, isLarAuthMsg,
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, MEMBERSHIP_RELAY_DOMAIN,
+  MEMBERSHIP_RELAY_DOMAIN,
 } from "@lararium/mesh";
 import type { CasWireServerDeps } from "../src/cas-wire.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "../src/carriage-serve-loop.js";
 import { DeterministicFederationGate } from "@lararium/mesh";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
+import { gateDouble } from "./gate-dial-fixture.js";
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 const asText = (d: RawData): string => (typeof d === "string" ? d : d.toString());
@@ -32,40 +32,33 @@ const GATE_SEED = new Uint8Array(32).fill(77);
 const MEMBERSHIP_AUD = MEMBERSHIP_RELAY_DOMAIN;
 
 /** A minimal handshake relay: challenge → (client auth) → signed auth-ok. Tracks connections + can kill the live socket. */
-function startHandshakeRelay(): Promise<{
+async function startHandshakeRelay(): Promise<{
   port: number; gatePubKey: string; connections: () => number; killLive: () => void; close: () => Promise<void>;
 }> {
+  // Accept every answer: the reconnection stands under test, never the proof. The verdict still carries the gate key's signature.
+  const gate = await gateDouble({ gateSeed: GATE_SEED, aud: MEMBERSHIP_AUD, proof: "accept" });
   return new Promise((resolve) => {
     const wss = new WebSocketServer({ port: 0 });
     let count = 0;
     let live: WebSocket | null = null;
-    const gatePub = ed25519VerifyingKeyFromSeed(GATE_SEED);
     wss.on("connection", (sock: WebSocket) => {
       count += 1;
       live = sock;
-      const nonce = hex(webGetRandomValues(new Uint8Array(32)));
-      sock.send(JSON.stringify(mkLarChallenge(nonce)));
+      const exchange = gate.accept();
+      sock.send(exchange.opening);
       sock.on("message", (data: RawData) => {
-        let frame: unknown;
-        try { frame = JSON.parse(asText(data)); } catch { return; }
-        if (!isLarAuthMsg(frame)) return;
-        // Accept — the reconnection is under test, not the proof; the verdict still carries the gate key's signature.
-        const auth = frame;
-        void gatePub.then(async (gatePubKey) => {
-          const sig = await ed25519SignerFromSeed(GATE_SEED)(authOkBytes({ nonce, leafNonce: auth.leafNonce, gatePubKey, peerPubKey: auth.contactCard, aud: MEMBERSHIP_AUD }));
-          sock.send(JSON.stringify(mkLarAuthOk(sig)));
-        });
+        void exchange.answer(asText(data)).then(({ verdict }) => { if (verdict) sock.send(verdict); });
       });
     });
     wss.on("listening", () => {
       const addr = wss.address();
       const port = typeof addr === "object" && addr ? addr.port : 0;
-      void gatePub.then((gatePubKey) => resolve({
-        port, gatePubKey,
+      resolve({
+        port, gatePubKey: gate.gatePubKey,
         connections: () => count,
         killLive: () => { try { live?.close(); } catch { /* down */ } },
         close: () => new Promise<void>((r) => wss.close(() => r())),
-      }));
+      });
     });
   });
 }

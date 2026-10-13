@@ -17,7 +17,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   NEXUS_DOC_DOMAIN, hex, hexToBytes, genesisCharterEpoch, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
-  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, buildAuthResponse,
+  carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc,
   type NexusDoc, type CarriageEntry, type LarDoc, type LeafIdentity, type DeviceDelegationTiddler,
 } from "@lararium/mesh";
 import { dialPresentation, dialIdentityFor, presentationKey } from "../src/nexus-carriage.js";
@@ -25,6 +25,7 @@ import { takeAdmitBundle } from "../src/admit-bundle.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { carriedCharterHome } from "../src/carried-set.js";
 import type { NexusLeaf } from "../src/nexus-leaf.js";
+import { dialerDouble, gateDouble } from "./gate-dial-fixture.js";
 
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
@@ -153,8 +154,13 @@ describe("one face per vessel per Nexus — a dial carries no contract slot", ()
     expect("contractEdge" in id).toBe(false);
     expect(id.presented).toMatchObject({ kind: "admit", admit: p.admit });
     expect(typeof id.leafSign).toBe("function");
-    const msg = await buildAuthResponse({ contactCard: id.contactCard, nonce: "00".repeat(32), gatePubKey: "ee".repeat(32),
-      peerPubKey: id.peerPubKey, aud: "lar:///x", leafNonce: "ef".repeat(32), sign: id.sign, presented: { ...id.presented!, leafProof: "ab".repeat(64) } });
+    const gate = await gateDouble({ gateSeed: seed(40), aud: "lar:///x", proof: "accept" });
+    const openingFrame = JSON.parse(gate.accept().opening);
+    const msg = await dialerDouble({
+      contactCard: id.contactCard, peerPubKey: id.peerPubKey, gatePubKey: gate.gatePubKey, aud: "lar:///x",
+      // The presentation rides under a placeholder proof: this test reads which slots the answer fills, never the proof.
+      sign: id.sign, presented: id.presented!, leafSign: async () => "ab".repeat(64),
+    }).answer(openingFrame);
     expect("contractEdge" in msg).toBe(false);
     expect(msg.edge).toBeUndefined();
     const sig = await id.leafSign!(new Uint8Array([1, 2, 3]));

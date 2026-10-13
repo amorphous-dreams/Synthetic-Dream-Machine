@@ -55,8 +55,9 @@ import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { runNexusContract, runNexusAcceptCarriage, runNexusMembersList, NexusContractError } from "../src/commands/nexus-contract.js";
 import { makeNexusMembership, readCarriedNexuses } from "../src/nexus-carriage.js";
 import { nexusLeafFor } from "../src/nexus-leaf.js";
-import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc, signLeafProof } from "@lararium/mesh";
+import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
+import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 
 let rootA: string;
 let rootB: string;
@@ -155,7 +156,7 @@ async function standGate(h: Hearth) {
     const nonce = "56".repeat(32);
     const gatePubKey = h.nexusPubkey;
     const vesselKey = "cd".repeat(32);
-    const leafProof = await signLeafProof({ presented: { kind: "admit", admit: presented.admit, lineage: [] }, nonce, gatePubKey, vesselKey, sign: ed25519SignerFromSeed(leafSeed) });
+    const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce, gatePubKey }), { kind: "admit", admit: presented.admit, lineage: [] }, ed25519SignerFromSeed(leafSeed));
     await holder.present(peerId, { presentedAdmit: { ...presented, leafProof }, nonce, gatePubKey, vesselKey });
   };
   return { holder, present };

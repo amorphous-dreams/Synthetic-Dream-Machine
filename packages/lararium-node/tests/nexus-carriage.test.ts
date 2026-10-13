@@ -23,7 +23,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract, carriageEntryActCid, signLeafProof,
+  hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract, carriageEntryActCid,
   makeMultiSigQuorumVerifier, signAntigenEntry,
   type NexusDoc, type CarriageEntry, type KahuQuorumSeats, type KapaeAntigenEntry,
 } from "@lararium/mesh";
@@ -32,6 +32,7 @@ import {
   type CarriedNexusReading, type SocketBinding,
 } from "../src/nexus-carriage.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
+import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
 const LEAF_SEED   = new Uint8Array(32).fill(5);
@@ -60,7 +61,7 @@ function reading(aid: string, roster: KahuQuorumSeats, denyBoard: CarriageEntry[
 }
 async function bind(admit: CarriageEntry, opts: { lineage?: CarriageEntry[]; signer?: Uint8Array; vessel?: Uint8Array; wireVessel?: Uint8Array } = {}): Promise<SocketBinding> {
   const vesselKey = await pubOf(opts.vessel ?? VESSEL_SEED);
-  const leafProof = await signLeafProof({ presented: { kind: "admit", admit, lineage: [] }, nonce: NONCE, gatePubKey: GATE, vesselKey, sign: signerOf(opts.signer ?? LEAF_SEED) });
+  const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce: NONCE, gatePubKey: GATE }), { kind: "admit", admit, lineage: [] }, signerOf(opts.signer ?? LEAF_SEED));
   return {
     presentedAdmit: { admit, lineage: opts.lineage ?? [], leafProof },
     nonce: NONCE, gatePubKey: GATE, vesselKey: await pubOf(opts.wireVessel ?? opts.vessel ?? VESSEL_SEED),

@@ -23,7 +23,7 @@ import * as ed from "@noble/ed25519";
 import WS, { type RawData } from "ws";
 import {
   DeterministicFederationGate, utf8Bytes, hex,
-  buildAuthResponse, ed25519SignerFromSeed, mintLeafNonce, knockedUrl, isLarChallengeMsg, isLarAuthOkMsg, mkLarSessionMsg,
+  ed25519SignerFromSeed, knockedUrl, mkLarSessionMsg,
   type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
@@ -42,6 +42,7 @@ import {
   sha256HexSync, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { DROP_CONNECTION_BUDGET } from "../src/authenticated-membership-relay.js";
+import { dialerDouble } from "./gate-dial-fixture.js";
 
 const BODY = utf8Bytes("the sealed carrier body a member blind-transits over a real authenticated socket");
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
@@ -182,6 +183,7 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     const peerSeed = new Uint8Array(32).fill(12);
     const peerPubKey = await pubOf(peerSeed);
     const knocked = knockedUrl(`ws://127.0.0.1:${relay.port}`, relay.gatePubKey);
+    const dial = dialerDouble({ peerPubKey, gatePubKey: relay.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(peerSeed) });
 
     // Hand-drive the one handshake: the challenge nonce is the connection-scoped replay boundary.
     const first = await new Promise<{ raw: WS; auth: unknown }>((resolve, reject) => {
@@ -190,14 +192,11 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
       raw.on("error", reject);
       raw.on("message", (data: RawData) => {
         const frame = JSON.parse(data.toString()) as Record<string, unknown>;
-        if (isLarChallengeMsg(frame)) void (async () => {
-          auth = await buildAuthResponse({
-            contactCard: peerPubKey, nonce: frame.nonce, gatePubKey: relay!.gatePubKey, peerPubKey,
-            aud: MEMBERSHIP_RELAY_DOMAIN, leafNonce: mintLeafNonce(), sign: ed25519SignerFromSeed(peerSeed),
-          });
+        if (dial.opens(frame)) void (async () => {
+          auth = await dial.answer(frame);
           raw.send(JSON.stringify(auth));
         })();
-        else if (isLarAuthOkMsg(frame) && auth) resolve({ raw, auth });
+        else if (dial.admitted(frame) && auth) resolve({ raw, auth });
       });
     });
     first.raw.close();
@@ -206,11 +205,12 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     // answers nothing and cuts the socket with no close frame.
     const end = await new Promise<{ code: number; frames: number }>((resolve, reject) => {
       const raw = new WS(knocked);
+      const replayDial = dialerDouble({ peerPubKey, gatePubKey: relay!.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(peerSeed) });
       let frames = 0;
       raw.on("error", reject);
       raw.on("message", (data: RawData) => {
         frames += 1;
-        if (isLarChallengeMsg(JSON.parse(data.toString()))) raw.send(JSON.stringify(first.auth));
+        if (replayDial.opens(JSON.parse(data.toString()))) raw.send(JSON.stringify(first.auth));
       });
       raw.on("close", (code: number) => resolve({ code, frames }));
     });
@@ -224,6 +224,8 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     const seedB = new Uint8Array(32).fill(15);
     const keyA = await pubOf(seedA);
     const keyB = await pubOf(seedB);
+    const dialA = dialerDouble({ peerPubKey: keyA, gatePubKey: relay.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(seedA) });
+    const dialB = dialerDouble({ peerPubKey: keyB, gatePubKey: relay.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN, sign: ed25519SignerFromSeed(seedB) });
 
     // An OBSERVER peer reads the stamped `from` — the relay broadcasts to other clients, never back to the sender.
     const observerSeed = new Uint8Array(32).fill(16);
@@ -236,20 +238,16 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
       await new Promise<void>((resolve) => {
         raw.on("message", (data: RawData) => {
           const frame = JSON.parse(data.toString()) as Record<string, unknown>;
-          if (isLarChallengeMsg(frame)) {
+          if (dialA.opens(frame)) {
             void (async () => {
               // Pre-build BOTH, then send them in the SAME tick — awaiting between sends would let the first verify
               // finish and close the window, and the race would never surface.
               const frames: string[] = [];
-              for (const [seed, key] of [[seedA, keyA], [seedB, keyB]] as const) {
-                frames.push(JSON.stringify(await buildAuthResponse({
-                  contactCard: key, nonce: frame.nonce, gatePubKey: relay.gatePubKey, peerPubKey: key,
-                  aud: MEMBERSHIP_RELAY_DOMAIN, leafNonce: mintLeafNonce(), sign: ed25519SignerFromSeed(seed),
-                })));
-              }
+              frames.push(JSON.stringify(await dialA.answer(frame)));
+              frames.push(JSON.stringify(await dialB.answer(frame)));
               for (const f of frames) raw.send(f);
             })();
-          } else if (isLarAuthOkMsg(frame)) {
+          } else if (dialA.admitted(frame) || dialB.admitted(frame)) {
             // Probe only AFTER both frames have had time to verify — otherwise the first binding is read before a
             // racing second one could overwrite it.
             setTimeout(() => {

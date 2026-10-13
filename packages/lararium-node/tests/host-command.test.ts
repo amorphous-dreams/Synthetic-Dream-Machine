@@ -22,9 +22,10 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   hex, genesisCharterEpoch, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
-  tokenVerifiesAt, redeemClaim, signLeafProof, type NexusDoc, type Presented,
+  tokenVerifiesAt, redeemClaim, type NexusDoc, type Presented,
 } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
+import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
@@ -128,7 +129,7 @@ describe("lares host — roll, invite, state", () => {
     const guestLeaf = hex(await ed.getPublicKeyAsync(guestSeed));
     const vesselKey = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(8)));
     const arm: Presented = { kind: "token", nexusAid: aid, token: carried.token, claim: redeemClaim(guestSeed, carried.token.n), leaf: guestLeaf };
-    const leafProof = await signLeafProof({ presented: arm, nonce: "ab".repeat(32), gatePubKey: "ee".repeat(32), vesselKey, sign: async (b) => hex(await ed.signAsync(b, guestSeed)) });
+    const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce: "ab".repeat(32), gatePubKey: "ee".repeat(32) }), arm, async (b) => hex(await ed.signAsync(b, guestSeed)));
     const roster = { keys: doc.kahu.map((k) => k.verifyingKey!), threshold: 2, sealEpochCid: aid };
     const reading: CarriedNexusReading = { aid, via: "seat", island: aid, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, posture: "private" };
     const sort = makeSocketSorter({

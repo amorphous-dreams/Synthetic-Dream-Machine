@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, encodeInvite, mintHostToken, takeInvite, walkIdentity, signPresented, deriveNexusScopedKey,
+  hex, genesisSealEpochCid, encodeInvite, mintHostToken, takeInvite, walkIdentity, deriveNexusScopedKey,
   hexToBytes, PERSONA_GLAMOUR_CONTEXT, type KahuQuorumSeats, type Presented, type WalkStore, type WalkRecord,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
@@ -28,6 +28,7 @@ import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import type { SortInput } from "../src/daemon-auth-gate.js";
+import { presentOnSocket, socketUnderTest } from "./gate-dial-fixture.js";
 
 const AID = "epoch0-" + "a".repeat(64);
 const HEARTH_LEAF = new Uint8Array(32).fill(91);
@@ -67,7 +68,7 @@ async function hearth(): Promise<{ sort: ReturnType<typeof makeSocketSorter>; in
 /** The sort input a dial carrying `identity` puts before the hearth's sorter. */
 async function sortInputFor(vesselKey: string, record: WalkRecord, leaf: { verifyingKey: string; seed: Uint8Array }): Promise<SortInput> {
   const id = walkIdentity({ contactCard: vesselKey, peerPubKey: vesselKey, sign: async () => "00".repeat(64) }, record, leaf)!;
-  const presented: Presented = await signPresented({ presented: id.presented!, nonce: NONCE, gatePubKey: GATE, vesselKey, sign: id.leafSign! });
+  const presented: Presented = await presentOnSocket(socketUnderTest(vesselKey, { nonce: NONCE, gatePubKey: GATE }), id.presented!, id.leafSign!);
   return { identifier: `0x${vesselKey}`, vesselKey, sameOperator: false, presented, challenge: { nonce: NONCE, gatePubKey: GATE } };
 }
 

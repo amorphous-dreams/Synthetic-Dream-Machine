@@ -29,11 +29,12 @@ import * as ed from "@noble/ed25519";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import {
-  hex, genesisSealEpochCid, verifyAuthProof, ed25519SignerFromSeed, LarWSClientAdapter, encodeInvite, mintHostToken,
+  hex, genesisSealEpochCid, ed25519SignerFromSeed, encodeInvite, mintHostToken,
   takeInvite, walkIdentity, walkOver, popInvite, hostingActCid, decodeInvite,
-  type AuthVerifierShore, type KahuQuorumSeats, type LeafIdentity, type WalkRecord, type WalkStore, type HostingAct,
+  type KahuQuorumSeats, type LarWSClientAdapter, type LeafIdentity, type WalkRecord, type WalkStore, type HostingAct,
 } from "@lararium/mesh";
-import { DaemonAuthGate, type GateKey } from "../src/daemon-auth-gate.js";
+import type { GateKey } from "../src/daemon-auth-gate.js";
+import { armGate, dialGate, provingShore, standGate } from "./gate-dial-fixture.js";
 import { serveHostingMint } from "../src/hosting-mint.js";
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
@@ -50,18 +51,6 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 function memoryStore(): WalkStore & { readonly records: Map<string, WalkRecord> } {
   const records = new Map<string, WalkRecord>();
   return { records, read: async (g) => records.get(g) ?? null, write: async (g, r) => { records.set(g, r); } };
-}
-
-/** The keyholder's floor without keyhive: the card is the dialer's key, and the V3 proof must hold under it. */
-function provingShore(gatePubKey: string): AuthVerifierShore {
-  return {
-    async verify(cardBytes, bagUrl, _access, proof) {
-      const key = new TextDecoder().decode(cardBytes);
-      if (!proof) return { ok: false };
-      const v = await verifyAuthProof({ nonce: proof.nonce, gatePubKey, peerPubKey: key, aud: bagUrl, sig: proof.sig });
-      return v.ok ? { ok: true, identifier: key, proofVerified: true } : { ok: false };
-    },
-  };
 }
 
 async function newcomer(fill: number): Promise<{ base: LeafIdentity; leaf: { verifyingKey: string; seed: Uint8Array } }> {
@@ -92,12 +81,12 @@ describe("a newcomer walks in at the hearth's own gate", () => {
     const reading: CarriedNexusReading = { aid: AID, via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, posture: "private" };
     http = createServer();
     wss = new WebSocketServer({ server: http });
-    const gate = new DaemonAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
+    const gate = standGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
     const key: GateKey = { pubKey: gatePub, sign: ed25519SignerFromSeed(GATE_SEED) };
-    gate.arm(provingShore(gatePub), AUD, key, makeSocketSorter({
+    armGate(gate, { gate: key, aud: AUD, sort: makeSocketSorter({
       readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
       hosting: { storageDir, leafSeedFor: async () => HEARTH_LEAF },
-    }));
+    }), shore: provingShore(gatePub) });
     serveHostingMint(gate, { storageDir, leafSeedFor: async () => HEARTH_LEAF });
     // The hearth's own Repo answers each admitted socket's join, so a verified dial meets a proven peer.
     repos.push(new Repo({ network: [new NodeWSServerAdapter(gate as unknown as WebSocketServer)], peerId: "hearth" as PeerId }));
@@ -115,7 +104,7 @@ describe("a newcomer walks in at the hearth's own gate", () => {
 
   /** Dial the hearth under `identity`; the walk client rides it. Resolves the adapter once it settles or anergizes. */
   async function dial(identity: LeafIdentity, walk?: { store: WalkStore; leaf: { verifyingKey: string; seed: Uint8Array }; base: LeafIdentity }): Promise<LarWSClientAdapter> {
-    const adapter = new LarWSClientAdapter({ url: `ws://127.0.0.1:${port}/ws`, identity, aud: AUD, gatePubKey: gatePub, retryInterval: 50 });
+    const adapter = dialGate({ url: `ws://127.0.0.1:${port}/ws`, identity, aud: AUD, gatePubKey: gatePub, retryInterval: 50 });
     adapters.push(adapter);
     if (walk) walkOver({ transport: adapter, store: walk.store, gatePubKey: gatePub, leaf: walk.leaf, base: walk.base, actFor });
     repos.push(new Repo({ network: [adapter], peerId: `walker-${adapters.length}` as PeerId }));
