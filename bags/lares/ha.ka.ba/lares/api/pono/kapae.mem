@@ -181,6 +181,7 @@ Two hands act on an edge. The ''holder'' hand signs with the one key the edge's 
 A board holds documents that any writer may edit, so a hand can delete a raise from the board. ''Every vessel keeps each act and each anchor it has counted, in a ledger of its own that never crosses to another operator.'' A reader folds the board together with its ledger, and it writes a kept act back onto a board that lost it.
 
 * A delete changes no reading at a vessel that once counted the raise, and the board regains the act at that vessel's next read.
+* A vouch accretes the same way: a vessel keeps each vouch it verified, so a hand that deletes a withdrawn vouch erases no record of how its joiner entered.
 * One act holds one id, and its signatures gather: a second hand's signature joins the first, and a false signature under a true signer's name displaces nothing. A vessel keeps the signatures that verified and returns them to a board copy that lost one.
 * A vessel that never read the raise cannot tell a delete from a withheld act. Withholding buys a delay; it proves no lift.
 * The ledger holds signed acts and nothing compiled about anyone. No signed board head and no per-writer chain stands beside it: the first would seat a keeper over the board, and the second would list the board's writers.
@@ -205,7 +206,7 @@ A board holds documents that any writer may edit, so a hand can delete a raise f
 | lineage standing and the realm's own boards | | that path to a root breaks | no standing; the edge board and the vouch board close for that member | |
 | a face-grant seat and the Binding Gate | no seat, no bind; a lease roll skips the dyad | | | |
 
-''Lineage standing reads as a live query'': a member stands in a realm while some path of standing vouches reaches a root and no shadow stands over the member edge. A root names a voucher that no vouch names as a joiner; such a hand entered by another road, and it leaves only by a shadow over its own member edge. A voucher who withdraws leaves the joiner standing wherever another path holds.
+''Lineage standing reads as a live query'': a member stands in a realm while some path of standing vouches reaches a root and no shadow stands over the member edge. A root names a seat of the charter the realm stands under, read off the reader's own charter; a key that merely signs a vouch roots nothing. A root leaves only by a shadow over its own member edge, and a vessel that holds no charter reads no joiner as standing. A voucher who withdraws leaves the joiner standing wherever another path holds.
 
 <<~/ahu>>
 
@@ -238,7 +239,7 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 ''The doors.'' `lares edge kapae` and `un-kapae` act by an edge id, by `--member` with `--realm`, or by `--device`; `--quorum` signs with the seats this vessel holds. `lares cabal vouch` and `lares cabal join` read and write the realm's own boards, and a crossing names each shadow it met: over a vouch, over a voucher, over the applicant. A seal roll anchors every realm edge board whose quorum acts the rolling vessel keeps.
 
-''The gates'', each through its own entry point: the socket sorter, the share verdicts, carriage serve, the realm's gate and the lane the realm's boards cross by. One live reading feeds them (`edge-shadow-ring`). It answers closed until its first fold lands, and closed again behind a fold that fails.
+''The gates'', each through its own entry point: the socket sorter, the share verdicts, carriage serve, the realm's gate and the lane the realm's boards cross by. One live reading feeds them (`edge-shadow-ring`). It answers closed until its first fold lands, closed again behind a fold that fails, and closed from the moment a board moves until the next fold lands.
 
 ▢ ''OWED'':
 * ''The composers.'' Neither vessel seats the ring, the board lanes or the sibling lane's fleet board; the hunks wait on the composers' owner. Until they land, the gates stand built and no standing vessel consults them.
@@ -273,6 +274,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0lzXdLD0SmJAarNNVaBEGJYuHTGP6DFLdqRW_uzrBm8
+<<^ code="&#x0003;">>ni:///sha-256;ZE5dWgYQ5tSq-6eCQQmeYie1_7SnF1roN3TqAlf-mBQ
 
 <<^ code="&#x0004;" -> to="?">>
