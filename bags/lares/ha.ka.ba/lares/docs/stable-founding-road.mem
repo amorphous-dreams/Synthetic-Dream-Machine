@@ -320,7 +320,6 @@ identity bytes; then R-WIRE, so every pin changes once.
 * ''Step 5, after ONE FACE'': a public bag served at the floor of a locked node; today the floor serves the oracle snapshot alone.
 * ''History at admission'' (operator ruling): sharing a bag's past with a newcomer must have stood declared when those edits got written. An inviter chooses between history the realm already marked shareable and a present-state admission, and never widens the audience for another writer's past. The design target keeps one logical bag name whose key rolls mark epochs: a removal rolls, a from-now admission rolls, and a with-its-past admission hands over the earlier epochs' keys.
 * ''Mutual removal'' (operator ruling; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>): both signed acts and both key branches stay, every member sees the conflict, and it ends in an explicit fork unless the realm's charter named a recovery council.
-* ''Owed first'': `foldEdgeKapae` projects no shadow for a same-version tie (`packages/lararium-mesh/src/edge-kapae.ts`), where kapae law keeps the shadow up.
 
 !!! The shore ~ the browser's five rungs, beside the paths
 * ''The rungs'': 0, an admitted crossing; 1, a carrier the node holds arrives and renders; 2, a typed field edit reaches the node and survives its restart, read from a fresh browser profile; 3, one human, many faces; 4, two hearths. Rungs 0–2 give the one-machine witness the working-Lararium ruling asks for, and the node's own read decides each rung, never a screenshot or a connected socket.
@@ -639,7 +638,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 
 !! Side lanes ~ queued beside the road, each on its own files
 
-* ''The kapae tie cure.'' `foldEdgeKapae` projects no shadow for a same-version tie (`packages/lararium-mesh/src/edge-kapae.ts`), where kapae law keeps the shadow up (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>).
+* ''The shadow at the gates.'' An edge-kapae shadow stops one door, the crossing verdict of `lares cabal join`. No sync gate, share verdict or Keyhive membership consults it; the fleet closure (`verifiedFleetOfGroup`, `dyad.ts`) holds no production caller; `KeyhiveProvider.revoke` holds none either; and a board writer may delete a raise, so "acts only accrete" holds by convention. The build waits on the rulings of #/open (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>).
 * ''Handle resolver wiring and cross-log order.'' A Handle reader that holds no owner-head resolver trusts the inception alone. Owed: the resolver's wiring, where it must answer "the current, unsuperseded, un-vetoed head" and never "a key that once stood as head", and the order between a Handle's log and its owner's log.
 * ''The clock cures.'' `lares watch --delete-grace` lets a wall clock decide a tombstone (`packages/lares-cli/src/commands/watch.ts`); the audit of each remaining contract, Cabal and Handle door runs relation by relation, never as a blind sweep (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/causal-island#/selected-contracts">>).
 * ''The code lane.'' False source comments (`G6` of #/the-loops); a bug in the module trust gate (`packages/lararium-tw5/src/tw5-module-gate.ts`) and its missing positive-path vector; callers that still mount a layer default-writable (`operator-daemon-behavior.ts`, `daemon-vm-core.ts`); mesh tests that sit outside the type-check.
@@ -706,6 +705,7 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 # ''Grammar submissions'': whether the Nexus Kahu or the corpus-kahu receive them.
 # ''DNS custody past the credential'': delegated `_acme-challenge`, record custody, the ACME account and CAA travel as one question (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>). With it: whether a host timer or a hand runs renewal, and the answer for a phone that forces encrypted DNS.
 # ''The crossroads mirror's filter'' (`G21` of #/the-loops).
+# ''Removal's reach.'' Three questions the kapae cure met. Who holds a vouch edge: the voucher alone, as built, so a cabal cannot set aside a member whose voucher refuses; or the voucher and a chartered quorum (lean: voucher today, the quorum as the eviction road; never one realm key). Whether a seal roll carries or clears shadows: a lower in a later epoch cannot cite a raise in an earlier one, so the shadow stays up across a roll. Whether a standing shadow drives a share-gate denial and a Keyhive revocation; today nothing does, and the sealed store's key roll at removal rests on the answer.
 # ''The self-slot inner ring.'' Wiring it freezes a naming: a bag URL through a live ring hashes to seed its document, and a re-name costs a re-founding. Lean: widen the bridge first, and wire the ring on an explicit ruling alone.
 
 !!! Shore, grammar and code
@@ -749,6 +749,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5-g2jT9v7Jag8pOjHcdZf9IGwoCJ4j3EAXE_cEKzADo
+<<^ code="&#x0003;">>ni:///sha-256;yNKgIkRls8eXm3Sv_fyR0fHr0-ATXcG98Ehg5iZiD9c
 
 <<^ code="&#x0004;" -> to="?">>

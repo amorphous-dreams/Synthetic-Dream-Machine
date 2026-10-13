@@ -42,6 +42,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **An unreadable archive refuses the stand by name.** So does an archive of another identity.
 - **A stand presents one contact card.** The card gets minted before the stand's Archive leaves, so every later stand opens what the card promised.
 - **The joinee rite dials the hearth's own gate.** A founder that also stands a carriage relay no longer hands a joiner the relay's key.
+- **A contested removal keeps its shadow.** A lower lifts an edge shadow only by causally following every raise; a racing lower, a missing parent or a relabeled act leaves it up. `lares cabal join` reads the edge-kapae board and names each vouch set aside, `lares edge` reports the verdict, and `lares cabal vouch` prints the edge id.
 
 **Added**
 - **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki. Every daemon-door meme verb and MCP meme tool likewise requires one container.
