@@ -214,6 +214,15 @@ describe("the sealed value opens whole, or refuses by name", () => {
     expect(sealChunk({ key: new Uint8Array(16) as never, context: ctx(), plaintext: body(1) })).toEqual({ refusal: "key-malformed" });
   });
 
+  it("a bag id of ill-formed text names no bag: two unlike ids never share one context", () => {
+    const lone = `${BAG}\ud800`, replaced = `${BAG}\ufffd`;
+    expect(lone).not.toBe(replaced);
+    expect(hex(utf8Bytes(lone))).toBe(hex(utf8Bytes(replaced)));               // the encoder folds them: the hazard
+    expect(() => keyVersionIdOf(key, lone)).toThrow(/bag id/);
+    expect(sealChunk({ key, context: { ...ctx(), bagId: lone }, plaintext: body(1) })).toEqual({ refusal: "context-malformed" });
+    expect(keyVersionIdOf(key, replaced)).toMatch(/^[0-9a-f]{64}$/);          // CONTROL: well-formed text names a bag
+  });
+
   it("no input shape throws: every malformed reading answers a named refusal", () => {
     const chunk = seal(body(10));
     const a = own(chunk.address);

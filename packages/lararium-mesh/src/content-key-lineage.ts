@@ -38,7 +38,7 @@
  * the sink and the lockbox store mints a key; out of the package barrel till then.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/epochs · #/siblings
  */
-import { readKeyVersionId, type KeyVersionId } from "./sealed-chunk.js";
+import { isWellFormedText, readKeyVersionId, type KeyVersionId } from "./sealed-chunk.js";
 import type { SeatRoll, SeatRollSink } from "./seat-duties.js";
 
 // ── Facts ───────────────────────────────────────────────────────────────────────────────────────
@@ -60,9 +60,11 @@ export interface KeyVersionFact {
   readonly cause:      KeyCause;
 }
 
-/** What the caller verified outside this module. The lineage asks; it never assumes. */
+/** What the caller verified outside this module. The lineage asks; it never assumes. A caller builds the
+ *  evidence for ONE bag: every answer speaks for that bag's own scope, and a raise or an admission act that
+ *  counts in another scope answers false here. */
 export interface TransitionEvidence {
-  /** The reader's own ledger counts this raise. */
+  /** The reader's own ledger counts this raise, on an edge of this bag's own scope. */
   raiseCounts(act: string): boolean;
   /** The reader verified this admission act. */
   admissionVerifies(act: string): boolean;
@@ -92,7 +94,8 @@ export type CountResult =
 
 const ascending = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 const isHistory = (value: unknown): value is HistoryDeclaration => (HISTORY_DECLARATIONS as readonly unknown[]).includes(value);
-const isAct = (act: unknown): act is string => typeof act === "string" && act.length > 0;
+/** An act id: non-empty, well-formed text, so no two unlike ids share one encoding. */
+const isAct = (act: unknown): act is string => isWellFormedText(act);
 /** The acts a cause names, as one comparable list. */
 const actsOf = (cause: KeyCause): readonly string[] => (cause.kind === "removal" ? cause.acts : cause.kind === "admission" ? [cause.act] : []);
 
@@ -278,7 +281,7 @@ export const ROLL_REFUSALS = [
   "own-edge-shadowed",    // a vessel that reads a shadow over its own edge mints no further version
   "already-rolled",       // the vessel already holds a successor for this raise
   "no-head-held",         // the vessel holds no head's key
-  "join-owed",            // the heads the vessel holds sit in unlike spans: join them first
+  "join-owed",            // one plan got asked for, and the heads the vessel holds sit in unlike spans
   "heads-not-all-held",   // a join needs every head
   "nothing-to-join",      // a join with fewer than two heads
   "history-closed",       // a with-past admission into a span declared closed
@@ -300,31 +303,48 @@ export function planFounding(lineage: KeyLineage, history: HistoryDeclaration): 
   return planned([], "self", history, { kind: "founding" });
 }
 
-/** Does this vessel still owe a roll for `act`? It owes one until it HOLDS a version that stands as, or
- *  descends from, a successor minted for that raise. A successor it counted and cannot open settles nothing. */
+/**
+ * Does this vessel still owe a roll for `act`? It owes one while any HEAD it holds stands outside the causal
+ * future of a successor minted for that raise. A successor it counted and cannot open settles nothing, and a
+ * vessel that holds no head has settled nothing.
+ */
 export function owesRoll(lineage: KeyLineage, act: string, held: ReadonlySet<KeyVersionId>): boolean {
   if (!isAct(act)) return false;
-  for (const id of held) if (lineage.followsRemoval(id, act)) return false;
-  return true;
+  const heads = heldHeads(lineage, held);
+  return heads.length === 0 || heads.some((head) => !lineage.followsRemoval(head, act));
 }
 
 /**
- * A removal's successor. Raises answered together share ONE successor: it cites every raise the vessel still
- * owes a roll for, and none it already settled. Its parents name every head the vessel holds, they share one
- * span, and the span continues.
+ * A removal's successors, one for each span the vessel holds a head in. Raises answered together share ONE
+ * successor per span: it cites every raise some head of that span still owes, and none already settled there.
+ * Its parents name every head the vessel holds in that span, and the span continues. A roll never waits on a
+ * join: heads of unlike spans each take their own successor, and both branches keep showing as a fork.
  */
-export function planRemovalRoll(lineage: KeyLineage, args: { readonly acts: readonly string[]; readonly held: ReadonlySet<KeyVersionId>; readonly ownEdgeShadowed: boolean }): Planned {
+export function planRemovalRolls(lineage: KeyLineage, args: { readonly acts: readonly string[]; readonly held: ReadonlySet<KeyVersionId>; readonly ownEdgeShadowed: boolean }):
+  { readonly plans: readonly KeyRollPlan[] } | { readonly refusal: RollRefusalName } {
   const acts = readActs([...new Set(Array.isArray(args.acts) ? args.acts : [])].sort(ascending));
   if (acts === null) return { refusal: "act-malformed" };
   if (lineage.unfounded) return { refusal: "bag-unfounded" };
   if (args.ownEdgeShadowed !== false) return { refusal: "own-edge-shadowed" };
-  const owed = acts.filter((act) => owesRoll(lineage, act, args.held));
-  if (owed.length === 0) return { refusal: "already-rolled" };
   const heads = heldHeads(lineage, args.held);
   if (heads.length === 0) return { refusal: "no-head-held" };
-  const spans = spansOf(lineage, heads);
-  if (spans.length > 1) return { refusal: "join-owed" };
-  return planned(heads, spans[0]!, lineage.historyOfSpan(spans[0]!)!, { kind: "removal", acts: Object.freeze(owed) });
+  const plans: KeyRollPlan[] = [];
+  for (const span of spansOf(lineage, heads).sort(ascending)) {
+    const parents = heads.filter((head) => lineage.fact(head)!.span === span);
+    const owed = acts.filter((act) => parents.some((head) => !lineage.followsRemoval(head, act)));
+    if (owed.length === 0) continue;
+    const one = planned(parents, span, lineage.historyOfSpan(span)!, { kind: "removal", acts: Object.freeze(owed) });
+    if ("plan" in one) plans.push(one.plan);
+  }
+  return plans.length === 0 ? { refusal: "already-rolled" } : { plans: Object.freeze(plans) };
+}
+
+/** The one successor a removal owes, where the vessel's heads share one span; `join-owed` where they do not
+ *  and `planRemovalRolls` answers more than one. */
+export function planRemovalRoll(lineage: KeyLineage, args: { readonly acts: readonly string[]; readonly held: ReadonlySet<KeyVersionId>; readonly ownEdgeShadowed: boolean }): Planned {
+  const all = planRemovalRolls(lineage, args);
+  if ("refusal" in all) return all;
+  return all.plans.length === 1 ? { plan: all.plans[0]! } : { refusal: "join-owed" };
 }
 
 /** A from-now admission: its parents name every head the vessel holds, and a new span opens with `history`. */
@@ -412,18 +432,21 @@ export interface RollerPorts {
   report(outcome: RollOutcome): void;
 }
 
-/** The outcomes that leave a raise owed: the sink rejects the roll, and the vessel hands it over again. */
-const COMES_AGAIN: ReadonlySet<RollOutcomeName> = new Set(["mint-failed", "join-owed"]);
+/** The outcomes that leave a raise owed: the sink rejects the roll, and the vessel hands it over again. A bag
+ *  the scope reaches and this vessel cannot roll yet (no head key in hand, no lineage read) stays owed: the
+ *  raise must not read answered while that bag holds no successor. */
+const COMES_AGAIN: ReadonlySet<RollOutcomeName> = new Set(["mint-failed", "no-head-held", "unknown-bag"]);
 
 /**
  * The subscriber a vessel hands its seat rolls to. For one roll it visits every bag the scope reaches, in turn
- * and one at a time per bag: it skips a bag that owes no roll for these raises, plans one successor for the
- * raises still owed, mints and reports. It proceeds on every answer the key group gave (`revoked`, `gone`,
- * `no-authority`): the content key rolls whether or not the seat left.
+ * and one at a time per bag: it skips a bag that owes no roll for these raises, plans one successor for each
+ * span the vessel holds a head in, mints each and reports. It proceeds on every answer the key group gave
+ * (`revoked`, `gone`, `no-authority`): the content key rolls whether or not the seat left.
  *
- * It REJECTS the roll where any bag could not finish (a mint that failed, heads that wait on a join), so the
- * raises stay unmarked and the same roll comes again; a repeat settles the bags that finished as `not-owed`.
- * A port that throws counts as a mint that failed.
+ * It REJECTS the roll where any bag could not finish (a mint that failed, a bag with no head key in hand, a
+ * bag it could not read), so the raises stay unmarked and the same roll comes again; a repeat settles what
+ * finished as `not-owed`. A vessel under its own shadow mints nothing and lets the roll settle: it performs
+ * no key act in that scope. A port that throws counts as a mint that failed.
  */
 export function contentKeyRollSink(ports: RollerPorts): SeatRollSink {
   const tails = new Map<string, Promise<unknown>>();
@@ -442,10 +465,14 @@ export function contentKeyRollSink(ports: RollerPorts): SeatRollSink {
     try {
       const lineage = ports.lineageOf(bagId);
       if (lineage === null) return say("unknown-bag");
-      const choice = planRemovalRoll(lineage, { acts: roll.raiseCids, held: ports.heldOf(bagId), ownEdgeShadowed: ports.ownEdgeShadowed(roll.scope) });
+      const choice = planRemovalRolls(lineage, { acts: roll.raiseCids, held: ports.heldOf(bagId), ownEdgeShadowed: ports.ownEdgeShadowed(roll.scope) });
       if ("refusal" in choice) return say(choice.refusal === "already-rolled" ? "not-owed" : choice.refusal);
-      const fact = await ports.mint(bagId, choice.plan);
-      return fact === null ? say("mint-failed") : say("rolled", fact.keyVersion);
+      for (const plan of choice.plans) {
+        const fact = await ports.mint(bagId, plan);
+        if (fact === null) return say("mint-failed");
+        say("rolled", fact.keyVersion);
+      }
+      return "rolled";
     } catch { return say("mint-failed"); }
   };
   return async (roll) => {

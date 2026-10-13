@@ -104,6 +104,13 @@ export function readSealedAddress(value: unknown): SealedAddress | null {
   return typeof value === "string" && ADDRESS.test(value) ? (value as SealedAddress) : null;
 }
 
+/** Non-empty text that survives its own UTF-8 encoding. A lone surrogate encodes as the replacement character,
+ *  so two unlike strings would share one image; such text names nothing here. */
+export function isWellFormedText(value: unknown): value is string {
+  if (typeof value !== "string" || value.length === 0) return false;
+  try { return new TextDecoder("utf-8", { fatal: true }).decode(utf8Bytes(value)) === value; } catch { return false; }
+}
+
 // ── The canonical image ─────────────────────────────────────────────────────────────────────────
 const MAX_FIELD = 0xffff_ffff;
 
@@ -163,7 +170,7 @@ function readContext(value: unknown): SealContext | null {
   try {
     if (typeof value !== "object" || value === null) return null;
     const { bagId, keyVersion, role, logicalRef } = value as SealContext;
-    if (typeof bagId !== "string" || bagId.length === 0) return null;
+    if (!isWellFormedText(bagId)) return null;
     if (readKeyVersionId(keyVersion) === null || !isChunkRole(role)) return null;
     if (!(logicalRef instanceof Uint8Array) || logicalRef.length === 0) return null;
     return { bagId, keyVersion, role, logicalRef: Uint8Array.from(logicalRef) };
@@ -183,7 +190,7 @@ function digestOfContext(c: SealContext): Uint8Array {
 /** The id of the key version `key` stands as in `bagId`. Whoever holds the key recomputes it. */
 export function keyVersionIdOf(key: ContentKey, bagId: string): KeyVersionId {
   if (readContentKey(key) === null) throw new TypeError("sealed-chunk: a content key rides exactly 32 bytes");
-  if (typeof bagId !== "string" || bagId.length === 0) throw new TypeError("sealed-chunk: a key version id binds a bag id");
+  if (!isWellFormedText(bagId)) throw new TypeError("sealed-chunk: a key version id binds a bag id of well-formed text");
   return hex(hkdf(sha256, key, undefined, sealedImage(CONTENT_KEY_ID_INFO, utf8Bytes(bagId)), 32)) as KeyVersionId;
 }
 

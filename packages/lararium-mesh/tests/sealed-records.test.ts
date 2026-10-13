@@ -160,6 +160,19 @@ describe("a record reads whole, or refuses by name", async () => {
       const forgedCertificate = { ...a.certificate, sessionKey: stranger.sessionCertificate.sessionKey };
       expect(refusalOf(readRecord("key-version", craft({ ...a, certificate: forgedCertificate }), reader(k2)))).toBe("certificate-refused:signature-refused");
     });
+    it("an act id of ill-formed text never signs: two unlike ids would share one signed image", async () => {
+      const lone = { cause: { kind: "removal" as const, acts: ["raise-\ud800"] }, history: "shareable" as const, joinProofs: [] };
+      expect(await signRecord({ kind: "key-version", body: removalBody, private: lone, bagId: BAG, key: k2, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
+      // An admission's act id and a checkpoint's frontier ids take the same rule.
+      const admitted = { cause: { kind: "admission" as const, act: "admit-\ud800" }, history: "closed" as const, joinProofs: [] };
+      expect(await signRecord({ kind: "key-version", body: { ...removalBody, span: v2 }, private: admitted, bagId: BAG, key: k2, signer: signerOf(writer) })).toEqual({ refusal: "record-malformed" });
+      expect(await signRecord({ kind: "key-version", body: { ...removalBody, span: v2 }, private: { ...admitted, cause: { kind: "admission", act: "admit-0001" } }, bagId: BAG, key: k2, signer: signerOf(writer) })).toHaveProperty("record");
+      const a = await authorshipOf(writer, { cause: { kind: "removal", acts: ["raise-\ufffd"] }, history: "shareable", joinProofs: [] });
+      // The signature covers the well-formed id; the same signature under the ill-formed twin reads as no record.
+      expect(refusalOf(readRecord("key-version", craft(a), reader(k2)))).toBe("READ");
+      expect(refusalOf(readRecord("key-version", craft({ ...a, private: { ...a.private, cause: { kind: "removal", acts: ["raise-\ud800"] } } }), reader(k2)))).toBe("authorship-malformed");
+    });
+
     it("a sealed part of another shape refuses `authorship-malformed`", async () => {
       const a = await authorshipOf(writer, removalPrivate);
       expect(refusalOf(readRecord("key-version", craft({ ...a, note: "extra" }), reader(k2)))).toBe("authorship-malformed");

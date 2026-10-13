@@ -22,7 +22,7 @@ import { blake3 } from "@noble/hashes/blake3.js";
 import { digestsEqual } from "./agile-digest.js";
 import { hexToBytes, sha256HexBytesSync, type RandomProvider } from "./crypto.js";
 import {
-  SEALED_ADDRESS_ALGO, keyVersionIdOf, openChunk, readContentKey, sealChunk, sealedAddressOf,
+  SEALED_ADDRESS_ALGO, isWellFormedText, keyVersionIdOf, openChunk, readContentKey, sealChunk, sealedAddressOf,
   type AuthorizedAddress, type ContentKey, type KeyVersionId, type OpenRefusalName, type SealContext,
   type SealRefusalName, type SealedAddress,
 } from "./sealed-chunk.js";
@@ -96,7 +96,7 @@ export type SealPrivateBodyResult = { readonly body: SealedPrivateBody } | { rea
 export function sealPrivateBody(plaintext: Uint8Array, under: PrivateBodyKey, random?: Pick<RandomProvider, "getRandomValues">): SealPrivateBodyResult {
   const key = readContentKey(under?.key);
   if (key === null) return { refusal: "key-malformed" };
-  if (typeof under.bagId !== "string" || under.bagId.length === 0) return { refusal: "context-malformed" };
+  if (!isWellFormedText(under.bagId)) return { refusal: "context-malformed" };
   if (!(plaintext instanceof Uint8Array)) return { refusal: "plaintext-malformed" };
   const keyVersion = keyVersionIdOf(key, under.bagId);
   const ref = sha256HexBytesSync(plaintext);
@@ -122,7 +122,7 @@ export function openPrivateBody(args: {
 }): OpenPrivateBodyResult {
   const key = readContentKey(args.under?.key);
   if (key === null) return { refusal: "key-malformed" };
-  if (typeof args.under.bagId !== "string" || args.under.bagId.length === 0) return { refusal: "context-malformed" };
+  if (!isWellFormedText(args.under.bagId)) return { refusal: "context-malformed" };
   if (typeof args.ref !== "string" || !REF.test(args.ref)) return { refusal: "reference-malformed" };
   const opened = openChunk({ key, context: blobContext(args.under, keyVersionIdOf(key, args.under.bagId), args.ref), sealed: args.ciphertext, authorized: args.authorized });
   if (!("plaintext" in opened)) return opened;

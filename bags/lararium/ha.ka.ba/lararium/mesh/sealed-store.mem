@@ -86,7 +86,7 @@ Every sealed value binds four facts, and a reader supplies all four before any b
 * ''the role'': one of `change`, `checkpoint`, `blob` or `record`;
 * ''the logical reference'': what the value stands for inside the bag. A change carries its change id, a checkpoint its checkpoint id, a blob the plaintext digest its pointer names, and a record its record id.
 
-The four ride one canonical image: the format's own name first, then each field as a four-byte big-endian length followed by its bytes. No two field tuples share an image. The SHA-256 digest of that image stands as the ''context digest''.
+The four ride one canonical image: the format's own name first, then each field as a four-byte big-endian length followed by its bytes. No two field tuples share an image. A bag id, like every id a record names in text, reads as well-formed text: text that would lose a character in its own encoding names nothing. The SHA-256 digest of that image stands as the ''context digest''.
 
 !!! The bytes
 
@@ -194,13 +194,13 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 |! act |! what happens to the key |! what happens to the span |
 | ''founding'' | the first version mints | the first span opens, with its declaration |
-| ''removal'', a counted raise | a successor version mints; the removed reader receives no lockbox for it | the span continues; the document history runs on |
+| ''removal'', a counted raise | a successor version mints in each span the vessel holds a head in; the removed reader receives no lockbox for it | each span continues; the document history runs on |
 | ''admission from now'' | a successor version mints | a new span opens on a `fresh` checkpoint; the newcomer receives that version alone |
 | ''admission with its past'' | no version mints | allowed only inside a span declared shareable; the newcomer receives a lockbox for each version of that span |
 | ''join'' of sibling versions | one version mints, citing every sibling | siblings of one span continue it; siblings of unlike spans open a new span on a `fresh` checkpoint |
 
 * ''An inviter never widens the audience for another writer's past'' (operator ruling). A span declared closed admits newcomers from now alone. An inviter chooses between history the span already declared shareable and a present-state admission.
-* ''A removal rolls forward only.'' The seat roll a vessel hands its subscribers stands as the one trigger (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>), and the content key rolls on every answer the key group gave: the seat revoked, the seat gone, or a seat no hand here can revoke. Raises answered together share one successor version. Every counted raise owes one roll, whatever acts follow it, and a lift restores standing and never an earlier key. A roll a vessel could not finish stays owed, and the same seat roll comes again.
+* ''A removal rolls forward only.'' The seat roll a vessel hands its subscribers stands as the one trigger (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>), and the content key rolls on every answer the key group gave: the seat revoked, the seat gone, or a seat no hand here can revoke. Raises answered together share one successor version. Every counted raise owes one roll, whatever acts follow it, and a lift restores standing and never an earlier key. A roll a vessel could not finish stays owed, and the same seat roll comes again: a mint that failed, a bag whose head key has not reached the vessel yet, a bag it could not read. A vessel under its own shadow mints nothing and performs no key act in that scope.
 * ''Present state without past needs a fresh causal base.'' The document engine keeps every operation inside one document, deleted text included, through save, sync and compaction alike. A `fresh` checkpoint therefore founds a new document from present values, and the span that opens on it shares no history with the span before.
 * ''Within a span'', changes sealed under neighbouring key versions merge as one document. A reader needs each version's key for the values it reads.
 * ''Across a span boundary'' no engine merge exists. A change written against the earlier span after the fresh base got cut stands as a ''late change''. Any holder of the manifests detects one: a change in the earlier span that no checkpoint's cover reaches. A writer that holds both spans' keys re-authors it onto the new base; until then it surfaces as a conflict and never drops in silence.
@@ -214,7 +214,7 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 * Two vessels that count the same raise, or two unlike raises, may each mint a successor from the same parent. Both versions stand as ''siblings''. Nothing ranks them: no clock, no arrival order and no id comparison.
 * ''The heads of a bag's key lineage'' name the versions no other version cites. A lineage with more than one head shows a fork at every door.
 * A writer seals new values under a head it holds. A writer that holds every head, and stands under no shadow of its own in that bag, may ''join'' them by minting one version that cites all of them. A writer that holds one head of several keeps writing under that head. A writer that holds some of several keeps the head it last wrote under; where it wrote under none, a person chooses.
-* A roll cites the heads its vessel holds and no head it cannot open.
+* A roll cites the heads its vessel holds and no head it cannot open. Heads of unlike spans each take their own successor, so a roll never waits on a join, and both branches keep showing as a fork.
 * A vessel that already holds a successor for a raise mints no second one for it.
 * ''Mutual removal ends in an explicit fork'' (operator ruling). Each party's roll shuts the other out, both key branches stay, and a vessel that reads a shadow over its own edge mints no further version in that bag. Both parties leave the shared key group (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>): a third member that counts both raises and holds both heads joins them into a version neither party receives. Where the two stand alone no join exists, and their relation continues only in a fresh realm, by an explicit fork, unless the realm's charter named a recovery council.
 
@@ -277,6 +277,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Em7KEb7CB_UCvtsNp_O37VFt7gHu05a-yaY1tzKvQ3w
+<<^ code="&#x0003;">>ni:///sha-256;PCpnq5JgZH8-EdI4v41UX3PGud-46-nh_ysXO1HTG60
 
 <<^ code="&#x0004;" -> to="?">>

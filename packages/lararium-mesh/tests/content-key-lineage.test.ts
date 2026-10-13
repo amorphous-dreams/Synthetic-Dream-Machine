@@ -11,7 +11,7 @@ import { readKeyVersionId, type KeyVersionId } from "../src/sealed-chunk.js";
 import type { SeatRoll } from "../src/seat-duties.js";
 import {
   contentKeyRollSink, factOfPlan, KeyLineage, LINEAGE_REFUSALS, owesRoll, planAdmissionFromNow, planFounding, planJoin,
-  planRemovalRoll, ScriptedSeatRolls, versionsToHandOver, writeHead,
+  planRemovalRoll, planRemovalRolls, ScriptedSeatRolls, versionsToHandOver, writeHead,
   type HistoryDeclaration, type KeyVersionFact, type RollOutcome, type TransitionEvidence,
 } from "../src/content-key-lineage.js";
 
@@ -130,6 +130,9 @@ describe("the key lineage", () => {
     expect(refusalOf(l, joinOf(dd, [bb, bb], aa, "shareable"))).toBe("version-malformed");
     expect(refusalOf(l, removal(bb, [bb]))).toBe("version-malformed");
     expect(refusalOf(l, removal(dd, [bb], ""))).toBe("version-malformed");
+    // An act id of ill-formed text reads as no act: two unlike ids must never share one encoding.
+    expect(refusalOf(l, removal(dd, [bb], "raise-\ud800"))).toBe("version-malformed");
+    expect(refusalOf(l, removal(dd, [bb], "raise-\ufffd"))).toBe("COUNTED");
     expect(refusalOf(l, { ...removal(dd, [bb]), cause: { kind: "removal", acts: [] } })).toBe("version-malformed");
     expect(refusalOf(l, { ...removal(dd, [bb]), cause: { kind: "removal", acts: ["raise-2", "raise-1"] } })).toBe("version-malformed");
     expect(refusalOf(l, { ...removal(dd, [bb]), cause: { kind: "removal", acts: ["raise-2", "raise-2"] } })).toBe("version-malformed");
@@ -236,6 +239,26 @@ describe("the roll", () => {
     expect(refusalOf(founded(), factOfPlan(batch.plan, bb), { ...yes, raiseCounts: (act) => act === "raise-1" })).toBe("cause-unverified");
   });
 
+  it("heads of unlike spans each take their own successor: a roll never waits on a join", () => {
+    // The vessel holds a removal branch (span aa) and a from-now branch (span cc).
+    const l = unlikeSpans();
+    const r = planRemovalRolls(l, { acts: ["raise-2"], held: held(bb, cc), ownEdgeShadowed: false });
+    expect(r).toEqual({ plans: [
+      { parents: [bb], span: aa, history: "shareable", cause: { kind: "removal", acts: ["raise-2"] } },
+      { parents: [cc], span: cc, history: "closed", cause: { kind: "removal", acts: ["raise-2"] } },
+    ] });
+    if (!("plans" in r)) throw new Error(r.refusal);
+    let rolled = count(l, factOfPlan(r.plans[0]!, dd));
+    // One branch rolled: the vessel still owes the roll on the other head it holds.
+    expect(owesRoll(rolled, "raise-2", held(dd, cc))).toBe(true);
+    expect(planRemovalRolls(rolled, { acts: ["raise-2"], held: held(dd, cc), ownEdgeShadowed: false }))
+      .toEqual({ plans: [{ parents: [cc], span: cc, history: "closed", cause: { kind: "removal", acts: ["raise-2"] } }] });
+    rolled = count(rolled, factOfPlan(r.plans[1]!, ee));
+    expect(owesRoll(rolled, "raise-2", held(dd, ee))).toBe(false);
+    expect(planRemovalRolls(rolled, { acts: ["raise-2"], held: held(dd, ee), ownEdgeShadowed: false })).toEqual({ refusal: "already-rolled" });
+    expect(rolled.heads()).toEqual([dd, ee]);                                 // both branches stay: the fork still shows
+  });
+
   it("a removal roll refuses by name", () => {
     const l = siblings();
     expect(planRemovalRoll(KeyLineage.empty(), { acts: ["raise-1"], held: held(), ownEdgeShadowed: false })).toEqual({ refusal: "bag-unfounded" });
@@ -244,7 +267,7 @@ describe("the roll", () => {
     expect(planRemovalRoll(l, { acts: ["raise-2"], held: held(bb), ownEdgeShadowed: true })).toEqual({ refusal: "own-edge-shadowed" });
     expect(planRemovalRoll(l, { acts: ["raise-1"], held: held(bb), ownEdgeShadowed: false })).toEqual({ refusal: "already-rolled" });
     expect(planRemovalRoll(l, { acts: ["raise-2"], held: held(aa), ownEdgeShadowed: false })).toEqual({ refusal: "no-head-held" });
-    expect(planRemovalRoll(unlikeSpans(), { acts: ["raise-2"], held: held(bb, cc), ownEdgeShadowed: false })).toEqual({ refusal: "join-owed" });
+    expect(planRemovalRoll(unlikeSpans(), { acts: ["raise-2"], held: held(bb, cc), ownEdgeShadowed: false })).toEqual({ refusal: "join-owed" });   // one plan asked, two owed
   });
 
   it("mutual removal: each shadowed vessel mints nothing, and both branches stay", () => {
@@ -363,20 +386,36 @@ describe("the content-key roll a seat roll feeds", () => {
     expect(results(state.reports)).toEqual(["bag-one:mint-failed:", "bag-one:mint-failed:", `bag-one:rolled:${bb}`]);
   });
 
-  it("heads that wait on a join reject the roll; a vessel with no head, a shadowed vessel and an unknown bag accept it", async () => {
-    const waiting = vessel(unlikeSpans(), []);
-    await expect(waiting.rolls.announce(roll(["raise-2"]))).rejects.toThrow(/join-owed/);
-    const keyless = vessel(founded(), []);
+  it("a vessel that holds heads of unlike spans rolls each branch in one delivery", async () => {
+    const both = vessel(unlikeSpans(), [dd, ee]);
+    await both.rolls.announce(roll(["raise-2"]));
+    expect(results(both.state.reports)).toEqual([`bag-one:rolled:${dd}`, `bag-one:rolled:${ee}`]);
+    expect(both.state.plans).toEqual([{ parents: [bb], acts: ["raise-2"] }, { parents: [cc], acts: ["raise-2"] }]);
+    expect(both.state.lineage.heads()).toEqual([dd, ee]);
+    // One branch's mint fails: the roll rejects, and the repeat mints the missing branch alone.
+    const half = vessel(unlikeSpans(), [dd, "fail", ee]);
+    await expect(half.rolls.announce(roll(["raise-2"]))).rejects.toThrow(/mint-failed/);
+    await half.rolls.announce(roll(["raise-2"]));
+    expect(results(half.state.reports)).toEqual([`bag-one:rolled:${dd}`, "bag-one:mint-failed:", `bag-one:rolled:${ee}`]);
+  });
+
+  it("a bag that owes a roll and cannot take one keeps the raise owed; a shadowed vessel mints nothing and lets it settle", async () => {
+    // No head key yet (a lockbox still on its way): the raise must not read answered.
+    const keyless = vessel(founded(), [bb]);
     keyless.state.held.clear();
-    await keyless.rolls.announce(roll(["raise-1"]));
-    expect(results(keyless.state.reports)).toEqual(["bag-one:no-head-held:"]);
+    await expect(keyless.rolls.announce(roll(["raise-1"]))).rejects.toThrow(/bag-one \(no-head-held\)/);
+    keyless.state.held.add(aa);                                               // the key arrives
+    await keyless.rolls.announce(roll(["raise-1"]));                          // the same roll, handed over again
+    expect(results(keyless.state.reports)).toEqual(["bag-one:no-head-held:", `bag-one:rolled:${bb}`]);
+    // A bag the scope names and this vessel cannot read yet.
+    const stray = vessel(founded(), [bb], { bags: ["bag-one", "bag-two", "bag-one"] });
+    await expect(stray.rolls.announce(roll(["raise-1"]))).rejects.toThrow(/bag-two \(unknown-bag\)/);
+    expect(results(stray.state.reports)).toEqual([`bag-one:rolled:${bb}`, "bag-two:unknown-bag:"]);
+    // A vessel under its own shadow performs no key act in that scope: nothing for a repeat to finish.
     const shadowed = vessel(founded(), [bb], { shadowed: true });
     await shadowed.rolls.announce(roll(["raise-1"]));
     expect(results(shadowed.state.reports)).toEqual(["bag-one:own-edge-shadowed:"]);
     expect(shadowed.state.plans).toEqual([]);
-    const stray = vessel(founded(), [bb], { bags: ["bag-one", "bag-two", "bag-one"] });
-    await stray.rolls.announce(roll(["raise-1"]));
-    expect(results(stray.state.reports)).toEqual([`bag-one:rolled:${bb}`, "bag-two:unknown-bag:"]);
   });
 
   it("a roll for a scope that reaches no bag here settles with nothing to do; after the unsubscribe no roll arrives", async () => {

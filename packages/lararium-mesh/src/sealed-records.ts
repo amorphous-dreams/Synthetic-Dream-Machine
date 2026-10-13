@@ -37,7 +37,7 @@ import {
 } from "./face-proof-subjects.js";
 import { readActs, type HistoryDeclaration, type KeyCause, type KeyVersionFact } from "./content-key-lineage.js";
 import {
-  CONTENT_KEY_LEN, authorizeAddress, contextDigest, isChunkRole, keyVersionIdOf, openChunk, readContentKey,
+  CONTENT_KEY_LEN, authorizeAddress, contextDigest, isChunkRole, isWellFormedText, keyVersionIdOf, openChunk, readContentKey,
   readKeyVersionId, readSealedAddress, readSealedImage, sealChunk, sealedAddressOf, sealedImage,
   type AuthorizedAddress, type ChunkRole, type ContentKey, type KeyVersionId, type OpenRefusalName,
   type SealContext, type SealedAddress,
@@ -67,7 +67,7 @@ const keyed = (key: ContentKey, info: Uint8Array): string => hex(hkdf(sha256, ke
 
 /** A bag's locator, from its FOUNDING content key and its id. A reader admitted later takes it from its lockbox. */
 export function bagLocatorOf(foundingKey: ContentKey, bagId: string): BagLocator {
-  if (readContentKey(foundingKey) === null || typeof bagId !== "string" || bagId.length === 0) throw new TypeError("sealed-records: a locator derives from a content key and a bag id");
+  if (readContentKey(foundingKey) === null || !isWellFormedText(bagId)) throw new TypeError("sealed-records: a locator derives from a content key and a bag id");
   return keyed(foundingKey, sealedImage(SEALED_BAG_LOCATOR_INFO, utf8Bytes(bagId))) as BagLocator;
 }
 /** A manifest entry's locator: a keyed digest of the entry's context. A holder of no key reads an opaque value. */
@@ -175,7 +175,8 @@ function sortedUnique<T extends string>(value: unknown, read: (member: unknown) 
   }
   return out;
 }
-const nonEmptyText = (value: unknown): string | null => (typeof value === "string" && value.length > 0 && value.length <= 512 ? value : null);
+/** Well-formed text of bounded length: an id whose bytes name it alone. */
+const nonEmptyText = (value: unknown): string | null => (isWellFormedText(value) && value.length <= 512 ? value : null);
 
 function readKeyVersionBody(value: unknown): KeyVersionBody | null {
   if (!isRecord(value) || !exactKeys(value, ["bag", "keyVersion", "parents", "span"])) return null;
@@ -318,7 +319,7 @@ export async function signRecord<K extends RecordKind>(args: {
   const secret = readPrivate(args.kind, args.private, body);
   if (secret === null) return { refusal: "record-malformed" };
   const key = readContentKey(args.key);
-  if (key === null || typeof args.bagId !== "string" || args.bagId.length === 0) return { refusal: "key-malformed" };
+  if (key === null || !isWellFormedText(args.bagId)) return { refusal: "key-malformed" };
   if (keyVersionIdOf(key, args.bagId) !== body.keyVersion) return { refusal: "key-mismatch" };
   const id = hex(sha256(bodyImage(args.kind, body))) as RecordId;
   const signed = await args.signer.sign("act", authorshipImage(args.kind, id, secret));
@@ -364,7 +365,7 @@ export function readRecord<K extends RecordKind>(kind: K, carried: unknown, read
     const sealed = carried["sealed"];
     if (body === null || !(sealed instanceof Uint8Array)) return { refusal: "record-malformed" };
     const key = readContentKey(reader.key);
-    if (key === null || typeof reader.bagId !== "string" || reader.bagId.length === 0) return { refusal: "key-malformed" };
+    if (key === null || !isWellFormedText(reader.bagId)) return { refusal: "key-malformed" };
     if (body.bag !== reader.locator) return { refusal: "locator-mismatch" };
     if (keyVersionIdOf(key, reader.bagId) !== body.keyVersion) return { refusal: "key-mismatch" };
     const id = hex(sha256(bodyImage(kind, body))) as RecordId;
@@ -438,7 +439,7 @@ export type LockboxRefusalName = (typeof LOCKBOX_REFUSALS)[number];
 /** The bytes a lockbox wraps. The wrap itself rides Keyhive's own encryption, with no predecessor reference. */
 export function encodeLockboxPayload(payload: LockboxPayload): Uint8Array {
   const key = readContentKey(payload.key);
-  if (key === null || readBagLocator(payload.locator) === null || typeof payload.bagId !== "string" || payload.bagId.length === 0) throw new TypeError("sealed-records: a lockbox payload names a bag, a locator, a key version and a key");
+  if (key === null || readBagLocator(payload.locator) === null || !isWellFormedText(payload.bagId)) throw new TypeError("sealed-records: a lockbox payload names a bag, a locator, a key version and a key");
   if (keyVersionIdOf(key, payload.bagId) !== payload.keyVersion) throw new TypeError("sealed-records: a lockbox payload's key stands as another key version");
   return sealedImage(SEALED_LOCKBOX_DOMAIN, utf8Bytes(payload.bagId), hexToBytes(payload.locator), hexToBytes(payload.keyVersion), key);
 }
