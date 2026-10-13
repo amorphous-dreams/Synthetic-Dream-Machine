@@ -191,12 +191,33 @@ up_and_answering() {
 # `[lararium]` match read a dying hearth as stood: a scenario read ok on a lararium that was exiting. The log
 # spans every restart (`on-failure`), so the reading is ORDER, never presence: the last relay line must stand
 # after the last fatal line, and a hearth that failed once and then stood reads as stood.
+#
+# AND ITS KEY STANDS OPEN. Every boot rests at the floor holding no vessel key: the relay socket opens there, a
+# daemon-routed verb answers there, and every sovereign verb refuses and names `lares vault unlock`. The staged
+# boot (`tools/lararium-container-boot.sh`) opens the key through the test door and prints `[boot] staged custody
+# unlock: door rc 0` once the vessel has composed with what the key opens. A reading taken between the relay
+# line and that line reads a floor: measured, a scenario's first sovereign verb met "this vessel's key rests
+# unopened" on a hearth that read as stood. So the relay line and the door line must both stand after the latest
+# `[boot] serving` line (a restart returns the vessel to the floor, and an earlier boot's lines never answer for
+# this one) and after the latest fatal line.
+#
+# AND ONLY THE CURRENT START ANSWERS. A restart keeps the earlier start's log, and the fresh boot prints its
+# first `[boot] serving` line only after its own offline acts: measured, a bounce read as stood on the EARLIER
+# start's relay and door lines while the new boot still lit its face, and the next verb met a held store. So
+# the reading takes the log since the container's own `StartedAt`; a container that does not run reads as not
+# stood.
 stood() {
-  local log relay fatal
-  log=$($COMPOSE logs "$1" 2>&1)
+  local cid since log relay fatal serving door
+  cid=$($COMPOSE ps -q "$1" 2>/dev/null)
+  [ -n "$cid" ] || return 1
+  since=$(docker inspect -f '{{.State.StartedAt}}' "$cid" 2>/dev/null) || return 1
+  log=$(docker logs --since "$since" "$cid" 2>&1)
   relay=$(printf '%s\n' "$log" | grep -nF "[lararium] WS relay on" | tail -n 1 | cut -d: -f1)
   fatal=$(printf '%s\n' "$log" | grep -nF "[lararium] fatal:" | tail -n 1 | cut -d: -f1)
-  [ -n "$relay" ] && [ "$relay" -gt "${fatal:-0}" ]
+  serving=$(printf '%s\n' "$log" | grep -nF "[boot] serving" | tail -n 1 | cut -d: -f1)
+  door=$(printf '%s\n' "$log" | grep -nF "[boot] staged custody unlock: door rc 0" | tail -n 1 | cut -d: -f1)
+  [ -n "$relay" ] && [ "$relay" -gt "${fatal:-0}" ] && [ "$relay" -gt "${serving:-0}" ] \
+    && [ -n "$door" ] && [ "$door" -gt "${serving:-0}" ] && [ "$door" -gt "${fatal:-0}" ]
 }
 
 # HOW MANY TIMES A PATTERN STANDS IN A SERVICE'S LOG — the counting twin of `logs_have`, and it
@@ -402,26 +423,22 @@ run_leaf() {
 
   # REACH, NEVER DEPTH. A fleet binds one principal's instruments, so admitting a device must not move
   # the Nexus phase — a browser is not a second operator however many of them an operator runs.
-  # THE ARTIFACT MUST BE CONSUMABLE, not merely produced. A payload the browser's own parser rejects
-  # would satisfy every check above and hand the operator a fragment that goes nowhere. This runs the
-  # BROWSER-SIDE parser over the carriage the operator would actually paste.
+  # THE ARTIFACT A PERSON CARRIES. The prose form of `device-admit` prints the `#admit=…` fragment an operator
+  # pastes into the page or hands over as a link; an admit that printed none would hand the operator nothing.
   #
-  # WHAT IT DOES NOT PROVE, and the scenario no longer claims: that a browser CONSUMED it. The probe
-  # mints and reports; carrying the fragment into a live page and completing the join is the half that
-  # stays unwalked, and calling this "admitted into its fleet" would have papered over exactly that.
-  step "the carriage PARSES back through the browser's own reader"
+  # WHAT THIS STEP DOES NOT PROVE, and where that proof stands. The browser's own reader
+  # (`parseAdmitCarriage`, `packages/lararium-browser`) rides the built web bundle alone: the product image
+  # carries no importable copy, so a node probe inside a hearth cannot run it, and a host copy would read
+  # bytes of another build. The consuming half runs where a browser runs: the crossing walk
+  # (`tools/browser-ci.sh qa-admit node packages/lararium-web/tests/live-wiki.mjs crossing`) hands a
+  # host-issued fragment to a live page and reads the proven gate key back.
+  step "the admit prints a carriage fragment to hand over"
   local CARRIAGE
+  # The fragment stands WHOLE on its own line: a line that carries anything past the base64url run names no
+  # fragment a page could take.
   CARRIAGE=$($COMPOSE exec -T lararium-a $LARES device-admit --joinee-key "$KEY" 2>&1 \
-             | grep -oE '#admit=[A-Za-z0-9_-]+' | tail -1)
-  if [ -z "$CARRIAGE" ]; then bad "the admit printed no carriage to hand over"; else
-    # THE VALUES MUST BE HANDED IN. `exec` carries no host environment, so a probe reading
-    # `process.env` inside the container would compare two empty strings and pass.
-    if $COMPOSE exec -T -e CARRIAGE="$CARRIAGE" -e KEY="$KEY" lararium-a node --input-type=module -e "
-      import { parseAdmitCarriage } from './packages/lararium-browser/dist/admit-carriage.js';
-      const p = parseAdmitCarriage(process.env.CARRIAGE ?? '');
-      if (!p || p.deviceEdge?.deviceVerifyingKey !== process.env.KEY) process.exit(1);
-    " >/dev/null 2>&1; then ok; else bad "the browser's reader refused the carriage, or it named another device"; fi
-  fi
+             | sed -n 's/^[[:space:]]*\(#admit=[A-Za-z0-9_-]\{1,\}\)[[:space:]]*$/\1/p' | tail -1)
+  if [ -n "$CARRIAGE" ]; then ok; else bad "the admit printed no whole carriage line to hand over"; fi
 
   step "the phase is UNMOVED — a fleet buys reach, never depth"
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
@@ -805,12 +822,17 @@ run_realm_crossing() {
   #
   # A draft chased this the other way — pointing B at A's members board — and that was an AUTHORITY
   # DEFECT: it would let A's future admits widen B's carriage without her consent.
-  step "★ does B read the Nexus too? a relation has two sides ★"
+  #
+  # ONE VESSEL READS ONLY ITS OWN VAULT (`nexusPhase`, `packages/lares-cli/src/nexus-phase.ts`). B seats no
+  # chair of her own here and holds A's charter as her primary, so every seat in it reads FOREIGN to her vault:
+  # her reading answers `nexus` and says she holds NO seat in it. A reads the same charter `seed`, since every
+  # seat comes from A's vault. Neither vessel can read the other's vault, and neither reading claims to.
+  step "★ B reads the charter she holds: every seat foreign to her vault, no seat of her own ★"
   local BPHASE
   BPHASE=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1)
-  if printf '%s' "$BPHASE" | grep -q '"phase":{"phase":"seed"'; then ok
+  if printf '%s' "$BPHASE" | grep -q '"phase":{"phase":"nexus"' && printf '%s' "$BPHASE" | grep -q 'holds NO seat'; then ok
   else
-    bad "B did not read the charter held in this vessel"
+    bad "B did not read the charter held in this vessel as another's, with no seat of her own"
     printf '      B reads: %s\n' "$(printf '%s' "$BPHASE" | grep -oE '"phase":\{"phase":"[a-z]+"' | head -1)"
     printf '      B board: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus members --list --json 2>&1 \
         | grep -oE '"island":"[^"]*"|"members":\[[^]]*\]' | tr '\n' ' ')"
@@ -1065,6 +1087,18 @@ run_meme() {
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
 
+  # EACH HAND SEALS WITH THE KEY HER WORN FACE PRESENTS. A hearth that wears no face refuses to keep a realm bag
+  # (`no-face-worn`), so both hearths wear face zero before either one seals a record of this realm.
+  step "both hearths wear face zero — a keeping hand seals under its worn face"
+  local WEAR_A WEAR_B
+  WEAR_A=$($COMPOSE exec -T lararium-a $LARES persona wear 0 --json 2>&1)
+  WEAR_B=$($COMPOSE exec -T lararium-b $LARES persona wear 0 --json 2>&1)
+  if printf '%s' "$WEAR_A" | grep -q '"active":0' && printf '%s' "$WEAR_B" | grep -q '"active":0'; then ok
+  else
+    bad "a hearth did not wear face zero"
+    printf '      A wears: %s\n      B wears: %s\n' "$(printf '%s' "$WEAR_A" | tail -1 | cut -c1-200)" "$(printf '%s' "$WEAR_B" | tail -1 | cut -c1-200)"
+  fi
+
   step "A registers bags/lares on the realm — steward-signed, read at CONTRACT"
   local REG
   REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag lares --json 2>&1)
@@ -1136,23 +1170,37 @@ run_meme() {
   else bad "B's projection refused"; printf '%s\n' "$PJ" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
   # THE STEWARD WRITE PATH. The read cap is CONTRACT (every contracted member); the write cap is the NAMED
-  # STEWARDS' SET. A names B a steward — n-of-n, so the naming is a PROPOSAL B completes with her own co-sign
-  # — and B's `meme put --bag lares` then resolves the REALM doc rather than refusing.
+  # STEWARDS' SET. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B asks from her own vessel (`--join`), her worn
+  # face sealing a record that names the standing steward and herself; the record is n-of-n, so it counts
+  # nothing until A consents on hers (`--cosign`). B's `meme put --bag lares` then resolves the REALM doc
+  # rather than refusing.
   step "B edits on the base she read, promotes; A gets the new slot"
-  local HASH_B GB2 GA2 NYM_B REG COSIGN PUT
+  local HASH_B GB2 GA2 ASK COSIGN PUT
   HASH_B=$(json_hash "$GB")
   meme_text a b | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-b.mem'
-  # CONTROL: before her naming, B's put refuses — a member at the read tier writes nothing.
+  # CONTROL: before she asks, B's put refuses — a member at the read tier writes nothing.
   if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
-    bad "B's put --bag lares LANDED BEFORE her naming — the read tier must refuse a placement"; clear_all; return; fi
-  NYM_B=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --json 2>&1 | grep -oE '"nym":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-  REG=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag lares --steward "$NYM_B" --json 2>&1)
-  COSIGN=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag lares --cosign --json 2>&1)
-  PUT=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
+    bad "B's put --bag lares LANDED BEFORE she asked — the read tier must refuse a placement"; clear_all; return; fi
+  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag lares --join --json 2>&1)
+  # THE RECORD CROSSES BEFORE EACH NEXT HAND CAN ACT ON IT. B's ask rides the realm doc to A, and A's consent
+  # rides it back; neither vessel reads the other's seal before the doc syncs. So each next act repeats until
+  # the realm answers it or its budget ends (the budget only bounds the wait; the verb's own answer decides).
+  local until_ms=$((SECONDS + 90))
+  while :; do
+    COSIGN=$($COMPOSE exec -T lararium-a $LARES nexus realm-bag lares --cosign --json 2>&1)
+    if printf '%s' "$COSIGN" | grep -q '"ok":true' || [ "$SECONDS" -ge "$until_ms" ]; then break; fi
+    sleep 3
+  done
+  until_ms=$((SECONDS + 90))
+  while :; do
+    PUT=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
+    if printf '%s' "$PUT" | grep -q '"ok":true' || [ "$SECONDS" -ge "$until_ms" ]; then break; fi
+    sleep 3
+  done
   if ! printf '%s' "$PUT" | grep -q '"ok":true'; then
-    bad "B's put --bag lares refused AFTER her co-sign — the steward write path never resolved"
-    printf '      A names B:  %s\n' "$(printf '%s' "$REG" | tail -1 | cut -c1-220)"
-    printf '      B co-signs: %s\n' "$(printf '%s' "$COSIGN" | tail -1 | cut -c1-220)"
+    bad "B's put --bag lares refused AFTER A's co-sign — the steward write path never resolved"
+    printf '      B asks:     %s\n' "$(printf '%s' "$ASK" | tail -1 | cut -c1-220)"
+    printf '      A co-signs: %s\n' "$(printf '%s' "$COSIGN" | tail -1 | cut -c1-220)"
     printf '      B puts:     %s\n' "$(printf '%s' "$PUT" | tail -1 | cut -c1-220)"
     clear_all; return; fi
   if GA2=$(await_meme lararium-a "<<~ ahu #/b>>" 90) && json_text "$GA2" | grep -qE "$BAG_RE"; then ok
@@ -1405,13 +1453,14 @@ run_seal() {
     printf '      %s\n' "$($COMPOSE logs lararium-a 2>&1 | grep -E 'custody' | tail -3 | cut -c1-200)"
   fi
 
-  # THE PASSPHRASE LIFECYCLE governs the share carriers alone: its status names no archive.
-  step "\`vault status\` names the share carriers and no archive"
+  # THE PASSPHRASE LIFECYCLE GOVERNS NO ROW: the reserve share and each face's device share rest under the vessel
+  # key, so its status names no carrier at all.
+  step "\`vault status\` names no passphrase carrier"
   local ST
   ST=$($COMPOSE exec -T lararium-a $LARES vault status --json 2>&1)
-  if printf '%s' "$ST" | grep -q '"reserve-share"' && ! printf '%s' "$ST" | grep -qE '"carriers":\{[^}]*"(archive|veil)"'; then ok
+  if printf '%s' "$ST" | grep -qF '"carriers":{}'; then ok
   else
-    bad "the passphrase lifecycle's status still names an archive carrier"
+    bad "the passphrase lifecycle's status still names a carrier"
     printf '      %s\n' "$(printf '%s' "$ST" | tail -1 | cut -c1-220)"
   fi
 
@@ -1424,19 +1473,6 @@ run_seal() {
     printf '      %s\n' "$(printf '%s' "$EX" | tail -1 | cut -c1-220)"
   fi
 
-  # THE UNGUARDED INDEX. `carriers()` (archive-passphrase.ts:82) enumerates a BARE `deviceSharePath()`
-  # — handle 0 alone — so `recovery-device-share-h1.bin` and higher sit outside rotate, repair, status
-  # and the export refusal entirely. A vessel running a second face carries a share nothing guards.
-  step "a SECOND handle's device share sits outside the guarded set"
-  $COMPOSE exec -T lararium-a $LARES persona new 1 --name "second" >/dev/null 2>&1 || true
-  local SHARES
-  SHARES=$($COMPOSE exec -T lararium-a sh -c 'ls /state/data/lares/identity/ 2>/dev/null | grep -c "recovery-device-share-h"' 2>/dev/null | tr -d '\r')
-  if [ "${SHARES:-0}" -le 1 ]; then
-    gap "only ${SHARES:-0} device share stands — a second face minted none, so the h1+ hole is unreached here"
-    printf '      archive-passphrase.ts:82 enumerates deviceSharePath() with no index\n'
-  else
-    bad "${SHARES} device shares stand and carriers() enumerates one — h1+ escapes every guard"
-  fi
   clear_all
 }
 
@@ -1484,13 +1520,20 @@ run_title() {
   fi
 
   # THE HALF AS IMPORTANT AS THE REFUSAL. A refusal that also loses the text is the worse failure.
+  #
+  # THE READ DOOR IS THE WIKI'S. A put through the recipe lands in the wiki's WORKING layer, and the canon bag
+  # moves only by a residency move: a read of `--bag lares` answers not-found for every such put, whatever
+  # happened to the record. So each read-back here asks the recipe the put went through.
   step "A — and the record SURVIVES where its author can see it"
   local BACK
-  BACK=$($COMPOSE exec -T lararium-a $LARES meme get "$BAD_URI" --bag lares --json 2>&1)
+  BACK=$($COMPOSE exec -T lararium-a $LARES meme get "$BAD_URI" --recipe lares --json 2>&1)
   if printf '%s' "$PUT" | grep -q '"ok":false' && ! printf '%s' "$BACK" | grep -q '"ok":true'; then
     gap "the write was refused and nothing was stored — the author's copy stands only on their screen"
     printf '      the spec asks a refusal to PRESERVE the record; a bare refusal preserves nothing\n'
-  elif printf '%s' "$BACK" | grep -q '"ok":true'; then ok
+  elif printf '%s' "$BACK" | grep -q '"ok":true' && printf '%s' "$BACK" | grep -qF '"text":"a body\n"'; then ok
+  elif printf '%s' "$BACK" | grep -q '"ok":true'; then
+    bad "the record reads back with another text than its author wrote — the put answered landed"
+    printf '      %s\n' "$(printf '%s' "$BACK" | tail -1 | cut -c1-240)"
   else bad "the record neither landed nor was refused legibly — it fell away unremarked"; fi
 
   # ── LEG B: THE NEGATIVE THAT MATTERS MOST ─────────────────────────────────────────────────────
@@ -1510,7 +1553,7 @@ run_title() {
     bad "a capture carrying userinfo in its BODY was refused — the check read the text, not the title slot"
     printf '      %s\n' "$(printf '%s' "$CPUT" | tail -1 | cut -c1-240)"
   else
-    CGET=$($COMPOSE exec -T lararium-a $LARES meme get "$BODY_URI" --bag lares --json 2>&1)
+    CGET=$($COMPOSE exec -T lararium-a $LARES meme get "$BODY_URI" --recipe lares --json 2>&1)
     # THREE SPEAKER-AIMS WENT IN; ALL THREE MUST READ BACK. A processor that stripped one and kept two
     # would satisfy any check that only asked whether the record survived.
     local N

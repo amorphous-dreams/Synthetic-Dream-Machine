@@ -76,23 +76,26 @@ _already_seated() {
     | grep -q '"quorumSeated":true'
 }
 
-# WHAT THE SEATED CHARTER ACTUALLY NAMES — so a boot can tell "nothing to do" from "you asked for
-# something else and I am not doing it".
+# WHO HOLDS THE SEATED CHAIRS — so a boot can tell "nothing to do" from "you asked for something else and I am
+# not doing it". A SEAT CARRIES A PRIVATE CHAIR LABEL AND NO HANDLE: the charter names each chair by its label
+# (`chair-h0`, …), so the charter alone never answers which handles this boot seated. The handles rest on the
+# personas that took the chairs, so the boot reads them there: each persona that holds a seat, by its handle,
+# in index order. (The answer's JSON rides the last line that opens with a brace; trace lines may precede it.)
 _seated_handles() {
-  node packages/lares-cli/dist/src/bin/lares.js nexus seal show --json 2>/dev/null \
-    | tr ',' '\n' | sed -n 's/.*"displayName":"\([^"]*\)".*/\1/p' | paste -sd, -
+  node packages/lares-cli/dist/src/bin/lares.js persona list --json 2>/dev/null \
+    | node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{try{const line=s.split("\n").filter((l)=>l.startsWith("{")).pop();const personas=JSON.parse(line).data.personas;process.stdout.write(personas.filter((p)=>p.seat===true).map((p)=>p.handle??"").join(","))}catch{}})'
 }
 
 if [ -n "${LAR_STAND_KAHU:-}" ] && _already_seated; then
   _seated="$(_seated_handles)"
   if [ "$_seated" = "$LAR_STAND_KAHU" ]; then
-    echo "[boot] a quorum already stands, naming these same chairs — nothing to seat"
+    echo "[boot] a quorum already stands, seated under these same handles — nothing to seat"
   else
     # A SILENT NO-OP IS THE WRONG ANSWER TO A CHANGED CONFIG. The operator edited the chair list and
     # this boot is deliberately not honouring it, because a re-seat at genesis re-derives the epoch
     # and orphans every carriage entry rooted on the PRIOR epoch. Changing a SEATED roster is what a
     # rotation is for — under the standing quorum, against a key-set pre-committed an epoch earlier.
-    echo "[boot] ⚠ the seated charter names: ${_seated}"
+    echo "[boot] ⚠ the seated chairs stand under the handles: ${_seated}"
     echo "[boot] ⚠ but LAR_STAND_KAHU asks for: ${LAR_STAND_KAHU}"
     echo "[boot] ⚠ NOT re-seating — a re-seat re-derives the genesis epoch and orphans every member."
     echo "[boot] ⚠ To change who holds a STANDING charter, rotate it: \`lares nexus seal rotate\`."
