@@ -22,6 +22,7 @@ import {
   type WikiRecipe,
 } from "@lararium/mesh";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
+import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 export interface BrowserVesselIslandPoolOptions {
   /**
@@ -66,6 +67,8 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
         awaitReady: true,
       },
       mainRepo: opts.mainRepo ?? null,
+      // The vessel's content store, as a session island's scoped view reads it: the origin's OPFS plane.
+      readContent: (cid) => readCasBlobFromOpfs(cid),
       ...(opts.onWorkerEvent ? { onWorkerEvent: opts.onWorkerEvent } : {}),
     });
   }
