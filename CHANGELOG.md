@@ -30,6 +30,18 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **Passphrase seal verbs refuse a carrier sealed under the vessel key.** The refusal names the carrier and moves no bytes.
 - **Every signature reads one strict rule.** Every Ed25519 verifier in the house calls one door: a key reads in its one canonical encoding and inside the prime-order subgroup, a signature reads canonical, and the equation takes no cofactor. A small-order key, which a lenient verifier lets anyone sign for, and a mixed-order key each refuse by name where they enter a charter seat, a guardian set, a key log, a device edge, an admit, a hosting grant or a commitment; a charter, roll or log that names one refuses whole. No reader takes its verifier from its caller.
 - **A Handle reader believes no step it did not verify.** A reader holding no owner-head resolver trusts a Handle's inception alone and answers `handle-rotation-unverified` for any later step, so a stranger's appended rotation gains nothing; a reader holding one verifies every step before any verdict. Every Handle incepts armed with its next key, and each rotation commits a fresh one. A persona head read verifies every rotation on every read.
+- **A corpus load answers without a stall.** Field values rest as immutable scalars, so a whole-corpus load lands about nine times sooner and the disk mirror follows with no long pause.
+- **Another device's save reaches an open wiki at once.** Ordinary, system and personal titles arrive without a reattach; a volatile title never arrives.
+- **A carrier's root and children land together.** The disk mirror never writes half a carrier.
+- **Removing a field someone else just edited loses no edit.** The other edit stays live and the remover's version stands as a parallel draft.
+- **A disk conflict raises one alert and one audit row.** Each standoff keeps its own key, and resolving it, moving it or ending its projection clears the alert.
+- **A refused ingest ends non-zero.** `lares ingest --apply` exits 4 when any file refused and still prints every row.
+- **Copy and move keep a record's change-id.** The corpus reader's memo follows the body.
+- **The raise door reads the leased epoch.** A raise against an earlier epoch refuses after a Nexus rekey.
+- **A command at a standing floor names the unlock.** A verb that needs a sealed row refuses and names `lares vault unlock`; with no vessel standing it asks for the custody route when it first needs one.
+- **An unreadable archive refuses the stand by name.** So does an archive of another identity.
+- **A stand presents one contact card.** The card gets minted before the stand's Archive leaves, so every later stand opens what the card promised.
+- **The joinee rite dials the hearth's own gate.** A founder that also stands a carriage relay no longer hands a joiner the relay's key.
 
 **Added**
 - **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki. Every daemon-door meme verb and MCP meme tool likewise requires one container.
@@ -56,6 +68,13 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **Disk projection reports its own pause.** A delay of a second or longer between a wiki change and the first file write prints a diagnostic with the elapsed time and lookup count.
 - **The container shims unlock after each start they perform.** With a terminal attached they run `vault unlock`; without one they name that command.
 - **Mesh scenarios name their compose project.** `MESH_PROJECT` names it, with `dreamnet-mesh` as the default, and the mesh's browser vessels read their code from the image.
+- **Every boot rests at the floor.** Nothing stored lifts it; `lares vault unlock` raises the vessel.
+- **Founding seals its archives under the vessel key.** The keyhive archive, each face's veil archive and each face's anchors rest sealed from the first write. `lares vault export` no longer exists.
+- **The house runs `@keyhive/keyhive` 0.3.0-alpha.1.** A vessel founded on an earlier Keyhive re-founds.
+- **A browser vessel keeps its keyhive Archives in its keystore.** A browser founded earlier refuses to boot until its site data gets cleared.
+- **Stores written before immutable values do not read.** Found anew; the genesis seed itself carries on unchanged.
+- **A capability layer takes a write by name alone.** The WHO board and the mesh palace refuse a bagless write.
+- **The session contract names every hand that reaches a vessel.** A tab, a CLI run, the disk watcher and a spirit's seat each open a session; a tasked spirit holds a Mask and the vessel's seat, and no key of its own.
 
 ### The shore and the oracle floor
 

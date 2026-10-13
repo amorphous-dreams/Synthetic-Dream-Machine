@@ -152,15 +152,15 @@ editor-side reuse only. matklad's Resilient-LL supplies the recovery-set/≥1-ch
 widget crashes the whole render tree. (An unknown widget degrades gracefully to `"Undefined widget"`
 text; the gap covers //throwing// widgets.)
 
-''The per-widget render boundary — designed, UNBUILT at the pinned fork commit.'' `renderChildren` and
-`refreshChildren` wrap each child call in try/catch → a throw degrades to a graded error widget in
-place, later siblings render on; `TranscludeRecursionError` re-throws (`transclude.js` handles it);
-the boundary runs OPT-IN (`$:/config/ResilientRender`, default off, so server/CI/static render keeps
-failing loudly). Fork commit `672ed9600` supplies provenance for that boundary and its spec
-(`test-resilient-render.js`); the fork commit this repository pins holds neither change. The boundary
-gives the render side of grade-on-a-gradient, the
-gradient-render-symmetry foundation, and the click-to-edit foundation (a live-edit re-render that
-throws leaves the wiki standing).
+''The parser carries the recovery; the render gap stays open.'' The fork recovers at the PARSER: an
+unmatched inline delimiter renders literally, an unclosed emphasis recovers, a block construct that
+never terminates gets reported, each recovery stands visible in the parse tree, and the
+`parse-diagnostics` filter reads them out. A per-widget render boundary (a try/catch around each child's
+`render()` and `refresh()`, opt-in by a config flag) stands WITHDRAWN: its author backed it out in
+favour of the parser recovery, and no branch of the fork carries it. A widget that throws at render
+still takes its render tree down. Whoever closes that gap owes three answers the withdrawn design left
+open: partial DOM a child inserted before it threw, a failure inside the error path itself, and the
+cost of the check on a hot render.
 
 ''ERROR-SURFACING — TWO channels (operator: TW5 messages the user via `$:/alert` + system tags):''
 (1) IN-PLACE — the inline `tc-error` span at the failure site (the gradient, in-render); (2) USER-
@@ -168,7 +168,7 @@ NOTIFICATION — a `$:/tags/Alert` tiddler so the user //knows// a degradation o
 dismissible alert, same channel as the reboot-alert shore). CAVEAT: NEVER raise `$:/alert` from inside
 `renderChildren` (mutating the wiki during render risks a re-render loop) — collect render-errors
 in-render, raise the alert OUT-of-render (a hook/sweep, eventual-send), per the reboot-alert discipline.
-Both channels ride with the render boundary: UNBUILT.
+Both channels stand UNBUILT, and no builder holds them.
 
 <<~/ahu>>
 
@@ -425,6 +425,6 @@ the grain a write actually lands in.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E98MIL88-Uzru3rUTUc0XLCXsJetxIVdOmG72nGxjtc
+<<^ code="&#x0003;">>ni:///sha-256;nQoiwFmLx-aJBAP4X3adkIXEJb2Y8aFuXvfCWJZGmN8
 
 <<^ code="&#x0004;" -> to="?">>
