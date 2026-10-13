@@ -9,11 +9,18 @@
  *   pack.json                  two foreign-titled tiddlers
  *
  *   ENTER   server: the wiki folder's `tiddlers/` (`$tw.loadTiddlersFromPath` reads them at boot)
- *           island: `lares ingest --source <dir> --to lar:///ha.ka.ba/bags/lares --apply --yes`
+ *           island: `lares ingest --source <dir> --to lar:///ha.ka.ba/bags/lares --apply --yes`, from a
+ *                   holding directory BESIDE the bag's mirror (`<root>/bags/parity-in/…`)
  *   LEAVE   server: `tiddlywiki --savewikifolder` — the same `generateTiddlerFileInfo` +
  *                   `saveTiddlerToFileSync` law the filesystem adaptor writes through, under a
  *                   real `$:/config/FileSystemPaths` carrying the loci rule
- *           island: the projector into `<root>/bags/lares/…`
+ *           island: the projector into `<root>/bags/lares/…`, where no file stood
+ *
+ * THE SOURCE ENTERS BESIDE THE MIRROR, NEVER INSIDE IT. A projection of an unchanged carrier writes
+ * nothing: a file a hand laid in the mirror says what its records say, so the island leaves its bytes as
+ * they stand (`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`). This witness measures what
+ * the island WRITES, so the island's door reads the source from a holding directory of its own and the
+ * projector lays every file fresh under the mirror.
  *
  * The two trees agree file-for-file where the house rides TW5's law; where they DISAGREE the
  * finding is named here with file:line, cured on the house side when the house strayed, held as a
@@ -47,7 +54,7 @@ const PNG_CID = createHash("sha256").update(PNG_BYTES).digest("hex");
 const PNG_NI  = `ni:///sha-256;${Buffer.from(PNG_CID, "hex").toString("base64url")}`;
 
 /** The source files, byte-identical for both doors. The `.meta` fields ride UNSORTED on purpose: TW5's
- *  field serializer sorts them, so a sorted sidecar on disk afterwards proves the door WROTE it. */
+ *  field serializer sorts them, so a sorted sidecar under the mirror afterwards proves the door WROTE it. */
 const SOURCE: Record<string, string | Buffer> = {
   "note.md":        "# a parity note\n\nprose that projects to `.md`, fields to `.meta`.\n",
   "note.md.meta":   `type: text/markdown\ntitle: ${NOTE_URI}\ntags: parity\n`,
@@ -94,7 +101,8 @@ function laySource(dir: string): void {
 
 let lar: LarInstance;
 let fork: ForkServer;
-let islandDir = "";     // <root>/bags/lares/ha.ka.ba/lares/parity — source AND projection
+let islandDir = "";     // <root>/bags/lares/ha.ka.ba/lares/parity — the PROJECTION (the island wrote every file here)
+let islandIn = "";      // <root>/bags/parity-in/ha.ka.ba/lares/parity — the SOURCE the island's door read
 let serverOut = "";     // <fork root>/out/tiddlers/ha.ka.ba/lares/parity
 let serverPaths: Record<string, string> = {};
 let islandRepack: { count: number; text: string } = { count: 0, text: "" };
@@ -120,10 +128,11 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
     // ── the island door ───────────────────────────────────────────────────────────────────────
     lar = await targetInstance();
     islandDir = join(lar.root, "bags/lares", REL_DIR);
-    laySource(islandDir);
-    const r = await lar.cli(["ingest", "--source", islandDir, "--to", BAG_URI, "--apply", "--yes", "--json"]);
+    islandIn = join(lar.root, "bags/parity-in", REL_DIR);
+    laySource(islandIn);
+    const r = await lar.cli(["ingest", "--source", islandIn, "--to", BAG_URI, "--apply", "--yes", "--json"]);
     if (r.json?.["ok"] !== true) throw new Error(`ingest failed: ${said(r)}`);
-    // Settle: the projector rewrites the sidecar in TW5's sorted field order once the record lands.
+    // Settle: the projector lays the sidecar under the mirror in TW5's sorted field order once the record lands.
     const deadline = Date.now() + 90_000;
     while (Date.now() < deadline) {
       const meta = existsSync(join(islandDir, "note.md.meta")) ? readFileSync(join(islandDir, "note.md.meta"), "utf8") : "";
@@ -132,7 +141,7 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
       await sleep(500);
     }
     await sleep(3_000);
-    const repack = await lar.cli(["act", "REPACK", "--source", join(islandDir, "pack.json"), "--from", BAG_URI, "--out", join(lar.root, "repack.json"), "--json"]);
+    const repack = await lar.cli(["act", "REPACK", "--source", join(islandIn, "pack.json"), "--from", BAG_URI, "--out", join(lar.root, "repack.json"), "--json"]);
     if (repack.json?.["ok"] === true) {
       islandRepack = { count: Number((repack.json["data"] as Record<string, unknown>)["count"]), text: readFileSync(join(lar.root, "repack.json"), "utf8") };
     } else {
@@ -145,11 +154,18 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
     if (lar) await lar.stop();
   });
 
-  test("★ the island WROTE the sidecar back (sorted fields) — the projection is measured, not assumed ★", () => {
+  test("★ the island WROTE the sidecar (sorted fields) — the projection is measured, not assumed ★", () => {
     const meta = readFileSync(join(islandDir, "note.md.meta"), "utf8");
     const keys = Object.keys(fieldsOf(meta));
-    expect(keys, `the projector never rewrote note.md.meta:\n${meta}`).toEqual([...keys].sort());
+    expect(keys, `the projector never wrote note.md.meta:\n${meta}`).toEqual([...keys].sort());
     expect(keys[0], "the source laid `type` first").not.toBe("type");
+  });
+
+  test("★ the source the island's door read stands as the hand laid it: the island wrote nothing back into it ★", () => {
+    for (const [name, bytes] of Object.entries(SOURCE)) {
+      expect(readFileSync(join(islandIn, name)).equals(Buffer.from(bytes)), `${name} moved under the source directory`).toBe(true);
+    }
+    expect(walk(islandIn).map((f) => relative(islandIn, f)).sort()).toEqual(Object.keys(SOURCE).sort());
   });
 
   test("★ note.md: identical bytes on both trees ★", () => {
@@ -269,13 +285,15 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
       expect(existsSync(join(serverOut, "../../..", `${t}.tid`)), `server: tiddlers/${t}.tid`).toBe(true);
       expect(walk(join(lar.root, "bags/lares")).some((f) => f.endsWith(`${t}.tid`)), `island: ${t}.tid must not exist`).toBe(false);
     }
-    expect(existsSync(join(islandDir, "pack.json"))).toBe(true);
+    // The pack owns no file under the mirror: its members ride records, and REPACK re-renders it whole.
+    expect(existsSync(join(islandDir, "pack.json")), "a pack never projects back").toBe(false);
+    expect(islandRepack.count).toBe(PACK_MEMBERS.length);
   });
 
   test("file-for-file: under the loci path the trees agree, minus the one named divergence (the pack)", () => {
     const serverFiles = walk(serverOut).map((f) => relative(serverOut, f)).sort();
     const islandFiles = walk(islandDir).map((f) => relative(islandDir, f)).sort();
     expect(serverFiles).toEqual(["note.md", "note.md.meta", "photo.png", "photo.png.meta"]);
-    expect(islandFiles).toEqual(["note.md", "note.md.meta", "pack.json", "photo.png", "photo.png.meta"]);
+    expect(islandFiles).toEqual(["note.md", "note.md.meta", "photo.png", "photo.png.meta"]);
   });
 });
