@@ -48,13 +48,13 @@ export interface SealedPlaneRegistry {
   /** The oracle the sharePolicy holds — reads the CURRENT sealed set (live; reflects post-open seals). */
   readonly seal: PlaneSeal;
   /**
-   * Record a docId as sealed UNDER a named secret — the SOLE caller is the encrypt-on-CAS installer, always
-   * AFTER a successful seal. The name is the SIDECAR: the Nexus AID and the charter epoch CID whose convergence
-   * secret sealed the body, so a reader looks up the matching keyring secret. The name NEVER enters the cid (the
-   * cid stays pure `BLAKE3(ciphertext)`, an immutable content-address); it rides beside the sealed set.
+   * Record a docId as sealed, WITH ITS SCOPE — the SOLE caller is the seal installer, always AFTER a successful
+   * seal. The scope is the SIDECAR: the Nexus AID the sealed block belongs to and the charter epoch CID that
+   * scope stood at, which the carry lane's own gates read. It names no key: a body seals under its bag's content
+   * key. The scope NEVER enters the cid (the cid stays `blake3:` over the ciphertext); it rides beside the sealed set.
    */
   register(documentId: DocumentId, sealedUnder: NexusEpochName): void;
-  /** The scoped name a sealed body sealed under, or `undefined` for an unsealed / unknown doc (fail-closed read). */
+  /** The scope a sealed body registered under, or `undefined` for an unsealed / unknown doc (fail-closed read). */
   epochFor(documentId: DocumentId): NexusEpochName | undefined;
   /** How many sealed docIds stand (audit / test). */
   readonly size: number;

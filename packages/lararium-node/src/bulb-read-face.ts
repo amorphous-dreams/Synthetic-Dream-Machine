@@ -37,7 +37,7 @@ import {
   type CasReferenceEntry, type CapTier, type LarDoc,
 } from "@lararium/mesh";
 import { plainRecord } from "@lararium/mesh";
-import { readCasBlobFromFs } from "./node-cas.js";
+import { readVerifiedCasBlobFromFs } from "./node-cas.js";
 import { buildBulb, type BulbArtifact } from "./bulb.js";
 import { ARRIVAL_WELL_KNOWN_ROUTE, WELL_KNOWN_LAR_ROUTE_KEY } from "./pronaos-adapter.js";
 import type { OracleReadFace } from "./oracle-read-face.js";
@@ -153,7 +153,8 @@ export function publicCasShore(opts: {
   readonly realmReferences?: () => Promise<Iterable<RealmShoreBook>> | Iterable<RealmShoreBook>;
 }): PublicCasShore {
   return {
-    read: (cid) => readCasBlobFromFs(cid, opts.casDir),
+    // Bytes altered at rest never leave: a blob that fails its own address reads as a blob this shore lacks.
+    read: (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     isPublic: async (cid) => {
       const own   = [...(await opts.references())];
       const books = opts.realmReferences ? [...(await opts.realmReferences())] : [];

@@ -52,17 +52,22 @@ export interface WalkRecord {
   readonly wallet?:  ReadonlyArray<{ readonly epoch: string; readonly token: InviteToken }>;
   /** A blinded batch sent and not yet finalized. */
   readonly pending?: PendingMint;
-  /** The walker's own receipts: one per document this hearth carries for it — its address and its read-cap. */
+  /** The walker's own receipts: one per document this hearth carries for it — its address, its reference and its key. */
   readonly carried?: ReadonlyArray<CarryReceipt>;
   /** The hearth's notice stands: its carriage for this walker is marked for reclaim under pressure. */
   readonly atRisk?:  boolean;
 }
 
-/** One carried document's receipt: what the walker needs to find it again and open it. */
+/** One carried document's receipt: what the walker needs to find it again and open it. The walker writes it
+ *  with its own hands before the sealed value leaves, so the receipt authorizes its own address. */
 export interface CarryReceipt {
-  readonly cid:     string;
-  /** Hex read-cap — derived from the walker's own carry secret and the document; the hearth never sees it. */
-  readonly readCap: string;
+  /** The sealed value's address: `blake3:` over its ciphertext. */
+  readonly cid: string;
+  /** The document's logical reference: lower-case hex SHA-256 of its plaintext. */
+  readonly ref: string;
+  /** Hex of this document's own key, which the walker's carry secret and the document's digest derive; the
+   *  hearth never sees it, and it opens no other document. */
+  readonly key: string;
 }
 
 /** Where a walker keeps its records — IndexedDB in a browser, a file on a node. Keyed by the hearth's gate key. */

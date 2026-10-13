@@ -87,13 +87,15 @@ WHO-axis recurring at the blob layer — carries the ruling law: ''the publicity
 * ''Public → `crossroads`.'' A ''plaintext `ni://` multihash'' (RFC-6920): a stranger
   fetches AND verifies, foreign-legible, federates at ≥meme-rating, archival to 500 years.
   No confirmation-oracle risk — the content stands public by design.
-* ''Private → `@catalog`.'' A ''ciphertext cid'', capability-gated. Here the ciphertext
-  address earns its keep: `cid = BLAKE3(ciphertext)` lets an untrusted holder verify, pin,
-  and repair ''blind'' — never touching the key (Tahoe ''verify-cap ⊥ read-cap''; repair
-  needs only ciphertext, not plaintext). The key = hash(per-operator convergence-secret +
-  plaintext) (Tahoe) dedups WITHIN one operator's private tier, zero cross-operator
-  confirmation-of-file leak — beating both global-convergent (CFA/LRI leak) and Peergos
-  random-key (no dedup).
+* ''Private → `@catalog`.'' A ''sealed value'' under a ciphertext address, capability-gated
+  (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>). The address hashes the
+  ciphertext, `blake3:` over every sealed byte, so an untrusted holder verifies, pins and
+  repairs ''blind'', never touching a key (Tahoe ''verify-cap ⊥ read-cap''). The body takes
+  ''randomized authenticated encryption'' under its bag's versioned content key, bound to
+  the bag, the key version, the role and the logical reference. Equal bodies share no
+  address: convergent sealing leaves the private tier, since any insider could confirm a
+  guessed body against a held address and the deduplication it bought ran small. The
+  private tier keeps the ciphertext address, the blind verify and the capability gate.
 * ''System → `@oracle`.'' The genesis seed places system rows and blob descriptors in the `@oracle`
   island, and the CAS supplies the bytes by CID. The floor's frozen seed-derived address and its
   no-writer rule stand owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance">>).
@@ -136,7 +138,8 @@ URL. This resolver keeps them ''three orthogonal gates'', none collapsing into a
 * ''Gate 2 — may-this-identity-resolve-THIS-cid (content-authz).'' A `#has` cap scoped
   `{peer × address}`, validated UCAN-shape (aud==next-iss → sub=holder) against a grow-only
   revocation-CID set (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>).
-* ''Gate 3 — may-they-read (decrypt).'' CGKA/BeeKEM decrypt, ''held SEPARATE'' — the node
+* ''Gate 3 — may-they-read (decrypt).'' The bag's content key, delivered through a lockbox
+  to the bag's key group, ''held SEPARATE'' — the node
   routes and verifies ciphertext and ''never decrypts''. That IS the
   MLS-Delivery-Service-never-decryptor keel, the node-never-Auth-root law
   (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh#/contract-key-agreement">>).
@@ -213,10 +216,12 @@ verify-only public read; ''forkable'' — the fork guards.
 
 The skinny tiddler carries a ''stable logical handle'' (cap/name) plus a
 ''provider-locality hint'' — never the raw cid as identity. It resolves through an
-''indirection map (logical name → current cid)'' so a re-key survives (WNFS
-private-forest). That map reads as small mutable metadata → it lives in the ''Automerge''
-''doc'' (the docs/blobs split applied to the map itself); only the bytes ride the `cid/`
-tier.
+''indirection map (logical name → current address)'' so a key roll survives (WNFS
+private-forest). In the private tier the pointer names the body's plaintext digest, and the
+bag's signed manifests carry the map: an entry locator, keyed under the content key, leads a
+reader from that digest to the sealed value's address, and a holder of no key reads an opaque
+value (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records">>). Only the
+bytes ride the `cid/` tier.
 
 <<~/ahu>>
 
@@ -229,8 +234,10 @@ Revocation runs two modes, matching `convergent-mesh`'s epoch-lease-vs-convergen
 
 * ''authz-revoke'' — drop the `#has` cap + drop the retention tag. Cheap,
   forward-immediate.
-* ''content-revoke'' — re-key → new ciphertext → new cid → indirection-map update.
-  Forward-only.
+* ''content-revoke'' — the bag's content key rolls to a successor version at the causal
+  removal act; later writes seal under it, and earlier sealed values keep their bytes and
+  their addresses. Forward-only
+  (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/epochs">>).
 
 ''Already-fetched bytes stand UNRECALLABLE by construction.'' The design assumes it:
 deletion across caches ''cannot exist'' in no-global-now, so the model never pretends to
@@ -270,10 +277,10 @@ Four choices ride ahead of the build, each holding for the operator:
 * ''① sha256 → BLAKE3 — SETTLED via self-describing multihash.'' The algorithm prefix
   carries the migration in-band (old ids stay parseable, new bodies hash `BLAKE3(ciphertext)`
   for range-verify); #46 closed it.
-* ''② Convergence-secret custody.'' The per-operator secret must persist AND survive a
-  device-add — it rhymes with the recovery keel
-  (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>); re-derivable on
-  re-admission from operator key material?
+* ''② Private body keys — SETTLED.'' A private body seals under its bag's random, versioned
+  content key, and a lockbox carries that key to the bag's readers
+  (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). No convergence secret
+  derives a body key.
 * ''③ Indirection-map placement.'' The logical-name→cid map likely rides the Automerge doc
   (small ordered causal metadata) — the docs/blobs split applied to the map.
 * ''④ Bilateral pin economics.'' Island A pins for B under a revocable cap — what does B
@@ -295,10 +302,11 @@ priors decide them, and wave-3 may reopen any.
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/base-doc">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZpU1EzS8bDmG-RJwtfjhJVEvlguWyfj3si4jVE3rJKs
+<<^ code="&#x0003;">>ni:///sha-256;MpGtHrrV9FRURxemU8N8hEMx6tz6fOhb9EAdlSyvFRY
 
 <<^ code="&#x0004;" -> to="?">>

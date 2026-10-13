@@ -28,7 +28,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  sealBodyOnCas, openBodyOnCas, walkCarrySecret, carryRecordKey, hex, genesisSealEpochCid, deriveNexusScopedKey,
+  sealPrivateBody, openPrivateBody, authorizeAddress, readContentKey, ciphertextCid, walkCarriageBagId, walkCarryDocumentKey, sha256HexBytesSync,
+  walkCarrySecret, carryRecordKey, hex, genesisSealEpochCid, deriveNexusScopedKey,
   hexToBytes, PERSONA_GLAMOUR_CONTEXT, mintHostToken, redeemClaim, signPresented, utf8Bytes,
   HOSTING_NOTICE_SESSION_KIND, type KahuQuorumSeats, type UnsignedPresented,
 } from "@lararium/mesh";
@@ -47,10 +48,11 @@ afterEach(() => { rmSync(storageDir, { recursive: true, force: true }); });
 const keyOf = (leaf: string) => carryRecordKey(HEARTH, AID, leaf);
 const L = (c: string) => c.repeat(64);
 const bytes = (n: number, fill = 7) => new Uint8Array(n).fill(fill);
-/** A distinct ciphertext of `n` bytes and its address (the hearth carries only what it can address). */
+/** Distinct bytes of length `n` and their address. The hearth holds no key and reads no format: it carries
+ *  whatever it can address, so opaque bytes stand in for a sealed value wherever only size and address matter. */
 function blob(n: number, fill: number): { cid: string; ciphertext: Uint8Array } {
-  const s = sealBodyOnCas(bytes(n, fill), new Uint8Array(32).fill(fill));
-  return { cid: s.cid, ciphertext: s.ciphertext };
+  const ciphertext = bytes(n, fill);
+  return { cid: ciphertextCid(ciphertext), ciphertext };
 }
 function put(key: string, depth: number, n: number, fill: number, limits: CarryLimits) {
   return depositCarried({ storageDir, nexusAid: AID, key, depth, ...blob(n, fill), limits });
@@ -66,17 +68,29 @@ function everything(): string {
 describe("carry ⊥ read", () => {
   test("RED: the hearth holds no plaintext and nothing it holds opens the bytes; CONTROL: the receipt does", () => {
     const plaintext = utf8Bytes("the walker's own private notes — never the hearth's to read");
-    const sealed = sealBodyOnCas(plaintext, walkCarrySecret(WALKER, AID));
+    const bagId = walkCarriageBagId(AID, sha256HexBytesSync(plaintext));
+    const walkerKey = readContentKey(walkCarryDocumentKey(WALKER, AID, sha256HexBytesSync(plaintext)))!;
+    const r = sealPrivateBody(plaintext, { bagId, key: walkerKey });
+    if (!("body" in r)) throw new Error(r.refusal);
+    const sealed = r.body;
     expect(depositCarried({ storageDir, nexusAid: AID, key: keyOf(L("1")), depth: 1, cid: sealed.cid, ciphertext: sealed.ciphertext })).toBe("held");
     const stored = fetchCarried(storageDir, AID, keyOf(L("1")), sealed.cid)!;
     expect(everything()).not.toContain("private notes");
+    const openWith = (key: Uint8Array): string => {
+      const opened = openPrivateBody({ ciphertext: stored, under: { bagId, key: readContentKey(key)! }, ref: sealed.ref, authorized: authorizeAddress(sealed.cid, "own-receipt")! });
+      return "plaintext" in opened ? hex(opened.plaintext) : `REFUSED ${opened.refusal}`;
+    };
     // What the hearth holds — its own leaf seed, the record key, and anything derived the walker's way from them —
-    // neither opens the bytes nor even CONFIRMS a guessed plaintext (the seal under it addresses elsewhere).
+    // opens nothing, by name. And a guessed plaintext CONFIRMS nothing: every seal draws fresh, so even the
+    // walker's own key seals the same document to another address.
     for (const guess of [HEARTH, walkCarrySecret(HEARTH, AID), hexToBytes(keyOf(L("1"))), walkCarrySecret(hexToBytes(keyOf(L("1"))), AID)]) {
-      expect(hex(openBodyOnCas(stored, guess))).not.toBe(hex(plaintext));
-      expect(sealBodyOnCas(plaintext, guess).cid).not.toBe(sealed.cid);
+      expect(openWith(guess)).toBe("REFUSED version-mismatch");
+      const again = sealPrivateBody(plaintext, { bagId, key: readContentKey(guess)! });
+      expect("body" in again && again.body.cid).not.toBe(sealed.cid);
     }
-    expect(hex(openBodyOnCas(stored, sealed.readCap))).toBe(hex(plaintext));           // CONTROL
+    const twin = sealPrivateBody(plaintext, { bagId, key: walkerKey });
+    expect("body" in twin && twin.body.cid).not.toBe(sealed.cid);
+    expect(openWith(walkerKey)).toBe(hex(plaintext));                                   // CONTROL
   });
 });
 

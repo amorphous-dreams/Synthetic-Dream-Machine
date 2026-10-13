@@ -1,22 +1,27 @@
 /**
- * nexus-convergence-keyring.test.ts — one Nexus's convergence secrets, named by (Nexus AID, epoch CID), and the
- * seal proofs against the REAL seal primitive (`sealBodyOnCas` / `openBodyOnCas`).
+ * nexus-convergence-keyring.test.ts — one Nexus's convergence secrets, named by (Nexus AID, epoch CID), the keyed
+ * digest `readCapForEpoch` derives from one, and the law that no sealed value derives from any.
  *
  *   K1  `current()` answers the secret the charter HEAD names, whatever order the entries arrived in.
  *                                                        control: with the other epoch as head it answers that one
- *   K2  same content + same secret → same cid; a different epoch's secret → a different cid.
- *   K3  a body sealed under each epoch opens with that epoch's re-derived read-cap.
+ *   K2  same content + same secret → same keyed digest; a different epoch's secret → a different digest.
+ *   K3  `readCapForEpoch` answers the keyed digest of the body under the epoch it names.
  *   K4  a member missing an epoch's secret re-derives nothing for it (a throw that names the epoch).
  *   K5  a head that names no held secret, and a charter that names no head, each fail closed at `current()`.
  *                                                        control: the held epochs still answer `forEpoch`
  *   K6  a mis-sized secret, one epoch named twice, an entry for ANOTHER Nexus and a malformed name each refuse.
- *   K7  read-all: a member handed both epochs reads a body sealed before it joined.
+ *   K7  a member handed both epochs re-derives the digest of an epoch that stood before it joined.
  *   K8  no counter names a secret: the same epoch CID under two Nexus AIDs names two secrets, and a keyring for one
  *       Nexus never answers the other's.
+ *   K9  no sealed value derives from a convergence secret: a private body seals under its bag's content key, at
+ *       random, and a holder of every convergence secret opens nothing with one.
+ *                                                        control: the bag's own content key opens it
  */
 import { describe, test, expect } from "vitest";
 import { randomBytes } from "node:crypto";
-import { sealBodyOnCas, openBodyOnCas, CONVERGENCE_SECRET_LEN } from "@lararium/mesh";
+import {
+  sealPrivateBody, openPrivateBody, authorizeAddress, readContentKey, deriveMessageKey, hex, CONVERGENCE_SECRET_LEN,
+} from "@lararium/mesh";
 import {
   mintNexusSecret, makeNexusConvergenceKeyring, readCapForEpoch, epochNameKey,
   type NexusEpochSecret,
@@ -46,20 +51,16 @@ describe("the keyring names a secret by Nexus and epoch", () => {
     expect([...atGenesis.current().secret]).toEqual([...e0.secret]);
   });
 
-  test("K2 same content + same secret → same cid; another epoch's secret → another cid", () => {
-    const a = sealBodyOnCas(body, full.forEpoch(ROLLED)!);
-    const b = sealBodyOnCas(body, full.forEpoch(ROLLED)!);
-    expect(b.cid).toBe(a.cid);
-    expect(sealBodyOnCas(body, full.forEpoch(GENESIS)!).cid).not.toBe(a.cid);
+  test("K2 same content + same secret → same keyed digest; another epoch's secret → another digest", () => {
+    const a = readCapForEpoch(body, ROLLED, full);
+    expect(hex(readCapForEpoch(body, ROLLED, full))).toBe(hex(a));
+    expect(hex(readCapForEpoch(body, GENESIS, full))).not.toBe(hex(a));
+    expect(hex(readCapForEpoch(enc("another body"), ROLLED, full))).not.toBe(hex(a));
   });
 
-  test("K3 a body sealed under each epoch opens with that epoch's re-derived read-cap", () => {
-    const s0 = sealBodyOnCas(body, full.forEpoch(GENESIS)!);
-    const s1 = sealBodyOnCas(body, full.forEpoch(ROLLED)!);
-    expect(text(openBodyOnCas(s0.ciphertext, s0.readCap))).toBe(text(body));
-    expect(text(openBodyOnCas(s1.ciphertext, s1.readCap))).toBe(text(body));
-    expect(readCapForEpoch(body, GENESIS, full)).toEqual(s0.readCap);
-    expect(readCapForEpoch(body, ROLLED, full)).toEqual(s1.readCap);
+  test("K3 readCapForEpoch answers the keyed digest of the body under the epoch it names", () => {
+    expect(hex(readCapForEpoch(body, GENESIS, full))).toBe(hex(deriveMessageKey(body, e0.secret)));
+    expect(hex(readCapForEpoch(body, ROLLED, full))).toBe(hex(deriveMessageKey(body, e1.secret)));
   });
 });
 
@@ -95,10 +96,9 @@ describe("fail-closed", () => {
 });
 
 describe("read-all and the scoped name", () => {
-  test("K7 a member handed both epochs reads a body sealed before it joined", () => {
-    const sealedOld = sealBodyOnCas(body, e0.secret);
+  test("K7 a member handed both epochs re-derives the digest of an epoch that stood before it joined", () => {
     const fresh = makeNexusConvergenceKeyring({ nexusAid: AID, headEpochCid: ROLLED, entries: [e0, e1] });
-    expect(text(openBodyOnCas(sealedOld.ciphertext, readCapForEpoch(body, GENESIS, fresh)))).toBe(text(body));
+    expect(hex(readCapForEpoch(body, GENESIS, fresh))).toBe(hex(deriveMessageKey(body, e0.secret)));
   });
 
   test("K8 one epoch CID under two Nexus AIDs names two secrets", () => {
@@ -107,6 +107,30 @@ describe("read-all and the scoped name", () => {
     expect(epochNameKey(a)).not.toBe(epochNameKey(b));
     expect(epochNameKey({ nexusAid: AID.toUpperCase(), epochCid: ROLLED.toUpperCase() })).toBe(epochNameKey(a));   // both parts fold case
     const other = makeNexusConvergenceKeyring({ nexusAid: OTHER_AID, headEpochCid: ROLLED, entries: [b] });
-    expect(sealBodyOnCas(body, other.current().secret).cid).not.toBe(sealBodyOnCas(body, a.secret).cid);
+    expect(hex(deriveMessageKey(body, other.current().secret))).not.toBe(hex(deriveMessageKey(body, a.secret)));
+  });
+});
+
+describe("no sealed value derives from a convergence secret", () => {
+  const BAG = "lar:///ha.ka.ba/@test/bags/ledger";
+  const under = { bagId: BAG, key: readContentKey(new Uint8Array(randomBytes(32)))! };
+
+  test("K9 a holder of every convergence secret opens no private body with one", () => {
+    const sealed = sealPrivateBody(body, under);
+    if (!("body" in sealed)) throw new Error(sealed.refusal);
+    const { cid, ciphertext, ref } = sealed.body;
+    const authorized = authorizeAddress(cid, "own-receipt")!;
+    // Each secret the keyring holds, and each keyed digest it derives, tried as the bag's key.
+    const candidates = [e0.secret, e1.secret, readCapForEpoch(body, GENESIS, full), readCapForEpoch(body, ROLLED, full)];
+    for (const candidate of candidates) {
+      const opened = openPrivateBody({ ciphertext, under: { bagId: BAG, key: readContentKey(candidate)! }, ref, authorized });
+      expect(opened).toEqual({ refusal: "version-mismatch" });
+    }
+    // The same body seals to another address each time: no secret confirms a guessed body against a held address.
+    const again = sealPrivateBody(body, under);
+    expect("body" in again && again.body.cid).not.toBe(cid);
+    // control: the bag's own content key opens it
+    const opened = openPrivateBody({ ciphertext, under, ref, authorized });
+    expect("plaintext" in opened && text(opened.plaintext)).toBe(text(body));
   });
 });

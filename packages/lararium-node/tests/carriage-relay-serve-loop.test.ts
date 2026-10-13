@@ -6,7 +6,7 @@
  *   · a HOLDER hearth runs `startCarriageServeLoop` (the B3 close): it dials the carriage relay and auto-answers
  *     want-blocks on a poll interval — no hand-driven serve turn, the running loop carries the body,
  *   · a MEMBER hearth (its own authenticated channel) fetches the sealed cid: it carries the ciphertext, re-verifies
- *     BLAKE3(ciphertext)==cid SECRET-FREE, and reads the plaintext with the per-body read-cap (carry ⊥ read),
+ *     BLAKE3(ciphertext)==cid SECRET-FREE, and reads the plaintext with the bag content key (carry ⊥ read),
  *   · a STRANGER hearth draws BYTE-IDENTICAL Mu — the same bytes a member draws for a not-held cid (denial ≡ satiety),
  *   · REVERT-VERIFY: flip the ONE membership input and the member's read collapses to Mu — a pass hangs on the gate,
  *   · INERT: the vessel's `url ? startCarriageServeLoop(...) : null` gate opens EXACTLY one socket when configured
@@ -24,7 +24,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { WebSocketServer, type WebSocket } from "ws";
 import {
-  DeterministicFederationGate, openBodyOnCas, verifyCiphertextCid, utf8Bytes, hex,
+  DeterministicFederationGate, verifyCiphertextCid, utf8Bytes, hex,
   type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
@@ -35,7 +35,7 @@ import {
 import { AuthenticatedWSMembershipChannel } from "../src/authenticated-membership-relay.js";
 import { startCarriageRelay, type CarriageRelay } from "../src/carriage-relay.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "../src/carriage-serve-loop.js";
-import { membershipOf, antigenOf, bytesFromPayload, freshTestKeyring } from "./cas-test-setup.js";
+import { membershipOf, antigenOf, bytesFromPayload, freshTestBodyKey, TEST_SCOPE, openAsMember } from "./cas-test-setup.js";
 
 const BODY = utf8Bytes("a family body one hearth seals and another carries over the live carriage");
 const pubOf = (seed: Uint8Array): Promise<string> => ed.getPublicKeyAsync(seed).then(hex);
@@ -74,13 +74,13 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
   });
 
   /** Seal a body cad on a holder's cadDir + return the installed handle (cid / docId / per-body read-cap). */
-  function sealBody(): { registry: ReturnType<typeof makeSealedPlaneRegistry>; cadDir: string; installed: ReturnType<typeof sealCarrierForFederation> } {
+  function sealBody(): { registry: ReturnType<typeof makeSealedPlaneRegistry>; cadDir: string; installed: ReturnType<typeof sealCarrierForFederation>; under: ReturnType<typeof freshTestBodyKey> } {
     const storageDir = mkDir("store");
     const registry = makeSealedPlaneRegistry();
-    const keyring = freshTestKeyring();
+    const under = freshTestBodyKey();
     const cadDir = cadSealDir(storageDir);
-    const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, keyring });
-    return { registry, cadDir, installed };
+    const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, under, scope: TEST_SCOPE });
+    return { registry, cadDir, installed, under };
   }
 
   test("a MEMBER carries + reads a sealed body over the running serve-loop; a STRANGER draws byte-identical Mu", async () => {
@@ -89,7 +89,7 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     const strangerSeed = new Uint8Array(32).fill(3);
     const [holderKey, memberKey, strangerKey] = await Promise.all([pubOf(holderSeed), pubOf(memberSeed), pubOf(strangerSeed)]);
 
-    const { registry, cadDir, installed } = sealBody();
+    const { registry, cadDir, installed, under } = sealBody();
     const deps: CasWireServerDeps = {
       cadDir, seal: registry.seal,
       membership: membershipOf([memberKey]),   // the ONE gate input this test also reverts, below
@@ -111,13 +111,13 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     const strangerCh = await AuthenticatedWSMembershipChannel.connect(url, strangerSeed);
     channels.push(memberCh, strangerCh);
 
-    // ── MEMBER: carries the ciphertext, re-verifies BLAKE3==cid secret-free, reads with the per-body read-cap. ──
+    // ── MEMBER: carries the ciphertext, re-verifies BLAKE3==cid secret-free, reads with the bag content key. ──
     const memberResp = await fetchOverCarriage({ channel: memberCh, requester: memberKey, holderAddr: holderKey, cid: installed.cid });
     expect(memberResp?.kind).toBe(CAS_BLOCK);
     const ciphertext = bytesFromPayload(memberResp!);
     expect(verifyCiphertextCid(ciphertext, installed.cid)).toBe(true);             // the requester re-verifies, secret-free
     expect([...ciphertext]).not.toEqual([...BODY]);                                // carried bytes are CIPHERTEXT (carry)
-    expect([...openBodyOnCas(ciphertext, installed.readCap)]).toEqual([...BODY]);  // reads with the read-cap (read)
+    expect(openAsMember(ciphertext, installed, under)).toEqual(BODY);  // opens with the bag key and pointer digest
 
     // ── STRANGER: draws the void — byte-identical to satiety (a member asking for an unheld cid). ──
     const strangerResp = await fetchOverCarriage({ channel: strangerCh, requester: strangerKey, holderAddr: holderKey, cid: installed.cid });
@@ -133,7 +133,7 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     const holderSeed = new Uint8Array(32).fill(4);
     const memberSeed = new Uint8Array(32).fill(5);
     const [holderKey, memberKey] = await Promise.all([pubOf(holderSeed), pubOf(memberSeed)]);
-    const { registry, cadDir, installed } = sealBody();
+    const { registry, cadDir, installed, under } = sealBody();
 
     // The BYPASSED gate: membership = [] — the member is no longer in the member set (the flip the revert-verify wants).
     const bypassedDeps: CasWireServerDeps = {
@@ -221,7 +221,7 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     const holderSeed = new Uint8Array(32).fill(7);
     const memberSeed = new Uint8Array(32).fill(8);
     const [holderKey, memberKey] = await Promise.all([pubOf(holderSeed), pubOf(memberSeed)]);
-    const { registry, cadDir, installed } = sealBody();
+    const { registry, cadDir, installed, under } = sealBody();
     const deps: CasWireServerDeps = {
       cadDir, seal: registry.seal,
       membership: membershipOf([memberKey]), antigen: antigenOf([]),

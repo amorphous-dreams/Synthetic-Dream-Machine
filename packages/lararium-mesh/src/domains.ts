@@ -149,6 +149,9 @@ export const HOSTING_INTRODUCTION_DOMAIN = mint("hosting-introduction");
 /** A walker's own SEAL secret for the documents a hearth carries for it — derived from the walker's leaf in the
  *  Nexus, so the read stays with the walker and the hearth carries ciphertext it can never open. */
 export const WALK_CARRY_SEAL_INFO = mint("walk-carry-seal");
+/** The HKDF `info` ONE carried document's key derives under, from the walker's carry secret and the document's
+ *  own digest: each receipt holds a key that opens its own document and no other. */
+export const WALK_CARRY_DOCUMENT_INFO = mint("walk-carry-document");
 /** A cabal invite — the join axis, orthogonal to the carriage contract. */
 export const CABAL_INVITE_DOMAIN = frozen("cabal-invite");
 
@@ -193,8 +196,38 @@ export const KEYRING_ENVELOPE_DOMAIN = frozen("keyring-envelope");
 /** Its HKDF `info`. A NAME of its own, held apart from the signing domain above: a version digit doing a
  *  domain's job fuses the two on the first reset. */
 export const KEYRING_ENVELOPE_SEAL_INFO = frozen("keyring-envelope-seal");
-/** The `cad` convergent keystream — ciphertext-addressed bodies. */
-export const CAD_KEYSTREAM_INFO = frozen("cad-keystream");
+// ── THE SEALED STORE: the one private-byte format ───────────────────────────────────────────────
+// Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store. Every derivation and every signed image takes a name
+// of its own, so a body key never equals a commitment, an id never equals a locator, and no record of one
+// kind verifies as another.
+/** The SEALED VALUE's own name: it leads the context image every sealed value binds (bag, key version,
+ *  role, logical reference), and its SHA-256 prefix stands as the format mark. A changed format takes a
+ *  new name. */
+export const SEALED_CHUNK_DOMAIN = mint("sealed-chunk");
+/** The HKDF `info` a sealed value's single-use BODY KEY derives under. */
+export const SEALED_CHUNK_KEY_INFO = mint("sealed-chunk-key");
+/** The HKDF `info` a sealed value's COMMITMENT derives under: it binds the content key, the salt and the
+ *  context, and a reader checks it before any segment opens. Apart from the body key's name. */
+export const SEALED_CHUNK_COMMITMENT_INFO = mint("sealed-chunk-commitment");
+/** The HKDF `info` a KEY VERSION ID derives under, with the bag's id: the id commits its content key. */
+export const CONTENT_KEY_ID_INFO = mint("content-key-id");
+/** The HKDF `info` a bag's opaque LOCATOR derives under, from the founding content key and the bag's id. */
+export const SEALED_BAG_LOCATOR_INFO = mint("sealed-bag-locator");
+/** The HKDF `info` a manifest ENTRY LOCATOR derives under, from the content key and the entry's context. */
+export const SEALED_ENTRY_LOCATOR_INFO = mint("sealed-entry-locator");
+/** The HKDF `info` a JOIN's proof of one parent key derives under, over the joining version's id. */
+export const CONTENT_KEY_JOIN_PROOF_INFO = mint("content-key-join-proof");
+/** A KEY VERSION RECORD: its clear part hashes to the record id under this name. */
+export const CONTENT_KEY_VERSION_DOMAIN = mint("content-key-version");
+/** A MANIFEST: its clear part hashes to the manifest id under this name. */
+export const SEALED_MANIFEST_DOMAIN = mint("sealed-manifest");
+/** A CHECKPOINT RECORD: its clear part hashes to the checkpoint id under this name. */
+export const SEALED_CHECKPOINT_DOMAIN = mint("sealed-checkpoint");
+/** What a record's writer SIGNS: the record's kind, its id and its private fields, under one name, handed
+ *  to the session signer as an `act`. Apart from every record id's name. */
+export const SEALED_RECORD_AUTHORSHIP_DOMAIN = mint("sealed-record-authorship");
+/** A LOCKBOX PAYLOAD's image: the bag's id, its locator, the key version id and the content key. */
+export const SEALED_LOCKBOX_DOMAIN = mint("sealed-lockbox");
 /** The relay gate's seed derivation — the crossroads transport identity, never the vessel's own. */
 export const RELAY_GATE_INFO = frozen("relay-gate");
 /** The V3 PROOF OF POSSESSION a peer signs at the wire's gate: nonce, gate key, own key, audience and

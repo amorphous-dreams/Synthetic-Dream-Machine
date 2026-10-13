@@ -16,7 +16,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   sealKeyringEnvelope, openKeyringEnvelope, mintKeyringRecipient,
-  verifyCiphertextCid, openBodyOnCas, ed25519SignerFromSeed, utf8Bytes, base64UrlEncode, hex,
+  verifyCiphertextCid, openPrivateBody, authorizeAddress, readContentKey, ed25519SignerFromSeed, utf8Bytes, base64UrlEncode, hex,
   type PersonaRef, type KeyringEntryWire,
 } from "@lararium/mesh";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
@@ -73,9 +73,16 @@ async function founderBody() {
   if (!keyring) throw new Error("founder keyring did not load");
   const registry = makeSealedPlaneRegistry();
   const cadDir = cadSealDir(storageDir);
-  const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, keyring });
+  // The body seals under its bag's content key; the charter head names only the scope the block registers under.
+  const under = { bagId: "lar:///ha.ka.ba/@test/bags/founder-ledger", key: readContentKey(new Uint8Array(32).fill(0x5c))! };
+  const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, under, scope: { nexusAid: AID, epochCid: EPOCH } });
   const ciphertext = readCasBlobFromFs(installed.cid, cadDir)!;
-  return { keyring, installed, ciphertext, cadDir };
+  /** Open the founder's body with `key` as the bag's content key: the plaintext, or the refusal's name. */
+  const openWith = (key: Uint8Array): Uint8Array | string => {
+    const opened = openPrivateBody({ ciphertext, under: { bagId: under.bagId, key: readContentKey(key)! }, ref: installed.ref, authorized: authorizeAddress(installed.cid, "own-receipt")! });
+    return "plaintext" in opened ? opened.plaintext : opened.refusal;
+  };
+  return { keyring, installed, ciphertext, cadDir, under, openWith };
 }
 
 async function ceremony(founderHasSecret = true) {
@@ -111,22 +118,27 @@ describe("recut keyring envelope", () => {
 });
 
 describe("recut custody delivery", () => {
-  test("D2 CARRY ⊥ READ: no keyring cannot read; delivered name re-derives the read-cap", async () => {
-    const { installed, ciphertext, cadDir } = await founderBody();
+  test("D2 CARRY ⊥ READ: a delivered keyring joins by name and opens no private body; the bag's content key does", async () => {
+    const { keyring, installed, ciphertext, under, openWith } = await founderBody();
     expect(await as(joinee, () => loadNexusKeyring({ nexusAid: AID, headEpochCid: EPOCH }))).toBeNull();
     expect(verifyCiphertextCid(ciphertext, installed.cid)).toBe(true);
     const entries = await as(founder, heldNexusKeyringEntries);
     await as(joinee, async () => { await installDeliveredKeyring(entries); });
     const joineeKeyring = await as(joinee, () => loadNexusKeyring({ nexusAid: AID, headEpochCid: installed.epochCid }));
     expect(joineeKeyring).not.toBeNull();
-    const cap = readCapForEpoch(BODY, installed.epochCid, joineeKeyring!);
-    expect([...openBodyOnCas(ciphertext, cap)]).toEqual([...BODY]);
+    // The delivery landed the founder's own secret under the same scoped name.
+    expect(hex(joineeKeyring!.forEpoch(installed.epochCid)!)).toBe(hex(keyring.forEpoch(installed.epochCid)!));
+    // No convergence secret, and no digest one derives, stands as a content key: neither opens the body.
+    expect(openWith(joineeKeyring!.forEpoch(installed.epochCid)!)).toBe("version-mismatch");
+    expect(openWith(readCapForEpoch(BODY, installed.epochCid, joineeKeyring!))).toBe("version-mismatch");
     const stranger = makeNexusConvergenceKeyring({ nexusAid: AID, headEpochCid: installed.epochCid, entries: [{ nexusAid: AID, epochCid: installed.epochCid, secret: new Uint8Array(32).fill(0x77) }] });
-    expect([...openBodyOnCas(ciphertext, readCapForEpoch(BODY, installed.epochCid, stranger))]).not.toEqual([...BODY]);
+    expect(openWith(readCapForEpoch(BODY, installed.epochCid, stranger))).toBe("version-mismatch");
+    // control: the bag's content key opens it
+    expect(openWith(under.key)).toEqual(BODY);
   });
 
-  test("D3 admit delivers the founder key and records a readable join; joinee starts empty", async () => {
-    const { installed, ciphertext } = await founderBody();
+  test("D3 admit delivers the founder's secret under its scoped name; joinee starts empty", async () => {
+    const { keyring, installed } = await founderBody();
     expect(await as(joinee, () => loadNexusKeyring({ nexusAid: AID, headEpochCid: EPOCH }))).toBeNull();
     const { grant, resolveHeadOpKey, deviceSigner } = await ceremony(false);
     if ("error" in grant) throw new Error(grant.error);
@@ -140,7 +152,7 @@ describe("recut custody delivery", () => {
     const heldJoinee = await as(joinee, heldNexusKeyringEntries);
     expect(heldJoinee).toContainEqual(heldFounder[0]);
     const ring = await as(joinee, () => loadNexusKeyring({ nexusAid: AID, headEpochCid: installed.epochCid }));
-    expect([...openBodyOnCas(ciphertext, readCapForEpoch(BODY, installed.epochCid, ring!))]).toEqual([...BODY]);
+    expect(hex(ring!.forEpoch(installed.epochCid)!)).toBe(hex(keyring.forEpoch(installed.epochCid)!));
   });
 
   test("D4 substituted keyring fragment is refused and the row remains empty", async () => {

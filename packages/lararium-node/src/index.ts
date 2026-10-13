@@ -264,7 +264,7 @@ export type {
 export {
   loadNexusKeyring, mintNexusEpochSecret, installDeliveredKeyring, heldNexusKeyringEntries, NexusKeyringConflict, NEXUS_KEYRING_FILE,
 } from "./nexus-convergence-secret-store.js";
-export { cadSealDir, sealCarrierForFederation } from "./seal-carrier-federation.js";
+export { cadSealDir, sealCarrierForFederation, ContentKeyUnavailable } from "./seal-carrier-federation.js";
 // The cad WIRE CONSUMER — a member carries a sealed body peer-to-peer over the request-response hop, gated by the
 // member blind-transit lane; a stranger / Kapae'd presenter draws Mu (byte-identical to caught-up satiety).
 export {
@@ -484,7 +484,7 @@ export {
   custodyTreeStands, assertFoundingRoute, CustodyFoundingRefused,
 } from "./custody-session.js";
 export type { CustodyUnlock, CustodyStatus, CustodyStatusRow } from "./custody-session.js";
-export { casDirForStorage, readCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
+export { casDirForStorage, readCasBlobFromFs, readVerifiedCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
 export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,

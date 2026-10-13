@@ -14,10 +14,11 @@
  * path.
  *
  * SECRET-FREE VERIFY (verify-cap ⊥ read-cap). The relay serving the block AND the fetcher receiving it BOTH run
- * `verifyCiphertextCid(bytes, cid)` — `BLAKE3(bytes) == cid`, holding NO key, NO per-Nexus secret, NO read-cap.
- * The cid IS the integrity check (no auth tag — an immutable content-address). A tampered byte fails the recompute
- * at both ends. Only AFTER verify does the member decrypt with the read-cap it holds on the private keyhive lane —
- * the transit layer carries ciphertext and reads nothing.
+ * `verifyCiphertextCid(bytes, cid)` — `BLAKE3(bytes) == cid`, holding NO key and NO secret. That check proves the
+ * bytes match the address the fetcher asked for, and nothing about whether that address belongs in a bag: a reader
+ * opens the sealed value afterward (`openPrivateBody`) under its bag's content key, an authorized address and the
+ * digest its pointer names, and the sealed value's own commitment and segment tags refuse a swapped, cut or
+ * re-ordered body. The transit layer carries ciphertext and reads nothing.
  *
  * FAIL-CLOSED: bytes failing `BLAKE3(bytes) == cid` are REJECTED — never cached, never returned (a corrupt/hostile
  * relay cannot poison the local CAS). `dont-have` from every peer + the tracker resolves to `null` (an explicit
@@ -121,7 +122,8 @@ export type LocalCasRead = (cid: string) => Uint8Array | null | Promise<Uint8Arr
 export type LocalCasCache = (cid: string, bytes: Uint8Array) => void | Promise<void>;
 
 /**
- * Compose the LOCAL-first `resolveByCid` with the REMOTE transit leg: try local; on a miss, fetch over transit
+ * Compose the LOCAL-first `resolveByCid` with the REMOTE transit leg: try local, and take a local hit only where its
+ * bytes still match the address (`verifyCidBytes`); on a miss, fetch over transit
  * (DHT-free discovery + secret-free verify); cache the verified body write-through; return it. A remote body that
  * fails verify never reaches `cache` (only `fetchCidOverTransit`'s verified return path feeds it), so the local
  * CAS holds ONLY self-proving bytes. Still a miss everywhere → `null` (the caller faults, never reads a wrong body).
@@ -133,7 +135,9 @@ export function makeCidResolver(
 ): (cid: string) => Promise<Uint8Array | null> {
   return async (cid: string): Promise<Uint8Array | null> => {
     const localBytes = await local(cid);
-    if (localBytes !== null) return localBytes;            // local hit — no transit
+    // A local hit returns only where its bytes still recompute to the address. Bytes altered at rest read as a
+    // miss, so the transit leg answers and a holder never opens what its own disk changed.
+    if (localBytes !== null && verifyCidBytes(localBytes, cid)) return localBytes;   // a sound local hit — no transit
     const remote = await fetchCidOverTransit(cid, transit);
     if (remote === null) return null;                      // fail-closed miss
     await cache(cid, remote);                              // write-through the VERIFIED body (fetch already re-verified)

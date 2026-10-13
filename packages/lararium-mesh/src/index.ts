@@ -156,10 +156,22 @@ export {
 } from "./cap-tier.js";
 // The cad ENCRYPT-ON-CAS primitive — cid = BLAKE3(ciphertext), verify-cap ⊥ read-cap, per-Nexus message-lock.
 export {
-  ciphertextCid, verifyCiphertextCid, deriveMessageKey, sealBodyOnCas, openBodyOnCas,
-  CIPHERTEXT_CID_ALGO, CONVERGENCE_SECRET_LEN, require32,
+  ciphertextCid, verifyCiphertextCid, deriveMessageKey, sealPrivateBody, openPrivateBody,
+  CIPHERTEXT_CID_ALGO, CONVERGENCE_SECRET_LEN, OPEN_PRIVATE_BODY_REFUSALS, require32,
 } from "./ciphertext-cas.js";
-export type { SealedBody } from "./ciphertext-cas.js";
+export type {
+  PrivateBodyKey, SealedPrivateBody, SealPrivateBodyResult, OpenPrivateBodyResult, OpenPrivateBodyRefusalName,
+} from "./ciphertext-cas.js";
+// The sealed value: the one private-byte format (`lar:///ha.ka.ba/lararium/mesh/sealed-store`).
+export {
+  sealChunk, openChunk, authorizeAddress, sealedAddressOf, keyVersionIdOf, contextDigest, mintContentKey,
+  readContentKey, readKeyVersionId, readSealedAddress, isChunkRole,
+  CHUNK_ROLES, ADDRESS_SOURCES, SEAL_REFUSALS, OPEN_REFUSALS, CONTENT_KEY_LEN, SEALED_HEADER_LEN, SEALED_SEGMENT_LEN, SEALED_TAG_LEN,
+} from "./sealed-chunk.js";
+export type {
+  ContentKey, KeyVersionId, SealedAddress, ChunkRole, SealContext, AuthorizedAddress, AddressSource,
+  SealedChunk, SealResult, OpenResult, SealRefusalName, OpenRefusalName,
+} from "./sealed-chunk.js";
 // The cad REMOTE TRANSIT leg — DHT-free discovery + secret-free BLAKE3(bytes)==cid verify (verify-cap ⊥ read-cap).
 export {
   have, block,
@@ -253,7 +265,7 @@ export {
 } from "./walk-client.js";
 export type { WalkRecord, WalkStore, WalkLeaf, WalkTransport, CarryReceipt, HostingDocHandle } from "./walk-client.js";
 export {
-  carryDocument, fetchDocument, openCarried, watchCarryNotice,
+  carryDocument, fetchDocument, openCarried, watchCarryNotice, walkCarriageBagId, walkCarryDocumentKey,
   HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,
 } from "./walk-carry.js";
 export type { CarryOutcome } from "./walk-carry.js";

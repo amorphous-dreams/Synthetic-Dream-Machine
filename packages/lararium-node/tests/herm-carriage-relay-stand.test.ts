@@ -6,7 +6,7 @@
  * (which proves the vessel's serve-loop client side against a free-standing relay):
  *   · STANDS + CARRIES — the Herm-boot gate stands `startCarriageRelay` on its resolved gate seed; a HOLDER hearth
  *     serves over it and a MEMBER hearth dials the Herm's `ws://` URL, carries the ciphertext, re-verifies
- *     BLAKE3(ciphertext)==cid SECRET-FREE, and reads with the per-body read-cap (carry ⊥ read),
+ *     BLAKE3(ciphertext)==cid SECRET-FREE, and reads with the bag content key (carry ⊥ read),
  *   · STRANGER draws Mu — a non-member dialing the SAME crossroads draws byte-identical Mu (denial ≡ satiety),
  *   · INERT — the EXACT boot gate (`relayPort !== null ? startCarriageRelay : null`) stands ZERO sockets when no
  *     relay port rides the config and ONE when it does (an un-configured Herm behaves as today),
@@ -28,7 +28,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { WebSocket } from "ws";
 import { knockedUrl,
-  DeterministicFederationGate, openBodyOnCas, verifyCiphertextCid, utf8Bytes, hex,
+  DeterministicFederationGate, verifyCiphertextCid, utf8Bytes, hex,
   type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
@@ -37,7 +37,7 @@ import { CAS_WANT_BLOCK, CAS_BLOCK, CAS_MU, muWireBytes, type CasWireServerDeps 
 import { AuthenticatedWSMembershipChannel } from "../src/authenticated-membership-relay.js";
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "../src/carriage-relay.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "../src/carriage-serve-loop.js";
-import { membershipOf, antigenOf, bytesFromPayload, freshTestKeyring } from "./cas-test-setup.js";
+import { membershipOf, antigenOf, bytesFromPayload, freshTestBodyKey, TEST_SCOPE, openAsMember } from "./cas-test-setup.js";
 
 const BODY = utf8Bytes("a family body one hearth seals and another carries over the Herm's crossroads");
 const pubOf = (seed: Uint8Array): Promise<string> => ed.getPublicKeyAsync(seed).then(hex);
@@ -80,13 +80,13 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
     for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* gone */ } }
   });
 
-  function sealBody(): { cadDir: string; installed: ReturnType<typeof sealCarrierForFederation>; registry: ReturnType<typeof makeSealedPlaneRegistry> } {
+  function sealBody(): { cadDir: string; installed: ReturnType<typeof sealCarrierForFederation>; registry: ReturnType<typeof makeSealedPlaneRegistry>; under: ReturnType<typeof freshTestBodyKey> } {
     const storageDir = mkDir("store");
     const registry = makeSealedPlaneRegistry();
-    const keyring = freshTestKeyring();
+    const under = freshTestBodyKey();
     const cadDir = cadSealDir(storageDir);
-    const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, keyring });
-    return { cadDir, installed, registry };
+    const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, under, scope: TEST_SCOPE });
+    return { cadDir, installed, registry, under };
   }
 
   test("STANDS + CARRIES: a member dials the Herm's crossroads + reads a sealed body; a stranger draws byte-identical Mu", async () => {
@@ -97,7 +97,7 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
     const strangerSeed = new Uint8Array(32).fill(14);
     const [holderKey, memberKey, strangerKey] = await Promise.all([pubOf(holderSeed), pubOf(memberSeed), pubOf(strangerSeed)]);
 
-    const { cadDir, installed, registry } = sealBody();
+    const { cadDir, installed, registry, under } = sealBody();
     const deps: CasWireServerDeps = {
       cadDir, seal: registry.seal,
       membership: membershipOf([memberKey]),
@@ -123,13 +123,13 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
     const strangerCh = await AuthenticatedWSMembershipChannel.connect(url, strangerSeed);
     channels.push(memberCh, strangerCh);
 
-    // MEMBER: carries the ciphertext over the Herm, re-verifies secret-free, reads with the per-body read-cap.
+    // MEMBER: carries the ciphertext over the Herm, re-verifies secret-free, reads with the bag content key.
     const memberResp = await fetchOverCarriage({ channel: memberCh, requester: memberKey, holderAddr: holderKey, cid: installed.cid });
     expect(memberResp?.kind).toBe(CAS_BLOCK);
     const ciphertext = bytesFromPayload(memberResp!);
     expect(verifyCiphertextCid(ciphertext, installed.cid)).toBe(true);
     expect([...ciphertext]).not.toEqual([...BODY]);
-    expect([...openBodyOnCas(ciphertext, installed.readCap)]).toEqual([...BODY]);
+    expect(openAsMember(ciphertext, installed, under)).toEqual(BODY);
 
     // STRANGER: dials the SAME crossroads, draws the void — byte-identical to satiety.
     const strangerResp = await fetchOverCarriage({ channel: strangerCh, requester: strangerKey, holderAddr: holderKey, cid: installed.cid });

@@ -99,7 +99,9 @@ Tightening runs free — a bag may always self-tighten, and a tightening cascade
 
 !! Keyring delivery ~ the member read-cap, delivered AUTHENTICATED
 
-The member tiers (PERSONAGROUP / CONTRACT) become concrete through ''keyring-delivery to the recipient set'' (built `30cdd087`). The per-Nexus convergence keyring — the `@cad` read-key (`content-resolution.mem`) — rides ''admission'': the founder seals the secrets its vessel holds, each named by (Nexus AID, `epochCid`), to the joinee's ephemeral X25519 recipient on the persona-admit grant hop (`persona-policy.mem`), and the joinee ''joins them by scoped name''. The same bytes under a held name change nothing; different bytes under a held name refuse the whole delivery, the held secret stays, and the join names the conflict. A secret for one Nexus never lands under another. The seat's own act mints a secret and no boot mints one, so a joinee holds none for the founder's Nexus until a delivery lands. Same-Nexus members thereby share the secret → cross-member `@cad` read works.
+The member tiers (PERSONAGROUP / CONTRACT) become concrete through ''delivery to the recipient set''. ''A member reads a private body through its bag's content key'': a lockbox carries each key version to the bag's key group, and the sealed store states that road (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records">>). The durable lockbox store stands owed there.
+
+''The per-Nexus convergence keyring derives no read key.'' Its delivery stands built (`30cdd087`) and rides ''admission'': the founder seals the secrets its vessel holds, each named by (Nexus AID, `epochCid`), to the joinee's ephemeral X25519 recipient on the persona-admit grant hop (`persona-policy.mem`), and the joinee ''joins them by scoped name''. The same bytes under a held name change nothing; different bytes under a held name refuse the whole delivery, the held secret stays, and the join names the conflict. A secret for one Nexus never lands under another. The seat's own act mints a secret and no boot mints one, so a joinee holds none for the founder's Nexus until a delivery lands. No sealed value derives from that secret, and no private body opens with it.
 
 ''The lesson, load-bearing: a delivery must stand as AUTHENTICATED as the ceremony it rides.'' The enrollment offer exposes the recipient pubkey publicly, so a ''sealed-only'' fragment proves nothing about WHO authored it — an active paster could substitute their own keyring, sealed to that same public key, and the joinee would seal every future body under an attacker-known secret. Confidential ≠ authenticated when the recipient key rides public. The cure ''binds a sha256 of the exact carried token INTO the persona-signed grant transcript''; the joinee installs ONLY on a signature-covered digest match, else stays carry-only (four fail-closed branches). Revert the digest gate and the MITM-substitution test falls — the binding genuinely catches the swap.
 
@@ -118,7 +120,7 @@ The model reads as a real pattern integrity because independent fields under the
 | ''Robust declassification'' (Myers · Sabelfeld · Sands) | `mayDeclassify` = loosening as a privileged operator-root act an attacker cannot influence — the operator NAMED this pattern | language-based security |
 | ''Anonymous sealed-box'' (`crypto_box_seal`) = sender-unauthenticated by construction; ''Signal X3DH signed prekey'' catches a substituted prekey by signature | the keyring lesson exactly — seal-to-public gives confidential-not-authenticated → MITM; the fix binds the digest into the SIGNED transcript | applied cryptography |
 | ''Object-capability'' deny-by-default + attenuation-only | `DEFAULT_CAP_TIER = veil` fail-closed; META-CAP ≥ declared = no amplification | ocap (`orichalcum-capabilities.mem`) |
-| ''MLS / TreeKEM'' group key delivery | keyring-delivery to a recipient set — ''PARTIAL: delivery, NOT agreement''; the mesh delivers a per-Nexus secret, it does not run a CGKA here | cryptography |
+| ''MLS / TreeKEM'' group key delivery | delivery to a recipient set — the bag's content key reaches its key group through a lockbox, and the group's own agreement runs inside Keyhive | cryptography |
 
 ''The honest guard (Stranger's frame-check):'' the security lattice illuminates the ''order'' (the tiers), the ''meet'' (tighten-only), and the ''declassification'' (privileged, robust) — but it lies about the mechanism where it assumes a global reference monitor. Our gate runs ''causal-island-local'' (`causal-islands.mem`): it reads WHAT THIS NODE verifies as-of-last-sync, never a global census. Borrow the lattice-meet, the high-water-mark, and the robust-declassification act; never borrow the //global-now// a classical reference monitor assumes.
 
@@ -145,6 +147,7 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/content-resolution">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh">>
@@ -157,6 +160,6 @@ Deferred with clean shores (not built): the TW5 `$:/tags/CapTierFilter` ordered-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;B0gJuUWAqc4tORuSCWTyk_aB4EqRShFNqYVWmHkJB9k
+<<^ code="&#x0003;">>ni:///sha-256;cKSxgUpH7K3NB7LkznKhW_m49LS4FJviydOBtf0lNkg
 
 <<^ code="&#x0004;" -> to="?">>

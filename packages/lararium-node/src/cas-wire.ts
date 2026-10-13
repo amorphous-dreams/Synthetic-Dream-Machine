@@ -35,7 +35,7 @@ import {
 import type { DocumentId } from "@automerge/automerge-repo";
 import type { ShadowConsult } from "@lararium/mesh";
 import { docIdForCiphertextCid } from "./ciphertext-cas-seal.js";
-import { readCasBlobFromFs } from "./node-cas.js";
+import { readVerifiedCasBlobFromFs } from "./node-cas.js";
 
 /** The wire message kinds — a served ciphertext block, a want-block ask, or the byte-identical void. */
 export const CAS_WANT_BLOCK = "cas-want-block" as const;
@@ -50,7 +50,7 @@ export const CAS_WANT_HAVE  = "cas-want-have" as const;
 
 /** The carry-lane gate + the served bytes the server composes on each request. */
 export interface CasWireServerDeps {
-  /** The cad ciphertext tier the server serves bytes from (readCasBlobFromFs). */
+  /** The cad ciphertext tier the server serves bytes from (`readVerifiedCasBlobFromFs`: bytes that fail their address never leave). */
   readonly cadDir:     string;
   /** The live sealed-plane oracle — only a PROVABLY-sealed docId carries (fail-closed: unknown → deny → Mu). */
   readonly seal:       PlaneSeal;
@@ -95,8 +95,8 @@ export async function decideAndServeWantBlock(
   if (cidDigestClass(cid) === "cleartext") {
     if (!deps.cidDir || !deps.fleet) return { kind: CAS_MU, bytes: muVoidBytes() };   // door shut → Mu
     if (!(await deps.fleet(peerId)))  return { kind: CAS_MU, bytes: muVoidBytes() };   // not fleet → Mu (≡ satiety)
-    const clear = readCasBlobFromFs(cid, deps.cidDir);
-    if (!clear) return { kind: CAS_MU, bytes: muVoidBytes() };                          // not held → the SAME Mu
+    const clear = readVerifiedCasBlobFromFs(cid, deps.cidDir);
+    if (!clear) return { kind: CAS_MU, bytes: muVoidBytes() };                          // not held, or altered at rest → the SAME Mu
     return { kind: CAS_BLOCK, cid, bytes: clear };
   }
   let docId: DocumentId;
@@ -117,8 +117,8 @@ export async function decideAndServeWantBlock(
     deps.shadow ?? null,         // a device set aside → Mu
   );
   if (!mayCarry) return { kind: CAS_MU, bytes: muVoidBytes() };            // DENY → Mu (byte-identical to satiety)
-  const bytes = readCasBlobFromFs(cid, deps.cadDir);
-  if (!bytes) return { kind: CAS_MU, bytes: muVoidBytes() };              // NOTHING TO SERVE → the SAME Mu (satiety)
+  const bytes = readVerifiedCasBlobFromFs(cid, deps.cadDir);
+  if (!bytes) return { kind: CAS_MU, bytes: muVoidBytes() };              // NOTHING TO SERVE, or altered at rest → the SAME Mu (satiety)
   return { kind: CAS_BLOCK, cid, bytes };                                  // MEMBER + sealed + held → carry the ciphertext
 }
 

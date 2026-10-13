@@ -1,59 +1,74 @@
 /**
- * seal-carrier-federation — the cad seal's FIRST live producer: seal a staged carrier body into the ciphertext
+ * seal-carrier-federation — the cad seal's live producer: seal a staged carrier body into the ciphertext
  * federation plane, ADDITIVELY, beside the cleartext-local corpus CAS the wake path reads.
  *
  * TWO LAYERS, TWO JOBS, COMPOSED (never fused). The cas-stage shore already keeps an oversized carrier body OUT of
  * the CRDT: it writes the CLEARTEXT bytes to the corpus CAS + rides a skinny `textCid` handle, and the local wake
- * resolves it cleartext (the operator's own island holds its own read-cap — no seal needed locally). This producer
- * adds the OTHER job: it seals the SAME body's plaintext into the cad ciphertext plane (`cid = BLAKE3(ciphertext)`)
- * so a CROSS-OPERATOR member may blind-transit the bytes and read NOTHING (carry ⊥ read). The dual representation —
- * a cleartext-local copy + a ciphertext-federated copy — IS the carry⊥read split made concrete: two consumers
- * (local wake vs cross-operator carry), two representations. It NEVER touches the cleartext resolveByCid wake read.
+ * resolves it cleartext (the operator's own island projects its own files). This producer adds the OTHER job: it
+ * seals the SAME body as one sealed value under its bag's content key, so a CROSS-OPERATOR member may blind-transit
+ * the bytes and read NOTHING (carry ⊥ read). It NEVER touches the cleartext resolveByCid wake read.
  *
- * VERIFY-CAP ⊥ READ-CAP: the sealed body's cid is `BLAKE3(ciphertext)` — a relay recomputes it holding NO secret
- * (`verifyCiphertextCid`); the read-cap (the message-locked key) rides the private keyring, never the relay. The
- * seal registers the ciphertext docId into the live `SealedPlaneRegistry` as a side-effect, opening the member
- * blind-transit lane for exactly that body — a cleartext body reaches no encrypt path, so nothing self-labels sealed.
+ * VERIFY ⊥ READ: the sealed body's cid reads `blake3:` over its ciphertext — a relay recomputes it holding no key
+ * (`verifyCiphertextCid`). The seal registers the ciphertext docId into the live `SealedPlaneRegistry` as a
+ * side-effect, opening the member blind-transit lane for exactly that body — a cleartext body reaches no seal
+ * path, so nothing self-labels sealed.
  *
- * FAIL-CLOSED: a vessel with NO convergence keyring (`keyring.current()` throws on empty) seals NOTHING — the body
- * stays cleartext-local only, never a plaintext body registered sealed. The caller catches the throw and skips.
+ * THE KEY COMES FROM A CONTENT-KEY HOLDER, NEVER FROM A NEXUS SECRET. A caller names the bag and hands that bag's
+ * current content key (`under`) and the Nexus the block belongs to (`scope`). FAIL-CLOSED: a caller that names no
+ * key seals NOTHING — `ContentKeyUnavailable` — and the body stays cleartext-local only. The durable holder that
+ * answers a bag's key belongs to the sealed store's lockbox store.
  *
- * Meme: lar:///ha.ka.ba/lararium/node/seal-carrier-federation
+ * Meme: lar:///ha.ka.ba/lararium/node/seal-carrier-federation · lar:///ha.ka.ba/lararium/mesh/sealed-store
  */
 
 import { join } from "node:path";
-import type { CasHolder } from "@lararium/mesh";
+import type { CasHolder, PrivateBodyKey } from "@lararium/mesh";
 import { installSealedBody, type InstalledSealedBody } from "./ciphertext-cas-seal.js";
 import { noteInstalledBody } from "./bag-tracker.js";
 import type { BagTracker } from "./bag-tracker.js";
 import type { SealedPlaneRegistry } from "./plane-seal.js";
-import type { NexusConvergenceKeyring } from "./nexus-convergence-keyring.js";
+import type { NexusConvergenceKeyring, NexusEpochName } from "./nexus-convergence-keyring.js";
 
 /** The cad ciphertext CAS tier — a DISTINCT dir from the cleartext `cas` tier, so the cleartext wake read
  *  (corpus / runtime CAS) is never touched by a sealed body. A member serves + `cas-transit resolveByCid`
- *  fetches from here; the bytes are ciphertext, the cid `BLAKE3(ciphertext)`. */
+ *  fetches from here; the bytes are ciphertext, the cid `blake3:` over them. */
 export function cadSealDir(storageDir: string): string {
   return join(storageDir, "cad");
 }
 
+/** No content key reached the seal: nothing sealed, and the body stays cleartext-local. */
+export class ContentKeyUnavailable extends Error {
+  override readonly name = "ContentKeyUnavailable";
+  constructor() {
+    super("cad-seal: a private body seals under its bag's content key, and no content-key holder handed one here — " +
+      "nothing sealed and the body stays cleartext-local (the sealed store's lockbox store supplies the holder)");
+  }
+}
+
 /**
- * Seal one carrier body's PLAINTEXT into the cad federation plane. Wraps the encrypt-on-CAS installer (the SOLE
- * door into the sealed-plane registry) + the bag-tracker announce, so a cid reaches BOTH the seal set AND the
- * discovery index ONLY through the encrypt path. Returns the installed sealed body (cid + docId + scoped name + read-cap);
- * the read-cap stays with the caller (the private keyring), NEVER the relay. Additive: writes only the ciphertext
- * `cad/` tier + the registry + the tracker — the cleartext corpus CAS the wake reads is untouched.
+ * Seal one carrier body's PLAINTEXT into the cad federation plane. Wraps the seal installer (the SOLE door into
+ * the sealed-plane registry) + the bag-tracker announce, so a cid reaches BOTH the seal set AND the discovery index
+ * ONLY through the seal path. Returns what a caller may show: the address, the docId, the scope, the key version
+ * and the body's digest. No key rides the answer. Additive: writes only the ciphertext `cad/` tier, the registry
+ * and the tracker — the cleartext corpus CAS the wake reads stays untouched.
  */
 export function sealCarrierForFederation(args: {
   readonly registry:  SealedPlaneRegistry;
   readonly cadDir:    string;
   readonly plaintext: Uint8Array;
-  readonly keyring:   NexusConvergenceKeyring;
+  /** The bag the body belongs to and that bag's current content key. Absent: `ContentKeyUnavailable`. */
+  readonly under?:    PrivateBodyKey;
+  /** The Nexus the sealed block belongs to, and its charter epoch. */
+  readonly scope?:    NexusEpochName;
+  /** UNREAD. The composer's `cad-seal` verb still hands its convergence keyring here; no secret in it seals
+   *  anything, and the field leaves with the compose hunk that names `under` and `scope`. */
+  readonly keyring?:  NexusConvergenceKeyring;
   /** Optional discovery announce: note the sealed cid on the relay-side bag-tracker under this holder handle. */
   readonly tracker?:  BagTracker;
   readonly self?:     CasHolder;
 }): InstalledSealedBody {
-  // keyring.current() throws fail-closed when the head names no held secret — the caller keeps the body cleartext-local only.
-  const installed = installSealedBody(args.registry, args.cadDir, args.plaintext, args.keyring.current());
+  if (!args.under || !args.scope) throw new ContentKeyUnavailable();
+  const installed = installSealedBody(args.registry, args.cadDir, args.plaintext, args.under, args.scope);
   if (args.tracker && args.self) noteInstalledBody(args.tracker, installed, args.self);
   return installed;
 }

@@ -15,7 +15,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync, copyFileSync, readd
 import { join, dirname } from "node:path";
 import {
   casReferences, graceForTier, tiersByGraceDescending, realmPace, pinnedCids,
-  sha256HexBytesSync,
+  sha256HexBytesSync, verifyCidBytes,
   type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
 } from "@lararium/mesh";
 import { runtimeCasOverride } from "./lares-config.js";
@@ -41,8 +41,12 @@ export function casDirFromIslandStorageDir(islandStorageDir: string): string {
 
 /**
  * Write each {cid, bytes} CAS entry as a content-addressed file under `casDir`.
- * Idempotent (content-addressed, immutable → skip if present). The build sink calls
+ * Idempotent (content-addressed, immutable → a sound file stays as it stands). The build sink calls
  * this to lay down `genesis/cas/<cid>` from the artifact's casEntries. Returns count.
+ *
+ * A FILE ALTERED AT REST GETS REPLACED, AND ONLY BY BYTES THAT PROVE THEMSELVES. Where a file already stands
+ * under the address and no longer recomputes to it, bytes that do recompute to it take its place by an atomic
+ * write, so a holder that fetched a block again keeps it. Bytes that fail the address replace nothing.
  */
 export function writeCasEntriesFs(
   entries: readonly { readonly cid: string; readonly bytes: Uint8Array }[],
@@ -52,7 +56,12 @@ export function writeCasEntriesFs(
   let written = 0;
   for (const { cid, bytes } of entries) {
     const path = join(casDir, cid);
-    if (existsSync(path)) continue;
+    if (existsSync(path)) {
+      if (!verifyCidBytes(bytes, cid) || readVerifiedCasBlobFromFs(cid, casDir) !== null) continue;
+      atomicWriteFileSync(path, bytes);
+      written += 1;
+      continue;
+    }
     writeFileSync(path, bytes);
     written += 1;
   }
@@ -106,6 +115,18 @@ export function readCasBlobFromFs(cid: string, casDir: string): Uint8Array | nul
   } catch {
     return null;
   }
+}
+
+/**
+ * Read content-addressed bytes and hand them on ONLY where they still recompute to their address: `blake3:` over
+ * the bytes for a sealed value, SHA-256 for a clear blob (`verifyCidBytes`). Bytes altered at rest answer null,
+ * exactly as an absent blob does, so a holder never serves or opens bytes its own disk changed. The check needs
+ * no key. It proves the bytes match the address and nothing about where the address belongs: a reader of a
+ * sealed value still opens it under an authorized address.
+ */
+export function readVerifiedCasBlobFromFs(cid: string, casDir: string): Uint8Array | null {
+  const bytes = readCasBlobFromFs(cid, casDir);
+  return bytes !== null && verifyCidBytes(bytes, cid) ? bytes : null;
 }
 
 // ── THE HERM SHORE AS A TRANSIT LEG (basket-one #/the-fetch-door) ────────────────────────────────────

@@ -1,9 +1,19 @@
 /**
- * walk-carry — the WALKER's side of W: hand a hearth its own documents to CARRY, as SEALED CIPHERTEXT.
+ * walk-carry — the WALKER's side of W: hand a hearth its own documents to CARRY, as SEALED VALUES.
  *
- * CARRY ⊥ READ. Each document is sealed under the walker's own carry secret (`walkCarrySecret`, derived from its
- * per-Nexus leaf seed) and handed over as ciphertext and its content address. The read-cap stays on the walker's
- * device in its receipt, written durably BEFORE the ciphertext leaves; the hearth holds bytes it can never open.
+ * CARRY ⊥ READ. Each document seals as one sealed value under a key of its own, which the walker's carry secret
+ * (`walkCarrySecret`, derived from its per-Nexus leaf seed) and the document's plaintext digest derive: randomized
+ * authenticated encryption bound to that document's carriage, the key version, the role `blob` and the digest.
+ * The hearth receives the sealed bytes and their address and can never open them. The walker's RECEIPT (the
+ * address, the digest and the document's key) rests on the walker's device, written durably BEFORE the sealed
+ * value leaves. One exposed receipt opens one document.
+ *
+ * ONE CARRY AT A TIME PER HEARTH. Carries for one hearth run in turn, so two that start together each keep
+ * their receipt, and one document started twice deposits once.
+ *
+ * THE RECEIPT AUTHORIZES THE ADDRESS. A fetch opens only bytes that hash to an address a receipt holds, under
+ * the digest that same receipt names. Bytes a hearth altered, swapped for another carried document, cut short or
+ * re-ordered refuse by name and open as nothing; an address the walker never wrote a receipt for opens nothing.
  *
  * REACHED BY PROOF, NEVER BY A HANDED KEY. The hearth files a walker's carriage under its PROVEN per-Nexus leaf,
  * so every carry and fetch rides only the grant the socket already proved, and nothing travels that names the
@@ -15,14 +25,53 @@
  * own devices hold its documents. A hearth's `hosting/notice` marks the record at risk — the walker's cue to make
  * sure its own devices hold what the receipts name — and a renewed grant clears the mark.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-walkers-carriage
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-walkers-carriage · lar:///ha.ka.ba/lararium/mesh/sealed-store
  */
 
-import { sealBodyOnCas, openBodyOnCas, verifyCiphertextCid } from "./ciphertext-cas.js";
-import { base64UrlEncode, base64UrlDecode, hex, hexToBytes } from "./crypto.js";
+import { hkdf } from "@noble/hashes/hkdf.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { sealPrivateBody, openPrivateBody, type PrivateBodyKey } from "./ciphertext-cas.js";
+import { authorizeAddress, readContentKey, sealedImage } from "./sealed-chunk.js";
+import { base64UrlEncode, base64UrlDecode, hex, hexToBytes, sha256HexBytesSync } from "./crypto.js";
+import { WALK_CARRY_DOCUMENT_INFO } from "./domains.js";
 import { walkCarrySecret } from "./hosting.js";
 import type { LarSessionMsg } from "./auth-wire.js";
-import type { WalkStore, WalkLeaf, WalkTransport } from "./walk-client.js";
+import type { WalkStore, WalkLeaf, WalkTransport, CarryReceipt } from "./walk-client.js";
+
+const REF = /^[0-9a-f]{64}$/;
+
+/** The bag ONE carried document stands as in one Nexus: a bag of one value, named to nobody but its walker. */
+export function walkCarriageBagId(nexusAid: string, ref: string): string {
+  return `walk-carriage:${nexusAid.trim().toLowerCase()}:${ref}`;
+}
+
+/** ONE carried document's key: the walker's carry secret and the document's plaintext digest derive it, so the
+ *  leaf seed and a receipt's digest yield it again, and no receipt's key opens another document. */
+export function walkCarryDocumentKey(walkerLeafSeed: Uint8Array, nexusAid: string, ref: string): Uint8Array {
+  if (!REF.test(ref)) throw new TypeError("walk-carry: a carried document's key derives over its SHA-256 digest");
+  return hkdf(sha256, walkCarrySecret(walkerLeafSeed, nexusAid), undefined, sealedImage(WALK_CARRY_DOCUMENT_INFO, hexToBytes(ref)), 32);
+}
+
+/** The key a receipt holds, as its document's content key; null for a receipt that reads malformed. */
+function receiptKey(receipt: CarryReceipt, nexusAid: string): PrivateBodyKey | null {
+  if (typeof receipt.ref !== "string" || !REF.test(receipt.ref) || typeof receipt.key !== "string") return null;
+  let bytes: Uint8Array;
+  try { bytes = hexToBytes(receipt.key); } catch { return null; }
+  const key = readContentKey(bytes);
+  return key === null ? null : { bagId: walkCarriageBagId(nexusAid, receipt.ref), key };
+}
+
+/** Carries in flight, per store and hearth: each waits for the one before it. */
+const carriesInTurn = new WeakMap<WalkStore, Map<string, Promise<unknown>>>();
+function inTurn<T>(store: WalkStore, gate: string, act: () => Promise<T>): Promise<T> {
+  let gates = carriesInTurn.get(store);
+  if (!gates) { gates = new Map(); carriesInTurn.set(store, gates); }
+  const run = (gates.get(gate) ?? Promise.resolve()).then(act, act);
+  const tail = run.catch(() => undefined);
+  gates.set(gate, tail);
+  void tail.then(() => { if (gates!.get(gate) === tail) gates!.delete(gate); });
+  return run;
+}
 
 /** The session kinds of the walker's carriage. */
 export const HOSTING_CARRY_SESSION_KIND   = "hosting/carry";
@@ -52,41 +101,69 @@ export type CarryOutcome =
   | null;
 
 /**
- * Hand one document to the hearth to carry. The receipt (its cid and read-cap) is kept durably first; the
- * ciphertext is sent after, on the walker's own proven socket.
+ * Hand one document to the hearth to carry. The receipt (its address, its digest and its key) is kept durably
+ * first; the sealed value is sent after, on the walker's own proven socket. A document the hearth already serves
+ * back under a held receipt answers from that receipt and deposits nothing twice.
  */
-export async function carryDocument(opts: {
+export function carryDocument(opts: {
+  readonly transport: CarryTransport; readonly store: WalkStore; readonly gatePubKey: string;
+  readonly leaf: WalkLeaf; readonly plaintext: Uint8Array; readonly withinMs: number;
+}): Promise<CarryOutcome> {
+  return inTurn(opts.store, opts.gatePubKey.toLowerCase(), () => carryInTurn(opts));
+}
+
+async function carryInTurn(opts: {
   readonly transport: CarryTransport; readonly store: WalkStore; readonly gatePubKey: string;
   readonly leaf: WalkLeaf; readonly plaintext: Uint8Array; readonly withinMs: number;
 }): Promise<CarryOutcome> {
   const gate = opts.gatePubKey.toLowerCase();
   const held = await opts.store.read(gate);
   if (!held?.grant) return null;                                                  // carriage rides a grant
-  const sealed = sealBodyOnCas(opts.plaintext, walkCarrySecret(opts.leaf.seed, held.nexusAid));
-  if (!held.carried?.some((r) => r.cid === sealed.cid)) {
-    await opts.store.write(gate, { ...held, carried: [...(held.carried ?? []), { cid: sealed.cid, readCap: hex(sealed.readCap) }] });
+  const ref = sha256HexBytesSync(opts.plaintext);
+  const standing = held.carried?.find((r) => r.ref === ref);
+  if (standing) {
+    // Each seal draws fresh, so a second seal would deposit a second value. Ask the hearth for the first.
+    const back = await fetchDocument({ transport: opts.transport, store: opts.store, gatePubKey: gate, cid: standing.cid, withinMs: opts.withinMs });
+    if (back !== null) return { cid: standing.cid, held: true };
   }
-  const answered = answerFor(opts.transport, HOSTING_CARRIED_SESSION_KIND, sealed.cid, opts.withinMs, async (msg) => {
+  const key = readContentKey(walkCarryDocumentKey(opts.leaf.seed, held.nexusAid, ref));
+  if (key === null) return null;
+  const sealed = sealPrivateBody(opts.plaintext, { bagId: walkCarriageBagId(held.nexusAid, ref), key });
+  if (!("body" in sealed)) return null;
+  const { cid, ciphertext } = sealed.body;
+  // Read the record again at the write: the fetch above may have waited, and another hand may have moved it.
+  // The receipt for a value the hearth no longer serves leaves with the write that names its replacement.
+  const now = (await opts.store.read(gate)) ?? held;
+  const kept = (now.carried ?? []).filter((r) => r.ref !== ref);
+  await opts.store.write(gate, { ...now, carried: [...kept, { cid, ref, key: hex(key) }] });
+  const answered = answerFor(opts.transport, HOSTING_CARRIED_SESSION_KIND, cid, opts.withinMs, async (msg) => {
     const body = msg.body as { held?: unknown; refused?: unknown };
     return body.held === true || typeof body.refused === "string";
   });
-  opts.transport.sendSession(HOSTING_CARRY_SESSION_KIND, { cid: sealed.cid, ciphertext: base64UrlEncode(sealed.ciphertext) });
+  opts.transport.sendSession(HOSTING_CARRY_SESSION_KIND, { cid, ciphertext: base64UrlEncode(ciphertext) });
   const msg = await answered;
   if (!msg) return null;
   const body = msg.body as { held?: unknown; refused?: unknown };
-  return body.held === true ? { cid: sealed.cid, held: true } : { cid: sealed.cid, refused: String(body.refused) };
+  return body.held === true ? { cid, held: true } : { cid, refused: String(body.refused) };
 }
 
-/** Open a `hosting/fetched` answer with the walker's own receipt: null for bytes that do not match the address. */
+/**
+ * Open a `hosting/fetched` answer with the walker's own receipt. Null for an address no receipt holds, and for
+ * bytes that refuse: altered, swapped, cut short, re-ordered, or opening to another document than the receipt names.
+ */
 export async function openCarried(store: WalkStore, gatePubKey: string, body: unknown): Promise<Uint8Array | null> {
   const answer = body as { cid?: unknown; ciphertext?: unknown } | null;
   if (typeof answer?.cid !== "string" || typeof answer.ciphertext !== "string") return null;
-  const receipt = (await store.read(gatePubKey.toLowerCase()))?.carried?.find((r) => r.cid === answer.cid);
-  if (!receipt) return null;
+  const record = await store.read(gatePubKey.toLowerCase());
+  const receipt = record?.carried?.find((r) => r.cid === answer.cid);
+  if (!record || !receipt) return null;
   let ciphertext: Uint8Array;
   try { ciphertext = base64UrlDecode(answer.ciphertext); } catch { return null; }
-  if (!verifyCiphertextCid(ciphertext, receipt.cid)) return null;
-  return openBodyOnCas(ciphertext, hexToBytes(receipt.readCap));
+  const under = receiptKey(receipt, record.nexusAid);
+  const authorized = authorizeAddress(receipt.cid, "own-receipt");
+  if (under === null || authorized === null) return null;
+  const opened = openPrivateBody({ ciphertext, under, ref: receipt.ref, authorized });
+  return "plaintext" in opened ? opened.plaintext : null;
 }
 
 /**

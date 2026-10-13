@@ -9,16 +9,13 @@ import { describe, test, expect } from "vitest";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { randomBytes } from "node:crypto";
-import { CONVERGENCE_SECRET_LEN } from "@lararium/mesh";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { installSealedBody } from "../src/ciphertext-cas-seal.js";
+import { freshTestBodyKey } from "./cas-test-setup.js";
 import { makeBagTracker, noteInstalledBody } from "../src/bag-tracker.js";
-import type { NexusEpochSecret } from "../src/nexus-convergence-keyring.js";
 
 const casDir = mkdtempSync(join(tmpdir(), "lar-cad-tracker-"));
 const NAME = { nexusAid: "epoch0-" + "cd".repeat(32), epochCid: "epoch0-" + "cd".repeat(32) };
-const epochSecret: NexusEpochSecret = { ...NAME, secret: new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN)) };
 
 describe("the bag-tracker indexes announced holders — DHT-free discovery", () => {
   test("an empty tracker is an honest miss (fail-closed until a body announces)", () => {
@@ -31,7 +28,7 @@ describe("the bag-tracker indexes announced holders — DHT-free discovery", () 
     const tracker = makeBagTracker();
     const registry = makeSealedPlaneRegistry();
     const body = new TextEncoder().encode("a cad body this member holds and announces");
-    const installed = installSealedBody(registry, casDir, body, epochSecret);
+    const installed = installSealedBody(registry, casDir, body, freshTestBodyKey(), NAME);
 
     noteInstalledBody(tracker, installed, "member-self");     // the side-effect off the encrypt path
     expect(tracker.holdersOf(installed.cid)).toEqual(["member-self"]);

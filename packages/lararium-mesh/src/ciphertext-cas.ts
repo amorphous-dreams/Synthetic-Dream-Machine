@@ -1,70 +1,41 @@
 /**
- * ciphertext-cas — the ENCRYPT-ON-CAS primitive: a body leaves the CRDT as CIPHERTEXT, content-addressed by
- * `cid = BLAKE3(ciphertext)`, so an untrusted member relay blind-transits + verifies it holding NO secret
- * (content-resolution.mem #cad-storage, verify-cap ⊥ read-cap). This is the cad-private addressing mode.
+ * ciphertext-cas — a PRIVATE BODY on the content-addressed store: sealed, addressed over its ciphertext.
  *
- * THE SELF-PROVING SEAL (verify-cap, secret-free). The address IS `BLAKE3(ciphertext)`: any relay recomputes
- * `BLAKE3(bytes) == cid` with NOTHING but the bytes — no key, no per-Nexus secret, no read-cap. That recompute
- * IS the member blind-transit lane's honesty (the relay carries what it can never read AND proves integrity
- * without the read-cap). `verifyCiphertextCid` is that check; it routes through `digestsEqual`, so the claimed
- * cid must name `blake3:` itself (agile-digest, fork-① — the algorithm rides IN the multihash tag; a cid that
- * names none matches nothing).
+ * A private body leaves the CRDT as one sealed value (`sealed-chunk`): randomized authenticated encryption
+ * under its bag's versioned content key, bound to the bag, the key version, the role `blob` and the body's own
+ * plaintext digest. The pointer in the wiki names that plaintext digest and never a ciphertext address; the
+ * bag's manifest leads from the digest to the address.
  *
- * THE READ-CAP (message-locked, per-Nexus). The body is sealed by a message-locked convergent construction:
- *   · messageKey = BLAKE3(plaintext, key = nexusSecret)          — the READ-CAP; message-locked to (content, secret)
- *   · keystream  = BLAKE3(KEYSTREAM_DOMAIN, key = messageKey, dkLen = |plaintext|)   — a per-body XOF keystream
- *   · ciphertext = plaintext ⊕ keystream
- *   · cid        = BLAKE3(ciphertext)                            — the VERIFY-CAP, secret-free
- * DEDUP is per-Nexus by construction: same (content, secret) → same messageKey → same keystream → same
- * ciphertext → same cid. A DIFFERENT per-Nexus secret → a different messageKey → a different cid → NO
- * cross-Nexus dedup (no confirmation-of-file leak across Nexuses). The read-cap (messageKey) rides the PRIVATE
- * lane (keyhive) and NEVER crosses the relay; the relay sees only ciphertext + cid.
+ * VERIFY ⊥ READ. The address reads `blake3:` over every sealed byte, so a carrier that holds no key recomputes
+ * it from the bytes alone (`verifyCiphertextCid`). That check proves the bytes match the address and nothing
+ * more. Reading takes the content key, an AUTHORIZED address, and the plaintext digest the pointer names: the
+ * opener answers the whole plaintext or one named refusal, and it refuses a body whose opened bytes hash to
+ * another digest than the one asked for.
  *
- * ── THE ACCEPTED RESIDUAL (fork-② = A, operator-ruled 2026-07-21) ────────────────────────────────────────
- * A PER-NEXUS convergence secret (not per-file random) admits the classic convergent-encryption INSIDER
- * confirmation-of-file residual: a Nexus member holding the secret can test whether a candidate plaintext
- * seals to a held cid. The operator ACCEPTS this — a Nexus member sits INSIDE the causal-island trust
- * boundary. The OPRF rate-limit throttle [fork-②-B] is DEFERRED to the Sensorium machina and NOT built here.
+ * NO CONVERGENT SEAL. Sealing one body twice yields two unlike values under two unlike addresses. No key
+ * derives from content or from a Nexus secret, so no holder confirms a guessed body against a held address.
  *
- * ── THE SURFACED SUB-FORK (fork-②, secret DERIVATION — Provisional, NOT wired here) ──────────────────────
- * This module keeps the per-Nexus secret an INJECTED 32-byte input. WHERE it derives (from Nexus-admission
- * material, re-derivable by every member on re-admission — vs an independent high-entropy secret VERSIONED by
- * a wax-sealed charter epoch) is the keyhive↔charter boundary, and NO shared per-Nexus secret source stands
- * today (the charter carries PUBLIC keys only). The cleanest primitive ships here; the derivation + custody +
- * epoch-rotation is surfaced as the honest gap (the seal FAILS CLOSED with no secret — see the node installer).
- *
- * Platform-blind: `@noble/hashes/blake3` (audited, browser-shippable) + agile-digest + crypto `hex` only.
- * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#/cad-storage
+ * Platform-blind: `@noble/hashes`, `@noble/ciphers`.
+ * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store · lar:///ha.ka.ba/lararium/mesh/content-resolution#/cad-storage
  */
-
-import { CAD_KEYSTREAM_INFO } from "./domains.js";
 import { blake3 } from "@noble/hashes/blake3.js";
-import { hex } from "./crypto.js";
-import { formatDigest, digestsEqual } from "./agile-digest.js";
+import { digestsEqual } from "./agile-digest.js";
+import { hexToBytes, sha256HexBytesSync, type RandomProvider } from "./crypto.js";
+import {
+  SEALED_ADDRESS_ALGO, keyVersionIdOf, openChunk, readContentKey, sealChunk, sealedAddressOf,
+  type AuthorizedAddress, type ContentKey, type KeyVersionId, type OpenRefusalName, type SealContext,
+  type SealRefusalName, type SealedAddress,
+} from "./sealed-chunk.js";
 
-/** The BLAKE3 multihash algorithm tag a ciphertext cid carries (agile-digest canonical form `blake3:<hex>`). */
-export const CIPHERTEXT_CID_ALGO = "blake3" as const;
+/** The multihash algorithm tag a ciphertext address carries (agile-digest canonical form `blake3:<hex>`). */
+export const CIPHERTEXT_CID_ALGO = SEALED_ADDRESS_ALGO;
 
-/** A per-Nexus convergence secret / a read-cap (messageKey) rides exactly 32 bytes — BLAKE3's keyed-MAC width. */
+/** A per-Nexus convergence secret rides exactly 32 bytes. */
 export const CONVERGENCE_SECRET_LEN = 32 as const;
 
-/** The fixed domain-separation tag the keystream hashes under `key = messageKey` — distinct from the derive step. */
-const KEYSTREAM_DOMAIN = new TextEncoder().encode(CAD_KEYSTREAM_INFO);
-
-/** A sealed body: the secret-free VERIFY-CAP (cid) + the ciphertext a relay carries + the READ-CAP a member keeps. */
-export interface SealedBody {
-  /** `blake3:<hex>` — the content-address a relay recomputes secret-free (verify-cap). */
-  readonly cid: string;
-  /** The ciphertext bytes that rest in the `cid/` CAS tier and blind-transit the member lane. */
-  readonly ciphertext: Uint8Array;
-  /** The message-locked read-cap (32 bytes) — rides the PRIVATE keyhive lane, NEVER the relay. */
-  readonly readCap: Uint8Array;
-}
-
 /**
- * Guard a 32-byte secret / read-cap — a stray width never seals (fail-closed at the boundary). Exported so a
- * per-Nexus convergence keyring guards every epoch secret through the ONE width-check the seal itself trusts
- * (a single fail-closed boundary, never two drifting copies).
+ * Guard a 32-byte secret: a stray width never passes (fail-closed at the boundary). A per-Nexus convergence
+ * keyring guards every epoch secret through this ONE width check, never two drifting copies.
  */
 export function require32(bytes: Uint8Array, what: string): Uint8Array {
   if (!(bytes instanceof Uint8Array) || bytes.length !== CONVERGENCE_SECRET_LEN) {
@@ -74,65 +45,87 @@ export function require32(bytes: Uint8Array, what: string): Uint8Array {
 }
 
 /**
- * The self-proving content-address of ciphertext bytes: `blake3:<hex>`. A relay recomputes this with NOTHING
- * but the bytes — the whole verify-cap ⊥ read-cap split rests here. Algorithm-tagged (fork-①), so it sits
- * beside a legacy sha256 cid and carries the migration in-band.
- */
-export function ciphertextCid(ciphertext: Uint8Array): string {
-  return formatDigest(CIPHERTEXT_CID_ALGO, hex(blake3(ciphertext)));
-}
-
-/**
- * THE BLIND VERIFY (secret-free). Recompute `BLAKE3(ciphertext)` and compare to the claimed cid — the check a
- * relay runs to certify a body it can never read. Routes through `digestsEqual`: the claimed cid must carry the
- * `blake3:` tag. Returns false (never throws) on a malformed or untagged cid — a hot-path comparator surfaces a
- * mismatch, it never crashes transit.
- */
-export function verifyCiphertextCid(ciphertext: Uint8Array, cid: string): boolean {
-  return digestsEqual(ciphertextCid(ciphertext), cid);
-}
-
-/**
- * Derive the message-locked read-cap (messageKey) for a body: `BLAKE3(plaintext, key = nexusSecret)`. Message-
- * locked → same (content, secret) yields the same read-cap (per-Nexus dedup); a different secret yields a
- * different read-cap (no cross-Nexus dedup). The output IS the read-cap that rides the private lane.
+ * A keyed digest of a body under a per-Nexus convergence secret: `BLAKE3(plaintext, key = nexusSecret)`.
+ * NOTHING SEALS OR OPENS WITH IT. No sealed value derives from a convergence secret; this digest stands for
+ * the convergence keyring's own `readCapForEpoch` alone and leaves the tree with that reader.
  */
 export function deriveMessageKey(plaintext: Uint8Array, nexusSecret: Uint8Array): Uint8Array {
   require32(nexusSecret, "nexusSecret");
   return blake3(plaintext, { key: nexusSecret, dkLen: CONVERGENCE_SECRET_LEN });
 }
 
-/** The per-body XOF keystream: `BLAKE3(KEYSTREAM_DOMAIN, key = messageKey, dkLen = len)`. Deterministic in the
- *  read-cap alone — a member decrypts with the read-cap, never the per-Nexus secret. */
-function keystream(readCap: Uint8Array, len: number): Uint8Array {
-  require32(readCap, "readCap");
-  return blake3(KEYSTREAM_DOMAIN, { key: readCap, dkLen: len });
-}
-
-/** XOR two equal-length byte runs into a fresh buffer (the stream-cipher core; length-checked by the caller). */
-function xorBytes(a: Uint8Array, b: Uint8Array): Uint8Array {
-  const out = new Uint8Array(a.length);
-  for (let i = 0; i < a.length; i++) out[i] = a[i]! ^ b[i]!;
-  return out;
+/** The address of ciphertext bytes: `blake3:<hex>` over every byte. A carrier recomputes it holding no key. */
+export function ciphertextCid(ciphertext: Uint8Array): string {
+  return sealedAddressOf(ciphertext);
 }
 
 /**
- * SEAL a body ON the CAS: message-lock it to the per-Nexus secret, XOR-stream it to ciphertext, address it by
- * `BLAKE3(ciphertext)`. Deterministic → per-Nexus dedup; the read-cap stays with the caller (never the relay).
- * FAIL-CLOSED upstream: a caller with NO per-Nexus secret MUST NOT reach here (the body stays local/unsealed —
- * never a plaintext body registered as sealed). The primitive itself never sees the fail-open path.
+ * THE BLIND VERIFY. Recompute the address and compare it to the claimed one: the check a carrier runs over a
+ * body it can never read. False, never a throw, on a malformed or untagged address. It proves the bytes match
+ * the address; it proves nothing about whether the address belongs where a reader found it.
  */
-export function sealBodyOnCas(plaintext: Uint8Array, nexusSecret: Uint8Array): SealedBody {
-  const readCap = deriveMessageKey(plaintext, nexusSecret);
-  const ciphertext = xorBytes(plaintext, keystream(readCap, plaintext.length));
-  return { cid: ciphertextCid(ciphertext), ciphertext, readCap };
+export function verifyCiphertextCid(ciphertext: Uint8Array, cid: string): boolean {
+  try { return digestsEqual(ciphertextCid(ciphertext), cid); } catch { return false; }
 }
 
+/** One bag's content key at one key version, with the bag it serves. */
+export interface PrivateBodyKey {
+  readonly bagId: string;
+  readonly key:   ContentKey;
+}
+
+/** A sealed private body: what a carrier holds (`cid`, `ciphertext`) and what its pointer and manifest name. */
+export interface SealedPrivateBody {
+  /** `blake3:<hex>` over the ciphertext: the address a carrier stores, serves and verifies by. */
+  readonly cid:        SealedAddress;
+  readonly ciphertext: Uint8Array;
+  /** The key version the body sealed under. */
+  readonly keyVersion: KeyVersionId;
+  /** The body's logical reference: lower-case hex SHA-256 of the plaintext, the digest its pointer names. */
+  readonly ref:        string;
+}
+
+const REF = /^[0-9a-f]{64}$/;
+const blobContext = (under: PrivateBodyKey, keyVersion: KeyVersionId, ref: string): SealContext =>
+  ({ bagId: under.bagId, keyVersion, role: "blob", logicalRef: hexToBytes(ref) });
+
+export type SealPrivateBodyResult = { readonly body: SealedPrivateBody } | { readonly refusal: SealRefusalName };
+
+/** Seal one private body under its bag's content key. Two seals of one body share no byte past the header's
+ *  version hint and no address. */
+export function sealPrivateBody(plaintext: Uint8Array, under: PrivateBodyKey, random?: Pick<RandomProvider, "getRandomValues">): SealPrivateBodyResult {
+  const key = readContentKey(under?.key);
+  if (key === null) return { refusal: "key-malformed" };
+  if (typeof under.bagId !== "string" || under.bagId.length === 0) return { refusal: "context-malformed" };
+  if (!(plaintext instanceof Uint8Array)) return { refusal: "plaintext-malformed" };
+  const keyVersion = keyVersionIdOf(key, under.bagId);
+  const ref = sha256HexBytesSync(plaintext);
+  const sealed = sealChunk({ key, context: blobContext(under, keyVersion, ref), plaintext, ...(random ? { random } : {}) });
+  if (!("chunk" in sealed)) return sealed;
+  return { body: { cid: sealed.chunk.address, ciphertext: sealed.chunk.sealed, keyVersion, ref } };
+}
+
+export const OPEN_PRIVATE_BODY_REFUSALS = [
+  "reference-malformed",    // the pointer's digest reads as no SHA-256
+  "plaintext-mismatch",     // the body opened, and its bytes hash to another digest than the pointer names
+] as const;
+export type OpenPrivateBodyRefusalName = OpenRefusalName | (typeof OPEN_PRIVATE_BODY_REFUSALS)[number];
+export type OpenPrivateBodyResult = { readonly plaintext: Uint8Array } | { readonly refusal: OpenPrivateBodyRefusalName };
+
 /**
- * OPEN a sealed body with its read-cap (the private-lane member path). Recomputes the keystream from the
- * read-cap ALONE — the per-Nexus secret is NOT needed to read, only to (re-)derive the read-cap. The relay,
- * holding neither, carries the ciphertext and reads nothing.
+ * Open one private body: the content key, the plaintext digest its pointer names, and an authorized address.
+ * Answers the whole plaintext or one named refusal; altered, swapped, truncated and re-ordered bytes all
+ * refuse, and so does a body that opens to other bytes than the pointer names.
  */
-export function openBodyOnCas(ciphertext: Uint8Array, readCap: Uint8Array): Uint8Array {
-  return xorBytes(ciphertext, keystream(readCap, ciphertext.length));
+export function openPrivateBody(args: {
+  readonly ciphertext: Uint8Array; readonly under: PrivateBodyKey; readonly ref: string; readonly authorized: AuthorizedAddress;
+}): OpenPrivateBodyResult {
+  const key = readContentKey(args.under?.key);
+  if (key === null) return { refusal: "key-malformed" };
+  if (typeof args.under.bagId !== "string" || args.under.bagId.length === 0) return { refusal: "context-malformed" };
+  if (typeof args.ref !== "string" || !REF.test(args.ref)) return { refusal: "reference-malformed" };
+  const opened = openChunk({ key, context: blobContext(args.under, keyVersionIdOf(key, args.under.bagId), args.ref), sealed: args.ciphertext, authorized: args.authorized });
+  if (!("plaintext" in opened)) return opened;
+  if (sha256HexBytesSync(opened.plaintext) !== args.ref) return { refusal: "plaintext-mismatch" };
+  return opened;
 }

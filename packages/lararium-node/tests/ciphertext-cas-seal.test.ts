@@ -13,15 +13,15 @@ import { describe, test, expect } from "vitest";
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { randomBytes } from "node:crypto";
+import { writeFileSync } from "node:fs";
 import {
   DeterministicFederationGate, carryContractShareDecision, carrierShareDecision,
-  verifyCiphertextCid, parseDigest, CONVERGENCE_SECRET_LEN,
+  verifyCiphertextCid, parseDigest,
   type NexusMembership,
 } from "@lararium/mesh";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { installSealedBody, docIdForCiphertextCid } from "../src/ciphertext-cas-seal.js";
-import type { NexusEpochSecret } from "../src/nexus-convergence-keyring.js";
+import { freshTestBodyKey, openAsMember } from "./cas-test-setup.js";
 
 const NX = "abcdef0123456789";
 const fedGate = new DeterministicFederationGate(NX);
@@ -30,7 +30,6 @@ const relayPeers = new Set([MEMBER, STRANGER]);
 const membership: NexusMembership = { holdsCarriagePeer: (p) => p === MEMBER };
 const casDir = mkdtempSync(join(tmpdir(), "lar-cad-seal-"));
 const NAME = { nexusAid: "epoch0-" + "cd".repeat(32), epochCid: "epoch0-" + "cd".repeat(32) };
-const epochSecret: NexusEpochSecret = { ...NAME, secret: new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN)) };
 
 describe("the seal-producer registers a sealed body AS A SIDE-EFFECT and lights the member lane", () => {
   test("installing a sealed body registers its docId; a MEMBER blind-transits it, a STRANGER is denied", async () => {
@@ -38,7 +37,8 @@ describe("the seal-producer registers a sealed body AS A SIDE-EFFECT and lights 
     expect(registry.size).toBe(0);   // fail-closed at birth
     const body = new TextEncoder().encode("a private cad body that leaves the CRDT sealed");
 
-    const installed = installSealedBody(registry, casDir, body, epochSecret);   // encrypt → CAS-write → register
+    const under = freshTestBodyKey();
+    const installed = installSealedBody(registry, casDir, body, under, NAME);   // encrypt → CAS-write → register
     expect(registry.size).toBe(1);                                         // the SIDE-EFFECT fired
     expect(registry.seal.isSealedPlane(installed.docId)).toBe(true);
     // The epoch sidecar rides beside the seal set — the cid stays pure BLAKE3(ct), the epoch keys the read-lookup.
@@ -52,8 +52,9 @@ describe("the seal-producer registers a sealed body AS A SIDE-EFFECT and lights 
     // The ciphertext rests in CAS and verifies SECRET-FREE (the relay's blind check).
     expect(parseDigest(installed.cid).algo).toBe("blake3");             // fork-① tagged address
     const atRest = new Uint8Array(readFileSync(join(casDir, installed.cid)));
-    expect(atRest.length).toBe(body.length);                           // XOR-stream: ciphertext == plaintext length
+    expect(atRest.length).toBeGreaterThan(body.length);
     expect(verifyCiphertextCid(atRest, installed.cid)).toBe(true);
+    expect(openAsMember(atRest, installed, under)).toEqual(body);
   });
 
   test("a PLAINTEXT body NEVER registers — its docId reads unsealed (a doc can never self-label sealed)", async () => {
@@ -65,6 +66,49 @@ describe("the seal-producer registers a sealed body AS A SIDE-EFFECT and lights 
     expect(registry.seal.isSealedPlane(fakeDocId)).toBe(false);
     expect(await carrierShareDecision(relayPeers, fedGate, null, null, membership, registry.seal, MEMBER, fakeDocId)).toBe(false);
   });
+});
+
+test("the installer's answer holds no key: every field may cross to a caller", () => {
+  const registry = makeSealedPlaneRegistry();
+  const under = freshTestBodyKey();
+  const installed = installSealedBody(registry, casDir, new TextEncoder().encode("a body"), under, NAME);
+  expect(Object.keys(installed).sort()).toEqual(["cid", "docId", "epochCid", "keyVersion", "nexusAid", "ref"]);
+  const keyHex = Buffer.from(under.key).toString("hex");
+  expect(keyHex.length).toBe(64);
+  expect(JSON.stringify(installed)).not.toContain(keyHex);
+});
+
+test("ORDER: a write that fails registers nothing, and a seal that refuses writes nothing", () => {
+  const registry = makeSealedPlaneRegistry();
+  const body = new TextEncoder().encode("a body whose block never lands");
+  // The cad dir's path holds a FILE, so the CAS write throws after the seal succeeded.
+  const blocked = join(casDir, "not-a-dir");
+  writeFileSync(blocked, "occupied");
+  expect(() => installSealedBody(registry, blocked, body, freshTestBodyKey(), NAME)).toThrow();
+  expect(registry.size).toBe(0);                                              // no docId stands with no ciphertext behind it
+  // A seal that refuses (a short key) throws by name before any byte lands.
+  const short = { bagId: "lar:///ha.ka.ba/@test/bags/sealed-fixture", key: new Uint8Array(16) } as never;
+  expect(() => installSealedBody(registry, casDir, body, short, NAME)).toThrow(/did not seal \(key-malformed\)/);
+  expect(registry.size).toBe(0);
+  // CONTROL: the same body under a whole key and a real dir registers one docId.
+  const installed = installSealedBody(registry, casDir, body, freshTestBodyKey(), NAME);
+  expect(registry.size).toBe(1);
+  expect(registry.seal.isSealedPlane(installed.docId)).toBe(true);
+});
+
+test("a relay that alters the stored ciphertext never yields plaintext", () => {
+  const registry = makeSealedPlaneRegistry();
+  const body = new TextEncoder().encode("address-bound private body");
+  const under = freshTestBodyKey();
+  const installed = installSealedBody(registry, casDir, body, under, NAME);
+  const file = join(casDir, installed.cid);
+  const untouched = new Uint8Array(readFileSync(file));
+  const altered = untouched.slice();
+  altered[altered.length - 1] ^= 1;
+  expect(altered).not.toEqual(untouched);
+  expect(verifyCiphertextCid(altered, installed.cid)).toBe(false);
+  expect(openAsMember(altered, installed, under)).toBe("REFUSED address-mismatch");
+  expect(openAsMember(untouched, installed, under)).toEqual(body);
 });
 
 describe("READ-LANE UNTOUCHED — an empty registry degenerates EXACTLY to the pre-split floor", () => {

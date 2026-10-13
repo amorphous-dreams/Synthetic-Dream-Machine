@@ -19,11 +19,16 @@ import { mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { pluginCidsFromIslandBlobs, type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership } from "@lararium/mesh";
+import { randomBytes } from "crypto";
+import {
+  pluginCidsFromIslandBlobs, authorizeAddress, openPrivateBody, readContentKey,
+  type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership, type PrivateBodyKey,
+} from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
 import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
-import { mintNexusSecret, makeNexusConvergenceKeyring, type NexusConvergenceKeyring } from "../src/nexus-convergence-keyring.js";
+import { mintNexusSecret, makeNexusConvergenceKeyring, type NexusConvergenceKeyring, type NexusEpochName } from "../src/nexus-convergence-keyring.js";
+import type { InstalledSealedBody } from "../src/ciphertext-cas-seal.js";
 import { cadSealDir, sealCarrierForFederation } from "../src/seal-carrier-federation.js";
 
 // L9 — this plane pins the repo's OWN tracked genesis dir (`<repo>/genesis`), derived from THIS
@@ -85,11 +90,13 @@ export const antigenOf = (kapaed: Iterable<string>): AntigenRing => {
   return { kapaed: set, presenterNym: (peerId) => peerId };
 };
 
-/** The one-shot cad seal fixture — the sealed body every wire test carries. */
+/** The one-shot cad seal fixture — the sealed body every wire test carries, and the key a member opens it with. */
 export interface SealedBodyFixture {
   readonly registry:  ReturnType<typeof makeSealedPlaneRegistry>;
   readonly cadDir:    string;
-  readonly installed: ReturnType<typeof sealCarrierForFederation>;
+  readonly installed: InstalledSealedBody;
+  /** The bag's content key a member holds through its lockbox. It never rides a relay. */
+  readonly under:     PrivateBodyKey;
   readonly cleanup:   () => void;
 }
 
@@ -105,16 +112,36 @@ export function freshTestKeyring(): NexusConvergenceKeyring {
   });
 }
 
+/** The synthetic bag a fixture body belongs to, and the Nexus scope its sealed block registers under. */
+export const TEST_BAG_ID = "lar:///ha.ka.ba/@test/bags/sealed-fixture";
+export const TEST_SCOPE: NexusEpochName = { nexusAid: TEST_NEXUS_AID, epochCid: TEST_HEAD_EPOCH };
+
+/** A fresh content key for the synthetic bag, held in memory alone. */
+export function freshTestBodyKey(bagId: string = TEST_BAG_ID): PrivateBodyKey {
+  return { bagId, key: readContentKey(new Uint8Array(randomBytes(32)))! };
+}
+
 /**
- * Seal one `plaintext` into a temp cad dir under a fresh in-memory keyring —
- * the registry + cadDir + InstalledSealedBody a wire test serves, plus the temp-dir cleanup.
+ * Open fetched ciphertext as a member does: the bag's content key, the digest the pointer names, and the address
+ * the member itself sealed. Answers the plaintext, or `REFUSED <name>` as text so a vector reads the refusal.
+ */
+export function openAsMember(ciphertext: Uint8Array, installed: Pick<InstalledSealedBody, "cid" | "ref">, under: PrivateBodyKey): Uint8Array | string {
+  const authorized = authorizeAddress(installed.cid, "own-receipt");
+  if (authorized === null) return "REFUSED address-malformed";
+  const opened = openPrivateBody({ ciphertext, under, ref: installed.ref, authorized });
+  return "plaintext" in opened ? opened.plaintext : `REFUSED ${opened.refusal}`;
+}
+
+/**
+ * Seal one `plaintext` into a temp cad dir under a fresh in-memory content key —
+ * the registry + cadDir + InstalledSealedBody a wire test serves, the key a member reads with, and the cleanup.
  */
 export function sealABody(plaintext: Uint8Array): SealedBodyFixture {
   const storageDir = mkdtempSync(join(tmpdir(), "lares-caswire-store-"));
   const registry = makeSealedPlaneRegistry();
-  const keyring = freshTestKeyring();
+  const under = freshTestBodyKey();
   const cadDir = cadSealDir(storageDir);
-  const installed = sealCarrierForFederation({ registry, cadDir, plaintext, keyring });
+  const installed = sealCarrierForFederation({ registry, cadDir, plaintext, under, scope: TEST_SCOPE });
   const cleanup = () => { rmSync(storageDir, { recursive: true, force: true }); };
-  return { registry, cadDir, installed, cleanup };
+  return { registry, cadDir, installed, under, cleanup };
 }

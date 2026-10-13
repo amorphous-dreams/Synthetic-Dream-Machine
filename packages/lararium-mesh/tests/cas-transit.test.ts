@@ -1,7 +1,7 @@
 /**
  * cas-transit.test.ts — the cad REMOTE leg: DHT-free discovery + secret-free BLAKE3(bytes)==cid verify.
  *
- * The load-bearing proofs against the REAL seal primitive (`sealBodyOnCas`) + a MODELED member↔relay transport:
+ * The load-bearing proofs against the REAL seal primitive (`sealPrivateBody`) + a MODELED member↔relay transport:
  *   · a member fetches a REMOTE-ONLY body via the transport's holder index (a bag-tracker stand-in) — no DHT,
  *   · a TAMPERED byte fails `verifyCiphertextCid` and is REJECTED at the fetcher (never returned, never cached),
  *   · the transport (relay) serves + the fetcher verifies holding NO secret (verify-cap ⊥ read-cap),
@@ -11,13 +11,15 @@
 import { describe, test, expect } from "vitest";
 import { randomBytes } from "node:crypto";
 import {
-  sealBodyOnCas, CONVERGENCE_SECRET_LEN,
+  sealPrivateBody, readContentKey,
   fetchCidOverTransit, makeCidResolver,
   type CasTransitTransport, type CasHolder,
 } from "../src/index.js";
 
-const secret = new Uint8Array(randomBytes(CONVERGENCE_SECRET_LEN));
-const sealed = sealBodyOnCas(new TextEncoder().encode("a sealed body that lives only on a remote holder"), secret);
+const key = readContentKey(new Uint8Array(randomBytes(32)))!;
+const sealedBody = sealPrivateBody(new TextEncoder().encode("a sealed body that lives only on a remote holder"), { bagId: "lar:///ha.ka.ba/@test/bags/transit", key });
+if (!("body" in sealedBody)) throw new Error(`setup: ${sealedBody.refusal}`);
+const sealed = sealedBody.body;
 
 /**
  * A modeled transport over a holder→bytes store — the relay/bag-tracker stand-in. `discover` returns the holders
@@ -35,6 +37,31 @@ function makeStoreTransport(store: Map<string, Map<CasHolder, Uint8Array | null>
     },
   };
 }
+
+describe("a local hit proves itself before it returns", () => {
+  test("RED: bytes altered at rest under a held address read as a miss, and the remote answer wins; CONTROL: an untouched hit returns with no transit", async () => {
+    const altered = new Uint8Array(sealed.ciphertext); altered[altered.length - 1] ^= 0x01;
+    expect([...altered]).not.toEqual([...sealed.ciphertext]);                   // the setup took
+    const asked: string[] = [];
+    const transit: CasTransitTransport = {
+      discover: async (cid) => { asked.push(cid); return ["relay-A"]; },
+      fetchBlock: async () => sealed.ciphertext,
+    };
+    const cached: Uint8Array[] = [];
+    const corrupt = makeCidResolver(() => altered, transit, (_cid, bytes) => { cached.push(bytes); });
+    expect(await corrupt(sealed.cid)).toEqual(sealed.ciphertext);
+    expect(asked).toEqual([sealed.cid]);
+    expect(cached).toEqual([sealed.ciphertext]);
+    // No holder anywhere: the altered bytes never return.
+    const alone = makeCidResolver(() => altered, { discover: async () => [], fetchBlock: async () => null }, () => {});
+    expect(await alone(sealed.cid)).toBeNull();
+    // CONTROL: an untouched local hit returns and asks nobody.
+    asked.length = 0;
+    const sound = makeCidResolver(() => sealed.ciphertext, transit, () => { throw new Error("a local hit caches nothing"); });
+    expect(await sound(sealed.cid)).toEqual(sealed.ciphertext);
+    expect(asked).toEqual([]);
+  });
+});
 
 describe("DHT-free remote fetch — the member finds a holder via the tracker index, no DHT", () => {
   test("a remote-only body fetches + verifies secret-free", async () => {

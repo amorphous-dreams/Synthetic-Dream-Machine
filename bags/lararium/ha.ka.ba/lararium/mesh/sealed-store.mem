@@ -62,7 +62,7 @@ This carrier states that format: the keys, the sealed value, its address, the re
 | ''Keyhive member keys'' | each vessel seated in a bag's key group | the lockboxes that carry content keys to that group | inside the Keyhive archive, sealed under the VK on a node | the VK | public group operations alone | a counted raise revokes the seat; a lift seats afresh and returns no earlier key (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/re-admission">>) |
 | ''Content key, one per key version'' | every reader the bag's key group held when a lockbox for that version got wrapped | every sealed value of that version: changes, checkpoints, blobs and the private part of each record | wrapped in a lockbox; bare in memory alone, and only while the vessel stands unlocked | the VK, then the Keyhive seat, then the lockbox | the lockbox as ciphertext, and the version's opaque id | a removal mints a successor version; the removed reader keeps the versions it held; a recovered device receives lockboxes as any newcomer does |
 | ''Body key, one per sealed value'' | nobody: each side derives it | the segments of one sealed value | nowhere | the content key | nothing | follows its content key |
-| ''Walker's carry key'' | the devices that hold one walker's per-Nexus leaf | the documents that walker hands a hearth to carry | nowhere: the leaf seed derives it | the leaf seed | the sealed values alone | a fresh leaf opens a fresh carriage; no hearth act reaches the key |
+| ''Walker's carry key, one per carried document'' | the devices that hold one walker's per-Nexus leaf | one document that walker hands a hearth to carry | the leaf seed and the document's digest derive it, and that document's receipt in the walker's own walk store keeps a copy | the leaf seed, or the receipt | the sealed value alone | a fresh leaf opens a fresh carriage; no hearth act reaches a key, and one exposed receipt opens one document |
 | ''Session signing key'' | one live session, beneath its vessel's face-scoped key | manifests, checkpoints and key version records; it seals nothing | in the session's memory alone | a live session (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">>) | nothing: every signature rides inside a sealed part | a withdrawal ends the vessel's face-scoped key; a reader then refuses its later records |
 | ''Per-Nexus convergence secret'' | the members an admission delivered it to | nothing in this format: it derives no content key and no body key | the sealed keyring row | the VK | nothing | its keyring and its delivery stand as built; the sealed store reads neither |
 | ''No key'' | the world | public and crossroads content, in the clear under a plaintext address | the public shelf | nothing | the bytes | nothing to roll |
@@ -108,18 +108,21 @@ The four ride one canonical image: the format's own name first, then each field 
 An opener answers with the plaintext or with exactly one named refusal, never a boolean and never partial bytes:
 
 |! refusal |! what the reader learned |
+| `address-unauthorized` | no named source vouched for the address |
 | `envelope-malformed` | too short to hold a header and one segment |
-| `format-unknown` | sealed bytes of a format this reader does not hold; never read as cleartext |
 | `address-mismatch` | the bytes do not hash to the address an authorized source named: altered or swapped |
+| `format-unknown` | sealed bytes of a format this reader does not hold; never read as cleartext |
 | `key-mismatch` | the key in hand does not belong to the key version the reader named |
 | `version-mismatch` | the value's version hint names another key version |
-| `context-mismatch` | the commitment fails: sealed for another bag, role or reference, or under another key |
+| `context-mismatch` | the commitment fails: sealed for another bag, role or reference, or by a hand that never held this key |
 | `sequence-broken` | a segment fails its tag: altered, out of order, repeated, cut inside, or trailing the final one |
 | `truncated` | the bytes end on a whole segment that names itself as not the last |
 
 The checks run in that order, and the commitment check precedes every decryption.
 
-An opener takes an ''authorized address'' and never a bare one. Two sources authorize an address: a verified manifest entry (#/the-records), and a receipt the reader wrote for a value it sealed with its own hands.
+An opener takes an ''authorized address'' and never a bare one, and the caller names the source that vouched for it. Three sources stand: a verified manifest entry (#/the-records); a receipt the reader wrote for a value it sealed with its own hands; and a record that carries its own sealed part, where the context binds that part to the record's id and the signature inside answers for the rest.
+
+''A blob's reader checks one thing more.'' A blob's logical reference names the SHA-256 digest of its plaintext, the same digest its pointer carries. The reader hashes what opened and refuses bytes that name another digest (`plaintext-mismatch`).
 
 <<~/ahu>>
 
@@ -140,7 +143,7 @@ An opener takes an ''authorized address'' and never a bare one. Two sources auth
 
 ''Each signed record holds a clear part and a sealed part.'' The clear part carries what a carrier needs to index and nothing that names a person. The sealed part carries the record's private fields, its writer's session certificate and the signature, as a sealed value of role `record` under the record's own key version. A record's id hashes its clear part under the record kind's own name.
 
-''A capable writer signs.'' A session signs each record with its session key under the `act` purpose, beneath the vessel's face-scoped key (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>). A reader trusts a record only after five checks pass, in order: the sealed part opens under the named key version; the session certificate reads whole; the signature covers the record's id and its private fields; the certificate's face holds write standing in the bag by the reader's own reading; and the record's own rules hold. A reader keeps each record it counted, and a record that goes missing later changes no reading it already took.
+''A capable writer signs.'' A session signs each record with its session key under the `act` purpose, beneath the vessel's face-scoped key (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>). A reader trusts a record only after six checks pass, in order: the clear part reads whole in its kind's own shape; it names the reader's bag locator, and the key in hand stands as its key version; the sealed part opens under that key version and the record's id; the private fields and the session certificate read whole; the signature covers the record's kind, its id and its private fields; and the certificate's face holds write standing in the bag by the reader's own reading. The lineage then judges a key version's transition. A reader keeps each record it counted, and a record that goes missing later changes no reading it already took.
 
 !!! The bag locator
 
@@ -151,8 +154,8 @@ A carrier names a bag by an opaque ''locator'': a keyed digest of the bag's id u
 * ''The key version id'' derives from the content key and the bag's id by HKDF-SHA-256. Whoever holds a key recomputes the id; nobody finds a second key for one id. The id commits a key drawn at random and hides nothing about a key someone could guess. A lockbox therefore needs no signature of its own.
 * ''Clear'': the locator, the key version id, the ids of its parent versions, and the id of the span it belongs to (#/epochs).
 * ''Sealed'': the cause (`founding`, `removal`, `admission` or `join`, with the id of the causal act where one applies), the span's history declaration, the certificate and the signature.
-* Two unlike records under one key version id refuse both.
-* ''A reader counts a successor only where its transition verifies.'' Every parent already stands counted in the reader's lineage. The span rule of #/epochs holds. A `removal` cites a raise the reader's own ledger counts, and an `admission` cites an admission act the reader verifies. A `join` cites two or more versions, and its sealed part carries one proof per parent: a keyed digest of the new version's id under that parent's key, which a reader checks for every parent whose key it holds.
+* Two unlike records under one key version id refuse both, and every version that descends from that id leaves the lineage's readings with them, whatever order the records arrived in. The conflict shows at every door, and the bag continues only from a version that descends from neither.
+* ''A reader counts a successor only where its transition verifies.'' Every parent already stands counted in the reader's lineage. The span rule of #/epochs holds. A `removal` cites one or more raises, and the reader's own ledger counts every one; an `admission` cites an admission act the reader verifies. A `join` cites two or more versions, and its sealed part carries one proof per parent: a keyed digest of the new version's id under that parent's key, which a reader checks for every parent whose key it holds.
 * ''A key enters use only under a key version record its reader counted.'' A lockbox that opens to a key no counted record names delivers nothing.
 
 !!! The lockbox
@@ -197,7 +200,7 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 | ''join'' of sibling versions | one version mints, citing every sibling | siblings of one span continue it; siblings of unlike spans open a new span on a `fresh` checkpoint |
 
 * ''An inviter never widens the audience for another writer's past'' (operator ruling). A span declared closed admits newcomers from now alone. An inviter chooses between history the span already declared shareable and a present-state admission.
-* ''A removal rolls forward only.'' The roll follows the Keyhive revocation the counted raise owes (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>). Every counted raise owes one roll, whatever acts follow it, and a lift restores standing and never an earlier key.
+* ''A removal rolls forward only.'' The seat roll a vessel hands its subscribers stands as the one trigger (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>), and the content key rolls on every answer the key group gave: the seat revoked, the seat gone, or a seat no hand here can revoke. Raises answered together share one successor version. Every counted raise owes one roll, whatever acts follow it, and a lift restores standing and never an earlier key. A roll a vessel could not finish stays owed, and the same seat roll comes again.
 * ''Present state without past needs a fresh causal base.'' The document engine keeps every operation inside one document, deleted text included, through save, sync and compaction alike. A `fresh` checkpoint therefore founds a new document from present values, and the span that opens on it shares no history with the span before.
 * ''Within a span'', changes sealed under neighbouring key versions merge as one document. A reader needs each version's key for the values it reads.
 * ''Across a span boundary'' no engine merge exists. A change written against the earlier span after the fresh base got cut stands as a ''late change''. Any holder of the manifests detects one: a change in the earlier span that no checkpoint's cover reaches. A writer that holds both spans' keys re-authors it onto the new base; until then it surfaces as a conflict and never drops in silence.
@@ -210,7 +213,8 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 * Two vessels that count the same raise, or two unlike raises, may each mint a successor from the same parent. Both versions stand as ''siblings''. Nothing ranks them: no clock, no arrival order and no id comparison.
 * ''The heads of a bag's key lineage'' name the versions no other version cites. A lineage with more than one head shows a fork at every door.
-* A writer seals new values under a head it holds. A writer that holds every head, and stands under no shadow of its own in that bag, may ''join'' them by minting one version that cites all of them. A writer that holds one head of several keeps writing under that head.
+* A writer seals new values under a head it holds. A writer that holds every head, and stands under no shadow of its own in that bag, may ''join'' them by minting one version that cites all of them. A writer that holds one head of several keeps writing under that head. A writer that holds some of several keeps the head it last wrote under; where it wrote under none, a person chooses.
+* A roll cites the heads its vessel holds and no head it cannot open.
 * A vessel that already holds a successor for a raise mints no second one for it.
 * ''Mutual removal ends in an explicit fork'' (operator ruling). Each party's roll shuts the other out, both key branches stay, and a vessel that reads a shadow over its own edge mints no further version in that bag. Both parties leave the shared key group (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>): a third member that counts both raises and holds both heads joins them into a version neither party receives. Where the two stand alone no join exists, and their relation continues only in a fresh realm, by an explicit fork, unless the realm's charter named a recovery council.
 
@@ -231,12 +235,18 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 !! What the code holds
 
-▢ ''OWED'', each part in the module its train lands:
-* ''The sealed value'': seal, open, the address, the authorized address and every refusal of #/the-sealed-value.
-* ''The records'': the key version, manifest and checkpoint records with their canonical images, the lockbox payload, and the row shapes the later steps persist.
-* ''The key lineage and the roll'': versions, heads, siblings, the join, the roll at a removal, and the interface a removal event feeds.
-* ''The content-addressed store'': a private body sealed and opened through the sealed value alone. Until that lands, the content-addressed opener returns bytes it never authenticated (`packages/lararium-mesh/src/ciphertext-cas.ts`), and a per-Nexus convergence secret still derives each body's key.
-* ''The walker's carriage'' and ''the node's seal producer'', moved onto the sealed value.
+''Built: a production path reaches each.''
+* ''The sealed value'' (`packages/lararium-mesh/src/sealed-chunk.ts`): seal, open, the address, the authorized address and every refusal of #/the-sealed-value.
+* ''The content-addressed store'' (`packages/lararium-mesh/src/ciphertext-cas.ts`): a private body seals and opens through the sealed value alone, as a `blob` bound to its plaintext digest. No opener returns unauthenticated bytes, and no key derives from content or from a Nexus secret.
+* ''The walker's carriage'' (`packages/lararium-mesh/src/walk-carry.ts`): a walker seals each carried document under that document's own key and opens it against its own receipt, which names the address, the document's digest and the key. Carries for one hearth run in turn, and a document the hearth already serves back deposits nothing twice. The hearth verifies the address and holds no key (`packages/lararium-node/src/hosting-carry.ts`).
+* ''The verified read'' (`packages/lararium-node/src/node-cas.ts`, `cas-wire.ts`, `bulb-read-face.ts`; `packages/lararium-mesh/src/cas-transit.ts`): a holder serves a block, and takes a local hit, only where the bytes still recompute to their address; a block altered at rest reads as a block the holder lacks, on the sealed tier and on the clear one.
+
+''Specified in code, each with its named caller.''
+* ''The node's seal producer'' (`packages/lararium-node/src/seal-carrier-federation.ts`, `ciphertext-cas-seal.ts`): it seals a body under the content key a caller hands it and registers the sealed block under its Nexus scope. Its caller, the `cad-seal` verb, hands no key until the lockbox store supplies a content-key holder, so the verb refuses by name and the body stays cleartext-local.
+* ''The records'' (`packages/lararium-mesh/src/sealed-records.ts`): the key version, manifest and checkpoint records with their canonical images, the manifest's authorized address, the join proofs, the lockbox payload, and the row shapes of the chunk index and the lockbox. Callers: the lockbox store and the chunk index of step two.
+* ''The key lineage and the roll'' (`packages/lararium-mesh/src/content-key-lineage.ts`): versions, heads, siblings, the span rules, the join, the roll at a removal, the hand-over of a shareable span, and the subscriber a seat roll feeds (`contentKeyRollSink`, over the `SeatRoll` of `seat-duties.ts`), proven against a scripted roll source. Callers: a composition that subscribes the sink to the vessel's seat rolls (`subscribeSeatRolls`), and step two's key mint.
+
+''The per-Nexus convergence secret seals nothing.'' Its keyring row and its delivery at admission stand as built. The `cad-seal` verb still loads the keyring and no reader derives from it; `readCapForEpoch` still derives a keyed digest that opens nothing.
 
 <<~/ahu>>
 
@@ -249,7 +259,7 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 * ''Step four'': the carriage protocol that publishes and fetches sealed values and clear record parts, the carrier's index, and its pins.
 * ''Step five'': a public bag served at the floor of a locked node.
 * ''Sync across epochs'': the act that re-authors a late change onto a fresh base, its record, and the door that shows a late change to a person.
-* ''The roll's trigger'': the removal event that feeds the roll, and the admission act that asks for a from-now roll or hands over a shareable span.
+* ''The roll's seat'': the compose line that subscribes the content-key roll to the vessel's seat rolls, with the scope-to-bags reading and the own-shadow reading it asks for; and the admission act that asks for a from-now roll or hands over a shareable span.
 * ''Range reads'': a verified read of one segment out of a large value, without hashing the whole.
 
 <<~/ahu>>
@@ -267,6 +277,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oTa1viy7268WaJdlSBMj86Do3ERNELKox_-KhnU_HWU
+<<^ code="&#x0003;">>ni:///sha-256;Em7KEb7CB_UCvtsNp_O37VFt7gHu05a-yaY1tzKvQ3w
 
 <<^ code="&#x0004;" -> to="?">>

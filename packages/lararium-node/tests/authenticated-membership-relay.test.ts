@@ -6,7 +6,7 @@
  *   · the ONE gate fronts the relay: a dial reaches it only on the knock its pinned key derives, proves its key, and
  *     reads the relay's signed verdict; a replayed or racing lar:auth meets silence or binds once,
  *   · CARRY ⊥ READ over the wire — an admitted MEMBER (proven key in the member set) carries the sealed ciphertext
- *     (verify-cap re-checked SECRET-FREE) + reads it with the per-body read-cap; a NON-member draws Mu,
+ *     (verify-cap re-checked SECRET-FREE) + reads it with its bag content key; a NON-member draws Mu,
  *   · NO IMPERSONATION — a stranger that forges `from = <a member's key>` is STAMPED back to its OWN proven key by
  *     the relay, so the cas-wire gate reads it as the stranger → Mu (the forged carry never crosses),
  *   · the wire bytes match the in-memory proof (the MembershipChannel interface carries the identical messages);
@@ -22,7 +22,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import WS, { type RawData } from "ws";
 import {
-  DeterministicFederationGate, openBodyOnCas, utf8Bytes, hex,
+  DeterministicFederationGate, utf8Bytes, hex,
   buildAuthResponse, ed25519SignerFromSeed, mintLeafNonce, knockedUrl, isLarChallengeMsg, isLarAuthOkMsg, mkLarSessionMsg,
   type MembershipChannel, type MembershipEnvelope,
 } from "@lararium/mesh";
@@ -33,7 +33,7 @@ import {
   startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel,
   type AuthenticatedMembershipRelay,
 } from "../src/authenticated-membership-relay.js";
-import { membershipOf, antigenOf, freshTestKeyring } from "./cas-test-setup.js";
+import { membershipOf, antigenOf, freshTestBodyKey, TEST_SCOPE, openAsMember } from "./cas-test-setup.js";
 import * as net from "node:net";
 import { request as httpRequest, Agent } from "node:http";
 import {
@@ -79,9 +79,9 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
 
     // Seal a body into the cad store.
     const registry = makeSealedPlaneRegistry();
-    const keyring = freshTestKeyring();
+    const under = freshTestBodyKey();
     const cadDir = cadSealDir(storageDir);
-    const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, keyring });
+    const installed = sealCarrierForFederation({ registry, cadDir, plaintext: BODY, under, scope: TEST_SCOPE });
 
     // The member gate: memberKey is a MEMBER; strangerKey is not. (Nexus pubkey seeds the federatable set.)
     const deps: CasWireServerDeps = {
@@ -103,7 +103,7 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
       expect(memberResp?.kind).toBe("cas-block");
       const carried = (memberResp!.payload as { bytes?: Record<string, number> }).bytes;
       const ciphertext = Uint8Array.from(Object.values(carried!));   // JSON round-trip of the byte array
-      expect([...openBodyOnCas(ciphertext, installed.readCap)]).toEqual([...BODY]);   // reads with the per-body read-cap
+      expect(openAsMember(ciphertext, installed, under)).toEqual(BODY);   // opens with the bag key and pointer digest
       expect([...ciphertext]).not.toEqual([...BODY]);                                  // carried bytes are CIPHERTEXT
 
       // ── NON-member draws Mu (no carry). ──

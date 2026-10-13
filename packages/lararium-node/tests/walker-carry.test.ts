@@ -13,15 +13,16 @@
  *   · a hearth's notice marks the record at risk.
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  carryDocument, fetchDocument, watchCarryNotice, takeInvite, issueGrant, encodeInvite, mintHostToken, utf8Bytes, hex,
+  carryDocument, fetchDocument, openCarried, watchCarryNotice, takeInvite, issueGrant, encodeInvite, mintHostToken, utf8Bytes, hex,
+  walkCarrySecret, walkCarryDocumentKey, sha256HexBytesSync, base64UrlEncode, base64UrlDecode, verifyCiphertextCid,
   HOSTING_NOTICE_SESSION_KIND, type HostingGrant, type LarSessionMsg, type WalkRecord, type WalkStore,
 } from "@lararium/mesh";
 import { serveHostingCarry } from "../src/hosting-carry.js";
-import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
+import { rollHosting, readHostingState, liveEpochs, hostingDir } from "../src/hosting-store.js";
 
 const AID = "epoch0-" + "a".repeat(64);
 const HEARTH = new Uint8Array(32).fill(71);
@@ -105,12 +106,149 @@ describe("the walker's carriage over the session verbs", () => {
     expect(await fetchDocument({ transport, store: thiefStore, gatePubKey: GATE, cid: carried!.cid, withinMs: 300 })).toBeNull();
   });
 
+  /** Every file under the hearth's hosting dir that holds carried bytes: path and bytes. */
+  function carriedFiles(): { path: string; bytes: Uint8Array }[] {
+    const out: { path: string; bytes: Uint8Array }[] = [];
+    const walk = (d: string, inBlobs: boolean) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p, f === "blobs"); else if (inBlobs) out.push({ path: p, bytes: new Uint8Array(readFileSync(p)) }); } };
+    walk(hostingDir(storageDir, AID), false);
+    return out;
+  }
+  /** The hearth names a carried file by its address's hex. */
+  const fileOf = (cid: string): string => cid.replace(/^blake3:/, "");
+  async function walkerAtHearth() {
+    await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
+    const grant = await grantAtCurrent("1".repeat(64));
+    const store = memoryStore();
+    await store.write(GATE, { nexusAid: AID, grant });
+    return { store, ...wire(() => grant) };
+  }
+
+  test("the receipt names the address, the document's digest and the walker's own key; the hearth sees none of the last two", async () => {
+    const { store, transport: bare, served } = await walkerAtHearth();
+    const sent: unknown[] = [];
+    const transport = { onSession: bare.onSession, sendSession: (kind: string, body: unknown) => { sent.push({ kind, body }); return bare.sendSession(kind, body); } };
+    const plaintext = utf8Bytes("a page the walker wrote");
+    const carried = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 });
+    const receipts = (await store.read(GATE))!.carried!;
+    const ref = sha256HexBytesSync(plaintext);
+    // The key belongs to this document alone: the walker's carry secret and the document's digest derive it.
+    const documentKey = hex(walkCarryDocumentKey(LEAF.seed, AID, ref));
+    expect(receipts).toEqual([{ cid: carried!.cid, ref, key: documentKey }]);
+    expect(documentKey).not.toBe(hex(walkCarrySecret(LEAF.seed, AID)));
+    expect(sent.length).toBeGreaterThan(0);                                   // the setup took: the carry crossed this transport
+    const wire = JSON.stringify(sent) + JSON.stringify(served) + carriedFiles().map((f) => hex(f.bytes)).join("");
+    expect(wire).not.toContain(receipts[0]!.ref);
+    expect(wire).not.toContain(receipts[0]!.key);
+    expect(carriedFiles().length).toBe(1);                                    // the setup took: the hearth holds the value
+  });
+
+  test("ORDER: the receipt rests before the sealed value leaves", async () => {
+    const { store, transport } = await walkerAtHearth();
+    const seenAtSend: number[] = [];
+    const watching = { onSession: transport.onSession, sendSession: (kind: string, body: unknown) => { if (kind === "hosting/carry") seenAtSend.push(store.map.get(GATE)?.carried?.filter((r) => r.cid === (body as { cid: string }).cid).length ?? 0); return transport.sendSession(kind, body); } };
+    await carryDocument({ transport: watching, store, gatePubKey: GATE, leaf: LEAF, plaintext: utf8Bytes("written down first"), withinMs: 2_000 });
+    expect(seenAtSend).toEqual([1]);
+  });
+
+  test("one exposed receipt opens one document: each carried document takes a key of its own", async () => {
+    const { store, transport } = await walkerAtHearth();
+    const first = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext: utf8Bytes("the first page"), withinMs: 2_000 });
+    const second = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext: utf8Bytes("the second page"), withinMs: 2_000 });
+    const [r1, r2] = (await store.read(GATE))!.carried!;
+    expect(r1!.key).not.toBe(r2!.key);
+    // A holder of the first receipt alone, handed the second document's address and bytes, opens nothing.
+    const held = carriedFiles();
+    const secondBytes = held.find((f) => f.path.endsWith(fileOf(second!.cid)))!.bytes;
+    const thief = memoryStore();
+    await thief.write(GATE, { nexusAid: AID, carried: [{ cid: second!.cid, ref: r2!.ref, key: r1!.key }] });
+    expect(await openCarried(thief, GATE, { cid: second!.cid, ciphertext: base64UrlEncode(secondBytes) })).toBeNull();
+    // CONTROL: the second receipt opens it.
+    expect(hex((await openCarried(store, GATE, { cid: second!.cid, ciphertext: base64UrlEncode(secondBytes) }))!)).toBe(hex(utf8Bytes("the second page")));
+    expect(first!.cid).not.toBe(second!.cid);
+  });
+
+  test("carries that start together lose no receipt, and one document started twice deposits once", async () => {
+    const { store, transport } = await walkerAtHearth();
+    const pages = ["page one", "page two", "page three"].map((t) => utf8Bytes(t));
+    const outcomes = await Promise.all(pages.map((plaintext) => carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 })));
+    expect(outcomes.every((o) => o !== null && "held" in o)).toBe(true);
+    const receipts = (await store.read(GATE))!.carried!;
+    expect(receipts.map((r) => r.cid).sort()).toEqual(outcomes.map((o) => o!.cid).sort());
+    expect(carriedFiles().length).toBe(3);
+    for (const [i, o] of outcomes.entries()) {
+      const back = await fetchDocument({ transport, store, gatePubKey: GATE, cid: o!.cid, withinMs: 2_000 });
+      expect(back && hex(back)).toBe(hex(pages[i]!));
+    }
+    // The same document, started twice in one tick: one value at the hearth, one receipt, one address.
+    const twin = utf8Bytes("handed over twice at once");
+    const [a, b] = await Promise.all([0, 1].map(() => carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext: twin, withinMs: 2_000 })));
+    expect(a!.cid).toBe(b!.cid);
+    expect(carriedFiles().length).toBe(4);
+    expect((await store.read(GATE))!.carried!.length).toBe(4);
+  });
+
+  test("a hearth that alters, swaps or cuts what it carries hands back nothing that opens", async () => {
+    const { store, transport } = await walkerAtHearth();
+    const first = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext: utf8Bytes("pay the gardener forty"), withinMs: 2_000 });
+    const second = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext: utf8Bytes("pay the gardener ninety"), withinMs: 2_000 });
+    const held = carriedFiles();
+    expect(held.length).toBe(2);
+    const bytesOf = (cid: string): Uint8Array => held.find((f) => f.path.endsWith(fileOf(cid)))!.bytes;
+    const answer = (cid: string, bytes: Uint8Array) => ({ cid, ciphertext: base64UrlEncode(bytes) });
+    // CONTROL: the true bytes under the true address open.
+    expect(hex((await openCarried(store, GATE, answer(first!.cid, bytesOf(first!.cid))))!)).toBe(hex(utf8Bytes("pay the gardener forty")));
+    expect(hex((await openCarried(store, GATE, answer(second!.cid, bytesOf(second!.cid))))!)).toBe(hex(utf8Bytes("pay the gardener ninety")));
+    // Swapped: the hearth answers the first address with the second document's bytes.
+    expect(hex(bytesOf(second!.cid))).not.toBe(hex(bytesOf(first!.cid)));
+    expect(await openCarried(store, GATE, answer(first!.cid, bytesOf(second!.cid)))).toBeNull();
+    // Altered: one stored byte moves.
+    const altered = Uint8Array.from(bytesOf(first!.cid)); altered[altered.length - 1] = altered[altered.length - 1]! ^ 1;
+    expect(hex(altered)).not.toBe(hex(bytesOf(first!.cid)));
+    expect(await openCarried(store, GATE, answer(first!.cid, altered))).toBeNull();
+    // Cut short.
+    expect(await openCarried(store, GATE, answer(first!.cid, bytesOf(first!.cid).slice(0, 90)))).toBeNull();
+    // An address the walker wrote no receipt for opens nothing, whatever bytes ride it.
+    const foreign = bytesOf(second!.cid);
+    const stranger = memoryStore();
+    await stranger.write(GATE, { nexusAid: AID, carried: [] });
+    expect(verifyCiphertextCid(foreign, second!.cid)).toBe(true);
+    expect(await openCarried(stranger, GATE, answer(second!.cid, foreign))).toBeNull();
+    // A receipt whose digest names another document opens nothing: the sealed value binds its own document.
+    const crossed = memoryStore();
+    const receipts = (await store.read(GATE))!.carried!;
+    await crossed.write(GATE, { nexusAid: AID, carried: [{ ...receipts[0]!, ref: receipts[1]!.ref }] });
+    expect(await openCarried(crossed, GATE, answer(first!.cid, bytesOf(first!.cid)))).toBeNull();
+    // The stored file altered on the hearth's own disk: the fetch door answers nothing that opens.
+    const victim = held.find((f) => f.path.endsWith(fileOf(first!.cid)))!;
+    writeFileSync(victim.path, altered);
+    expect(await fetchDocument({ transport, store, gatePubKey: GATE, cid: first!.cid, withinMs: 300 })).toBeNull();
+    expect(base64UrlDecode(base64UrlEncode(altered)).length).toBe(altered.length);
+  });
+
+  test("a document carried twice deposits once; a document the hearth lost seals afresh and its receipt moves", async () => {
+    const { store, transport } = await walkerAtHearth();
+    const plaintext = utf8Bytes("the same page, handed over twice");
+    const first = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 });
+    const again = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 2_000 });
+    expect(again).toEqual({ cid: first!.cid, held: true });
+    expect(carriedFiles().length).toBe(1);
+    expect((await store.read(GATE))!.carried!.length).toBe(1);
+    // The hearth loses the value: the next carry seals afresh under a new address, and one receipt stands.
+    rmSync(carriedFiles()[0]!.path);
+    const third = await carryDocument({ transport, store, gatePubKey: GATE, leaf: LEAF, plaintext, withinMs: 300 });
+    expect(third).toMatchObject({ held: true });
+    expect(third!.cid).not.toBe(first!.cid);
+    expect((await store.read(GATE))!.carried!.map((r) => r.cid)).toEqual([third!.cid]);
+    const back = await fetchDocument({ transport, store, gatePubKey: GATE, cid: third!.cid, withinMs: 2_000 });
+    expect(back && hex(back)).toBe(hex(plaintext));
+  });
+
   test("walking back in keeps the receipts", async () => {
     const store = memoryStore();
-    await store.write(GATE, { nexusAid: AID, carried: [{ cid: "blake3:" + "d".repeat(64), readCap: "e".repeat(64) }] });
+    await store.write(GATE, { nexusAid: AID, carried: [{ cid: "blake3:" + "d".repeat(64), ref: "c".repeat(64), key: "e".repeat(64) }] });
     await rollHosting({ storageDir, nexusAid: AID, leafSeed: HEARTH });
     await takeInvite(store, encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: mintHostToken(liveEpochs(readHostingState(storageDir, AID)!, HEARTH)!.current) }));
-    expect(await store.read(GATE)).toMatchObject({ carried: [{ readCap: "e".repeat(64) }] });
+    expect(await store.read(GATE)).toMatchObject({ carried: [{ cid: "blake3:" + "d".repeat(64), ref: "c".repeat(64), key: "e".repeat(64) }] });
   });
 
   test("a hearth's notice marks the record at risk", async () => {
