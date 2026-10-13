@@ -49,7 +49,7 @@ full machina without owning a durable home.
 ephemeral palace projects the SAME three views the durable palace does, on a borrowed corpus, under one
 discipline. The unification's product-presheaf spine
 ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/unification]]) governs the join here exactly as it
-governs the durable store — the corpus palace is that object read three ways, transiently.
+governs the durable store — the corpus palace stands as that object read three ways, transiently.
 
 <<~/ahu>>
 
@@ -77,7 +77,7 @@ drift. The organ ladder wires dependency-ordered:
 
 ''The help that teaches.'' Add a per-command ''HELP REGISTRY'' — each command carries
 `{ synopsis, examples[], flags[] }`, examples-first. This registry
-IS the heleuma-anchored surface (#/the-gate): the help text the operator reads and the meme prose stand as
+CONSTITUTES the heleuma-anchored surface (#/the-gate): the help text the operator reads and the meme prose stand as
 ONE canon, and the audit trips when they drift.
 
 <<~/ahu>>
@@ -127,8 +127,8 @@ Four of the five caps stand on built or stock ground; one
 <<~ has Cap form "the INDUCTION STACK ~ #the-form-induction below — the research-grade half">>
 <<~ has Cap coupling "the BASE cap that glues sub-sensoria ~ the directed child↔child flow read ON DEMAND through the H¹ cohomological gate (fuse when H¹=0, hold-open when H¹≠0 — never a silent average); empty for a single frozen corpus, present as the plane">>
 
-''The structure plane is the cheap win.'' The structurepalace already encodes content-free shape vectors — it
-reads any tree. The new work is a ''parse-ROUTER'': route code/markdown/wikitext/json through tree-sitter
+''The structure plane gives the cheap win.'' The structurepalace already encodes content-free shape vectors — it
+reads any tree. The new work centers on a ''parse-ROUTER'': route code/markdown/wikitext/json through tree-sitter
 into one CST API; fall prose back to a constituency parser (benepar or Stanza). The sigil grammar (a thin
 tree-sitter grammar for `<<~…>>`) earns its bits by making the house's OWN corpus first-class to its own
 sensorium.
@@ -143,7 +143,7 @@ sensorium.
 ''frequency decomposition.'' The five bands ([[noosphere-boot|lar:///ha.ka.ba/lares/api/noosphere-boot#/law-of-5s]] —
 Pulse · Beat · Measure · Arc · Theme) name grain-LEVELS of a containment path — WHICH theme, which arc,
 which measure — a stored prefix code (the FFZ address, [[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine]]),
-li not ki. What a band never names is HOW MANY ticks: a band counted in ticks IS a count, and a bandpass
+li not ki. A band never names HOW MANY ticks: a band counted in ticks AMOUNTS TO a count, and a bandpass
 reporting where energy concentrates answers a different question than a change-point reporting where the
 generating regime turns over — a category error, retired
 ([[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/ki]]). The organ rides two layers
@@ -153,19 +153,19 @@ plus a gate:
 
 <<~ scale grain-level "Pulse ~ the finest cell -> Beat -> Measure -> Arc -> Theme ~ the coarsest">>
 
-The address is a ''containment PATH read as an ultrametric'',
+The address stands as a ''containment PATH read as an ultrametric'',
 ORDER-FREE, prefix-free at each level — so it prices itself in BITS and FOLDS INTO the two-part code
 (`ffz_address.address_bits`), never sitting beside it. Coarsening = truncation. A band MAY read null and
-the address truncates cleanly; a band that could not go null would be a counter, and a counter manufactures
+the address truncates cleanly; a band that could not go null would act as a counter, and a counter manufactures
 a global now.
 
 !!! 2 — the BOUNDARY tree (ecp::e.divisive, ki)
 
 The band-membership tree rides ''`ecp::e.divisive`'' (R,
-nonparametric) — ''MULTIVARIATE'' over content + form + structure, which IS our three-plane quorum
+nonparametric) — ''MULTIVARIATE'' over content + form + structure, which CONSTITUTES our three-plane quorum
 ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/unification]]) read in the
 changepoint domain; ''divisive'' = native-nested, so the tree falls out of the algorithm — coarse cuts
-parenting fine, which IS the membership tree, handed over for free. The ''per-chunk cosine-drift'' over
+parenting fine, which CONSTITUTES the membership tree, handed over for free. The ''per-chunk cosine-drift'' over
 content embeddings reads as the boundary signal — //Measure = cosine-drop// — a regime-turn read, never a
 wavelet band.
 
@@ -173,7 +173,7 @@ wavelet band.
 
 Liminal's old worry — does an adaptive boundary-finder ever converge, or
 chase forever — RESOLVES on ''RESAMPLING-CONSENSUS'': lock a boundary as Canon ONLY where a bootstrap /
-jackknife reproduces it (an un-witnessed boundary NEVER reads reproduced). That gate IS our confidence
+jackknife reproduces it (an un-witnessed boundary NEVER reads reproduced). That gate STANDS AS our confidence
 register made statistical — Canon-vs-Provisional becomes does-the-resample-reproduce-it, witnessed against
 the baseline corpus (#/baseline-corpus) before it locks Canon.
 
@@ -189,13 +189,13 @@ the loop until the mining settles.
 
 <<~ scale miner "treeminer ~ frequent EMBEDDED subtree templates — the structural constructions -> prefixspan-bide ~ move-SEQUENCES — the temporal/ordered constructions -> c2xg ~ usage-based CONSTRUCTICON induction (ΔP association) — the on-target nameless learner">>
 
-''The stop is MDL.'' A mined template survives only if it PAYS
+''MDL sets the stop.'' A mined template survives only if it PAYS
 ITS OWN description-length — minimize `l(G) + l(D|G)` (grammar bits + data-given-grammar bits); a template
 that does not shrink the encoding gets REJECTED. Backed by held-out likelihood and a min-support floor.
-This is our existing MDL stop lifted from recall into grammar.
+This lifts our existing MDL stop from recall into grammar.
 
-''SEED-AND-REFINE is safe BECAUSE of MDL.'' Seeding the miners with a
-prior is sound precisely because MDL discards any seed that fails to earn its bits — the floor catches a
+''SEED-AND-REFINE stays safe BECAUSE of MDL.'' Seeding the miners with a
+prior remains sound precisely because MDL discards any seed that fails to earn its bits — the floor catches a
 bad seed, so the seed cannot smuggle a fabricated grammar past the encoding.
 
 ''The LLM names LAST.'' The LLM enters ONLY to label and merge
@@ -207,7 +207,7 @@ on what already proved itself by description-length.
 
 <<~ ahu #/the-resonances>>
 
-!! The Resonances ~ the house was right again
+!! The Resonances ~ the house had it right again
 
 The research did not invent the architecture — it found the
 house's existing moves already standing in the statistical literature. Each cap lands on a pattern the
@@ -346,7 +346,7 @@ homes the sensorium itself — the model reads py-side rather than behind TS:
 
 !! The SCRUM ~ build order, each task with an ACCEPT line
 
-S0 is UNGATED (no upstream blocker); the cap sprints follow. The
+S0 stands UNGATED (no upstream blocker); the cap sprints follow. The
 TW5-quine runs after S0 + S2.
 
 <<~ has Sprint S0 "name/CLI foundation [UNGATED] ~ palaceOrgans registry · setup-wires-all-five · help-registry · `lares corpus` ephemeral-lifecycle · THIS corpus.md heleuma meme ~ ACCEPT: `lares vessel read --palaces` lists all five organs; `lares corpus run <path>` opens, analyzes, and DISSOLVES on exit; an interrupted run leaves no scratch under ~/.lares/.corpus/; the heleuma drift gate (`packages/lararium-tw5/scripts/sync-heleuma.ts`) ties this meme to the corpus help registry">>
@@ -394,7 +394,7 @@ The operator named ''RULE F1'' as primary → the baseline leans ''small-grammar
 
 A ''synthetic PCFG'' — the only family giving clean blind
 RULE-recovery F1. Author `G_true`, sample a corpus `C` plus gold trees `T`; we hold every rule and every
-tree. ''Recursion depth is a DIAL'' → manufacture pulse→theme nesting to stress the bands directly. Tiny
+tree. ''Recursion depth offers a DIAL'' → manufacture pulse→theme nesting to stress the bands directly. Tiny
 (KB–MB), generated via NLTK (`nltk.grammar.PCFG` + `nltk.parse.generate`). Lineage: the ''Omphalos''
 CFG-learning and ''Abbadingo'' DFA-learning competitions (hidden target → induce blind → score recovery)
 braided with the ''Compound-PCFG'' induction line.
@@ -405,7 +405,7 @@ The tree-sitter ''Writing-Tests'' corpus format pairs each
 `test/corpus/*.txt` snippet with its expected parse tree as an S-expression, separated by `---` — raw
 input + gold tree BY CONSTRUCTION across ~19 languages. Free ''structure-F1'' ground-truth, real AST depth
 (nested scopes), real-grammar confirmation. Rule-F1 reads murky there (the grammar runs large) → use it
-for ''structure-F1 + realism'', not strict rule recovery. TW5/JS is its home turf → it ties straight to
+for ''structure-F1 + realism'', not strict rule recovery. TW5/JS serves as its home turf → it ties straight to
 the quine (S0 + S2).
 
 !!! The real compact-grammar bridge ~ SMILES, and the sanity floor
@@ -491,7 +491,7 @@ verdict.
 The machina holds at corpus scale by a discipline recorded in full at
 [[scale-architecture|lar:///ha.ka.ba/lares/api/pono/scale-architecture]]: ''never densify the whole corpus, never''
 ''solve exactly what a Lipschitz-faithful proxy indexes, never eigensolve what a polynomial matrix-vector loop''
-''approximates.'' Four carries hold it, and quality is a continuous DIAL (K · ε · L · nSurr), never a wall:
+''approximates.'' Four carries hold it, and quality moves along a continuous DIAL (K · ε · L · nSurr), never a wall:
 
 <<~ scale scale "structure-descent ~ exact tree-edit-distance is O(N²·n³) and NEVER needed — descend to DECKARD embeddings + pq-gram profiles; the Lipschitz bound (pq-gram sandwiches edit-distance) preserves the neighbor structure the DEM basins read -> fusion-escape ~ the consistency-radius (H⁰ check) is O(edges), CHEAP; the sheaf-Laplacian eigensolve is the threat; CHEBYSHEV is the escape — the heat-flow diffusion runs matrix-free, O(L·edges), never the eigendecomposition -> the-catma ~ a merge-and-reduce coreset tree keeps a bounded streaming summary, memory O(coreset) not O(corpus²) — scalable from the START, not retrofitted -> numerical-path ~ the signal-fraction confidence + closed-form π* + complementary-form guard, ENACTED in the sensorium settlePrecision (commit f50a35b8)">>
 
@@ -499,7 +499,7 @@ The machina holds at corpus scale by a discipline recorded in full at
 merges island readings gains a two-tier gate at [[cohomological-gate|lar:///ha.ka.ba/lares/api/pono/cohomological-gate]]:
 ''H⁰'' (a global section exists → diffuse, Chebyshev-cheap) versus ''H¹'' (an irreducible obstruction → hold-open,
 route to Talk-Story). The consistency-radius the [[li-ki-integrities|lar:///ha.ka.ba/lares/api/pono/li-ki-integrities#/crucible-tested]]
-crucible already named IS the cheap H¹-detection the gate runs first — so the machina's merge never fabricates a
+crucible already named SERVES AS the cheap H¹-detection the gate runs first — so the machina's merge never fabricates a
 global-now it cannot ground. The reconciliation cost `R*_sem = log₂ dim H¹` gives the federation merge a price tag.
 
 <<~/ahu>>
@@ -517,6 +517,6 @@ A 3-research-scout synthesis, grounded on:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Zi4XMR4KI-_qu0Fc6YkEYgLG20xVESjJmZjLASwaTwU
+<<^ code="&#x0003;">>ni:///sha-256;JnXKl8FSDBW4r-cQSEpswXYex2Fg3Y-FsWwlAZlyT5c
 
 <<^ code="&#x0004;" -> to="?">>

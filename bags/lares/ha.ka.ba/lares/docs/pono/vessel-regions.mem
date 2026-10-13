@@ -37,15 +37,15 @@ The browser's counterpart (`packages/lararium-browser/src/open-browser-vessel.ts
 
 !!! ① The boot window — `:369-383` + `:417-466` · ''MUST NOT MOVE''
 
-Destructure · `readHearthDialPin` · `readWornPersonaMount` · `emit("boot")`, and then ''seven forward declarations whose initial values ARE the denial'': `antigenRing = null` (`:420`) · `selfSlotFedGate = null` (`:425`) · `realmPlane = null` (`:429`) · `nexusMembership = null` (`:434`) · `federationPosture = "private"` (`:438`) · `sealRegistry = makeSealedPlaneRegistry()` — empty, so DENY-ALL (`:444`) · `nexusConvergenceKeyring = null` (`:466`).
+Destructure · `readHearthDialPin` · `readWornPersonaMount` · `emit("boot")`, and then ''seven forward declarations whose initial values ENACT the denial'': `antigenRing = null` (`:420`) · `selfSlotFedGate = null` (`:425`) · `realmPlane = null` (`:429`) · `nexusMembership = null` (`:434`) · `federationPosture = "private"` (`:438`) · `sealRegistry = makeSealedPlaneRegistry()` — empty, so DENY-ALL (`:444`) · `nexusConvergenceKeyring = null` (`:466`).
 
-The Repo is constructed at `:467`; the gates that fill those cells arm between `:587` and `:640`. ''The window from `:467` to `:640` is deliberately inert.'' One default flipped — `federationPosture = "open"` — turns it into a cross-Nexus open door for the length of a boot.
+The closure constructs the Repo at `:467`; the gates that fill those cells arm between `:587` and `:640`. ''The window from `:467` to `:640` stays deliberately inert.'' One default flipped — `federationPosture = "open"` — turns it into a cross-Nexus open door for the length of a boot.
 
 !!! ② Repo + the share verdict + reverdict — `:385-533` + `:589-640`
 
 `DaemonAuthGate` · `ListeningWSServerAdapter` · the four peer maps and the `peer-candidate` microtask that fills three of them (`:404-416`) · `new Repo({ shareConfig: shareConfigOf(…) })` (`:467-523`) · the `doc-metrics` wire probe (`:524-532`) · `reverdict = () => repo.shareConfigChanged()` (`:602`).
 
-''The verdict closure reads EIGHT mutable cells'' and six regions write them. This is the region that does not split.
+''The verdict closure reads EIGHT mutable cells'' and six regions write them. This region does not split.
 
 !!! ③ The dial — fleet · contract · pin — `:642-771` and `:1155-1195`
 
@@ -75,21 +75,21 @@ Sixteen verbs, and behind them the verb-plane provider implementations (mempalac
 
 !! What each region could become
 
-''Three regions lift as modules today. Four are one object.''
+''By this measure, three regions lift as modules. Four form one object.''
 
 !!! Lifts cleanly
 
 * ''⑦ the verb-provider bundle'' → `makeNodeVerbProviders({ daemonVm: () => daemonVm })`, ~370 lines, ZERO coupling to the verdict cells. The browser has no counterpart for any of `wiki-act` · `nexus-refresh` · `realm-bag` · `realm-bags` · `nexus-rekey` · `nexus-reshare` · `cas-fetch` · `cad-seal`, and it composes six verbs the node does (`sync-wiki` · `residency` · `wiki-switch` · `wiki-hold` · `wiki-release` · `wiki-active`). A module here gives the shared six ONE spelling and leaves each substrate its own.
-* ''⑤ the CAS / fetch-door'' (`cidDir` · `resolveCidThroughDoor` · `carriageLoop` · `fleetHolders` · `casBagTracker`) → a `NodeCasDoor` holder. It couples to the verdict cluster through `sealRegistry` ALONE, which the module would take as an injected cell rather than close over. ''Its `setCasDoor` is a process global'' — a module makes that visible where the closure hides it.
+* ''⑤ the CAS / fetch-door'' (`cidDir` · `resolveCidThroughDoor` · `carriageLoop` · `fleetHolders` · `casBagTracker`) → a `NodeCasDoor` holder. It couples to the verdict cluster through `sealRegistry` ALONE, which the module would take as an injected cell rather than close over. ''Its `setCasDoor` writes a process global'' — a module makes that visible where the closure hides it.
 * ''⑥ the pool / mailbox wiring'' → a `NodePool` holder over `vmManager` · `wikiActivation` · `mailbox` · `eventBus`. The residency wiring reads these 700 lines before `makePool` writes them; a holder turns four forward-declared `let`s into one constructed thing.
 
-!!! Does NOT split — and naming it is the point
+!!! Does NOT split — and naming it makes the point
 
 Regions ①②③④ co-own ten cells: `antigenRing` · `selfSlotFedGate` · `realmPlane` · `nexusMembership` · `federationPosture` · `sealRegistry` · `peerIdentifierMap` · `peerClassMap` · `peerContractNymMap` · `charterHearthPeers`.
 
-''The object hiding in this file is a SHARE-VERDICT AUTHORITY'' holding those ten cells with ONE mutation protocol: every write calls `reverdict()`. Eight writers stand today — `:609` · `:701` · `:1148` · `:1691` · `:1732` and the three assignments that arm the cells at boot — and the invariant "a writer calls reverdict" lives in NO type, NO test, and NO comment that a compiler reads. ''Extracting the authority converts that invariant from a habit into an API'' (a setter that reverdicts, never a public field), which is the whole return on the region work.
+''The object hiding in this file stands as a SHARE-VERDICT AUTHORITY'' holding those ten cells with ONE mutation protocol: every write calls `reverdict()`. Eight writers stand as measured — `:609` · `:701` · `:1148` · `:1691` · `:1732` and the three assignments that arm the cells at boot — and the invariant "a writer calls reverdict" lives in NO type, NO test, and NO comment that a compiler reads. ''Extracting the authority converts that invariant from a habit into an API'' (a setter that reverdicts, never a public field), which gives the whole return on the region work.
 
-''The browser owes the authority NOTHING today'' — it has no antigen ring, no membership board, no posture, no seal registry, no realm plane, and no `reverdict` path at all (`open-browser-vessel.ts:392`: `identityRing` is a `const … = null`, flagged in its own comment as an HONEST GAP). So the authority extracts as a NODE module first and reaches the browser only when a browser vessel gains any of those five. The three clean lifts reach both substrates immediately.
+''The browser owes the authority NOTHING as measured'' — it has no antigen ring, no membership board, no posture, no seal registry, no realm plane, and no `reverdict` path at all (`open-browser-vessel.ts:392`: the declaration of `identityRing` reads `const … = null`, flagged in its own comment as an HONEST GAP). So the authority extracts as a NODE module first and reaches the browser only when a browser vessel gains any of those five. The three clean lifts reach both substrates immediately.
 
 <<~/ahu>>
 
@@ -97,14 +97,14 @@ Regions ①②③④ co-own ten cells: `antigenRing` · `selfSlotFedGate` · `re
 
 !! The red that pins the boot order — BEFORE any line moves
 
-''No test anywhere pins the boot order of this file.'' `prepareNodeBoot` is not exported, so nothing can import it; `openNodeVessel`/`openNodeHerm` appear in tests only inside prose comments. The one test that imports from the file at all covers `parseFormVector`, a pure helper.
+''No test anywhere pins the boot order of this file.'' The file does not export `prepareNodeBoot`, so nothing can import it; `openNodeVessel`/`openNodeHerm` appear in tests only inside prose comments. The one test that imports from the file at all covers `parseFormVector`, a pure helper.
 
-Four orderings are load-bearing and unpinned. A region plan that moves a line before these stand is a rewrite with no instrument.
+Four orderings bear load and stand unpinned. A region plan that moves a line before these stand amounts to a rewrite with no instrument.
 
-# ''THE ADMISSION LANDS FIRST'' (`:486-497`). The share verdict awaits a microtask before reading `network.sockets[peerId]`, because the WS adapter emits `peer-candidate` BEFORE it keys the socket, and the Repo resolves the verdict synchronously inside that emit. Without the yield a WS peer reads as an in-process house member and every private plane the vessel holds at that instant syncs. ''RED'': a staged WS peer that never passed the gate asks for a private plane on its FIRST verdict and draws `false`; ''CONTROL'': the same peer after `peer-candidate` lands draws the same `false` for a different reason (unadmitted), and an in-process island peer draws `true`. The red must fail when the `await` at `:493` is removed — collide it by removing the line and re-running.
-# ''THE DIAL FIRES AFTER THE BOARDS'' (`:1155-1195` vs `:1121-1153`). ''RED'': a boot with a `LAR_JOIN_SYNC` naming a live peer reaches `phase → live` and the crossroads slot resolves; with the dial hoisted ahead of `registerCrossroadsInOracle` the same boot dies on `slot bags/crossroads unavailable — the peer answered WITHOUT doc`. The witness wants the hoist as a deliberate arm, so the order is measured rather than asserted.
-# ''EVERY WRITER REVERDICTS''. ''RED'': for each of the ten cells, a write followed by a verdict read answers the NEW value. Today this is eight hand-kept call sites; the red is what makes an extraction safe, since a missed `reverdict` in a refactor reads as a peer that syncs what it should not and shows up nowhere else.
-# ''THE PREFAB ORDER'' (`:1628` writes `pendingVerbContribution`, `:1863` reads it). This one already throws, which is the shape the other three want.
+# ''THE ADMISSION LANDS FIRST'' (`:486-497`). The share verdict awaits a microtask before reading `network.sockets[peerId]`, because the WS adapter emits `peer-candidate` BEFORE it keys the socket, and the Repo resolves the verdict synchronously inside that emit. Without the yield a WS peer reads as an in-process house member and every private plane the vessel holds at that instant syncs. ''RED'': a staged WS peer that never passed the gate asks for a private plane on its FIRST verdict and draws `false`; ''CONTROL'': the same peer after `peer-candidate` lands draws the same `false` for a different reason (unadmitted), and an in-process island peer draws `true`. The red must fail once the `await` at `:493` goes — collide it by removing the line and re-running.
+# ''THE DIAL FIRES AFTER THE BOARDS'' (`:1155-1195` vs `:1121-1153`). ''RED'': a boot with a `LAR_JOIN_SYNC` naming a live peer reaches `phase → live` and the crossroads slot resolves; with the dial hoisted ahead of `registerCrossroadsInOracle` the same boot dies on `slot bags/crossroads unavailable — the peer answered WITHOUT doc`. The witness wants the hoist as a deliberate arm, so the witness measures the order rather than asserting it.
+# ''EVERY WRITER REVERDICTS''. ''RED'': for each of the ten cells, a write followed by a verdict read answers the NEW value. As measured, eight hand-kept call sites carry this; the red makes an extraction safe, since a missed `reverdict` in a refactor reads as a peer that syncs what it should not and shows up nowhere else.
+# ''THE PREFAB ORDER'' (`:1628` writes `pendingVerbContribution`, `:1863` reads it). This one already throws; the other three want that shape.
 
 Beside them, one asymmetry the plan should settle rather than carry: ''`openNodeVessel` never emits `vessel-ready` or `live`'' where `openNodeHerm` emits both (`:2155-2156`). A phase witness that reads one door and not the other measures nothing.
 
@@ -114,17 +114,17 @@ Beside them, one asymmetry the plan should settle rather than carry: ''`openNode
 
 !! Spirit-hours
 
-A tasked spirit's walk at this codebase's grain, never a human's. ''The reds come first and they are not optional'' — the region work without them is an unwitnessed rewrite of the vessel's only boot.
+A tasked spirit's walk at this codebase's grain, never a human's. ''The reds come first, and nothing makes them optional'' — the region work without them amounts to an unwitnessed rewrite of the vessel's only boot.
 
 |!step |!hours |!what |
-|R0 · the four boot-order reds | 6 | the microtask yield · the dial-after-boards · a reverdict red per cell · the phase-emit asymmetry. Nothing moves; every red must fail when its ordering is deliberately broken. |
+|R0 · the four boot-order reds | 6 | the microtask yield · the dial-after-boards · a reverdict red per cell · the phase-emit asymmetry. Nothing moves; every red must fail when a hand deliberately breaks its ordering. |
 |R1 · ⑦ the verb-provider bundle | 5 | `makeNodeVerbProviders`, ~370 lines out, one injected `daemonVm` thunk. The browser composes the shared six through it. |
 |R2 · ⑥ the pool holder | 4 | four forward-declared cells become one constructed holder; the residency wiring takes it as a parameter. |
 |R3 · ⑤ the CAS door | 4 | `NodeCasDoor` with `sealRegistry` injected; `setCasDoor`'s process-global scope named at the module edge. |
-|R4 · the share-verdict authority | 10 | the ten cells behind setters that reverdict; ①②③④ read it rather than close over it. Gated on R0 — without the reverdict reds this step cannot be shown correct. |
+|R4 · the share-verdict authority | 10 | the ten cells behind setters that reverdict; ①②③④ read it rather than close over it. Gated on R0 — without the reverdict reds nothing can show this step correct. |
 |R5 · the Herm shore | 3 | `publicCasShore`'s wiring out of `openNodeHerm`, taking `realmStanding` as its one injected reading. |
 
-''Order matters and R0 gates everything.'' R1–R3 are separable and each lands alone. R4 wants R0 whole. R5 is the smallest and may run any time after R0.
+''Order matters and R0 gates everything.'' R1–R3 separate cleanly and each lands alone. R4 wants R0 whole. R5, the smallest, may run any time after R0.
 
 <<~/ahu>>
 
@@ -138,6 +138,6 @@ A tasked spirit's walk at this codebase's grain, never a human's. ''The reds com
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qtnemCVH9vEUnbIzxZNGfHSU8KuvVuovpthkUXCMLCc
+<<^ code="&#x0003;">>ni:///sha-256;9lme4T0Z3dPxPQyQ3vWcInjWzlNAYBqNU_4XeI5PAG8
 
 <<^ code="&#x0004;" -> to="?">>

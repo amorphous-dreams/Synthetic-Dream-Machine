@@ -72,15 +72,15 @@ Structured expressions never add roots — they only add children.
 
 When the first arm completes, the `race` expression sends cancellation signals to each
 losing arm, and those signals cascade recursively to any tasks those losers created.
-The entire subtree below each losing arm is pruned, not just the direct children.
+The cascade prunes the entire subtree below each losing arm, not just the direct children.
 
 !!! `puka / rush` — enclosing scope, not rush winner
 
 When the first arm completes, `rush` does NOT cancel the other arms. They continue
 consuming resources until: (a) they complete naturally, or (b) the enclosing scope
-exits. At scope exit, all background tasks created by rush arms are cancelled by
-normal cascading rules. The distinction from `race` is that the cancellation trigger
-is the scope boundary, not the first winner.
+exits. At scope exit, normal cascading rules cancel all background tasks that rush arms
+created. The distinction from `race`: the scope boundary triggers the cancellation,
+not the first winner.
 
 ''Law:'' A `puka` or `lele` block MUST sit outside a `huli` (`\for`)
 iteration body. Placing branch/rush inside a loop accumulates unbounded background
@@ -92,9 +92,9 @@ tasks with no clear cancellation boundary.
 
 !! task(t) — Runtime Object
 
-`task(t)` is a runtime object representing a currently-executing or suspended async
-function. It is the handle returned by `spawn`. `branch` creates a task implicitly
-but does NOT return a handle — the branch is managed by the enclosing scope.
+`task(t)` stands as a runtime object representing a currently-executing or suspended async
+function. `spawn` returns that task object as its handle. `branch` creates a task implicitly
+but does NOT return a handle — the enclosing scope manages the branch.
 
 !!! States
 
@@ -111,15 +111,15 @@ but does NOT return a handle — the branch is managed by the enclosing scope.
 
 * ''Sticky:'' If the task already completed, Await() returns immediately with the cached
   result. Multiple callers on the same task always receive the same result.
-* ''Cancellation propagation:'' If the awaited task was cancelled, Await() propagates
+* ''Cancellation propagation:'' If the awaited task settled as Canceled, Await() propagates
   the cancellation to the caller.
-* Can be called multiple times from multiple callers.
+* Accepts multiple calls from multiple callers.
 
 ''`task.Cancel() : void`'' — Requests cooperative cancellation.
 
-* Cancellation is cooperative, not forced. The task does not stop immediately; it
+* Cancellation works cooperatively, never by force. The task does not stop immediately; it
   receives a cancellation signal checked at the ''next suspension point''.
-* Code between suspension points runs to completion before cancellation is observed.
+* Code between suspension points runs to completion before the task observes cancellation.
 * Safe to call multiple times or on an already-settled task (no effect).
 * Responsive cancellation pattern: insert `Sleep(0.0)` in tight loops to yield and
   check cancellation each iteration.
@@ -132,7 +132,7 @@ cancelable := interface:
 ```
 
 `task(t)` implements `cancelable`. The `cancelable` interface also appears as the
-return type of `subscribable_event.Subscribe()` — these are unsubscribe handles,
+return type of `subscribable_event.Subscribe()` — these serve as unsubscribe handles,
 not task handles. Same interface, different semantic role.
 
 <<~/ahu>>
@@ -141,8 +141,8 @@ not task handles. Same interface, different semantic role.
 
 !! Suspension Points
 
-Suspension points are the only locations where: (a) async tasks can pause and yield
-control, and (b) cancellation signals are checked and processed.
+Suspension points mark the only locations where: (a) async tasks can pause and yield
+control, and (b) cancellation signals get checked and processed.
 
 Suspension points include:
 * Timing operations: `Sleep(duration)`, `NextTick()`
@@ -150,7 +150,7 @@ Suspension points include:
 * Structured concurrency expressions: `sync`, `race`, `rush`, `branch`
 * `task.Await()`
 
-Code between suspension points is ''atomic'' — it runs to completion without
+Code between suspension points stays ''atomic'' — it runs to completion without
 interruption or context switching.
 
 `GetSecondsSinceEpoch()` returns the same value within a single transaction (frozen
@@ -163,14 +163,14 @@ per-transaction). All calls within one atomic block share the same timestamp.
 !! `return` Escape Semantics
 
 A `return` statement inside a `sync`, `race`, or `rush` arm causes the enclosing
-''function'' to return — not just the arm. The entire concurrency expression is
-abandoned:
+''function'' to return — not just the arm. The function abandons the entire
+concurrency expression:
 
 * Arms already started execute their `defer` blocks during unwinding
-* Unstarted arms are skipped entirely
+* Unstarted arms never run
 * The enclosing function exits with the return value
 
-This is a cross-cutting edge in the task tree: `return` pierces upward through
+This makes a cross-cutting edge in the task tree: `return` pierces upward through
 nested concurrency nodes and exits the containing function scope.
 
 <<~/ahu>>
@@ -197,14 +197,14 @@ has already exited.
 !! Why `spawn` Escapes the Tree — Formal Reason
 
 Effects in Verse propagate upward through call chains. The `<suspends>` effect
-propagates: any function calling a `<suspends>` function must itself be marked
+propagates: any function calling a `<suspends>` function must itself carry
 `<suspends>`.
 
-''`spawn` is the exception:'' `spawn` ''hides'' the `<suspends>` effect from its
-caller. The calling context sees no suspension; it does not need to be `<suspends>`
+''`spawn` stands as the exception:'' `spawn` ''hides'' the `<suspends>` effect from its
+caller. The calling context sees no suspension; it does not need to carry `<suspends>`
 itself. The spawned function carries its own `<suspends>` effect independently.
 
-This is the formal reason `spawn` creates a new root instead of a child node:
+This gives the formal reason `spawn` creates a new root instead of a child node:
 by hiding the effect, `spawn` breaks the upward-propagation chain that ties
 structured concurrency expressions to their parent scope. The spawned task has
 no parent effect context — therefore no parent scope boundary — therefore no
@@ -226,12 +226,12 @@ Epic surveyed UEFN creators (2024-2025) on two proposed Visual Verse interface m
 
 ''Critical:'' Any future Visual Verse node graph will represent ''Verse execution''
 ''semantics'' (this task tree model, structured concurrency, effects), NOT Blueprint's
-event-driven graph. Blueprint nodes are event handlers and function calls in an
+event-driven graph. Blueprint nodes stand as event handlers and function calls in an
 unstructured imperative graph. Visual Verse would represent Verse's structured,
 effect-typed, concurrent expression tree — a fundamentally different ontology.
 
 ''Lararium implication:'' Pono concurrency sigils (`lele`, `hui`, `holo`, `puka`)
-are already aligned with Verse's structured execution model. When Visual Verse ships,
+already align with Verse's structured execution model. When Visual Verse ships,
 the sigil-to-Verse mapping in this document provides the canonical alignment surface.
 
 <<~/ahu>>
@@ -240,8 +240,8 @@ the sigil-to-Verse mapping in this document provides the canonical alignment sur
 
 !! Verse Calculus vs. UEFN Verse
 
-The Verse Calculus (VC) is a formal core calculus published at ICFP 2023 (Peyton Jones,
-Sweeney et al.). It is a research artifact, not the game language.
+The Verse Calculus (VC) constitutes a formal core calculus published at ICFP 2023 (Peyton Jones,
+Sweeney et al.). It stands as a research artifact, not the game language.
 
 Key distinctions:
 
@@ -253,7 +253,7 @@ Key distinctions:
 | Status | Research artifact (ICFP 2023) | Shipping in UEFN |
 
 VC's `choice` expression (`|`) — non-deterministic selection between two computation
-branches — is the formal ancestor of `race`/`rush`. UEFN Verse gives this structured,
+branches — stands as the formal ancestor of `race`/`rush`. UEFN Verse gives this structured,
 async-aware, deterministic semantics with the concurrency operators.
 
 <<~/ahu>>
@@ -272,6 +272,6 @@ async-aware, deterministic semantics with the concurrency operators.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BP7YXuYe1zjeHEOMdMht4Uc-O19njkmjcw-XvXm950c
+<<^ code="&#x0003;">>ni:///sha-256;heDQju0J5ujMOsQwIZtRwso5PwiTxy1zvvH2Lf59YMY
 
 <<^ code="&#x0004;" -> to="?">>
