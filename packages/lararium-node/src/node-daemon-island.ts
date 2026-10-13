@@ -14,6 +14,7 @@ import { runVaultVerb } from "./archive-passphrase.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import { HULLS_FULL } from "@lararium/mesh";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
+import { nodeSealedStoreShore } from "./sealed-store-island.js";
 
 // The Boundary-1 inversion, in the worker: keyhive stays fs-blind, node supplies the writer that lands the
 // keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes
@@ -42,6 +43,10 @@ runSovereignWorker((manifest) => {
     onBoot:         (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
     ...(restOnVessel ? { restDocuments: restOnVessel } : {}),
     ...(dyadOnVessel ? { dyadReading: dyadOnVessel } : {}),
+    // THE SEALED STORE'S SHORE: the content-key holder stands in this island, beside its Keyhive identities, over
+    // the vessel's own `sealed/`, `cad/` and cleartext-local tiers. An island with no directory of its own gets
+    // none, and its `sealed-*` verbs refuse by name.
+    ...(manifest.storage?.type === "nodefs" ? { sealedStore: nodeSealedStoreShore(manifest.storage.dir) } : {}),
     ...(sealOnVessel ? {
       persistArchive:     (bytes: Uint8Array) => sealOnVessel("archive", bytes),
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),

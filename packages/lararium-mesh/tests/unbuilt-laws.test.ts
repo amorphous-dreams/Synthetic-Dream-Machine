@@ -430,8 +430,20 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
     expect(mesh.readEdgeActPartial({ kind: "edge-act-partial", scope: "ab".repeat(32), subject: { kind: "member", member: "cd".repeat(32) }, act: {} })).toBeNull();
   });
 
-  test.skip("A BAG'S CONTENT KEY ROLLS AT THE SEAT'S ROLL — DEFERRED: kapae#/keys, the content-key seam. The executor hands one roll to its subscribers for each batch of raises a vessel answers, and the vessel keeps each roll in its ledger (`keptSeatRolls`); no subscriber stands, so no bag's key rolls. A sentinel document's revocation rolls no bag key by itself (`seat-roll-substrate`, probe 8). Lands with the sealed store's key-version manifest.", () => {
-    expect(Object.keys(mesh)).toContain("contentKeyRollOf");
+  test("A BAG'S CONTENT KEY ROLLS AT THE SEAT'S ROLL — kapae#/keys, the content-key seam. One production subscriber stands: the daemon island seats the content-key holder beside its Keyhive identities (`seatContentKeys`), that seat subscribes the content-key roll to the island's own seat rolls, and the node hands the island its sealed-store shore. The roll itself runs in `@lararium/node` `tests/sealed-store-vessel.test.ts` (through `announceSeatRoll`, over a founded island) and in `@lararium/keyhive` `tests/content-key-seat.test.ts` (through the real executor on real identities).", () => {
+    const code = (...parts: string[]): string => readFileSync(join(import.meta.dirname, "..", "..", ...parts), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
+    const seat = code("lararium-keyhive", "src", "content-key-seat.ts");
+    const island = code("lararium-keyhive", "src", "operator-daemon-behavior.ts");
+    const shore = code("lararium-node", "src", "node-daemon-island.ts");
+    expect(seat.length).toBeGreaterThan(1000);                      // the strip left the module's code
+    // A census, never a mention: one subscription in the seat, one seat in the island, one shore handed in.
+    expect(seat.match(/subscribeSeatRolls\)\(sink\)/g)?.length).toBe(1);
+    expect(seat.match(/contentKeyRollSink\(holder\.rollerPorts\(/g)?.length).toBe(1);
+    expect(island.match(/contentKeys = seatContentKeys\(\{/g)?.length).toBe(1);
+    expect(shore.match(/sealedStore: nodeSealedStoreShore\(/g)?.length).toBe(1);
+    expect(Object.keys(mesh)).toContain("contentKeyRollSink");
+    // CONTROL: the same census reads zero in a module that subscribes nothing.
+    expect(code("lararium-keyhive", "src", "keyhive-lockbox.ts").match(/subscribeSeatRolls/g)).toBeNull();
   });
 
   test.skip("THE PERSONAGROUP STANDS AS A GROUP, AND ITS REVOCATION ROLLS EVERY BAG IT REACHES — DEFERRED: kapae#/keys. Keyhive carries a removal down to the documents a group reaches and to nothing a document reaches (`seat-roll-substrate`, probes 8 and 9); every principal stands as a sentinel document today. The move changes the group's own id, so it lands with a re-founding.", () => {
