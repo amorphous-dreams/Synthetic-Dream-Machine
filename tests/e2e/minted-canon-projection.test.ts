@@ -100,23 +100,24 @@ describe("minted-canon projection — a user wiki's @{slug} canon reaches bags/{
     });
     second.stdout?.on("data", (d) => { secondLog += String(d); });
     second.stderr?.on("data", (d) => { secondLog += String(d); });
-    // The root cause (episkopos finding #12): this test used to wait on `phase → live`, but
-    // `main.ts` prints the ACTIVE-WIKI-MARKER line (naming which wiki actually activated) only
-    // AFTER `openNodeVessel` returns — which follows the `live` phase callback. A CI run could
-    // read `phase → live` with the marker line not yet written, then assert on a log tail that
-    // hadn't caught up: a flake, not a real miss. `[lararium] live — wiki: …` prints
-    // SYNCHRONOUSLY right after the marker line (main.ts:448) — waiting on IT is a causal
-    // marker that the activation decision has already landed in the log, never a timing guess.
-    await new Promise<void>((resolve, reject) => {
+    // TWO MARKERS, AND THE UNLOCK BETWEEN THEM. Every boot rests at the floor: the reboot reaches `phase → live`
+    // holding no vessel key, as a wiki-less floor that activates no wiki at all. The custody unlock composes the
+    // hearth again, and only that composition reads the active-wiki marker. So the vector waits for the floor's
+    // `phase → live`, opens the vessel through the test door, and then waits for `[lararium] live — wiki:`.
+    // `main.ts` prints that line straight after the ACTIVE-WIKI-MARKER line (naming which wiki activated), so
+    // its presence proves the activation decision already stands in the log: a causal marker, never a timing
+    // guess, and never the hearth's own `phase → live`, which prints before the marker line.
+    const awaitLogLine = (line: string, what: string): Promise<void> => new Promise<void>((resolve, reject) => {
       const t0 = performance.now();
       const poll = setInterval(() => {
-        if (secondLog.includes("[lararium] live — wiki:")) { clearInterval(poll); resolve(); }
-        else if (second!.exitCode !== null) { clearInterval(poll); reject(new Error(`reboot exited ${second!.exitCode}:\n${secondLog.slice(-800)}`)); }
-        else if (performance.now() - t0 > 120_000) { clearInterval(poll); reject(new Error(`reboot never reached live:\n${secondLog.slice(-800)}`)); }
+        if (secondLog.includes(line)) { clearInterval(poll); resolve(); }
+        else if (second!.exitCode !== null) { clearInterval(poll); reject(new Error(`reboot exited ${second!.exitCode} before ${what}:\n${secondLog.slice(-800)}`)); }
+        else if (performance.now() - t0 > 120_000) { clearInterval(poll); reject(new Error(`reboot never reached ${what}:\n${secondLog.slice(-800)}`)); }
       }, 500);
     });
-
+    await awaitLogLine("phase → live", "the floor's live phase");
     unlockStaged(lar.root);
+    await awaitLogLine("[lararium] live — wiki:", "the hearth's live line after the unlock");
 
     // sanity: the reboot actually activated the minted wiki (not the lares-wiki fallback) —
     // asserted only once the causal marker above proves the activation line has been written.
