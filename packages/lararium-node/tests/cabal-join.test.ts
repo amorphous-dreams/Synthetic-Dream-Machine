@@ -26,6 +26,7 @@ import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
 import { direct } from "./direct-store.js";
 
+import { fixtureKey } from "./fixture-keys.js";
 let root: string;
 let priorLarRoot: string | undefined;
 
@@ -200,13 +201,13 @@ describe("cabal join — the crossing, and what it refuses", () => {
     // writes the island's board; a join keyed on the vessel key reads a board nobody wrote.
     // The retired bare-`sealEpochCid` legacy path carries no lineage; a "the charter STANDS" fixture
     // needs a real, verifiable genesis to raise a live roster.
-    const genesis = genesisCharterEpoch(["b2".repeat(32)], 1, "");
+    const genesis = genesisCharterEpoch([fixtureKey(0xb2)], 1, "");
     writeNexusDoc(larSealHome(), {
       kind: NEXUS_DOC_DOMAIN,
       threshold: 1,
       sealEpochCid: genesis.epochCid,
       sealLineage: [genesis],
-      kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
+      kahu: [{ displayName: "steward", verifyingKey: fixtureKey(0xb2) }],
     });
     const vesselKey = await loadVesselVerifyingKey();
     // CONTROL: the rig moved the island, or the assertion below greens on the defect.

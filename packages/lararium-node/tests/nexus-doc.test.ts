@@ -34,6 +34,7 @@ import {
   makeNodePersonaDeclarationStore,
 } from "../src/node-vessel-identity.js";
 
+import { fixtureKey } from "./fixture-keys.js";
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
   saved[k] = process.env[k];
@@ -51,7 +52,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
   });
 
   test("a seated doc writes in house form and reads back faithfully", () => {
-    const keys = ["a".repeat(64), "b".repeat(64)];
+    const keys = [fixtureKey(0xa), fixtureKey(0xb)];
     const genesis = genesisCharterEpoch(keys, 2, "");
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
@@ -72,7 +73,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
   });
 
   test("parseNexusDoc reads charter BYTES with no home — the round-trip, and torn bytes fail closed", () => {
-    const keys = ["c".repeat(64), "d".repeat(64)];
+    const keys = [fixtureKey(0xc), fixtureKey(0xd)];
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
       sealEpochCid: genesisSealEpochCid(keys, 2),
@@ -123,8 +124,8 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
   });
 
   test("a pre-rotated CHAIN doc round-trips through disk + roots the roster on the head epoch (#68)", () => {
-    const keys = ["a".repeat(64), "b".repeat(64)];
-    const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash(["c".repeat(64), "d".repeat(64)], 2));
+    const keys = [fixtureKey(0xa), fixtureKey(0xb)];
+    const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash([fixtureKey(0xc), fixtureKey(0xd)], 2));
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
       sealEpochCid: genesis.epochCid,
@@ -266,10 +267,10 @@ describe("the charter carrier itself — FRAMED, checked, and restamped per join
 
   const doc: NexusDoc = {
     kind: NEXUS_DOC_DOMAIN, threshold: 2,
-    sealEpochCid: genesisSealEpochCid(["a".repeat(64), "b".repeat(64)], 2),
+    sealEpochCid: genesisSealEpochCid([fixtureKey(0xa), fixtureKey(0xb)], 2),
     kahu: [
-      { displayName: "Kahu Alpha", verifyingKey: "a".repeat(64) },
-      { displayName: "Kahu Beta",  verifyingKey: "b".repeat(64) },
+      { displayName: "Kahu Alpha", verifyingKey: fixtureKey(0xa) },
+      { displayName: "Kahu Beta",  verifyingKey: fixtureKey(0xb) },
     ],
   };
 

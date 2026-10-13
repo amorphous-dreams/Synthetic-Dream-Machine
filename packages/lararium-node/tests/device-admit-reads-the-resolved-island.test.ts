@@ -42,11 +42,12 @@ import { admitBoardIsland } from "../src/commands/device-admit.js";
 import { larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { hearthDialTiddlers, readHearthDialPin, HEARTH_ISLAND_KIND_TIDDLER } from "../src/hearth-dial-pin.js";
 
+import { fixtureKey } from "./fixture-keys.js";
 /** A stand-in vessel verifying key — the spelling `loadVesselVerifyingKey` would hand back. */
 const OWN_KEY = "a1".repeat(32);
 /** A real genesis seal lineage over the "steward" key below — there is no legacy bare-`sealEpochCid`
  *  path any more, so a "the charter STANDS" fixture must carry a verifiable one-epoch lineage. */
-const CHARTER_GENESIS = genesisCharterEpoch(["b2".repeat(32)], 1, "");
+const CHARTER_GENESIS = genesisCharterEpoch([fixtureKey(0xb2)], 1, "");
 const CHARTER = CHARTER_GENESIS.epochCid;
 
 const saved: Record<string, string | undefined> = {};
@@ -79,7 +80,7 @@ describe("device-admit resolves the island the boot resolved", () => {
       threshold: 1,
       sealEpochCid: CHARTER,
       sealLineage: [CHARTER_GENESIS],
-      kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
+      kahu: [{ displayName: "steward", verifyingKey: fixtureKey(0xb2) }],
     });
   }
 
@@ -127,7 +128,7 @@ describe("device-admit resolves the island the boot resolved", () => {
       kind: NEXUS_DOC_DOMAIN,
       threshold: 1,
       sealEpochCid: "not-an-epoch-cid",
-      kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
+      kahu: [{ displayName: "steward", verifyingKey: fixtureKey(0xb2) }],
     });
     // The FALLBACK is the defect: keying a board on a name the boot never stands on. Fail closed.
     let fellBack: string | null = null;
@@ -229,7 +230,7 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
       threshold: 1,
       sealEpochCid: CHARTER,
       sealLineage: [CHARTER_GENESIS],
-      kahu: [{ displayName: "steward", verifyingKey: "b2".repeat(32) }],
+      kahu: [{ displayName: "steward", verifyingKey: fixtureKey(0xb2) }],
     });
   }
 

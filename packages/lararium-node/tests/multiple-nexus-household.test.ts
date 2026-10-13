@@ -29,6 +29,7 @@ import {
 import { identityShareDecision } from "@lararium/mesh";
 import { selfSlotShareDecision } from "../src/self-slot-share.js";
 
+import { fixtureKey } from "./fixture-keys.js";
 const SHARED_GENESIS_SEED: GenesisSeed = {
   format: "lararium-genesis-seed/v1",
   actorSeed: "11".repeat(32),
@@ -37,8 +38,8 @@ const SHARED_GENESIS_SEED: GenesisSeed = {
   tiddlers: {},
 };
 
-const NEXUS_A = genesisCharterEpoch(["aa".repeat(32)], 1, "").epochCid;
-const NEXUS_B = genesisCharterEpoch(["bb".repeat(32)], 1, "").epochCid;
+const NEXUS_A = genesisCharterEpoch([fixtureKey(0xaa)], 1, "").epochCid;
+const NEXUS_B = genesisCharterEpoch([fixtureKey(0xbb)], 1, "").epochCid;
 const VESSEL_A = "a1".repeat(32);
 const VESSEL_B = "b1".repeat(32);
 const LEAF_B = "c1".repeat(32);
