@@ -315,6 +315,9 @@ export const SESSION_AUTHORITY_DOMAIN = mint("session-authority");
 /** The custody root's CHILD every gate bundle of a vessel derives from: an HKDF `info`, asked of the custody
  *  seat once per derivation. Apart from every other child of that root. */
 export const GATE_BUNDLE_INFO = mint("gate-bundle");
+/** The FLOOR key's CHILD every floor-tier gate bundle derives from: an HKDF `info`, asked of the floor key's
+ *  own door. Apart from the custody root's child: a floor bundle and a sovereign bundle share no ancestor. */
+export const GATE_FLOOR_BUNDLE_INFO = mint("gate-floor-bundle");
 /** A bundle's TRANSPORT key: the HKDF `info`, over the Nexus and the route, of the X25519 key that answers a
  *  dialer's first flight. */
 export const GATE_TRANSPORT_KEY_INFO = mint("gate-transport-key");
@@ -333,6 +336,10 @@ export const GATE_PRESENTATION_DOMAIN = mint("gate-presentation");
  *  digest and the audience. It rides inside the session key's `session-finish` image and leads with its own
  *  name, so no other finish payload reads as a dial's. */
 export const GATE_FINISH_DOMAIN = mint("gate-finish");
+/** A PLACE's signed FINISH: a faceless place's own key signs the completed handshake's hash, the bundle's
+ *  digest, its presentation's digest and the audience under this name. Apart from `gate-finish` and from the
+ *  session key's `session-finish`: a finish signed for a place verifies for no face, and a face's for no place. */
+export const GATE_PLACE_FINISH_DOMAIN = mint("gate-place-finish");
 /** The gate's VERDICT: its signing key signs the handshake's hash, the bundle's digest and a digest of its
  *  answer under this name, so a dialer reads an answer only from the gate it pinned, for the dial it made. */
 export const GATE_VERDICT_DOMAIN = mint("gate-verdict");

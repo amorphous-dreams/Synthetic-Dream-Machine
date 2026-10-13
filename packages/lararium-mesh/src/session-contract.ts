@@ -56,6 +56,15 @@ export class SessionContractError extends Error {}
 export const CAPABILITY_PROFILES = ["face", "verb", "ingest", "seat"] as const;
 export type CapabilityProfile = (typeof CAPABILITY_PROFILES)[number];
 
+/**
+ * The profile a faceless PLACE's seat carries at a gate: it carries bytes it cannot open and signs no act of
+ * a face. It stands OUTSIDE `CAPABILITY_PROFILES`: those name the hands of a face and feed a session's
+ * certificate, and a place holds no session and no certificate.
+ */
+export const PLACE_PROFILE = "carriage" as const;
+/** What a gate's seat may carry: a hand's profile, or the place's. */
+export type SeatProfile = CapabilityProfile | typeof PLACE_PROFILE;
+
 /** Each hand's profile. A hand names WHO moved; the face names the relation the move speaks in. */
 export const HAND_PROFILES = Object.freeze({ tab: "face", cli: "verb", watcher: "ingest", seat: "seat" } as const);
 export type Hand = keyof typeof HAND_PROFILES;

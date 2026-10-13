@@ -22,7 +22,10 @@
  *     session key. A recorder of a first flight holds no handshake hash to sign.
  *   · NO VESSEL STANDS IN A PRESENTATION. Its reader takes exact keys: no card, no vessel key, no root, no
  *     edge and no handle rides one.
- *   · ONE ARM AT MOST, and the arm's subject key names the face key.
+ *   · ONE ARM AT MOST, and a face's arm names the face key as its subject.
+ *   · A PLACE STANDS OUTSIDE THE FACE PROOF. A faceless place presents its own key and at most its carriage
+ *     contract, under its own exact keys, and signs its finish under its own name: a place's presentation
+ *     reads as no face's, and a face's as no place's.
  *
  * THE FRAME LAYOUT STANDS PROVISIONAL. A sealed frame leads with one tag byte, and a presentation or an
  * answer that outgrows one frame rides in parts. The house reads this layout as its own until the browser's
@@ -35,7 +38,8 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { isPresentedAdmit } from "./auth-wire.js";
 import type { CarriageEntry, PresentedLineageAct } from "./carriage-registry.js";
 import { canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "./crypto.js";
-import { GATE_FINISH_DOMAIN, GATE_PRESENTATION_DOMAIN, GATE_VERDICT_DOMAIN } from "./domains.js";
+import { CARRIAGE_ENTRY_DOMAIN, GATE_FINISH_DOMAIN, GATE_PLACE_FINISH_DOMAIN, GATE_PRESENTATION_DOMAIN, GATE_VERDICT_DOMAIN } from "./domains.js";
+import { acceptEd25519Key } from "./ed25519-door.js";
 import { WITHDRAWAL_HISTORY_BOUND } from "./face-authority.js";
 import type { FaceWithdrawal, SessionCertificate, VesselFaceCertificate, WithdrawalFrontier } from "./face-proof-subjects.js";
 import { gateFields } from "./gate-bundle.js";
@@ -215,6 +219,88 @@ export function readGatePresentation(bytes: Uint8Array): ReadGatePresentation | 
 /** The digest the finish signs for a presentation: over the bytes that crossed, under its own name. */
 export function gatePresentationDigest(bytes: Uint8Array): string {
   return hex(sha256(gateFields(GATE_PRESENTATION_DOMAIN, bytes)));
+}
+
+// ── The place's presentation: a faceless place, outside the face proof ──────────────────────────
+
+/** The contract a place presents: the quorum's `carry` act over its key, with the acts that act cites. */
+export interface PlaceArm {
+  readonly kind:     "place";
+  readonly contract: CarriageEntry;
+  readonly lineage:  readonly CarriageEntry[];
+}
+
+/**
+ * What a faceless place presents: its own key, and at most one arm. No certificate, no session certificate,
+ * no frontier and no carried event rides it: a place holds no face, so no chain and no withdrawal history
+ * stands behind it.
+ */
+export interface PlacePresentation {
+  /** The place's own key: the key that signs this dial's finish. */
+  readonly placeKey: string;
+  readonly arm:      PlaceArm | null;
+  readonly audience: string;
+}
+
+const PLACE_KEYS = ["placeKey", "arm", "audience"] as const;
+const PLACE_ARM_KEYS = ["kind", "contract", "lineage"] as const;
+/** How many acts a contract's lineage may carry. */
+export const PLACE_LINEAGE_BOUND = 64;
+
+function isCarrierAct(value: unknown): value is CarriageEntry {
+  if (!isRecord(value)) return false;
+  return value["kind"] === CARRIAGE_ENTRY_DOMAIN && typeof value["nym"] === "string" && HEX64.test(value["nym"]) &&
+    (value["action"] === "carry" || value["action"] === "uncarry") &&
+    Array.isArray(value["parents"]) && value["parents"].every((parent) => typeof parent === "string") &&
+    typeof value["sealEpochCid"] === "string" && value["sealEpochCid"].length > 0 && Array.isArray(value["signatures"]);
+}
+
+export function encodePlacePresentation(presentation: PlacePresentation): Uint8Array {
+  return canonicalJsonBytes(presentation);
+}
+
+/** A place's presentation as a gate first reads it: its shape, and nothing verified. */
+export interface ReadPlacePresentation {
+  readonly placeKey: string;
+  readonly arm:      PlaceArm | null;
+  readonly audience: string;
+  readonly digest:   string;
+}
+
+/**
+ * Read the bytes of a place's presentation: exact keys, one encoding, a key the one door accepts, an
+ * audience in its one spelling, and at most a `place` arm whose contract reads as a `carry` act over that
+ * same key. Null for anything else: a presentation that carries a certificate beside a place key, or a
+ * face's arm under a place key, reads as none.
+ */
+export function readPlacePresentation(bytes: Uint8Array): ReadPlacePresentation | null {
+  try {
+    if (!(bytes instanceof Uint8Array) || bytes.length === 0 || bytes.length > GATE_SUBJECT_MAX_BYTES) return null;
+    const value: unknown = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+    if (!isRecord(value) || !exactKeys(value, PLACE_KEYS)) return null;
+    if (hex(canonicalJsonBytes(value)) !== hex(bytes)) return null;
+    const { placeKey, audience } = value;
+    if (typeof placeKey !== "string" || !HEX64.test(placeKey) || !acceptEd25519Key(placeKey).ok) return null;
+    if (typeof audience !== "string" || !AUDIENCE.test(audience)) return null;
+    let arm: PlaceArm | null = null;
+    if (value["arm"] !== null) {
+      const raw = value["arm"];
+      if (!isRecord(raw) || !exactKeys(raw, PLACE_ARM_KEYS) || raw["kind"] !== "place") return null;
+      const { contract, lineage } = raw;
+      if (!isCarrierAct(contract) || contract.action !== "carry" || contract.nym !== placeKey) return null;
+      if (!Array.isArray(lineage) || lineage.length > PLACE_LINEAGE_BOUND || !lineage.every((act) => isCarrierAct(act) && act.nym === placeKey)) return null;
+      arm = { kind: "place", contract, lineage: lineage as CarriageEntry[] };
+    }
+    return Object.freeze({ placeKey, arm, audience, digest: gatePresentationDigest(bytes) });
+  } catch { return null; }
+}
+
+/**
+ * The image a place's own key signs as its finish: the completed handshake's hash, the bundle's digest, its
+ * presentation's digest, the audience and the place key, under the place finish's own name.
+ */
+export function gatePlaceFinishImage(parts: { handshakeHash: Uint8Array; bundleDigest: string; presentationDigest: string; audience: string; placeKey: string }): Uint8Array {
+  return gateFields(GATE_PLACE_FINISH_DOMAIN, parts.handshakeHash, hexToBytes(parts.bundleDigest), hexToBytes(parts.presentationDigest), utf8Bytes(parts.audience), hexToBytes(parts.placeKey));
 }
 
 // ── The signed finish ───────────────────────────────────────────────────────────────────────────

@@ -37,10 +37,10 @@ import { isWithdrawalMemory, type WithdrawalMemory } from "./face-authority.js";
 import {
   own, readCertificate, sameFaceScope, type FaceWithdrawal, type VesselFaceCertificate,
 } from "./face-proof-subjects.js";
-import { gateBundleDigest, gateKnock, gatePrologue, readGateBundlePin, readGateSignature, type GateBundlePin } from "./gate-bundle.js";
+import { gateBundleDigest, gateKnock, gatePrologue, readGateBundlePin, readGateSignature, type GateBundlePin, type GateTier } from "./gate-bundle.js";
 import {
-  GATE_FRAME, encodeGatePresentation, gateFinishPayload, gateFrame, gatePartReader, gateParts,
-  gatePresentationDigest, gateVerdictImage, readGateAnswer, type PresentationArm,
+  GATE_FRAME, encodeGatePresentation, encodePlacePresentation, gateFinishPayload, gateFrame, gatePartReader, gateParts,
+  gatePlaceFinishImage, gatePresentationDigest, gateVerdictImage, readGateAnswer, type PlaceArm, type PresentationArm,
 } from "./gate-exchange.js";
 import { noiseInitiate, noiseKeyPair, type NoiseTransport } from "./noise-ik.js";
 import type { SessionSigner } from "./session-signer.js";
@@ -58,6 +58,8 @@ export interface DialSocket {
 export interface FaceDialArgs {
   /** The gate's pin, held before the dial. */
   readonly pin:         unknown;
+  /** The tier the caller means to reach. A pin of the other tier dials nothing: a floor gate's `verified` seats the floor alone. */
+  readonly tier:        GateTier;
   readonly socket:      DialSocket;
   /** What the dial asks to reach. */
   readonly audience:    string;
@@ -82,6 +84,7 @@ export interface FaceDialArgs {
 
 export const FACE_DIAL_REFUSALS = [
   "pin-refused",              // the pin fails its own reading
+  "pin-other-tier",           // the pin names another tier than the caller means to reach
   "history-foreign",          // no memory the withdrawal fold built
   "certificate-refused",      // this vessel's certificate fails its reading
   "pin-other-nexus",          // the pin names another Nexus than the face's scope
@@ -135,6 +138,7 @@ async function present(args: FaceDialArgs, keys: DialKeys): Promise<FaceDialOutc
   const pinned = readGateBundlePin(args.pin);
   if (!("pin" in pinned)) return refused("pin-refused");
   const pin: GateBundlePin = pinned.pin;
+  if (pin.tier !== args.tier) return refused("pin-other-tier");
   if (!isWithdrawalMemory(args.history)) return refused("history-foreign");
   const certificate = readCertificate(args.certificate);
   if (!own(certificate, "read")) return refused("certificate-refused");
@@ -200,5 +204,83 @@ async function present(args: FaceDialArgs, keys: DialKeys): Promise<FaceDialOutc
     return { state: "silence" };
   } finally {
     keys.wipe();
+  }
+}
+
+// ── A faceless place dials ──────────────────────────────────────────────────────────────────────
+
+export interface PlaceDialArgs {
+  readonly pin:       unknown;
+  /** The tier the place means to reach. */
+  readonly tier:      GateTier;
+  readonly socket:    DialSocket;
+  readonly audience:  string;
+  /** The place's own key, bare lower-case hex. */
+  readonly placeKey:  string;
+  /** The place key's own signing door: the 64 signature bytes over exactly the image handed in. */
+  readonly sign:      (image: Uint8Array) => Promise<Uint8Array> | Uint8Array;
+  /** The place's carriage contract for the pinned Nexus, or null where it holds none. */
+  readonly arm:       PlaceArm | null;
+  readonly deadlines: { draw(lapse: () => void): { cancel(): void } };
+  readonly random?:   RandomProvider;
+}
+
+/** A place hears `verified` or nothing: it holds no face, so no state of a face's history answers it. */
+export type PlaceDialOutcome =
+  | { readonly state: "verified"; readonly transport: NoiseTransport }
+  | { readonly state: "silence" }
+  | { readonly state: "refused"; readonly refusal: "pin-refused" | "pin-other-tier" };
+
+/**
+ * A faceless place presents its own key to one pinned gate: the same flight, the same sealed channel and
+ * the same deadline a face's dial keeps, with the place's presentation and a finish its own key signs
+ * under the place finish's name. It never throws.
+ */
+export async function dialPlaceGate(args: PlaceDialArgs): Promise<PlaceDialOutcome> {
+  const pinned = readGateBundlePin(args.pin);
+  if (!("pin" in pinned)) return { state: "refused", refusal: "pin-refused" };
+  const pin = pinned.pin;
+  if (pin.tier !== args.tier) return { state: "refused", refusal: "pin-other-tier" };
+  const staticSecret = (args.random ?? defaultCryptoProvider).getRandomValues(new Uint8Array(32));
+  const staticPair = noiseKeyPair(staticSecret);
+  const wipe = (): void => { staticSecret.fill(0); staticPair.secretKey.fill(0); };
+  const { socket } = args;
+  let lapse!: (outcome: PlaceDialOutcome) => void;
+  const lapsed = new Promise<PlaceDialOutcome>((resolve) => { lapse = resolve; });
+  const deadline = args.deadlines.draw(() => { try { socket.close(); } catch { /* already gone */ } wipe(); lapse({ state: "silence" }); });
+  const speak = async (): Promise<PlaceDialOutcome> => {
+    try {
+      const dial = noiseInitiate({ prologue: gatePrologue(pin), s: staticPair, rs: hexToBytes(pin.transportKey) });
+      await socket.open({ knock: gateKnock(pin), message1: dial.message1 });
+      const message2 = await socket.recv();
+      if (message2 === null) return { state: "silence" };
+      const answered = dial.readMessage2(message2);
+      if (answered.payload.length !== 0) return { state: "silence" };
+      const transport = answered.transport;
+      const presentation = encodePlacePresentation({ placeKey: args.placeKey, arm: args.arm, audience: args.audience });
+      const bundleDigest = gateBundleDigest(pin);
+      const signature = await args.sign(gatePlaceFinishImage({
+        handshakeHash: transport.handshakeHash, bundleDigest, presentationDigest: gatePresentationDigest(presentation), audience: args.audience, placeKey: args.placeKey,
+      }));
+      for (const part of gateParts(GATE_FRAME.presentationPart, GATE_FRAME.presentationEnd, presentation)) socket.send(transport.send.seal(part));
+      socket.send(transport.send.seal(gateFrame(GATE_FRAME.finish, signature)));
+      const answer = gatePartReader(GATE_FRAME.answerPart, GATE_FRAME.answerEnd).push(transport.receive.open((await socket.recv()) ?? new Uint8Array(0)));
+      if (answer === null || answer === "refused") return { state: "silence" };
+      const verdict = transport.receive.open((await socket.recv()) ?? new Uint8Array(0));
+      if (verdict.length !== 65 || verdict[0] !== GATE_FRAME.verdict) return { state: "silence" };
+      if (!readGateSignature(pin, gateVerdictImage({ handshakeHash: transport.handshakeHash, bundleDigest, answer }), verdict.subarray(1))) return { state: "silence" };
+      return readGateAnswer(answer)?.state === "verified" ? { state: "verified", transport } : { state: "silence" };
+    } catch {
+      return { state: "silence" };
+    } finally {
+      wipe();
+    }
+  };
+  try {
+    const outcome = await Promise.race([speak(), lapsed]);
+    if (outcome.state !== "verified") { try { socket.close(); } catch { /* already gone */ } }
+    return outcome;
+  } finally {
+    deadline.cancel();
   }
 }

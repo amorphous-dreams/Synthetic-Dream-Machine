@@ -16,7 +16,7 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import type { CarriageEntry } from "../src/carriage-registry.js";
 import { hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
 import { checkVesselChain, foldWithdrawals, type VesselFaceKeyCustody, type WithdrawalMemory } from "../src/face-authority.js";
-import { dialFaceGate, type DialSocket, type FaceDialArgs, type FaceDialOutcome } from "../src/face-dial.js";
+import { dialFaceGate, dialPlaceGate, type DialSocket, type FaceDialArgs, type FaceDialOutcome, type PlaceDialOutcome } from "../src/face-dial.js";
 import {
   makeFaceGate, memoryBackedWithdrawals, presentedAdmitReader, type FaceGate, type GateOutcome, type GateSession,
   type GateShadowReading, type GateSocket, type GateSortInput, type GateSortVerdict, type GateWithdrawalMemory,
@@ -24,10 +24,13 @@ import {
 } from "../src/face-gate.js";
 import type { FaceScope, NexusAid, VesselFaceCertificate } from "../src/face-proof-subjects.js";
 import { classifySocket, type FederationPosture } from "../src/federation-gate.js";
-import { deriveGateBundle, gateKnock, gatePrologue, type GateBundle, type GateBundlePin, type GateBundleRoot } from "../src/gate-bundle.js";
 import {
-  GATE_FRAME, encodeGatePresentation, gateFinishPayload, gateFrame, gateParts, gatePresentationDigest,
-  type GatePresentation, type PresentationArm,
+  deriveGateBundle, floorGateRoot, floorRoute, gateKnock, gatePrologue, sovereignGateRoot, sovereignRoute,
+  type GateBundle, type GateBundlePin, type GateRootDoor, type GateTier,
+} from "../src/gate-bundle.js";
+import {
+  GATE_FRAME, encodeGatePresentation, encodePlacePresentation, gateFinishPayload, gateFrame, gateParts, gatePlaceFinishImage,
+  gatePresentationDigest, type GatePresentation, type PlaceArm, type PlacePresentation, type PresentationArm,
 } from "../src/gate-exchange.js";
 import type { PeerClass } from "../src/island-protocol.js";
 import { makeMultiSigQuorumVerifier, type KahuQuorumSeats, type KapaeAntigenEntry } from "../src/kapae-antigen.js";
@@ -41,8 +44,8 @@ import { carriageAct, kahuRoster } from "./fixtures/carriage.js";
 export const AUDIENCE = "lar:///ha.ka.ba/bags/daemon";
 export const GROUP = "b7f1c2a9d4e60381";
 
-/** A custody root's stand-in: one child per registered name, as the custody seat derives. */
-export function rootOf(label: string): GateBundleRoot {
+/** A root's derive door, stood in: one child per registered name, as the custody seat and the floor key derive. */
+export function rootOf(label: string): GateRootDoor {
   const bytes = sha256(utf8Bytes(`face-gate-fixture root ${label}`));
   return { derive: (domain) => hkdf(sha256, bytes, new Uint8Array(0), utf8Bytes(domain), 32) };
 }
@@ -168,6 +171,8 @@ export interface World {
   fleetReadable:        boolean;
   /** Vessel face keys a dyad shadow sets aside from the fleet. */
   readonly fleetAside:  Set<string>;
+  /** Place keys whose carriage edge a standing shadow sets aside. */
+  readonly placeAside:  Set<string>;
   /** The private grants this vessel's ring holds, by face key. */
   readonly grants:      Map<string, FaceGrantReading>;
   /** What the sorter answers IN PLACE of the house's rule, where a suite sets one. */
@@ -189,39 +194,51 @@ export interface World {
   readonly epoch:       string;
   admitFor(face: Pair, parents?: readonly string[]): Promise<CarriageEntry>;
   revokeFor(face: Pair, parents: readonly string[]): Promise<CarriageEntry>;
+  /** The quorum's `carry` act over a place's key, with the place's own carrier seal. */
+  carryFor(placeSeed: Uint8Array, parents?: readonly string[]): Promise<CarriageEntry>;
+  uncarryFor(placeSeed: Uint8Array, parents: readonly string[]): Promise<CarriageEntry>;
 }
 
 /** Stand one gate for `nexus` on `route`, under the vessel root `root`. */
-export async function world(opts: { nexus?: string; route?: string; root?: GateBundleRoot; posture?: FederationPosture; maxPending?: number; audience?: string; gateBundle?: (derived: GateBundle) => GateBundle } = {}): Promise<World> {
+export async function world(opts: { nexus?: string; route?: string; root?: GateRootDoor; tier?: GateTier; posture?: FederationPosture; maxPending?: number; audience?: string; withdrawals?: GateWithdrawalMemory; gateBundle?: (derived: GateBundle) => GateBundle } = {}): Promise<World> {
   const nexus = (opts.nexus ?? "nexus-a.synthetic") as NexusAid;
   const epoch = `epoch-${nexus}`;
   // Each Nexus seats its own quorum: an admit one Nexus signed counts under no other's roster.
   const kahuSeeds = KAHU.map((seed) => sha256(new Uint8Array([...seed, ...utf8Bytes(nexus)])));
   const roster: KahuQuorumSeats = await kahuRoster(kahuSeeds, 2, epoch);
   const antigenRoster = await kahuRoster(WARDENS, 2, epoch);
-  const bundle = deriveGateBundle(opts.root ?? rootOf("vessel one"), utf8Bytes(nexus), opts.route ?? "/ws");
+  const door = opts.root ?? rootOf("vessel one");
+  const bundle = opts.tier === "floor"
+    ? deriveGateBundle(floorGateRoot(door), utf8Bytes(nexus), floorRoute(opts.route ?? "/shelf"))
+    : deriveGateBundle(sovereignGateRoot(door), utf8Bytes(nexus), sovereignRoute(opts.route ?? "/ws"));
   const deadlines = handDeadlines();
-  const withdrawals = memoryBackedWithdrawals();
+  const withdrawals = opts.withdrawals ?? memoryBackedWithdrawals();
   const w: World = {
     nexus, bundle, pin: bundle.pin, deadlines, withdrawals, epoch,
     held: { nexus, revision: "board-heads-1", roster, denyBoard: [] as CarriageEntry[], antigen: [] as KapaeAntigenEntry[], antigenRoster, antigenVerifier: makeMultiSigQuorumVerifier() },
     posture: opts.posture ?? "private",
-    aside: new Set(), fleetReadable: true, fleetAside: new Set(), grants: new Map(), sorterAnswer: null,
+    aside: new Set(), fleetReadable: true, fleetAside: new Set(), placeAside: new Set(), grants: new Map(), sorterAnswer: null,
     asked: [], sorted: [], attached: [], abandoned: [], sentAtAttach: [], tableFault: null, seatFault: null, refusals: [],
     admitFor: (face, parents = []) => carriageAct(face.secret, "admit", { kahu: kahuSeeds.slice(0, 2), epoch, parents }),
     revokeFor: (face, parents) => carriageAct(face.secret, "revoke", { kahu: kahuSeeds.slice(0, 2), epoch, parents }),
+    carryFor: (placeSeed, parents = []) => carriageAct(placeSeed, "carry", { kahu: kahuSeeds.slice(0, 2), epoch, parents }),
+    uncarryFor: (placeSeed, parents) => carriageAct(placeSeed, "uncarry", { kahu: kahuSeeds.slice(0, 2), epoch, parents }),
     gate: undefined as unknown as FaceGate,
   };
   const admits = presentedAdmitReader(() => w.held);
   (w as { gate: FaceGate }).gate = makeFaceGate({
     bundle: opts.gateBundle ? opts.gateBundle(bundle) : bundle, nexus, audience: opts.audience ?? AUDIENCE, deadlines, withdrawals,
     ...(opts.maxPending !== undefined ? { maxPending: opts.maxPending } : {}),
-    admits: { read: (arm) => { w.asked.push("admit"); return admits.read(arm); } },
+    admits: {
+      read: (arm) => { w.asked.push("admit"); return admits.read(arm); },
+      readPlace: (arm) => { w.asked.push("contract"); return admits.readPlace(arm); },
+    },
     shadows: {
       consult({ scope, vesselFaceKey }): GateShadowReading {
         w.asked.push("shadow");
         return { aside: w.aside.has(scope.faceKey), fleetAside: !w.fleetReadable || w.fleetAside.has(vesselFaceKey) };
       },
+      consultPlace({ placeKey }) { w.asked.push("shadow-place"); return { aside: w.placeAside.has(placeKey) }; },
     },
     grants: { grantFor: (scope) => { w.asked.push("grant"); return w.grants.get(scope.faceKey) ?? null; } },
     sorter: {
@@ -232,11 +249,12 @@ export async function world(opts: { nexus?: string; route?: string; root?: GateB
         // The house's own class rule, over THIS Nexus's posture alone.
         const cls: PeerClass | null = classifySocket({
           sameOperator: input.sameGroup !== null && !input.fleetAside,
-          contracted: input.admit !== null,
+          contracted: input.admit !== null || input.place !== null,
           walker: input.arm?.kind === "grant" || input.arm?.kind === "claim",
           answersStrangers: w.posture === "open",
         });
-        return cls === null ? null : { class: cls, ...(input.admit ? { standing: { nym: input.scope.faceKey, aid: input.scope.nexus } } : {}) };
+        const nym = input.admit ? input.scope!.faceKey : input.place ? input.placeKey! : null;
+        return cls === null ? null : { class: cls, ...(nym ? { standing: { nym, aid: nexus } } : {}) };
       },
     },
     sessions: {
@@ -332,7 +350,7 @@ export interface Dialed {
  */
 export async function dial(w: World, p: Presenter, over: Partial<FaceDialArgs> = {}): Promise<Dialed & { cutsBeforeLapse: number; pendingBeforeLapse: number }> {
   const { dial: socket, accepted, log } = wire();
-  const outcome = dialFaceGate({ pin: w.pin, socket, audience: AUDIENCE, certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history, deadlines: handDeadlines(), ...over });
+  const outcome = dialFaceGate({ pin: w.pin, tier: w.pin.tier, socket, audience: AUDIENCE, certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history, deadlines: handDeadlines(), ...over });
   // The gate's own run ends by itself on an honest dial: it answers, or it reaches its silence and waits.
   const accepting = accepted.then((gateSocket) => w.gate.accept(gateSocket));
   const early = await Promise.race([accepting.then(() => null), outcome]);
@@ -417,4 +435,66 @@ export async function replayFlight(w: World, flight: { knock: string; message1: 
   const cutsBeforeLapse = log.cuts, pendingBeforeLapse = w.gate.pending;
   w.deadlines.fire();
   return { gate: await accepting, log, cutsBeforeLapse, pendingBeforeLapse };
+}
+
+// ── A faceless place ────────────────────────────────────────────────────────────────────────────
+
+/** A herm or a carrier: one key, and the quorum's carriage contract over it at the world's Nexus. */
+export interface Place {
+  readonly seed:     Uint8Array;
+  readonly key:      string;
+  readonly contract: CarriageEntry;
+  readonly arm:      PlaceArm;
+  sign(image: Uint8Array): Promise<Uint8Array>;
+}
+
+export async function place(w: World, label: string): Promise<Place> {
+  const seed = seedOf(`place ${label}`);
+  const key = hex(await ed25519.getPublicKeyAsync(seed));
+  const contract = await w.carryFor(seed);
+  return { seed, key, contract, arm: { kind: "place", contract, lineage: [] }, sign: (image) => ed25519.signAsync(image, seed) };
+}
+
+/** One honest dial of a place, start to end, as `dial` runs a face's. */
+export async function dialPlace(w: World, pl: Place, over: { arm?: PlaceArm | null; audience?: string; tier?: GateTier } = {}): Promise<{ outcome: PlaceDialOutcome; gate: GateOutcome; log: WireLog; cutsBeforeLapse: number; pendingBeforeLapse: number }> {
+  const { dial: socket, accepted, log } = wire();
+  const outcome = dialPlaceGate({ pin: w.pin, tier: w.pin.tier, socket, audience: over.audience ?? AUDIENCE, placeKey: pl.key, sign: pl.sign, arm: over.arm === undefined ? pl.arm : over.arm, deadlines: handDeadlines(), ...(over.tier ? { tier: over.tier } : {}) });
+  const accepting = accepted.then((gateSocket) => w.gate.accept(gateSocket));
+  const early = await Promise.race([accepting.then(() => null), outcome]);
+  if (early !== null && early.state === "refused") return { outcome: early, gate: { outcome: "silence", reason: "no flight reached the gate" }, log, cutsBeforeLapse: log.cuts, pendingBeforeLapse: w.gate.pending };
+  const gate = await accepting;
+  await settle();
+  const cutsBeforeLapse = log.cuts, pendingBeforeLapse = w.gate.pending;
+  w.deadlines.fire();
+  return { outcome: await outcome, gate, log, cutsBeforeLapse, pendingBeforeLapse };
+}
+
+/**
+ * A place's dial driven by hand: a suite may rewrite the presentation, sign the finish with another key, or
+ * sign it over another image. The gate's own run always ends by itself here.
+ */
+export async function bentPlaceDial(w: World, pl: Place, bend: {
+  presentation?: (honest: PlacePresentation) => unknown;
+  signWith?:     Uint8Array;
+  image?:        (parts: Parameters<typeof gatePlaceFinishImage>[0]) => Uint8Array;
+} = {}): Promise<{ gate: GateOutcome; log: WireLog; cutsBeforeLapse: number; pendingBeforeLapse: number }> {
+  const { dial: socket, accepted, log } = wire();
+  const flight = noiseInitiate({ prologue: gatePrologue(w.pin), s: noiseKeyPair(seedOf(`static ${Math.random()}`)), rs: hexToBytes(w.pin.transportKey) });
+  void socket.open({ knock: gateKnock(w.pin), message1: flight.message1 });
+  const accepting = w.gate.accept(await accepted);
+  const message2 = await socket.recv();
+  if (message2 !== null) {
+    const { transport } = flight.readMessage2(message2);
+    const honest: PlacePresentation = { placeKey: pl.key, arm: pl.arm, audience: AUDIENCE };
+    const bytes = encodePlacePresentation((bend.presentation ? bend.presentation(honest) : honest) as PlacePresentation);
+    const parts = { handshakeHash: transport.handshakeHash, bundleDigest: w.bundle.digest, presentationDigest: gatePresentationDigest(bytes), audience: AUDIENCE, placeKey: pl.key };
+    const signature = await ed25519.signAsync(bend.image ? bend.image(parts) : gatePlaceFinishImage(parts), bend.signWith ?? pl.seed);
+    for (const part of gateParts(GATE_FRAME.presentationPart, GATE_FRAME.presentationEnd, bytes)) socket.send(transport.send.seal(part));
+    socket.send(transport.send.seal(gateFrame(GATE_FRAME.finish, signature)));
+  }
+  const gate = await accepting;
+  await settle();
+  const cutsBeforeLapse = log.cuts, pendingBeforeLapse = w.gate.pending;
+  w.deadlines.fire();
+  return { gate, log, cutsBeforeLapse, pendingBeforeLapse };
 }
