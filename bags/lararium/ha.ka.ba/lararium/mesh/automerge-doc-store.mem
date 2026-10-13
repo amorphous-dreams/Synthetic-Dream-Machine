@@ -8,7 +8,7 @@ cacheable   = true
 file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/automerge-doc-store.mem"
 l-space     = "lararium"
 mana        = 3
-role        = "self-documentation: TODO describe automerge-doc-store.ts"
+role        = "self-documentation: the one tiddler store over an Automerge document — every string of a record rests as an immutable scalar, a write merges field by field, and a family lands as one change"
 source-file = "packages/lararium-mesh/src/automerge-doc-store.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/automerge-doc-store"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -35,6 +35,6 @@ A write merges a record field by field at its base. A field whose value did not 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bPc8CNjvf78qaUIXTL1774xYn3d4lbiu_pT0mciOuCc
+<<^ code="&#x0003;">>ni:///sha-256;OIX7RBhSlR0Ppwe8m7rLUnhI_HEuTakknhwthkhThGM
 
 <<^ code="&#x0004;" -> to="?">>
