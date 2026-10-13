@@ -61,7 +61,8 @@ describe("the charter's seal reading — pure", () => {
   });
 
   test("CONTROL — a doc carrying a lineage reads SEALED", () => {
-    const keys = ["a".repeat(64), "b".repeat(64)];
+    // Real verifying keys (RFC 8032 §7.1 TEST 1 and 2): a charter seats only a key the Ed25519 door accepts.
+    const keys = ["d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c"];
     const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 2));
     const doc: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 2, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
       kahu: keys.map((k, i) => ({ displayName: `K${i}`, verifyingKey: k })) };

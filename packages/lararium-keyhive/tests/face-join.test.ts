@@ -12,7 +12,8 @@ import { runFaceJoin, gateFaceJoin, type FaceJoinProvider, type FaceJoinContext 
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
 const OTHER_SEED   = new Uint8Array(32).fill(9);
-const JOINEE_KEY   = "6".repeat(64);
+// A REAL verifying key (RFC 8032 §7.1 TEST 1): a device edge names only a key the Ed25519 door accepts.
+const JOINEE_KEY   = "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a";
 const HEARTH       = "bafkreift7cvcpxxqusdb4lkxsxnt3mzv5uip6tpytinrh7ibgrvu7ceqwa";
 
 /** The identifier a card derives ends in the raw verifying key — the relationship the Binding Gate leans on. */

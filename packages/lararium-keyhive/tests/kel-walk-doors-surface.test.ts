@@ -29,7 +29,7 @@ describe("the live admission door says what the KEL walk set aside", () => {
       enrolmentDigest: enrolmentDigestOf([]),
     };
     const junk: PersonaKelEvent = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
-    const edge = await buildDeviceDelegation({ personaRootSeed: ROOT, deviceVerifyingKey: "6".repeat(64), hearthTrueName: "", boundEpoch: 0 });
+    const edge = await buildDeviceDelegation({ personaRootSeed: ROOT, deviceVerifyingKey: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a" /* RFC 8032 §7.1 TEST 1: a real key */, hearthTrueName: "", boundEpoch: 0 });
     const planted = await verifyEdgeAgainstPersonaKel(edge, [inception, junk], { expectedEpoch: 0 });
     expect(planted.ok).toBe(true);
     expect(kelWalkNote(planted)).toMatch(new RegExp(`set aside: .*${junk.eventCid.slice(0, 16)}`));
