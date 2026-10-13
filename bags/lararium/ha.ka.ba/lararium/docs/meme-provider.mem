@@ -41,13 +41,15 @@ owns on top of it.
 patch, so the same implementation runs in Node and in a browser without a platform branch.
 # ''The document reads at FIRE time, never at patch time.'' A debounce that captured state on arrival
 would deliver a value the doc has already moved past; reading at the flush delivers the latest.
-# ''Eligibility should bind to the save cascade; the provider binds it to two prefixes.'' A key enters
-the fan-out on `lar:` or `Draft of ` and on nothing else (`packages/lararium-mesh/src/meme-provider.ts`).
-The save cascade admits more (`lar-bag-paths.tid`): `$:/temp/*` lands in the device-only temp store,
-but the `personal` kind (`$:/StoryList`, `$:/state/folded/*`, …) reaches a CRDT slot, a draft routes by
-its `draft.of` field under any title, and `[regexp[.]]` lands every other title at the write layer.
-A record stored outside the two prefixes reaches no fan-out — OWED to the provider: whatever the
-adaptor writes, the provider carries.
+# ''Every title a document holds fans out.'' The save cascade (`lar-bag-paths.tid`) routes more than `lar:`
+titles into a document: the `personal` kind (`$:/StoryList`, `$:/state/folded/*`, …) reaches a CRDT slot, a
+draft routes by its `draft.of` field under any title, and `[regexp[.]]` lands every other title at the write
+layer. Whatever a writer lands, the provider carries: another device's save of an ordinary title or of
+`$:/SiteTitle` reaches a wiki that stands open, with no reattach. One class stays home, `neverSyncs`
+(`packages/lararium-mesh/src/lar-uris.ts`): the device-only `$:/temp/` plane and the volatile VM plane. No
+lawful writer lands one in a document, so a peer's document that carries one names a fault at that peer, and
+the fan-out does not spread it. At the wiki shore an unmarked plugin shadow carries no hand, so a peer's record
+for a shadowed system title lands over the shadow (`island-adaptor.ts`, `_landOne`).
 # ''Sync-complete binds to an ISLAND, never to the provider.'' `markSyncComplete(islandId)` stays
 idempotent per island; a single-doc vessel uses the default id, and each handle in a multi-bag vessel
 calls with its own once ready.
@@ -90,6 +92,6 @@ the reference, and the law below it stays the part a reader needs anyway.
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
 
-<<^ code="&#x0003;">>ni:///sha-256;VedIGBSCFDE2JAeJFPzIHVMXLqfGDZ9hyeBTQvtfVrs
+<<^ code="&#x0003;">>ni:///sha-256;Jmlag_IB2rCe9Zf7HEytZydV5zx56C-o2N4f2BMzRe4
 
 <<^ code="&#x0004;" -> to="?">>

@@ -22,6 +22,7 @@
 
 import type { LarTiddlerRecord, LarTiddlerChange, ChangeOrigin, MemeProjection, RawPatch } from "./tiddler-store.js";
 import { KeyedCoalesceGate } from "./projection-nalu.js";
+import { neverSyncs } from "./lar-uris.js";
 export type { MemeProjection, RawPatch } from "./tiddler-store.js";
 
 // ---------------------------------------------------------------------------
@@ -109,24 +110,20 @@ export class MemeProvider {
    * Feed document patches. Small changes schedule per-URI delivery; large changes coalesce into
    * complete state envelopes for projections that declare the bulk path.
    *
-   * Eligible keys:
-   *   lar:    — canonical meme URIs (corpus, wiki, system)
-   *   Draft of — identity-scoped drafts synced across user devices
-   *
-   * $:/temp/ and $:/ system tiddlers are excluded — they never enter the store.
-   * Natural language titles (personal bag, imported wikis) will be included once
-   * the personal bag Automerge doc lands (M-bags). The filter here stays in sync
-   * with the save cascade — whatever the adaptor writes, the provider must fan out.
+   * EVERY TITLE A DOCUMENT HOLDS FANS OUT. The save cascade routes more than `lar:` titles into a
+   * document (an ordinary title, a system title, a personal-layer title, a draft under any title), and
+   * whatever a writer lands there a reader's open wiki must receive. One class stays home: a title that
+   * never persists (`neverSyncs`: the device-only `$:/temp/` plane and the volatile VM plane). No lawful
+   * writer lands one in a document, so a peer's document that carries one names a fault at that peer,
+   * and this shore does not spread it.
    */
   handleChange(patches: RawPatch[], origin: ChangeOrigin): void {
     // Collect all touched URIs from this Automerge change() transaction.
     const touched = new Set<string>();
     for (const p of patches) {
       const key = p.path[0];
-      if (typeof key !== "string") continue;
-      if (key.startsWith("lar:") || key.startsWith("Draft of ")) {
-        touched.add(key);
-      }
+      if (typeof key !== "string" || key === "" || neverSyncs(key)) continue;
+      touched.add(key);
     }
     if (touched.size === 0) return;
 

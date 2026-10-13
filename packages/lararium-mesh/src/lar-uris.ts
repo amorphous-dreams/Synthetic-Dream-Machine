@@ -25,6 +25,14 @@ export function isVolatileVmUri(uri: string): boolean {
   return uri.startsWith(VOLATILE_VM_PREFIX);
 }
 
+/**
+ * True for a title no document carries by law: the volatile VM plane, and TiddlyWiki's `$:/temp/` plane,
+ * which lives in a device's memory alone. A store's listing and a provider's fan-out both leave it home.
+ */
+export function neverSyncs(title: string): boolean {
+  return isVolatileVmUri(title) || title.startsWith("$:/temp/");
+}
+
 // ── Petname l-space regions (the NAMING / addressing layer) ───────────────
 // Petnames and TW5 titles ride the lar: grammar as their own abstraction layer,
 // SEPARATE from both federation and persistence

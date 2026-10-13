@@ -327,8 +327,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // A marked title holds a hand even when its state has returned to the landed value: the flush decides
     // from the state at flush, and a write still in flight for it must be superseded before this wave lands.
     const marked = this.gate.has(title) || this.pendingHand.has(title);
+    // A SHADOW CARRIES NO HAND. TiddlyWiki answers a plugin's shadow where the wiki holds no record of its
+    // own; nobody wrote it and no wave landed it. A hand that reveals a shadow marks the title (the bridge
+    // saves what the wiki shows), so an unmarked shadow meets a wave as an empty title does and the wave
+    // lands over it.
+    const shadowOnly = standing !== null && typeof wiki.tiddlerExists === "function" && !wiki.tiddlerExists(title);
     const isHand = !handSettled && this.resident
-      && (marked || (!same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
+      && (marked || (!shadowOnly && !same(standing, known) && !(this.sent.has(title) && this.sent.get(title) === standing)));
     if (isHand) {
       for (let pass = 0; pass < 8; pass++) {
         const wrote = await this._leaveNow(title);
