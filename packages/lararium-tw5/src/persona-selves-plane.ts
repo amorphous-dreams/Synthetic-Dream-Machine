@@ -48,15 +48,20 @@ export async function readPersonaSelves(store: LarTiddlerStore): Promise<readonl
  * moves, so a fleet-mate's concurrent rename of the other name, or of another persona, survives the merge.
  * `stamp` orders concurrent writes of this one field and settles nothing else. Answers `written: false` where a
  * stamp the plane already holds outranks this one, so the plane keeps the newer name.
+ *
+ * `fill` writes only where the plane never held this name (no stamp stands for it): a vessel that carries up a
+ * name it set long ago never replaces a name, or a clear, some other vessel of the face wrote since.
  */
 export async function writePersonaSelfName(
   store: LarTiddlerStore, handleIndex: number, name: PersonaSelfName, value: string, stamp: string,
+  opts: { readonly fill?: boolean } = {},
 ): Promise<{ readonly written: boolean }> {
   if (!Number.isSafeInteger(handleIndex) || handleIndex < 0) {
     throw new Error("a persona self names a handle-index: a whole number from 0");
   }
   const title = personaSelfTiddlerUri(handleIndex);
   const prev = ((await store.get(title))?.tiddler ?? {}) as PersonaSelfFields;
+  if (opts.fill === true && typeof prev[`${name}@`] === "string") return { written: false };
   const trimmed = value.trim();
   const fields = trimmed.length > 0
     ? withPersonaSelfName(prev, handleIndex, name, trimmed, stamp)

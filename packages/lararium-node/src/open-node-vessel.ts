@@ -145,7 +145,7 @@ import { makeContentPalace, type ContentPalace } from "./sensorium.js";
 import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensorium-recall.js";
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
-import { loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
+import { listAnchoredPersonas, loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
 import { custodyHeld, custodyVeilKeys } from "./custody-seat.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
@@ -433,7 +433,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   siblingChannel: () => SiblingChannelStatus | null;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
   storeClaim: StoreClaim & { readonly holder: "vessel" };
-  /** The mounted face's persona plane off this thread's Repo, for the custody door's `selves` acts; null where no face stands lit. */
+  /** Each carried face's own persona plane off this thread's Repo, for the custody door's `selves` acts; null where no face stands lit. */
   personaSelves: PersonaSelvesPlane | null;
   /** M15: which social planes mounted live vs degraded vs PENDING (probe answered no verdict at all —
    *  distinct from a real condemn). `degraded` already logs its own line live (`quarantineDoc`
@@ -461,7 +461,7 @@ export interface NodeHermResult {
   socketSorter:     SocketSorter;
   /** This vessel's claim on its store, taken before its Repo opened; its verb channel serves it (`startUdsChannel`). */
   storeClaim:       StoreClaim & { readonly holder: "vessel" };
-  /** The mounted face's persona plane off this thread's Repo; null where no face stands lit. */
+  /** Each carried face's own persona plane off this thread's Repo; null where no face stands lit. */
   personaSelves:    PersonaSelvesPlane | null;
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
   mountManifest:    MountManifest;
@@ -491,7 +491,7 @@ interface NodeBootPrep {
   /** The HEARTH this vessel asks for a seat — null when it holds its own face and IS the hearth. A thunk for
    *  the same reason. */
   hearthDaemonUrl:  () => string | null;
-  /** The mounted face's persona plane off this Repo, or null where the bootstrap names no face. A thunk, as above. */
+  /** Each carried face's own persona plane off this Repo, or null where the bootstrap names no face. A thunk, as above. */
   personaSelves:    () => PersonaSelvesPlane | null;
   /** This PLACE's own 32-byte signing seed — the substrate key, never the human's. The two-key atom keeps it
    *  distinct from the persona root a device-delegation edge signs under (`device-delegation.vesselSeed`). */
@@ -1256,7 +1256,7 @@ async function prepareNodeBootOn(
   // per-island plugin-offering resolution (makePool's pool, and the daemon VM's own recipe).
   let crossroadsOfferingsHandle: DocHandle<LarDoc> | undefined;
   let bootstrap!: VesselBootstrap;         // captured in loadGenesis
-  let personaSelves: PersonaSelvesPlane | null = null;   // the mounted face's plane, built at its first ask
+  let personaSelves: PersonaSelvesPlane | null = null;   // the carried faces' planes, built at the first ask
   let slotActiveWikiId = "";               // captured in wikiSlot
   let activeWikiSource: "boot-arg" | "daemon-marker" = "boot-arg";
   // The recall FORM leg holder — opened ONCE, lazily, shared by BOTH the dual recall fuse and the
@@ -2758,8 +2758,18 @@ async function prepareNodeBootOn(
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
     hearthDaemonUrl: () => (bootstrap as { hearthDaemonUrl?: string | null } | undefined)?.hearthDaemonUrl ?? null,
-    personaSelves:   () => (personaSelves ??= bootstrap?.personaUrl && bootstrap.personaBagId
-      ? repoPersonaSelvesPlane(repo, bootstrap.personaUrl, bootstrap.personaBagId) : null),
+    // EVERY carried face's own plane, each reached by the group that face's sealed anchors name: a name of one
+    // face lands on that face's plane and on no other's.
+    personaSelves:   () => (personaSelves ??= bootstrap?.personaPlanes?.length
+      ? repoPersonaSelvesPlane(repo, bootstrap.personaPlanes, async () => {
+          const faces: { handleIndex: number; personaGroupId: string }[] = [];
+          for (const handleIndex of await listAnchoredPersonas()) {
+            const anchors = await loadIdentityAnchors(handleIndex);
+            if (anchors) faces.push({ handleIndex, personaGroupId: anchors.personaGroupDocIdHex });
+          }
+          return faces;
+        })
+      : null),
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,

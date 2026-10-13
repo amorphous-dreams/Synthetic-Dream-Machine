@@ -24,6 +24,9 @@
  *       name.                     control: the sealed write's own frame holds the name (the search finds it there),
  *                                 and with no vessel standing the carry refuses by name while the sealed row keeps
  *                                 the name
+ *   D7  `lares persona sync` FILLS: each held name rides one `selves.carry` frame marked `fill`, so a name the
+ *       face's plane already holds stands, and the command says which names landed and which the fleet kept.
+ *                                 control: a rename (`makeFleetPetnameStore.set`) sends its carry with no `fill`
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -38,7 +41,7 @@ import {
 import { dispatch } from "../src/bin/lares.js";
 import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_SCRATCH_MARKER } from "../src/offline-custody.js";
 import { sealedActVia } from "../src/sealed-act-door.js";
-import { carryOwnName, makeFleetDeclarationStore, makeFleetPetnameStore, readFleetSelves } from "../src/daemon-persona-store.js";
+import { carryOwnName, clearOwnName, makeFleetDeclarationStore, makeFleetPetnameStore, readFleetSelves } from "../src/daemon-persona-store.js";
 import { sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-rows.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
@@ -223,7 +226,9 @@ describe("a command beside a standing vessel", () => {
     await stage();
     const PETNAME = `the-quiet-compartment-${Math.random().toString(36).slice(2)}`;
     const HANDLE = `The Lindwyrm ${Math.random().toString(36).slice(2)}`;
-    const vessel = await standVessel({ unlocked: true, table: (act) => (act === "selves.read" ? { selves: [] } : act.endsWith(".entries") ? { entries: [] } : {}) });
+    const vessel = await standVessel({ unlocked: true, table: (act, args) => (
+      act === "selves.read" ? { selves: [] } : act.endsWith(".entries") ? { entries: [] }
+        : act === "selves.carry" ? { carried: (args as { fill?: boolean }).fill !== true } : act === "selves.clear" ? { cleared: true } : {}) });
     await makeFleetPetnameStore(sealedPetnameStore()).set(0, PETNAME);
     await makeFleetDeclarationStore(sealedDeclarationStore()).set(0, { handle: HANDLE, seat: true, chair: "a private chair" });
     await makeFleetPetnameStore(sealedPetnameStore()).clear(0);
@@ -234,9 +239,16 @@ describe("a command beside a standing vessel", () => {
       expect(frame["op"]).toBe("act");
       expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);
     }
-    expect(frames.map((f) => f["act"])).toEqual(["petname.set", "selves.carry", "declaration.set", "selves.carry", "petname.clear", "selves.carry", "selves.read"]);
-    const carries = frames.filter((f) => f["act"] === "selves.carry");
-    expect(carries.map((f) => f["args"])).toEqual([{ handleIndex: 0, name: "petname" }, { handleIndex: 0, name: "handle" }, { handleIndex: 0, name: "petname" }]);
+    expect(frames.map((f) => f["act"])).toEqual(["petname.set", "selves.carry", "declaration.set", "selves.carry", "petname.clear", "selves.clear", "selves.read"]);
+    const carries = frames.filter((f) => String(f["act"]).startsWith("selves."));
+    expect(carries.map((f) => f["args"])).toEqual([{ handleIndex: 0, name: "petname" }, { handleIndex: 0, name: "handle" }, { handleIndex: 0, name: "petname" }, {}]);
+    // A MOVE REPORTS WHAT THE PLANE DID: it landed, or the plane kept what it held (a fill over a standing name).
+    expect(await carryOwnName(0, "petname")).toEqual({ landed: true });
+    expect(await carryOwnName(0, "petname", { fill: true })).toEqual({ landed: false, kept: true });
+    expect(await clearOwnName(0, "handle")).toEqual({ landed: true });
+    expect((vessel.frames as Array<Record<string, unknown>>).slice(-3).map((f) => f["args"])).toEqual([
+      { handleIndex: 0, name: "petname" }, { handleIndex: 0, name: "petname", fill: true }, { handleIndex: 0, name: "handle" },
+    ]);
     for (const text of [PETNAME, HANDLE, "a private chair"]) expect(JSON.stringify(carries).includes(text)).toBe(false);
     // CONTROL: the search finds a name where one rides: the sealed write's own frame holds it.
     expect(JSON.stringify(frames.filter((f) => f["act"] === "petname.set")).includes(PETNAME)).toBe(true);
@@ -258,8 +270,28 @@ describe("a command beside a standing vessel", () => {
     seatOfflineCustody();
     const alone = makeFleetPetnameStore(sealedPetnameStore());
     await alone.set(1, PETNAME);
-    expect(await carryOwnName(1, "petname")).toMatch(/no persona plane stands here/);
+    expect(await carryOwnName(1, "petname")).toMatchObject({ landed: false, kept: false, why: expect.stringMatching(/no persona plane stands here/) });
     expect(await readFleetSelves()).toMatchObject({ reached: false });
     expect(await alone.get(1)).toBe(PETNAME);
+  });
+
+  test("D7 — persona sync fills, and says which names landed and which the fleet kept", async () => {
+    await stage();
+    const vessel = await standVessel({ unlocked: true, table: (act, args) => {
+      if (act === "selves.read") return { selves: [{ handleIndex: 1, petname: "a-fleet-mates-newer-name" }] };
+      if (act === "petname.entries") return { entries: [[0, "the-work-face"], [1, "an-old-local-name"]] };
+      if (act === "declaration.entries") return { entries: [] };
+      if (act === "selves.carry") return { carried: (args as { handleIndex: number }).handleIndex === 0 };   // the plane keeps h1's name
+      return {};
+    } });
+    const r = await run(["persona", "sync"]);
+    expect(r.code).toBe(0);
+    const carries = (vessel.frames as Array<Record<string, unknown>>).filter((f) => f["act"] === "selves.carry").map((f) => f["args"]);
+    expect(carries).toEqual([{ handleIndex: 0, name: "petname", fill: true }, { handleIndex: 1, name: "petname", fill: true }]);
+    const said = (JSON.parse(r.out) as { data: { carried: Array<{ handleIndex: number; petnameLanded: boolean }> } }).data.carried;
+    expect(said.map((c) => [c.handleIndex, c.petnameLanded])).toEqual([[0, true], [1, false]]);   // h1's name stayed the fleet's
+    // CONTROL: a rename carries with no `fill`, so it replaces.
+    await makeFleetPetnameStore(sealedPetnameStore()).set(1, "a-rename-on-this-device");
+    expect((vessel.frames as Array<Record<string, unknown>>).filter((f) => f["act"] === "selves.carry").pop()!["args"]).toEqual({ handleIndex: 1, name: "petname" });
   });
 });

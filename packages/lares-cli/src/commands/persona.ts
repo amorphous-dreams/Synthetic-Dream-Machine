@@ -290,12 +290,12 @@ async function personaList(args: ParsedArgs): Promise<number> {
  * personaSync — carry this node's own-persona names UP to the persona plane, so the fleet reads what this device knows.
  *
  * A vessel founds before it breathes, so names set pre-boot rest on the sealed rows alone. This walks those
- * rows and carries each held name through the custody door; the plane's own stamp rule decides the rest
- * (a name a fleet-mate set LATER stands, and this device's stale copy loses without a clobber). The `seat`
- * claim never rides — a Kahu chair belongs to the node that holds it.
+ * rows and carries each held name through the custody door, onto that face's own plane, WHERE THE PLANE NEVER
+ * HELD THAT NAME. A name some vessel of the face already wrote there stands, and so does a clear: this device
+ * cannot tell an old name of its own from a newer one a fleet-mate set, so a sync never replaces either. A
+ * rename on this device replaces it. The `seat` claim never rides — a Kahu chair belongs to the node that holds it.
  *
- * Idempotent, and safe to run from every device: two vessels syncing the same persona converge, because each
- * name carries its own stamp and the later one reads.
+ * Idempotent, and safe to run from every device: a second run lands nothing the first one landed.
  */
 async function personaSync(args: ParsedArgs): Promise<number> {
   const read = await readFleetSelves();
@@ -305,7 +305,7 @@ async function personaSync(args: ParsedArgs): Promise<number> {
   const localPetnames     = sealedPetnameStore();
   const localDeclarations = sealedDeclarationStore();
 
-  const carried: Array<{ handleIndex: number; petname: string | null; handle: string | null }> = [];
+  const carried: Array<{ handleIndex: number; petname: string | null; handle: string | null; petnameLanded: boolean; handleLanded: boolean }> = [];
   const indices = new Set<number>([
     ...(await localPetnames.entries()).map(([i]) => i),
     ...(await localDeclarations.entries()).map(([i]) => i),
@@ -313,11 +313,17 @@ async function personaSync(args: ParsedArgs): Promise<number> {
   for (const handleIndex of [...indices].sort((a, b) => a - b)) {
     const petname = await localPetnames.get(handleIndex);
     const handle  = (await localDeclarations.get(handleIndex))?.handle;
-    // A carry names the face and which name; the vessel reads the name off its own sealed row.
-    const refused = [petname ? await carryOwnName(handleIndex, "petname") : null, handle ? await carryOwnName(handleIndex, "handle") : null]
-      .find((why) => why !== null);
-    if (refused) throw new Error(`the persona plane refused the names of h${handleIndex}: ${refused}`);
-    carried.push({ handleIndex, petname: petname ?? null, handle: handle ?? null });
+    // A carry names the face and which name; the vessel reads the name off its own sealed row. It FILLS: a name
+    // the face's plane already holds (or cleared) stands, since this device cannot tell its own older name from a
+    // newer one a fleet-mate set.
+    const moves = { petname: petname ? await carryOwnName(handleIndex, "petname", { fill: true }) : null, handle: handle ? await carryOwnName(handleIndex, "handle", { fill: true }) : null };
+    for (const move of Object.values(moves)) {
+      if (move && !move.landed && !move.kept) throw new Error(`the persona plane refused the names of h${handleIndex}: ${move.why}`);
+    }
+    carried.push({
+      handleIndex, petname: petname ?? null, handle: handle ?? null,
+      petnameLanded: moves.petname?.landed === true, handleLanded: moves.handle?.landed === true,
+    });
   }
 
   emit(args, {
@@ -325,10 +331,12 @@ async function personaSync(args: ParsedArgs): Promise<number> {
     data: { carried },
     human: () => {
       if (carried.length === 0) { console.log("no own-persona names held — nothing to carry."); return; }
-      console.log(`carried ${carried.length} persona name${carried.length === 1 ? "" : "s"} up to the fleet (the persona plane):`);
+      console.log(`read ${carried.length} persona${carried.length === 1 ? "" : "s"} against the fleet (each face's own persona plane):`);
+      const said = (held: string | null, landed: boolean): string => (held === null ? "" : landed ? " (carried up)" : " (the fleet already holds a name here; it stands)");
       for (const c of carried) {
-        console.log(`  h${c.handleIndex}  ${c.petname ?? "(unnamed)"}${c.handle ? `  ->  "${c.handle}"` : ""}`);
+        console.log(`  h${c.handleIndex}  ${c.petname ?? "(unnamed)"}${said(c.petname, c.petnameLanded)}${c.handle ? `  ->  "${c.handle}"${said(c.handle, c.handleLanded)}` : ""}`);
       }
+      console.log("  to replace a name the fleet holds, rename the persona on this device.");
       console.log("  the seat claim stays on this node — a Kahu chair belongs to the node that holds it.");
     },
   });

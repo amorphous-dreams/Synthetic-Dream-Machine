@@ -490,8 +490,8 @@ interface StandingComposition {
    */
   readonly kelHead?: (prefix: string) => Promise<{ readonly head: string | null; readonly seq: number | null }>;
   /**
-   * The mounted face's persona plane off this composition's Repo, for a custody act that carries one of a face's
-   * own names to its fleet. Absent where no face stands lit.
+   * Each carried face's own persona plane off this composition's Repo, for a custody act that carries one of a
+   * face's own names to its fleet. Absent where no face stands lit.
    */
   readonly personaSelves?: PersonaSelvesPlane | null;
 }

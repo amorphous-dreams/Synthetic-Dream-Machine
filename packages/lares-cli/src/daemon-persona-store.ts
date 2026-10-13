@@ -10,9 +10,10 @@
  * THE MIRROR RIDES THE CUSTODY DOOR, NEVER A STORE VERB. A store verb's outcome rests in the daemon's document
  * in the clear and the digest of its arguments rests in a receipt, so a name on that road would leave its
  * sealed row and its private plane for an unsealed document. Each move here sends one `act` frame instead
- * (`sealed-act-door`): `selves.read` answers what the plane holds, and `selves.carry` names a face and which of
- * its two names to carry. The vessel reads that name off its own sealed row and writes it onto the plane from its
- * main thread, so a carry frame holds no name at all.
+ * (`sealed-act-door`): `selves.read` answers what each face's plane holds, `selves.carry` names a face and which
+ * of its two names to carry, and `selves.clear` clears a name whose sealed row holds it no more. The vessel reads
+ * the name off its own sealed row and writes it onto that face's own plane from its main thread, so no mirror
+ * frame holds a name at all.
  *
  * LOCAL-FIRST, NOT VESSEL-REQUIRED. A vessel FOUNDS before it breathes, so every write lands on the sealed row
  * FIRST and gets carried to the plane when a vessel with a lit face answers. A read prefers the fleet (a
@@ -58,17 +59,34 @@ export async function readFleetSelves(): Promise<FleetRead> {
   }
 }
 
-/**
- * Carry one name of one face from its sealed row up to the persona plane. Answers why the carry did not land,
- * or null when it did. A carry reports; it never throws.
- */
-export async function carryOwnName(handleIndex: number, name: FleetName): Promise<string | null> {
+/** How one mirror move ended: the plane took it, the plane kept what it held, or no plane took the frame. */
+export type FleetCarry =
+  | { readonly landed: true }
+  /** The plane kept its own value: a newer write stands there, or (under `fill`) any write at all. */
+  | { readonly landed: false; readonly kept: true }
+  | { readonly landed: false; readonly kept: false; readonly why: string };
+
+async function mirrorAct(act: "selves.carry" | "selves.clear", args: Record<string, unknown>, done: "carried" | "cleared"): Promise<FleetCarry> {
   try {
-    await sealedAct("selves.carry", { handleIndex, name });
-    return null;
+    const out = await sealedAct<Record<string, unknown>>(act, args);
+    return out[done] === true ? { landed: true } : { landed: false, kept: true };
   } catch (err) {
-    return err instanceof Error ? err.message : String(err);
+    return { landed: false, kept: false, why: err instanceof Error ? err.message : String(err) };
   }
+}
+
+/**
+ * Carry one name of one face from its sealed row up to that face's persona plane. `fill` lands it only where the
+ * plane never held that name, so an old local name never replaces what another vessel of the face wrote since.
+ * A carry reports; it never throws.
+ */
+export function carryOwnName(handleIndex: number, name: FleetName, opts: { readonly fill?: boolean } = {}): Promise<FleetCarry> {
+  return mirrorAct("selves.carry", { handleIndex, name, ...(opts.fill === true ? { fill: true } : {}) }, "carried");
+}
+
+/** Clear one name of one face on its persona plane, once its sealed row holds that name no more. Reports; never throws. */
+export function clearOwnName(handleIndex: number, name: FleetName): Promise<FleetCarry> {
+  return mirrorAct("selves.clear", { handleIndex, name }, "cleared");
 }
 
 /**
@@ -89,7 +107,7 @@ export function makeFleetPetnameStore(local: OwnPersonaPetnameStore): OwnPersona
     },
     async clear(handleIndex) {
       await local.clear(handleIndex);
-      await carryOwnName(handleIndex, "petname");
+      await clearOwnName(handleIndex, "petname");
     },
     async entries() {
       const read = await readFleetSelves();
@@ -128,7 +146,7 @@ export function makeFleetDeclarationStore(local: PersonaDeclarationStore): Perso
     },
     async clear(handleIndex) {
       await local.clear(handleIndex);
-      await carryOwnName(handleIndex, "handle");
+      await clearOwnName(handleIndex, "handle");
     },
     async entries() {
       const read = await readFleetSelves();

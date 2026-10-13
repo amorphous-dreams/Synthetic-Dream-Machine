@@ -11,6 +11,8 @@
  *   P6  only the persona's own self tiddler moves; the identity machinery beside it stays untouched and unread.
  *   P7  a handle-index that names no face refuses; nothing lands.
  *   P8  no move takes a seat claim: the written tiddler carries the two names, their stamps and its title alone.
+ *   P9  FILL writes only where the plane never held the name: it lands over nothing, and it replaces neither a
+ *       standing name nor a clear, whatever its stamp.   CONTROL: the same write without `fill` replaces.
  */
 import { describe, expect, test } from "vitest";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -84,5 +86,18 @@ describe("the two names on the persona plane", () => {
     await writePersonaSelfName(s, 0, "petname", "veil-one", "t1");
     await writePersonaSelfName(s, 0, "handle", "Kahu Alpha", "t1");
     expect(Object.keys(await fieldsOf(s, 0)).sort()).toEqual(["handle", "handle@", "petname", "petname@", "title"]);
+  });
+
+  test("P9 — fill lands over nothing and never over a standing name or a clear", async () => {
+    const s = store();
+    expect(await writePersonaSelfName(s, 0, "petname", "carried-up", "t9", { fill: true })).toEqual({ written: true });
+    expect(await writePersonaSelfName(s, 0, "petname", "an-old-local-name", "t99", { fill: true })).toEqual({ written: false });
+    expect(await readPersonaSelves(s)).toEqual([{ handleIndex: 0, petname: "carried-up" }]);
+    await writePersonaSelfName(s, 0, "petname", "", "t100");                                        // a fleet-mate cleared it
+    expect(await writePersonaSelfName(s, 0, "petname", "an-old-local-name", "t200", { fill: true })).toEqual({ written: false });
+    expect(await readPersonaSelves(s)).toEqual([]);
+    expect(await writePersonaSelfName(s, 0, "handle", "Kahu Alpha", "t1", { fill: true })).toEqual({ written: true });   // the other name never stood
+    expect(await writePersonaSelfName(s, 0, "petname", "a-rename", "t300")).toEqual({ written: true });                 // control
+    expect(await readPersonaSelves(s)).toEqual([{ handleIndex: 0, petname: "a-rename", handle: "Kahu Alpha" }]);
   });
 });

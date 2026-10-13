@@ -51,9 +51,9 @@ export interface SealedActContext {
    */
   readonly kelHead: ((prefix: string) => Promise<{ readonly head: string | null; readonly seq: number | null }>) | null;
   /**
-   * The mounted face's own persona plane, as this thread's Repo holds it: the fleet-riding half of a face's two
-   * own names. `null` where no plane stands to write: a vessel with no face lit, a herm floor, or a command
-   * running an act in its own process.
+   * The persona planes of the faces this vessel carries, as this thread's Repo holds them: the fleet-riding half
+   * of each face's two own names. `null` where no plane stands to write: a vessel with no face lit, a herm floor,
+   * or a command running an act in its own process.
    */
   readonly personaSelves: PersonaSelvesPlane | null;
 }
@@ -69,15 +69,20 @@ export interface PersonaSelfLine {
 export type PersonaSelfNameKind = "petname" | "handle";
 
 /**
- * The mounted face's persona plane, read and written by the vessel's MAIN THREAD through its own Repo. The plane
- * private-federates across that face's vessels and reaches no published or federating surface. A write here leaves
- * the record on the plane and nothing else anywhere: it never becomes an invocation.
+ * Each carried face's own persona plane, read and written by the vessel's MAIN THREAD through its own Repo. A
+ * plane private-federates across its one face's vessels and reaches no published or federating surface. A write
+ * here leaves the record on that face's plane and nothing else anywhere: it never becomes an invocation.
  */
 export interface PersonaSelvesPlane {
-  /** Every own persona the plane names, ascending. */
+  /** Each carried face as its own plane names it, ascending. */
   read(): Promise<readonly PersonaSelfLine[]>;
-  /** Write one name; an empty value clears it. `written` false where the plane already holds a newer write. */
-  write(handleIndex: number, name: PersonaSelfNameKind, value: string): Promise<{ readonly written: boolean }>;
+  /**
+   * Write one name of the face at `handleIndex` onto that face's own plane; an empty value clears it. `plane`
+   * false where this vessel carries no plane for that face; `written` false where the plane keeps what it holds
+   * (a newer write, or, under `fill`, any write at all).
+   */
+  write(handleIndex: number, name: PersonaSelfNameKind, value: string, opts?: { readonly fill?: boolean }):
+    Promise<{ readonly written: boolean; readonly plane: boolean }>;
 }
 
 export type SealedActRefusalReason = "unknown-act" | "bad-args" | "act-refused";
@@ -142,6 +147,7 @@ const selfName: Kind<PersonaSelfNameKind> = {
   label: `one of the two names that ride a face's plane ("petname" or "handle")`,
   read: (v) => (v === "petname" || v === "handle" ? v : undefined),
 };
+const flag: Kind<boolean> = { label: "true or false", read: (v) => (typeof v === "boolean" ? v : undefined) };
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
 
 type Shape = Readonly<Record<string, Kind<unknown>>>;
@@ -168,6 +174,21 @@ function planeOf(ctx: SealedActContext): PersonaSelvesPlane {
   return ctx.personaSelves;
 }
 
+/** Refuse an index this vessel holds no persona root for: the mirror moves a held face's names alone. */
+async function heldFace(handleIndex: number): Promise<void> {
+  if (!(await listPersonaRosterLines()).some((l) => l.handleIndex === handleIndex)) {
+    throw refuse(`this vessel holds no persona root at h${handleIndex}, so it carries no name for that face`);
+  }
+}
+
+/** One of a face's two riding names as its sealed row holds it; undefined where the row holds none (or an empty one). */
+async function sealedSelfName(handleIndex: number, name: PersonaSelfNameKind): Promise<string | undefined> {
+  const held = name === "petname"
+    ? await (await makeNodePersonaPetnameStore()).get(handleIndex)
+    : (await (await makeNodePersonaDeclarationStore()).get(handleIndex))?.handle;
+  return held !== undefined && held.trim().length > 0 ? held : undefined;
+}
+
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
 function orRefuse<T extends object>(r: T | { readonly error: string }): T {
   if ("error" in r && typeof (r as { error: unknown }).error === "string") throw refuse((r as { error: string }).error);
@@ -185,9 +206,11 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   carriage.readings     one reading per charter this vessel holds: whether a kept consent or a seated chair carries it
  *   petname.*             this vessel's own private labels for its faces
  *   declaration.*         each face's declared Handle, seat claim and chair label
- *   selves.read           the mounted face's persona plane: each own persona the face's fleet names
- *   selves.carry          carry ONE name of one face from its sealed row up to that plane; the frame names the face
- *                         and which name, and never the name itself, so the plane takes only what a sealed row holds
+ *   selves.read           each carried face as its own persona plane names it
+ *   selves.carry          carry ONE name of one held face from its sealed row up to that face's own plane; the frame
+ *                         names the face and which name, and never the name itself, so a plane takes only what a
+ *                         sealed row holds. `fill` lands it only where the plane never held that name
+ *   selves.clear          clear ONE name of one held face on its plane, once its sealed row holds that name no more
  *   admit.*               the persona admission's hops and its pending rows
  *   handle-book.load|save the recogniser's private memory, as one snapshot
  */
@@ -259,20 +282,30 @@ export const SEALED_ACTS = Object.freeze({
     return {};
   }),
 
-  // THE FLEET MIRROR. A face's two own names rest sealed on this vessel and ride that face's persona plane to its
-  // other vessels. The plane's document lives in this thread's own Repo, so the write needs no vessel key and no
-  // worker; it rides THIS door because a pet-name on a store verb would rest in the daemon's document as an
-  // outcome and a receipt digest, and because a locked vessel shuts every fleet lane. The carry reads the name
-  // off its sealed row itself: a frame carries a face's index and which name, and no name.
+  // THE FLEET MIRROR. A face's two own names rest sealed on this vessel and ride that face's own persona plane to
+  // its other vessels. The plane's document lives in this thread's own Repo, so the write needs no vessel key and
+  // no worker; it rides THIS door because a pet-name on a store verb would rest in the daemon's document as an
+  // outcome and a receipt digest, and because a locked vessel shuts every fleet lane. A carry reads the name off
+  // its sealed row itself: a frame names a face and which name, and no name. Each row acts for a face this vessel
+  // holds a root for and on that face's own plane alone; a carry needs the row to hold the name and a clear needs
+  // it gone, so neither act moves a plane past what the sealed row says.
   "selves.read": act({}, async (_a, ctx) => ({ selves: (await planeOf(ctx).read()).map((s) => ({ ...s })) })),
-  "selves.carry": act({ handleIndex: index, name: selfName }, async (a, ctx) => {
+  "selves.carry": act({ handleIndex: index, name: selfName, fill: optional(flag) }, async (a, ctx) => {
     const plane = planeOf(ctx);
-    const held = a.name === "petname"
-      ? await (await makeNodePersonaPetnameStore()).get(a.handleIndex)
-      : (await (await makeNodePersonaDeclarationStore()).get(a.handleIndex))?.handle;
-    // A row that holds no such name carries its absence: the plane's copy clears, so a cleared name clears fleet-wide.
-    const { written } = await plane.write(a.handleIndex, a.name, held ?? "");
-    return { carried: written, held: held !== undefined };
+    await heldFace(a.handleIndex);
+    const held = await sealedSelfName(a.handleIndex, a.name);
+    if (held === undefined) throw refuse(`the sealed row holds no ${a.name} for h${a.handleIndex}, so nothing carries; a name cleared here clears on the plane by \`selves.clear\``);
+    const { written, plane: stands } = await plane.write(a.handleIndex, a.name, held, a.fill === true ? { fill: true } : {});
+    if (!stands) throw refuse(`this vessel carries no persona plane for h${a.handleIndex}, so its names rest here alone`);
+    return { carried: written };
+  }),
+  "selves.clear": act({ handleIndex: index, name: selfName }, async (a, ctx) => {
+    const plane = planeOf(ctx);
+    await heldFace(a.handleIndex);
+    if ((await sealedSelfName(a.handleIndex, a.name)) !== undefined) throw refuse(`the sealed row still holds a ${a.name} for h${a.handleIndex}; clear it there first`);
+    const { written, plane: stands } = await plane.write(a.handleIndex, a.name, "");
+    if (!stands) throw refuse(`this vessel carries no persona plane for h${a.handleIndex}, so nothing clears beyond it`);
+    return { cleared: written };
   }),
 
   "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({
