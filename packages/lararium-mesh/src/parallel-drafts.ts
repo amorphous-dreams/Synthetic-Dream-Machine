@@ -53,7 +53,9 @@ export interface ParallelDraftsChange {
  * registers on a doc store (`AutomergeDocStore.addProjection`) hears every surfacing that store raises.
  */
 export interface ParallelDraftsReader {
-  onParallelDrafts(change: ParallelDraftsChange): void;
+  /** May answer a promise that settles once the drafts stand kept; a store that surfaces BEFORE it writes
+   *  (a removal that meets a concurrent set) waits on it. */
+  onParallelDrafts(change: ParallelDraftsChange): void | Promise<void>;
 }
 
 /** Does this projection read surfaced drafts? */

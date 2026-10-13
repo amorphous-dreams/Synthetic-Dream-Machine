@@ -589,8 +589,10 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    * with the projector's disk-conflict surface. A surfacing ON the draft bag itself persists nothing —
    * a draft of a draft is two edit buffers racing, and copying it would mint drafts of drafts.
    */
-  onParallelDrafts(change: ParallelDraftsChange): void {
-    void this._track(this.surfacings, this._persistParallelDrafts(change).then(() => undefined), true);
+  onParallelDrafts(change: ParallelDraftsChange): Promise<void> {
+    // The answer settles once the drafts stand kept (or refused onto the alert rail): a store that
+    // surfaces before it writes waits on it.
+    return this._track(this.surfacings, this._persistParallelDrafts(change).then(() => undefined), true);
   }
 
   /** Track a task until it settles; the landing queue's seed checkpoint waits on it when asked. */

@@ -127,7 +127,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
   protected readonly handle: DocHandle<LarDoc>;
   readonly provider: MemeProvider;
   readonly bagId: string | undefined;
-  private readonly _draftListeners = new Set<(change: ParallelDraftsChange) => void>();
+  private readonly _draftListeners = new Set<(change: ParallelDraftsChange) => void | Promise<void>>();
 
   constructor(handle: DocHandle<LarDoc>, bagId?: string) {
     this.handle  = handle;
@@ -159,7 +159,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
   }
 
   /** Listen for a change that leaves concurrent values on a record. Returns the unsubscribe. */
-  onParallelDrafts(fn: (change: ParallelDraftsChange) => void): () => void {
+  onParallelDrafts(fn: (change: ParallelDraftsChange) => void | Promise<void>): () => void {
     this._draftListeners.add(fn);
     return () => { this._draftListeners.delete(fn); };
   }
@@ -178,7 +178,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const drafts = this.parallelDrafts(title);
       if (drafts.length === 0) continue;
       const change: ParallelDraftsChange = { title, bag: this.bagId, drafts };
-      for (const fn of this._draftListeners) fn(change);
+      for (const fn of this._draftListeners) void fn(change);
     }
   }
 
@@ -363,6 +363,20 @@ export class AutomergeDocStore implements LarTiddlerStore {
         if (fields.length > 0) removing.set(record.tiddler.title, { record, fields });
       }
     }
+    // SURFACE FIRST, THEN WRITE. Where the standing document already holds a later value for a field this
+    // write removes, the removal will not stand. The hand's record surfaces as a draft, and its readers
+    // settle, BEFORE the change lands: a vessel that stops between the two keeps the draft, which holds
+    // the hand's whole record. The read after the change stays as the second net.
+    const surfaced = new Map<string, Set<string>>();
+    for (const [title, { record, fields }] of removing) {
+      const base = current?.[title] as { tiddler: Record<string, unknown> } | undefined;
+      const now = docNow?.tiddlers?.[title] as { tiddler?: Record<string, unknown> } | undefined;
+      if (!base || !now?.tiddler || storedDeleted(docNow?.tiddlers?.[title])) continue;
+      const met = fields.filter((field) => field in now.tiddler! && !_sameValue(now.tiddler![field], base.tiddler[field]));
+      if (met.length === 0) continue;
+      surfaced.set(title, new Set(met));
+      await this._surfaceRemoval(title, record, met, origin, requestedBase);
+    }
     const change = (doc: LarDoc) => {
       const tiddlers = doc.tiddlers as unknown as Record<string, MutableLarTiddlerRecord>;
       for (const record of moved) {
@@ -408,18 +422,19 @@ export class AutomergeDocStore implements LarTiddlerStore {
     for (const [title, { record, fields }] of removing) {
       const standing = tiddlersNow?.[title];
       if (!standing || storedDeleted(standing)) continue;
-      const kept = fields.filter((field) => plainField(standing, field) !== undefined);
-      if (kept.length > 0) this._surfaceRemoval(title, record, kept, origin, madeAt);
+      const kept = fields.filter((field) => plainField(standing, field) !== undefined && !surfaced.get(title)?.has(field));
+      if (kept.length > 0) await this._surfaceRemoval(title, record, kept, origin, madeAt);
     }
   }
 
   /**
    * A hand removed fields a concurrent writer set. The merged record keeps the concurrent values (the
    * store decides nothing); the hand's record, WITHOUT those fields, surfaces as one attributed draft in
-   * the parallel-draft shape, so a reader keeps it beside the live record until a person settles it.
+   * the parallel-draft shape, so a reader keeps it beside the live record until a person settles it. The
+   * answer settles once every reader has settled.
    * `lar-conflict-removed` names the fields the hand removed; none of them reads live.
    */
-  private _surfaceRemoval(title: string, record: LarTiddlerRecord, fields: readonly string[], origin: ChangeOrigin, madeAt: readonly string[] | undefined): void {
+  private async _surfaceRemoval(title: string, record: LarTiddlerRecord, fields: readonly string[], origin: ChangeOrigin, madeAt: readonly string[] | undefined): Promise<void> {
     if (this._draftListeners.size === 0) return;
     const by = origin.kind === "tw-local" ? origin.instanceId : origin.kind;
     const modifier = (record.tiddler as Record<string, unknown>)["modifier"];
@@ -438,7 +453,10 @@ export class AutomergeDocStore implements LarTiddlerStore {
       }),
     });
     const change: ParallelDraftsChange = { title, bag: this.bagId, drafts: [draft] };
-    for (const fn of this._draftListeners) fn(change);
+    // A reader's own failure stays its own (it raises its unkept-draft alert); the write goes on.
+    await Promise.all([...this._draftListeners].map(async (fn) => {
+      try { await fn(change); } catch (error) { console.warn(`[AutomergeDocStore] a parallel-drafts reader failed for "${title}": ${String(error)}`); }
+    }));
   }
 
   /** A tombstone is a family of one: one change marking the title deleted, one tombstone fire. */

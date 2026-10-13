@@ -54,6 +54,24 @@ describe("a removal against a concurrent edit surfaces", () => {
     expect(draftsOffLive(seen[0]!.drafts), "a reader keeps it: it carries a state the live record does not").toHaveLength(1);
   });
 
+  test("the draft reaches its reader, and the reader settles, BEFORE the hand's change lands", async () => {
+    const repo = new Repo({ network: [] });
+    const store = new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), "bag-removal");
+    await store.put({ tiddler: { title: TITLE, text: "body", caption: "base caption" } }, peer);
+    const base = store.headsNow()!;
+    await store.put({ tiddler: { title: TITLE, text: "body", caption: "edited caption" } }, peer);
+    const order: string[] = [];
+    store.onParallelDrafts(async (change) => {
+      // A reader that persists the draft takes host turns to do it; the store's write waits for it.
+      await new Promise<void>((resolve) => setImmediate(resolve));
+      order.push(`draft kept while the record reads "${String((await store.get(change.title))!.tiddler.text)}"`);
+    });
+    await store.put({ tiddler: { title: TITLE, text: "hand body" } }, hand, { base });
+    order.push(`write returned with the record reading "${String((await store.get(TITLE))!.tiddler.text)}"`);
+    // A vessel that stops between the two keeps the draft, which holds the hand's whole record.
+    expect(order).toEqual([`draft kept while the record reads "body"`, `write returned with the record reading "hand body"`]);
+  });
+
   test("CONTROL: a removal no concurrent writer touched lands clean", async () => {
     const { store, seen } = stage();
     await store.put({ tiddler: { title: TITLE, text: "body", caption: "base caption" } }, peer);
