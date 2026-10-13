@@ -3,17 +3,15 @@
  *
  * THE LAW (strict by construction; no option loosens it):
  *   · a public key reads as exactly 32 bytes, in its ONE canonical encoding (y below the field prime, no
- *     negative zero), on the curve, and NOT of small order. The eight small-order points refuse BY NAME
- *     (`key-small-order`): such a key holds no secret, so anyone signs for it;
+ *     negative zero), on the curve, and INSIDE the prime-order subgroup. The eight small-order points refuse
+ *     BY NAME (`key-small-order`): such a key holds no secret, so anyone signs for it. A MIXED-ORDER key (a
+ *     prime-order point plus a torsion point) refuses `key-mixed-order`: no honest key generation yields one,
+ *     and it stands as the one key whose signatures two lawful verifiers may read differently;
  *   · a signature reads as exactly 64 bytes `R ‖ S`, with `S` below the group order (`signature-scalar-
  *     non-canonical`: one signature, one encoding), `R` canonical, on the curve and not of small order;
  *   · the equation reads COFACTORLESS, as RFC 8032 §5.1.7 states its sufficient form: `[S]B = R + [k]A`,
  *     `k = SHA-512(R ‖ A ‖ M) mod L` over the EXACT bytes handed in. No factor of eight forgives a torsion
  *     component.
- *
- * A MIXED-ORDER KEY (a prime-order point plus a torsion point) stands as RFC 8032 leaves it: it reads as a
- * key, and a signature under it verifies exactly when the cofactorless equation holds. No honest key
- * generation yields one, and its holder gains nothing over a third party by it.
  *
  * EVERY PRODUCER THE HOUSE USES (noble, Node `crypto`, WebCrypto, extractable or not) signs by RFC 8032
  * §5.1.6 and so passes: an honest `R` and `A` sit in the prime-order subgroup, canonically encoded, with
@@ -37,7 +35,8 @@ export type Ed25519KeyRefusal =
   | "key-malformed"        // not 32 bytes, or hex that names no bytes
   | "key-non-canonical"    // a second encoding of a point: y at or above the field prime, or negative zero
   | "key-off-curve"        // 32 canonical bytes that name no point
-  | "key-small-order";     // one of the eight points anyone signs for
+  | "key-small-order"      // one of the eight points anyone signs for
+  | "key-mixed-order";     // a prime-order point plus a torsion point: outside the prime-order subgroup
 
 /** Why a signature refuses. A key refusal reads first: a weak key refuses whatever signature rides it. */
 export type Ed25519Refusal =
@@ -86,6 +85,7 @@ function leToBigInt(bytes: Uint8Array): bigint {
 }
 
 type PointReading = { point: EdPoint } | { fault: "non-canonical" | "off-curve" | "small-order" };
+type KeyReading = { point: EdPoint } | { refusal: Ed25519KeyRefusal };
 
 /** One 32-byte point encoding → the point, or which law it breaks. */
 function readPoint(bytes: Uint8Array): PointReading {
@@ -101,10 +101,13 @@ function readPoint(bytes: Uint8Array): PointReading {
   return { point };
 }
 
-function readKey(bytes: Uint8Array | null): { point: EdPoint } | { refusal: Ed25519KeyRefusal } {
+function readKey(bytes: Uint8Array | null): KeyReading {
   if (bytes === null) return { refusal: "key-malformed" };
   const read = readPoint(bytes);
-  return "point" in read ? read : { refusal: `key-${read.fault}` };
+  if (!("point" in read)) return { refusal: `key-${read.fault}` };
+  // One scalar multiplication by the group order: only a point of the prime-order subgroup lands on the identity.
+  if (!read.point.isTorsionFree()) return { refusal: "key-mixed-order" };
+  return read;
 }
 
 /**

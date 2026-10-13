@@ -254,7 +254,7 @@ describe("charter-epoch CHAIN minter — pre-rotation seat + SIGNED rotate cerem
     const [g, e1] = [chain[0]!, chain[1]!];
     const repointed = mintCharterEpoch({ ...e1, nextKeyCommit: "moved" }, e1.roll);
     expect(verifySealRoll(g, repointed)).toBe("roll-short-of-revealed-quorum");
-    const otherPrev = genesisCharterEpoch(["c".repeat(64)], 1, g.nextKeyCommit);
+    const otherPrev = genesisCharterEpoch([(await hand()).pub], 1, g.nextKeyCommit);
     const spliced = mintCharterEpoch({ ...e1, prevEpochCid: otherPrev.epochCid }, e1.roll);
     expect(verifySealLineage([otherPrev, spliced])).toBe(false);
   });

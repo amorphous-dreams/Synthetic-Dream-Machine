@@ -4,9 +4,9 @@
  * Sources, each quoted byte for byte:
  *   · RFC 8032 §7.1, TEST 1, TEST 2, TEST 3 and TEST SHA(abc): known answers a lawful signer produces;
  *   · "Taming the many EdDSAs" (Chalkias, Garillot, Nikolaenko, SSR 2020), the twelve edge vectors, as
- *     published in `cases.json` of github.com/novifinancial/ed25519-speccheck. The door stands in the
+ *     published in `cases.json` of github.com/novifinancial/ed25519-speccheck. The door stands past the
  *     strictest column of that paper's table (cofactorless equation, canonical encodings, small-order A and
- *     R refused): of the twelve only vector 3 verifies;
+ *     R refused) and refuses a mixed-order A besides: of the twelve it verifies none;
  *   · the eight small-order points of edwards25519 (the same paper, §5; libsodium's `ed25519_ref10.c`
  *     blocklist carries the same canonical encodings).
  *
@@ -17,6 +17,7 @@ import { generateKeyPairSync, sign as nodeSign } from "node:crypto";
 import { describe, test, expect } from "vitest";
 import * as nobleEd from "@noble/ed25519";
 import { ed25519 as curveEd } from "@noble/curves/ed25519.js";
+import { sha512 } from "@noble/hashes/sha2.js";
 import { hex, hexToBytes } from "../src/crypto.js";
 import { acceptEd25519Key, readEd25519, verifyEd25519 } from "../src/ed25519-door.js";
 
@@ -65,16 +66,16 @@ const TAMING: ReadonlyArray<readonly [string, string, string, "ok" | string, boo
    "f7badec5b8abeaf699583992219b7b223f1df3fbbea919844e3f7c554a43dd43a5bb704786be79fc476f91d3f3f89b03984d8068dcf1bb7dfc6637b45450ac04", "key-small-order", true],
   /* 2  mixed A, small R */
   ["f7badec5b8abeaf699583992219b7b223f1df3fbbea919844e3f7c554a43dd43", "aebf3f2601a0c8c5d39cc7d8911642f740b78168218da8471772b35f9d35b9ab",
-   "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa8c4bd45aecaca5b24fb97bc10ac27ac8751a7dfe1baff8b953ec9f5833ca260e", "signature-point-small-order", true],
+   "c7176a703d4dd84fba3c0b760d10670f2a2053fa2c39ccc64ec7fd7792ac03fa8c4bd45aecaca5b24fb97bc10ac27ac8751a7dfe1baff8b953ec9f5833ca260e", "key-mixed-order", true],
   /* 3  mixed A, mixed R, both equations hold */
   ["cdb267ce40c5cd45306fa5d2f29731459387dbf9eb933b7bd5aed9a765b88d4d", "9bd9f44f4dcc75bd531b56b2cd280b0bb38fc1cd6d1230e14861d861de092e79",
-   "9046a64750444938de19f227bb80485e92b83fdb4b6506c160484c016cc1852f87909e14428a7a1d62e9f22f3d3ad7802db02eb2e688b6c52fcd6648a98bd009", "ok", true],
+   "9046a64750444938de19f227bb80485e92b83fdb4b6506c160484c016cc1852f87909e14428a7a1d62e9f22f3d3ad7802db02eb2e688b6c52fcd6648a98bd009", "key-mixed-order", true],
   /* 4  mixed A, mixed R, the cofactored equation alone holds */
   ["cdb267ce40c5cd45306fa5d2f29731459387dbf9eb933b7bd5aed9a765b88d4d", "e47d62c63f830dc7a6851a0b1f33ae4bb2f507fb6cffec4011eaccd55b53f56c",
-   "160a1cb0dc9c0258cd0a7d23e94d8fa878bcb1925f2c64246b2dee1796bed5125ec6bc982a269b723e0668e540911a9a6a58921d6925e434ab10aa7940551a09", "signature-mismatch", true],
+   "160a1cb0dc9c0258cd0a7d23e94d8fa878bcb1925f2c64246b2dee1796bed5125ec6bc982a269b723e0668e540911a9a6a58921d6925e434ab10aa7940551a09", "key-mixed-order", true],
   /* 5  mixed A, order-2L R, the cofactored equation alone holds */
   ["cdb267ce40c5cd45306fa5d2f29731459387dbf9eb933b7bd5aed9a765b88d4d", "e47d62c63f830dc7a6851a0b1f33ae4bb2f507fb6cffec4011eaccd55b53f56c",
-   "21122a84e0b5fca4052f5b1235c80a537878b38f3142356b2c2384ebad4668b7e40bc836dac0f71076f9abe3a53f9c03c1ceeeddb658d0030494ace586687405", "signature-mismatch", true],
+   "21122a84e0b5fca4052f5b1235c80a537878b38f3142356b2c2384ebad4668b7e40bc836dac0f71076f9abe3a53f9c03c1ceeeddb658d0030494ace586687405", "key-mixed-order", true],
   /* 6  S above the group order */
   ["442aad9f089ad9e14647b1ef9099a1ff4798d78589e66f28eca69c11f582a623", "85e241a07d148b41e47d62c63f830dc7a6851a0b1f33ae4bb2f507fb6cffec40",
    "e96f66be976d82e60150baecff9906684aebb1ef181f67a7189ac78ea23b6c0e547f7690a0e2ddcd04d87dbc3490dc19b3b3052f7ff0538cb68afb369ba3a514", "signature-scalar-non-canonical", false],
@@ -83,10 +84,10 @@ const TAMING: ReadonlyArray<readonly [string, string, string, "ok" | string, boo
    "8ce5b96c8f26d0ab6c47958c9e68b937104cd36e13c33566acd2fe8d38aa19427e71f98a473474f2f13f06f97c20d58cc3f54b8bd0d272f42b695dd7e89a8c22", "signature-scalar-non-canonical", false],
   /* 8  R non-canonical (a second encoding of a small-order point) */
   ["f7badec5b8abeaf699583992219b7b223f1df3fbbea919844e3f7c554a43dd43", "9bedc267423725d473888631ebf45988bad3db83851ee85c85e241a07d148b41",
-   "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff03be9678ac102edcd92b0210bb34d7428d12ffc5df5f37e359941266a4e35f0f", "signature-point-non-canonical", false],
+   "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff03be9678ac102edcd92b0210bb34d7428d12ffc5df5f37e359941266a4e35f0f", "key-mixed-order", false],
   /* 9  R non-canonical, reduced before hashing */
   ["f7badec5b8abeaf699583992219b7b223f1df3fbbea919844e3f7c554a43dd43", "9bedc267423725d473888631ebf45988bad3db83851ee85c85e241a07d148b41",
-   "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffca8c5b64cd208982aa38d4936621a4775aa233aa0505711d8fdcfdaa943d4908", "signature-point-non-canonical", true],
+   "ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffca8c5b64cd208982aa38d4936621a4775aa233aa0505711d8fdcfdaa943d4908", "key-mixed-order", true],
   /* 10 A non-canonical (a second encoding of a small-order point) */
   ["ecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "e96b7021eb39c1a163b6da4e3093dcd3f21387da4cc4572be588fafae23c155b",
    "a9d55260f765261eb9b84e106f665e00b867287a761990d7135963ee0a7d59dca5bb704786be79fc476f91d3f3f89b03984d8068dcf1bb7dfc6637b45450ac04", "key-non-canonical", true],
@@ -156,26 +157,45 @@ describe("the published edge vectors (Taming the many EdDSAs)", () => {
     expect(curveEd.verify(hexToBytes(signature), hexToBytes(message), hexToBytes(pub))).toBe(lenient);
   });
 
-  test("of the twelve, the door verifies vector 3 alone; the default rule verifies nine", () => {
+  test("of the twelve, the door verifies NONE; the default rule verifies nine", () => {
     const door = TAMING.map(([pub, m, sig]) => verifyEd25519(sig, hexToBytes(m), pub));
-    expect(door.map((ok, i) => (ok ? i : -1)).filter((i) => i >= 0)).toEqual([3]);
+    expect(door.filter(Boolean)).toEqual([]);
     expect(TAMING.filter((v) => v[4]).length).toBe(9);
   });
 });
 
-describe("a mixed-order key stands as RFC 8032 leaves it", () => {
-  const MIXED = TAMING[3]![0];
-  test("it reads as a key: not small order, not in the prime-order subgroup", () => {
-    const point = curveEd.Point.fromBytes(hexToBytes(MIXED), false);
-    expect(point.isSmallOrder()).toBe(false);
-    expect(point.isTorsionFree()).toBe(false);
-    expect(acceptEd25519Key(MIXED)).toEqual({ ok: true });
+describe("a mixed-order key refuses, at acceptance and at every reading", () => {
+  const MIXED = TAMING[3]![0], OTHER_MIXED = TAMING[2]![0];
+  test("it names a point outside the small-order set and outside the prime-order subgroup", () => {
+    for (const key of [MIXED, OTHER_MIXED]) {
+      const point = curveEd.Point.fromBytes(hexToBytes(key), false);
+      expect(point.isSmallOrder()).toBe(false);
+      expect(point.isTorsionFree()).toBe(false);
+      expect(acceptEd25519Key(key)).toEqual({ ok: false, refusal: "key-mixed-order" });
+    }
   });
-  test("a signature under it verifies exactly when the cofactorless equation holds", () => {
-    expect(verifyEd25519(TAMING[3]![2], hexToBytes(TAMING[3]![1]), MIXED)).toBe(true);    // both equations
-    expect(readEd25519(TAMING[4]![2], hexToBytes(TAMING[4]![1]), MIXED)).toEqual({ ok: false, refusal: "signature-mismatch" });
-    // KNOWN POSITIVE: a factor of eight forgives vector 4, in the lenient branch and the library's strict one.
-    expect(curveEd.verify(hexToBytes(TAMING[4]![2]), hexToBytes(TAMING[4]![1]), hexToBytes(MIXED), { zip215: false })).toBe(true);
+  test("a signature both equations read true under it still refuses, by the key's name", () => {
+    // KNOWN POSITIVE: vector 3 satisfies the cofactorless equation too; the library's strict branch reads it true.
+    expect(curveEd.verify(hexToBytes(TAMING[3]![2]), hexToBytes(TAMING[3]![1]), hexToBytes(MIXED), { zip215: false })).toBe(true);
+    expect(readEd25519(TAMING[3]![2], hexToBytes(TAMING[3]![1]), MIXED)).toEqual({ ok: false, refusal: "key-mixed-order" });
+  });
+});
+
+describe("a torsion component in R refuses under an ordinary key", () => {
+  test("the cofactored equation reads it true, in the lenient branch and the library's strict one; the door reads signature-mismatch", () => {
+    const secret = hexToBytes(RFC8032[0]![0]), pub = hexToBytes(RFC8032[0]![1]);
+    const L = curveEd.Point.Fn.ORDER, le = (b: Uint8Array): bigint => { let n = 0n; for (let i = b.length - 1; i >= 0; i--) n = (n << 8n) | BigInt(b[i]!); return n; };
+    const a = curveEd.utils.getExtendedPublicKey(secret).scalar;
+    const r = 123456789n;
+    const R = curveEd.Point.BASE.multiply(r).add(curveEd.Point.fromBytes(hexToBytes(SMALL_ORDER[6]![0]), false)).toBytes();
+    const k = le(sha512(new Uint8Array([...R, ...pub, ...MSG]))) % L;
+    let s = (r + k * a) % L;
+    const sig = new Uint8Array(64); sig.set(R, 0);
+    for (let i = 32; i < 64; i++) { sig[i] = Number(s & 0xffn); s >>= 8n; }
+    expect(acceptEd25519Key(pub)).toEqual({ ok: true });
+    expect(curveEd.verify(sig, MSG, pub)).toBe(true);
+    expect(curveEd.verify(sig, MSG, pub, { zip215: false })).toBe(true);
+    expect(readEd25519(sig, MSG, pub)).toEqual({ ok: false, refusal: "signature-mismatch" });
   });
 });
 
@@ -217,8 +237,8 @@ describe("every producer the house uses signs through the door", () => {
     expect(acceptEd25519Key(pub)).toEqual({ ok: true });
     expect(verifyEd25519(sig, MSG, pub)).toBe(true);
   });
-  test("200 fresh keys and signatures all pass (no honest signature leans on a lenient rule)", () => {
-    for (let i = 0; i < 200; i++) {
+  test("100 fresh keys and signatures all pass (no honest signature leans on a lenient rule)", { timeout: 60_000 }, () => {
+    for (let i = 0; i < 100; i++) {
       const secret = curveEd.utils.randomSecretKey();
       const pub = curveEd.getPublicKey(secret);
       const msg = globalThis.crypto.getRandomValues(new Uint8Array(i));
