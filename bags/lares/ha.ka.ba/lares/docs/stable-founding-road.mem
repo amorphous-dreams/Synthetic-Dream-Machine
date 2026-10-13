@@ -656,7 +656,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 * ''The code lane.'' False source comments (`G6` of #/the-loops); a bug in the module trust gate (`packages/lararium-tw5/src/tw5-module-gate.ts`) and its missing positive-path vector; callers that still mount a layer default-writable (`operator-daemon-behavior.ts`, `daemon-vm-core.ts`); mesh tests that sit outside the type-check.
 * ''The Harbor tail'': train A.
 * ''Early starts beside the chain'': the Kahu plane's first three steps take no identity bytes (the steward signer, the carriage verifier's held root, realms with selected-realm routing); the handshake funnel and the proof subjects of train W; the node, CLI and tool fixtures funnel of train K.
-* ''The small sweep.'' The memetic-wikitext plugin still ships `$:/config/ResilientRender`, a flag nothing reads; retiring it rebuilds the plugin and takes a labelled genesis re-bake. Two e2e files read the first `gate key:` line of a log (`tests/e2e/meme-realm-bag.test.ts`, `tests/e2e/arrival-surfaces.e2e.test.ts`), and the `awaitRendezvous` docblock in `tests/harness/instance.ts` describes an earlier boot order. Three source comments name a carrier that left (`packages/lararium-keyhive/src/face-grant-record.ts`, `packages/lararium-keyhive/tests/archive-floor-write.test.ts`, `tests/e2e/meme-realm-bag.test.ts`); its law rests at <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>.
+* ''The small sweep.'' The memetic-wikitext plugin still ships `$:/config/ResilientRender`, a flag nothing reads; retiring it rebuilds the plugin and takes a labelled genesis re-bake. Two e2e files read the first `gate key:` line of a log (`tests/e2e/meme-realm-bag.test.ts`, `tests/e2e/arrival-surfaces.e2e.test.ts`), and the `awaitRendezvous` docblock in `tests/harness/instance.ts` describes an earlier boot order. Three source comments name a carrier that left (`packages/lararium-keyhive/src/face-grant-record.ts`, `packages/lararium-keyhive/tests/archive-floor-write.test.ts`, `tests/e2e/meme-realm-bag.test.ts`); its law rests at <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>. Five `Meme:` headers and two package notes name the shift ledger, which left (`packages/lares-cli/src/commands/watch.ts`, `commands/ingest.ts`, `packages/lares-cli/src/ingest-core.ts`, `packages/lararium-tw5/src/delete-gate.ts`, `packages/lararium-node/tests/ingest-verb.test.ts`, `packages/SPRINT-01-GENESIS-MESH.md`, `packages/.shelf/HANDOFF.md`); its procedures rest at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>.
 * ''Band-ladder residue'': one five-band ladder, the measure-servo aliases in `ffz-project.ts`, the `lar_feedback` output field name. It rides the Sensorium's wait, and a frame inside it may heal at any time.
 * ''The capture lane's era ruling'': #/open.
 * ''Sealed-store step 1'': after the seal (#/the-road, the sealed store).
@@ -757,6 +757,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AcwEfwTtil40-69PUlPwMnIpaojdSRrjjQ5N0QsZOVA
+<<^ code="&#x0003;">>ni:///sha-256;qb62YVc9orVjTHn_GKspM4EVOTH6Y1k4jZQAmKYwaIU
 
 <<^ code="&#x0004;" -> to="?">>
