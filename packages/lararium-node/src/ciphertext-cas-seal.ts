@@ -20,6 +20,12 @@
  * NO CONVERGENCE SECRET SEALS HERE. The scope a body registers under names the Nexus the sealed block belongs
  * to, which the carry lane's own gates read; it names no key.
  *
+ * TWO HANDS MAY SEAL, AND ONE DOOR REGISTERS. A vessel's content-key holder lives beside its key seat (the
+ * daemon island), seals a body there and rests the ciphertext in this same `cad/` tier; the vessel then
+ * registers that body by its address (`registerSealedBody`). A caller that itself holds a content key seals
+ * and registers in one call (`installSealedBody`). Either way a docId enters the sealed set only for bytes
+ * that rest in the tier, recompute to their address and carry the sealed value's own format mark.
+ *
  * Meme: lar:///ha.ka.ba/lararium/node/ciphertext-cas-seal · lar:///ha.ka.ba/lararium/mesh/sealed-store
  */
 
@@ -27,8 +33,11 @@ import {
   interpretAsDocumentId, stringifyAutomergeUrl,
   type BinaryDocumentId, type DocumentId,
 } from "@automerge/automerge-repo";
-import { sealPrivateBody, parseDigest, hexToBytes, type PrivateBodyKey, type KeyVersionId } from "@lararium/mesh";
-import { writeCasEntriesFs } from "./node-cas.js";
+import {
+  SEALED_CHUNK_MARK, SEALED_HEADER_LEN, SEALED_MARK_LEN, SEALED_TAG_LEN, sealPrivateBody, parseDigest, hexToBytes, readSealedAddress,
+  type PrivateBodyKey, type KeyVersionId,
+} from "@lararium/mesh";
+import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "./node-cas.js";
 import type { SealedPlaneRegistry } from "./plane-seal.js";
 import type { NexusEpochName } from "./plane-seal.js";
 
@@ -61,6 +70,9 @@ export function docIdForCiphertextCid(cid: string): DocumentId {
   return interpretAsDocumentId(stringifyAutomergeUrl({ documentId: idBytes }));
 }
 
+/** What registering one sealed body answers: the address, the docId and the scope. None holds a key. */
+export type RegisteredSealedBody = Pick<InstalledSealedBody, "cid" | "docId" | "nexusAid" | "epochCid">;
+
 /** A seal that refused: the body stays local and unsealed, and nothing registered. */
 export class SealRefused extends Error {
   override readonly name = "SealRefused";
@@ -92,7 +104,29 @@ export function installSealedBody(
   if (!("body" in sealed)) throw new SealRefused(sealed.refusal);
   const { cid, ciphertext, keyVersion, ref } = sealed.body;
   writeCasEntriesFs([{ cid, bytes: ciphertext }], casDir);
-  const docId = docIdForCiphertextCid(cid);
-  registry.register(docId, scope);                                   // THE SIDE-EFFECT (set + scope sidecar together)
-  return { cid, docId, nexusAid: scope.nexusAid, epochCid: scope.epochCid, keyVersion, ref };
+  return { ...registerSealedBody(registry, casDir, cid, scope), keyVersion, ref };
+}
+
+/**
+ * REGISTER a body some hand already sealed and rested in the cad tier: THE SIDE-EFFECT (the sealed set and
+ * its scope sidecar together). The bytes must rest under `cid`, recompute to it, and read as a sealed value:
+ * long enough for a header and one segment, under the sealed value's own format mark. A missing, altered or
+ * cleartext body throws `SealRefused` and registers nothing, so no plaintext door opens here.
+ */
+export function registerSealedBody(
+  registry: SealedPlaneRegistry,
+  casDir:   string,
+  cid:      string,
+  scope:    NexusEpochName,
+): RegisteredSealedBody {
+  const address = readSealedAddress(cid);
+  if (address === null) throw new SealRefused("address-malformed");
+  const bytes = readVerifiedCasBlobFromFs(address, casDir);
+  if (bytes === null) throw new SealRefused("value-absent");
+  if (bytes.length < SEALED_HEADER_LEN + SEALED_TAG_LEN || !SEALED_CHUNK_MARK.every((byte, i) => bytes[i] === byte) || SEALED_CHUNK_MARK.length !== SEALED_MARK_LEN) {
+    throw new SealRefused("format-unknown");
+  }
+  const docId = docIdForCiphertextCid(address);
+  registry.register(docId, scope);
+  return { cid: address, docId, nexusAid: scope.nexusAid, epochCid: scope.epochCid };
 }

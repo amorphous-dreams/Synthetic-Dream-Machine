@@ -13,17 +13,19 @@
  * side-effect, opening the member blind-transit lane for exactly that body — a cleartext body reaches no seal
  * path, so nothing self-labels sealed.
  *
- * THE KEY COMES FROM A CONTENT-KEY HOLDER, NEVER FROM A NEXUS SECRET. A caller names the bag and hands that bag's
- * current content key (`under`) and the Nexus the block belongs to (`scope`). FAIL-CLOSED: a caller that names no
- * key seals NOTHING — `ContentKeyUnavailable` — and the body stays cleartext-local only. The durable holder that
- * answers a bag's key belongs to the sealed store's lockbox store.
+ * THE KEY STAYS WITH THE CONTENT-KEY HOLDER, NEVER A NEXUS SECRET. A vessel's holder lives beside its key seat,
+ * in the daemon island: it seals a body under its bag's content key there and rests the ciphertext in the
+ * `cad/` tier (the island's `sealed-seal` verb). The vessel then REGISTERS that body by its address
+ * (`registerSealedCarrier`, the `cad-seal` verb), so no bare key crosses the island's port. A caller that itself
+ * holds a content key seals and registers in one call (`sealCarrierForFederation`). FAIL-CLOSED: a caller that
+ * names no key seals NOTHING — `ContentKeyUnavailable` — and the body stays cleartext-local only.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/seal-carrier-federation · lar:///ha.ka.ba/lararium/mesh/sealed-store
  */
 
 import { join } from "node:path";
 import type { CasHolder, PrivateBodyKey } from "@lararium/mesh";
-import { installSealedBody, type InstalledSealedBody } from "./ciphertext-cas-seal.js";
+import { installSealedBody, registerSealedBody, type InstalledSealedBody, type RegisteredSealedBody } from "./ciphertext-cas-seal.js";
 import { noteInstalledBody } from "./bag-tracker.js";
 import type { BagTracker } from "./bag-tracker.js";
 import type { SealedPlaneRegistry } from "./plane-seal.js";
@@ -68,4 +70,24 @@ export function sealCarrierForFederation(args: {
   const installed = installSealedBody(args.registry, args.cadDir, args.plaintext, args.under, args.scope);
   if (args.tracker && args.self) noteInstalledBody(args.tracker, installed, args.self);
   return installed;
+}
+
+/**
+ * Register one carrier body the content-key holder already sealed into the cad tier: the sealed set, its scope
+ * sidecar and the discovery announce, for exactly the address handed in. The bytes must rest in `cadDir`,
+ * recompute to `cid` and read as a sealed value; anything else throws `SealRefused` and registers nothing.
+ */
+export function registerSealedCarrier(args: {
+  readonly registry: SealedPlaneRegistry;
+  readonly cadDir:   string;
+  /** `blake3:<hex>`: the address the holder's seal answered. */
+  readonly cid:      string;
+  /** The Nexus the sealed block belongs to, and its charter epoch. */
+  readonly scope:    NexusEpochName;
+  readonly tracker?: BagTracker;
+  readonly self?:    CasHolder;
+}): RegisteredSealedBody {
+  const registered = registerSealedBody(args.registry, args.cadDir, args.cid, args.scope);
+  if (args.tracker && args.self) args.tracker.note(registered.cid, args.self);
+  return registered;
 }
