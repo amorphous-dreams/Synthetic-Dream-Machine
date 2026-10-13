@@ -357,6 +357,8 @@ Three research spirits (Keyhive/BeeKEM · object-capability theory · MLS/TreeKE
 
 ''Reuse-on-present.'' Subsequent boots read the binding tiddlers and mount the existing Automerge docs. When a vessel-only binding finds a seated face, reuse restores its Keyhive registration from `keyhive-doc-id`, re-delegates it to the face and rewrites `face-reach` to `face`. If that re-grant lacks `keyhive-doc-id`, `BindingRegistrationRefusal` refuses the boot and tells the operator to "perform a fresh start by hand because no compatibility reader can guess its document identity".
 
+''The grant that seats a later joiner.'' A vessel that joins a PersonaGroup after its founding holds bindings minted on its own vessel key. The founder writes a signed face-join grant record on the PersonaGroup plane; the joinee's own kit reads and verifies that record, takes the seat, and re-grants its vessel-only bindings on reuse. Verification checks the persona KEL's genesis against the pinned root, then the founder's edge against the KEL head and the current lease epoch; reading never re-cuts (`packages/lararium-keyhive/src/face-grant-record.ts`, witnessed in `tests/e2e/meme-two-vessel-bag.test.ts`).
+
 ''Never-delete.'' Operator view state carries durability — `$:/StoryList`, `$:/state/folded/*`, `$:/state/tab-*`, and `$:/palette` represent the operator's actual viewing history per recipe. Bindings persist indefinitely; the operator's view state across all recipes they have ever opened stays recoverable.
 
 ''Cap-rotation on PersonaGroup membership change.'' When the operator admits a new device, the founding ceremony already grants the new device admin access to the admin doc. The new device reads the admin doc, sees existing binding tiddlers, mounts the same `@personal`/`@draft` docs. Keyhive's CRDT-of-capabilities means the new device also gains access to the underlying `@personal`/`@draft` docs (each carries a delegation to the PersonaGroup, and the new device joined the PersonaGroup) — no per-binding re-grant required. //(Verified 2026-06-03: access is membership-graph reachability, so the new edge covers every doc the group can reach, retroactively.)//
@@ -502,6 +504,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LqPI3dPnEV15o9QodUTI8UCWSrkkXLN5cCouKE31AQA
+<<^ code="&#x0003;">>ni:///sha-256;jMS1DTMNRaWDxjt_9ve3za3ObHgW-InH1S388UbZRJg
 
 <<^ code="&#x0004;" -> to="?">>

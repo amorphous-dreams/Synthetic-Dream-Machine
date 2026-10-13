@@ -404,6 +404,7 @@ hours. The eight red-first moves and the first instrument list read in #/shift-f
 * ''Measure both sides of a boundary.'' A wire that drops a field may not lose it, since the receiver re-derives; under a first-writer-wins store, read order carries load.
 * ''A commit subject claims; it proves nothing.'' A reader stricter than the parser still lies.
 * ''Derive, never enumerate'': a quoted count drifts.
+* ''A receipt from one layer greens no claim another layer holds.'' A pure scenario proves grammar; a docker run proves a process and a storage boundary; neither decides authority. Record what each receipt leaves unproven.
 
 !!! Tree and run
 * ''`lares vessel stand` detaches.'' Readiness reads from the node's own log: `phase → vessel-ready`, or `fatal:` on a boot fault. Read `<lares>/vessel/stand.log` from the byte offset the run starts at, never the launcher's pipe.
@@ -449,6 +450,6 @@ hours. The eight red-first moves and the first instrument list read in #/shift-f
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kvMx8MHElW7z54RQmRCAigYNAPvXwUk5ZeR400Mz6wA
+<<^ code="&#x0003;">>ni:///sha-256;8VE8KVu4hGslzAMsIJirm4TWOo54cxiaUJ1htNAANmQ
 
 <<^ code="&#x0004;" -> to="?">>

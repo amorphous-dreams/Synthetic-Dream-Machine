@@ -414,11 +414,11 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `P7` The engine-offer lineage under the cadence threshold. Operator (cadence shares, #/open). P; may follow the ceremony.
 * `P8` One public answer per Nexus, signed by the steward; the domain's Handle table. Off the ceremony's chain by ruling. P.
 * `P9` The fork-resolve act's shape and the re-seal proof. Operator (#/open); each shapes a signed record.
-* `P10` The herm's carriage client fetch leg (a public blob the herm lacks gets fetched, written through and served; `bulb-read-face.ts`, `node-cas.ts`), which the held red in `tests/e2e/herm-reshares-public-blob.e2e.test.ts` waits on; seeding a herm from a stood Lararium. House. Before the fence where the ceremony seeds a herm.
+* `P10` The herm's carriage client fetch leg (a public blob the herm lacks gets fetched, written through and served; `bulb-read-face.ts`, `node-cas.ts`), and one circle in the law beside it: a carrier may read a book its registration declares public, the declaration lives on the realm doc, and the realm doc never crosses to a carrier. The held red in `tests/e2e/herm-reshares-public-blob.e2e.test.ts` waits on both. Also owed: seeding a herm from a stood Lararium. House. Before the fence where the ceremony seeds a herm.
 * `P11` Board migration beyond the persona log; the explicit DEPARTURE, named by an act at the rite and never inferred at a boot; the offering's announce and taker doors. May follow.
 * `P12` The `edge-kapae` and `vouch` boards stay unfederated: both composers build the federation gate with no extra board. May follow.
 * `P13` Per-meme grants; a leaf honouring a session's effective recipe. O1 for the recipe.
-* `P14` The Offering: generic adoption stays deferred; the grammar-scoped offering relation, and the receiver's Antigen consultation cap behind the scope ruling (#/open); the fold stands with no caller. May follow.
+* `P14` The Offering: generic adoption stays deferred, and no generic `take` or `stage` evidence gets minted; the grammar-scoped offering relation, and the receiver's Antigen consultation cap behind the scope ruling (#/open); the fold stands with no caller; a multi-vessel docker receipt for partial replication, partition and rejoin. First arrival, carriage, local inspection, adoption, grammar admission and Antigen enforcement each keep their own receipt. May follow.
 * `P15` `nexus kahuli grammar --apply` stands held, its diff-gate unbuilt. Operator (engine cadence, #/open).
 * `P16` Re-anchoring sorts dwellings by an injected `epochOrder` (`re-anchoring.ts`); it should keep `epochCid` as a fence and surface concurrent records. May follow.
 
@@ -747,6 +747,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;57KeWnLNJkN6-DiyUnhAjq8EelRJmMuYeBUYHo9eFPI
+<<^ code="&#x0003;">>ni:///sha-256;cNuuB9tLe5KBjrSvHS_f2lEpzFxEaR8OW_fmYMbnRJ0
 
 <<^ code="&#x0004;" -> to="?">>
