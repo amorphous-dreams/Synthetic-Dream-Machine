@@ -24,7 +24,7 @@ uri-path    = "ha.ka.ba/lares/api/pono/local-first"
 ! Local-First Software
 
 The seven ideals from Kleppmann et al. (Ink & Switch, 2019) define the design target.
-Keyhive (convergent capabilities + BeeKEM) and Beelay (RIBLT sync + sedimentree) are
+Keyhive (convergent capabilities + BeeKEM) and Beelay (RIBLT sync + sedimentree) form
 the current prior-art stack closest to satisfying all seven simultaneously.
 
 ''Scale ladder (canonical 2026-05-06):''
@@ -42,11 +42,11 @@ the current prior-art stack closest to satisfying all seven simultaneously.
 
 !!! Ideal 1 — Fast
 
-No server round-trips for reading or writing. Local state is always available.
+No server round-trips for reading or writing. Local state always remains available.
 UX MUST stay off the network-latency critical path.
 
-''Lararium:'' SATISFIED. TW5Engine runs entirely in-process; tiddler store is local;
-`filterTiddlers` and `renderTiddler` are synchronous.
+''Lararium:'' SATISFIED. TW5Engine runs entirely in-process; tiddler store resides locally;
+`filterTiddlers` and `renderTiddler` run synchronously.
 
 ''Law:'' Any projection or filter that requires a network call before returning VIOLATES
 this ideal. Cache locally; sync asynchronously.
@@ -55,7 +55,7 @@ this ideal. Cache locally; sync asynchronously.
 
 !!! Ideal 2 — Multi-Device
 
-Data lives on all devices, not just in a cloud. Sync is automatic and bidirectional.
+Data lives on all devices, not just in a cloud. Sync runs automatically and bidirectionally.
 A device holds first-class standing; the cloud serves as an optional relay.
 
 ''Lararium:'' GAP. No cross-device sync architecture implemented. Automerge + Beelay
@@ -76,7 +76,7 @@ not a degraded fallback.
 ''Lararium:'' PARTIALLY SATISFIED. TW5 works offline by construction (in-process VM).
 Lararium Node server mode adds a network dependency for initial content load.
 
-''Law:'' The browser peer MUST be able to boot, read, and write from IndexedDB without
+''Law:'' The browser peer MUST support booting, reading, and writing from IndexedDB without
 any server present. The server functions as a sync accelerator, not a boot requirement.
 
 ---
@@ -100,11 +100,11 @@ Software created today remains accessible without the vendor. Data in open forma
 readable independently of the application.
 
 ''Lararium:'' SATISFIED. TW5 format — HTML + JS in a single file or tiddler store —
-remains readable today from 2004 archives. The `text/memetic-wikitext` format is
+remains readable from 2004 archives. The `text/memetic-wikitext` format consists of
 plain text with TOML headers; readable by any text editor.
 
-''Law:'' No binary-only storage for meme content. `MutableLarRecord.text` is always
-UTF-8 string. Blobs (`LarariumDoc.blobs`) are reserved for truly binary assets
+''Law:'' No binary-only storage for meme content. `MutableLarRecord.text` always holds a
+UTF-8 string. Blobs (`LarariumDoc.blobs`) stay reserved for truly binary assets
 (TW5 core JS, plugin bundles) — never for meme content.
 
 ---
@@ -140,11 +140,11 @@ stabilizes. Browser agent: `SubtleCrypto` non-exportable keys. Node agent: files
 
 !!! Ideal 7 — User Control
 
-Users can move, copy, inspect, and modify their data. No lock-in. The application is
+Users can move, copy, inspect, and modify their data. No lock-in. The application serves as
 a tool, not a custodian.
 
-''Lararium:'' SATISFIED for single-user. The `lar:` URI namespace is an open addressing
-scheme; the tiddler store is inspectable and exportable.
+''Lararium:'' SATISFIED for single-user. The `lar:` URI namespace forms an open addressing
+scheme; the tiddler store admits inspection and export.
 
 ''Multi-user gap:'' shared lararium-node wiki islands need a capability model for access
 control. The Orichalcum `ABILITY_LADDER` provides the vocabulary;
@@ -168,7 +168,7 @@ It does NOT have:
 * Override capability for user-controlled data
 
 ''Law:'' A lararium-node MUST keep its decisions within its peer role.
-Routing, relay, and projection are peer capabilities; adjudication is not.
+Routing, relay, and projection count as peer capabilities; adjudication does not.
 
 ''Readiness reads local (corollary, 2026-06-10):'' a vessel declares its own
 readiness from local state (the server listens; the port stands open) — it MUST
@@ -193,9 +193,9 @@ Fuller (Synergetics §301): //"the aggregate of all humanity's consciously appre
 //and communicated nonsimultaneous and only partially overlapping experiences."//
 
 ''Universe has no global now.'' Events have finite durations; they partially overlap;
-no single simultaneous snapshot of the whole is coherent or necessary.
+no single simultaneous snapshot of the whole coheres or meets any need.
 
-This is the theoretical grounding for causal island doctrine:
+This supplies the theoretical grounding for causal island doctrine:
 * The lararium mesh has no global clock, no global state.
 * Each island has a causal history (partially-ordered event log).
 * Islands overlap "only partially" — they share some events (via sync), not all.
@@ -204,10 +204,10 @@ This is the theoretical grounding for causal island doctrine:
 Sync protocols requiring total order (a single source of truth for "current state")
 violate Fuller's Universe model. CRDT-based sync (Automerge + Beelay) requires
 only ''causal order'' — Fuller-consistent by construction. BeeKEM's
-"only a causal order of operations" requirement is the cryptographic expression
+"only a causal order of operations" requirement gives the cryptographic expression
 of Fuller's non-simultaneous Universe.
 
-''The UI MUST reflect this:'' content is "current as of my last sync with peer X,"
+''The UI MUST reflect this:'' content reads "current as of my last sync with peer X,"
 not "current globally." A lararium-node MUST present its view as local — current as of last sync.
 
 <<~/ahu>>
@@ -220,7 +220,7 @@ Beelay provides the sync protocol for Automerge repos. Key mechanisms:
 
 ''RIBLT (Rateless Invertible Bloom Lookup Tables):''
 Nested set reconciliation at three levels — membership operations, document states,
-per-document CGKA operations. Peers exchange RIBLT digests; the difference is the
+per-document CGKA operations. Peers exchange RIBLT digests; the difference forms the
 sync payload. No central coordinator; no round-trip to determine "what do you need?"
 
 ''Sedimentree:''
@@ -262,6 +262,6 @@ Beelay's sync protocol operates below this boundary — transparent to the meme 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;8viGYxCNUowOAnpPKph-LB-CXP7BMG0wTfdEQbRjNRc
+<<^ code="&#x0003;">>ni:///sha-256;WbKIMTnkw3oZ_TOrPsmr0LsyZjut3We0Ag2S7vHvb18
 
 <<^ code="&#x0004;" -> to="?">>

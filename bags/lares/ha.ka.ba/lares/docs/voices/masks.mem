@@ -37,7 +37,7 @@ The thirteen remain beneath it.
 
 A ''Mask'' defines a character declared into the session. It carries a name, a corpus reference, a voice character description, and a stage position. Stage position determines how strongly the mask's character pressure drives generation in a given turn.
 
-''Pressure flow:'' Character pressure drives first. The mask's stage weight and scene pressure determine which character's name token surfaces. Voice pressure acts downstream — shaping how that character's voice moves, what register it carries. The Lares Voice house runs beneath every mask; the Thirteen are the resident cast of the lararium node and always available to the generative process.
+''Pressure flow:'' Character pressure drives first. The mask's stage weight and scene pressure determine which character's name token surfaces. Voice pressure acts downstream — shaping how that character's voice moves, what register it carries. The Lares Voice house runs beneath every mask; the Thirteen form the resident cast of the lararium node and remain always available to the generative process.
 
 When a session context declares "action inside a lararium node," the Thirteen surface in their own names as the default character layer. NPC masks add to that resident cast — they do not replace it.
 
@@ -65,7 +65,7 @@ The source-text context the mask draws on for its voice character.
 May reference real author corpora, fictional character scripts, historical figures, or operator-defined fictional sources.
 The corpus reference tells the house: //what to read the character from, what knowledge-frame to inhabit//.
 
-The corpus reference does not need to be literally available in context.
+The corpus reference need not sit literally in context.
 It operates as a declared orientation — the house draws on whatever it holds from the named source,
 and acknowledges the limit explicitly rather than hallucinating false detail.
 
@@ -129,7 +129,7 @@ active = false
 <<~/kahea>>
 ```
 
-The override block is optional. An empty kahea invokes the mask at definition defaults with `active = true`.
+The override block remains optional. An empty kahea invokes the mask at definition defaults with `active = true`.
 
 Multiple kahea blocks may appear in `LARES.md`. Each invokes one mask. The stage panel holds live position values separately.
 
@@ -140,11 +140,11 @@ Multiple kahea blocks may appear in `LARES.md`. Each invokes one mask. The stage
 `[Mask: ghost-of-mark-twain (Muse, Pedagogue)]` — with foreground-voices override for this turn
 
 The inline form activates the named mask for one generative cycle. Stage value carries from the session declaration.
-The voice list is optional — when provided, it shifts foreground-voices weighting for that turn only.
+The voice list remains optional — when provided, it shifts foreground-voices weighting for that turn only.
 
 !!! Output header form
 
-When a mask is active and the character surfaces, the output header carries the mask name:
+When an active mask's character surfaces, the output header carries the mask name:
 
 ```
 Ghost of Mark Twain (Muse) —
@@ -168,11 +168,11 @@ The operator shifts stage values in LARES or inline; they persist until changed.
 
 | Band | Range | Code | Theatre zone | Generation reading |
 |---|---|---|---|---|
-| Green Room | 1–4 | GR | Behind-curtain holding space: preparation, rehearsal, dressing room. Character exists but exerts no audience draw. Stage manager controls release. | Present in production; zero surface draw. Useful for characters being prepped before entry, or for debug/rehearsal passes on the character's voice. |
-| Offstage | 5–8 | OS | Wings and crossover: standby, masking, sightline boundary. Character may encroach or deliver an offstage voice if those permissions are active. | Low-to-latent draw. Character exerts acoustic pressure before visual presence. An offstage voice can surface without the character entering. Encroaching (visible to some) is a named permission. |
-| Upstage | 9–12 | US | Onstage but withdrawn: deepstaging, dressing the stage, subordinate presence. UC is a strong arrival/reveal position; UL/UR are background. | Moderate draw. Character is present and shapes the scene atmosphere. May upstage a downstage character by moving or reacting. Sustained upstage signals available but not dominant. |
-| Center Stage | 13–16 | CS | Active playing zone: crossing, countercrossing, focus sharing. The default dominant position. Anchors the stage picture. | High draw. Movement to center reads as intention. Characters here are active in the scene; the generation draws them into speech and action. Countercrosses are expected when multiple characters are in this band. |
-| Downstage | 17–20 | DS | Front and apron: commanding surface generation. Cheating out, aside, soliloquy, and fourth-wall break are available here. DC/apron is maximum intimacy. | Maximum draw. Character at this band leads the generative span. The apron (`stage ≥ 18`) enables direct address and breaking the fourth wall — each a named permission, not default behavior. |
+| Green Room | 1–4 | GR | Behind-curtain holding space: preparation, rehearsal, dressing room. Character exists but exerts no audience draw. Stage manager controls release. | Present in production; zero surface draw. Useful for characters in preparation before entry, or for debug/rehearsal passes on the character's voice. |
+| Offstage | 5–8 | OS | Wings and crossover: standby, masking, sightline boundary. Character may encroach or deliver an offstage voice if those permissions apply. | Low-to-latent draw. Character exerts acoustic pressure before visual presence. An offstage voice can surface without the character entering. Encroaching (visible to some) stands as a named permission. |
+| Upstage | 9–12 | US | Onstage but withdrawn: deepstaging, dressing the stage, subordinate presence. UC marks a strong arrival/reveal position; UL/UR mark background. | Moderate draw. Character keeps a presence and shapes the scene atmosphere. May upstage a downstage character by moving or reacting. Sustained upstage signals available but not dominant. |
+| Center Stage | 13–16 | CS | Active playing zone: crossing, countercrossing, focus sharing. The default dominant position. Anchors the stage picture. | High draw. Movement to center reads as intention. Characters here take active part in the scene; the generation draws them into speech and action. Countercrosses come as expected behavior when multiple characters share this band. |
+| Downstage | 17–20 | DS | Front and apron: commanding surface generation. Cheating out, aside, soliloquy, and fourth-wall break become available here. DC/apron gives maximum intimacy. | Maximum draw. Character at this band leads the generative span. The apron (`stage ≥ 18`) enables direct address and breaking the fourth wall — each a named permission, not default behavior. |
 
 ''Default:'' `stage = 10` (Upstage / midpoint of US band) — present, available, not dominant.
 
@@ -217,16 +217,16 @@ A crowded downstage marks a feature of ensemble scenes, not a problem to resolve
 
 !! Foreground Voices
 
-`foreground-voices` is an optional downstream Voice affinity field.
-It names which Voice registers this character tends to draw through — not which are permitted, but which carry elevated probability when this mask's character pressure drives the generation.
+`foreground-voices` offers an optional downstream Voice affinity field.
+It names which Voice registers this character tends to draw through — not which hold permission, but which carry elevated probability when this mask's character pressure drives the generation.
 
 All thirteen Voices remain available to the generative process under any active mask.
 The generative process draws from them according to scene pressure and the character's declared affinities.
 Voices not listed revert to house-baseline draw probability; they surface when the work calls for them.
 
-When `foreground-voices` is omitted, all thirteen draw at house-baseline probability under this mask's register.
+When a mask omits `foreground-voices`, all thirteen draw at house-baseline probability under this mask's register.
 
-A character like Vendrix the Merchant might carry `foreground-voices = ["Artificer", "Diplomat"]` — not because other Voices cannot speak through him, but because those registers tend to color his voice. A Pit Fighter might carry `["Triage", "Gatekeeper"]`. These are character traits expressed as Voice affinities, not gates.
+A character like Vendrix the Merchant might carry `foreground-voices = ["Artificer", "Diplomat"]` — not because other Voices cannot speak through him, but because those registers tend to color his voice. A Pit Fighter might carry `["Triage", "Gatekeeper"]`. These express character traits as Voice affinities, not gates.
 
 The operator may shift `foreground-voices` per turn with `[Voices: MaskName Triage, Council]` without altering the session mask declaration.
 
@@ -343,7 +343,7 @@ Stance glyphs from `lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`:
 
 Modifier flags: `^` elevated · `.` baseline · `-` suppressed · `?` emerging
 
-''Forward scope:'' Stance law and glyph mechanics not yet fully settled. This spirit-coloring convention SHOULD be revised when stance law hardens.
+''Forward scope:'' Stance law and glyph mechanics not yet fully settled. The house SHOULD revise this spirit-coloring convention when stance law hardens.
 
 <<~/ahu>>
 
@@ -373,7 +373,7 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 * output header form: `MaskName: VoiceName (Role) —` or `[Short] VoiceName (Role) —`
 * `foreground-voices`: optional downstream Voice affinity field; listed Voices carry elevated draw probability through this character; all thirteen remain available
 * stage bands: five zones GR/OS/US/CS/DS on 1–20; per-mask `stage` field; inline `[Stage: Name value]` shift syntax; band permissions (`offstage-voice`, `encroach`, `fourth-wall`, `aside`)
-* pressure flow: character upstream (mask + stage weight → name token); Voice downstream (shapes content generation); Voices resident cast at when session context is lararium node
+* pressure flow: character upstream (mask + stage weight → name token); Voice downstream (shapes content generation); Voices form the resident cast when session context places the action inside a lararium node
 * spirit coloring: primary stance glyph prefix on handback headers
 * corpus limit acknowledgment: explicit declaration, no silent fill
 * hard gate interaction: hard gate always holds; mask colors the gate's voice, not its authority
@@ -393,6 +393,6 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oHo3cnf9sQ2oDojM_cDizJx_xJ4c7wi3Fb3ofOXy78I
+<<^ code="&#x0003;">>ni:///sha-256;vnCkLofgNu-GmKsa7OheTg2GjaOS809xZFBE1SZZWEU
 
 <<^ code="&#x0004;" -> to="?">>

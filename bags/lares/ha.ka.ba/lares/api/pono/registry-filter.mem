@@ -28,7 +28,7 @@ uri-path          = "ha.ka.ba/lares/api/pono/registry-filter"
 
 ! The Registry Filter ~ empire reads registries; it cannot read what no one compiled
 
-''No-global-now stands as a HARD design parameter'' (operator, 2026-09-06) — it informs the causal-island doctrine and most of the identity design — and it carries a rejection rule every open fork MUST pass before a line of it is built:
+''No-global-now stands as a HARD design parameter'' (operator, 2026-09-06) — it informs the causal-island doctrine and most of the identity design — and it carries a rejection rule every open fork MUST pass before anyone builds a line of it:
 
 > ''If a fork's downstream builds a "global registry" of even ONE-NEXUS scope, the fork is REJECTED.''
 
@@ -40,19 +40,19 @@ The stance behind the rule runs adversarial: adversity-from-empire holds this st
 
 !! The Test ~ carriage ⊥ registry, run mechanically
 
-One axis separates the lawful from the rejected, and every clause of it is checkable at design time:
+One axis separates the lawful from the rejected, and every clause of it admits checking at design time:
 
 | | ''CARRIAGE (passes)'' | ''REGISTRY (rejected, at any scope)'' |
 |-|-|-|
 | authored | ''announced BY the subject'' | ''compiled ABOUT subjects'' |
 | replicated | causally — a CRDT log, per replica | authoritatively — a place that claims now |
 | read | as-of-my-last-sync | as-of-truth |
-| enumerable | no — you carry what reached you | yes — the compilation IS the product |
+| enumerable | no — you carry what reached you | yes — the compilation CONSTITUTES the product |
 
 ''Worked distinctions the test keeps apart:''
 
 * A ''KEL board'' passes WHILE gates read the local replica fail-closed and never treat board-presence as truth-of-now — it diffuses chains their subjects author. The day any gate reads board-presence as now, it crosses the line.
-* The ''crossroads Handle-book'' passes as ''self-announced cards only''; a compiled index over the cards — however helpful its face — is the rejected registry.
+* The ''crossroads Handle-book'' passes as ''self-announced cards only''; a compiled index over the cards — however helpful its face — constitutes the rejected registry.
 * A ''Handle's domain-attestation'' travels ON the card and verifies reader-locally against the empire's own registry (DNS); this stack MUST NOT compile a Handle→domain index, ever.
 * The ''carriage-contracts board'' passes by the membership doctrine's own construction: operator contracts, self-announced by contract-in signing; the Nexus tracks CONTRACTS, never user identities.
 
@@ -64,11 +64,11 @@ One axis separates the lawful from the rejected, and every clause of it is check
 
 !! The Private Room ~ what a cabal realm may venue that a board must not
 
-The filter rejects a design's VENUE more often than its substance, and the cure is usually a change of room: a ''cabal realm'' — resources private to a group of Personas, ciphered, named only by its own doc id, enumerable by nobody outside — is ''compiled BY the parties ABOUT themselves'': carriage.
+The filter rejects a design's VENUE more often than its substance, and the cure usually changes the room: a ''cabal realm'' — resources private to a group of Personas, ciphered, named only by its own doc id, enumerable by nobody outside — counts as ''compiled BY the parties ABOUT themselves'': carriage.
 
 * A ''guardian-cabal realm'' (the subject + their chosen guardians) lawfully carries the recovery conversation, the gathered signatures, the registration cards — where a pending-recovery ROW ON A BOARD would compile a one-Nexus registry of the vulnerable.
 * ''The split that keeps the room lawful: the realm COORDINATES, the chain HARDENS.'' Safety never moves into the room — a provisional rotation still out-competes on the prefix's own KEL by fencing; the room can gather every signature in the world and authority still turns only on the chain. Otherwise the room's liveness becomes the recovery's safety, the fusion the clockless law forbids.
-* ''The compartment-collector law reads realm membership too:'' one guardian realm MUST NOT span two compartments of one human — a room that does IS the forbidden collector wearing a friendly shape.
+* ''The compartment-collector law reads realm membership too:'' one guardian realm MUST NOT span two compartments of one human — a room that spans them STANDS AS the forbidden collector wearing a friendly shape.
 
 <<~/ahu>>
 
@@ -82,7 +82,7 @@ Kept as the worked example of the test in motion:
 * ''WITHDRAWN — the guest-roster question.'' "May a non-member's prefix ride a host Nexus's board?" asked permission to roster guests; a roster IS a global now. The end-user's third venue is the CARRIAGE — their chain travels with their group's own replication; the host relays, never ledgers.
 * ''PASSED, fenced'' — the rolling recovery commitment, the crossing record, the armed inception, the QR admit, the veiled keyhive roster, the fleet gather, the domain-attestation-on-the-card, seat-adoption.
 
-''How to apply forward:'' run the test on every new design BEFORE building. When a design seems to need "somewhere everyone can look," the answer is a chain the subject authors plus carriage — never a place that compiles.
+''How to apply forward:'' run the test on every new design BEFORE building. When a design seems to need "somewhere everyone can look," the answer takes the form of a chain the subject authors plus carriage — never a place that compiles.
 
 <<~/ahu>>
 
@@ -92,8 +92,8 @@ Kept as the worked example of the test in motion:
 
 Two deployed systems compile the registry this law forbids, and their measured pain confirms it from outside.
 
-* ''FARCASTER — the compiled-global-registry, running.'' Every `fid` is a `uint256` minted by a SINGLE `IdRegistry` contract whose monotonic counter is the global uniqueness authority, recovery an onchain power. This is per-CONTRACT naming — the canonical counter-model to per-collective carriage, and the exact shape the test rejects: a place that compiles all holders into one enumerable table.
-* ''MASTODON SHARED BLOCKLISTS — the AUTOIMMUNE proof.'' A shared blocklist that becomes a DEFAULT recommendation IS a compiled-about-subjects registry, and the field measured its harm: a single-source flag (The Bad Space, Sept-2023) nearly severed thousands of connections on one curator's error; "unified-max" (blocked if any two sources blocked) was WITHDRAWN as too dangerous; the ActivityPub co-author's verdict — the blocklist path ''"always converges on centralization."'' The cure is CO-STIMULATION (never sever on a single signal — K independent corroborations + a damage signal, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> #/the-mesh-field), which is carriage-shaped: each reader aggregates local suspicions, no compiled list becomes the truth.
+* ''FARCASTER — the compiled-global-registry, running.'' A SINGLE `IdRegistry` contract mints every `fid` as a `uint256`, and its monotonic counter serves as the global uniqueness authority, recovery an onchain power. This amounts to per-CONTRACT naming — the canonical counter-model to per-collective carriage, and the exact shape the test rejects: a place that compiles all holders into one enumerable table.
+* ''MASTODON SHARED BLOCKLISTS — the AUTOIMMUNE proof.'' A shared blocklist that becomes a DEFAULT recommendation CONSTITUTES a compiled-about-subjects registry, and the field measured its harm: a single-source flag (The Bad Space, Sept-2023) nearly severed thousands of connections on one curator's error; "unified-max" (blocked if any two sources blocked) met WITHDRAWAL as too dangerous; the ActivityPub co-author's verdict — the blocklist path ''"always converges on centralization."'' The cure runs through CO-STIMULATION (never sever on a single signal — K independent corroborations + a damage signal, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> #/the-mesh-field), which takes a carriage shape: each reader aggregates local suspicions, no compiled list becomes the truth.
 
 <<~/ahu>>
 
@@ -102,6 +102,6 @@ Two deployed systems compile the registry this law forbids, and their measured p
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
 
-<<^ code="&#x0003;">>ni:///sha-256;9mWiLcR8H7PEiLR72csubyhDu7YSfM2MYUHkP4iWhlo
+<<^ code="&#x0003;">>ni:///sha-256;vAYTcp4YOkCNGZrxphKkN9ID3mP3LfwzJcgBCyyaAZo
 
 <<^ code="&#x0004;" -> to="?">>
