@@ -95,6 +95,8 @@ presence, storage size, port, seal state, personas, quorum).
 `build` compiles the workspace and stamps its source digest inside `rite refresh`; it names no vessel door.
 `stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, `--init`, and `--admit <file>` postures. The sub-doors `card`, `wire`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, and run the named compositions. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing.
 
+''What a stand's `ok` answers.'' `ok` reads true where the vessel stands and no organ a hand installed stands broken. The memory library keeps its own door (`lares mempalace install`) and never rides a founding, so a machine that holds none of it reads `mempalace: absent` beside a true `ok`: an absent optional organ never reads as a failed stand. A half-installed library reads `incomplete` and fails the reading, and a node that fails to answer fails the stand whatever the library says (`packages/lares-cli/src/integration-check.ts`, `mempalaceStanding`, `standOk`; `packages/lares-cli/tests/stand-ok-reads-the-vessel.test.ts`).
+
 ''RE-DERIVING THE GENESIS ISLAND IS NOT A DOOR.'' Advancing the composition (the engine, the memetic-wikitext
 grammar) is a MESH act that goes out past a single vessel — it rides `nexus kahuli`, the engine/grammar
 ratchet. The LOCAL re-derive rides only as an internal step of the `rebuild` rite and the
@@ -247,6 +249,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_ksD5YH9bivhjaK9fPsjm9BQe2KUzpzv8Vzb11ZdyDE
+<<^ code="&#x0003;">>ni:///sha-256;J3VRbe3fVzIgasDDZAUeBlJlmCmlEw44h63Nyh8yJBA
 
 <<^ code="&#x0004;" -> to="?">>

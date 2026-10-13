@@ -32,7 +32,7 @@ import { readVesselStanding, conditionOk } from "../vessel-condition.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
-import { checkMempalaceIntegration } from "../integration-check.js";
+import { checkMempalaceIntegration, standOk } from "../integration-check.js";
 import { foundIfAbsent, type FoundStep } from "../standup.js";
 import { tendSurfaces, SURFACES } from "./wire.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -397,7 +397,9 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   ];
 
   // 3. Emit the live-delta frame (dual output). Graceful: never hard-fail the wake.
-  const ok = integration.ok && nodeUp;
+  // The vessel's stand answers for the vessel. The memory library keeps its own door, so its absence reads
+  // as absent and never as a failed stand; a half-installed one reads as a fault (`standOk`).
+  const ok = standOk(nodeUp, integration.standing);
   emit(args, {
     ok,
     ...(hostRefusal !== undefined ? { error: hostRefusal } : {}),
@@ -411,7 +413,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       ...(standingAct !== null ? { standing: { act: standingAct, reason: standingReason } } : {}),
       node: { up: nodeUp, started, port, note: nodeNote, cap: observeOnly ? "observe" : "observe+stand" },
       ...(recall !== undefined ? { recall } : {}),
-      mempalace: { ok: integration.ok, checks: integration.checks },
+      mempalace: { ok: integration.ok, standing: integration.standing, checks: integration.checks },
       ...(founding !== undefined ? { founding } : {}),
       ...(foundingHint !== undefined ? { foundingHint } : {}),
       ...(claude !== undefined ? { claude } : {}),
@@ -426,16 +428,18 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     human: () => {
       console.log("lares vessel stand");
       console.log(`  node:        ${nodeUp ? "up" : "down"} on :${port}${nodeNote ? ` — ${nodeNote}` : ""}`);
-      console.log(`  mempalace:   ${integration.ok ? "integrated" : "incomplete"}`);
+      console.log(`  mempalace:   ${integration.standing === "absent" ? "absent (an optional organ; the vessel stands without it)" : integration.standing}`);
       for (const c of integration.checks) {
-        console.log(`    ${c.ok ? "ok     " : "MISSING"} ${c.name}: ${c.detail}`);
+        console.log(`    ${c.ok ? "ok     " : integration.standing === "absent" ? "absent " : "MISSING"} ${c.name}: ${c.detail}`);
       }
       if (recall?.ok) console.log(`  recall:      ${recall.drawers ?? 0} drawers in ${recall.wing} — recent journey surfaced into the wake`);
       else if (recall) console.log(`  recall:      skipped (${recall.note})`);
       // A missing sidecar reads as COUNSEL, never as a silent install. The vessel stands without it;
       // the operator decides whether this machine also carries the memory tooling.
       if (integration.checks.some((c) => !c.ok)) {
-        console.log("  the mempalace sidecar stands incomplete — it is a SEPARATE tool, never part of founding:");
+        console.log(integration.standing === "absent"
+          ? "  the mempalace sidecar stands absent — it is a SEPARATE tool, never part of founding. To add it:"
+          : "  the mempalace sidecar stands incomplete — it is a SEPARATE tool, never part of founding:");
         console.log("    → lares mempalace install    the library deps (submodule + pip)");
         console.log("    → lares sense setup          the sovereign sensorium organs");
       }

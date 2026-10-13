@@ -31,9 +31,42 @@ export interface IntegrationCheck {
   readonly detail: string;
 }
 
+/**
+ * How the memory library stands on this machine. The library keeps its own door (`lares mempalace install`)
+ * and never rides a founding, so three readings stay apart:
+ *
+ *   · `integrated`: every check holds.
+ *   · `absent`: no part of the library stands here: no submodule and no python that holds its deps. An
+ *     optional organ nobody installed. The vessel stands whole without it.
+ *   · `incomplete`: some part stands and another lacks: an install a hand began and something broke or
+ *     stopped. That reads as a fault to cure.
+ */
+export type MempalaceStanding = "integrated" | "absent" | "incomplete";
+
 export interface IntegrationReport {
   readonly ok: boolean;
+  readonly standing: MempalaceStanding;
   readonly checks: readonly IntegrationCheck[];
+}
+
+/** The two checks that name the library itself: its source and the python that holds its deps. The
+ *  integration package and the recall plugin ride the repository, so they say nothing of an install. */
+const LIBRARY_CHECKS: ReadonlySet<string> = new Set(["submodule", "holder-deps"]);
+
+/** Read the standing off the checks alone: pure, so a stand and a vector read one law. */
+export function mempalaceStanding(checks: readonly IntegrationCheck[]): MempalaceStanding {
+  if (checks.every((c) => c.ok)) return "integrated";
+  const library = checks.filter((c) => LIBRARY_CHECKS.has(c.name));
+  return library.length > 0 && library.every((c) => !c.ok) ? "absent" : "incomplete";
+}
+
+/**
+ * WHAT `ok` MEANS ON A STAND: the vessel stands, and no organ a hand installed stands broken. An absent
+ * memory library leaves a standing vessel `ok`; a half-installed one does not, and neither does a node
+ * that fails to answer.
+ */
+export function standOk(nodeUp: boolean, standing: MempalaceStanding): boolean {
+  return nodeUp && standing !== "incomplete";
 }
 
 /** Cheap, every-stand-safe: file presence + a light `find_spec` (never a full import). */
@@ -86,7 +119,7 @@ export function checkMempalaceIntegration(): IntegrationReport {
       : "mempalace .claude-plugin absent",
   });
 
-  return { ok: checks.every((c) => c.ok), checks };
+  return { ok: checks.every((c) => c.ok), standing: mempalaceStanding(checks), checks };
 }
 
 export interface InstallStep {

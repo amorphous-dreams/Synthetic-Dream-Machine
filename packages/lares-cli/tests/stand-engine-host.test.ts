@@ -36,7 +36,11 @@ vi.mock("../src/vessel-condition.js", () => ({
 vi.mock("../src/render.js", () => ({ emit: (_args: unknown, payload: Record<string, unknown>) => { emitted.push(payload); } }));
 vi.mock("../src/verb-result.js", () => ({ summaryOutput: () => ({}) }));
 vi.mock("../src/verb-call.js", () => ({ runVerb: vi.fn() }));
-vi.mock("../src/integration-check.js", () => ({ checkMempalaceIntegration: () => ({ ok: true, checks: [] }) }));
+// The check itself probes the machine; the verdict law (`standOk`) stays the module's own.
+vi.mock("../src/integration-check.js", async (original) => ({
+  ...(await original<typeof import("../src/integration-check.js")>()),
+  checkMempalaceIntegration: () => ({ ok: true, standing: "integrated", checks: [] }),
+}));
 vi.mock("../src/standup.js", () => ({ foundIfAbsent: vi.fn(), }));
 vi.mock("../src/commands/wire.js", () => ({ tendSurfaces: vi.fn(), SURFACES: [] }));
 vi.mock("node:child_process", () => ({ spawn }));
