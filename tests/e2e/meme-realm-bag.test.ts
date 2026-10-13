@@ -30,17 +30,20 @@
  * vessel's refresh. B RE-DIALS and presents the leaf admit, its lineage and the leaf's proof over A's
  * challenge — and no root-signed edge (no proof binding a leaf to a root travels on the wire). A's seat
  * verifies the proof and holds the admit against its deny board: B's LEAF enters A's leaf map, which the
- * membership consult reads, while A's ROOT map stays empty. The realm co-sign signs with B's persona ROOT,
- * so `--steward` names that root, read off B's own founding door. The share verdict seats on BOTH of
+ * membership consult reads, while A's ROOT map stays empty. THE STEWARD SIGNER: each operator WEARS her face
+ * (`persona wear 0`) before her daemon stands, and the realm record seals with the key that worn face presents
+ * to this Nexus — the very key her contract-in names — so no persona root reaches `keptBy` or the public
+ * announce. A NAME ENTERS A RECORD BY ITS OWN HAND FIRST: B ASKS to keep the bag from her own vessel
+ * (`realm-bag lares --join`) and A consents (`--cosign`); A naming a key that sealed nothing in the realm
+ * refuses `steward-name-unproven`. The share verdict seats on BOTH of
  * automerge-repo's hooks (announce AND access) and reads the admission maps AFTER they land — a stranger at
  * the floor asking for a private plane by its genesis-derived id draws nothing.
  *
- * ⑬ MEASURED WHERE THE RETURN LANE STOPPED, and it stopped at the WIRE — one book, one crossing, and no sync
- * session after it. The stop was a STALE VERDICT: ⑨'s proposal, written under A's own nym, replaced A's
- * counted registration (`writeRealmBagRegistration` keys by bag + signing hand), the fold dropped the bag and
- * the realm leg denied it; B's co-signature re-seated it as a CHANGE on the shared realm doc, the plane
- * refolded — and nothing asked the Repo to re-read a verdict it caches per (doc, peer). The cure fires the
- * reverdict on every fold (`makeRealmPlane` `onRefold` → `repo.shareConfigChanged`). ⑬ keeps measuring, and
+ * ⑬ MEASURES WHERE A RETURN LANE WOULD STOP. Two laws hold the book open across the steward write path: a
+ * record still short of a seal rests under its own key, so B's ask never unseats A's counted registration
+ * (`realmBagProposalKey`); and every fold fires the reverdict (`makeRealmPlane` `onRefold` →
+ * `repo.shareConfigChanged`), so a consent that lands as a CHANGE on the shared realm doc reaches the verdict
+ * the Repo caches per (doc, peer). ⑬ keeps measuring, and
  * (vi) QUOTES THE WIRE: both daemons run with `LAR_WIRE_LOG=1`, so every verdict either share hook answers and
  * every sync message either Repo moves prints a `[wire]` line, filtered here to the registered book's own id.
  */
@@ -118,8 +121,13 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     A = await openStaged({ tag: "A", port: portA, daemonEnv: wireLog, found: async (cliA, rootA) => {
       const found = await cliA(["vessel", "found", "--root", rootA, "--skip-build"]);
       if (found.code !== 0) throw new Error(`A: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
-      const face = await cliA(["persona", "new", "0", "--name", "spider-steward"]);
+      const face = await cliA(["persona", "new", "0", "--name", "spider-steward", "--json"]);
       if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
+      const vkA = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
+      if (typeof vkA === "string") rootNymOf.set("A", vkA.toLowerCase());
+      // A steward seals with the face she WEARS: the realm-bag door refuses a vessel that wears none.
+      const wear = await cliA(["persona", "wear", "0"]);
+      if (wear.code !== 0) throw new Error(`A: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
       // A FOUNDS THE NEXUS, so it seats the founding kahu who tend it — three chairs, a majority of two —
       // and `rite quorum` seats the charter, all BEFORE the daemon stands (tools/lararium-container-boot.sh:101-111).
       let i = 1;
@@ -142,6 +150,8 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       if (face.code !== 0) throw new Error(`${tag}: face failed (${face.code})\n${face.stderr.slice(-800)}`);
       const vk = ((face.json?.["data"] ?? {}) as Record<string, unknown>)["verifyingKey"];
       if (typeof vk === "string") rootNymOf.set(tag, vk.toLowerCase());
+      const wear = await cli(["persona", "wear", "0"]);
+      if (wear.code !== 0) throw new Error(`${tag}: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
     };
     const dialA = { ...wireLog, LAR_JOIN_SYNC: `ws://127.0.0.1:${portA}/ws`, LAR_JOIN_GATE: gateA };
     // Each root is marked and founded independently before its daemon stands.
@@ -248,6 +258,11 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     expect(data["bag"]).toBe(LARES_BAG);
     expect(data["readTier"]).toBe("contract");
     expect(Array.isArray(data["keptBy"]) && (data["keptBy"] as string[]).length).toBe(1);
+    // THE STEWARD SIGNER: A's worn face seals with its per-Nexus key, and her persona root stays home.
+    const rootA = rootNymOf.get("A") ?? "";
+    expect(rootA, "A's persona root, read off her founding door").toMatch(/^[0-9a-f]{64}$/);
+    expect((data["keptBy"] as string[]).map((n) => n.toLowerCase())).not.toContain(rootA);
+    expect((data["signedBy"] as string[]).map((n) => n.toLowerCase())).not.toContain(rootA);
     const list = await A!.cli(["nexus", "realm-bags", "--json"]);
     const bags = ((list.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
     expect(bags.map((b) => b["bag"])).toContain(LARES_BAG);
@@ -271,13 +286,14 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     return r;
   };
 
-  /** B's co-sign, bounded: A's proposal crosses by WS-sync, so the first attempt may find nothing yet. */
-  const pollCoSign = async (ms: number) => {
-    let r = await B!.cli(["nexus", "realm-bag", "lares", "--cosign", "--json"]);
+  /** One steward act on one vessel, bounded: the record it reads crosses by WS-sync, so the first attempt may
+   *  find nothing yet. `--join` reads A's standing registration on B; `--cosign` reads B's ask on A. */
+  const pollSteward = async (who: LarInstance, flag: "--join" | "--cosign", ms: number) => {
+    let r = await who.cli(["nexus", "realm-bag", "lares", flag, "--json"]);
     const until = Date.now() + ms;
     while (r.json?.["ok"] !== true && Date.now() < until) {
       await new Promise((res) => setTimeout(res, 4_000));
-      r = await B!.cli(["nexus", "realm-bag", "lares", "--cosign", "--json"]);
+      r = await who.cli(["nexus", "realm-bag", "lares", flag, "--json"]);
     }
     return r;
   };
@@ -354,68 +370,95 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
   }, 60_000);
 
   // ── THE STEWARD WRITE PATH ──────────────────────────────────────────────────────────────────────
-  // The read cap is CONTRACT; the write cap is the NAMED STEWARDS' SET. A names B a steward; the record is
-  // n-of-n, so the naming is a PROPOSAL that stands unregistered until B's own hand co-signs it. Then B's
-  // `meme put --bag lares` resolves the REALM doc — the ford's one book — and A reads the new slot.
+  // The read cap is CONTRACT; the write cap is the NAMED STEWARDS' SET. A name enters a record by its own hand
+  // first: B ASKS to keep the bag, sealing with her worn face a record that names A's standing steward and
+  // herself; it counts nothing until A's own hand consents, and A's registration keeps standing meanwhile.
+  // Then B's `meme put --bag lares` resolves the REALM doc — the ford's one book — and A reads the new slot.
 
-  test("⑨ A names B a steward — the record ACCRETES her name and waits on her own hand", async () => {
-    // THE STEWARD IS B's PERSONA ROOT: the realm co-sign signs with the root, never with her per-Nexus leaf.
-    const rootB = rootNymOf.get("B") ?? "";
-    expect(rootB, "B's persona root, read off her founding door").toMatch(/^[0-9a-f]{64}$/);
-    expect(rootB).not.toBe(contractNym.toLowerCase());                            // ROOT ⊥ LEAF
-    const reg = await A!.cli(["nexus", "realm-bag", "lares", "--steward", rootB, "--json"]);
-    console.error(`meme-realm-bag MEASURE A names B: ${said(reg).trim().slice(0, 300)}`);
-    expect(reg.json?.["ok"], said(reg)).toBe(true);
-    const data = (reg.json?.["data"] ?? {}) as Record<string, unknown>;
-    expect((data["keptBy"] as string[]).map((n) => n.toLowerCase())).toContain(rootB);
-    // n-of-n: A alone cannot seat B — the proposal names B and counts nothing until B signs.
-    expect(data["counts"]).toBe(false);
-    expect((data["awaiting"] as string[]).map((n) => n.toLowerCase())).toContain(rootB);
-    named = true;
+  test("⑨a CONTROL: A naming a key that sealed nothing in the realm refuses — no hand but its own writes a name", async () => {
+    const stewardB = contractNym.toLowerCase();
+    expect(stewardB, "B's per-Nexus key, read off her contract-in").toMatch(/^[0-9a-f]{64}$/);
+    const reg = await A!.cli(["nexus", "realm-bag", "lares", "--steward", stewardB, "--json"]);
+    expect(reg.json?.["ok"], said(reg)).toBe(false);
+    expect(said(reg)).toContain("steward-name-unproven");
+    // A's own registration stands untouched by the refusal.
+    const list = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const bags = ((list.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
+    expect(bags.map((b) => b["bag"])).toContain(LARES_BAG);
   }, 60_000);
 
-  test("⑩ CONTROL: while the proposal waits, B's put still draws the SAME refusal", async (ctx) => {
+  test("⑨ B asks to keep the bag — the record ACCRETES her name and waits on A's own hand", async () => {
+    // THE STEWARD IS THE KEY B's WORN FACE PRESENTS TO THIS NEXUS — the nym her contract-in printed — and
+    // never her persona root: the record travels, so whatever key it names gets published.
+    const rootB = rootNymOf.get("B") ?? "";
+    const stewardB = contractNym.toLowerCase();
+    expect(rootB, "B's persona root, read off her founding door").toMatch(/^[0-9a-f]{64}$/);
+    expect(rootB).not.toBe(stewardB);                                             // ROOT ⊥ LEAF
+    const ask = await pollSteward(B!, "--join", 120_000);
+    console.error(`meme-realm-bag MEASURE B asks to keep: ${said(ask).trim().slice(0, 300)}`);
+    expect(ask.json?.["ok"], said(ask)).toBe(true);
+    const data = (ask.json?.["data"] ?? {}) as Record<string, unknown>;
+    const keptBy = (data["keptBy"] as string[]).map((n) => n.toLowerCase());
+    expect(keptBy).toHaveLength(2);
+    expect(keptBy).toContain(stewardB);
+    expect(keptBy).not.toContain(rootB);
+    expect((data["signedBy"] as string[]).map((n) => n.toLowerCase())).toEqual([stewardB]);
+    // n-of-n: B alone cannot seat herself — her ask counts nothing until A's hand consents.
+    expect(data["counts"]).toBe(false);
+    expect((data["awaiting"] as string[])).toHaveLength(1);
+    named = true;
+  }, 180_000);
+
+  test("⑩ CONTROL: while the ask waits, B's put still draws the SAME refusal and A's registration stands", async (ctx) => {
     if (!named) ctx.skip();
     const file = join(rootB, "b-edit.mem");
     const r = await B!.cli(["meme", "put", URI, "--bag", "lares", "--file", file, "--json"]);
     expect(r.json?.["ok"], said(r)).toBe(false);
     expect(errorOf(said(r))).toBe(errorOf(refusalB));
+    // The ask rests under its own key: A's counted registration keeps standing, kept by A alone.
+    const list = await A!.cli(["nexus", "realm-bags", "--json"]);
+    const bags = ((list.json?.["data"] as Record<string, unknown> | undefined)?.["bags"] ?? []) as Array<Record<string, unknown>>;
+    const lares = bags.find((b) => b["bag"] === LARES_BAG);
+    expect(lares, said(list)).toBeDefined();
+    expect((lares?.["keptBy"] as string[] | undefined)?.length).toBe(1);
   }, 60_000);
 
-  test("★ B co-signs, then her `meme put --bag lares` lands on the REALM doc ★", async (ctx) => {
+  test("★ A consents, then B's `meme put --bag lares` lands on the REALM doc ★", async (ctx) => {
     if (!named) ctx.skip();
-    const co = await pollCoSign(120_000);
-    console.error(`meme-realm-bag MEASURE B co-sign: ${said(co).trim().slice(0, 300)}`);
+    const co = await pollSteward(A!, "--cosign", 120_000);
+    console.error(`meme-realm-bag MEASURE A consents: ${said(co).trim().slice(0, 300)}`);
     expect(co.json?.["ok"], said(co)).toBe(true);
-    expect(((co.json?.["data"] ?? {}) as Record<string, unknown>)["counts"]).toBe(true);
+    const coData = (co.json?.["data"] ?? {}) as Record<string, unknown>;
+    expect(coData["counts"]).toBe(true);
+    // Each worn face sealed with its per-Nexus key; neither operator's root stands on the completed record.
+    const sealed = [...(coData["keptBy"] as string[]), ...(coData["signedBy"] as string[])].map((n) => n.toLowerCase());
+    expect(sealed).toContain(contractNym.toLowerCase());
+    expect(sealed).not.toContain(rootNymOf.get("A") ?? "");
+    expect(sealed).not.toContain(rootNymOf.get("B") ?? "");
 
-    const base = String(((await B!.cli(["meme", "get", URI, "--bag", "lares", "--json"])).json?.["data"] as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
+    // A's consent reaches B as a change on the shared realm doc; her write cap follows the fold that reads it.
+    const until = Date.now() + 120_000;
+    let put = { json: null as Record<string, unknown> | null, stdout: "", stderr: "" };
     const file = join(rootB, "b-slot.mem");
     writeFileSync(file, memeWithSlot());
-    const put = await B!.cli(["meme", "put", URI, "--bag", "lares", "--base", base, "--file", file, "--json"]);
+    while (Date.now() < until) {
+      const base = String(((await B!.cli(["meme", "get", URI, "--bag", "lares", "--json"])).json?.["data"] as Record<string, unknown> | undefined)?.["canonicalHash"] ?? "");
+      put = await B!.cli(["meme", "put", URI, "--bag", "lares", "--base", base, "--file", file, "--json"]);
+      if (put.json?.["ok"] === true) break;
+      await new Promise((res) => setTimeout(res, 4_000));
+    }
     console.error(`meme-realm-bag MEASURE B put: ${said(put).trim().slice(0, 300)}`);
     expect(put.json?.["ok"], said(put)).toBe(true);
     bPut = true;
-  }, 240_000);
+  }, 360_000);
 
   // ⑪ STANDS. B's placement lands on the registration's own doc and A reads it back — the ford carries one
-  // book in both directions.
-  //
-  // WHERE IT STOPPED, and the wire that names it (`LAR_WIRE_LOG=1` on both daemons, quoted by ⑬ (vi)): the
-  // realm leg answers off a STANDING fold, and `writeRealmBagRegistration` keys a record by (bag, signing
-  // hand) — so ⑨'s PROPOSAL, written under A's OWN nym, REPLACED A's counted registration. The fold dropped
-  // the bag, `RealmBagGate.mayFederate` took its `#standing.has(documentId)` early return, and A's reverdict
-  // denied B that document:
-  //     [wire] verdict announce peer=<B> doc=<bag> → false
-  //     [wire] verdict access   peer=<B> doc=<bag> → false
-  // Then B co-signed. Her counted record reached A as a plain CHANGE on the shared realm doc, A's realm plane
-  // refolded on that change — and nothing asked the Repo to read the verdict again, so its per-(doc, peer)
-  // cache kept answering DENIED. The sync session carried nothing either way after the one crossing.
-  // The cure fires the reverdict on EVERY fold (`makeRealmPlane` `onRefold` → `repo.shareConfigChanged`), and
-  // the same wire now reads:
+  // book in both directions. The wire that shows it (`LAR_WIRE_LOG=1` on both daemons, quoted by ⑬ (vi)):
   //     [wire] verdict announce peer=<B> doc=<bag> → true
   //     [wire] verdict access   peer=<B> doc=<bag> → true
   //     [wire] out doc=<bag> peer=<B> · [wire] in doc=<bag> peer=<B>
+  // The verdict holds true from A's registration on: B's ask never unseats the record that stands, and A's
+  // consent re-seats the wider record with a reverdict fired by the fold that read it.
   test("⑪ A's `meme get` reads B's new slot — the write crossed the ford, not a second chest", async (ctx) => {
     if (!bPut) ctx.skip();
     const until = Date.now() + 90_000;

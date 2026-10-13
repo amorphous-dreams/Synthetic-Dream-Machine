@@ -19,8 +19,8 @@
  * that guard over the vessel's own keys, and it refuses a persona root, a vessel key and a key it cannot class.
  *
  * A NAME ENTERS A RECORD BY ITS OWN HAND FIRST. Nobody can class a key that belongs to another hand, so the
- * steward door writes somebody else's name only where that name already sealed a record of this realm
- * (`sealedHere`). A hand that would keep a bag another hand keeps ASKS (`join`): it seals a proposal that names
+ * holder writes somebody else's name only where that name already sealed a record of this realm
+ * (`sealedHere`, checked at `register`, the write itself, and by the steward door before it). A hand that would keep a bag another hand keeps ASKS (`join`): it seals a proposal that names
  * the standing stewards and itself, and each standing steward consents by `coSign`. A record still short of a
  * seal lands under its own key and never unseats the registration that stands.
  *
@@ -85,7 +85,8 @@ export interface RealmPlaneHolder {
   sealedHere(name: string): Promise<boolean>;
   /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on @crossroads.
    *  `propose` names stewards whose hands have NOT sealed this record — it accretes their names and counts
-   *  nothing until each proposed hand co-signs (n-of-n; a named-but-unsigned steward is conscription).
+   *  nothing until each proposed hand co-signs (n-of-n; a named-but-unsigned steward is conscription). A
+   *  proposed name must already have sealed a record of this realm, else `steward-name-unproven`.
    *  Each signer names its steward: the worn face's key at this realm's Nexus, or a quorum Handle's prefix. */
   register(input: {
     readonly bagUri: string;
@@ -308,6 +309,13 @@ export function makeRealmPlane(opts: {
           ...(expiry === undefined ? {} : { expiry }),
         };
         const proposed = (propose ?? []).map((n) => n.trim().toLowerCase()).filter((n) => !signers.some((s) => s.signer.toLowerCase() === n));
+        // THE WRITE BOUNDARY holds the naming law whoever calls: a name another hand holds enters only where its
+        // own holder already sealed here.
+        for (const name of proposed) {
+          if (!(await stewardSealedHere(realmHandle.doc(), realmId, name, opts.sealReading))) {
+            throw new StewardRefused("steward-name-unproven", `"${name}" sealed nothing in this realm, so no hand but its own may write it here — that hand asks to keep the bag from its own vessel (\`lares nexus realm-bag <bag> --join\`), and each standing steward consents (\`--cosign\`)`);
+          }
+        }
         const rec = proposed.length > 0
           ? await proposeRealmBagRegistration(parts, signers, proposed)
           : await signRealmBagRegistration(parts, signers);

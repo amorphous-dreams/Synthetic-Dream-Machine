@@ -100,18 +100,26 @@ const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly
 /**
  * `lares nexus realm-bag <bag-uri>` — register a bag this vessel's steward keeps on the realm's shared CRDT
  * (realm-bag-brief). The bag's doc is the one this vessel names for the URI; the record
- * rides the steward's persona-root signature; @crossroads carries only that the bag exists and who keeps it.
+ * rides the seal of the key this vessel's WORN face presents to the realm's Nexus (`lares persona wear N`
+ * first), never a persona root; @crossroads carries only that the bag exists and who keeps it.
  * A contracted member reads it through `meme get --bag <slug>`; the stewards alone write.
+ *
+ * A name enters a record by its own hand first. `--join` ASKS to keep a bag another hand keeps: this vessel's
+ * worn face seals a record that names the standing stewards and itself. `--cosign` CONSENTS to a record that
+ * names this vessel's steward. `--steward <key>` names a hand that already sealed a record of this realm.
  */
 async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   const bag = args.positional[1];
-  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--steward <did>…] [--cosign] [--tier <t>] [--expiry <rolls>] [--charter <nym>=<realm-id>] [--index N]"); return 2; }
-  const index = args.options["index"] !== undefined ? Number(args.options["index"]) : 0;
-  // `--steward` names a SECOND keeping hand. The record is n-of-n, so naming is a proposal: it stands
-  // unregistered until that hand runs `lares nexus realm-bag <bag> --cosign` on her own vessel.
+  if (!bag) { console.error("usage: lares nexus realm-bag <bag-uri> [--join | --cosign [--with <key>]] [--steward <key>…] [--tier <t>] [--expiry <rolls>] [--charter <key>=<realm-id>]"); return 2; }
+  // `--steward` names a keeping hand by the key her worn face presents to this Nexus, and the vessel refuses a
+  // key that sealed nothing in this realm: a hand that would keep the bag asks from her own vessel (`--join`).
+  // The record is n-of-n: it counts nothing until every hand it names has sealed it.
   const stewards = (args.options["steward"] ?? "").split(",")
     .map((v) => v.trim().replace(/^0x/i, "").toLowerCase()).filter((v) => v.length > 0);
   const cosign = args.flags["cosign"] === true;
+  const join = args.flags["join"] === true;
+  // `--with <key>` names the hand a co-sign consents WITH, where several different proposals wait on this steward.
+  const withName = typeof args.options["with"] === "string" ? args.options["with"].trim().replace(/^0x/i, "").toLowerCase() : "";
   // `--tier` declares the read (CONTRACT default; PUBLIC names a book the Herm carries by hash), `--expiry`
   // leases the registration in rolls of the realm's own pace, and `--charter <nym>=<realm-id>` names the
   // charter a second hand holds when the book spans two of them.
@@ -124,7 +132,8 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
   }
   try {
     const r = await runVerb("realm-bag", {
-      bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, index, stewards, cosign,
+      bag: bag.startsWith("lar:") ? bag : `lar:///ha.ka.ba/bags/${bag}`, stewards, cosign, join,
+      ...(withName ? { with: withName } : {}),
       ...(tier ? { tier } : {}),
       ...(expiry === undefined || !Number.isFinite(expiry) ? {} : { expiry }),
       ...(Object.keys(charters).length > 0 ? { charters } : {}),
@@ -146,7 +155,7 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
         const awaiting = Array.isArray(out["awaiting"]) ? (out["awaiting"] as string[]) : [];
         if (awaiting.length > 0) {
           console.log(`  awaiting:  ${awaiting.map((n) => `${n.slice(0, 16)}…`).join(", ")}`);
-          console.log(`             the record is n-of-n — it stands unregistered until each named hand runs`);
+          console.log(`             the record is n-of-n — it counts nothing until each named hand runs`);
           console.log(`             \`lares nexus realm-bag ${bag} --cosign\` on her own vessel`);
         }
       },

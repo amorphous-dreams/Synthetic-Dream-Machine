@@ -34,6 +34,8 @@
  *     a `with` that names a hand which sealed neither refuses.
  * D15 a record that carries a junk seal never lands over a counted record / the same flow with honest seals
  *     lands the wider record under the counted key.
+ * D16 THE WRITE BOUNDARY: the plane's own `register` refuses a proposed name that sealed nothing here, whoever
+ *     calls it, and writes nothing / a name that sealed a book of this realm gets proposed.
  * D17 WHERE NO REGISTRATION STANDS a bare co-sign founds nothing: it refuses and asks for the hand it consents
  *     with / `with` names that hand and the first joint registration counts.
  * D18 a charter map listed in another order, in another case, still reads as the same book / an ask that moves
@@ -376,6 +378,22 @@ describe("the realm steward door", () => {
     expect(realm.doc().tiddlers[realmBagProposalKey(BAG, a.worn)]).toBeDefined();
     expect((await planeA.standing()).get(BAG)?.keptBy).toEqual([a.worn]);
     planeA.dispose();
+  });
+
+  test("D16 the plane's own register refuses a proposed name that sealed nothing here; control: a sealed name lands", async () => {
+    const repo = new Repo({}), [{ plane: planeA }, { plane: planeB }] = await standingPlanes(repo, ["A", "B"]);
+    const a = await actor(270), b = await actor(280);
+    const realm = await repo.find<LarDoc>(planeA.realmUrl()!);
+    const before = JSON.stringify(realm.doc().tiddlers);
+    const signers = [{ signer: a.worn, sign: signOf(a.wornSeed) }];
+    await expect(planeA.register({ bagUri: BAG, docUrl: DOC, signers, propose: [b.worn] })).rejects.toMatchObject({ refusal: "steward-name-unproven" });
+    await expect(planeA.register({ bagUri: BAG, docUrl: DOC, signers, propose: [b.root] })).rejects.toMatchObject({ refusal: "steward-name-unproven" });
+    expect(JSON.stringify(realm.doc().tiddlers)).toBe(before);
+    // CONTROL: B seals a book of her own here; the plane then takes her name on A's proposal.
+    await planeB.register({ bagUri: `${BAG}/other`, docUrl: deterministicDocUrl("the-other-book"), signers: [{ signer: b.worn, sign: signOf(b.wornSeed) }] });
+    const rec = await planeA.register({ bagUri: BAG, docUrl: DOC, signers, propose: [b.worn] });
+    expect([...rec.keptBy].sort()).toEqual([a.worn, b.worn].sort());
+    planeA.dispose(); planeB.dispose();
   });
 
   test("D17 where no registration stands a bare co-sign founds nothing; control: `with` names the hand and it counts", async () => {

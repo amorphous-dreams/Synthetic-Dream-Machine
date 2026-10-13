@@ -41,7 +41,7 @@ import {
   DAEMON_BAG_ID,
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
-  type RealmBagRegistration, type CapTier, ed25519SignerFromSeed,
+  type RealmBagRegistration, ed25519SignerFromSeed,
   PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
@@ -93,6 +93,7 @@ import {
   leaseEpochPrefix, effectiveLeaseEpoch, type SiblingNetworkAdapter, type SiblingChannelStatus,
 } from "@lararium/mesh";
 import { wornNexusLeaf } from "./nexus-leaf.js";
+import { nodeHandleBookReading, runRealmBag, runRealmBags, stewardGuard } from "./realm-steward.js";
 import { LarEventBusImpl, DEFAULT_RINGS } from "./lar-event-bus-impl.js";
 import { setCasDoor, setRestDoor, setCustodyWriteDoor, setDyadDoor } from "./worker-handle.js";
 import { writeCasEntriesFs } from "./node-cas.js";
@@ -154,7 +155,7 @@ import {
   makeVesselResidency, type VesselResidency,
   replayPinsFromDaemonDoc,
 } from "@lararium/tw5";   // residency stats — the lone read that stays main-resident; the shared residency/pool-wiring factory
-import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
+import { loadVesselIdentity, loadVesselSigningSeed, loadPersonaGroupRootVerifyingKey, listPersonaRoots } from "./node-vessel-identity.js";
 import { DaemonAuthGate, type SocketSorter }       from "./daemon-auth-gate.js";
 import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers, ownPlacePosture, type PlaceClass } from "./socket-sorter.js";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
@@ -1678,6 +1679,11 @@ async function prepareNodeBootOn(
         pace:             () => (realmPaceCell.read() > 0 ? realmPaceCell.read() : null),
         // THE MEMBER SHADOW: a member set aside reads none of the realm's documents, by any lane.
         memberAside:      (realmId) => shadowRing.memberAside(realmId),
+        // THE STEWARD GUARD: every signer passes it before it seals. It reads the key against this vessel's own
+        // material and passes a per-Nexus face key alone (`realm-steward`).
+        stewardGuard:     stewardGuard(),
+        // THE HANDLE BOOK: a Handle steward's seal reads against the chain this vessel's own book holds for it.
+        sealReading:      nodeHandleBookReading(),
         // THE REFOLD REVERDICT. The fold decides which documents the realm leg opens, and it moves on a change
         // ANOTHER member writes — a co-signature completing a proposal re-seats a registration this vessel
         // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the
@@ -2401,58 +2407,18 @@ async function prepareNodeBootOn(
         : reactor);
     }
 
-    // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief, the
-    // 2026-09-11 ruling): the record `{ bagUri, docUrl, keptBy, readTier: contract }` signed by the steward's
-    // persona root, landed on the realm doc, and announced on @crossroads as `{ bagUri, keptBy }` alone. The
-    // bag's doc is the one this vessel's oracle registry names for the URI — the steward's OWN doc becomes
-    // the ford's one book, read by every contracted member, written by the stewards.
-    registry.register("realm-bag", async (args) => {
-      if (!realmPlane) throw new Error("realm-bag: the realm plane never stood on this vessel (no oracle plane at boot)");
-      const bagUri = typeof args["bag"] === "string" ? (args["bag"] as string).trim() : "";
-      if (!bagUri) throw new Error("realm-bag: `bag` required (the bag's lar: URI, e.g. lar:///ha.ka.ba/bags/lares)");
-      const handleIndex = Number.isFinite(args["index"]) ? Number(args["index"]) : 0;
-      const oracleDoc = assembly.islandHandle.doc();
-      const catalogDoc = assembly.catalogHandle.doc();
-      // A CO-SIGN consents to the PROPOSER's bytes — the doc it names, never this vessel's own doc of that
-      // name (that substitution would be the two-chests equivocation the fold refuses).
-      const docUrl = tiddlerText(oracleDoc?.tiddlers?.[bagUri]) ?? tiddlerText(catalogDoc?.tiddlers?.[bagUri]) ?? "";
-      if (!docUrl && args["cosign"] !== true) throw new Error(`realm-bag: "${bagUri}" names no doc on this vessel's registry planes — nothing to register`);
-      const nym = await loadPersonaGroupRootVerifyingKey(handleIndex);
-      if (!nym) throw new Error(`realm-bag: no persona root at index ${handleIndex} — a bag is kept by a named steward`);
-      const sign = ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex));
-      // NAMING A SECOND STEWARD takes two hands (n-of-n): `stewards` proposes them, and the record stands
-      // unregistered until each proposed hand co-signs with its own `cosign`.
-      const propose = Array.isArray(args["stewards"]) ? (args["stewards"] as unknown[]).filter((v): v is string => typeof v === "string") : [];
-      // The DECLARED read tier (CONTRACT by default; PUBLIC names a book the Herm carries by hash), the LEASE
-      // in rolls of the realm's pace, and the CHARTER each named hand holds — a book spanning two charters is a
-      // `keptBy` with two charters, never a fused realm.
-      const readTier = typeof args["tier"] === "string" ? (args["tier"] as CapTier) : undefined;
-      const expiry   = Number.isFinite(args["expiry"]) ? Number(args["expiry"]) : undefined;
-      const charters = typeof args["charters"] === "object" && args["charters"] !== null
-        ? (args["charters"] as Record<string, string>) : undefined;
-      const rec = args["cosign"] === true
-        ? await realmPlane.coSign({ bagUri, signer: nym.toLowerCase(), sign })
-        : await realmPlane.register({
-            bagUri, docUrl, signers: [{ signer: nym.toLowerCase(), sign }], propose,
-            ...(readTier ? { readTier } : {}),
-            ...(expiry === undefined ? {} : { expiry }),
-            ...(charters ? { charters } : {}),
-          });
-      reverdict();   // the realm gate's standing set grew — a member peer's cached verdict on that bag's doc moves
-      const counts = rec.keptBy.every((k) => rec.signatures.some((sg) => sg.signer.toLowerCase() === k.toLowerCase()));
-      return { verb: "realm-bag", realm: rec.realmId, bag: rec.bagUri, doc: rec.docUrl, keptBy: rec.keptBy,
-               readTier: rec.readTier, signedBy: rec.signatures.map((sg) => sg.signer), counts,
-               awaiting: rec.keptBy.filter((k) => !rec.signatures.some((sg) => sg.signer.toLowerCase() === k.toLowerCase())) };
-    });
+    // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief): the
+    // record `{ bagUri, docUrl, keptBy, readTier }` sealed by the key this vessel's WORN face presents to the
+    // realm's Nexus, landed on the realm doc, and announced on @crossroads as `{ bagUri, keptBy }` alone. The
+    // steward door holds the whole verb (`realm-steward`): it picks the signer, and it never reaches a root.
+    registry.register("realm-bag", (args) => runRealmBag({
+      plane: realmPlane, args,
+      registryDocs: () => [assembly.islandHandle.doc(), assembly.catalogHandle.doc()],
+      reverdict,   // the realm gate's standing set grew — a member peer's cached verdict on that bag's doc moves
+    }));
     // realm-bags — the STANDING registrations this vessel's realm carries (counted and folded; an equivocal
     // bag never lists). Verdict-free: it reads the realm doc as-of-last-sync.
-    registry.register("realm-bags", async () => {
-      const standing = realmPlane ? await realmPlane.standing() : new Map();
-      return {
-        verb: "realm-bags", realm: realmPlane?.realmId() ?? null, realmDoc: realmPlane?.realmUrl() ?? null,
-        bags: [...standing.values()].map((r) => ({ bag: r.bagUri, doc: r.docUrl, keptBy: r.keptBy, readTier: r.readTier })),
-      };
-    });
+    registry.register("realm-bags", () => runRealmBags({ plane: realmPlane }));
 
     // nexus-rekey — the immune keel's RE-KEY tooth at the Herm's OWN tier: roll a resource's LEASE EPOCH
     // forward on the live daemon board, staling every grant bound below the new epoch. It writes the

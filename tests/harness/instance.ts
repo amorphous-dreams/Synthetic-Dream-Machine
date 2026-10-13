@@ -522,6 +522,9 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
       tag: `${tag}fleet`,
       daemonEnv: { LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
       riteA: async (cliA) => {
+        // A registers a realm bag below, and a steward seals with the face she WEARS (`realm-steward`).
+        const wear = await cliA(["persona", "wear", "0"]);
+        if (wear.code !== 0) throw new Error(`A: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
         let i = 1;
         for (const handle of ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]) {
           const k = await cliA(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
