@@ -27,8 +27,15 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   hostingDocUrl, materializeSharedLarDoc, writeHostingAct, hostingActsFromBoard, hostingActCid, mintHostToken, encodeInvite,
-  type HostingAct,
+  verifyHostingAct, type HostingAct, type LarDoc,
 } from "@lararium/mesh";
+
+/** The acts on a hosting doc that `hearthLeaf` itself signed. `hostingActsFromBoard` reads shape alone. */
+async function signedActsOf(doc: LarDoc | undefined | null, hearthLeaf: string): Promise<HostingAct[]> {
+  const signed: HostingAct[] = [];
+  for (const act of hostingActsFromBoard(doc, hearthLeaf)) if (await verifyHostingAct(act)) signed.push(act);
+  return signed;
+}
 import { larDataDir } from "../vessel-paths.js";
 import { primaryNexusAid, carriedSet, charterHomeFor } from "../carried-set.js";
 import { wornNexusLeaf, type NexusLeaf } from "../nexus-leaf.js";
@@ -115,7 +122,9 @@ export async function runHostRoll(opts: {
     // THE FIRST ACT READS BEFORE IT WRITES. An act this face signed on the doc that no local state holds means
     // the face already hosts here from another store; a second chain would split one face's spent-sets. It
     // surfaces, aloud, and nothing is written.
-    if (!readHostingState(storageDir, aid) && hostingActsFromBoard(handle.doc(), leaf.verifyingKey).length > 0) {
+    // Only an act this face's own leaf SIGNED says so: the board reads by shape, and a planted act under this
+    // leaf with a signature nobody made must never stop a lawful host from rolling.
+    if (!readHostingState(storageDir, aid) && (await signedActsOf(handle.doc(), leaf.verifyingKey)).length > 0) {
       throw new HostRefusal("this face already hosts in this Nexus from another store — its act stands on the hosting doc and no local state holds it; nothing was written");
     }
     const rolled = await rollHosting({ storageDir, nexusAid: aid, leafSeed: leaf.seed, ...(opts.cap !== undefined ? { cap: opts.cap } : {}) });

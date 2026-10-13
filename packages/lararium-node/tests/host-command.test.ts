@@ -14,7 +14,7 @@
  *     counts one redemption;
  *   · REFUSALS write nothing: no charter, a Nexus this hearth does not carry, an invite before any roll.
  */
-import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
+import { NEXUS_DOC_DOMAIN, HOSTING_ACT_DOMAIN, writeHostingAct } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -157,6 +157,23 @@ describe("lares host — roll, invite, state", () => {
     const { aid } = await seatOwnCharter();
     await expect(direct(runHostRoll)({ sealHome: sealHome() })).rejects.toThrow(/wears no face/);
     expect(existsSync(hostingDir(larDataDir(), aid))).toBe(false);
+  });
+
+  it("★ a FORGED act naming this face blocks nothing: only an act the face's own leaf signed counts as hosting elsewhere ★", async () => {
+    const { aid } = await seatAndWear();
+    const url = hostingDocUrl(aid, await loadVesselVerifyingKey());
+    const leaf = (await heldNexusLeaves(aid))[0]!.verifyingKey;
+    // A board writer plants a well-shaped act under this face's leaf, with a signature nobody made.
+    const forged = { kind: HOSTING_ACT_DOMAIN, nexusAid: aid, hearthLeaf: leaf, prev: null, oprfPub: "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76", cap: 3, sig: "00".repeat(64) };
+    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    try {
+      const handle = await materializeSharedLarDoc(repo, url, "hosting");
+      handle.change((d) => writeHostingAct(d, forged as never));
+      await repo.flush();
+      expect(hostingActsFromBoard(handle.doc(), leaf).length, "KNOWN POSITIVE: the planted act reads by shape").toBe(1);
+    } finally { await repo.shutdown().catch(() => {}); }
+    const rolled = await direct(runHostRoll)({ sealHome: sealHome() });
+    expect(rolled.act.hearthLeaf).toBe(leaf);
   });
 
   it("RED: an act this face signed on the hosting doc that no local state holds refuses the first roll, writing nothing", async () => {
