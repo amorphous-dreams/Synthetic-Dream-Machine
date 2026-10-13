@@ -31,6 +31,8 @@ function stand(text = DISK): { tree: SyncedTree; file: string; dir: string } {
   writeFileSync(file, text);
   return { tree: new SyncedTree(join(root, "synced.json"), 0), file, dir };
 }
+/** The one file every vector here scans: a base stands at a path. */
+const FILE = (): string => join(root, "bags", "@x", "ha.ka.ba", "lares", "api", "note.mem");
 const scan = (tree: SyncedTree) => scanFiles(root, listCarriers(join(root, "bags", "@x"))!, BAG, tree, bagsFileToUri).rows;
 
 describe("the gesture pins a two-sided base", () => {
@@ -39,29 +41,29 @@ describe("the gesture pins a two-sided base", () => {
     const candidates = candidatesOf(scan(tree));
     expect(candidates.map((c) => c.uri)).toEqual([URI]);
     expect(recordLandedCarriers(tree, BAG, candidates, [{ uri: URI, decision: "ingest", canonicalHash: RENDER }])).toBe(1);
-    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK), records: RENDER });
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ path: FILE(), disk: carrierHash(DISK), records: RENDER });
   });
 
   test("a noop row pins the same way: the records already say what the disk says", () => {
     const { tree } = stand();
     recordLandedCarriers(tree, BAG, candidatesOf(scan(tree)), [{ uri: URI, decision: "noop", reason: "canonical-equivalent", canonicalHash: RENDER }]);
-    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK), records: RENDER });
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ path: FILE(), disk: carrierHash(DISK), records: RENDER });
   });
 
   test("a row that names no render keeps the records side a standing base holds for the same bytes", () => {
     const { tree } = stand();
-    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK), RENDER);
+    tree.set(syncedTreeKey(BAG, URI), FILE(), carrierHash(DISK), RENDER);
     // The scan reads `unchanged`; a row for it (an echo noop) carries no render of its own.
     const rows = scan(tree);
     expect(rows[0]!.status).toBe("unchanged");
     recordLandedCarriers(tree, BAG, rows, [{ uri: URI, decision: "noop", reason: "disk-matches-synced" }]);
-    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK), records: RENDER });
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ path: FILE(), disk: carrierHash(DISK), records: RENDER });
   });
 
   test("a row that names no render over bytes no base names pins one hash for both sides", () => {
     const { tree } = stand();
     recordLandedCarriers(tree, BAG, candidatesOf(scan(tree)), [{ uri: URI, decision: "ingest" }]);
-    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK), records: carrierHash(DISK) });
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ path: FILE(), disk: carrierHash(DISK), records: carrierHash(DISK) });
   });
 
   test("CONTROL: a refuse row and a conflict row pin nothing", () => {
@@ -76,7 +78,7 @@ describe("the gesture pins a two-sided base", () => {
 describe("the scan reads a two-sided base", () => {
   test("a file standing in another framing reads unchanged against the base's disk side", () => {
     const { tree } = stand();
-    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK), RENDER);
+    tree.set(syncedTreeKey(BAG, URI), FILE(), carrierHash(DISK), RENDER);
     const rows = scan(tree);
     expect(rows[0]!.status).toBe("unchanged");
     expect(candidatesOf(rows)).toEqual([]);
@@ -84,7 +86,7 @@ describe("the scan reads a two-sided base", () => {
 
   test("a hand edit reads changed, and BOTH sides ride the row to the island", () => {
     const { tree, file } = stand();
-    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK), RENDER);
+    tree.set(syncedTreeKey(BAG, URI), FILE(), carrierHash(DISK), RENDER);
     writeFileSync(file, "! a note a hand edited\n");
     const row = scan(tree)[0]!;
     expect(row.status).toBe("changed");
@@ -94,7 +96,7 @@ describe("the scan reads a two-sided base", () => {
 
   test("CONTROL: a base whose two sides read equal rides one hash, and the row carries no records side", () => {
     const { tree, file } = stand();
-    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK));
+    tree.set(syncedTreeKey(BAG, URI), FILE(), carrierHash(DISK));
     writeFileSync(file, "! a note a hand edited\n");
     const row = scan(tree)[0]!;
     expect(row.syncedHash).toBe(carrierHash(DISK));
@@ -113,7 +115,7 @@ describe("the scan reads a two-sided base", () => {
 describe("a confirmed rename moves the whole base", () => {
   test("the records side travels with the records: the moved file holds the bytes the source's base named", () => {
     const { tree, file, dir } = stand();
-    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK), RENDER);
+    tree.set(syncedTreeKey(BAG, URI), FILE(), carrierHash(DISK), RENDER);
     renameSync(file, join(dir, "moved.mem"));
     const moved = "lar:///ha.ka.ba/lares/api/moved";
     const full = scanSource(root, join(root, "bags", "@x"), BAG, tree, bagsFileToUri)!;
@@ -124,6 +126,24 @@ describe("a confirmed rename moves the whole base", () => {
     const count = applyConfirmedRenames(tree, BAG, candidatesOf(full.rows), { decision: "apply", renames: [{ fromUri: URI, toUri: moved }] });
     expect(count).toBe(1);
     expect(tree.base(syncedTreeKey(BAG, URI))).toBeNull();
-    expect(tree.base(syncedTreeKey(BAG, moved))).toEqual({ disk: carrierHash(DISK), records: RENDER });
+    expect(tree.base(syncedTreeKey(BAG, moved))).toEqual({ path: join(dir, "moved.mem"), disk: carrierHash(DISK), records: RENDER });
+  });
+});
+
+describe("a base stands at one path", () => {
+  test("a file at another path than its carrier's base reads as new, and a gone path with no base there skips", () => {
+    const { tree } = stand();
+    // The agreement stood at a path a siting rule once named; the file the scan meets sits elsewhere.
+    tree.set(syncedTreeKey(BAG, URI), join(root, "bags", "@x", "ruled", "note.mem"), carrierHash(DISK), RENDER);
+    const [row] = scan(tree);
+    expect(row!.status).toBe("new");
+    expect(row!.syncedHash).toBeNull();
+    // A vanished path reads as a deletion only where the base stands AT that path.
+    const gone = join(root, "bags", "@x", "ha.ka.ba", "lares", "api", "gone.mem");
+    const goneUri = "lar:///ha.ka.ba/lares/api/gone";
+    tree.set(syncedTreeKey(BAG, goneUri), join(root, "bags", "@x", "ruled", "gone.mem"), carrierHash("gone"));
+    expect(scanFiles(root, [gone], BAG, tree, bagsFileToUri)).toMatchObject({ rows: [], skipped: [gone] });
+    tree.set(syncedTreeKey(BAG, goneUri), gone, carrierHash("gone"));
+    expect(scanFiles(root, [gone], BAG, tree, bagsFileToUri).rows.map((r) => r.status)).toEqual(["deleted"]);
   });
 });

@@ -281,6 +281,37 @@ describe.skipIf(coreBlobSkip)(
     expect(touched).toEqual([]);
   }, 600_000);
 
+  test("a vessel that lost its tree meets the whole corpus with no base: no file moves, no standoff surfaces, and every base pins anew", async () => {
+    // The projector first meets every file on disk with the records standing and NO base at all. With no
+    // base a real difference stands off, so this pass measures every carrier class the congruences read
+    // (framed memes, native text, sidecar pairs, binary bodies) for a false standoff over an unchanged corpus.
+    const lost = new SyncedTree(path.join(scratch, "state", "synced-tree-lost.json"), 0);
+    const deserializer = makeTw5Deserializer(engine);
+    const raised: string[] = [];
+    const pending: string[] = [];
+    const fresh = new LarDiskProjector({
+      mirrors: HOUSE_BAGS.map((bag) => ({ bagId: bagUri(bag), mirrorRoot: path.join(scratch, "bags", bag) })),
+      carrierFileFn: (uri) => { try { return Promise.resolve(exportCarrierFile(engine, uri)); } catch { return Promise.resolve(null); } },
+      canonicalizeFn: canonicalizeCarrierText,
+      canonicalizeNativeFn: (uri, ext, body, meta) => canonicalizeNativeCarrierText(deserializer, uri, ext, body, meta),
+      syncedTree: lost,
+      onConflict: (info) => { raised.push(`${info.uri}: ${info.reason}`); },
+      onRefusal: (info) => { raised.push(`${info.uri}: ${info.reason}`); },
+      onPendingRemoval: (info) => { pending.push(`${info.bagId}: ${info.count}`); },
+    });
+    const before = new Map<string, number>();
+    for (const bag of HOUSE_BAGS) for (const f of tracked.get(bag)!) before.set(f, statSync(path.join(scratch, f)).mtimeMs);
+    const stop = fresh.start(engine);
+    await fresh.idle();
+    await stop();
+    expect(raised).toEqual([]);
+    expect(pending).toEqual([]);
+    expect([...before].filter(([f, at]) => statSync(path.join(scratch, f)).mtimeMs !== at).map(([f]) => f)).toEqual([]);
+    // Every base the gesture pinned stands again, at the same path, under the same two hashes.
+    const repinned = JSON.parse(readFileSync(path.join(scratch, "state", "synced-tree-lost.json"), "utf8")) as Record<string, unknown>;
+    expect(repinned).toEqual(pinnedByGesture);
+  }, 600_000);
+
   test("every carrier whose render differs from its bytes falls in a named framing class", () => {
     const unnamed: string[] = [];
     const byClass = new Map<string, number>();

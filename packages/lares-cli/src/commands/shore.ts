@@ -1,73 +1,81 @@
 /**
  * lares shore — a person's answers at the disk shore.
  *
- *   lares shore                                       what stands for a hand: each standoff and its key
+ *   lares shore [list]                                    what stands for a hand
  *   lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
+ *   lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *
- * The disk projector decides nothing a person owns. Where the disk and the records say different things
- * and no base names which moved last, it writes nothing and raises a keyed alert. A person settles a
- * standoff by ingesting the file (`lares ingest`), by saving in the wiki until both sides say the same
- * thing, or here: by taking the records' side under the key the alert showed.
+ * The disk projector decides nothing a person owns.
  *
- * The verb rides one line over the daemon's sock into the active wiki's island (`wiki-act`), which
- * answers for the mirrors it holds. An answer names the state its giver read; where that state moved, the
- * island refuses by name and nothing writes.
+ *   · A STANDOFF: the disk and the records say different things and no rule picks. Nothing writes. A
+ *     person settles it by ingesting the file (`lares ingest`), by saving in the wiki until both sides say
+ *     the same thing, or by `take-records` under the key the alert showed.
+ *   · A PENDING REMOVAL: a file vanished from the path its base names. Nothing writes it back and nothing
+ *     tombstones its records. `restore` writes the file back from the records; `remove` deletes the
+ *     carrier in the wiki, where the wiki shore lands the tombstone.
+ *
+ * `list` looks at the disk first, so what it shows stands true to the bytes at that instant. An answer
+ * names the state its giver read: a standoff's key, and for more than one pending removal the count. Where
+ * that state moved, the island refuses by name and nothing changes.
+ *
+ * The verb rides one line over the daemon's sock into the active wiki's island (`wiki-act`), which answers
+ * for the mirrors it holds.
  */
 
 import { createInterface } from "readline/promises";
 import { stdin, stdout } from "process";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
-import { summaryOutput, type SubmitResult } from "../verb-result.js";
-import { runVerb, verbFailure } from "../verb-call.js";
+import { verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
-
-/** The verb the island answers at its disk shore (`@lararium/node` `shore-verb.ts`, `SHORE_VERB`). */
-export const SHORE_VERB = "shore";
+import { askShore, type ShoreAnswer } from "../shore-core.js";
 
 /** The acts this door carries. */
-export const SHORE_ACTS = ["list", "take-records"] as const;
+export const SHORE_ACTS = ["list", "take-records", "restore", "remove"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
 
 function printUsage(): void {
   console.log("usage: lares shore [list]");
   console.log("       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]");
-  console.log("  list          what stands at the disk shore for a hand: each standoff with its key;");
-  console.log("  take-records  write the records' render over the file of one standoff, named by its key.");
-}
-
-/** The island's answer to one shore act, read whole. */
-export interface ShoreAnswer {
-  readonly ok:      boolean;
-  readonly output:  Record<string, unknown>;
-  readonly refusal: string | null;
-  readonly why:     string | null;
-  readonly requestId?: string;
-}
-
-/** Read a `wiki-act` outcome as the island's shore answer. A verb that failed outright answers as a refusal. */
-export function readShoreAnswer(result: SubmitResult): ShoreAnswer {
-  if (result.status === "error") {
-    return { ok: false, output: {}, refusal: "verb-error", why: result.errorMessage ?? "the daemon refused and named no reason", requestId: result.requestId };
-  }
-  const output = summaryOutput(result) ?? {};
-  const ok = output["ok"] === true;
-  return {
-    ok, output,
-    refusal: ok ? null : typeof output["refusal"] === "string" ? output["refusal"] : "shore-answer-unread",
-    why: ok ? null : typeof output["why"] === "string" ? output["why"] : "the island answered in a shape this door cannot read",
-    requestId: result.requestId,
-  };
+  console.log("       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
+  console.log("       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
+  console.log("  list          look at the disk, then name each standoff with its key and each pending removal;");
+  console.log("  take-records  write the records' render over the file of one standoff, named by its key;");
+  console.log("  restore       write a vanished file back from the records;");
+  console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
+  console.log("  an answer over more than one carrier names the count that stands pending (--count).");
 }
 
 /** The args one act sends, or the usage fault that stops it. */
 export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Record<string, unknown> } | { readonly usage: string } {
   const bag = args.options["bag"];
-  if (act === "list") return { args: { op: "list" } };
-  const uri = args.positional[1];
-  const key = args.options["key"];
-  if (!uri || !key) return { usage: "take-records names a carrier and the standoff's key: lares shore take-records <uri> --key <key>" };
-  return { args: { op: "take-records", uri, key, ...(bag ? { bag } : {}) } };
+  const withBag = bag ? { bag } : {};
+  if (act === "list") return { args: { op: "list", ...withBag } };
+  if (act === "take-records") {
+    const uri = args.positional[1];
+    const key = args.options["key"];
+    if (!uri || !key) return { usage: "take-records names a carrier and the standoff's key: lares shore take-records <uri> --key <key>" };
+    return { args: { op: "take-records", uri, key, ...withBag } };
+  }
+  const uris = args.positional.slice(1);
+  const all = Boolean(args.flags["all"]);
+  const countText = args.options["count"];
+  const count = countText !== undefined ? Number(countText) : undefined;
+  if (count !== undefined && (!Number.isInteger(count) || count < 0)) return { usage: `--count names a whole number of carriers; "${countText}" names none` };
+  if (all && uris.length > 0) return { usage: `${act} names carriers or --all, never both` };
+  if (!all && uris.length === 0) return { usage: `${act} names a carrier, or --all with --count: lares shore ${act} <uri>` };
+  if ((all || uris.length > 1) && count === undefined) return { usage: `${act} over more than one carrier names the count that stands pending: --count <n> (read it from \`lares shore\`)` };
+  return { args: { op: act, ...(all ? { all: true } : { uris }), ...(count !== undefined ? { count } : {}), ...withBag } };
+}
+
+/** What a person confirms before an act that writes. */
+function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
+  if (act === "take-records") return `take-records ${String(shaped["uri"])}: the file's present bytes give way to the records' render. Proceed? [y/N] `;
+  const what = shaped["all"] === true ? `all ${String(shaped["count"])} pending carrier(s)` : (shaped["uris"] as string[]).join(", ");
+  return act === "restore"
+    ? `restore ${what}: each file returns from the records. Proceed? [y/N] `
+    : `remove ${what}: each carrier leaves the wiki, and its records rest under a tombstone. Proceed? [y/N] `;
 }
 
 export async function cmdShore(args: ParsedArgs): Promise<number> {
@@ -86,7 +94,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       return exitFor("usage");
     }
     const rl = createInterface({ input: stdin, output: stdout });
-    const answer = await rl.question(`${act} ${String(shaped.args["uri"] ?? "")}: the file's present bytes give way to the records' render. Proceed? [y/N] `);
+    const answer = await rl.question(confirmLine(act, shaped.args));
     rl.close();
     if (!/^y(es)?$/i.test(answer.trim())) { console.log("aborted"); return 1; }
   }
@@ -100,7 +108,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
 
   let answer: ShoreAnswer;
   try {
-    answer = readShoreAnswer(await runVerb("wiki-act", { verb: SHORE_VERB, args: shaped.args }, did, { timeoutMs: 30_000 }));
+    answer = await askShore(shaped.args, did);
   } catch (err) {
     const f = verbFailure(err);
     emit(args, {
@@ -125,16 +133,32 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     ok: true, ...(answer.requestId !== undefined ? { requestId: answer.requestId } : {}),
     data: answer.output,
     human: () => {
+      const rows = (name: string): Array<Record<string, unknown>> => (Array.isArray(answer.output[name]) ? (answer.output[name] as Array<Record<string, unknown>>) : []);
       if (act === "list") {
-        const standoffs = Array.isArray(answer.output["standoffs"]) ? (answer.output["standoffs"] as Array<Record<string, unknown>>) : [];
-        if (standoffs.length === 0) { console.log("the disk shore holds nothing for a hand"); return; }
-        console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
-        for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}  key ${String(s["standoff"])}`);
-        console.log("  settle one: `lares ingest` the file · save in the wiki until both say the same · `lares shore take-records <uri> --key <key>`");
+        const standoffs = rows("standoffs");
+        const pending = rows("pending");
+        if (standoffs.length === 0 && pending.length === 0) { console.log("the disk shore holds nothing for a hand"); return; }
+        if (standoffs.length > 0) {
+          console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
+          for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
+          console.log("  settle one: `lares ingest` the file · save in the wiki until both say the same · `lares shore take-records <uri> --key <key>`");
+        }
+        if (pending.length > 0) {
+          console.log(`${pending.length} pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones`);
+          for (const p of pending) console.log(`  ${String(p["uri"])}  bag ${String(p["bagId"])}  ${String(p["path"])}`);
+          console.log(`  answer: \`lares shore restore <uri>\` · \`lares shore remove <uri>\` · over all: \`--all --count ${pending.length}\` (with --bag where more than one bag stands pending)`);
+        }
         return;
       }
-      console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`);
+      if (act === "take-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
+      const done = Array.isArray(answer.output["done"]) ? (answer.output["done"] as string[]) : [];
+      const left = Array.isArray(answer.output["left"]) ? (answer.output["left"] as string[]) : [];
+      console.log(`${act === "restore" ? "restored" : "removed"} ${done.length} carrier(s) (${String(answer.output["bag"])})`);
+      for (const uri of done) console.log(`  ${uri}`);
+      for (const uri of left) console.error(`  ⚠ still pending: ${uri}`);
     },
   });
-  return 0;
+  // An answer that left a carrier pending did not take everything it named.
+  const left = Array.isArray(answer.output["left"]) ? (answer.output["left"] as unknown[]) : [];
+  return left.length > 0 ? exitFor("verb-error") : 0;
 }

@@ -3,9 +3,11 @@
  * #pattern-integrities §6, the Nucleus triangle).
  *
  * For every carrier the two legs last agreed on, this tree persists the BASE: the
- * hash of the bytes the disk held and the hash of the render the records carried.
- * Disk and records co-project one carrier, each in its own grain, so an agreement
- * names both. The two hashes read equal where the disk holds the canonical render
+ * path the agreement stood at, the hash of the bytes the disk held there, and the hash
+ * of the render the records carried. Disk and records co-project one carrier, each in
+ * its own grain, so an agreement names both. AN AGREEMENT STANDS AT ONE PATH: a carrier
+ * re-sited to another path holds no base there, so a file absent at the new path reads
+ * as never written, while a file absent at the base's own path reads as vanished. The two hashes read equal where the disk holds the canonical render
  * (every projector write leaves them so) and differ where the disk stands in a
  * framing the render would normalize. Each gate compares a disk read against the
  * disk side and the records' current render against the records side to decide
@@ -31,7 +33,7 @@
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync } from "fs";
-import { dirname, join } from "path";
+import { dirname, join, resolve } from "path";
 import { randomBytes } from "crypto";
 import { tagDigest, formatDigest, sha256HexSync } from "@lararium/mesh";
 
@@ -48,8 +50,16 @@ export function syncedTreeKey(bagId: string, uri: string): string {
   return `${bagId}\0${uri}`;
 }
 
-/** One carrier's base: what the disk held and what the records rendered at the last agreement. */
+/** The one spelling of a path a base carries: absolute and normalized, symlinks unread. The projector's
+ *  confined write path and the ingest gesture's scanned file both pass through here. */
+export function syncedPath(file: string): string {
+  return resolve(file);
+}
+
+/** One carrier's base: where the agreement stood, what the disk held there and what the records rendered. */
 export interface SyncedBase {
+  /** The content file the agreement stood at (`syncedPath`). */
+  readonly path: string;
   /** Whole-carrier hash of the bytes the disk held (body plus `.meta`). */
   readonly disk: string;
   /** Whole-carrier hash of the render the records carried. */
@@ -59,8 +69,9 @@ export interface SyncedBase {
 /** A persisted row reads as a base only in the one shape this tree writes; any other value names no base. */
 function baseOf(value: unknown): SyncedBase | null {
   if (value === null || typeof value !== "object" || Array.isArray(value)) return null;
-  const { disk, records } = value as Record<string, unknown>;
-  return typeof disk === "string" && disk !== "" && typeof records === "string" && records !== "" ? { disk, records } : null;
+  const { path, disk, records } = value as Record<string, unknown>;
+  return typeof path === "string" && path !== "" && typeof disk === "string" && disk !== "" && typeof records === "string" && records !== ""
+    ? { path, disk, records } : null;
 }
 
 /** The persisted file as a map, keeping the rows that read as a base, and the count of rows that read as none.
@@ -136,20 +147,27 @@ export class SyncedTree {
     return this.map.get(uri)?.disk ?? null;
   }
 
-  /** The whole base, both sides, or null where the two legs never agreed. */
+  /** The whole base, wherever it stood, or null where the two legs never agreed. */
   base(uri: string): SyncedBase | null {
     return this.map.get(uri) ?? null;
   }
 
+  /** The base that stands AT `file`, or null: an agreement reached at another path names no base here. */
+  baseAt(uri: string, file: string): SyncedBase | null {
+    const base = this.map.get(uri);
+    return base !== undefined && base.path === syncedPath(file) ? base : null;
+  }
+
   /**
-   * Record an agreement; persistence coalesces per quiet window. `diskHash` names the bytes the disk
-   * holds; `recordsHash` names the render the records carry, and equals `diskHash` where the disk holds
-   * that render (a projector write, a byte-identical skip).
+   * Record an agreement; persistence coalesces per quiet window. `file` names the content file the
+   * agreement stands at; `diskHash` names the bytes the disk holds there; `recordsHash` names the render
+   * the records carry, and equals `diskHash` where the disk holds that render (a projector write, a
+   * byte-identical skip).
    */
-  set(uri: string, diskHash: string, recordsHash: string = diskHash): void {
+  set(uri: string, file: string, diskHash: string, recordsHash: string = diskHash): void {
     const prev = this.map.get(uri);
     if (prev !== undefined) this.indexRemove(uri, prev.disk);   // the prior value leaves the reverse view
-    const base: SyncedBase = { disk: diskHash, records: recordsHash };
+    const base: SyncedBase = { path: syncedPath(file), disk: diskHash, records: recordsHash };
     this.map.set(uri, base);
     this.indexAdd(uri, diskHash);                               // the new content enters it
     this.journal.set(uri, base);

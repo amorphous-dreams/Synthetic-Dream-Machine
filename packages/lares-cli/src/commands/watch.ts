@@ -14,12 +14,16 @@
  * no-op save drops at the gate, never a timer alone. Every wave rides one line
  * over the daemon's sock — the watcher holds no replica of its own.
  *
- * Deletion: a vanished carrier enters a ~60s grace window (separate from the edit
- * debounce); a transient delete (git checkout flood) self-heals when its path scans
- * present again; a real delete rides the wave as
- * a `deletions[]` entry once due, OR rides EARLY when a candidate add shares its
- * synced-hash (a rename — the island re-links rather than tombstone+create).
- * The island gate applies the mass-delete brake (`--delete-fraction`).
+ * A VANISHED FILE TOMBSTONES NOTHING HERE. A carrier whose file left the path its base names may
+ * name a delete, a branch switch, a checkout or a slip, and no span of waiting tells them apart, so the
+ * watcher holds no grace clock and no deletion fraction. It keeps each vanished address in memory, hands
+ * it to the vessel's shore (`shore sense`), and there the carrier stands as a PENDING REMOVAL: nothing
+ * writes it back and nothing tombstones it until a person answers (`lares shore remove | restore`). A
+ * path that scans present again leaves the set, and the shore hears that too.
+ *
+ * A RENAME rides by content alone: one vanished address and one arrived file that share a hash, each
+ * unique in the wave, ride together as a re-link (the island re-homes the records). A pair that reads
+ * ambiguous on either side sends no deletion at all.
  *
  * OWED: the file-grain rolling backup (`.stversions`-style) belongs at the
  * PROJECTOR (backup-on-write) — content is gone from disk by the time a delete
@@ -35,11 +39,10 @@ import { exitFor, emit } from "../render.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
 import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
 import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
+import { askShore } from "../shore-core.js";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
 const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well under this
-const DEFAULT_DELETE_GRACE_MS = 60_000;     // Syncthing's delete-pairing window
-const DEFAULT_MASS_DELETE_FRACTION = 0.25;  // tombstones above this fraction of the bag suspend
 
 /**
  * Editor litter, our own observation state, and the `.meta` field-sidecar never
@@ -59,36 +62,32 @@ function isNoise(rel: string): boolean {
 }
 
 /**
- * Which of a watcher's pending deletes ride THIS wave — DUE (its patience, a MONOTONIC span, has
- * elapsed) OR PAIRED (a candidate add in this same wave shares its synced-hash: a rename, settled by
- * content, never by time). `nowMs` and `graceMs` are both durations on a monotonic clock
- * (`performance.now()`) — never wall-clock — so a set-back or set-forward system clock changes neither
- * answer. Pulled out of `cmdWatch`'s closure so it stands as one weldable, directly-testable fact.
+ * Which vanished addresses ride THIS wave as a rename's source: PAIRED BY CONTENT, and by nothing else.
+ * A vanished address pairs where exactly one vanished address holds its base hash and exactly one of the
+ * wave's candidates holds that same hash. Every other vanished address rides nowhere: no span of waiting
+ * turns a vanish into a deletion. Pulled out of `cmdWatch`'s closure so it stands as one weldable fact.
  */
-export function dueDeletions(
-  pending:   ReadonlyMap<string, { readonly syncedHash: string; readonly armedAt: number; readonly file: string }>,
-  addHashes: ReadonlySet<string>,
-  nowMs:     number,
-  graceMs:   number,
+export function pairedDeletions(
+  vanished:   ReadonlyMap<string, { readonly syncedHash: string; readonly file: string }>,
+  candidates: ReadonlyArray<{ readonly diskHash: string }>,
 ): ArmedDeletion[] {
+  const gone = new Map<string, number>();
+  for (const v of vanished.values()) gone.set(v.syncedHash, (gone.get(v.syncedHash) ?? 0) + 1);
+  const arrived = new Map<string, number>();
+  for (const c of candidates) arrived.set(c.diskHash, (arrived.get(c.diskHash) ?? 0) + 1);
   const ride: ArmedDeletion[] = [];
-  for (const [uri, p] of pending) {
-    if (nowMs - p.armedAt >= graceMs || addHashes.has(p.syncedHash)) {
-      // L7: `file` is REQUIRED on `ArmedDeletion` — no `?? uri` fallback. A `lar://` uri stat'd as a
-      // path always reads absent, so a fallback here would have let a `file`-less entry ride on the
-      // grace timer's patience alone, never the causal rescan (M9) this watcher actually runs.
-      ride.push({ uri, syncedHash: p.syncedHash, file: p.file });
-    }
+  for (const [uri, v] of vanished) {
+    if (gone.get(v.syncedHash) === 1 && arrived.get(v.syncedHash) === 1) ride.push({ uri, syncedHash: v.syncedHash, file: v.file });
   }
   return ride;
 }
 
 function printUsage(): void {
-  console.log("usage: lares watch --source <dir> --to <bagUri> [--apply] [--debounce ms] [--delete-grace ms] [--delete-fraction f]");
+  console.log("usage: lares watch --source <dir> --to <bagUri> [--apply] [--debounce ms]");
   console.log("  default = preview (logs what each settle WOULD ingest, submits nothing);");
   console.log("  --apply submits each settled wave through the island's INGEST gate;");
-  console.log("  --delete-grace ms  hold a vanished carrier before tombstoning (default 60000);");
-  console.log("  --delete-fraction f  suspend a wave whose tombstones exceed f of the bag (default 0.25).");
+  console.log("  a vanished file tombstones nothing: it stands pending at the vessel's shore until a person");
+  console.log("  answers with `lares shore remove` or `lares shore restore`.");
 }
 
 export async function cmdWatch(args: ParsedArgs): Promise<number> {
@@ -99,8 +98,6 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   const root      = larRoot();
   const apply     = Boolean(args.flags["apply"]);
   const debounceMs = args.options["debounce"] ? Number(args.options["debounce"]) : DEFAULT_DEBOUNCE_MS;
-  const deleteGraceMs = args.options["delete-grace"] ? Number(args.options["delete-grace"]) : DEFAULT_DELETE_GRACE_MS;
-  const massDeleteFraction = args.options["delete-fraction"] ? Number(args.options["delete-fraction"]) : DEFAULT_MASS_DELETE_FRACTION;
 
   // One operator identity for the whole life of the watch. Each wave submits over
   // the sock; the daemon holds the warm replica, so the watcher holds nothing.
@@ -120,14 +117,10 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
 
   // ── the drain seat — one wave at a time (recipe-watch kick, disk-side) ──
   const buffer = new Set<string>();        // absolute carrier paths pending a wave
-  // Vanished carriers held in the grace window: a real delete waits for a
-  // possibly-lagging paired add (rename) before it tombstones; a transient
-  // delete (git checkout flood) self-heals when its path scans present again
-  // — each drain's fresh scan IS that causal check, run every time this map
-  // is consulted. `armedAt` is a MONOTONIC reading (`performance.now()`); the
-  // grace bounds this watcher's own patience, never an authority a wall
-  // clock could move.
-  const pendingDeletes = new Map<string, { syncedHash: string; armedAt: number; file: string }>();
+  // Vanished carriers this watcher saw leave: each scanned gone from a path where a base stands. The set
+  // holds what a later arrival may pair with (a rename) and what to re-stat at every drain, so a path that
+  // returns leaves it. It decides nothing and no clock reads it.
+  const vanished = new Map<string, { syncedHash: string; file: string }>();
   let busy  = false;
   let rerun = false;
   let timer: NodeJS.Timeout | null = null;
@@ -135,65 +128,80 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
   /** What still asks for a hand across the waves: read at the stop for the exit. */
   let standing: StandingAsks = NO_STANDING_ASKS;
 
+  /** Addresses that vanished or returned and that the vessel's shore has not yet looked at. A look that
+   *  fails leaves them here, so the next drain asks again. */
+  const unsensed = new Set<string>();
+
+  /** Hand the vessel's shore what the disk showed: each address that vanished or returned. */
+  const tellShore = async (): Promise<void> => {
+    if (unsensed.size === 0) return;
+    const uris = [...unsensed];
+    if (!apply) { unsensed.clear(); console.log(`    (preview: the vessel's shore would look at ${uris.length} carrier(s))`); return; }
+    try {
+      const answer = await askShore({ op: "sense", uris }, did);
+      if (!answer.ok) { console.error(`    ⚠ the vessel's shore did not look (${answer.refusal}: ${answer.why}); \`lares shore\` looks again`); return; }
+      for (const uri of uris) unsensed.delete(uri);
+      const pending = typeof answer.output["pendingCount"] === "number" ? answer.output["pendingCount"] : null;
+      if (pending !== null && pending > 0) console.log(`    ${pending} carrier(s) stand pending at the vessel's shore: answer with \`lares shore remove\` or \`lares shore restore\``);
+    } catch (err) {
+      console.error(`    ⚠ the vessel's shore did not look (${err instanceof Error ? err.message : String(err)}); \`lares shore\` looks again`);
+    }
+  };
+
   const drain = async (): Promise<void> => {
-    const now = performance.now();   // MONOTONIC — the grace is this watcher's own patience, never a wall reading
-    // M9: a drain KICKED BY THE GRACE TIMER carries an EMPTY buffer — nothing new touched this watch's fs
-    // paths. Scanning only `buffer` then means the "causal rescan" below never actually re-stats an already-
-    // pending delete's path, and a lost fs event (WSL's `fs.watch` drops them) tombstones a file that came
-    // back. So every drain re-stats BOTH the freshly-touched paths AND every outstanding pending-delete's own
-    // path — the union is this drain's fresh scan, which is the only thing the self-heal check below is
-    // honest about covering.
+    // Every drain re-stats BOTH the freshly-touched paths AND every vanished address's own path: a lost fs
+    // event (WSL's `fs.watch` drops them) never leaves a returned file reading as gone.
     const files = new Set(buffer);
-    for (const p of pendingDeletes.values()) files.add(p.file);
+    for (const v of vanished.values()) files.add(v.file);
     buffer.clear();
 
     const tree = openSyncedTree();     // fresh read — the projection moves under us
     const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() }));
     const candidates = candidatesOf(rows);
 
-    // A pending delete whose path scanned present again has RETURNED — drop it
-    // (the transient-delete self-heal: a checkout that re-creates the file). Every pending-delete path was
-    // just re-stat above, so this now covers every outstanding entry, not only the ones a watch event named.
-    for (const r of rows) if (r.status !== "deleted" && pendingDeletes.has(r.uri)) pendingDeletes.delete(r.uri);
-    // Newly-vanished carriers enter the grace window; wake to flush once the patience runs out.
+    // A vanished address whose path scans present again has RETURNED (a checkout that re-creates the
+    // file, an editor's write-rename save): it leaves the set, and the shore hears it came back.
+    const moved: string[] = [];
+    for (const r of rows) if (r.status !== "deleted" && vanished.delete(r.uri)) moved.push(r.uri);
     for (const d of deletionsOf(rows)) {
-      if (!pendingDeletes.has(d.uri)) {
-        pendingDeletes.set(d.uri, { syncedHash: d.syncedHash, armedAt: now, file: d.file });
-        setTimeout(kick, deleteGraceMs + 50);
-      }
+      if (!vanished.has(d.uri)) { vanished.set(d.uri, { syncedHash: d.syncedHash, file: d.file }); moved.push(d.uri); }
     }
 
-    // Which pending deletes ride THIS wave: DUE (patience elapsed, monotonic) OR PAIRED (a
-    // candidate add shares its synced-hash — a rename; ride together so the
-    // island re-links rather than tombstone+create). This drain's own fresh scan above is
-    // the causal rescan: a path still in `pendingDeletes` here already survived it unreturned,
-    // because it was re-stat in THIS wave's `files` union, not merely carried over from a stale map entry.
-    const addHashes = new Set(candidates.map((c) => c.diskHash));
-    const ride = dueDeletions(pendingDeletes, addHashes, now, deleteGraceMs);
-    for (const d of ride) pendingDeletes.delete(d.uri);
+    // Which vanished addresses ride THIS wave: only a rename's source, paired by content, unique on both
+    // sides. The island re-links the records; nothing here tombstones.
+    const ride = pairedDeletions(vanished, candidates);
+    for (const d of ride) vanished.delete(d.uri);
+    const rode = new Set(ride.map((d) => d.uri));
+    for (const uri of moved) if (!rode.has(uri)) unsensed.add(uri);
+    const nowGone = moved.filter((uri) => vanished.has(uri));
 
     if (candidates.length === 0 && ride.length === 0) {
-      if (rows.length > 0) console.log(`  ${rows.length} touched · 0 changed (all match the Synced tree)`);
+      if (nowGone.length > 0) console.log(`  ${nowGone.length} carrier(s) vanished from disk · nothing tombstones (${vanished.size} stand vanished in all)`);
+      else if (rows.length > 0) console.log(`  ${rows.length} touched · 0 changed (all match the Synced tree)`);
+      await tellShore();
       return;
     }
     const n = ++waveNo;
 
     if (!apply) {
-      console.log(`  wave ${n} (preview): ${candidates.length} change(s), ${ride.length} deletion(s) of ${rows.length} touched`);
+      console.log(`  wave ${n} (preview): ${candidates.length} change(s), ${ride.length} rename(s) of ${rows.length} touched`);
       for (const r of candidates) console.log(`    ${r.status.toUpperCase().padEnd(8)} ${r.uri}`);
-      for (const d of ride)       console.log(`    DELETE   ${d.uri}`);
+      for (const d of ride)       console.log(`    RENAME-FROM ${d.uri}`);
+      for (const uri of nowGone)  console.log(`    VANISHED ${uri}`);
       if (skipped.length) console.log(`    (${skipped.length} skipped — outside bags/ or unreadable)`);
+      await tellShore();
       return;
     }
 
     try {
       // The settling gesture reads every row the wave needs, asking again under the outcome's row cap
       // where a flood crossed it, and pins what landed.
-      const settled = await settleIngest({ source, toBag, candidates, did, deletions: ride, massDeleteFraction }, tree);
+      const settled = await settleIngest({ source, toBag, candidates, did, deletions: ride }, tree);
       standing = standingAfterWave(standing, settled);
       const result = settled.first;
       if (result.status === "error") {
         console.error(`  wave ${n}: INGEST failed — ${result.errorMessage ?? "unknown"}`);
+        await tellShore();
         return;
       }
       const carriers = [...settled.named.values()];
@@ -204,20 +212,19 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       // carrier reads `unchanged` next settle instead of re-landing (echo-survival).
       const renamesMoved  = applyConfirmedRenames(tree, toBag, candidates, del);
       if (settled.recorded + renamesMoved > 0) tree.flush();
-      console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} deletion(s) submitted · audit lar:///ha.ka.ba/bags/daemon/outcomes/${result.requestId}`);
+      console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit lar:///ha.ka.ba/bags/daemon/outcomes/${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
       for (const r of [...settled.refused, ...settled.conflicts]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
       if (settled.pageError !== undefined) console.error(`    ⚠ a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
       // A file at an address whose records never project refuses by name; the hand removes the file.
       for (const c of carriers) if (c["code"] === "never-projected-path") console.error(`    ⚠ ${String(c["reason"] ?? c["uri"])}`);
-      if (del && (del as { decision?: string })["decision"] === "suspend") {
-        console.error(`    ⚠ mass-delete brake TRIPPED — ${String((del as { reason?: string })["reason"] ?? "")}; nothing applied, re-run to confirm.`);
-      }
+      if (nowGone.length > 0) console.log(`    ${nowGone.length} carrier(s) vanished from disk · nothing tombstones`);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       standing = standingAfterFault(standing, { asked: candidates.map((c) => c.uri), askedDeletions: ride.map((d) => d.uri) }, message);
       console.error(`  wave ${n}: ${message}`);
     }
+    await tellShore();
   };
 
   // Serialize: a settle arriving mid-drain queues exactly one rerun.

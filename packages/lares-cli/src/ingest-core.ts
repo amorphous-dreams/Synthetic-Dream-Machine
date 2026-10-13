@@ -182,10 +182,10 @@ export function scanFiles(
     let text: string;
     let binary: boolean;
     try { ({ text, binary } = readCarrierText(file)); } catch {
-      // A path gone from disk that the Synced tree still projects = a deletion
-      // candidate (the watcher feeds vanished paths; the grace window + the
-      // island gate confirm before any tombstone). An unknown gone path skips.
-      const goneSynced = tree.get(syncedTreeKey(toBag, uri));
+      // A path gone from disk where a base stands AT THAT PATH = a vanished carrier (the watcher feeds
+      // vanished paths; it tombstones none and hands each to the vessel's shore, where it stands pending
+      // until a person answers). A gone path that holds no base skips: no agreement ever stood there.
+      const goneSynced = tree.baseAt(syncedTreeKey(toBag, uri), file)?.disk ?? null;
       if (goneSynced !== null) rows.push({ file, uri, text: "", diskHash: "", syncedHash: goneSynced, status: "deleted", ext });
       else skipped.push(file);
       continue;
@@ -210,7 +210,8 @@ export function scanFiles(
     // THE BASE HOLDS TWO SIDES. The scan reads the disk side: a file whose bytes stand where the last
     // agreement left them reads `unchanged`, whatever framing they wear. The records side rides the
     // wave so the island's gate can tell "the records moved" from "the disk stands in another framing".
-    const base       = tree.base(syncedTreeKey(toBag, uri));
+    // A BASE STANDS AT ONE PATH: an agreement the carrier reached at another path names no base for this file.
+    const base       = tree.baseAt(syncedTreeKey(toBag, uri), file);
     const syncedHash = base?.disk ?? null;
     const syncedRecordsHash = base !== null && !digestsEqual(base.disk, base.records) ? base.records : undefined;
     // Both sides ride tagged now (`carrierHash` emits `sha256:…`; the tree stores
@@ -255,11 +256,11 @@ export function recordLandedCarriers(
     if (!cand || cand.diskHash === "") continue;
     if (diskHashNow(cand.file) !== cand.diskHash) continue;
     const key = syncedTreeKey(toBag, cand.uri);
-    const standing = tree.base(key);
+    const standing = tree.baseAt(key, cand.file);
     const answered = typeof c["canonicalHash"] === "string" && c["canonicalHash"] ? (c["canonicalHash"] as string) : null;
     const recordsHash = answered
       ?? (standing !== null && digestsEqual(standing.disk, cand.diskHash) ? standing.records : cand.diskHash);
-    tree.set(key, cand.diskHash, recordsHash);
+    tree.set(key, cand.file, cand.diskHash, recordsHash);
     recorded++;
   }
   return recorded;
@@ -609,7 +610,9 @@ function diskHashNow(file: string): string | null {
  * records change-id-preserving), and its gone source rides the wave as a
  * rename-deletion; the caller moves the Synced observation on confirm
  * (`applyConfirmedRenames`). A genuine EDIT never matches (its hash changed); two
- * carriers sharing content decline (the index answers null on a >1 collision).
+ * carriers sharing content decline (the index answers null on a >1 collision), and so do two ARRIVED
+ * files sharing content: the pair must stand unique on both sides, since the island's delete gate reads
+ * an ambiguous pair as a tombstone, and no scan tombstones a carrier by itself.
  *
  * FULL-scan only: `liveUris` must be the WHOLE on-disk carrier set for the gone-guard
  * to read true, which a partial (watcher) wave cannot supply — so the watcher keeps
@@ -619,8 +622,12 @@ export function resolveRenames(rows: ScanRow[], toBag: string, tree: SyncedTree)
   const liveUris = new Set(rows.filter((r) => r.status !== "deleted").map((r) => r.uri));
   const renameDeletions: PendingDeletion[] = [];
   const claimedSources = new Set<string>();   // one source re-homes at most once per wave
+  // How many arrived files hold each content: a rename pairs one vanished source with ONE arrival.
+  const arrivals = new Map<string, number>();
+  for (const r of rows) if (r.status === "new" && r.diskHash !== "") arrivals.set(r.diskHash, (arrivals.get(r.diskHash) ?? 0) + 1);
   const out = rows.map((r) => {
     if (r.status !== "new") return r;
+    if ((arrivals.get(r.diskHash) ?? 0) !== 1) return r;
     const src = tree.renameSourceUri(toBag, r.diskHash);
     if (src === null || src === r.uri || liveUris.has(src) || claimedSources.has(src)) return r;
     const srcHash = tree.get(syncedTreeKey(toBag, src));
@@ -679,18 +686,19 @@ export function applyConfirmedRenames(
   if (!deletionSummary || deletionSummary["decision"] !== "apply") return 0;
   const renames = deletionSummary["renames"];
   if (!Array.isArray(renames)) return 0;
-  const diskHashByUri = new Map(candidates.map((c) => [c.uri, c.diskHash] as const));
+  const byUri = new Map(candidates.map((c) => [c.uri, c] as const));
   let moved = 0;
   for (const r of renames as Array<Record<string, unknown>>) {
     const fromUri = String(r["fromUri"]);
     const toUri   = String(r["toUri"]);
-    const diskHash = diskHashByUri.get(toUri);
-    if (diskHash === undefined) continue;   // a rename we did not submit — leave it be
+    const arrived = byUri.get(toUri);
+    if (arrived === undefined) continue;   // a rename we did not submit — leave it be
+    const diskHash = arrived.diskHash;
     // The records re-homed whole, so the base's records side travels with them where the moved file
     // holds the bytes the source's base named.
     const source = tree.base(syncedTreeKey(toBag, fromUri));
     tree.delete(syncedTreeKey(toBag, fromUri));
-    tree.set(syncedTreeKey(toBag, toUri), diskHash, source !== null && digestsEqual(source.disk, diskHash) ? source.records : diskHash);
+    tree.set(syncedTreeKey(toBag, toUri), arrived.file, diskHash, source !== null && digestsEqual(source.disk, diskHash) ? source.records : diskHash);
     moved++;
   }
   return moved;
@@ -711,10 +719,9 @@ export interface SubmitIngestOpts {
   readonly did:       string;
   /** Omit for a fresh change-id; pass one to thread a known id. */
   readonly changeId?: string;
-  /** Vanished carriers riding the same wave (rename re-link or tombstone). */
+  /** Vanished carriers riding the same wave: the sources of renames the gesture paired by content, one
+   *  vanished file to one arrived file. No gesture sends a deletion it did not pair. */
   readonly deletions?: readonly PendingDeletion[];
-  /** Operator mass-delete brake dial (0,1]; omitted → island default. */
-  readonly massDeleteFraction?: number;
   /**
    * Run the INGEST IN the active wiki island over ITS composite — the path
    * for `working` (the per-fingerprint write layer the daemon never reaches).
@@ -756,7 +763,6 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
       };
     }),
     ...(deletions.length > 0 ? { deletions: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
-    ...(opts.massDeleteFraction !== undefined ? { massDeleteFraction: opts.massDeleteFraction } : {}),
   };
   // --in-wiki: wrap the INGEST so it runs IN the active wiki island over its
   // composite (where working lives), mirroring `lares act --in-wiki`. The

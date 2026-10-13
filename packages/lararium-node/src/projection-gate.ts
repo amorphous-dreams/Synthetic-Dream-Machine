@@ -10,7 +10,7 @@
  * Three states meet per carrier — the SAME triangle the ingest leg reads, seen
  * from the other shore:
  *   - the RECORDS' canonical render (what the doc would write; the merge seat),
- *   - the BASE (the last agreement: what the disk held and what the records rendered),
+ *   - the BASE (the last agreement AT THIS PATH: what the disk held and what the records rendered),
  *   - the DISK bytes (what the operator's hands left),
  * read through a fourth input that is not a stream but a LENS on the third — the
  * canonical text those disk bytes SAY (`render(parse(disk))`, the congruence `≈`).
@@ -37,10 +37,19 @@
  *       read from the projecting side — the echo gate. RIDES FIRST, so a
  *       corpus whose anchors went stale but whose disk and doc agree projects
  *       nothing and conflicts on nothing.)
- *   2. disk absent/incomplete   → PROJECT `absent-on-disk`
- *      (no coherent carrier stands there to lose — a missing content file, or a
- *       missing `.meta` beside a filetype that declares one. Restoring a
- *       sidecar the operator's hands never wrote loses no edit.)
+ *   2. no content file on disk:
+ *        a base stands at this path → PENDING-REMOVAL `vanished`
+ *          (the file stood here at the last agreement and left. That may name a
+ *           delete, a branch switch, a checkout or a slip, and the bytes cannot
+ *           say which: nothing writes back and nothing tombstones until a person
+ *           answers. `answer: "restore"` → PROJECT `restore-answered`.)
+ *        no base at this path     → PROJECT `absent-on-disk`
+ *          (the path never held an agreement: a first projection, or a carrier a
+ *           siting rule moved here. No file stands there to lose.)
+ *      A content file that stands with its declared `.meta` gone reads as a disk
+ *      state of its own (the caller hashes the body alone and hands in no
+ *      canonical view), so the base clauses decide it and no body gets replaced
+ *      on the strength of a missing sidecar.
  *   3. render(parse(disk)) == records → NOOP `canonical-equivalent`
  *      (ingest's rule 3, transposed — the `≈` clause. The disk and the records
  *       SAY THE SAME THING and differ only in framing: the carrier stands
@@ -100,17 +109,19 @@ import { digestsEqual } from "@lararium/mesh";
 
 export type ProjectionDecision =
   | { readonly kind: "noop"; readonly reason: "disk-matches-records" | "canonical-equivalent" | "records-unmoved" }
-  | { readonly kind: "project"; readonly reason: "absent-on-disk" | "disk-unmoved" | "records-taken" }
+  | { readonly kind: "project"; readonly reason: "absent-on-disk" | "disk-unmoved" | "records-taken" | "restore-answered" }
+  | { readonly kind: "pending-removal"; readonly reason: "vanished" }
   | { readonly kind: "conflict"; readonly reason: "no-base" | "both-moved" };
 
 export interface ProjectionGateInput {
   /**
    * Whole-carrier hash of the bytes STANDING on disk (body + `.meta`, folded the
    * same way the Synced-tree observation folds them — `carrierHash`), computed by
-   * the caller. Null names an absent or incomplete on-disk carrier.
+   * the caller. Null names a path that holds no content file.
    */
   readonly diskHash: string | null;
-  /** THE BASE'S DISK SIDE: whole-carrier hash of the bytes the disk held at the last agreement; null = never agreed. */
+  /** THE BASE'S DISK SIDE: whole-carrier hash of the bytes the disk held at the last agreement AT THIS PATH;
+   *  null = no agreement ever stood here (an agreement reached at another path names no base at this one). */
   readonly syncedHash: string | null;
   /** THE BASE'S RECORDS SIDE: whole-carrier hash of the render the records carried at that agreement.
    *  Null/absent beside a standing `syncedHash` = that one hash names both sides. */
@@ -132,10 +143,11 @@ export interface ProjectionGateInput {
    */
   readonly diskCanonicalHash?: string | null;
   /**
-   * A person's answer to the standoff these very states stand in: take the records' side. The caller
-   * hands it in only where the person named this standoff by its key. Absent = no person answered.
+   * A person's answer for this carrier. `take-records` settles the standoff these very states stand in
+   * (the caller hands it in only where the person named that standoff by its key); `restore` answers a
+   * pending removal. Absent = no person answered.
    */
-  readonly answer?: "take-records";
+  readonly answer?: "take-records" | "restore";
 }
 
 /**
@@ -154,9 +166,11 @@ export function decideProjection(input: ProjectionGateInput): ProjectionDecision
     return { kind: "noop", reason: "disk-matches-records" };
   }
 
-  // 2 — nothing coherent stands on disk: no operator edit can be lost here.
+  // 2 — no content file stands at this path. Where an agreement stood here, the file vanished: a person
+  // answers. Where none did, nothing stands there to lose and the first projection writes.
   if (diskHash === null) {
-    return { kind: "project", reason: "absent-on-disk" };
+    if (syncedHash === null) return { kind: "project", reason: "absent-on-disk" };
+    return input.answer === "restore" ? { kind: "project", reason: "restore-answered" } : { kind: "pending-removal", reason: "vanished" };
   }
 
   // 3 — the two streams SAY THE SAME THING: the carrier stands unchanged and nothing writes.

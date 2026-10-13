@@ -67,7 +67,7 @@ function rig(recordsFields: Record<string, unknown>, syncedHash: string | null):
   const deserializer = jsonDeserializer();
   const recordsRendered = deserializer.renderCarrier(uri, recordsFields);
   const syncedTree = new SyncedTree(join(root, "synced-tree.json"));
-  if (syncedHash !== null) syncedTree.set(syncedTreeKey("wiki", uri), syncedHash);
+  if (syncedHash !== null) syncedTree.set(syncedTreeKey("wiki", uri), join(root, `${uri.replace(/[:/]/g, "_")}.json`), syncedHash);
   const file: CarrierFile = { ext: ".json", body: recordsRendered.body, defaultRelPath: `${uri.replace(/[:/]/g, "_")}.json` };
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: "wiki", mirrorRoot: root }],
@@ -103,6 +103,7 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
     const reframed = `{"b":"2","type":"application/json","a":"1","title":"${URI}"}`;
     expect(readFileSync(diskPath, "utf-8")).toBe(reframed);
     expect(syncedTree.base(syncedTreeKey("wiki", URI))).toEqual({
+      path: diskPath,
       disk: carrierHash(reframed, undefined),
       records: carrierHash(JSON.stringify({ a: "1", b: "2", title: URI, type: "application/json" }, null, 2), undefined),
     });
@@ -131,7 +132,7 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
     const deserializer = jsonDeserializer();
     const anchor = carrierHash(deserializer.renderCarrier(uri, { title: uri, type: "application/json", a: "0", b: "0" }).body, undefined);
     const syncedTree = new SyncedTree(join(root, "synced-tree.json"));
-    syncedTree.set(syncedTreeKey("wiki", uri), anchor);
+    syncedTree.set(syncedTreeKey("wiki", uri), join(root, `${uri.replace(/[:/]/g, "_")}.json`), anchor);
     const recordsRendered = deserializer.renderCarrier(uri, { title: uri, type: "application/json", a: "1", b: "2" });
     const file: CarrierFile = { ext: ".json", body: recordsRendered.body, defaultRelPath: `${uri.replace(/[:/]/g, "_")}.json` };
     const projector = new LarDiskProjector({

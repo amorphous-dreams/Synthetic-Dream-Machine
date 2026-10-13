@@ -40,7 +40,7 @@ function seed(name: string, body: string): { src: string; bagDir: string; tree: 
   const stem = name.replace(/\.[^.]+$/, "");
   const row = scan.rows.find((r) => r.uri === uriOf(stem))!;
   expect(row.status).toBe("new");
-  tree.set(syncedTreeKey(TO_BAG, uriOf(stem)), row.diskHash);
+  tree.set(syncedTreeKey(TO_BAG, uriOf(stem)), row.file, row.diskHash);
   return { src, bagDir, tree, landedHash: row.diskHash };
 }
 
@@ -118,5 +118,18 @@ describe("rename-survival — the observation moves with the carrier (R2)", () =
     expect(scan.renameDeletions).toBeUndefined();  // the live source is never a deletion
     // the source observation stays put
     expect(tree.get(syncedTreeKey(TO_BAG, uriOf("orig")))).toBe(landedHash);
+  });
+
+  test("two arrived files sharing the vanished carrier's content pair with neither: no deletion rides the wave", () => {
+    const body = "# a note two files now hold\n\nthe same bytes twice\n";
+    const { src, bagDir, tree } = seed("old.md", body);
+    rmSync(join(bagDir, "old.md"));
+    writeFileSync(join(bagDir, "new-a.md"), body);
+    writeFileSync(join(bagDir, "new-b.md"), body);
+    const scan2 = scanSource(root, src, TO_BAG, tree)!;
+    // The island's delete gate reads an ambiguous pair as a tombstone; a scan tombstones nothing by itself.
+    expect(scan2.renameDeletions).toBeUndefined();
+    expect(scan2.rows.filter((r) => r.status === "renamed")).toEqual([]);
+    expect(scan2.rows.filter((r) => r.status === "new").map((r) => r.uri).sort()).toEqual([uriOf("new-a"), uriOf("new-b")]);
   });
 });

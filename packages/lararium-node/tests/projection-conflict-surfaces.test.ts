@@ -66,9 +66,27 @@ describe("the projection gate's decision law — clause for clause against the i
       .toEqual({ kind: "noop", reason: "disk-matches-records" });
   });
 
-  test("2 — nothing coherent on disk → project absent-on-disk", () => {
-    expect(decideProjection({ diskHash: null, syncedHash: C, recordsHash: A }))
+  test("2 — no content file and no base at this path → project absent-on-disk (a first projection)", () => {
+    expect(decideProjection({ diskHash: null, syncedHash: null, recordsHash: B }))
       .toEqual({ kind: "project", reason: "absent-on-disk" });
+  });
+
+  test("2 — no content file where a base stands → pending-removal vanished: nothing writes back", () => {
+    expect(decideProjection({ diskHash: null, syncedHash: A, recordsHash: B }))
+      .toEqual({ kind: "pending-removal", reason: "vanished" });
+    // The records' side changes nothing: a later render gives no leave to write the file back.
+    expect(decideProjection({ diskHash: null, syncedHash: A, syncedRecordsHash: A, recordsHash: A }))
+      .toEqual({ kind: "pending-removal", reason: "vanished" });
+    // A person's `restore` writes it back; `take-records` answers a standoff and no vanished file.
+    expect(decideProjection({ diskHash: null, syncedHash: A, recordsHash: B, answer: "restore" }))
+      .toEqual({ kind: "project", reason: "restore-answered" });
+    expect(decideProjection({ diskHash: null, syncedHash: A, recordsHash: B, answer: "take-records" }))
+      .toEqual({ kind: "pending-removal", reason: "vanished" });
+    // CONTROL: `restore` answers a vanished file and nothing else.
+    expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B, answer: "restore" }))
+      .toEqual({ kind: "conflict", reason: "no-base" });
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, answer: "restore" }))
+      .toEqual({ kind: "conflict", reason: "both-moved" });
   });
 
   test("3 — disk's canonical view == records → noop canonical-equivalent (the carrier stands unchanged)", () => {

@@ -125,6 +125,27 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
     listenable: "confluence:resolved",
     payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: "resolved", standoff: info.standoff, resolved: true },
   }),
+  // A file vanished from the path its base names: the projector wrote nothing back and tombstoned nothing.
+  // ONE ALERT PER BAG names the count and rides the same rail under its own ward kind; the set's key names
+  // the audit row and the live alert, and the set's end clears it.
+  onPendingRemoval: (info) => ctx.post({
+    schema_version: 1,
+    type: "event",
+    wikiUri: ctx.wikiUri,
+    listenable: "confluence:pending-removal",
+    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, standoff: info.key },
+  }),
+  onPendingRemovalResolved: (info) => ctx.post({
+    schema_version: 1,
+    type: "event",
+    wikiUri: ctx.wikiUri,
+    listenable: "confluence:pending-removal-resolved",
+    payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: "(none)", reason: "resolved", standoff: info.key, resolved: true },
+  }),
+  // THE `remove` ANSWER'S DELETE DOOR: a hand's delete of the carrier root in this island's wiki. The wiki
+  // shore carries it like any hand delete: its adaptor routes the tombstone (the working layer, shadowing
+  // canon) and removes the slot children.
+  removeCarrier: (uri) => { ctx.tw5.$tw.wiki.deleteTiddler(uri); },
   // WHAT THE DISK BYTES SAY — `render(parse(disk))`, the `≈` seat the projecting leg of
   // the Confluence has no parse of its own to compute. ONE door, the pure subpath (the
   // barrel drags wasm the plugin build cannot bundle, and this is the same congruence the

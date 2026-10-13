@@ -95,7 +95,7 @@ function stand(diskBody: string, opts: { canonicalize: boolean }): {
   // THE MERGE BASE IS LIVE AND STALE — the last projection, which BOTH streams have
   // since moved past. That is the only state clause 7 can reach.
   const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
-  tree.set(syncedTreeKey(BAG, URI), carrierHash("title: records\n\nTHE LAST PROJECTION\n"));
+  tree.set(syncedTreeKey(BAG, URI), join(root, REL), carrierHash("title: records\n\nTHE LAST PROJECTION\n"));
 
   const conflicts: Array<{ bagId: string; uri: string; reason: string }> = [];
   const projector = new LarDiskProjector({
@@ -139,13 +139,13 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     expect(readFileSync(abs, "utf-8")).toBe(DISK_FRAMED);
     // AND the base pinned at this agreement, the disk's bytes on one side and the records' render on
     // the other: the ingest scan reads the file unchanged, and each gate still tells the two apart.
-    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ path: join(root, REL), disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
     expect(conflicts).toHaveLength(0);
 
     // Idempotent: the second pass meets the same agreement and moves nothing.
     await reconcile(projector, URI);
     expect(readFileSync(abs, "utf-8")).toBe(DISK_FRAMED);
-    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ path: join(root, REL), disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
     expect(conflicts).toHaveLength(0);
 
     await stop();
@@ -155,7 +155,7 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     // The agreement pinned earlier: the disk held DISK_FRAMED, the records rendered RECORDS_RENDER.
     // Since then a hand changed the file's MEANING and the records stand where they stood.
     const { projector, stop, conflicts, abs, tree } = stand(DISK_DIVERGED, { canonicalize: true });
-    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK_FRAMED), carrierHash(RECORDS_RENDER));
+    tree.set(syncedTreeKey(BAG, URI), join(root, REL), carrierHash(DISK_FRAMED), carrierHash(RECORDS_RENDER));
 
     await reconcile(projector, URI);
 
@@ -163,14 +163,14 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     // the last agreement so the ingest leg still sees the edit.
     expect(conflicts).toHaveLength(0);
     expect(readFileSync(abs, "utf-8")).toBe(DISK_DIVERGED);
-    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
+    expect(tree.base(syncedTreeKey(BAG, URI))).toEqual({ path: join(root, REL), disk: carrierHash(DISK_FRAMED), records: carrierHash(RECORDS_RENDER) });
 
     await stop();
   });
 
   test("CONTROL — the same edit over a base that names the disk's bytes for both sides surfaces as a standoff", async () => {
     const { projector, stop, conflicts, abs, tree } = stand(DISK_DIVERGED, { canonicalize: true });
-    tree.set(syncedTreeKey(BAG, URI), carrierHash(DISK_FRAMED));
+    tree.set(syncedTreeKey(BAG, URI), join(root, REL), carrierHash(DISK_FRAMED));
 
     await reconcile(projector, URI);
 
@@ -206,7 +206,7 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, DISK_FRAMED, "utf-8");
     const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
-    tree.set(syncedTreeKey(BAG, URI), carrierHash("title: records\n\nTHE LAST PROJECTION\n"));
+    tree.set(syncedTreeKey(BAG, URI), join(root, REL), carrierHash("title: records\n\nTHE LAST PROJECTION\n"));
     const conflicts: Array<{ bagId: string; uri: string; reason: string }> = [];
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: BAG, mirrorRoot: root }],

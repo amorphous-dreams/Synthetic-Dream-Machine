@@ -51,6 +51,8 @@ type WikiShape = {
     deleteTiddler(title: string): void;
     getTiddler(title: string): { fields: Record<string, unknown> } | undefined;
     allTitles(): string[];
+    addEventListener(type: string, listener: (changes: Record<string, unknown>) => void): void;
+    removeEventListener(type: string, listener: (changes: Record<string, unknown>) => void): void;
   };
 };
 
@@ -153,19 +155,43 @@ export class ShoreRig {
     return { ...settled, scanned: scan.rows };
   }
 
+  /**
+   * THE WIKI'S OWN CHANGE HANDSHAKE. TW5 dispatches `change` in a later turn than the write. The rig arms
+   * a listener BEFORE it writes and waits for that dispatch, so the projector's queue holds the marks
+   * before the rig asks it for idle. No span of time stands in for the dispatch.
+   */
+  private async written(write: () => number | void | Promise<number | void>): Promise<void> {
+    const $tw = this.$tw;
+    let seen!: () => void;
+    const dispatched = new Promise<void>((resolve) => { seen = resolve; });
+    const listener = (): void => { seen(); };
+    $tw.wiki.addEventListener("change", listener);
+    try {
+      const writes = await write();
+      if (writes !== 0) await dispatched;
+    } finally {
+      $tw.wiki.removeEventListener("change", listener);
+    }
+    await this.idle();
+  }
+
   /** A WAVE LANDS: the wiki comes to hold what the bag's store holds, each record stamped with its bag. */
   async land(): Promise<void> {
     const $tw = this.$tw;
-    const live = new Set(await this.store.listVisible());
-    for (const title of $tw.wiki.allTitles()) {
-      if ($tw.wiki.getTiddler(title)?.fields["$origin-bag"] === RIG_BAG && !live.has(title)) $tw.wiki.deleteTiddler(title);
-    }
-    for (const title of live) {
-      const rec = await this.store.get(title);
-      if (!rec || rec.meta?.deleted) continue;
-      $tw.wiki.addTiddler(new $tw.Tiddler(rec.tiddler as Record<string, unknown>, { "$origin-bag": RIG_BAG }));
-    }
-    await this.idle();
+    await this.written(async () => {
+      let writes = 0;
+      const live = new Set(await this.store.listVisible());
+      for (const title of $tw.wiki.allTitles()) {
+        if ($tw.wiki.getTiddler(title)?.fields["$origin-bag"] === RIG_BAG && !live.has(title)) { $tw.wiki.deleteTiddler(title); writes++; }
+      }
+      for (const title of live) {
+        const rec = await this.store.get(title);
+        if (!rec || rec.meta?.deleted) continue;
+        $tw.wiki.addTiddler(new $tw.Tiddler(rec.tiddler as Record<string, unknown>, { "$origin-bag": RIG_BAG }));
+        writes++;
+      }
+      return writes;
+    });
   }
 
   /** A HAND IN THE WIKI: replace one tiddler's text. */
@@ -173,8 +199,7 @@ export class ShoreRig {
     const $tw = this.$tw;
     const held = $tw.wiki.getTiddler(title);
     if (!held) throw new Error(`rig: the wiki holds no ${title}`);
-    $tw.wiki.addTiddler(new $tw.Tiddler(held.fields, { text }));
-    await this.idle();
+    await this.written(() => { $tw.wiki.addTiddler(new $tw.Tiddler(held.fields, { text })); });
   }
 
   titlesOf(uri: string): string[] {
@@ -198,6 +223,7 @@ export class ShoreRig {
       ...({
         onPendingRemoval: (info: Record<string, unknown>) => { this.pendings.push(info); },
         onPendingRemovalResolved: (info: Record<string, unknown>) => { this.pendingsResolved.push(info); },
+        removeCarrier: (uri: string) => this.wikiDelete(uri),
       } as Partial<LarDiskProjectorOptions>),
       ...(opts.extra ?? {}),
     });
@@ -207,10 +233,34 @@ export class ShoreRig {
 
   async idle(): Promise<void> {
     if (!this.stop) return;
-    // The alert a quiet queue raises rides one more host turn behind the queue's own idle.
     await this.projector.idle();
-    await new Promise<void>((resolve) => setImmediate(resolve));
-    await this.projector.idle();
+  }
+
+  /**
+   * A HAND'S DELETE IN THE WIKI, as the wiki shore carries it: the root leaves the wiki, the shore's adaptor
+   * removes its slot children and lands each tombstone. The rig holds one bag and no working layer, so the
+   * tombstones land in that bag; the layer a tombstone lands in belongs to the adaptor's own vectors.
+   */
+  readonly removed: string[] = [];
+  async wikiDelete(uri: string): Promise<void> {
+    this.removed.push(uri);
+    // The dispatch alone gets awaited here: the projector calls this door from inside its own answer, and
+    // that answer waits for the queue itself.
+    const $tw = this.$tw;
+    let seen!: () => void;
+    const dispatched = new Promise<void>((resolve) => { seen = resolve; });
+    const listener = (): void => { seen(); };
+    $tw.wiki.addEventListener("change", listener);
+    try {
+      const titles = this.titlesOf(uri);
+      for (const title of titles) {
+        $tw.wiki.deleteTiddler(title);
+        await this.store.tombstone(title, { kind: "lares-verb", requestId: `rig-delete-${this.removed.length}` });
+      }
+      if (titles.length > 0) await dispatched;
+    } finally {
+      $tw.wiki.removeEventListener("change", listener);
+    }
   }
 
   /** THE VESSEL RESTS: its projector stops; the disk and the records stay as they stand. */

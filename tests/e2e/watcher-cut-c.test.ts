@@ -2,18 +2,19 @@
  * watcher-cut-c.test.ts — Cut C: the file-watcher's end-to-end witness
  * (NEXT VECTOR build 4, the deferred cut; handoff #watcher-talk-story).
  *
- * The §6 deletion machinery — grace window, mass-delete brake, rename re-link —
- * ran unit-green but had never been WATCHED end-to-end. A one-shot `lares
- * ingest` walks disk, so a vanished carrier never appears in its scan; only the
- * long-lived `lares watch` daemon, tracking what it last saw, can witness a
- * deletion. So this vector drives the real watcher process and moves the disk:
+ * A one-shot `lares ingest` walks disk, so a vanished carrier never appears in its
+ * scan; the long-lived `lares watch` daemon, tracking what it last saw, witnesses a
+ * vanish. The watcher tombstones nothing by itself and holds no clock over a vanish:
+ * it hands each vanished address to the vessel's shore, where the carrier stands as a
+ * PENDING REMOVAL until a person answers through `lares shore`. This vector drives the
+ * real watcher process, the real vessel and the real answer door, and moves the disk:
  *
  *   live   — the cookie self-test fires on ext4 (a dead backend fails closed)
  *   coalesce — rapid edits drain to ONE wave, not per-keystroke dribbles
- *   transient — a delete+recreate inside the grace window self-heals (no tombstone)
- *   rename — a delete + same-bytes add inside grace re-links (identity preserved)
- *   brake  — tombstones above the fraction suspend the whole wave, applying nothing
- *   delete — a confirmed vanish (grace expired, no pairing) tombstones the carrier
+ *   transient — a delete+recreate leaves nothing pending and tombstones nothing
+ *   rename — a delete + same-bytes add re-links by content (identity preserved)
+ *   mass   — three vanished files read as ONE count; a wrong count refuses; `restore` returns them
+ *   remove — a vanished file stays gone and unwritten until `remove` deletes its carrier in the wiki
  *
  * Staged-only (mutating, spawns watcher daemons). Carriers template from the
  * small canonical `tick.mem` with the URI slug swapped — cheap to parse, lands
@@ -69,7 +70,7 @@ interface WatchProc {
 }
 
 /** Spawn `lares watch --apply` against the staged vessel; stream its log. */
-function spawnWatch(opts: { grace: number; fraction: number }): WatchProc {
+function spawnWatch(): WatchProc {
   let log = "";
   const child = spawn(
     process.execPath,
@@ -77,8 +78,6 @@ function spawnWatch(opts: { grace: number; fraction: number }): WatchProc {
       CLI_BIN, "watch",
       "--source", SRC, "--to", LARES_URI, "--apply",
       "--debounce", "150",
-      "--delete-grace", String(opts.grace),
-      "--delete-fraction", String(opts.fraction),
     ],
     { cwd: REPO_ROOT, env: { ...process.env, LAR_ROOT: lar.root, LAR_PORT: String(lar.port) } },
   );
@@ -138,7 +137,7 @@ afterAll(async () => { await lar.stop(); });
 describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
   test("live + coalesce — backend self-test fires; rapid edits drain to ONE wave", async () => {
     if (lar.mode !== "staged") return;
-    const w = spawnWatch({ grace: 1_000, fraction: 0.5 });
+    const w = spawnWatch();
     try {
       await w.waitFor(/backend live/);          // cookie echoed on ext4 — fails closed if dead
       await w.waitFor(/watching/);
@@ -166,33 +165,42 @@ describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
     }
   }, 60_000);
 
-  test("transient delete — delete+recreate inside grace self-heals, no tombstone", async () => {
+  /** What the vessel's shore holds pending, as `lares shore --json` answers it (the list looks at the disk first). */
+  async function pendingUris(): Promise<string[]> {
+    const r = await cli(["shore", "list", "--json"]);
+    const data = r.json?.["data"] as Record<string, unknown> | undefined;
+    if (!data) throw new Error(`lares shore answered no data: ${JSON.stringify(r.json)}\n${r.stderr.slice(-600)}`);
+    return ((data["pending"] as Array<Record<string, unknown>>) ?? []).map((p) => String(p["uri"]));
+  }
+
+  test("transient vanish — delete+recreate leaves nothing pending and tombstones nothing", async () => {
     if (lar.mode !== "staged") return;
-    const w = spawnWatch({ grace: 1_200, fraction: 0.5 });
+    const w = spawnWatch();
     try {
       await w.waitFor(/watching/);
       const path = carrierPath("cutc-trans");
       const bytes = readFileSync(path, "utf8");
 
       rmSync(path);                              // a transient vanish (git-checkout flood shape)
-      await sleep(350);                          // well inside the 1.2s grace
-      writeFileSync(path, bytes);                // returns, byte-identical → self-heal
+      await w.waitFor(/vanished from disk/);     // the watcher saw it leave, and tombstoned nothing
+      writeFileSync(path, bytes);                // returns, byte-identical
+      await w.waitFor(/touched · 0 changed/);    // the watcher saw it return
 
-      await sleep(2_200);                        // past the grace deadline
       expect(existsSync(path), "the recreated carrier survives").toBe(true);
+      expect(readFileSync(path, "utf8")).toBe(bytes);
+      expect(await pendingUris()).not.toContain(carrierUri("cutc-trans"));
       expect(w.log()).not.toMatch(/TOMBSTONE\s+\S*cutc-trans/);
-      // THE COUNT IS THE CLAIM, so the pattern names a NON-ZERO one: `deletion(s) submitted`
-      // alone also matches the `0 deletion(s) submitted` a wave carrying only changes prints,
-      // and a slack assertion holds green over a watcher that tombstones nothing at all.
-      expect(w.log()).not.toMatch(/[1-9]\d* deletion\(s\) submitted/);
+      // THE COUNT IS THE CLAIM, so the pattern names a NON-ZERO one: a wave carrying only changes
+      // prints `0 rename(s) submitted`.
+      expect(w.log()).not.toMatch(/[1-9]\d* rename\(s\) submitted/);
     } finally {
       await w.stop();
     }
-  }, 60_000);
+  }, 90_000);
 
-  test("rename — delete + same-bytes add inside grace re-links the record", async () => {
+  test("rename — delete + same-bytes add re-links the record by content", async () => {
     if (lar.mode !== "staged") return;
-    const w = spawnWatch({ grace: 2_000, fraction: 0.5 });
+    const w = spawnWatch();
     try {
       await w.waitFor(/watching/);
       const from = carrierPath("cutc-ren");
@@ -204,44 +212,64 @@ describe("watcher Cut C — the disk peer witnessed end-to-end", () => {
       rmSync(from);
 
       await w.waitFor(/RENAME/);                 // unique-hash match → re-link, not tombstone+create
-      await sleep(1_000);
       expect(existsSync(to), "the renamed carrier holds its new name").toBe(true);
       expect(w.log()).not.toMatch(/TOMBSTONE\s+\S*cutc-ren\b/);
+      expect(await pendingUris()).not.toContain(carrierUri("cutc-ren"));
     } finally {
       await w.stop();
     }
-  }, 60_000);
+  }, 90_000);
 
-  test("mass-delete brake — tombstones above the fraction suspend the whole wave", async () => {
+  test("mass vanish — three files read as one count; nothing tombstones; a wrong count refuses; restore returns them", async () => {
     if (lar.mode !== "staged") return;
-    // 3 deletes against ~7 live roots at fraction 0.25 → 3 > 1.75 → suspend.
-    const w = spawnWatch({ grace: 900, fraction: 0.25 });
+    const w = spawnWatch();
+    const slugs = ["cutc-brake-1", "cutc-brake-2", "cutc-brake-3"];
     try {
       await w.waitFor(/watching/);
-      rmSync(carrierPath("cutc-brake-1"));
-      rmSync(carrierPath("cutc-brake-2"));
-      rmSync(carrierPath("cutc-brake-3"));
+      const bytes = new Map(slugs.map((slug) => [slug, readFileSync(carrierPath(slug), "utf8")] as const));
+      for (const slug of slugs) rmSync(carrierPath(slug));
 
-      await w.waitFor(/mass-delete brake TRIPPED/, 15_000);
-      // Suspend applies NOTHING — no carrier of this wave tombstoned.
+      await w.waitFor(/stand pending at the vessel's shore/, 30_000);
+      const pending = await pendingUris();
+      for (const slug of slugs) expect(pending).toContain(carrierUri(slug));
+      for (const slug of slugs) expect(existsSync(carrierPath(slug)), `${slug} stays unwritten while it pends`).toBe(false);
       expect(w.log()).not.toMatch(/TOMBSTONE\s+\S*cutc-brake/);
+
+      // An answer over many names the count that stands. One short refuses and changes nothing.
+      const short = await cli(["shore", "restore", "--all", "--count", String(pending.length + 1), "--yes", "--json"]);
+      expect(short.json?.["ok"]).toBe(false);
+      expect((short.json?.["error"] as Record<string, unknown>)["code"]).toBe("pending-count-moved");
+      for (const slug of slugs) expect(existsSync(carrierPath(slug))).toBe(false);
+
+      const restored = await cli(["shore", "restore", "--all", "--count", String(pending.length), "--yes", "--json"]);
+      expect(restored.json?.["ok"], JSON.stringify(restored.json)).toBe(true);
+      for (const slug of slugs) expect(readFileSync(carrierPath(slug), "utf8")).toBe(bytes.get(slug));
+      expect(await pendingUris()).toEqual([]);
     } finally {
       await w.stop();
     }
-  }, 60_000);
+  }, 120_000);
 
-  test("confirmed delete — a vanish past grace with no pairing tombstones the carrier", async () => {
+  test("remove — a vanished file stays gone and unwritten until a person removes its carrier in the wiki", async () => {
     if (lar.mode !== "staged") return;
-    const w = spawnWatch({ grace: 900, fraction: 0.5 });
+    const w = spawnWatch();
     try {
       await w.waitFor(/watching/);
       const path = carrierPath("cutc-del");
-      rmSync(path);                              // a real, confirmed removal
+      rmSync(path);                              // a hand's delete
 
-      await w.waitFor(/TOMBSTONE\s+lar:\/\/\/ha\.ka\.ba\/lares\/api\/pono\/cutc-del/, 15_000);
-      expect(existsSync(path), "a tombstoned carrier stays gone from disk").toBe(false);
+      await w.waitFor(/stand pending at the vessel's shore/, 30_000);
+      expect(await pendingUris()).toEqual([carrierUri("cutc-del")]);
+      expect(existsSync(path), "nothing writes the file back while it pends").toBe(false);
+      expect(w.log()).not.toMatch(/TOMBSTONE\s+\S*cutc-del/);
+
+      const removed = await cli(["shore", "remove", carrierUri("cutc-del"), "--yes", "--json"]);
+      expect(removed.json?.["ok"], JSON.stringify(removed.json)).toBe(true);
+      expect((removed.json?.["data"] as Record<string, unknown>)["done"]).toEqual([carrierUri("cutc-del")]);
+      expect(existsSync(path), "a removed carrier stays gone from disk").toBe(false);
+      expect(await pendingUris()).toEqual([]);
     } finally {
       await w.stop();
     }
-  }, 60_000);
+  }, 120_000);
 });

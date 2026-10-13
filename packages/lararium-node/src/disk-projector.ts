@@ -126,6 +126,23 @@ export interface LarDiskProjectorOptions {
    */
   readonly onConflictResolved?: (info: { bagId: string; uri: string; standoff: string }) => void;
   /**
+   * Fired when the set of this bag's PENDING REMOVALS settles at a new membership: carriers whose file
+   * vanished from the path their base names. The projector writes none of them back and tombstones none;
+   * a person answers (`answerRemovals`). ONE CALL PER SETTLED SET: the projector raises it when its
+   * reconcile queue drains, so a branch switch that removes five hundred files reads as one call naming
+   * the count. `key` names the set (the bag and its sorted members); a set that changed reads as a new one.
+   */
+  readonly onPendingRemoval?: (info: { bagId: string; key: string; count: number; uris: readonly string[]; reason: string }) => void;
+  /** Fired once when a surfaced pending-removal set stands no longer: it emptied, or its membership moved. */
+  readonly onPendingRemovalResolved?: (info: { bagId: string; key: string }) => void;
+  /**
+   * A HAND'S DELETE IN THE WIKI, for the `remove` answer: delete the carrier root where the wiki shore
+   * sees it, so the shore's own router lands the tombstone (the working layer, shadowing canon) and
+   * removes the slot children. Absent → a `remove` answer refuses by name: this projector holds no
+   * delete door.
+   */
+  readonly removeCarrier?: (uri: string) => void | Promise<void>;
+  /**
    * WHAT THE DISK BYTES SAY — `render(parse(diskText))` for the memetic-wikitext family
    * (`@lararium/tw5/carrier-canonical`, the ONE door; the pure subpath, no wasm). Feeds
    * `decideProjection`'s canonical-equivalence clause, which is what tells the ORDINARY
@@ -293,6 +310,17 @@ export class LarDiskProjector {
   private readonly standoffs = new Map<string, string>();
   /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
   private readonly answered = new Map<string, string>();
+  /** Every carrier whose file vanished from the path its base names, by (bag, carrier). Memory only: a boot's mount scan finds each anew. */
+  private readonly pending = new Map<string, { readonly bagId: string; readonly uri: string; readonly path: string }>();
+  /** The pending removals a person answered `restore` for. Read once, by the reconcile the answer starts. */
+  private readonly restoreAsked = new Set<string>();
+  /** The pending-removal set surfaced for each bag, by its key. */
+  private readonly pendingSurfaced = new Map<string, string>();
+  /** True while a pending set moved and its surfacing waits for the reconcile queue to drain. */
+  private pendingMoved = false;
+  private readonly onPendingRemoval: LarDiskProjectorOptions["onPendingRemoval"];
+  private readonly onPendingRemovalResolved: LarDiskProjectorOptions["onPendingRemovalResolved"];
+  private readonly removeCarrier: LarDiskProjectorOptions["removeCarrier"];
   private readonly canonicalizeFn: ((uri: string, diskText: string) => string | null) | undefined;
   private readonly canonicalizeNativeFn:
     | ((uri: string, ext: string, diskBody: string, diskMeta: string | undefined) => { readonly body: string; readonly metaBody?: string } | null)
@@ -309,6 +337,9 @@ export class LarDiskProjector {
     this.onRefusal    = opts.onRefusal;
     this.onConflict   = opts.onConflict;
     this.onConflictResolved = opts.onConflictResolved;
+    this.onPendingRemoval = opts.onPendingRemoval;
+    this.onPendingRemovalResolved = opts.onPendingRemovalResolved;
+    this.removeCarrier = opts.removeCarrier;
     this.canonicalizeFn = opts.canonicalizeFn;
     this.canonicalizeNativeFn = opts.canonicalizeNativeFn;
     this.readinessMap = opts.readinessMap;
@@ -388,9 +419,10 @@ export class LarDiskProjector {
     return async () => { wiki.removeEventListener?.("change", handler); await this.stop(); };
   }
 
-  /** Resolve when no reconcile runs and no root waits in the queue. */
-  idle(): Promise<void> {
-    return this.gate?.idle() ?? Promise.resolve();
+  /** Resolve when no reconcile runs and no root waits in the queue, and every pending-removal set that moved has surfaced. */
+  async idle(): Promise<void> {
+    await (this.gate?.idle() ?? Promise.resolve());
+    this._surfacePending();
   }
 
   async stop(): Promise<void> {
@@ -482,17 +514,20 @@ export class LarDiskProjector {
     if (isVolatileVmUri(rootUri)) return;
     const tiddler = this._tw5?.$tw.wiki.getTiddler?.(rootUri);
     if (!tiddler) {
+      // The resolved view holds no such carrier: nothing stands to write back, so no removal stays pending.
+      this._leavePendingExcept(rootUri);
       await this._scheduleUnlinkByTitle(rootUri);
       return;
     }
     const fields = tiddler.fields as Record<string, string | string[] | undefined>;
     // A carrier that stopped projecting, or left for another bag, leaves every standoff it stood in
     // where it no longer projects: the alert names a conflict this projector no longer weighs.
-    if (fields["disk-projection"] === "no") { this._leaveStandoffsExcept(rootUri); return; }
+    if (fields["disk-projection"] === "no") { this._leaveStandoffsExcept(rootUri); this._leavePendingExcept(rootUri); return; }
     // The host's provenance stamp (nalu-engine) names the mirror; `bag` is the author's field.
     const bagId = typeof fields["$origin-bag"] === "string" ? fields["$origin-bag"] : undefined;
-    if (!bagId || !this.mirrors.some((m) => m.bagId === bagId)) { this._leaveStandoffsExcept(rootUri); return; }
+    if (!bagId || !this.mirrors.some((m) => m.bagId === bagId)) { this._leaveStandoffsExcept(rootUri); this._leavePendingExcept(rootUri); return; }
     this._leaveStandoffsExcept(rootUri, bagId);
+    this._leavePendingExcept(rootUri, bagId);
     await this.flush(bagId, rootUri);
   }
 
@@ -579,6 +614,136 @@ export class LarDiskProjector {
     for (const mirror of this.mirrors) if (mirror.bagId !== keepBag) this._leaveStandoff(mirror.bagId, uri);
   }
 
+  /** This carrier's file vanished from the path its base names: it stands pending until a person answers or the file returns. */
+  private _enterPending(bagId: string, uri: string, path: string): void {
+    const key = sitedKey(bagId, uri);
+    if (this.pending.get(key)?.path === path) return;
+    this.pending.set(key, { bagId, uri, path });
+    this._pendingSetMoved();
+  }
+
+  private _leavePending(bagId: string, uri: string): void {
+    if (this.pending.delete(sitedKey(bagId, uri))) this._pendingSetMoved();
+  }
+
+  /** Leave the pending removal this carrier stands in under every mirror but `keepBag` (none kept when absent). */
+  private _leavePendingExcept(uri: string, keepBag?: string): void {
+    if (this.pending.size === 0) return;
+    for (const mirror of this.mirrors) if (mirror.bagId !== keepBag) this._leavePending(mirror.bagId, uri);
+  }
+
+  /**
+   * A pending set moved. ITS SURFACING WAITS FOR THE QUEUE TO DRAIN, by the queue's own idle handshake
+   * and no timer: a mount scan that finds five hundred vanished files raises one alert naming the count.
+   */
+  private _pendingSetMoved(): void {
+    if (this.pendingMoved) return;
+    this.pendingMoved = true;
+    void (this.gate?.idle() ?? Promise.resolve()).then(() => { this._surfacePending(); });
+  }
+
+  /** Surface each bag's pending-removal set where its membership moved since the last surfacing. */
+  private _surfacePending(): void {
+    if (!this.pendingMoved) return;
+    this.pendingMoved = false;
+    const byBag = new Map<string, string[]>();
+    for (const p of this.pending.values()) byBag.set(p.bagId, [...(byBag.get(p.bagId) ?? []), p.uri]);
+    for (const bagId of new Set([...this.pendingSurfaced.keys(), ...byBag.keys()])) {
+      const uris = (byBag.get(bagId) ?? []).sort();
+      const key = uris.length === 0 ? undefined
+        : sha256HexBytesSync(new TextEncoder().encode([bagId, "pending-removal", ...uris].join("\n"))).slice(0, 24);
+      const surfaced = this.pendingSurfaced.get(bagId);
+      if (surfaced === key) continue;
+      if (surfaced !== undefined) { this.pendingSurfaced.delete(bagId); this.onPendingRemovalResolved?.({ bagId, key: surfaced }); }
+      if (key === undefined) continue;
+      this.pendingSurfaced.set(bagId, key);
+      const named = uris.slice(0, 5);
+      const reason = `${uris.length} carrier(s) vanished from disk where a base stands (${named.join(", ")}${uris.length > named.length ? ", …" : ""}); nothing writes back and nothing tombstones until a person answers: \`lares shore remove\` or \`lares shore restore\``;
+      console.error(`[confluence] pending removal (${bagId}): ${reason}`);
+      this.onPendingRemoval?.({ bagId, key, count: uris.length, uris: named, reason });
+    }
+  }
+
+  /** Every carrier that stands pending right now: its bag, its address and the path its file left. */
+  pendingRemovals(): Array<{ readonly bagId: string; readonly uri: string; readonly path: string }> {
+    return [...this.pending.values()].sort((a, b) => a.bagId.localeCompare(b.bagId) || a.uri.localeCompare(b.uri));
+  }
+
+  /**
+   * LOOK AT THE DISK NOW. The projector reads the disk only when a reconcile runs, and a file a hand
+   * moved raises no change in the wiki. `sense` reconciles the named carrier roots (every root this
+   * projector mirrors, when none get named) and returns once the queue drains: a vanished file enters the
+   * pending set, a returned one leaves it, and every standoff reads against the bytes that stand.
+   */
+  async sense(uris?: readonly string[]): Promise<void> {
+    const roots = uris ?? this.mirroredRoots();
+    if (this.gate === null) { for (const uri of roots) await this.reconcile(uri); this._surfacePending(); return; }
+    for (const uri of roots) this.gate.mark(uri);
+    await this.idle();
+  }
+
+  /** Every carrier root in the wiki whose `$origin-bag` names one of this projector's mirrors. */
+  private mirroredRoots(): string[] {
+    const wiki = this._tw5?.$tw.wiki as unknown as { allTitles?: () => string[]; getTiddler?: (t: string) => { fields: Record<string, unknown> } | undefined } | undefined;
+    const roots: string[] = [];
+    for (const title of wiki?.allTitles?.() ?? []) {
+      if (title.includes("#")) continue;
+      const bagId = wiki?.getTiddler?.(title)?.fields["$origin-bag"];
+      if (typeof bagId === "string" && this.mirrors.some((m) => m.bagId === bagId)) roots.push(title);
+    }
+    return roots;
+  }
+
+  /**
+   * A PERSON ANSWERS PENDING REMOVALS in one bag: `restore` writes each file back from the records and
+   * pins its base; `remove` deletes each carrier in the wiki through the wiki shore's own delete door
+   * (`removeCarrier`), so the tombstone lands where a hand's delete lands. `remove` leaves the base in
+   * the tree: a carrier that later returns from beneath its tombstone reads as pending again and asks its
+   * person afresh.
+   *
+   * THE COUNT REPLACES A FRACTION. An answer over more than one carrier, or over `all`, names how many
+   * carriers its giver read as pending in the bag. A count that moved refuses and changes nothing, so no
+   * answer ever sweeps a carrier its giver never saw.
+   */
+  async answerRemovals(
+    act: "remove" | "restore", bagId: string,
+    sel: { readonly uris?: readonly string[]; readonly all?: boolean; readonly count?: number },
+  ): Promise<
+    | { readonly ok: true; readonly done: readonly string[]; readonly left: readonly string[] }
+    | { readonly ok: false; readonly refusal: "not-pending" | "pending-count-moved" | "no-delete-door" | "answer-names-nothing"; readonly why: string; readonly count?: number }
+  > {
+    const inBag = this.pendingRemovals().filter((p) => p.bagId === bagId).map((p) => p.uri);
+    const asked = sel.all ? inBag : [...new Set(sel.uris ?? [])];
+    if (asked.length === 0) {
+      return sel.all
+        ? { ok: false, refusal: "not-pending", why: `no carrier of ${bagId} stands pending`, count: 0 }
+        : { ok: false, refusal: "answer-names-nothing", why: "the answer names a carrier, or `all` with the count" };
+    }
+    const stray = asked.filter((uri) => !inBag.includes(uri));
+    if (stray.length > 0) return { ok: false, refusal: "not-pending", why: `${stray.join(", ")} stand(s) in no pending removal of ${bagId}`, count: inBag.length };
+    if ((sel.all || asked.length > 1) && sel.count !== inBag.length) {
+      return { ok: false, refusal: "pending-count-moved", why: `${inBag.length} carrier(s) of ${bagId} stand pending; the answer names ${sel.count ?? "no count"}`, count: inBag.length };
+    }
+    if (act === "remove") {
+      if (!this.removeCarrier) return { ok: false, refusal: "no-delete-door", why: "this projector holds no wiki delete door" };
+      for (const uri of asked) {
+        await this.removeCarrier(uri);
+        // The carrier left the resolved view by a hand's delete: nothing stands to write back.
+        this._leavePending(bagId, uri);
+      }
+    } else {
+      for (const uri of asked) this.restoreAsked.add(sitedKey(bagId, uri));
+      try {
+        await this.sense(asked);
+      } finally {
+        for (const uri of asked) this.restoreAsked.delete(sitedKey(bagId, uri));
+      }
+    }
+    await this.idle();
+    const still = new Set(this.pendingRemovals().filter((p) => p.bagId === bagId).map((p) => p.uri));
+    return { ok: true, done: asked.filter((uri) => !still.has(uri)), left: asked.filter((uri) => still.has(uri)) };
+  }
+
   private async _scheduleUnlinkByTitle(title: string): Promise<void> {
     if (this.bagsHolding) this.measure.holdsSinceChange++;
     const holdingBags = this.bagsHolding ? new Set(await this.bagsHolding(title)) : null;
@@ -635,23 +800,23 @@ export class LarDiskProjector {
    * because the Synced-tree observation and the ingest gesture both hash that base64 text
    * (the carrier text), never the decoded bytes; only the physical file holds those.
    *
-   * Returns null for an INCOMPLETE carrier — no content file, or a missing `.meta` beside a
-   * filetype that declares one. Null is the gate's `absent-on-disk`: nothing coherent stands
-   * there to lose. An unreadable file reads the same way, and that is deliberate — the write
-   * that follows replaces bytes this shore cannot read, which loses no edit it could ever
-   * have surfaced.
+   * Returns null where NO CONTENT FILE stands: the gate's clause 2 (a first projection, or a
+   * vanished file where a base stands). A content file whose declared `.meta` left reads as a
+   * disk state of its own: the body alone, `sidecarGone` set. That state equals no render and no
+   * canonical view, so the base clauses decide it and a hand's body never gives way on the
+   * strength of a missing sidecar. An unreadable content file reads as absent.
    */
   private diskCarrierText(
     candidate: string,
     metaPath: string | null,
     isBinary: boolean,
-  ): { readonly body: string; readonly meta: string | undefined } | null {
+  ): { readonly body: string; readonly meta: string | undefined; readonly sidecarGone: boolean } | null {
     try {
       if (!existsSync(candidate)) return null;
       const body = isBinary ? readFileSync(candidate).toString("base64") : readFileSync(candidate, "utf-8");
-      if (metaPath === null) return { body, meta: undefined };
-      if (!existsSync(metaPath)) return null;
-      return { body, meta: readFileSync(metaPath, "utf-8") };
+      if (metaPath === null) return { body, meta: undefined, sidecarGone: false };
+      if (!existsSync(metaPath)) return { body, meta: undefined, sidecarGone: true };
+      return { body, meta: readFileSync(metaPath, "utf-8"), sidecarGone: false };
     } catch { return null; }
   }
 
@@ -760,8 +925,9 @@ export class LarDiskProjector {
         ? readFileSync(candidate).equals(writeBytes as Buffer)
         : contentHash(readFileSync(candidate, "utf-8")) === outputHash);
       if (bodyInSync && metaInSync) {
-        this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
+        this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, obsHash);
         this._leaveStandoff(bagId, tiddlerUri);
+        this._leavePending(bagId, tiddlerUri);
         return;
       }
       if (bodyPending && metaInSync) return;
@@ -785,7 +951,7 @@ export class LarDiskProjector {
       // above already answers). Absent from either door hands the gate null, which reads
       // as the standoff, never as equivalence.
       const diskCanonicalHash = (() => {
-        if (onDisk === null) return null;
+        if (onDisk === null || onDisk.sidecarGone) return null;
         if (file.ext === MEME_EXT) {
           const canonicalText = this.canonicalizeFn ? this.canonicalizeFn(tiddlerUri, onDisk.body) : null;
           return canonicalText === null ? null : carrierHash(canonicalText, onDisk.meta);
@@ -797,7 +963,8 @@ export class LarDiskProjector {
         return null;
       })();
       const diskHash = onDisk === null ? null : carrierHash(onDisk.body, onDisk.meta);
-      let base = this.syncedTree.base(syncedTreeKey(bagId, tiddlerUri)) ?? null;
+      // A BASE STANDS AT ONE PATH: an agreement this carrier reached at another path names no base here.
+      let base = this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate);
       // ONE STANDOFF, ONE KEY: the bag, the carrier and the two states. A person's answer names this key,
       // and the gate hears the answer only where the states that stand now fold to the key the person named.
       const standoff = sha256HexBytesSync(new TextEncoder().encode([mirror.bagId, tiddlerUri, diskHash ?? "", obsHash].join("\n"))).slice(0, 24);
@@ -808,16 +975,25 @@ export class LarDiskProjector {
         syncedRecordsHash: base?.records ?? null,
         recordsHash:       obsHash,
         diskCanonicalHash,
-        ...(this.answered.get(key) === standoff ? { answer: "take-records" as const } : {}),
+        ...(this.answered.get(key) === standoff ? { answer: "take-records" as const }
+          : this.restoreAsked.has(key) ? { answer: "restore" as const } : {}),
       });
       let decision = decideProjection(gateInput());
-      // A SIBLING MAY HAVE PINNED A BASE since this projector loaded the tree (another island, the ingest
-      // gesture). Before a divergence surfaces, the tree reads afresh and the gate decides again.
-      if (decision.kind === "conflict") {
+      // A SIBLING MAY HAVE MOVED THE BASE since this projector loaded the tree (another island, the ingest
+      // gesture). Before anything writes, surfaces or pends, the tree reads afresh and the gate decides again.
+      if (decision.kind !== "noop") {
         this.syncedTree.reread();
-        base = this.syncedTree.base(syncedTreeKey(bagId, tiddlerUri)) ?? null;
+        base = this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate);
         decision = decideProjection(gateInput());
       }
+      if (decision.kind === "pending-removal") {
+        // THE FILE VANISHED WHERE A BASE STANDS. Nothing writes back and nothing tombstones; the base stays,
+        // and the carrier stands pending until a person answers or the file returns.
+        this._leaveStandoff(bagId, tiddlerUri);
+        this._enterPending(bagId, tiddlerUri, candidate);
+        return;
+      }
+      this._leavePending(bagId, tiddlerUri);
       if (decision.kind === "noop") {
         // THE DISK AND THE RECORDS SAY THE SAME THING IN TWO FRAMINGS: the carrier stands unchanged, so
         // no byte writes. The base pins at this agreement, the disk's bytes on one side and the records'
@@ -825,7 +1001,7 @@ export class LarDiskProjector {
         // later disk edit from a later record edit. A base that already names this agreement stays put.
         if (decision.reason === "canonical-equivalent" && diskHash !== null
             && !(base !== null && base.disk === diskHash && base.records === obsHash)) {
-          this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), diskHash, obsHash);
+          this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash, obsHash);
         }
         this._leaveStandoff(bagId, tiddlerUri);
         return;
@@ -863,7 +1039,7 @@ export class LarDiskProjector {
       // body with a stale sidecar.
       if (metaPath !== null) this.atomicWrite(metaPath, metaBody!);
       // The observation names the WHOLE carrier — a pending body leaves no observation to name.
-      if (!bodyPending) this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
+      if (!bodyPending) this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, obsHash);
       if (this.debugJson && this._tw5) {
         const jsonStr = (this._tw5.$tw.wiki as { getTiddlerAsJson?: (t: string) => string })
           .getTiddlerAsJson?.(tiddlerUri);

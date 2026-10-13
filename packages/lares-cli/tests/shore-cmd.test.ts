@@ -7,7 +7,8 @@
  */
 import { describe, test, expect } from "vitest";
 import { VERB_RESULT_KEY } from "@lararium/mesh";
-import { SHORE_ACTS, SHORE_VERB, readShoreAnswer, shoreArgs } from "../src/commands/shore.js";
+import { SHORE_ACTS, shoreArgs } from "../src/commands/shore.js";
+import { SHORE_VERB, askShore, readShoreAnswer } from "../src/shore-core.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import type { SubmitResult } from "../src/verb-result.js";
 import { COMMANDS } from "../src/bin/lares.js";
@@ -30,6 +31,38 @@ describe("lares shore reads an act", () => {
   test("CONTROL: take-records with no key, or no carrier, names its usage and sends nothing", () => {
     expect(shoreArgs("take-records", parsed(["take-records", "lar:///a.b.c/x"]))).toHaveProperty("usage");
     expect(shoreArgs("take-records", parsed(["take-records"], { key: "abc123" }))).toHaveProperty("usage");
+  });
+});
+
+describe("lares shore reads an answer to a pending removal", () => {
+  test("one carrier names itself; the bag rides where a person named it", () => {
+    expect(shoreArgs("restore", parsed(["restore", "lar:///a.b.c/x"]))).toEqual({ args: { op: "restore", uris: ["lar:///a.b.c/x"] } });
+    expect(shoreArgs("remove", parsed(["remove", "lar:///a.b.c/x"], { bag: "lar:///ha.ka.ba/bags/lares" })))
+      .toEqual({ args: { op: "remove", uris: ["lar:///a.b.c/x"], bag: "lar:///ha.ka.ba/bags/lares" } });
+  });
+  test("an answer over many carries the count its giver read", () => {
+    expect(shoreArgs("restore", parsed(["restore"], { count: "7" }, { all: true }))).toEqual({ args: { op: "restore", all: true, count: 7 } });
+    expect(shoreArgs("remove", parsed(["remove", "lar:///a.b.c/x", "lar:///a.b.c/y"], { count: "2" })))
+      .toEqual({ args: { op: "remove", uris: ["lar:///a.b.c/x", "lar:///a.b.c/y"], count: 2 } });
+  });
+  test("CONTROL: many with no count, all beside a name, no name at all and a count that names no number each stop at usage", () => {
+    expect(shoreArgs("remove", parsed(["remove"], {}, { all: true }))).toHaveProperty("usage");
+    expect(shoreArgs("remove", parsed(["remove", "lar:///a.b.c/x", "lar:///a.b.c/y"]))).toHaveProperty("usage");
+    expect(shoreArgs("restore", parsed(["restore", "lar:///a.b.c/x"], { count: "1" }, { all: true }))).toHaveProperty("usage");
+    expect(shoreArgs("restore", parsed(["restore"]))).toHaveProperty("usage");
+    expect(shoreArgs("restore", parsed(["restore"], { count: "some" }, { all: true }))).toHaveProperty("usage");
+  });
+});
+
+describe("one line carries every shore act", () => {
+  test("askShore wraps the act in `wiki-act` under the shore verb and reads the island's answer", async () => {
+    const sent: Array<{ name: string; args: Record<string, unknown> }> = [];
+    const answer = await askShore({ op: "sense", uris: ["lar:///a.b.c/x"] }, "did:test", async (name, args) => {
+      sent.push({ name, args });
+      return done({ ok: true, op: "sense", pendingCount: 1 });
+    });
+    expect(sent).toEqual([{ name: "wiki-act", args: { verb: "shore", args: { op: "sense", uris: ["lar:///a.b.c/x"] } } }]);
+    expect(answer).toMatchObject({ ok: true, output: { pendingCount: 1 } });
   });
 });
 

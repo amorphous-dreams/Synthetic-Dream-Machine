@@ -55,7 +55,7 @@ async function stand(): Promise<{ projector: LarDiskProjector; file: string; key
 describe("the shore verb answers from the projector", () => {
   test("list names each standoff with the key a person answers by", async () => {
     const s = await stand();
-    expect(await answerShore(s.projector, { op: "list" })).toEqual({ ok: true, op: "list", standoffs: [{ bagId: BAG, uri: URI, standoff: s.key }] });
+    expect(await answerShore(s.projector, { op: "list" })).toEqual({ ok: true, op: "list", standoffs: [{ bagId: BAG, uri: URI, standoff: s.key }], pending: [], pendingCount: 0 });
     expect(await answerShore(s.projector, {})).toMatchObject({ ok: true, op: "list" });
   });
 
