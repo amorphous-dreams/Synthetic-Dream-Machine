@@ -1,0 +1,623 @@
+{
+ "recorded": "gh run list --branch feature/lararium-node-5 --workflow CI --limit 12 --json databaseId,headSha,status,conclusion,createdAt,url ; gh run view 38393357077 --json jobs (jobs trimmed to name, status, conclusion and each step name and conclusion)",
+ "runs": [
+  {
+   "conclusion": "",
+   "createdAt": "2026-10-13T13:31:27Z",
+   "databaseId": 38405653295,
+   "headSha": "0f246e77310ae9fca222c2cfd79294ac30a0d9f0",
+   "status": "in_progress",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38405653295"
+  },
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-13T11:53:30Z",
+   "databaseId": 38393357077,
+   "headSha": "7ad33d8acc00aac5b62f88779c8d07c5386b768f",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38393357077"
+  },
+  {
+   "conclusion": "cancelled",
+   "createdAt": "2026-10-13T11:25:06Z",
+   "databaseId": 38390068998,
+   "headSha": "06d8276c0c0484f8494e6fe62306d9905635c5b7",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38390068998"
+  },
+  {
+   "conclusion": "cancelled",
+   "createdAt": "2026-10-13T10:42:32Z",
+   "databaseId": 38385211353,
+   "headSha": "b912bad0b18d9188914d94c00f296dded4470c9b",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38385211353"
+  },
+  {
+   "conclusion": "cancelled",
+   "createdAt": "2026-10-13T10:07:48Z",
+   "databaseId": 38381234756,
+   "headSha": "cf8286874f142c9347bd02f4137e6a36c0be630c",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38381234756"
+  },
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-13T09:01:49Z",
+   "databaseId": 38373405073,
+   "headSha": "a305bb384e2244969d484282a3c600a5e08356d5",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38373405073"
+  },
+  {
+   "conclusion": "cancelled",
+   "createdAt": "2026-10-13T08:37:47Z",
+   "databaseId": 38370557215,
+   "headSha": "738eefa33f127971e25b4336e7f6b1cb0c0c0b69",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38370557215"
+  },
+  {
+   "conclusion": "cancelled",
+   "createdAt": "2026-10-13T08:06:03Z",
+   "databaseId": 38366980801,
+   "headSha": "d2840c7039a0e9ebb483e5ad2e2d1e22162acab8",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38366980801"
+  },
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-13T06:56:57Z",
+   "databaseId": 38359652524,
+   "headSha": "6d19af1c6e26f82c28e7413d43c8d91e02a7f5a0",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38359652524"
+  },
+  {
+   "conclusion": "cancelled",
+   "createdAt": "2026-10-13T06:39:20Z",
+   "databaseId": 38357927661,
+   "headSha": "32d49cbcfed41a5fb1f2b92edfae74be84d134a0",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38357927661"
+  },
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-13T05:40:10Z",
+   "databaseId": 38352577454,
+   "headSha": "fb7fda3342e50b13c7a5bc99cfae85e1cbef8851",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38352577454"
+  },
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-13T04:01:36Z",
+   "databaseId": 38344472723,
+   "headSha": "71b10c749e6851eb688372fc3db95fe4de94bf80",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38344472723"
+  }
+ ],
+ "views": {
+  "38393357077": {
+   "jobs": [
+    {
+     "name": "Pristine upstream (stock tiddlywiki from npm)",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Node floor — process.getBuiltinModule must be present",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm install --frozen-lockfile",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build (dependency packages; the tw5 plugin build also runs here)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Point dist-plugin at the committed standalone artifact",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install Playwright Chromium (standalone single-file suite)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Cache the published tiddlywiki",
+       "conclusion": "success"
+      },
+      {
+       "name": "Pack tiddlywiki@5.4.1 from npm",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Witness the engine is the one pinned",
+       "conclusion": "success"
+      },
+      {
+       "name": "meme-routes + standalone single-file contact against the pristine engine",
+       "conclusion": "success"
+      },
+      {
+       "name": "The log names the engine it met",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Cache the published tiddlywiki",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "E2E",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm install --frozen-lockfile",
+       "conclusion": "success"
+      },
+      {
+       "name": "Render the TW5 core blob (genesis bakes from it)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build (vessels run from dist)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run e2e suite",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Build + generated freshness",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm install --frozen-lockfile",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build all packages",
+       "conclusion": "success"
+      },
+      {
+       "name": "Generated artifacts must be fresh (build emits no tracked diff)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Grammar artifact gates",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm install --frozen-lockfile",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install py host deps",
+       "conclusion": "success"
+      },
+      {
+       "name": "generate-parity — the committed parser.c stays the truth",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build (the weld runs the lares CLI from dist)",
+       "conclusion": "success"
+      },
+      {
+       "name": "fold + golden manifest gates (py host)",
+       "conclusion": "success"
+      },
+      {
+       "name": "wasm builds under the pinned CLI",
+       "conclusion": "success"
+      },
+      {
+       "name": "fold + parity gates (ts host)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Boot budget",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "noosphere-boot.mem must stay under the 40000-char ceiling",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Witnesses",
+     "status": "completed",
+     "conclusion": "failure",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm install --frozen-lockfile",
+       "conclusion": "success"
+      },
+      {
+       "name": "Render the TW5 core blob (four witnesses read it)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build (the fleet measures the built tree)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build the grammar wasm (ahu-pair-parity reads it)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run every witness (never short-circuits; the worst exit wins)",
+       "conclusion": "failure"
+      },
+      {
+       "name": "The held-out witnesses are named in this log",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run every tool self-test (tools/*.test.mjs)",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Typecheck",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm install --frozen-lockfile",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build (typecheck resolves workspace subpaths through dist/)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Every dependency names ONE version",
+       "conclusion": "success"
+      },
+      {
+       "name": "Typecheck all packages",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Test",
+     "status": "completed",
+     "conclusion": "failure",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm install --frozen-lockfile",
+       "conclusion": "success"
+      },
+      {
+       "name": "Render the TW5 core blob (suites guard on tw5-core/ and skip without it)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build (suites guard on built artifacts and silently skip without them)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+       "conclusion": "success"
+      },
+      {
+       "name": "Cache the holder venv",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stand the holder venv (~/.venv)",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Witness the holder answers",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run lararium-sensorium Python suite",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install Playwright Chromium (browser-vessel suite)",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run all package suites",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Post Cache the holder venv",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

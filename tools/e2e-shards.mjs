@@ -356,6 +356,9 @@ function deleteBranch(repoRoot, branch) {
   spawnSync("git", ["-C", repoRoot, "push", "origin", "--delete", branch], { stdio: ["ignore", "pipe", "pipe"] });
 }
 
+/** The line `push` ends on, whatever the shards answered: where the other half of the verdict gets read. */
+export const HALF_VERDICT = "HALF A VERDICT: the shards ran the e2e sets alone — read the full CI workflow before calling this head green: node tools/ci-verdict.mjs --head";
+
 async function cliPush(args, repoRoot) {
   const lane = args[0];
   if (!lane) { console.error("usage: e2e-shards.mjs push <lane>"); process.exitCode = 1; return; }
@@ -367,6 +370,9 @@ async function cliPush(args, repoRoot) {
   for (const line of result.verdictLines?.length ? result.verdictLines : (result.verdictLine ? [result.verdictLine] : [])) {
     console.log(line);
   }
+  // ONE HALF OF GREEN. This lane runs the e2e sets alone; the package suites, the witness fleet and the tool
+  // self-tests answer only in the full CI workflow, where a newer push cancels a run before it reports.
+  console.log(`${HALF_VERDICT} ${execFileSync("git", ["-C", repoRoot, "rev-parse", "--short=9", "HEAD"], { encoding: "utf8" }).trim()}`);
   assertNotBare(repoRoot);
   process.exitCode = result.ok ? 0 : 1;
 }
