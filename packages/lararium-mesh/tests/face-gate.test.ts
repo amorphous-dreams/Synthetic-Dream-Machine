@@ -24,7 +24,7 @@ import { canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "../src/crypto.js
 import { learnWithdrawals, type WithdrawalMemory } from "../src/face-authority.js";
 import { memoryBackedWithdrawals } from "../src/face-gate.js";
 import { MIN_MESSAGE2_BYTES, NOISE_MAX_MESSAGE_BYTES } from "../src/noise-ik.js";
-import { deriveGateBundle, gateFields, gateKnock, readGateSignature, sovereignGateRoot, sovereignRoute } from "../src/gate-bundle.js";
+import { custodyRootDoor, deriveGateBundle, gateFields, gateKnock, readGateSignature, sovereignGateRoot, sovereignRoute } from "../src/gate-bundle.js";
 import { GATE_FINISH_DOMAIN, GATE_PLACE_FINISH_DOMAIN } from "../src/domains.js";
 import {
   GATE_FRAME, GATE_FRAME_BODY_MAX, GATE_SUBJECT_MAX_BYTES, encodeGateAnswer, gateFrame, gatePartReader, gateParts,
@@ -682,7 +682,7 @@ describe("two Nexuses on one vessel", () => {
     expect((run.gate as { reason: string }).reason).toMatch(/^the admit reads/);
     // A gate refuses to stand over a bundle derived for another Nexus.
     const { makeFaceGate } = await import("../src/face-gate.js");
-    expect(() => makeFaceGate({ bundle: deriveGateBundle(sovereignGateRoot(root), utf8Bytes("nexus-b.synthetic"), sovereignRoute("/ws")), nexus: "nexus-a.synthetic" } as never)).toThrow(/Nexus/);
+    expect(() => makeFaceGate({ bundle: deriveGateBundle(sovereignGateRoot(custodyRootDoor(root)), utf8Bytes("nexus-b.synthetic"), sovereignRoute("/ws")), nexus: "nexus-a.synthetic" } as never)).toThrow(/Nexus/);
     expect(gateKnock(open.pin)).toBe(open.bundle.knock);
   });
 });

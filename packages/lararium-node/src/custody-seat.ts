@@ -32,7 +32,9 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import { GATE_FLOOR_BUNDLE_INFO, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type RowUpdate } from "./custody-holder.js";
+import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -159,4 +161,24 @@ export async function updateColdCustodyRow<T>(
 /** The dyad veil for `groupTag`, derived from the custody root the seat holds. */
 export async function custodyVeilKeys(groupTag: string): Promise<{ signingKey: string; verifyingKey: string }> {
   return (await openedCustody()).veil(groupTag);
+}
+
+/**
+ * THE CUSTODY ROOT'S DERIVE DOOR for a sovereign gate's bundle: one child of the sealed custody root this home's
+ * seat holds, under one registered domain. It answers only while the seat holds its key: a locked seat, or a
+ * home with no seat, throws `CustodyLocked`, and it opens nothing (no opener runs for a derivation). It refuses
+ * the floor bundle's name, so no "floor" child ever derives from the sealed root, and it carries a type the floor
+ * tier's root refuses (`vesselFloorKeyDoor` mints the other).
+ */
+export function custodyGateDoor(): CustodyRootDoor {
+  return custodyRootDoor({
+    derive(domain: string): Uint8Array {
+      if (domain === GATE_FLOOR_BUNDLE_INFO) {
+        throw new CustodyRootRefused("refused the floor gate bundle's name: that child derives from the floor key alone");
+      }
+      const holder = seats.get(larIdentityDir())?.holder;
+      if (!holder) throw new CustodyLocked();
+      return holder.derive(domain);
+    },
+  });
 }

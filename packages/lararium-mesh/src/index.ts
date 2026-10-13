@@ -290,6 +290,10 @@ export * from "./edge-partial.js";
 export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_ROWS } from "./face-authority.js";
 export type { FaceKeyCustody, WithdrawalMemory, FaceAuthorityRefusal } from "./face-authority.js";
 export type { FaceScope, FaceWithdrawal } from "./face-proof-subjects.js";
+// THE GATE'S TWO ROOT DOORS, named here by the seats that mint them: the vessel identity mints the floor key's
+// door and the custody seat the custody root's. The bundle itself stays out of the barrel until the socket cutover.
+export { floorKeyDoor, custodyRootDoor } from "./gate-bundle.js";
+export type { FloorKeyDoor, CustodyRootDoor, GateRootDoor } from "./gate-bundle.js";
 export * from "./device-removal.js";
 export * from "./re-anchoring.js";
 export * from "./lineage-rank.js";

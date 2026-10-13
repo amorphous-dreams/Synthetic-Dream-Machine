@@ -59,6 +59,7 @@ import { noiseRespond, type NoiseResponderPending } from "./noise-ik.js";
 
 export const GATE_BUNDLE_REFUSALS = [
   "root-astray",              // the root answered anything but 32 bytes, or no root this module minted
+  "door-other-tier",          // a root asked to stand over the other tier's door, or over a door this module never minted
   "route-other-tier",         // a route asked of the other tier's root
   "tier-malformed",           // a pin whose tier names neither tier
   "nexus-malformed",          // no bytes, too many bytes, or (in a pin) a spelling other than bare lower-case hex
@@ -211,14 +212,34 @@ export function readGateSignature(pin: GateBundlePin, image: Uint8Array, signatu
 // ── The bundle ──────────────────────────────────────────────────────────────────────────────────
 
 /**
- * A derive door: one child of one root, under one registered name. The custody seat's holder answers the
- * sovereign tier's (`derive(domain)`, and a locked seat throws its own refusal); the floor key's own door
- * answers the floor tier's. A door answers a FRESH buffer each time, which its caller owns: the bundle
- * overwrites the child it received.
+ * A derive door's bare shape: one child of one root, under one registered name. A door answers a FRESH buffer
+ * each time, which its caller owns: the bundle overwrites the child it received.
  */
 export interface GateRootDoor {
   derive(domain: string): Uint8Array;
 }
+
+/**
+ * TWO DOORS, ONE PER TIER, AND NEITHER PASSES FOR THE OTHER. The floor key's door answers while a vessel rests
+ * locked; the custody root's door answers only while it stands unlocked. Each carries the root it derives from
+ * in its type, and only the two functions below mint one, so a line that hands the custody door to the floor
+ * tier fails to compile, and a value dressed as the other tier's door refuses by name where it runs
+ * (`door-other-tier`). A custody door behind a floor root would derive a "floor" bundle from the sealed root,
+ * and that bundle would stand only while the vessel stood unlocked.
+ */
+export interface FloorKeyDoor extends GateRootDoor { readonly root: "floor-key"; }
+export interface CustodyRootDoor extends GateRootDoor { readonly root: "custody-root"; }
+
+const DOORS = new WeakMap<GateRootDoor, "floor-key" | "custody-root">();
+function doorOver<R extends "floor-key" | "custody-root">(root: R, over: GateRootDoor): GateRootDoor & { readonly root: R } {
+  const door = Object.freeze({ root, derive: (domain: string) => over.derive(domain) });
+  DOORS.set(door, root);
+  return door;
+}
+/** The floor key's door, over the one derive that answers a child of the floor key. The vessel's identity mints it. */
+export const floorKeyDoor = (over: GateRootDoor): FloorKeyDoor => doorOver("floor-key", over);
+/** The custody root's door, over the custody seat's own derive. The seat mints it; a locked seat throws its own refusal. */
+export const custodyRootDoor = (over: GateRootDoor): CustodyRootDoor => doorOver("custody-root", over);
 
 /**
  * The root one tier's bundles derive from. Only `floorGateRoot` and `sovereignGateRoot` mint one, and each
@@ -231,15 +252,16 @@ export interface GateBundleRoot<T extends GateTier = GateTier> {
 }
 
 const ROOTS = new WeakSet<GateBundleRoot>();
-function rootOver<T extends GateTier>(tier: T, door: GateRootDoor, domain: string): GateBundleRoot<T> {
+function rootOver<T extends GateTier>(tier: T, door: GateRootDoor, of: "floor-key" | "custody-root", domain: string): GateBundleRoot<T> {
+  if (door === null || typeof door !== "object" || DOORS.get(door) !== of) throw new GateBundleRefused("door-other-tier");
   const root: GateBundleRoot<T> = Object.freeze({ tier, child: () => door.derive(domain) });
   ROOTS.add(root);
   return root;
 }
 /** The floor tier's root, over the floor key's derive door. It stands while the vessel rests locked. */
-export const floorGateRoot = (floorKeyDoor: GateRootDoor): GateBundleRoot<"floor"> => rootOver("floor", floorKeyDoor, GATE_FLOOR_BUNDLE_INFO);
+export const floorGateRoot = (door: FloorKeyDoor): GateBundleRoot<"floor"> => rootOver("floor", door, "floor-key", GATE_FLOOR_BUNDLE_INFO);
 /** The sovereign tier's root, over the custody seat's derive door. A locked seat answers nothing. */
-export const sovereignGateRoot = (custodyDoor: GateRootDoor): GateBundleRoot<"sovereign"> => rootOver("sovereign", custodyDoor, GATE_BUNDLE_INFO);
+export const sovereignGateRoot = (door: CustodyRootDoor): GateBundleRoot<"sovereign"> => rootOver("sovereign", door, "custody-root", GATE_BUNDLE_INFO);
 
 /**
  * A route by its typed name: the path a gate answers on, and the tier that path belongs to. Only

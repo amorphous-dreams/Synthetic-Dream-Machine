@@ -25,7 +25,7 @@ import {
 import type { FaceScope, NexusAid, VesselFaceCertificate } from "../src/face-proof-subjects.js";
 import { classifySocket, type FederationPosture } from "../src/federation-gate.js";
 import {
-  deriveGateBundle, floorGateRoot, floorRoute, gateKnock, gatePrologue, sovereignGateRoot, sovereignRoute,
+  custodyRootDoor, deriveGateBundle, floorGateRoot, floorKeyDoor, floorRoute, gateKnock, gatePrologue, sovereignGateRoot, sovereignRoute,
   type GateBundle, type GateBundlePin, type GateRootDoor, type GateTier,
 } from "../src/gate-bundle.js";
 import {
@@ -41,6 +41,9 @@ import { mintSessionSigner, type SessionSigner } from "../src/session-signer.js"
 import { chain, vesselOf, type Chain, type Pair } from "./face-proof-fixture.js";
 import { carriageAct, kahuRoster } from "./fixtures/carriage.js";
 
+/** Each tier's root over a bare derive: the door a seat mints, minted here for a vector. */
+const sov = (d: GateRootDoor) => sovereignGateRoot(custodyRootDoor(d));
+const flo = (d: GateRootDoor) => floorGateRoot(floorKeyDoor(d));
 export const AUDIENCE = "lar:///ha.ka.ba/bags/daemon";
 export const GROUP = "b7f1c2a9d4e60381";
 
@@ -209,8 +212,8 @@ export async function world(opts: { nexus?: string; route?: string; root?: GateR
   const antigenRoster = await kahuRoster(WARDENS, 2, epoch);
   const door = opts.root ?? rootOf("vessel one");
   const bundle = opts.tier === "floor"
-    ? deriveGateBundle(floorGateRoot(door), utf8Bytes(nexus), floorRoute(opts.route ?? "/shelf"))
-    : deriveGateBundle(sovereignGateRoot(door), utf8Bytes(nexus), sovereignRoute(opts.route ?? "/ws"));
+    ? deriveGateBundle(flo(door), utf8Bytes(nexus), floorRoute(opts.route ?? "/shelf"))
+    : deriveGateBundle(sov(door), utf8Bytes(nexus), sovereignRoute(opts.route ?? "/ws"));
   const deadlines = handDeadlines();
   const withdrawals = opts.withdrawals ?? memoryBackedWithdrawals();
   const w: World = {

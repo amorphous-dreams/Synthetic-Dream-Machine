@@ -49,7 +49,7 @@
  * Mode 0o600 at write time; caller must ensure the identity dir is not world-readable.
  */
 
-import { createPrivateKey, createPublicKey, generateKeyPairSync } from "node:crypto";
+import { createPrivateKey, createPublicKey, generateKeyPairSync, hkdfSync } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, readdirSync, renameSync, openSync, writeSync, fsyncSync, closeSync } from "node:fs";
@@ -74,6 +74,10 @@ import {
   type PersonaPublicHandleRecord,
   sha256HexBytesSync,
   hexToBytes,
+  ALL_DOMAINS,
+  GATE_BUNDLE_INFO,
+  floorKeyDoor,
+  type FloorKeyDoor,
 } from "@lararium/mesh";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
@@ -472,6 +476,49 @@ export async function loadVesselSigningSeed(): Promise<Uint8Array> {
     throw new Error(`[vessel-identity] malformed signingKey in ${keyFile}`);
   }
   return signingSeedFromHex(raw.signingKey);
+}
+
+/** The floor key's door refused: a name the registry never declared, or a child that belongs to the sealed custody root. */
+export class FloorKeyDoorRefused extends Error {
+  override readonly name = "FloorKeyDoorRefused";
+}
+
+/**
+ * THE FLOOR KEY'S DERIVE DOOR: one child of the vessel's floor key under one registered domain.
+ *
+ * The floor key rests outside the vessel key, so this door answers while the vessel stands LOCKED: a floor
+ * gate's bundle derives through it at every standing. Each call reads the key file, derives (RFC 5869
+ * HKDF-SHA256, empty salt, the domain's address as `info`, 32 bytes), overwrites the seed it read, and answers
+ * a FRESH buffer its caller owns and overwrites. The door never answers the floor key itself, and the seed
+ * rests in no closure between two calls.
+ *
+ * It derives no child the sealed custody root owns: the sovereign gate bundle's name refuses here, so a floor
+ * key never stands in for the custody root. The custody seat's own door refuses the floor bundle's name the
+ * same way (`custodyGateDoor`), and the two doors carry two types no composer can swap.
+ */
+export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
+  const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
+  const keyFile = join(identityDir(), keyFileName(hint.login));
+  return floorKeyDoor({
+    derive(domain: string): Uint8Array {
+      if (!ALL_DOMAINS.includes(domain)) {
+        throw new FloorKeyDoorRefused(`refused domain ${JSON.stringify(domain)}: a floor child derives only under a domain the registry declares`);
+      }
+      if (domain === GATE_BUNDLE_INFO) {
+        throw new FloorKeyDoorRefused("refused the sovereign gate bundle's name: that child derives from the sealed custody root alone");
+      }
+      if (!existsSync(keyFile)) {
+        throw new FloorKeyDoorRefused(`no vessel key stands at ${keyFile}: found the vessel with \`lares vessel found\``);
+      }
+      const raw = JSON.parse(readFileSync(keyFile, "utf8")) as PersistedKey;
+      if (typeof raw.signingKey !== "string" || raw.signingKey.length !== 64) {
+        throw new FloorKeyDoorRefused(`the vessel key at ${keyFile} reads malformed`);
+      }
+      const seed = signingSeedFromHex(raw.signingKey);
+      try { return new Uint8Array(hkdfSync("sha256", seed, new Uint8Array(0), domain, 32)); }
+      finally { seed.fill(0); }
+    },
+  });
 }
 
 // ── PersonaGroup root key custody — the sealed PersonaVault (over @lararium/mesh) ─────────────────
