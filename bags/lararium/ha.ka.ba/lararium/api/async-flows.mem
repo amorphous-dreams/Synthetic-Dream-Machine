@@ -31,12 +31,12 @@ written   = "2026-06-25"
 ''Long ops must never go silent.'' Mining, writeback, multi-session sweeps, and
 swarm-mines run seconds-to-minutes (a 9-spirit mine blew past 2 minutes blind).
 The whole field has converged on one shape — ''submit → request-id → poll/wait'' —
-and `lares` already owns all three pieces: a ''daemon-job model'' (submit→id→poll),
+and `lares` holds all three pieces: a ''daemon-job model'' (submit→id→poll),
 ''durable results by request-id'' (re-queryable after disconnect), and a ''dual''
-''prose/JSON renderer''. The work is wiring, not invention (Beacon, cited).
+''prose/JSON renderer''. The work reads as wiring, not invention (Beacon, cited).
 
 > ''stdout is the API contract; progress and diagnostics ride stderr — and a''
-''> timeout is never a loss, because the result is durable by id.''
+''> timeout never loses work, because the result stays durable by id.''
 
 <<~/ahu>>
 
@@ -53,6 +53,13 @@ off-TTY / `--detach` it returns the id and exits.
 <<~ has Verb wait "lares wait <id> --timeout <s> ~ block until terminal-or-timeout; timeout → structured 'still running + progress', NEVER a hard fail (the work lives in the job, not the call)">>
 <<~ has Verb cancel "lares cancel <id> ~ move the job to the cancelled terminal state (distinct from Ctrl-C, which DETACHES — job keeps running, re-attach by id)">>
 
+''As built'' (`packages/lares-cli/src/bin/lares.ts`): `lares receipt <requestId>` reads a request's
+receipt from the vessel's own ledger and durable outcome doc, dispatching nothing; `lares cancel <requestId>`
+marks the id abandoned only when no decision already stands, so a later request under that id refuses — it
+stops no running job; and
+`lares watch` names a source-directory ingest watcher. The four verbs above, the `pollInterval` hint,
+exit 124 and the progress event stream read UNBUILT.
+
 Precedent: `gh run watch --exit-status`, `kubectl wait --for=condition --timeout`,
 `clig.dev` ("a start command that returns a job ID, and a status command to poll").
 
@@ -65,10 +72,10 @@ Precedent: `gh run watch --exit-status`, `kubectl wait --for=condition --timeout
 <<~ scale job "working ~ in progress -> input_required ~ awaiting the operator -> completed ~ ok, terminal -> failed ~ error, terminal -> cancelled ~ stopped, terminal">>
 
 ''Terminal-once:'' once a job reaches completed/failed/cancelled it never moves
-again. ''Poll is authoritative'' (not pushed notifications, which drop) — non-terminal
+again. ''Poll carries the authority'' (not pushed notifications, which drop) — non-terminal
 = keep working, terminal = stop + fetch the result. `status` emits a server-side
 ''`pollInterval`'' (ms) so an agent polls without overloading (the MCP async-task
-shape). The result is fetched after terminal, by id.
+shape). A caller fetches the result after terminal, by id.
 
 <<~/ahu>>
 
@@ -91,8 +98,8 @@ One progress event stream; the existing renderer splits it:
 {"type":"result","requestId":"…","status":"completed","ok":true, …}      # stdout
 ```
 
-`render.ts`'s prose/JSON shore IS this split
-— one event stream, two projections.
+`render.ts`'s prose/JSON shore carries the RESULT half of this split (prose on a TTY or under `--no-json`, one structured
+payload on stdout off-TTY or under `--json`); the progress stream reads UNBUILT.
 
 <<~/ahu>>
 
@@ -101,9 +108,9 @@ One progress event stream; the existing renderer splits it:
 !! Progress & ETA
 
 * ''Never silent:'' show something in <100ms; never a blank wait (clig.dev).
-* ''Determinate'' (count/total → % · bar · ETA) when the total is known — the swarm
+* ''Determinate'' (count/total → % · bar · ETA) when the job knows its total — the swarm
   mine knows "9 spirits," a sweep knows its file count. ''Indeterminate'' (spinner /
-  elapsed-seconds heartbeat) when it isn't.
+  elapsed-seconds heartbeat) when it knows none.
 * ''ETA'' by an ''exponential moving average of per-item rate'' (tqdm) — recent items
   weighted, so ETA tracks rate changes without jitter.
 
@@ -123,9 +130,9 @@ One progress event stream; the existing renderer splits it:
 * ''Cancellation:'' Ctrl-C ''detaches'' (job runs on, re-attach by id); `cancel <id>`
   ''stops'' (cancelled terminal state). On SIGINT: say so immediately, then time-boxed
   cleanup.
-* ''No-loss by construction:'' the ''durable request-id IS the idempotency key''
+* ''No-loss by construction:'' the ''durable request-id SERVES AS the idempotency key''
   (Stripe/MCP shape) — a re-submit returns the stored result if completed, the
-  in-progress handle if running; a timeout is re-queryable, never lost.
+  in-progress handle if running; a timeout stays re-queryable, never lost.
 
 <<~/ahu>>
 
@@ -146,7 +153,7 @@ One progress event stream; the existing renderer splits it:
 
 !! Map to Our Infra + Backlog
 
-The three pieces already exist:
+Three pieces stand:
 
 <<~ scale have "daemon-jobs ~ mempalace `--daemon --background` → job-id → daemon jobs/wait/status (we call mine SYNCHRONOUSLY instead) -> durable-results ~ lares summons → @daemon/outcomes/<requestId> (CRDT, survives a CLI timeout, re-queryable) -> dual-render ~ render.ts prose/JSON (the progress-event split shore)">>
 
@@ -158,8 +165,8 @@ The three pieces already exist:
 
 ''Caveat (Beacon, Cup):'' the research did not read the repo — confirm whether the
 daemon-job/durable-result interfaces already emit //intermediate// progress (vs only
-terminal status) before binding the verbs. The event shape above is the target to
-write toward, not a description of current emission.
+terminal status) before binding the verbs. The event shape above names the target to
+write toward; it describes no current emission.
 
 <<~/ahu>>
 
@@ -173,6 +180,6 @@ write toward, not a description of current emission.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5VAIgF1wD2lxWQD0nHKF3_ICGPc5BJnA3Uhwpdo-hbE
+<<^ code="&#x0003;">>ni:///sha-256;e_aQave-xiNFOGV-2jq_pfWctU6Lv8Mc2i_nT6k-fjc
 
 <<^ code="&#x0004;" -> to="?">>
