@@ -143,7 +143,7 @@ nothing did, and reaches for a socket no process holds. *Clear the log before ev
 **A zero presenter key is refused on CAPABILITY, before your question is reached.** `0x000…` names
 nobody, and nobody is denied by the cap gate long before the thing under test runs. A vector holding a
 zero key measures the gate and reports whatever it meant to ask. *Present the vessel's own did —
-`fleetPeerDid()` under the test's `LAR_ROOT`.*
+`vesselDid()` under the test's `LAR_ROOT`.*
 
 **Never fail-fast on a bare `/Error:/`.** A healthy keyhive wasm boot prints
 `Error: Some(ReceiveCgkaOpError(UnknownInvitePrekey…))` on its way to `live`. Matching it cuts the

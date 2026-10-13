@@ -174,10 +174,10 @@ async function standHerm(r: string): Promise<{ live: boolean; log: string }> {
  * FACE stand — is ever reached. A vector holding a zero key measures the cap gate and reports the herm.
  */
 async function operatorDid(r: string): Promise<string> {
-  const { fleetPeerDid } = await import("../../packages/lares-cli/src/daemon-persona-store.js");
+  const { vesselDid } = await import("../../packages/lares-cli/src/env.js");
   const prior = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = r;
-  try { return (await fleetPeerDid()) ?? `0x${"0".repeat(64)}`; }
+  try { return await vesselDid().catch(() => `0x${"0".repeat(64)}`); }
   finally { if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; }
 }
 
