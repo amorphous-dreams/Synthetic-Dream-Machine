@@ -26,8 +26,9 @@ import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.
 const AID = "epoch0-" + "a".repeat(64);
 const HEARTH = new Uint8Array(32).fill(71);
 const GATE = "ee".repeat(32);
-const LEAF = { verifyingKey: "c".repeat(64), seed: new Uint8Array(32).fill(72) };
-const OTHER_LEAF = { verifyingKey: "b".repeat(64), seed: new Uint8Array(32).fill(73) };
+// A REAL verifying key (RFC 8032 §7.1): a grant names only a walker leaf the Ed25519 door accepts.
+const LEAF = { verifyingKey: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", seed: new Uint8Array(32).fill(72) };
+const OTHER_LEAF = { verifyingKey: "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c", seed: new Uint8Array(32).fill(73) };
 let storageDir = "";
 beforeEach(() => { storageDir = mkdtempSync(join(tmpdir(), "walker-carry-")); });
 afterEach(() => { rmSync(storageDir, { recursive: true, force: true }); });
