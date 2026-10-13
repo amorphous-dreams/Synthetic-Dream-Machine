@@ -13,7 +13,7 @@ manao             = 16
 manaoio           = 15
 namespace         = "&#x2299;"
 pattern-integrity = true
-role              = "session-contract — the contract a SESSION holds with the vessel it rides: one vessel owns one durable Repo, one store lock, custody and one trusted face-blind daemon; each browser tab or CLI run opens a volatile session that wears exactly one verified face. An owner-minted id ROUTES and nothing more; a binding and worker-held capabilities AUTHORIZE; a generation advances at a switch. The owner persists switch acts and request outcomes and never a roster of sessions. Every interactive surface takes its own island, a session-scoped document view replaces the broad sync port, one function resolves the effective recipe at surface mount, the holder answers the requesting binding alone, and receipts bind to the face's proof subject. Every hand (a tab, a CLI run, the disk watcher, a spirit's seat) opens a session and differs by capability profile, never by key. Carries the five-step switch, how a session ends, what the code holds, and the twelve debts of the build"
+role              = "session-contract — the contract a SESSION holds with the vessel it rides: one vessel owns one durable Repo, one store lock, custody and one trusted face-blind daemon; each browser tab or CLI run opens a volatile session that wears exactly one verified face. An owner-minted id ROUTES and nothing more; a binding and worker-held capabilities AUTHORIZE; a generation advances at a switch. The owner persists switch acts and request outcomes and never a roster of sessions. Every interactive surface takes its own island, a session-scoped document view replaces the broad sync port, one function resolves the effective recipe at surface mount, the holder answers the requesting binding alone, and receipts bind to the face's proof subject. Every hand (a tab, a CLI run, the disk watcher, a spirit's seat) opens a session and differs by capability profile, never by key. Carries the five-step switch, how a session ends, what the code holds, and the thirteen debts of the build"
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/api/pono/session-contract"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -68,6 +68,15 @@ written           = "2026-10-11"
 
 ''A spirit holds a seat and no key'' (operator ruling, 2026-10-12; quote license: //"the spirit's identity enacts the operator's relationship"//; //"you all get a 'seat' here in the lararium … your persona's don't trade keys out, the vessel itself serves as your identity-as-relation across all AI frontier model providers and locally run models later"//). The seat rests on the vessel. A model from any provider, or a model run locally, may sit in it, and none carries it away. A spirit's persona names who authored; it never names who signed.
 
+''Three positions stand on one gradient'' (operator ruling, 2026-10-12, approved as presented; quote license: //"I consider you an extention of my hands, that's Identity as Relation right there"//).
+
+|! Position |! When |! Who signs |! What another party sees |
+| ''hand'' | a spirit whose lineage roots in the operator's live, unlocked session works at the operator's direction | the operator's face, as the operator's own act | the operator's act, with the spirit's name as authorship |
+| ''seat'' | a spirit works in the house under a standing grant, with no person in the loop | nothing that changes who holds authority; it drafts | working-layer writes carrying a hand's name |
+| ''principal'' | a persistent spirit's activity crosses a vessel or federation boundary that needs a separately attributable party | the spirit's own delegated key | a separate party to appraise, and an edge to shadow without touching the operator's own relation |
+
+The lineage handle tells hand from seat (<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline#/name">>). A principal arises by delegation and never by impersonation, only at a crossing (<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance#/worldline-boundary">>): the house mints no identity material for a spirit that stays inside it. A principal's key derives per face and vessel and gets minted when an act first needs to cross, so one spirit serving two faces links neither.
+
 * ''A standing grant names the face a seat wears.'' The grant rests at the MCP mount. The owner verifies it afresh at every open, and it opens nothing while the vessel rests at the floor: no spirit works on a locked vessel.
 * ''The hand's name travels as authorship.'' A write into a shared realm carries the hand that made it as a field of the record, beside the face that signs. The field names and authorizes nothing; no gate reads it.
 * ''A projected wiki stands as a surface.'' One tree on disk serves the person. A wiki names a face's relation to a composition (#/the-working-layer), so each face's wiki takes its own folder and the path says whose wiki it holds. No file and no `.meta` chooses the signer: an edit returns under the face of the session that leases the surface. A switch advances the generation, and an edit sensed under an earlier generation surfaces as a draft.
@@ -76,7 +85,7 @@ written           = "2026-10-11"
 ''The door carries; the hand authorizes'' (operator ruling, 2026-10-12, approved as presented). MCP and the CLI stand as two doors onto one contract: the same session messages over the one socket, one verb table, the same named refusals, the same receipts. Parity belongs to the doors. A profile belongs to the hand, and no door widens or narrows it.
 
 * ''One verb table serves every hand.'' A seat sees every verb, and a verb beyond its profile refuses by name.
-* ''A seat never signs an act that changes who holds authority'': a vault or custody verb, an admit, a kapae, a quorum signature, a face switch, or a residency move into a bag. A seat MAY draft such an act for a person to sign.
+* ''A seat never signs an act that changes who holds authority'' (a hand acts as the operator, so this bound falls on the seat alone): a vault or custody verb, an admit, a kapae, a quorum signature, a face switch, or a residency move into a bag. A seat MAY draft such an act for a person to sign.
 * ''Authority only narrows down a chain of spirits.'' A spirit MAY seat a sub-spirit under a profile no wider than its own, and the hand's name records the chain.
 * ''A container makes the profile bind.'' A spirit that shares its operator's OS account reaches every door that operator reaches, and its declared hand stays a declaration. A spirit that runs in a container holding only its seat's socket and grant holds no other door.
 
@@ -249,7 +258,7 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 * ''A CLI over the local socket'' with caller-generated request ids and durable outcomes (`packages/lares-cli/src/local-connector.ts`, `packages/lararium-node/src/uds-channel.ts`); no socket binds a session to a face.
 * ''A watcher that names its own destination.'' `lares watch --source <dir> --to <bagUri>` takes the bag from its caller and submits each wave under the vessel's identity (`packages/lares-cli/src/commands/watch.ts`); no lease and no face stands between a disk edit and its signature.
 
-''OWED ~ twelve debts, each resting on the one before it.'' A builder closes each with its callers and its own proof, so the tree keeps a runnable contract at every step.
+''OWED ~ thirteen debts, each resting on the one before it.'' A builder closes each with its callers and its own proof, so the tree keeps a runnable contract at every step.
 
 # ''The contract in mesh.'' The session type, its validators, the port and socket binding, and refusal of a stale owner epoch or generation.
 # ''Scoped document access.'' The session-scoped view over announcements, fetches, writes, catalog and content-addressed reads; no durable per-island store.
@@ -263,6 +272,7 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 # ''The seat.'' An MCP connection opens a session under a standing grant, verified at each open and refused at the floor; its profile writes the working layer alone.
 # ''The hand's name.'' A record written into a shared realm carries its hand as a field no gate reads; a session cannot write another hand's name.
 # ''Door parity at the session.'' A CLI run and an MCP connection open the same session kinds and draw the same named refusals; a seat's refused verb names its profile; a seat drafts an authority act and cannot sign one; a sub-spirit's profile never exceeds its parent's.
+# ''The principal.'' A spirit's delegated key, derived per face and vessel and minted at its first crossing; a neighbour's shadow over the spirit's edge leaves the operator's relation standing.
 
 ''A flipped bound reopens the design.'' Should the operator ever rule the daemon untrusted, faces take per-face encryption with decryption beyond the daemon. Should hostile same-origin code enter scope, capability use moves behind a stronger boundary. Should shared engine state across tabs become wanted, a serialized multi-surface writer gets defined before any island key collapses.
 
@@ -282,9 +292,11 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot#/core-claim">> ~ aligns slot addresses with the face working-layer rule
 <<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">> ~ keeps camera surfaces within each mounted wiki
 <<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">> ~ the disk surface a watcher session leases
+<<~ loulou "lar:///ha.ka.ba/lararium/api/agent-worldline">> ~ a spirit's lineage handle tells a hand from a seat
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">> ~ a spirit gains its own identity only at a crossing
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9xRB7-ew2wuwDLQaRRExVVfILQAtJT37mSURu5l6-LA
+<<^ code="&#x0003;">>ni:///sha-256;U433nuLGz4sgnjr4eqDMi_M3g1PcljY55oaO3GPRdqE
 
 <<^ code="&#x0004;" -> to="?">>

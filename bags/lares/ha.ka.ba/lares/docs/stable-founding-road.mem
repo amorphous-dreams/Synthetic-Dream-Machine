@@ -215,11 +215,23 @@ identity bytes; then R-WIRE, so every pin changes once.
 * ''Working-layer law the build owes'': one working document per (face, wiki, slot kind); its address derives from a secret only that face's vessels hold. The working layer follows its wiki across recipe recomposition. A leaf with an admit and no seat writes nothing to face wikis until join completion. Vessel removal leaves the address standing; the gate and document membership refuse the removed vessel (operator ruling).
 * A wiki names one face's composition over bags; sharing happens at the bag (operator ruling).
 * A personal Handle never rides without its owning face; one current personal Handle per PersonaGroup; a collective quorum Handle stays separate.
+* ''Every hand opens a session'' (operator ruling; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>): a tab, a CLI run, the disk watcher and a spirit's MCP seat differ by capability profile and never by key; MCP and the CLI stand as two doors onto one contract. The slice owes the watcher as a leasing session, the seat under a standing grant, the hand's name as a record field, and door parity at the session. A spirit works as a hand, a seat or a principal; the principal's delegated key waits for the first act that crosses a vessel, in TWO HEARTHS or later.
 * The compose hunk in `open-node-vessel.ts` belongs to this slice's owner; cabal runtime work stops at its module boundary.
 
 !!! 6 · TWO HEARTHS ~ the fresh start, then the ceremony (waits on everything above)
 * The fresh start by hand (#/fresh-start) on both machines, on the re-found build.
 * The ceremony: both found their seeds through the Stable act and stand; both found the Nexus fresh through the Nexus founding act; each signs a contract the two seats countersign; both join one shared cabal realm beside others; each wears a face; an edit crosses both ways and reads back after a restart on each machine. Probes use synthetic names; no fixture forges a cast persona's key or Handle.
+
+!!! The sealed store ~ five steps threaded through the paths (operator-approved model; unbuilt)
+* ''The model'': cleartext lives in the live wiki and in the operator's projected files alone. A private bag rests as authenticated ciphertext chunks, the same bytes at rest and in a blind carrier's hands; a node that holds the capability and stands locked rests sealed. Private bytes take randomized authenticated encryption addressed over the ciphertext, so convergent sealing leaves the private tier. A bag's content key rolls at a causal removal act, never by a clock.
+* ''Step 1, after SUBSTRATE's seal'': the one private-byte format (chunk envelope, ciphertext address, key-version manifest, lockbox) and the amendments to `content-resolution.mem`, `blob-carriage.mem` and `cap-tier.mem`. The format changes ONCE, here. It also defines shareable-history epochs and authenticated checkpoint frontiers.
+* ''Step 2'': durable, sealed bag lockboxes and a chunk index; the provider's tracked chunks rest in memory alone today.
+* ''Step 3, after ONE FACE'': sealed storage values and hydration scoped by the session's face.
+* ''Step 4, after the KAHU PLANE's seats and wire'': sealed history published to and fetched from a blind carrier by the house's own carriage protocol, with a causal index. A carrier never joins document sync.
+* ''Step 5, after ONE FACE'': a public bag served at the floor of a locked node; today the floor serves the oracle snapshot alone.
+* ''History at admission'' (operator ruling): sharing a bag's past with a newcomer must have stood declared when those edits got written. An inviter chooses between history the realm already marked shareable and a present-state admission, and never widens the audience for another writer's past. The design target keeps one logical bag name whose key rolls mark epochs: a removal rolls, a from-now admission rolls, and a with-its-past admission hands over the earlier epochs' keys.
+* ''Mutual removal'' (operator ruling; <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">>): both signed acts and both key branches stay, every member sees the conflict, and it ends in an explicit fork unless the realm's charter named a recovery council.
+* ''Owed first'': `foldEdgeKapae` projects no shadow for a same-version tie (`packages/lararium-mesh/src/edge-kapae.ts`), where kapae law keeps the shadow up.
 
 !!! The shore ~ the browser's five rungs, beside the paths
 * ''The rungs'': 0, an admitted crossing; 1, a carrier the node holds arrives and renders; 2, a typed field edit reaches the node and survives its restart, read from a fresh browser profile; 3, one human, many faces; 4, two hearths. Rungs 0–2 give the one-machine witness the working-Lararium ruling asks for, and the node's own read decides each rung, never a screenshot or a connected socket.
@@ -290,6 +302,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RGNvJleanMIOE537ef1-E5rfcw5ksCr8A6CuN79DjH8
+<<^ code="&#x0003;">>ni:///sha-256;8p3IOs9nou_lpDLxc9rdjQHm5UKCWdp-lHUMIK20ylU
 
 <<^ code="&#x0004;" -> to="?">>
