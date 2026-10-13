@@ -69,6 +69,7 @@ import {
   type SlotUri,
 } from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
+import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
 import { makeCatalogAccessor } from "./catalog-accessor.js";
 import { installLazyResolver } from "./lazy-resolver.js";
@@ -230,38 +231,34 @@ export function runSovereignKernel(
     slot: string,
     wikiUri: string,
   ): Promise<DocHandle<LarDoc> | null> {
-    const started = mono();
-    // automerge-repo 2.6: find() resolves only when READY and REJECTS on an
-    // unavailable VERDICT (the peer answered "don't have") — a genuine miss,
-    // distinct from not-yet-arrived. undefined = still pending.
-    let outcome: DocHandle<LarDoc> | null | undefined;
-    void repo.find<LarDoc>(docUrl as AutomergeUrl).then(
-      (h) => { outcome = h; },
-      ()  => { outcome = null; },
-    );
-    // The silence budget clocks from max(last inbound message, THIS find's start):
-    // slots that resolve from the island's own storage partition move no port
-    // traffic, so quiet accrued BEFORE this find says nothing about this doc's
-    // request (draft faulted at 756ms elapsed under 9240ms of stale
-    // pre-find silence when the big bags loaded locally).
-    const silence = (): number => mono() - Math.max(_lastSyncHeardAt, started);
-    for (;;) {
-      await new Promise((res) => setTimeout(res, SLOT_POLL_MS));
-      if (outcome !== undefined) break;
-      if (silence() < SLOT_SILENCE_TIMEOUT_MS && mono() - started < SLOT_READY_HARD_CAP_MS) continue;
-      // Verdict deferral: queued port messages get one turn to land and move
-      // _lastSyncHeardAt (or settle the find) before the fault fires.
-      await defer();
-      if (outcome !== undefined) break;
-      const finalSilent = silence();
-      if (finalSilent < SLOT_SILENCE_TIMEOUT_MS && mono() - started < SLOT_READY_HARD_CAP_MS) continue;
+    // The wait's law lives in `slot-wait`: a rejection counts as a verdict only when a peer stood connected to
+    // give it. This island's one peer is the vessel's main thread, and a Repo with no peer connected settles a
+    // find "unavailable" at once, so an ask that lands while the main thread stalls (a key derivation at an
+    // unlock, a corpus load) gets asked again inside the same silence and hard-cap budgets.
+    const out = await waitForSlotDocument<DocHandle<LarDoc>>({
+      find:      () => repo.find<LarDoc>(docUrl as AutomergeUrl),
+      peerCount: () => repo.peers.length,
+      // The library words an unavailable document so (`DocumentQuery`); the node package pins the wording
+      // (`repo-without-a-peer-rejects.test.ts`), and any other rejection ends the wait at once as a refused ask.
+      absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
+      now:       mono,
+      lastHeard: () => _lastSyncHeardAt,
+      sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
+      defer,
+      budgets:   { silenceMs: SLOT_SILENCE_TIMEOUT_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
+    });
+    if (out.outcome === "ready") return out.handle;
+    if (out.outcome === "never-arrived") {
       _post(mkFault(wikiUri,
         `slot ${slot} unavailable — doc ${docUrl} never arrived over syncPort ` +
-        `(${Math.round(finalSilent)}ms port-silence, ${Math.round(mono() - started)}ms elapsed; ` +
+        `(${out.silentMs}ms port-silence, ${out.elapsedMs}ms elapsed; ` +
         `silence budget ${SLOT_SILENCE_TIMEOUT_MS}ms, hard cap ${SLOT_READY_HARD_CAP_MS}ms)`));
       return null;
     }
-    if (outcome) return outcome;
+    if (out.outcome === "refused") {
+      _post(mkFault(wikiUri, `slot ${slot} unavailable — the Repo refused the ask for ${docUrl}: ${out.why}`));
+      return null;
+    }
     _post(mkFault(wikiUri, `slot ${slot} unavailable — the peer answered WITHOUT doc ${docUrl} (unavailable verdict, not a timeout)`));
     return null;
   }
