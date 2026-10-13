@@ -385,9 +385,13 @@ export class AutomergeDocStore implements LarTiddlerStore {
     // has not seen stays concurrent with every one of them.
     const writtenAt = madeAt ?? heads;
     const envelope = { origin, ...bag, ...(heads !== undefined ? { heads } : {}), ...(writtenAt !== undefined ? { writtenAt } : {}) };
+    // THE FAMILY FIRES AS ONE GRAIN: every envelope of this change reaches a shore together, so its landing
+    // queue never hands a turn to the host between a root and its children.
     const tiddlersNow = this.handle.doc()?.tiddlers;
-    for (const record of moved) this.provider.fireImmediate({ title: record.tiddler.title, record: tiddlersNow?.[record.tiddler.title] ? _freezeRecord(tiddlersNow[record.tiddler.title]!) : null, ...envelope });
-    for (const title of movedTombstones) this.provider.fireImmediate({ title, record: tiddlersNow?.[title] ? _freezeRecord(tiddlersNow[title]!) : _tombstoneRecord(title), ...envelope });
+    const fired: LarTiddlerChange[] = [];
+    for (const record of moved) fired.push({ title: record.tiddler.title, record: tiddlersNow?.[record.tiddler.title] ? _freezeRecord(tiddlersNow[record.tiddler.title]!) : null, ...envelope });
+    for (const title of movedTombstones) fired.push({ title, record: tiddlersNow?.[title] ? _freezeRecord(tiddlersNow[title]!) : _tombstoneRecord(title), ...envelope });
+    this.provider.fireFamily(fired);
   }
 
   /** A tombstone is a family of one: one change marking the title deleted, one tombstone fire. */

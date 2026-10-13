@@ -535,20 +535,31 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
    */
   onUriChanged(change: LarTiddlerChange): void {
     this.installLandingQueue();
-    // Own writes return with the heads the next hand must build on; every envelope is a wave.
-    // An own-origin envelope IS the store's acknowledgment of this shore's write, whatever the store
-    // (a store with no heads names none); `writtenAt` then says where the hand's next write builds.
+    this._noteOwnWrite(change);
+    this._enqueue(change);
+  }
+
+  /**
+   * Own writes return with the heads the next hand must build on; every envelope is a wave.
+   * An own-origin envelope IS the store's acknowledgment of this shore's write, whatever the store
+   * (a store with no heads names none); `writtenAt` then says where the hand's next write builds.
+   */
+  private _noteOwnWrite(change: LarTiddlerChange): void {
     if (change.origin.kind === "tw-local" && change.origin.instanceId === this.instanceId) {
       this.writeAcks.set(change.title, (this.writeAcks.get(change.title) ?? 0) + 1);
       if (change.writtenAt && change.bag) this.handBase.set(change.title, { bag: change.bag, heads: change.writtenAt });
     }
-
-    this._enqueue(change);
   }
 
-  /** Forward each complete bulk envelope through the per-change bag resolution path. */
+  /**
+   * A changeset carries the envelopes of whole store changes (a family write, or the union of the change
+   * events a provider gathered). It enters the queue as ONE grain: the queue lands it inside one slice, so
+   * the wiki dispatches a root and its children together.
+   */
   onChangeset(changes: readonly LarTiddlerChange[]): void {
-    for (const change of changes) this.onUriChanged(change);
+    this.installLandingQueue();
+    for (const change of changes) this._noteOwnWrite(change);
+    this.landing!.enqueueFamily(changes);
   }
 
   /**

@@ -105,9 +105,10 @@ The shore keeps no per-island pre-sync buffer. The method exists for
 projection-protocol compatibility and may carry future telemetry; it does not
 mutate adaptor or wiki state.
 
-''I-7 onChangeset (FFZ Scale-3) routes through the queue.''
-For bulk patches (URIs ≥ `MemeProvider.CHANGESET_THRESHOLD`), the adaptor receives complete change
-envelopes and hands each to `onUriChanged`, so every one joins the landing queue.
+''I-7 onChangeset enters the queue as one grain.''
+A changeset carries the complete envelopes of whole store changes: a local family write, or the union of
+the change events the provider gathered for a bag, whatever its size. The adaptor hands it to the landing
+queue as ONE family (`enqueueFamily`), and the queue lands it inside one slice.
 
 ''I-8 A stopped shore holds no account of the wiki.''
 `stop()` awaits acts in flight, stops the queue, flushes every marked hand, removes the door it
@@ -137,6 +138,6 @@ its tracked work settle and turns the shore resident (a seed landing that fails 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;po7XUHlxgqtOR3RH6ttUfxaYBrhB1IT4-5N2C45Hdtk
+<<^ code="&#x0003;">>ni:///sha-256;saD5V81jn4QTjW-ZFPbOlpE6dLuOxRDRNvdJvXqTR4g
 
 <<^ code="&#x0004;" -> to="?">>

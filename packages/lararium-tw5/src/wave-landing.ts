@@ -5,10 +5,18 @@ export interface LandingQueueDoor {
   enqueue(change: LarTiddlerChange): void;
 }
 
-/** The shore owns the ordered wave queue, 200-item slices, and seed checkpoint. */
+/**
+ * The shore owns the ordered wave queue, its slices, and the seed checkpoint.
+ *
+ * THE GRAIN: the queue holds FAMILIES. A family names the envelopes of one or more whole store changes
+ * (`enqueueFamily`); a lone envelope stands as a family of one. A slice gathers whole families up to the
+ * quota and lands them with no turn handed to the host in between, so the wiki dispatches its `change`
+ * for a root and its children together and no reader of the wiki meets half a carrier. A family larger
+ * than the quota lands whole in a slice of its own.
+ */
 export class WaveLanding {
   static readonly QUOTA = 200;
-  private readonly queue: LarTiddlerChange[] = [];
+  private readonly queue: LarTiddlerChange[][] = [];
   private readonly owed = new Map<string, LarTiddlerChange>();
   private draining = false;
   private stopped = false;
@@ -28,10 +36,13 @@ export class WaveLanding {
     private readonly onLandingRecovered: (title: string) => void = () => {},
   ) {}
 
-  enqueue(change: LarTiddlerChange): void {
-    if (this.stopped) return;
-    if (this.owed.has(change.title)) this.owed.set(change.title, change);
-    this.queue.push(change);
+  enqueue(change: LarTiddlerChange): void { this.enqueueFamily([change]); }
+
+  /** Queue the envelopes of whole store changes as one grain: a slice never cuts between them. */
+  enqueueFamily(changes: readonly LarTiddlerChange[]): void {
+    if (this.stopped || changes.length === 0) return;
+    for (const change of changes) if (this.owed.has(change.title)) this.owed.set(change.title, change);
+    this.queue.push([...changes]);
     this.kick();
   }
 
@@ -45,7 +56,7 @@ export class WaveLanding {
     return this.seedWait;
   }
 
-  pending(): number { return this.queue.length; }
+  pending(): number { return this.queue.reduce((count, family) => count + family.length, 0); }
 
   /** Resolves at every quiescent edge; each call observes the queue and current drain afresh. */
   idle(): Promise<void> {
@@ -104,11 +115,14 @@ export class WaveLanding {
       }
     }
     while (!this.stopped && this.queue.length) {
-      const count = Math.min(WaveLanding.QUOTA, this.queue.length);
+      // Whole families up to the quota; the first family of a slice lands whatever its size.
+      const slice: LarTiddlerChange[] = this.queue.shift()!;
+      while (this.queue.length && slice.length + this.queue[0]!.length <= WaveLanding.QUOTA) slice.push(...this.queue.shift()!);
+      const count = slice.length;
       const failed: Array<{ item: LarTiddlerChange; error: unknown; at: number }> = [];
       const landedAt = new Map<string, number>();
       for (let i = 0; i < count; i++) {
-        const item = this.queue.shift()!;
+        const item = slice[i]!;
         try {
           await this.landOne(item);
           landedAt.set(item.title, i);

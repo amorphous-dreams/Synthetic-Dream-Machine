@@ -121,8 +121,8 @@ the same layer.
   `onChangeset(union)` per bag. This names the ''coalesce'' family — intermediates lawfully DROP,
   newest-per-key wins. The drop happens HERE, before a change ever reaches the landing queue.
 * ''DOWNSTREAM — the landing queue (runtime).'' Each surviving change reaches
-  `IslandAdaptor.onUriChanged` and joins the shore's ONE queue in arrival order. The shore
-  processes at most 200 queued changes per slice and yields to the host between slices; each
+  the island adaptor and joins the shore's ONE queue in arrival order, a changeset as one family. The
+  shore processes whole families, up to 200 queued changes per slice, and yields to the host between slices; each
   landing resolves its title through the composition, and the shore calls `applyNalu` when that
   value differs from the value the wiki holds. A landing that fails twice stays owed for a later
   wave; a standing shore coalesces NOTHING further.
@@ -151,6 +151,6 @@ gates (`mesh/meme-provider.ts`, `mesh/projection-nalu.ts`).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vScxm2LYBlE9FIbNoufl47RQSpQZVo-D_s6VGAeq9ZQ
+<<^ code="&#x0003;">>ni:///sha-256;LYlSwNedLFFXQdXuHuUfciy-C76CRBcTIYJaP3tf9CQ
 
 <<^ code="&#x0004;" -> to="?">>

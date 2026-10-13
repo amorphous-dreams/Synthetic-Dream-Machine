@@ -38,20 +38,6 @@ export class MemeProvider {
    */
   static readonly DEBOUNCE_MS = 40;
 
-  /**
-   * FFZ Scale-3 threshold. When a single Automerge change() transaction touches
-   * >= CHANGESET_THRESHOLD URIs, MemeProvider emits one onChangeset() call on
-   * projections that declare it, INSTEAD OF N individual onUriChanged() calls.
-   *
-   * Rationale: at UEFN scene scale (100 actors × 60fps) per-URI debounce fires
-   * 6000 callbacks/second into the TW5 VM. A single onChangeset() call lets the
-   * VM call bulkSetTiddlers() once per transaction instead.
-   *
-   * Below this threshold: per-URI debounce path (human-speed edits).
-   * At/above this threshold: onChangeset() path (game-loop/bulk imports).
-   */
-  static readonly CHANGESET_THRESHOLD = 10;
-
   private readonly _projections = new Set<MemeProjection>();
   private readonly _pending     = new Map<string, { origin: ChangeOrigin; timer: ReturnType<typeof setTimeout> }>();
   /** Set of island IDs whose initial replay has settled. Default island: "automerge". */
@@ -107,8 +93,9 @@ export class MemeProvider {
   // ---------------------------------------------------------------------------
 
   /**
-   * Feed document patches. Small changes schedule per-URI delivery; large changes coalesce into
-   * complete state envelopes for projections that declare the bulk path.
+   * Feed the patches of one change event. A projection that declares `onChangeset` receives each bag's
+   * gathered events as one array of complete state envelopes; any other receives one debounced call
+   * per title.
    *
    * EVERY TITLE A DOCUMENT HOLDS FANS OUT. The save cascade routes more than `lar:` titles into a
    * document (an ordinary title, a system title, a personal-layer title, a draft under any title), and
@@ -127,38 +114,22 @@ export class MemeProvider {
     }
     if (touched.size === 0) return;
 
-    // FFZ Scale-3: large batch → emit onChangeset to projections that declare it.
-    // Any projection WITHOUT onChangeset falls back to N individual debounced calls.
-    if (touched.size >= MemeProvider.CHANGESET_THRESHOLD) {
-      const hasChangesetProjection = [...this._projections].some((p) => p.onChangeset);
-      if (hasChangesetProjection) {
-        // Gate bulk delivery per bag. Union touched URIs and read their complete state envelopes at
-        // flush, so intermediate values can be omitted without losing the latest document state.
-        // Storm-safe — the gate's maxWaitMs guarantees progress under an unbroken flood instead of
-        // starving the re-projection (Mogul–Ramakrishnan receive-livelock).
-        const bagId = this._getBag?.() ?? "automerge";
-        const acc = this._changesetPending.get(bagId);
-        if (acc) { for (const u of touched) acc.touched.set(u, origin); }
-        else { this._changesetPending.set(bagId, { touched: new Map([...touched].map((u) => [u, origin])) }); }
-        this._changesetGate.mark(bagId);
-
-        // Non-changeset projections still take the per-URI debounce path; drop any per-URI timers
-        // for URIs the changeset path now owns, then re-schedule for the opted-out projections.
-        for (const uri of touched) {
-          const existing = this._pending.get(uri);
-          if (existing) clearTimeout(existing.timer);
-          this._pending.delete(uri);
-        }
-        if ([...this._projections].some((p) => !p.onChangeset)) {
-          for (const uri of touched) this._schedule(uri, origin);
-        }
-        return;
-      }
+    // ONE EVENT, ONE GRAIN. A change event applies whole store changes, so its touched set never cuts a
+    // family (a root, its children and its orphans' tombstones ride one change). A projection that declares
+    // `onChangeset` receives the union of the events gathered for its bag as ONE array, so a shore can land
+    // it with no turn handed to the host in between. The gate's max wait guarantees progress under an
+    // unbroken flood (Mogul–Ramakrishnan receive-livelock); the union only ever grows by whole events.
+    const projections = [...this._projections];
+    if (projections.some((p) => p.onChangeset)) {
+      const bagId = this._getBag?.() ?? "automerge";
+      const acc = this._changesetPending.get(bagId);
+      if (acc) { for (const u of touched) acc.touched.set(u, origin); }
+      else { this._changesetPending.set(bagId, { touched: new Map([...touched].map((u) => [u, origin])) }); }
+      this._changesetGate.mark(bagId);
     }
-
-    // FFZ Scale-1/2: small batch or no changeset projections → debounce per URI.
-    for (const uri of touched) {
-      this._schedule(uri, origin);
+    // A projection that declares no changeset keeps its per-URI path, one debounce per title.
+    if (projections.some((p) => !p.onChangeset)) {
+      for (const uri of touched) this._schedule(uri, origin);
     }
   }
 
@@ -171,6 +142,22 @@ export class MemeProvider {
     for (const p of this._projections) {
       try { p.onUriChanged(change); }
       catch (e) { console.error("[MemeProvider] projection error in onUriChanged:", e); }
+    }
+  }
+
+  /**
+   * Fire the envelopes of ONE store change together, bypassing the debounce: a local family write. A
+   * projection that declares `onChangeset` receives the family as one array; any other receives its
+   * members in order. A family of one fires as a single change.
+   */
+  fireFamily(changes: readonly LarTiddlerChange[]): void {
+    if (changes.length === 0) return;
+    if (changes.length === 1) { this.fireImmediate(changes[0]!); return; }
+    for (const p of this._projections) {
+      try {
+        if (p.onChangeset) p.onChangeset(changes);
+        else for (const change of changes) p.onUriChanged(change);
+      } catch (e) { console.error("[MemeProvider] projection error in a family fire:", e); }
     }
   }
 
@@ -261,6 +248,8 @@ export class MemeProvider {
     const heads = this._getHeads() ?? undefined;
     const change: LarTiddlerChange = { title: uri, record, origin, ...(bag !== undefined && { bag }), ...(heads !== undefined && { heads }) };
     for (const p of this._projections) {
+      // A projection that declares a changeset received this title in its bag's union already.
+      if (p.onChangeset) continue;
       try { p.onUriChanged(change); }
       catch (e) { console.error("[MemeProvider] projection error in onUriChanged:", e); }
     }

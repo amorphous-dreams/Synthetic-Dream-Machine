@@ -144,6 +144,8 @@ export async function shoreRig(opts: RigOptions = {}) {
   const arrivals: string[] = [];
   const onUriChanged = adaptor.onUriChanged.bind(adaptor);
   vi.spyOn(adaptor, "onUriChanged").mockImplementation((change) => { arrivals.push(change.title); onUriChanged(change); });
+  const onChangeset = adaptor.onChangeset.bind(adaptor);
+  vi.spyOn(adaptor, "onChangeset").mockImplementation((changes) => { for (const change of changes) arrivals.push(change.title); onChangeset(changes); });
   adaptor.start();
   const unbridge = bridgeWikiToAdaptor(engine, adaptor);
   await turns();

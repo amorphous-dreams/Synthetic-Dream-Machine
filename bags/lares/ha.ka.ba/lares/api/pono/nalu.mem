@@ -55,15 +55,19 @@ Verse / UEFN SceneGraph layer:
 
 Lararium wiki shore (the landing queue) + nalu engine (the in-wiki applier):
   CRDT merge patches arrive           ← scattered writes (from peers, from CRDT ops)
-  AutomergeDocStore → MemeProvider → IslandAdaptor.onUriChanged → the landing queue
-  host-task yield                     ← pacing boundary: one queue across ALL bags, at most 200 landings between yields
+  AutomergeDocStore → MemeProvider → IslandAdaptor.onChangeset → the landing queue, one family per grain
+  host-task yield                     ← pacing boundary: one queue across ALL bags, whole families up to 200 landings between yields
   $tw.lares.applyNalu(change) × N     ← each change lands in the wiki, synchronously
   refresh(changedTiddlers)            ← WAVE ARRIVES: TW5's own nextTick dispatch carries what landed
 ```
 
 ''Unified-nalu law:'' ONE landing queue per wiki collects the changes of every CRDT bag in
-arrival order. The wiki shore owns that queue and drains it in slices of at most 200 changes,
-yielding to the host between slices; the nalu engine lands each change synchronously
+arrival order. The wiki shore owns that queue and drains it in slices of whole families, up to 200
+changes, yielding to the host between slices. ''The grain = one store change per dispatch'': a store
+change carries a carrier's root, its children and its orphans' tombstones together, the provider hands
+a shore the union of whole change events as one array, and the queue never cuts inside it (a family
+larger than 200 lands whole in a slice of its own), so the wiki dispatches a root and its children
+together and the disk projector never renders half a carrier; the nalu engine lands each change synchronously
 (`$tw.lares.applyNalu`) and holds no queue, no timer and no frame. TW5 gathers changed titles
 until its own scheduled `nextTick` dispatch, so the batch boundary belongs to the wiki and follows
 no slice of the shore; the TiddlyWiki core ships no `wiki.transact()` and nothing on this surface calls one. Prior art
@@ -331,6 +335,6 @@ lands and what refuses follow from state alone (`lar:///ha.ka.ba/lares/docs/pono
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aKB24GukkRHfXl-3CwRpU0MWRnpyDaUaZws4SMXKc44
+<<^ code="&#x0003;">>ni:///sha-256;1DCFBYwhqo2rb6xNCI64xVPP3Ohv-bbyEXD_4NJCSoc
 
 <<^ code="&#x0004;" -> to="?">>

@@ -93,12 +93,14 @@ describe("landed store laws", () => {
     expect(getAllChanges(handle.doc()!).length - before).toBe(1);
   });
 
-  test("A2-store: a bulk changeset carries twelve complete bag and heads envelopes", async () => {
+  test("A2-store: a change event reaches a changeset projection as one array of complete bag and heads envelopes", async () => {
     vi.useFakeTimers();
     const { handle, store } = newStore("bag-a2");
     const calls: Array<readonly any[]> = [];
     const singles: any[] = [];
+    const plainSingles: any[] = [];
     store.addProjection({ onUriChanged(change) { singles.push(change); }, onChangeset(changes) { calls.push(changes); } });
+    store.addProjection({ onUriChanged(change) { plainSingles.push(change); } });
     handle.change((doc) => {
       for (let i = 0; i < 12; i++) doc.tiddlers[`lar:///landed/${i}`] = { tiddler: { title: `lar:///landed/${i}`, text: `v${i}` } };
     });
@@ -113,8 +115,15 @@ describe("landed store laws", () => {
       for (let i = 0; i < 9; i++) doc.tiddlers[`lar:///landed/small-${i}`] = { tiddler: { title: `lar:///landed/small-${i}`, text: `s${i}` } };
     });
     await vi.advanceTimersByTimeAsync(200);
-    expect(singles).toHaveLength(9);
-    expect(singles.every((change) => change.bag === "bag-a2" && change.heads?.length && change.record)).toBe(true);
+    // ONE EVENT, ONE GRAIN, whatever its size: a projection that declares a changeset receives the nine
+    // together, and never a single for a title its changeset carried.
+    expect(calls).toHaveLength(2);
+    expect(calls[1]).toHaveLength(9);
+    expect(calls[1]!.every((change) => change.bag === "bag-a2" && change.heads?.length && change.record)).toBe(true);
+    expect(singles).toHaveLength(0);
+    // CONTROL: a projection that declares no changeset keeps its per-title path for both events.
+    expect(plainSingles).toHaveLength(21);
+    expect(plainSingles.every((change) => change.bag === "bag-a2" && change.heads?.length && change.record)).toBe(true);
   });
 
   test("H-store: a based same-field write surfaces both values; a different-field write merges clean", async () => {
