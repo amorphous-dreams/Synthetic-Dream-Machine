@@ -2514,24 +2514,23 @@ async function prepareNodeBootOn(
                door: carriageLoop ? "socket-b" : "local-only", holders: fleetHolders() };
     });
 
-    // cad-seal — the cad seal's FIRST live producer. Seal a carrier body's PLAINTEXT into the ciphertext
-    // federation plane (a distinct `cad/` tier), ADDITIVELY: the cleartext-local corpus CAS the wake reads stays
-    // untouched. The body arrives as a staged `cid` (resolved cleartext from the corpus CAS) or inline `text`.
-    // The seal registers the ciphertext docId into the live sealRegistry → the member blind-transit lane opens
-    // for exactly that body; a member reads NOTHING (carry ⊥ read — the read-cap rides the keyring, never here).
-    // The keyring row reads HERE, at the act, through the sovereign seam: the charter names the Nexus and its head
-    // epoch, and the secret that name answers to seals the body. FAIL-CLOSED: at the floor, with no seated charter,
-    // or with no secret held for the head, the act refuses by name and the body stays cleartext-local only.
+    // cad-seal — the cad seal's live producer. Seal a carrier body's PLAINTEXT into the ciphertext federation
+    // plane (a distinct `cad/` tier), ADDITIVELY: the cleartext-local corpus CAS the wake reads stays untouched.
+    // The body arrives as a staged `cid` (resolved cleartext from the corpus CAS) or inline `text`. The body
+    // seals as one sealed value under its BAG's content key (lar:///ha.ka.ba/lararium/mesh/sealed-store); the
+    // charter names only the SCOPE the sealed block registers under, which the carry lane's own gates read.
+    // No convergence secret seals anything, so this verb reads no keyring. FAIL-CLOSED: at the floor, with no
+    // seated charter, or with no content key for the bag, the act refuses by name and the body stays
+    // cleartext-local only. The content-key holder arrives with the sealed store's lockbox store; until a
+    // composition seats one, `under` stays absent and the producer answers `ContentKeyUnavailable`.
     registry.register("cad-seal", async (args) => {
-      if (!sovereign) throw new Error("cad-seal: this vessel rests at the floor, so its keyring row stays shut — open it with `lares vault unlock` (the body stays cleartext-local)");
-      // The head comes off the VERIFIED lineage (`foundingRoster`): a charter whose chain does not verify, or whose
-      // head does not bind its seated keys, names no head, so no secret answers and nothing seals.
+      if (!sovereign) throw new Error("cad-seal: this vessel rests at the floor, so no content key opens — unlock it with `lares vault unlock` (the body stays cleartext-local)");
+      // The scope comes off the VERIFIED lineage (`foundingRoster`): a charter whose chain does not verify, or
+      // whose head does not bind its seated keys, names no head, so no scope stands and nothing seals.
       const charter = readNexusDoc(sealHome);
       const nexusAid = realmIdOfCharter(charter);
       const headEpochCid = foundingRoster(charter).sealEpochCid || null;
-      if (!nexusAid || !headEpochCid) throw new Error("cad-seal: no verified charter epoch stands here, so no Nexus names a convergence secret — seat one with `lares nexus seal seat` (the body stays cleartext-local)");
-      const keyring = await sovereign.keyring({ nexusAid, headEpochCid });
-      if (!keyring) throw new Error("cad-seal: this vessel holds no convergence secret for its Nexus — the seat mints one and an admission delivers it (the body stays cleartext-local)");
+      if (!nexusAid || !headEpochCid) throw new Error("cad-seal: no verified charter epoch stands here, so no Nexus names the sealed block's scope — seat one with `lares nexus seal seat` (the body stays cleartext-local)");
       const cid  = typeof args["cid"]  === "string" ? (args["cid"]  as string) : "";
       const text = typeof args["text"] === "string" ? (args["text"] as string) : "";
       let plaintext: Uint8Array;
@@ -2548,12 +2547,12 @@ async function prepareNodeBootOn(
         registry:  sealRegistry,
         cadDir:    cadSealDir(storageDir),
         plaintext,
-        keyring,
+        scope:     { nexusAid, epochCid: headEpochCid },
         tracker:   casBagTracker,
         self:      vesselIdentity.verifyingKey,
       });
-      // Return the PUBLIC verify-cap only (cid + docId + the name it sealed under) — the read-cap NEVER crosses this boundary.
-      return { verb: "cad-seal", cid: installed.cid, docId: installed.docId, nexusAid: installed.nexusAid, epochCid: installed.epochCid, sealed: sealRegistry.seal.isSealedPlane(installed.docId) };
+      // Every field may cross this boundary: the address, the docId, the scope, the key version and the body's digest. No key rides the answer.
+      return { verb: "cad-seal", cid: installed.cid, docId: installed.docId, nexusAid: installed.nexusAid, epochCid: installed.epochCid, keyVersion: installed.keyVersion, ref: installed.ref, sealed: sealRegistry.seal.isSealedPlane(installed.docId) };
     });
 
     // ── The wiki-SWITCHER surface (the FACE over the activation cap) ──────────────

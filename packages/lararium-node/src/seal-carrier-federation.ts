@@ -27,7 +27,7 @@ import { installSealedBody, type InstalledSealedBody } from "./ciphertext-cas-se
 import { noteInstalledBody } from "./bag-tracker.js";
 import type { BagTracker } from "./bag-tracker.js";
 import type { SealedPlaneRegistry } from "./plane-seal.js";
-import type { NexusConvergenceKeyring, NexusEpochName } from "./nexus-convergence-keyring.js";
+import type { NexusEpochName } from "./nexus-convergence-keyring.js";
 
 /** The cad ciphertext CAS tier — a DISTINCT dir from the cleartext `cas` tier, so the cleartext wake read
  *  (corpus / runtime CAS) is never touched by a sealed body. A member serves + `cas-transit resolveByCid`
@@ -60,9 +60,6 @@ export function sealCarrierForFederation(args: {
   readonly under?:    PrivateBodyKey;
   /** The Nexus the sealed block belongs to, and its charter epoch. */
   readonly scope?:    NexusEpochName;
-  /** UNREAD. The composer's `cad-seal` verb still hands its convergence keyring here; no secret in it seals
-   *  anything, and the field leaves with the compose hunk that names `under` and `scope`. */
-  readonly keyring?:  NexusConvergenceKeyring;
   /** Optional discovery announce: note the sealed cid on the relay-side bag-tracker under this holder handle. */
   readonly tracker?:  BagTracker;
   readonly self?:     CasHolder;

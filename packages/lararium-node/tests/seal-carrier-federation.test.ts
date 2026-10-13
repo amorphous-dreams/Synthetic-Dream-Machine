@@ -7,7 +7,7 @@
  *     the SealedPlaneRegistry entry appears → the member blind-transit lane opens for that docId,
  *   · VERIFY ⊥ READ — the ciphertext's cid is BLAKE3(ciphertext): verifyCiphertextCid holds with no key; a member
  *     opens with its bag content key, and a carry-only holder's key refuses by name,
- *   · NO KEY, NO SEAL — a convergence keyring alone seals nothing: the producer refuses and nothing lands,
+ *   · NO KEY, NO SEAL — with no content key the producer refuses and nothing lands,
  *   · cas-transit resolveByCid reads the sealed body back + re-verifies BLAKE3==cid at the fetcher,
  *   · WAKE UNCHANGED (regression guard) — the seal writes ONLY the ciphertext `cad/` tier; the cleartext corpus
  *     CAS the wake reads is a DISTINCT dir, untouched, still returning the plaintext.
@@ -20,7 +20,7 @@ import {
   verifyCiphertextCid, makeCidResolver, sha256HexBytesSync, utf8Bytes,
   type CasTransitTransport,
 } from "@lararium/mesh";
-import { freshTestKeyring, freshTestBodyKey, TEST_SCOPE, TEST_NEXUS_AID, TEST_HEAD_EPOCH, openAsMember } from "./cas-test-setup.js";
+import { freshTestBodyKey, TEST_SCOPE, TEST_NEXUS_AID, TEST_HEAD_EPOCH, openAsMember } from "./cas-test-setup.js";
 import { cadSealDir, sealCarrierForFederation, ContentKeyUnavailable } from "../src/seal-carrier-federation.js";
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { makeBagTracker } from "../src/bag-tracker.js";
@@ -68,10 +68,10 @@ describe("seal-carrier-federation — the seal's first producer (additive)", () 
     expect(verifyCiphertextCid(fetched!, installed.cid)).toBe(true);
   });
 
-  test("a convergence keyring alone seals nothing: with no content key the producer refuses and nothing lands", () => {
+  test("with no content key the producer refuses and nothing lands", () => {
     const registry = makeSealedPlaneRegistry();
     const cadDir = cadSealDir(storageDir);
-    expect(() => sealCarrierForFederation({ registry, cadDir, plaintext: BODY, scope: TEST_SCOPE, keyring: freshTestKeyring() })).toThrow(ContentKeyUnavailable);
+    expect(() => sealCarrierForFederation({ registry, cadDir, plaintext: BODY, scope: TEST_SCOPE })).toThrow(ContentKeyUnavailable);
     expect(registry.size).toBe(0);
     expect(existsSync(cadDir) ? readdirSync(cadDir) : []).toEqual([]);
   });
