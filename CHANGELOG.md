@@ -43,6 +43,10 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **A stand presents one contact card.** The card gets minted before the stand's Archive leaves, so every later stand opens what the card promised.
 - **The joinee rite dials the hearth's own gate.** A founder that also stands a carriage relay no longer hands a joiner the relay's key.
 - **A contested removal keeps its shadow.** A lower lifts an edge shadow only by causally following every raise; a racing lower, a missing parent or a relabeled act leaves it up. `lares cabal join` reads the edge-kapae board and names each vouch set aside, `lares edge` reports the verdict, and `lares cabal vouch` prints the edge id.
+- **An edge removal takes two hands.** The holder an edge names, or the seat quorum, raises a shadow; a lower lifts only its own hand's raises. `lares edge kapae` names a relation by edge id, by `--member` with `--realm`, or by `--device`, and `--quorum` signs with the held seats.
+- **A shadow carries across a seal roll.** An edge anchor chains from the charter head, so a lift at the new head cites the earlier raise. A vessel keeps every act, anchor and vouch it counted and returns it to a board that lost it.
+- **Vouch and edge boards key on the realm, and a device's edge board on its fleet root.** A vessel re-founds; nothing migrates. `lares cabal join` names a shadow over a vouch, over its voucher, and over the applicant.
+- **A session-scoped document view and a whole-key surface mount stand in mesh.** One function resolves a session's recipe; a session carries a capability profile; no production surface mounts through them yet.
 
 **Added**
 - **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki. Every daemon-door meme verb and MCP meme tool likewise requires one container.
