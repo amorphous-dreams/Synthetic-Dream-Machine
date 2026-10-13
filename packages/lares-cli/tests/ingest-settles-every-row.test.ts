@@ -185,7 +185,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
     for (const c of candidates) {
       const own = carrierHash(canonicalizeCarrierText(c.uri, c.text)!);
       expect(own).not.toBe(c.diskHash);   // the setup took: the bytes stand in another framing
-      expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ disk: c.diskHash, records: own });
+      expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ path: c.file, disk: c.diskHash, records: own });
     }
   });
 
@@ -197,7 +197,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
     const s = await settleIngest(opts(candidates), tree, isl.submit);
     expect(isl.waves.length).toBe(2);
     expect(isl.waves[1]!.candidates.map((c) => c.uri).sort()).toEqual(plain.map((c) => c.uri).sort());
-    for (const c of plain) expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ disk: c.diskHash, records: islandRender(c) });
+    for (const c of plain) expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ path: c.file, disk: c.diskHash, records: islandRender(c) });
     expect(s.recorded).toBe(80);
     expect(s.refused).toEqual([]);
   });
@@ -218,7 +218,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
     await settleIngest(opts(candidates), tree, isl.submit);
     expect(isl.waves.length).toBe(2);
     expect(isl.waves[1]!.candidates.map((c) => c.uri)).toEqual([uriOf(900)]);
-    expect(tree.base(syncedTreeKey(BAG, uriOf(900)))).toEqual({ disk: beside.diskHash, records: islandRender(beside) });
+    expect(tree.base(syncedTreeKey(BAG, uriOf(900)))).toEqual({ path: beside.file, disk: beside.diskHash, records: islandRender(beside) });
   });
 
   test("a carrier the island re-homed from a vanished source rides the deletion summary: never asked again, never pinned here", async () => {
@@ -252,7 +252,7 @@ describe("past the cap every landed carrier still pins both sides of its base", 
     const s = await settleIngest(opts(candidates), tree, submit);
     expect(waves.length).toBe(1 + Math.ceil(40 / INGEST_PAGE));
     expect(s.named.size).toBe(40);
-    for (const c of candidates) expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ disk: c.diskHash, records: islandRender(c) });
+    for (const c of candidates) expect(tree.base(syncedTreeKey(BAG, c.uri))).toEqual({ path: c.file, disk: c.diskHash, records: islandRender(c) });
   });
 
   test("deletions and the change id ride the first wave alone", async () => {
