@@ -23,6 +23,7 @@
  * a pid namespace split (a container beside a host process on the same bind mount) and a SIGKILLed holder's corpse all
  * read true: a corpse is reaped by exactly one claimant, a live holder in any namespace is waited on. A contender
  * waits through `maxWaits` looks (a COUNT, never an age) and then refuses by name rather than seize a live holder's claim.
+ * Each look against a live holder takes one wait from the `pace` port, so the budget reads as that many waits on any machine.
  *
  * The claim is a socket, not a carrier: `list()` takes regular files only, so the census never meets it.
  */
@@ -50,6 +51,8 @@ export interface FsCustodyIoOptions {
   readonly maxWaits?: number;
   /** Milliseconds between polls. Default 50. Pacing only: no poll decides anything by elapsed time. */
   readonly pollMs?: number;
+  /** The wait one look takes against a live holder. Default: a timer of `pollMs`. A port, so a test counts looks and reads no clock. */
+  readonly pace?: (pollMs: number) => Promise<void>;
 }
 
 function syncDir(dir: string): void {
@@ -64,10 +67,12 @@ export class FsCustodyIo implements CustodyIo {
   private chain: Promise<unknown> = Promise.resolve();
   private readonly maxWaits: number;
   private readonly pollMs: number;
+  private readonly pace: (pollMs: number) => Promise<void>;
 
   constructor(readonly homes: CustodyHomes, opts: FsCustodyIoOptions = {}) {
     this.maxWaits = opts.maxWaits ?? 600;
     this.pollMs = opts.pollMs ?? 50;
+    this.pace = opts.pace ?? ((ms) => new Promise<void>((r) => setTimeout(r, ms)));
   }
 
   /** The claim this port's holder takes, spelled by absolute path (for reading; the claim itself rides an anchored spelling). */
@@ -143,8 +148,13 @@ export class FsCustodyIo implements CustodyIo {
       catch (err) {
         if (!(err instanceof NameHeld)) throw err;
         if (await answers(path)) {
-          // Pacing only: wait for the holder's release or death, but never longer than one poll interval per look.
-          await Promise.race([letGo(path), new Promise<void>((r) => setTimeout(r, this.pollMs))]);
+          // Pacing only: one wait per look, cut short when the holder releases or dies. A holder hangs up on every
+          // caller at once, so a closed connection alone says nothing: the look ends early only when the name
+          // stopped answering. A look that returned on the hang-up alone would spend the whole budget in the time
+          // the kernel takes to connect `maxWaits` times, and refuse a holder that had barely begun.
+          const paced = this.pace(this.pollMs);
+          await Promise.race([letGo(path), paced]);
+          if (await answers(path)) await paced;
         }
       }
     }

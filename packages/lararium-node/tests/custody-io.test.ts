@@ -166,6 +166,48 @@ describe("FsCustodyIo — the port over the real filesystem", () => {
     } finally { child.kill("SIGKILL"); }
   });
 
+  test("RED: each look at a live holder takes ONE wait from the pace port, and the budget counts those waits", async () => {
+    // No clock: the port hands back a wait this case alone releases, and says each time the contender asks for one.
+    const maxWaits = 3, pollMs = 41;
+    const asks: { pollMs: number; release: () => void }[] = [];
+    let onAsk: () => void = () => undefined;
+    const pace = (ms: number) => new Promise<void>((release) => { asks.push({ pollMs: ms, release }); onAsk(); });
+    const nextAsk = (n: number) => new Promise<void>((res) => { if (asks.length >= n) res(); else onAsk = () => { if (asks.length >= n) res(); }; });
+    const io = new FsCustodyIo(homes, { maxWaits, pollMs, pace });
+    const child = holderChild(io.claimPath());
+    let said = "";
+    child.stdout!.on("data", (chunk: Buffer) => { said += chunk.toString(); });
+    const saidAll = new Promise<void>((res) => child.stdout!.once("end", () => res()));
+    try {
+      await heldBy(child);
+      let ran = false;
+      const order: string[] = [];
+      const second = io.exclusive(async () => { ran = true; }).then(() => { order.push("entered"); }, (err) => { order.push("refused"); throw err; });
+      const settledEarly = second.catch(() => undefined);
+      for (let look = 1; look <= maxWaits + 1; look++) {
+        await Promise.race([nextAsk(look), settledEarly]);
+        expect(asks.length).toBe(look);             // one wait per look, and no look begins before its wait ends
+        // The holder hangs up on the look's callers (its release-watch and its second ask). A hang-up alone ends no look.
+        await Promise.race([askedOf(child, 2), settledEarly]);
+        expect(asks.length).toBe(look);
+        expect(order).toEqual(Array.from({ length: look - 1 }, (_, k) => `released-${k + 1}`));
+        order.push(`released-${look}`);
+        asks[look - 1]!.release();
+      }
+      await expect(second).rejects.toBeInstanceOf(CustodyLockRefused);
+      expect(order).toEqual([...Array.from({ length: maxWaits + 1 }, (_, k) => `released-${k + 1}`), "refused"]);   // refused only after its last wait
+      expect(asks.map((a) => a.pollMs)).toEqual(Array(maxWaits + 1).fill(pollMs));
+      expect(ran).toBe(false);
+      expect(existsSync(io.claimPath())).toBe(true);   // CONTROL: the live claim stood untouched
+      // THE HOLDER'S OWN TALLY, read whole once it leaves. A look reaches the holder four times: twice to find it
+      // live (the claim's ask and the contender's), once to watch for its release, and once more after the
+      // hang-up to see that it still answers. A look that ended on the hang-up alone would reach it three times.
+      child.kill("SIGTERM");
+      await saidAll;
+      expect(said.split("asked").length - 1).toBe(4 * (maxWaits + 1));
+    } finally { child.kill("SIGKILL"); }
+  });
+
   test("a holder SIGKILLed mid-section leaves a corpse the next claimant reaps", async () => {
     const io = new FsCustodyIo(homes, { maxWaits: 3, pollMs: 10 });
     const child = holderChild(io.claimPath());
