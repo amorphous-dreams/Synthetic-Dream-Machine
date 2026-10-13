@@ -12,7 +12,7 @@ mana      = 19
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "the worldline keel — ONE model for a spawned spirit across three faces: NAME (a derived lineage-path handle, baptized at spawn, no registry, no daemon-crypto — descent SERVES AS the address), ATTRIBUTION (a reified prov:Delegation/Communication DAG, bi-temporal, keyed on trace-id·span-pair — who-drove-whom, and the SAME DAG read as the worldline's happened-before), TIME (the two-domain boundary — Automerge owns causal order INSIDE its docs/CRDTs; the worldline owns a per-handle FfzClock whose merge-topology carries its partial order and whose grain names rhythmic POSITION — a membership coordinate, where-in-the-cadence, NOT a freshness/decay scalar (manaoio serves the memes, never this clock); FfzClock NEVER rules inside Automerge). Folds the former agent-identity (mana 18) + agent-provenance (mana 19); the FfzClock primitive itself lives separate at mesh/ffz-clock as a domain-general pattern integrity"
+role      = "the worldline keel — ONE model for a spawned spirit across three faces: NAME (a derived lineage-path handle, baptized at spawn, no registry, no daemon-crypto — descent SERVES AS the address for recall), ATTRIBUTION (a reified prov:Delegation/Communication DAG, bi-temporal, keyed on trace-id·span-pair — who-drove-whom, and the SAME DAG read as the worldline's happened-before; the Mask carries authorship), TIME (the two-domain boundary — Automerge owns causal order INSIDE its docs/CRDTs; the worldline owns a per-handle FfzClock whose merge-topology carries its partial order and whose grain names rhythmic POSITION — a membership coordinate, where-in-the-cadence, NOT a freshness/decay scalar (manaoio serves the memes, never this clock); FfzClock NEVER rules inside Automerge). The FfzClock primitive lives at mesh/ffz-clock as a domain-general pattern integrity"
 tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/agent-worldline"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -57,7 +57,7 @@ The three faces, each its own organ, none collapsing into another:
 !! Face I ~ Name ~ descent serves as the address
 
 <<~ has Part Handle "carries/a lineage-path handle BAPTIZED at spawn, DERIVED not minted — `run.parent.child` or `CID(parent,role,spawn-args,nonce)`; the parent recovers FROM the child; no registry. = the trace-id/span-id formalized [Meristem: the division path AB.pla IS the name · Deixis: Kripke baptism + teknonymy · Cipher: pid/span-id/BIP32-path · Archivist: local-first, no-registry]">>
-<<~ has Part Self "resolves/by RULE against the spawn-context (the indexical 'I' = the agent of THIS context), never a stored referent; the handle carries identity, the pet-name labels only [Deixis: character vs content · Cipher: petname split]">>
+<<~ has Part Self "resolves/by RULE against the spawn-context (the indexical 'I' = the agent of THIS context), never a stored referent; the handle addresses and recalls work, the Mask carries authorship [Deixis: character vs content · Cipher: petname split]">>
 <<~ has Part Two>>
 
 ''The fork resolves on different organs'' (Deixis): the //handle// baptizes ''FIXED''
@@ -88,7 +88,7 @@ the verb the same way the handle does: descent SERVES AS the address, so the wor
 its own wing; this face names the //edges between them// — the coordination graph the
 frameworks throw away and the memory must keep. It stacks ''three layers'':
 
-<<~ has Layer Identity "organ/wing + #has grain/the-actor ~ PERSISTENT actors (operator, recurring specialists) keep a NAMED wing. EPHEMERAL tasked spirits go NAMELESS — identity IS their #has stack (capabilities · role · task), pet-name only a handle; they land in the project __spirits wing and recall by semantic search over captured verbatim (capability-routed comes free), never name-exact. The run-id is never the key.">>
+<<~ has Layer Identity "organ/wing + #has grain/the-actor ~ PERSISTENT actors (operator, recurring specialists) keep a NAMED wing. EPHEMERAL tasked spirits carry a Mask; their #has stack (capabilities · role · task) routes recall. They land in the project __spirits wing and recall by semantic search over captured verbatim (capability-routed comes free), never name-exact. The run-id is never the key.">>
 <<~ has Layer Provenance "organ/added_by grain/the-chunk ~ every drawer carries its actor (who-said-what). PROV wasAttributedTo; mem0 agent_id. The episodic provenance layer.">>
 <<~ has Layer Relationship "organ/reified-node+projected-edge grain/the-relation ~ the spawn/handoff REIFIES to its own node (a PROV Delegation/Communication shape) carrying parent·child·driver·correlation, WITH a projected (parent)—spawned/actedOnBehalfOf→(child) edge for cheap traversal. Bi-temporal: mutable valid-interval [spawn,handback) + append-only transaction-interval; INVALIDATE-don't-delete. The reified node owns the truth; a labeled tunnel MAY mirror it for browsing only.">>
 <<~ has Layer Three>>
@@ -329,14 +329,14 @@ prompts vs untrusted generated code (sets the tier floor: T0 vs T1+).
 
 <<~ ahu #/crypto>>
 
-!! Crypto ~ deferred to the founding boundary
+!! Crypto ~ the vessel's key serves; a spirit holds none
 
 ''NONE inside the daemon'' — the single replica grants ocap-grade unforgeability for
-free. A signature (did:key / UCAN / AIP) earns its cost ONLY where an act crosses into
-a peer's trust-domain the daemon can't vouch for — the //founding/incorporation//
-crossing, where the agent handle meets the operator's keyhive vessel-identity
-(→ keyhive, the founding boundary). Derive lineage into the id; attribute by reference
-edge, not a signed chain; sign only at the hostile boundary.
+free. The vessel's own key serves at every crossing; the house mints no key for a
+spirit. An act presents what any session of that face on that vessel presents. The
+operator answers for the spirit's acts (→ keyhive, the vessel identity). Derive lineage
+into the handle for addressing and recall; attribute by reference edge; the Mask carries
+authorship.
 
 <<~/ahu>>
 
@@ -344,7 +344,7 @@ edge, not a signed chain; sign only at the hostile boundary.
 
 !! The Six Rhymes ~ pattern integrities, one per domain
 
-<<~ scale rhyme "physics ~ Lightcone: each worldline carries its own proper time; happened-before orders only cone-neighbors; 'elsewhere' = concurrency (REFUSE to order siblings); the twin REUNITES at handback; keep the order a union of local cones, never a global DAG -> law ~ Fiduciary: the act binds the principal (qui-facit), keyed to the act, stopping at scope; re-delegation defaults CLOSED; mandate carries scope+TTL+revocability; conduit-not-person until a deliberate founding; anonymity never severs the upward edge -> biology ~ Meristem: the division path SERVES AS the name (no registry); work attributed to the LINE; apoptosis packages teardown (merge sealed, never spilled); coordinate on locally-sensed thresholds (no global clock) -> linguistics ~ Deixis: identity = a character (rule) resolving content per context; the 'I' shifts at the spawn boundary; the parent resolves as a bound variable up the tree; name by relation (teknonymy) -> cs-web3 ~ Cipher: a logical handle holds identity unforgeably INSIDE one trust-domain (ocap-grade); derive lineage into the id; attribute by reference edge not signed chain; crypto only at the hostile boundary -> repo ~ Archivist: local-first, run-local-stable (not crypto), capability-not-platform, nameless-subagents-ok, no-global-wall-clock; the KG triple (temporal validity + provenance fields) stands ready to extend with agent_handle">>
+<<~ scale rhyme "physics ~ Lightcone: each worldline carries its own proper time; happened-before orders only cone-neighbors; 'elsewhere' = concurrency (REFUSE to order siblings); the twin REUNITES at handback; keep the order a union of local cones, never a global DAG -> law ~ Fiduciary: the act binds the principal (qui-facit), keyed to the act, stopping at scope; re-delegation defaults CLOSED; mandate carries scope+TTL+revocability; conduit-not-person until a deliberate founding; anonymity never severs the upward edge -> biology ~ Meristem: the division path SERVES AS the name (no registry); work attributed to the LINE; apoptosis packages teardown (merge sealed, never spilled); coordinate on locally-sensed thresholds (no global clock) -> linguistics ~ Deixis: identity = a character (rule) resolving content per context; the 'I' shifts at the spawn boundary; the parent resolves as a bound variable up the tree; name by relation (teknonymy) -> cs-web3 ~ Cipher: the lineage handle addresses and recalls work INSIDE one trust-domain (ocap-grade); the vessel's own key serves at crossings; attribute by reference edge, not signed chain -> repo ~ Archivist: local-first, run-local-stable (not crypto), capability-not-platform, Masked-subagents-ok, no-global-wall-clock; the KG triple (temporal validity + provenance fields) stands ready to extend with agent_handle">>
 
 <<~/ahu>>
 
@@ -426,6 +426,6 @@ attribute to the spirit that moved them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WkSMbJm3MNSDK6WtV280X9DbHjBT7TZO4C01PYfDBI4
+<<^ code="&#x0003;">>ni:///sha-256;JkNmIvkW7iWkk6qxdJzpr7ARJa3Tk71ze6yQ2kCMoVI
 
 <<^ code="&#x0004;" -> to="?">>
