@@ -86,7 +86,7 @@ import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonCorpusRoot, loadLaresConfig, hostingCarryLimits } from "./lares-config.js";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
-import { DeterministicFederationGate, utf8Bytes, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
+import { DeterministicFederationGate, makeCidResolver, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
 import { walkIdentity, walkOver, hostingActOn } from "@lararium/mesh";
 import {
   standSiblingChannel, siblingRefusalLine, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
@@ -114,7 +114,7 @@ import { readBulbArtifact, type BulbArtifact } from "./bulb.js";
 import { hermRealmShoreBooks, publicCasShore } from "./bulb-read-face.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { makeSealedPlaneRegistry } from "./plane-seal.js";
-import { cadSealDir, sealCarrierForFederation } from "./seal-carrier-federation.js";
+import { cadSealDir, registerSealedCarrier } from "./seal-carrier-federation.js";
 import { makeBagTracker } from "./bag-tracker.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "./carriage-serve-loop.js";
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "./carriage-relay.js";
@@ -2505,45 +2505,34 @@ async function prepareNodeBootOn(
                door: carriageLoop ? "socket-b" : "local-only", holders: fleetHolders() };
     });
 
-    // cad-seal — the cad seal's live producer. Seal a carrier body's PLAINTEXT into the ciphertext federation
-    // plane (a distinct `cad/` tier), ADDITIVELY: the cleartext-local corpus CAS the wake reads stays untouched.
-    // The body arrives as a staged `cid` (resolved cleartext from the corpus CAS) or inline `text`. The body
-    // seals as one sealed value under its BAG's content key (lar:///ha.ka.ba/lararium/mesh/sealed-store); the
-    // charter names only the SCOPE the sealed block registers under, which the carry lane's own gates read.
-    // FAIL-CLOSED: at the floor, with no
-    // seated charter, or with no content key for the bag, the act refuses by name and the body stays
-    // cleartext-local only. The content-key holder arrives with the sealed store's lockbox store; until a
-    // composition seats one, `under` stays absent and the producer answers `ContentKeyUnavailable`.
+    // cad-seal — REGISTER a carrier body the content-key holder sealed. The holder lives in the daemon island,
+    // beside this vessel's key seat (lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store): the island's
+    // `sealed-seal` verb seals a body under its BAG's content key and rests the ciphertext in the `cad/` tier, so
+    // no bare key crosses the island's port. This verb then takes the sealed ADDRESS and registers it: the
+    // sealed set, its scope sidecar and the discovery announce. The charter names only the SCOPE the sealed block
+    // registers under, which the carry lane's own gates read. FAIL-CLOSED: at the floor, with no seated charter,
+    // or for an address whose bytes do not rest sealed in the tier, the act refuses by name and registers nothing.
+    // A caller runs the two verbs in turn, as `lares edge settle` runs its three.
     registry.register("cad-seal", async (args) => {
-      if (!sovereign) throw new Error("cad-seal: this vessel rests at the floor, so no content key opens — unlock it with `lares vault unlock` (the body stays cleartext-local)");
+      if (!sovereign) throw new Error("cad-seal: this vessel rests at the floor, so no content key opens — unlock it with `lares vault unlock` (nothing registered)");
       // The scope comes off the VERIFIED lineage (`foundingRoster`): a charter whose chain does not verify, or
-      // whose head does not bind its seated keys, names no head, so no scope stands and nothing seals.
+      // whose head does not bind its seated keys, names no head, so no scope stands and nothing registers.
       const charter = readNexusDoc(sealHome);
       const nexusAid = realmIdOfCharter(charter);
       const headEpochCid = foundingRoster(charter).sealEpochCid || null;
-      if (!nexusAid || !headEpochCid) throw new Error("cad-seal: no verified charter epoch stands here, so no Nexus names the sealed block's scope — seat one with `lares nexus seal seat` (the body stays cleartext-local)");
-      const cid  = typeof args["cid"]  === "string" ? (args["cid"]  as string) : "";
-      const text = typeof args["text"] === "string" ? (args["text"] as string) : "";
-      let plaintext: Uint8Array;
-      if (cid) {
-        const bytes = readCasBlobFromFs(cid, casDirForStorage(storageDir));   // the SAME cleartext corpus CAS the CLI staged to
-        if (!bytes) throw new Error(`cad-seal: no staged carrier body at cid ${cid} in the corpus CAS`);
-        plaintext = bytes;
-      } else if (text) {
-        plaintext = utf8Bytes(text);
-      } else {
-        throw new Error("cad-seal: `cid` (a staged carrier) or `text` (an inline body) required");
-      }
-      const installed = sealCarrierForFederation({
-        registry:  sealRegistry,
-        cadDir:    cadSealDir(storageDir),
-        plaintext,
-        scope:     { nexusAid, epochCid: headEpochCid },
-        tracker:   casBagTracker,
-        self:      vesselIdentity.verifyingKey,
+      if (!nexusAid || !headEpochCid) throw new Error("cad-seal: no verified charter epoch stands here, so no Nexus names the sealed block's scope — seat one with `lares nexus seal seat` (nothing registered)");
+      const cid = typeof args["cid"] === "string" ? (args["cid"] as string) : "";
+      if (!cid) throw new Error("cad-seal: `cid` required — the `blake3:` address the island's `sealed-seal` verb answered");
+      const registered = registerSealedCarrier({
+        registry: sealRegistry,
+        cadDir:   cadSealDir(storageDir),
+        cid,
+        scope:    { nexusAid, epochCid: headEpochCid },
+        tracker:  casBagTracker,
+        self:     vesselIdentity.verifyingKey,
       });
-      // Every field may cross this boundary: the address, the docId, the scope, the key version and the body's digest. No key rides the answer.
-      return { verb: "cad-seal", cid: installed.cid, docId: installed.docId, nexusAid: installed.nexusAid, epochCid: installed.epochCid, keyVersion: installed.keyVersion, ref: installed.ref, sealed: sealRegistry.seal.isSealedPlane(installed.docId) };
+      // Every field may cross this boundary: the address, the docId and the scope. No key rides the answer.
+      return { verb: "cad-seal", cid: registered.cid, docId: registered.docId, nexusAid: registered.nexusAid, epochCid: registered.epochCid, sealed: sealRegistry.seal.isSealedPlane(registered.docId) };
     });
 
     // ── The wiki-SWITCHER surface (the FACE over the activation cap) ──────────────
