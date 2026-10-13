@@ -192,7 +192,8 @@ The law, in five clauses:
   leaf through the shared key as surely as both on one socket would. The code as it stands proves ONE vessel
   key on every socket a vessel opens, so today the clause binds the whole vessel, and two sessions of one
   vessel that wear different faces would correlate at any gate both dial. The session ruling moves the gate
-  proof to a face-scoped subject; that build stands OWED, and how such a key comes into being stands unruled. The wire therefore
+  proof to a face-scoped subject, and <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">> names how
+  such a key comes to stand; the cutover that wires it stands OWED. The wire therefore
   carries no contract slot at all: a self-founded vessel with no admit for the dialed Nexus presents its
   ContactCard alone, and only the fleet edge (signed by a root the vessel does NOT hold) rides beside a card.
 
@@ -345,9 +346,10 @@ own hosting doc, so nothing detects a forked hosting act until a second carrier 
 host whose invite came in. The cryptography removes the record. It cannot remove what the host can see.
 
 ''WHAT WAITS FOR THE RE-FOUND.'' A per-Nexus wire key (one gate key serves every Nexus a hearth
-carries, so a gate's posture folds over all of them); a sealed custody root (the hosting key derives from a
-leaf seed that rests cleartext on disk); full Noise IK (the transport and the knock path still leak to a
-passive watcher).
+carries, so a gate's posture folds over all of them); full Noise IK (the transport and the knock path leak
+to a passive watcher). The hosting key derives from a per-Nexus leaf seed, which derives from a persona root
+that rests sealed under the vessel key; the hosting stores' own rows rest outside that key until the custody
+seal takes them (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>).
 
 ''The reputation-cost braid'' — the idea that an invite rides on the inviter's reputation as a cost
 (Sybil-resistance, accountability) — reserves to the ''Cabal tier'', never the general invite: a
@@ -387,8 +389,8 @@ grant tag. The guest keeps its own receipts. The quota bounds each guest's carri
 ''TWO BOUNDS, NAMED.'' The records form a directory of opaque rows, so a seizer of the hearth's store reads
 how many guests it carries for and each row's contact rhythm — a count and a cadence, never who. A holder
 of the hearth's leaf seed can test a KNOWN leaf against the rows; that adds no linkage the hearth lacks,
-since it already sees that leaf prove. Both bounds stand until the sealed custody root closes the store at
-rest.
+since it already sees that leaf prove. Both bounds stand until the hosting stores rest sealed under the
+vessel key.
 
 ''RECLAIM RUNS PONO — PRESSURE THE ONLY TRIGGER, THE GUEST'S OWN RHYTHM THE MEASURE, NOTICE BEFORE DISCARD.''
 * Lapsing alone evicts nothing. Only a deposit that would pass the hearth's total triggers a
@@ -502,6 +504,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rZ7i_qC9HMTo_NpjvBowNsQDN6haaIFXwNNX3OEVjFk
+<<^ code="&#x0003;">>ni:///sha-256;lLOLbyfEVBGurtC2xA0XptqslUrHqLAxJ-QUgSuz0xs
 
 <<^ code="&#x0004;" -> to="?">>

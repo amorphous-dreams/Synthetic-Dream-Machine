@@ -138,13 +138,15 @@ out on purpose
 The service provider cannot read user data. End-to-end encryption by default.
 Servers hold only encrypted bytes; they see membership info but not document content.
 
-''Lararium:'' PARTIAL. Document content rests in cleartext; sealing lands by the custody
-train.
+''Lararium:'' PARTIAL. Identity rows rest sealed under the vessel key; document content rests in
+cleartext, and the sealed store's later steps seal it
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>).
 
 * ''Stands built:'' the custody slot tree and the custody root seal from birth
-  (`packages/lararium-node/src/custody-root.ts`). The identity archive seals under an
-  operator passphrase where one stands (scrypt + AES-256-GCM,
-  `packages/lararium-node/src/archive-seal.ts`) and rests cleartext where none does. Sibling
+  (`packages/lararium-node/src/custody-root.ts`). The keyhive archive, each face's veil
+  archive and each face's anchors rest sealed under the vessel key from a founding's first
+  write, and each row reads whole or refuses by name
+  (`packages/lararium-node/src/vault-carriers.ts` · `custody-seat.ts`). Sibling
   devices sync through a herm over a sealed channel the herm cannot read
   (`packages/lararium-mesh/src/leaf-peer-proof.ts`). The sealed-box and ciphertext-CAS
   primitives stand (`sealed-box.ts` · `ciphertext-cas.ts`).
@@ -154,10 +156,11 @@ train.
   roots in IndexedDB (`packages/lararium-browser/src/browser-vessel-identity.ts`); and
   vessel-to-vessel sync on the wire, which rides an auth-gated plain WebSocket (this tree
   binds no TLS).
-* ''OWED:'' the operator ruling of 2026-06-23 — every surface encrypts from the first write
-  (`lararium-identity#/encrypt-from-start`, a carrier that stands PROPOSED) — stays unbuilt
-  for document content. Sealing of the remaining hot and cold rows lands by the custody
-  train. A WebAuthn-PRF wrap for a browser seed stands as a primitive
+* ''OWED:'' the operator's ruling that every surface encrypts from the first write
+  (`lararium-identity#/encrypt-from-start`, a carrier that stands PROPOSED) stays unbuilt
+  for document content. The custody rows that rest outside the vessel key, and the order
+  the sealed store's steps land in, read at
+  <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>. A WebAuthn-PRF wrap for a browser seed stands as a primitive
   (`packages/lararium-browser/src/seed-wrap-prf.ts`) with no production caller.
 
 ''Keyhive target stack (design; BeeKEM content keying stays outside the built path):''
@@ -309,6 +312,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jo1_fpEr3ai5D1OmqYZTXADzDMgU-GiZesKkV_vNpLA
+<<^ code="&#x0003;">>ni:///sha-256;45qL8ETi7uayX21EhC4cIcIIqmZWRPVMgP-xMTW29CQ
 
 <<^ code="&#x0004;" -> to="?">>
