@@ -159,7 +159,7 @@ its own carrier, and this carrier points there.
 * ''Compartments outrank admission control.'' A walker reads its own hearth's hosting doc, never the carriage board: the carrier set stays a contract ledger read by those who hold contracts.
 
 !!! The first ceremony, and the acts around it (operator ruling)
-* ''Guests'': the first ceremony runs with the host's own invites only. Guest introductions stay off until the hosted road's re-cut lands; the hosting act's new bytes still land before the fence.
+* ''Guests'': the first ceremony runs with the host's own invites only. The hosted road builds whole before the ceremony (#/the-attractor): its doors stand built and stay shut on the day.
 * ''Reach on the day'': LAN only. The public domain's Handle table comes later.
 * ''At two seats no seat signs any Kahu act alone.''
 * ''An operator's own herm'': an operator contracts their own herm with one signature, scoped to one place and one Nexus, and it falls with a kapae of the operator's admit.
@@ -509,7 +509,7 @@ wire or a signature carries.
 ''The solo chain.'' Each of these holds the compose hunk in `open-node-vessel.ts` and
 `open-browser-vessel.ts` while it runs, and no other node lane lands beside it: S, then K's seat, flip,
 rename, scopes and founding act, then N's sealing and self-contracts, then W's three live steps, then W's
-dials, then E, then O1's working address through its switch, then H's hosting act through its door, then X.
+dials, then E, then O1's working address through its switch, then H's hosting act through its strangers' dial, then X.
 
 !!! S ~ the custody seal (SUBSTRATE; running)
 Its state and its remaining steps read in #/the-road's SUBSTRATE block, and nowhere else. It ends on the retirement of the passphrase lifecycle and on the fold's live proof.
@@ -587,10 +587,12 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 # The fleet view and removal.
 ''Riskiest'': the working address, where an attach that cannot stand refuses the boot.
 
-!!! H ~ the hosted road's re-cut (its pure introduction landed; the rest waits on K's founding act and W's cutover)
+!!! H ~ the hosted road's re-cut (its pure introduction landed; the rest waits on K's founding act and W's cutover, and lands whole before X)
 # ''Landed ahead'': the introduction, pure (`introduction.ts`).
 # The hosting act names the operator's seat and three dials; its bytes change once, before the fence.
-# ''Off the ceremony's chain by ruling'': a walker's token buys a knock; the door and the answer; the strangers' dial.
+# A walker's token buys a knock, and earns standing by the operator's answer alone.
+# The door and the answer.
+# The strangers' dial.
 # Canon: one pass on the invite doctrine.
 ''Riskiest'': the hosting act's signer, an authority change.
 
@@ -683,9 +685,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 !! Open ~ what the operator still owns
 
-!!! Order
-# ''The hosted road against the ceremony.'' The ceremony runs with the host's own invites alone (#/rulings), and every byte the hosted road signs lands before the fence. Whether its doors (the introduction's answer, the strangers' dial) open before the ceremony stays the operator's.
-
 !!! Seats, custody and recovery
 # ''Guardians and recovery.'' Guardian count and threshold at enrolment, request authentication, the veto, a person's death and succession, the catastrophe rite and any third key, and a Handle's DNS binding stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
 # ''The backup bundle.'' What a per-face sealed bundle holds, which verb restores it, and whether the seal train or recovery's verbs build it. Lean: one bundle per face, so faces stay unlinked on the backup medium, built in the seal train.
@@ -747,6 +746,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QPZjHND3U94OOmwfdlYiRx55tFDcMYw6jx9bFB8-nps
+<<^ code="&#x0003;">>ni:///sha-256;1barW9OmAhRwgilvis69uKx6BltFBRHRa-1N2zG4d6k
 
 <<^ code="&#x0004;" -> to="?">>
