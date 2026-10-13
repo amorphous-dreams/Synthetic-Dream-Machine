@@ -10,7 +10,6 @@
  * the moment of the act (`ownedStore`). One table, two holders, never both at once.
  *
  *   host-state · host-roll · host-invite         the hearth's hosting (`commands/host`)
- *   walk-state · walk-take · walk-invite         this vessel's walking (`commands/walk`)
  *   nexus-kapae · nexus-kapae-list               the antigen board (`commands/nexus-kapae`)
  *   nexus-contract · nexus-roll-anchor · nexus-members-list
  *                                                the carriage board's writer, its roll anchor and its reader
@@ -58,7 +57,6 @@ import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, type FederationPosture, type CarriageAction, type KahuQuorumSeats } from "@lararium/mesh";
 import { runHostState, runHostRoll, runHostInvite, HostRefusal } from "./commands/host.js";
-import { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
 import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
 import { runNexusContract, runNexusRollAnchor, runNexusMembersList, NexusContractError } from "./commands/nexus-contract.js";
 import { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
@@ -85,8 +83,6 @@ export interface StoreDoorDeps {
   readonly sealHome:   string;
   /** The store's one holder — the running vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:       Repo;
-  /** The gate key the vessel's standing hearth dial pins, or null when it dials no hearth. */
-  readonly dialGate:   () => string | null;
   /**
    * A write just counted. `nexusAid` names the hosting doc a roll opened (host-roll only); every other caller
    * passes nothing. Absent on `storeDoorDirect` — a direct act has no live reading to refold.
@@ -126,7 +122,7 @@ async function awaitOnRolled(call: boolean | void | Promise<boolean | void>): Pr
 
 /** The door's rows, by name — each command's routed call names exactly one of these. */
 export const STORE_DOOR_VERBS = [
-  "host-state", "host-roll", "host-invite", "walk-state", "walk-take", "walk-invite",
+  "host-state", "host-roll", "host-invite",
   "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-roll-anchor", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
   "edge-kapae", "edge-seat-facts", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "device-admit",
@@ -139,7 +135,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
-  HostRefusal, WalkRefusal, NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError,
+  HostRefusal, NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError,
 ] as const;
 
@@ -179,13 +175,6 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "host-invite": (args) => answer("host-invite", async () => ({
       ...(await runHostInvite({ sealHome, storageDir, ...opt("nexusAid", str(args["nexusAid"])), ...opt("relay", str(args["relay"])) })),
     })),
-    "walk-state": () => answer("walk-state", async () => ({ walks: runWalkState({ storageDir }) })),
-    "walk-take": (args) => answer("walk-take", async () => {
-      const carried = str(args["invite"]);
-      if (!carried) throw new WalkRefusal("walk-take needs the carried invite");
-      return { ...(await runWalkTake({ carried, storageDir, dialGate: deps.dialGate() })) };
-    }),
-    "walk-invite": () => answer("walk-invite", async () => ({ ...(await runWalkInvite({ storageDir })) })),
 
     "nexus-kapae": (args) => answer("nexus-kapae", async () => {
       const action = args["action"] === "un_kapae" ? "un_kapae" : "kapae";
@@ -352,5 +341,5 @@ export async function storeDoorDirect(
 ): Promise<Record<string, unknown>> {
   const storageDir = opts.storageDir ?? larDataDir();
   return await ownedStore(storageDir, (repo) =>
-    storeDoorRows({ storageDir, sealHome: opts.sealHome, repo, dialGate: () => null })[verb](args));
+    storeDoorRows({ storageDir, sealHome: opts.sealHome, repo })[verb](args));
 }

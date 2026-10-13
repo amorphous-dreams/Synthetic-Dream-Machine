@@ -22,7 +22,7 @@
  *                                           another command holds the store for one act): the act runs here.
  */
 import {
-  CustodyLocked, CustodyRowUnavailable, SealedActRefused, runSealedAct,
+  CustodyLocked, CustodyRowUnavailable, SealedActRefused, runSealedAct, readHearthDialPin, larBootstrapPath,
   type SealedActContext, type SealedActName, type SealedActRefusalReason,
 } from "@lararium/node";
 import { sendCustodyFrame } from "./custody-door.js";
@@ -33,11 +33,14 @@ export type SealedActVia = "vessel" | "direct";
 
 /**
  * What an act reads from its surroundings when it runs in this process: the KEL head comes off the store's one
- * holder, and no persona plane stands (a command mounts no face's plane, so a name stays on its sealed row until
- * a vessel carries it).
+ * holder, no persona plane stands (a command mounts no face's plane, so a name stays on its sealed row until a
+ * vessel carries it), and the hearth dial reads as the pin a stopped vessel would dial by.
  */
 const directContext: SealedActContext = {
   personaSelves: null,
+  // The gate key a stopped vessel's hearth dial would pin at its next stand (an admit's pin, or `LAR_JOIN_GATE`);
+  // no walk dial stands in a command's own process, so a kept invite waits for the next stand.
+  walk: { dialGate: () => process.env["LAR_JOIN_GATE"] ?? readHearthDialPin(larBootstrapPath())?.gatePubKey ?? null, represent: null },
   kelHead: async (prefix) => {
     const out = (await storeVerb("persona-kel-head", { prefix })).output;
     return { head: typeof out["head"] === "string" ? out["head"] : null, seq: typeof out["seq"] === "number" ? out["seq"] : null };

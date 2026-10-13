@@ -60,7 +60,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     await wearPersona(0);
     const taken = await runWalkTake({ carried: await invite() });
     expect(taken).toMatchObject({ gatePubKey: GATE, nexusAid: AID, relay: RELAY, leaf: (await nexusLeafFor(0, AID)).verifyingKey });
-    expect(listWalkRecords(larDataDir()).map((w) => w.gatePubKey)).toEqual([GATE]);
+    expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);
   });
 
   it("the worn face, never the roster's first: two faces held and h1 worn, the walk presents h1's leaf", async () => {
@@ -74,6 +74,17 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     expect((await runWalkTake({ carried: await invite() })).leaf).toBe(h1);
   });
 
+  it("RED: two takes for two hearths that start together keep ONE hearth; the other refuses", async () => {
+    await generateOrLoadVesselIdentity();
+    await generateOrLoadPersonaGroupRoot(0);
+    await wearPersona(0);
+    const [here, there] = [await invite(GATE), await invite(OTHER_GATE)];
+    const outcomes = await Promise.allSettled([runWalkTake({ carried: here }), runWalkTake({ carried: there })]);
+    expect(outcomes.map((o) => o.status)).toEqual(["fulfilled", "rejected"]);
+    expect((outcomes[1] as PromiseRejectedResult).reason).toBeInstanceOf(WalkRefusal);
+    expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);
+  });
+
   it("RED: a second hearth, or a dial pinned elsewhere, refuses and writes nothing; CONTROL: the same hearth takes a fresh invite", async () => {
     await generateOrLoadVesselIdentity();
     await generateOrLoadPersonaGroupRoot(0);
@@ -82,10 +93,14 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     expect(existsSync(walkDirOf())).toBe(false);
     await runWalkTake({ carried: await invite() });
     await expect(runWalkTake({ carried: await invite(OTHER_GATE) })).rejects.toBeInstanceOf(WalkRefusal);
-    expect(listWalkRecords(larDataDir()).map((w) => w.gatePubKey)).toEqual([GATE]);
+    expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);
+    // The same hearth in another Nexus refuses too: one record names one Nexus.
+    const otherNexus = encodeInvite({ nexusAid: "epoch0-" + "b".repeat(64), gatePubKey: GATE, token: mintHostToken(epoch), relay: RELAY });
+    await expect(runWalkTake({ carried: otherNexus })).rejects.toThrow(/in another Nexus/);
+    expect((await runWalkState()).map((w) => w.nexusAid)).toEqual([AID]);
     // A fresh invite for the same hearth — walking back in — is taken, and the relay stays.
     await runWalkTake({ carried: await invite(GATE, null) });
-    expect(runWalkState()).toEqual([expect.objectContaining({ gatePubKey: GATE, relay: RELAY, redeeming: true })]);
+    expect(await runWalkState()).toEqual([expect.objectContaining({ gatePubKey: GATE, relay: RELAY, redeeming: true })]);
   });
 
   it("an invite with no relay, for a hearth this vessel knows no relay of, refuses", async () => {
@@ -103,7 +118,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     await expect(runWalkInvite()).rejects.toThrow(/walks nowhere/);
     await runWalkTake({ carried: await invite() });
     await expect(runWalkInvite()).rejects.toThrow(/holds no invite/);
-    const store = nodeWalkStore(larDataDir());
+    const store = nodeWalkStore();
     const second = await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: epoch.cid, cap: 3 });
     const older = mintHostToken(epoch), newer = mintHostToken(second);
     await store.update(GATE, (held) => ({ ...held!, wallet: [{ epoch: epoch.cid, token: older }, { epoch: second.cid, token: newer }] }));

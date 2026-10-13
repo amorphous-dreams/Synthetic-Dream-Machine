@@ -190,7 +190,7 @@ describe("the charter reserve's rows at rest", () => {
 
   test("V7 — the door takes one share in and hands none out", async () => {
     await custody("reserve-v7");
-    const ctx = { kelHead: null, personaSelves: null };
+    const ctx = { kelHead: null, personaSelves: null, walk: null };
     const wire = (sh: RecoveryShare) => ({ x: sh.bytes.x, ys: [...sh.bytes.ys], custodian: sh.custodian, recoveryEpoch: sh.recoveryEpoch });
     const bad = async (args: unknown): Promise<string> => runSealedAct("reserve.provision", args, ctx).then(() => "ran", (e: { reason?: string }) => String(e.reason));
     for (const args of [

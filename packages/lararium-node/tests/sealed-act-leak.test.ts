@@ -171,7 +171,7 @@ describe("an act frame and the daemon's document", () => {
     const door = custodyFrameHandler({
       holder: c.holder, testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }),
       onLog: (line) => logs.push(line),
-      runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: null }),
+      runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: null, walk: null }),
     });
     const v = await stand(door);
     drops.push(() => v.down());
@@ -206,7 +206,7 @@ describe("an act frame and the daemon's document", () => {
     const door = custodyFrameHandler({
       holder: c.holder, testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }),
       onLog: (line) => logs.push(line),
-      runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: v.plane }),
+      runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: v.plane, walk: null }),
     });
     v = await stand(door);
     drops.push(() => v.down());
@@ -259,7 +259,7 @@ describe("an act frame and the daemon's document", () => {
     let lend = true;
     const door = custodyFrameHandler({
       holder: c.holder, testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
-      runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: lend ? v.plane : null }),
+      runAct: (act, a) => runSealedAct(act, a, { kelHead: null, personaSelves: lend ? v.plane : null, walk: null }),
     });
     v = await stand(door);
     drops.push(() => v.down());

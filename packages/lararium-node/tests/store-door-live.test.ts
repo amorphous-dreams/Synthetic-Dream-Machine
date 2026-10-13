@@ -195,7 +195,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
         const boardUrl = w.board(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() }), (await loadPersonaGroupRootVerifyingKey(0)) ?? "");
         await materializeSharedLarDoc(live, boardUrl as AutomergeUrl, w.label);
         await materializeSharedLarDoc(peer, boardUrl as AutomergeUrl, w.label);
-        const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });
+        const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live });
         liveOut = await doors[w.verb](args, {} as never);
         expect(liveOut["refused"], String(liveOut["refused"])).toBeUndefined();
         const url = String(liveOut["boardUrl"]);
@@ -245,7 +245,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const rolled: Array<string | undefined> = [];
     try {
       const doors = storeDoorReactors({
-        storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null,
+        storageDir: larDataDir(), sealHome: sealHome(), repo: live,
         onRolled: (aid) => { rolled.push(aid); },
       });
       // CONTROL first — a bare read never writes and never fires the hook.
@@ -290,7 +290,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const rolled: Array<string | undefined> = [];
     try {
       const doors = storeDoorReactors({
-        storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null,
+        storageDir: larDataDir(), sealHome: sealHome(), repo: live,
         // `represented` reads this hook's OWN claim (F2-1/H2): a fire-and-forget hook that merely EXISTS
         // reads false. Here the hook stands for the real `afterRoll`, which the fix made truthfully
         // report its own success — so this fixture claims it too, honestly, by returning `true`.

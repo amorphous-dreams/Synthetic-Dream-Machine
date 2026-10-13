@@ -17,7 +17,7 @@ import { storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.j
 
 const baseDeps = (onRolled?: StoreDoorDeps["onRolled"]): StoreDoorDeps => ({
   storageDir: "/tmp/unused", sealHome: "/tmp/unused-seal",
-  repo: {} as StoreDoorDeps["repo"], dialGate: () => null,
+  repo: {} as StoreDoorDeps["repo"],
   ...(onRolled ? { onRolled } : {}),
 });
 

@@ -173,7 +173,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
     try {
       const offered = await runNexusPublishPlugins({ source: dir, storageDir: larDataDir(), repo: live });
-      const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: join(root, "state", "nexus"), repo: live, dialGate: () => null });
+      const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: join(root, "state", "nexus"), repo: live });
       const row = doors["nexus-offering-inspect"];
       const out = await row({ offeringCid: offered.offeringCid }, {} as never);
       expect(out["refused"]).toBeUndefined();

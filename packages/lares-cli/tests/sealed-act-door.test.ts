@@ -31,6 +31,12 @@
  *       the seed in its own process and sends ONE act frame holding ONE share (the operator's own) and the state;
  *       no frame holds a guardian card's share, the seed, or a second share, and the command opens no key session.
  *                                 control: the share the frame holds equals the "mine" card the command printed
+ *   D9  RED: A CARRIED INVITE RIDES NO VERB. `lares walk`, `walk take` and `walk invite` beside a standing vessel
+ *       send act frames alone (`walk.state`, `walk.take`, `walk.invite`); the invite a person carries in, and the
+ *       one the wallet hands out, appear in no frame that names a verb, and the command opens no key session.
+ *       A vessel's refusal of a take reads as the walk door's own refusal (exit code and words).
+ *                                 control: the take's act frame holds the carried invite, and the command
+ *                                 prints `via: daemon` as every store door does
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -322,5 +328,38 @@ describe("a command beside a standing vessel", () => {
     const mineShare = reserveShareFromCard(mine as never, 1);
     expect(sent.share!.x).toBe(mineShare.bytes.x);
     expect(sent.share!.ys).toEqual([...mineShare.bytes.ys]);
+  });
+
+  test("D9 — the walk commands send act frames alone, and a carried invite rides no verb", async () => {
+    await stage();
+    const CARRIED = `lar-invite:a-synthetic-carried-invite-${Math.random().toString(36).slice(2)}`;
+    const HANDED = `lar-invite:a-synthetic-wallet-invite-${Math.random().toString(36).slice(2)}`;
+    const vessel = await standVessel({ unlocked: true, table: (act) => {
+      if (act === "walk.state") return { walks: [{ gatePubKey: KEY, nexusAid: "a-synthetic-nexus", relay: null, redeeming: true, grant: null, wallet: 0 }] };
+      if (act === "walk.take") return { gatePubKey: KEY, nexusAid: "a-synthetic-nexus", relay: null, leaf: KEY, dialing: "now" };
+      if (act === "walk.invite") return { gatePubKey: KEY, invite: HANDED, left: 0 };
+      return {};
+    } });
+    const state = await run(["walk", "--json"]);
+    const take = await run(["walk", "take", CARRIED, "--json"]);
+    const invite = await run(["walk", "invite", "--json"]);
+    for (const r of [state, take, invite]) expect(r.code, r.out + r.err).toBe(0);
+    const frames = vessel.frames as Array<Record<string, unknown>>;
+    for (const frame of frames) expect(Object.keys(frame).sort()).toEqual(["act", "args", "op"]);   // no verb, requester or request id
+    expect(frames.map((f) => f["act"])).toEqual(["walk.state", "walk.take", "walk.invite"]);
+    expect(frames[1]!["args"]).toEqual({ carried: CARRIED });                                       // CONTROL: the take's own frame holds it
+    expect(JSON.stringify([frames[0], frames[2]]).includes("lar-invite:")).toBe(false);
+    expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
+    expect(JSON.parse(take.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { dialing: "now", via: "daemon" } });
+    expect(JSON.parse(invite.out.trim().split("\n").at(-1)!)).toMatchObject({ ok: true, data: { invite: HANDED, via: "daemon" } });
+    await vessel.down();
+
+    // A vessel's refusal of a take crosses as the walk door's own refusal.
+    const refusing = await standVessel({ unlocked: true, table: () => { throw new SealedActRefused("act-refused", "this vessel wears no face — a walker walks as a person"); } });
+    const refused = await run(["walk", "take", CARRIED, "--json"]);
+    expect(refused.code).not.toBe(0);
+    expect(refused.out + refused.err).toContain("wears no face");
+    expect(JSON.parse((refused.out + "\n" + refused.err).trim().split("\n").filter((l) => l.startsWith("{")).at(-1)!)).toMatchObject({ ok: false, error: { code: "refused" } });
+    await refusing.down();
   });
 });

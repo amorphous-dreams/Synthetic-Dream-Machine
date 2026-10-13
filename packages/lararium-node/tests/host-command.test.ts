@@ -102,7 +102,7 @@ describe("lares host — roll, invite, state", () => {
     const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     try {
       const held = await materializeSharedLarDoc(live, doc, "hosting");
-      const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live, dialGate: () => null });
+      const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live });
       const rolled = await doors["host-roll"]({}, {} as never);
       expect(rolled["refused"]).toBeUndefined();
       expect(hostingActsFromBoard(held.doc()).map(hostingActCid)).toEqual([rolled["epoch"]]);

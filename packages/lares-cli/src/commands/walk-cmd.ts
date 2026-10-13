@@ -13,16 +13,19 @@
  * A vessel walks at one hearth, as the face it wears; a take for a second hearth refuses aloud and writes nothing.
  * A node carries none of its documents at a hearth — it is its own durable store.
  *
- * ONE STORE DOOR. While the vessel stands, each door runs inside it (`walk-*` verbs over the local socket), beside
- * the walk client that writes the same records; with no vessel standing, the door runs here (`store-door`).
+ * THE CUSTODY DOOR. A walk record holds bearer invites, the hearth's grant and one key per carried document, so it
+ * rests sealed under the vessel key and each door here sends one `act` frame (`walk.state`, `walk.take`,
+ * `walk.invite`): a carried invite as a verb's argument, or an invite as a verb's outcome, would rest in the
+ * daemon's document in the clear. While the vessel stands unlocked the act runs inside it, beside the walk client
+ * that writes the same records; with no vessel standing it runs here, under this command's own key session.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { runWalkState, runWalkTake, runWalkInvite, WalkRefusal, readHearthDialPin, larBootstrapPath } from "@lararium/node";
+import { SealedActRefused, WalkRefusal } from "@lararium/node";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { throughStoreDoor } from "../store-door.js";
+import { sealedActVia } from "../sealed-act-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 function refuse(args: ParsedArgs, verb: string, err: unknown): number {
@@ -32,16 +35,16 @@ function refuse(args: ParsedArgs, verb: string, err: unknown): number {
   return exitFor(code);
 }
 
-/** Run a walk door through the store door; a door's refusal comes back as a `WalkRefusal`, as on the direct path. */
-async function walkDoor(verb: string, args: Record<string, unknown>, direct: () => Promise<Record<string, unknown>>): Promise<{ output: Record<string, unknown>; via: string }> {
-  const r = await throughStoreDoor({ verb, args, direct });
-  if (typeof r.output["refused"] === "string") throw new WalkRefusal(r.output["refused"]);
-  return r;
-}
-
-/** The gate key a stopped vessel's hearth dial would pin at its next stand — an admit's pin, or `LAR_JOIN_GATE`. */
-function pinnedDialGate(): string | null {
-  return process.env["LAR_JOIN_GATE"] ?? readHearthDialPin(larBootstrapPath())?.gatePubKey ?? null;
+/** Run a walk act on the custody door; the door's own refusal comes back as a `WalkRefusal`, on either path. */
+async function walkDoor(act: "walk.state" | "walk.take" | "walk.invite", args: Record<string, unknown> = {}): Promise<{ output: Record<string, unknown>; via: string }> {
+  try {
+    const r = await sealedActVia(act, args);
+    // The command's own word for where a door ran stays what every store door says: `daemon` inside the standing vessel.
+    return { output: r.result, via: r.via === "vessel" ? "daemon" : "direct" };
+  } catch (err) {
+    if (err instanceof SealedActRefused && err.reason === "act-refused") throw new WalkRefusal(err.message);
+    throw err;
+  }
 }
 
 export async function cmdWalk(args: ParsedArgs): Promise<number> {
@@ -56,7 +59,7 @@ interface WalkRow { gatePubKey: string; nexusAid: string; relay: string | null; 
 
 async function walkState(args: ParsedArgs): Promise<number> {
   try {
-    const { output, via } = await walkDoor("walk-state", {}, async () => ({ walks: runWalkState() }));
+    const { output, via } = await walkDoor("walk.state");
     const walks = (output["walks"] ?? []) as WalkRow[];
     emit(args, {
       ok: true,
@@ -80,8 +83,7 @@ async function walkTake(args: ParsedArgs): Promise<number> {
   const carried = args.positional[1];
   if (!carried) return refuseUsage(args, "walk", helpLines("walk"), "walk take needs the carried `lar-invite:` string");
   try {
-    const { output: r, via } = await walkDoor("walk-take", { invite: carried },
-      async () => ({ ...(await runWalkTake({ carried, dialGate: pinnedDialGate() })), dialing: "next-stand" }));
+    const { output: r, via } = await walkDoor("walk.take", { carried });
     emit(args, {
       ok: true,
       data: { gatePubKey: r["gatePubKey"], nexusAid: r["nexusAid"], relay: r["relay"], leaf: r["leaf"], dialing: r["dialing"], via },
@@ -99,7 +101,7 @@ async function walkTake(args: ParsedArgs): Promise<number> {
 
 async function walkInvite(args: ParsedArgs): Promise<number> {
   try {
-    const { output: r, via } = await walkDoor("walk-invite", {}, async () => ({ ...(await runWalkInvite()) }));
+    const { output: r, via } = await walkDoor("walk.invite");
     emit(args, {
       ok: true,
       data: { gatePubKey: r["gatePubKey"], invite: r["invite"], left: r["left"], via },

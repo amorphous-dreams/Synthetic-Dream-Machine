@@ -154,7 +154,10 @@ import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { askIslandVerb }                   from "./island-verb-ask.js";
 import { newRequestId }                    from "@lararium/mesh";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
-import type { PersonaSelvesPlane }         from "./sealed-acts.js";
+import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
+
+/** The hearth dial a custody act reads: `SealedActContext.walk`, lent by the standing composition. */
+export type WalkDialReading = NonNullable<SealedActContext["walk"]>;
 import {
   makeResidencyStatsReactor,
   makeVesselResidency, type VesselResidency,
@@ -368,7 +371,7 @@ export interface NodeFloor {
 export interface SovereignReaders {
   readonly wornMount: (storageDir: string) => ReturnType<typeof readWornPersonaMount>;
   readonly personaRoots: () => ReturnType<typeof listPersonaRoots>;
-  readonly walkRecords: (storageDir: string) => ReturnType<typeof listWalkRecords>;
+  readonly walkRecords: () => ReturnType<typeof listWalkRecords>;
   /** The vessel's own keyhive archive, or null when none stands. A row that stands and does not open throws. */
   readonly archive: () => Promise<Uint8Array | null>;
   /** One face's veil archive, or null when none stands. */
@@ -439,6 +442,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   storeClaim: StoreClaim & { readonly holder: "vessel" };
   /** Each carried face's own persona plane off this thread's Repo, for the custody door's `selves` acts; null where no face stands lit. */
   personaSelves: PersonaSelvesPlane | null;
+  /** The hearth dial as the custody door's `walk` acts read it. */
+  walkDial: WalkDialReading;
   /** M15: which social planes mounted live vs degraded vs PENDING (probe answered no verdict at all —
    *  distinct from a real condemn). `degraded` already logs its own line live (`quarantineDoc`
    *  above); `pending` entries carried NO log line at all until this field threaded them out here for
@@ -467,6 +472,8 @@ export interface NodeHermResult {
   storeClaim:       StoreClaim & { readonly holder: "vessel" };
   /** Each carried face's own persona plane off this thread's Repo; null where no face stands lit. */
   personaSelves:    PersonaSelvesPlane | null;
+  /** The hearth dial as the custody door's `walk` acts read it. */
+  walkDial:         WalkDialReading;
   /** M15: which social planes mounted live vs degraded vs PENDING — see `NodeVesselResult.mountManifest`. */
   mountManifest:    MountManifest;
   /** Tear down the read-face + the daemon island, then the composed vessel (reverse build order). */
@@ -497,6 +504,8 @@ interface NodeBootPrep {
   hearthDaemonUrl:  () => string | null;
   /** Each carried face's own persona plane off this Repo, or null where the bootstrap names no face. A thunk, as above. */
   personaSelves:    () => PersonaSelvesPlane | null;
+  /** The hearth dial as a custody act reads it: the gate key it pins, and the standing walk dial's re-presentation. */
+  walkDial:         WalkDialReading;
   /** This PLACE's own 32-byte signing seed — the substrate key, never the human's. The two-key atom keeps it
    *  distinct from the persona root a device-delegation edge signs under (`device-delegation.vesselSeed`). */
   vesselSeed:     Uint8Array;
@@ -642,7 +651,8 @@ async function prepareNodeBootOn(
   let nexusMembershipHolder: NexusMembershipHolder | null = null;
   // The dial's re-presentation check — set once the dial stands (below); a board change or a refresh calls it.
   let representIfMoved: (() => Promise<void>) | null = null;
-  // The walk's re-presentation — set once a walk dial stands (below); `walk-take` for the dialed hearth calls it.
+  // The walk's re-presentation — set once a walk dial stands (below); the custody door's `walk.take` act calls it
+  // for the dialed hearth.
   let representWalk: (() => Promise<void>) | null = null;
   // THE CHARTER'S HEARTH, at the other end of a socket THIS vessel dialed. The realm's return lane reads it:
   // the operator pinned that gate key out of band and imported that hearth's charter, so the realm's own
@@ -1272,7 +1282,9 @@ async function prepareNodeBootOn(
   // THE HEARTH THIS VESSEL WALKS AT names its own dial: where its relay answers, and the gate key to pin there —
   // kept on the walk record `lares walk take` wrote. It is the dial's last default — an explicit option,
   // `LAR_JOIN_*`, or a hearth pin each outranks it. A vessel walks at one hearth (the take refuses a second).
-  const walkingAt      = (sovereign ? sovereign.walkRecords(storageDir) : []).find((w) => w.record.relay) ?? null;
+  // THE WALK RECORDS REST SEALED, so this read belongs to a sovereign composition alone: a floor reads no walk
+  // record and so dials no walked hearth, and the first unlock stands a composition that reads them.
+  const walkingAt      = (sovereign ? await sovereign.walkRecords() : []).find((w) => w.record.relay) ?? null;
   const joinSyncUrl    = opts.joinSyncUrl    ?? process.env["LAR_JOIN_SYNC"] ?? hearthPin?.syncUrl    ?? walkingAt?.record.relay ?? null;
   const joinGatePubKey = opts.joinGatePubKey ?? process.env["LAR_JOIN_GATE"] ?? hearthPin?.gatePubKey ?? walkingAt?.gatePubKey   ?? null;
   const joinDocUrl     = opts.joinDocUrl     ?? process.env["LAR_JOIN_DOC"]  ?? null;
@@ -1774,8 +1786,9 @@ async function prepareNodeBootOn(
         // while unsettled, then the grant) presents under the leaf of the face this vessel WEARS in the hearth's
         // Nexus. A vessel wearing no face walks nowhere. An admit or a fleet edge outranks a walk: a proven
         // relation to the dialed Nexus needs no hosting.
-        const walkStore = nodeWalkStore(storageDir);
-        const walkRecord = joinGatePubKey ? await walkStore.read(joinGatePubKey) : null;
+        // A walk record rests sealed under the vessel key: a floor composition reads none and presents no walk.
+        const walkStore = nodeWalkStore();
+        const walkRecord = sovereign && joinGatePubKey ? await walkStore.read(joinGatePubKey) : null;
         const walkLeaf = walkRecord ? await wornNexusLeaf(walkRecord.nexusAid).catch(() => null) : null;
         if (walkRecord && !walkLeaf) console.log("[nexus-join] a walk record stands for this hearth, but this vessel wears no face — `lares persona wear <N>` to walk");
         const walkBase: LeafIdentity = { contactCard: leafIdentity.contactCard, peerPubKey: leafIdentity.peerPubKey, sign: leafIdentity.sign };
@@ -2431,29 +2444,17 @@ async function prepareNodeBootOn(
     });
     registry.register("residency", makeResidencyStatsReactor({ residency }));
 
-    // THE STORE'S DOOR TABLE — `lares host`, `lares walk`, `lares nexus kapae/posture/admit-take`, and every other
-    // store-touching verb run here while this vessel stands, against the Repo its peers sync and the walk
-    // records its walk client writes, so a roll reaches its walkers with no restart and no second Repo ever
-    // writes beside this one. `afterRoll` (above) is the one after-write hook every row that lands a board or a
-    // practice joint fires; the rows reach the refold, and no standalone CLI-dialed verb does.
+    // THE STORE'S DOOR TABLE — `lares host`, `lares nexus kapae/posture/admit-take`, and every other
+    // store-touching verb run here while this vessel stands, against the Repo its peers sync, so a roll reaches
+    // its walkers with no restart and no second Repo ever writes beside this one. (`lares walk` rides the custody
+    // door: a walk record rests sealed, and its acts read the dial this composition lends them.) `afterRoll`
+    // (above) serves as the one after-write hook every row that lands a board or a practice joint fires; the
+    // rows reach the refold, and no standalone CLI-dialed verb does.
     const doors = storeDoorReactors({
       storageDir, sealHome, repo,
-      dialGate: () => joinGatePubKey?.toLowerCase() ?? null,
       onRolled: afterRoll,
     });
-    for (const [verb, reactor] of Object.entries(doors)) {
-      registry.register(verb, verb === "walk-take"
-        ? async (args, ctx) => {
-            const out = await reactor(args, ctx);
-            // A fresh invite for the hearth this vessel's walk dial stands to re-presents at once.
-            if (!out["refused"] && typeof out["gatePubKey"] === "string" && out["gatePubKey"] === joinGatePubKey?.toLowerCase()) {
-              await representWalk?.();
-              return { ...out, dialing: representWalk ? "now" : "next-stand" };
-            }
-            return out["refused"] ? out : { ...out, dialing: "next-stand" };
-          }
-        : reactor);
-    }
+    for (const [verb, reactor] of Object.entries(doors)) registry.register(verb, reactor);
 
     // realm-bag — REGISTER a bag this vessel's steward keeps on the realm's shared CRDT (realm-bag-brief): the
     // record `{ bagUri, docUrl, keptBy, readTier }` sealed by the key this vessel's WORN face presents to the
@@ -2815,6 +2816,8 @@ async function prepareNodeBootOn(
           return faces;
         })
       : null),
+    // Thunks: the dial's gate key settles before any act runs, and the walk dial stands only once the daemon reads its doc.
+    walkDial: { dialGate: () => joinGatePubKey?.toLowerCase() ?? null, get represent() { return representWalk; } },
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
@@ -2912,6 +2915,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     // hearth it asks. Null here reads "this vessel IS the hearth", never "unknown".
     hearthDaemonUrl:  p.hearthDaemonUrl(),
     personaSelves:    p.personaSelves(),
+    walkDial:         p.walkDial,
     oracleDocUrl:     result.assembly.islandHandle.url,
     larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
     phase: "live",
@@ -3035,6 +3039,7 @@ async function composeNodeHermOn(
     socketSorter:     p.socketSorter,
     storeClaim:       p.storeClaim,
     personaSelves:    p.personaSelves(),
+    walkDial:         p.walkDial,
     mountManifest:    herm.assembly.mountManifest,
     dispose,
     teardown: async () => {

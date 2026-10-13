@@ -78,7 +78,7 @@ describe("N — a node vessel walks like any leaf", () => {
     const nodeVessel = (await generateOrLoadVesselIdentity()).verifyingKey;
     await generateOrLoadPersonaGroupRoot(0);
     const nodeLeaf = (await heldNexusLeaves(AID))[0]!;
-    const store: WalkStore = nodeWalkStore(larDataDir());
+    const store: WalkStore = nodeWalkStore();
     const taken = await takeInvite(store, invite());
     const nodeRedeem = await sort(await sortInputFor(nodeVessel, taken!.record, nodeLeaf));
     expect(nodeRedeem?.class).toBe("walker");
@@ -114,7 +114,7 @@ describe("N — a node vessel walks like any leaf", () => {
     await generateOrLoadPersonaGroupRoot(0);
     const sealHome = join(root, "state", "nexus");
     const before = await carriedSet(sealHome);
-    await takeInvite(nodeWalkStore(larDataDir()), invite());
+    await takeInvite(nodeWalkStore(), invite());
     expect(await carriedSet(sealHome)).toEqual(before);
     expect(existsSync(join(sealHome, "nexus.json"))).toBe(false);
     expect(readdirSync(join(larDataDir(), "walk"))).toHaveLength(1);

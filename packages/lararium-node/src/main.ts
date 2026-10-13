@@ -60,7 +60,7 @@ import type { Socket } from "node:net";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { seatCustody } from "./custody-seat.js";
 import { custodyFrameHandler } from "./custody-frames.js";
-import { runSealedAct, type PersonaSelvesPlane } from "./sealed-acts.js";
+import { runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./persona-admit-flow.js";
 import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
@@ -431,7 +431,9 @@ async function main(): Promise<void> {
     holder, recompose, testScratch,
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
-    runAct: (act, args) => runSealedAct(act, args, { kelHead: composition?.kelHead ?? null, personaSelves: composition?.personaSelves ?? null }),
+    runAct: (act, args) => runSealedAct(act, args, {
+      kelHead: composition?.kelHead ?? null, personaSelves: composition?.personaSelves ?? null, walk: composition?.walk ?? null,
+    }),
     standing: () => composition?.standing ?? "recomposing",
     onLog: (line) => console.log(`[custody] ${line}`),
   });
@@ -494,6 +496,8 @@ interface StandingComposition {
    * face's own names to its fleet. Absent where no face stands lit.
    */
   readonly personaSelves?: PersonaSelvesPlane | null;
+  /** The hearth dial this composition stands, for a custody act that keeps a carried invite. */
+  readonly walk?: SealedActContext["walk"];
 }
 
 /** The floor every vessel stands on: the daemon immune core and a served FLOW-map, no wiki, no pool. */
@@ -650,6 +654,7 @@ async function composeHermStanding(ctx: BootContext & ComposedAs, sovereign: Sov
     onSignal: (sig) => void hermShutdown(sig),
     teardown: async () => { await front.detach(); await herm.teardown(); },
     personaSelves: herm.personaSelves,
+    walk: herm.walkDial,
   };
 }
 
@@ -922,6 +927,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     teardown: async () => { await front.detach(); oracleReadFace?.dispose(); await result.teardown(); },
     kelHead: async (prefix) => (await makeLocalPersonaKelHeadAndSeqResolver(result.repo))(prefix),
     personaSelves: result.personaSelves,
+    walk: result.walkDial,
   };
 }
 

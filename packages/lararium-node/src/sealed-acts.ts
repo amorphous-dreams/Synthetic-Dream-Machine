@@ -45,6 +45,7 @@ import {
   provisionCharterReserve, readCharterReserveState, readReserveShare, readReserveState,
   type SealReserveState,
 } from "./seal-reserve-store.js";
+import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import { larSealHome } from "./vessel-paths.js";
 
 /** What an act reads from the composition it runs beside. */
@@ -60,6 +61,12 @@ export interface SealedActContext {
    * or a command running an act in its own process.
    */
   readonly personaSelves: PersonaSelvesPlane | null;
+  /**
+   * The hearth dial this act runs beside. `dialGate` answers the gate key a hearth dial pins (the standing dial's,
+   * or the one a stopped vessel would pin at its next stand), or null when it dials no hearth. `represent`
+   * re-presents the standing walk dial on a fresh invite; null where no walk dial stands.
+   */
+  readonly walk: { readonly dialGate: () => string | null; readonly represent: (() => Promise<void>) | null } | null;
 }
 
 /** One own persona as the persona plane holds it: the two names that ride a face's fleet. */
@@ -208,6 +215,12 @@ async function sealedSelfName(handleIndex: number, name: PersonaSelfNameKind): P
   return held !== undefined && held.trim().length > 0 ? held : undefined;
 }
 
+/** A walk door's own refusal keeps its words and crosses as the act's refusal. */
+async function walkOrRefuse<T>(run: Promise<T>): Promise<T> {
+  try { return await run; }
+  catch (err) { if (err instanceof WalkRefusal) throw refuse(err.message); throw err; }
+}
+
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
 function orRefuse<T extends object>(r: T | { readonly error: string }): T {
   if ("error" in r && typeof (r as { error: unknown }).error === "string") throw refuse((r as { error: string }).error);
@@ -230,6 +243,9 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *                         names the face and which name, and never the name itself, so a plane takes only what a
  *                         sealed row holds. `fill` lands it only where the plane never held that name
  *   selves.clear          clear ONE name of one held face on its plane, once its sealed row holds that name no more
+ *   walk.state            where this vessel walks: per hearth, the Nexus, the grant it holds and its wallet's count
+ *   walk.take             keep a carried invite on the walk record of the hearth it names
+ *   walk.invite           hand the newest invite out of the wallet of the hearth this vessel walks at
  *   reserve.state         the charter reserve's state: the pre-rotation commit and the guardian labels
  *   reserve.provision     seal ONE share of a reserve seed (the operator's own) and the state that commits it. The
  *                         command splits the seed in its own process; the seed and the two guardian shares never
@@ -330,6 +346,20 @@ export const SEALED_ACTS = Object.freeze({
     if (!stands) throw refuse(`this vessel carries no persona plane for h${a.handleIndex}, so nothing clears beyond it`);
     return { cleared: written };
   }),
+
+  // THE WALK RECORDS. A record holds bearer invites, the hearth's grant and one key per carried document, so it
+  // rests sealed (`node-walk-store`) and its three acts ride this door: a carried invite as a verb's argument, or
+  // an invite as a verb's outcome, would rest in the daemon's document in the clear.
+  "walk.state": act({}, async () => ({ walks: (await runWalkState()).map((w) => ({ ...w })) })),
+  "walk.take": act({ carried: text }, async (a, ctx) => {
+    const dialGate = ctx.walk?.dialGate()?.toLowerCase() ?? null;
+    const taken = await walkOrRefuse(runWalkTake({ carried: a.carried, dialGate }));
+    // A fresh invite for the hearth this vessel's walk dial stands to re-presents at once.
+    const represent = taken.gatePubKey === dialGate ? (ctx.walk?.represent ?? null) : null;
+    if (represent) await represent();
+    return { ...taken, dialing: represent ? "now" : "next-stand" };
+  }),
+  "walk.invite": act({}, async () => ({ ...(await walkOrRefuse(runWalkInvite())) })),
 
   // THE CHARTER RESERVE. Its two rows rest under the vessel key (`seal-reserve-store`). A reserve's seed gets
   // forged and split in the command's own process, where its three cards print to the person; the door takes
