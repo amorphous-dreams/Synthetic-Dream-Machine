@@ -37,22 +37,22 @@ A carrier's phased arrival through a transmission medium.
 //Pae// (Hawaiian) — to land, to come ashore; a row or tier; to drift carried by current.
 
 Primary: a canoe //pae// — it arrives after traversal. The carrier arrives at each phase boundary
-the same way: crossing water, touching shore. SOH is first landfall. EOT is final departure.
-STX and ETX are intermediate landings between stretches of open water.
+the same way: crossing water, touching shore. SOH makes first landfall. EOT makes final departure.
+STX and ETX serve as intermediate landings between stretches of open water.
 
 Secondary: a row of things arranged in sequence — a tier, a rank. The four phases SOH→STX→ETX→EOT
-are a ranked sequence; each tier unlocks the next. Streaming consumers MUST process them in order.
+form a ranked sequence; each tier unlocks the next. Streaming consumers MUST process them in order.
 
-Tertiary: to drift or be carried — the carrier IS carried by the stream. Each `<<~\x0N>>` is the
+Tertiary: to drift or ride the current — the stream CARRIES the carrier. Each `<<~\x0N>>` constitutes the
 moment of contact with a fixed point.
 
 Mythological register: In the //Kumulipo// (creation chant), creation itself unfolds as a sequence
 of //pae// — phases of emergence, each landing into the next. The chant does not describe phases;
 it enacts them. A carrier's pae nodes do the same: they do not describe lifecycle, they perform it.
 
-Navigator's meaning: wayfinders watch for //pae// — the moment you know land is near before you can
-see it. SOH is that moment: the receiver knows the carrier is arriving, knows its URI, before the
-content body has crossed. The streaming protocol IS a navigation instrument.
+Navigator's meaning: wayfinders watch for //pae// — the moment you know land lies near before you can
+see it. SOH constitutes that moment: the receiver knows the carrier has begun arriving, knows its URI, before the
+content body has crossed. The streaming protocol WORKS AS a navigation instrument.
 
 <<~/ahu>>
 
@@ -115,8 +115,8 @@ set, because three scarred readings say a merged scan re-introduces the bugs the
 
 !! Pae ʻĀina
 
-//Pae ʻāina// — archipelago, literally "row of lands." The carrier's four phases are an archipelago:
-related, sequential, each its own shore. No shore is skipped. The navigator knows them all.
+//Pae ʻāina// — archipelago, literally "row of lands." The carrier's four phases form an archipelago:
+related, sequential, each its own shore. The carrier skips no shore. The navigator knows them all.
 
 SOH arrives standing (//pae kū//) — the carrier declares itself upright.
 STX crosses the beach — identity settled, content begins flowing inland.
@@ -129,6 +129,6 @@ EOT pushes off — the carrier releases the channel and the current takes it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xRB4fYMztCb2ZJtVaYaJmwqIIowVCz24lC4AHnqTOJE
+<<^ code="&#x0003;">>ni:///sha-256;L_gqLU6lPdeCS7V3wl9TbItjQaSTOd0nK22jO5XtSBs
 
 <<^ code="&#x0004;" -> to="?">>

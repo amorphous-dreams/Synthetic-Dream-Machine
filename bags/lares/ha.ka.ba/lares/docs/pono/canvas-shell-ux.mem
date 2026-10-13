@@ -37,24 +37,24 @@ The study takes ''Kinopio'' as its reference implementation (`kinopio.club`, Vue
 
 !! The pointer-events discipline
 
-Chrome sits at ''fixed viewport corners'' with `position: fixed; pointer-events: none`, and interaction is re-enabled ''only on the child controls that need it''. The canvas fills 100% of the viewport ''beneath'' it.
+Chrome sits at ''fixed viewport corners'' with `position: fixed; pointer-events: none`, and the shell re-enables interaction ''only on the child controls that need it''. The canvas fills 100% of the viewport ''beneath'' it.
 
-''Why this rather than a layout that reserves space:'' a shell that reserves space makes the canvas smaller, and on a small viewport the canvas is the scarce resource — measured elsewhere, an overview panel on a phone ''costs time and buys no preference'', because a larger detail view outweighs what the panel provides. Chrome that floats costs nothing but the pixels under it.
+''Why this rather than a layout that reserves space:'' a shell that reserves space makes the canvas smaller, and on a small viewport the canvas stands as the scarce resource — measured elsewhere, an overview panel on a phone ''costs time and buys no preference'', because a larger detail view outweighs what the panel provides. Chrome that floats costs nothing but the pixels under it.
 
-⚠ ''A canvas-mode toggle must exist.'' Dimming the shell (`opacity` down, `pointer-events: none`) and restoring the drawing surface's own tools is a mode, not a preference — freeform drawing and structured arrangement want different chrome, and a shell that cannot get out of the way will be fought.
+⚠ ''A canvas-mode toggle must exist.'' Dimming the shell (`opacity` down, `pointer-events: none`) and restoring the drawing surface's own tools constitutes a mode, not a preference — freeform drawing and structured arrangement want different chrome, and a shell that cannot get out of the way will draw resistance.
 
 <<~/ahu>>
 
 <<~ ahu #/the-ios-viewport>>
 
-!! ⚠ The iOS visual viewport ~ a fixed header is not fixed
+!! ⚠ The iOS visual viewport ~ a fixed header does not stay fixed
 
-''On iOS the software keyboard and pinch-zoom shrink the VISUAL viewport while leaving the LAYOUT viewport — and CSS `dvh` — unchanged.'' A `position: fixed` header therefore drifts off-screen or floats mid-canvas exactly when a user is typing or zooming.
+''On iOS the software keyboard and pinch-zoom shrink the VISUAL viewport while leaving the LAYOUT viewport — and CSS `dvh` — unchanged.'' A `position: fixed` header therefore drifts off-screen or floats mid-canvas exactly when a user types or zooms.
 
-The studied answer is to ''reposition the chrome against `visualViewport` on a frame cadence'' rather than trusting `fixed`. Android Chrome does not exhibit the same behaviour, so this is a platform branch and not a general rule.
+The studied answer says to ''reposition the chrome against `visualViewport` on a frame cadence'' rather than trusting `fixed`. Android Chrome does not exhibit the same behaviour, so this stands as a platform branch and not a general rule.
 
 ⚠ Two adjacent traps, both measured and both live at WebKit:
-* ''Scroll events fire only when scrolling FINISHES'' on iOS, so the keyboard's animation cannot be tracked — only its endpoints.
+* ''Scroll events fire only when scrolling FINISHES'' on iOS, so nothing can track the keyboard's animation — only its endpoints.
 * ''An input with `font-size` under 16px makes iOS Safari zoom the page on focus.'' Set 16px minimum on every focusable control, or the camera moves ''because the user touched a text field''.
 
 <<~/ahu>>
@@ -63,11 +63,11 @@ The studied answer is to ''reposition the chrome against `visualViewport` on a f
 
 !! One-finger pan ~ let the browser do it
 
-''The single most valuable structural borrowing.'' Render the space as a ''real, page-sized DOM element'' and let the browser's ''native scroller'' perform one-finger pan. Momentum, rubber-banding and compositor-thread scrolling all arrive free, and none of them has to be reimplemented in JavaScript on the main thread.
+''The single most valuable structural borrowing.'' Render the space as a ''real, page-sized DOM element'' and let the browser's ''native scroller'' perform one-finger pan. Momentum, rubber-banding and compositor-thread scrolling all arrive free, and none of them needs reimplementing in JavaScript on the main thread.
 
-''What it buys, measured against the alternative:'' the category's most-reported mobile blocker is that a user must switch tools to navigate and switch back to draw. A canvas that pans by native scroll never asks. Selection moves to long-press; two-finger tap and three-finger tap take undo and redo, matching the platform convention rather than inventing one.
+''What it buys, measured against the alternative:'' the category's most-reported mobile blocker comes from a user having to switch tools to navigate and switch back to draw. A canvas that pans by native scroll never asks. Selection moves to long-press; two-finger tap and three-finger tap take undo and redo, matching the platform convention rather than inventing one.
 
-⚠ ''This composes with the pointer-events discipline and NOT with a rasterised surface.'' A real DOM element under a real scroller is available only to a DOM-hosting camera — one more consequence of `wikispace-canvasspace-ontology.mem`'s surface correction, arriving from the mobile side.
+⚠ ''This composes with the pointer-events discipline and NOT with a rasterised surface.'' A real DOM element under a real scroller stays available only to a DOM-hosting camera — one more consequence of `wikispace-canvasspace-ontology.mem`'s surface correction, arriving from the mobile side.
 
 <<~/ahu>>
 
@@ -119,7 +119,7 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 └────────────────────────────────────────────────────────────┘
 ```
 
-''Remote cursors are canvas-relative, never viewport-relative'' — they move with pan and zoom because they mark a place in the space, not a place on the glass.
+''Remote cursors stay canvas-relative, never viewport-relative'' — they move with pan and zoom because they mark a place in the space, not a place on the glass.
 
 <<~/ahu>>
 
@@ -127,6 +127,6 @@ This decorates nothing. Capability enforces the `canon-boundary` crossing, and p
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/canvas-field-scout">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
 
-<<^ code="&#x0003;">>ni:///sha-256;R6hKnC1hEntm9DLhxeHPfAN79j_1sz-7aOob6MYcJ34
+<<^ code="&#x0003;">>ni:///sha-256;8FOG7UShlYalHehSVe5bZqckg2tMGYBMfTKElk7Rzi0
 
 <<^ code="&#x0004;" -> to="?">>
