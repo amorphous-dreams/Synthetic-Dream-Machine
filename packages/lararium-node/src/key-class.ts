@@ -57,9 +57,13 @@ export interface KeyCensusEntry {
   readonly carrier: CarrierName | null;
 }
 
-/** Whether the bytes at `path` read as a VK-sealed frame. An unreadable or absent file reads as no frame. */
+/**
+ * Whether a VK frame stands at `path`: whole, torn, or of a framing this build cannot open. A damaged frame still
+ * names a row under the vessel key, never a cleartext one; the custody reader names the damage when it opens the
+ * row. An unreadable or absent file reads as no frame.
+ */
 function vkFrameStands(path: string): boolean {
-  try { return readVkCarrier(readFileSync(path)) === "sealed"; }
+  try { const reading = readVkCarrier(readFileSync(path)); return reading === "sealed" || reading === "torn" || reading === "unopenable"; }
   catch { return false; }
 }
 

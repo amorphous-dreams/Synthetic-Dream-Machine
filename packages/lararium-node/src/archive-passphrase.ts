@@ -2,15 +2,12 @@
  * archive-passphrase (node atom) — the passphrase-LIFECYCLE surface over the at-rest seal (G1, #60).
  *
  * `archive-seal` frames the crypto atoms (scrypt KEK, AES-256-GCM seal/unseal, the envelope). This file
- * adds NO new crypto — it composes those atoms into the operator's lifecycle gestures over the share
- * carriers the vessel still keeps under a passphrase:
- *   · recovery-device-share-h${N}.bin — the device recovery share, ONE PER PERSONA (written at each
- *                                     persona's founding). The enumeration READS THE DISK for them —
- *                                     a family spelled as a single path is a family that escapes rotate,
- *                                     repair and status (see `deviceShareCarriers`).
- * The keyhive archive, the veil archives and the charter reserve's two rows rest under the vessel key
- * (`identity-anchors`, `seal-reserve-store`); this lifecycle governs none of them, and refuses any carrier it
- * meets sealed that way.
+ * adds NO new crypto — it composes those atoms into the operator's lifecycle gestures over whatever carriers
+ * the carrier table's `lifecycle` column names. NO ROW NAMES ONE: the keyhive archive, the veil archives, the
+ * charter reserve's two rows and each face's device recovery share all rest under the vessel key
+ * (`identity-anchors`, `seal-reserve-store`, `recovery-share-store`). So these verbs find no carrier and move no
+ * byte, and they stand only until the lifecycle retires; a carrier they ever met sealed under the vessel key
+ * refuses by name.
  *
  * ONE RULE NAMES THE SET: every file a boot opens through `openArchiveBytes` under the resolved seal policy
  * rides this lifecycle. A carrier sealed under the policy and left out of a rotate stays under the OLD
@@ -48,7 +45,7 @@ import {
 } from "./archive-seal.js";
 import {
   vaultCarriers,
-  type CarrierName, type DeviceShareName,
+  type CarrierName,
 } from "./vault-carriers.js";
 import { setSealExpected, sealExpected as readSealExpected, type LaresConfig } from "./lares-config.js";
 import { probeSecretService, keychainKekAvailable } from "./secret-service-probe.js";
@@ -95,7 +92,7 @@ function refuseVkSeal(carrier: CarrierName, bytes: Uint8Array, act: string): voi
 }
 // The names stay readable from this surface — every existing importer of `CarrierName` reads the lifecycle,
 // not the enumeration, and this is the lifecycle's door.
-export type { CarrierName, DeviceShareName };
+export type { CarrierName };
 
 /**
  * THREE READINGS PLUS ABSENCE, BECAUSE FOLDING ANY TWO LIES TO THE OPERATOR. `unopenable` names a seal
@@ -134,9 +131,8 @@ export interface ArchiveSealStatus {
 
 /**
  * Trial-open raw carrier bytes under a passphrase, THREE-VALUED — the distinction itself lives ONCE, in
- * `archive-seal`'s `probeArchiveBytes`, so the boot reading here and the WRITE guard
- * (`archive-write-guard`) can never drift into disagreeing about what a torn carrier means. See that atom
- * for why `unreadable` must never fold into `key-fails` (the pin-reader inversion).
+ * `archive-seal`'s `probeArchiveBytes`, so no second reader drifts into disagreeing about what a torn carrier
+ * means. See that atom for why `unreadable` must never fold into `key-fails` (the pin-reader inversion).
  */
 function probeCarrier(bytes: Uint8Array, passphrase: string): CarrierProbe {
   return probeArchiveBytes(bytes, passphraseSealPolicy(passphrase));

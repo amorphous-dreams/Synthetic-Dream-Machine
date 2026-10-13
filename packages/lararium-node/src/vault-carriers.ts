@@ -21,7 +21,7 @@
  *
  * ── ONE TABLE, EVERY READER DERIVES ─────────────────────────────────────────────────────────────
  * The key census (`key-class`), the passphrase seal lifecycle (`vaultCarriers`, read by `archive-passphrase`; it
- * governs the device share rows alone)
+ * governs no row)
  * and the custody shape reader (`custody-shape`) all read these rows. A second list of filenames anywhere
  * else would drift from this one, and the drift costs in both directions: a carrier a sweep omits stays
  * unsealed while the sweep reports success; a carrier a sweep invents gets written over by an act nobody
@@ -49,7 +49,6 @@ import { rotateVk, type CustodyIo, type KeyClass, type SealedCarrier, type SlotS
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { reserveMineSharePath } from "./seal-reserve-store.js";
-import { deviceSharePath } from "./recovery-share-store.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
 /** The custody classes, closed. */
@@ -77,12 +76,11 @@ export function vesselCustodyHomes(): CustodyHomes {
 }
 
 /**
- * A passphrase seal lifecycle carrier's name. It names one family: a vessel wearing several personas splits each
- * persona-root on its own, so every handle-index's device share is its own carrier. The name carries the index
- * because h0's quorum leg and h1's are different secrets.
+ * A passphrase seal lifecycle carrier's name: whatever a row's `lifecycle` column answers. NO ROW ANSWERS ONE: every
+ * share row rests under the vessel key, so the lifecycle governs nothing and its verbs find no carrier until they
+ * retire.
  */
-export type DeviceShareName = `device-share-h${number}`;
-export type CarrierName = DeviceShareName;
+export type CarrierName = string;
 
 /** Whose a carrier is: one face's own (its handle-index), or the vessel's (every face, or none). */
 export type CarrierFace = number | "vessel";
@@ -126,12 +124,8 @@ export interface CarrierEntry {
   readonly face:      CarrierFace;
 }
 
-/** The device-share filename law, read back: the family's spelling in `recovery-share-store`. */
+/** The device-share filename law, read back: the family's spelling in `recovery-share-store` (`deviceShareFile`). */
 export const DEVICE_SHARE_FILE = /^recovery-device-share-h(\d+)\.bin$/;
-
-export function deviceShareName(handleIndex: number): DeviceShareName {
-  return `device-share-h${handleIndex}`;
-}
 
 const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** A filename the writer's own path function spells. */
@@ -239,8 +233,7 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "face-proof-key", match: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
          writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf }),
     id({ row: "device-share", match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
-         writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf,
-         lifecycle: (m) => (Number.isSafeInteger(Number(m[1])) ? deviceShareName(Number(m[1])) : null) }),
+         writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf }),
     id({ row: "reserve-share", match: exact(reserveMineSharePath()), custody: "cold", keyClass: "seed",
          writer: "seal-reserve-store", name: () => "seal-reserve-mine-share" }),
   ]);
@@ -362,18 +355,8 @@ export function vaultCarrierFiles(identityDir: string): ReadonlySet<string> {
   return new Set(vaultCarrierMap(identityDir).keys());
 }
 
-/** Every device-share carrier standing on disk, ascending by handle-index. */
-export function deviceShareCarriers(): readonly VaultCarrier[] {
-  const indices: number[] = [];
-  for (const f of vaultCarrierMap(larIdentityDir()).keys()) {
-    const m = DEVICE_SHARE_FILE.exec(f);
-    if (m && Number.isSafeInteger(Number(m[1]))) indices.push(Number(m[1]));
-  }
-  return indices.sort((a, b) => a - b)
-    .map((index) => ({ name: deviceShareName(index), path: deviceSharePath(index) }));
-}
-
-/** The passphrase-sealed carriers, in a FIXED order (the rename sequence the ratify flow commits in): the device shares. */
+/** The passphrase-sealed carriers standing in the identity home, by file name: none, while no row answers the lifecycle column. */
 export function vaultCarriers(): readonly VaultCarrier[] {
-  return [...deviceShareCarriers()];
+  const dir = larIdentityDir();
+  return [...vaultCarrierMap(dir)].sort(([a], [b]) => a.localeCompare(b)).map(([file, name]) => ({ name, path: join(dir, file) }));
 }

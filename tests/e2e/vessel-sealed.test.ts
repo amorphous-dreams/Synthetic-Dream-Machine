@@ -195,16 +195,19 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(readFileSync(SHARE()).equals(shareAtFounding), "a stand re-minted the device share").toBe(true);
   }, 300_000);
 
-  test("⑥ the passphrase lifecycle seals the device share alone and names no archive", async () => {
+  test("⑥ the passphrase lifecycle names no carrier: the device share rests under the vessel key", async () => {
     const before = await cli(NO_PASS, ["vault", "status", "--json"]);
     const carriers = (dataOf(before)["carriers"] ?? {}) as Record<string, { state: string }>;
-    expect(Object.keys(carriers).sort()).toEqual(["device-share-h0"]);   // the reserve share rides the vessel key
-    expect(carriers["device-share-h0"]?.state).toBe("cleartext");
+    expect(Object.keys(carriers)).toEqual([]);                           // every share row rides the vessel key
+    const share = readFileSync(SHARE());
+    expect(readVkCarrier(share)).toBe("sealed");
+    expect(isSealedEnvelope(share)).toBe(false);
 
+    // The passphrase verb finds nothing and moves no byte of the share.
     const sealed = await cli({ ...NO_PASS, LARES_ARCHIVE_PASSPHRASE_NEW: SHARE_PASS }, ["vault", "seal", "--yes", "--json"]);
     expect(sealed.json?.["ok"], said(sealed)).toBe(true);
-    expect(dataOf(sealed)["sealed"]).toEqual(["device-share-h0"]);
-    expect(isSealedEnvelope(readFileSync(SHARE()))).toBe(true);
+    expect(dataOf(sealed)["sealed"]).toEqual([]);
+    expect(readFileSync(SHARE()).equals(share)).toBe(true);
     // The archive never entered that lifecycle: it carries the vessel key's seal and no passphrase envelope.
     const archive = readFileSync(identity("keyhive-archive.bin"));
     expect(readVkCarrier(archive)).toBe("sealed");

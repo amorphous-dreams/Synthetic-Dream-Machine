@@ -5,7 +5,7 @@
  * ── WHAT A FALSE POSITIVE COSTS ──────────────────────────────────────────────────────────────────
  * `readSealCarrier` reads a carrier's standing bytes THREE ways, and answers `unopenable` when the
  * LAYOUT frames as a sealed envelope even with the magic damaged — the magic is a LABEL, the framing
- * is EVIDENCE. An `unopenable` carrier REFUSES EVERY WRITE (`archive-write-guard`). So a false
+ * is EVIDENCE. The passphrase lifecycle treats an `unopenable` carrier as one no key can judge, and refuses to move it. So a false
  * positive over genuinely BARE bytes refuses the FIRST write to a carrier — it refuses a FOUNDING,
  * with a message pointing at a corrupt seal that does not exist. The envelope's own docblock names
  * the trade ("DELIBERATELY STRICT, because the consequence of a false positive is a REFUSED WRITE")

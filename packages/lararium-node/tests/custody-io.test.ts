@@ -13,11 +13,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   CustodyRefusal, OldShapeRefusal, SEALING_SUFFIX, ROTATING_SUFFIX, bindSlot, commitSlotTree, decodeSlotTree, mintVk,
-  openSealedCarrier, openVk, readSealCarrier, readVkCarrier, writeSealedCarrier, type CustodyIo, type SealedCarrier, type VesselKey,
+  openSealedCarrier, openVk, readVkCarrier, writeSealedCarrier, type CustodyIo, type SealedCarrier, type VesselKey,
 } from "@lararium/mesh";
 import { CustodyLockRefused, FsCustodyIo } from "../src/custody-io.js";
-import { FloorWriteRefused } from "../src/archive-write-guard.js";
-import { persistRecoveryDeviceShare } from "../src/recovery-share-store.js";
 import { ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 import { rotateVesselVk, vesselCustodyHomes, vkSealedCarriers, vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 
@@ -288,49 +286,6 @@ describe("PROOF 1 — rotate, reopen, compare, rename on actual carrier files", 
     const before = treeHash(root);
     await expect(rotateVesselVk({ io, homes, oldVk: mintVk(), newVk: mintVk(), slots: [{ t: 1, pins: [pass] }] })).rejects.toThrow(/refusing/);
     expect(treeHash(root)).toBe(before);
-  });
-});
-
-describe("PROOF 2 — the floor guard: an overwrite the floor cannot open refuses", () => {
-  const recoveryShare = (x: string) => ({ bytes: { x, ys: Uint8Array.from([1, 2, 3]) }, custodian: "device" as const, recoveryEpoch: 1 });
-  const deviceSharePath = () => join(homes.identity, "recovery-device-share-h0.bin");
-
-  test("a VK-sealed device share refuses the floor's write, with and without a passphrase, and its bytes stand", async () => {
-    const io = new FsCustodyIo(homes);
-    const vk = mintVk();
-    const treePath = vkSlotsPath(homes.identity);
-    await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [pass] }), carriers: vkSealedCarriers(homes) });
-    const carrier: SealedCarrier = { name: "identity/recovery-device-share-h0.bin", path: deviceSharePath() };
-    await writeSealedCarrier({ io, vk, treePath, carrier, plaintext: text("sovereign") });
-    const stood = readFileSync(deviceSharePath());
-    expect(readVkCarrier(stood)).toBe("sealed");
-    // The passphrase reader frames nothing in a VK seal, so the guard must inspect the VK frame before writing.
-    expect(readSealCarrier(stood)).toBe("bare");
-
-    expect(() => persistRecoveryDeviceShare(recoveryShare("fresh"))).toThrow(FloorWriteRefused);   // floor, no key
-    setEnv(ARCHIVE_PASSPHRASE_ENV, "a-passphrase-that-is-not-the-vk");
-    expect(() => persistRecoveryDeviceShare(recoveryShare("fresh"))).toThrow(/floor holds no VK/);   // floor, a "key" of the wrong kind
-    expect(readFileSync(deviceSharePath()).equals(stood)).toBe(true);
-    // And the sealed writer, holding the VK, still replaces it.
-    await writeSealedCarrier({ io, vk, treePath, carrier, plaintext: text("sovereign-2") });
-    expect(str((await openSealedCarrier({ io, vk, carrier }) as { plaintext: Uint8Array }).plaintext)).toBe("sovereign-2");
-  });
-
-  test("a TORN VK frame refuses because no key can be judged", () => {
-    writeFileSync(deviceSharePath(), Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.from([1, 2, 3])]));
-    const stood = readFileSync(deviceSharePath());
-    expect(readVkCarrier(stood)).toBe("torn");
-    expect(readSealCarrier(stood)).toBe("bare");
-    expect(() => persistRecoveryDeviceShare(recoveryShare("fresh"))).toThrow(FloorWriteRefused);
-    expect(readFileSync(deviceSharePath()).equals(stood)).toBe(true);
-  });
-
-  test("CONTROL: an absent path and a bare cleartext device share both still take the write", () => {
-    persistRecoveryDeviceShare(recoveryShare("first"));         // absent: a founding is never blocked
-    const first = readFileSync(deviceSharePath());
-    expect(JSON.parse(first.toString("utf8")).x).toBe("first");
-    persistRecoveryDeviceShare(recoveryShare("second"));       // bare cleartext answers to the cleartext policy
-    expect(JSON.parse(readFileSync(deviceSharePath(), "utf8")).x).toBe("second");
   });
 });
 

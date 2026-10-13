@@ -149,8 +149,8 @@ describe("CURE 1 — the floor must not write", () => {
   });
 
   // ── CONTROL · A FOUNDING STILL WRITES ───────────────────────────────────────────────────────────
-  // `archive-write-guard-attacks.test.ts` already pins "the guard never blocks a founding"; the
-  // standing gate must not either. A founding reads `no-seal-expected` → `archiveOpens: true`,
+  // A founding never gets blocked by a guard over a carrier that does not stand yet; the standing gate must
+  // not block it either. A founding reads `no-seal-expected` → `archiveOpens: true`,
   // while its CLASS is still `"herm"` (no face lit) — which is exactly why the door reads the
   // archive fact rather than the class.
   test("CONTROL — a founding (no carrier, no sealExpected → archive opens) still writes", async () => {

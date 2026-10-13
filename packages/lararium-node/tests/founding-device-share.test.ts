@@ -14,7 +14,7 @@ import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { isSealedEnvelope } from "@lararium/mesh";
+import { isSealedEnvelope, readVkCarrier } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare, deviceSharePath } from "../src/recovery-share-store.js";
 import { reserveMineSharePath } from "../src/seal-reserve-store.js";
@@ -43,15 +43,16 @@ describe("the device share mints at the face founding", () => {
 
   test("a founding mints the share; a re-found never re-mints; the reserve stays absent", async () => {
     await generateOrLoadPersonaGroupRoot(0);
-    expect(loadRecoveryDeviceShare(0)).toBeNull();
+    expect(await loadRecoveryDeviceShare(0)).toBeNull();
 
     const first = await armRecoveryAtFounding(root, 0);
     expect(first.minted).toBe(true);
     expect(first.recordedCode.length).toBeGreaterThan(0);
     expect(first.escrowCarrier.length).toBeGreaterThan(0);
-    expect(loadRecoveryDeviceShare(0)?.custodian).toBe("device");
+    expect((await loadRecoveryDeviceShare(0))?.custodian).toBe("device");
     const bytes = readFileSync(deviceSharePath(0));
-    expect(archiveSealStatus().carriers["device-share-h0"]!.state).toBe("cleartext");   // no policy → bare, honestly
+    expect(readVkCarrier(bytes)).toBe("sealed");                                        // a cold row under the vessel key, from its first write
+    expect(archiveSealStatus().carriers).toEqual({});                                   // and the passphrase lifecycle names no carrier
 
     // CONTROL: the second act (a re-light, a re-stand) leaves the carrier byte-identical.
     const again = await armRecoveryAtFounding(root, 0);
@@ -60,18 +61,39 @@ describe("the device share mints at the face founding", () => {
 
     // CONTROL: one leg, not two.
     expect(existsSync(reserveMineSharePath())).toBe(false);
-    expect((archiveSealStatus().carriers as Record<string, unknown>)["reserve-share"]).toBeUndefined();   // the reserve rides the vessel key
   });
 
-  test("under the seal policy the share lands sealed (passphrase), the same policy the veil rides", async () => {
+  test("a passphrase in the environment changes nothing: the share lands under the vessel key, one row per face", async () => {
     setEnv("LARES_ARCHIVE_PASSPHRASE", "founding-share-witness-passphrase");
     await generateOrLoadPersonaGroupRoot(1);
     const r = await armRecoveryAtFounding(root, 1);
     expect(r.minted).toBe(true);
-    expect(isSealedEnvelope(readFileSync(deviceSharePath(1)))).toBe(true);
-    expect(loadRecoveryDeviceShare(1)?.custodian).toBe("device");
+    const row = readFileSync(deviceSharePath(1));
+    expect(readVkCarrier(row)).toBe("sealed");
+    expect(isSealedEnvelope(row)).toBe(false);                                          // no passphrase envelope wraps it
+    expect((await loadRecoveryDeviceShare(1))?.custodian).toBe("device");
     // h0 stays untouched — the split keys by handle-index.
-    expect(loadRecoveryDeviceShare(0)).toBeNull();
+    expect(await loadRecoveryDeviceShare(0)).toBeNull();
+  });
+
+  test("RED: the person holds both off-device shares BEFORE the device share rests, and a hand-out that fails seals nothing", async () => {
+    await generateOrLoadPersonaGroupRoot(2);
+    // The hand-out runs first: at that moment no device share rests yet.
+    let restedAtHandOut: boolean | null = null;
+    let handed: { recordedCode: string; escrowCarrier: string } | null = null;
+    // A run that stops inside the hand-out (the terminal closed, the process ended) leaves NO device share...
+    await expect(armRecoveryAtFounding(root, 2, () => { throw new Error("the run stopped before the person held the shares"); })).rejects.toThrow(/stopped before/);
+    expect(existsSync(deviceSharePath(2))).toBe(false);
+    // ...so the same command splits afresh, hands both shares out, and only then seals.
+    const armed = await armRecoveryAtFounding(root, 2, (off) => { restedAtHandOut = existsSync(deviceSharePath(2)); handed = { ...off }; });
+    expect(restedAtHandOut).toBe(false);
+    expect(armed.minted).toBe(true);
+    expect(handed).toEqual({ recordedCode: armed.recordedCode, escrowCarrier: armed.escrowCarrier });
+    expect(readVkCarrier(readFileSync(deviceSharePath(2)))).toBe("sealed");
+    // CONTROL: with the share at rest, a later run hands out nothing and re-splits nothing.
+    let again = 0;
+    expect((await armRecoveryAtFounding(root, 2, () => { again += 1; })).minted).toBe(false);
+    expect(again).toBe(0);
   });
 
   test("CONTROL: no persona root at the index → refuses, fabricates no share", async () => {

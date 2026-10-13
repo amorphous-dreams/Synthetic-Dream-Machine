@@ -153,8 +153,8 @@ describe("multi-persona-per-vessel (#63)", () => {
     const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir(), seededRng(11), 1, 1);
 
     // The device-share for persona 1 landed at ITS OWN keyed carrier; persona 0's carrier stays untouched.
-    expect(loadRecoveryDeviceShare(1)?.custodian).toBe("device");
-    expect(loadRecoveryDeviceShare(0)).toBeNull();
+    expect((await loadRecoveryDeviceShare(1))?.custodian).toBe("device");
+    expect(await loadRecoveryDeviceShare(0)).toBeNull();
 
     // The two off-device carriers reconstruct persona-1's REAL root — and NOT persona-0's.
     const codeShare:   RecoveryShare = { bytes: decodeShareBytes(recordedCode),  custodian: "recorded-code", recoveryEpoch: 1 };

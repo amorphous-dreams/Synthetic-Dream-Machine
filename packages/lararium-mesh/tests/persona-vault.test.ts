@@ -57,8 +57,8 @@ function makeInMemoryVault(): PersonaVault {
     list: () => [...anchorsMap.keys()].sort((a, b) => a - b),
   };
   const recovery: RecoveryShareStore = {
-    load: (i) => shares.get(i) ?? null,
-    save: (i, s) => { shares.set(i, s); },
+    load: async (i) => shares.get(i) ?? null,
+    save: async (i, s) => { shares.set(i, s); },
   };
   return {
     rootSlot(i): KeypairStore {
@@ -136,8 +136,8 @@ describe("persona-vault core (#64 stage 1)", () => {
 
     const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(v, seededRng(11), 1, 1);
     // The device-share for persona 1 landed at ITS OWN key; persona 0's stays untouched.
-    expect(v.recovery!.load(1)?.custodian).toBe("device");
-    expect(v.recovery!.load(0)).toBeNull();
+    expect((await v.recovery!.load(1))?.custodian).toBe("device");
+    expect(await v.recovery!.load(0)).toBeNull();
 
     const codeShare:   RecoveryShare = { bytes: decodeShareBytes(recordedCode),  custodian: "recorded-code", recoveryEpoch: 1 };
     const escrowShare: RecoveryShare = { bytes: decodeShareBytes(escrowCarrier), custodian: "escrow-peer",   recoveryEpoch: 1 };

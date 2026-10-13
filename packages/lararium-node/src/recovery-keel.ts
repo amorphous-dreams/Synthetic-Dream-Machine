@@ -67,8 +67,9 @@ export async function provisionRecoveryAtFounding(
   rng: RandomProvider,
   recoveryEpoch = 1,
   handleIndex = 0,
+  handOut?: (off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>,
 ): Promise<{ recordedCode: string; escrowCarrier: string }> {
-  return coreProvisionRecoveryAtFounding(await makeNodeFsPersonaVault(), rng, recoveryEpoch, handleIndex);
+  return coreProvisionRecoveryAtFounding(await makeNodeFsPersonaVault(), rng, recoveryEpoch, handleIndex, handOut);
 }
 
 export type { GuardianCard, RecoveryCardsAtFounding } from "@lararium/mesh";

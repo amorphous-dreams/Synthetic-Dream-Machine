@@ -36,13 +36,14 @@ import {
 /**
  * How a runtime persists the DEVICE recovery-share, keyed by handle-index (one persona's quorum never
  * reconstructs another's root). The device-share is share material of the PersonaGroup root — self-only
- * secret — so the platform SEALS it at rest; the seal lives in the adapter, never in this core shore.
+ * secret — so the platform SEALS it at rest; the seal lives in the adapter, never in this core shore. Both moves
+ * answer asynchronously: a store that rests its share behind a custody door opens it for the one act that asks.
  */
 export interface RecoveryShareStore {
-  /** Read the device-share for ONE persona, or null when none has landed. */
-  load(handleIndex: number): RecoveryShare | null;
-  /** Persist (sealed) the device-share for ONE persona. */
-  save(handleIndex: number, share: RecoveryShare): void;
+  /** Read the device-share for ONE persona, or null when none has landed. A share that stands and does not open refuses. */
+  load(handleIndex: number): Promise<RecoveryShare | null>;
+  /** Persist (sealed) the device-share for ONE persona. Resolves once the share rests. */
+  save(handleIndex: number, share: RecoveryShare): Promise<void>;
 }
 
 /** The three shares a founding split produces. Any two DISTINCT custodians recover — so a lost device
@@ -119,6 +120,12 @@ export async function provisionRecoveryAtFounding(
   rng: RandomProvider,
   recoveryEpoch = 1,
   handleIndex = 0,
+  /**
+   * Hand the two off-device shares to the person BEFORE the device share seals. A provision that stops after the
+   * hand-out and before the seal leaves no device share, so the same provision run again splits afresh; one that
+   * sealed first and stopped would leave a share whose two partners nobody ever received.
+   */
+  handOut?: (off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>,
 ): Promise<{ recordedCode: string; escrowCarrier: string }> {
   assertHandleIndex(handleIndex);
   if (!vault.recovery) {
@@ -127,7 +134,8 @@ export async function provisionRecoveryAtFounding(
   const rootSeed = await loadPersonaRootSeed(vault, handleIndex);
   try {
     const shares = splitRootAtFounding(rootSeed, rng, recoveryEpoch);
-    vault.recovery.save(handleIndex, shares.deviceShare);
+    await handOut?.({ recordedCode: shares.recordedCode, escrowCarrier: shares.escrowCarrier });
+    await vault.recovery.save(handleIndex, shares.deviceShare);
     return { recordedCode: shares.recordedCode, escrowCarrier: shares.escrowCarrier };
   } finally {
     rootSeed.fill(0);   // the root never lingers after the split
@@ -174,7 +182,7 @@ export async function provisionRecoveryCardsAtFounding(
   const rootSeed = await loadPersonaRootSeed(vault, handleIndex);
   try {
     const split: GuardianCardSplit = splitToGuardianCards(rootSeed, guardianA, guardianB, recoveryEpoch, rng);
-    vault.recovery.save(handleIndex, split.mineShare);   // seal the "mine" (device) share at rest
+    await vault.recovery.save(handleIndex, split.mineShare);   // seal the "mine" (device) share at rest
     return { cards: split.cards, mineSealed: true };
   } finally {
     rootSeed.fill(0);   // the root never lingers after the split

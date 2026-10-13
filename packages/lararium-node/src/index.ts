@@ -459,7 +459,7 @@ export type { KeyClass, KeyCensusEntry, KeyAtRest } from "./key-class.js";
 // lifecycle and the custody shape reader all derive from it — see `vault-carriers`.
 export {
   CUSTODY_CLASSES, carrierTable, carrierCensus, vesselCustodyHomes,
-  vaultCarriers, vaultCarrierMap, vaultCarrierFiles, deviceShareCarriers,
+  vaultCarriers, vaultCarrierMap, vaultCarrierFiles,
   vkSlotsPath, vkSealedCarriers, rotateVesselVk,
 } from "./vault-carriers.js";
 export type {

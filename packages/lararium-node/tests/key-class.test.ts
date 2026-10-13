@@ -100,13 +100,15 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
       expect(mine!.class).toBe("seed");
       // …and CUSTODY DIFFERS. This is what a `class`-only census could not say.
       expect(root!.atRest).toBe("cleartext");
-      expect(share!.atRest).toBe("sealed");
+      // Neither share rides the passphrase lifecycle: both rest as custody rows, and these sown bytes carry no VK
+      // frame, so the census reads each as the bare file it stands as.
+      expect(share!.atRest).toBe("cleartext");
       // The reserve share rides the vessel key: the passphrase lifecycle governs it no more, and these sown bytes
       // carry no VK frame, so the census reads them as the bare file they stand as.
       expect(mine!.atRest).toBe("cleartext");
       // The sweep that costs the story now has a predicate that cannot skip-and-claim.
       const sealedSeeds = keys.filter((k) => k.class === "seed" && k.atRest === "sealed").map((k) => k.name);
-      expect(sealedSeeds).toEqual(["recovery-device-share-h0"]);
+      expect(sealedSeeds).toEqual([]);
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
@@ -114,7 +116,7 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
     const dir = sownDir();
     try {
       const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k]));
-      expect(byName["recovery-device-share-h0"]!.carrier).toBe("device-share-h0");
+      expect(byName["recovery-device-share-h0"]!.carrier).toBeNull();        // a row under the vessel key names no lifecycle carrier
       expect(byName["seal-reserve-mine-share"]!.carrier).toBeNull();          // a row under the vessel key names no lifecycle carrier
       expect(byName["keyhive-archive"]!.carrier).toBeNull();
       expect(byName["veil-archive-h0"]!.carrier).toBeNull();
@@ -138,7 +140,7 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
       //   write over a file no rotate owns). `vault status` naming `recovery-device-share-h1` under `keys`
       //   while omitting it from `carriers` was this disagreement, one direction, in the field.
       for (const f of censusSealed) expect(governed.has(f), `the census calls ${f} sealed; the vault governs no carrier there`).toBe(true);
-      expect(governed.size).toBe(1);   // device-share-h0
+      expect(governed.size).toBe(0);   // the passphrase lifecycle governs no row
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 
@@ -171,9 +173,23 @@ describe("custody ⊥ secret-kind — the census names both axes", () => {
       writeFileSync(join(dir, "recovery-device-share-h3.bin"), "x");
       writeFileSync(join(dir, ".persona-group-root-joshua-h3.json"), "{}");
       const keys = vesselKeyCensus(dir);
-      expect(keys.filter((k) => k.atRest === "sealed").map((k) => k.carrier)).toEqual(["device-share-h0", "device-share-h3"]);
+      expect(keys.filter((k) => k.class === "seed").map((k) => k.name).sort()).toEqual(["persona-root-h3", "recovery-device-share-h0", "recovery-device-share-h3"]);
+      expect(keys.filter((k) => k.atRest === "sealed")).toEqual([]);               // sown bare: no VK frame, and no lifecycle governs them
       expect(keys.find((k) => k.name === "persona-root-h3")!.atRest).toBe("cleartext");
-      expect([...vaultCarrierFiles(dir)].length).toBe(2);
+      expect([...vaultCarrierFiles(dir)].length).toBe(0);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("a VK frame that stands DAMAGED still reads as sealed, never as cleartext", () => {
+    const dir = mkdtempSync(join(tmpdir(), "lar-custody-torn-"));
+    try {
+      // A torn frame: the vessel key's seal marker with too few bytes behind it. The custody reader refuses the
+      // row by name; the census must not call a row under the vessel key cleartext.
+      writeFileSync(join(dir, "recovery-device-share-h0.bin"), Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.from([1, 2, 3])]));
+      writeFileSync(join(dir, "recovery-device-share-h1.bin"), "x");               // control: bare bytes carry no frame
+      const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k.atRest]));
+      expect(byName["recovery-device-share-h0"]).toBe("sealed");
+      expect(byName["recovery-device-share-h1"]).toBe("cleartext");
     } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 

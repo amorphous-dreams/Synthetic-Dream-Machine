@@ -404,17 +404,25 @@ export interface RecoveryArmed {
  * standing vessel's outcome record. Absent by choice and absent by omission read identical from outside;
  * only the mint at founding tells them apart. The root at
  * `handleIndex` splits 2-of-3 {device, recorded-code, escrow-peer} ONCE: the device share seals into the
- * identity home under the live seal policy (the same carrier set the veil rides — `archive-passphrase`
- * names it, so `vault seal`/`rotate` carry it), and the two off-device shares return for the operator to
- * place by hand. SHARES ARE KEYS: the recorded code and the escrow carrier together reconstruct the root.
+ * identity home as a cold row under the vessel key (`recovery-share-store`), and the two off-device shares
+ * return for the operator to place by hand. SHARES ARE KEYS: the recorded code and the escrow carrier together reconstruct the root.
+ *
+ * `handOut` receives the two off-device shares before the device share seals, so the caller shows them to the
+ * person first.
  *
  * Idempotent by the carrier: a share already standing at the index is never re-split (a re-light after a
  * preserving re-pave, a re-stand, `persona new` at a standing index all read `minted: false` and carry
  * nothing). Only the device share persists here — the reserve share belongs to the seal rite.
  */
-export async function armRecoveryAtFounding(storageDir: string, handleIndex: number): Promise<RecoveryArmed> {
-  if (loadRecoveryDeviceShare(handleIndex)) return { minted: false, recordedCode: "", escrowCarrier: "" };
-  const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(storageDir, globalThis.crypto, 1, handleIndex);
+export async function armRecoveryAtFounding(
+  storageDir: string, handleIndex: number,
+  handOut?: (off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>,
+): Promise<RecoveryArmed> {
+  if (await loadRecoveryDeviceShare(handleIndex)) return { minted: false, recordedCode: "", escrowCarrier: "" };
+  // THE PERSON HOLDS THE TWO OFF-DEVICE SHARES BEFORE THE DEVICE SHARE RESTS (`handOut`). A run that stops between
+  // the two leaves no device share, and the same command splits afresh; no run leaves a sealed share whose two
+  // partners nobody received.
+  const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(storageDir, globalThis.crypto, 1, handleIndex, handOut);
   return { minted: true, recordedCode, escrowCarrier };
 }
 

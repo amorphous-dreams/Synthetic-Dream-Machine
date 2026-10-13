@@ -87,7 +87,7 @@ class RotationPreflightRefusal extends Error { override readonly name = "Rotatio
 
 /** The refusals the custody door names: each leads its error line, so a caller reads the class, not a guess. */
 const NAMED_REFUSALS: ReadonlySet<string> = new Set([
-  "OldShapeRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal", "FloorWriteRefused",
+  "OldShapeRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal",
   "CustodyLockRefused", "CustodyFoundingRefused", "CredentialTtyRefusal", "RotationPreflightRefusal",
 ]);
 

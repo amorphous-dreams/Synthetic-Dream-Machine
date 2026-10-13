@@ -162,7 +162,7 @@ describe("recovery-keel — founding provision against the real identity store",
     const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(dataDir, seededRng(11));
 
     // The device-share landed sealed in the identity home; the two off-device carriers came back.
-    expect(loadRecoveryDeviceShare()?.custodian).toBe("device");
+    expect((await loadRecoveryDeviceShare())?.custodian).toBe("device");
     expect(recordedCode.length).toBeGreaterThan(0);
     expect(escrowCarrier.length).toBeGreaterThan(0);
 
@@ -202,7 +202,7 @@ describe("recovery-keel — identity recovery issues the SHARED guardian cards (
     expect(new Set(cards.map((c) => c.confirmPhrase)).size).toBe(3);
 
     // The "mine" (device) share sealed on THIS device; a lost device recovers from the two GUARDIAN cards.
-    expect(loadRecoveryDeviceShare()?.custodian).toBe("device");
+    expect((await loadRecoveryDeviceShare())?.custodian).toBe("device");
     const guardianCards = cards.filter((c) => c.slot !== "mine");
     const quorum = guardianCards.map((c) => guardianShareFromCard(c, 1));
     const freshVK = freshDeviceKey();

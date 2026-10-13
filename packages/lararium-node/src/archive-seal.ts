@@ -130,8 +130,7 @@ export function passphraseSealPolicy(passphrase: string): SealPolicy {
  * The third value exists because collapsing it into `key-fails` is the pin-reader inversion: one answer
  * covering both "the key is wrong" and "the carrier is torn" sends an operator to re-type a passphrase that
  * was right all along, and hides a corruption behind a credential error. `archiveSealStatus` reads its
- * probe verdict from this, and `refuseWriteOverUnopenableSeal` names its refusals from it — one distinction,
- * derived once, so the two can never drift apart.
+ * probe verdict from this: one distinction, derived once.
  *
  * CALLERS HANDLE THE CLEARTEXT POLICY FIRST. A policy carrying no `unseal` cannot open anything, so it reads
  * `key-fails` here; the writers refuse that case earlier and with a message that names the missing key.

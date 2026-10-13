@@ -170,8 +170,15 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
 
   // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares
-  // print to the person at this terminal and ride no door.
-  const recovery = splitRoot ? await armRecoveryAtFounding(larDataDir(), index) : null;
+  // print to the person at this terminal and ride no door. THE PERSON HOLDS BOTH OFF-DEVICE SHARES BEFORE THE
+  // DEVICE SHARE RESTS: a run that stops between the two leaves no device share, and this command splits afresh.
+  const recovery = splitRoot ? await armRecoveryAtFounding(larDataDir(), index, ({ recordedCode, escrowCarrier }) => {
+    console.log(`[lares persona new] 2-of-3 memory split for h${index} — write both carriers down NOW; the device share seals next.`);
+    console.log("  SHARES ARE KEYS: any two of the three rebuild this persona's root.");
+    console.log("  Keep both carriers yourself, apart from this device and apart from each other. Handing one to another person makes that person plus this device able to rebuild the root.");
+    console.log(`  recorded-code   ${recordedCode}`);
+    console.log(`  escrow-carrier  ${escrowCarrier}`);
+  }) : null;
 
   // The founding act above is the ONE door that mints a persona root; this reads the root it stood (or the one
   // already standing), never mints one. Then set the PRIVATE pet-name; renameOwnPersona keeps its own guard.
@@ -187,12 +194,8 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   const declaration = await declarations.get(index);
   if (splitRoot && recovery?.minted) {
     console.log(`[lares persona new] 2-of-3 memory split armed for h${index} — the device share sealed into the identity home.`);
-    console.log("  SHARES ARE KEYS: any two of the three rebuild this persona's root.");
-    console.log("  Keep both carriers yourself, apart from this device and apart from each other. Handing one to another person makes that person plus this device able to rebuild the root.");
-    console.log(`  recorded-code   ${recovery.recordedCode}`);
-    console.log(`  escrow-carrier  ${recovery.escrowCarrier}`);
   } else if (splitRoot) {
-    console.log(`  root split already stands for h${index}.`);
+    console.log(`  root split already stands for h${index}: its device share rests here, and no second split runs over it.`);
   }
   const fleetRead = await readFleetSelves();
 
