@@ -169,6 +169,7 @@ export async function writeOutcome(
         title:          `${EFFECT_URI_PREFIX}${opts.invocation.effectKey}`,
         "effect-key":   opts.invocation.effectKey,
         "request-id":   opts.invocation.requestId,
+        "disk-projection": "no",
       },
       meta: { authority: "lares-dispatcher" },
     }, origin, { bag: DAEMON_BAG_ID });

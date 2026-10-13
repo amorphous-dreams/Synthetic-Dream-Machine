@@ -414,6 +414,8 @@ export function concludeVerb(opts: {
     "requested-by":  opts.requestedBy,
     "completed-at":  new Date().toISOString(),
     cause:           opts.cause,
+    // Bookkeeping of the control bag: no mirror writes a file for an outcome, whatever layer holds it.
+    "disk-projection": "no",
   };
   return {
     tiddler: {
