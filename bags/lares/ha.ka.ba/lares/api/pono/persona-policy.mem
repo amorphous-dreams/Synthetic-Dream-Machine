@@ -181,6 +181,8 @@ A sweep of the measured abuse literature (`docs/pono/managed-identity-scout`) re
 
 ''A pet-name counts as MEMORY.'' The own-side map rides the human's private fleet in the `@persona` bag, so it returns with any vessel or backup that holds it, and otherwise the human types it again. The labels other people keep for the face live in their own handle-books and never moved.
 
+''A pet-name pins to an identifier.'' In this law the word names one thing: a private label a person pins to a key or an identifier. A working name used loosely in talk pins to nothing and falls outside it, and so does the Mask a tasked spirit wears (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>).
+
 ''Nothing but key material restores a face's MEMORY'' — its private documents and its working layer. The rule names four roads: another vessel that still wears the face · a sealed backup with its passphrase · an opt-in memory card (`persona new --split-root` prints one; its reader stands unbuilt) · for a shared document, a fellow member who admits the returning face. With none of those the documents stay sealed for good, by design.
 
 ''Which faces recover reads off the class ladder'', never off a separate word (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/the-identity-class-ladder">>): a non-transferable face gets re-made; a delegated leaf gets re-delegated from its root; a transferable face recovers its lineage by paper or guardians. Memory recovers by key material on every class alike, so a face that holds private documents wants a memory road even when it takes no guardians.
@@ -263,6 +265,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;A3h5cS5jLl5RLHTDgrxQYRdY89fRGEXxQ8ptiRSZcb8
+<<^ code="&#x0003;">>ni:///sha-256;tgxGy7HdINTOn5HG1y6eqJ6Kdb58FtrISLv5fpiAdIM
 
 <<^ code="&#x0004;" -> to="?">>
