@@ -22,6 +22,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { openStaged, type LarInstance, type CliResult } from "../harness/instance.js";
+import { seatStagedCustody } from "../harness/test-door.js";
 import { pullArrival, kindleFromBulb, httpBulbTransport } from "../../packages/lararium-node/src/kindle.js";
 import { didKeyFromVerifyingKey } from "../../packages/lararium-mesh/src/index.js";
 
@@ -123,6 +124,9 @@ describe.skipIf(gaps.length > 0)("★ the arrival surfaces — the house's own o
     const prior = process.env["LAR_ROOT"];
     const device = mkdtempSync(join(scratch, "device-"));
     process.env["LAR_ROOT"] = device;
+    // A kindle mints the device's vessel key, and a vessel key mints only inside a held custody: the cold device
+    // founds its custody and opens it first, as a founding on a terminal would.
+    const custody = await seatStagedCustody(device);
     const repo = new Repo({ sharePolicy: async () => true });
     try {
       const k = await kindleFromBulb({ bulb: fire, repo, storageDir: join(device, "store") });
@@ -132,6 +136,7 @@ describe.skipIf(gaps.length > 0)("★ the arrival surfaces — the house's own o
       expect(k.deviceVerifyingKey).not.toBe(houseKey);
     } finally {
       await repo.shutdown();
+      await custody.drop();
       if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
     }
   }, 60_000);

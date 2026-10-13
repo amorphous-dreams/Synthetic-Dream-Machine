@@ -34,3 +34,24 @@ export function unlockTestCustody(root: string, act: "unlock" | "lock" | "status
     return { code: err.status ?? 1, answer, stderr: err.stderr ?? "" };
   }
 }
+
+/**
+ * Seat a custody holder IN THIS PROCESS over the staged root `LAR_ROOT` names, opened under the published test
+ * route, for a suite that drives a node function directly where a `lares` command would open its own key session
+ * (a kindle, a key mint). The root gets its marker and its custody first. `drop()` locks the holder and clears its
+ * seat. The modules load from source, the same modules the calling suite imports.
+ */
+export async function seatStagedCustody(root: string): Promise<{ drop(): Promise<void> }> {
+  seedTestCustody(root);
+  const { TEST_PASSPHRASE } = await import(join(REPO_ROOT, "tools", "test-custody-route.mjs")) as { TEST_PASSPHRASE: string };
+  const { FsCustodyIo } = await import("../../packages/lararium-node/src/custody-io.js");
+  const { makeCustodyHolder } = await import("../../packages/lararium-node/src/custody-holder.js");
+  const { seatCustody, unseatCustody } = await import("../../packages/lararium-node/src/custody-seat.js");
+  const { vesselCustodyHomes } = await import("../../packages/lararium-node/src/vault-carriers.js");
+  const homes = vesselCustodyHomes();
+  const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
+  const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+  if (opened.reading !== "opens") throw new Error(`the staged custody at ${root} reads ${opened.reading} under the test route`);
+  seatCustody(holder);
+  return { async drop() { await holder.lock(); unseatCustody(holder); } };
+}
