@@ -193,6 +193,7 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
     console.log(`  realm:     ${r.realm}`);
     console.log(`  bound at:  epoch ${r.boundEpoch}  (the fence — the only thing that lapses a vouch)`);
     console.log(`  board:     ${r.boardUrl}`);
+    console.log(`  edge:      ${r.edgeId}  (\`lares edge kapae\` with this id sets the vouch aside)`);
     // The number that matters to the voucher — stated as a FLOOR, because it counts what this replica has
     // synced. A peer may hold edges we have not seen, so real dilution reads at or above this.
     console.log(`  out-degree: at least ${r.outDegreeFloor}  (this replica sees your standing split ${r.outDegreeFloor} way${r.outDegreeFloor === 1 ? "" : "s"} — a peer may hold more)`);
@@ -223,7 +224,7 @@ async function cmdJoin(args: ParsedArgs): Promise<number> {
 
     emit(args, {
       ok: true,
-      data: { admitted: v.admitted, refusal: v.refusal, voucherDid: v.voucherDid, capped: v.capped.length },
+      data: { admitted: v.admitted, refusal: v.refusal, voucherDid: v.voucherDid, capped: v.capped.length, setAside: v.setAside },
       human: () => {
         if (v.admitted) {
           console.log("ADMITTED");
@@ -238,6 +239,13 @@ async function cmdJoin(args: ParsedArgs): Promise<number> {
         }
         // The fold's budget, stated rather than trusted.
         if (v.capped.length > 0) console.log(`  capped:    ${v.capped.length} edge(s) the per-voucher choke turned away`);
+        // The shadows this crossing met, each with its reading — a fork shows as a fork, for people to settle.
+        for (const s of v.setAside) {
+          const why = s.verdict === "held" ? "its voucher set it aside"
+            : s.verdict === "unsettled" ? "FORK — a raise and a lower stand unordered; the shadow holds until its voucher decides"
+            : "its record reads incomplete here; no lift stands proven";
+          console.log(`  set aside: ${s.edgeId}  voucher ${s.voucherDid.slice(0, 16)}… → joiner ${s.joinerIdentityHex.slice(0, 16)}…  (${why})`);
+        }
       },
     });
     return v.admitted ? 0 : 1;

@@ -20,7 +20,7 @@
 
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites,
+  signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites, vouchEdgeId,
   vouchBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
   type CabalInvite,
 } from "@lararium/mesh";
@@ -55,6 +55,8 @@ export interface CabalVouchResult {
   readonly realm:       string;
   readonly boundEpoch:  string;
   readonly boardUrl:    string;
+  /** The relationship id this vouch presents to the kāpae plane — what `lares edge kapae` takes to set it aside. */
+  readonly edgeId:      string;
   /**
    * The FLOOR on this voucher's out-degree — how many edges THIS REPLICA can see, never how many exist. A sibling
    * replica may hold edges this one has not synced, so the dilution a voucher actually carries reads at
@@ -171,7 +173,7 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
     }
 
     const outDegreeFloor = vouchDagFromInvites(after).edges.filter((e) => e.voucher === voucherDid).length;
-    return { voucherDid, joiner, realm, boundEpoch, boardUrl, outDegreeFloor, reMinted };
+    return { voucherDid, joiner, realm, boundEpoch, boardUrl, edgeId: vouchEdgeId(invite), outDegreeFloor, reMinted };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }

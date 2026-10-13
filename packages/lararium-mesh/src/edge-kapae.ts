@@ -22,7 +22,8 @@
  * ── THE LAW THIS ENACTS (kapae#law) ──────────────────────────────────────────────────────────────────────
  * A raised kāpae shadows every layer beneath. Lowering it takes a deliberate gesture and writes its own record;
  * nothing un-shadows silently. Entries only accrete. A causal descendant lower can withdraw a shadow, while
- * concurrent opposite heads remain unsettled and project no shadow; the fold adjudicates, never the write.
+ * concurrent opposite heads remain unsettled and the shadow STANDS over them (remove-wins); the fold
+ * adjudicates, never the write.
  *
  * ── KĀPAE ⊥ ABSENT, and the cut MUST stay sharp ─────────────────────────────────────────────────────────
  * A kāpae shadows; an absent edge falls through. An edge that never existed, or one that expired, reads
@@ -140,8 +141,34 @@ export function edgeKapaeActsFromBoard(doc: LarDoc | undefined | null): EdgeKapa
 /**
  * The fold uses only the local causal acts it has received. An absent parent makes that branch unavailable;
  * contradictory admissible heads remain unsettled rather than being ranked by a scalar or arrival order.
+ *
+ *   · `held`        — every causal head raises.
+ *   · `withdrawn`   — every causal head lowers: the ONE reading that lifts a shadow.
+ *   · `unsettled`   — a raise and a lower both stand as heads, with no causal order between them.
+ *   · `unavailable` — some act cites a parent this reader does not hold (or one rooted on another epoch).
+ *   · `rejected`    — some act's id fails to derive from its own bytes.
+ *
+ * An edge no act names carries NO verdict: it reads ABSENT, which never shadows.
  */
 export type EdgeKapaeVerdict = "held" | "withdrawn" | "unsettled" | "unavailable" | "rejected";
+
+/**
+ * Does a shadow STAND over an edge that reads this verdict? The one rule every standing-reader shares.
+ *
+ * ONLY `withdrawn` LIFTS. Lowering takes a deliberate hand and writes its own record, so a shadow comes
+ * down on proof — every causal head a lower, the whole ancestry read — and on nothing less:
+ *   · `unsettled` stands: remove-wins. A lower that races a raise must never lift it by racing; the people
+ *     settle the fork with a later act that cites both heads.
+ *   · `unavailable` stands: the fold reads only what arrived and keeps no memory of an earlier reading, so it
+ *     cannot tell a shadow this reader once saw from one it never saw. A missing parent therefore proves no
+ *     lift, and a relay that withholds one act buys a delay, never a re-admission.
+ *   · `rejected` stands: a frontier that fails its own identity check proves nothing either way. (The
+ *     verifying fold drops such an act before it counts, so this arm guards the bare fold alone.)
+ *   · no verdict (`undefined`) reads ABSENT: nobody set the edge aside, and absent never shadows.
+ */
+export function edgeShadowStands(verdict: EdgeKapaeVerdict | undefined): boolean {
+  return verdict !== undefined && verdict !== "withdrawn";
+}
 
 /** Fold a causal frontier. A child is admissible only when every parent is present in the same
  * edge family; maximal heads are then projected. Concurrent opposing heads stay unsettled. */
@@ -164,20 +191,25 @@ export function foldEdgeKapaeVerdicts(acts: readonly EdgeKapae[]): Map<string, E
   return out;
 }
 
+/** The edges a verdict map leaves SHADOWED — `edgeShadowStands` applied to each. */
+export function shadowedEdges(verdicts: ReadonlyMap<string, EdgeKapaeVerdict>): Set<string> {
+  const shadowed = new Set<string>();
+  for (const [edgeId, verdict] of verdicts) if (edgeShadowStands(verdict)) shadowed.add(edgeId);
+  return shadowed;
+}
+
 /**
  * Fold the acts into the set of SHADOWED edges — the projection the whole pattern rests on.
  *
- * The causal frontier determines standing. A contradictory pair of admissible heads remains unsettled and
- * therefore does not project a shadow; under partition no arrival order quietly reverses a relationship.
+ * The causal frontier determines standing, and only a frontier of lowers lifts (`edgeShadowStands`). A
+ * contradictory pair of heads leaves the shadow UP: under partition no arrival order, and no racing lower,
+ * quietly reverses a relationship. A reader that wants to SHOW the contest reads the verdict map beside this.
  *
  * Every act arrives VERIFIED — the caller checks signatures before folding, because this fold decides
- * standing and an unverified act would let anyone lower anyone's shadow.
+ * standing and an unverified act would let anyone raise or lower anyone's shadow.
  */
 export function foldEdgeKapae(acts: readonly EdgeKapae[]): Set<string> {
-  const verdicts = foldEdgeKapaeVerdicts(acts);
-  const shadowed = new Set<string>();
-  for (const [edgeId, verdict] of verdicts) if (verdict === "held") shadowed.add(edgeId);
-  return shadowed;
+  return shadowedEdges(foldEdgeKapaeVerdicts(acts));
 }
 
 /**
@@ -192,13 +224,34 @@ export async function verifiedShadowSet(
   authorityFor: (edgeId: string) => string | undefined,
   verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
 ): Promise<Set<string>> {
-  const verdicts = await Promise.all(acts.map(async (a) => {
+  return shadowedEdges(await verifiedEdgeKapaeVerdicts(acts, authorityFor, verify));
+}
+
+/**
+ * Verify then fold, keeping the VERDICT per edge — the reading a caller surfaces when a fork stands.
+ *
+ * `verifiedShadowSet` answers "does this relationship stand aside"; this answers "and why", so a door can
+ * tell a person that two hands disagree instead of reporting a bare refusal. Deciding the fork stays with
+ * the people: nothing here ranks one head over another.
+ *
+ * AN ACT COUNTS ONLY WHEN ITS ID DERIVES FROM ITS OWN SIGNED BYTES. The signature covers the semantic bytes
+ * and never the id, so any hand able to write a board could copy a real signed act under a fresh id; the
+ * copy verifies. Such a copy drops here beside every other forgery, so it neither lifts a shadow nor raises
+ * one. The bare fold keeps its `rejected` verdict for a caller that hands it acts some other way.
+ */
+export async function verifiedEdgeKapaeVerdicts(
+  acts: readonly EdgeKapae[],
+  authorityFor: (edgeId: string) => string | undefined,
+  verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
+): Promise<Map<string, EdgeKapaeVerdict>> {
+  const admitted = await Promise.all(acts.map(async (a) => {
     const signer = authorityFor(a.edgeId);
     if (!signer) return false;                       // no known authority → the act carries none
+    if (a.actCid !== edgeKapaeActCid(a)) return false;   // a relabeled copy of a signed act → a forgery
     const { sig: _s, ...unsigned } = a;
     return verify(edgeKapaeBytes(unsigned), a.sig, signer).catch(() => false);
   }));
-  return foldEdgeKapae(acts.filter((_, i) => verdicts[i] === true));
+  return foldEdgeKapaeVerdicts(acts.filter((_, i) => admitted[i] === true));
 }
 
 /**
@@ -211,6 +264,7 @@ export async function verifiedShadowSet(
  *
  * An absent board yields NO shadows, which reads as the honest floor rather than a permissive one: nothing
  * set aside means nothing set aside, and the readers that consult this still verify every edge they admit.
+ * A CONTESTED edge reads shadowed (`edgeShadowStands`); `edgeKapaeVerdictsFromBoard` names the contest.
  */
 export async function shadowSetFromBoard(
   doc: LarDoc | undefined | null,
@@ -218,4 +272,13 @@ export async function shadowSetFromBoard(
   verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
 ): Promise<Set<string>> {
   return verifiedShadowSet(edgeKapaeActsFromBoard(doc), authorityFor, verify);
+}
+
+/** Read a board and hand back the verdict per edge — `shadowSetFromBoard`'s sibling for a door that surfaces a fork. */
+export async function edgeKapaeVerdictsFromBoard(
+  doc: LarDoc | undefined | null,
+  authorityFor: (edgeId: string) => string | undefined,
+  verify: (bytes: Uint8Array, sigHex: string, signerDid: string) => Promise<boolean>,
+): Promise<Map<string, EdgeKapaeVerdict>> {
+  return verifiedEdgeKapaeVerdicts(edgeKapaeActsFromBoard(doc), authorityFor, verify);
 }

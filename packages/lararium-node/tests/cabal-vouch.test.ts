@@ -177,7 +177,7 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
     expect(src).not.toMatch(/expiresAt/);
     const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 });
     expect(Object.keys(r).sort()).toEqual(
-      ["boardUrl", "boundEpoch", "joiner", "outDegreeFloor", "reMinted", "realm", "voucherDid"],
+      ["boardUrl", "boundEpoch", "edgeId", "joiner", "outDegreeFloor", "reMinted", "realm", "voucherDid"],
     );
   });
 });

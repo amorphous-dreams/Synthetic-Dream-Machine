@@ -50,7 +50,11 @@ export async function cmdEdge(args: ParsedArgs): Promise<number> {
       edgeId, epochCid, raised: verb === "kapae",
       ...(handleIndex !== undefined ? { handleIndex } : {}),
     }, EdgeKapaeError)).output as unknown as EdgeKapaeResult;
-    console.log(r.raised ? "RAISED — the relationship stands aside" : "LOWERED — the relationship stands again");
+    // THE HEADLINE REPORTS STANDING, never the gesture: a lower may land while a raise it never cited still
+    // stands beside it, and "stands again" would then tell a person the opposite of what every reader reads.
+    console.log(r.raised
+      ? (r.shadowStands ? "RAISED — the relationship stands aside" : "RAISE RECORDED — the shadow does not read as standing under this signer")
+      : (r.shadowStands ? "LOWER RECORDED — the shadow STILL STANDS" : "LOWERED — the relationship stands again"));
     console.log(`  edge:     ${r.edgeId}`);
     console.log(`  act-cid:  ${r.actCid}`);
     console.log(`  parents:  ${r.parents.length === 0 ? "(genesis)" : r.parents.join(", ")}`);
@@ -59,7 +63,14 @@ export async function cmdEdge(args: ParsedArgs): Promise<number> {
     console.log(`  board:    ${r.boardUrl}`);
     // What a reader consulting THIS signer as the edge's authority would now see — never a claim that every
     // reader agrees, since authority gets decided at the fold and this vessel does not get to decide it.
-    console.log(`  shadow:   ${r.shadowStands ? "STANDS" : "down"} (as read under this signer)`);
+    console.log(`  shadow:   ${r.shadowStands ? "STANDS" : "down"} (as read under this signer${r.verdict ? `: ${r.verdict}` : ""})`);
+    if (r.verdict === "unsettled") {
+      console.log("  fork:     a raise and a lower stand with no causal order between them. Nothing picks a winner;");
+      console.log("            the shadow stays up until a hand decides — run the verb again, and the new act cites both.");
+    } else if (r.shadowStands && (r.verdict === "unavailable" || r.verdict === "rejected")) {
+      console.log("  unread:   this replica holds an act on this edge whose ancestry it cannot read whole, so no lift");
+      console.log("            stands proven. The shadow stays up until the missing act arrives.");
+    }
     return 0;
   } catch (err) {
     if (err instanceof EdgeKapaeError) { console.error(`refused: ${err.message}`); return 1; }

@@ -509,16 +509,19 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   edge: {
-    usage: "usage: lares edge <kapae | un-kapae> <edge-id> --epoch-cid <cid> [--as <root-index>] [--version <n>]",
+    usage: "usage: lares edge <kapae | un-kapae> <edge-id> --epoch-cid <cid> [--as <root-index>]",
     synopsis:
       "Set one RELATIONSHIP aside, or take the marker back down — the kāpae raised over an EDGE rather than " +
       "over a party. Scoped under `edge` to mirror `nexus kapae` / `nexus un_kapae` and stay apart from " +
       "them: that pair shadows a PRESENTER under a kahu quorum, this pair shadows one RELATIONSHIP under " +
       "whichever key holds it. Setting a relation aside says NOTHING about either end — the vessel keeps " +
-      "standing, the face keeps standing, only that relation stops counting. RAISING WINS A TIE and " +
-      "lowering takes a deliberate hand, so an eviction never quietly reverses when a partition heals. The " +
-      "write asserts no authority: whether the signing root holds the edge gets decided by whichever reader " +
-      "consults the shadow.",
+      "standing, the face keeps standing, only that relation stops counting. RAISING WINS A TIE: a lower " +
+      "lifts the shadow only when it causally follows every raise, so a lower racing a raise leaves the " +
+      "shadow up and shows a fork for people to settle, and an eviction never quietly reverses when a " +
+      "partition heals. Each act cites the heads this vessel reads, so running the verb again settles a " +
+      "fork. The write asserts no authority: whether the signing root holds the edge gets decided by " +
+      "whichever reader consults the shadow. `lares cabal join` consults it for a vouch (the edge id " +
+      "`lares cabal vouch` prints), under the voucher's key.",
     examples: [
       "lares edge kapae <edge-id> --epoch-cid <cid>              # shadow that relation",
       "lares edge un-kapae <edge-id> --epoch-cid <cid>           # re-admit it — a deliberate signed act",
@@ -527,7 +530,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: [
       "--epoch-cid <cid>  the charter epoch the marker rides",
       "--as <root-index>  which held persona root signs (default: the active one)",
-      "--version <n>      pin the marker version; a raise wins a same-version tie",
     ],
     next: ["lares nexus kapae --list   # the PRESENTER board — a different kind of setting-aside"],
   },

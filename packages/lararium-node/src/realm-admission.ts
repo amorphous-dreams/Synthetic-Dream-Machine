@@ -53,6 +53,7 @@ import {
 /** Why a crossing did not clear — the invite gate's own refusals, plus the one the price wall raises. */
 export type AdmissionRefusal =
   | JoinRefusal         // the structural gate refused (no-invite / wrong-realm / wrong-joiner / expired / bad-signature)
+  | "set-aside"         // a vouch names this applicant, and a kāpae stands over it — its voucher set the relation aside
   | "at-the-ceiling";   // the invite cleared, but the vouching cluster sits at β — the convex wall stands vertical
 
 export interface AdmissionVerdict {

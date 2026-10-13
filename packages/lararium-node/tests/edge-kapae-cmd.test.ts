@@ -116,7 +116,9 @@ describe("runEdgeKapae — a relationship set aside, and taken back", () => {
     await repo.flush();
     const next = await direct(runEdgeKapae)({ edgeId: EDGE, raised: false, epochCid: EPOCH });
     expect(next.parents).toEqual([]);
-    expect(next.shadowStands).toBe(false);
+    // A raise whose ancestry never arrived proves no lift: the shadow stands until the missing parent reads.
+    expect(next.shadowStands).toBe(true);
+    expect(next.verdict).toBe("unavailable");
     await repo.shutdown();
   });
 

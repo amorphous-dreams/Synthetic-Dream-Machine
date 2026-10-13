@@ -12,14 +12,16 @@
  *
  * RAISING AND LOWERING STAY SYMMETRIC IN SHAPE AND ASYMMETRIC IN FORCE: both write one signed act, and only
  * the fold knows that a raise wins a tie. Nothing here special-cases the gesture, which keeps the asymmetry
- * in ONE place where it can be read.
+ * in ONE place where it can be read. So a lower may LAND and the shadow still stand — a raise it never cited
+ * stands beside it — and the result says so (`shadowStands`, `verdict`) rather than reporting the gesture.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  signEdgeKapae, writeEdgeKapae, edgeKapaeActsFromBoard, edgeKapaeActCid, edgeKapaeBytes, shadowSetFromBoard,
+  signEdgeKapae, writeEdgeKapae, edgeKapaeActsFromBoard, edgeKapaeActCid, edgeKapaeBytes,
+  edgeKapaeVerdictsFromBoard, edgeShadowStands, type EdgeKapaeVerdict,
   edgeKapaeBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
 } from "@lararium/mesh";
 import {
@@ -55,6 +57,12 @@ export interface EdgeKapaeResult {
   readonly boardUrl:  string;
   /** Whether the shadow STANDS after this act, read back through the verifying fold under this signer. */
   readonly shadowStands: boolean;
+  /**
+   * Why — the fold's verdict for this edge under this signer. `unsettled` names a FORK: a raise and a lower
+   * stand with no causal order between them, the shadow stays up, and a later act citing both heads settles it.
+   * Absent when the signer's own act did not survive the verifying fold.
+   */
+  readonly verdict?: EdgeKapaeVerdict;
 }
 
 /** Land one kāpae act on the Nexus board. `now` never enters — an act roots on an epochCid, never a clock. */
@@ -122,8 +130,11 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     // Read the act BACK through the verifying fold, under this signer as the edge's authority. A caller
     // learns whether the shadow now STANDS rather than merely whether a tiddler landed — and an act that
     // cannot survive its own extraction refuses loudly here instead of sitting on the board doing nothing.
-    const shadowed = await shadowSetFromBoard(handle.doc(), () => signerDid, verify);
-    return { edgeId, raised: opts.raised, actCid: act.actCid, parents, epochCid, signerDid, boardUrl, shadowStands: shadowed.has(edgeId) };
+    const verdict = (await edgeKapaeVerdictsFromBoard(handle.doc(), () => signerDid, verify)).get(edgeId);
+    return {
+      edgeId, raised: opts.raised, actCid: act.actCid, parents, epochCid, signerDid, boardUrl,
+      shadowStands: edgeShadowStands(verdict), ...(verdict !== undefined ? { verdict } : {}),
+    };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }

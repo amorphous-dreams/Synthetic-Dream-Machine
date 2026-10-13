@@ -7,6 +7,11 @@
  * Reads only. A refused applicant anergizes — this writes nothing and bans nobody; Kapae stands as a
  * separate quorum-signed act.
  *
+ * TWO BOARDS, ONE CROSSING. The vouch board says who vouched; the edge-kāpae board says which of those
+ * vouches a voucher set aside. A vouch under a standing shadow leaves the lineage before the fold prices it,
+ * whether it rode the board or arrived in the applicant's hand — and what stood aside rides back in
+ * `setAside`, so a person sees the shadow (and a fork, where two hands disagree) instead of a bare refusal.
+ *
  * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
 
@@ -14,6 +19,7 @@ import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   verifiedVouchesFromBoard, vouchBoardDocUrl, materializeSharedLarDoc,
+  vouchEdgeId, edgeKapaeBoardDocUrl, edgeKapaeVerdictsFromBoard, edgeShadowStands, type EdgeKapaeVerdict,
   leaseEpochPrefix, effectiveLeaseEpoch, DAEMON_BAG_ID,
   DEFAULT_JOIN_POLICY, alphaFromHalfLife,
   type CabalInvite, type CabalJoinPolicy, type AdmissionDials,
@@ -23,7 +29,7 @@ import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
-import { verifyEd25519 } from "@lararium/mesh";
+import { verifyEd25519, cabalInviteBytes } from "@lararium/mesh";
 
 const NYM_RE = /^[0-9a-f]{64}$/;
 
@@ -117,7 +123,24 @@ export interface CabalJoinOptions {
   readonly repo:       Repo;
 }
 
-export type CabalJoinResult = LineageAdmission;
+/** One vouch the crossing left out because a kāpae stands over its edge. */
+export interface SetAsideVouch {
+  /** The relationship id (`vouchEdgeId`) — the id `lares edge kapae` / `un-kapae` take. */
+  readonly edgeId:            string;
+  readonly voucherDid:        string;
+  readonly joinerIdentityHex: string;
+  /**
+   * Why the shadow stands. `held` — the voucher set it aside. `unsettled` — a raise and a lower stand with no
+   * causal order between them: a FORK, which the voucher settles with a later act citing both. `unavailable`
+   * / `rejected` — this replica cannot read the edge's whole ancestry, so no lift stands proven.
+   */
+  readonly verdict:           EdgeKapaeVerdict;
+}
+
+export interface CabalJoinResult extends LineageAdmission {
+  /** Every vouch in this realm a standing shadow removed from the crossing — surfaced, never silently short. */
+  readonly setAside: readonly SetAsideVouch[];
+}
 
 const verifyOffline = (bytes: Uint8Array, sigHex: string, voucherDid: string): Promise<boolean> =>
   Promise.resolve(verifyEd25519(sigHex, bytes, voucherDid));
@@ -145,6 +168,18 @@ export async function runCabalJoin(
   let boardEpoch = 0;
   const repo = opts.repo;
   let issued: CabalInvite[];
+  const setAside: SetAsideVouch[] = [];
+  // WHAT THE APPLICANT PRESENTS, and whether it may COUNT. The structural gate reads `presented` and names
+  // its own refusal (bad signature, wrong realm). The lineage fold and the shadow read take a carried invite
+  // only once it verifies for THIS realm — the same bar the board's read sets — so a forged one lends no
+  // mass under any policy and names no shadow.
+  let carried = opts.invite ?? null;
+  let carriedCounts = false;
+  if (carried) {
+    const { sig: _sig, ...unsigned } = carried;
+    carriedCounts = carried.realmDocIdHex === realm
+      && await verifyOffline(cabalInviteBytes(unsigned), carried.sig, carried.voucherDid).catch(() => false);
+  }
   try {
     // THE BOARD KEYS ON THE NEXUS, never the vessel key — the same island `cabal vouch` writes. On a
     // vessel standing under a charter the island is the genesis AID, and a vessel-keyed read finds a
@@ -153,7 +188,26 @@ export async function runCabalJoin(
     const handle = await materializeSharedLarDoc(repo, vouchBoardDocUrl(boardIsland), "board:vouch-registry");
     // THE VERIFYING READ, the only read that stands. An unverified board carries edges whose
     // signatures never cleared, and the fold would price a lineage partly made of noise.
-    issued = await verifiedVouchesFromBoard(handle.doc(), realm, verifyOffline);
+    const onBoard = await verifiedVouchesFromBoard(handle.doc(), realm, verifyOffline);
+    // THE SHADOW BOARD, on the same island. WHO HOLDS A VOUCH EDGE: its voucher, and nobody else — the edge
+    // id hashes (realm, voucher, joiner), so the authority reads off the id's own preimage and no act can
+    // re-attribute it. A raise or lower signed by any other hand drops in the verifying fold.
+    const candidates = carried && carriedCounts ? [...onBoard, carried] : onBoard;
+    const voucherOf = new Map(candidates.map((i) => [vouchEdgeId(i), i.voucherDid] as const));
+    const shadowBoard = await materializeSharedLarDoc(repo, edgeKapaeBoardDocUrl(boardIsland), "board:edge-kapae");
+    const verdicts = await edgeKapaeVerdictsFromBoard(shadowBoard.doc(), (edgeId) => voucherOf.get(edgeId), verifyOffline);
+    // ONLY A CAUSAL LOWER LIFTS (`edgeShadowStands`): a contested or unreadable edge stays aside.
+    const stands = (i: CabalInvite) => edgeShadowStands(verdicts.get(vouchEdgeId(i)));
+    const seen = new Set<string>();
+    for (const i of candidates) {
+      const edgeId = vouchEdgeId(i);
+      if (!stands(i) || seen.has(edgeId)) continue;
+      seen.add(edgeId);
+      setAside.push({ edgeId, voucherDid: i.voucherDid, joinerIdentityHex: i.joinerIdentityHex, verdict: verdicts.get(edgeId)! });
+    }
+    issued = onBoard.filter((i) => !stands(i));
+    // A vouch carried out of band meets the same shadow the board's copy would.
+    if (carried && carriedCounts && stands(carried)) carried = null;
     // THE FENCE LIVES ON THE DAEMON DOC, NOT THIS BOARD. `realm-feed` rolls a realm's per-writer lease
     // slot "over the sovereign daemon doc — one slot per writer under the daemon bag", so a reader
     // scanning the VOUCH board for that prefix matches nothing and folds epoch 0 forever. Measured: the
@@ -179,15 +233,15 @@ export async function runCabalJoin(
     await repo.flush();
   }
 
-  const presented = opts.invite ?? issued.find((i) => i.joinerIdentityHex.toLowerCase() === applicant) ?? null;
+  const presented = carried ?? issued.find((i) => i.joinerIdentityHex.toLowerCase() === applicant) ?? null;
   // A CARRIED INVITE JOINS THE ISSUED SET, never replaces it. The lineage prices the realm's whole
   // vouch graph; an applicant holding their own copy must not shrink that graph to the one edge they
   // happen to be carrying.
-  const forFold = opts.invite && !issued.some((i) => i.sig === opts.invite!.sig)
-    ? [...issued, opts.invite]
+  const forFold = carried && carriedCounts && !issued.some((i) => i.sig === carried!.sig)
+    ? [...issued, carried]
     : issued;
 
-  return await admitOnLineage({
+  const verdict = await admitOnLineage({
     policy:            opts.policy ?? DEFAULT_JOIN_POLICY,
     realmDocIdHex:     realm,
     joinerIdentityHex: applicant,
@@ -205,4 +259,11 @@ export async function runCabalJoin(
     dials:             opts.dials ?? FALLBACK_DIALS,
     ...(opts.maxVouchesPerVoucher !== undefined ? { maxVouchesPerVoucher: opts.maxVouchesPerVoucher } : {}),
   });
+  // NAME THE SHADOW. An applicant whose only vouch stands aside holds no invite the gate will read; "no-invite"
+  // would say nobody ever vouched, which a person cannot act on. The refusal names what stands in the way.
+  const applicantSetAside = setAside.some((s) => s.joinerIdentityHex.toLowerCase() === applicant);
+  if (!verdict.admitted && verdict.refusal === "no-invite" && applicantSetAside) {
+    return { ...verdict, refusal: "set-aside", setAside };
+  }
+  return { ...verdict, setAside };
 }

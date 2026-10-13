@@ -219,7 +219,7 @@ describe("② the shadows carry — an empty shadow board lowers every shadow", 
     });
     const shadows = await shadowSetFromBoard(
       (await board(r, edgeKapaeBoardDocUrl(EXPLICIT))).doc(), () => authority, verify);
-    expect(shadows.has("edge-contested"), "contradictory causal heads remain unsettled — fail-closed").toBe(false);
+    expect(shadows.has("edge-contested"), "contradictory causal heads read unsettled, and the shadow stays UP").toBe(true);
   }, 30_000);
 });
 
