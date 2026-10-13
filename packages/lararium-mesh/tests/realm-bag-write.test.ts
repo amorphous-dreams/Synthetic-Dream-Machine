@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
   signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
-  realmBagRegistrationCounts, writeRealmBagRegistration, realmBagKey, foldRealmBags,
+  realmBagRegistrationCounts, writeRealmBagRegistration, realmBagKey, realmBagProposalKey, foldRealmBags,
   mayWriteRealmBag, RealmBagGate, realmDocUrl,
 } from "../src/realm-bag.js";
 import { deterministicDocUrl } from "../src/deterministic-doc.js";
@@ -57,7 +57,9 @@ describe("realm-bag — naming a SECOND steward takes two hands (n-of-n)", () =>
     expect(await realmBagRegistrationCounts(done, REALM)).toBe(true);
     writeRealmBagRegistration(doc, done, await pubOf(B));
     expect(Object.keys(doc.tiddlers)).toHaveLength(2);               // A's proposal was never overwritten
-    expect(doc.tiddlers[realmBagKey(BAG, await pubOf(A))]).toBeDefined();
+    // A record still short of a seal rests under the writer's PROPOSAL key, so it never unseats a counted record.
+    expect(doc.tiddlers[realmBagProposalKey(BAG, await pubOf(A))]).toBeDefined();
+    expect(doc.tiddlers[realmBagKey(BAG, await pubOf(A))]).toBeUndefined();
     expect(doc.tiddlers[realmBagKey(BAG, await pubOf(B))]).toBeDefined();
     expect((await foldRealmBags(doc, REALM)).get(BAG)?.docUrl).toBe(DOC_A);
   });

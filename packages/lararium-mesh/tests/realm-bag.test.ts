@@ -113,11 +113,32 @@ describe("realm-bag — the doc face and the fold", () => {
     expect(realmBagRegistrationsFromDoc(doc)).toHaveLength(2);   // both accrete — nothing overwrote
     expect((await foldRealmBags(doc, REALM)).has(BAG)).toBe(false);
   });
-  test("two hands naming the SAME doc fold to one", async () => {
+  test("records naming the SAME doc fold to the WIDEST consented set; two sets that neither hold the other tie", async () => {
+    // A alone, and A with B: the wider record carries A's own seal, so A consented to it and it stands,
+    // whichever order the doc lists them in.
+    const both = await signRealmBagRegistration({ realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "contract" }, [await stewardA(), await stewardB()]);
+    for (const order of [["solo", "both"], ["both", "solo"]] as const) {
+      const doc = emptyDoc();
+      for (const which of order) {
+        if (which === "solo") writeRealmBagRegistration(doc, await registrationByA(DOC_A), "a-first");
+        else writeRealmBagRegistration(doc, both, "b-last");
+      }
+      const stands = (await foldRealmBags(doc, REALM)).get(BAG);
+      expect(stands?.docUrl).toBe(DOC_A);
+      expect(stands?.keptBy).toHaveLength(2);
+    }
+    // A alone and B alone over one doc: neither set holds the other's consent, so the write set would follow
+    // the doc's own listing order. A tie never grants: the bag stands unregistered.
     const doc = emptyDoc();
     writeRealmBagRegistration(doc, await registrationByA(DOC_A));
     writeRealmBagRegistration(doc, await signRealmBagRegistration({ realmId: REALM, bagUri: BAG, docUrl: DOC_A, readTier: "contract" }, [await stewardB()]));
-    expect((await foldRealmBags(doc, REALM)).get(BAG)?.docUrl).toBe(DOC_A);
+    expect(realmBagRegistrationsFromDoc(doc)).toHaveLength(2);
+    expect((await foldRealmBags(doc, REALM)).has(BAG)).toBe(false);
+    // A WIDER set over ANOTHER doc never supersedes: consent widens who keeps a book and never moves the book.
+    const moved = emptyDoc();
+    writeRealmBagRegistration(moved, await registrationByA(DOC_A), "a-first");
+    writeRealmBagRegistration(moved, await signRealmBagRegistration({ realmId: REALM, bagUri: BAG, docUrl: DOC_B, readTier: "contract" }, [await stewardA(), await stewardB()]), "b-last");
+    expect((await foldRealmBags(moved, REALM)).has(BAG)).toBe(false);
   });
   test("CONTROL: an uncounted record (foreign realm) folds to nothing; an absent doc folds empty", async () => {
     const doc = emptyDoc();

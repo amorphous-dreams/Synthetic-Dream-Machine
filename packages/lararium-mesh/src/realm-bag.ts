@@ -14,10 +14,17 @@
  *
  * THE REGISTRATION RECORD (`REALM_BAG_DOMAIN`, minted in the registry): `{ realmId, bagUri, docUrl, keptBy, readTier }`, signed by
  * EVERY steward it names (n-of-n — a steward is named only by her own hand; a record that names a steward who
- * never signed is CONSCRIPTION and never counts). Records ACCRETE under distinct keys (one per signing steward),
- * so a hostile member overwrites nothing; the FOLD adjudicates — exactly one counted registration per bag
- * stands, and two counted registrations naming DIFFERENT docs for one bag EQUIVOCATE and neither stands
- * (a tie never grants, the carriage fold's own law).
+ * never signed is CONSCRIPTION and never counts). Records ACCRETE under distinct keys (one per signing steward,
+ * and a record still short of a seal under a key of its own, so a proposal never unseats a counted record and
+ * a hostile member overwrites nothing); the FOLD adjudicates — one registration per bag stands. Counted
+ * registrations that agree on the doc fold to the WIDEST consented set: the one whose `keptBy` holds every
+ * other's. Two that name DIFFERENT docs, and two whose steward sets neither hold the other, EQUIVOCATE and
+ * the bag stands unregistered (a tie never grants, the carriage fold's own law).
+ *
+ * WHO A STEWARD READS AS (`steward-seal`). A name in `keptBy` reads one of two classes and nothing else: the key
+ * the steward's WORN FACE presents at the Nexus this realm stands under, for a bag one person keeps; or a quorum
+ * HANDLE's prefix, for a bag the collective keeps. A persona root never stands here: the realm doc crosses to
+ * every member and the announce names `keptBy` in public, so whatever key a record carries gets published.
  *
  * WHAT @CROSSROADS CARRIES: `{ bagUri, keptBy }` — that a ford stands here and who keeps it — never the doc,
  * never a tiddler, never the read cap (`crossroadsAnnounceOf`).
@@ -41,11 +48,13 @@ import { canonicalJsonBytes } from "./crypto.js";
 import { deterministicDocUrl } from "./deterministic-doc.js";
 import { bagUri } from "./lar-uris.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
-import type { QuorumSignature } from "./kapae-antigen.js";
+import {
+  coerceStewardSeal, sealAsSteward, verifyStewardSeal,
+  type StewardSeal, type StewardSealReading, type StewardSigner,
+} from "./steward-seal.js";
 import type { NexusDoc } from "./nexus-seal-seed.js";
 import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
-import { verifyEd25519 } from "./ed25519-door.js";
 import { storedLarRecord } from "./stored-record.js";
 
 /** The realm plane's registry name on a vessel's oracle plane — the pointer a boot writes to the realm doc. */
@@ -69,8 +78,15 @@ export const REALM_BAG_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bags/" as const;
 /** The tiddler prefix the @crossroads announce rides under — `{ bagUri, keptBy }` and nothing more. */
 export const REALM_BAG_ANNOUNCE_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bag-announce/" as const;
 
-/** A steward nym reads clean only at the exact ed25519 verifying-key length. */
-const NYM_RE = /^[0-9a-f]{64}$/;
+/** The steward's seal and signer, and the reading of a steward's name: the record's own vocabulary. */
+export { stewardClassOf, type StewardClass, type StewardSeal, type StewardSealReading, type StewardSigner } from "./steward-seal.js";
+
+/** The most text one stored registration may hold. A larger tiddler reads as no record: a member's write to
+ *  the shared doc never buys unbounded parsing. */
+export const REALM_BAG_RECORD_MAX = 256 * 1024;
+
+/** A steward's name as a record carries it: trimmed and lower-case. */
+const stewardName = (name: string): string => name.trim().toLowerCase();
 
 // ── THE REALM'S NAME ─────────────────────────────────────────────────────────────────────────────
 
@@ -99,7 +115,8 @@ export interface RealmBagRegistration {
   readonly bagUri:     string;
   /** The Automerge doc URL the bag's tiddlers live in — the doc the members replicate. */
   readonly docUrl:     string;
-  /** The stewards' persona-root nyms — the write set. Every one of them signs. */
+  /** The stewards' NAMES, the write set: each the key its steward's worn face presents at this realm's Nexus,
+   *  or a quorum Handle's prefix (`stewardClassOf`). Never a persona root. Every one of them seals. */
   readonly keptBy:     readonly string[];
   /** The declared read tier — CONTRACT (a realm bag reads to the contracted cabal), or PUBLIC for a book the
    *  Herm carries BY HASH (the pointer travels; the doc still crosses on the realm's own lane). */
@@ -117,8 +134,8 @@ export interface RealmBagRegistration {
    * a fresh n-of-n. Absent → the registration stands at every pace (today's records, unmoved).
    */
   readonly expiry?:    number;
-  /** One signature per steward in `keptBy`, over `realmBagBytes(record)`. */
-  readonly signatures: readonly QuorumSignature[];
+  /** One seal per steward in `keptBy`, over `realmBagBytes(record)` (`verifyStewardSeal`). */
+  readonly signatures: readonly StewardSeal[];
 }
 
 /** The charter a named hand holds — the record's own `charters` entry, else the realm the record lives in. */
@@ -163,18 +180,19 @@ export function realmBagBytes(parts: Omit<RealmBagRegistration, "signatures">): 
 }
 
 /**
- * Sign a registration with the stewards' own signers. Each signer names its nym; the record's `keptBy`
- * reads exactly the signers' nyms (a steward is named by her own hand). The module holds no key.
+ * Seal a registration with the stewards' own signers. Each signer names its steward; the record's `keptBy`
+ * reads exactly the signers' names (a steward is named by her own hand). The module holds no key. A signer
+ * whose name reads neither class throws (`sealAsSteward`).
  */
 export async function signRealmBagRegistration(
   parts: Pick<RealmBagRegistration, "realmId" | "bagUri" | "docUrl" | "readTier"> & Partial<Pick<RealmBagRegistration, "charters" | "expiry">>,
-  signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>,
+  signers: readonly StewardSigner[],
 ): Promise<RealmBagRegistration> {
-  const keptBy = signers.map((s) => s.signer.toLowerCase()).sort();
+  const keptBy = signers.map((s) => stewardName(s.signer)).sort();
   const unsigned = { kind: REALM_BAG_DOMAIN, ...parts, keptBy } as Omit<RealmBagRegistration, "signatures">;
   const bytes = realmBagBytes(unsigned);
-  const signatures: QuorumSignature[] = [];
-  for (const s of signers) signatures.push({ signer: s.signer.toLowerCase(), sig: await s.sign(bytes) });
+  const signatures: StewardSeal[] = [];
+  for (const s of signers) signatures.push(await sealAsSteward({ ...s, signer: stewardName(s.signer) }, bytes));
   return { ...unsigned, signatures };
 }
 
@@ -187,14 +205,14 @@ export async function signRealmBagRegistration(
  */
 export async function proposeRealmBagRegistration(
   parts: Pick<RealmBagRegistration, "realmId" | "bagUri" | "docUrl" | "readTier"> & Partial<Pick<RealmBagRegistration, "charters" | "expiry">>,
-  signers: ReadonlyArray<{ readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> }>,
+  signers: readonly StewardSigner[],
   proposed: readonly string[],
 ): Promise<RealmBagRegistration> {
-  const keptBy = [...new Set([...signers.map((s) => s.signer), ...proposed].map((n) => n.toLowerCase()))].sort();
+  const keptBy = [...new Set([...signers.map((s) => s.signer), ...proposed].map(stewardName))].sort();
   const unsigned = { kind: REALM_BAG_DOMAIN, ...parts, keptBy } as Omit<RealmBagRegistration, "signatures">;
   const bytes = realmBagBytes(unsigned);
-  const signatures: QuorumSignature[] = [];
-  for (const s of signers) signatures.push({ signer: s.signer.toLowerCase(), sig: await s.sign(bytes) });
+  const signatures: StewardSeal[] = [];
+  for (const s of signers) signatures.push(await sealAsSteward({ ...s, signer: stewardName(s.signer) }, bytes));
   return { ...unsigned, signatures };
 }
 
@@ -206,20 +224,27 @@ export async function proposeRealmBagRegistration(
  */
 export async function coSignRealmBagRegistration(
   rec: RealmBagRegistration,
-  cosigner: { readonly signer: string; readonly sign: (bytes: Uint8Array) => Promise<string> },
+  cosigner: StewardSigner,
 ): Promise<RealmBagRegistration> {
-  const nym = cosigner.signer.toLowerCase();
+  const nym = stewardName(cosigner.signer);
   const bytes = realmBagBytes(rec);
-  const signatures = [...rec.signatures.filter((s) => s.signer.toLowerCase() !== nym), { signer: nym, sig: await cosigner.sign(bytes) }];
+  const signatures = [...rec.signatures.filter((s) => stewardName(s.signer) !== nym), await sealAsSteward({ ...cosigner, signer: nym }, bytes)];
   return { ...rec, signatures };
 }
 
+/** What a fold may hand the seal verifier beyond the record itself: this reader's own knowledge of a Handle
+ *  steward (`StewardSealReading`). A face steward's seal reads the same with or without it. */
+export type RealmBagFoldOptions = StewardSealReading;
+
 /**
  * Does this registration COUNT for `realmId`? Fail-closed at every shore: a foreign realm, an empty steward
- * set, a malformed nym, a tier wider than CONTRACT, a steward with no verifying signature — each reads false.
- * n-of-n: every named steward signed, so the record conscripts nobody.
+ * set, a name that reads neither class or that the record spells twice, a tier this fold does not know, a
+ * steward with no verifying seal, a seal under a name the record does not keep — each reads false. n-of-n and
+ * nothing beside it: every named steward sealed, once, and no other hand stands on the record.
  */
-export async function realmBagRegistrationCounts(rec: RealmBagRegistration, realmId: string): Promise<boolean> {
+export async function realmBagRegistrationCounts(
+  rec: RealmBagRegistration, realmId: string, opts?: RealmBagFoldOptions,
+): Promise<boolean> {
   if (rec.kind !== REALM_BAG_DOMAIN) return false;
   if (rec.realmId !== realmId) return false;
   if (rec.keptBy.length === 0) return false;
@@ -233,16 +258,32 @@ export async function realmBagRegistrationCounts(rec: RealmBagRegistration, real
   if (rec.expiry !== undefined && (!Number.isInteger(rec.expiry) || rec.expiry < 0)) return false;
   if (!rec.bagUri.startsWith("lar:///") || !rec.docUrl.startsWith("automerge:")) return false;
   const bytes = realmBagBytes(rec);
+  // EXACTLY THE KEPT NAMES, EACH ONCE, IN THEIR CANONICAL SPELLING. A name the record spells twice, a name in
+  // another case (the seal's own verifier reads the name's class), and a seal under a name the record does not
+  // keep each refuse: a counted record carries its stewards' seals and no other key.
+  if (new Set(rec.keptBy).size !== rec.keptBy.length) return false;
+  if (rec.signatures.length !== rec.keptBy.length) return false;
   for (const steward of rec.keptBy) {
-    const nym = steward.toLowerCase();
-    if (!NYM_RE.test(nym)) return false;
-    const sig = rec.signatures.find((s) => s.signer.toLowerCase() === nym);
-    if (!sig) return false;
-    let ok = false;
-    try { ok = verifyEd25519(sig.sig, bytes, nym); } catch { ok = false; }
-    if (!ok) return false;
+    const seal = rec.signatures.find((s) => s.signer === steward);
+    if (!seal) return false;
+    if (!(await verifyStewardSeal(seal, steward, bytes, opts)).ok) return false;
   }
   return true;
+}
+
+/**
+ * How far a record's consent stands: its KEPT names whose own seal verifies over the record's bytes. A counted
+ * record reads every kept name; a proposal reads fewer; a seal under a name the record does not keep, and a
+ * seal that fails, add nobody.
+ */
+export async function realmBagSealedBy(rec: RealmBagRegistration, opts?: RealmBagFoldOptions): Promise<readonly string[]> {
+  const bytes = realmBagBytes(rec);
+  const sealed: string[] = [];
+  for (const steward of new Set(rec.keptBy)) {
+    const seal = rec.signatures.find((s) => s.signer === steward);
+    if (seal && (await verifyStewardSeal(seal, steward, bytes, opts)).ok) sealed.push(steward);
+  }
+  return sealed;
 }
 
 // ── THE DOC FACE ─────────────────────────────────────────────────────────────────────────────────
@@ -253,19 +294,23 @@ export function realmBagKey(bagUri: string, steward: string): string {
   return `${REALM_BAG_PREFIX}${encodeURIComponent(bagUri)}/${steward.toLowerCase()}`;
 }
 
-/** Land a signed registration on the realm doc draft under the WRITING hand's key (`by`; the first named
- *  steward when a caller names none). A co-signer's completed record accretes beside the proposal it
- *  completes rather than over it — the fold, never a write, adjudicates. Call INSIDE `handle.change()`. */
-export function writeRealmBagRegistration(draft: LarDoc, rec: RealmBagRegistration, by?: string): void {
-  const key = realmBagKey(rec.bagUri, by ?? rec.keptBy[0] ?? "");
-  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(rec) }, rec.realmId);
+/** The tiddler key a record STILL SHORT OF A SEAL accretes under: its own key beside the writer's counted one,
+ *  so a proposal, and a co-sign that leaves a hand still owed, never unseat the record that stands. */
+export function realmBagProposalKey(bagUri: string, steward: string): string {
+  return `${realmBagKey(bagUri, steward)}~proposal`;
 }
 
-function coerceSignature(raw: unknown): QuorumSignature | null {
-  if (typeof raw !== "object" || raw === null) return null;
-  const s = raw as Record<string, unknown>;
-  if (typeof s["signer"] !== "string" || typeof s["sig"] !== "string") return null;
-  return { signer: s["signer"], sig: s["sig"] };
+/** Land a signed registration on the realm doc draft under the WRITING hand's key (`by`; the first named
+ *  steward when a caller names none): the counted key for a record that COUNTS, else the proposal key. A
+ *  writer that verified the record says so in `counts` (`realmBagRegistrationCounts`), and a record it read
+ *  short never lands over a counted one, whatever its seal count looks like. Absent, the key follows the
+ *  record's shape: one seal per kept name. A co-signer's completed record accretes beside the proposal it
+ *  completes rather than over it — the fold, never a write, adjudicates. Call INSIDE `handle.change()`. */
+export function writeRealmBagRegistration(draft: LarDoc, rec: RealmBagRegistration, by?: string, counts?: boolean): void {
+  const writer = by ?? rec.keptBy[0] ?? "";
+  const whole = counts ?? (rec.signatures.length === rec.keptBy.length);
+  const key = whole ? realmBagKey(rec.bagUri, writer) : realmBagProposalKey(rec.bagUri, writer);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(rec) }, rec.realmId);
 }
 
 /** A parsed payload reads a registration only at the exact floor shape — extra fields drop, a torn one skips. */
@@ -277,9 +322,9 @@ function coerceRegistration(parsed: unknown): RealmBagRegistration | null {
   if (typeof p["readTier"] !== "string") return null;
   if (!Array.isArray(p["keptBy"]) || !p["keptBy"].every((n) => typeof n === "string")) return null;
   if (!Array.isArray(p["signatures"])) return null;
-  const signatures: QuorumSignature[] = [];
+  const signatures: StewardSeal[] = [];
   for (const raw of p["signatures"]) {
-    const sig = coerceSignature(raw);
+    const sig = coerceStewardSeal(raw);
     if (sig === null) return null;
     signatures.push(sig);
   }
@@ -304,7 +349,7 @@ export function realmBagRegistrationsFromDoc(doc: LarDoc | undefined | null): Re
   for (const [title, record] of Object.entries(tiddlers)) {
     if (!title.startsWith(REALM_BAG_PREFIX)) continue;
     const text = tiddlerText(record);
-    if (text === null) continue;
+    if (text === null || text.length > REALM_BAG_RECORD_MAX) continue;
     let parsed: unknown;
     try { parsed = JSON.parse(text); } catch { continue; }
     const rec = coerceRegistration(parsed);
@@ -315,22 +360,46 @@ export function realmBagRegistrationsFromDoc(doc: LarDoc | undefined | null): Re
 
 /**
  * Fold the realm doc into the STANDING registrations, keyed by bag URI. Only counted records participate.
- * Two counted records for one bag that agree on the doc fold to one; two that name DIFFERENT docs
- * EQUIVOCATE and the bag stands UNREGISTERED (fail-closed — a tie never grants).
+ * Counted records for one bag that agree on the doc fold to the WIDEST consented set: the record whose
+ * `keptBy` holds every other's (each wider record carries the narrower one's stewards' own seals, so each of
+ * them consented to it). Records that name DIFFERENT docs, and records whose steward sets neither hold the
+ * other, EQUIVOCATE and the bag stands UNREGISTERED (fail-closed — a tie never grants). The answer never
+ * leans on the order a doc lists its tiddlers in.
  */
 export async function foldRealmBags(
-  doc: LarDoc | undefined | null, realmId: string,
+  doc: LarDoc | undefined | null, realmId: string, opts?: RealmBagFoldOptions,
 ): Promise<ReadonlyMap<string, RealmBagRegistration>> {
-  const standing = new Map<string, RealmBagRegistration>();
-  const equivocal = new Set<string>();
+  const counted = new Map<string, RealmBagRegistration[]>();
   for (const rec of realmBagRegistrationsFromDoc(doc)) {
-    if (!(await realmBagRegistrationCounts(rec, realmId))) continue;
-    const prior = standing.get(rec.bagUri);
-    if (prior && prior.docUrl !== rec.docUrl) { equivocal.add(rec.bagUri); continue; }
-    if (!prior) standing.set(rec.bagUri, rec);
+    if (!(await realmBagRegistrationCounts(rec, realmId, opts))) continue;
+    (counted.get(rec.bagUri) ?? (counted.set(rec.bagUri, []), counted.get(rec.bagUri)!)).push(rec);
   }
-  for (const bag of equivocal) standing.delete(bag);
+  const standing = new Map<string, RealmBagRegistration>();
+  for (const [bag, recs] of counted) {
+    if (recs.some((r) => r.docUrl !== recs[0]!.docUrl)) continue;                       // two docs under one name
+    const holds = (wide: RealmBagRegistration, narrow: RealmBagRegistration): boolean =>
+      narrow.keptBy.every((name) => wide.keptBy.includes(name));
+    const widest = recs.find((r) => recs.every((other) => holds(r, other)));
+    if (widest) standing.set(bag, widest);                                              // none holds the rest → a tie
+  }
   return standing;
+}
+
+/**
+ * Has this steward SEALED HERE: does some record of this realm on the doc, counted or still short of a hand,
+ * carry a seal under `name` that verifies over that record's own bytes? A name enters a realm record by its
+ * own hand first, so a door that would write somebody else's name asks this before it writes: a key that
+ * never sealed here stands unproven, whatever class its holder would read it as.
+ */
+export async function stewardSealedHere(
+  doc: LarDoc | undefined | null, realmId: string, name: string, opts?: RealmBagFoldOptions,
+): Promise<boolean> {
+  for (const rec of realmBagRegistrationsFromDoc(doc)) {
+    if (rec.realmId !== realmId) continue;
+    const seal = rec.signatures.find((s) => s.signer === name);
+    if (seal && (await verifyStewardSeal(seal, name, realmBagBytes(rec), opts)).ok) return true;
+  }
+  return false;
 }
 
 /**
@@ -487,6 +556,7 @@ export class RealmBagGate implements FederationGate {
   readonly #realmDocId: DocumentId;
   readonly #charter: RealmCharterConsult | null;
   readonly #pace: (() => number | null) | null;
+  readonly #sealReading: RealmBagFoldOptions | undefined;
   readonly #memberAside: ((peerId: string) => boolean) | null;
 
   constructor(
@@ -498,6 +568,9 @@ export class RealmBagGate implements FederationGate {
       readonly charter?: RealmCharterConsult;
       /** The realm's pace in rolls (`realmPace`) — the lease the write side reads against. */
       readonly pace?: () => number | null;
+      /** What this vessel knows of a Handle that sealed (its own handle book): every refold reads a Handle
+       *  steward's seal against it, so a seal under a head this vessel saw retired stops counting here. */
+      readonly sealReading?: RealmBagFoldOptions;
       /**
        * THE MEMBER SHADOW (kapae#/reach): true when a shadow stands over this peer's own edge to the realm, or
        * no path of standing vouches reaches it. Every lane onto the realm's documents and bags then closes for
@@ -510,6 +583,7 @@ export class RealmBagGate implements FederationGate {
     this.#realmDocId = interpretAsDocumentId(realmUrl) as DocumentId;
     this.#charter = opts?.charter ?? null;
     this.#pace = opts?.pace ?? null;
+    this.#sealReading = opts?.sealReading;
     this.#memberAside = opts?.memberAside ?? null;
   }
 
@@ -517,7 +591,7 @@ export class RealmBagGate implements FederationGate {
   async refold(doc: LarDoc | undefined | null, realmId: string): Promise<void> {
     const next = new Set<DocumentId>();
     const byDoc = new Map<DocumentId, RealmBagRegistration>();
-    this.#registrations = await foldRealmBags(doc, realmId);
+    this.#registrations = await foldRealmBags(doc, realmId, this.#sealReading);
     this.#realmId = realmId;
     for (const rec of this.#registrations.values()) {
       try {

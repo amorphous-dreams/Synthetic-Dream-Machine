@@ -146,6 +146,35 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 
 <<~/ahu>>
 
+<<~ ahu #/the-steward-signer>>
+
+!! The steward signer ~ the worn face or a quorum Handle, never the root
+
+> ''Operator ruling.'' A scoped face signs acts that belong to one person; a transparent quorum Handle signs acts the collective owns; the root never appears publicly. A human wears many faces and many public Handles, each in many cabals, and signs a steward edge with the face or Handle worn in that cabal.
+
+''A realm record publishes whatever key it names.'' A realm-bag registration names its stewards in `keptBy`. The realm doc crosses to every member, and the `@crossroads` announce names `keptBy` on the public plane. So a steward's name reads one of two classes and nothing else:
+
+|! class |! the name |! the seal |
+| ''face'' | the key the steward's worn face presents at the Nexus the realm stands under | that key signs the record's own bytes |
+| ''Handle'' | the Handle's stable prefix | the Handle's head key signs an image that binds the prefix, the chain's head event and the record's digest, under a domain of its own; the seal carries the chain |
+
+* ''One door picks the key.'' A vessel's steward door hands out the key its worn face presents to that Nexus, and nothing else (`packages/lararium-node/src/realm-steward.ts`). A vessel that wears no face refuses by name. No option names a persona index, and no roster order picks a face.
+* ''A guard stands before every seal.'' The door and the realm plane each read the signer's key against the vessel's own keys. A persona root, a vessel key, a key the vessel cannot class and a vault that will not read each refuse by name.
+* ''A name enters a record by its own hand first.'' No vessel can class a key that belongs to another hand, and no roster of face keys stands to ask: the carriage board records carriage, never belonging. So a hand that would keep a bag another hand keeps ASKS from its own vessel, sealing with its own worn face a record that names the standing stewards and itself; each standing steward then consents with her own. A keeping hand names another steward only where that name already sealed a record of the realm.
+* ''Consent widens who keeps a book and never moves the book.'' A standing steward's co-sign seals only a record that keeps the standing registration's doc, tier, charters and lease and widens its steward set. Where several different asks wait, and where no registration stands to hold an ask to, she names the hand she consents with.
+* ''A counted record carries its stewards' seals and no other key.'' The fold reads each seal under the exact name the record keeps, once (`packages/lararium-mesh/src/steward-seal.ts`). A face seal never counts for a Handle's name, and a Handle seal never counts for a key.
+* ''A record still short of a seal rests under a key of its own'', so an ask never unseats the registration that stands.
+* ''The widest consented set stands.'' Counted records for one bag that agree on the doc fold to the one whose `keptBy` holds every other's: each wider record carries the narrower one's stewards' own seals. Two docs under one name tie, and so do two steward sets where neither holds the other; a tie leaves the bag unregistered and grants no write. Any realm member who writes a rival counted record can force that tie.
+* ''A Handle seal reads against the chain it carries, and a reader's own chain outranks it.'' A reader with no owner heads trusts a chain that holds its inception alone. A vessel reads every Handle seal against the chain its own handle book holds for that Handle: a seal under a head that book saw retired reads stale or burned. A reader that holds no chain learns of a later rotation or burn from a fresh seal.
+
+> ''A house reading, marked as one.'' A Handle steward's seal carries the head key's signature alone, as a card and an attestation carry it. Any threshold over a collective act belongs to the charter's classes.
+
+> ''A house reading, marked as one.'' The order of naming (the joining hand asks, the standing hands consent) follows from the door's own limit: it cannot class another hand's key. The ruling names who signs and leaves the order open.
+
+''OWED.'' The composing vessel's `realm-bag` verb takes the steward door through the compose owner's hand; until that lands, the vessel's own verb seals with a persona root. The Handle arm stands specified in code: no vessel holds a collective Handle's key and no door offers a Handle signer, and the chartered promotion act will reach it. The vouch door, the feed's writer and an edge's holder hand sign under a persona root on boards that cross to a realm's members; each takes this same door, and each move changes an edge's id. A steward leaves a bag by no act yet: the widest set stands until the lease lapses.
+
+<<~/ahu>>
+
 <<~ ahu #/the-unswept-corner>>
 
 !! The Unswept Corner ~ persistence ≠ legitimacy (OPEN)
@@ -246,6 +275,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ju82fwA6_K7Qo7idcWUf0_UzCgwA9xf7HJeLxdSzkcQ
+<<^ code="&#x0003;">>ni:///sha-256;rQidFfavpLA5pQTympHeG82lDLgBu59J2q74RtF9Hio
 
 <<^ code="&#x0004;" -> to="?">>

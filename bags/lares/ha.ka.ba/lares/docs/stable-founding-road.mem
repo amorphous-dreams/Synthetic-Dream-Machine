@@ -288,7 +288,7 @@ Build order: the realm and signer shapes against the rulings; then R-CHARTER, th
 identity bytes; then R-WIRE, so every pin changes once.
 
 * ''Realms'': many cabal realms per Nexus with selected-realm routing, where one charter-derived realm plane stands today. A cabal reads as its relation closure and takes no key or roster of its own.
-* ''The steward signer'': the worn face or a quorum Handle, never the root. The docker `meme` scenario fails at "B edits, promotes" — the steward gets named by a per-Nexus LEAF key while the realm-bag co-sign looks for the persona ROOT — and it proves the end-state signer, never a root workaround and never a leaf fallback.
+* ''The steward signer'': the worn face or a quorum Handle, never the root (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer">>). The seal, the fold and the steward door stand in code; the composing vessel's `realm-bag` verb takes the door through the compose owner's hand. The docker `meme` scenario then proves it by hand at "B edits, promotes", in the asker's order: B asks to keep the bag with her worn face, and A consents.
 * ''Thresholded admission and promotion'': the four chartered classes and exact-bytes promotion of #/rulings; chartered Kahu-cabal admission as its own authority act, where a vouch alone admits nobody.
 
 ''R-CHARTER, the one AID train'' (waits on SUBSTRATE whole).
@@ -424,7 +424,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `N3` The founders' self-contracts, both seats signing. N.
 * `N4` The roll that ADDS a seat, the new holder's carriage contract, and a passed chair as a later act. N.
 * `N5` A long-dormant node rejoins: a catch-up walk by re-import, and its witness. House. N, X.
-* `P1` The steward signer: the worn face's per-Nexus key or a quorum Handle; the docker `meme` scenario reads red at "B edits, promotes" (`realm-plane.ts`). P.
+* `P1` The steward signer: the composing vessel's `realm-bag` verb calls the steward door (`realm-steward.ts`); the docker `meme` scenario by hand, in the asker's order; a door for a collective Handle's seal waits on the chartered classes; the vouch door, the feed's writer and an edge's holder hand still sign under a persona root. P.
 * `P2` The carriage verifier's held-root check (`carriage-registry.ts`). P.
 * `P3` Many cabal realms per Nexus, with selected-realm routing. P.
 * `P4` The four chartered classes and exact-bytes promotion. P.
@@ -772,6 +772,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uoy5n0SbDRIpM3Mr_qZR9mRq4f9nM5tnvTKRiJg3Ez8
+<<^ code="&#x0003;">>ni:///sha-256;CKWiCTLi14F_USic7m2qIkSz4IP6t7wkGSGTUJ6qa80
 
 <<^ code="&#x0004;" -> to="?">>

@@ -341,6 +341,10 @@ export const GATE_VERDICT_DOMAIN = mint("gate-verdict");
 /** A realm-bag REGISTRATION — the record a bag's stewards sign onto the realm's shared doc (`keptBy`,
  *  `readTier`, the doc url). Its own domain: a registration must never verify as any other signed thing. */
 export const REALM_BAG_DOMAIN = frozen("realm-bag");
+/** A quorum HANDLE's seal as a realm steward: the Handle's head key signs a realm record's digest under the
+ *  chain state it stands at. Its own name, so a steward seal never verifies as a card, an attestation or a
+ *  chain event, and none of those verifies as a seal. */
+export const STEWARD_SEAL_DOMAIN = mint("steward-seal");
 
 /**
  * THE OFFERING — one operator publishing their own plugin collection for others to take.

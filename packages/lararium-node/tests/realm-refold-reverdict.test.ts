@@ -6,15 +6,13 @@
  * moves on every realm-doc change — including changes another member writes — while the Repo caches its
  * share verdict per (doc, peer) until `shareConfigChanged` asks it to read again.
  *
- * MEASURED on `meme-realm-bag` ⑪/⑬: A registers the book (it counts, it crosses to B once), A then PROPOSES
- * B as a second steward under A's OWN key — the proposal REPLACES A's counted record (`writeRealmBagRegistration`
- * keys by `(bag, signer)`), the fold drops the bag, and A's reverdict denies B that doc. B co-signs; her
- * counted record lands on the realm doc and A's realm plane refolds on the doc's `change` — and NOTHING asks
- * the Repo to re-read the verdict. A's cached "denied" stands, and no change crosses either way after.
+ * TWO LAWS HOLD THE BOOK OPEN. A record still short of a seal rests under its own key, so a proposal never
+ * unseats the registration that stands (`realmBagProposalKey`). And every fold fires the caller's `onRefold`,
+ * so a change another member wrote reaches the Repo's verdict cache with no verb run on the holding vessel.
  *
- * RED: `makeRealmPlane` gives the caller no way to hear a refold, so the node vessel cannot reverdict on one.
- * CONTROL: a refold that moves nothing still fires (the caller, not the plane, decides what a re-read costs),
- * and the verdict walk below shows the gate's own answer moving with no verb run on the holding vessel.
+ * VECTOR 1: a proposal lands and the registered book keeps federating; a counted record that names ANOTHER
+ * doc lands from another member and the book stops (the fold moved on a foreign write).
+ * VECTOR 2: a realm-doc change refolds the plane and the caller hears it. CONTROL: standing the realm folds once.
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -45,7 +43,7 @@ const denyAll: FederationGate = { mayFederate: async () => false };
 const noMembers: NexusMembership = { holdsCarriagePeer: () => false };
 
 describe("the realm fold moves the wire verdict, and the caller must hear it", () => {
-  test("RED — the verdict on the registered book moves with no verb run on the holding vessel", async () => {
+  test("a proposal never drops the registered book; a foreign counted record that names another doc does", async () => {
     const nymA = await pubOf(seedA);
     const nymB = await pubOf(seedB);
     const consult: RealmCharterConsult = {
@@ -66,23 +64,31 @@ describe("the realm fold moves the wire verdict, and the caller must hear it", (
     await gate.refold(doc, REALM);
     const afterRegister = await gate.mayFederate(bagDoc, peerB);
 
-    // ② A PROPOSES B as a second steward — same key, so the counted record is REPLACED by one that
-    //    does not count. The fold drops the bag; the leg's `#standing.has` early-return denies it.
-    const proposal = await proposeRealmBagRegistration(parts, [{ signer: nymA, sign: signerOf(seedA) }], [nymB]);
-    writeRealmBagRegistration(doc, proposal, nymA);
+    // ② B ASKS to keep the book: her proposal names [A, B] and rests under its own key, so A's counted record
+    //    keeps standing and the book keeps federating while the ask waits.
+    const proposal = await proposeRealmBagRegistration(parts, [{ signer: nymB, sign: signerOf(seedB) }], [nymA]);
+    writeRealmBagRegistration(doc, proposal, nymB);
     await gate.refold(doc, REALM);
     const whileProposed = await gate.mayFederate(bagDoc, peerB);
 
-    // ③ B co-signs on HER vessel; the completed record reaches A only as a realm-doc change.
-    const completed = await coSignRealmBagRegistration(proposal, { signer: nymB, sign: signerOf(seedB) });
-    writeRealmBagRegistration(doc, completed, nymB);
+    // ③ A consents on HIS vessel; the completed record lands and the widest consented set stands.
+    const completed = await coSignRealmBagRegistration(proposal, { signer: nymA, sign: signerOf(seedA) });
+    writeRealmBagRegistration(doc, completed, nymA);
     await gate.refold(doc, REALM);
     const afterCoSign = await gate.mayFederate(bagDoc, peerB);
+    expect(gate.registrations().get(BAG)?.keptBy).toHaveLength(2);
 
-    expect([afterRegister, whileProposed, afterCoSign]).toEqual([true, false, true]);
+    // ④ ANOTHER member writes a counted record that names a DIFFERENT doc for the bag: the fold equivocates
+    //    and the book stops federating, with no verb run on this vessel.
+    const rival = await signRealmBagRegistration({ ...parts, docUrl: deterministicDocUrl("a-rival-book") }, [{ signer: nymB, sign: signerOf(seedB) }]);
+    writeRealmBagRegistration(doc, rival, nymB);
+    await gate.refold(doc, REALM);
+    const afterRival = await gate.mayFederate(bagDoc, peerB);
+
+    expect([afterRegister, whileProposed, afterCoSign, afterRival]).toEqual([true, true, true, false]);
   });
 
-  test("RED — a realm-doc change refolds the plane and the caller never hears it", async () => {
+  test("a realm-doc change refolds the plane and the caller hears it", async () => {
     const repo = new Repo({});
     const oracleHandle = repo.create<LarDoc>(emptyLarDoc());
     const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
