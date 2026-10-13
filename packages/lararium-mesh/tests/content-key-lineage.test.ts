@@ -177,6 +177,32 @@ describe("the key lineage", () => {
     expect(before.count(removal(bb, [aa]), yes)).toEqual({ lineage: before });
   });
 
+  it("a reader that verified two unlike records marks the id itself: the version and every descendant leave the readings, and the id counts nowhere again", () => {
+    const before = count(count(founded(), removal(bb, [aa])), removal(cc, [bb], "raise-2"));
+    expect(before.heads()).toEqual([cc]);                              // CONTROL: unmarked, the chain stands
+    const after = before.conflict(bb);
+    expect(before.has(bb)).toBe(true);                                 // the earlier lineage stays as it stood
+    expect(after.conflicted(bb)).toBe(true);
+    expect(after.has(bb)).toBe(false);
+    expect(after.has(cc)).toBe(false);                                 // the descendant left with it
+    expect(after.heads()).toEqual([aa]);                               // the bag continues from the version that descends from neither
+    expect(refusalOf(after, removal(bb, [aa]))).toBe("version-conflict");
+    expect(refusalOf(after, removal(dd, [bb], "raise-3"))).toBe("parent-unknown");
+    expect(refusalOf(after, removal(dd, [bb], "raise-3"), yes)).toBe("parent-unknown");
+    // Naming the conflicted parent unheld changes nothing: its fate decides the version's.
+    const named = after.count(removal(dd, [bb], "raise-3"), yes, [bb]);
+    expect("refusal" in named && named.refusal).toBe("parent-unknown");
+    // A mark on a lineage that counted nothing reads as a conflicted founding: the bag reads founded, with no
+    // head, and no founding takes its place. A reader therefore marks AFTER it counted what stands.
+    const early = KeyLineage.empty().conflict(aa);
+    expect(early.unfounded).toBe(false);
+    expect(early.heads()).toEqual([]);
+    expect(refusalOf(early, founding(bb))).toBe("second-founding");
+    // A name that reads as no id marks nothing, and a second mark changes nothing.
+    expect(before.conflict("not-an-id" as KeyVersionId)).toBe(before);
+    expect(after.conflict(bb)).toBe(after);
+  });
+
   it("a conflicted founding leaves the bag with no standing version, and no second founding takes its place", () => {
     const r = count(founded(), removal(bb, [aa])).count(founding(aa, "closed"), yes);
     if (!("conflicted" in r)) throw new Error("no conflict");
@@ -455,6 +481,31 @@ describe("the content-key roll a seat roll feeds", () => {
     await rolls.announce(roll(["raise-1"]));
     expect(results(state.reports)).toEqual([`bag-one:rolled:${bb}`, "bag-one:not-owed:"]);
     expect(state.plans.length).toBe(1);
+  });
+
+  it("a roll that names a seat ends that seat's debts before any plan, on a repeat and for a bag no version reached; a debt that cannot settle leaves the roll owed; a roll that names no seat asks nothing", async () => {
+    const seated = (raiseCids: string[]): SeatRoll => ({ ...roll(raiseCids), seat: { group: "0xgroup", member: "0xseat" } });
+    const order: string[] = [];
+    let fails = false;
+    const lineage = founded();
+    const state = { lineage, held: new Set<KeyVersionId>(lineage.heads()) };
+    const sink = contentKeyRollSink({
+      bagsOf: () => ["bag-one", "bag-none"],
+      lineagesOf: (bagId) => (bagId === "bag-one" ? [{ founding: "founding-one", lineage: state.lineage, held: state.held }] : []),
+      ownEdgeShadowed: () => false,
+      seatLeft: (bagId, r) => { order.push(`left:${bagId}:${r.seat?.member}`); if (fails) throw new Error("the rest refused"); },
+      mint: async (_bag, _founding, plan) => { order.push("mint"); const fact = factOfPlan(plan, bb); state.lineage = count(state.lineage, fact); state.held.add(bb); return fact; },
+      report: (o) => { order.push(`report:${o.bagId}:${o.result}`); },
+    });
+    await sink(roll(["raise-1"]));                                     // CONTROL: no seat named, nothing asked
+    expect(order).toEqual(["mint", "report:bag-one:rolled", "report:bag-none:bag-unfounded"]);
+    order.length = 0;
+    await sink(seated(["raise-1"]));                                   // already rolled, or no version held: the seat's debts still end
+    expect(order).toEqual(["left:bag-one:0xseat", "report:bag-one:not-owed", "left:bag-none:0xseat", "report:bag-none:bag-unfounded"]);
+    order.length = 0;
+    fails = true;
+    await expect(sink(seated(["raise-2"]))).rejects.toThrow(/the roll stays owed/);
+    expect(order).toEqual(["left:bag-one:0xseat", "report:bag-one:mint-failed", "left:bag-none:0xseat", "report:bag-none:mint-failed"]);   // no plan ran
   });
 
   it("a batch of raises mints one successor that cites them all", async () => {

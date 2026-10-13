@@ -140,7 +140,8 @@ function readFact(value: unknown): KeyVersionFact | null {
   } catch { return null; }
 }
 
-function sameFact(a: KeyVersionFact, b: KeyVersionFact): boolean {
+/** Do two facts state one thing: the same id, parents, span, declaration, cause and acts? */
+export function sameFact(a: KeyVersionFact, b: KeyVersionFact): boolean {
   return a.keyVersion === b.keyVersion && a.span === b.span && a.history === b.history
     && a.parents.length === b.parents.length && a.parents.every((parent, i) => parent === b.parents[i])
     && a.cause.kind === b.cause.kind && actsOf(a.cause).length === actsOf(b.cause).length
@@ -252,6 +253,21 @@ export class KeyLineage {
     const bases = new Map(this.#unheld);
     if (skipped.size > 0) bases.set(fact.keyVersion, skipped);
     return { lineage: new KeyLineage(next, this.#conflicted, bases) };
+  }
+  /**
+   * Hold `id` conflicted with no fact counted under it. A reader that verified two unlike records under one id
+   * calls this BEFORE it judges either transition, so a record that fails its evidence conflicts all the same.
+   * Every version that cites the id then finds no standing parent, as after a conflict the count itself met.
+   * A name that reads as no id marks nothing. A mark on a lineage that counted nothing reads as a conflicted
+   * founding, so a reader marks after it counted what stands.
+   */
+  conflict(id: KeyVersionId): KeyLineage {
+    if (readKeyVersionId(id) === null || this.#conflicted.has(id)) return this;
+    const rest = new Map(this.#counted);
+    rest.delete(id);
+    const bases = new Map(this.#unheld);
+    bases.delete(id);
+    return new KeyLineage(rest, new Set([...this.#conflicted, id]), bases);
   }
   /** Did this reader count `id` as a base: over one or more parents it held no key for? */
   base(id: KeyVersionId): boolean { return this.#facts.has(id) && (this.#unheld.get(id)?.size ?? 0) > 0; }
@@ -482,6 +498,10 @@ export interface RollerPorts {
   lineagesOf(bagId: string): readonly BagLineage[] | null | Promise<readonly BagLineage[] | null>;
   /** Does this vessel read a shadow over its own edge in `scope`? Such a vessel mints nothing there. */
   ownEdgeShadowed(scope: string, bagId: string): boolean | Promise<boolean>;
+  /** The roll names a seat that left. The vessel remembers it for the bag, whether or not it holds a version
+   *  of the bag, so a seat that returns receives no key minted before a successor for these raises. Absent:
+   *  the vessel keeps no debt to an unserved reader. */
+  seatLeft?(bagId: string, roll: SeatRoll): void | Promise<void>;
   /** Mint the key, sign the record, wrap the lockboxes for the readers that remain (the seat `roll` names
    *  never among them), and answer the fact it counted; null where it could not. */
   mint(bagId: string, founding: string, plan: KeyRollPlan, roll: SeatRoll): Promise<KeyVersionFact | null>;
@@ -499,6 +519,9 @@ const COMES_AGAIN: ReadonlySet<RollOutcomeName> = new Set(["mint-failed", "no-he
  * that owes no roll for these raises, plans one successor for each span the vessel holds a head in, mints each
  * and reports. It proceeds on every answer the key group gave (`revoked`, `gone`, `no-authority`): the content
  * key rolls whether or not the seat left.
+ *
+ * A roll that names a seat first ends what the vessel stood owing that reader (`seatLeft`): a seat that
+ * returns stands fresh, and receives no earlier key.
  *
  * It REJECTS the roll where any founding could not finish (a mint that failed, a founding with no head key in
  * hand, a bag it could not read), so the raises stay unmarked and the same roll comes again; a repeat settles
@@ -519,6 +542,10 @@ export function contentKeyRollSink(ports: RollerPorts): SeatRollSink {
       try { ports.report({ scope: roll.scope, bagId, ...(founding !== undefined ? { founding } : {}), raises: roll.raiseCids, result, ...(keyVersion !== undefined ? { keyVersion } : {}) }); } catch { /* a report that throws loses only itself */ }
       return result;
     };
+    // The seat left on every answer the key group gave, so its debts end first, whatever this vessel holds of
+    // the bag: a version that reaches it later carries no debt to that seat. A debt that could not settle
+    // leaves the roll owed.
+    try { if (roll.seat) await ports.seatLeft?.(bagId, roll); } catch { return [say("mint-failed")]; }
     let lineages: readonly BagLineage[] | null;
     try { lineages = await ports.lineagesOf(bagId); } catch { return [say("mint-failed")]; }
     if (lineages === null) return [say("unknown-bag")];

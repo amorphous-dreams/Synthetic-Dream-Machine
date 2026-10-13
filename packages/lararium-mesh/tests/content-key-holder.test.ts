@@ -379,6 +379,101 @@ describe("a reader the mint could not serve stays owed, by name, inside the reco
   });
 });
 
+describe("a debt to an unserved reader ends when a roll names that reader's seat", () => {
+  it("A SEAT THAT LEFT AND RETURNED RECEIVES NO EARLIER KEY: the roll that names it retires what it stood owed, across a restart; a reader no roll named stays owed", async () => {
+    const w = world();
+    const a = await vessel(w, "a"), c = await vessel(w, "c"), d = await vessel(w, "d");
+    const v1 = await seal(a, "written before c left");               // c and d both went unserved: a holds neither card
+    expect((await heads(a)).foundings[0]!.unserved).toEqual([c.id, d.id].sort());
+    counts(w, a, "raise-1");
+    const reports = await rolls(a, roll(["raise-1"], c));            // the raise over c: its seat leaves
+    expect(reports.map((r) => r.result)).toEqual(["rolled"]);
+    // c returns under the same identifier with a fresh seat, and a now holds both cards.
+    introduce(a, c, d);
+    const served = await a.holder.serveUnserved();
+    if ("refusal" in served) throw new Error(said(served));
+    const seatsOf = (reader: string) => [...w.docs.values()].filter((doc) => doc.seats.has(reader)).length;
+    expect(seatsOf(c.id)).toBe(0);                                   // no wrap of any version seats c
+    expect(served.parcels.map((p) => p.record.body.keyVersion)).toContain(v1.body.keyVersion);   // CONTROL: d, whom no roll named, gets the earlier key
+    expect(seatsOf(d.id)).toBe(served.parcels.length);
+    expect(served.parcels.length).toBeGreaterThan(0);
+    a.restart();
+    const again = await a.holder.serveUnserved();
+    expect(again).toEqual({ parcels: [], owed: 0 });                 // the retirement rests: a restart serves c nothing
+    expect(seatsOf(c.id)).toBe(0);
+    // A version minted after c's return that could not reach it stands as a fresh debt, and gets served.
+    a.cards.delete(c.id);
+    counts(w, a, "raise-2");
+    await rolls(a, roll(["raise-2"], d));
+    a.cards.add(c.id);
+    const fresh = await a.holder.serveUnserved();
+    expect("parcels" in fresh && fresh.parcels.length).toBe(1);
+    expect(seatsOf(c.id)).toBe(1);
+  });
+});
+
+describe("a version that arrives after its unserved reader's seat left carries no debt to that seat", () => {
+  it("A ROLL TAKEN BEFORE THE VERSION ARRIVED STILL BINDS: a vessel that held no version of the bag at the roll serves the returned seat nothing once the earlier version reaches it", async () => {
+    const run = async (name: string, takesRoll: boolean): Promise<number> => {
+      const w = world();
+      const a = await vessel(w, `${name}-a`), b = await vessel(w, `${name}-b`), c = await vessel(w, `${name}-c`);
+      introduce(a, b);
+      const v1 = await seal(a, "sealed before c left");               // c went unserved at a's mint
+      counts(w, b, "raise-1");
+      if (takesRoll) expect((await rolls(b, roll(["raise-1"], c))).map((r) => r.result)).toEqual(["bag-unfounded"]);   // b holds no version yet
+      await carry(a, b, BAG);                                          // the earlier version arrives afterwards
+      expect((await heads(b)).foundings[0]!.held).toEqual([v1.body.keyVersion]);
+      b.restart();
+      introduce(b, c);                                                 // c returned; b holds its card
+      const served = await b.holder.serveUnserved();
+      if ("refusal" in served) throw new Error(said(served));
+      return [...w.docs.values()].filter((doc) => doc.seats.has(c.id)).length;
+    };
+    expect(await run("rolled", true)).toBe(0);
+    expect(await run("control", false)).toBe(1);                       // CONTROL: with no roll over c, the debt stands and gets served
+  });
+});
+
+describe("a seat that leaves twice", () => {
+  it("a debt from between its two leavings ends at the second, and the vessel's note holds a digest of each raise and no name", async () => {
+    const w = world();
+    const a = await vessel(w, "a"), c = await vessel(w, "c"), d = await vessel(w, "d");
+    await seal(a, "founded with c and d unserved");
+    counts(w, a, "raise-1", "raise-2", "raise-3");
+    await rolls(a, roll(["raise-1"], c));                            // c leaves
+    await rolls(a, roll(["raise-2"], d));                            // c returned meanwhile: this version names it unserved
+    expect((await heads(a)).foundings[0]!.unserved).toContain(c.id);
+    await rolls(a, roll(["raise-3"], c));                            // c leaves again
+    a.cards.add(c.id);
+    // c gets nothing: the founding predates its first leaving, the middle version its second. d returned before
+    // the last version, which names it unserved: that debt stands, and waits on d's card.
+    expect(await a.holder.serveUnserved()).toEqual({ parcels: [], owed: 1 });
+    expect([...w.docs.values()].filter((doc) => doc.seats.has(c.id)).length).toBe(0);
+    const notes = [...a.rest.values].filter(([name]) => name.startsWith("own/left."));
+    expect(notes.map(([, bytes]) => bytes.length).sort()).toEqual([32, 64]);   // d: one raise; c: both
+    const rested = notes.map(([name, bytes]) => name + hex(bytes)).join(" ");
+    for (const clear of [c.id, d.id, hex(utf8Bytes("raise-1")), hex(utf8Bytes(BAG))]) expect(rested.includes(clear)).toBe(false);
+  });
+});
+
+describe("a debt that cannot settle leaves its roll owed", () => {
+  it("a rest that refuses the retirement rejects the roll and mints nothing; the same roll again settles the debt and rolls", async () => {
+    const w = world();
+    const a = await vessel(w, "a"), c = await vessel(w, "c");
+    await seal(a, "c went unserved");
+    counts(w, a, "raise-1");
+    a.rest.failOn = (kind, name) => kind === "own" && name.startsWith("left.");
+    const versions = () => [...a.rest.values.keys()].filter((k) => k.startsWith("key-version/")).length;
+    const before = versions();
+    await expect(rolls(a, roll(["raise-1"], c))).rejects.toThrow(/the roll stays owed/);
+    expect(versions()).toBe(before);
+    a.rest.failOn = null;                                            // CONTROL
+    expect((await rolls(a, roll(["raise-1"], c))).map((r) => r.result)).toEqual(["rolled"]);
+    a.cards.add(c.id);
+    expect(await a.holder.serveUnserved()).toEqual({ parcels: [], owed: 0 });
+  });
+});
+
 describe("sibling successors both stand until a capable writer joins them", () => {
   it("two vessels that roll one raise mint siblings; each keeps its own head; a writer that holds both joins them", async () => {
     const { w, v: [a, b, c] } = await fleet("a", "b", "c");
@@ -415,6 +510,37 @@ describe("sibling successors both stand until a capable writer joins them", () =
     a.shadowed = false;
     const served = await a.holder.serveUnserved();                   // CONTROL: clear again, the debt gets served
     expect("parcels" in served && served.parcels.length).toBe(1);
+  });
+
+  it("UNDER ITS OWN SHADOW A VESSEL HANDS NO KEY ON: `parcelsFor` refuses by name; a seal under a held head, a receipt and a head choice wrap nothing and run", async () => {
+    const { w, v: [a, b, c] } = await fleet("a", "b", "c");
+    const v1 = await seal(a!, "written while clear");
+    const clear = await a!.holder.parcelsFor({ bagId: BAG, reader: c!.id });
+    if (!Array.isArray(clear)) throw new Error("setup: parcels");
+    expect(clear.length).toBe(1);                                    // CONTROL: a clear vessel hands its parcels on
+    a!.shadowed = true;
+    const wraps = w.docs.size;
+    const minted = () => [...a!.rest.values.keys()].filter((k) => k.startsWith("lockbox/") || k.startsWith("key-version/")).length;
+    const before = minted();
+    // REFUSES: a parcel carries a lockbox to a reader, so handing one on hands a key on.
+    expect(said(await a!.holder.parcelsFor({ bagId: BAG, reader: b!.id }))).toBe("own-edge-shadowed");
+    // RUNS: a seal under the head it already holds draws no key and wraps for nobody.
+    const under = await seal(a!, "written under its own shadow");
+    expect(under.body.keyVersion).toBe(v1.body.keyVersion);
+    expect(under.founded).toBeUndefined();
+    expect(under.joined).toBeUndefined();
+    // RUNS: the head choice moves this vessel's own notes alone.
+    expect(await a!.holder.chooseHead({ bagId: BAG, head: v1.body.keyVersion })).toEqual({ founding: v1.founding });
+    expect(minted()).toBe(before);                                   // no lockbox and no key version rested
+    expect(w.docs.size).toBe(wraps);                                 // and nothing got wrapped
+    // RUNS: a shadowed vessel takes what another hand wrapped for it, and opens it; it wraps nothing itself.
+    c!.shadowed = true;
+    for (const [address, bytes] of a!.values) c!.values.set(address, bytes);
+    expect(said(await c!.holder.receive({ parcels: clear, records: await a!.store.records("manifest") }))).toBe("OK");
+    expect(await opens(c!, v1.body.ref)).toBe("written while clear");
+    expect(await opens(c!, under.body.ref)).toBe("written under its own shadow");
+    expect(w.docs.size).toBe(wraps);
+    expect(said(await c!.holder.parcelsFor({ bagId: BAG, reader: b!.id }))).toBe("own-edge-shadowed");
   });
 
   it("HEADS OF UNLIKE SPANS: a writer that holds both refuses the join by name, and the fork keeps showing", async () => {
@@ -615,7 +741,7 @@ describe("a reader counts what it can check: the base rule", () => {
 });
 
 describe("the with-its-past hand-over: an explicit act, under the span's own declaration", () => {
-  it("a holder hands a shareable span to one reader: the reader counts it under the hand-over record and opens its past", async () => {
+  it("a holder hands a shareable span to one reader: the reader counts each version by its own evidence and opens its past", async () => {
     const { w, v: [a] } = await fleet("a");
     const v1 = await seal(a!, "written in a shareable span", BAG, { history: "shareable" });
     counts(w, a!, "raise-1");
@@ -790,6 +916,62 @@ describe("a lockbox and a record deliver nothing they cannot prove", () => {
     expect(reading.foundings[0]!.uncounted).toEqual([{ keyVersion: made.keyVersion, why: "version-conflict" }]);
   });
 
+  /** Rest one lockbox for a successor of `parent` under the founding's own locator, and one key version record
+   *  for each sealed part handed in: every record carries the same clear part, so all share one record id. */
+  async function forgeSuccessor(v: Vessel, w: World, locator: string, span: KeyVersionId, parent: KeyVersionId, privates: readonly Partial<KeyVersionPrivate>[]) {
+    const key = mintContentKey();
+    const keyVersion = keyVersionIdOf(key, BAG);
+    const { wrapLockbox } = await import("../src/lockbox-wrap.js");
+    const wrapped = await wrapLockbox({ payload: { bagId: BAG, locator: locator as never, keyVersion, key }, readers: [...w.group], shore: v.shore });
+    if (!("lockbox" in wrapped)) throw new Error("setup: wrap");
+    await v.store.putLockbox(wrapped.lockbox);
+    for (const secret of privates) {
+      const signed = await signRecord({
+        kind: "key-version", bagId: BAG, key, signer: v.signer,
+        body: { bag: locator as never, keyVersion, parents: [parent], span },
+        private: { cause: { kind: "removal", acts: ["raise-1"] }, history: "closed", joinProofs: [], unserved: [], ...secret },
+      });
+      if (!("record" in signed)) throw new Error(`setup: sign ${signed.refusal}`);
+      expect(readRecord("key-version", signed.record, { bagId: BAG, locator: locator as never, key, standing: { holdsWrite: () => true } })).toHaveProperty("record");
+      await v.store.putRecord(signed.record);
+    }
+    return keyVersion;
+  }
+
+  it("TWO UNLIKE VERIFIED RECORDS UNDER ONE VERSION REFUSE BOTH BEFORE ANY TRANSITION COUNTS: one that fails this reader's evidence still conflicts, whichever of the two fails, and a descendant leaves every reading with them", async () => {
+    // The same key signed twice as a removal: once for a raise, once for another. Each reader's ledger counts
+    // ONE of the two raises, so exactly one record fails its evidence; which one differs between the readers.
+    for (const counted of ["raise-1", "raise-2"]) {
+      const { w, v: [x] } = await fleet(`x-${counted}`);
+      const founded = await seal(x!, "v1");
+      counts(w, x!, counted);
+      const twin = await forgeSuccessor(x!, w, founded.founding, founded.body.keyVersion, founded.body.keyVersion, [{ cause: { kind: "removal", acts: ["raise-1"] } }, { cause: { kind: "removal", acts: ["raise-2"] } }]);
+      expect((await x!.store.records("key-version")).filter((r) => r.body.keyVersion === twin).length).toBe(2);   // both records rest
+      // A descendant of the twin, whose own raise this reader counts.
+      const child = await forgeSuccessor(x!, w, founded.founding, founded.body.keyVersion, twin, [{ cause: { kind: "removal", acts: [counted] } }]);
+      x!.restart();
+      const reading = (await heads(x!)).foundings[0]!;
+      expect(reading.held, counted).toEqual([founded.body.keyVersion]);            // neither record counted, and no descendant
+      expect(reading.heads, counted).toEqual([founded.body.keyVersion]);
+      expect(reading.uncounted, counted).toEqual([{ keyVersion: twin, why: "version-conflict" }, { keyVersion: child, why: "parent-unknown" }].sort((a, b) => (a.keyVersion < b.keyVersion ? -1 : 1)));
+      // The bag continues from the version that descends from neither: the next seal rides the founding.
+      expect((await seal(x!, "written on")).body.keyVersion, counted).toBe(founded.body.keyVersion);
+    }
+    // CONTROL: two records that state ONE fact under one version (signed twice, so their sealed parts differ)
+    // conflict with nothing; the version counts, and so does its descendant.
+    const { w, v: [y] } = await fleet("y");
+    const founded = await seal(y!, "v1");
+    counts(w, y!, "raise-1");
+    const same = await forgeSuccessor(y!, w, founded.founding, founded.body.keyVersion, founded.body.keyVersion, [{}, {}]);
+    expect((await y!.store.records("key-version")).filter((r) => r.body.keyVersion === same).length).toBe(2);
+    const child = await forgeSuccessor(y!, w, founded.founding, founded.body.keyVersion, same, [{}]);
+    y!.restart();
+    const reading = (await heads(y!)).foundings[0]!;
+    expect(reading.held).toEqual([founded.body.keyVersion, same, child].sort());
+    expect(reading.heads).toEqual([child]);
+    expect(reading.uncounted).toEqual([]);
+  });
+
   it("A KEY ENTERS USE ONLY UNDER A COUNTED RECORD: a lockbox with no record opens no value and seals none", async () => {
     const { w, v: [a] } = await fleet("a");
     const made = await forge(a!, w, BAG, {});
@@ -847,6 +1029,158 @@ describe("a lock ends an act in flight, at whichever await it lands", () => {
     // CONTROL: with no lock the same seal answers a sealed body.
     b!.restart();
     expect(said(await b!.holder.sealBlob({ bagId: BAG, plaintext: body("third"), signer: b!.signer }))).toBe("OK");
+  });
+});
+
+describe("a lock that lands between two writes of one act stops every later write", () => {
+  /** Lock the holder as the first write `at` names lands; `after()` answers how many writes rested after it
+   *  (-1: the lock never landed), `puts()` every write the act made. */
+  function lockAt(v: Vessel, at: (kind: string, name: string) => boolean): { after(): number; puts(): number } {
+    const inner = v.rest.put.bind(v.rest);
+    let after = -1, puts = 0;
+    v.rest.put = async (kind, name, bytes) => {
+      await inner(kind, name, bytes);
+      puts += 1;
+      if (after >= 0) after += 1;
+      else if (at(kind, name)) { after = 0; v.holder.lock(); }
+    };
+    return { after: () => after, puts: () => puts };
+  }
+  const never = (): boolean => false;
+
+  it("a seal: a lock at the manifest's write, at the row's, or at the manifest note's rests nothing after it", async () => {
+    const points: Record<string, (kind: string, name: string) => boolean> = {
+      "the manifest": (kind) => kind === "manifest",
+      "the index row": (kind) => kind === "index",
+      "the manifest note": (kind, name) => kind === "own" && name.startsWith("manifest-head."),
+    };
+    for (const [where, at] of Object.entries(points)) {
+      const { v: [a] } = await fleet(`a-${where}`);
+      await seal(a!, "first");
+      const spy = lockAt(a!, at);
+      expect(said(await a!.holder.sealBlob({ bagId: BAG, plaintext: body("second"), signer: a!.signer })), where).toBe("holder-locked");
+      expect(spy.after(), where).toBe(0);
+    }
+    // CONTROL: unlocked, the same seal rests its manifest, its row and both notes.
+    const { v: [b] } = await fleet("b");
+    await seal(b!, "first");
+    const free = lockAt(b!, never);
+    expect(said(await b!.holder.sealBlob({ bagId: BAG, plaintext: body("second"), signer: b!.signer }))).toBe("OK");
+    expect(free.puts()).toBe(4);
+  });
+
+  it("a mint: a lock while the key wraps rests no lockbox, and a lock at the lockbox's write rests no key version record", async () => {
+    const { v: [a] } = await fleet("a");
+    const spy = lockAt(a!, (kind) => kind === "lockbox");
+    expect(said(await a!.holder.sealBlob({ bagId: BAG, plaintext: body("first"), signer: a!.signer }))).toBe("holder-locked");
+    expect(spy.after()).toBe(0);
+    expect([...a!.rest.values.keys()].filter((k) => k.startsWith("key-version/"))).toEqual([]);
+    const { v: [b] } = await fleet("b");
+    const free = lockAt(b!, never);
+    const wrap = b!.shore.wrap.bind(b!.shore);
+    (b!.shore as { wrap: typeof wrap }).wrap = async (args) => { const out = await wrap(args); b!.holder.lock(); return out; };
+    expect(said(await b!.holder.sealBlob({ bagId: BAG, plaintext: body("first"), signer: b!.signer }))).toBe("holder-locked");
+    expect(free.puts()).toBe(0);
+    // CONTROL: unlocked, a founding seal rests its lockbox, its record, the manifest, the row and both notes.
+    const { v: [c] } = await fleet("c");
+    const whole = lockAt(c!, never);
+    expect(said(await c!.holder.sealBlob({ bagId: BAG, plaintext: body("first"), signer: c!.signer }))).toBe("OK");
+    expect(whole.puts()).toBe(6);
+  });
+
+  it("a hand-over: a lock at the first lockbox's write rests no second lockbox, and one at the last lockbox's rests no hand-over record", async () => {
+    const setup = async (name: string) => {
+      const { w, v: [a] } = await fleet(name);
+      await seal(a!, "v1", BAG, { history: "shareable" });
+      counts(w, a!, "raise-1");
+      await rolls(a!, roll(["raise-1"]));
+      const n = await vessel(w, `${name}-n`);
+      introduce(a!, n);
+      return { a: a!, n };
+    };
+    for (const nth of [1, 2]) {
+      const { a, n } = await setup(`a${nth}`);
+      let seen = 0;
+      const spy = lockAt(a, (kind) => kind === "lockbox" && (seen += 1) === nth);
+      expect(said(await a.holder.handOver({ bagId: BAG, reader: n.id, signer: a.signer })), `lockbox ${nth}`).toBe("holder-locked");
+      expect(spy.after(), `lockbox ${nth}`).toBe(0);
+      expect([...a.rest.values.keys()].filter((k) => k.startsWith("hand-over/"))).toEqual([]);
+    }
+    const control = await setup("b");
+    const free = lockAt(control.a, never);
+    expect(said(await control.a.holder.handOver({ bagId: BAG, reader: control.n.id, signer: control.a.signer }))).toBe("OK");
+    expect(free.puts()).toBe(3);                                     // CONTROL: two lockboxes and the record
+  });
+
+  it("a receipt: a lock while the operations ingest rests nothing, and a lock at the lockbox's write, at its record's or at the manifest's rests nothing after it", async () => {
+    const { v: [a, b, c, d, e, f, g] } = await fleet("a", "b", "c", "d", "e", "f", "g");
+    const sealed = await seal(a!, "v1");
+    const parcels = await a!.holder.parcelsFor({ bagId: BAG, reader: b!.id });
+    if (!Array.isArray(parcels)) throw new Error("setup: parcels");
+    const records = await a!.store.records("manifest");
+    const spy = lockAt(b!, (kind) => kind === "lockbox");
+    expect(said(await b!.holder.receive({ parcels, records }))).toBe("holder-locked");
+    expect(spy.after()).toBe(0);
+    expect([...b!.rest.values.keys()].filter((k) => !k.startsWith("lockbox/"))).toEqual([]);
+    const atRecord = lockAt(d!, (kind) => kind === "key-version");
+    expect(said(await d!.holder.receive({ parcels, records }))).toBe("holder-locked");
+    expect(atRecord.after()).toBe(0);
+    const atManifest = lockAt(e!, (kind) => kind === "manifest");
+    expect(said(await e!.holder.receive({ parcels, records }))).toBe("holder-locked");
+    expect(atManifest.after()).toBe(0);
+    const early = lockAt(f!, never);
+    const ingest = f!.shore.ingest.bind(f!.shore);
+    (f!.shore as { ingest: typeof ingest }).ingest = async (ops) => { f!.holder.lock(); await ingest(ops); };
+    expect(said(await f!.holder.receive({ parcels, records }))).toBe("holder-locked");
+    expect(early.puts()).toBe(0);
+    // Two manifests arrive: a lock at the first one's row rests no second row.
+    await seal(a!, "v1 again");
+    const both = await a!.store.records("manifest");
+    expect(both.length).toBe(2);
+    const atRow = lockAt(g!, (kind) => kind === "index");
+    expect(said(await g!.holder.receive({ parcels, records: both }))).toBe("holder-locked");
+    expect(atRow.after()).toBe(0);
+    expect([...g!.rest.values.keys()].filter((k) => k.startsWith("index/")).length).toBe(1);
+    const free = lockAt(c!, never);                                  // CONTROL
+    expect(said(await c!.holder.receive({ parcels, records }))).toBe("OK");
+    expect(free.puts()).toBeGreaterThan(3);                          // the lockbox, its record, the manifest, its row
+    void sealed;
+  });
+
+  it("a service of the unserved: a lock at the lockbox's write rests no served note", async () => {
+    const setup = async (name: string) => {
+      const w = world();
+      const a = await vessel(w, name), c = await vessel(w, `${name}-c`);
+      await seal(a, "founded with c unserved");
+      a.cards.add(c.id);
+      return a;
+    };
+    const a = await setup("a");
+    const spy = lockAt(a, (kind) => kind === "lockbox");
+    expect(said(await a.holder.serveUnserved())).toBe("holder-locked");
+    expect(spy.after()).toBe(0);
+    const b = await setup("b");
+    const free = lockAt(b, never);
+    const served = await b.holder.serveUnserved();
+    expect("parcels" in served && served.parcels.length).toBe(1);
+    expect(free.puts()).toBe(2);                                     // CONTROL: the lockbox and its note
+  });
+
+  it("a head choice: a lock at the first note's write rests no second note", async () => {
+    const setup = async (name: string) => {
+      const { v: [a, b, c] } = await fleet(`${name}-a`, `${name}-b`, `${name}-c`);
+      const fromA = await seal(a!, "a founded"); await seal(b!, "b founded");
+      await carry(a!, c!, BAG); await carry(b!, c!, BAG);
+      return { c: c!, head: fromA.body.keyVersion };
+    };
+    const one = await setup("x");
+    const spy = lockAt(one.c, (kind) => kind === "own");
+    expect(said(await one.c.holder.chooseHead({ bagId: BAG, head: one.head }))).toBe("holder-locked");
+    expect(spy.after()).toBe(0);
+    const two = await setup("y");
+    const free = lockAt(two.c, never);
+    expect(said(await two.c.holder.chooseHead({ bagId: BAG, head: two.head }))).toBe("OK");
+    expect(free.puts()).toBe(2);                                     // CONTROL: the rival's note and the chosen head's
   });
 });
 

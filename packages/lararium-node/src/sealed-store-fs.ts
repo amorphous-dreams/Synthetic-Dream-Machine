@@ -5,8 +5,9 @@
  * tier. Nothing here holds a secret, a name or a key in the clear (`@lararium/mesh` `sealed-store-rest`), so
  * the files rest as plain bytes and a carrier may hold every one.
  *
- * A WRITE LANDS WHOLE OR NOT AT ALL. Each value goes to a temporary file in its own directory, reaches the
- * disk, takes its name by a rename, and the directory's own entry reaches the disk before the write answers.
+ * A WRITE LANDS WHOLE OR NOT AT ALL. Each value goes to a temporary file in its own directory, every byte of
+ * it however many calls the file system takes, reaches the disk, takes its name by a rename, and the directory's own entry reaches the disk before the write answers.
+ * A directory the write had to make reaches the disk the same way, through its parent, before the value does.
  * A stop leaves the earlier state or the whole value. A temporary file carries a name the store's own rule
  * refuses, so a leftover never lists and never reads.
  *
@@ -21,7 +22,7 @@
  */
 import { randomBytes } from "node:crypto";
 import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, rmSync, writeSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { isRestKind, isRestName, restNameHolds, type RestKind, type SealedStoreRest } from "@lararium/mesh";
 import type { ProviderChunkRest } from "@lararium/keyhive";
 
@@ -34,6 +35,28 @@ export function sealedStoreDir(storageDir: string): string {
 function syncDir(dir: string): void {
   const fd = openSync(dir, "r");
   try { fsyncSync(fd); } finally { closeSync(fd); }
+}
+
+/** Make `dir` and every missing directory above it, and flush each new directory's entry: a directory made
+ *  for a first write reaches the disk once its PARENT does, so a stop after the write answers still finds it. */
+function makeDir(dir: string): void {
+  const first = mkdirSync(dir, { recursive: true, mode: 0o700 });
+  if (first === undefined) return;
+  const top = resolve(first);
+  for (let at = resolve(dir); ; at = dirname(at)) {
+    syncDir(dirname(at));
+    if (at === top || dirname(at) === at) return;
+  }
+}
+
+/** Write every byte. One call may take fewer bytes than it got handed, and a rest that answered after a part
+ *  of a lockbox would leave a value sealed under a key no restart opens. */
+function writeWhole(fd: number, bytes: Uint8Array): void {
+  for (let at = 0; at < bytes.length;) {
+    const took = writeSync(fd, bytes, at, bytes.length - at);
+    if (!(took > 0)) throw new Error("sealed-store-fs: the file system took no byte of the value");
+    at += took;
+  }
 }
 
 /** The rest over files. `dir` names the sealed store's own directory (`sealedStoreDir`). */
@@ -52,12 +75,12 @@ export function fsSealedStoreRest(dir: string): SealedStoreRest {
       const target = pathOf(kind, name);
       if (kind !== "own" && existsSync(target) && (restNameHolds(name, readFileSync(target)) || !restNameHolds(name, bytes))) return;
       const shelf = shelfOf(kind);
-      mkdirSync(shelf, { recursive: true, mode: 0o700 });
+      makeDir(shelf);
       // An upper-case lead keeps the temporary name outside the rule every listed name passes.
       const temp = join(shelf, `TMP-${randomBytes(12).toString("hex")}`);
       const fd = openSync(temp, "wx", 0o600);
       try {
-        writeSync(fd, bytes);
+        writeWhole(fd, bytes);
         fsyncSync(fd);
       } catch (err) {
         closeSync(fd);
@@ -97,10 +120,10 @@ export function fsProviderChunkRest(dir: string): ProviderChunkRest {
   return {
     async put(shelf, refHex, ciphertext) {
       const home = join(dir, bare(shelf));
-      mkdirSync(home, { recursive: true, mode: 0o700 });
+      makeDir(home);
       const temp = join(home, `TMP-${randomBytes(12).toString("hex")}`);
       const fd = openSync(temp, "wx", 0o600);
-      try { writeSync(fd, ciphertext); fsyncSync(fd); }
+      try { writeWhole(fd, ciphertext); fsyncSync(fd); }
       catch (err) { closeSync(fd); rmSync(temp, { force: true }); throw err; }
       closeSync(fd);
       try { renameSync(temp, join(home, bare(refHex))); } catch (err) { rmSync(temp, { force: true }); throw err; }
