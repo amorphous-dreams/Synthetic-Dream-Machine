@@ -36,6 +36,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/memory-store
  */
 
+import { assertStorableTitle } from "@lararium/mesh/lar-uris";
 import type {
   LarTiddlerRecord,
   LarTiddlerChange,
@@ -72,11 +73,14 @@ export class MemoryTiddlerStore implements LarTiddlerStore {
   }
 
   async put(record: LarTiddlerRecord, origin: ChangeOrigin, _options?: LarWriteOptions): Promise<void> {
+    // The title door: one law for every store that holds a title (`@lararium/mesh` `title-law.ts`).
+    assertStorableTitle(record.tiddler.title);
     this._records.set(record.tiddler.title, record);
     this._emit({ title: record.tiddler.title, record, origin, ...(this.bagId !== undefined ? { bag: this.bagId } : {}) });
   }
 
   async tombstone(title: string, origin: ChangeOrigin, _options?: LarWriteOptions): Promise<void> {
+    assertStorableTitle(title);   // a tombstone against an absent title mints the key
     const existing = this._records.get(title);
     const dead: LarTiddlerRecord = {
       ...(existing ?? { tiddler: { title } }),

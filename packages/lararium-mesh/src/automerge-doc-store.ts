@@ -25,6 +25,7 @@
  * retain concurrent values as field conflicts.
  */
 
+import { assertStorableTitle } from "./title-law.js";
 import { decodeHeads, encodeHeads, type DocHandle } from "@automerge/automerge-repo";
 import { hasHeads } from "@automerge/automerge";
 import type { LarTiddlerRecord, LarTiddlerStore, LarTiddlerChange, ChangeOrigin } from "./tiddler-store.js";
@@ -314,6 +315,11 @@ export class AutomergeDocStore implements LarTiddlerStore {
     origin:     ChangeOrigin,
     options?:   { bag?: string; base?: readonly string[] },
   ): Promise<void> {
+    // THE TITLE DOOR. Every durable title passes this write: a put, a family, a tombstone (a tombstone
+    // against an absent title MINTS the key). A session-form URI never stands as one, so the whole family
+    // refuses by name before any byte moves (`title-law.ts`).
+    for (const record of puts) assertStorableTitle(record.tiddler.title);
+    for (const title of tombstones) assertStorableTitle(title);
     const docNow = this.handle.doc();
     const requestedBase = options?.base;
     let currentHeads: readonly string[] | null = null;

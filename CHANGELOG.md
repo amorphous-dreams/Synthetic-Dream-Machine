@@ -7,6 +7,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **A title that names a speaker refuses.** A write under a `lar://alias:grant@host/…` title refuses with `session-form-title` at every door (`lares meme put`, ingest, LOAD, CREATE, a wiki save); the same URI in a record's text lands untouched, and a hostful `lar://host/…` title stands.
 - **A first seed leaves tracked files untouched.** A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so `lares vessel seed` writes no tracked file and a second seed submits nothing. A later change writes that one carrier in its canonical render.
 - **Markdown that shows a carrier head keeps its file type.** A `.md` file beside a `.meta` sidecar ingests as markdown with every sidecar field and projects back as `.md`.
 - **Every refused carrier gets named.** `lares ingest --apply` prints each refused or conflicting carrier with its reason, however many carriers the wave holds, and asks the island again in pages where one answer cannot hold every row. A tripped mass-delete brake ends the run non-zero under its own name, `lares watch` ends non-zero while any carrier or deletion it carried stays unsettled, and `lares act LOAD` reports no `unknown` tally.

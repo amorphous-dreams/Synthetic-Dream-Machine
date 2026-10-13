@@ -65,6 +65,7 @@ import { memeticWikitextDeserializer, QUOTEBLOCKED_FIELD, TORN_FIELD } from "./d
 import type { TiddlerFields } from "./deserializer.js";
 import { frameAlt, maskedExec } from "@lararium/memetic-frame";
 import { isCarrierType } from "@lararium/mesh/carrier-type";
+import { SESSION_FORM_TITLE_CODE, assertStorableTitle, storableTitleFault } from "@lararium/mesh/lar-uris";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { decideIngest } from "./ingest-gate.js";
 import { placeMeme } from "./place-meme.js";
@@ -676,6 +677,9 @@ async function executeCREATE(action: CreateAction, access: BagAccess, opts: Acti
   if (!registryUrl) {
     throw new Error(`action-handler/CREATE: the reach carries no ${action.plane} registry url`);
   }
+  // The title law, ahead of any mint: a bag's address stands as a registry title, and a refusal after the
+  // mint would leave a fresh document and its cap behind a row that never lands.
+  assertStorableTitle(action.bag);
   const registry = makeCatalogAccessor(reach.repo, registryUrl);
   // Already-stood check FIRST — a registered bag whose own doc carries no
   // retirement answers success with its existing doc, never a double-mint and
@@ -916,6 +920,12 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
       const title = typeof refusedField["title"] === "string" ? refusedField["title"] as string : carrier.title ?? "(carrier)";
       throw new NeverProjectedPathRefusal(carrier.title ?? title, title);
     }
+    // The title law, ahead of any slice: a LOAD lands in slices, so the refusal rides before the first one
+    // and no family of the wave lands beside it.
+    for (const fields of fieldsList) {
+      const title = typeof fields["title"] === "string" && fields["title"] ? fields["title"] as string : carrier.title ?? "";
+      assertStorableTitle(title);
+    }
     warnings.push(...shoreWarnings(fieldsList));
     const family: LarTiddlerRecord[] = [];
     for (const fields of fieldsList) {
@@ -967,6 +977,20 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
  * `IngestOps`); the refuse leg fires only where a family grades error (memetic), riding
  * dormant for native (a native deserialize throws rather than grading).
  */
+/**
+ * THE TITLE LAW, read ahead of the write. The store's door refuses a session-form title by throwing, and a
+ * throw inside a wave would end the wave with its earlier carriers landed. So a reactor that answers per
+ * carrier asks the same law first (`storableTitleFault`, `@lararium/mesh` `title-law.ts`) and names the
+ * refusal in that carrier's row; the door still stands behind it.
+ */
+function sessionFormRow(uri: string, titles: readonly string[]): Record<string, unknown> | null {
+  for (const title of [uri, ...titles]) {
+    const fault = storableTitleFault(title);
+    if (fault !== null) return { uri, decision: "refuse", code: SESSION_FORM_TITLE_CODE, reason: fault, warnings: [fault] };
+  }
+  return null;
+}
+
 /** The row field naming the render the records hold after a decision (the base's records side). */
 function recordsSide(canonicalHash: string | undefined): { canonicalHash?: string } {
   return canonicalHash ? { canonicalHash } : {};
@@ -1017,7 +1041,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       tombstoneUris = decision.tombstones;
       // A re-link never re-homes a record onto an address whose records never project: that carrier falls to
       // the gate below and refuses by name, and its vanished source stands as it stood.
-      renames = renames.filter((r) => !neverProjects(r.toUri));
+      // A rename onto a session-form address re-homes nothing: that carrier falls to the gate below and
+      // refuses by name (`title-law.ts`).
+      renames = renames.filter((r) => !neverProjects(r.toUri) && storableTitleFault(r.toUri) === null);
       // A RE-LINK RE-HOMES RECORDS THAT STAND. A vanished source that holds no live record leaves nothing
       // to re-home: answered as a rename, the target would skip its own ingest, land no record, and the
       // gesture would still pin a base for it. So such a pair reads as no rename, and the target carrier
@@ -1054,6 +1080,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       results.push(neverProjectedRow(uri, carrier.file, uri));
       continue;
     }
+    // The carrier's own address, ahead of every write path below (a skinny handle lands before any parse).
+    const sessionFormCarrier = sessionFormRow(uri, []);
+    if (sessionFormCarrier) { results.push(sessionFormCarrier); continue; }
     // Scenario B: an OVERSIZED RAW shard rides a skinny handle — the body stays in the cid/
     // tier, never materializing as a CRDT scalar-string (the automerge OOM wall). The gate
     // runs at content-address grain: the handle's cid IS its render, so an unchanged cid
@@ -1122,6 +1151,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         results.push(neverProjectedRow(uri, carrier.file, title));
         continue;
       }
+      const sessionForm = sessionFormRow(uri, parsedFields.map((fields) => String(fields["title"] ?? uri)));
+      if (sessionForm) { results.push(sessionForm); continue; }
       // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
       // The gesture's Synced-tree hash rides as the base the gate merges against.
       const placed = await placeMeme(
@@ -1180,6 +1211,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         results.push(neverProjectedRow(uri, carrier.file, title));
         continue;
       }
+      const sessionForm = sessionFormRow(uri, freshRecords.map((record) => String(record["title"] ?? uri)));
+      if (sessionForm) { results.push(sessionForm); continue; }
       // Pack detection: any member whose title is NOT the carrier's own loci URI
       // came from a bundle (the file's tiddlers self-title). Record the WHOLE
       // membership → the pack file path, so REPACK can re-collect it and the

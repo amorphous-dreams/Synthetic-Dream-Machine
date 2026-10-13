@@ -78,6 +78,8 @@ Hostful and hostless both stand lawful ''as titles'' in any bag on any layer. Ev
 
 ⚠ ''A userinfo-bearing URI never stands as a TITLE, and reads fine everywhere else.'' A title stands as a KEY, and a key takes no tier, no redaction, and no tombstone — a tombstone marks a record deleted and leaves its key standing. So `alias × grant × host` frozen into a title replicates to every peer and outlives the grant it names (`lar-uri#/security`). A ''body'' takes all three controls, so the same URI in a record's ''text'' — a quoted turn, a link, a captured chat line — carries no such hazard and stands lawful. A captured exchange turn therefore crosses into canon carrying its speaker-aim URIs ''in its content'', titled by an address that names no speaker.
 
+''One door holds it.'' Every record a document rests takes the stored shape, and that constructor refuses a title whose authority carries a userinfo, under the name `session-form-title` (`packages/lararium-mesh/src/title-law.ts`, `stored-record.ts`). A store asserts once more ahead of its change, over every put and every tombstone, since a tombstone against an absent title mints the key; a family that holds one such title refuses whole. The test reads the title slot by parse and never the text: the first literal `@` inside the authority, or a percent-encoded one hiding there. No verb carries a check of its own: `meme put`, LOAD, CREATE and a wiki save each refuse because each writes through that door, INGEST names the refusal in that carrier's row so its siblings land, and the wiki shore raises its `unsaved` alert and keeps the record where its author still sees it. A session-form title that arrives by a peer's change merges beneath the door; the red register declares that law unbuilt (`packages/lararium-mesh/tests/unbuilt-laws.test.ts`). Witnesses: `packages/lararium-mesh/tests/title-law.test.ts` · `packages/lararium-tw5/tests/session-form-title.test.ts`.
+
 ⚠ ''The address form carries no residency signal, so a reader derives none from it.'' Only the envelope answers which bag holds a record; only a query over surfaces (`listBagsHolding`, catalog holdings, recipe order) answers which bags hold an address at all. A carrier's own address tells a reader nothing about whether a promotion ran, which leaves ''the receipt carrying the whole burden'' of recording that one did.
 
 !!! The live layer holds TWO durabilities, and only one of them syncs
@@ -203,6 +205,6 @@ If the answers remain vague, the claim should stay as session pressure.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O61DtLbpNsL6x4QLyPApPQcarY8IkWdnFoF2-xB5EQg
+<<^ code="&#x0003;">>ni:///sha-256;ZzYCwj3vcnmQlLNEvTlfK1ESHPshB-XhIxC8GInF8mw
 
 <<^ code="&#x0004;" -> to="?">>

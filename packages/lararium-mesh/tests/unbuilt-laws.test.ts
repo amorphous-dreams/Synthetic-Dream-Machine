@@ -70,6 +70,10 @@ describe("④ promotion into canon", () => {
     expect(crossingDirection({ from: "veil", to: "public" }).direction).toBe("outward");
   });
 
+  test.skip("A SESSION-FORM TITLE ARRIVING BY SYNC SURFACES TO THE OPERATOR — DEFERRED: lar-uri#/security binds a userinfo-bearing title that reaches stable storage to surface as a violation. The store's WRITE door refuses one by name (`title-law.ts`, every put, family and tombstone). A record a PEER's change carries merges into the document beneath that door, so a session-form key a peer wrote arrives unremarked. Wakes when the sync boundary gains a rail: a reader over an arriving change that names each session-form title on the ward-alert rail, with a durable audit row, and leaves the record where it stands.", () => {
+    expect(Object.keys(mesh)).toContain("sessionFormTitlesArrivedIn");
+  });
+
   test.skip("A PROMOTION EMITS A PROPOSAL AND A RECEIPT — DEFERRED: tiddler-store states 'canon promotion is disabled until a Keyhive-backed proposal/receipt graph exists'. The cap gate PERMITS the act (every verb demands admin on the destination bag) and nothing RECORDS it, so a promotion into canon leaves no artifact a later reader can audit or revoke against. Keyhive alpha.8 supplies the delegation surface this was waiting on", () => {
     expect(Object.keys(mesh)).toContain("promotionReceipt");
   });

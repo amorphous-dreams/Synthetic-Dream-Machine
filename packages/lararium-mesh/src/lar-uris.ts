@@ -602,3 +602,7 @@ export const BAG_IDS = {
   lares:      LARES_DOC_URI,
   crossroads: CROSSROADS_DOC_URI,
 } as const;
+
+// THE TITLE LAW rides this module's door: a session-form URI never stands as a storage key
+// (`title-law.ts`). A pure reader (`@lararium/mesh/lar-uris`) and the barrel both reach it here.
+export { SESSION_FORM_TITLE_CODE, SessionFormTitleRefusal, assertStorableTitle, larUserinfoOf, storableTitleFault } from "./title-law.js";
