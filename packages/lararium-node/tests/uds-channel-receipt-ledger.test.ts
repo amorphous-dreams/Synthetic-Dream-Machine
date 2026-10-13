@@ -629,7 +629,11 @@ describe("the receipt ring bounds BYTES as well as count", () => {
       return c;
     };
     let boot = 0;
-    const ledgerAt = (ringBytes: number, ring = 100) => { const c = composite(); return { ledger: new FactLedger(c, repo, ring, ++boot, ringBytes), composite: c }; };
+    const ledgerAt = (ringBytes: number, ring = 100) => {
+      const c = composite();
+      const faults: string[] = [];
+      return { ledger: new FactLedger(c, repo, ring, ++boot, ringBytes, (line) => faults.push(line)), composite: c, faults };
+    };
     return { repo, daemonHandle, workingHandle, ledgerAt };
   }
   type Booted = ReturnType<ReturnType<typeof stores>["ledgerAt"]>;
@@ -849,15 +853,20 @@ describe("the receipt ring bounds BYTES as well as count", () => {
       if (refused++ === 0) throw new Error("a synthetic store fault");
       return tombstone(...args);
     };
-    await expect(land(b, 3)).rejects.toThrow("a synthetic store fault");
+    // The pass fails at the body. The act that started it stands: the third request landed, and the fault got said.
+    await land(b, 3);
     expect(refused).toBe(1);
+    expect(b.faults).toHaveLength(1);
+    expect(b.faults[0]).toContain("a synthetic store fault");
+    expect(await stateOf(b, 3)).toBe("done");
     // The oldest body still stands, so its fact still reads landed, in the store as in the ledger.
     expect(await keptOutcome(b, 1)).toBe(true);
     const stored = plainRecord(s.workingHandle.doc()!.tiddlers[`${RECEIPT_FACT_URI_PREFIX}${ID(1)}`]!).tiddler as Record<string, unknown>;
     expect(stored["state"]).toBe("done");
     expect(await stateOf(b, 1)).toBe("done");
-    // The fault ended one act and no more: the next act takes its turn, and its pass finishes the eviction.
+    // The next act's pass finishes the eviction, and says nothing more.
     await land(b, 4);
+    expect(b.faults).toHaveLength(1);
     expect(await Promise.all([1, 2, 3, 4].map((n) => stateOf(b, n)))).toEqual(["evicted", "evicted", "done", "done"]);
     expect(await Promise.all([1, 2, 3, 4].map((n) => keptOutcome(b, n)))).toEqual([false, false, true, true]);
     await s.repo.shutdown();
@@ -874,13 +883,35 @@ describe("the receipt ring bounds BYTES as well as count", () => {
       if (refused++ === 0) throw new Error("a synthetic store fault");
       return tombstone(...args);
     };
-    // The third request commits, and the count pass it starts fails at the oldest body.
-    await expect(b.ledger.arbitrate(ID(3), DIGEST(3))).rejects.toThrow("a synthetic store fault");
+    // The third request commits, and the count pass it starts fails at the oldest body. THE COMMIT STANDS AND ITS
+    // CALLER HEARS "run": a ring fault never refuses an act whose fact already landed.
+    expect(await b.ledger.arbitrate(ID(3), DIGEST(3))).toEqual({ verdict: "run" });
+    expect(b.faults).toHaveLength(1);
     expect([await stateOf(b, 1), await keptOutcome(b, 1)]).toEqual(["done", true]);
     // The next act's pass takes the same victim up, and the ring comes down to its count.
     expect((await b.ledger.arbitrate(ID(4), DIGEST(4))).verdict).toBe("run");
     expect(await Promise.all([1, 2, 3, 4].map((n) => stateOf(b, n)))).toEqual(["evicted", "evicted", "committed", "committed"]);
     expect([await keptOutcome(b, 1), await keptOutcome(b, 2)]).toEqual([false, false]);
+    await s.repo.shutdown();
+  });
+
+  test("a boot whose first pass fails still stands: the ledger seeds, answers, and takes the pass up at its next act", async () => {
+    const s = stores();
+    const wide = s.ledgerAt(WEIGHT * 10);
+    for (const n of [1, 2, 3]) await land(wide, n);
+    const tight = s.ledgerAt(Math.floor(WEIGHT * 1.5));
+    const tombstone = tight.composite.tombstoneInBag.bind(tight.composite);
+    let refused = 0;
+    tight.composite.tombstoneInBag = async (...args: Parameters<typeof tombstone>) => {
+      if (refused++ === 0) throw new Error("a synthetic store fault");
+      return tombstone(...args);
+    };
+    // The seed's own pass fails. The ledger reads every fact as it stood, and refuses nothing for it.
+    expect(await Promise.all([1, 2, 3].map((n) => stateOf(tight, n)))).toEqual(["done", "done", "done"]);
+    expect(tight.faults).toHaveLength(1);
+    expect((await tight.ledger.arbitrate(ID(4), DIGEST(4))).verdict).toBe("run");   // and the next act's pass brings it down
+    expect(await Promise.all([1, 2, 3, 4].map((n) => stateOf(tight, n)))).toEqual(["evicted", "evicted", "done", "committed"]);
+    expect(tight.faults).toHaveLength(1);
     await s.repo.shutdown();
   });
 

@@ -211,7 +211,20 @@ export class FactLedger {
     private readonly ring: number,
     private readonly bootEpoch: number,
     private readonly ringBytes: number = RECEIPT_RING_BYTES_DEFAULT,
+    /** Where a ring pass that failed says so. The act that started the pass stands either way. */
+    private readonly onRingFault: (line: string) => void = () => { /* quiet */ },
   ) {}
+
+  /**
+   * THE RING TENDS; IT NEVER DECIDES. A pass runs after an act already wrote and flushed its own fact, so a pass
+   * that fails must not fail that act: a commit whose caller heard a refusal would stand durable and never run,
+   * and a seed that threw would refuse every act for the life of the boot. The fault gets said once per pass,
+   * the victim stays where it stood, and the next pass takes it up again.
+   */
+  private async tend(justLanded?: string): Promise<void> {
+    try { await this.evictIfNeeded(justLanded); }
+    catch (e) { this.onRingFault(`receipt ring pass failed, and the next act's pass retries it: ${e instanceof Error ? e.message : String(e)}`); }
+  }
 
   /** The end of the last write this ledger began. Every act that changes a fact, a body or the tally takes its
    *  turn behind it. */
@@ -311,7 +324,7 @@ export class FactLedger {
       for (const fact of facts) { this.cache.set(fact.requestId, fact); this.order.push(fact.requestId); this.hold(fact); }
       this.nextSeq = maxRawSeq + 1;
       // A boot under tighter bounds than the last brings the ledger down to them before it answers anything.
-      await this.evictIfNeeded();
+      await this.tend();
     })();
     return this.seeded;
   }
@@ -344,7 +357,7 @@ export class FactLedger {
     this.cache.set(fact.requestId, full);
     this.order.push(fact.requestId);
     this.hold(full);
-    await this.evictIfNeeded(fact.requestId);
+    await this.tend(fact.requestId);
     return full;
   }
 
@@ -442,7 +455,7 @@ export class FactLedger {
         await this.repo.flush();
         this.cache.set(requestId, updated);
         this.hold(updated);
-        await this.evictIfNeeded(requestId);
+        await this.tend(requestId);
         return;
       }
       if (inputDigest === undefined) {
@@ -632,7 +645,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   // receipt-fact tiddler this channel alone writes; a restart reads the SAME fact a prior process
   // wrote, closing H1R (a same-id reuse re-running after restart) and H4 (a cancelled id's
   // abandonment not surviving one).
-  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT);
+  const ledger = new FactLedger(composite, opts.repo, opts.ring ?? RECEIPT_RING_DEFAULT, claim.bootEpoch, opts.ringBytes ?? RECEIPT_RING_BYTES_DEFAULT, log);
 
   const readOutcomeFor = async (requestId: string): Promise<Record<string, unknown> | null> => {
     const event = await composite.get(`${OUTCOME_URI_PREFIX}${requestId}`);
