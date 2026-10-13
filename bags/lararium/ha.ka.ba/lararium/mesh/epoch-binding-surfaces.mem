@@ -12,7 +12,7 @@ manao      = 16
 manaoio    = 15
 namespace  = "&#x2695;"
 revised-on = "2026-08-10"
-role       = "WHAT A DEPENDENCY BUMP COSTS AN ALREADY-FOUNDED NEXUS — the five surfaces that bind to an epoch, measured rather than assumed. The engine CID is NOT the only one: hearthTrueName rides INSIDE every signed device-delegation preimage, and the pluginsCid tracks blobs built from THIS REPO'S OWN SOURCE. CORRECTED 2026-08-09 against the code, replacing this meme's own earlier over-claim: the pluginsCid rides as a LOCAL build-time integrity witness, never a membership criterion — the epoch binds to the ENGINE alone (hearthTrueName = engineCid, the slow ratchet), and the served-plugin layer composes per-operator beneath it on its own fast ratchet. Measured 2026-08-08: a runtime dep bump (automerge · noble · ws) touches exactly ONE surface (the on-disk serde, cured identity-safe by `lares vessel rite rebuild`) and moves NO epoch binding, because the engine blob is vendored TW5 and the built plugin carries zero automerge references. COLLAPSED 2026-08-10: the word names ONE mechanism — a monotone frontier that only rolls forward — in TWO carriers. An INTEGER max-register held as per-writer slots where the writer-set is fixed (`epoch-lease`; grants bind with `boundEpoch`), and a HASH-LINKED chain head where the writer-set itself rotates (`sealLineage`, head `sealEpochCid`). The third draft shape, a rolling WINDOW of markers for a vessel's raise, REFUTED: a set cannot answer //is this newer//, its far end hides a retention policy, and a list of valid markers is a roster of moments. A raise ends by NON-RENEWAL like every other grant"
+role       = "WHAT A DEPENDENCY BUMP COSTS AN ALREADY-FOUNDED NEXUS — the five surfaces that bind to an epoch, measured rather than assumed. The engine CID is NOT the only one: hearthTrueName rides INSIDE every signed device-delegation preimage, and the pluginsCid tracks blobs built from THIS REPO'S OWN SOURCE. CORRECTED 2026-08-09 against the code, replacing this meme's own earlier over-claim: the pluginsCid rides as a LOCAL build-time integrity witness, never a membership criterion — the epoch binds to the ENGINE alone (hearthTrueName = engineCid, the slow ratchet), and the served-plugin layer composes per-operator beneath it on its own fast ratchet. Measured 2026-08-08: a runtime dep bump (automerge · noble · ws) touches exactly ONE surface (the on-disk serde, cured identity-safe by `lares vessel rite rebuild`) and moves NO epoch binding, because the engine blob is vendored TW5 and the built plugin carries zero automerge references. COLLAPSED 2026-08-10: the word names ONE mechanism — a monotone frontier that only rolls forward — in TWO carriers. An INTEGER max-register held as per-writer slots where the writer-set is fixed (`epoch-lease`; grants bind with `boundEpoch`), and a HASH-LINKED chain head where the writer-set itself rotates (`sealLineage`, head `sealEpochCid`). The third draft shape, a rolling WINDOW of markers for a vessel's raise, REFUTED: a set cannot answer //is this newer//, its far end hides a retention policy, and a list of valid markers makes a roster of moments. A raise ends by NON-RENEWAL like every other grant"
 tags       = ["mesh/genesis-doc", "mesh/kahu"]
 title      = "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces"
 type       = "text/memetic-wikitext+tiddlywiki"
@@ -47,15 +47,15 @@ a wrong answer here reads identically to a right one until a founding breaks.
 
 !!! ★ ONE MECHANISM — A MONOTONE FRONTIER THAT ONLY ROLLS FORWARD ★
 
-''The word carried three shapes for a while, and two of them were the same mechanism wearing different clothes.'' Named, so nobody re-splits them:
+''Three candidate shapes contend for the word; two name the same mechanism wearing different clothes.'' Named, so nobody re-splits them:
 
 | carrier | what rolls it | why this carrier |
-| ''an INTEGER max-register, per-writer slots'' | any writer renewing | the writer-set is FIXED, so a number orders it. `epoch-lease` folds the slots by max; `device-delegation` binds with `boundEpoch` and goes stale when the fold rolls past it |
-| ''a HASH-LINKED chain head'' | the kahu quorum, at a seat or rotate ceremony | the writer-set ITSELF rotates, so no number the old set could write would bind the new one. Each link names its parent, so the order is cryptographic rather than numeric (`sealLineage`, head = `sealEpochCid`) |
+| ''an INTEGER max-register, per-writer slots'' | any writer renewing | the writer-set stays FIXED, so a number orders it. `epoch-lease` folds the slots by max; `device-delegation` binds with `boundEpoch` and goes stale when the fold rolls past it |
+| ''a HASH-LINKED chain head'' | the kahu quorum, at a seat or rotate ceremony | the writer-set ITSELF rotates, so no number the old set could write would bind the new one. Each link names its parent, so the order runs cryptographic rather than numeric (`sealLineage`, head = `sealEpochCid`) |
 
-''Same law, two carriers: a value that only moves forward, and a grant that goes stale when it moves past.'' The chain is the max-register at the charter grain — where what changes is //who may roll it//, which a plain counter cannot express.
+''Same law, two carriers: a value that only moves forward, and a grant that goes stale when it moves past.'' The chain enacts the max-register at the charter grain — where //who may roll it// changes, which a plain counter cannot express.
 
-!!!! Whose word is it ~ the unblur that has to come first
+!!!! Whose word ~ the unblur that has to come first
 
 ''Before asking what a shape does, ask who owns the word.'' A word this house mints, it may rule; a word a dependency owns, it MUST NOT redefine — it qualifies at the shore and translates, because redefining an upstream term silently forks the reader's understanding of the upstream's own docs.
 
@@ -63,28 +63,28 @@ a wrong answer here reads identically to a right one until a founding breaks.
 | ''epoch'' (bare) | ''ours'' | the monotone fencing frontier — `epoch-lease`, bound by `boundEpoch` | RESERVED. Bare //epoch// names this and nothing else (the rule `epoch-handlers` already set) |
 | ''seal epoch'' | ''ours'', shape from KERI/TUF | the charter's hash-linked lineage, head = `sealEpochCid` | always QUALIFIED. Same law as the fence, at a grain where the writer-set itself rotates |
 | ''engine epoch'' / ''kāhuli epoch'' | ''ours'' | the `hearthTrueName` = `engineCid` roll — a hearth's forward-rebind onto a new engine content-CID inside its Nexus's rolling window (the kāhuli motion) | always QUALIFIED. It names the PLACE half rolling forward, NEVER the bare //epoch// (the lease frontier); a grep for the fence reads past it |
-| ''grammar epoch'' | ''ours'', marked to RETIRE | the `grammarCid` roll under `nexus kahuli grammar` (ʻōlelo kāhuli, the overturned-grammar state) — a code surface, never a ratchet the grammar holds; read at most as a hint of which formal-register snapshot a carrier was written against | RETIRING. The grammar holds no versions: it lives and drifts by use, and the corpus-kahu curate it (kahu#/contract). `grammarCid`, this word and `kahuli grammar` retire in code, owed pending a scout's measurement of their consumers. It binds no membership: the Nexus's engine window decides who may talk. An operator's own `pluginsCid` collection names no epoch here at all |
+| ''grammar epoch'' | ''ours'', marked to RETIRE | the `grammarCid` roll under `nexus kahuli grammar` (ʻōlelo kāhuli, the overturned-grammar state) — a code surface, never a ratchet the grammar holds; read at most as a hint of which formal-register snapshot a carrier followed | RETIRING. The grammar holds no versions: it lives and drifts by use, and the corpus-kahu curate it (kahu#/contract). `grammarCid`, this word and `kahuli grammar` retire in code, owed pending a scout's measurement of their consumers. It binds no membership: the Nexus's engine window decides who may talk. An operator's own `pluginsCid` collection names no epoch here at all |
 | ''CGKA epoch'' | ''Keyhive / BeeKEM'', upstream MLS RFC 9420 | a group-key generation; concurrent rolls ''merge by BLANKING'' and hold NO root secret until a later non-concurrent commit | NEVER ours to rule. Keeps its upstream spelling, always qualified. A max-register picks a winner and this does not — carrying our fence onto it costs FORWARD SECRECY (cabal-realm#the-tie-break) |
 | ''compaction epoch'' | ''DXOS'', borrowed for `bag-compact` | a snapshot-restart that cuts history behind | always QUALIFIED. It bounds //state-history growth//, never //who may act// — a cut, not a fence |
-| ''epoch (ms)'' | ''POSIX'' | a time ORIGIN — 1970, and a wall-clock offset from it | NOT SPENT HERE. Our wall-clock fields read `POSIX ms`, because a reader meeting both spellings in one file has to guess which authority a number carries — and one of them is the global now this house refuses |
+| ''epoch (ms)'' | ''POSIX'' | a time ORIGIN — 1970, and a wall-clock offset from it | NOT SPENT HERE. Our wall-clock fields read `POSIX ms`, because a reader meeting both spellings in one file has to guess which authority a number carries — and one of them names the global now this house refuses |
 | ''L4 Theme / strategic epoch'' | ''ours'' (FfzClock) | a rhythmic BAND name, unbounded | pure homonym. Names no mechanism; a grep for the fence should read past it |
 
-''The test that separates them in one question: does the fold pick a WINNER, or blank both paths?'' Max-register and chain-head both pick; CGKA blanks; compaction picks nothing because it is not a fold at all.
+''The test that separates them in one question: does the fold pick a WINNER, or blank both paths?'' Max-register and chain-head both pick; CGKA blanks; compaction picks nothing because it performs no fold at all.
 
-''And a lease rides two instruments, not one'' — the epoch-counter for its VALUE, FfzClock for its CADENCE (ffz-clock#the-two-instruments); how fast the frontier SHOULD roll is paced to the adversary's measured creep, never to convenience (ffz-mesh-timing#the-primary-clock).
+''And a lease rides two instruments, not one'' — the epoch-counter for its VALUE, FfzClock for its CADENCE (ffz-clock#the-two-instruments); the adversary's measured creep paces how fast the frontier SHOULD roll, never convenience (ffz-mesh-timing#the-primary-clock).
 
-''AND THE THIRD SHAPE DIED.'' A vessel's RAISE briefly carried a rolling WINDOW of markers — a moving set, per-Nexus, entered as the Nexus traded and falling off the far end. It refuted on three counts, each fatal alone:
+''AND THE THIRD SHAPE DIED.'' A rolling WINDOW of markers for a vessel's RAISE — a moving set, per-Nexus, entered as the Nexus trades and falling off the far end — stands REFUTED on three counts, each fatal alone:
 * ''a set answers //is this listed//, never //is this newer//'', so a partitioned island cannot reason about it locally — the one property a causal island needs most.
 * ''whatever falls off the far end encodes a retention policy nobody wrote down'', and a count-based lifetime tracks the Nexus's own tempo: a quiet Nexus expires nothing, a busy one expires fast, and the slowest peer becomes everyone's replay surface. In a totally-ordered chain that costs LIVENESS; in a mesh it costs SAFETY.
-* ''a list of valid markers IS a roster of moments.'' This house holds no rosters.
+* ''a list of valid markers MAKES a roster of moments.'' This house holds no rosters.
 
-A raise is an ordinary capability grant that ends by ''NON-RENEWAL'', which the house already does everywhere else. So `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that every device delegation already makes. ''Read it as: the Nexus is the resource, and its lease epoch is the fence.''
+A raise stands as an ordinary capability grant that ends by ''NON-RENEWAL'', which the house does everywhere else. So `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that every device delegation already makes. ''Read it as: the Nexus stands as the resource, and its lease epoch as the fence.''
 
-The receiver-side per-peer window (IPsec-shaped, evaluated locally, `undefined` at the edge) stays available for ''anti-replay on a wire'' — packet sequence numbers, where a set is the right instrument. It never governs standing.
+The receiver-side per-peer window (IPsec-shaped, evaluated locally, `undefined` at the edge) stays available for ''anti-replay on a wire'' — packet sequence numbers, where a set serves as the right instrument. It never governs standing.
 
 !!!! Prior art ~ the field built this discipline, and named the grave
 
-''A monotone forward frontier is a TAGGING DISCIPLINE the deployed field arrives at independently'' — recorded here as evergreen prior-art, never as an advance owed: the engine-advance shape stays `mu`, pending its own recovery.
+''The deployed field arrives independently at a monotone forward frontier as a TAGGING DISCIPLINE'' — recorded here as evergreen prior-art, never as an advance owed: the engine-advance shape stays `mu`, pending its own recovery.
 
 * ''Veilid `CryptoKind`'' fourcc-tagged keys (VLD0=Ed25519, VLD1=ML-DSA): "every new version is supported alongside the old ones," a separate routing table per cryptosystem, reads auto-select, writes default to newest (veilid.com/how-it-works/cryptography). Version each unit, route by its tag, both coexist.
 * ''UCAN'' per-subspec versioned envelope tags (`ucan/dlg@1.0.0`) "enable future protocol evolution without flag-days."
@@ -93,42 +93,40 @@ The receiver-side per-peer window (IPsec-shaped, evaluated locally, `undefined` 
 * ''DXOS epochs'': peers cooperatively agree a new epoch that collapses history into a compact baseline without breaking the running stream — the borrowed compaction epoch, at source.
 * ''BeeKEM (Keyhive)'' at primary source (inkandswitch.com/keyhive/notebook): concurrent CGKA rolls ''blank-and-merge rather than pick a winner'', and κ trades forward secrecy for concurrent-secret access — exactly the ruling that carrying a max-register fence onto a CGKA epoch costs forward secrecy (`cabal-realm#the-tie-break`).
 
-''Sedimentree confirms the compaction split at source'' (inkandswitch.com/keyhive/notebook). It compacts the Automerge commit graph by recursive content-addressed chunking, with chunk boundaries set by ''the number of trailing zeros in a commit's hash'' so peers with different change-sets agree what goes in each chunk — ''no wall clock, no coordination.'' That answers the test above (does the fold pick a WINNER or blank both paths?): compaction ''picks nothing; it is a cut, not a fold.'' And it states the interaction plainly — because CRDTs need the entire causal history it "sacrifices forward secrecy … but retains secrecy of concurrent and future chunks," and ''member revocation depends on BeeKEM key rotation, NOT compaction'' — verbatim the ruling that a compaction epoch bounds state-history growth, never who-may-act. The trailing-zeros-in-hash rule is the clockless boundary the field supplies for that cut; BeeKEM (κ, blank-and-merge) stays the sole who-may-act authority beneath it.
+''Sedimentree confirms the compaction split at source'' (inkandswitch.com/keyhive/notebook). It compacts the Automerge commit graph by recursive content-addressed chunking, with chunk boundaries set by ''the number of trailing zeros in a commit's hash'' so peers with different change-sets agree what goes in each chunk — ''no wall clock, no coordination.'' That answers the test above (does the fold pick a WINNER or blank both paths?): compaction ''picks nothing; it cuts, it does not fold.'' And it states the interaction plainly — because CRDTs need the entire causal history it "sacrifices forward secrecy … but retains secrecy of concurrent and future chunks," and ''member revocation depends on BeeKEM key rotation, NOT compaction'' — verbatim the ruling that a compaction epoch bounds state-history growth, never who-may-act. The trailing-zeros-in-hash rule gives the clockless boundary the field supplies for that cut; BeeKEM (κ, blank-and-merge) stays the sole who-may-act authority beneath it.
 
-''ANTI-PATTERN — the killed clock-dependency, running in the wild.'' Willow's prefix-pruning lets a newer short-path entry silently tombstone a whole subtree, and a skewed/hostile clock weaponizes "newer" (willowprotocol.org/specs/data-model) — a live instance of exactly why the rolling-window shape died here (a set answers //is this listed//, never //is this newer//). did:webvh builds the same dependency: it requires "the versionTime of every entry MUST be strictly greater than the immediately preceding entry's" and rejects equal timestamps — a self-asserted-time ordering the signed `handleEventBytes` refuses by carrying NO time field (ordering is pure `seq` + `prevEventCid`). Both confirm "correct even if all timestamps were zero"; no migration marker may resolve on a self-asserted time.
+''ANTI-PATTERN — the killed clock-dependency, running in the wild.'' Willow's prefix-pruning lets a newer short-path entry silently tombstone a whole subtree, and a skewed/hostile clock weaponizes "newer" (willowprotocol.org/specs/data-model) — a live instance of exactly why the rolling-window shape died here (a set answers //is this listed//, never //is this newer//). did:webvh builds the same dependency: it requires "the versionTime of every entry MUST be strictly greater than the immediately preceding entry's" and rejects equal timestamps — a self-asserted-time ordering the signed `handleEventBytes` refuses by carrying NO time field (ordering rides pure `seq` + `prevEventCid`). Both confirm "correct even if all timestamps were zero"; no migration marker may resolve on a self-asserted time.
 
 !!!! Where each claimant already stands — the sweep map
 
 ''Sited so the next reader corrects nothing that already reads true.'' A sweep that re-derives these will
-re-split what this meme collapsed; the whole arc began because a hand-derived model inverted the fact it
-meant to capture.
+re-split what this meme collapsed; a hand-derived model can invert the fact it aims to capture.
 
 ''CANONICAL — cite, never rewrite.'' `convergent-mesh#two-revocation-modes` holds the founding statement
 (//the epoch is a LEASE, not a revoker//). `ffz-clock#the-two-instruments` rules value ⊥ cadence, and
-`ffz-mesh-timing#the-primary-clock` paces the roll. `cabal-realm#the-tie-break` is the AUTHORITY on the
+`ffz-mesh-timing#the-primary-clock` paces the roll. `cabal-realm#the-tie-break` holds the AUTHORITY on the
 keying fold and belongs to Keyhive/BeeKEM. `compaction-handlers` reserves the bare word and names compaction.
 `FFZ_Chronometer_SPEC_OUTLINE` and `federated-causal-islands#the-edge-island` carry carrier-B at edge grain.
 
 ''HOMONYMS — read past them.'' `attention-scale` · `law-of-5s` · `system-pattern-integrities` ·
-`ffz-clock`'s L4 band all name a RHYTHMIC //Theme/epoch//, which is no mechanism at all. `causal-islands`
-§model-drift names a model VERSION. `sensorium-runbook` forbids the word locally and is a ward, not a gap.
+`ffz-clock`'s L4 band all name a RHYTHMIC //Theme/epoch//, which names no mechanism at all. `causal-islands`
+§model-drift names a model VERSION. `sensorium-runbook` forbids the word locally and stands as a ward, not a gap.
 
-''AND A MARK THAT LIVES ONLY IN A REPORT IS NO MARK.'' This section exists because the first pass named
-these sites in conversation and left the tree unmarked — which is the same failure as a green count beside
-a check that never ran.
+''AND A MARK THAT LIVES ONLY IN A REPORT MARKS NOTHING.'' Mark each site in the tree; a report without
+those marks gives the same false assurance as a green count beside a check that never ran.
 
 !!! ★ THE ONE MOST EASILY MISSED ★
 
-''`hearthTrueName` IS the genesis `engineCid`, and it rides inside the SIGNED preimage of every
-device-delegation edge'':
+''For a hearth-bound edge, `hearthTrueName` carries the genesis `engineCid`; a hearth-agnostic edge
+carries `""`. The field rides inside the SIGNED preimage of every device-delegation edge'':
 
 ```
 {domain}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
 ```
 
-''So every vessel that ever joined SIGNED the engine CID.'' Move it and every edge names a hearth true-name
-that no longer matches — the Binding Gate refuses, and the refusal reads as a fleet-wide eviction nobody
-performed. ''The binding IS (vessel × hearthTrueName)'': the engine CID is not a version label, it is the
+''So every vessel joined to a named hearth SIGNED that hearth's engine CID.'' Move it and every edge names a hearth true-name
+that fails to match — the Binding Gate refuses, and the refusal reads as a fleet-wide eviction nobody
+performed. ''The binding PAIRS (vessel × hearthTrueName)'': the engine CID serves as no version label; it holds the
 ''PLACE'' half of the two-key atom.
 
 <<~/ahu>>
@@ -139,7 +137,7 @@ performed. ''The binding IS (vessel × hearthTrueName)'': the engine CID is not 
 
 ''The answer reads narrower than the fear, and the narrowness rests on two facts a reader can re-check.''
 
-# ''The engine blob is VENDORED TW5.'' `computeEngineCid` hashes `engine/v1\ncore-sha256:<the TW5 core blob's
+# ''The engine blob rides as VENDORED TW5.'' `computeEngineCid` hashes `engine/v1\ncore-sha256:<the TW5 core blob's
   sha256>` — a pure function of those bytes, with the version label deliberately excluded so a re-tag cannot
   manufacture a schism. TW5 rides as a ''workspace submodule'', so ''no npm bump can move it''.
 # ''The built plugin carries ZERO automerge references.'' Measured on the packed artifact: 23 modules, 115
@@ -149,7 +147,7 @@ performed. ''The binding IS (vessel × hearthTrueName)'': the engine CID is not 
 ''Therefore'': bumping `@automerge/*`, `@noble/*`, `ws`, `tsx`, `vite` moves ''NO epoch binding''. The seal
 lineage stands and every delegation edge still verifies, because the binding rides the engine alone.
 
-''What it CAN break is the on-disk serde'' — stored bytes serialized by a format the new deserializer cannot
+''It CAN break the on-disk serde'' — stored bytes serialized by a format the new deserializer cannot
 read. The vessel already names that condition and its cure rather than boot-looping on it:
 
 > ''Cause'': stored bytes predate a dependency bump (keyhive / automerge / beelay / TW5).
@@ -184,7 +182,7 @@ against another's.
 > NEVER perturb the true-name.''
 
 ''So the epoch rides the genesis ENGINE, and beneath it THREE tiers stand named, and only the
-engine ratchets'' — the standing cut //the engine is universal; the corpus is content// (`bag-wiki-uri-split`):
+engine ratchets'' — the standing cut //engine universal, corpus content// (`bag-wiki-uri-split`):
 
 * ''ENGINE'' (`engineCid` = `hearthTrueName`) — the SLOW ratchet. Signed into every
   device-delegation edge, it BINDS MEMBERSHIP through the Nexus's rolling window of admitted engines, and it advances by ACT (a TW5-submodule roll, never
@@ -197,7 +195,7 @@ engine ratchets'' — the standing cut //the engine is universal; the corpus is 
 
 A commit that re-packs the plugin moves a local integrity witness and touches no lineage: the seal
 stands, every delegation edge still verifies, and no confederation shifts. Keeping the three tiers
-apart is what lets operators differ without schisming — a grammar each hearth speaks in its own dialect,
+apart lets operators differ without schisming — a grammar each hearth speaks in its own dialect,
 a corpus each edits live, an engine all share by hash.
 
 ''INVARIANT: grammar drift alone does not separate Nexuses — the ENGINE window binds who-can-talk.''
@@ -205,8 +203,9 @@ Two hearths on the SAME engine speaking DIFFERENT dialects still interoperate �
 grades, and graceful parsing with the quoteblock floor carries what a reader lacks — because the
 grammar lives in use and never touches the `hearthTrueName` each device-delegation edge signed. Only
 a DIFFERENT engine reaches the disjoint-station-set break below (no transformation, only translation by
-assertion). The engine epoch is the slow ratchet, and a Nexus binds membership to a rolling window of
-engine epochs its cadence threshold advances (kahu#/contract); the grammar never determines who-can-talk.
+assertion). The engine epoch names the slow ratchet; the Nexus's rolling window of admitted engine epochs stands
+UNBUILT (the founding compares true-names directly), and `nexus kahuli engine` stands HELD pending its
+forward-rebind rulings (kahu#/contract); the grammar never determines who-can-talk.
 
 ''THE SHAPE OF THE ERROR, kept as the useful part.'' Two CIDs sat side by side in one manifest, so the meme
 read adjacency as conjunction and promoted a local witness to a federation criterion. ''A field's PRESENCE
@@ -231,7 +230,7 @@ a rebuild at an inconvenient moment.
 
 ''The surfaces that would make a cliff — the engine CID and the plugins CID — do not move on npm at all.''
 They move when the operator bumps the TW5 submodule or when this repo's source changes, and ''both of those
-are acts, never upgrades''.
+count as acts, never upgrades''.
 
 <<~ has Rule Runtime-deps "when/before-founding cost/a-rebuild-if-skipped surface/serde-only ~ automerge · noble · ws · vite">>
 <<~ has Rule TW5-submodule "when/an-ACT-never-an-upgrade cost/every-delegation-edge surface/hearthTrueName ~ moves the PLACE half of the atom">>
@@ -247,6 +246,6 @@ are acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fnvZUYlQ-Tgx1qwNlEErcbW4SkbNOV92RiBHCEAhjNU
+<<^ code="&#x0003;">>ni:///sha-256;IgzM9iQeFaFr0JeZRP2nfkGp5hivbRyxWiv-o1OUxVw
 
 <<^ code="&#x0004;" -> to="?">>
