@@ -37,6 +37,7 @@ import { cmdAct }                     from "../commands/act.js";
 import { cmdReceipt, cmdCancel }      from "../commands/receipt-cmd.js";
 import { cmdIngest }                  from "../commands/ingest.js";
 import { cmdWatch }                   from "../commands/watch.js";
+import { cmdShore }                   from "../commands/shore.js";
 import { cmdWingOf }                  from "../commands/wing-of.js";
 import { cmdSense }                   from "../commands/sense.js";
 import { cmdFlowRun }                 from "../commands/flow-run.js";
@@ -184,6 +185,7 @@ export const COMMANDS: readonly Command[] = [
   { name: "act",           summary: "Residency Model ACTION verb (ADD/COPY/MOVE/CLEAR/DROP/LOAD/CREATE) + `REPACK --source <bundle> --from <bag>`, the collect-the-residency export: the island re-renders a multi-tiddler bundle from its aside provenance through TW5's own serializer. Run `lares act` for usage.", handler: cmdAct, accepts: ["bag", "change-id", "dry-run", "from", "in-wiki", "out", "plane", "shadow", "source", "source-uri", "title", "to"] },
   { name: "ingest",        summary: "Disk→records through the Confluence gate: scan + diff (preview) or --apply through the island's INGEST verb. --tag-blobs stamps the CAS opt-in flag (`.meta` sidecar / meme ahu meta) for the large un-flagged carriers that would fault during LOAD/INGEST (preview names the count).", handler: cmdIngest, accepts: ["apply", "change-id", "in-wiki", "source", "tag-blobs", "to"] },
   { name: "watch",         summary: "Watch a source dir and fire the ingest gesture per settle — one wave per quiet window. Preview by default; --apply submits.", handler: cmdWatch, accepts: ["apply", "debounce", "delete-fraction", "delete-grace", "source", "to"] },
+  { name: "shore",         summary: "A person's answers at the disk shore. `lares shore` lists what stands for a hand: each standoff (the disk and the records say different things, and nothing writes) with the key that names it. `shore take-records <uri> --key <key>` writes the records' render over that one file; an answer naming a state that moved takes nothing.", handler: cmdShore, accepts: ["bag", "key", "yes"] },
   { name: "draft",         summary: "Pull a tiddler from a lower bag into a writable draft (no tombstone). The operator may later land it through a residency ACTION verb (`lares act`).", handler: cmdDraft, accepts: ["to"] },
   { name: "receipt",       summary: "`lares receipt <requestId>` — read a verb request's receipt WITHOUT dispatching anything (H1/M14): the one door `outcome-unknown` / `request-abandoned` tell an operator to check. Answers from the vessel's own ledger + durable outcome doc; never runs a second attempt.", handler: cmdReceipt, accepts: [] },
   { name: "cancel",        summary: "`lares cancel <requestId>` — withdraw a request BEFORE it is read (M8/M14): the operator's OWN explicit withdrawal, marking the id abandoned so a later line under the same id refuses rather than running. Never sent on a bare timeout by any automated path (council ruling 4).", handler: cmdCancel, accepts: [] },

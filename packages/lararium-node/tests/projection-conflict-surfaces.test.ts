@@ -81,14 +81,36 @@ describe("the projection gate's decision law — clause for clause against the i
   test("3 — the equivalence rides AHEAD of the base clauses: a first seed with no base writes nothing", () => {
     expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B, diskCanonicalHash: B }))
       .toEqual({ kind: "noop", reason: "canonical-equivalent" });
-    // CONTROL: with no base and a disk that says something else, the fresh adoption still projects.
+    // CONTROL: with no base and a disk that says something else, the gate stands off.
     expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B, diskCanonicalHash: C }))
-      .toEqual({ kind: "project", reason: "never-projected" });
+      .toEqual({ kind: "conflict", reason: "no-base" });
   });
 
-  test("4 — no merge base → project never-projected (ingest's fresh adoption, 4b)", () => {
+  test("4 — no merge base and a real difference → conflict no-base (neither leg picks)", () => {
     expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B }))
-      .toEqual({ kind: "project", reason: "never-projected" });
+      .toEqual({ kind: "conflict", reason: "no-base" });
+    // CONTROL: an empty path still takes its first projection, and equal bytes still echo.
+    expect(decideProjection({ diskHash: null, syncedHash: null, recordsHash: B }))
+      .toEqual({ kind: "project", reason: "absent-on-disk" });
+    expect(decideProjection({ diskHash: B, syncedHash: null, recordsHash: B }))
+      .toEqual({ kind: "noop", reason: "disk-matches-records" });
+  });
+
+  test("a person's answer takes the records' side of a standoff, and of nothing else", () => {
+    expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B, answer: "take-records" }))
+      .toEqual({ kind: "project", reason: "records-taken" });
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: C, answer: "take-records" }))
+      .toEqual({ kind: "project", reason: "records-taken" });
+    // CONTROL: where no standoff stands, the answer changes no verdict.
+    expect(decideProjection({ diskHash: B, syncedHash: null, recordsHash: B, answer: "take-records" }))
+      .toEqual({ kind: "noop", reason: "disk-matches-records" });
+    expect(decideProjection({ diskHash: A, syncedHash: null, recordsHash: B, diskCanonicalHash: B, answer: "take-records" }))
+      .toEqual({ kind: "noop", reason: "canonical-equivalent" });
+    const R = hash("the records where the base left them");
+    expect(decideProjection({ diskHash: A, syncedHash: B, recordsHash: R, syncedRecordsHash: R, answer: "take-records" }))
+      .toEqual({ kind: "noop", reason: "records-unmoved" });
+    expect(decideProjection({ diskHash: A, syncedHash: A, recordsHash: B, answer: "take-records" }))
+      .toEqual({ kind: "project", reason: "disk-unmoved" });
   });
 
   test("5 — disk == the base's disk side → project disk-unmoved (only the records moved)", () => {
@@ -248,16 +270,17 @@ describe("the gate over the REAL corpus — bags/ holds 701 hand-authored carrie
     expect(tally).toEqual({ "noop:disk-matches-records": files.length });
   });
 
-  test("with the doc moved off every carrier, a LIVE anchor conflicts and an absent one projects", () => {
+  test("with the doc moved off every carrier, a LIVE anchor conflicts, and so does an absent one", () => {
     const files = everyMem(repoBags);
-    let conflict = 0, project = 0;
+    let conflict = 0, noBase = 0;
     for (const f of files) {
       const disk = hash(readFileSync(f, "utf-8"));
       const moved = hash(readFileSync(f, "utf-8") + "\nthe doc moved\n");
       if (decideProjection({ diskHash: disk, syncedHash: hash("older"), recordsHash: moved }).kind === "conflict") conflict++;
-      if (decideProjection({ diskHash: disk, syncedHash: null, recordsHash: moved }).kind === "project") project++;
+      const fresh = decideProjection({ diskHash: disk, syncedHash: null, recordsHash: moved });
+      if (fresh.kind === "conflict" && fresh.reason === "no-base") noBase++;
     }
     expect(conflict).toBe(files.length);
-    expect(project).toBe(files.length);
+    expect(noBase).toBe(files.length);
   });
 });

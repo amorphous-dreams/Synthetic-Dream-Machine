@@ -51,9 +51,15 @@
  *       CLAUSES: a first seed holds no base, and a fresh adoption that rewrote
  *       every file standing in another framing would dirty a person's working
  *       tree with edits no person made.)
- *   4. no base                  → PROJECT `never-projected`
- *      (ingest's rule 4b: a carrier with no merge base reads as a fresh
- *       adoption — the same answer from either shore.)
+ *   4. no base                  → CONFLICT `no-base`
+ *      (THE OPERATOR'S MIND ORIGINATES. The disk says one thing, the records say
+ *       another, and no agreement names which moved last: a hand may have edited
+ *       the file while the vessel rested. Neither leg picks. This leg writes
+ *       nothing and the difference surfaces for a person, who settles it by
+ *       ingesting the file, by saving in the wiki until both sides say the same
+ *       thing, or by taking the records' side by name (`answer`). Clauses 2 and 3
+ *       ride ahead, so a first projection onto an empty path still writes, and a
+ *       first seed of an unchanged corpus pins its bases and surfaces nothing.)
  *   5. disk == base's disk side → PROJECT `disk-unmoved`
  *      (the operator's hands never touched the file since the last agreement;
  *       only the records moved, so the write applies cleanly, and it writes the
@@ -64,7 +70,12 @@
  *       INGEST — it ADOPTS the disk edit — so the projecting leg MUST stand
  *       down rather than race it. Deciding otherwise would make the two legs
  *       disagree about one state, which is how a round trip eats an edit.)
- *   7. both moved               → CONFLICT (surface, never overwrite)
+ *   7. both moved               → CONFLICT `both-moved` (surface, never overwrite)
+ *
+ * A PERSON'S ANSWER TAKES A SIDE. Where a standoff stands (clause 4 or 7) and the
+ * caller hands in `answer: "take-records"`, the gate answers PROJECT `records-taken`.
+ * The caller admits that answer only for the standoff the person named by its key, so
+ * an answer given for one pair of states never writes over another.
  *
  * THE AHU-FIDELITY GUARD RIDES — inside the CANONICALIZER, not here. Ingest
  * guards its rule 3 with a structural-slot check because a lossy render makes an
@@ -89,8 +100,8 @@ import { digestsEqual } from "@lararium/mesh";
 
 export type ProjectionDecision =
   | { readonly kind: "noop"; readonly reason: "disk-matches-records" | "canonical-equivalent" | "records-unmoved" }
-  | { readonly kind: "project"; readonly reason: "absent-on-disk" | "never-projected" | "disk-unmoved" }
-  | { readonly kind: "conflict"; readonly reason: "both-moved" };
+  | { readonly kind: "project"; readonly reason: "absent-on-disk" | "disk-unmoved" | "records-taken" }
+  | { readonly kind: "conflict"; readonly reason: "no-base" | "both-moved" };
 
 export interface ProjectionGateInput {
   /**
@@ -120,6 +131,11 @@ export interface ProjectionGateInput {
    * therefore never gains a quiet equivalence.
    */
   readonly diskCanonicalHash?: string | null;
+  /**
+   * A person's answer to the standoff these very states stand in: take the records' side. The caller
+   * hands it in only where the person named this standoff by its key. Absent = no person answered.
+   */
+  readonly answer?: "take-records";
 }
 
 /**
@@ -150,9 +166,12 @@ export function decideProjection(input: ProjectionGateInput): ProjectionDecision
     return { kind: "noop", reason: "canonical-equivalent" };
   }
 
-  // 4 — no merge base: a fresh adoption, from either shore.
+  // A person who named this standoff and took the records' side settles clauses 4 and 7.
+  const taken = input.answer === "take-records";
+
+  // 4 — no merge base and a real difference: nothing says which side moved last, so neither leg picks.
   if (syncedHash === null) {
-    return { kind: "project", reason: "never-projected" };
+    return taken ? { kind: "project", reason: "records-taken" } : { kind: "conflict", reason: "no-base" };
   }
 
   // 5 — the disk stands where the last agreement left it; only the records moved.
@@ -169,5 +188,5 @@ export function decideProjection(input: ProjectionGateInput): ProjectionDecision
   }
 
   // 7 — both moved since the merge base: surface, never overwrite.
-  return { kind: "conflict", reason: "both-moved" };
+  return taken ? { kind: "project", reason: "records-taken" } : { kind: "conflict", reason: "both-moved" };
 }

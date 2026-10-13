@@ -65,9 +65,10 @@ function baseOf(value: unknown): SyncedBase | null {
 
 /** The persisted file as a map, keeping the rows that read as a base, and the count of rows that read as none.
  *  An absent or torn file reads empty. */
-function readBases(filePath: string): { bases: Map<string, SyncedBase>; unread: number } {
+function readBases(filePath: string | null): { bases: Map<string, SyncedBase>; unread: number } {
   const bases = new Map<string, SyncedBase>();
   let unread = 0;
+  if (filePath === null) return { bases, unread };
   try {
     const raw = JSON.parse(readFileSync(filePath, "utf8")) as Record<string, unknown>;
     for (const [key, value] of Object.entries(raw)) {
@@ -105,7 +106,8 @@ export class SyncedTree {
   private byHash = new Map<string, Set<string>>();
 
   constructor(
-    private readonly filePath: string,
+    /** Where the tree rests. Null holds the bases in memory for this instance's life and persists nothing. */
+    private readonly filePath: string | null,
     /**
      * Persist coalesce window (ms). A flush wave (a corpus feed = hundreds
      * of observations in seconds) collapses into one atomic write per
@@ -118,7 +120,7 @@ export class SyncedTree {
   ) {
     // A corrupt tree, or a row in any shape but the one this tree writes, names no base: that
     // carrier reads as never agreed and each gate falls back to its fresh-adoption answer.
-    if (existsSync(filePath)) {
+    if (filePath !== null && existsSync(filePath)) {
       const { bases, unread } = readBases(filePath);
       this.map = bases;
       // A FORGOTTEN BASE SPEAKS ONCE. A row this tree cannot read leaves its carrier with no merge base,
@@ -232,6 +234,8 @@ export class SyncedTree {
   }
 
   private schedulePersist(): void {
+    // A tree held in memory persists nothing, so it arms no timer.
+    if (this.filePath === null) { this.journal.clear(); return; }
     if (this.coalesceMs <= 0) { this.persist(); return; }
     if (this.persistTimer) clearTimeout(this.persistTimer);
     this.persistTimer = setTimeout(() => { this.persistTimer = null; this.persist(); }, this.coalesceMs);
@@ -247,6 +251,7 @@ export class SyncedTree {
    * the same fresh-adoption degradation the constructor already allows.
    */
   private persist(): void {
+    if (this.filePath === null) { this.journal.clear(); return; }
     const dir = dirname(this.filePath);
     mkdirSync(dir, { recursive: true });
     const merged = readBases(this.filePath).bases;
@@ -260,6 +265,19 @@ export class SyncedTree {
     const tmp = join(dir, `.synced-tree.${process.pid}.${++SyncedTree.writeSeq}.${randomBytes(4).toString("hex")}.tmp`);
     writeFileSync(tmp, JSON.stringify(Object.fromEntries(merged), null, 1), "utf-8");
     renameSync(tmp, this.filePath);
+  }
+
+  /**
+   * Read the file afresh and lay this instance's unpersisted changes over it. A sibling writer (another
+   * island, the ingest gesture) may have pinned a base since this instance loaded; a caller about to
+   * surface a divergence reads through here first, so a base a sibling pinned answers before an alert does.
+   */
+  reread(): void {
+    if (this.filePath === null) return;
+    const merged = readBases(this.filePath).bases;
+    for (const [k, v] of this.journal) { if (v === null) merged.delete(k); else merged.set(k, v); }
+    this.map = merged;
+    this.rebuildIndex();
   }
 
   /** Per-process write counter — one half of the temp file's unique name. */

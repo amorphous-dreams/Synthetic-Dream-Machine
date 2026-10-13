@@ -7,6 +7,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **A hand edit made while the vessel rested survives the next boot.** Where a file and its records say different things and no base names a last agreement, the vessel writes nothing and raises one alert that names the file and a key. Settle it by `lares ingest` of the file, by saving in the wiki until both say the same, or by `lares shore take-records <uri> --key <key>`. `lares shore` lists what stands.
 - **Unlock and lock recompose without a ten-second stall.** The daemon island's teardown handshake runs once per island; a second shutdown call reads the first answer where it once waited out its whole bound on a worker already terminated.
 - **A stand reads ok without the memory library.** `lares vessel stand` on a machine that holds no mempalace reports `mempalace: absent` beside `ok: true`; a half-installed library still reads `incomplete` and fails the reading.
 - **A title that names a speaker refuses.** A write under a `lar://alias:grant@host/…` title refuses with `session-form-title` at every door (`lares meme put`, ingest, LOAD, CREATE, a wiki save); the same URI in a record's text lands untouched, and a hostful `lar://host/…` title stands.

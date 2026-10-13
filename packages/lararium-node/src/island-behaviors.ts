@@ -10,7 +10,8 @@
  * Meme: lar:///ha.ka.ba/lararium/node/island-behaviors
  */
 
-import type { IslandMsg_Manifest } from "@lararium/mesh";
+import { mkWikiVerbResult } from "@lararium/mesh";
+import type { IslandMsg_Manifest, WikiMsg_PlaceVerb } from "@lararium/mesh";
 import { exportCarrierFile, makeWikiBehavior, hasWikiSensorium, makeTw5Deserializer, canonicalizeNativeCarrierText } from "@lararium/tw5";
 import type { IslandBehavior, IslandContext } from "@lararium/tw5";
 // PURE subpath (no Automerge/wasm) — the same law `ingest-gate` reads `@lararium/mesh/agile-digest` under.
@@ -20,6 +21,39 @@ import { namedBagMirror } from "./bag-paths.js";
 import { SyncedTree } from "./synced-tree.js";
 import { larProjectionDir } from "./vessel-paths.js";
 import { join } from "path";
+import { SHORE_VERB, answerShore } from "./shore-verb.js";
+
+/** The projector this island mounted, while it stands. One island runs per worker, so one seat suffices. */
+let mountedProjector: LarDiskProjector | null = null;
+
+/** The disk projector this island mounts right now, or null. */
+export function mountedDiskProjector(): LarDiskProjector | null {
+  return mountedProjector;
+}
+
+/**
+ * A PERSON'S ANSWER AT THE DISK SHORE. The shore verb (`lares shore`, carried by `wiki-act`) reaches the
+ * island as an ordinary `wiki:place-verb`; this door claims it ahead of the island's verb table and
+ * answers from the projector the island mounts. An island that mounts no projector refuses by name.
+ * Returns true where it claimed the message.
+ */
+export function claimShoreVerb(
+  type: string, raw: unknown, post: IslandContext["post"], projector: () => LarDiskProjector | null = mountedDiskProjector,
+): boolean {
+  if (type !== "wiki:place-verb") return false;
+  const msg = raw as WikiMsg_PlaceVerb;
+  if (msg.verb !== SHORE_VERB) return false;
+  const requestId = msg.requestId;
+  const mounted = projector();
+  const answer = mounted === null
+    ? Promise.resolve<Record<string, unknown>>({ ok: false, refusal: "no-disk-shore", why: "this island mounts no disk projection" })
+    : answerShore(mounted, msg.args ?? {});
+  void answer.then(
+    (result) => { if (requestId) post(mkWikiVerbResult({ requestId, result })); },
+    (err: unknown) => { if (requestId) post(mkWikiVerbResult({ requestId, error: err instanceof Error ? err.message : String(err) })); },
+  );
+  return true;
+}
 
 /**
  * Primary wiki island behavior for the node vessel: the shared wiki behavior
@@ -106,14 +140,26 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
     canonicalizeNativeCarrierText(makeTw5Deserializer(ctx.tw5), uri, ext, diskBody, diskMeta),
   syncedTree,
   });
-  return projector.start(ctx.tw5);
+  const stop = projector.start(ctx.tw5);
+  mountedProjector = projector;
+  return async () => {
+    if (mountedProjector === projector) mountedProjector = null;
+    await stop();
+  };
 }
 
 export function makeWikiPrimaryBehavior(manifest: IslandMsg_Manifest): IslandBehavior {
-  return makeWikiBehavior({
+  const base = makeWikiBehavior({
     onBoot: (ctx: IslandContext) => mountDiskProjection(manifest, ctx),
     // caps = the wiki-sensorium perceiver cap — the wiki island answers the daemon's supervision reads
     // (sensorium:cohere/recall in, SENSORIUM_FRAME back). Platform-blind hull; same cap as browser.
     caps: [hasWikiSensorium()],
   });
+  return {
+    onEa:     (ctx) => base.onEa(ctx),
+    // The shore verb belongs to the node-held disk capability, so its door stands here, ahead of the
+    // isomorphic verb table.
+    onSignal: (type, raw, ctx) => claimShoreVerb(type, raw, ctx.post) || base.onSignal(type, raw, ctx),
+    onHooAnu: (ctx) => base.onHooAnu(ctx),
+  };
 }

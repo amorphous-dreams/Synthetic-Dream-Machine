@@ -54,12 +54,15 @@
  * stands down LOUDLY on the ward-alert rail (`onConflict`). Both legs of the round trip
  * reconcile and neither overwrites (the operator's ruling: conflict-surfacing in BOTH
  * legs). The gate decides and never writes; this file owns every I/O and every alert.
+ *
+ * A PERSON ANSWERS A STANDOFF BY ITS KEY (`takeRecords`): the answer admits one write of the
+ * records' render over the very states the key names, and no other.
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, renameSync } from "fs";
 import { dirname, basename } from "path";
 import { confineMirrorWrite, carrierBaseRelPath } from "./bag-paths.js";
-import { contentHash, syncedTreeKey, type SyncedTree } from "./synced-tree.js";
+import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { isEffectRecordUri, isBagManifestUri, isVolatileVmUri, isNexusHandlesUri, KeyedReconcileGate, carrierHash, sha256HexBytesSync } from "@lararium/mesh";
@@ -164,7 +167,9 @@ export interface LarDiskProjectorOptions {
   /**
    * The Synced tree (Confluence merge base): records the content hash of every
    * projected carrier; arms the projection-side hash gate — a write whose
-   * bytes match disk skips silently (no event, no churn).
+   * bytes match disk skips silently (no event, no churn). Absent → the projector holds
+   * its bases in memory for its own life: a base still names every agreement it reached,
+   * and a restart reads every carrier as never agreed.
    */
   readonly syncedTree?: SyncedTree;
 }
@@ -286,13 +291,15 @@ export class LarDiskProjector {
   private readonly onConflictResolved: ((info: { bagId: string; uri: string; standoff: string }) => void) | undefined;
   /** The standoff each (bag, carrier) stands in right now, by key. Memory only: a fresh boot enters anew. */
   private readonly standoffs = new Map<string, string>();
+  /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
+  private readonly answered = new Map<string, string>();
   private readonly canonicalizeFn: ((uri: string, diskText: string) => string | null) | undefined;
   private readonly canonicalizeNativeFn:
     | ((uri: string, ext: string, diskBody: string, diskMeta: string | undefined) => { readonly body: string; readonly metaBody?: string } | null)
     | undefined;
   private readonly readinessMap: ReadinessMap | undefined;
   private readonly debugJson: boolean;
-  private readonly syncedTree: SyncedTree | undefined;
+  private readonly syncedTree: SyncedTree;
 
   constructor(opts: LarDiskProjectorOptions) {
     this.mirrors      = opts.mirrors;
@@ -306,7 +313,7 @@ export class LarDiskProjector {
     this.canonicalizeNativeFn = opts.canonicalizeNativeFn;
     this.readinessMap = opts.readinessMap;
     this.debugJson    = opts.debugJson ?? false;
-    this.syncedTree   = opts.syncedTree;
+    this.syncedTree   = opts.syncedTree ?? new SyncedTree(null);
   }
 
   /**
@@ -389,7 +396,7 @@ export class LarDiskProjector {
   async stop(): Promise<void> {
     await this.gate?.settle();
     this.writing.clear();
-    this.syncedTree?.flush();
+    this.syncedTree.flush();
   }
 
   /**
@@ -418,6 +425,42 @@ export class LarDiskProjector {
     const provText = provFields?.["text"];
     if (typeof provText !== "string") return false;
     return packOfMember(parseProvenance(provText), title) !== undefined;
+  }
+
+  /** Every standoff this projector stands in right now: the bag, the carrier and the key a person answers by. */
+  standing(): Array<{ readonly bagId: string; readonly uri: string; readonly standoff: string }> {
+    return [...this.standoffs].map(([key, standoff]) => {
+      const cut = key.indexOf("\n");
+      return { bagId: key.slice(0, cut), uri: key.slice(cut + 1), standoff };
+    });
+  }
+
+  /**
+   * A PERSON TAKES THE RECORDS' SIDE of one standoff, named by its key. The answer admits one reconcile:
+   * where the carrier still stands in the standoff the key names, the records' render writes over the
+   * file and the base pins there. Where the states moved since the person read the key, the answer
+   * takes nothing, and the standoff that stands keeps its own key.
+   */
+  async takeRecords(bagId: string, uri: string, standoff: string): Promise<{ readonly took: boolean; readonly why?: string }> {
+    const key = sitedKey(bagId, uri);
+    const stands = this.standoffs.get(key);
+    if (stands === undefined) return { took: false, why: `no standoff stands for ${uri} in ${bagId}` };
+    if (stands !== standoff) return { took: false, why: `the standoff for ${uri} stands under key ${stands}; the answer names ${standoff}` };
+    this.answered.set(key, standoff);
+    try {
+      await this.reconcileNow(uri);
+    } finally {
+      this.answered.delete(key);
+    }
+    const after = this.standoffs.get(key);
+    return after === undefined ? { took: true } : { took: false, why: `the states moved while the answer travelled; the standoff stands under key ${after}` };
+  }
+
+  /** Reconcile one carrier root through the queue where it runs, and wait for the queue to drain. */
+  private async reconcileNow(rootUri: string): Promise<void> {
+    if (this.gate === null) { await this.reconcile(rootUri); return; }
+    this.gate.mark(rootUri);
+    await this.gate.idle();
   }
 
   private async reconcile(rootUri: string): Promise<void> {
@@ -550,7 +593,7 @@ export class LarDiskProjector {
             try { unlinkSync(f); } finally { this.writing.delete(title); }
           }
         }
-        this.syncedTree?.delete(syncedTreeKey(mirror.bagId, title));   // the observation leaves with the file(s)
+        this.syncedTree.delete(syncedTreeKey(mirror.bagId, title));   // the observation leaves with the file(s)
         this.sited.delete(sitedKey(mirror.bagId, title));
         this._leaveStandoff(mirror.bagId, title);
       } catch { /* best-effort — operator can clean up manually */ }
@@ -717,7 +760,7 @@ export class LarDiskProjector {
         ? readFileSync(candidate).equals(writeBytes as Buffer)
         : contentHash(readFileSync(candidate, "utf-8")) === outputHash);
       if (bodyInSync && metaInSync) {
-        this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
+        this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
         this._leaveStandoff(bagId, tiddlerUri);
         return;
       }
@@ -754,14 +797,27 @@ export class LarDiskProjector {
         return null;
       })();
       const diskHash = onDisk === null ? null : carrierHash(onDisk.body, onDisk.meta);
-      const base = this.syncedTree?.base(syncedTreeKey(bagId, tiddlerUri)) ?? null;
-      const decision = decideProjection({
+      let base = this.syncedTree.base(syncedTreeKey(bagId, tiddlerUri)) ?? null;
+      // ONE STANDOFF, ONE KEY: the bag, the carrier and the two states. A person's answer names this key,
+      // and the gate hears the answer only where the states that stand now fold to the key the person named.
+      const standoff = sha256HexBytesSync(new TextEncoder().encode([mirror.bagId, tiddlerUri, diskHash ?? "", obsHash].join("\n"))).slice(0, 24);
+      const key = sitedKey(mirror.bagId, tiddlerUri);
+      const gateInput = (): Parameters<typeof decideProjection>[0] => ({
         diskHash,
         syncedHash:        base?.disk ?? null,
         syncedRecordsHash: base?.records ?? null,
         recordsHash:       obsHash,
         diskCanonicalHash,
+        ...(this.answered.get(key) === standoff ? { answer: "take-records" as const } : {}),
       });
+      let decision = decideProjection(gateInput());
+      // A SIBLING MAY HAVE PINNED A BASE since this projector loaded the tree (another island, the ingest
+      // gesture). Before a divergence surfaces, the tree reads afresh and the gate decides again.
+      if (decision.kind === "conflict") {
+        this.syncedTree.reread();
+        base = this.syncedTree.base(syncedTreeKey(bagId, tiddlerUri)) ?? null;
+        decision = decideProjection(gateInput());
+      }
       if (decision.kind === "noop") {
         // THE DISK AND THE RECORDS SAY THE SAME THING IN TWO FRAMINGS: the carrier stands unchanged, so
         // no byte writes. The base pins at this agreement, the disk's bytes on one side and the records'
@@ -769,7 +825,7 @@ export class LarDiskProjector {
         // later disk edit from a later record edit. A base that already names this agreement stays put.
         if (decision.reason === "canonical-equivalent" && diskHash !== null
             && !(base !== null && base.disk === diskHash && base.records === obsHash)) {
-          this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), diskHash, obsHash);
+          this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), diskHash, obsHash);
         }
         this._leaveStandoff(bagId, tiddlerUri);
         return;
@@ -778,11 +834,11 @@ export class LarDiskProjector {
         // SURFACE, never overwrite. The write stops here; the divergence goes out on the
         // ward-alert rail (a durable ledger record + an alert in the operator's pinned VM),
         // named for the mechanism that actually stood down — never as a disk-ward refusal.
-        const reason = `the disk and the records both moved past the last projection (${decision.reason}) — the write stands down so neither edit is drowned`;
+        const reason = decision.reason === "no-base"
+          ? `the file at ${candidate} and the records say different things, and no base names a last agreement (${decision.reason}); nothing writes. Ingest the file, save in the wiki until both say the same, or take the records' side under key ${standoff}`
+          : `the disk and the records both moved past the last projection (${decision.reason}) — the write stands down so neither edit is drowned (key ${standoff})`;
         // ONE SURFACING PER STANDOFF: the key names the bag, the carrier and the two states. A reconcile
         // that meets the standoff it already raised stays quiet; the write still stands down.
-        const standoff = sha256HexBytesSync(new TextEncoder().encode([mirror.bagId, tiddlerUri, diskHash ?? "", obsHash].join("\n"))).slice(0, 24);
-        const key = sitedKey(mirror.bagId, tiddlerUri);
         if (this.standoffs.get(key) === standoff) return;
         // The states moved while the carrier still stands off: the standoff it left ends (its alert
         // clears) and this one enters under its own key.
@@ -807,7 +863,7 @@ export class LarDiskProjector {
       // body with a stale sidecar.
       if (metaPath !== null) this.atomicWrite(metaPath, metaBody!);
       // The observation names the WHOLE carrier — a pending body leaves no observation to name.
-      if (!bodyPending) this.syncedTree?.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
+      if (!bodyPending) this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), obsHash);
       if (this.debugJson && this._tw5) {
         const jsonStr = (this._tw5.$tw.wiki as { getTiddlerAsJson?: (t: string) => string })
           .getTiddlerAsJson?.(tiddlerUri);
