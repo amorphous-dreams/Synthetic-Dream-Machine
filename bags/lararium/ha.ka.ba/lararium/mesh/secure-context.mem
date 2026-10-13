@@ -49,7 +49,7 @@ The browser vessel mints its sovereign key via `crypto.subtle.generateKey({name:
 
 !! Split auth from TLS ~ two concerns the CA question fuses
 
-The move that dissolves the wall: ''split the two concerns.'' AUTHENTICATION (who may sync) stays on the ''device-key TOFU'' the mesh already holds — the Tailnet-Lock shape: each device mints its own keypair, admission is human-gated by physical co-presence, ≥2 household devices co-sign so no single device is the trust root, and every admit fires a household-visible join event (instantly revocable). TLS (the padlock + the secure-context boot) rides a ''separate real cert''. They compose: device-key TOFU for who-syncs, a publicly-trusted cert for the browser's trust store, and ''the family installs nothing''.
+The move that dissolves the wall: ''split the two concerns.'' AUTHENTICATION (who may sync) stays on ''device keys'': each device mints its own keypair, and the built `device-admit/v1` path accepts one founder PersonaGroup root signature. The Tailnet-Lock shape — physical co-presence human-gating admission, ≥2 household devices co-signing so no single device stands as the trust root, and a household-visible, instantly revocable join event on every admit — stands UNBUILT. TLS (the padlock + the secure-context boot) rides a ''separate real cert''. They compose: device-key TOFU for who-syncs, a publicly-trusted cert for the browser's trust store, and ''the family installs nothing''.
 
 <<~/ahu>>
 
@@ -57,17 +57,17 @@ The move that dissolves the wall: ''split the two concerns.'' AUTHENTICATION (wh
 
 !! Why DNS-01 ~ the only challenge that never reaches inward, the only wildcard
 
-Given an entity holding a ''DNS-delegation cap'' over some zone (`kahu.tld` below, a worked placeholder), a ''Let's Encrypt DNS-01 wildcard'' `*.home.kahu.tld` pointed at LAN IPs by ONE split-horizon resolver (AdGuard Home / dnsmasq / Pi-hole the router advertises) clears the wall. DNS-01 proves control by writing a TXT record via the DNS-provider API — ''the only ACME challenge that never needs the validation server to reach the CGNAT'd box'', and the only one that issues a ''wildcard''. Let's Encrypt already sits in every phone's root store, so `https://freyja.home.kahu.tld` is a genuine secure context with ''zero device steps''. The CA-install alternative is HOSTILE to a non-technical family — iOS needs two disjoint trust journeys, Android 7+ apps ignore user-installed CAs outright — so never route a family through it.
+Given an entity holding a ''DNS-delegation cap'' over some zone (`kahu.tld` below, a worked placeholder), a ''Let's Encrypt DNS-01 wildcard'' `*.home.kahu.tld` pointed at LAN IPs by ONE split-horizon resolver (AdGuard Home / dnsmasq / Pi-hole the router advertises) clears the wall. DNS-01 proves control by writing a TXT record via the DNS-provider API — ''the only ACME challenge that never needs the validation server to reach the CGNAT'd box'', and the only one that issues a ''wildcard''. Let's Encrypt already sits in every phone's root store, so `https://freyja.home.kahu.tld` gives a genuine secure context with ''zero device steps''. The CA-install alternative runs HOSTILE to a non-technical family — iOS needs two disjoint trust journeys, Android 7+ apps ignore user-installed CAs outright — so never route a family through it.
 
 <<~/ahu>>
 
 <<~ ahu #/the-web2-bridge>>
 
-!! The web2 bridge ~ renewal is the only internet-touching moment, on the middle of three clocks
+!! The web2 bridge ~ issuance and renewal touch the internet, on the middle of three clocks
 
 ''Three clocks run here, and a single "the name lapses" story fuses them.'' ''REGISTRAR TENURE'' — years, human-paced, ends by non-payment or death of the holder; the remedy reads as succession, never automation. ''ISSUANCE / RENEWAL'' — ~60d, automatable, the declared bridge below. ''SERVE'' — offline for the cert's full validity, no internet at all. Each wants its own drill; a failure on one says nothing about the others, and only ''serve'' failing shuts a door the same day.
 
-DNS-01 needs the internet ''only at issuance / renewal (~every 60d), never at serve time'' — a minted cert serves the LAN for its full validity with the home internet fully down. So the causal-island law falls out clean (`causal-islands.mem`): ''cert-renewal IS the one declared web2 bridge'' — alarm it, retry it, tolerate a lapse; only a renewal that fails for the ''entire'' validity window breaks trust. The ''zero-internet sovereign fallback'' = a name-constrained local CA (RFC 5280 constraints bind it to `*.home.kahu.tld`, so a leaked root cannot MITM `bank.com`) — it issues offline forever, at the cost of the per-device install tax the DNS-01 path avoids.
+DNS-01 needs the internet ''only at issuance / renewal (~every 60d), never at serve time'' — a minted cert serves the LAN for its full validity with the home internet fully down. So the causal-island law falls out clean (`causal-islands.mem`): ''cert-renewal STANDS AS the one declared web2 bridge'' — alarm it, retry it, tolerate a lapse; only a renewal that fails for the ''entire'' validity window breaks trust. The ''zero-internet sovereign fallback'' = a name-constrained local CA (RFC 5280 constraints bind it to `*.home.kahu.tld`, so a leaked root cannot MITM `bank.com`) — it issues offline forever, at the cost of the per-device install tax the DNS-01 path avoids.
 
 <<~/ahu>>
 
@@ -99,7 +99,7 @@ Both research lenses converged on what reads as a ''two-layer'' split. Stated in
 * ''ORIGIN-ATTESTATION'' (a CA-trusted name + its cert key) — what a browser demands before it grants `crypto.subtle`. It answers ''where to reach'', and it authenticates ''the origin'', never the peer.
 * ''PEER-IDENTITY'' (self-certifying, key-derived) — libp2p's PeerID (a multihash of the pubkey), Yggdrasil's key-derived address, Mazières' SFS self-certifying names. The handshake proves the far key hashes to the name dialed. No DNS, no CA.
 
-''The composition law: holding one grants nothing on the other.'' The mesh already runs this way — ''our identities ARE keys'' (#lararium-identity, #publish-a-face); Matrix and ActivityPub lean on public PKI at their federation boundary, and the mesh keeps a CA only where a browser demands one.
+''The composition law: holding one grants nothing on the other.'' The mesh already runs this way — ''our identities STAND AS keys'' (#lararium-identity, #publish-a-face); Matrix and ActivityPub lean on public PKI at their federation boundary, and the mesh keeps a CA only where a browser demands one.
 
 Two consequences fall straight out, and both dissolve worries the role-shaped reading manufactures:
 
@@ -114,10 +114,10 @@ Two consequences fall straight out, and both dissolve worries the role-shaped re
 
 Read from caps rather than from tiers, the landlord and bootstrap worries dissolve (#/name-and-key) and ''four'' concerns survive — each a property of a capability, none of a class of person.
 
-* ''ORIGIN-ATTESTATION CUSTODY.'' The wildcard's private key stands up ANY name under its zone, so whoever holds it presents trusted glass for the whole zone. This rhymes exactly with a ruling already made at the person layer — ''the recovery quorum IS the impersonation quorum, so no safe custodial escrow'' (`identity-classes.mem`). OPEN: whether the origin-attestation cap wants the same quorum treatment, or whether forging a door while forging no peer stays tolerable.
+* ''ORIGIN-ATTESTATION CUSTODY.'' The wildcard's private key stands up ANY name under its zone, so whoever holds it presents trusted glass for the whole zone. This rhymes exactly with a ruling already made at the person layer — ''the recovery quorum and the impersonation quorum stand as ONE quorum, so no safe custodial escrow'' (`identity-classes.mem`). OPEN: whether the origin-attestation cap wants the same quorum treatment, or whether forging a door while forging no peer stays tolerable.
 * ''PERMANENT PUBLICATION.'' Certificate Transparency logs every issued cert to public, append-only logs. A ''wildcard publishes only the wildcard'' — which makes wildcard-only a ''privacy requirement, not a convenience''; any per-name cert publishes that name to the world forever. Sits beside the Herm's anon-veil path (`the-veil-ladder.mem`), and bounds what a rendezvous hint may safely carry.
 * ''REVOCATION ASYMMETRY.'' Keys revoke by quorum, locally, immediately. Browser cert revocation runs soft-fail, so short validity carries the real mitigation. An entity whose peer-identity gets expelled keeps a working trusted origin until its cert expires — two planes, two speeds.
-* ''THE REACH PLANE RAISES THE FIRST TWO.'' Once a vessel holds foreign app credentials so a human posts outward from their wiki (`reach-plane.mem`), ''the browser origin stops guarding one identity and starts guarding many instruments''. Nothing about origin-attestation custody changes; its weight roughly multiplies, and it takes the fallback question up with it — a fallback that silently degrades reads tolerable when the loss is reachability and reads very differently when the vessel is a credential store. ''The vault needs no keychain to begin'' — the scrypt passphrase KEK already carries it, and a keychain leg suits the reach plane BETTER than the sovereign floor (#reach-plane, the carrier prices the key).
+* ''THE REACH PLANE RAISES THE FIRST TWO.'' Once a vessel holds foreign app credentials so a human posts outward from their wiki (`reach-plane.mem`), ''the browser origin stops guarding one identity and starts guarding many instruments''. Nothing about origin-attestation custody changes; its weight roughly multiplies, and it takes the fallback question up with it — a fallback that silently degrades reads tolerable when the loss costs reachability and reads very differently when the vessel holds a credential store. ''The vault needs no keychain to begin'' — the scrypt passphrase KEK already carries it, and a keychain leg suits the reach plane BETTER than the sovereign floor (#reach-plane, the carrier prices the key).
 * ''THE FALLBACK'S TAX LANDS AT THE WORST MOMENT.'' The name-constrained local CA issues offline forever, at the per-device install cost this path exists to avoid — so the sovereign fallback demands precisely the ceremony ruled HOSTILE to a non-technical family (#/why-dns-01), in the crisis where it gets reached for. OPEN: whether a household rehearses that install BEFORE it needs it, or the fallback stays honestly unavailable.
 
 <<~/ahu>>
@@ -126,13 +126,13 @@ Read from caps rather than from tiers, the landlord and bootstrap worries dissol
 
 !! What a key format buys, MEASURED ~ non-portability, never non-compromise
 
-A browser vessel persists its signing key as a hex seed, so a same-origin read yields raw key material. The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Both halves were measured rather than read (Playwright Chromium 151 + Firefox 153, 2026-08-09).
+A browser vessel persists its signing key as a hex seed, so a same-origin read yields raw key material. The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Measurement, not reading, grounds both halves (Playwright Chromium 151 + Firefox 153, 2026-08-09).
 
 ''IT WORKS.'' An Ed25519 key generated non-extractable structured-clones into IndexedDB, survives a full browser restart, signs afterward, and refuses every export. Ed25519 reached WebCrypto across the field in 2024–25 (Firefox 129, Safari 17, Chrome 137). ''One gap:'' Safari can MAKE an X25519 key and cannot PERSIST one as a CryptoKey — Ed25519 persists there, X25519 does not.
 
 ''AND THE SEED SITS ON DISK IN THE CLEAR REGARDLESS.'' The spec says so normatively — the flag *"does not guarantee that the underlying cryptographic key material will not be persisted to disk, possibly unencrypted"* — and a probe confirmed it: mint, re-import non-extractable, store only the handle, close the browser, then grep the profile directory and the seed appears, in Chromium's leveldb log and in Firefox's idb sqlite alike. Devtools cannot show it; script cannot export it; ''the disk can''.
 
-''So the honest frame reads NON-PORTABILITY.'' A hostile script gets a live signing oracle rather than a portable secret — and, because a CryptoKey structured-clones, it can hand that oracle to another origin permanently. Anyone with the filesystem, a backup, or a stolen laptop takes the seed either way. What genuinely changes: the key stops being copyable OUT of this browser profile, which makes a device key genuinely ''device''-bound — exactly what a mesh wants where nobody but its holder reopens a key and every other recovery runs as re-admission (#/two-key-classes).
+''So the honest frame reads NON-PORTABILITY.'' A hostile script gets a live signing oracle rather than a portable secret — and, because a CryptoKey structured-clones, it can hand that oracle to another origin permanently. Anyone with the filesystem, a backup, or a stolen laptop takes the seed either way. What genuinely changes: WebCrypto refuses script export of the non-extractable handle, which binds a device key to its ''device'' at that API boundary — what a mesh wants where nobody but its holder reopens a key and every other recovery runs as re-admission (#/two-key-classes); profile files and backups can still carry raw key material.
 
 ''AND IT DOES NOT CLOSE THE WALL ABOVE IT.'' An entity holding the origin-attestation cap ''serves the vessel's code''. Once it does, key format stops mattering: it replaces the signer, replaces the admit flow, and holds a permanent remote oracle. The field's incident ledger reads entirely this shape, up to a 2025 supply-chain tampering that moved roughly a billion and a half dollars through a wallet's own served bundle. ''Two separate problems'' — custody of a key, and custody of the code that uses it — and only the second one the wildcard cap touches. That second one closes by moving code delivery off the served page: an installed application surface, a signed bundle, a separately-originated holder. Every serious browser key-holder in the field made that move OUTWARD, and none of them made it by changing a key's format.
 
@@ -151,7 +151,7 @@ A browser vessel persists its signing key as a hex seed, so a same-origin read y
 
 ''The instrument that fits the persona root'' reads as authenticator-derived envelope encryption — a key derived per-authenticator, wrapping one content key, one wrapped copy per device. It suits the root's needs (bytes, and multi-device recovery) and suits the device key's not at all. ''Two keys, two cures, and a design that gives both the same treatment gets one of them wrong.''
 
-''The migration preserves identity.'' Re-importing an existing seed as non-extractable keeps the same key, the same verifying key, and the same address — no re-mint, no re-admission. It runs ONE-WAY: afterward no paper backup of that key can ever be produced. Costs nothing where a key never reopens; a trap anywhere else, so a vessel takes the move only where its holder wants no slot.
+''The migration preserves identity.'' Re-importing an existing seed as non-extractable keeps the same key, the same verifying key, and the same address — no re-mint, no re-admission. It runs ONE-WAY through WebCrypto: afterward the handle supplies no paper backup of that key; an earlier backup, or a seed recovered from profile storage, may still supply one. Costs nothing where a key never reopens; a trap anywhere else, so a vessel takes the move only where its holder wants no slot.
 
 !!! How a vessel's key reopens ~ by its own holder's slot, and by nothing else
 
@@ -171,11 +171,11 @@ So //a device key never gets resurrected// reads: nobody ELSE raises it, and not
 
 A minted key rests in browser storage, and browsers reclaim it. ''WebKit clears ALL script-writable storage for an origin after seven days of browser use without interaction there'' — which reads as an occasionally-opened vessel simply disappearing, with no event and no warning. Elsewhere, eviction runs least-recently-used under storage pressure and lands ''all-or-nothing per origin''; a vessel never half-survives.
 
-''HOME-SCREEN INSTALLATION IS EXEMPT FROM THAT CLOCK.'' So //install this// stops being a nicety and joins the identity's durability story — the one act that keeps an occasionally-used vessel alive on the surface a family most often carries.
+''HOME-SCREEN INSTALLATION ESCAPES THAT CLOCK.'' So //install this// outgrows a nicety and joins the identity's durability story — the one act that keeps an occasionally-used vessel alive on the surface a family most often carries.
 
-''And a vessel may ASK for the eviction-resistant class.'' One call requests it, another reports what was granted; some browsers prompt, others decide from interaction history. The answer belongs in the HUD rather than in an assumption: ''best-effort'' names a real and reportable state, and a vessel that never asked cannot tell a household which one it holds.
+''And a vessel may ASK for the eviction-resistant class.'' One call requests it, another reports what the browser granted; some browsers prompt, others decide from interaction history. The answer belongs in the HUD rather than in an assumption: ''best-effort'' names a real and reportable state, and a vessel that never asked cannot tell a household which one it holds.
 
-''THE FAILURE THAT MUST NEVER BE SILENT.'' Where a secure context stands absent, a signer whose platform path throws may fall back to an in-memory key that IS extractable — an identity nobody chose, weaker than the one asked for, surfaced only through a getter nobody reads. That degrade sits on precisely the household path this meme opens with. ''Refuse and explain; never substitute.'' A vessel with no identity stays honest.
+''THE FAILURE THAT MUST NEVER STAY SILENT.'' Where a secure context stands absent, a signer whose platform path throws may fall back to an EXTRACTABLE in-memory key — an identity nobody chose, weaker than the one asked for, surfaced only through a getter nobody reads. That degrade sits on precisely the household path this meme opens with. ''Refuse and explain; never substitute.'' A vessel with no identity stays honest.
 
 <<~/ahu>>
 
@@ -240,9 +240,9 @@ It bears on the standing finding that no shipped guardianship design gives its s
 
 !! Admit inertness ~ SAS, not a proximity radio
 
-The QR admit ceremony (`persona-circle.mem`) stays ''photograph-inert by construction'': the offer QR carries only an ephemeral pubkey + nonce, the grant is ECDH-sealed to a secret that never leaves the joinee, and the keyring rides bound into the persona-signed transcript (#cap-tier, #keyring-delivery). ''Under camera-to-screen, nothing more is needed'' — the single-use-nonce + freshness window + who-scans-whom already carry it.
+The QR admit ceremony (`persona-circle.mem`) stays ''photograph-inert by construction'': the offer carries the target vessel's device key, an ephemeral pubkey and a nonce, the grant rides ECDH-sealed to a secret that never leaves the joinee, and the keyring rides bound into the persona-signed transcript (#cap-tier, #keyring-delivery). ''Under camera-to-screen, the ceremony needs nothing more'' — nonce consumption, local session patience and who-scans-whom carry it.
 
-FIDO caBLE leans on a ''BLE proximity gate'' ONLY because its QR bootstraps a tunnel-SERVER relay (the QR is not the channel) — so a photographed / remote QR could drive auth from afar, and BLE re-adds the proximity the relay threw away. ''Our QR is the channel'', so the property BLE restores was never lost; and BLE runs beacon-relayable (~150m) and platform-broken for our surfaces (no Web Bluetooth on Safari/Firefox/iOS; no Web NFC on any desktop/home-node). ''The one residual'' — an active relay over a MODIFIABLE channel (the admit surface accepts paste; a relayed 3-hop to a distant victim) — wants a ''short-authentication-string'' (SAS), never a radio: derive a short compare (Vaudenay CRYPTO-2005; Matrix/Signal) by HKDF over material already in the signed transcript — ''bind it to the TRANSCRIPT HASH, not raw DH'', or a same-DH-different-payload substitution slips under it — render ~5-7 emoji / 3×4-digit, one human glance, gated to the relayed case only. Zero new dependency, web3-native. Skip rotating-QR (nonce+expiry already banks it) and NFC (Android-only). ''NOT built'' — a flagged follow; the SAS length + whether the relayed path stays in-scope read as operator rulings.
+FIDO caBLE leans on a ''BLE proximity gate'' ONLY because its QR bootstraps a tunnel-SERVER relay (the QR opens no channel itself) — so a photographed / remote QR could drive auth from afar, and BLE re-adds the proximity the relay threw away. ''Our QR carries the channel'', so the property BLE restores never left; and BLE runs beacon-relayable (~150m) and platform-broken for our surfaces (no Web Bluetooth on Safari/Firefox/iOS; no Web NFC on any desktop/home-node). ''The one residual'' — an active relay over a MODIFIABLE channel (the admit surface accepts paste; a relayed 3-hop to a distant victim) — wants a ''short-authentication-string'' (SAS), never a radio: derive a short compare (Vaudenay CRYPTO-2005; Matrix/Signal) by HKDF over material already in the signed transcript — ''bind it to the TRANSCRIPT HASH, not raw DH'', or a same-DH-different-payload substitution slips under it — render ~5-7 emoji / 3×4-digit, one human glance, gated to the relayed case only. Zero new dependency, web3-native. Skip rotating-QR (nonce consumption and local session patience bound the ceremony) and NFC (Android-only). ''NOT built'' — a flagged follow; the SAS length + whether the relayed path stays in-scope read as operator rulings.
 
 <<~/ahu>>
 
@@ -254,12 +254,12 @@ FIDO caBLE leans on a ''BLE proximity gate'' ONLY because its QR bootstraps a tu
 |---|---|---|
 | ''Tailscale Tailnet Lock'' — new nodes locked out until an existing signing node co-signs, ≥2 signers, no central CA | the device-key TOFU auth layer, structure-for-structure | overlay-network trust |
 | ''Let's Encrypt DNS-01 wildcard'' + split-horizon DNS | the zero-install trusted-origin path; TXT-via-API never reaches inward, the only wildcard | web PKI / ACME |
-| ''libp2p PeerID · Yggdrasil · SFS'' (Mazières) self-certifying names | the key-derived spine identity — names ARE keys, no CA at the boundary | distributed systems |
+| ''libp2p PeerID · Yggdrasil · SFS'' (Mazières) self-certifying names | the key-derived spine identity — names STAND AS keys, no CA at the boundary | distributed systems |
 | ''RFC 5280 Name Constraints'' | the sovereign fallback CA bounded to `*.home.kahu.tld` — a leaked root cannot MITM the world | X.509 |
 | ''Vaudenay SAS'' (CRYPTO 2005); Matrix cross-signing emoji; Signal safety numbers | the relayed-channel residual: a short human compare over the signed ECDH transcript kills an active MITM, ≈2^−k independent of compute | applied cryptography |
-| ''FIDO caBLE proximity'' | the anti-pattern: BLE's rationale is coupled to a tunnel-server relay our airgapped QR does not have — borrow the threat-model clarity, NOT the radio | authentication UX |
+| ''FIDO caBLE proximity'' | the anti-pattern: BLE's rationale couples to a tunnel-server relay our airgapped QR does not have — borrow the threat-model clarity, NOT the radio | authentication UX |
 
-''The honest guard:'' the prior art illuminates the ''path'' (DNS-01, TOFU, SAS) but the mesh borrows only what survives its own law — the runtime cloud control plane a Tailscale-style overlay assumes is a ''web2 bridge behind a causal-island boundary'' (#/web3-only-lares), never a core dependency. Take the DNS-01 zero-install, the co-sign TOFU, the SAS compare; leave the coordination server at the island edge.
+''The honest guard:'' the prior art illuminates the ''path'' (DNS-01, TOFU, SAS) but the mesh borrows only what survives its own law — the runtime cloud control plane a Tailscale-style overlay assumes reads as a ''web2 bridge behind a causal-island boundary'' (#/web3-only-lares), never a core dependency. Take the DNS-01 zero-install, the co-sign TOFU, the SAS compare; leave the coordination server at the island edge.
 
 <<~/ahu>>
 
@@ -296,6 +296,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;i1BSGsUduUc9FBTnGqXudlSXok4EOW3d7rLr_0kpes8
+<<^ code="&#x0003;">>ni:///sha-256;JWv5KD9NxUdSXGzV0v3SAsK9peLJzJI5GkdXYDU9kl8
 
 <<^ code="&#x0004;" -> to="?">>
