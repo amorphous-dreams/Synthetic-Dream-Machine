@@ -7,7 +7,7 @@
  * Node-specific shores (only these belong here):
  *   - the store's one holder (`repo`): the standing vessel's own Repo, or the direct holder's (`ownedStore`)
  *   - readNexusDoc off `bags/nexus` (the roster's authority home) → foundingRoster
- *   - the held-quorum selector (`held-quorum`) + loadPersonaGroupRootSeed (founder-held signing seeds)
+ *   - the held-quorum selector (`held-quorum`): the seats of the roster whose own keys this vessel holds
  *   - loadVesselVerifyingKey (the node's own gate key — the board's per-island deterministic address seed)
  *
  * The signing, the quorum SHAPE, the fold/verify, and the board tiddler shape stay in @lararium/mesh
@@ -15,12 +15,12 @@
  *
  * FAIL CLOSED, at every shore:
  *   - an unseated / quorum-short charter → REFUSE (nothing to root a quorum on); no board write.
- *   - fewer than `threshold` HELD persona-roots that sit IN the seated roster → REFUSE; no sub-quorum entry.
+ *   - fewer than `threshold` HELD seat keys that sit IN the seated roster → REFUSE; no sub-quorum entry.
  *   - an entry that does not verify against the seated roster → REFUSE; never write an unverifiable ban.
  *   - a malformed nym (not a 64-hex ed25519 verifying key) → REFUSE.
  *
- * The a-multitude-of-one ceremony: one operator holds all three founding persona-roots, so a 2-of-3 quorum
- * signs with 2 of their OWN held persona-roots. A real cabal (2 DISTINCT operators) needs a collect-signatures
+ * The a-multitude-of-one ceremony: one operator holds all three founding seats' keys, so a 2-of-3 quorum
+ * signs with 2 of their OWN held seat keys. A real cabal (2 DISTINCT operators) needs a collect-signatures
  * flow — surfaced, unbuilt (see the handback fork).
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen
@@ -30,11 +30,11 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   antigenEntriesFromBoard, antigenActCid, writeAntigenEntry, signAntigenEntry,
   makeMultiSigQuorumVerifier, foldAntigenSet, isKapaed, foundingRoster,
-  kapaeAntigenDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
+  kapaeAntigenDocUrl, materializeSharedLarDoc,
   type KapaeAction, type KapaeAntigenEntry, type KahuQuorumSeats,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
-import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 
@@ -61,7 +61,7 @@ export interface NexusKapaeResult {
   readonly parents:         readonly string[];
   readonly sealEpochCid: string;
   readonly threshold:       number;
-  /** The verifying keys that signed the entry (the held persona-roots that met the quorum). */
+  /** The verifying keys that signed the entry (the held seat keys that met the quorum). */
   readonly signers:         readonly string[];
   readonly boardUrl:        string;
   /** Whether the nym stands Kapae'd AFTER this write folds against the seated roster. */
@@ -91,13 +91,13 @@ function seatedRosterOrRefuse(sealHome: string): KahuQuorumSeats {
 
 /** The antigen door's sub-quorum refusal — it names the act a short quorum would have minted. */
 const subQuorum = (held: number, k: number): NexusKapaeError => new NexusKapaeError(
-  `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seated persona-root(s), but a valid antigen act carries ${k} distinct founding-kahu signatures. ` +
+  `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seat key(s) of the seated roster, but a valid antigen act carries ${k} distinct founding-kahu signatures. ` +
   `A real cabal collects the missing signature(s) from the other founding kahu (a collect-signatures ceremony, unbuilt).`,
 );
 
 /**
  * Raise a ban (`kapae`) or mint a lift (`un_kapae`) on `nym` — sign a causal antigen entry with ≥ threshold
- * held founding persona-roots and LAND it on the always-carried board. The command observes the local causal
+ * held founding seat keys and LAND it on the always-carried board. The command observes the local causal
  * frontier and cites every admissible head as a parent; no scalar next-version is minted or accepted. FAILS CLOSED
  * before any write: unseated charter, sub-quorum, malformed
  * nym, or a self-verify miss all REFUSE with nothing written.
@@ -139,12 +139,9 @@ export async function runNexusKapae(opts: NexusKapaeOptions): Promise<NexusKapae
     const covered = new Set(admissible.flatMap((e) => e.parents));
     const parents = admissible.filter((e) => !covered.has(e.actCid)).map((e) => e.actCid).sort();
 
-    // Sign with the held persona-roots — each signer supplies its OWN seed's bare-ed25519 signer (mesh holds
-    // no key). loadPersonaGroupRootSeed reads founder-only custody; a joinee never reaches this branch.
-    const signers = await Promise.all(selected.map(async (s) => ({
-      signer: s.verifyingKey,
-      sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
-    })));
+    // Sign with the held seats' own keys: each hand opens its one cold row for its one signature (mesh holds
+    // no key). A vessel that holds no seat row never reaches this branch.
+    const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
     const entry: KapaeAntigenEntry = await signAntigenEntry(
       { nym, action: opts.action, parents, sealEpochCid: roster.sealEpochCid },
       signers,

@@ -14,10 +14,10 @@ import * as ed from "@noble/ed25519";
 import {
   hex, DAEMON_BAG_ID, seedDaemonDoc,
   foundingRoster, memberEdgeId, materializeSharedLarDoc, realmEdgeBoardDocUrl, edgeRollAnchorsFromBoard,
-  edgeKapaeActsFromBoard, ed25519SignerFromSeed,
+  edgeKapaeActsFromBoard,
 } from "@lararium/mesh";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, listPersonaRoots,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
 } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
@@ -28,6 +28,7 @@ import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js"
 import { runEdgeRollAnchors } from "../src/commands/edge-roll-anchor.js";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { seatChairs } from "./seat-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -36,24 +37,15 @@ const REALM = "a".repeat(64);
 const nymOf = (byte: number) => ed.getPublicKeyAsync(new Uint8Array(32).fill(byte)).then(hex);
 const chairs = (keys: readonly string[]) => keys.map((_, i) => `Kahu ${i}`);
 
-/** The hands over `keys`, each a persona root this vessel holds. */
-async function heldHands(keys: readonly string[]) {
-  const want = new Set(keys.map((k) => k.toLowerCase()));
-  const hands: { signer: string; sign: (b: Uint8Array) => Promise<string> }[] = [];
-  for (const i of await listPersonaRoots()) {
-    const r = await generateOrLoadPersonaGroupRoot(i);
-    if (want.has(r.verifyingKey.toLowerCase())) hands.push({ signer: r.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(i)) });
-  }
-  return hands;
-}
-
-/** A charter seated over roots 0-2 at two of three, armed with roots 4-6, and the roll that reveals them. */
+/** A charter seated over faces 0-2 at two of three, armed with faces 4-6, and the roll that reveals them. */
 async function seatCharter() {
-  const roots = await Promise.all([0, 1, 2, 3, 4, 5, 6].map((i) => generateOrLoadPersonaGroupRoot(i)));
-  const oldKeys = roots.slice(0, 3).map((r) => r.verifyingKey), newKeys = roots.slice(4, 7).map((r) => r.verifyingKey);
+  await Promise.all([0, 1, 2, 4, 5, 6].map((i) => generateOrLoadPersonaGroupRoot(i)));
+  const old = await seatChairs([0, 1, 2]);
+  const next = await seatChairs([4, 5, 6], { generation: 1 });
+  const oldKeys = [...old.keys], newKeys = [...next.keys];
   const genesis = heldCharter({ keys: oldKeys, threshold: 2, successors: { keys: newKeys, threshold: 2 } });
   writeNexusDoc(larSealHome(), genesis.doc({ labels: chairs(oldKeys) }));
-  const rolled = await genesis.roll(await heldHands(newKeys));
+  const rolled = await genesis.roll(next.hands);
   const opened = rolled.roster;
   const roll = (): void => writeNexusDoc(larSealHome(), rolled.doc({ labels: chairs(newKeys) }));
   return { e0: genesis.head, opened, roll };
@@ -136,8 +128,9 @@ describe("the quorum hand — the seats of the charter act on a realm's edges", 
     const joiner = await nymOf(9);
     // No charter at all: nothing to sign with, nothing written.
     await expect(direct(runEdgeKapae)({ member: joiner, realm: REALM, raised: true, hand: "quorum" })).rejects.toBeInstanceOf(EdgeKapaeError);
-    // A charter that seats ONE held root beside two foreign keys, at two of three: this vessel holds one seat.
-    const held = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+    // A charter that seats ONE held seat key beside two foreign keys, at two of three: this vessel holds one seat.
+    await generateOrLoadPersonaGroupRoot(0);
+    const held = (await seatChairs([0])).keys[0]!;
     const keys = [held, await nymOf(21), await nymOf(22)];
     writeNexusDoc(larSealHome(), heldCharter({ keys, threshold: 2 }).doc({ labels: chairs(keys) }));
     await expect(direct(runEdgeKapae)({ member: joiner, realm: REALM, raised: true, hand: "quorum" })).rejects.toThrow(/holds 1 seat/);

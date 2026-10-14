@@ -7,17 +7,16 @@
  * hands the two off-device carriers back for the operator to place BY HAND.
  *
  * CONTROLS: a second call re-mints nothing (byte-identical carrier — a re-stand never re-splits); the
- * reserve share stays absent (one leg, not two — the keel pass owns the reserve); a missing persona root
+ * founding seals one share beside the root and no second leg; a missing persona root
  * refuses rather than fabricating a share.
  */
-import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { readVkCarrier } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare, deviceSharePath } from "../src/recovery-share-store.js";
-import { reserveMineSharePath } from "../src/seal-reserve-store.js";
 import { armRecoveryAtFounding } from "../src/commands/init.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -39,7 +38,7 @@ describe("the device share mints at the face founding", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("a founding mints the share; a re-found never re-mints; the reserve stays absent", async () => {
+  test("a founding mints the share; a re-found never re-mints; no second leg seals", async () => {
     await generateOrLoadPersonaGroupRoot(0);
     expect(await loadRecoveryDeviceShare(0)).toBeNull();
 
@@ -56,8 +55,8 @@ describe("the device share mints at the face founding", () => {
     expect(again.minted).toBe(false);
     expect(readFileSync(deviceSharePath(0)).equals(bytes)).toBe(true);
 
-    // CONTROL: one leg, not two.
-    expect(existsSync(reserveMineSharePath())).toBe(false);
+    // CONTROL: one leg, not two: the founding seals the device share and nothing beside it in that home.
+    expect(readdirSync(dirname(deviceSharePath(0))).filter((f) => f.endsWith(".bin") && f.includes("share"))).toEqual([basename(deviceSharePath(0))]);
   });
 
   test("the share lands under the vessel key, one row per face", async () => {

@@ -15,10 +15,8 @@
  * the nym it carries is published; a leaf presents a different key to each Nexus and the same key to one
  * Nexus across a seal rotation, where a root would name the human's device-group on every island at once.
  *
- * THE ONE EXCEPTION, NAMED: the kahu quorum signs with the persona-ROOTS seated in the charter, because
- * the charter seats roots and a quorum signature counts only against seated keys. The charter therefore
- * publishes those roots; moving its seats onto leaves re-founds the charter epoch, which is a founding act
- * rather than a wiring one.
+ * THE QUORUM SIGNS WITH THE SEATS' OWN KEYS (`held-quorum`, `seat-key-store`): a seat's key stands apart from
+ * every persona root and every leaf, so the charter publishes no root and no dialing key signs a quorum's act.
  *   · ≥ threshold founding-kahu quorum signatures (the steward act — identical to the antigen's).
  * A REVOKE needs the kahu quorum ONLY (an uncooperative member cannot veto its own removal).
  *
@@ -27,7 +25,7 @@
  *
  * FAIL CLOSED, at every shore (mirrors nexus-kapae):
  *   · an unseated / quorum-short charter → REFUSE (nothing to root a quorum on); no board write.
- *   · fewer than `threshold` HELD persona-roots that sit IN the seated roster → REFUSE; no sub-quorum entry.
+ *   · fewer than `threshold` HELD seat keys that sit IN the seated roster → REFUSE; no sub-quorum entry.
  *   · an admit with no valid contract-in → REFUSE; never write a conscripted member.
  *   · an entry that does not COUNT against the seated roster → REFUSE; never write a dead admit.
  *   · a malformed nym → REFUSE.
@@ -47,9 +45,7 @@ import {
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
 
-import {
-  loadPersonaGroupRootSeed, personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed,
-} from "../node-vessel-identity.js";
+import { personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves, nexusLeafFor } from "../nexus-leaf.js";
@@ -130,7 +126,7 @@ function nexusAidOrRefuse(sealHome: string): string {
 
 /** The membership door's sub-quorum refusal — it names the act a short quorum would have minted. */
 const subQuorum = (held: number, k: number): NexusContractError => new NexusContractError(
-  `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seated persona-root(s), but a valid membership act carries ${k} distinct founding-kahu signatures. ` +
+  `sub-quorum REFUSED (fail-closed): the vessel holds ${held} seat key(s) of the seated roster, but a valid membership act carries ${k} distinct founding-kahu signatures. ` +
   `A real cabal collects the missing signature(s) from the other founding kahu (a collect-signatures ceremony, unbuilt).`,
 );
 
@@ -212,7 +208,7 @@ export async function runNexusCarryFor(opts: {
 
 /**
  * ADMIT (`admit`) or REVOKE (`revoke`) an operator nym — sign a causal membership act with ≥ threshold held
- * founding persona-roots (plus, for admit, the operator's contract-in) and LAND it on the always-carried members
+ * founding seat keys (plus, for admit, the operator's contract-in) and LAND it on the always-carried members
  * board. FAILS CLOSED before any write. The act names every locally observed causal head for this relation family;
  * it never derives authority from a scalar counter.
  */
@@ -245,12 +241,8 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     const boardFold = await foldCarriageDetails(boardEntries, roster);
     const parents = causalHeadsForNym(boardFold.entries, nym, opts.action, roster.sealEpochCid);
 
-    // The quorum signs with the seated persona-ROOTS: a quorum signature counts only against keys the charter
-    // seats, and the charter seats roots; only a re-found moves its seats onto leaves.
-    const signers = await Promise.all(selected.map(async (s) => ({
-      signer: s.verifyingKey,
-      sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
-    })));
+    // The quorum signs with the seats' own keys: each hand opens its one cold row for its one signature.
+    const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
     const entry: CarriageEntry = await signCarriageQuorum(
       { nym, action: opts.action, parents, sealEpochCid: roster.sealEpochCid },
       signers,
@@ -322,7 +314,7 @@ export interface NexusRollAnchorResult {
  * head, so a roll whose anchor cannot land writes nothing at all. The anchor names the epoch `closing` heads
  * and the epoch `opened` heads, carries `closing`'s public key-set, cites the board's causal heads at the roll
  * (`rollAnchorParents`: the acts and anchors that count at the closing epoch and nothing cites), and is signed
- * by `opened`'s quorum out of the held persona-roots it seats. The closing keys never sign it.
+ * by `opened`'s quorum out of the held seat keys it seats. The closing keys never sign it.
  *
  * FAIL CLOSED, before any write: fewer than `opened.threshold` held roots seated in `opened` → REFUSE; an
  * anchor that does not count under `opened` → REFUSE. An anchor that lands for a head the rotate then fails
@@ -338,7 +330,7 @@ export async function runNexusRollAnchor(opts: {
   readonly repo:        Repo;
 }): Promise<NexusRollAnchorResult> {
   const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new NexusContractError(
-    `roll anchor REFUSED (fail-closed): the vessel holds ${held} persona-root(s) the new roster seats, but the anchor ` +
+    `roll anchor REFUSED (fail-closed): the vessel holds ${held} seat key(s) the new roster seats, but the anchor ` +
     `carries ${k} distinct signatures of the NEW quorum — the closing keys never sign it.`,
   ));
   // The board keys on the charter's genesis island — a rotating vessel holds a charter, and a charter outranks
@@ -352,10 +344,7 @@ export async function runNexusRollAnchor(opts: {
     const handle  = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
     const parents = await rollAnchorParents(
       carriageEntriesFromBoard(handle.doc()), rollAnchorsFromBoard(handle.doc()), opts.closing);
-    const signers = await Promise.all(selected.map(async (s) => ({
-      signer: s.verifyingKey,
-      sign:   ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
-    })));
+    const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
     const anchor = await signRollAnchor({
       prevEpochCid:  opts.closing.sealEpochCid,
       sealEpochCid:  opts.opened.sealEpochCid,

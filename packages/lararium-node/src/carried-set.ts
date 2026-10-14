@@ -15,7 +15,7 @@
  *     of this vessel's held personas presents to N, and its `sealEpochCid` must equal the head of the
  *     charter this vessel holds for N. Consent covers N's admits within that seal epoch; a rotation moves
  *     the head and the consent stops counting until the operator consents again.
- *   · A SEATED CHAIR. A held persona-root seated in N's verified roster carries for N with no consent
+ *   · A SEATED CHAIR. A seat key this vessel holds, seated in N's verified roster, carries for N with no consent
  *     record: the chair itself is the act of joining.
  *
  * ── A CARRIED CHARTER MOVES FORWARD ONLY ────────────────────────────────────────────────────────
@@ -38,7 +38,8 @@ import { dirname, join } from "node:path";
 import { foundingRoster, realmIdOfCharter, verifyCarriageConsent, type NexusDoc } from "@lararium/mesh";
 import { readNexusDoc, parseNexusDoc, nexusCharterDocRelPath } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
-import { listPersonaRoots, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
+import { listPersonaRoots } from "./node-vessel-identity.js";
+import { heldSeatKey } from "./seat-key-store.js";
 
 /** A refusal the CLI renders as a clean message. Nothing was written when one is thrown. */
 export class CarriedCharterError extends Error {}
@@ -253,19 +254,18 @@ export interface CarriedReading {
   readonly sealEpochCid: string;
   /** A kept consent verifies at that head under a held leaf. */
   readonly consented:    boolean;
-  /** A held persona-root sits in the verified roster. */
+  /** A seat key this vessel holds, under a face it holds a root for, sits in the verified roster. */
   readonly seated:       boolean;
   readonly carried:      boolean;
 }
 
-/** The persona-root verifying keys this vessel holds, lowercased. */
-async function heldRootKeys(): Promise<Set<string>> {
-  const keys = new Set<string>();
-  for (const i of await listPersonaRoots()) {
-    const vk = await loadPersonaGroupRootVerifyingKey(i);
-    if (vk) keys.add(vk.toLowerCase());
-  }
-  return keys;
+/**
+ * Whether this vessel holds a chair in `keys`: a seat row under one of those keys, filed under a face whose root
+ * this vessel holds. The roster of faces rests sealed, so a locked vessel refuses here as it does for a consent;
+ * the seat row itself answers by name and opens for nothing.
+ */
+async function holdsSeatAmong(keys: readonly string[], faces: ReadonlySet<number>): Promise<boolean> {
+  return keys.some((key) => { const held = heldSeatKey(key.toLowerCase()); return held !== null && faces.has(held.handleIndex); });
 }
 
 /** A reading per held charter, primary first, then carried charters in AID order. */
@@ -278,11 +278,11 @@ export async function carriedReadings(sealHome: string): Promise<readonly Carrie
     if (aid !== primaryAid) charters.push({ aid, doc, primary: false });
   }
 
-  const roots = await heldRootKeys();
+  const faces = new Set(await listPersonaRoots());
   const out: CarriedReading[] = [];
   for (const { aid, doc, primary } of charters) {
     const roster    = foundingRoster(doc);
-    const seated    = roster.sealEpochCid.length > 0 && roster.keys.some((k) => roots.has(k.toLowerCase()));
+    const seated    = roster.sealEpochCid.length > 0 && await holdsSeatAmong(roster.keys, faces);
     const consented = await hasContractedInto(sealHome, aid);
     out.push({ aid, primary, sealEpochCid: roster.sealEpochCid, consented, seated, carried: consented || seated });
   }

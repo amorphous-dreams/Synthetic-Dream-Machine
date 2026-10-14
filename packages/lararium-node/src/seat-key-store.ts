@@ -30,9 +30,13 @@
  * once the row's own bytes answer the key asked for: a row sealed under another key stays, and so does a row that
  * holds another key under this key's name.
  *
- * No production path calls this module yet: the seal rite (`nexus seal seat`, `nexus seal rotate`) and the quorum
- * doors' signer selection (`held-quorum`) will. Until one does it stands SPECIFIED in code and stays out of the
- * package barrel.
+ * ── ONE FACE'S PUBLIC HALVES, FOR A RITE THAT MUST NAME THEM ────────────────────────────────────
+ * A name commits to a key and reveals none, so a rite that must spell a key-set (the roll that seats the keys a
+ * head committed) asks `seatKeysOfFace`: each row of ONE face opens once, for that read, and answers the public
+ * half its secret derives. Nothing secret leaves the call.
+ *
+ * Callers: the seal rite (`seal-ceremony`: the arming of a genesis and of a roll, the roll's hand, a crossing's
+ * marks) and the quorum doors' choice of signers (`held-quorum`).
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus · lar:///ha.ka.ba/lararium/mesh/custody#/the-table
  */
@@ -109,6 +113,27 @@ export function listSeatKeys(): HeldSeatKey[] {
 export function heldSeatKey(verifyingKey: string): HeldSeatKey | null {
   const name = seatKeyName(verifyingKey);
   return listSeatKeys().find((k) => k.name === name) ?? null;
+}
+
+/**
+ * The public half of every seat key face `handleIndex` holds, ascending. Each row of that face opens once, for
+ * this read; its secret answers the key its name commits to or the read refuses by name, and no secret leaves.
+ * No row of another face opens. At the floor it refuses `CustodyLocked` before it says what the face holds.
+ */
+export async function seatKeysOfFace(handleIndex: number): Promise<string[]> {
+  assertFace(handleIndex);
+  await openedCustody();
+  const keys: string[] = [];
+  for (const held of listSeatKeys()) {
+    if (held.handleIndex !== handleIndex) continue;
+    keys.push(await openColdCustodyRow("identity", held.file, (secret) => {
+      if (secret.length !== 32) throw new CustodyRowUnavailable("identity", held.file, "malformed");
+      const key = publicOf(secret);
+      if (seatKeyName(key) !== held.name) throw new CustodyRowUnavailable("identity", held.file, "names-another-key");
+      return key;
+    }));
+  }
+  return keys.sort();
 }
 
 /**

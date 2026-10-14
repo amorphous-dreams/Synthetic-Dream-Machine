@@ -3,13 +3,14 @@
  * through a REAL persona vault + the bags/nexus charter DOC on disk.
  *
  * Proven:
- *   · seat establishes the GENESIS epoch (null prev, no roll) with a pre-rotation commitment + raises a
- *     live quorum, all through the vault (pet-name match → seated verifying keys → chain head),
+ *   · seat gives each chair that stands a SEAT key of its own (never a persona root) and a next key, both
+ *     sealed rows, and establishes the GENESIS epoch (null prev, no roll) that commits the next set,
  *   · seat FAILS CLOSED against re-seating a chain that has already ROTATED past genesis,
- *   · rotate REVEALS the vault key-set, verifies it against the head's pre-commitment, has the revealed
- *     hands SIGN the roll, and APPENDS a hash-linked successor (the seat→rotate round-trip),
- *   · a rotate whose reveal does NOT match the head's pre-commitment REFUSES (nonzero) and writes NOTHING
- *     (the chain stays at genesis) — the fail-closed floor.
+ *   · rotate seats the committed set it finds on this vessel, has those hands SIGN the roll, APPENDS a
+ *     hash-linked successor, rolls again, and retires the closing keys (the seat→rotate round-trip),
+ *   · an arming option passed by hand refuses by name; a head that commits a set this vessel does not hold
+ *     REFUSES the rotate and writes NOTHING (the chain stays at genesis) — the fail-closed floor,
+ *   · succession: a chair that joins signs by possession, a chair that steps down drops.
  *
  * The reveal-verify SEMANTICS (accept/refuse on the digest, the pre-rotation guard) are exhaustively proven
  * at the mesh layer (wax-stamp.test); this file proves the CLI WIRING over a genuine vault + disk.
@@ -19,13 +20,15 @@ import { mkdtempSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
+import { dispatch } from "../src/bin/lares.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome, larDataDir } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, nexusCharterDocPath,
+  heldSeatKey, listSeatKeys, writeNexusDoc,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage, genesisCharterEpoch,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
@@ -79,11 +82,10 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     return keys;
   }
 
-  test("seat establishes the genesis epoch + a live quorum; re-seat past a rotation fails closed", async () => {
-    const keys = await seatVault();
-    const commitNext = sealKeySetHash(keys, 2);   // pre-commit a digest the current vault satisfies
+  test("seat establishes the genesis epoch + a live quorum over SEAT keys, each chair's next key armed", async () => {
+    const roots = (await seatVault()).map((k) => k.toLowerCase());
 
-    const rc = await cmdNexus(args(["seal", "seat"], { "next-key-commit": commitNext }));
+    const rc = await cmdNexus(args(["seal", "seat"]));
     expect(rc).toBe(0);
 
     const doc = readNexusDoc(larSealHome());
@@ -91,33 +93,46 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const head = sealLineageHead(doc)!;
     expect(head.prevEpochCid).toBeNull();
     expect(head.roll).toBeUndefined();
-    expect(head.nextKeyCommit).toBe(commitNext);          // rotation armed
+    expect(head.nextKeyCommit).toMatch(/^[0-9a-f]{64}$/);   // rotation armed by the rite itself
     expect(doc?.sealEpochCid).toBe(head.epochCid);      // the antigen roots on the head
-    expect(head.keySetHash).toBe(sealKeySetHash(keys, 2));
+    // A SEAT HOLDS ITS OWN KEY: the chairs seat keys this vessel holds as seat rows, and no persona root.
+    const seated = doc!.kahu.map((k) => k.verifyingKey!.toLowerCase());
+    expect(head.keySetHash).toBe(sealKeySetHash(seated, 2));
+    for (const key of seated) expect(roots).not.toContain(key);
+    expect(seated.every((key) => heldSeatKey(key) !== null)).toBe(true);
+    expect(listSeatKeys()).toHaveLength(6);                // each chair: its seat key and its next key
   });
 
-  test("the seat→rotate round-trip: rotate reveals the pre-committed key-set + appends a hash-linked epoch1", async () => {
-    const keys = await seatVault();
-    // Genesis pre-commits a digest the current vault reveals — so the rotate's reveal MATCHES.
-    await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }));
-    const genesis = sealLineageHead(readNexusDoc(larSealHome()))!;
+  test("the seat→rotate round-trip: a head the rite armed rolls, and rolls again; the closing keys leave", async () => {
+    await seatVault();
+    await cmdNexus(args(["seal", "seat"]));
+    const genesisDoc = readNexusDoc(larSealHome())!;
+    const genesis = sealLineageHead(genesisDoc)!;
+    const genesisKeys = genesisDoc.kahu.map((k) => k.verifyingKey!.toLowerCase());
 
-    const rc = await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
-    expect(rc).toBe(0);
-
+    expect(await cmdNexus(args(["seal", "rotate"]))).toBe(0);
     const doc = readNexusDoc(larSealHome());
     expect(doc?.sealLineage?.length).toBe(2);
     const head = sealLineageHead(doc)!;
     expect(head.prevEpochCid).toBe(genesis.epochCid);     // hash-linked to genesis
-    // The revealed hands SIGNED the roll, and the stored chain verifies whole.
-    expect(head.roll!.signatures.map((s) => s.signer).sort()).toEqual([...keys].map((k) => k.toLowerCase()).sort());
+    // The committed hands SIGNED the roll: they ARE the seated set, fresh keys apart from the genesis's.
+    const rolled = doc!.kahu.map((k) => k.verifyingKey!.toLowerCase());
+    expect(head.roll!.signatures.map((s) => s.signer).sort()).toEqual([...rolled].sort());
+    for (const key of rolled) expect(genesisKeys).not.toContain(key);
     expect(verifySealLineage(doc!.sealLineage!)).toBe(true);
     expect(doc?.sealEpochCid).toBe(head.epochCid);      // the antigen re-roots on the new head
+    // The closing keys retired once the charter moved: each chair holds its seated key and its next one.
+    expect(genesisKeys.some((key) => heldSeatKey(key) !== null)).toBe(false);
+    expect(listSeatKeys()).toHaveLength(6);
+
+    expect(await cmdNexus(args(["seal", "rotate"]))).toBe(0);                    // and again
+    expect(verifySealLineage(readNexusDoc(larSealHome())!.sealLineage!)).toBe(true);
+    expect(readNexusDoc(larSealHome())?.sealLineage?.length).toBe(3);
 
     // re-seat now REFUSES (the chain has rotated past genesis) — never a silent re-genesis.
-    const reseat = await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    const reseat = await cmdNexus(args(["seal", "seat"]));
     expect(reseat).not.toBe(0);
-    expect(readNexusDoc(larSealHome())?.sealLineage?.length).toBe(2);   // unchanged
+    expect(readNexusDoc(larSealHome())?.sealLineage?.length).toBe(3);   // unchanged
   });
 
   /**
@@ -135,9 +150,9 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
    * vessel ever runs. Only the TORN case refuses.
    */
   test("★ a rotated chain whose charter reads TORN refuses the re-seat — null means absent OR torn, and they differ ★", async () => {
-    const keys = await seatVault();
-    await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }));
-    await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    await seatVault();
+    await cmdNexus(args(["seal", "seat"]));
+    await cmdNexus(args(["seal", "rotate"]));
     expect(readNexusDoc(larSealHome())?.sealLineage?.length, "the fixture failed to rotate").toBe(2);
 
     // TEAR the charter: the file stands, its fenced blocks no longer compose. `readNexusDoc` reads null.
@@ -146,31 +161,43 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     writeFileSync(charter, whole.replace(/```/g, "`` "), "utf8");
     expect(readNexusDoc(larSealHome()), "the tear did not actually tear the doc").toBeNull();
 
-    const reseat = await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }));
+    const reseat = await cmdNexus(args(["seal", "seat"]));
     expect(reseat, "a torn charter re-seated as though no charter stood").not.toBe(0);
   });
 
   test("CONTROL — an ABSENT charter still seats: a fresh founding must never be refused", async () => {
-    const keys = await seatVault();
+    await seatVault();
     // No charter written at all — the first ceremony a vessel runs.
     expect(readNexusDoc(larSealHome())).toBeNull();
-    expect(await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2) }))).toBe(0);
+    expect(await cmdNexus(args(["seal", "seat"]))).toBe(0);
   });
 
-  test("a rotate whose reveal MISMATCHES the pre-commitment REFUSES (nonzero) and writes nothing", async () => {
-    const keys = await seatVault();
-    // Genesis pre-commits a STRANGER key-set — the vault's real keys will not match on reveal.
-    const strangerCommit = sealKeySetHash(["f".repeat(64), "e".repeat(64)], 2);
-    await cmdNexus(args(["seal", "seat"], { "next-key-commit": strangerCommit }));
-    const before = readNexusDoc(larSealHome());
-    expect(before?.sealLineage?.length).toBe(1);
+  test("RED: an arming flag typed at the door refuses by name, and nothing gets written or minted", async () => {
+    await seatVault();
+    // The rite arms itself, so the nexus door reads no arming flag: the front door refuses it before any act.
+    for (const verb of ["seat", "rotate"]) {
+      expect(await dispatch(["nexus", "seal", verb, "--next-key-commit", "f".repeat(64)])).not.toBe(0);
+    }
+    expect(readNexusDoc(larSealHome())).toBeNull();
+    expect(listSeatKeys()).toEqual([]);
+    expect(await cmdNexus(args(["seal", "seat"]))).toBe(0);                        // CONTROL
+  });
 
-    const rc = await cmdNexus(args(["seal", "rotate"], { "next-key-commit": sealKeySetHash(keys, 2) }));
-    expect(rc).not.toBe(0);                                 // fail-closed on the reveal mismatch
+  test("a rotate from a head that commits a set this vessel does not hold REFUSES and writes nothing", async () => {
+    await seatVault();
+    await cmdNexus(args(["seal", "seat"]));
+    // The head commits a STRANGER key-set, which no seat row here holds.
+    const doc = readNexusDoc(larSealHome())!;
+    const seated = doc.kahu.map((k) => k.verifyingKey!);
+    const stranger = genesisCharterEpoch(seated, 2, sealKeySetHash(["f".repeat(64), "e".repeat(64)], 2));
+    writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: stranger.epochCid, sealLineage: [stranger] });
+    const rows = listSeatKeys().length;
 
+    expect(await cmdNexus(args(["seal", "rotate"]))).not.toBe(0);                // fail-closed: nothing to reveal
     const after = readNexusDoc(larSealHome());
     expect(after?.sealLineage?.length).toBe(1);            // nothing written — still at genesis
     expect(sealLineageHead(after)!.prevEpochCid).toBeNull();
+    expect(listSeatKeys()).toHaveLength(rows);             // and no key minted
   });
 
   test("commit computes a key-set digest matching sealKeySetHash (the operator's offline helper)", async () => {
@@ -178,25 +205,18 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     expect(rc).toBe(0);   // the digest itself is asserted against sealKeySetHash at the mesh layer
   });
 
-  test("★ SUCCESSION rides ROTATE — the roster becomes exactly what stands, and the pre-commitment still gates it ★", async () => {
-    // Three stand and seal a genesis armed for a FOUR-key successor. Then a fourth persona stands. The
-    // rotation lands ONLY because the operator pre-committed that exact four-key set an epoch earlier —
-    // which is the whole no-admin property: nobody adds a kahu quietly.
-    const keys = await seatVault();
+  test("★ SUCCESSION rides ROTATE — the roster becomes exactly what stands, and the committed hands sign it ★", async () => {
+    // Three stand and seal a genesis. Then a fourth persona stands: the rotation seats four chairs, the fourth
+    // on a fresh key of its own that signs by possession, beside the three keys the head committed.
+    await seatVault();
+    expect(await cmdNexus(args(["seal", "seat"], { threshold: "2" }))).toBe(0);
+    const genesis = readNexusDoc(larSealHome())!;
+
     const petnames     = await makeNodePersonaPetnameStore();
     const declarations = await makeNodePersonaDeclarationStore();
-
-    // Stand the fourth NOW, so its key exists to pre-commit against — then step it back until the rotation.
-    const fourth = await generateOrLoadPersonaGroupRoot(3);
+    await generateOrLoadPersonaGroupRoot(3);
     await renameOwnPersona(petnames, 3, "compartment-3");
     await declarePersonaHandle(declarations, 3, "Kahu Delta");
-    await standForKahuSeat(declarations, 3, false);
-
-    const successor = [...keys, fourth.verifyingKey];
-    const commit = sealKeySetHash(successor, 3);
-    expect(await cmdNexus(args(["seal", "seat"], { "next-key-commit": commit, threshold: "2" }))).toBe(0);
-
-    // The fourth now stands — the roster that ROTATE will seat reads four chairs.
     await standForKahuSeat(declarations, 3, true, "Kahu Delta");
     expect(await cmdNexus(args(["seal", "rotate"], { threshold: "3" }))).toBe(0);
 
@@ -204,24 +224,15 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     expect(doc!.kahu.map((k) => k.displayName).sort()).toEqual([...KAHU, "Kahu Delta"].sort());
     expect(doc!.threshold).toBe(3);
     expect(doc!.sealLineage!.length).toBe(2);
-  });
+    expect(verifySealLineage(doc!.sealLineage!)).toBe(true);
+    // The roll revealed the committed set beside the seated one, since the seats moved.
+    expect(sealLineageHead(doc)!.roll!.revealed?.threshold).toBe(genesis.threshold);
 
-  test("★ a roster change with NO matching pre-commitment REFUSES — a kahu cannot be added or dropped quietly ★", async () => {
-    const keys = await seatVault();
-    // Arm for the SAME three keys — no successor was ever pre-committed for a four-chair roster.
-    expect(await cmdNexus(args(["seal", "seat"], { "next-key-commit": sealKeySetHash(keys, 2), threshold: "2" }))).toBe(0);
-
-    const petnames     = await makeNodePersonaPetnameStore();
-    const declarations = await makeNodePersonaDeclarationStore();
-    await generateOrLoadPersonaGroupRoot(3);
-    await renameOwnPersona(petnames, 3, "compartment-3");
-    await declarePersonaHandle(declarations, 3, "Kahu Delta");
-    await standForKahuSeat(declarations, 3, true);
-
-    expect(await cmdNexus(args(["seal", "rotate"]))).not.toBe(0);
-    // Nothing moved: the chain stays at genesis and the roster keeps its three chairs.
-    const doc = readNexusDoc(larSealHome());
-    expect(doc!.sealLineage!.length).toBe(1);
-    expect(doc!.kahu.length).toBe(3);
+    // A chair that steps down drops at the next roll, and the committed hands still sign.
+    await standForKahuSeat(declarations, 1, false);
+    expect(await cmdNexus(args(["seal", "rotate"], { threshold: "2" }))).toBe(0);
+    const after = readNexusDoc(larSealHome())!;
+    expect(after.kahu.map((k) => k.displayName).sort()).toEqual(["Kahu Alpha", "Kahu Delta", "Kahu Gamma"]);
+    expect(verifySealLineage(after.sealLineage!)).toBe(true);
   });
 });

@@ -152,9 +152,9 @@ tools/lares-container.sh nexus rite quorum
 tools/lares-container.sh nexus seal show
 ```
 
-The seed's seat holds its own key and commits its own cold next key, which rests on paper off the machine.
+The seed's seat holds its own key and commits its own next key.
 
-▢ ''OWED — the cold-key rite.'' The quorum rite composes `seal reserve`, `seal seat`, and `seal show`; it forges a shared reserve seed and prints three reserve cards that name generation and quorum. No verb carries a card into a rotation. `seal rotate` refuses a reserve-armed head as `reserve-armed` and refuses to arm a roll with the reserve's commit as `reserve-commit-unrevealable` (`packages/lares-cli/src/commands/nexus-seal.ts`).
+▢ ''OWED — the cold-key rite.'' The quorum rite composes `seal seat` and `seal show`: the seat gives each chair a seat key of its own and mints the chair's next key beside it, sealed on this node, and the genesis commits that set; `seal rotate` seats it. The next key therefore rests on the same disk as the seat key, and no card prints and no verb carries a card into a rotation (`packages/lares-cli/src/commands/nexus-seal.ts`).
 
 The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. Stop the vessel, then make one consistent backup of the full state mount, including its custody slots and relation carriers; that copy plus the custody passphrase (or paper pin) restores the vessel.
 
@@ -170,11 +170,11 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 !! Recovery cards and the guardian signing boundary
 
-`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. Reserve cards restore no charter. `lares nexus seal reserve rehearse --card-a <code> --card-b <code>` reads two reserve cards under a scratch root, proves the rebuilt key-set against the charter head's pre-commitment, writes nothing and rolls nothing. Guardians and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. No card restores a charter. Guardians and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 
 `persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. The persona-KEL threshold-attest core accepts independent guardian signatures; this founding supplies no guardian-enrollment command. `identity-classes.mem` tracks that unfinished path.
 
-▢ ''OWED — reserve-backed charter rotation.'' The cold-key rite at #/reserve holds the reserve-backed rotation ruling. `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
+▢ ''OWED — card-backed charter rotation.'' The cold-key rite at #/reserve holds the card-backed rotation ruling. `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
 
 ''Do'': compare each physical or offline copy with the CLI's printed destination instructions, then confirm an independent second location.
 
@@ -338,6 +338,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tw1F215R6LtMFVLhGAq1ht0GCQMe3uJaCd79k2yIZW0
+<<^ code="&#x0003;">>ni:///sha-256;DHdtMQRwZdC6tWPTQJmsjmuuyaJ8ldR9W5JM8vdr5cc
 
 <<^ code="&#x0004;" -> to="?">>

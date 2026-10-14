@@ -55,7 +55,7 @@ describe("a seat claim needs no Handle and exports no chair label", () => {
     expect(output(wire).data.chair).toBe("first-chair");
     expect(await cmdPersona(personaArgs("2", "veil-three", {}, { handle: "outward" }))).toBe(0);
 
-    expect((await rite.seat("nobody")).code).toBe(0);
+    expect((await rite.seat()).code).toBe(0);
     const standing = readNexusDoc(larSealHome())!;
     const fingerprints = standing.kahu.map((k) => seatFingerprint(k.verifyingKey!));
     const seatPayload = output(wire).data.kahu;

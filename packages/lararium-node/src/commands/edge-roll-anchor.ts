@@ -21,11 +21,10 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   edgeRollAnchorParents, signEdgeRollAnchor, edgeRollAnchorCounts, edgeRollAnchorCid, writeEdgeRollAnchor,
   keptFromLedger, ledgerScopes, keepInLedger, edgeLedgerDocUrl, realmEdgeBoardDocUrl, materializeSharedLarDoc,
-  ed25519SignerFromSeed,
   type KahuQuorumSeats,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
-import { loadPersonaGroupRootSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
 
@@ -57,12 +56,10 @@ export async function runEdgeRollAnchors(opts: {
   if (realms.length === 0) return [];
 
   const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new EdgeRollAnchorError(
-    `edge roll anchor REFUSED (fail-closed): the vessel holds ${held} persona-root(s) the new roster seats, but the anchor ` +
+    `edge roll anchor REFUSED (fail-closed): the vessel holds ${held} seat key(s) the new roster seats, but the anchor ` +
     `carries ${k} distinct signatures of the NEW quorum — the closing keys never sign it.`,
   ));
-  const signers = await Promise.all(selected.map(async (s) => ({
-    signer: s.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
-  })));
+  const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
   const sealLineage = readNexusDoc(opts.sealHome)?.sealLineage ?? [];
   const landed: EdgeRollAnchorLanded[] = [];
   try {

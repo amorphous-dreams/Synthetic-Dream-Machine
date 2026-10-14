@@ -101,7 +101,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
       await standForKahuSeat(declarations, i, true);
       keys.push(rt.verifyingKey);
     }
-    expect((await rite.seat({ keys, threshold: 2 })).code).toBe(0);
+    expect((await rite.seat()).code).toBe(0);
     return keys;
   }
 
@@ -109,7 +109,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const keys = await seatedGenesis();
     const genesis = sealLineageHead(readNexusDoc(larSealHome()))!;
 
-    const r = await rite.rotate({ keys, threshold: 2 });
+    const r = await rite.rotate();
     expect(r.code).toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the anchor step ran against the closing head
     const head = sealLineageHead(readNexusDoc(larSealHome()))!;
@@ -127,7 +127,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const before = readFileSync(path);
 
     anchorStep.fault = () => new NexusContractError("refusing to write: the roll anchor does not count under the new roster (fail-closed).");
-    const r = await rite.rotate({ keys, threshold: 2 });
+    const r = await rite.rotate();
     expect(r.code).not.toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the step was reached …
     expect(readFileSync(path).equals(before)).toBe(true);           // … and the charter never moved
@@ -135,7 +135,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
 
     // THE SAME ROLL RUN AGAIN LANDS: the refusal left nothing behind that a second run trips on.
     anchorStep.fault = null;
-    const again = await rite.rotate({ keys, threshold: 2 });
+    const again = await rite.rotate();
     expect(again.code).toBe(0);
     expect(readNexusDoc(larSealHome())!.sealLineage!.length).toBe(2);
   });
@@ -146,7 +146,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     const before = readFileSync(path);
 
     anchorStep.fault = () => new Error("the board store faulted");
-    const r = await rite.rotate({ keys, threshold: 2 });
+    const r = await rite.rotate();
     expect(r.code).not.toBe(0);
     expect(readFileSync(path).equals(before)).toBe(true);
   });

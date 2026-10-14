@@ -18,9 +18,7 @@
  *   · `roll-law`: the shape of an epoch or of a roll stands as its subject, field by field;
  *   · `rite-law`: what the seat and rotate rites write and refuse stands as its subject;
  *   · `doc-law`: the charter doc's reader and writer stand as its subject, a torn doc among its vectors;
- *   · `reserve`: it tests the shared reserve, whose record names the commitment it arms;
  *   · `signed-bytes`: it pins the exact bytes an act signs;
- *   · `rite-witness`: a docker witness that drives the built binary through the rite.
  * Every named file must still build by hand, so a file that moved into the funnel leaves this list in the same
  * commit.
  *
@@ -39,28 +37,22 @@ const HELPERS = [
   "packages/lares-cli/tests/seal-rite-fixture.ts",
 ] as const;
 
-type Outside = "roll-law" | "rite-law" | "doc-law" | "reserve" | "signed-bytes" | "rite-witness";
+type Outside = "roll-law" | "rite-law" | "doc-law" | "signed-bytes";
 const OUTSIDE: Readonly<Record<string, Outside>> = {
   // The roll law, field by field; and the helper's own test, which holds the helper's bytes to the constructors'.
   "packages/lararium-mesh/tests/wax-stamp.test.ts":                     "roll-law",
   "packages/lararium-mesh/tests/charter-fixture.test.ts":               "roll-law",
   "packages/lararium-node/tests/seal-ceremony.test.ts":                 "roll-law",
-  // What the seat and rotate rites write and refuse.
+  // What the seat and rotate rites write and refuse, and what the door's arming answers them.
   "packages/lares-cli/tests/nexus-seal-lineage.test.ts":                "rite-law",
   "packages/lares-cli/tests/seal-rotate-refusal-codes.test.ts":         "rite-law",
+  "packages/lares-cli/tests/sealed-act-door.test.ts":                   "rite-law",
+  "packages/lararium-node/tests/seat-arming.test.ts":                   "rite-law",
   // The charter doc's reader and writer, a torn doc among the vectors.
   "packages/lararium-mesh/tests/nexus-seal-seed.test.ts":               "doc-law",
   "packages/lararium-node/tests/nexus-doc.test.ts":                     "doc-law",
-  // The shared reserve: its record names the commitment it arms.
-  "packages/lararium-node/tests/seal-reserve-store.test.ts":            "reserve",
-  "packages/lares-cli/tests/nexus-seal-reserve-armed.test.ts":          "reserve",
-  "packages/lares-cli/tests/nexus-seal-reserve-rehearse.test.ts":       "reserve",
-  "packages/lares-cli/tests/seal-reserve.test.ts":                      "reserve",
-  "packages/lares-cli/tests/sealed-act-door.test.ts":                   "reserve",
   // The exact bytes a roll's signer signs.
   "packages/lararium-node/tests/sealed-acts.test.ts":                   "signed-bytes",
-  // The docker witness of the contract-in road: it seats and rolls through the built binary.
-  "tools/contract-witness.sh":                                          "rite-witness",
 };
 
 /** What building a charter by hand looks like in code. */

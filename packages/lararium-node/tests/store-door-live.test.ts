@@ -38,6 +38,7 @@ import { admitBundlePathFor } from "../src/admit-bundle.js";
 import { storeDoorReactors, storeDoorDirect, type StoreDoorVerb } from "../src/store-door-verbs.js";
 import { claimStore, StoreHeld, ownedStore } from "../src/owned-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { seatChairs } from "./seat-fixture.js";
 
 let base: string;
 let priorLarRoot: string | undefined;
@@ -75,7 +76,8 @@ async function seatVessel(root: string): Promise<void> {
   };
   writeFileSync(join(root, "genesis", "seed.json"), JSON.stringify(seed));
   await generateOrLoadVesselIdentity();
-  const keys = (await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)))).map((r) => r.verifyingKey);
+  await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+  const { keys } = await seatChairs([0, 1, 2]);
   const charter = heldCharter({ keys, threshold: 2 });
   const doc: NexusDoc = charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
   writeNexusDoc(sealHome(), doc);
@@ -279,8 +281,8 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     // `runNexusContract` mints in production, built here with the same pure mesh signers it uses.
     const leaf = await nexusLeafFor(0, aidP);
     const sign = (seedBytes: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seedBytes).then(hex);
-    const kahuSeeds = await Promise.all([0, 1].map((i) => loadPersonaGroupRootSeed(i)));
-    const quorum = await Promise.all(kahuSeeds.map(async (s) => ({ signer: await ed.getPublicKeyAsync(s).then(hex), sign: sign(s) })));
+    const chairs = await seatChairs([0, 1, 2]);
+    const quorum = chairs.hands.slice(0, 2);
     const consent = await signCarriageContract(leaf.verifyingKey, doc.sealEpochCid!, sign(leaf.seed));
     const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid! }, quorum, consent);
     const raw = JSON.stringify({ aid: aidP, gatePubKey: "c3".repeat(32), admit, lineage: [] });

@@ -152,9 +152,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
       `REFUSED (fail-closed): this vessel holds ${held} seat(s) of the charter's quorum and the act takes ${k}. ` +
       "A quorum act never lands short of its threshold.",
     ));
-    signers = await Promise.all(selected.map(async (s) => ({
-      signer: s.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(s.handleIndex)),
-    })));
+    signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
     authority = { quorum: true };
     scope = realm!;
     boardUrl = realmEdgeBoardDocUrl(realm!);

@@ -43,11 +43,10 @@
 # keys mint at the closed epoch AFTER the anchor stands in no anchor's past and reads WRONG-EPOCH; the
 # presentation captured before the roll, carrying no anchor, reads WRONG-EPOCH too.
 #
-# ── THE EPOCH ROLL ARMS WITH THE KEY-SET IT REVEALS ─────────────────────────────────────────────────────
-# `seal rotate` reveals the personas STANDING in the vault, the reveal must hash to the head's
-# pre-commitment, and the revealed hands SIGN the roll — the lineage verifies those signatures whole. The reserve's commit names three keys derived off a separate reserve seed, and no verb
-# provisions those keys into the vault, so a genesis armed with the reserve's commit can never rotate.
-# The witness arms with `seal commit` over the roster it will reveal, and says so.
+# ── THE RITE ARMS ITSELF ────────────────────────────────────────────────────────────────────────────────
+# Each chair holds a SEAT key of its own, minted sealed on A apart from every persona root. `seal seat` mints
+# each chair's next key beside it and commits that set; `seal rotate` seats the committed set, the committed
+# hands SIGN the roll, and the closing keys retire once the charter moved — the lineage verifies whole.
 #
 # Exit 0 = the door opened for a foreign key, refused every forgery, the presented admit read held, denied
 # and wrong-epoch where it should, the raise door raised a leaf and refused a stranger, the board closed by
@@ -178,23 +177,7 @@ for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
     ok; KAHU_KEYS="$KAHU_KEYS${KAHU_KEYS:+,}$(printf '%s' "$MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)"
   else bad "$?"; printf '%s\n' "$MINT" | tail -4 | sed 's/^/      /'; fi
 done
-step "A forges the pre-rotation reserve"
-if RESERVE=$(as_a nexus seal reserve --guardian-a 'guardian-a' --guardian-b 'guardian-b' --json 2>&1); then
-  ok; RESERVE_COMMIT=$(printf '%s' "$RESERVE" | grep -oE '"nextKeyCommit":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-else bad "$?"; printf '%s\n' "$RESERVE" | tail -4 | sed 's/^/      /'; RESERVE_COMMIT=""; fi
-# ARM WITH WHAT THE ROTATE WILL REVEAL. The rotate reveals the three kahu standing in A's vault at the
-# majority threshold; the commit names exactly that set (see the header).
-step "A commits to the key-set the rotate will reveal"
-if COMMIT=$(as_a nexus seal commit --keys "$KAHU_KEYS" --threshold 2 --json 2>&1 | grep -oE '"digest":"[0-9a-f]{64}"' | cut -d'"' -f4) && [ -n "$COMMIT" ]; then
-  ok
-  if [ "$COMMIT" != "$RESERVE_COMMIT" ]; then
-    note "measured: the reserve's commit (${RESERVE_COMMIT:0:16}…) ≠ the standing roster's (${COMMIT:0:16}…)"
-    note "— a genesis armed with the reserve's commit fails the rotate's reveal."
-  fi
-else bad "no digest"; COMMIT=""; fi
-if [ -n "$COMMIT" ]; then
-  run_a "A seats the genesis epoch"     nexus seal seat --next-key-commit "$COMMIT"
-else step "A seats the genesis epoch"; bad "no commit from reserve"; fi
+run_a "A seats the genesis epoch (the rite arms itself)"     nexus seal seat
 step "A's quorum STANDS"
 if as_a nexus seal show --json 2>/dev/null | grep -q '"quorumSeated":true'; then ok; else bad "quorum not seated"; fi
 
@@ -312,11 +295,11 @@ const { larSealHome, larDataDir } = await import(`${D}/vessel-paths.js`);
 const { readNexusDoc }            = await import(`${D}/nexus-doc.js`);
 const { nodeNexusIsland }         = await import(`${D}/nexus-standing.js`);
 const { heldNexusLeaves }         = await import(`${D}/nexus-leaf.js`);
-const { loadVesselVerifyingKey, loadPersonaGroupRootSeed } = await import(`${D}/node-vessel-identity.js`);
+const { loadVesselVerifyingKey } = await import(`${D}/node-vessel-identity.js`);
 // The persona roster and each root rest sealed under the vessel key. This helper stands where a command stands with
 // no vessel answering it: it seats its own holder and opens it, under the staged root's published test route, at the
 // first sealed row a mode reads.
-const { FsCustodyIo, makeCustodyHolder, seatCustodyWhenNeeded, vesselCustodyHomes } = await import(`${D}/index.js`);
+const { FsCustodyIo, makeCustodyHolder, seatCustodyWhenNeeded, vesselCustodyHomes, signAsSeat } = await import(`${D}/index.js`);
 const { TEST_PASSPHRASE } = await import(`${process.env.REPO_ROOT}/tools/test-custody-route.mjs`);
 seatCustodyWhenNeeded(
   () => { const homes = vesselCustodyHomes(); return makeCustodyHolder({ io: new FsCustodyIo(homes), homes }); },
@@ -372,18 +355,24 @@ switch (mode) {
     console.log(json(a1).lineage.filter((e) => M.isRollAnchor(e)).length);
     break;
   }
-  case "late-admit": {         // the CLOSING keys mint an admit at the closed epoch AFTER the roll's anchor
+  case "sign-closing": {       // the CLOSING seats sign an admit at the standing epoch, landed on no board
     const [nym, contractSig, out] = [a1, a2, process.argv[5]];
     const r = await reading();
-    const closed = r.sealLineage.length >= 2 ? r.sealLineage[r.sealLineage.length - 2].epochCid : null;
-    if (!closed) { console.log("no-roll"); process.exit(1); }
-    const signers = await Promise.all([0, 1].map(async (i) => {
-      const seed = await loadPersonaGroupRootSeed(i);
-      const signer = M.hex(await (await import("@noble/ed25519")).getPublicKeyAsync(seed));
-      return { signer, sign: M.ed25519SignerFromSeed(seed) };
+    const signers = r.roster.keys.slice(0, r.roster.threshold).map((signer) => ({
+      signer, sign: async (bytes) => M.hex(await signAsSeat(signer, bytes)),
     }));
-    const late = await M.signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: closed }, signers,
+    const act = await M.signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: r.roster.sealEpochCid }, signers,
       { signer: nym, sig: contractSig });
+    writeFileSync(out, JSON.stringify(act));
+    console.log("signed");
+    break;
+  }
+  case "late-admit": {         // the admit the CLOSING seats signed at the closed epoch, beside the roll's anchor
+    const [actFile, out] = [a1, a2];
+    const r = await reading();
+    const closed = r.sealLineage.length >= 2 ? r.sealLineage[r.sealLineage.length - 2].epochCid : null;
+    const late = json(actFile);
+    if (!closed || late.sealEpochCid !== closed) { console.log("no-roll"); process.exit(1); }
     const anchors = r.anchors.filter((a) => a.sealEpochCid === r.roster.sealEpochCid);
     writeFileSync(out, JSON.stringify({ admit: late, lineage: anchors }));
     console.log(`minted anchors=${anchors.length}`);
@@ -527,15 +516,22 @@ step "CONTROL: before the roll, B's token re-admits"
 if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && as_a nexus contract "$B_NYM" --sig "$B_SIG" --json 2>&1 | grep -q '"memberHeld":true'; then ok
 else bad "the token did not re-admit before the roll"; fi
 
-step "A rotates the charter (the armed reveal)"
-if ROT=$(as_a nexus seal rotate --next-key-commit "$COMMIT" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+# THE CLOSING KEYS SIGN ONE ADMIT NOW, at the epoch the roll closes, and it lands on no board: after the roll it
+# stands in no anchor's past. They sign before the roll, since the roll retires them.
+LATE_ACT="$XFER/late-admit-act.json"
+step "the closing seats sign an admit at the closing epoch that no board holds"
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && SC=$(s6_a sign-closing "$B_NYM" "$B_SIG" "$LATE_ACT" 2>&1) && [ "$SC" = "signed" ]; then ok
+else bad "${SC:-no token}"; fi
+
+step "A rotates the charter (the committed reveal)"
+if ROT=$(as_a nexus seal rotate --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
 else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 
 step "the rotate landed a ROLL ANCHOR on A's board"
 if printf '%s' "$ROT" | grep -qE '"rollAnchor":\{"cid":"[0-9a-f]{64}"'; then ok
 else bad "no anchor in the rotate's report"; fi
 
-step "★ the revealed hands SIGNED the roll, and the lineage verifies whole ★"
+step "★ the committed hands SIGNED the roll, and the lineage verifies whole ★"
 LN=$(s6_a lineage 2>&1)
 case "$LN" in verified=true\ sigs=[1-9]*) ok ;; *) bad "$LN" ;; esac
 
@@ -563,11 +559,11 @@ step "★ (4) an admit in the anchor's past reads HELD at the new head ★"
 VH=$(s6_a verdict "$ANCHORED" 2>&1)
 if [ "$VH" = "held" ]; then ok; else bad "$VH"; fi
 
-step "★ CONTROL: an admit minted at the closed epoch AFTER the anchor reads WRONG-EPOCH ★"
-# The closing keys still sign at the closed epoch — the act counts there, and stands in no anchor's past.
+step "★ CONTROL: an admit the closing seats signed at the closed epoch, landed on no board, reads WRONG-EPOCH ★"
+# The closing seats signed at the closed epoch — the act counts there, and stands in no anchor's past.
 # CONTROL inside the check: it carries the same anchor the held presentation carries.
 LATE="$XFER/late-admit.json"
-if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && LM=$(s6_a late-admit "$B_NYM" "$B_SIG" "$LATE" 2>&1) && [ "$LM" = "minted anchors=1" ]; then
+if [ -s "$LATE_ACT" ] && LM=$(s6_a late-admit "$LATE_ACT" "$LATE" 2>&1) && [ "$LM" = "minted anchors=1" ]; then
   VL=$(s6_a verdict "$LATE" 2>&1)
   if [ "$VL" = "wrong-epoch" ]; then ok; else bad "$VL"; fi
 else bad "${LM:-no token}"; fi

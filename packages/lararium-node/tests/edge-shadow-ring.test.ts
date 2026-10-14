@@ -36,6 +36,7 @@ import { decideAndServeWantBlock, type CasWireServerDeps } from "../src/cas-wire
 import type { SortInput } from "../src/daemon-auth-gate.js";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { seatChairs } from "./seat-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -401,8 +402,8 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
   });
 
   it("★ a member the quorum set aside reads nothing of the realm, though no vouch ever named it ★", async () => {
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-    const keys = roots.map((r) => r.verifyingKey);
+    await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const keys = [...(await seatChairs([0, 1, 2])).keys];
     const charter = heldCharter({ keys, threshold: 2 });
     writeNexusDoc(larSealHome(), charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
     const member = await nymOf(63);

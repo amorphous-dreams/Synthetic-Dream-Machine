@@ -1,6 +1,6 @@
 /**
  * host-command.test.ts — the hearth's three hosting doors, end to end on a temp LAR_ROOT: a real vessel
- * identity, real persona roots seated in a real charter, a real Automerge board on disk.
+ * identity, real persona roots held beneath faces with their seat keys seated in a real charter, a real Automerge board on disk.
  *
  * Proven:
  *   · `runHostRoll` signs the hosting act with the face's per-Nexus leaf, keeps the state, and LANDS the act on
@@ -40,6 +40,7 @@ import { makeSocketSorter } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { seatChairs } from "./seat-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -58,11 +59,11 @@ afterEach(async () => {
   rmSync(root, { recursive: true, force: true });
 });
 
-/** Seat a charter whose founding kahu are this vessel's own held persona roots — so the vessel carries it. */
+/** Seat a charter whose founding kahu are this vessel's held seat keys — so the vessel carries it. */
 async function seatOwnCharter(): Promise<{ aid: string; doc: NexusDoc }> {
   await generateOrLoadVesselIdentity();
-  const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-  const keys = roots.map((r) => r.verifyingKey);
+  await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+  const keys = (await seatChairs([0, 1, 2])).keys;
   const doc: NexusDoc = heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
   writeNexusDoc(sealHome(), doc);
   return { aid: doc.sealEpochCid!, doc };

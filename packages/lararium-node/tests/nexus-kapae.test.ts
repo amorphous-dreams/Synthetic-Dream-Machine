@@ -1,17 +1,17 @@
 /**
  * nexus-kapae.test.ts — the RAISE side of the Kapae immune antigen (#65), end-to-end through the node command.
  *
- * Proven, against a SYNTHETIC seated roster on a temp LAR_ROOT (real vessel identity, real founder persona-
- * roots, a real Automerge board on disk):
+ * Proven, against a SYNTHETIC seated roster on a temp LAR_ROOT (real vessel identity, real founder persona
+ * roots and seat keys, a real Automerge board on disk):
  *   · the full loop RAISE → board → read → fold → isKapaed — a 2-of-3 signed ban lands on the always-carried
  *     board and folds the victim nym to Kapae'd (the exact set the antigen-ring enforces on),
- *   · a SUB-QUORUM raise REFUSES (fewer than threshold HELD roots sit in the roster) — nothing written,
+ *   · a SUB-QUORUM raise REFUSES (fewer than threshold HELD seat keys sit in the roster) — nothing written,
  *   · an UNSEATED charter REFUSES (no roster to root on),
  *   · un_kapae as a causal descendant LIFTS; the fold reflects it,
  *   · the written tiddler PERSISTS across Repo instances (a fresh Repo reads the prior write back).
  *
- * The signing is the a-multitude-of-one: one operator holds all three founding persona-roots and signs the
- * quorum with two of their OWN held roots (the real-cabal collect-signatures ceremony is the surfaced fork).
+ * The signing is the a-multitude-of-one: one operator holds all three faces' seat keys and signs the
+ * quorum with two of their OWN held seats (the real-cabal collect-signatures ceremony is the surfaced fork).
  */
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -23,13 +23,14 @@ import { hex, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, sig
 import { Repo } from "@automerge/automerge-repo";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, loadPersonaGroupRootSeed,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "../src/commands/nexus-kapae.js";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { seatChairs } from "./seat-fixture.js";
 
 const VICTIM = "beadfeed".repeat(8);   // the presenter nym a ban targets
 
@@ -62,10 +63,10 @@ function seatCharter(keys: string[], threshold = 2): string {
 }
 
 describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
-  it("RAISE → board → fold → isKapaed: a 2-of-3 held-root ban Kapae's the victim", async () => {
+  it("RAISE → board → fold → isKapaed: a 2-of-3 held-seat ban Kapae's the victim", async () => {
     await generateOrLoadVesselIdentity();
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-    seatCharter(roots.map((r) => r.verifyingKey));
+    await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
 
     const res = await direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
     expect(res.actCid).toMatch(/^sha256:/);
@@ -82,8 +83,8 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
 
   it("un_kapae as a causal descendant LIFTS the standing ban", async () => {
     await generateOrLoadVesselIdentity();
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-    seatCharter(roots.map((r) => r.verifyingKey));
+    await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
 
     const ban = await direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
     const lift = await direct(runNexusKapae)({ action: "un_kapae", nym: VICTIM, sealHome: sealHome() });
@@ -103,8 +104,8 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
 
   it("rejects a raw CID-poisoned board act when selecting the next frontier", async () => {
     await generateOrLoadVesselIdentity();
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-    seatCharter(roots.map((r) => r.verifyingKey));
+    await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
     const ban = await direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
     const repo = restingRepo(larDataDir());
     const handle = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(await loadVesselVerifyingKey()), "board:kapae-antigen");
@@ -118,12 +119,10 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
 
   it("excludes a verified parent whose own grandparent is absent", async () => {
     await generateOrLoadVesselIdentity();
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-    const epoch = seatCharter(roots.map((r) => r.verifyingKey));
-    const signers = await Promise.all([0, 1].map(async (i) => ({
-      signer: roots[i]!.verifyingKey,
-      sign: async (bytes: Uint8Array) => ed.signAsync(bytes, await loadPersonaGroupRootSeed(i)).then(hex),
-    })));
+    await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const chairs = await seatChairs([0, 1, 2]);
+    const epoch = seatCharter([...chairs.keys]);
+    const signers = chairs.hands.slice(0, 2);
     const branch = await signAntigenEntry({ nym: VICTIM, action: "kapae", parents: ["sha256:missing-grandparent"], sealEpochCid: epoch }, signers);
     const repo = restingRepo(larDataDir());
     const handle = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(await loadVesselVerifyingKey()), "board:kapae-antigen");
@@ -135,18 +134,19 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
     await repo.rest();
   });
 
-  it("SUB-QUORUM REFUSES: one held root against a 2-of-3 roster writes NOTHING", async () => {
+  it("SUB-QUORUM REFUSES: one held seat key against a 2-of-3 roster writes NOTHING", async () => {
     await generateOrLoadVesselIdentity();
-    const held = await generateOrLoadPersonaGroupRoot(0);   // the ONLY held root
+    await generateOrLoadPersonaGroupRoot(0);
+    const held = (await seatChairs([0])).keys[0]!;   // the ONLY held seat key
     // Two roster co-signers the vessel does NOT hold — real ed25519 keys, just not in this vault.
     const stranger1 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(7)));
     const stranger2 = hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(8)));
-    seatCharter([held.verifyingKey, stranger1, stranger2]);
+    seatCharter([held, stranger1, stranger2]);
 
     const refused = direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
     await expect(refused).rejects.toBeInstanceOf(NexusKapaeError);
     // The shared selector refuses in THIS door's words: it names the antigen act, never the membership one.
-    await expect(refused).rejects.toThrow(/holds 1 seated persona-root\(s\), but a valid antigen act carries 2/);
+    await expect(refused).rejects.toThrow(/holds 1 seat key\(s\) of the seated roster, but a valid antigen act carries 2/);
 
     // Fail-closed: nothing landed on the board.
     const list = await direct(runNexusKapaeList)({ sealHome: sealHome() });
@@ -164,8 +164,8 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
 
   it("a malformed nym REFUSES before any quorum work", async () => {
     await generateOrLoadVesselIdentity();
-    const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-    seatCharter(roots.map((r) => r.verifyingKey));
+    await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+    const chairs = await seatChairs([0, 1, 2]); seatCharter([...chairs.keys]);
     await expect(direct(runNexusKapae)({ action: "kapae", nym: "not-a-key", sealHome: sealHome() }))
       .rejects.toBeInstanceOf(NexusKapaeError);
   });

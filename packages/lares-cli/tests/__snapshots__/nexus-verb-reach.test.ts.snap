@@ -20,7 +20,7 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry |
 
 lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
 
-  seal <seat | reserve | rotate | commit | show | export | import | grow>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony
+  seal <seat | rotate | commit | show | export | import | grow>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony
   kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym
   kapae --list                              read the currently-Kapae'd set (the fold)
   un_kapae <nym>                            mint a quorum-signed causal lift
@@ -67,30 +67,20 @@ Examples:
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `
 "lares nexus seal: unknown sub-verb "not-a-subverb"
-usage: lares nexus seal <seat | reserve | rotate | commit | show | export | import>
+usage: lares nexus seal <seat | rotate | commit | show | export | import | grow>
 
-  seat    form the roster from the personas that STOOD for a chair, then
-          establish the GENESIS epoch over their verifying keys:
-          --next-key-commit <digest>   the pre-rotation commitment
+  seat    form the roster from the personas that STOOD for a chair, give each chair a seat key
+          of its own, and establish the GENESIS epoch over those keys. The rite arms itself: each
+          chair's next key mints sealed beside its seat key, and the genesis commits that set.
           [--threshold <k>]            the quorum rule (default: majority of those that stood)
-  rotate  reveal the pre-committed next key-set (now in the vault) + advance the chain.
+  rotate  seat the next key-set the head committed, held on this vessel, and advance the chain.
           The roster becomes exactly what STANDS — the succession door: a kahu steps down by
-          no longer standing, a new one takes a chair by standing. Either way the reveal must
-          match the prior epoch's pre-commitment, so no seat moves without notice.
-          --next-key-commit <digest-of-the-FOLLOWING-key-set>
+          no longer standing, a new one takes a chair by standing and signs with a fresh key.
+          The hands the head committed sign every roll, so no seat moves without them.
           [--threshold <k>]  the quorum rule for the new roster (default: majority)
   commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>
   show    read the kahu quorum's seats + chain head + quorum verdict + the carried set
   import <file>          land a charter at the primary path — only where none stands, or the same one
   import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for
-                         that AID lands only when its seal lineage extends the held head
-  reserve [refresh|show|rehearse]            custody the pre-rotation's NEXT key-set:
-          reserve         forge one reserve seed, derive the 3 next keys HARDENED, print the
-                          --next-key-commit + the 3 recovery cards   [--guardian-a --guardian-b]
-                          no verb rolls the charter from that seed
-          reserve refresh re-seed + re-derive + re-issue the cards + print a NEW commit
-          reserve show    the reserve state (commit present, guardians, share sealed)
-          reserve rehearse --card-a <code> --card-b <code> [--slot-a <slot> --slot-b <slot>] [--generation <n>]
-                          read two SYNTHETIC cards back under a SCRATCH root, prove the rebuilt
-                          key-set against the charter head, write nothing, roll nothing"
+                         that AID lands only when its seal lineage extends the held head"
 `;

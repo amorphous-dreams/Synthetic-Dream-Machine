@@ -20,7 +20,7 @@
  * prose is pinned under an explicit `json:false`, which is the only way those arrays are reached.
  *
  * Nothing here pins behaviour. `nexus-kahuli`, `nexus-seal-lineage`, `nexus-seal-grow` and
- * `seal-reserve` own that, and they keep importing `cmdNexus` from this same door.
+ * `nexus-seal-rotate-anchor` own that, and they keep importing `cmdNexus` from this same door.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";

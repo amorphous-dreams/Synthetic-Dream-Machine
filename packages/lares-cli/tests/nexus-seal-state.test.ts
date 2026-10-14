@@ -108,7 +108,7 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
     expect(show.code).toBe(0);
     expect((show.out["data"] as { seal: string }).seal).toBe("unsealed");
 
-    const rotate = await rite.rotate("nobody");
+    const rotate = await rite.rotate();
     expect(rotate.code).not.toBe(0);
     expect(message(rotate.out)).toMatch(/UNSEALED/);
     expect(message(rotate.out)).toMatch(/seal seat/);
@@ -125,7 +125,7 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
     const show = await run(args(["seal", "show"]));
     expect((show.out["data"] as { seal: string; present: boolean }).seal).toBe("absent");
 
-    const rotate = await rite.rotate("nobody");
+    const rotate = await rite.rotate();
     expect(rotate.code).not.toBe(0);
     expect(message(rotate.out)).toMatch(/no charter stands/);
     expect(message(rotate.out)).not.toMatch(/UNSEALED/);
@@ -136,7 +136,7 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, "not a charter\n");
     expect(readCharterSeal(larSealHome()).state).toBe("torn");
-    const rotate = await rite.rotate("nobody");
+    const rotate = await rite.rotate();
     expect(rotate.code).not.toBe(0);
     expect(message(rotate.out)).toMatch(/TORN/);
   });
@@ -152,11 +152,11 @@ describe("lares nexus seal — an unsealed charter is named, never read as absen
       await standForKahuSeat(declarations, i, true);
       keys.push(rt.verifyingKey);
     }
-    expect((await rite.seat({ keys, threshold: 2 })).code).toBe(0);
+    expect((await rite.seat()).code).toBe(0);
     expect(readCharterSeal(larSealHome()).state).toBe("sealed");
     const show = await run(args(["seal", "show"]));
     expect((show.out["data"] as { seal: string }).seal).toBe("sealed");
-    const rotate = await rite.rotate({ keys, threshold: 2 });
+    const rotate = await rite.rotate();
     expect(rotate.code, message(rotate.out)).toBe(0);
   });
 });

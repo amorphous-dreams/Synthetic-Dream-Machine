@@ -80,11 +80,11 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
   test("★ THE CROSSING WALKS — open before the rotate, bind after, sign both quorums, witness, seal ★", async () => {
     // Three found; the fourth chair (the arriving operator) pre-commits into the successor set.
     const founders = await stand(KAHU);
-    expect((await rite.seat({ keys: founders, threshold: 2 })).code).toBe(0);
+    expect((await rite.seat()).code).toBe(0);
     // Arm the succession: the four-key set, pre-committed an epoch ahead.
     const rt3 = await generateOrLoadPersonaGroupRoot(3);
     const fourKeys = [...founders, rt3.verifyingKey];
-    expect((await rite.rotate({ keys: fourKeys, threshold: 2 })).code).toBe(0);
+    expect((await rite.rotate()).code).toBe(0);
     const fromHead = sealLineageHead(readNexusDoc(larSealHome()))!;
 
     // ── OPEN: capture the standing hands BEFORE anything moves.
@@ -92,7 +92,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
 
     // The fourth stands; the succession rotate seats the four (matching the armed pre-commit).
     await stand(["Kahu Freyja"], 3);
-    expect((await rite.rotate({ keys: fourKeys, threshold: 2 })).code).toBe(0);
+    expect((await rite.rotate()).code).toBe(0);
     const toHead = sealLineageHead(readNexusDoc(larSealHome()))!;
     expect(toHead.epochCid).not.toBe(fromHead.epochCid);
 
@@ -123,10 +123,10 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
 
   test("★ AN UNSIGNED CROSSING REFUSES TO SEAL — and writes nothing ★", async () => {
     const founders = await stand(KAHU);
-    await rite.seat({ keys: founders, threshold: 2 });
-    await rite.rotate({ keys: founders, threshold: 2 });
+    await rite.seat();
+    await rite.rotate();
     expect((await cmdNexus(args(["seal", "grow", "open"])))).toBe(0);
-    await rite.rotate({ keys: founders, threshold: 2 });
+    await rite.rotate();
     expect((await cmdNexus(args(["seal", "grow", "bind"])))).toBe(0);
 
     expect((await cmdNexus(args(["seal", "grow", "seal"])))).not.toBe(0);

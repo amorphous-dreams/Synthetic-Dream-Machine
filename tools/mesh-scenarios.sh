@@ -1364,7 +1364,7 @@ run_climb() {
   if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
      | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the climb has no inception to strand"; fi
 
-  # THE RE-KEYING ACT. `rite quorum` composes seal reserve · seal seat · seal show; the seat writes the
+  # THE RE-KEYING ACT. `rite quorum` composes seal seat · seal show; the seat writes the
   # roster and `sealEpochCid` becomes the island every later boot resolves.
   step "the charter seats AFTER the face — the board re-keys"
   local i EPOCH

@@ -313,12 +313,15 @@ export {
 } from "./nexus-doc.js";
 export { loadLeafIdentity } from "./leaf-identity.js";
 export type { LeafIdentity } from "./leaf-identity.js";
-// The charter reserve's two rows, sealed under the vessel key: the operator's own share and the state that commits it.
+// A seat's own key: one cold sealed row per key, minted at random, apart from every persona root and every leaf.
+// The seal rite arms its heads from these rows and the quorum doors sign with them.
 export {
-  sealReserveMineShare, loadReserveMineShare, writeCharterReserveState, readCharterReserveState, provisionCharterReserve, reserveStands,
-  reserveMineSharePath, reserveStatePath,
-} from "./seal-reserve-store.js";
-export type { SealReserveState } from "./seal-reserve-store.js";
+  SEAT_KEY_FILE, heldSeatKey, listSeatKeys, mintSeatKey, retireSeatKey, seatKeyFile, seatKeyName, seatKeysOfFace, signAsSeat, storeSeatKey,
+} from "./seat-key-store.js";
+export type { HeldSeatKey } from "./seat-key-store.js";
+export { heldSeatSigners, selectHeldQuorumSigners } from "./held-quorum.js";
+export type { HeldQuorumSigner } from "./held-quorum.js";
+export type { ArmedGenesis, ArmedRoll, SeatKept } from "./seal-ceremony.js";
 // The crossing record's own library (its bytes, its cid, its mint and its verdict): a pure module the seal
 // ceremony's rows call, and the one a reader of a carried record verifies it with.
 export {

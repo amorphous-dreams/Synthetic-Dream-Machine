@@ -4,13 +4,13 @@
  * A command never opens a sealed row by a node function of its own: it asks `sealedAct` (`sealed-act-door`), which
  * runs the act inside the standing vessel when one answers and in this process otherwise. This module spells the
  * acts a command needs as the shapes commands already hold: the roster, the two own-persona stores, the
- * handle-book, and the seal ceremony's hand, which signs as a held persona root while the seed stays behind the door.
+ * handle-book, and the seal rite's own acts: the arming of a head, a seat's hand on a roll, and the retirement of a
+ * seat key nothing needs. A seat's key mints, signs and leaves behind the door; a command holds public halves alone.
  */
 import {
   HandleBook, type HandleBookSnapshot, type OwnPersonaPetnameStore, type PersonaDeclaration, type PersonaDeclarationStore,
-  type RecoveryShare,
 } from "@lararium/mesh";
-import type { SealReserveState } from "@lararium/node";
+import type { ArmedGenesis, ArmedRoll, SeatKept } from "@lararium/node";
 import { sealedAct } from "./sealed-act-door.js";
 
 /** The roster as one read: each held root's index and public key, the worn index, and every orphan root. */
@@ -73,42 +73,45 @@ export async function saveHandleBook(book: HandleBook): Promise<void> {
   await sealedAct("handle-book.save", { snapshot: book.snapshot() });
 }
 
-/** The charter reserve's state: the pre-rotation commit and the guardian labels. Null where no reserve stands. */
-export async function readReserveState(): Promise<SealReserveState | null> {
-  return (await sealedAct<{ state: SealReserveState | null }>("reserve.state")).state;
-}
-
 /**
- * Seal the operator's own share of a reserve seed and the state that commits it. The frame carries ONE share,
- * which alone rebuilds nothing; the seed and the two guardian shares stay in the command's own process.
- */
-export async function provisionReserve(share: RecoveryShare, state: SealReserveState): Promise<void> {
-  await sealedAct("reserve.provision", {
-    share: { x: share.bytes.x, ys: [...share.bytes.ys], custodian: share.custodian, recoveryEpoch: share.recoveryEpoch },
-    state: { ...state },
-  });
-}
-
-/**
- * A hand of the seal ceremony's ROLL: it signs as the persona root held at one index, and the seed stays behind
- * the custody door. The door reads the charter that stands and signs only a roll its standing head licenses; it
- * signs no other image. (A crossing's marks ride the rite's own acts, which take no image at all.)
+ * A hand of the seal ceremony's ROLL: it signs as one seat, named by that seat's public key, and the key stays
+ * behind the custody door. The door reads the charter that stands and signs only a roll its standing head
+ * licenses; it signs no other image. (A crossing's marks ride the rite's own acts, which take no image at all.)
  */
 export interface SealHand {
-  /** The root's public key, lower-case hex. */
+  /** The seat's public key, lower-case hex. */
   readonly signer: string;
   /** Sign a charter roll's bytes; answers the signature as lower-case hex. */
   readonly sign: (bytes: Uint8Array) => Promise<string>;
 }
 
-/** The seal hand for the root at `handleIndex`. Refuses when this vessel holds no root there. */
-export async function sealHand(handleIndex: number): Promise<SealHand> {
-  const signer = await personaRootKey(handleIndex);
-  if (!signer) {
-    throw new Error(`[persona-vault] no persona-root at h${handleIndex} — mint it via the founding ceremony first (founder-only; a joining vessel never holds the root seed)`);
-  }
+/** The seal hand of the seat `verifyingKey` names. The door refuses at the signature where this vessel holds no such seat key. */
+export function sealHand(verifyingKey: string): SealHand {
+  const signer = verifyingKey.toLowerCase();
   return {
     signer,
-    sign: async (bytes) => (await sealedAct<{ sig: string }>("seal.sign", { handleIndex, image: Buffer.from(bytes).toString("hex") })).sig,
+    sign: async (bytes) => (await sealedAct<{ sig: string }>("seal.sign", { seat: signer, image: Buffer.from(bytes).toString("hex") })).sig,
   };
+}
+
+/** Which of `keys` this vessel holds a seat key for, lower-case. A reading of row names: it opens nothing. */
+export async function heldSeats(keys: readonly string[]): Promise<string[]> {
+  if (keys.length === 0) return [];
+  return (await sealedAct<{ held: string[] }>("seat.held", { keys: keys.map((k) => k.toLowerCase()) })).held;
+}
+
+/** Arm a genesis behind the door: each standing chair's seat key and next key mint there; the roster and a digest answer. */
+export function armGenesisSeats(threshold?: number): Promise<ArmedGenesis> {
+  return sealedAct<ArmedGenesis>("seat.arm-genesis", threshold === undefined ? {} : { threshold });
+}
+
+/** Arm a roll behind the door: the committed set this vessel holds, the chairs that stand, and the digest after. */
+export function armRollSeats(threshold?: number): Promise<ArmedRoll> {
+  return sealedAct<ArmedRoll>("seat.arm-roll", threshold === undefined ? {} : { threshold });
+}
+
+/** Retire the seat keys among `keys` that nothing needs; the door's own licence decides, whatever this names. */
+export async function retireSeats(keys: readonly string[]): Promise<{ retired: string[]; kept: Array<{ key: string; why: SeatKept }> }> {
+  if (keys.length === 0) return { retired: [], kept: [] };
+  return sealedAct("seat.retire", { keys: keys.map((k) => k.toLowerCase()) });
 }

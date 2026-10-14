@@ -5,8 +5,8 @@ import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
-import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, nexusCharterDocPath } from "@lararium/node";
-import { renameOwnPersona, sealKeySetHash, standForKahuSeat } from "@lararium/mesh";
+import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "@lararium/node";
+import { genesisCharterEpoch, renameOwnPersona, sealKeySetHash, standForKahuSeat } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
@@ -40,21 +40,28 @@ describe("seal rotate refusal codes", () => {
     for (let i = 0; i < 3; i++) { const face = await generateOrLoadPersonaGroupRoot(i); await renameOwnPersona(petnames, i, `veil-${i}`); await standForKahuSeat(declarations, i, true); keys.push(face.verifyingKey); }
     return keys;
   }
-  test("unarmed and mismatched reveals carry their refusal codes and preserve bytes", async () => {
-    const keys = await roster();
+  test("an unarmed head and a head this vessel cannot reveal refuse by name, and preserve bytes", async () => {
+    await roster();
     expect((await run(args(["seal", "seat"]))).code).toBe(0);
-    const path = nexusCharterDocPath(larSealHome()); const unarmedBefore = readFileSync(path);
-    const unarmed = await run(args(["seal", "rotate"], { "next-key-commit": "f".repeat(64) }));
-    expect(unarmed.code).not.toBe(0); expect(unarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
+    const path = nexusCharterDocPath(larSealHome());
+    const doc = readNexusDoc(larSealHome())!;
+    const seated = doc.kahu.map((k) => k.verifyingKey!);
+    // An UNARMED head: it committed nothing, so the roll refuses under the roll law's own name.
+    const unarmed = genesisCharterEpoch(seated, 2, "");
+    writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: unarmed.epochCid, sealLineage: [unarmed] });
+    const unarmedBefore = readFileSync(path);
+    const refusedUnarmed = await run(args(["seal", "rotate"]));
+    expect(refusedUnarmed.code).not.toBe(0); expect(refusedUnarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
 
-    const wrong = sealKeySetHash(["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], 2);
-    expect((await run(args(["seal", "seat"], { "next-key-commit": wrong }))).code).toBe(0);
-    const mismatchBefore = readFileSync(path);
-    const mismatch = await run(args(["seal", "rotate"], { "next-key-commit": "e".repeat(64) }));
-    expect(mismatch.code).not.toBe(0); expect(mismatch.out.error.code).toBe("reveal-mismatch"); expect(readFileSync(path).equals(mismatchBefore)).toBe(true);
+    // A head that commits a set this vessel holds no row of: nothing reveals it.
+    const stranger = genesisCharterEpoch(seated, 2, sealKeySetHash(["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], 2));
+    writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: stranger.epochCid, sealLineage: [stranger] });
+    const strangerBefore = readFileSync(path);
+    const refusedStranger = await run(args(["seal", "rotate"]));
+    expect(refusedStranger.code).not.toBe(0); expect(refusedStranger.out.error.message).toMatch(/holds no key-set the standing head pre-committed/); expect(readFileSync(path).equals(strangerBefore)).toBe(true);
 
-    const commit = sealKeySetHash(keys, 2);
-    expect((await run(args(["seal", "seat"], { "next-key-commit": commit }))).code).toBe(0);
-    expect((await run(args(["seal", "rotate"], { "next-key-commit": commit }))).code).toBe(0);
+    // CONTROL: the head the rite armed rolls.
+    writeNexusDoc(larSealHome(), doc);
+    expect((await run(args(["seal", "rotate"]))).code).toBe(0);
   });
 });

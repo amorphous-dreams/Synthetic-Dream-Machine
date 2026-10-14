@@ -58,6 +58,7 @@ import { materializeSharedLarDoc, carriageDocUrl, presentationFromBoardDoc } fro
 import { direct } from "./direct-store.js";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { seatChairs } from "./seat-fixture.js";
 
 let rootA: string;
 let rootB: string;
@@ -96,15 +97,15 @@ interface Hearth {
   readonly epoch:       string;   // the seated genesis charter epoch
 }
 
-/** Stand ONE sovereign hearth: mint a vessel identity + 3 founding-kahu persona-roots and SEAT a genesis
- *  charter epoch over them. Persona h0 doubles as the operator nym the PEER hearth will admit. */
+/** Stand ONE sovereign hearth: mint a vessel identity + 3 founding-kahu persona-roots and seat their SEAT keys.
+ *  Persona h0 doubles as the operator nym the PEER hearth will admit. */
 async function standHearth(root: string, threshold = 2): Promise<Hearth> {
   return asRoot(root, async () => {
     const dir = larDataDir();
     await generateOrLoadVesselIdentity();
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     const nexusPubkey = await loadVesselVerifyingKey();
-    const keys = roots.map((r) => r.verifyingKey);
+    const { keys } = await seatChairs([0, 1, 2], { family: root });           // each hearth's chairs hold keys of their own
     const bags = join(root, "state", "nexus");
     const doc: NexusDoc = heldCharter({ keys, threshold }).doc({ labels: ["Founder-0", "Founder-1", "Founder-2"] });
     writeNexusDoc(bags, doc);
@@ -294,10 +295,7 @@ describe("LIVE-WIRE B4 — two hearths write each other into membership (the bil
 
       // Hand-build the entry `runNexusContract` REFUSES to mint: a valid 2-of-3 kahu quorum over an admit that
       // carries NO operator contract-in (bypassing the command's `resolveContractIn` gate outright).
-      const signers = await Promise.all([0, 1].map(async (i) => {
-        const r = await generateOrLoadPersonaGroupRoot(i);
-        return { signer: r.verifyingKey, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(i)) };
-      }));
+      const signers = (await seatChairs([0, 1, 2], { family: rootA })).hands.slice(0, 2);
       const conscript: CarriageEntry = await signCarriageQuorum(
         { nym: unconsented, action: "admit", parents: [], sealEpochCid: rosterA.sealEpochCid },
         signers,

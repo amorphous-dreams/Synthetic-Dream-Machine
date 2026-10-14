@@ -27,10 +27,9 @@
  *   D7  `lares persona sync` FILLS: each held name rides one `selves.carry` frame marked `fill`, so a name the
  *       face's plane already holds stands, and the command says which names landed and which the fleet kept.
  *                                 control: a rename (`makeFleetPetnameStore.set`) sends its carry with no `fill`
- *   D8  RED: A RESERVE'S CARDS NEVER CROSS THE DOOR. `lares nexus seal reserve` beside a standing vessel splits
- *       the seed in its own process and sends ONE act frame holding ONE share (the operator's own) and the state;
- *       no frame holds a guardian card's share, the seed, or a second share, and the command opens no key session.
- *                                 control: the share the frame holds equals the "mine" card the command printed
+ *   D8  RED: A SEAT'S KEY NEVER CROSSES THE DOOR. `lares nexus seal seat` beside a standing vessel sends ONE
+ *       arming frame that carries no key, takes public halves back, and opens no key session of its own.
+ *                                 control: the charter the command wrote seats exactly the halves the door answered
  *   D9  RED: A CARRIED INVITE RIDES NO VERB. `lares walk`, `walk take` and `walk invite` beside a standing vessel
  *       send act frames alone (`walk.state`, `walk.take`, `walk.invite`); the invite a person carries in, and the
  *       one the wallet hands out, appear in no frame that names a verb, and the command opens no key session.
@@ -50,7 +49,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   CustodyLocked, CustodyRowUnavailable, FsCustodyIo, SEALED_ACT_NAMES, SealedActRefused, claimStore, custodyFrameHandler, foundCustody,
-  larDataDir, loadIdentityAnchors, makeCustodyHolder, persistIdentityAnchors, seatCustody, seatedCustody, serveUdsFront,
+  larDataDir, larSealHome, loadIdentityAnchors, makeCustodyHolder, persistIdentityAnchors, readNexusDoc, seatCustody, seatedCustody, serveUdsFront,
   vesselCustodyHomes, type CustodyHolder,
 } from "@lararium/node";
 import { dispatch } from "../src/bin/lares.js";
@@ -310,29 +309,21 @@ describe("a command beside a standing vessel", () => {
     expect((vessel.frames as Array<Record<string, unknown>>).filter((f) => f["act"] === "selves.carry").pop()!["args"]).toEqual({ handleIndex: 1, name: "petname" });
   });
 
-  test("D8 — a reserve provision sends one share in and no card out", async () => {
+  test("D8 — the seat rite arms behind the door: one frame out, public halves back, no key crosses", async () => {
     await stage();
-    const vessel = await standVessel({ unlocked: true, table: (act) => (act === "reserve.state" ? { state: null } : {}) });
-    const r = await run(["nexus", "seal", "reserve", "--guardian-a", "a-synthetic-guardian", "--json"]);
+    const { getPublicKeyAsync } = await import("@noble/ed25519");
+    const keys = await Promise.all([1, 2, 3].map(async (i) => Buffer.from(await getPublicKeyAsync(new Uint8Array(32).fill(40 + i))).toString("hex")));
+    const vessel = await standVessel({ unlocked: true, table: (act) => (act === "seat.arm-genesis"
+      ? { kahu: keys.map((verifyingKey, i) => ({ displayName: `Chair ${i}`, verifyingKey })), seatedKeys: keys, threshold: 2, nextKeyCommit: "ab".repeat(32), superseded: [], minted: keys }
+      : {}) });
+    const r = await run(["nexus", "seal", "seat", "--json"]);
     expect(r.code).toBe(0);
     expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
-    const said = JSON.parse(r.out.trim().split("\n").at(-1)!) as { data: { cards: Array<{ slot: string; shareCode: string }>; nextKeyCommit: string } };
-    const frames = vessel.frames as Array<{ op: string; act: string; args: { share?: { x: number; ys: number[] }; state?: Record<string, unknown> } }>;
-    expect(frames.map((f) => f.act)).toEqual(["reserve.state", "reserve.provision"]);
-    const sent = frames[1]!.args;
-    expect(Object.keys(sent).sort()).toEqual(["share", "state"]);
-    expect(Object.keys(sent.share!).sort()).toEqual(["custodian", "recoveryEpoch", "x", "ys"]);
-    expect(sent.state!["nextKeyCommit"]).toBe(said.data.nextKeyCommit);
-    // No frame holds a guardian's card, and the frames hold exactly one share's bytes.
-    const wire = JSON.stringify(frames);
-    for (const card of said.data.cards.filter((c) => c.slot !== "mine")) expect(wire.includes(card.shareCode)).toBe(false);
-    expect(wire.match(/"ys":/g)!.length).toBe(1);
-    // CONTROL: the one share that crossed reads as the "mine" card the command printed to the person.
-    const mine = said.data.cards.find((c) => c.slot === "mine")!;
-    const { reserveShareFromCard } = await import("../src/seal-reserve.js");
-    const mineShare = reserveShareFromCard(mine as never, 1);
-    expect(sent.share!.x).toBe(mineShare.bytes.x);
-    expect(sent.share!.ys).toEqual([...mineShare.bytes.ys]);
+    const frames = vessel.frames as Array<{ act: string; args: Record<string, unknown> }>;
+    expect(frames.map((f) => f.act)).toEqual(["seat.arm-genesis"]);
+    expect(frames[0]!.args).toEqual({});                                             // the arming takes no key and no commitment
+    // CONTROL: the charter the command wrote seats exactly the public halves the door answered.
+    expect(readNexusDoc(larSealHome())!.kahu.map((k) => k.verifyingKey)).toEqual(keys);
   });
 
   test("D9 — the walk commands send act frames alone, and a carried invite rides no verb", async () => {

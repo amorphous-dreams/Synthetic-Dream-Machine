@@ -69,7 +69,6 @@ import {
 } from "@lararium/mesh";
 import { custodyRootPath } from "./custody-root.js";
 import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
-import { reserveMineSharePath } from "./seal-reserve-store.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
 /** The custody classes, closed. */
@@ -295,8 +294,6 @@ function buildTable(): readonly CarrierRow[] {
          writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
     id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
          writer: "node-circle-store", bundle: "lines" }),
-    id({ row: "reserve-state", match: file("seal-reserve-state.json"), custody: "hot", keyClass: null,
-         writer: "seal-reserve-store" }),
     row({ row: "hosting-state", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
           custody: "hot", keyClass: null, writer: "hosting-store" }),
     row({ row: "hosting-spent", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),
@@ -335,8 +332,6 @@ function buildTable(): readonly CarrierRow[] {
          writer: "face-bundle-restore" }),
     id({ row: "device-share", match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf }),
-    id({ row: "reserve-share", match: exact(reserveMineSharePath()), custody: "cold", keyClass: "seed",
-         writer: "seal-reserve-store", name: () => "seal-reserve-mine-share" }),
   ]);
 }
 

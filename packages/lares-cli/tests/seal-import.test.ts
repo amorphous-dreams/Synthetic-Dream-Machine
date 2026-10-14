@@ -26,7 +26,7 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import {
-  generateOrLoadPersonaGroupRoot, renderNexusDoc, writeNexusDoc, nexusCharterDocPath, carriedCharterHome, readConsent,
+  generateOrLoadPersonaGroupRoot, mintSeatKey, renderNexusDoc, writeNexusDoc, nexusCharterDocPath, carriedCharterHome, readConsent,
   parseNexusDoc,
 } from "@lararium/node";
 import {
@@ -139,7 +139,9 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
 
   /** This vessel's own founding: three held roots seated at the primary path. */
   async function found(): Promise<string[]> {
-    const keys = (await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)))).map((r) => r.verifyingKey);
+    // Each chair holds a seat key of its own, filed under a face this vessel holds a root for.
+    const keys: string[] = [];
+    for (const i of [0, 1, 2]) { await generateOrLoadPersonaGroupRoot(i); keys.push(await mintSeatKey(i)); }
     writeNexusDoc(larSealHome(), (await charter(keys)));
     return keys;
   }

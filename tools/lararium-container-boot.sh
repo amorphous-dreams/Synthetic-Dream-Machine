@@ -64,7 +64,7 @@ fi
 # them before it serves.
 #
 # THE SEAL IS FILE-LOCAL, so it lands before the exec below rather than against a running daemon —
-# `seal reserve` and `seal seat` read and write this vessel's own nexus home. A container seats its
+# `seal seat` reads and writes this vessel's own nexus home and its own seat keys. A container seats its
 # own founding quorum for the same reason it founds its own identity: nothing in the mesh grants it.
 # SEATING IS ONCE, NEVER EVERY BOOT. `seal seat` at genesis RE-DERIVES the genesis epoch, and every
 # carriage entries root on the epoch that stood when they were signed. A re-seat on restart mints a new
@@ -117,8 +117,8 @@ elif [ -n "${LAR_STAND_KAHU:-}" ]; then
       || echo "[boot] kahu $_i ('$_handle') did NOT stand — the roster will read short"
     _i=$((_i + 1))
   done
-  # `rite quorum` composes seal reserve · seal seat · seal show — the reserve arms the next epoch, the
-  # seat writes the roster from what stood, and the threshold derives majority over it.
+  # `rite quorum` composes seal seat · seal show — the seat gives each chair that stood a seat key of its own,
+  # arms the next epoch with each chair's next key, and the threshold derives majority over the roster.
   LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js nexus rite quorum \
     || echo "[boot] the cabal did NOT seat (see above) — this hearth carries but does not tend"
 fi

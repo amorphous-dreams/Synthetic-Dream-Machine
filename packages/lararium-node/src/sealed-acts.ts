@@ -25,15 +25,17 @@
  *     recovery split, whose shares rebuild a root, runs in a command's own process alone and never here. A
  *     backup's cut, which does hand a root off the vessel sealed, rides a frame of its own that asks the vessel's
  *     route again (`custody-frames`, `backup`). The restore's two rows take a root IN, sealed; neither answers one.
- *   · No row signs whatever it gets handed. The row that signs a charter roll as a persona root (`seal.sign`)
- *     reads the charter that stands and signs only a roll its standing head licenses; the crossing rows take no
- *     image at all, and sign the crossing that stands open.
+ *   · No row signs whatever it gets handed. The row that signs a charter roll as a seat (`seal.sign`) reads the
+ *     charter that stands and signs only a roll its standing head licenses; the crossing rows take no image at
+ *     all, and sign the crossing that stands open.
+ *   · No row takes a seat's key or answers one. The arming rows mint a chair's keys behind this door and answer
+ *     their public halves; the retirement row removes only a seat key nothing needs.
  *
  * Node-main only: a worker never imports this module.
  */
 import {
   HandleBook, ed25519SignerFromSeed,
-  type HandleBookSnapshot, type PersonaDeclaration, type PersonaRef, type RecoveryShare,
+  type HandleBookSnapshot, type PersonaDeclaration, type PersonaRef,
 } from "@lararium/mesh";
 import { carriedReadings } from "./carried-set.js";
 import { NexusContractError, runNexusAcceptCarriage } from "./commands/nexus-contract.js";
@@ -46,17 +48,14 @@ import {
   listPersonaRosterLines, loadActivePersonaIndex, loadPersonaGroupRootSeed, loadVesselSigningSeed,
   loadVesselVerifyingKey, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots, wearPersona,
 } from "./node-vessel-identity.js";
-import {
-  provisionCharterReserve, readCharterReserveState, readReserveShare, readReserveState,
-  type SealReserveState,
-} from "./seal-reserve-store.js";
 import type { Repo } from "@automerge/automerge-repo";
 import type { BackupDoor } from "./face-bundle-cut.js";
 import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundle } from "./face-bundle-restore.js";
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import {
-  SealCeremonyRefusal, bindCrossing, openCrossing, readCrossing, sealCrossing, signCrossing, signLicensedSealRoll, witnessCrossing,
+  SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readCrossing, retireSeats, sealCrossing,
+  signCrossing, signLicensedSealRoll, witnessCrossing,
 } from "./seal-ceremony.js";
 import { larSealHome } from "./vessel-paths.js";
 
@@ -186,22 +185,15 @@ const selfName: Kind<PersonaSelfNameKind> = {
   label: `one of the two names that ride a face's plane ("petname" or "handle")`,
   read: (v) => (v === "petname" || v === "handle" ? v : undefined),
 };
-const reserveShare: Kind<RecoveryShare> = {
-  label: "one share of a reserve seed { x, ys, custodian, recoveryEpoch }",
-  read: (v) => {
-    if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
-    for (const k of Object.keys(v)) if (k !== "x" && k !== "ys" && k !== "custodian" && k !== "recoveryEpoch") return undefined;
-    return readReserveShare(v) ?? undefined;
-  },
-};
-const reserveState: Kind<SealReserveState> = {
-  label: "a reserve state { reserveEpoch, nextKeyCommit, threshold, kahuCount, guardianA, guardianB, mineShareSealed, issuedAt }",
-  read: (v) => {
-    if (!v || typeof v !== "object" || Array.isArray(v) || Object.keys(v).length !== 8) return undefined;
-    return readReserveState(v) ?? undefined;
-  },
-};
 const flag: Kind<boolean> = { label: "true or false", read: (v) => (typeof v === "boolean" ? v : undefined) };
+const HEX64 = /^[0-9a-f]{64}$/;
+/** The most seat keys one row takes: a roster and the set beside it fit well inside. */
+export const SEAT_KEYS_ARG_LIMIT = 128;
+const seatKey: Kind<string> = { label: "a seat's public key, 64 lower hex", read: (v) => (typeof v === "string" && HEX64.test(v) ? v : undefined) };
+const seatKeys: Kind<string[]> = {
+  label: `a list of seats' public keys, each 64 lower hex, ${SEAT_KEYS_ARG_LIMIT} at most`,
+  read: (v) => (Array.isArray(v) && v.length <= SEAT_KEYS_ARG_LIMIT && v.every((k) => typeof k === "string" && HEX64.test(k)) ? [...(v as string[])] : undefined),
+};
 /** The largest sealed bundle body a row takes, as the characters of its base64 spelling. */
 export const BUNDLE_BODY_ARG_LIMIT = 16 * 1024 * 1024;
 const BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
@@ -283,9 +275,16 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *
  *   persona.roots         the roster: each held handle-index with its root's public key, the worn index, the orphans
  *   persona.wear          wear the face at an index this vessel holds a root for
- *   seal.sign             sign one charter roll as the persona root at an index, when the charter that stands
- *                         licenses it: the roll steps from the standing head and seats the key-set that head
- *                         pre-committed, and the root holds a seat in it; every other image refuses by name
+ *   seat.held             which of the public keys asked this vessel holds a seat key for: a reading of row names
+ *   seat.arm-genesis      give each chair that stands a seat key and a next seat key, minted behind this door, and
+ *                         answer the roster and the digest of the next set; it writes no charter
+ *   seat.arm-roll         find the next key-set the standing head committed among this vessel's rows, seat the
+ *                         chairs that stand, mint the set after, and answer the roster, the reveal and the digest
+ *   seat.retire           retire the seat keys nothing needs: one no held charter seats, the standing head did not
+ *                         commit and no open crossing names
+ *   seal.sign             sign one charter roll as the seat a public key names, when the charter that stands
+ *                         licenses it: the roll steps from the standing head, the head pre-committed a key-set this
+ *                         roll reveals, and the seat sits in the roll or in that set; every other image refuses by name
  *   crossing.*            the growth rite's steps over the crossing that stands open: state, open, bind, sign,
  *                         witness, seal. A hand names itself; the row reads what it signs off its own sealed row
  *   carriage.accept       sign this operator's own consent to one Nexus's carriage, under the face's leaf for it
@@ -303,10 +302,6 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   host.state            what this hearth hosts: per Nexus, the live epochs, the cap and the redemption counts
  *   host.roll             roll the hosting epoch in one Nexus and land the new act on this hearth's hosting doc
  *   host.invite           mint this hearth's own invite at the current epoch; the answer returns to the one caller
- *   reserve.state         the charter reserve's state: the pre-rotation commit and the guardian labels
- *   reserve.provision     seal ONE share of a reserve seed (the operator's own) and the state that commits it. The
- *                         command splits the seed in its own process; the seed and the two guardian shares never
- *                         cross this door, and one share alone rebuilds nothing
  *   admit.*               the persona admission's hops and its pending rows
  *   handle-book.load|save the recogniser's private memory, as one snapshot
  *   bundle.restore        bring ONE face back from its backup bundle, as a recovery act: the row takes the bundle's
@@ -330,11 +325,22 @@ export const SEALED_ACTS = Object.freeze({
     await wearPersona(handleIndex);
     return { active: handleIndex };
   }),
-  // THE SEAL CEREMONY'S HANDS (`seal-ceremony`). A persona root signs a roll only when the charter that stands
-  // licenses it, and marks a crossing only through the rite's own steps, which read the crossing that stands open.
-  // No row takes a crossing record's bytes from its caller, and the roll row reads the standing head before it signs.
-  "seal.sign": act({ handleIndex: index, image }, async (a) => ({
-    ...(await ceremonyOrRefuse(signLicensedSealRoll(a.handleIndex, Uint8Array.from(Buffer.from(a.image, "hex"))))),
+  // THE SEATS' OWN KEYS (`seal-ceremony`, `seat-key-store`). A chair's keys mint behind this door and never cross
+  // it: the arming rows answer public halves, the roster to write and a digest, and the charter's own writer stays
+  // with the rite. The retirement row removes only what its licence allows, whatever a caller names.
+  "seat.held": act({ keys: seatKeys }, async (a) => ({ held: heldSeatsAmong(a.keys) })),
+  "seat.arm-genesis": act({ threshold: optional(count) }, async (a) => ({
+    ...(await ceremonyOrRefuse(armGenesis(a.threshold !== undefined ? { threshold: a.threshold } : {}))),
+  })),
+  "seat.arm-roll": act({ threshold: optional(count) }, async (a) => ({
+    ...(await ceremonyOrRefuse(armRoll(a.threshold !== undefined ? { threshold: a.threshold } : {}))),
+  })),
+  "seat.retire": act({ keys: seatKeys }, async (a) => ({ ...(await ceremonyOrRefuse(retireSeats(a.keys))) })),
+  // THE SEAL CEREMONY'S HANDS (`seal-ceremony`). A seat signs a roll only when the charter that stands licenses
+  // it, and marks a crossing only through the rite's own steps, which read the crossing that stands open. No row
+  // takes a crossing record's bytes from its caller, and the roll row reads the standing head before it signs.
+  "seal.sign": act({ seat: seatKey, image }, async (a) => ({
+    ...(await ceremonyOrRefuse(signLicensedSealRoll(a.seat, Uint8Array.from(Buffer.from(a.image, "hex"))))),
   })),
   "crossing.state": act({}, async () => {
     const { pending, kept } = await readCrossing();
@@ -441,15 +447,6 @@ export const SEALED_ACTS = Object.freeze({
       sealHome: larSealHome(), ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.relay !== undefined ? { relay: a.relay } : {}),
     }))),
   })),
-
-  // THE CHARTER RESERVE. Its two rows rest under the vessel key (`seal-reserve-store`). A reserve's seed gets
-  // forged and split in the command's own process, where its three cards print to the person; the door takes
-  // the operator's ONE share and the state that commits it, answers nothing, and hands out no share.
-  "reserve.state": act({}, async () => ({ state: await readCharterReserveState() })),
-  "reserve.provision": act({ share: reserveShare, state: reserveState }, async (a) => {
-    await provisionCharterReserve(a.share, a.state);
-    return {};
-  }),
 
   "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({
     ...(await offerAdmitFlow({

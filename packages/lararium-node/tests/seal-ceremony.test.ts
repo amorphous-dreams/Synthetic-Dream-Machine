@@ -1,14 +1,16 @@
 /**
- * seal-ceremony — a persona root signs what the standing ceremony state licenses, and the growth rite's two rows
- * rest sealed.
+ * seal-ceremony — a SEAT signs what the standing ceremony state licenses, and the growth rite's two rows rest
+ * sealed. A chair's key rests as a seat row of its own (`seat-fixture` stores them), apart from every persona root.
  *
  * THE ROLL (through the custody door's `seal.sign`):
- *   L1  CONTROL: the roll the standing head licenses signs, and the signature verifies under the root's key.
+ *   L1  CONTROL: the roll the standing head licenses signs, and the signature verifies under the seat's key.
  *   L2  RED: A WELL-FORMED ROLL THE STANDING STATE DOES NOT LICENSE REFUSES AT THE DOOR, each by its own name: a
  *       roll from another epoch than the standing head; a roll that seats another key-set, or another threshold,
- *       than the head pre-committed; a roll whose signing root holds no seat in it; a roll from an unarmed head;
- *       a roll with no charter standing, an unsealed one, a torn one; a roll that pre-commits the reserve's
- *       key-set; a roll that seats a key the Ed25519 door refuses. The parent commit's row signed every one of
+ *       than the head pre-committed, where this vessel holds no set the head committed; a roll whose signing seat
+ *       sits in neither set; a key this vessel holds no seat row for; a persona root, which holds no seat row;
+ *       a roll from an unarmed head;
+ *       a roll with no charter standing, an unsealed one, a torn one; a roll that seats a key the Ed25519 door
+ *       refuses. The parent commit's row signed every one of
  *       them for any caller that spelled it canonically.
  *   L3  RED: no other image signs: a crossing record, a roll with a field beside its five, a roll out of its
  *       canonical spelling.
@@ -16,8 +18,9 @@
  *   C1  the rite walks: open, (the chain moves), bind, sign as the outgoing and incoming hands, witness, seal. Both
  *       rows rest sealed and spell no key, signature or note; the sealed record verifies; the pending row leaves.
  *   C2  RED: A HAND MARKS ONLY THE CROSSING THAT STANDS, AS WHAT IT HOLDS THERE. No crossing, an unbound one, a
- *       hand in neither set (it may witness, never sign), a keyholder (it may sign, never witness), a root this
- *       vessel does not hold: each refuses, and the pending row keeps its bytes.
+ *       face that holds no seat key in either set (it may witness, never sign), a face that holds one (it may
+ *       sign, never witness), a face whose root this vessel does not hold: each refuses, and the pending row keeps
+ *       its bytes. A face that held its chair across the roll holds one key in each set, and both sign.
  *   C3  RED: the order holds: a second open refuses; a bind before the chain moved refuses; a second bind refuses;
  *       a seal short of either quorum refuses, and the pending row stands with nothing committed.
  *   C4  PREPARED WITHOUT COMMIT RESUMES; COMMITTED WITHOUT REMOVAL RESUMES; COMMIT WITHOUT PREPARE READS CLEAN. A
@@ -36,13 +39,13 @@ import {
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { readCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
 import { nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
-import { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { verifyReserveTransition, type ReserveTransition } from "../src/reserve-transition.js";
 import { TRANSITIONS_FILE, TRANSITION_PENDING_FILE, boundCore, dropPendingCrossing, keepCrossingMark, readCrossing, sealCrossing } from "../src/seal-ceremony.js";
-import { provisionCharterReserve } from "../src/seal-reserve-store.js";
 import { SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { seatChairs, type SeatHand } from "./seat-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -60,11 +63,13 @@ const why = async (run: Promise<unknown>): Promise<string> =>
   run.then(() => "ran", (e: unknown) => (e instanceof SealedActRefused ? `${e.reason}: ${e.message}` : (e as Error).constructor.name));
 const act = (name: string, args: Record<string, unknown> = {}): Promise<Record<string, unknown>> => runSealedAct(name, args, ctx);
 
-/** Stand persona roots 0..n-1; answer their public keys. */
-async function roots(n: number): Promise<string[]> {
-  const keys: string[] = [];
-  for (let i = 0; i < n; i++) keys.push((await generateOrLoadPersonaGroupRoot(i)).verifyingKey);
-  return keys;
+/** Seat keys for faces 0..n-1 at `generation`, stored as this vessel's rows; answer their public keys. */
+async function seats(n: number, generation = 0): Promise<string[]> {
+  return [...(await seatChairs(Array.from({ length: n }, (_, i) => i), { generation })).keys];
+}
+/** The hands of faces 0..n-1 at `generation`, signing by hand outside every door. */
+async function handsOf(n: number, generation: number): Promise<readonly SeatHand[]> {
+  return (await seatChairs(Array.from({ length: n }, (_, i) => i), { generation })).hands;
 }
 /** Write a charter whose chain holds `lineage`, seated by `keys` at `threshold`. */
 function charter(keys: readonly string[], threshold: number, lineage: SealEpoch[] | null): NexusDoc {
@@ -75,16 +80,15 @@ function charter(keys: readonly string[], threshold: number, lineage: SealEpoch[
   return doc;
 }
 /**
- * A LAWFUL successor epoch after `prev`: the seated roots at `indexes` reveal the key-set `prev` pre-committed, sign
- * the roll with their own seeds, and pre-commit the same set again. The rite reads a head only off a lineage that
- * verifies, so a test chain moves by real rolls.
+ * A LAWFUL successor epoch after `prev`: the seats at `indexes` of generation `generation` reveal the key-set `prev`
+ * pre-committed, sign the roll by hand, and pre-commit the next generation's set. The rite reads a head only off a
+ * lineage that verifies, so a test chain moves by real rolls.
  */
-async function successor(prev: SealEpoch, keys: readonly string[], threshold: number, indexes: readonly number[]): Promise<SealEpoch> {
-  const signers = await Promise.all(indexes.map(async (i) => {
-    const seed = await loadPersonaGroupRootSeed(i);
-    return { signer: keys[i]!, sign: ed25519SignerFromSeed(seed) };
-  }));
-  const rolled = await rotateSealEpoch(prev, { keys, threshold }, sealKeySetHash(keys, threshold), signers);
+async function successor(prev: SealEpoch, generation: number, n: number, threshold: number, indexes: readonly number[]): Promise<SealEpoch> {
+  const keys = await seats(n, generation);
+  const hands = await handsOf(n, generation);
+  const signers = indexes.map((i) => hands[i]!);
+  const rolled = await rotateSealEpoch(prev, { keys, threshold }, sealKeySetHash(await seats(n, generation + 1), threshold), signers);
   if (!rolled.ok) throw new Error(`the fixture's roll refused: ${rolled.reason}`);
   return rolled.epoch;
 }
@@ -96,36 +100,38 @@ const keptPath = (): string => join(larSealHome(), TRANSITIONS_FILE);
 describe("a roll signs only under the charter that licenses it", () => {
   test("L1/L2 — the licensed roll signs; every well-formed roll the standing state does not license refuses by name", async () => {
     await custody("ceremony-l");
-    const [k0, k1, k2] = await roots(3) as [string, string, string];
+    const [k0, k1, k2] = await seats(3) as [string, string, string];
+    const root = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey.toLowerCase();
     const committed = [k0, k1];                                                     // the key-set the genesis head pre-commits, 2-of-2
     const genesis = genesisCharterEpoch([k0], 1, sealKeySetHash(committed, 2));
     charter([k0], 1, [genesis]);
-    const sign = (image: string, handleIndex = 0): Promise<Record<string, unknown>> => act("seal.sign", { handleIndex, image });
+    const sign = (image: string, verifyingKey = k0): Promise<Record<string, unknown>> => act("seal.sign", { seat: verifyingKey, image });
 
     // L1 CONTROL: the roll this head licenses signs, for each seated root, and the signature verifies.
-    const licensed = rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 2, nextKeyCommit: "cd".repeat(32) });
-    for (const [index, key] of [[0, k0], [1, k1]] as const) {
-      const signed = await sign(licensed, index) as { signer: string; sig: string };
+    // The roll commits the set after it, which rests here too (faces 0 and 1 at generation 1).
+    const following = sealKeySetHash((await seatChairs([0, 1], { generation: 1 })).keys, 2);
+    const licensed = rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 2, nextKeyCommit: following });
+    // RED: a roll that commits a set no row here holds, or leaves its successor unarmed, signs nothing.
+    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 2, nextKeyCommit: "cd".repeat(32) })))).toMatch(/^act-refused: the roll's forward commitment names no key-set this vessel's arming holds/);
+    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 2 })))).toMatch(/^act-refused: the roll's forward commitment names no key-set/);
+    for (const key of [k0, k1]) {
+      const signed = await sign(licensed, key) as { signer: string; sig: string };
       expect(signed.signer).toBe(key);
       expect(verifyEd25519(signed.sig, Uint8Array.from(Buffer.from(licensed, "hex")), key)).toBe(true);
     }
 
     // L2 RED: each of these spells a whole, canonical roll. None stands licensed, and none signs.
     expect(await why(sign(rollImage({ prevEpochCid: "epoch-" + "ab".repeat(32), keys: committed, threshold: 2 })))).toMatch(/^act-refused: the roll steps from another epoch/);
+    // k1 rests under face 1, which holds no seat at this head, so this vessel finds no committed set to reveal, and
+    // a roll that seats another set than the commitment's refuses.
     expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: [k0, k2], threshold: 2 })))).toMatch(/^act-refused: the roll seats another key-set/);
     expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: [k0], threshold: 1 })))).toMatch(/^act-refused: the roll seats another key-set/);
     expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 1 })))).toMatch(/^act-refused: the roll seats another key-set/);
-    expect(await why(sign(licensed, 2))).toMatch(/^act-refused: the root at h2 holds no seat/);
-    expect(await why(sign(licensed, 7))).toMatch(/^act-refused: this vessel holds no persona root at h7/);
-
-    // A roll that pre-commits the charter reserve's key-set refuses: no verb reveals it, and the chain would freeze.
-    const reserveCommit = "9e".repeat(32);
-    await provisionCharterReserve({ bytes: { x: 1, ys: new Uint8Array(32).fill(4) }, custodian: "mine", recoveryEpoch: 1 }, {
-      reserveEpoch: 1, nextKeyCommit: reserveCommit, threshold: 2, kahuCount: 3, guardianA: "a", guardianB: "b", mineShareSealed: true, issuedAt: "a-synthetic-stamp",
-    });
-    expect(((await act("reserve.state"))["state"] as { nextKeyCommit: string }).nextKeyCommit).toBe(reserveCommit);   // the reserve stands
-    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 2, nextKeyCommit: reserveCommit })))).toMatch(/^act-refused: the roll pre-commits the charter reserve's key-set/);
-    expect(await why(sign(licensed))).toBe("ran");                                  // CONTROL: another commitment still signs
+    expect(await why(sign(licensed, k2))).toMatch(/^act-refused: that seat sits neither in the roll's key-set nor in the set the standing head committed/);
+    expect(await why(sign(licensed, "7".repeat(64)))).toMatch(/^act-refused: this vessel holds no seat key under that public key/);
+    // A PERSONA ROOT SIGNS NO ROLL: it holds no seat row.
+    expect(await why(sign(licensed, root))).toMatch(/^act-refused: this vessel holds no seat key under that public key/);
+    expect(await why(act("seal.sign", { handleIndex: 0, image: licensed }))).toMatch(/^bad-args/);   // a hand names a seat, never a face
 
     // A head that pre-committed nothing licenses no roll.
     const unarmed = genesisCharterEpoch([k0], 1, "");
@@ -157,11 +163,11 @@ describe("a roll signs only under the charter that licenses it", () => {
 
   test("L3 — no other image signs: a crossing record, a roll with a sixth field, a roll out of its canonical spelling", async () => {
     await custody("ceremony-l3");
-    const [k0] = await roots(1) as [string];
+    const [k0] = await seats(1) as [string];
     const genesis = genesisCharterEpoch([k0], 1, sealKeySetHash([k0], 1));
     charter([k0], 1, [genesis]);
-    const roll = sealRollBytes({ prevEpochCid: genesis.epochCid, keys: [k0], threshold: 1, nextKeyCommit: "" });
-    expect(await why(act("seal.sign", { handleIndex: 0, image: hex(roll) }))).toBe("ran");            // CONTROL
+    const roll = sealRollBytes({ prevEpochCid: genesis.epochCid, keys: [k0], threshold: 1, nextKeyCommit: sealKeySetHash((await seatChairs([0], { generation: 1 })).keys, 1) });
+    expect(await why(act("seal.sign", { seat: k0, image: hex(roll) }))).toBe("ran");          // CONTROL
     const text = new TextDecoder().decode(roll);
     const images: Array<[string, Uint8Array]> = [
       ["a crossing record", canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN, fromEpochCid: genesis.epochCid, toEpochCid: "b", oldKeySetHash: "c", newKeySetHash: "d", rite: "e" })],
@@ -171,45 +177,58 @@ describe("a roll signs only under the charter that licenses it", () => {
       ["a roll whose keys read upper-case", new TextEncoder().encode(text.replace(k0, k0.toUpperCase()))],
       ["bytes that spell no record", new TextEncoder().encode("a synthetic image to sign")],
     ];
-    for (const [name, image] of images) expect(await why(act("seal.sign", { handleIndex: 0, image: hex(image) })), name).toMatch(/^act-refused: this door signs a charter roll/);
+    for (const [name, image] of images) expect(await why(act("seal.sign", { seat: k0, image: hex(image) })), name).toMatch(/^act-refused: this door signs a charter roll/);
   });
 });
 
 describe("the growth rite's rows", () => {
-  /** A sealed charter of three chairs at 2-of-3, and four held roots (the fourth holds no chair). */
-  async function founded(label: string): Promise<{ c: SeatedScratchCustody; keys: string[]; genesis: SealEpoch }> {
+  /**
+   * A sealed charter of three chairs at 2-of-3 over faces 0-2's generation-0 seat keys, committing their
+   * generation-1 keys; four held roots (the fourth face holds no chair and witnesses).
+   */
+  async function founded(label: string): Promise<{ c: SeatedScratchCustody; keys: string[]; witness: string; genesis: SealEpoch }> {
     const c = await custody(label);
-    const keys = await roots(4);
-    const genesis = genesisCharterEpoch(keys.slice(0, 3), 2, sealKeySetHash(keys.slice(0, 3), 2));
-    charter(keys.slice(0, 3), 2, [genesis]);
-    return { c, keys, genesis };
+    const keys = await seats(3);
+    for (let i = 0; i < 4; i++) await generateOrLoadPersonaGroupRoot(i);
+    const witness = (await generateOrLoadPersonaGroupRoot(3)).verifyingKey.toLowerCase();
+    const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash(await seats(3, 1), 2));
+    charter(keys, 2, [genesis]);
+    generation = 0;
+    return { c, keys, witness, genesis };
   }
-  /** Move the chain one epoch on by a lawful roll, seating `keys` at `threshold`. */
-  async function moveChain(keys: readonly string[], threshold: number): Promise<SealEpoch> {
+  let generation = 0;
+  /** Move the chain one epoch on by a lawful roll: the next generation's three chairs, at 2-of-3. */
+  async function moveChain(): Promise<{ next: SealEpoch; keys: string[] }> {
     const doc = readNexusDoc(larSealHome())!;
-    const next = await successor(sealLineageHead(doc)!, keys, threshold, [0, 1]);
-    charter(keys, threshold, [...doc.sealLineage!, next]);
-    return next;
+    generation += 1;
+    const next = await successor(sealLineageHead(doc)!, generation, 3, 2, [0, 1]);
+    const keys = await seats(3, generation);
+    charter(keys, 2, [...doc.sealLineage!, next]);
+    return { next, keys };
   }
 
   test("C1 — the rite walks, both rows rest sealed, and the sealed record verifies", async () => {
-    const { keys, genesis } = await founded("ceremony-c1");
+    const { keys, witness, genesis } = await founded("ceremony-c1");
     expect(await act("crossing.state")).toEqual({ kept: 0, open: null });
     expect(await act("crossing.open")).toEqual({ fromEpochCid: genesis.epochCid, oldHands: 3 });
     const sealedPending = readFileSync(pendingPath());
     expect(readVkCarrier(sealedPending)).toBe("sealed");
     for (const key of keys.slice(0, 3)) expect(sealedPending.includes(Buffer.from(key)), "a seated key").toBe(false);
-    // The chain moves: the same three chairs, re-keyed to a new head (h0, h1 and h2 sit in both sets).
-    const next = await moveChain(keys.slice(0, 3), 2);
+    // The chain moves: the same three chairs, each on its committed next key (faces 0-2 hold a key in each set).
+    const { next, keys: rolled } = await moveChain();
+    const both = (i: number): string[] => [keys[i]!, rolled[i]!].sort();
     expect(await act("crossing.bind")).toEqual({ toEpochCid: next.epochCid });
-    expect(await act("crossing.sign", { handleIndex: 0 })).toEqual({ as: keys[0], old: true, new: true });
-    expect(await act("crossing.sign", { handleIndex: 1 })).toEqual({ as: keys[1], old: true, new: true });
-    expect(await act("crossing.sign", { handleIndex: 1 })).toEqual({ as: keys[1], old: true, new: true });   // a hand that signs again counts once
+    expect(await act("crossing.sign", { handleIndex: 0 })).toEqual({ as: both(0), old: true, new: true });
+    expect(await act("crossing.sign", { handleIndex: 1 })).toEqual({ as: both(1), old: true, new: true });
+    expect(await act("crossing.sign", { handleIndex: 1 })).toEqual({ as: both(1), old: true, new: true });   // a hand that signs again counts once
     const note = "watched the rite at the hearth, script in hand";
-    expect(await act("crossing.witness", { handleIndex: 3, note })).toEqual({ by: keys[3] });
+    expect(await act("crossing.witness", { handleIndex: 3, note })).toEqual({ by: witness });
     expect(await act("crossing.state")).toEqual({ kept: 0, open: { fromEpochCid: genesis.epochCid, toEpochCid: next.epochCid, oldSigs: 2, newSigs: 2, witnesses: 1 } });
-    const sealed = await act("crossing.seal") as { transitionCid: string; independentWitnesses: number; resumed: boolean };
-    expect(sealed).toMatchObject({ independentWitnesses: 1, resumed: false });
+    const sealed = await act("crossing.seal") as { transitionCid: string; independentWitnesses: number; resumed: boolean; retired: number };
+    // THE OUTGOING KEYS RETIRE AT THE SEAL: their marks rest in the record, and the charter seats them no more.
+    expect(sealed).toMatchObject({ independentWitnesses: 1, resumed: false, retired: 3 });
+    expect(await act("seat.held", { keys })).toEqual({ held: [] });
+    expect(await act("seat.held", { keys: rolled })).toEqual({ held: rolled });      // CONTROL: the seated keys stay
     expect(existsSync(pendingPath())).toBe(false);
     const keptBytes = readFileSync(keptPath());
     expect(readVkCarrier(keptBytes)).toBe("sealed");
@@ -217,12 +236,12 @@ describe("the growth rite's rows", () => {
     const kept = JSON.parse(new TextDecoder().decode((await readCustodyRow("seal", TRANSITIONS_FILE))!)) as ReserveTransition[];
     expect(kept).toHaveLength(1);
     expect(kept[0]).toMatchObject({ transitionCid: sealed.transitionCid, fromEpochCid: genesis.epochCid, toEpochCid: next.epochCid });
-    expect(await verifyReserveTransition(kept[0]!, { oldKeys: keys.slice(0, 3), oldThreshold: 2, newKeys: keys.slice(0, 3), newThreshold: 2 })).toEqual({ ok: true, independentWitnesses: 1 });
+    expect(await verifyReserveTransition(kept[0]!, { oldKeys: keys, oldThreshold: 2, newKeys: rolled, newThreshold: 2 })).toEqual({ ok: true, independentWitnesses: 1 });
     expect(await act("crossing.state")).toEqual({ kept: 1, open: null });
   });
 
   test("C2 — a hand marks only the crossing that stands, as what it holds there", async () => {
-    const { keys } = await founded("ceremony-c2");
+    await founded("ceremony-c2");
     // No crossing stands: no hand marks anything.
     expect(await why(act("crossing.sign", { handleIndex: 0 }))).toMatch(/^act-refused: no bound crossing stands/);
     expect(await why(act("crossing.witness", { handleIndex: 3, note: "x" }))).toMatch(/^act-refused: no bound crossing stands/);
@@ -231,12 +250,13 @@ describe("the growth rite's rows", () => {
     await act("crossing.open");
     // Open and unbound: the byte-image stands open, so no hand signs it yet.
     expect(await why(act("crossing.sign", { handleIndex: 0 }))).toMatch(/^act-refused: no bound crossing stands/);
-    await moveChain(keys.slice(0, 3), 2);
+    await moveChain();
     await act("crossing.bind");
     const bound = readFileSync(pendingPath());
-    expect(await why(act("crossing.sign", { handleIndex: 3 }))).toMatch(/^act-refused: this hand sits in neither set/);
+    expect(await why(act("crossing.sign", { handleIndex: 3 }))).toMatch(/^act-refused: the face at h3 holds no seat key in either set/);
     expect(await why(act("crossing.witness", { handleIndex: 0, note: "I held a chair" }))).toMatch(/^act-refused: a keyholder attests as a party/);
-    expect(await why(act("crossing.sign", { handleIndex: 9 }))).toMatch(/^act-refused: this vessel holds no persona root at h9/);
+    expect(await why(act("crossing.sign", { handleIndex: 9 }))).toMatch(/^act-refused: the face at h9 holds no seat key in either set/);
+    expect(await why(act("crossing.witness", { handleIndex: 9, note: "x" }))).toMatch(/^act-refused: this vessel holds no persona root at h9/);
     expect(await why(act("crossing.witness", { handleIndex: 3 }))).toMatch(/^bad-args/);              // a witness mark carries a note
     expect(await why(act("crossing.sign", { handleIndex: 0, image: "ab" }))).toMatch(/^bad-args/);    // no hand takes an image
     expect(readFileSync(pendingPath()).equals(bound)).toBe(true);                    // nothing a refusal touched moved
@@ -261,11 +281,11 @@ describe("the growth rite's rows", () => {
   });
 
   test("C3 — the order holds, and a crossing short of a quorum refuses to seal", async () => {
-    const { keys } = await founded("ceremony-c3");
+    await founded("ceremony-c3");
     await act("crossing.open");
     expect(await why(act("crossing.open"))).toMatch(/^act-refused: a crossing already stands open/);
     expect(await why(act("crossing.bind"))).toMatch(/^act-refused: the chain has not moved/);
-    await moveChain(keys.slice(0, 3), 2);
+    await moveChain();
     await act("crossing.bind");
     expect(await why(act("crossing.bind"))).toMatch(/^act-refused: the crossing is already bound/);
     await act("crossing.sign", { handleIndex: 0 });                                  // one hand of a 2-of-3
@@ -278,9 +298,9 @@ describe("the growth rite's rows", () => {
   });
 
   test("C4 — a seal that committed and stopped resumes to one kept record; kept records with no pending row read clean", async () => {
-    const { keys } = await founded("ceremony-c4");
+    await founded("ceremony-c4");
     await act("crossing.open");
-    await moveChain(keys.slice(0, 3), 2);
+    await moveChain();
     await act("crossing.bind");
     await act("crossing.sign", { handleIndex: 0 });
     await act("crossing.sign", { handleIndex: 1 });
@@ -298,7 +318,7 @@ describe("the growth rite's rows", () => {
     expect(await act("crossing.state")).toEqual({ kept: 1, open: null });
     // COMMIT WITHOUT PREPARE READS CLEAN: one kept record, no pending row, and a new crossing opens from the head.
     expect(await why(act("crossing.open"))).toBe("ran");
-    await moveChain(keys.slice(0, 3), 2);
+    await moveChain();
     await act("crossing.bind");
     await act("crossing.sign", { handleIndex: 0 });
     await act("crossing.sign", { handleIndex: 2 });
@@ -315,11 +335,11 @@ describe("the growth rite's rows", () => {
     const a = await custody("ceremony-c5-a");
     const as = (c: SeatedScratchCustody): void => { process.env["LAR_ROOT"] = c.root; };
     const walk = async (): Promise<void> => {
-      const keys = await roots(3);
-      charter(keys, 2, [genesisCharterEpoch(keys, 2, sealKeySetHash(keys, 2))]);
+      const keys = await seats(3);
+      charter(keys, 2, [genesisCharterEpoch(keys, 2, sealKeySetHash(await seats(3, 1), 2))]);
       await act("crossing.open");
       const doc = readNexusDoc(larSealHome())!;
-      charter(keys, 2, [...doc.sealLineage!, await successor(sealLineageHead(doc)!, keys, 2, [0, 1])]);
+      charter(await seats(3, 1), 2, [...doc.sealLineage!, await successor(sealLineageHead(doc)!, 1, 3, 2, [0, 1])]);
       await act("crossing.bind");
       await act("crossing.sign", { handleIndex: 0 });
       await act("crossing.sign", { handleIndex: 1 });
@@ -356,7 +376,7 @@ describe("the growth rite's rows", () => {
     expect(readFileSync(pendingPath()).equals(own)).toBe(true);                      // the pending row stands
     // The floor reads neither row.
     await a.holder.lock();
-    for (const step of [act("crossing.state"), act("crossing.open"), act("crossing.sign", { handleIndex: 0 }), act("crossing.seal"), act("seal.sign", { handleIndex: 0, image: "ab" })]) {
+    for (const step of [act("crossing.state"), act("crossing.open"), act("crossing.sign", { handleIndex: 0 }), act("crossing.seal"), act("seal.sign", { seat: "ab".repeat(32), image: "ab" })]) {
       expect(await step.catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
     }
   });

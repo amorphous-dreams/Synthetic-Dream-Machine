@@ -29,7 +29,8 @@
  * coupling and tests against any temp tree.
  */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { atomicWriteFileSync } from "./fs-atomic.js";
+import { readFileSync, mkdirSync, existsSync } from "node:fs";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { join, dirname } from "node:path";
 import {
@@ -321,10 +322,11 @@ export function renderNexusDoc(doc: NexusDoc): string {
 
 // ── write ─────────────────────────────────────────────────────────────────────────────────────────
 
+/** A reader sees the charter that stood or the one written, never a torn file: a synced sibling renames over it. */
 function writeBody(bagsDir: string, body: string): string {
   const path = nexusCharterDocPath(bagsDir);
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, body, "utf8");
+  atomicWriteFileSync(path, body);
   return path;
 }
 

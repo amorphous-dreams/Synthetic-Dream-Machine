@@ -75,8 +75,6 @@ const SOWN: Record<string, string> = {
   [`identity/seat-key-h0-${"9e".repeat(16)}.bin`]:       "x",
   "identity/.restore-pending.json": "x",
   [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
-  "identity/seal-reserve-mine-share.bin":       "x",
-  "identity/seal-reserve-state.json":           "{}",
   "identity/.persona-enroll-pending.json":      "{}",
   "identity/.persona-grant-pending.json":       "{}",
   "identity/.persona-admissions.json":          "{}",
@@ -116,10 +114,10 @@ const RULED: Record<string, CustodyClass> = {
   "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot",
   "enroll-pending": "hot", "grant-pending": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
-  "public-handles": "hot", "handle-book": "hot", "reserve-state": "hot",
+  "public-handles": "hot", "handle-book": "hot",
   "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot", "gate-memory": "hot",
   "transition-pending": "hot", "transitions": "hot",
-  "vessel-next": "cold", "persona-root": "cold", "device-share": "cold", "reserve-share": "cold",
+  "vessel-next": "cold", "persona-root": "cold", "device-share": "cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
   "vessel-face-key": "hot", "face-proof-key": "cold",
   // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).

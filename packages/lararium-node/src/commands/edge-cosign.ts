@@ -14,18 +14,19 @@
  * stale partial and a replay refuse by causal position alone (`judgeEdgeActPartial`): the charter's head epoch,
  * the line's own heads, the board's own count.
  *
- * A PERSON SIGNS. Each seat's signature comes from a persona root this vessel holds, by this door, on a
- * person's own command; no seat signs for another, and no session signs at all.
+ * A PERSON SIGNS. Each seat's signature comes from that seat's own key, which this vessel holds as a sealed row,
+ * by this door, on a person's own command; no seat signs for another, and no session signs at all.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands
  */
 import type { Repo } from "@automerge/automerge-repo";
 import {
   signEdgeKapae, writeEdgeKapae, edgeLineHeads, realmEdgeBoardDocUrl, realmEdgeAuthority, readLedgeredVouches,
-  ed25519SignerFromSeed, edgeActPartial, readEdgeActPartial, judgeEdgeActPartial, cosignEdgeActPartial, edgeIdOfSubject,
+  edgeActPartial, readEdgeActPartial, judgeEdgeActPartial, cosignEdgeActPartial, edgeIdOfSubject,
   type EdgeActPartial, type EdgeKapaeVerdict, type EdgePartialSubject, type EdgeSigner, type KahuQuorumSeats, type PartialVerdict,
 } from "@lararium/mesh";
-import { listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
+import { heldSeatSigners as heldSeats } from "../held-quorum.js";
 import { readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
 
 export class EdgeCosignError extends Error {
@@ -35,18 +36,9 @@ export class EdgeCosignError extends Error {
 const HEX64 = /^[0-9a-f]{64}$/;
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
 
-/** The persona roots this vessel holds that sit in a roster, each as a signer. No threshold: a partial takes any. */
+/** The seats of a roster whose keys this vessel holds, each as a signer. No threshold: a partial takes any. */
 async function heldSeatSigners(roster: KahuQuorumSeats, except: ReadonlySet<string> = new Set()): Promise<EdgeSigner[]> {
-  const seats = new Set(roster.keys.map(bare));
-  const out: EdgeSigner[] = [];
-  const seen = new Set<string>();
-  for (const handleIndex of await listPersonaRoots()) {
-    const key = bare((await loadPersonaGroupRootVerifyingKey(handleIndex)) ?? "");
-    if (!seats.has(key) || seen.has(key) || except.has(key)) continue;
-    seen.add(key);
-    out.push({ signer: key, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)) });
-  }
-  return out;
+  return heldSeats(roster, except).map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
 }
 
 async function readRealm(repo: Repo, realm: string, sealHome: string) {

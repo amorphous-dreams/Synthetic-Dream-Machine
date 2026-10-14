@@ -29,6 +29,7 @@ import {
 } from "../src/carried-set.js";
 import { runNexusAcceptCarriage } from "../src/commands/nexus-contract.js";
 import { heldCharter, type HeldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { seatChairs } from "./seat-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -98,11 +99,11 @@ function genesisOnlyCharter(keys: string[], threshold: number): NexusDoc {
   return heldCharter({ keys, threshold, variant: 1 }).doc({ labels: partnerLabels(keys) });
 }
 
-/** This vessel's own founding: three held persona-roots seated in the primary charter. */
+/** This vessel's own founding: three held seat keys, filed under held persona-roots. */
 async function standFounding(): Promise<string[]> {
   await generateOrLoadVesselIdentity();
-  const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-  const keys  = roots.map((r) => r.verifyingKey);
+  await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+  const { keys } = await seatChairs([0, 1, 2]);
   writeNexusDoc(sealHome(), genesisCharter(keys).doc);
   return keys;
 }

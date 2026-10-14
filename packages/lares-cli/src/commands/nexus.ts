@@ -4,20 +4,17 @@
  * home. The roster lives as data-as-authority in the `bags/nexus` charter DOC; the antigen roots on
  * the chain's HEAD epoch. The pure antigen fold/verify reads this same doc through `foundingRoster`.
  *
- *   seat    read each held persona's ed25519 VERIFYING key from the vault (NEVER the signing seed), match it
- *           to a founding-kahu chair by its DECLARED HANDLE (never the private pet-name — matching the label
- *           would weld a compartment's private name to a public commitment), and establish the GENESIS epoch (sequence 0)
- *           bound to the seated key-set + an operator-supplied PRE-ROTATION commitment (`--next-key-commit`)
- *           to the next epoch's keys. FAILS CLOSED: a kahu with no matching held persona stays unseated; a
- *           quorum-short roster establishes no epoch (the antigen stays inert); a chain already ADVANCED past
- *           genesis refuses re-seat (rotate advances it, never a silent re-genesis).
- *   rotate  advance the chain: the operator has provisioned the pre-committed next key-set into the vault;
- *           rotate REVEALS it, verifies its digest matches the head's `nextKeyCommit` (FAIL CLOSED on
- *           mismatch), seats it as the new head, hash-linked to the prior epoch, and pre-commits the
- *           following key-set (`--next-key-commit`). A broken reveal writes nothing.
+ *   seat    give each persona that STANDS for a chair a seat key of its own, minted behind the custody door
+ *           and apart from every persona root, and establish the GENESIS epoch over those keys. The rite
+ *           arms itself: each chair's NEXT key mints sealed beside its seat key and the genesis commits that
+ *           set. FAILS CLOSED: a chair nobody stands for stays unseated; a quorum-short roster establishes no
+ *           epoch (the antigen stays inert); a chain already ADVANCED past genesis refuses re-seat (rotate
+ *           advances it, never a silent re-genesis).
+ *   rotate  advance the chain: the door finds the next key-set the head committed among this vessel's own
+ *           seat keys, seats the chairs that stand, has the committed hands sign the step, hash-links the new
+ *           head to the prior epoch, and commits the set after. A roll the law refuses writes nothing.
  *   commit  compute a key-set commitment digest (`sealKeySetHash`) from a comma-separated `--keys` set +
- *           `--threshold`, so the operator produces the `--next-key-commit` value OFFLINE from the next
- *           epoch's verifying keys, holding the next SIGNING seeds in offline custody.
+ *           `--threshold`, to compare by hand.
  *   show    the current roster state — seated/unseated kahu, threshold, chain head epoch, quorum verdict.
  *
  * The pre-rotation is the recovery keel: stealing today's council keys cannot forge tomorrow's charter,
@@ -93,7 +90,7 @@ export async function cmdNexus(args: ParsedArgs): Promise<number> {
  * primitive for namespace. The primitives keep every behaviour; a rite only orders them.
  */
 const NEXUS_RITES: Readonly<Record<string, { readonly composes: string; readonly run: (a: ParsedArgs) => Promise<number> }>> = {
-  quorum: { composes: "seal reserve · seal seat · seal show", run: runQuorumRite },
+  quorum: { composes: "seal seat · seal show", run: runQuorumRite },
   kahuli: { composes: "kahuli grammar (· kahuli engine — held)", run: runKahuliRite },
 };
 

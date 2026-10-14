@@ -7,7 +7,8 @@
  *   T2  no row takes a credential of this vessel: no act's shape names one, and a credential handed in refuses by
  *       its key's name. The restore's two rows take a BUNDLE's own key, as 64 lower hex and nothing else: the one
  *       stated exception, and it opens nothing this vessel holds.
- *   T3  the roster reads as one answer and opens no root. `seal.sign` signs no image a caller hands it on the
+ *   T3  the roster reads as one answer and opens no root. `seal.sign` signs as a seat this vessel holds a key
+ *       for, never as a persona root, and it signs no image a caller hands it on the
  *       image's form alone: with no charter standing a well-formed roll refuses, and so does every other image
  *       (bytes that spell no record, a record of another name, a crossing record, a roll out of its canonical
  *       spelling). The license itself, and the lawful signature, read in `seal-ceremony.test.ts`.
@@ -28,6 +29,7 @@ import { HANDLE_BOOK_FILE } from "../src/node-circle-store.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadPersonaGroupRootSeed, loadVesselSigningSeed } from "../src/node-vessel-identity.js";
 import { LABEL_ARG_LIMIT, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, SNAPSHOT_ARG_LIMIT, SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { seatChairs } from "./seat-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -59,8 +61,10 @@ describe("the sealed-act table", () => {
     }
     expect(await reasonOf(runSealedAct("petname.set", { handleIndex: 0.5, petname: "x" }, ctx))).toBe("bad-args");
     expect(await reasonOf(runSealedAct("petname.set", { handleIndex: 0, petname: "" }, ctx))).toBe("bad-args");
-    expect(await reasonOf(runSealedAct("seal.sign", { handleIndex: 0, image: "zz" }, ctx))).toBe("bad-args");
-    expect(await reasonOf(runSealedAct("seal.sign", { handleIndex: 0, image: "ab".repeat(SIGN_IMAGE_LIMIT + 1) }, ctx))).toBe("bad-args");
+    expect(await reasonOf(runSealedAct("seal.sign", { seat: "ab".repeat(32), image: "zz" }, ctx))).toBe("bad-args");
+    expect(await reasonOf(runSealedAct("seal.sign", { seat: "ab".repeat(32), image: "ab".repeat(SIGN_IMAGE_LIMIT + 1) }, ctx))).toBe("bad-args");
+    expect(await reasonOf(runSealedAct("seal.sign", { handleIndex: 0, image: "ab" }, ctx))).toBe("bad-args");   // a hand names a seat, never a face
+    expect(await reasonOf(runSealedAct("seat.retire", { keys: ["AB".repeat(32)] }, ctx))).toBe("bad-args");
     expect(await reasonOf(runSealedAct("petname.set", { handleIndex: 0, petname: "x".repeat(LABEL_ARG_LIMIT + 1) }, ctx))).toBe("bad-args");
     expect(await reasonOf(runSealedAct("declaration.set", { handleIndex: 0, declaration: { chair: "x".repeat(LABEL_ARG_LIMIT + 1) } }, ctx))).toBe("bad-args");
     expect(await reasonOf(runSealedAct("handle-book.save", { snapshot: { era: 1, records: ["x".repeat(SNAPSHOT_ARG_LIMIT)] } }, ctx))).toBe("bad-args");
@@ -102,10 +106,11 @@ describe("the sealed-act table", () => {
     const root = await generateOrLoadPersonaGroupRoot(0);
     const roots = await runSealedAct("persona.roots", {}, ctx);
     expect(roots).toEqual({ roots: [{ handleIndex: 0, verifyingKey: root.verifyingKey }], active: null, orphans: [] });
-    const sign = (args: Record<string, unknown>) => runSealedAct("seal.sign", { handleIndex: 0, ...args }, ctx) as Promise<{ signer: string; sig: string }>;
+    const [seat] = (await seatChairs([0])).keys as [string];
+    const sign = (args: Record<string, unknown>) => runSealedAct("seal.sign", { seat, ...args }, ctx) as Promise<{ signer: string; sig: string }>;
     // A WELL-FORMED ROLL SIGNS ONLY UNDER A CHARTER THAT LICENSES IT (`seal-ceremony.test.ts` walks the license).
     // No charter stands here: the roll the parent commit's row signed for any caller refuses.
-    const roll = sealRollBytes({ prevEpochCid: "epoch0-" + "ab".repeat(32), keys: [root.verifyingKey], threshold: 1, nextKeyCommit: "cd".repeat(32) });
+    const roll = sealRollBytes({ prevEpochCid: "epoch0-" + "ab".repeat(32), keys: [seat], threshold: 1, nextKeyCommit: "cd".repeat(32) });
     expect(await reasonOf(sign({ image: hex(roll) }))).toBe("act-refused");
     // EVERY OTHER IMAGE REFUSES TOO, a crossing record among them: the crossing's hands mark through the rite's own acts.
     const crossing = canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN, fromEpochCid: "a", toEpochCid: "b" });
@@ -119,7 +124,7 @@ describe("the sealed-act table", () => {
     ];
     for (const [why, args] of foreign) expect(await reasonOf(sign(args)), why).toBe("act-refused");
     expect(await reasonOf(sign({ image: hex(roll), note: "what stood observed" }))).toBe("bad-args");   // the roll row takes no note
-    expect(await reasonOf(runSealedAct("seal.sign", { handleIndex: 3, image: hex(roll) }, ctx))).toBe("act-refused");   // no root held there
+    expect(await reasonOf(runSealedAct("seal.sign", { seat: root.verifyingKey.toLowerCase(), image: hex(roll) }, ctx))).toBe("act-refused");   // a root holds no seat row
     await runSealedAct("persona.wear", { handleIndex: 0 }, ctx);
     expect((await runSealedAct("persona.roots", {}, ctx))["active"]).toBe(0);
     await expect(runSealedAct("persona.wear", { handleIndex: 5 }, ctx)).rejects.toThrow();  // wearing needs a held root
