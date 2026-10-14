@@ -359,7 +359,7 @@ Four parts carry it:
   recovery authority signs ''only rotations'', never content.
 # ''The identifier pre-COMMITS the recovery authority at founding'' — the persona's inception folds a
   DIGEST of the recovery root's authorized key-set (`sealKeySetHash`, already built), the same
-  pre-rotation KERI commits for the charter (`nextKeyCommit`). The recovery keys never sign until the
+  pre-rotation the charter commits per seat (`nextKeyDigests` · `nextThreshold`). The recovery keys never sign until the
   reveal; a compromise of the operational present cannot forge the recovery future.
 # ''Recovery signs a ROTATION EVENT, not a re-admit of the old key'' — the recovery authority signs an
   event that (a) reveals against the pre-committed recovery-key digest, (b) SEATS a FRESH operational
@@ -696,6 +696,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kJ3gcijSZ4J8XdTFdS781b2fN3sLveuJ9Gb6aCWWSUI
+<<^ code="&#x0003;">>ni:///sha-256;DnrIqlBs72TeHaB15F7PLIm3xXjeEpG0DUKj5EQuSzE
 
 <<^ code="&#x0004;" -> to="?">>

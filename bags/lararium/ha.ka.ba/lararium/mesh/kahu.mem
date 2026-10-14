@@ -363,13 +363,16 @@ those seat keys.
 
 ''EACH SEAT PRE-ROTATES ITS OWN KEY.'' The charter commits per seat: a list of next-key digests and a
 next threshold (`nextKeyDigests[]` · `nextThreshold`, KERI's `n[]` · `nt`), never one digest over a
-shared key-set. A seat commits its own COLD next key with a proof of possession (`seal commit --seat`).
+shared key-set. `seal seat` mints each chair's COLD next key, prints it as a cold-key card the operator
+reads back before the charter moves, and commits its digest; the next key rests on its card, never on a vessel.
 A routine roll takes k per-seat REVEALS, and every digest left unrevealed carries forward as reserve — a
 partial rotation. ''No Guardian takes part in a routine roll.''
 
-''Owed in code — the re-found.'' The charter holds ONE digest over the next key-set and threshold
-(`nextKeyCommit`, `wax-stamp.ts`). The per-seat `nextKeyDigests[]` · `nextThreshold`, `seal commit --seat`
-and the partial rotation land inside the re-found. The signed roll below stands in code.
+''Built'': the charter commits `nextKeyDigests[]` · `nextThreshold` per seat (`wax-stamp.ts`), a roll takes
+each card back on a terminal (`seal rotate`), `seal cold rehearse` reads a card back and moves nothing, and an
+earlier shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. The signed roll below stands
+in code. ''Owed in code'': the partial rotation. A roll refuses to list any digest an earlier epoch listed
+(`roll-respends-a-digest`), so a digest left unrevealed cannot carry forward as reserve.
 
 ''THE KEYS A ROLL REVEALS SIGN IT.'' At least threshold of the revealed keys — the keys whose
 digests the prior epoch committed, which carry that epoch's authority — sign the roll over the prior
@@ -545,6 +548,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BUEGQlHJjWCm75fYnTv1nCErJdroFaO8yVXWtRK5_2s
+<<^ code="&#x0003;">>ni:///sha-256;I0t7F4Dqmt8we-OJJJhPqijlPCoAP7L9CrC7D7ox-0s
 
 <<^ code="&#x0004;" -> to="?">>
