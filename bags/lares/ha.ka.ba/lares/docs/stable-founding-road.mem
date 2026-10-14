@@ -280,7 +280,7 @@ seal: it owns the compose hunk.
 !!! 3 · HARBOR ~ the container's tail
 * ''A persona door before `up`'': `tools/lares-container.sh` routes CLI acts through the offline door before `up`; after a successful act in a standing vessel the host shim reads the standing verdict and restarts the vessel on `restand`. The verdict reads a LIT face alone, so a `persona wear` that changes the worn face on a standing vessel waits on ONE FACE.
 * ''LAN candidate discovery'': the module and wiring stand off by default; `LAR_LAN_DISCOVERY=announce` enables announcements without keys. A real-LAN run and the network mode remain owed (`lar:///ha.ka.ba/lararium/mesh/harbor#/lan-discovery`).
-* ''Household HTTPS'': the compose `https` profile supplies a terminator and a resolver slot, the `issuer` profile supplies a one-shot DNS-01 issuer that reads the registrar's credential from two owner-read files outside both mounts (`docker-compose.surface.yml`; `tools/household-https-witness.sh` walks issuance against a test authority), and `deviceAdmitSyncUrl` derives relay reach from `LAR_PUBLIC_URL`. The node entry names itself by that setting alone: a boot without one, or with one that names loopback, says so in one loud line, and the first request that arrives under another host logs once per boot (`packages/lararium-node/src/reach-face-watch.ts`). The operator supplies the domain and the credential files. Owed: per-name resolver records, the renewal verb with its reload, and a first live issuance. No device takes an install (`lar:///ha.ka.ba/lararium/mesh/harbor#/household-https`, `lar:///ha.ka.ba/lararium/mesh/secure-context`).
+* ''Household HTTPS'': the compose `https` profile supplies a terminator and a resolver slot, the `issuer` profile supplies a one-shot DNS-01 issuer that reads the registrar's credential from two owner-read files outside both mounts (`docker-compose.surface.yml`; `tools/household-https-witness.sh` walks issuance against a test authority), the resolver answers each household name with its own address from one records file the operator keeps (`tools/household-resolver-witness.sh` walks it against a test zone), and `deviceAdmitSyncUrl` derives relay reach from `LAR_PUBLIC_URL`. The node entry names itself by that setting alone: a boot without one, or with one that names loopback, says so in one loud line, and the first request that arrives under another host logs once per boot (`packages/lararium-node/src/reach-face-watch.ts`). The operator supplies the domain and the credential files. Owed: the renewal verb with its reload, and a first live issuance. No device takes an install (`lar:///ha.ka.ba/lararium/mesh/harbor#/household-https`, `lar:///ha.ka.ba/lararium/mesh/secure-context`).
 * ''The harnesses stand on the image'': harnesses run the built image by digest and bind no source tree; the mesh scenarios name their own compose project (`MESH_PROJECT`) and feed their browser vessels from the image; the browser CI runner alone reads the repository read-only. Each harness opens the vessel it staged through the test custody door and reads a hearth as stood only once that door answered an open key; `mesh-scenarios all`, `harbor-walk-witness`, the crossing and herm witnesses, the browser walks and the household HTTPS witness all stand on that shape (`lar:///ha.ka.ba/lararium/mesh/harbor#/the-harnesses`).
 * ''The release manifest'': `tools/release-manifest.mjs` emits the record shape; a real multi-arch index, its push and signing remain owed.
 
@@ -392,7 +392,6 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 
 !!! HARBOR
 * `A2` The renewal verb with its terminator reload, and a first live issuance. The operator supplies the domain and the two credential files. A.
-* `A3` Per-name resolver records (two hearths, two addresses); the resolver answers one address for the whole zone today (`docker-compose.surface.yml`). A.
 * `A4` LAN discovery's network mode and one run on the real LAN. Operator's hands. A.
 * `A5` The release: a real multi-arch index, its push and signature, after the last re-bake and the last wire change. Operator's hands. A.
 * `A6` A container walk of `vessel seed` over an exported checkout leaves every tracked file as it stood (`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/found`). The first unlock leaves twelve untracked files under `wikis/daemon/` (nine `$__lares_ui_*.tid`, three flows), so `git status` reads `?? wikis/` where the runbook says clean. Either the daemon island's projection keeps those tiddlers off disk, or the runbook and `.gitignore` name what a founding leaves. A.
@@ -616,8 +615,7 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 ''Riskiest'': the hosting act's signer, an authority change.
 
 !!! A ~ HARBOR's tail (waits on nothing but the operator's hands for its live steps)
-# ''Landed ahead'': the issuer slot and its witness against a test authority.
-# Per-name resolver records.
+# ''Landed ahead'': the issuer slot and its witness against a test authority; per-name resolver records and their witness against a test zone.
 # Renewal.
 # LAN discovery's network mode.
 # The seed's fixed point.
@@ -765,6 +763,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jaep9Z0kyixt8UJ4LOpFLTk7p1KLPAW7_aHqWUvSgxk
+<<^ code="&#x0003;">>ni:///sha-256;_pmt9QvqkhEgmyYBDMPPpdEx4DPkTOIRP9oochvAKYs
 
 <<^ code="&#x0004;" -> to="?">>

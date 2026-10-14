@@ -271,7 +271,9 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 `tools/household-https-witness.sh` walks the slot with no real credential, domain or zone: a test certificate authority issues the wildcard through the same issuer service, a stand-in answers for the DNS host's API, the terminator serves the issued certificate, a knocked socket upgrade passes through, a header of the measured tablet size passes both ways, and the vessel's container, state and workspace show no trace of the credential. The stand-in leaves the registrar's own provider code unwalked.
 
-`LAR_PUBLIC_URL` names the vessel's reach face (#/behind-the-terminator), and `deviceAdmitSyncUrl` derives its relay URL. The operator supplies the domain, the registrar's API key pair, the LAN address and the router's DNS setting. A live issuance against the public authority through the registrar's API, a renewal on its ~60d clock with the terminator's restart, installed-PWA and Android-WebView TLS behavior, encrypted-DNS interaction with split horizon, and certificate-renewal behavior at the browser remain unverified.
+`tools/household-resolver-witness.sh` walks the resolver against a test zone: the records check refuses each malformed records file by name and stands no resolver behind one, two hearths answer with two addresses, a name the file does not list answers NXDOMAIN, a name outside the zone reaches a stand-in upstream that hears no household name, and an edit lands once the check passed and the resolver restarted.
+
+`LAR_PUBLIC_URL` names the vessel's reach face (#/behind-the-terminator), and `deviceAdmitSyncUrl` derives its relay URL. The operator supplies the domain, the registrar's API key pair, the records file naming each machine's LAN address and the router's DNS setting. A live issuance against the public authority through the registrar's API, a renewal on its ~60d clock with the terminator's restart, installed-PWA and Android-WebView TLS behavior, encrypted-DNS interaction with split horizon, and certificate-renewal behavior at the browser remain unverified.
 
 <<~/ahu>>
 
@@ -296,6 +298,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NfyFRUukV9Ms_4J9xP4ptqryvzxPpwQIaxAPyO7FRVw
+<<^ code="&#x0003;">>ni:///sha-256;5H4AOzlWr1QeSmuKiuEBw-hKAEI6jwNWPMY-WbuXpVc
 
 <<^ code="&#x0004;" -> to="?">>

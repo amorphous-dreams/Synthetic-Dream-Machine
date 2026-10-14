@@ -190,7 +190,7 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 !! 7 · Establish household reach
 
-Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and one split-horizon resolver. mDNS offers a hint only. No device installs a certificate authority. Keep the DNS credential and TLS private key outside the vessel state and image.
+Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and one split-horizon resolver. The resolver answers each household name from one records file the operator keeps, one `<LAN address> <name>` line per machine (`LARES_DNS_RECORDS`; `docker-compose.surface.yml` names how to check an edit and restart the resolver). mDNS offers a hint only. No device installs a certificate authority. Keep the DNS credential and TLS private key outside the vessel state and image.
 
 ▢ ''OWED — household HTTPS integration.'' The optional Compose profile supplies a terminator and split-horizon resolver. The operator still needs DNS-01 issuance and renewal, LAN binding and DHCP wiring, and a verified trusted origin on a household device. Carriers: `harbor.mem`, `secure-context.mem`, and `stable-founding-road.mem`.
 
@@ -340,6 +340,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d_VRWdTo_RaaEQRBzBxZns6vxz_2VhezJgm9rzlnFJ0
+<<^ code="&#x0003;">>ni:///sha-256;ET6td6AadE26AJPQhFk2uQ4Td03reVw6JeIb505aCuM
 
 <<^ code="&#x0004;" -> to="?">>

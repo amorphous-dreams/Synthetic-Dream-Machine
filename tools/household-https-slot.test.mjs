@@ -26,13 +26,15 @@ const nonComment = (text) => text.split("\n").filter((line) => !/^\s*#/.test(lin
 function scan(text) {
   const terminator = serviceBlock(text, "terminator");
   const resolver = serviceBlock(text, "resolver");
+  const records = serviceBlock(text, "records");
   const issuer = serviceBlock(text, "issuer");
   const slot = text.slice(text.search(/^  terminator:\s*$/m));
   const problems = [];
   if (!terminator) problems.push("terminator service missing");
   if (!resolver) problems.push("resolver service missing");
+  if (!records) problems.push("records service missing");
   if (!issuer) problems.push("issuer service missing");
-  for (const [name, block] of [["terminator", terminator], ["resolver", resolver]]) {
+  for (const [name, block] of [["terminator", terminator], ["resolver", resolver], ["records", records]]) {
     if (block && !/profiles:\s*\[https\]/.test(block)) problems.push(`${name} lacks https profile`);
     if (block && !/cap_drop:\s*\[ALL\]/.test(block)) problems.push(`${name} does not drop all capabilities`);
     if (block && !/no-new-privileges:true/.test(block)) problems.push(`${name} permits new privileges`);
@@ -83,25 +85,37 @@ function scan(text) {
   if (!/proxy_pass http:\/\/lares:4321;/.test(slot)) problems.push("terminator does not proxy to lares:4321");
   if (!/proxy_set_header Upgrade \$\$http_upgrade;/.test(slot)) problems.push("terminator does not pass the WebSocket upgrade");
   if (!/ssl_reject_handshake on;/.test(slot)) problems.push("terminator serves undeclared names");
-  if (!/template IN A \$\{LARES_TLS_ZONE/.test(slot) || !/forward \. \$\{LARES_DNS_UPSTREAM/.test(slot)) problems.push("resolver holds no zone template and upstream forward");
+  if (!/file \/zone\/db\.household \$\{LARES_TLS_ZONE/.test(slot) || !/forward \. \$\{LARES_DNS_UPSTREAM/.test(slot)) problems.push("resolver serves no rendered zone and upstream forward");
   for (const bind of ["LARES_TLS_BIND", "LARES_DNS_BIND"]) {
     if (!new RegExp(`\\$\\{${bind}:-127\\.0\\.0\\.1\\}`).test(slot)) problems.push(`${bind} does not default to loopback`);
   }
   if (/docker\.sock|\/state(?:\/|\b)/.test(slot)) problems.push("slot mounts protected host state");
-  for (const required of ["LARES_TLS_NAME", "LARES_TLS_CERT", "LARES_TLS_KEY", "LARES_TLS_ZONE", "LARES_LAN_ADDRESS"]) {
+  for (const required of ["LARES_TLS_NAME", "LARES_TLS_CERT", "LARES_TLS_KEY", "LARES_TLS_ZONE"]) {
     if (!/echo "household-https: /.test(terminator) || !terminator.includes(`'${required} stands unset`)) problems.push(`terminator has no named ${required} refusal`);
   }
-  // The resolver's image holds no shell: it stands only behind a terminator that passed every named check.
-  if (resolver && !/depends_on:\s*\n\s*terminator:\s*\n\s*condition: service_healthy/.test(resolver)) problems.push("resolver does not wait on a healthy terminator");
+  // The resolver's image holds no shell: it stands only behind a records check that passed every named check.
+  if (resolver && !/depends_on:\s*\n\s*records:\s*\n\s*condition: service_completed_successfully/.test(resolver)) problems.push("resolver does not wait on a passed records check");
+  // ONE RECORD PER NAME: the check reads the household's file read-only, holds no network, refuses by name, and its
+  // one write is the zone volume the resolver reads read-only.
+  if (records) {
+    if (!/network_mode: none/.test(records)) problems.push("records check holds a network");
+    for (const required of ["LARES_TLS_ZONE", "LARES_DNS_RECORDS"]) {
+      if (!/echo "household-records: /.test(records) || !records.includes(`'${required} stands unset`)) problems.push(`records check has no named ${required} refusal`);
+    }
+    if (!/source: \$\{LARES_DNS_RECORDS:-\/dev\/null\}\n\s*target: \/run\/records\/household\.records\n\s*read_only: true/.test(records)) problems.push("records file bind is not read-only");
+    const writable = [...records.matchAll(/- type: (bind|volume)\n([\s\S]*?)(?=\n\s{6}- type: |\n\s{4}[a-z_]+:|$)/g)].filter((m) => !/read_only: true/.test(m[2]));
+    if (writable.length !== 1 || writable[0][1] !== "volume" || !/source: household-zone\n\s*target: \/zone\s*$/.test(writable[0][2])) problems.push("records check writes somewhere other than the zone volume");
+  }
+  if (resolver && !/source: household-zone\n\s*target: \/zone\n\s*read_only: true/.test(resolver)) problems.push("resolver reads the zone volume writable");
   // The terminator mounts its certificate and its key as two read-only files and nothing else of the issuer's directory.
   for (const [label, file] of [["certificate", "tls.crt"], ["key", "tls.key"]]) {
     const mount = new RegExp(`source: \\$\\{LARES_TLS_${label === "certificate" ? "CERT" : "KEY"}[^\\n]*\\n\\s*target: /run/tls/${file.replace(".", "\\.")}\\n\\s*read_only: true`);
     if (!mount.test(terminator)) problems.push(`${label} bind is not read-only`);
   }
-  if (/LARES_TLS_DIR|LARES_DNS_CREDENTIAL|PORKBUN|\/run\/dns/.test(nonComment(terminator) + nonComment(resolver))) problems.push("the edge names issuer material");
+  if (/LARES_TLS_DIR|LARES_DNS_CREDENTIAL|PORKBUN|\/run\/dns/.test(nonComment(terminator) + nonComment(resolver) + nonComment(records))) problems.push("the edge names issuer material");
   for (const name of ["lares", "offline", "herm"]) {
     if (profileOf(text, name).includes("https")) problems.push(`${name} carries https profile`);
-    if (/depends_on:\s*[\s\S]{0,160}\b(?:terminator|resolver)\b/.test(serviceBlock(text, name))) problems.push(`${name} depends on the slot`);
+    if (/depends_on:\s*[\s\S]{0,160}\b(?:terminator|resolver|records)\b/.test(serviceBlock(text, name))) problems.push(`${name} depends on the slot`);
   }
   const nonCommentSlot = slot.split("\n").filter((line) => !/^\s*#/.test(line)).join("\n");
   const domains = [...nonCommentSlot.matchAll(/\b[a-z0-9-]+(?:\.[a-z0-9-]+){2,}\b/gi)].map((m) => m[0]).filter((d) => !/^\d+(?:\.\d+)+$/.test(d) && d !== "acme-v02.api.letsencrypt.org");
@@ -125,7 +139,7 @@ test("CONTROL: the slot scanner reads planted violations and accepts a planted l
   const planted = `x-vessel: &vessel
   image: local
 services:
-  terminator:\n    profiles: [https]\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    command: echo \"household-https: \" 'LARES_TLS_NAME stands unset 'LARES_TLS_CERT stands unset 'LARES_TLS_KEY stands unset 'LARES_TLS_ZONE stands unset 'LARES_LAN_ADDRESS stands unset\n    volumes:\n      - type: bind\n        source: \${LARES_TLS_CERT:-/tmp/cert}\n        target: /run/tls/tls.crt\n        read_only: true\n      - type: bind\n        source: \${LARES_TLS_KEY:-/tmp/key}\n        target: /run/tls/tls.key\n        read_only: true\n  resolver:\n    profiles: [https]\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    depends_on:\n      terminator:\n        condition: service_healthy\n  lares:\n    profiles: [surface]\n  offline:\n    profiles: [offline]\n  herm:\n    profiles: [herm]\n`;
+  terminator:\n    profiles: [https]\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    command: echo \"household-https: \" 'LARES_TLS_NAME stands unset 'LARES_TLS_CERT stands unset 'LARES_TLS_KEY stands unset 'LARES_TLS_ZONE stands unset\n    volumes:\n      - type: bind\n        source: \${LARES_TLS_CERT:-/tmp/cert}\n        target: /run/tls/tls.crt\n        read_only: true\n      - type: bind\n        source: \${LARES_TLS_KEY:-/tmp/key}\n        target: /run/tls/tls.key\n        read_only: true\n  records:\n    profiles: [https]\n    network_mode: none\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    command: echo \"household-records: \" 'LARES_TLS_ZONE stands unset 'LARES_DNS_RECORDS stands unset\n    volumes:\n      - type: bind\n        source: \${LARES_DNS_RECORDS:-/dev/null}\n        target: /run/records/household.records\n        read_only: true\n      - type: volume\n        source: household-zone\n        target: /zone\n  resolver:\n    profiles: [https]\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    volumes:\n      - type: volume\n        source: household-zone\n        target: /zone\n        read_only: true\n    depends_on:\n      records:\n        condition: service_completed_successfully\n  lares:\n    profiles: [surface]\n  offline:\n    profiles: [offline]\n  herm:\n    profiles: [herm]\n`;
   const lawful = planted + `  issuer:
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
@@ -158,7 +172,7 @@ services:
       - type: bind
         source: \${LARES_TLS_DIR:-/dev/null}
         target: /certs
-  configs:\n  nginx:\n    content: |\n      large_client_header_buffers 4 16k;\n      proxy_buffer_size 16k;\n      ssl_reject_handshake on;\n      proxy_pass http://lares:4321;\n      proxy_set_header Upgrade $$http_upgrade;\n  corefile:\n    content: |\n      template IN A \${LARES_TLS_ZONE:-unset.invalid} {\n      forward . \${LARES_DNS_UPSTREAM:-1.1.1.1}\n  ports: "\${LARES_TLS_BIND:-127.0.0.1}:443" "\${LARES_DNS_BIND:-127.0.0.1}:53"\n`;
+  configs:\n  nginx:\n    content: |\n      large_client_header_buffers 4 16k;\n      proxy_buffer_size 16k;\n      ssl_reject_handshake on;\n      proxy_pass http://lares:4321;\n      proxy_set_header Upgrade $$http_upgrade;\n  corefile:\n    content: |\n      file /zone/db.household \${LARES_TLS_ZONE:-unset.invalid} {\n      forward . \${LARES_DNS_UPSTREAM:-1.1.1.1}\n  ports: "\${LARES_TLS_BIND:-127.0.0.1}:443" "\${LARES_DNS_BIND:-127.0.0.1}:53"\n`;
   assert.deepEqual(scan(lawful), []);
   const red = (text, needle) => assert.ok(scan(text).some((p) => p.includes(needle)), `scanner missed: ${needle}`);
   red(lawful.replace("profiles: [https]", "profiles: [other]"), "https profile");
@@ -167,7 +181,15 @@ services:
   red(lawful.replace("proxy_pass http://lares:4321;", "return 200;"), "does not proxy to lares:4321");
   red(lawful.replace("proxy_set_header Upgrade $$http_upgrade;", ""), "WebSocket upgrade");
   red(lawful.replace("ssl_reject_handshake on;", ""), "undeclared names");
-  red(lawful.replace("forward . ", "forward-nothing "), "zone template and upstream forward");
+  red(lawful.replace("forward . ", "forward-nothing "), "rendered zone and upstream forward");
+  // ONE RECORD PER NAME: each fault turns its own scanner.
+  red(lawful.replace("file /zone/db.household", "template IN A"), "rendered zone and upstream forward");
+  red(lawful.replace("      records:\n        condition: service_completed_successfully", "      records:\n        condition: service_started"), "passed records check");
+  red(lawful.replace("    network_mode: none\n", ""), "records check holds a network");
+  red(lawful.replace("'LARES_DNS_RECORDS stands unset", "'LARES_DNS_RECORDS check removed"), "named LARES_DNS_RECORDS refusal");
+  red(lawful.replace("target: /run/records/household.records\n        read_only: true", "target: /run/records/household.records\n        read_only: false"), "records file bind is not read-only");
+  red(lawful.replace("        target: /zone\n  resolver:", "        target: /zone\n      - type: bind\n        source: /srv/elsewhere\n        target: /elsewhere\n  resolver:"), "writes somewhere other than the zone volume");
+  red(lawful.replace("        target: /zone\n        read_only: true", "        target: /zone"), "zone volume writable");
   red(lawful.replace("LARES_DNS_BIND:-127.0.0.1", "LARES_DNS_BIND:-0.0.0.0"), "LARES_DNS_BIND does not default to loopback");
   // A credential under a name the plain word list would miss.
   red(lawful.replace("target: /run/dns\n        read_only: true", "target: /run/dns\n        read_only: false"), "credential bind is not read-only");
