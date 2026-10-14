@@ -184,6 +184,14 @@ describe("the inception", () => {
     expect(readCharterInception({ ...i, image: { ...i.image, aid: `nexus-${"00".repeat(32)}` } })).toBeNull();
     expect(readCharterInception({ ...i, image: { ...i.image, keys: [...i.image.keys].reverse() } })).toBeNull();
     expect(readCharterInception({ ...i, extra: 1 })).toBeNull();
+    // An image assembled by hand whose successor resolves to a seated key reads nowhere, signed or not.
+    const { a, b } = await founders();
+    const bCold = await coldKeyFromSeed(seedOf(22));
+    const pairs = [{ seat: a.seat, next: a.next }, { seat: bCold.verifyingKey, next: b.next }].sort((x, y) => (x.seat < y.seat ? -1 : 1));
+    const keys = pairs.map((p) => p.seat), nextKeyDigests = pairs.map((p) => p.next);
+    const crafted = { ...i.image, keys, nextKeyDigests, aid: genesisCharterEpoch(keys, 2, { digests: nextKeyDigests, threshold: 2 }).epochCid };
+    expect(readCharterInceptionImage(crafted)).toBeNull();
+    expect(readCharterInceptionImage({ ...crafted, keys: [...keys] })).toBeNull();
   });
 });
 

@@ -246,6 +246,8 @@ export function readCharterInceptionImage(parsed: unknown): CharterInceptionImag
   const manifest = readManifest(r["manifest"]);
   if (!manifest || typeof aid !== "string") return null;
   const seats = keys as string[], digests = nextKeyDigests as string[];
+  // A seat key whose digest a seat committed comes back at the first roll and stalls it there.
+  if (seats.some((k) => digests.includes(seatNextDigest(k)))) return null;
   if (aid !== sealEpochCidOf({ keySetHash: sealKeySetHash(seats, threshold), nextKeyDigests: digests, nextThreshold: threshold, prevEpochCid: null })) return null;
   return { kind: CHARTER_INCEPTION_DOMAIN, aid, keys: [...seats], threshold, nextKeyDigests: [...digests], nextThreshold: threshold, charterLaw, manifest };
 }
