@@ -279,9 +279,10 @@ apart from every persona root (`seat-key-store.ts`, <<~ loulou "lar:///ha.ka.ba/
 `seal seat` mints it, prints the chair's NEXT key as a cold-key card the operator reads back before the charter
 moves, and commits one digest per chair (`nextKeyDigests`); `seal rotate` takes each card back on a terminal and
 adopts each revealed key as its chair's seat key; the quorum doors sign with the rows (`held-quorum.ts`). An
-earlier charter shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. ''Owed in code'': the
-card's rehearsal (`seal cold rehearse`); every chair of a charter comes from one vault; no co-founding verb and no
-cross-vault countersign stand.
+earlier charter shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. `seal cold rehearse`
+reads a card back against the head's digests, names the chair it would roll, and moves nothing; `--cold-key`
+stands in for its terminal only on a staged root whose custody proves the published test route. ''Owed in code'':
+every chair of a charter comes from one vault; no co-founding verb and no cross-vault countersign stand.
 
 <<~/ahu>>
 
@@ -544,6 +545,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Oj-4LWtSu3lliFP1jroErN14BTtQVcp6Z3beiwRGE8Y
+<<^ code="&#x0003;">>ni:///sha-256;BUEGQlHJjWCm75fYnTv1nCErJdroFaO8yVXWtRK5_2s
 
 <<^ code="&#x0004;" -> to="?">>

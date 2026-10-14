@@ -44,7 +44,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
-      "  seal <seat | rotate | commit | show | export | import | grow>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony",
+      "  seal <seat | rotate | show | export | import | grow | cold>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back",
       "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
       "  kapae --list                              read the currently-Kapae'd set (the fold)",
       "  un_kapae <nym>                            mint a quorum-signed causal lift",

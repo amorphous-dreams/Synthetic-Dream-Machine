@@ -20,7 +20,7 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry |
 
 lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
 
-  seal <seat | rotate | commit | show | export | import | grow>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony
+  seal <seat | rotate | show | export | import | grow | cold>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back
   kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym
   kapae --list                              read the currently-Kapae'd set (the fold)
   un_kapae <nym>                            mint a quorum-signed causal lift
@@ -67,7 +67,7 @@ Examples:
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `
 "lares nexus seal: unknown sub-verb "not-a-subverb"
-usage: lares nexus seal <seat | rotate | show | export | import | grow>
+usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse>
 
   seat    form the roster from the personas that STOOD for a chair, give each chair a seat key
           of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints
@@ -80,6 +80,8 @@ usage: lares nexus seal <seat | rotate | show | export | import | grow>
           fresh key. Fresh cards print for the rolled head, and you type them back.
           [--threshold <k>]  the quorum rule for the new roster (default: majority)
   show    read the kahu quorum's seats + chain head + quorum verdict + the carried set
+  cold rehearse  type back one or more chairs' cards: each reads against the digests the head
+          committed and names the chair it would roll. Nothing moves: no key, row or charter.
   import <file>          land a charter at the primary path — only where none stands, or the same one
   import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for
                          that AID lands only when its seal lineage extends the held head"

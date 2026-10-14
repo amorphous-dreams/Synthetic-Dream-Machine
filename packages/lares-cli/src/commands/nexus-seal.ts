@@ -44,7 +44,7 @@ import {
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
   genesisCharterEpoch, rotateSealEpoch, seatedKahuKeys,
-  mintColdKey, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode, ColdKeyCardError, type SealNext,
+  mintColdKey, coldKeyFromSeed, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode, ColdKeyCardError, type SealNext,
   federationPostureFromDoc,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats, type RotateResult,
   type CharterSealState, seatFingerprint,
@@ -98,7 +98,7 @@ function sealedCharterOrRefuse(sealHome: string, act: string): { doc: NexusDoc; 
 }
 
 const SEAL_USAGE: readonly string[] = [
-  "usage: lares nexus seal <seat | rotate | show | export | import | grow>",
+  "usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse>",
   "",
   "  seat    form the roster from the personas that STOOD for a chair, give each chair a seat key",
   "          of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints",
@@ -111,6 +111,8 @@ const SEAL_USAGE: readonly string[] = [
   "          fresh key. Fresh cards print for the rolled head, and you type them back.",
   "          [--threshold <k>]  the quorum rule for the new roster (default: majority)",
   "  show    read the kahu quorum's seats + chain head + quorum verdict + the carried set",
+  "  cold rehearse  type back one or more chairs' cards: each reads against the digests the head",
+  "          committed and names the chair it would roll. Nothing moves: no key, row or charter.",
   "  import <file>          land a charter at the primary path — only where none stands, or the same one",
   "  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for",
   "                         that AID lands only when its seal lineage extends the held head",
@@ -165,6 +167,7 @@ export async function cmdSeal(args: ParsedArgs): Promise<number> {
       case "export":  return sealExport(args);
       case "import":  return await sealImport(args);
       case "grow":    return await sealGrow(args);
+      case "cold":    return await sealCold(args);
       default:
         return refuseUsage(args, "nexus seal", SEAL_USAGE, sub ? `unknown sub-verb "${sub}"` : undefined);
     }
@@ -280,17 +283,24 @@ async function gatherCards(args: ParsedArgs, chairs: number): Promise<Uint8Array
     catch (err) { if (err instanceof ColdKeyCardError) throw new UsageError(err.message); throw err; }
   };
   const flagged = args.options["cold-key"];
-  if (flagged !== undefined) {
-    if (!(await readBackStandsIn())) throw new UsageError("--cold-key stands in for the terminal on a staged test root alone: type each card when the rite asks for it");
-    return flagged.split(",").map((code) => code.trim()).filter((code) => code.length > 0).map(read);
-  }
-  if (!canPromptSecret()) throw new UsageError("a roll reads each chair's cold-key card on a terminal; run it on one");
+  if (flagged !== undefined && !(await readBackStandsIn())) throw new UsageError("--cold-key stands in for the terminal on a staged test root alone: type each card when the rite asks for it");
+  if (flagged === undefined && !canPromptSecret()) throw new UsageError("a roll reads each chair's cold-key card on a terminal; run it on one");
+  // A CARD THAT FAILS TO READ LEAVES NO SEED BEHIND: every seed read before it zero-fills before the refusal leaves.
   const seeds: Uint8Array[] = [];
-  for (let i = 0; i < chairs; i++) {
-    const code = (await promptSecret(`cold-key card ${i + 1} of ${chairs} (blank to skip)`)).trim();
-    if (code.length > 0) seeds.push(read(code));
+  try {
+    if (flagged !== undefined) {
+      for (const code of flagged.split(",").map((c) => c.trim()).filter((c) => c.length > 0)) seeds.push(read(code));
+      return seeds;
+    }
+    for (let i = 0; i < chairs; i++) {
+      const code = (await promptSecret(`cold-key card ${i + 1} of ${chairs} (blank to skip)`)).trim();
+      if (code.length > 0) seeds.push(read(code));
+    }
+    return seeds;
+  } catch (err) {
+    for (const seed of seeds) seed.fill(0);
+    throw err;
   }
-  return seeds;
 }
 
 /**
@@ -508,6 +518,68 @@ async function sealGrow(args: ParsedArgs): Promise<number> {
     default:
       console.error("lares nexus seal grow <open | bind | sign --index N | witness --index N --note '…' | seal>");
       return 2;
+  }
+}
+
+// ── THE CARD'S REHEARSAL — `seal cold rehearse` ────────────────────────────────────────────────────
+//
+// One mis-copied card freezes a chair at its next roll, and the roll itself spends the cards it reads. The rehearsal
+// reads a card back the way a roll would, against the digests the head committed, and moves nothing: it asks the
+// custody door for no act beyond the stand-in reading, writes no row and no charter, and every seed zero-fills
+// before it answers. It needs no unlocked vessel on a terminal: a card's digest reads off public bytes alone.
+
+const COLD_USAGE: readonly string[] = [
+  "usage: lares nexus seal cold rehearse",
+  "",
+  "  rehearse  type back one or more chairs' cold-key cards (a blank line skips a chair). Each card",
+  "            reads against the digests the head committed and names the chair it would roll.",
+  "            Nothing moves: no key, row or charter changes.",
+];
+
+async function sealCold(args: ParsedArgs): Promise<number> {
+  const step = args.positional[2];
+  if (step !== "rehearse") return refuseUsage(args, "nexus seal cold", COLD_USAGE, step ? `unknown step "${step}"` : undefined);
+  const { doc, head } = sealedCharterOrRefuse(larSealHome(), "rehearse");
+  const refuse = (code: string, message: string): number => {
+    emit(args, { ok: false, error: { code, message }, human: () => console.error(`lares nexus seal cold rehearse: ${message}`) });
+    return exitFor(code);
+  };
+  if (!headArmed(head)) return refuse("rotation-unarmed", "the head commits no next key, so no card answers it");
+  // Digest i commits the successor of the i-th SORTED seated key, so position i names that key's chair.
+  const chairOf = new Map(doc.kahu.filter((k) => k.verifyingKey).map((k) => [k.verifyingKey!.toLowerCase(), k.displayName]));
+  const sorted = seatedKahuKeys(doc);
+  const positions = head.nextKeyDigests.length;
+  const seeds = await gatherCards(args, positions);
+  try {
+    if (seeds.length === 0) throw new UsageError("no card typed — type at least one chair's card");
+    const answered: Array<{ card: number; position: number; chair: string; digest: string }> = [];
+    for (const [i, seed] of seeds.entries()) {
+      const cold = await coldKeyFromSeed(seed);
+      cold.seed.fill(0);
+      const digest = cold.digest;
+      const position = head.nextKeyDigests.indexOf(digest);
+      // A REFUSAL CARRIES NO SECRET: it names the card by its place in the typing, never by a byte of its code.
+      if (position < 0) return refuse("cold-card-answers-no-digest", `card ${i + 1} answers no digest the head committed — it would roll nothing; check it against the paper. Nothing moved.`);
+      // A roll refuses two cards for one chair, so the rehearsal names the repeat rather than counting it twice.
+      const earlier = answered.find((a) => a.position === position + 1);
+      if (earlier) return refuse("cold-card-repeated", `card ${i + 1} answers the same chair as card ${earlier.card} — a roll takes one card per chair. Nothing moved.`);
+      answered.push({ card: i + 1, position: position + 1, chair: chairOf.get(sorted[position] ?? "") ?? "a chair", digest });
+    }
+    const rehearsed = new Set(answered.map((a) => a.position));
+    const unrehearsed = head.nextKeyDigests.map((_, p) => p + 1).filter((p) => !rehearsed.has(p));
+    emit(args, {
+      ok: true,
+      data: { head: head.epochCid, positions, nextThreshold: head.nextThreshold, answered, unrehearsed, moved: false },
+      human: () => {
+        console.log(`nexus seal cold rehearse — head ${head.epochCid.slice(0, 24)}…`);
+        for (const a of answered) console.log(`  card ${a.card} answers chair ${a.position} of ${positions} (${a.chair}): it would roll this head`);
+        if (unrehearsed.length > 0) console.log(`  not rehearsed: chair(s) ${unrehearsed.join(", ")}`);
+        console.log(`  a roll needs ${head.nextThreshold} of ${positions} cards. Nothing moved.`);
+      },
+    });
+    return 0;
+  } finally {
+    for (const seed of seeds) seed.fill(0);
   }
 }
 

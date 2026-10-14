@@ -56,6 +56,9 @@ describe("seal rotate refusal codes", () => {
     const unarmedBefore = readFileSync(path);
     const refusedUnarmed = await rite.rotate() as { code: number; out: Record<string, any> };
     expect(refusedUnarmed.code).not.toBe(0); expect(refusedUnarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
+    // The card's rehearsal reads the same head and refuses under the same name, before any card reads.
+    const rehearsedUnarmed = await run(args(["seal", "cold", "rehearse"]));
+    expect(rehearsedUnarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
 
     // A head that commits a set this vessel holds no row of: nothing reveals it.
     const stranger = genesisCharterEpoch(seated, 2, { digests: ["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], threshold: 2 });

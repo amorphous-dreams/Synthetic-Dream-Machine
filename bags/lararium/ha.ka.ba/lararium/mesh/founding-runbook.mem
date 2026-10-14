@@ -156,7 +156,7 @@ The seed's seat holds its own key and commits its own cold next key, which rests
 
 The quorum rite composes `seal seat` and `seal show`: the seat gives each chair a seat key of its own, prints each chair's NEXT key as a cold-key card, asks each card back on the terminal before the charter moves, and commits one digest per chair. `seal rotate` asks each chair's card back the same way (`packages/lares-cli/src/commands/nexus-seal.ts`). Write each card onto paper before you type it back; no copy rests on the node.
 
-▢ ''OWED — the card's rehearsal.'' `seal cold rehearse` reads a card back against the charter head and moves nothing.
+Rehearse each card before the paper leaves the room: `tools/lares-container.sh nexus seal cold rehearse` asks for one or more cards on the terminal (a blank line skips a chair), reads each against the digests the head committed, names the chair each would roll, and moves nothing. A card that answers no digest refuses by its place in the typing and never by a byte of its code.
 
 The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. Stop the vessel, then make one consistent backup of the full state mount, including its custody slots and relation carriers; that copy plus the custody passphrase (or paper pin) restores the vessel.
 
@@ -340,6 +340,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZHGWi5WAs-oE5Ffx_0_TOORO6nnR1GpOSBOMNBETGuc
+<<^ code="&#x0003;">>ni:///sha-256;d_VRWdTo_RaaEQRBzBxZns6vxz_2VhezJgm9rzlnFJ0
 
 <<^ code="&#x0004;" -> to="?">>
