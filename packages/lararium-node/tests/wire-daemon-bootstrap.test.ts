@@ -43,6 +43,7 @@ vi.mock("../src/doc-load-probe.js", async (orig) => ({
 }));
 
 import { openNodeVessel } from "../src/open-node-vessel.js";
+import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { larBootstrapPath } from "../src/vessel-paths.js";
 
 const repoRoot = new URL("../../..", import.meta.url).pathname;
@@ -137,5 +138,28 @@ describe("the node daemon address wire", () => {
     const seed = JSON.parse(readFileSync(join(genesisCarrying(ORACLE_ADDRESS), "seed.json"), "utf8")) as GenesisSeed;
     const oracle = await materializeGenesisIsland(new Repo(), seed, "wire-daemon-bootstrap");
     expect(tiddlerText(oracle.doc()?.tiddlers?.[DAEMON_BAG_ID])).toBe(ORACLE_ADDRESS);
+  }, TIMEOUT_MS);
+
+  test("a composition that stands down rests its store: the Repo's own shutdown closes its storage adapter, once, before the boot answers", async () => {
+    const order: string[] = [];
+    const shutdown = vi.spyOn(Repo.prototype, "shutdown").mockImplementation(async function (this: Repo, ...args: []) {
+      shutdown.mockRestore();
+      order.push("repo.shutdown begins");
+      try { return await Repo.prototype.shutdown.apply(this, args); } finally { order.push("repo.shutdown ends"); }
+    });
+    const realClose = DurableNodeFSStorageAdapter.prototype.close;
+    const close = vi.spyOn(DurableNodeFSStorageAdapter.prototype, "close").mockImplementation(async function (this: DurableNodeFSStorageAdapter) {
+      order.push("storage.close");
+      return realClose.apply(this);
+    });
+    const claimsBefore = held.claims.length;
+    try {
+      // The boot refuses after its Repo stood (the daemon mount fails), so the whole standing composition stands down.
+      await bootRefusal(ORACLE_ADDRESS, BOOTSTRAP_ADDRESS);
+    } finally { close.mockRestore(); shutdown.mockRestore(); }
+    expect(held.claims.length, "CONTROL: this boot took a store claim, so a Repo stood over a store").toBeGreaterThan(claimsBefore);
+    // The engine's shutdown closes the storage it holds. A save the Repo's debounce starts after that lands no byte
+    // (`durable-storage-adapter` counts it late), so the store the claim gives up next holds no write in flight.
+    expect(order).toEqual(["repo.shutdown begins", "storage.close", "repo.shutdown ends"]);
   }, TIMEOUT_MS);
 });

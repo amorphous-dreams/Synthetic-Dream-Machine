@@ -3112,8 +3112,7 @@ async function composeNodeHermOn(
       // and `p.nexusPubkey` now resolves through `nexusIdentity`: a keeper and a carrier holding ONE charter
       // derive ONE island name (the charter's genesis epoch) and therefore ONE crossroads board, so the
       // announce lands where the carrier reads it. e2e ⑦ (`tests/e2e/herm-reshares-public-blob.e2e.test.ts`)
-      // stands UNMEASURED against this cure — a sibling hearth held the e2e set when the cure landed, and two
-      // sets never run at once over one `synced-tree.json`. Its second half is independent and still owed:
+      // stands UNMEASURED against this cure. Its second half is independent and still owed:
       // the Herm holds no carriage CLIENT (it IS the relay), so nothing in the product ever makes it FETCH the
       // body, and the witness plants it by hand at ⑤b to isolate the index half from the byte half.
       realmReferences: () => hermRealmShoreBooks({
