@@ -387,9 +387,9 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `G19` Canon sweeps owed: the shore surface's carriers; wherever the test door's "scratch" reads as a temp-dir test; the browser surface's secure-context law beside `docker-compose.mesh.yml`'s; `secure-context.mem#/behind-the-terminator` to harbor's law; `kahu.mem` and `lamplighters.mem` on what the code holds. G.
 * `G20` Carried, unranked: road (iv), surface-for-review; loans keyed by CID; a design call on `/cas` timing; whether the parallel-draft alert persists; `packages/lararium-sensorium/requirements.txt` on the tree-sitter versions; one elyncia carrier that fails the corpus round-trip and wants an owner; the cold-boot `unavailable` reading of automerge-repo, where a widened grace wants the per-source map read first.
 * `G27` `lares shore` sends one line, to the active wiki's island (`wiki-act`). The daemon island answers the shore verb from the projector it mounts (`operator-daemon-behavior.ts`, `node-daemon-island.ts`), and no command reaches that door: `askShore` (`packages/lares-cli/src/shore-core.ts`) owes a second line to the daemon island and the merge of the two lists. A wiki island that stands live and unpinned still takes no `lares shore` answer; a person settles those by bringing the two sides to say the same. G.
-* `G28` The Synced tree's read-merge-write holds no lock across its writers (`synced-tree.ts`, `persist`): two that write in one window can drop a row. A dropped row reads as never agreed, which surfaces a standoff where the sides differ and pins anew where they agree; a serialized write closes it. G.
+* `G31` After `lares shore remove <uri>`, `lares meme get <uri> --recipe <wiki>` still answers the carrier whole, while the wiki island's resolved view drops it (it pends no more at the next mount scan) and the working layer answers `not-found` by name. The verb's recipe read misses the working layer's tombstone. Beside it, `answerRemovals` leaves its pending set on the delete door's word and never reads back that the carrier left. Meme verbs; a cure in the plugin bundle rides a bake. Repro: `handoff-2026-10-12/pilot2-faults.md`, `P2-3`. G.
 * `G29` The ingest leg adopts a file that holds no base over records that say something else (`ingest-gate.ts`, `settle`). A person's `lares ingest` names that act; a watcher's wave takes it with no person. And the island's delete gate keeps a tombstone leg and a fraction brake that no gesture reaches. House, then G: both sit in the plugin bundle, so a cure rides a bake.
-* `G30` The Synced tree holds one row per carrier, and the ingest gesture pins that row at the source it read (`ingest-core.ts`, `recordLandedCarriers`). An ingest from a holding directory beside the mirror displaces the base the projector pinned at the mirror's file; a record change that follows meets `no-base` there and stands off, and each later scan of the holding file reads `new`. A row per path closes it, which moves the tree's stored shape. Measured in the node suite's harness; no vector stands. G.
+* `G32` `lares meme list --bag lares` answers `roots: []` over a bag that holds 401 carriers, and `lares meme list --recipe lares` names the working layer alone; `lares meme get --bag lares` answers each carrier. Meme verbs; the plugin bundle. Repro: `handoff-2026-10-12/pilot2-faults.md`, `P2-5`. G.
 * `G21` The crossroads mirror projects a boot's WHO-board pointer with no filter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>); a scratch `LAR_ROOT` keeps it off the tracked tree. Lean: project the pointer for a charter island alone. Operator. G.
 
 !!! SUBSTRATE (its state reads in #/the-road's own block)
@@ -404,12 +404,13 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `A3` Per-name resolver records (two hearths, two addresses); the resolver answers one address for the whole zone today (`docker-compose.surface.yml`). A.
 * `A4` LAN discovery's network mode and one run on the real LAN. Operator's hands. A.
 * `A5` The release: a real multi-arch index, its push and signature, after the last re-bake and the last wire change. Operator's hands. A.
-* `A6` The seed's fixed point holds over both house bags at package level (`packages/lararium-node/tests/seed-fixed-point-corpus.test.ts`); one container walk of `vessel seed` over an exported checkout, reading `git status` clean after it, stays owed (`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/found`). A.
+* `A6` A container walk of `vessel seed` over an exported checkout leaves every tracked file as it stood (`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/found`). The first unlock leaves twelve untracked files under `wikis/daemon/` (nine `$__lares_ui_*.tid`, three flows), so `git status` reads `?? wikis/` where the runbook says clean. Either the daemon island's projection keeps those tiddlers off disk, or the runbook and `.gitignore` name what a founding leaves. Repro: `handoff-2026-10-12/pilot2-faults.md`, `P2-4`. A.
 * `A7` Phones that force encrypted DNS bypass the resolver: document the per-network setting, or offer a public record that names the private address. Operator. A.
 * `A8` `persona wear` on a standing vessel waits on the session switch. O1.
 * `A9` The browser harness keeps a read-only repository bind; a Playwright harness image retires it. B.
 * `A10` The Pronaos household proof: one reserved docker project that attributes the arrival bytes to their shore and the node faces to their owners, then fresh browser peers through relay and oracle loss; and one effective-capability inventory across the node and web assemblies. A.
 * `A11` A hosted run of the held-out drivers that reads green (`held-out.yml`). A.
+* `A12` The first unlock after a container restart ran past eighty seconds at one full core before `live`, where an unlock on a warm process answers in eight; the span stays unmeasured, and the terminal shows nothing meanwhile. The compose owner's boot path. Repro: `handoff-2026-10-12/pilot2-faults.md`, `R6`. A.
 
 !!! KAHU PLANE
 * `K1` A seat holds its own key: chairs sign with persona roots today (`held-quorum.ts`, `nexus-seal.ts`). K.
@@ -771,6 +772,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TQv-A6x3BR2uIlFKEbYds7brsSx4_ERDie4oM5B3l50
+<<^ code="&#x0003;">>ni:///sha-256;4ZYAB9zmr2njDMxM_5KlYPHVhtlTGcT2uE5e7m4_uHs
 
 <<^ code="&#x0004;" -> to="?">>
