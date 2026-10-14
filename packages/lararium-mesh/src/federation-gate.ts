@@ -15,12 +15,12 @@
  * So the V5 `KeyhiveIdentitySlot` swaps in behind this interface with no
  * call-site churn.
  *
- * HONEST BOUND: `sharePolicy` is ADVISORY. This gate closes the ACCIDENTAL leak
- * (the repo stops VOLUNTEERING private docs to the relay), and the private
- * planes' random 16-byte document ids give effective confidentiality against a
- * peer that cannot guess an id. TRUE crypto read-control — denying a *guessed*
- * id and hiding the bytes — is the V5 KeyhiveIdentitySlot / BeeKEM path, out of
- * this shore's scope. This gate IS that shore's alpha socket.
+ * HONEST BOUND: this gate decides at this vessel's Repo alone, and it encrypts
+ * nothing. Seated on both share hooks (`shareConfigOf`), it stops the repo
+ * VOLUNTEERING a private doc to the relay and refuses a relay peer that asks for
+ * one by a known id. It hides no bytes: a peer that already holds a doc keeps
+ * reading it. Crypto read-control rests with the sealed store's content keys,
+ * out of this shore's scope. This gate IS that shore's alpha socket.
  *
  * SECOND HONEST BOUND — THIS GATE OFFERS NO PROBE RESISTANCE, and nothing here should read as
  * though it did. It decides what a peer may PULL; it never conceals that a lararium answers at
@@ -537,12 +537,13 @@ export function classifySocket(proven: {
  * INERT until a bag actually carries the datum.
  *
  * ── HONEST BOUND (the not-yet-wired shore) ────────────────────────────────────────────────────────
- * The `CapTierRing`'s `floor` oracle IS wired on the live path (it reads the SAME federatable-set + seal
- * oracles the carry-split consults — see cap-tier.ts `structuralFloorFor`). The `declared` source is the
- * SHORE not yet lit: no daemon recipe / BagTiddler carries a `capTier` datum in the tree TODAY, so a live
- * `declaredTierForDoc` returns null for every doc → the floor governs → zero behavior change. Lighting it
- * needs the recipe surface to seat the datum + a doc→bag resolver over the bag registry (the same bridge
- * `identityShareDecision`'s bound names). This fn is that shore's tested socket; it never fakes a verdict.
+ * No vessel's share config calls this fn: the node composes `carrierShareDecision` and the browser
+ * `federationShareDecision`, so no `CapTierRing` stands on a live path, neither its `floor` oracle nor its
+ * `declared` source. A bag's declared tier reaches production through the `bagTier` readers alone (the
+ * crossing gate, the bulb read face). Lighting this shore needs a composer that hands it a floor oracle
+ * answering all three readings (cap-tier.ts `makeTierFloorOracle`) + a doc→bag resolver over the bag
+ * registry (the same bridge `identityShareDecision`'s bound names). This fn is that shore's tested socket;
+ * it never fakes a verdict.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/cap-tier
  */

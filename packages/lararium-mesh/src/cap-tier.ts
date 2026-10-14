@@ -195,14 +195,13 @@ export function structuralFloorFor(oracle: TierFloorOracle | null, documentId: s
 /**
  * makeTierFloorOracle — the ONE door that assembles a floor oracle, so no site hand-rolls one.
  *
- * WHY A CONSTRUCTOR RATHER THAN AN OBJECT LITERAL. `isContractSecretsPlane` rides OPTIONAL so every oracle
- * written before it keeps working unchanged — which is right for compatibility and wrong for authorship: a
- * new site writing its own literal omits the secrets reading silently, and the omission reads exactly like
- * a site that had no secrets plane to declare. A hand-written enumeration cannot notice what it missed.
- * Assembling through here makes each reading a NAMED argument, so leaving one out becomes a visible act.
+ * WHY A CONSTRUCTOR RATHER THAN AN OBJECT LITERAL. The interface requires all three readings, and this
+ * door takes each as a NAMED argument, so a site that leaves one out does so in plain sight.
  *
- * FAIL-CLOSED per reading: an absent predicate answers false for every doc, which floors toward VEIL rather
- * than away from it. Passing nothing at all yields an oracle that reads VEIL for everything.
+ * AN ABSENT READING ANSWERS FALSE, AND FALSE CLOSES ONLY TWO OF THE THREE. An absent `federatable` or
+ * `sealed` floors toward VEIL. An absent `secrets` withholds the CONTRACT ceiling: a doc whose `federatable`
+ * reads true then floors PUBLIC. A caller that holds a secrets store must pass `secrets`, and nothing here
+ * notices the omission. Passing nothing at all yields an oracle that reads VEIL for everything.
  */
 export function makeTierFloorOracle(readings: {
   /** The doc rides the deterministically-federatable PUBLIC shelf. */
