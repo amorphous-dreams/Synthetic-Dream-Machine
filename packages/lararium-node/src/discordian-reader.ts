@@ -6,16 +6,17 @@
  * days until X-Day (`%X`), and the whole `%{…%}` shape. A vessel that reimplemented all of that would be
  * reimplementing a program that already ships.
  *
- * ── BUT THE PASSPHRASE STAMP NEVER READS IT, AND HERE IS THE MEASUREMENT ─────────────────────────
+ * ── THE STAMP NEVER READS IT, AND HERE IS THE MEASUREMENT ───────────────────────────────────────
  * `ddate`'s own output shape varies by invocation. Measured on one machine, one binary, one day:
  *
  *     ddate            → "Today is Setting Orange, the 1st day of Bureaucracy in the YOLD 3192"
  *     ddate 1 3 2028   → "Setting Orange, Chaos 60, 3194 YOLD"
  *
- * Two shapes from one program. A value that rides a key-derivation cannot depend on that: an operator who
- * sealed under one shape and unsealed under another would be locked out of their own vault by a formatting
- * difference. So the STAMP always comes from the computed calendar (`discordianStamp`) — deterministic,
- * version-proof, and byte-stable — while the PROSE prefers `ddate`, because prose is for reading.
+ * Two shapes from one program. A value that must read byte-stable cannot depend on that. So the STAMP always
+ * comes from the computed calendar (`discordianStamp`): deterministic, version-proof and byte-stable. The
+ * PROSE prefers `ddate`, because prose serves a reader.
+ *
+ * NO PRODUCTION PATH CALLS THIS MODULE: it stands specified, and the calendar waits for its next caller.
  *
  * ── THE PARITY CHECK EARNS ITS KEEP ─────────────────────────────────────────────────────────────
  * Where both stand, the reading compares them. Agreement is worth nothing to assert and disagreement is

@@ -367,10 +367,10 @@ unsealed archive lifts a boot.
 signs or admits; a count dial bounds it, and no clock; it wants the device's own unlock plus a second
 signal; each raise gets recorded; any other device of the human removes it.
 
-''OWED in code'': the passphrase lifecycle (`LARES_ARCHIVE_PASSPHRASE`) still seals the share carriers
-(the device recovery shares and the reserve share) and lifts no boot; it leaves when those rows move
-under the vessel key
-(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>).
+''One key seals every private row'': the vessel key holds the device recovery shares and the reserve share
+beside every other private row, and no second key governs a file at rest. A credential reaches the vessel
+on a terminal alone, so no environment variable, flag or stored file opens a key or lifts a boot
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>).
 
 <<~/ahu>>
 
@@ -402,6 +402,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;R3hqAQi9n2Jwb_muiBaTiWdUene0XpZ5rbHKqNjEFNk
+<<^ code="&#x0003;">>ni:///sha-256;oVWEeoKLjcRdnhMkHJ1VuZ74koJL_wMd83HYFwqNXew
 
 <<^ code="&#x0004;" -> to="?">>

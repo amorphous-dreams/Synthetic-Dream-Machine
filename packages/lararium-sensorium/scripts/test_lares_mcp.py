@@ -10,7 +10,7 @@ import os
 
 import pytest
 
-from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, VAULT_VERBS, SENSE_LIFECYCLE_VERBS,
+from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, SENSE_LIFECYCLE_VERBS,
                        MEME_VERBS,
                        VERB_SEATS, DaemonCoordinator,
                        LaresCoordinator, build_mcp, guard_hitl, seat_of)
@@ -224,10 +224,9 @@ def _mcp_tool_names(tmp_path):
 
 def test_mcp_tools_mirror_the_cli_lifecycle_verbs(tmp_path):
     # the /mcp tool-set equals the declared lifecycle verb-set PLUS the per-plane query-door verbs, the
-    # vault seal-lifecycle, the DURABLE sensorium-lifecycle sub-verbs, and the meme placement pair —
-    # name-for-name (the growth floor).
+    # DURABLE sensorium-lifecycle sub-verbs, and the meme placement pair — name-for-name (the growth floor).
     assert _mcp_tool_names(tmp_path) == (set(LIFECYCLE_VERBS) | set(PLANE_VERBS) | set(WIKI_VERBS)
-                                         | set(VAULT_VERBS) | set(SENSE_LIFECYCLE_VERBS)
+                                         | set(SENSE_LIFECYCLE_VERBS)
                                          | set(MEME_VERBS))
 
 
@@ -260,12 +259,12 @@ def test_parity_inventory_three_way(tmp_path):
     mirror_hosts = set(inv["mirror_hosts"])     # the CLI top-level verbs those tools land on (coverage-form)
     not_yet = set(inv["not_yet_mirrored"])
     cli_forms = inv["cli_forms"]
-    # THE AHEAD-OF-CLI ALLOWANCES (query door + vault): PLANE_VERBS and VAULT_VERBS ride the MCP surface
-    # AHEAD of their formal `cli_forms` mappings — the CLI forms + this fixture grow with those arcs. Until
-    # then the parity invariants read over the tool-set MINUS the named allowances (never a silent
-    # widening: each allowance is a declared tuple, and every allowance verb still seats in VERB_SEATS).
+    # THE AHEAD-OF-CLI ALLOWANCE (the query door): PLANE_VERBS ride the MCP surface AHEAD of their formal
+    # `cli_forms` mappings — the CLI forms + this fixture grow with that arc. Until then the parity
+    # invariants read over the tool-set MINUS the named allowance (never a silent widening: the allowance
+    # stands as a declared tuple, and every allowance verb still seats in VERB_SEATS).
     mcp_tools = _mcp_tool_names(tmp_path)
-    mirrored_tools = mcp_tools - set(PLANE_VERBS) - set(VAULT_VERBS)
+    mirrored_tools = mcp_tools - set(PLANE_VERBS)
 
     # (a) the MCP tool-set IS the mirrored anchor IS the cli_forms keys — grow a tool, grow all three.
     assert mirrored_tools == mirrored

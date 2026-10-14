@@ -202,7 +202,6 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

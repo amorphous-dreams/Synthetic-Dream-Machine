@@ -353,8 +353,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       });
       nodeUp = conditionOk(condition);
       nodeNote = phase === "fault"
-        // A BOOT FAULT KEEPS ITS OWN VOICE. The node writes a cure-naming line — "your archive is sealed,
-        // set LARES_ARCHIVE_PASSPHRASE and boot again" — and a report answering with a PATH sends the
+        // A BOOT FAULT KEEPS ITS OWN VOICE. The node writes a cure-naming line, and a report answering with a PATH sends the
         // operator to a file at the moment they least want a detour, while the caller downstream fails on
         // the symptom and buries the cause. The line that knows the answer belongs where the question got
         // asked, so it rides verbatim rather than through the condition's vocabulary.
@@ -387,13 +386,9 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     "lares persona new 1 --name '<private label>' --handle '<Handle>' --seat   # …one command per kahu",
     `Then seat the 2-of-3 quorum from the named personas: lares nexus seal seat`,
     `(These three name the founding KAHU QUORUM, never a limit on faces — this vessel's own slot ceiling rides LAR_PERSONA_SLOTS.)`,
-    // WHAT THE VAULT WILL DO NEXT, said HERE rather than discovered at the sealing movement. The archive
-    // takes the passphrase path whenever LARES_ARCHIVE_PASSPHRASE rides the environment, so a founding run
-    // in a shell that carries one seals AT FOUNDING — and `vault seal` then finds nothing to do and never
-    // opens its prompt. Both outcomes stand; meeting the second unannounced reads as a broken prompt.
-    process.env["LARES_ARCHIVE_PASSPHRASE"]
-      ? `NOTE: LARES_ARCHIVE_PASSPHRASE rode this founding, so the archive sealed HERE — \`lares vault seal\` will find nothing to do and open no prompt. To type it instead, found in a shell without that var.`
-      : `The archive stands UNSEALED — seal it when the kahu stand: \`lares vault seal\` (no-echo, double-entry).`,
+    // WHAT THE VAULT HOLDS, said HERE: the founding sealed every private row under the vessel key, so nothing waits
+    // on a sealing movement, and each boot rests at the floor until a person unlocks it.
+    "This vessel's private rows rest sealed under its vessel key from the founding. Every boot stands at the floor until `lares vault unlock`; `lares vault status` gives one reading of each file.",
   ];
 
   // 3. Emit the live-delta frame (dual output). Graceful: never hard-fail the wake.

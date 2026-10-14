@@ -457,38 +457,31 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] | seal | rotate | repair | passphrase> [--yes] [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory]> [--passphrase | --paper] [--rotate]",
     synopsis:
-      "The VESSEL KEY custody door (unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
+      "The VESSEL KEY custody door (status, unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
       "`backup` cuts ONE face's bundle: its root, its own lines and the content keys this vessel holds for it, sealed " +
       "under a new route of its own; it carries no veil key and no seat, and the sealed bytes must survive elsewhere. " +
       "`restore` brings a face back from its bundle as a recovery act: the vessel derives its own veil and takes a NEW seat " +
       "under the face's fixed prefix, and `--memory` lands the bundle's content keys on that seat. " +
-      "Beside it, the passphrase LIFECYCLE for the share carriers (the device recovery shares and the reserve share). " +
-      "DAEMON-FIRST: a mutating lifecycle verb routes through the daemon while it stands, so its in-memory policy " +
-      "moves with the carriers and nothing un-rotates; it falls to a direct file op only when the daemon " +
-      "sits down. The passphrase never touches argv or shell history — a no-echo TTY prompt takes it " +
-      "(double-entry for a new pass), or LARES_ARCHIVE_PASSPHRASE (+ _NEW) with --yes. Every seal STAMPS " +
-      "its Erisian day beside the vault as a record, never as part of the passphrase.",
+      "`status` gives ONE reading of every standing file the carrier table names: a row under the vessel key reads " +
+      "sealed or reads as a fault, a row outside it names the law it rests bare under, and a private file no row " +
+      "names prints by name. `unbind --rotate` runs as one act: the rotation's census passes before any byte moves, " +
+      "so a carrier that refuses it leaves the slot bound. A credential rides a TTY alone, typed with no echo: no " +
+      "flag, no environment variable and no pipe carries one.",
     examples: [
-      "lares vault status                     # the share carriers' seal state + the custody (VK) tree and rows",
+      "lares vault status                     # the slot tree, one reading of each standing file, and any private file outside the carrier table",
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
       "lares vault lock                       # the standing vessel drops its key and stands at the floor",
       "lares vault bind [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back)",
-      "lares vault unbind <slot-id> [--rotate]   # unlock, remove a slot; the rotation offer prints EVERY time",
+      "lares vault unbind <slot-id>           # unlock, remove a slot; the rotation offer prints",
+      "lares vault unbind <slot-id> --rotate  # one act: a new vessel key seals every carrier and each staying slot binds over it",
       "lares vault backup --face <N> --out <file>   # cut ONE face's backup bundle, sealed under a route of its own",
       "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",
       "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked, wearing the face)",
-      "lares vault status --check             # ... probing a passphrase → split-KEK detection",
-      "lares vault seal                       # seal cleartext share carriers under a NEW passphrase",
-      "lares vault rotate                     # re-seal the share carriers old → new",
-      "lares vault repair                     # re-seal a lagging carrier — the split-KEK cure",
-      "lares vault passphrase                 # WHICH DAY this vault was sealed on, and what to type",
     ],
     flags: [
-      "--check            (status) probe a passphrase against the share carriers → split detection",
-      "--yes              take the passphrase from the environment instead of a TTY prompt (seal/rotate/repair only)",
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
       "--rotate           (unbind) mint a new vessel key and re-bind each staying slot; put <slot-id> BEFORE it",
       "--face <N>         (backup) the handle-index of the face to cut; the standing vessel wears it",
@@ -496,8 +489,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
       "--memory           (restore) import the bundle's memory section instead of its lineage",
       "unlock | bind | unbind | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
-      "LARES_ARCHIVE_PASSPHRASE       the current passphrase (non-interactive, with --yes)",
-      "LARES_ARCHIVE_PASSPHRASE_NEW   the new passphrase for seal / rotate",
     ],
     next: ["lares vault status", "lares vault unlock"],
   },

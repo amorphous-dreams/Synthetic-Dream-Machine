@@ -39,8 +39,8 @@ export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Names that one command reads as a flag and another reads as a valued option (`vault status --check` vs
- * `meme ... --check <x>`; `--grammar`; `--ephemeral`). The parser cannot tell which command is meant, so these
+ * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
+ * alone or `--check <x>`; `--grammar`; `--ephemeral`). The parser cannot tell which spelling comes, so these
  * stay greedy.
  */
 export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "ephemeral", "grammar"]);

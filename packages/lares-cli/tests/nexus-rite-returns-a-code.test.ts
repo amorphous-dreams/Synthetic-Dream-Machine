@@ -29,7 +29,6 @@ describe("a nexus rite answers with a code", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-rite-code-"));
     setEnv("LAR_ROOT", root);            // nothing this rite writes may leave the temp tree
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     vi.spyOn(process.stdout, "write").mockImplementation(() => true);

@@ -169,19 +169,6 @@ export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
 export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, archivePath, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
 
-// The passphrase-LIFECYCLE surface over the share carriers (#60) — status/seal/rotate/repair + the
-// daemon vault handler. No new crypto; composes archive-seal's atoms under a ratify
-// discipline (several carriers, independent write lifecycles, never one shared envelope).
-export {
-  archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase,
-  repairSplitKek, runVaultVerb, weakPassphraseWarning, PASSPHRASE_MIN_LENGTH,
-} from "./archive-passphrase.js";
-export type {
-  ArchiveSealStatus, CarrierStatus, CarrierState, CarrierName,
-  SealResult, RotateResult, RepairResult,
-} from "./archive-passphrase.js";
-export { sealExpected, setSealExpected } from "./lares-config.js";
-export { ARCHIVE_PASSPHRASE_ENV } from "./archive-seal.js";
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
 export { createReadinessState, mountReadinessFace, markReadyOnceStanding } from "./readiness-face.js";
@@ -458,18 +445,17 @@ export type {
 // makeNodeCaptureEngine.
 
 // ── The cleartext `cid/` CAS tier — read · list · sweep (tiddler-carriage #/pin-and-release) ──
-export { KEY_CLASSES, isKeyClass, isRelationClass, vesselKeyCensus } from "./key-class.js";
+export { KEY_CLASSES, isKeyClass, isRelationClass } from "@lararium/mesh";
 export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_CLAIM_NAME, type FsCustodyIoOptions } from "./custody-io.js";
-export type { KeyClass, KeyCensusEntry, KeyAtRest } from "./key-class.js";
-// The ONE carrier table: every carrier at rest by home, custody class and writer. The key census, the seal
-// lifecycle and the custody shape reader all derive from it — see `vault-carriers`.
+export type { KeyClass } from "@lararium/mesh";
+// The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the VK
+// rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {
-  CUSTODY_CLASSES, carrierTable, carrierCensus, vesselCustodyHomes,
-  vaultCarriers, vaultCarrierMap, vaultCarrierFiles,
+  CUSTODY_CLASSES, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
   vkSlotsPath, vkSealedCarriers, rotateVesselVk,
 } from "./vault-carriers.js";
 export type {
-  VaultCarrier, CustodyClass, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry,
+  CustodyClass, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,
 } from "./vault-carriers.js";
 // The old-shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
 export { readCustodyShape, oldShapeRefusal, FRESH_START_RUNBOOK } from "./custody-shape.js";
@@ -483,7 +469,7 @@ export type { CustodyRoot, OpenedCustodyRoot } from "./custody-root.js";
 // The custody session: found, unlock, bind, unbind, rotate and read the vessel's key custody — see `custody-session`.
 export {
   foundCustody, unlockCustody, bindCustodySlot, unbindCustodySlot, rotateCustody, custodyStatus,
-  custodyTreeStands, assertFoundingRoute, CustodyFoundingRefused,
+  custodyTreeStands, assertFoundingRoute, CustodyFoundingRefused, RotationSlotsRefused,
 } from "./custody-session.js";
 export type { CustodyUnlock, CustodyStatus, CustodyStatusRow } from "./custody-session.js";
 export { casDirForStorage, readCasBlobFromFs, readVerifiedCasBlobFromFs, listCasBlobs, casSweep, readCasPins, writeCasPins, pinCas, releaseCas } from "./node-cas.js";
@@ -502,4 +488,3 @@ export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 // The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.
 export { serveUdsFront, type UdsFront } from "./uds-channel.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";
-export { VkSealedCarrierRefusal } from "./archive-passphrase.js";

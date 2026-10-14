@@ -43,7 +43,6 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-sealgrow-"));
     setEnv("LAR_ROOT", root);
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
   });

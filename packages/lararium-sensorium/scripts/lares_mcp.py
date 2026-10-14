@@ -65,17 +65,6 @@ MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project"
 # The targets `meme_project` renders — the same list `lares meme project --to` takes.
 PROJECT_TARGETS = ("mem", "md", "html", "tid", "json")
 
-# The VAULT namespace — the at-rest seal LIFECYCLE the operator drives (status/seal/rotate/export the two
-# sovereign secret carriers: the keyhive archive + the recovery share). Each MCP tool rides the @daemon
-# vault verb over the owner-only 0600 UDS, so the passphrase crosses the SAME trust boundary a CLI arg
-# does on the operator's own machine, and MCP reaches ONLY the daemon (never a local store). Like
-# PLANE_VERBS, these ride the MCP surface AHEAD of a formal `cli_forms` mirror: the CLI form `lares vault
-# <sub>` exists, but the fixture has not yet mapped the vault sub-verbs, so the parity test carries them
-# as a NAMED allowance (mcp_tools − VAULT_VERBS mirrors the anchor) until the fixture grows the mapping.
-# `vault-repair` (the split-KEK cure) stays CLI-ONLY on purpose — kept off the agent surface so a repair
-# rides the operator's own hand, never an MCP client's.
-VAULT_VERBS = ("vault_status", "vault_seal", "vault_rotate", "vault_export")
-
 # The DURABLE sensorium LIFECYCLE sub-verbs — roster · inspect · build · reconcile · promote · retire ·
 # un-retire · purge. Each mirrors `lares sense <verb>` (CLI-direct over manifest.json) three-way now: an
 # @mcp.tool routes over the @daemon wire to the house-consistent routed executor in open-node-vessel.ts
@@ -118,12 +107,6 @@ VERB_SEATS = {
     "meme_list": (True, False),         # list the roots a seat holds + their canonical hashes — a read → HOTL
     "meme_delete": (True, False),       # remove a meme's group — a kāpae tombstone a re-put restores; stale base → conflict → HOTL
     "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
-    # The vault seal-lifecycle tools — a status READ rides HOTL; every MUTATION of the sovereign at-rest
-    # seal crosses a trust boundary (it touches identity secret material), so it seats HITL.
-    "vault_status": (True, False),      # read the per-carrier seal STATE — reversible, trusted → HOTL
-    "vault_seal": (True, True),         # seal cleartext carriers under a passphrase — TRUST-CROSSING → HITL
-    "vault_rotate": (True, True),       # re-seal old→new passphrase — TRUST-CROSSING → HITL
-    "vault_export": (False, True),      # write a passphrase-sealed secret backup to a path — irreversible + trust-crossing → HITL
     # teardown tears a whole sensorium store DOWN — IRREVERSIBLE → HITL. It rides the CLI today, gated
     # by --confirm (the operator's hand at the door); the grid NAMES its HITL seat so a future MCP mirror
     # inherits the gate rather than crossing the surface ungated.
@@ -966,40 +949,6 @@ def build_mcp(coordinator: LaresCoordinator):
             raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
         args: dict = {**_meme_container("meme_project", recipe, bag), "uri": uri, "to": to}
         return _meme_wire("meme-project", args)
-
-    @mcp.tool()
-    def vault_status(probe: "str | None" = None) -> dict:
-        """Report the at-rest seal STATE of the two sovereign secret carriers (the keyhive archive + the
-        recovery share) — per-carrier absent/cleartext/sealed, NEVER any key material. `probe` supplies a
-        passphrase to test each sealed carrier against, surfacing a split-KEK (the carriers disagreeing on
-        one passphrase). Rides the @daemon vault verb over the owner-only 0600 UDS, never a local store."""
-        args = {"probe": probe} if probe else {}
-        return uds.output("vault-status", args)
-
-    @mcp.tool()
-    def vault_seal(passphrase: str) -> dict:
-        """Seal the cleartext secret carriers under `passphrase` (scrypt KEK, AES-256-GCM at rest). The
-        passphrase rides the verb args over the owner-only 0600 UDS to the @daemon — the SAME trust
-        boundary as a CLI argument on the operator's own machine — and MCP reaches ONLY the daemon, never
-        a local store. Prefer configuring the passphrase via the environment in practice; this arg exists
-        for the operator's own driven use."""
-        return uds.output("vault-seal", {"passphrase": passphrase})
-
-    @mcp.tool()
-    def vault_rotate(old: str, new: str) -> dict:
-        """Re-seal both carriers from the `old` passphrase to the `new` one (a wrong `old` fails the GCM
-        tag and aborts with zero writes). Both passphrases ride the verb args over the owner-only 0600 UDS
-        to the @daemon — the SAME trust boundary as a CLI argument on the operator's own machine — and MCP
-        reaches ONLY the daemon, never a local store."""
-        return uds.output("vault-rotate", {"old": old, "new": new})
-
-    @mcp.tool()
-    def vault_export(passphrase: str, dest: str, force: bool = False) -> dict:
-        """Write a passphrase-SEALED backup of the keyhive archive to `dest` — NEVER the raw cleartext.
-        `force` overwrites an existing file (else the export refuses a silent clobber). The passphrase
-        rides the verb args over the owner-only 0600 UDS to the @daemon — the SAME trust boundary as a CLI
-        argument on the operator's own machine — and MCP reaches ONLY the daemon, never a local store."""
-        return uds.output("vault-export", {"passphrase": passphrase, "dest": dest, "force": force})
 
     # ── the DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` and routes over the
     #    @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The reads + reversible

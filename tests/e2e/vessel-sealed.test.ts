@@ -8,7 +8,7 @@
  * staged vessel it owns:
  *
  *   ① stand, locked                    the custody door reads no key held; the rows at rest carry the vessel key's
- *                                      seal and none of the passphrase envelope; a recipe read answers nothing
+ *                                      seal; a recipe read answers nothing
  *   ② unlock                           the door opens the key and the vessel composes again as a hearth; a carrier
  *                                      put through the recipe reads back        (the CONTROL for every floor below)
  *   ③ lock                             the vessel drops the key and stands at the floor; the sealed rows keep their
@@ -17,9 +17,9 @@
  *                                      stand writes no identity
  *   ⑤ unlock                           the same hearth answers: the carrier put in ② reads back by its hash, and
  *                                      the device share never moved
- *   ⑥ the passphrase lifecycle         `vault seal` seals the device share alone and names no archive; the archive
- *                                      at rest still carries the vessel key's seal
- *   ⑦ `vault export`                   no such door stands
+ *   ⑥ one reading of each file         `vault status` reads every hot and cold row sealed, each floor row beside the
+ *                                      law it rests bare under, and no private file outside the carrier table
+ *   ⑦ a word outside the seven         the vault door answers it as no door, and no byte of the share moves
  *
  * The custody door reads its credential from a terminal alone; this witness opens the staged root through the
  * harness door (`tools/unlock-test-custody.mjs`), which acts only on a root that carries the scratch marker.
@@ -30,14 +30,12 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { openStaged, cliFor, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
 import { unlockTestCustody } from "../harness/test-door.js";
-import { isSealedEnvelope } from "../../packages/lararium-mesh/src/archive-envelope.js";
 import { readVkCarrier } from "../../packages/lararium-mesh/src/vk-envelope.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
 const NODE_MAIN = join(REPO_ROOT, "packages/lararium-node/dist/src/main.js");
 
-const SHARE_PASS = "witness-share-passphrase-one";
 const PATH = "t.witness.seal/carrier";
 const URI  = `lar:///${PATH}`;
 const WIKI = ["--recipe", "lares"] as const;
@@ -60,11 +58,10 @@ const gaps = missing();
 if (gaps.length > 0) console.error(`vessel-sealed: SKIPPED — missing ${gaps.join("; ")}`);
 
 let lar: LarInstance | null = null;
-/** The CLI under this vessel's pair plus an explicit passphrase environment. An EMPTY value blanks any passphrase
- *  the test runner's own shell carries. */
+/** The CLI under this vessel's pair, plus whatever environment a step adds. */
 let cli: (env: Record<string, string>, args: readonly string[]) => Promise<CliResult>;
 let carrierHash = "";
-const NO_PASS = { LARES_ARCHIVE_PASSPHRASE: "", LARES_ARCHIVE_PASSPHRASE_NEW: "" };
+const PLAIN: Record<string, string> = {};
 
 const identity = (file: string): string => join(lar!.root, "data/lares/identity", file);
 /** The rows this witness watches at rest: the family the founding seals under the vessel key. */
@@ -83,7 +80,7 @@ async function custodyReading(): Promise<Record<string, unknown>> {
 }
 
 /** A recipe read of the witness carrier, as the vessel answers it right now. */
-const readCarrier = (): Promise<CliResult> => cli(NO_PASS, ["meme", "get", URI, ...WIKI, "--json"]);
+const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["meme", "get", URI, ...WIKI, "--json"]);
 
 /**
  * This suite's rite: a place, then a face whose root split stands, so a device share rests beside the sealed rows
@@ -110,7 +107,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
   afterAll(async () => {
     if (!lar) return;
     // Whatever stood last was spawned DETACHED by `vessel stand`; the port is the handle to it.
-    await cli(NO_PASS, ["vessel", "stop", "--skip-build"]);
+    await cli(PLAIN, ["vessel", "stop", "--skip-build"]);
     await lar.stop();
   });
 
@@ -120,7 +117,6 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(reading["slot"]).toBeNull();
     for (const [file, bytes] of Object.entries(rowsAtRest())) {
       expect(readVkCarrier(bytes), `${file} carries the vessel key's seal`).toBe("sealed");
-      expect(isSealedEnvelope(bytes), `${file} carries no passphrase envelope`).toBe(false);
     }
     // No sovereign act answers on the floor: the recipe seat reads nothing.
     const r = await readCarrier();
@@ -140,7 +136,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
 
     const f = join(lar!.root, "seal-carrier.mem");
     writeFileSync(f, meme());
-    const put = await cli(NO_PASS, ["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
+    const put = await cli(PLAIN, ["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     carrierHash = String(dataOf(put)["canonicalHash"]);
     const got = await readCarrier();
@@ -155,7 +151,7 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
   test("③ lock: the vessel drops the key and stands at the floor; the sealed rows keep their bytes", async () => {
     // The rows as the hearth holds them, read after its own verbs answered and before the lock.
     afterUnlock = rowsAtRest();
-    const locked = await cli(NO_PASS, ["vault", "lock", "--json"]);
+    const locked = await cli(PLAIN, ["vault", "lock", "--json"]);
     expect(locked.json?.["ok"], said(locked)).toBe(true);
     expect(dataOf(locked)).toMatchObject({ locked: true, was: "unlocked", standing: "herm" });
     expect((await custodyReading())["unlocked"]).toBe(false);
@@ -168,9 +164,9 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
 
   test("④ stop, then stand: a restart rests at the floor and writes no identity", async () => {
     await lar!.stopDaemonOnly();
-    const stop = await cli(NO_PASS, ["vessel", "stop", "--skip-build", "--json"]);
+    const stop = await cli(PLAIN, ["vessel", "stop", "--skip-build", "--json"]);
     expect(stop.code, said(stop)).toBe(0);
-    const stand = await cli(NO_PASS, ["vessel", "stand", "--skip-build", "--json"]);
+    const stand = await cli(PLAIN, ["vessel", "stand", "--skip-build", "--json"]);
     console.error(`vessel-sealed MEASURE ④ stand → exit ${stand.code} node=${JSON.stringify(dataOf(stand)["node"])}`);
     const reading = await custodyReading();
     expect(reading["unlocked"]).toBe(false);
@@ -195,30 +191,34 @@ describe.skipIf(gaps.length > 0)("★ a vessel sealed under its vessel key stand
     expect(readFileSync(SHARE()).equals(shareAtFounding), "a stand re-minted the device share").toBe(true);
   }, 300_000);
 
-  test("⑥ the passphrase lifecycle names no carrier: the device share rests under the vessel key", async () => {
-    const before = await cli(NO_PASS, ["vault", "status", "--json"]);
-    const carriers = (dataOf(before)["carriers"] ?? {}) as Record<string, { state: string }>;
-    expect(Object.keys(carriers)).toEqual([]);                           // every share row rides the vessel key
-    const share = readFileSync(SHARE());
-    expect(readVkCarrier(share)).toBe("sealed");
-    expect(isSealedEnvelope(share)).toBe(false);
-
-    // The passphrase verb finds nothing and moves no byte of the share.
-    const sealed = await cli({ ...NO_PASS, LARES_ARCHIVE_PASSPHRASE_NEW: SHARE_PASS }, ["vault", "seal", "--yes", "--json"]);
-    expect(sealed.json?.["ok"], said(sealed)).toBe(true);
-    expect(dataOf(sealed)["sealed"]).toEqual([]);
-    expect(readFileSync(SHARE()).equals(share)).toBe(true);
-    // The archive never entered that lifecycle: it carries the vessel key's seal and no passphrase envelope.
-    const archive = readFileSync(identity("keyhive-archive.bin"));
-    expect(readVkCarrier(archive)).toBe("sealed");
-    expect(isSealedEnvelope(archive)).toBe(false);
+  test("⑥ `vault status` gives one reading of each file: no row at fault, nothing outside the carrier table", async () => {
+    const status = await cli(PLAIN, ["vault", "status", "--json"]);
+    expect(status.json?.["ok"], said(status)).toBe(true);
+    const custody = dataOf(status)["custody"] as {
+      rows: { row: string; home: string; file: string; custody: string; reading: string; bare: string | null; fault: boolean }[];
+      outside: { file: string; why: string }[];
+    };
+    expect(custody.outside, "a private file no row of the carrier table names").toEqual([]);
+    expect(custody.rows.filter((r) => r.fault).map((r) => r.file)).toEqual([]);
+    expect(new Set(custody.rows.map((r) => `${r.home}/${r.file}`)).size).toBe(custody.rows.length);
+    for (const r of custody.rows) {
+      if (r.custody === "hot" || r.custody === "cold") expect(r.reading, r.file).toBe("sealed");
+      else expect(typeof r.bare === "string" && r.bare.length > 0, `${r.file} names the law it rests bare under`).toBe(true);
+    }
+    // CONTROL: the reading holds rows of both kinds, so neither loop above ran over nothing.
+    expect(custody.rows.some((r) => r.row === "device-share" && r.reading === "sealed")).toBe(true);
+    expect(custody.rows.some((r) => r.row === "vk-slots" && r.reading === "bare")).toBe(true);
+    expect(readVkCarrier(readFileSync(SHARE()))).toBe("sealed");
   }, 120_000);
 
-  test("⑦ `vault export` answers as no door at all", async () => {
-    const dest = join(lar!.root, "backup", "archive.sealed");
-    const r = await cli(NO_PASS, ["vault", "export", dest, "--json"]);
-    expect(r.code).not.toBe(0);
-    expect(said(r)).toContain('unknown sub-verb "export"');
-    expect(existsSync(dest)).toBe(false);
+  test("⑦ a word outside the vault door's seven verbs answers as no door, and the share keeps its bytes", async () => {
+    const share = readFileSync(SHARE());
+    for (const word of ["seal", "rotate", "repair", "passphrase", "export"]) {
+      const r = await cli(PLAIN, ["vault", word, "--json"]);
+      expect(r.code, word).not.toBe(0);
+      expect(said(r), word).toContain(`unknown sub-verb "${word}"`);
+    }
+    expect(readFileSync(SHARE()).equals(share)).toBe(true);
+    expect(existsSync(join(lar!.root, "backup"))).toBe(false);
   });
 });

@@ -3,7 +3,7 @@
  *
  * The dyad veil derives per-handle from the DEVICE-MINTED vessel key — never the persona-root seed (layers ②
  * and ③ only), never a cloud-synced key (a passkey the vendor syncs reads identical on every device: a seed
- * wearing a device name; `packages/lararium-node/src/key-class.ts` names the closed vocabulary). The mesh
+ * wearing a device name; `packages/lararium-mesh/src/key-class.ts` names the closed vocabulary). The mesh
  * `deriveDyadVeil` takes raw bytes and cannot tell the three apart. This door can.
  *
  * ── THE BRAND ────────────────────────────────────────────────────────────────────────────────────
@@ -20,7 +20,7 @@
 
 import { deriveDyadVeil } from "@lararium/mesh";
 
-/** The closed key-class vocabulary — mirrors `key-class.ts` (node) without importing a node package. */
+/** The closed key-class vocabulary — mirrors `key-class.ts` (mesh), which the node and the browser read alike. */
 import type { KeyClass } from "@lararium/mesh";
 /** The one vocabulary (mesh `key-class`); keyhive keeps its local name for the brand below. */
 export type KeyClassName = KeyClass;

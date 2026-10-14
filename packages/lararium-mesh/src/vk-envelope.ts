@@ -12,8 +12,8 @@
  *  · `sealed`     — the house magic over a frame long enough to hold a nonce and a tag. A VK may be tried.
  *  · `torn`       — the house magic over a frame too short to hold them. The bytes never framed, so no key is at
  *                   fault; the route out is a backup, never a re-typed credential.
- *  · `old-shape`  — the `LARK` magic of the passphrase envelope, at any version. The custody it belongs to is
- *                   gone; the fresh-start runbook answers it, and no write here replaces it.
+ *  · `old-shape`  — the four bytes `LARK` lead the file. No custody of this house writes that frame and no
+ *                   reader here opens it; the fresh-start runbook answers it, and no write here replaces it.
  *  · `unopenable` — a seal stands that this build cannot frame: the house magic with damaged bytes, or another
  *                   scheme of the house family (`lares-…`). No key can be judged against it, so none may replace it.
  *  · `bare`       — nothing frames as a seal: cleartext, or bytes of no seal this house writes.
@@ -22,10 +22,10 @@
  * no crypto; `vk.ts` holds the AEAD.
  */
 
-import { carriesSealMagic } from "./archive-envelope.js";
-
 /** The magic that names the VK seal scheme. */
 export const VK_SEAL_MAGIC: Uint8Array = new TextEncoder().encode("lares-vk-seal");
+/** The four bytes a frame of the `old-shape` reading opens with ("LARK"). The house writes no such frame and opens none. */
+export const LARK_MAGIC: Uint8Array = Uint8Array.from([0x4c, 0x41, 0x52, 0x4b]);
 /** The house family prefix: a magic that opens with it names a house seal scheme, known to this build or not. */
 const HOUSE_FAMILY_PREFIX = new TextEncoder().encode("lares-");
 /** XChaCha20-Poly1305 nonce and tag widths. */
@@ -51,7 +51,7 @@ function magicDistance(bytes: Uint8Array): number {
 export function readVkCarrier(bytes: Uint8Array | null): VkCarrierReading {
   if (bytes === null) return "absent";
   if (startsWith(bytes, VK_SEAL_MAGIC)) return bytes.length >= VK_SEAL_MIN_LENGTH ? "sealed" : "torn";
-  if (carriesSealMagic(bytes)) return "old-shape";
+  if (startsWith(bytes, LARK_MAGIC)) return "old-shape";
   if (bytes.length >= VK_SEAL_MIN_LENGTH) {
     if (startsWith(bytes, HOUSE_FAMILY_PREFIX)) return "unopenable";
     if (magicDistance(bytes) <= DAMAGED_MAGIC_TOLERANCE) return "unopenable";

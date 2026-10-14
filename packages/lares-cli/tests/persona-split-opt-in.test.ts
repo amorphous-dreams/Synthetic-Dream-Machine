@@ -25,7 +25,6 @@ describe("persona root split opt-in", () => {
     vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
     root = mkdtempSync(join(tmpdir(), "lares-split-opt-in-"));
     env("LAR_ROOT", root);
-    env("LARES_ARCHIVE_PASSPHRASE", undefined);
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });

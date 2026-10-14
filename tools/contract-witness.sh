@@ -7,7 +7,7 @@
 # the whole ceremony exists for goes unmeasured: that a Nexus admits a key it has NEVER HELD.
 #
 # So this stands two roots. Vessel A founds a Nexus and seats its quorum. Vessel B founds independently —
-# its own device key, its own persona roots, its own vault passphrase — and A holds no seed of B's. The
+# its own device key, its own persona roots, its own custody route — and A holds no seed of B's. The
 # handshake then has to cross a real custody boundary, which is the only boundary this ceremony defends.
 #
 # ── THE PREREQUISITE THE ONE-VESSEL RUN HID ─────────────────────────────────────────────────────
@@ -94,13 +94,13 @@ export LAR_SAME_ORIGIN=true
 # Each vessel runs in its OWN environment. A subshell per call keeps A's LAR_ROOT from leaking into B's —
 # a single exported root would silently make this a one-vessel test again, which is the exact failure the
 # harness exists to rule out.
-as_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-A"; node "$LARES" "$@" ); }
-as_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-B"; node "$LARES" "$@" ); }
+as_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT"; node "$LARES" "$@" ); }
+as_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT"; node "$LARES" "$@" ); }
 run_a() { step "$1"; shift; if out=$(as_a "$@" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
 run_b() { step "$1"; shift; if out=$(as_b "$@" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
 # `as_a` PREFIXES the binary, so a pipeline cannot ride it — `as_a sh -c ...` hands `sh` to the CLI as a
 # subcommand. A grep-the-output check needs a shell that inherits the vessel's environment instead.
-sh_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-A"; sh -c "$1" ); }
+sh_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT"; sh -c "$1" ); }
 run_sh_a() { step "$1"; if out=$(sh_a "$2" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
 unlock_root() {
   root=$1 label=$2 tries=0 rc=0
@@ -440,8 +440,8 @@ switch (mode) {
   default: console.error(`s6: unknown mode ${mode}`); process.exit(2);
 }
 JSEOF
-s6_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-A" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
-s6_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT" LARES_ARCHIVE_PASSPHRASE_NEW="witness-B" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
+s6_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
+s6_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
 PRESENTED="$XFER/presented-admit.json"
 
 # ── ⑤ S6 — B's admit as a PRESENTATION ───────────────────────────────────────────────────────────────

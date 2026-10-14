@@ -1465,8 +1465,7 @@ run_seal() {
   else bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
 
   # ★ THE READING. Each row of the founding's sealed family carries the vessel key's seal frame at rest: the
-  # frame's own magic leads the file. A bare archive would lead with keyhive's bytes, a passphrase envelope with
-  # its own four-byte magic.
+  # frame's own magic leads the file. A bare archive would lead with keyhive's bytes.
   step "★ the keyhive archive, the veil archive and the anchors each lead with the vessel key's seal ★"
   local ROW HEAD BARE=""
   for ROW in keyhive-archive.bin veil-archive-h0.bin anchors-h0.json anchor-roster.json; do
@@ -1486,23 +1485,23 @@ run_seal() {
     printf '      %s\n' "$($COMPOSE logs lararium-a 2>&1 | grep -E 'custody' | tail -3 | cut -c1-200)"
   fi
 
-  # THE PASSPHRASE LIFECYCLE GOVERNS NO ROW: the reserve share and each face's device share rest under the vessel
-  # key, so its status names no carrier at all.
-  step "\`vault status\` names no passphrase carrier"
+  # ONE READING OF EACH FILE. `vault status` derives every row from the carrier table: a hot or cold row that reads
+  # anything but sealed prints as a fault, and a private file no row names prints by name.
+  step "★ \`vault status\` reads no row at fault and no private file outside the carrier table ★"
   local ST
   ST=$($COMPOSE exec -T lararium-a $LARES vault status --json 2>&1)
-  if printf '%s' "$ST" | grep -qF '"carriers":{}'; then ok
+  if printf '%s' "$ST" | grep -qF '"outside":[]' && printf '%s' "$ST" | grep -qF '"reading":"sealed"' && ! printf '%s' "$ST" | grep -qF '"fault":true'; then ok
   else
-    bad "the passphrase lifecycle's status still names a carrier"
-    printf '      %s\n' "$(printf '%s' "$ST" | tail -1 | cut -c1-220)"
+    bad "the custody census names a fault or a file outside the table"
+    printf '      %s\n' "$(printf '%s' "$ST" | tail -1 | cut -c1-320)"
   fi
 
-  step "\`vault export\` stands as no door"
+  step "a word outside the vault door's seven verbs answers as no door"
   local EX
-  EX=$($COMPOSE exec -T lararium-a $LARES vault export /state/backup.seal --json 2>&1)
+  EX=$($COMPOSE exec -T lararium-a $LARES vault seal --json 2>&1)
   if printf '%s' "$EX" | grep -qF 'unknown sub-verb'; then ok
   else
-    bad "\`vault export\` answered as a door"
+    bad "\`vault seal\` answered as a door"
     printf '      %s\n' "$(printf '%s' "$EX" | tail -1 | cut -c1-220)"
   fi
 

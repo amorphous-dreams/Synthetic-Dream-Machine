@@ -16,7 +16,6 @@ import {
   openSealedCarrier, openVk, readVkCarrier, writeSealedCarrier, type CustodyIo, type SealedCarrier, type VesselKey,
 } from "@lararium/mesh";
 import { CustodyLockRefused, FsCustodyIo } from "../src/custody-io.js";
-import { ARCHIVE_PASSPHRASE_ENV } from "../src/archive-seal.js";
 import { rotateVesselVk, vesselCustodyHomes, vkSealedCarriers, vkSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 
 const pass = { kind: "passphrase", passphrase: "the hearth remembers" } as const;
@@ -37,7 +36,6 @@ beforeEach(() => {
   setEnv("XDG_STATE_HOME", join(root, "state"));
   setEnv("XDG_DATA_HOME", join(root, "state"));
   setEnv("XDG_CONFIG_HOME", join(root, "config"));
-  setEnv(ARCHIVE_PASSPHRASE_ENV, undefined);
   // The homes are the vessel's own resolvers' answers under the scratch LAR_ROOT, so the production paths and the port agree.
   homes = vesselCustodyHomes();
   expect(homes.identity.startsWith(root)).toBe(true);

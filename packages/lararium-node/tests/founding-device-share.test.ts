@@ -14,11 +14,10 @@ import { mkdtempSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { isSealedEnvelope, readVkCarrier } from "@lararium/mesh";
+import { readVkCarrier } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare, deviceSharePath } from "../src/recovery-share-store.js";
 import { reserveMineSharePath } from "../src/seal-reserve-store.js";
-import { archiveSealStatus } from "../src/archive-passphrase.js";
 import { armRecoveryAtFounding } from "../src/commands/init.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -34,7 +33,6 @@ describe("the device share mints at the face founding", () => {
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
@@ -52,7 +50,6 @@ describe("the device share mints at the face founding", () => {
     expect((await loadRecoveryDeviceShare(0))?.custodian).toBe("device");
     const bytes = readFileSync(deviceSharePath(0));
     expect(readVkCarrier(bytes)).toBe("sealed");                                        // a cold row under the vessel key, from its first write
-    expect(archiveSealStatus().carriers).toEqual({});                                   // and the passphrase lifecycle names no carrier
 
     // CONTROL: the second act (a re-light, a re-stand) leaves the carrier byte-identical.
     const again = await armRecoveryAtFounding(root, 0);
@@ -63,14 +60,12 @@ describe("the device share mints at the face founding", () => {
     expect(existsSync(reserveMineSharePath())).toBe(false);
   });
 
-  test("a passphrase in the environment changes nothing: the share lands under the vessel key, one row per face", async () => {
-    setEnv("LARES_ARCHIVE_PASSPHRASE", "founding-share-witness-passphrase");
+  test("the share lands under the vessel key, one row per face", async () => {
     await generateOrLoadPersonaGroupRoot(1);
     const r = await armRecoveryAtFounding(root, 1);
     expect(r.minted).toBe(true);
     const row = readFileSync(deviceSharePath(1));
     expect(readVkCarrier(row)).toBe("sealed");
-    expect(isSealedEnvelope(row)).toBe(false);                                          // no passphrase envelope wraps it
     expect((await loadRecoveryDeviceShare(1))?.custodian).toBe("device");
     // h0 stays untouched — the split keys by handle-index.
     expect(await loadRecoveryDeviceShare(0)).toBeNull();

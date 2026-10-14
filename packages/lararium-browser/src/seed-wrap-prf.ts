@@ -36,7 +36,7 @@ import { SEED_WRAP_PRF_INFO, type KeyClass, hex as meshHex } from "@lararium/mes
 /** The HKDF `info` for the seed wrap — minted once in the registry, never built at a call site, never another seal's. */
 export const SEED_WRAP_HKDF_INFO = SEED_WRAP_PRF_INFO;
 
-/** The key class the wrapping credential holds — the closed vocabulary of `key-class.ts` (node). */
+/** The key class the wrapping credential holds — the closed vocabulary of `key-class.ts` (mesh). */
 /** The credential's class — the one vocabulary (mesh `key-class`) less `seed`: a passkey never IS the seed. */
 export type SeedWrapKeyClass = Exclude<KeyClass, "seed">;
 

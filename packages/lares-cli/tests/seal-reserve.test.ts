@@ -54,7 +54,6 @@ describe("lares nexus seal reserve — the pre-rotation custody ceremony (CLI, r
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-reserve-"));
     setEnv("LAR_ROOT", root);
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
     writes = [];
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { writes.push(String(chunk)); return true; });
     vi.spyOn(console, "log").mockImplementation(() => {});

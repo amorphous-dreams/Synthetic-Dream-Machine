@@ -19,6 +19,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
+import { custodyBreaches, custodyReading } from "./custody-census.mjs";
 import { backupTestCustody } from "./backup-test-custody.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
 
@@ -153,6 +154,8 @@ test("a standing vessel cuts one face's backup bundle through its custody door",
     vessel = null;
     assert.equal(everyByte(root).includes(seed), false, "no file under the root holds the root's seed in the clear");
     assert.equal(everyByte(root).includes(Buffer.from(key.bundleKey).toString("hex")), false, "no file under the root holds the bundle key");
+    // The cut left no private file outside the carrier table, and no row at fault.
+    assert.deepEqual(custodyBreaches(custodyReading(root)), [], "the vessel that cut holds no private file outside the carrier table");
   } finally {
     await vessel?.stop();
     rmSync(root, { recursive: true, force: true });

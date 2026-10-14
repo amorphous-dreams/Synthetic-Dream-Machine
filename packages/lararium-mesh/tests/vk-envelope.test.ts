@@ -3,13 +3,13 @@
  * writer must keep apart stays apart: absent · sealed · torn · old-shape · unopenable · bare.
  *
  * The shredder this closes: a reader that folds "sealed, but not in a frame I decode" into "not sealed" lets a
- * writer replace ciphertext it never opened. A flipped magic byte, a `LARK` carrier from the passphrase envelope,
+ * writer replace ciphertext it never opened. A flipped magic byte, a carrier that opens with `LARK`,
  * and a future scheme in the house family all read as something a write must not replace.
  */
 import { describe, test, expect } from "vitest";
 import { readVkCarrier, VK_SEAL_MAGIC, VK_SEAL_MIN_LENGTH } from "../src/vk-envelope.js";
 import { mintVk, sealUnderVk, openUnderVk } from "../src/vk.js";
-import { encodeEnvelope } from "../src/archive-envelope.js";
+import { LARK_MAGIC } from "../src/vk-envelope.js";
 import { ALL_DOMAINS, DOMAIN_ROOT, VESSEL_KEL_DOMAIN, VK_SLOT_WRAP_INFO } from "../src/domains.js";
 
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
@@ -59,8 +59,8 @@ describe("the readings stay apart", () => {
     expect(readVkCarrier(future)).toBe("unopenable");
   });
 
-  test("RED: a LARK carrier (the passphrase envelope) reads old-shape, whatever its version byte", () => {
-    const lark = encodeEnvelope({ mode: "passphrase", salt: new Uint8Array(16), iv: new Uint8Array(12), tag: new Uint8Array(16), ciphertext: text("ct") });
+  test("RED: a carrier that opens with LARK reads old-shape, whatever its version byte", () => {
+    const lark = Uint8Array.from([...LARK_MAGIC, 0x01, 0x01, ...new Array(60).fill(7)]);
     expect(readVkCarrier(lark)).toBe("old-shape");
     const v2 = Uint8Array.from(lark);
     v2[4] = 0x02;

@@ -34,7 +34,7 @@ describe("a seat claim needs no Handle and exports no chair label", () => {
   beforeEach(async () => {
     vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
     root = mkdtempSync(join(tmpdir(), "lares-seat-no-handle-"));
-    env("LAR_ROOT", root); env("LARES_ARCHIVE_PASSPHRASE", undefined);
+    env("LAR_ROOT", root);
     vi.spyOn(console, "log").mockImplementation(() => {}); vi.spyOn(console, "error").mockImplementation(() => {});
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
     expect(await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } })).toBe(0);

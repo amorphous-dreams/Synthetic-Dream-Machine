@@ -150,10 +150,10 @@ describe("CURE 1 — the floor must not write", () => {
 
   // ── CONTROL · A FOUNDING STILL WRITES ───────────────────────────────────────────────────────────
   // A founding never gets blocked by a guard over a carrier that does not stand yet; the standing gate must
-  // not block it either. A founding reads `no-seal-expected` → `archiveOpens: true`,
+  // not block it either. A founding's archive opens (`archiveOpens: true`),
   // while its CLASS is still `"herm"` (no face lit) — which is exactly why the door reads the
   // archive fact rather than the class.
-  test("CONTROL — a founding (no carrier, no sealExpected → archive opens) still writes", async () => {
+  test("CONTROL — a founding (no carrier → archive opens) still writes", async () => {
     const archive = spy();
     const out = await persistArchiveFloor({
       archiveOpens: true,

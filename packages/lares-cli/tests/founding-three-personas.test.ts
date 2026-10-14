@@ -68,7 +68,6 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
     vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
     root = mkdtempSync(join(tmpdir(), "lares-founding3-"));
     setEnv("LAR_ROOT", root);                       // isolates bags + vault-state + petname store under one tree
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     // An isolated root carries no hearth true-name until the tracked genesis seed rides into it — the engine

@@ -61,7 +61,7 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
     await react({
       bagId:    DAEMON_BAG_ID,
       uri:      "lar:///ha.ka.ba/identity/keyhive-archive.bin",
-      reason:   "LARES_ARCHIVE_PASSPHRASE does not open it",
+      reason:   "the vessel key in hand does not open it",
       wardKind: "archive-seal",
     });
 
@@ -200,7 +200,7 @@ async function react(
   return (await reactor({
     bagId:    DAEMON_BAG_ID,
     uri:      "lar:///ha.ka.ba/identity/keyhive-archive.bin",
-    reason:   "LARES_ARCHIVE_PASSPHRASE does not open it",
+    reason:   "the vessel key in hand does not open it",
     wardKind: "archive-seal",
   })) as Record<string, unknown>;
 }

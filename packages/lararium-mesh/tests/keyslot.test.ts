@@ -12,7 +12,7 @@ import {
   commitSlotTree, writeSealedCarrier, openSealedCarrier, rotateVk, OldShapeRefusal, CustodyRefusal,
   type CustodyIo, type SealedCarrier,
 } from "../src/sealed-writer.js";
-import { ARCHIVE_MAGIC } from "../src/archive-envelope.js";
+import { LARK_MAGIC } from "../src/vk-envelope.js";
 
 const right = { kind: "passphrase", passphrase: "correct horse battery staple" } as const;
 const wrong = { kind: "passphrase", passphrase: "correct horse battery stapler" } as const;
@@ -305,9 +305,9 @@ describe("the old shape refuses BEFORE any write", () => {
     expect(new TextDecoder().decode(io.files.get(ROOT.path)!)).toMatch(/cleartext custody root/);
   });
 
-  test("RED: the retired LARK passphrase envelope refuses as old-shape, and a relation carrier is NAMED among them", async () => {
+  test("RED: a frame that opens with LARK refuses as old-shape, and a relation carrier is NAMED among them", async () => {
     const io = new ScratchIo();
-    io.files.set(KEYRING.path, Uint8Array.from([...ARCHIVE_MAGIC, 0x01, 0x02, ...new Array(80).fill(7)]));
+    io.files.set(KEYRING.path, Uint8Array.from([...LARK_MAGIC, 0x01, 0x02, ...new Array(80).fill(7)]));
     const vk = mintVk();
     const tree = bindSlot(null, vk, { t: 1, pins: [right] });
     const err = await commitSlotTree({ io, path: TREE, expected: null, vk, tree, carriers: [ROOT, KEYRING] }).catch((e: unknown) => e);

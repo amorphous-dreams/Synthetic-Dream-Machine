@@ -1,254 +1,112 @@
 /**
- * key-class.test — EVERY KEY NAMES ITS CLASS (basket-one #/the-phone-seat, ruled 2026-09-11: "every key names its
- * class in vault status"). The classes form a CLOSED vocabulary — `device-minted` (the vessel key, the veil it
- * derives), `seed` (a persona root, a recovery share of it), `cloud-synced` (any key that reads identical across
- * devices — none today; the slot exists so a future PRF / synced-passkey wrap MUST declare it). An unknown class
- * refuses at the type AND at the guard, so a synced key can never pass as a device key by omission.
+ * key-class.test — EVERY KEY NAMES ITS CLASS in the one custody reading (`custodyStatus`, printed by `vault status`).
+ *
+ * The vocabulary stands closed in mesh (`device-minted` · `seed` · `cloud-synced` · `relation`). The custody status
+ * reads each standing file ONCE and carries three facts on that one line, and none answers for another:
+ *   `keyClass` — what kind of secret the file holds, off its row of the carrier table;
+ *   `custody`  — where the vessel key holds it (`floor` · `floor-plain` · `hot` · `cold`), off the same row;
+ *   `reading`  — what the bytes standing there read as.
+ * Three rows read `seed` and all three rest `cold`; a sweep keyed on the class alone could not tell a sealed root
+ * from a bare one, so the reading rides beside the class and a hot or cold row that reads anything but `sealed`
+ * reads as a fault.
  */
 import { describe, test, expect } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { KEY_CLASSES, isKeyClass, vesselKeyCensus, type KeyClass } from "../src/key-class.js";
-import { carrierTable, vaultCarrierFiles } from "../src/vault-carriers.js";
+import { isKeyClass } from "@lararium/mesh";
+import { carrierTable, type CustodyHomes } from "../src/vault-carriers.js";
 import { FsCustodyIo } from "../src/custody-io.js";
-import { foundCustody } from "../src/custody-session.js";
+import { custodyStatus, foundCustody, type CustodyStatusRow } from "../src/custody-session.js";
 
-describe("the key-class vocabulary is closed", () => {
-  test("four classes, and an unknown spelling refuses at the guard", () => {
-    expect([...KEY_CLASSES]).toEqual(["device-minted", "seed", "cloud-synced", "relation"]);
-    expect(isKeyClass("relation")).toBe(true);
-    expect(isKeyClass("device-minted")).toBe(true);
-    expect(isKeyClass("cloud-synced")).toBe(true);
-    expect(isKeyClass("passkey")).toBe(false);
-    expect(isKeyClass("")).toBe(false);
-    // CONTROL at the TYPE: a KeyClass slot takes no other string (a compile-time refusal, witnessed by ts-expect-error).
-    // @ts-expect-error — "synced" is not a KeyClass
-    const refused: KeyClass = "synced";
-    void refused;
-  });
-});
+function scratch(): { homes: CustodyHomes; drop: () => void } {
+  const base = mkdtempSync(join(tmpdir(), "lar-key-class-"));
+  const homes = { identity: join(base, "identity"), storage: join(base, "storage"), seal: join(base, "seal") };
+  mkdirSync(homes.identity, { recursive: true });
+  return { homes, drop: () => rmSync(base, { recursive: true, force: true }) };
+}
 
-describe("vesselKeyCensus — every key the identity dir holds, with its class", () => {
-  test("the vessel key reads device-minted; a persona root and a recovery share read seed; nothing reads cloud-synced today", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lar-keys-"));
+async function rowsOf(homes: CustodyHomes, files: Record<string, string | Uint8Array>): Promise<Map<string, CustodyStatusRow>> {
+  for (const [name, body] of Object.entries(files)) writeFileSync(join(homes.identity, name), body);
+  const status = await custodyStatus({ io: new FsCustodyIo(homes), homes });
+  return new Map(status.rows.map((r) => [r.name, r]));
+}
+
+describe("custody ⊥ secret-kind — one reading names both axes", () => {
+  const SOWN = {
+    ".vessel-key-joshua.json": "{}", "keyhive-archive.bin": "x", "veil-archive-h0.bin": "x",
+    ".persona-group-root-joshua-h0.json": "{}", "recovery-device-share-h0.bin": "x", "seal-reserve-mine-share.bin": "x",
+    ".vessel-card-joshua.json": "{}",
+  };
+
+  test("each key names its class and its custody off the one carrier table; a card carries no key", async () => {
+    const v = scratch();
     try {
-      writeFileSync(join(dir, ".vessel-key-joshua.json"), "{}");
-      writeFileSync(join(dir, ".persona-group-root-joshua-h0.json"), "{}");
-      writeFileSync(join(dir, ".persona-group-root-joshua-h2.json"), "{}");
-      writeFileSync(join(dir, "keyhive-archive.bin"), "x");
-      writeFileSync(join(dir, "veil-archive-h0.bin"), "x");
-      writeFileSync(join(dir, ".vessel-card-joshua.json"), "{}");   // a CARD is public — never a key
-      const keys = vesselKeyCensus(dir);
-      const byName = Object.fromEntries(keys.map((k) => [k.name, k.class]));
-      expect(byName["vessel-key"]).toBe("device-minted");
-      expect(byName["veil-archive-h0"]).toBe("device-minted");
-      expect(byName["persona-root-h0"]).toBe("seed");
-      expect(byName["persona-root-h2"]).toBe("seed");
-      expect(keys.every((k) => isKeyClass(k.class))).toBe(true);
-      expect(keys.some((k) => k.class === "cloud-synced")).toBe(false);
-      expect(keys.some((k) => /card/.test(k.name))).toBe(false);
-    } finally { rmSync(dir, { recursive: true, force: true }); }
-  });
-  test("CONTROL: an empty identity dir names no keys (and faults nothing)", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lar-keys-"));
-    try { expect(vesselKeyCensus(dir)).toEqual([]); } finally { rmSync(dir, { recursive: true, force: true }); }
-    expect(vesselKeyCensus(join(tmpdir(), "no-such-dir-" + Date.now()))).toEqual([]);
-  });
-});
-
-/**
- * CUSTODY IS A SECOND AXIS, AND `class` NEVER ANSWERED FOR IT.
- *
- * `class: "seed"` correctly names WHAT KIND OF SECRET a carrier holds, and three files answer to it —
- * `recovery-device-share-h{N}.bin`, `seal-reserve-mine-share.bin`, and `.persona-group-root-…-h{N}.json`.
- * Only the first two ride the vault's at-rest seal lifecycle (`vaultCarriers` → seal/rotate/repair/status/
- * export). The persona-group root rides NO seal at all.
- *
- * THE COST OF ONE CLASS NAMING TWO REGIMES: a hand writes "re-seal every `seed`-class carrier under the new
- * passphrase", iterates the census, and either writes over a file the lifecycle does not own or SKIPS it
- * silently and reports "all seeds re-sealed" over a cleartext root. A sweep over a class that names two
- * regimes reports success on what it skipped — the vacuous-pass family.
- *
- * The cure adds the axis rather than splitting the class, the same shape as presence ⊥ readability in
- * `readArchiveOpening`: `class` says what the secret is, `atRest` says who holds it at rest, and neither
- * answers for the other.
- */
-describe("custody ⊥ secret-kind — the census names both axes", () => {
-  function sownDir(): string {
-    const dir = mkdtempSync(join(tmpdir(), "lar-custody-"));
-    writeFileSync(join(dir, ".vessel-key-joshua.json"), "{}");
-    writeFileSync(join(dir, "keyhive-archive.bin"), "x");
-    writeFileSync(join(dir, "veil-archive-h0.bin"), "x");
-    writeFileSync(join(dir, ".persona-group-root-joshua-h0.json"), "{}");
-    writeFileSync(join(dir, "recovery-device-share-h0.bin"), "x");
-    writeFileSync(join(dir, "seal-reserve-mine-share.bin"), "x");
-    return dir;
-  }
-
-  test("RED — a persona-group root and a device share read INDISTINGUISHABLE on custody", () => {
-    const dir = sownDir();
-    try {
-      const keys = vesselKeyCensus(dir);
-      const root  = keys.find((k) => k.name === "persona-root-h0");
-      const share = keys.find((k) => k.name === "recovery-device-share-h0");
-      const mine  = keys.find((k) => k.name === "seal-reserve-mine-share");
-      expect(root).toBeDefined(); expect(share).toBeDefined(); expect(mine).toBeDefined();
-      // The SECRET KIND agrees, and rightly so — all three carry a seed.
-      expect(root!.class).toBe("seed");
-      expect(share!.class).toBe("seed");
-      expect(mine!.class).toBe("seed");
-      // …and CUSTODY DIFFERS. This is what a `class`-only census could not say.
-      expect(root!.atRest).toBe("cleartext");
-      // Neither share rides the passphrase lifecycle: both rest as custody rows, and these sown bytes carry no VK
-      // frame, so the census reads each as the bare file it stands as.
-      expect(share!.atRest).toBe("cleartext");
-      // The reserve share rides the vessel key: the passphrase lifecycle governs it no more, and these sown bytes
-      // carry no VK frame, so the census reads them as the bare file they stand as.
-      expect(mine!.atRest).toBe("cleartext");
-      // The sweep that costs the story now has a predicate that cannot skip-and-claim.
-      const sealedSeeds = keys.filter((k) => k.class === "seed" && k.atRest === "sealed").map((k) => k.name);
-      expect(sealedSeeds).toEqual([]);
-    } finally { rmSync(dir, { recursive: true, force: true }); }
-  });
-
-  test("a sealed entry names WHICH carrier, so the custody fact joins to the byte-state one", () => {
-    const dir = sownDir();
-    try {
-      const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k]));
-      expect(byName["recovery-device-share-h0"]!.carrier).toBeNull();        // a row under the vessel key names no lifecycle carrier
-      expect(byName["seal-reserve-mine-share"]!.carrier).toBeNull();          // a row under the vessel key names no lifecycle carrier
-      expect(byName["keyhive-archive"]!.carrier).toBeNull();
-      expect(byName["veil-archive-h0"]!.carrier).toBeNull();
-      expect(byName["keyhive-archive"]!.atRest).toBe("cleartext");
-      expect(byName["veil-archive-h0"]!.atRest).toBe("cleartext");
-      // A cleartext-custody key names NO carrier — null states "no carrier owed", it never loses one.
-      expect(byName["persona-root-h0"]!.carrier).toBeNull();
-      expect(byName["vessel-key"]!.carrier).toBeNull();
-    } finally { rmSync(dir, { recursive: true, force: true }); }
-  });
-
-  test("FAULT-PIN: the vault's enumeration and the census agree, in BOTH directions", () => {
-    const dir = sownDir();
-    try {
-      const keys = vesselKeyCensus(dir);
-      const governed = new Set(vaultCarrierFiles(dir));
-      const censusSealed = new Set(keys.filter((k) => k.atRest === "sealed").map((k) => k.file));
-      // → a carrier the VAULT governs that the census does not name reads as a FAULT (the sweep would skip it).
-      for (const f of governed) expect(censusSealed.has(f), `vault governs ${f}; the census names no sealed key for it`).toBe(true);
-      // ← a key the census calls sealed that the vault does NOT govern reads as a FAULT (the sweep would
-      //   write over a file no rotate owns). `vault status` naming `recovery-device-share-h1` under `keys`
-      //   while omitting it from `carriers` was this disagreement, one direction, in the field.
-      for (const f of censusSealed) expect(governed.has(f), `the census calls ${f} sealed; the vault governs no carrier there`).toBe(true);
-      expect(governed.size).toBe(0);   // the passphrase lifecycle governs no row
-    } finally { rmSync(dir, { recursive: true, force: true }); }
-  });
-
-  test("each key names its custody class off the one carrier table: floor · hot · cold", () => {
-    const dir = sownDir();
-    try {
-      const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k.custody]));
-      expect(byName).toEqual({
-        "vessel-key": "floor",
-        "keyhive-archive": "hot", "veil-archive-h0": "hot",
-        "persona-root-h0": "cold", "recovery-device-share-h0": "cold", "seal-reserve-mine-share": "cold",
+      const rows = await rowsOf(v.homes, SOWN);
+      expect(Object.fromEntries([...rows].map(([name, r]) => [name, `${r.keyClass ?? "-"} ${r.custody}`]))).toEqual({
+        "vessel-key": "device-minted floor", "vessel-card": "- floor-plain",
+        "keyhive-archive": "device-minted hot", "veil-archive-h0": "device-minted hot",
+        "persona-root-h0": "seed cold", "recovery-device-share-h0": "seed cold", "seal-reserve-mine-share": "seed cold",
       });
-    } finally { rmSync(dir, { recursive: true, force: true }); }
+      for (const r of rows.values()) expect(r.keyClass === null || isKeyClass(r.keyClass), r.name).toBe(true);
+      expect([...rows.values()].some((r) => r.keyClass === "cloud-synced")).toBe(false);
+    } finally { v.drop(); }
   });
 
-  test("CONTROL: the three device-minted entries keep their class untouched", () => {
-    const dir = sownDir();
+  test("RED: three seeds share a class and a custody, and the READING tells a sealed one from a bare one", async () => {
+    const v = scratch();
     try {
-      const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k.class]));
-      expect(byName["vessel-key"]).toBe("device-minted");
-      expect(byName["veil-archive-h0"]).toBe("device-minted");
-      expect(byName["keyhive-archive"]).toBe("device-minted");
-    } finally { rmSync(dir, { recursive: true, force: true }); }
+      const io = new FsCustodyIo(v.homes);
+      await foundCustody({ io, homes: v.homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "census-test-route" }] }] });
+      const rows = await rowsOf(v.homes, { ".persona-group-root-joshua-h0.json": "{}", "recovery-device-share-h0.bin": "x" });
+      expect(rows.get("custody-root")).toMatchObject({ keyClass: "device-minted", custody: "hot", reading: "sealed", fault: false });
+      expect(rows.get("persona-root-h0")).toMatchObject({ keyClass: "seed", custody: "cold", reading: "bare", fault: true });
+      expect(rows.get("recovery-device-share-h0")).toMatchObject({ keyClass: "seed", custody: "cold", reading: "bare", fault: true });
+      // CONTROL: the floor's own key reads bare by law, and no fault.
+      const floor = await rowsOf(v.homes, { ".vessel-key.json": "{}" });
+      expect(floor.get("vessel-key")).toMatchObject({ custody: "floor", reading: "bare", fault: false });
+    } finally { v.drop(); }
   });
 
-  test("CONTROL: a GAP in the handle numbering throws nothing and drops nobody", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lar-custody-gap-"));
+  test("a VK frame that stands DAMAGED reads `torn` and a fault, never bare by law", async () => {
+    const v = scratch();
     try {
-      writeFileSync(join(dir, "recovery-device-share-h0.bin"), "x");
-      writeFileSync(join(dir, "recovery-device-share-h3.bin"), "x");
-      writeFileSync(join(dir, ".persona-group-root-joshua-h3.json"), "{}");
-      const keys = vesselKeyCensus(dir);
-      expect(keys.filter((k) => k.class === "seed").map((k) => k.name).sort()).toEqual(["persona-root-h3", "recovery-device-share-h0", "recovery-device-share-h3"]);
-      expect(keys.filter((k) => k.atRest === "sealed")).toEqual([]);               // sown bare: no VK frame, and no lifecycle governs them
-      expect(keys.find((k) => k.name === "persona-root-h3")!.atRest).toBe("cleartext");
-      expect([...vaultCarrierFiles(dir)].length).toBe(0);
-    } finally { rmSync(dir, { recursive: true, force: true }); }
+      const rows = await rowsOf(v.homes, {
+        "recovery-device-share-h0.bin": Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.from([1, 2, 3])]),
+        "recovery-device-share-h1.bin": "x",
+      });
+      expect(rows.get("recovery-device-share-h0")).toMatchObject({ reading: "torn", fault: true, bare: null });
+      expect(rows.get("recovery-device-share-h1")).toMatchObject({ reading: "bare", fault: true, bare: null });
+    } finally { v.drop(); }
   });
 
-  test("a VK frame that stands DAMAGED still reads as sealed, never as cleartext", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lar-custody-torn-"));
+  test("CONTROL: a GAP in the handle numbering throws nothing and drops nobody", async () => {
+    const v = scratch();
     try {
-      // A torn frame: the vessel key's seal marker with too few bytes behind it. The custody reader refuses the
-      // row by name; the census must not call a row under the vessel key cleartext.
-      writeFileSync(join(dir, "recovery-device-share-h0.bin"), Buffer.concat([Buffer.from("lares-vk-seal"), Buffer.from([1, 2, 3])]));
-      writeFileSync(join(dir, "recovery-device-share-h1.bin"), "x");               // control: bare bytes carry no frame
-      const byName = Object.fromEntries(vesselKeyCensus(dir).map((k) => [k.name, k.atRest]));
-      expect(byName["recovery-device-share-h0"]).toBe("sealed");
-      expect(byName["recovery-device-share-h1"]).toBe("cleartext");
-    } finally { rmSync(dir, { recursive: true, force: true }); }
-  });
-
-  test("CONTROL: an absent dir names no governed carrier and faults nothing", () => {
-    expect([...vaultCarrierFiles(join(tmpdir(), "no-such-dir-" + Date.now()))]).toEqual([]);
+      const rows = await rowsOf(v.homes, { "recovery-device-share-h0.bin": "x", "recovery-device-share-h3.bin": "x", ".persona-group-root-joshua-h3.json": "{}" });
+      expect([...rows.keys()].sort()).toEqual(["persona-root-h3", "recovery-device-share-h0", "recovery-device-share-h3"]);
+    } finally { v.drop(); }
   });
 });
 
 describe("the relation class — a secret only the other party re-issues", () => {
-  const RELATION_ROWS: Record<string, string> = {
-    ".persona-enroll-pending.json":    "enroll-pending",
-    ".persona-grant-pending.json":     "grant-pending",
-    ".persona-admissions.json":        "admissions",
-  };
-
-  test("the four relation rows read `relation`, hot, and ride no passphrase lifecycle; the census prints the class", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lar-relation-"));
+  test("the three relation rows read `relation` and hot", async () => {
+    const v = scratch();
     try {
-      for (const f of Object.keys(RELATION_ROWS)) writeFileSync(join(dir, f), "{}");
-      const keys = vesselKeyCensus(dir);
-      expect(keys.map((k) => k.name).sort()).toEqual(Object.values(RELATION_ROWS).sort());
-      for (const k of keys) {
-        expect(k.class, k.name).toBe("relation");
-        expect(k.custody, k.name).toBe("hot");
-        expect(k.atRest, k.name).toBe("cleartext");   // the VK custody seals it; the passphrase lifecycle never governs it
-        expect(k.carrier, k.name).toBeNull();
-      }
-    } finally { rmSync(dir, { recursive: true, force: true }); }
+      const rows = await rowsOf(v.homes, { ".persona-enroll-pending.json": "{}", ".persona-grant-pending.json": "{}", ".persona-admissions.json": "{}" });
+      expect([...rows.keys()].sort()).toEqual(["admissions", "enroll-pending", "grant-pending"]);
+      for (const r of rows.values()) expect(r, r.name).toMatchObject({ keyClass: "relation", custody: "hot" });
+    } finally { v.drop(); }
   });
 
-  test("CONTROL: a non-relation hot row (the handle-book) names no key at all", () => {
-    const dir = mkdtempSync(join(tmpdir(), "lar-relation-"));
+  test("CONTROL: a non-relation hot row (the handle-book) names no key class", async () => {
+    const v = scratch();
     try {
-      writeFileSync(join(dir, ".handle-book.json"), "{}");
-      expect(vesselKeyCensus(dir)).toEqual([]);
-    } finally { rmSync(dir, { recursive: true, force: true }); }
+      expect((await rowsOf(v.homes, { ".handle-book.json": "{}" })).get("handle-book")?.keyClass).toBeNull();
+    } finally { v.drop(); }
   });
 
-  test("every relation row in the table is exactly the three, and each VK-sealed carrier carries its row's class", () => {
-    const rows = carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort();
-    expect(rows).toEqual(["admissions", "enroll-pending", "grant-pending"]);
-  });
-});
-
-describe("vesselKeyCensus — one reading of a VK-sealed file", () => {
-  test("★ a custody root whose bytes carry the VK frame reads `sealed`; bare bytes at the same name read `cleartext` ★", async () => {
-    const base = mkdtempSync(join(tmpdir(), "lar-vkframe-"));
-    try {
-      const homes = { identity: join(base, "identity"), storage: join(base, "storage"), seal: join(base, "seal") };
-      await foundCustody({
-        io: new FsCustodyIo(homes), homes,
-        slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "census-test-route" }] }],
-      });
-      const root = vesselKeyCensus(homes.identity).find((k) => k.name === "custody-root");
-      expect(root?.atRest).toBe("sealed");
-      expect(root?.carrier).toBeNull();                       // no passphrase-lifecycle carrier: the VK frame alone says sealed
-      // CONTROL: the same name holding bare bytes reads cleartext.
-      writeFileSync(join(homes.identity, "custody-root.bin"), "x");
-      expect(vesselKeyCensus(homes.identity).find((k) => k.name === "custody-root")?.atRest).toBe("cleartext");
-    } finally { rmSync(base, { recursive: true, force: true }); }
+  test("every relation row in the table is exactly the three", () => {
+    expect(carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort()).toEqual(["admissions", "enroll-pending", "grant-pending"]);
   });
 });

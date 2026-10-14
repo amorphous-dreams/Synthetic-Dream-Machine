@@ -1,30 +1,18 @@
 /**
- * `lares vault {status,unlock,lock,bind,unbind,seal,rotate,repair}` — the vessel key custody door, and the
- * retiring passphrase lifecycle over the share carriers.
+ * `lares vault {status,unlock,lock,bind,unbind,backup,restore}` — the vessel key custody door.
  *
- * The vessel key seals the vessel's private rows; `unlock`, `lock`, `bind` and `unbind` open, drop and re-route
- * it. The passphrase lifecycle (`seal`, `rotate`, `repair`) governs the share carriers alone: the device recovery
- * shares and the reserve share.
+ * The vessel key seals the vessel's private rows. `unlock` and `lock` open and drop it on the standing vessel;
+ * `bind` and `unbind` change the human routes that open it, and an unbind that rotates moves the key itself in one
+ * act; `status` gives one reading of every standing file the carrier table names, and names every private file it
+ * does not; `backup` and `restore` carry one face off the vessel and back.
  *
- * DAEMON-FIRST: when the daemon holds the socket, the MUTATING verbs route THROUGH it, so the
- * daemon re-persists the carriers AND updates its own in-memory seal policy in one act (no un-rotate).
- * When the daemon is DOWN, the CLI does the direct file op itself (same core functions, this process).
- *
- * THE PASSPHRASE NEVER TOUCHES argv OR the shell history: interactively it reads from a no-echo TTY prompt
- * (double-entry for a NEW passphrase — a typo would be a self-lockout); non-interactively it rides an
- * environment variable (LARES_ARCHIVE_PASSPHRASE / _NEW), never a flag. It drops the instant the op returns.
+ * A CREDENTIAL RIDES A TTY ALONE (`custody-prompt`): no flag, no environment variable and no pipe carries one, and
+ * nothing here echoes one. It drops the instant the act returns.
  */
 
-import { join } from "node:path";
-import { readFileSync } from "node:fs";
 import {
-  archiveSealStatus, sealArchiveWithPassphrase, rotateArchivePassphrase,
-  repairSplitKek, weakPassphraseWarning,
-  ARCHIVE_PASSPHRASE_ENV,
-} from "@lararium/node";
-import {
-  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, rotateCustody, custodyStatus,
-  type CustodyHomes, type CustodyStatus,
+  FsCustodyIo, unlockCustody, bindCustodySlot, unbindCustodySlot, custodyStatus,
+  type CustodyHomes, type CustodyStatus, type CustodyStatusRow,
 } from "@lararium/node";
 import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
@@ -32,66 +20,22 @@ import { gatherBundleRoute, gatherCredentials, gatherNewSlot, gatherStayingSlot 
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
 import { importLines, restoreFromBundle, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
-import { discordianReading } from "@lararium/node";
-import { throughStoreDoor } from "../store-door.js";
 import { udsAlive } from "../local-connector.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { canPromptSecret, promptSecret, promptSecretConfirmed } from "../prompt-secret.js";
 import type { ParsedArgs } from "../parse-args.js";
-
-/** The env var carrying a NEW/target passphrase for non-interactive seal/rotate. */
-const NEW_PASS_ENV = "LARES_ARCHIVE_PASSPHRASE_NEW";
 
 function usage(args: ParsedArgs, typed?: string): number {
   return refuseUsage(args, "vault", helpLines("vault"), typed ? `unknown sub-verb "${typed}"` : undefined);
 }
 
-/** The CURRENT passphrase — env first, else a no-echo prompt. Non-interactive without the env → usage error. */
-async function currentPass(args: ParsedArgs, label: string): Promise<string> {
-  const env = process.env[ARCHIVE_PASSPHRASE_ENV];
-  if (env) {
-    if (canPromptSecret()) console.error(`  using ${ARCHIVE_PASSPHRASE_ENV} from the environment — no prompt opened.`);
-    return env;
-  }
-  if (args.flags["yes"] || !canPromptSecret()) {
-    throw new UsageError(`set ${ARCHIVE_PASSPHRASE_ENV} for non-interactive use`);
-  }
-  return promptSecret(`${label}: `);
-}
-
-/**
- * A NEW passphrase — env first (non-interactive), else a double-entry no-echo prompt (anti-lockout).
- *
- * A TTY caller carrying the env var keeps the env: setting it deliberately means it. But the bypass
- * SAYS SO, because an operator who expected a prompt and met silence learns nothing from the silence —
- * they conclude the prompt is broken, or worse, that they typed something they never typed. A shell
- * carrying a passphrase from an earlier command reads exactly like a shell that does not.
- */
-async function newPass(args: ParsedArgs, label: string): Promise<string> {
-  const env = process.env[NEW_PASS_ENV];
-  if (args.flags["yes"] || !canPromptSecret()) {
-    if (!env) throw new UsageError(`set ${NEW_PASS_ENV} for non-interactive use`);
-    return env;
-  }
-  if (env) {
-    console.error(`  using ${NEW_PASS_ENV} from the environment — no prompt opened.`);
-    console.error(`  to type it instead:  env -u ${NEW_PASS_ENV} lares vault <verb>`);
-    return env;
-  }
-  return promptSecretConfirmed(label);
-}
-
 class UsageError extends Error {}
-
-/** A rotation that would refuse mid-way, caught before the slot is removed. */
-class RotationPreflightRefusal extends Error { override readonly name = "RotationPreflightRefusal"; }
 
 /** The refusals the custody door names: each leads its error line, so a caller reads the class, not a guess. */
 const NAMED_REFUSALS: ReadonlySet<string> = new Set([
   "OldShapeRefusal", "CustodyRefusal", "TreeVkRefusal", "CensusRefusal",
-  "CustodyLockRefused", "CustodyFoundingRefused", "CredentialTtyRefusal", "RotationPreflightRefusal",
+  "CustodyLockRefused", "CustodyFoundingRefused", "CredentialTtyRefusal", "RotationSlotsRefused",
 ]);
 
 function custodyHomes(): CustodyHomes {
@@ -102,54 +46,6 @@ function custodyHomes(): CustodyHomes {
 const RELATION_LINE =
   "rotation never repairs the loss of a relation carrier: a relation secret derives from no house key, so only the " +
   "other party can re-issue it. Back the carrier itself up.";
-
-/** Warn (never reject) on a weak passphrase — the SOFT floor. */
-function warnIfWeak(pass: string): void {
-  const w = weakPassphraseWarning(pass);
-  if (w) console.error(`  warning: ${w}`);
-}
-
-/** Where the seal-day rides — NON-SECRET, beside the identity it belongs to. */
-function sealDayPath(): string { return join(larIdentityDir(), ".archive-seal-day.json"); }
-
-/** Read the recorded seal-day, or null when this vault was sealed without one. */
-function readSealDay(): { stamp: string; prose: string; source: string } | null {
-  try { return JSON.parse(readFileSync(sealDayPath(), "utf8")) as { stamp: string; prose: string; source: string }; }
-  catch { return null; }
-}
-
-/**
- * `lares vault passphrase` — read back WHICH DAY a sealed vault carries, and what to type.
- *
- * ANSWERING THE FIRST QUESTION PLAINLY: no CLI can set `LARES_ARCHIVE_PASSPHRASE` in the operator's shell —
- * a child process cannot write its parent's environment, on any OS. What a CLI can do is hold the ceremony
- * (`vault seal --ddate`) and read the record back (here), so the operator never has to remember a composed
- * string, only their own secret.
- */
-function vaultPassphrase(args: ParsedArgs): number {
-  const recorded = readSealDay();
-  const today    = discordianReading();
-  emit(args, {
-    ok: true,
-    data: { recorded, today: { prose: today.prose, stamp: today.stamp, source: today.source, agrees: today.agrees ?? null } },
-    human: () => {
-      console.log(`today:  ${today.prose}   [${today.source}]`);
-      if (today.agrees === false) {
-        console.log("  ⚠ ddate and the computed calendar DISAGREE — a foreign ddate, or a leap-year rule we have wrong.");
-      }
-      if (!recorded) {
-        console.log("this vault carries NO recorded seal-day — it was sealed before the stamp existed.");
-        console.log("  a re-seal or a rotate records one; the passphrase itself is unaffected either way.");
-        return;
-      }
-      console.log(`sealed: ${recorded.prose}`);
-      console.log(`  stamp:  ${recorded.stamp}`);
-      console.log("  the day is a STAMP ON the passphrase, never a PART of it — this vault opens on your");
-      console.log("  secret alone. Losing this record loses a nice fact and no access at all.");
-    },
-  });
-  return 0;
-}
 
 export async function cmdVault(args: ParsedArgs): Promise<number> {
   const sub = args.positional[0];
@@ -165,10 +61,6 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "unbind":     return await vaultUnbind(args);
       case "backup":     return await vaultBackup(args, daemonUp);
       case "restore":    return await vaultRestore(args, daemonUp);
-      case "passphrase": return vaultPassphrase(args);
-      case "seal":    return await vaultSeal(args, daemonUp);
-      case "rotate":  return await vaultRotate(args, daemonUp);
-      case "repair":  return await vaultRepair(args, daemonUp);
       default:
         console.error(`lares vault: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -189,20 +81,13 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
 }
 
 async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number> {
-  // --check probes a passphrase to detect a split-KEK (the carriers disagree on it).
-  let probe: string | undefined;
-  if (args.flags["check"]) {
-    probe = process.env[ARCHIVE_PASSPHRASE_ENV] ?? (canPromptSecret() ? await promptSecret("passphrase to probe: ") : undefined);
-  }
-  const vargs: Record<string, unknown> = probe ? { probe } : {};
-  const { output, via } = await throughStoreDoor({ verb: "vault-status", args: vargs, direct: () => ({ ...archiveSealStatus(probe ? { probe } : {}) }), daemonUp });
   const homes = custodyHomes();
   const custody = await custodyStatus({ io: new FsCustodyIo(homes), homes });
   // What the STANDING vessel holds, read off its custody door: a read, it opens nothing.
   const door = daemonUp ? await sendCustodyFrame({ op: "custody" }) : null;
   emit(args, {
     ok: true,
-    data: { ...output, via, custody, door },
+    data: { custody, door },
     human: () => {
       if (door?.["testScratch"] === true) console.log("TEST SCRATCH ROOT — a harness staged this vessel; its custody opens under the published test route. Never a vessel anyone keeps.");
       if (door && typeof door["unlocked"] === "boolean") {
@@ -213,117 +98,31 @@ async function vaultStatus(args: ParsedArgs, daemonUp: boolean): Promise<number>
         console.log("vessel key     no vessel stands on this store, so no process holds it.");
       }
       printCustody(custody);
-      const carriers = (output["carriers"] ?? {}) as Record<string, { state: string; mode?: string; opensUnderProbe?: boolean }>;
-      console.log(`vault status (${via}):`);
-      for (const [name, c] of Object.entries(carriers)) {
-        const probeMark = c.opensUnderProbe === undefined ? "" : c.opensUnderProbe ? "  ✓ opens under probe" : "  ✗ does NOT open under probe";
-        // 18 columns, because the device share names a FAMILY: one carrier per persona
-        // (`device-share-h0`, `device-share-h1`, …), and a 14-column field ran the widest name into its state.
-        console.log(`  ${name.padEnd(18)} ${c.state}${c.mode ? ` (${c.mode})` : ""}${probeMark}`);
-      }
-      // `unopenable` is a FAULT, not a third resting state, so it says so rather than sitting in the
-      // column beside `sealed` as though it were one. It reads apart from a split-KEK: no passphrase
-      // reaches these bytes at all, so `repair` cannot cure it and only a backup can.
-      const unopenable = Object.entries(carriers).filter(([, c]) => c.state === "unopenable").map(([n]) => n);
-      if (unopenable.length > 0) {
-        console.error(
-          `  ⚠ UNOPENABLE: ${unopenable.join(", ")} hold a seal this build cannot frame — no passphrase ` +
-          `opens them and \`vault repair\` cannot cure it; recover from a backup`,
-        );
-      }
-      if (output["split"]) console.error("  ⚠ SPLIT-KEK: the carriers ride different passphrases — run `lares vault repair`");
-      console.log(`  sealExpected   ${output["sealExpected"]}`);
-      console.log(`  passphraseEnv  ${output["passphraseEnvSet"] ? "set" : "unset"}`);
-      // The keychain leg says WHY it reads dark. A silent leg gets mistaken for a leg that never ran.
-      const kc = output["keychain"] as { persistentStore?: boolean; reason?: string; kekAvailable?: boolean } | undefined;
-      if (kc) {
-        console.log(`  keychainKek    ${kc.kekAvailable ? "available" : "dark"} — ${kc.reason ?? "no reason reported"}`);
-      }
-      // EVERY KEY NAMES ITS CLASS (basket-one #/the-phone-seat): device-minted · seed · cloud-synced. A key
-      // the census cannot class never renders as a device key by omission — the class rides beside the name.
-      //
-      // AND EVERY KEY NAMES ITS CUSTODY, on a SECOND column, because `class` names two regimes. Three keys
-      // read `seed` and only two of them ride the vault lifecycle above — a reader who saw `seed` alone and
-      // swept "every seed" would either write over the persona-group root or skip it while reporting success.
-      // `at-rest` says which; the carrier name joins the row to the `carriers` block overhead.
-      const keys = (output["keys"] ?? []) as readonly { name: string; class: string; file?: string; atRest?: string; carrier?: string | null }[];
-      const sealedSeeds = keys.filter((k) => k.class === "seed" && k.atRest === "sealed").length;
-      const bareSeeds   = keys.filter((k) => k.class === "seed" && k.atRest === "cleartext").length;
-      console.log(`  keys           ${keys.length} (cloud-synced: ${keys.filter((k) => k.class === "cloud-synced").length} — none stand today; a PRF/passkey wrap MUST declare one)`);
-      console.log(`                 seed keys: ${sealedSeeds} under the vault lifecycle · ${bareSeeds} riding no seal`);
-      // 14 for the class, 10 for the at-rest word ("cleartext"), so neither runs into the next field.
-      for (const k of keys) {
-        const custody = k.atRest ?? "unnamed";
-        const where   = k.carrier ? ` → ${k.carrier}` : "";
-        console.log(`    ${k.name.padEnd(28)} ${k.class.padEnd(14)} ${custody.padEnd(10)}${k.file ? ` ${k.file}` : ""}${where}`);
-      }
     },
   });
   return 0;
 }
 
-async function vaultSeal(args: ParsedArgs, daemonUp: boolean): Promise<number> {
-  const secret = await newPass(args, "new passphrase");
-  warnIfWeak(secret);
-  // EVERY seal stamps its day. It needs no flag because it changes nothing about the passphrase — the
-  // vault opens on exactly what the operator typed, and the day rides beside it as a record.
-  const pass    = secret;
-  const erisian = discordianReading();
-  const { output, via } = await throughStoreDoor({ verb: "vault-seal", args: { passphrase: pass }, direct: () => ({ ...sealArchiveWithPassphrase(pass) }), daemonUp });
-  const sealed = (output["sealed"] ?? []) as string[];
+/** How many files one row and reading may print by name before the section folds them into one counted line. */
+const ROW_FOLD = 4;
 
-  // NO STAMP GETS WRITTEN HERE. No carrier answers the passphrase lifecycle, so this seal seals none, and a day
-  // nobody sealed on never gets recorded. `stamped` therefore reads false; `vault passphrase` reads back a stamp
-  // an earlier seal left, where one stands.
-  emit(args, {
-    ok: true, data: { ...output, via, sealedCount: sealed.length, stamped: sealed.length > 0 },
-    human: () => {
-      if (sealed.length === 0) {
-        // A no-op reads as a no-op. The common cause is worth naming: a passphrase in the environment
-        // during founding seals the carriers THERE, so this movement finds nothing left to do.
-        console.log(`sealed NOTHING (${via}) — every carrier already stands sealed, or none exists yet.`);
-        console.log("  no stamp written: the day records a seal that happened, never one attempted.");
-        console.log("  see what stands:      lares vault status");
-        console.log("  change the passphrase: lares vault rotate");
-        return;
-      }
-      console.log(`sealed ${sealed.join(", ")} (${via})`);
-      console.log(`  sealed on ${erisian.prose}   [${erisian.source}]`);
-      console.log("  the day is a STAMP, never part of the passphrase — the vault opens on what you typed.");
-      console.log("  read it back any time with:  lares vault passphrase");
-    },
-  });
-  return 0;
+/** One standing file's line: the row, where it rests, its custody class, its key class, its ONE reading, and why. */
+function rowLine(r: CustodyStatusRow): string {
+  const why = r.fault
+    ? r.bare === null
+      ? `  FAULT — the vessel key governs this row and no seal of it stands (it reads ${r.reading})`
+      : r.reading === "bare"
+        ? "  FAULT — this file took the row's spelling and fails the name its own bytes derive"
+        : `  FAULT — this row rests outside the vessel key, and the file reads ${r.reading}: no rotation re-seals it`
+    : r.bare !== null ? `  by law: ${r.bare}` : "";
+  return `    ${r.name.padEnd(30)} ${r.home.padEnd(9)} ${r.custody.padEnd(11)} ${String(r.keyClass ?? "-").padEnd(14)} ${r.reading.padEnd(10)} ${r.file}${why}`;
 }
 
-async function vaultRotate(args: ParsedArgs, daemonUp: boolean): Promise<number> {
-  const oldP = await currentPass(args, "current passphrase");
-  const newP = await newPass(args, "new passphrase");
-  warnIfWeak(newP);
-  const { output, via } = await throughStoreDoor({ verb: "vault-rotate", args: { old: oldP, new: newP }, direct: () => ({ ...rotateArchivePassphrase(oldP, newP) }), daemonUp });
-  emit(args, {
-    ok: true, data: { ...output, via },
-    human: () => console.log(`rotated ${((output["rotated"] ?? []) as string[]).join(", ") || "(none)"} (${via})`),
-  });
-  return 0;
-}
-
-async function vaultRepair(args: ParsedArgs, daemonUp: boolean): Promise<number> {
-  // The lagging carrier opens under the OPEN passphrase; re-seal it under the SEAL (target) passphrase.
-  const openP = await currentPass(args, "passphrase that opens the LAGGING carrier");
-  const sealP = await newPass(args, "target passphrase (opens the other carrier)");
-  const { output, via } = await throughStoreDoor({ verb: "vault-repair", args: { openPass: openP, sealPass: sealP }, direct: () => ({ ...repairSplitKek(openP, sealP) }), daemonUp });
-  emit(args, {
-    ok: true, data: { ...output, via },
-    human: () => {
-      const repaired = (output["repaired"] ?? []) as string[];
-      console.log(`repaired ${repaired.length ? repaired.join(", ") : "(nothing — carriers already consistent)"} (${via})`);
-    },
-  });
-  return 0;
-}
-
-/** The "custody (VK)" section: the slot tree, then every standing table row with its key class and reading. */
+/**
+ * The "custody (VK)" section: the slot tree, then ONE reading of every standing file the carrier table names, then
+ * every private file it does not name. A row outside the vessel key prints the law it rests bare under; a hot or
+ * cold row that reads anything but `sealed` prints as a fault.
+ */
 function printCustody(c: CustodyStatus): void {
   console.log("custody (VK):");
   if (c.tree.reading === "absent") console.log("  slot tree      absent — no vk-slots.bin stands (a founding seals custody from birth)");
@@ -332,16 +131,26 @@ function printCustody(c: CustodyStatus): void {
     console.log(`  slot tree      ${c.tree.slots.length} slot(s)`);
     for (const sl of c.tree.slots) console.log(`    ${sl.id}  t=${sl.t}  ${sl.pins.join(" + ")}`);
   }
-  const standing = c.rows.filter((r) => r.reading !== "absent");
-  if (standing.length === 0) console.log("  carriers       none standing");
-  for (const r of standing) {
-    console.log(`    ${r.row.padEnd(22)} ${r.home.padEnd(9)} ${r.custody.padEnd(5)} ${String(r.keyClass ?? "-").padEnd(14)} ${r.reading}`);
+  const sealed = c.rows.filter((r) => r.reading === "sealed" && !r.fault).length;
+  const byLaw = c.rows.filter((r) => r.bare !== null && !r.fault).length;
+  const faults = c.rows.filter((r) => r.fault);
+  console.log(c.rows.length === 0
+    ? "  carriers       none standing"
+    : `  carriers       ${c.rows.length} standing: ${sealed} sealed under the vessel key, ${byLaw} outside it by law, ${faults.length} at fault`);
+  // A row that names many files (a spend per burn, a rest file per record) folds into one counted line per reading.
+  const groups = new Map<string, CustodyStatusRow[]>();
+  for (const r of c.rows) {
+    const key = `${r.row}\u0000${r.reading}`;
+    groups.set(key, [...(groups.get(key) ?? []), r]);
   }
-  // OWED = a hot or cold row still bare. The floor rows (`floor`, `floor-plain`) never move under the VK by rule, so
-  // they never count.
-  const bare = standing.filter((r) => (r.custody === "hot" || r.custody === "cold") && r.reading === "bare").length;
-  if (bare > 0) console.log(`  ${bare} hot/cold carrier(s) read bare: their writers have not yet moved under the VK. Floor rows (floor, floor-plain) never move under it and are not counted.`);
-  const relation = standing.filter((r) => r.keyClass === "relation");
+  for (const rows of groups.values()) {
+    if (rows.length <= ROW_FOLD || rows[0]!.fault) { for (const r of rows) console.log(rowLine(r)); continue; }
+    const r = rows[0]!;
+    console.log(`    ${`${r.row} ×${rows.length}`.padEnd(30)} ${r.home.padEnd(9)} ${r.custody.padEnd(11)} ${String(r.keyClass ?? "-").padEnd(14)} ${r.reading.padEnd(10)}${r.bare !== null ? `   by law: ${r.bare}` : ""}`);
+  }
+  if (c.outside.length === 0) console.log("  outside the table  nothing: every private file in the three homes answers to a row");
+  for (const o of c.outside) console.log(`  OUTSIDE THE TABLE  ${o.home}/${o.file} (${o.why}): no row names this file, so no rotation re-seals it and no bundle weighs it`);
+  const relation = c.rows.filter((r) => r.keyClass === "relation");
   console.log(`  relation class ${relation.length} standing${relation.length ? ` (${relation.map((r) => r.row).join(", ")})` : ""}`);
   console.log(`  note           ${RELATION_LINE}`);
 }
@@ -518,23 +327,15 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const u = await openOrRefuse(args, "unbind", homes, io, creds);
   if (!u) return 1;
 
-  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new VK and each slot that stays must
-  // be re-bound over it, so a typo found after the unbind would leave the tree on a VK nobody holds.
-  const staying: SlotSpec[] = [];
+  // GATHER EVERY STAYING SLOT'S ROUTE BEFORE ANY BYTE MOVES: a rotation mints a new VK and binds each slot that stays
+  // over it, so a typo found after a write would leave the tree on a VK nobody holds.
+  let staying: SlotSpec[] | undefined;
   if (rotate) {
     const status = await custodyStatus({ io, homes });
     if (status.tree.reading !== "readable") throw new UsageError("the slot tree is not readable; nothing was changed");
     if (!status.tree.slots.some((sl) => sl.id === slotId)) throw new UsageError(`no slot ${slotId} stands in the tree`);
-    // REFUSE THE ROTATION BEFORE THE UNBIND, never between them: the sealed writer re-seals only bytes the VK sealed,
-    // so a hot or cold carrier still bare would refuse the rotation AFTER the slot was already removed.
-    const bare = status.rows.filter((r) => (r.custody === "hot" || r.custody === "cold") && r.reading === "bare").map((r) => r.row);
-    if (bare.length > 0) {
-      throw new RotationPreflightRefusal(
-        `--rotate re-seals every hot and cold carrier under a new vessel key, and ${bare.length} still read bare (${bare.join(", ")}): ` +
-        "their writers have not moved under the VK. Nothing was changed; unbind without --rotate, or rotate once those carriers are sealed",
-      );
-    }
     const tree = decodeSlotTree(await io.read(`${homes.identity}/vk-slots.bin`));
+    staying = [];
     for (const sl of status.tree.slots.filter((x) => x.id !== slotId)) {
       const got = await gatherStayingSlot(sl);
       const proof = tree.reading === "readable" ? openVk(tree.tree, got.credentials) : null;
@@ -545,21 +346,21 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
     }
   }
 
-  const out = await unbindCustodySlot({ io, homes, vk: u.vk, slotId });
+  // ONE ACT. With --rotate the removal and the rotation land together: the rotation's census and its opening of
+  // every carrier run before any byte moves, so a carrier that refuses the rotation leaves the slot bound.
+  const out = await unbindCustodySlot({ io, homes, vk: u.vk, slotId, ...(staying ? { rotate: staying } : {}) });
   const say = (line: string): void => { if (!wantsJson(args)) console.log(line); };
   say(`unbound: slot ${slotId} no longer opens the vessel key (${out.tree.slots.length} slot(s) stand).`);
-  say("");
-  say("  ROTATION OFFER — " + out.rotationOffer);
-  say("  " + RELATION_LINE);
-  let rotated = false;
-  if (rotate) {
-    const r = await rotateCustody({ io, homes, oldVk: u.vk, slots: staying });
-    rotated = true;
-    say(`rotated: a new vessel key seals every carrier; ${r.tree.slots.length} slot(s) re-bound; the removed route opens nothing.`);
+  if (out.rotated) {
+    say(`rotated: a new vessel key seals every carrier; ${out.tree.slots.length} slot(s) re-bound; the removed route opens nothing.`);
+    say("  " + RELATION_LINE);
   } else {
+    say("");
+    say("  ROTATION OFFER — " + out.rotationOffer);
+    say("  " + RELATION_LINE);
     say("  not rotated. A copy of the tree taken before this unbind still opens the key through the removed slot.");
     say("  to end that route now:  lares vault unbind <slot-id> --rotate   (re-reads each staying slot's route)");
   }
-  emit(args, { ok: true, data: { slotId, rotated, rotationOffer: out.rotationOffer, slots: out.tree.slots.length }, human: () => undefined });
+  emit(args, { ok: true, data: { slotId, rotated: out.rotated, rotationOffer: out.rotationOffer, slots: out.tree.slots.length }, human: () => undefined });
   return 0;
 }

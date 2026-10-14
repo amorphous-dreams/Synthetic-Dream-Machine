@@ -47,7 +47,6 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-nexuschain-"));
     setEnv("LAR_ROOT", root);                       // isolates bags + vault-state + petname store under one tree
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
     vi.spyOn(console, "log").mockImplementation(() => {});    // the ceremony prints; keep the test output clean
     vi.spyOn(console, "error").mockImplementation(() => {});
   });

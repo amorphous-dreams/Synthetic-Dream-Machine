@@ -103,7 +103,7 @@ const SAYS: Record<RefusedReading, string> = {
     "it carries a seal this build cannot frame (a damaged magic, or another scheme of the house family), and a write " +
     "would destroy ciphertext that a repair could still recover; copy the carrier aside first",
   "old-shape":
-    "it carries the LARK envelope of the retired passphrase custody, which no unlock opens; the fresh-start runbook " +
+    "it opens with the LARK frame, which no custody of this house writes and no unlock opens; the fresh-start runbook " +
     "(stable-founding-road #/fresh-start) answers it",
   bare:
     "cleartext stands there, and this writer replaces only bytes the VK sealed",
@@ -143,7 +143,7 @@ export class CensusRefusal extends Error {
 export interface StandingCarrier { readonly carrier: SealedCarrier; readonly reading: Exclude<VkCarrierReading, "absent"> }
 
 /**
- * A founding or a write over a store the new custody never sealed: a carrier stands (cleartext, the retired LARK
+ * A founding or a write over a store this custody never sealed: a carrier stands (cleartext, a LARK
  * envelope, or a seal no tree commits to) and no slot tree does. Nothing was written. `standing` names the listed
  * carriers met; `unlisted` the paths that bear the VK seal's magic yet no listed carrier names.
  */

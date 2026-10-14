@@ -45,12 +45,6 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
   /** The veil identity's archive persistence — the same inversion, its own file. Absent → the veil's
    *  prekeys regenerate per boot, and material keyed to an earlier card stops opening. */
   persistVeilArchive?: (bytes: Uint8Array) => void | Promise<void>;
-  /** `vault` — the SAME Boundary-1 inversion for the at-rest seal LIFECYCLE (#60): keyhive stays
-   *  fs-blind, so NODE injects the handler that seals/rotates/exports the identity-home carriers and
-   *  updates the worker's own in-memory seal policy (no un-rotate). Registered as the `vault-*` worker
-   *  verbs below. Absent (a browser vessel with no fs) → the vault verbs simply never register. The
-   *  passphrase rides the verb args over the owner-only 0600 UDS — the same trust boundary as a CLI arg. */
-  vault?: (verb: string, args: Record<string, unknown>) => Promise<Record<string, unknown>>;
   /** `shore` — a person's answers at THIS island's disk shore (`lares shore`): the node entry injects the
    *  door that answers from the projector this island mounts (`@lararium/node` `shore-verb.ts`). keyhive
    *  stays fs-blind. Absent (a browser vessel) → the verb never registers. */
@@ -180,8 +174,8 @@ const lightAFace = (verb: string): VerbReactor => async () => {
 };
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
-  // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
-  const { persistArchive, persistVeilArchive, vault, shore, bagTier, restDocuments, dyadReading, sealedStore, sessionProof, countedRaises, ...daemonExtra } = extra;
+  // persistArchive rides node-only; keep it OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
+  const { persistArchive, persistVeilArchive, shore, bagTier, restDocuments, dyadReading, sealedStore, sessionProof, countedRaises, ...daemonExtra } = extra;
   const daemonAuth = manifest.daemonAuth;
   if (!daemonAuth) {
     return {
@@ -909,16 +903,6 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         return { verb: "sealed-rolls", ...(await holderFor("sealed-rolls").catchUp(rolls, daemonAuth.vesselVerifyingKey)) };
       });
 
-      // The share carriers' passphrase LIFECYCLE (#60) — DAEMON-FIRST: seal/rotate/repair/status route THROUGH
-      // this worker, so the daemon updates its OWN in-memory seal
-      // policy in the same act it re-persists the carriers — no un-rotate. The node-injected `vault`
-      // handler does the fs + policy work (keyhive stays fs-blind). The passphrase rides the args over
-      // the owner-only 0600 UDS. Absent injection (no fs) → the verbs never register.
-      if (vault) {
-        for (const v of ["vault-status", "vault-seal", "vault-rotate", "vault-repair"] as const) {
-          registry.register(v, async (args) => vault(v, args));
-        }
-      }
       // A person's answers at this island's own disk shore (the daemon wiki's working layer, crossroads).
       if (shore) registry.register("shore", async (args) => shore(args as Record<string, unknown>));
 

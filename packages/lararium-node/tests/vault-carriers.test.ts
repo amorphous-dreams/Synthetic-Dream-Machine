@@ -9,14 +9,13 @@
  */
 import { describe, test, expect } from "vitest";
 import { createHash } from "node:crypto";
-import { mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import {
-  CUSTODY_CLASSES, carrierTable, carrierCensus, vaultCarrierFiles, vaultCarriers, vesselCustodyHomes, vkSealedCarriers, rotateVesselVk, vkSlotsPath,
+  CUSTODY_CLASSES, carrierTable, carrierCensus, outsideTheTable, vkSealedCarriers, rotateVesselVk, vkSlotsPath,
   type CustodyHomes, type CustodyClass,
 } from "../src/vault-carriers.js";
-import { vesselKeyCensus } from "../src/key-class.js";
 import { custodyRootCarrier } from "../src/custody-root.js";
 import {
   bindSlot, commitSlotTree, mintVk, openSealedCarrier, openVk, decodeSlotTree, writeSealedCarrier, CensusRefusal,
@@ -88,13 +87,16 @@ const SOWN: Record<string, string> = {
   "identity/.persona-declarations-joshua.json": "{}",
   "identity/.persona-public-handles-joshua.json": "{}",
   "identity/.handle-book.json":                 "{}",
-  "identity/.archive-seal-day.json":            "{}",
   [`vessel/hosting/${HOST}/state.json`]:        "{}",
   [`vessel/hosting/${HOST}/spent-bafyepoch`]:   "n a b\n",
   [`vessel/hosting/${HOST}/carry/guest/record.json`]: "{}",
   [`vessel/hosting/${HOST}/carry/guest/blobs/abc`]:   "sealed",
   [`vessel/walk/${HOST}.json`]:                 "{}",
   [`vessel/gate-memory/${"ef".repeat(32)}.bin`]: "x",
+  "vessel/sealed/lockbox/aa.bb-cc":             "x",
+  "vessel/sealed/own/notes":                    "x",
+  "vessel/sealed/outbox/aa.bb":                 "x",
+  [`vessel/sealed/keyhive-chunks/${"ab".repeat(8)}/${"cd".repeat(16)}`]: "x",
   "nexus/founding-roster.mem":                  "charter",
   "nexus/carried/AID1/founding-roster.mem":     "charter",
   "nexus/nexus/carriage-consent/AID1.json":     "{}",
@@ -108,10 +110,12 @@ const RULED: Record<string, CustodyClass> = {
   "vessel-key": "floor", "vessel-kel": "floor", "vk-slots": "floor",
   "vessel-card": "floor-plain", "charter": "floor-plain", "carried-charter": "floor-plain",
   "carriage-consent": "floor-plain", "carriage-admit": "floor-plain",
+  // The sealed store's rests hold no secret in the clear, and a blind carrier may hold every one (sealed-store#/the-store).
+  "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-outbox": "floor-plain", "sealed-chunk": "floor-plain",
   "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot",
   "enroll-pending": "hot", "grant-pending": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
-  "public-handles": "hot", "handle-book": "hot", "reserve-state": "hot", "seal-day": "hot",
+  "public-handles": "hot", "handle-book": "hot", "reserve-state": "hot",
   "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot", "gate-memory": "hot",
   "transition-pending": "hot", "transitions": "hot",
   "vessel-next": "cold", "persona-root": "cold", "device-share": "cold", "reserve-share": "cold",
@@ -126,12 +130,9 @@ describe("the carrier table", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, { "identity/.vessel-next-joshua.json": "{}", "identity/.vessel-next.json": "{}" });
-      const keys = vesselKeyCensus(homes.identity);
-      const next = keys.filter((k) => k.name === "vessel-next");
-      expect(next.map((k) => k.file)).toEqual([".vessel-next-joshua.json", ".vessel-next.json"]);
-      for (const k of next) { expect(k.custody).toBe("cold"); expect(k.class).toBe("device-minted"); }
       const census = carrierCensus(homes).filter((e) => e.row === "vessel-next");
-      expect(census.map((e) => e.custody)).toEqual(["cold", "cold"]);
+      expect(census.map((e) => e.file)).toEqual([".vessel-next-joshua.json", ".vessel-next.json"]);
+      expect(census.map((e) => [e.custody, e.keyClass])).toEqual([["cold", "device-minted"], ["cold", "device-minted"]]);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
@@ -161,8 +162,16 @@ describe("the carrier table", () => {
       expect(at("seal", "nexus/carriage-consent/AID1.json")?.row).toBe("carriage-consent");
       expect(at("seal", "nexus/carriage-admit/AID1.json")?.row).toBe("carriage-admit");
       expect(at("seal", "transitions.json")?.custody).toBe("hot");
-      expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", lifecycle: null });
-      expect(at("identity", "veil-archive-h0.bin")).toMatchObject({ row: "veil-archive", face: 0, lifecycle: null });
+      expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", bare: null });
+      expect(at("identity", "veil-archive-h0.bin")).toMatchObject({ row: "veil-archive", face: 0, bare: null });
+      expect(at("storage", "sealed/lockbox/aa.bb-cc")?.row).toBe("sealed-rest");
+      expect(at("storage", "sealed/own/notes")?.row).toBe("sealed-own");
+      expect(at("storage", "sealed/outbox/aa.bb")?.row).toBe("sealed-outbox");
+      // A rest row's names derive from their bytes, and the row carries the check; the notes' names do not.
+      expect(at("storage", "sealed/lockbox/aa.bb-cc")?.holds).not.toBeNull();
+      expect(at("storage", "sealed/outbox/aa.bb")?.holds).not.toBeNull();
+      expect(at("storage", "sealed/own/notes")?.holds).toBeNull();
+      expect(at("storage", `sealed/keyhive-chunks/${"ab".repeat(8)}/${"cd".repeat(16)}`)?.row).toBe("sealed-chunk");
       expect(at("identity", "anchors-h0.json")).toMatchObject({ row: "anchors", face: 0 });
       expect(census.every((entry) => entry.face === "vessel" || typeof entry.face === "number")).toBe(true);
       // Every sown file lands on exactly one row, and every row stands in the sowing.
@@ -191,6 +200,10 @@ describe("the carrier table", () => {
         "vessel/3f/2a/snapshot/chunk": "automerge",
         "vessel/social-bootstrap.json": "{}",
         "vessel/hosting/not-a-digest/state.json": "{}",
+        "vessel/sealed/no-such-kind/name": "x",
+        "vessel/sealed/lockbox/.hidden": "x",
+        "vessel/sealed/lockbox/-dash": "x",
+        "vessel/sealed/lockbox/TMP-00aa": "x",
         "nexus/elsewhere/founding-roster.mem": "x",
       });
       expect(carrierCensus(homes)).toEqual([]);
@@ -208,42 +221,11 @@ describe("the carrier table", () => {
       sow(homes, SOWN);
       const before = treeHash(root);
       carrierCensus(homes);
-      vesselKeyCensus(homes.identity);
-      vaultCarrierFiles(homes.identity);
+      vkSealedCarriers(homes);
       expect(treeHash(root)).toBe(before);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("the seal lifecycle's carriers derive from the same rows the census reads", () => {
-    const { homes, root } = freshHomes();
-    try {
-      sow(homes, SOWN);
-      const lifecycle = carrierCensus(homes).filter((e) => e.lifecycle !== null);
-      expect(new Set(lifecycle.map((e) => e.file))).toEqual(vaultCarrierFiles(homes.identity));
-      expect(lifecycle.map((e) => e.lifecycle).sort()).toEqual([]);              // no row answers the lifecycle column
-      expect(carrierCensus(homes).filter((e) => e.row === "keyhive-archive" || e.row === "veil-archive" || e.row === "reserve-share" || e.row === "reserve-state")
-        .every((e) => e.lifecycle === null)).toBe(true);
-    } finally { rmSync(root, { recursive: true, force: true }); }
-  });
-
-  test("the lifecycle API lists share carriers alone", () => {
-    const root = mkdtempSync(join(tmpdir(), "lar-vault-carriers-"));
-    const prior = process.env["LAR_ROOT"];
-    process.env["LAR_ROOT"] = root;
-    const homes = vesselCustodyHomes();
-    try {
-      sow(homes, {
-        "identity/recovery-device-share-h0.bin": "x",
-        "identity/seal-reserve-mine-share.bin": "x",
-        "identity/keyhive-archive.bin": "x",
-        "identity/veil-archive-h0.bin": "x",
-      });
-      expect(vaultCarriers().map((carrier) => carrier.name).sort()).toEqual([]);
-    } finally {
-      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
-      rmSync(root, { recursive: true, force: true });
-    }
-  });
 });
 
 describe("the VK rotation reads its carriers from the table", { timeout: 30_000 }, () => {
@@ -271,7 +253,7 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
   test("every hot and cold carrier standing names its VK-sealed carrier by home and file; floor rows stay out", async () => {
     const v = await founded();
     try {
-      sow(v.homes, { "identity/.vessel-key-joshua.json": "{}", "identity/.vessel-card-joshua.json": "{}" });
+      sow(v.homes, { "identity/.vessel-key-joshua.json": "{}", "identity/.vessel-card-joshua.json": "{}", "vessel/sealed/lockbox/aa.bb": "x" });
       const carriers = vkSealedCarriers(v.homes);
       expect(carriers.map((c) => c.name).sort()).toEqual(v.sealed.map((c) => c.name).sort());
       expect(carriers.find((c) => c.name === "identity/custody-root.bin")).toEqual(custodyRootCarrier(v.homes.identity));
@@ -318,13 +300,89 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
   });
 });
 
-describe("the seal-day stamp", () => {
-  test("RED (L4): `.archive-seal-day.json` rests under its own row, so the census never misses it", () => {
+describe("a row that rests outside the vessel key names its law", () => {
+  test("RED: every floor and floor-plain row states why it rests bare; CONTROL: no hot or cold row states one", () => {
+    for (const r of carrierTable()) {
+      if (r.custody === "floor" || r.custody === "floor-plain") expect(typeof r.bare === "string" && r.bare.length > 20, r.row).toBe(true);
+      else expect(r.bare, r.row).toBeNull();
+    }
     const { homes, root } = freshHomes();
     try {
-      sow(homes, { "identity/.archive-seal-day.json": "{}" });
-      const census = carrierCensus(homes);
-      expect(census.map((e) => [e.row, e.custody, e.keyClass])).toEqual([["seal-day", "hot", null]]);
+      sow(homes, SOWN);
+      for (const e of carrierCensus(homes)) expect(e.bare === null, e.file).toBe(e.custody === "hot" || e.custody === "cold");
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+});
+
+describe("the census names every private file outside the table", () => {
+  /** Sow one file per row, then set every sown file owner-only, the mode each real writer leaves. */
+  function sownOwnerOnly(homes: CustodyHomes): void {
+    sow(homes, SOWN);
+    for (const e of carrierCensus(homes)) chmodSync(e.path, 0o600);
+  }
+
+  test("CONTROL: a home that holds one owner-only file per row, beside the document store's own chunks, names nothing", () => {
+    const { homes, root } = freshHomes();
+    try {
+      sownOwnerOnly(homes);
+      sow(homes, { "vessel/3f/2a/snapshot/chunk": "automerge", "vessel/social-bootstrap.json": "{}", "identity/notes.txt": "x" });
+      expect(carrierCensus(homes).length).toBe(Object.keys(SOWN).length);
+      expect(outsideTheTable(homes)).toEqual([]);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("RED: an owner-only file no row names reads `owner-only`, in any home and at any depth", () => {
+    const { homes, root } = freshHomes();
+    try {
+      sownOwnerOnly(homes);
+      sow(homes, { "identity/side-key.json": "{}", "vessel/deep/er/secret.bin": "x", "nexus/elsewhere/key.json": "{}" });
+      for (const rel of ["identity/side-key.json", "vessel/deep/er/secret.bin", "nexus/elsewhere/key.json"]) {
+        const [home, ...rest] = rel.split("/");
+        chmodSync(join(homes[homeOf(home!)], ...rest), 0o600);
+      }
+      expect(outsideTheTable(homes).map((o) => [o.home, o.file, o.why])).toEqual([
+        ["identity", "side-key.json", "owner-only"],
+        ["storage", "deep/er/secret.bin", "owner-only"],
+        ["seal", "elsewhere/key.json", "owner-only"],
+      ]);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("RED: a file under the vessel key's seal that no row names reads `vk-seal`, whatever its mode", async () => {
+    const { homes, drop } = scratchHomes();
+    try {
+      const io = new ScratchCustodyIo(homes);
+      const vk = mintVk();
+      const treePath = vkSlotsPath(homes.identity);
+      await commitSlotTree({ io, path: treePath, expected: null, vk, tree: bindSlot(null, vk, { t: 1, pins: [{ kind: "passphrase", passphrase: "the hearth remembers" }] }), carriers: vkSealedCarriers(homes) });
+      const stray: SealedCarrier = { name: "storage/stray.bin", path: join(homes.storage, "stray.bin") };
+      await writeSealedCarrier({ io, vk, treePath, carrier: stray, plaintext: new TextEncoder().encode("x") });
+      chmodSync(stray.path, 0o644);
+      expect(outsideTheTable(homes).map((o) => [o.home, o.file, o.why])).toEqual([["storage", "stray.bin", "vk-seal"]]);
+    } finally { drop(); }
+  });
+
+  test("RED: a sidecar left standing reads `sidecar`: the sealed writer's two, and a rest's temporary file", () => {
+    const { homes, root } = freshHomes();
+    try {
+      sownOwnerOnly(homes);
+      sow(homes, { "identity/custody-root.bin.vk-sealing": "x", "nexus/transitions.json.vk-rotating": "x", "vessel/sealed/lockbox/TMP-00aa": "x" });
+      expect(outsideTheTable(homes).map((o) => [o.home, o.file, o.why])).toEqual([
+        ["identity", "custody-root.bin.vk-sealing", "sidecar"],
+        ["storage", "sealed/lockbox/TMP-00aa", "sidecar"],
+        ["seal", "transitions.json.vk-rotating", "sidecar"],
+      ]);
+    } finally { rmSync(root, { recursive: true, force: true }); }
+  });
+
+  test("the reading writes nothing, and absent homes name nothing", () => {
+    const { homes, root } = freshHomes();
+    try {
+      expect(outsideTheTable(homes)).toEqual([]);
+      sownOwnerOnly(homes);
+      const before = treeHash(root);
+      outsideTheTable(homes);
+      expect(treeHash(root)).toBe(before);
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 });

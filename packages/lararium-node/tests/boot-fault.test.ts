@@ -36,14 +36,14 @@ describe("boot-fault attestation", () => {
   });
 
   it("CONTROL: a non-skew fault reads back as its own message, never painted with the rebuild cure", () => {
-    const err = new Error("archive sealed — set LARES_ARCHIVE_PASSPHRASE and boot again\nsecond line");
+    const err = new Error("the store claim stands held — stop the other vessel and boot again\nsecond line");
     expect(isSerdeSkewFault(err)).toBe(false);
     const report = bootFaultReport(err);
     expect(report.code).toBe(1);
-    expect(report.lines[0]).toBe("[lararium] fatal: archive sealed — set LARES_ARCHIVE_PASSPHRASE and boot again");
+    expect(report.lines[0]).toBe("[lararium] fatal: the store claim stands held — stop the other vessel and boot again");
     expect(report.lines.slice(1).join("\n")).toContain("at ");      // the stack rides below the one line
     const line = fatalLine(attest(err));
-    expect(line).toBe("archive sealed — set LARES_ARCHIVE_PASSPHRASE and boot again");
+    expect(line).toBe("the store claim stands held — stop the other vessel and boot again");
     expect(line).not.toContain(SERDE_SKEW_CURE);
   });
 

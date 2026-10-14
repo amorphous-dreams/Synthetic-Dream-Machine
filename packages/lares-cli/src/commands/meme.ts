@@ -734,7 +734,7 @@ function surveySitting(files: string[]): number {
 // ── project: the seat law decides local or daemon ──────────────────────────────────────────────
 
 async function memeProject(args: ParsedArgs): Promise<number> {
-  if ("check" in args.options || "check" in args.flags) return projectMdCheck(args);
+  if ("check" in args.options || args.flags["check"] !== undefined) return projectMdCheck(args);
   const plan = projectPlan(args);
   if (plan.seat === "local") return projectMdLocal(args, plan.file as string);
 

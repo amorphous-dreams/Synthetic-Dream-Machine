@@ -53,7 +53,6 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "packages/lararium-node/tests/nexus-doc.test.ts":                     "doc-law",
   // The shared reserve: its record names the commitment it arms.
   "packages/lararium-node/tests/seal-reserve-store.test.ts":            "reserve",
-  "packages/lararium-node/tests/archive-passphrase.test.ts":            "reserve",
   "packages/lares-cli/tests/nexus-seal-reserve-armed.test.ts":          "reserve",
   "packages/lares-cli/tests/nexus-seal-reserve-rehearse.test.ts":       "reserve",
   "packages/lares-cli/tests/seal-reserve.test.ts":                      "reserve",

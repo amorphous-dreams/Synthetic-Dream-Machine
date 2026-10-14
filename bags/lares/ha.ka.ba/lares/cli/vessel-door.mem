@@ -150,11 +150,10 @@ and cannot be expressed as a sequence of the others. Everything else composes.
 the daemon and re-baked genesis would tear down what the second movement built moments earlier. The only
 part a founding needs there is the seeding.
 
-''A RITE THAT NEVER RESTARTS NEVER CROSSES THE SEAL GATE.'' Sealing the vault writes a marker, so every later
-daemon boot wants the passphrase in its environment. A movement that RESTARTS the daemon crosses that gate —
-and an operator who sealed by typing would carry the passphrase forward by hand between two movements or
-watch the vessel come up at the floor. The founding rite restarts nothing, so no carry-forward step exists
-to get wrong.
+''A RITE THAT NEVER RESTARTS NEVER RETURNS TO THE FLOOR.'' Every boot rests at the floor until a person
+unlocks it on a terminal, and nothing stored lifts it. A movement that RESTARTS the daemon drops the key the
+vessel held, so a person would unlock again between two movements or watch the vessel come up at the floor.
+The founding rite restarts nothing, so no second unlock stands between its movements.
 
 <<~/ahu>>
 
@@ -194,6 +193,12 @@ moved.
 
 ''NOT the noun-doors.'' `nexus`, `persona`, `vault`, `library`, `circle`, `cabal`, `hooks`, `sense`,
 `mempalace`, `sensorium` already obey the law. Touching them spends risk for nothing.
+
+''THE `vault` DOOR ANSWERS SEVEN VERBS.'' `status` · `unlock` · `lock` · `bind` · `unbind` · `backup` · `restore`,
+and any other word refuses as a usage error. `status` gives one reading of each standing file the carrier table
+names and prints any private file outside it; `unbind <slot-id> --rotate` moves the vessel key in the same act that
+removes the slot, and its census passes before any byte moves
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>).
 
 ''THE `vault` DOOR CARRIES A FACE'S BACKUP.'' `lares vault backup --face <N> --out <file>` cuts one face's
 backup bundle through the standing vessel's custody door: it reads the vessel's own route and the bundle's new
@@ -263,6 +268,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hcH-hV134NQOmRAUEqSssIyjON0KobHKeZnkHBXUMQ4
+<<^ code="&#x0003;">>ni:///sha-256;mLPZorSLoBc2QWkOMbWeJ5J-U_-9FxjtiWwj4EUXP8A
 
 <<^ code="&#x0004;" -> to="?">>

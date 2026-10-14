@@ -14,12 +14,11 @@
  *   D7  RED: A SHARE LANDS ONCE PER GENERATION. A second split's share of the same generation refuses
  *       `RecoveryShareStands` and the standing bytes never move; an earlier generation refuses too; the same share
  *       again writes nothing; a LATER generation replaces the row.
- *   D8  an old passphrase envelope at the path refuses the read and the write, and nothing lands over it.
+ *   D8  a frame that opens with `LARK` at the path refuses the read and the write, and nothing lands over it.
  */
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
-import { isSealedEnvelope, readVkCarrier, type RecoveryShare } from "@lararium/mesh";
-import { scryptKek, sealBytes } from "../src/archive-seal.js";
+import { LARK_MAGIC, readVkCarrier, type RecoveryShare } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { seatCustody, writeCustodyRow } from "../src/custody-seat.js";
 import {
@@ -155,12 +154,10 @@ describe("the device recovery share at rest", () => {
     expect(same(await loadRecoveryDeviceShare(1), share(14))).toBe(true);
   });
 
-  test("D8 — an old passphrase envelope at the path refuses the read and the write", async () => {
+  test("D8 — a frame that opens with LARK at the path refuses the read and the write", async () => {
     await custody("share-d8");
-    const plain = new TextEncoder().encode(JSON.stringify({ x: 3, ys: [1, 2, 3], custodian: "device", recoveryEpoch: 1 }));
-    const salt = Uint8Array.from({ length: 16 }, (_, i) => i);
-    const envelope = Buffer.from(sealBytes(plain, scryptKek("an-earlier-lifecycle-passphrase", salt), "passphrase", salt));
-    expect(isSealedEnvelope(envelope)).toBe(true);                               // control: the old lifecycle's own shape
+    const envelope = Buffer.from(Uint8Array.from([...LARK_MAGIC, 0x01, 0x01, ...new Array(90).fill(7)]));
+    expect(readVkCarrier(envelope)).toBe("old-shape");                           // control: the reading that refuses
     writeFileSync(deviceSharePath(0), envelope);
     expect(await refusal(loadRecoveryDeviceShare(0))).toBeInstanceOf(CustodyRowUnavailable);
     expect(await refusal(persistRecoveryDeviceShare({ ...share(5), recoveryEpoch: 9 }, 0))).toBeInstanceOf(CustodyRowUnavailable);

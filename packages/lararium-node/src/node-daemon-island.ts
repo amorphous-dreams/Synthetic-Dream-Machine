@@ -11,7 +11,6 @@ import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-be
 import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js";
 import { answerShore } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
-import { runVaultVerb } from "./archive-passphrase.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import { HULLS_FULL } from "@lararium/mesh";
 import { runReconcileCadence } from "./sensorium-lifecycle-verbs.js";
@@ -21,10 +20,6 @@ import { islandStorageDirOf, nodeSealedStoreShore } from "./sealed-store-island.
 // keyhive Archive in the sovereign identity home. This island holds no vessel key, so the writer HANDS the bytes
 // to the vessel through the custody write door, and the vessel's main thread seals them under the key it holds.
 // The island names the carrier, never a path.
-//
-// `vault` — the SAME inversion for the at-rest seal LIFECYCLE (#60). It runs IN this worker (the one that
-// owns the M3 re-seal), so seal/rotate re-persist the carriers AND update THIS process.env seal policy in
-// one act — no un-rotate. keyhive stays fs-blind; node supplies the fs+crypto lifecycle handler.
 // THE REST DOOR: this island's Repo keeps no store for the slot documents it mints, so each mint asks the vessel
 // to rest the new document and records its binding only on the vessel's acknowledgment.
 const restOnVessel = parentPort ? vesselRestAsker(parentPort) : null;
@@ -53,7 +48,6 @@ runSovereignWorker((manifest) => {
       persistArchive:     (bytes: Uint8Array) => sealOnVessel("archive", bytes),
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
     } : {}),
-    vault:          (verb, args) => runVaultVerb(verb, args),
     // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),
     // answered from the projector this island mounts.
     shore:          async (args) => {

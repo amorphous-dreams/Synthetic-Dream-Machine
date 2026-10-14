@@ -75,7 +75,6 @@ describe("multi-persona-per-vessel (#63)", () => {
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);   // exercise the cleartext-parity path
     seated = await seatScratchCustody("multi-persona");
   });
   afterEach(async () => {

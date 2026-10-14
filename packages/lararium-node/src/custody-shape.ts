@@ -21,7 +21,7 @@
  */
 
 import { closeSync, openSync, readSync } from "node:fs";
-import { ARCHIVE_MAGIC } from "@lararium/mesh";
+import { LARK_MAGIC } from "@lararium/mesh";
 import { carrierCensus, type CarrierEntry, type CustodyHome, type CustodyHomes } from "./vault-carriers.js";
 
 /** Where the fresh start's by-hand move stands written. */
@@ -67,7 +67,7 @@ function headOf(path: string): Uint8Array {
 }
 
 function opensWithRetiredMagic(head: Uint8Array): boolean {
-  return head.length >= ARCHIVE_MAGIC.length && ARCHIVE_MAGIC.every((b, i) => head[i] === b);
+  return head.length >= LARK_MAGIC.length && LARK_MAGIC.every((b, i) => head[i] === b);
 }
 
 const isSecret = (e: CarrierEntry): boolean => e.custody === "hot" || e.custody === "cold";

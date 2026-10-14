@@ -16,7 +16,7 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { OldShapeRefusal, VK_SEAL_MAGIC } from "@lararium/mesh";
+import { CensusRefusal, OldShapeRefusal, VK_SEAL_MAGIC, encodeIndexRow, readIndexRow, restDigest, writeSealedCarrier } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { custodyRootPath, custodyVeil, openCustodyRootCarrier, custodyRootFromBytes } from "../src/custody-root.js";
 import {
@@ -154,6 +154,54 @@ describe("bind, unbind", () => {
   });
 });
 
+describe("an unbind that rotates runs as ONE act", () => {
+  const text = (v: string): Uint8Array => new TextEncoder().encode(v);
+
+  test("CONTROL: the removed route opens nothing, the staying route opens the same custody root under a new VK", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const veil = await custodyVeil(f.root, "group-tag");
+    const bound = await bindCustodySlot({ io, homes, vk: f.vk, spec: slotOf("second route") });
+    const out = await unbindCustodySlot({ io, homes, vk: f.vk, slotId: bound.slotId, rotate: [TEST_SLOT] });
+    expect(out.rotated).toBe(true);
+    expect(out.tree.slots).toHaveLength(1);
+    expect(out.vk).not.toEqual(f.vk);
+    expect((await unlockCustody({ io, homes, credentials: [passphrase("second route")] })).reading).toBe("no-slot-opens");
+    const u = await unlockCustody({ io, homes, credentials: [passphrase(TEST_PASSPHRASE)] });
+    if (u.reading !== "opens") throw new Error(`the staying route reads ${u.reading}`);
+    expect(u.vk).toEqual(out.vk);
+    const opened = await openCustodyRootCarrier({ io, vk: u.vk, identityDir: homes.identity });
+    if (opened.reading !== "opens") throw new Error(`custody root reads ${opened.reading}`);
+    expect(await custodyVeil(custodyRootFromBytes(opened.opened), "group-tag")).toEqual(veil);
+    expect((await openCustodyRootCarrier({ io, vk: f.vk, identityDir: homes.identity })).reading).not.toBe("opens");
+  });
+
+  test("RED: a sealed file no row names refuses the rotation BEFORE the unbind, so the slot stays bound and no byte moved", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const bound = await bindCustodySlot({ io, homes, vk: f.vk, spec: slotOf("second route") });
+    await writeSealedCarrier({ io, vk: f.vk, treePath: vkSlotsPath(homes.identity), carrier: { name: "storage/stray.bin", path: join(homes.storage, "stray.bin") }, plaintext: text("x") });
+    const before = hashes(root);
+    const err = await unbindCustodySlot({ io, homes, vk: f.vk, slotId: bound.slotId, rotate: [TEST_SLOT] }).catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(CensusRefusal);
+    expect(hashes(root)).toEqual(before);
+    expect((await unlockCustody({ io, homes, credentials: [passphrase("second route")] })).reading).toBe("opens");
+    expect((await unlockCustody({ io, homes, credentials: [passphrase(TEST_PASSPHRASE)] })).reading).toBe("opens");
+    // CONTROL: the same unbind with no rotation never asks the census, and removes the slot.
+    const plain = await unbindCustodySlot({ io, homes, vk: f.vk, slotId: bound.slotId });
+    expect(plain.rotated).toBe(false);
+    expect(plain.tree.slots).toHaveLength(1);
+  });
+
+  test("RED: a rotation that re-binds fewer slots than stay refuses by name before any byte moves", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const second = await bindCustodySlot({ io, homes, vk: f.vk, spec: slotOf("second route") });
+    await bindCustodySlot({ io, homes, vk: f.vk, spec: slotOf("third route") });
+    const before = hashes(root);
+    await expect(unbindCustodySlot({ io, homes, vk: f.vk, slotId: second.slotId, rotate: [TEST_SLOT] })).rejects.toThrow(/2 slot\(s\) stay/);
+    await expect(unbindCustodySlot({ io, homes, vk: f.vk, slotId: "no-such-slot", rotate: [TEST_SLOT, slotOf("third route")] })).rejects.toThrow(/no slot/);
+    expect(hashes(root)).toEqual(before);
+  });
+});
+
 describe("rotateCustody", () => {
   test("a rotation moves the VK: the old passphrase reads no-slot-opens, the new route opens the same custody root", async () => {
     const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
@@ -187,6 +235,46 @@ describe("custodyStatus", () => {
     expect(byRow.get("custody-root")?.reading).toBe("sealed");
     expect(byRow.get("anchors")?.reading).toBe("bare");
     expect(byRow.get("anchors")?.custody).toBe("hot");
+  });
+  test("RED: one reading of one file: a floor row names the law it rests bare under, a bare hot row reads as a fault, and a private file no row names reads outside", async () => {
+    await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
+    writeFileSync(join(homes.identity, "anchors-h0.json"), '{"a":1}', { mode: 0o600 });
+    writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });
+    const s = await custodyStatus({ io, homes });
+    const byRow = new Map(s.rows.map((r) => [r.row, r]));
+    expect(byRow.get("vessel-key")).toMatchObject({ reading: "bare", custody: "floor", fault: false });
+    expect(byRow.get("vessel-key")?.bare).toMatch(/floor/);
+    expect(byRow.get("vk-slots")).toMatchObject({ reading: "bare", fault: false });
+    expect(byRow.get("custody-root")).toMatchObject({ reading: "sealed", bare: null, fault: false });
+    expect(byRow.get("anchors")).toMatchObject({ reading: "bare", bare: null, fault: true });
+    expect(s.outside.map((o) => [o.home, o.file, o.why])).toEqual([["identity", "side-key.json", "owner-only"]]);
+    expect(new Set(s.rows.map((r) => `${r.home}/${r.file}`)).size).toBe(s.rows.length);
+  });
+  test("RED: a file spelled like a plain row answers to that row's law: a rest name its bytes fail, bytes of no rest kind, and a seal no rotation re-seals, each read as a fault", async () => {
+    const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const hex32 = (byte: string) => byte.repeat(32);
+    const row = encodeIndexRow({ bag: hex32("a1"), keyVersion: hex32("b2"), role: "blob", address: `blake3:${hex32("c3")}`, locator: hex32("d4"), parents: [], manifest: hex32("e5") } as never);
+    expect(readIndexRow(row)).not.toBeNull();                                                               // the fixture reads as a real index row
+    const key = new TextEncoder().encode("a private key a hand dropped here");
+    const index = join(homes.storage, "sealed", "index");
+    mkdirSync(index, { recursive: true });
+    mkdirSync(join(homes.seal, "nexus", "carriage-consent"), { recursive: true });
+    writeFileSync(join(index, `aa.bb.${restDigest(row)}`), row, { mode: 0o600 });                           // CONTROL: a real row under its own name
+    writeFileSync(join(index, `aa.cc.${restDigest(row)}`), key, { mode: 0o600 });                           // a name its bytes fail
+    writeFileSync(join(index, `aa.dd.${restDigest(key)}`), key, { mode: 0o600 });                           // a clear key named by its own digest
+    writeFileSync(join(index, `aa.ee.${restDigest(key)}`), row, { mode: 0o600 });                           // a real row under a name it does not hold
+    writeFileSync(join(homes.seal, "nexus", "carriage-consent", "plain.json"), "{}");                       // CONTROL: plain bytes at a plain row
+    await writeSealedCarrier({ io, vk: f.vk, treePath: vkSlotsPath(homes.identity), carrier: { name: "seal/x", path: join(homes.seal, "nexus", "carriage-consent", "sealed.json") }, plaintext: key });
+    const s = await custodyStatus({ io, homes });
+    const at = (file: string) => s.rows.find((r) => r.file === file);
+    expect(at(`sealed/index/aa.bb.${restDigest(row)}`)).toMatchObject({ row: "sealed-rest", reading: "bare", fault: false });
+    expect(at(`sealed/index/aa.cc.${restDigest(row)}`)).toMatchObject({ row: "sealed-rest", reading: "bare", fault: true });
+    expect(at(`sealed/index/aa.dd.${restDigest(key)}`)).toMatchObject({ row: "sealed-rest", reading: "bare", fault: true });
+    expect(at(`sealed/index/aa.ee.${restDigest(key)}`)).toMatchObject({ row: "sealed-rest", reading: "bare", fault: true });
+    expect(at("nexus/carriage-consent/plain.json")).toMatchObject({ row: "carriage-consent", reading: "bare", fault: false });
+    expect(at("nexus/carriage-consent/sealed.json")).toMatchObject({ row: "carriage-consent", reading: "sealed", fault: true });
+    expect(s.outside).toEqual([]);
   });
   test("an unfounded home reads the tree absent", async () => {
     expect((await custodyStatus({ io, homes })).tree).toEqual({ reading: "absent" });

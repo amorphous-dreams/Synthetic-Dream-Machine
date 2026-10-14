@@ -149,7 +149,6 @@ describe("recovery-keel — founding provision against the real identity store",
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(root, "state"));
     setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
@@ -183,7 +182,6 @@ describe("recovery-keel — identity recovery issues the SHARED guardian cards (
     setEnv("LAR_ROOT", undefined);
     setEnv("XDG_STATE_HOME", join(dir, "state"));
     setEnv("XDG_DATA_HOME", join(dir, "state"));   // identity/seal/library answer HERE
-    setEnv("LARES_ARCHIVE_PASSPHRASE", undefined);
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

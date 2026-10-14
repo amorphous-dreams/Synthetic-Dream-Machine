@@ -21,7 +21,7 @@ const FIXTURE_MAGIC = Buffer.from("FIXTURE-VK-SEAL:");
 /** The fixture recognizer: bytes that open with the fixture magic read sealed. */
 const reading = { sealed: (head: Uint8Array): boolean => Buffer.from(head).subarray(0, FIXTURE_MAGIC.length).equals(FIXTURE_MAGIC) };
 const sealedBytes = (body: string): Buffer => Buffer.concat([FIXTURE_MAGIC, Buffer.from(body)]);
-/** A carrier under the retired passphrase envelope: `LARK`, a version byte, then a frame. */
+/** A carrier that opens with `LARK`: the magic, a version byte, then a frame. */
 const larkBytes = (version: number): Buffer => Buffer.from([0x4c, 0x41, 0x52, 0x4b, version, 1, 0, 0, 0]);
 
 function freshHomes(): { homes: CustodyHomes; root: string } {

@@ -20,6 +20,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
+import { custodyBreaches, custodyReading } from "./custody-census.mjs";
 import { backupTestCustody } from "./backup-test-custody.mjs";
 import { restoreTestCustody } from "./restore-test-custody.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
@@ -165,6 +166,12 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     assert.ok(JSON.stringify(a.body).includes(a.body.root.signingKey), "CONTROL: the opened body carries the seed");
     assert.equal(everything.includes(a.body.root.signingKey), false, "no file under the restored root holds the root's seed in the clear");
     assert.equal(everything.includes(a.bundleKey), false, "no file under the restored root holds the bundle key");
+
+    // ── the restored vessel's rows answer to the carrier table: the restore's own rows among them ───────────────
+    const custody = custodyReading(rootB);
+    assert.deepEqual(custodyBreaches(custody), [], "the restored vessel holds no row at fault and no private file outside the carrier table");
+    assert.ok(custody.rows.some((r) => r.row === "persona-root" && r.reading === "sealed"), "CONTROL: the reading names the restored root's own row");
+    assert.equal(custody.rows.some((r) => r.row === "restore-pending"), false, "the restore's commit row left once the face stood lit");
 
     // ── R4: another face's bundle meets the vessel that wears this one ─────────────────────────────────────────
     const rootC = stageFounded("c", "the potter");
