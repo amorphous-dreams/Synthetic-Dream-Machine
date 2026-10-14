@@ -109,6 +109,7 @@ describe("a booting vessel holds its store", () => {
       besideTheAct = via(await cli(PROBE));
       expect(besideTheAct, "a command opened the store beside a direct act").not.toBe("direct");
       expect(besideTheAct, "a command reached a vessel that held nothing yet").not.toBe("daemon");
+      expect(besideTheAct, "the refusal names the store the act holds").toMatch(/^error:.*store/i);
     } finally {
       await act.release();
     }
