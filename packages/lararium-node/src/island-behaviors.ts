@@ -31,8 +31,9 @@ export function mountedDiskProjector(): LarDiskProjector | null {
 }
 
 /**
- * A PERSON'S ANSWER AT THE DISK SHORE. The shore verb (`lares shore`, carried by `wiki-act`) reaches the
- * island as an ordinary `wiki:place-verb`; this door claims it ahead of the island's verb table and
+ * A PERSON'S ANSWER AT THE DISK SHORE. `lares shore` sends every act down two lines (`shore-core.ts`): `wiki-act`
+ * carries the shore verb into the active wiki's island, and the `shore` verb itself reaches the daemon island. Here
+ * it arrives as an ordinary `wiki:place-verb`; this door claims it ahead of the island's verb table and
  * answers from the projector the island mounts. An island that mounts no projector refuses by name.
  * Returns true where it claimed the message.
  */

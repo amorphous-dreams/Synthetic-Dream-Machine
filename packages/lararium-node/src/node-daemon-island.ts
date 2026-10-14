@@ -49,7 +49,8 @@ runSovereignWorker((manifest) => {
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
     } : {}),
     // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),
-    // answered from the projector this island mounts.
+    // answered from the projector this island mounts. `lares shore` reaches it by this verb, beside the
+    // `wiki-act` line into the active wiki's island (`shore-core.ts`).
     shore:          async (args) => {
       const projector = mountedDiskProjector();
       return projector === null
