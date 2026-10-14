@@ -67,6 +67,8 @@ describe("runEdgeKapae", () => {
     expect(r.boardUrl).toBe(fleetEdgeBoardDocUrl(rootDid!));
     expect(r.edgeId).toBe(deviceEdgeId(rootDid!, DEVICE));
     expect(r.shadowStands).toBe(true);
+    // A holder act names no epoch: the fleet root's hand holds no roster (kapae#/rolls).
+    expect("epochCid" in r).toBe(false);
   });
 
   it("a second act supersedes the line head", async () => {
@@ -126,7 +128,7 @@ describe("runEdgeKapae", () => {
     const repo = restingRepo(larDataDir());
     const handle = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(up.signers[0]!), "board:edge-kapae");
     const rawSeed = await loadPersonaGroupRootSeed(0);
-    const raw = await signEdgeKapae({ edgeId: EDGE, raised: true, hand: "holder", parents: [], epochCid: "no-charter" }, [{ signer: up.signers[0]!, sign: (bytes) => ed.signAsync(bytes, rawSeed).then(hex) }]);
+    const raw = await signEdgeKapae({ edgeId: EDGE, raised: true, hand: "holder", parents: [] }, [{ signer: up.signers[0]!, sign: (bytes) => ed.signAsync(bytes, rawSeed).then(hex) }]);
     const poisoned = { ...raw, actCid: "f".repeat(64) };
     handle.change((d) => { d.tiddlers["wrong-id"] = mutableLarRecord("wrong-id", { text: JSON.stringify(poisoned) }, "test"); });
     await repo.flush();

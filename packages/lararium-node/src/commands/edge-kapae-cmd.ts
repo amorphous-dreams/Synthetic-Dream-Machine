@@ -94,7 +94,8 @@ export interface EdgeKapaeResult {
   readonly hand:      EdgeHand;
   readonly actCid:    string;
   readonly parents:   readonly string[];
-  readonly epochCid:  string;
+  /** The seal epoch a quorum act names; a holder act names none. */
+  readonly epochCid?: string;
   /** Every key that signed: one for the holder hand, the held seats for the quorum hand. */
   readonly signers:   readonly string[];
   /** Which board carries the act: one realm's, or one fleet's. */
@@ -144,7 +145,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   let authority: EdgeAuthority;
   let scope: string;
   let boardUrl: ReturnType<typeof realmEdgeBoardDocUrl>;
-  let epochCid: string;
+  let epochCid: string | undefined;
 
   if (hand === "quorum") {
     if (!charter) throw new EdgeKapaeError("no seated charter stands on this vessel — the quorum hand has no seats to sign with.");
@@ -175,8 +176,8 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     if (device !== undefined) edgeId = deviceEdgeId(signerDid, device);   // the fleet root and the device key name it
     scope = realm ?? signerDid;
     boardUrl = realm !== undefined ? realmEdgeBoardDocUrl(realm) : fleetEdgeBoardDocUrl(signerDid);
-    // A holder act carries the charter's head where one stands; no reader checks it (kapae#/rolls).
-    epochCid = charter?.head.sealEpochCid ?? "no-charter";
+    // A holder act names no epoch: its hand holds no roster (kapae#/rolls).
+    epochCid = undefined;
   }
 
   const repo = opts.repo;
@@ -212,7 +213,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
       throw new EdgeKapaeError("refusing raw or non-frontier parent: parents name heads of this edge's own line, as this vessel counts them.");
     }
 
-    const act = await signEdgeKapae({ edgeId, raised: opts.raised, hand, parents, epochCid }, signers);
+    const act = await signEdgeKapae({ edgeId, raised: opts.raised, hand, parents, ...(epochCid === undefined ? {} : { epochCid }) }, signers);
     before.handle.change((d) => writeEdgeKapae(d, act));
     await repo.flush();
 
@@ -251,7 +252,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     }
     return {
       ...(withdrawals ? { withdrawals } : {}),
-      edgeId, raised: opts.raised, hand, actCid: act.actCid, parents, epochCid,
+      edgeId, raised: opts.raised, hand, actCid: act.actCid, parents, ...(epochCid === undefined ? {} : { epochCid }),
       signers: signers.map((s) => s.signer), board: realm !== undefined ? "realm" : "fleet", boardUrl,
       shadowStands: reading?.stands ?? false, ...(reading !== undefined ? { verdict: reading.verdict } : {}),
     };

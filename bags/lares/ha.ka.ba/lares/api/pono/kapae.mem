@@ -165,7 +165,7 @@ Two hands act on an edge. The ''holder'' hand signs with the one key the edge's 
 > ''Operator ruling, approved as presented.'' A seal roll carries every shadow, and a lift may cite a raise from an earlier epoch through the roll's own anchors.
 
 * ''Citation alone orders acts.'' An act cites its parents by content id, and a parent may root on any epoch. No scalar, clock or arrival order ranks.
-* ''The epoch names a roster and ranks nothing.'' A quorum act counts under the roster of the seal epoch it names. A holder act carries an epoch and no reader checks it. The charter's own lineage names each rolled epoch's seats, and a hash binds the first epoch's seats.
+* ''The epoch names a roster and ranks nothing.'' A quorum act counts under the roster of the seal epoch it names. A holder act names no epoch, since its hand signs with the one key the edge's id names and holds no roster; a holder act that names one, and a quorum act that names none, read as no act. The charter's own lineage names each rolled epoch's seats, and a hash binds the first epoch's seats.
 * ''Every roll writes an edge anchor.'' The quorum of the epoch the roll opens signs the closed epoch's id, the closed epoch's seated keys and threshold, the causal heads of the quorum acts that counted at the closed epoch, and the anchor that opened it. The closed keys never sign an anchor, since they may stand as the reason for the roll. The anchor follows the carriage board's roll anchor in shape and law (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>).
 * ''The anchors chain from the head down.'' An anchor counts under the roster it opens, and below the head it must sit in the causal past of the anchor that closed that roster's own epoch. A key-set that retired therefore signs no anchor after its roll, exactly as it signs no act.
 * ''A quorum act at an earlier epoch counts through the anchors.'' The act must sit in the causal past of a counted anchor that closed its epoch. A retired key-set mints nothing after its roll: no raise and no lift.
@@ -297,6 +297,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GwtKEBzol5ZkaHOPuyeU7I-suH_ZEH_Qqq0LDfTGr8E
+<<^ code="&#x0003;">>ni:///sha-256;6kRfBqzPga5IWGSGkZpLrvw03GDJu2RTUku8NHgFtKc
 
 <<^ code="&#x0004;" -> to="?">>

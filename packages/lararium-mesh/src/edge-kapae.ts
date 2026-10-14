@@ -76,20 +76,28 @@ export interface EdgeKapae {
   readonly actCid:     string;
   /** Causal parents: acts of the SAME edge and hand, at any epoch. An empty set founds a line. */
   readonly parents:    readonly string[];
-  /** The seal epoch this act names. It selects a quorum act's roster; it ranks nothing. */
-  readonly epochCid:   string;
+  /** The seal epoch a QUORUM act names: it selects that act's roster and ranks nothing. A HOLDER act names no
+   *  epoch, since its hand signs with the one key the edge id names and holds no roster: a holder act that names
+   *  one, and a quorum act that names none, read as no act. */
+  readonly epochCid?:  string;
   /** A holder act: one signature by the edge's holder. A quorum act: the seats' signatures. */
   readonly signatures: readonly QuorumSignature[];
 }
 
 type UnsignedAct = Omit<EdgeKapae, "signatures" | "actCid">;
 
-/** The semantic bytes an act signs and hashes. Signatures never enter the act identity. */
+/** The semantic bytes an act signs and hashes. Signatures never enter the act identity. An epoch enters the bytes
+ *  exactly where the act names one. */
 export function edgeKapaeBytes(a: UnsignedAct): Uint8Array {
   return canonicalJsonBytes({
     kind: a.kind, edgeId: a.edgeId, raised: a.raised, hand: a.hand,
-    parents: [...new Set(a.parents)].sort(), epochCid: a.epochCid,
+    parents: [...new Set(a.parents)].sort(), ...(a.epochCid === undefined ? {} : { epochCid: a.epochCid }),
   });
+}
+
+/** Does the act name an epoch exactly where its hand takes one: a quorum act names one, a holder act none? */
+export function edgeActEpochFits(a: Pick<EdgeKapae, "hand" | "epochCid">): boolean {
+  return a.hand === "quorum" ? typeof a.epochCid === "string" && a.epochCid.length > 0 : a.epochCid === undefined;
 }
 
 export function edgeKapaeActCid(a: UnsignedAct): string {
@@ -108,6 +116,9 @@ export async function signEdgeKapae(
   signers: readonly EdgeSigner[],
 ): Promise<EdgeKapae> {
   const base: UnsignedAct = { ...parts, kind: EDGE_KAPAE_DOMAIN, parents: [...new Set(parts.parents)].sort() };
+  if (!edgeActEpochFits(base)) {
+    throw new Error(base.hand === "quorum" ? "edge-kapae: a quorum act names the seal epoch its roster reads at" : "edge-kapae: a holder act names no epoch");
+  }
   const bytes = edgeKapaeBytes(base);
   const signatures: QuorumSignature[] = [];
   for (const s of signers) signatures.push({ signer: s.signer, sig: await s.sign(bytes) });
@@ -204,7 +215,7 @@ export function writeEdgeKapae(draft: LarDoc, act: EdgeKapae): void {
   const key = edgeKapaeKey(act);
   const standing = edgeKapaeActsFromRecords(draft.tiddlers[key] !== undefined ? [draft.tiddlers[key]!] : []);
   const [merged] = mergeEdgeActs([...standing.filter((a) => a.actCid === act.actCid), act]);
-  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(merged) }, act.epochCid);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(merged) }, act.epochCid ?? act.hand);
 }
 
 function coerceSignatures(v: unknown): QuorumSignature[] | null {
@@ -230,12 +241,14 @@ function coerceAct(parsed: unknown): EdgeKapae | null {
   if (p["hand"] !== "holder" && p["hand"] !== "quorum") return null;
   if (typeof p["actCid"] !== "string" || !CID_RE.test(p["actCid"])) return null;
   if (!Array.isArray(p["parents"]) || p["parents"].some((x) => typeof x !== "string")) return null;
-  if (typeof p["epochCid"] !== "string" || p["epochCid"].length === 0) return null;
+  // A quorum act names its epoch; a holder act names none, and a holder act that carries one reads as no act.
+  if (p["hand"] === "quorum" ? typeof p["epochCid"] !== "string" || p["epochCid"].length === 0 : "epochCid" in p) return null;
   const signatures = coerceSignatures(p["signatures"]);
   if (signatures === null || signatures.length === 0) return null;
   return {
     kind: EDGE_KAPAE_DOMAIN, edgeId: p["edgeId"], raised: p["raised"], hand: p["hand"],
-    actCid: p["actCid"], parents: [...new Set(p["parents"] as string[])].sort(), epochCid: p["epochCid"], signatures,
+    actCid: p["actCid"], parents: [...new Set(p["parents"] as string[])].sort(),
+    ...(p["hand"] === "quorum" ? { epochCid: p["epochCid"] as string } : {}), signatures,
   };
 }
 
@@ -503,7 +516,7 @@ export async function countEdgeActs(
   const out: EdgeKapae[] = [];
   for (const a of mergeEdgeActs(acts)) {
     const { signatures, actCid, ...unsigned } = a;
-    if (actCid !== edgeKapaeActCid(unsigned)) continue;
+    if (actCid !== edgeKapaeActCid(unsigned) || !edgeActEpochFits(a)) continue;
     const authority = authorityFor(a.edgeId);
     if (!authority) continue;
     const bytes = edgeKapaeBytes(unsigned);
@@ -518,12 +531,12 @@ export async function countEdgeActs(
       verified = [signed];
     } else {
       if (authority.quorum !== true) continue;
-      const roster = rosters.get(a.epochCid);
+      const roster = rosters.get(a.epochCid!);
       const seats = roster ? quorumOf(bytes, signatures, roster) : null;
       if (seats === null) continue;
       verified = seats;
       if (charter && a.epochCid !== charter.head.sealEpochCid) {
-        const closers = closing.get(a.epochCid) ?? [];
+        const closers = closing.get(a.epochCid!) ?? [];
         const anchored = closers.some((anchor) => inPastOf(anchor.parents, a.actCid, parentsOf));
         const keptAsHead = a.raised && seenAtHead?.get(a.actCid) === a.epochCid;
         if (!anchored && !keptAsHead) continue;

@@ -31,8 +31,8 @@ const REALM = "ab".repeat(32);
 const SCOPE = REALM;
 const EDGE = "e1".repeat(32);
 
-const holderAct = async (edgeId: string, raised: boolean, parents: string[] = [], by = VOUCHER, epochCid = "any-epoch") =>
-  signEdgeKapae({ edgeId, raised, hand: "holder", parents, epochCid }, await kahuSigners([by]));
+const holderAct = async (edgeId: string, raised: boolean, parents: string[] = [], by = VOUCHER) =>
+  signEdgeKapae({ edgeId, raised, hand: "holder", parents }, await kahuSigners([by]));
 const quorumAct = async (edgeId: string, raised: boolean, epochCid: string, seats: readonly Uint8Array[], parents: string[] = []) =>
   signEdgeKapae({ edgeId, raised, hand: "quorum", parents, epochCid }, await kahuSigners(seats));
 const boardOf = (acts: readonly EdgeKapae[], anchors: readonly EdgeRollAnchor[] = []): LarDoc => {

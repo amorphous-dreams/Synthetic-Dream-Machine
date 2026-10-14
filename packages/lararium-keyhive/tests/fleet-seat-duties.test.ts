@@ -42,7 +42,7 @@ async function fleet(base: number, devices = 2) {
   const ids: string[] = [];
   for (const d of others) { const id = await d.vesselIdentifierHex(); ids.push(id); await founder.addSentinelMember(id, docIdHex); }
   const act = async (deviceId: string, raised: boolean, parents: string[] = [], by = ROOT_SEED): Promise<EdgeKapae> =>
-    signEdgeKapae({ edgeId: deviceEdgeId(fleetRoot, keyOf(deviceId)), raised, hand: "holder", parents, epochCid: "no-charter" },
+    signEdgeKapae({ edgeId: deviceEdgeId(fleetRoot, keyOf(deviceId)), raised, hand: "holder", parents },
       [{ signer: await pub(by), sign: ed25519SignerFromSeed(by) }]);
   const holds = async (p: KeyhiveProvider, id: string) => (await p.verifySentinelMembership(id, docIdHex)).ok;
   const answer = (provider: KeyhiveProvider, acts: readonly unknown[], opts: { rolled?: string[]; own?: string[]; sink?: (r: SeatRoll) => void | Promise<void> } = {}) =>

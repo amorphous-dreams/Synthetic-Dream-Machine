@@ -64,7 +64,7 @@ const edgeOf = (v: { realm: string; voucherDid: string; joiner: string }) => vou
 /** Land an act on the shadow board signed by a seed this vessel does NOT hold as the vouch's voucher. */
 async function writeForeignAct(edgeId: string, raised: boolean, parents: string[], seed: Uint8Array): Promise<void> {
   const signer = await ed.getPublicKeyAsync(seed).then(hex);
-  const act = await signEdgeKapae({ edgeId, raised, hand: "holder", parents, epochCid: "no-charter" }, [{ signer, sign: (b) => ed.signAsync(b, seed).then(hex) }]);
+  const act = await signEdgeKapae({ edgeId, raised, hand: "holder", parents }, [{ signer, sign: (b) => ed.signAsync(b, seed).then(hex) }]);
   await ownedStore(larDataDir(), async (repo) => {
     const handle = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
     handle.change((d) => writeEdgeKapae(d, act));

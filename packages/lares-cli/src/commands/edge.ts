@@ -213,7 +213,7 @@ export async function cmdEdge(args: ParsedArgs): Promise<number> {
     console.log(`  act-cid:  ${r.actCid}`);
     console.log(`  parents:  ${r.parents.length === 0 ? "(genesis)" : r.parents.join(", ")}`);
     console.log(`  hand:     ${r.hand}  (${r.signers.length} signature${r.signers.length === 1 ? "" : "s"}: ${r.signers.map((k) => `${k.slice(0, 16)}…`).join(", ")})`);
-    console.log(`  epoch-cid: ${r.epochCid}`);
+    if (r.epochCid !== undefined) console.log(`  epoch-cid: ${r.epochCid}`);
     console.log(`  board:    ${r.board} · ${r.boardUrl}`);
     // What a reader consulting THIS signer as the edge's authority would now see — never a claim that every
     // reader agrees, since authority gets decided at the fold and this vessel does not get to decide it.
