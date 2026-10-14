@@ -133,3 +133,34 @@ describe("pokeSealHomeRefold — poke only when a vessel stands (H2)", () => {
     expect(invokeLocal).toHaveBeenCalledWith("seal-home-refold", {}, "did:test", expect.anything());
   });
 });
+
+describe("pokeSealHomeRefold says what the refold did, one word per outcome", () => {
+  const rowAnswers = (output: Record<string, unknown>) => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(null);
+    vi.mocked(invokeLocal).mockResolvedValue({ status: "done", requestId: "r", results: { summary: { ok: true, output: { verb: "seal-home-refold", ...output } } } });
+  };
+
+  it("★ a refold that ran and failed names itself `failed`, never the `none` of a vessel that does not stand ★", async () => {
+    rowAnswers({ attempted: true, refolded: false });
+    expect(await pokeSealHomeRefold()).toBe("failed");
+  });
+
+  it("a poke the vessel never answered reads `failed`: nothing says the refold ran", async () => {
+    vi.mocked(udsAlive).mockResolvedValue(true);
+    vi.mocked(whoHolds).mockResolvedValue(null);
+    vi.mocked(invokeLocal).mockRejectedValue(new Error("a synthetic transport fault"));
+    expect(await pokeSealHomeRefold()).toBe("failed");
+  });
+
+  it("CONTROL: done, pending, and the two honest `none`s keep their words", async () => {
+    rowAnswers({ attempted: true, refolded: true });
+    expect(await pokeSealHomeRefold()).toBe("done");
+    rowAnswers({ attempted: true, refolded: "pending" });
+    expect(await pokeSealHomeRefold()).toBe("pending");
+    rowAnswers({ attempted: false, refolded: false });         // the row ran where no live reading stands to refold
+    expect(await pokeSealHomeRefold()).toBe("none");
+    vi.mocked(udsAlive).mockResolvedValue(false);               // no vessel stands
+    expect(await pokeSealHomeRefold()).toBe("none");
+  });
+});

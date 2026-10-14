@@ -187,14 +187,17 @@ export async function storeVerb(
 }
 
 /**
- * What a `pokeSealHomeRefold` call reports (L3): `"done"` — the hook truthfully claimed this write's
- * refold landed; `"pending"` — a vessel stood and the row ran, but the refold is still running past its
- * own budget (`store-door-verbs.ts`'s `awaitOnRolled`); `"none"` — nothing to poke (no vessel standing),
- * or the row ran and the hook made no truthful claim either way. A caller that only logged this before
- * now carries it: discarding the answer is exactly how H2's live readings could stay stale with nobody
- * able to tell from the CLI's own JSON.
+ * What a `pokeSealHomeRefold` call reports, one word per outcome:
+ *   `"done"`    — the hook claimed this write's refold landed;
+ *   `"pending"` — a vessel stood and the row ran, and the refold still runs past its own budget
+ *                 (`store-door-verbs.ts`'s `awaitOnRolled`);
+ *   `"failed"`  — a vessel stood and its refold ran without landing, or the poke itself drew no answer. The write
+ *                 already landed beside the seal home; the vessel's live readings may stand stale until its next
+ *                 refold or boot;
+ *   `"none"`    — nothing to refold: no vessel stands, or the row ran where no live reading stands.
+ * The caller carries the word into its JSON.
  */
-export type SealHomeRefold = "done" | "pending" | "none";
+export type SealHomeRefold = "done" | "pending" | "failed" | "none";
 
 /**
  * Poke a STANDING vessel to refold right after a write that landed beside the seal home rather than through
@@ -212,6 +215,7 @@ export async function pokeSealHomeRefold(): Promise<SealHomeRefold> {
     const refolded = r.output["refolded"];
     if (refolded === true) return "done";
     if (refolded === "pending") return "pending";
-    return "none";
-  } catch { return "none"; }               // a refusal here names nothing broken — the write itself already landed
+    // The row tried the vessel's hook and the hook claimed nothing: the refold ran and did not land.
+    return r.output["attempted"] === true ? "failed" : "none";
+  } catch { return "failed"; }             // the write itself already landed; nothing says the refold ran
 }
