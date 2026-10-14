@@ -15,10 +15,19 @@ from __future__ import annotations
 
 import os
 import tempfile
+import threading
 
 import pytest
 
-from handle_gauge import HandleReading, handles_available, open_handle_count
+from handle_gauge import (
+    HandleReading,
+    handles_available,
+    join_threads_started_since,
+    new_handles,
+    open_handle_count,
+    open_handles,
+    thread_ids,
+)
 
 pytestmark = pytest.mark.skipif(
     not handles_available(), reason="this platform does not expose its own descriptor table"
@@ -77,19 +86,67 @@ def test_the_reading_reports_the_delta_a_block_left_behind():
         assert clean.delta == 0
 
 
+def test_the_join_waits_on_a_thread_that_still_holds_its_handle():
+    """The join must read liveness, not return on sight. A thread holds a handle and blocks on an
+    event nobody has set: the join reports it alive and the handle still counts. Set the event, and
+    the join returns only once the thread has closed its handle and gone."""
+    with tempfile.TemporaryDirectory() as tmp:
+        path = os.path.realpath(os.path.join(tmp, "probe"))  # the descriptor table names real paths
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write("x")
+        before_threads, base = thread_ids(), open_handles()
+        opened, release = threading.Event(), threading.Event()
+
+        def holder():
+            with open(path, encoding="utf-8"):
+                opened.set()
+                release.wait()
+
+        worker = threading.Thread(target=holder)
+        worker.start()
+        try:
+            assert opened.wait(60), "the holder never opened its handle"
+            alive = join_threads_started_since(before_threads, timeout=0.2)
+            assert any(name.endswith(f"[{worker.native_id}]") for name in alive), (
+                f"the join returned while the holder still ran: {alive}"
+            )
+            assert list(new_handles(base).values()) == [path], (
+                "the holder's handle did not count, or a pidfd stayed open"
+            )
+        finally:
+            release.set()
+        assert join_threads_started_since(before_threads) == [], "the holder never exited"
+        assert new_handles(base) == {}, "the join returned before the holder's handle closed"
+        worker.join()
+
+
 # ── the palace path, measured ───────────────────────────────────────────────────────────────────
 
 
-def _cycle(p, tmp, n):
-    """Open n fresh palaces, close every cached client, and report (opened, residue)."""
-    before = open_handle_count()
+def _cycle(p, tmp, n, *, join=True):
+    """Open n fresh palaces, close every cached client, and report (opened, residue).
+
+    The residue gets read only after the close has COMPLETED, not when `close_palace` returns.
+    chromadb 1.5.9 hands each SQLite connection's release to that connection's own worker thread, so
+    the call returns while the database files still sit open; a count taken then reads a backlog of
+    handles in flight, and on a slow runner that backlog grows with n and reads like a leak. Joining
+    every thread the palaces started orders the count after their last release. As measured, each
+    client runs its own threads, so a client that never closes keeps them, and the join names them.
+
+    Both readings count only descriptors the cycle ADDED. A release some earlier work left in flight
+    may finish mid-cycle; a plain count would book it against this cycle's residue.
+    """
+    before, before_threads = open_handles(), thread_ids()
     for i in range(n):
         p.get_collection(os.path.join(tmp, f"pal-{n}-{i}"), create=True, _skip_identity_check=True)
-    opened = open_handle_count() - before
+    opened = len(new_handles(before))
     backend = p._DEFAULT_BACKEND
     for path in list(backend._clients):
         backend.close_palace(path)
-    return opened, open_handle_count() - before
+    if join:
+        alive = join_threads_started_since(before_threads)
+        assert alive == [], f"threads the {n} palaces started outlived their close: {alive}"
+    return opened, len(new_handles(before))
 
 
 def test_closing_a_palace_gives_its_handles_back_and_the_residue_does_not_scale():
@@ -115,7 +172,7 @@ def test_closing_a_palace_gives_its_handles_back_and_the_residue_does_not_scale(
         pytest.skip("mempalace.palace (chroma stack) not importable")
 
     with tempfile.TemporaryDirectory() as tmp:
-        _cycle(p, tmp, 1)                        # absorb one-time init before measuring
+        _cycle(p, tmp, 1, join=False)            # absorb one-time init, lifetime threads included
         small_opened, small_residue = _cycle(p, tmp, SMALL)
         large_opened, large_residue = _cycle(p, tmp, LARGE)
 
