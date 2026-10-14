@@ -24,6 +24,7 @@ import { ed25519SignerFromSeed, knockPath } from "@lararium/mesh";
 import type { PeerId } from "@automerge/automerge-repo";
 import type { LarWSClientAdapter } from "@lararium/mesh";
 import { dialGate, gateDouble } from "./gate-dial-fixture.js";
+import { arrival } from "../../lararium-mesh/tests/handshake.js";
 import type { LeafIdentity } from "../src/leaf-identity.js";
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
@@ -222,16 +223,15 @@ describe("LarWSClientAdapter — re-presentation after anergy restores the recon
     const gatePub = genKey().pub;
     gate = await makeScriptedGate({ gatePubKey: gatePub, accept: (n) => n >= 2, dropAfterHandoff: (n) => n === 2 });
     const first = makeLeaf();
+    const refused = arrival<string>("the leaf saying it anergized (`onAnergy`)");
     adapter = dialGate({
       url: `ws://127.0.0.1:${gate.port}`, identity: first.identity, aud: AUD, gatePubKey: gatePub, retryInterval: RETRY_MS,
+      onAnergy: (reason) => { refused.arrive(reason); },
     });
     adapter.connect("anergy-peer" as PeerId);
-    // ① denied → ANERGIZED, and the door stays shut across several retry intervals.
-    const anergized = await (async () => {
-      for (let i = 0; i < 100 && !adapter!.anergized; i++) await new Promise((r) => setTimeout(r, 10));
-      return adapter!.anergized;
-    })();
-    expect(anergized).toBe("no answer");
+    // ① denied → ANERGIZED: the leaf says so itself, and the state stands when it says it.
+    expect(await refused.arrived).toBe("no answer");
+    expect(adapter.anergized).toBe("no answer");
     // ② re-present under a new identity (a presentable admit appeared) → the second socket, accepted.
     adapter.represent(makeLeaf().identity);
     expect(await gate.until(2, 2_000)).toBe(true);

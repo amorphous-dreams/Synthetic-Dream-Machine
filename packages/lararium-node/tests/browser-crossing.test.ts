@@ -31,6 +31,7 @@ import { armGate, dialGate, provingShore, standGate as standAuthGate } from "./g
 /** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
 const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
 import type { LeafIdentity } from "../src/leaf-identity.js";
+import { arrival } from "../../lararium-mesh/tests/handshake.js";
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
 
@@ -160,10 +161,12 @@ describe("browser↔node crossing — real gate · real Ed25519 · real capabili
     // The leaf's proof verifies (bound to the pinned key), so the answering gate ADMITS it — and signs the
     // verdict with a key that is not the pin. Only the leaf's own check can refuse it.
     armGate(harness.gate, { gate: gateKeyOf(relay), aud: AUD, sort: admitProven, shore: provingShore(pinned, { admits: (key) => key === pub }) });
-    adapter = dialGate({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: pinned });
+    // The leaf's own word carries the wait: it says its refusal the moment it anergizes.
+    const refused = arrival<string>("the leaf saying it anergized (`onAnergy`)");
+    adapter = dialGate({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: pinned, onAnergy: (reason) => { refused.arrive(reason); } });
     adapter.connect("pinned-leaf" as PeerId);
 
-    await new Promise<void>((r) => setTimeout(r, 300));
+    expect(await refused.arrived).toBe("the verdict carries no signature of the pinned gate key");
     expect(adapter.anergized).toBe("the verdict carries no signature of the pinned gate key");
   });
 

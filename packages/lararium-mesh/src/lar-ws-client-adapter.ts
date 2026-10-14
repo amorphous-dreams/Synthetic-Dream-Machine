@@ -67,6 +67,12 @@ export interface LarWSClientOptions {
   gatePubKey: string;
   /** The parent's reconnect delay (ms) after a socket closes. Defaults to the parent's own. */
   retryInterval?: number;
+  /**
+   * Hears the gate's refusal at the moment this leaf ANERGIZES, after the state stands (`anergized` already reads
+   * the same reason) and before the refused socket closes. Each anergy says it once; a leaf that re-presents and
+   * meets another refusal says that one too. A hearer that throws changes nothing of the leaf.
+   */
+  onAnergy?: (reason: string) => void;
 }
 
 export class LarWSClientAdapter extends WebSocketClientAdapter {
@@ -75,6 +81,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
   readonly #gatePubKey: string;
   /** The gate's refusal, once it has come. A leaf that holds one has ANERGIZED and does not re-present. */
   #anergized: string | null = null;
+  readonly #onAnergy: ((reason: string) => void) | undefined;
   /** Set by `disconnect()` — the caller stood this transport down, and nothing below re-dials it. */
   #stopped = false;
   /** The socket whose gate signed its verdict for this leaf; null while none has. */
@@ -90,6 +97,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
     this.#identity   = opts.identity;
     this.#aud        = opts.aud;
     this.#gatePubKey = opts.gatePubKey;
+    this.#onAnergy   = opts.onAnergy;
     // A peer counts as proven only when it arrives on the socket whose gate signed this leaf's verdict.
     this.on("peer-candidate", ({ peerId }: { peerId: PeerId }) => {
       if (this.#verifiedSocket !== null && this.#verifiedSocket === this.socket) {
@@ -255,6 +263,7 @@ export class LarWSClientAdapter extends WebSocketClientAdapter {
           "alone is signal-1; admission needs signal-2 — a VOUCH from an already-licensed member.",
         );
       } catch { /* a console is a courtesy, never a dependency */ }
+      try { this.#onAnergy?.(verdict.reason); } catch { /* a hearer never moves the leaf */ }
       try { socket.close(); } catch { /* closed */ }
       return;
     }

@@ -33,6 +33,7 @@ import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { type DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
 import { armGate, dialGate, provingShore, standGate as standAuthGate } from "./gate-dial-fixture.js";
+import { arrival } from "../../lararium-mesh/tests/handshake.js";
 /** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
 const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
 import type { LeafIdentity } from "../src/leaf-identity.js";
@@ -93,6 +94,8 @@ interface Vessel {
   port: number;
   /** The dial-out client adapter (present only when `dialOut` was given) — carries `.anergized`. */
   client: LarWSClientAdapter | null;
+  /** The dial-out leaf's own word that it anergized, with the refusal it met (`onAnergy`). */
+  anergy: Promise<string>;
   close: () => Promise<void>;
 }
 
@@ -123,10 +126,12 @@ function standNodeVessel(opts: VesselOpts): Promise<Vessel> {
     });
 
     let client: LarWSClientAdapter | null = null;
+    const anergy = arrival<string>("the dialing node saying it anergized (`onAnergy`)", 8_000);
     const network: (ReadyWSServerAdapter | LarWSClientAdapter)[] = [serverNetwork];
     if (opts.dialOut) {
       client = dialGate({
         url: opts.dialOut.url, identity: opts.dialOut.identity, aud: AUD, gatePubKey: opts.dialOut.peerGatePubKey,
+        onAnergy: (reason) => { anergy.arrive(reason); },
       });
       network.push(client);
     }
@@ -145,7 +150,7 @@ function standNodeVessel(opts: VesselOpts): Promise<Vessel> {
       const addr = http.address();
       if (!addr || typeof addr === "string") { reject(new Error("bad address")); return; }
       resolve({
-        gate, repo, port: addr.port, client,
+        gate, repo, port: addr.port, client, anergy: anergy.arrived,
         close: async () => {
           try { client?.disconnect(); } catch { /* never connected */ }
           await repo.rest();
@@ -243,7 +248,9 @@ describe("LIVE-WIRE S1 — two NODE vessels, one dialing the other over the real
     ]);
     expect(findOutcome).not.toBe("found");         // the denied node never synced B's doc
     expect(nodeB.gate.clients.size).toBe(0);       // never a peer — the real barrier held
-    expect(nodeC.client?.anergized).toBeTruthy();  // the dialing node anergized on the refusal
+    // The dialing node anergized on the refusal: it says so itself, whenever the race above happened to end.
+    expect(await nodeC.anergy).toBeTruthy();
+    expect(nodeC.client?.anergized).toBeTruthy();
   }, 12_000);
 
   test("the positive control (the bite): the SAME un-admitted setup, once B admits C's key, DOES sync", async () => {
