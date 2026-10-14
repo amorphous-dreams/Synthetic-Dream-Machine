@@ -236,6 +236,9 @@ def test_meme_list_wire_container_and_tree(daemon):
     assert daemon.wire() == {"verb": "meme-list", "args": {"recipe": "sdm", "tree": True}}
     _list(bag="lares")
     assert daemon.wire() == {"verb": "meme-list", "args": {"bag": "lares"}}
+    # THE CURSOR rides back as `after`, and only when a caller holds one.
+    _list(bag="lares", after="lar:///t/x")
+    assert daemon.wire() == {"verb": "meme-list", "args": {"bag": "lares", "after": "lar:///t/x"}}
     with pytest.raises(ValueError, match="no-container"):
         _list(recipe="sdm", bag="lares")
 

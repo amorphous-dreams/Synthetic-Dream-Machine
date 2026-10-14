@@ -414,24 +414,67 @@ export interface MemeListing {
 export async function listMemes(
   sink: Pick<MemeSink, "titles" | "read">, opts: { readonly tree?: boolean } = {}, hash: (text: string) => string = defaultHash,
 ): Promise<MemeListing[]> {
+  return (await listMemePage(sink, opts, hash)).roots;
+}
+
+/** One page of a listing: the roots it carries, and the cursor the next page takes (null where none remains). */
+export interface MemeListPage {
+  readonly roots: MemeListing[];
+  /** The last root this page names where more roots stand behind it; a caller hands it back as `after`. */
+  readonly next: string | null;
+}
+
+/**
+ * THE LISTING, ONE PAGE AT A TIME. Roots answer in title order, so a root's own URI serves as the cursor:
+ * `after` names the last root a caller read, `limit` bounds the page, and `next` names the cursor of the
+ * page behind it. With neither, the page holds every root (`listMemes`). A door whose answer rides a
+ * bounded channel pages here, so a seat that holds more roots than one answer carries still names each.
+ *
+ * The sink's titles get read once for the whole page. A root's title carries no `#`, so the root law reads
+ * the records under such titles alone; a page then reads the groups of the roots it names and no other.
+ */
+export async function listMemePage(
+  sink: Pick<MemeSink, "titles" | "read">,
+  opts: { readonly tree?: boolean; readonly after?: string | null; readonly limit?: number } = {},
+  hash: (text: string) => string = defaultHash,
+): Promise<MemeListPage> {
   const titles = [...await sink.titles()].sort();
+  const once: Pick<MemeSink, "titles" | "read"> = { titles: () => titles, read: (title) => sink.read(title) };
+  const after = opts.after ?? null;
+  const limit = opts.limit !== undefined && opts.limit > 0 ? opts.limit : Infinity;
+  const roots: MemeListing[] = [];
+  let next: string | null = null;
+  for (const uri of titles) {
+    if (uri.includes("#") || (after !== null && uri <= after)) continue;
+    if (!isMemeRoot(uri, await sink.read(uri))) continue;
+    if (roots.length >= limit) { next = roots[roots.length - 1]!.uri; break; }
+    const listed = await listOneMeme(uri, once, opts.tree === true, hash);
+    if (listed) roots.push(listed);
+  }
+  return { roots, next };
+}
+
+/**
+ * One root as a listing answers it: its URI, the hash of its present render, and on request its slot tree.
+ * A slot nests under the parent its own record names, so the tree reads the root's group and nothing else.
+ * Null where the sink holds no record under the URI.
+ */
+export async function listOneMeme(
+  uri: string, sink: Pick<MemeSink, "titles" | "read">, tree: boolean, hash: (text: string) => string = defaultHash,
+): Promise<MemeListing | null> {
+  const meme = await readMeme(uri, sink, hash);
+  if (!meme) return null;
+  if (!tree) return { uri, canonicalHash: meme.canonicalHash };
   const fields = new Map<string, TiddlerFields>();
-  for (const title of titles) {
+  for (const title of groupOfMeme(await sink.titles(), uri)) {
     const f = await sink.read(title);
     if (f && f["type"] === CARRIER_TYPE) fields.set(title, f);
   }
-  const roots = [...fields.keys()].filter((t) => isMemeRoot(t, fields.get(t)!));
   const childrenOf = (parent: string): MemeSlotNode[] =>
     [...fields.entries()]
       .filter(([, f]) => f["$fragment-parent"] === parent && typeof f["$slot"] === "string" && !String(f["$slot"]).startsWith("$"))
       .map(([title, f]) => ({ slot: String(f["$slot"]), uri: title, slots: childrenOf(title) }));
-  const out: MemeListing[] = [];
-  for (const uri of roots) {
-    const meme = await readMeme(uri, sink, hash);
-    if (!meme) continue;
-    out.push({ uri, canonicalHash: meme.canonicalHash, ...(opts.tree ? { slots: childrenOf(uri) } : {}) });
-  }
-  return out;
+  return { uri, canonicalHash: meme.canonicalHash, slots: childrenOf(uri) };
 }
 
 /** The `$tw.wiki` skin — a live wiki, on the plain server or inside the island. Its rail is the wiki's

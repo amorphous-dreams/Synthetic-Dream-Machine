@@ -298,7 +298,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # text on stdout, the base on stderr",
       "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
-      "lares meme list --recipe lares --tree                                  # nest each root's slot tree",
+      "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
+      "lares meme list --bag lares                                            # every root that one bag holds",
       "lares meme delete lar:///ha.ka.ba/... --recipe lares --if-match <hash> # a stale base moves nothing",
       "lares meme normalize draft.mem                         # re-frame + re-stamp the block check",
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
@@ -312,7 +313,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--base <hash>      (put) the canonical hash last read; stale → conflict, nothing lands",
       "--if-match <hash>  (delete) the canonical hash last read; stale → conflict, nothing moves",
       "--file <path>      (put) the meme text (stdin when absent)",
-      "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise",
+      "--tree             (list) nest each root's slot tree; roots + canonical hash alone otherwise. " +
+        "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +
+        "`list --bag` names that one bag's own",
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",

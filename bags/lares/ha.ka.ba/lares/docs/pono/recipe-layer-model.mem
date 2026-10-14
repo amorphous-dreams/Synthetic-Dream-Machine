@@ -135,6 +135,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 | `meme put --recipe default` | the daemon's own wiki anchor | its daemon working layer | `packages/lararium-tw5/src/meme-verbs.ts` `readContainer` and `anchorBagOf` |
 | `meme put --recipe <slug>` | THE PUT LAW: the recipe RECORD's `writable-bag` = `wikis/<slug>/working`, else the top of its `bag-stack` (`designatedBagOf`, `@lararium/mesh` recipe.ts) → a mounted writable layer of the DAEMON island, else the instance slot's doc through THE ONE slot-doc resolver, else reach by catalog | the SAME working doc the wiki island mounts — the placement surfaces in the running wiki (two-vessel e2e ⑤ ★) | `meme-verbs.ts` `reachRecipeBag` / `storeOfBag` |
 | `meme get --recipe <slug>` | THE GET LAW: the whole cascade top-down (`expandRecipe(recipeFromRecord(rec))`), the first bag holding a RECORD under the root, live or tombstoned, as the wiki's own composite reads it; the designated bag's store when none does (a null read, never a refusal) | the stack — draft shadows canon; canon answers through `--recipe` when the drafts hold nothing; a tombstone in a bag above shadows canon, so a carrier the wiki removed reads `not-found` | `meme-verbs.ts` `reachRecipeBag`; `tests/meme-verbs.test.ts` "READS THE STACK" |
+| `meme list --recipe <slug>` | THE LIST LAW: the same cascade the get walks; every root some bag of the stack holds, each answered by the first bag that holds a record under it, so a tombstone above shadows the bags beneath and a root two bags hold lists once | the stack — each row names the bag that answered; a bag the island neither mounts nor reaches gets named `unreached`; `meme list --bag` lists that one bag's own records. Every listing pages at the outcome's row cap (`MEME_LIST_PAGE`) and names the cursor of the next page | `meme-verbs.ts` `listRecipeStack`; `tests/meme-verbs.test.ts` "a named recipe lists the roots its stack resolves" |
 | `meme put --bag <slug>` | `compositeMemeSink` → `composite.put({bag})` on the daemon island | that bag's writable layer, else refuses (no shadow-up) | `meme-verbs.ts:177-179`, `composite-store.ts:218-244` |
 | `act ADD / COPY / MOVE / LOAD / INGEST --to <bag>` | `BagAccess`: a mounted writable layer, else the catalog/oracle accessor's own store (write-then-sync) | the named bag exactly | `packages/lararium-tw5/src/action-handler.ts:243-270`, `:1170-1186` |
 | `lares ingest --source <dir> --to <bag>` | the caller names `--to`; a `wikis/` source only changes the URI derivation | the named bag | `packages/lares-cli/src/commands/ingest.ts:27-33`, `packages/lares-cli/src/ingest-core.ts:118-131` |
@@ -308,6 +309,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zaMWKBm7Zh-0Muph0n-RIpkRU_UE6JbdaE5DogyOGWs
+<<^ code="&#x0003;">>ni:///sha-256;p8plFbo7UPPA494xU1fH568BYWb2iKFRL_ZITHejHfU
 
 <<^ code="&#x0004;" -> to="?">>

@@ -5,8 +5,8 @@ exports[`the per-command help registry > meme help publishes the required store 
   "examples": [
     "lares meme get lar:///ha.ka.ba/lares/api/corpus --recipe lares        # text on stdout, the base on stderr",
     "lares meme put lar:///ha.ka.ba/... --recipe lares --file note.mem     # land a framed meme through the gate",
-    "lares meme list --recipe lares --tree                                  # nest each root's slot tree",
-    "lares meme delete lar:///ha.ka.ba/... --recipe lares --if-match <hash> # a stale base moves nothing",
+    "lares meme list --recipe lares --tree                                  # every root the wiki resolves, each slot tree nested",
+    "lares meme list --bag lares                                            # every root that one bag holds",
   ],
   "synopsis": "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: \`normalize\` · \`check\` · \`sitting\` · \`project --to md\` (over a file) run LOCAL with no daemon in reach; \`put\` · \`get\` · \`list\` · \`delete\` · \`project\` to any other target, or from a \`lar:\` uri, ride the daemon verb. Store-backed verbs require \`(--recipe <slug> | --bag <slug>)\`; \`--recipe\` edits AS the named wiki; \`--bag\` places into that bag and REFUSES when this island cannot write it; \`--realm <id>\` beside \`--bag\` names the realm whose registration that bag resolves through, and reads that realm alone. \`--base\` carries the canonical hash last read — a record that moved past it CONFLICTS and nothing lands.",
   "usage": "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote> (store verbs require (--recipe <slug> | --bag <slug>))",

@@ -12,7 +12,8 @@ import { describe, test, expect } from "vitest";
 import { CompositeStore, NoWorkingLayerRefusal, bagUri, recipeUri, wikiSlotUri, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import { effectiveRecipe } from "../src/recipe-planes.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
-import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { memeVerbOptions, makeMemePutReactor, makeMemeGetReactor, makeMemeProjectReactor, makeMemeListReactor, makeMemeDeleteReactor, MEME_LIST_PAGE, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { AUDIT_ARRAY_CAP, boundOutcomeOutput } from "../src/verb-vm.js";
 import { placeMeme } from "../src/place-meme.js";
 import { storeMemeSink } from "../src/meme-sinks.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
@@ -429,6 +430,176 @@ describe("meme-list — roots by default, the slot tree on request", () => {
  * THE DELETE VERB — `meme-delete { recipe?, bag?, uri, base? }` over `removeMeme`: the whole group leaves;
  * a stale base answers `conflict` and moves nothing; an absent root answers `absent`. Gates admin.
  */
+/**
+ * EVERY ROOT ANSWERS. A verb's outcome carries at most `AUDIT_ARRAY_CAP` rows of an array and turns a
+ * longer one into a count and a sample, so a listing that named a large seat's roots in one array reached
+ * its reader as no roots at all. The listing pages at that cap: each answer rides whole through the
+ * outcome's bound, and `next` names the cursor of the page behind it.
+ */
+describe("meme-list — a seat past the outcome's cap answers every root, a page at a time", () => {
+  const at = (n: number): string => `lar:///t/many/${String(n).padStart(3, "0")}`;
+  const memeAt = (uri: string, slots: readonly string[] = ["a"]): string => meme(slots).replaceAll(URI, uri).replaceAll("t/x", uri.slice("lar:///".length));
+  const fill = async (r: Rig, count: number) => {
+    const put = makeMemePutReactor(r.opts);
+    for (let i = 0; i < count; i++) await put({ bag: "sdm", uri: at(i), text: memeAt(at(i)) }, ctx());
+  };
+  /** Read a listing to its end the way a caller does: hand each `next` back as `after`. */
+  const readAll = async (r: Rig, args: Record<string, unknown>) => {
+    const list = makeMemeListReactor(r.opts);
+    const uris: string[] = [];
+    let pages = 0;
+    for (let after: string | null = null; ;) {
+      const out = await list({ ...args, ...(after ? { after } : {}) }, ctx());
+      pages++;
+      // The law itself: what the outcome's bound hands a reader still names every root of the page.
+      const carried = boundOutcomeOutput(out)["roots"];
+      expect(Array.isArray(carried), "the outcome's bound turned the page's roots into a summary").toBe(true);
+      uris.push(...(carried as { uri: string }[]).map((x) => x.uri));
+      after = out["next"] as string | null;
+      if (after === null) return { uris, pages };
+      expect(pages, "the cursor never ended").toBeLessThan(50);
+    }
+  };
+
+  test("★ a bag of more roots than one outcome carries lists each of them, in title order ★", async () => {
+    const r = rig();
+    const count = AUDIT_ARRAY_CAP * 2 + 5;
+    await fill(r, count);
+    const { uris, pages } = await readAll(r, { bag: "sdm" });
+    expect(uris).toEqual(Array.from({ length: count }, (_, i) => at(i)));
+    expect(pages).toBe(3);
+  });
+
+  test("the first page carries the cap's worth and names its last root as the cursor", async () => {
+    const r = rig();
+    await fill(r, MEME_LIST_PAGE + 1);
+    const out = await makeMemeListReactor(r.opts)({ bag: "sdm" }, ctx());
+    expect((out["roots"] as unknown[]).length).toBe(MEME_LIST_PAGE);
+    expect(out["next"]).toBe(at(MEME_LIST_PAGE - 1));
+  });
+
+  test("CONTROL: a seat within the cap answers one page and no cursor", async () => {
+    const r = rig();
+    await fill(r, MEME_LIST_PAGE);
+    const out = await makeMemeListReactor(r.opts)({ bag: "sdm" }, ctx());
+    expect((out["roots"] as unknown[]).length).toBe(MEME_LIST_PAGE);
+    expect(out["next"]).toBeNull();
+  });
+
+  test("`limit` narrows a page and never widens it past the cap", async () => {
+    const r = rig();
+    await fill(r, MEME_LIST_PAGE + 3);
+    const list = makeMemeListReactor(r.opts);
+    const narrow = await list({ bag: "sdm", limit: 2 }, ctx());
+    expect((narrow["roots"] as { uri: string }[]).map((x) => x.uri)).toEqual([at(0), at(1)]);
+    expect(narrow["next"]).toBe(at(1));
+    const wide = await list({ bag: "sdm", limit: 10_000 }, ctx());
+    expect((wide["roots"] as unknown[]).length).toBe(MEME_LIST_PAGE);
+  });
+
+  test("the anchor pages the same way", async () => {
+    const r = rig();
+    const put = makeMemePutReactor(r.opts);
+    for (let i = 0; i < MEME_LIST_PAGE + 2; i++) await put({ recipe: "default", uri: at(i), text: memeAt(at(i)) }, ctx());
+    const { uris, pages } = await readAll(r, { recipe: "default" });
+    expect(uris.length).toBe(MEME_LIST_PAGE + 2);
+    expect(pages).toBe(2);
+  });
+});
+
+/**
+ * A NAMED RECIPE LISTS WHAT THE WIKI RESOLVES. `meme-get --recipe` reads the stack; the listing reads the
+ * same stack, so a root the read answers also lists, and a root the read answers absent lists nowhere.
+ */
+describe("meme-list — a named recipe lists the roots its stack resolves", () => {
+  const A = "lar:///t/stack/a", B = "lar:///t/stack/b", C = "lar:///t/stack/c";
+  const memeAt = (uri: string, slots: readonly string[]): string => meme(slots).replaceAll(URI, uri).replaceAll("t/x", uri.slice("lar:///".length));
+  const o = { kind: "canon-hydrate" as const, receipt: "t" };
+  const stacked = (r: Rig) => {
+    const working = wikiSlotUri("garden", "working");
+    r.recipes.set(recipeUri("catalog", "garden"), {
+      tiddler: { title: recipeUri("catalog", "garden"), "bag-stack": `${bagUri("lares")} ${bagUri("garden")}`, "writable-bag": working },
+    });
+    const canon = new MemoryTiddlerStore(bagUri("garden"));
+    r.reached.set(bagUri("garden"), canon);
+    const draft = new MemoryTiddlerStore(wikiSlotUri("garden", "draft"));
+    const work = new MemoryTiddlerStore(working);
+    r.slots.set("garden/draft", draft);
+    r.slots.set("garden/working", work);
+    return { canon, draft, work };
+  };
+  const land = (store: MemoryTiddlerStore, bag: string, uri: string, slots: readonly string[]) =>
+    placeMeme({ uri, text: memeAt(uri, slots) }, storeMemeSink(store, bag, o));
+
+  test("★ canon's roots list through the recipe, each row naming the bag that answered ★", async () => {
+    const r = rig();
+    const { canon, work } = stacked(r);
+    await land(canon, bagUri("garden"), A, ["a"]);
+    await land(work, wikiSlotUri("garden", "working"), B, ["b"]);
+    const out = await makeMemeListReactor(r.opts)({ recipe: "garden" }, ctx());
+    expect(out["recipe"]).toBe("garden");
+    expect((out["roots"] as { uri: string; bag: string }[]).map((x) => [x.uri, x.bag])).toEqual([
+      [A, bagUri("garden")],
+      [B, wikiSlotUri("garden", "working")],
+    ]);
+    expect(out["next"]).toBeNull();
+  });
+
+  test("★ a root the working layer tombstoned lists nowhere, and the read agrees ★", async () => {
+    const r = rig();
+    const { canon, work } = stacked(r);
+    await land(canon, bagUri("garden"), A, ["a"]);
+    await land(canon, bagUri("garden"), C, ["c"]);
+    for (const title of [C, `${C}#/c`]) await work.tombstone(title, o);
+    const out = await makeMemeListReactor(r.opts)({ recipe: "garden" }, ctx());
+    expect((out["roots"] as { uri: string }[]).map((x) => x.uri)).toEqual([A]);
+    expect((await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: C }, ctx()))["meme"]).toBeNull();
+  });
+
+  test("a root two bags hold lists once, from the upper bag, under the hash the read hands back", async () => {
+    const r = rig();
+    const { canon, draft } = stacked(r);
+    await land(canon, bagUri("garden"), A, ["a"]);
+    await land(draft, wikiSlotUri("garden", "draft"), A, ["z"]);
+    const out = await makeMemeListReactor(r.opts)({ recipe: "garden", tree: true }, ctx());
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: A }, ctx());
+    expect(out["roots"]).toEqual([{
+      uri: A, bag: wikiSlotUri("garden", "draft"), canonicalHash: (got["meme"] as { canonicalHash: string }).canonicalHash,
+      slots: [{ slot: "#/z", uri: `${A}#/z`, slots: [] }],
+    }]);
+  });
+
+  test("the stack pages under the cap, and a bag nothing reaches gets named", async () => {
+    const r = rig();
+    const { canon } = stacked(r);
+    const at = (n: number): string => `lar:///t/stack/many/${String(n).padStart(3, "0")}`;
+    for (let i = 0; i < MEME_LIST_PAGE + 4; i++) await land(canon, bagUri("garden"), at(i), ["a"]);
+    const list = makeMemeListReactor(r.opts);
+    const first = await list({ recipe: "garden" }, ctx());
+    expect((first["roots"] as unknown[]).length).toBe(MEME_LIST_PAGE);
+    expect(first["next"]).toBe(at(MEME_LIST_PAGE - 1));
+    // The recipe names `lares` as a library and this rig reaches no such bag: the listing says so.
+    expect(first["unreached"]).toContain(bagUri("lares"));
+    const second = await list({ recipe: "garden", after: first["next"] }, ctx());
+    expect((second["roots"] as { uri: string }[]).map((x) => x.uri)).toEqual([at(MEME_LIST_PAGE), at(MEME_LIST_PAGE + 1), at(MEME_LIST_PAGE + 2), at(MEME_LIST_PAGE + 3)]);
+    expect(second["next"]).toBeNull();
+  });
+
+  test("CONTROL: a named bag still lists that bag's records alone", async () => {
+    const r = rig();
+    const { canon, work } = stacked(r);
+    await land(canon, bagUri("garden"), A, ["a"]);
+    await land(work, wikiSlotUri("garden", "working"), B, ["b"]);
+    const out = await makeMemeListReactor(r.opts)({ bag: wikiSlotUri("garden", "working") }, ctx());
+    expect((out["roots"] as { uri: string }[]).map((x) => x.uri)).toEqual([B]);
+    expect(out["bag"]).toBe(wikiSlotUri("garden", "working"));
+  });
+
+  test("CONTROL: an unknown recipe fails loud, naming the slug", async () => {
+    await expect(makeMemeListReactor(rig().opts)({ recipe: "nowhere" }, ctx())).rejects.toThrow(/recipe "nowhere" not found/);
+  });
+});
+
 describe("meme-delete — the daemon skin of removeMeme", () => {
   test("★ removes the whole group from the anchor; gates admin on the bag the cascade lands in ★", async () => {
     const r = rig();

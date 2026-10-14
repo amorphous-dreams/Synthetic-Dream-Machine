@@ -20,6 +20,8 @@ const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
   reply: {} as Record<string, unknown>,
   refuse: "" as string,
+  /** A reply chosen per call, for a verb a door asks more than once; null reads `reply`. */
+  replyFor: null as null | ((args: Record<string, unknown>) => Record<string, unknown>),
 }));
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
@@ -27,7 +29,7 @@ vi.mock("../src/verb-call.js", () => ({
   runVerb: async (verb: string, args: Record<string, unknown>) => {
     h.calls.push({ verb, args });
     if (h.refuse) return { status: "error", requestId: "r", errorMessage: h.refuse };
-    return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.reply } } };
+    return { status: "done", requestId: "r", results: { summary: { ok: true, output: h.replyFor ? h.replyFor(args) : h.reply } } };
   },
 }));
 vi.mock("../src/env.js", async (orig) => ({
@@ -47,7 +49,7 @@ const REPO = new URL("../../..", import.meta.url).pathname;
 const PRISM = join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/prism.mem");
 
 const dirs: string[] = [];
-afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); h.calls.length = 0; h.refuse = ""; });
+afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); h.calls.length = 0; h.refuse = ""; h.replyFor = null; });
 const tmpFile = (text: string): string => {
   const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
   const p = join(d, "x.mem"); writeFileSync(p, text, "utf8"); return p;
@@ -144,6 +146,51 @@ describe("lares meme list — roots by default, --tree nests the slots", () => {
     expect(await cmdMeme(memeArgs(["list"], {}, { tree: true }))).toBe(2);
     expect(h.calls).toEqual([]);
   });
+  /** Capture the one JSON line `emit` prints under `--json`. */
+  const captured = async (run: () => Promise<number>): Promise<{ code: number; json: Record<string, unknown> }> => {
+    const lines: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { lines.push(String(m)); return true; });
+    const code = await run().finally(() => spy.mockRestore());
+    return { code, json: JSON.parse(lines.join("")) as Record<string, unknown> };
+  };
+
+  test("★ a listing that arrives in pages gets read to its end: each cursor rides back as `after` ★", async () => {
+    const pages: Record<string, Record<string, unknown>> = {
+      "": { bag: "b", roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }, { uri: "lar:///t/b", canonicalHash: "sha256:2" }], next: "lar:///t/b" },
+      "lar:///t/b": { bag: "b", roots: [{ uri: "lar:///t/c", canonicalHash: "sha256:3" }], next: null },
+    };
+    h.replyFor = (args) => pages[String(args["after"] ?? "")]!;
+    const out = await captured(() => cmdMeme(memeArgs(["list"], { bag: "sdm" })));
+    expect(out.code).toBe(0);
+    expect(h.calls).toEqual([{ verb: "meme-list", args: { bag: "sdm" } }, { verb: "meme-list", args: { bag: "sdm", after: "lar:///t/b" } }]);
+    expect((out.json["data"] as { bag: string; roots: { uri: string }[] })).toEqual({
+      bag: "b", roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }, { uri: "lar:///t/b", canonicalHash: "sha256:2" }, { uri: "lar:///t/c", canonicalHash: "sha256:3" }],
+    });
+  });
+
+  test("★ a count where the roots belong refuses by name; it never prints an empty listing ★", async () => {
+    h.reply = { bag: "b", roots: { boundedArrayCount: 401, tallies: {}, sha256: "x", sample: [], held: [], heldMore: 0 } };
+    const out = await captured(() => cmdMeme(memeArgs(["list"], { bag: "lares" })));
+    expect(out.code).not.toBe(0);
+    expect(out.json["ok"]).toBe(false);
+    expect(JSON.stringify(out.json["error"])).toMatch(/401 roots/);
+  });
+
+  test("a cursor that stands still refuses; the door never loops", async () => {
+    h.replyFor = () => ({ bag: "b", roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }], next: "lar:///t/a" });
+    const out = await captured(() => cmdMeme(memeArgs(["list"], { bag: "sdm" })));
+    expect(out.code).not.toBe(0);
+    expect(h.calls.length).toBe(2);
+    expect(JSON.stringify(out.json["error"])).toMatch(/cursor stood still/);
+  });
+
+  test("a recipe's listing carries the seat the verb named: the recipe, its bags, and any bag unreached", async () => {
+    h.reply = { recipe: "lares", bags: ["w", "c"], unreached: ["lar:///ha.ka.ba/bags/far"], roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1", bag: "c" }], next: null };
+    const out = await captured(() => cmdMeme(memeArgs(["list"], { recipe: "lares" })));
+    expect(out.code).toBe(0);
+    expect(out.json["data"]).toEqual({ recipe: "lares", bags: ["w", "c"], unreached: ["lar:///ha.ka.ba/bags/far"], roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1", bag: "c" }] });
+  });
+
   test("★ --recipe AND --bag together refuse; nothing reaches the wire ★", async () => {
     expect(await cmdMeme(memeArgs(["list"], { recipe: "sdm", bag: "sdm" }))).toBe(2);
     expect(h.calls).toEqual([]);

@@ -6,12 +6,15 @@
  *
  *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
- *   meme-list     { recipe?, bag?, tree? }              → { bag, roots: MemeListing[] }
+ *   meme-list     { recipe?, bag?, tree?, after?, limit? } → { bag | recipe, roots: MemeListing[], next }
  *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, canonicalHash? }
  *   meme-project  { recipe?, bag?, uri, to, dialect?, tongue? } → { uri, to, text, contentType, meta? }
  *
- * `meme-list` answers every ROOT the seat holds with the canonical hash a writer hands back as its base;
- * `tree` nests each root's slot tree. `meme-delete` removes the whole group through `removeMeme` — a
+ * `meme-list` answers every ROOT the seat holds with the canonical hash a writer hands back as its base,
+ * a page at a time (`MEME_LIST_PAGE` roots, in title order): `next` names the cursor of the page behind,
+ * a caller hands it back as `after`, and `next: null` ends the listing. A bag lists its own records; a
+ * named recipe lists the roots its whole stack resolves, each row naming the bag that answered
+ * (`listRecipeStack`). `tree` nests each root's slot tree. `meme-delete` removes the whole group through `removeMeme` — a
  * stale `base` answers `conflict` and moves nothing; an absent root answers `absent`.
  *
  * `to` names a target — mem · md · html · tid · json (`meme-project.ts`); `meta` rides on `md` alone,
@@ -60,7 +63,7 @@ import {
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { IslandContext } from "./island-context.js";
-import { holdsUnreadPointer, listMemes, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, wikiMemeSink, type MemeSink } from "./place-meme.js";
+import { holdsUnreadPointer, isMemeRoot, listMemePage, listOneMeme, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, wikiMemeSink, type MemeListing, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
 import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import { pinTargetsOf, profileOf } from "./weave/index.js";
@@ -68,6 +71,8 @@ import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
+import { AUDIT_ARRAY_CAP } from "./verb-vm.js";
+import type { TiddlerFields } from "./deserializer.js";
 
 export interface MemeVerbOptions {
   readonly composite: CompositeStore;
@@ -331,15 +336,83 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
   };
 }
 
+/**
+ * THE PAGE A LISTING ANSWERS. A verb's outcome carries at most `AUDIT_ARRAY_CAP` rows of any array and
+ * turns a longer one into a count and a sample (`boundOutcomeOutput`, `verb-vm.ts`). A listing that named
+ * its roots in one array would therefore reach its reader as no roots at all once a seat held more than
+ * the cap. So the listing pages at the cap: every answer carries its roots whole, and `next` names the
+ * cursor of the page behind it.
+ */
+export const MEME_LIST_PAGE = AUDIT_ARRAY_CAP;
+
+/** The page size a caller asked for, held inside the outcome's cap; absent or unreadable reads as the cap. */
+function pageLimitOf(raw: unknown): number {
+  const n = typeof raw === "number" ? raw : typeof raw === "string" && /^[0-9]+$/.test(raw.trim()) ? Number(raw.trim()) : NaN;
+  return Number.isInteger(n) && n >= 1 ? Math.min(n, MEME_LIST_PAGE) : MEME_LIST_PAGE;
+}
+
+/** One root of a recipe's listing: the listing's own row, and the bag whose record answered it. */
+type StackListing = MemeListing & { readonly bag: string };
+
+/**
+ * A NAMED RECIPE'S LISTING READS THE STACK, as its `meme-get` does: every root the wiki resolves, each
+ * answered by the first bag that holds a record under it. A tombstone in a bag above shadows the bags
+ * beneath, so a carrier the wiki deleted lists nowhere; a root two bags hold lists once, from the upper
+ * one, under that bag's own render. Each row names the bag that answered. A bag the island neither
+ * mounts nor reaches gets named in `unreached`, so a partial listing says so.
+ */
+async function listRecipeStack(
+  opts: MemeVerbOptions, slug: string, page: { tree: boolean; after: string | null; limit: number },
+  origin: ChangeOrigin, cap: (access: "read", bag: string) => Promise<{ ok: boolean; reason?: string }>,
+): Promise<Record<string, unknown>> {
+  const rec = await opts.recipeOf?.(slug);
+  if (!rec) throw new Error(`meme: recipe "${slug}" not found in any registry plane — run \`lares wiki init ${slug}\` first`);
+  const layers: Array<{ bag: string; store: LarTiddlerStore; sink: Pick<MemeSink, "titles" | "read"> }> = [];
+  const unreached: string[] = [];
+  const candidates = new Set<string>();
+  for (const bag of expandRecipe(recipeFromRecord(rec, slug))) {
+    const store = await storeOfBag(opts, slug, bag, "get");
+    // An instance slot with no store holds no record yet (nothing minted its doc), and `temp` lives in the
+    // wiki island alone: neither hides a root. Any other bag with no store stands unreached, by name.
+    if (!store) { if (!wikiSlotKindOf(slug, bag)) unreached.push(bag); continue; }
+    const proof = await cap("read", bag);
+    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    const titles = await store.listVisible();
+    const base = storeMemeSink(store, bag, origin);
+    layers.push({ bag, store, sink: { titles: () => titles, read: (title) => base.read(title) } });
+    // A root's title carries no `#`; a title at or before the cursor rode an earlier page.
+    for (const title of titles) if (!title.includes("#") && (page.after === null || title > page.after)) candidates.add(title);
+  }
+  const roots: StackListing[] = [];
+  let next: string | null = null;
+  for (const uri of [...candidates].sort()) {
+    let answered: (typeof layers)[number] | null = null;
+    for (const layer of layers) {
+      const held = await layer.store.get(uri);
+      if (!held) continue;
+      // The first bag that holds a record answers: a live root lists from it, a tombstone shadows the rest.
+      if (!held.meta?.deleted && isMemeRoot(uri, held.tiddler as unknown as TiddlerFields)) answered = layer;
+      break;
+    }
+    if (!answered) continue;
+    if (roots.length >= page.limit) { next = roots[roots.length - 1]!.uri; break; }
+    const listed = await listOneMeme(uri, answered.sink, page.tree);
+    if (listed) roots.push({ ...listed, bag: answered.bag });
+  }
+  return { recipe: slug, bags: layers.map((l) => l.bag), ...(unreached.length > 0 ? { unreached } : {}), roots, next };
+}
+
 export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readContainer(args, "meme-list");
     const tree = args["tree"] === true || args["tree"] === "1" || args["tree"] === "true";
+    const page = { tree, after: optionalStringArg(args, "after") ?? null, limit: pageLimitOf(args["limit"]) };
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    if (target.recipe && target.recipe !== "default") return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
     const { bag, sink } = await resolveSink(opts, target, origin, "get");
     const proof = await ctx.cap("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
-    return { bag, roots: await listMemes(sink, { tree }) };
+    return { bag, ...(await listMemePage(sink, page)) };
   };
 }
 

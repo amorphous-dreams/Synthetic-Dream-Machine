@@ -155,10 +155,12 @@ One law, four skins. Every row calls the same function in `packages/lararium-tw5
 |---|---|---|---|---|
 | `placeMeme` | `PUT …/memes/<scheme>/<path>` | `meme-put {(recipe \| bag), uri, text, base?}` | `lares meme put <uri> (--recipe <slug> \| --bag <slug>) [--base <hash>] [--file <path>]` | `meme_put(uri, text, (recipe \| bag), base?)` |
 | `readMeme` | `GET …/memes/<scheme>/<path>` | `meme-get {(recipe \| bag), uri}` | `lares meme get <uri> (--recipe <slug> \| --bag <slug>)` | `meme_get(uri, (recipe \| bag))` |
-| `listMemes` | `GET …/memes.json[?tree=1]` | `meme-list {(recipe \| bag), tree?}` | `lares meme list (--recipe <slug> \| --bag <slug>) [--tree]` | `meme_list((recipe \| bag), tree?)` |
+| `listMemes` · `listMemePage` | `GET …/memes.json[?tree=1]` | `meme-list {(recipe \| bag), tree?, after?, limit?}` | `lares meme list (--recipe <slug> \| --bag <slug>) [--tree]` | `meme_list((recipe \| bag), tree?, after?)` |
 | `removeMeme` | `DELETE /bags/…/memes/<scheme>/<path>` | `meme-delete {(recipe \| bag), uri, base?}` | `lares meme delete <uri> (--recipe <slug> \| --bag <slug>) [--if-match <hash>]` | `meme_delete(uri, (recipe \| bag), base?)` |
 | the projection | `tiddlywiki --render` through the house templates | `meme-project {(recipe \| bag), uri, to}` | `lares meme project <uri\|file> --to <mem\|md\|html\|tid\|json> (--recipe <slug> \| --bag <slug>)` for a store-backed projection; `lares meme project <file> --to md` runs local | `meme_project(uri, to, (recipe \| bag))` |
 | `normalizeMemeSource` · the check | — (a file law) | — | `lares meme normalize` · `lares meme check [--gradient\|--edges]` | — (LOCAL seat, by law) |
+
+''The listing pages on the daemon verb.'' A verb's outcome carries a bounded number of rows of any array (`AUDIT_ARRAY_CAP`, <<~ loulou "lar:///ha.ka.ba/lararium/tw5/verb-vm">>), so `meme-list` answers at most that many roots, in title order, and names the cursor of the page behind them (`next`); a caller hands it back as `after`, and `next: null` ends the listing. The CLI reads every page and prints every root; the MCP tool hands the page and its cursor to its caller. A named bag lists its own records; a named recipe lists the roots its whole stack resolves, each row naming the bag that answered, and a root the wiki removed (a tombstone in a bag above) lists nowhere, as its read answers `not-found`. The plain server's route answers one whole array, since no outcome bounds it.
 
 Every door requires exactly one container on every store verb. At the CLI a missing or doubled container refuses `no-container` (exit 2) before file reads or daemon calls; the daemon verb refuses under the same code before any cap ask, read or write, and the MCP tool refuses under it before the wire. No default wiki exists: `--recipe default` at the CLI, `recipe: "default"` at the daemon verb and `recipe="default"` at the MCP tool name the daemon's own wiki. The in-VM face publishes the same verbs to a wiki-side caller as `$tw.lares.meme.{place, read, list, remove, normalize, check, project, recompose, parse}`. The CLI's exit classes: `no-container` exits 2; a `conflict` exits `conflict`; an absent meme on `get` or `delete` exits `not-found`; a refusal exits `verb-error`. The fixture `packages/lararium-sensorium/scripts/fixtures/cli-verbs.json` welds the MCP names to the CLI spellings; `tools/mirror-parity-witness.sh` reds when it goes stale. The CLI door law: <<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>.
 
@@ -226,6 +228,6 @@ The CLI walk names its container on each store verb: `lares meme put lar:///t/x 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;SBw9qaEb7Wfwh_A94eyWRz_0DSFKcLJBEAewPHseL14
+<<^ code="&#x0003;">>ni:///sha-256;kt2FAV91a8G4PtZSdUBRodHqtt8OJqUtkSlj4VWJznw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -33,6 +33,10 @@
  *   · --if-match <hash>— (delete) the same base, spelled as the route's header: stale → CONFLICT, nothing moves.
  *   · --tree           — (list) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
  *
+ * `list` names EVERY root its seat holds. `--bag` lists that one bag's records; `--recipe <slug>` lists the
+ * roots the wiki's whole stack resolves, as `get --recipe` reads them (a tombstone in the working layer
+ * shadows canon, so a carrier the wiki removed lists nowhere), each row naming the bag that answered.
+ *
  * Slugs ride bare (`sdm`, `lares`). Exit classes: a conflict exits `conflict`; an island refusal `verb-error`;
  * a missing or doubled container exits `no-container` (2);
  * an absent meme on `get` exits `not-found`; drift under `check` exits 1 for a CI gate.
@@ -302,28 +306,61 @@ async function memeGet(args: ParsedArgs): Promise<number> {
 }
 
 /** One listed root, as the verb answers it. */
-interface ListedRoot { uri: string; canonicalHash: string; slots?: ListedSlot[] }
+interface ListedRoot { uri: string; canonicalHash: string; bag?: string; slots?: ListedSlot[] }
 interface ListedSlot { slot: string; uri: string; slots: ListedSlot[] }
 
+/**
+ * THE LISTING ARRIVES IN PAGES. One outcome carries a bounded number of rows, so the verb answers a page
+ * and names the cursor of the next (`next`); this door hands each cursor back as `after` until none
+ * remains, and a person reads every root. An answer whose `roots` holds no array (an outcome that carried
+ * a count where the rows belong) refuses by name: an empty listing over a full seat would state a thing
+ * nobody measured. A cursor that fails to advance refuses the same way.
+ */
 async function memeList(args: ParsedArgs): Promise<number> {
   const plan = listPlan(args);
-  const result = await runVerb(plan.verb, plan.args, await vesselDid());
-  const outcome = readVerbOutcome(result);
-  if (!outcome.ok) {
-    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
-    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme list: ${outcome.error}`) });
+  const did = await vesselDid();
+  const roots: ListedRoot[] = [];
+  let head: Record<string, unknown> = {};
+  let requestId = "";
+  const refuse = (code: "cap-denied" | "verb-error", message: string): number => {
+    emit(args, { ok: false, requestId, error: { code, message }, human: () => console.error(`lares meme list: ${message}`) });
     return exitFor(code);
+  };
+  for (let after: string | null = null; ;) {
+    const result = await runVerb(plan.verb, after === null ? plan.args : { ...plan.args, after }, did);
+    requestId = result.requestId;
+    const outcome = readVerbOutcome(result);
+    if (!outcome.ok) return refuse(/cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error", outcome.error ?? "the verb refused");
+    const page = outcome.output["roots"];
+    if (!Array.isArray(page)) {
+      const count = (page as { boundedArrayCount?: unknown } | null | undefined)?.boundedArrayCount;
+      return refuse("verb-error", typeof count === "number"
+        ? `the listing arrived as a count of ${count} roots and named none of them; this vessel answers an unpaged listing`
+        : "the listing named no roots array");
+    }
+    roots.push(...(page as ListedRoot[]));
+    if (after === null) head = outcome.output;
+    const next = outcome.output["next"];
+    if (typeof next !== "string" || next === "") break;
+    if (after !== null && next <= after) return refuse("verb-error", `the listing's cursor stood still at ${next}`);
+    after = next;
   }
-  const roots = Array.isArray(outcome.output["roots"]) ? (outcome.output["roots"] as ListedRoot[]) : [];
   const slotLines = (slots: ListedSlot[] | undefined, depth: number): void => {
     for (const s of slots ?? []) { console.log(`${"  ".repeat(depth)}${s.slot}`); slotLines(s.slots, depth + 1); }
   };
+  // The seat as the verb named it: one bag, or a recipe with the bags its stack read and any it could not reach.
+  const seat: Record<string, unknown> = {};
+  for (const key of ["bag", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
+  const unreached = Array.isArray(head["unreached"]) ? (head["unreached"] as string[]) : [];
   emit(args, {
     ok: true,
-    requestId: result.requestId,
-    data: { bag: outcome.output["bag"], roots },
+    requestId,
+    data: { ...seat, roots },
     // One root per line — the base first so a shell reads it, the uri after; slots indent beneath.
-    human: () => { for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); } },
+    human: () => {
+      for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); }
+      for (const bag of unreached) console.error(`lares meme list: ${bag} stands unreached; its roots stay unlisted`);
+    },
   });
   return 0;
 }

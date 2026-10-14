@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked/v1",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "041ce73cfd27bda6298931b9c76dbc1b3cb951ed688303c187f38050efef55ea",
+      "why": "The grammar plugin's place-meme module carries the paged listing (listMemePage, listOneMeme) that lares meme list reads; the daemon runs it from dist. The next GENESIS RE-BAKE carries it into a founded vessel's own wiki."
+    }
+  ]
+}

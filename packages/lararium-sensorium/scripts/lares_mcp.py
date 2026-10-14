@@ -910,15 +910,21 @@ def build_mcp(coordinator: LaresCoordinator):
         return out.get("meme")
 
     @mcp.tool()
-    def meme_list(recipe: "str | None" = None, bag: "str | None" = None, tree: bool = False) -> dict:
+    def meme_list(recipe: "str | None" = None, bag: "str | None" = None, tree: bool = False,
+                  after: "str | None" = None) -> dict:
         """LIST every meme ROOT a seat holds, each with the canonical hash a writer hands back as `base` —
         mirrors `lares meme list`. CONTAINER LAW: exactly one of `recipe` / `bag` names the seat
         (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as `no-container`. Slugs ride bare. `tree` nests each root's slot tree
-        (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. Returns {bag, roots}. A plain
-        tiddler never lists. Rides the @daemon wire, never a store."""
+        (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. A `bag` lists that bag's own
+        records; a named `recipe` lists the roots its whole stack resolves, each row naming the `bag` that
+        answered. THE LISTING PAGES: one answer carries a bounded page of roots in title order and `next`
+        names the cursor of the page behind it; hand it back as `after` until `next` reads null. Returns
+        {bag | recipe, roots, next}. A plain tiddler never lists. Rides the @daemon wire, never a store."""
         args: dict = _meme_container("meme_list", recipe, bag)
         if tree:
             args["tree"] = True
+        if after:
+            args["after"] = after
         return _meme_wire("meme-list", args)
 
     @mcp.tool()
