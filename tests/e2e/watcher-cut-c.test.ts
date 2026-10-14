@@ -128,9 +128,10 @@ beforeAll(async () => {
     expect(landed, `carrier ${slug} must ingest cleanly`).toContain(carrierUri(slug));
   }
 
-  // Let the projection settle so each carrier's base pins (the file stands in the framing the hand
-  // laid, beside the records' render) — the watcher's baseline for "unchanged".
-  await sleep(2_500);
+  // THE SETTLE WORD: the apply answers once the projection its records cause has run, so each carrier's
+  // base stands pinned (the file in the framing the hand laid, beside the records' render) — the
+  // watcher's baseline for "unchanged". No nap: the vessel says the moment.
+  expect(d["settle"], `the apply names its settle word: ${JSON.stringify(d["settle"])}`).toMatchObject({ settled: true, mirrored: true, settledCount: landed.length });
   const r2 = await cli(["ingest", "--source", SRC, "--to", LARES_URI, "--json"]);
   const d2 = r2.json?.["data"] as Record<string, unknown>;
   expect(d2["changed"], "the mirror must be settled before the watcher cases").toBe(0);

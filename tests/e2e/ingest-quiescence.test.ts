@@ -91,9 +91,10 @@ describe("ingest quiescence — the composed loop holds still", () => {
     const carriers = d["carriers"] as Array<Record<string, unknown>>;
     expect(carriers?.[0]?.["decision"]).toBe("ingest");
 
-    // The projection wave re-renders the carrier canonical, edit preserved.
-    await sleep(2_000);
-    const settled = await awaitSettled();
+    // The projection wave re-renders the carrier canonical, edit preserved. THE SETTLE WORD: the apply
+    // answers once that projection has run, so the file reads as it leaves it. No nap, no quiet-window poll.
+    expect(d["settle"], `the apply names its settle word: ${JSON.stringify(d["settle"])}`).toMatchObject({ settled: true, mirrored: true, settledCount: 1 });
+    const settled = readFileSync(projected, "utf8");
     expect(settled).toContain("(quiescence-edit)");
 
     // ONE cycle: the next scan reads the mirror as unchanged.

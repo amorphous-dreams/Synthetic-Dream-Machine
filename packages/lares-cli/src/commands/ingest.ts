@@ -25,6 +25,7 @@ import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
 import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
+import { askShore, askSettle, type SettleReading } from "../shore-core.js";
 
 function printUsage(): void {
   console.log("usage: lares ingest --source <dir|file> --to <bagUri> [--apply] [--tag-blobs] [--in-wiki] [--yes]");
@@ -177,6 +178,20 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // set new), so the moved carrier reads `unchanged` next scan instead of re-landing.
   applyConfirmedRenames(tree, toBag, candidates, settled.deletions);
 
+  // THE SETTLE WORD. Each carrier whose records this gesture moved causes a projection; the gesture asks the
+  // vessel to say when that projection has run, so the run ends where a scan that follows reads what the
+  // projection left (`askSettle`). A wait that ends with no word says so and changes no exit: the records
+  // landed either way.
+  let settle: SettleReading | { readonly settled: false; readonly refusal: string; readonly why: string } | undefined;
+  if (settled.rendered.length > 0) {
+    try {
+      settle = await askSettle((a) => askShore(a, did), toBag, settled.rendered);
+    } catch (err) {
+      const f = verbFailure(err);
+      settle = { settled: false, refusal: f.code, why: f.message };
+    }
+  }
+
   const auditUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
   // A REFUSED FILE ENDS THE RUN NON-ZERO, AND EVERY REFUSED FILE GETS NAMED WITH ITS REFUSAL, however many
   // rows the wave held. The landed carriers stay landed and pinned; the exit and the envelope say that the
@@ -193,6 +208,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
     tallies: settled.tallies, refused, conflicts,
     ...(settled.pages.length > 0 ? { pages: settled.pages.map((p) => p.requestId) } : {}),
+    ...(settle !== undefined ? { settle } : {}),
     audit: auditUri,
   };
   emit(args, {
@@ -225,6 +241,10 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         console.error(`    ⚠ ${r.why}`);
       }
       if (pageError !== undefined) console.error(`  ⚠ ${refusedMessage}`);
+      if (settle !== undefined) {
+        if (settle.settled) console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from another bag` : ""}${"mirrored" in settle && !settle.mirrored ? " (no mirror holds this bag)" : ""}`);
+        else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
+      }
       if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
       console.log(`\n  audit: ${auditUri}`);
     },

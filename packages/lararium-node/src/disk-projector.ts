@@ -433,6 +433,7 @@ export class LarDiskProjector {
       this.measure.holdsSinceChange = 0;
       this.measure.wroteSinceChange = false;
       for (const title of Object.keys(changes)) gate.mark(routeToRoot(title));
+      this.wakeWaiters();
     };
     wiki.addEventListener?.("change", handler);
     // The scan follows subscription in this synchronous turn. The gate starts in a microtask and
@@ -457,6 +458,8 @@ export class LarDiskProjector {
   }
 
   async stop(): Promise<void> {
+    this.stopping = true;
+    this.wakeWaiters();
     await this.gate?.settle();
     this.writing.clear();
   }
@@ -1016,6 +1019,106 @@ export class LarDiskProjector {
     } catch { return null; }
   }
 
+  /**
+   * The text a carrier's render stands as, the text the Synced tree's records side hashes. A POINTER carries
+   * no body: its raw bytes come from the local cid/ tier, verified by hash, and a miss or a fault leaves the
+   * body pending (the `.meta` lands alone). A binary filetype (image/PDF) carries base64 text in `body` (a
+   * pointer's bytes re-encode to it); the raw bytes land on disk. The Synced-tree observation and the ingest
+   * gesture BOTH hash the base64 string form (the carrier text), so the echo gate compares like with like;
+   * only the physical file holds decoded bytes.
+   */
+  private async renderedOutput(tiddlerUri: string, file: CarrierFile): Promise<{ readonly pointerBytes: Buffer | null; readonly bodyPending: boolean; readonly output: string }> {
+    let pointerBytes: Buffer | null = null;
+    if (file.pointerCid !== undefined) {
+      const got = this.resolveByCid ? await this.resolveByCid(file.pointerCid) : null;
+      if (got && sha256HexBytesSync(got) === file.pointerCid) pointerBytes = Buffer.from(got);
+      else if (got) console.error(`[disk-projector] pointer ${tiddlerUri}: cid/ bytes fail sha256 == ${file.pointerCid} — writing the .meta alone`);
+    }
+    const bodyPending = file.pointerCid !== undefined && pointerBytes === null;
+    const output = pointerBytes ? (file.encoding === "base64" ? pointerBytes.toString("base64") : pointerBytes.toString("utf-8")) : file.body;
+    return { pointerBytes, bodyPending, output };
+  }
+
+  /**
+   * THE SETTLE WORD. A gesture that landed records names each carrier and the hash its records render
+   * (`records`, the records side the gesture pinned). This answers once the projection those records cause
+   * has run: for each carrier the wiki's resolved view holds records that render to that hash (or names
+   * another bag as the carrier's origin, where this mirror projects nothing of it), a reconcile of that
+   * carrier marked after the look has run, and the queue then stands drained. So the base each reconcile
+   * pins stands in the tree, and a scan that follows reads what the projection left.
+   *
+   * A HANDSHAKE, NO CLOCK. Records a gesture landed elsewhere reach this wiki by sync, at no instant a caller
+   * can name, and the wiki raises its change event on a later tick than the view moves. So the word never
+   * rests on that event: once the look finds the named records in the view, the wait marks the carrier
+   * itself (the reconcile reads settled state and writes nothing where nothing moved; a mark during a
+   * running reconcile runs it once more) and the drain at the end waits for that reconcile. The wait wakes
+   * at each change event (TW5 raises one for every move of its view, on a later tick, never none), and holds
+   * no timer of its own: the caller's wait bounds the caller, and a projector that stops ends it (`stopped`).
+   * A wait whose caller gave up holds one waiter and renders its carriers at each change event until their
+   * records arrive or the projector stops. A view that names no origin yet counts as not arrived.
+   *
+   * THE WORD NAMES THE STATE OR A LATER ONE. Where the view moves past the named records before the marked
+   * reconcile runs, that reconcile projects the later state, and the word still holds: a scan that follows
+   * reads what the projection left. A carrier whose records never moved settles at the first look, at the
+   * cost of one reconcile that writes nothing.
+   */
+  async settled(bagId: string, carriers: ReadonlyArray<{ readonly uri: string; readonly records: string }>): Promise<
+    | { readonly mirrored: false }
+    | { readonly mirrored: true; readonly settled: readonly string[]; readonly elsewhere: readonly string[]; readonly stopped: readonly string[] }
+  > {
+    if (!this.mirrors.some((m) => m.bagId === bagId)) return { mirrored: false };
+    const waiting = new Map(carriers.map((c) => [c.uri, c.records] as const));
+    const settled: string[] = [];
+    const elsewhere: string[] = [];
+    for (;;) {
+      // Arm the wake BEFORE the look, so an event that comes while the look awaits a render wakes the next look.
+      const wake = this.nextWake();
+      try {
+        for (const [uri, records] of [...waiting]) {
+          const origin = (this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];
+          if (typeof origin !== "string") continue;
+          if (origin !== bagId) { waiting.delete(uri); elsewhere.push(uri); continue; }
+          const file = await this.carrierFileFn(uri);
+          if (file === null) continue;
+          const { output } = await this.renderedOutput(uri, file);
+          if (!digestsEqual(carrierHash(output, file.metaBody), records)) continue;
+          // The view holds the named records: a reconcile marked now reads them, and the drain below waits for it.
+          waiting.delete(uri);
+          settled.push(uri);
+          if (this.gate !== null) this.gate.mark(uri);
+          else await this.reconcile(uri);
+        }
+        if (waiting.size === 0 || this.stopping) break;
+        await wake.promise;
+      } finally {
+        wake.cancel();
+      }
+    }
+    await this.idle();
+    return { mirrored: true, settled, elsewhere, stopped: [...waiting.keys()] };
+  }
+
+  /** Settle waits for the next wake: a change event, or the projector stopping. */
+  private settleWakes: Set<() => void> = new Set();
+  /** True once `stop` began: a settle wait ends, naming what never settled. */
+  private stopping = false;
+
+  /** A wake the caller arms before it looks, and cancels when it stops waiting, so no waiter outlives its wait. */
+  private nextWake(): { readonly promise: Promise<void>; readonly cancel: () => void } {
+    if (this.stopping) return { promise: Promise.resolve(), cancel: () => {} };
+    let wake: () => void = () => {};
+    const promise = new Promise<void>((resolve) => { wake = resolve; });
+    this.settleWakes.add(wake);
+    return { promise, cancel: () => { this.settleWakes.delete(wake); } };
+  }
+
+  /** Wake every settle wait. */
+  private wakeWaiters(): void {
+    const waiters = [...this.settleWakes];
+    this.settleWakes.clear();
+    for (const wake of waiters) wake();
+  }
+
   private async flush(bagId: string, tiddlerUri: string): Promise<void> {
     const mirror = this.mirrors.find((m) => m.bagId === bagId);
     if (!mirror) return;
@@ -1076,18 +1179,7 @@ export class LarDiskProjector {
     // A POINTER carries no body: its raw bytes come from the local cid/ tier, verified by hash.
     // The whole file lands beside the `.meta`; a miss or a fault lands the `.meta` alone (the
     // content file neither written nor swept — a file the projector did not write is not its own).
-    let pointerBytes: Buffer | null = null;
-    if (file.pointerCid !== undefined) {
-      const got = this.resolveByCid ? await this.resolveByCid(file.pointerCid) : null;
-      if (got && sha256HexBytesSync(got) === file.pointerCid) pointerBytes = Buffer.from(got);
-      else if (got) console.error(`[disk-projector] pointer ${tiddlerUri}: cid/ bytes fail sha256 == ${file.pointerCid} — writing the .meta alone`);
-    }
-    const bodyPending = file.pointerCid !== undefined && pointerBytes === null;
-    // A binary filetype (image/PDF) carries base64 text in `body` (a pointer's bytes re-encode to
-    // it); the raw bytes land on disk. The Synced-tree observation + the ingest gesture BOTH hash
-    // the base64 string form (the carrier text), so the echo gate compares like with like; only
-    // the physical file holds decoded bytes.
-    const output   = pointerBytes ? (isBinary ? pointerBytes.toString("base64") : pointerBytes.toString("utf-8")) : file.body;
+    const { pointerBytes, bodyPending, output } = await this.renderedOutput(tiddlerUri, file);
     const writeBytes: string | Buffer = pointerBytes ?? (isBinary ? Buffer.from(output, "base64") : output);
 
     // The disk ward — sovereign-island write confinement (bag-paths). Cascade

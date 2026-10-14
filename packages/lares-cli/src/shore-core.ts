@@ -93,12 +93,41 @@ export async function readShoreList(
   return { ok: true, standoffs, pending, ...(requestId !== undefined ? { requestId } : {}) };
 }
 
+/** What the settle word said, as a gesture reports it. */
+export interface SettleReading {
+  /** True where the island answered that the projection the named records cause has run. */
+  readonly settled: boolean;
+  /** False where no mirror of the island holds the bag: it projects nothing of these records. */
+  readonly mirrored: boolean;
+  readonly settledCount: number;
+  readonly elsewhereCount: number;
+  readonly refusal?: string;
+  readonly why?: string;
+}
+
+/**
+ * THE SETTLE WORD. A gesture that landed records names each carrier with the hash its records render; the
+ * island answers once the projection those records cause has run (`settle`, `shore-verb.ts`), so a scan that
+ * follows reads what the projection left. The island holds no clock for it: the caller's own wait bounds it.
+ */
+export async function askSettle(
+  ask: (shoreArgs: Readonly<Record<string, unknown>>) => Promise<ShoreAnswer>,
+  bag: string, carriers: ReadonlyArray<{ readonly uri: string; readonly records: string }>,
+): Promise<SettleReading> {
+  const answer = await ask({ op: "settle", bag, carriers: carriers.map((c) => ({ uri: c.uri, records: c.records })) });
+  const o = answer.output;
+  const count = (name: string): number => (typeof o[name] === "number" ? (o[name] as number) : 0);
+  if (!answer.ok) return { settled: false, mirrored: true, settledCount: 0, elsewhereCount: 0, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused" };
+  return { settled: true, mirrored: o["mirrored"] !== false, settledCount: count("settledCount"), elsewhereCount: count("elsewhereCount") };
+}
+
 /** Send one shore act to the active wiki's island and read its answer. Throws what `runVerb` throws. */
 export async function askShore(
   shoreArgs: Readonly<Record<string, unknown>>, did: string,
   run: (name: string, args: Record<string, unknown>, did: string, opts: { timeoutMs: number }) => Promise<SubmitResult> = runVerb,
 ): Promise<ShoreAnswer> {
-  // A sense or an answer over many carriers reconciles each one: the wait grows with the count.
-  const many = Array.isArray(shoreArgs["uris"]) ? (shoreArgs["uris"] as unknown[]).length : 0;
+  // A sense, a settle or an answer over many carriers reconciles each one: the wait grows with the count.
+  const many = (Array.isArray(shoreArgs["uris"]) ? (shoreArgs["uris"] as unknown[]).length : 0)
+    + (Array.isArray(shoreArgs["carriers"]) ? (shoreArgs["carriers"] as unknown[]).length : 0);
   return readShoreAnswer(await run("wiki-act", { verb: SHORE_VERB, args: { ...shoreArgs } }, did, { timeoutMs: 30_000 + many * 200 }));
 }

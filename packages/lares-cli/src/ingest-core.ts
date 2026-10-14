@@ -350,6 +350,10 @@ export interface IngestSettlement {
   readonly deletions: Record<string, unknown> | undefined;
   /** How many bases the gesture pinned. */
   readonly recorded: number;
+  /** Each carrier whose records the gesture moved (`ingest`), with the hash its records render as the island
+   *  named it, or as the one pure door read it where the rows stayed behind the cap. The settle word asks the
+   *  projection after exactly these (`settle`, `shore-verb.ts`). */
+  readonly rendered: ReadonlyArray<{ readonly uri: string; readonly records: string }>;
   /** A later wave that ended in an error: the gesture stops there and names what stays unread. */
   readonly pageError?: { readonly message: string; readonly unread: number };
 }
@@ -495,7 +499,7 @@ export async function settleIngest(
   if (first.status === "error") {
     return {
       first, pages: [], submitted: asked.length, asked, askedDeletions, landed: new Set(), unanswered: asked,
-      named: new Map(), refused: [], conflicts: [], tallies: {}, deletions: undefined, recorded: 0,
+      named: new Map(), refused: [], conflicts: [], tallies: {}, deletions: undefined, recorded: 0, rendered: [],
     };
   }
 
@@ -507,6 +511,10 @@ export async function settleIngest(
   for (const row of answer.rows) named.set(String(row["uri"]), row);
   const pages: SubmitResult[] = [];
   let recorded = 0;
+  /** The records sides the pure door read for landed carriers no row named. */
+  const ownRendered: Array<{ uri: string; records: string }> = [];
+  /** The carriers a later wave asked again: the first wave may have landed them, so their `noop` names a render. */
+  const askedAgain = new Set<string>();
   let pageError: IngestSettlement["pageError"];
   /** Carriers a tally proves landed though no row names them. */
   const provenLanded = new Set<string>();
@@ -532,12 +540,13 @@ export async function settleIngest(
       for (const c of unnamed) {
         const records = ownRecordsSide(c);
         if (records === null) askAgain.push(c);
-        else own.push({ uri: c.uri, decision: "ingest", canonicalHash: records });
+        else { own.push({ uri: c.uri, decision: "ingest", canonicalHash: records }); ownRendered.push({ uri: c.uri, records }); }
       }
       recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, own);
     }
     for (let at = 0; at < askAgain.length && pageError === undefined; at += INGEST_PAGE) {
       const page = askAgain.slice(at, at + INGEST_PAGE);
+      for (const c of page) askedAgain.add(c.uri);
       const { deletions: _first, changeId: _id, ...rest } = opts;
       const result = await submit({ ...rest, candidates: page });
       pages.push(result);
@@ -582,9 +591,17 @@ export async function settleIngest(
   }
   const askingUris = new Set([...refused, ...conflicts].map((r) => r.uri));
   const unanswered = asked.filter((uri) => !landed.has(uri) && !askingUris.has(uri));
+  const rendered = [...ownRendered];
+  for (const [uri, row] of named) {
+    const records = row["canonicalHash"];
+    // A later wave reads against the records the first wave left: a carrier the first wave landed answers
+    // `noop` there, and its records moved all the same.
+    const moved = row["decision"] === "ingest" || (row["decision"] === "noop" && askedAgain.has(uri));
+    if (moved && byUri.has(uri) && typeof records === "string" && records !== "") rendered.push({ uri, records });
+  }
   return {
     first, pages, submitted: asked.length, asked, askedDeletions, landed, unanswered,
-    named, refused, conflicts, tallies, deletions, recorded,
+    named, refused, conflicts, tallies, deletions, recorded, rendered,
     ...(pageError !== undefined ? { pageError } : {}),
   };
 }

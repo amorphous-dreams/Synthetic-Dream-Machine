@@ -105,9 +105,10 @@ describe("wikis ingest-back — the working write-layer round-trips", () => {
     const carriers = d["carriers"] as Array<Record<string, unknown>>;
     expect(carriers?.[0]?.["decision"]).toBe("ingest");
 
-    // the working projection re-renders canonical, the edit preserved
-    await sleep(2_000);
-    const settled = await awaitSettled();
+    // the working projection re-renders canonical, the edit preserved. THE SETTLE WORD: the apply answers
+    // once that projection has run, so the file reads as it leaves it. No nap, no quiet-window poll.
+    expect(d["settle"], `the apply names its settle word: ${JSON.stringify(d["settle"])}`).toMatchObject({ settled: true, mirrored: true, settledCount: 1 });
+    const settled = readFileSync(projected, "utf8");
     expect(settled).toContain("(wikis-ingest-back-edit)");
 
     // ONE cycle: the next scan reads the working mirror unchanged

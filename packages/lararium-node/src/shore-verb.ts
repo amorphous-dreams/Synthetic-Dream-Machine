@@ -11,6 +11,8 @@
  *                  pending removal, a page at a time (`after` names the page behind, `next` answers its
  *                  cursor); `uris` narrows the answer to named carriers
  *   sense          look at the disk for the named carriers (the watcher sends what vanished or returned)
+ *   settle         answer once the projection that landed records cause has run (`lares ingest --apply`
+ *                  names each carrier it landed and the hash its records render)
  *   take-records   take the records' side of one standoff, named by its key
  *   restore        write a vanished file back from the records and pin its base
  *   remove         delete the vanished carrier in the wiki, by the wiki shore's own delete door
@@ -34,7 +36,7 @@ import type { LarDiskProjector } from "./disk-projector.js";
 export const SHORE_VERB = "shore";
 
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "take-records", "restore", "remove"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "take-records", "restore", "remove"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
@@ -135,6 +137,21 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     if (uris === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "sense names carriers as a list of addresses (`uris`), or none for every mirrored carrier" };
     await projector.sense(uris);
     return { ok: true, op, ...shoreCounts(projector, bag) };
+  }
+  if (op === "settle") {
+    // THE SETTLE WORD: answer once the projection the named records cause has run (`settled`). A bag that no
+    // mirror of this island holds answers at once (`mirrored: false`): this island projects nothing of it.
+    const carriers = Array.isArray(args["carriers"])
+      && (args["carriers"] as unknown[]).every((c) => c !== null && typeof c === "object" && text((c as Record<string, unknown>)["uri"]) !== null && text((c as Record<string, unknown>)["records"]) !== null)
+      ? (args["carriers"] as Array<{ uri: string; records: string }>).map((c) => ({ uri: c.uri, records: c.records }))
+      : null;
+    if (bag === null || carriers === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "settle names the bag the records landed in (`bag`) and each carrier with the hash its records render (`carriers`: `{ uri, records }`)" };
+    const answer = await projector.settled(bag, carriers);
+    if (!answer.mirrored) return { ok: true, op, bag, mirrored: false, settledCount: 0, elsewhereCount: 0 };
+    // Counts ride every answer; the rows of what never settled ride too (the outcome caps them past 32).
+    return answer.stopped.length > 0
+      ? { ok: false, op, bag, refusal: "projector-stopped", why: `the projection stopped before ${answer.stopped.length} carrier(s) settled`, stopped: answer.stopped, stoppedCount: answer.stopped.length }
+      : { ok: true, op, bag, mirrored: true, settledCount: answer.settled.length, elsewhereCount: answer.elsewhere.length };
   }
   if (op === "restore" || op === "remove") {
     const uris = args["uris"] === undefined ? [] : uriList(args["uris"]);
