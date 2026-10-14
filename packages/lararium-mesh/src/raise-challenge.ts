@@ -55,7 +55,7 @@ const RAISE_DOMAIN = RAISE_CHALLENGE_DOMAIN;
 export interface RaiseChallenge {
   /** Which vessel asks — its own verifying key. A grant for another vessel answers nothing here. */
   readonly vesselId: string;
-  /** The AID of the Nexus whose admit counts for this raise (`realmIdOfCharter`, the charter's genesis epoch
+  /** The AID of the Nexus whose admit counts for this raise (`nexusAidOf`, the charter's genesis epoch
    *  CID). A raise crosses no Nexus boundary: an admit for any other Nexus raises nothing here. */
   readonly nexus:    string;
   /** The lease epoch standing when the challenge was minted — the fence the grant binds to. */

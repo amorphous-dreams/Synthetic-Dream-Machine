@@ -200,7 +200,7 @@ export async function reAnnounceRealmBooksAtIsland(opts: {
   repo:        Repo;
   /** The island this boot RESOLVED — the crossroads board the announce lands on. */
   nexusPubkey: string;
-  /** The realm this vessel stands in (`realmIdOfCharter`). Null/absent ⇒ no realm, so nothing to announce. */
+  /** The realm this vessel stands in (`nexusAidOf`). Null/absent ⇒ no realm, so nothing to announce. */
   realmId:     string | null | undefined;
 }): Promise<BoardClimbResult> {
   const { repo, nexusPubkey, realmId } = opts;
@@ -255,7 +255,7 @@ export async function climbNexusBoards(opts: {
   nexusPubkey:  string;
   /** The islands beneath it (`nexusIslandsBelow`). Empty ⇒ standing at the bottom, or torn: nothing moves. */
   priorIslands: readonly string[];
-  /** The realm this vessel stands in (`realmIdOfCharter`), for the crossroads re-announce alone. */
+  /** The realm this vessel stands in (`nexusAidOf`), for the crossroads re-announce alone. */
   realmId?:     string | null;
 }): Promise<NexusBoardClimb> {
   const acts: BoardClimbResult[] = [

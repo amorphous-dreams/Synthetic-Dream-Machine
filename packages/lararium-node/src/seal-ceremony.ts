@@ -217,14 +217,14 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
     throw refuse("no-chair-stands", "no persona stands for a chair — stand one first:\n  lares persona new <index> --name '<label>' --seat [--chair '<chair label>']");
   }
   const kahu: NexusCharterKahu[] = doc.kahu.map((k) => ({ ...k }));
-  const chairAt = new Map<string, number>(kahu.map((k, i) => [normChair(k.displayName), i]));
+  const chairAt = new Map<string, number>(kahu.map((k, i) => [normChair(k.chairLabel), i]));
   const mints: Array<{ readonly at: number; readonly face: number }> = [];
   for (const [index, chair] of chairs) {
     let at = chairAt.get(normChair(chair));
-    if (at === undefined) { at = kahu.length; chairAt.set(normChair(chair), at); kahu.push({ displayName: chair, verifyingKey: null }); }
+    if (at === undefined) { at = kahu.length; chairAt.set(normChair(chair), at); kahu.push({ chairLabel: chair, verifyingKey: null }); }
     // The chair keeps its key where this vessel holds that key as a row of the same face; any other chair mints.
     const seated = kahu[at]!.verifyingKey;
-    if (seated && heldSeatKey(seated)?.handleIndex === index) kahu[at] = { displayName: kahu[at]!.displayName, verifyingKey: lower(seated) };
+    if (seated && heldSeatKey(seated)?.handleIndex === index) kahu[at] = { chairLabel: kahu[at]!.chairLabel, verifyingKey: lower(seated) };
     else mints.push({ at, face: index });
   }
   const threshold = thresholdFor(opts.threshold, doc, kahu.length);
@@ -234,7 +234,7 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
   for (const { at, face } of mints) {
     const key = await mintSeatKey(face);
     minted.push(key);
-    kahu[at] = { displayName: kahu[at]!.displayName, verifyingKey: key };
+    kahu[at] = { chairLabel: kahu[at]!.chairLabel, verifyingKey: key };
   }
   const seatedKeys = kahu.map((k) => k.verifyingKey).filter((k): k is string => typeof k === "string" && k.length > 0).map(lower);
   return { kahu, seatedKeys, threshold, superseded: priorSeated.filter((k) => !seatedKeys.includes(k)), minted };
@@ -304,7 +304,7 @@ export async function armRoll(opts: { readonly cards: readonly Uint8Array[]; rea
   for (const [index, chair] of chairs) {
     let key = adoptedOfFace.get(index);
     if (key === undefined) { key = await mintSeatKey(index); minted.push(key); }
-    kahu.push({ displayName: chair, verifyingKey: key });
+    kahu.push({ chairLabel: chair, verifyingKey: key });
   }
   const seatedKeys = kahu.map((k) => k.verifyingKey!);
   return {

@@ -241,7 +241,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     expect(await code(rite.rotate({ threshold: "3" }))).toBe(0);
 
     const doc = readNexusDoc(larSealHome());
-    expect(doc!.kahu.map((k) => k.displayName).sort()).toEqual([...KAHU, "Kahu Delta"].sort());
+    expect(doc!.kahu.map((k) => k.chairLabel).sort()).toEqual([...KAHU, "Kahu Delta"].sort());
     expect(doc!.threshold).toBe(3);
     expect(doc!.sealLineage!.length).toBe(2);
     expect(verifySealLineage(doc!.sealLineage!)).toBe(true);
@@ -255,7 +255,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     await standForKahuSeat(declarations, 1, false);
     expect(await code(rite.rotate({ threshold: "2" }))).toBe(0);
     const after = readNexusDoc(larSealHome())!;
-    expect(after.kahu.map((k) => k.displayName).sort()).toEqual(["Kahu Alpha", "Kahu Delta", "Kahu Gamma"]);
+    expect(after.kahu.map((k) => k.chairLabel).sort()).toEqual(["Kahu Alpha", "Kahu Delta", "Kahu Gamma"]);
     expect(verifySealLineage(after.sealLineage!)).toBe(true);
   });
 });

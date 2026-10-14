@@ -36,10 +36,10 @@ import { plainField } from "../src/index.js";
 
 // ── THE GRADIENT, three rungs ───────────────────────────────────────────────────────────────────────
 const OWN      = "ab".repeat(32);
-const CHARTER  = `epoch0-${"7a".repeat(32)}`;
+const CHARTER  = `nexus-${"7a".repeat(32)}`;
 const EXPLICIT = "ee".repeat(32);
 /** An epoch this vessel rooted acts on BEFORE it held the charter — the roster below never names it. */
-const OLD_EPOCH = `epoch0-${"11".repeat(32)}`;
+const OLD_EPOCH = `nexus-${"11".repeat(32)}`;
 
 /** own → charter: the founding walk. ONE island below. */
 const AT_CHARTER = { genesisEpochCid: CHARTER, charterStands: true, ownVesselKey: OWN };
@@ -185,7 +185,7 @@ describe("③ the crossroads RE-ANNOUNCES — the announce carries no signature 
       d.tiddlers[key] = mutableLarRecord(key, { text: stale }, "test:stale");
     });
     // And a live registration for a DIFFERENT realm on the realm doc — the realm filter must drop it too.
-    const foreign = await publicBook("epoch0-someotherrealm", "lar:///ha.ka.ba/books/another-realm");
+    const foreign = await publicBook("nexus-someotherrealm", "lar:///ha.ka.ba/books/another-realm");
     (await board(r, realmDocUrl(CHARTER))).change((d) => writeRealmBagRegistration(d, foreign));
 
     await reAnnounceRealmBooksAtIsland({ repo: r, nexusPubkey: EXPLICIT, realmId: CHARTER });
@@ -265,7 +265,7 @@ describe("⑤ the climb runs every boot, and ratchets on INTENT alone", () => {
 
   test("CONTROL — an UNREADABLE charter re-keys NOTHING: the boot refuses before a board is addressed", async () => {
     const r = repo();
-    const at   = { genesisEpochCid: "epoch0-truncated", charterStands: true, ownVesselKey: OWN };
+    const at   = { genesisEpochCid: "nexus-truncated", charterStands: true, ownVesselKey: OWN };
     const torn = nexusIdentity(at);
     expect(torn.kind).toBe("torn");
     // WHAT IT DOES INSTEAD: it HALTS, loudly, at the scope door — never descending to its own board.

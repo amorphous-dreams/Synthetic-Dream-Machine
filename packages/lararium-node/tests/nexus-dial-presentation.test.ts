@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, hexToBytes, realmIdOfCharter, signCarriageQuorum, signCarriageContract,
+  hex, hexToBytes, nexusAidOf, signCarriageQuorum, signCarriageContract,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc,
   type NexusDoc, type CarriageEntry, type LarDoc, type LeafIdentity, type DeviceDelegationTiddler,
 } from "@lararium/mesh";
@@ -76,8 +76,8 @@ describe("the dial presents the DIALED island's admit only", () => {
     const sealHome = join(root, "nexus");
     const primary = await charter(P_KAHU);
     const carried = await charter(C_KAHU);
-    const aidP = realmIdOfCharter(primary)!;
-    const aidC = realmIdOfCharter(carried)!;
+    const aidP = nexusAidOf(primary)!;
+    const aidC = nexusAidOf(carried)!;
     writeNexusDoc(sealHome, primary);
     writeNexusDoc(carriedCharterHome(sealHome, aidC), carried);
     // One leaf per Nexus — a held persona presents a DIFFERENT key to each.
@@ -139,7 +139,7 @@ describe("one face per vessel per Nexus — a dial carries no contract slot", ()
     const doc = await charter([seed(1), seed(2), seed(3)]);
     const admit = await admitOn(doc, [seed(1), seed(2), seed(3)], seed(21));
     return {
-      admit, lineage: [], aid: realmIdOfCharter(doc)!, island: realmIdOfCharter(doc)!,
+      admit, lineage: [], aid: nexusAidOf(doc)!, island: nexusAidOf(doc)!,
       leaf: { handleIndex: 0, verifyingKey: await pubOf(seed(21)), seed: seed(21) },
     };
   }

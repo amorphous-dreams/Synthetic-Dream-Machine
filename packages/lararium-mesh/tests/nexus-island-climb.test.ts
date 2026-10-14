@@ -22,8 +22,8 @@ import { nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow } from "../src/nexu
 
 const OWN     = "a".repeat(64);
 const ANCHOR  = "b".repeat(64);
-const GENESIS = `epoch0-${"c".repeat(64)}`;
-const OTHER   = `epoch0-${"d".repeat(64)}`;
+const GENESIS = `nexus-${"c".repeat(64)}`;
+const OTHER   = `nexus-${"d".repeat(64)}`;
 
 describe("nexusIslandsBelow — the climb's migration sources", () => {
   test("a CHARTER island reads the anchor it dialled, then its own key — high to low", () => {

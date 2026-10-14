@@ -22,7 +22,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract, makeMultiSigQuorumVerifier,
+  hex, nexusAidOf, signCarriageQuorum, signCarriageContract, makeMultiSigQuorumVerifier,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, foundingRoster,
   signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
   type NexusDoc, type CarriageEntry, type LarDoc,
@@ -89,8 +89,8 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const sealHome = join(root, "nexus");
     const P = await charter(P_KAHU);
     const Q = await charter(Q_KAHU);
-    const aidP = realmIdOfCharter(P)!;
-    const aidQ = realmIdOfCharter(Q)!;
+    const aidP = nexusAidOf(P)!;
+    const aidQ = nexusAidOf(Q)!;
     writeNexusDoc(sealHome, P);
     writeNexusDoc(carriedCharterHome(sealHome, aidQ), Q);
     const leafAt = new Map<string, Uint8Array>([[aidP, LEAF_P], [aidQ, LEAF_Q]]);
@@ -132,7 +132,7 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const w = await stand();
     const unheld = await charter([seed(7), seed(8), seed(9)]);
     const admit = await act(unheld, [seed(7), seed(8), seed(9)], LEAF_P, "admit");
-    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ aid: realmIdOfCharter(unheld)!, gatePubKey: GATE_P, admit, lineage: [] }), leaves: w.leaves }))
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ aid: nexusAidOf(unheld)!, gatePubKey: GATE_P, admit, lineage: [] }), leaves: w.leaves }))
       .rejects.toThrow(AdmitBundleError);
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: "{not json", leaves: w.leaves })).rejects.toThrow(AdmitBundleError);
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: "zz" }), leaves: w.leaves })).rejects.toThrow(AdmitBundleError);
@@ -248,7 +248,7 @@ describe("a bundle taken across a seal roll carries the anchor, and the dial pre
     const rolled: NexusDoc = grown.doc({ labels: newKeys.map((_, i) => `Kahu ${i}`) });
     const sealHome = join(root, "nexus");
     writeNexusDoc(sealHome, rolled);
-    const aid = realmIdOfCharter(rolled)!;
+    const aid = nexusAidOf(rolled)!;
     expect(aid).toBe(e0.epochCid);
     const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
       a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
@@ -299,7 +299,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
     const rolled: NexusDoc = grown.doc({ labels: newKeys.map((_, i) => `Kahu ${i}`) });
     const sealHome = join(root, "nexus");
     writeNexusDoc(sealHome, rolled);
-    const aid = realmIdOfCharter(rolled)!;
+    const aid = nexusAidOf(rolled)!;
     const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
       a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
     const admit = await act(genesis.doc(), OLD, LEAF, "admit");

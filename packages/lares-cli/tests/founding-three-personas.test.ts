@@ -143,10 +143,10 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
     const doc = readNexusDoc(larSealHome());
     expect(doc?.kahu.length).toBe(3);
     for (const k of doc!.kahu) {
-      expect(k.verifyingKey, `${k.displayName} seated by declared-Handle join`).toBeTruthy();
+      expect(k.verifyingKey, `${k.chairLabel} seated by declared-Handle join`).toBeTruthy();
     }
     // The founder (h0 / "Kahu Alpha") is seated too — never a 2-of-3 that strands it unnamed.
-    const founder = doc!.kahu.find((k) => k.displayName === KAHU[0]);
+    const founder = doc!.kahu.find((k) => k.chairLabel === KAHU[0]);
     expect(founder?.verifyingKey).toBeTruthy();
     expect(foundingQuorumSeated(doc)).toBe(true);
   });
@@ -163,8 +163,8 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
 
     expect(await cmdNexus(nexusArgs(["seal", "seat"]))).toBe(0);
     const doc = readNexusDoc(larSealHome());
-    expect(doc!.kahu.map((k) => k.displayName)).toEqual(KAHU);
-    expect(doc!.kahu.find((k) => k.displayName === KAHU_SPARE)).toBeUndefined();
+    expect(doc!.kahu.map((k) => k.chairLabel)).toEqual(KAHU);
+    expect(doc!.kahu.find((k) => k.chairLabel === KAHU_SPARE)).toBeUndefined();
     // Majority over the three that stood reads 2 — the fourth's declaration moved nothing.
     expect(doc!.threshold).toBe(2);
     expect(foundingQuorumSeated(doc)).toBe(true);
@@ -179,7 +179,7 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
     }
     await cmdNexus(nexusArgs(["seal", "seat"]));
     const doc = readNexusDoc(larSealHome());
-    expect(doc!.kahu.map((k) => k.displayName).sort()).toEqual([...mine].sort());
+    expect(doc!.kahu.map((k) => k.chairLabel).sort()).toEqual([...mine].sort());
     for (const k of doc!.kahu) expect(k.verifyingKey).toBeTruthy();
   });
 
@@ -222,6 +222,6 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
     expect(await ownPersonaPetname(await makeNodePersonaPetnameStore(), 0)).toBe(LABELS[0]);
     expect(await declaredHandle(await makeNodePersonaDeclarationStore(), 0)).toBe(KAHU[0]);
     expect(await cmdNexus(nexusArgs(["seal", "seat"]))).toBe(0);
-    expect(readNexusDoc(larSealHome())!.kahu.find((k) => k.displayName === KAHU[0])?.verifyingKey).toBeTruthy();
+    expect(readNexusDoc(larSealHome())!.kahu.find((k) => k.chairLabel === KAHU[0])?.verifyingKey).toBeTruthy();
   });
 });

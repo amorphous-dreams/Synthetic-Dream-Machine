@@ -20,7 +20,7 @@ import * as ed from "@noble/ed25519";
 import { verifyBcc } from "@lararium/memetic-frame";
 import { readCarrierShape } from "@lararium/tw5";
 import {
-  emptyFoundingCharterDoc, genesisSealEpochCid, foundingRoster, foundingQuorumSeated,
+  emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated,
   genesisCharterEpoch, rotateSealEpoch, sealLineageHead, ed25519SignerFromSeed, hex, UNARMED, seatNextDigest,
   renameOwnPersona, ownPersonaPetname, declarePersonaHandle, standForKahuSeat,
   personasStandingForSeat, majorityThreshold, type NexusDoc, type NexusCharterKahu,
@@ -35,6 +35,7 @@ import {
 } from "../src/node-vessel-identity.js";
 
 import { fixtureKey } from "./fixture-keys.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
   saved[k] = process.env[k];
@@ -59,9 +60,9 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
       sealEpochCid: genesis.epochCid, sealLineage: [genesis],
       kahu: [
-        { displayName: "Kahu Alpha", verifyingKey: keys[0]! },
-        { displayName: "Kahu Beta",        verifyingKey: keys[1]! },
-        { displayName: "Kahu Gamma",        verifyingKey: null },
+        { chairLabel: "Kahu Alpha", verifyingKey: keys[0]! },
+        { chairLabel: "Kahu Beta",        verifyingKey: keys[1]! },
+        { chairLabel: "Kahu Gamma",        verifyingKey: null },
       ],
     };
     const path = writeNexusDoc(bags, doc);
@@ -79,10 +80,10 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     const keys = [fixtureKey(0xc), fixtureKey(0xd)];
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
-      sealEpochCid: genesisSealEpochCid(keys, 2),
+      sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid,
       kahu: [
-        { displayName: "Kahu Alpha", verifyingKey: keys[0]! },
-        { displayName: "Kahu Beta",  verifyingKey: keys[1]! },
+        { chairLabel: "Kahu Alpha", verifyingKey: keys[0]! },
+        { chairLabel: "Kahu Beta",  verifyingKey: keys[1]! },
       ],
     };
     const body = renderNexusDoc(doc);
@@ -100,11 +101,16 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     const genesis = genesisCharterEpoch(keys, 2, UNARMED);
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid,
-      sealLineage: [genesis], kahu: keys.map((verifyingKey, i) => ({ displayName: `Kahu ${i}`, verifyingKey })),
+      sealLineage: [genesis], kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Kahu ${i}`, verifyingKey })),
     };
     const whole = renderNexusDoc(doc);
     const old = whole.replace('"nextKeyDigests": [],', '"nextKeyCommit": "legacy",');
     writeFileSync(nexusCharterDocPath(bags), old, "utf8");
+    expect(nexusCharterShape(bags)).toBe("earlier-shape");
+    expect(readNexusDoc(bags)).toBeNull();
+    // A seat that carries `displayName` where a chair carries `chairLabel`: the earlier shape, by name.
+    writeFileSync(nexusCharterDocPath(bags), whole.replaceAll('"chairLabel"', '"displayName"'), "utf8");
+    expect(whole).toContain('"chairLabel"');
     expect(nexusCharterShape(bags)).toBe("earlier-shape");
     expect(readNexusDoc(bags)).toBeNull();
 
@@ -154,9 +160,9 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
       sealEpochCid: genesis.epochCid,
       sealLineage: [genesis],
       kahu: [
-        { displayName: "Kahu Alpha", verifyingKey: keys[0]! },
-        { displayName: "Kahu Beta",        verifyingKey: keys[1]! },
-        { displayName: "Kahu Gamma",        verifyingKey: null },
+        { chairLabel: "Kahu Alpha", verifyingKey: keys[0]! },
+        { chairLabel: "Kahu Beta",        verifyingKey: keys[1]! },
+        { chairLabel: "Kahu Gamma",        verifyingKey: null },
       ],
     };
     writeNexusDoc(bags, doc);
@@ -187,7 +193,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     if (!r.ok) throw new Error(r.reason);
     return {
       kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: r.epoch.epochCid, sealLineage: [genesis, r.epoch],
-      kahu: keys.slice(2).map((k, i) => ({ displayName: `Kahu ${i}`, verifyingKey: k })),
+      kahu: keys.slice(2).map((k, i) => ({ chairLabel: `Kahu ${i}`, verifyingKey: k })),
     };
   }
 
@@ -262,7 +268,7 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
     for (const [index, chair] of await personasStandingForSeat(declarations)) {
       if (!held.has(index)) continue;
       const rt = await generateOrLoadPersonaGroupRoot(index);
-      kahu.push({ displayName: chair, verifyingKey: rt.verifyingKey });
+      kahu.push({ chairLabel: chair, verifyingKey: rt.verifyingKey });
     }
     const seated    = kahu.map((k) => k.verifyingKey).filter((v): v is string => Boolean(v));
     const threshold = majorityThreshold(kahu.length);          // 3 chairs → 2, derived, never a constant
@@ -277,7 +283,7 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
 
     const back = readNexusDoc(bags);
     expect(existsSync(nexusCharterDocPath(bags))).toBe(true);
-    expect(back?.kahu.map((k) => k.displayName)).toEqual(handles);   // the operator's names, not the build's
+    expect(back?.kahu.map((k) => k.chairLabel)).toEqual(handles);   // the operator's names, not the build's
     expect(back?.threshold).toBe(2);
     expect(foundingRoster(back).keys.length).toBe(3);
     expect(foundingQuorumSeated(back)).toBe(true);
@@ -291,10 +297,10 @@ describe("the charter carrier itself — FRAMED, checked, and restamped per join
 
   const doc: NexusDoc = {
     kind: NEXUS_DOC_DOMAIN, threshold: 2,
-    sealEpochCid: genesisSealEpochCid([fixtureKey(0xa), fixtureKey(0xb)], 2),
+    sealEpochCid: heldCharter({ keys: [fixtureKey(0xa), fixtureKey(0xb)], threshold: 2 }).aid,
     kahu: [
-      { displayName: "Kahu Alpha", verifyingKey: fixtureKey(0xa) },
-      { displayName: "Kahu Beta",  verifyingKey: fixtureKey(0xb) },
+      { chairLabel: "Kahu Alpha", verifyingKey: fixtureKey(0xa) },
+      { chairLabel: "Kahu Beta",  verifyingKey: fixtureKey(0xb) },
     ],
   };
 
@@ -315,7 +321,7 @@ describe("the charter carrier itself — FRAMED, checked, and restamped per join
 
   test("a KAHU-joint write re-stamps the check over the moved span", () => {
     writeNexusDoc(bags, doc);
-    writeNexusKahu(bags, { threshold: 1, kahu: [{ displayName: "Solo", verifyingKey: null }] }, doc);
+    writeNexusKahu(bags, { threshold: 1, kahu: [{ chairLabel: "Solo", verifyingKey: null }] }, doc);
     const body = readFileSync(nexusCharterDocPath(bags), "utf8");
     expect(verifyBcc(body)).toBe("ok");
     expect(readNexusDoc(bags)?.threshold).toBe(1);

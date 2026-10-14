@@ -28,7 +28,7 @@ import { nodeWalkStore, listWalkRecords } from "../src/node-walk-store.js";
 import { rollHosting, hostingDir } from "../src/hosting-store.js";
 import { runWalkTake, runWalkInvite, runWalkState, WalkRefusal } from "../src/commands/walk.js";
 
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const GATE = "ee".repeat(32);
 const OTHER_GATE = "dd".repeat(32);
 const RELAY = "ws://hearth:7700/ws";
@@ -104,7 +104,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     await expect(runWalkTake({ carried: await invite(OTHER_GATE) })).rejects.toBeInstanceOf(WalkRefusal);
     expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);
     // The same hearth in another Nexus refuses too: one record names one Nexus.
-    const otherNexus = encodeInvite({ nexusAid: "epoch0-" + "b".repeat(64), gatePubKey: GATE, token: mintHostToken(epoch), relay: RELAY });
+    const otherNexus = encodeInvite({ nexusAid: "nexus-" + "b".repeat(64), gatePubKey: GATE, token: mintHostToken(epoch), relay: RELAY });
     await expect(runWalkTake({ carried: otherNexus })).rejects.toThrow(/in another Nexus/);
     expect((await runWalkState()).map((w) => w.nexusAid)).toEqual([AID]);
     // A fresh invite for the same hearth — walking back in — is taken, and the relay stays.

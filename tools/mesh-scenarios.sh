@@ -1373,7 +1373,7 @@ run_climb() {
   done
   $COMPOSE exec -T lararium-a $LARES nexus rite quorum >/dev/null 2>&1
   EPOCH=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
-          | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+          | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   if [ -n "$EPOCH" ]; then ok; else bad "no charter seated — nothing re-keyed, so the climb never happened"; clear_all; return; fi
 
   # ★ THE READING THIS SCENARIO EXISTS FOR ★
@@ -1418,7 +1418,7 @@ run_climb() {
   step "NEG b — a TORN charter REFUSES, and never falls to the floor"
   local OWN_BEFORE OWN_AFTER
   OWN_BEFORE=$(logs_count '\[nexus\] island .* \(own\)' lararium-a)
-  $COMPOSE exec -T lararium-a sh -c 'sed -i "s/epoch0-[0-9a-f]*/epoch0-ZZZTORNZZZ/g" /state/data/lares/nexus/founding-roster.mem' 2>/dev/null
+  $COMPOSE exec -T lararium-a sh -c 'sed -i "s/nexus-[0-9a-f]\\{64\\}/nexus-ZZZTORNZZZ/g" /state/data/lares/nexus/founding-roster.mem' 2>/dev/null
   $COMPOSE restart lararium-a >/dev/null 2>&1
   # THE VESSEL IS EXPECTED TO DIE HERE, and `restart: on-failure:8` means it dies eight times. Wait for
   # the refusal to appear rather than for an exit, so a cure that refuses WITHOUT dying still reads.
@@ -1832,7 +1832,7 @@ run_conflict() {
 
 # ── ⑥ NEXUS BOARD KEYING, AND THE GRADIENT'S THREE STATES ───────────────────────────────────────
 # TWO VESSELS SHARING ONE CHARTER MUST COMPUTE ONE BOARD. The scope is the charter's genesis epoch —
-# `GENESIS_RE = /^epoch0-[0-9a-f]{64}$/` (nexus-identity.ts:71) — hashed into a doc id by
+# `GENESIS_RE = /^nexus-[0-9a-f]{64}$/` (nexus-identity.ts:71) — hashed into a doc id by
 # `deterministicDocUrl`, so A and B derive the same address "alike by every holder and belonging to
 # no operator" without exchanging it.
 #
@@ -1876,8 +1876,8 @@ run_board() {
 
   step "NEG a — two vessels under DIFFERENT charters compute DIFFERENT boards"
   local EA EB BA BB
-  EA=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-  EB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"epoch0-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  EA=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  EB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   BA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
   BB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
   if [ -n "$EA" ] && [ -n "$EB" ] && [ "$EA" != "$EB" ] && [ -n "$BA" ] && [ -n "$BB" ] && [ "$BA" != "$BB" ]; then ok
@@ -1927,7 +1927,7 @@ run_board() {
   step "NEG c — B's charter is TORN: she REFUSES, and never reads as no-nexus"
   local OWN_BEFORE OWN_AFTER
   OWN_BEFORE=$(logs_count '\[nexus\] island .* \(own\)' lararium-b)
-  $COMPOSE exec -T lararium-b sh -c 'sed -i "s/epoch0-[0-9a-f]*/epoch0-ZZZTORNZZZ/g" /state/data/lares/nexus/founding-roster.mem' 2>/dev/null
+  $COMPOSE exec -T lararium-b sh -c 'sed -i "s/nexus-[0-9a-f]\\{64\\}/nexus-ZZZTORNZZZ/g" /state/data/lares/nexus/founding-roster.mem' 2>/dev/null
   $COMPOSE restart lararium-b >/dev/null 2>&1
   local d=$((SECONDS + 180)) tornseen=0
   while [ "$SECONDS" -lt "$d" ]; do

@@ -288,7 +288,7 @@ Every bag declares its sealing posture as self-describing, tighten-only data ove
 
 !!! The name — a KERI AID
 
-`genesisSealEpochCid` content-addresses the charter's seated key-set and threshold — ''prior art: a KERI Autonomic Identifier'', "cryptographically derived from its very first key event" (`nexus-identity.ts:4-7`, quote license). Every charter holder derives the identical value from public material; it names no vessel and survives rotation because the genesis sits at the head of the lineage rather than its end (`nexus-identity.ts:38-41`).
+The Nexus AID (`nexus-…`, `sealEpochCidOf` at genesis, read by `nexusAidOf`) content-addresses the charter's genesis epoch: its seated key-set, threshold and successor commitments — ''prior art: a KERI Autonomic Identifier'', "cryptographically derived from its very first key event" (`nexus-identity.ts:4-7`, quote license). Every charter holder derives the identical value from public material; it names no vessel and survives rotation because the genesis sits at the head of the lineage rather than its end (`nexus-identity.ts:38-41`).
 
 !!! The three-state gradient
 
@@ -300,7 +300,7 @@ Every bag declares its sealing posture as self-describing, tighten-only data ove
 
 !!! The resolution order
 
-`nexusIdentity()` resolves in exactly this order (`nexus-identity.ts:138-186`): ''explicit scope'' (a caller that already knows its island) ?? ''charter genesis'' (a readable `genesisSealEpochCid`, refusing TORN if the genesis is present but unreadable) ?? ''anchor'' (the gate key of a confederation this vessel dials, refusing TORN if an admission record stands but the key is malformed) ?? ''own'' (the vessel's own key, as a private nexus of one). A charter always outranks an anchor because "it names a relation this vessel consented to, where an anchor names only a relay it reaches" (`nexus-identity.ts:152-154`), and neither can outrank a term that structurally cannot exist for a leaf vessel (`nexus-identity.ts:27-36`).
+`nexusIdentity()` resolves in exactly this order (`nexus-identity.ts:138-186`): ''explicit scope'' (a caller that already knows its island) ?? ''charter genesis'' (a readable Nexus AID, refusing TORN if the genesis is present but unreadable) ?? ''anchor'' (the gate key of a confederation this vessel dials, refusing TORN if an admission record stands but the key is malformed) ?? ''own'' (the vessel's own key, as a private nexus of one). A charter always outranks an anchor because "it names a relation this vessel consented to, where an anchor names only a relay it reaches" (`nexus-identity.ts:152-154`), and neither can outrank a term that structurally cannot exist for a leaf vessel (`nexus-identity.ts:27-36`).
 
 !!! What landed, 2026-09-18
 
@@ -638,6 +638,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VR_QoaLn7TRL8NpIqxEObxy-uIzb8NziXs2D4XeA2V0
+<<^ code="&#x0003;">>ni:///sha-256;PMqfXdQVfHZzvmy0dio-vyllNpRnALXpj0kC2njXWX8
 
 <<^ code="&#x0004;" -> to="?">>

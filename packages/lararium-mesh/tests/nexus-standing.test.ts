@@ -28,8 +28,8 @@ import { describe, test, expect } from "vitest";
 import { nexusIdentity, nexusScopeOrThrow, nexusScopeMoved } from "../src/nexus-identity.js";
 import { crossroadsDocUrl, whoBoardDocUrl, personaKelBoardDocUrl, kapaeAntigenDocUrl } from "../src/deterministic-doc.js";
 
-const GENESIS = `epoch0-${"9e".repeat(32)}`;     // ONE charter, held alike by every member
-const OTHER   = `epoch0-${"1d".repeat(32)}`;     // a DIFFERENT Nexus
+const GENESIS = `nexus-${"9e".repeat(32)}`;     // ONE charter, held alike by every member
+const OTHER   = `nexus-${"1d".repeat(32)}`;     // a DIFFERENT Nexus
 const LAPTOP  = "bb".repeat(32);                 // the keeping hearth's own vessel key
 const HERM    = "cc".repeat(32);                 // the always-on carrier's own vessel key
 const ANCHOR  = "aa".repeat(32);                 // a hearth's gate key, as a leaf passes it back
@@ -103,7 +103,7 @@ describe("THE NULL RULING — three states, and ① and ③ must DIFFER", () => 
   });
 
   test("③ a MALFORMED genesis is torn too — garbage names no island, and a board keyed by it mints clean and empty", () => {
-    for (const bad of ["nope", "epoch0-", "9e".repeat(12), `${GENESIS}ff`, "EPOCH1-" + "9e".repeat(32)]) {
+    for (const bad of ["nope", "nexus-", "9e".repeat(12), `${GENESIS}ff`, "EPOCH1-" + "9e".repeat(32)]) {
       const s = nexusIdentity({ genesisEpochCid: bad, charterStands: true, ownVesselKey: LAPTOP });
       expect(s.kind, `a malformed genesis ${JSON.stringify(bad)} must not read as a standing`).toBe("torn");
       expect(s.scope).toBeUndefined();

@@ -22,7 +22,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract, carriageEntryActCid,
+  hex, signCarriageQuorum, signCarriageContract, carriageEntryActCid,
   makeMultiSigQuorumVerifier, signAntigenEntry,
   type NexusDoc, type CarriageEntry, type KahuQuorumSeats, type KapaeAntigenEntry,
 } from "@lararium/mesh";
@@ -46,7 +46,7 @@ const NONCE = "ab".repeat(32);
 
 async function rosterAt(): Promise<KahuQuorumSeats> {
   const keys = await Promise.all(SEEDS.map(pubOf));
-  return { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
+  return { keys, threshold: 2, sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid };
 }
 async function kahu() {
   return Promise.all([SEEDS[0]!, SEEDS[1]!].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
@@ -209,7 +209,7 @@ describe("CONTROL B on the real carried set — a held charter this vessel never
     const keys = await Promise.all(SEEDS.map(pubOf));
     // The seats and their threshold, and a bare epoch name with no lineage under it.
     const { sealLineage: _lineage, ...seats } = heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
-    const doc: NexusDoc = { ...seats, sealEpochCid: genesisSealEpochCid(keys, 2) };
+    const doc: NexusDoc = { ...seats, sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid };
     const bags = join(root, "nexus");
     writeNexusDoc(bags, doc);
     let opened = 0;

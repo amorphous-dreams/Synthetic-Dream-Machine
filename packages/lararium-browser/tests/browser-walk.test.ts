@@ -27,7 +27,7 @@ afterEach(async () => {
 });
 
 const GATE  = "ab".repeat(32);
-const AID   = "epoch0-" + "a".repeat(64);
+const AID   = "nexus-" + "a".repeat(64);
 const TOKEN: InviteToken = { purpose: "host-invite", n: "12".repeat(32), y: "34".repeat(64) };
 
 describe("the browser walk", () => {
@@ -84,7 +84,7 @@ describe("the browser walk", () => {
     const name = idb();
     await generateOrLoadBrowserPersonaRoot(name, 0);
     const a = await browserWalkLeaf(name, AID, 0);
-    const b = await browserWalkLeaf(name, "epoch0-" + "b".repeat(64), 0);
+    const b = await browserWalkLeaf(name, "nexus-" + "b".repeat(64), 0);
     expect(a.verifyingKey).toMatch(/^[0-9a-f]{64}$/);
     expect(a.verifyingKey).not.toBe(b.verifyingKey);
     expect((await browserWalkLeaf(name, AID, 0)).verifyingKey).toBe(a.verifyingKey);

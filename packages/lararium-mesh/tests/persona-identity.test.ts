@@ -53,7 +53,7 @@ describe("deriveVeiledUserKey — deterministic + unlinkable-by-distinctness", (
 
 describe("deriveNexusScopedKey — a hardened grandchild of the face, one per Nexus", () => {
   const seed = fakeRandomBytes(PERSONA_SEED_BYTES);
-  const AID  = "epoch0-" + "c".repeat(64);
+  const AID  = "nexus-" + "c".repeat(64);
 
   test("the leaf derives deterministically and differs from the face at the same [handle, context]", async () => {
     const a = await deriveNexusScopedKey(seed, 0, 0, AID);

@@ -33,7 +33,7 @@
  * environment and the hearth pin decide, in the boot's order.
  */
 
-import { nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, type NexusIdentityAt, type NexusIdentity } from "@lararium/mesh";
+import { nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, type NexusIdentityAt, type NexusIdentity } from "@lararium/mesh";
 
 // `admittedJoineeIsland` moved to `@lararium/mesh/nexus-identity.ts` — it composes only `nexusIdentity`/
 // `nexusScopeOrThrow` and touches no disk, so it belongs beside them rather than in this node-only module.
@@ -63,7 +63,7 @@ export function nodeNexusStandsAt(opts: {
 }): NexusIdentityAt {
   const sealHome  = opts.sealHome ?? larSealHome();
   const hearthPin = readHearthDialPin(opts.bootstrapPath ?? larBootstrapPath());
-  const ownGenesis       = realmIdOfCharter(readNexusDoc(sealHome));
+  const ownGenesis       = nexusAidOf(readNexusDoc(sealHome));
   const ownCharterStands = nexusCharterStands(sealHome);
   // A vessel admitted onto a climbed founder holds no charter RECORD of its own (`ownGenesis`/
   // `ownCharterStands` both read empty/false) — its admit instead carried a SNAPSHOT of the founder's

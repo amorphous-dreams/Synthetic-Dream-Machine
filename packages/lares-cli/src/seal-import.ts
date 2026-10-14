@@ -55,7 +55,7 @@ export function sealImportVerdict(at: { incoming: string; standing: string | nul
 
 /** One chair as a charter carries it — seated when it holds a key, declared when it does not. */
 export interface CharterChair {
-  readonly displayName:  string;
+  readonly chairLabel:  string;
   readonly verifyingKey: string | null;
 }
 

@@ -68,8 +68,9 @@ export const NEXUS_CHARTER_URI_PATH = "ha.ka.ba/nexus/charter/founding-roster" a
 
 /** One founding kahu — a local private chair label or exported fingerprint + its ed25519 key. */
 export interface NexusCharterKahu {
-  /** The seating vessel holds a private chair label; exports carry only a fingerprint, no Handle, pet-name, or label. */
-  readonly displayName:  string;
+  /** The chair's private label on the seating vessel; an export carries the seat's fingerprint here, never a
+   *  Handle, pet-name or label. */
+  readonly chairLabel:   string;
   /** The PersonaGroup's ed25519 verifying-key hex (64 chars), or null while the operator has not seated it. */
   readonly verifyingKey: string | null;
 }
@@ -160,15 +161,14 @@ export function seatedKahuKeys(doc: NexusDoc | null): string[] {
 }
 
 /**
- * The GENESIS charter-epoch inception content-address — a deterministic hash BOUND to the seated key-set +
- * threshold (KERI genesis inception: the epoch IS its authorized key-set). Recomputed each seat while the
- * roster forms; at founding no antigen entry exists yet, so a re-derivation strands nothing. This is a
- * single-epoch inception, NOT the full pre-rotated wax-stamp epoch-chain (that + `lares rotate-root` is a
- * follow-on: it needs the next epoch's keys in offline custody before this epoch ever seals).
+ * THE NEXUS AID a charter names: its genesis epoch's content address (`nexus-…`, minted by `sealEpochCidOf` and
+ * nowhere else), fixed across every roll. Null when no lineage stands: an unseated charter names no Nexus, so
+ * nothing materializes under it. KERI's inception carries the same rule: an identifier derives from its first
+ * key event, which holds the controlling keys, their threshold and the commitment to their successors.
  */
-export function genesisSealEpochCid(seatedKeys: readonly string[], threshold: number): string {
-  const keys = [...seatedKeys].map((k) => k.toLowerCase()).sort();
-  return `epoch0-${sha256HexSync(canonicalJson({ kind: NEXUS_DOC_DOMAIN, keys, threshold }))}`;
+export function nexusAidOf(doc: NexusDoc | null | undefined): string | null {
+  const genesis = doc?.sealLineage?.[0]?.epochCid;
+  return typeof genesis === "string" && genesis.length > 0 ? genesis : null;
 }
 
 /**

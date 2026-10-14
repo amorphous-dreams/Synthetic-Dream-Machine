@@ -15,7 +15,7 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, signCarriageQuorum, signCarriageContract,
+  hex, signCarriageQuorum, signCarriageContract,
   makeMultiSigQuorumVerifier,
   type CarriageEntry, type KahuQuorumSeats, type FederationPosture, type PeerClass,
 } from "@lararium/mesh";
@@ -23,6 +23,7 @@ import { makeSocketSorter, socketsNoLongerHeld, gateAnswersStrangers } from "../
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import type { SortInput } from "../src/daemon-auth-gate.js";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
 const LEAF_SEED   = new Uint8Array(32).fill(5);
@@ -35,7 +36,7 @@ const NONCE = "ab".repeat(32);
 
 async function rosterAt(): Promise<KahuQuorumSeats> {
   const keys = await Promise.all(SEEDS.map(pubOf));
-  return { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
+  return { keys, threshold: 2, sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid };
 }
 async function admitAt(epoch: string): Promise<CarriageEntry> {
   const nym = await pubOf(LEAF_SEED);

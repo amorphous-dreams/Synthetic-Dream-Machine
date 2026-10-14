@@ -53,7 +53,7 @@ import type {
   LeafIdentity, SealEpoch, FederationPosture,
 } from "@lararium/mesh";
 import {
-  realmIdOfCharter,
+  nexusAidOf,
   federationPostureFromDoc,
   seatedKahuKeys,
   foundingRoster,
@@ -572,7 +572,7 @@ export function makeRealmCharterConsult(opts: {
       const want = nym.toLowerCase();
       if (!NYM_RE.test(want)) return false;
       const doc = readNexusDoc(sealHome);
-      if (realmIdOfCharter(doc) !== charterId) return false;   // a charter this vessel never held names nobody
+      if (nexusAidOf(doc) !== charterId) return false;   // a charter this vessel never held names nobody
       return seatedKahuKeys(doc).some((k) => k.toLowerCase() === want);
     },
     holdsCharterPeer(peerId: string): boolean {

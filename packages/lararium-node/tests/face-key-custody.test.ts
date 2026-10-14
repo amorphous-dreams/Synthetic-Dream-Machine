@@ -45,7 +45,7 @@ const secretOf = (fill: number): Uint8Array => Uint8Array.from({ length: 32 }, (
 
 const FACE_SECRET = secretOf(3);
 const VESSEL_SECRET = secretOf(101);
-const scope = { faceKey: publicOf(FACE_SECRET), nexus: "epoch0-" + "ab".repeat(32) };
+const scope = { faceKey: publicOf(FACE_SECRET), nexus: "nexus-" + "ab".repeat(32) };
 const vesselFaceKey = publicOf(VESSEL_SECRET);
 const IMAGE = new TextEncoder().encode("synthetic image the library hands the door");
 

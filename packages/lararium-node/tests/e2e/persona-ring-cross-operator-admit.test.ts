@@ -222,7 +222,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     // ran a real seal-seat ceremony.
     // `nexusIdentity` reads a null `sealEpochCid` beside a STANDING charter file as TORN (a half-written
     // seat) rather than "no charter at all" — so the seed needs a well-formed (if synthetic) genesis
-    // epoch id, `GENESIS_RE = /^epoch0-[0-9a-f]{64}$/` (nexus-identity.ts), to read as a coherent charter.
+    // epoch id, `GENESIS_RE = /^nexus-[0-9a-f]{64}$/` (nexus-identity.ts), to read as a coherent charter.
     // `composeDoc` (nexus-doc.ts) also refuses `threshold < 1` outright (the whole doc reads torn) — 1
     // with an empty kahu roster is the minimal well-formed shape.
     const nexusSeed: NexusDoc = charterDocAt("open");

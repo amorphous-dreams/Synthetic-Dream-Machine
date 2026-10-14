@@ -24,8 +24,8 @@ const memoryOf = (scope: FaceScope): WithdrawalMemory => {
 };
 
 const FACE_SECRET = secretOf(5);
-const held = { faceKey: publicOf(FACE_SECRET), nexus: "epoch0-" + "ab".repeat(32) } as unknown as FaceScope;
-const cold = { faceKey: publicOf(secretOf(9)), nexus: "epoch0-" + "cd".repeat(32) } as unknown as FaceScope;
+const held = { faceKey: publicOf(FACE_SECRET), nexus: "nexus-" + "ab".repeat(32) } as unknown as FaceScope;
+const cold = { faceKey: publicOf(secretOf(9)), nexus: "nexus-" + "cd".repeat(32) } as unknown as FaceScope;
 const deviceFaceKey = publicOf(secretOf(77));
 
 let c: SeatedScratchCustody;

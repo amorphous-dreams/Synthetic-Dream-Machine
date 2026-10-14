@@ -84,7 +84,7 @@ describe("lares nexus seal cold rehearse", () => {
     const rowsBefore = rowBytes();
     expect(rowsBefore).toHaveLength(3);
     const doc = readNexusDoc(larSealHome())!;
-    const chairOf = new Map(doc.kahu.map((k) => [k.verifyingKey!.toLowerCase(), k.displayName]));
+    const chairOf = new Map(doc.kahu.map((k) => [k.verifyingKey!.toLowerCase(), k.chairLabel]));
     const sorted = seatedKahuKeys(doc);
 
     const all = await run(rehearse({ "cold-key": codes.join(",") }));

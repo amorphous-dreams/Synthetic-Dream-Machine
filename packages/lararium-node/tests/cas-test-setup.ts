@@ -101,7 +101,7 @@ export interface SealedBodyFixture {
 }
 
 /** A synthetic Nexus AID and head epoch CID for a test that seals with no charter standing. */
-export const TEST_NEXUS_AID = "epoch0-" + "ab".repeat(32);
+export const TEST_NEXUS_AID = "nexus-" + "ab".repeat(32);
 export const TEST_HEAD_EPOCH = TEST_NEXUS_AID;
 
 /** The synthetic bag a fixture body belongs to, and the Nexus scope its sealed block registers under. */

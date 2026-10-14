@@ -33,7 +33,7 @@ let GROUP_ME = "", GROUP_MASKED = "";
 const bsigner = (seed: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, seed).then(hex);
 
 /** A dyad carrying a REAL edge signed by the named root. */
-async function bound(vessel: string, veil: string, rootSeed: Uint8Array, epochCid = "epoch0-aaa") {
+async function bound(vessel: string, veil: string, rootSeed: Uint8Array, epochCid = "nexus-aaa") {
   const root = await ed.getPublicKeyAsync(rootSeed).then(hex);
   const ref  = { vesselDid: vessel, veilDid: veil };
   return rec(vessel, veil, await signDyadBinding(ref, root, epochCid, bsigner(rootSeed)));
@@ -173,7 +173,7 @@ describe("the fleet closes over a PRESENTED EDGE, never over a pointer", () => {
     // a forger names the real root and signs with its OWN key — the textbook confused-deputy attempt
     const ref = { vesselDid: VESSEL_B, veilDid: VEIL_PLAY };
     const forged = rec(VESSEL_B, VEIL_PLAY,
-      await signDyadBinding(ref, GROUP_ME, "epoch0-aaa", bsigner(ROOT_MASKED_SEED)));
+      await signDyadBinding(ref, GROUP_ME, "nexus-aaa", bsigner(ROOT_MASKED_SEED)));
 
     expect(fleetOfGroup([honest, forged], GROUP_ME)).toHaveLength(2);                       // the CLAIM passes …
     expect(await verifiedFleetOfGroup([honest, forged], GROUP_ME)).toHaveLength(1); // … the EDGE does not
@@ -186,9 +186,9 @@ describe("the fleet closes over a PRESENTED EDGE, never over a pointer", () => {
   });
 
   test("a stale EPOCH still verifies as a signature — scoping stays the caller's, and stays positive", async () => {
-    const old = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED, "epoch0-aaa");
+    const old = await bound(VESSEL_A, VEIL_WORK, ROOT_ME_SEED, "nexus-aaa");
     expect(await verifiedFleetOfGroup([old], GROUP_ME)).toHaveLength(1);
-    expect(old.binding!.epochCid).toBe("epoch0-aaa");   // the caller compares against its own head
+    expect(old.binding!.epochCid).toBe("nexus-aaa");   // the caller compares against its own head
   });
 
   test("a second root on the SAME vessel stays a separate fleet", async () => {

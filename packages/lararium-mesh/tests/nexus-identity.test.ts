@@ -11,7 +11,7 @@
  * key were chosen, the others would be reading someone's vessel rather than their shared island.
  *
  * ── THE GENESIS EPOCH IS THE ISLAND'S NAME ──────────────────────────────────────────────────────
- * `genesisSealEpochCid` content-addresses the seated key-set and threshold, so every vessel holding
+ * The Nexus AID (the genesis epoch's `nexus-` address) content-addresses the founding key event, so every vessel holding
  * the charter derives the SAME value, it names no vessel, and it survives rotation because the
  * genesis sits at the head of the lineage rather than at its end.
  *
@@ -28,7 +28,7 @@ import { describe, it, expect } from "vitest";
 import { nexusIdentity } from "../src/nexus-identity.js";
 
 const OWN = "a".repeat(64);
-const GENESIS = "epoch0-" + "b".repeat(64);
+const GENESIS = "nexus-" + "b".repeat(64);
 
 describe("nexus-identity — a shared island names no vessel", () => {
   it("★ a seated charter names the island by its GENESIS epoch, not by any vessel ★", () => {
@@ -61,7 +61,7 @@ describe("nexus-identity — a shared island names no vessel", () => {
     // header's own word "REFUSED" already forbade: a vessel that WAS serving an island would descend
     // to its private board on an accident — believing it published while its peers watched it vanish.
     // "No charter" STATES a fact; "charter unreadable" LOSES one, so they answer under different names.
-    for (const bad of ["nope", "epoch0-", "b".repeat(12)]) {
+    for (const bad of ["nope", "nexus-", "b".repeat(12)]) {
       const r = nexusIdentity({ genesisEpochCid: bad, ownVesselKey: OWN });
       expect(r.kind).toBe("torn");
       expect(r.scope).toBeUndefined();

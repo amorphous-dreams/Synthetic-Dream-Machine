@@ -9,7 +9,7 @@
  *
  *   · The same persona presents a different leaf to each Nexus — an observer reading two islands finds
  *     no shared key.
- *   · The same Nexus always receives the same leaf. The AID a caller passes is `realmIdOfCharter(doc)`,
+ *   · The same Nexus always receives the same leaf. The AID a caller passes is `nexusAidOf(doc)`,
  *     the genesis epoch CID, which a seal rotation leaves fixed.
  *
  * THE CONTEXT INDEX IS THE PUBLIC FACE'S, `PERSONA_GLAMOUR_CONTEXT`. The leaf hangs one hardened level

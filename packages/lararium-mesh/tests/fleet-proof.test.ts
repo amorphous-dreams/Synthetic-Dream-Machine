@@ -25,7 +25,7 @@ import { hex, hexToBytes } from "../src/crypto.js";
 const ROOT_SEED  = new Uint8Array(32).fill(3);   // the persona ROOT — lives where the human is
 const OTHER_ROOT = new Uint8Array(32).fill(4);   // somebody else's fleet
 const FACE_SEED  = new Uint8Array(32).fill(5);   // the published face
-const EPOCH = "epoch0-abc123";
+const EPOCH = "nexus-abc123";
 
 const signer = (seed: Uint8Array) => (b: Uint8Array) => ed.signAsync(b, seed).then(hex);
 const pubOf  = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);

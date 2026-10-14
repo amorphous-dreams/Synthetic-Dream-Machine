@@ -25,7 +25,7 @@
  * `[lar-leaf] verdict OK — crossing open, syncing`.
  *
  * ★ WHAT THE MEASUREMENT THEN SAID. A and the Herm name the SAME realm and the SAME realm doc
- * (`realm epoch0-8117…`, `realmDoc automerge:483v…`). A's `nexus realm-bags` carries the registration;
+ * (`realm nexus-8117…`, `realmDoc automerge:483v…`). A's `nexus realm-bags` carries the registration;
  * the HERM's reads `bags: []`. The Herm stands in the realm, holds the charter, and folds no registration
  * from it — so `publicCasShore`'s realm lane is empty, `/cas/<cid>` draws 404 with A up or dark, and C
  * reads PENDING (`held:false`).
@@ -61,7 +61,7 @@
  * THE FORK THE OPERATOR OWNS, and the only thing between here and ⑦: WHICH public plane carries a realm's
  * announces? (a) the KEEPING hearth's own board, which makes a carrier need that hearth's vessel key (it holds
  * the peer id and the contract nym, and neither is that key); or (b) a board the REALM ID derives, which both
- * already compute (the Herm's own `nexus realm-bags` names `realm epoch0-8496…`) at the cost of a second
+ * already compute (the Herm's own `nexus realm-bags` names `realm nexus-8496…`) at the cost of a second
  * realm-addressed plane beside the realm doc. Shape (iii) — the publisher PUSHES to the places it carries with
  * — dissolves the question instead of answering it.
  *

@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, encodeInvite, mintHostToken, takeInvite, walkIdentity, deriveNexusScopedKey, makeMultiSigQuorumVerifier,
+  hex, encodeInvite, mintHostToken, takeInvite, walkIdentity, deriveNexusScopedKey, makeMultiSigQuorumVerifier,
   hexToBytes, PERSONA_GLAMOUR_CONTEXT, type KahuQuorumSeats, type Presented, type WalkStore, type WalkRecord,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
@@ -29,8 +29,9 @@ import { makeSocketSorter } from "../src/socket-sorter.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import type { SortInput } from "../src/daemon-auth-gate.js";
 import { presentOnSocket, socketUnderTest } from "./gate-dial-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const HEARTH_LEAF = new Uint8Array(32).fill(91);
 const GATE = "ee".repeat(32);
 const NONCE = "ab".repeat(32);
@@ -55,7 +56,7 @@ afterEach(() => {
 async function hearth(): Promise<{ sort: ReturnType<typeof makeSocketSorter>; invite: () => string }> {
   await rollHosting({ nexusAid: AID, leafSeed: HEARTH_LEAF });
   const keys = await Promise.all(SEEDS.map(pubOf));
-  const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
+  const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid };
   const reading: CarriedNexusReading = { nexus: AID, aid: AID, revision: "fixture", via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
   const sort = makeSocketSorter({
     readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",

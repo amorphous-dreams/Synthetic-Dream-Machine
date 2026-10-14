@@ -29,7 +29,7 @@ import * as ed from "@noble/ed25519";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
 import {
-  hex, genesisSealEpochCid, ed25519SignerFromSeed, encodeInvite, mintHostToken, makeMultiSigQuorumVerifier,
+  hex, ed25519SignerFromSeed, encodeInvite, mintHostToken, makeMultiSigQuorumVerifier,
   takeInvite, walkIdentity, walkOver, popInvite, hostingActCid, decodeInvite,
   type KahuQuorumSeats, type LarWSClientAdapter, type LeafIdentity, type WalkRecord, type WalkStore, type HostingAct,
 } from "@lararium/mesh";
@@ -39,9 +39,10 @@ import { serveHostingMint } from "../src/hosting-mint.js";
 import { makeSocketSorter } from "../src/socket-sorter.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const AUD = "lar:///ha.ka.ba/bags/daemon";
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const GATE_SEED   = new Uint8Array(32).fill(81);
 const HEARTH_LEAF = new Uint8Array(32).fill(82);
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
@@ -85,7 +86,7 @@ describe("a newcomer walks in at the hearth's own gate", () => {
     await rollHosting({ nexusAid: AID, leafSeed: HEARTH_LEAF });
     gatePub = await pubOf(GATE_SEED);
     const keys = await Promise.all(SEEDS.map(pubOf));
-    const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
+    const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid };
     const reading: CarriedNexusReading = { nexus: AID, aid: AID, revision: "fixture", via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
     http = createServer();
     wss = new WebSocketServer({ server: http });

@@ -598,7 +598,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // An edge shadow rides no Nexus key (a realm's board, a fleet's board), so a climb re-keys none of them.
   //
   // THE CROSSROADS RE-ANNOUNCE STANDS INERT HERE, and that reads as the leaf's shape rather than a gap:
-  // `realmIdOfCharter(readNexusDoc(sealHome))` has no analogue, because a leaf keeps no seal home and so
+  // `nexusAidOf(readNexusDoc(sealHome))` has no analogue, because a leaf keeps no seal home and so
   // holds no charter, and a realm exists only where a charter does. `reAnnounceRealmBooksAtIsland` answers
   // "a vessel outside every realm announces nothing — it registers nothing either", so `null` states the
   // fact. Borrowing some other id would announce ANOTHER realm's books onto this island, which is exactly

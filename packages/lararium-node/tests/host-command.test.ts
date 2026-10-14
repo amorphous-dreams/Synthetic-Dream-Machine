@@ -118,7 +118,7 @@ describe("lares host — roll, invite, state", () => {
     // No store lent: the roll refuses before any row moves. A hosting door's own refusal crosses with its words.
     const reason = async (act: Promise<unknown>): Promise<string> => act.then(() => "ran", (e: { reason?: string; message?: string }) => `${e.reason}: ${e.message}`);
     expect(await reason(runSealedAct("host.roll", {}, beside(null)))).toMatch(/^act-refused: no store stands here/);
-    expect(await reason(runSealedAct("host.roll", { nexusAid: "epoch0-" + "b".repeat(64) }, beside({ withRepo: (act) => ownedStore(larDataDir(), act), rolled: async () => {} })))).toMatch(/^act-refused: .*does not carry/);
+    expect(await reason(runSealedAct("host.roll", { nexusAid: "nexus-" + "b".repeat(64) }, beside({ withRepo: (act) => ownedStore(larDataDir(), act), rolled: async () => {} })))).toMatch(/^act-refused: .*does not carry/);
     expect(await reason(runSealedAct("host.roll", { storageDir: "/elsewhere" }, beside(null)))).toMatch(/^bad-args/);   // no frame names a directory
     // CONTROL: no vessel stands — the command's own act holds the store for the roll, and the next opener reads both acts.
     const ran = await runSealedAct("host.roll", {}, beside({ withRepo: (act) => ownedStore(larDataDir(), act), rolled: async () => {} }));
@@ -229,7 +229,7 @@ describe("lares host — roll, invite, state", () => {
     const url = hostingDocUrl(aid, await loadVesselVerifyingKey());
     const held = (await heldNexusLeaves(aid))[0]!;
     // A genuine act, signed by this very leaf, naming another Nexus: the signature verifies and the Nexus does not match.
-    const elsewhere = await mintHostingAct({ leafSeed: held.seed, nexusAid: `epoch0-${"e7".repeat(32)}`, prev: null, cap: 3 });
+    const elsewhere = await mintHostingAct({ leafSeed: held.seed, nexusAid: `nexus-${"e7".repeat(32)}`, prev: null, cap: 3 });
     const repo = restingRepo(larDataDir());
     try {
       const handle = await materializeSharedLarDoc(repo, url, "hosting");
@@ -256,7 +256,7 @@ describe("lares host — roll, invite, state", () => {
     await generateOrLoadVesselIdentity();
     await expect(direct(runHostRoll)({ sealHome: sealHome() })).rejects.toBeInstanceOf(HostRefusal);
     const { aid } = await seatAndWear();
-    await expect(direct(runHostRoll)({ sealHome: sealHome(), nexusAid: "epoch0-" + "b".repeat(64) })).rejects.toThrow(/does not carry/);
+    await expect(direct(runHostRoll)({ sealHome: sealHome(), nexusAid: "nexus-" + "b".repeat(64) })).rejects.toThrow(/does not carry/);
     await expect(runHostInvite({ sealHome: sealHome() })).rejects.toThrow(/hosts no one here yet/);
     expect(existsSync((await hostingDir(aid)))).toBe(false);
   });

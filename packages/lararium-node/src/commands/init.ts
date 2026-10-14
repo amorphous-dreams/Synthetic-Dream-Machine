@@ -23,7 +23,7 @@ import type { Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds,
   PERSONA_GROUP_DOC_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
-  nexusIdentity, nexusScopeOrThrow, realmIdOfCharter,
+  nexusIdentity, nexusScopeOrThrow, nexusAidOf,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
 import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../vessel-paths.js";
@@ -522,7 +522,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     nexusPubkey: (() => {
       const hearthPin = readHearthDialPin(larBootstrapPath());
       return nexusScopeOrThrow(nexusIdentity({
-        genesisEpochCid: realmIdOfCharter(readNexusDoc(larSealHome()))
+        genesisEpochCid: nexusAidOf(readNexusDoc(larSealHome()))
                             ?? (hearthPin?.islandKind === "charter" ? hearthPin.islandScope ?? null : null),
         charterStands:   nexusCharterStands(larSealHome()),
         anchorGateKey:   hearthPin?.gatePubKey ?? null,

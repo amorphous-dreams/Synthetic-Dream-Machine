@@ -30,13 +30,13 @@ import {
   parseNexusDoc,
 } from "@lararium/node";
 import {
-  hex, realmIdOfCharter, type NexusDoc,
+  hex, nexusAidOf, type NexusDoc,
 } from "@lararium/mesh";
 import { heldCharter } from "./seal-rite-fixture.js";
 import { sealImportVerdict } from "../src/seal-import.js";
 
-const A = "epoch0-" + "a".repeat(64);
-const B = "epoch0-" + "b".repeat(64);
+const A = "nexus-" + "a".repeat(64);
+const B = "nexus-" + "b".repeat(64);
 
 describe("seal-import — a charter arrives where none stands", () => {
   it("★ a charter lands cleanly on a vessel holding none ★", () => {
@@ -160,7 +160,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
     await found();
     const before = readFileSync(nexusCharterDocPath(larSealHome()));
     const partner = (await charter(await foreignKeys(10)));
-    const aid = realmIdOfCharter(partner)!;
+    const aid = nexusAidOf(partner)!;
 
     const r = await run(verb(["seal", "import"], { carry: partnerFile(partner) }));
     expect(r.code).toBe(0);
@@ -189,9 +189,9 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
 
   it("★ accept-carriage --nexus consents to one Nexus, and seal show reports the carried set ★", async () => {
     const keys = await found();
-    const primary = realmIdOfCharter((await charter(keys)))!;
+    const primary = nexusAidOf((await charter(keys)))!;
     const partner = (await charter(await foreignKeys(10)));
-    const aid = realmIdOfCharter(partner)!;
+    const aid = nexusAidOf(partner)!;
     await run(verb(["seal", "import"], { carry: partnerFile(partner) }));
 
     const before = await run(verb(["seal", "show"]));
@@ -263,7 +263,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
     await found();
     const keys = await foreignKeys(10);
     expect((await run(verb(["seal", "import"], { carry: partnerFile((await charter(keys, 0)), "held.mem") }))).code).toBe(0);
-    const home = carriedCharterHome(larSealHome(), realmIdOfCharter((await charter(keys, 0)))!);
+    const home = carriedCharterHome(larSealHome(), nexusAidOf((await charter(keys, 0)))!);
     const path = join(home, "founding-roster.mem");
     const before = readFileSync(path);
     symlinkSync("/dev/full", `${path}.incoming`);
@@ -303,7 +303,7 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
 
   it("CONTROL — accept-carriage and members --list for an AID this vessel holds no charter for refuse", async () => {
     await found();
-    const ghost = "epoch0-" + "e".repeat(64);
+    const ghost = "nexus-" + "e".repeat(64);
     expect((await run(verb(["accept-carriage"], { nexus: ghost }))).code).not.toBe(0);
     expect((await run(verb(["members"], { nexus: ghost }, { list: true }))).code).not.toBe(0);
     expect(readConsent(larSealHome(), ghost)).toBeNull();

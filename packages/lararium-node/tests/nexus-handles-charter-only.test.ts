@@ -22,7 +22,7 @@ import { namedBagMirror } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
 
 const OWN_NEXUS     = "abc123def456abc123def456abc123def456abc123def456abc123def456ab";
-const CHARTER_NEXUS = "epoch0-" + "1".repeat(64);
+const CHARTER_NEXUS = "nexus-" + "1".repeat(64);
 
 let root = "";
 afterEach(() => { if (root) { rmSync(root, { recursive: true, force: true }); root = ""; } });

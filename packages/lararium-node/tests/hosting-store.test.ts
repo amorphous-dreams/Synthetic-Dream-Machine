@@ -34,7 +34,7 @@ import {
 } from "../src/hosting-store.js";
 import { holdSealsUntilBothArrive, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
-const AID  = "epoch0-" + "a".repeat(64);
+const AID  = "nexus-" + "a".repeat(64);
 const LEAF = new Uint8Array(32).fill(51);
 const GUEST_SEED = new Uint8Array(32).fill(52);
 const GUEST_LEAF = "c".repeat(64);

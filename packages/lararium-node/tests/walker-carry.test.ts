@@ -25,7 +25,7 @@ import { serveHostingCarry } from "../src/hosting-carry.js";
 import { rollHosting, readHostingState, liveEpochs, hostingDir, hostingRowDir } from "../src/hosting-store.js";
 import { readCustodyRow } from "../src/custody-seat.js";
 
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const HEARTH = new Uint8Array(32).fill(71);
 const GATE = "ee".repeat(32);
 // A REAL verifying key (RFC 8032 §7.1): a grant names only a walker leaf the Ed25519 door accepts.

@@ -25,7 +25,7 @@
  * ride the gradient the leaf boot composes, never a hand-written one.
  *
  * ── WHAT THE LEAF STRUCTURALLY CANNOT CARRY ────────────────────────────────────────────────────────
- * A leaf keeps no seal home, so it holds no charter, so `realmIdOfCharter` has no analogue and the
+ * A leaf keeps no seal home, so it holds no charter, so `nexusAidOf` has no analogue and the
  * crossroads RE-ANNOUNCE has nothing to re-derive from — `reAnnounceRealmBooksAtIsland` reads
  * "a vessel outside every realm announces nothing — it registers nothing either" and returns inert. That
  * is a fact about the leaf, not a gap in the wiring, and the vector below pins it as inert rather than
@@ -67,7 +67,7 @@ async function keysOn(r: Repo, url: AutomergeUrl): Promise<string[]> {
 }
 
 /** The epoch a leaf's acts rooted on while it stood alone — ranked BELOW anything the island knows. */
-const PRE_EPOCH = `epoch0-${"11".repeat(32)}`;
+const PRE_EPOCH = `nexus-${"11".repeat(32)}`;
 
 /**
  * THE LEAF BOOT'S OWN COMPOSITION — `open-browser-vessel.ts`'s `nexusStandsAt`, verbatim in shape.
@@ -342,7 +342,7 @@ describe("the leaf climb stays scoped to antigen and crossroads", () => {
     expect(climbCall, "a leaf holds no charter, so it may pass no realm but null")
       .toMatch(/realmId:\s*null/);
     expect(climbCall, "and it must never reach for a charter reader it has no seal home for")
-      .not.toContain("realmIdOfCharter");
+      .not.toContain("nexusAidOf");
 
     // ④ THE THREE REFUSALS. A hand passing one more board here would compile a COMPILED ABOUT-SET at a
     //    new address — `nexus-board-climb`'s header carries the reason for each.

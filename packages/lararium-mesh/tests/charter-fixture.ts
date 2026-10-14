@@ -85,7 +85,7 @@ function docOf(chain: readonly SealEpoch[], keys: readonly string[], threshold: 
   return {
     kind: NEXUS_DOC_DOMAIN, threshold,
     sealEpochCid: chain[chain.length - 1]!.epochCid, sealLineage: [...chain],
-    kahu: Array.from({ length: chairs }, (_, i) => ({ displayName: options.labels?.[i] ?? `Seat ${i}`, verifyingKey: keys[i] ?? null })),
+    kahu: Array.from({ length: chairs }, (_, i) => ({ chairLabel: options.labels?.[i] ?? `Seat ${i}`, verifyingKey: keys[i] ?? null })),
     ...options.dials,
   };
 }

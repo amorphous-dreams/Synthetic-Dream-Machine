@@ -53,7 +53,7 @@ The ruling names three, and they differ by ''what holds the presenting key'', ne
 
 !!! ① A cabal — the arms of a thing with no name
 
-''A cabal holds no name of its own'' and keys on its realm's doc id (memory `project_cabal_realm_nexus_planes.md`; enacted at `packages/lararium-mesh/src/realm-bag.ts:80-86` — `realmIdOfCharter` reads the GENESIS epoch cid, "fixed across every rotation — the realm's NAME"). So a cabal's Face names the realm it keeps, and its natural owner-set reads straight off the book: `keptBy` — "the stewards' persona-root nyms — the write set. Every one of them signs" (`realm-bag.ts:105-106`, quote license), already n-of-n and already charter-aware (`charterOfSteward`, `realm-bag.ts:131-133`).
+''A cabal holds no name of its own'' and keys on its realm's doc id (memory `project_cabal_realm_nexus_planes.md`; enacted at `packages/lararium-mesh/src/nexus-seal-seed.ts` — `nexusAidOf` reads the charter's genesis epoch address, the Nexus AID, fixed across every roll). So a cabal's Face names the realm it keeps, and its natural owner-set reads straight off the book: `keptBy` — "the stewards' persona-root nyms — the write set. Every one of them signs" (`realm-bag.ts:105-106`, quote license), already n-of-n and already charter-aware (`charterOfSteward`, `realm-bag.ts:131-133`).
 
 ''The threshold the ruling wants already rides in the record.'' A realm-bag registration counts only when every named steward signed (`realmBagRegistrationCounts`, `realm-bag.ts:221-249`); a Handle grafts only at the prior set's threshold (`handle-kel.ts:384`+). The two thresholds answer different questions — who KEEPS the book, who may TURN the name — and a cabal Handle whose owner-set equals `keptBy` fuses them by accident. ''They stay separate'' (#/questions Q1).
 
@@ -249,6 +249,6 @@ Ordered so each step's red stands alone and its CONTROL rides beside it. Spirit-
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6u5bnBBWoxprt6OAlkZqjhGMhzxN9oRIZFsfrHvGwEI
+<<^ code="&#x0003;">>ni:///sha-256;paCXTlq39EpfFHwFJk1h-vrNBCFvCBilLDDlFzKGS-M
 
 <<^ code="&#x0004;" -> to="?">>

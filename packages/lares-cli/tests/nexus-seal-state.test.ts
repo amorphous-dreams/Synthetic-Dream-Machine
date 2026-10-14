@@ -54,7 +54,7 @@ function writeUnsealedCharter(): void {
   const home = larSealHome();
   const doc: NexusDoc = {
     ...emptyFoundingCharterDoc(), threshold: 2,
-    kahu: [{ displayName: "Kahu Alpha", verifyingKey: null }, { displayName: "Kahu Beta", verifyingKey: null }],
+    kahu: [{ chairLabel: "Kahu Alpha", verifyingKey: null }, { chairLabel: "Kahu Beta", verifyingKey: null }],
   };
   writeNexusKahu(home, { threshold: doc.threshold, kahu: doc.kahu }, doc);
   writeNexusSeal(home, { kind: doc.kind, sealEpochCid: null }, doc);

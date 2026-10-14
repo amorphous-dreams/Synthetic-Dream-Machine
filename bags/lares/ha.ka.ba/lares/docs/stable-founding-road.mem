@@ -405,7 +405,6 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 
 !!! KAHU PLANE
 * `K4` The Stable founding act as one act; the harness founds through it. K.
-* `K5` Names: `epoch0-` becomes `nexus-`; `genesisSealEpochCid` leaves; one AID constructor; the chair label field. K.
 * `K6` The device edge and the dyad scope commit to the Nexus AID; the sentinel re-keys. K.
 * `K7` The floor vessel key drops its next-key commitment; the `vessel-next` row leaves. K.
 * `K8` Per-Nexus keys mint at random; the lineage re-issues one by a signed hand-over; the antigen's and the Handle card's `nym` follow the same hand-over (`nexus-leaf.ts` derives today). K, then W.
@@ -766,6 +765,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2yxdT3ZYsi45HVG2-XUXiqPZhO-d9TpzA2JsRV9TDAE
+<<^ code="&#x0003;">>ni:///sha-256;jaep9Z0kyixt8UJ4LOpFLTk7p1KLPAW7_aHqWUvSgxk
 
 <<^ code="&#x0004;" -> to="?">>

@@ -38,7 +38,7 @@ import {
   carriageEntriesFromBoard, writeCarriageEntry, signCarriageQuorum, carriageEntryActCid, signCarriageContract,
   signCarrierContract, verifyCarrierContract, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
   holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
-  carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, realmIdOfCharter,
+  carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, nexusAidOf,
   rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor,
   type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
@@ -462,7 +462,7 @@ export async function runNexusMembersList(opts: {
     const entries = carriageEntriesFromBoard(handle.doc());
     const folded  = await foldCarriageSet(entries, roster);
     return {
-      aid:             realmIdOfCharter(doc),
+      aid:             nexusAidOf(doc),
       island:          boardIsland,
       sealEpochCid: roster.sealEpochCid,
       threshold:       roster.threshold,

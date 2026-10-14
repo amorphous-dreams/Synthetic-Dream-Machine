@@ -124,7 +124,7 @@ describe("the rite arms its heads behind the door", () => {
     await custody("arm-a1");
     const roots = await stand([0, 1, 2]);
     const { armed } = await writeGenesis();
-    expect(armed.kahu.map((k) => k.displayName)).toEqual(["Chair 0", "Chair 1", "Chair 2"]);
+    expect(armed.kahu.map((k) => k.chairLabel)).toEqual(["Chair 0", "Chair 1", "Chair 2"]);
     expect(armed.threshold).toBe(2);
     for (const key of armed.seatedKeys) expect(roots, "a seat key never equals a root").not.toContain(key);
     expect(seatRows()).toBe(3);                                                      // the seat keys alone: the next keys rest on cards
@@ -141,9 +141,9 @@ describe("the rite arms its heads behind the door", () => {
     expect(await why(act("seat.arm-genesis"))).toMatch(/^act-refused: no persona stands for a chair/);
     const roots = await stand([0, 1]);
     expect(await why(act("seat.arm-genesis", { threshold: 3 }))).toMatch(/^act-refused: --threshold 3 sits past the 2 chairs that stood/);
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ displayName: "Kept", verifyingKey: roots[1]! }] });
+    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ chairLabel: "Kept", verifyingKey: roots[1]! }] });
     expect(await why(act("seat.arm-genesis"))).toMatch(/^act-refused: a chair holds the persona root at h1 as its key/);
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ displayName: "Theirs", verifyingKey: "3d".repeat(32) }] });
+    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ chairLabel: "Theirs", verifyingKey: "3d".repeat(32) }] });
     expect(await why(act("seat.arm-genesis"))).toMatch(/^act-refused: the charter standing here seats 1 chair\(s\) this vessel did not found/);
     expect(seatRows()).toBe(0);
     writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [] });
@@ -173,11 +173,11 @@ describe("the rite arms its heads behind the door", () => {
     const { cards } = await writeGenesis();
     await stand([3]);
     const grown = await roll(cards);
-    expect(grown.armed.kahu.map((k) => k.displayName)).toEqual(["Chair 0", "Chair 1", "Chair 2", "Chair 3"]);
+    expect(grown.armed.kahu.map((k) => k.chairLabel)).toEqual(["Chair 0", "Chair 1", "Chair 2", "Chair 3"]);
     expect(grown.armed.minted).toHaveLength(4);                                       // three adopted, one minted by possession
     await stepDown(1);
     const shrunk = await roll(grown.cards);
-    expect(shrunk.armed.kahu.map((k) => k.displayName)).toEqual(["Chair 0", "Chair 2", "Chair 3"]);
+    expect(shrunk.armed.kahu.map((k) => k.chairLabel)).toEqual(["Chair 0", "Chair 2", "Chair 3"]);
     expect(shrunk.retired).toHaveLength(5);                                           // four closing keys and the leaving chair's revealed key
     expect(seatRows()).toBe(3);
   });
@@ -194,7 +194,7 @@ describe("the rite arms its heads behind the door", () => {
     expect(retired).toEqual([]);                                                      // an open crossing keeps the outgoing keys
     const again = await act("seat.retire", { keys: g.seatedKeys }) as { kept: Array<{ why: string }> };
     expect(again.kept.map((k) => k.why)).toEqual(["crossing-open", "crossing-open", "crossing-open"]);
-    const carried = join(larSealHome(), "carried", "epoch0-" + "ab".repeat(32));
+    const carried = join(larSealHome(), "carried", "nexus-" + "ab".repeat(32));
     mkdirSync(carried, { recursive: true });
     writeFileSync(nexusCharterDocPath(carried), "a carried charter that will not read");
     expect(await why(act("seat.retire", { keys: g.seatedKeys }))).toMatch(/^act-refused: a carried charter stands and reads TORN/);
@@ -283,7 +283,7 @@ describe("the rite arms its heads behind the door", () => {
     await custody("arm-a11");
     await stand([0]);
     const borrowed = (await seatChairs([1], { family: "a11" })).keys[0]!;
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ displayName: "Chair 0", verifyingKey: borrowed }] });
+    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ chairLabel: "Chair 0", verifyingKey: borrowed }] });
     const armed = await act("seat.arm-genesis") as unknown as Armed;
     expect(armed.seatedKeys[0]).not.toBe(borrowed);
     expect(armed.superseded).toContain(borrowed);

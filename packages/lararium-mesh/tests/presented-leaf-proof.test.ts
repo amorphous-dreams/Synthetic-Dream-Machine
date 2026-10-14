@@ -230,10 +230,10 @@ describe("the one presenter — the dialer derives its presentation from a board
 describe("one relation across every arm — the grant and token arms prove under their own leaf", () => {
   const grantArm = async (): Promise<Presented> => ({
     kind: "grant",
-    grant: { nexusAid: "epoch0-" + "a".repeat(64), leaf: await pubOf(SEEDS.leaf), epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) },
+    grant: { nexusAid: "nexus-" + "a".repeat(64), leaf: await pubOf(SEEDS.leaf), epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) },
   });
   const tokenArm = async (): Promise<Presented> => ({
-    kind: "token", nexusAid: "epoch0-" + "a".repeat(64),
+    kind: "token", nexusAid: "nexus-" + "a".repeat(64),
     token: { purpose: "host-invite", n: "ab".repeat(32), y: "cd".repeat(64) }, claim: "12".repeat(32), leaf: await pubOf(SEEDS.leaf),
   });
   const sign = async (arm: Presented, signer: Uint8Array) => ({

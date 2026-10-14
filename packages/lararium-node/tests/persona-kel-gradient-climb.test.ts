@@ -11,7 +11,7 @@
  * `lares nexus rite quorum` then seats a charter. The next boot resolves the island through the charter's
  * genesis epoch — a DIFFERENT board — and the same run printed:
  *
- *     [nexus] island epoch0-0790f04d937… (charter, shared)
+ *     [nexus] island nexus-0790f04d937… (charter, shared)
  *     [lararium] fatal: Error: [lararium] persona-KEL chain for the pinned identifier persona-fa51a762122e…
  *               absent from the local board replica — the Binding Gate cannot reach a head (fail-closed).
  *
@@ -79,7 +79,7 @@ describe("a vessel that climbs the nexus gradient still boots", () => {
     expect(await chainOn(repo, ownKey, cer.personaKelPrefix)).not.toBeNull();
 
     // ③ a charter now stands at the seal home. The island CLIMBS.
-    const charter = `epoch0-${"7a".repeat(32)}`;
+    const charter = `nexus-${"7a".repeat(32)}`;
     const at      = { genesisEpochCid: charter, charterStands: true, ownVesselKey: ownKey };
     const climbed = nexusIdentity(at);
     expect(climbed.kind).toBe("charter");
@@ -102,7 +102,7 @@ describe("a vessel that climbs the nexus gradient still boots", () => {
 
   test("RED — the gate reaches a VERIFIED head over the carried chain, so the carry lowers nothing", async () => {
     const { repo, ownKey, cer } = await foundAtOwnIsland(seed(12));
-    const charter = `epoch0-${"7b".repeat(32)}`;
+    const charter = `nexus-${"7b".repeat(32)}`;
     const at      = { genesisEpochCid: charter, charterStands: true, ownVesselKey: ownKey };
     const island  = nexusScopeOrThrow(nexusIdentity(at));
 
@@ -136,7 +136,7 @@ describe("a vessel that climbs the nexus gradient still boots", () => {
   test("CONTROL — an UNREADABLE charter never re-keys: the island reads TORN and the boot REFUSES", async () => {
     const { repo, ownKey, cer } = await foundAtOwnIsland(seed(14));
     // A charter RECORD stands and its genesis epoch reads as no island — a half-written seat, a torn fence.
-    const at   = { genesisEpochCid: "epoch0-truncated", charterStands: true, ownVesselKey: ownKey };
+    const at   = { genesisEpochCid: "nexus-truncated", charterStands: true, ownVesselKey: ownKey };
     const torn = nexusIdentity(at);
     expect(torn.kind).toBe("torn");
     // The boot never reaches the carry: `nexusScopeOrThrow` refuses before any board is addressed. So the
@@ -150,7 +150,7 @@ describe("a vessel that climbs the nexus gradient still boots", () => {
   test("CONTROL — the Binding Gate still HALTS when a chain is genuinely absent, climb or no climb", async () => {
     const { repo, ownKey } = await foundAtOwnIsland(seed(15));
     const absent  = "persona-nobodyeverseatedthisidentifier";
-    const charter = `epoch0-${"7c".repeat(32)}`;
+    const charter = `nexus-${"7c".repeat(32)}`;
     const at      = { genesisEpochCid: charter, charterStands: true, ownVesselKey: ownKey };
     const island  = nexusScopeOrThrow(nexusIdentity(at));
 
@@ -167,7 +167,7 @@ describe("a vessel that climbs the nexus gradient still boots", () => {
 
   test("CONTROL — the carry runs twice with no second effect (every boot runs it)", async () => {
     const { repo, ownKey, cer } = await foundAtOwnIsland(seed(16));
-    const charter = `epoch0-${"7d".repeat(32)}`;
+    const charter = `nexus-${"7d".repeat(32)}`;
     const at      = { genesisEpochCid: charter, charterStands: true, ownVesselKey: ownKey };
     const island  = nexusScopeOrThrow(nexusIdentity(at));
     const sources = nexusIslandsBelow(at);
@@ -187,7 +187,7 @@ describe("a vessel that climbs the nexus gradient still boots", () => {
 
   test("CONTROL — the SOURCE board keeps its chain: a carry copies, it never empties the island below", async () => {
     const { repo, ownKey, cer } = await foundAtOwnIsland(seed(17));
-    const charter = `epoch0-${"7e".repeat(32)}`;
+    const charter = `nexus-${"7e".repeat(32)}`;
     const at      = { genesisEpochCid: charter, charterStands: true, ownVesselKey: ownKey };
     const island  = nexusScopeOrThrow(nexusIdentity(at));
     const before  = await eventCountOn(repo, ownKey);

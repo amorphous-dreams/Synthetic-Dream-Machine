@@ -21,7 +21,7 @@ import { describe, it, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { signCarriageContract, verifyCarriageConsent } from "../src/carriage-registry.js";
 
-const EPOCH = "epoch0-" + "a".repeat(64);
+const EPOCH = "nexus-" + "a".repeat(64);
 
 async function mint(seedByte: number, epoch = EPOCH) {
   const seed = new Uint8Array(32).fill(seedByte);
@@ -46,7 +46,7 @@ describe("carriage-consent-verify — trust rides the signature, never the locat
     // The load-bearing case: a consent lifted onto a later charter would carry a relation across
     // terms it never read, which is exactly what the epoch binding exists to prevent.
     const c = await mint(7);
-    expect(await verifyCarriageConsent({ ...c, sealEpochCid: "epoch0-" + "b".repeat(64) })).toBe(false);
+    expect(await verifyCarriageConsent({ ...c, sealEpochCid: "nexus-" + "b".repeat(64) })).toBe(false);
   });
 
   it("★ swapping the NYM breaks it — a seal names the hand that made it ★", async () => {

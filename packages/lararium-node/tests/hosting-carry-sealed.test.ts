@@ -30,7 +30,7 @@ import { depositCarried, fetchCarried, noteContact, readCarryRecord, type CarryL
 import { hostingDir, hostingRowDir } from "../src/hosting-store.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const HEARTH = new Uint8Array(32).fill(61);
 const KEY = carryRecordKey(HEARTH, AID, "c".repeat(64));
 const ROOMY: CarryLimits = { perGuestBytes: 1_000, totalBytes: 10_000 };

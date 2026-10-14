@@ -23,7 +23,7 @@ import {
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
   fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
-  realmIdOfCharter, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
+  nexusAidOf, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
   type NexusDoc, type LarDoc, type GenesisSeed,
 } from "@lararium/mesh";
 import {
@@ -276,7 +276,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const root = join(base, "admit-take-root");
     await seatVessel(root);
     const doc = readNexusDoc(sealHome())!;
-    const aidP = realmIdOfCharter(doc)!;
+    const aidP = nexusAidOf(doc)!;
     // The held persona's OWN per-Nexus leaf (h0, the face `seatVessel` wears) — the multitude-of-one self-admit
     // `runNexusContract` mints in production, built here with the same pure mesh signers it uses.
     const leaf = await nexusLeafFor(0, aidP);

@@ -38,7 +38,7 @@ import {
 import { carryDocument, fetchDocument, watchCarryNotice, HOSTING_CARRY_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND } from "../src/walk-carry.js";
 import type { LarSessionMsg, LeafIdentity } from "../src/auth-wire.js";
 
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const GATE = "ee".repeat(32);
 const HEARTH = new Uint8Array(32).fill(51);
 // A REAL verifying key (RFC 8032 §7.1): a grant names only a walker leaf the Ed25519 door accepts.
@@ -176,7 +176,7 @@ describe("one hand at a time: a site's update decides over the record as it stan
     expect((await taking2)!.record).toEqual({ nexusAid: AID, grant });
     expect(s2.now()).toEqual({ nexusAid: AID, grant });
     // An invite for another Nexus at a hearth already walked at keeps nothing: one record names one Nexus.
-    const elsewhere = encodeInvite({ nexusAid: "epoch0-" + "b".repeat(64), gatePubKey: GATE, token: T });
+    const elsewhere = encodeInvite({ nexusAid: "nexus-" + "b".repeat(64), gatePubKey: GATE, token: T });
     const s3 = testStore({ nexusAid: AID, invite: older, grant });
     expect(await takeInvite(s3.store, elsewhere)).toBeNull();
     expect(s3.now()).toEqual({ nexusAid: AID, invite: older, grant });
@@ -201,12 +201,12 @@ describe("one hand at a time: a site's update decides over the record as it stan
 
   test("CONTROL: a grant that names another Nexus keeps nothing and re-presents nothing", async () => {
     const { grant } = await hearth();
-    const s = testStore({ nexusAid: "epoch0-" + "b".repeat(64) });
+    const s = testStore({ nexusAid: "nexus-" + "b".repeat(64) });
     const w = ride(s.store);
     const declined = s.returned(1);
     w.frame(HOSTING_GRANT_SESSION_KIND, { grant });
     await declined;
-    expect(s.now()).toEqual({ nexusAid: "epoch0-" + "b".repeat(64) });
+    expect(s.now()).toEqual({ nexusAid: "nexus-" + "b".repeat(64) });
     expect(w.represented).toHaveLength(0);
     expect(w.faults).toHaveLength(0);
   });

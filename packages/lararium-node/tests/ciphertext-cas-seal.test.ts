@@ -29,7 +29,7 @@ const MEMBER = "peer-member", STRANGER = "peer-stranger";
 const relayPeers = new Set([MEMBER, STRANGER]);
 const membership: NexusMembership = { holdsCarriagePeer: (p) => p === MEMBER };
 const casDir = mkdtempSync(join(tmpdir(), "lar-cad-seal-"));
-const NAME = { nexusAid: "epoch0-" + "cd".repeat(32), epochCid: "epoch0-" + "cd".repeat(32) };
+const NAME = { nexusAid: "nexus-" + "cd".repeat(32), epochCid: "nexus-" + "cd".repeat(32) };
 
 describe("the seal-producer registers a sealed body AS A SIDE-EFFECT and lights the member lane", () => {
   test("installing a sealed body registers its docId; a MEMBER blind-transits it, a STRANGER is denied", async () => {

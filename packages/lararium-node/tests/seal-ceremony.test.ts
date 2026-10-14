@@ -74,8 +74,8 @@ async function handsOf(n: number, generation: number): Promise<readonly SeatHand
 /** Write a charter whose chain holds `lineage`, seated by `keys` at `threshold`. */
 function charter(keys: readonly string[], threshold: number, lineage: SealEpoch[] | null): NexusDoc {
   const doc: NexusDoc = lineage
-    ? { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: lineage.at(-1)!.epochCid, sealLineage: lineage, kahu: keys.map((verifyingKey, i) => ({ displayName: `Chair ${i}`, verifyingKey })) }
-    : { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: null, kahu: keys.map((verifyingKey, i) => ({ displayName: `Chair ${i}`, verifyingKey })) };
+    ? { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: lineage.at(-1)!.epochCid, sealLineage: lineage, kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Chair ${i}`, verifyingKey })) }
+    : { kind: NEXUS_DOC_DOMAIN, threshold, sealEpochCid: null, kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Chair ${i}`, verifyingKey })) };
   writeNexusDoc(larSealHome(), doc);
   return doc;
 }

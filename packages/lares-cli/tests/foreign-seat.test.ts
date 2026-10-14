@@ -28,21 +28,21 @@ const held = ["aa".repeat(32), "bb".repeat(32), "cc".repeat(32)];
 describe("foreign-seat — what this vessel did not found, it does not seat onto", () => {
   it("★ a charter seating keys this vault cannot produce is FOREIGN ★", () => {
     const r = foreignSeats(
-      [{ displayName: "private", verifyingKey: "dd".repeat(32) }, { displayName: "mine", verifyingKey: held[0]! }], held);
+      [{ chairLabel: "private", verifyingKey: "dd".repeat(32) }, { chairLabel: "mine", verifyingKey: held[0]! }], held);
     expect(r.foreign).toEqual([seatFingerprint("dd".repeat(32))]);
     expect(r.ok).toBe(false);
     expect(r.why).toMatch(/quorum|did not found|foreign/i);
   });
 
   it("★ a charter of only this vessel's own keys seats cleanly ★", () => {
-    const r = foreignSeats([{ displayName: "mine", verifyingKey: held[1]! }], held);
+    const r = foreignSeats([{ chairLabel: "mine", verifyingKey: held[1]! }], held);
     expect(r.ok).toBe(true);
     expect(r.foreign).toEqual([]);
   });
 
   it("★ an UNSEATED chair is not foreign — it carries no key and no authority ★", () => {
     // `unstood: "keep"` exists for exactly this: a declared chair nobody has stood for yet.
-    const r = foreignSeats([{ displayName: "declared", verifyingKey: null }], held);
+    const r = foreignSeats([{ chairLabel: "declared", verifyingKey: null }], held);
     expect(r.ok).toBe(true);
   });
 
@@ -52,13 +52,13 @@ describe("foreign-seat — what this vessel did not found, it does not seat onto
 
   it("★ the refusal names EVERY foreign chair, not just the first ★", () => {
     const r = foreignSeats(
-      [{ displayName: "A0", verifyingKey: "dd".repeat(32) }, { displayName: "A1", verifyingKey: "ee".repeat(32) },
-       { displayName: "mine", verifyingKey: held[2]! }], held);
+      [{ chairLabel: "A0", verifyingKey: "dd".repeat(32) }, { chairLabel: "A1", verifyingKey: "ee".repeat(32) },
+       { chairLabel: "mine", verifyingKey: held[2]! }], held);
     expect(r.foreign).toEqual([seatFingerprint("dd".repeat(32)), seatFingerprint("ee".repeat(32))]);
     expect(r.why).toContain(r.foreign[1]!);
   });
 
   it("★ key comparison ignores case — hex from two sources need not agree on it ★", () => {
-    expect(foreignSeats([{ displayName: "mine", verifyingKey: held[0]!.toUpperCase() }], held).ok).toBe(true);
+    expect(foreignSeats([{ chairLabel: "mine", verifyingKey: held[0]!.toUpperCase() }], held).ok).toBe(true);
   });
 });

@@ -226,7 +226,7 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
    * ISLAND, and every vessel class composes ONE ruling to find it.
    */
   test("A NODE THAT JOINS A NEXUS READS THAT NEXUS'S BOARD, NOT ITS OWN — one ruling, every shore", () => {
-    const GENESIS = `epoch0-${"9e".repeat(32)}`;
+    const GENESIS = `nexus-${"9e".repeat(32)}`;
     // Two vessels holding ONE charter derive ONE scope, and neither key appears in it.
     const a = mesh.nexusIdentity({ genesisEpochCid: GENESIS, charterStands: true, ownVesselKey: "aa".repeat(32) });
     const b = mesh.nexusIdentity({ genesisEpochCid: GENESIS, charterStands: true, ownVesselKey: "bb".repeat(32) });
@@ -261,7 +261,7 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
 
   /** GREENED 2026-09-13 by the same cure — the KEL board rides the island scope like every other board. */
   test("A JOINED NODE WALKS ITS NEXUS'S PERSONA-KEL BOARD — the identifier→head map is one map per island", () => {
-    const GENESIS = `epoch0-${"7c".repeat(32)}`;
+    const GENESIS = `nexus-${"7c".repeat(32)}`;
     const scopeOf = (own: string): string =>
       mesh.nexusScopeOrThrow(mesh.nexusIdentity({ genesisEpochCid: GENESIS, charterStands: true, ownVesselKey: own }));
     expect(mesh.personaKelBoardDocUrl(scopeOf("aa".repeat(32)))).toBe(mesh.personaKelBoardDocUrl(scopeOf("bb".repeat(32))));

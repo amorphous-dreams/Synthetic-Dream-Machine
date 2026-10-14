@@ -34,7 +34,7 @@ import { join, dirname } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 
-import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, realmIdOfCharter } from "@lararium/mesh";
+import { nexusIdentity, nexusScopeOrThrow, personaKelBoardDocUrl, nexusAidOf } from "@lararium/mesh";
 
 import { writeNexusDoc, readNexusDoc, nexusCharterStands } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
@@ -81,7 +81,7 @@ describe("device-admit resolves the island the boot resolved", () => {
   /** The island THE BOOT resolves, derived exactly as `open-node-vessel` derives it. */
   function bootIsland(): string {
     return nexusScopeOrThrow(nexusIdentity({
-      genesisEpochCid: realmIdOfCharter(readNexusDoc(larSealHome())),
+      genesisEpochCid: nexusAidOf(readNexusDoc(larSealHome())),
       charterStands:   nexusCharterStands(larSealHome()),
       anchorGateKey:   process.env["LAR_JOIN_GATE"] ?? null,
       ownVesselKey:    OWN_KEY,
@@ -176,7 +176,7 @@ describe("device-admit resolves the island the boot resolved", () => {
  * that resolution away when it CARRIED the payload: the wire only ever carried `hearthGatePubKey` (the
  * founder's raw vessel key, on purpose — the anti-relay dial binding), and `init.ts` read that single
  * field back as `anchorGateKey`, so a joinee ALWAYS resolved `kind: "anchor"` regardless of what the
- * founder itself stood on. A CLIMBED founder (its own boot resolves `kind: "charter"`, `epoch0-…`) thus
+ * founder itself stood on. A CLIMBED founder (its own boot resolves `kind: "charter"`, `nexus-…`) thus
  * handed its joinee an island the founder does NOT stand on — two disjoint persona-KEL boards.
  *
  * Option A splits the payload: `hearthGatePubKey` stays byte-identical (still the raw vessel key, still

@@ -28,7 +28,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
-  deriveNexusScopedKey, realmIdOfCharter, signerClass, PERSONA_GLAMOUR_CONTEXT } from "@lararium/mesh";
+  deriveNexusScopedKey, nexusAidOf, signerClass, PERSONA_GLAMOUR_CONTEXT } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey,
   listPersonaRoots } from "../src/node-vessel-identity.js";
 
@@ -88,7 +88,7 @@ afterEach(async () => {
  * straight off the mesh primitive, so the expectation never borrows the code under test.
  */
 async function leafOf(handleIndex: number): Promise<string> {
-  const aid = realmIdOfCharter(readNexusDoc(sealHome()));
+  const aid = nexusAidOf(readNexusDoc(sealHome()));
   if (!aid) throw new Error("no charter stands to derive a leaf for");
   const seed = await loadPersonaGroupRootSeed(handleIndex);
   return (await deriveNexusScopedKey(seed, handleIndex, PERSONA_GLAMOUR_CONTEXT, aid)).verifyingKey.toLowerCase();
@@ -184,7 +184,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     const joinerNym = await leafOf(3);
 
     const first = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
-    const aid = realmIdOfCharter(readNexusDoc(sealHome()));
+    const aid = nexusAidOf(readNexusDoc(sealHome()));
     expect(first.bundle).not.toBeNull();
     expect(first.bundle!.aid).toBe(aid);
     expect(first.bundle!.gatePubKey).toBe((await loadVesselVerifyingKey()).toLowerCase());
@@ -278,7 +278,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
     const res  = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const list = await direct(runNexusMembersList)({ sealHome: sealHome() });
-    expect(list.island).toBe(realmIdOfCharter(readNexusDoc(sealHome())));   // the charter's island, not the vessel key
+    expect(list.island).toBe(nexusAidOf(readNexusDoc(sealHome())));   // the charter's island, not the vessel key
     expect(res.boardUrl).toBe(carriageDocUrl(list.island));
     expect(list.members).toContain(joinerNym);
   });
@@ -395,7 +395,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
       const board = (await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts")).doc();
       const { presentation: presented } = await presentationFromBoardDoc(board, joinerNym, foundingRoster(readNexusDoc(sealHome())));
       expect(presented).not.toBeNull();
-      const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
+      const aid = nexusAidOf(readNexusDoc(sealHome()))!;
       const leaf = await nexusLeafFor(3, aid);
       const nonce = "34".repeat(32);
       const gatePubKey = "ee".repeat(32);
@@ -447,7 +447,7 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
   }
 
   /** The AID of the charter standing at the primary path. */
-  const primaryAid = (): string => realmIdOfCharter(readNexusDoc(sealHome()))!;
+  const primaryAid = (): string => nexusAidOf(readNexusDoc(sealHome()))!;
 
   /** A charter with a signed lineage that alternates its quorum between 2 and 3, so a rotation moves the head and keeps the AID. */
   async function seatLineage(keys: string[], rotations: number): Promise<void> {
@@ -511,7 +511,7 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
     await seatCharter(keys);
     const aid = primaryAid();
     await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
-    writeNexusDoc(sealHome(), { ...emptyFoundingCharterDoc(), threshold: 2, kahu: [{ displayName: "Kahu Alpha", verifyingKey: null }] });
+    writeNexusDoc(sealHome(), { ...emptyFoundingCharterDoc(), threshold: 2, kahu: [{ chairLabel: "Kahu Alpha", verifyingKey: null }] });
     expect(await hasContractedInto(sealHome(), aid)).toBe(false);
   });
 
@@ -577,14 +577,14 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
   it("★ an admit in the anchor's past reads MEMBER at the new head; one minted after the anchor reads STRANGER ★", async () => {
     const { opened, roll } = await foundAndArm();
     const joinerNym = await leafOf(3);
-    const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
+    const aid = nexusAidOf(readNexusDoc(sealHome()))!;
     const admitted = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
 
     const closing = foundingRoster(readNexusDoc(sealHome()));
     const landed = await direct(runNexusRollAnchor)({ sealHome: sealHome(), closing, opened });
     expect(landed.parents).toContain(admitted.evidenceCid);
     roll();
-    expect(realmIdOfCharter(readNexusDoc(sealHome()))).toBe(aid);   // the AID survives the roll
+    expect(nexusAidOf(readNexusDoc(sealHome()))).toBe(aid);   // the AID survives the roll
 
     // AFTER the anchor, the CLOSED keys mint an admit at the closed epoch — it counts there, in no anchor's past.
     const lateNym = await leafOf(0);
@@ -633,7 +633,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
 
   it("★ a recogniser whose admit was minted BEFORE a roll still raises — raise-sign presents the anchor ★", async () => {
     const { opened, roll } = await foundAndArm();
-    const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
+    const aid = nexusAidOf(readNexusDoc(sealHome()))!;
     const recogniser = await leafOf(3);
     await direct(runNexusContract)({ action: "admit", nym: recogniser, sealHome: sealHome() });
     const challenge = mintRaiseChallenge({ vesselId: "ab".repeat(32), nexus: aid, epoch: 1, nonce: "56".repeat(16) });
@@ -683,7 +683,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
 
   it("★ raise-sign surfaces two anchors opening one epoch beside the grant, and still signs ★", async () => {
     const { opened, roll } = await foundAndArm();
-    const aid = realmIdOfCharter(readNexusDoc(sealHome()))!;
+    const aid = nexusAidOf(readNexusDoc(sealHome()))!;
     await direct(runNexusContract)({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
     const closing = foundingRoster(readNexusDoc(sealHome()));
     const landed = await direct(runNexusRollAnchor)({ sealHome: sealHome(), closing, opened });

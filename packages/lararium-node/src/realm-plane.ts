@@ -32,7 +32,7 @@ import {
   materializeSharedLarDoc, storedLarRecord, tiddlerText, type LarDoc,
   type NexusDoc, type FederationGate, type NexusMembership, type CapTier,
   REALM_ID_TIDDLER, CABAL_REALM_RE, realmDocPointer, realmStewardPointer, realmStandingPointer,
-  writeRealmStanding, realmIdOfCharter, realmDocUrl, RealmBagGate,
+  writeRealmStanding, nexusAidOf, realmDocUrl, RealmBagGate,
   signRealmBagRegistration, proposeRealmBagRegistration, coSignRealmBagRegistration,
   realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
   realmBagBytes, realmBagSealedBy, stewardSealedHere, hex,
@@ -438,7 +438,7 @@ export function makeRealmPlane(opts: {
   const refresh = (charter: NexusDoc | null): Promise<void> => inTurn(() => refreshNow(charter));
 
   async function refreshNow(charter: NexusDoc | null): Promise<void> {
-    const id = realmIdOfCharter(charter);
+    const id = nexusAidOf(charter);
     if (!id) return;                   // no charter → inert (a vessel outside every realm)
     if (id !== charterRealm) {
       // ANOTHER NEXUS: every plane re-stands under it, since a steward's key derives against the Nexus.

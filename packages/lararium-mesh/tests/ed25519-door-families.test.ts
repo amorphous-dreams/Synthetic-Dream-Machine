@@ -55,7 +55,7 @@ const honestHand = async (n: number): Promise<Hand> => ({
   key:  hex(await ed.getPublicKeyAsync(seed(n))),
   sign: (bytes) => ed.signAsync(bytes, seed(n)).then(hex),
 });
-const EPOCH = `epoch0-${"a1".repeat(32)}`;
+const EPOCH = `nexus-${"a1".repeat(32)}`;
 const utf8 = (s: string): Uint8Array => new TextEncoder().encode(s);
 
 /** One relation, read twice: the honest hand stands, the torsion hand stands nowhere. */

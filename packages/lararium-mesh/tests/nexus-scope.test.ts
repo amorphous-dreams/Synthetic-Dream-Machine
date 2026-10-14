@@ -23,8 +23,8 @@ import { nexusScopeIndex, deriveNexusScopedKey, deriveCircleScopedKey, deriveVei
 import { circleScopeIndex } from "../src/persona-identity.js";
 import { derivePersonaKeypair } from "../src/persona-hd.js";
 
-const AID_A = "epoch0-" + "a".repeat(64);
-const AID_B = "epoch0-" + "b".repeat(64);
+const AID_A = "nexus-" + "a".repeat(64);
+const AID_B = "nexus-" + "b".repeat(64);
 
 describe("nexus-scope — one leaf per island, and none of them meet", () => {
   it("★ one island yields one index, however often it gets asked ★", () => {
@@ -42,7 +42,7 @@ describe("nexus-scope — one leaf per island, and none of them meet", () => {
   });
 
   it("★ the index lands inside the raw hardened range ★", () => {
-    for (const aid of [AID_A, AID_B, "epoch0-" + "9".repeat(64)]) {
+    for (const aid of [AID_A, AID_B, "nexus-" + "9".repeat(64)]) {
       const i = nexusScopeIndex(aid);
       expect(i).toBeGreaterThanOrEqual(0);
       expect(i).toBeLessThan(0x80000000);

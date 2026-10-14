@@ -34,7 +34,7 @@ afterEach(() => {
 class DoorRefusal extends Error {}
 const refuse = (held: number, k: number): Error => new DoorRefusal(`door: ${held} of ${k}`);
 
-const rosterOf = (keys: string[], threshold: number): KahuQuorumSeats => ({ keys, threshold, sealEpochCid: "epoch0-x" });
+const rosterOf = (keys: string[], threshold: number): KahuQuorumSeats => ({ keys, threshold, sealEpochCid: "nexus-x" });
 
 describe("selectHeldQuorumSigners — one selector, each door's own refusal", () => {
   it("selects exactly threshold distinct held seat keys seated in the roster", async () => {

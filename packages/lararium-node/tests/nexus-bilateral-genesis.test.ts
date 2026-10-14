@@ -40,7 +40,7 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   hex, foundingRoster, foldCarriageSet, holdsCarriage,
   carriageEntryBytes, signCarriageQuorum, ed25519SignerFromSeed,
-  deriveNexusScopedKey, realmIdOfCharter, PERSONA_GLAMOUR_CONTEXT,
+  deriveNexusScopedKey, nexusAidOf, PERSONA_GLAMOUR_CONTEXT,
   type NexusDoc, type KahuQuorumSeats, type CarriageEntry,
 } from "@lararium/mesh";
 import {
@@ -110,7 +110,7 @@ async function standHearth(root: string, threshold = 2): Promise<Hearth> {
     const doc: NexusDoc = heldCharter({ keys, threshold }).doc({ labels: ["Founder-0", "Founder-1", "Founder-2"] });
     writeNexusDoc(bags, doc);
     const island = nodeNexusIsland({ ownVesselKey: nexusPubkey, sealHome: bags });
-    return { root, bags, nexusPubkey, island, aid: realmIdOfCharter(doc)!, operatorNym: keys[0]!.toLowerCase(), epoch: doc.sealEpochCid! };
+    return { root, bags, nexusPubkey, island, aid: nexusAidOf(doc)!, operatorNym: keys[0]!.toLowerCase(), epoch: doc.sealEpochCid! };
   });
 }
 
@@ -119,7 +119,7 @@ async function standHearth(root: string, threshold = 2): Promise<Hearth> {
  * derived straight off the mesh primitive, so the expectation never borrows the code under test.
  */
 async function leafAt(root: string, sealHome: string): Promise<string> {
-  const aid = realmIdOfCharter(readNexusDoc(sealHome));
+  const aid = nexusAidOf(readNexusDoc(sealHome));
   if (!aid) throw new Error("no charter stands to derive a leaf for");
   return asRoot(root, async () => (await deriveNexusScopedKey(
     await loadPersonaGroupRootSeed(0), 0, PERSONA_GLAMOUR_CONTEXT, aid)).verifyingKey.toLowerCase());

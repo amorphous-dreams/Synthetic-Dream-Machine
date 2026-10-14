@@ -40,7 +40,7 @@ import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const GATE = "ee".repeat(32), OTHER_GATE = "dd".repeat(32);
 const RELAY = "ws://a-synthetic-hearth/ws";
 const HEARTH = new Uint8Array(32).fill(91);
@@ -126,8 +126,8 @@ describe("a walk record at rest", () => {
       { gatePubKey: GATE, record: RECORD, extra: 1 },
       // Each field whole, and the record disagrees with its hearth: an invite for another gate, or another Nexus; a grant of another Nexus.
       { gatePubKey: GATE, record: { ...RECORD, invite: encodeInvite({ nexusAid: AID, gatePubKey: OTHER_GATE, token: { purpose: "host-invite", n: "5a".repeat(32), y: "6b".repeat(64) } }) } },
-      { gatePubKey: GATE, record: { ...RECORD, nexusAid: "epoch0-" + "b".repeat(64) } },
-      { gatePubKey: GATE, record: { nexusAid: AID, grant: { nexusAid: "epoch0-" + "b".repeat(64), leaf: "ab".repeat(32), epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) } } },
+      { gatePubKey: GATE, record: { ...RECORD, nexusAid: "nexus-" + "b".repeat(64) } },
+      { gatePubKey: GATE, record: { nexusAid: AID, grant: { nexusAid: "nexus-" + "b".repeat(64), leaf: "ab".repeat(32), epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) } } },
     ];
     for (const shape of shapes) {
       await writeCustodyRow("storage", walkRowFile(GATE), enc(shape));              // sealed under the right key, of the wrong shape
@@ -141,7 +141,7 @@ describe("a walk record at rest", () => {
     // An update whose decision answers a malformed record seals nothing, and the standing row stays.
     const standing = readFileSync(rowPath());
     expect(String(await refusal(store().update(GATE, (held) => ({ ...held!, wallet: "x" as never }))))).toMatch(/reads malformed; nothing sealed/);
-    expect(String(await refusal(store().update(GATE, (held) => ({ ...held!, nexusAid: "epoch0-" + "b".repeat(64) }))))).toMatch(/reads malformed; nothing sealed/);
+    expect(String(await refusal(store().update(GATE, (held) => ({ ...held!, nexusAid: "nexus-" + "b".repeat(64) }))))).toMatch(/reads malformed; nothing sealed/);
     expect(readFileSync(rowPath()).equals(standing)).toBe(true);
   });
 

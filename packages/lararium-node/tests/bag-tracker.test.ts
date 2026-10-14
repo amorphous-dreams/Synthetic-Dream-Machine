@@ -15,7 +15,7 @@ import { freshTestBodyKey } from "./cas-test-setup.js";
 import { makeBagTracker, noteInstalledBody } from "../src/bag-tracker.js";
 
 const casDir = mkdtempSync(join(tmpdir(), "lar-cad-tracker-"));
-const NAME = { nexusAid: "epoch0-" + "cd".repeat(32), epochCid: "epoch0-" + "cd".repeat(32) };
+const NAME = { nexusAid: "nexus-" + "cd".repeat(32), epochCid: "nexus-" + "cd".repeat(32) };
 
 describe("the bag-tracker indexes announced holders — DHT-free discovery", () => {
   test("an empty tracker is an honest miss (fail-closed until a body announces)", () => {

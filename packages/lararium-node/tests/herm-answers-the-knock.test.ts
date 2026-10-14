@@ -87,7 +87,7 @@ describe("a herm answers the knock", () => {
   }, 30_000);
 
   test("the one reader: a herm reads OPEN by class; a lararium reads its charter and fails closed", () => {
-    const privateCharter: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 1, sealEpochCid: `epoch0-${"a".repeat(64)}`, federationPosture: "private" };
+    const privateCharter: NexusDoc = { ...emptyFoundingCharterDoc(), threshold: 1, sealEpochCid: `nexus-${"a".repeat(64)}`, federationPosture: "private" };
     expect(ownPlacePosture("herm", null)).toBe("open");
     expect(ownPlacePosture("herm", privateCharter)).toBe("open");
     expect(ownPlacePosture("lararium", null)).toBe("private");

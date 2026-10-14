@@ -13,7 +13,7 @@ import { sealedImage } from "../src/sealed-chunk.js";
 import { walkCarriageBagId, walkCarryDocumentKey } from "../src/walk-carry.js";
 
 const LEAF = new Uint8Array(32).fill(72);
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const ref = sha256HexBytesSync(utf8Bytes("a page the walker wrote"));
 
 describe("a carried document's key", () => {
@@ -25,7 +25,7 @@ describe("a carried document's key", () => {
     const other = sha256HexBytesSync(utf8Bytes("another page"));
     const k = hex(walkCarryDocumentKey(LEAF, AID, ref));
     expect(hex(walkCarryDocumentKey(LEAF, AID, other))).not.toBe(k);
-    expect(hex(walkCarryDocumentKey(LEAF, "epoch0-" + "b".repeat(64), ref))).not.toBe(k);
+    expect(hex(walkCarryDocumentKey(LEAF, "nexus-" + "b".repeat(64), ref))).not.toBe(k);
     expect(hex(walkCarryDocumentKey(new Uint8Array(32).fill(73), AID, ref))).not.toBe(k);
     expect(hex(walkCarrySecret(LEAF, AID))).not.toBe(k);
   });

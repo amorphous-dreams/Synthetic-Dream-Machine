@@ -6,7 +6,7 @@
  * also carry for any number of partner Nexuses. Each partner charter lands BESIDE the primary, at
  * `<sealHome>/carried/<aid>/founding-roster.mem`, and this module never writes the primary path.
  *
- * THE AID NAMES THE NEXUS. `realmIdOfCharter(doc)` reads it: the genesis epoch, which a seal rotation leaves
+ * THE AID NAMES THE NEXUS. `nexusAidOf(doc)` reads it: the genesis epoch, which a seal rotation leaves
  * fixed. The same AID keys the carried charter's directory, the kept consent, and the per-Nexus leaf.
  *
  * ── WHAT PUTS A NEXUS IN THE SET ────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { dirname, join } from "node:path";
-import { foundingRoster, realmIdOfCharter, verifyCarriageConsent, type NexusDoc } from "@lararium/mesh";
+import { foundingRoster, nexusAidOf, verifyCarriageConsent, type NexusDoc } from "@lararium/mesh";
 import { readNexusDoc, parseNexusDoc, nexusCharterDocRelPath } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
 import { listPersonaRoots } from "./node-vessel-identity.js";
@@ -66,7 +66,7 @@ export function carriageConsentPathFor(sealHome: string, aid: string): string {
 
 /** The AID of the charter at the PRIMARY path, or null when none stands there. */
 export function primaryNexusAid(sealHome: string): string | null {
-  return realmIdOfCharter(readNexusDoc(sealHome));
+  return nexusAidOf(readNexusDoc(sealHome));
 }
 
 /**
@@ -78,7 +78,7 @@ export function primaryNexusAid(sealHome: string): string | null {
 export function charterHomeFor(sealHome: string, aid: string): string | null {
   if (primaryNexusAid(sealHome) === aid) return sealHome;
   const home = carriedCharterHome(sealHome, aid);
-  return realmIdOfCharter(readNexusDoc(home)) === aid ? home : null;
+  return nexusAidOf(readNexusDoc(home)) === aid ? home : null;
 }
 
 // ── import ────────────────────────────────────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ export function importCarriedCharter(sealHome: string, raw: string): CarriedImpo
       "the incoming charter carries no verified epoch head — a torn, unseated, or broken-lineage charter names no terms to consent to.",
     );
   }
-  const aid = realmIdOfCharter(doc);
+  const aid = nexusAidOf(doc);
   if (!aid) throw new CarriedCharterError("the incoming charter names no genesis epoch, so it names no Nexus to carry for.");
   aidOrRefuse(aid);
   if (primaryNexusAid(sealHome) === aid) {
@@ -181,7 +181,7 @@ export function readCarriedCharters(sealHome: string): Map<string, NexusDoc> {
   for (const name of names.sort()) {
     if (!AID_RE.test(name) || name.includes("..")) continue;
     const doc = readNexusDoc(join(root, name));
-    if (doc && realmIdOfCharter(doc) === name) out.set(name, doc);
+    if (doc && nexusAidOf(doc) === name) out.set(name, doc);
   }
   return out;
 }
@@ -272,7 +272,7 @@ async function holdsSeatAmong(keys: readonly string[], faces: ReadonlySet<number
 export async function carriedReadings(sealHome: string): Promise<readonly CarriedReading[]> {
   const charters: Array<{ aid: string; doc: NexusDoc; primary: boolean }> = [];
   const primaryDoc = readNexusDoc(sealHome);
-  const primaryAid = realmIdOfCharter(primaryDoc);
+  const primaryAid = nexusAidOf(primaryDoc);
   if (primaryDoc && primaryAid) charters.push({ aid: primaryAid, doc: primaryDoc, primary: true });
   for (const [aid, doc] of readCarriedCharters(sealHome)) {
     if (aid !== primaryAid) charters.push({ aid, doc, primary: false });

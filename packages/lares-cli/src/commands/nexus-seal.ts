@@ -225,7 +225,7 @@ interface ArmedSeat {
  * commits the successor of the i-th sorted seated key, under the roster's own threshold.
  */
 async function mintColdCards(kahu: readonly NexusCharterKahu[], seatedKeys: readonly string[], threshold: number): Promise<{ cards: ColdCard[]; next: SealNext }> {
-  const chairOf = new Map(kahu.filter((k) => k.verifyingKey).map((k) => [k.verifyingKey!.toLowerCase(), k.displayName]));
+  const chairOf = new Map(kahu.filter((k) => k.verifyingKey).map((k) => [k.verifyingKey!.toLowerCase(), k.chairLabel]));
   const cards: ColdCard[] = [];
   for (const key of [...new Set(seatedKeys.map((k) => k.toLowerCase()))].sort()) {
     const cold = await mintColdKey();
@@ -408,7 +408,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
     data: {
       path, threshold: next.threshold, sealEpochCid, quorumSeated: quorum,
       rotationArmed: armed, retiredSeatKeys: left.retired, cards: printed,
-      kahu: kahu.map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey), verifyingKey: k.verifyingKey,
+      kahu: kahu.map((k) => ({ chairLabel: k.chairLabel, seated: Boolean(k.verifyingKey), verifyingKey: k.verifyingKey,
         fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null })),
     },
     human: () => {
@@ -417,7 +417,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
         ? `nexus seal seated — GENESIS EPOCH established → ${path}`
         : `nexus seal seated — roster written, NO epoch (quorum short) → ${path}`);
       for (const k of kahu) {
-        console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.displayName}${k.verifyingKey ? `  ${seatFingerprint(k.verifyingKey)}` : ""}`);
+        console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.chairLabel}${k.verifyingKey ? `  ${seatFingerprint(k.verifyingKey)}` : ""}`);
       }
       console.log(`  threshold:  ${next.threshold} of ${kahu.length}`);
       // WHAT IT SURVIVES, AT THE MOMENT IT IS WRITTEN. A seat NAMES a fragile quorum and refuses none —
@@ -426,13 +426,13 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
       // so the reading rides at the moment of writing as well as at `show`.
       const seatStanding = rosterStanding({ seated: seatedKeys.length, threshold: next.threshold });
       if (seatStanding.fragile) console.log(`  ⚠ survives:  ${seatStanding.reading}`);
-      console.log(`  epoch0:     ${sealEpochCid ?? "(unestablished — seat a quorum first)"}`);
+      console.log(`  nexus:      ${sealEpochCid ?? "(unestablished — seat a quorum first)"}`);
       if (quorum) {
         console.log(`  quorum STANDS — the antigen now reads a live roster rooted on the genesis epoch.`);
         console.log(`  seat keys:  each chair holds its own key, sealed on this vessel, apart from every persona root.`);
         console.log(`  rotation:   ${armed ? "ARMED (each chair's next key rests on its card alone, and the genesis commits one digest per chair)" : "UNARMED"}`);
       } else {
-        const missing = kahu.filter((k) => !k.verifyingKey).map((k) => `"${k.displayName}"`);
+        const missing = kahu.filter((k) => !k.verifyingKey).map((k) => `"${k.chairLabel}"`);
         console.log(`  quorum SHORT (fail-closed; the antigen stays inert). Unseated: ${missing.join(", ") || "(none)"}`);
         console.log(`  seat them: lares persona new <index> --name '<label>' --seat [--chair '<chair label>']  →  lares nexus seal seat`);
       }
@@ -546,7 +546,7 @@ async function sealCold(args: ParsedArgs): Promise<number> {
   };
   if (!headArmed(head)) return refuse("rotation-unarmed", "the head commits no next key, so no card answers it");
   // Digest i commits the successor of the i-th SORTED seated key, so position i names that key's chair.
-  const chairOf = new Map(doc.kahu.filter((k) => k.verifyingKey).map((k) => [k.verifyingKey!.toLowerCase(), k.displayName]));
+  const chairOf = new Map(doc.kahu.filter((k) => k.verifyingKey).map((k) => [k.verifyingKey!.toLowerCase(), k.chairLabel]));
   const sorted = seatedKahuKeys(doc);
   const positions = head.nextKeyDigests.length;
   const seeds = await gatherCards(args, positions);
@@ -702,7 +702,7 @@ function sealExport(args: ParsedArgs): number {
     return 3;
   }
   const chairs = parsed.kahu.map((k) => ({ fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null, seated: Boolean(k.verifyingKey) }));
-  const payload = { ...parsed, kahu: parsed.kahu.map((k) => ({ ...k, displayName: k.verifyingKey ? seatFingerprint(k.verifyingKey) : "unseated" })) };
+  const payload = { ...parsed, kahu: parsed.kahu.map((k) => ({ ...k, chairLabel: k.verifyingKey ? seatFingerprint(k.verifyingKey) : "unseated" })) };
   const fence = /```json nexus-kahu\r?\n([\s\S]*?)\r?\n```/;
   const redacted = stampCarrier(raw.replace(fence, `\`\`\`json nexus-kahu\n${JSON.stringify(payload, null, 2)}\n\`\`\``));
   emit(args, {
@@ -854,7 +854,7 @@ async function sealShow(args: ParsedArgs): Promise<number> {
       // path prints it where the numbers already are.
       standing: rosterStanding({ seated: roster.keys.length, threshold: roster.threshold }),
       phase: nexusPhase({ ownSeats, foreignSeats: foreign }),
-      kahu: (doc?.kahu ?? []).map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey), fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null })),
+      kahu: (doc?.kahu ?? []).map((k) => ({ chairLabel: k.chairLabel, seated: Boolean(k.verifyingKey), fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null })),
       carried: carried.map((c) => ({ aid: c.aid, primary: c.primary, sealEpochCid: c.sealEpochCid || null,
                                      consented: c.consented, seated: c.seated, carried: c.carried })),
     },
@@ -876,7 +876,7 @@ async function sealShow(args: ParsedArgs): Promise<number> {
         return;
       }
       console.log(`nexus seal (${nexusCharterDocPath(sealHome)}):`);
-      for (const k of doc.kahu) console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.displayName}${k.verifyingKey ? `  ${seatFingerprint(k.verifyingKey)}` : ""}`);
+      for (const k of doc.kahu) console.log(`  ${k.verifyingKey ? "seated  " : "UNSEATED"} ${k.chairLabel}${k.verifyingKey ? `  ${seatFingerprint(k.verifyingKey)}` : ""}`);
       console.log(`  threshold:  ${roster.threshold} · seated keys: ${roster.keys.length}`);
       console.log(`  seal:       ${seal === "sealed" ? "SEALED" : "UNSEALED — the roster stands and no seal epoch is seated; seat one once a quorum stands"}`);
       console.log(`  chain:      ${chainDepth > 0 ? `${chainDepth} epoch(s), head at seq ${chainDepth - 1}` : "(none — no epoch established)"}`);

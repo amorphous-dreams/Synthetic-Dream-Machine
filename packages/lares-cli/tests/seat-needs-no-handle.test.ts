@@ -61,7 +61,7 @@ describe("a seat claim needs no Handle and exports no chair label", () => {
     const seatPayload = output(wire).data.kahu;
     expect(seatPayload.map((k: any) => k.fingerprint)).toEqual(fingerprints);
     expect(seatPayload.every((k: any) => /^[0-9a-f]{4}(-[0-9a-f]{4}){4}$/.test(k.fingerprint))).toBe(true);
-    expect(seatPayload.map((k: any) => k.displayName)).toEqual(["chair-h0", "first-chair"]);
+    expect(seatPayload.map((k: any) => k.chairLabel)).toEqual(["chair-h0", "first-chair"]);
 
     expect(await cmdNexus(nexusArgs(["seal", "export"]))).toBe(0);
     const exported = output(wire).data;

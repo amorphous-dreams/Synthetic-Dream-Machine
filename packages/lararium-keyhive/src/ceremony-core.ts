@@ -505,7 +505,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // travels as binding:null rather than hiding behind a label.
   const dyadRef: DyadRef = { vesselDid: founderEdge.deviceDid, veilDid: didFromVerifyingKey(dyadVeilKeys.verifyingKey) };
   const dyadBinding = input.binding.mode === "self-stood"
-    ? await signDyadBindingWithSeed(dyadRef, signerDid, `epoch0-${personaGroup.docIdHex}`, input.binding.signerSeed)
+    ? await signDyadBindingWithSeed(dyadRef, signerDid, `group0-${personaGroup.docIdHex}`, input.binding.signerSeed)
     : null;
   const dyadRecord: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(dyadRef), ref: dyadRef, edge: founderEdge, binding: dyadBinding };
 

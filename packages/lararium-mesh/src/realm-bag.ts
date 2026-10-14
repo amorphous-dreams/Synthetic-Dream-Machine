@@ -52,7 +52,6 @@ import {
   coerceStewardSeal, sealAsSteward, verifyStewardSeal,
   type StewardSeal, type StewardSealReading, type StewardSigner,
 } from "./steward-seal.js";
-import type { NexusDoc } from "./nexus-seal-seed.js";
 import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
 import { storedLarRecord } from "./stored-record.js";
@@ -114,15 +113,7 @@ const stewardName = (name: string): string => name.trim().toLowerCase();
 
 // ── THE REALM'S NAME ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * The realm id a charter names: the GENESIS epoch cid of the seal lineage alone (inception — fixed
- * across every rotation). Null when no lineage stands: an unseated charter, or one read through the
- * retired bare-`sealEpochCid` legacy path, names no realm, so nothing materializes.
- */
-export function realmIdOfCharter(doc: NexusDoc | null | undefined): string | null {
-  const genesis = doc?.sealLineage?.[0]?.epochCid;
-  return typeof genesis === "string" && genesis.length > 0 ? genesis : null;
-}
+// A realm's id IS its Nexus AID (`nexusAidOf`, nexus-seal-seed): one name for one Nexus.
 
 /** The realm's shared-CRDT doc URL — deterministic from the realm id, so every member resolves ONE doc. */
 export function realmDocUrl(realmId: string): AutomergeUrl {

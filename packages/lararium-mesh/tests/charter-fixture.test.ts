@@ -5,7 +5,7 @@ import { hex } from "../src/crypto.js";
 import { genesisCharterEpoch, sealKeySetHash, verifySealLineage } from "../src/wax-stamp.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import { NEXUS_DOC_DOMAIN } from "../src/domains.js";
-import { realmIdOfCharter } from "../src/realm-bag.js";
+import { nexusAidOf } from "../src/nexus-seal-seed.js";
 import { charterSeatSeeds, heldCharter, namedCharter, seatedCharter } from "./charter-fixture.js";
 
 const seeds = (ns: number[]) => ns.map(n => new Uint8Array(32).fill(n));
@@ -36,6 +36,6 @@ describe("a seated fixture charter stands under the roll law", () => {
   });
   test("named charter carries no forward commitment", () => {
     const doc = namedCharter("test-aid"); expect(doc.kind).toBe(NEXUS_DOC_DOMAIN); expect(doc.sealLineage![0]).toMatchObject({ nextKeyDigests: [], nextThreshold: 0 });
-    expect(realmIdOfCharter(doc)).toBe("test-aid");
+    expect(nexusAidOf(doc)).toBe("test-aid");
   });
 });

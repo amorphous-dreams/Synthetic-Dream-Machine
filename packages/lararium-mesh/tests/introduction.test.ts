@@ -34,7 +34,7 @@ const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const pubOf = (s: Uint8Array): Promise<string> => ed.getPublicKeyAsync(s).then(hex);
 const signerOf = (s: Uint8Array) => (bytes: Uint8Array): Promise<string> => ed.signAsync(bytes, s).then(hex);
 
-const NEXUS = `epoch0-${"a1".repeat(32)}`;
+const NEXUS = `nexus-${"a1".repeat(32)}`;
 const HEARTH = seed(40), GUEST = seed(1), OTHER_GUEST = seed(2), STRANGER = seed(3);
 const FRIEND_SECRET = seed(9), OTHER_SECRET = seed(10);
 const STUB_TOKEN: InviteToken = { purpose: "host-invite", n: "1".repeat(64), y: "2".repeat(128) };
@@ -67,7 +67,7 @@ describe("an introduction stands only as its guest signed it", () => {
     expect(isIntroduction(intro)).toBe(true);
     expect(verifyIntroduction(intro, live).ok).toBe(true);                       // CONTROL
     const refusalOf = (v: unknown) => verifyIntroduction(v, live);
-    expect(refusalOf({ ...intro, nexus: `epoch0-${"b2".repeat(32)}` })).toEqual({ ok: false, refusal: "introduction-nexus-foreign" });
+    expect(refusalOf({ ...intro, nexus: `nexus-${"b2".repeat(32)}` })).toEqual({ ok: false, refusal: "introduction-nexus-foreign" });
     expect(refusalOf({ ...intro, epoch: flip(intro.epoch) })).toEqual({ ok: false, refusal: "introduction-epoch-dead" });
     // A LIVE epoch other than the one signed still breaks the signature: the epoch sits under it.
     expect(refusalOf({ ...intro, epoch: previous.cid })).toEqual({ ok: false, refusal: "introduction-unsigned" });

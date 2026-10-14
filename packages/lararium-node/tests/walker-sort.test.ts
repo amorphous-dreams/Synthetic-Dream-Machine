@@ -24,7 +24,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, genesisSealEpochCid, hostingActCid, issueGrant, mintHostToken, mintHostingAct, evaluateToken,
+  hex, hostingActCid, issueGrant, mintHostToken, mintHostingAct, evaluateToken,
   redeemClaim, lineageOf, claimDigest, signAntigenEntry, makeMultiSigQuorumVerifier,
   type KahuQuorumSeats, type HostingGrant, type InviteToken, type KapaeAntigenEntry, type Presented,
 } from "@lararium/mesh";
@@ -34,6 +34,7 @@ import { rollHosting, readHostingState, liveEpochs, hostingDir, spendToken } fro
 import type { CarriedNexusReading } from "../src/nexus-carriage.js";
 import type { SortInput } from "../src/daemon-auth-gate.js";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
+import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
 const HEARTH_LEAF = new Uint8Array(32).fill(61);
@@ -44,7 +45,7 @@ const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
 const GATE  = "ee".repeat(32);
 const NONCE = "ab".repeat(32);
-const AID   = "epoch0-" + "a".repeat(64);
+const AID   = "nexus-" + "a".repeat(64);
 
 // The hearth's hosting rows rest sealed in the custody storage home of this scratch root.
 let storageDir = "";
@@ -57,7 +58,7 @@ afterEach(() => {
 
 async function rosterAt(): Promise<KahuQuorumSeats> {
   const keys = await Promise.all(SEEDS.map(pubOf));
-  return { keys, threshold: 2, sealEpochCid: genesisSealEpochCid(keys, 2) };
+  return { keys, threshold: 2, sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid };
 }
 async function reading(aid = AID, antigen: KapaeAntigenEntry[] = []): Promise<CarriedNexusReading> {
   const roster = await rosterAt();
@@ -147,7 +148,7 @@ describe("the grant arm", () => {
     await rollHosting({ nexusAid: AID, leafSeed: HEARTH_LEAF });
     const grant = await grantAt("current");
     expect(await sorter([await reading()])(await socket({ kind: "grant", grant }, VESSEL_SEED))).toBeNull();
-    expect(await sorter([await reading("epoch0-" + "b".repeat(64))])(await socket({ kind: "grant", grant }))).toBeNull();
+    expect(await sorter([await reading("nexus-" + "b".repeat(64))])(await socket({ kind: "grant", grant }))).toBeNull();
     const foreign = await mintHostingAct({ leafSeed: OTHER_HEARTH, nexusAid: AID, prev: null, cap: 3 });
     const forged = issueGrant(foreign, { leaf: grant.leaf, lineage: grant.lineage, survived: 0, from: "host" });
     expect(await sorter([await reading()])(await socket({ kind: "grant", grant: forged }))).toBeNull();

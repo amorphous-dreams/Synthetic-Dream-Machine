@@ -29,7 +29,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ed from "@noble/ed25519";
 import {
-  hex, realmIdOfCharter, signCarriageQuorum, signCarriageContract, signCarrierContract, makeMultiSigQuorumVerifier,
+  hex, nexusAidOf, signCarriageQuorum, signCarriageContract, signCarrierContract, makeMultiSigQuorumVerifier,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, heldNexusRoot,
   type NexusDoc, type CarriageEntry, type LarDoc,
 } from "@lararium/mesh";
@@ -65,7 +65,7 @@ async function act(doc: NexusDoc, kahu: Uint8Array[], action: "admit" | "revoke"
 }
 /** A carried reading over a REAL held root: the charter filed under its own genesis, with a deny board. */
 function readingOf(doc: NexusDoc, denyBoard: CarriageEntry[] = []): CarriedNexusReading {
-  const aid = realmIdOfCharter(doc)!;
+  const aid = nexusAidOf(doc)!;
   const root = heldNexusRoot({ nexus: aid, charter: doc, denyBoard, antigen: [], antigenVerifier: makeMultiSigQuorumVerifier() });
   if ("absent" in root) throw new Error(`fixture: ${root.absent}`);
   return { ...root, sealLineage: root.sealLineage ?? [], aid, via: "consent", island: `island-${aid}`, posture: "private" };
@@ -107,7 +107,7 @@ describe("the held root at the socket seat", () => {
     await holding.present("peer-q", binding);
     expect(holding.membership.holdsCarriagePeer("peer-q")).toBe(true);
     expect(quiet).toEqual([]);
-    expect(await leafReadingFor(binding, [readingOf(P), readingOf(Q)])).toEqual({ standing: { nym: await pubOf(LEAF), aid: realmIdOfCharter(Q) } });
+    expect(await leafReadingFor(binding, [readingOf(P), readingOf(Q)])).toEqual({ standing: { nym: await pubOf(LEAF), aid: nexusAidOf(Q) } });
   });
 
   test("N2 the seat names its other refusals; control: the same admit unrevoked stands", async () => {
@@ -136,7 +136,7 @@ describe("the held root at the take, on a real seal home", () => {
     const sealHome = join(root, "nexus");
     const P = await charter(P_KAHU), Q = await charter(Q_KAHU);
     writeNexusDoc(sealHome, P);
-    const aidQ = realmIdOfCharter(Q)!;
+    const aidQ = nexusAidOf(Q)!;
     const bundle: AdmitBundle = { aid: aidQ, gatePubKey: GATE, admit: await act(Q, Q_KAHU, "admit"), lineage: [] };
     const take = () => takeAdmitBundle({ sealHome, raw: JSON.stringify(bundle), leaves });
     await expect(take()).rejects.toThrow(AdmitBundleError);
@@ -152,14 +152,14 @@ describe("the held root at the take, on a real seal home", () => {
 
   test("N4 the offline check reads a bundle against its own charter alone", async () => {
     const P = await charter(P_KAHU), Q = await charter(Q_KAHU);
-    const bundle: AdmitBundle = { aid: realmIdOfCharter(Q)!, gatePubKey: GATE, admit: await act(Q, Q_KAHU, "admit"), lineage: [] };
+    const bundle: AdmitBundle = { aid: nexusAidOf(Q)!, gatePubKey: GATE, admit: await act(Q, Q_KAHU, "admit"), lineage: [] };
     expect(await admitBundleHolds(bundle, null)).toBe(false);
     expect(await admitBundleHolds(bundle, undefined)).toBe(false);
     expect(await admitBundleHolds(bundle, P)).toBe(false);                      // another Nexus's charter
-    expect(await admitBundleHolds({ ...bundle, aid: realmIdOfCharter(P)! }, P)).toBe(false);   // P's name, Q's quorum
+    expect(await admitBundleHolds({ ...bundle, aid: nexusAidOf(P)! }, P)).toBe(false);   // P's name, Q's quorum
     expect(await admitBundleHolds(bundle, Q)).toBe(true);                       // CONTROL
     // A bundle filed under ANOTHER name than the charter's own never holds, though P's quorum signed its admit.
-    const ownP: AdmitBundle = { aid: realmIdOfCharter(P)!, gatePubKey: GATE, admit: await act(P, P_KAHU, "admit"), lineage: [] };
+    const ownP: AdmitBundle = { aid: nexusAidOf(P)!, gatePubKey: GATE, admit: await act(P, P_KAHU, "admit"), lineage: [] };
     expect(await admitBundleHolds(ownP, P)).toBe(true);                         // CONTROL
     expect(await admitBundleHolds({ ...ownP, aid: "a-borrowed-name" }, P)).toBe(false);
   });
@@ -179,7 +179,7 @@ describe("the held root at the take, on a real seal home", () => {
     const [first] = await placeCarriedNexuses({ sealHome, ownVesselKey: place, open });
     expect(first).toBeDefined();
     expect(first!.nexus).toBe(first!.aid);
-    expect(first!.nexus).toBe(realmIdOfCharter(P));
+    expect(first!.nexus).toBe(nexusAidOf(P));
     expect(first!.roster.sealEpochCid).toBe(epoch);
     const [again] = await placeCarriedNexuses({ sealHome, ownVesselKey: place, open });
     expect(again!.revision).toBe(first!.revision);                              // CONTROL: nothing moved
@@ -237,7 +237,7 @@ describe("the sorter reads first", () => {
     expect(await open(() => { throw new Error("a log that fails"); })(await socket(admitQ))).toEqual(bareOpen);
     // CONTROL: the vessel holds Q's root; the same socket sorts contracted and names nothing.
     heard.length = 0;
-    expect(await sorter([readingOf(P), readingOf(Q)])(await socket(admitQ))).toMatchObject({ class: "contracted", standing: { aid: realmIdOfCharter(Q) } });
+    expect(await sorter([readingOf(P), readingOf(Q)])(await socket(admitQ))).toMatchObject({ class: "contracted", standing: { aid: nexusAidOf(Q) } });
     expect(heard).toEqual([]);
   });
 });

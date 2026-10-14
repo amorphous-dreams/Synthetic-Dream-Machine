@@ -47,7 +47,7 @@ import {
   ENGINE_CORE_ID, BagStowage,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
   coupleMesh, crystallize, guardHitl,
-  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, realmIdOfCharter, foundingRoster, type NexusIdentityAt,
+  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, foundingRoster, type NexusIdentityAt,
   climbNexusBoards, sha256HexBytesSync, RealmBoardGate,
   genesisCasCidsFromOracle,
 }                                       from "@lararium/mesh";
@@ -1096,7 +1096,7 @@ async function prepareNodeBootOn(
       }
       return [...roots];
     },
-    charterRealm:    () => realmIdOfCharter(readNexusDoc(sealHome)),
+    charterRealm:    () => nexusAidOf(readNexusDoc(sealHome)),
     vesselKeyOfPeer: (peerId) => peerIdentifierMap.get(peerId)?.slice(-64).toLowerCase() ?? null,
     realmNymOfPeer:  (peerId) => peerContractNymMap.get(peerId) ?? null,
     onRefold:        () => { reverdict(); dropNoLongerHeld(); seatSettler?.onFold(); },
@@ -1731,7 +1731,7 @@ async function prepareNodeBootOn(
     await climbNexusBoards({
       repo, nexusPubkey,
       priorIslands: nexusIslandsBelow(nexusStandsAt),
-      realmId:      realmIdOfCharter(readNexusDoc(sealHome)),
+      realmId:      nexusAidOf(readNexusDoc(sealHome)),
     });
     // Register the per-Nexus crossroads plane into the oracle plane (isomorphic with the browser). Both shores
     // compose the SAME `nexusIdentity` ruling — this one off its charter, a leaf off the anchor gate key it
@@ -2577,7 +2577,7 @@ async function prepareNodeBootOn(
       // The scope comes off the VERIFIED lineage (`foundingRoster`): a charter whose chain does not verify, or
       // whose head does not bind its seated keys, names no head, so no scope stands and nothing registers.
       const charter = readNexusDoc(sealHome);
-      const nexusAid = realmIdOfCharter(charter);
+      const nexusAid = nexusAidOf(charter);
       const headEpochCid = foundingRoster(charter).sealEpochCid || null;
       if (!nexusAid || !headEpochCid) throw new Error("cad-seal: no verified charter epoch stands here, so no Nexus names the sealed block's scope — seat one with `lares nexus seal seat` (nothing registered)");
       const cid = typeof args["cid"] === "string" ? (args["cid"] as string) : "";

@@ -38,7 +38,7 @@ import * as ed from "@noble/ed25519";
 import {
   climbNexusBoards,
   nexusIdentity, nexusIslandsBelow, nexusScopeOrThrow, type NexusIdentityAt,
-  realmIdOfCharter, realmDocUrl,
+  nexusAidOf, realmDocUrl,
   materializeSharedLarDoc,
   kapaeAntigenDocUrl, crossroadsDocUrl,
   writeAntigenEntry, antigenEntriesFromBoard, signAntigenEntry,
@@ -65,7 +65,7 @@ const CHARTER_KEY = Buffer.from(await ed.getPublicKeyAsync(new Uint8Array(32).fi
 const STANDING  = heldCharter({ keys: [CHARTER_KEY], threshold: 1 });
 const CHARTER   = STANDING.aid;
 /** The epoch a vessel's acts rooted on while it stood alone — the reader ranks it BELOW the charter's. */
-const PRE_EPOCH = `epoch0-${"11".repeat(32)}`;
+const PRE_EPOCH = `nexus-${"11".repeat(32)}`;
 
 /** A fresh seal home — never `~/.local/share/lares`. A charter stands here or it does not. */
 function sealHomeAt(): string {
@@ -87,7 +87,7 @@ async function seatCharter(sealHome: string): Promise<void> {
  */
 function bootStandsAt(sealHome: string, ownKey: string, anchorGateKey: string | null = null): NexusIdentityAt {
   return {
-    genesisEpochCid: realmIdOfCharter(readNexusDoc(sealHome)),
+    genesisEpochCid: nexusAidOf(readNexusDoc(sealHome)),
     charterStands:   nexusCharterStands(sealHome),
     anchorGateKey,
     ownVesselKey:    ownKey,
@@ -251,7 +251,7 @@ describe("the boot climb stays scoped to antigen and crossroads", () => {
       .toContain("nexusIslandsBelow(nexusStandsAt)");
     expect(call, "the island is the one `nexusScopeOrThrow` resolved").toContain("nexusPubkey");
     expect(call, "the crossroads re-announce needs the realm the charter names")
-      .toMatch(/realmId:\s*realmIdOfCharter\(readNexusDoc\(sealHome\)\)/);
+      .toMatch(/realmId:\s*nexusAidOf\(readNexusDoc\(sealHome\)\)/);
 
     // ③ THE THREE REFUSALS, at the boot. A hand passing one more board here would be compiling a
     //    COMPILED ABOUT-SET at a new address — read `nexus-board-climb`'s header before adding one.

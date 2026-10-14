@@ -12,7 +12,7 @@ import { mintHostingAct, writeHostingAct, hostingActCid } from "../src/hosting.j
 import { hostingActOn, type HostingDocHandle } from "../src/walk-client.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 
-const AID = "epoch0-" + "a".repeat(64);
+const AID = "nexus-" + "a".repeat(64);
 const LEAF = new Uint8Array(32).fill(61);
 
 function handle(doc: LarDoc): HostingDocHandle & { land(change: (d: LarDoc) => void): void } {

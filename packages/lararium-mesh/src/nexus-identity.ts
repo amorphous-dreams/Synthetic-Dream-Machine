@@ -3,7 +3,7 @@
  *
  * PRIOR ART: this is a KERI Autonomic Identifier. An AID is "cryptographically derived from its very
  * first key event, called an inception event", and that event "MUST include the list of controlling
- * public keys and a signature threshold" — the same inputs `genesisSealEpochCid` hashes. The charter
+ * public keys and a signature threshold" — the inputs a charter's genesis epoch hashes. The charter
  * chain already cites KERI for pre-rotation; the identifier it mints at genesis is the island's name.
  *
  * ── A NEXUS HOLDS NO KEY, SO NO VESSEL'S KEY NAMES IT ───────────────────────────────────────────
@@ -36,9 +36,10 @@
  * answers to its operator; the crossroads answers to whoever walks the road.
  *
  * ── THE GENESIS EPOCH IS THAT NAME ──────────────────────────────────────────────────────────────
- * `genesisSealEpochCid` content-addresses the seated key-set and the threshold, so every vessel
- * holding the charter derives the same value from public material, it names no vessel, and it
- * survives rotation because the genesis sits at the HEAD of the lineage rather than at its end.
+ * The genesis epoch's content address (`nexus-…`, `sealEpochCidOf`) binds the seated key-set, the
+ * threshold and the successor commitments, so every vessel holding the charter derives the same value
+ * from public material, it names no vessel, and it survives rotation because the genesis sits at the
+ * HEAD of the lineage rather than at its end (`nexusAidOf`).
  *
  * ── AND SHARING IS SAFE ONLY WHERE IT CANNOT WIDEN ──────────────────────────────────────────────
  * A shared scope belongs to a plane whose contents cannot enlarge a vessel's own authority:
@@ -67,8 +68,10 @@
  * semantics; a quorum signature answers forgery and never legitimacy.
  */
 
-/** `epoch0-` plus 64 hex — the shape `genesisSealEpochCid` mints. Anything else names no island. */
-const GENESIS_RE = /^epoch0-[0-9a-f]{64}$/;
+import { NEXUS_AID_PATTERN } from "./wax-stamp.js";
+
+/** A Nexus AID (`NEXUS_AID_PATTERN`, the shape `sealEpochCidOf` mints at genesis). Anything else names no island. */
+const GENESIS_RE = NEXUS_AID_PATTERN;
 
 /** A gate key names an island only as hex — anything else addresses a board no peer resolves. */
 const KEY_RE = /^[0-9a-f]{16,64}$/;

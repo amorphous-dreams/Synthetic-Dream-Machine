@@ -327,7 +327,7 @@ async function reading() {
     const board   = await M.materializeSharedLarDoc(repo, M.carriageDocUrl(island), "board:carriage-contracts");
     const antigen = await M.materializeSharedLarDoc(repo, M.kapaeAntigenDocUrl(island), "board:kapae-antigen");
     // The anchors are the PRESENTER's read; the verdict reads the board as a deny board and nothing more.
-    return { aid: M.realmIdOfCharter(doc), doc, roster, sealLineage: doc?.sealLineage ?? [], boardDoc: board.doc(),
+    return { aid: M.nexusAidOf(doc), doc, roster, sealLineage: doc?.sealLineage ?? [], boardDoc: board.doc(),
              denyBoard: M.carriageEntriesFromBoard(board.doc()), anchors: M.rollAnchorsFromBoard(board.doc()),
              antigen: M.antigenEntriesFromBoard(antigen.doc()), antigenRoster: roster };
   } finally { await repo.flush().catch(() => {}); }
@@ -387,7 +387,7 @@ switch (mode) {
   }
   case "leafproof": {          // only the admit's own leaf proves it to a socket
     const p = json(a1);
-    const aid = M.realmIdOfCharter(readNexusDoc(larSealHome()));
+    const aid = M.nexusAidOf(readNexusDoc(larSealHome()));
     const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
     if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
     const bind = { nonce: hex32(), gatePubKey: hex32(), vesselKey: await loadVesselVerifyingKey() };

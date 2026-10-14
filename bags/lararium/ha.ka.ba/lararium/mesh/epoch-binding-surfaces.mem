@@ -40,7 +40,7 @@ a wrong answer here reads identically to a right one until a founding breaks.
 
 !! The five surfaces, and what each binds TO
 
-<<~ has Surface Seal-epoch "binds/seated-keys + threshold moved-by/a-roster-or-quorum-change ~ genesisSealEpochCid — carries NO dependency, NO blob, NO version">>
+<<~ has Surface Seal-epoch "binds/seated-keys + threshold moved-by/a-roster-or-quorum-change ~ the Nexus AID (`nexus-…`, the genesis epoch address) — carries NO dependency, NO blob, NO version">>
 <<~ has Surface Hearth-true-name "binds/the-TW5-core-blob-sha256 moved-by/a-TW5-submodule-bump ~ engineCid, and it rides INSIDE every signed delegation preimage">>
 <<~ has Surface Plugins-CID "binds/the-built-plugin-blob-shas moved-by/THIS-REPO'S-OWN-SOURCE ~ 23 modules + 115 tiddlers packed from our TS; verified at BUILD time by verifyGenesisArtifact — LOCAL integrity, never a membership criterion, and no peer path reads it (#/the-real-mover)">>
 <<~ has Surface On-disk-serde "binds/automerge + keyhive byte formats moved-by/a-RUNTIME-dep-bump ~ the only npm-movable surface">>
@@ -246,6 +246,6 @@ count as acts, never upgrades''.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IgzM9iQeFaFr0JeZRP2nfkGp5hivbRyxWiv-o1OUxVw
+<<^ code="&#x0003;">>ni:///sha-256;tthiEpu5jHmEbeoSbfhwXfIX2YKi63c66jsZXJ3jSRg
 
 <<^ code="&#x0004;" -> to="?">>

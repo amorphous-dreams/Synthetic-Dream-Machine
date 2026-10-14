@@ -200,10 +200,10 @@ function composeDoc(seal: unknown, kahu: unknown, practice: unknown): NexusDoc |
   for (const raw of k["kahu"]) {
     if (typeof raw !== "object" || raw === null) return null;     // a torn seat reads the whole doc closed
     const seat = raw as Record<string, unknown>;
-    if (typeof seat["displayName"] !== "string") return null;
+    if (typeof seat["chairLabel"] !== "string") return null;
     const vk = seat["verifyingKey"];
     seats.push({
-      displayName:  seat["displayName"] as string,
+      chairLabel:   seat["chairLabel"] as string,
       verifyingKey: typeof vk === "string" && vk.length > 0 ? vk : null,
     });
   }
@@ -250,11 +250,18 @@ export type NexusCharterShape = "absent" | "whole" | "torn" | "earlier-shape";
 export function nexusCharterShape(bagsDir: string): NexusCharterShape {
   const body = readBody(bagsDir);
   if (body === null) return existsSync(nexusCharterDocPath(bagsDir)) ? "torn" : "absent";
+  // THE EARLIER SHAPES, each by its own mark: one `nextKeyCommit` per epoch, and a seat that carries `displayName`
+  // where a chair carries `chairLabel`. Every charter written before the Nexus AID took its `nexus-` name carries the
+  // second mark, so no reader needs the earlier name itself.
+  const own = (e: unknown, key: string): boolean => typeof e === "object" && e !== null && Object.prototype.hasOwnProperty.call(e, key);
   const seal = readFence(body, SEAL_BLOCK);
   if (typeof seal === "object" && seal !== null) {
     const lineage = (seal as Record<string, unknown>)["sealLineage"];
-    if (Array.isArray(lineage) && lineage.some((e) => typeof e === "object" && e !== null && Object.prototype.hasOwnProperty.call(e, "nextKeyCommit"))) return "earlier-shape";
+    if (Array.isArray(lineage) && lineage.some((e) => own(e, "nextKeyCommit"))) return "earlier-shape";
   }
+  const kahu = readFence(body, KAHU_BLOCK);
+  const seats = typeof kahu === "object" && kahu !== null ? (kahu as Record<string, unknown>)["kahu"] : undefined;
+  if (Array.isArray(seats) && seats.some((s) => own(s, "displayName") && !own(s, "chairLabel"))) return "earlier-shape";
   return parseNexusDoc(body) === null ? "torn" : "whole";
 }
 

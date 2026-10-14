@@ -20,7 +20,7 @@ import { dirname, join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   hex, emptyFoundingCharterDoc, signCarriageContract, ed25519SignerFromSeed,
-  realmIdOfCharter, type NexusDoc, type SealEpoch,
+  nexusAidOf, type NexusDoc, type SealEpoch,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed } from "../src/node-vessel-identity.js";
 import { renderNexusDoc, writeNexusDoc, nexusCharterDocPath, parseNexusDoc } from "../src/nexus-doc.js";
@@ -187,7 +187,7 @@ describe("the carried set — one contract-in per Nexus", () => {
 
   it("★ a seated chair carries its Nexus with NO consent record — primary or carried ★", async () => {
     const keys = await standFounding();
-    const primary = realmIdOfCharter(genesisCharter(keys).doc)!;
+    const primary = nexusAidOf(genesisCharter(keys).doc)!;
     // A partner Nexus that seats one of this vessel's roots beside two foreign chairs.
     const shared = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter([keys[0]!, ...(await foreignKeys(30)).slice(0, 2)]).doc));
 
@@ -248,7 +248,7 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
     const n = importCarriedCharter(sealHome(), renderNexusDoc((await lineageCharter(keys, 3)).doc));
     const held = readFileSync(n.path);
     const fork = (await lineageCharter(keys, 3, 1)).doc;                  // same genesis, a different epoch-2
-    expect(realmIdOfCharter(fork)).toBe(n.aid);
+    expect(nexusAidOf(fork)).toBe(n.aid);
     expect(fork.sealEpochCid).not.toBe(n.sealEpochCid);
     expect(() => importCarriedCharter(sealHome(), renderNexusDoc(fork))).toThrow(CarriedCharterError);
     expect(readFileSync(n.path).equals(held)).toBe(true);
@@ -341,7 +341,7 @@ describe("CONTROLS — what stays out of the set, and what refuses to land", () 
   it("CONTROL — a carried directory whose charter names another AID is not read as that directory's Nexus", async () => {
     await standJoiner();
     const n = importCarriedCharter(sealHome(), renderNexusDoc(genesisCharter(await foreignKeys(10)).doc));
-    const misplaced = join(sealHome(), "carried", "epoch0-" + "f".repeat(64), "founding-roster.mem");
+    const misplaced = join(sealHome(), "carried", "nexus-" + "f".repeat(64), "founding-roster.mem");
     mkdirSync(dirname(misplaced), { recursive: true });
     writeFileSync(misplaced, readFileSync(n.path));
     expect([...readCarriedCharters(sealHome()).keys()]).toEqual([n.aid]);

@@ -56,11 +56,20 @@ export function sealKeySetHash(keys: readonly string[], threshold: number): stri
   return sha256HexSync(canonicalJson({ keys: normKeys(keys), threshold }));
 }
 export type SealEpochFields = Omit<SealEpoch, "epochCid" | "roll">;
-/** The content-address binds the positional commitments exactly as supplied. */
+/**
+ * A Nexus AID: `nexus-` and 64 lower hex. ONE CONSTRUCTOR MINTS IT, `sealEpochCidOf` on a genesis: the content
+ * address of the charter's first epoch, so every holder derives it alike from public material, it names no vessel,
+ * and no roll moves it (a roll appends; the genesis stays first).
+ */
+export const NEXUS_AID_PATTERN = /^nexus-[0-9a-f]{64}$/;
+/**
+ * The content-address binds the positional commitments exactly as supplied. A genesis (no `prevEpochCid`) takes the
+ * `nexus-` prefix, and its address names the Nexus; every later epoch takes `epoch-`.
+ */
 export function sealEpochCidOf(fields: SealEpochFields): string {
   const digest = sha256HexSync(canonicalJson({ keySetHash: fields.keySetHash, nextKeyDigests: fields.nextKeyDigests,
     nextThreshold: fields.nextThreshold, prevEpochCid: fields.prevEpochCid }));
-  return fields.prevEpochCid === null ? `epoch0-${digest}` : `epoch-${digest}`;
+  return fields.prevEpochCid === null ? `nexus-${digest}` : `epoch-${digest}`;
 }
 /** Seal one charter epoch from its authority fields and optional signed roll. */
 export function mintCharterEpoch(fields: SealEpochFields, roll?: SealRoll): SealEpoch {

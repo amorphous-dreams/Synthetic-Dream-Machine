@@ -31,7 +31,7 @@ import { ALL_DOMAINS, DOMAIN_ROOT } from "../src/domains.js";
 import { emptyLarDoc } from "../src/base-doc.js";
 import { hex, base64UrlDecode, base64UrlEncode } from "../src/crypto.js";
 
-const AID   = "epoch0-" + "a".repeat(64);
+const AID   = "nexus-" + "a".repeat(64);
 const LEAF  = new Uint8Array(32).fill(41);
 const OTHER = new Uint8Array(32).fill(42);
 // A REAL verifying key (RFC 8032 §7.1): a grant names only a walker leaf the Ed25519 door accepts.
@@ -73,7 +73,7 @@ describe("the hosting act — the epoch is its CID", () => {
     expect(twin.cid).toBe(second.cid);                                        // deterministic: the same roll is the same act
     const forged = { ...second.act, oprfPub: "b".repeat(64) };
     expect(await hostingForks([first.act, second.act, forged])).toEqual([]);
-    const otherKeyRoll = await mintHostingAct({ leafSeed: LEAF, nexusAid: "epoch0-" + "b".repeat(64), prev: first.cid, cap: 3 });
+    const otherKeyRoll = await mintHostingAct({ leafSeed: LEAF, nexusAid: "nexus-" + "b".repeat(64), prev: first.cid, cap: 3 });
     expect(await hostingForks([first.act, second.act, otherKeyRoll.act])).toEqual([]);   // another Nexus, no fork
     // RED: an EQUIVOCATING hearth signs a second act from the same act under another key — one fork surfaces.
     const unsigned = { ...second.act, oprfPub: "e".repeat(64) };

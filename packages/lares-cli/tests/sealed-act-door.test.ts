@@ -315,7 +315,7 @@ describe("a command beside a standing vessel", () => {
     const { getPublicKeyAsync } = await import("@noble/ed25519");
     const keys = await Promise.all([1, 2, 3].map(async (i) => Buffer.from(await getPublicKeyAsync(new Uint8Array(32).fill(40 + i))).toString("hex")));
     const vessel = await standVessel({ unlocked: true, table: (act) => (act === "seat.arm-genesis"
-      ? { kahu: keys.map((verifyingKey, i) => ({ displayName: `Chair ${i}`, verifyingKey })), seatedKeys: keys, threshold: 2, superseded: [], minted: keys }
+      ? { kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Chair ${i}`, verifyingKey })), seatedKeys: keys, threshold: 2, superseded: [], minted: keys }
       : act === "seat.readback-stand-in" ? { standIn: true } : {}) });
     const r = await run(["nexus", "seal", "seat", "--json"]);
     expect(r.code).toBe(0);

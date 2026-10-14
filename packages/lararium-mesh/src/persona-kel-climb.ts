@@ -17,7 +17,7 @@
  * that never boots again.
  *
  *   · on a NODE: `vessel found` → use → `nexus rite quorum` → restart (measured live: island
- *     `079da8bf0e1efce59d…` (own) at founding, `epoch0-0790f04d937…` (charter) after, and the halt every
+ *     `079da8bf0e1efce59d…` (own) at founding, `nexus-0790f04d937…` (charter) after, and the halt every
  *     boot thereafter).
  *   · on a LEAF: found offline at a PRIVATE NEXUS OF ONE → the operator configures the hearth it dials →
  *     restart. `nexusIdentity` resolves the ANCHOR, the KEL board re-keys to it, and the leaf's own gate

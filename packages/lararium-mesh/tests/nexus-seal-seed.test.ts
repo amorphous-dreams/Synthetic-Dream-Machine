@@ -6,17 +6,17 @@
  *   · a doc with no established charter epoch fails closed even with keys present,
  *   · an unseated doc (keys null) fails closed,
  *   · a seated doc with an established epoch raises a LIVE roster that a real 2-of-3 antigen entry verifies,
- *   · `genesisSealEpochCid` is deterministic on the sorted seated key-set (re-seat strands nothing),
+ *   · the Nexus AID: the genesis epoch's `nexus-` address, fixed across a roll, moved by any genesis byte,
  *   · a below-threshold seated roster fails closed.
  */
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import {
-  foundingRoster, foundingQuorumSeated, genesisSealEpochCid,
+  foundingRoster, foundingQuorumSeated, nexusAidOf,
   sealLineageHead, emptyFoundingCharterDoc, NEXUS_DOC_DOMAIN, type NexusDoc,
 } from "../src/nexus-seal-seed.js";
-import { mintCharterEpoch } from "../src/wax-stamp.js";
+import { mintCharterEpoch, sealEpochCidOf, NEXUS_AID_PATTERN } from "../src/wax-stamp.js";
 import { seatedCharter, type SeatedCharter } from "./charter-fixture.js";
 import { signAntigenEntry, foldAntigenSet, isKapaed, makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
 
@@ -30,7 +30,7 @@ function docOf(charter: SeatedCharter): NexusDoc {
   return {
     kind: NEXUS_DOC_DOMAIN, threshold: 2,
     sealEpochCid: charter.head.epochCid, sealLineage: [...charter.chain],
-    kahu: charter.keys.map((verifyingKey, i) => ({ displayName: CHAIRS[i]!, verifyingKey })),
+    kahu: charter.keys.map((verifyingKey, i) => ({ chairLabel: CHAIRS[i]!, verifyingKey })),
   };
 }
 
@@ -40,7 +40,7 @@ function docOf(charter: SeatedCharter): NexusDoc {
 async function seated(seats: 1 | 2 | 3): Promise<{ doc: NexusDoc; charter: SeatedCharter }> {
   if (seats < 2) {
     const charter = await seatedCharter({ seats, threshold: 1, armed: false });
-    const kahu = CHAIRS.map((displayName, i) => ({ displayName, verifyingKey: charter.keys[i] ?? null }));
+    const kahu = CHAIRS.map((chairLabel, i) => ({ chairLabel, verifyingKey: charter.keys[i] ?? null }));
     return { doc: { kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: null, kahu }, charter };
   }
   const charter = await seatedCharter({ seats, threshold: 2, armed: false });
@@ -107,7 +107,7 @@ describe("foundingRoster — a seated doc raises a LIVE antigen roster", () => {
     const roster = foundingRoster(doc);
     const signers = await charter.signers();
     const entry = await signAntigenEntry(
-      { nym: VICTIM, action: "kapae", parents: [], sealEpochCid: "epoch0-someone-elses" },
+      { nym: VICTIM, action: "kapae", parents: [], sealEpochCid: "nexus-someone-elses" },
       signers,
     );
     expect(isKapaed(VICTIM, await foldAntigenSet([entry], roster, verifier))).toBe(false);
@@ -171,12 +171,32 @@ describe("foundingRoster — the PRE-ROTATED CHAIN roots the antigen on the veri
   });
 });
 
-describe("genesisSealEpochCid — deterministic on the seated key-set", () => {
-  test("order-independent + stable across re-derivation", async () => {
-    const a = await pubOf(new Uint8Array(32).fill(1)), b = await pubOf(new Uint8Array(32).fill(2));
-    expect(genesisSealEpochCid([a, b], 2)).toBe(genesisSealEpochCid([b, a], 2));
-    expect(genesisSealEpochCid([a, b], 2)).toMatch(/^epoch0-[0-9a-f]{64}$/);
-    // a different key-set or threshold yields a different epoch
-    expect(genesisSealEpochCid([a, b], 2)).not.toBe(genesisSealEpochCid([a], 1));
+describe("the Nexus AID — one constructor, one name", () => {
+  test("a seated charter names its Nexus `nexus-…`, the genesis epoch's own address", async () => {
+    const charter = await seatedCharter({ seats: 3, threshold: 2 });
+    const doc = charter.doc();
+    expect(nexusAidOf(doc)).toBe(charter.chain[0]!.epochCid);
+    expect(nexusAidOf(doc)).toMatch(NEXUS_AID_PATTERN);
+    expect(nexusAidOf(doc)).toBe(sealEpochCidOf(charter.chain[0]!));       // the one constructor mints it
+  });
+  test("RED: the AID stays fixed across a roll, and every later epoch reads `epoch-`", async () => {
+    const charter = await seatedCharter({ seats: 3, threshold: 2 });
+    const rolled = await charter.roll();
+    expect(nexusAidOf(rolled.doc())).toBe(nexusAidOf(charter.doc()));
+    expect(rolled.head.epochCid).toMatch(/^epoch-[0-9a-f]{64}$/);
+    expect(NEXUS_AID_PATTERN.test(rolled.head.epochCid)).toBe(false);
+  });
+  test("CONTROL: changed genesis bytes change the AID; an unseated charter names none", async () => {
+    const a = await seatedCharter({ seats: 3, threshold: 2, seed: 1 });
+    const b = await seatedCharter({ seats: 3, threshold: 2, seed: 2 });
+    const c = await seatedCharter({ seats: 3, threshold: 3, seed: 1 });
+    expect(nexusAidOf(a.doc())).not.toBe(nexusAidOf(b.doc()));
+    expect(nexusAidOf(a.doc())).not.toBe(nexusAidOf(c.doc()));
+    // The same seats under the same rule, unarmed: the successor commitments enter the genesis bytes too.
+    const unarmed = await seatedCharter({ seats: 3, threshold: 2, seed: 1, armed: false });
+    expect(unarmed.keys).toEqual(a.keys);
+    expect(nexusAidOf(unarmed.doc())).not.toBe(nexusAidOf(a.doc()));
+    expect(nexusAidOf(emptyFoundingCharterDoc())).toBeNull();
+    expect(nexusAidOf(null)).toBeNull();
   });
 });
