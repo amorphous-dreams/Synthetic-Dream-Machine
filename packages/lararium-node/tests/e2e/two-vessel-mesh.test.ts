@@ -39,7 +39,7 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID,
-  PERSONA_GROUP_ID_TIDDLER, PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   CAP_EVENT_TAG,
   PERSONA_KEL_PREFIX_TIDDLER, SIGNER_DID_TIDDLER,
   HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
