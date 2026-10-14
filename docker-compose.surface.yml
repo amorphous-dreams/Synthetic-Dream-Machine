@@ -47,12 +47,13 @@
 #                        192.168.1.10 hearth.home.example.test
 #                        192.168.1.11 parlour.home.example.test
 #                      A name under the zone that the file lists answers with its address; one it does not list
-#                      answers "no such name" and never leaves the house; every name outside the zone forwards to
-#                      LARES_DNS_UPSTREAM (default 1.1.1.1). The one-shot `records` check reads the file first and
-#                      refuses by name a line that names no IPv4 LAN address, a name outside the zone, a name on two
-#                      lines, and a file others cannot read (the check reads it holding no privilege over files:
-#                      mode 0644) or others can write. It renders the zone the resolver serves, and the resolver
-#                      stands only once that check passed. After an edit to the file, run the check, and once it
+#                      answers "no such name" and never leaves the house; a reverse lookup of a private or link-local
+#                      address answers "no such name" inside the house too; every other name forwards to
+#                      LARES_DNS_UPSTREAM (default 1.1.1.1). The one-shot `records` check reads the file first, as
+#                      LARES_UID, and refuses by name a line that names no IPv4 LAN address (an octet led by a zero
+#                      included), a name outside the zone, a name on two lines, and a file LARES_UID cannot read or
+#                      others can write: mode 0600 owned by LARES_UID serves. It renders the zone the resolver
+#                      serves, and the resolver stands only once that check passed. After an edit to the file, run the check, and once it
 #                      passes restart the resolver; a refused edit leaves the resolver answering the last zone the
 #                      check passed (a forced recreate of both would stop the resolver on a refusal):
 #                        docker compose -f docker-compose.surface.yml --profile https run --rm records
@@ -63,7 +64,15 @@
 #                        docker compose -f docker-compose.surface.yml --profile issuer run --rm issuer
 #                      It asks the certificate authority for ONE WILDCARD certificate over LARES_TLS_ZONE and proves
 #                      control of the zone by a TXT record written through the DNS host's API (DNS-01), so nothing
-#                      reaches inward to the house. A run issues, and a later run renews. The operator supplies
+#                      reaches inward to the house. A run issues, and a later run renews. It asks PUBLIC resolvers
+#                      (LARES_ISSUER_RESOLVERS, default 1.1.1.1:53,9.9.9.9:53) for the zone's apex and the challenge
+#                      record, never the household resolver, which answers every name under the zone itself: through
+#                      it the issuer would find the house's own apex, no name server and no challenge record. The
+#                      issuer refuses by name a resolver it reads as inside the house (a private, loopback,
+#                      link-local or shared address, the resolver's service name, a local name or a name under the
+#                      zone); a LAN resolver under another name stays the operator's to keep out. So a public
+#                      record under the zone stays
+#                      out of reach inside the house, by design. The operator supplies
 #                      LARES_TLS_ZONE, LARES_TLS_DIR (a host directory the issuer writes), LARES_DNS_CREDENTIAL_DIR
 #                      and LARES_ACME_ACCEPT_TOS=yes (the operator, never this file, accepts the authority's terms).
 #                      Optional: LARES_TLS_CERT_NAME (default household; one name per machine), LARES_ACME_SERVER,
@@ -261,14 +270,39 @@ services:
       - lares
     restart: unless-stopped
 
-  # The records check: one-shot, before the resolver. It reads the household's records file, refuses by name what
-  # the resolver would answer wrongly or never, and renders the zone the resolver serves into one volume, which is
-  # its only write. It holds no network and no capability. It runs as root so it may write that root-owned volume,
-  # and reads the records file as any other user would (mode 0644).
-  records:
+  # The zone volume's owner: one-shot, before the records check. It hands the zone volume to LARES_UID, so the check
+  # renders the zone and reads the records file as that uid, holding no privilege. It holds no network and the one
+  # capability a change of owner needs.
+  zone-owner:
     profiles: [https]
     image: ${LARES_TLS_IMAGE:-nginx:1.30-alpine}
     user: "0:0"
+    network_mode: none
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        case "$$LARES_UID:$$LARES_GID" in *[!0-9:]*|:*|*:|*:*:*) echo "household-zone: LARES_UID and LARES_GID ($$LARES_UID:$$LARES_GID) read as no numeric uid and gid" >&2; exit 2 ;; esac
+        chown "$$LARES_UID:$$LARES_GID" /zone
+    environment:
+      LARES_UID: ${LARES_UID:-1000}
+      LARES_GID: ${LARES_GID:-1000}
+    volumes:
+      - type: volume
+        source: household-zone
+        target: /zone
+    cap_drop: [ALL]
+    cap_add: [CHOWN]
+    security_opt: ["no-new-privileges:true"]
+    restart: "no"
+
+  # The records check: one-shot, before the resolver. It reads the household's records file, refuses by name what
+  # the resolver would answer wrongly or never, and renders the zone the resolver serves into one volume, which is
+  # its only write. It holds no network and no capability, and runs as LARES_UID: it reads the records file as that
+  # uid, so a file only LARES_UID reads (mode 0600) serves.
+  records:
+    profiles: [https]
+    image: ${LARES_TLS_IMAGE:-nginx:1.30-alpine}
+    user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
     network_mode: none
     entrypoint: ["/bin/sh", "-ec"]
     command:
@@ -281,9 +315,10 @@ services:
         file=/run/records/household.records
         [ -f "$$file" ] && [ -s "$$file" ] || refuse 'LARES_DNS_RECORDS names no file, or an empty one — one "<LAN address> <name>" line per household name'
         mode=$$(stat -c %a "$$file")
-        [ $$((0$$mode & 4)) -ne 0 ] || refuse "LARES_DNS_RECORDS file mode ($$mode) keeps the check out — it reads the file holding no privilege over files; set mode 0644"
-        [ $$((0$$mode & 022)) -eq 0 ] || refuse "LARES_DNS_RECORDS file mode ($$mode) lets group or other write — set mode 0644"
+        [ -r "$$file" ] || refuse "LARES_DNS_RECORDS file mode ($$mode) keeps the check out — it reads the file as LARES_UID ($$(id -u)); let that uid read it (mode 0600 owned by LARES_UID)"
+        [ $$((0$$mode & 022)) -eq 0 ] || refuse "LARES_DNS_RECORDS file mode ($$mode) lets group or other write — set mode 0600"
         next=/zone/.next
+        rm -f "$$next"
         printf '$$ORIGIN %s.\n@ 60 IN SOA resolver.%s. hostmaster.%s. 1 3600 600 86400 60\n' "$$LARES_TLS_ZONE" "$$LARES_TLS_ZONE" "$$LARES_TLS_ZONE" > "$$next"
         names=' '; count=0
         while IFS= read -r line || [ -n "$$line" ]; do
@@ -293,7 +328,10 @@ services:
           [ "$$#" -eq 2 ] || refuse "the line \"$$line\" holds no \"<LAN address> <name>\" pair"
           address=$$1; name=$$2
           printf '%s\n' "$$address" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}$$' || refuse "$$address (for $$name) reads as no IPv4 address"
-          for octet in $$(printf '%s' "$$address" | tr . ' '); do [ "$$octet" -le 255 ] || refuse "$$address (for $$name) reads as no IPv4 address"; done
+          for octet in $$(printf '%s' "$$address" | tr . ' '); do
+            case "$$octet" in 0?*) refuse "$$address (for $$name) holds an octet led by a zero — the resolver loads no zone that holds one; write each octet with no leading zero" ;; esac
+            [ "$$octet" -le 255 ] || refuse "$$address (for $$name) reads as no IPv4 address"
+          done
           case "$$address" in 0.*|127.*|255.*) refuse "$$address (for $$name) names no device on the LAN" ;; esac
           case "$$name" in *[!a-z0-9.-]*|.*|*.|*..*) refuse "$$name reads as no household name — lowercase letters, digits, hyphens and dots" ;; esac
           case "$$name" in *".$$LARES_TLS_ZONE") ;; *) refuse "$$name lies outside LARES_TLS_ZONE ($$LARES_TLS_ZONE) — the resolver would never answer it" ;; esac
@@ -326,6 +364,9 @@ services:
       - /tmp:rw,noexec,nosuid,size=1m
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
+    depends_on:
+      zone-owner:
+        condition: service_completed_successfully
     restart: "no"
 
   # One split-horizon DNS answer per household name; every name outside the zone follows the configured upstream.
@@ -418,7 +459,26 @@ services:
           mode=$$(stat -c %a "$$file")
           [ "$$mode" = 400 ] || refuse "$$name file mode ($$mode) reads wider than its owner — set mode 0400"
         done
-        exec /lego run --accept-tos --account-id household --server "$$LARES_ACME_SERVER" --path /certs --dns "$$LARES_ISSUER_DNS" --cert.name "$$LARES_TLS_CERT_NAME" -d "*.$$LARES_TLS_ZONE"
+        # The issuer asks PUBLIC resolvers for the zone's apex and the challenge record. The household resolver answers
+        # every name under the zone itself, so through it the issuer would find the house's apex and no name server.
+        # It refuses, by name, a resolver it reads as inside the house: a private, loopback, link-local or shared
+        # (CGNAT) address in either family, the household resolver's own service name, a local name, or a name
+        # under the zone. A LAN resolver under any other public-looking name stays the operator's to keep out.
+        set -f
+        [ -n "$$LARES_ISSUER_RESOLVERS" ] || refuse 'LARES_ISSUER_RESOLVERS stands unset — name public resolvers as host:port, comma-separated'
+        resolvers=$$(printf '%s' "$$LARES_ISSUER_RESOLVERS" | tr 'A-Z' 'a-z')
+        case ",$$resolvers," in *,,*) refuse "LARES_ISSUER_RESOLVERS ($$LARES_ISSUER_RESOLVERS) holds an empty entry" ;; esac
+        for resolver in $$(printf '%s' "$$resolvers" | tr , ' '); do
+          case "$$resolver" in ?*:[0-9]*) ;; *) refuse "LARES_ISSUER_RESOLVERS entry $$resolver names no host:port" ;; esac
+          case "$${resolver%:*}" in *[!a-z0-9.:\[\]-]*) refuse "LARES_ISSUER_RESOLVERS entry $$resolver reads as no host" ;; esac
+          case "$${resolver%:*}" in
+            0.*|10.*|127.*|169.254.*|192.168.*|172.1[6-9].*|172.2[0-9].*|172.3[01].*|100.6[4-9].*|100.[7-9][0-9].*|100.1[01][0-9].*|100.12[0-7].*|\
+            \[::*|\[fc*|\[fd*|\[fe[89ab]*|\
+            localhost|*.localhost|resolver|*.local|*.lan|*.internal|*.home.arpa|"$$LARES_TLS_ZONE"|*".$$LARES_TLS_ZONE")
+              refuse "LARES_ISSUER_RESOLVERS entry $$resolver names a resolver inside the house — the issuer asks public resolvers, never the household zone" ;;
+          esac
+        done
+        exec /lego run --accept-tos --account-id household --server "$$LARES_ACME_SERVER" --path /certs --dns "$$LARES_ISSUER_DNS" --dns.resolvers "$$resolvers" --cert.name "$$LARES_TLS_CERT_NAME" -d "*.$$LARES_TLS_ZONE"
     environment:
       LARES_TLS_ZONE: ${LARES_TLS_ZONE:-}
       LARES_TLS_DIR: ${LARES_TLS_DIR:-}
@@ -427,6 +487,7 @@ services:
       LARES_ACME_ACCEPT_TOS: ${LARES_ACME_ACCEPT_TOS:-}
       LARES_ACME_SERVER: ${LARES_ACME_SERVER:-https://acme-v02.api.letsencrypt.org/directory}
       LARES_ISSUER_DNS: ${LARES_ISSUER_DNS:-porkbun}
+      LARES_ISSUER_RESOLVERS: ${LARES_ISSUER_RESOLVERS:-1.1.1.1:53,9.9.9.9:53}
       LARES_STATE: ${LARES_STATE:-}
       LARES_WORKSPACE: ${LARES_WORKSPACE:-}
       PORKBUN_API_KEY_FILE: /run/dns/porkbun-api-key
@@ -503,8 +564,13 @@ configs:
     content: |
       # The rendered zone answers for every name under it: a listed name with its one address, any other name
       # "no such name", and no household name leaves the house. It loads once at start (reload 0), after the check.
+      # A reverse lookup of a private, loopback, link-local or unspecified address (RFC 6303) answers "no such name"
+      # here and never leaves the house either.
       .:1053 {
         errors
+        template ANY ANY 0.in-addr.arpa 10.in-addr.arpa 127.in-addr.arpa 254.169.in-addr.arpa 16.172.in-addr.arpa 17.172.in-addr.arpa 18.172.in-addr.arpa 19.172.in-addr.arpa 20.172.in-addr.arpa 21.172.in-addr.arpa 22.172.in-addr.arpa 23.172.in-addr.arpa 24.172.in-addr.arpa 25.172.in-addr.arpa 26.172.in-addr.arpa 27.172.in-addr.arpa 28.172.in-addr.arpa 29.172.in-addr.arpa 30.172.in-addr.arpa 31.172.in-addr.arpa 168.192.in-addr.arpa 255.255.255.255.in-addr.arpa d.f.ip6.arpa 8.e.f.ip6.arpa 9.e.f.ip6.arpa a.e.f.ip6.arpa b.e.f.ip6.arpa 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa 0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa {
+          rcode NXDOMAIN
+        }
         file /zone/db.household ${LARES_TLS_ZONE:-unset.invalid} {
           reload 0
         }

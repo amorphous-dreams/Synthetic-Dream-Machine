@@ -190,7 +190,7 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 !! 7 · Establish household reach
 
-Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and one split-horizon resolver. The resolver answers each household name from one records file the operator keeps, one `<LAN address> <name>` line per machine (`LARES_DNS_RECORDS`; `docker-compose.surface.yml` names how to check an edit and restart the resolver). mDNS offers a hint only. No device installs a certificate authority. Keep the DNS credential and TLS private key outside the vessel state and image.
+Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and one split-horizon resolver. The resolver answers each household name from one records file the operator keeps, one `<LAN address> <name>` line per machine (`LARES_DNS_RECORDS`, mode 0600 owned by the vessel's uid; `docker-compose.surface.yml` names how to check an edit and restart the resolver). Write each address plainly, with no octet led by a zero. A public record under the household zone stays unreachable from inside the house. mDNS offers a hint only. No device installs a certificate authority. Keep the DNS credential and TLS private key outside the vessel state and image.
 
 ''When one phone cannot reach the household name.'' The household name answers only from the household's own resolver, the one the router hands every device. A phone or a browser set to send its DNS questions somewhere else (encrypted DNS) never asks that resolver, so the household name fails on that device alone while it works on the others. At home, set the device back to the network's own DNS:
 
@@ -349,6 +349,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;N7lJ3tfKyy5CH7D5PL2ORTEBeNyTseYMhDmGKdsdOOs
+<<^ code="&#x0003;">>ni:///sha-256;sIdUeprR7NK78xtks1bmdRVSG6YECxxMLQB1pRz5EQI
 
 <<^ code="&#x0004;" -> to="?">>

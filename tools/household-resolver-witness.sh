@@ -3,13 +3,16 @@
 # zone alone: two hearths, two addresses, through the compose file's own `records` check and `resolver` service.
 #
 #   REFUSALS      the `records` check refuses by name: no zone, no records file, a path that names no file, a
-#                 malformed line, an address that reads as no IPv4 address or names no LAN device, a name outside the
-#                 zone, a label DNS cannot hold, a name on two lines, a file the check cannot read and a file others
-#                 can write. A file it refused stands no resolver.
+#                 malformed line, an address that reads as no IPv4 address, holds an octet led by a zero or names no
+#                 LAN device, a name outside the zone, a label DNS cannot hold, a name on two lines, a file LARES_UID
+#                 cannot read and a file others can write. A file only LARES_UID reads passes: the check runs as that
+#                 uid. A file it refused stands no resolver.
 #   PER NAME      the resolver answers `hearth.<zone>` and `parlour.<zone>` with their two addresses; a name under the
-#                 zone that the file does not list answers NXDOMAIN; a listed name asked for AAAA answers no address.
-#   THE HOUSE     a name outside the zone forwards to the upstream, and the upstream hears no household name.
-#                 CONTROL: the upstream's own log names the outside name the witness asked for.
+#                 zone that the file does not list answers NXDOMAIN; a listed name asked for AAAA answers no address;
+#                 a private reverse lookup answers NXDOMAIN inside the house; the house answers its zone apex itself.
+#   THE HOUSE     a name outside the zone forwards to the upstream, and the upstream hears no household name and
+#                 no private reverse lookup. CONTROL: the upstream's own log names the outside name and the public
+#                 reverse lookup the witness asked for.
 #   AN EDIT       a third line lands once the check passed and the resolver restarted; a refused edit leaves the
 #                 standing resolver on the last zone the check passed.
 #
@@ -125,6 +128,9 @@ result 'a line with three words refuses'                        contains "$out" 
 write_records '192.0.2.300 hearth.home.example.test'
 out=$(check || :)
 result 'an octet past 255 refuses'                              contains "$out" 'reads as no IPv4 address'
+write_records '192.0.02.10 hearth.home.example.test'
+out=$(check || :)
+result 'an octet led by a zero refuses (the resolver loads no such zone)' contains "$out" 'holds an octet led by a zero'
 write_records '127.0.0.1 hearth.home.example.test'
 out=$(check || :)
 result 'a loopback address refuses'                             contains "$out" 'names no device on the LAN'
@@ -141,9 +147,12 @@ write_records '# nothing but a comment'
 out=$(check || :)
 result 'a file that holds no record refuses'                    contains "$out" 'holds no record'
 write_records '192.0.2.10 hearth.home.example.test'
+chmod 200 "$RECORDS"
+out=$(check || :)
+result 'a file LARES_UID cannot read refuses'                   contains "$out" 'keeps the check out'
 chmod 600 "$RECORDS"
 out=$(check || :)
-result 'a file the check cannot read refuses'                contains "$out" 'keeps the check out'
+result 'a file only its owner reads passes: the check reads it as LARES_UID' contains "$out" 'household-records: 1 name(s)'
 chmod 666 "$RECORDS"
 out=$(check || :)
 result 'a file others can write refuses'                        contains "$out" 'lets group or other write'
@@ -167,6 +176,14 @@ result 'a name outside the zone forwards to the upstream'       test "$(answer_o
 heard=$(compose --profile witness logs --no-color upstream 2>&1)
 result 'CONTROL: the upstream log names the outside question'   contains "$heard" 'www.elsewhere.example'
 result 'the upstream heard no household name'                   not_contains "$heard" "$ZONE"
+private=$(ask -x 10.0.0.5)
+result 'a private reverse lookup answers NXDOMAIN inside the house' contains "$private" 'status: NXDOMAIN'
+ask -x 198.51.100.7 >/dev/null
+heard=$(compose --profile witness logs --no-color upstream 2>&1)
+result 'CONTROL: a public reverse lookup forwards to the upstream'  contains "$heard" '7.100.51.198.in-addr.arpa'
+result 'the upstream heard no private reverse lookup'          not_contains "$heard" '5.0.0.10.in-addr.arpa'
+apex=$(ask _acme-challenge.$ZONE TXT)
+result 'the house answers its zone apex itself (why the issuer asks public resolvers)' sh -c "printf '%s' \"\$1\" | grep -q 'flags: qr aa' && printf '%s' \"\$1\" | grep -q 'SOA'" sh "$apex"
 
 printf '── an edit lands once the check passed and the resolver restarted\n'
 write_records '192.0.2.10 hearth.home.example.test' '192.0.2.11 parlour.home.example.test' '192.0.2.12 study.home.example.test'

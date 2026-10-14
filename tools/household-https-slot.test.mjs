@@ -107,6 +107,30 @@ function scan(text) {
     if (writable.length !== 1 || writable[0][1] !== "volume" || !/source: household-zone\n\s*target: \/zone\s*$/.test(writable[0][2])) problems.push("records check writes somewhere other than the zone volume");
   }
   if (resolver && !/source: household-zone\n\s*target: \/zone\n\s*read_only: true/.test(resolver)) problems.push("resolver reads the zone volume writable");
+  // THE CHECK READS AS LARES_UID: a file only that uid reads serves, and a one-shot owner hands it the zone volume.
+  const zoneOwner = serviceBlock(text, "zone-owner");
+  if (!zoneOwner) problems.push("zone-owner service missing");
+  if (records) {
+    if (!/user: "\$\{LARES_UID:-1000\}:\$\{LARES_GID:-1000\}"/.test(records)) problems.push("records check reads the file as a uid other than LARES_UID");
+    if (!/depends_on:\s*\n\s*zone-owner:\s*\n\s*condition: service_completed_successfully/.test(records)) problems.push("records check does not wait on the zone owner");
+    if (!/case "\$\$octet" in 0\?\*\) refuse/.test(records)) problems.push("records check admits an octet led by a zero");
+  }
+  if (zoneOwner) {
+    if (!/profiles:\s*\[https\]/.test(zoneOwner)) problems.push("zone-owner lacks https profile");
+    if (!/network_mode: none/.test(zoneOwner)) problems.push("zone owner holds a network");
+    if (!/cap_drop:\s*\[ALL\]/.test(zoneOwner) || !/cap_add:\s*\[CHOWN\]/.test(zoneOwner)) problems.push("zone owner holds more than the change-of-owner capability");
+    if (!/no-new-privileges:true/.test(zoneOwner)) problems.push("zone-owner permits new privileges");
+    const mounts = [...zoneOwner.matchAll(/- type: \w+\n\s*source: ([^\n]+)/g)].map((m) => m[1].trim());
+    if (mounts.length !== 1 || mounts[0] !== "household-zone") problems.push("zone owner mounts more than the zone volume");
+  }
+  // THE ISSUER NEVER ASKS THE HOUSE: it names public resolvers, and refuses one inside the house by name.
+  if (issuer) {
+    const run = nonComment(issuer).split("\n").find((line) => /\/lego\s+run\b/.test(line)) ?? "";
+    if (!/--dns\.resolvers "\$\$(?:LARES_ISSUER_RESOLVERS|resolvers)"/.test(run) || (/"\$\$resolvers"/.test(run) && !/resolvers=\$\$\(printf '%s' "\$\$LARES_ISSUER_RESOLVERS"/.test(issuer))) problems.push("issuer asks the system resolver, which may be the house's");
+    if (!/names a resolver inside the house/.test(issuer) || !/192\.168\.\*/.test(issuer) || !/\*"\.\$\$LARES_TLS_ZONE"/.test(issuer)) problems.push("issuer admits a resolver inside the house");
+  }
+  // A PRIVATE REVERSE LOOKUP NEVER LEAVES THE HOUSE.
+  if (!/template ANY ANY [^{\n]*\b10\.in-addr\.arpa\b[^{\n]*\b168\.192\.in-addr\.arpa\b[^{\n]*\{\s*\n\s*rcode NXDOMAIN/.test(slot)) problems.push("resolver forwards private reverse lookups upstream");
   // The terminator mounts its certificate and its key as two read-only files and nothing else of the issuer's directory.
   for (const [label, file] of [["certificate", "tls.crt"], ["key", "tls.key"]]) {
     const mount = new RegExp(`source: \\$\\{LARES_TLS_${label === "certificate" ? "CERT" : "KEY"}[^\\n]*\\n\\s*target: /run/tls/${file.replace(".", "\\.")}\\n\\s*read_only: true`);
@@ -119,7 +143,8 @@ function scan(text) {
   }
   const nonCommentSlot = slot.split("\n").filter((line) => !/^\s*#/.test(line)).join("\n");
   const domains = [...nonCommentSlot.matchAll(/\b[a-z0-9-]+(?:\.[a-z0-9-]+){2,}\b/gi)].map((m) => m[0]).filter((d) => !/^\d+(?:\.\d+)+$/.test(d) && d !== "acme-v02.api.letsencrypt.org");
-  if (domains.some((d) => !/\.(?:test|example|invalid)$/i.test(d) && !/^v?\d+(?:\.\d+){1,2}$/i.test(d))) problems.push(`slot contains a literal domain: ${domains.join(", ")}`);
+  // The reverse-mapping tree (`in-addr.arpa`, `ip6.arpa`) names address ranges, never a domain an operator holds.
+  if (domains.some((d) => !/\.(?:test|example|invalid)$/i.test(d) && !/^(?:\d{1,3}\.)+in-addr\.arpa$|^(?:[0-9a-f]\.)+ip6\.arpa$/i.test(d) && !/^v?\d+(?:\.\d+){1,2}$/i.test(d))) problems.push(`slot contains a literal domain: ${domains.join(", ")}`);
   for (const name of ["lares", "offline", "herm"]) {
     const block = serviceBlock(text, name);
     if (/LARES_DNS_|PORKBUN|\/run\/dns|LARES_TLS_DIR/.test(block)) problems.push(`${name} names issuer material`);
@@ -139,7 +164,7 @@ test("CONTROL: the slot scanner reads planted violations and accepts a planted l
   const planted = `x-vessel: &vessel
   image: local
 services:
-  terminator:\n    profiles: [https]\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    command: echo \"household-https: \" 'LARES_TLS_NAME stands unset 'LARES_TLS_CERT stands unset 'LARES_TLS_KEY stands unset 'LARES_TLS_ZONE stands unset\n    volumes:\n      - type: bind\n        source: \${LARES_TLS_CERT:-/tmp/cert}\n        target: /run/tls/tls.crt\n        read_only: true\n      - type: bind\n        source: \${LARES_TLS_KEY:-/tmp/key}\n        target: /run/tls/tls.key\n        read_only: true\n  records:\n    profiles: [https]\n    network_mode: none\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    command: echo \"household-records: \" 'LARES_TLS_ZONE stands unset 'LARES_DNS_RECORDS stands unset\n    volumes:\n      - type: bind\n        source: \${LARES_DNS_RECORDS:-/dev/null}\n        target: /run/records/household.records\n        read_only: true\n      - type: volume\n        source: household-zone\n        target: /zone\n  resolver:\n    profiles: [https]\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    volumes:\n      - type: volume\n        source: household-zone\n        target: /zone\n        read_only: true\n    depends_on:\n      records:\n        condition: service_completed_successfully\n  lares:\n    profiles: [surface]\n  offline:\n    profiles: [offline]\n  herm:\n    profiles: [herm]\n`;
+  terminator:\n    profiles: [https]\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    command: echo \"household-https: \" 'LARES_TLS_NAME stands unset 'LARES_TLS_CERT stands unset 'LARES_TLS_KEY stands unset 'LARES_TLS_ZONE stands unset\n    volumes:\n      - type: bind\n        source: \${LARES_TLS_CERT:-/tmp/cert}\n        target: /run/tls/tls.crt\n        read_only: true\n      - type: bind\n        source: \${LARES_TLS_KEY:-/tmp/key}\n        target: /run/tls/tls.key\n        read_only: true\n  zone-owner:\n    profiles: [https]\n    network_mode: none\n    volumes:\n      - type: volume\n        source: household-zone\n        target: /zone\n    cap_drop: [ALL]\n    cap_add: [CHOWN]\n    security_opt: ["no-new-privileges:true"]\n  records:\n    profiles: [https]\n    user: "\${LARES_UID:-1000}:\${LARES_GID:-1000}"\n    network_mode: none\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    command: echo \"household-records: \" 'LARES_TLS_ZONE stands unset 'LARES_DNS_RECORDS stands unset; case "$$octet" in 0?*) refuse x ;; esac\n    volumes:\n      - type: bind\n        source: \${LARES_DNS_RECORDS:-/dev/null}\n        target: /run/records/household.records\n        read_only: true\n      - type: volume\n        source: household-zone\n        target: /zone\n    depends_on:\n      zone-owner:\n        condition: service_completed_successfully\n  resolver:\n    profiles: [https]\n    cap_drop: [ALL]\n    security_opt: ["no-new-privileges:true"]\n    volumes:\n      - type: volume\n        source: household-zone\n        target: /zone\n        read_only: true\n    depends_on:\n      records:\n        condition: service_completed_successfully\n  lares:\n    profiles: [surface]\n  offline:\n    profiles: [offline]\n  herm:\n    profiles: [herm]\n`;
   const lawful = planted + `  issuer:
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
@@ -159,7 +184,8 @@ services:
       case "$$mode" in 700|500) ;; *) refuse "LARES_DNS_CREDENTIAL_DIR mode ($$mode) lets group or other in" ;; esac
       [ "$$(stat -c %u "$$file")" = "$$(id -u)" ] || refuse "another user"
       [ "$$mode" = 400 ] || refuse "wider than its owner"
-      exec /lego run --account-id household -d "*.$$LARES_TLS_ZONE"
+      case "$$host" in 10.*|192.168.*|"$$LARES_TLS_ZONE"|*".$$LARES_TLS_ZONE") refuse "names a resolver inside the house" ;; esac
+      exec /lego run --account-id household --dns.resolvers "$$LARES_ISSUER_RESOLVERS" -d "*.$$LARES_TLS_ZONE"
     environment:
       PORKBUN_API_KEY_FILE: /run/dns/porkbun-api-key
       PORKBUN_SECRET_API_KEY_FILE: /run/dns/porkbun-secret-api-key
@@ -172,7 +198,7 @@ services:
       - type: bind
         source: \${LARES_TLS_DIR:-/dev/null}
         target: /certs
-  configs:\n  nginx:\n    content: |\n      large_client_header_buffers 4 16k;\n      proxy_buffer_size 16k;\n      ssl_reject_handshake on;\n      proxy_pass http://lares:4321;\n      proxy_set_header Upgrade $$http_upgrade;\n  corefile:\n    content: |\n      file /zone/db.household \${LARES_TLS_ZONE:-unset.invalid} {\n      forward . \${LARES_DNS_UPSTREAM:-1.1.1.1}\n  ports: "\${LARES_TLS_BIND:-127.0.0.1}:443" "\${LARES_DNS_BIND:-127.0.0.1}:53"\n`;
+  configs:\n  nginx:\n    content: |\n      large_client_header_buffers 4 16k;\n      proxy_buffer_size 16k;\n      ssl_reject_handshake on;\n      proxy_pass http://lares:4321;\n      proxy_set_header Upgrade $$http_upgrade;\n  corefile:\n    content: |\n      file /zone/db.household \${LARES_TLS_ZONE:-unset.invalid} {\n      template ANY ANY 10.in-addr.arpa 168.192.in-addr.arpa {\n        rcode NXDOMAIN\n      }\n      forward . \${LARES_DNS_UPSTREAM:-1.1.1.1}\n  ports: "\${LARES_TLS_BIND:-127.0.0.1}:443" "\${LARES_DNS_BIND:-127.0.0.1}:53"\n`;
   assert.deepEqual(scan(lawful), []);
   const red = (text, needle) => assert.ok(scan(text).some((p) => p.includes(needle)), `scanner missed: ${needle}`);
   red(lawful.replace("profiles: [https]", "profiles: [other]"), "https profile");
@@ -185,10 +211,23 @@ services:
   // ONE RECORD PER NAME: each fault turns its own scanner.
   red(lawful.replace("file /zone/db.household", "template IN A"), "rendered zone and upstream forward");
   red(lawful.replace("      records:\n        condition: service_completed_successfully", "      records:\n        condition: service_started"), "passed records check");
-  red(lawful.replace("    network_mode: none\n", ""), "records check holds a network");
+  red(lawful.replace("1000}\"\n    network_mode: none\n", "1000}\"\n"), "records check holds a network");
   red(lawful.replace("'LARES_DNS_RECORDS stands unset", "'LARES_DNS_RECORDS check removed"), "named LARES_DNS_RECORDS refusal");
   red(lawful.replace("target: /run/records/household.records\n        read_only: true", "target: /run/records/household.records\n        read_only: false"), "records file bind is not read-only");
-  red(lawful.replace("        target: /zone\n  resolver:", "        target: /zone\n      - type: bind\n        source: /srv/elsewhere\n        target: /elsewhere\n  resolver:"), "writes somewhere other than the zone volume");
+  red(lawful.replace("        target: /zone\n    depends_on:", "        target: /zone\n      - type: bind\n        source: /srv/elsewhere\n        target: /elsewhere\n    depends_on:"), "writes somewhere other than the zone volume");
+  // THE CHECK READS AS LARES_UID, behind a zone owner that holds one capability and one mount.
+  red(lawful.replace("    user: \"\${LARES_UID:-1000}:\${LARES_GID:-1000}\"\n    network_mode: none", "    user: \"0:0\"\n    network_mode: none"), "uid other than LARES_UID");
+  red(lawful.replace("      zone-owner:\n        condition: service_completed_successfully", "      zone-owner:\n        condition: service_started"), "wait on the zone owner");
+  red(lawful.replace("case \"$$octet\" in 0?*) refuse x ;; esac", ""), "octet led by a zero");
+  red(lawful.replace("    cap_add: [CHOWN]", "    cap_add: [CHOWN, DAC_OVERRIDE]"), "more than the change-of-owner capability");
+  red(lawful.replace("  zone-owner:\n    profiles: [https]\n    network_mode: none\n", "  zone-owner:\n    profiles: [https]\n"), "zone owner holds a network");
+  red(lawful.replace("        source: household-zone\n        target: /zone\n    cap_drop: [ALL]\n    cap_add: [CHOWN]", "        source: household-zone\n        target: /zone\n      - type: bind\n        source: /srv/records\n        target: /run/records\n    cap_drop: [ALL]\n    cap_add: [CHOWN]"), "zone owner mounts more than the zone volume");
+  // THE ISSUER NEVER ASKS THE HOUSE, and A PRIVATE REVERSE LOOKUP NEVER LEAVES IT.
+  red(lawful.replace(" --dns.resolvers \"$$LARES_ISSUER_RESOLVERS\"", ""), "issuer asks the system resolver");
+  red(lawful.replace("10.*|192.168.*|", "10.*|"), "admits a resolver inside the house");
+  red(lawful.replace("|\"$$LARES_TLS_ZONE\"|*\".$$LARES_TLS_ZONE\")", ")"), "admits a resolver inside the house");
+  red(lawful.replace("10.in-addr.arpa 168.192.in-addr.arpa", "10.in-addr.arpa"), "private reverse lookups upstream");
+  red(lawful.replace("        rcode NXDOMAIN\n", "        fallthrough\n"), "private reverse lookups upstream");
   red(lawful.replace("        target: /zone\n        read_only: true", "        target: /zone"), "zone volume writable");
   red(lawful.replace("LARES_DNS_BIND:-127.0.0.1", "LARES_DNS_BIND:-0.0.0.0"), "LARES_DNS_BIND does not default to loopback");
   // A credential under a name the plain word list would miss.
@@ -198,6 +237,8 @@ services:
   red(lawful.replace("cap_drop: [ALL]\n    security_opt: [\"no-new-privileges:true\"]\n    profiles: [issuer]", "cap_drop: [NET_ADMIN]\n    security_opt: [\"no-new-privileges:true\"]\n    profiles: [issuer]"), "issuer does not drop all capabilities");
   red(lawful.replace("security_opt: [\"no-new-privileges:true\"]\n    profiles: [issuer]", "security_opt: []\n    profiles: [issuer]"), "issuer permits new privileges");
   red(lawful.replace("LARES_ACME_SERVER: https://acme-v02.api.letsencrypt.org/directory", "LARES_ACME_SERVER: https://acme.example.net/directory"), "literal domain");
+  red(lawful.replace("10.in-addr.arpa 168.192.in-addr.arpa", "10.in-addr.arpa 168.192.in-addr.arpa home.arpa.example.net"), "literal domain");
+  red(lawful.replace("10.in-addr.arpa 168.192.in-addr.arpa", "10.in-addr.arpa 168.192.in-addr.arpa evil.net.in-addr.arpa"), "literal domain");
   // Each fault turns ONE scanner: a second read-only bind onto the workspace, and a writable bind beside /certs.
   const oneScanner = (text, needle, others) => { const hits = scan(text); assert.ok(hits.some((p) => p.includes(needle)), `scanner missed: ${needle}`); for (const other of others) assert.ok(!hits.some((p) => p.includes(other)), `${needle} fault also tripped: ${other}`); };
   oneScanner(lawful.replace("        target: /certs\n", "        target: /certs\n      - type: bind\n        source: /srv/corpus\n        target: /workspace\n        read_only: true\n"), "issuer mounts protected host paths", ["writable bind"]);

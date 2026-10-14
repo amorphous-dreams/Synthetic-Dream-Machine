@@ -267,11 +267,11 @@ FIDO caBLE leans on a ''BLE proximity gate'' ONLY because its QR bootstraps a tu
 
 !! Provenance ~ a built slot, an issuer proven against a test authority, and an operator-supplied household
 
-The `https` compose profile supplies a TLS terminator and a split-horizon resolver. The `issuer` profile runs one ACME client as a one-shot: it asks for one wildcard certificate over the household zone, answers the DNS-01 challenge through the DNS host's API, and writes the certificate where the terminator reads it. The DNS credential rests as two owner-read files in a host directory the operator names, outside both vessel mounts; the issuer alone mounts that directory, read-only, refuses by name a directory inside either mount or a file wider than its owner, and no credential value enters the compose file, an environment variable, the image, the state mount or the workspace mount. The first always-on node issues one certificate per machine, and a human carries a second machine's certificate to it by hand.
+The `https` compose profile supplies a TLS terminator and a split-horizon resolver. The `issuer` profile runs one ACME client as a one-shot: it asks for one wildcard certificate over the household zone, answers the DNS-01 challenge through the DNS host's API, and writes the certificate where the terminator reads it. The DNS credential rests as two owner-read files in a host directory the operator names, outside both vessel mounts; the issuer alone mounts that directory, read-only, refuses by name a directory inside either mount or a file wider than its owner, asks public resolvers for the zone (`LARES_ISSUER_RESOLVERS`) and refuses one it reads as inside the house, and no credential value enters the compose file, an environment variable, the image, the state mount or the workspace mount. The first always-on node issues one certificate per machine, and a human carries a second machine's certificate to it by hand.
 
 `tools/household-https-witness.sh` walks the slot with no real credential, domain or zone: a test certificate authority issues the wildcard through the same issuer service, a stand-in answers for the DNS host's API, the terminator serves the issued certificate, a knocked socket upgrade passes through, a header of the measured tablet size passes both ways, and the vessel's container, state and workspace show no trace of the credential. The stand-in leaves the registrar's own provider code unwalked.
 
-`tools/household-resolver-witness.sh` walks the resolver against a test zone: the records check refuses each malformed records file by name and stands no resolver behind one, two hearths answer with two addresses, a name the file does not list answers NXDOMAIN, a name outside the zone reaches a stand-in upstream that hears no household name, and an edit lands once the check passed and the resolver restarted.
+`tools/household-resolver-witness.sh` walks the resolver against a test zone: the records check refuses each malformed records file by name and stands no resolver behind one, two hearths answer with two addresses, a name the file does not list answers NXDOMAIN, a private reverse lookup answers NXDOMAIN and never reaches the upstream, a file only the vessel's uid reads passes the check, a name outside the zone reaches a stand-in upstream that hears no household name, and an edit lands once the check passed and the resolver restarted.
 
 `LAR_PUBLIC_URL` names the vessel's reach face (#/behind-the-terminator), and `deviceAdmitSyncUrl` derives its relay URL. The operator supplies the domain, the registrar's API key pair, the records file naming each machine's LAN address and the router's DNS setting. A live issuance against the public authority through the registrar's API, a renewal on its ~60d clock with the terminator's restart, installed-PWA and Android-WebView TLS behavior, encrypted-DNS interaction with split horizon, and certificate-renewal behavior at the browser remain unverified.
 
@@ -298,6 +298,6 @@ The `https` compose profile supplies a TLS terminator and a split-horizon resolv
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5H4AOzlWr1QeSmuKiuEBw-hKAEI6jwNWPMY-WbuXpVc
+<<^ code="&#x0003;">>ni:///sha-256;knbiTDLKZAaCwKvrBAwFWKtX0d87mmE-D9ATJoijORA
 
 <<^ code="&#x0004;" -> to="?">>

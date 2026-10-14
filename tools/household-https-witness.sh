@@ -4,8 +4,10 @@
 # `terminator` serves it in front of a standing vessel, and the vessel's container never meets the credential.
 #
 #   REFUSALS    the issuer refuses by name: no credential directory, a directory inside the state mount (trailing
-#               slashes and dotted paths included), a file or directory wider than its owner, terms not accepted.
+#               slashes and dotted paths included), a file or directory wider than its owner, terms not accepted,
+#               and a resolver inside the house (a private address or a name under the zone) or one with no port.
 #   ISSUANCE    Pebble (the Let's Encrypt test authority) validates a DNS-01 challenge for `*.<zone>`; lego's
+#               lookups ride the slot's own LARES_ISSUER_RESOLVERS, here the challenge test server, and its
 #               `exec` DNS provider stands in for the DNS host's API and writes the TXT record to Pebble's
 #               challenge test server. The certificate names the wildcard alone and chains to Pebble's root.
 #   PER MACHINE a second run under another certificate name issues a second certificate with its own key.
@@ -123,8 +125,9 @@ esac
 HOOK
 chmod 755 "$SCRATCH/witness/dns-hook.sh"
 
-# The test authority joins the project beside the slot; the issuer gains the stand-in hook, the test root and the
-# test resolver through its environment alone. Its command stays the compose file's own.
+# The test authority joins the project beside the slot; the issuer gains the stand-in hook and the test root through
+# its environment, and the test resolver through the slot's own LARES_ISSUER_RESOLVERS. Its command stays the
+# compose file's own.
 cat > "$SCRATCH/witness.compose.yml" <<YAML
 services:
   challtestsrv:
@@ -147,7 +150,6 @@ services:
     environment:
       EXEC_PATH: /witness/dns-hook.sh
       LEGO_CA_CERTIFICATES: /witness/pebble.minica.pem
-      LEGO_DNS_RESOLVERS: challtestsrv:8053
       LEGO_DNS_PROPAGATION_WAIT: 1s
     volumes:
       - type: bind
@@ -159,7 +161,7 @@ YAML
 export LARES_STATE="$SCRATCH/state" LARES_WORKSPACE="$SCRATCH/workspace"
 export LARES_TLS_ZONE="$ZONE" LARES_TLS_NAME="$NAME"
 export LARES_TLS_DIR="$SCRATCH/tls" LARES_TLS_BIND=127.0.0.1 LARES_TLS_PORT="$TLS_PORT"
-export LARES_ISSUER_DNS=exec LARES_ACME_SERVER=https://pebble:14000/dir
+export LARES_ISSUER_DNS=exec LARES_ACME_SERVER=https://pebble:14000/dir LARES_ISSUER_RESOLVERS=challtestsrv:8053
 export LAR_PUBLIC_URL="https://$NAME"
 
 issue() { compose --profile issuer run --rm -T issuer 2>&1; }
@@ -189,6 +191,18 @@ chmod 755 "$SCRATCH/credential"
 out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential" issue || :)
 result 'a credential directory others can enter refuses'          contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR mode (755)'
 chmod 700 "$SCRATCH/credential"
+out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential" LARES_ISSUER_RESOLVERS=192.168.0.53:53 issue || :)
+result 'a private resolver refuses: the issuer never asks the house' contains "$out" 'household-issuer: LARES_ISSUER_RESOLVERS entry 192.168.0.53:53 names a resolver inside the house'
+out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential" LARES_ISSUER_RESOLVERS=resolver.$ZONE:53 issue || :)
+result 'a resolver named under the zone refuses'                  contains "$out" 'names a resolver inside the house'
+for inside in resolver:1053 '[fd00::53]:53' 100.100.100.100:53 LOCALHOST:53 pihole.lan:53; do
+  out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential" LARES_ISSUER_RESOLVERS="$inside" issue || :)
+  result "a resolver inside the house refuses: $inside"           contains "$out" 'names a resolver inside the house'
+done
+out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential" LARES_ISSUER_RESOLVERS=challtestsrv:8053, issue || :)
+result 'a resolver list with an empty entry refuses'              contains "$out" 'holds an empty entry'
+out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential" LARES_ISSUER_RESOLVERS=challtestsrv issue || :)
+result 'a resolver with no port refuses'                          contains "$out" 'names no host:port'
 result 'a refusing issuer wrote no certificate'                   test ! -e "$SCRATCH/tls/certificates"
 
 export LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential"
