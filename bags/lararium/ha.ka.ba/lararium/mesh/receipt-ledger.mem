@@ -1,0 +1,196 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/receipt-ledger">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/receipt-ledger.mem"
+l-space     = "lararium"
+role        = "the receipt ledger as law — one durable fact per request id, written by one writer; one winner per id, with every refusal named; abandonment by a causal event alone, never by a timer; the three receipts of a cancel (the caller's abandonment, the relay's delivery, the vessel's outcome), none standing in for another; a ring that bounds what the vessel keeps and answers `retention-gap` past it; what the direct leg holds, and what a leg across a herm adds and still owes"
+source-file = "packages/lararium-node/src/uds-channel.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/receipt-ledger"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/receipt-ledger"
+```
+
+<<~ ahu #/head>>
+
+! The receipt ledger ~ what a vessel says about a request, and who else may say anything
+
+A person asks a vessel to act, and the ask carries a request id. This carrier states what the vessel records about that id, what each party may say about it, and what a later read of the id answers. It covers the leg where the asker and the vessel share a machine, and it states what a leg across a herm adds.
+
+> ''Register.'' The operator ruled the three receipts, that a caller's timeout never counts as a cancel, that eviction answers `retention-gap`, and that no wall clock decides whether an act runs (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The house settled the ledger below under those rulings. A line marked ''house reading'' states a choice the rulings leave room for.
+
+The verb, summons and outcome records themselves read at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler">>. The socket between a CLI and its vessel reads at <<~ loulou "lar:///ha.ka.ba/lararium/api/lares-lararium-binding">>.
+
+<<~/ahu>>
+
+<<~ ahu #/three-receipts>>
+
+!! Three receipts ~ three parties, three facts
+
+''A cancel yields three receipts, and none stands in for another.''
+
+| Receipt | Who says it | What it states | What it never states |
+| The caller's ''abandonment'' | the asker | "I withdraw request R" | that anything stopped |
+| The relay's ''delivery'' | a herm that carried the cancel | "I handed this frame to a socket proven under the key it names" | that the vessel read it, agreed, or acted |
+| The vessel's ''outcome'' | the vessel that holds the ledger | the verdict its ledger holds for R | what the caller meant |
+
+* ''Each party says only the fact it holds.'' The asker holds its own intent. A relay holds transit. The vessel holds the ledger. A reader who wants the verdict on an act reads the vessel's outcome and nothing else.
+* ''A cancel asks; it never commands.'' A cancel that reaches the ledger before any fact stands for its id wins, and the id reads `abandoned`. A cancel that reaches the ledger after a fact stands changes nothing: an act the vessel committed runs to its end.
+* ''A caller's timeout never counts as a cancel.'' A wait that ends tells the waiter to stop listening, and it sends no cancel. A person withdraws by an explicit act. What a hang-up does reads at #/abandonment.
+* ''Quiet never means a verdict.'' A missing delivery receipt reads as transit unknown, never as "not delivered". A missing outcome reads as `unknown`, never as "did not run".
+
+<<~/ahu>>
+
+<<~ ahu #/the-fact>>
+
+!! The fact ~ one record per request id, one writer
+
+The vessel keeps one ''receipt fact'' per request id at `@daemon/receipts/<requestId>`, in the daemon's working layer. The fact never projects to disk.
+
+''One writer.'' The verb channel alone writes facts (`FactLedger`, `packages/lararium-node/src/uds-channel.ts`). The worker that runs a verb writes the outcome record and never a fact; the channel observes each outcome that lands, on any road, and moves the fact. The ledger takes one write at a time, in the order the calls arrived.
+
+| State | Meaning | The stored record holds |
+| `committed` | this vessel took the request and no outcome has landed | id, `seq`, input digest, boot epoch |
+| `interrupted` | an earlier boot committed it, and that boot ended before an outcome landed; its effect may have landed in part | the same |
+| `abandoned` | this vessel refused the request before commit, and this channel never ran it | id, `seq`; the input digest where the request itself reached the vessel |
+| `done` · `error` | the outcome landed, and the vessel keeps its record | id, `seq`, input digest, `terminal`, `outcome-bytes` |
+| `evicted` | the ring let the request go | id, `seq`, input digest, and `terminal` where a verdict stood |
+
+* ''`seq` orders one vessel's own facts.'' A counter, never a time; it names which fact leaves the ring first.
+* ''The boot epoch fences a restart.'' At boot the ledger reads each `committed` fact of an earlier epoch: where its outcome landed unobserved the fact takes that verdict, and where none landed it reads `interrupted`. No timer decides either.
+* ''The input digest names what the request asked'': verb, arguments, requester and effect key (`verbInputDigest`, `packages/lararium-mesh/src/verb-tiddler.ts`). The worker stamps the same digest on the outcome. The fact's shape leaves room for an effect key of its own, and no writer fills it: the digest carries the key.
+* ''An outcome that lands moves the fact, whatever road ran the verb.'' A summons under an id this channel abandoned may still run on the summons road; its outcome then moves the fact to that verdict.
+* ''A record that fails to parse reads as torn'', never as absent. The ledger refuses that id by name and never writes over it.
+
+<<~/ahu>>
+
+<<~ ahu #/one-winner>>
+
+!! One winner per request id
+
+A request id names one attempt. The ledger commits an id once, flushes the fact to the store, and only then hands the verb to the worker. A second line under an id that already holds a fact never runs:
+
+| The fact reads | A dispatch under that id answers |
+| `committed`, `done` or `error`, same digest | the outcome once it stands, read again; `unknown` where the vessel's own wait for it ends |
+| `committed`, `done` or `error`, other digest | refusal `request-id-reused-with-changed-input` |
+| `abandoned` | refusal `abandoned` |
+| `interrupted` | refusal `interrupted` |
+| `evicted` | refusal `retention-gap` |
+| torn | refusal `receipt-fact-torn` |
+
+A ''receipt read'' asks what the ledger holds and dispatches nothing. It answers `abandoned`, `committed`, `interrupted`, `done`, `error`, `evicted`, or `unknown` for an id this vessel never met. A torn fact answers `error` with the refusal `receipt-fact-torn`. An outcome that stands answers its verdict even where the fact still reads `committed` or `abandoned`: a record that landed says the act ran, on whatever road.
+
+''The effect key names the change, the request id names the attempt.'' A retry under a fresh id and the same effect key meets the worker's effect index (`packages/lararium-tw5/src/verb-dispatcher.ts`). Where the earlier outcome still stands under the same input digest, the retry draws that result and runs nothing twice. Where the ring dropped that outcome, the retry answers `retention-gap`. Under another digest it runs as a fresh change.
+
+<<~/ahu>>
+
+<<~ ahu #/abandonment>>
+
+!! Abandonment ~ a causal event, never a timer
+
+Two events abandon a request, and each happens before the vessel commits:
+
+# ''The asker hung up before the vessel read the line.'' The vessel finds the connection ended when it first turns to the request, records the id `abandoned` with its digest, and runs nothing.
+# ''A person cancelled the id'' before any fact stood for it. The ledger records `abandoned` with no digest, since a cancel carries no content.
+
+Three things never abandon a request:
+
+* ''The asker's wait ended'', taken alone. The asker stops listening, closes its connection and keeps the request id. No cancel crosses. Where the vessel committed before it met that close, the act runs on. Where the vessel first turns to the request after the close, event 1 above abandons it: the close decides, as an event the vessel met before commit, and the timer that caused it decides nothing at the vessel. Either way a later receipt read answers which.
+* ''The vessel's own wait for an outcome ended.'' The vessel answers `unknown` on that connection, and the act runs on.
+* ''The asker hung up after the commit.'' The act runs to its end, and its outcome waits for a read.
+
+<<~/ahu>>
+
+<<~ ahu #/the-ring>>
+
+!! The ring ~ what the vessel keeps, and what it answers past that
+
+The ledger keeps outcome records inside two bounds, and either one evicts.
+
+* ''Count'': past `ring` tracked requests, the oldest by `seq` leaves.
+* ''Bytes'': each landed fact names what its outcome record weighs. While the kept records weigh more than `ringBytes`, the oldest kept record leaves. The record that just landed stays for the caller that awaits it.
+
+''Eviction keeps the fact and drops the outcome record where one stands.'' The count bound takes the oldest fact whatever its state, so a request still in flight, an interrupted one or an abandoned one leaves with no record to drop. The fact flips to `evicted`, and the id answers `retention-gap` from then on: never a second run, and never "did not happen". The record leaves before the fact says so, so a stop between the two leaves a verdict with no body, which the next pass finishes. The byte bound takes only facts that keep a record.
+
+''A stored fact never leaves the store.'' The ring bounds the outcome records and the verdicts that still stand; every id the vessel ever met keeps its fact, so an old id answers `retention-gap` and never reads as fresh.
+
+''The ring tends and never decides.'' A pass runs after an act wrote and flushed its own fact. A pass that fails says so once and leaves that act standing.
+
+Vessel config sets both bounds (`receipts.ring`: `ratePerMin`, `horizonDays`, `burst`, `bytesPerOutcome`).
+
+<<~/ahu>>
+
+<<~ ahu #/the-direct-leg>>
+
+!! The direct leg ~ a CLI beside its vessel
+
+The CLI and the vessel share a machine and meet at the vessel's owner-only socket. One line asks, one line answers.
+
+| A person runs | The line | The vessel answers |
+| `lares act …` and every verb command | the verb, its arguments, the requester, a request id the CLI minted | the outcome, a named refusal, or `unknown` where the vessel's own wait ended |
+| `lares receipt <id>` | `{op:"receipt"}` | the ledger's reading of the id |
+| `lares cancel <id>` | `{op:"cancel"}` | what a receipt read answers after the cancel took its turn: `abandoned` where the cancel stands, else what the vessel holds for the id |
+
+On this leg two of the three receipts exist. The cancel line carries the caller's abandonment, and the answer carries the vessel's outcome. No relay stands between them, so no delivery receipt exists.
+
+''`lares cancel` reports both.'' A cancel that stands reads `withdrawn: true` and exits clean. A cancel that met a commit reads `withdrawn: false` with the code `cancel-lost` and the state the vessel holds, and the act runs on. A line from the vessel that names no state reads as a fault on both doors, never as a verdict.
+
+''The CLI mints the request id before it sends'', so the id survives a lost answer. A CLI whose wait ended reports `outcome-unknown` with the id, reads the receipt once by that id, and never sends the verb a second time.
+
+<<~/ahu>>
+
+<<~ ahu #/the-relay-leg>>
+
+!! The relay leg ~ what a herm between asker and vessel adds
+
+A herm carries sealed frames between keys it proved, reads none of them, and holds no ledger (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">>). An ask that crosses a herm adds one party and one receipt.
+
+''What the law fixes:''
+
+* ''One ledger, whatever the leg.'' The vessel that runs the act holds the only ledger for it. An ask that arrives across a herm meets the same arbitration, the same refusals and the same ring as an ask from the socket. The outcome that crosses back states that ledger's reading.
+* ''The relay's receipt attests transit only.'' A herm states that it handed a frame to a socket proven under the key the frame names. It arbitrates nothing, keeps no fact, and its word never moves the vessel's ledger or the asker's reading of the act.
+* ''A herm's stamp never grants authority.'' The herm stamps each frame with the key its sender proved. That stamp routes the answer home. It never licenses a verb: the vessel reads the asker's own proof (''house reading'', from carry ⊥ read ⊥ contract).
+* ''No timer on any side.'' The asker's wait, the herm's socket deadline and the vessel's wait each pace their own holder. None of them abandons, cancels or evicts.
+* ''The asker keeps its own abandonment.'' A cancel that the herm drops still happened on the asker's side. The asker records that it withdrew, and reads the vessel's outcome when one reaches it.
+
+''What stays owed.'' No code asks, cancels or answers across a herm. A remote caller reaches a vessel by dialing that vessel's own daemon door and writing a summons (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler#/contract">>); a herm carries no daemon document, since its carriage moves sealed envelopes and the document relay stays a socket of its own (`packages/lararium-node/src/carriage-relay.ts`). The channel observes a summoned verb's outcome and mints its fact, and a summoner holds no cancel.
+
+''What a herm already carries.'' An envelope holds an open `kind` and an opaque payload, and the relay routes it between proven keys (`packages/lararium-mesh/src/membership-channel.ts`). Two siblings under one PersonaGroup hold a sealed session across a herm (`packages/lararium-mesh/src/sibling-channel.ts`). Either could carry an ask with no change to the frame a herm routes. Neither gives the ask a meaning, a reader at the vessel, or an authority; and a herm sends nothing back when it hands a frame onward.
+
+The relay leg therefore owes three choices, each above a lane. It stands parked until the wire cutover lands the sibling channel at face scope (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>, `W12`); none of it stands built.
+
+# ''The asker's proof'': what the vessel reads to decide that this asker may run this verb. A herm's stamp cannot serve. The ask carries a signature of its own under a new signing domain, or it rides the sealed sibling session, which already proved its far end.
+# ''The sealed payload'': an ask carries a verb's arguments, and a herm reads no plaintext. The ask, the cancel and the vessel's answer ride a sealed box to the vessel's key, or they inherit the session's seal as a tagged inner frame.
+# ''The delivery receipt'': a frame the herm itself sends back when it hands a cancel onward. A bare session note serves the asker alone; a note the gate key signs serves a third party too.
+
+''House lean'' (a ''house reading''; the operator rules): the ask rides the sealed sibling session, inherits that session's seal with a tagged inner frame, and the herm answers a bare session note good for the asker alone. That road adds the fewest new shapes and no signing domain, and it narrows reach to one PersonaGroup.
+
+<<~/ahu>>
+
+<<~ ahu #/what-the-code-holds>>
+
+!! What the code holds
+
+* ''The ledger, arbitration, both abandonment events, the boot fence and the ring'': `packages/lararium-node/src/uds-channel.ts`. The fact's shapes and parser: `packages/lararium-mesh/src/verb-tiddler.ts`.
+* ''The CLI's doors'': `packages/lares-cli/src/local-connector.ts` (`invokeLocal`, `queryReceipt`, `cancelRequest`), `packages/lares-cli/src/commands/receipt-cmd.ts`, and the refusal codes of `packages/lares-cli/src/verb-call.ts`.
+* ''Owed on the direct leg'': a cancelled id holds no digest, and the count bound passes over it, so it leaves the ring's count and keeps reading `abandoned`.
+* ''Owed across a herm'': the whole relay leg of #/the-relay-leg.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> the rulings name the three receipts and the law of no global now
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/verb-tiddler">> the verb, summons and outcome records
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lares-lararium-binding">> the socket between a CLI and its vessel
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps">> a herm carries and reads nothing
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">> no wall clock decides an act
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;GVOowRQ-Gt6QhpJqJArwF4RtaU2yrhSQon49h3GTaWI
+
+<<^ code="&#x0004;" -> to="?">>

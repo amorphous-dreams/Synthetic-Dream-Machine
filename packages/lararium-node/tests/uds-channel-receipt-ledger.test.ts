@@ -986,3 +986,76 @@ describe("the receipt ring bounds BYTES as well as count", () => {
     expect(counter.n).toBe(2);
   });
 });
+
+describe("a cancel's answer carries the vessel's outcome, never the caller's abandonment retold", () => {
+  const INV = (requestId: string) => ({ verb: "nexus-kapae", args: {}, requestedBy: "did:key:test", requestId });
+
+  test("★ a cancel that lost to a commit answers `committed`, and the act it met runs on ★", async () => {
+    const counter = { n: 0 };
+    let land: (() => void) | undefined;
+    const done = doneWorker({ n: 0 });
+    // The worker holds the verb until the test lets it land: the handshake that pins "a fact stands, no outcome yet".
+    const v = await Vessel.boot({ placeVerbImpl: (p, h) => { counter.n++; land = () => done(p, h); } });
+    try {
+      const requestId = "req-cancel-lost";
+      const asked = sendLine(v.socketPath, INV(requestId));
+      for (let i = 0; i < 500 && counter.n === 0; i++) await new Promise((r) => setTimeout(r, 10));
+      expect(counter.n).toBe(1);
+
+      expect(await sendLine(v.socketPath, { op: "cancel", requestId })).toEqual({ requestId, state: "committed" });
+
+      land!();
+      expect((await asked)["status"]).toBe("done");          // the cancel un-dispatched nothing
+      expect(counter.n).toBe(1);
+    } finally { await v.teardown(); }
+  });
+
+  test("a cancel of a landed request answers its verdict and its results, as a receipt read would", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const requestId = "req-cancel-after-done";
+      expect((await sendLine(v.socketPath, INV(requestId)))["status"]).toBe("done");
+      const cancelled = await sendLine(v.socketPath, { op: "cancel", requestId });
+      expect(cancelled).toEqual(await sendLine(v.socketPath, { op: "receipt", requestId }));
+      expect(cancelled["state"]).toBe("done");
+    } finally { await v.teardown(); }
+  });
+
+  test("a cancel of an id the ring evicted answers `evicted`", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter), ring: 1 });
+    try {
+      expect((await sendLine(v.socketPath, INV("req-cancel-ring-1")))["status"]).toBe("done");
+      expect((await sendLine(v.socketPath, INV("req-cancel-ring-2")))["status"]).toBe("done");
+      expect(await sendLine(v.socketPath, { op: "cancel", requestId: "req-cancel-ring-1" })).toEqual({ requestId: "req-cancel-ring-1", state: "evicted" });
+    } finally { await v.teardown(); }
+  });
+
+  test("★ an outcome that stands under an abandoned id answers both doors: the record says the act ran ★", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const requestId = "req-cancel-then-summoned";
+      expect(await sendLine(v.socketPath, { op: "cancel", requestId })).toEqual({ requestId, state: "abandoned" });
+      // Another road ran the id. Its record names no digest, so the fact keeps reading `abandoned` and the answer
+      // below comes from the record alone, whatever the observer did.
+      const outcome = concludeVerb({ requestId, verb: "nexus-kapae", status: "done", requestedBy: "did:key:test", cause: "summons", batchMode: "best-effort", results: { summary: { ok: true } } });
+      v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+      expect((await sendLine(v.socketPath, { op: "receipt", requestId }))["state"]).toBe("done");
+      expect((await sendLine(v.socketPath, { op: "cancel", requestId }))["state"]).toBe("done");
+      expect(counter.n).toBe(0);
+    } finally { await v.teardown(); }
+  });
+
+  test("CONTROL: a cancel that reaches the ledger before any fact stands answers `abandoned`, twice over", async () => {
+    const counter = { n: 0 };
+    const v = await Vessel.boot({ placeVerbImpl: doneWorker(counter) });
+    try {
+      const requestId = "req-cancel-won";
+      expect(await sendLine(v.socketPath, { op: "cancel", requestId })).toEqual({ requestId, state: "abandoned" });
+      expect(await sendLine(v.socketPath, { op: "cancel", requestId })).toEqual({ requestId, state: "abandoned" });
+      expect(counter.n).toBe(0);
+    } finally { await v.teardown(); }
+  });
+});

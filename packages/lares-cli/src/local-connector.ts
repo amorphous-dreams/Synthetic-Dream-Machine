@@ -248,6 +248,8 @@ export interface ReceiptAnswer {
   readonly state: "abandoned" | "committed" | "interrupted" | "done" | "error" | "evicted" | "unknown" | "unanswered";
   readonly results?: Record<string, unknown>;
   readonly errorMessage?: string;
+  /** The vessel's own name for a refusal it answers with (a torn fact reads `receipt-fact-torn`). */
+  readonly refusal?: { readonly reason: string };
 }
 
 /** This READ's own patience ended with no line back — mirrors `LocalWaitExpired` for the dispatch
@@ -321,8 +323,10 @@ export function queryReceipt(requestId: string, opts: { dataDir?: string | null;
 }
 
 /**
- * Withdraw a request id BEFORE it is read (M8) — `{op:"cancel"}`. Marks the id abandoned on the
- * vessel's own ledger so a later line under the same id (a stray retry) refuses rather than running.
+ * Withdraw a request id BEFORE it is read (M8) — `{op:"cancel"}`. Where no fact stands for the id, marks it
+ * abandoned on the vessel's own ledger so a later line under the same id (a stray retry) refuses rather than
+ * running. Answers the state that ledger holds once the cancel took its turn: `abandoned` where the withdrawal
+ * stands, else the fact that already stood.
  *
  * `patienceMs` (M13) — see {@link readOnlyQuery}.
  */

@@ -163,4 +163,38 @@ describe("uds front", () => {
     front.close();
     await claim.release();
   });
+
+  test("★ a seat waits out a cancel whose caller hung up: detach resolves only once the cancel's write ended ★", async () => {
+    for (const hold of [true, false]) {
+      const repo = new Repo({ sharePolicy: async () => true });
+      const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+      const composite = new CompositeStore();
+      composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+      composite.addLayer({ bagId: wikiSlotUri("daemon", "working"), store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), wikiSlotUri("daemon", "working")), writable: true });
+      const claim = await setup();
+      const front = serveUdsFront({ claim });
+      // The handshake: the cancel's own flush tells the test it began, and ends when the test says so.
+      let began!: () => void, release!: () => void;
+      const flushBegan = new Promise<void>((r) => { began = r; });
+      const gate = new Promise<void>((r) => { release = r; });
+      front.attach(makeUdsSeat({ daemonHandle, composite, placeVerb: () => {}, claim, repo: { flush: async () => { began(); if (hold) await gate; } } }));
+      const caller = dial(claim.socketPath, { op: "cancel", requestId: `front-cancel-${hold}` });
+      await caller.sent;
+      await flushBegan;
+      if (hold) {
+        caller.sock.destroy();
+        await new Promise<void>((r) => setImmediate(() => setImmediate(r)));   // the seat meets the caller's close
+      }
+      let detached = false;
+      const leaving = front.detach().then(() => { detached = true; });
+      await new Promise<void>((r) => setImmediate(() => setImmediate(r)));
+      // CONTROL (hold false): with the write ended and its answer written, the seat leaves at once.
+      if (hold) { expect(detached).toBe(false); release(); }
+      await leaving;
+      expect(detached).toBe(true);
+      front.close();
+      await claim.release();
+      await repo.shutdown();
+    }
+  });
 });

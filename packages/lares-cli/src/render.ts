@@ -73,6 +73,9 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   // itself — there is none, the act never started) or the bare `outcome-unknown` (which would tell a
   // caller to keep wondering about an id this vessel has already settled).
   "request-abandoned": 6,
+  // The CONFLICT family (4): `lares cancel` reached a ledger that already held a fact for the id. The withdrawal
+  // changed nothing and the act it met runs on (or already landed); the state the vessel holds rides beside it.
+  "cancel-lost":       4,
   // THE SAME EXIT FAMILY (6), outcome-unknown's sharper kin: the vessel that committed this request
   // stopped before an outcome landed, so the effect may have landed in part.
   "request-interrupted": 6,

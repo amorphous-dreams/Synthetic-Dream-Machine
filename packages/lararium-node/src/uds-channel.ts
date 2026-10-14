@@ -115,8 +115,9 @@ interface Invocation {
 
 /** A read-only receipt query — `{op:"receipt", requestId}`. Never reaches `placeVerb`; see H1. */
 interface ReceiptQuery { op: "receipt"; requestId: string; }
-/** An explicit withdrawal — `{op:"cancel", requestId}` (M8). Marks the id abandoned so a later
- *  dispatch attempt under the SAME id (a read-back, a retry) refuses rather than running. */
+/** An explicit withdrawal — `{op:"cancel", requestId}` (M8). Where no fact stands for the id, marks it abandoned so
+ *  a later dispatch attempt under the SAME id (a read-back, a retry) refuses rather than running. Answers the
+ *  ledger's verdict for the id, as a receipt query would. */
 interface CancelQuery { op: "cancel"; requestId: string; }
 
 function isReceiptQuery(v: unknown): v is ReceiptQuery {
@@ -731,8 +732,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
 
   /** Answer a `{op:"receipt"}` query (H1, now durable) — a READ, built from the fact ledger plus
    *  the durable outcome doc; NEVER calls `placeVerb`. The outcome doc wins over a bare `committed`
-   *  fact (still running, or an outcome this fact hasn't yet observed) — never over `abandoned` or
-   *  `evicted`, which are this ledger's own terminal verdicts. */
+   *  fact (still running, or an outcome this fact hasn't yet observed) and over an `abandoned` one
+   *  (a record that landed on another road) — never over `evicted`, whose record the ring dropped. */
   const answerReceipt = async (requestId: string): Promise<ReceiptAnswer> => {
     const fact = await ledger.get(requestId);
     if (fact === "torn") {
@@ -742,10 +743,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         refusal: { reason: "receipt-fact-torn" },
       };
     }
-    if (fact) {
-      if (fact.state === "abandoned") return { requestId, state: "abandoned" };
-      if (fact.state === "evicted")   return { requestId, state: "evicted" };
-    }
+    if (fact && fact.state === "evicted") return { requestId, state: "evicted" };
+    // AN OUTCOME THAT STANDS ANSWERS, even under an `abandoned` fact: a summons under an id this channel refused
+    // may have run on its own road, and a record that landed says so whether or not the fact caught up with it.
     const outcome = await readOutcomeFor(requestId);
     if (outcome) {
       const status = outcome["status"] as "done" | "error";
@@ -756,6 +756,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         ...(outcome["refusal"] !== undefined ? { refusal: outcome["refusal"] as { reason: string } } : {}),
       };
     }
+    if (fact?.state === "abandoned") return { requestId, state: "abandoned" };
     if (fact?.terminal) return { requestId, state: fact.terminal }; // the fact reached done/error but the outcome body itself is unreadable right now
     if (fact?.state === "interrupted") return { requestId, state: "interrupted" };
     return { requestId, state: fact?.state === "committed" ? "committed" : "unknown" };
@@ -800,21 +801,33 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     };
     const answerUnknown = (requestId: string) => { try { sock.end(JSON.stringify({ status: "unknown", requestId }) + "\n"); } catch { /* gone */ } };
       // READ-ONLY QUERIES NEVER REACH `placeVerb` (H1 fix item 3).
+      // BOTH DOORS BELOW COUNT AS WORK THE SEAT WAITS OUT: a caller that hangs up while its cancel still writes, or
+      // while its read still holds the ledger, never lets the seat read as drained under them.
+      const tended = (work: Promise<void>): void => {
+        arbitrating += 1;
+        void work.finally(() => { arbitrating -= 1; if (idle()) drained?.(); });
+      };
       if (isReceiptQuery(parsed)) {
-        void answerReceipt(parsed.requestId).then(
+        tended(answerReceipt(parsed.requestId).then(
           (answer) => { try { sock.end(JSON.stringify(answer) + "\n"); } catch { /* gone */ } },
           (err)    => fail(err instanceof Error ? err.message : String(err)),
-        );
+        ));
         return;
       }
       if (isCancelQuery(parsed)) {
         // Durable (M8, D1): the abandonment fact flushes BEFORE this channel answers, so a later
         // read-back under the same id — even after a restart — meets the withdrawal, never a fresh
         // "never seen" that would invite a second dispatch to run it after all.
-        void ledger.cancel(parsed.requestId).then(
-          () => { try { sock.end(JSON.stringify({ requestId: parsed.requestId, state: "abandoned" } satisfies ReceiptAnswer) + "\n"); } catch { /* gone */ } },
+        //
+        // THE ANSWER CARRIES THE VESSEL'S OUTCOME, NEVER THE CALLER'S ABANDONMENT RETOLD
+        // (lar:///ha.ka.ba/lararium/mesh/receipt-ledger#/three-receipts). The cancel line already states that its
+        // caller withdrew. What it asks back: the verdict this vessel holds for the id after the cancel took its
+        // turn. A cancel that met no fact reads `abandoned`; one that met a commit reads what the vessel holds for
+        // that act, which runs on.
+        tended(ledger.cancel(parsed.requestId).then(() => answerReceipt(parsed.requestId)).then(
+          (answer) => { try { sock.end(JSON.stringify(answer) + "\n"); } catch { /* gone */ } },
           (err) => fail(err instanceof Error ? err.message : String(err)),
-        );
+        ));
         return;
       }
 

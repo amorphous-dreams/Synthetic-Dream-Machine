@@ -168,15 +168,89 @@ describe("lares receipt <requestId> (M14)", () => {
 });
 
 describe("lares cancel <requestId> (M14 + M8 — the OPERATOR's own explicit withdrawal)", () => {
-  test("★ cancelling a request reads back its abandoned state ★", async () => {
-    await standStub({ requestId: "req-9", state: "abandoned" });
+  /** Run the cancel door against a stub vessel that answers `answer`; the JSON it printed and its exit code. */
+  async function cancelAgainst(answer: Record<string, unknown>): Promise<{ payload: { ok: boolean; data: Record<string, unknown>; error?: { code: string; message: string; hint?: string } }; code: number }> {
+    await standStub(answer);
     const cap = captured();
-    const code = await cmdCancel(parseArgs(["cancel", "req-9", "--json"]));
+    const code = await cmdCancel(parseArgs(["cancel", String(answer["requestId"]), "--json"]));
     cap.restore();
-    const payload = JSON.parse(cap.lines.join("")) as { ok: boolean; error: { code: string } };
+    return { payload: JSON.parse(cap.lines.join("")), code };
+  }
+
+  test("★ a cancel that stands reads withdrawn, ok and exit 0: the vessel holds the id abandoned ★", async () => {
+    const { payload, code } = await cancelAgainst({ requestId: "req-9", state: "abandoned" });
+    expect(payload).toEqual({ ok: true, requestId: "req-9", data: { state: "abandoned", withdrawn: true } });
+    expect(code).toBe(0);
+  });
+
+  test("★ a cancel that met a commit reads `cancel-lost` with the state the vessel holds, never as withdrawn ★", async () => {
+    const { payload, code } = await cancelAgainst({ requestId: "req-10", state: "committed" });
     expect(payload.ok).toBe(false);
-    expect(payload.error.code).toBe("request-abandoned");
-    expect(code).not.toBe(0);
+    expect(payload.data).toEqual({ state: "committed", withdrawn: false });
+    expect(payload.error?.code).toBe("cancel-lost");
+    expect(payload.error?.hint).toMatch(/lares receipt req-10/);
+    expect(code).toBe(4);
+  });
+
+  test("a cancel that met a landed request reads `cancel-lost` and carries the results the vessel keeps", async () => {
+    for (const state of ["done", "error"]) {
+      const { payload, code } = await cancelAgainst({ requestId: "req-11", state, results: { count: 3 } });
+      expect(payload.data).toEqual({ state, withdrawn: false, results: { count: 3 } });
+      expect(payload.error?.code).toBe("cancel-lost");
+      expect(code).toBe(4);
+    }
+  });
+
+  test("a cancel of an id the vessel no longer answers for reads that state's own code, and never as withdrawn", async () => {
+    for (const [state, errorCode] of [["evicted", "retention-gap"], ["interrupted", "request-interrupted"]] as const) {
+      const { payload, code } = await cancelAgainst({ requestId: "req-12", state });
+      expect(payload.data).toEqual({ state, withdrawn: false });
+      expect(payload.error?.code).toBe(errorCode);
+      expect(code).toBe(6);
+    }
+  });
+
+  test("a torn fact names its own refusal on both doors, never a verb's error", async () => {
+    const torn = { requestId: "req-13", state: "error", errorMessage: "unreadable", refusal: { reason: "receipt-fact-torn" } };
+    const cancelled = await cancelAgainst(torn);
+    expect(cancelled.payload.error?.code).toBe("receipt-fact-torn");
+    expect(cancelled.payload.data["withdrawn"]).toBe(false);
+    await new Promise<void>((r) => server!.close(() => r())); server = undefined;
+    await standStub(torn);
+    const cap = captured();
+    const code = await cmdReceipt(jsonArgs(["req-13"]));
+    cap.restore();
+    expect((JSON.parse(cap.lines.join("")) as { error: { code: string } }).error.code).toBe("receipt-fact-torn");
+    expect(code).toBe(6);
+  });
+
+  test("a landed error that carries a refusal of its own still reads `cancel-lost` on the cancel door", async () => {
+    const { payload, code } = await cancelAgainst({ requestId: "req-15", state: "error", errorMessage: "evicted effect", refusal: { reason: "retention-gap" } });
+    expect(payload.error?.code).toBe("cancel-lost");
+    expect(code).toBe(4);
+  });
+
+  test("★ the vessel's fault line names no state: both doors read a fault, never ok ★", async () => {
+    const fault = { requestId: "req-16", status: "error", errorMessage: "a synthetic store fault" };
+    const cancelled = await cancelAgainst(fault);
+    expect(cancelled.payload).toEqual({ ok: false, requestId: "req-16", error: { code: "verb-error", message: "a synthetic store fault" } });
+    expect(cancelled.code).toBe(4);
+    await new Promise<void>((r) => server!.close(() => r())); server = undefined;
+    await standStub(fault);
+    const cap = captured();
+    const code = await cmdReceipt(jsonArgs(["req-16"]));
+    cap.restore();
+    expect((JSON.parse(cap.lines.join("")) as { ok: boolean }).ok).toBe(false);
+    expect(code).toBe(4);
+  });
+
+  test("CONTROL: the receipt door reads the same `committed` answer as ok, with no `withdrawn` word", async () => {
+    await standStub({ requestId: "req-14", state: "committed" });
+    const cap = captured();
+    const code = await cmdReceipt(jsonArgs(["req-14"]));
+    cap.restore();
+    expect(JSON.parse(cap.lines.join(""))).toEqual({ ok: true, requestId: "req-14", data: { state: "committed" } });
+    expect(code).toBe(0);
   });
 
   test("usage: no requestId given → exit 2", async () => {
