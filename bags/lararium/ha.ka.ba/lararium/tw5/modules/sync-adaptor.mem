@@ -28,7 +28,7 @@ uri-path      = "ha.ka.ba/lararium/tw5/modules/sync-adaptor"
 
 ''Inbound (projection).'' It queues each `LarTiddlerChange` in its landing queue and lands it, slice by slice, as the composition resolves its title, handing each result to `$tw.lares.applyNalu()`. Initial replay flows the same road: `emitInitialReplay()` fires one change per existing record, the fan-out reaches `onUriChanged`, and the seed checkpoint resolves once the queue and its tracked work settle.
 
-''Outbound (TW5 edits).'' The outbound bridge (`packages/lararium-tw5/src/outbound-bridge.ts`) reads each live wiki `change` dispatch and hands every hand to `saveTiddler` / `deleteTiddler`; they pace per title, route through the bag-path cascade to `store.writeFamily` at or above the working layer, or tombstone in the bag the composition's layer order picks.
+''Outbound (TW5 edits).'' The outbound bridge (`packages/lararium-tw5/src/outbound-bridge.ts`) reads each live wiki `change` dispatch and hands every hand to `saveTiddler` / `deleteTiddler`; they pace per title, route through the bag-path cascade to `store.writeFamily` at or above the working layer, or tombstone in the bag the composition's layer order picks. A saved tiddler's fields string through TW5's own `Tiddler.getFieldStrings()` (`toTW5FieldStrings`), so a date and a list take TW5's own spelling, an absent field stays out, and no second normaliser stands beside it.
 
 ''The composition read stays in TS,'' because it needs an async `resolveLayered` on the composite.
 
@@ -50,7 +50,7 @@ The TW5 module `nalu-engine` holds the one piece the adaptor deliberately does n
 
 !! The Bag-Path Cascade
 
-`_routeBag(title)` walks `lar:///ha.ka.ba/lararium/config/bag-paths` — newline-separated filter expressions evaluated against a single-tiddler source, first non-empty result winning. It mirrors TW5's own `$:/config/FileSystemPaths` shape, and takes the shape of `$:/config/SyncFilter` too: the shipped cascade opens with the exclusions and ends in a catch-all.
+`routeBag(wiki, title)` (`bag-cascade.ts`) walks `lar:///ha.ka.ba/lararium/config/bag-paths` — newline-separated filter expressions evaluated against a single-tiddler source, first non-empty result winning. It mirrors TW5's own `$:/config/FileSystemPaths` shape, and takes the shape of `$:/config/SyncFilter` too: the shipped cascade opens with the exclusions and ends in a catch-all.
 
 ''The cascade routes; it does not decide whether to write.'' Everything a hand edits and saves travels through the composition and round-trips. Only a rule that NAMES what it withholds may withhold a write. Two things stand outside that sentence: `neverPersists` withholds the volatile VM plane and the alert rail ahead of the cascade, and the temp slot's store lives in memory on the device.
 
@@ -98,6 +98,6 @@ The ledger stays volatile: one adaptor, one session. A stopped adaptor clears it
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;llWmhXxkJHNxQP8v0vIEr7vfC0wSi0rtwowORW6Dq2c
+<<^ code="&#x0003;">>ni:///sha-256;1yWJielGYQmDzOGyIgtzdAjl9ygGMKlO-xUCrOZ_XpU
 
 <<^ code="&#x0004;" -> to="?">>
