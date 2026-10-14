@@ -130,19 +130,21 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     // while the real holder (mocked via `holderAlive`, exactly as `commands/read.ts` wires `udsAlive`)
     // stands alive well past it. The fix never re-reads the port at that point; it signals the pids it
     // itself signalled at the top (captured BEFORE the port froze), filtered by their own real liveness.
+    // The timeline rides the door's own acts, and no clock of the test's: the port frees the moment the first
+    // SIGTERM lands (main.ts's own order), and the holder lets go three of the door's looks after the door
+    // reported its grace spent, so it outlasts the grace on any machine and then truly exits.
     const kill = vi.fn();
-    let portFreed = false;
-    setTimeout(() => { portFreed = true; }, 2);     // the port frees almost at once — main.ts's own order
-    let holderLetGo = false;
-    setTimeout(() => { holderLetGo = true; }, 30);  // the real holder exits well after grace is spent
+    let reportedPastGrace = false;
+    let looksPastGrace = 0;
+    const holderStands = (): boolean => !reportedPastGrace || ++looksPastGrace <= 3;
     const probe = async () => true;                 // irrelevant once holderAlive is wired
-    const holderPids = () => (portFreed ? [] : [4242]);   // THE RE-READ FAULT: [] by the time grace fires
-    const holderAlive = async () => !holderLetGo;
+    const holderPids = () => (kill.mock.calls.length > 0 ? [] : [4242]);   // THE RE-READ FAULT: [] once the first signal landed
+    const holderAlive = async () => holderStands();
     let pastGraceHeldPids: readonly number[] | null = null;
 
-    const result = await withPidAliveSpy(() => !holderLetGo, () => stopIncumbent(PORT, {
+    const result = await withPidAliveSpy(() => holderStands(), () => stopIncumbent(PORT, {
       graceMs: 10, pollMs: 5, probe, holderPids, kill, cut: true, holderAlive,
-      onPastGrace: (pids) => { pastGraceHeldPids = pids; },
+      onPastGrace: (pids) => { pastGraceHeldPids = pids; reportedPastGrace = true; },
     }));
     expect(result).toEqual<StopResult>({ stopped: true });
     expect(pastGraceHeldPids).toEqual([4242]);      // named the real holder, never the stale []
@@ -246,26 +248,37 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     // wildly off by this; `stopIncumbent`'s OWN grace/cut timing must not move at all.
     Date.now = () => realNow() + wallOffsetMs;
     try {
-      let heldUntil = realNow() + 300;
-      const probe = async () => realNow() < heldUntil;
-      let pastGraceHeldPids: readonly number[] | null = null;
-      const t0 = performance.now();
-      // Jump the wall clock backward by a year mid-wait, then forward by a year — a reverted
-      // `Date.now()`-based deadline would either never fire (set-back) or fire instantly (set-forward).
-      setTimeout(() => { wallOffsetMs = -365 * 24 * 60 * 60 * 1000; }, 10);
-      setTimeout(() => { wallOffsetMs = 365 * 24 * 60 * 60 * 1000; }, 20);
-      const result = await withPidAliveSpy(() => realNow() < heldUntil, () => stopIncumbent(PORT, {
-        graceMs: 40, pollMs: 5, probe, holderPids: () => [4242], kill,
-        onPastGrace: (pids) => { pastGraceHeldPids = pids; },
-      }));
-      const elapsedMonotonic = performance.now() - t0;
-      expect(result).toEqual<StopResult>({ stopped: true });
-      expect(pastGraceHeldPids).toEqual([4242]);
-      // The real elapsed time stayed near the declared 300ms hold, not instant (forward jump) and not
-      // never-ending (back jump, which would have timed this test out instead).
-      expect(elapsedMonotonic).toBeGreaterThan(100);
-      expect(elapsedMonotonic).toBeLessThan(2_000);
-      void heldUntil;
+      // One stop per jump. The holder lets go only at the door's own report of a spent grace (`onPastGrace`), and
+      // the wall clock jumps at the door's first look at its holder: after the door fixed its deadline, before it
+      // read the deadline once. No timer of the test's sets either moment.
+      const stopAcrossJump = async (offsetMs: number): Promise<{ result: StopResult; reportedAfterMs: number; held: readonly number[] | null }> => {
+        wallOffsetMs = 0;
+        let stands = true;
+        let jumped = false;
+        let held: readonly number[] | null = null;
+        let reportedAfterMs = -1;
+        const t0 = performance.now();
+        const alive = (): boolean => { if (!jumped) { jumped = true; wallOffsetMs = offsetMs; } return stands; };
+        const result = await withPidAliveSpy(alive, () => stopIncumbent(PORT, {
+          graceMs: 40, pollMs: 5, probe: async () => stands, holderPids: () => [4242], kill,
+          onPastGrace: (pids) => { held = pids; reportedAfterMs = performance.now() - t0; stands = false; },
+        }));
+        return { result, reportedAfterMs, held };
+      };
+      const YEAR = 365 * 24 * 60 * 60 * 1000;
+      // SET-FORWARD: a reverted `Date.now()`-based deadline would read the grace spent at the door's first look.
+      // The report came no sooner than the declared grace: a lower bound on real elapsed time, which a slow
+      // machine only lengthens.
+      const forward = await stopAcrossJump(YEAR);
+      expect(forward.result).toEqual<StopResult>({ stopped: true });
+      expect(forward.held).toEqual([4242]);
+      expect(forward.reportedAfterMs).toBeGreaterThanOrEqual(40);
+      // SET-BACK: a reverted `Date.now()`-based deadline would never read the grace spent, the holder would never
+      // let go, and this stop would never answer (the vector's own timeout names that).
+      const back = await stopAcrossJump(-YEAR);
+      expect(back.result).toEqual<StopResult>({ stopped: true });
+      expect(back.held).toEqual([4242]);
+      expect(back.reportedAfterMs).toBeGreaterThanOrEqual(40);
     } finally {
       Date.now = realNow;
     }
@@ -339,14 +352,25 @@ describe("waitForPortBudgeted — a declared budget per named boot phase", () =>
   });
 
   it("CONTROL: a phase change resets the clock — a port that opens inside the NEW phase's budget resolves", async () => {
-    let phase = "starting";
-    let opensAt = 0;
-    setTimeout(() => { phase = "ready"; opensAt = Date.now() + 60; }, 30);   // moves on before "starting" exhausts
-    const probe = async () => opensAt !== 0 && Date.now() >= opensAt;
+    // The boot moves on at the door's SECOND read of the phase (its first look inside the loop, ahead of any
+    // budget check), and the port opens only once more than the whole "starting" budget has passed since: a door
+    // that kept the old phase's clock would refuse first. Both moments ride the door's own reads; the one clock
+    // read sets a LOWER bound on elapsed time, which a slow machine only lengthens. "ready" carries a budget that
+    // only fails: a door that never sees the port open refuses by name inside this vector's own timeout.
+    const phases = [{ name: "starting", budgetMs: 40 }, { name: "ready", budgetMs: 5_000 }] as const;
+    let phaseReads = 0;
+    let movedOnAt: number | null = null;
+    const phase = (): string => {
+      if (++phaseReads < 2) return "starting";
+      movedOnAt ??= performance.now();
+      return "ready";
+    };
+    const probe = async () => movedOnAt !== null && performance.now() - movedOnAt > 60;
     await expect(
-      waitForPortBudgeted(54_323, PHASES, { phase: () => phase, pollMs: 5, probe, holderPids: () => [] }),
+      waitForPortBudgeted(54_323, phases, { phase, pollMs: 5, probe, holderPids: () => [] }),
     ).resolves.toBeUndefined();
-  });
+    expect(phaseReads).toBeGreaterThan(2);   // the door kept reading past the change: it waited inside "ready"
+  }, 30_000);
 
   it("a port already open resolves at once, spending none of either phase's budget", async () => {
     // "At once" reads off the door's own acts, never off a clock: it probed once, and never asked who holds.
@@ -381,14 +405,17 @@ describe("waitForResourceBudgeted — the non-port generalization (M1)", () => {
   });
 
   it("CONTROL: `until` ends the wait quietly the instant it reads true, never throwing", async () => {
-    let done = false;
-    setTimeout(() => { done = true; }, 15);
+    // `until` turns true at the door's own third look at the resource. The phase's budget only fails: a door deaf
+    // to `until` refuses by name inside this vector's own timeout.
+    let probes = 0;
+    const probe = vi.fn(async () => { probes += 1; return false; });
     await expect(
-      waitForResourceBudgeted("the vessel's store door", PHASES, {
-        phase: () => "starting", pollMs: 5, probe: async () => false, holderPids: () => [], until: () => done,
+      waitForResourceBudgeted("the vessel's store door", [{ name: "starting", budgetMs: 5_000 }], {
+        phase: () => "starting", pollMs: 5, probe, holderPids: () => [], until: () => probes >= 3,
       }),
     ).resolves.toBeUndefined();
-  });
+    expect(probe).toHaveBeenCalledTimes(3);   // it ended at the very look `until` turned true, before a fourth probe
+  }, 30_000);
 
   it("async phase/probe/holderPids are awaited (an async holder read is honoured, not just a sync one)", async () => {
     await expect(
@@ -407,19 +434,27 @@ describe("waitForResourceBudgeted — the non-port generalization (M1)", () => {
     let wallOffsetMs = 0;
     Date.now = () => realNow() + wallOffsetMs;
     try {
-      setTimeout(() => { wallOffsetMs = -365 * 24 * 60 * 60 * 1000; }, 10);
-      setTimeout(() => { wallOffsetMs = 365 * 24 * 60 * 60 * 1000; }, 20);
-      const t0 = performance.now();
-      await expect(
-        waitForResourceBudgeted("the vessel's store door", PHASES, {
-          phase: () => "starting", pollMs: 5, probe: async () => false, holderPids: () => [4242],
-        }),
-      ).rejects.toBeInstanceOf(SlowBootTimeout);
-      const elapsedMonotonic = performance.now() - t0;
-      // A reverted Date.now()-based deadline would either never throw (set-back, timing this test out)
-      // or throw near-instantly (set-forward, well under the declared 40ms phase budget).
-      expect(elapsedMonotonic).toBeGreaterThan(30);
-      expect(elapsedMonotonic).toBeLessThan(2_000);
+      // One wait per jump. The wall clock jumps at the door's own first look at the resource: after the door
+      // fixed its phase deadline, before it read the deadline once. No timer of the test's sets that moment.
+      const spendAcrossJump = async (offsetMs: number): Promise<number> => {
+        wallOffsetMs = 0;
+        let jumped = false;
+        const t0 = performance.now();
+        await expect(
+          waitForResourceBudgeted("the vessel's store door", PHASES, {
+            phase: () => "starting", pollMs: 5, holderPids: () => [4242],
+            probe: async () => { if (!jumped) { jumped = true; wallOffsetMs = offsetMs; } return false; },
+          }),
+        ).rejects.toBeInstanceOf(SlowBootTimeout);
+        return performance.now() - t0;
+      };
+      const YEAR = 365 * 24 * 60 * 60 * 1000;
+      // SET-FORWARD: a reverted `Date.now()`-based deadline would read the budget spent at the door's first look.
+      // The refusal came no sooner than the declared 40ms budget: a lower bound, which a slow machine only lengthens.
+      expect(await spendAcrossJump(YEAR)).toBeGreaterThanOrEqual(40);
+      // SET-BACK: a reverted `Date.now()`-based deadline would never read the budget spent, and this wait would
+      // never refuse (the vector's own timeout names that).
+      expect(await spendAcrossJump(-YEAR)).toBeGreaterThanOrEqual(40);
     } finally {
       Date.now = realNow;
     }
