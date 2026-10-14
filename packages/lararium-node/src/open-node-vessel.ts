@@ -2545,8 +2545,8 @@ async function prepareNodeBootOn(
       // M7″: `storeClaim.bootEpoch` is REQUIRED on a vessel-held claim (never undefined, never a guessed
       // 0) — the epoch THIS vessel's own boot bumped once, at claim time (step 0, above). Epoch 0 HOLDS
       // every pin (`currentFence <= fence` for any non-negative fence), so a first boot withholds nothing
-      // it should keep; read fresh here on every sweep (never cached), so a `--held` pin is judged against
-      // the boot that actually stands, never a stale re-read of the `.boot-epoch` sidecar file.
+      // it should keep. Each sweep takes this boot's captured epoch, so a `--held` pin is judged against
+      // the boot that stands, never a re-read of the `.boot-epoch` sidecar file.
       const bootEpoch = storeClaim.bootEpoch;
       const sweep = installCasSweep({ registry, casDir: cidDir, paceCell: realmPaceCell, references: () => assembly.composite.entries(), protect: genesisProtect, pins: () => readCasPins(cidDir), currentFence: () => bootEpoch, realmClock: async () => { const doc = (await readDaemonDoc()).doc(); const realm = tiddlerText(doc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER]); return realm && doc ? realmMaintenanceFromBoard(doc, realm) : null; }, log: (line) => console.log(line) });
       stood.push({ what: "the CAS sweep tick", down: () => sweep.stop() });
@@ -2766,9 +2766,9 @@ async function prepareNodeBootOn(
       { bagId: "self",          mirrorRoot: join(workerRootDir, "bags"),           scope: "self",    perWikiSlug: true, selfCanon: true },
     ];
     // R3 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
-    // through the selector + CAS (`resolveNodeIslandPluginCids`), never the vessel-wide floor
-    // every island used to get identically. The Crossroads board materializes once and is read
-    // fresh per mount (a later-announced offering becomes selectable without a vessel restart).
+    // through the selector + CAS (`resolveNodeIslandPluginCids`), never one vessel-wide floor.
+    // The shared Crossroads board materializes once and is read fresh per mount (a
+    // later-announced offering becomes selectable without a vessel restart).
     const casDir = casDirForStorage(storageDir);
     vmManager = new VesselIslandPool({
       mainRepo:    repo,

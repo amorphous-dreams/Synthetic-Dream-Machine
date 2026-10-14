@@ -441,7 +441,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
   // A second tab on this origin would stand a second repo and a second keyhive provider over ONE
   // IndexedDB store and ONE OPFS CAS. The Web Lock refuses that open LOUD, naming the holder; it stays
   // held for this page's life and the browser lets go when the page does. An engine without Web Locks
-  // reads as a floor and opens as before. `steal` never passes.
+  // refuses the open by name (`holdVesselLock`): one holder per store cannot be proven there. `steal` never passes.
   //
   // THE HOUSE BEHIND THE LOCK (opt-in): with a shared holder configured and `SharedWorker` on the engine, the
   // holder owns the one daemon island and the lock; this tab attaches. The one refusal that opens is a lock
@@ -1522,8 +1522,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
 
     makePool: (_a, assembly) => {
       // R4 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
-      // through the selector + OPFS CAS (`resolveBrowserIslandPluginCids`), never the vessel-wide
-      // floor every island used to get identically. The Crossroads board materializes once (lazily,
+      // through the selector + OPFS CAS (`resolveBrowserIslandPluginCids`), never one vessel-wide
+      // floor. The Crossroads board materializes once (lazily,
       // shared with the daemon VM's own resolution above) and is read fresh per mount.
       vmManager = new BrowserVesselIslandPool({
         mainRepo: repo,

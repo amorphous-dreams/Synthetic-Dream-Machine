@@ -21,18 +21,16 @@
  * reads as a mismatch rather than as agreement.
  *
  * ── NO SIDECAR: EVERY ENTRY'S RECORD LIVES IN THE COLLECTION'S OWN INDEX ─────────────────────────
- * A per-entry `meta.json` was one more untracked file per body, readable only by walking the disk. Each
- * entry's record now rides as its own `#/<cid>` ahu slot INSIDE the collection's index carrier
- * (`<collection>/index.mem`), typed as a JSON tiddler (`type = "application/json"`, body = the JSON the
- * sidecar used to hold) — the same shape `deserializer.ts`'s `splitRecursive` already gives any child
+ * Each entry's record rides as its own `#/<cid>` ahu slot INSIDE the collection's index carrier
+ * (`<collection>/index.mem`), typed as a JSON tiddler (`type = "application/json"`, body = the
+ * entry's JSON record) — the same shape `deserializer.ts`'s `splitRecursive` gives any child
  * slot that declares its own `type` (precedent: `child-declared-type.test.ts`). `acquireIntoLibrary`
  * reads the current index back through `carrier-render.ts`'s `metaFieldsFromBody` (the SAME fence
  * reader the root carrier meta already goes through here — `deserializeCarrier` itself stays an
  * internal tw5 module with no package subpath, by the same design note `carrier-canonical.ts` carries:
  * exporting it would widen that package's public surface for one caller), upserts this entry, and
  * renders the whole index again through `canonicalizeCarrierText` — the one door that decides a
- * carrier's bytes. One fewer untracked-file-per-body, one more reason the index travels as a single
- * coherent carrier.
+ * carrier's bytes. The index travels as a single coherent carrier.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution
  */
@@ -168,8 +166,7 @@ const AHU_ENTRY_RE = /<<~\s*ahu\s+#\/([0-9a-f]{64})\s*>>([\s\S]*?)<<~\/ahu\s*>>/
  * it for.)
  *
  * A slot that fails to parse as JSON, or does not carry `type: application/json`, or holds neither a
- * `cid` nor a `name` string, reads ABSENT — the same "cannot describe itself" verdict a torn sidecar
- * used to produce.
+ * `cid` nor a `name` string, reads ABSENT: it cannot describe itself.
  */
 function readLibraryIndexEntries(collection: string): ReadonlyMap<string, LibraryEntryMeta> {
   const path = libraryIndexPath(collection);
@@ -243,8 +240,7 @@ export function verifyCollection(collection: string): LibraryVerdict[] {
       ? { collection, cid: slotCid, name: meta.name, ok: true }
       : { collection, cid: slotCid, name: meta.name, ok: false, why: `bytes digest ${actual} — the index claims ${slotCid}` });
   }
-  // A directory standing in the tier with no index entry describing it cannot be audited alone —
-  // the same verdict a body with no readable sidecar used to carry.
+  // A directory standing in the tier with no index entry describing it cannot be audited alone.
   if (existsSync(dir)) {
     for (const cidDir of readdirSync(dir).sort()) {
       if (cidDir === "index.mem" || entries.has(cidDir)) continue;
@@ -262,7 +258,7 @@ export function verifyCollection(collection: string): LibraryVerdict[] {
  *
  * EACH ENTRY IS ITS OWN SLOT, never a markdown table row: a `#/<cid>` ahu block TYPED AS A JSON
  * TIDDLER (`type = "application/json"` in the slot's own leading `toml meta` fence, body = the JSON
- * the sidecar used to hold), so `<index-uri>#/<cid>` addresses one entry directly, a reader (or
+ * record for that entry), so `<index-uri>#/<cid>` addresses one entry directly, a reader (or
  * `lares meme`) walks the collection the same way it walks any other carrier's children, and
  * `deserializeCarrier` hands back that entry as an ordinary tiddler record whose `type` reads
  * `application/json` and whose `text` parses back to these same fields — the precedent

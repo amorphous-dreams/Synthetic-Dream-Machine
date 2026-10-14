@@ -211,9 +211,8 @@ export function ffzLca(a: string, b: string): string {
 // servo below. A caller drives it DIRECTLY — {@link centroidDriftStep} derives
 // the content drift (`1 − cosine` against the running centroid) and {@link
 // quorumStep} at N=1 makes the decision, where `effGong = min(quorumGong, 1) = 1`
-// reproduces the single-plane gong byte-for-byte (the retired `measureStep`
-// back-compat wrapper that once fused these two calls was unused residue and
-// is gone). The whole FAST/SLOW/MDL/FLOOR/CEIL/Schmitt decision lives ONCE, in
+// reproduces the single-plane gong byte-for-byte. The whole
+// FAST/SLOW/MDL/FLOOR/CEIL/Schmitt decision lives ONCE, in
 // {@link schmittGongCore} (shared by both paths).
 //
 // SIGNAL — the cosine of incoming content against the running centroid of the

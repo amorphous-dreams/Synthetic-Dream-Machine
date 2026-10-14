@@ -424,11 +424,9 @@ export interface InstallCasSweepOptions {
   /** The realm's own clock — the reading `realm-clock` answers (`realmMaintenanceFromBoard`), or null on a
    *  hearth outside every realm. Read at each probe; `realmPace` turns it into rolls. */
   readonly realmClock: () => CabalRealmMaintenanceProvenance | null | Promise<CabalRealmMaintenanceProvenance | null>;
-  /** This vessel's CURRENT boot epoch (M7″) — read fresh at EVERY sweep, never cached, so a `--held` pin is
-   *  judged against the epoch THIS boot owns. REQUIRED (alpha line, no back-compat): the production sweep
-   *  threads it straight into `casSweep`'s own `currentFence`, closing the gap `CasSweepOptions.currentFence`'s
-   *  doc comment named ("no caller YET threads a live epoch here") — a caller with no epoch to give supplies
-   *  `() => 0`, which the fence law already reads as "no boot has happened yet" (every `--held` pin superseded). */
+  /** This vessel's boot epoch (M7″) — the callback supplies the fence at each sweep, so a `--held` pin is
+   *  judged against the epoch THIS boot owns. A caller with no epoch supplies `() => 0`, which the fence
+   *  law reads as "no boot has happened yet" (every `--held` pin superseded). */
   readonly currentFence: () => number;
   readonly log:        (line: string) => void;
   /** Observes each tick's result (a witness hook; the verb's caller reads the result directly). */
@@ -488,8 +486,7 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
       references,
       protect: opts.protect,
       pins: opts.pins(),
-      // M7″: read fresh at EVERY sweep — the production fence a `--held` pin's own stamped `fence` is judged
-      // against, never a cached boot-time reading (a held pin outlives many ticks within the SAME boot).
+      // M7″: sample the caller's fence for this sweep when judging a `--held` pin's stamped `fence`.
       currentFence: opts.currentFence(),
       // The floor: the longest tier's grace in rolls. No pace → no age (every blob reads 0) → nothing sweeps.
       grace: graceForTier(longest, 1),

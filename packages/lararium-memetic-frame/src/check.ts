@@ -224,7 +224,7 @@ export const BCC_RE = /^(ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+)$/;
  *                 exactly as BSC allowed blocks to run without one on a trusted link.
  *   · `bcc`     — a well-formed block check. Legal, and checkable.
  *   · `foreign` — anything else. Payload stranded past the end of text, which no reader will ever
- *                 render. This is the case that used to vanish.
+ *                 render; the caller receives its text and line count.
  */
 export type Postamble =
   | { readonly kind: "empty" }

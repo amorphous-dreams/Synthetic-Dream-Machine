@@ -117,7 +117,7 @@ function parseArgs(): { port: number; storageDir: string; genesisDir: string; wi
   const askedStanding = (get("--recipe", "LAR_RECIPE", "lararium") === "herm" ? "herm" : "lararium") as AskedStanding;
   const port   = Number(get("--port", "LAR_PORT", "8080"));
   const wikiId = get("--wiki", "LAR_WIKI", "lares");
-  // A flag nothing above names is refused by name: it used to vanish, and a vessel booted on the wrong root.
+  // Refuse any flag the parser did not register before booting the vessel.
   const stray = args.find((a) => a.startsWith("--") && !named.has(a.split("=", 1)[0] as string));
   if (stray !== undefined) {
     console.error(`lararium-node: unknown flag ${stray.split("=", 1)[0]} (reads ${[...named].sort().join(" ")})`);
