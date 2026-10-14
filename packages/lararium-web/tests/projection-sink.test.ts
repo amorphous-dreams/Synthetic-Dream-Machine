@@ -165,3 +165,62 @@ describe("★ nothing leaks across a switch ★", () => {
     m.done();
   });
 });
+
+describe("★ a refused input says so beside the pane ★", () => {
+  const notice = (m: ReturnType<typeof mount>): HTMLElement | null => m.host.shadowRoot!.querySelector<HTMLElement>('[role="alert"]');
+  const shown = (m: ReturnType<typeof mount>): boolean => { const n = notice(m); return n !== null && !n.hidden && (n.textContent ?? "") !== ""; };
+  const type = (field: HTMLInputElement, value: string): void => {
+    field.value = value;
+    field.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+  };
+
+  test("an input past the bound raises a visible word naming both counts; CONTROL: one within the bound raises none", () => {
+    const m = mount();
+    m.sink.apply(frame("lares", 1, `<input data-lar-rid="9" value="">`));
+    const field = m.pane().querySelector<HTMLInputElement>("input")!;
+    // CONTROL: a value the wiki takes shows no word.
+    type(field, "x".repeat(16));
+    expect(shown(m)).toBe(false);
+    type(field, "x".repeat(17));
+    expect(m.events).toEqual([`lares:input:9=${"x".repeat(16)}`]);     // the overlong value never crossed
+    expect(shown(m)).toBe(true);
+    expect(notice(m)!.textContent).toContain("17");
+    expect(notice(m)!.textContent).toContain("16");
+    // The word stands outside the painted pane, so no frame's morph removes it.
+    expect(m.pane().contains(notice(m))).toBe(false);
+    m.done();
+  });
+
+  test("the word outlives the surface's next frame and leaves when the field relays within the bound", () => {
+    const m = mount();
+    m.sink.apply(frame("lares", 1, `<input data-lar-rid="9" value="">`));
+    const field = m.pane().querySelector<HTMLInputElement>("input")!;
+    field.focus();
+    type(field, "x".repeat(17));
+    m.sink.apply(frame("lares", 2, `<input data-lar-rid="9" value=""><p>another tiddler changed</p>`));
+    expect(shown(m)).toBe(true);
+    // CONTROL: another field's accepted input leaves the refused field's word standing.
+    m.sink.apply(frame("lares", 3, `<input data-lar-rid="9" value=""><input data-lar-rid="4" value="">`));
+    type(m.pane().querySelector<HTMLInputElement>('[data-lar-rid="4"]')!, "short");
+    expect(shown(m)).toBe(true);
+    type(m.pane().querySelector<HTMLInputElement>('[data-lar-rid="9"]')!, "x".repeat(8));
+    expect(shown(m)).toBe(false);
+    m.done();
+  });
+
+  test("the word ends with its surface, and with its field", () => {
+    const m = mount();
+    m.sink.apply(frame("lares", 1, `<input data-lar-rid="9" value="">`));
+    type(m.pane().querySelector<HTMLInputElement>("input")!, "x".repeat(17));
+    expect(shown(m)).toBe(true);
+    // Another island's frame: its render-ids name other nodes, so the word about a field of the old surface ends.
+    m.sink.apply(frame("daemon", 1, `<input data-lar-rid="9" value="">`));
+    expect(shown(m)).toBe(false);
+    // A frame of the same surface that no longer carries the field ends the word too.
+    type(m.pane().querySelector<HTMLInputElement>("input")!, "y".repeat(17));
+    expect(shown(m)).toBe(true);
+    m.sink.apply(frame("daemon", 2, `<p>the field left</p>`));
+    expect(shown(m)).toBe(false);
+    m.done();
+  });
+});

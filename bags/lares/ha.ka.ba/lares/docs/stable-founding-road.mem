@@ -463,7 +463,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `F4` Node callers move to sessions; receipts bind to the face; verb outcomes and the effect index follow the working layer with their reader (`verb-vm.ts`, `uds-channel.ts`). O1.
 * `F5` The durability receipt, rung 2's node half. O1.
 * `F6` The browser holder as owner, with unicast replies (`shared-holder-core.ts` broadcasts). O1.
-* `F8` One control-event leg retires `wiki:dom-event` and `wiki:dom-input`, and carries keys, files and drops, so Escape, Ctrl-Enter and import work in the browser; the four page-sink faults of `page-controls.mem` close with it. O1.
+* `F8` One control-event leg retires `wiki:dom-event` and `wiki:dom-input`, and carries keys, files and drops, so Escape, Ctrl-Enter and import work in the browser; the three page-sink faults of `page-controls.mem` close with it. O1.
 * `F9` The switch; the vessel-wide selector retires. O1.
 * `F10` A person's fleet view and removal; the long-silent device rule of #/decisions. O1.
 * `F11` The hands: the watcher as a leasing session, the seat under a standing grant, the Mask as a record field, door parity at the session (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). O1.
@@ -771,6 +771,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cGz6V0VXag9GNMwE_m7GY1S0c-m8ovzjy4Gte0nwUiQ
+<<^ code="&#x0003;">>ni:///sha-256;x3UsSy9_jK2yZBCWYAvCaVnd_0PnubOR3wSbO3CvHqI
 
 <<^ code="&#x0004;" -> to="?">>

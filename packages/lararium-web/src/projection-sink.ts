@@ -15,6 +15,9 @@
  *     at the moment of the act, so the vessel routes it to that island and never to whichever stands active.
  *   - NOTHING LEAKS ACROSS A SWITCH. Islands share no render-id space: a field's local value, a pending popup
  *     placement and the painted nodes of one surface never carry into another's frame.
+ *   - A REFUSED INPUT SAYS SO. A value past the input bound never crosses, so the island cannot answer for it:
+ *     the page raises one word beside the pane, outside the morphed nodes, naming both counts. The word stands
+ *     until that field relays a value within the bound, its surface gives way, or a frame drops the field.
  */
 import { Idiomorph } from "idiomorph";
 
@@ -48,6 +51,30 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
   let pane = shadow.querySelector<HTMLElement>(".lar-projection");
   if (!pane) { pane = document.createElement("div"); pane.className = "lar-projection"; shadow.appendChild(pane); }
   const paneEl = pane;
+  // The refusal word rests beside the pane, never inside it: a frame's morph owns every node the pane holds, and
+  // a frame's CSS replaces the style sheet, so the word carries its own inline style.
+  let refusalEl = shadow.querySelector<HTMLElement>(".lar-input-refusal");
+  if (!refusalEl) {
+    refusalEl = document.createElement("div");
+    refusalEl.className = "lar-input-refusal";
+    refusalEl.setAttribute("role", "alert");
+    refusalEl.style.cssText = "position:sticky;top:0;z-index:2147483647;padding:0.5em 0.75em;background:#7a1f1f;color:#ffffff;font:14px/1.4 system-ui,sans-serif";
+    refusalEl.hidden = true;
+    shadow.insertBefore(refusalEl, paneEl);
+  }
+  const refusal = refusalEl;
+  let refusedField: { readonly surface: string; readonly renderId: string } | null = null;
+  const raiseRefusal = (surface: string, renderId: string, length: number): void => {
+    refusedField = { surface, renderId };
+    refusal.textContent = `This field holds ${length} characters, and the wiki takes at most ${opts.inputMaxChars}. `
+      + "The wiki keeps the last value it accepted: shorten the field, or these words stand in this page alone.";
+    refusal.hidden = false;
+  };
+  const endRefusal = (): void => {
+    refusedField = null;
+    refusal.textContent = "";
+    refusal.hidden = true;
+  };
 
   let shownSurface: string | null = null;
   let shownRev = 0;
@@ -78,6 +105,7 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
       // Another island's frame: its render-ids name other nodes, so the old surface's nodes, the field values
       // a person typed there and the popup placement measured there all end with it.
       paneEl.replaceChildren();
+      endRefusal();
       pendingPopupPlacement = undefined;
       restoreRenderId = null;
       modalWasPresent = false;
@@ -99,6 +127,8 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
         field.setSelectionRange(saved.selectionStart, saved.selectionEnd);
       }
     }
+    // A refusal word names one field: a frame that no longer carries the field ends the word.
+    if (refusedField && !paneEl.querySelector(`[data-lar-rid="${CSS.escape(refusedField.renderId)}"]`)) endRefusal();
     if (pendingPopupPlacement) {
       const visiblePopup = [...paneEl.querySelectorAll<HTMLElement>(".tc-popup, .tc-search-drop-down")]
         .find((popup) => !popup.hidden && getComputedStyle(popup).display !== "none");
@@ -192,11 +222,14 @@ export function createProjectionSink(host: HTMLElement, opts: { readonly inputMa
     if (!compositionEnd && (composingFields.has(src) || (event as InputEvent).isComposing)) return;
     const value = (src as TextField).value;
     if (typeof value !== "string") return;       // a non-text control carries no input leg
+    const renderId = el.getAttribute("data-lar-rid")!;
     if (value.length > opts.inputMaxChars) {
       console.warn(`[vessel] input leg refused — ${value.length} characters exceeds the ${opts.inputMaxChars} bound; the wiki holds its last accepted value.`);
+      raiseRefusal(shownSurface, renderId, value.length);
       return;
     }
-    doors.sendDomInput(shownSurface, el.getAttribute("data-lar-rid")!, kind, value);
+    if (refusedField?.surface === shownSurface && refusedField.renderId === renderId) endRefusal();
+    doors.sendDomInput(shownSurface, renderId, kind, value);
   };
   paneEl.addEventListener("input", (event) => {
     const src = (event.composedPath?.()[0] ?? event.target) as TextField | null;

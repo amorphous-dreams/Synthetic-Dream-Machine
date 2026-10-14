@@ -201,14 +201,15 @@ A twin under one of TiddlyWiki's stock widget names lets stock templates keep wo
 
 <<~ ahu #/the-sink-today>>
 
-!! OWED ~ four faults standing in the page sink
+!! OWED ~ three faults standing in the page sink
 
-The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projection (`packages/lararium-tw5/src/tw5-projection.ts`) relay acts by render id. Four faults stand against this contract:
+The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projection (`packages/lararium-tw5/src/tw5-projection.ts`) relay acts by render id. Three faults stand against this contract:
 
 # ''The delegated click handler cancels every projected click as it handles it.'' That decides at handling what the binding rule fixes at binding, and it takes modified and middle clicks on a real anchor with it.
-# ''An oversize input warns on the console alone.'' The person sees nothing beside the field.
 # ''A revision orders a whole surface.'' The sink orders frames within one continuous showing of one surface, so a switch paints the arriving surface's first frame. It carries no per-key revision, no mount epoch and no sensed revision: a focused or composing field keeps its value by focus, never by a revision the frame names.
 # ''A stale render id answers `stale-target` with no event id.'' The answer paints into the next frame of the surface that raised it, so an answer raised on a surface no longer shown reaches no frame, and nothing correlates an answer to the act that drew it.
+
+''An oversize input says so.'' A value past the input bound never crosses to the island. The page raises one word beside the pane, outside the morphed nodes, naming the field's count and the bound; the word stands until that field relays a value within the bound, its surface gives way, or a frame drops the field (`createProjectionSink`). A status that rests beside the field itself, and an answer correlated to the act, wait on the control-event leg.
 
 ''Also standing'': no message carries a control id, an event id or a correlated result; the two return kinds carry a render id and number-or-boolean fields, or a bounded whole string.
 
@@ -246,6 +247,6 @@ The page sink (`packages/lararium-web/src/projection-sink.ts`) and the projectio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_L5fv3qJL-uFnKdP3ZKrglfny6YQAHGyXO2mp8lRER8
+<<^ code="&#x0003;">>ni:///sha-256;N9p1oe_IZFC3soX-mho7cqLVWqAWgSnrUnnAC2hNmYs
 
 <<^ code="&#x0004;" -> to="?">>
