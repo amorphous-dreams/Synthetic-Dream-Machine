@@ -147,16 +147,35 @@ function awaitPeer(gate: DaemonAuthGate, ms: number): Promise<void> {
  *  resolves on the true `ready` and never on the transient blink — the shape automerge-repo v2.6 itself points
  *  to (`RepoFindOptions.allowableStates` is deprecated and IGNORED in this alpha, Repo.ts:923-928, which is why
  *  passing it to `find` changed nothing). */
-function findWhenReady<T>(repo: Repo, url: AutomergeUrl, ms: number): Promise<DocHandle<T>> {
+function findWhenReady<T>(repo: Repo, url: AutomergeUrl, ms: number, said: () => string = () => ""): Promise<DocHandle<T>> {
   return new Promise<DocHandle<T>>((resolve, reject) => {
     const progress = repo.findWithProgress<T>(url);
+    const states: string[] = [];
     let unsub: () => void = () => { /* set below */ };
-    const timer = setTimeout(() => { unsub(); reject(new Error(`timeout: ${url} never became ready`)); }, ms);
+    // A RED HERE NAMES WHAT STOOD, never only that time ran out: every state the query passed through, and what
+    // the caller reads of the crossing at that moment. A bare timeout taught nothing the one time it fired.
+    const timer = setTimeout(() => { unsub(); reject(new Error(`timeout: ${url} never became ready (states ${states.join(" → ")}; ${said()})`)); }, ms);
     const settle = (state: ReturnType<typeof progress.peek>): void => {
+      if (states[states.length - 1] !== state.state) states.push(state.state);
       if (state.state === "ready") { clearTimeout(timer); unsub(); resolve(state.handle); }
     };
     unsub = progress.subscribe(settle);
     settle(progress.peek());
+  });
+}
+
+/**
+ * Resolve once `repo` holds `peerId` as a connected peer: the DIAL'S OWN event (the network subsystem's `peer`,
+ * which the client adapter raises after the gate's verdict and the sync join), never a poll of the far gate.
+ * A gate that admitted a socket proves the far side; this proves the near side's synchronizer gained the peer.
+ */
+function awaitRepoPeer(repo: Repo, peerId: string, ms: number): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    const holds = (): boolean => repo.peers.includes(peerId as (typeof repo.peers)[number]);
+    const onPeer = (): void => { if (holds()) { clearTimeout(timer); repo.networkSubsystem.off("peer", onPeer); resolve(); } };
+    const timer = setTimeout(() => { repo.networkSubsystem.off("peer", onPeer); reject(new Error(`timeout: the dialing repo never gained peer ${peerId}`)); }, ms);
+    repo.networkSubsystem.on("peer", onPeer);   // the Repo's own listener, registered at its construction, adds the peer first
+    onPeer();
   });
 }
 
@@ -213,6 +232,8 @@ describe("B1 — the production client dial-out mounts onto a live Repo and cros
 
     // Wait for the dial to CROSS the gate before pulling — the operator's find rides an up socket.
     await awaitPeer(nodeB.gate, 6_000);
+    // ...and the DIALING repo holds B as a peer, by the dial's own event: the near half of the same crossing.
+    await awaitRepoPeer(nodeA.repo, nodeB.repo.peerId, 6_000);
 
     // B → A: the dialing node finds + syncs B's doc.
     //
@@ -222,7 +243,8 @@ describe("B1 — the production client dial-out mounts onto a live Repo and cros
     // settles to `unavailable` and REJECTS — the instrument-lie the operator named: the doc reads GONE
     // while it is still arriving. `findWhenReady` observes that transient blink and waits out the true
     // `ready` instead (see its doc-comment for the mechanism + the two refuted cures it supersedes).
-    const foundOnA = await findWhenReady<GreetDoc>(nodeA.repo, docB.url as AutomergeUrl, 8_000);
+    const foundOnA = await findWhenReady<GreetDoc>(nodeA.repo, docB.url as AutomergeUrl, 8_000,
+      () => `A's peers ${JSON.stringify(nodeA.repo.peers)}, B's admitted sockets ${nodeB.gate.clients.size}, dial anergized ${String(dial.adapter.anergized)}`);
     await awaitKey(foundOnA, GREETING_KEY, 5_000, "node A never synced node B's doc");
     expect(foundOnA.doc()?.tiddlers?.[GREETING_KEY]?.text).toBe("the DreamNet breathes");
 
