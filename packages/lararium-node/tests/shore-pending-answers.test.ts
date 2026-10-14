@@ -154,12 +154,12 @@ describe("the shore verb answers pending removals", () => {
     const s = await vanished();
     await answerShore(s.projector, { op: "sense" });
     expect(await answerShore(s.projector, { op: "restore", all: true, count: 4 })).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
-    expect(await answerShore(s.projector, { op: "restore", uris: [X] })).toEqual({ ok: true, op: "restore", bag: OTHER, done: [X], left: [] });
+    expect(await answerShore(s.projector, { op: "restore", uris: [X] })).toEqual({ ok: true, op: "restore", bag: OTHER, done: [X], doneCount: 1, left: [], leftCount: 0 });
     expect(readFileSync(s.file(X), "utf-8")).toBe(RENDER(X));
     // With one bag left pending, `all` reads that bag, under the count that stands there.
     expect(await answerShore(s.projector, { op: "remove", all: true, count: 2 })).toMatchObject({ ok: false, refusal: "pending-count-moved", count: 3 });
     expect(s.removed).toEqual([]);
-    expect(await answerShore(s.projector, { op: "remove", uris: [A] })).toEqual({ ok: true, op: "remove", bag: BAG, done: [A], left: [] });
+    expect(await answerShore(s.projector, { op: "remove", uris: [A] })).toEqual({ ok: true, op: "remove", bag: BAG, done: [A], doneCount: 1, left: [], leftCount: 0 });
     expect(s.removed).toEqual([A]);
     expect(existsSync(s.file(A))).toBe(false);
     expect(await answerShore(s.projector, { op: "remove", all: true, count: 2 })).toMatchObject({ ok: true, done: [B, C] });

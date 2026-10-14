@@ -35,7 +35,7 @@ function standing(name: string, body: string, uri: string): { path: string; deps
   const waves: SubmitIngestOpts[] = [];
   const ask = async (): Promise<ShoreAnswer> => ({
     ok: true, refusal: null, why: null,
-    output: { ok: true, standoffs: [{ bagId: BAG, uri, standoff: KEY, kind: "sides", reason: "r", path, disk: carrierHash(body), records: "sha256:" + "0".repeat(64) }], standoffCount: 1 },
+    output: { ok: true, standoffs: [{ bagId: BAG, uri, standoff: KEY, kind: "sides", reason: "r", path, disk: carrierHash(body), records: "sha256:" + "0".repeat(64) }], standoffCount: 1, pending: [], pendingCount: 0, mark: "one-shore", next: null },
   });
   return { path, waves, deps: (submit) => ({ ask, tree: new SyncedTree(join(tmp, "synced")), root: tmp, did: "did:test", submit: async (o) => { waves.push(o); return submit!(o); } }) };
 }

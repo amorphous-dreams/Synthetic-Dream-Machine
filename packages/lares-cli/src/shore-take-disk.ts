@@ -26,7 +26,7 @@ import type { SyncedTree } from "@lararium/node";
 import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 import { scanFiles, settleIngest, submitIngest, type ScanRow, type SubmitIngestOpts } from "./ingest-core.js";
-import type { ShoreAnswer } from "./shore-core.js";
+import { readShoreList, type ShoreAnswer } from "./shore-core.js";
 import type { SubmitResult } from "./verb-result.js";
 
 export interface TakeDiskRequest {
@@ -56,11 +56,10 @@ const text = (v: unknown): string | null => (typeof v === "string" && v !== "" ?
 
 export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promise<TakeDiskResult> {
   const { uri, key } = req;
-  // 1 — the key, against what stands after a fresh look at the disk.
-  const listed = await deps.ask({ op: "list", uris: [uri], ...(req.bag !== undefined ? { bag: req.bag } : {}) });
+  // 1 — the key, against what stands after a fresh look at the disk, read across every page the list answers.
+  const listed = await readShoreList(deps.ask, { uris: [uri], ...(req.bag !== undefined ? { bag: req.bag } : {}) });
   if (!listed.ok) return { ok: false, refusal: listed.refusal ?? "verb-error", why: listed.why ?? "the island refused", ...(listed.requestId !== undefined ? { requestId: listed.requestId } : {}) };
-  const rows = Array.isArray(listed.output["standoffs"]) ? (listed.output["standoffs"] as Array<Record<string, unknown>>) : [];
-  const stands = rows.filter((s) => s["uri"] === uri);
+  const stands = listed.standoffs.filter((s) => s["uri"] === uri);
   if (stands.length === 0) return { ok: false, refusal: "no-standoff-stands", why: `no standoff stands for ${uri} at this island's shore` };
   const named = stands.find((s) => s["standoff"] === key);
   if (named === undefined) {

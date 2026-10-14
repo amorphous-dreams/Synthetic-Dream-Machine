@@ -18,7 +18,8 @@
  *     tombstones its records. `restore` writes the file back from the records; `remove` deletes the
  *     carrier in the wiki, where the wiki shore lands the tombstone.
  *
- * `list` looks at the disk first, so what it shows stands true to the bytes at that instant. An answer
+ * `list` looks at the disk first, so what it shows stands true to the bytes at that instant, and it reads
+ * every page the island answers, so a list of any length names every row. An answer
  * names the state its giver read: a standoff's key, and for more than one pending removal the count. Where
  * that state moved, the island refuses by name and nothing changes.
  *
@@ -32,7 +33,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
 import { verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
-import { askShore, type ShoreAnswer } from "../shore-core.js";
+import { askShore, readShoreList, type ShoreAnswer } from "../shore-core.js";
 import { takeDisk } from "../shore-take-disk.js";
 import { openSyncedTree } from "../ingest-core.js";
 import { larRoot } from "../env.js";
@@ -151,6 +152,50 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     return 0;
   }
 
+  // LIST reads every page the island answers (`readShoreList`), so a mass vanish of any size lists whole.
+  if (act === "list") {
+    let listed: Awaited<ReturnType<typeof readShoreList>>;
+    try {
+      listed = await readShoreList((a) => askShore(a, did), shaped.args);
+    } catch (err) {
+      const f = verbFailure(err);
+      emit(args, {
+        ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+        error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+        human: () => { console.error(`lares shore: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+      });
+      return exitFor(f.code);
+    }
+    if (!listed.ok) {
+      const refused = listed;
+      emit(args, {
+        ok: false, ...(refused.requestId !== undefined ? { requestId: refused.requestId } : {}),
+        error: { code: refused.refusal ?? "verb-error", message: refused.why ?? "the island refused" },
+        human: () => console.error(`lares shore list: ${refused.refusal}: ${refused.why}`),
+      });
+      return exitFor("verb-error");
+    }
+    const { standoffs, pending } = listed;
+    emit(args, {
+      ok: true, ...(listed.requestId !== undefined ? { requestId: listed.requestId } : {}),
+      data: { op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length },
+      human: () => {
+        if (standoffs.length === 0 && pending.length === 0) { console.log("the disk shore holds nothing for a hand"); return; }
+        if (standoffs.length > 0) {
+          console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
+          for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
+          console.log("  settle one under its key: `lares shore take-disk <uri> --key <key>` lands the file's words · `lares shore take-records <uri> --key <key>` writes the records' render · or save in the wiki until both say the same");
+        }
+        if (pending.length > 0) {
+          console.log(`${pending.length} pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones`);
+          for (const p of pending) console.log(`  ${String(p["uri"])}  bag ${String(p["bagId"])}  ${String(p["path"])}`);
+          console.log(`  answer: \`lares shore restore <uri>\` · \`lares shore remove <uri>\` · over all: \`--all --count <n>\` with the count one bag holds (and --bag where more than one bag stands pending)`);
+        }
+      },
+    });
+    return 0;
+  }
+
   let answer: ShoreAnswer;
   try {
     answer = await askShore(shaped.args, did);
@@ -178,39 +223,27 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     ok: true, ...(answer.requestId !== undefined ? { requestId: answer.requestId } : {}),
     data: answer.output,
     human: () => {
-      const rows = (name: string): Array<Record<string, unknown>> => (Array.isArray(answer.output[name]) ? (answer.output[name] as Array<Record<string, unknown>>) : []);
-      if (act === "list") {
-        const standoffs = rows("standoffs");
-        const pending = rows("pending");
-        // THE COUNTS NAME EVERY ROW. Past the outcome's row cap the rows themselves stay behind, and a
-        // list that printed "nothing" over them would state a thing nobody measured.
-        const counted = (name: string, held: number): number => (typeof answer.output[name] === "number" ? (answer.output[name] as number) : held);
-        const standoffCount = counted("standoffCount", standoffs.length);
-        const pendingCount = counted("pendingCount", pending.length);
-        if (standoffCount === 0 && pendingCount === 0) { console.log("the disk shore holds nothing for a hand"); return; }
-        if (standoffCount > standoffs.length) console.log(`${standoffCount} standoff(s) stand, more than one answer names: read one bag with --bag`);
-        if (pendingCount > pending.length) console.log(`${pendingCount} pending removal(s) stand, more than one answer names: read one bag with --bag, or answer over all with \`--all --count ${pendingCount}\``);
-        if (standoffs.length > 0) {
-          console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
-          for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
-          console.log("  settle one under its key: `lares shore take-disk <uri> --key <key>` lands the file's words · `lares shore take-records <uri> --key <key>` writes the records' render · or save in the wiki until both say the same");
-        }
-        if (pending.length > 0) {
-          console.log(`${pending.length} pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones`);
-          for (const p of pending) console.log(`  ${String(p["uri"])}  bag ${String(p["bagId"])}  ${String(p["path"])}`);
-          console.log(`  answer: \`lares shore restore <uri>\` · \`lares shore remove <uri>\` · over all: \`--all --count ${pending.length}\` (with --bag where more than one bag stands pending)`);
-        }
-        return;
-      }
       if (act === "take-records") { console.log(`took the records' side: ${String(answer.output["uri"])} (${String(answer.output["bag"])})`); return; }
-      const done = Array.isArray(answer.output["done"]) ? (answer.output["done"] as string[]) : [];
-      const left = Array.isArray(answer.output["left"]) ? (answer.output["left"] as string[]) : [];
-      console.log(`${act === "restore" ? "restored" : "removed"} ${done.length} carrier(s) (${String(answer.output["bag"])})`);
-      for (const uri of done) console.log(`  ${uri}`);
-      for (const uri of left) console.error(`  ⚠ still pending: ${uri}`);
+      const reached = answeredRows(answer.output);
+      console.log(`${act === "restore" ? "restored" : "removed"} ${reached.doneCount} carrier(s) (${String(answer.output["bag"])})`);
+      for (const uri of reached.done) console.log(`  ${uri}`);
+      if (reached.done.length < reached.doneCount) console.log(`  (the answer named ${reached.done.length} of them)`);
+      for (const uri of reached.left) console.error(`  ⚠ still pending: ${uri}`);
+      if (reached.left.length < reached.leftCount) console.error(`  ⚠ ${reached.leftCount} carrier(s) still pending in all: \`lares shore\` names each`);
     },
   });
   // An answer that left a carrier pending did not take everything it named.
-  const left = Array.isArray(answer.output["left"]) ? (answer.output["left"] as unknown[]) : [];
-  return left.length > 0 ? exitFor("verb-error") : 0;
+  return answeredRows(answer.output).leftCount > 0 ? exitFor("verb-error") : 0;
+}
+
+/**
+ * The carriers an answer over pending removals reached and left. Past the outcome's row cap the rows stay
+ * behind, so the counts the island answered decide; a count that stays absent reads as the rows it holds.
+ */
+export function answeredRows(output: Readonly<Record<string, unknown>>): { done: string[]; doneCount: number; left: string[]; leftCount: number } {
+  const rows = (name: string): string[] => (Array.isArray(output[name]) ? (output[name] as string[]) : []);
+  const counted = (name: string, held: number): number => (typeof output[name] === "number" ? (output[name] as number) : held);
+  const done = rows("done");
+  const left = rows("left");
+  return { done, doneCount: counted("doneCount", done.length), left, leftCount: counted("leftCount", left.length) };
 }
