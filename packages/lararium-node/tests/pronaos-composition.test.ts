@@ -27,7 +27,7 @@ function fixture(): { web: string; genesis: string; cid: string } {
   writeFileSync(join(web, "manifest.webmanifest"), '{"name":"Pronaos"}');
   writeFileSync(join(web, "assets/wiki.worker-def.js"), "self.postMessage('worker')");
   const seed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "composition-actor", schemaVersion: "1",
+    format: "lararium-genesis-seed/v1", actorSeed: "composition-actor",
     blobs: { fixture: { id: "fixture", version: "1", sha256: cid, mimeType: "application/octet-stream" } },
     tiddlers: {
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "engine-region" } },

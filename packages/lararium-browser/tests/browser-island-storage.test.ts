@@ -3,7 +3,6 @@ import { browserIslandStorage } from "../src/browser-sovereign-island-model.js";
 import type { IslandMsg_Manifest } from "@lararium/mesh";
 
 const manifest = (patch: Partial<IslandMsg_Manifest> = {}): IslandMsg_Manifest => ({
-  schema_version: 1,
   type: "manifest",
   wikiUri: "lar:///ha.ka.ba/browser-storage-regression",
   coreHash: null,

@@ -20,7 +20,7 @@ let wikiUri = null;
 let frameCount = 0;
 
 parentPort.on("message", (msg) => {
-  if (typeof msg !== "object" || msg === null || msg.schema_version !== 1) return;
+  if (typeof msg !== "object" || msg === null) return;
 
   if (msg.type === "manifest") {
     wikiUri = msg.wikiUri;
@@ -36,7 +36,6 @@ parentPort.on("message", (msg) => {
         void handle.whenReady().then(() => {
           // Signal that the change listener is now live — tests await this before mutating.
           parentPort.postMessage({
-            schema_version: 1,
             type: "event",
             wikiUri,
             listenable: "repo:synced",
@@ -48,7 +47,6 @@ parentPort.on("message", (msg) => {
 
             // Observable event: surfaces via onWorkerEvent.
             parentPort.postMessage({
-              schema_version: 1,
               type: "event",
               wikiUri,
               listenable: "repo:change",
@@ -71,12 +69,12 @@ parentPort.on("message", (msg) => {
       }
     }
 
-    parentPort.postMessage({ schema_version: 1, type: "ea", wikiUri });
+    parentPort.postMessage({ type: "ea", wikiUri });
     return;
   }
 
   if (msg.type === "teardown" || msg.type === "hooanu") {
-    parentPort.postMessage({ schema_version: 1, type: "teardown:ack" });
+    parentPort.postMessage({ type: "teardown:ack" });
     wikiUri = null;
     return;
   }

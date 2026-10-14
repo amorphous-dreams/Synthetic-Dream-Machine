@@ -8,11 +8,11 @@ let primary = null;
 let owned = null;
 let wikiUri = "";
 
-const emit = (payload) => self.postMessage({ schema_version: 1, type: "event", wikiUri, listenable: "dvr:browser", payload });
+const emit = (payload) => self.postMessage({ type: "event", wikiUri, listenable: "dvr:browser", payload });
 
 self.addEventListener("message", (event) => {
   const msg = event.data;
-  if (!msg || msg.schema_version !== 1) return;
+  if (!msg) return;
   if (msg.type === "manifest") {
     wikiUri = msg.wikiUri;
     primary = new Repo({ network: [new MessageChannelNetworkAdapter(msg.syncPort)], sharePolicy: async () => true });
@@ -34,12 +34,12 @@ self.addEventListener("message", (event) => {
       await primary.flush();
       await owned.flush();
       emit({ pinnedUrl: daemon.url, ordinaryUrl: ordinary.url, ordinaryOwnedRefused, ordinaryPresent: Boolean(ordinary.doc()?.tiddlers?.[O_MARK]) });
-      self.postMessage({ schema_version: 1, type: "ea", wikiUri });
-    })().catch((error) => self.postMessage({ schema_version: 1, type: "fault", wikiUri, error: String(error) }));
+      self.postMessage({ type: "ea", wikiUri });
+    })().catch((error) => self.postMessage({ type: "fault", wikiUri, error: String(error) }));
     return;
   }
   if (msg.type === "teardown") {
-    void (async () => { await primary?.flush(); await owned?.flush(); self.postMessage({ schema_version: 1, type: "teardown:ack" }); })();
+    void (async () => { await primary?.flush(); await owned?.flush(); self.postMessage({ type: "teardown:ack" }); })();
   }
 });
-self.postMessage({ schema_version: 1, type: "ready" });
+self.postMessage({ type: "ready" });

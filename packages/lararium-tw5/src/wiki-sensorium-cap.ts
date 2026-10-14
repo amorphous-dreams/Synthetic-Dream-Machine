@@ -233,7 +233,6 @@ function postFrame(
   ctx: IslandContext, verb: keyof typeof SENSORIUM_SIGNAL, requestId: string, result: unknown,
 ): void {
   ctx.post({
-    schema_version: 1,
     type: "event",
     wikiUri: ctx.wikiUri,
     listenable: SENSORIUM_FRAME,
@@ -247,7 +246,6 @@ function postErrorFrame(
   ctx: IslandContext, verb: keyof typeof SENSORIUM_SIGNAL, requestId: string, error: unknown,
 ): void {
   ctx.post({
-    schema_version: 1,
     type: "event",
     wikiUri: ctx.wikiUri,
     listenable: SENSORIUM_FRAME,

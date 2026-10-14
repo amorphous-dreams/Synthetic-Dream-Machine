@@ -11,7 +11,7 @@ import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { isIslandToVesselMsg, isVesselToIslandMsg, ISLAND_PROTOCOL_VERSION, type EdgeStanding } from "@lararium/mesh";
+import { isIslandToVesselMsg, isVesselToIslandMsg, type EdgeStanding } from "@lararium/mesh";
 import { vesselDyadAsker } from "../src/sovereign-island-model.js";
 import { answerDyadAsk, nodeWorkerHandle, setDyadDoor } from "../src/worker-handle.js";
 
@@ -42,7 +42,7 @@ function fakeWorker() {
 }
 
 const ask = (requestId: string, fleetRoot: unknown = "fleet", deviceKey: unknown = "device") => ({
-  schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:ask", requestId, fleetRoot, deviceKey,
+  type: "dyad:ask", requestId, fleetRoot, deviceKey,
 });
 
 afterEach(() => { setDyadDoor(null); vi.restoreAllMocks(); });
@@ -113,7 +113,7 @@ describe("the dyad door", () => {
 
   test("D5 — protocol guards accept only their dyad direction", () => {
     const dyadAsk = ask("ask-1");
-    const dyadRead = { schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:read", requestId: "read-1", standing: "clear" };
+    const dyadRead = { type: "dyad:read", requestId: "read-1", standing: "clear" };
     expect(isIslandToVesselMsg(dyadAsk)).toBe(true); // control: ask belongs to island → vessel
     expect(isVesselToIslandMsg(dyadRead)).toBe(true); // control: read belongs to vessel → island
     expect(isVesselToIslandMsg(dyadAsk)).toBe(false);

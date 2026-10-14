@@ -16,7 +16,7 @@ import {
   genesisCasManifestFromSeed,
   type GenesisSeed,
 } from "@lararium/mesh";
-import { readGenesisCasManifest, readGenesisSeed } from "../src/genesis-artifact.js";
+import { parseGenesisSeed, readGenesisCasManifest, readGenesisSeed } from "../src/genesis-artifact.js";
 
 const GENESIS_DIR = join(repoRoot, "genesis");
 
@@ -28,8 +28,18 @@ describe("production genesis bundle — seed + CAS", () => {
 
   test("altering seed data changes the deterministic witness", () => {
     const seed = JSON.parse(readFileSync(join(GENESIS_DIR, "seed.json"), "utf8")) as GenesisSeed;
-    const altered: GenesisSeed = { ...seed, schemaVersion: `${seed.schemaVersion}-altered` };
+    const altered: GenesisSeed = { ...seed, actorSeed: `${seed.actorSeed.slice(0, -2)}${seed.actorSeed.endsWith("00") ? "01" : "00"}` };
     expect(materializeGenesisDoc(altered)).not.toEqual(materializeGenesisDoc(seed));
+  });
+
+  test("RED: the production seed carries no version, and a seed that carries one reads as no seed", () => {
+    const bytes = readFileSync(join(GENESIS_DIR, "seed.json"));
+    const seed = JSON.parse(bytes.toString("utf8")) as Record<string, unknown>;
+    expect(Object.prototype.hasOwnProperty.call(seed, "schemaVersion")).toBe(false);
+    expect(parseGenesisSeed(new Uint8Array(bytes))).not.toBeNull();                       // CONTROL
+    const versioned = { ...seed, schemaVersion: "0.1" };
+    expect(parseGenesisSeed(new TextEncoder().encode(JSON.stringify(versioned)))).toBeNull();
+    expect(() => genesisCasManifestFromSeed(versioned as unknown as GenesisSeed)).toThrow(/carries a version/);
   });
 
   test("seed-derived CIDs match every immutable CAS member", () => {

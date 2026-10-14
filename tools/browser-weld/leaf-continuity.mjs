@@ -121,13 +121,13 @@ function instrumentBootSource(source) {
   if (body.includes("function runSovereignKernel") && body.includes("host.ready")) {
     body = body.replace(
       /host\.listen\(\(raw(?:\s*:\s*unknown)?\) => \{/,
-      (match) => `${match}\n    if (raw?.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-received", detail: JSON.stringify({ type: raw?.type ?? null, schema_version: raw?.schema_version ?? null }) }); } catch {} }`,
+      (match) => `${match}\n    if (raw?.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-received", detail: JSON.stringify({ type: raw?.type ?? null }) }); } catch {} }`,
     );
     body = body.replace(
       /if \(!isVesselToIslandMsg\(raw\)\) return;/,
       `const __laresC4Accepted = isVesselToIslandMsg(raw);
-    if (!__laresC4Accepted) { if (raw?.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-rejected", detail: JSON.stringify({ type: raw?.type ?? null, schema_version: raw?.schema_version ?? null }) }); } catch {} } return; }
-    if (raw.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-accepted", detail: JSON.stringify({ type: raw.type, schema_version: raw.schema_version ?? null }) }); } catch {} }`,
+    if (!__laresC4Accepted) { if (raw?.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-rejected", detail: JSON.stringify({ type: raw?.type ?? null }) }); } catch {} } return; }
+    if (raw.type === "manifest") { try { self.postMessage({ __laresC4BootTrace: "worker:manifest-accepted", detail: JSON.stringify({ type: raw.type }) }); } catch {} }`,
     );
     body = body.replace(
       /const breathe = \(\) => \{/,
@@ -242,7 +242,7 @@ function instrumentBootSource(source) {
       /if\s*\(!isIslandToVesselMsg\(raw\)\)\s*return;/,
       `const __laresC4Watched = raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault");
       const __laresC4Guard = isIslandToVesselMsg(raw);
-      if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-raw " + JSON.stringify({ type: raw.type, schema_version: raw.schema_version ?? null, guard: __laresC4Guard, expected: opts.expectedType }));
+      if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-raw " + JSON.stringify({ type: raw.type, guard: __laresC4Guard, expected: opts.expectedType }));
       if (!__laresC4Guard) { if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-guard-rejected"); return; }
       if (__laresC4Watched) console.log("[C4 boot] host:awaitIslandMsg-guard-accepted");`,
     );
@@ -288,7 +288,7 @@ function instrumentBootSource(source) {
       /const fn = \(e(?:: MessageEvent)?\)(?:: void)? => cb\(e\.data\);/,
       `const fn = (e) => {
         const raw = e.data;
-        if (raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault" || raw.type === "ready")) console.log("[C4 boot] host:worker-handle-dispatch " + JSON.stringify({ listen: __laresC4ListenId, type: raw.type, schema_version: raw.schema_version ?? null }));
+        if (raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault" || raw.type === "ready")) console.log("[C4 boot] host:worker-handle-dispatch " + JSON.stringify({ listen: __laresC4ListenId, type: raw.type }));
         cb(raw);
       };`,
     );
@@ -299,7 +299,7 @@ function instrumentBootSource(source) {
     body = body.replace(
       /subscribe:\s*\(h\) => worker\.listen\(h\),/,
       `subscribe:       (h) => worker.listen((raw) => {
-        if (raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault")) console.log("[C4 boot] host:daemon-workerEa-callback " + JSON.stringify({ type: raw.type, schema_version: raw.schema_version ?? null }));
+        if (raw && (raw.type === "ea" || raw.type === "breath" || raw.type === "fault")) console.log("[C4 boot] host:daemon-workerEa-callback " + JSON.stringify({ type: raw.type }));
         h(raw);
       }),`,
     );

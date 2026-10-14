@@ -67,7 +67,7 @@ test("the committed table names every seam the source holds, and no other", () =
 });
 
 test("CONTROL: the probe's handshake reads an answered ask and an unanswered one apart, with no clock", async () => {
-  const asks = asksOf(1);
+  const asks = asksOf();
   const dir = mkdtempSync(join(tmpdir(), "capability-probe-test-"));
   try {
     const url = pathToFileURL(join(dir, "probe.mjs"));

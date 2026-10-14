@@ -33,7 +33,6 @@ import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 const SHARED_GENESIS_SEED: GenesisSeed = {
   format: "lararium-genesis-seed/v1",
   actorSeed: "11".repeat(32),
-  schemaVersion: "0.1",
   blobs: {},
   tiddlers: {},
 };

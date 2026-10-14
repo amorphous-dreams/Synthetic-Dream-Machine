@@ -19,7 +19,7 @@ function fixture(): { web: string; genesis: string; cid: string } {
   writeFileSync(join(web, "assets/wiki.worker-def.js"), "worker");
   const blob = { id: "fixture", version: "1", sha256: cid, mimeType: "application/octet-stream" };
   writeFileSync(join(genesis, "seed.json"), JSON.stringify({
-    format: "lararium-genesis-seed/v1", actorSeed: "fixture-actor", schemaVersion: "1", blobs: { fixture: blob },
+    format: "lararium-genesis-seed/v1", actorSeed: "fixture-actor", blobs: { fixture: blob },
     tiddlers: {
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: regionCids.engine } },
       "lar:///ha.ka.ba/bags/oracle/genesis-cid-grammar": { tiddler: { cid: regionCids.grammar } },

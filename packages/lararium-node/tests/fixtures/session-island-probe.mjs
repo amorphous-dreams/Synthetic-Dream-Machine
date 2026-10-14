@@ -21,7 +21,7 @@ import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-
 let repo = null;
 let seen = null;
 const parked = new Map();
-const post = (msg) => parentPort.postMessage({ schema_version: 1, ...msg });
+const post = (msg) => parentPort.postMessage({ ...msg });
 
 async function find(url, ms = 1500) {
   const found = repo.find(url).then((h) => h, () => null);
@@ -35,7 +35,7 @@ const askView = (type, fields) => new Promise((resolve) => {
 });
 
 parentPort.on("message", async (msg) => {
-  if (typeof msg !== "object" || msg === null || msg.schema_version !== 1) return;
+  if (typeof msg !== "object" || msg === null) return;
 
   if (msg.type === "manifest") {
     seen = {

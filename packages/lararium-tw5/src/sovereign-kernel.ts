@@ -515,8 +515,10 @@ export function runSovereignKernel(
     _handles.clear();
     _composite = null;
     _ctx       = null;
-    try { _ownedRepo?.shutdown(); } catch { /* teardown remains best-effort after flush */ }
-    try { _repo?.shutdown(); } catch { /* teardown remains best-effort after flush */ }
+    // EACH REPO SHUTS DOWN BEFORE THE ACK. A shutdown closes the storage adapter, so a sync arrival after the
+    // flush starts no save the vessel's terminate could cut: a later save reads as late and lands no byte.
+    try { await _ownedRepo?.shutdown(); } catch { /* teardown remains best-effort after flush */ }
+    try { await _repo?.shutdown(); } catch { /* teardown remains best-effort after flush */ }
     _repo      = null;
     _ownedRepo = null;
 

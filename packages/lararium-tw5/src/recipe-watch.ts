@@ -94,7 +94,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
       handle = await findOrThrow(ctx.repo, docUrl, `bag ${bagId}`);
     } catch (err) {
       ctx.post({
-        schema_version: 1, type: "event", wikiUri: ctx.wikiUri,
+        type: "event", wikiUri: ctx.wikiUri,
         listenable: "recipe-watch:bag-unresolved",
         payload: { bagId, docUrl, reason: String(err) },
       });

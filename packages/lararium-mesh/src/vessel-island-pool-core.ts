@@ -58,7 +58,6 @@ import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.
 import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./surface-recipe.js";
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
-import { ISLAND_PROTOCOL_VERSION } from "./island-protocol.js";
 import type { IslandGrants, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
 
 // ── Slots — two-state thermal axis (wela/anu) + orthogonal pin flag ──────────
@@ -1033,7 +1032,7 @@ export class VesselIslandPoolCore {
         if (typeof ask.requestId !== "string") return;
         const answer = view ? view.catalog(ask.name) : null;
         worker.post({
-          schema_version: ISLAND_PROTOCOL_VERSION, type: "view:catalog-result", requestId: ask.requestId,
+          type: "view:catalog-result", requestId: ask.requestId,
           documentUrl: answer?.ok ? answer.documentUrl : null,
           ...(answer?.ok ? {} : { refusal: answer ? answer.refusal : "view-absent" }),
         });
@@ -1043,7 +1042,7 @@ export class VesselIslandPoolCore {
         const ask = raw as IslandMsg_ViewSettle;
         if (typeof ask.requestId !== "string") return;
         const answer = (settled: boolean): void => {
-          try { worker.post({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settled", requestId: ask.requestId, settled }); }
+          try { worker.post({ type: "view:settled", requestId: ask.requestId, settled }); }
           catch { /* the island went away: nothing to answer */ }
         };
         if (standing.settling) { answer(false); return; }
@@ -1063,7 +1062,7 @@ export class VesselIslandPoolCore {
         const ask = raw as IslandMsg_ViewContent;
         if (typeof ask.requestId !== "string") return;
         void this._answerContent(ask, view).then((answer) => {
-          try { worker.post({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:content-result", requestId: ask.requestId, ...answer }); }
+          try { worker.post({ type: "view:content-result", requestId: ask.requestId, ...answer }); }
           catch { /* the island went away: nothing to answer */ }
         });
         return;

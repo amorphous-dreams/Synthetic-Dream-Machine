@@ -65,7 +65,7 @@ function seedMinimalGenesis(): void {
   const genesisDir = join(root, "genesis");
   mkdirSync(genesisDir, { recursive: true });
   const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
     blobs: {},
     tiddlers: {
       [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },

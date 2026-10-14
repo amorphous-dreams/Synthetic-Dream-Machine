@@ -66,7 +66,7 @@ async function seatVessel(root: string): Promise<void> {
   at(root);
   mkdirSync(join(root, "genesis"), { recursive: true });
   const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
     blobs: {},
     tiddlers: {
       [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },

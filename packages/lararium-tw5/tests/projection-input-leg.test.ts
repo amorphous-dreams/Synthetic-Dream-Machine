@@ -10,7 +10,7 @@
 import { describe, test, expect, vi } from "vitest";
 import { patchFakeElementForEvents, dispatchProjectedInput, dispatchProjectedEvent } from "../src/tw5-projection.js";
 import { hasProjection } from "../src/has-island-watches.js";
-import { mkWikiDomInput, mkWikiDomEvent, DOM_INPUT_MAX_CHARS, ISLAND_PROTOCOL_VERSION } from "@lararium/mesh";
+import { mkWikiDomInput, mkWikiDomEvent, DOM_INPUT_MAX_CHARS } from "@lararium/mesh";
 import type { IslandContext } from "../src/island-context.js";
 
 /** The two members the patch reads off a fakedom element: an attribute bag and a setter. */
@@ -95,7 +95,7 @@ describe("the projection cap's door", () => {
     const n = boundNode("input");
     // Hand-built, bypassing mkWikiDomInput's throw: this stands in for a sender that never called it.
     const forged = {
-      schema_version: ISLAND_PROTOCOL_VERSION, type: "wiki:dom-input",
+      type: "wiki:dom-input",
       renderId: n.rid, eventType: "input", value: "x".repeat(DOM_INPUT_MAX_CHARS + 1),
     };
     expect(cap.onSignal!("wiki:dom-input", forged, ctx)).toBe(true);   // claimed — it falls to no other cap

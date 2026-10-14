@@ -213,7 +213,6 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
           // bridge, no URI-prefix allowlist). The structured args ride
           // the GP-2-flat island wire as ONE `verb-args` JSON string; main re-parses.
           post({
-            schema_version: 1,
             type:           "event",
             wikiUri:        ctx.wikiUri,
             listenable,

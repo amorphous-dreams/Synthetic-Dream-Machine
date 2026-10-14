@@ -17,7 +17,7 @@ const ROOT = mkdtempSync(join(tmpdir(), "lr-cas-read-"));
 const CAS  = join(ROOT, "cas");
 const cidOf = (s: string): string => createHash("sha256").update(Buffer.from(s, "utf8")).digest("hex");
 const seedFor = (cid: string): object => ({
-  format: "lararium-genesis-seed/v1", actorSeed: "actor", schemaVersion: "1",
+  format: "lararium-genesis-seed/v1", actorSeed: "actor",
   blobs: { tiddlywikicore: { id: "tiddlywikicore", sha256: cid, mimeType: "application/javascript", version: "1" } },
   tiddlers: {
     "lar:///ha.ka.ba/bags/oracle/genesis-cid-engine": { tiddler: { cid: "e" } },

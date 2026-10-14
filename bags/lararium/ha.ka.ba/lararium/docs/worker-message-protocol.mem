@@ -63,11 +63,11 @@ This meme lifts that protocol out of the alignment-architecture doctrine so oper
 
 The envelope's source of truth: `packages/lararium-mesh/src/island-protocol.ts`.
 
-''GP-1 — Schema-versioned envelope.'' Every message MUST carry `schema_version` and a `type` discriminant; its other fields ride flat beside them, each message type naming its own:
+''GP-1 — A typed envelope.'' Every message MUST carry a `type` discriminant; its other fields ride flat beside it, each message type naming its own:
 ```json
-{ "schema_version": 1, "type": "<message-type>", "...": "the type's own fields" }
+{ "type": "<message-type>", "...": "the type's own fields" }
 ```
-No naked payloads. `ISLAND_PROTOCOL_VERSION` stands locked at `1`, and both type guards refuse any other value. ''Owed'': the island `schema_version` drops its counter with the engine fold (`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`, SUBSTRATE, R-ENGINE); until that lands, every message carries the `1`.
+No naked payloads, and no version counter: a vessel and its islands run one build, so a frame shape changes once, everywhere, in one commit, and both type guards refuse a frame that names no type.
 
 ''GP-2 — Plain-object payloads only.'' No class instances, functions, or DOM. An `event` payload carries only `string | number | boolean` values; a relayed DOM event carries an explicit allowlist of `number | boolean` fields; relayed text rides its own message under one named field and one bound (`DOM_INPUT_MAX_CHARS`). All engine-side class wrappers stay Worker-local. One transferable rides the manifest: the `syncPort`.
 
@@ -75,7 +75,7 @@ No naked payloads. `ISLAND_PROTOCOL_VERSION` stands locked at `1`, and both type
 
 ''GP-4 — Key material stays in-thread.'' No `CryptoKey` and no raw key bytes appear on this protocol surface. A proof or a verdict crosses (`daemon:verify-request`, `daemon:verify-result`); a key does not.
 
-''GP-5 — Teardown handshake.'' On eviction the vessel sends `{ schema_version: 1, type: "teardown" }`. The island completes in-flight reactions, cancels all live handles, and replies `{ schema_version: 1, type: "teardown:ack" }`. The vessel then terminates the worker. The vessel MUST also close its end of the sync channel (`mainPort.close()`) in the teardown path; a port left open leaks the network adapter silently.
+''GP-5 — Teardown handshake.'' On eviction the vessel sends `{ type: "teardown" }`. The island completes in-flight reactions, cancels all live handles, and replies `{ type: "teardown:ack" }` once each Repo it holds has shut down and closed its storage. The vessel then terminates the worker. The vessel MUST also close its end of the sync channel (`mainPort.close()`) in the teardown path; a port left open leaks the network adapter silently.
 
 ''GP-6 — No direct Worker-to-Worker messages.'' Islands never message each other. An island emits an `event` to the vessel, which routes it; shared state crosses between islands as CRDT sync through each island's own port.
 
@@ -137,6 +137,6 @@ A browser camera renders inside the island and crosses the boundary twice. ''Out
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;78e8rvxcUh3IjHUvw4YwX05G-T0mVevTNvxCn1tfPmk
+<<^ code="&#x0003;">>ni:///sha-256;F7ya7gusTtfGEnXqGKqqr6QMlbzxBc7xooBwVZ-1Prc
 
 <<^ code="&#x0004;" -> to="?">>

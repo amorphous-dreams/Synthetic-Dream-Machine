@@ -38,6 +38,15 @@ describe("genesis seed/CAS manifest coherence", () => {
     expect(genesisCasManifestFromSeed(mutatedOracle)).toEqual(artifact.casManifest);
   });
 
+  it("RED: a built seed carries no version, and a seed that carries one derives nothing", () => {
+    const artifact = buildGenesisDoc(inputs());
+    expect(Object.prototype.hasOwnProperty.call(artifact.seed, "schemaVersion")).toBe(false);
+    const versioned = { ...artifact.seed, schemaVersion: "0.1" } as unknown as GenesisSeed;
+    expect(() => genesisCasManifestFromSeed(versioned)).toThrow(/carries a version/);
+    expect(() => validateGenesisBundleCoherence(versioned, artifact.casManifest)).toThrow(/carries a version/);
+    expect(() => validateGenesisBundleCoherence(artifact.seed, artifact.casManifest)).not.toThrow();   // CONTROL
+  });
+
   it("refuses malformed seed inventory instead of widening or emptying it", () => {
     const artifact = buildGenesisDoc(inputs());
     const [id, original] = Object.entries(artifact.seed.blobs)[0]!;

@@ -24,7 +24,6 @@
  */
 
 import {
-  ISLAND_PROTOCOL_VERSION,
   type EdgeStanding,
   type IslandMsg_DyadAsk,
   type IslandMsg_DyadRead,
@@ -67,7 +66,7 @@ export function browserDyadAsker(
       resolve(standing);
     });
     const ask: IslandMsg_DyadAsk = {
-      schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:ask", requestId, fleetRoot, deviceKey,
+      type: "dyad:ask", requestId, fleetRoot, deviceKey,
     };
     try { scope.postMessage(ask); }
     catch {
@@ -85,7 +84,7 @@ export async function answerBrowserDyadAsk(
   door: BrowserDyadDoor | null,
   ask: Pick<IslandMsg_DyadAsk, "requestId" | "fleetRoot" | "deviceKey">,
 ): Promise<IslandMsg_DyadRead> {
-  const base = { schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:read" as const, requestId: ask.requestId };
+  const base = { type: "dyad:read" as const, requestId: ask.requestId };
   if (typeof ask.fleetRoot !== "string" || typeof ask.deviceKey !== "string") return { ...base, standing: "aside" };
   if (!door) return { ...base, standing: "aside" };
   try {
@@ -123,7 +122,7 @@ export function refuseBrowserDyadAsks(handle: Pick<VesselWorkerHandle, "post" | 
       console.warn("[vessel-door] DyadDoorRefused: a wiki island asked the dyad door; only the daemon island reaches it. The ask refused and nothing ran.");
     }
     const reply: IslandMsg_DyadRead = {
-      schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:read", requestId: message.requestId, standing: "aside",
+      type: "dyad:read", requestId: message.requestId, standing: "aside",
     };
     try { handle.post(reply); } catch { /* the worker went away */ }
   });

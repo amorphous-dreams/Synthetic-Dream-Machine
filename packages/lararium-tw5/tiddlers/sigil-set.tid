@@ -7,9 +7,10 @@ lar-example: <<~ set hud="aim" mode="build" aperture="9/measure" ooda-ha="closed
 type: text/vnd.tiddlywiki
 
 <!-- set — the TURN FRAME, gathered. Every gauge that stands alone mid-stream also rides here as a
-     KEY: two grips, one handle. `hud` names which end of the turn the panel closes over — the
-     ward rides LAST at aim and FIRST at yield, one chiasmus — and a key left blank writes
-     nothing, so an absent instrument reads absent rather than empty. (operator ruling: `focus` →
+     KEY: two grips, one handle. `hud` names which end of the turn the panel closes over. A writer
+     places the ward LAST at aim and FIRST at yield, one chiasmus in the WRITTEN sigil; this
+     procedure renders its keys in one fixed order at either end and mirrors nothing. A key left
+     blank writes nothing, so an absent instrument reads absent rather than empty. (operator ruling: `focus` →
      `aperture`, `feedback` → `ooda-ha`; retired spellings stay readable by the HARVESTER, not here.) -->
 
 \procedure ~set(hud:"" mode:"" mood:"" mu:"" stance:"" aperture:"" ooda-ha:"" drift-ward:"" note:"")

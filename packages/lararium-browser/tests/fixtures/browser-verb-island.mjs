@@ -38,7 +38,6 @@ function emitVerbEvents(doc) {
       if (f.startsWith("arg-")) args[f.slice(4)] = v;
     }
     self.postMessage({
-      schema_version: 1,
       type: "event",
       wikiUri,
       listenable: typeof fields.listenable === "string" ? fields.listenable : "",
@@ -49,13 +48,13 @@ function emitVerbEvents(doc) {
 
 self.addEventListener("message", (e) => {
   const msg = e.data;
-  if (typeof msg !== "object" || msg === null || msg.schema_version !== 1) return;
+  if (typeof msg !== "object" || msg === null) return;
 
   if (msg.type === "manifest") {
     wikiUri = msg.wikiUri;
     const syncPort = msg.syncPort;
     if (!syncPort) {
-      self.postMessage({ schema_version: 1, type: "fault", wikiUri, error: "manifest missing syncPort" });
+      self.postMessage({ type: "fault", wikiUri, error: "manifest missing syncPort" });
       return;
     }
 
@@ -76,16 +75,16 @@ self.addEventListener("message", (e) => {
       });
     }
 
-    self.postMessage({ schema_version: 1, type: "ea", wikiUri });
+    self.postMessage({ type: "ea", wikiUri });
     return;
   }
 
   if (msg.type === "teardown" || msg.type === "hooanu") {
-    self.postMessage({ schema_version: 1, type: "teardown:ack" });
+    self.postMessage({ type: "teardown:ack" });
     wikiUri = "";
     return;
   }
 });
 
 // Inversion of control: listener registered; vessel may now send manifest.
-self.postMessage({ schema_version: 1, type: "ready" });
+self.postMessage({ type: "ready" });

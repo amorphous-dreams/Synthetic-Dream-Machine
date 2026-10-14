@@ -22,7 +22,6 @@ parentPort.on("message", (msg) => {
     if (mode === "stall") {
       setInterval(() => {
         parentPort.postMessage({
-          schema_version: 1,
           type:     "breath",
           wikiUri:  msg.wikiUri,
           phase:    "slots",
@@ -34,6 +33,6 @@ parentPort.on("message", (msg) => {
   }
 
   if (msg.type === "teardown" || msg.type === "hooanu") {
-    parentPort.postMessage({ schema_version: 1, type: "teardown:ack" });
+    parentPort.postMessage({ type: "teardown:ack" });
   }
 });

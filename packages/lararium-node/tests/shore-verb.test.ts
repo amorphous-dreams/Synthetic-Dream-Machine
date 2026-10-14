@@ -97,7 +97,7 @@ describe("the shore verb answers from the projector", () => {
 
 describe("the island's shore door", () => {
   const place = (verb: string, args: Record<string, unknown>, requestId?: string) =>
-    ({ schema_version: 1, type: "wiki:place-verb", verb, args, requestedBy: "did:test", ...(requestId ? { requestId } : {}) });
+    ({ type: "wiki:place-verb", verb, args, requestedBy: "did:test", ...(requestId ? { requestId } : {}) });
 
   test("claims the shore verb and posts the projector's answer under the request's id", async () => {
     const s = await stand();

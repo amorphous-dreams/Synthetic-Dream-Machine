@@ -117,7 +117,7 @@ describe("oracle causal pointer", () => {
 // ── The public floor: only the genesis-named rows cross, at their live values, with no history ──
 
 const FLOOR_SEED = {
-  format: "lararium-genesis-seed/v1", actorSeed: "ab".repeat(16), schemaVersion: "0.1",
+  format: "lararium-genesis-seed/v1", actorSeed: "ab".repeat(16),
   blobs: { "lar:///core": { id: "core", version: "1", sha256: "c".repeat(64), mimeType: "application/javascript" } },
   tiddlers: { "lar:///seeded": { tiddler: { title: "lar:///seeded", text: "seed value" } } },
 } as unknown as GenesisSeed;

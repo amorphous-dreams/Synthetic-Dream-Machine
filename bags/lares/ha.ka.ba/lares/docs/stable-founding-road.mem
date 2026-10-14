@@ -388,7 +388,6 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 
 !!! SUBSTRATE (its state reads in #/the-road's own block)
 * `S2` The fold's live proof on the rebuilt image, with a pushed shard run reading green. S.
-* `S3` The seed carries `schemaVersion` (`genesis/seed.json`) and the island message carries its counter (`island-protocol.ts`); both leave in the one genesis re-bake. House. K.
 * `S7` Standing leans the seal met, kept as built unless the operator overturns one: an unlock mints a fresh Keyhive document for a binding whose floor-minted document died; one contact card per stand; the browser's creator veil stays unwired; a browser founded before the Keyhive move refuses to boot. Answered by rule and still open: a resumed face founding mints a new group; a founding stopped before its anchors re-founds with a fresh veil.
 
 !!! HARBOR
@@ -661,7 +660,6 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 * ''The code lane.'' False source comments (`G6` of #/the-loops); callers that still mount a layer default-writable (`operator-daemon-behavior.ts`, `daemon-vm-core.ts`); mesh tests that sit outside the type-check.
 * ''The Harbor tail'': train A.
 * ''Early starts beside the chain'': the node, CLI and tool fixtures funnel of train K.
-* ''The small sweep.'' The memetic-wikitext plugin still ships `$:/config/ResilientRender`, a flag nothing reads; retiring it rebuilds the plugin and takes a labelled genesis re-bake. Two e2e files read the first `gate key:` line of a log (`tests/e2e/meme-realm-bag.test.ts`, `tests/e2e/arrival-surfaces.e2e.test.ts`), and the `awaitRendezvous` docblock in `tests/harness/instance.ts` describes an earlier boot order. Three source comments name a carrier that left (`packages/lararium-keyhive/src/face-grant-record.ts`, `packages/lararium-keyhive/tests/archive-floor-write.test.ts`, `tests/e2e/meme-realm-bag.test.ts`); its law rests at <<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>. Five `Meme:` headers and two package notes name the shift ledger, which left (`packages/lares-cli/src/commands/watch.ts`, `commands/ingest.ts`, `packages/lares-cli/src/ingest-core.ts`, `packages/lararium-tw5/src/delete-gate.ts`, `packages/lararium-node/tests/ingest-verb.test.ts`, `packages/SPRINT-01-GENESIS-MESH.md`, `packages/.shelf/HANDOFF.md`); its procedures rest at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/working-procedures">>.
 * ''Band-ladder residue'': one five-band ladder, the measure-servo aliases in `ffz-project.ts`, the `lar_feedback` output field name. It rides the Sensorium's wait, and a frame inside it may heal at any time.
 * ''The capture lane's era ruling'': #/open.
 * ''Sealed-store step 3'': sealed Repo storage values, hydration checked against the session's face, and the fresh base a from-now admission needs. It waits on a production session signer (the wire cutover's caller) and on ONE FACE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
@@ -764,6 +762,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TTjhYTTTr_BttQ0vZplNGpij5OFUFd6YqPdNN_fKckk
+<<^ code="&#x0003;">>ni:///sha-256;A9VH0YdsvO7MCDKxZcKx0VVhon9NqQNhpztqmNw4aEc
 
 <<^ code="&#x0004;" -> to="?">>

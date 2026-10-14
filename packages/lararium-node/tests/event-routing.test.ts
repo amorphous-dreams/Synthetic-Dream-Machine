@@ -137,7 +137,6 @@ describe("M.2 event-routing — M.1 subscription handler unit", () => {
 
     // Verb-carrying event
     handleWorkerEvent({
-      schema_version: 1,
       type: "event",
       wikiUri: WIKI_ID,
       listenable: "OnActivated",
@@ -146,7 +145,6 @@ describe("M.2 event-routing — M.1 subscription handler unit", () => {
 
     // Observation-only event (no verb) — should not place
     handleWorkerEvent({
-      schema_version: 1,
       type: "event",
       wikiUri: WIKI_ID,
       listenable: "OnScoreChanged",
@@ -171,11 +169,11 @@ describe("M.2 event-routing — M.1 subscription handler unit", () => {
     }
 
     handleWorkerEvent({
-      schema_version: 1, type: "event", wikiUri: WIKI_ID,
+      type: "event", wikiUri: WIKI_ID,
       listenable: "OnChanged", payload: { uri: "lar:///x" },
     });
     handleWorkerEvent({
-      schema_version: 1, type: "event", wikiUri: WIKI_ID,
+      type: "event", wikiUri: WIKI_ID,
       listenable: "OnScore", payload: { uri: "lar:///y", score: 42 },
     });
 

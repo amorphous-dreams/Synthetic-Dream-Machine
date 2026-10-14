@@ -22,7 +22,7 @@ import {
   emptyLarDoc,
   materializeGenesisIsland,
   genesisCasManifestFromSeed,
-  GENESIS_SEED_FORMAT,
+  GENESIS_SEED_FORMAT, genesisSeedCarriesAVersion,
   sha256HexBytesSync,
   utf8Bytes,
   type GenesisCasManifest,
@@ -72,7 +72,7 @@ export function genesisSeedCid(seedBytes: Uint8Array): string {
 export function parseGenesisSeed(seedBytes: Uint8Array): GenesisSeed | null {
   try {
     const parsed = JSON.parse(new TextDecoder().decode(seedBytes)) as GenesisSeed;
-    return parsed?.format === GENESIS_SEED_FORMAT ? parsed : null;
+    return parsed?.format === GENESIS_SEED_FORMAT && !genesisSeedCarriesAVersion(parsed) ? parsed : null;
   } catch {
     return null;
   }

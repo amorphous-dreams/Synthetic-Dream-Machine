@@ -7,7 +7,7 @@
  * B5 wiki asks refuse by name even beside a clear daemon door; control: another handle reaches that door.
  */
 import { describe, expect, test, vi } from "vitest";
-import { ISLAND_PROTOCOL_VERSION, type EdgeStanding } from "@lararium/mesh";
+import { type EdgeStanding } from "@lararium/mesh";
 import {
   answerBrowserDyadAsk,
   attachBrowserDyadDoor,
@@ -17,7 +17,7 @@ import {
 
 const standings: EdgeStanding[] = ["clear", "aside", "owing", "returned"];
 const ask = (requestId: string, fleetRoot: unknown = "fleet", deviceKey: unknown = "device") => ({
-  schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:ask", requestId, fleetRoot, deviceKey,
+  type: "dyad:ask", requestId, fleetRoot, deviceKey,
 });
 
 function fakeScope() {

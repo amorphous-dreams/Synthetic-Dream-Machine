@@ -6,10 +6,10 @@ const MARKER = "lar:///ha.ka.ba/daemon-replay-probe/marker";
 let repo = null;
 let wikiUri = null;
 function event(present) {
-  parentPort.postMessage({ schema_version: 1, type: "event", wikiUri, listenable: "daemon:replay-probe", payload: { present, sync: false } });
+  parentPort.postMessage({ type: "event", wikiUri, listenable: "daemon:replay-probe", payload: { present, sync: false } });
 }
 parentPort.on("message", (msg) => {
-  if (!msg || msg.schema_version !== 1) return;
+  if (!msg) return;
   if (msg.type === "manifest") {
     wikiUri = msg.wikiUri;
     const opts = { sharePolicy: async () => true };
@@ -19,9 +19,9 @@ parentPort.on("message", (msg) => {
       const report = () => event(Boolean(handle.doc()?.tiddlers?.[MARKER]));
       handle.on("change", report);
       report();
-      parentPort.postMessage({ schema_version: 1, type: "ea", wikiUri });
-    }, (error) => parentPort.postMessage({ schema_version: 1, type: "fault", wikiUri, error: String(error) }));
+      parentPort.postMessage({ type: "ea", wikiUri });
+    }, (error) => parentPort.postMessage({ type: "fault", wikiUri, error: String(error) }));
   } else if (msg.type === "teardown") {
-    void (async () => { try { await repo?.flush(); } catch {} parentPort.postMessage({ schema_version: 1, type: "teardown:ack" }); })();
+    void (async () => { try { await repo?.flush(); } catch {} parentPort.postMessage({ type: "teardown:ack" }); })();
   }
 });

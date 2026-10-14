@@ -22,7 +22,7 @@ uri-path      = "ha.ka.ba/lararium/mesh/island-protocol"
 !! Island Protocol
 
 Discriminated union for all messages crossing the vessel / causal-island boundary.
-Every message MUST carry `schema_version: 1`. Platform-neutral — no Node or browser imports.
+Every message MUST carry its `type`, and no version counter rides beside it. Platform-neutral — no Node or browser imports.
 Vessel entrypoints (node, browser) bind the I/O; this module names the envelopes only.
 
 !!! Island Sovereignty Law — nine clauses (isomorphic across all vessel types)
@@ -56,7 +56,7 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 | Grade | Invariant |
 |---|---|
-| GP-1 | `schema_version` on every message. Lock at 1; increment on breaking changes. |
+| GP-1 | `type` on every message, and no counter: a vessel and its islands run one build, so a frame shape changes once, everywhere, in one commit. |
 | GP-2 | All payloads ride as plain objects — no class instances, no functions, no DOM. |
 | GP-4 | CryptoKey NOT on this surface; key material stays in-thread. |
 
@@ -115,6 +115,6 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ovqyP_0GtuLwMOLh-pCVbEfQ5LIUYRweNvvKyjnOgzY
+<<^ code="&#x0003;">>ni:///sha-256;rIxh2uFuk_lxJ59oG2ydPLEoYI_dQng0JaFV5qlhD9w
 
 <<^ code="&#x0004;" -> to="?">>

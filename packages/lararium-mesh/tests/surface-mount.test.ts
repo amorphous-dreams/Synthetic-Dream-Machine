@@ -28,7 +28,7 @@ import { ENGINE_CORE_ID, emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import type { CasBlobLike } from "../src/cas.js";
 import { computePluginsCid } from "../src/genesis-doc.js";
 import { makeIslandRepo } from "../src/island-repo.js";
-import { ISLAND_PROTOCOL_VERSION, mkEa, mkFault, mkTeardownAck, type IslandMsg_Manifest } from "../src/island-protocol.js";
+import { mkEa, mkFault, mkTeardownAck, type IslandMsg_Manifest } from "../src/island-protocol.js";
 import { recipeUri, wikiUri } from "../src/lar-uris.js";
 import { pluginOfferingCid, signPluginOffering, type OfferedBlob, type PluginOffering } from "../src/plugin-offering.js";
 import { storedLarRecord } from "../src/stored-record.js";
@@ -360,7 +360,7 @@ function standIsland(island: FakeIsland): Repo {
 }
 const ask = (island: FakeIsland, msg: Record<string, unknown>): Record<string, unknown> => {
   const before = island.posted.length;
-  island.reply({ schema_version: ISLAND_PROTOCOL_VERSION, ...msg });
+  island.reply({ ...msg });
   return island.posted[before] as Record<string, unknown>;
 };
 
@@ -506,17 +506,17 @@ describe("the island pool keys by the whole session key", () => {
     const [player, referee, outside] = islands as [FakeIsland, FakeIsland, FakeIsland];
     const refereePlane = "lar:///ha.ka.ba/bags/persona-referee";
     expect(ask(player, { type: "view:catalog", requestId: "q1", name: SHARED_BAG }))
-      .toEqual({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:catalog-result", requestId: "q1", documentUrl: v.shared.url });
+      .toEqual({ type: "view:catalog-result", requestId: "q1", documentUrl: v.shared.url });
     expect(ask(player, { type: "view:catalog", requestId: "q2", name: refereePlane }))
-      .toEqual({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:catalog-result", requestId: "q2", documentUrl: null, refusal: "beyond-facets" });
+      .toEqual({ type: "view:catalog-result", requestId: "q2", documentUrl: null, refusal: "beyond-facets" });
     expect(ask(referee, { type: "view:catalog", requestId: "q3", name: refereePlane })).toMatchObject({ documentUrl: v.faces.referee.plane.url });   // control
     // Content: the view decides, then the vessel's own store answers with bytes that recompute to the address.
     const content = async (island: FakeIsland, requestId: string, cid: string): Promise<Record<string, unknown>> => {
-      island.reply({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:content", requestId, cid });
+      island.reply({ type: "view:content", requestId, cid });
       expect(await until(() => island.posted.some((m) => (m as { requestId?: string }).requestId === requestId))).toBe(true);
       return island.posted.find((m) => (m as { requestId?: string }).requestId === requestId) as Record<string, unknown>;
     };
-    expect(await content(player, "q4", OFFERED_CID)).toEqual({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:content-result", requestId: "q4", bytes: OFFERED_BYTES });
+    expect(await content(player, "q4", OFFERED_CID)).toEqual({ type: "view:content-result", requestId: "q4", bytes: OFFERED_BYTES });
     expect(await content(player, "q5", "cid-nobody-holds")).toMatchObject({ bytes: null, refusal: "beyond-facets" });
     // The referee's mount named no reader, so the same address opens nothing for it: no reader, no reference.
     expect(await content(referee, "q6", OFFERED_CID)).toMatchObject({ bytes: null, refusal: "beyond-facets" });
@@ -726,7 +726,7 @@ describe("the island pool keys by the whole session key", () => {
       handle.change((d) => { d.tiddlers[title] = storedLarRecord(title, { text: "written while the island tore down" }, "test"); });
     };
     const settleAsk = async (island: FakeIsland, requestId: string, heads: Record<string, string[]>): Promise<Record<string, unknown>> => {
-      island.reply({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settle", requestId, heads });
+      island.reply({ type: "view:settle", requestId, heads });
       expect(await until(() => island.posted.some((m) => (m as { requestId?: string }).requestId === requestId), 4000)).toBe(true);
       return island.posted.find((m) => (m as { requestId?: string }).requestId === requestId) as Record<string, unknown>;
     };
@@ -743,7 +743,7 @@ describe("the island pool keys by the whole session key", () => {
     expect(await until(() => closedIsland.posted.some((m) => (m as { type?: string }).type === "teardown"))).toBe(true);
     // The island names heads of a write that has NOT crossed its port yet: no answer comes while the owner lacks them.
     const pending = A.change(A.clone(closedCopy.doc()!), (d) => { d.tiddlers["during-close"] = storedLarRecord("during-close", { text: "written while the island tore down" }, "test"); });
-    closedIsland.reply({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settle", requestId: "s2", heads: {
+    closedIsland.reply({ type: "view:settle", requestId: "s2", heads: {
       [v.faces.player.working.url]: A.getHeads(pending),
       [v.shared.url]: ["ff".repeat(32)],          // a bag the session may only read: its heads count for nothing
     } });
@@ -773,7 +773,7 @@ describe("the island pool keys by the whole session key", () => {
     expect(await settleAsk(more[0]!, "t4", { [v.faces.player.working.url]: ["../../not-a-hash"] })).toMatchObject({ settled: false });
     expect(await settleAsk(more[0]!, "t1", { [v.faces.player.working.url]: A.getHeads(v.faces.player.working.doc()!) })).toMatchObject({ settled: true });   // control
     // An ask still waiting when the island goes leaves it unsettled, whatever an earlier ask answered.
-    more[0]!.reply({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settle", requestId: "t5", heads: { [v.faces.player.working.url]: ["bb".repeat(32)] } });
+    more[0]!.reply({ type: "view:settle", requestId: "t5", heads: { [v.faces.player.working.url]: ["bb".repeat(32)] } });
     await quiet(60);
     const ending = second.closeSession("session-9");
     expect(await until(() => more[0]!.posted.some((m) => (m as { type?: string }).type === "teardown"))).toBe(true);
@@ -808,13 +808,13 @@ describe("the island pool keys by the whole session key", () => {
       island.posted.find((m) => (m as { requestId?: string }).requestId === requestId) as Record<string, unknown> | undefined;
     // An early ask waits on a write that has not crossed yet.
     const unsent = A.change(A.clone(copy.doc()!), (d) => { d.tiddlers["late"] = storedLarRecord("late", { text: "x" }, "test"); });
-    island.reply({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settle", requestId: "early", heads: { [v.faces.player.working.url]: A.getHeads(unsent) } });
+    island.reply({ type: "view:settle", requestId: "early", heads: { [v.faces.player.working.url]: A.getHeads(unsent) } });
     await quiet(80);
     expect(answerTo("early")).toBeUndefined();
     // The teardown begins. Its own ask finds the waiting place free, though the early ask still waits.
     const closing = pool.closeSession("session-1");
     expect(await until(() => island.posted.some((m) => (m as { type?: string }).type === "teardown"))).toBe(true);
-    island.reply({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settle", requestId: "fresh", heads: { [v.faces.player.working.url]: A.getHeads(copy.doc()!) } });
+    island.reply({ type: "view:settle", requestId: "fresh", heads: { [v.faces.player.working.url]: A.getHeads(copy.doc()!) } });
     expect(await until(() => answerTo("fresh") !== undefined)).toBe(true);
     expect(answerTo("fresh")).toMatchObject({ settled: true });                          // control: the teardown's own ask counts
     // The island writes AGAIN after that ask; the early ask's heads then arrive and it answers true, late.
@@ -822,7 +822,7 @@ describe("the island pool keys by the whole session key", () => {
     expect(await until(() => answerTo("early") !== undefined)).toBe(true);
     expect(answerTo("early")).toMatchObject({ settled: true });
     // A third ask, begun in this teardown, fails: the island leaves unsettled, whatever the stale ask said.
-    island.reply({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settle", requestId: "torn", heads: { [v.faces.player.working.url]: "not-heads" } });
+    island.reply({ type: "view:settle", requestId: "torn", heads: { [v.faces.player.working.url]: "not-heads" } });
     expect(await until(() => answerTo("torn") !== undefined)).toBe(true);
     island.reply(mkTeardownAck());
     expect(await closing).toEqual([{ wikiId: expect.any(String), acked: true, settled: false }]);
@@ -838,7 +838,7 @@ describe("the island pool keys by the whole session key", () => {
     const copy = (await tryFind(standIsland(island), v.faces.player.working.url))!;
     await quiet();
     const unsent = A.change(A.clone(copy.doc()!), (d) => { d.tiddlers["late"] = storedLarRecord("late", { text: "x" }, "test"); });
-    island.reply({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settle", requestId: "early", heads: { [v.faces.player.working.url]: A.getHeads(unsent) } });
+    island.reply({ type: "view:settle", requestId: "early", heads: { [v.faces.player.working.url]: A.getHeads(unsent) } });
     await quiet(80);
     const closing = pool.closeSession("session-1");
     expect(await until(() => island.posted.some((m) => (m as { type?: string }).type === "teardown"))).toBe(true);
@@ -865,7 +865,7 @@ describe("the island pool keys by the whole session key", () => {
     pools.push(pool);
     const key = await pool.mountSurface({ sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe });
     await pool.mountWiki("lar:///ha.ka.ba/wikis/outside", { coreHash: null, recipe: { wikiSlug: "outside" }, grants: { islandUrl: v.oracle.url } });
-    const event = (wiki: string) => ({ schema_version: ISLAND_PROTOCOL_VERSION, type: "event", wikiUri: wiki, listenable: "OnActivated", payload: { verb: "vault-unlock", uri: "lar:///synthetic" } });
+    const event = (wiki: string) => ({ type: "event", wikiUri: wiki, listenable: "OnActivated", payload: { verb: "vault-unlock", uri: "lar:///synthetic" } });
     // A session island spells a verb-bearing event, under its own wiki's name and under another's.
     islands[0]!.reply(event(WIKI));
     islands[0]!.reply(event("lar:///ha.ka.ba/wikis/outside"));

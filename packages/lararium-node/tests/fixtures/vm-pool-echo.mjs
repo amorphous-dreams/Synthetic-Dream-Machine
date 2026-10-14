@@ -14,14 +14,14 @@ import { parentPort } from "node:worker_threads";
 let wikiUri = null;
 
 parentPort.on("message", (msg) => {
-  if (typeof msg !== "object" || msg === null || msg.schema_version !== 1) {
-    parentPort.postMessage({ schema_version: 1, type: "fault", wikiUri: wikiUri ?? "", error: "bad schema" });
+  if (typeof msg !== "object" || msg === null) {
+    parentPort.postMessage({ type: "fault", wikiUri: wikiUri ?? "", error: "bad schema" });
     return;
   }
 
   if (msg.type === "manifest") {
     wikiUri = msg.wikiUri;
-    parentPort.postMessage({ schema_version: 1, type: "ea", wikiUri });
+    parentPort.postMessage({ type: "ea", wikiUri });
     // Close the transferred syncPort if present — fixture doesn't use Repo.
     msg.syncPort?.close?.();
     return;
@@ -31,7 +31,6 @@ parentPort.on("message", (msg) => {
     // Echo verb back as result for testing wiki:place-verb / wiki:verb-result round-trip.
     if (msg.requestId) {
       parentPort.postMessage({
-        schema_version: 1,
         type: "wiki:verb-result",
         requestId: msg.requestId,
         result: { verb: msg.verb, echoed: true },
@@ -42,7 +41,7 @@ parentPort.on("message", (msg) => {
 
   if (msg.type === "teardown" || msg.type === "hooanu") {
     wikiUri = null;
-    parentPort.postMessage({ schema_version: 1, type: "teardown:ack" });
+    parentPort.postMessage({ type: "teardown:ack" });
     return;
   }
 });

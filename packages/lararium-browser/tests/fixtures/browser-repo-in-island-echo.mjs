@@ -16,7 +16,6 @@ let frameCount = 0;
 function wireHandle(handle, usingDocUrl) {
   void handle.whenReady().then(() => {
     self.postMessage({
-      schema_version: 1,
       type: "event",
       wikiUri,
       listenable: "repo:synced",
@@ -30,7 +29,6 @@ function wireHandle(handle, usingDocUrl) {
       frameCount += 1;
       const tiddlerCount = doc?.tiddlers ? Object.keys(doc.tiddlers).length : 0;
       self.postMessage({
-        schema_version: 1,
         type: "event",
         wikiUri,
         listenable: "repo:change",
@@ -46,13 +44,13 @@ function wireHandle(handle, usingDocUrl) {
 
 self.addEventListener("message", (e) => {
   const msg = e.data;
-  if (typeof msg !== "object" || msg === null || msg.schema_version !== 1) return;
+  if (typeof msg !== "object" || msg === null) return;
 
   if (msg.type === "manifest") {
     wikiUri = msg.wikiUri;
     const syncPort = msg.syncPort;
     if (!syncPort) {
-      self.postMessage({ schema_version: 1, type: "fault", wikiUri, error: "manifest missing syncPort" });
+      self.postMessage({ type: "fault", wikiUri, error: "manifest missing syncPort" });
       return;
     }
 
@@ -70,16 +68,16 @@ self.addEventListener("message", (e) => {
       repo.on("document", ({ handle }) => wireHandle(handle, false));
     }
 
-    self.postMessage({ schema_version: 1, type: "ea", wikiUri });
+    self.postMessage({ type: "ea", wikiUri });
     return;
   }
 
   if (msg.type === "teardown" || msg.type === "hooanu") {
-    self.postMessage({ schema_version: 1, type: "teardown:ack" });
+    self.postMessage({ type: "teardown:ack" });
     wikiUri = "";
     return;
   }
 });
 
 // Inversion of control: listener is registered; vessel may now send manifest.
-self.postMessage({ schema_version: 1, type: "ready" });
+self.postMessage({ type: "ready" });

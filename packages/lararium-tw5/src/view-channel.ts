@@ -12,7 +12,7 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view
  */
-import { ISLAND_PROTOCOL_VERSION, type IslandToVesselMsg } from "@lararium/mesh";
+import { type IslandToVesselMsg } from "@lararium/mesh";
 
 export interface ViewChannel {
   /** Resolve a catalog name through the session's view: the document, or null when the view refuses. */
@@ -42,9 +42,9 @@ export function makeViewChannel(post: (msg: IslandToVesselMsg) => void, mintId: 
     });
   };
   return {
-    catalog: async (name) => (await ask((requestId) => ({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:catalog", requestId, name }))).documentUrl,
-    content: async (cid) => (await ask((requestId) => ({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:content", requestId, cid }))).bytes,
-    settle: async (heads) => (await ask((requestId) => ({ schema_version: ISLAND_PROTOCOL_VERSION, type: "view:settle", requestId, heads }))).settled,
+    catalog: async (name) => (await ask((requestId) => ({ type: "view:catalog", requestId, name }))).documentUrl,
+    content: async (cid) => (await ask((requestId) => ({ type: "view:content", requestId, cid }))).bytes,
+    settle: async (heads) => (await ask((requestId) => ({ type: "view:settle", requestId, heads }))).settled,
     settleAnswer(raw) {
       if (typeof raw !== "object" || raw === null) return false;
       const { type, requestId, documentUrl, bytes, settled } = raw as Record<string, unknown>;

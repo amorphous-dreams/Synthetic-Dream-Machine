@@ -2,10 +2,10 @@
  * teardown-echo.mjs — minimal wiki island fixture for GP-5 teardown handshake tests.
  *
  * Simulates the handshake contract:
- *   1. Receives { schema_version: 1, type: "teardown" }
+ *   1. Receives { type: "teardown" }
  *   2. Completes in-flight work (none in this fixture — immediate)
  *   3. Calls cancel() on all live KumuCancelable handles (simulated via cancelTracking)
- *   4. Posts { schema_version: 1, type: "teardown:ack" }
+ *   4. Posts { type: "teardown:ack" }
  *
  * The "cancelTracking" array mimics the island holding a set of live cancelables
  * and calling .cancel() on each before sending ack. The fixture records each
@@ -37,13 +37,8 @@ const liveSubscriptions = [
 
 parentPort.on("message", (msg) => {
   if (typeof msg !== "object" || msg === null) return;
-  if (msg.schema_version !== 1) {
-    parentPort.postMessage({
-      schema_version: 1,
-      type: "fault",
-      wikiUri: "",
-      error: `unexpected schema_version: ${msg.schema_version}`,
-    });
+  if (typeof msg.type !== "string") {
+    parentPort.postMessage({ type: "fault", wikiUri: "", error: "a message names no type" });
     return;
   }
 
@@ -52,16 +47,15 @@ parentPort.on("message", (msg) => {
     const cancelled = liveSubscriptions.map((sub) => sub.cancel());
     // Signal that cancels completed — test asserts this arrives BEFORE teardown:ack.
     parentPort.postMessage({
-      schema_version: 1,
       type: "cancel:confirmed",
       cancelled,
     });
-    parentPort.postMessage({ schema_version: 1, type: "teardown:ack" });
+    parentPort.postMessage({ type: "teardown:ack" });
     return;
   }
 
   if (msg.type === "manifest") {
-    parentPort.postMessage({ schema_version: 1, type: "ea", wikiUri: msg.wikiUri });
+    parentPort.postMessage({ type: "ea", wikiUri: msg.wikiUri });
     return;
   }
 

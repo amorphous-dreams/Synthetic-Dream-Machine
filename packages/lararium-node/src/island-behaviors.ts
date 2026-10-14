@@ -96,7 +96,6 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   // bridge routes any event whose payload carries `verb`). The daemon audits
   // it durably and injects a $:/tags/Alert into the operator's pinned VM.
   onRefusal: (info) => ctx.post({
-    schema_version: 1,
     type: "event",
     wikiUri: ctx.wikiUri,
     listenable: "disk-ward:refused",
@@ -110,7 +109,6 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   // mechanism that actually stood down, so an operator is never sent to the disk ward for
   // a conflict. The wire `kind`/`cause` stay Rail A's transport names, per that ruling.
   onConflict: (info) => ctx.post({
-    schema_version: 1,
     type: "event",
     wikiUri: ctx.wikiUri,
     listenable: "confluence:conflict",
@@ -119,7 +117,6 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   // The standoff the projector surfaced stands resolved: the same rail carries its key with `resolved`,
   // and the alert that key raised clears. No audit row rides a resolution.
   onConflictResolved: (info) => ctx.post({
-    schema_version: 1,
     type: "event",
     wikiUri: ctx.wikiUri,
     listenable: "confluence:resolved",
@@ -129,14 +126,12 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   // ONE ALERT PER BAG names the count and rides the same rail under its own ward kind; the set's key names
   // the audit row and the live alert, and the set's end clears it.
   onPendingRemoval: (info) => ctx.post({
-    schema_version: 1,
     type: "event",
     wikiUri: ctx.wikiUri,
     listenable: "confluence:pending-removal",
     payload: { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "pending-removal", bagId: info.bagId, uri: info.uris[0] ?? "(none)", reason: info.reason, standoff: info.key },
   }),
   onPendingRemovalResolved: (info) => ctx.post({
-    schema_version: 1,
     type: "event",
     wikiUri: ctx.wikiUri,
     listenable: "confluence:pending-removal-resolved",

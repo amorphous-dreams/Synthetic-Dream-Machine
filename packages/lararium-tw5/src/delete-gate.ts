@@ -16,7 +16,7 @@
  * Ambiguity never guesses: a hash shared by more than one vanished address OR more than one arrived
  * file re-links none of them (rclone's decline-on-ambiguity), and each such address reads declined.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/handoff (#watcher-talk-story)
+ * Meme: lar:///ha.ka.ba/lares/api/pono/working-procedures
  */
 
 export interface PendingDelete {

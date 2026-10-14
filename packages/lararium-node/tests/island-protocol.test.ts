@@ -4,7 +4,7 @@
  * Tests GP-1 through GP-5 from the structured-clone-gap ahu.
  * All tests must pass before the first Lararium island ships.
  *
- * GP-1: schema_version enforcement (unit)
+ * GP-1: a frame names its type and carries no counter (unit)
  * GP-2: plain-object payload shape (unit + structural)
  * GP-3: Tiddler-level delta (integration — confirms added/deleted arrays cross the boundary)
  * GP-5: teardown handshake ordering (integration — cancel:confirmed before teardown:ack)
@@ -17,7 +17,6 @@ import { Worker, MessageChannel } from "worker_threads";
 import {
   isSensoriumSignalType, isVesselToIslandMsg,
   isIslandToVesselMsg,
-  ISLAND_PROTOCOL_VERSION,
   mkTeardown,
   mkManifest,
   mkDaemonDeriveSkeletonRequest,
@@ -216,29 +215,27 @@ describe("IslandStorageConfig — island-owned storage protocol", () => {
   });
 });
 
-// ── GP-1: schema_version enforcement (unit) ────────────────────────────────
+// ── GP-1: a message names its type, and no counter rides beside it (unit) ─────────────────────────────
 
-describe("GP-1 — schema_version enforcement", () => {
-  test("isVesselToIslandMsg accepts valid teardown with schema_version 1", () => {
+describe("GP-1 — a frame names its type and carries no counter", () => {
+  test("a teardown frame carries its type and nothing else", () => {
     const msg = mkTeardown();
+    expect(msg).toEqual({ type: "teardown" });
     expect(isVesselToIslandMsg(msg)).toBe(true);
   });
 
-  test("isVesselToIslandMsg rejects message missing schema_version", () => {
-    expect(isVesselToIslandMsg({ type: "teardown" })).toBe(false);
+  test("CONTROL: a frame that names no type, or a type of no string, refuses", () => {
+    expect(isVesselToIslandMsg({})).toBe(false);
+    expect(isVesselToIslandMsg({ type: 7 })).toBe(false);
+    expect(isVesselToIslandMsg(null)).toBe(false);
   });
 
-  test("isVesselToIslandMsg rejects message with wrong schema_version", () => {
-    expect(isVesselToIslandMsg({ schema_version: 2, type: "teardown" })).toBe(false);
-    expect(isVesselToIslandMsg({ schema_version: 0, type: "teardown" })).toBe(false);
-  });
-
-  test("isVesselToIslandMsg rejects unknown type even with correct schema_version", () => {
-    expect(isVesselToIslandMsg({ schema_version: ISLAND_PROTOCOL_VERSION, type: "unknown" })).toBe(false);
+  test("isVesselToIslandMsg rejects an unknown type", () => {
+    expect(isVesselToIslandMsg({ type: "unknown" })).toBe(false);
   });
 
   test("admits cap-owned sensorium verbs without extending a central union", () => {
-    const msg = { schema_version: ISLAND_PROTOCOL_VERSION, type: "sensorium:telemetry" };
+    const msg = { type: "sensorium:telemetry" };
     expect(isSensoriumSignalType(msg.type)).toBe(true);
     expect(isVesselToIslandMsg(msg)).toBe(true);
   });
@@ -246,17 +243,17 @@ describe("GP-1 — schema_version enforcement", () => {
   test("refuses malformed sensorium signal names", () => {
     for (const type of ["sensorium:", "sensorium:Dream", "sensorium:two:parts", "sensorium/recall"]) {
       expect(isSensoriumSignalType(type)).toBe(false);
-      expect(isVesselToIslandMsg({ schema_version: ISLAND_PROTOCOL_VERSION, type })).toBe(false);
+      expect(isVesselToIslandMsg({ type })).toBe(false);
     }
   });
 
   test("isIslandToVesselMsg accepts valid teardown:ack", () => {
-    const ack: IslandMsg_TeardownAck = { schema_version: 1, type: "teardown:ack" };
+    const ack: IslandMsg_TeardownAck = { type: "teardown:ack" };
     expect(isIslandToVesselMsg(ack)).toBe(true);
   });
 
   test("isIslandToVesselMsg rejects teardown (main→island msg) as island→main", () => {
-    expect(isIslandToVesselMsg({ schema_version: 1, type: "teardown" })).toBe(false);
+    expect(isIslandToVesselMsg({ type: "teardown" })).toBe(false);
   });
 
   test("isVesselToIslandMsg rejects null and primitives", () => {
@@ -270,22 +267,21 @@ describe("GP-1 — schema_version enforcement", () => {
     const { port2: _p } = new MessageChannel();
     expect(isVesselToIslandMsg(mkManifest("lar:///test", _p as unknown as globalThis.MessagePort, { wikiSlug: "test" }, {}))).toBe(true);
     _p.close();
-    expect(isVesselToIslandMsg({ schema_version: 1, type: "hooanu", wikiUri: "lar:///test" })).toBe(true);
+    expect(isVesselToIslandMsg({ type: "hooanu", wikiUri: "lar:///test" })).toBe(true);
     expect(isVesselToIslandMsg(mkTeardown())).toBe(true);
   });
 
   test("all four islandToMain types pass isIslandToVesselMsg", () => {
     const event: IslandMsg_Event = {
-      schema_version: 1,
       type: "event",
       wikiUri: "lar:///test",
       listenable: "ev-1",
       payload: { x: 1 },
     };
     expect(isIslandToVesselMsg(event)).toBe(true);
-    expect(isIslandToVesselMsg({ schema_version: 1, type: "teardown:ack" })).toBe(true);
-    expect(isIslandToVesselMsg({ schema_version: 1, type: "ea", wikiUri: "lar:///test" })).toBe(true);
-    expect(isIslandToVesselMsg({ schema_version: 1, type: "fault", wikiUri: "lar:///test", error: "boom" })).toBe(true);
+    expect(isIslandToVesselMsg({ type: "teardown:ack" })).toBe(true);
+    expect(isIslandToVesselMsg({ type: "ea", wikiUri: "lar:///test" })).toBe(true);
+    expect(isIslandToVesselMsg({ type: "fault", wikiUri: "lar:///test", error: "boom" })).toBe(true);
   });
 
   test("derive-skeleton request is vessel→island, result is island→vessel (the in-VM query-derive channel)", () => {
@@ -419,9 +415,8 @@ describe("GP-5 — teardown handshake (integration)", () => {
     expect(isIslandToVesselMsg(ack)).toBe(true);
   });
 
-  test("message without schema_version is not routed by the guard", () => {
+  test("a frame with no type is not routed by the guard", () => {
     // Unit test — no island needed.
-    const naked = { type: "teardown" };
-    expect(isVesselToIslandMsg(naked)).toBe(false);
+    expect(isVesselToIslandMsg({ wikiUri: "lar:///x" })).toBe(false);
   });
 });

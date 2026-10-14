@@ -4,7 +4,7 @@
  */
 
 import { Worker, MessageChannel } from "worker_threads";
-import { ISLAND_PROTOCOL_VERSION, type VesselWorkerHandle, type EdgeStanding, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_DocRest, type IslandMsg_DocRested, type CustodyWriteCarrier, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten } from "@lararium/mesh";
+import { type VesselWorkerHandle, type EdgeStanding, type IslandMsg_CasWant, type IslandMsg_CasBlock, type IslandMsg_DyadAsk, type IslandMsg_DyadRead, type IslandMsg_DocRest, type IslandMsg_DocRested, type CustodyWriteCarrier, type IslandMsg_CustodyWrite, type IslandMsg_CustodyWritten } from "@lararium/mesh";
 
 /** The vessel's answer to a worker's `cas:want` — verified bytes, or null (a miss stays a miss). */
 export type CasDoor = (cid: string) => Promise<Uint8Array | null>;
@@ -30,7 +30,7 @@ function attachCasDoor(w: Worker): void {
     if (!m || m.type !== "cas:want" || typeof m.requestId !== "string" || typeof m.cid !== "string") return;
     const { requestId, cid } = m;
     const answer = (bytes: Uint8Array | null): void => {
-      const reply: IslandMsg_CasBlock = { schema_version: ISLAND_PROTOCOL_VERSION, type: "cas:block", requestId, bytes };
+      const reply: IslandMsg_CasBlock = { type: "cas:block", requestId, bytes };
       try { w.postMessage(reply); } catch { /* the worker went away — nothing to answer */ }
     };
     const door = casDoor;
@@ -52,7 +52,7 @@ export function setRestDoor(door: RestDoor | null): void { restDoor = door; }
 
 /** Answer one `doc:rest` ask through the door standing now. Exported so a test asks it without a worker. */
 export async function answerDocRest(ask: Pick<IslandMsg_DocRest, "requestId" | "documentIds">): Promise<IslandMsg_DocRested> {
-  const base = { schema_version: ISLAND_PROTOCOL_VERSION, type: "doc:rested" as const, requestId: ask.requestId };
+  const base = { type: "doc:rested" as const, requestId: ask.requestId };
   const door = restDoor;
   if (!door) return { ...base, rested: false, why: "no rest door stands on this vessel" };
   try { await door(ask.documentIds); return { ...base, rested: true }; }
@@ -71,7 +71,7 @@ export function setDyadDoor(door: DyadDoor | null): void { dyadDoor = door; }
 
 /** Answer one dyad ask through the vessel's live board, failing closed on missing or malformed readings. */
 export async function answerDyadAsk(ask: Pick<IslandMsg_DyadAsk, "requestId" | "fleetRoot" | "deviceKey">): Promise<IslandMsg_DyadRead> {
-  const base = { schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:read" as const, requestId: ask.requestId };
+  const base = { type: "dyad:read" as const, requestId: ask.requestId };
   if (typeof ask.fleetRoot !== "string" || typeof ask.deviceKey !== "string") return { ...base, standing: "aside" };
   const door = dyadDoor;
   if (!door) return { ...base, standing: "aside" };
@@ -100,7 +100,7 @@ export function setCustodyWriteDoor(door: CustodyWriteDoor | null): void { custo
 
 /** Answer one `custody:write` ask through the door standing now. */
 export async function answerCustodyWrite(ask: Pick<IslandMsg_CustodyWrite, "requestId" | "carrier" | "bytes">): Promise<IslandMsg_CustodyWritten> {
-  const base = { schema_version: ISLAND_PROTOCOL_VERSION, type: "custody:written" as const, requestId: ask.requestId };
+  const base = { type: "custody:written" as const, requestId: ask.requestId };
   if ((ask.carrier !== "archive" && ask.carrier !== "veil") || !(ask.bytes instanceof Uint8Array)) {
     return { ...base, written: false, why: "bad custody write ask" };
   }
@@ -166,21 +166,21 @@ function attachRefusals(w: Worker): void {
     if (m.type === "custody:write") {
       once("CustodyDoorRefused", "custody write door");
       const refused: IslandMsg_CustodyWritten = {
-        schema_version: ISLAND_PROTOCOL_VERSION, type: "custody:written", requestId: m.requestId, written: false,
+        type: "custody:written", requestId: m.requestId, written: false,
         why: "CustodyDoorRefused: only the daemon island reaches the custody write door",
       };
       reply(refused);
     } else if (m.type === "doc:rest") {
       once("RestDoorRefused", "rest door");
       const refused: IslandMsg_DocRested = {
-        schema_version: ISLAND_PROTOCOL_VERSION, type: "doc:rested", requestId: m.requestId, rested: false,
+        type: "doc:rested", requestId: m.requestId, rested: false,
         why: "RestDoorRefused: only the daemon island reaches the rest door",
       };
       reply(refused);
     } else if (m.type === "dyad:ask") {
       once("DyadDoorRefused", "dyad door");
       const refused: IslandMsg_DyadRead = {
-        schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:read", requestId: m.requestId, standing: "aside",
+        type: "dyad:read", requestId: m.requestId, standing: "aside",
       };
       reply(refused);
     }

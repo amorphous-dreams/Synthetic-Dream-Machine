@@ -50,12 +50,12 @@ export function outcomeOf(door, reply) {
 }
 
 /** The four asks an island posts, one per door, each on its own request id. */
-export function asksOf(version) {
+export function asksOf() {
   return [
-    { door: "fetch",   msg: { schema_version: version, type: "cas:want", requestId: "probe-fetch", cid: "bafkprobe" } },
-    { door: "rest",    msg: { schema_version: version, type: "doc:rest", requestId: "probe-rest", documentIds: ["probe-document"] } },
-    { door: "custody", msg: { schema_version: version, type: "custody:write", requestId: "probe-custody", carrier: "archive", bytes: new Uint8Array([1]) } },
-    { door: "dyad",    msg: { schema_version: version, type: "dyad:ask", requestId: "probe-dyad", fleetRoot: "probe-fleet", deviceKey: "probe-device" } },
+    { door: "fetch",   msg: { type: "cas:want", requestId: "probe-fetch", cid: "bafkprobe" } },
+    { door: "rest",    msg: { type: "doc:rest", requestId: "probe-rest", documentIds: ["probe-document"] } },
+    { door: "custody", msg: { type: "custody:write", requestId: "probe-custody", carrier: "archive", bytes: new Uint8Array([1]) } },
+    { door: "dyad",    msg: { type: "dyad:ask", requestId: "probe-dyad", fleetRoot: "probe-fleet", deviceKey: "probe-device" } },
   ];
 }
 
@@ -108,8 +108,7 @@ export const NODE_SPAWNS = [["daemon", "nodeSpawnDaemonWorker"], ["wiki", "nodeS
 
 async function measureNode(dist) {
   const handleMod = await import(pathToFileURL(join(dist.node, "worker-handle.js")).href);
-  const { ISLAND_PROTOCOL_VERSION } = await import(pathToFileURL(join(dist.mesh, "index.js")).href);
-  const asks = asksOf(ISLAND_PROTOCOL_VERSION);
+  const asks = asksOf();
   // Stand-in doors that grant every ask.
   handleMod.setCasDoor(async () => new Uint8Array([7]));
   handleMod.setRestDoor(async () => {});
@@ -143,8 +142,7 @@ async function measureNode(dist) {
 
 async function measureWeb(dist) {
   const door = await import(pathToFileURL(join(dist.browser, "browser-dyad-door.js")).href);
-  const { ISLAND_PROTOCOL_VERSION } = await import(pathToFileURL(join(dist.mesh, "index.js")).href);
-  const asks = asksOf(ISLAND_PROTOCOL_VERSION);
+  const asks = asksOf();
   const run = async (attach) => {
     const listeners = []; const replies = {};
     const handle = { listen: (cb) => { listeners.push(cb); return () => {}; }, post: (m) => { if (m && typeof m.requestId === "string") replies[m.requestId] = m; } };

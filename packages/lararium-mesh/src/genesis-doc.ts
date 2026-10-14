@@ -243,6 +243,14 @@ export interface GenesisArtifact {
 export const GENESIS_SEED_FORMAT = "lararium-genesis-seed/v1" as const;
 
 /**
+ * A SEED CARRIES NO VERSION. Its format names its shape, and its bytes name themselves (the seed CID); a version
+ * counter beside them would claim an order no reader checks. A seed that carries `schemaVersion` reads as no seed.
+ */
+export function genesisSeedCarriesAVersion(seed: unknown): boolean {
+  return typeof seed === "object" && seed !== null && Object.prototype.hasOwnProperty.call(seed, "schemaVersion");
+}
+
+/**
  * GenesisSeed — the oracle doc's initial state as PLAIN DATA (JSON-serializable).
  *
  * It carries exactly what the oracle CRDT is seeded with: the schema version, the
@@ -254,7 +262,6 @@ export const GENESIS_SEED_FORMAT = "lararium-genesis-seed/v1" as const;
 export interface GenesisSeed {
   readonly format:        typeof GENESIS_SEED_FORMAT;
   readonly actorSeed:     string;
-  readonly schemaVersion: string;
   readonly blobs:         Record<string, LarBlobEntry>;
   readonly tiddlers:      Record<string, unknown>;
 }
@@ -273,6 +280,7 @@ export function genesisCasManifestFromSeed(seed: GenesisSeed): GenesisCasManifes
   if (!seed || seed.format !== GENESIS_SEED_FORMAT) {
     throw new Error(`[genesis-derive] unsupported seed format: ${String(seed?.format)}`);
   }
+  if (genesisSeedCarriesAVersion(seed)) throw new Error("[genesis-derive] the seed carries a version; a seed carries none");
   if (!seed.blobs || typeof seed.blobs !== "object" || Array.isArray(seed.blobs)) {
     throw new Error("[genesis-derive] seed blobs must be an object");
   }
@@ -343,6 +351,7 @@ export function validateGenesisBundleCoherence(
   if (seed.format !== GENESIS_SEED_FORMAT) {
     throw new Error(`[genesis-coherence] unsupported seed format: ${String(seed.format)}`);
   }
+  if (genesisSeedCarriesAVersion(seed)) throw new Error("[genesis-coherence] the seed carries a version; a seed carries none");
   if (manifest.format !== GENESIS_CAS_MANIFEST_FORMAT) {
     throw new Error(`[genesis-coherence] unsupported manifest format: ${String(manifest.format)}`);
   }
@@ -662,7 +671,7 @@ export function buildGenesisSeed(inputs: GenesisInputs, coreSha256?: string): Ge
     meta: { authority: "genesis" },
   };
 
-  return { format: GENESIS_SEED_FORMAT, actorSeed: inputs.actorSeed, schemaVersion: "0.1", blobs, tiddlers };
+  return { format: GENESIS_SEED_FORMAT, actorSeed: inputs.actorSeed, blobs, tiddlers };
 }
 
 /**
@@ -678,7 +687,8 @@ export function materializeGenesisDoc(seed: GenesisSeed): Uint8Array {
   let doc = automergeInit<LarDoc>({ actor: seed.actorSeed });
   doc = automergeChange(doc, { time: 0 }, d => {
     const r = d as unknown as Record<string, unknown>;
-    r["schemaVersion"] = seed.schemaVersion;
+    // The oracle document keeps the shape every lar document carries (`base-doc.ts`); the seed itself names none.
+    r["schemaVersion"] = "0.1";
     const blobs: Record<string, unknown> = {};
     for (const k of Object.keys(seed.blobs).sort()) blobs[k] = seed.blobs[k];
     r["blobs"] = blobs;

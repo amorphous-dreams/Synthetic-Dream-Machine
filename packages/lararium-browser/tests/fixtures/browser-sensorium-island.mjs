@@ -20,7 +20,7 @@ let capDown = null;
 
 self.addEventListener("message", async (e) => {
   const msg = e.data;
-  if (typeof msg !== "object" || msg === null || msg.schema_version !== 1) return;
+  if (typeof msg !== "object" || msg === null) return;
 
   if (msg.type === "manifest") {
     wikiUri = msg.wikiUri;
@@ -34,7 +34,7 @@ self.addEventListener("message", async (e) => {
     };
     const down = cap.onEa(ctx);
     capDown = typeof down === "function" ? down : null;
-    self.postMessage({ schema_version: 1, type: "ea", wikiUri });
+    self.postMessage({ type: "ea", wikiUri });
     return;
   }
 
@@ -42,7 +42,7 @@ self.addEventListener("message", async (e) => {
     if (capDown) capDown();
     cap = null;
     ctx = null;
-    self.postMessage({ schema_version: 1, type: "teardown:ack" });
+    self.postMessage({ type: "teardown:ack" });
     return;
   }
 
@@ -54,4 +54,4 @@ self.addEventListener("message", async (e) => {
 });
 
 // Inversion of control: listener registered; the vessel may now send the manifest.
-self.postMessage({ schema_version: 1, type: "ready" });
+self.postMessage({ type: "ready" });

@@ -29,8 +29,7 @@ import {
   type IslandHostShore,
 } from "@lararium/tw5";
 import {
-  makeCidResolver, ISLAND_PROTOCOL_VERSION,
-  type StorageAdapterInterface,
+  makeCidResolver, type StorageAdapterInterface,
   type IslandMsg_Manifest,
   type IslandStorageConfig,
   type IslandToVesselMsg,
@@ -76,7 +75,7 @@ function portTransit(port: { postMessage(msg: unknown): void; on(ev: "message", 
         const timer = setTimeout(() => { pending.delete(requestId); resolve(null); }, CAS_WANT_TIMEOUT_MS);
         timer.unref?.();
         pending.set(requestId, (bytes) => { clearTimeout(timer); resolve(bytes); });
-        const ask: IslandMsg_CasWant = { schema_version: ISLAND_PROTOCOL_VERSION, type: "cas:want", requestId, cid };
+        const ask: IslandMsg_CasWant = { type: "cas:want", requestId, cid };
         port.postMessage(ask);
       });
     },
@@ -107,7 +106,7 @@ export function vesselDyadAsker(
     const timer = setTimeout(() => { pending.delete(requestId); resolve("aside"); }, patienceMs);
     timer.unref?.();
     pending.set(requestId, (standing) => { clearTimeout(timer); resolve(standing); });
-    const ask: IslandMsg_DyadAsk = { schema_version: ISLAND_PROTOCOL_VERSION, type: "dyad:ask", requestId, fleetRoot, deviceKey };
+    const ask: IslandMsg_DyadAsk = { type: "dyad:ask", requestId, fleetRoot, deviceKey };
     try { port.postMessage(ask); } catch { pending.delete(requestId); clearTimeout(timer); resolve("aside"); }
   });
 }
@@ -138,7 +137,7 @@ export function vesselRestAsker(port: { postMessage(msg: unknown): void; on(ev: 
       else reject(new Error(`the vessel's store did not acknowledge ${documentIds.join(", ")} at rest (${answer ? answer.why ?? "unrested" : "no answer"})`));
     };
     pending.set(requestId, settleWith);
-    const ask: IslandMsg_DocRest = { schema_version: ISLAND_PROTOCOL_VERSION, type: "doc:rest", requestId, documentIds: [...documentIds] };
+    const ask: IslandMsg_DocRest = { type: "doc:rest", requestId, documentIds: [...documentIds] };
     port.postMessage(ask);
   });
 }
@@ -168,7 +167,7 @@ export function vesselCustodyWriter(port: { postMessage(msg: unknown): void; on(
       else reject(new Error(`the vessel did not seal the ${carrier} carrier (${answer ? answer.why ?? "unwritten" : "no answer"})`));
     };
     pending.set(requestId, settleWith);
-    const ask: IslandMsg_CustodyWrite = { schema_version: ISLAND_PROTOCOL_VERSION, type: "custody:write", requestId, carrier, bytes };
+    const ask: IslandMsg_CustodyWrite = { type: "custody:write", requestId, carrier, bytes };
     port.postMessage(ask);
   });
 }

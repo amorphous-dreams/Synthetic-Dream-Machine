@@ -47,7 +47,8 @@
  *      `lar-wiki-island.ts` (Node wiki), `browser-wiki-worker.ts` (browser wiki),
  *      `browser-daemon-island.ts` (browser daemon). Main-thread entry files carry no TW5 import.
  *
- * GP-1: schema_version on every message. Lock at 1; increment on breaking changes.
+ * GP-1: every message names its `type`, and no version counter rides beside it: a vessel and its islands run
+ *       one build, so a frame shape changes once, everywhere, in one commit.
  * GP-2: all payloads are plain objects; no class instances, no functions, no DOM.
  * GP-4: CryptoKey — NOT on this protocol surface; key material stays in-thread.
  *
@@ -63,8 +64,6 @@ import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
 
-export const ISLAND_PROTOCOL_VERSION = 1 as const;
-export type ProtocolVersion = typeof ISLAND_PROTOCOL_VERSION;
 
 // ── Island storage configuration ──────────────────────────────────────────
 
@@ -158,7 +157,6 @@ export interface IslandGrants {
   workingUrl?:  string | null;
 }
 export interface IslandMsg_Manifest {
-  schema_version: ProtocolVersion;
   type: "manifest";
   wikiUri: string;
   /**
@@ -317,7 +315,6 @@ export interface IslandMsg_Manifest {
  * condition in residency-tiers.md #warm-cut. No HooMahana signal type today.
  */
 export interface IslandMsg_HooAnu {
-  schema_version: ProtocolVersion;
   type: "hooanu";
   wikiUri: string;
 }
@@ -328,7 +325,6 @@ export interface IslandMsg_HooAnu {
  * then respond with `teardown:ack` before the vessel calls worker.terminate().
  */
 export interface IslandMsg_Teardown {
-  schema_version: ProtocolVersion;
   type: "teardown";
 }
 
@@ -347,7 +343,6 @@ export interface IslandMsg_Teardown {
 
 /** Vessel → island: place a volatile verb invocation in the daemon island's TW5 wiki. */
 export interface DaemonMsg_PlaceVerb {
-  schema_version: ProtocolVersion;
   type: "daemon:place-verb";
   verb: string;
   args: Record<string, unknown>;
@@ -369,7 +364,6 @@ export interface DaemonMsg_PlaceVerb {
  * the DISPATCH cap claims for VerbDispatcher verbs) — caps are independent, so a separate signal.
  */
 export interface DaemonMsg_TelemetryPlaceVerb {
-  schema_version: ProtocolVersion;
   type: "telemetry:place-verb";
   turnText: string;
   sourceFile: string;
@@ -403,7 +397,6 @@ export interface DaemonMsg_TelemetryPlaceVerb {
  * that holds the holder; it set-asides the turn's tally AND down-weights the turn's content drawers.
  */
 export interface DaemonMsg_StructurepalaceKapae {
-  schema_version: ProtocolVersion;
   type: "structurepalace:kapae";
   /** The USER turn's uuid to rewind (matched against the .structurepalace provenance turn_key). */
   turnKey: string;
@@ -420,7 +413,6 @@ export interface DaemonMsg_StructurepalaceKapae {
  * {@link DaemonMsg_DeriveSkeletonResult}.
  */
 export interface DaemonMsg_DeriveSkeletonRequest {
-  schema_version: ProtocolVersion;
   type: "daemon:derive-skeleton-request";
   requestId: string;
   /** The recall query — sniffed in-VM for sigil markers, parsed with the full grammar. */
@@ -432,7 +424,6 @@ export interface DaemonMsg_DeriveSkeletonRequest {
  *  BOTH absent (a graceful null) when it did not (→ the recall fuses content-only). `error` carries a
  *  derive fault (the VM unavailable degrades to null at the host, never an error). */
 export interface DaemonMsg_DeriveSkeletonResult {
-  schema_version: ProtocolVersion;
   type: "daemon:derive-skeleton-result";
   requestId: string;
   skeleton?: unknown;
@@ -477,7 +468,6 @@ export interface WorldlineStubWire {
  * in-VM fn lives on `$tw.lares.worldlineCompareVm`. An unknown handle answers `error` (never throws the wire).
  */
 export interface DaemonMsg_WorldlineCompareRequest {
-  schema_version: ProtocolVersion;
   type: "daemon:worldline-compare-request";
   requestId: string;
   a: string;
@@ -492,7 +482,6 @@ export interface DaemonMsg_WorldlineCompareRequest {
 
 /** Island → vessel: the ITC causal verdict (`order`) — or an `error` (unknown handle / no registry). */
 export interface DaemonMsg_WorldlineCompareResult {
-  schema_version: ProtocolVersion;
   type: "daemon:worldline-compare-result";
   requestId: string;
   /** "before" | "after" | "concurrent" | "equal" — the ItcOrder, carried as a plain string (GP-2). */
@@ -508,7 +497,6 @@ export interface DaemonMsg_WorldlineCompareResult {
  * a plain object (GP-2). Empty stubs → an empty trajectory (graceful, like a derive null).
  */
 export interface DaemonMsg_WorldlineTrajectoryRequest {
-  schema_version: ProtocolVersion;
   type: "daemon:worldline-trajectory-request";
   requestId: string;
   handle: string;
@@ -525,7 +513,6 @@ export interface DaemonMsg_WorldlineTrajectoryRequest {
 
 /** Island → vessel: the worldline-ordered trajectory (+ optional null baseline) as plain objects. */
 export interface DaemonMsg_WorldlineTrajectoryResult {
-  schema_version: ProtocolVersion;
   type: "daemon:worldline-trajectory-result";
   requestId: string;
   trajectory?: unknown;
@@ -539,7 +526,6 @@ export interface DaemonMsg_WorldlineTrajectoryResult {
  * The vessel executes the handler and posts DaemonMsg_VerbResult back.
  */
 export interface DaemonMsg_DelegateVerb {
-  schema_version: ProtocolVersion;
   type: "daemon:delegate-verb";
   requestId: string;
   verb: string;
@@ -551,7 +537,6 @@ export interface DaemonMsg_DelegateVerb {
 
 /** Vessel → island: delegation result or error. Daemon island resolves the in-flight delegation promise. */
 export interface DaemonMsg_VerbResult {
-  schema_version: ProtocolVersion;
   type: "daemon:verb-result";
   requestId: string;
   result?: Record<string, unknown>;
@@ -567,7 +552,6 @@ export interface DaemonMsg_VerbResult {
 
 /** Vessel → island: verify an inbound peer's capability. Host has no keyhive. */
 export interface DaemonMsg_VerifyRequest {
-  schema_version: ProtocolVersion;
   type: "daemon:verify-request";
   requestId: string;
   /** The peer's serialized Keyhive ContactCard bytes. */
@@ -611,7 +595,6 @@ export type PeerClass = "same-operator" | "contracted" | "walker" | "stranger";
 
 /** Island → vessel: the keyhive verdict for a verify-request. */
 export interface DaemonMsg_VerifyResult {
-  schema_version: ProtocolVersion;
   type: "daemon:verify-result";
   requestId: string;
   ok: boolean;
@@ -641,7 +624,6 @@ export interface DaemonMsg_VerifyResult {
 
 /** Vessel → island: resolve (or mint+delegate) the personal/draft binding pair. */
 export interface DaemonMsg_ResolveBindingRequest {
-  schema_version: ProtocolVersion;
   type: "daemon:resolve-binding-request";
   requestId: string;
   fingerprint: string;
@@ -652,7 +634,6 @@ export interface DaemonMsg_ResolveBindingRequest {
 
 /** Island → vessel: the resolved binding doc URLs (or an error). */
 export interface DaemonMsg_ResolveBindingResult {
-  schema_version: ProtocolVersion;
   type: "daemon:resolve-binding-result";
   requestId: string;
   personalUrl?: string;
@@ -669,7 +650,6 @@ export interface DaemonMsg_ResolveBindingResult {
 
 /** Island → vessel: the worker commands the main pool to evict (unmount) a bag's lane. */
 export interface DaemonMsg_EvictRequest {
-  schema_version: ProtocolVersion;
   type: "daemon:evict-request";
   requestId: string;
   /** The bag (lar: URI) whose live lane the pool should tear down. */
@@ -678,7 +658,6 @@ export interface DaemonMsg_EvictRequest {
 
 /** Vessel → island: the pool's ack for an evict-request. */
 export interface DaemonMsg_EvictResult {
-  schema_version: ProtocolVersion;
   type: "daemon:evict-result";
   requestId: string;
   ok: boolean;
@@ -694,7 +673,6 @@ export interface DaemonMsg_EvictResult {
  * pending the askMain research.)
  */
 export interface DaemonMsg_ResidencyOp {
-  schema_version: ProtocolVersion;
   type: "daemon:residency-op";
   requestId: string;
   op: "pin" | "unpin" | "register-cold";
@@ -704,7 +682,6 @@ export interface DaemonMsg_ResidencyOp {
 
 /** Vessel → island: ack for a residency-op. */
 export interface DaemonMsg_ResidencyOpResult {
-  schema_version: ProtocolVersion;
   type: "daemon:residency-op-result";
   requestId: string;
   ok: boolean;
@@ -720,7 +697,6 @@ export interface DaemonMsg_ResidencyOpResult {
  * that aren't mounted. The daemon computes "affected by content"; main filters "live".
  */
 export interface DaemonMsg_WikiAlert {
-  schema_version: ProtocolVersion;
   type: "daemon:wiki-alert";
   /** The affected wiki's slug — main maps it to `${hostId}:${slug}` to find the island. */
   wikiSlug: string;
@@ -746,7 +722,6 @@ export interface DaemonMsg_WikiAlert {
  * Read-only end to end — no field of this message writes.
  */
 export interface WikiMsg_SensoriumSignal {
-  schema_version: ProtocolVersion;
   type: SensoriumSignalType;
   requestId: string;
   /** verb fields (recall's text/sigilHead/likeTitle/limit) — the cap reads them off `args`. */
@@ -796,7 +771,6 @@ export type VesselToIslandMsg =
  * GP-2: payload MUST contain only string | number | boolean values.
  */
 export interface IslandMsg_Event {
-  schema_version: ProtocolVersion;
   type: "event";
   wikiUri: string;
   listenable: string;
@@ -809,7 +783,6 @@ export interface IslandMsg_Event {
  * Vessel calls worker.terminate() on receipt.
  */
 export interface IslandMsg_TeardownAck {
-  schema_version: ProtocolVersion;
   type: "teardown:ack";
 }
 
@@ -821,7 +794,6 @@ export interface IslandMsg_TeardownAck {
  * See: lar:///ha.ka.ba/lares/api/pono/ea
  */
 export interface IslandMsg_Ea {
-  schema_version: ProtocolVersion;
   type: "ea";
   wikiUri: string;
 }
@@ -842,7 +814,6 @@ export interface IslandMsg_Ea {
  * "timer-ISR kick" anti-pattern, guarded.)
  */
 export interface IslandMsg_Breath {
-  schema_version: ProtocolVersion;
   type: "breath";
   wikiUri: string;
   phase: string;
@@ -853,7 +824,6 @@ export interface IslandMsg_Breath {
  * Island fault signal. Vessel MUST mark the slot as evicted.
  */
 export interface IslandMsg_Fault {
-  schema_version: ProtocolVersion;
   type: "fault";
   wikiUri: string;
   error: string;
@@ -865,7 +835,6 @@ export interface IslandMsg_Fault {
  * `requestId` — verified bytes, or `null` when no fleet holder carried them (PENDING stays PENDING, no fault).
  */
 export interface IslandMsg_CasWant {
-  schema_version: ProtocolVersion;
   type: "cas:want";
   requestId: string;
   cid: string;
@@ -873,7 +842,6 @@ export interface IslandMsg_CasWant {
 
 /** Vessel → island: the fetch door's answer — the bytes (already verified against the cid) or null. */
 export interface IslandMsg_CasBlock {
-  schema_version: ProtocolVersion;
   type: "cas:block";
   requestId: string;
   bytes: Uint8Array | null;
@@ -884,7 +852,6 @@ export interface IslandMsg_CasBlock {
  * from the session's own facets on the same `requestId`: the document, or null with the refusal's name.
  */
 export interface IslandMsg_ViewCatalog {
-  schema_version: ProtocolVersion;
   type: "view:catalog";
   requestId: string;
   name: string;
@@ -892,7 +859,6 @@ export interface IslandMsg_ViewCatalog {
 
 /** Vessel → island: the view's answer to `view:catalog`. */
 export interface IslandMsg_ViewCatalogResult {
-  schema_version: ProtocolVersion;
   type: "view:catalog-result";
   requestId: string;
   documentUrl: string | null;
@@ -905,7 +871,6 @@ export interface IslandMsg_ViewCatalogResult {
  * with the bytes on the same `requestId`. The island re-checks the bytes against the address it asked for.
  */
 export interface IslandMsg_ViewContent {
-  schema_version: ProtocolVersion;
   type: "view:content";
   requestId: string;
   cid: string;
@@ -913,7 +878,6 @@ export interface IslandMsg_ViewContent {
 
 /** Vessel → island: the view's answer to `view:content`: the bytes, or null with the refusal's name. */
 export interface IslandMsg_ViewContentResult {
-  schema_version: ProtocolVersion;
   type: "view:content-result";
   requestId: string;
   bytes: Uint8Array | null;
@@ -927,7 +891,6 @@ export interface IslandMsg_ViewContentResult {
  * and that replica rests in the owner's store; the island acks its teardown only then.
  */
 export interface IslandMsg_ViewSettle {
-  schema_version: ProtocolVersion;
   type: "view:settle";
   requestId: string;
   /** Document URL → the heads the island holds, as hex change hashes. */
@@ -936,7 +899,6 @@ export interface IslandMsg_ViewSettle {
 
 /** Vessel → island: the answer to `view:settle`. `settled: false` names a view that closed first. */
 export interface IslandMsg_ViewSettled {
-  schema_version: ProtocolVersion;
   type: "view:settled";
   requestId: string;
   settled: boolean;
@@ -948,7 +910,6 @@ export interface IslandMsg_ViewSettled {
  * named documents durably, and waits for `doc:rested` on the same `requestId`.
  */
 export interface IslandMsg_DocRest {
-  schema_version: ProtocolVersion;
   type: "doc:rest";
   requestId: string;
   documentIds: string[];
@@ -956,7 +917,6 @@ export interface IslandMsg_DocRest {
 
 /** Vessel → island: the rest door's answer — every named document rests in the vessel's store, or `why` it does not. */
 export interface IslandMsg_DocRested {
-  schema_version: ProtocolVersion;
   type: "doc:rested";
   requestId: string;
   rested: boolean;
@@ -971,13 +931,12 @@ export type CustodyWriteCarrier = "archive" | "veil";
  * answers `custody:written` on the same `requestId`. The island names the CARRIER, never a path: the vessel decides
  * where the bytes rest.
  */
-export interface IslandMsg_CustodyWrite { schema_version: ProtocolVersion; type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array; }
+export interface IslandMsg_CustodyWrite { type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array; }
 /** Vessel → island: the custody write door's answer: the bytes rest sealed, or `why` they do not. */
-export interface IslandMsg_CustodyWritten { schema_version: ProtocolVersion; type: "custody:written"; requestId: string; written: boolean; why?: string; }
+export interface IslandMsg_CustodyWritten { type: "custody:written"; requestId: string; written: boolean; why?: string; }
 
 /** Vessel → island: the fleet-edge standing the vessel read for an island's dyad ask. */
 export interface IslandMsg_DyadRead {
-  schema_version: ProtocolVersion;
   type: "dyad:read";
   requestId: string;
   standing: "clear" | "aside" | "owing" | "returned";
@@ -985,7 +944,6 @@ export interface IslandMsg_DyadRead {
 
 /** Island → vessel: ask the vessel's live fleet board for this device's standing. */
 export interface IslandMsg_DyadAsk {
-  schema_version: ProtocolVersion;
   type: "dyad:ask";
   requestId: string;
   fleetRoot: string;
@@ -1000,7 +958,6 @@ export interface IslandMsg_DyadAsk {
  * The wiki change event fires at next tick; the island's VerbDispatcher dispatches it.
  */
 export interface WikiMsg_PlaceVerb {
-  schema_version: ProtocolVersion;
   type:           "wiki:place-verb";
   verb:           string;
   args:           Record<string, unknown>;
@@ -1018,7 +975,6 @@ export interface WikiMsg_PlaceVerb {
  * `fields` is an explicit allowlist of primitive event properties (GP-2: primitives only).
  */
 export interface WikiMsg_DomEvent {
-  schema_version: ProtocolVersion;
   type:           "wiki:dom-event";
   renderId:       string;
   eventType:      string;
@@ -1061,7 +1017,6 @@ export function boundedDomInputValue(v: unknown): string | null {
  * edit widgets read what a human typed exactly where they read a local keystroke.
  */
 export interface WikiMsg_DomInput {
-  schema_version: ProtocolVersion;
   type:           "wiki:dom-input";
   renderId:       string;
   eventType:      string;
@@ -1077,7 +1032,6 @@ export interface WikiMsg_DomInput {
  * For fire-and-forget verbs (no result needed) the island omits this message.
  */
 export interface WikiMsg_VerbResult {
-  schema_version: ProtocolVersion;
   type:           "wiki:verb-result";
   requestId:      string;
   result?:        Record<string, unknown>;
@@ -1094,7 +1048,6 @@ export interface WikiMsg_VerbResult {
  * Inversion of control: the Worker initiates; the vessel waits.
  */
 export interface IslandMsg_Ready {
-  schema_version: ProtocolVersion;
   type: "ready";
 }
 
@@ -1126,17 +1079,13 @@ export type IslandToVesselMsg =
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
-function _hasVersion(v: unknown): v is { schema_version: ProtocolVersion; type: string } {
-  return (
-    typeof v === "object" &&
-    v !== null &&
-    (v as Record<string, unknown>).schema_version === ISLAND_PROTOCOL_VERSION &&
-    typeof (v as Record<string, unknown>).type === "string"
-  );
+/** A message names its type, and the type names its shape; no counter rides beside it. */
+function _hasType(v: unknown): v is { type: string } {
+  return typeof v === "object" && v !== null && typeof (v as Record<string, unknown>).type === "string";
 }
 
 export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
-  if (!_hasVersion(v)) return false;
+  if (!_hasType(v)) return false;
   // The text bound holds AT THE ISLAND DOOR — the one gate every island message passes (the sovereign
   // kernel's listen). Refusing here means no behavior, no cap, and no TW5 handler ever sees an unbounded
   // string: an over-long arrival vanishes exactly as a malformed one does, and the island keeps running.
@@ -1146,7 +1095,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
-  if (!_hasVersion(v)) return false;
+  if (!_hasType(v)) return false;
   return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
     v.type as IslandToVesselMsg["type"],
   );
@@ -1155,11 +1104,11 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
 // ── Envelope factories ─────────────────────────────────────────────────────
 
 export function mkTeardown(): IslandMsg_Teardown {
-  return { schema_version: ISLAND_PROTOCOL_VERSION, type: "teardown" };
+  return { type: "teardown" };
 }
 
 export function mkTeardownAck(): IslandMsg_TeardownAck {
-  return { schema_version: ISLAND_PROTOCOL_VERSION, type: "teardown:ack" };
+  return { type: "teardown:ack" };
 }
 
 /**
@@ -1192,7 +1141,6 @@ export function mkManifest(
   },
 ): IslandMsg_Manifest {
   const msg: IslandMsg_Manifest = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "manifest",
     wikiUri,
     coreHash,
@@ -1212,21 +1160,21 @@ export function mkManifest(
 
 /** Ready signal — Worker has registered its message listener, vessel may now send the manifest. */
 export function mkReady(): IslandMsg_Ready {
-  return { schema_version: ISLAND_PROTOCOL_VERSION, type: "ready" };
+  return { type: "ready" };
 }
 
 /** Build an ea sovereignty declaration — the island signals it breathes and stands ready. */
 export function mkEa(wikiUri: string): IslandMsg_Ea {
-  return { schema_version: ISLAND_PROTOCOL_VERSION, type: "ea", wikiUri };
+  return { type: "ea", wikiUri };
 }
 
 /** Build a mount-progress breath — `phase` names the stage, `progress` the monotonic work counter. */
 export function mkBreath(wikiUri: string, phase: string, progress = 0): IslandMsg_Breath {
-  return { schema_version: ISLAND_PROTOCOL_VERSION, type: "breath", wikiUri, phase, progress };
+  return { type: "breath", wikiUri, phase, progress };
 }
 
 export function mkFault(wikiUri: string, error: string): IslandMsg_Fault {
-  return { schema_version: ISLAND_PROTOCOL_VERSION, type: "fault", wikiUri, error };
+  return { type: "fault", wikiUri, error };
 }
 
 export function mkDaemonPlaceVerb(opts: {
@@ -1241,7 +1189,6 @@ export function mkDaemonPlaceVerb(opts: {
   effectKey?: string;
 }): DaemonMsg_PlaceVerb {
   const msg: DaemonMsg_PlaceVerb = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:place-verb",
     verb: opts.verb,
     args: opts.args,
@@ -1264,7 +1211,6 @@ export function mkTelemetryPlaceVerb(opts: {
   chunkIndex?: number;
 }): DaemonMsg_TelemetryPlaceVerb {
   return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "telemetry:place-verb",
     turnText: opts.turnText,
     sourceFile: opts.sourceFile,
@@ -1279,7 +1225,6 @@ export function mkStructurepalaceKapae(opts: {
   ended?: string;
 }): DaemonMsg_StructurepalaceKapae {
   return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "structurepalace:kapae",
     turnKey: opts.turnKey,
     ...(opts.ended ? { ended: opts.ended } : {}),
@@ -1291,7 +1236,6 @@ export function mkDaemonDeriveSkeletonRequest(opts: {
   query: string;
 }): DaemonMsg_DeriveSkeletonRequest {
   return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:derive-skeleton-request",
     requestId: opts.requestId,
     query: opts.query,
@@ -1305,7 +1249,6 @@ export function mkDaemonDeriveSkeletonResult(opts: {
   error?: string;
 }): DaemonMsg_DeriveSkeletonResult {
   const msg: DaemonMsg_DeriveSkeletonResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:derive-skeleton-result",
     requestId: opts.requestId,
   };
@@ -1324,7 +1267,6 @@ export function mkDaemonWorldlineCompareRequest(opts: {
   root?: string;
 }): DaemonMsg_WorldlineCompareRequest {
   const msg: DaemonMsg_WorldlineCompareRequest = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:worldline-compare-request",
     requestId: opts.requestId,
     a: opts.a,
@@ -1342,7 +1284,6 @@ export function mkDaemonWorldlineCompareResult(opts: {
   error?: string;
 }): DaemonMsg_WorldlineCompareResult {
   const msg: DaemonMsg_WorldlineCompareResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:worldline-compare-result",
     requestId: opts.requestId,
   };
@@ -1361,7 +1302,6 @@ export function mkDaemonWorldlineTrajectoryRequest(opts: {
   window?: number;
 }): DaemonMsg_WorldlineTrajectoryRequest {
   const msg: DaemonMsg_WorldlineTrajectoryRequest = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:worldline-trajectory-request",
     requestId: opts.requestId,
     handle: opts.handle,
@@ -1381,7 +1321,6 @@ export function mkDaemonWorldlineTrajectoryResult(opts: {
   error?: string;
 }): DaemonMsg_WorldlineTrajectoryResult {
   const msg: DaemonMsg_WorldlineTrajectoryResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:worldline-trajectory-result",
     requestId: opts.requestId,
   };
@@ -1400,7 +1339,6 @@ export function mkDaemonDelegateVerb(opts: {
   batchMode?: string;
 }): DaemonMsg_DelegateVerb {
   const msg: DaemonMsg_DelegateVerb = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:delegate-verb",
     requestId: opts.requestId,
     verb: opts.verb,
@@ -1418,7 +1356,6 @@ export function mkDaemonVerbResult(opts: {
   error?: string;
 }): DaemonMsg_VerbResult {
   const msg: DaemonMsg_VerbResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:verb-result",
     requestId: opts.requestId,
   };
@@ -1436,7 +1373,6 @@ export function mkDaemonVerifyRequest(opts: {
   edge?:     DeviceDelegationTiddler;
 }): DaemonMsg_VerifyRequest {
   return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:verify-request",
     requestId: opts.requestId,
     cardBytes: opts.cardBytes,
@@ -1456,7 +1392,6 @@ export function mkDaemonVerifyResult(opts: {
   peerClass?:     PeerClass;
 }): DaemonMsg_VerifyResult {
   const msg: DaemonMsg_VerifyResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:verify-result",
     requestId: opts.requestId,
     ok:        opts.ok,
@@ -1475,7 +1410,6 @@ export function mkDaemonResolveBindingRequest(opts: {
   wikiSlug:    string;
 }): DaemonMsg_ResolveBindingRequest {
   return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:resolve-binding-request",
     requestId:   opts.requestId,
     fingerprint: opts.fingerprint,
@@ -1492,7 +1426,6 @@ export function mkDaemonResolveBindingResult(opts: {
   error?:       string;
 }): DaemonMsg_ResolveBindingResult {
   const msg: DaemonMsg_ResolveBindingResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:resolve-binding-result",
     requestId: opts.requestId,
   };
@@ -1505,7 +1438,6 @@ export function mkDaemonResolveBindingResult(opts: {
 
 export function mkDaemonEvictResult(opts: { requestId: string; ok: boolean; error?: string }): DaemonMsg_EvictResult {
   const msg: DaemonMsg_EvictResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:evict-result",
     requestId: opts.requestId,
     ok:        opts.ok,
@@ -1521,7 +1453,6 @@ export function mkDaemonResidencyOp(opts: {
   reason?: string;
 }): DaemonMsg_ResidencyOp {
   const msg: DaemonMsg_ResidencyOp = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:residency-op",
     requestId: opts.requestId,
     op:        opts.op,
@@ -1540,7 +1471,6 @@ export function mkDaemonWikiAlert(opts: {
   clear?:   boolean;
 }): DaemonMsg_WikiAlert {
   const msg: DaemonMsg_WikiAlert = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type:     "daemon:wiki-alert",
     wikiSlug: opts.wikiSlug,
     message:  opts.message,
@@ -1554,7 +1484,6 @@ export function mkDaemonWikiAlert(opts: {
 
 export function mkDaemonResidencyOpResult(opts: { requestId: string; ok: boolean; error?: string }): DaemonMsg_ResidencyOpResult {
   const msg: DaemonMsg_ResidencyOpResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "daemon:residency-op-result",
     requestId: opts.requestId,
     ok:        opts.ok,
@@ -1572,7 +1501,6 @@ export function mkWikiPlaceVerb(opts: {
   requestId?: string;
 }): WikiMsg_PlaceVerb {
   const msg: WikiMsg_PlaceVerb = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "wiki:place-verb",
     verb: opts.verb,
     args: opts.args,
@@ -1590,7 +1518,6 @@ export function mkWikiDomEvent(opts: {
   fields: Record<string, number | boolean>;
 }): WikiMsg_DomEvent {
   return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "wiki:dom-event",
     renderId: opts.renderId,
     eventType: opts.eventType,
@@ -1617,7 +1544,6 @@ export function mkWikiDomInput(opts: {
     );
   }
   return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "wiki:dom-input",
     renderId: opts.renderId,
     eventType: opts.eventType,
@@ -1631,7 +1557,6 @@ export function mkSensoriumSignal(opts: {
   args?: Record<string, unknown>;
 }): WikiMsg_SensoriumSignal {
   return {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: opts.signal,
     requestId: opts.requestId,
     // the S2 cap reads its fields off `args` when present — carry the requestId inside it too.
@@ -1645,7 +1570,6 @@ export function mkWikiVerbResult(opts: {
   error?: string;
 }): WikiMsg_VerbResult {
   const msg: WikiMsg_VerbResult = {
-    schema_version: ISLAND_PROTOCOL_VERSION,
     type: "wiki:verb-result",
     requestId: opts.requestId,
   };

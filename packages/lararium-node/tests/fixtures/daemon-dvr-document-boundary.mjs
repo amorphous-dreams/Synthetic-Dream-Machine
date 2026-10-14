@@ -21,7 +21,6 @@ let wikiUri = null;
 
 function event(payload) {
   parentPort.postMessage({
-    schema_version: 1,
     type: "event",
     wikiUri,
     listenable: "daemon:dvr-document-boundary",
@@ -88,14 +87,14 @@ async function open(msg) {
       ordinaryPresent: Boolean(ordinary.doc()?.tiddlers?.[ORDINARY_MARKER]),
       ordinaryOwnedRefused,
     });
-    parentPort.postMessage({ schema_version: 1, type: "ea", wikiUri });
+    parentPort.postMessage({ type: "ea", wikiUri });
   } catch (error) {
-    parentPort.postMessage({ schema_version: 1, type: "fault", wikiUri, error: String(error) });
+    parentPort.postMessage({ type: "fault", wikiUri, error: String(error) });
   }
 }
 
 parentPort.on("message", (msg) => {
-  if (!msg || msg.schema_version !== 1) return;
+  if (!msg) return;
   if (msg.type === "manifest") {
     void open(msg);
     return;
@@ -103,7 +102,7 @@ parentPort.on("message", (msg) => {
   if (msg.type === "teardown") {
     void (async () => {
       try { await repo?.flush(); await ownedRepo?.flush(); } catch { /* the red witness is on disk */ }
-      parentPort.postMessage({ schema_version: 1, type: "teardown:ack" });
+      parentPort.postMessage({ type: "teardown:ack" });
     })();
   }
 });

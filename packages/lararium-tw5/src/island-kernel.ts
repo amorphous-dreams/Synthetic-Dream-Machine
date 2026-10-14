@@ -46,7 +46,6 @@ import type {
 import {
   mkEa,
   mkFault,
-  ISLAND_PROTOCOL_VERSION,
   LARES_VERB_ARGS_WIRE_FIELD,
 } from "@lararium/mesh";
 
@@ -93,7 +92,6 @@ export class IslandKernel {
           // Structured summon args ride the GP-2-flat island wire as ONE `verb-args` JSON
           // string (the payload admits only scalars); the vessel re-parses it (#48).
           this._post({
-            schema_version: ISLAND_PROTOCOL_VERSION,
             type: "event",
             wikiUri: this._wikiUri!,
             listenable,

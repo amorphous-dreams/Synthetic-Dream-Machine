@@ -329,7 +329,6 @@ export function mountProjection(ctx: IslandContext): () => void {
         delete scope.pendingAnswer;
       }
       ctx.post({
-        schema_version: 1,
         type:           "event",
         wikiUri:        ctx.wikiUri,
         listenable:     PROJECTION_FRAME,

@@ -179,7 +179,6 @@ export function mountCoherenceProjection(ctx: IslandContext): () => void {
     read: () => adapter.consistency(),
     emit: (frame, rev) => {
       ctx.post({
-        schema_version: 1,
         type: "event",
         wikiUri: ctx.wikiUri,
         listenable: COHERENCE_FRAME,

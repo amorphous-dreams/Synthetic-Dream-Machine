@@ -22,7 +22,7 @@ describe("the node oracle read-face wire", () => {
       [LARES_DOC_URI]: mutableLarRecord(LARES_DOC_URI, { text: "automerge:lares" }, "seed"),
       [liveOnlyTitle]: mutableLarRecord(liveOnlyTitle, { text: "automerge:live-only" }, "live"),
     } } as unknown as LarDoc;
-    const seed = { format: "lararium-genesis-seed/v1", actorSeed: "wire", schemaVersion: "1", blobs: {}, tiddlers: { [LARES_DOC_URI]: {} } } as GenesisSeed;
+    const seed = { format: "lararium-genesis-seed/v1", actorSeed: "wire", blobs: {}, tiddlers: { [LARES_DOC_URI]: {} } } as GenesisSeed;
     const snapshot = await snapshotPublicOracle(floor, seed, "seed-cid");
     expect(snapshot.seedCid).toBe("seed-cid");
     const exported = load<Record<string, unknown>>(snapshot.bytes);

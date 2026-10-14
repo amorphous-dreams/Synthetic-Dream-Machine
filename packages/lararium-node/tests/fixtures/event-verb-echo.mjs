@@ -19,18 +19,17 @@ import { parentPort } from "node:worker_threads";
 let wikiUri = null;
 
 parentPort.on("message", (msg) => {
-  if (typeof msg !== "object" || msg === null || msg.schema_version !== 1) return;
+  if (typeof msg !== "object" || msg === null) return;
 
   if (msg.type === "manifest") {
     wikiUri = msg.wikiUri;
 
     // Emit ea — island declares sovereignty.
-    parentPort.postMessage({ schema_version: 1, type: "ea", wikiUri });
+    parentPort.postMessage({ type: "ea", wikiUri });
 
     // Immediately post a verb-carrying event — simulates island-kernel enriching
     // a tm-verse-event with verb metadata from a reaction:listenable edge.
     parentPort.postMessage({
-      schema_version: 1,
       type: "event",
       wikiUri,
       listenable: "OnActivated",
@@ -45,7 +44,7 @@ parentPort.on("message", (msg) => {
   }
 
   if (msg.type === "teardown" || msg.type === "hooanu") {
-    parentPort.postMessage({ schema_version: 1, type: "teardown:ack" });
+    parentPort.postMessage({ type: "teardown:ack" });
     wikiUri = null;
     return;
   }

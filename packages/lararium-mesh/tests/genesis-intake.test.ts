@@ -37,7 +37,6 @@ const CORE_BYTES = new TextEncoder().encode("fake-tw5-core");
 const RESTART_SEED = {
   format: GENESIS_SEED_FORMAT,
   actorSeed: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-  schemaVersion: "0.1",
   blobs: {
     [ENGINE_CORE_ID]: { id: ENGINE_CORE_ID, version: "test", sha256: "1".repeat(64), mimeType: "application/javascript" },
     [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: {

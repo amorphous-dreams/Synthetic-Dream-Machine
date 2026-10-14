@@ -81,7 +81,6 @@ export function hasCapture(opts: CaptureCapOptions): IslandCap {
         // Event payload is flat scalars (the CRDT/tiddler law) — flatten the stats + the live
         // (breathing) gate; the host reconstructs. gate_depth makes the servo's effect visible.
         ctx.post({
-          schema_version: 1,
           type: "event",
           wikiUri: ctx.wikiUri,
           listenable: TELEMETRY_FRAME,

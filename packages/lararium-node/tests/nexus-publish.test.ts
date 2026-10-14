@@ -69,7 +69,7 @@ function seedMinimalGenesis(): void {
   const genesisDir = join(root, "genesis");
   mkdirSync(genesisDir, { recursive: true });
   const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
     blobs: {},
     tiddlers: {
       [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
@@ -218,7 +218,7 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     const genesisDir = join(root, "genesis-separate");
     mkdirSync(genesisDir, { recursive: true });
     const seed: GenesisSeed = {
-      format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+      format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
       blobs: {},
       tiddlers: {
         [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
@@ -246,7 +246,7 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     mkdirSync(genesisDir, { recursive: true });
     const bootBlobId = "$:/boot/the-grammar";
     const seed: GenesisSeed = {
-      format: "lararium-genesis-seed/v1", actorSeed: "actor-seed", schemaVersion: "alpha",
+      format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
       blobs: { [bootBlobId]: { id: bootBlobId, sha256: "f".repeat(64), mimeType: "application/json", version: "v1" } },
       tiddlers: {
         [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },

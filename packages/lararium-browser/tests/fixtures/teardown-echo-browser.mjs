@@ -29,21 +29,20 @@ const liveSubscriptions = [
 self.addEventListener("message", (e) => {
   const msg = e.data;
   if (typeof msg !== "object" || msg === null) return;
-  if (msg.schema_version !== 1) {
-    self.postMessage({ schema_version: 1, type: "fault", wikiUri: "", error: `unexpected schema_version: ${msg.schema_version}` });
+  if (typeof msg.type !== "string") {
+    self.postMessage({ type: "fault", wikiUri: "", error: "a message names no type" });
     return;
   }
 
   if (msg.type === "teardown") {
     const cancelled = liveSubscriptions.map((sub) => sub.cancel());
-    self.postMessage({ schema_version: 1, type: "cancel:confirmed", cancelled });
-    self.postMessage({ schema_version: 1, type: "teardown:ack" });
+    self.postMessage({ type: "cancel:confirmed", cancelled });
+    self.postMessage({ type: "teardown:ack" });
     return;
   }
 
   if (msg.type === "manifest") {
     self.postMessage({
-      schema_version: 1,
       type: "ea",
       wikiUri: msg.wikiUri,
     });

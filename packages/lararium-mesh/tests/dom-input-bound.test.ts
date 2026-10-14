@@ -9,7 +9,7 @@
 import { describe, test, expect } from "vitest";
 import {
   boundedDomInputValue, mkWikiDomInput, mkWikiDomEvent, isVesselToIslandMsg,
-  DOM_INPUT_MAX_CHARS, ISLAND_PROTOCOL_VERSION,
+  DOM_INPUT_MAX_CHARS,
 } from "../src/island-protocol.js";
 
 describe("the bounded text leg", () => {
@@ -33,12 +33,12 @@ describe("the bounded text leg", () => {
     expect(() => mkWikiDomInput({ renderId: "1", eventType: "input", value: "x".repeat(DOM_INPUT_MAX_CHARS + 1) }))
       .toThrow(/at most/);
     expect(mkWikiDomInput({ renderId: "1", eventType: "input", value: "hi" })).toEqual({
-      schema_version: ISLAND_PROTOCOL_VERSION, type: "wiki:dom-input", renderId: "1", eventType: "input", value: "hi",
+      type: "wiki:dom-input", renderId: "1", eventType: "input", value: "hi",
     });
   });
 
   test("THE ISLAND DOOR refuses an over-long arrival — no behavior, no cap, no TW5 handler sees it", () => {
-    const inBound = { schema_version: ISLAND_PROTOCOL_VERSION, type: "wiki:dom-input", renderId: "1", eventType: "input", value: "hi" };
+    const inBound = { type: "wiki:dom-input", renderId: "1", eventType: "input", value: "hi" };
     expect(isVesselToIslandMsg(inBound)).toBe(true);
     expect(isVesselToIslandMsg({ ...inBound, value: "x".repeat(DOM_INPUT_MAX_CHARS + 1) })).toBe(false);
     // A sender that omits the field, or sends a non-string in it, fails the same door the same way.
@@ -50,7 +50,7 @@ describe("the bounded text leg", () => {
   test("the CLICK path keeps its primitives-only shape — the text kind widened nothing", () => {
     const click = mkWikiDomEvent({ renderId: "1", eventType: "click", fields: { button: 0, metaKey: false } });
     expect(isVesselToIslandMsg(click)).toBe(true);
-    expect(Object.keys(click)).toEqual(["schema_version", "type", "renderId", "eventType", "fields"]);
+    expect(Object.keys(click)).toEqual(["type", "renderId", "eventType", "fields"]);
     expect("value" in click).toBe(false);
   });
 });
