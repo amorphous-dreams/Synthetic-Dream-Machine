@@ -450,7 +450,7 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
     expect(code("lararium-keyhive", "src", "keyhive-lockbox.ts").match(/subscribeSeatRolls/g)).toBeNull();
   });
 
-  test.skip("THE PERSONAGROUP STANDS AS A GROUP, AND ITS REVOCATION ROLLS EVERY BAG IT REACHES — DEFERRED: kapae#/keys. Keyhive carries a removal down to the documents a group reaches and to nothing a document reaches (`seat-roll-substrate`, probes 8 and 9); every principal stands as a sentinel document today. The move changes the group's own id, so it lands with a re-founding.", () => {
+  test("THE PERSONAGROUP STANDS AS A GROUP, AND ITS REVOCATION ROLLS EVERY BAG IT REACHES — kapae#/keys. A face's PersonaGroup founds as a Keyhive group, and Keyhive carries a removal down to every document the group reaches (`seat-roll-substrate`, probes 8 and 9). Behaviour in `@lararium/node` `tests/persona-group-roll.test.ts`; this census reads the founding door.", () => {
     const provider = readFileSync(join(import.meta.dirname, "..", "..", "lararium-keyhive", "src", "keyhive-provider.ts"), "utf8");
     expect(provider).toMatch(/generateGroup\(/);
   });
