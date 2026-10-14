@@ -245,9 +245,9 @@ and the six paths disagree, operator-ruled order governs: the engine fold and th
 seal land early, and the container's tail lands before the charter train.
 
 !!! 1 · GROUND ~ the residue (no identity bytes; waits on nothing; rides beside SUBSTRATE on disjoint files)
-* ''The herm route for cancel and receipts'': the three receipts of #/rulings, mesh → node → CLI.
+* ''The receipt ledger's direct leg'': the three receipts of #/rulings stand where a CLI meets its vessel (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/receipt-ledger">>). The leg across a herm rides THE WIRE (`W12` of #/the-loops).
 * ''`KeyhiveIdentitySlot` production wiring.''
-* ''The quiet doors, retired bags, the evergreen sweep and custody's edges'', itemized in #/the-loops (`G4` through `G7`).
+* ''Retired bags, the evergreen sweep and custody's edges'', itemized in #/the-loops (`G5` through `G7`).
 * ''Measures'': the full-corpus per-verb flush re-measure; pack-PIN recursion; a production `assertBodyIndexTier` caller.
 * ''Canon direction the build owes'': canon crosses hearth → leaf; a leaf never writes the hearth's canon documents, and edits land in the working layer. The admitted leaf-side mount flag stops mount-path writes, while Repo sync carries those documents in both directions.
 * ''A binding lands after its document rests'': a slot mint records the binding only on the vessel store's acknowledgment (the rest door, `doc:rest` / `doc:rested`); a mint no binding names stays listed (`lares vessel unbound`), and nothing removes one.
@@ -370,9 +370,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 ''A'' HARBOR's tail · ''V'' recovery's verbs · ''B'' the browser and the phones · ''X'' TWO HEARTHS.
 
 !!! GROUND
-* `G2` The herm route for cancel and the three receipts: the mesh → node → CLI relay leg. G.
 * `G3` `KeyhiveIdentitySlot` wants a production caller, and rides its package barrel without one. House. G.
-* `G4` The quiet doors: store refusals reach JSON under a generic code. G.
 * `G5` Retired bags: the write gate enumerates its verbs by hand (`action-handler.ts`); the refusal's `error.code` reads generic where its message names `bag-retired`; a wiki-island save and the watcher's ingest-back into a retired bag stand unprobed. Canon owes `action-handler.mem` the refusal that follows DROP. G.
 * `G6` The evergreen sweep. Stale prose in source: `open-node-vessel.ts` and `node-cas.ts` ("read fresh … never cached" over a captured boot epoch); `cabal-vouch.ts` ("an expiry already past"); lane labels in test titles. Back-compat wording or tolerant readers: `index.ts` (node), `open-browser-vessel.ts`, `residency-actions.ts`, `daemon-vm-core.ts`, `nexus-publish.ts`, `ingest-core.ts`, `device-delegation.ts`, `lar-uris.ts`, `seal-reserve.ts`, `mesh-palace.ts` (a carried `expiry` field), `cleanup-days.ts`, `nexus-seal-seed.ts`, `archive-envelope.ts`. G; the false source comments ride the code lane of #/side-lanes.
 * `G7` Custody's edges: the floor guard reads a carrier cut inside its 13-byte magic as `bare`; a short seat can write a charter that boots torn (`nexus-seal.ts`); a floor-class carrier standing alone founds; `setFoundingRoute` stands as a test seam in source (`found.ts`); the custody wait can refuse falsely where no holder answers; `readTty` drops a pasted second line. G.
@@ -380,7 +378,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `G10` The wiki shore's echo law: every leaked change routes as a save. Verify at the shore lane's close. G.
 * `G12` A ten-title change lands without its bag stamp (`island-adaptor.ts`). G.
 * `G13` Summons: no check of who wrote one; a consume tombstones every layer; dedup lives in memory (`verb-dispatcher.ts`, `verb-summons.ts`). Owed: a writer check, a working-layer tombstone alone, durable dedup, lease and fence, and honouring `aud`. House. G.
-* `G15` The refold's answers: `after-roll-awaited.test.ts` reads source shape alone; an unbounded `afterRollChain` stage can stall later rolls; `pokeSealHomeRefold` maps a failed refold to `none`; the plugin build's transcript records a fixed logical path for the TW5 binary, never the resolved one (`build-plugin-tiddler.ts`). G.
+* `G15` The refold's answers. For the compose owner, who holds `open-node-vessel.ts`: `after-roll-awaited.test.ts` reads source shape alone, and wants the chain lifted into a module a vector can run; an unbounded `afterRollChain` stage can stall later rolls, and a bound must never let two refolds of one holder overlap. Beside those: the plugin build's transcript records a fixed logical path for the TW5 binary, never the resolved one (`build-plugin-tiddler.ts`). G.
 * `G16` The shore's small leans, each to verify against the tree: the modified-compare ignores envelope fields, so an untouched draft asks nothing; `lar-kind` matches the palette choice exactly. Kept as built: the draft-open base rides the store record alone; a draft discard refuses by name where no working layer mounts; one shore per engine. G.
 * `G17` Tests only: the mutation survivors a closing review named; the sealed suite's coverage of each place the harness's root split changes behaviour; a detached render id that still fires a handler (`tw5-projection.ts`). G.
 * `G18` The shore: the web defaults name port 8080 and the mode row never moves. G or B.
@@ -458,6 +456,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `W9` The sibling channel at face scope, on per-dial transport keys. W.
 * `W10` The knock tests offline for an observer with candidate keys (`gate-knock.ts`): accepted as a named leak once IK lands. W, canon.
 * `W11` Keyhive keeps the PersonaGroup's private membership and carries no face chain: four probe readings on 0.3.0-alpha.1 stand as alarms (`packages/lararium-keyhive/tests/face-chain-substrate.probe.test.ts`), and a Keyhive bump re-reads them. House. W.
+* `W12` The herm route for cancel and the three receipts (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/receipt-ledger#/the-relay-leg">>); no code asks, cancels or answers across a herm, and three choices stand open. ''The asker's proof'': a signed ask under a new signing domain, or an ask inside the sealed sibling session that already proved its far end. The session road narrows reach to one PersonaGroup and wants a rule for which verbs standing reaches. ''The sealed payload'': a sealed box to the vessel's key, or the session's own seal with a tagged inner frame beside the sync message. A herm reads no plaintext either way. ''The delivery receipt'': a bare session note good for the asker alone, or a note the gate key signs under a new domain. Either adds a frame a herm sends. House lean: the session, its seal, and the bare note: the fewest new shapes and no new signing domain. It lands with `W9`. Operator. W.
 
 !!! ONE FACE
 * `F1` The scoped document view stands specified in mesh (`session-document-view.ts` over `gated-sync-leg.ts`); the pool's surface door (`mountSurface`) and the island kernel's half ride it, and no production caller mounts a surface. Owed: every interactive surface mounts under it in place of the broad sync port, which waits on a verified face (train W) and on callers that hold a session (`F4`, `F6`); the share verdict's caller keeps an owner from offering a session island a document beyond its facets; an admitted leaf's relay adapter wears the one-way gate over its hearth's canon documents, and the hearth wears that gate's twin toward its leaves (`hearth-canon.ts`, `open-browser-vessel.ts`, `open-node-vessel.ts`); a wiki island's verbs that read the catalog document move to the view's catalog ask. O1.
@@ -772,6 +771,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4ZYAB9zmr2njDMxM_5KlYPHVhtlTGcT2uE5e7m4_uHs
+<<^ code="&#x0003;">>ni:///sha-256;GOtfoqYkHdI4IxuZweMmee2YpJy0YbX4kfd97MO9thw
 
 <<^ code="&#x0004;" -> to="?">>
