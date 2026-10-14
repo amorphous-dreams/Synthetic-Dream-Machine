@@ -57,8 +57,12 @@ echo "browser-weld: standing the web surface on :$PORT"
 ) >"$LOG" 2>&1 &
 VITE_PID=$!
 
+# A RUNNER COLOURS THE ANNOUNCEMENT. Vite paints its banner wherever `CI` stands set, and it paints the port
+# alone inside the URL (`http://localhost:<SGR>5173<SGR>/`), so a fixed-string match on the raw log reads a
+# standing server as silent on every hosted runner and as live on every desk. The reader strips the SGR
+# sequences first and matches the text a person reads.
 vite_announced_local_url() {
-  grep -F "Local:" "$LOG" | grep -F "http://localhost:$PORT/" >/dev/null
+  sed $'s/\x1b\\[[0-9;]*m//g' "$LOG" | grep -F "Local:" | grep -F "http://localhost:$PORT/" >/dev/null
 }
 
 web_answers() {

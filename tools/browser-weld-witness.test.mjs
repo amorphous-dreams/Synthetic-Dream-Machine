@@ -80,7 +80,12 @@ case "$FAKE_MODE" in
     /bin/sleep 0.3
     ;;
 esac
-echo "  ➜  Local:   http://localhost:$WELD_PORT/"
+if [ "$FAKE_MODE" = "ready-coloured" ]; then
+  # The line a hosted runner's Vite writes: the port alone rides inside its own SGR pair.
+  printf '  \\033[32m➜\\033[39m  \\033[1mLocal\\033[22m:   \\033[36mhttp://localhost:\\033[1m%s\\033[22m/\\033[39m\\n' "$WELD_PORT"
+else
+  echo "  ➜  Local:   http://localhost:$WELD_PORT/"
+fi
 printf '%s\\n' "$$" > "$FAKE_VITE_PIDS"
 (
   trap 'exit 0' TERM INT
@@ -336,6 +341,24 @@ async function testDelayedForeignPortCannotPassViteReadiness() {
   }
 }
 
+/**
+ * A hosted runner sets `CI`, and Vite then colours its banner with the port inside its own SGR pair. The
+ * readiness reader must take that line as the announcement: read raw, every hosted run ends "never answered"
+ * over a server that stands.
+ */
+async function testAColouredAnnouncementStillReadsReady() {
+  const harness = await makeHarness("ready-coloured");
+  try {
+    const result = await run("bash", [RUNNER], { cwd: REPO, env: harness.env }).done;
+    assert.equal(result.status, 0, result.output);
+    assert.deepEqual(await readLines(harness.calls), ["weld", "c4"]);
+    // The fake wrote the escaped form, so the vector exercised the strip and never a plain line.
+    assert.match(await readFile(join(harness.artifacts, "vite.log"), "utf8"), /localhost:\x1b\[1m56991\x1b\[22m\//);
+  } finally {
+    await harness.dispose();
+  }
+}
+
 async function testSignalReapsTheViteProcessGroup() {
   const harness = await makeHarness("ready", { FAKE_BLOCK_WELD: "1" });
   try {
@@ -401,6 +424,7 @@ await testC4TraceInstrumentsWorkerShoreInbound();
 await testC4TraceInstrumentsWorkerShoreRegistration();
 await testIndependentDriversAndArtifacts();
 await testSlowSurfaceStillReachesTheDrivers();
+await testAColouredAnnouncementStillReadsReady();
 await testForeignPortCannotPassReadiness();
 await testDelayedForeignPortCannotPassViteReadiness();
 await testSignalReapsTheViteProcessGroup();
