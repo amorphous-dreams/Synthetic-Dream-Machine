@@ -60,14 +60,14 @@ lattice membership from cold — no network request, no authority server.
 
 ```text
 Vessel Individual (Ed25519 device keypair, local storage only)
-  └─▶ PersonaGroup sentinel Document   ← Gate B: vessel ∈ PersonaGroup
+  └─▶ PersonaGroup, a Keyhive group    ← Gate B: vessel ∈ PersonaGroup
            └─▶ MeshCabal sentinel Document  ← Gate C: PersonaGroup ∈ MeshCabal
 ```
 
 Gate A — local key integrity: Keyhive DID MUST match disk or WebCrypto verifying key.
 Throws `EaKeyMismatch` on any divergence. No silent corruption path.
 
-Gate B — device membership: PersonaGroup sentinel doc carries this vessel's Individual as a member.
+Gate B — device membership: the PersonaGroup, a Keyhive group, seats this vessel's identity as a member.
 Verified by reading the oracle tiddler written at founding or admit-apply time.
 
 Gate C — cabal membership: MeshCabal sentinel doc carries this PersonaGroup as a member.
@@ -131,6 +131,6 @@ would turn admission into cloning, and every admitted vessel would hold the huma
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;POEsHtQqCkSas6bjYglDZErQAWDVQjpwDGIpfVAYoaQ
+<<^ code="&#x0003;">>ni:///sha-256;sV2hD1WvuFKyYjmVE2Ips06GQOUVsUx-LZjmRxZxkwg
 
 <<^ code="&#x0004;" -> to="?">>

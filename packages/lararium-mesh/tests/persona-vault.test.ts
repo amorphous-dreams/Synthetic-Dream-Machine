@@ -166,8 +166,8 @@ describe("persona-vault core (#64 stage 1)", () => {
 
   test("anchors ride the vault as a SET keyed by index; list reads the store's keys", () => {
     const v = makeInMemoryVault();
-    const a0: IdentityAnchors = { personaGroupDocIdHex: "a0".repeat(32), meshCabalDocIdHex: "b0".repeat(32), personaGroupAgentIdHex: "c0".repeat(32) };
-    const a1: IdentityAnchors = { personaGroupDocIdHex: "a1".repeat(32), meshCabalDocIdHex: "b1".repeat(32), personaGroupAgentIdHex: "c1".repeat(32) };
+    const a0: IdentityAnchors = { personaGroupId: "a0".repeat(32), meshCabalDocIdHex: "b0".repeat(32) };
+    const a1: IdentityAnchors = { personaGroupId: "a1".repeat(32), meshCabalDocIdHex: "b1".repeat(32) };
     v.anchors.save(0, a0);
     v.anchors.save(1, a1);
     expect(v.anchors.load(0)).toEqual(a0);
@@ -191,9 +191,8 @@ describe("persona-vault core (#64 stage 1)", () => {
  */
 describe("the wear-reboot mount-switch carries the veil", () => {
   const FULL = {
-    personaGroupDocIdHex:   "aa".repeat(32),
+    personaGroupId:   "aa".repeat(32),
     meshCabalDocIdHex:      "bb".repeat(32),
-    personaGroupAgentIdHex: "cc".repeat(32),
     signerDid:              "did:key:zWorn",
     personaKelPrefix:       "EWornPrefix",
     deviceEdge:             { title: "edge", personaRootDid: "did:key:zWorn" } as unknown as IdentityAnchors["deviceEdge"],
@@ -236,9 +235,8 @@ describe("the wear-reboot mount-switch carries the veil", () => {
  */
 describe("a worn face refused for want of its mount material", () => {
   const FULL_M = {
-    personaGroupDocIdHex:   "aa".repeat(32),
+    personaGroupId:   "aa".repeat(32),
     meshCabalDocIdHex:      "bb".repeat(32),
-    personaGroupAgentIdHex: "cc".repeat(32),
     signerDid:              "did:key:zWorn",
     personaKelPrefix:       "EWornPrefix",
     deviceEdge:             { title: "edge" } as unknown as IdentityAnchors["deviceEdge"],

@@ -40,7 +40,7 @@ async function rig(opts: { seated: boolean }): Promise<{ resolver: SlotDocResolv
     repo, daemonStore: daemon, keyhive: kh,
     catalog: makeCatalogAccessor(repo, catalogHandle.url), oracle: null,
     vesselDid: () => DID, mintedByHex: () => "0x" + "a".repeat(64),
-    personaGroupAgentIdHex: "cd".repeat(16),
+    personaGroupId: "cd".repeat(16),
     faceSeated: async () => opts.seated,
     delegateToFace: async () => {},
   });

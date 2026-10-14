@@ -45,8 +45,7 @@ const manifestWithKey = (vesselVerifyingKey: string) => ({
   daemonAuth: {
     vesselVerifyingKey,
     registerBags: [],
-    personaGroupDocIdHex:   "ab".repeat(16),
-    personaGroupAgentIdHex: "cd".repeat(16),
+    personaGroupId:   "ab".repeat(16),
   },
 }) as never;
 

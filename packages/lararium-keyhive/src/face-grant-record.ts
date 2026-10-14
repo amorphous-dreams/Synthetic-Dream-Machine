@@ -35,14 +35,13 @@ export const FACE_GRANT_PREFIX = "$:/lares/face-grant/";
  */
 export interface FaceGrantRecord {
   readonly kind: "face-join-grant/v1";
-  /** The PersonaGroup sentinel this seat lands in. */
-  readonly groupDocIdHex: string;
+  /** The PersonaGroup (a Keyhive group's id) this seat lands in. */
+  readonly groupId: string;
   /** The joinee's agent id (its card-derived identifier — ends in its vessel verifying key). */
   readonly joineeAgentIdHex: string;
   readonly founderCard: string;
   readonly capEvents: readonly string[];
   readonly reKeyed: boolean;
-  readonly regranted: number;
   readonly reSealed: readonly { bagUrl: string; contentRefB64: string; ciphertextB64: string }[];
   /** The founder's OWN device-delegation edge — root-signed; the joinee verifies it under the root it pinned. */
   readonly founderEdge: DeviceDelegationTiddler;
@@ -53,8 +52,8 @@ export interface FaceGrantRecord {
 export type UnsignedFaceGrantRecord = Omit<FaceGrantRecord, "sig">;
 
 /** The record's title on the plane — one per (group, joinee); a re-join overwrites its own. */
-export function faceGrantTitle(groupDocIdHex: string, joineeAgentIdHex: string): string {
-  return `${FACE_GRANT_PREFIX}${groupDocIdHex}/${joineeAgentIdHex.replace(/^0x/i, "").toLowerCase()}`;
+export function faceGrantTitle(groupId: string, joineeAgentIdHex: string): string {
+  return `${FACE_GRANT_PREFIX}${groupId}/${joineeAgentIdHex.replace(/^0x/i, "").toLowerCase()}`;
 }
 
 /**
@@ -99,7 +98,7 @@ export interface FaceGrantVerifyContext {
   /** This vessel's own raw verifying-key hex — the record must name it. */
   readonly selfVerifyingKey: string;
   /** The group this vessel's face belongs to — the record must name it. */
-  readonly groupDocIdHex: string;
+  readonly groupId: string;
   /**
    * OPTIONAL PersonaGroup lease epoch (`effectiveLeaseEpoch` off the live daemon replica) the JOINEE holds
    * at verify time. Present, the founder's OWN edge must not read stale against it — the founder leases too,
@@ -125,7 +124,7 @@ export async function verifyFaceGrantRecord(rec: unknown, ctx: FaceGrantVerifyCo
   if (!r || r.kind !== "face-join-grant/v1" || typeof r.sig !== "string" || !r.founderEdge || !Array.isArray(r.capEvents)) {
     return { ok: false, reason: "not a face-join-grant/v1 record" };
   }
-  if (typeof r.groupDocIdHex !== "string" || r.groupDocIdHex.toLowerCase() !== ctx.groupDocIdHex.toLowerCase()) {
+  if (typeof r.groupId !== "string" || r.groupId.toLowerCase() !== ctx.groupId.toLowerCase()) {
     return { ok: false, reason: "the record names another group" };
   }
   if (typeof r.joineeAgentIdHex !== "string" || !r.joineeAgentIdHex.toLowerCase().endsWith(ctx.selfVerifyingKey.toLowerCase())) {

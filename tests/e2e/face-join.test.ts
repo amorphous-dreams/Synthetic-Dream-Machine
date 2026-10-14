@@ -124,7 +124,7 @@ async function recordedGrant(g: Record<string, unknown>): Promise<FaceGrantRecor
   // Nor does the founder's edge it carries: the lease is the edge's only decay.
   expect(Object.keys(rec!.founderEdge).filter((k) => /^(issuedAt|expiresAt)$/.test(k)), "the founder's edge carries a wall-clock stamp").toEqual([]);
   const verdict = await verifyFaceGrantRecord(rec, {
-    personaRootDid: (edge as DeviceDelegationTiddler).personaRootDid, selfVerifyingKey: joineeKey, groupDocIdHex: rec!.groupDocIdHex,
+    personaRootDid: (edge as DeviceDelegationTiddler).personaRootDid, selfVerifyingKey: joineeKey, groupId: rec!.groupId,
   });
   expect(verdict, "the grant record does not verify as signed under the hearth's root").toEqual({ ok: true });
   expect(rec!.capEvents.length).toBeGreaterThan(0);
@@ -170,14 +170,13 @@ describe("e2e/face-join — the join against a live hearth", () => {
     expect(edge?.deviceVerifyingKey).toBe(joineeKey);
   });
 
-  test("V1 — a licensed edge seats the joinee AND re-grants the hearth's standing bags", async () => {
+  test("V1 — a licensed edge seats the joinee in the hearth's PersonaGroup", async () => {
     const g = await summon({ contactCard: joineeCard, deviceEdge: edge });
     expect(g["admitted"]).toBe(true);
     expect(typeof g["founderCard"]).toBe("string");
     const rec = await recordedGrant(g);
+    // The seat moved the group: a Keyhive group carries the seat into every bag it reaches, with no re-grant.
     expect(rec.reKeyed).toBe(true);
-    // THE VECTOR THAT CANNOT BE INFERRED — a seat that re-grants nothing reaches nothing.
-    expect(rec.regranted).toBeGreaterThan(0);
   }, 120_000);
 
   test("V2 — a repeat hands the seat back and moves no epoch", async () => {
@@ -188,15 +187,14 @@ describe("e2e/face-join — the join against a live hearth", () => {
     // these. Its keel is the archive.
     const rec = await recordedGrant(g);
     expect(rec.reKeyed).toBe(false);
-    expect(rec.regranted).toBe(0);
+    expect(rec.reSealed).toEqual([]);
   }, 120_000);
 
-  test("V3 — force re-keys a seated device and re-grants again", async () => {
+  test("V3 — force re-keys a seated device", async () => {
     const g = await summon({ contactCard: joineeCard, deviceEdge: edge, force: true });
     expect(g["admitted"]).toBe(true);
     const rec = await recordedGrant(g);
     expect(rec.reKeyed).toBe(true);
-    expect(rec.regranted).toBeGreaterThan(0);
   }, 120_000);
 
   test("V5 — a hearth refuses to seat ITSELF, so one summons never draws two writers", async () => {

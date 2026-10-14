@@ -40,7 +40,7 @@ type RingPeerId = Parameters<PersonaGroupIdentityRing["admitsPeer"]>[1];
 export interface PersonaGroupRingInput {
   readonly catalog: PlaneCatalog;
   /** The face this vessel wears — its PersonaGroup sentinel doc id (hex). */
-  readonly personaGroupDocIdHex: string;
+  readonly personaGroupId: string;
   /** The persona root the face pinned at admit — the published seal the founder edge chains to. */
   readonly personaRootDid: string;
   /** The founder's persona-KEL, when this vessel holds it (the edge verifies under the KEL head). */
@@ -61,7 +61,7 @@ export interface PersonaGroupRingInput {
 }
 
 export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Promise<PersonaGroupIdentityRing> {
-  const group = input.personaGroupDocIdHex;
+  const group = input.personaGroupId;
   const governedDocIds = await governedPlaneDocIds(input.catalog, group);        // resolved once, at wiring time
   const planeBag = personaScopedBagIds(group).persona;
   const prefix = `${FACE_GRANT_PREFIX}${group}/`;
@@ -94,7 +94,7 @@ export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Pr
         const verdict = await verifyFaceGrantRecord(record, {
           personaRootDid: input.personaRootDid,
           selfVerifyingKey: joineeVesselKey,
-          groupDocIdHex: group,
+          groupId: group,
           personaKel: input.personaKel,
         });
         return verdict.ok;

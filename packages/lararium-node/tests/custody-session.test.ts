@@ -70,7 +70,7 @@ describe("foundCustody", () => {
   });
 
   test("RED: over today's cleartext founding output it refuses OldShapeRefusal, the directory hash unchanged — CONTROL: a clean home founds", async () => {
-    writeFileSync(join(homes.identity, "anchors-h0.json"), '{"personaGroupDocIdHex":"00"}', { mode: 0o600 });
+    writeFileSync(join(homes.identity, "anchors-h0.json"), '{"personaGroupId":"00"}', { mode: 0o600 });
     const before = hashes(root);
     await expect(foundCustody({ io, homes, slots: [TEST_SLOT] })).rejects.toBeInstanceOf(OldShapeRefusal);
     expect(hashes(root)).toEqual(before);
@@ -336,7 +336,7 @@ describe("runInit seals custody from birth", () => {
         mkdirSync(oStorage, { recursive: true });
         const oldHome = await withLarRoot(old, async () => larIdentityDir());
         mkdirSync(oldHome, { recursive: true });
-        writeFileSync(join(oldHome, "anchors-h0.json"), '{"personaGroupDocIdHex":"00"}', { mode: 0o600 });
+        writeFileSync(join(oldHome, "anchors-h0.json"), '{"personaGroupId":"00"}', { mode: 0o600 });
         const before = hashes(oldHome);
         const err = await withLarRoot(old, async () => {
           try { await foundDirect({ storageDir: oStorage, genesisDir: oGenesis }); return null; } catch (e) { return e; }

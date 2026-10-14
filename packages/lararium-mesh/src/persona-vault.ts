@@ -252,9 +252,8 @@ export { generateOrLoadKeypair };
  */
 export interface WornPersonaMount {
   readonly handleIndex:            number;
-  readonly personaGroupDocIdHex:   string;
+  readonly personaGroupId:         string;
   readonly meshCabalDocIdHex:      string;
-  readonly personaGroupAgentIdHex: string;
   readonly signerDid:              string;
   readonly personaKelPrefix:       string;
   readonly deviceEdge:             DeviceDelegationTiddler;
@@ -303,9 +302,8 @@ export async function readWornPersonaMount(
 
   return {
     handleIndex,
-    personaGroupDocIdHex:   anchors.personaGroupDocIdHex,
+    personaGroupId:         anchors.personaGroupId,
     meshCabalDocIdHex:      anchors.meshCabalDocIdHex,
-    personaGroupAgentIdHex: anchors.personaGroupAgentIdHex,
     signerDid,
     personaKelPrefix,
     deviceEdge,

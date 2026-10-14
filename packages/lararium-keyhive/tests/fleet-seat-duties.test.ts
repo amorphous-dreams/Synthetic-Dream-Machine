@@ -38,19 +38,19 @@ async function fleet(base: number, devices = 2) {
   const founder = await stand(base);
   const others = await Promise.all(Array.from({ length: devices }, (_, i) => stand(base + 1 + i)));
   await introduce([founder, ...others]);
-  const { docIdHex } = await founder.createSentinelDoc(`lar:///test.fleet-seat/${base}`);
+  const { groupId } = await founder.createGroup();
   const ids: string[] = [];
-  for (const d of others) { const id = await d.vesselIdentifierHex(); ids.push(id); await founder.addSentinelMember(id, docIdHex); }
+  for (const d of others) { const id = await d.vesselIdentifierHex(); ids.push(id); await founder.addGroupMember(id, groupId); }
   const act = async (deviceId: string, raised: boolean, parents: string[] = [], by = ROOT_SEED): Promise<EdgeKapae> =>
     signEdgeKapae({ edgeId: deviceEdgeId(fleetRoot, keyOf(deviceId)), raised, hand: "holder", parents },
       [{ signer: await pub(by), sign: ed25519SignerFromSeed(by) }]);
-  const holds = async (p: KeyhiveProvider, id: string) => (await p.verifySentinelMembership(id, docIdHex)).ok;
+  const holds = async (p: KeyhiveProvider, id: string) => (await p.verifyGroupMembership(id, groupId)).ok;
   const answer = (provider: KeyhiveProvider, acts: readonly unknown[], opts: { rolled?: string[]; own?: string[]; sink?: (r: SeatRoll) => void | Promise<void> } = {}) =>
     answerFleetSeatDuties({
-      provider, facts: { fleetRoot, acts, rolled: opts.rolled ?? [] }, wornFleetRoot: fleetRoot, groupDocIdHex: docIdHex,
+      provider, facts: { fleetRoot, acts, rolled: opts.rolled ?? [] }, wornFleetRoot: fleetRoot, groupId,
       ownIdentifiers: opts.own ?? [], sink: opts.sink ?? (() => undefined), signReceipt: ed25519SignerFromSeed(VESSEL_SEED),
     });
-  return { fleetRoot, founder, others, ids, docIdHex, act, holds, answer };
+  return { fleetRoot, founder, others, ids, groupId, act, holds, answer };
 }
 
 describe("a counted raise moves the seat it names", () => {
@@ -62,7 +62,7 @@ describe("a counted raise moves the seat it names", () => {
     expect(await f.holds(f.founder, f.ids[0]!)).toBe(false);
     expect(await f.holds(f.founder, f.ids[1]!)).toBe(true);            // CONTROL
     expect(out.outcomes.map((o) => o.did)).toEqual(["revoked"]);
-    expect(heard).toEqual([{ kind: "seat-roll", scope: f.fleetRoot, edgeId: raise.edgeId, seat: { group: f.docIdHex, member: f.ids[0]! }, raiseCids: [raise.actCid], how: "revoked" }]);
+    expect(heard).toEqual([{ kind: "seat-roll", scope: f.fleetRoot, edgeId: raise.edgeId, seat: { group: f.groupId, member: f.ids[0]! }, raiseCids: [raise.actCid], how: "revoked" }]);
     // Each roll leaves under the vessel's own receipt: it verifies under the vessel key and under no other.
     expect(out.rolls.map(({ receipt: _r, ...roll }) => roll)).toEqual(heard);
     expect(verifiedSeatRoll(out.rolls[0], await pub(VESSEL_SEED))).toEqual(heard[0]);
@@ -118,7 +118,7 @@ describe("only an act the worn fleet root signed moves a seat", () => {
     const f = await fleet(0x60);
     await expect(answerFleetSeatDuties({
       provider: f.founder, facts: { fleetRoot: "b2".repeat(32), acts: [], rolled: [] }, wornFleetRoot: f.fleetRoot,
-      groupDocIdHex: f.docIdHex, ownIdentifiers: [], sink: () => undefined, signReceipt: ed25519SignerFromSeed(VESSEL_SEED),
+      groupId: f.groupId, ownIdentifiers: [], sink: () => undefined, signReceipt: ed25519SignerFromSeed(VESSEL_SEED),
     })).rejects.toThrow(/its own face's seats alone/);
   });
 });
@@ -174,11 +174,11 @@ describe("the provider says how a seat answered", () => {
     const f = await fleet(0xb0);
     const peer = f.others[1]!;
     await ship(f.founder, peer);
-    expect(await peer.revokeSentinelSeat(f.ids[0]!, f.docIdHex)).toEqual({ how: "no-authority" });
+    expect(await peer.revokeGroupSeat(f.ids[0]!, f.groupId)).toEqual({ how: "no-authority" });
     expect(await f.holds(peer, f.ids[0]!)).toBe(true);
-    expect(await f.founder.revokeSentinelSeat(f.ids[0]!, f.docIdHex)).toEqual({ how: "revoked" });
-    expect(await f.founder.revokeSentinelSeat(f.ids[0]!, f.docIdHex)).toEqual({ how: "gone" });      // done reads as done, and throws nothing
-    expect(await f.founder.revokeSentinelSeat(`0x${"7e".repeat(32)}`, f.docIdHex)).toEqual({ how: "gone" });
+    expect(await f.founder.revokeGroupSeat(f.ids[0]!, f.groupId)).toEqual({ how: "revoked" });
+    expect(await f.founder.revokeGroupSeat(f.ids[0]!, f.groupId)).toEqual({ how: "gone" });      // done reads as done, and throws nothing
+    expect(await f.founder.revokeGroupSeat(`0x${"7e".repeat(32)}`, f.groupId)).toEqual({ how: "gone" });
     expect(await f.holds(f.founder, f.ids[1]!)).toBe(true);                                             // CONTROL
   });
 });

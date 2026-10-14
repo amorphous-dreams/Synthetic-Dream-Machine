@@ -36,7 +36,7 @@ export { splitRootAtFounding, type FoundingShares } from "@lararium/mesh";
  * founding, so there is no honest 0 to float to. NO CALLER LIVES HERE YET that reads the daemon doc, so a
  * future CLI door (a `lares device-readmit` verb or similar) wiring this MUST read the PersonaGroup's live
  * lease epoch itself before calling — the exact composition `device-admit.ts`'s `runDeviceAdmit` already
- * runs at its admit door: `leaseEpochPrefix(personaGroupDocIdHex)` → filter the daemon doc's tiddler map to
+ * runs at its admit door: `leaseEpochPrefix(personaGroupId)` → filter the daemon doc's tiddler map to
  * that prefix → `effectiveLeaseEpoch(leaseSlotValues)`. That door does not exist today (this file has no
  * live CLI consumer — `reconstructAndReadmit` is presently exercised only by `recovery-keel.test.ts`); this
  * comment is the wiring's future caller's reminder, not a restatement of a read this file performs.

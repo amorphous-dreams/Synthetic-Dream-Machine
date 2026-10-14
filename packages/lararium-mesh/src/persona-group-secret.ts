@@ -353,6 +353,6 @@ export async function enrolmentUnderHead(kel: readonly PersonaKelEvent[], standi
 }
 
 /** The daemon-doc title a device's enrolment seal for one PersonaGroup rests under — sovereign, never crossing. */
-export function groupSecretSealTitle(personaGroupDocIdHex: string): string {
-  return `${PERSONA_NAMESPACE}/group-secret/${personaGroupDocIdHex.toLowerCase()}`;
+export function groupSecretSealTitle(personaGroupId: string): string {
+  return `${PERSONA_NAMESPACE}/group-secret/${personaGroupId.toLowerCase()}`;
 }

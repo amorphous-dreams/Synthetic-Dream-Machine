@@ -115,7 +115,7 @@ describe("a contracted founding carries its binding instead of signing it", () =
     const f = await found({ mode: "contracted", ...b }, deviceKey, repo);
     expect(f.groupSecretSeal).toEqual(b.groupSecretSeal);
     const daemon = await repo.find<LarDoc>(f.daemonUrl as never);
-    const rested = JSON.parse(tiddlerText(daemon.doc()?.tiddlers?.[groupSecretSealTitle(f.personaGroupDocIdHex)]) ?? "null");
+    const rested = JSON.parse(tiddlerText(daemon.doc()?.tiddlers?.[groupSecretSealTitle(f.personaGroupId)]) ?? "null");
     expect(rested).toEqual(b.groupSecretSeal);
     expect(groupSecretOpenerFromSeed(HERM_SEED).seal(rested)).toEqual(personaGroupSecret(OPERATOR_SEED, b.personaKelPrefix));
     expect(groupSecretOpenerFromSeed(OPERATOR_SEED).seal(rested)).toBeNull();

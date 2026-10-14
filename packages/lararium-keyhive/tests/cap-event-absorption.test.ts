@@ -57,8 +57,7 @@ async function crossing(): Promise<{ joineeSeed: Uint8Array; capEvents: readonly
   const laptop = new KeyhiveProvider();
   await laptop.init({ seed: laptopSeed, eventStore: noop });
 
-  const pg = await phone.createSentinelDoc("lar:///ha.ka.ba/sentinel/pg-absorb");
-  await phone.addSentinelMember(await phone.vesselIdentifierHex(), pg.docIdHex);
+  const pg = await phone.createGroup();
   const edge = await buildDeviceDelegation({
     personaRootSeed:    seedOf(213),
     deviceVerifyingKey: (await laptop.whoami()).replace(/^0x/, ""),
@@ -68,8 +67,7 @@ async function crossing(): Promise<{ joineeSeed: Uint8Array; capEvents: readonly
   const ctx: FaceJoinContext = {
     personaRootDid:         edge.personaRootDid,
     hearthTrueName:         "",
-    personaGroupDocIdHex:   pg.docIdHex,
-    personaGroupAgentIdHex: pg.agentIdHex,
+    personaGroupId:         pg.groupId,
     dyad: () => "clear", leaseEpoch:             0,
   };
   const out = await runFaceJoin(phone, {

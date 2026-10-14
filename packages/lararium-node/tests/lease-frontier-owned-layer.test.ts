@@ -83,12 +83,12 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   } as never;
   const daemonAuth = {
     seed: FOUNDER_SEED, vesselVerifyingKey: key,
-    personaGroupDocIdHex: cer.personaGroupDocIdHex, personaGroupAgentIdHex: cer.personaGroupAgentIdHex,
+    personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
   };
   const writeSlot = (value: string) => daemonHandle.change((d) => {
-    const title = leaseEpochSlotUri(cer.personaGroupDocIdHex, "another-writer");
+    const title = leaseEpochSlotUri(cer.personaGroupId, "another-writer");
     (d.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text: value } };
   });
   return { ctx, daemonAuth, daemonHandle, writeSlot, chain };

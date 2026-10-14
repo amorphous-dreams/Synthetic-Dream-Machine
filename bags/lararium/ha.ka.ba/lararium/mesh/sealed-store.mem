@@ -354,7 +354,7 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 !! What the later steps owe
 
 * ''The session proof'': the session open that hands the daemon island a signer and the chain check. Until a production path opens a session signer, no content key mints on a production vessel, and `cad-seal` seals nothing. Caller: the wire cutover's session open.
-* ''A removal that leaves out the founding vessel'': the vessel that founded a face's key group holds that group through an identity no device edge names, so a raise over it names no seat a roll can leave out, and it keeps receiving keys. The PersonaGroup as a Keyhive Group cures it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>; roadmap loop `K12`).
+* ''A removal that leaves out the founding vessel'': the vessel that founded a face's key group holds that group through an identity no device edge names, so a raise over it names no seat a roll can leave out, and it keeps receiving keys. The PersonaGroup stands as a Keyhive group, so any other seat's revocation rolls every bag the group reaches; the founder's seat stands upstream of every hand and leaves only by a fresh group (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>; roadmap loop `K12`).
 * ''Step three'': the document store's own storage values sealed as `change` and `checkpoint` values, and hydration checked against the session's face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-document-view">>). It takes from step two: the holder's seal and open, widened from a `blob` to a `change` and a `checkpoint` with their own logical references and parent addresses; one manifest for each write batch, citing every manifest its writer verified; the `fresh` checkpoint a from-now admission's span opens on, cut before any change seals under that version, and the `freshBase` port through which the seat hands that cut to the holder; and the cleartext-local tier, which a staged body and an opened one still rest in.
 * ''Step four'': the carriage protocol that publishes and fetches sealed values and clear record parts, the carrier's index, and its pins. It takes from step two: the store's values exactly as they rest (a lockbox, a record and an index row each travel as their resting bytes); the parcel, which rides the key group's member lane and never a carrier; the vessel's outbox, where each parcel rests until that lane takes it, and the reader that empties it; and the `sealed-parcels`, `sealed-receive` and `sealed-serve` verbs at each end of that lane. The sealed set a vessel registers lives in memory, so a restart re-registers from the `cad/` tier there.
 * ''Step five'': a public bag served at the floor of a locked node.
@@ -382,6 +382,6 @@ A bag keeps ''one logical name'' for its whole life. Its content key rolls at ca
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fsiTDVD_a_BbpFcMKfGdTc1znl4gjfXIVOyN_hzkHb0
+<<^ code="&#x0003;">>ni:///sha-256;N3oeebMsZr7PEMpVKD3g7mz6uAs4pw7iX7PM72xr7E0
 
 <<^ code="&#x0004;" -> to="?">>

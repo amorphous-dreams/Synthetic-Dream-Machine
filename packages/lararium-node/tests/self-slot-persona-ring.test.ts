@@ -47,8 +47,8 @@ async function founderEdge(opKeySeed = ROOT_SEED) {
 async function validGrant(opKeySeed = ROOT_SEED): Promise<FaceGrantRecord> {
   const edge = await founderEdge(opKeySeed);
   return signFaceGrantRecord({
-    kind: "face-join-grant/v1", groupDocIdHex: GROUP, joineeAgentIdHex: `0x${JOINEE_KEY}`,
-    founderCard: '{"founder":"card"}', capEvents: ["AQID"], reKeyed: true, regranted: 1, reSealed: [],
+    kind: "face-join-grant/v1", groupId: GROUP, joineeAgentIdHex: `0x${JOINEE_KEY}`,
+    founderCard: '{"founder":"card"}', capEvents: ["AQID"], reKeyed: true, reSealed: [],
     founderEdge: edge,
   }, ed25519SignerFromSeed(FOUNDER_SEED));
 }
@@ -124,7 +124,7 @@ async function ringOver(
   const kel = kelOverride === null ? undefined : (kelOverride ?? (await personaKel()));
   const ring = await assemblePersonaGroupRing({
     catalog: fakeCatalog(urls, grantText, reads),
-    personaGroupDocIdHex: GROUP,
+    personaGroupId: GROUP,
     personaRootDid: edge.personaRootDid,
     ...(kel ? { personaKel: kel } : {}),
     provenKeyOf: (p) => identifiers.get(p) ?? null,

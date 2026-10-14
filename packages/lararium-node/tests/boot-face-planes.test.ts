@@ -5,7 +5,7 @@
 import { describe, test, expect } from "vitest";
 import {
   personaBagIdFor, personaSiblingBagIds, personaMembershipEntries, personaScopedBagIds,
-  PERSONA_GROUP_DOC_ID_TIDDLER, DAEMON_BAG_ID, type PlaneEntry,
+  PERSONA_GROUP_ID_TIDDLER, DAEMON_BAG_ID, type PlaneEntry,
 } from "@lararium/mesh";
 import { bootFacePlanes, bootDaemonUrl } from "../src/boot-face-planes.js";
 
@@ -44,7 +44,7 @@ describe("bootFacePlanes: the bootstrap alone answers", () => {
     const sib = personaSiblingBagIds(personaBagIdFor(G1));
     const b = {
       ...asBootstrap(planeOf(G1, U1)),
-      [PERSONA_GROUP_DOC_ID_TIDDLER]: { text: G1 },
+      [PERSONA_GROUP_ID_TIDDLER]: { text: G1 },
       [sib.identities]: { text: "automerge:ids" },
       [sib.circles]: { text: "automerge:circ" },
       [sib.sessions]: { text: "automerge:sess" },
@@ -65,7 +65,7 @@ describe("bootFacePlanes: the bootstrap alone answers", () => {
   });
 
   test("(iii) an oracle carrying the worn pin names no group for an empty bootstrap", () => {
-    const r = BOOT({}, { [PERSONA_GROUP_DOC_ID_TIDDLER]: oracleRec(G1) }, null);
+    const r = BOOT({}, { [PERSONA_GROUP_ID_TIDDLER]: oracleRec(G1) }, null);
     expect(r.personaGroupId).toBeNull();
   });
 
@@ -82,7 +82,7 @@ describe("bootFacePlanes: the bootstrap alone answers", () => {
       [face.identities]: { text: "automerge:ids" },
       [face.circles]:    { text: "automerge:circ" },
       [face.sessions]:   { text: "automerge:sess" },
-      [PERSONA_GROUP_DOC_ID_TIDDLER]: { text: G1 },
+      [PERSONA_GROUP_ID_TIDDLER]: { text: G1 },
     };
     const r = bootFacePlanes(b, null);
     expect(r).toMatchObject({

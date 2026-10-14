@@ -207,7 +207,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     await veilKh.ingestPeerEvents(await kh.eventsForPeer(veilId));
     const { docId } = await kh.registerBag(bagUrl);   // idempotent — the cached mapping
     veilKh.adoptBag(bagUrl, docId);
-    await veilKh.delegate({ bagUrl, audience: faceAgent(), access });
+    await veilKh.delegate({ bagUrl, audience: faceGroup(), access });
   };
   let mintedByHex = daemonAuth.vesselVerifyingKey;
   // Captured at `verifierFactory` boot time (the only site this behavior sees an `IslandContext`) so the
@@ -232,10 +232,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    * reads seated. Any failure → false, a logged refusal, and NO binding moved.
    */
   const takeFaceGrantIfPublished = async (ctx: IslandContext): Promise<boolean> => {
-    const agent = daemonAuth.personaGroupAgentIdHex;
-    const group = daemonAuth.personaGroupDocIdHex;
+    const group = daemonAuth.personaGroupId;
     const ownEdge = daemonAuth.deviceEdge;
-    if (!agent || !group || !ownEdge || !kh || !ctx.catalogUrl) return false;
+    if (!group || !ownEdge || !kh || !ctx.catalogUrl) return false;
     // NO CLOCK. Absent a founder persona-KEL chain to walk, ABSTAIN rather than fall back to a
     // pinned-root-only verify gated on a wall clock — fail-closed, event order or nothing (no global now).
     if (!daemonAuth.personaKel) return false;
@@ -265,7 +264,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const expectedEpoch = lease.n;
       judgedGrants.add(rec.sig);
       const verdict = await verifyFaceGrantRecord(rec, {
-        personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupDocIdHex: group,
+        personaRootDid: ownEdge.personaRootDid, selfVerifyingKey: self, groupId: group,
         personaKel: daemonAuth.personaKel,   // the edge verifies under the KEL HEAD, never a frozen root — no clock
         expectedEpoch,
       });
@@ -280,8 +279,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       const eventStore = new DaemonEventStore({ daemon: ctx.composite });
       try { await absorbCapEvents(kh, eventStore, events); } catch (err) { console.log(`[daemon] face-join grant: vessel ingest faulted: ${(err as Error)?.message ?? err}`); }
       try { await veilKh?.ingestPeerEvents(events); } catch (err) { console.log(`[daemon] face-join grant: veil ingest faulted: ${(err as Error)?.message ?? err}`); }
-      const seated = await (veilKh ?? kh).knowsAgent(agent);
-      console.log(`[daemon] face-join grant record taken from the PersonaGroup plane (${events.length} cap events, regranted ${rec.regranted}) — face ${seated ? "SEATED" : "still unseated after ingest"}`);
+      const seated = await (veilKh ?? kh).knowsAgent(group);
+      console.log(`[daemon] face-join grant record taken from the PersonaGroup plane (${events.length} cap events, ${rec.reSealed.length} chunks re-sealed) — face ${seated ? "SEATED" : "still unseated after ingest"}`);
       if (seated) return true;
     }
     return false;
@@ -297,10 +296,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       oracle:  ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null,
       vesselDid: () => didFromVerifyingKey(daemonAuth.vesselVerifyingKey),
       mintedByHex: () => mintedByHex,
-      ...(daemonAuth.personaGroupAgentIdHex ? { personaGroupAgentIdHex: daemonAuth.personaGroupAgentIdHex } : {}),
+      ...(daemonAuth.personaGroupId ? { personaGroupId: daemonAuth.personaGroupId } : {}),
       ...(veilKh ? { delegateToFace: (bagUrl: string, access: "read" | "admin") => delegateToFaceViaVeil(bagUrl, access) } : {}),
       faceSeated: async () => {
-        const agent = daemonAuth.personaGroupAgentIdHex;
+        const agent = daemonAuth.personaGroupId;
         if (!agent) return false;
         let seated = await (veilKh ?? kh!).knowsAgent(agent);
         // THE LATER GRANT (basket-one #/the-later-grant): not seated → read the PersonaGroup plane for a grant
@@ -339,7 +338,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       store.markSyncComplete();
       // Keyhive gates this slot by its lar: URI; register the working doc and grant the seated face its reach.
       await kh.registerBag(working);
-      if (daemonAuth.personaGroupAgentIdHex && veilKh && await veilKh.knowsAgent(daemonAuth.personaGroupAgentIdHex)) {
+      if (daemonAuth.personaGroupId && veilKh && await veilKh.knowsAgent(daemonAuth.personaGroupId)) {
         await delegateToFaceViaVeil(working, "admin");
       }
       const temp = wikiSlotUri(slug, "temp");
@@ -358,14 +357,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // A vessel at the WAKING FLOOR carries and serves; it holds no persona plane, no bindings, nobody to
   // delegate a bag TO. Reaching for the face here refuses LOUDLY rather than resolving `undefined` into
   // a cap check — an audience that reads undefined would delegate to nobody and look like it worked.
-  const faceAgent = (): string => {
-    const id = daemonAuth.personaGroupAgentIdHex;
-    if (!id) throw new Error("[daemon] this vessel stands at the waking floor and holds no face — light one with `lares persona new 0 --name '<label>'` before any persona-scoped act.");
-    return id;
-  };
+  // ONE VALUE NAMES THE FACE'S GROUP: a Keyhive group's id serves as the membership target, the audience every
+  // bag delegates to, and the stem of the face's plane names.
   const faceGroup = (): string => {
-    const id = daemonAuth.personaGroupDocIdHex;
-    if (!id) throw new Error("[daemon] this vessel stands at the waking floor and holds no PersonaGroup plane — light a face with `lares persona new 0 --name '<label>'`.");
+    const id = daemonAuth.personaGroupId;
+    if (!id) throw new Error("[daemon] this vessel stands at the waking floor and holds no face — light one with `lares persona new 0 --name '<label>'` before any persona-scoped act.");
     return id;
   };
 
@@ -378,7 +374,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // no daemon layer, or a read fault reads UNAVAILABLE — and a mutation gate names that frontier rather than
   // silently licensing from the signature and wall-clock window alone.
   const readLeaseEpoch = (composite: IslandContext["composite"] | null | undefined): Promise<LeaseFrontier> =>
-    readLeaseFrontier(composite, daemonAuth.personaGroupDocIdHex);
+    readLeaseFrontier(composite, daemonAuth.personaGroupId);
 
   return {
     ...daemonExtra, // the vessel-injected telemetry capture SINK flows through (idempotent cap → live)
@@ -426,7 +422,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // THE CONTENT VERBS NEED A FACE. Every ACTION verb mints or writes under the face's reach, and REPACK
       // registers beside them; a floor holds no face and no bag it minted, so each refuses by naming the lift
       // BEFORE the cap check, the mint or any registry write. The set derives from the mesh table, never a list.
-      if (daemonAuth.personaGroupAgentIdHex) {
+      if (daemonAuth.personaGroupId) {
         registerActionReactors(registry, {
           composite: ctx.composite,
           reach: {
@@ -537,7 +533,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // A founding stands a PLACE first — carrying, serving the public shelf — and lights a FACE after. In
         // that window `faceGroup()` names nothing, so the follow verbs register only where they can act; absent
         // a face each answers with the act that lights one.
-        if (daemonAuth.personaGroupDocIdHex) {
+        if (daemonAuth.personaGroupId) {
           // THE FOLLOW-GRAPH RIDES THE FACE, so it registers on the same fact the persona verbs do.
           // Founding writes the circles doc in the same breath as the PersonaGroup plane and its sentinel — a
           // PLACE bootstrap carries the daemon bag alone — and the boot refuses a partial set outright, so the
@@ -584,7 +580,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         // Rolling those slots re-admits the WHOLE fleet (the epoch leases, it never revokes one device;
         // a single device leaves by `revokeSentinelMember`).
         // The capability half of a join is persona-scoped too — a hearth with no face seats nobody.
-        if (daemonAuth.personaGroupDocIdHex) {
+        if (daemonAuth.personaGroupId) {
           // `seat-duties` — THE KEY SIDE OF A REMOVAL, for the face this island wears (kapae#/keys). The vessel
           // folds its fleet's edge board and hands in the acts it counted; this island, where the group's keys
           // live, counts them again under the root its own edge pins, reads each seat, plans what the counted
@@ -609,7 +605,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const answered = await answerFleetSeatDuties({
               provider: veilKh, facts,
               wornFleetRoot: ownEdge.personaRootDid,
-              groupDocIdHex: faceGroup(),
+              groupId: faceGroup(),
               ownIdentifiers: [await veilKh.vesselIdentifierHex(), ...(kh ? [await kh.vesselIdentifierHex()] : []), daemonAuth.vesselVerifyingKey],
               sink: announceSeatRoll,
               signReceipt: ed25519SignerFromSeed(daemonAuth.seed),
@@ -662,13 +658,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                 try { await vessel.receiveContactCard(bytes); } catch { /* already known reads fine */ }
                 return got;
               },
-              verifySentinelMembership: (a: string, d: string) => veil.verifySentinelMembership(a, d),
-              addSentinelMember:        (a: string, d: string) => veil.addSentinelMember(a, d),
-              revokeSentinelSeat:       (a: string, d: string) => veil.revokeSentinelSeat(a, d),
-              delegate:                 async (args: { bagUrl: string; audience: string; access: "read" | "admin" }) =>
-                delegateToFaceViaVeil(args.bagUrl, args.access),
-              // The re-delegate re-keys the bag FORWARD only; the vessel holds the standing chunks it sealed and
-              // re-seals them at the re-keyed epoch, so a fresh seat reaches what the group held before it. The
+              verifyGroupMembership:    (a: string, g: string) => veil.verifyGroupMembership(a, g),
+              addGroupMember:           (a: string, g: string) => veil.addGroupMember(a, g),
+              revokeGroupSeat:          (a: string, g: string) => veil.revokeGroupSeat(a, g),
+              // A seat reaches each bag FORWARD only; the vessel holds the standing chunks it sealed and re-seals
+              // them at the group's current key, so a fresh seat reaches what the group held before it. The
               // vessel is the holder because the vessel sealed the content — the same key that delegated the bag.
               reSealBag:                (bagUrl: string) => vessel.reSealBag(bagUrl),
               eventsForPeer:            async (peer: string) => [
@@ -684,15 +678,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const outcome = await runFaceJoin(joinProvider, summons, {
               personaRootDid:         ownEdge.personaRootDid,
               hearthTrueName:         ownEdge.hearthTrueName,
-              personaGroupDocIdHex:   faceGroup(),
-              personaGroupAgentIdHex: faceAgent(),
+              personaGroupId:         faceGroup(),
               leaseEpoch:             lease.n,
               dyad:                   () => joineeDyad,
-              // The bags this vessel ALREADY delegated to its own face, re-granted so a fresh seat reaches them.
-              // Naming only what we granted, at the access we granted, widens nobody's reach — it refreshes the
-              // epoch on grants that already stand. `registerBags` IS that set, and `FACE_SEATS_AND_UNSEATS` IS the
-              // access every one of them carries, because the mint above reads the same name.
-              regrant: daemonAuth.registerBags.map((bagUrl) => ({ bagUrl, access: FACE_SEATS_AND_UNSEATS })),
+              // The bags this vessel ALREADY delegated to its own face, whose standing chunks the join re-seals so
+              // a fresh seat reaches them. `registerBags` IS that set: the mint above delegates each to the face.
+              reseal: daemonAuth.registerBags,
             });
             // A refusal RETURNS — an unlicensed summons names an absent contract, never an attack, and the
             // reason rides the outcome so the joinee's panel can paint why rather than showing a silence.
@@ -717,7 +708,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
                 const { kind: _grantKind, ...grantBody } = outcome.grant;
                 void _grantKind;
                 const rec = await signFaceGrantRecord({
-                  kind: "face-join-grant/v1", groupDocIdHex: faceGroup(), ...grantBody,
+                  kind: "face-join-grant/v1", groupId: faceGroup(), ...grantBody,
                   founderEdge: ownEdge,
                 }, ed25519SignerFromSeed(daemonAuth.seed));
                 recordTitle = faceGrantTitle(faceGroup(), outcome.grant.joineeAgentIdHex);
@@ -928,7 +919,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         };
         // The wiki-minting and composing verbs write under the face's reach, so a floor refuses them by
         // naming the lift, as it does the ACTION verbs.
-        const faceStands = !!daemonAuth.personaGroupAgentIdHex;
+        const faceStands = !!daemonAuth.personaGroupId;
         const underFace = (verb: string, reactor: VerbReactor): VerbReactor => faceStands ? reactor : lightAFace(verb);
         registry.register("init-wiki",   underFace("init-wiki", makeInitWikiReactor(wikiMintOpts)));
         registry.register("open-wiki",   makeOpenWikiReactor({ composite: ctx.composite, catalog, post: ctx.post }));
@@ -956,7 +947,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // boot, so a single read at this moment is exactly as fresh as the gate itself). An UNAVAILABLE frontier
       // threads no epoch, and the gate refuses a persona-bound boot on it.
       const bindingGateLease = await readLeaseEpoch(ctx.composite);
-      if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupDocIdHex) {
+      if (bindingGateLease.kind === "unavailable" && daemonAuth.personaGroupId) {
         console.log(`[daemon] Binding Gate lease read: current lease frontier unavailable (${bindingGateLease.why})`);
       }
       const { keyhive, did } = await bootDaemonKeyhive({
@@ -964,8 +955,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         eventStore:            new DaemonEventStore({ daemon: ctx.composite }),
         vesselVerifyingKey:  daemonAuth.vesselVerifyingKey,
         // The face pins ride CONDITIONALLY — the gate runs in full or grants no persona caps at all.
-        ...(daemonAuth.personaGroupDocIdHex   ? { personaGroupDocIdHex:   daemonAuth.personaGroupDocIdHex }   : {}),
-        ...(daemonAuth.personaGroupAgentIdHex ? { personaGroupAgentIdHex: daemonAuth.personaGroupAgentIdHex } : {}),
+        ...(daemonAuth.personaGroupId   ? { personaGroupId:   daemonAuth.personaGroupId }   : {}),
         ...(daemonAuth.meshCabalDocIdHex      ? { meshCabalDocIdHex:      daemonAuth.meshCabalDocIdHex }      : {}),
         registerBags:          daemonAuth.registerBags,
         ...(daemonAuth.signerDid  ? { signerDid:  daemonAuth.signerDid }  : {}),
@@ -1042,7 +1032,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             if (!write) throw new Error("no Archive writer stands on this shore, so a wrap could not open again");
             await write(await (provider as KeyhiveProvider).exportArchiveAfterTheCard());
           },
-          group: daemonAuth.personaGroupDocIdHex && fleetRoot ? { docIdHex: daemonAuth.personaGroupDocIdHex, scope: fleetRoot } : null,
+          group: daemonAuth.personaGroupId && fleetRoot ? { groupId: daemonAuth.personaGroupId, scope: fleetRoot } : null,
           bags: () => daemonAuth.registerBags,
           // A face's seat reads every standing through the dyad's guard: with no reader composed each ask
           // throws by name, so the seat wraps for nobody and performs no key act. It never reads the absence
@@ -1138,7 +1128,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // verified proof-of-possession exactly as before.
       //
       // SELF-SLOT CLASS: cap=admin on the daemon bag is held ONLY by this operator's own PersonaGroup (the
-      // founding delegates admin to personaGroupAgentIdHex; no foreign operator ever earns it). So an
+      // founding delegates admin to personaGroupId; no foreign operator ever earns it). So an
       // admin admit PROVES same-operator — the peer keeps full device sync. This is an UNFORGEABLE
       // signal: a cross-operator cannot manufacture an admin@daemon grant it was never delegated.
       if (verdict.ok) {
@@ -1217,7 +1207,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     // daemon bag has always stood in. Where a face is SEATED the same doc delegates to the
     // PersonaGroup on top, so operator and vessel compose over every critical doc; the draft slot
     // of an unseated vessel falls to the device floor and says so (`resolveSlotDoc`). The callback
-    // reads `daemonAuth.personaGroupAgentIdHex` directly rather than through `faceAgent()`, so a
+    // reads `daemonAuth.personaGroupId` directly rather than through `faceGroup()`, so a
     // floor offering it cannot throw during boot and take its own standing with it.
     resolveBinding: async (ctx: IslandContext, fingerprint: string, recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] }, wikiSlug: string) =>
       slotDocsOf(ctx).bindings(fingerprint, recipeTrace, wikiSlug),

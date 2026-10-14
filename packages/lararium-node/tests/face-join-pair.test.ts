@@ -39,8 +39,7 @@ describe("face-join — the granting half, proven end to end", () => {
     const founder = await makeVessel(7);
     const joinee  = await makeVessel(106);
 
-    const pg = await founder.createSentinelDoc("lar:///ha.ka.ba/sentinel/pg-face-join");
-    await founder.addSentinelMember(await founder.vesselIdentifierHex(), pg.docIdHex);
+    const pg = await founder.createGroup();   // the founder stands seated in the group it founds
 
     const edge = await buildDeviceDelegation({
       personaRootSeed:    ROOT_SEED,
@@ -51,8 +50,7 @@ describe("face-join — the granting half, proven end to end", () => {
     const ctx: FaceJoinContext = {
       personaRootDid:         edge.personaRootDid,
       hearthTrueName:         HEARTH,
-      personaGroupDocIdHex:   pg.docIdHex,
-      personaGroupAgentIdHex: pg.agentIdHex,
+      personaGroupId: pg.groupId,
       dyad: () => "clear", leaseEpoch:             0,
       now:                    NOW,
     };
@@ -76,7 +74,7 @@ describe("face-join — the granting half, proven end to end", () => {
     // Seal AFTER the add, so the ciphertext keys to an epoch the joinee stands inside.
     const BAG = "lar:///ha.ka.ba/bags/catalog/after-the-join";
     const { docId } = await founder.registerBag(BAG);
-    await founder.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await founder.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
     const sealed = await founder.encryptContent(BAG, new TextEncoder().encode("the face reads this"));
 
     // THE ONGOING FLOW, stood in by hand. A grant seats the joinee in the GROUP; a bag delegated to that group
@@ -95,13 +93,12 @@ describe("face-join — the granting half, proven end to end", () => {
     const founder = await makeVessel(11);
     const joinee  = await makeVessel(112);
 
-    const pg = await founder.createSentinelDoc("lar:///ha.ka.ba/sentinel/pg-forward-only");
-    await founder.addSentinelMember(await founder.vesselIdentifierHex(), pg.docIdHex);
+    const pg = await founder.createGroup();   // the founder stands seated in the group it founds
 
     // Sealed FIRST — the joinee has no seat yet, so this chunk keys to an epoch it never stood in.
     const BAG = "lar:///ha.ka.ba/bags/catalog/before-the-join";
     const { docId } = await founder.registerBag(BAG);
-    await founder.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await founder.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
     const sealedEarly = await founder.encryptContent(BAG, new TextEncoder().encode("sealed too soon"));
 
     const edge = await buildDeviceDelegation({
@@ -116,7 +113,7 @@ describe("face-join — the granting half, proven end to end", () => {
       deviceEdge: edge,
     }, {
       personaRootDid: edge.personaRootDid, hearthTrueName: HEARTH,
-      personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex,
+      personaGroupId: pg.groupId,
       dyad: () => "clear", leaseEpoch: 0, now: NOW,
     });
     expect(outcome.ok).toBe(true);
@@ -132,7 +129,7 @@ describe("face-join — the granting half, proven end to end", () => {
     // again, and only then does the bag's tree carry an epoch this member stands inside. A face-join that
     // seated a member and stopped here would leave that member reading nothing in every bag the group already
     // held — membership without reach.
-    await founder.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await founder.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
 
     // THE CONTROL. A chunk sealed AFTER the add, in the very same bag, opens — which proves the joinee's scope,
     // membership and key material all stand. Without it, the refusal below could read as a doc the joinee never
@@ -160,8 +157,7 @@ describe("face-join — the granting half, proven end to end", () => {
     const founder = await makeVessel(17);
     const joinee  = await makeVessel(118);
 
-    const pg = await founder.createSentinelDoc("lar:///ha.ka.ba/sentinel/pg-wiped");
-    await founder.addSentinelMember(await founder.vesselIdentifierHex(), pg.docIdHex);
+    const pg = await founder.createGroup();   // the founder stands seated in the group it founds
 
     const edge = await buildDeviceDelegation({
       personaRootSeed: ROOT_SEED, deviceVerifyingKey: await rawKeyOf(joinee), hearthTrueName: HEARTH,
@@ -169,7 +165,7 @@ describe("face-join — the granting half, proven end to end", () => {
     });
     const ctx: FaceJoinContext = {
       personaRootDid: edge.personaRootDid, hearthTrueName: HEARTH,
-      personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex, dyad: () => "clear", leaseEpoch: 0, now: NOW,
+      personaGroupId: pg.groupId, dyad: () => "clear", leaseEpoch: 0, now: NOW,
     };
     const cardOf = async (v: KeyhiveProvider) => new TextDecoder().decode(await v.contactCard());
 
@@ -179,7 +175,7 @@ describe("face-join — the granting half, proven end to end", () => {
 
     const BAG = "lar:///ha.ka.ba/bags/catalog/wiped-store";
     const { docId } = await founder.registerBag(BAG);
-    await founder.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await founder.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
     await joinee.receiveContactCard(new TextEncoder().encode(first.grant.founderCard));
     await joinee.ingestPeerEvents(first.grant.capEvents.map(b64));
     await joinee.ingestPeerEvents(await founder.eventsForPeer(first.grant.joineeAgentIdHex));
@@ -225,8 +221,7 @@ describe("face-join — the granting half, proven end to end", () => {
     const founder = await makeVessel(13);
     const joinee  = await makeVessel(114);
 
-    const pg = await founder.createSentinelDoc("lar:///ha.ka.ba/sentinel/pg-repeat");
-    await founder.addSentinelMember(await founder.vesselIdentifierHex(), pg.docIdHex);
+    const pg = await founder.createGroup();   // the founder stands seated in the group it founds
 
     const edge = await buildDeviceDelegation({
       personaRootSeed:    ROOT_SEED,
@@ -236,7 +231,7 @@ describe("face-join — the granting half, proven end to end", () => {
     });
     const ctx: FaceJoinContext = {
       personaRootDid: edge.personaRootDid, hearthTrueName: HEARTH,
-      personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex,
+      personaGroupId: pg.groupId,
       dyad: () => "clear", leaseEpoch: 0, now: NOW,
     };
     const summons = {
@@ -293,8 +288,7 @@ describe("the hearth's door — kept where a joinee always reads it", () => {
         // The secret the same root sealed beside the edge — REQUIRED: an enrolment without it meets no sibling.
         groupSecretSeal:        await sealGroupSecret({ opSeed: ROOT_SEED, prefix: "persona-probe", deviceVerifyingKey: await rawKeyOf(joinee) }),
         hearthTrueName:         HEARTH,
-        personaGroupDocIdHex:   "ab".repeat(16),
-        personaGroupAgentIdHex: "cd".repeat(16),
+        personaGroupId:   "ab".repeat(16),
         meshCabalDocIdHex:      "ef".repeat(16),
         syncUrl:                null,
         hearthDaemonUrl:        HEARTH_DOOR,

@@ -59,7 +59,7 @@ const edgeFor = (rootDid: string): DeviceDelegationTiddler => ({
   signature: "dd".repeat(64),
 });
 const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
-  personaGroupDocIdHex: `aa${n}`, meshCabalDocIdHex: `bb${n}`, personaGroupAgentIdHex: `cc${n}`,
+  personaGroupId: `aa${n}`, meshCabalDocIdHex: `bb${n}`,
   // A FULL MOUNT IS FOUR PINS. The veil tag joined the set: a face's founder-veil derives from
   // (vesselSeed × tag) and the tag is minted fresh per founding, so mounting a face without its own tag
   // would leave the FOUNDING face's veil standing over it. The founding path persists all four.
@@ -164,8 +164,8 @@ describe("multi-persona-per-vessel (#63)", () => {
   });
 
   test("veiled-Handle anchors extend to a SET — each persona anchors to its OWN PersonaGroup", async () => {
-    const a0 = { personaGroupDocIdHex: "a0".repeat(32), meshCabalDocIdHex: "b0".repeat(32), personaGroupAgentIdHex: "c0".repeat(32) };
-    const a1 = { personaGroupDocIdHex: "a1".repeat(32), meshCabalDocIdHex: "b1".repeat(32), personaGroupAgentIdHex: "c1".repeat(32) };
+    const a0 = { personaGroupId: "a0".repeat(32), meshCabalDocIdHex: "b0".repeat(32) };
+    const a1 = { personaGroupId: "a1".repeat(32), meshCabalDocIdHex: "b1".repeat(32) };
     await persistIdentityAnchors(a0);          // default index 0 (founding) → anchors-h0.json, uniform keying
     await persistIdentityAnchors(a1, 1);       // persona 1 → anchors-h1.json
 
@@ -193,7 +193,7 @@ describe("multi-persona-per-vessel (#63)", () => {
       expect(worn?.handleIndex).toBe(1);
       expect(worn?.signerDid).toBe("0xdid1");
       expect(worn?.personaKelPrefix).toBe("EKEL1");
-      expect(worn?.personaGroupDocIdHex, "the switched face's OWN group, not h0's").toBe("aa1");
+      expect(worn?.personaGroupId, "the switched face's OWN group, not h0's").toBe("aa1");
       expect(worn?.meshCabalDocIdHex).toBe("bb1");
       expect(worn?.deviceEdge.kind).toBe("device-delegation");
     });

@@ -67,11 +67,11 @@ async function grantFor(overrides: Partial<FaceGrantRecord> = {}, rootSeed = ROO
   const edge = await founderEdge(rootSeed, boundEpoch);
   const unsigned = {
     kind: "face-join-grant/v1" as const,
-    groupDocIdHex: GROUP,
+    groupId: GROUP,
     joineeAgentIdHex: `0x${JOINEE_KEY}`,
     founderCard: '{"founder":"card"}',
     capEvents: ["AQID", "BAU="],
-    reKeyed: true, regranted: 1, reSealed: [],
+    reKeyed: true, reSealed: [],
     founderEdge: edge,
     ...overrides,
   };
@@ -87,7 +87,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
   test("a record the founder signed, under the pinned root, naming this joinee and group → taken", async () => {
     const rec = await grantFor();
     const edge = await founderEdge();
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP });
     expect(v.ok).toBe(true);
   });
 
@@ -95,7 +95,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const rec = await grantFor();
     const tampered = { ...rec, capEvents: [...rec.capEvents, "Zm9yZ2Vk"] };
     const edge = await founderEdge();
-    const v = await verifyFaceGrantRecord(tampered, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP });
+    const v = await verifyFaceGrantRecord(tampered, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP });
     expect(v.ok).toBe(false);
     if (!v.ok) expect(v.reason).toMatch(/signature/i);
   });
@@ -103,7 +103,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
   test("CONTROL: a founder edge ANOTHER root signed (an unpublished seal) → refused", async () => {
     const rec = await grantFor({}, OTHER_ROOT);
     const pinned = await founderEdge();   // the joinee pins ROOT_SEED's did
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP });
     expect(v.ok).toBe(false);
     if (!v.ok) expect(v.reason).toMatch(/edge|root/i);
   });
@@ -111,9 +111,9 @@ describe("the later grant — a signed record the joinee verifies offline", () =
   test("CONTROL: a record naming another joinee, or another group → not taken", async () => {
     const edge = await founderEdge();
     const other = await grantFor({ joineeAgentIdHex: `0x${"5".repeat(64)}` });
-    expect((await verifyFaceGrantRecord(other, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP })).ok).toBe(false);
-    const wrongGroup = await grantFor({ groupDocIdHex: "cd".repeat(16) });
-    expect((await verifyFaceGrantRecord(wrongGroup, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP })).ok).toBe(false);
+    expect((await verifyFaceGrantRecord(other, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP })).ok).toBe(false);
+    const wrongGroup = await grantFor({ groupId: "cd".repeat(16) });
+    expect((await verifyFaceGrantRecord(wrongGroup, { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP })).ok).toBe(false);
   });
 
   // ── THE RECORD'S CONTENT ADDRESS ──────────────────────────────────────────────────────────────────────
@@ -128,7 +128,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     expect(faceGrantRecordCid(reordered)).toBe(cid);
     const moved: Array<[string, FaceGrantRecord]> = [
       ["one more cap event", { ...rec, capEvents: [...rec.capEvents, "Zm9yZ2Vk"] }],
-      ["regranted",          { ...rec, regranted: rec.regranted + 1 }],
+      ["one more re-seal",   { ...rec, reSealed: [...rec.reSealed, { bagUrl: "lar:///b", contentRefB64: "AA==", ciphertextB64: "AQ==" }] }],
       ["reKeyed",            { ...rec, reKeyed: !rec.reKeyed }],
       ["the signature",      { ...rec, sig: `${rec.sig.slice(0, -1)}${rec.sig.endsWith("0") ? "1" : "0"}` }],
       ["the joinee",         { ...rec, joineeAgentIdHex: `0x${"5".repeat(64)}` }],
@@ -152,9 +152,9 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const rec = await grantFor();
     expect(Object.keys(rec)).not.toContain("issuedAt");
     const edge = await founderEdge();
-    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP };
+    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP };
     expect(await verifyFaceGrantRecord(rec, ctx)).toEqual({ ok: true });
-    const moved = await verifyFaceGrantRecord({ ...rec, regranted: rec.regranted + 1 }, ctx);
+    const moved = await verifyFaceGrantRecord({ ...rec, reKeyed: !rec.reKeyed }, ctx);
     expect(moved.ok).toBe(false);
     if (!moved.ok) expect(moved.reason).toMatch(/signature/i);
   });
@@ -179,7 +179,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const kel = await personaKel(FRESH_OP_SEED);
     const rec = await grantFor();                       // edge signed by ROOT_SEED — the superseded op-key
     const pinned = await founderEdge();
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP, personaKel: kel });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel });
     expect(v.ok).toBe(false);
     if (!v.ok) expect(v.reason).toMatch(/head|KEL/i);
   });
@@ -188,7 +188,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const kel = await personaKel(FRESH_OP_SEED);
     const rec = await grantFor({}, FRESH_OP_SEED);      // edge re-issued under the seated op-key
     const pinned = await founderEdge();
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP, personaKel: kel });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel });
     expect(v.ok, v.ok ? "" : v.reason).toBe(true);
   });
 
@@ -196,7 +196,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const kel = await personaKel(null);
     const rec = await grantFor();
     const pinned = await founderEdge();
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP, personaKel: kel });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel });
     expect(v.ok, v.ok ? "" : v.reason).toBe(true);
   });
 
@@ -204,7 +204,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     const kel = await personaKel(null);
     const rec = await grantFor({}, OTHER_ROOT);
     const other = await founderEdge(OTHER_ROOT);        // the joinee pinned OTHER_ROOT; the chain incepts at ROOT_SEED
-    const v = await verifyFaceGrantRecord(rec, { personaRootDid: other.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP, personaKel: kel });
+    const v = await verifyFaceGrantRecord(rec, { personaRootDid: other.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP, personaKel: kel });
     expect(v.ok).toBe(false);
   });
 
@@ -218,7 +218,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
       const pinned = await founderEdge(ROOT_SEED, 1);         // the pin the joinee verifies against, at epoch 1
       const staleRec = await grantFor({}, ROOT_SEED, 1);      // the record's own founder edge also at epoch 1
       const denied = await verifyFaceGrantRecord(staleRec, {
-        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP,
+        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
         expectedEpoch: 3,       // the group has since rolled to epoch 3
       });
       expect(denied.ok).toBe(false);
@@ -226,7 +226,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
 
       const currentRec = await grantFor({}, ROOT_SEED, 3);    // re-minted at the current epoch
       const admitted = await verifyFaceGrantRecord(currentRec, {
-        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP,
+        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
         expectedEpoch: 3,
       });
       expect(admitted.ok, admitted.ok ? "" : admitted.reason).toBe(true);
@@ -237,14 +237,14 @@ describe("the later grant — a signed record the joinee verifies offline", () =
       const pinned = await founderEdge(ROOT_SEED, 1);
       const staleRec = await grantFor({}, ROOT_SEED, 1);
       const denied = await verifyFaceGrantRecord(staleRec, {
-        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP,
+        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
         personaKel: kel, expectedEpoch: 3,
       });
       expect(denied.ok).toBe(false);
 
       const currentRec = await grantFor({}, ROOT_SEED, 3);
       const admitted = await verifyFaceGrantRecord(currentRec, {
-        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP,
+        personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP,
         personaKel: kel, expectedEpoch: 3,
       });
       expect(admitted.ok, admitted.ok ? "" : admitted.reason).toBe(true);
@@ -253,7 +253,7 @@ describe("the later grant — a signed record the joinee verifies offline", () =
     test("omitting expectedEpoch skips the lease fence (unchanged prior behavior)", async () => {
       const pinned = await founderEdge(ROOT_SEED, 0);
       const rec = await grantFor({}, ROOT_SEED, 0);   // would fail ANY expectedEpoch > 0, but none is supplied
-      const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP });
+      const v = await verifyFaceGrantRecord(rec, { personaRootDid: pinned.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP });
       expect(v.ok).toBe(true);
     });
   });
@@ -271,7 +271,7 @@ describe("a grant record under a persona-KEL with a junk event beside it", () =>
     const junk: PersonaKelEvent = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
     const rec = await grantFor();
     const edge = await founderEdge();
-    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupDocIdHex: GROUP };
+    const ctx = { personaRootDid: edge.personaRootDid, selfVerifyingKey: JOINEE_KEY, groupId: GROUP };
     const planted = await verifyFaceGrantRecord(rec, { ...ctx, personaKel: { prefix: kel.prefix, chain: [...kel.chain, junk] } });
     expect(planted).toMatchObject({ ok: true, unreadable: expect.stringMatching(/do not verify and move nothing/) });
     const clean = await verifyFaceGrantRecord(rec, { ...ctx, personaKel: kel });

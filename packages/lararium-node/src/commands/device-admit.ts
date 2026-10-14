@@ -21,7 +21,7 @@ import { existsSync, readFileSync } from "fs";
 import { isValidAutomergeUrl, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
-  PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
   leaseEpochPrefix, effectiveLeaseEpoch,
   LARES_DOC_URI, LARARIUM_DOC_URI, oracleGenesisDocUrl, tiddlerText, type LarDoc,
@@ -198,25 +198,25 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     );
   }
 
-  // Read sentinel oracle IDs from social-bootstrap.json.
+  // Read the face's group id and the cabal's sentinel id from social-bootstrap.json.
   const bootstrapPlugin = JSON.parse(readFileSync(bootstrap, "utf8")) as { text?: string };
   const tiddlers = (JSON.parse(bootstrapPlugin.text ?? "{}") as {
     tiddlers?: Record<string, { text?: string }>;
   }).tiddlers ?? {};
 
-  const personaGroupDocIdHex = tiddlers[PERSONA_GROUP_DOC_ID_TIDDLER]?.text ?? null;
+  const personaGroupId = tiddlers[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
   const meshCabalDocIdHex   = tiddlers[MESH_CABAL_DOC_ID_TIDDLER]?.text   ?? null;
   const daemonUrl            = tiddlers[DAEMON_BAG_ID]?.text                 ?? null;
   // The founder's PersonaGroup plane — carried into the payload so the joinee SYNCS the shared veiled
   // identity (membership-sync foundation); the daemon bag stays sovereign (the joinee seeds its own). The entry
-  // is keyed by the name the group's own doc id derives, which both devices compute alike.
-  const personaUrl           = personaGroupDocIdHex
-    ? tiddlers[personaBagIdFor(personaGroupDocIdHex)]?.text ?? null
+  // is keyed by the name the group's own id derives, which both devices compute alike.
+  const personaUrl           = personaGroupId
+    ? tiddlers[personaBagIdFor(personaGroupId)]?.text ?? null
     : null;
 
-  if (!personaGroupDocIdHex || !meshCabalDocIdHex) {
+  if (!personaGroupId || !meshCabalDocIdHex) {
     throw new Error(
-      `[lares device-admit] sentinel oracle IDs missing from social-bootstrap.json.\n` +
+      `[lares device-admit] the PersonaGroup or MeshCabal id is missing from social-bootstrap.json.\n` +
       `  Run \`lares vessel found --force\` to re-establish the founding ceremony.`,
     );
   }
@@ -232,7 +232,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     throw new Error(`[lares device-admit] daemon doc URL missing from social-bootstrap.json.`);
   }
 
-  // Open daemon doc to read cap events + personaGroupAgentIdHex.
+  // Open daemon doc to read cap events and the group pin.
   const repo        = opts.repo;
   const progress    = repo.findWithProgress(daemonUrl as AutomergeUrl);
   // automerge-repo 2.6: whenReady() resolves the handle when ready, rejects on
@@ -246,9 +246,9 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const daemonDoc    = daemonHandle.doc();
   const tiddlerMap  = (daemonDoc as LarDoc | undefined)?.tiddlers ?? {};
 
-  const personaGroupAgentIdHex = tiddlerText(tiddlerMap[PERSONA_GROUP_AGENT_ID_TIDDLER]);
-  if (!personaGroupAgentIdHex) {
-    throw new Error(`[lares device-admit] PersonaGroup agent ID missing from daemon doc — run \`lares vessel found --force\`.`);
+  // The bootstrap and the daemon doc each pin the face's group; they name one group, or the founding tore.
+  if (tiddlerText(tiddlerMap[PERSONA_GROUP_ID_TIDDLER]) !== personaGroupId) {
+    throw new Error(`[lares device-admit] the daemon doc pins no PersonaGroup, or another than social-bootstrap.json names — run \`lares vessel found --force\`.`);
   }
 
   // The founder's persona-KEL PREFIX (the identifier the joinee will pin) + the chain SNAPSHOT off the
@@ -310,7 +310,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // (leaseEpochPrefix → per-writer slot values → effectiveLeaseEpoch = max). The minted edge binds to
   // THIS PersonaGroup's current epoch, so a device admitted here reads fresh at the door until a later
   // roll leases it stale (re-admits via face-join regrant, never a silent renewal).
-  const leasePrefix = leaseEpochPrefix(personaGroupDocIdHex);
+  const leasePrefix = leaseEpochPrefix(personaGroupId);
   const leaseSlotValues: string[] = [];
   for (const [title, entry] of Object.entries(tiddlerMap)) {
     if (!title.startsWith(leasePrefix)) continue;
@@ -325,8 +325,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     personaKelPrefix,
     personaKelChain,
     hearthTrueName,
-    personaGroupDocIdHex,
-    personaGroupAgentIdHex,
+    personaGroupId,
     meshCabalDocIdHex,
     boundEpoch,
     syncUrl:      deviceAdmitSyncUrl(opts.syncUrl),

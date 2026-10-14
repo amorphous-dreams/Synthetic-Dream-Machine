@@ -42,7 +42,7 @@ import {
   BAG_IDS, slugFromUri, verbArgsFromPayload, registerCrossroadsInOracle,
   whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl,
   type RealmBagRegistration, ed25519SignerFromSeed, MEMORY_CUT_SHADOW_READ,
-  PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER, type DeviceDelegationTiddler,
   ENGINE_CORE_ID, BagStowage,
   deriveRegisterBags, catalogNamedBags, personaBagIdFor, personaSiblingBagIds,
@@ -1531,7 +1531,7 @@ async function prepareNodeBootOn(
       // family, the pin and every face plane read off the bootstrap alone.
       const {
         personaPlanes, personaBagId, personaUrl, identitiesUrl, circlesUrl, sessionsUrl,
-      } = bootFacePlanes(bootstrapTiddlers, wornMount?.personaGroupDocIdHex ?? null);
+      } = bootFacePlanes(bootstrapTiddlers, wornMount?.personaGroupId ?? null);
       // ── THE PLACE STANDS ALONE; THE FACE RIDES OPTIONAL ────────────────────────────────────────
       // Only the daemon doc reads required — a founding stands a PLACE first (`lares vessel found`) and a FACE
       // later (`lares persona new 0`), so a vessel that carries and serves while holding no persona names
@@ -1623,8 +1623,7 @@ async function prepareNodeBootOn(
     const daemonDoc = (await readDaemonDoc()).doc();
     // Each pin defaults to the WORN face's own anchors; absent a switch these read the daemon doc exactly
     // as before (byte-identical for a single-face vessel, which is every vessel until one wears a second).
-    const personaGroupDocIdHex   = wornMount?.personaGroupDocIdHex   ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_DOC_ID_TIDDLER])   ?? undefined;
-    const personaGroupAgentIdHex = wornMount?.personaGroupAgentIdHex ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_AGENT_ID_TIDDLER]) ?? undefined;
+    const personaGroupId   = wornMount?.personaGroupId   ?? tiddlerText(daemonDoc?.tiddlers?.[PERSONA_GROUP_ID_TIDDLER])   ?? undefined;
     const meshCabalDocIdHex     = wornMount?.meshCabalDocIdHex      ?? tiddlerText(daemonDoc?.tiddlers?.[MESH_CABAL_DOC_ID_TIDDLER])     ?? undefined;
     // The cabal rides with the FACE — its members read as PersonaGroups, so a faceless place names none.
     // ── THE FACE, IF ONE STANDS ────────────────────────────────────────────────────────────────
@@ -1970,8 +1969,7 @@ async function prepareNodeBootOn(
       ...(veilArchiveBytes ? { veilArchiveBytes } : {}),
       // The face pins ride CONDITIONALLY — a place at the floor carries none, and writing them as
       // explicit `undefined` would read as a torn face rather than an unlit one.
-      ...(personaGroupDocIdHex   ? { personaGroupDocIdHex }   : {}),
-      ...(personaGroupAgentIdHex ? { personaGroupAgentIdHex } : {}),
+      ...(personaGroupId   ? { personaGroupId }   : {}),
       ...(meshCabalDocIdHex      ? { meshCabalDocIdHex }      : {}),
       // Derived, never enumerated — one derivation both vessels share, so the node and the browser
       // cannot drift apart on which bags a cap check can resolve. A wiki slot's bags ride only when a
@@ -1981,7 +1979,7 @@ async function prepareNodeBootOn(
         // devices reconciling. Only ONE mounts; the two verbs part company here.
         fleets: bootstrap.personaPlanes.map((p) => ({
           personaGroupId: p.personaGroupId,
-          catalogNamed: p.personaGroupId === personaGroupDocIdHex ? catalogNamedBags(assembly.catalogHandle.doc()) : [],
+          catalogNamed: p.personaGroupId === personaGroupId ? catalogNamedBags(assembly.catalogHandle.doc()) : [],
         })),
         ...(slot ? { wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId] } : {}),
       }),
@@ -2045,10 +2043,10 @@ async function prepareNodeBootOn(
     // PersonaGroup delegated, proven over the sibling session, reaches the face's own planes and the public
     // boards — never the @daemon, never another face's planes. Its proof source is the sibling channel's alone;
     // the grant path reads only what this vessel's inbound gate proved.
-    if (personaGroupDocIdHex && deviceEdge?.personaRootDid && personaKelPrefix && personaKelChain) {
+    if (personaGroupId && deviceEdge?.personaRootDid && personaKelPrefix && personaKelChain) {
       const ring = await assemblePersonaGroupRing({
         catalog: makeCatalogAccessor(repo, catalogHandle.url),
-        personaGroupDocIdHex,
+        personaGroupId,
         personaRootDid: deviceEdge.personaRootDid,
         personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
         provenKeyOf: (peerId) => peerIdentifierMap.get(peerId) ?? null,
@@ -2072,8 +2070,8 @@ async function prepareNodeBootOn(
     // seed stays in these closures.
     const siblingHerms = opts.siblingHerms
       ?? (process.env["LAR_SIBLING_HERMS"] ?? "").split(",").map((h) => h.trim()).filter((h) => h.length > 0);
-    if (siblingHerms.length > 0 && personaGroupDocIdHex && personaKelPrefix && deviceEdge && siblingGate) {
-      const sealRecord = tiddlerText(daemonDoc?.tiddlers?.[groupSecretSealTitle(personaGroupDocIdHex)]);
+    if (siblingHerms.length > 0 && personaGroupId && personaKelPrefix && deviceEdge && siblingGate) {
+      const sealRecord = tiddlerText(daemonDoc?.tiddlers?.[groupSecretSealTitle(personaGroupId)]);
       let sealRaw: unknown = null;
       try { sealRaw = sealRecord ? JSON.parse(sealRecord) : null; } catch { sealRaw = null; }
       const seal = await verifyGroupSecretSeal(sealRaw);
@@ -2081,7 +2079,7 @@ async function prepareNodeBootOn(
         console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
       } else {
         const leaseSlots: Array<string | null> = [];
-        const leasePrefix = leaseEpochPrefix(personaGroupDocIdHex);
+        const leasePrefix = leaseEpochPrefix(personaGroupId);
         for (const [title, rec] of Object.entries(daemonDoc?.tiddlers ?? {})) {
           if (title.startsWith(leasePrefix)) leaseSlots.push(tiddlerText(rec));
         }
@@ -2863,7 +2861,7 @@ async function prepareNodeBootOn(
           const faces: { handleIndex: number; personaGroupId: string }[] = [];
           for (const handleIndex of await listAnchoredPersonas()) {
             const anchors = await loadIdentityAnchors(handleIndex);
-            if (anchors) faces.push({ handleIndex, personaGroupId: anchors.personaGroupDocIdHex });
+            if (anchors) faces.push({ handleIndex, personaGroupId: anchors.personaGroupId });
           }
           return faces;
         })

@@ -86,8 +86,7 @@ describe("the ceremony mints the dyad", () => {
       personaKelPrefix:       founder.f.personaKelPrefix,
       personaKelChain:        await founderPersonaKelChain(founder),
       hearthTrueName:         "bafyHearth",
-      personaGroupDocIdHex:   founder.f.personaGroupDocIdHex,
-      personaGroupAgentIdHex: founder.f.personaGroupAgentIdHex,
+      personaGroupId:   founder.f.personaGroupId,
       meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
@@ -101,7 +100,7 @@ describe("the ceremony mints the dyad", () => {
     const slots = await dyadSlotsOf(joineeRepo, applied.daemonUrl);
     expect(slots.length, "the admit mints exactly one dyad on the joinee").toBe(1);
 
-    const veil = await deriveDyadVeil(JOINEE_SEED, founder.f.personaGroupDocIdHex);
+    const veil = await deriveDyadVeil(JOINEE_SEED, founder.f.personaGroupId);
     const slot = slots[0]!;
     expect(slot.ref.veilDid.toLowerCase()).toContain(veil.verifyingKey);
     expect(slot.binding, "no root stands on the joinee — the absence travels").toBeNull();

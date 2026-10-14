@@ -39,8 +39,8 @@ export interface FleetSeatFacts {
 }
 
 export interface FleetSeatProvider extends SeatShoreProvider {
-  sentinelCgkaMembers(sentinelDocIdHex: string): Promise<string[]>;
-  verifySentinelMembership(agentIdentifierHex: string, sentinelDocIdHex: string): Promise<{ ok: boolean }>;
+  groupMembers(groupId: string): Promise<string[]>;
+  verifyGroupMembership(agentIdentifierHex: string, groupId: string): Promise<{ ok: boolean }>;
 }
 
 export interface FleetSeatAnswer {
@@ -62,8 +62,8 @@ export async function answerFleetSeatDuties(input: {
   readonly facts:          FleetSeatFacts;
   /** The fleet root this island's own device edge pins. */
   readonly wornFleetRoot:  string;
-  /** The face's group: its sentinel id on the key shore. */
-  readonly groupDocIdHex:  string;
+  /** The face's key group: its Keyhive group id. */
+  readonly groupId:        string;
   /** This vessel's own identifiers in the group (its veil, its vessel), and its own device key. */
   readonly ownIdentifiers: readonly string[];
   readonly sink:           SeatRollSink;
@@ -84,15 +84,15 @@ export async function answerFleetSeatDuties(input: {
   const seats: SeatStanding[] = [];
   // A raise over this vessel's OWN edge names this vessel as the party: it answers none of those, by any row.
   const matched = new Set<string>(ownEdges);
-  for (const member of await input.provider.sentinelCgkaMembers(input.groupDocIdHex)) {
+  for (const member of await input.provider.groupMembers(input.groupId)) {
     const key = deviceKeyOf(member);
     if (key === null || ownKeys.includes(key)) continue;
     const edgeId = deviceEdgeId(fleetRoot, key);
     const reading = readings.get(edgeId);
     if (!reading) continue;                                 // a seat no counted act names owes nothing
     matched.add(edgeId);
-    const seatStands = (await input.provider.verifySentinelMembership(member, input.groupDocIdHex)).ok;
-    seats.push({ scope: fleetRoot, edgeId, seat: { group: input.groupDocIdHex, member }, aside: reading.stands, raiseCids: reading.raiseCids, seatStands });
+    const seatStands = (await input.provider.verifyGroupMembership(member, input.groupId)).ok;
+    seats.push({ scope: fleetRoot, edgeId, seat: { group: input.groupId, member }, aside: reading.stands, raiseCids: reading.raiseCids, seatStands });
   }
   const seatless: SeatlessRaises[] = [...readings].filter(([edgeId, r]) => !matched.has(edgeId) && r.raiseCids.length > 0)
     .map(([edgeId, r]) => ({ scope: fleetRoot, edgeId, raiseCids: r.raiseCids }));

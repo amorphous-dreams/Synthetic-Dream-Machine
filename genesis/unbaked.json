@@ -1,0 +1,10 @@
+{
+  "format": "lararium-genesis-unbaked/v1",
+  "unbaked": [
+    {
+      "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
+      "sha256": "26d101748538b52349bd7cafc0b8f587058d6228e0d59dffcf574ee5c5de3536",
+      "why": "The grammar plugin packs the mesh's lar-uris module, whose PersonaGroup pin moves: the face's PersonaGroup founds as a Keyhive group, one id names it, and the sentinel URI leaves. No plugin code reads the pin; the daemon runs the mesh from dist. The next GENESIS RE-BAKE carries the bytes into a founded vessel's own wiki."
+    }
+  ]
+}

@@ -172,7 +172,7 @@ describe("the joinee-wear path — a joinee reads its persona through the anchor
 
     // The admit lands exactly one anchor set at the admitted index — public doc-ids, no secret.
     const anchors: IdentityAnchors = {
-      personaGroupDocIdHex: "aa11", meshCabalDocIdHex: "bb22", personaGroupAgentIdHex: "cc33",
+      personaGroupId: "aa11", meshCabalDocIdHex: "bb22",
     };
     vault.anchors.save(3, anchors);
     expect(vault.anchors.list()).toEqual([3]);      // the in-process snapshot is authoritative at once
@@ -189,12 +189,12 @@ describe("the joinee-wear path — a joinee reads its persona through the anchor
   test("the anchor snapshot re-primes from IDB across a fresh vault handle (write-through persisted)", async () => {
     const name = idb();
     const first = await makeBrowserIdbPersonaVault(name);
-    first.anchors.save(2, { personaGroupDocIdHex: "d1", meshCabalDocIdHex: "d2", personaGroupAgentIdHex: "d3" });
+    first.anchors.save(2, { personaGroupId: "d1", meshCabalDocIdHex: "d2" });
     // Give the fire-and-forget write-through a moment to reach IDB, then re-prime a NEW vault handle.
     await new Promise((r) => setTimeout(r, 50));
     const second = await makeBrowserIdbPersonaVault(name);
     expect(second.anchors.list()).toEqual([2]);
-    expect(second.anchors.load(2)?.personaGroupDocIdHex).toBe("d1");
+    expect(second.anchors.load(2)?.personaGroupId).toBe("d1");
   });
 });
 
@@ -215,7 +215,7 @@ describe("the worn mount over the browser IDB vault", () => {
     signature: "dd".repeat(64),
   });
   const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
-    personaGroupDocIdHex: `aa${n}`, meshCabalDocIdHex: `bb${n}`, personaGroupAgentIdHex: `cc${n}`,
+    personaGroupId: `aa${n}`, meshCabalDocIdHex: `bb${n}`,
     // A FULL MOUNT IS FOUR PINS. The veil tag joined the set: a face's founder-veil derives from
   // (vesselSeed × tag) and the tag mints fresh per founding, so mounting a face without its own tag would
   // leave the FOUNDING face's veil standing over it. Both vessel classes read one law, so both fixtures
@@ -235,7 +235,7 @@ describe("the worn mount over the browser IDB vault", () => {
     expect(worn?.handleIndex).toBe(1);
     expect(worn?.signerDid).toBe("0xdid1");
     expect(worn?.personaKelPrefix).toBe("EKEL1");
-    expect(worn?.personaGroupDocIdHex, "the switched face's OWN group").toBe("aa1");
+    expect(worn?.personaGroupId, "the switched face's OWN group").toBe("aa1");
     expect(worn?.deviceEdge.kind).toBe("device-delegation");
   });
 

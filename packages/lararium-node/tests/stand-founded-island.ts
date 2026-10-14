@@ -64,7 +64,7 @@ export async function standFoundedIsland(teardown: Array<() => void>, opts: { co
   } as never;
   const daemonAuth = {
     seed: FOUNDER_SEED, vesselVerifyingKey: key,
-    personaGroupDocIdHex: cer.personaGroupDocIdHex, personaGroupAgentIdHex: cer.personaGroupAgentIdHex,
+    personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
   };

@@ -89,7 +89,7 @@ Ha holds oracle tiddlers for the two non-ha CONTENT docs; a face's four resolve 
 
 ''A face's planes (registered on `@catalog`, read back from `@catalog`):''
 
-# The four ids DERIVE. `personaScopedBagIds(personaGroupDocIdHex)` yields `{persona, circles, identities, sessions}`, all off one tag; no doc lists them.
+# The four ids DERIVE. `personaScopedBagIds(personaGroupId)` yields `{persona, circles, identities, sessions}`, all off one tag; no doc lists them.
 # Each plane self-describes. A plane's own document carries `tiddlers[its own bag id].text` = its own automerge URL.
 # The founding registers all four. A face lit by a CLI act on a vessel that never ran lands its planes in the bootstrap, and the boot bridges seed → `@catalog` so registered-where-read matches.
 # Titles inside a plane keep the BARE namespace. `@circles/following` spells the same inside every face's circles document — a title resolves verbatim within its own document, so one internal shape serves every face.
@@ -178,6 +178,6 @@ The two-plane Automerge geometry rides ''Scope 1'' of the two-scopes ruling — 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Z6uMJISAk6zpgPtFBe5ts4pMxg5sRJ4juNkClBb_ekQ
+<<^ code="&#x0003;">>ni:///sha-256;jwwubY_7Ezv06VZclz9sUIAhrEjIaGwH7WaN-TPtvYI
 
 <<^ code="&#x0004;" -> to="?">>

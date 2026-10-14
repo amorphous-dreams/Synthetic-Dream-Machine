@@ -143,13 +143,13 @@ describe("a founding keeps its archives, sealed per face", () => {
     const guest = standing(new KeyhiveProvider());
     await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: new InMemoryEventStore() });
     const { id: guestId } = await restood.receiveContactCard(await guest.contactCard());
-    await restood.addSentinelMember(guestId, anchors.personaGroupDocIdHex);
-    expect(await restood.sentinelCgkaMembers(anchors.personaGroupDocIdHex)).toContain(guestId);
+    await restood.addGroupMember(guestId, anchors.personaGroupId);
+    expect(await restood.groupMembers(anchors.personaGroupId)).toContain(guestId);
 
     // control: the same seed with no archive and no events holds no such group
     const bare = standing(new KeyhiveProvider());
     await bare.init({ seed: hexToBytes(veil.signingKey), eventStore: new InMemoryEventStore() });
-    await expect(bare.addSentinelMember(guestId, anchors.personaGroupDocIdHex)).rejects.toThrow();
+    await expect(bare.addGroupMember(guestId, anchors.personaGroupId)).rejects.toThrow();
   });
 
   test("F5 at the floor a face founding refuses CustodyLocked and lands nothing private", async () => {
@@ -241,7 +241,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     // The founding as it stands one write short: the anchors and the veil archive rest, the entry never landed.
     const plugin = JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string };
     const packed = JSON.parse(plugin.text) as { tiddlers: Record<string, { text: string }> };
-    const planes = personaScopedBagIds(before.personaGroupDocIdHex);
+    const planes = personaScopedBagIds(before.personaGroupId);
     const stale = [planes.identities, planes.circles, planes.sessions, planes.persona].filter((title) => packed.tiddlers[title]);
     expect(stale.length, "the face's plane entries stand").toBe(4);
     for (const title of stale) delete packed.tiddlers[title];
@@ -252,7 +252,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     const after = (await loadIdentityAnchors(2))!;
     expect(after.veilTag, "the resumed founding re-derives the same veil").toBe(before.veilTag);
     const now = JSON.parse((JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text: string }).text) as { tiddlers: Record<string, unknown> };
-    expect(now.tiddlers[personaScopedBagIds(after.personaGroupDocIdHex).identities], "the entry landed").toBeTruthy();
+    expect(now.tiddlers[personaScopedBagIds(after.personaGroupId).identities], "the entry landed").toBeTruthy();
     expect((await foundFace({ genesisDir, handleIndex: 2 })).alreadyStood).toBe(true);
   });
 });

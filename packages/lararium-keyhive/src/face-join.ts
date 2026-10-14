@@ -62,26 +62,14 @@ export interface FaceJoinGrant {
    *  existing seat. A joinee reads it as "the group moved" vs "you were already here". */
   readonly reKeyed: boolean;
   /**
-   * How many of the group's standing bags this seat re-pointed at the re-keyed group.
+   * The pre-seat chunks RE-SEALED to the group's current key — the reach a seat cannot confer on its own.
    *
-   * A seat with `reKeyed: true` and `regranted: 0` reads as membership WITHOUT REACH — the member holds a
-   * seat and opens nothing the group already carried. That shape looks identical to a healthy join from
-   * every other angle, so the count rides out where a caller and a test can both see it rather than being
-   * inferred from an event tally.
-   *
-   * A re-delegate confers reach onto FUTURE content only — it re-keys the bag forward. The chunks the group
-   * held BEFORE this seat need `reSealed` below; `regranted > 0` with those chunks left un-re-sealed is reach
-   * to nothing that already stood.
-   */
-  readonly regranted: number;
-  /**
-   * The pre-seat chunks RE-SEALED to the re-keyed group — the reach a re-delegate cannot confer on its own.
-   *
-   * keyhive reads FORWARD-ONLY: a re-delegate re-keys a bag forward, but a chunk sealed before this seat stays
-   * keyed to an epoch the new member stands outside of and reads `Key not found`. The holder therefore
-   * re-encrypts each standing chunk at the current epoch here; the joinee ingests these to reach what the group
-   * held before it arrived. Empty when nothing stood sealed on the re-granted bags (a freshly minted bag), or
-   * when the provider tracks no content.
+   * The PersonaGroup stands as a Keyhive group, so a seat joins the key agreement of every bag the group reaches,
+   * and content sealed after the seat opens for the member with no re-delegation. Keyhive reads FORWARD-ONLY: a
+   * chunk sealed before this seat stays keyed to an epoch the new member stands outside of and reads `Key not
+   * found`. The holder therefore re-encrypts each standing chunk at the current epoch here; the joinee ingests
+   * these to reach what the group held before it arrived. Empty when nothing stood sealed on the named bags (a
+   * freshly minted bag), or when the provider tracks no content.
    */
   readonly reSealed: readonly { bagUrl: string; contentRefB64: string; ciphertextB64: string }[];
 }
@@ -92,24 +80,17 @@ export type FaceJoinOutcome = { readonly ok: true; readonly grant: FaceJoinGrant
 /** What the island supplies. Structural, so a test stands it without a WASM provider. */
 export interface FaceJoinProvider {
   receiveContactCard(bytes: Uint8Array): Promise<{ id: string }>;
-  verifySentinelMembership(agentIdHex: string, sentinelDocIdHex: string): Promise<{ ok: boolean; reason?: string }>;
-  addSentinelMember(memberIdentifierHex: string, sentinelDocIdHex: string): Promise<void>;
-  /** Roll one seat: revoke it and say how the key group answered (`KeyhiveProvider.revokeSentinelSeat`). A join
+  verifyGroupMembership(agentIdHex: string, groupId: string): Promise<{ ok: boolean; reason?: string }>;
+  addGroupMember(memberIdentifierHex: string, groupId: string): Promise<void>;
+  /** Roll one seat: revoke it and say how the key group answered (`KeyhiveProvider.revokeGroupSeat`). A join
    *  for a device that returns while its earlier seat stands runs this first. Absent, such a join refuses. */
-  revokeSentinelSeat?(memberIdentifierHex: string, sentinelDocIdHex: string): Promise<{ how: "revoked" | "gone" | "no-authority" }>;
-  delegate(args: { bagUrl: string; audience: string; access: "read" | "admin" }): Promise<unknown>;
-  /** Re-seal a bag's standing chunks to the re-keyed group, returning the fresh ciphertext per chunk — the
-   *  step a re-delegate cannot do, because keyhive reads FORWARD-ONLY and a chunk sealed before the seat stays
-   *  keyed to an epoch the new member stands outside of. Absent when the holder tracks no bag content. */
+  revokeGroupSeat?(memberIdentifierHex: string, groupId: string): Promise<{ how: "revoked" | "gone" | "no-authority" }>;
+  /** Re-seal a bag's standing chunks to the group's current key, returning the fresh ciphertext per chunk — the
+   *  step a seat cannot do, because keyhive reads FORWARD-ONLY and a chunk sealed before the seat stays keyed to
+   *  an epoch the new member stands outside of. Absent when the holder tracks no bag content. */
   reSealBag?(bagUrl: string): Promise<{ contentRef: Uint8Array; ciphertext: Uint8Array }[]>;
   eventsForPeer(peerAgentIdHex: string): Promise<Uint8Array[]>;
   contactCard(): Promise<Uint8Array>;
-}
-
-/** A bag to re-grant after a seat lands, at the access the granter ALREADY holds toward this audience. */
-export interface FaceJoinRegrant {
-  readonly bagUrl: string;
-  readonly access: "read" | "admin";
 }
 
 export interface FaceJoinContext {
@@ -117,23 +98,16 @@ export interface FaceJoinContext {
   readonly personaRootDid: string;
   /** The hearth true-name an edge must bind to; an edge for another hearth reads as another place's business. */
   readonly hearthTrueName: string;
-  /** The PersonaGroup sentinel the joinee joins. */
-  readonly personaGroupDocIdHex: string;
-  /** That group's AGENT id — the audience a bag delegates to (the doc id above names the sentinel itself). */
-  readonly personaGroupAgentIdHex: string;
+  /** The PersonaGroup the joinee joins: a Keyhive group's id, which also names the audience its bags delegate to. */
+  readonly personaGroupId: string;
   /**
-   * The bags to RE-GRANT once the seat lands, and the access each already carries toward this group.
-   *
-   * A seat does not reach backward on its own: a bag delegated to the group BEFORE this member joined keeps a
-   * delegation made against the older group, and the transitive re-key never propagates onto it. A member
-   * seated and left there reads nothing the group already held — membership without reach. Re-granting each
-   * bag re-points it at the re-keyed group.
-   *
-   * This grants NO new authority: the caller names bags it has ALREADY delegated to this same audience, at the
-   * access it already gave. A caller that names a bag it never granted would be widening the group's reach
-   * under cover of a join, so the list belongs to the caller that knows its own grants, never to this function.
+   * The bags whose standing chunks the join RE-SEALS once the seat lands: bags this vessel ALREADY delegated to
+   * the group. The seat reaches every such bag's later content by itself (a group carries a seat into the key
+   * agreement of every document it reaches); the chunks sealed before it stay keyed to an epoch the member
+   * stands outside of, and only a re-seal carries them across. The list grants no reach the group lacks, and it
+   * belongs to the caller that knows its own grants.
    */
-  readonly regrant?: readonly FaceJoinRegrant[];
+  readonly reseal?: readonly string[];
   /**
    * THE LEASE AUTHORITY — this resource's current max-register epoch (`effectiveLeaseEpoch` over its slots).
    * A grant whose `boundEpoch` sits below it reads STALE and the gate refuses. A max-register is monotone and
@@ -244,12 +218,12 @@ export async function runFaceJoin(
   // store recovers from its ARCHIVE (`keyhive-provider` init: RESTORE-OR-FRESH) and from nothing here — force
   // re-keys the group and still opens none of it. A seat is not a key.
   //
-  // A joinee whose group was re-founded holds no seat in the NEW sentinel, so the add genuinely runs.
-  const seated = await provider.verifySentinelMembership(joineeAgentIdHex, ctx.personaGroupDocIdHex);
+  // A joinee whose group was re-founded holds no seat in the NEW group, so the add genuinely runs.
+  const seated = await provider.verifyGroupMembership(joineeAgentIdHex, ctx.personaGroupId);
   const addUnlessRolled = summons.force === true || !seated.ok;
-  // A DEVICE THAT RETURNS AFTER A LIFT TAKES A FRESH SEAT AND NO EARLIER KEY. The re-grant below re-keys each bag
-  // FORWARD; the re-seal that would carry the standing chunks across stays out, since those chunks hold the span
-  // the device missed.
+  // A DEVICE THAT RETURNS AFTER A LIFT TAKES A FRESH SEAT AND NO EARLIER KEY. The seat reaches each bag FORWARD;
+  // the re-seal that would carry the standing chunks across stays out, since those chunks hold the span the
+  // device missed.
   const dyad = ctx.dyad(summons.deviceEdge.deviceVerifyingKey);
   const returned = dyad === "returned" || dyad === "owing";
   // THE EARLIER SEAT LEAVES FIRST. A device that returns while a raise still owes its roll may hold the very seat
@@ -258,29 +232,24 @@ export async function runFaceJoin(
   // the raise still owes its roll, and the vessel that seated the device answers it first (kapae#/keys).
   let rolledFirst = false;
   if (dyad === "owing" && seated.ok) {
-    const how = provider.revokeSentinelSeat ? (await provider.revokeSentinelSeat(joineeAgentIdHex, ctx.personaGroupDocIdHex)).how : "no-authority";
+    const how = provider.revokeGroupSeat ? (await provider.revokeGroupSeat(joineeAgentIdHex, ctx.personaGroupId)).how : "no-authority";
     if (how === "no-authority") {
       return { ok: false, reason: "the earlier seat still stands and its roll stays owed — the vessel that seated this device answers the raise first, and the join then seats afresh" };
     }
     rolledFirst = true;
   }
   const mustAdd = addUnlessRolled || rolledFirst;
-  let regranted = 0;
   const reSealed: { bagUrl: string; contentRefB64: string; ciphertextB64: string }[] = [];
   if (mustAdd) {
-    await provider.addSentinelMember(joineeAgentIdHex, ctx.personaGroupDocIdHex);
-    // Re-point the group's existing bags at the re-keyed group, so the new seat reaches what the group already
-    // held. Only after the add — a re-grant made first would key to the group this member stands outside of.
-    for (const bag of ctx.regrant ?? []) {
-      await provider.delegate({ bagUrl: bag.bagUrl, audience: ctx.personaGroupAgentIdHex, access: bag.access });
-      regranted++;
-      // The re-delegate re-keys the bag FORWARD only. A chunk the group held before this seat stays keyed to an
-      // epoch the member stands outside of (forward-only read), so RE-SEAL each standing chunk to the re-keyed
-      // group — the reach a re-delegate cannot confer alone. Absent a re-seal capability, or an empty bag, this
-      // adds nothing and the pre-seat chunks stay unreached, visibly (an empty `reSealed`).
-      for (const chunk of returned ? [] : ((await provider.reSealBag?.(bag.bagUrl)) ?? [])) {
+    await provider.addGroupMember(joineeAgentIdHex, ctx.personaGroupId);
+    // The seat joins the key agreement of every bag the group reaches, FORWARD only. A chunk the group held before
+    // this seat stays keyed to an epoch the member stands outside of, so RE-SEAL each standing chunk at the
+    // group's current key, after the add. Absent a re-seal capability, or an empty bag, this adds nothing and the
+    // pre-seat chunks stay unreached, visibly (an empty `reSealed`).
+    for (const bagUrl of returned ? [] : (ctx.reseal ?? [])) {
+      for (const chunk of (await provider.reSealBag?.(bagUrl)) ?? []) {
         reSealed.push({
-          bagUrl:        bag.bagUrl,
+          bagUrl,
           contentRefB64: bytesToBase64(chunk.contentRef),
           ciphertextB64: bytesToBase64(chunk.ciphertext),
         });
@@ -288,8 +257,8 @@ export async function runFaceJoin(
     }
   }
 
-  // CAPTURE LAST — the events must carry the add AND every re-grant/re-seal above, or the joinee ingests a
-  // membership that reaches nothing (the add→re-grant→encrypt→capture order `packPersonaCrossing` also keeps).
+  // CAPTURE LAST — the events must carry the add AND every re-seal above, or the joinee ingests a membership whose
+  // re-sealed chunks open under no key it holds (the add→encrypt→capture order `packPersonaCrossing` also keeps).
   const events = await provider.eventsForPeer(joineeAgentIdHex);
   const founderCard = new TextDecoder().decode(await provider.contactCard());
 
@@ -301,7 +270,6 @@ export async function runFaceJoin(
       founderCard,
       capEvents: events.map(bytesToBase64),
       reKeyed: mustAdd,
-      regranted,
       reSealed,
     },
   };

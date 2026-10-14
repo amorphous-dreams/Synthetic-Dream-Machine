@@ -89,7 +89,7 @@ Automerge doc, kept off the mesh. Identity derives from local keys — no server
 
 ''OP-E2 — Three gates at boot.''
 Gate A: Keyhive DID matches local verifying key — throws hard on mismatch.
-Gate B: vessel ∈ PersonaGroup sentinel doc.
+Gate B: vessel ∈ PersonaGroup, a Keyhive group.
 Gate C: PersonaGroup ∈ MeshCabal sentinel doc.
 All three gates pass before the vessel opens its wiki VM lanes.
 
@@ -255,6 +255,6 @@ carrier's verdict.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hZvn_XsWq2mUHAePm2ax98KE_6FiHvWPKkzx1wJ-3kA
+<<^ code="&#x0003;">>ni:///sha-256;ws7yDlVToPZ1uAn5lyKK_D66AEdr9uojoCVobc7OhLA
 
 <<^ code="&#x0004;" -> to="?">>

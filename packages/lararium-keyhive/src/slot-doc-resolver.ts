@@ -47,7 +47,7 @@ export interface SlotDocResolverArgs {
   /** The vessel DID, the one spelling (`didFromVerifyingKey`) — the floor key derives from it. */
   readonly vesselDid: () => string | Promise<string>;
   readonly mintedByHex: () => string;
-  readonly personaGroupAgentIdHex?: string | undefined;
+  readonly personaGroupId?: string | undefined;
   readonly faceSeated?: () => Promise<boolean>;
   readonly delegateToFace?: (bagUrl: string, access: "read" | "admin") => Promise<void>;
 }
@@ -76,7 +76,7 @@ const PREFIX_OF: Record<Exclude<WikiSlotKind, "temp">, { prefix: string; kind: B
 
 export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver {
   const seated = async (): Promise<boolean> =>
-    args.personaGroupAgentIdHex ? await (args.faceSeated?.() ?? Promise.resolve(true)) : false;
+    args.personaGroupId ? await (args.faceSeated?.() ?? Promise.resolve(true)) : false;
 
   /**
    * THE MOUNT'S TRACE IS THE TRACE. A wiki the vessel has mounted this session fingerprinted the canon
@@ -103,7 +103,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     const r = await resolveOrMintBinding({
       kind: PREFIX_OF[kind].kind, prefix: PREFIX_OF[kind].prefix, fingerprint, recipeTrace,
       repo: args.repo, daemonStore: args.daemonStore, keyhive: args.keyhive,
-      ...(args.personaGroupAgentIdHex ? { personaGroupAgentIdHex: args.personaGroupAgentIdHex } : {}),
+      ...(args.personaGroupId ? { personaGroupId: args.personaGroupId } : {}),
       ...(args.delegateToFace ? { delegateToFace: args.delegateToFace } : {}),
       ...(args.faceSeated ? { faceSeated: args.faceSeated } : {}),
       mintedByHex: args.mintedByHex(),

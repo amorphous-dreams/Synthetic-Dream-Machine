@@ -59,12 +59,12 @@ beforeEach(async () => {
   kel0 = [mintPersonaInception(`0x${keys.face0}`, "ab".repeat(32))];
   const kel1 = [mintPersonaInception(`0x${keys.face1}`, "cd".repeat(32))];
   await persistIdentityAnchors({
-    personaGroupDocIdHex: "GROUP-DOC-OF-FACE-ZERO", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ZERO", personaGroupAgentIdHex: "GROUP-AGENT-OF-FACE-ZERO",
+    personaGroupId: "GROUP-DOC-OF-FACE-ZERO", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ZERO",
     signerDid: `0x${keys.face0}`, personaKelPrefix: kel0[0]!.prefix, veilTag: "VEIL-TAG-OF-FACE-ZERO",
     deviceEdge: { title: "DEVICE-EDGE-OF-FACE-ZERO" } as never,
   }, 0);
   await persistIdentityAnchors({
-    personaGroupDocIdHex: "GROUP-DOC-OF-FACE-ONE", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ONE", personaGroupAgentIdHex: "GROUP-AGENT-OF-FACE-ONE",
+    personaGroupId: "GROUP-DOC-OF-FACE-ONE", meshCabalDocIdHex: "CABAL-DOC-OF-FACE-ONE",
     signerDid: `0x${keys.face1}`, personaKelPrefix: kel1[0]!.prefix, veilTag: "VEIL-TAG-OF-FACE-ONE",
   }, 1);
   const petnames = await makeNodePersonaPetnameStore();

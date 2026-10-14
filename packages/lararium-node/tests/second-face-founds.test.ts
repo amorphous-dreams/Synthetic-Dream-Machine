@@ -23,7 +23,7 @@ import * as ed25519 from "@noble/ed25519";
 import {
   hex, tiddlerText, type LarDoc,
   personaScopedBagIds, personaMembershipEntries, readPersonaPlanes, type PlaneEntry,
-  PERSONA_GROUP_DOC_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   SIGNER_DID_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
 } from "@lararium/mesh";
 
@@ -40,7 +40,7 @@ const pins = (h: DaemonHandle): Record<string, string | undefined> => {
   // The device edge rides as STRUCTURED fields (not a `text` body), so read its bound persona-root did.
   const edgeRec = doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER]?.tiddler as Record<string, string> | undefined;
   return {
-    group:  read(PERSONA_GROUP_DOC_ID_TIDDLER),
+    group:  read(PERSONA_GROUP_ID_TIDDLER),
     cabal:  read(MESH_CABAL_DOC_ID_TIDDLER),
     kel:    read(PERSONA_KEL_PREFIX_TIDDLER),
     signer: read(SIGNER_DID_TIDDLER),
@@ -64,7 +64,7 @@ async function foundFace(
     ...(opts.mount === undefined ? {} : { mount: opts.mount }),
   });
   return {
-    groupId: face.personaGroupDocIdHex, cabalId: face.meshCabalDocIdHex, prefix: face.personaKelPrefix,
+    groupId: face.personaGroupId, cabalId: face.meshCabalDocIdHex, prefix: face.personaKelPrefix,
     personaUrl: face.personaUrl, identitiesUrl: face.identitiesUrl, circlesUrl: face.circlesUrl, sessionsUrl: face.sessionsUrl,
   };
 }

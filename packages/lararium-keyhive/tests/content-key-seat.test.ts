@@ -10,7 +10,7 @@
  * leaf for each identity the wrapper added and for nobody else (`lockbox-wrap.test.ts`, on 0.3.0-alpha.1);
  * (2) the minting vessel's own reading of who to leave out: the seat its roll names, and each party its edge
  * reading sets aside; (3) the removed device's prekey secrets staying its own. It rests on NO revocation
- * reaching the bag's document: a sentinel document's revocation rolls no key there (`seat-roll-substrate`, 8).
+ * reaching the bag's document: the lockbox wraps into a fresh document no group reaches.
  *
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store · lar:///ha.ka.ba/lares/api/pono/kapae#/keys
  */
@@ -75,7 +75,7 @@ async function fleet(base: number, names: readonly string[]): Promise<{ group: s
           providers: [d.provider], rest: d.rest,
           values: { read: async (a) => d.values.get(a) ?? null, write: async (a, bytes) => { d.values.set(a, Uint8Array.from(bytes)); } },
           restArchive: async (p) => { d.archives.push(await (p as KeyhiveProvider).exportArchive()); },
-          group: { docIdHex: group, scope: SCOPE },
+          group: { groupId: group, scope: SCOPE },
           bags: () => [BAG],
           standingOf: (member) => d.standing.get(bare(member)) ?? "clear",
           countedRaises: () => d.raises,
@@ -90,8 +90,8 @@ async function fleet(base: number, names: readonly string[]): Promise<{ group: s
   }
   for (const a of devices) for (const b of devices) if (a !== b) await a.provider.receiveContactCard(await b.provider.contactCard());
   const founder = devices[0]!;
-  group = (await founder.provider.createSentinelDoc(`lar:///test.content-key-seat/${base}`)).docIdHex;
-  for (const d of devices.slice(1)) await founder.provider.addSentinelMember(d.id, group);
+  group = (await founder.provider.createGroup()).groupId;
+  for (const d of devices.slice(1)) await founder.provider.addGroupMember(d.id, group);
   const ship = async (from: Device, to: Device): Promise<void> => { await to.provider.ingestPeerEvents(await from.provider.eventsForPeer(to.id)); };
   for (const d of devices.slice(1)) await ship(founder, d);
   for (const d of devices) d.reseat();
@@ -168,7 +168,7 @@ describe("a private body seals on real Keyhive identities, end to end", () => {
     const { group, devices: [f] } = await fleet(0x20, ["f"]);
     const bareSeat = seatContentKeys({
       providers: [f!.provider], rest: f!.rest, values: { read: async () => null, write: async () => {} },
-      restArchive: async () => {}, group: { docIdHex: group, scope: SCOPE }, bags: () => [BAG], subscribe: (sink) => f!.rolls.subscribe(sink),
+      restArchive: async () => {}, group: { groupId: group, scope: SCOPE }, bags: () => [BAG], subscribe: (sink) => f!.rolls.subscribe(sink),
     });
     expect(await bareSeat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("x"), signer: null })).toEqual({ refusal: "signer-unavailable" });
     // A signer from elsewhere changes nothing: with no proof composed this vessel reads no writer as capable.
@@ -236,7 +236,7 @@ describe("a removed device opens nothing sealed after its removal", () => {
     b!.raises.add("raise-1");
     const outcomes = await runSeatDuties(keyhiveSeatShore(b!.provider), [{ kind: "revoke", scope: SCOPE, edgeId: "edge-c", seat: { group, member: c!.id }, raiseCids: ["raise-1"], then: "leave-out" }], (r) => b!.rolls.announce(r));
     expect(outcomes.map((o) => o.did)).toEqual(["no-authority"]);
-    expect((await b!.provider.verifySentinelMembership(c!.id, group)).ok).toBe(true);    // the seat still stands
+    expect((await b!.provider.verifyGroupMembership(c!.id, group)).ok).toBe(true);    // the seat still stands
     expect(b!.reports.map((r) => r.result)).toEqual(["rolled"]);
     const after = await seal(b!, "sealed by b after the raise");
     await carry(b!, f!); await carry(b!, c!);
@@ -291,7 +291,7 @@ describe("a removed device opens nothing sealed after its removal", () => {
     f!.seat = seatContentKeys({
       providers: [f!.provider], rest: f!.rest, values: { read: async (a) => f!.values.get(a) ?? null, write: async (a, bytes) => { f!.values.set(a, bytes); } },
       restArchive: async (p) => { if (refuse) throw new Error("the custody seat refused the archive"); f!.archives.push(await (p as KeyhiveProvider).exportArchive()); },
-      group: { docIdHex: group, scope: SCOPE }, bags: () => [BAG], standingOf: () => "clear", countedRaises: () => f!.raises,
+      group: { groupId: group, scope: SCOPE }, bags: () => [BAG], standingOf: () => "clear", countedRaises: () => f!.raises,
       session: { signer: () => f!.signer, standing: { holdsWrite: () => true } }, report: (o) => { f!.reports.push(o); }, subscribe: (sink) => f!.rolls.subscribe(sink),
     });
     const lockboxes = (await new SealedStore(f!.rest).lockboxes()).length;
@@ -337,7 +337,7 @@ describe("sibling successors, the hand-over and the kept rolls, on real identiti
     await xProvider.receiveContactCard(await f!.provider.contactCard());
     await f!.provider.receiveContactCard(await xProvider.contactCard());
     const xId = await xProvider.vesselIdentifierHex();
-    await f!.provider.addSentinelMember(xId, group);
+    await f!.provider.addGroupMember(xId, group);
     await xProvider.ingestPeerEvents(await f!.provider.eventsForPeer(xId));
     const xChain = await chain("x-70", NEXUS);
     const x = {
@@ -346,7 +346,7 @@ describe("sibling successors, the hand-over and the kept rolls, on real identiti
     };
     x.seat = seatContentKeys({
       providers: [xProvider], rest: x.rest, values: { read: async (a) => x.values.get(a) ?? null, write: async (a, bytes) => { x.values.set(a, bytes); } },
-      restArchive: async () => {}, group: { docIdHex: group, scope: SCOPE }, bags: () => [BAG], standingOf: () => "clear",
+      restArchive: async () => {}, group: { groupId: group, scope: SCOPE }, bags: () => [BAG], standingOf: () => "clear",
       session: { signer: () => ({ certificate: xChain.sessionCertificate, sign: async (purpose, payload) => ({ signature: await signHex(sessionSignatureImage(purpose, xChain.scope, xChain.sessionCertificate.sessionKey, payload), xChain.session) }) }), standing: { holdsWrite: () => true } },
       subscribe: () => () => {},
     });
@@ -412,7 +412,7 @@ describe("a vessel with no face names no key group", () => {
     f2!.seat.lock();
     f2!.seat = seatContentKeys({
       providers: [f2!.provider], rest: f2!.rest, values: { read: async (a) => f2!.values.get(a) ?? null, write: async (a, bytes) => { f2!.values.set(a, bytes); } },
-      restArchive: async () => {}, group: { docIdHex: g2, scope: SCOPE }, bags: () => [BAG],
+      restArchive: async () => {}, group: { groupId: g2, scope: SCOPE }, bags: () => [BAG],
       session: { signer: () => f2!.signer, standing: { holdsWrite: () => true } }, subscribe: (sink) => f2!.rolls.subscribe(sink),
     });
     const alone = await seal(f2!, "no standing reader composed");
@@ -433,7 +433,7 @@ describe("the production seam", () => {
     const reports: RollOutcome[] = [];
     const seat = seatContentKeys({
       providers: [f!.provider], rest: f!.rest, values: { read: async (a) => f!.values.get(a) ?? null, write: async (a, bytes) => { f!.values.set(a, bytes); } },
-      restArchive: async () => {}, group: { docIdHex: group, scope: SCOPE }, bags: () => [BAG], standingOf: () => "clear",
+      restArchive: async () => {}, group: { groupId: group, scope: SCOPE }, bags: () => [BAG], standingOf: () => "clear",
       session: { signer: () => f!.signer, standing: { holdsWrite: () => true } }, report: (o) => { reports.push(o); },
     });
     const sealed = await seat.holder.sealBlob({ bagId: BAG, plaintext: utf8Bytes("v1"), signer: f!.signer });

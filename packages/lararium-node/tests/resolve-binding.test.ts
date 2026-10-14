@@ -73,7 +73,7 @@ function commonArgs(repo: Repo, daemonStore: CompositeStore, keyhive: Capability
     repo,
     daemonStore,
     keyhive,
-    personaGroupAgentIdHex: AGENT_HEX,
+    personaGroupId: AGENT_HEX,
     mintedByHex:           MINTED_BY,
     recipeTrace:           { wikiDocId: "automerge:wiki", libraryBagDocIds: [] as readonly string[] },
   } as const;
@@ -206,7 +206,7 @@ describe("resolveOrMintBinding — the faceless floor", () => {
 
     const result = await resolveOrMintBinding({
       ...commonArgs(repo, daemonStore, provider),
-      personaGroupAgentIdHex: undefined,           // the waking floor: no face stands
+      personaGroupId: undefined,           // the waking floor: no face stands
       kind: "working-binding", prefix: WORKING_BINDINGS_PREFIX,
     });
 
@@ -223,7 +223,7 @@ describe("resolveOrMintBinding — the faceless floor", () => {
     const repo = new Repo();
     const { daemonStore } = makeDaemonStore(repo);
     const { provider } = makeFakeKeyhive();
-    const args = { ...commonArgs(repo, daemonStore, provider), personaGroupAgentIdHex: undefined,
+    const args = { ...commonArgs(repo, daemonStore, provider), personaGroupId: undefined,
                    kind: "working-binding" as const, prefix: WORKING_BINDINGS_PREFIX };
 
     const first  = await resolveOrMintBinding(args);

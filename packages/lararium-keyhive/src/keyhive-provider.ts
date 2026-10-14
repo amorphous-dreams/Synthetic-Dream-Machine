@@ -663,7 +663,7 @@ export class KeyhiveProvider implements CapabilityProvider {
    * identity, and a cabal IS the shared relation over that realm's resources, so it has no
    * other name to take. Cabals-as-Groups stands OUT OF SCOPE rather than merely unbuilt.
    *
-   * Today every principal here is a sentinel Document, PersonaGroup included.
+   * A PersonaGroup founds as a Keyhive Group through `createGroup`; a cabal and a realm keep their Document.
    *
    * Returns both the DocumentId hex (for bag-level accessForDoc checks) and
    * the Document's agent Identifier hex (for adding this sentinel as a member
@@ -677,6 +677,112 @@ export class KeyhiveProvider implements CapabilityProvider {
     const docIdHex   = bytesToHex(docId.toBytes());
     const agentIdHex = bytesToHex(doc.id.toBytes());
     return { docIdHex, agentIdHex };
+  }
+
+  /**
+   * Found a Keyhive GROUP and answer its id as `0x`-hex. The group's agent id reads the same bytes, so one value
+   * names the group as a membership target and as the audience a bag delegates to.
+   *
+   * A PersonaGroup founds here (kapae#/keys). A revocation travels down to the documents a group reaches and rolls
+   * their key, where a sentinel Document rolls none; and a member seated after the group reached a document joins
+   * that document's key agreement with no re-delegation (`tests/persona-group-substrate.test.ts`). The founding
+   * identity stands as the group's first admin and upstream of every seat it makes.
+   */
+  async createGroup(): Promise<{ groupId: string }> {
+    const kh = this.requireKh();
+    const gid = await kh.generateGroup([]);
+    const group = await kh.getGroup(gid);
+    if (!group) throw new Error("[keyhive] generated group is not available");
+    const groupId = bytesToHex(gid.toBytes());
+    this.hydratedIslands.add(groupId);   // CIV-2b — a freshly founded group stands live in memory, never deferred
+    return { groupId };
+  }
+
+  /** Resolve a group by id, or answer null where the id parses as no group or names none on this replica. */
+  private async findGroup(groupId: string): Promise<{ gid: KH.GroupId; group: KH.Group } | null> {
+    let gid: KH.GroupId;
+    try { gid = new KH.GroupId(hexToBytes(groupId)); } catch { return null; }
+    await this.ensureIsland(groupId);   // CIV-2b — a group's own events rest in its island; first access materializes it
+    const group = await this.requireKh().getGroup(gid);
+    return group ? { gid, group } : null;
+  }
+
+  /** Resolve a group by id, or refuse by name: a group write or a member read never lands on a guess. */
+  private async requireGroup(groupId: string): Promise<{ gid: KH.GroupId; group: KH.Group }> {
+    const found = await this.findGroup(groupId);
+    if (!found) throw new Error(`[keyhive] group not found: ${groupId.slice(0, 16)}…`);
+    return found;
+  }
+
+  /** Seat an agent (by Identifier hex) in a group at admin. A group or an agent this replica cannot name refuses by
+   *  name: a seat never lands on a guess. */
+  async addGroupMember(memberIdentifierHex: string, groupId: string): Promise<void> {
+    const kh = this.requireKh();
+    const { gid } = await this.requireGroup(groupId);
+    const identifier = new KH.Identifier(hexToBytes(memberIdentifierHex));
+    const agent = await kh.getAgent(identifier);
+    if (!agent) throw new Error(`[keyhive] agent not found for group addMember: ${memberIdentifierHex.slice(0, 16)}…`);
+    const access = KH.Access.tryFromString("admin");
+    if (!access) throw new Error("[keyhive] Access.tryFromString('admin') returned undefined");
+    await this.withActiveIsland(groupId, () => kh.addMember(agent.id, KH.MemberedId.group(gid), access, []));
+  }
+
+  /**
+   * Answer one seat in a group for the key side of a removal (kapae#/keys), and say HOW it answered.
+   *
+   *   · `gone`         — no direct seat stands for the party here: it left already, never sat, or reaches the group
+   *                      only through another member. A revocation that finds the party gone reads as done, so this
+   *                      writes nothing and never throws.
+   *   · `revoked`      — this identity revoked the seat. The removal converges across replicas, and every document
+   *                      the group reaches rolls its key past the party.
+   *   · `no-authority` — the seat stands, and this identity holds no hand over it. REVOKE AUTHORITY FOLLOWS THE
+   *                      SEATING LINEAGE: the hand that seated a party revokes it, and so does a hand upstream of
+   *                      that seat; a peer seated beside the party holds none, admin or not, and a junior never
+   *                      revokes the founder (`tests/persona-group-substrate.test.ts`).
+   *
+   * Any other fault rides out. The founder's own departure while it seated others throws, and its seat still
+   * leaves (the same file's canary): no door asks it.
+   */
+  async revokeGroupSeat(memberIdentifierHex: string, groupId: string): Promise<{ how: "revoked" | "gone" | "no-authority" }> {
+    const kh = this.requireKh();
+    const { gid } = await this.requireGroup(groupId);
+    const identifier = new KH.Identifier(hexToBytes(memberIdentifierHex));
+    const agent = await kh.getAgent(identifier);
+    if (!agent) return { how: "gone" };
+    // A party with no direct seat here draws an empty revocation from Keyhive (measured), so it reads `gone`.
+    try {
+      const revocations = await this.withActiveIsland(groupId, () => kh.revokeMember(agent.id, true, KH.MemberedId.group(gid)));
+      return revocations.length === 0 ? { how: "gone" } : { how: "revoked" };
+    } catch (err) {
+      const said = err instanceof Error ? err.message : String(err);
+      if (/proof missing/i.test(said)) return { how: "no-authority" };
+      throw err;
+    }
+  }
+
+  /** Whether an agent reaches a group, directly or through a member group, on this replica. A group this replica
+   *  cannot name answers `ok: false` with a reason that names it; a group read never answers through a document's
+   *  lattice, which reads a group id as "no access" in silence. */
+  async verifyGroupMembership(agentIdentifierHex: string, groupId: string): Promise<{ ok: boolean; reason?: string }> {
+    const found = await this.findGroup(groupId);
+    if (!found) return { ok: false, reason: `[keyhive] group not found: ${groupId.slice(0, 16)}…` };
+    const { group } = found;
+    const identifier = new KH.Identifier(hexToBytes(agentIdentifierHex));
+    const members = await group.transitiveMembers();
+    return members.some((membership) => bytesToHex(membership.who.id.toBytes()) === bytesToHex(identifier.toBytes()))
+      ? { ok: true }
+      : { ok: false, reason: "no access granted in group" };
+  }
+
+  /** Every INDIVIDUAL a group reaches on this replica (transitively), `0x`-hex, its founder included. A group this
+   *  replica cannot name refuses by name, so an empty answer always means an empty group. The count stays this
+   *  replica's: a seat that has not synced here reads absent. */
+  async groupMembers(groupId: string): Promise<string[]> {
+    const { group } = await this.requireGroup(groupId);
+    const members = await group.transitiveMembers();
+    // A party reads as an individual where it names neither a group nor a document: this identity's own seat reads
+    // as Keyhive's ACTIVE agent and answers `isIndividual` false, and the founder's seat would drop with it.
+    return members.filter(({ who }) => !who.isGroup && !who.isDocument).map(({ who }) => bytesToHex(who.id.toBytes()));
   }
 
   /**
@@ -735,43 +841,6 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /**
-   * Answer one seat on a sentinel Document for the key side of a removal (kapae#/keys), and say HOW it answered.
-   *
-   *   · `gone`         — the party holds no access here: it left already, or never sat. A revocation that finds
-   *                      the party gone reads as done, so this never throws and writes nothing.
-   *   · `revoked`      — this identity revoked the seat. The removal converges across replicas.
-   *   · `no-authority` — the seat stands, and this identity holds no hand over it. REVOKE AUTHORITY FOLLOWS THE
-   *                      SEATING LINEAGE: the hand that seated a party revokes it, and so does a hand upstream of
-   *                      that seat; a peer seated beside the party holds none, admin or not. A party seated by
-   *                      two hands leaves only under a hand upstream of both, and the refusal covers the whole
-   *                      call (`tests/seat-roll-substrate.probe.test.ts` measures each).
-   *
-   * WHAT A REVOCATION HERE DOES NOT REACH. It closes the lattice and removes the party's leaf from THIS
-   * document's key agreement. A bag delegated to this sentinel keeps the party's leaf: the removal travels down
-   * to the documents a Keyhive Group reaches and to nothing a Document reaches (the same probe, 8 and 9). A
-   * bag's own content key rolls by the subscriber to the seat's roll, never by this call.
-   */
-  async revokeSentinelSeat(
-    memberIdentifierHex: string,
-    sentinelDocIdHex:    string,
-  ): Promise<{ how: "revoked" | "gone" | "no-authority" }> {
-    const kh = this.requireKh();
-    const docId = new KH.DocumentId(hexToBytes(sentinelDocIdHex));
-    if (!(await kh.getDocument(docId))) throw new Error(`[keyhive] sentinel doc not found for seat revoke: ${sentinelDocIdHex.slice(0, 16)}…`);
-    const identifier = new KH.Identifier(hexToBytes(memberIdentifierHex));
-    // Standing reads FIRST: a second revocation of a seat already gone produces no event and would throw.
-    if (!(await kh.getAgent(identifier)) || !(await kh.accessForDoc(identifier, docId))) return { how: "gone" };
-    try {
-      await this.revokeSentinelMember(memberIdentifierHex, sentinelDocIdHex);
-    } catch (err) {
-      const said = err instanceof Error ? err.message : String(err);
-      if (/proof missing/i.test(said)) return { how: "no-authority" };
-      throw err;
-    }
-    return { how: "revoked" };
-  }
-
-  /**
    * ENUMERATE the individuals reaching a sentinel Document, from its CGKA tree.
    *
    * `verifySentinelMembership` answers "does THIS hex hold access" and so needs a
@@ -795,8 +864,8 @@ export class KeyhiveProvider implements CapabilityProvider {
 
   /**
    * Verify that an agent (by Identifier hex) holds any access on a sentinel Document.
-   * Gate B: vesselIndividualHex vs personaGroupDocIdHex
-   * Gate C: personaGroupAgentIdHex vs meshCabalDocIdHex
+   * Gate B: vesselIndividualHex vs personaGroupId
+   * Gate C: personaGroupId vs meshCabalDocIdHex
    *
    * Returns VerifyResult shape for consistency with verify().
    */

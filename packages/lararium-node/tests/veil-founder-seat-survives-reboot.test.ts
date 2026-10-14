@@ -2,7 +2,7 @@
  * veil-founder-seat-survives-reboot — the founding agent's OWN seat re-hydrates through every reboot shape.
  *
  * The veil archive exists so a lit vessel that founded a face re-knows its own PersonaGroup after the
- * night: a boot delegates bags to `personaGroupAgentIdHex` (the face), and a veil that could not name that
+ * night: a boot delegates bags to `personaGroupId` (the face), and a veil that could not name that
  * agent would throw `audience not known` and take the vessel down. This vector holds the invariant at the
  * grain the daemon actually reboots at — the veil stood over a real founding daemon doc, restored the four
  * ways a reboot can restore it — so a regression that stops the founder's own seat from re-hydrating reds
@@ -50,14 +50,14 @@ describe("the founder's veil seat survives the night", () => {
     const r1 = new KeyhiveProvider();
     await r1.init({ seed: veilSeed, eventStore });
     await r1.hydrateFromEventStore();
-    expect(await r1.knowsAgent(f.personaGroupAgentIdHex), "R1 event-store boot re-knows the face").toBe(true);
+    expect(await r1.knowsAgent(f.personaGroupId), "R1 event-store boot re-knows the face").toBe(true);
     const archive = await r1.exportArchive();
 
     // R2 — archive + event store (the ordinary sealed reboot).
     const r2 = new KeyhiveProvider();
     await r2.init({ seed: veilSeed, eventStore, archiveBytes: archive });
     await r2.hydrateFromEventStore();
-    expect(await r2.knowsAgent(f.personaGroupAgentIdHex), "R2 sealed reboot re-knows the face").toBe(true);
+    expect(await r2.knowsAgent(f.personaGroupId), "R2 sealed reboot re-knows the face").toBe(true);
     expect(await r2.knowsAgent(UNKNOWN_AGENT), "CONTROL — an unmet agent stays unknown").toBe(false);
 
     // R3 — archive only, cap events gone (the archive-only restore).
@@ -65,7 +65,7 @@ describe("the founder's veil seat survives the night", () => {
     const r3 = new KeyhiveProvider();
     await r3.init({ seed: veilSeed, eventStore: emptyStore, archiveBytes: archive });
     await r3.hydrateFromEventStore();
-    expect(await r3.knowsAgent(f.personaGroupAgentIdHex), "R3 archive-only restore re-knows the face").toBe(true);
+    expect(await r3.knowsAgent(f.personaGroupId), "R3 archive-only restore re-knows the face").toBe(true);
 
     await r1.dispose(); await r2.dispose(); await r3.dispose();
     await repo.shutdown();

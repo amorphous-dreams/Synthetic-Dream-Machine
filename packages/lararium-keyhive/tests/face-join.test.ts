@@ -28,16 +28,16 @@ async function edgeFor(opts: { seed?: Uint8Array; key?: string; hearth?: string 
   });
 }
 
-interface Calls { received: number; added: string[]; events: number; regranted: string[] }
+interface Calls { received: number; added: string[]; events: number; resealed: string[] }
 
 function fakeProvider(opts: { seated?: boolean; cardId?: string } = {}): FaceJoinProvider & { calls: Calls } {
-  const calls: Calls = { received: 0, added: [], events: 0, regranted: [] };
+  const calls: Calls = { received: 0, added: [], events: 0, resealed: [] };
   return {
     calls,
     async receiveContactCard() { calls.received++; return { id: opts.cardId ?? cardIdFor(JOINEE_KEY) }; },
-    async verifySentinelMembership() { return opts.seated ? { ok: true } : { ok: false, reason: "no access" }; },
-    async addSentinelMember(member, doc) { calls.added.push(`${member}@${doc}`); },
-    async delegate(a) { calls.regranted.push(a.bagUrl); return {}; },
+    async verifyGroupMembership() { return opts.seated ? { ok: true } : { ok: false, reason: "no access" }; },
+    async addGroupMember(member, group) { calls.added.push(`${member}@${group}`); },
+    async reSealBag(bagUrl) { calls.resealed.push(bagUrl); return [{ contentRef: new Uint8Array([7]), ciphertext: new Uint8Array([8, 9]) }]; },
     async eventsForPeer() { calls.events++; return [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5])]; },
     async contactCard() { return new TextEncoder().encode('{"founder":"card"}'); },
   };
@@ -48,8 +48,7 @@ async function ctxFor(): Promise<FaceJoinContext> {
   return {
     personaRootDid:       own.personaRootDid,
     hearthTrueName:       HEARTH,
-    personaGroupDocIdHex: "ab".repeat(16),
-    personaGroupAgentIdHex: "cd".repeat(16),
+    personaGroupId:       "ab".repeat(16),
     dyad: () => "clear", leaseEpoch:           0,          // an unfed resource — the epoch a founding's grants bind to
   };
 }
@@ -129,43 +128,40 @@ describe("the gate — a signature, never a list", () => {
   });
 });
 
-describe("the re-grant — a seat that reaches what the group already held", () => {
-  test("a fresh seat re-points the group's existing bags, AFTER the add", async () => {
-    const ctx = { ...(await ctxFor()), regrant: [
-      { bagUrl: "lar:///ha.ka.ba/bags/catalog", access: "admin" as const },
-      { bagUrl: "lar:///ha.ka.ba/bags/persona", access: "admin" as const },
-    ] };
+describe("the re-seal — a seat that reaches what the group already held", () => {
+  test("a fresh seat re-seals the named bags' standing chunks, AFTER the add, and the grant carries them", async () => {
+    const ctx = { ...(await ctxFor()), reseal: ["lar:///ha.ka.ba/bags/catalog", "lar:///ha.ka.ba/bags/persona"] };
     const p   = fakeProvider();
     const out = await runFaceJoin(p, summons(await edgeFor()), ctx);
     expect(out.ok).toBe(true);
-    expect(p.calls.regranted).toEqual(["lar:///ha.ka.ba/bags/catalog", "lar:///ha.ka.ba/bags/persona"]);
     expect(p.calls.added).toHaveLength(1);
-    if (out.ok) expect(out.grant.regranted).toBe(2);   // the count rides OUT, so a caller can see reach
+    expect(p.calls.resealed).toEqual(["lar:///ha.ka.ba/bags/catalog", "lar:///ha.ka.ba/bags/persona"]);
+    if (out.ok) expect(out.grant.reSealed.map((c) => c.bagUrl)).toEqual(["lar:///ha.ka.ba/bags/catalog", "lar:///ha.ka.ba/bags/persona"]);
   });
 
-  test("a seat granted with an EMPTY regrant list reports 0 — membership without reach, visibly", async () => {
-    // The failure this fences looks healthy from every other angle: admitted, re-keyed, events flowing, and a
-    // member that opens nothing the group already held. Only the count says so.
-    const ctx = await ctxFor();                     // no `regrant` — the daemon named no standing bags
+  test("a seat with NO bag named to re-seal carries no chunk — the earlier span stays unreached, visibly", async () => {
+    // The group carries the seat into every bag it reaches, forward; what stood sealed before stays keyed to an
+    // epoch the member stands outside of, and only an empty `reSealed` says so.
+    const ctx = await ctxFor();                     // no `reseal` — the daemon named no standing bags
     const out = await runFaceJoin(fakeProvider(), summons(await edgeFor()), ctx);
     expect(out.ok).toBe(true);
     if (!out.ok) return;
     expect(out.grant.reKeyed).toBe(true);
-    expect(out.grant.regranted).toBe(0);
+    expect(out.grant.reSealed).toEqual([]);
   });
 
-  test("an already-seated device re-grants NOTHING — no seat moved, no epoch moved", async () => {
-    const ctx = { ...(await ctxFor()), regrant: [{ bagUrl: "lar:///ha.ka.ba/bags/catalog", access: "admin" as const }] };
+  test("an already-seated device re-seals NOTHING — no seat moved, no epoch moved", async () => {
+    const ctx = { ...(await ctxFor()), reseal: ["lar:///ha.ka.ba/bags/catalog"] };
     const p   = fakeProvider({ seated: true });
     await runFaceJoin(p, summons(await edgeFor()), ctx);
-    expect(p.calls.regranted).toEqual([]);
+    expect(p.calls.resealed).toEqual([]);
   });
 
-  test("a REFUSED summons re-grants nothing", async () => {
-    const ctx = { ...(await ctxFor()), regrant: [{ bagUrl: "lar:///ha.ka.ba/bags/catalog", access: "admin" as const }] };
+  test("a REFUSED summons re-seals nothing", async () => {
+    const ctx = { ...(await ctxFor()), reseal: ["lar:///ha.ka.ba/bags/catalog"] };
     const p   = fakeProvider();
     await runFaceJoin(p, summons(await edgeFor({ seed: OTHER_SEED })), ctx);
-    expect(p.calls.regranted).toEqual([]);
+    expect(p.calls.resealed).toEqual([]);
   });
 });
 
@@ -188,7 +184,7 @@ describe("the repeat — membership lives founder-side", () => {
     expect(out.ok).toBe(true);
     if (!out.ok) return;
     expect(out.grant.reKeyed).toBe(true);
-    expect(p.calls.added).toEqual([`${cardIdFor(JOINEE_KEY)}@${ctx.personaGroupDocIdHex}`]);
+    expect(p.calls.added).toEqual([`${cardIdFor(JOINEE_KEY)}@${ctx.personaGroupId}`]);
   });
 
   test("force re-keys a seated device — the answer to a suspected-but-unrevoked key", async () => {
@@ -229,24 +225,23 @@ describe("the Binding Gate reads the dyad's shadow", () => {
     expect(seen).toContain(JOINEE_KEY);
   });
   test("a returned device receives a fresh seat without resealing old bags", async () => {
-    const base = await ctxFor(), ctx = { ...base, dyad: () => "returned" as const, regrant: [{ bagUrl: "bag", access: "read" as const }] };
-    const p = fakeProvider() as ReturnType<typeof fakeProvider> & { reSealCalls: number; reSealBag: () => Promise<{ contentRef: Uint8Array; ciphertext: Uint8Array }[]> };
-    p.reSealCalls = 0; p.reSealBag = async () => { p.reSealCalls++; return []; };
+    const base = await ctxFor(), ctx = { ...base, dyad: () => "returned" as const, reseal: ["bag"] };
+    const p = fakeProvider();
     const result = await runFaceJoin(p, summons(await edgeFor()), ctx);
-    expect(result.ok).toBe(true); expect(p.calls.regranted).toEqual(["bag"]); expect(p.reSealCalls).toBe(0);
+    expect(result.ok).toBe(true); expect(p.calls.added).toHaveLength(1); expect(p.calls.resealed).toEqual([]);
     if (result.ok) expect(result.grant.reSealed).toEqual([]);
-    const control = fakeProvider() as typeof p; control.reSealCalls = 0; control.reSealBag = async () => { control.reSealCalls++; return []; };
-    await runFaceJoin(control, summons(await edgeFor()), { ...base, dyad: () => "clear", regrant: [{ bagUrl: "bag", access: "read" }] });
-    expect(control.reSealCalls).toBe(1);
+    const control = fakeProvider();
+    await runFaceJoin(control, summons(await edgeFor()), { ...base, dyad: () => "clear", reseal: ["bag"] });
+    expect(control.calls.resealed).toEqual(["bag"]);
   });
 });
 
 describe("a device that returns takes a fresh seat, and an earlier seat leaves first", () => {
-  type Rolling = ReturnType<typeof fakeProvider> & { revoked: string[]; revokeSentinelSeat: (a: string, d: string) => Promise<{ how: "revoked" | "gone" | "no-authority" }> };
+  type Rolling = ReturnType<typeof fakeProvider> & { revoked: string[]; revokeGroupSeat: (a: string, g: string) => Promise<{ how: "revoked" | "gone" | "no-authority" }> };
   const rolling = (how: "revoked" | "gone" | "no-authority", seated = true): Rolling => {
     const p = fakeProvider({ seated }) as Rolling;
     p.revoked = [];
-    p.revokeSentinelSeat = async (a) => { p.revoked.push(a); return { how }; };
+    p.revokeGroupSeat = async (a) => { p.revoked.push(a); return { how }; };
     return p;
   };
 
@@ -284,12 +279,10 @@ describe("a device that returns takes a fresh seat, and an earlier seat leaves f
 
   test("an owing device with no seat left takes a fresh seat and no re-seal", async () => {
     const base = await ctxFor(), p = rolling("revoked", false);
-    let reSeals = 0;
-    (p as Rolling & { reSealBag: () => Promise<never[]> }).reSealBag = async () => { reSeals++; return []; };
-    const out = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "owing", regrant: [{ bagUrl: "bag", access: "read" }] });
+    const out = await runFaceJoin(p, summons(await edgeFor()), { ...base, dyad: () => "owing", reseal: ["bag"] });
     expect(out.ok).toBe(true);
     expect(p.revoked).toEqual([]);
     expect(p.calls.added).toHaveLength(1);
-    expect(reSeals).toBe(0);
+    expect(p.calls.resealed).toEqual([]);
   });
 });

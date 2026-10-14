@@ -255,8 +255,7 @@ export interface IslandMsg_Manifest {
      *  them, and that names the WAKING FLOOR rather than a fault — canon has a vessel boot permissionlessly
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and
      *  never a softened gate. */
-    personaGroupDocIdHex?:   string;
-    personaGroupAgentIdHex?: string;
+    personaGroupId?:   string;
     meshCabalDocIdHex?:    string;
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
     registerBags:          readonly string[];

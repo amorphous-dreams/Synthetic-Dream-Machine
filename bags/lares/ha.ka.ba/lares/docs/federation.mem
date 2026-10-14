@@ -29,7 +29,7 @@ A Lararium runs as a ''swarm of one operator's vessels'' (a PersonaGroup) — ea
 
 ''What NEVER enters github'' (identity-bearing — each lives in the vessel's own data home, outside the clone):
 * `<lares>/identity/.vessel-key*.json` — this vessel's OWN private signing key. The device mints it and it never leaves the device.
-* `<lares>/vessel/social-bootstrap.json` — the PersonaGroup pointers (admin/identities/circles/sessions doc-URLs + the sentinel PersonaGroup / MeshCabal IDs). Each vessel writes its own, at founding or at join.
+* `<lares>/vessel/social-bootstrap.json` — the PersonaGroup pointers (admin/identities/circles/sessions doc-URLs + the PersonaGroup's id and the MeshCabal sentinel's id). Each vessel writes its own, at founding or at join.
 
 ''What crosses between two vessels'': the joinee's PUBLIC verifying key one way, and the signed admit payload the other (`device-admit/v1` — the device-delegation edge, the pinned persona-KEL chain, the PersonaGroup secret sealed to the joinee's key, and the doc pointers). The signed edge binds the joinee's key to the hearth's True Name and the sealed secret carries its own signature, so a hostile carrier may withhold either and forge neither; the remaining payload fields ride as untrusted carriage. The payload rides whatever channel the operator already trusts — a file, a paste, a QR — never the public remote. A clone alone cannot join a PersonaGroup; joining requires what the founding vessel hands over deliberately.
 
@@ -177,6 +177,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Fu0X65L8TyARWrgU_Gblnkxs9tNZ4dN1N9n7hYxi2zk
+<<^ code="&#x0003;">>ni:///sha-256;7VZychZKrATcPZ_BHEQHF91OnOXIhFOAFNsVx8c_iDc
 
 <<^ code="&#x0004;" -> to="?">>

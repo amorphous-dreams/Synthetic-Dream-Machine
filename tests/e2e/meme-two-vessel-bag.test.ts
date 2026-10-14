@@ -272,7 +272,7 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
       `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
       { results?: { summary?: { output?: Record<string, unknown> } } };
     const grant = r.results?.summary?.output ?? {};
-    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · regranted ${String(grant["regranted"])} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
+    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${Array.isArray(grant["reSealed"]) ? grant["reSealed"].length : "(none)"} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
     expect(grant["admitted"], JSON.stringify(grant).slice(0, 400)).toBe(true);
     expect(typeof grant["recordTitle"], "the grant landed on no plane — A's log names why").toBe("string");
     // B's next present: the binding resolves, the kit reads the record and takes the seat by its own act.

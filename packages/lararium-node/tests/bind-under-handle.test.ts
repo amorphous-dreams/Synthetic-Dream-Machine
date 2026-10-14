@@ -34,7 +34,7 @@ const BAG = "lar:///ha.ka.ba/bags/catalog/handle-shared";
 
 /** Boot a live keyhive over a founded/admitted daemon doc, the way a real vessel boots. */
 async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingKey: string,
-                        pg: { docIdHex: string; agentIdHex: string }, mesh: string, signerDid: string,
+                        pg: { groupId: string }, mesh: string, signerDid: string,
                         personaKelPrefix: string, deviceEdge: unknown, archiveBytes?: Uint8Array) {
   const handle = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
   const composite = new CompositeStore();
@@ -46,12 +46,12 @@ async function bootOver(repo: Repo, daemonUrl: string, s: Uint8Array, verifyingK
   const chain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
   if (!chain) throw new Error(`no persona-KEL chain for ${personaKelPrefix} on this vessel's board`);
   // The lease frontier, by the SAME fold the daemon behaviour runs, over this vessel's OWN daemon layer.
-  const lease = await readLeaseFrontier(composite, pg.docIdHex);
+  const lease = await readLeaseFrontier(composite, pg.groupId);
   if (lease.kind !== "epoch") throw new Error(`fixture: lease frontier unavailable (${lease.why})`);
   return bootDaemonKeyhive({
     seed: s, eventStore: new DaemonEventStore({ daemon: composite }),
     vesselVerifyingKey: verifyingKey,
-    personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex, meshCabalDocIdHex: mesh,
+    personaGroupId: pg.groupId, meshCabalDocIdHex: mesh,
     registerBags: [DAEMON_BAG_ID], signerDid, personaKel: { prefix: personaKelPrefix, chain },
     deviceEdge: deviceEdge as never, expectedEpoch: lease.n,
     ...(archiveBytes ? { archiveBytes } : {}),
@@ -66,7 +66,7 @@ describe("two vessels bind under one Handle", () => {
       repo: founderRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: founderKey,
       vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: founderKey,
     });
-    const pg = { docIdHex: cer.personaGroupDocIdHex, agentIdHex: cer.personaGroupAgentIdHex };
+    const pg = { groupId: cer.personaGroupId };
     const { keyhive: founder } = await bootOver(founderRepo, cer.daemonUrl, FOUNDER_SEED, founderKey, pg, cer.meshCabalDocIdHex, cer.signerDid, cer.personaKelPrefix, cer.founderEdge);
     // Snapshot the founder's KEL chain — the admit payload carries it so the joinee seeds its LOCAL board.
     const founderKelBoard = await materializeSharedLarDoc(founderRepo, personaKelBoardDocUrl(founderKey), "board:persona-kel");
@@ -95,7 +95,7 @@ describe("two vessels bind under one Handle", () => {
     const base = await runDeviceAdmitEdge({
       signerSeed: FOUNDER_SEED, joineeVerifyingKey: joineeKey, hearthTrueName: "bafyHearth",
       personaKelPrefix: cer.personaKelPrefix, personaKelChain: founderKelChain,
-      personaGroupDocIdHex: pg.docIdHex, personaGroupAgentIdHex: pg.agentIdHex, meshCabalDocIdHex: cer.meshCabalDocIdHex,
+      personaGroupId: pg.groupId, meshCabalDocIdHex: cer.meshCabalDocIdHex,
       syncUrl: null, islandDocUrl: null, personaUrl: cer.personaUrl, hearthDaemonUrl: null,
     } as Parameters<typeof runDeviceAdmitEdge>[0]);
     const payload = { ...base, capEvents: bundle.capEvents };
@@ -107,7 +107,7 @@ describe("two vessels bind under one Handle", () => {
       vesselDisplayName: "Joinee", payload, nexusPubkey: joineeKey,
     });
     const { keyhive: joinee } = await bootOver(joineeRepo, applied.daemonUrl, JOINEE_SEED, joineeKey,
-      { docIdHex: payload.personaGroupDocIdHex, agentIdHex: payload.personaGroupAgentIdHex }, payload.meshCabalDocIdHex,
+      { groupId: payload.personaGroupId }, payload.meshCabalDocIdHex,
       payload.signerDid, payload.personaKelPrefix, payload.deviceEdge, joineeArchive);
 
     // BOUND: the joinee reads the Handle's shared content.

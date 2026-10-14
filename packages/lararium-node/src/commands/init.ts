@@ -22,7 +22,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds,
-  PERSONA_GROUP_DOC_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
 } from "@lararium/mesh";
 import { daemonGenesisDir } from "../lares-config.js";
@@ -117,9 +117,9 @@ function placeTiddlers(daemonUrl: string): PackedTiddlers {
  */
 function facePlaneTiddlers(
   identitiesUrl: string, circlesUrl: string, sessionsUrl: string, personaUrl: string,
-  personaGroupDocIdHex: string,
+  personaGroupId: string,
 ): PackedTiddlers {
-  const face = personaScopedBagIds(personaGroupDocIdHex);
+  const face = personaScopedBagIds(personaGroupId);
   return {
     [face.identities]: { title: face.identities, text: identitiesUrl, kind: "oracle" },
     [face.circles]:    { title: face.circles,    text: circlesUrl,    kind: "oracle" },
@@ -128,7 +128,7 @@ function facePlaneTiddlers(
     // standing in a SECOND compartment would add, so founding and admission lay down one shape. The boot
     // path reads the family back by derivation; nothing here holds an order or an index.
     ...Object.fromEntries(
-      personaMembershipEntries({ personaGroupId: personaGroupDocIdHex, url: personaUrl })
+      personaMembershipEntries({ personaGroupId: personaGroupId, url: personaUrl })
         .map((e) => [e.title, { title: e.title, text: e.text as string, kind: "oracle" }]),
     ),
   };
@@ -138,12 +138,12 @@ function facePlaneTiddlers(
  *  to run the ONE mounted face's Binding Gate. Only the founding face (h0) writes these. */
 function faceTiddlers(
   identitiesUrl: string, circlesUrl: string, sessionsUrl: string, personaUrl: string,
-  personaGroupDocIdHex: string, meshCabalDocIdHex: string,
+  personaGroupId: string, meshCabalDocIdHex: string,
 ): PackedTiddlers {
   return {
     [MESH_CABAL_DOC_ID_TIDDLER]: { title: MESH_CABAL_DOC_ID_TIDDLER, text: meshCabalDocIdHex, kind: "sentinel-id" },
-    ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl, personaGroupDocIdHex),
-    [PERSONA_GROUP_DOC_ID_TIDDLER]: { title: PERSONA_GROUP_DOC_ID_TIDDLER, text: personaGroupDocIdHex, kind: "sentinel-id" },
+    ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl, personaGroupId),
+    [PERSONA_GROUP_ID_TIDDLER]: { title: PERSONA_GROUP_ID_TIDDLER, text: personaGroupId, kind: "persona-group-id" },
   };
 }
 
@@ -282,7 +282,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
       ...placeTiddlers(daemonUrl),
       ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl,
-                      payload.personaGroupDocIdHex, payload.meshCabalDocIdHex),
+                      payload.personaGroupId, payload.meshCabalDocIdHex),
       ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey, {
         kind:  payload.hearthIslandKind,
         scope: payload.hearthIslandScope,
@@ -297,15 +297,14 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
     await persistIdentityAnchors({
-      personaGroupDocIdHex:    payload.personaGroupDocIdHex,
+      personaGroupId:          payload.personaGroupId,
       meshCabalDocIdHex:       payload.meshCabalDocIdHex,
-      personaGroupAgentIdHex:  payload.personaGroupAgentIdHex,
     });
     await repo.flush();
 
     console.log(`[lares vessel found --admit] vessel ${operatorIdentity.verifyingKey.slice(0, 16)}… admitted`);
     console.log(`  persona plane ${personaUrl}${payload.personaUrl ? " (synced from founder)" : " (fresh local — payload carried none)"}`);
-    console.log(`  PersonaGroup ${payload.personaGroupDocIdHex.slice(0, 20)}…`);
+    console.log(`  PersonaGroup ${payload.personaGroupId.slice(0, 20)}…`);
     console.log(`  signer pin   ${payload.signerDid.slice(0, 20)}…`);
     console.log(`  hearth-name  ${payload.hearthTrueName.slice(0, 20)}…  (binding: device × hearthTrueName)`);
     console.log("[lares vessel found --admit] done — joined the PersonaGroup. Start with: lares vessel stand --with-web");
@@ -380,12 +379,12 @@ export interface FoundFaceOptions {
 export function faceStands(): boolean {
   const bootstrap = larBootstrapPath();
   if (!existsSync(bootstrap)) return false;
-  return Boolean(readPackedTiddlers(bootstrap)[PERSONA_GROUP_DOC_ID_TIDDLER]?.text);
+  return Boolean(readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text);
 }
 
 export interface FoundFaceResult {
   readonly alreadyStood:         boolean;
-  readonly personaGroupDocIdHex: string;
+  readonly personaGroupId: string;
   readonly personaKelPrefix:     string;
   readonly signerDid:            string;
 }
@@ -459,18 +458,18 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // IDEMPOTENCE, PER INDEX. The mounting face reads its sentinel pin; an added compartment reads its own
   // anchor — a fresh mint at a standing index would orphan the group already there.
   if (mounts) {
-    const already = packed[PERSONA_GROUP_DOC_ID_TIDDLER]?.text;
+    const already = packed[PERSONA_GROUP_ID_TIDDLER]?.text;
     if (already) {
-      return { alreadyStood: true, personaGroupDocIdHex: already, personaKelPrefix: "", signerDid: "" };
+      return { alreadyStood: true, personaGroupId: already, personaKelPrefix: "", signerDid: "" };
     }
   } else {
     // A COMPARTMENT STANDS WHEN ITS PLANE ENTRY STANDS. The bootstrap entry lands last (below), so anchors with no
     // entry mark a founding that stopped midway: the act runs again and completes, re-deriving the same veil.
-    if (priorAnchors && packed[personaScopedBagIds(priorAnchors.personaGroupDocIdHex).identities]?.text) {
-      return { alreadyStood: true, personaGroupDocIdHex: priorAnchors.personaGroupDocIdHex, personaKelPrefix: "", signerDid: "" };
+    if (priorAnchors && packed[personaScopedBagIds(priorAnchors.personaGroupId).identities]?.text) {
+      return { alreadyStood: true, personaGroupId: priorAnchors.personaGroupId, personaKelPrefix: "", signerDid: "" };
     }
     // A compartment rides BESIDE the mounted face — the founding face must stand first.
-    if (!packed[PERSONA_GROUP_DOC_ID_TIDDLER]?.text) {
+    if (!packed[PERSONA_GROUP_ID_TIDDLER]?.text) {
       throw new Error("[lares persona new] no founding face stands yet — light it with `lares persona new 0 --name '<label>'` first.");
     }
   }
@@ -541,9 +540,9 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   // register-many plane entry the boot's `readPersonaPlanes` consumes, merged over the mounted face's pins.
   const faceEntry = mounts
     ? faceTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
-                   face.personaGroupDocIdHex, face.meshCabalDocIdHex)
+                   face.personaGroupId, face.meshCabalDocIdHex)
     : facePlaneTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
-                        face.personaGroupDocIdHex);
+                        face.personaGroupId);
   // THREE WRITES, ONE COMMIT POINT. The veil's archive rests first, under this face's own row; the anchors and
   // their roster line follow; the bootstrap entry lands LAST and commits the face. Every "already stood" reading
   // above reads that entry, so a founding that stops anywhere before it runs again whole. An entry never stands
@@ -558,8 +557,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   await persistVeilArchive(face.veilArchive, handleIndex);
   await persistIdentityAnchors({
     meshCabalDocIdHex:      face.meshCabalDocIdHex,
-    personaGroupDocIdHex:   face.personaGroupDocIdHex,
-    personaGroupAgentIdHex: face.personaGroupAgentIdHex,
+    personaGroupId:   face.personaGroupId,
     // The persisted veil tag and doc ids let the same identity re-derive its founder-veil on a fresh store.
     veilTag:                face.veilTag,
     // THE WEAR-REBOOT MOUNT MATERIAL. A non-active persona (mount:false) pins NONE of these into the daemon
@@ -575,7 +573,7 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
 
   return {
     alreadyStood: false,
-    personaGroupDocIdHex: face.personaGroupDocIdHex,
+    personaGroupId: face.personaGroupId,
     personaKelPrefix:     face.personaKelPrefix,
     signerDid:            face.signerDid,
   };

@@ -8,7 +8,7 @@
  */
 
 import {
-  PERSONA_GROUP_DOC_ID_TIDDLER, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault,
+  PERSONA_GROUP_ID_TIDDLER, readPersonaPlanes, mountedPlaneBagId, personaPlanesFault,
   personaSiblingBagIds, DAEMON_BAG_ID, type PersonaPlaneRef, type PlaneEntry,
 } from "@lararium/mesh";
 
@@ -37,7 +37,7 @@ export function bootFacePlanes(
   if (planesFault) throw new Error(`[lararium] the PersonaGroup planes this vessel carries do not stand: ${planesFault}`);
   // The WORN face decides which plane mounts; the bootstrap pin names the founding face where no
   // switch is owed.
-  const personaGroupId = wornPersonaGroupId ?? bootstrapTiddlers[PERSONA_GROUP_DOC_ID_TIDDLER]?.text ?? null;
+  const personaGroupId = wornPersonaGroupId ?? bootstrapTiddlers[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
   // A vessel standing in compartments but told to wear none it carries halts rather than wearing
   // whichever loaded first.
   const personaBagId = personaGroupId && personaPlanes.length

@@ -169,7 +169,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
   let vessel: NodeVesselResult;
   let port: number;
   let gatePubKey: string;
-  let personaGroupDocIdHex: string;
+  let personaGroupId: string;
   let personaBagUrl: string;
 
   const grantHolderFill = 201;
@@ -182,10 +182,10 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     await withLarRoot(FOUNDER.root, () => direct(runFoundTheFace)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
 
     const anchors = await withLarRoot(FOUNDER.root, async () => loadIdentityAnchors(0));
-    if (!anchors?.deviceEdge || !anchors.personaGroupDocIdHex) {
+    if (!anchors?.deviceEdge || !anchors.personaGroupId) {
       throw new Error("[persona-ring-cross-operator-admit] founding face carries no anchors — runFoundTheFace did not land a face");
     }
-    personaGroupDocIdHex = anchors.personaGroupDocIdHex;
+    personaGroupId = anchors.personaGroupId;
     // `identityDir()` (node-vessel-identity.ts) takes NO `dataDir` and resolves purely off `LAR_ROOT`
     // (`larIdentityDir()`) — honoring a caller-supplied `dataDir` would need a second address-derivation
     // scheme this file's storage law forbids. So EVERY vessel-identity read/write MUST still run inside
@@ -201,16 +201,15 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     const joineeAgentIdHex = `0x${holder.rawKey}`;
     const rec = await signFaceGrantRecord({
       kind: "face-join-grant/v1",
-      groupDocIdHex: personaGroupDocIdHex,
+      groupId: personaGroupId,
       joineeAgentIdHex,
       founderCard: "test-founder-card",
       capEvents: [],
       reKeyed: false,
-      regranted: 0,
       reSealed: [],
       founderEdge: anchors.deviceEdge,
     }, ed25519SignerFromSeed(founderSeed));
-    const grantTitle = faceGrantTitle(personaGroupDocIdHex, joineeAgentIdHex);
+    const grantTitle = faceGrantTitle(personaGroupId, joineeAgentIdHex);
 
     // ── Open the federation POSTURE ─────────────────────────────────────────────────────────────
     // The gate's sorter answers a proven foreign key only when some Nexus the vessel stands in reads OPEN —
@@ -243,7 +242,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     // store path the ring's `grants.records()` reads, and the same shape the production
     // face-join verb's publish step writes (operator-daemon-behavior.ts).
     const catalog = makeCatalogAccessor(vessel.repo, vessel.catalogHandleUrl);
-    const personaBagUri = personaScopedBagIds(personaGroupDocIdHex).persona;
+    const personaBagUri = personaScopedBagIds(personaGroupId).persona;
     const store = await catalog.storeOf(personaBagUri);
     if (!store) throw new Error("[persona-ring-cross-operator-admit] the face's persona-plane bag is unresolved");
     await store.put(
@@ -274,7 +273,7 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     const client = dialGate({ url: `ws://127.0.0.1:${port}`, identity: holder.identity, aud: DAEMON_BAG_ID, gatePubKey });
     const joineeRepo = new Repo({ network: [client] });
     try {
-      const grantTitle = faceGrantTitle(personaGroupDocIdHex, `0x${holder.rawKey}`);
+      const grantTitle = faceGrantTitle(personaGroupId, `0x${holder.rawKey}`);
       const outcome = await awaitTitle(joineeRepo, personaBagUrl, grantTitle, 8_000);
       expect(outcome, "the grant-holder never synced the persona-plane doc — the ring did not admit it").toBe("synced");
     } finally {

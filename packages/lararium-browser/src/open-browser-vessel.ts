@@ -121,8 +121,7 @@ const BOOTSTRAP_KEY  = "social-bootstrap";
 
 
 interface BrowserBootstrap extends VesselBootstrap {
-  personaGroupDocIdHex:   string;
-  personaGroupAgentIdHex: string;
+  personaGroupId:   string;
   meshCabalDocIdHex:     string;
   /** The signer DID — provenance only (the founding op-key = the persona-KEL inception op-key). */
   signerDid:             string;
@@ -663,9 +662,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       daemonUrl: a.daemonUrl, personaUrl: a.personaUrl, personaBagId: a.personaBagId,
       // The compartments this vessel carries. An admitted browser joins one today; the shape takes the
       // family so a second admission adds an entry rather than re-typing the boot path.
-      personaPlanes: [{ personaGroupId: admit.personaGroupDocIdHex, url: a.personaUrl }],
-      personaGroupDocIdHex: admit.personaGroupDocIdHex,
-      personaGroupAgentIdHex: admit.personaGroupAgentIdHex,
+      personaPlanes: [{ personaGroupId: admit.personaGroupId, url: a.personaUrl }],
+      personaGroupId: admit.personaGroupId,
       meshCabalDocIdHex: admit.meshCabalDocIdHex,
       // The PINNED identifier and the SIGNED edge ride from the payload, never from this vessel: an admitted
       // leaf presents a binding it could not have written for itself, and that is the whole difference
@@ -708,8 +706,8 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
     await saveBrowserKeyhiveArchive(idbName, f.archive);
     bootstrap = {
       identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
-      personaPlanes: [{ personaGroupId: f.personaGroupDocIdHex, url: f.personaUrl }],
-      personaGroupDocIdHex: f.personaGroupDocIdHex, personaGroupAgentIdHex: f.personaGroupAgentIdHex, meshCabalDocIdHex: f.meshCabalDocIdHex,
+      personaPlanes: [{ personaGroupId: f.personaGroupId, url: f.personaUrl }],
+      personaGroupId: f.personaGroupId, meshCabalDocIdHex: f.meshCabalDocIdHex,
       signerDid: f.signerDid, personaKelPrefix: f.personaKelPrefix, deviceEdge: f.founderEdge,
       contactCard: f.contactCardJson,
       hearthDaemonUrl: null,   // a vessel that founded its own face IS the hearth
@@ -1136,8 +1134,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
         // the Archive each founding act handed out. The field rides
         // REQUIRED so a populator that answers nothing fails at the compiler rather than at review.
         archiveOpens: true,
-        personaGroupDocIdHex: wornMount?.personaGroupDocIdHex   ?? social.personaGroupDocIdHex,
-        personaGroupAgentIdHex: wornMount?.personaGroupAgentIdHex ?? social.personaGroupAgentIdHex,
+        personaGroupId: wornMount?.personaGroupId   ?? social.personaGroupId,
         meshCabalDocIdHex: wornMount?.meshCabalDocIdHex      ?? social.meshCabalDocIdHex,
         // Derived, never enumerated — the same derivation the node vessel runs, so neither can drift on
         // which bags a cap check can resolve. This vessel had been carrying neither the shared substrate
@@ -1146,7 +1143,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
           // EVERY compartment registers; exactly one mounts. The two verbs part company here.
           fleets: social.personaPlanes.map((pl) => ({
             personaGroupId: pl.personaGroupId,
-            catalogNamed: pl.personaGroupId === (wornMount?.personaGroupDocIdHex ?? social.personaGroupDocIdHex) ? catalogNamedBags(catalogHandle.doc()) : [],
+            catalogNamed: pl.personaGroupId === (wornMount?.personaGroupId ?? social.personaGroupId) ? catalogNamedBags(catalogHandle.doc()) : [],
           })),
           wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId],
         }),
@@ -1242,7 +1239,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       if (ringRoot && daemonAuth.personaKel) {
         const ring = await assemblePersonaGroupRing({
           catalog: makeCatalogAccessor(repo, catalogHandle.url),
-          personaGroupDocIdHex: daemonAuth.personaGroupDocIdHex,
+          personaGroupId: daemonAuth.personaGroupId,
           personaRootDid: ringRoot,
           personaKel: daemonAuth.personaKel,
           provenKeyOf: (peerId) => ringRelay?.provenKeyOf(peerId) ?? null,
@@ -1268,7 +1265,7 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       // these closures.
       const siblingEdge = daemonAuth.deviceEdge;
       if (siblingHerms && siblingHerms.length > 0 && siblingEdge && siblingGate) {
-        const group = daemonAuth.personaGroupDocIdHex;
+        const group = daemonAuth.personaGroupId;
         const sealText = tiddlerText(bootDaemonDoc?.tiddlers?.[groupSecretSealTitle(group)]);
         let sealRaw: unknown = null;
         try { sealRaw = sealText ? JSON.parse(sealText) : null; } catch { sealRaw = null; }

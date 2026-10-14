@@ -27,7 +27,7 @@ import { dispatch } from "../src/bin/lares.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
-const ANCHORS = { personaGroupDocIdHex: "aa11", meshCabalDocIdHex: "bb22", personaGroupAgentIdHex: "cc33" };
+const ANCHORS = { personaGroupId: "aa11", meshCabalDocIdHex: "bb22" };
 const roots: string[] = [];
 let priorRoot: string | undefined;
 

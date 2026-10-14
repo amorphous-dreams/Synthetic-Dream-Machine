@@ -38,8 +38,8 @@ import { subscribeSeatRolls } from "./seat-duty-executor.js";
 
 /** The slice of a `KeyhiveProvider` a content-key seat rides. */
 export interface ContentKeyProvider extends LockboxProvider {
-  sentinelCgkaMembers(sentinelDocIdHex: string): Promise<string[]>;
-  verifySentinelMembership(agentIdentifierHex: string, sentinelDocIdHex: string): Promise<{ ok: boolean }>;
+  groupMembers(groupId: string): Promise<string[]>;
+  verifyGroupMembership(agentIdentifierHex: string, groupId: string): Promise<{ ok: boolean }>;
 }
 
 /** What a session's open hands the holder: the signer of the session that acts, and this vessel's own reading
@@ -63,8 +63,8 @@ export interface ContentKeySeatInput {
   readonly values: ContentKeyHolderPorts["values"];
   /** Rest one identity's Archive under the vessel key. It resolves before a wrap answers. */
   restArchive(provider: ContentKeyProvider): Promise<void>;
-  /** The face's key group on the key shore and the scope its edge acts ride. Null: no face stands here. */
-  readonly group: { readonly docIdHex: string; readonly scope: string } | null;
+  /** The face's key group (a Keyhive group's id) and the scope its edge acts ride. Null: no face stands here. */
+  readonly group: { readonly groupId: string; readonly scope: string } | null;
   /** The bags this vessel holds under the face's key group. */
   bags(): readonly string[];
   /** What one seat's edge reads on this vessel's own fold. Absent: no reader stands composed, and every other
@@ -112,11 +112,11 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
     const own = new Set((await shore.self()).map(bare));
     for (const provider of input.providers) {
       let members: string[];
-      try { members = await provider.sentinelCgkaMembers(input.group.docIdHex); } catch { continue; }   // this identity holds no replica of the group
+      try { members = await provider.groupMembers(input.group.groupId); } catch { continue; }   // this identity holds no replica of the group
       const readers: string[] = [];
       for (const member of members) {
         if (own.has(bare(member))) continue;                         // the wrap seats this vessel's own identities itself
-        if (!(await provider.verifySentinelMembership(member, input.group.docIdHex)).ok) continue;
+        if (!(await provider.verifyGroupMembership(member, input.group.groupId)).ok) continue;
         const standing = input.standingOf === undefined ? "aside" : await input.standingOf(member);
         // A seat that owes its roll leaves first; a party set aside holds no standing. Neither receives a key.
         if (standing === "clear" || standing === "returned") readers.push(bare(member));
@@ -142,9 +142,9 @@ export function seatContentKeys(input: ContentKeySeatInput): ContentKeySeat {
       const own = (await shore.self()).map(bare);
       for (const provider of input.providers) {
         let members: string[];
-        try { members = (await provider.sentinelCgkaMembers(input.group.docIdHex)).map(bare); } catch { continue; }   // this identity holds no replica of the group
+        try { members = (await provider.groupMembers(input.group.groupId)).map(bare); } catch { continue; }   // this identity holds no replica of the group
         for (const id of own) {
-          if (members.includes(id) && (await provider.verifySentinelMembership(id, input.group.docIdHex)).ok) return id;
+          if (members.includes(id) && (await provider.verifyGroupMembership(id, input.group.groupId)).ok) return id;
         }
         return null;
       }

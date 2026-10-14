@@ -63,7 +63,7 @@ export function admitNaming(hearthGatePubKey: string, hearthCanonDocs: Record<st
   return {
     hearthGatePubKey, hearthIslandKind: "anchor", hearthIslandScope: hearthGatePubKey,
     hearthCanonDocs,
-    personaGroupDocIdHex: hex("a1"), personaGroupAgentIdHex: hex("a2"), meshCabalDocIdHex: hex("a3"),
+    personaGroupId: hex("a1"), meshCabalDocIdHex: hex("a3"),
     signerDid: "did:key:z6MkWireRig", personaKelPrefix: "EWireRigPrefix",
     deviceEdge: { signed: true },
   } as unknown as CarriedAdmitPayload;

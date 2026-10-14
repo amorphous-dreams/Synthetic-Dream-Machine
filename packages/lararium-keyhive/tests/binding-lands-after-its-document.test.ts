@@ -37,7 +37,7 @@ function harness(options: { failFlush?: boolean; initial?: Array<[string, string
     adoptBag: () => {},
   } as never;
   const args = { kind: "draft-binding" as const, prefix, fingerprint, repo, daemonStore: store, keyhive,
-    personaGroupAgentIdHex: "synthetic-agent", faceSeated: async () => true,
+    personaGroupId: "synthetic-agent", faceSeated: async () => true,
     mintedByHex: "synthetic", recipeTrace: { wikiDocId: "wiki", libraryBagDocIds: [] } };
   return { args, calls, records, store };
 }

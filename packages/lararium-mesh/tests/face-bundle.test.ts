@@ -261,7 +261,7 @@ describe("the body's shape gives a seat key no home", () => {
     ["a chair label inside the names", (b: Record<string, unknown>) => { (b["names"] as Record<string, unknown>)["chair"] = "north"; }],
     ["a veil tag inside the anchors", (b: Record<string, unknown>) => { (b["anchors"] as Record<string, unknown>)["veilTag"] = "tag"; }],
     ["a device edge inside the anchors", (b: Record<string, unknown>) => { (b["anchors"] as Record<string, unknown>)["deviceEdge"] = {}; }],
-    ["a key group id inside the anchors", (b: Record<string, unknown>) => { (b["anchors"] as Record<string, unknown>)["personaGroupDocIdHex"] = "ab"; }],
+    ["a key group id inside the anchors", (b: Record<string, unknown>) => { (b["anchors"] as Record<string, unknown>)["personaGroupId"] = "ab"; }],
     ["a second face's root", (b: Record<string, unknown>) => { b["roots"] = [b["root"]]; }],
     ["a bare key inside a holding", (b: Record<string, unknown>) => { ((b["memory"] as { holds: Record<string, unknown>[] }).holds[0]!)["key"] = "aa".repeat(32); }],
     ["a root seed of another width", (b: Record<string, unknown>) => { (b["root"] as Record<string, unknown>)["signingKey"] = "aa".repeat(31); }],

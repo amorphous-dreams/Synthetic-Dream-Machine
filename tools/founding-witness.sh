@@ -47,7 +47,7 @@ fi
 
 # ── HALF ONE — the PLACE stands, and stands FACELESS ────────────────────────────────────────────
 LAR_ROOT="$TB" node --input-type=module -e '
-import { readPersonaPlanes } from "'"$REPO"'/packages/lararium-mesh/dist/index.js";
+import { readPersonaPlanes, PERSONA_GROUP_ID_TIDDLER } from "'"$REPO"'/packages/lararium-mesh/dist/index.js";
 import fs from "node:fs";
 const path = process.argv[1] + "/data/lares/vessel/social-bootstrap.json";
 const t = JSON.parse(JSON.parse(fs.readFileSync(path, "utf8")).text).tiddlers;
@@ -60,8 +60,8 @@ if (!t["lar:///ha.ka.ba/bags/daemon"]?.text?.startsWith("automerge:")) {
 // FACELESS BY POSITIVE ASSERTION. A place that wrote a persona pin would pass any looser reading.
 const planes = readPersonaPlanes(entries);
 if (planes.length !== 0) fail(`the place wrote ${planes.length} persona plane(s); a place holds none until a face lands`);
-if (t["lar:///ha.ka.ba/bags/persona/sentinel/persona-group/doc-id"]) {
-  fail("the place wrote a PersonaGroup sentinel — the cabal and the group ride with the FACE");
+if (t[PERSONA_GROUP_ID_TIDDLER]) {
+  fail("the place wrote a PersonaGroup pin — the cabal and the group ride with the FACE");
 }
 if (!process.exitCode) console.log("  ok (place) — @daemon stands, and nothing of a person");
 ' "$TB"
@@ -73,7 +73,7 @@ fi
 
 # ── HALF TWO — the FACE landed, and the boot path derives what it wrote ──────────────────────────
 LAR_ROOT="$TB" node --input-type=module -e '
-import { readPersonaPlanes, personaBagIdFor, mountedPlaneBagId } from "'"$REPO"'/packages/lararium-mesh/dist/index.js";
+import { readPersonaPlanes, personaBagIdFor, mountedPlaneBagId, PERSONA_GROUP_ID_TIDDLER } from "'"$REPO"'/packages/lararium-mesh/dist/index.js";
 import fs from "node:fs";
 const path = process.argv[1] + "/data/lares/vessel/social-bootstrap.json";
 const t = JSON.parse(JSON.parse(fs.readFileSync(path, "utf8")).text).tiddlers;
@@ -83,8 +83,8 @@ const fail = (m) => { console.error("  MISMATCH (face): " + m); process.exitCode
 const planes = readPersonaPlanes(entries);
 if (planes.length !== 1) fail(`the face wrote ${planes.length} readable planes, expected 1`);
 
-const active = t["lar:///ha.ka.ba/bags/persona/sentinel/persona-group/doc-id"]?.text;
-if (!active) fail("no active PersonaGroup sentinel — the boot path has no gesture to resolve");
+const active = t[PERSONA_GROUP_ID_TIDDLER]?.text;
+if (!active) fail("no active PersonaGroup pin — the boot path has no gesture to resolve");
 else {
   // The pairing itself: the name the founding wrote, and the name the boot path derives.
   const derived = personaBagIdFor(active);

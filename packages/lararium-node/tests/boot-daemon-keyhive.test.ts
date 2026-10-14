@@ -77,8 +77,7 @@ beforeAll(async () => {
     bootArgs: {
       seed: SEED, eventStore,
       vesselVerifyingKey:  verifyingKey,
-      personaGroupDocIdHex:   cer.personaGroupDocIdHex,
-      personaGroupAgentIdHex: cer.personaGroupAgentIdHex,
+      personaGroupId:   cer.personaGroupId,
       meshCabalDocIdHex:     cer.meshCabalDocIdHex,
       registerBags:          [DAEMON_BAG_ID],
       signerDid:             cer.signerDid,

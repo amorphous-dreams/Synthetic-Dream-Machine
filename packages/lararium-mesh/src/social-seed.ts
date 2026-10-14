@@ -84,7 +84,7 @@ export function seedDaemonDoc(repo: Repo): DocHandle<LarDoc> {
 /**
  * Seed ONE PersonaGroup's private plane, under the name that group's own material derives.
  *
- * `personaBagId` arrives resolved (`personaBagIdFor(personaGroupDocIdHex)`) rather than derived here,
+ * `personaBagId` arrives resolved (`personaBagIdFor(personaGroupId)`) rather than derived here,
  * because a plane must exist under its TRUE name from its first write: the capability layer hashes a bag
  * URL to seed the document behind it, so a plane seeded under one name and renamed later would leave a
  * document nothing can reach. The caller mints the PersonaGroup first, then seeds its plane.

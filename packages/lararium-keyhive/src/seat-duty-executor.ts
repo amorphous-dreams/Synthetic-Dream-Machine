@@ -24,19 +24,19 @@ export interface SeatKeyShore {
   seatAfresh(seat: SeatRef): Promise<"seated" | "unknown-party">;
 }
 
-/** The slice of a provider a seat shore rides. */
+/** The slice of a provider a seat shore rides: the face's key group stands as a Keyhive group. */
 export interface SeatShoreProvider {
-  revokeSentinelSeat(memberIdentifierHex: string, sentinelDocIdHex: string): Promise<{ how: "revoked" | "gone" | "no-authority" }>;
+  revokeGroupSeat(memberIdentifierHex: string, groupId: string): Promise<{ how: "revoked" | "gone" | "no-authority" }>;
   knowsAgent(agentIdentifierHex: string): Promise<boolean>;
-  addSentinelMember(memberIdentifierHex: string, sentinelDocIdHex: string): Promise<void>;
+  addGroupMember(memberIdentifierHex: string, groupId: string): Promise<void>;
 }
 
 export function keyhiveSeatShore(provider: SeatShoreProvider): SeatKeyShore {
   return {
-    revokeSeat: async (seat) => (await provider.revokeSentinelSeat(seat.member, seat.group)).how,
+    revokeSeat: async (seat) => (await provider.revokeGroupSeat(seat.member, seat.group)).how,
     seatAfresh: async (seat) => {
       if (!(await provider.knowsAgent(seat.member))) return "unknown-party";
-      await provider.addSentinelMember(seat.member, seat.group);
+      await provider.addGroupMember(seat.member, seat.group);
       return "seated";
     },
   };

@@ -111,7 +111,7 @@ describe("persona-petname — the MULTITUDE-VIEW (#64 stage 4)", () => {
     await generateOrLoadPersonaRoot(vault, memCrypto, 0);   // a held root (founder face)
     await generateOrLoadPersonaRoot(vault, memCrypto, 1);
     vault.anchors.save(3, {                                  // a joinee-face: anchored, no root
-      personaGroupDocIdHex: "a3".repeat(32), meshCabalDocIdHex: "b3".repeat(32), personaGroupAgentIdHex: "c3".repeat(32),
+      personaGroupId: "a3".repeat(32), meshCabalDocIdHex: "b3".repeat(32),
     });
     await renameOwnPersona(petnames, 0, "work");
     await renameOwnPersona(petnames, 3, "the-joinee");

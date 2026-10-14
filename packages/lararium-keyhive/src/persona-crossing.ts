@@ -45,10 +45,10 @@ export interface CrossingPlaintext {
   readonly plaintext: Uint8Array;
 }
 
-/** The PersonaGroup a crossing admits into — its sentinel doc id (membership) and agent id (delegation target). */
+/** The PersonaGroup a crossing admits into: a Keyhive group's id, both the membership target and the audience a
+ *  bag delegates to. */
 export interface PersonaGroupRef {
-  readonly docIdHex:   string;
-  readonly agentIdHex: string;
+  readonly groupId: string;
 }
 
 /**
@@ -70,7 +70,7 @@ export async function packPersonaCrossing(
   if (seat !== founder) {
     try { await founder.receiveContactCard(joineeContactCardBytes); } catch { /* already known reads fine */ }
   }
-  await seat.addSentinelMember(joineeAgentId, personaGroup.docIdHex);  // ADD first — forward-only demands it
+  await seat.addGroupMember(joineeAgentId, personaGroup.groupId);  // ADD first — forward-only demands it
 
   // Two-handed, the bag reaches the group THROUGH THE SEAT: the vessel never learns the group agent
   // (an event addressed at the vessel would spell its raw key into the carried log — the byte-law).
@@ -90,11 +90,11 @@ export async function packPersonaCrossing(
   }
   const packed: CrossingContent[] = [];
   for (const c of content) {
-    // Route A: RE-DELEGATE the bag to the PersonaGroup after the join, so the bag's tree sees the re-keyed
-    // group (incl. the joinee) — the transitive re-key does NOT auto-propagate to a bag delegated before the
-    // join. THEN encrypt, so the ciphertext keys to an epoch the joinee reaches.
-    await seat.delegate({ bagUrl: c.bagUrl, audience: personaGroup.agentIdHex, access: "read" });
-    const ct = await seat.encryptContent(c.bagUrl, c.plaintext);       // ENCRYPT after re-delegate
+    // The seat delegates the bag to the PersonaGroup, so the bag's key agreement holds the group's members (the
+    // joinee included: a group carries a seat into every document it reaches). THEN encrypt, so the ciphertext
+    // keys to an epoch the joinee reaches.
+    await seat.delegate({ bagUrl: c.bagUrl, audience: personaGroup.groupId, access: "read" });
+    const ct = await seat.encryptContent(c.bagUrl, c.plaintext);       // ENCRYPT after the delegation
     packed.push({ bagUrl: c.bagUrl, docIdHex: c.docIdHex, ciphertext: bytesToBase64(ct) });
   }
   // CAPTURE after the encrypt — the seat holds the whole reach (group + ingested bag chain), and the

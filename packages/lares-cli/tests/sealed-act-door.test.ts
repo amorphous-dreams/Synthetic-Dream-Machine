@@ -61,7 +61,7 @@ import { sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-rows.j
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
-const ANCHORS = { personaGroupDocIdHex: "aa11", meshCabalDocIdHex: "bb22", personaGroupAgentIdHex: "cc33" };
+const ANCHORS = { personaGroupId: "aa11", meshCabalDocIdHex: "bb22" };
 const KEY = "ab".repeat(32);
 const downs: Array<() => Promise<void>> = [];
 let priorRoot: string | undefined;

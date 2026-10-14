@@ -66,7 +66,7 @@ describe("the veil-born group", () => {
     // asserts both halves as they actually exist: the raw key sits on no roster, and the re-stood
     // veil identity can EXERCISE the creator's authority (seat a member) — which is what "boot
     // stands the veil" must mean.
-    const group = await veilKh.sentinelCgkaMembers(f.personaGroupDocIdHex);
+    const group = await veilKh.groupMembers(f.personaGroupId);
     expect(group, "the raw device key never rides the group roster").not.toContain(vesselId);
 
     const cabal = await veilKh.sentinelCgkaMembers(f.meshCabalDocIdHex);
@@ -76,8 +76,8 @@ describe("the veil-born group", () => {
     const guest = new KeyhiveProvider();
     await guest.init({ seed: new Uint8Array(32).fill(99), eventStore: await replayCapEvents(handle as never) });
     const { id: guestId } = await veilKh.receiveContactCard(await guest.contactCard());
-    await veilKh.addSentinelMember(guestId, f.personaGroupDocIdHex);
-    const after = await veilKh.sentinelCgkaMembers(f.personaGroupDocIdHex);
+    await veilKh.addGroupMember(guestId, f.personaGroupId);
+    const after = await veilKh.groupMembers(f.personaGroupId);
     expect(after, "the re-derived veil seats a member — the creator's hand works after re-standing").toContain(guestId);
   });
 
@@ -108,7 +108,7 @@ describe("the veil-born group", () => {
     await founderVessel.hydrateFromEventStore();
 
     const JOINEE_SEED = new Uint8Array(32).fill(41);
-    const joineeVeilKeys = await deriveDyadVeil(JOINEE_SEED, f.personaGroupDocIdHex);
+    const joineeVeilKeys = await deriveDyadVeil(JOINEE_SEED, f.personaGroupId);
     const joineeVeil = new KeyhiveProvider();
     await joineeVeil.init({ seed: hexToBytes(joineeVeilKeys.signingKey), eventStore: new InMemoryEventStore() });
     const joineeRawId = await (async () => {
@@ -122,7 +122,7 @@ describe("the veil-born group", () => {
     const bundle = await packPersonaCrossing(
       founderVessel,
       await joineeVeil.contactCard(),
-      { docIdHex: f.personaGroupDocIdHex, agentIdHex: f.personaGroupAgentIdHex },
+      { groupId: f.personaGroupId },
       [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("keyed to the veil") }],
       seat,
     );
@@ -131,7 +131,7 @@ describe("the veil-born group", () => {
     });
     expect(new TextDecoder().decode(read[0]!.plaintext)).toBe("keyed to the veil");
 
-    const members = await seat.sentinelCgkaMembers(f.personaGroupDocIdHex);
+    const members = await seat.groupMembers(f.personaGroupId);
     expect(members, "the joinee's veil holds the seat").toContain(await joineeVeil.vesselIdentifierHex());
     expect(members, "the raw joinee key touches no roster").not.toContain(joineeRawId);
     const streamHex = bundle.capEvents.map((b64: string) =>
@@ -154,7 +154,7 @@ describe("the veil-born group", () => {
 
     // The joinee's FIRST boot: mint the veil, export the archive, present the card, receive content.
     const JOINEE_SEED = new Uint8Array(32).fill(43);
-    const joineeVeilKeys = await deriveDyadVeil(JOINEE_SEED, f.personaGroupDocIdHex);
+    const joineeVeilKeys = await deriveDyadVeil(JOINEE_SEED, f.personaGroupId);
     const firstBoot = new KeyhiveProvider();
     await firstBoot.init({ seed: hexToBytes(joineeVeilKeys.signingKey), eventStore: new InMemoryEventStore() });
     const card = await firstBoot.contactCard();
@@ -164,7 +164,7 @@ describe("the veil-born group", () => {
     const { docId } = await founderVessel.registerBag(BAG);
     const bundle = await packPersonaCrossing(
       founderVessel, card,
-      { docIdHex: f.personaGroupDocIdHex, agentIdHex: f.personaGroupAgentIdHex },
+      { groupId: f.personaGroupId },
       [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("opens after the night") }],
       seat,
     );

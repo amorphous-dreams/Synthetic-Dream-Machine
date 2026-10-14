@@ -84,8 +84,8 @@ export const PERSONA_SCOPE_TAG_HEX = 16;
  * the plane it left. Different group → an unrelated tag, with no material of the vessel or of any sibling
  * compartment inside it.
  */
-export function personaScopeTag(personaGroupDocIdHex: string): string {
-  const mac = hmac(sha256, PERSONA_SCOPE_HMAC_KEY, new TextEncoder().encode(personaGroupDocIdHex));
+export function personaScopeTag(personaGroupId: string): string {
+  const mac = hmac(sha256, PERSONA_SCOPE_HMAC_KEY, new TextEncoder().encode(personaGroupId));
   return hex(mac.subarray(0, PERSONA_SCOPE_TAG_HEX / 2));
 }
 
@@ -96,8 +96,8 @@ export function personaScopeTag(personaGroupDocIdHex: string): string {
  * `persona/g/<tag>/…` would put one group's plane inside another's document, where a cap that opens the
  * outer bag opens every compartment a person holds. Distinct bags keep the separation the vault requires.
  */
-export function personaBagIdFor(personaGroupDocIdHex: string): string {
-  return bagUri(`persona-${personaScopeTag(personaGroupDocIdHex)}`);
+export function personaBagIdFor(personaGroupId: string): string {
+  return bagUri(`persona-${personaScopeTag(personaGroupId)}`);
 }
 
 /**
@@ -140,8 +140,8 @@ export interface PersonaScopedBags {
 
 /** All four of one PersonaGroup's plane ids, derived. The caller mints the group first — a plane must
  *  stand under its TRUE name from its first write (see `personaBagIdFor`). */
-export function personaScopedBagIds(personaGroupDocIdHex: string): PersonaScopedBags {
-  return personaScopedBagIdsForTag(personaScopeTag(personaGroupDocIdHex));
+export function personaScopedBagIds(personaGroupId: string): PersonaScopedBags {
+  return personaScopedBagIdsForTag(personaScopeTag(personaGroupId));
 }
 
 /** The same four, named off a tag already in hand. */

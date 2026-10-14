@@ -23,15 +23,15 @@ describe("persona-crossing pair — one call admits a vessel and hands it the sh
     const joinee  = await makeVessel(106);
 
     // Founder's PersonaGroup; the bag delegates to the group (production wires this at bind-mint).
-    const pg = await founder.createSentinelDoc("lar:///ha.ka.ba/sentinel/pg-pair");
+    const pg = await founder.createGroup();
     const { docId } = await founder.registerBag(BAG);
-    await founder.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await founder.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
 
     // ONE call: admit the joinee and pack everything it needs to read the note.
     const bundle = await packPersonaCrossing(
       founder,
       await joinee.contactCard(),
-      { docIdHex: pg.docIdHex, agentIdHex: pg.agentIdHex },
+      { groupId: pg.groupId },
       [{ bagUrl: BAG, docIdHex: docId, plaintext: new TextEncoder().encode("shared across the human's vessels") }],
     );
 

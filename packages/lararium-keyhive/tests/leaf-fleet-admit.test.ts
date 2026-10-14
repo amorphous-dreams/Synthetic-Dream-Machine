@@ -44,18 +44,16 @@ async function leafEdge(rootSeed: Uint8Array, joinee: KeyhiveProvider) {
   });
 }
 
-/** Stand a leaf's own face: its PersonaGroup, with itself seated. */
+/** Stand a leaf's own face: its PersonaGroup, a Keyhive group with itself seated as its founder. */
 async function faceOf(hearth: KeyhiveProvider, uri: string) {
-  const pg = await hearth.createSentinelDoc(uri);
-  await hearth.addSentinelMember(await hearth.vesselIdentifierHex(), pg.docIdHex);
-  return pg;
+  void uri;
+  return hearth.createGroup();   // the founding identity stands seated in the group it founds
 }
 
-const ctxFor = (rootDid: string, pg: { docIdHex: string; agentIdHex: string }): FaceJoinContext => ({
+const ctxFor = (rootDid: string, pg: { groupId: string }): FaceJoinContext => ({
   personaRootDid:         rootDid,
   hearthTrueName:         "",          // the fleet names no place
-  personaGroupDocIdHex:   pg.docIdHex,
-  personaGroupAgentIdHex: pg.agentIdHex,
+  personaGroupId:         pg.groupId,
   dyad: () => "clear", leaseEpoch:             0,
 });
 
@@ -88,7 +86,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
 
     const BAG = "lar:///ha.ka.ba/bags/catalog/leaf-fleet-note";
     const { docId } = await phone.registerBag(BAG);
-    await phone.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await phone.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
     const sealed = await phone.encryptContent(BAG, new TextEncoder().encode("what the phone knows"));
     await laptop.ingestPeerEvents(await phone.eventsForPeer(out.grant.joineeAgentIdHex));
     laptop.adoptBag(BAG, docId);
@@ -120,7 +118,7 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     // Seal AFTER the whole fleet stands, so the chunk keys to an epoch every member is inside.
     const BAG = "lar:///ha.ka.ba/bags/catalog/leaf-fleet-shared";
     const { docId } = await phone.registerBag(BAG);
-    await phone.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await phone.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
     const sealed = await phone.encryptContent(BAG, new TextEncoder().encode("one face, three devices"));
 
     for (const { v, agent } of joined) {
@@ -176,6 +174,5 @@ describe("an end-user's fleet — leaves only, no node anywhere", () => {
     expect(again.ok).toBe(true);
     if (!again.ok) return;
     expect(again.grant.reKeyed).toBe(false);
-    expect(again.grant.regranted).toBe(0);
   }, 60_000);
 });

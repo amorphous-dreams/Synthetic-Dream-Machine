@@ -189,8 +189,8 @@ orthogonally as the rare root-rotation sub-lever (#/provenance).
 
 ''Wire-C (Keyhive 0.1.0 scout, 2026-06-24) — the two layers COMPOSE, not duplicate.'' Keyhive's
 ''membership graph serves as the authority'' for the operator↔device binding + revocation: the operator
-PersonaGroup sentinel (`addSentinelMember`/`accessForDoc` LIVE; `revokeMember` live in Keyhive's WASM,
-our wrapper's `revoke()` the open D.3 bridge to convergent revocation). The ''`device-delegation` edge''
+PersonaGroup, a Keyhive group (`addGroupMember`/`verifyGroupMembership`; a seat's revocation rolls the key of
+every bag the group reaches). The ''`device-delegation` edge''
 ''stands beside it as the OFFLINE projection'' — verifiable against the pinned operator root with no
 Keyhive boot (the light leaf path), place-bound, synchronously `exp`-bounded; a lossy offline witness
 of the authoritative graph, never a parallel authority. (Group still can't round-trip in 0.1.0-alpha.3
@@ -555,6 +555,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n0Jr3EJ-40ZN3wUBfNE8f2UIqQYHAx4n_ObqU_M_qV0
+<<^ code="&#x0003;">>ni:///sha-256;DLmH19Sgf4fPmrTSxi-BHJrh76oAjCyYIMtVw7lIGBo
 
 <<^ code="&#x0004;" -> to="?">>

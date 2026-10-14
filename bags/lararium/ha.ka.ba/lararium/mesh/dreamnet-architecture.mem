@@ -213,7 +213,7 @@ The root. Each vessel mints its ''own'' Ed25519 keypair, stored locally (disk `0
 
 !!! personaGroup (veiled)
 
-One operator, N device-vessels. The Keyhive `PersonaGroup` sentinel document proves which vessels speak for the same operator. The group faces the mesh ''veiled'' — anon by default, a first-class veil, not a deficit (see the veil doctrine at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil">>). The ''device-admit'' ceremony transfers membership out-of-band (QR, file, direct message) — no server participates.
+One operator, N device-vessels. The `PersonaGroup`, a Keyhive group, proves which vessels speak for the same operator. The group faces the mesh ''veiled'' — anon by default, a first-class veil, not a deficit (see the veil doctrine at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil">>). The ''device-admit'' ceremony transfers membership out-of-band (QR, file, direct message) — no server participates.
 
 !!! cabalGroup (neighborhood shrine)
 
@@ -638,6 +638,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PMqfXdQVfHZzvmy0dio-vyllNpRnALXpj0kC2njXWX8
+<<^ code="&#x0003;">>ni:///sha-256;YHL1TeVLJ03K_2BC6ymRiN8jepfGE8Oy7k3v0_X9cRw
 
 <<^ code="&#x0004;" -> to="?">>

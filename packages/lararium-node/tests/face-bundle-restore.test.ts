@@ -122,7 +122,7 @@ async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", p
   });
   const body = readFaceBundleBody(openFaceBundleBody(cut.sealedBody, bundleKey)!)!;
   const out: Cut = {
-    sealedBody: cut.sealedBody, bundleKey, body, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupDocIdHex,
+    sealedBody: cut.sealedBody, bundleKey, body, rootKey, prefix: anchors.personaKelPrefix!, group: anchors.personaGroupId,
     veilTag: anchors.veilTag!, vesselKey: await loadVesselVerifyingKey(),
   };
   // DESTROY THE SCRATCH HOME: nothing of vessel A survives but the bundle in hand.
@@ -180,7 +180,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(anchors.signerDid?.toLowerCase().replace(/^0x/, "")).toBe(a.rootKey);
     expect(init.faceStands()).toBe(true);
     // A NEW SEAT: another key group, another veil tag, a veil archive of this vessel's own, an edge for this vessel's key.
-    expect(anchors.personaGroupDocIdHex).not.toBe(a.group);
+    expect(anchors.personaGroupId).not.toBe(a.group);
     expect(anchors.veilTag).not.toBe(a.veilTag);
     expect(existsSync(veilArchivePath(0))).toBe(true);
     const here = await loadVesselVerifyingKey();
@@ -334,7 +334,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
 
     // AN ADMITTED FACE holds anchors at its index and no root: the index stands lit, with no roster line to name.
     await foundVessel("lit");
-    await persistIdentityAnchors({ personaGroupDocIdHex: "an-admitted-group", meshCabalDocIdHex: "an-admitted-cabal", personaGroupAgentIdHex: "an-admitted-agent" }, 0);
+    await persistIdentityAnchors({ personaGroupId: "an-admitted-group", meshCabalDocIdHex: "an-admitted-cabal" }, 0);
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("index-held");
     expect(homeTree()).toBe(before);

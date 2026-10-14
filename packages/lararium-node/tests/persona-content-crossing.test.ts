@@ -64,10 +64,10 @@ describe("catalog-registry crossing — the human's second vessel reads its Pers
     const { id: joineeAgentId } = await founder.receiveContactCard(await joinee.contactCard());
     await joinee.receiveContactCard(await founder.contactCard());
 
-    const pg = await founder.createSentinelDoc("lar:///ha.ka.ba/sentinel/pg-hydrate");
-    await founder.addSentinelMember(joineeAgentId, pg.docIdHex);
+    const pg = await founder.createGroup();
+    await founder.addGroupMember(joineeAgentId, pg.groupId);
     const { docId } = await founder.registerBag(BAG);
-    await founder.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await founder.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
     const ciphertext = await founder.encryptContent(BAG, new TextEncoder().encode("read via hydrate from the daemon store"));
 
     // Transport: the founder's membership events land in the joinee's event STORE (the daemon doc path).
@@ -92,12 +92,12 @@ describe("catalog-registry crossing — the human's second vessel reads its Pers
     const deviceAgentId = await introduce(founder, device);
 
     // The PersonaGroup as a sentinel Document; add the device vessel to it BEFORE any encrypt (forward-only).
-    const pg = await founder.createSentinelDoc("lar:///ha.ka.ba/sentinel/persona-group-x");
-    await founder.addSentinelMember(deviceAgentId, pg.docIdHex);
+    const pg = await founder.createGroup();
+    await founder.addGroupMember(deviceAgentId, pg.groupId);
 
     // The bag delegates to the PersonaGroup AGENT — the production topology (bag member = the group).
     const { docId } = await founder.registerBag(BAG);
-    await founder.delegate({ bagUrl: BAG, audience: pg.agentIdHex, access: "read" });
+    await founder.delegate({ bagUrl: BAG, audience: pg.groupId, access: "read" });
 
     const PLAINTEXT = new TextEncoder().encode("read via PersonaGroup membership, transitively");
     const ciphertext = await founder.encryptContent(BAG, PLAINTEXT);

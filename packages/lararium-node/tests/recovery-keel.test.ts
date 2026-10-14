@@ -57,7 +57,7 @@ const fakeKelChain = (prefix: string, opKeyDid: string) => [{
 const readmitFields = (joineeVerifyingKey: string, boundEpoch = 0) => ({
   joineeVerifyingKey, personaKelPrefix: ROOT_PREFIX,
   personaKelChain: fakeKelChain(ROOT_PREFIX, `0x${ROOT_PREFIX}`), hearthTrueName: PLACE,
-  personaGroupDocIdHex: "aa".repeat(32), personaGroupAgentIdHex: "bb".repeat(32),
+  personaGroupId: "aa".repeat(32),
   meshCabalDocIdHex: "cc".repeat(32), syncUrl: null, boundEpoch,
   hearthDaemonUrl: null, personaUrl: "automerge:2fakeRecoveryPersonaDocUrl0000",
 });

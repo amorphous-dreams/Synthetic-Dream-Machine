@@ -91,7 +91,7 @@ export interface ResolveBindingArgs {
    * holds — it is a doc the VESSEL holds, the posture the daemon bag itself has always stood in. The
    * delegation ADDS a persona over that hold; it never creates it.
    */
-  readonly personaGroupAgentIdHex?: string | undefined;
+  readonly personaGroupId?: string | undefined;
   /** Vessel Individual hex — the binding tiddler's `minted-by` audit field. */
   readonly mintedByHex: string;
   /** Fingerprint inputs, stored verbatim as the `recipe-trace` audit field (Q5: keep). */
@@ -158,14 +158,14 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   // holds no seat in the group yet — its veil cannot name that agent, and a delegation to it throws. The
   // binding then stays on the vessel's own key, the same posture a faceless vessel holds, and the record
   // says so; a seated face re-grants a vessel-only binding when its resolver reuses it.
-  const seated = args.personaGroupAgentIdHex ? await (args.faceSeated?.() ?? Promise.resolve(true)) : false;
-  if (args.personaGroupAgentIdHex && seated) {
+  const seated = args.personaGroupId ? await (args.faceSeated?.() ?? Promise.resolve(true)) : false;
+  if (args.personaGroupId && seated) {
     if (args.delegateToFace) {
       await args.delegateToFace(handle.url, "admin");
     } else {
       await args.keyhive.delegate({
         bagUrl:   handle.url,
-        audience: args.personaGroupAgentIdHex,
+        audience: args.personaGroupId,
         access:   "admin",
       });
     }
@@ -242,7 +242,7 @@ async function regrantOnSeat(
   fields: Record<string, unknown> | undefined,
 ): Promise<void> {
   if (fields?.["face-reach"] !== "vessel-only") return;
-  if (!args.personaGroupAgentIdHex) return;
+  if (!args.personaGroupId) return;
   const seated = await (args.faceSeated?.() ?? Promise.resolve(true));
   if (!seated) return;
   let keyhiveDocId = restoreBagRegistration(args, key, url, fields);
@@ -257,7 +257,7 @@ async function regrantOnSeat(
   if (args.delegateToFace) {
     await args.delegateToFace(url, "admin");
   } else {
-    await args.keyhive.delegate({ bagUrl: url, audience: args.personaGroupAgentIdHex, access: "admin" });
+    await args.keyhive.delegate({ bagUrl: url, audience: args.personaGroupId, access: "admin" });
   }
   // Every field the record carried rides through; only the posture moves.
   const carried: Record<string, string> = {};

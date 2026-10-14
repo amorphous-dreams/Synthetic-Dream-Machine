@@ -59,7 +59,7 @@ describe("a face pinned is not a face seated", () => {
     const r = await resolveOrMintBinding({
       kind: "draft-binding", prefix: "lar:///ha.ka.ba/bags/daemon/draft-bindings", fingerprint: "f".repeat(64),
       repo, daemonStore, keyhive: joinee,
-      personaGroupAgentIdHex: "cd".repeat(16),
+      personaGroupId: "cd".repeat(16),
       faceSeated: async () => false,
       delegateToFace: async (bagUrl) => { delegated.push(bagUrl); },
       mintedByHex: "0x" + "a".repeat(64),
@@ -90,7 +90,7 @@ describe("a face pinned is not a face seated", () => {
     const r = await resolveOrMintBinding({
       kind: "draft-binding", prefix: "lar:///ha.ka.ba/bags/daemon/draft-bindings", fingerprint: "f".repeat(64),
       repo, daemonStore, keyhive: joinee,
-      personaGroupAgentIdHex: "cd".repeat(16),
+      personaGroupId: "cd".repeat(16),
       faceSeated: async () => true,
       delegateToFace: async (bagUrl, access) => { delegated.push([bagUrl, access]); },
       mintedByHex: "0x" + "a".repeat(64),
@@ -120,7 +120,7 @@ describe("a face pinned is not a face seated", () => {
         get: async () => ({ tiddler: { title: key, text: "automerge:seatedBinding", "face-reach": "face", "keyhive-doc-id": "d2".repeat(16) }, meta: { authority: "personal-bindings" } }),
         put: async (rec: unknown) => { put.push(rec); },
       } as never,
-      keyhive: joinee, personaGroupAgentIdHex: "cd".repeat(16),
+      keyhive: joinee, personaGroupId: "cd".repeat(16),
       faceSeated: async () => true,
       delegateToFace: async (bagUrl) => { delegated.push(bagUrl); },
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "w", libraryBagDocIds: [] },
@@ -143,7 +143,7 @@ describe("a face pinned is not a face seated", () => {
         get: async () => ({ tiddler: { title: key, text: "automerge:earlierBinding", "face-reach": "vessel-only", "keyhive-doc-id": "d3".repeat(16) }, meta: { authority: "personal-bindings" } }),
         put: async (rec: unknown) => { put.push(rec); },
       } as never,
-      keyhive: joinee, personaGroupAgentIdHex: "cd".repeat(16),
+      keyhive: joinee, personaGroupId: "cd".repeat(16),
       faceSeated: async () => false,
       delegateToFace: async (bagUrl) => { delegated.push(bagUrl); },
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "w", libraryBagDocIds: [] },
@@ -163,7 +163,7 @@ describe("a face pinned is not a face seated", () => {
         get: async () => ({ tiddler: { title: key, text: "automerge:unrestorable", "face-reach": "vessel-only" } }),
         put: async () => {},
       } as never,
-      keyhive: joinee, personaGroupAgentIdHex: "cd".repeat(16), faceSeated: async () => true,
+      keyhive: joinee, personaGroupId: "cd".repeat(16), faceSeated: async () => true,
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     }).catch((err: unknown) => err);
     expect((error as Error).name).toBe("BindingRegistrationRefusal");
@@ -217,7 +217,7 @@ describe("a face pinned is not a face seated", () => {
       prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings",
       fingerprint: "b".repeat(64), repo: { create: () => ({ url: bindingUrl, documentId: "binding" }), flush: async () => {} },
       daemonStore: provider === first ? firstStore : secondStore,
-      keyhive: provider, personaGroupAgentIdHex: agent, faceSeated: async () => faceSeated,
+      keyhive: provider, personaGroupId: agent, faceSeated: async () => faceSeated,
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     });
 
@@ -269,7 +269,7 @@ describe("a face pinned is not a face seated", () => {
     const args = (provider: KeyhiveProvider, faceSeated: boolean) => ({
       kind: "working-binding" as const, prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings",
       fingerprint: "e".repeat(64), repo: { create: () => ({ url: bindingUrl, documentId: "binding" }), flush: async () => {} },
-      daemonStore, keyhive: provider, personaGroupAgentIdHex: agent, faceSeated: async () => faceSeated,
+      daemonStore, keyhive: provider, personaGroupId: agent, faceSeated: async () => faceSeated,
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     });
     const docIdAt = (): unknown => (records.get(key) as { tiddler?: Record<string, unknown> } | undefined)?.tiddler?.["keyhive-doc-id"];
@@ -326,7 +326,7 @@ describe("a face pinned is not a face seated", () => {
     const input = {
       kind: "working-binding" as const, prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings",
       fingerprint: "c".repeat(64), repo: { create: () => ({ url: "automerge:face-first", documentId: "face-first" }), flush: async () => {} }, daemonStore,
-      keyhive: provider, personaGroupAgentIdHex: agent, faceSeated: async () => true,
+      keyhive: provider, personaGroupId: agent, faceSeated: async () => true,
       mintedByHex: "0x" + "a".repeat(64), recipeTrace: { wikiDocId: "daemon", libraryBagDocIds: [] },
     };
     let grants = 0;

@@ -83,7 +83,7 @@ export async function standRootIsland(args: { repo: Repo; handleIndex: number; b
   } as never;
   const daemonAuth = {
     seed, vesselVerifyingKey: vesselKey, archiveOpens: true,
-    personaGroupDocIdHex: anchors.personaGroupDocIdHex, personaGroupAgentIdHex: anchors.personaGroupAgentIdHex,
+    personaGroupId: anchors.personaGroupId,
     meshCabalDocIdHex: anchors.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID, ...args.bags], signerDid: anchors.signerDid,
     personaKel: { prefix: anchors.personaKelPrefix, chain: kel }, deviceEdge: anchors.deviceEdge,
     dyadVeil: { tag: anchors.veilTag, signingKey: veilKeys.signingKey },

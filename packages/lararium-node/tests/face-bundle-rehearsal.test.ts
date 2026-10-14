@@ -168,7 +168,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   expect(stood.filter((id) => oldSeats.includes(id))).toEqual([]);
   // And no word of the vessel's own seat rides the body: not its key, its veil tag, its key group or its device edge.
   const text = JSON.stringify(body).toLowerCase();
-  for (const word of [vesselKeyA, anchorsA.veilTag!, anchorsA.personaGroupDocIdHex, anchorsA.personaGroupAgentIdHex, anchorsA.meshCabalDocIdHex]) {
+  for (const word of [vesselKeyA, anchorsA.veilTag!, anchorsA.personaGroupId, anchorsA.meshCabalDocIdHex]) {
     expect(text.includes(word.toLowerCase()), `the body names ${word.slice(0, 16)}…`).toBe(false);
   }
 
@@ -184,7 +184,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   expect(restored.holds).toEqual(a.cut.holds);
   const anchorsB = (await loadIdentityAnchors(0))!;
   expect(anchorsB.personaKelPrefix).toBe(anchorsA.personaKelPrefix);
-  expect(anchorsB.personaGroupDocIdHex, "a NEW seat: another key group").not.toBe(anchorsA.personaGroupDocIdHex);
+  expect(anchorsB.personaGroupId, "a NEW seat: another key group").not.toBe(anchorsA.personaGroupId);
   expect(await loadVesselVerifyingKey()).not.toBe(vesselKeyA);
   // The sealed bytes return from where they survived.
   for (const tier of ["sealed", "cad"]) cpSync(join(aside, tier), join(larDataDir(), tier), { recursive: true });

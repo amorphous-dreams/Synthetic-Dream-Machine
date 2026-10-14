@@ -256,7 +256,7 @@ export const BOOT_SPLASH_ACTIVE_URI = stableLarUri("state/boot-splash/active");
  *
  *  A FACE'S RELATIONS TRAVEL WITH THE FACE. Who a persona follows, blocks and mutes; how it recognises
  *  others; the sessions it wears — each answers WHICH FACE is worn, so a vessel holding a multitude keeps
- *  ONE SET PER FACE. `personaScopedBagIds` derives all four names off the one tag a PersonaGroup's own doc
+ *  ONE SET PER FACE. `personaScopedBagIds` derives all four names off the one tag a PersonaGroup's own
  *  id yields, and `personaSiblingBagIds` reaches the other three from any one of them: the name is the
  *  index, so nothing stores a second copy to drift from.
  *
@@ -477,17 +477,13 @@ export function emptyIdentitiesDoc(): IdentitiesDoc { return emptyLarDoc(); }
 export function emptyCirclesDoc(): CirclesDoc       { return emptyLarDoc(); }
 export function emptySessionsDoc(): SessionsDoc     { return emptyLarDoc(); }
 
-// ── DreamNet identity sentinel URIs ──────────────────────────────────────
-// These URIs serve as ChangeId seeds for Keyhive sentinel Documents that carry
-// DreamNet membership chains. DocumentId uniqueness comes from Keyhive's internal
-// EphemeralSigner (CSPRNG) — the URI is a semantic label only.
-//
-// Two-level identity lattice:
-//   PersonaGroup  — vessels belonging to one operator (Vessel Individual → PersonaGroup)
-//   MeshCabal    — operators participating in one Nexus (PersonaGroup → MeshCabal)
+// ── DreamNet identity lattice ────────────────────────────────────────────
+// Two levels:
+//   PersonaGroup  — one face's devices, a Keyhive GROUP (`KeyhiveProvider.createGroup`). Its id comes from
+//                   Keyhive's own CSPRNG, so no URI seeds it.
+//   MeshCabal     — the faces tending one Nexus, a Keyhive DOCUMENT whose ChangeId this URI seeds
+//                   (PersonaGroup → MeshCabal).
 
-/** Sentinel URI for a vessel's PersonaGroup membership document. */
-export const PERSONA_GROUP_SENTINEL_URI = stableLarUri("sentinel/persona-group");
 /**
  * Sentinel URI for the kahu CABAL's membership document — the kuleana-bearing tenders of one nexus-mesh,
  * each a PersonaGroup member of it.
@@ -506,12 +502,12 @@ export const PERSONA_GROUP_SENTINEL_URI = stableLarUri("sentinel/persona-group")
  */
 export const MESH_CABAL_SENTINEL_URI   = stableLarUri("sentinel/kahu-cabal");
 
-// PersonaGroup-identity sentinel tiddlers re-home to the `persona` namespace — they name
-// the operator's veiled identity (the PersonaGroup), the membership-sync surface. MeshCabal
-// (nexus-affiliation, NOT personGroup-identity) stays under the daemon bag.
+// PersonaGroup-identity tiddlers rest in the `persona` namespace: they name the operator's veiled
+// identity (the PersonaGroup), the membership-sync surface. The MeshCabal's (nexus-affiliation, never
+// PersonaGroup identity) rests under the daemon bag.
 /**
  * One membership entry — this vessel stands in that PersonaGroup. Keyed by the plane's derived tag, text
- * carrying the group's own doc id, so the family reads back without an order or an index to maintain.
+ * carrying the group's own id, so the family reads back without an order or an index to maintain.
  *
  * A LIST OF A PERSON'S GROUPS IS PERMITTED HERE, AND ONLY HERE. Canon's single-bit test: local-only reads
  * as COLLECT (unlinkable); published reads as MERGE (links every self). This list lives on the vessel's own
@@ -526,10 +522,11 @@ export function personaMembershipUri(planeTag: string): string {
   return `${PERSONA_MEMBERSHIP_PREFIX}/${planeTag}`;
 }
 
-/** Persona oracle tiddler: PersonaGroup Document ID (hex). Legacy sentinel target (the Binding Gate superseded it). */
-export const PERSONA_GROUP_DOC_ID_TIDDLER   = `${PERSONA_NAMESPACE}/sentinel/persona-group/doc-id`;
-/** Persona oracle tiddler: PersonaGroup agent Identifier (hex). Gate C owes its read at cabal-canon access, never at boot. */
-export const PERSONA_GROUP_AGENT_ID_TIDDLER = `${PERSONA_NAMESPACE}/sentinel/persona-group/agent-id`;
+/**
+ * Persona oracle tiddler: the mounted face's PersonaGroup id (`0x`-hex), a Keyhive GROUP's id. One value names the
+ * group as a membership target and as the audience a bag delegates to: a group's agent id reads the same bytes.
+ */
+export const PERSONA_GROUP_ID_TIDDLER = `${PERSONA_NAMESPACE}/persona-group/group-id`;
 /** Daemon oracle tiddler: MeshCabal Document ID (hex) — NEXUS-affiliation, sovereign-per-vessel. Gate C owes its read at cabal-canon access, never at boot. */
 export const MESH_CABAL_DOC_ID_TIDDLER     = `${DAEMON_BAG_ID}/sentinel/mesh-cabal/doc-id`;
 

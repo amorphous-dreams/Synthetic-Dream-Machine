@@ -43,7 +43,7 @@ async function admitFor(founder: Awaited<ReturnType<typeof founded>>, joineeKey:
   return runDeviceAdmitEdge({
     signerSeed: FOUNDER_SEED, joineeVerifyingKey: joineeKey,
     personaKelPrefix: founder.f.personaKelPrefix, personaKelChain: founder.chain, hearthTrueName: "bafyHearth",
-    personaGroupDocIdHex: founder.f.personaGroupDocIdHex, personaGroupAgentIdHex: founder.f.personaGroupAgentIdHex,
+    personaGroupId: founder.f.personaGroupId,
     meshCabalDocIdHex: founder.f.meshCabalDocIdHex, syncUrl: null, islandDocUrl: null,
     hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
   });
@@ -59,7 +59,7 @@ const apply = async (payload: Awaited<ReturnType<typeof runDeviceAdmitEdge>>) =>
 describe("every enrolment delivers the PersonaGroup secret beside the edge", () => {
   test("CONTROL: a founding rests a seal on its own daemon doc that opens for this device alone", async () => {
     const { repo, f } = await founded();
-    const rested = await restedSeal(repo, f.daemonUrl, f.personaGroupDocIdHex);
+    const rested = await restedSeal(repo, f.daemonUrl, f.personaGroupId);
     expect(await verifyGroupSecretSeal(rested)).not.toBeNull();
     expect(rested).toEqual(f.groupSecretSeal);
     const secret = personaGroupSecret(FOUNDER_SEED, f.personaKelPrefix);
@@ -72,7 +72,7 @@ describe("every enrolment delivers the PersonaGroup secret beside the edge", () 
     const payload = JSON.parse(JSON.stringify(await admitFor(founder, await pubOf(JOINEE_SEED))));
     expect(payload.groupSecretSeal.deviceKey).toBe(await pubOf(JOINEE_SEED));
     const { repo, applied } = await apply(payload);
-    const rested = await restedSeal(repo, applied.daemonUrl, founder.f.personaGroupDocIdHex);
+    const rested = await restedSeal(repo, applied.daemonUrl, founder.f.personaGroupId);
     expect(groupSecretOpenerFromSeed(JOINEE_SEED).seal(rested as never)).toEqual(personaGroupSecret(FOUNDER_SEED, founder.f.personaKelPrefix));
   });
 

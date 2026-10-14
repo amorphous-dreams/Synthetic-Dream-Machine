@@ -16,7 +16,8 @@
  *
  * Identity lattice produced by runFoundingCeremony:
  *   Vessel Individual (from seed)
- *     └─▶ PersonaGroup sentinel Document (the Binding Gate proves the vessel at boot)
+ *     └─▶ PersonaGroup, a Keyhive GROUP (the Binding Gate proves the vessel at boot; a seat's revocation rolls
+ *         the key of every bag the group reaches)
  *              └─▶ MeshCabal sentinel Document (Gate C: cabal membership, owed at canon access, never at boot)
  *
  * At t=0, founding operator's PersonaGroup is the only MeshCabal member.
@@ -44,8 +45,8 @@
 import type { Repo } from "@lararium/mesh";
 import {
   IDENTITIES_NAMESPACE, DAEMON_BAG_ID,
-  PERSONA_GROUP_SENTINEL_URI, MESH_CABAL_SENTINEL_URI,
-  PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  MESH_CABAL_SENTINEL_URI,
+  PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   HEARTH_DAEMON_URL_TIDDLER,
   SIGNER_DID_TIDDLER, HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER, PERSONA_KEL_PREFIX_TIDDLER,
   CAP_EVENT_TAG,
@@ -133,10 +134,9 @@ export interface FoundingCeremonyResult {
   daemonUrl:              string;
   /** The mounted PersonaGroup plane's doc URL — founded alongside the daemon bag. */
   personaUrl:             string;
-  /** That plane's BAG ID, derived from the PersonaGroup's own doc id. One name, everywhere it is reached. */
+  /** That plane's BAG ID, derived from the PersonaGroup's own id. One name, everywhere it is reached. */
   personaBagId:           string;
-  personaGroupDocIdHex:   string;
-  personaGroupAgentIdHex: string;
+  personaGroupId:   string;
   meshCabalDocIdHex:     string;
   /** The operator's self-certifying ContactCard JSON, minted once during the
    *  ceremony. The caller caches it for the light leaf-identity path (OP-AP5). */
@@ -294,8 +294,7 @@ export interface FaceFoundingResult {
   sessionsUrl:            string;
   personaUrl:             string;
   personaBagId:           string;
-  personaGroupDocIdHex:   string;
-  personaGroupAgentIdHex: string;
+  personaGroupId:   string;
   signerDid:              string;
   personaKelPrefix:       string;
   founderEdge:            DeviceDelegationTiddler;
@@ -308,9 +307,9 @@ export interface FaceFoundingResult {
 
 /** Rest a device's PersonaGroup secret seal on its daemon doc, keyed by the group. Call inside `change()`. */
 function writeGroupSecretSeal(
-  doc: { tiddlers: StoredTiddlers }, personaGroupDocIdHex: string, seal: GroupSecretSeal, authority = "lares-init",
+  doc: { tiddlers: StoredTiddlers }, personaGroupId: string, seal: GroupSecretSeal, authority = "lares-init",
 ): void {
-  const title = groupSecretSealTitle(personaGroupDocIdHex);
+  const title = groupSecretSealTitle(personaGroupId);
   doc.tiddlers[title] = storedRecord({
     tiddler: { title, text: JSON.stringify(seal), kind: "group-secret-seal" },
     meta: { authority },
@@ -357,7 +356,9 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   });
   await veilKeyhive.hydrateFromEventStore();
 
-  const personaGroup = await veilKeyhive.createSentinelDoc(PERSONA_GROUP_SENTINEL_URI);
+  // THE PERSONAGROUP FOUNDS AS A KEYHIVE GROUP (kapae#/keys). A revocation travels down to the documents a group
+  // reaches and rolls their key; a sentinel document's rolls none (`tests/seat-roll-substrate.probe.test.ts`).
+  const personaGroup = await veilKeyhive.createGroup();
 
   // THE FACE'S FOUR PLANES, SEEDED ONLY NOW — every one of them names the group's own tag, so the group
   // must exist before any of them can stand under its true name. The capability layer keys a document by
@@ -368,7 +369,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // @identities holds how it recognises others; @sessions holds the sessions it wears. One vessel-global
   // set would put one persona's blocked list in the same document as another's follows, and anything
   // reading it correlates the faces a multitude exists to hold apart.
-  const planes        = personaScopedBagIds(personaGroup.docIdHex);
+  const planes        = personaScopedBagIds(personaGroup.groupId);
   const personaBagId  = planes.persona;
   const personaHandle = seedPersonaDoc(repo, personaBagId);
   const identitiesHandle = seedIdentitiesDoc(repo, planes.identities);
@@ -388,7 +389,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
 
   // The cabal stands WITH the face, seated on the PersonaGroup that can actually hold a seat in it.
   const meshCabal = await veilKeyhive.createSentinelDoc(MESH_CABAL_SENTINEL_URI);
-  await veilKeyhive.addSentinelMember(personaGroup.agentIdHex, meshCabal.docIdHex);
+  await veilKeyhive.addSentinelMember(personaGroup.groupId, meshCabal.docIdHex);
 
   // The veil-keyhive membership events are ADDITIVE (content-addressed) — every face's group needs them
   // persisted to be usable, mounted or not, so this flush always runs.
@@ -401,12 +402,8 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
       tiddler: { title: MESH_CABAL_DOC_ID_TIDDLER, text: meshCabal.docIdHex, kind: "sentinel-id" },
       meta: { authority: "lares-init" },
     });
-    doc.tiddlers[PERSONA_GROUP_DOC_ID_TIDDLER] = storedRecord({
-      tiddler: { title: PERSONA_GROUP_DOC_ID_TIDDLER, text: personaGroup.docIdHex, kind: "sentinel-id" },
-      meta: { authority: "lares-init" },
-    });
-    doc.tiddlers[PERSONA_GROUP_AGENT_ID_TIDDLER] = storedRecord({
-      tiddler: { title: PERSONA_GROUP_AGENT_ID_TIDDLER, text: personaGroup.agentIdHex, kind: "sentinel-id" },
+    doc.tiddlers[PERSONA_GROUP_ID_TIDDLER] = storedRecord({
+      tiddler: { title: PERSONA_GROUP_ID_TIDDLER, text: personaGroup.groupId, kind: "persona-group-id" },
       meta: { authority: "lares-init" },
     });
     doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = storedRecord({
@@ -496,7 +493,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   if (!groupSecretSeal || groupSecretSeal.deviceKey !== vesselVerifyingKey.toLowerCase() || groupSecretSeal.prefix !== personaKelPrefix) {
     throw new Error("[founding] the enrolment carries no PersonaGroup secret sealed to this device under the pinned prefix — refusing to found under it.");
   }
-  daemonHandle.change((doc) => { writeGroupSecretSeal(doc, personaGroup.docIdHex, groupSecretSeal); });
+  daemonHandle.change((doc) => { writeGroupSecretSeal(doc, personaGroup.groupId, groupSecretSeal); });
 
   // ── The DYAD, minted where the face meets the device ──
   // The veil derives off THIS vessel's own veil root, scoped by the PersonaGroup — never the persona root,
@@ -505,7 +502,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // travels as binding:null rather than hiding behind a label.
   const dyadRef: DyadRef = { vesselDid: founderEdge.deviceDid, veilDid: didFromVerifyingKey(dyadVeilKeys.verifyingKey) };
   const dyadBinding = input.binding.mode === "self-stood"
-    ? await signDyadBindingWithSeed(dyadRef, signerDid, `group0-${personaGroup.docIdHex}`, input.binding.signerSeed)
+    ? await signDyadBindingWithSeed(dyadRef, signerDid, `group0-${personaGroup.groupId}`, input.binding.signerSeed)
     : null;
   const dyadRecord: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(dyadRef), ref: dyadRef, edge: founderEdge, binding: dyadBinding };
 
@@ -546,8 +543,7 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     sessionsUrl:   sessionsHandle.url   as string,
     personaUrl:    personaHandle.url    as string,
     personaBagId,
-    personaGroupDocIdHex:   personaGroup.docIdHex,
-    personaGroupAgentIdHex: personaGroup.agentIdHex,
+    personaGroupId:   personaGroup.groupId,
     signerDid,
     personaKelPrefix,
     founderEdge,
@@ -664,12 +660,11 @@ export interface DeviceAdmitEdgeInput {
   personaKelChain:       readonly PersonaKelEvent[];
   /** The hearth true-name (engine CID) the joinee binds TO. */
   hearthTrueName:         string;
-  /** Founder sentinel oracle IDs — carried through for the founding sentinel + future affiliation layer. */
-  personaGroupDocIdHex:   string;
-  personaGroupAgentIdHex: string;
+  /** The face's PersonaGroup (a Keyhive group's id) and the MeshCabal sentinel the founding seated it in. */
+  personaGroupId:   string;
   meshCabalDocIdHex:      string;
   syncUrl:                string | null;
-  /** The PersonaGroup's CURRENT lease epoch (`effectiveLeaseEpoch` over `leaseEpochPrefix(personaGroupDocIdHex)`
+  /** The PersonaGroup's CURRENT lease epoch (`effectiveLeaseEpoch` over `leaseEpochPrefix(personaGroupId)`
    *  slots, read by the caller off the live daemon replica — the SAME read `gateFaceJoin` folds by max) at
    *  mint time. The minted edge's `boundEpoch` binds to THIS value, so a device admitted before a later roll
    *  reads stale at the admission door and is denied until it re-presents via face-join regrant. OPTIONAL —
@@ -739,8 +734,7 @@ export async function runDeviceAdmitEdge(
     deviceEdge,
     groupSecretSeal,
     hearthTrueName:         input.hearthTrueName,
-    personaGroupDocIdHex:   input.personaGroupDocIdHex,
-    personaGroupAgentIdHex: input.personaGroupAgentIdHex,
+    personaGroupId:   input.personaGroupId,
     meshCabalDocIdHex:      input.meshCabalDocIdHex,
     syncUrl:                input.syncUrl,
     ...(input.islandDocUrl != null ? { islandDocUrl: input.islandDocUrl } : {}),
@@ -832,7 +826,7 @@ export async function runApplyAdmitPayload(
   // THE FOUR PLANES OF THE FACE THIS VESSEL JOINS — all named off the SAME group doc id the founder used,
   // so the two devices name one set identically or they sync nothing. the daemon bag stays sovereign-per-vessel
   // and is seeded fresh above; the face's planes are shared ground reached by one derivation.
-  const planes = personaScopedBagIds(payload.personaGroupDocIdHex);
+  const planes = personaScopedBagIds(payload.personaGroupId);
   const identitiesHandle = seedIdentitiesDoc(repo, planes.identities);
   const circlesHandle    = seedCirclesDoc(repo, planes.circles);
   const sessionsHandle   = seedSessionsDoc(repo, planes.sessions);
@@ -861,7 +855,7 @@ export async function runApplyAdmitPayload(
   // The joinee's DYAD: its veil derives off its OWN veil root, scoped by the group it joins. No group
   // root stands on this vessel, so the slot lands binding:null — presented, not yet gathered — and
   // `fleetOfGroup` will not count it until a root signs the binding (the absence travels).
-  const joineeVeil = await input.deriveVeil(payload.personaGroupDocIdHex);
+  const joineeVeil = await input.deriveVeil(payload.personaGroupId);
   const joineeRef: DyadRef = { vesselDid: payload.deviceEdge.deviceDid, veilDid: didFromVerifyingKey(joineeVeil.verifyingKey) };
   const joineeDyad: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(joineeRef), ref: joineeRef, edge: payload.deviceEdge, binding: null };
 
@@ -882,11 +876,11 @@ export async function runApplyAdmitPayload(
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...payload.deviceEdge },
       meta: { authority: "lares-init-admit" },
     });
-    writeGroupSecretSeal(doc, payload.personaGroupDocIdHex, seal, "lares-init-admit");
+    writeGroupSecretSeal(doc, payload.personaGroupId, seal, "lares-init-admit");
     // The joinee's veil tag IS the carried group doc id (the split's second moment) — persisted under
     // the same tiddler the founder's minted tag rides, so ONE boot rule stands either veil.
     doc.tiddlers[DYAD_VEIL_TAG_TIDDLER] = storedRecord({
-      tiddler: { title: DYAD_VEIL_TAG_TIDDLER, text: payload.personaGroupDocIdHex, kind: "dyad-veil-tag" },
+      tiddler: { title: DYAD_VEIL_TAG_TIDDLER, text: payload.personaGroupId, kind: "dyad-veil-tag" },
       meta: { authority: "lares-init-admit" },
     });
     // The PINNED identifier — the joinee's Binding Gate walks THIS to the current head op-key (the founder's
@@ -907,14 +901,10 @@ export async function runApplyAdmitPayload(
     });
   }
 
-  // Write sentinel oracle tiddlers.
+  // Write the face's group pin and the cabal's sentinel pin.
   daemonHandle.change((doc) => {
-    doc.tiddlers[PERSONA_GROUP_DOC_ID_TIDDLER] = storedRecord({
-      tiddler: { title: PERSONA_GROUP_DOC_ID_TIDDLER, text: payload.personaGroupDocIdHex, kind: "sentinel-id" },
-      meta: { authority: "lares-init-admit" },
-    });
-    doc.tiddlers[PERSONA_GROUP_AGENT_ID_TIDDLER] = storedRecord({
-      tiddler: { title: PERSONA_GROUP_AGENT_ID_TIDDLER, text: payload.personaGroupAgentIdHex, kind: "sentinel-id" },
+    doc.tiddlers[PERSONA_GROUP_ID_TIDDLER] = storedRecord({
+      tiddler: { title: PERSONA_GROUP_ID_TIDDLER, text: payload.personaGroupId, kind: "persona-group-id" },
       meta: { authority: "lares-init-admit" },
     });
     doc.tiddlers[MESH_CABAL_DOC_ID_TIDDLER] = storedRecord({

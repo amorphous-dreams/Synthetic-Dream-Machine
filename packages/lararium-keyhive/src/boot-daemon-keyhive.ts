@@ -30,10 +30,9 @@ export interface BootDaemonKeyhiveInput {
   readonly eventStore: CapabilityProviderInitOpts["eventStore"];
   /** Hex Ed25519 verifying key the keyhive identity MUST resolve to (Gate A). */
   readonly vesselVerifyingKey: string;
-  /** PersonaGroup sentinel Document id hex. ABSENT names a vessel at the WAKING FLOOR — see `face` below. */
-  readonly personaGroupDocIdHex?: string;
-  /** PersonaGroup agent id hex — the affiliation layer's membership subject. */
-  readonly personaGroupAgentIdHex?: string;
+  /** The face's PersonaGroup id (a Keyhive group's), the affiliation layer's membership subject. ABSENT names a
+   *  vessel at the WAKING FLOOR — see `face` below. */
+  readonly personaGroupId?: string;
   /** MeshCabal sentinel Document id hex — the affiliation layer's membership target, face-side. */
   readonly meshCabalDocIdHex?: string;
   /** Writable bag URIs to register so `verify`/`delegate` resolve (lar: URIs). */
@@ -118,7 +117,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // cannot skip the Binding Gate by deleting the edge, because deleting the edge deletes the authority
   // the gate would have granted. A HALF face refuses outright — a vessel holding some pins and not others
   // has a torn founding, and guessing which half to trust is exactly the deputy confusion.
-  const facePins = [input.personaGroupDocIdHex, input.signerDid, input.personaKel, input.deviceEdge];
+  const facePins = [input.personaGroupId, input.signerDid, input.personaKel, input.deviceEdge];
   const facesHeld = facePins.filter((p) => p !== undefined).length;
   if (facesHeld > 0 && facesHeld < facePins.length) {
     throw new Error("[daemon-keyhive] the face this vessel pins reads TORN — some persona pins stand and others do not. Re-found the face (`lares persona new 0`) rather than booting on half of one.");
@@ -181,7 +180,7 @@ export async function bootDaemonKeyhive(input: BootDaemonKeyhiveInput): Promise<
   // ACCESS to a cabal's shared canon, local-first — never a single boot gate (a boot gate
   // conflated ID-with-authz, assumed single-membership, and read a global "now"). Boot proves
   // IDENTITY ONLY: Gate A (key self-consistency) + the Binding Gate (the signed delegation edge).
-  // `personaGroupAgentIdHex` / `meshCabalDocIdHex` stay on the input for the founding sentinel
+  // `personaGroupId` / `meshCabalDocIdHex` stay on the input for the founding sentinel
   // dance + the affiliation layer; boot itself proves identity only and does not read them.
 
   // Register the operator's writable bags so cap checks resolve against lar: URIs.

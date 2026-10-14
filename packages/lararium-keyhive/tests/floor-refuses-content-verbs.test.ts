@@ -25,7 +25,7 @@ const manifest = (face: boolean) => ({
   daemonAuth: {
     vesselVerifyingKey: "a".repeat(64),
     registerBags: [],
-    ...(face ? { personaGroupDocIdHex: "ab".repeat(16), personaGroupAgentIdHex: "cd".repeat(16) } : {}),
+    ...(face ? { personaGroupId: "ab".repeat(16) } : {}),
   },
 }) as never;
 

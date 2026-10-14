@@ -58,8 +58,7 @@ describe("recovery keel — quorum → reconstruct → re-admit a fresh device",
         vetoOfCid: null, rotationSigs: [],
       }],
       hearthTrueName: PLACE,
-      personaGroupDocIdHex: "aa".repeat(32),
-      personaGroupAgentIdHex: "bb".repeat(32),
+      personaGroupId: "aa".repeat(32),
       meshCabalDocIdHex: "cc".repeat(32),
       syncUrl: null,
       hearthDaemonUrl: null,
@@ -83,7 +82,7 @@ describe("recovery keel — quorum → reconstruct → re-admit a fresh device",
     // from a quorum-reconstructed root. If this line stops erroring, the recovery quorum gate is gone.
     void (() => runReadmitEdge({
       reconstructedRoot: bareSeed, joineeVerifyingKey: "aa".repeat(32), hearthTrueName: "",
-      personaGroupDocIdHex: "", personaGroupAgentIdHex: "", meshCabalDocIdHex: "", syncUrl: null,
+      personaGroupId: "", meshCabalDocIdHex: "", syncUrl: null,
     }));
   });
 });

@@ -18,12 +18,11 @@
 
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 
-/** The sentinel anchors that bind a vessel to ONE veiled Handle. Hex doc-ids + agentId — all public. */
+/** The anchors that bind a vessel to ONE veiled Handle: the PersonaGroup's id (a Keyhive group) and the MeshCabal
+ *  sentinel's id, both public. */
 export interface IdentityAnchors {
-  readonly personaGroupDocIdHex: string;
+  readonly personaGroupId: string;
   readonly meshCabalDocIdHex: string;
-  /** The PersonaGroup agentId — Gate-C membership reads it, and the bootstrap never carried it. */
-  readonly personaGroupAgentIdHex: string;
   /** The persona-root DID this face signs as. PUBLIC (a verifying-key identifier, never a secret). */
   readonly signerDid?: string;
   /** The prefix of this face's persona-KEL — its continuity anchor, walkable from the shared board. PUBLIC. */
@@ -66,9 +65,8 @@ export interface AnchorStore {
 export function readIdentityAnchors(parsed: Partial<IdentityAnchors> | null | undefined): IdentityAnchors | null {
   if (
     parsed &&
-    typeof parsed.personaGroupDocIdHex === "string" &&
+    typeof parsed.personaGroupId === "string" &&
     typeof parsed.meshCabalDocIdHex === "string" &&
-    typeof parsed.personaGroupAgentIdHex === "string" &&
     (parsed.veilTag === undefined || typeof parsed.veilTag === "string") &&
     // The wear-reboot mount material is optional (old anchors, joinees, and h0 hold none), but a PRESENT
     // one must be well-shaped — a torn signerDid/prefix (non-string) or a device edge that is not a record

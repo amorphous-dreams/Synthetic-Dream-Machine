@@ -99,7 +99,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
       repo, verifyingKey, prefix: cer.personaKelPrefix,
       args: {
         seed: SEED, eventStore: new DaemonEventStore({ daemon: composite }), vesselVerifyingKey: verifyingKey,
-        personaGroupDocIdHex: cer.personaGroupDocIdHex, personaGroupAgentIdHex: cer.personaGroupAgentIdHex,
+        personaGroupId: cer.personaGroupId,
         meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
         personaKel: { prefix: cer.personaKelPrefix, chain: [] }, deviceEdge: cer.founderEdge, expectedEpoch: 0,
       },

@@ -39,7 +39,7 @@ import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID,
-  PERSONA_GROUP_DOC_ID_TIDDLER, PERSONA_GROUP_AGENT_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
+  PERSONA_GROUP_ID_TIDDLER, PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   CAP_EVENT_TAG,
   PERSONA_KEL_PREFIX_TIDDLER, SIGNER_DID_TIDDLER,
   HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
@@ -225,13 +225,12 @@ describe("Vessel A — founding ceremony", () => {
 
   test("social-bootstrap.json exists and carries PersonaGroup + MeshCabal oracle IDs", () => {
     const bootstrap = readBootstrap(vesselABootstrapPath);
-    expect(bootstrap[PERSONA_GROUP_DOC_ID_TIDDLER]?.text).toMatch(HEX_RE);
+    expect(bootstrap[PERSONA_GROUP_ID_TIDDLER]?.text).toMatch(HEX_RE);
     expect(bootstrap[MESH_CABAL_DOC_ID_TIDDLER]?.text).toMatch(HEX_RE);
   });
 
   test("daemon doc carries all three sentinel oracle tiddlers", () => {
-    expect(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_DOC_ID_TIDDLER)).toMatch(HEX_RE);
-    expect(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_AGENT_ID_TIDDLER)).toMatch(HEX_RE);
+    expect(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_ID_TIDDLER)).toMatch(HEX_RE);
     expect(daemonTiddlerText(vesselADaemonTiddlers, MESH_CABAL_DOC_ID_TIDDLER)).toMatch(HEX_RE);
   });
 
@@ -257,8 +256,7 @@ describe("Vessel A — founding ceremony", () => {
 describe("device-admit payload", () => {
   test("payload carries kind, sentinel IDs, the signed edge on its lineage, and syncUrl", () => {
     expect(admitPayload["kind"]).toBe("device-admit/v1");
-    expect(String(admitPayload["personaGroupDocIdHex"])).toMatch(HEX_RE);
-    expect(String(admitPayload["personaGroupAgentIdHex"])).toMatch(HEX_RE);
+    expect(String(admitPayload["personaGroupId"])).toMatch(HEX_RE);
     expect(String(admitPayload["meshCabalDocIdHex"])).toMatch(HEX_RE);
 
     // Admission carries ONE signed edge anchored on a lineage — never a bundle of cap events. The
@@ -279,10 +277,8 @@ describe("device-admit payload", () => {
   });
 
   test("sentinel IDs in payload match Vessel A daemon doc", () => {
-    expect(admitPayload["personaGroupDocIdHex"])
-      .toBe(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_DOC_ID_TIDDLER));
-    expect(admitPayload["personaGroupAgentIdHex"])
-      .toBe(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_AGENT_ID_TIDDLER));
+    expect(admitPayload["personaGroupId"])
+      .toBe(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_ID_TIDDLER));
     expect(admitPayload["meshCabalDocIdHex"])
       .toBe(daemonTiddlerText(vesselADaemonTiddlers, MESH_CABAL_DOC_ID_TIDDLER));
   });
@@ -302,15 +298,13 @@ describe("Vessel B — admitted vessel", () => {
 
   test("bootstrap carries sentinel IDs matching the admit payload", () => {
     const bootstrap = readBootstrap(vesselBBootstrapPath);
-    expect(bootstrap[PERSONA_GROUP_DOC_ID_TIDDLER]?.text).toBe(admitPayload["personaGroupDocIdHex"]);
+    expect(bootstrap[PERSONA_GROUP_ID_TIDDLER]?.text).toBe(admitPayload["personaGroupId"]);
     expect(bootstrap[MESH_CABAL_DOC_ID_TIDDLER]?.text).toBe(admitPayload["meshCabalDocIdHex"]);
   });
 
   test("Vessel B daemon doc oracle tiddlers match Vessel A sentinel IDs", () => {
-    expect(daemonTiddlerText(vesselBDaemonTiddlers, PERSONA_GROUP_DOC_ID_TIDDLER))
-      .toBe(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_DOC_ID_TIDDLER));
-    expect(daemonTiddlerText(vesselBDaemonTiddlers, PERSONA_GROUP_AGENT_ID_TIDDLER))
-      .toBe(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_AGENT_ID_TIDDLER));
+    expect(daemonTiddlerText(vesselBDaemonTiddlers, PERSONA_GROUP_ID_TIDDLER))
+      .toBe(daemonTiddlerText(vesselADaemonTiddlers, PERSONA_GROUP_ID_TIDDLER));
     expect(daemonTiddlerText(vesselBDaemonTiddlers, MESH_CABAL_DOC_ID_TIDDLER))
       .toBe(daemonTiddlerText(vesselADaemonTiddlers, MESH_CABAL_DOC_ID_TIDDLER));
   });

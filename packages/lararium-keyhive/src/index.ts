@@ -124,8 +124,7 @@ export interface DeviceAdmitPayload {
   /** The hearth true-name (engine CID) the joinee binds TO. */
   readonly hearthTrueName:         string;
   /** Founder sentinel oracle IDs — for the founding sentinel dance + the future affiliation layer. */
-  readonly personaGroupDocIdHex:    string;
-  readonly personaGroupAgentIdHex:  string;
+  readonly personaGroupId:    string;
   readonly meshCabalDocIdHex:      string;
   readonly syncUrl:                string | null;
   /**

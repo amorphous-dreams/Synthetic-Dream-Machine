@@ -31,7 +31,7 @@ import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fi
 
 vi.setConfig({ testTimeout: 120_000 });
 
-const anchors: IdentityAnchors = { personaGroupDocIdHex: "aa11", meshCabalDocIdHex: "bb22", personaGroupAgentIdHex: "cc33" };
+const anchors: IdentityAnchors = { personaGroupId: "aa11", meshCabalDocIdHex: "bb22" };
 const edge: DeviceDelegationTiddler = {
   kind: "device-delegation", personaRootDid: "0xaa11" as LarDid, deviceDid: "0xbb22" as LarDid,
   deviceVerifyingKey: "cc".repeat(32), hearthTrueName: "", boundEpoch: "1", signature: "dd".repeat(64),
@@ -64,7 +64,7 @@ describe("the identity home's sealed family", () => {
   });
 
   test("A3 a row that opens and holds another shape refuses by name", async () => {
-    await c.holder.writeRow("identity", "anchors-h0.json", new TextEncoder().encode(JSON.stringify({ personaGroupDocIdHex: "aa11" })));
+    await c.holder.writeRow("identity", "anchors-h0.json", new TextEncoder().encode(JSON.stringify({ personaGroupId: "aa11" })));
     await expect(loadIdentityAnchors()).rejects.toThrow(CustodyRowUnavailable);
     await expect(loadIdentityAnchors()).rejects.toThrow(/anchors-h0\.json reads malformed/);
     await c.holder.writeRow("identity", "anchors-h1.json", new TextEncoder().encode(JSON.stringify({ ...anchors, deviceEdge: "not-an-object" })));
