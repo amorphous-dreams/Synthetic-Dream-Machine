@@ -7,7 +7,7 @@
  *   meme-put      { recipe?, bag?, uri, text, base? }   → PlaceMemeReceipt
  *   meme-get      { recipe?, bag?, uri }                → { uri, meme: { text, canonicalHash } | null }
  *   meme-list     { recipe?, bag?, tree?, after?, limit? } → { bag | recipe, roots: MemeListing[], next }
- *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, canonicalHash? }
+ *   meme-delete   { recipe?, bag?, uri, base? }         → { uri, decision: removed|absent|conflict, tombstoned, canonicalHash?, readFrom?, tombstonedIn?, unreached? }
  *   meme-project  { recipe?, bag?, uri, to, dialect?, tongue? } → { uri, to, text, contentType, meta? }
  *
  * `meme-list` answers every ROOT the seat holds with the canonical hash a writer hands back as its base,
@@ -15,7 +15,10 @@
  * a caller hands it back as `after`, and `next: null` ends the listing. A bag lists its own records; a
  * named recipe lists the roots its whole stack resolves, each row naming the bag that answered
  * (`listRecipeStack`). `tree` nests each root's slot tree. `meme-delete` removes the whole group through `removeMeme` — a
- * stale `base` answers `conflict` and moves nothing; an absent root answers `absent`.
+ * stale `base` answers `conflict` and moves nothing; an absent root answers `absent`. A named recipe's delete
+ * reads the meme where the stack answers it and tombstones it where the tombstone shadows that bag
+ * (`deleteThroughRecipe`); its receipt names the bag that answered the root (`readFrom`) and each bag a
+ * tombstone landed in (`tombstonedIn`).
  *
  * `to` names a target — mem · md · html · tid · json (`meme-project.ts`); `meta` rides on `md` alone,
  * the `.md.meta` sidecar. The anchor projects through the in-VM face (`$tw.lares.meme.project`), so
@@ -63,7 +66,7 @@ import {
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { IslandContext } from "./island-context.js";
-import { holdsUnreadPointer, isMemeRoot, listMemePage, listOneMeme, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, wikiMemeSink, type MemeListing, type MemeSink } from "./place-meme.js";
+import { groupOfMeme, holdsUnreadPointer, isMemeRoot, listMemePage, listOneMeme, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, wikiMemeSink, type MemeListing, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
 import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import { pinTargetsOf, profileOf } from "./weave/index.js";
@@ -425,11 +428,84 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
   };
 }
 
+/**
+ * A NAMED WIKI'S DELETE READS THE STACK, AS ITS READ DOES, AND LANDS EACH TOMBSTONE WHERE IT SHADOWS. The meme
+ * reads from the first bag of the wiki's cascade that holds a record under its root (`reachRecipeBag`, mode
+ * `get`), so the base a writer read through `get --recipe` names the same render here, and a base that moved
+ * answers `conflict` with nothing tombstoned. Then every live title of the group the wiki reads (the root,
+ * its `#slot` fragments, its `/path` children, in whichever bag of the stack answers each one) gets a
+ * tombstone where it hides that bag's record from the wiki: in the designated bag where the record stands
+ * beneath it (the wiki's own delete of a canon carrier lands exactly there), and in the record's own bag where
+ * that bag stands above the designated one (an instance slot over the working layer). A meme no bag holds,
+ * or one a tombstone already shadows, answers `absent`.
+ *
+ * A designated bag outside the wiki's own stack shadows nothing the wiki reads, so the delete refuses by name
+ * (`recipe-unshadowed`). The caps ride the order the read and the put keep: the read cap on the bag that
+ * answered the root, then the admin cap on each bag a tombstone lands in, before any store of those bags
+ * gets reached to write. A bag of the stack the island cannot reach shows no titles; the receipt names it
+ * (`unreached`), as the listing does, since a child that bag holds stays unseen by this delete.
+ */
+async function deleteThroughRecipe(
+  opts: MemeVerbOptions, slug: string, uri: string, base: string | null | undefined, origin: ChangeOrigin,
+  cap: Parameters<VerbReactor>[1]["cap"],
+): Promise<Record<string, unknown>> {
+  const rec = await opts.recipeOf?.(slug);
+  if (!rec) throw new Error(`meme: recipe "${slug}" not found in any registry plane — run \`lares wiki init ${slug}\` first`);
+  const designated = designatedBagOf(rec, slug);
+  const stack = expandRecipe(recipeFromRecord(rec, slug));
+  if (!stack.includes(designated)) {
+    throw new VerbRefusal("recipe-unshadowed", `recipe-unshadowed: recipe "${slug}" designates bag "${designated}", which its own stack never reads; a tombstone there shadows nothing the wiki reads, so meme-delete removes nothing.`);
+  }
+  const answered = await reachRecipeBag(opts, slug, "get", uri);
+  const readProof = await cap("read", answered.bag);
+  if (!readProof.ok) throw new Error(`cap-denied: read on ${answered.bag} required (${readProof.reason ?? "no reason"})`);
+  const meme = await readMeme(uri, storeMemeSink(answered.store, answered.bag, origin));
+  if (meme === null) return { uri, decision: "absent", tombstoned: [], readFrom: answered.bag };
+  if (base && base !== meme.canonicalHash) return { uri, decision: "conflict", tombstoned: [], canonicalHash: meme.canonicalHash, readFrom: answered.bag };
+
+  // Every live title of the group, as the wiki reads it: the first bag of the stack that holds a record under
+  // the title answers it, and a tombstone there shadows every bag beneath.
+  const layers: Array<{ bag: string; store: LarTiddlerStore }> = [];
+  const unreached: string[] = [];
+  for (const bag of stack) {
+    const store = await storeOfBag(opts, slug, bag, "get");
+    // As the listing reads it: an instance slot with no store holds no record yet, and `temp` lives in the
+    // wiki island alone; any other bag with no store stands unreached, by name.
+    if (store) layers.push({ bag, store }); else if (!wikiSlotKindOf(slug, bag)) unreached.push(bag);
+  }
+  const titles = new Set<string>();
+  for (const layer of layers) for (const t of groupOfMeme(await layer.store.listVisible(), uri)) titles.add(t);
+  const shadowAt = new Map<string, string>();
+  for (const title of titles) {
+    for (const layer of layers) {
+      const record = await layer.store.get(title);
+      if (!record) continue;
+      if (!record.meta?.deleted) shadowAt.set(title, stack.indexOf(layer.bag) < stack.indexOf(designated) ? layer.bag : designated);
+      break;
+    }
+  }
+  const writeBags = [...new Set(shadowAt.values())];
+  for (const bag of writeBags) {
+    const proof = await cap("admin", bag);
+    if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
+  }
+  const writers = new Map<string, LarTiddlerStore>();
+  for (const bag of writeBags) {
+    const store = await storeOfBag(opts, slug, bag, "put");
+    if (!store) throw new Error(`meme: recipe "${slug}" tombstones ${uri} in bag "${bag}", which this island neither mounts writable nor reaches by access`);
+    writers.set(bag, store);
+  }
+  const tombstoned: string[] = [];
+  for (const [title, bag] of shadowAt) { await writers.get(bag)!.tombstone(title, origin); tombstoned.push(title); }
+  return { uri, decision: "removed", tombstoned, canonicalHash: meme.canonicalHash, readFrom: answered.bag, tombstonedIn: writeBags, ...(unreached.length > 0 ? { unreached } : {}) };
+}
+
 export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-delete");
     const base = optionalStringArg(args, "base");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    if (target.recipe && target.recipe !== "default") return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap);
     const { bag, sink } = await resolveSink(opts, target, origin, "put");
     const proof = await ctx.cap("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
