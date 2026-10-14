@@ -365,14 +365,15 @@ those seat keys.
 next threshold (`nextKeyDigests[]` · `nextThreshold`, KERI's `n[]` · `nt`), never one digest over a
 shared key-set. `seal seat` mints each chair's COLD next key, prints it as a cold-key card the operator
 reads back before the charter moves, and commits its digest; the next key rests on its card, never on a vessel.
-A routine roll takes k per-seat REVEALS, and every digest left unrevealed carries forward as reserve — a
-partial rotation. ''No Guardian takes part in a routine roll.''
+A routine roll takes k per-seat REVEALS. ''A card opens the one generation it prints'' (house reading under the
+cold-card law), so a digest left unrevealed carries forward nowhere: every roll lists fresh digests alone, and a
+chair whose card stays unrevealed leaves at that roll. It returns only as an added seat, whose key signs the roll
+as its proof of possession. ''No Guardian takes part in a routine roll.''
 
 ''Built'': the charter commits `nextKeyDigests[]` · `nextThreshold` per seat (`wax-stamp.ts`), a roll takes
 each card back on a terminal (`seal rotate`), `seal cold rehearse` reads a card back and moves nothing, and an
-earlier shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. The signed roll below stands
-in code. ''Owed in code'': the partial rotation. A roll refuses to list any digest an earlier epoch listed
-(`roll-respends-a-digest`), so a digest left unrevealed cannot carry forward as reserve.
+earlier shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing, and a roll that lists any
+digest an earlier epoch listed refuses (`roll-respends-a-digest`). The signed roll below stands in code.
 
 ''THE KEYS A ROLL REVEALS SIGN IT.'' At least threshold of the revealed keys — the keys whose
 digests the prior epoch committed, which carry that epoch's authority — sign the roll over the prior
@@ -548,6 +549,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;I0t7F4Dqmt8we-OJJJhPqijlPCoAP7L9CrC7D7ox-0s
+<<^ code="&#x0003;">>ni:///sha-256;NCLlpCDc4kK0JFoVjxVcYv26uNc4A0AJh9M3yiWwchk
 
 <<^ code="&#x0004;" -> to="?">>
