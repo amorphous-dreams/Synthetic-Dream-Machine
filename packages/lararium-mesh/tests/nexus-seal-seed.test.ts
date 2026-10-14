@@ -17,7 +17,7 @@ import {
   sealLineageHead, emptyFoundingCharterDoc, NEXUS_DOC_DOMAIN, type NexusDoc,
 } from "../src/nexus-seal-seed.js";
 import { mintCharterEpoch, sealEpochCidOf, NEXUS_AID_PATTERN } from "../src/wax-stamp.js";
-import { seatedCharter, type SeatedCharter } from "./charter-fixture.js";
+import { namedCharter, seatedCharter, type SeatedCharter } from "./charter-fixture.js";
 import { signAntigenEntry, foldAntigenSet, isKapaed, makeMultiSigQuorumVerifier } from "../src/kapae-antigen.js";
 
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
@@ -197,6 +197,10 @@ describe("the Nexus AID — one constructor, one name", () => {
     expect(unarmed.keys).toEqual(a.keys);
     expect(nexusAidOf(unarmed.doc())).not.toBe(nexusAidOf(a.doc()));
     expect(nexusAidOf(emptyFoundingCharterDoc())).toBeNull();
+    // RED: a genesis address of any other shape names no Nexus, the earlier name among them.
+    expect(nexusAidOf(namedCharter(`epoch${0}-${"ab".repeat(32)}`))).toBeNull();
+    expect(nexusAidOf(namedCharter("test-aid"))).toBeNull();
+    expect(nexusAidOf(namedCharter(`nexus-${"ab".repeat(32)}`))).toBe(`nexus-${"ab".repeat(32)}`);   // CONTROL
     expect(nexusAidOf(null)).toBeNull();
   });
 });

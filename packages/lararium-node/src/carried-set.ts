@@ -35,7 +35,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { dirname, join } from "node:path";
-import { foundingRoster, nexusAidOf, verifyCarriageConsent, type NexusDoc } from "@lararium/mesh";
+import { foundingRoster, nexusAidOf, NEXUS_AID_PATTERN, verifyCarriageConsent, type NexusDoc } from "@lararium/mesh";
 import { readNexusDoc, parseNexusDoc, nexusCharterDocRelPath } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
 import { listPersonaRoots } from "./node-vessel-identity.js";
@@ -44,8 +44,8 @@ import { heldSeatKey } from "./seat-key-store.js";
 /** A refusal the CLI renders as a clean message. Nothing was written when one is thrown. */
 export class CarriedCharterError extends Error {}
 
-/** An AID addresses a directory, so only a plain token passes — never a separator or a dot-segment. */
-const AID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+/** An AID addresses a directory, so only a Nexus AID passes (`NEXUS_AID_PATTERN`): no separator, no dot-segment, no other name. */
+const AID_RE = NEXUS_AID_PATTERN;
 
 function aidOrRefuse(aid: string): string {
   if (!AID_RE.test(aid) || aid.includes("..")) {

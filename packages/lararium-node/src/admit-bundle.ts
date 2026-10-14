@@ -48,7 +48,7 @@
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  isPresentedAdmit, makeMultiSigQuorumVerifier, carriageEntryActCid, heldNexusRoot, readAdmitAtHeldRoot,
+  isPresentedAdmit, makeMultiSigQuorumVerifier, NEXUS_AID_PATTERN, carriageEntryActCid, heldNexusRoot, readAdmitAtHeldRoot,
   type CarriageEntry, type PresentedLineageAct, type NexusDoc,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
@@ -69,8 +69,8 @@ export interface AdmitBundle {
   readonly lineage:    readonly PresentedLineageAct[];
 }
 
-/** An AID addresses a file, so only a plain token passes — never a separator or a dot-segment. */
-const AID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+/** An AID addresses a file, so only a Nexus AID passes (`NEXUS_AID_PATTERN`): no separator, no dot-segment, no other name. */
+const AID_RE = NEXUS_AID_PATTERN;
 const KEY_RE = /^[0-9a-f]{64}$/;
 
 /** Shape only: a path-safe AID, a 64-hex gate key, and an admit with a lineage `isPresentedAdmit` accepts. */

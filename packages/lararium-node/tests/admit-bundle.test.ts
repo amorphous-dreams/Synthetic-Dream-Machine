@@ -366,3 +366,18 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
     expect(heard).toHaveLength(1);
   });
 });
+
+describe("an AID names a file or a directory only in its one shape", () => {
+  test("RED: the earlier genesis name, a bare token and a dot-segment refuse at every path door; CONTROL: a Nexus AID passes", () => {
+    const home = "/nowhere/seal-home";
+    for (const aid of [`epoch${0}-${"ab".repeat(32)}`, "test-aid", "..", `nexus-${"ab".repeat(31)}`]) {
+      expect(() => admitBundlePathFor(home, aid), aid).toThrow();
+      expect(() => carriedCharterHome(home, aid), aid).toThrow();
+      expect(() => carriageConsentPathFor(home, aid), aid).toThrow();
+    }
+    const aid = `nexus-${"ab".repeat(32)}`;
+    expect(admitBundlePathFor(home, aid)).toContain(aid);
+    expect(carriedCharterHome(home, aid)).toContain(aid);
+    expect(carriageConsentPathFor(home, aid)).toContain(aid);
+  });
+});

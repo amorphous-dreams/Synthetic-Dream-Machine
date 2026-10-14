@@ -35,7 +35,7 @@ describe("a seated fixture charter stands under the roll law", () => {
     expect(() => heldCharter({ keys: current, threshold: 2, successors: { keys: successor, threshold: 1 } })).toThrow(/roll-malformed/);
   });
   test("named charter carries no forward commitment", () => {
-    const doc = namedCharter("test-aid"); expect(doc.kind).toBe(NEXUS_DOC_DOMAIN); expect(doc.sealLineage![0]).toMatchObject({ nextKeyDigests: [], nextThreshold: 0 });
-    expect(nexusAidOf(doc)).toBe("test-aid");
+    const aid = `nexus-${"7e".repeat(32)}`; const doc = namedCharter(aid); expect(doc.kind).toBe(NEXUS_DOC_DOMAIN); expect(doc.sealLineage![0]).toMatchObject({ nextKeyDigests: [], nextThreshold: 0 });
+    expect(nexusAidOf(doc)).toBe(aid);
   });
 });

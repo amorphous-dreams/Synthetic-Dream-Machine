@@ -49,7 +49,7 @@
 import { NEXUS_DOC_DOMAIN, SEAT_FINGERPRINT_DOMAIN } from "./domains.js";
 import type { KahuQuorumSeats } from "./kapae-antigen.js";
 import { sha256HexSync, canonicalJson } from "./crypto.js";
-import { type SealEpoch, verifySealLineage, sealKeySetHash, weakSeatOf } from "./wax-stamp.js";
+import { type SealEpoch, verifySealLineage, sealKeySetHash, weakSeatOf, NEXUS_AID_PATTERN } from "./wax-stamp.js";
 import { type FederationPosture, DEFAULT_FEDERATION_POSTURE } from "./federation-gate.js";
 import { type CabalJoinPolicy, DEFAULT_JOIN_POLICY } from "./cabal-invite.js";
 import type { AdmissionDials } from "./admission-price.js";
@@ -163,12 +163,12 @@ export function seatedKahuKeys(doc: NexusDoc | null): string[] {
 /**
  * THE NEXUS AID a charter names: its genesis epoch's content address (`nexus-…`, minted by `sealEpochCidOf` and
  * nowhere else), fixed across every roll. Null when no lineage stands: an unseated charter names no Nexus, so
- * nothing materializes under it. KERI's inception carries the same rule: an identifier derives from its first
+ * nothing materializes under it, and a genesis address of any other shape names none either. KERI's inception carries the same rule: an identifier derives from its first
  * key event, which holds the controlling keys, their threshold and the commitment to their successors.
  */
 export function nexusAidOf(doc: NexusDoc | null | undefined): string | null {
   const genesis = doc?.sealLineage?.[0]?.epochCid;
-  return typeof genesis === "string" && genesis.length > 0 ? genesis : null;
+  return typeof genesis === "string" && NEXUS_AID_PATTERN.test(genesis) ? genesis : null;
 }
 
 /**

@@ -22,6 +22,7 @@
  * R20 a same-Nexus refresh folds every plane again / control: nothing re-pins.
  * R9 a new Nexus re-stands cabal planes beneath it / control: the cabal id stays while its nexusAid changes.
  */
+import { createHash } from "node:crypto";
 import { describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import { Repo, interpretAsDocumentId, type DocHandle } from "@automerge/automerge-repo";
@@ -43,7 +44,9 @@ const noMembers: NexusMembership = { holdsCarriagePeer: () => false };
 const seed = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const keyOf = async (s: Uint8Array): Promise<string> => hex(await ed.getPublicKeyAsync(s));
 const signOf = (s: Uint8Array) => (bytes: Uint8Array): Promise<string> => ed.signAsync(bytes, s).then(hex);
-const charter = (genesis: string): NexusDoc => namedCharter(genesis);
+/** A charter named by a label: the label hashes into a Nexus AID, the one shape a charter names. */
+const aidOf = (label: string): string => `nexus-${createHash("sha256").update(label).digest("hex")}`;
+const charter = (label: string): NexusDoc => namedCharter(aidOf(label));
 
 interface Actor { readonly worn: string; readonly wornSeed: Uint8Array; readonly vault: StewardVault; }
 async function actor(n: number): Promise<Actor> {
@@ -227,7 +230,7 @@ async function realmDoc(repo: Repo, id: string): Promise<LarDoc> { return (await
     const repo = new Repo({}), { holder } = makeHolder(repo); await holder.refresh(charter("charter-old")); await holder.enter(A);
     expect(holder.plane(A)!.nexusAid()).toBe(holder.realmId());
     await holder.refresh(charter("charter-new"));
-    expect(holder.realmId()).not.toBe("charter-old"); expect(holder.realms()).toContain(A);
+    expect(holder.realmId()).not.toBe(aidOf("charter-old")); expect(holder.realms()).toContain(A);
     expect(holder.plane(A)!.nexusAid()).toBe(holder.realmId()); expect(holder.plane(A)!.realmId()).toBe(A); holder.dispose();
   });
   // R10

@@ -53,7 +53,7 @@ import { makeRealmPlane } from "../src/realm-plane.js";
 import { runRealmBag, runRealmBags, stewardGuard, StewardRefused, wornStewardSigner, type StewardVault } from "../src/realm-steward.js";
 import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
-const REALM = "epoch-cid-genesis";
+const REALM = `nexus-${"e1".repeat(32)}`;
 const AID = "nexus-genesis-aid";
 const BAG = "lar:///ha.ka.ba/bags/lares";
 const DOC = deterministicDocUrl("the-registered-book");
