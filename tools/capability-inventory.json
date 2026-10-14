@@ -1,0 +1,49 @@
+{
+  "islands": {
+    "node daemon": {
+      "fetch": "grants",
+      "rest": "grants",
+      "custody": "grants",
+      "dyad": "grants"
+    },
+    "node wiki": {
+      "fetch": "grants",
+      "rest": "refused",
+      "custody": "refused",
+      "dyad": "refused"
+    },
+    "node session": {
+      "fetch": "silent",
+      "rest": "silent",
+      "custody": "silent",
+      "dyad": "silent"
+    },
+    "web daemon": {
+      "fetch": "silent",
+      "rest": "silent",
+      "custody": "silent",
+      "dyad": "grants"
+    },
+    "web wiki": {
+      "fetch": "silent",
+      "rest": "silent",
+      "custody": "silent",
+      "dyad": "refused"
+    }
+  },
+  "callSites": [
+    "packages/lararium-browser/src/browser-vessel-island-pool.ts: browserSpawnWorker(…",
+    "packages/lararium-browser/src/browser-vessel-island-pool.ts: refuseBrowserDyadAsks(…",
+    "packages/lararium-browser/src/open-browser-vessel.ts: holderWorkerHandle(…",
+    "packages/lararium-browser/src/open-browser-vessel.ts: browserSpawnWorker(…",
+    "packages/lararium-browser/src/open-browser-vessel.ts: attachBrowserDyadDoor(…",
+    "packages/lararium-browser/src/shared-holder.worker.ts: browserWorkerHandle(…",
+    "packages/lararium-browser/src/worker-handle.ts: browserWorkerHandle(…",
+    "packages/lararium-node/src/open-daemon-vm.ts: nodeSpawnDaemonWorker(…",
+    "packages/lararium-node/src/vessel-island-pool.ts: nodeSpawnSessionWorker(…",
+    "packages/lararium-node/src/vessel-island-pool.ts: nodeSpawnWikiWorker(…",
+    "packages/lararium-node/src/worker-handle.ts: nodeWorkerHandle(…",
+    "packages/lararium-node/src/worker-handle.ts: nodeWorkerHandle(…",
+    "packages/lararium-node/src/worker-handle.ts: nodeWorkerHandle(…"
+  ]
+}
