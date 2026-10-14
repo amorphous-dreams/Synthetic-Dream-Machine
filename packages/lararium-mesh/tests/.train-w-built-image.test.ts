@@ -6,6 +6,7 @@
  */
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
+import { GATE_FLIGHT_HEADER_BYTES, GATE_PROTOCOL } from "../src/gate-exchange.js";
 
 type DialReading = {
   hearth: string;
@@ -83,9 +84,10 @@ describe.skip("train W built-image crossing witness", () => {
     const trace = readBuiltImageTrace();
     expect(trace.imageHead).toMatch(/^[0-9a-f]{40,64}$/);
     expect(trace.throughTerminator).toBe(true);
-    expect(trace.selectedProtocol).toBeTruthy();
-    expect(trace.headerBytes).toBeGreaterThan(0);
-    expect(trace.headerBytes).toBeLessThanOrEqual(4096);
+    // The measured envelope: the 101 selects the fixed name alone and echoes no token; the browser's header
+    // value weighs one minimal flight (lar:///ha.ka.ba/lares/api/pono/face-proof#/the-browser-envelope).
+    expect(trace.selectedProtocol).toBe(GATE_PROTOCOL);
+    expect(trace.headerBytes).toBe(GATE_FLIGHT_HEADER_BYTES);
     expect(trace.tokenSeenInRetainedLogs).toBe(false);
     expect(trace.receiverRestarted).toBe(true);
     expect(trace.withdrawalRemembered).toBe(true);

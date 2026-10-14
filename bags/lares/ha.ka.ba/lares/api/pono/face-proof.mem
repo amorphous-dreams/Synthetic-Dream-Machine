@@ -149,6 +149,31 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 
 <<~/ahu>>
 
+<<~ ahu #/the-browser-envelope>>
+
+!! The browser envelope ~ the first flight as an upgrade carries it
+
+''A browser offers two protocols, in this order'': the fixed name `lar-gate`, then Noise IK message one as ONE unpadded base64url token. A minimal flight weighs 96 bytes and spells 128 characters, so the header value weighs 138 bytes and one flight spells one way. A flight that carries a payload never leaves the dialer.
+
+''The gate's 101 selects `lar-gate` alone'' and never echoes the token. The browser dialer reads the protocol its socket opened under and cuts any other: Chromium fails a 101 that selects nothing, while Firefox and WebKit open it under the protocol `""`, so only the dialer's own check holds the line in every engine. A foreign selection fails in all three.
+
+''The gate reads the header before any Noise work'' and refuses by name, each name drawing the same silence on the wire: `flight-absent`, `flight-overlong` (checked before the value splits), `flight-shape` (anything but two non-empty entries), `flight-protocol` (the first entry names anything but `lar-gate`, in its one case and order), `flight-token` (any character outside the alphabet, or a short token). List whitespace beside the comma reads as space and tab alone. The reader holds no memory: a replayed flight reads again and buys provisional work alone (`packages/lararium-mesh/src/gate-exchange.ts`).
+
+''What the measurement read'' (one run, a house reading of its instruments): Chromium 156, Firefox 157 and WebKit 27.2 under Playwright 1.64, over plain sockets on loopback, direct and behind `nginx:1.30-alpine` under the household terminator's own settings.
+
+|! Reading |! Measured |
+| the header as sent | the list in the order given, joined by `, ` |
+| the alphabet | Chromium and Firefox refuse `=`, `/`, space and the other separators at construction; unpadded base64url passes in all three |
+| the bound, direct | every engine carried 196608 payload bytes; the browsers set no bound the envelope nears |
+| the bound, behind the terminator | a 16013-byte header passed; a 21859-byte header drew 400 before the upstream saw it |
+| the bound, behind stock nginx | an 8013-byte header passed; an 8205-byte header drew 400 |
+| an unanswered upgrade | Firefox closes it after 20 s; Chromium and WebKit still waited at 75 s |
+| the terminator's log | its stock access line keeps the request path, so it keeps the knock; no line keeps the token |
+
+''Unmeasured'': the envelope through TLS and through HTTP/2's extended CONNECT, on a phone's own engine, and behind a proxy other than nginx. One Android tablet carried 8192 payload bytes in this header (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">>).
+
+<<~/ahu>>
+
 <<~ ahu #/who-learns-what>>
 
 !! What each party learns
@@ -170,7 +195,7 @@ The dialer pins the gate bundle before it dials. Every signature uses its own do
 * ''A withdrawal history's length tells each gate the face dials how many keys that face has withdrawn there.'' A gate that never met a withdrawn vessel learns the count and nothing of the key.
 * ''A session's certificate names its hand's profile'', so a gate tells a spirit's seat from a person's tab. It names no spirit and no Mask.
 * ''A replayed first flight draws provisional work'', and tells its sender whether that flight still earns the upgrade. The signed finish still blocks every application effect.
-* ''A terminating proxy reads the subprotocol token'' and may log it. A passive observer of an encrypted connection reads neither the path nor the header.
+* ''A terminating proxy reads the subprotocol token and the path.'' The household terminator's stock access line keeps the path, and with it the knock, and keeps no line of the token (#/the-browser-envelope). A passive observer of an encrypted connection reads neither the path nor the header.
 * ''The knock tests offline'' for an observer holding candidate gate keys.
 * ''Address, timing, destination and size stay visible'', as the session ruling names them. Silence at the application layer never amounts to invisibility on the network.
 
@@ -322,7 +347,7 @@ The design names that unavailability and does not cure it. A recovery authority 
 * ''Private authority'' (`packages/lararium-mesh/src/face-authority.ts`): minting, the request, the certificate, the withdrawal, the fold of a reader's memory, and the chain check with its six verdicts. Its callers: the fleet-join door, the removal door and the gate. It also reads a vessel's OWN chain with no session key in it (`checkVesselChain`), which a session opens on.
 * ''The session signer'' (`packages/lararium-mesh/src/session-signer.ts`). Its callers: the node's session open on the local socket, and the browser holder. One door opens a session and mints its signer (`openSignedSession`), so no session stands live without one.
 * ''The gate bundle'' (`packages/lararium-mesh/src/gate-bundle.ts`): the floor and sovereign tiers with their typed routes and roots (the serving tier stands owed with the ember's train E), the pin, its digest, the knock, the prologue, and the transport and signing keys one gate derives per (tier, Nexus, route). Nothing rests. Its caller: the vessel's gate composer.
-* ''The exchange's subjects'' (`packages/lararium-mesh/src/gate-exchange.ts`): the presentation and the answer with their readers, the image of the finish, the image of the verdict, and a provisional frame layout.
+* ''The exchange's subjects'' (`packages/lararium-mesh/src/gate-exchange.ts`): the presentation and the answer with their readers, the image of the finish, the image of the verdict, the browser's first-flight envelope with its reader and its refusals (#/the-browser-envelope), and the house's sealed frame layout.
 * ''The gate'' (`packages/lararium-mesh/src/face-gate.ts`): the whole exchange against a socket and the collaborators it asks: a deadline source, an admit reader over the one presenter-verifier, the shadow ring, the grant ring, the sorter, a withdrawal memory and a session table. Its caller: the socket cutover.
 * ''The dialers'' (`packages/lararium-mesh/src/face-dial.ts`): the other half of the exchange, for a face and for a faceless place, one function each for a node and a browser. Their callers: both client transports, at the cutover.
 * ''The gate's stored memory'' (`packages/lararium-mesh/src/gate-withdrawal-store.ts`): one row of signed events per face key, verified again at every load, accreting under one writer. Its caller: the gate composer, over rows the vessel seals.
@@ -342,8 +367,8 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 ''Unproven, and each blocks the part that rests on it'':
 
-* ''The header's size budget through real proxies.'' The largest minimal first flight the house's browsers, server and proxies accept in `Sec-WebSocket-Protocol`, the token's syntax, and where logs redact it. Unmeasured.
-* ''The byte layout of the browser's exchange'': the token's encoding, the frame that carries the gate's handshake reply, and the frames that carry a presentation, a frontier and the events beside it. A provisional layout stands in `gate-exchange.ts`; no proxy has measured it, and the cutover may move it.
+* ''The envelope beyond the measured run'': through TLS, through HTTP/2, on a phone's own engine and behind other proxies (#/the-browser-envelope). The token's syntax, its bound and the terminator's log stand measured and fixed.
+* ''The sealed frames' layout'': the frame that carries the gate's handshake reply, and the frames that carry a presentation, a frontier and the events beside it. They ride binary WebSocket messages no proxy reads; the layout in `gate-exchange.ts` stands as the house's own, and the cutover may move it.
 * ''The withdrawal proof under a live partition.'' The fold and the six verdicts stand proven as pure functions over synthetic histories, and the six answers stand proven at one gate against a dialer in the same process, partitioned by hand. No two gates and no real herm have yet carried one.
 
 ''OWED ~ seven debts, each resting on the one before it.''
@@ -372,6 +397,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XAFvxoMBvlOkTEhlhDcbsXEJ9VldiPvdoCKsGjMGQ3M
+<<^ code="&#x0003;">>ni:///sha-256;zOQKk6O5FCRk5wojlkZqoAKj7FNYf9W7zwmDh90ybFQ
 
 <<^ code="&#x0004;" -> to="?">>

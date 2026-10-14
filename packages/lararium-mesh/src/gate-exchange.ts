@@ -27,9 +27,13 @@
  *     contract, under its own exact keys, and signs its finish under its own name: a place's presentation
  *     reads as no face's, and a face's as no place's.
  *
- * THE FRAME LAYOUT STANDS PROVISIONAL. A sealed frame leads with one tag byte, and a presentation or an
- * answer that outgrows one frame rides in parts. The house reads this layout as its own until the browser's
- * exchange gets measured through real proxies; the cutover may move it, and nothing here stands as law.
+ * THE FIRST FLIGHT STANDS MEASURED. A browser offers `GATE_PROTOCOL` and then the flight as one unpadded
+ * base64url token in `Sec-WebSocket-Protocol`; the gate's 101 selects `GATE_PROTOCOL` alone and never echoes
+ * the token. Three browser engines and the household terminator's proxy carried that envelope as written
+ * (lar:///ha.ka.ba/lares/api/pono/face-proof#/the-browser-envelope).
+ *
+ * THE SEALED FRAMES STAND AS THE HOUSE'S LAYOUT. They ride binary WebSocket messages no proxy reads. A sealed
+ * frame leads with one tag byte, and a presentation or an answer that outgrows one frame rides in parts.
  *
  * Pure: no key, no I/O, no clock, no timer, no randomness.
  * Stands specified in code until the socket cutover consumes it; out of the package barrel till then.
@@ -37,14 +41,14 @@
 import { sha256 } from "@noble/hashes/sha2.js";
 import { isPresentedAdmit } from "./auth-wire.js";
 import type { CarriageEntry, PresentedLineageAct } from "./carriage-registry.js";
-import { canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "./crypto.js";
+import { base64UrlDecode, base64UrlEncode, canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "./crypto.js";
 import { CARRIAGE_ENTRY_DOMAIN, GATE_FINISH_DOMAIN, GATE_PLACE_FINISH_DOMAIN, GATE_PRESENTATION_DOMAIN, GATE_VERDICT_DOMAIN } from "./domains.js";
 import { acceptEd25519Key } from "./ed25519-door.js";
 import { WITHDRAWAL_HISTORY_BOUND } from "./face-authority.js";
 import type { FaceWithdrawal, SessionCertificate, VesselFaceCertificate, WithdrawalFrontier } from "./face-proof-subjects.js";
 import { gateFields } from "./gate-bundle.js";
 import { isHostingGrant, isInviteToken, type HostingGrant, type InviteToken } from "./hosting.js";
-import { NOISE_MAX_MESSAGE_BYTES } from "./noise-ik.js";
+import { MIN_MESSAGE1_BYTES, NOISE_MAX_MESSAGE_BYTES } from "./noise-ik.js";
 
 // ── Frames on the sealed channel (provisional layout) ───────────────────────────────────────────
 
@@ -107,6 +111,77 @@ export function gateFrame(tag: number, body: Uint8Array): Uint8Array {
   frame[0] = tag;
   frame.set(body, 1);
   return frame;
+}
+
+// ── The browser's first flight: the upgrade's envelope (measured) ───────────────────────────────
+
+/**
+ * The one application protocol a gate's 101 selects, and the first entry a browser offers. An RFC 6455
+ * token; its spelling versions nothing: the Noise protocol name and the pin's prologue carry the handshake's
+ * own name.
+ */
+export const GATE_PROTOCOL = "lar-gate";
+/** The whole first flight: Noise IK message one over an empty payload. */
+export const GATE_FLIGHT_BYTES = MIN_MESSAGE1_BYTES;
+/** The flight as one token: unpadded base64url. 96 bytes spell exactly 128 characters, so one flight spells one way. */
+export const GATE_FLIGHT_TOKEN_CHARS = Math.ceil((GATE_FLIGHT_BYTES * 4) / 3);
+/** The header value a browser sends: the fixed name, a comma and a space, then the token. */
+export const GATE_FLIGHT_HEADER_BYTES = GATE_PROTOCOL.length + 2 + GATE_FLIGHT_TOKEN_CHARS;
+/** The longest header value the reader splits; list whitespace may pad the sent spelling, and nothing longer reads. */
+const GATE_FLIGHT_HEADER_MAX = 256;
+const FLIGHT_TOKEN = /^[A-Za-z0-9_-]+$/;
+/** RFC 9110 list whitespace: space and horizontal tab alone. */
+const OWS = /^[ \t]+|[ \t]+$/g;
+
+/**
+ * Why a gate read no flight in an upgrade's `Sec-WebSocket-Protocol`. Each draws the same silence on the
+ * wire; the names exist for the vessel's own log and for vectors.
+ *
+ *   flight-absent    no header, an empty one, or a value that reads as no text
+ *   flight-overlong  the value or its token runs past the flight's own length: no split, no decode, no Noise work
+ *   flight-shape     anything but exactly two non-empty entries
+ *   flight-protocol  the first entry names anything but `GATE_PROTOCOL`, in its one case and order
+ *   flight-token     a token shorter than a flight, or any character outside unpadded base64url
+ */
+export const GATE_FLIGHT_REFUSALS = ["flight-absent", "flight-overlong", "flight-shape", "flight-protocol", "flight-token"] as const;
+export type GateFlightRefusal = (typeof GATE_FLIGHT_REFUSALS)[number];
+
+/**
+ * The two protocols a browser hands `new WebSocket(url, protocols)`: the fixed name first, the flight second.
+ * Throws a RangeError for anything but a minimal flight: a flight that carries a payload never leaves.
+ */
+export function gateFlightProtocols(message1: Uint8Array): readonly [string, string] {
+  if (!(message1 instanceof Uint8Array) || message1.length !== GATE_FLIGHT_BYTES) {
+    throw new RangeError("gate-exchange: a first flight weighs exactly one minimal Noise IK message one");
+  }
+  return Object.freeze([GATE_PROTOCOL, base64UrlEncode(message1)] as const);
+}
+
+/**
+ * Read the first flight out of an upgrade's `Sec-WebSocket-Protocol` value. The reader holds no memory: a
+ * replayed flight reads again, and buys provisional work alone, since the signed finish needs the dial's
+ * secrets. A flight under another pin reads here and decrypts nothing at the gate.
+ */
+export function readGateFlightHeader(value: string | undefined): { readonly ok: true; readonly message1: Uint8Array } | { readonly ok: false; readonly refusal: GateFlightRefusal } {
+  const refuse = (refusal: GateFlightRefusal) => ({ ok: false as const, refusal });
+  if (typeof value !== "string" || value.length === 0) return refuse("flight-absent");
+  if (value.length > GATE_FLIGHT_HEADER_MAX) return refuse("flight-overlong");
+  const entries = value.split(",").map((entry) => entry.replace(OWS, ""));
+  if (entries.length !== 2 || entries.some((entry) => entry.length === 0)) return refuse("flight-shape");
+  const [name, token] = entries as [string, string];
+  if (name !== GATE_PROTOCOL) return refuse("flight-protocol");
+  if (token.length > GATE_FLIGHT_TOKEN_CHARS) return refuse("flight-overlong");
+  if (token.length !== GATE_FLIGHT_TOKEN_CHARS || !FLIGHT_TOKEN.test(token)) return refuse("flight-token");
+  // 128 characters of the alphabet decode to exactly 96 bytes, and re-encode to themselves: one spelling.
+  return { ok: true as const, message1: base64UrlDecode(token) };
+}
+
+/**
+ * Whether the protocol a browser socket opened under names the gate's selection. A browser dialer cuts any
+ * other: Firefox and WebKit open a 101 that selected nothing, under the protocol `""`.
+ */
+export function gateProtocolSelected(protocol: string): boolean {
+  return protocol === GATE_PROTOCOL;
 }
 
 // ── The presentation ────────────────────────────────────────────────────────────────────────────

@@ -444,7 +444,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 
 !!! THE WIRE
 * `W1` A per-Nexus gate key in two tiers, one gate per (Nexus, route). The bundle stands specified in code (`gate-bundle.ts`): a floor route's keys derive from the floor key and a sovereign route's from the sealed custody root, each per (tier, Nexus, route), resting nowhere. Owed: the composer that stands one gate per bundle and hands each tier its own door, and the dispatcher's knock per bundle. W.
-* `W2` Noise IK, proof first; `lar:challenge` retires (`auth-wire.ts`). The gate and both dialers stand specified in code behind interfaces (`face-gate.ts`, `face-dial.ts`), proven against each other in one process: a face's chain, a faceless place's arm, and a withdrawal memory that rests in the gate's own store (`gate-withdrawal-store.ts`). Owed: the cutover that wires them. House (byte layout, provisional in `gate-exchange.ts`). W.
+* `W2` Noise IK, proof first; `lar:challenge` retires (`auth-wire.ts`). The gate and both dialers stand specified in code behind interfaces (`face-gate.ts`, `face-dial.ts`), proven against each other in one process: a face's chain, a faceless place's arm, and a withdrawal memory that rests in the gate's own store (`gate-withdrawal-store.ts`). The browser's first flight stands measured and fixed in `gate-exchange.ts`: `lar-gate`, then message one as one 128-character token, the 101 selecting `lar-gate` alone (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-browser-envelope">>). Owed: the cutover that wires them. House (the sealed frames' layout in `gate-exchange.ts`). W.
 * `W3` The dialer's ContactCard rides the clear (`LarAuthMsg`). The specified exchange carries no card at all; the leak closes at the cutover. W.
 * `W4` The face-scoped proof chain: face key, the vessel's face key, the session key. The subjects, private authority, the session signer and the session face supplier stand specified in code, and the withdrawal proof reads as a house model the operator may overturn (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof">>). The two custody rows stand in node (`face-key-custody.ts`), the gate around the chain check stands specified in code (`face-gate.ts`), and a session opens before its certificate through one door (`openSignedSession`). Owed: the callers (the fleet-join door, the node's session open, the browser holder, the cutover). House. W.
 * `W5` The admit signature covers the canon list and the gate key (`device-admit.ts` carries them beside it). W.
@@ -772,6 +772,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4udWN_qtMbjr3OtPzXKkPVtJPKKCCiH250vJwti6xmo
+<<^ code="&#x0003;">>ni:///sha-256;HGv244yQxR2F0qIdRSExMdB6Ab9966Dlwfrb8GPYk6A
 
 <<^ code="&#x0004;" -> to="?">>
