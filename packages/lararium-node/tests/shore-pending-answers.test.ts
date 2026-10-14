@@ -37,7 +37,7 @@ interface Stand {
 
 function stand(uris: readonly string[], bagOf: (uri: string) => string = () => BAG): Stand {
   root = mkdtempSync(join(tmpdir(), "lar-shore-pending-"));
-  const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"));
+  const tree = new SyncedTree(join(root, ".projection", "synced-tree"));
   const live = new Map(uris.map((uri) => [uri, bagOf(uri)] as const));
   const files = new Map<string, CarrierFile>();
   const removed: string[] = [];

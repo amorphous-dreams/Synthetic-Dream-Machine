@@ -48,7 +48,7 @@ interface Stand {
 
 function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHER }): Stand {
   root = mkdtempSync(join(tmpdir(), "lar-unlink-reads-"));
-  const tree = (): SyncedTree => new SyncedTree(join(root, ".projection", "synced-tree.json"));
+  const tree = (): SyncedTree => new SyncedTree(join(root, ".projection", "synced-tree"));
   const s = {
     conflicts: [] as Stand["conflicts"], resolved: [] as string[],
     file: { ext: ".md", body: BODY, metaBody: META, relPath: "a/note.md", encoding: "utf8" } as CarrierFile,
@@ -261,13 +261,13 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     mkdirSync(dirname(sited), { recursive: true });
     writeFileSync(sited, BODY, "utf-8");
     writeFileSync(`${sited}.meta`, META, "utf-8");
-    new SyncedTree(join(root, ".projection", "synced-tree.json")).set(syncedTreeKey(BAG, URI), syncedPath(sited), carrierHash(BODY, META));
+    new SyncedTree(join(root, ".projection", "synced-tree")).set(syncedTreeKey(BAG, URI), syncedPath(sited), carrierHash(BODY, META));
     s.owner.bag = null; s.holding.clear();                      // the records drop the carrier
     await s.projector.sense([URI]);
     expect(existsSync(s.at("a/note.md"))).toBe(false);
     expect(existsSync(sited)).toBe(false);                      // agreed with its base, so it left with the carrier
     expect(existsSync(`${sited}.meta`)).toBe(false);
-    expect(new SyncedTree(join(root, ".projection", "synced-tree.json")).bases(syncedTreeKey(BAG, URI))).toEqual([]);
+    expect(new SyncedTree(join(root, ".projection", "synced-tree")).bases(syncedTreeKey(BAG, URI))).toEqual([]);
     expect(s.conflicts).toEqual([]);
   });
 
@@ -294,7 +294,7 @@ describe("a base that names a file outside the mirror names no home of it", () =
     mkdirSync(dirname(held), { recursive: true });
     writeFileSync(held, BODY, "utf-8");
     writeFileSync(`${held}.meta`, META, "utf-8");
-    const gesture = new SyncedTree(join(root, ".projection", "synced-tree.json"));
+    const gesture = new SyncedTree(join(root, ".projection", "synced-tree"));
     gesture.set(syncedTreeKey(BAG, URI), syncedPath(held), carrierHash(BODY, META));
     return held;
   }

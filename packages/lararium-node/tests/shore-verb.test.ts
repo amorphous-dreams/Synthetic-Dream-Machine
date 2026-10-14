@@ -37,7 +37,7 @@ async function stand(): Promise<{ projector: LarDiskProjector; file: string; key
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: BAG, mirrorRoot: root }],
     carrierFileFn: async () => ({ ext: MEME_EXT, body: RECORDS, encoding: "utf8" }),
-    syncedTree: new SyncedTree(join(root, ".projection", "synced-tree.json")),
+    syncedTree: new SyncedTree(join(root, ".projection", "synced-tree")),
     onConflict: (info) => { conflicts.push(info.standoff); },
     onConflictResolved: (info) => { resolved.push(info.standoff); },
   });

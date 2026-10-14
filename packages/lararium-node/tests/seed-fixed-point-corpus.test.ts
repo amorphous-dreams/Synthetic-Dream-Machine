@@ -161,7 +161,7 @@ describe.skipIf(coreBlobSkip)(
     }
     engine = new TW5Engine();
     await engine.boot(new Uint8Array(readFileSync(CORE)), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
-    tree = new SyncedTree(path.join(scratch, "state", "synced-tree.json"));
+    tree = new SyncedTree(path.join(scratch, "state", "synced-tree"));
 
     // THE SEED'S GESTURE, one bag at a time: scan, INGEST, record what landed.
     const composite = new CompositeStore();
@@ -189,7 +189,7 @@ describe.skipIf(coreBlobSkip)(
       const settled = await settleIngest({ source: path.join(scratch, "bags", bag), toBag: bagUri(bag), candidates, did: "did:test" }, tree, submit);
       settlements.set(bag, { waves: wave, refused: settled.refused.length, conflicts: settled.conflicts.length, recorded: settled.recorded, submitted: candidates.length });
     }
-    pinnedByGesture = restingRows(path.join(scratch, "state", "synced-tree.json"));
+    pinnedByGesture = restingRows(path.join(scratch, "state", "synced-tree"));
 
     // THE RECORDS REACH THE WIKI as a wave lands them: each under its title, stamped with the bag it came from.
     const $tw = engine.$tw as unknown as { Tiddler: new (...f: Array<Record<string, unknown>>) => unknown; wiki: { addTiddler(t: unknown): void } };
@@ -236,7 +236,7 @@ describe.skipIf(coreBlobSkip)(
   });
 
   test("the gesture and the projector pin the same base: the projection pass moves no row of the tree", () => {
-    const after = restingRows(path.join(scratch, "state", "synced-tree.json"));
+    const after = restingRows(path.join(scratch, "state", "synced-tree"));
     expect(Object.keys(pinnedByGesture).length).toBeGreaterThan(300);
     expect(after).toEqual(pinnedByGesture);
     // The setup took: some base holds two sides that differ (a carrier standing in another framing).
@@ -269,7 +269,7 @@ describe.skipIf(coreBlobSkip)(
   });
 
   test("a second scan reads every carrier unchanged, and a second projection pass writes nothing", async () => {
-    const reopened = new SyncedTree(path.join(scratch, "state", "synced-tree.json"));
+    const reopened = new SyncedTree(path.join(scratch, "state", "synced-tree"));
     for (const bag of HOUSE_BAGS) {
       const scan = scanSource(scratch, path.join(scratch, "bags", bag), bagUri(bag), reopened)!;
       const unsettled = scan.rows.filter((r) => r.status !== "unchanged").map((r) => `${r.uri}: ${r.status}`);
@@ -289,7 +289,7 @@ describe.skipIf(coreBlobSkip)(
     // The projector first meets every file on disk with the records standing and NO base at all. With no
     // base a real difference stands off, so this pass measures every carrier class the congruences read
     // (framed memes, native text, sidecar pairs, binary bodies) for a false standoff over an unchanged corpus.
-    const lost = new SyncedTree(path.join(scratch, "state", "synced-tree-lost.json"));
+    const lost = new SyncedTree(path.join(scratch, "state", "synced-tree-lost"));
     const deserializer = makeTw5Deserializer(engine);
     const raised: string[] = [];
     const pending: string[] = [];
@@ -312,7 +312,7 @@ describe.skipIf(coreBlobSkip)(
     expect(pending).toEqual([]);
     expect([...before].filter(([f, at]) => statSync(path.join(scratch, f)).mtimeMs !== at).map(([f]) => f)).toEqual([]);
     // Every base the gesture pinned stands again, at the same path, under the same two hashes.
-    const repinned = restingRows(path.join(scratch, "state", "synced-tree-lost.json"));
+    const repinned = restingRows(path.join(scratch, "state", "synced-tree-lost"));
     expect(repinned).toEqual(pinnedByGesture);
   }, 600_000);
 

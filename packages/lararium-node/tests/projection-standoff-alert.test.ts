@@ -36,7 +36,7 @@ function stand(): {
   fields: Map<string, Record<string, string>>; disk: (uri: string, body: string) => void; read: (uri: string) => string; reconcile: (uri: string) => Promise<void>;
 } {
   root = mkdtempSync(join(tmpdir(), "lar-standoff-"));
-  const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"));
+  const tree = new SyncedTree(join(root, ".projection", "synced-tree"));
   const disk = (uri: string, body: string): void => { const abs = join(root, relOf(uri)); mkdirSync(dirname(abs), { recursive: true }); writeFileSync(abs, body, "utf-8"); };
   for (const uri of [URI_A, URI_B]) { disk(uri, `title: records\n\nA HAND ON DISK for ${uri}\n`); tree.set(syncedTreeKey(BAG, uri), join(root, relOf(uri)), carrierHash(LAST)); }
   const fields = new Map<string, Record<string, string>>();

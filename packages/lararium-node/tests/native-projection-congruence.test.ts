@@ -66,7 +66,7 @@ function rig(recordsFields: Record<string, unknown>, syncedHash: string | null):
   const uri = String(recordsFields["title"]);
   const deserializer = jsonDeserializer();
   const recordsRendered = deserializer.renderCarrier(uri, recordsFields);
-  const syncedTree = new SyncedTree(join(root, "synced-tree.json"));
+  const syncedTree = new SyncedTree(join(root, "synced-tree"));
   if (syncedHash !== null) syncedTree.set(syncedTreeKey("wiki", uri), join(root, `${uri.replace(/[:/]/g, "_")}.json`), syncedHash);
   const file: CarrierFile = { ext: ".json", body: recordsRendered.body, defaultRelPath: `${uri.replace(/[:/]/g, "_")}.json` };
   const projector = new LarDiskProjector({
@@ -131,7 +131,7 @@ describe("the projecting leg's native congruence, wired into LarDiskProjector.fl
     const uri = URI;
     const deserializer = jsonDeserializer();
     const anchor = carrierHash(deserializer.renderCarrier(uri, { title: uri, type: "application/json", a: "0", b: "0" }).body, undefined);
-    const syncedTree = new SyncedTree(join(root, "synced-tree.json"));
+    const syncedTree = new SyncedTree(join(root, "synced-tree"));
     syncedTree.set(syncedTreeKey("wiki", uri), join(root, `${uri.replace(/[:/]/g, "_")}.json`), anchor);
     const recordsRendered = deserializer.renderCarrier(uri, { title: uri, type: "application/json", a: "1", b: "2" });
     const file: CarrierFile = { ext: ".json", body: recordsRendered.body, defaultRelPath: `${uri.replace(/[:/]/g, "_")}.json` };

@@ -56,7 +56,7 @@ describe("binary projection — base64 body decodes to raw bytes on disk", () =>
 describe("THE POINTER projects as the WHOLE FILE beside its .meta", () => {
   test("★ bytes the local cid/ holds → photo.png (raw, verified) + photo.png.meta; the observation hashes the base64 form ★", async () => {
     root = mkdtempSync(join(tmpdir(), "lar-ptrproj-"));
-    const tree = new SyncedTree(join(root, "synced-tree.json"));
+    const tree = new SyncedTree(join(root, "synced-tree"));
     const asked: string[] = [];
     const projector = new LarDiskProjector({
       mirrors: [{ bagId: "lares", mirrorRoot: root }],

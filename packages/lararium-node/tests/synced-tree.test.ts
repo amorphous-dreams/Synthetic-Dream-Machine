@@ -47,7 +47,7 @@ const AT = "/scratch/mirror/a.mem";
 describe("synced-tree — observations persist atomically", () => {
   test("set → reload reads the same observation", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
-    const p = join(dir, "state", "synced-tree.json");
+    const p = join(dir, "state", "synced-tree");
     const t1 = new SyncedTree(p);
     t1.set("lar:///a", AT, contentHash("alpha"));
     const t2 = new SyncedTree(p);
@@ -58,7 +58,7 @@ describe("synced-tree — observations persist atomically", () => {
 
   test("delete removes the observation durably", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
-    const p = join(dir, "synced-tree.json");
+    const p = join(dir, "synced-tree");
     const t = new SyncedTree(p);
     t.set("lar:///a", AT, "h1");
     t.deleteAt("lar:///a", AT);
@@ -90,7 +90,7 @@ describe("synced-tree — observations persist atomically", () => {
 describe("synced-tree — the base holds two sides", () => {
   const fresh = () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
-    return { dir, p: join(dir, "synced-tree.json") };
+    return { dir, p: join(dir, "synced-tree") };
   };
 
   test("one hash names both sides: a projector write leaves the disk holding the render", () => {
@@ -196,7 +196,7 @@ describe("synced-tree — the base holds two sides", () => {
 describe("synced-tree — the R2 content-addressed rename-index", () => {
   const BAG = "lar:///ha.ka.ba/bags/daemon/notes";
   const OTHER = "lar:///ha.ka.ba/bags/daemon/other";
-  const freshTree = () => new SyncedTree(join(mkdtempSync(join(tmpdir(), "synced-")), "synced-tree.json"));
+  const freshTree = () => new SyncedTree(join(mkdtempSync(join(tmpdir(), "synced-")), "synced-tree"));
 
   test("resolves the UNIQUE live carrier observing a given content in a bag", () => {
     const t = freshTree();
@@ -262,7 +262,7 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
 
   test("the index rebuilds from disk on reload (derived, never persisted)", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
-    const p = join(dir, "synced-tree.json");
+    const p = join(dir, "synced-tree");
     const h = carrierHash("persisted body", undefined);
     const t1 = new SyncedTree(p);
     t1.set(syncedTreeKey(BAG, "lar:///a.b.c"), AT, h);
@@ -287,8 +287,8 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
   });
 });
 
-describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worker law)", () => {
-  // ONE tree file serves EVERY projector in the vessel: the daemon island mirrors
+describe("synced-tree — CONCURRENT WRITERS over one tree (the island-per-worker law)", () => {
+  // ONE tree serves EVERY projector in the vessel: the daemon island mirrors
   // wikis/daemon + bags/crossroads, each wiki island mirrors its recipe's bags, and
   // the CLI's ingest gate records packs and renames. They live in SEPARATE workers and
   // SEPARATE processes, so each holds its own in-memory map loaded at open. A persist
@@ -300,9 +300,9 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
 
   test("a sibling's observation survives another writer's persist", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
-    const p = join(dir, "synced-tree.json");
+    const p = join(dir, "synced-tree");
     const wiki   = new SyncedTree(p);        // the wiki island's projector
-    const daemon = new SyncedTree(p);        // the daemon island's projector, same file
+    const daemon = new SyncedTree(p);        // the daemon island's projector, same tree
 
     wiki.set(syncedTreeKey(A, "lar:///a.b.c"), AT, "h-wiki");
     daemon.set(syncedTreeKey(B, "lar:///verbs/x"), AT, "h-daemon");   // opened BEFORE the wiki wrote
@@ -313,9 +313,9 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("a delete still lands across writers — it never resurrects from the file", () => {
+  test("a delete still lands across writers — it never resurrects from the disk", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
-    const p = join(dir, "synced-tree.json");
+    const p = join(dir, "synced-tree");
     const seed = new SyncedTree(p);
     seed.set(syncedTreeKey(A, "lar:///gone"), AT, "h1");
 
@@ -359,7 +359,7 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
     // Islands are worker THREADS — one pid, two SyncedTrees. A pid-keyed temp name is
     // the same name twice; the rename of one can carry the other's half-written bytes.
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
-    const p = join(dir, "synced-tree.json");
+    const p = join(dir, "synced-tree");
     const a = new SyncedTree(p);
     const b = new SyncedTree(p);
     for (let i = 0; i < 40; i++) { a.set(syncedTreeKey(A, `lar:///a${i}`), AT, `ha${i}`); b.set(syncedTreeKey(B, `lar:///b${i}`), AT, `hb${i}`); }
@@ -374,7 +374,7 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
 describe("a base stands at one path", () => {
   const fresh = (): { dir: string; p: string } => {
     const dir = mkdtempSync(join(tmpdir(), "synced-tree-path-"));
-    return { dir, p: join(dir, "synced-tree.json") };
+    return { dir, p: join(dir, "synced-tree") };
   };
 
   test("baseAt answers the base only at the path its agreement stood at, in every spelling of that path", () => {
@@ -437,7 +437,7 @@ describe("a base stands at one path", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("a tree with no file holds its bases in memory, persists nothing and arms no timer", () => {
+  test("a tree with no directory holds its bases in memory, persists nothing and arms no timer", () => {
     const armed: unknown[] = [];
     const setTimer = globalThis.setTimeout;
     (globalThis as { setTimeout: unknown }).setTimeout = ((...a: unknown[]) => { armed.push(a); return (setTimer as (...x: unknown[]) => unknown)(...a); });
@@ -505,7 +505,7 @@ describe("an observation rests the moment it gets recorded", () => {
   test("the later observation of one row stands: a reread answers a sibling's newer base, never this instance's older one", () => {
     const { dir, p } = fresh();
     const projector = new SyncedTree(p);
-    projector.set(K, AT, "d-old", "r-old");            // the projector wrote the file
+    projector.set(K, AT, "d-old", "r-old");            // the projector wrote the row
     const gesture = new SyncedTree(p);
     gesture.set(K, AT, "d-new", "r-new");              // a hand edited it and ingested: the newer agreement
     expect(projector.baseAt(K, AT)?.disk).toBe("d-old");
