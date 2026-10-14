@@ -1,0 +1,134 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/hearth-anchor">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lararium/ha.ka.ba/lararium/docs/hearth-anchor.mem"
+l-space   = "adjacent"
+role      = "freshness anchors for unattended ember raises: what a disk copy can carry; what hardware proves per ask; what each household pays in setup, upkeep and recovery; the confirm-only floor and the WSL2 ruling"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lararium/docs/hearth-anchor"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/docs/hearth-anchor"
+```
+
+<<~ ahu #/head>>
+
+! Hearth Anchor ~ what an ember can trust after a power cut
+
+Which freshness anchor lets an ember answer a hearth unattended while a copied disk fails the same ask? What does each anchor ask a household to install, maintain, trust and replace?
+
+This design serves the ember's raise law (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-raise">>) and the five custody classes (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>): an unattended raise reaches SERVING alone, while every hearth without a disk-independent anchor asks a person to confirm.
+
+!! The threat ~ three hands, three reaches
+
+A disk copy carries the floor key, its signed floor announcement, both slot trees, the serving rows sealed under SK, and every bare pin and policy record; it can name the hearth and stand its floor routes. The copy lacks a non-exportable private key held in hardware outside that disk, so it cannot answer a fresh hardware challenge unless it can call the original hardware or someone lends it a fresh proof. A copied signed floor announcement, a new software nonce, or a counter stored on that same disk cannot distinguish the original from its copy.
+
+A thief who takes the whole machine also takes its TPM, attached token, phone, or board anchor. Hardware may then answer fresh asks for that thief; the anchor proves possession of that machine's key and measured state, not the owner's continued consent or the machine's safe location. The thief can reach SERVING for parties already admitted, but SK grants no plaintext, grant-minting secret, identity root, seat key, or authority-changing signature.
+
+A thief who takes an unlocked ember device can answer only its bound slot and only within the count; an unattended ember also needs the real hearth's fresh proof. A confirmed answer can raise a disk copy too, so the person's screen must show the hearth's pet-name, standing, ordinal and remaining count, and the person must refuse an unexpected ask.
+
+!! Native Linux TPM 2.0 ~ the strongest direct host path
+
+A native Linux hearth can hold an attestation key (AK) in a TPM 2.0 and ask the TPM for a quote over selected PCR measurements. For each ask, the ember supplies a fresh nonce; the hearth binds that nonce, the blinded point, the proved channel and the exact SERVING request into the quote's qualification data, then returns the quote, signature and PCR values. The ember checks the signature under the AK pinned at bind, checks the fresh nonce and channel, and checks the PCR policy; an EK/AK credential chain can add manufacturer evidence, while a household can instead pin the AK during an attended bind.
+
+A disk copy gets public keys, certificates and PCR policy, but no AK private key or fresh quote. A whole-machine thief keeps the TPM and can answer if the machine still meets the accepted boot policy; the quote cannot prove a safe room, owner presence, or every runtime action unless the build measures and verifies those actions too. PCRs identify measured boot state, not arbitrary container contents by themselves.
+
+Setup asks the operator to enable a supported TPM, choose and record a measured-boot policy, pin the AK at an attended bind, and keep a human VK route. Kernel, bootloader, Secure Boot or initramfs changes may alter PCRs; signed PCR policies can ease authorized updates, but someone must review the update path and preserve a human recovery route. TPM loss or clear ends that anchor: the hearth falls back to confirm-only until a human unlocks, binds a replacement anchor and rolls SK where the replacement changes the serving trust path.
+
+Native Linux and Linux containers can reach `/dev/tpmrm0` when the host exposes it and the container receives the device. A container device mapping grants the process an interface to the host TPM; keep that mapping on the trusted hearth, never a blind carrier. `systemd-cryptenroll` binds LUKS unlock to PCR policy, but does not itself define the ember's remote challenge protocol; `tpm2_quote` supplies the nonce-qualified quote primitive.
+
+!! Windows TPM through a WSL2 host helper ~ hardware proof, guest blind spot
+
+The measured operator WSL2 kernel exposes no `/dev/tpm*`. Windows offers TPM Base Services (TBS), a TPM-backed CNG provider for non-exportable keys, and the `tcti-tbs` path in the Windows TPM software stack; those interfaces run on Windows, not as a TPM device handed into this Linux vessel. A small Windows helper could own an AK or TPM-backed signing key and answer a WSL request over a narrow local channel.
+
+For each ask, the helper must sign the fresh nonce, blinded point, channel binding and SERVING purpose with the TPM key, or return a fresh TPM quote that covers them. The ember pins the hardware key and validates the signature or quote and freshness. A copied disk moved to a different machine lacks that TPM key; a clone running on the same Windows host may still ask the helper unless the helper can bind requests to the one intended WSL vessel. The TPM quote speaks for Windows TPM state; it does not, by itself, attest the WSL distro, a Docker container, its bind mounts, or the code that formed the request.
+
+Windows measured boot and a TPM-backed CNG key add host evidence, but a helper that blindly signs caller bytes only proves that the caller reached the helper. A `tcti-tbs` adapter does not solve guest identity. WSL USB pass-through can carry a physical token, while the current house container path would also need an explicit device route; neither grants a measurement of container code. WSL Containers (`wslc`) at its current documented GA lacks device passthrough and the compose/API path this vessel needs.
+
+Setup asks the household to create and pin the TPM key on Windows, install and maintain the helper, restrict its local channel, and confirm exactly which host and vessel claims it checks. A Windows update or TPM reset can break the key; human VK unlock and a new attended bind restore service. A whole-machine thief takes the TPM and helper and may still get SERVING; a disk-only thief on another host gets no hardware signature. The helper's failure mode must remain confirm-only, never a software-key fallback.
+
+!! USB security token ~ portable anchor, attached at the hearth
+
+A PIV or OpenPGP token can hold a generated, non-exportable signing key. At bind, an attended ceremony pins its public key; for every ask, the ember challenges the token to sign the nonce, blinded point, channel binding and SERVING purpose, then verifies that signature. A public-key signature keeps the signing secret off the disk; a shared-secret HMAC design does not, because a disk copy needs the verifier secret and could then imitate the token.
+
+A disk copy gets no private key. A whole-machine thief who also takes the inserted token can use it; a token kept physically separate blocks that theft but cannot raise unattended while absent. PIV touch-on-every-use or a FIDO2 user-presence gesture restores a human in the loop; an unattended PIV key therefore needs a no-touch policy and a PIN policy that survives a power cut without another person, which weakens protection against anyone who steals the token with its host.
+
+Setup asks a person to generate the key on the token, verify and pin its public half, leave the token attached, and keep a spare or human route for loss. WSL2 can attach USB devices through `usbipd-win`; Docker then needs an explicit device mapping, and the current vessel compose grants none. A lost token stops unattended raises but leaves confirm-only service; the human unlock binds a replacement and rotates SK. A spare token needs its own separately enrolled key, not a copied private key.
+
+!! Phone secure hardware ~ Secure Enclave or StrongBox
+
+An iPhone Secure Enclave or Android hardware-backed Keystore/StrongBox can hold a non-exportable key for a phone that runs the hearth or a trusted local anchor service. At bind, the ember pins the public key and checks an attestation chain and device policy; on every ask, it checks a fresh signature or quote over its nonce, the request, and channel binding. Android key attestation can describe hardware security level and verified boot state; Apple App Attest binds an app key to Apple platform attestation and a server-issued challenge, so an offline household verifier needs an explicit verification and trust-root plan rather than assuming an Apple service call.
+
+A disk copy gets no enclave private key. A whole-phone thief takes the enclave and may run the serving process; platform lock state, per-use user authentication and app background rules can prevent unattended work after reboot. Android Direct Boot supports a limited device-encrypted phase before first unlock; iOS data protection and application lifecycle rules constrain what a locked phone can read and serve. A phone held as a separate anchor must stay charged, reachable and awake enough to answer; if the phone itself runs the hearth, its radio and background service become household infrastructure.
+
+Setup asks a person to install and enroll the anchor app, pin its attestation/public key at bind, and retain the human route. Reinstall, reset, OS policy change or phone loss may invalidate the key; the human route then binds a replacement and rolls SK. The phone route reaches only its own platform and service API, not a generic Linux container without a helper.
+
+!! Dedicated Linux hearth ~ TPM board or HAT
+
+A small Linux board with a TPM 2.0 HAT gives the hearth a direct TPM path without WSL's guest boundary. The board runs the same per-ask nonce-bound quote as native Linux; the ember pins the board's AK and measured-boot policy during attended setup. A Raspberry Pi plus an Infineon OPTIGA TPM evaluation HAT offers one concrete route, though the HAT does not configure a trustworthy boot chain by itself.
+
+A disk copy gets no TPM private key. A whole-board thief takes both board and TPM and may serve if its measured boot still passes; the board grants no VK, plaintext, admission or authority-changing act. A board or TPM failure requires a human-route restore or repair, a new attended anchor bind and an SK roll where policy demands; a replacement board does not inherit the old private anchor key.
+
+Setup asks the household to assemble and power the board, establish measured boot and PCR update policy, pin the AK, and maintain a known-good recovery route. Linux and a container with a deliberate TPM device mapping can reach the chip; WSL2 cannot use a HAT attached to the Windows host unless the host exposes it through a supported, audited path. Costs include another computer, power, cooling, physical security, firmware upkeep and an extra failure point.
+
+!! Software-only ~ the universal confirm path
+
+A software key stored on the disk signs any fresh nonce that a disk clone invents; a nonce stops replay of an old answer, not a clone that can make a new answer. A key held only in RAM disappears at the power cut and cannot answer the overnight raise. With no non-copyable hardware or independent live party, identical copied state and software can produce indistinguishable answers.
+
+No disk copy gets an anchor proof because no software-only anchor qualifies. The person confirms each raise on the ember device; the threshold still counts distinct ember secrets, but each answer asks a person. This path works on Linux, WSL2, macOS, containers and unsupported phones without new hardware, and recovery means the person unlocks the hearth or confirms again.
+
+!! Comparison ~ what the household pays and receives
+
+|! anchor |! disk-copy proof |! whole-machine theft |! platform and reach |! household cost and recovery |
+| native TPM 2.0 | no AK key; fresh PCR quote fails | thief keeps TPM and may serve accepted boot | native Linux; Docker only with a narrow device mapping | measured-boot upkeep, PCR update review, TPM replacement and human recovery |
+| Windows TPM helper | no host TPM key on another machine; same-host WSL clone remains a helper-policy risk | thief keeps TPM and helper | Windows host plus local WSL/container channel; no guest proof by TPM alone | helper software and Windows maintenance; rebind after TPM reset |
+| USB PIV/OpenPGP | no token private key | thief gets an attached token too | USB hosts; WSL via usbipd; container needs device mapping | leave plugged, tune PIN/touch, replace lost token through human bind |
+| phone enclave/StrongBox | no enclave private key | thief keeps phone hardware and may serve | native iOS/Android service; no generic container reach | app lifecycle, charge/network, platform enrollment and rebind after reset |
+| dedicated Linux + TPM HAT | no board TPM key | thief gets board and TPM | native Linux, container with device mapping | extra board, power, measured boot, maintenance and hardware replacement |
+| software-only | copied key makes fresh proof | whole machine holds the same software secret | every platform | no anchor hardware; a person confirms each raise |
+
+!! Recommendation ~ hardware when it proves the ask, confirmation everywhere else
+
+The house supports the fifth `serving` custody class and a hardware anchor only when each unattended ask carries a fresh, channel-bound attestation under a key the disk cannot copy. The universal floor remains confirm-only: a threshold, signed floor announcement, software nonce, disk counter, or unverified host helper never authorizes unattended answers by itself.
+
+Build first for a native Linux TPM 2.0 quote path with a pinned AK, an explicit PCR policy, and a human recovery route; add a narrow Windows-helper adapter only after it proves which vessel request it serves, and add PIV as an optional attached-token anchor with explicit no-touch/no-PIN risk. Treat Android/Apple anchors as separate native-device integrations, and a TPM HAT as a household appliance path, not as a property every container can assume.
+
+For the operator's WSL2 hearth, keep every ember confirm-only today. The measured WSL kernel exposes no TPM device, Windows TBS/CNG can prove host TPM possession but not the caller's WSL/container identity, and the house's Docker compose grants no USB or TPM device; consider a Windows helper only after a copied distro cannot borrow its proof, or move the always-on hearth to a native Linux TPM host or dedicated board.
+
+!! What the build owes ~ the anchor train
+
+* An `anchor-bind` record: anchor kind, pinned public key or AK, accepted attestation roots, measured-boot policy, the human confirmation that approved the binding, and a causal replacement/removal history. The private anchor key stays in hardware and never enters any custody row.
+* A single ask transcript: fresh ember nonce, blinded point, SERVING purpose, transport/channel binding, anchor identity and quote/signature. The ember rejects stale nonces, wrong channels, wrong purposes, unpinned keys, unacceptable PCRs and malformed evidence before it answers.
+* A floor gate that asks the anchor before any unattended slot answer; no anchor or failed proof means human confirm only. The floor announcement alone never counts as anchor evidence.
+* PCR policy and update handling, plus documented AK/EK trust: pin an AK at a human bind or validate its credential chain; never infer hardware trust from a self-asserted certificate. Name what PCRs cover and what they leave outside the measurement.
+* An explicit host-helper protocol for WSL2, with narrow commands, local-channel authentication, no arbitrary TPM command relay, and a proof that links each answer to the intended vessel. Until that proof lands, the helper cannot lift the confirm-only floor.
+* A custody entry for public anchor metadata and its allowed bare/sealed class; no anchor secret in a `floor`, `floor-plain`, `serving`, `hot`, or `cold` row. Keep `sk-rotation-owed` as a deny-only pre-ask check; state plainly that a disk rollback can omit it.
+* Anchor loss, replacement and TPM clear flows: fail closed to confirm, let the VK human route bind a new key, record the causal transition, and rotate SK where a removed anchor could still unwrap the old serving tier.
+* Attack rehearsal across a copied disk on another host, a copied WSL distro on the same Windows host, whole-machine theft, a stolen unlocked ember, a PCR-changing update, an absent token, a missing phone, and a crash between quote, count commit and SERVING start.
+
+!! Questions still open ~ each carries a lean
+
+* ''Which PCRs and boot stages count?'' Lean: name the minimum secure/measured boot chain and a signed update policy; do not pretend PCRs measure container files or all runtime behavior.
+* ''How does a WSL helper identify the right vessel?'' Lean: no unattended WSL raise until a same-host distro clone cannot call the helper as the original; a fresh TPM quote alone does not establish that relation.
+* ''Which AK/EK roots can a household verify offline?'' Lean: allow an attended public-key pin as the alpha path, and add manufacturer credential verification only with a maintained root and revocation story that needs no global subject registry.
+* ''Can an inserted PIV token answer unattended without a PIN?'' Lean: support it only as an explicit household risk choice; no touch and no per-boot PIN trade theft resistance for overnight availability.
+* ''What does a whole-machine thief get?'' Lean: document that device-bound anchors cannot prevent a thief who takes the device; constrain the consequence to SERVING's existing blind, no-admission boundary and let relation-scoped removal close future service.
+* ''When does anchor replacement require an SK roll?'' Lean: roll whenever the old anchor could still answer an old copied serving tree; keep the human VK path as the recovery route.
+
+!! References ~ primary specifications and platform guidance
+
+* [[TPM 2.0 Library Specification|https://trustedcomputinggroup.org/resource/tpm-library-specification/]] · [[tpm2_quote: nonce qualification and PCR quote|https://github.com/tpm2-software/tpm2-tools/blob/master/man/tpm2_quote.1.md]] · [[systemd-cryptenroll: TPM and PCR policy|https://github.com/systemd/systemd/blob/main/man/systemd-cryptenroll.xml]].
+* [[TPM Base Services API|https://learn.microsoft.com/en-us/windows/win32/api/_tbs/]] · [[Windows CNG key storage providers|https://learn.microsoft.com/en-us/windows/win32/seccertenroll/cng-key-storage-providers]] · [[tpm2-tss TCTI guide: device and Windows TBS|https://github.com/tpm2-software/tpm2-tss/blob/master/doc/tcti.md]].
+* [[WSL TPM support request|https://github.com/microsoft/WSL/issues/10777]] · [[Microsoft: connect USB devices to WSL 2|https://learn.microsoft.com/en-us/windows/wsl/connect-usb]] · [[Microsoft: WSL containers GA|https://blogs.windows.com/windowsdeveloper/2026/09/29/wsl-containers-now-generally-available/]].
+* [[YubiKey PIV PIN and touch policies|https://docs.yubico.com/yesdk/users-manual/application-piv/pin-touch-policies.html]] · [[YubiKey challenge-response|https://docs.yubico.com/yesdk/users-manual/application-otp/challenge-response.html]] · [[W3C WebAuthn Level 2|https://www.w3.org/TR/webauthn-2/]].
+* [[Android Key Attestation|https://developer.android.com/privacy-and-security/security-key-attestation]] · [[Android KeyMint and StrongBox security interface|https://source.android.com/docs/security/features/keystore/attestation]] · [[Apple App Attest, WWDC26|https://developer.apple.com/videos/play/wwdc2026/201/]].
+* [[Infineon OPTIGA TPM for Raspberry Pi|https://www.infineon.com/products/security-smart-card-solutions/optiga-embedded-security-solutions/optiga-tpm]] · [[Raspberry Pi OPTIGA TPM evaluation board|https://www.infineon.com/evaluation-board/OPTIGA-TPM-9673-RPI-EVAL]].
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;dOTXVs1cecVtLq4vouNLMiw_Bnc8julylB0TfCBPyV8
+
+<<^ code="&#x0004;" -> to="?">>
