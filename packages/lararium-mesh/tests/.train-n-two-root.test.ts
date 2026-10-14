@@ -1,8 +1,10 @@
 /**
  * Unregistered train N witness scaffold. The mesh Vitest include excludes dotfiles.
- * Unskip the unsigned-genesis red BEFORE the N signed-inception acceptance commit;
+ * The unsigned-genesis red stands unskipped ahead of the N signed-inception acceptance commit;
  * unskip the two-root import case WITH that commit and bind its trace to the live
  * two-root, file-courier driver. Do not count an absent trace as a passing witness.
+ * To run it, copy it under a name without the leading dot inside tests/, run that copy with vitest, and remove
+ * the copy. The registered reds stand in nexus-cofound-law.test.ts under LAR_UNBUILT_REDS=1.
  */
 import { describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
@@ -42,13 +44,16 @@ describe("train N witness scaffold control", () => {
   });
 });
 
-describe.skip("train N two-root import and boot witness", () => {
+// UNSKIPPED before the seal: this reads red until the signed-inception commit changes the lineage reader.
+describe("train N red before the seal", () => {
   test("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: an unsigned two-seat genesis refuses", async () => {
     const keys = await Promise.all([1, 2].map(async n => hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(n)))));
     const unsigned = genesisCharterEpoch(keys, 2);
     expect(verifySealLineage([unsigned])).toBe(false);
   });
+});
 
+describe.skip("train N two-root import and boot witness", () => {
   test("COFOUND_OFFER_IS_NOT_A_CHARTER: each isolated root imports and boots only the final two-signature charter", () => {
     const trace = readTwoRootTrace();
     const [a, b] = trace.roots;
