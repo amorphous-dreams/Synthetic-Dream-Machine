@@ -21,7 +21,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { openStaged, type LarInstance, type CliResult } from "../harness/instance.js";
+import { openStaged, awaitOwnGateKey, type LarInstance, type CliResult } from "../harness/instance.js";
 import { seatStagedCustody } from "../harness/test-door.js";
 import { pullArrival, kindleFromBulb, httpBulbTransport } from "../../packages/lararium-node/src/kindle.js";
 import { didKeyFromVerifyingKey } from "../../packages/lararium-mesh/src/index.js";
@@ -131,8 +131,7 @@ describe.skipIf(gaps.length > 0)("★ the arrival surfaces — the house's own o
     try {
       const k = await kindleFromBulb({ bulb: fire, repo, storageDir: join(device, "store") });
       expect(k.did).toBe(didKeyFromVerifyingKey(k.deviceVerifyingKey));
-      const houseKey = /gate key: ([0-9a-f]{64})/.exec(hearth!.bootLog())?.[1];
-      expect(houseKey).toBeTruthy();
+      const houseKey = await awaitOwnGateKey(hearth!);
       expect(k.deviceVerifyingKey).not.toBe(houseKey);
     } finally {
       await repo.shutdown();

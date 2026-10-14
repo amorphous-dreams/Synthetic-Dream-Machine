@@ -8,7 +8,7 @@
  * A seats a charter · the charter crosses by `seal export`/`seal import` · B signs her contract-in · A's
  * quorum admits her. A LOADs a carrier into `bags/lares`. THE VECTOR: B's `meme get --bag lares <uri>`.
  *
- * MEASURED (seal-and-seat-handoff#/plan-relation-bag): each operator mints its own `bags/lares` doc, the
+ * MEASURED (the law rests at lar:///ha.ka.ba/lararium/api/personal-slot): each operator mints its own `bags/lares` doc, the
  * contract writes the carriage-contracts board and never a bag, and B answers `not-found`. BUILT: the realm's
  * shared CRDT materializes on both members' boot from the charter's genesis epoch (`realmDocUrl`); A REGISTERS
  * her `bags/lares` on it (`lares nexus realm-bag lares` — steward-signed, read at CONTRACT); @crossroads
@@ -54,7 +54,7 @@ import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import {
-  openStaged, freePort, stageDir, awaitRendezvous, bootDocUrl, vesselStorageDir, type LarInstance,
+  openStaged, freePort, stageDir, awaitRendezvous, awaitOwnGateKey, ownGateKey, bootDocUrl, vesselStorageDir, type LarInstance,
 } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -140,7 +140,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       if (rite.code !== 0) throw new Error(`A: rite quorum failed (${rite.code})\n${said(rite).slice(-800)}`);
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`A reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
-    const gateA = /gate key: ([0-9a-f]{64})/.exec(A.bootLog())?.[1] ?? "";
+    const gateA = await awaitOwnGateKey(A);
     // B: its OWN root, its own founding — a second OPERATOR, never a device of A's. C: a third, alike, that
     // never contracts.
     const foundOperator = (tag: string, name: string) => async (cli: (a: readonly string[]) => Promise<{ code: number; stderr: string; json: Record<string, unknown> | null }>, root: string) => {
@@ -310,7 +310,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
       // under against the key B presents at A's wire, and each side's realm lines.
       const bags = await B!.cli(["nexus", "realm-bags", "--json"]);
       console.error(`meme-realm-bag MEASURE B realm-bags: ${said(bags).trim().slice(0, 400)}`);
-      console.error(`meme-realm-bag MEASURE B gate key (presented at A): ${/gate key: ([0-9a-f]{64})/.exec(B!.bootLog())?.[1] ?? "?"} · contract nym: ${contractNym}`);
+      console.error(`meme-realm-bag MEASURE B gate key (presented at A): ${ownGateKey(B!.bootLog()) ?? "?"} · contract nym: ${contractNym}`);
       for (const [tag, v] of [["A", A!], ["B", B!]] as const) {
         const lines = v.bootLog().split("\n").filter((l) => /\[realm\]|nexus-join|sharePolicy|cross-operator|peer-class|admitted/.test(l)).slice(-8).join("\n  ");
         console.error(`meme-realm-bag MEASURE ${tag} lines:\n  ${lines}`);
@@ -330,7 +330,7 @@ describe.skipIf(gaps.length > 0)("★ a bag two operators keep through a relatio
     const verdicts = lines.filter((l) => /\[lar-leaf\] (ANERGIZED|verdict)/.test(l));
     const verdict = verdicts.at(-1) ?? "(no verdict line)";
     console.error(`meme-realm-bag MEASURE B dial verdict: ${verdict.trim().slice(0, 200)}`);
-    console.error(`meme-realm-bag MEASURE B gate key (presented at A): ${/gate key: ([0-9a-f]{64})/.exec(b)?.[1] ?? "?"} · contract nym: ${contractNym}`);
+    console.error(`meme-realm-bag MEASURE B gate key (presented at A): ${ownGateKey(b) ?? "?"} · contract nym: ${contractNym}`);
     if (process.env["LAR_STAGE_DIR"]) {
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-A.log"), A!.bootLog());
       writeFileSync(join(process.env["LAR_STAGE_DIR"], "realm-bag-B.log"), b);

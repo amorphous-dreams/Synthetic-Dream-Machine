@@ -28,8 +28,8 @@
  * bars is a LOCKED vessel signing; `personaSlotCeiling("herm") === 0` bars a SEATED persona, never an
  * archive. So the door reads the archive fact, which is the fact the ruling fences.
  *
- * TWO WRITERS, TWO REDS. `seal-and-seat-handoff` records the lesson: "`carriers()` named two
- * carriers; the boot opens four." The vessel archive and the veil archive are separate writers with
+ * TWO WRITERS, TWO REDS. A list of carriers a hand keeps names fewer than a boot opens (the law rests at
+ * lar:///ha.ka.ba/lararium/api/personal-slot). The vessel archive and the veil archive are separate writers with
  * separate files, and a gate proven on one proves nothing about the other.
  *
  * THE REDS ASSERT ON THE INJECTED WRITER, NEVER ON DISK. A disk assertion passes for the wrong reason

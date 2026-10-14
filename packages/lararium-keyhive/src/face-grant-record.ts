@@ -16,7 +16,7 @@
  * merely NAMES a grant, and a kit that decides, is membership doctrine kept — a board that acted when read would
  * be a written command channel.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/pono/seal-and-seat-handoff#/plan-face-join
+ * Meme: lar:///ha.ka.ba/lararium/api/personal-slot
  */
 
 import {

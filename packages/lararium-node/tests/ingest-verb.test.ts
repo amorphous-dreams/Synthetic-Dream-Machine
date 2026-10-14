@@ -9,7 +9,7 @@
  *     (replace-by-group — LOAD never removes; INGEST must)
  *   - on conflict/refuse/noop: applies NOTHING; the decision rides the outcome.
  *
- * Meme: lar:///ha.ka.ba/lares/docs/handoff (NEXT VECTOR, build 1)
+ * Meme: lar:///ha.ka.ba/lares/api/pono/working-procedures
  */
 
 import { describe, test, expect } from "vitest";

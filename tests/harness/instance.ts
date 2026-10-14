@@ -442,7 +442,9 @@ export function rendezvousSocket(instance: LarInstance): string {
  *
  * A vessel binds the name before its Repo opens (`claimStore`) and holds callers there until its channel serves, so a
  * name standing says only that a vessel holds the store. A staged daemon names the moment its channel serves in its
- * own log, after every line of its live banner (the gate key a joinee dials among them); a live hearth already serves.
+ * own log; a live hearth already serves. Every boot rests at the floor and serves its channel there, before a person
+ * unlocks, so that line stands ahead of the hearth's own banner: a caller that needs the gate key a joinee dials waits
+ * for it by `awaitOwnGateKey`, never by this.
  */
 export async function awaitRendezvous(instance: LarInstance, timeoutMs = 60_000): Promise<boolean> {
   const sock = rendezvousSocket(instance);
