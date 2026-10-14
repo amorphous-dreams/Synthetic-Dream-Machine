@@ -108,7 +108,19 @@ export interface DaemonAuthGateOptions {
   readonly authTimeoutMs?: number;
   /** Where the gate logs a refusal's cause (the wire never carries it). Defaults to the console. */
   readonly onRefuse?:      (reason: string) => void;
+  /**
+   * The hand that holds a socket's silence deadline: it takes the delay the gate drew at accept and the cut, and
+   * answers a cancel the gate calls once the socket passes or leaves. Production takes the process timer. A test
+   * hands one in to read the drawn delay and fire the cut on its own word, so no vector reads a clock.
+   */
+  readonly deadline?:      (ms: number, cut: () => void) => () => void;
 }
+
+/** The process timer as the deadline's hand. */
+const timerDeadline = (ms: number, cut: () => void): (() => void) => {
+  const timer = setTimeout(cut, ms);
+  return () => clearTimeout(timer);
+};
 
 const AUTH_TIMEOUT_MS        = 5_000;
 const MAX_PENDING            = 50;     // max concurrent unadmitted connections
@@ -137,6 +149,7 @@ export class DaemonAuthGate extends EventEmitter {
   private _pending = 0;
   private readonly authTimeoutMs: number;
   private readonly onRefuse: (reason: string) => void;
+  private readonly deadline: (ms: number, cut: () => void) => () => void;
   private readonly realWss: WSSType;
   private closed = false;
   private readonly onRealConnection = (socket: WebSocket, req: unknown): void => { if (!this.closed) void this._handleConnection(socket, req); };
@@ -160,6 +173,7 @@ export class DaemonAuthGate extends EventEmitter {
     this.realWss = realWss;
     this.authTimeoutMs = opts.authTimeoutMs ?? AUTH_TIMEOUT_MS;
     this.onRefuse = opts.onRefuse ?? ((reason) => { try { console.log(`[gate] silent: ${reason}`); } catch { /* */ } });
+    this.deadline = opts.deadline ?? timerDeadline;
     realWss.on("connection", this.onRealConnection);
     realWss.on("close", this.onRealClose);
     realWss.on("error", this.onRealError);
@@ -234,8 +248,8 @@ export class DaemonAuthGate extends EventEmitter {
   private async _handleConnection(socket: WebSocket, req: unknown): Promise<void> {
     // ONE DEADLINE, drawn at accept. Whatever happens below, a socket that has not passed by then is cut.
     const deadline = this.authTimeoutMs + randomInt(0, Math.max(1, this.authTimeoutMs));
-    const timer = setTimeout(() => terminate(socket), deadline);
-    socket.once("close", () => clearTimeout(timer));
+    const cancel = this.deadline(deadline, () => terminate(socket));
+    socket.once("close", () => cancel());
     const silence = (reason: string): void => {
       try { socket.removeAllListeners("message"); } catch { /* closed */ }
       this.onRefuse(reason);
@@ -309,8 +323,8 @@ export class DaemonAuthGate extends EventEmitter {
       silence(`gate could not sign its verdict: ${err instanceof Error ? err.message : String(err)}`);
       return;
     }
-    if (socket.readyState !== 1) { clearTimeout(timer); return; }   // the peer left while the sort ran
-    clearTimeout(timer);
+    if (socket.readyState !== 1) { cancel(); return; }   // the peer left while the sort ran
+    cancel();
     this.socketToIdentifier.set(socket, result.identHex);
     this.socketToClass.set(socket, result.verdict.class);
     if (result.verdict.standing) this.socketToStanding.set(socket, result.verdict.standing);

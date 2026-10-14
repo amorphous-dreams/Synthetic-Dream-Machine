@@ -79,16 +79,36 @@ function makeServer(): Promise<{ wss: WebSocketServer; port: number; close: () =
   });
 }
 
-/** A dialed socket that records every frame, the close code and reason, and when it ended (ms after open). */
+/**
+ * THE DEADLINE'S HAND, held by the test. Each socket a gate accepts draws its silence delay here, in accept order,
+ * and its cut waits for the test's word. No vector reads a clock: the silence law reads off the delay the gate drew
+ * at accept and the order of events (no frame and no close until the cut fires), and an admitted socket reads off
+ * the gate cancelling its cut.
+ */
+interface Drawn { readonly ms: number; readonly cut: () => void; cancelled: boolean }
+const drawnQueue: Drawn[] = [];
+const drawWaiters: Array<(d: Drawn) => void> = [];
+const deadlineHand = (ms: number, cut: () => void): (() => void) => {
+  const d: Drawn = { ms, cut, cancelled: false };
+  const waiter = drawWaiters.shift();
+  if (waiter) waiter(d); else drawnQueue.push(d);
+  return () => { d.cancelled = true; };
+};
+const nextDrawn = (): Promise<Drawn> => drawnQueue.length > 0 ? Promise.resolve(drawnQueue.shift()!) : new Promise((r) => drawWaiters.push(r));
+const freshHand = (): void => { drawnQueue.length = 0; drawWaiters.length = 0; };
+
+/** A dialed socket that records every frame, the close code and reason, and the deadline its gate drew. */
 class Dial {
   readonly frames: string[] = [];
   private readonly waiters: Array<(v: unknown) => void> = [];
   private readonly buffered: unknown[] = [];
-  readonly openedAt: number;
-  readonly ended: Promise<{ code: number; reason: string; ms: number }>;
+  /** The deadline the gate drew when it accepted this socket (dials run one at a time, so accept order holds). */
+  readonly deadline: Promise<Drawn>;
+  endedYet = false;
+  readonly ended: Promise<{ code: number; reason: string }>;
 
   constructor(readonly ws: WebSocket) {
-    this.openedAt = Date.now();
+    this.deadline = nextDrawn();
     ws.on("message", (data: Buffer) => {
       const text = data.toString();
       this.frames.push(text);
@@ -96,7 +116,7 @@ class Dial {
       const w = this.waiters.shift();
       if (w) w(msg); else this.buffered.push(msg);
     });
-    this.ended = new Promise((res) => ws.once("close", (code: number, reason: Buffer) => res({ code, reason: reason.toString(), ms: Date.now() - this.openedAt })));
+    this.ended = new Promise((res) => ws.once("close", (code: number, reason: Buffer) => { this.endedYet = true; res({ code, reason: reason.toString() }); }));
   }
 
   next(): Promise<unknown> {
@@ -115,14 +135,21 @@ function dial(port: number, path = ""): Promise<Dial> {
   });
 }
 
-/** The silent end every refusal draws: no frame past `framesBefore`, no close frame, cut in [T, 2T). */
+/**
+ * The silent end every refusal draws: a deadline drawn at accept in [T, 2T); the socket stands open and silent until
+ * that deadline's cut fires; then no frame past `framesBefore` and no close frame.
+ */
 async function expectSilentEnd(d: Dial, framesBefore: number): Promise<void> {
+  const drawn = await d.deadline;
+  expect(drawn.ms).toBeGreaterThanOrEqual(T);
+  expect(drawn.ms).toBeLessThan(2 * T);
+  expect(drawn.cancelled, "a refused socket's deadline was cancelled").toBe(false);
+  expect(d.endedYet, "the gate cut a refused socket before its deadline").toBe(false);
+  drawn.cut();
   const end = await d.ended;
   expect(d.frames.length, `a refused socket heard ${d.frames.slice(framesBefore).join(" | ")}`).toBe(framesBefore);
   expect(end.code).toBe(1006);                  // no close frame crossed: the gate terminated
   expect(end.reason).toBe("");
-  expect(end.ms).toBeGreaterThanOrEqual(T - 20);
-  expect(end.ms).toBeLessThan(2 * T + 250);
 }
 
 describe("DaemonAuthGate — a signed verdict, or nothing", () => {
@@ -130,8 +157,9 @@ describe("DaemonAuthGate — a signed verdict, or nothing", () => {
   let gate: DaemonAuthGate;
 
   beforeEach(async () => {
+    freshHand();
     server = await makeServer();
-    gate = new DaemonAuthGate(server.wss, { authTimeoutMs: T, onRefuse: () => {} });
+    gate = new DaemonAuthGate(server.wss, { authTimeoutMs: T, onRefuse: () => {}, deadline: deadlineHand });
   });
   afterEach(async () => { await server.close(); });
 
@@ -167,7 +195,8 @@ describe("DaemonAuthGate — a signed verdict, or nothing", () => {
     const socket = await admitted;
     expect(gate.getClassForSocket(socket)).toBe("same-operator");
     expect(seen[0]).toMatchObject({ sameOperator: true, vesselKey: leafKey, challenge: { nonce: chal.nonce, gatePubKey: GATE.pubKey } });
-    await new Promise((r) => setTimeout(r, 2 * T + 100));
+    // The verdict cancelled the socket's cut: no deadline ends it.
+    expect((await d.deadline).cancelled).toBe(true);
     expect(d.ws.readyState).toBe(WebSocket.OPEN);
     d.ws.close();
   });
@@ -192,7 +221,7 @@ describe("DaemonAuthGate — a signed verdict, or nothing", () => {
     const wires: string[] = [];
     for (const cause of causes) {
       const local = await makeServer();
-      const g = new DaemonAuthGate(local.wss, { authTimeoutMs: T, onRefuse: () => {} });
+      const g = new DaemonAuthGate(local.wss, { authTimeoutMs: T, onRefuse: () => {}, deadline: deadlineHand });
       g.arm(cause.shore, AUD, GATE, cause.sort);
       const d = await dial(local.port);
       const chal = await d.next() as { nonce: string };
@@ -265,7 +294,7 @@ describe("DaemonAuthGate — a signed verdict, or nothing", () => {
     for (const extra of [{ edge: { kind: "x" }, presented: { kind: "admit", admit: await anAdmit(), lineage: [] } }, { contractEdge: { kind: "x" } }, { presentedAdmit: { admit: await anAdmit(), lineage: [] } }]) {
       const { shore, calls } = capturingShore();
       const local = await makeServer();
-      const g = new DaemonAuthGate(local.wss, { authTimeoutMs: T, onRefuse: () => {} });
+      const g = new DaemonAuthGate(local.wss, { authTimeoutMs: T, onRefuse: () => {}, deadline: deadlineHand });
       g.arm(shore, AUD, GATE, admitStranger);
       const d = await dial(local.port);
       const chal = await d.next() as { nonce: string };
@@ -323,10 +352,11 @@ describe("THE KNOCK — no HTTP 101 off the gate's own path", () => {
   let gate: DaemonAuthGate;
 
   beforeEach(async () => {
+    freshHand();
     http = createServer();
     const dispatcher = mountHttpFaceDispatcher(http);
     const wss = new WebSocketServer({ noServer: true });
-    gate = new DaemonAuthGate(wss as never, { authTimeoutMs: T, onRefuse: () => {} });
+    gate = new DaemonAuthGate(wss as never, { authTimeoutMs: T, onRefuse: () => {}, deadline: deadlineHand });
     gate.arm(capturingShore().shore, AUD, GATE, admitStranger);
     dispatcher.registerUpgrade({
       name: "relay", path: gate.upgradePath("/ws")!,
