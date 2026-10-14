@@ -7,6 +7,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **A first unlock leaves an exported checkout clean.** The daemon's protocol records, rewritten from source at every boot, no longer project to disk, so `git status` stops showing twelve untracked files under `wikis/daemon/`.
 - **`lares shore` lists every row.** Past 32 standoffs or pending removals the list once collapsed into a count; it now reads every page, and a list that moves between pages or comes up short refuses by name.
 - **`lares shore remove` reads the wiki back.** A carrier the wiki's view still holds stays pending, gets named, and the command exits non-zero; it once cleared on the delete door's word alone.
 - **`lares shore` reaches the daemon island.** A standoff or pending removal the daemon's own projector holds lists beside the active wiki's, tagged by island, and each answer routes to the island that holds its state.
@@ -119,6 +120,9 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **The container offers a one-shot certificate issuer.** Compose profile `issuer` asks for one DNS-01 wildcard certificate per machine. It reads the registrar's credential from two owner-read files in a directory outside both mounts, and it refuses by name on a missing or misplaced directory, a loose file or directory mode, or unaccepted authority terms.
 
 **Changed**
+- **Genesis carries the cured wiki.** One labelled re-bake moved the plugin bundle (the meme verbs and the ingest gate a founded vessel's own wiki runs), dropped the seed's version field and the island message counter, and retired the unread ResilientRender config; the engine blob, boot shadows and plugins stand unchanged, so the hearth's true-name stays. A vessel founded earlier re-founds.
+- **One pattern reads a Nexus identifier.** `nexus-<sha>` reads alike at every door; an `epoch0-` identifier, a bare token or a dot-segment refuses.
+- **`lares meme delete --recipe` checks read on every bag that answers.** A tombstone write that fails answers `partial` with what failed, and an unreachable bag above the one that answered answers `unconfirmed`; the CLI reports both as errors.
 - **Each chair signs with a seat key of its own.** `nexus seal seat` mints a sealed seat key per chair at random; every quorum door (contract, roll anchor, kapae, the edge quorum hand, partial and cosign) signs with those rows, and no persona root signs a chair's act.
 - **A seat's next key leaves the machine on a card.** The rite prints each chair's next key on a cold-key card, asks for every card back on the terminal before the charter moves, and commits one digest per seat; `nexus seal rotate` takes the cards back and seats the revealed keys. A live root refuses `--json` for both, so no card reaches a log.
 - **A charter in the earlier shape reads by name and licenses nothing.**
