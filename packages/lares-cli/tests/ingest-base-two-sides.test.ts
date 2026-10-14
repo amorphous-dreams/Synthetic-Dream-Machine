@@ -29,7 +29,7 @@ function stand(text = DISK): { tree: SyncedTree; file: string; dir: string } {
   mkdirSync(dir, { recursive: true });
   const file = join(dir, "note.mem");
   writeFileSync(file, text);
-  return { tree: new SyncedTree(join(root, "synced.json"), 0), file, dir };
+  return { tree: new SyncedTree(join(root, "synced.json")), file, dir };
 }
 /** The one file every vector here scans: a base stands at a path. */
 const FILE = (): string => join(root, "bags", "@x", "ha.ka.ba", "lares", "api", "note.mem");

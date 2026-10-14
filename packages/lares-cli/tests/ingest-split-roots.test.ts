@@ -27,7 +27,7 @@ describe("ingest scan against split mirror roots", () => {
   test("RED-then-GREEN: bags dir outside the root scans 1 (default derivation skips it)", () => {
     tmp = mkdtempSync(join(tmpdir(), "split-"));
     const src = carrier(join(tmp, "workspace", "bags"));
-    const tree = new SyncedTree(join(tmp, "synced.json"), 0);
+    const tree = new SyncedTree(join(tmp, "synced.json"));
     const state = join(tmp, "state");
     const old = scanSource(state, src, TO, tree)!;
     expect(old.rows.length).toBe(0); expect(old.skipped.length).toBe(1);          // today's defect
@@ -39,7 +39,7 @@ describe("ingest scan against split mirror roots", () => {
   test("CONTROL: the classic single-root layout still scans", () => {
     tmp = mkdtempSync(join(tmpdir(), "split-"));
     const src = carrier(join(tmp, "bags"));
-    const tree = new SyncedTree(join(tmp, "synced.json"), 0);
+    const tree = new SyncedTree(join(tmp, "synced.json"));
     expect(scanSource(tmp, src, TO, tree)!.rows.length).toBe(1);
   });
 

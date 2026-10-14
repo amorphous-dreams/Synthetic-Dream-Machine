@@ -22,7 +22,7 @@ function seed() {
   mkdirSync(dir, { recursive: true });
   const file = join(dir, "note.mem");
   writeFileSync(file, "! note\n\nbody\n");
-  const tree = new SyncedTree(join(root, "synced.json"), 0);
+  const tree = new SyncedTree(join(root, "synced.json"));
   const files = listCarriers(join(root, "bags", "@x"))!;
   const { rows } = scanFiles(root, files, BAG, tree, bagsFileToUri);
   return { file, tree, files, candidates: candidatesOf(rows) };

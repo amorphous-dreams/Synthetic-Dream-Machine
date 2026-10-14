@@ -131,7 +131,7 @@ function framingClassesOf(disk: { body: string; meta?: string }, render: { body:
 
 /** The tree as it rests on disk, read by a fresh instance: each row under its carrier's key and its path. */
 function restingRows(dir: string): Record<string, unknown> {
-  return Object.fromEntries(new SyncedTree(dir, 0).rows().map((r) => [`${r.bagId}\0${r.uri}\0${r.base.path}`, r.base]));
+  return Object.fromEntries(new SyncedTree(dir).rows().map((r) => [`${r.bagId}\0${r.uri}\0${r.base.path}`, r.base]));
 }
 
 describe.skipIf(coreBlobSkip)(
@@ -161,7 +161,7 @@ describe.skipIf(coreBlobSkip)(
     }
     engine = new TW5Engine();
     await engine.boot(new Uint8Array(readFileSync(CORE)), [LARES_MEMETIC_WIKITEXT_PLUGIN as unknown as Record<string, unknown>]);
-    tree = new SyncedTree(path.join(scratch, "state", "synced-tree.json"), 0);
+    tree = new SyncedTree(path.join(scratch, "state", "synced-tree.json"));
 
     // THE SEED'S GESTURE, one bag at a time: scan, INGEST, record what landed.
     const composite = new CompositeStore();
@@ -189,7 +189,6 @@ describe.skipIf(coreBlobSkip)(
       const settled = await settleIngest({ source: path.join(scratch, "bags", bag), toBag: bagUri(bag), candidates, did: "did:test" }, tree, submit);
       settlements.set(bag, { waves: wave, refused: settled.refused.length, conflicts: settled.conflicts.length, recorded: settled.recorded, submitted: candidates.length });
     }
-    tree.flush();
     pinnedByGesture = restingRows(path.join(scratch, "state", "synced-tree.json"));
 
     // THE RECORDS REACH THE WIKI as a wave lands them: each under its title, stamped with the bag it came from.
@@ -270,7 +269,7 @@ describe.skipIf(coreBlobSkip)(
   });
 
   test("a second scan reads every carrier unchanged, and a second projection pass writes nothing", async () => {
-    const reopened = new SyncedTree(path.join(scratch, "state", "synced-tree.json"), 0);
+    const reopened = new SyncedTree(path.join(scratch, "state", "synced-tree.json"));
     for (const bag of HOUSE_BAGS) {
       const scan = scanSource(scratch, path.join(scratch, "bags", bag), bagUri(bag), reopened)!;
       const unsettled = scan.rows.filter((r) => r.status !== "unchanged").map((r) => `${r.uri}: ${r.status}`);
@@ -290,7 +289,7 @@ describe.skipIf(coreBlobSkip)(
     // The projector first meets every file on disk with the records standing and NO base at all. With no
     // base a real difference stands off, so this pass measures every carrier class the congruences read
     // (framed memes, native text, sidecar pairs, binary bodies) for a false standoff over an unchanged corpus.
-    const lost = new SyncedTree(path.join(scratch, "state", "synced-tree-lost.json"), 0);
+    const lost = new SyncedTree(path.join(scratch, "state", "synced-tree-lost.json"));
     const deserializer = makeTw5Deserializer(engine);
     const raised: string[] = [];
     const pending: string[] = [];

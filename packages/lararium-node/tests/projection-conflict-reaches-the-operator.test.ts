@@ -94,7 +94,7 @@ function stand(diskBody: string, opts: { canonicalize: boolean }): {
 
   // THE MERGE BASE IS LIVE AND STALE — the last projection, which BOTH streams have
   // since moved past. That is the only state clause 7 can reach.
-  const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
+  const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"));
   tree.set(syncedTreeKey(BAG, URI), join(root, REL), carrierHash("title: records\n\nTHE LAST PROJECTION\n"));
 
   const conflicts: Array<{ bagId: string; uri: string; reason: string }> = [];
@@ -205,7 +205,7 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     const abs = join(root, REL_TID);
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, DISK_FRAMED, "utf-8");
-    const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
+    const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"));
     tree.set(syncedTreeKey(BAG, URI), join(root, REL), carrierHash("title: records\n\nTHE LAST PROJECTION\n"));
     const conflicts: Array<{ bagId: string; uri: string; reason: string }> = [];
     const projector = new LarDiskProjector({

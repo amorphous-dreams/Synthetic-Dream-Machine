@@ -236,8 +236,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       // both write the same key and the same base where they agree.
       // R2: a confirmed rename moves its observation to the new location, so a moved
       // carrier reads `unchanged` next settle instead of re-landing (echo-survival).
-      const renamesMoved  = applyConfirmedRenames(tree, toBag, candidates, del);
-      if (settled.recorded + renamesMoved > 0) tree.flush();
+      applyConfirmedRenames(tree, toBag, candidates, del);
       console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit lar:///ha.ka.ba/bags/daemon/outcomes/${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
       for (const r of [...settled.refused, ...settled.conflicts]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);

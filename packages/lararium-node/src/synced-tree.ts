@@ -27,10 +27,24 @@
  * row, each named by its carrier and its path and written whole (a temp file in the same
  * directory, then a rename). A writer touches only the rows it changed and reads no
  * other row to do so, so no read-merge-write window exists and two writers in one
- * moment drop no row: no lock, no holder to outlive, no clock. Two writers of the SAME
- * row leave the later rename standing, whole. A row that reads torn, or in any shape but
- * the one this tree writes, names no base: its carrier reads as never agreed there,
- * which converges and never corrupts.
+ * moment drop no row: no lock, no holder to outlive, no clock.
+ *
+ * AN OBSERVATION RESTS THE MOMENT IT GETS RECORDED. `set` lands its row and `deleteAt` unlinks
+ * its row before either returns; no instance holds a change back for a later write. Two writers of
+ * the SAME row therefore leave the LATER OBSERVATION standing, whole: a row never lands behind a
+ * sibling's newer word, and a row a sibling removed never returns from another instance's memory.
+ * THE DIRECTORY'S WORD STANDS. A landing the disk refuses gets named, and the instance takes back the row
+ * it held before the act: an observation the disk never took rests nowhere, and a row the disk would not
+ * give up stands in memory as it stands on disk. Nothing retries on a timer (an observation written late
+ * would claim a moment that passed); the next gate that weighs the carrier meets the earlier base, finds
+ * it behind, and pins anew.
+ *
+ * A BASE LEAVES WITH ITS OWN FILE. A carrier's rows stand one per path, and each leaves alone
+ * (`deleteAt`): the file a hand keeps in a holding directory keeps its base while the mirror's
+ * file and base leave, so its next scan still reads it against the agreement it reached.
+ *
+ * A row that reads torn, or in any shape but the one this tree writes, names no base: its
+ * carrier reads as never agreed there, which converges and never corrupts.
  */
 
 import { readFileSync, writeFileSync, renameSync, mkdirSync, readdirSync, unlinkSync, statSync } from "fs";
@@ -117,12 +131,6 @@ export class SyncedTree {
   private map = new Map<string, Row>();
   /** A carrier's key → the ids of its rows. Mirrors `map`. */
   private byKey = new Map<string, Set<string>>();
-  private persistTimer: ReturnType<typeof setTimeout> | null = null;
-
-  /** THIS instance's changes since its last persist, by row. A row records an observation; a path alone
-   *  records a removal. */
-  private journal = new Map<string, Row | { readonly key: string; readonly gone: string }>();
-
   /**
    * R2 rename-index — the CONTENT-addressed reverse view: `${bagId}\0${canonical-hash}`
    * → the set of carrier URIs in that bag that hold a base observing that exact content.
@@ -140,15 +148,6 @@ export class SyncedTree {
   constructor(
     /** The directory the tree rests in. Null holds the bases in memory for this instance's life and persists nothing. */
     private dirPath: string | null,
-    /**
-     * Persist coalesce window (ms). A flush wave (a corpus feed = hundreds
-     * of observations in seconds) collapses into one pass per
-     * quiet window instead of one per observation. 0 = persist immediately
-     * (tests). A crash inside the window forgets at most the last few
-     * observations — which degrade to fresh-adoption decisions, never
-     * corruption (the Confluence's recovery law).
-     */
-    private readonly coalesceMs = 250,
   ) {
     if (dirPath === null) return;
     // A TREE IN AN EARLIER SHAPE NAMES NO BASE, AND SAYS SO BY NAME. A vessel founded under the single-file
@@ -212,29 +211,37 @@ export class SyncedTree {
   }
 
   /**
-   * Record an agreement; persistence coalesces per quiet window. `file` names the content file the
+   * Record an agreement, and land its row before returning. `file` names the content file the
    * agreement stands at; `diskHash` names the bytes the disk holds there; `recordsHash` names the render
    * the records carry, and equals `diskHash` where the disk holds that render (a projector write, a
    * byte-identical skip). The carrier's bases at other paths stand as they stood.
    */
   set(key: string, file: string, diskHash: string, recordsHash: string = diskHash): void {
     const row: Row = { key, base: { path: syncedPath(file), disk: diskHash, records: recordsHash } };
+    const before = this.map.get(rowId(key, row.base.path)) ?? null;
     this.put(row);
-    this.journal.set(rowId(key, row.base.path), row);
-    this.schedulePersist();
+    if (this.land(row)) return;
+    // The disk refused the row: this instance answers what it held before, as every other reader does.
+    if (before !== null) this.put(before); else this.drop(key, row.base.path);
   }
 
-  /** The base at `file` leaves; the carrier's bases at other paths stay. */
+  /**
+   * The base at `file` leaves, and its row file with it, before this returns; the carrier's bases at
+   * other paths stay. The row file unlinks whether or not this instance ever read it: a sibling may
+   * have pinned it since this instance loaded.
+   */
   deleteAt(key: string, file: string): void {
     const path = syncedPath(file);
-    if (!this.drop(key, path)) return;
-    this.journal.set(rowId(key, path), { key, gone: path });
-    this.schedulePersist();
-  }
-
-  /** Every base of the carrier leaves. */
-  delete(key: string): void {
-    for (const base of this.bases(key)) this.deleteAt(key, base.path);
+    const before = this.map.get(rowId(key, path)) ?? null;
+    this.drop(key, path);
+    if (this.dirPath === null) return;
+    const name = join(this.dirPath, rowFile(key, path));
+    try { unlinkSync(name); } catch (err) {
+      // A row that already left needs no word. Any other refusal leaves the row standing, and memory says so.
+      if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
+      this.refused("remove", name, err);
+      if (before !== null) this.put(before);
+    }
   }
 
   /**
@@ -295,50 +302,61 @@ export class SyncedTree {
     return this.map.size;
   }
 
-  /** Force any pending coalesced write to land now (shutdown hook, tests). */
-  flush(): void {
-    if (this.persistTimer) { clearTimeout(this.persistTimer); this.persistTimer = null; }
-    this.persist();
-  }
-
-  private schedulePersist(): void {
-    // A tree held in memory persists nothing, so it arms no timer.
-    if (this.dirPath === null) { this.journal.clear(); return; }
-    if (this.coalesceMs <= 0) { this.persist(); return; }
-    if (this.persistTimer) clearTimeout(this.persistTimer);
-    this.persistTimer = setTimeout(() => { this.persistTimer = null; this.persist(); }, this.coalesceMs);
-    // Never hold the process open just to remember faster.
-    (this.persistTimer as { unref?: () => void }).unref?.();
-  }
-
   /**
-   * Each changed row lands as its own file, whole: a temp file in the tree's directory, then a rename
-   * onto the row's name; a removed row's file unlinks. No other row gets read or rewritten, so a sibling
-   * writer's rows stand whatever this instance held when it loaded.
+   * One row lands as its own file, whole: a temp file in the tree's directory, then a rename onto the
+   * row's name. No other row gets read or rewritten, so a sibling writer's rows stand whatever this
+   * instance held when it loaded.
    */
-  private persist(): void {
-    if (this.dirPath === null || this.journal.size === 0) { this.journal.clear(); return; }
+  private land(row: Row): boolean {
+    if (this.dirPath === null) return true;
     const dir = this.dirPath;
-    mkdirSync(dir, { recursive: true });
-    for (const change of this.journal.values()) {
-      if ("gone" in change) {
-        try { unlinkSync(join(dir, rowFile(change.key, change.gone))); } catch { /* it already left */ }
-        continue;
+    // The temp name carries a per-write nonce beside the pid: island projectors run as worker THREADS
+    // of ONE process, so a pid-keyed name names one file twice. A leading dot keeps it out of every read.
+    const tmp = join(dir, `.row.${process.pid}.${++SyncedTree.writeSeq}.${randomBytes(4).toString("hex")}.tmp`);
+    const name = join(dir, rowFile(row.key, row.base.path));
+    const text = JSON.stringify({ key: row.key, ...row.base });
+    try {
+      try { writeFileSync(tmp, text, "utf-8"); } catch (err) {
+        if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+        mkdirSync(dir, { recursive: true });               // the first row of a tree, or a directory a hand removed
+        writeFileSync(tmp, text, "utf-8");
       }
-      // The temp name carries a per-write nonce beside the pid: island projectors run as worker THREADS
-      // of ONE process, so a pid-keyed name names one file twice. A leading dot keeps it out of every read.
-      const tmp = join(dir, `.row.${process.pid}.${++SyncedTree.writeSeq}.${randomBytes(4).toString("hex")}.tmp`);
-      writeFileSync(tmp, JSON.stringify({ key: change.key, ...change.base }), "utf-8");
-      renameSync(tmp, join(dir, rowFile(change.key, change.base.path)));
+      renameSync(tmp, name);
+      return true;
+    } catch (err) {
+      try { unlinkSync(tmp); } catch { /* it never landed, or it already left */ }
+      this.refused("write", name, err);
+      return false;
     }
-    this.journal.clear();
   }
 
   /**
-   * Read the directory afresh and lay this instance's unpersisted changes over it: every row, or the rows
-   * of one carrier where `key` names it. A sibling writer (another island, the ingest gesture) may have
-   * pinned a base since this instance loaded; a caller about to surface a divergence reads through here
-   * first, so a base a sibling pinned answers before an alert does.
+   * THE DISK REFUSED A ROW, AND THE TREE SAYS SO BY NAME. The caller restores the row this instance held
+   * before the act, so its memory never claims a base no reader could meet, nor forgets one every reader
+   * still meets. The first refusal of a write and the first of a removal each speak, naming the row;
+   * `refusals` counts all.
+   */
+  private refused(act: "write" | "remove", name: string, err: unknown): void {
+    this.refusedCount += 1;
+    if (this.spoke.has(act)) return;
+    this.spoke.add(act);
+    const why = (err as NodeJS.ErrnoException).code ?? (err instanceof Error ? err.message : String(err));
+    console.warn(act === "write"
+      ? `[synced-tree] the disk refused to write row ${name} (${why}); the carrier keeps the base it held, and the next agreement pins anew`
+      : `[synced-tree] the disk refused to remove row ${name} (${why}); the row stays, and the carrier keeps that base`);
+  }
+
+  private refusedCount = 0;
+  private readonly spoke = new Set<"write" | "remove">();
+  /** How many rows the disk refused to write or to remove over this instance's life. */
+  get refusals(): number { return this.refusedCount; }
+
+  /**
+   * Read the directory afresh: every row, or the rows of one carrier where `key` names it. A sibling
+   * writer (another island, the ingest gesture) may have pinned or removed a base since this instance
+   * loaded; a caller about to surface a divergence reads through here first, so a base a sibling pinned
+   * answers before an alert does. Every change this instance made already rests in the directory, so the
+   * directory's word replaces this instance's own.
    */
   reread(key?: string): void {
     if (this.dirPath === null) return;
@@ -347,10 +365,6 @@ export class SyncedTree {
       this.drop(row.key, row.base.path);
     }
     for (const row of rows) this.put(row);
-    for (const change of this.journal.values()) {
-      if (key !== undefined && change.key !== key) continue;
-      if ("gone" in change) this.drop(change.key, change.gone); else this.put(change);
-    }
   }
 
   /** Per-process write counter — one half of the temp file's unique name. */

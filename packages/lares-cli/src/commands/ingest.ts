@@ -175,8 +175,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // next scan instead of re-landing.
   // R2 — a confirmed rename moves its observation to the new location (delete old key,
   // set new), so the moved carrier reads `unchanged` next scan instead of re-landing.
-  const renamesMoved = applyConfirmedRenames(tree, toBag, candidates, settled.deletions);
-  if (settled.recorded + renamesMoved > 0) tree.flush();
+  applyConfirmedRenames(tree, toBag, candidates, settled.deletions);
 
   const auditUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
   // A REFUSED FILE ENDS THE RUN NON-ZERO, AND EVERY REFUSED FILE GETS NAMED WITH ITS REFUSAL, however many

@@ -29,7 +29,7 @@ function seedBundle(): { root: string; treePath: string } {
 describe("pack echo-gate — a landed bundle's synced hash rides the gesture", () => {
   test("recordLandedCarriers stamps the pack's synced hash → next scan reads unchanged", () => {
     const { root: r, treePath } = seedBundle();
-    const tree = new SyncedTree(treePath, 0);
+    const tree = new SyncedTree(treePath);
     const files = listCarriers(join(r, "bags", "@x"))!;
     const { rows } = scanFiles(r, files, BAG, tree, bagsFileToUri);
     const candidates = candidatesOf(rows);
@@ -51,7 +51,7 @@ describe("pack echo-gate — a landed bundle's synced hash rides the gesture", (
 
   test("a single-meme ingest result records its observation → next scan reads unchanged", () => {
     const { root: r, treePath } = seedBundle();
-    const tree = new SyncedTree(treePath, 0);
+    const tree = new SyncedTree(treePath);
     const files = listCarriers(join(r, "bags", "@x"))!;
     const { rows } = scanFiles(r, files, BAG, tree, bagsFileToUri);
     const candidates = candidatesOf(rows);

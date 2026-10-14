@@ -239,8 +239,7 @@ export function scanFiles(
  * bytes, else the disk hash names both sides. Never records `conflict`, `refuse`,
  * or a result naming no candidate. Before recording, the file is hashed as it
  * stands NOW: where the disk moved since the scan, the projector wrote it and owns
- * that observation, so nothing records. Returns the count recorded; the caller
- * flushes the tree.
+ * that observation, so nothing records. Returns the count recorded.
  */
 export function recordLandedCarriers(
   tree: SyncedTree,
@@ -674,9 +673,10 @@ export function candidatesOf(rows: readonly ScanRow[]): ScanRow[] {
  * R2 — move the Synced observation for each rename the island CONFIRMED. Reads the
  * authoritative `deletions.renames` the gate returned (never the CLI's own guess),
  * so a suspended wave (mass-delete brake) moves nothing. For each `fromUri → toUri`
- * it drops the stale source observation and records the moved carrier's hash at the
+ * it drops the source's base AT THE PATH THE FILE LEFT and records the moved carrier's hash at the
  * new location — so the NEXT scan reads the moved carrier `unchanged` and never
- * re-lands it. Returns the count moved; the caller flushes the tree.
+ * re-lands it. A base the source holds at another path (a holding copy that still stands) stays with
+ * its file. Returns the count moved.
  */
 export function applyConfirmedRenames(
   tree: SyncedTree,
@@ -697,8 +697,10 @@ export function applyConfirmedRenames(
     const diskHash = arrived.diskHash;
     // The records re-homed whole, so the base's records side travels with them where the moved file
     // holds the bytes the source's base named.
-    const source = tree.bases(syncedTreeKey(toBag, fromUri)).find((b) => digestsEqual(b.disk, diskHash));
-    tree.delete(syncedTreeKey(toBag, fromUri));
+    const held = tree.bases(syncedTreeKey(toBag, fromUri)).filter((b) => digestsEqual(b.disk, diskHash));
+    const source = held[0];
+    // A BASE LEAVES WITH ITS OWN FILE: the source gives up each base of these bytes whose file stands no more.
+    for (const b of held) if (!existsSync(b.path)) tree.deleteAt(syncedTreeKey(toBag, fromUri), b.path);
     tree.set(syncedTreeKey(toBag, toUri), arrived.file, diskHash, source !== undefined ? source.records : diskHash);
     moved++;
   }

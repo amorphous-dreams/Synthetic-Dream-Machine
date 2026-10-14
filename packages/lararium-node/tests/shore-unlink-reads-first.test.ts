@@ -48,7 +48,7 @@ interface Stand {
 
 function stand(mirrorRoots: Record<string, string> = { [BAG]: BAG, [OTHER]: OTHER }): Stand {
   root = mkdtempSync(join(tmpdir(), "lar-unlink-reads-"));
-  const tree = (): SyncedTree => new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
+  const tree = (): SyncedTree => new SyncedTree(join(root, ".projection", "synced-tree.json"));
   const s = {
     conflicts: [] as Stand["conflicts"], resolved: [] as string[],
     file: { ext: ".md", body: BODY, metaBody: META, relPath: "a/note.md", encoding: "utf8" } as CarrierFile,
@@ -216,7 +216,7 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     const TITLE = "My Notes";
     const live = { on: true };
     await s.projector.stop();
-    const tree = new SyncedTree(join(root, ".projection", "foreign-tree.json"), 0);
+    const tree = new SyncedTree(join(root, ".projection", "foreign-tree.json"));
     const conflicts: string[] = [];
     const make = (): LarDiskProjector => {
       const p = new LarDiskProjector({
@@ -252,6 +252,25 @@ describe("the records dropped a carrier whose file a hand edited", () => {
     expect(s.conflicts).toEqual([]);
   });
 
+  test("a base a sibling pinned inside the mirror after this projector loaded gets read before the homes settle", async () => {
+    const s = stand();
+    await s.projector.idle();
+    // The ingest gesture, a separate process over the same tree, pins a base at a second file inside the
+    // mirror (a path an earlier siting left the carrier at). This projector loaded the tree before that.
+    const sited = s.at("z/note.md");
+    mkdirSync(dirname(sited), { recursive: true });
+    writeFileSync(sited, BODY, "utf-8");
+    writeFileSync(`${sited}.meta`, META, "utf-8");
+    new SyncedTree(join(root, ".projection", "synced-tree.json")).set(syncedTreeKey(BAG, URI), syncedPath(sited), carrierHash(BODY, META));
+    s.owner.bag = null; s.holding.clear();                      // the records drop the carrier
+    await s.projector.sense([URI]);
+    expect(existsSync(s.at("a/note.md"))).toBe(false);
+    expect(existsSync(sited)).toBe(false);                      // agreed with its base, so it left with the carrier
+    expect(existsSync(`${sited}.meta`)).toBe(false);
+    expect(new SyncedTree(join(root, ".projection", "synced-tree.json")).bases(syncedTreeKey(BAG, URI))).toEqual([]);
+    expect(s.conflicts).toEqual([]);
+  });
+
   test("CONTROL: a file a second bag still projects to the same path stays, whatever the first bag's base says", async () => {
     const s = stand({ [BAG]: "shared", [OTHER]: "shared" });
     await s.projector.idle();
@@ -275,9 +294,8 @@ describe("a base that names a file outside the mirror names no home of it", () =
     mkdirSync(dirname(held), { recursive: true });
     writeFileSync(held, BODY, "utf-8");
     writeFileSync(`${held}.meta`, META, "utf-8");
-    const gesture = new SyncedTree(join(root, ".projection", "synced-tree.json"), 0);
+    const gesture = new SyncedTree(join(root, ".projection", "synced-tree.json"));
     gesture.set(syncedTreeKey(BAG, URI), syncedPath(held), carrierHash(BODY, META));
-    gesture.flush();
     return held;
   }
 

@@ -106,7 +106,7 @@ export class ShoreRig {
 
   /** A Synced tree that names no base: a fresh vessel's. */
   newTree(): SyncedTree {
-    this.tree = new SyncedTree(path.join(this.scratch, "state", `synced-tree-${++this.treeNo}.json`), 0);
+    this.tree = new SyncedTree(path.join(this.scratch, "state", `synced-tree-${++this.treeNo}.json`));
     return this.tree;
   }
 
@@ -150,7 +150,6 @@ export class ShoreRig {
       source, toBag: RIG_BAG, candidates, did: "did:test",
       ...(scan.renameDeletions && scan.renameDeletions.length > 0 ? { deletions: scan.renameDeletions } : {}),
     }, this.tree, submit);
-    this.tree.flush();
     await this.land();
     return { ...settled, scanned: scan.rows };
   }

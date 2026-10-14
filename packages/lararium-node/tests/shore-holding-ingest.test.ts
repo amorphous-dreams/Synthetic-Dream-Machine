@@ -30,12 +30,12 @@ describe.skipIf(coreBlobSkip)("an ingest from a holding directory beside the mir
   const holdingOf = (uri: string): string => path.join(rig.scratch, "wikis", "inbox", `${uri.slice("lar:///".length)}.mem`);
   /** The ingest gesture as its own process runs it: a tree instance opened fresh over the vessel's directory. */
   const gesture = async (source: string): Promise<Awaited<ReturnType<ShoreRig["ingest"]>>> => {
-    rig.tree = new SyncedTree(path.join(rig.scratch, "state", "synced-tree-1.json"), 0);
+    rig.tree = new SyncedTree(path.join(rig.scratch, "state", "synced-tree-1.json"));
     try { return await rig.ingest(source); } finally { rig.tree = projectorTree; }
   };
 
   beforeAll(async () => {
-    rig = await ShoreRig.stand(3);
+    rig = await ShoreRig.stand(4);
     await rig.ingest();
     await rig.boot();
     projectorTree = rig.tree;
@@ -62,7 +62,7 @@ describe.skipIf(coreBlobSkip)("an ingest from a holding directory beside the mir
     expect(rig.conflicts).toEqual([]);
     expect(rig.read(uri!)).toContain(HOLDING_LINE);              // the projector wrote the records' render
     expect(readFileSync(holding, "utf8")).toBe(held);            // the source stays as the hand left it
-    const fresh = new SyncedTree(path.join(rig.scratch, "state", "synced-tree-1.json"), 0);
+    const fresh = new SyncedTree(path.join(rig.scratch, "state", "synced-tree-1.json"));
     expect(fresh.baseAt(key, holding)).not.toBeNull();
     expect(fresh.baseAt(key, rig.fileOf(uri!))).not.toBeNull();
     expect(fresh.bases(key)).toHaveLength(2);
@@ -70,6 +70,45 @@ describe.skipIf(coreBlobSkip)("an ingest from a holding directory beside the mir
     expect(scanSource(rig.scratch, holding, RIG_BAG, fresh)!.rows.map((r) => r.status)).toEqual(["unchanged"]);
     expect(scanSource(rig.scratch, rig.fileOf(uri!), RIG_BAG, fresh)!.rows.map((r) => r.status)).toEqual(["unchanged"]);
     expect(rig.conflicts).toEqual([]);
+  });
+
+  test("a base leaves with its own file: the wiki drops the carrier, the mirror's file and base leave, and the holding copy keeps its base", async () => {
+    const uri = rig.uris[2]!;
+    const key = syncedTreeKey(RIG_BAG, uri);
+    const holding = holdingOf(uri);
+    const held = addLine(rig.read(uri), HOLDING_LINE);
+    mkdirSync(path.dirname(holding), { recursive: true });
+    writeFileSync(holding, held, "utf8");
+    await gesture(holding);
+    await rig.idle();
+    expect(rig.read(uri)).toContain(HOLDING_LINE);
+    // The projector weighed the carrier after the gesture pinned the holding base, so it holds both rows.
+    expect(projectorTree.bases(key)).toHaveLength(2);
+
+    await rig.wikiDelete(uri);
+    await rig.idle();
+
+    expect(rig.stands(uri)).toBe(false);                         // the mirror's file agreed with its base, so it left
+    expect(readFileSync(holding, "utf8")).toBe(held);            // the holding copy stays its person's
+    const fresh = new SyncedTree(path.join(rig.scratch, "state", "synced-tree-1.json"));
+    expect(fresh.baseAt(key, rig.fileOf(uri))).toBeNull();
+    expect(fresh.baseAt(key, holding)).not.toBeNull();
+    // The copy still reads against the agreement it reached: no later ingest of that directory re-lands a
+    // carrier the wiki dropped.
+    expect(scanSource(rig.scratch, holding, RIG_BAG, fresh)!.rows.map((r) => r.status)).toEqual(["unchanged"]);
+    // CONTROL: a base with no file of its own would read the same copy as new.
+    fresh.deleteAt(key, holding);
+    expect(scanSource(rig.scratch, holding, RIG_BAG, fresh)!.rows.map((r) => r.status)).toEqual(["new"]);
+  });
+
+  test("CONTROL: a mirror file a hand already removed gives up its base when the wiki drops the carrier", async () => {
+    const uri = rig.uris[3]!;
+    const key = syncedTreeKey(RIG_BAG, uri);
+    expect(projectorTree.baseAt(key, rig.fileOf(uri))).not.toBeNull();
+    rig.remove(uri);
+    await rig.wikiDelete(uri);
+    await rig.idle();
+    expect(new SyncedTree(path.join(rig.scratch, "state", "synced-tree-1.json")).bases(key)).toEqual([]);
   });
 
   test("CONTROL: a hand's edit in the mirror plus a holding ingest stands off as both-moved, and the hand's bytes stay", async () => {

@@ -48,7 +48,7 @@ function seed(n: number, plainEvery = 0): { tree: SyncedTree; candidates: ScanRo
     const plain = plainEvery > 0 && i % plainEvery === 0;
     writeFileSync(join(dir, `note-${String(i).padStart(3, "0")}.mem`), plain ? `a frameless note ${i}\n` : framed(i));
   }
-  const tree = new SyncedTree(join(root, "synced.json"), 0);
+  const tree = new SyncedTree(join(root, "synced.json"));
   const { rows } = scanFiles(root, listCarriers(join(root, "bags", "@x"))!, BAG, tree, bagsFileToUri);
   return { tree, candidates: candidatesOf(rows) };
 }

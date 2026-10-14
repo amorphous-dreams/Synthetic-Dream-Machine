@@ -40,7 +40,7 @@ describe("ingest-core READ shore — filetype-native listing + ext carry", () =>
   test("scanFiles stamps ext on every row and derives a URI per filetype", () => {
     const { root: r } = seed();
     const files = listCarriers(join(r, "bags", "@x"))!;
-    const tree  = new SyncedTree(join(r, "synced.json"), 0);
+    const tree  = new SyncedTree(join(r, "synced.json"));
     const { rows, skipped } = scanFiles(r, files, "lar:///bag", tree, bagsFileToUri);
     expect(skipped).toEqual([]);
     // every row carries its own extension, matching the file it read

@@ -439,7 +439,6 @@ export class LarDiskProjector {
   async stop(): Promise<void> {
     await this.gate?.settle();
     this.writing.clear();
-    this.syncedTree.flush();
   }
 
   /**
@@ -919,13 +918,19 @@ export class LarDiskProjector {
       if (keptRoots.has(resolvePath(mirror.mirrorRoot))) continue;
       // A title the loci law sites nowhere (a foreign title) names no file by itself; the base still may.
       const homes = (this.mirrorCarrierFiles(mirror, title) ?? []).map((f) => LarDiskProjector.contentOf(f));
+      // A sibling (the ingest gesture, another island) may have pinned a base for this carrier since this
+      // projector loaded the tree: the directory answers before the homes get collected.
+      this.syncedTree.reread(syncedTreeKey(mirror.bagId, title));
       // The base names the content file its agreement stood at, across a restart: a carrier a siting rule
       // or the flattened default placed elsewhere gets read there too.
       homes.push(...this.basedHomes(mirror, title));
       // The records hold no such carrier, so the base alone can vouch for a file. A held one stays.
       if (!this.settleHomes(mirror.bagId, title, homes, null, null, `the records dropped ${title}`)) continue;
       this._leaveStandoff(mirror.bagId, title);
-      this.syncedTree.delete(syncedTreeKey(mirror.bagId, title));   // the observation leaves with the file(s)
+      // A BASE LEAVES WITH ITS OWN FILE: each home this mirror weighed gives up its base, a home whose file
+      // had already left included. A base at a path outside the mirror (a holding copy a hand keeps) stays
+      // with its file, so that file's next scan still reads it against the agreement it reached.
+      for (const home of new Set(homes)) this.syncedTree.deleteAt(syncedTreeKey(mirror.bagId, title), home);
       this.sited.delete(sitedKey(mirror.bagId, title));
     }
   }

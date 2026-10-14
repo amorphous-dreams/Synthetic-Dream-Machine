@@ -12,7 +12,7 @@ import { carrierHash } from "@lararium/mesh";
 
 // THE HANDSHAKE SEAM for the two-writers vector: the tree's own `renameSync` calls a hook the vector arms,
 // at the moment a row (or, under a single-file tree, the whole map) stands ready to land. Unarmed, it passes through.
-const seam = vi.hoisted(() => ({ beforeRename: null as null | (() => void) }));
+const seam = vi.hoisted(() => ({ beforeRename: null as null | (() => void), unlinkFault: null as null | Error }));
 vi.mock("fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("fs")>();
   return {
@@ -22,6 +22,12 @@ vi.mock("fs", async (importOriginal) => {
       seam.beforeRename = null;                 // one firing: the second writer's own renames pass through
       hook?.();
       actual.renameSync(from, to);
+    },
+    // A row's removal the disk refuses, once: the armed fault throws in place of the unlink.
+    unlinkSync: (path: string): void => {
+      const fault = /[0-9a-f]{32}\.[0-9a-f]{32}\.json$/.test(path) ? seam.unlinkFault : null;
+      if (fault !== null) { seam.unlinkFault = null; throw fault; }
+      actual.unlinkSync(path);
     },
   };
 });
@@ -36,9 +42,9 @@ describe("synced-tree — observations persist atomically", () => {
   test("set → reload reads the same observation", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "state", "synced-tree.json");
-    const t1 = new SyncedTree(p, 0);
+    const t1 = new SyncedTree(p);
     t1.set("lar:///a", AT, contentHash("alpha"));
-    const t2 = new SyncedTree(p, 0);
+    const t2 = new SyncedTree(p);
     expect(t2.get("lar:///a")).toBe(contentHash("alpha"));
     expect(t2.get("lar:///missing")).toBeNull();
     rmSync(dir, { recursive: true, force: true });
@@ -47,24 +53,24 @@ describe("synced-tree — observations persist atomically", () => {
   test("delete removes the observation durably", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "synced-tree.json");
-    const t = new SyncedTree(p, 0);
+    const t = new SyncedTree(p);
     t.set("lar:///a", AT, "h1");
-    t.delete("lar:///a");
-    expect(new SyncedTree(p, 0).get("lar:///a")).toBeNull();
+    t.deleteAt("lar:///a", AT);
+    expect(new SyncedTree(p).get("lar:///a")).toBeNull();
     rmSync(dir, { recursive: true, force: true });
   });
 
   test("a torn row degrades to never-projected, never throws, and heals on the next agreement", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "synced-tree");
-    new SyncedTree(p, 0).set("lar:///a", AT, "h1");
+    new SyncedTree(p).set("lar:///a", AT, "h1");
     const [name] = rowFiles(p);
     writeFileSync(join(p, name!), "{ torn json", "utf-8");
     const said: string[] = [];
     const warn = console.warn;
     console.warn = (line: unknown) => { said.push(String(line)); };
     let t: SyncedTree;
-    try { t = new SyncedTree(p, 0); } finally { console.warn = warn; }
+    try { t = new SyncedTree(p); } finally { console.warn = warn; }
     expect(said).toEqual([`[synced-tree] 1 row(s) of ${p} name no base in this tree's shape; each such carrier reads as never agreed`]);
     expect(t.size).toBe(0);
     expect(t.get("lar:///a")).toBeNull();
@@ -83,7 +89,7 @@ describe("synced-tree — the base holds two sides", () => {
 
   test("one hash names both sides: a projector write leaves the disk holding the render", () => {
     const { dir, p } = fresh();
-    const t = new SyncedTree(p, 0);
+    const t = new SyncedTree(p);
     t.set("k", AT, contentHash("render"));
     expect(t.base("k")).toEqual({ path: AT, disk: contentHash("render"), records: contentHash("render") });
     expect(t.get("k")).toBe(contentHash("render"));
@@ -92,10 +98,10 @@ describe("synced-tree — the base holds two sides", () => {
 
   test("a disk standing in another framing pins two hashes, and both survive a reload", () => {
     const { dir, p } = fresh();
-    const t = new SyncedTree(p, 0);
+    const t = new SyncedTree(p);
     t.set("k", AT, contentHash("disk bytes"), contentHash("the render"));
     expect(t.get("k")).toBe(contentHash("disk bytes"));
-    const reopened = new SyncedTree(p, 0);
+    const reopened = new SyncedTree(p);
     expect(reopened.base("k")).toEqual({ path: AT, disk: contentHash("disk bytes"), records: contentHash("the render") });
     expect(reopened.base("missing")).toBeNull();
     rmSync(dir, { recursive: true, force: true });
@@ -103,7 +109,7 @@ describe("synced-tree — the base holds two sides", () => {
 
   test("the rename index keys on the disk side, never the records side", () => {
     const { dir, p } = fresh();
-    const t = new SyncedTree(p, 0);
+    const t = new SyncedTree(p);
     const bag = "lar:///ha.ka.ba/bags/x";
     t.set(syncedTreeKey(bag, "lar:///a"), AT, contentHash("disk bytes"), contentHash("the render"));
     expect(t.renameSourceUri(bag, contentHash("disk bytes"))).toBe("lar:///a");
@@ -111,9 +117,9 @@ describe("synced-tree — the base holds two sides", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("the rename index reads right before any persist: a coalescing tree answers from the set itself", () => {
+  test("the rename index follows each set and each removal", () => {
     const { dir, p } = fresh();
-    const t = new SyncedTree(p, 60_000);   // the write waits; the index must not
+    const t = new SyncedTree(p);
     const bag = "lar:///ha.ka.ba/bags/x";
     t.set(syncedTreeKey(bag, "lar:///a"), AT, contentHash("disk bytes"), contentHash("the render"));
     expect(t.renameSourceUri(bag, contentHash("disk bytes"))).toBe("lar:///a");
@@ -122,15 +128,14 @@ describe("synced-tree — the base holds two sides", () => {
     t.set(syncedTreeKey(bag, "lar:///a"), AT, contentHash("later bytes"), contentHash("the render"));
     expect(t.renameSourceUri(bag, contentHash("disk bytes"))).toBeNull();
     expect(t.renameSourceUri(bag, contentHash("later bytes"))).toBe("lar:///a");
-    t.delete(syncedTreeKey(bag, "lar:///a"));
+    t.deleteAt(syncedTreeKey(bag, "lar:///a"), AT);
     expect(t.renameSourceUri(bag, contentHash("later bytes"))).toBeNull();
-    t.flush();
     rmSync(dir, { recursive: true, force: true });
   });
 
   test("a row in any other shape names no base: that carrier reads as never agreed", () => {
     const { dir, p } = fresh();
-    const t0 = new SyncedTree(p, 0);
+    const t0 = new SyncedTree(p);
     t0.set("whole", AT, "d1", "r1");
     const [whole] = rowFiles(p);
     const strangers: Record<string, unknown> = {
@@ -148,7 +153,7 @@ describe("synced-tree — the base holds two sides", () => {
     const warn = console.warn;
     console.warn = (line: unknown) => { said.push(String(line)); };
     let t: SyncedTree;
-    try { t = new SyncedTree(p, 0); } finally { console.warn = warn; }
+    try { t = new SyncedTree(p); } finally { console.warn = warn; }
     // The forgotten bases speak once, by count and by directory.
     expect(said).toEqual([`[synced-tree] 6 row(s) of ${p} name no base in this tree's shape; each such carrier reads as never agreed`]);
     expect(t.size).toBe(1);
@@ -171,12 +176,12 @@ describe("synced-tree — the base holds two sides", () => {
     const warn = console.warn;
     console.warn = (line: unknown) => { said.push(String(line)); };
     let t: SyncedTree;
-    try { t = new SyncedTree(p, 0); } finally { console.warn = warn; }
+    try { t = new SyncedTree(p); } finally { console.warn = warn; }
     expect(said).toEqual([`[synced-tree] ${earlier} holds a tree in an earlier shape; it names no base here, and each carrier reads as never agreed`]);
     expect(t.size).toBe(0);
     expect(t.baseAt("k", AT)).toBeNull();
     t.set("k", AT, "d2");
-    expect(new SyncedTree(p, 0).baseAt("k", AT)).toEqual({ path: AT, disk: "d2", records: "d2" });
+    expect(new SyncedTree(p).baseAt("k", AT)).toEqual({ path: AT, disk: "d2", records: "d2" });
     expect(readFileSync(earlier, "utf-8")).toBe(bytes);          // nothing rewrites the earlier file
     rmSync(dir, { recursive: true, force: true });
   });
@@ -185,7 +190,7 @@ describe("synced-tree — the base holds two sides", () => {
 describe("synced-tree — the R2 content-addressed rename-index", () => {
   const BAG = "lar:///ha.ka.ba/bags/daemon/notes";
   const OTHER = "lar:///ha.ka.ba/bags/daemon/other";
-  const freshTree = () => new SyncedTree(join(mkdtempSync(join(tmpdir(), "synced-")), "synced-tree.json"), 0);
+  const freshTree = () => new SyncedTree(join(mkdtempSync(join(tmpdir(), "synced-")), "synced-tree.json"));
 
   test("resolves the UNIQUE live carrier observing a given content in a bag", () => {
     const t = freshTree();
@@ -210,7 +215,7 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     t.set(syncedTreeKey(BAG, "lar:///twin.two"), AT, h);
     expect(t.renameSourceUri(BAG, h)).toBeNull();        // >1 live carrier — decline
     // remove one → the collision clears, the survivor resolves uniquely
-    t.delete(syncedTreeKey(BAG, "lar:///twin.two"));
+    t.deleteAt(syncedTreeKey(BAG, "lar:///twin.two"), AT);
     expect(t.renameSourceUri(BAG, h)).toBe("lar:///twin.one");
   });
 
@@ -229,7 +234,7 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     const t = freshTree();
     const h = carrierHash("body", undefined);
     t.set(syncedTreeKey(BAG, "lar:///a.b.c"), AT, h);
-    t.delete(syncedTreeKey(BAG, "lar:///a.b.c"));
+    t.deleteAt(syncedTreeKey(BAG, "lar:///a.b.c"), AT);
     expect(t.renameSourceUri(BAG, h)).toBeNull();
   });
 
@@ -253,9 +258,9 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "synced-tree.json");
     const h = carrierHash("persisted body", undefined);
-    const t1 = new SyncedTree(p, 0);
+    const t1 = new SyncedTree(p);
     t1.set(syncedTreeKey(BAG, "lar:///a.b.c"), AT, h);
-    const t2 = new SyncedTree(p, 0);                       // cold reload
+    const t2 = new SyncedTree(p);                       // cold reload
     expect(t2.renameSourceUri(BAG, h)).toBe("lar:///a.b.c");
     // the directory holds the one row and nothing else: no index rests on disk
     expect(readdirSync(p)).toEqual(rowFiles(p));
@@ -268,7 +273,7 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     const h = carrierHash("moved unchanged", undefined);
     t.set(syncedTreeKey(BAG, "lar:///old.name"), AT, h);
     // the R2 retarget: drop the stale source observation, record the moved carrier
-    t.delete(syncedTreeKey(BAG, "lar:///old.name"));
+    t.deleteAt(syncedTreeKey(BAG, "lar:///old.name"), AT);
     t.set(syncedTreeKey(BAG, "lar:///new.name"), AT, h);
     expect(t.renameSourceUri(BAG, h)).toBe("lar:///new.name");
     expect(t.get(syncedTreeKey(BAG, "lar:///old.name"))).toBeNull();
@@ -290,13 +295,13 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
   test("a sibling's observation survives another writer's persist", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "synced-tree.json");
-    const wiki   = new SyncedTree(p, 0);        // the wiki island's projector
-    const daemon = new SyncedTree(p, 0);        // the daemon island's projector, same file
+    const wiki   = new SyncedTree(p);        // the wiki island's projector
+    const daemon = new SyncedTree(p);        // the daemon island's projector, same file
 
     wiki.set(syncedTreeKey(A, "lar:///a.b.c"), AT, "h-wiki");
     daemon.set(syncedTreeKey(B, "lar:///verbs/x"), AT, "h-daemon");   // opened BEFORE the wiki wrote
 
-    const onDisk = new SyncedTree(p, 0);
+    const onDisk = new SyncedTree(p);
     expect(onDisk.get(syncedTreeKey(A, "lar:///a.b.c"))).toBe("h-wiki");
     expect(onDisk.get(syncedTreeKey(B, "lar:///verbs/x"))).toBe("h-daemon");
     rmSync(dir, { recursive: true, force: true });
@@ -305,14 +310,14 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
   test("a delete still lands across writers — it never resurrects from the file", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "synced-tree.json");
-    const seed = new SyncedTree(p, 0);
+    const seed = new SyncedTree(p);
     seed.set(syncedTreeKey(A, "lar:///gone"), AT, "h1");
 
-    const other = new SyncedTree(p, 0);          // sees lar:///gone at open
-    seed.delete(syncedTreeKey(A, "lar:///gone"));
+    const other = new SyncedTree(p);          // sees lar:///gone at open
+    seed.deleteAt(syncedTreeKey(A, "lar:///gone"), AT);
     other.set(syncedTreeKey(B, "lar:///kept"), AT, "h2");   // must not resurrect the deleted key
 
-    const onDisk = new SyncedTree(p, 0);
+    const onDisk = new SyncedTree(p);
     expect(onDisk.get(syncedTreeKey(A, "lar:///gone"))).toBeNull();
     expect(onDisk.get(syncedTreeKey(B, "lar:///kept"))).toBe("h2");
     rmSync(dir, { recursive: true, force: true });
@@ -325,22 +330,22 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
     // stale map over the second writer's row.
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "synced-tree");
-    new SyncedTree(p, 0).set(syncedTreeKey(A, "lar:///seeded"), AT, "h-seed");
-    const first  = new SyncedTree(p, 60_000);
-    const second = new SyncedTree(p, 0);
-    first.set(syncedTreeKey(A, "lar:///a.b.c"), AT, "h-first");
+    new SyncedTree(p).set(syncedTreeKey(A, "lar:///seeded"), AT, "h-seed");
+    const first  = new SyncedTree(p);
+    const second = new SyncedTree(p);
     let fired = 0;
     seam.beforeRename = () => { fired++; second.set(syncedTreeKey(B, "lar:///verbs/x"), AT, "h-second"); };
-    first.flush();
+    first.set(syncedTreeKey(A, "lar:///a.b.c"), AT, "h-first");
     expect(fired).toBe(1);                                     // the window opened once, inside the first writer's write
-    const onDisk = new SyncedTree(p, 0);
+    // Each writer's temp file stood under its own name: the second landed whole while the first's waited.
+    expect(readdirSync(p)).toEqual(rowFiles(p));
+    const onDisk = new SyncedTree(p);
     expect(onDisk.get(syncedTreeKey(B, "lar:///verbs/x"))).toBe("h-second");
     expect(onDisk.get(syncedTreeKey(A, "lar:///a.b.c"))).toBe("h-first");
     expect(onDisk.get(syncedTreeKey(A, "lar:///seeded"))).toBe("h-seed");
-    // CONTROL: with no second writer in the window the same flush lands the same rows.
+    // CONTROL: with no second writer in the window a set lands the same way.
     first.set(syncedTreeKey(A, "lar:///later"), AT, "h-later");
-    first.flush();
-    expect(new SyncedTree(p, 0).size).toBe(4);
+    expect(new SyncedTree(p).size).toBe(4);
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -349,10 +354,10 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
     // the same name twice; the rename of one can carry the other's half-written bytes.
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
     const p = join(dir, "synced-tree.json");
-    const a = new SyncedTree(p, 0);
-    const b = new SyncedTree(p, 0);
+    const a = new SyncedTree(p);
+    const b = new SyncedTree(p);
     for (let i = 0; i < 40; i++) { a.set(syncedTreeKey(A, `lar:///a${i}`), AT, `ha${i}`); b.set(syncedTreeKey(B, `lar:///b${i}`), AT, `hb${i}`); }
-    const onDisk = new SyncedTree(p, 0);
+    const onDisk = new SyncedTree(p);
     expect(onDisk.get(syncedTreeKey(A, "lar:///a39"))).toBe("ha39");
     expect(onDisk.get(syncedTreeKey(B, "lar:///b39"))).toBe("hb39");
     expect(onDisk.size).toBe(80);
@@ -368,7 +373,7 @@ describe("a base stands at one path", () => {
 
   test("baseAt answers the base only at the path its agreement stood at, in every spelling of that path", () => {
     const { dir, p } = fresh();
-    const t = new SyncedTree(p, 0);
+    const t = new SyncedTree(p);
     t.set("k", "/scratch/mirror/a.mem", "d1", "r1");
     expect(t.baseAt("k", "/scratch/mirror/a.mem")).toEqual({ path: "/scratch/mirror/a.mem", disk: "d1", records: "r1" });
     expect(t.baseAt("k", "/scratch/mirror/sub/../a.mem")).not.toBeNull();
@@ -376,18 +381,18 @@ describe("a base stands at one path", () => {
     expect(t.baseAt("k", "/scratch/mirror/a.md")).toBeNull();
     expect(t.baseAt("missing", "/scratch/mirror/a.mem")).toBeNull();
     // The path survives a reload.
-    expect(new SyncedTree(p, 0).baseAt("k", "/scratch/mirror/a.mem")).not.toBeNull();
+    expect(new SyncedTree(p).baseAt("k", "/scratch/mirror/a.mem")).not.toBeNull();
     rmSync(dir, { recursive: true, force: true });
   });
 
   test("a carrier holds one row per path: an agreement at a second path displaces none at the first", () => {
     const { dir, p } = fresh();
     const MIRROR = "/scratch/bags/lares/a.mem", HOLDING = "/scratch/wikis/inbox/a.mem";
-    const projector = new SyncedTree(p, 0);
+    const projector = new SyncedTree(p);
     projector.set("k", MIRROR, "d1", "r1");                    // the projector pins the mirror's base
-    const gesture = new SyncedTree(p, 0);
+    const gesture = new SyncedTree(p);
     gesture.set("k", HOLDING, "d2", "r2");                     // the ingest gesture pins the holding file's
-    for (const t of [gesture, new SyncedTree(p, 0)]) {
+    for (const t of [gesture, new SyncedTree(p)]) {
       expect(t.baseAt("k", MIRROR)).toEqual({ path: MIRROR, disk: "d1", records: "r1" });
       expect(t.baseAt("k", HOLDING)).toEqual({ path: HOLDING, disk: "d2", records: "r2" });
       expect(t.bases("k").map((b) => b.path).sort()).toEqual([MIRROR, HOLDING]);
@@ -397,26 +402,25 @@ describe("a base stands at one path", () => {
     // CONTROL: a path no agreement stood at still names no base, and one base leaves alone.
     expect(gesture.baseAt("k", "/scratch/bags/lares/moved/a.mem")).toBeNull();
     gesture.deleteAt("k", HOLDING);
-    const after = new SyncedTree(p, 0);
+    const after = new SyncedTree(p);
     expect(after.baseAt("k", HOLDING)).toBeNull();
     expect(after.base("k")).toEqual({ path: MIRROR, disk: "d1", records: "r1" });
-    after.delete("k");
-    expect(new SyncedTree(p, 0).size).toBe(0);
+    after.deleteAt("k", MIRROR);
+    expect(new SyncedTree(p).size).toBe(0);
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("reread lays this instance's unpersisted changes over what a sibling wrote", () => {
+  test("reread takes the directory's word: a sibling's rows arrive, and one carrier rereads alone", () => {
     const { dir, p } = fresh();
-    const mine = new SyncedTree(p, 60_000);          // coalescing: its own set waits in the journal
-    const sibling = new SyncedTree(p, 0);
+    const mine = new SyncedTree(p);
+    const sibling = new SyncedTree(p);
     mine.set("mine", AT, "m1");
     sibling.set("theirs", AT, "s1");
     expect(mine.base("theirs")).toBeNull();
     mine.reread();
     expect(mine.base("theirs")).toEqual({ path: AT, disk: "s1", records: "s1" });
     expect(mine.base("mine")).toEqual({ path: AT, disk: "m1", records: "m1" });
-    mine.flush();
-    const onDisk = new SyncedTree(p, 0);
+    const onDisk = new SyncedTree(p);
     expect([onDisk.base("mine")?.disk, onDisk.base("theirs")?.disk, onDisk.size]).toEqual(["m1", "s1", 2]);
     // One carrier's rows reread alone, and the other carriers' rows stand as this instance held them.
     sibling.set("theirs", "/scratch/mirror/b.mem", "s2");
@@ -436,13 +440,137 @@ describe("a base stands at one path", () => {
       t.set("k", AT, "d1", "r1");
       expect(t.baseAt("k", AT)).toEqual({ path: AT, disk: "d1", records: "r1" });
       t.reread();
-      t.flush();
       expect(t.size).toBe(1);
-      t.delete("k");
+      t.deleteAt("k", AT);
       expect(t.base("k")).toBeNull();
     } finally {
       (globalThis as { setTimeout: unknown }).setTimeout = setTimer;
     }
     expect(armed).toEqual([]);
+  });
+});
+
+describe("an observation rests the moment it gets recorded", () => {
+  const K = syncedTreeKey("lar:///ha.ka.ba/bags/lares", "lar:///a.b.c");
+  const fresh = (): { dir: string; p: string } => {
+    const dir = mkdtempSync(join(tmpdir(), "synced-tree-now-"));
+    return { dir, p: join(dir, "synced-tree") };
+  };
+  /** Run `act` and return what the tree said on `console.warn`. */
+  const hearing = (act: () => void): string[] => {
+    const said: string[] = [];
+    const warn = console.warn;
+    console.warn = (line: unknown) => { said.push(String(line)); };
+    try { act(); } finally { console.warn = warn; }
+    return said;
+  };
+
+  test("a set lands its row before it returns: a sibling that opens next reads it", () => {
+    const { dir, p } = fresh();
+    const projector = new SyncedTree(p);               // as an island builds it: no argument but the directory
+    projector.set(K, AT, "d1", "r1");
+    expect(rowFiles(p)).toHaveLength(1);
+    expect(new SyncedTree(p).baseAt(K, AT)).toEqual({ path: AT, disk: "d1", records: "r1" });
+    // CONTROL: a tree with no directory lands nothing.
+    new SyncedTree(null).set(K, AT, "d1");
+    expect(rowFiles(p)).toHaveLength(1);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a row a sibling removed never returns from another instance's memory", () => {
+    const { dir, p } = fresh();
+    const projector = new SyncedTree(p);
+    projector.set(K, AT, "d1");
+    const sibling = new SyncedTree(p);
+    expect(sibling.baseAt(K, AT)).not.toBeNull();      // the sibling read the row the projector recorded
+    sibling.deleteAt(K, AT);
+    expect(rowFiles(p)).toEqual([]);
+    // The projector goes on working and holds the row in memory still; nothing of it reaches the disk again.
+    projector.set(syncedTreeKey("lar:///ha.ka.ba/bags/lares", "lar:///other"), AT, "d2");
+    const onDisk = new SyncedTree(p);
+    expect(onDisk.baseAt(K, AT)).toBeNull();
+    expect(onDisk.size).toBe(1);
+    // The projector reads the directory's word when it asks.
+    projector.reread(K);
+    expect(projector.baseAt(K, AT)).toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("the later observation of one row stands: a reread answers a sibling's newer base, never this instance's older one", () => {
+    const { dir, p } = fresh();
+    const projector = new SyncedTree(p);
+    projector.set(K, AT, "d-old", "r-old");            // the projector wrote the file
+    const gesture = new SyncedTree(p);
+    gesture.set(K, AT, "d-new", "r-new");              // a hand edited it and ingested: the newer agreement
+    expect(projector.baseAt(K, AT)?.disk).toBe("d-old");
+    projector.reread(K);
+    expect(projector.baseAt(K, AT)).toEqual({ path: AT, disk: "d-new", records: "r-new" });
+    expect(new SyncedTree(p).baseAt(K, AT)).toEqual({ path: AT, disk: "d-new", records: "r-new" });
+    // CONTROL: with no sibling in between, a reread answers what this instance recorded.
+    projector.set(K, AT, "d-newest");
+    projector.reread(K);
+    expect(projector.baseAt(K, AT)?.disk).toBe("d-newest");
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a removal reaches a row this instance never read", () => {
+    const { dir, p } = fresh();
+    const early = new SyncedTree(p);                    // opens on an empty directory
+    const sibling = new SyncedTree(p);
+    sibling.set(K, AT, "d1");
+    sibling.set(K, "/scratch/holding/a.mem", "d2");
+    expect(rowFiles(p)).toHaveLength(2);
+    expect(early.baseAt(K, AT)).toBeNull();
+    early.deleteAt(K, AT);
+    const onDisk = new SyncedTree(p);
+    expect(onDisk.baseAt(K, AT)).toBeNull();
+    // CONTROL: the carrier's base at another path stays.
+    expect(onDisk.baseAt(K, "/scratch/holding/a.mem")).not.toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a removal the disk refuses gets named, throws nothing, and leaves the row for a reader to meet", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p);
+    t.set(K, AT, "d1");
+    const [name] = rowFiles(p);
+    seam.unlinkFault = Object.assign(new Error("EACCES: permission denied"), { code: "EACCES" });
+    const said = hearing(() => { t.deleteAt(K, AT); });
+    expect(said).toEqual([`[synced-tree] the disk refused to remove row ${join(p, name!)} (EACCES); the row stays, and the carrier keeps that base`]);
+    expect(t.refusals).toBe(1);
+    // The directory's word stands: the row rests on disk, so this instance holds it still, as every reader does.
+    expect(t.baseAt(K, AT)).toEqual({ path: AT, disk: "d1", records: "d1" });
+    expect(new SyncedTree(p).baseAt(K, AT)).not.toBeNull();
+    // CONTROL: with no fault the removal lands, and a row that already left raises no word.
+    expect(hearing(() => { t.deleteAt(K, AT); t.deleteAt(K, AT); })).toEqual([]);
+    expect(rowFiles(p)).toEqual([]);
+    expect(t.refusals).toBe(1);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a write the disk refuses gets named, throws nothing, leaves no temp file, and the directory's word stands", () => {
+    const { dir, p } = fresh();
+    const t = new SyncedTree(p);
+    t.set(K, AT, "d0", "r0");                           // the row stands at an earlier agreement
+    seam.beforeRename = () => { throw Object.assign(new Error("EIO: i/o error"), { code: "EIO" }); };
+    const said = hearing(() => { t.set(K, AT, "d1", "r1"); });
+    expect(said).toHaveLength(1);
+    expect(said[0]).toMatch(/^\[synced-tree\] the disk refused to write row .*\(EIO\); the carrier keeps the base it held, and the next agreement pins anew$/);
+    expect(t.refusals).toBe(1);
+    expect(readdirSync(p)).toEqual(rowFiles(p));        // no temp file stays behind
+    // This instance answers what every reader meets: the earlier base, so a gate that weighs the carrier
+    // finds the base behind and pins anew. An instance that kept `d1` in memory would call the carrier pinned.
+    expect(t.baseAt(K, AT)).toEqual({ path: AT, disk: "d0", records: "r0" });
+    expect(new SyncedTree(p).baseAt(K, AT)).toEqual({ path: AT, disk: "d0", records: "r0" });
+    // A refused FIRST agreement rests nowhere.
+    seam.beforeRename = () => { throw Object.assign(new Error("ENOSPC: no space"), { code: "ENOSPC" }); };
+    expect(hearing(() => { t.set(K, "/scratch/mirror/first.mem", "d5"); })).toEqual([]);   // the second refusal counts and stays quiet
+    expect(t.refusals).toBe(2);
+    expect(t.baseAt(K, "/scratch/mirror/first.mem")).toBeNull();
+    // CONTROL: the next agreement lands, and nothing wrote the refused rows behind anyone's back.
+    expect(hearing(() => { t.set(K, AT, "d1", "r1"); })).toEqual([]);
+    expect(rowFiles(p)).toHaveLength(1);
+    expect(new SyncedTree(p).baseAt(K, AT)).toEqual({ path: AT, disk: "d1", records: "r1" });
+    rmSync(dir, { recursive: true, force: true });
   });
 });

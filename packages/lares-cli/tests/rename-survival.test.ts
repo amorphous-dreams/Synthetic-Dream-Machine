@@ -33,7 +33,7 @@ function seed(name: string, body: string): { src: string; bagDir: string; tree: 
   const bagDir = join(root, "bags", "@x", "ha.ka.ba", "lares", "api");
   mkdirSync(bagDir, { recursive: true });
   writeFileSync(join(bagDir, name), body);
-  const tree = new SyncedTree(join(root, "synced.json"), 0);
+  const tree = new SyncedTree(join(root, "synced.json"));
   const src = join(root, "bags", "@x");
   // first scan → the carrier is new; record the landed observation as the projector would
   const scan = scanSource(root, src, TO_BAG, tree)!;
@@ -79,6 +79,40 @@ describe("rename-survival — the observation moves with the carrier (R2)", () =
     // the stale source observation is gone; the new one carries the (identical) hash
     expect(tree.get(syncedTreeKey(TO_BAG, uriOf("old")))).toBeNull();
     expect(tree.get(syncedTreeKey(TO_BAG, uriOf("new")))).toBe(landedHash);
+  });
+
+  test("a confirmed rename drops the source's base where its file left, and a holding copy keeps its own", () => {
+    const body = "# a kept note\n\nthe same bytes in two places\n";
+    const { src, bagDir, tree, landedHash } = seed("old.md", body);
+    const oldKey = syncedTreeKey(TO_BAG, uriOf("old"));
+    // A person keeps a copy of the carrier in a holding directory beside the mirror, and ingested it there.
+    const holding = join(root, "holding", "old.md");
+    mkdirSync(join(root, "holding"), { recursive: true });
+    writeFileSync(holding, body);
+    tree.set(oldKey, holding, landedHash);
+    expect(tree.bases(oldKey)).toHaveLength(2);
+
+    rmSync(join(bagDir, "old.md"));
+    writeFileSync(join(bagDir, "new.md"), body);
+    const scan2 = scanSource(root, src, TO_BAG, tree)!;
+    expect(scan2.rows.find((r) => r.uri === uriOf("new"))!.status).toBe("renamed");
+    expect(applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan2.rows), { decision: "apply", renames: [{ fromUri: uriOf("old"), toUri: uriOf("new") }] })).toBe(1);
+
+    for (const t of [tree, new SyncedTree(join(root, "synced.json"))]) {
+      expect(t.baseAt(oldKey, join(bagDir, "old.md"))).toBeNull();                 // the file left: its base left with it
+      expect(t.baseAt(oldKey, holding)).toEqual({ path: holding, disk: landedHash, records: landedHash });
+      expect(t.baseAt(syncedTreeKey(TO_BAG, uriOf("new")), join(bagDir, "new.md"))).not.toBeNull();
+    }
+    // CONTROL: where a holding copy went too, its base goes with it. The first carrier's own holding base
+    // steps aside first, so `new` alone observes these bytes and the next move reads as a rename.
+    tree.deleteAt(oldKey, holding);
+    rmSync(join(bagDir, "new.md"));
+    rmSync(holding);
+    writeFileSync(join(bagDir, "newer.md"), body);
+    tree.set(syncedTreeKey(TO_BAG, uriOf("new")), holding, landedHash);
+    const scan3 = scanSource(root, src, TO_BAG, tree)!;
+    expect(applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan3.rows), { decision: "apply", renames: [{ fromUri: uriOf("new"), toUri: uriOf("newer") }] })).toBe(1);
+    expect(tree.bases(syncedTreeKey(TO_BAG, uriOf("new")))).toEqual([]);
   });
 
   test("a suspended wave (mass-delete brake) moves NO observation", () => {
