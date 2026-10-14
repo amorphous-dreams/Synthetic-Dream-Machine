@@ -903,13 +903,19 @@ export class LarDiskProjector {
    * THE COUNT REPLACES A FRACTION. An answer over more than one carrier, or over `all`, names how many
    * carriers its giver read as pending in the bag. A count that moved refuses and changes nothing, so no
    * answer ever sweeps a carrier its giver never saw.
+   *
+   * A REMOVE READS THE VIEW, OR REFUSES. With no wiki view attached the projector cannot read back what the
+   * delete door did, so `remove` refuses by name (`no-wiki-view`) and calls no door. A carrier the view now
+   * resolves from ANOTHER bag left this bag's pending set, and the meme still stands: the answer names it
+   * `unshadowed`, with the bag that answers it now, and never `done`, which names a carrier that left the
+   * wiki. A tiddler the view still shows with no origin stays pending.
    */
   async answerRemovals(
     act: "remove" | "restore", bagId: string,
     sel: { readonly uris?: readonly string[]; readonly all?: boolean; readonly count?: number },
   ): Promise<
-    | { readonly ok: true; readonly done: readonly string[]; readonly left: readonly string[] }
-    | { readonly ok: false; readonly refusal: "not-pending" | "pending-count-moved" | "no-delete-door" | "answer-names-nothing"; readonly why: string; readonly count?: number }
+    | { readonly ok: true; readonly done: readonly string[]; readonly left: readonly string[]; readonly unshadowed: ReadonlyArray<{ readonly uri: string; readonly bag: string }> }
+    | { readonly ok: false; readonly refusal: "not-pending" | "pending-count-moved" | "no-delete-door" | "no-wiki-view" | "answer-names-nothing"; readonly why: string; readonly count?: number }
   > {
     const inBag = this.pendingRemovals().filter((p) => p.bagId === bagId).map((p) => p.uri);
     const asked = sel.all ? inBag : [...new Set(sel.uris ?? [])];
@@ -923,8 +929,11 @@ export class LarDiskProjector {
     if ((sel.all || asked.length > 1) && sel.count !== inBag.length) {
       return { ok: false, refusal: "pending-count-moved", why: `${inBag.length} carrier(s) of ${bagId} stand pending; the answer names ${sel.count ?? "no count"}`, count: inBag.length };
     }
+    const unshadowed: Array<{ uri: string; bag: string }> = [];
     if (act === "remove") {
       if (!this.removeCarrier) return { ok: false, refusal: "no-delete-door", why: "this projector holds no wiki delete door" };
+      const view = this._tw5?.$tw.wiki;
+      if (!view) return { ok: false, refusal: "no-wiki-view", why: "this projector holds no wiki view to read the removal back; nothing ran" };
       for (const uri of asked) await this.removeCarrier(uri);
       // THE DELETE DOOR'S WORD PROVES NOTHING BY ITSELF. Each carrier gets read back from the wiki's resolved
       // view: one that left it, or that the view now resolves from another bag, leaves this bag's pending
@@ -932,10 +941,15 @@ export class LarDiskProjector {
       // before the store weighs the tombstone: a store that refuses it returns the carrier to the view, and
       // the reconcile that return marks pends it again, since the base stays. The read runs no reconcile, so
       // the base stays in the tree.
-      const view = this._tw5?.$tw.wiki;
       for (const uri of asked) {
-        const origin = (view?.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];
-        if (origin !== bagId) this._leavePending(bagId, uri);
+        const standing = view.getTiddler?.(uri);
+        const origin = (standing?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];
+        if (origin === bagId) continue;
+        // A tiddler the view still shows with no origin has not left it: it stays pending.
+        if (standing !== undefined && standing !== null && typeof origin !== "string") continue;
+        // Left this bag's view: gone from the wiki, or answered now by another bag, which still holds the meme.
+        if (typeof origin === "string") unshadowed.push({ uri, bag: origin });
+        this._leavePending(bagId, uri);
       }
     } else {
       for (const uri of asked) this.restoreAsked.add(sitedKey(bagId, uri));
@@ -947,7 +961,10 @@ export class LarDiskProjector {
     }
     await this.idle();
     const still = new Set(this.pendingRemovals().filter((p) => p.bagId === bagId).map((p) => p.uri));
-    return { ok: true, done: asked.filter((uri) => !still.has(uri)), left: asked.filter((uri) => still.has(uri)) };
+    // `done` names what left the wiki; a carrier another bag answers now rides `unshadowed` alone.
+    const standsBelow = unshadowed.filter((u) => !still.has(u.uri));
+    const below = new Set(standsBelow.map((u) => u.uri));
+    return { ok: true, done: asked.filter((uri) => !still.has(uri) && !below.has(uri)), left: asked.filter((uri) => still.has(uri)), unshadowed: standsBelow };
   }
 
   private async _scheduleUnlinkByTitle(title: string): Promise<void> {

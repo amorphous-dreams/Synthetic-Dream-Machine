@@ -100,7 +100,7 @@ describe("the settle word", () => {
     expect(answered, "no word while the wiki holds other records").toBeNull();
     s.arrive("THE LANDED RECORDS");
     await asked;
-    expect(answered).toEqual({ ok: true, op: "settle", bag: BAG, mirrored: true, settledCount: 1, elsewhereCount: 0, supersededCount: 0 });
+    expect(answered).toEqual({ ok: true, op: "settle", bag: BAG, mirrored: true, settledCount: 1, elsewhereCount: 0, supersededCount: 0, settled: [URI], elsewhere: [], superseded: [] });
     // THE WORD COMES AFTER THE PROJECTION: the file already holds what the records render.
     expect(readFileSync(s.file, "utf-8")).toBe(body("THE LANDED RECORDS"));
   });
@@ -217,7 +217,7 @@ describe("the settle word", () => {
   test("CONTROL: records that already stand answer at once; a bag no mirror holds answers at once; an incomplete ask refuses", async () => {
     const s = await stand();
     expect(await answerShore(s.projector, { op: "settle", bag: BAG, carriers: [{ uri: URI, records: carrierHash(body("THE FIRST RECORDS")) }] }))
-      .toEqual({ ok: true, op: "settle", bag: BAG, mirrored: true, settledCount: 1, elsewhereCount: 0, supersededCount: 0 });
+      .toEqual({ ok: true, op: "settle", bag: BAG, mirrored: true, settledCount: 1, elsewhereCount: 0, supersededCount: 0, settled: [URI], elsewhere: [], superseded: [] });
     expect(await answerShore(s.projector, { op: "settle", bag: "no-such-bag", carriers: [{ uri: URI, records: "x" }] }))
       .toMatchObject({ ok: true, mirrored: false, settledCount: 0 });
     expect(await answerShore(s.projector, { op: "settle", bag: BAG })).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });

@@ -94,10 +94,18 @@ export async function readShoreList(
   return { ok: true, standoffs, pending, ...(requestId !== undefined ? { requestId } : {}) };
 }
 
+/**
+ * A settle ask's page: at most this many carriers, so every row an island answers rides whole under the outcome's
+ * row cap (`AUDIT_ARRAY_CAP`, `@lararium/tw5` `verb-vm.ts`); `tests/shore-two-islands.test.ts` welds the two.
+ */
+export const SETTLE_PAGE = 32;
+
 /** What the settle word said, as a gesture reports it. */
 export interface SettleReading {
   /** True where the island answered that the projection the named records cause has run. */
   readonly settled: boolean;
+  /** False where no island of the vessel mounts a disk shore: no projection follows these records at all. */
+  readonly shore: boolean;
   /** False where no mirror of the island holds the bag: it projects nothing of these records. */
   readonly mirrored: boolean;
   readonly settledCount: number;
@@ -120,8 +128,8 @@ export async function askSettle(
   const answer = await ask({ op: "settle", bag, carriers: carriers.map((c) => ({ uri: c.uri, records: c.records })) });
   const o = answer.output;
   const count = (name: string): number => (typeof o[name] === "number" ? (o[name] as number) : 0);
-  if (!answer.ok) return { settled: false, mirrored: true, settledCount: 0, elsewhereCount: 0, supersededCount: 0, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused" };
-  return { settled: true, mirrored: o["mirrored"] !== false, settledCount: count("settledCount"), elsewhereCount: count("elsewhereCount"), supersededCount: count("supersededCount") };
+  if (!answer.ok) return { settled: false, shore: true, mirrored: true, settledCount: 0, elsewhereCount: 0, supersededCount: 0, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused" };
+  return { settled: true, shore: o["shore"] !== false, mirrored: o["mirrored"] !== false, settledCount: count("settledCount"), elsewhereCount: count("elsewhereCount"), supersededCount: count("supersededCount") };
 }
 
 type RunVerb = (name: string, args: Record<string, unknown>, did: string, opts: { timeoutMs: number }) => Promise<SubmitResult>;
@@ -162,8 +170,11 @@ const refusedAt = (island: ShoreIsland, a: ShoreAnswer): ShoreAnswer =>
  *   list     reads every page of each island (`readShoreList`) and answers both lists as one page, each
  *            row naming its island; an island that mounts no projection lists nothing
  *   sense    each island looks; the counts add
- *   settle   each island answers for the mirrors it holds; the word stands where every island gave it, and
- *            `mirrored` reads true where any island mirrors the bag
+ *   settle   asked in pages of at most SETTLE_PAGE carriers, so each island's rows ride whole; each island
+ *            answers for the mirrors it holds, and the word stands where every island gave it. Each carrier
+ *            reads ONCE across islands: settled where any island that mirrors the bag projected it, superseded
+ *            where a later word took it and none projected it, elsewhere otherwise. `mirrored` reads true where
+ *            any island mirrors the bag, and `shore` false where no island mounts a disk shore at all
  *   answers  (`take-records`, `restore`, `remove`) go to the island whose list holds the state: the standoff
  *            under the named key, or the pending removals the answer names (by carrier, by bag, or all).
  *            Where both islands hold it, or a set splits across them, the answer refuses by name
@@ -198,17 +209,64 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     };
   }
 
-  if (op === "sense" || op === "settle") {
+  if (op === "sense") {
     const answers: Array<{ island: ShoreIsland; answer: ShoreAnswer }> = [];
     for (const island of SHORE_ISLANDS) answers.push({ island, answer: await ask(island)(shoreArgs) });
     const refused = answers.find((a) => !a.answer.ok && !holdsNoShore(a.answer));
     if (refused) return refusedAt(refused.island, refused.answer);
     const held = answers.filter((a) => a.answer.ok).map((a) => a.answer.output);
     const sum = (name: string): number => held.reduce((n, o) => n + (typeof o[name] === "number" ? (o[name] as number) : 0), 0);
-    const output: Record<string, unknown> = op === "sense"
-      ? { ok: true, op, standoffCount: sum("standoffCount"), pendingCount: sum("pendingCount") }
-      : { ok: true, op, ...(typeof shoreArgs["bag"] === "string" ? { bag: shoreArgs["bag"] } : {}), mirrored: held.some((o) => o["mirrored"] === true), settledCount: sum("settledCount"), elsewhereCount: sum("elsewhereCount"), supersededCount: sum("supersededCount") };
+    const output: Record<string, unknown> = { ok: true, op, standoffCount: sum("standoffCount"), pendingCount: sum("pendingCount") };
     const requestId = answers.find((a) => a.answer.requestId !== undefined)?.answer.requestId;
+    return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
+  }
+
+  if (op === "settle") {
+    const carriers = Array.isArray(shoreArgs["carriers"]) ? (shoreArgs["carriers"] as unknown[]) : [];
+    const pages: unknown[][] = [];
+    for (let at = 0; at < carriers.length; at += SETTLE_PAGE) pages.push(carriers.slice(at, at + SETTLE_PAGE));
+    if (pages.length === 0) pages.push([]);
+    const kinds = ["settled", "elsewhere", "superseded"] as const;
+    const reading = new Map<string, Set<(typeof kinds)[number]>>();
+    let shore = false; let mirrored = false; let requestId: string | undefined;
+    for (const page of pages) {
+      for (const island of SHORE_ISLANDS) {
+        const answer = await ask(island)({ ...shoreArgs, carriers: page });
+        if (!answer.ok) { if (holdsNoShore(answer)) continue; return refusedAt(island, answer); }
+        shore = true;
+        requestId ??= answer.requestId;
+        const o = answer.output;
+        if (o["mirrored"] !== true) continue;
+        mirrored = true;
+        // AN ISLAND THAT MIRRORS THE BAG READS EVERY CARRIER OF THE PAGE EXACTLY ONCE: rows that miss one, name
+        // one twice, or name one the page never asked refuse by name, never count.
+        const asked = (page as Array<{ uri?: unknown }>).map((c) => String(c?.uri)).sort();
+        const named = kinds.flatMap((kind) => (Array.isArray(o[kind]) ? (o[kind] as unknown[]).map(String) : [])).sort();
+        if (asked.length !== named.length || asked.some((uri, i) => uri !== named[i])) {
+          return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: `the ${island === "wiki" ? "active wiki's" : "daemon"} island's settle answer reads ${named.length} row(s) for the ${asked.length} carrier(s) it was asked` };
+        }
+        for (const kind of kinds) {
+          const rows = o[kind];
+          const count = o[`${kind}Count`];
+          if (!Array.isArray(rows) || (typeof count === "number" && count !== rows.length)) {
+            return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: `the ${island === "wiki" ? "active wiki's" : "daemon"} island's settle answer carries no whole ${kind} rows` };
+          }
+          for (const uri of rows as string[]) {
+            let held = reading.get(uri);
+            if (!held) { held = new Set(); reading.set(uri, held); }
+            held.add(kind);
+          }
+        }
+      }
+    }
+    // ONE READING PER CARRIER, whichever islands mirror its bag.
+    let settledCount = 0, elsewhereCount = 0, supersededCount = 0;
+    for (const held of reading.values()) {
+      if (held.has("settled")) settledCount += 1;
+      else if (held.has("superseded")) supersededCount += 1;
+      else elsewhereCount += 1;
+    }
+    const output: Record<string, unknown> = { ok: true, op, ...(typeof shoreArgs["bag"] === "string" ? { bag: shoreArgs["bag"] } : {}), shore, mirrored, settledCount, elsewhereCount, supersededCount };
     return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
   }
 

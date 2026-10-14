@@ -230,6 +230,11 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       for (const uri of reached.done) console.log(`  ${uri}`);
       if (reached.done.length < reached.doneCount) console.log(`  (the answer named ${reached.done.length} of them)`);
       for (const uri of reached.left) console.error(`  ⚠ still pending: ${uri}`);
+      // A removal that unshadowed a lower copy: this bag let it go, and the meme still stands from that bag.
+      const standing = Array.isArray(answer.output["unshadowed"]) ? (answer.output["unshadowed"] as Array<{ uri: string; bag: string }>) : [];
+      for (const u of standing) console.error(`  ⚠ still stands from ${u.bag}: ${u.uri}`);
+      const standingCount = typeof answer.output["unshadowedCount"] === "number" ? (answer.output["unshadowedCount"] as number) : standing.length;
+      if (standing.length < standingCount) console.error(`  ⚠ ${standingCount} carrier(s) still stand from a lower bag in all: \`lares shore\` names each`);
       if (reached.left.length < reached.leftCount) console.error(`  ⚠ ${reached.leftCount} carrier(s) still pending in all: \`lares shore\` names each`);
     },
   });

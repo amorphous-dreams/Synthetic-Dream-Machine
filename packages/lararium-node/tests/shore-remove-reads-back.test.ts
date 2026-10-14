@@ -7,6 +7,9 @@
  *
  * The real projector runs over a scratch mirror and a stub wiki.
  * Control: a door that does remove the carrier answers it done, and it pends no more.
+ *
+ * A remove with no wiki view to read back refuses by name and calls no door (F5.1); a carrier a bag beneath now
+ * answers leaves this bag's pending set and reads `unshadowed`, naming that bag, since the meme still stands (F5.2).
  */
 import { describe, test, expect, afterEach } from "vitest";
 import { mkdtempSync, rmSync, existsSync } from "node:fs";
@@ -25,7 +28,7 @@ const BAG = "lares";
 const URI = "lar:///ha.ka.ba/probe/remove-reads-back";
 
 /** A projector over one pending carrier, with a delete door that removes the carrier from the view or not. */
-async function stand(door: "removes" | "refused" | "beneath") {
+async function stand(door: "removes" | "refused" | "beneath" | "bare") {
   root = mkdtempSync(join(tmpdir(), "lar-remove-back-"));
   const live = new Map([[URI, BAG]]);
   const asked: string[] = [];
@@ -35,10 +38,10 @@ async function stand(door: "removes" | "refused" | "beneath") {
     syncedTree: new SyncedTree(join(root, ".projection", "synced-tree")),
     // The door answers either way; only the view says whether the carrier left.
     // "beneath": the tombstone lands, and a bag beneath answers the carrier now.
-    removeCarrier: (uri) => { asked.push(uri); if (door === "removes") live.delete(uri); if (door === "beneath") live.set(uri, "a-bag-beneath"); },
+    removeCarrier: (uri) => { asked.push(uri); if (door === "removes") live.delete(uri); if (door === "beneath") live.set(uri, "a-bag-beneath"); if (door === "bare") live.set(uri, null as unknown as string); },
   });
   projector.start({ $tw: { wiki: {
-    getTiddler: (title: string) => (live.has(title) ? { fields: { title, "$origin-bag": live.get(title) } } : undefined),
+    getTiddler: (title: string) => (live.has(title) ? { fields: { title, ...(live.get(title) !== null ? { "$origin-bag": live.get(title) } : {}) } } : undefined),
     allTitles: () => [...live.keys()],
     addEventListener: () => {}, removeEventListener: () => {},
   } } } as unknown as TW5Engine);
@@ -65,9 +68,31 @@ describe("remove reads back that the carrier left the wiki's resolved view", () 
     expect(existsSync(s.file)).toBe(false);
   });
 
-  test("a carrier the view now resolves from a bag beneath leaves this bag's pending set: this mirror projects it no more", async () => {
+  test("a carrier the view now resolves from a bag beneath leaves this bag's pending set, and the answer says the meme still stands there", async () => {
     const s = await stand("beneath");
-    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({ ok: true, done: [URI], left: [] });
+    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({
+      ok: true, done: [], doneCount: 0, left: [], unshadowed: [{ uri: URI, bag: "a-bag-beneath" }], unshadowedCount: 1,
+    });
     expect(s.projector.pendingRemovals()).toEqual([]);
+  });
+
+  test("a tiddler the view still shows with no origin has not left it: it stays pending, never done", async () => {
+    const s = await stand("bare");
+    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({ ok: true, done: [], left: [URI] });
+    expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
+  });
+
+  test("CONTROL: a carrier that left the view reads done and names nothing unshadowed", async () => {
+    const s = await stand("removes");
+    const answered = await answerShore(s.projector, { op: "remove", uris: [URI] });
+    expect(answered).not.toHaveProperty("unshadowed");
+  });
+
+  test("a remove with no wiki view to read back refuses by name, calls no door, and leaves the carrier pending", async () => {
+    const s = await stand("removes");
+    (s.projector as unknown as { _tw5: unknown })._tw5 = null;
+    expect(await answerShore(s.projector, { op: "remove", uris: [URI] })).toMatchObject({ ok: false, refusal: "no-wiki-view" });
+    expect(s.asked).toEqual([]);
+    expect(s.projector.pendingRemovals().map((p) => p.uri)).toEqual([URI]);
   });
 });

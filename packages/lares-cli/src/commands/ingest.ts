@@ -242,8 +242,12 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       }
       if (pageError !== undefined) console.error(`  ⚠ ${refusedMessage}`);
       if (settle !== undefined) {
-        if (settle.settled) {
-          console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from a higher bag` : ""}${"mirrored" in settle && !settle.mirrored ? " (no mirror holds this bag)" : ""}`);
+        if (settle.settled && "shore" in settle && !settle.shore) {
+          console.log("  no island of this vessel mounts a disk shore: no projection follows these records");
+        } else if (settle.settled && "mirrored" in settle && !settle.mirrored) {
+          console.log(`  no mirror holds ${toBag}: no projection follows these records`);
+        } else if (settle.settled) {
+          console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from a higher bag` : ""}`);
           if ("supersededCount" in settle && settle.supersededCount > 0) console.error(`  ⚠ a later settle word took ${settle.supersededCount} carrier(s) over; this run claims no projection for them, and a scan now may read a file the projection still moves`);
         } else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
       }

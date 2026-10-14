@@ -150,7 +150,9 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     if (!answer.mirrored) return { ok: true, op, bag, mirrored: false, settledCount: 0, elsewhereCount: 0, supersededCount: 0 };
     // Counts ride every answer; the rows of what never settled ride too (the outcome caps them past 32). A
     // carrier a later word took answers too: this word ends, naming it, and claims no projection for it.
-    const counts = { settledCount: answer.settled.length, elsewhereCount: answer.elsewhere.length, supersededCount: answer.superseded.length, ...(answer.superseded.length > 0 ? { superseded: answer.superseded } : {}) };
+    // The rows ride every answer too: the CLI asks in pages under the outcome's row cap and reads each carrier
+    // once across islands (`askShore`, lares-cli shore-core.ts).
+    const counts = { settledCount: answer.settled.length, elsewhereCount: answer.elsewhere.length, supersededCount: answer.superseded.length, settled: answer.settled, elsewhere: answer.elsewhere, superseded: answer.superseded };
     if (answer.failed.length > 0) {
       return { ok: false, op, bag, refusal: "projection-failed", why: `the reconcile threw for ${answer.failed.length} carrier(s); their files stand as the failure left them`, failed: answer.failed, failedCount: answer.failed.length, ...(answer.stopped.length > 0 ? { stopped: answer.stopped, stoppedCount: answer.stopped.length } : {}), ...counts };
     }
@@ -175,8 +177,9 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     const answer = await projector.answerRemovals(op, target, { ...(all ? { all: true } : { uris }), ...(count !== undefined ? { count } : {}) });
     // The counts ride beside the rows: past the outcome's row cap the rows stay behind, and the counts still
     // say how many carriers the answer reached and how many it left pending.
+    // A carrier another bag answers now left this bag's pending set, and the meme still stands: it rides apart.
     return answer.ok
-      ? { ok: true, op, bag: target, done: answer.done, doneCount: answer.done.length, left: answer.left, leftCount: answer.left.length }
+      ? { ok: true, op, bag: target, done: answer.done, doneCount: answer.done.length, left: answer.left, leftCount: answer.left.length, ...(answer.unshadowed.length > 0 ? { unshadowed: answer.unshadowed, unshadowedCount: answer.unshadowed.length } : {}) }
       : { ok: false, op, bag: target, refusal: answer.refusal, why: answer.why, ...(answer.count !== undefined ? { count: answer.count } : {}) };
   }
   if (op === "take-records") {

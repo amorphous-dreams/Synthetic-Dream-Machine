@@ -12,7 +12,7 @@
  */
 import { describe, test, expect } from "vitest";
 import { VERB_RESULT_KEY } from "@lararium/mesh";
-import { askShore, readShoreList } from "../src/shore-core.js";
+import { askShore, readShoreList, askSettle, SETTLE_PAGE } from "../src/shore-core.js";
 import type { SubmitResult } from "../src/verb-result.js";
 
 type Island = (args: Record<string, unknown>) => Record<string, unknown>;
@@ -36,6 +36,18 @@ function vessel(wiki: Island, daemon: Island | "unregistered") {
     return { status: "done", requestId: `req-${island}`, results: { [VERB_RESULT_KEY]: { ok: true, output } } } as SubmitResult;
   };
   return { run, sent };
+}
+
+/** Carriers as a settle ask names them. */
+const carriersOf = (uris: string[]) => uris.map((uri) => ({ uri, records: "h" }));
+/** An island that mirrors the bag and reads each carrier of the page it gets as `kindOf` says, rows and counts. */
+function settleIsland(kindOf: (uri: string) => "settled" | "elsewhere" | "superseded", onPage?: (n: number) => void): Island {
+  return (a) => {
+    const page = (a["carriers"] as Array<{ uri: string }>).map((c) => c.uri);
+    onPage?.(page.length);
+    const of = (k: string) => page.filter((u) => kindOf(u) === k);
+    return { ok: true, op: "settle", mirrored: true, settled: of("settled"), settledCount: of("settled").length, elsewhere: of("elsewhere"), elsewhereCount: of("elsewhere").length, superseded: of("superseded"), supersededCount: of("superseded").length };
+  };
 }
 
 const wikiRow = { bagId: "lar:///ha.ka.ba/bags/lares", uri: "lar:///a/w", path: "/m/w.mem" };
@@ -73,13 +85,65 @@ describe("sense and settle reach both islands", () => {
   });
 
   test("settle: the island that mirrors the bag gives the word; the other answers it mirrors nothing", async () => {
-    const v = vessel(() => ({ ok: true, op: "settle", mirrored: false, settledCount: 0, elsewhereCount: 0, supersededCount: 0 }), () => ({ ok: true, op: "settle", mirrored: true, settledCount: 2, elsewhereCount: 0, supersededCount: 1 }));
-    expect((await askShore({ op: "settle", bag: "b", carriers: [] }, "did:test", v.run)).output).toMatchObject({ ok: true, mirrored: true, settledCount: 2, supersededCount: 1 });
+    const v = vessel(() => ({ ok: true, op: "settle", mirrored: false, settledCount: 0, elsewhereCount: 0, supersededCount: 0 }), settleIsland((u) => (u === "c" ? "superseded" : "settled")));
+    expect((await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a", "b", "c"]) }, "did:test", v.run)).output).toMatchObject({ ok: true, shore: true, mirrored: true, settledCount: 2, supersededCount: 1 });
+  });
+
+  test("F3.1 settle: two islands that mirror one bag count each carrier ONCE", async () => {
+    const both = settleIsland(() => "settled");
+    const v = vessel(both, both);
+    expect((await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a", "b"]) }, "did:test", v.run)).output).toMatchObject({ settledCount: 2, elsewhereCount: 0 });
+    // A carrier one island projects and the other reads under a higher bag stands settled, once.
+    const split = vessel(settleIsland(() => "settled"), settleIsland(() => "elsewhere"));
+    expect((await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a"]) }, "did:test", split.run)).output).toMatchObject({ settledCount: 1, elsewhereCount: 0 });
+  });
+
+  test("settle: carriers past a page ride in pages under the row cap, and every carrier counts", async () => {
+    const uris = Array.from({ length: 2 * SETTLE_PAGE + 6 }, (_, i) => `lar:///a/c${i}`);
+    const seen: number[] = [];
+    const island = settleIsland(() => "settled", (n) => seen.push(n));
+    const v = vessel(island, () => NO_SHORE);
+    expect((await askShore({ op: "settle", bag: "b", carriers: carriersOf(uris) }, "did:test", v.run)).output).toMatchObject({ settledCount: uris.length });
+    expect(seen).toEqual([SETTLE_PAGE, SETTLE_PAGE, 6]);
+  });
+
+  test("F3.2 settle: no island mounts a disk shore, and the reading says so instead of a settle over nothing", async () => {
+    const v = vessel(() => NO_SHORE, () => NO_SHORE);
+    const out = (await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a"]) }, "did:test", v.run)).output;
+    expect(out).toMatchObject({ ok: true, shore: false, mirrored: false, settledCount: 0 });
+    const read = await askSettle((a) => askShore(a, "did:test", v.run), "b", [{ uri: "a", records: "h" }]);
+    expect(read).toMatchObject({ settled: true, shore: false, mirrored: false });
+  });
+
+  test("CONTROL: an island whose settle answer carries no whole rows refuses by name, never counts", async () => {
+    const v = vessel(() => ({ ok: true, op: "settle", mirrored: true, settledCount: 2, elsewhereCount: 0, supersededCount: 0, settled: ["a"], elsewhere: [], superseded: [] }), () => NO_SHORE);
+    expect(await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a", "b"]) }, "did:test", v.run)).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+  });
+
+  test("an island whose rows miss a carrier, name one twice, or name one never asked refuses by name", async () => {
+    const short = vessel(() => ({ ok: true, op: "settle", mirrored: true, settled: [], settledCount: 0, elsewhere: [], elsewhereCount: 0, superseded: [], supersededCount: 0 }), () => NO_SHORE);
+    expect(await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a"]) }, "did:test", short.run)).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+    const twice = vessel(() => ({ ok: true, op: "settle", mirrored: true, settled: ["a"], settledCount: 1, elsewhere: ["a"], elsewhereCount: 1, superseded: [], supersededCount: 0 }), () => NO_SHORE);
+    expect(await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a"]) }, "did:test", twice.run)).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+    const stranger = vessel(() => ({ ok: true, op: "settle", mirrored: true, settled: ["z"], settledCount: 1, elsewhere: [], elsewhereCount: 0, superseded: [], supersededCount: 0 }), () => NO_SHORE);
+    expect(await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a"]) }, "did:test", stranger.run)).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+  });
+
+  test("the weld: a settle page never exceeds the outcome's row cap, and a full page's rows ride whole", async () => {
+    const { boundOutcomeOutput, AUDIT_ARRAY_CAP } = await import(new URL("../../lararium-tw5/dist/verb-vm.js", import.meta.url).href) as {
+      boundOutcomeOutput: (o: Record<string, unknown>) => Record<string, unknown>; AUDIT_ARRAY_CAP: number;
+    };
+    expect(SETTLE_PAGE).toBeGreaterThan(0);
+    expect(SETTLE_PAGE).toBeLessThanOrEqual(AUDIT_ARRAY_CAP);
+    const rows = Array.from({ length: SETTLE_PAGE }, (_, i) => `lar:///a/c${i}`);
+    expect(Array.isArray(boundOutcomeOutput({ settled: rows })["settled"])).toBe(true);
+    // CONTROL: one row past the cap rides as a summary.
+    expect(Array.isArray(boundOutcomeOutput({ settled: [...rows, ...Array.from({ length: AUDIT_ARRAY_CAP + 1 - SETTLE_PAGE }, (_, i) => `x${i}`)] })["settled"])).toBe(false);
   });
 
   test("settle: an island that stopped before its carriers settled refuses the word by name", async () => {
-    const v = vessel(() => ({ ok: true, op: "settle", mirrored: true, settledCount: 1, elsewhereCount: 0 }), () => ({ ok: false, refusal: "projector-stopped", why: "stopped" }));
-    expect(await askShore({ op: "settle", bag: "b", carriers: [] }, "did:test", v.run)).toMatchObject({ ok: false, refusal: "projector-stopped" });
+    const v = vessel(settleIsland(() => "settled"), () => ({ ok: false, refusal: "projector-stopped", why: "stopped" }));
+    expect(await askShore({ op: "settle", bag: "b", carriers: carriersOf(["a"]) }, "did:test", v.run)).toMatchObject({ ok: false, refusal: "projector-stopped" });
   });
 });
 
