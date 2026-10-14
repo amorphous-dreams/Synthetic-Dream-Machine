@@ -45,8 +45,8 @@ unlink, then meets one judge (`judgeHome`, under `settleHomes`): it leaves only 
 agreed, and a file that holds a hand's words stays while the carrier stands off (the law:
 `lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`, an unlink reads the file first).
 # ''A base names a home only where its mirror may write.'' The base's `path` remembers an earlier
-home across a restart, and the ingest gesture pins a base at whatever source it read. `basedHome`
-passes that path through the mirror's own ward (`confineMirrorWrite`: the mirror's root, or a file
+home across a restart, and the ingest gesture pins a base at whatever source it read, in a row of its own beside the mirror's. `basedHomes`
+passes each such path through the mirror's own ward (`confineMirrorWrite`: the mirror's root, or a file
 directly in the bags root under `allowBagsRootFiles`): a path the ward would refuse names no home, so a source kept
 in a holding directory beside the mirror never meets the judge and never leaves.
 # ''A stem match binds the WHOLE stem.'' `carrierDiskFiles` resolves a carrier's actual files by the
@@ -83,6 +83,6 @@ This section, anchored `#/the-servo`, holds the disk shore's level-triggered rec
 <<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/guards">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
 
-<<^ code="&#x0003;">>ni:///sha-256;4JPzrfaUlMF5wZ-dJWPgMO0vRJPf9qao7uQucM8klKM
+<<^ code="&#x0003;">>ni:///sha-256;5iUBNymEUr8QTYCrfBG6PY6KT9njjw2AN_ajkurkYks
 
 <<^ code="&#x0004;" -> to="?">>

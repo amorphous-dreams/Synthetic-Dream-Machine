@@ -645,16 +645,14 @@ export class LarDiskProjector {
   }
 
   /**
-   * THE HOME A BASE NAMES, WHERE THIS MIRROR HOLDS IT. A base names the file its agreement stood at, and
-   * the ingest gesture pins one at whatever source it read: a holding directory beside the mirror included.
-   * A path this mirror's own ward would refuse to write names no home of the mirror, so no unlink weighs it
-   * and the file there stays its person's.
+   * THE HOMES A CARRIER'S BASES NAME, WHERE THIS MIRROR HOLDS THEM. Each base names the file its agreement
+   * stood at, and the ingest gesture pins one at whatever source it read: a holding directory beside the
+   * mirror included. A path this mirror's own ward would refuse to write names no home of the mirror, so no
+   * unlink weighs it and the file there stays its person's.
    */
-  private basedHome(mirror: BagMirrorConfig, uri: string): string | undefined {
-    const basedAt = this.syncedTree.base(syncedTreeKey(mirror.bagId, uri))?.path;
-    if (basedAt === undefined) return undefined;
-    const within = confineMirrorWrite(mirror.mirrorRoot, relativePath(resolvePath(mirror.mirrorRoot), basedAt), mirror.allowBagsRootFiles);
-    return within.ok ? basedAt : undefined;
+  private basedHomes(mirror: BagMirrorConfig, uri: string): string[] {
+    return this.syncedTree.bases(syncedTreeKey(mirror.bagId, uri)).map((base) => base.path).filter((basedAt) =>
+      confineMirrorWrite(mirror.mirrorRoot, relativePath(resolvePath(mirror.mirrorRoot), basedAt), mirror.allowBagsRootFiles).ok);
   }
 
   /**
@@ -717,7 +715,7 @@ export class LarDiskProjector {
       }
     } finally { this.writing.delete(uri); }
     const key = syncedTreeKey(bagId, uri);
-    if (this.syncedTree.baseAt(key, contentPath) !== null) this.syncedTree.delete(key);
+    this.syncedTree.deleteAt(key, contentPath);
   }
 
   /**
@@ -820,6 +818,26 @@ export class LarDiskProjector {
     await this.idle();
   }
 
+  /**
+   * THE CARRIERS WHOSE FILE LEFT WITH NO ONE WATCHING. A hand that removes a mirrored file raises no change
+   * in the wiki, and where no watcher runs nothing marks the carrier. This reads the tree afresh and names
+   * each carrier root the wiki still holds whose base stands at a path of one of this projector's mirrors
+   * where no content file stands. It reads no file and decides nothing: a caller hands the names to `sense`,
+   * and the gate answers each.
+   */
+  vanished(): string[] {
+    this.syncedTree.reread();
+    const held = new Set(this.mirroredRoots());
+    const gone = new Set<string>();
+    for (const { bagId, uri, base } of this.syncedTree.rows()) {
+      if (!held.has(uri) || existsSync(base.path)) continue;
+      const mirror = this.mirrors.find((m) => m.bagId === bagId);
+      if (mirror === undefined) continue;
+      if (confineMirrorWrite(mirror.mirrorRoot, relativePath(resolvePath(mirror.mirrorRoot), base.path), mirror.allowBagsRootFiles).ok) gone.add(uri);
+    }
+    return [...gone].sort();
+  }
+
   /** Every carrier root in the wiki whose `$origin-bag` names one of this projector's mirrors. */
   private mirroredRoots(): string[] {
     const wiki = this._tw5?.$tw.wiki as unknown as { allTitles?: () => string[]; getTiddler?: (t: string) => { fields: Record<string, unknown> } | undefined } | undefined;
@@ -903,8 +921,7 @@ export class LarDiskProjector {
       const homes = (this.mirrorCarrierFiles(mirror, title) ?? []).map((f) => LarDiskProjector.contentOf(f));
       // The base names the content file its agreement stood at, across a restart: a carrier a siting rule
       // or the flattened default placed elsewhere gets read there too.
-      const basedAt = this.basedHome(mirror, title);
-      if (basedAt !== undefined) homes.push(basedAt);
+      homes.push(...this.basedHomes(mirror, title));
       // The records hold no such carrier, so the base alone can vouch for a file. A held one stays.
       if (!this.settleHomes(mirror.bagId, title, homes, null, null, `the records dropped ${title}`)) continue;
       this._leaveStandoff(mirror.bagId, title);
@@ -1072,8 +1089,7 @@ export class LarDiskProjector {
       const was = confineMirrorWrite(mirror.mirrorRoot, previous, mirror.allowBagsRootFiles);
       if (was.ok) for (const f of carrierDiskFiles(was.path)) earlier.push(LarDiskProjector.contentOf(f));
     }
-    const basedAt = this.basedHome(mirror, tiddlerUri);
-    if (basedAt !== undefined) earlier.push(basedAt);
+    earlier.push(...this.basedHomes(mirror, tiddlerUri));
     const left = earlier.filter((home) => home !== candidate);
     if (left.length > 0 && !this.settleHomes(bagId, tiddlerUri, left, bodyPending ? null : obsHash, candidate, `a siting moves ${tiddlerUri}`)) return;
     this.sited.set(sitedKey(bagId, tiddlerUri), base);
@@ -1161,7 +1177,7 @@ export class LarDiskProjector {
       // gesture). Before the carrier's own files write, surface or pend, the tree reads afresh and the gate
       // decides again.
       if (weighed.decision.kind !== "noop") {
-        this.syncedTree.reread();
+        this.syncedTree.reread(syncedTreeKey(bagId, tiddlerUri));
         base = this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate);
         weighed = weigh();
       }

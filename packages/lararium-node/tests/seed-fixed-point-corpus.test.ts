@@ -129,6 +129,11 @@ function framingClassesOf(disk: { body: string; meta?: string }, render: { body:
   return [...out];
 }
 
+/** The tree as it rests on disk, read by a fresh instance: each row under its carrier's key and its path. */
+function restingRows(dir: string): Record<string, unknown> {
+  return Object.fromEntries(new SyncedTree(dir, 0).rows().map((r) => [`${r.bagId}\0${r.uri}\0${r.base.path}`, r.base]));
+}
+
 describe.skipIf(coreBlobSkip)(
   `the seed's fixed point over both house bags${coreBlobSkip ? ` [SKIPPED: ${coreBlobSkip}]` : ""}`,
 () => {
@@ -185,7 +190,7 @@ describe.skipIf(coreBlobSkip)(
       settlements.set(bag, { waves: wave, refused: settled.refused.length, conflicts: settled.conflicts.length, recorded: settled.recorded, submitted: candidates.length });
     }
     tree.flush();
-    pinnedByGesture = JSON.parse(readFileSync(path.join(scratch, "state", "synced-tree.json"), "utf8")) as Record<string, unknown>;
+    pinnedByGesture = restingRows(path.join(scratch, "state", "synced-tree.json"));
 
     // THE RECORDS REACH THE WIKI as a wave lands them: each under its title, stamped with the bag it came from.
     const $tw = engine.$tw as unknown as { Tiddler: new (...f: Array<Record<string, unknown>>) => unknown; wiki: { addTiddler(t: unknown): void } };
@@ -232,7 +237,7 @@ describe.skipIf(coreBlobSkip)(
   });
 
   test("the gesture and the projector pin the same base: the projection pass moves no row of the tree", () => {
-    const after = JSON.parse(readFileSync(path.join(scratch, "state", "synced-tree.json"), "utf8")) as Record<string, unknown>;
+    const after = restingRows(path.join(scratch, "state", "synced-tree.json"));
     expect(Object.keys(pinnedByGesture).length).toBeGreaterThan(300);
     expect(after).toEqual(pinnedByGesture);
     // The setup took: some base holds two sides that differ (a carrier standing in another framing).
@@ -308,7 +313,7 @@ describe.skipIf(coreBlobSkip)(
     expect(pending).toEqual([]);
     expect([...before].filter(([f, at]) => statSync(path.join(scratch, f)).mtimeMs !== at).map(([f]) => f)).toEqual([]);
     // Every base the gesture pinned stands again, at the same path, under the same two hashes.
-    const repinned = JSON.parse(readFileSync(path.join(scratch, "state", "synced-tree-lost.json"), "utf8")) as Record<string, unknown>;
+    const repinned = restingRows(path.join(scratch, "state", "synced-tree-lost.json"));
     expect(repinned).toEqual(pinnedByGesture);
   }, 600_000);
 

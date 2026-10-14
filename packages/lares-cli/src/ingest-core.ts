@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, bagsFileToUri, mirrorDirFileToUri, larProjectionDir } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionDir } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -87,7 +87,7 @@ export interface ScanResult {
 /** Open the Synced tree at the canonical projection-state path (larProjectionDir() —
  *  runtime vessel state, not corpus). */
 export function openSyncedTree(): SyncedTree {
-  return new SyncedTree(join(larProjectionDir(), "synced-tree.json"));
+  return new SyncedTree(syncedTreeDir(larProjectionDir()));
 }
 
 /**
@@ -630,8 +630,9 @@ export function resolveRenames(rows: ScanRow[], toBag: string, tree: SyncedTree)
     if ((arrivals.get(r.diskHash) ?? 0) !== 1) return r;
     const src = tree.renameSourceUri(toBag, r.diskHash);
     if (src === null || src === r.uri || liveUris.has(src) || claimedSources.has(src)) return r;
-    const srcHash = tree.get(syncedTreeKey(toBag, src));
-    if (srcHash === null) return r;             // the index and the map disagree — decline, never guess
+    // The source's base that observed this very content (a carrier holds one base per path).
+    const srcHash = tree.bases(syncedTreeKey(toBag, src)).find((b) => digestsEqual(b.disk, r.diskHash))?.disk ?? null;
+    if (srcHash === null) return r;             // the index and the rows disagree — decline, never guess
     claimedSources.add(src);
     // §2.2: `PendingDeletion` is the WIRE shape alone (`{uri, syncedHash}`) — no `file`. This whole-
     // source scan has no on-disk path for the vanished `src` uri (only the row's OWN `file`, the
@@ -696,9 +697,9 @@ export function applyConfirmedRenames(
     const diskHash = arrived.diskHash;
     // The records re-homed whole, so the base's records side travels with them where the moved file
     // holds the bytes the source's base named.
-    const source = tree.base(syncedTreeKey(toBag, fromUri));
+    const source = tree.bases(syncedTreeKey(toBag, fromUri)).find((b) => digestsEqual(b.disk, diskHash));
     tree.delete(syncedTreeKey(toBag, fromUri));
-    tree.set(syncedTreeKey(toBag, toUri), arrived.file, diskHash, source !== null && digestsEqual(source.disk, diskHash) ? source.records : diskHash);
+    tree.set(syncedTreeKey(toBag, toUri), arrived.file, diskHash, source !== undefined ? source.records : diskHash);
     moved++;
   }
   return moved;

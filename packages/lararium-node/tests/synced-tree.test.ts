@@ -3,12 +3,31 @@
  * recovery, and the projector's hash-gate contract.
  */
 
-import { describe, test, expect } from "vitest";
-import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { describe, test, expect, vi } from "vitest";
+import { mkdtempSync, readFileSync, writeFileSync, rmSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { SyncedTree, contentHash, syncedTreeKey } from "../src/synced-tree.js";
 import { carrierHash } from "@lararium/mesh";
+
+// THE HANDSHAKE SEAM for the two-writers vector: the tree's own `renameSync` calls a hook the vector arms,
+// at the moment a row (or, under a single-file tree, the whole map) stands ready to land. Unarmed, it passes through.
+const seam = vi.hoisted(() => ({ beforeRename: null as null | (() => void) }));
+vi.mock("fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("fs")>();
+  return {
+    ...actual,
+    renameSync: (from: string, to: string): void => {
+      const hook = seam.beforeRename;
+      seam.beforeRename = null;                 // one firing: the second writer's own renames pass through
+      hook?.();
+      actual.renameSync(from, to);
+    },
+  };
+});
+
+/** The row files a tree directory holds (temp files and strangers left out). */
+const rowFiles = (dir: string): string[] => readdirSync(dir).filter((f) => /^[0-9a-f]{32}\.[0-9a-f]{32}\.json$/.test(f)).sort();
 
 /** The path every base in this file stands at: the tree compares it and never reads it. */
 const AT = "/scratch/mirror/a.mem";
@@ -35,15 +54,23 @@ describe("synced-tree — observations persist atomically", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("corrupt tree degrades to never-projected, never throws", () => {
+  test("a torn row degrades to never-projected, never throws, and heals on the next agreement", () => {
     const dir = mkdtempSync(join(tmpdir(), "synced-"));
-    const p = join(dir, "synced-tree.json");
-    writeFileSync(p, "{ torn json", "utf-8");
-    const t = new SyncedTree(p, 0);
+    const p = join(dir, "synced-tree");
+    new SyncedTree(p, 0).set("lar:///a", AT, "h1");
+    const [name] = rowFiles(p);
+    writeFileSync(join(p, name!), "{ torn json", "utf-8");
+    const said: string[] = [];
+    const warn = console.warn;
+    console.warn = (line: unknown) => { said.push(String(line)); };
+    let t: SyncedTree;
+    try { t = new SyncedTree(p, 0); } finally { console.warn = warn; }
+    expect(said).toEqual([`[synced-tree] 1 row(s) of ${p} name no base in this tree's shape; each such carrier reads as never agreed`]);
     expect(t.size).toBe(0);
     expect(t.get("lar:///a")).toBeNull();
-    t.set("lar:///a", AT, "h1");                       // heals by re-persisting
-    expect(JSON.parse(readFileSync(p, "utf-8"))["lar:///a"]).toEqual({ path: AT, disk: "h1", records: "h1" });
+    t.set("lar:///a", AT, "h2");                       // heals: the row lands whole under the same name
+    expect(rowFiles(p)).toEqual([name]);
+    expect(JSON.parse(readFileSync(join(p, name!), "utf-8"))).toEqual({ key: "lar:///a", path: AT, disk: "h2", records: "h2" });
     rmSync(dir, { recursive: true, force: true });
   });
 });
@@ -103,27 +130,54 @@ describe("synced-tree — the base holds two sides", () => {
 
   test("a row in any other shape names no base: that carrier reads as never agreed", () => {
     const { dir, p } = fresh();
-    writeFileSync(p, JSON.stringify({
-      whole: { path: AT, disk: "d1", records: "r1" },
-      "two sides and no path": { disk: "d0", records: "r0" },
-      "a bare string": "h1",
-      "one side only": { disk: "d2" },
-      "an empty side": { disk: "d3", records: "" },
-      "an array": ["d4", "r4"],
-    }), "utf-8");
+    const t0 = new SyncedTree(p, 0);
+    t0.set("whole", AT, "d1", "r1");
+    const [whole] = rowFiles(p);
+    const strangers: Record<string, unknown> = {
+      [`${"1".repeat(32)}.${"1".repeat(32)}.json`]: { key: "no path", disk: "d0", records: "r0" },
+      [`${"2".repeat(32)}.${"2".repeat(32)}.json`]: "h1",
+      [`${"3".repeat(32)}.${"3".repeat(32)}.json`]: { key: "one side", path: AT, disk: "d2" },
+      [`${"4".repeat(32)}.${"4".repeat(32)}.json`]: { key: "empty side", path: AT, disk: "d3", records: "" },
+      [`${"5".repeat(32)}.${"5".repeat(32)}.json`]: ["d4", "r4"],
+      // A whole row resting under a name its own key and path do not fold to names no base either.
+      [`${"6".repeat(32)}.${"6".repeat(32)}.json`]: { key: "misfiled", path: AT, disk: "d5", records: "r5" },
+    };
+    for (const [name, value] of Object.entries(strangers)) writeFileSync(join(p, name), JSON.stringify(value), "utf-8");
+    writeFileSync(join(p, ".row.1.1.abcd.tmp"), "{ a temp file a crash left", "utf-8");   // never read, never counted
     const said: string[] = [];
     const warn = console.warn;
     console.warn = (line: unknown) => { said.push(String(line)); };
     let t: SyncedTree;
     try { t = new SyncedTree(p, 0); } finally { console.warn = warn; }
-    // The forgotten bases speak once, by count and by file.
-    expect(said).toEqual([`[synced-tree] 5 row(s) of ${p} name no base in this tree's shape; each such carrier reads as never agreed`]);
+    // The forgotten bases speak once, by count and by directory.
+    expect(said).toEqual([`[synced-tree] 6 row(s) of ${p} name no base in this tree's shape; each such carrier reads as never agreed`]);
     expect(t.size).toBe(1);
     expect(t.base("whole")).toEqual({ path: AT, disk: "d1", records: "r1" });
-    for (const k of ["two sides and no path", "a bare string", "one side only", "an empty side", "an array"]) expect(t.base(k)).toBeNull();
-    // A write keeps the readable row and leaves the unreadable ones behind.
+    for (const k of ["no path", "one side", "empty side", "misfiled"]) expect(t.base(k)).toBeNull();
+    // A write lands its own row and touches no other file.
     t.set("fresh", AT, "d9");
-    expect(Object.keys(JSON.parse(readFileSync(p, "utf-8"))).sort()).toEqual(["fresh", "whole"]);
+    expect(rowFiles(p)).toHaveLength(8);
+    expect(JSON.parse(readFileSync(join(p, whole!), "utf-8"))).toEqual({ key: "whole", path: AT, disk: "d1", records: "r1" });
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a single-file tree of an earlier shape names no base, and the tree says so by name", () => {
+    const { dir } = fresh();
+    const p = join(dir, "synced-tree");
+    const earlier = `${p}.json`;
+    const bytes = JSON.stringify({ k: { path: AT, disk: "d1", records: "r1" } });
+    writeFileSync(earlier, bytes, "utf-8");
+    const said: string[] = [];
+    const warn = console.warn;
+    console.warn = (line: unknown) => { said.push(String(line)); };
+    let t: SyncedTree;
+    try { t = new SyncedTree(p, 0); } finally { console.warn = warn; }
+    expect(said).toEqual([`[synced-tree] ${earlier} holds a tree in an earlier shape; it names no base here, and each carrier reads as never agreed`]);
+    expect(t.size).toBe(0);
+    expect(t.baseAt("k", AT)).toBeNull();
+    t.set("k", AT, "d2");
+    expect(new SyncedTree(p, 0).baseAt("k", AT)).toEqual({ path: AT, disk: "d2", records: "d2" });
+    expect(readFileSync(earlier, "utf-8")).toBe(bytes);          // nothing rewrites the earlier file
     rmSync(dir, { recursive: true, force: true });
   });
 });
@@ -203,9 +257,9 @@ describe("synced-tree — the R2 content-addressed rename-index", () => {
     t1.set(syncedTreeKey(BAG, "lar:///a.b.c"), AT, h);
     const t2 = new SyncedTree(p, 0);                       // cold reload
     expect(t2.renameSourceUri(BAG, h)).toBe("lar:///a.b.c");
-    // the on-disk shape stays the flat primary map — no index leaks into the file
-    const raw = JSON.parse(readFileSync(p, "utf-8")) as Record<string, string>;
-    expect(Object.keys(raw)).toEqual([syncedTreeKey(BAG, "lar:///a.b.c")]);
+    // the directory holds the one row and nothing else: no index rests on disk
+    expect(readdirSync(p)).toEqual(rowFiles(p));
+    expect(rowFiles(p)).toHaveLength(1);
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -264,6 +318,32 @@ describe("synced-tree — CONCURRENT WRITERS over one file (the island-per-worke
     rmSync(dir, { recursive: true, force: true });
   });
 
+  test("two writers in ONE window drop no row (pinned by handshake at the first writer's rename)", () => {
+    // Both writers load the tree before either writes. The first writer's write stands ready to land; at
+    // that moment, by the seam and by no clock, the second writer records its own row and lands it whole.
+    // A tree that rewrote one whole map from what it read before the window would land the first writer's
+    // stale map over the second writer's row.
+    const dir = mkdtempSync(join(tmpdir(), "synced-"));
+    const p = join(dir, "synced-tree");
+    new SyncedTree(p, 0).set(syncedTreeKey(A, "lar:///seeded"), AT, "h-seed");
+    const first  = new SyncedTree(p, 60_000);
+    const second = new SyncedTree(p, 0);
+    first.set(syncedTreeKey(A, "lar:///a.b.c"), AT, "h-first");
+    let fired = 0;
+    seam.beforeRename = () => { fired++; second.set(syncedTreeKey(B, "lar:///verbs/x"), AT, "h-second"); };
+    first.flush();
+    expect(fired).toBe(1);                                     // the window opened once, inside the first writer's write
+    const onDisk = new SyncedTree(p, 0);
+    expect(onDisk.get(syncedTreeKey(B, "lar:///verbs/x"))).toBe("h-second");
+    expect(onDisk.get(syncedTreeKey(A, "lar:///a.b.c"))).toBe("h-first");
+    expect(onDisk.get(syncedTreeKey(A, "lar:///seeded"))).toBe("h-seed");
+    // CONTROL: with no second writer in the window the same flush lands the same rows.
+    first.set(syncedTreeKey(A, "lar:///later"), AT, "h-later");
+    first.flush();
+    expect(new SyncedTree(p, 0).size).toBe(4);
+    rmSync(dir, { recursive: true, force: true });
+  });
+
   test("two writers persisting in the SAME process never collide on the temp file", () => {
     // Islands are worker THREADS — one pid, two SyncedTrees. A pid-keyed temp name is
     // the same name twice; the rename of one can carry the other's half-written bytes.
@@ -295,12 +375,33 @@ describe("a base stands at one path", () => {
     expect(t.baseAt("k", "/scratch/mirror/moved/a.mem")).toBeNull();
     expect(t.baseAt("k", "/scratch/mirror/a.md")).toBeNull();
     expect(t.baseAt("missing", "/scratch/mirror/a.mem")).toBeNull();
-    // The path survives a reload, and a later agreement at another path moves it.
-    const reopened = new SyncedTree(p, 0);
-    expect(reopened.baseAt("k", "/scratch/mirror/a.mem")).not.toBeNull();
-    reopened.set("k", "/scratch/mirror/moved/a.mem", "d2");
-    expect(reopened.baseAt("k", "/scratch/mirror/a.mem")).toBeNull();
-    expect(reopened.baseAt("k", "/scratch/mirror/moved/a.mem")).toEqual({ path: "/scratch/mirror/moved/a.mem", disk: "d2", records: "d2" });
+    // The path survives a reload.
+    expect(new SyncedTree(p, 0).baseAt("k", "/scratch/mirror/a.mem")).not.toBeNull();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a carrier holds one row per path: an agreement at a second path displaces none at the first", () => {
+    const { dir, p } = fresh();
+    const MIRROR = "/scratch/bags/lares/a.mem", HOLDING = "/scratch/wikis/inbox/a.mem";
+    const projector = new SyncedTree(p, 0);
+    projector.set("k", MIRROR, "d1", "r1");                    // the projector pins the mirror's base
+    const gesture = new SyncedTree(p, 0);
+    gesture.set("k", HOLDING, "d2", "r2");                     // the ingest gesture pins the holding file's
+    for (const t of [gesture, new SyncedTree(p, 0)]) {
+      expect(t.baseAt("k", MIRROR)).toEqual({ path: MIRROR, disk: "d1", records: "r1" });
+      expect(t.baseAt("k", HOLDING)).toEqual({ path: HOLDING, disk: "d2", records: "r2" });
+      expect(t.bases("k").map((b) => b.path).sort()).toEqual([MIRROR, HOLDING]);
+      expect(t.base("k")).toBeNull();                          // several stand: no one base names the carrier
+      expect(t.size).toBe(2);
+    }
+    // CONTROL: a path no agreement stood at still names no base, and one base leaves alone.
+    expect(gesture.baseAt("k", "/scratch/bags/lares/moved/a.mem")).toBeNull();
+    gesture.deleteAt("k", HOLDING);
+    const after = new SyncedTree(p, 0);
+    expect(after.baseAt("k", HOLDING)).toBeNull();
+    expect(after.base("k")).toEqual({ path: MIRROR, disk: "d1", records: "r1" });
+    after.delete("k");
+    expect(new SyncedTree(p, 0).size).toBe(0);
     rmSync(dir, { recursive: true, force: true });
   });
 
@@ -315,7 +416,14 @@ describe("a base stands at one path", () => {
     expect(mine.base("theirs")).toEqual({ path: AT, disk: "s1", records: "s1" });
     expect(mine.base("mine")).toEqual({ path: AT, disk: "m1", records: "m1" });
     mine.flush();
-    expect(Object.keys(JSON.parse(readFileSync(p, "utf-8"))).sort()).toEqual(["mine", "theirs"]);
+    const onDisk = new SyncedTree(p, 0);
+    expect([onDisk.base("mine")?.disk, onDisk.base("theirs")?.disk, onDisk.size]).toEqual(["m1", "s1", 2]);
+    // One carrier's rows reread alone, and the other carriers' rows stand as this instance held them.
+    sibling.set("theirs", "/scratch/mirror/b.mem", "s2");
+    sibling.set("later", AT, "s3");
+    mine.reread("theirs");
+    expect(mine.bases("theirs").map((b) => b.disk).sort()).toEqual(["s1", "s2"]);
+    expect(mine.base("later")).toBeNull();
     rmSync(dir, { recursive: true, force: true });
   });
 
