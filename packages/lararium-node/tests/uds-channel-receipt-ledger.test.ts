@@ -26,6 +26,7 @@ import { emptyLarDoc, NoWorkingLayerRefusal, buildReceiptFact, concludeVerb, ver
 import { FactLedger, startUdsChannel, type UdsChannel } from "../src/uds-channel.js";
 import { claimStore, type StoreClaim } from "../src/owned-store.js";
 import { plainRecord, outcomeBytesOf } from "@lararium/mesh";
+import { arrival } from "../../lararium-mesh/tests/handshake.js";
 
 interface Placed { verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string; effectKey?: string; }
 
@@ -304,8 +305,14 @@ describe("uds-channel — the DURABLE receipt-fact ledger (D1, H1R+H4+M1+M3″)"
         requestId, verb, status: "done", requestedBy, cause: "remote-summons", batchMode: "best-effort",
         results: { summary: { ok: true } }, inputDigest: workerDigest,
       });
+      // The ledger's own write carries the wait: the subscription has minted the fact once the working layer
+      // holds it. The listener stands before the outcome lands, so no change slips past it.
+      const minted = arrival<void>(`the ledger minting a fact for ${requestId} in the working layer`);
+      const factTitle = `${RECEIPT_FACT_URI_PREFIX}${requestId}`;
+      const onWorking = (): void => { if (v.workingHandle.doc()!.tiddlers[factTitle] !== undefined) minted.arrive(); };
+      v.workingHandle.on("change", onWorking);
       v.daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
-      await new Promise((r) => setTimeout(r, 100)); // let the subscription mint the fact
+      try { await minted.arrived; } finally { v.workingHandle.off("change", onWorking); }
 
       // A same-args UDS dispatch under the SAME id computes the IDENTICAL digest — `arbitrate`
       // finds the minted fact's digest matches, refuses `already-committed` (never a changed-input

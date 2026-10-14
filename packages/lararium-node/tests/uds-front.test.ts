@@ -6,6 +6,7 @@ import { createConnection, type Socket } from "node:net";
 import { claimStore } from "../src/owned-store.js";
 import { makeUdsSeat, serveUdsFront, startUdsChannel, type UdsSeat } from "../src/uds-channel.js";
 import { Repo } from "@automerge/automerge-repo";
+import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 import { emptyLarDoc, AutomergeDocStore, CompositeStore, wikiSlotUri, DAEMON_BAG_ID, OUTCOME_URI_PREFIX, type LarDoc } from "@lararium/mesh";
 
 const dirs: string[] = [];
@@ -27,6 +28,29 @@ function dial(path: string, frame: unknown): Promise<{ sock: Socket; read: () =>
   });
   return { sock, read: () => data, sent };
 }
+/**
+ * The front's own word for each frame it reads (`onFrame`, called before a frame reaches a seat or the hold, with
+ * the front's side of the caller's socket). `read` resolves when the front has read that frame, and `gone` when
+ * the front's socket for it has closed: the ear's close listener stands before the front's own, so the front has
+ * dropped a held caller by the time `gone` answers. No pause stands in for "the frame reached the front".
+ */
+function frameEar(): { onFrame: (parsed: unknown, sock: Socket) => boolean; read: (frame: unknown) => Promise<void>; gone: (frame: unknown) => Promise<void> } {
+  const words = new Map<string, { read: Arrival<void>; gone: Arrival<void> }>();
+  const of = (frame: unknown) => {
+    const key = JSON.stringify(frame);
+    let word = words.get(key);
+    if (!word) {
+      word = { read: arrival<void>(`the front reading the frame ${key}`), gone: arrival<void>(`the front's socket for the frame ${key} closing`) };
+      words.set(key, word);
+    }
+    return word;
+  };
+  return {
+    onFrame: (parsed, sock) => { const word = of(parsed); sock.once("close", () => { word.gone.arrive(); }); word.read.arrive(); return false; },
+    read: (frame) => of(frame).read.arrived,
+    gone: (frame) => of(frame).gone.arrived,
+  };
+}
 function seenSeat(seen: unknown[]): UdsSeat {
   return { handle: (parsed) => { seen.push(parsed); }, close: () => {} };
 }
@@ -43,19 +67,20 @@ afterEach(() => {
 describe("uds front", () => {
   test("R1: seats hand frames across detach; start channel remains a working control", async () => {
     const claim = await setup();
-    const front = serveUdsFront({ claim });
+    const ear = frameEar();
+    const front = serveUdsFront({ claim, onFrame: ear.onFrame });
     const a: unknown[] = [], b: unknown[] = [];
     front.attach(seenSeat(a));
     const first = dial(claim.socketPath, { verb: "first" });
     await first.sent;
-    await new Promise((resolve) => setTimeout(resolve, 25));
+    await ear.read({ verb: "first" });             // the front read it, and hands a frame on in that same step
     expect(a).toEqual([{ verb: "first" }]);
     await front.detach();
     const parked = dial(claim.socketPath, { verb: "parked" });
     await parked.sent;
+    await ear.read({ verb: "parked" });            // the front holds it: no seat stands
     await noBytes(parked);
-    front.attach(seenSeat(b));
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    front.attach(seenSeat(b));                     // a seat takes every held frame as it attaches
     expect(b).toEqual([{ verb: "parked" }]);
     expect(a).toEqual([{ verb: "first" }]);
     front.close();
@@ -80,17 +105,20 @@ describe("uds front", () => {
 
   test("R2: closed parked callers are discarded and connected callers replay", async () => {
     const claim = await setup();
-    const front = serveUdsFront({ claim });
+    const ear = frameEar();
+    const front = serveUdsFront({ claim, onFrame: ear.onFrame });
     const closed = dial(claim.socketPath, { n: 1 });
     await closed.sent;
+    await ear.read({ n: 1 });                      // held
     await noBytes(closed);
     closed.sock.destroy();
+    await ear.gone({ n: 1 });                      // the front met the hang-up and dropped the held caller
     const live = dial(claim.socketPath, { n: 2 });
     await live.sent;
+    await ear.read({ n: 2 });
     await noBytes(live);
     const seen: unknown[] = [];
     front.attach(seenSeat(seen));
-    await new Promise((resolve) => setTimeout(resolve, 10));
     expect(seen).toEqual([{ n: 2 }]);
     front.close();
     await claim.release();
@@ -98,10 +126,19 @@ describe("uds front", () => {
 
   test("R3: hold limit refuses the oldest caller and keeps the remaining queue", async () => {
     const claim = await setup();
-    const front = serveUdsFront({ claim, holdLimit: 2 });
-    const callers = [1, 2, 3].map((n) => dial(claim.socketPath, { n }));
-    await Promise.all(callers.map((c) => c.sent));
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    const ear = frameEar();
+    const front = serveUdsFront({ claim, holdLimit: 2, onFrame: ear.onFrame });
+    // One caller at a time, each read by the front before the next dials: caller 1 stands oldest because the
+    // front read it first, never because three dials happened to land in the order they started.
+    const callers: Array<ReturnType<typeof dial>> = [];
+    for (const n of [1, 2, 3]) {
+      const caller = dial(claim.socketPath, { n });
+      callers.push(caller);
+      await caller.sent;
+      await ear.read({ n });
+    }
+    // The third frame pushed the hold past its limit; the refusal travels back on the oldest caller's own socket.
+    if (callers[0]!.read() === "") await new Promise((resolve) => callers[0]!.sock.once("data", resolve));
     expect(callers[0]!.read()).toContain('"reason":"recomposing"');
     expect(callers[1]!.read()).toBe("");
     expect(callers[2]!.read()).toBe("");
@@ -115,13 +152,15 @@ describe("uds front", () => {
   test("R4: onFrame consumes before the seat only when it returns true", async () => {
     const claim = await setup();
     const passed: unknown[] = [];
-    const front = serveUdsFront({ claim, onFrame: (frame) => (frame as { consume?: boolean }).consume === true });
+    const ear = frameEar();
+    const front = serveUdsFront({ claim, onFrame: (frame, sock) => { ear.onFrame(frame, sock); return (frame as { consume?: boolean }).consume === true; } });
     front.attach(seenSeat(passed));
     const consumed = dial(claim.socketPath, { consume: true });
     await consumed.sent;
+    await ear.read({ consume: true });
     const forwarded = dial(claim.socketPath, { consume: false });
     await forwarded.sent;
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await ear.read({ consume: false });            // both frames passed `onFrame`; the seat holds what it let through
     expect(passed).toEqual([{ consume: false }]);
     front.close();
     await claim.release();
