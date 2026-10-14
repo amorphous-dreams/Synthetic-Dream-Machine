@@ -396,7 +396,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `A4` LAN discovery's network mode and one run on the real LAN. Operator's hands. A.
 * `A5` The release: a real multi-arch index, its push and signature, after the last re-bake and the last wire change. Operator's hands. A.
 * `A6` A container walk of `vessel seed` over an exported checkout leaves every tracked file as it stood (`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/found`). The first unlock leaves twelve untracked files under `wikis/daemon/` (nine `$__lares_ui_*.tid`, three flows), so `git status` reads `?? wikis/` where the runbook says clean. Either the daemon island's projection keeps those tiddlers off disk, or the runbook and `.gitignore` name what a founding leaves. A.
-* `A7` Phones that force encrypted DNS bypass the resolver: document the per-network setting, or offer a public record that names the private address. Operator. A.
+* `A7` Phones that force encrypted DNS bypass the resolver. The runbook names the setting a household member turns on each device at home (`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/household-reach`). Whether to publish a public record that names a private address, so such a phone needs no setting, stays the operator's. Operator. A.
 * `A8` `persona wear` on a standing vessel waits on the session switch. O1.
 * `A9` The browser harness keeps a read-only repository bind; a Playwright harness image retires it. B.
 * `A10` The Pronaos household proof: one reserved docker project that attributes the arrival bytes to their shore and the node faces to their owners, then fresh browser peers through relay and oracle loss. A.
@@ -764,6 +764,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5wLwVeJJG1XGNH18zR8zWqd_oejhw3XvrwMKlSaztU0
+<<^ code="&#x0003;">>ni:///sha-256;TTjhYTTTr_BttQ0vZplNGpij5OFUFd6YqPdNN_fKckk
 
 <<^ code="&#x0004;" -> to="?">>

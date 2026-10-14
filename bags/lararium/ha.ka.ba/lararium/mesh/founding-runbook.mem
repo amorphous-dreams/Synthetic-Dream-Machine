@@ -192,6 +192,15 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and one split-horizon resolver. The resolver answers each household name from one records file the operator keeps, one `<LAN address> <name>` line per machine (`LARES_DNS_RECORDS`; `docker-compose.surface.yml` names how to check an edit and restart the resolver). mDNS offers a hint only. No device installs a certificate authority. Keep the DNS credential and TLS private key outside the vessel state and image.
 
+''When one phone cannot reach the household name.'' The household name answers only from the household's own resolver, the one the router hands every device. A phone or a browser set to send its DNS questions somewhere else (encrypted DNS) never asks that resolver, so the household name fails on that device alone while it works on the others. At home, set the device back to the network's own DNS:
+
+* ''Android'': Settings → Network & internet → Private DNS (on some phones: Connections → More connection settings → Private DNS). Choose ''Automatic'' or ''Off''. A named provider (a hostname typed there) skips the household resolver. The setting holds for every network the phone joins, so a person who wants a named provider away from home turns it back on when they leave.
+* ''iPhone and iPad'': Settings → Wi-Fi → the ⓘ beside the household network → turn off ''iCloud Private Relay'' for that network alone. A DNS or VPN app, or an installed DNS profile, sends questions past the household resolver as well: pause it at home, or remove the profile under Settings → General → VPN & Device Management.
+* ''Chrome'': Settings → Privacy and security → (Security →) Use secure DNS (the path differs a little between a phone and a computer) → ''With your current service provider'', or off. A named provider skips the household resolver.
+* ''Firefox'': Settings → Privacy & Security → DNS over HTTPS → ''Default Protection'' or ''Off''. ''Increased'' or ''Max'' protection with a named provider skips the household resolver.
+
+''See'': on that device, at home, the household name opens the vessel's page over `https` with no certificate warning. Away from home the household name answers nothing, by design.
+
 ▢ ''OWED — household HTTPS integration.'' The optional Compose profile supplies a terminator and split-horizon resolver. The operator still needs DNS-01 issuance and renewal, LAN binding and DHCP wiring, and a verified trusted origin on a household device. Carriers: `harbor.mem`, `secure-context.mem`, and `stable-founding-road.mem`.
 
 ''See'': the carriers describe the required DNS-01 wildcard, resolver, and terminator boundary; the road still tracks the integration.
@@ -340,6 +349,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ET6td6AadE26AJPQhFk2uQ4Td03reVw6JeIb505aCuM
+<<^ code="&#x0003;">>ni:///sha-256;_ibquqpURYgW5R2ReeaoSsb9V5wOZhL41bfatKgc1L8
 
 <<^ code="&#x0004;" -> to="?">>
