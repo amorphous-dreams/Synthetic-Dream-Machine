@@ -49,6 +49,7 @@ import { personaGroupSecret } from "../src/persona-group-secret.js";
 import { startLeafPeerProof } from "../src/leaf-peer-proof.js";
 import { SiblingNetworkAdapter, siblingChannelTag, siblingKelDropsOf, siblingRefusalLine, type SiblingRefusal } from "../src/sibling-channel.js";
 import { personaKelDropName } from "../src/persona-kel-drop.js";
+import type { PersonaKelEvent } from "../src/persona-kel.js";
 import {
   SEEDS, pubOf, didOf, founded, enrol, rotatedKeeping, rotatedTwice, provisionalKeeping, leafOf, memoryRelay, memoryDropHerm,
   standLeaf, until, sleep, peersOf, shutdown, carriedReads, type Leaf,
@@ -436,11 +437,20 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
       // Each withholding herm says when the leaf asked it: the moment it answered with nothing.
       const asked = relay.stores.map((_, i) => arrival<void>(`the leaf asking herm ${i} for its successor`));
       const herms = relay.stores.map((store, i) => memoryDropHerm(store, relay.timeline, withholding[i] ? { serve: () => { asked[i]!.arrive(); return []; } } : {}));
-      const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay, { drops: siblingKelDropsOf(herms) });
+      // THE LEAF'S OWN WORD THAT ITS PULL FINISHED. A dialing leaf pulls, stands under the KEL the pull folded, and
+      // only then deposits its own chain at its herms. The deposit therefore carries the KEL the leaf stands under
+      // once the pull has ended and been taken in, and the vector waits on that call and no clock.
+      const drops = siblingKelDropsOf(herms);
+      const deposited = arrival<readonly PersonaKelEvent[]>("the leaf depositing its chain after its pull (the dial's own next step)");
+      const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay, {
+        drops: { pull: drops.pull, deposit: (kel) => { deposited.arrive(kel); return drops.deposit(kel); } },
+      });
       try {
         if (withholding[1]) {
-          // Both herms withheld, and the leaf asked both: nothing reached it, so it stands where it stood.
+          // Both herms withheld, and the leaf asked both: nothing reached it, so it stands where it stood. Its
+          // pull has finished: the chain it deposits afterwards holds the one event it began with.
           await Promise.all(asked.map((a) => a.arrived));
+          expect(await deposited.arrived, "the chain the leaf deposits once its pull ended").toHaveLength(1);
           expect(y.adapter.kel, "withholding true/true").toHaveLength(1);
         } else {
           // The second herm serves: the leaf's KEL takes the successor. The wait hangs on that state itself.
