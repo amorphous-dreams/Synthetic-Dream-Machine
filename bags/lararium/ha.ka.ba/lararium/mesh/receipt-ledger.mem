@@ -160,13 +160,15 @@ A herm carries sealed frames between keys it proved, reads none of them, and hol
 
 ''What a herm already carries.'' An envelope holds an open `kind` and an opaque payload, and the relay routes it between proven keys (`packages/lararium-mesh/src/membership-channel.ts`). Two siblings under one PersonaGroup hold a sealed session across a herm (`packages/lararium-mesh/src/sibling-channel.ts`). Either could carry an ask with no change to the frame a herm routes. Neither gives the ask a meaning, a reader at the vessel, or an authority; and a herm sends nothing back when it hands a frame onward.
 
-The relay leg therefore owes three choices, each above a lane. It stands parked until the wire cutover lands the sibling channel at face scope (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>, `W12`); none of it stands built.
+''The relay leg's three shapes'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). Each answers one need, and none adds a signing domain.
 
-# ''The asker's proof'': what the vessel reads to decide that this asker may run this verb. A herm's stamp cannot serve. The ask carries a signature of its own under a new signing domain, or it rides the sealed sibling session, which already proved its far end.
-# ''The sealed payload'': an ask carries a verb's arguments, and a herm reads no plaintext. The ask, the cancel and the vessel's answer ride a sealed box to the vessel's key, or they inherit the session's seal as a tagged inner frame.
-# ''The delivery receipt'': a frame the herm itself sends back when it hands a cancel onward. A bare session note serves the asker alone; a note the gate key signs serves a third party too.
+# ''The asker's proof: the sealed sibling session.'' The ask rides the sealed sibling session, which already proved its far end, and the vessel reads that session's proof as the asker's. A herm's stamp never serves. Reach therefore narrows to one PersonaGroup: an asker outside the vessel's own PersonaGroup holds no such session and asks across no herm.
+# ''The sealed payload: the session's own seal.'' The ask, the cancel and the vessel's answer ride under that session's seal as a tagged inner frame beside the sync message, so a herm reads no plaintext and the frame it routes stays unchanged.
+# ''The delivery receipt: a bare session note, good for the asker alone.'' When the herm hands a frame onward, it sends the asker one note inside the same session. The note binds the ask's request id, unique to that ask, and the session's causal position at the hand-off, so it answers that one ask and never another. It attests transit and never execution: it states that the herm handed the frame on, and never that the vessel read it, agreed or acted. No key signs it, so it convinces no third party; the vessel's outcome stays the one verdict on the act.
 
-''House lean'' (a ''house reading''; the operator rules): the ask rides the sealed sibling session, inherits that session's seal with a tagged inner frame, and the herm answers a bare session note good for the asker alone. That road adds the fewest new shapes and no signing domain, and it narrows reach to one PersonaGroup.
+''What the ruling leaves standing.'' A party that needs to audit relay delivery after its asker vanishes holds nothing here; that need, shown concrete, re-opens the delivery receipt toward a signed note that names exactly what the relay attests. Which verbs a sibling's standing reaches across the session rides the leg's build.
+
+''What stays owed.'' The whole leg lands with the sibling channel at face scope (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>, `W9` and `W12`); none of it stands built.
 
 <<~/ahu>>
 
@@ -176,7 +178,7 @@ The relay leg therefore owes three choices, each above a lane. It stands parked 
 
 * ''The ledger, arbitration, both abandonment events, the boot fence and the ring'': `packages/lararium-node/src/uds-channel.ts`. The fact's shapes and parser: `packages/lararium-mesh/src/verb-tiddler.ts`.
 * ''The CLI's doors'': `packages/lares-cli/src/local-connector.ts` (`invokeLocal`, `queryReceipt`, `cancelRequest`), `packages/lares-cli/src/commands/receipt-cmd.ts`, and the refusal codes of `packages/lares-cli/src/verb-call.ts`.
-* ''Owed across a herm'': the whole relay leg of #/the-relay-leg.
+* ''Owed across a herm'': the whole relay leg of #/the-relay-leg, as ruled: the ask, the cancel and the answer as a tagged inner frame under the sibling session's seal, and the herm's bare delivery note bound to the request id and the session's causal position. Caller: the sibling channel at face scope.
 
 <<~/ahu>>
 
@@ -190,6 +192,6 @@ The relay leg therefore owes three choices, each above a lane. It stands parked 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qPlqTaJad5FUJN1PPNCtXq7JMY_7_spT-MEBdLu0ZYg
+<<^ code="&#x0003;">>ni:///sha-256;CEyjrocu_Rwx3TwDw1hMY1EYvn8FCDoTbNJJG68tnEs
 
 <<^ code="&#x0004;" -> to="?">>
