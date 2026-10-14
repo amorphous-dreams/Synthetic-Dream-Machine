@@ -179,7 +179,11 @@ function coerceSealRoll(raw: unknown): SealRoll | "torn" {
     signatures.push({ signer: q["signer"], sig: q["sig"] });
   }
   if (Object.prototype.hasOwnProperty.call(r, "revealed")) return "torn";
-  return { ...seated, signatures };
+  // The genesis seats a first roll reveals: shape here; the roll law binds them to the genesis's key-set hash.
+  if (r["genesis"] === undefined) return { ...seated, signatures };
+  const genesis = coerceKeySet(r["genesis"]);
+  if (genesis === "torn") return "torn";
+  return { ...seated, signatures, genesis };
 }
 
 /** Fold the three read blocks into one composed `NexusDoc`, or null when seal or kahu fails its guards. */

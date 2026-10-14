@@ -145,6 +145,7 @@ async function stand(st: Standing): Promise<SeatedCharter> {
       const result = await rotateSealEpoch(
         head, seated,
         await successorCommitment(grownShape, generation + 1), handsOf(nextSeeds, nextKeys), st.chain.slice(0, -1),
+        { keys, threshold: st.threshold },
       );
       if (!result.ok) throw refusal(result.code);
       const chain = [...st.chain, result.epoch];
@@ -219,7 +220,8 @@ function standHeld(chain: readonly SealEpoch[], seats: HeldSeats, successors: He
       if (then && !lawfulSeats(then)) throw refusal("roll-malformed");
       // EVERY ROLL RE-ARMS: a roll that names no successors commits a set nobody holds, so it never rolls on.
       const next = then ? heldCommitment(successors, then) : nobodysCommitment(successors, head.epochCid);
-      const result = await rotateSealEpoch(head, { keys: successors.keys, threshold: successors.threshold }, next, hands, chain.slice(0, -1));
+      const result = await rotateSealEpoch(head, { keys: successors.keys, threshold: successors.threshold }, next, hands, chain.slice(0, -1),
+        { keys, threshold: seats.threshold });
       if (!result.ok) throw refusal(result.code);
       const grown = [...chain, result.epoch];
       if (!verifySealLineage(grown)) throw refusal("roll-lineage-invalid");

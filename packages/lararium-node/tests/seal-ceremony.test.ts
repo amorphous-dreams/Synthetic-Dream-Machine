@@ -88,7 +88,9 @@ async function successor(prev: SealEpoch, generation: number, n: number, thresho
   const keys = await seats(n, generation);
   const hands = await handsOf(n, generation);
   const signers = indexes.map((i) => hands[i]!);
-  const rolled = await rotateSealEpoch(prev, { keys, threshold }, await commitOf(keys, await seats(n, generation + 1), threshold), signers, earlierOf(prev));
+  // A roll off the genesis reveals the genesis seats (the generation before), under the same threshold.
+  const closing = prev.prevEpochCid === null ? { keys: await seats(n, generation - 1), threshold } : undefined;
+  const rolled = await rotateSealEpoch(prev, { keys, threshold }, await commitOf(keys, await seats(n, generation + 1), threshold), signers, earlierOf(prev), closing);
   if (!rolled.ok) throw new Error(`the fixture's roll refused: ${rolled.reason}`);
   return rolled.epoch;
 }

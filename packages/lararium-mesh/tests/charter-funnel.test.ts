@@ -41,6 +41,7 @@ type Outside = "roll-law" | "rite-law" | "doc-law" | "signed-bytes";
 const OUTSIDE: Readonly<Record<string, Outside>> = {
   // The roll law, field by field; and the helper's own test, which holds the helper's bytes to the constructors'.
   "packages/lararium-mesh/tests/wax-stamp.test.ts":                     "roll-law",
+  "packages/lararium-mesh/tests/wax-stamp-genesis-seats.test.ts":       "roll-law",
   "packages/lararium-mesh/tests/charter-fixture.test.ts":               "roll-law",
   "packages/lararium-node/tests/seal-ceremony.test.ts":                 "roll-law",
   // What the seat and rotate rites write and refuse.

@@ -267,8 +267,10 @@ async function armRoll(args: ParsedArgs, doc: NexusDoc, head: SealEpoch): Promis
   const seatedKeys = [...armed.seatedKeys];
   const kahu = armed.kahu.map((k) => ({ ...k }));
   const { cards, next } = await mintColdCards(kahu, seatedKeys, armed.threshold);
+  // A roll off the genesis reveals the genesis seats (the head roster), so no key the genesis seated returns.
+  const closing = foundingRoster(doc);
   const result = await riteStep(() => rotateSealEpoch(head, { keys: seatedKeys, threshold: armed.threshold }, next,
-    armed.signers.map(sealHand), (doc.sealLineage ?? []).slice(0, -1)));
+    armed.signers.map(sealHand), (doc.sealLineage ?? []).slice(0, -1), { keys: closing.keys, threshold: closing.threshold }));
   return { kahu, seatedKeys, threshold: armed.threshold, result, cards, spent: armed.spent, minted: armed.minted };
 }
 

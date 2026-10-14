@@ -10,6 +10,10 @@
  * carries a ROLL signed by the revealed quorum, the seated quorum, and each added seat. It lists
  * KEYS/THRESHOLDS, never a roster. A stamp attests a PAST ("sealed under epoch N"), never present standing.
  *
+ * A KEY A CHARTER SEATED NEVER RETURNS. A rolled epoch names its seats in its roll; the genesis names its own by
+ * a hash alone, so the FIRST roll reveals the genesis seats (`SealRoll.genesis`), which must hash to the
+ * genesis's key-set. Every later roll then reads every key the lineage ever seated, the genesis's among them.
+ *
  * The honest wall, kept lit: "valid trace to lineage L" is a HARD crypto fact (decided here); "L is the
  * legitimate org" is HIGHER-ORDER social acceptance (NOT decided here — a fork yields two internally-valid
  * lineages). Duplicity — two signed inconsistent epochs rolling from one predecessor — IS algorithmically
@@ -29,8 +33,15 @@ export interface SealKeySet { readonly keys: readonly string[]; readonly thresho
 /** The forward commitment an epoch carries: one digest per seated key, and the count a roll must reveal. */
 export interface SealNext { readonly digests: readonly string[]; readonly threshold: number }
 export const UNARMED: SealNext = Object.freeze({ digests: Object.freeze([]), threshold: 0 });
-/** The signed ROLL reveals the successor's seats and carries signatures over exactly that transition. */
-export interface SealRoll { readonly keys: readonly string[]; readonly threshold: number; readonly signatures: readonly QuorumSignature[] }
+/**
+ * The signed ROLL reveals the successor's seats and carries signatures over exactly that transition. The FIRST
+ * roll also reveals the genesis seats (`genesis`), bound by the genesis's own key-set hash rather than by a
+ * signature; every other roll carries none.
+ */
+export interface SealRoll {
+  readonly keys: readonly string[]; readonly threshold: number; readonly signatures: readonly QuorumSignature[];
+  readonly genesis?: SealKeySet;
+}
 /** One epoch binds its seated quorum, positional cold-key commitments and predecessor link. */
 export interface SealEpoch {
   readonly epochCid: string;
@@ -119,7 +130,17 @@ export function verifySealRoll(prev: SealEpoch, epoch: SealEpoch, earlier: reado
   const history = [prev, ...earlier];
   const spent = new Set(history.flatMap(e => e.nextKeyDigests).map(d => d.toLowerCase()));
   if (epoch.nextKeyDigests.some(d => spent.has(d.toLowerCase()))) return "roll-respends-a-digest";
-  const priorKeys = new Set(history.flatMap(e => e.roll?.keys ?? []).map(k => k.toLowerCase()));
+  // THE GENESIS SEATS: the first roll reveals them against the genesis's own key-set hash, and no other roll may.
+  const first = prev.prevEpochCid === null;
+  if (first) {
+    const g = roll.genesis;
+    if (!g || typeof g !== "object" || !Array.isArray(g.keys) || !g.keys.every(isHex64) || !isThreshold(g.threshold)) return "roll-genesis-unrevealed";
+    // One encoding alone: the reveal carries its keys lower-case, distinct and sorted, as the hash reads them.
+    if (g.keys.join() !== normKeys(g.keys).join()) return "roll-malformed";
+    if (sealKeySetHash(g.keys, g.threshold) !== prev.keySetHash) return "roll-genesis-unbound";
+  } else if (roll.genesis !== undefined) return "roll-malformed";
+  const priorKeys = new Set([...history.flatMap(e => [...(e.roll?.keys ?? []), ...(e.roll?.genesis?.keys ?? [])]),
+    ...(first ? roll.genesis!.keys : [])].map(k => k.toLowerCase()));
   if (keys.some(k => priorKeys.has(k))) return "roll-reuses-a-seated-key";
   const revealed = new Set(keys.filter(k => prev.nextKeyDigests.includes(seatNextDigest(k))));
   const added = keys.filter(k => !revealed.has(k));
@@ -151,17 +172,22 @@ export function verifySealLineage(chain: readonly SealEpoch[]): boolean {
   }
   return true;
 }
-/** Advance a chain by revealing the head's positional cold keys and re-arming each seat. */
+/**
+ * Advance a chain by revealing the head's positional cold keys and re-arming each seat. `closing` names the head's
+ * own seats; a roll off the genesis reveals them (`SealRoll.genesis`), and every other roll leaves them out, since
+ * its predecessor's roll already names them.
+ */
 export async function rotateSealEpoch(head: SealEpoch, seat: SealKeySet, next: SealNext,
-  signers: readonly SealRollSigner[], earlier: readonly SealEpoch[] = []): Promise<RotateResult> {
+  signers: readonly SealRollSigner[], earlier: readonly SealEpoch[] = [], closing?: SealKeySet): Promise<RotateResult> {
   if (!head.nextKeyDigests.length) return { ok: false, code: "rotation-unarmed", reason: "rotation unarmed" };
   const keys = normKeys(seat.keys);
   const bytes = sealRollBytes({ prevEpochCid: head.epochCid, keys, threshold: seat.threshold,
     nextKeyDigests: next.digests, nextThreshold: next.threshold });
   const signatures: QuorumSignature[] = [];
   for (const s of signers) signatures.push({ signer: s.signer.toLowerCase(), sig: await s.sign(bytes) });
+  const genesis = head.prevEpochCid === null && closing ? { genesis: { keys: normKeys(closing.keys), threshold: closing.threshold } } : {};
   const epoch = mintCharterEpoch({ keySetHash: sealKeySetHash(keys, seat.threshold), nextKeyDigests: [...next.digests],
-    nextThreshold: next.threshold, prevEpochCid: head.epochCid }, { keys, threshold: seat.threshold, signatures });
+    nextThreshold: next.threshold, prevEpochCid: head.epochCid }, { keys, threshold: seat.threshold, signatures, ...genesis });
   const code = verifySealRoll(head, epoch, earlier);
   return code ? { ok: false, code, reason: `roll refused — ${code}` } : { ok: true, epoch };
 }

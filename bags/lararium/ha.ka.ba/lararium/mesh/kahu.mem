@@ -375,6 +375,11 @@ cold-card law), so a digest left unrevealed carries forward nowhere: every roll 
 chair whose card stays unrevealed leaves at that roll. It returns only as an added seat, whose key signs the roll
 as its proof of possession. ''No Guardian takes part in a routine roll.''
 
+''A KEY THE LINEAGE SEATED NEVER SEATS AGAIN, the genesis's own among them.'' A rolled epoch names its seats in its
+roll; the genesis names its seats by a key-set hash alone, so the FIRST roll reveals the genesis seats and their
+threshold, which must hash to the genesis's key-set (`roll-genesis-unrevealed`, `roll-genesis-unbound`), and no later
+roll carries them. Every roll then refuses a key any earlier epoch seated (`roll-reuses-a-seated-key`).
+
 ''Built'': the charter commits `nextKeyDigests[]` · `nextThreshold` per seat (`wax-stamp.ts`), a roll takes
 each card back on a terminal (`seal rotate`), `seal cold rehearse` reads a card back and moves nothing, and an
 earlier shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing, and a roll that lists any
@@ -554,6 +559,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0BXb3WO0hKrWLKP0uzEIoz7cWq8wfJBpF3a2ddn9AaI
+<<^ code="&#x0003;">>ni:///sha-256;V0VXdihnSvusUM2L4vtxrZSWt-qB6BFAtV9PcDPyjfA
 
 <<^ code="&#x0004;" -> to="?">>

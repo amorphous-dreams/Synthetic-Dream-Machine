@@ -34,7 +34,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  NEXUS_DOC_DOMAIN, genesisCharterEpoch, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
+  NEXUS_DOC_DOMAIN, foundingRoster, genesisCharterEpoch, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
   type NexusCharterKahu, type SealEpoch,
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
@@ -110,7 +110,9 @@ async function roll(cards: readonly Uint8Array[], threshold?: number): Promise<{
   const hands = armed.signers.map((signer) => ({
     signer, sign: async (bytes: Uint8Array) => ((await act("seal.sign", { seat: signer, image: hexOf(bytes) })) as { sig: string }).sig,
   }));
-  const rolled = await rotateSealEpoch(sealLineageHead(doc)!, { keys: armed.seatedKeys, threshold: armed.threshold }, next, hands, doc.sealLineage!.slice(0, -1));
+  const closing = foundingRoster(doc);
+  const rolled = await rotateSealEpoch(sealLineageHead(doc)!, { keys: armed.seatedKeys, threshold: armed.threshold }, next, hands, doc.sealLineage!.slice(0, -1),
+    { keys: closing.keys, threshold: closing.threshold });
   if (!rolled.ok) throw new Error(`the roll refused: ${rolled.reason}`);
   const lineage = [...doc.sealLineage!, rolled.epoch];
   expect(verifySealLineage(lineage)).toBe(true);

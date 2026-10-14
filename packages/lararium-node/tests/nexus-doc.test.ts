@@ -189,7 +189,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     const keys = await Promise.all(seeds.map(async (s) => hex(await ed.getPublicKeyAsync(s))));
     const genesis = genesisCharterEpoch(keys.slice(0, 2), 2, { digests: keys.slice(2).map(seatNextDigest), threshold: 2 });
     const r = await rotateSealEpoch(genesis, { keys: keys.slice(2), threshold: 2 }, { digests: keys.slice(0, 2).map(seatNextDigest), threshold: 2 },
-      seeds.slice(2).map((s, i) => ({ signer: keys[i + 2]!, sign: ed25519SignerFromSeed(s) })));
+      seeds.slice(2).map((s, i) => ({ signer: keys[i + 2]!, sign: ed25519SignerFromSeed(s) })), [], { keys: keys.slice(0, 2), threshold: 2 });
     if (!r.ok) throw new Error(r.reason);
     return {
       kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: r.epoch.epochCid, sealLineage: [genesis, r.epoch],
@@ -215,12 +215,17 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     writeFileSync(path, whole.replace('"signatures": [', '"smuggled": true,\n      "signatures": ['), "utf8");
     const smuggled = readNexusDoc(bags);
     expect(smuggled).not.toBeNull();
-    expect(Object.keys(sealLineageHead(smuggled)!.roll!).sort()).toEqual(["keys", "signatures", "threshold"]);
+    // The head rolled off the genesis, so its roll keeps the genesis seats it revealed beside the known three.
+    expect(Object.keys(sealLineageHead(smuggled)!.roll!).sort()).toEqual(["genesis", "keys", "signatures", "threshold"]);
     // Tear the roll: a signature record without its sig.
     writeFileSync(path, whole.replace(/"sig": "[0-9a-f]+"/, '"sig": 7'), "utf8");
     expect(readNexusDoc(bags)).toBeNull();
     writeFileSync(path, whole.replace('"signatures": [', '"revealed": {"keys": [], "threshold": 1},\n      "signatures": ['), "utf8");
     expect(nexusCharterShape(bags)).toBe("torn");
+    // A genesis reveal that reads as no key-set tears the roll too.
+    const tornGenesis = whole.replace(/"genesis": \{/, '"genesis": {"keys": 7},\n      "was": {');
+    writeFileSync(path, tornGenesis, "utf8");
+    expect(readNexusDoc(bags)).toBeNull();
   });
 });
 
