@@ -180,10 +180,15 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   const auditUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
   // A REFUSED FILE ENDS THE RUN NON-ZERO, AND EVERY REFUSED FILE GETS NAMED WITH ITS REFUSAL, however many
   // rows the wave held. The landed carriers stay landed and pinned; the exit and the envelope say that the
-  // run did not take everything it was handed. A conflict gets named the same way and leaves the exit alone.
+  // run did not take everything it was handed.
+  // A CONFLICT ENDS THE RUN NON-ZERO TOO, under its own exit class. The person named these files and the
+  // gate landed nothing for a conflicting one, so an exit of zero would read as "your words landed". Each
+  // one gets named with the two doors that settle it by key.
   const { refused, conflicts } = settled;
   const pageError = settled.pageError;
   const { failed, message: refusedMessage } = ingestVerdict(settled);
+  const stoodOff = !failed && conflicts.length > 0;
+  const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> --key <key>\` (the file's words) or \`lares shore take-records <uri> --key <key>\` (the records')`;
   const data = {
     verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
     tallies: settled.tallies, refused, conflicts,
@@ -193,12 +198,16 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   emit(args, {
     ...(failed
       ? { ok: false as const, error: { code: "verb-error", message: refusedMessage ?? "INGEST refused" } }
+      : stoodOff
+      ? { ok: false as const, error: { code: "conflict", message: conflictMessage } }
       : { ok: true as const }),
     requestId: result.requestId,
     data,
     human: () => {
       console.log(pageError !== undefined
         ? `INGEST ✗ ${refused.length} refusal(s) read, then a later wave failed; ${pageError.unread} carrier(s) stay unread (req ${result.requestId.slice(0, 8)})`
+        : stoodOff
+        ? `INGEST ✗ ${conflicts.length} of ${candidates.length} carrier(s) stand in a conflict and landed nothing; the rest applied locally (req ${result.requestId.slice(0, 8)})`
         : refused.length === 0
         ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
         : `INGEST ✗ ${refused.length} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
@@ -216,8 +225,9 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         console.error(`    ⚠ ${r.why}`);
       }
       if (pageError !== undefined) console.error(`  ⚠ ${refusedMessage}`);
+      if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
       console.log(`\n  audit: ${auditUri}`);
     },
   });
-  return failed ? exitFor("verb-error") : 0;
+  return failed ? exitFor("verb-error") : stoodOff ? exitFor("conflict") : 0;
 }

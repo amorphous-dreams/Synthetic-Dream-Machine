@@ -97,7 +97,7 @@ function stand(diskBody: string, opts: { canonicalize: boolean }): {
   const tree = new SyncedTree(join(root, ".projection", "synced-tree.json"));
   tree.set(syncedTreeKey(BAG, URI), join(root, REL), carrierHash("title: records\n\nTHE LAST PROJECTION\n"));
 
-  const conflicts: Array<{ bagId: string; uri: string; reason: string }> = [];
+  const conflicts: Array<{ bagId: string; uri: string; reason: string; standoff: string }> = [];
   const projector = new LarDiskProjector({
     mirrors: [{ bagId: BAG, mirrorRoot: root }],
     carrierFileFn: async () => ({ ext: MEME_EXT, body: RECORDS_RENDER, encoding: "utf8" }),
@@ -125,7 +125,10 @@ describe("the projecting leg's verdict reaches disk and the operator", () => {
     expect(conflicts).toHaveLength(1);
     expect(conflicts[0]!.bagId).toBe(BAG);
     expect(conflicts[0]!.uri).toBe(URI);
-    expect(conflicts[0]!.reason).toContain("both moved past the last projection");
+    expect(conflicts[0]!.reason).toContain("both moved past their last agreement");
+    // The alert names both doors, each under the standoff's own key.
+    expect(conflicts[0]!.reason).toContain(`lares shore take-disk ${URI} --key ${conflicts[0]!.standoff}`);
+    expect(conflicts[0]!.reason).toContain(`lares shore take-records ${URI} --key ${conflicts[0]!.standoff}`);
 
     await stop();
   });

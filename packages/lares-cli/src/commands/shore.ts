@@ -3,14 +3,17 @@
  *
  *   lares shore [list]                                    what stands for a hand
  *   lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]
+ *   lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
  *   lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *   lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *
  * The disk projector decides nothing a person owns.
  *
  *   · A STANDOFF: the disk and the records say different things and no rule picks. Nothing writes. A
- *     person settles it by ingesting the file (`lares ingest`), by saving in the wiki until both sides say
- *     the same thing, or by `take-records` under the key the alert showed.
+ *     person settles it under the key the alert showed, toward either side: `take-disk` lands the file's
+ *     words in the records, `take-records` writes the records' render over the file. Saving in the wiki
+ *     until both sides say the same thing settles it too. Where no base stands, `lares ingest` of the file
+ *     names the same adoption `take-disk` does.
  *   · A PENDING REMOVAL: a file vanished from the path its base names. Nothing writes it back and nothing
  *     tombstones its records. `restore` writes the file back from the records; `remove` deletes the
  *     carrier in the wiki, where the wiki shore lands the tombstone.
@@ -30,18 +33,23 @@ import { emit, exitFor, wantsJson } from "../render.js";
 import { verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
 import { askShore, type ShoreAnswer } from "../shore-core.js";
+import { takeDisk } from "../shore-take-disk.js";
+import { openSyncedTree } from "../ingest-core.js";
+import { larRoot } from "../env.js";
 
 /** The acts this door carries. */
-export const SHORE_ACTS = ["list", "take-records", "restore", "remove"] as const;
+export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
 
 function printUsage(): void {
   console.log("usage: lares shore [list]");
   console.log("       lares shore take-records <uri> --key <key> [--bag <bagUri>] [--yes]");
+  console.log("       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]");
   console.log("       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
   console.log("       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
   console.log("  list          look at the disk, then name each standoff with its key and each pending removal;");
   console.log("  take-records  write the records' render over the file of one standoff, named by its key;");
+  console.log("  take-disk     land the file's words in the records for one standoff, named by its key;");
   console.log("  restore       write a vanished file back from the records;");
   console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
   console.log("  an answer over more than one carrier names the count that stands pending (--count).");
@@ -52,11 +60,11 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   const bag = args.options["bag"];
   const withBag = bag ? { bag } : {};
   if (act === "list") return { args: { op: "list", ...withBag } };
-  if (act === "take-records") {
+  if (act === "take-records" || act === "take-disk") {
     const uri = args.positional[1];
     const key = args.options["key"];
-    if (!uri || !key) return { usage: "take-records names a carrier and the standoff's key: lares shore take-records <uri> --key <key>" };
-    return { args: { op: "take-records", uri, key, ...withBag } };
+    if (!uri || !key) return { usage: `${act} names a carrier and the standoff's key: lares shore ${act} <uri> --key <key>` };
+    return { args: { op: act, uri, key, ...withBag } };
   }
   const uris = args.positional.slice(1);
   const all = Boolean(args.flags["all"]);
@@ -72,6 +80,7 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
 /** What a person confirms before an act that writes. */
 function confirmLine(act: ShoreAct, shaped: Record<string, unknown>): string {
   if (act === "take-records") return `take-records ${String(shaped["uri"])}: the file's present bytes give way to the records' render. Proceed? [y/N] `;
+  if (act === "take-disk") return `take-disk ${String(shaped["uri"])}: the records give way to the file's present words. Proceed? [y/N] `;
   const what = shaped["all"] === true ? `all ${String(shaped["count"])} pending carrier(s)` : (shaped["uris"] as string[]).join(", ");
   return act === "restore"
     ? `restore ${what}: each file returns from the records. Proceed? [y/N] `
@@ -106,6 +115,42 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     return exitFor("not-found");
   }
 
+  // TAKE-DISK rides the ingest leg, under the key (`shore-take-disk.ts`): the island names the standoff's
+  // states, and the file lands only where the disk and the records still stand as the person read them.
+  if (act === "take-disk") {
+    let taken;
+    try {
+      taken = await takeDisk(
+        { uri: String(shaped.args["uri"]), key: String(shaped.args["key"]), ...(typeof shaped.args["bag"] === "string" ? { bag: shaped.args["bag"] } : {}) },
+        { ask: (shoreArgs) => askShore(shoreArgs, did), tree: openSyncedTree(), root: larRoot(), did },
+      );
+    } catch (err) {
+      const f = verbFailure(err);
+      emit(args, {
+        ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+        error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+        human: () => { console.error(`lares shore: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+      });
+      return exitFor(f.code);
+    }
+    if (!taken.ok) {
+      const refused = taken;
+      emit(args, {
+        ok: false, ...(refused.requestId !== undefined ? { requestId: refused.requestId } : {}),
+        error: { code: refused.refusal, message: refused.why },
+        human: () => console.error(`lares shore take-disk: ${refused.refusal}: ${refused.why}`),
+      });
+      return exitFor(refused.refusal === "standoff-key-moved" ? "conflict" : "verb-error");
+    }
+    const done = taken;
+    emit(args, {
+      ok: true, ...(done.requestId !== undefined ? { requestId: done.requestId } : {}),
+      data: { op: "take-disk", bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision },
+      human: () => console.log(`took the disk's side: ${done.uri} (${done.bag}); the words at ${done.path} stand in the records`),
+    });
+    return 0;
+  }
+
   let answer: ShoreAnswer;
   try {
     answer = await askShore(shaped.args, did);
@@ -137,11 +182,18 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       if (act === "list") {
         const standoffs = rows("standoffs");
         const pending = rows("pending");
-        if (standoffs.length === 0 && pending.length === 0) { console.log("the disk shore holds nothing for a hand"); return; }
+        // THE COUNTS NAME EVERY ROW. Past the outcome's row cap the rows themselves stay behind, and a
+        // list that printed "nothing" over them would state a thing nobody measured.
+        const counted = (name: string, held: number): number => (typeof answer.output[name] === "number" ? (answer.output[name] as number) : held);
+        const standoffCount = counted("standoffCount", standoffs.length);
+        const pendingCount = counted("pendingCount", pending.length);
+        if (standoffCount === 0 && pendingCount === 0) { console.log("the disk shore holds nothing for a hand"); return; }
+        if (standoffCount > standoffs.length) console.log(`${standoffCount} standoff(s) stand, more than one answer names: read one bag with --bag`);
+        if (pendingCount > pending.length) console.log(`${pendingCount} pending removal(s) stand, more than one answer names: read one bag with --bag, or answer over all with \`--all --count ${pendingCount}\``);
         if (standoffs.length > 0) {
           console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
           for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
-          console.log("  settle one: `lares ingest` the file · save in the wiki until both say the same · `lares shore take-records <uri> --key <key>`");
+          console.log("  settle one under its key: `lares shore take-disk <uri> --key <key>` lands the file's words · `lares shore take-records <uri> --key <key>` writes the records' render · or save in the wiki until both say the same");
         }
         if (pending.length > 0) {
           console.log(`${pending.length} pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones`);

@@ -7,11 +7,19 @@
  * into the island that mounts the projector (`lares shore` sends it through `wiki-act`), and each island
  * answers for the mirrors it holds.
  *
- *   list           look at the disk, then name what stands: each standoff with its key, each pending removal
+ *   list           look at the disk, then name what stands: each standoff with its key and its states, each
+ *                  pending removal; `uris` narrows the answer to named carriers
  *   sense          look at the disk for the named carriers (the watcher sends what vanished or returned)
  *   take-records   take the records' side of one standoff, named by its key
  *   restore        write a vanished file back from the records and pin its base
  *   remove         delete the vanished carrier in the wiki, by the wiki shore's own delete door
+ *
+ * ONE STANDOFF, TWO DOORS. `take-records` settles a standoff toward the records, and this island's
+ * projector performs it: the records' render writes over the file. Its twin, `lares shore take-disk`,
+ * settles toward the disk, and no projector performs that: no disk byte reaches a record through the
+ * projecting leg. The CLI reads the standoff's states here (`list`, by carrier), proves the key and the
+ * file's bytes still name them, and sends the file through the ingest leg with the records the person
+ * read as its base, so the gate lands the disk's words only where those records still stand.
  *
  * Every answer names the state the person read: a standoff's key, and for more than one pending removal
  * the count that stood pending. An answer that names a state which moved since takes nothing and says so:
@@ -29,11 +37,16 @@ export type ShoreOp = (typeof SHORE_OPS)[number];
 
 const text = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
 
-/** What stands for a hand at this island's shore, optionally within one bag. */
-export function shoreList(projector: LarDiskProjector, bag: string | null = null): Record<string, unknown> {
-  const standoffs = projector.standing().filter((s) => bag === null || s.bagId === bag);
-  const pending = projector.pendingRemovals().filter((p) => bag === null || p.bagId === bag);
-  return { standoffs, pending, pendingCount: pending.length };
+/**
+ * What stands for a hand at this island's shore, optionally within one bag and optionally for named
+ * carriers alone. The counts name every row, so a reader whose answer rides a bounded channel still reads
+ * how many stand, and a door that answers one carrier asks for that carrier by name.
+ */
+export function shoreList(projector: LarDiskProjector, bag: string | null = null, uris: readonly string[] | null = null): Record<string, unknown> {
+  const named = (uri: string): boolean => uris === null || uris.includes(uri);
+  const standoffs = projector.standing().filter((s) => (bag === null || s.bagId === bag) && named(s.uri));
+  const pending = projector.pendingRemovals().filter((p) => (bag === null || p.bagId === bag) && named(p.uri));
+  return { standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length };
 }
 
 const uriList = (v: unknown): string[] | null =>
@@ -51,8 +64,11 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     // standoff or a pending removal, so a file a hand put back or edited since reads as it stands, and at
     // every carrier whose file left where its base stands, so a file a hand removed with no watcher running
     // pends by the time the list answers.
-    await projector.sense([...new Set([...projector.standing().map((s) => s.uri), ...projector.pendingRemovals().map((p) => p.uri), ...projector.vanished()])]);
-    return { ok: true, op, ...shoreList(projector, bag) };
+    // `uris` narrows the answer to the carriers a door names; the look at the disk stays whole.
+    const only = args["uris"] === undefined ? null : uriList(args["uris"]);
+    if (args["uris"] !== undefined && only === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "list names carriers as a list of addresses (`uris`), or none for every carrier" };
+    await projector.sense([...new Set([...projector.standing().map((s) => s.uri), ...projector.pendingRemovals().map((p) => p.uri), ...projector.vanished(), ...(only ?? [])])]);
+    return { ok: true, op, ...shoreList(projector, bag, only) };
   }
   if (op === "sense") {
     // No carrier named = every carrier this island mirrors.

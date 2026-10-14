@@ -284,6 +284,26 @@ function sitedKey(bagId: string, uri: string): string {
   return `${bagId}\n${uri}`;
 }
 
+/** The states a `sides` standoff folds into its key: the file weighed, the disk's hash, the records' hash, and the base where one stands. */
+export interface StandoffSides {
+  readonly path: string;
+  readonly disk: string | null;
+  readonly records: string;
+  readonly base?: { readonly disk: string; readonly records: string };
+}
+
+interface StandoffEntry extends Partial<StandoffSides> {
+  readonly standoff: string;
+  readonly kind: "sides" | "home";
+  readonly reason: string;
+}
+
+/** One standoff as `standing()` names it. */
+export interface StandingStandoff extends StandoffEntry {
+  readonly bagId: string;
+  readonly uri: string;
+}
+
 export class LarDiskProjector {
   /**
    * URIs currently being written to disk.
@@ -318,7 +338,7 @@ export class LarDiskProjector {
    * `sides` names a standoff between the disk and the records at the carrier's own path; `home` names a
    * file at a path the carrier left (or of a carrier the records dropped) that holds bytes no agreement covers.
    */
-  private readonly standoffs = new Map<string, { readonly standoff: string; readonly kind: "sides" | "home" }>();
+  private readonly standoffs = new Map<string, StandoffEntry>();
   /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
   private readonly answered = new Map<string, string>();
   /** Every carrier whose file vanished from the path its base names, by (bag, carrier). Memory only: a boot's mount scan finds each anew. */
@@ -469,11 +489,17 @@ export class LarDiskProjector {
     return packOfMember(parseProvenance(provText), title) !== undefined;
   }
 
-  /** Every standoff this projector stands in right now: the bag, the carrier and the key a person answers by. */
-  standing(): Array<{ readonly bagId: string; readonly uri: string; readonly standoff: string }> {
+  /**
+   * Every standoff this projector stands in right now: the bag, the carrier, the key a person answers by,
+   * and the states that key folds. A `sides` standoff names the file it weighed (`path`), the hash of the
+   * bytes that stand there (`disk`) and the hash of the records' render (`records`), so a door that takes
+   * the disk's words can prove it lands the very file, over the very records, the person read. A `home`
+   * standoff names a file at a path the carrier left, and carries its reason alone.
+   */
+  standing(): StandingStandoff[] {
     return [...this.standoffs].map(([key, entry]) => {
       const cut = key.indexOf("\n");
-      return { bagId: key.slice(0, cut), uri: key.slice(cut + 1), standoff: entry.standoff };
+      return { bagId: key.slice(0, cut), uri: key.slice(cut + 1), ...entry };
     });
   }
 
@@ -619,11 +645,11 @@ export class LarDiskProjector {
    * Enter a standoff, once per key: a reconcile that meets the standoff it already raised stays quiet. A
    * standoff whose states moved ends (its alert clears) and the new one enters under its own key.
    */
-  private _enterStandoff(bagId: string, uri: string, standoff: string, kind: "sides" | "home", reason: string): void {
+  private _enterStandoff(bagId: string, uri: string, standoff: string, kind: "sides" | "home", reason: string, sides?: StandoffSides): void {
     const key = sitedKey(bagId, uri);
     if (this.standoffs.get(key)?.standoff === standoff) return;
     this._leaveStandoff(bagId, uri);
-    this.standoffs.set(key, { standoff, kind });
+    this.standoffs.set(key, { standoff, kind, reason, ...(sides ?? {}) });
     console.error(`[confluence] projection conflict (${bagId} <- ${uri}): ${reason}`);
     this.onConflict?.({ bagId, uri, reason, standoff });
   }
@@ -1217,12 +1243,16 @@ export class LarDiskProjector {
         // SURFACE, never overwrite. The write stops here; the divergence goes out on the
         // ward-alert rail (a durable ledger record + an alert in the operator's pinned VM),
         // named for the mechanism that actually stood down — never as a disk-ward refusal.
+        // THE ALERT NAMES BOTH DOORS: the one that lands the disk's words and the one that lands the
+        // records', each under this standoff's own key, so a person who reads the alert alone can settle it.
+        const doors = `Take the disk's words: \`lares shore take-disk ${tiddlerUri} --key ${standoff}\`. Take the records' words: \`lares shore take-records ${tiddlerUri} --key ${standoff}\`. Or save in the wiki until both say the same`;
         const reason = decision.reason === "no-base"
-          ? `the file at ${candidate} and the records say different things, and no base names a last agreement (${decision.reason}); nothing writes. Ingest the file, save in the wiki until both say the same, or take the records' side under key ${standoff}`
-          : `the disk and the records both moved past the last projection (${decision.reason}) — the write stands down so neither edit is drowned (key ${standoff})`;
+          ? `the file at ${candidate} and the records say different things, and no base names a last agreement (${decision.reason}); nothing writes. ${doors}`
+          : `the file at ${candidate} and the records both moved past their last agreement (${decision.reason}); nothing writes, so neither edit drowns. ${doors}`;
         // ONE SURFACING PER STANDOFF: the key names the bag, the carrier and the two states. A reconcile
         // that meets the standoff it already raised stays quiet; the write still stands down.
-        this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason);
+        this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason,
+          { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}) });
         return;
       }
     }

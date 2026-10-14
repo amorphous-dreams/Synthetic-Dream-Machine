@@ -55,7 +55,12 @@ async function stand(): Promise<{ projector: LarDiskProjector; file: string; key
 describe("the shore verb answers from the projector", () => {
   test("list names each standoff with the key a person answers by", async () => {
     const s = await stand();
-    expect(await answerShore(s.projector, { op: "list" })).toEqual({ ok: true, op: "list", standoffs: [{ bagId: BAG, uri: URI, standoff: s.key }], pending: [], pendingCount: 0 });
+    const listed = await answerShore(s.projector, { op: "list" });
+    expect(listed).toMatchObject({ ok: true, op: "list", standoffCount: 1, pending: [], pendingCount: 0 });
+    // Each standoff names its key and the states that key folds: the file weighed, and both hashes.
+    expect((listed["standoffs"] as Array<Record<string, unknown>>)).toHaveLength(1);
+    expect((listed["standoffs"] as Array<Record<string, unknown>>)[0]).toMatchObject({ bagId: BAG, uri: URI, standoff: s.key, kind: "sides", path: s.file });
+    expect(String((listed["standoffs"] as Array<Record<string, unknown>>)[0]!["reason"])).toContain(s.key);
     expect(await answerShore(s.projector, {})).toMatchObject({ ok: true, op: "list" });
   });
 

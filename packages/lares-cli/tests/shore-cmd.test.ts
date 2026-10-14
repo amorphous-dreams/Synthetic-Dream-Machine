@@ -28,6 +28,16 @@ describe("lares shore reads an act", () => {
     expect(shoreArgs("take-records", parsed(["take-records", "lar:///a.b.c/x"], { key: "abc123", bag: "lar:///ha.ka.ba/bags/lares" })))
       .toEqual({ args: { op: "take-records", uri: "lar:///a.b.c/x", key: "abc123", bag: "lar:///ha.ka.ba/bags/lares" } });
   });
+  test("take-disk names the carrier, the key and the bag a person named, as its twin does", () => {
+    expect(shoreArgs("take-disk", parsed(["take-disk", "lar:///a.b.c/x"], { key: "abc123" })))
+      .toEqual({ args: { op: "take-disk", uri: "lar:///a.b.c/x", key: "abc123" } });
+    expect(shoreArgs("take-disk", parsed(["take-disk", "lar:///a.b.c/x"], { key: "abc123", bag: "lar:///ha.ka.ba/bags/lares" })))
+      .toEqual({ args: { op: "take-disk", uri: "lar:///a.b.c/x", key: "abc123", bag: "lar:///ha.ka.ba/bags/lares" } });
+    // No key, or no carrier: its usage, and nothing sent. No flag settles a standoff without the key.
+    expect(shoreArgs("take-disk", parsed(["take-disk", "lar:///a.b.c/x"]))).toHaveProperty("usage");
+    expect(shoreArgs("take-disk", parsed(["take-disk"], { key: "abc123" }))).toHaveProperty("usage");
+  });
+
   test("CONTROL: take-records with no key, or no carrier, names its usage and sends nothing", () => {
     expect(shoreArgs("take-records", parsed(["take-records", "lar:///a.b.c/x"]))).toHaveProperty("usage");
     expect(shoreArgs("take-records", parsed(["take-records"], { key: "abc123" }))).toHaveProperty("usage");
@@ -87,5 +97,6 @@ describe("the door stands in the command table", () => {
     expect(COMMANDS.find((c) => c.name === "shore")).toBeDefined();
     expect(SHORE_VERB).toBe("shore");
     expect(SHORE_ACTS).toContain("take-records");
+    expect(SHORE_ACTS).toContain("take-disk");
   });
 });
