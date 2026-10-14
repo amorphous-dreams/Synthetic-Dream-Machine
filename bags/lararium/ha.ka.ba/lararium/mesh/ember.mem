@@ -1,0 +1,296 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/ember">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/mesh/ember.mem"
+hydrate   = true
+l-space   = "stable"
+role      = "the ember as law — a household's second device lifts a resting hearth to SERVING and to nothing more: the stories it answers and who holds what in each; the serving tier, the rows a gate needs and the rows it never opens; the serving key the vessel key wraps and the serving tree that holds it; the ember pin as a blinded exchange that holds no share; the raise, its second signal, its count and its record; the four roads that remove an ember; how each meets the backup bundle, the seat keys, the per-Nexus keys and the sealed store's content keys; what a thief of each medium learns; and what the build owes"
+title     = "lar:///ha.ka.ba/lararium/mesh/ember"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/ember"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! The ember ~ a second device lifts a resting hearth to serve, and to nothing more
+
+A hearth that restarts rests at its floor until a person unlocks it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>). The floor keeps the arrival page and the public shelf, and shuts everything a guest's phone or a carried walker needs. An ''ember'' lets one of the person's own other devices lift that hearth to ''SERVING'': the hearth answers its gate and carries the bytes it already carries, blind, and it signs nothing, admits nobody and opens no private byte.
+
+> ''Register.'' The operator ruled the ember's bounds (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>): a Tang-shaped, per-relation device pin that holds no share of the key it opens; a raise to SERVING alone that never signs or admits; a count and never a clock; the device's own unlock plus a second signal; a record of each raise; removal by any other device of the human; a human route in every tree, so an ember never stands as the only way in. The house settled the rest under those bounds, and marks each reading. Three questions change custody at rest or a ruled derivation, and rest with the operator (#/open). A builder MUST NOT harden a part #/open names before its ruling.
+
+''Words.'' The ''vessel key'' (VK) seals a vessel's private files (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>). The ''floor key'' signs the floor's acts and rests outside the VK. The ''serving key'' (SK) seals the serving tier alone. An ''ember'' names one device's pin in one hearth's serving tree; the ''ember device'' holds its secret half. A ''raise'' lifts a resting vessel; a ''human unlock'' opens the VK through a passphrase or paper route.
+
+<<~/ahu>>
+
+<<~ ahu #/the-stories>>
+
+!! The stories ~ what a household asks of an ember
+
+Synthetic names. Mele runs the household hearth, an always-on node in a cupboard. Her laptop holds her face's root. Her tablet and her phone each joined her fleet through the fleet-join door. Her friend Koa walks at the hearth as an invited guest, and his phone keeps his documents there as sealed carriage.
+
+!!! One ~ the power cut at night
+
+The power drops at night and comes back. The hearth restarts at its floor: the page loads for Koa, and his sync waits. Mele sleeps; her laptop sleeps.
+
+* ''With one ember'' (the tablet, a slot of threshold one): nothing lifts the hearth until a person confirms. In the morning Mele unlocks the tablet; it shows //raise the hearth to serve, raise 2 of 3 left//; she confirms; the hearth serves. Koa's sync resumes. Mele typed no passphrase.
+* ''With two embers'' (the tablet and the phone, a slot of threshold two): the tablet on its charger and the phone on the nightstand, each standing unlocked on the household link, answer the hearth's ask with no person; the hearth serves before anyone wakes. Each device records the answer it gave.
+* ''What the hearth still refuses'' while it serves: a new invite, an invite's redemption, a fleet join, a face's session on the hearth itself, a seat's signature, a roll, a private document's plaintext. Each refuses by name and names `lares vault unlock`.
+
+!!! Two ~ the main machine dies
+
+The hearth's disk fails. No ember helps: an ember opens a key that rested on that disk, and nothing anywhere else. Mele restores her face onto a fresh hearth from her backup bundle (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>), and binds her tablet as an ember of the NEW hearth with a fresh key. The tablet's old ember key opens nothing anywhere, and its device drops it at the new bind.
+
+If Mele's LAPTOP dies instead, the hearth keeps serving and keeps rising by its embers; her face's root rests on paper and in her bundle. While no root holder stands, nobody new joins the fleet and no dyad marker gets signed, but any standing device still withdraws an ember (#/removal).
+
+!!! Three ~ a thief takes the tablet
+
+* ''Locked tablet, off the household link'': the thief holds a device whose keystore stays shut. The ember answers nobody.
+* ''Unlocked tablet, inside the house'': with a threshold-one slot the thief confirms a raise, and the hearth serves. That serving opens to the thief nothing the hearth holds and signs nothing for it: the hearth carries bytes it cannot open for parties already standing. The thief keeps whatever the tablet itself holds, its own grants and sessions among them, until the fleet sets it aside. The count bounds how many raises the thief gets before a human unlock.
+* ''What ends it'': Mele's phone signs an ember withdrawal and dials the hearth's ember route to deliver it; the hearth counts it, drops the tablet's pin, falls to its floor and takes no ember raise until Mele unlocks it and rolls the serving key. Her laptop's root also sets the tablet aside on the fleet (the dyad marker), which removes every ember that device held.
+
+!!! Four ~ a thief takes the hearth's disk
+
+The thief holds the floor key, every bare row, both slot trees and every sealed row, and no route. The thief stands the floor gates and speaks as the place where the place's own key speaks (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange">>). To lift a copy to SERVING the thief needs an ember to answer an ask from that copy. With a threshold-one slot that takes Mele confirming a raise the thief's copy asked for; with threshold two, two answers. A copy raised that way opens the serving tier: the gate's memory of withdrawals, the public halves that check walkers' grants, the walkers' carriage and the raise ledger, all ciphertext, public halves or signed events, and no root, seat key, face key, content key or plaintext.
+
+!!! Who holds what
+
+|! party |! at rest |! in hand, at a raise |
+| the hearth | the floor key; the VK's slot tree and the serving tree, bare by law; the serving rows under SK; every other private row under the VK | at the floor: the floor key's children alone. At SERVING: SK and the serving rows, never the VK. After a human unlock: the VK, then SK |
+| an ember device | one ember secret per hearth it serves, sealed in its own keystore under its own route; its record of every answer it gave | the ember secret, inside its own process, for one answer |
+| the person | the VK's human routes (passphrase, paper); each device's own unlock | the confirm on the ember device |
+| a guest | its own leaf and carry keys | nothing of the hearth's |
+
+<<~/ahu>>
+
+<<~ ahu #/the-tiers>>
+
+!! Three standings ~ floor, serving, unlocked
+
+|! standing |! what lifts it |! what it holds in memory |! what it serves |
+| ''floor'' | a boot | the floor key's children | the arrival page, the public shelf, the floor gates and the floor's announcement |
+| ''serving'' | t embers answer one raise ask | SK and the serving rows | the floor's service, and the serving gate for presenters already standing, and blind carriage for them |
+| ''unlocked'' | a human route | the VK, the custody root, SK and every hot row | everything a vessel serves |
+
+''SERVING names a standing between the floor and the unlocked vessel, and a raise reaches it alone.'' An ember never lifts a vessel past it. A human unlock lifts a serving vessel to unlocked and replaces the ember's raise; a lock returns any standing to the floor.
+
+!!! The serving tier ~ the rows a gate needs
+
+The serving tier holds exactly the rows the serving gate and blind carriage read and write for parties already standing, and nothing beside them. The serving gate's own bundle and its pins wait on the operator (#/open).
+
+|! row |! why serving needs it |! at serving |
+| `gate-memory` | a gate that forgets a denial admits the withdrawn vessel again | read and keep |
+| `hosting-serve` | the gate checks a walker's hosting grant, and names the walker's carriage rows | read; each roll at an unlocked hearth writes it |
+| `hosting-carry` | a walker deposits and fetches its own sealed documents | read and write, under the quota and the reclaim law |
+| `raise-ledger` | each raise records itself, and the count reads off it | append |
+
+''A grant checks under a key that mints nothing.'' The walker arm reads a hearth's grant against each live epoch, and a key that checks a tag it could also have made would hand a serving hearth the power to mint grants: an admission. So the serving tier holds `hosting-serve` alone, which a roll at an unlocked hearth derives: for each hosted Nexus, the public halves that check the current and the previous epoch's grants, and the naming key of the walkers' carriage rows. It holds no epoch secret, no hosting key and no leaf seed. A grant whose bytes check under a public half forms a new signed shape; the hosting act's re-cut carries it (#/new-shapes).
+
+* ''SERVING renews nothing.'' A walker that presents the previous epoch's grant stands for that dial and takes its renewal at the hearth's next unlocked contact. A token's redemption burns a spend and mints a grant, so it refuses, and the serving tier needs no spend row.
+
+!!! Each arm's path at SERVING ~ a presentation the gate cannot check draws silence
+
+|! arm |! what the serving gate reads |! where it rests |
+| an admitted face, or a contracted place | the admit pin or the carriage contract, the charter lineage, the carriage board's counted revokes and the antigen | `carriage-admit`, `charter`, `carried-charter` (bare by law) and the always-carried boards |
+| a face's withdrawal history | the learned denials | `gate-memory`, under SK |
+| a walker's grant | the public halves of the live epochs | `hosting-serve`, under SK |
+| a walker's token | nothing: redemption refuses | |
+| a device of the person's own fleet | nothing beyond the arm it presents: no same-operator sort | |
+| a stranger | the posture of the charters this hearth carries | bare by law |
+
+* ''The edge shadow ring reads at SERVING as it reads at the floor'' (`floor-fleet-lanes`): every device reads as set aside, and the one board its own device edge names folds in the clear, so the Binding Gate and the removal of an ember (#/removal) read it.
+* ''The daemon island stands at SERVING as it stands at the floor'': no VK, no Keyhive identity, no content-key holder, and no share of the daemon's own document to any socket. Blind carriage reads the walkers' rows through the custody seat on the main thread, which holds SK and nothing more.
+
+''Every other row stays under the VK and stays shut at SERVING'': the custody root, the Keyhive and veil archives, the anchors and the anchor roster, the persona roster and every names row, the handle-book, the admit family, the walk records, the hosting state and its spends, the seal ceremony's rows, `vessel-face-key`, and every cold row (each persona root, each face proof key, each seat key, the device recovery shares, the vessel's next-key seed, a restore's pending row).
+
+!!! What SERVING refuses, by name
+
+Each refusal names `serving-standing` and `lares vault unlock`.
+
+* ''No signature.'' The custody root rests shut, so no veil, no Keyhive signer, no hosting key and no seat key stands. No roll, no hosting act, no invite mint, no grant, no dyad act, no quorum signature, no seal act.
+* ''No admission.'' An invite's redemption mints a grant under the hosting key and burns a spend, so it refuses. A fleet join, a persona admit, add-a-face and every crossing refuse.
+* ''No face on the hearth.'' `vessel-face-key` rests shut, so the hearth opens no session of its own, dials no gate as a face and presents no hand-over. It verifies presentations, hand-overs included, since each stands public and signed.
+* ''No plaintext.'' No content-key holder stands in the daemon island, and no Keyhive identity: the sealed store's rests serve as ciphertext alone. No wiki island stands.
+* ''No same-operator sort.'' The fleet's roots rest under the VK, so the sorter sorts nobody same-operator, exactly as at the floor. A device of the person's own fleet reaches what its arm earns at the gate; the blind carriage of its own sealed history rides the sealed store's fourth step and stands owed with it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
+* ''No key settle.'' A raise counted on the fleet's board while the hearth serves closes its gates at once and settles its keys at the next human unlock (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>).
+
+<<~/ahu>>
+
+<<~ ahu #/the-serving-key>>
+
+!! The serving key ~ the VK wraps it; it seals the serving tier alone
+
+* ''SK mints once, at the Stable founding, beside the custody root'': 32 random bytes from the founding's own source. No key derives it, and it derives from no other key.
+* ''SK rests in the serving tree'' (`sk-slots`, a `floor` row beside `vk-slots`): the same LUKS shape as the VK's tree (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>), committed to the one SK it wraps by a keyed check, holding no version, counter or clock. It holds ONE VK entry and zero or more ember slots.
+* ''The VK entry'' wraps SK under a key the VK derives under the serving wrap's own registered domain. A human unlock opens the VK, then SK through this entry. The entry stands as the serving tree's human route: the tree refuses any change that would leave it without one, so an ember never stands as the only way to SK.
+* ''An ember slot'' wraps SK under a slot key split t-of-n across ember pins, as a passphrase slot splits across its pins. An ember slot holds ember pins alone; the VK's own tree refuses an ember pin (house reading under the ruling that the ember holds no share of the VK).
+* ''SK seals each serving row through the one sealed writer'', under associated data that names the row by home and file, as the VK seals every other row. No serving row opens under the VK, and no VK row opens under SK.
+* ''A VK rotation re-wraps the VK entry'' and touches no serving row.
+* ''An SK rotation runs as ONE act at a human unlock'': a fresh SK, every serving row re-sealed, the VK entry and each standing ember pin bound again over the fresh key. An ember pin re-binds from its public half alone, so no ember device takes part. Its census and its opening of every serving row pass before any byte moves, as the VK's rotation's do.
+* ''Every unbind of an ember offers an SK rotation, loudly'', as every unbind of a VK slot offers a VK rotation: a copy of the serving tree taken before the unbind still lets the removed ember open SK.
+
+<<~/ahu>>
+
+<<~ ahu #/the-pin>>
+
+!! The ember pin ~ a blinded exchange, and no share
+
+''The pin follows Tang's exchange'' (McCallum-Relyea, as Clevis binds it). The ember device holds a secret scalar `s` and hands the hearth its public point `S` at the bind. The hearth draws a fresh scalar `c`, keeps the point `C` in the pin, derives the pin's wrapping key from the point `cS`, wraps its share of the slot key, and discards `c`. At a raise the hearth draws a fresh `e`, sends the blinded point `C + eG`, takes back `s(C + eG)`, and recovers `cS` by subtracting `eS`.
+
+* ''The ember holds no share.'' Its secret alone opens nothing: `C` rests on the hearth. The hearth's disk alone opens nothing: `cS` needs `s`. The ember learns nothing of the key it helped recover, and nothing of `C`.
+* ''One ember key per (ember device, hearth).'' The ember device mints a fresh scalar for each hearth it serves, apart from every key it holds for anything else (its fleet key, its face keys, its leaf), so two hearths' pins never link one device and no pin names a fleet key.
+* ''The group adds points'', so the exchange can blind; the build fixes the group and its encoding under a registered domain. An answer that carries the x-coordinate alone yields two candidates, and the pin's authenticated wrap picks the one that opens. An ember that rests in a hardware enclave waits on the approved measurement of that hardware's exchange (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>).
+* ''The pin record rests bare'', inside the serving tree: its kind, `S`, `C`, a nonce and the wrapped share, and the associated data binds the slot, the pin's place and its kind. `S` names no device: it stands fresh for this hearth alone.
+* ''The ember's secret rests sealed on its own device'', under that device's own route: on a node, under that vessel's VK; in a browser leaf, under the leaf's own slot (`B1` of the roadmap's loops). A leaf the browser evicts loses its ember, and the hearth keeps its human routes.
+* ''The ember's secret never syncs.'' No passkey provider, cloud keychain, backup bundle or fleet channel carries it: an ember names one physical device, and a copy on a second device would make two embers the hearth counts as one.
+
+!!! The bind
+
+''An ember binds at a human unlock, with both devices in hand.'' The hearth holds the VK; the ember device stands joined to the person's fleet and unlocked. The two meet over the fleet channel, each screen shows one check string, and the person confirms both. The ember device mints its scalar for this hearth and hands `S`; the hearth binds the slot and records the bind in the raise ledger with the count dial the person set. A device that holds no standing dyad on the fleet's board binds no ember.
+
+<<~/ahu>>
+
+<<~ ahu #/the-raise>>
+
+!! The raise ~ an ask the hearth emits, a second signal, a count, a record
+
+# ''The ember dials the hearth's ember route.'' The route stands at the floor tier: its bundle derives from the floor key, so a locked hearth answers it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange">>). The route seats only a dialer whose handshake proves a transport key a standing ember pin names, or a device key the fleet's board shows standing (#/removal); every other dialer draws the silence every floor gate gives.
+# ''The ember carries its fleet's removals first.'' Every dial carries the dialer's frontier of its fleet's edge board and the dyad and withdrawal acts the hearth may lack, as a face's presenters carry its withdrawal history (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof">>). The hearth verifies each act against the fleet root its own device edge names in the clear, the one board a floor folds, folds it, and asks nothing of a pin a counted act removed. An act it cannot verify there teaches it nothing.
+# ''The hearth asks.'' The ask names the slot and the pin, carries the blinded point, the hearth's own fresh raise nonce bound to its boot epoch, the standing it asks for (SERVING, the only one an ember reaches), and the ordinal the raise will take in the ledger. A hearth asks once per pin per raise nonce, and a nonce never serves two raises.
+# ''The ember answers on a second signal.'' Its keystore must stand open (the device's own unlock), and then one of two signals: ''the person confirms this raise'' on the ember's screen, which shows the hearth's own pet-name on that device, the standing asked, the ordinal and the raises left; or ''the slot's threshold reaches two or more'' and every answering ember stands unlocked on the household link. An unattended answer rides the local link alone; an answer across a herm or a relay always waits for the person's confirm. The answer binds the ask's raise nonce and rides the channel the dial proved, so it answers that one ask on that one channel. The ember device records every answer it gives in its own custody, raise nonce included, and answers no nonce twice, so a replayed ask draws no second prompt and no second answer.
+#* ''A threshold-one slot keeps one compromise domain'': the device that unlocks also confirms, so a thief who holds that device unlocked supplies both signals. The house therefore offers threshold two wherever the household holds two devices, and says so at the bind.
+# ''The hearth unblinds and opens SK.'' It gathers t answers, unwraps the slot key and SK, and checks SK against the serving tree's commitment.
+# ''The ledger commits the raise before anything serves.'' The hearth opens `raise-ledger`, reads the count, and seals one entry: the ordinal, the slot, a digest of each answering ember's key, the raise nonce and the boot epoch. A spent count refuses (`count-spent`): SK drops, the hearth stays at its floor, and the ember shows that a person must unlock the hearth. Only after the entry lands does the serving tier compose.
+# ''The hearth stands at SERVING'' until a lock, a restart, a human unlock (which replaces the raise), or a counted removal of any ember (#/removal). Each of those reads as a causal event; no timer ends a raise.
+
+''A replayed ask yields nothing.'' An answer to an old blinded point opens nothing without the `e` that blinded it, and the hearth drew and dropped that `e`. A replayed answer meets a raise nonce the hearth no longer holds. ''A replayed raise yields nothing either'': a raise holds no bearer token, so nothing recorded lifts a fresh boot.
+
+!!! The count ~ a dial, never a clock
+
+* ''The person sets the count at the bind'': how many raises the hearth takes between two human unlocks. It rests in `raise-ledger`, under SK. The house offers three.
+* ''Each raise spends one; a human unlock refills it'', and the ledger records the refill.
+* ''A spent count leaves the hearth at its floor'' and costs no route: the next human unlock refills it.
+* ''The count binds the live hearth, and nothing beyond it.'' A thief who holds an ember and stands on the household link spends the count and gets no more. A thief who holds a copy of the hearth's disk and an ember's scalar answers to nothing the count says: that thief computes `cS` offline. A hand that writes an older `raise-ledger` or an older serving tree onto the disk restores spent raises and removed pins, and that hand already holds the disk. No fence here detects a rollback (#/a-thief).
+
+!!! The record ~ each raise, where the person reads it
+
+* ''On the hearth'': every raise, refill and spent count rests in `raise-ledger`. A human unlock prints the raises since the last unlock in its first lines, and `lares vault status` lists them.
+* ''On the ember device'': every answer it gave, with the hearth's pet-name and the ordinal it saw.
+* ''Nowhere else.'' A raise signs nothing (#/rulings of the roadmap), so no notice of it rides a board. The person reads the record on the hearth at an unlock and on each ember device, and any device of the person may then remove an ember (#/removal).
+
+<<~/ahu>>
+
+<<~ ahu #/removal>>
+
+!! Removal ~ four roads, each deny-only
+
+''A removed ember never returns.'' A device that serves again binds a fresh ember key at a fresh bind. Every road below drops the pin and offers or owes an SK rotation; no road lifts.
+
+|! road |! who acts |! what the hearth does |! shape |
+| ''unbind at the hearth'' | a person at a human unlock | `lares vault unbind <slot> --rotate` removes the ember slot and rotates SK in one act | the custody door's own act |
+| ''the device leaves the fleet'' | the fleet root, by the dyad marker (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/four-edges">>) | once the act reaches it, even at its floor, it deletes every ember pin that device bound, falls to its floor and owes an SK rotation | the dyad act, as built |
+| ''an ember withdrawal'' | any device of the person, signing with the device key a dyad edge of that fleet's root names, while no shadow stands over that edge | the same, for the one ember the act names | a new signed shape (#/new-shapes) |
+| ''the ember forgets'' | the ember device, by its own hand | nothing until a removal reaches it: the pin answers nothing and the hearth names a silent pin at each human unlock | none |
+
+* ''The hearth folds its own fleet's board at its floor'', as it does for the Binding Gate's ask about its own seat (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>), so a removal reaches a resting or serving hearth with no unlock. At the floor every fleet lane stays shut, so a removal arrives on the ember route: any standing device of the person dials it to deliver one, and every ember's dial carries its frontier first (#/the-raise). A removal that reached no dial reaches the hearth at its next human unlock.
+* ''A removal that has not arrived does not bind.'' Until a removal reaches the hearth, the removed ember still answers there. The count bounds that span, and any honest dial ends it.
+* ''Deleting a pin needs no key'': the serving tree rests bare, and the hearth removes the pin's record from it. That record's absence stands as the hearth's memory of the removal; a hand that restores an older tree onto the disk restores the pin, and that hand already holds the disk.
+* ''A counted removal shuts every ember until SK rolls.'' The hearth falls to its floor at once, whichever ember answered the standing raise, and the serving tree takes no raise while an SK rotation stands owed: a raise under the old SK would seal fresh serving rows the removed ember can still open from a copied tree. The rotation needs the VK, so it waits for a human unlock, which names it in its first line; `vault status` names it until a person runs it, and the person runs it as its own act.
+* ''Why a device key signs a withdrawal'' (house reading under the ruling that any other device of the human removes an ember): the dyad's two hands stay the fleet root's alone (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands">>), and the ember withdrawal marks no dyad. It marks the ember's own relation to one hearth, a fifth thing a marker reaches that kapae's four edges do not name, and it only denies: a device that signs one gains no standing, lifts nothing and removes no other device. A stolen device that has not yet left the fleet can withdraw the person's embers, which costs the household its unattended raises and opens nothing.
+* ''The pin names its device by a digest the hearth alone can test'' (house reading): a digest of the device key the dyad names and the hearth's own floor key, so a holder of the bare tree learns which device an ember belongs to only by already holding that device's key.
+* ''A withdrawal outranks a raise.'' A raise and a withdrawal of one of its embers read together leave the hearth at its floor.
+* ''Removal ends reach forward alone.'' A removed ember, or a thief who held SK, keeps whatever it already copied and opened; no rotation reaches backward (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">>).
+
+<<~/ahu>>
+
+<<~ ahu #/meets>>
+
+!! How the ember meets the rest of custody
+
+* ''The backup bundle'' carries no part of it: `sk-slots`, every serving row and `raise-ledger` stay on their vessel (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle">>). A restored vessel mints its own SK at its founding and binds fresh embers. An ember of a lost vessel opens nothing anywhere.
+* ''The seat keys'' rest cold under the VK; SERVING opens no cold row, so the seal door refuses every seat act at SERVING, the cold-key card's rehearsal among them.
+* ''The per-Nexus keys'': a face's proof key rests cold on the root holder, and a vessel's face-scoped key rests hot under the VK, so a serving hearth presents as no face at any Nexus and signs no hand-over. Its gate verifies a hand-over a presenter carries, since that act stands public and signed.
+* ''The gate's tiers'': the floor gates keep deriving from the floor key, and the sovereign gate from the sealed custody root, as ruled. The serving gate stands as a third tier under the house's lean, its bundle derived from SK under its own name, so a dialer that pinned the sovereign tier never mistakes a serving hearth for an unlocked one (#/open).
+* ''The sealed store's content keys'' stay in the daemon island's holder, which stands only on an unlocked vessel. SERVING mints, rolls and opens none. A roll a counted raise owes waits for the next human unlock, and the gates close on the shadow at once.
+* ''The waking floor's rulings'' hold: every boot rests at its floor, and nothing stored lifts it, since a raise needs a live answer from another device for each boot.
+
+<<~/ahu>>
+
+<<~ ahu #/a-thief>>
+
+!! What a thief learns, and what a removed ember still knows
+
+|! the thief holds |! what it reaches |! what it never reaches |
+| an ember device, locked | nothing | |
+| an ember device, unlocked, off the household link | nothing without the person's confirm, which it can give: then a raise of the live hearth to SERVING, bounded by the count | any byte the hearth holds; any signature |
+| an ember device, unlocked, on the household link | the same, and with a threshold-two slot only when it also holds a second ember | the same |
+| the hearth's disk, no ember | the floor (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange">>) | SK, every serving row, every sealed row |
+| the hearth's disk and t embers' answers | SK and the serving rows, offline and with no count: the gate's withdrawal events, the public halves that check grants, the walkers' ciphertext and the raise ledger | the VK, the custody root, any root, seat key, face key or content key, any plaintext a party sealed |
+| a removed ember, and a copy of the serving tree taken before its removal | SK as it stood, and every serving row sealed under it; no ember raise seals more under that SK, and an unlocked hearth keeps sealing under it until a person runs the rotation | anything sealed after the rotation |
+| a removed ember whose removal has not reached the hearth | a raise of the live hearth, as before its removal, bounded by the count | the same as any ember |
+
+''A removed ember still knows'' its own scalar and the record of its answers: which hearth it served, by its own pet-name, and the ordinals it saw. Its scalar alone yields neither SK nor `C`; beside a copy of the serving tree taken before its removal, it yields SK as it stood (the row above).
+
+''A lost main machine strands nothing an ember holds.'' An ember holds no share and no route, so the human routes and the backup bundle carry every recovery (#/the-stories, two).
+
+<<~/ahu>>
+
+<<~ ahu #/new-shapes>>
+
+!! New shapes ~ each a wire frame or a signed act the build owes, and the train that carries it
+
+* ''The ember route and its exchange frame'' (train E): a floor route name, its pin, the dialer's fleet frontier with the edge acts it carries, the ask (slot, pin, blinded point, raise nonce, standing, ordinal) and the answer, inside the floor gate's encrypted channel. Live: a wire frame.
+* ''The ember withdrawal'' (train E): a deny-only act on the fleet's edge board, signed under its own registered domain by a device key the fleet's board shows standing, naming the ember by the digest its pin carries. It accretes as every edge act accretes (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/accretion">>) and never lifts. Live: a signed shape.
+* ''A hosting grant that checks under a public half'' (train H, the hosting act's re-cut, whose bytes change once before the fence): a grant a serving hearth checks with no key that could mint it. Live: a signed shape.
+* ''The serving tree's bytes and the pin record'' (train E): a bare row the census reads like `vk-slots`. Live: a stored shape.
+* ''The serving custody class and its rows'' (train E, after the operator's answer in #/open): the carrier table's class, the census, the rotation and `vault status` all read it.
+* ''The serving gate'' (train E, after the operator's answer in #/open): a third tier name in the route type, its bundle's derivation from SK under its own registered domain, and its pin. Live: a wire shape.
+
+''Every signed act here carries an id over its own bytes, and a reader folds a duplicate as one act'', so a replayed withdrawal repeats a denial and nothing more.
+
+<<~/ahu>>
+
+<<~ ahu #/open>>
+
+!! Open ~ three questions the operator holds
+
+Each question, its lean and its two strongest readings rest in the roadmap (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/open">>). This carrier writes each lean where it bites, marked as a lean.
+
+# ''A second key at rest.'' Standing law lets one key govern every private row; SK governs the serving tier. Lean: a fifth custody class, `serving`, whose rows SK seals and whose key the VK wraps.
+# ''The serving gate.'' The ruled tiers root the sovereign gate in the custody root, which SERVING never opens. Lean: a third tier, the serving route, rooted in SK, with the floor and sovereign tiers untouched.
+# ''How a raise lapses.'' The ruling reads //the raise lapses by non-renewal//. Lean: a raise lives one boot, and lapses at a lock, a restart, a human unlock or a counted removal; the count bounds how many boots the embers lift.
+
+<<~/ahu>>
+
+<<~ ahu #/owed>>
+
+!! What the build owes, in train E's order
+
+# ''The serving tier'': the serving class (after #/open one), `sk-slots`, SK minted at the Stable founding, the VK entry, the serving rows moved under SK, the SK rotation, the composition at SERVING with each refusal of #/the-tiers by name. Caller: the custody door's unlock, and the ember raise.
+# ''The ember pin'': the pin kind in the serving tree alone, the exchange, the bind at a human unlock over the fleet channel, the ember's secret in the ember device's own custody (a browser leaf's after `B1`).
+# ''The raise, the count, the record and the removal'': the ember route, the ledger, the count and its refill, the ember withdrawal, the fold at the floor that drops a pin, and the owed SK rotation.
+# ''Canon'': the face proof's thief clause and its tier statement (after #/open two), the custody carrier's class table, the sealed store's key table.
+
+''Nothing of this carrier stands in code.'' The slot tree holds passphrase and paper pins (`packages/lararium-mesh/src/keyslot.ts`); the floor key's door (`vesselFloorKeyDoor`) and the custody seat's door (`custodyGateDoor`) stand specified in code and reach no composer until the socket cutover.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody">> custody states the carrier table, the slot tree and the backup bundle the ember meets
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> the waking floor states the floor a raise lifts from
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange">> the face proof states the gate's two tiers
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">> kapae states the dyad marker and the edge board a removal rides
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">> the sealed store states the content keys SERVING never opens
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> the roadmap carries the operator's rulings
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;BH2PsBADm7Un6GrxnT_ZeVkKwWROUHjyhR4licES_XI
+
+<<^ code="&#x0004;" -> to="?">>
