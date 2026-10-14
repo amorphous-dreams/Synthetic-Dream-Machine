@@ -12,7 +12,7 @@ import { carrierHash } from "@lararium/mesh";
 
 // THE HANDSHAKE SEAM for the two-writers vector: the tree's own `renameSync` calls a hook the vector arms,
 // at the moment a row (or, under a single-file tree, the whole map) stands ready to land. Unarmed, it passes through.
-const seam = vi.hoisted(() => ({ beforeRename: null as null | (() => void), unlinkFault: null as null | Error }));
+const seam = vi.hoisted(() => ({ beforeRename: null as null | (() => void), unlinkFault: null as null | Error, readFault: null as null | Error }));
 vi.mock("fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("fs")>();
   return {
@@ -23,6 +23,12 @@ vi.mock("fs", async (importOriginal) => {
       hook?.();
       actual.renameSync(from, to);
     },
+    // A row's read the disk refuses, once: the armed fault throws in place of the read.
+    readFileSync: ((path: unknown, ...rest: unknown[]): unknown => {
+      const fault = typeof path === "string" && /[0-9a-f]{32}\.[0-9a-f]{32}\.json$/.test(path) ? seam.readFault : null;
+      if (fault !== null) { seam.readFault = null; throw fault; }
+      return (actual.readFileSync as (...a: unknown[]) => unknown)(path, ...rest);
+    }) as typeof actual.readFileSync,
     // A row's removal the disk refuses, once: the armed fault throws in place of the unlink.
     unlinkSync: (path: string): void => {
       const fault = /[0-9a-f]{32}\.[0-9a-f]{32}\.json$/.test(path) ? seam.unlinkFault : null;
@@ -541,6 +547,15 @@ describe("an observation rests the moment it gets recorded", () => {
     // The directory's word stands: the row rests on disk, so this instance holds it still, as every reader does.
     expect(t.baseAt(K, AT)).toEqual({ path: AT, disk: "d1", records: "d1" });
     expect(new SyncedTree(p).baseAt(K, AT)).not.toBeNull();
+    // A row this instance never read, whose removal the disk refuses: the instance reads it back and holds it.
+    const early = new SyncedTree(p);
+    const HELD = "/scratch/holding/a.mem";
+    new SyncedTree(p).set(K, HELD, "d7", "r7");
+    expect(early.baseAt(K, HELD)).toBeNull();
+    seam.unlinkFault = Object.assign(new Error("EACCES: permission denied"), { code: "EACCES" });
+    hearing(() => { early.deleteAt(K, HELD); });
+    expect(early.baseAt(K, HELD)).toEqual({ path: HELD, disk: "d7", records: "r7" });
+    new SyncedTree(p).deleteAt(K, HELD);
     // CONTROL: with no fault the removal lands, and a row that already left raises no word.
     expect(hearing(() => { t.deleteAt(K, AT); t.deleteAt(K, AT); })).toEqual([]);
     expect(rowFiles(p)).toEqual([]);
@@ -555,18 +570,32 @@ describe("an observation rests the moment it gets recorded", () => {
     seam.beforeRename = () => { throw Object.assign(new Error("EIO: i/o error"), { code: "EIO" }); };
     const said = hearing(() => { t.set(K, AT, "d1", "r1"); });
     expect(said).toHaveLength(1);
-    expect(said[0]).toMatch(/^\[synced-tree\] the disk refused to write row .*\(EIO\); the carrier keeps the base it held, and the next agreement pins anew$/);
+    expect(said[0]).toMatch(/^\[synced-tree\] the disk refused to write row .*\(EIO\); the carrier keeps the base the directory holds, and the next agreement pins anew$/);
     expect(t.refusals).toBe(1);
     expect(readdirSync(p)).toEqual(rowFiles(p));        // no temp file stays behind
     // This instance answers what every reader meets: the earlier base, so a gate that weighs the carrier
     // finds the base behind and pins anew. An instance that kept `d1` in memory would call the carrier pinned.
     expect(t.baseAt(K, AT)).toEqual({ path: AT, disk: "d0", records: "r0" });
     expect(new SyncedTree(p).baseAt(K, AT)).toEqual({ path: AT, disk: "d0", records: "r0" });
+    // A sibling moved the row since this instance read it, and this instance's own write gets refused: it
+    // answers the sibling's row, never the older one it held.
+    new SyncedTree(p).set(K, AT, "d-sibling", "r-sibling");
+    seam.beforeRename = () => { throw Object.assign(new Error("EIO: i/o error"), { code: "EIO" }); };
+    hearing(() => { t.set(K, AT, "d2", "r2"); });
+    expect(t.baseAt(K, AT)).toEqual({ path: AT, disk: "d-sibling", records: "r-sibling" });
+    t.set(K, AT, "d0", "r0");
     // A refused FIRST agreement rests nowhere.
     seam.beforeRename = () => { throw Object.assign(new Error("ENOSPC: no space"), { code: "ENOSPC" }); };
     expect(hearing(() => { t.set(K, "/scratch/mirror/first.mem", "d5"); })).toEqual([]);   // the second refusal counts and stays quiet
-    expect(t.refusals).toBe(2);
+    expect(t.refusals).toBe(3);
     expect(t.baseAt(K, "/scratch/mirror/first.mem")).toBeNull();
+    // The disk refuses the write AND the read back: the instance keeps the row it held before the act.
+    seam.beforeRename = () => { throw Object.assign(new Error("EIO: i/o error"), { code: "EIO" }); };
+    seam.readFault = Object.assign(new Error("EIO: i/o error"), { code: "EIO" });
+    hearing(() => { t.set(K, AT, "d3", "r3"); });
+    expect(seam.readFault).toBeNull();                  // the read back ran, and met the fault
+    expect(t.baseAt(K, AT)).toEqual({ path: AT, disk: "d0", records: "r0" });
+    expect(t.refusals).toBe(4);
     // CONTROL: the next agreement lands, and nothing wrote the refused rows behind anyone's back.
     expect(hearing(() => { t.set(K, AT, "d1", "r1"); })).toEqual([]);
     expect(rowFiles(p)).toHaveLength(1);

@@ -33,11 +33,12 @@
  * its row before either returns; no instance holds a change back for a later write. Two writers of
  * the SAME row therefore leave the LATER OBSERVATION standing, whole: a row never lands behind a
  * sibling's newer word, and a row a sibling removed never returns from another instance's memory.
- * THE DIRECTORY'S WORD STANDS. A landing the disk refuses gets named, and the instance takes back the row
- * it held before the act: an observation the disk never took rests nowhere, and a row the disk would not
- * give up stands in memory as it stands on disk. Nothing retries on a timer (an observation written late
- * would claim a moment that passed); the next gate that weighs the carrier meets the earlier base, finds
- * it behind, and pins anew.
+ * THE DIRECTORY'S WORD STANDS. A landing the disk refuses gets named, and the instance reads that one row
+ * back from the directory: an observation the disk never took rests nowhere, a row the disk would not give
+ * up stands in memory as it stands on disk, and a row a sibling moved meanwhile answers as the sibling left
+ * it. Where the disk refuses that read too, the instance keeps the row it held before the act. Nothing
+ * retries on a timer (an observation written late would claim a moment that passed); the next gate that
+ * weighs the carrier meets the base the directory holds, finds it behind, and pins anew.
  *
  * A BASE LEAVES WITH ITS OWN FILE. A carrier's rows stand one per path, and each leaves alone
  * (`deleteAt`): the file a hand keeps in a holding directory keeps its base while the mirror's
@@ -106,6 +107,18 @@ const rowFile = (key: string, path: string): string => `${stem(key)}.${stem(path
 const rowId = (key: string, path: string): string => `${key}\0${path}`;
 /** A row file's name, as against a temp file or a stranger's. */
 const ROW_NAME = /^[0-9a-f]{32}\.[0-9a-f]{32}\.json$/;
+
+/** Read ONE row's file: the row, null where no file stands (or it reads as no row), undefined where the disk refuses the read. */
+function readRow(dir: string, key: string, path: string): Row | null | undefined {
+  const name = rowFile(key, path);
+  let text: string;
+  try { text = readFileSync(join(dir, name), "utf8"); } catch (err) {
+    return (err as NodeJS.ErrnoException).code === "ENOENT" ? null : undefined;
+  }
+  let row: Row | null = null;
+  try { row = rowOf(JSON.parse(text)); } catch { /* torn */ }
+  return row !== null && row.key === key && row.base.path === path ? row : null;
+}
 
 /** Read the row files of a tree directory (those of one carrier where `key` names it), and count the files
  *  that read as no row. An absent directory reads empty. */
@@ -220,9 +233,17 @@ export class SyncedTree {
     const row: Row = { key, base: { path: syncedPath(file), disk: diskHash, records: recordsHash } };
     const before = this.map.get(rowId(key, row.base.path)) ?? null;
     this.put(row);
-    if (this.land(row)) return;
-    // The disk refused the row: this instance answers what it held before, as every other reader does.
-    if (before !== null) this.put(before); else this.drop(key, row.base.path);
+    if (!this.land(row)) this.takeBack(key, row.base.path, before);
+  }
+
+  /**
+   * The disk refused an act on one row: memory takes the directory's word for it. Where the disk refuses
+   * that read too, memory keeps the row this instance held before the act.
+   */
+  private takeBack(key: string, path: string, before: Row | null): void {
+    const stands = this.dirPath === null ? undefined : readRow(this.dirPath, key, path);
+    const row = stands === undefined ? before : stands;
+    if (row !== null) this.put(row); else this.drop(key, path);
   }
 
   /**
@@ -240,7 +261,7 @@ export class SyncedTree {
       // A row that already left needs no word. Any other refusal leaves the row standing, and memory says so.
       if ((err as NodeJS.ErrnoException).code === "ENOENT") return;
       this.refused("remove", name, err);
-      if (before !== null) this.put(before);
+      this.takeBack(key, path, before);
     }
   }
 
@@ -331,8 +352,8 @@ export class SyncedTree {
   }
 
   /**
-   * THE DISK REFUSED A ROW, AND THE TREE SAYS SO BY NAME. The caller restores the row this instance held
-   * before the act, so its memory never claims a base no reader could meet, nor forgets one every reader
+   * THE DISK REFUSED A ROW, AND THE TREE SAYS SO BY NAME. The caller takes the row back from the directory
+   * (`takeBack`), so its memory never claims a base no reader could meet, nor forgets one every reader
    * still meets. The first refusal of a write and the first of a removal each speak, naming the row;
    * `refusals` counts all.
    */
@@ -342,7 +363,7 @@ export class SyncedTree {
     this.spoke.add(act);
     const why = (err as NodeJS.ErrnoException).code ?? (err instanceof Error ? err.message : String(err));
     console.warn(act === "write"
-      ? `[synced-tree] the disk refused to write row ${name} (${why}); the carrier keeps the base it held, and the next agreement pins anew`
+      ? `[synced-tree] the disk refused to write row ${name} (${why}); the carrier keeps the base the directory holds, and the next agreement pins anew`
       : `[synced-tree] the disk refused to remove row ${name} (${why}); the row stays, and the carrier keeps that base`);
   }
 
