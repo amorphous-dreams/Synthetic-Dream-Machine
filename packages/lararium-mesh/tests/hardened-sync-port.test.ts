@@ -21,15 +21,21 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { attachMessageChannelSync, makeIslandRepo, readsAsSyncMessage } from "../src/island-repo.js";
-
-const settle = (ms = 60): Promise<void> => new Promise((r) => setTimeout(r, ms));
+import { arrival } from "./handshake.js";
 
 describe("a broad sync port drops what does not read as a sync message", () => {
   test("P1 noise from the far end throws nothing in the owner and the leg keeps syncing", async () => {
     const { port1, port2 } = new MessageChannel();
     const owner = new Repo({ network: [] });
     const dropped: string[] = [];
-    const detach = attachMessageChannelSync(owner, port1, undefined, (why) => dropped.push(why));
+    // The port's own drop sink carries the wait: the eighth drop arrives when the owner has read all eight.
+    const eighth = arrival<void>("the owner's port dropping the eighth noise message (its drop sink)");
+    const ninth = arrival<void>("the owner's port dropping the sentinel posted behind the nine malformed messages");
+    const detach = attachMessageChannelSync(owner, port1, undefined, (why) => {
+      dropped.push(why);
+      if (dropped.length === 8) eighth.arrive();
+      if (dropped.length === 9) ninth.arrive();
+    });
     const island = makeIslandRepo({ syncPort: port2 });
     try {
       const before = owner.create<{ n: number }>({ n: 1 });
@@ -41,7 +47,7 @@ describe("a broad sync port drops what does not read as a sync message", () => {
         for (const noise of [7, "a string", null, [1, 2], { senderId: "x" }, { type: "sync" }, { type: "sync", senderId: "x", data: 1_000_000_000 }, { type: "a-type-no-repo-knows", senderId: "x", n: 1n }]) {
           port2.postMessage(noise);
         }
-        await settle();
+        await eighth.arrived;
         expect(dropped.length).toBe(8);
         // A KNOWN type with a malformed body passes the port: the Repo's own handling answers for it, and it
         // throws nothing into the listener either.
@@ -52,12 +58,17 @@ describe("a broad sync port drops what does not read as a sync message", () => {
           { type: "remote-subscription-change", senderId: "x" }, { type: "remote-heads-changed", senderId: "x" },
           { type: "welcome", senderId: "x" }, { type: "leave", senderId: "nobody" },
         ]) port2.postMessage(malformed);
-        await settle(150);
+        // A SENTINEL carries the wait: one more noise message posted behind the nine. A port delivers in the order
+        // it took, so the sentinel's drop arrives only after the owner read every malformed message before it.
+        port2.postMessage("the sentinel");
+        await ninth.arrived;
       } finally { process.off("uncaughtException", onThrow); }
       expect(thrown).toEqual([]);
-      expect(dropped.length).toBe(8);
-      const after = owner.create<{ n: number }>({ n: 2 });
-      expect((await (await island.find<{ n: number }>(after.url)).doc()).n).toBe(2);         // control: it still syncs
+      expect(dropped.length, "the eight, and the sentinel alone beside them: none of the nine got dropped").toBe(9);
+      // CONTROL: the leg still syncs, read in the direction the noise travelled. The island mints the document, so
+      // the owner holds it only through sync messages its hardened port passed after all of the above.
+      const after = island.create<{ n: number }>({ n: 2 });
+      expect((await (await owner.find<{ n: number }>(after.url)).doc()).n).toBe(2);
     } finally {
       detach();
       port1.close(); port2.close();

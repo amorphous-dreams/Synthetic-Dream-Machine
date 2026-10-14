@@ -48,6 +48,11 @@ async function leaf(device: Uint8Array, root: Uint8Array, kel: Parameters<typeof
  * A relay between two leaves: it forwards each frame as the bytes it received and keeps every one it carried.
  * `tamper` lets a test stand an ACTIVE relay that rewrites frames in flight; `fromOf` stands the sender key an
  * authenticated relay would stamp.
+ *
+ * THE RELAY KNOWS SILENCE. It delivers a frame inside the sender's own `send`, so no frame ever travels unseen:
+ * a side that waits in `recv` on an empty inbox hears nothing more exactly when the other side waits there too or
+ * has left the exchange (`leave`). `silent` resolves at that moment and at no other, so "silent" reads off the
+ * exchange's own state and no clock decides it.
  */
 function relay(opts: {
   tamper?: (frame: LeafPeerFrame, toward: "a" | "b") => Promise<LeafPeerFrame> | LeafPeerFrame;
@@ -56,6 +61,18 @@ function relay(opts: {
   const carried: string[] = [];
   const inbox = { a: [] as string[], b: [] as string[] };
   const waiting = { a: [] as Array<() => void>, b: [] as Array<() => void> };
+  const left = { a: false, b: false };
+  const hush = { a: () => {}, b: () => {} };
+  const silent = {
+    a: new Promise<"silent">((res) => { hush.a = () => res("silent"); }),
+    b: new Promise<"silent">((res) => { hush.b = () => res("silent"); }),
+  };
+  /** A side parked on an empty inbox hears nothing more once the other side parks too or has left. */
+  const readSilence = (): void => {
+    const parked = { a: waiting.a.length > 0 && inbox.a.length === 0, b: waiting.b.length > 0 && inbox.b.length === 0 };
+    if (parked.a && (parked.b || left.b)) hush.a();
+    if (parked.b && (parked.a || left.a)) hush.b();
+  };
   const deliver = (to: "a" | "b", bytes: string) => { inbox[to].push(bytes); waiting[to].shift()?.(); };
   const side = (me: "a" | "b"): LeafPeerDuplex => {
     const other = me === "a" ? "b" : "a";
@@ -67,20 +84,21 @@ function relay(opts: {
         deliver(other, bytes);
       },
       recv: async () => {
-        if (inbox[me].length === 0) await new Promise<void>((r) => waiting[me].push(r));
+        if (inbox[me].length === 0) await new Promise<void>((r) => { waiting[me].push(r); readSilence(); });
         const from = opts.fromOf?.[other];
         return { frame: JSON.parse(inbox[me].shift()!) as LeafPeerFrame, ...(from ? { from } : {}) };
       },
     };
   };
-  return { a: side("a"), b: side("b"), carried };
+  return { a: side("a"), b: side("b"), carried, silent, leave: (me: "a" | "b"): void => { left[me] = true; readSilence(); } };
 }
 
-/** Run one exchange, each side's wait bounded: a side that hears nothing more reads "silent". */
+/** Run one exchange. A side reads "silent" when the relay knows it will hear nothing more (see `relay`). */
 async function exchange(a: LeafPeerSelf, b: LeafPeerSelf, r = relay()): Promise<{ a: LeafPeerVerdict | "silent"; b: LeafPeerVerdict | "silent"; carried: string[] }> {
-  const bounded = <T,>(p: Promise<T>) => Promise.race([p, new Promise<"silent">((res) => setTimeout(() => res("silent"), 300))]);
-  const bSide = bounded(proveLeafPeerAsResponder(b, r.b));
-  const aVerdict = await bounded(proveLeafPeerAsInitiator(a, r.a));
+  const run = (me: "a" | "b", proof: Promise<LeafPeerVerdict>): Promise<LeafPeerVerdict | "silent"> =>
+    Promise.race([proof.finally(() => { r.leave(me); }), r.silent[me]]);
+  const bSide = run("b", proveLeafPeerAsResponder(b, r.b));
+  const aVerdict = await run("a", proveLeafPeerAsInitiator(a, r.a));
   return { a: aVerdict, b: await bSide, carried: r.carried };
 }
 const ok = (v: LeafPeerVerdict | "silent"): v is LeafPeerVerdict & { ok: true } => v !== "silent" && v.ok;

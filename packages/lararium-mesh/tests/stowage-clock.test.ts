@@ -51,26 +51,32 @@ describe("the stowage idle clock", () => {
   // eviction timing nor whether a still-fresh bag gets evicted early.
   test("SET-BACK/SET-FORWARD: the wall floor reads monotonic — a Date.now() jump moves nothing real", async () => {
     const realNow = Date.now;
+    const realMono = performance.now;
     let wallOffsetMs = 0;
+    // The vector steps the monotonic clock by hand, so "inside the idle window" and "past it" read off that clock
+    // alone and the machine's own pace decides neither.
+    let mono = 1_000;
     Date.now = () => realNow() + wallOffsetMs;
+    performance.now = () => mono;
     try {
       const mgr = new BagStowage({ idleMs: 50 });
       await mgr.touch(URL_A);
       // A forward jump of a year: a reverted Date.now()-based idle clock would read the bag as
-      // ancient and evict it at once, well before its real 50ms idle window elapsed.
+      // ancient and evict it at once, with none of its 50ms idle window spent.
       wallOffsetMs = 365 * 24 * 60 * 60 * 1000;
       const tooSoon = await mgr.sweepOnce();
       expect(tooSoon.cooled).toBe(0);
       expect(mgr.tier(URL_A)).toBe("wela");
       // A set-back of a year: a reverted Date.now()-based idle clock would never read the bag as
-      // idle again (lastTouched would sit "in the future"). The REAL idle window still elapses.
+      // idle again (lastTouched would sit "in the future"). The monotonic clock passes the idle window.
       wallOffsetMs = -365 * 24 * 60 * 60 * 1000;
-      await new Promise((r) => setTimeout(r, 80));
+      mono += 80;
       const nowIdle = await mgr.sweepOnce();
       expect(nowIdle.cooled).toBe(1);
       expect(mgr.tier(URL_A)).toBe("anu");
     } finally {
       Date.now = realNow;
+      performance.now = realMono;
     }
   });
 });
