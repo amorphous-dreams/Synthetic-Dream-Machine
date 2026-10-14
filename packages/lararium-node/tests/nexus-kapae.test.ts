@@ -21,7 +21,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { hex, kapaeAntigenDocUrl, materializeSharedLarDoc, mutableLarRecord, signAntigenEntry } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, loadPersonaGroupRootSeed,
 } from "../src/node-vessel-identity.js";
@@ -45,7 +45,9 @@ beforeEach(() => {
   process.env["LAR_ROOT"] = root;   // isolates data/state/bags under the temp tree
 });
 
-afterEach(() => {
+afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorLarRoot;
   rmSync(root, { recursive: true, force: true });
@@ -104,14 +106,14 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
     const roots = await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
     seatCharter(roots.map((r) => r.verifyingKey));
     const ban = await direct(runNexusKapae)({ action: "kapae", nym: VICTIM, sealHome: sealHome() });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const handle = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(await loadVesselVerifyingKey()), "board:kapae-antigen");
     const raw = { kind: "lararium/kapae-antigen", nym: VICTIM, action: "kapae", actCid: "sha256:raw-poison", parents: [], sealEpochCid: ban.sealEpochCid, signatures: [] };
     handle.change((d) => { d.tiddlers["raw-poison"] = mutableLarRecord("raw-poison", { text: JSON.stringify(raw) }, "test"); });
     await repo.flush();
     const lift = await direct(runNexusKapae)({ action: "un_kapae", nym: VICTIM, sealHome: sealHome() });
     expect(lift.parents).toEqual([ban.actCid]);
-    await repo.shutdown();
+    await repo.rest();
   });
 
   it("excludes a verified parent whose own grandparent is absent", async () => {
@@ -123,14 +125,14 @@ describe("nexus kapae — the RAISE side end-to-end (#65)", () => {
       sign: async (bytes: Uint8Array) => ed.signAsync(bytes, await loadPersonaGroupRootSeed(i)).then(hex),
     })));
     const branch = await signAntigenEntry({ nym: VICTIM, action: "kapae", parents: ["sha256:missing-grandparent"], sealEpochCid: epoch }, signers);
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const handle = await materializeSharedLarDoc(repo, kapaeAntigenDocUrl(await loadVesselVerifyingKey()), "board:kapae-antigen");
     handle.change((d) => { d.tiddlers["unavailable-branch"] = mutableLarRecord("unavailable-branch", { text: JSON.stringify(branch) }, "test"); });
     await repo.flush();
     const next = await direct(runNexusKapae)({ action: "un_kapae", nym: VICTIM, sealHome: sealHome() });
     expect(next.parents).toEqual([]);
     expect(next.kapaedNow).toBe(false);
-    await repo.shutdown();
+    await repo.rest();
   });
 
   it("SUB-QUORUM REFUSES: one held root against a 2-of-3 roster writes NOTHING", async () => {

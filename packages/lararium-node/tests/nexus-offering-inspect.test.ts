@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   sha256HexBytesSync, materializeSharedLarDoc, offeringAnnounceKey, computePluginsCid,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
@@ -21,7 +21,6 @@ import { runNexusPublishPlugins } from "../src/commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../src/commands/nexus-offering-inspect.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
-import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 import { direct } from "./direct-store.js";
 import { tiddlerText } from "@lararium/mesh";
 
@@ -33,7 +32,9 @@ beforeEach(() => {
   priorRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
 });
-afterEach(() => {
+afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
   rmSync(root, { recursive: true, force: true });
 });
@@ -132,11 +133,10 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     const { dir } = seedOfferingSource();
     await stand();
     const offered = await direct(runNexusPublishPlugins)({ source: dir, storageDir: larDataDir() });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
     board.change((doc) => { doc.tiddlers[offeringAnnounceKey(offered.offeringCid)] = { tiddler: { title: offeringAnnounceKey(offered.offeringCid), text: "not-json" }, meta: { authority: "test" } }; });
-    await repo.flush();
-    await repo.shutdown();
+    await repo.rest();
     await expect(direct(runNexusInspectOffering)({ offeringCid: offered.offeringCid, storageDir: larDataDir() }))
       .rejects.toThrow(/malformed/);
   });
@@ -145,7 +145,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     const { dir } = seedOfferingSource();
     await stand();
     const offered = await direct(runNexusPublishPlugins)({ source: dir, storageDir: larDataDir() });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
     const key = offeringAnnounceKey(offered.offeringCid);
     const prior = tiddlerText(board.doc()?.tiddlers[key]);
@@ -159,8 +159,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
         meta: { authority: "test" },
       };
     });
-    await repo.flush();
-    await repo.shutdown();
+    await repo.rest();
     await expect(direct(runNexusInspectOffering)({ offeringCid: offered.offeringCid, storageDir: larDataDir() }))
       .rejects.toThrow(/malformed/);
   });
@@ -169,7 +168,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     const { dir } = seedOfferingSource();
     await stand();
     const { port1, port2 } = new MessageChannel();
-    const live = new Repo({ storage: new DurableNodeFSStorageAdapter(larDataDir()), network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true });
+    const live = restingRepo(larDataDir(), { network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true });
     const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
     try {
       const offered = await runNexusPublishPlugins({ source: dir, storageDir: larDataDir(), repo: live });
@@ -188,7 +187,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
       expect(String(unknown["refused"])).toMatch(/not present on the local Crossroads board/);
     } finally {
       await peer.shutdown();
-      await live.shutdown();
+      await live.rest();
       port1.close(); port2.close();
     }
   });

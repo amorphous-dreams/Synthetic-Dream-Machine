@@ -31,7 +31,7 @@ import type { LeafIdentity } from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl, DocHandle } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import { type DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
 import { armGate, provingShore, standGate as standAuthGate } from "./gate-dial-fixture.js";
 /** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
@@ -94,8 +94,7 @@ function standServerVessel(opts: { storageDir: string; gatePubKey: string; admit
       });
     });
 
-    const repo = new Repo({
-      storage: new NodeFSStorageAdapter(opts.storageDir),
+    const repo = restingRepo(opts.storageDir, {
       network: [serverNetwork],
       // A WS peer (on the server socket) shares only once its socket carries an admitted identifier; a peer
       // reached over the OUTBOUND client leg is not in the server sockets → shared with freely (production asymmetry).
@@ -113,7 +112,7 @@ function standServerVessel(opts: { storageDir: string; gatePubKey: string; admit
       resolve({
         gate, repo, port: addr.port,
         close: async () => {
-          await repo.shutdown();
+          await repo.rest();
           await new Promise<void>((res) => wss.close(() => http.close(() => res())));
         },
       });
@@ -182,10 +181,8 @@ describe("B1 — the production client dial-out mounts onto a live Repo and cros
     for (const d of dials.splice(0)) { try { d.stop(); } catch { /* already down */ } }
     for (const v of vessels) { try { await v.close(); } catch { /* already down */ } }
     vessels = [];
-    // Drain, then delete: repo.shutdown() flushes but does NOT cancel the StorageSource's armed asyncThrottle
-    // (saveDebounceRate) trailing sync-state/incremental save; a rmSync ahead of that timer draws an ENOENT
-    // unhandled rejection. Wait past the debounce (deadline ≤ arm+100ms < this 200ms) so the write lands live.
-    await new Promise((r) => setTimeout(r, 200));
+    // Every vessel's Repo rests (its adapter closed) before its directory leaves: no save of its can land after.
+    await restEvery();
     for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* gone */ } }
   });
 

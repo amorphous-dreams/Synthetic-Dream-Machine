@@ -3,8 +3,7 @@ import { mkdtempSync, rmSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   deviceEdgeId, edgeKapaeKey, fleetEdgeBoardDocUrl, materializeSharedLarDoc, edgeLedgerDocUrl, keptSeatRolls, signSeatRoll, ed25519SignerFromSeed, foldWithdrawals, hex,
 } from "@lararium/mesh";
@@ -29,9 +28,10 @@ beforeEach(async () => {
   await generateOrLoadPersonaGroupRoot(0);
 });
 afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorLarRoot;
-  await new Promise((r) => setTimeout(r, 200));
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -79,13 +79,13 @@ describe("runEdgeSeatFacts", () => {
     const fleetRoot = (await loadPersonaGroupRootVerifyingKey(0))!;
     const device = "ae".repeat(32);
     const raise = await direct(runEdgeKapae)({ device, raised: true });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
     board.change((d) => { delete d.tiddlers[edgeKapaeKey({ edgeId: raise.edgeId, hand: "holder", raised: true, actCid: raise.actCid })]; });
     await repo.flush();
     const facts = await direct(runEdgeSeatFacts)({ fleetRoot });
     expect(facts.fleets[0]!.edges).toContainEqual({ edgeId: raise.edgeId, aside: true, raiseCids: [raise.actCid] });
-    await repo.shutdown();
+    await repo.rest();
   });
 });
 

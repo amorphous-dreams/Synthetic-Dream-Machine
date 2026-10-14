@@ -4,8 +4,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   hex, realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, edgeLedgerDocUrl, materializeSharedLarDoc,
   edgeKapaeActsFromBoard, keptFromLedger, mutableLarRecord, signEdgeKapae,
@@ -31,14 +30,15 @@ beforeEach(async () => {
   await generateOrLoadPersonaGroupRoot(0);
 });
 afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorLarRoot;
-  await new Promise((r) => setTimeout(r, 200));
   rmSync(root, { recursive: true, force: true });
 });
 
 async function boardState(url: string, authority: string) {
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+  const repo = restingRepo(larDataDir());
   const handle = await materializeSharedLarDoc(repo, url, "board:edge-kapae");
   const acts = edgeKapaeActsFromBoard(handle.doc());
   const counted = await countEdgeActs(acts, [], () => ({ holder: authority }));
@@ -57,7 +57,7 @@ describe("runEdgeKapae", () => {
     expect(r.shadowStands).toBe(true);
     const state = await boardState(r.boardUrl, r.signers[0]!);
     expect(state.readings.get(vouch.edgeId)?.stands).toBe(true);
-    await state.repo.shutdown();
+    await state.repo.rest();
   });
 
   it("a device act lands on the signing root fleet board and names its device edge", async () => {
@@ -90,10 +90,10 @@ describe("runEdgeKapae", () => {
   it("refuses a quorum hand without a seated charter and writes nothing", async () => {
     await expect(direct(runEdgeKapae)({ edgeId: EDGE, realm: REALM, hand: "quorum", raised: true })).rejects.toThrow(EdgeKapaeError);
     const url = realmEdgeBoardDocUrl(REALM);
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const handle = await materializeSharedLarDoc(repo, url, "board:edge-kapae");
     expect(edgeKapaeActsFromBoard(handle.doc())).toEqual([]);
-    await repo.shutdown();
+    await repo.rest();
   });
 
   it("refuses ambiguous relationships and a device scoped to a realm", async () => {
@@ -108,10 +108,10 @@ describe("runEdgeKapae", () => {
     await generateOrLoadPersonaGroupRoot(1);
     const url = realmEdgeBoardDocUrl(REALM);
     const assertEmpty = async () => {
-      const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+      const repo = restingRepo(larDataDir());
       const handle = await materializeSharedLarDoc(repo, url, "board:edge-kapae");
       expect(edgeKapaeActsFromBoard(handle.doc())).toEqual([]);
-      await repo.shutdown();
+      await repo.rest();
     };
     await expect(direct(runEdgeKapae)({ edgeId: EDGE, realm: REALM, raised: true })).rejects.toThrow(EdgeKapaeError);
     await assertEmpty();
@@ -123,7 +123,7 @@ describe("runEdgeKapae", () => {
 
   it("does not use a raw act stored under the wrong id as a parent", async () => {
     const up = await direct(runEdgeKapae)({ edgeId: EDGE, raised: true });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const handle = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(up.signers[0]!), "board:edge-kapae");
     const rawSeed = await loadPersonaGroupRootSeed(0);
     const raw = await signEdgeKapae({ edgeId: EDGE, raised: true, hand: "holder", parents: [], epochCid: "no-charter" }, [{ signer: up.signers[0]!, sign: (bytes) => ed.signAsync(bytes, rawSeed).then(hex) }]);
@@ -132,13 +132,13 @@ describe("runEdgeKapae", () => {
     await repo.flush();
     const next = await direct(runEdgeKapae)({ edgeId: EDGE, raised: false });
     expect(next.parents).toEqual([up.actCid]);
-    await repo.shutdown();
+    await repo.rest();
   });
 
   it("keeps counted acts in the vessel ledger and restores a deleted raise", async () => {
     const rootDid = await loadPersonaGroupRootVerifyingKey(0), vessel = await loadVesselVerifyingKey();
     const raised = await direct(runEdgeKapae)({ edgeId: EDGE, raised: true });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const board = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(rootDid!), "board:edge-kapae");
     board.change((d) => { delete d.tiddlers[edgeKapaeKey({ edgeId: EDGE, hand: "holder", raised: true, actCid: raised.actCid })]; });
     await repo.flush();
@@ -148,10 +148,10 @@ describe("runEdgeKapae", () => {
     expect(next.parents).toEqual([raised.actCid]);
     expect(next.shadowStands).toBe(true);
     expect(rootDid).toBe(raised.signers[0]);
-    await repo.shutdown();
-    const restoredRepo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    await repo.rest();
+    const restoredRepo = restingRepo(larDataDir());
     const restored = await materializeSharedLarDoc(restoredRepo, fleetEdgeBoardDocUrl(rootDid!), "board:edge-kapae");
     expect(edgeKapaeActsFromBoard(restored.doc()).some((a) => a.actCid === raised.actCid)).toBe(true);
-    await restoredRepo.shutdown();
+    await restoredRepo.rest();
   });
 });

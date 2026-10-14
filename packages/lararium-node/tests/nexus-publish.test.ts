@@ -13,7 +13,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   computePluginsCid,
   crossroadsDocUrl,
@@ -54,7 +54,9 @@ beforeEach(() => {
   process.env["LAR_ROOT"] = root;
 });
 
-afterEach(() => {
+afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorRoot;
   rmSync(root, { recursive: true, force: true });
@@ -151,13 +153,13 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     expect(second.offeringCid).toBe(first.offeringCid);
     expect(second.offering).toEqual(first.offering);
 
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const board = await materializeSharedLarDoc(repo, first.boardUrl, "board:crossroads");
     const records = offeringAnnouncesFromDoc(board.doc());
     expect(records).toHaveLength(1);
     expect(records[0]?.offeringCid).toBe(first.offeringCid);
     expect(records[0]?.offering).toEqual(first.offering);
-    await repo.shutdown();
+    await repo.rest();
   });
 
   it("a SIGNED gift is announced EXACTLY as signed — never re-signed under this vessel's own persona", async () => {

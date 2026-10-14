@@ -13,8 +13,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
-import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   hex, hexToBytes, realmVouchBoardDocUrl, verifiedVouchesFromBoard, materializeSharedLarDoc, vouchDagFromInvites,
   decideCabalJoin, DEFAULT_JOIN_POLICY,
@@ -45,18 +44,19 @@ beforeEach(async () => {
   await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
 });
 afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorLarRoot;
-  await new Promise((r) => setTimeout(r, 200));       // past the storage debounce, as the sibling suites do
   rmSync(root, { recursive: true, force: true });
 });
 
 /** Read the board back the way any consumer must — through the verifying read. */
 async function boardVouches(realm = REALM) {
-  const repo   = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+  const repo   = restingRepo(larDataDir());
   const handle = await materializeSharedLarDoc(repo, realmVouchBoardDocUrl(realm), "board:vouch-registry");
   const out    = await verifiedVouchesFromBoard(handle.doc(), realm, verify);
-  await repo.flush();
+  await repo.rest();
   return out;
 }
 

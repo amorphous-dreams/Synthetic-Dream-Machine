@@ -15,7 +15,7 @@ import { existsSync, mkdtempSync, readdirSync, rmSync, statSync } from "node:fs"
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import { emptyLarDoc, type IslandMsg_Event, type LarDoc } from "@lararium/mesh";
 import { openDaemonVm } from "../src/open-daemon-vm.js";
 import { docStorePath } from "../src/store-integrity.js";
@@ -79,6 +79,7 @@ describe("D-VR-C document-owned physical boundary", () => {
       try { await core.shutdown(2_000); } catch { core.dispose(); }
     }
     for (const repo of repos.splice(0)) await repo.shutdown();
+    await restEvery();
     for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
   });
 
@@ -156,13 +157,13 @@ describe("D-VR-C document-owned physical boundary", () => {
     // store assertion below is the restart witness.
     expect(result.pinnedFiles.length).toBeGreaterThan(0);
     expect(result.ordinaryFiles).toEqual([]);
-    const offline = new Repo({ storage: new NodeFSStorageAdapter(result.workerRoot) });
+    const offline = restingRepo(result.workerRoot);
     try {
       const pinned = await offline.find<LarDoc>(`automerge:${result.pinnedId}`);
       await pinned.whenReady();
       await expect(offline.find<LarDoc>(`automerge:${result.ordinaryId}`)).rejects.toThrow();
     } finally {
-      await offline.shutdown();
+      await offline.rest();
     }
   }, 45_000);
 });

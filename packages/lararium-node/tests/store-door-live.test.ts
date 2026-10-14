@@ -17,7 +17,7 @@ import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
@@ -49,8 +49,9 @@ beforeEach(() => {
   priorLarRoot = process.env["LAR_ROOT"];
 });
 afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
-  await new Promise((r) => setTimeout(r, 200));
   rmSync(base, { recursive: true, force: true });
 });
 
@@ -184,7 +185,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
       // ── the twin stands a vessel: its Repo holds the store, a peer syncs it live ──
       at(twin);
       const { port1, port2 } = new MessageChannel();
-      const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()), network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true });
+      const live = restingRepo(larDataDir(), { network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true });
       const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
       let liveOut: Record<string, unknown>;
       let liveSig: string | undefined;
@@ -202,7 +203,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
         if (w.verb === "cabal-vouch") liveSig = await vouchSigOf((await live.find<LarDoc>(url as AutomergeUrl)).doc());
       } finally {
         await peer.shutdown().catch(() => {});
-        await live.shutdown().catch(() => {});
+        await live.rest();
         port1.close(); port2.close();
       }
 
@@ -211,12 +212,12 @@ describe("the store door — a writer reaches the standing vessel's live peers",
       const directOut = await storeDoorDirect(w.verb, args, { sealHome: sealHome() });
       expect(directOut["refused"], String(directOut["refused"])).toBeUndefined();
       expect(w.id(directOut)).toBe(w.id(liveOut));
-      const reader = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+      const reader = restingRepo(larDataDir());
       try {
         const doc = (await reader.find<LarDoc>(String(directOut["boardUrl"]) as AutomergeUrl)).doc();
         expect(await w.carries(doc, w.id(directOut))).toBe(true);
         if (w.verb === "cabal-vouch") expect(await vouchSigOf(doc)).toBe(liveSig);
-      } finally { await reader.shutdown().catch(() => {}); }
+      } finally { await reader.rest(); }
     }, 60_000);
   }
 
@@ -239,7 +240,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
   it("RED nexus-posture: a flip over a live Repo fires the after-roll hook once; CONTROL: a bare read fires it never", async () => {
     const root = join(base, "posture-root");
     await seatVessel(root);
-    const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const live = restingRepo(larDataDir());
     const rolled: Array<string | undefined> = [];
     try {
       const doors = storeDoorReactors({
@@ -260,7 +261,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
       expect(flipped["wrote"]).toBe(true);
       expect(rolled).toEqual([undefined]);
       expect(federationPostureFromDoc(readNexusDoc(sealHome()))).toBe("open");
-    } finally { await live.shutdown().catch(() => {}); }
+    } finally { await live.rest(); }
 
     // CONTROL — `storeDoorDirect` (no vessel standing) writes the SAME joint with no hook to fire.
     const direct = await storeDoorDirect("nexus-posture", { want: "private" }, { sealHome: sealHome() });
@@ -284,7 +285,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid! }, quorum, consent);
     const raw = JSON.stringify({ aid: aidP, gatePubKey: "c3".repeat(32), admit, lineage: [] });
 
-    const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const live = restingRepo(larDataDir());
     const rolled: Array<string | undefined> = [];
     try {
       const doors = storeDoorReactors({
@@ -300,7 +301,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
       expect(out["represented"]).toBe(true);
       expect(rolled).toEqual([aidP]);
       expect(existsSync(admitBundlePathFor(sealHome(), aidP))).toBe(true);
-    } finally { await live.shutdown().catch(() => {}); }
+    } finally { await live.rest(); }
 
     // CONTROL — `storeDoorDirect` (no vessel standing) keeps the identical bundle, `represented: false`, no hook.
     const direct = await storeDoorDirect("nexus-admit-take", { raw }, { sealHome: sealHome() });

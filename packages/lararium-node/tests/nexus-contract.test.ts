@@ -25,7 +25,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard, signCarriageQuorum, writeCarriageEntry, ed25519SignerFromSeed,
   deriveNexusScopedKey, realmIdOfCharter, signerClass, PERSONA_GLAMOUR_CONTEXT } from "@lararium/mesh";
@@ -75,12 +75,10 @@ beforeEach(() => {
   process.env["LAR_ROOT"] = root;
 });
 afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorLarRoot;
-  // Drain, then delete: a storage-backed Repo arms an uncancelable asyncThrottle (saveDebounceRate) trailing
-  // save on materialize; a rmSync ahead of that timer draws an ENOENT unhandled rejection that bleeds across
-  // the run. Wait past the debounce (deadline ≤ arm+100ms < this 200ms) so the write lands on a live dir.
-  await new Promise((r) => setTimeout(r, 200));
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -213,7 +211,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
 
     const first = await direct(runNexusContract)({ action: "admit", nym: joinerNym, sealHome: sealHome() });
     const ownVesselKey = await loadVesselVerifyingKey();
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     try {
       const handle = await materializeSharedLarDoc(
         repo,
@@ -287,7 +285,7 @@ describe("nexus admit — the RAISE side end-to-end (Build-2)", () => {
     seatCharter(roots.slice(0, 3).map((r) => r.verifyingKey));
     await direct(runNexusContract)({ action: "admit", nym: await leafOf(3), sealHome: sealHome() });
     const ownKey = (await loadVesselVerifyingKey()).toLowerCase();
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     try {
       const handle = await materializeSharedLarDoc(repo, carriageDocUrl(ownKey), "board:carriage-contracts");
       expect(carriageEntriesFromBoard(handle.doc())).toHaveLength(0);
@@ -368,7 +366,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
   async function standHolder() {
     const ownVesselKey = await loadVesselVerifyingKey();
     const nexusPubkey = nodeNexusIsland({ ownVesselKey, sealHome: sealHome() });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
     const holder = makeNexusMembership({
       sealHome: sealHome(), repo, nexusPubkey,
@@ -415,7 +413,7 @@ describe("the presented-admit gate — the sharePolicy member gate reads what a 
     await Promise.all([0, 1].map((i) => generateOrLoadPersonaGroupRoot(i)));
     // No seatCharter, no admit — the local replica is blank (as-of-a-sync-that-never-happened).
     const ownVesselKey = await loadVesselVerifyingKey();
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
     const holder = makeNexusMembership({ sealHome: sealHome(), repo, nexusPubkey: ownVesselKey,
       readCarried: () => readCarriedNexuses({ sealHome: sealHome(), ownVesselKey, open }) });
@@ -560,7 +558,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
 
   async function boardNow() {
     const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const doc = (await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts")).doc();
     await repo.flush();
     return { doc, entries: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc) };
@@ -587,7 +585,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
       await signCarriageContract(lateNym, closing.sealEpochCid, ed25519SignerFromSeed((await nexusLeafFor(0, aid)).seed)));
     {
       const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
-      const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+      const repo = restingRepo(larDataDir());
       const handle = await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts");
       handle.change((d) => writeCarriageEntry(d, late));
       await repo.flush();
@@ -597,7 +595,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     expect(anchors.map(rollAnchorCid)).toEqual([landed.anchorCid]);
     const head = foundingRoster(readNexusDoc(sealHome()));
     const ownVesselKey = await loadVesselVerifyingKey();
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
     const holder = makeNexusMembership({ readCarried: () => readCarriedNexuses({ sealHome: sealHome(), ownVesselKey, open }) });
     try {
@@ -646,7 +644,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
     expect(findings).toEqual([]);   // CONTROL: one anchor opens the head epoch — nothing to surface
 
     const ownVesselKey = await loadVesselVerifyingKey();
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     try {
       const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
       const readings = await readCarriedNexuses({ sealHome: sealHome(), ownVesselKey, open });
@@ -666,7 +664,7 @@ describe("the rotate's ROLL ANCHOR carries an admit in its past across the seal 
       (await heldHands(opened.keys)).slice(0, opened.threshold),
     );
     const nexusPubkey = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: sealHome() });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     const handle = await materializeSharedLarDoc(repo, carriageDocUrl(nexusPubkey), "board:carriage-contracts");
     handle.change((d) => writeRollAnchor(d, orphan));
     await repo.flush();
@@ -740,8 +738,7 @@ describe("the door row — a held Repo, never a second opener", () => {
     const ownVesselKey = await loadVesselVerifyingKey();
     const boardUrl = carriageDocUrl(nodeNexusIsland({ ownVesselKey, sealHome: sealHome() }));
     const { port1, port2 } = new MessageChannel();
-    const live = new Repo({
-      storage: new NodeFSStorageAdapter(larDataDir()),
+    const live = restingRepo(larDataDir(), {
       network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true,
     });
     const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
@@ -751,7 +748,7 @@ describe("the door row — a held Repo, never a second opener", () => {
     await materializeSharedLarDoc(peer, boardUrl, "board:carriage-contracts");
     return {
       live, peer, boardUrl,
-      close: async () => { await peer.shutdown().catch(() => {}); await live.shutdown().catch(() => {}); port1.close(); port2.close(); },
+      close: async () => { await peer.shutdown().catch(() => {}); await live.rest(); port1.close(); port2.close(); },
     };
   }
 

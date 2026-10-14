@@ -30,7 +30,7 @@ import { WebSocketServer } from "ws";
 import { ed25519SignerFromSeed, type LarWSClientAdapter } from "@lararium/mesh";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
 import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import { type DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
 import { armGate, dialGate, provingShore, standGate as standAuthGate } from "./gate-dial-fixture.js";
 /** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
@@ -131,8 +131,7 @@ function standNodeVessel(opts: VesselOpts): Promise<Vessel> {
       network.push(client);
     }
 
-    const repo = new Repo({
-      storage: new NodeFSStorageAdapter(opts.storageDir),
+    const repo = restingRepo(opts.storageDir, {
       network,
       sharePolicy: async (peerId) => {
         const wsSocket = (serverNetwork.sockets as Record<string, unknown> | undefined)?.[peerId];
@@ -149,7 +148,7 @@ function standNodeVessel(opts: VesselOpts): Promise<Vessel> {
         gate, repo, port: addr.port, client,
         close: async () => {
           try { client?.disconnect(); } catch { /* never connected */ }
-          await repo.shutdown();
+          await repo.rest();
           await new Promise<void>((res) => wss.close(() => http.close(() => res())));
         },
       });
@@ -176,10 +175,8 @@ describe("LIVE-WIRE S1 — two NODE vessels, one dialing the other over the real
   afterEach(async () => {
     for (const v of vessels) { try { await v.close(); } catch { /* already down */ } }
     vessels = [];
-    // Drain, then delete: repo.shutdown() flushes but does NOT cancel the StorageSource's armed asyncThrottle
-    // (saveDebounceRate) trailing sync-state/incremental save; a rmSync ahead of that timer draws an ENOENT
-    // unhandled rejection. Wait past the debounce (deadline ≤ arm+100ms < this 200ms) so the write lands live.
-    await new Promise((r) => setTimeout(r, 200));
+    // Every vessel's Repo rests (its adapter closed) before its directory leaves: no save of its can land after.
+    await restEvery();
     for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* gone */ } }
   });
 

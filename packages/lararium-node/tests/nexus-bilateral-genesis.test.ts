@@ -36,7 +36,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { Repo } from "@automerge/automerge-repo";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   hex, foundingRoster, foldCarriageSet, holdsCarriage,
   carriageEntryBytes, signCarriageQuorum, ed25519SignerFromSeed,
@@ -69,12 +69,10 @@ beforeEach(() => {
   priorLarRoot = process.env["LAR_ROOT"];
 });
 afterEach(async () => {
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorLarRoot;
-  // Drain, then delete: a storage-backed Repo arms an uncancelable asyncThrottle (saveDebounceRate) trailing
-  // save on materialize; a rmSync ahead of that timer draws an ENOENT unhandled rejection that bleeds across
-  // the run. Wait past the debounce (deadline ≤ arm+100ms < this 200ms) so the write lands on a live dir.
-  await new Promise((r) => setTimeout(r, 200));
   rmSync(rootA, { recursive: true, force: true });
   rmSync(rootB, { recursive: true, force: true });
 });
@@ -132,7 +130,7 @@ async function leafAt(root: string, sealHome: string): Promise<string> {
  * own leaf seed. Run inside `asRoot(hearth.root)`.
  */
 async function standGate(h: Hearth) {
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+  const repo = restingRepo(larDataDir());
   const ownVesselKey = await loadVesselVerifyingKey();
   const open = async (url: Parameters<typeof materializeSharedLarDoc>[1], label: string) => (await materializeSharedLarDoc(repo, url, label)).doc();
   const holder = makeNexusMembership({
