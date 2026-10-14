@@ -1,0 +1,101 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-w-launch">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-w-launch.mem"
+l-space   = "adjacent"
+role      = "train W launch kit: signed face admit, six cutover module contracts, assembled socket commit and built-image witness"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lararium/docs/train-w-launch"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/docs/train-w-launch"
+```
+
+<<~ ahu #/head>>
+
+! Train W ~ the wire and face-proof launch
+
+!! Contents
+
+* [[Ground and crew|#/ground]] · [[Commit walk|#/walk]] · [[Six fixed module briefs|#/briefs]] · [[Assembled cutover and proof order|#/cutover]] · [[Collision sheet|#/collisions]] · [[Red window and done when|#/done]].
+
+<<~/ahu>>
+
+<<~ ahu #/ground>>
+
+!! Ground and crew
+
+Start pure vectors beside N on disjoint files. Start the live admit after N hands over its two-vault `nexus-contract.ts` caller. One compose lead owns both vessel composers and the whole socket commit; six narrow builders each hand back one module contract below; one reviewer audits signed bytes, no-old-wire reachability, first-frame order and two-Nexus isolation. The controller owns canon, shards and the single assembled landing.
+
+K12 already mints random per-Nexus face keys, keeps sealed custody rows and signs hand-over through `runNexusKeyReissue`. `readAdmitAtHeldRoot` returns the verified head and `makeFaceGate` compares it. `supplySessionFace` still discards that head and compares the original admit `nym` with the current face key; declare `REISSUED_FACE_OPENS_LOCAL_SESSION` red before a session-open caller lands. K13 already founds the PersonaGroup as a Keyhive Group and rolls reached bags on revocation. W supplies its private face grant and live readers, not a second group or face identity. The Stable founding's serving key and AID enter W through typed custody and `charterHomeFor`.
+
+<<~/ahu>>
+
+<<~ ahu #/walk>>
+
+!! Commit walk
+
+# ''PURE: browser measurement and fixed vectors.'' Measure actual `Sec-WebSocket-Protocol` syntax, bound, fixed selected protocol, 101 timing and proxy log handling before freezing `gate-exchange.ts` first-flight bytes. Keep `noise-ik.ts`, `face-proof-subjects.ts`, `face-authority.ts`, `session-signer.ts`, `session-document-view.ts`, `gate-bundle.ts`, `gate-exchange.ts`, `face-gate.ts` and `face-dial.ts` uncalled while their vectors mature. Draft the built-image trace contract without registering a container cell.
+# ''LIVE: one face-subject and join slice.'' On N's completed cosign seam, `device-admit.ts` signs its canon list and gate pin inside payload; producer, board verifier, `readAdmitAtHeldRoot`, import reader and N contract fixtures move with those bytes. Keep the original admitted `nym` as the anchor; require the verified hand-over `head` for today's face key. Repair `supplySessionFace` before node session open and browser holder call `openSignedSession` with real sealed rows. Build one fleet-join door, a separate vessel face-key certificate and add-a-face grant; retire the bare import and old join doors. A gate cannot borrow PersonaGroup membership history as a face proof. Before a removal caller uses `runSeatDuties`, prove that a Keyhive `revokeSeat` throw after mutation still reaches roll subscribers and ledger marking; distinguish completed mutation from refusal before mutation.
+# ''LIVE: THE SOCKET CUTOVER, one assembled commit.'' Land the six contracts below with node and browser dialers, raw upgrade, gate and knock dispatcher, typed bundle composer, sorter, face-subject ring/grant lookup, floor announcement reader/signer and purpose, both fixture helpers and old-wire retirement. Index every live dial by `(hearth, Nexus)` in this commit; hold withdrawal memory per face at the receiving gate. Route the exact tier, Nexus and route through `charterHomeFor`. Keep any production dial not converted explicitly shut until its new caller lands. No reachable gate may send `lar:challenge`, a ContactCard proof or vessel-key proof.
+# ''LIVE: sibling and herm leg.'' Open the sibling channel on fresh per-dial transport keys and face scope. Carry ask, cancel and vessel answer as tagged inner frames under the sealed sibling session; bind the bare relay delivery note to request id and causal position. Distinguish ask receipt, transit-only delivery and vessel outcome; a relay note never attests execution. Then fold canon.
+
+<<~/ahu>>
+
+<<~ ahu #/briefs>>
+
+!! Six fixed module briefs
+
+Each builder returns an API, vectors and a fixed refusal vocabulary. Pure work may land uncalled; the compose lead alone connects production callers in the assembled commit.
+
+| Brief | Fixed contract and acceptance |
+|---|---|
+| `gate-bundle.ts` | `deriveGateBundle` selects one typed floor or sovereign root for exact `(tier, Nexus, route)`; composer uses `charterHomeFor`. Pin, knock, signing and posture share that selection. Add floor-announcement purpose to `GATE_SIGNING_PURPOSES` and its reader in the assembled commit; another Nexus or tier refuses the signature. |
+| `gate-exchange.ts` | Bound browser token and encrypted presentation/history frames from the measured header envelope; canonical signed finish/verdict bytes. Message one permits only provisional upgrade work, never application authority; replay, wrong pin and overlong token refuse. |
+| `face-gate.ts` | `makeFaceGate` consumes held-root admit plus verified hand-over head, face chain, shadow, private grant and the exact Nexus. Place arm uses its own key. Deadline and replay refusal close once. `seat` must open or buffer before a verified dial can deliver application frame one. |
+| `face-dial.ts` | `dialFaceGate` uses fresh IK transport, pinned gate key, signed finish and verified verdict; node and browser differ at upgrade envelope alone. A failed or timed-out dial cuts its socket and never exposes an application session. |
+| `socket-sorter.ts` with ring lookup | Class, standing, grant and ring lookup use proven face or place key at one Nexus. No `vesselKey` enters decisions, cache keys or refusal logs; no shortened wire key leaks. Pair-indexed client dial state keeps `(hearth, Nexus)` routes and pins separate. |
+| mesh and node `gate-dial-fixture.ts` | Both helpers return opaque admitted sockets and verdicts to ordinary suites; wire-vector suites alone inspect frames. Lead edits both helpers alongside production dialers so no test-only old handshake survives as a false control. |
+
+<<~/ahu>>
+
+<<~ ahu #/cutover>>
+
+!! Assembled cutover and proof order
+
+The compose lead owns `open-node-vessel.ts`, `open-browser-vessel.ts`, `lar-ws-client-adapter.ts`, `daemon-auth-gate.ts`, `auth-wire.ts`, `socket-sorter.ts`, `sibling-channel.ts`, `oracle-read-client.ts`, `authenticated-membership-relay.ts`, the two fixture helpers and the upgrade route. Audit every production caller of `runPeerHandshake`, `lar:challenge` and vessel-key gate proof. Convert the node relay, WebSocket adapter, oracle reader and sibling dial in the same commit, or shut their route with an explicit refusal. The floor announcement moves under the wire key together with its newly accepted signing purpose and reader. The gate's attach → verdict → open interval buffers frame one or signals ready only after open. The pair index and the two-Nexus acceptance proof land together.
+
+Prove in this order: pure Noise, chain, bundle and exchange vectors; two-root custody and real `openSignedSession`; node↔node Noise first flight; browser↔hearth through the terminator; immediate application frame arrives exactly once after `open`; receiver restart preserves withdrawal memory; floor and sovereign pins refuse crossing; two faces, two Nexuses and two hearths retain separate pins and shelves; source reachability plus built-image frames find no old wire on any enabled route. Then prove sibling ask, cancel, transit receipt and vessel outcome over its own live path. `session-document-view.ts` gains the O1 surface caller later; W proves wire identity and routing.
+
+<<~/ahu>>
+
+<<~ ahu #/collisions>>
+
+!! Collision sheet
+
+| Shared file or seam | N seat | W seat |
+|---|---|---|
+| `nexus-contract.ts` | Finishes two-vault self-contracts and partial cosign. | Changes signed admit carriage only after N's hand-off; migrates producer, verifier and fixtures together. |
+| `open-node-vessel.ts`, `open-browser-vessel.ts` | Stable founding and N import/boot finish before socket composition. | One compose lead owns both for the assembled commit. |
+| `socket-sorter.ts`, both `gate-dial-fixture.ts` helpers | N stays clear. | One lead owns production and test helper contracts together. |
+| `wax-stamp.ts`, charter readers | N freezes signed genesis and AID. | W consumes the final held-root reader through `charterHomeFor`; no parallel signed-byte edit. |
+| `auth-wire.ts`, sibling/oracle/relay clients | N stays clear. | W either converts each live dial or explicitly shuts the route in the one commit. |
+
+<<~/ahu>>
+
+<<~ ahu #/done>>
+
+!! Red window and done when
+
+The admit payload change reddens producer/verifier/import and self-contract fixtures unless one commit moves all four. The socket cutover reddens `gate-dial-funnel`, `live-wire-node-crossing`, `browser-crossing`, `nexus-client-dial`, `wire-hearth-crossing`, `authenticated-membership-relay` and `sibling-herm-relay` until both fixture and production paths meet. The `crossing`, `herm-mesh`, `nexus`, `quorum`, `relation`, `leaf`, `open`, `realm-crossing` and `meme` held-out cells give independent seams; add a two-Nexus cell only with its driver. Run changed package suites, both e2e shard sets, built-image crossing and held-out head; an unread head never counts green. The unregistered `.train-w-built-image.test.ts` fixes the trace assertions now and waits for a real driver.
+
+Done when every enabled production dial emits Noise IK first, follows one typed bundle and held charter, accepts a current face only through its verified hand-over head, opens a real signed session before frame one, preserves gate withdrawal across restart, keeps pair-indexed dials and two face grants separate, signs the floor announcement under the selected wire pin, and reaches no retired handshake. Disabled routes state their refusal. The sibling leg additionally proves sealed ask/cancel/outcome against transit-only delivery. Offering Antigen scope and fork resolution remain with the operator.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Cqu1Q57mChxJNwmYBHOUOpigbLonVAZok0A2bz-CPzY
+
+<<^ code="&#x0004;" -> to="?">>

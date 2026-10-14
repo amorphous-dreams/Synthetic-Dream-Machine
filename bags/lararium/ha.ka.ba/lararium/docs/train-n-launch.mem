@@ -1,0 +1,94 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-n-launch">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-n-launch.mem"
+l-space   = "adjacent"
+role      = "train N launch kit: two-founder inception, partial acts, contracts, rolls, two-root proof and file collisions"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lararium/docs/train-n-launch"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/docs/train-n-launch"
+```
+
+<<~ ahu #/head>>
+
+! Train N ~ the two-founder Nexus launch
+
+!! Contents
+
+* [[Ground and crew|#/ground]] · [[Commit walk|#/walk]] · [[Witness and red window|#/witness]] · [[Collision sheet|#/collisions]] · [[Done when|#/done]] · [[Open rulings|#/rulings]].
+
+<<~/ahu>>
+
+<<~ ahu #/ground>>
+
+!! Ground and crew
+
+Start the live train after the Stable founding and canon settle. One compose lead owns the joint charter image, the two vaults and the final acceptance reader. A ceremony builder owns open/join/seal and file courier; a mesh builder owns inception and partial images; a reviewer reads bytes, fingerprints, stale acts and independent roots. W's pure gate modules may proceed on disjoint files. The lead alone edits the shared `nexus-contract.ts` hand-off after N's partial caller passes.
+
+The Stable founding supplies the seed charter, persona zero, private charter and serving key. Keep each founder's seed unchanged; file the joint charter under its own AID through `charterHomeFor`. K12 supplies random per-Nexus face keys and their signed hand-over line. K13 supplies the PersonaGroup Keyhive group and the genesis-seat non-return rule in `verifySealRoll`. Neither landing signs a joint inception. `verifySealLineage` still admits an unsigned genesis; place the red two-root import and boot case before changing that reader.
+
+<<~/ahu>>
+
+<<~ ahu #/walk>>
+
+!! Commit walk
+
+# ''PURE: offer and join image.'' Add strict public offer and join readers, file courier vectors and terminal read-back. `seal cofound open` commits A's seat, cold successor commitment, charter law and manifest addresses. Name its checksum ''offer fingerprint''. `seal cofound join` adds B's public material and half signature, derives the joint AID and names the resulting ''final charter fingerprint''. Display both fingerprints and both seat keys; cold-card labels aid the human but their checksum covers the key code, not the label. Refuse a card with the wrong charter or generation and a copied marker unlocked by a wrong passphrase while both original cards remain. An offer or B's half-signature cannot import or boot as a charter.
+# ''RED before seal.'' Put `COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES` and `COFOUND_OFFER_IS_NOT_A_CHARTER` beside a two-root import/boot witness. One or zero signatures, signatures on different images, or a forged display label refuse. The ordinary one-founder seed remains the control.
+# ''PURE, then one LIVE acceptance commit: signed inception.'' Define exact genesis image and both Ed25519 signatures in `wax-stamp.ts`; then connect `verifySealLineage`, charter parse, import, boot, `seal cofound seal` and founding fixture factories together. This changes the stored genesis and accepted identity bytes. Each root computes the same AID from final public material; neither root inherits the other's private signer. The offer fingerprint never substitutes for the final charter fingerprint.
+# ''PURE, then LIVE: each partial act.'' Reuse `edge-partial.ts` verdict vocabulary, whose `edgeActPartial` and `cosignEdgeActPartial` already stand for realm edges. Define separate canonical images and subject/parent rules for Nexus admit, revoke, kapae and roll anchor; do not cast an admit into `EdgeKapae`. Every caller runs its judge before any signature, including callers of `cosignEdgeActPartial`; stale head, missing parent, replay and wrong subject write no second signature or board act. Pass the file across vaults without a clock.
+# ''LIVE: contracts and rolls.'' `runNexusContract` must carry each founder's consent and two seat signatures for each self-contract. `resolveContractIn` guards the local consent; neither single-vault control proves the crossing. Read both contracts from each root after courier and restart. Arm and verify fresh successor cards on both roots before the add roll. The first roll reveals genesis seats; `verifySealRoll` bars every seated key from returning. Then add the third holder with possession and its contract; pass a chair in a later roll. A lost two-of-two cold card invokes the loss law.
+# ''PROOF and canon.'' Read the joint AID, contracts and final roll independently after both roots restart and unlock. Re-import one verified lineage into a dormant root. A fork remains a fork until the operator rules its resolving act. The controller folds the charter and command canon after the witness passes.
+
+<<~/ahu>>
+
+<<~ ahu #/witness>>
+
+!! Witness and red window
+
+The unregistered `packages/lararium-mesh/tests/.train-n-two-root.test.ts` names the red two-root import contract before the seal acceptance commit. A later live node witness supplies two different `LAR_ROOT` trees, Repos, seal homes and signing handles; its only courier carries files. It checks the same final AID and contracts after independent restart, rejects an unsigned or half-signed charter at both imports, and keeps both seeds intact. The first red runs before the verifier changes, so an acceptance rewrite cannot hide a one-root fixture shortcut.
+
+The signed-inception commit can redden charter reader, `seal-ceremony`, `nexus-contract`, founding e2e and the `nexus`, `quorum`, `relation` and `board` container cells until fixture factories move in the same commit. Run changed package suites, both e2e shard sets and the held-out head after each live seam; distinguish an unread held-out head from green. The two-root witness keeps its red until actual independent boot. A later two-container witness strengthens custody separation for X.
+
+<<~/ahu>>
+
+<<~ ahu #/collisions>>
+
+!! Collision sheet
+
+| File or seam | N owner and hand-off | W owner and hand-off |
+|---|---|---|
+| `nexus-contract.ts` | N lead owns two-vault self-contract and cosign caller. | W lead waits, then moves signed admit's canon list and gate pin with all readers. |
+| `wax-stamp.ts`, charter fixture factories | N mesh builder changes inception image and all acceptance readers as one live seam. | W consumes the final AID and verified held root. |
+| `seal-ceremony.ts`, `init.ts`, `found.ts`, founding e2e | Seat lead owns them through Stable founding; N lead takes ceremony files after hand-off. | W avoids these files during N. |
+| `open-node-vessel.ts`, `open-browser-vessel.ts` | N needs import/boot proof but leaves W's socket composition alone. | One W compose lead owns both during assembled cutover. |
+| `socket-sorter.ts`, mesh and node `gate-dial-fixture.ts` | N avoids them. | W compose lead updates sorter and both fixture contracts with production callers. |
+
+Pure N image and read-back modules may run beside W's pure Noise, bundle and exchange work. Live N charter acceptance and W's admit shape share the charter/contract seam; finish N's contract before W changes its signed bytes. The controller owns canon and landing order.
+
+<<~/ahu>>
+
+<<~ ahu #/done>>
+
+!! Done when
+
+Two isolated vaults read both offer and final fingerprints, sign one fresh 2-of-2 inception, retain their seeds, exchange judged partials, import both co-signed contracts, roll with fresh successors, add and contract a third chair, pass a chair later, refuse stale/replayed/wrong-subject acts and spent keys, and independently restart under the same joint AID. A single verified lineage catches up; no claim resolves a fork.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! Open rulings
+
+The operator retains Offering Antigen scope and the fork-resolve act. N freezes no related authority bytes before the first ruling; its dormant-node witness claims catch-up along one lineage only.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;DYT0Lf2frvlhd7DAnHiCzXtE3z3s2wX35UNNZ0F5Kzs
+
+<<^ code="&#x0004;" -> to="?">>
