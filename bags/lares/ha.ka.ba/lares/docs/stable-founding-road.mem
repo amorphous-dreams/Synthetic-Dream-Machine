@@ -314,7 +314,7 @@ identity bytes; then R-WIRE, so every pin changes once.
 ''Behind the train, each waiting on R-CHARTER''.
 * ''R-KAHU'': S1, a quorum whose seats live on different vessels, and L1, the realm root map from the co-signed `keptBy`. Needs only the seat shape.
 * ''R-ENGINE, the offers'': the engine-offer lineage signs under the cadence threshold, adopted within a k-hop window along `prev`.
-* ''R-EMBER'': a household's first ember stands on its second device, which needs the fleet-join door; the slot tree carries passphrase and paper pins today, and this slice adds the ember pin kind.
+* ''R-EMBER'': a household's second device lifts a resting hearth to SERVING and to nothing more (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">>). It needs the fleet-join door; the slot tree carries passphrase and paper pins, and the ember pin binds in a serving tree of its own.
 
 !!! 5 · ONE FACE ~ the recorded switch act (waits on the signer and the realm shapes)
 * The slice builds `session-contract.mem` in its build order and `face-proof.mem`. A session wears the face; the vessel wears none. The switch acts on ONE session and closes and re-dials only that session's links under the incoming face's scoped proof.
@@ -459,7 +459,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `F10` A person's fleet view and removal; the long-silent device rule of #/decisions. O1.
 * `F11` The hands: the watcher as a leasing session, the seat under a standing grant, the Mask as a record field, door parity at the session (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>). O1.
 * `F12` A parallel draft names its writer by the record's own `modifier` value, else by the bare Automerge actor id; neither binds a face, so a reader learns only what a writer chose to say (`parallel-drafts.ts`). The session's face on each change answers it. O1.
-* `E1` The ember: a serving tier, the ember pin, the raise record, removal. House (custody design before any build). E.
+* `E1` The ember: the serving tier under its own key, the ember pin, the raise with its count and record, four roads of removal (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">>). Operator (three questions, #/open). E.
 
 !!! THE HOSTED ROAD
 * `H1` The operator's answer and the door that shows what waits (`host door`, `host answer`). H.
@@ -585,13 +585,14 @@ The rows of #/the-loops' GROUND group, tests-only work first. Riskiest: the summ
 # Canon.
 ''Riskiest'': the cutover; an old-wire dialer must draw no byte, and node and browser must both cross after it.
 
-!!! E ~ the ember (waits on W's join door; lands before the fence)
-# A design round first, on paper: a SERVING key, wrapped by the vessel key, wraps the rows a gate needs, and the ember's slot wraps that key alone, so an ember-raised vessel opens no seat key, persona root or cold row.
-# The serving tier.
-# The ember pin.
-# The raise count, the record and the removal.
-# Canon.
-''Riskiest'': the design may turn out to need a signed shape, since the removal act rides the face's log.
+!!! E ~ the ember (waits on W's join door, on the operator's three answers in #/open, on `B1` for an ember in a browser leaf, and on H's grant re-cut for the walker arm at SERVING; lands before the fence)
+# ''Landed ahead'': the law, on paper (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">>). A serving key the vessel key wraps seals the serving tier alone; the ember's slot wraps that key alone, so an ember-raised vessel opens no seat key, persona root, content key or cold row.
+# The serving tier: its custody class, the serving tree, the serving key minted at the Stable founding, its rotation, and a composition at SERVING that refuses each act by name.
+# The ember pin, in the serving tree alone, and its bind at a human unlock over the fleet channel.
+# ''Live'': the serving gate's tier and pin; the ember route and its exchange; the raise, its count and its ledger.
+# ''Live'': the ember withdrawal on the fleet's edge board; a pin dropped at the floor; every ember shut until the serving key rolls.
+# Canon: the face proof's tiers, the custody carrier's classes, the sealed store's key table.
+''Riskiest'': the ember withdrawal, a new signed act a device key signs on the fleet's edge board, which the floor must verify against the one fleet root its own device edge names; and the walker arm, which at SERVING needs a grant that checks under a public half (train H).
 
 !!! O1 ~ ONE FACE's sessions (its contract landed; the working address onward waits on W's cutover)
 # ''Landed ahead'': the session contract in mesh (`session-contract.ts`); the scoped document view (`session-document-view.ts`), the one recipe resolver's surface resolution (`surface-recipe.ts`, `resolveSurfaceRecipe`) and the pool's surface door (`mountSurface`), each specified in code and reached by no production caller.
@@ -707,6 +708,9 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 # ''Carriage across leaves.'' A guest-held carry-claim proven at the carry door would let carriage follow a guest across leaves — a second relation and a second domain. Lean: not built.
 # ''The fork-resolve act's shape.'' The seal record holds one predecessor. A ruling after the fence costs a migration, and the dormant node's shattered-Nexus case waits on it.
 # ''The re-seal proof.'' Name the causal record that maps old ciphertext to its replacement.
+# ''The ember's second key at rest.'' Standing law lets one key govern every private row, and the ember needs a serving key that seals the serving tier (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key">>). Lean: a fifth custody class, `serving`, whose rows the serving key seals and whose key the vessel key wraps. The two strongest readings: (a) the fifth class, so a thief of the disk who also gathers the embers' answers reaches only ciphertext, public halves and signed events; (b) no second key, where the serving rows rest bare by law, since each holds signed events, public halves or a walker's ciphertext, and the ember then wraps nothing at all, which ends the ember as a pin.
+# ''The ember's serving gate.'' The ruled tiers derive a sovereign route's bundle from the sealed custody root, which SERVING never opens (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange">>). Lean: a third tier, the serving route, its bundle derived from the serving key, the floor and sovereign tiers untouched. The two strongest readings: (a) the third tier, so a dialer that pinned the sovereign tier never mistakes a serving hearth for an unlocked one, at the cost of a pin that tells a standing party which standing answers; (b) the sovereign bundle re-rooted on the serving key, one pin at every standing above the floor, which changes every dialer's trust in a sovereign pin and grants a thief of the disk who gathers the embers' answers a sovereign gate.
+# ''How an ember's raise lapses.'' The custody ruling reads //the raise lapses by non-renewal//. Lean: a raise lives one boot, lapses at a lock, a restart, a human unlock or a counted removal, and the count bounds how many boots the embers lift; no timer. The two strongest readings: (a) per boot, as the lean, which leaves a raised hearth serving until a causal event; (b) a renewal the hearth asks of its embers on its own local liveness wire, lapsing when no ember answers, which bounds a stolen ember's raise more tightly and lets a timer the hearth alone reads end a standing.
 # ''The reading of "delegated keys" for cloud carriers'', deferred until the operator can deploy to a cloud surface (#/the-road).
 # ''House leans the operator may overturn'': the floor vessel key drops its next-key commitment; the long-silent device rule; the strangers' dial drops the newest arrival (#/decisions); the seal's standing leans (`S7` of #/the-loops).
 
@@ -762,6 +766,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_cX8HuEP3WpY5-wqzqTNoMplSwcDeat4mh8HPMkgw54
+<<^ code="&#x0003;">>ni:///sha-256;2yxdT3ZYsi45HVG2-XUXiqPZhO-d9TpzA2JsRV9TDAE
 
 <<^ code="&#x0004;" -> to="?">>
