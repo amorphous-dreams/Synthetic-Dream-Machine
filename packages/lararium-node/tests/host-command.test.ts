@@ -26,9 +26,8 @@ import {
   hex, carriageDocUrl, hostingDocUrl, materializeSharedLarDoc, hostingActsFromBoard, hostingActCid, decodeInvite,
   tokenVerifiesAt, redeemClaim, makeMultiSigQuorumVerifier, type NexusDoc, type Presented,
 } from "@lararium/mesh";
-import { Repo } from "@automerge/automerge-repo";
 import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
-import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+import { restEvery, restingRepo } from "./resting-repo.js";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
@@ -52,8 +51,10 @@ beforeEach(() => {
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
 });
-afterEach(() => {
+afterEach(async () => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
+  // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
+  await restEvery();
   rmSync(root, { recursive: true, force: true });
 });
 
@@ -75,9 +76,9 @@ async function seatAndWear(): Promise<{ aid: string; doc: NexusDoc }> {
 
 /** The hosting acts a doc carries, read by a fresh opener of the vessel's store. */
 async function docActs(url: Parameters<typeof materializeSharedLarDoc>[1]): Promise<ReturnType<typeof hostingActsFromBoard>> {
-  const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+  const repo = restingRepo(larDataDir());
   try { return hostingActsFromBoard((await materializeSharedLarDoc(repo, url, "hosting")).doc()); }
-  finally { await repo.shutdown().catch(() => {}); }
+  finally { await repo.rest(); }
 }
 
 describe("lares host — roll, invite, state", () => {
@@ -100,7 +101,7 @@ describe("lares host — roll, invite, state", () => {
     const { aid } = await seatAndWear();
     const doc = hostingDocUrl(aid, await loadVesselVerifyingKey());
     // The running vessel holds its store and already carries its hosting doc in its replica.
-    const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const live = restingRepo(larDataDir());
     const told: string[] = [];
     const beside = (hosting: SealedActContext["hosting"]): SealedActContext => ({ kelHead: null, personaSelves: null, walk: null, hosting, backup: null });
     try {
@@ -112,7 +113,7 @@ describe("lares host — roll, invite, state", () => {
       expect(await runSealedAct("host.state", {}, beside(null))).toEqual({ nexuses: [expect.objectContaining({ nexusAid: aid, epoch: rolled["epoch"], redeemed: 0 })] });
       const minted = await runSealedAct("host.invite", { relay: "ws://hearth:8080/ws" }, beside(null));
       expect(decodeInvite(String(minted["invite"]))).toMatchObject({ nexusAid: aid, relay: "ws://hearth:8080/ws" });
-    } finally { await live.shutdown().catch(() => {}); }
+    } finally { await live.rest(); }
     // No store lent: the roll refuses before any row moves. A hosting door's own refusal crosses with its words.
     const reason = async (act: Promise<unknown>): Promise<string> => act.then(() => "ran", (e: { reason?: string; message?: string }) => `${e.reason}: ${e.message}`);
     expect(await reason(runSealedAct("host.roll", {}, beside(null)))).toMatch(/^act-refused: no store stands here/);
@@ -211,13 +212,13 @@ describe("lares host — roll, invite, state", () => {
     const leaf = (await heldNexusLeaves(aid))[0]!.verifyingKey;
     // A board writer plants a well-shaped act under this face's leaf, with a signature nobody made.
     const forged = { kind: HOSTING_ACT_DOMAIN, nexusAid: aid, hearthLeaf: leaf, prev: null, oprfPub: "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76", cap: 3, sig: "00".repeat(64) };
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     try {
       const handle = await materializeSharedLarDoc(repo, url, "hosting");
       handle.change((d) => writeHostingAct(d, forged as never));
       await repo.flush();
       expect(hostingActsFromBoard(handle.doc(), leaf).length, "KNOWN POSITIVE: the planted act reads by shape").toBe(1);
-    } finally { await repo.shutdown().catch(() => {}); }
+    } finally { await repo.rest(); }
     const rolled = await direct(runHostRoll)({ sealHome: sealHome() });
     expect(rolled.act.hearthLeaf).toBe(leaf);
   });
@@ -228,13 +229,13 @@ describe("lares host — roll, invite, state", () => {
     const held = (await heldNexusLeaves(aid))[0]!;
     // A genuine act, signed by this very leaf, naming another Nexus: the signature verifies and the Nexus does not match.
     const elsewhere = await mintHostingAct({ leafSeed: held.seed, nexusAid: `epoch0-${"e7".repeat(32)}`, prev: null, cap: 3 });
-    const repo = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+    const repo = restingRepo(larDataDir());
     try {
       const handle = await materializeSharedLarDoc(repo, url, "hosting");
       handle.change((d) => writeHostingAct(d, elsewhere.act));
       await repo.flush();
       expect(hostingActsFromBoard(handle.doc(), held.verifyingKey).length, "KNOWN POSITIVE: the copied act reads by shape and by leaf").toBe(1);
-    } finally { await repo.shutdown().catch(() => {}); }
+    } finally { await repo.rest(); }
     const rolled = await direct(runHostRoll)({ sealHome: sealHome() });
     expect(rolled.act.nexusAid).toBe(aid);
   });
