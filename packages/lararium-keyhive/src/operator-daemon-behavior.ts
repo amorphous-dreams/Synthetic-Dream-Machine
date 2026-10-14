@@ -51,6 +51,10 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  verbs below. Absent (a browser vessel with no fs) → the vault verbs simply never register. The
    *  passphrase rides the verb args over the owner-only 0600 UDS — the same trust boundary as a CLI arg. */
   vault?: (verb: string, args: Record<string, unknown>) => Promise<Record<string, unknown>>;
+  /** `shore` — a person's answers at THIS island's disk shore (`lares shore`): the node entry injects the
+   *  door that answers from the projector this island mounts (`@lararium/node` `shore-verb.ts`). keyhive
+   *  stays fs-blind. Absent (a browser vessel) → the verb never registers. */
+  shore?: (args: Record<string, unknown>) => Promise<Record<string, unknown>>;
   /** `restDocuments` — the rest door. This island's Repo may keep no store for a slot document it mints; the
    *  host injects the ask that resolves once the vessel's own store holds the named documents durably. Present →
    *  every slot mint waits on it before its binding lands. Absent → the island's own Repo flush stands alone. */
@@ -177,7 +181,7 @@ const lightAFace = (verb: string): VerbReactor => async () => {
 
 export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: DaemonExtra = {}): DaemonBehaviorOptions {
   // persistArchive + vault ride node-only; keep them OUT of the makeDaemonBehavior spread (not DaemonBehaviorOptions).
-  const { persistArchive, persistVeilArchive, vault, bagTier, restDocuments, dyadReading, sealedStore, sessionProof, countedRaises, ...daemonExtra } = extra;
+  const { persistArchive, persistVeilArchive, vault, shore, bagTier, restDocuments, dyadReading, sealedStore, sessionProof, countedRaises, ...daemonExtra } = extra;
   const daemonAuth = manifest.daemonAuth;
   if (!daemonAuth) {
     return {
@@ -915,6 +919,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           registry.register(v, async (args) => vault(v, args));
         }
       }
+      // A person's answers at this island's own disk shore (the daemon wiki's working layer, crossroads).
+      if (shore) registry.register("shore", async (args) => shore(args as Record<string, unknown>));
 
       // Every other daemon verb reaches USER registry data in the catalog plane (wiki oracles,
       // recipes) via the accessor over ctx.repo/ctx.catalogUrl — access≠load. The daemon

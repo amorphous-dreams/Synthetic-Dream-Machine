@@ -8,7 +8,8 @@
 import { parentPort } from "worker_threads";
 import { runSovereignWorker, vesselRestAsker, vesselCustodyWriter, vesselDyadAsker } from "./sovereign-island-model.js";
 import { makeOperatorDaemonBehavior } from "@lararium/keyhive/operator-daemon-behavior";
-import { mountDiskProjection } from "./island-behaviors.js";
+import { mountDiskProjection, mountedDiskProjector } from "./island-behaviors.js";
+import { answerShore } from "./shore-verb.js";
 import type { IslandContext } from "@lararium/tw5";
 import { runVaultVerb } from "./archive-passphrase.js";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
@@ -53,6 +54,14 @@ runSovereignWorker((manifest) => {
       persistVeilArchive: (bytes: Uint8Array) => sealOnVessel("veil", bytes),
     } : {}),
     vault:          (verb, args) => runVaultVerb(verb, args),
+    // A person's answers at this island's disk shore: the same door a wiki island stands (`claimShoreVerb`),
+    // answered from the projector this island mounts.
+    shore:          async (args) => {
+      const projector = mountedDiskProjector();
+      return projector === null
+        ? { ok: false, refusal: "no-disk-shore", why: "the daemon island mounts no disk projection" }
+        : answerShore(projector, args);
+    },
     // The crossing gate reads each bag's declared cap-tier off this vessel's hearth manifests,
     // so an outward transfer (veil-ward -> public-ward) refuses without the kahu-cabal.
     bagTier:        makeBagTierReader(),
