@@ -172,8 +172,10 @@ export async function runRealmBag(opts: {
   let target: RealmPlaneHolder | null = plane;
   if (requested && plane) {
     if (requested === plane.realmId()) target = plane;
+    // A realm this vessel already stands a plane for (a carried charter's realm, a cabal realm it entered) answers.
+    else if (plane.plane?.(requested)) target = plane.plane(requested);
     // AN ACT STANDS THE VESSEL IN A REALM: a cabal realm it never entered gets entered here, and noted.
-    else if (CABAL_REALM_RE.test(requested)) target = plane.plane?.(requested) ?? (await plane.enter?.(requested)) ?? null;
+    else if (CABAL_REALM_RE.test(requested)) target = (await plane.enter?.(requested)) ?? null;
     else throw new StewardRefused("realm-unreadable", `realm "${requested}" does not read as a stood realm or cabal realm id`);
   }
   if (!target || !target.realmId() || !target.nexusAid()) throw refusedNoRealm();

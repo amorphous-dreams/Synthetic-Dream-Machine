@@ -36,7 +36,7 @@ import { ownedStore } from "../src/owned-store.js";
 import { readLocalPersonaKelChain } from "../src/persona-admit-flow.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
-import { foundDirect } from "./found-route.js";
+import { foundDirect, seatSeedCharter } from "./found-route.js";
 import { standRootIsland, suiteSessionProof, type RootIsland } from "./stand-root-island.js";
 
 vi.setConfig({ testTimeout: 900_000, hookTimeout: 900_000 });
@@ -54,13 +54,16 @@ async function leave(): Promise<void> {
   const holder = seatedCustody();
   if (holder) { await holder.lock(); unseatCustody(holder); }
 }
-async function foundVessel(label: string): Promise<string> {
+/** A fresh vessel under a fresh root: a HEARTH (place, seed charter, persona zero's face), or its seed charter alone. */
+async function foundVessel(label: string, as: "hearth" | "charter" = "hearth"): Promise<string> {
   await leave();
   const root = mkdtempSync(join(tmpdir(), `lar-rehearsal-${label}-`));
   roots.push(root);
   process.env["LAR_ROOT"] = root;
   cpSync(REPO_GENESIS, join(root, "genesis"), { recursive: true });
   await foundDirect({ storageDir: larDataDir(), genesisDir: join(root, "genesis") });
+  await seatSeedCharter({ name: `${label}-keeper` });
+  if (as === "hearth") await foundFace({ genesisDir: join(root, "genesis"), handleIndex: 0 });
   return root;
 }
 afterEach(async () => {
@@ -79,9 +82,9 @@ async function ask(island: RootIsland, verb: string, act: "cut" | "door" | "impo
 }
 
 /** What a standing vessel lends a cut and an import, over one island the suite stood. */
-function doorOver(island: RootIsland, repo: Parameters<Parameters<typeof ownedStore>[1]>[0]): BackupDoor {
+function doorOver(island: RootIsland, repo: Parameters<Parameters<typeof ownedStore>[1]>[0], face = 0): BackupDoor {
   return {
-    wornFace: () => 0,
+    wornFace: () => face,
     ownEdgeShadowed: async () => false,
     cutMemory: async (to) => {
       const facts = { to: hex(to), shadow: MEMORY_CUT_SHADOW_READ };
@@ -122,7 +125,6 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
 
   // ── VESSEL A: found, light a face, seal a private body, cut ─────────────────────────────────────────────────
   const rootA = await foundVessel("a");
-  await foundFace({ genesisDir: join(rootA, "genesis"), handleIndex: 0 });
   const rootKey = (await listPersonaRosterLines())[0]!.verifyingKey;
   const anchorsA = (await loadIdentityAnchors(0))!;
   const oldSeats = [
@@ -177,12 +179,12 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   rmSync(rootA, { recursive: true, force: true });
   expect(existsSync(rootA)).toBe(false);
 
-  // ── VESSEL B: found fresh, restore (the restore re-admits) ──────────────────────────────────────────────────
+  // ── VESSEL B: a fresh hearth, restore beside its persona zero (the restore re-admits) ─────────────────────────
   await foundVessel("b");
-  const restored = await restoreFaceBundle({ sealedBody: a.cut.sealedBody, bundleKey, withRepo });
-  expect(restored.face).toEqual({ handleIndex: 0, verifyingKey: rootKey });
+  const restored = await restoreFaceBundle({ sealedBody: a.cut.sealedBody, bundleKey, as: 1, withRepo });
+  expect(restored.face).toEqual({ handleIndex: 1, verifyingKey: rootKey });
   expect(restored.holds).toEqual(a.cut.holds);
-  const anchorsB = (await loadIdentityAnchors(0))!;
+  const anchorsB = (await loadIdentityAnchors(1))!;
   expect(anchorsB.personaKelPrefix).toBe(anchorsA.personaKelPrefix);
   expect(anchorsB.personaGroupId, "a NEW seat: another key group").not.toBe(anchorsA.personaGroupId);
   expect(await loadVesselVerifyingKey()).not.toBe(vesselKeyA);
@@ -190,15 +192,15 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   for (const tier of ["sealed", "cad"]) cpSync(join(aside, tier), join(larDataDir(), tier), { recursive: true });
 
   await withRepo(async (repo) => {
-    const island = await standRootIsland({ repo, handleIndex: 0, bags: [BAG], sessionProof: proof });
+    const island = await standRootIsland({ repo, handleIndex: 1, bags: [BAG], sessionProof: proof });
     try {
-      const door = doorOver(island, repo);
+      const door = doorOver(island, repo, 1);
       // CONTROL: before the import the restored seat holds no key, and the body stays shut.
       expect(await said(island.run("sealed-open", { bag: BAG, ref: String(a.first["ref"]) }))).not.toBe("ANSWERED");
 
       // ── IMPORT ────────────────────────────────────────────────────────────────────────────────────────────
       const imported = await importFaceBundleMemory({ sealedBody: a.cut.sealedBody, bundleKey, door });
-      expect(imported.face).toEqual({ handleIndex: 0, verifyingKey: rootKey });
+      expect(imported.face).toEqual({ handleIndex: 1, verifyingKey: rootKey });
       expect(imported.results).toEqual([{ bagId: BAG, keyVersion: a.first["keyVersion"], outcome: "imported" }]);
 
       // ── OPEN: the body sealed before the cut, and the one sealed AFTER it under the same version ─────────────
@@ -216,8 +218,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
 
   // ── ANOTHER IDENTITY REFUSES ────────────────────────────────────────────────────────────────────────────────
   // A second face, cut on a vessel of its own, meets the vessel that wears the restored face.
-  const rootC = await foundVessel("c");
-  await foundFace({ genesisDir: join(rootC, "genesis"), handleIndex: 0 });
+  await foundVessel("c");
   const otherKey = mintBundleKey();
   const other = await withRepo(async (repo) => {
     const island = await standRootIsland({ repo, handleIndex: 0, bags: [BAG], sessionProof: proof });
@@ -230,21 +231,20 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   const { openTestCustody } = await import("./found-route.js");
   await openTestCustody();
   await withRepo(async (repo) => {
-    const island = await standRootIsland({ repo, handleIndex: 0, bags: [BAG], sessionProof: proof });
+    const island = await standRootIsland({ repo, handleIndex: 1, bags: [BAG], sessionProof: proof });
     try {
-      expect(await said(importFaceBundleMemory({ sealedBody: other.sealedBody, bundleKey: otherKey, door: doorOver(island, repo) }))).toBe("another-face");
-      // Its lineage, too: the index holds the restored face, so the other face's restore names the roster line.
+      expect(await said(importFaceBundleMemory({ sealedBody: other.sealedBody, bundleKey: otherKey, door: doorOver(island, repo, 1) }))).toBe("another-face");
+      // Its lineage, too: the index holds persona zero, so the other face's restore names the roster line.
       expect(await said(restoreFaceBundle({ sealedBody: other.sealedBody, bundleKey: otherKey, withRepo: (act) => act(repo) }))).toBe("roster-names-another-key");
       // CONTROL: the restored face's own bundle still imports as held.
-      expect((await importFaceBundleMemory({ sealedBody: a.cut.sealedBody, bundleKey, door: doorOver(island, repo) })).results[0]!.outcome).toBe("held");
+      expect((await importFaceBundleMemory({ sealedBody: a.cut.sealedBody, bundleKey, door: doorOver(island, repo, 1) })).results[0]!.outcome).toBe("held");
     } finally { await island.down(); }
   });
 });
 
 test("ON A VESSEL WHOSE ISLAND HOLDS NO SESSION SIGNER, the import refuses by name and lands nothing: a production import stands SPECIFIED", async () => {
   const proof = await suiteSessionProof("rehearsal-unsigned");
-  const rootA = await foundVessel("a");
-  await foundFace({ genesisDir: join(rootA, "genesis"), handleIndex: 0 });
+  await foundVessel("a");
   const bundleKey = mintBundleKey();
   const cut = await withRepo(async (repo) => {
     const island = await standRootIsland({ repo, handleIndex: 0, bags: [BAG], sessionProof: proof });
@@ -254,12 +254,12 @@ test("ON A VESSEL WHOSE ISLAND HOLDS NO SESSION SIGNER, the import refuses by na
     } finally { await island.down(); }
   });
   await foundVessel("b");
-  await restoreFaceBundle({ sealedBody: cut.sealedBody, bundleKey, withRepo });
+  await restoreFaceBundle({ sealedBody: cut.sealedBody, bundleKey, as: 1, withRepo });
   await withRepo(async (repo) => {
     // The island a production vessel stands today: no session proof composed.
-    const island = await standRootIsland({ repo, handleIndex: 0, bags: [BAG], sessionProof: null });
+    const island = await standRootIsland({ repo, handleIndex: 1, bags: [BAG], sessionProof: null });
     try {
-      expect(await said(importFaceBundleMemory({ sealedBody: cut.sealedBody, bundleKey, door: doorOver(island, repo) }))).toBe("signer-unavailable");
+      expect(await said(importFaceBundleMemory({ sealedBody: cut.sealedBody, bundleKey, door: doorOver(island, repo, 1) }))).toBe("signer-unavailable");
     } finally { await island.down(); }
   });
 });

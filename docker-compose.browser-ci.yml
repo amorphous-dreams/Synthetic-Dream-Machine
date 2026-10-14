@@ -4,7 +4,8 @@
 #
 #   seed    one-shot. Stages /state through the TEST door: tools/test-scratch-marker.mjs writes the scratch marker,
 #           then tools/seed-test-custody.mjs founds the custody under the published test passphrase, and the CLI's offline
-#           `vessel found` completes the founding on that standing custody tree. No bypass
+#           `vessel found --hearth` completes the Stable founding act on that standing custody tree (the place, its seed
+#           charter, the face; the card's read-back stands in on the marked root). No bypass
 #           flag and no env var carries a credential. The `serve` image carries neither tool, so THIS surface
 #           alone mounts the repo's tools/ directory read-only at /app/tools; the product image stays free of the
 #           test door.
@@ -63,7 +64,7 @@ services:
       - >-
         node tools/test-scratch-marker.mjs /state &&
         node tools/seed-test-custody.mjs /state &&
-        node packages/lares-cli/bin/lares.mjs vessel found --skip-build --root /state --genesis /app/genesis
+        node packages/lares-cli/bin/lares.mjs vessel found --hearth --name "${BROWSER_CI_FACE:-ci-face}" --skip-build --root /state --genesis /app/genesis
     restart: "no"
 
   lares:

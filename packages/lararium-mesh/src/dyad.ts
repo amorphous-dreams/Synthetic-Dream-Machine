@@ -269,13 +269,20 @@ export async function verifiedFleetOfGroup(
   dyads: readonly DyadRecord[],
   groupRootDid: LarDid,
   shadowed: ReadonlySet<string> = new Set(),
+  /**
+   * The hearth the reader stands at: its seed charter's Nexus AID, the scope a dyad binding roots on. A binding that
+   * roots on any other scope was gathered at another hearth, and reads unverified here however well it signs.
+   */
+  scope?: string,
 ): Promise<DyadRecord[]> {
   // A SHADOWED relationship stands aside before any signature runs. The edge it presents may verify
   // perfectly — a valid edge set aside stays set aside, which is the whole difference between a kāpae and
   // an expiry. Checking here rather than after keeps a raised marker unconditional. The set holds the ids
   // the fleet's edge board reads (`deviceEdgeId`): the fleet root and the device key.
+  const want = scope?.trim().toLowerCase();
   const claimed = fleetOfGroup(dyads, groupRootDid)
-    .filter((d) => !shadowed.has(deviceEdgeId(groupRootDid, d.ref.vesselDid)));
+    .filter((d) => !shadowed.has(deviceEdgeId(groupRootDid, d.ref.vesselDid)))
+    .filter((d) => want === undefined || d.binding!.epochCid.trim().toLowerCase() === want);
   const verdicts = await Promise.all(claimed.map((d) =>
     verifyDelegationEdge(DELEGATION_DOMAIN.dyadBinding, dyadBindingSubject(d.ref), d.binding)));
   return claimed.filter((_, i) => verdicts[i] === true);

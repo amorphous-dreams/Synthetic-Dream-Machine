@@ -35,7 +35,7 @@ const freePort = () => new Promise((resolve) => {
   s.listen(0, "127.0.0.1", () => { const { port } = s.address(); s.close(() => resolve(port)); });
 });
 
-/** Stage a marked scratch root and found a PLACE on it; `face` also lights the founding face. */
+/** Stage a marked scratch root and found a PLACE on it; with `face`, the Stable founding act founds a HEARTH there. */
 function stageFounded(tag, face) {
   const root = mkdtempSync(join(tmpdir(), `lares-restore-door-${tag}-`));
   for (const script of ["test-scratch-marker.mjs", "seed-test-custody.mjs"]) {
@@ -43,7 +43,7 @@ function stageFounded(tag, face) {
     assert.equal(r.status, 0, `${script}: ${r.stderr}`);
   }
   cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
-  const acts = [["vessel", "found", "--root", root, "--skip-build"], ...(face ? [["persona", "new", "0", "--name", face]] : [])];
+  const acts = [face ? ["vessel", "found", "--hearth", "--name", face, "--root", root, "--skip-build"] : ["vessel", "found", "--root", root, "--skip-build"]];
   for (const args of acts) {
     const r = spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root } });
     assert.equal(r.status, 0, `lares ${args.join(" ")}: ${r.stderr}`);
@@ -116,26 +116,26 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     rmSync(rootA, { recursive: true, force: true });
     assert.equal(existsSync(rootA), false, "vessel A's whole home stands destroyed");
 
-    // ── VESSEL B: found fresh, no face ─────────────────────────────────────────────────────────────────────────
-    const rootB = stageFounded("b", null);
+    // ── VESSEL B: a fresh hearth, persona zero its own; the restored face lands beside it at h1 ─────────────────
+    const rootB = stageFounded("b", "the keeper");
     roots.push(rootB);
     vessel = await stand(rootB);
     // R3: a locked vessel refuses the act.
-    const locked = await restoreTestCustody(rootB, { file: bundle });
+    const locked = await restoreTestCustody(rootB, { file: bundle, as: 1 });
     assert.deepEqual({ ok: locked.answer.ok, reason: locked.answer.reason }, { ok: false, reason: "custody-locked" });
     const unlocked = await unlockTestCustody(rootB);
     assert.equal(unlocked?.reading, "opens", JSON.stringify(unlocked));
     // R3: a route that opens no slot of the bundle refuses before any act leaves.
-    const missed = await restoreTestCustody(rootB, { file: bundle, passphrase: "a-wrong-route-for-the-bundle" });
+    const missed = await restoreTestCustody(rootB, { file: bundle, as: 1, passphrase: "a-wrong-route-for-the-bundle" });
     assert.equal(missed.answer.reason, "no-slot-opens");
 
     // ── R1: the restore, through the door's own CLI ────────────────────────────────────────────────────────────
-    const ran = spawnSync(process.execPath, [door, rootB, bundle], { encoding: "utf8", env: vessel.env });
+    const ran = spawnSync(process.execPath, [door, rootB, bundle, "--as", "1"], { encoding: "utf8", env: vessel.env });
     assert.equal(ran.status, 0, `the door restores: ${ran.stdout}${ran.stderr}`);
     const restored = JSON.parse(ran.stdout.trim().split("\n").pop());
     assert.equal(restored.ok, true);
     assert.equal(restored.via, "vessel");
-    assert.deepEqual(restored.face, { handleIndex: 0, verifyingKey: a.body.root.verifyingKey });
+    assert.deepEqual(restored.face, { handleIndex: 1, verifyingKey: a.body.root.verifyingKey });
     assert.equal(restored.prefix, a.body.anchors.personaKelPrefix);
     assert.deepEqual(restored.checked, { seq: 0, from: "bundle" });
     // R3: a second restore over it refuses.
@@ -144,9 +144,11 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
 
     // ── THE VESSEL STANDS AGAIN and wears the restored face at its own seat ────────────────────────────────────
     await vessel.stop();
+    const worn = spawnSync(process.execPath, [cli, "persona", "wear", "1"], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: rootB } });
+    assert.equal(worn.status, 0, `the hearth wears the restored face: ${worn.stderr}`);
     vessel = await standUnlocked(rootB);
     const again = join(outDir, "gardener-from-b.bundle");
-    const recut = await backupTestCustody(rootB, { face: 0, out: again });
+    const recut = await backupTestCustody(rootB, { face: 1, out: again });
     assert.equal(recut.ok, true, `the restored vessel wears the face lit, and cuts it from its own seat: ${JSON.stringify(recut)}`);
     const b = openBody(again);
     assert.equal(b.body.root.verifyingKey, a.body.root.verifyingKey, "the same root");

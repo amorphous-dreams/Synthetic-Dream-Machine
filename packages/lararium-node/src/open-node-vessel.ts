@@ -102,7 +102,7 @@ import type { SparseFormVector, AntigenRing, FederationGate, NexusMembership, Pe
 import { selfSlotShareDecision } from "./self-slot-share.js";
 import { makeAntigenRingHolder } from "./antigen-ring.js";
 import { makePersonaKelRingHolder, carryPersonaKelUpTheGradient } from "./persona-kel-ring.js";
-import { vesselDyads, DYAD_VEIL_TAG_TIDDLER } from "@lararium/mesh";
+import { vesselDyads, verifiedFleetOfGroup, DYAD_VEIL_TAG_TIDDLER, type LarDid } from "@lararium/mesh";
 import {
   makeNexusMembership, makeRealmCharterConsult, readCarriedNexuses, liveBoardOpener, dialPresentation,
   presentationKey, dialIdentityFor,
@@ -175,7 +175,7 @@ import { serveHostingCarry, DEFAULT_CARRY_LIMITS } from "./hosting-carry.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
 import { nodeWalkStore, listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
-import { carriedSet }                             from "./carried-set.js";
+import { carriedSet, readCarriedCharters }       from "./carried-set.js";
 import { composeLararium, composeHerm, carriageStack, type MeshSelf } from "./node-caps.js";
 
 /** The genesis dir when a caller sites none — resolves through the composable genesis cap
@@ -1675,7 +1675,12 @@ async function prepareNodeBootOn(
       console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
     } else if (dyads.length > 0) {
       const bound = dyads.filter((d) => d.binding !== null).length;
-      console.log(`[dyad] this vessel holds ${dyads.length} relationship(s), ${bound} bound.`);
+      // THE DYAD SCOPE READS HERE (gap 4): a binding counts as this hearth's only where it verifies under the fleet
+      // root the worn edge names AND roots on the hearth that edge binds (its seed charter's AID).
+      const atHearth = deviceEdge?.personaRootDid && deviceEdge.hearthTrueName
+        ? (await verifiedFleetOfGroup(dyads, deviceEdge.personaRootDid as LarDid, new Set(), deviceEdge.hearthTrueName)).length
+        : 0;
+      console.log(`[dyad] this vessel holds ${dyads.length} relationship(s), ${bound} bound, ${atHearth} verified at this hearth.`);
     }
     // THE PERSONA-KEL PIN — the continuity anchor the Binding Gate walks. Read the pinned identifier PREFIX
     // from the daemon bag (the pin's root of trust), then read its seq-sorted key-event-log from the per-Nexus KEL
@@ -1770,6 +1775,14 @@ async function prepareNodeBootOn(
         realms:           () => readVesselRealms(repo, vesselIdentity.verifyingKey),
         standsInRealm:    shadowRing.standsInRealm,
         noteRealm:        (realm, nexusAid) => noteVesselRealm(repo, vesselIdentity.verifyingKey, realm, nexusAid),
+        // THE CARRIED CHARTERS: a hearth stands on its own seed charter, so another operator's Nexus it contracted
+        // into reaches it as a carried charter, and that Nexus's realm stands as a plane of its own, under ITS AID.
+        carried:          () => [...readCarriedCharters(sealHome).values()],
+        // EACH PLANE'S LANES SCOPE TO ITS OWN NEXUS: the Nexus lane to a leaf that Nexus admitted, the return lane
+        // to the hearth this vessel dialed (its pin's charter scope; none on a self-founded vessel).
+        leafAidOf:        (peerId) => nexusMembershipHolder?.leafAidOf(peerId) ?? null,
+        dialedHearth:     () => ({ pinned: hearthPin !== null,
+          aid: hearthPin?.islandKind === "charter" ? hearthPin.islandScope ?? null : null }),
         // THE REFOLD REVERDICT. The fold decides which documents the realm leg opens, and it moves on a change
         // ANOTHER member writes — a co-signature completing a proposal re-seats a registration this vessel
         // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the

@@ -37,7 +37,7 @@
  */
 import {
   CHARTER_SEAT_ROLL_DOMAIN, canonicalJsonBytes, coldKeyFromSeed, seatNextDigest, charterSealState, ed25519SignerFromSeed, emptyFoundingCharterDoc, foundingRoster,
-  majorityThreshold, personasStandingForSeat, sealKeySetHash, sealLineageHead, seatFingerprint, seatedKahuKeys, weakSeatOf,
+  majorityThreshold, nexusAidOf, personasStandingForSeat, sealKeySetHash, sealLineageHead, seatFingerprint, seatedKahuKeys, weakSeatOf,
   type NexusCharterKahu, type NexusDoc, type QuorumSignature, type SealEpoch,
 } from "@lararium/mesh";
 import { existsSync, readdirSync } from "node:fs";
@@ -54,6 +54,7 @@ import {
   type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
 } from "./reserve-transition.js";
 import { larSealHome } from "./vessel-paths.js";
+import { aFaceBinds } from "./hearth-aid.js";
 
 /** The row a crossing stands open in (it prepares), relative to the seal home. */
 export const TRANSITION_PENDING_FILE = "transition-pending.json";
@@ -202,6 +203,12 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
   const doc = standingDoc ?? emptyFoundingCharterDoc();
   if ((doc.sealLineage?.length ?? 0) > 1) {
     throw refuse("charter-rolled", "the charter chain has already ROTATED past genesis — advance it with `lares nexus seal rotate`, never re-seat");
+  }
+  // A HEARTH'S AID NEVER MOVES. Once a face binds the seed charter's Nexus AID (its device edge, its dyad scope, its
+  // cabal sentinel), a re-seat would mint another AID and orphan every relation bound to the first. The faces' own
+  // anchors answer, never the bootstrap's pin: a re-seeded bootstrap names no face while every edge still binds.
+  if (await aFaceBinds(nexusAidOf(doc))) {
+    throw refuse("hearth-bound", "the seed charter stands and the face this hearth holds binds its Nexus AID — a re-seat would mint another AID and orphan every relation bound to it. Grow the charter by the roll its card arms: `lares nexus seal rotate`");
   }
   const priorSeated = seatedKahuKeys(doc).map(lower);
   // EVERY REFUSAL LANDS BEFORE ANY KEY MINTS. A chair that holds a root or a leaf as its key refuses by that name.

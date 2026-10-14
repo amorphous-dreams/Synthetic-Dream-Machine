@@ -49,7 +49,7 @@ import { runFoundTheFace, runDeviceAdmit } from "../../src/index.js";
 import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
-import { foundDirect, sealTestCustody } from "../found-route.js";
+import { foundDirect, sealTestCustody, seatSeedCharter } from "../found-route.js";
 import { plainEntries, tiddlerText } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
@@ -167,6 +167,8 @@ beforeAll(async () => {
   // Step 1b — A wears a FACE. `runInit` founds the PLACE alone (faceless: `foundThePlace` writes no
   // PersonaGroup / mesh-cabal sentinel IDs); the FACE lands by a distinct act, and `runDeviceAdmit` (Step 3)
   // needs the face's sentinel oracle IDs to sign an edge — mirrors the founder in `persona-ring-cross-operator-admit`.
+  // The seed charter seats first, as the Stable founding act seats it: A's face and every edge A signs bind its AID.
+  await withLarRoot(VESSEL_A.root, () => seatSeedCharter({ name: "vessel-a" }));
   await withLarRoot(VESSEL_A.root, () =>
     direct(runFoundTheFace)({ storageDir: VESSEL_A.storage, genesisDir: VESSEL_A.genesis }));
 

@@ -14,7 +14,7 @@
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { join } from "node:path";
-import { openStagedJoinee, type LarInstance, type StagedJoinee } from "../harness/instance.js";
+import { growStagedQuorum, openStagedJoinee, type LarInstance, type StagedJoinee } from "../harness/instance.js";
 
 /** A door answer slower than this reads as a vessel that stopped serving. */
 const PROMPT_MS = 20_000;
@@ -33,15 +33,8 @@ beforeAll(async () => {
   fleet = await openStagedJoinee({
     tag: "inspect-door",
     daemonEnv: { LAR_SAME_ORIGIN: "true" },
-    riteA: async (source) => {
-      let i = 1;
-      for (const handle of ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]) {
-        const k = await source(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
-        if (k.code !== 0) throw new Error(`kahu ${i}: ${k.stderr.slice(-400)}`);
-        i += 1;
-      }
-      const rite = await source(["nexus", "rite", "quorum"]);
-      if (rite.code !== 0) throw new Error(`rite: ${rite.stderr.slice(-400)}`);
+    riteA: async (source, rootA) => {
+      await growStagedQuorum(source, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
       await source(["persona", "wear", "0"]);
       const pub = await source(["nexus", "publish", "plugins", "--source", HIGHLIGHT_SOURCE, "--apply", "--json"]);
       const d = pub.json?.["data"] as { offeringCid?: string; boardUrl?: string; blobCount?: number } | undefined;

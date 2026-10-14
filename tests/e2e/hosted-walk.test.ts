@@ -30,7 +30,7 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { Repo, type PeerId } from "@automerge/automerge-repo";
-import { openStaged, freePort, stageDir, awaitRendezvous, type LarInstance } from "../harness/instance.js";
+import { openStaged, freePort, stageDir, awaitRendezvous, foundStagedHearth, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-provider.js";
 import { InMemoryEventStore } from "../../packages/lararium-keyhive/src/event-store.js";
 import {
@@ -121,18 +121,8 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
     const portA = await freePort();
     relayA = `ws://127.0.0.1:${portA}/ws`;
     A = await openStaged({ tag: "hostA", port: portA, found: async (cli, root) => {
-      const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
-      if (found.code !== 0) throw new Error(`A: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
-      const face = await cli(["persona", "new", "0", "--name", "hearth-keeper"]);
-      if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
-      let i = 1;
-      for (const handle of ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]) {
-        const k = await cli(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
-        if (k.code !== 0) throw new Error(`A: kahu ${i} failed (${k.code})\n${k.stderr.slice(-800)}`);
-        i += 1;
-      }
-      const rite = await cli(["nexus", "rite", "quorum"]);
-      if (rite.code !== 0) throw new Error(`A: rite quorum failed (${rite.code})\n${said(rite).slice(-800)}`);
+      await foundStagedHearth(cli, root, "hearth-keeper");
+      await growStagedQuorum(cli, root, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
       // The hearth hosts as the face it wears.
       const wear = await cli(["persona", "wear", "0"]);
       if (wear.code !== 0) throw new Error(`A: wear failed (${wear.code})\n${said(wear).slice(-800)}`);
@@ -165,10 +155,7 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
     const carried = inviteB;
     const rootB = mkdtempSync(join(stageDir(), "lares-staged-walkB-"));
     B = await openStaged({ tag: "walkB", root: rootB, found: async (cli, root) => {
-      const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
-      if (found.code !== 0) throw new Error(`B: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
-      const face = await cli(["persona", "new", "0", "--name", "wayfarer"]);
-      if (face.code !== 0) throw new Error(`B: face failed (${face.code})\n${face.stderr.slice(-800)}`);
+      await foundStagedHearth(cli, root, "wayfarer");
       // A walker walks as the face it wears: unworn, the take refuses and writes nothing.
       const unworn = await cli(["walk", "take", carried, "--json"]);
       if (unworn.code === 0) throw new Error(`B: a take with no face worn was kept:\n${said(unworn)}`);
@@ -194,9 +181,8 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
     expect(decodeInvite(handed)).toMatchObject({ gatePubKey: gateA, relay: relayA, token: { purpose: "walker-invite" } });
     const rootC = mkdtempSync(join(stageDir(), "lares-staged-walkC-"));
     C = await openStaged({ tag: "walkC", root: rootC, found: async (cli, root) => {
-      const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
-      if (found.code !== 0) throw new Error(`C: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
-      for (const step of [["persona", "new", "0", "--name", "second-wayfarer"], ["persona", "wear", "0"], ["walk", "take", handed]]) {
+      await foundStagedHearth(cli, root, "second-wayfarer");
+      for (const step of [["persona", "wear", "0"], ["walk", "take", handed]]) {
         const r = await cli(step);
         if (r.code !== 0) throw new Error(`C: ${step.join(" ")} failed (${r.code})\n${said(r).slice(-800)}`);
       }

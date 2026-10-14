@@ -181,6 +181,15 @@ flows down through their infra's relationships with each other's nodes and leafs
 
 ''The ladder'': a seed → a Nexus of two seats → an enduring Nexus of three or more.
 
+''A SEED FOUNDS IN ONE ACT, AND ITS AID NEVER MOVES.'' The Stable founding act (`lares vessel found --hearth`)
+yields, under one human route, the place, persona zero, and a PRIVATE seed charter of one seat at threshold one:
+the seat's own key, and its cold next key on one card the person reads back before the charter moves. Persona
+zero's face founds after the charter, so its fleet relations bind the seed charter's AID, the hearth's true name:
+its device edge, its dyad scope and its cabal sentinel's seed. A seed grows its chairs by the roll that card
+arms, and a re-seat over a seed charter a face binds refuses by name, since a second genesis would mint another
+AID and orphan every relation bound to the first. A face founds at a hearth alone: on a place with no seed
+charter, `persona new 0` refuses and names the act.
+
 ''A NEXUS FOUNDS FRESH.'' Two founders make a fresh joint genesis beside each household's own seed, at
 threshold two of two. Nobody grows a household's own charter into a Nexus: a second operator's key seated
 there hands that partner quorum over the household. A household seed never takes a foreign seat
@@ -290,8 +299,10 @@ moves, and commits one digest per chair (`nextKeyDigests`); `seal rotate` takes 
 adopts each revealed key as its chair's seat key; the quorum doors sign with the rows (`held-quorum.ts`). An
 earlier charter shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. `seal cold rehearse`
 reads a card back against the head's digests, names the chair it would roll, and moves nothing; `--cold-key`
-stands in for its terminal only on a staged root whose custody proves the published test route. ''Owed in code'':
-every chair of a charter comes from one vault; no co-founding verb and no cross-vault countersign stand.
+stands in for its terminal only on a staged root whose custody proves the published test route. The Stable founding
+act stands in code (`found-hearth.ts`, `hearth-aid.ts`): one seat, its card, the PRIVATE seed charter, persona zero's
+face binding its AID; `seal-ceremony.ts` refuses a re-seat over it (`hearth-bound`). ''Owed in code'': every chair of
+a charter comes from one vault; no co-founding verb and no cross-vault countersign stand.
 
 <<~/ahu>>
 
@@ -568,6 +579,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YOF23wvZwsQJJH51NJB1O3KqwXHVjBSPb-jflzwTeiU
+<<^ code="&#x0003;">>ni:///sha-256;lmRyWaka1SF-bzpxH03EOz-jcUFqKNfDTF71RssOOM0
 
 <<^ code="&#x0004;" -> to="?">>

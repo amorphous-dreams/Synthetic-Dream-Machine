@@ -17,7 +17,7 @@ import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { openStagedJoinee, vesselStorageDir, type CliResult, type LarInstance, type StagedJoinee } from "../harness/instance.js";
+import { growStagedQuorum, openStagedJoinee, vesselStorageDir, type CliResult, type LarInstance, type StagedJoinee } from "../harness/instance.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../../packages/lararium-node/src/commands/nexus-offering-inspect.js";
 import { ownedStore } from "../../packages/lararium-node/src/owned-store.js";
 
@@ -78,15 +78,8 @@ beforeAll(async () => {
     daemonEnv: { LAR_SAME_ORIGIN: "true" },
     // The persona-bound daemon requires a lease frontier. This is the existing staged-founder rite,
     // kept here as harness setup rather than production behavior.
-    riteA: async (source) => {
-      let i = 1;
-      for (const handle of ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]) {
-        const kahu = await source(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
-        if (kahu.code !== 0) throw new Error(`source: kahu ${i} failed (${kahu.code})\n${kahu.stderr.slice(-800)}`);
-        i += 1;
-      }
-      const rite = await source(["nexus", "rite", "quorum"]);
-      if (rite.code !== 0) throw new Error(`source: rite quorum failed (${rite.code})\n${rite.stderr.slice(-800)}`);
+    riteA: async (source, rootA) => {
+      await growStagedQuorum(source, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
       // Publishing signs in a held persona's name, and an unset selector refuses rather than choosing h0:
       // the source wears its founding face explicitly before its daemon reads it.
       const wear = await source(["persona", "wear", "0"]);

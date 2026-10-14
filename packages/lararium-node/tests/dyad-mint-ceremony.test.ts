@@ -7,26 +7,29 @@
  * veilDid is the derived face — never the persona root, which spans devices and names no veil.
  *
  * The binding asymmetry is the model's own honesty: at FOUNDING (self-stood) the group root stands
- * in the same hands, so the binding gets signed; at APPLY the joinee holds no root, so its slot
- * carries `binding: null` — presented, not yet gathered — and the absence travels rather than hides.
+ * in the same hands, so the binding gets signed, rooted on the HEARTH it binds (the seed charter's AID);
+ * at APPLY the joinee holds no root, so its slot carries `binding: null` — presented, not yet gathered —
+ * and the absence travels rather than hides. A face founded at no hearth binds no dyad either.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { KeyhiveProvider, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
 import * as ed25519 from "@noble/ed25519";
 import {
   hex, deriveDyadVeil, vesselDyads, DYAD_SLOT_PREFIX, DYAD_VEIL_TAG_TIDDLER, tiddlerText, type DyadRecord,
-  personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix,
+  personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix, MESH_CABAL_SENTINEL_URI,
 } from "@lararium/mesh";
 import type { LarDoc } from "@lararium/mesh";
 
 const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
 
 const FOUNDER_SEED = new Uint8Array(32).fill(7);
+/** The hearth the founding binds: a seed charter's Nexus AID. */
+const HEARTH_AID = `nexus-${"5a".repeat(32)}`;
 const JOINEE_SEED  = new Uint8Array(32).fill(11);
 
-async function found() {
+async function found(hearthTrueName: string = HEARTH_AID) {
   const repo = new Repo({ sharePolicy: async () => true });
   const verifyingKey = await pubOf(FOUNDER_SEED);
   const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
@@ -35,7 +38,7 @@ async function found() {
     vesselVerifyingKey: verifyingKey,
     vesselDisplayName:  "The Strandbeest Shrine",
     binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },
-    hearthTrueName:       "",
+    hearthTrueName,
     nexusPubkey:          verifyingKey,
   });
   return { repo, f, verifyingKey };
@@ -75,6 +78,28 @@ describe("the ceremony mints the dyad", () => {
     expect(slot.ref.veilDid.toLowerCase()).not.toBe(f.signerDid.toLowerCase());
     expect(slot.ref.vesselDid.toLowerCase()).toBe(f.founderEdge.deviceDid.toLowerCase());
     expect(slot.binding, "the root stands self-stood here, so the binding signs").not.toBeNull();
+    expect(slot.binding!.epochCid, "the binding roots on the hearth's AID").toBe(HEARTH_AID);
+  });
+
+  test("★ the cabal sentinel seeds from the HEARTH: the face founds its cabal under the hearth's AID — CONTROL: no hearth, the bare URI ★", async () => {
+    const created = vi.spyOn(KeyhiveProvider.prototype, "createSentinelDoc");
+    try {
+      await found();
+      expect(created.mock.calls.map((c) => c[0])).toContain(`${MESH_CABAL_SENTINEL_URI}/${HEARTH_AID}`);
+      created.mockClear();
+      await found("");
+      expect(created.mock.calls.map((c) => c[0])).toContain(MESH_CABAL_SENTINEL_URI);                  // CONTROL
+      expect(created.mock.calls.map((c) => c[0])).not.toContain(`${MESH_CABAL_SENTINEL_URI}/`);
+    } finally { created.mockRestore(); }
+  });
+
+  test("★ a face founded at NO hearth binds no dyad: its slot carries binding null — CONTROL: at a hearth it binds ★", async () => {
+    const { repo, f } = await found("");
+    const slots = await dyadSlotsOf(repo, f.daemonUrl);
+    expect(slots).toHaveLength(1);
+    expect(slots[0]!.binding).toBeNull();
+    const at = await found();
+    expect((await dyadSlotsOf(at.repo, at.f.daemonUrl))[0]!.binding).not.toBeNull();
   });
 
   test("★ APPLY writes the joinee's dyad slot — its OWN derived face, binding null (the root is absent) ★", async () => {

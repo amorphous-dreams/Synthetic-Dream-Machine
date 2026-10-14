@@ -176,13 +176,35 @@ export function makeRealmPlane(opts: {
   readonly standsInRealm?: (peerId: string, realm: string) => boolean;
   /** Note a realm in the vessel's own ledger under the Nexus that stands here: `enter` calls it once per realm. */
   readonly noteRealm?: (realm: string, nexusAid: string) => Promise<void>;
+  /**
+   * The charters this vessel CARRIES beside its own (`nexus seal import --carry`): each Nexus another operator
+   * founded and this vessel contracted into. Each stands a realm plane of its own, under ITS Nexus: a hearth stands
+   * on its own seed charter, so a realm of another operator's Nexus reaches it as a carried charter, never as its
+   * primary. Absent, the holder stands its own charter's realm and its cabal realms alone.
+   */
+  readonly carried?: () => readonly NexusDoc[];
+  /**
+   * THE NEXUS LANE, SCOPED TO A PLANE'S OWN NEXUS: the Nexus AID a peer's leaf stands under (the membership
+   * holder's leaf map), or null. A charter's or a carried charter's plane opens its Nexus lane only to a leaf of
+   * ITS Nexus, so a peer one carried Nexus admitted reads nothing of another's realm. Absent, the lane reads the
+   * vessel-wide membership.
+   */
+  readonly leafAidOf?: (peerId: string) => string | null;
+  /**
+   * THE RETURN LANE'S NEXUS: the hearth this vessel dialed, read off its dial pin. The charter-hearth peers open
+   * the plane of THAT Nexus alone: a pin naming a charter scope opens the plane of that AID; a pin naming none (a
+   * joiner whose admit carried no charter scope) opens the joiner's primary charter plane, the hearth it joined;
+   * no pin (a self-founded vessel, which IS its own hearth) opens the one carried plane where ONE charter rides
+   * carried, never the vessel's own seed realm (two carried with no pin leave the dialed Nexus unnamed: it shuts).
+   */
+  readonly dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null };
 }): RealmPlanesHolder {
   const { repo, oracleHandle, crossroadsHandle, membership, base } = opts;
   const log = opts.onLog ?? (() => {});
 
   /** One realm's plane as the holder keeps it: the plane a verb acts through, its gate, and its teardown. */
   interface Stood {
-    readonly kind:  "charter" | "cabal";
+    readonly kind:  "charter" | "cabal" | "carried";
     readonly plane: RealmPlaneHolder;
     readonly gate:  RealmBagGate;
     /** Does this vessel's own steward keep, in this realm, the book this document holds? */
@@ -215,13 +237,39 @@ export function makeRealmPlane(opts: {
   };
 
   /** Stand ONE realm's plane: its shared doc, its gate, its pointers on the vessel's own plane, its verbs. */
-  const standPlane = async (realmId: string, kind: "charter" | "cabal"): Promise<Stood> => {
+  const standPlane = async (realmId: string, kind: "charter" | "cabal" | "carried"): Promise<Stood> => {
     const realmUrl = realmDocUrl(realmId);
     const realmHandle = await materializeSharedLarDoc(repo, realmUrl, "realm");
-    const nexusAid = (): string => charterRealm ?? realmId;
+    // A CARRIED charter's realm stands under ITS OWN Nexus: a steward's key there derives against that AID.
+    const nexusAid = (): string => (kind === "carried" ? realmId : charterRealm ?? realmId);
     const memberAside = opts.memberAside?.(realmId);
-    const realmGate = new RealmBagGate(base, membership, realmUrl, {
-      ...(opts.charter ? { charter: opts.charter } : {}),
+    // THE NEXUS LANE answers a leaf of THIS plane's Nexus alone, read at each ask (the charter realm may move).
+    const leafAidOf = opts.leafAidOf;
+    const laneMembership: NexusMembership = leafAidOf && kind !== "cabal"
+      ? { holdsCarriagePeer: (peerId: string): boolean => leafAidOf(peerId) === nexusAid() }
+      : membership;
+    // THE RETURN LANE opens toward the dialed hearth on the plane of the Nexus that hearth holds, and no other.
+    const charter = opts.charter;
+    const returnLaneHere = (): boolean => {
+      if (!opts.dialedHearth) return true;
+      const dialed = opts.dialedHearth();
+      if (dialed.aid !== null) return dialed.aid === nexusAid();
+      if (dialed.pinned) return kind === "charter";
+      // No pin names the dialed Nexus: the lane opens only where one carried charter alone could be it (two
+      // carried leave the dialed hearth unnamed, and the lane stays shut on both). The carried set reads LIVE, so
+      // a charter imported before the next refresh shuts the lane at once.
+      if (kind !== "carried") return false;
+      const carriedNow = new Set((opts.carried?.() ?? []).map((doc) => nexusAidOf(doc)).filter((aid): aid is string => aid !== null && aid !== charterRealm));
+      return carriedNow.size === 1 && carriedNow.has(nexusAid());
+    };
+    const realmCharter: RealmCharterConsult | undefined = charter && {
+      contractNymOfPeer: (peerId) => charter.contractNymOfPeer(peerId),
+      holdsCharter:      (nym, charterId) => charter.holdsCharter(nym, charterId),
+      holdsCharterPeer:  (peerId) => charter.holdsCharterPeer?.(peerId) === true && returnLaneHere(),
+      ...(charter.carrierPeer ? { carrierPeer: (peerId: string) => charter.carrierPeer!(peerId) } : {}),
+    };
+    const realmGate = new RealmBagGate(base, laneMembership, realmUrl, {
+      ...(realmCharter ? { charter: realmCharter } : {}),
       ...(opts.pace    ? { pace:    opts.pace }    : {}),
       ...(memberAside ? { memberAside } : {}),
       ...(opts.sealReading ? { sealReading: opts.sealReading } : {}),
@@ -494,6 +542,16 @@ export function makeRealmPlane(opts: {
     for (const realm of [...entered].sort()) {
       if (realm === charterRealm || stood.has(realm) || elsewhere.has(realm)) continue;
       stood.set(realm, await standPlane(realm, "cabal"));
+    }
+    // EACH CARRIED CHARTER stands its realm under its own Nexus; one this vessel no longer carries leaves with its
+    // pins. A carried plane that fails to stand stands again at the next refresh.
+    const carriedAids = new Set((opts.carried?.() ?? []).map((doc) => nexusAidOf(doc)).filter((aid): aid is string => aid !== null && aid !== charterRealm));
+    for (const [realm, s] of [...stood.entries()]) {
+      if (s.kind === "carried" && !carriedAids.has(realm)) { s.drop(); stood.delete(realm); unpin(realm); }
+    }
+    for (const aid of [...carriedAids].sort()) {
+      if (stood.has(aid)) continue;
+      stood.set(aid, await standPlane(aid, "carried"));
     }
   }
 

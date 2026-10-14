@@ -4,7 +4,8 @@
 #   lares-container.sh up [--capture <dir>]...   stand the vessel (detached) and wait until it answers healthy
 #   lares-container.sh down                      stop it and remove its container (state stays in LARES_STATE)
 #   lares-container.sh found [vessel-found args] the founding act, under a TTY (it gathers the human route: a passphrase
-#                                                and/or a paper pin; with no TTY the CLI refuses CredentialTtyRefusal)
+#                                                and/or a paper pin, and `--hearth` prints the seed card and reads it
+#                                                back; with no TTY the CLI refuses CredentialTtyRefusal)
 #   lares-container.sh logs [compose-logs args]  follow the vessel's log
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
 #                                                longer matches its state on disk; otherwise print the standing
@@ -23,7 +24,9 @@
 #
 # ONE STORE DOOR. While a vessel stands the CLI runs by `compose exec`, sharing the daemon's /tmp (the UDS
 # rendezvous), uid and environment. With no vessel standing, one `compose run` of the `offline` service owns the
-# store for that act. So a face lights before `up`: found, `persona new 0 --name <label>`, `persona wear 0`, up.
+# store for that act. So a hearth founds before `up`: `found --hearth --name <label>` (the Stable founding act: the
+# place, persona zero, its seed charter, the face), `persona wear 0`, up. A place standing already lifts the same way,
+# with the vessel stopped first: the act holds the store.
 #
 # THE HOST HOLDS THE ENGINE. The app gets no docker socket, and the CLI inside never stops or starts the daemon.
 # After each exec'd verb that succeeds, the shim reads the CLI's standing verdict (`vessel stand --observe --json`)

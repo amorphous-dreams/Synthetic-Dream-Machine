@@ -21,7 +21,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { openStaged, awaitRendezvous, freePort, type LarInstance } from "../harness/instance.js";
+import { openStaged, awaitRendezvous, foundStagedHearth, freePort, growStagedQuorum, type LarInstance } from "../harness/instance.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -55,20 +55,10 @@ const bagsOf = (r: { json: Record<string, unknown> | null }): string[] =>
 describe.skipIf(gaps.length > 0)("★ many realms under one Nexus — a verb names its realm ★", () => {
   beforeAll(async () => {
     A = await openStaged({ tag: "realms", port: await freePort(), found: async (cli, root) => {
-      const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
-      if (found.code !== 0) throw new Error(`founding failed (${found.code})\n${found.stderr.slice(-800)}`);
-      const face = await cli(["persona", "new", "0", "--name", "club-keeper"]);
-      if (face.code !== 0) throw new Error(`face failed (${face.code})\n${face.stderr.slice(-800)}`);
+      await foundStagedHearth(cli, root, "club-keeper");
       const wear = await cli(["persona", "wear", "0"]);
       if (wear.code !== 0) throw new Error(`persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
-      let i = 1;
-      for (const handle of ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]) {
-        const k = await cli(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
-        if (k.code !== 0) throw new Error(`kahu ${i} failed (${k.code})\n${k.stderr.slice(-800)}`);
-        i += 1;
-      }
-      const rite = await cli(["nexus", "rite", "quorum"]);
-      if (rite.code !== 0) throw new Error(`rite quorum failed (${rite.code})\n${rite.stderr.slice(-800)}`);
+      await growStagedQuorum(cli, root, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
     } });
     if (!(await awaitRendezvous(A))) throw new Error(`the vessel reached live but bound no rendezvous:\n${A.bootLog().slice(-800)}`);
   }, 400_000);

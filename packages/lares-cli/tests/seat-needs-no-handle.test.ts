@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdPersona } from "../src/commands/persona.js";
@@ -9,7 +9,6 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import { makeNodePersonaDeclarationStore, nexusCharterDocPath, parseNexusDoc, readNexusDoc } from "@lararium/node";
 import { seatFingerprint } from "@lararium/mesh";
-import { sealRite, type SealRite } from "./seal-rite-fixture.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -29,15 +28,19 @@ const output = (spy: { mock: { calls: unknown[][] } }, index = -1): Record<strin
 describe("a seat claim needs no Handle and exports no chair label", () => {
   let root: string;
   // One rite per charter: the helper alone spells how a seat or a rotate arms the head it writes.
-  let rite: SealRite;
-  beforeEach(() => { rite = sealRite(); });
+  let card = "";
   beforeEach(async () => {
     vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
     root = mkdtempSync(join(tmpdir(), "lares-seat-no-handle-"));
     env("LAR_ROOT", root);
     vi.spyOn(console, "log").mockImplementation(() => {}); vi.spyOn(console, "error").mockImplementation(() => {});
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
-    expect(await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } })).toBe(0);
+    // The Stable founding act: persona zero under its private label, its one chair seating the seed charter.
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    const wire = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+    expect(await cmdVessel({ command: "vessel", positional: ["found"], options: { name: "veil-one" }, flags: { json: true, hearth: true } })).toBe(0);
+    card = String(output(wire).data.cards[0].code);
+    wire.mockRestore();
   });
   afterEach(() => {
     vi.restoreAllMocks();
@@ -51,17 +54,18 @@ describe("a seat claim needs no Handle and exports no chair label", () => {
     expect(await cmdPersona(personaArgs("0", "veil-one", { seat: true }))).toBe(0);
     const one = output(wire);
     expect(one.data).toMatchObject({ seat: true, handle: null, chair: "chair-h0" });
+    const seed = readNexusDoc(larSealHome())!;
     expect(await cmdPersona(personaArgs("1", "veil-two", { seat: true }, { chair: "first-chair" }))).toBe(0);
     expect(output(wire).data.chair).toBe("first-chair");
     expect(await cmdPersona(personaArgs("2", "veil-three", {}, { handle: "outward" }))).toBe(0);
 
-    expect((await rite.seat()).code).toBe(0);
+    // The seed card reveals, and the roll seats every chair that stands: the AID stays the hearth's.
+    expect(await cmdNexus(nexusArgs(["seal", "rotate"], { "cold-key": card }))).toBe(0);
     const standing = readNexusDoc(larSealHome())!;
+    expect(standing.sealLineage![0]!.epochCid).toBe(seed.sealLineage![0]!.epochCid);
     const fingerprints = standing.kahu.map((k) => seatFingerprint(k.verifyingKey!));
-    const seatPayload = output(wire).data.kahu;
-    expect(seatPayload.map((k: any) => k.fingerprint)).toEqual(fingerprints);
-    expect(seatPayload.every((k: any) => /^[0-9a-f]{4}(-[0-9a-f]{4}){4}$/.test(k.fingerprint))).toBe(true);
-    expect(seatPayload.map((k: any) => k.chairLabel)).toEqual(["chair-h0", "first-chair"]);
+    expect(fingerprints.every((f) => /^[0-9a-f]{4}(-[0-9a-f]{4}){4}$/.test(f))).toBe(true);
+    expect(standing.kahu.map((k) => k.chairLabel)).toEqual(["chair-h0", "first-chair"]);
 
     expect(await cmdNexus(nexusArgs(["seal", "export"]))).toBe(0);
     const exported = output(wire).data;

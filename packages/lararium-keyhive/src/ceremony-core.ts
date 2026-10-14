@@ -252,6 +252,15 @@ export async function foundThePlace(input: PlaceFoundingInput): Promise<PlaceFou
   };
 }
 
+/**
+ * The cabal sentinel's seed for a face founded at one hearth: the sentinel URI under the hearth's Nexus AID, so two
+ * hearths' cabals seed apart. A face founded at no hearth (a hearth-agnostic leaf) seeds from the bare URI.
+ */
+export function meshCabalSentinelUriFor(hearthAid: string): string {
+  const aid = hearthAid.trim();
+  return aid.length > 0 ? `${MESH_CABAL_SENTINEL_URI}/${aid}` : MESH_CABAL_SENTINEL_URI;
+}
+
 /** What a face-founding lands ON: a place that already stands, named by its own daemon bag. */
 export interface FaceFoundingInput {
   repo:               Repo;
@@ -388,7 +397,9 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   }
 
   // The cabal stands WITH the face, seated on the PersonaGroup that can actually hold a seat in it.
-  const meshCabal = await veilKeyhive.createSentinelDoc(MESH_CABAL_SENTINEL_URI);
+  // THE SENTINEL SEEDS FROM THE HEARTH. A constant seed named one cabal on every vessel; the hearth's AID names
+  // this hearth's alone.
+  const meshCabal = await veilKeyhive.createSentinelDoc(meshCabalSentinelUriFor(input.hearthTrueName));
   await veilKeyhive.addSentinelMember(personaGroup.groupId, meshCabal.docIdHex);
 
   // The veil-keyhive membership events are ADDITIVE (content-addressed) — every face's group needs them
@@ -501,8 +512,10 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
   // so the binding SIGNS at the genesis epoch; contracted, no root is present and the absence
   // travels as binding:null rather than hiding behind a label.
   const dyadRef: DyadRef = { vesselDid: founderEdge.deviceDid, veilDid: didFromVerifyingKey(dyadVeilKeys.verifyingKey) };
-  const dyadBinding = input.binding.mode === "self-stood"
-    ? await signDyadBindingWithSeed(dyadRef, signerDid, `group0-${personaGroup.groupId}`, input.binding.signerSeed)
+  // THE DYAD'S SCOPE IS THE HEARTH: the binding roots on the hearth's Nexus AID, so a fleet relation minted at one
+  // hearth reads bound at that hearth alone. A face founded at no hearth (a hearth-agnostic leaf) binds no dyad.
+  const dyadBinding = input.binding.mode === "self-stood" && input.hearthTrueName.trim().length > 0
+    ? await signDyadBindingWithSeed(dyadRef, signerDid, input.hearthTrueName.trim(), input.binding.signerSeed)
     : null;
   const dyadRecord: DyadRecord = { kind: DYAD_ID_DOMAIN, dyadId: dyadId(dyadRef), ref: dyadRef, edge: founderEdge, binding: dyadBinding };
 
@@ -524,6 +537,11 @@ export async function foundTheFace(input: FaceFoundingInput): Promise<FaceFoundi
     });
     doc.tiddlers[DEVICE_DELEGATION_SELF_TIDDLER] = storedRecord({
       tiddler: { title: DEVICE_DELEGATION_SELF_TIDDLER, ...founderEdge },
+      meta: { authority: "lares-init" },
+    });
+    // The hearth the mounted face binds: its edge's true name, which a place founding wrote before any hearth stood.
+    doc.tiddlers[HEARTH_TRUE_NAME_TIDDLER] = storedRecord({
+      tiddler: { title: HEARTH_TRUE_NAME_TIDDLER, text: founderEdge.hearthTrueName, kind: "hearth-true-name" },
       meta: { authority: "lares-init" },
     });
   });

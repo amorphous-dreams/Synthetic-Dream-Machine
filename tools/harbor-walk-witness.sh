@@ -1,12 +1,13 @@
 #!/bin/sh
 # harbor-walk-witness — the container vessel's first walk, through the host shim alone (tools/lares-container.sh).
 #
-#   LEG 1  the door before `up`: found → persona new → persona wear → up → unlock. The vessel boots once and rests
-#          at the floor holding no key; the unlock composes it in place as a Lararium wearing the face, with its
-#          working layer attached, and the workspace mount receives a projected carrier.
-#   LEG 2  a face lit after `up`: found → up → unlock (a faceless vessel stands as a herm) → persona new. The shim
-#          reads the CLI's standing verdict and restarts the vessel itself; no restart gets typed. The restart
-#          returns the vessel to the floor, and a second unlock composes the Lararium.
+#   LEG 1  the hearth before `up`: found --hearth (the Stable founding act: the place, persona zero, its seed charter,
+#          the face) → persona wear → up → unlock. The vessel boots once and rests at the floor holding no key; the
+#          unlock composes it in place as a Lararium wearing the face, with its working layer attached, and the
+#          workspace mount receives a projected carrier.
+#   LEG 2  a place lifted to a hearth after `up`: found → up → unlock (a faceless vessel stands as a herm) → a face
+#          refuses on a place with no seed charter → stop → found --hearth over the standing place → up. The lifted
+#          boot rests at the floor, and a second unlock composes the Lararium.
 #   CONTROL  a reading verb after the lift restarts nothing; a sovereign verb at the floor refuses and names
 #            `lares vault unlock`.
 #
@@ -87,8 +88,7 @@ not_contains 'live — wiki-less wayfarer' 'live — wiki:' || { printf 'harbor-
 
 printf '── leg 1: a face before up\n'
 new_scratch
-lares found
-lares persona new 0 --name ci-face
+lares found --hearth --name ci-face
 lares persona wear 0
 lares up
 floor=$(boot_log)
@@ -129,11 +129,12 @@ log=$(boot_log)
 result 'leg 2: the faceless unlock opens the key onto a herm'   contains "$opened" '"standing":"herm"'
 result 'leg 2: the faceless vessel stands as a herm'            contains "$log" 'live — wiki-less wayfarer'
 result 'leg 2: the faceless vessel composes no Lararium'        not_contains "$log" 'live — wiki:'
-before=$(started_at)
-lares persona new 0 --name ci-face
-after=$(started_at)
-result 'leg 2: the shim restarted the vessel by itself'         test "$before" != "$after"
-result 'leg 2: the restart returns the vessel to the floor'     contains "$(boot_log)" 'stands holding no vessel key'
+faceless=$(lares persona new 0 --name ci-face 2>&1 || :)
+result 'leg 2: a face refuses on a place with no seed charter'  contains "$faceless" 'no seed charter stands here'
+lares vessel stop
+lares found --hearth --name ci-face
+lares up
+result 'leg 2: the lifted boot rests at the floor'              contains "$(boot_log)" 'stands holding no vessel key'
 opened=$(unlock_staged 2>&1 || :)
 log=$(boot_log)
 result 'leg 2: the second unlock opens the key onto a hearth'   contains "$opened" '"standing":"hearth"'

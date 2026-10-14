@@ -28,7 +28,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { openStaged, cliFor, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
+import { openStaged, cliFor, foundStagedHearth, unlockStaged, type LarInstance, type CliResult } from "../harness/instance.js";
 import { unlockTestCustody } from "../harness/test-door.js";
 import { readVkCarrier } from "../../packages/lararium-mesh/src/vk-envelope.js";
 
@@ -83,12 +83,11 @@ async function custodyReading(): Promise<Record<string, unknown>> {
 const readCarrier = (): Promise<CliResult> => cli(PLAIN, ["meme", "get", URI, ...WIKI, "--json"]);
 
 /**
- * This suite's rite: a place, then a face whose root split stands, so a device share rests beside the sealed rows
+ * This suite's rite: the Stable founding act, then persona zero's root split, so a device share rests beside the sealed rows
  * and the passphrase lifecycle has a carrier of its own to seal.
  */
 async function foundWithRootSplit(found: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
-  const place = await found(["vessel", "found", "--root", root, "--skip-build"]);
-  if (place.code !== 0) throw new Error(`staged founding failed (${place.code}):\n${place.stderr.slice(-800)}`);
+  await foundStagedHearth(found, root, "staged");
   const face = await found(["persona", "new", "0", "--name", "staged", "--split-root"]);
   if (face.code !== 0) throw new Error(`staged face-founding with a root split failed (${face.code}):\n${face.stderr.slice(-800)}`);
 }

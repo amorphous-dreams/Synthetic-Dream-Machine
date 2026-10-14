@@ -281,24 +281,26 @@ describe("the herm — the floor of the lararium cap stack", () => {
       .toMatch(/light a face|unknown verb|no face|waking floor/i);
   }, R4_BUDGET_MS);
 
-  test("R5 — a herm LIFTS into a lararium: light the face, re-wake, the hearth verbs stand", async () => {
-    const lightFace = (): { code: number; said: string } => {
-      const r = spawnSync(process.execPath, [CLI, "persona", "new", "0", "--name", "the lift"], {
-        env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8",
-      });
+  test("R5 — a herm LIFTS into a lararium: the Stable founding act over the place, re-wake, the hearth verbs stand", async () => {
+    const run = (args: readonly string[]): { code: number; said: string } => {
+      const r = spawnSync(process.execPath, [CLI, ...args], { env: { ...process.env, LAR_ROOT: root }, cwd: REPO, encoding: "utf8" });
       return { code: r.status ?? -1, said: `${r.stdout}\n${r.stderr}`.trim().split("\n").slice(-3).join("\n") };
     };
     // CONTROL — THE FLOOR HOLDS NO VESSEL KEY, SO NO FACE LIGHTS ON IT. A face founding seals its anchors and its
     // veil archive under the vessel key; the standing vessel rests locked, and the founding refuses by naming the
     // unlock, with nothing landed. A lift that passed here would have lit a face under no key.
-    const locked = lightFace();
+    const locked = run(["persona", "new", "0", "--name", "the lift"]);
     expect(locked.code, `a locked floor lit a face:\n${locked.said}`).not.toBe(0);
     expect(locked.said).toMatch(/lares vault unlock/);
-    // The human opens the vessel, then lights the face.
+    // A PLACE HOLDS NO HEARTH, SO NO FACE LIGHTS ON IT EVEN OPENED: a face binds its hearth's seed charter.
     unlockStaged(root);
-    const lit = lightFace();
-    expect(lit.code, `the opened floor refused its first face:\n${lit.said}`).toBe(0);
+    const unseeded = run(["persona", "new", "0", "--name", "the lift"]);
+    expect(unseeded.code, `an opened place with no seed charter lit a face:\n${unseeded.said}`).not.toBe(0);
+    expect(unseeded.said).toMatch(/no seed charter stands here/);
+    // The lift: the Stable founding act over the standing place, with no vessel holding the store.
     await stopVessel();
+    const lit = run(["vessel", "found", "--hearth", "--name", "the lift", "--skip-build"]);
+    expect(lit.code, `the Stable founding act refused the lift:\n${lit.said}`).toBe(0);
     const { live, log } = await standHerm(root);
     // CARRY THE BOOT INTO THE FAILURE. A bare `expected false to be true` names a vessel that did not
     // stand and says nothing about WHY — and this vector has flaked without ever telling anyone what the

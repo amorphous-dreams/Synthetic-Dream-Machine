@@ -27,6 +27,12 @@
  *     the realm under the Nexus that stands.
  * R23 a standing realm the ledger comes to read conflicted, or pinned elsewhere, leaves with its pins at the next
  *     refresh, and an entry refuses it though it stood / control: an untouched realm keeps standing.
+ * R24 a carried charter's realm stands a plane of its own under ITS Nexus, beside the hearth's own charter realm, and
+ *     a realm-bag act that names it registers there / control: a charter no longer carried leaves with its pins,
+ *     and the hearth's own realm stays the default.
+ * R25 each plane's Nexus lane answers a leaf of ITS Nexus alone, and the return lane opens the dialed hearth's Nexus
+ *     alone (the one carried plane on a self-founded hearth, never its own seed realm; two carried and no pin shut
+ *     it) / control: a pinned dial opens the plane its pin names and no other.
  * R22 a realm entered under one Nexus stands no plane under the next when the ledger pins it to the first; a
  *     conflicted realm stands nowhere; a charter that leaves takes every plane and pin / control: a realm under
  *     none re-stands under the next.
@@ -39,6 +45,7 @@ import {
   deterministicDocUrl, emptyLarDoc, hex, mutableLarRecord, realmDocUrl, tiddlerText,
   realmDocPointer, realmEdgeBoardDocUrl, realmStandingPointer, realmStewardPointer, realmVouchBoardDocUrl,
   REALM_ID_TIDDLER, RealmBagGate, RealmBoardGate, signRealmBagRegistration, writeRealmBagRegistration, type FederationGate, type LarDoc, type NexusDoc, type NexusMembership,
+  type RealmCharterConsult,
 } from "@lararium/mesh";
 import { makeRealmPlane, type NotedRealm, type RealmPlaneHolder } from "../src/realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "../src/edge-board.js";
@@ -75,6 +82,8 @@ function makeHolder(repo: Repo, options: {
   realms?: () => readonly (string | NotedRealm)[] | Promise<readonly (string | NotedRealm)[]>; noteRealm?: (realm: string, nexusAid: string) => Promise<void>;
   standsInRealm?: (peer: string, realm: string) => boolean;
   membership?: NexusMembership; base?: FederationGate;
+  carried?: () => readonly NexusDoc[];
+  leafAidOf?: (peerId: string) => string | null; dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null }; charter?: RealmCharterConsult;
 } = {}) {
   const oracleHandle = repo.create<LarDoc>(emptyLarDoc());
   const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
@@ -84,6 +93,10 @@ function makeHolder(repo: Repo, options: {
     ...(options.realms ? { realms: async () => (await options.realms!()).map((r) => typeof r === "string" ? { realm: r, nexus: null } : r) } : {}),
     ...(options.noteRealm ? { noteRealm: options.noteRealm } : {}),
     ...(options.standsInRealm ? { standsInRealm: options.standsInRealm } : {}),
+    ...(options.carried ? { carried: options.carried } : {}),
+    ...(options.leafAidOf ? { leafAidOf: options.leafAidOf } : {}),
+    ...(options.dialedHearth ? { dialedHearth: options.dialedHearth } : {}),
+    ...(options.charter ? { charter: options.charter } : {}),
   });
   oracles.set(holder, oracleHandle);
   return { holder, oracleHandle, crossroadsHandle };
@@ -98,6 +111,82 @@ async function oracleDoc(repo: Repo, holder: ReturnType<typeof makeHolder>["hold
   return handle.doc();
 }
 async function realmDoc(repo: Repo, id: string): Promise<LarDoc> { return (await repo.find<LarDoc>(realmDocUrl(id))).doc(); }
+
+// R24
+describe("a carried charter's realm", () => {
+  test("R24 stands under its own Nexus beside the hearth's own realm; an act naming it registers there — control: uncarried, it leaves", async () => {
+    const repo = new Repo({});
+    let carried: NexusDoc[] = [charter("r24-theirs")];
+    const { holder, oracleHandle } = makeHolder(repo, { carried: () => carried });
+    await holder.refresh(charter("r24-own"));
+    const own = aidOf("r24-own"), theirs = aidOf("r24-theirs");
+    expect(holder.realmId()).toBe(own);
+    expect(holder.realms()).toEqual([own, theirs]);
+    expect(holder.plane(theirs)!.nexusAid()).toBe(theirs);                       // its steward keys derive at ITS AID
+    expect(holder.plane(own)!.nexusAid()).toBe(own);
+    expect(tiddlerText(oracleHandle.doc().tiddlers[realmDocPointer(theirs)])).toBe(realmDocUrl(theirs));
+    expect(tiddlerText(oracleHandle.doc().tiddlers[REALM_ID_TIDDLER])).toBe(own);  // the default stays the hearth's own
+    const who = await actor(24), doc = deterministicDocUrl("r24-book");
+    const reg = await bag(holder, { bag: BAG_A, realm: theirs }, who, [[BAG_A, doc]]);
+    expect(reg.realm).toBe(theirs);
+    expect((await holder.plane(theirs)!.standing()).has(BAG_A)).toBe(true);
+    expect((await holder.standing()).has(BAG_A)).toBe(false);
+    // CONTROL: the charter leaves the carried set, and its plane leaves with its pins at the next refresh.
+    carried = [];
+    await holder.refresh(charter("r24-own"));
+    expect(holder.realms()).toEqual([own]);
+    expect(holder.plane(theirs)).toBeNull();
+    expect(oracleHandle.doc().tiddlers[realmDocPointer(theirs)]).toBeUndefined();
+    holder.dispose();
+  });
+});
+
+// R25
+describe("a plane's lanes scope to its own Nexus", () => {
+  test("R25 a leaf of one Nexus reads no other's realm; the return lane opens the dialed hearth's plane alone — control: a pin names the plane", async () => {
+    const own = aidOf("r25-own"), theirs = aidOf("r25-theirs"), other = aidOf("r25-other");
+    const leaves: Record<string, string> = { "peer-own": own, "peer-theirs": theirs, "peer-other": other };
+    // The vessel-wide membership holds every leaf: the plane's own scope alone keeps them apart.
+    const membership: NexusMembership = { holdsCarriagePeer: (peer) => peer in leaves };
+    const charterConsult: RealmCharterConsult = {
+      contractNymOfPeer: () => null, holdsCharter: () => false, holdsCharterPeer: (peer) => peer === "peer-hearth",
+    };
+    const doc = (id: string) => interpretAsDocumentId(id);
+    const reads = async (holder: ReturnType<typeof makeHolder>["holder"], realm: string, peer: string) =>
+      holder.gate.mayFederate(doc(realmDocUrl(realm)), peer);
+
+    let pinned: string | null = null;
+    let carried: NexusDoc[] = [charter("r25-theirs")];
+    const { holder } = makeHolder(new Repo({}), { membership, carried: () => carried, charter: charterConsult,
+      leafAidOf: (peer) => leaves[peer] ?? null, dialedHearth: () => ({ pinned: pinned !== null, aid: pinned === "" ? null : pinned }) });
+    await holder.refresh(charter("r25-own"));
+    expect(holder.realms()).toEqual([own, theirs]);
+    expect(await reads(holder, theirs, "peer-theirs")).toBe(true);
+    expect(await reads(holder, own, "peer-own")).toBe(true);
+    expect(await reads(holder, theirs, "peer-other")).toBe(false);     // admitted by another Nexus: nothing of this one
+    expect(await reads(holder, own, "peer-theirs")).toBe(false);       // a carried Nexus's leaf: nothing of the seed realm
+    // A self-founded hearth (no pin): the dialed hearth reads the carried realm, never the hearth's own seed realm.
+    expect(await reads(holder, theirs, "peer-hearth")).toBe(true);
+    expect(await reads(holder, own, "peer-hearth")).toBe(false);
+    // CONTROL: a pin naming the own charter (a joiner) opens that plane and closes the carried one.
+    pinned = own;
+    expect(await reads(holder, own, "peer-hearth")).toBe(true);
+    expect(await reads(holder, theirs, "peer-hearth")).toBe(false);
+    // A pin naming no charter scope (a joiner's older admit): the joiner's primary plane, the hearth it joined.
+    pinned = "";
+    expect(await reads(holder, own, "peer-hearth")).toBe(true);
+    expect(await reads(holder, theirs, "peer-hearth")).toBe(false);
+    // Two charters carried and no pin: the dialed hearth stays unnamed, and the lane shuts on both carried planes.
+    pinned = null;
+    carried = [charter("r25-theirs"), charter("r25-other")];
+    expect(await reads(holder, theirs, "peer-hearth")).toBe(false);    // shut at the import, before any refresh
+    await holder.refresh(charter("r25-own"));
+    expect(await reads(holder, theirs, "peer-hearth")).toBe(false);
+    expect(await reads(holder, other, "peer-hearth")).toBe(false);
+    expect(await reads(holder, other, "peer-other")).toBe(true);       // its own Nexus's leaf still reads it
+    holder.dispose();
+  });
+});
 
 // R1
  describe("many realm planes", () => {

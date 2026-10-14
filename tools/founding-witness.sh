@@ -66,8 +66,15 @@ if (t[PERSONA_GROUP_ID_TIDDLER]) {
 if (!process.exitCode) console.log("  ok (place) — @daemon stands, and nothing of a person");
 ' "$TB"
 
-echo "founding-witness: lighting the face"
-if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" persona new 0 --name founding-witness >"$TB/face.log" 2>&1; then
+echo "founding-witness: a face refuses on a place with no seed charter"
+if LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" persona new 0 --name founding-witness >"$TB/refused.log" 2>&1; then
+  echo "  MISMATCH: a face founded on a place with no seed charter — a face binds its hearth"; exit 1
+fi
+grep -q "no seed charter stands here" "$TB/refused.log" || { echo "  MISMATCH: the refusal names no seed charter:"; tail -5 "$TB/refused.log" | sed 's/^/    /'; exit 1; }
+echo "  ok (place) — persona zero refuses by name until the hearth founds"
+
+echo "founding-witness: the Stable founding act lifts the place to a hearth"
+if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found --hearth --name founding-witness --skip-build >"$TB/face.log" 2>&1; then
   echo "  FACE FAILED — tail of the log:"; tail -15 "$TB/face.log" | sed 's/^/    /'; exit 1
 fi
 

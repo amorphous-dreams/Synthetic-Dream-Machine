@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { cpSync, mkdtempSync, rmSync } from "node:fs";
+import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdPersona } from "../src/commands/persona.js";
@@ -28,7 +28,9 @@ describe("persona root split opt-in", () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     cpSync(join(import.meta.dirname, "..", "..", "..", "genesis"), join(root, "genesis"), { recursive: true });
-    expect(await cmdVessel({ command: "vessel", positional: ["found"], options: {}, flags: { json: true } })).toBe(0);
+    // A STAGED root (the card's read-back stands in): the Stable founding act founds the hearth and persona zero.
+    writeFileSync(join(root, ".lar-test-scratch"), "");
+    expect(await cmdVessel({ command: "vessel", positional: ["found"], options: { name: "veil-one" }, flags: { json: true, hearth: true } })).toBe(0);
   });
   afterEach(() => {
     vi.restoreAllMocks();

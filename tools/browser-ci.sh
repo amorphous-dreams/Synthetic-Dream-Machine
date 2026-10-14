@@ -1,8 +1,9 @@
 #!/bin/sh
 # browser-ci — the HOST driver for docker-compose.browser-ci.yml (a node plus a disposable Playwright runner).
 #
-#   browser-ci.sh up                        build, seed through the test door, stand the node, open its key through the test
-#                                           door, light one synthetic face (`persona new 0`) and WEAR it (`persona wear 0`),
+#   browser-ci.sh up                        build, found a hearth through the test door (`vessel found --hearth`: the place,
+#                                           its seed charter, one synthetic face), stand the node, open its key through the
+#                                           test door, name the face (`persona new 0`) and WEAR it (`persona wear 0`),
 #                                           restart so the vessel stands as a Lararium, wait healthy, open its key again.
 #                                           Refuses by name when the port already answers or the project already stands.
 #   browser-ci.sh restart                   restart the node container WITHOUT removing its volumes; wait healthy; open its key

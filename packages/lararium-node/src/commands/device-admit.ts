@@ -26,7 +26,6 @@ import {
   leaseEpochPrefix, effectiveLeaseEpoch,
   LARES_DOC_URI, LARARIUM_DOC_URI, oracleGenesisDocUrl, tiddlerText, type LarDoc,
 } from "@lararium/mesh";
-import { daemonGenesisDir } from "../lares-config.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { runDeviceAdmitEdge, type DeviceAdmitPayload, type CarriedAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -34,7 +33,7 @@ import { readVesselEdgeBoard } from "../edge-board.js";
 import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
-import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
+import { hearthAid } from "../hearth-aid.js";
 import { wsUrlForOrigin } from "../lan-address.js";
 
 export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive";
@@ -160,7 +159,6 @@ export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string): P
 export interface DeviceAdmitOptions {
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:           Repo;
-  readonly genesisDir?:    string;
   readonly syncUrl?:       string;
   /** The joining vessel's PUBLIC Ed25519 verifying-key hex — the delegate the founder's root signs. */
   readonly joineeVerifyingKey: string;
@@ -178,17 +176,7 @@ export interface DeviceAdmitResult {
   readonly carried: CarriedAdmitPayload;
 }
 
-function defaultDirs(): { genesisDir: string } {
-  return {
-    // Baked seed rides the composable genesis cap (LAR_GENESIS → ~/.lares/config.json →
-    // repo-relative <corpus>/genesis). Checked-in by default; a no-config boot lands on the repo seed.
-    genesisDir: daemonGenesisDir(),
-  };
-}
-
 export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAdmitResult> {
-  const defaults   = defaultDirs();
-  const genesisDir = opts.genesisDir ?? defaults.genesisDir;
   const bootstrap  = larBootstrapPath();
 
   if (!existsSync(bootstrap)) {
@@ -301,9 +289,10 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   const signerSeed     = await loadPersonaGroupRootSeed();
   // THE BINDING GATE READS THE DYAD'S SHADOW (kapae#/reach): no seat, no bind.
   await assertDyadBinds(repo, opts.joineeVerifyingKey);
-  const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
+  // The joinee's edge binds THIS hearth: the AID of its seed charter, the true name its own face's edge names.
+  const hearthTrueName = hearthAid();
   if (!hearthTrueName) {
-    throw new Error("[lares device-admit] hearth true-name (engine CID) absent — run `lares vessel found` first.");
+    throw new Error("[lares device-admit] no seed charter stands here, so no hearth stands to admit a device to — found the hearth with `lares vessel found --hearth`.");
   }
 
   // THE LEASE READ — off the SAME daemon doc already open above, the same fold `gateFaceJoin` runs

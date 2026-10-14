@@ -42,7 +42,7 @@ import { FACE_PROOF_KEY_FILE, storeFaceProofKey } from "../src/face-key-custody.
 import { loadIdentityAnchors, persistIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "../src/node-circle-store.js";
 import {
-  generateOrLoadPersonaGroupRoot, listPersonaRosterLines, loadVesselVerifyingKey, makeNodePersonaDeclarationStore,
+  listPersonaRosterLines, loadVesselVerifyingKey, makeNodePersonaDeclarationStore,
   makeNodePersonaPetnameStore,
 } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
@@ -50,7 +50,7 @@ import { readLocalPersonaKelChain, readLocalPersonaKelEvents, seatLocalPersonaKe
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
-import { foundDirect } from "./found-route.js";
+import { foundDirect, seatSeedCharter } from "./found-route.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 600_000, hookTimeout: 600_000 });
@@ -68,14 +68,20 @@ async function leave(): Promise<void> {
   const holder = seatedCustody();
   if (holder) { await holder.lock(); unseatCustody(holder); }
 }
-/** Found a fresh vessel under a fresh scratch root and stand in it, unlocked. */
-async function foundVessel(label: string): Promise<string> {
+/**
+ * Found a fresh vessel under a fresh scratch root and stand in it, unlocked: a HEARTH by default (the place, its
+ * seed charter and persona zero's face, as the Stable founding act stands one), its seed charter alone with no face
+ * lit yet (`"charter"`), or a bare place (`"place"`).
+ */
+async function foundVessel(label: string, as: "hearth" | "charter" | "place" = "hearth"): Promise<string> {
   await leave();
   const root = mkdtempSync(join(tmpdir(), `lar-restore-${label}-`));
   roots.push(root);
   process.env["LAR_ROOT"] = root;
   cpSync(REPO_GENESIS, join(root, "genesis"), { recursive: true });
   await foundDirect({ storageDir: larDataDir(), genesisDir: join(root, "genesis") });
+  if (as !== "place") await seatSeedCharter({ name: `${label}-keeper` });
+  if (as === "hearth") await foundFace({ genesisDir: join(root, "genesis"), handleIndex: 0 });
   return root;
 }
 afterEach(async () => {
@@ -99,7 +105,6 @@ interface Cut {
 /** Found vessel A, light a face, give it names, a proof key and a recognised friend, cut its bundle, and DESTROY A. */
 async function cutOnDestroyedVessel(label: string, faceLabel = "the gardener", proofFill = 3): Promise<Cut> {
   const root = await foundVessel(label);
-  await foundFace({ genesisDir: join(root, "genesis"), handleIndex: 0 });
   const rootKey = (await listPersonaRosterLines()).find((l) => l.handleIndex === 0)!.verifyingKey;
   await (await makeNodePersonaPetnameStore()).set(0, faceLabel);
   await (await makeNodePersonaDeclarationStore()).set(0, { handle: `${faceLabel}-handle`, seat: true, chair: "CHAIR-ON-A" });
@@ -163,26 +168,29 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R1 + R2 — the restored face stands under the same prefix at a NEW seat; a second restore refuses", async () => {
     const a = await cutOnDestroyedVessel("a");
     await foundVessel("b");
-    expect((await listPersonaRosterLines()).length, "CONTROL: the fresh vessel holds no root").toBe(0);
-    expect(init.faceStands()).toBe(false);
+    const own = (await listPersonaRosterLines())[0]!;
+    expect(own.handleIndex, "CONTROL: the fresh hearth holds persona zero's root alone").toBe(0);
+    expect(await loadIdentityAnchors(1)).toBeNull();
 
-    const restored = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo });
-    expect(restored.face).toEqual({ handleIndex: 0, verifyingKey: a.rootKey });
+    // The fresh hearth's persona zero holds h0; the restored face lands beside it.
+    const restored = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
+    expect(restored.face).toEqual({ handleIndex: 1, verifyingKey: a.rootKey });
     expect(restored.prefix).toBe(a.prefix);
     expect(restored.resumed).toBe(false);
     expect(restored.checked).toEqual({ seq: 0, from: "bundle" });
     expect(restored.landed).toEqual({ faceProofKeys: 1, petname: true, handle: true, handleBook: { landed: 1, kept: 0 } });
 
     // THE LINEAGE RETURNED: the same root, the same fixed prefix, the same signer name.
-    expect(await listPersonaRosterLines()).toEqual([{ handleIndex: 0, verifyingKey: a.rootKey }]);
-    const anchors = (await loadIdentityAnchors(0))!;
+    expect(await listPersonaRosterLines()).toEqual([own, { handleIndex: 1, verifyingKey: a.rootKey }]);
+    const anchors = (await loadIdentityAnchors(1))!;
     expect(anchors.personaKelPrefix).toBe(a.prefix);
     expect(anchors.signerDid?.toLowerCase().replace(/^0x/, "")).toBe(a.rootKey);
-    expect(init.faceStands()).toBe(true);
     // A NEW SEAT: another key group, another veil tag, a veil archive of this vessel's own, an edge for this vessel's key.
     expect(anchors.personaGroupId).not.toBe(a.group);
     expect(anchors.veilTag).not.toBe(a.veilTag);
-    expect(existsSync(veilArchivePath(0))).toBe(true);
+    expect(existsSync(veilArchivePath(1))).toBe(true);
+    // The restored face binds THIS hearth: its edge names the seed charter this vessel founded.
+    expect(anchors.deviceEdge!.hearthTrueName).toBe((await loadIdentityAnchors(0))!.deviceEdge!.hearthTrueName);
     const here = await loadVesselVerifyingKey();
     expect(here).not.toBe(a.vesselKey);
     expect(JSON.stringify(anchors.deviceEdge).toLowerCase()).toContain(here.toLowerCase());
@@ -190,8 +198,8 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // The board holds the face's key history.
     expect((await withRepo((repo) => readLocalPersonaKelChain(repo, a.prefix))).map((e) => e.eventCid)).toEqual(a.body.kel.map((e) => e.eventCid));
     // THE CARRIED ROWS LANDED: the names, the record under the face's own tag, the proof key. The seat claim and the chair label stayed behind.
-    expect(await (await makeNodePersonaPetnameStore()).get(0)).toBe("the gardener");
-    expect(await (await makeNodePersonaDeclarationStore()).get(0)).toEqual({ handle: "the gardener-handle" });
+    expect(await (await makeNodePersonaPetnameStore()).get(1)).toBe("the gardener");
+    expect(await (await makeNodePersonaDeclarationStore()).get(1)).toEqual({ handle: "the gardener-handle" });
     const friend = (await loadNodeHandleBook()).snapshotFor(a.rootKey).records;
     expect(friend.map((r) => r.petname)).toEqual(["Ana"]);
     expect(readdirSync(larIdentityDir()).filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
@@ -240,7 +248,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
     // CONTROL: the unbent body, sealed the same way, lands.
-    expect(await refusalOf(restoreFaceBundle({ ...sealed(a.body), withRepo }))).toBe("LANDED");
+    expect(await refusalOf(restoreFaceBundle({ ...sealed(a.body), as: 1, withRepo }))).toBe("LANDED");
   });
 
   test("R5 — a root the face's key history superseded refuses `root-superseded`: in the carried log, and on this vessel's own board", async () => {
@@ -267,7 +275,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("root-superseded");
     expect(homeTree()).toBe(boarded);
     expect(pendingStands()).toBe(false);
-    expect((await listPersonaRosterLines()).length).toBe(0);
+    expect((await listPersonaRosterLines()).length).toBe(1);
     // A GUARDIAN SET GRAFTED IN: the rotation keeps the root as the operating key and commits recovery to another
     // key set. The root no longer satisfies the face's current recovery commitment, and the restore refuses.
     const grafted = await attestAndRotate({
@@ -289,19 +297,19 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await foundVessel("forked");
     await withRepo((repo) => seatLocalPersonaKelChain(repo, [...newer, rival.event]));
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("root-superseded");
-    expect((await listPersonaRosterLines()).length).toBe(0);
+    expect((await listPersonaRosterLines()).length).toBe(1);
     // An event that does not verify moves nothing: a rotation no recovery key signed, planted on the board, refuses
     // nobody. The board holds no event of the lineage, so the check says it read its head off the bundle.
     await foundVessel("planted");
     await withRepo((repo) => seatLocalPersonaKelChain(repo, [{ ...rotated.event, rotationSigs: [] }]));
-    expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo })).checked).toEqual({ seq: 0, from: "bundle" });
+    expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo })).checked).toEqual({ seq: 0, from: "bundle" });
     // A board that holds the lineage's own head says so.
     await foundVessel("boarded");
     await withRepo((repo) => seatLocalPersonaKelChain(repo, [a.body.kel[0]!]));
-    expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo })).checked).toEqual({ seq: 0, from: "board" });
+    expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo })).checked).toEqual({ seq: 0, from: "board" });
     // CONTROL: the same bundle on a vessel whose board holds no newer head lands.
     await foundVessel("c");
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("LANDED");
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("LANDED");
   });
 
   test("R6 — every preflight refusal lands before any write", async () => {
@@ -315,33 +323,37 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
       expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo: () => { throw new Error("no store opens for an unfounded place"); } }))).toMatch(/^(place-unfounded|threw: no store opens)/);
     } finally { await bare.drop(); }
 
-    // A roster line for another key at the index: a root this vessel minted itself.
-    await foundVessel("b");
-    await generateOrLoadPersonaGroupRoot(0);
+    // A PLACE WITH NO SEED CHARTER holds no hearth for the restored face to bind to.
+    await foundVessel("place", "place");
     let before = homeTree();
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("no-hearth");
+    expect(homeTree()).toBe(before);
+
+    // A roster line for another key at the index: persona zero's own root, which the seed charter's seat claim stands for.
+    await foundVessel("b", "charter");
+    before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("roster-names-another-key");
     expect(homeTree()).toBe(before);
 
-    // A lit face at the index (another face, restored there first).
+    // A lit face at the index (another face, restored there first, beside persona zero).
     await foundVessel("c");
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: other.sealedBody, bundleKey: other.bundleKey, withRepo }))).toBe("LANDED");
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: other.sealedBody, bundleKey: other.bundleKey, as: 1, withRepo }))).toBe("LANDED");
     before = homeTree();
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("roster-names-another-key");
-    // CONTROL: beside the lit founding face, at a free index, the same bundle lands as a compartment.
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("roster-names-another-key");
+    // CONTROL: beside the lit faces, at a free index, the same bundle lands as a compartment.
     expect(homeTree()).toBe(before);
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("LANDED");
-    expect((await loadIdentityAnchors(1))?.personaKelPrefix).toBe(a.prefix);
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 2, withRepo }))).toBe("LANDED");
+    expect((await loadIdentityAnchors(2))?.personaKelPrefix).toBe(a.prefix);
 
     // AN ADMITTED FACE holds anchors at its index and no root: the index stands lit, with no roster line to name.
     await foundVessel("lit");
-    await persistIdentityAnchors({ personaGroupId: "an-admitted-group", meshCabalDocIdHex: "an-admitted-cabal" }, 0);
+    await persistIdentityAnchors({ personaGroupId: "an-admitted-group", meshCabalDocIdHex: "an-admitted-cabal" }, 1);
     before = homeTree();
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("index-held");
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("index-held");
     expect(homeTree()).toBe(before);
 
     // AN ORPHAN ROOT under another key: a root row with no roster line (an act that stopped between its two writes).
-    await foundVessel("orphan");
-    await generateOrLoadPersonaGroupRoot(0);
+    await foundVessel("orphan", "charter");
     expect(await removeCustodyRow("identity", readdirSync(larIdentityDir()).find((n) => /persona-roster/.test(n))!)).toBe(true);
     expect(await listPersonaRosterLines()).toEqual([]);
     before = homeTree();
@@ -353,24 +365,25 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await foundVessel("torn");
     await seatedCustody()!.writeRow("identity", readdirSync(larIdentityDir()).find((n) => /persona-petnames/.test(n)) ?? ".persona-petnames.json", new TextEncoder().encode("{ this row reads as no map"));
     before = homeTree();
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toMatch(/^threw: custody row identity\/\.persona-petnames.*reads malformed/);
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toMatch(/^threw: custody row identity\/\.persona-petnames.*reads malformed/);
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
 
-    // A face at an index above zero on a vessel with no founding face lit.
-    await foundVessel("d");
+    // A face at an index above zero on a hearth whose founding face never lit (its seed charter stands alone).
+    await foundVessel("d", "charter");
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 2, withRepo }))).toBe("founding-face-unlit");
     // A proof key row under other bytes for the same face at the same Nexus.
+    await foundVessel("e");
     const clash = secretOf(9);
-    await storeFaceProofKey({ faceKey: await publicOf(clash), nexus: "nexus-test-one" }, clash, 0);
+    await storeFaceProofKey({ faceKey: await publicOf(clash), nexus: "nexus-test-one" }, clash, 1);
     before = homeTree();
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("row-conflict");
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("row-conflict");
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
     expect([...RESTORE_REFUSALS]).toEqual([
       "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
-      "founding-face-unlit", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
+      "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
     ]);
   });
 
@@ -393,7 +406,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
 
     // A cut carries the LINEAGE its board's fold verified: the inception, then the veto that took the contested seat.
     await foundVessel("b");
-    const restored = await restoreFaceBundle({ ...sealed({ ...a.body, kel: [...a.body.kel, veto] }), withRepo });
+    const restored = await restoreFaceBundle({ ...sealed({ ...a.body, kel: [...a.body.kel, veto] }), as: 1, withRepo });
     expect(restored.checked.seq).toBe(1);
     // The fresh vessel's board holds the WHOLE carried lineage, the veto among it.
     expect((await withRepo((repo) => readLocalPersonaKelEvents(repo, a.prefix))).map((e) => e.eventCid).sort()).toEqual([a.body.kel[0]!.eventCid, veto.eventCid].sort());
@@ -412,11 +425,11 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // The face rite fails once, after the commit row and the rows landed.
     const real = init.runFoundTheFace;
     const rite = vi.spyOn(init, "runFoundTheFace").mockImplementationOnce(async () => { throw new Error("the rite stopped"); });
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("threw: the rite stopped");
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("threw: the rite stopped");
     expect(pendingStands(), "the commit row stands: this restore owes its rest").toBe(true);
-    expect(init.faceStands()).toBe(false);
+    expect(await loadIdentityAnchors(1)).toBeNull();
     // Another face's restore refuses while this one stands pending.
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: other.sealedBody, bundleKey: other.bundleKey, as: 1, withRepo }))).toBe("restore-pending");
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: other.sealedBody, bundleKey: other.bundleKey, as: 2, withRepo }))).toBe("restore-pending");
     // The same face under ANOTHER index refuses too: the pending restore completes where it committed.
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 3, withRepo }))).toBe("restore-pending");
     expect(pendingStands()).toBe(true);
@@ -430,24 +443,23 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     });
     if (!rotated.ok) throw new Error(`setup: the rotation refused: ${rotated.reason}`);
     expect(await refusalOf(restoreFaceBundle({ ...sealed({ ...a.body, kel: [...a.body.kel, rotated.event] }), withRepo }))).toBe("root-superseded");
-    expect(init.faceStands()).toBe(false);
+    expect(await loadIdentityAnchors(1)).toBeNull();
     // The same restore again completes, from the row.
     rite.mockImplementation(real);
     const again = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo });
     expect(again.resumed).toBe(true);
-    expect(again.face).toEqual({ handleIndex: 0, verifyingKey: a.rootKey });
+    expect(again.face).toEqual({ handleIndex: 1, verifyingKey: a.rootKey });
     expect(pendingStands()).toBe(false);
-    expect(init.faceStands()).toBe(true);
-    expect((await loadIdentityAnchors(0))?.personaKelPrefix).toBe(a.prefix);
+    expect((await loadIdentityAnchors(1))?.personaKelPrefix).toBe(a.prefix);
   });
 
   test("R8 — a restore lands additively: a name this vessel already holds stays", async () => {
     const a = await cutOnDestroyedVessel("a");
     await foundVessel("b");
-    await (await makeNodePersonaPetnameStore()).set(0, "a name kept here");
-    const restored = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo });
+    await (await makeNodePersonaPetnameStore()).set(1, "a name kept here");
+    const restored = await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo });
     expect(restored.landed.petname).toBe(false);
     expect(restored.landed.handle).toBe(true);
-    expect(await (await makeNodePersonaPetnameStore()).get(0)).toBe("a name kept here");
+    expect(await (await makeNodePersonaPetnameStore()).get(1)).toBe("a name kept here");
   });
 });

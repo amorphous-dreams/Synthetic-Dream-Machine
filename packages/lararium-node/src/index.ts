@@ -179,6 +179,9 @@ export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase 
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri } from "./bag-paths.js";
 
 export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
+// THE STABLE FOUNDING ACT: place, persona zero, the one-seat seed charter and the face that binds its AID — see `found-hearth`.
+export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./commands/found-hearth.js";
+export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./commands/found-hearth.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";
 export type { InitOptions, InitResult, FoundFaceOptions, FoundFaceResult } from "./commands/init.js";

@@ -79,7 +79,7 @@ try {
     if (r.status !== 0) throw new Error(`${script}: ${r.stderr}`);
   }
   cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
-  for (const args of [["vessel", "found", "--root", root, "--skip-build"], ["persona", "new", "0", "--name", "the census keeper"]]) {
+  for (const args of [["vessel", "found", "--hearth", "--name", "the census keeper", "--root", root, "--skip-build"]]) {
     const r = lares(root, args);
     if (r.status !== 0) throw new Error(`lares ${args.join(" ")}: ${r.stdout}${r.stderr}`);
   }

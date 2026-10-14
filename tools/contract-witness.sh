@@ -44,11 +44,12 @@
 # presentation captured before the roll, carrying no anchor, reads WRONG-EPOCH too.
 #
 # ── THE RITE ARMS ITSELF ────────────────────────────────────────────────────────────────────────────────
-# Each chair holds a SEAT key of its own, minted sealed on A apart from every persona root. `seal seat` prints
-# each chair's NEXT key as a cold-key card and commits one digest per chair; on this staged root the read-back
-# stands in and the answer carries each card's code. `seal rotate --cold-key` takes the cards back, each revealed
-# key becomes its chair's seat key, the seated hands SIGN the roll, and the closing keys retire once the charter
-# moved — the lineage verifies whole.
+# Each chair holds a SEAT key of its own, minted sealed on A apart from every persona root. The Stable founding act
+# seats persona zero's chair alone and prints its NEXT key as a cold-key card; the first roll reveals it and seats
+# the three chairs, printing each chair's next card; on this staged root every read-back stands in and the answer
+# carries each card's code. `seal rotate --cold-key` takes the cards back, each revealed key becomes its chair's
+# seat key, the seated hands SIGN the roll, and the closing keys retire once the charter moved — the lineage
+# verifies whole.
 #
 # Exit 0 = the door opened for a foreign key, refused every forgery, the presented admit read held, denied
 # and wrong-epoch where it should, the raise door raised a leaf and refused a stranger, the board closed by
@@ -162,7 +163,17 @@ say "① vessel A — the Nexus founds and seats its quorum"
 step "seed A's genesis (the hearth true-name lives there)"
 if seed_genesis "$A_ROOT"; then ok; else bad "cp genesis"; fi
 stage_custody "$A_ROOT" A
-run_a "A founds"                        vessel stand --install --skip-build
+# A HEARTH FOUNDS BY THE STABLE FOUNDING ACT: the place, persona zero, its one-seat seed charter and the face. On this
+# staged root the seed card's read-back stands in, and the answer carries its code for the roll below.
+step "A founds its hearth (the Stable founding act)"
+SEEDCARD=""
+A_AID=""
+if FOUND=$(as_a vessel found --hearth --name adc-0 --skip-build --json 2>&1) && printf '%s' "$FOUND" | grep -q '"ok":true'; then
+  SEEDCARD=$(printf '%s' "$FOUND" | grep -oE '"code":"[0-9a-f-]+"' | head -1 | cut -d'"' -f4)
+  A_AID=$(printf '%s' "$FOUND" | grep -oE '"nexusAid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  if [ -n "$SEEDCARD" ]; then ok; else bad "the founding printed no seed card on a staged root"; fi
+else bad "$(printf '%s' "$FOUND" | tail -3 | tr '\n' ' ')"; fi
+run_a "A stands"                        vessel stand --install --skip-build
 unlock_root "$A_ROOT" A || exit 1
 assert_founded "$A_ROOT" A
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
@@ -179,11 +190,11 @@ for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
     ok; KAHU_KEYS="$KAHU_KEYS${KAHU_KEYS:+,}$(printf '%s' "$MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)"
   else bad "$?"; printf '%s\n' "$MINT" | tail -4 | sed 's/^/      /'; fi
 done
-step "A seats the genesis epoch (the rite prints each chair's card)"
+step "A rolls its seed charter to the three chairs (the seed card reveals; the roll prints each chair's card)"
 CARDS=""
-if SEAT=$(as_a nexus seal seat --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
+if SEAT=$(as_a nexus seal rotate --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
   CARDS=$(printf '%s' "$SEAT" | grep -oE '"code":"[0-9a-f-]+"' | cut -d'"' -f4 | paste -sd, -)
-  if [ -n "$CARDS" ]; then ok; else bad "the seat printed no card on a staged root"; fi
+  if [ -n "$CARDS" ]; then ok; else bad "the roll printed no card on a staged root"; fi
 else bad "$(printf '%s' "$SEAT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 step "A's quorum STANDS"
 if as_a nexus seal show --json 2>/dev/null | grep -q '"quorumSeated":true'; then ok; else bad "quorum not seated"; fi
@@ -194,21 +205,24 @@ step "seed B's genesis"
 if seed_genesis "$B_ROOT"; then ok; else bad "cp genesis"; fi
 stage_custody "$B_ROOT" B
 BEFORE=$FAILED
-run_b "B founds (own device key, own vault)"  vessel stand --install --skip-build
+# The name doubles as the ABSENCE PROBE below, so it must not collide with ordinary prose. A bare
+# "joiner" matched "zero-width joiner" inside vendored engine text and read A's root as leaking B's
+# key. A probe that can appear by accident measures the corpus, never the boundary.
+B_PROBE="bjoiner-$$-xqz"
+run_b "B founds its own hearth (own device key, own vault, own seed charter)"  vessel found --hearth --name "$B_PROBE" --skip-build
+# Persona zero declares its Handle and reads its key back BEFORE B stands, with no vessel holding the store: the
+# label lands on B's sealed rows alone, as it did when the face founded in this same step.
+step "B names its own persona"
+if B_MINT=$(as_b persona new 0 --name "$B_PROBE" --handle 'Independent Operator' --json 2>&1); then
+  ok; B_PERSONA_KEY=$(printf '%s' "$B_MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+else bad "$?"; printf '%s\n' "$B_MINT" | tail -4 | sed 's/^/      /'; B_PERSONA_KEY=""; fi
+run_b "B stands"                              vessel stand --install --skip-build
 unlock_root "$B_ROOT" B || exit 1
 if [ "$FAILED" -ne "$BEFORE" ]; then
   say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."
   exit "$FAILED"
 fi
 assert_founded "$B_ROOT" B
-# The name doubles as the ABSENCE PROBE below, so it must not collide with ordinary prose. A bare
-# "joiner" matched "zero-width joiner" inside vendored engine text and read A's root as leaking B's
-# key. A probe that can appear by accident measures the corpus, never the boundary.
-B_PROBE="bjoiner-$$-xqz"
-step "B mints its own persona"
-if B_MINT=$(as_b persona new 0 --name "$B_PROBE" --handle 'Independent Operator' --json 2>&1); then
-  ok; B_PERSONA_KEY=$(printf '%s' "$B_MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-else bad "$?"; printf '%s\n' "$B_MINT" | tail -4 | sed 's/^/      /'; B_PERSONA_KEY=""; fi
 
 step "★ B's key is FOREIGN to A — no shared seed on disk ★"
 # The whole ceremony defends one boundary; measure it rather than assume it. If any of B's persona
@@ -240,31 +254,31 @@ if grep -rqs "$B_PROBE" "$B_ROOT" 2>/dev/null; then bad "B's pet-name reads in t
 
 # ── ③ THE PREREQUISITE — carry A's public charter to B ───────────────────────────────────────────
 say "③ the prerequisite the one-vessel run hid"
-note "accept-carriage reads the roster from the JOINER'S OWN seal home."
-note "B cannot consent to a charter epoch it has never seen — so the charter must travel FIRST."
-step "B refuses to consent with no charter in hand"
-if as_b nexus accept-carriage --index 0 --json >/dev/null 2>&1; then
-  bad "B signed a contract-in with no seated charter — fail-closed did not hold"
+note "B stands on its own seed charter; A's Nexus reaches B as a CARRIED charter, beside B's own."
+note "B cannot consent to a charter epoch it has never seen — so A's charter must travel FIRST."
+B_AID_BEFORE=$(as_b nexus seal show --json 2>/dev/null | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+step "B refuses to consent to A's Nexus with A's charter not in hand"
+if [ -z "$A_AID" ]; then bad "A's founding named no AID"
+elif as_b nexus accept-carriage --index 0 --nexus "$A_AID" --json >/dev/null 2>&1; then
+  bad "B signed a contract-in for a Nexus whose charter it never held — fail-closed did not hold"
 else ok; fi
 
-step "carry A's founding-roster.mem → B (public material)"
-A_SEAL=$(find "$A_ROOT" -name founding-roster.mem -print -quit 2>/dev/null)
-if [ -n "$A_SEAL" ]; then
-  B_SEAL_DIR=$(dirname "${A_SEAL/$A_ROOT/$B_ROOT}")
-  mkdir -p "$B_SEAL_DIR" && cp "$A_SEAL" "$B_SEAL_DIR/" && ok
-  note "from ${A_SEAL#$A_ROOT/}  →  B's seal home"
-else bad "A wrote no founding-roster.mem"; fi
+step "carry A's charter → B, beside B's own seed charter (public material)"
+A_CHARTER="$XFER/a-charter.mem"
+if as_a nexus seal export --no-json > "$A_CHARTER" 2>/dev/null && [ -s "$A_CHARTER" ] \
+   && as_b nexus seal import --carry "$A_CHARTER" --json 2>&1 | grep -q '"ok":true'; then ok
+else bad "A's charter did not carry to B"; fi
 
-step "★ the charter grants B no QUORUM — it carries public material only ★"
-# B now holds A's charter. If that alone let B sign quorum acts, the public charter would BE the key.
-if as_b nexus contract 0000000000000000000000000000000000000000000000000000000000000000 --json 2>&1 | grep -q '"ok":true'; then
-  bad "B raised a quorum act holding only the public charter"
-else ok; fi
+step "★ the carried charter grants B no QUORUM — B's own seed charter stands as it stood ★"
+# B now holds A's charter beside its own. If carrying it moved B's primary, A's public charter would BE B's quorum.
+B_AID_AFTER=$(as_b nexus seal show --json 2>/dev/null | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+if [ -n "$B_AID_BEFORE" ] && [ "$B_AID_BEFORE" = "$B_AID_AFTER" ] && [ "$B_AID_AFTER" != "$A_AID" ]; then ok
+else bad "B's primary charter moved (${B_AID_BEFORE:-none} → ${B_AID_AFTER:-none})"; fi
 
 # ── ④ THE HANDSHAKE ──────────────────────────────────────────────────────────────────────────────
 say "④ the handshake — B consents, A's quorum admits"
 step "B signs its contract-in (the joiner's half)"
-if CARRIAGE=$(as_b nexus accept-carriage --index 0 --json 2>&1); then
+if CARRIAGE=$(as_b nexus accept-carriage --index 0 --nexus "$A_AID" --json 2>&1); then
   ok
   B_NYM=$(printf '%s' "$CARRIAGE" | grep -oE '"nym":"[0-9a-fx]+"' | head -1 | cut -d'"' -f4)
   B_SIG=$(printf '%s' "$CARRIAGE" | grep -oE '"contractSig":"[0-9a-f]+"' | head -1 | cut -d'"' -f4)
@@ -387,7 +401,8 @@ switch (mode) {
   }
   case "leafproof": {          // only the admit's own leaf proves it to a socket
     const p = json(a1);
-    const aid = M.nexusAidOf(readNexusDoc(larSealHome()));
+    // The Nexus the admit names: the one passed (a charter this vessel carries), else the primary charter's.
+    const aid = a2 || M.nexusAidOf(readNexusDoc(larSealHome()));
     const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
     if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
     const bind = { nonce: hex32(), gatePubKey: hex32(), vesselKey: await loadVesselVerifyingKey() };
@@ -454,7 +469,7 @@ else bad "$(s6_a verdict "$PRESENTED" 2>&1 | tail -1)"; fi
 step "★ (2) a leaf proof by ANOTHER key refuses — B's own leaf proves ★"
 # CONTROL inside the check: the honest proof by B's own leaf (derived in B's environment) must verify,
 # or a refusing forged proof would measure a verifier that refuses everything.
-LP=$(s6_b leafproof "$PRESENTED" 2>&1)
+LP=$(s6_b leafproof "$PRESENTED" "$A_AID" 2>&1)
 if [ "$LP" = "honest=true forged=false" ]; then ok; else bad "$LP"; fi
 
 step "★ (5) the admit beside a root edge fails the wire guard ★"

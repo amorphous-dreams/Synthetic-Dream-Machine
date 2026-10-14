@@ -74,7 +74,7 @@ import { runFoundingCeremony, runApplyAdmitPayload, assemblePersonaGroupRing, mi
 import {
   loadBrowserKeyhiveArchive, requireBrowserKeyhiveArchive, saveBrowserKeyhiveArchive, saveBrowserVeilArchive,
 } from "./browser-keyhive-archive.js";
-import { vesselDyads } from "@lararium/mesh";
+import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import type { LarOpenPhase }                 from "@lararium/mesh";
 import { readWornPersonaMount }              from "@lararium/mesh";
@@ -760,7 +760,13 @@ export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<Bro
       console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
     } else if (dyads.length > 0) {
       const boundCount = dyads.filter((d) => d.binding !== null).length;
-      console.log(`[dyad] this vessel holds ${dyads.length} relationship(s), ${boundCount} bound.`);
+      // THE DYAD SCOPE READS HERE: a binding counts as this hearth's only where it verifies under the fleet root the
+      // leaf's edge names AND roots on the hearth that edge binds.
+      const edge = social.deviceEdge;
+      const atHearth = edge?.personaRootDid && edge.hearthTrueName
+        ? (await verifiedFleetOfGroup(dyads, edge.personaRootDid as LarDid, new Set(), edge.hearthTrueName)).length
+        : 0;
+      console.log(`[dyad] this vessel holds ${dyads.length} relationship(s), ${boundCount} bound, ${atHearth} verified at this hearth.`);
     }
   } catch { /* the observation never blocks a boot — a torn read stays a torn read */ }
 

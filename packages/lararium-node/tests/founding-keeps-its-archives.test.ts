@@ -17,9 +17,9 @@
  *   F5  AT THE FLOOR A FACE FOUNDING WRITES NOTHING PRIVATE. With the holder locked the founding refuses
  *       `CustodyLocked`; no anchors row, no veil archive and no persona plane entry lands, and every standing
  *       sealed row keeps its bytes.         control: unlocked, the same founding lands all of them
- *   F6  THE FIRST FACE, AT THE FLOOR, MINTS NO ROOT. On a place that holds no face, the founding of h0 with the
- *       holder locked refuses before any persona root file lands.
- *                                           control: unlocked, h0 founds and its root stands
+ *   F6  THE SEED CHARTER, AT THE FLOOR, MINTS NO ROOT. On a place that holds no face, the seed charter (whose
+ *       seat claim persona zero's root stands for) with the holder locked refuses before any persona root lands.
+ *                                           control: unlocked, the charter seats, h0 founds and its root stands
  *   F7  A PLACE FOUNDED AGAIN KEEPS ITS ARCHIVE. A re-seed (`force`) over a standing archive restores from it:
  *       the archive at rest afterwards still knows a sentinel only the kept archive held.
  *                                           control: a provider stood from the seed alone knows no such agent
@@ -46,7 +46,7 @@ import { loadVesselSigningSeed } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
-import { foundDirect, TEST_PASSPHRASE } from "./found-route.js";
+import { foundDirect, seatSeedCharter, TEST_PASSPHRASE } from "./found-route.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -71,6 +71,8 @@ beforeAll(async () => {
   cpSync(REPO_GENESIS, join(root, "genesis"), { recursive: true });
   archiveAbsentBefore = !existsSync(archivePath());
   await foundDirect({ storageDir: larDataDir(), genesisDir: join(root, "genesis") });
+  // A face binds its hearth: the seed charter seats before any face founds, as the Stable founding act seats it.
+  await seatSeedCharter();
 });
 /** Every provider a case stands, so the file hands each back before it returns. */
 const providers: KeyhiveProvider[] = [];
@@ -174,7 +176,7 @@ describe("a founding keeps its archives, sealed per face", () => {
     expect(await listAnchoredPersonas()).toEqual([0, 1, 2, 3]);
   });
 
-  test("F6 the first face at the floor refuses before it mints a persona root", async () => {
+  test("F6 the seed charter at the floor refuses before it mints persona zero's root", async () => {
     const second = mkdtempSync(join(tmpdir(), "lar-founding-floor-"));
     const outer = process.env["LAR_ROOT"];
     process.env["LAR_ROOT"] = second;
@@ -184,11 +186,12 @@ describe("a founding keeps its archives, sealed per face", () => {
       const holder = seatedCustody()!;
       const roots = (): string[] => readdirSync(larIdentityDir()).filter((f) => f.startsWith(".persona-group-root"));
       await holder.lock();
-      await expect(foundFace({ genesisDir: join(second, "genesis"), handleIndex: 0 })).rejects.toThrow(CustodyLocked);
+      await expect(seatSeedCharter()).rejects.toThrow(CustodyLocked);
       expect(roots()).toEqual([]);
       expect(existsSync(veilArchivePath(0))).toBe(false);
       // control
       expect((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading).toBe("opens");
+      await seatSeedCharter();
       expect((await foundFace({ genesisDir: join(second, "genesis"), handleIndex: 0 })).alreadyStood).toBe(false);
       expect(roots().length).toBe(1);
       await holder.lock();

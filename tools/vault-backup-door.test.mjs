@@ -40,7 +40,7 @@ function stageFounded(tag) {
     assert.equal(r.status, 0, `${script}: ${r.stderr}`);
   }
   cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
-  for (const args of [["vessel", "found", "--root", root, "--skip-build"], ["persona", "new", "0", "--name", "the gardener"]]) {
+  for (const args of [["vessel", "found", "--hearth", "--name", "the gardener", "--root", root, "--skip-build"]]) {
     const r = spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root } });
     assert.equal(r.status, 0, `lares ${args.join(" ")}: ${r.stderr}`);
   }

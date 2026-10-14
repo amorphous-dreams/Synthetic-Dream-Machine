@@ -401,6 +401,8 @@ export interface NexusMembershipHolder {
   carriers(): ReadonlySet<string>;
   /** The leaf nym standing for a peer, or null. Read-only; the realm consult never reads it. */
   leafNymOf(peerId: string): string | null;
+  /** The Nexus AID a peer's leaf stands under, or null: a realm plane scopes its Nexus lane to its own AID. */
+  leafAidOf(peerId: string): string | null;
   /** How many peers stand held per carried Nexus (by AID). */
   heldCounts(): ReadonlyMap<string, number>;
   /** Record what a peer's socket presented (null when it presented no admit), verify it against the current
@@ -537,6 +539,7 @@ export function makeNexusMembership(opts: {
     membership,
     carriers: () => carriers,
     leafNymOf: (peerId) => leafMap.get(peerId)?.nym ?? null,
+    leafAidOf: (peerId) => leafMap.get(peerId)?.aid ?? null,
     heldCounts: () => {
       const out = new Map<string, number>();
       for (const { aid } of leafMap.values()) out.set(aid, (out.get(aid) ?? 0) + 1);

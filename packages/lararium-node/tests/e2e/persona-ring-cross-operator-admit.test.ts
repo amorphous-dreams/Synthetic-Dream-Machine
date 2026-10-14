@@ -72,23 +72,18 @@ import { dialGate } from "../gate-dial-fixture.js";
 // seats a key the `dist/` face founding, anchor read and boot below can never reach, and each refuses
 // `CustodyLocked`.
 import {
-  runInit, runFoundTheFace, loadIdentityAnchors, openNodeVessel, loadVesselSigningSeed,
-  larSealHome, writeNexusDoc,
+  runInit, runFoundTheFace, foundSeedCharter, loadIdentityAnchors, openNodeVessel, loadVesselSigningSeed,
+  larSealHome, readNexusDoc, writeNexusDoc,
 } from "../../dist/src/index.js";
 import { generateOrLoadVesselIdentity } from "../../dist/src/node-vessel-identity.js";
 import type { NodeVesselResult } from "../../dist/src/open-node-vessel.js";
-// The charter's genesis epoch, built the way a real founding builds it: a charter that names a seal epoch
-// carries the lineage that proves it (the lineage law reads a bare `sealEpochCid` as torn). Its one seat names a
-// real Ed25519 key: a founding seat passes the strict door, and `"a".repeat(64)` names a mixed-order point.
-const STANDING = heldCharter({ keys: [fixtureKey(0xaa)], threshold: 1 });
-/** The doc the founder stores: the lineage stands, the roster names no chair, and the posture rides beside. */
-const charterDocAt = (federationPosture: "open" | "private"): NexusDoc =>
-  ({ ...STANDING.doc({ dials: { federationPosture } }), kahu: [] });
+// The founder's own seed charter, as the Stable founding act wrote it: the posture rides beside its lineage, and
+// turning the posture moves no seat and no AID (the face's edge binds that AID).
+let seedCharter: NexusDoc | null = null;
+const charterDocAt = (federationPosture: "open" | "private"): NexusDoc => ({ ...seedCharter!, federationPosture });
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { TEST_CUSTODY } from "../found-route.js";
-import { fixtureKey } from "../fixture-keys.js";
-import { heldCharter } from "../../../lararium-mesh/tests/charter-fixture.js";
 
 // ---------------------------------------------------------------------------
 // Test isolation
@@ -179,6 +174,9 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
   beforeAll(async () => {
     // ── Found + wear a face ──────────────────────────────────────────────────────────────────
     await withLarRoot(FOUNDER.root, () => direct(runInit)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis, custody: TEST_CUSTODY }));
+    // The seed charter seats before the face, as the Stable founding act seats it: the face binds its AID.
+    await withLarRoot(FOUNDER.root, () => foundSeedCharter({ name: "founder", readBack: async () => {} }));
+    seedCharter = await withLarRoot(FOUNDER.root, async () => readNexusDoc(larSealHome()));
     await withLarRoot(FOUNDER.root, () => direct(runFoundTheFace)({ storageDir: FOUNDER.storage, genesisDir: FOUNDER.genesis }));
 
     const anchors = await withLarRoot(FOUNDER.root, async () => loadIdentityAnchors(0));
@@ -212,18 +210,11 @@ describe("PersonaGroup identity-slot ring — a real boot, a real grant, a real 
     const grantTitle = faceGrantTitle(personaGroupId, joineeAgentIdHex);
 
     // ── Open the federation POSTURE ─────────────────────────────────────────────────────────────
-    // The gate's sorter answers a proven foreign key only when some Nexus the vessel stands in reads OPEN —
-    // and a freshly-founded, charter-less vessel's nexus doc is ABSENT, which `federationPostureFromDoc` folds
-    // to PRIVATE (fail-closed). Under PRIVATE every such key is SILENCE before the ring is ever reached — an
-    // outer relation (this Nexus's stance toward strangers) gates an inner one (this face's own PersonaGroup
-    // grant). So proving the ring needs this vessel's Nexus posture OPEN, seeded here through `writeNexusDoc` —
-    // the founding act's own writer, and the sanctioned way to mint a minimal charter for a vessel that never
-    // ran a real seal-seat ceremony.
-    // `nexusIdentity` reads a null `sealEpochCid` beside a STANDING charter file as TORN (a half-written
-    // seat) rather than "no charter at all" — so the seed needs a well-formed (if synthetic) genesis
-    // epoch id, `GENESIS_RE = /^nexus-[0-9a-f]{64}$/` (nexus-identity.ts), to read as a coherent charter.
-    // `composeDoc` (nexus-doc.ts) also refuses `threshold < 1` outright (the whole doc reads torn) — 1
-    // with an empty kahu roster is the minimal well-formed shape.
+    // The gate's sorter answers a proven foreign key only when some Nexus the vessel stands in reads OPEN — and a
+    // hearth's seed charter rests PRIVATE from its founding (fail-closed). Under PRIVATE every such key is SILENCE
+    // before the ring is ever reached — an outer relation (this Nexus's stance toward strangers) gates an inner one
+    // (this face's own PersonaGroup grant). So proving the ring turns the seed charter's posture OPEN through
+    // `writeNexusDoc`, the founding act's own writer: the lineage, the seat and the AID stay as the founding wrote them.
     const nexusSeed: NexusDoc = charterDocAt("open");
     await withLarRoot(FOUNDER.root, async () => { writeNexusDoc(larSealHome(), nexusSeed); });
 

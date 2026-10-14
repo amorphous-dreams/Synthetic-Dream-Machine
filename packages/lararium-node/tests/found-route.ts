@@ -7,6 +7,7 @@
  */
 import type { SlotSpec } from "@lararium/mesh";
 import { runInit, type InitOptions } from "../src/commands/init.js";
+import { foundSeedCharter, runFoundHearth, type FoundHearthOptions } from "../src/commands/found-hearth.js";
 import { direct } from "./direct-store.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
@@ -53,4 +54,27 @@ export async function openTestCustody(): Promise<void> {
   const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   if (opened.reading !== "opens") throw new Error(`the test route did not open this root's custody: ${opened.reading}`);
   seatCustody(holder);
+}
+
+/**
+ * THE STABLE FOUNDING ACT over the direct holder, with the test route and a read-back that confirms each card as a
+ * person would at a terminal (the seeds zero-fill when the act returns). A suite that proves a refused read-back
+ * passes its own `readBack`.
+ */
+export function foundHearthDirect(opts: Omit<FoundHearthOptions, "repo" | "custody" | "name" | "readBack"> & {
+  readonly custody?: FoundHearthOptions["custody"];
+  readonly name?: string;
+  readonly readBack?: FoundHearthOptions["readBack"];
+}) {
+  const run = direct(runFoundHearth);
+  return run({ ...opts, custody: opts.custody ?? TEST_CUSTODY, name: opts.name ?? "staged", readBack: opts.readBack ?? (async () => {}) });
+}
+
+/**
+ * The seed charter alone, over a place some earlier act founded (custody seated): persona zero's root and seat
+ * claim, the seat key, one card confirmed, the genesis at threshold one. A suite that founds faces by the face rite
+ * runs this first, as the Stable founding act does before its face.
+ */
+export function seatSeedCharter(opts: { readonly name?: string; readonly chair?: string } = {}) {
+  return foundSeedCharter({ name: opts.name ?? "staged", ...(opts.chair ? { chair: opts.chair } : {}), readBack: async () => {} });
 }

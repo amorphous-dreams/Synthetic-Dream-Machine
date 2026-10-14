@@ -30,6 +30,7 @@ import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../ve
 import { FsCustodyIo } from "../custody-io.js";
 import { assertFoundingRoute, custodyTreeStands, foundCustody } from "../custody-session.js";
 import { hearthDialTiddlers, readHearthDialPin } from "../hearth-dial-pin.js";
+import { hearthAid } from "../hearth-aid.js";
 import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { admittedJoineeIsland } from "../nexus-standing.js";
 import type { CarriedAdmitPayload } from "./device-admit.js";
@@ -479,9 +480,16 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     throw new Error("[lares persona new] the bootstrap names no daemon doc — this place did not finish founding.");
   }
 
-  const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
+  // THE HEARTH'S TRUE NAME IS ITS SEED CHARTER'S AID. A face binds (device × the hearth's own first Nexus), so an
+  // edge minted at one of a human's hearths names that hearth and no other: the engine CID every hearth shares
+  // would let it pass at all of them. A place with no seed charter holds no hearth for a face to bind to; the
+  // Stable founding act (`lares vessel found --hearth`) seats the charter before it founds persona zero.
+  if (!GENESIS_ENGINE_CID(genesisDir)) {
+    throw new Error(`[lares persona new] the engine CID stands absent from ${genesisDir} — this place did not finish founding.`);
+  }
+  const hearthTrueName = hearthAid();
   if (!hearthTrueName) {
-    throw new Error(`[lares persona new] hearth true-name (engine CID) absent from ${genesisDir} — the edge binds (device × hearthTrueName) and has nothing to bind to.`);
+    throw new Error("[lares persona new] no seed charter stands here, so no hearth stands for a face to bind to — found the hearth with `lares vessel found --hearth --name '<label>'`.");
   }
 
   const vesselIdentity = await generateOrLoadVesselIdentity();

@@ -45,15 +45,12 @@ function stage(tag, { found }) {
   }
   if (found) {
     cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
-    const r = spawnSync(process.execPath, [cli, "vessel", "found", "--root", root, "--skip-build"], {
+    // A hearth, by the Stable founding act: its face makes the composition that holds the key stand a veil and read
+    // that face's own rows.
+    const r = spawnSync(process.execPath, [cli, "vessel", "found", "--hearth", "--name", "two-phase", "--root", root, "--skip-build"], {
       cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root },
     });
-    assert.equal(r.status, 0, `vessel found: ${r.stderr}`);
-    // A face, so the composition that holds the key stands a veil and reads that face's own rows.
-    const f = spawnSync(process.execPath, [cli, "persona", "new", "0", "--name", "two-phase"], {
-      cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root },
-    });
-    assert.equal(f.status, 0, `persona new: ${f.stderr}`);
+    assert.equal(r.status, 0, `vessel found --hearth: ${r.stderr}`);
   } else {
     // A genesis the boot can materialize, and no founding: the bootstrap names no daemon doc, so the boot refuses.
     const dir = join(root, "genesis");

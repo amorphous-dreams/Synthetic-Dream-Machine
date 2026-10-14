@@ -6,6 +6,8 @@
  * identical acts. So every door that MINTS a root is named here, and each is the founding of a face:
  *
  *   · node `runFoundTheFace` (`lares persona new N` founds the face, its root among it);
+ *   · node `foundSeedCharter`, inside the Stable founding act (`lares vessel found --hearth`): persona zero's root
+ *     mints before its face, since the root's seat claim seats the seed charter the face then binds;
  *   · the browser's founding branch and its `persona-mint` verb (the browser twin of founding a face);
  *   · the platform-blind core and its two shores (`persona-vault`, the node and browser identity modules),
  *     which define the mint and are called only through those doors.
@@ -30,6 +32,7 @@ const MINTERS = ["generateOrLoadPersonaRoot", "generateOrLoadPersonaGroupRoot", 
 /** The founding doors, and the modules that define the mint — the only files that may call one. */
 const FOUNDING = new Set([
   "lararium-node/src/commands/init.ts",
+  "lararium-node/src/commands/found-hearth.ts",
   "lararium-browser/src/open-browser-vessel.ts",
   "lararium-mesh/src/persona-vault.ts",
   "lararium-node/src/node-vessel-identity.ts",

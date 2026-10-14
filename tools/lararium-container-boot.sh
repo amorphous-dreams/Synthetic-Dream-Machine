@@ -19,108 +19,89 @@ cp -r /app/genesis/cas  "$LAR_ROOT/genesis/" 2>/dev/null || true   # the CAS sub
 # spirits' substrate stands at `<root>/data/lares/vessel` beside the house's `<root>/data/lararium`.
 # A probe reading one segment short finds nothing and re-founds a container that already stands.
 
-if [ ! -f "$LAR_ROOT/data/lares/vessel/social-bootstrap.json" ]; then
+# THE CARD OF A STAGED HEARTH. On a staged root the founding's read-back stands in, and its JSON answer carries the
+# seed card's code; a quorum this boot grows reveals it to roll the charter. Test roots alone: a live card never
+# rests anywhere but on its paper, and an attached founding prints it on the terminal for a person to keep.
+_card=""
+_json_line() { node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{const l=s.split("\n").filter((x)=>x.startsWith("{")).pop();process.stdout.write(l??"")})'; }
+_card_of() { node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).data.cards[0].code??""))}catch{}})'; }
+
+_bootstrap="$LAR_ROOT/data/lares/vessel/social-bootstrap.json"
+# A HEARTH WHOSE FOUNDING STOPPED RESUMES. A place that stands with no face lit, under LAR_STAND_FACE, runs the
+# Stable founding act again: the act skips what stands (the place, a seed charter it already seated) and completes.
+_resume=""
+if [ -f "$_bootstrap" ] && [ -n "${LAR_STAND_FACE:-}" ] && ! grep -q 'persona-group/group-id' "$_bootstrap"; then _resume=yes; fi
+
+if [ ! -f "$_bootstrap" ] || [ -n "$_resume" ]; then
   echo "[boot] founding this container's own Lararium (own vessel identity)…"
   # --skip-build uses the CLI and daemon already compiled into the product image.
   #
   # THE HUMAN ROUTE. A founding seals custody from birth and gathers its route (a passphrase or a paper pin) from a
   # TTY ALONE: no flag and no env var carries one. Two shapes reach this line.
-  #   · ATTACHED (`docker compose run --rm -it <service>`): the CLI prompts on the terminal.
+  #   · ATTACHED (`docker compose run --rm -it <service>`): the CLI prompts on the terminal, and a hearth's card
+  #     prints there and reads back there.
   #   · A DISPOSABLE TEST HARNESS (the mesh scenarios, the rehearsal): the compose file declares the root scratch with
   #     LAR_STAGE_DIR, and the existing test door founds the custody under a fixed test passphrase first. The door
   #     refuses any root without the staging marker (`.lar-test-scratch`), which this boot writes only under LAR_STAGE_DIR.
   # Neither shape standing, the founding below refuses BY NAME (CredentialTtyRefusal) and says how to run it attached.
-  if [ -n "${LAR_STAGE_DIR:-}" ]; then
+  if [ -n "${LAR_STAGE_DIR:-}" ] && [ -z "$_resume" ]; then
     node tools/test-scratch-marker.mjs "$LAR_ROOT"
     node tools/seed-test-custody.mjs "$LAR_ROOT"
   fi
-  node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build
-fi
-
-# A PLACE IS NOT YET A HEARTH. `vessel found` stands the place FACELESS, and `standAs` reads a faceless
-# vessel as a herm however the compose file labels it — so a container meant to serve as a full Lararium
-# must LIGHT A FACE before it serves, or it stands the crossroads instead and announces no node dial.
-# A Herm container leaves this unset on purpose: staying faceless IS its standing (Lares Viales).
-if [ -n "${LAR_STAND_FACE:-}" ]; then
-  # NEVER FATAL. Lighting a face seeds four planes through the repo, and a cold container whose peers have
-  # not yet answered reports the plane doc unavailable — a vessel that then EXITS serves nothing at all,
-  # where a faceless one still carries and routes. So the lift is attempted and its refusal is named, and
-  # the container serves either way; `standAs` reads whatever actually stands.
-  echo "[boot] lighting the face '${LAR_STAND_FACE}' — this container serves as a hearth, never a crossroads…"
-  # LIT AGAINST THIS ISLAND'S OWN STORE, never against the mesh. Lighting a face MINTS four planes and
-  # writes the PersonaGroup id into a bootstrap this container already holds — every doc it touches lives
-  # on local disk. With LAR_PEERS set, the repo reaches for peers that have not yet stood and the mint
-  # answers `Document … is unavailable`: a resolution failure standing in for a dependency that was never
-  # real. So the lift runs peerless and the SERVER carries the peers, which also reads right — a face is
-  # what this vessel holds, never what the mesh grants it.
-  LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js persona new 0 --name "$LAR_STAND_FACE" \
-    || echo "[boot] the face did NOT light (see the error above) — serving faceless, at the waking floor"
-fi
-
-# A HEARTH THAT CARRIES IS NOT YET A HEARTH THAT TENDS. A single face lifts a vessel off the floor and
-# leaves the Nexus ungoverned: the roster forms from personas that declared a HANDLE and took a CHAIR,
-# so a face minted with neither seats nobody and `nexus seal show` reads an empty quorum with a
-# fail-closed threshold. `LAR_STAND_KAHU` names the chairs, comma-separated, and this container seats
-# them before it serves.
-#
-# THE SEAL IS FILE-LOCAL, so it lands before the exec below rather than against a running daemon —
-# `seal seat` reads and writes this vessel's own nexus home and its own seat keys. A container seats its
-# own founding quorum for the same reason it founds its own identity: nothing in the mesh grants it.
-# SEATING IS ONCE, NEVER EVERY BOOT. `seal seat` at genesis RE-DERIVES the genesis epoch, and every
-# carriage entries root on the epoch that stood when they were signed. A re-seat on restart mints a new
-# epoch, so the fold denies existing members whose entries name another epoch.
-#
-# A vessel that already carries a seated quorum has nothing to seat.
-_already_seated() {
-  node packages/lares-cli/dist/src/bin/lares.js nexus seal show --json 2>/dev/null \
-    | grep -q '"quorumSeated":true'
-}
-
-# WHO HOLDS THE SEATED CHAIRS — so a boot can tell "nothing to do" from "you asked for something else and I am
-# not doing it". A SEAT CARRIES A PRIVATE CHAIR LABEL AND NO HANDLE: the charter names each chair by its label
-# (`chair-h0`, …), so the charter alone never answers which handles this boot seated. The handles rest on the
-# personas that took the chairs, so the boot reads them there: each persona that holds a seat, by its handle,
-# in index order. (The answer's JSON rides the last line that opens with a brace; trace lines may precede it.)
-_seated_handles() {
-  node packages/lares-cli/dist/src/bin/lares.js persona list --json 2>/dev/null \
-    | node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{try{const line=s.split("\n").filter((l)=>l.startsWith("{")).pop();const personas=JSON.parse(line).data.personas;process.stdout.write(personas.filter((p)=>p.seat===true).map((p)=>p.handle??"").join(","))}catch{}})'
-}
-
-if [ -n "${LAR_STAND_KAHU:-}" ] && _already_seated; then
-  _seated="$(_seated_handles)"
-  if [ "$_seated" = "$LAR_STAND_KAHU" ]; then
-    echo "[boot] a quorum already stands, seated under these same handles — nothing to seat"
+  # A HEARTH FOUNDS BY THE STABLE FOUNDING ACT. `LAR_STAND_FACE` names persona zero: the act stands the place, the
+  # face's root, its one-seat PRIVATE seed charter (the seat's own key, its next key on a card read back) and the
+  # face that binds the charter's AID, in one act. A Herm container leaves it unset on purpose: a place with no face
+  # IS its standing (Lares Viales). The face lifts peerless: every doc it mints lives on local disk, and with
+  # LAR_PEERS set the repo reaches for peers that have not yet stood.
+  if [ -n "${LAR_STAND_FACE:-}" ]; then
+    echo "[boot] founding the hearth '${LAR_STAND_FACE}' by the Stable founding act…"
+    if [ -n "${LAR_STAGE_DIR:-}" ]; then
+      # A staged root: the read-back stands in, and the JSON answer carries the card's code for the roll below.
+      _out="$(LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js vessel found --hearth --name "$LAR_STAND_FACE" --skip-build --json)" \
+        || { echo "$_out"; echo "[boot] the hearth did NOT found (see above) — serving as a place, at the waking floor"; }
+      _card="$(printf '%s\n' "$_out" | _json_line | _card_of)"
+    else
+      # A live root: the card prints on this terminal and reads back there, and no answer carries its code.
+      LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js vessel found --hearth --name "$LAR_STAND_FACE" --skip-build \
+        || echo "[boot] the hearth did NOT found (see above) — serving as a place, at the waking floor"
+    fi
   else
-    # A SILENT NO-OP IS THE WRONG ANSWER TO A CHANGED CONFIG. The operator edited the chair list and
-    # this boot is deliberately not honouring it, because a re-seat at genesis re-derives the epoch
-    # and orphans every carriage entry rooted on the PRIOR epoch. Changing a SEATED roster is what a
-    # rotation is for — under the standing quorum, against a key-set pre-committed an epoch earlier.
-    echo "[boot] ⚠ the seated chairs stand under the handles: ${_seated}"
-    echo "[boot] ⚠ but LAR_STAND_KAHU asks for: ${LAR_STAND_KAHU}"
-    echo "[boot] ⚠ NOT re-seating — a re-seat re-derives the genesis epoch and orphans every member."
-    echo "[boot] ⚠ To change who holds a STANDING charter, rotate it: \`lares nexus seal rotate\`."
-    echo "[boot] ⚠ To start over instead, burn this vessel's volume and boot fresh."
+    node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build
   fi
-elif [ -n "${LAR_STAND_KAHU:-}" ]; then
-  echo "[boot] seating the founding kahu: ${LAR_STAND_KAHU}"
-  _i=0
-  # THREE ACTS PER COMMAND, never one: --name labels privately, --handle declares outward, --seat
-  # stands for a chair. Only the last two reach the roster.
-  # `printf '%s'` ENDS WITHOUT A NEWLINE, and `while read` returns false on a final unterminated line
-  # after assigning it — so the last chair silently never stood. Measured: three handles named, two
-  # kahu seated, and the roster still met a majority-of-two threshold, so the reading stayed green
-  # over a quorum missing a third of itself.
-  printf '%s\n' "$LAR_STAND_KAHU" | tr ',' '\n' | while IFS= read -r _handle; do
-    [ -z "$_handle" ] && continue
-    LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js persona new "$_i" \
-      --name "kahu-$_i" --handle "$_handle" --seat \
-      || echo "[boot] kahu $_i ('$_handle') did NOT stand — the roster will read short"
-    _i=$((_i + 1))
-  done
-  # `rite quorum` composes seal seat · seal show — the seat gives each chair that stood a seat key of its own,
-  # arms the next epoch with each chair's next key, and the threshold derives majority over the roster.
-  LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js nexus rite quorum \
-    || echo "[boot] the cabal did NOT seat (see above) — this hearth carries but does not tend"
+
+  # A HEARTH THAT CARRIES IS NOT YET A HEARTH THAT TENDS. `LAR_STAND_KAHU` names the chairs' Handles,
+  # comma-separated: persona zero takes the first (its seed chair stays its own), each later one stands on a face of
+  # its own (h1, h2, …), and the seed card reveals so `seal rotate` rolls the seed charter to every chair that
+  # stands, under a majority rule. The AID the founding
+  # minted stays the hearth's name: a roll moves the seats and never the Nexus. This runs ONCE, at the founding
+  # that printed the card; a later boot finds the roster rolled and seats nothing.
+  if [ -n "${LAR_STAND_KAHU:-}" ]; then
+    if [ -z "$_card" ]; then
+      echo "[boot] ⚠ LAR_STAND_KAHU asks for chairs, and no seed card stands in this boot's hand (an attached founding"
+      echo "[boot] ⚠ keeps its card on paper): roll the charter by hand, \`lares nexus seal rotate\`, with the card."
+    else
+      echo "[boot] growing the seed charter to the founding kahu: ${LAR_STAND_KAHU}"
+      _i=0
+      # `printf '%s'` ENDS WITHOUT A NEWLINE, and `while read` returns false on a final unterminated line after
+      # assigning it — so the last chair silently never stood. Each line ends here.
+      printf '%s\n' "$LAR_STAND_KAHU" | tr ',' '\n' | while IFS= read -r _handle; do
+        [ -z "$_handle" ] && continue
+        _label="kahu-$_i"; [ "$_i" -eq 0 ] && _label="$LAR_STAND_FACE"
+        LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js persona new "$_i" \
+          --name "$_label" --handle "$_handle" --seat \
+          || echo "[boot] kahu $_i ('$_handle') did NOT stand — the roster will read short"
+        _i=$((_i + 1))
+      done
+      _chairs=$(printf '%s\n' "$LAR_STAND_KAHU" | tr ',' '\n' | grep -c .)
+      LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js nexus seal rotate --cold-key "$_card" --threshold $(( _chairs / 2 + 1 )) \
+        || echo "[boot] the seed charter did NOT roll (see above) — this hearth tends under its one seed seat"
+    fi
+  fi
+  # A staged hearth whose card no roll took prints it for the harness that may roll it later (test roots alone).
+  if [ -n "${LAR_STAGE_DIR:-}" ] && [ -n "$_card" ] && [ -z "${LAR_STAND_KAHU:-}" ]; then
+    echo "[boot] staged seed card: $_card"
+  fi
+  _card=""
 fi
 
 # A VESSEL STANDS HOLDING NO KEY, and only a TTY opens one. A DISPOSABLE TEST HARNESS (LAR_STAGE_DIR: the mesh

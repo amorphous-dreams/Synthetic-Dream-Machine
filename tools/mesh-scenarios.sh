@@ -15,7 +15,7 @@
 #   meme         two contracted operators + browser-a  an author's `bag` crossing; the island's face
 #
 # ── AND SIX THAT WALK SEAMS RATHER THAN CELLS ───────────────────────────────────────────────────
-#   climb        one operator, a face used before a charter   the bricking climb (REGRESSION GUARD)
+#   climb        one operator, a face used, its seed rolled   a roll moves no island (REGRESSION GUARD)
 #   seal         one operator, the archive's own boot reading a wrong key that reads as no key
 #   title        one operator, the userinfo ban               enforcement, body-passthrough, the allowed form
 #   wikis        one operator, NO cabal                       which layer took the save
@@ -275,22 +275,26 @@ logs_count() {
 # refused, having printed its evidence; the caller tears down and returns.
 #
 # The charter travels by its own doors rather than by `cp` — `seal export` hands A's public material over,
-# `seal import` places it on B, refusing to land on a founding. That is the handoff the runbook instructs
-# ("B cannot consent to a charter it has never seen"), performed rather than simulated.
+# `seal import --carry` places it on B BESIDE B's own seed charter (each hearth stands on its own seed; another
+# operator's Nexus reaches it as a carried charter), and B consents to it by its AID. That is the handoff the
+# runbook instructs ("B cannot consent to a charter it has never seen"), performed rather than simulated.
 NYM=""
+AID_A=""
 contract_ab() {
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
-  local CHARTER ACC SIG CONTRACT TAKE
+  local CHARTER IMP ACC SIG CONTRACT TAKE
   NYM=""
-  step "A's charter travels to B by its own doors"
+  AID_A=""
+  step "A's charter travels to B by its own doors, carried beside B's own seed"
   CHARTER=$($COMPOSE exec -T lararium-a $LARES nexus seal export --no-json 2>/dev/null)
   if [ -z "$CHARTER" ]; then bad "A exported no charter"; return 1; fi
   if printf '%s' "$CHARTER" | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/a-charter.mem' \
-     && $COMPOSE exec -T lararium-b $LARES nexus seal import /tmp/a-charter.mem >/dev/null 2>&1; then ok
-  else bad "B could not take A's charter"; return 1; fi
+     && IMP=$($COMPOSE exec -T lararium-b $LARES nexus seal import --carry /tmp/a-charter.mem --json 2>/dev/null) \
+     && AID_A=$(printf '%s' "$IMP" | grep -oE '"aid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4) && [ -n "$AID_A" ]; then ok
+  else bad "B could not carry A's charter"; printf '%s\n' "$IMP" | tail -2 | sed 's/^/      /'; return 1; fi
 
   step "B signs her contract-in, A's quorum admits her"
-  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --json 2>/dev/null)
+  ACC=$($COMPOSE exec -T lararium-b $LARES nexus accept-carriage --nexus "$AID_A" --json 2>/dev/null)
   NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
   SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
   if [ -z "$NYM" ] || [ -z "$SIG" ]; then
@@ -867,19 +871,23 @@ run_realm_crossing() {
   # A draft chased this the other way — pointing B at A's members board — and that was an AUTHORITY
   # DEFECT: it would let A's future admits widen B's carriage without her consent.
   #
-  # ONE VESSEL READS ONLY ITS OWN VAULT (`nexusPhase`, `packages/lares-cli/src/nexus-phase.ts`). B seats no
-  # chair of her own here and holds A's charter as her primary, so every seat in it reads FOREIGN to her vault:
-  # her reading answers `nexus` and says she holds NO seat in it. A reads the same charter `seed`, since every
-  # seat comes from A's vault. Neither vessel can read the other's vault, and neither reading claims to.
-  step "★ B reads the charter she holds: every seat foreign to her vault, no seat of her own ★"
-  local BPHASE
+  # ONE VESSEL READS ONLY ITS OWN VAULT (`nexusPhase`, `packages/lares-cli/src/nexus-phase.ts`). B stands on her
+  # OWN seed charter, its one seat hers, and A's charter rides CARRIED beside it: B's reading answers `seed` for
+  # her own, and A's charter never becomes her primary. Neither vessel can read the other's vault, and neither
+  # reading claims to.
+  step "★ B reads her own seed charter as primary; A's rides carried, never in its place ★"
+  local BPHASE BCARRIED
   BPHASE=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1)
-  if printf '%s' "$BPHASE" | grep -q '"phase":{"phase":"nexus"' && printf '%s' "$BPHASE" | grep -q 'holds NO seat'; then ok
+  BCARRIED=$($COMPOSE exec -T lararium-b $LARES nexus members --list --nexus "$AID_A" --json 2>&1)
+  # `seal show` lists the carried set beside the primary: A's AID stands there as primary:false, never true.
+  if printf '%s' "$BPHASE" | grep -q '"phase":{"phase":"seed"' \
+     && printf '%s' "$BPHASE" | grep -q "\"aid\":\"$AID_A\",\"primary\":false" \
+     && ! printf '%s' "$BPHASE" | grep -q "\"aid\":\"$AID_A\",\"primary\":true" \
+     && printf '%s' "$BCARRIED" | grep -q "\"aid\":\"$AID_A\""; then ok
   else
-    bad "B did not read the charter held in this vessel as another's, with no seat of her own"
+    bad "B did not stand on her own seed with A's charter carried beside it"
     printf '      B reads: %s\n' "$(printf '%s' "$BPHASE" | grep -oE '"phase":\{"phase":"[a-z]+"' | head -1)"
-    printf '      B board: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus members --list --json 2>&1 \
-        | grep -oE '"island":"[^"]*"|"members":\[[^]]*\]' | tr '\n' ' ')"
+    printf '      B carried: %s\n' "$(printf '%s' "$BCARRIED" | grep -oE '"aid":"[^"]*"|"island":"[^"]*"' | tr '\n' ' ')"
   fi
 
   # AND SHE NEVER CLAIMS THE ROSTER. A joiner sees her own relation; how many others joined is not
@@ -980,14 +988,16 @@ run_quorum_realm() {
   for partner in lararium-b; do
     step "$partner takes the charter and contracts in"
     printf '%s' "$CHARTER" | $COMPOSE exec -T "$partner" sh -c 'cat > /tmp/a-charter.mem'
-    $COMPOSE exec -T "$partner" $LARES nexus seal import /tmp/a-charter.mem >/dev/null 2>&1
-    local ACC NYM SIG
-    ACC=$($COMPOSE exec -T "$partner" $LARES nexus accept-carriage --json 2>/dev/null)
+    # The partner stands on her own seed charter: A's rides CARRIED beside it, and she contracts in under A's AID.
+    local IMP AID ACC NYM SIG
+    IMP=$($COMPOSE exec -T "$partner" $LARES nexus seal import --carry /tmp/a-charter.mem --json 2>/dev/null)
+    AID=$(printf '%s' "$IMP" | grep -oE '"aid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+    ACC=$($COMPOSE exec -T "$partner" $LARES nexus accept-carriage --nexus "$AID" --json 2>/dev/null)
     NYM=$(printf '%s' "$ACC" | grep -oE '"nym":"[a-f0-9]{64}"' | head -1 | cut -d'"' -f4)
     SIG=$(printf '%s' "$ACC" | grep -oE '"contractSig":"[a-f0-9]+"' | head -1 | cut -d'"' -f4)
-    if [ -n "$NYM" ] && [ -n "$SIG" ] \
+    if [ -n "$AID" ] && [ -n "$NYM" ] && [ -n "$SIG" ] \
        && $COMPOSE exec -T lararium-a $LARES nexus contract "$NYM" --sig "$SIG" >/dev/null 2>&1; then ok
-    else bad "$partner never contracted in"; printf '%s\n' "$ACC" | tail -2 | sed 's/^/      /'; clear_all; return; fi
+    else bad "$partner never contracted in"; printf '%s\n' "$IMP" "$ACC" | tail -3 | sed 's/^/      /'; clear_all; return; fi
   done
 
   step "★ three seated chairs plus a contracted partner still read SEED ★"
@@ -1071,7 +1081,11 @@ run_meme() {
     printf '<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n'
   }
   # One `meme get --bag lares --json` on a hearth — the whole JSON, for the caller to read fields off.
-  meme_get() { $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag lares --json 2>&1; }
+  # B stands on her own seed: A's realm reaches her as a carried charter's realm, named on every realm-scoped call.
+  meme_get() {
+    if [ "$1" = lararium-b ]; then $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag lares --realm "$AID_A" --json 2>&1
+    else $COMPOSE exec -T "$1" $LARES meme get "$URI" --bag lares --json 2>&1; fi
+  }
   json_text() { printf '%s' "$1" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);process.stdout.write(String(j.data?.text??""))}catch{}})'; }
   json_hash() { printf '%s' "$1" | grep -oE '"canonicalHash":"[^"]+"' | head -1 | cut -d'"' -f4; }
   # Poll a hearth's `get` until its text carries `$2` (a slot marker) or the budget ends; echoes the JSON.
@@ -1134,7 +1148,7 @@ run_meme() {
   step "both sides re-fold the relation; the realm stands under ONE doc id"
   local RA RB
   RA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
-  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else bad "the two sides name different realm docs"; printf '      A: %s\n      B: %s\n' "$RA" "$RB"; fi
 
@@ -1176,7 +1190,7 @@ run_meme() {
   else
     bad "B reads no meme"
     printf '      B reads:      %s\n' "$(printf '%s' "$GB" | tail -1 | cut -c1-200)"
-    printf '      B realm-bags: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
+    printf '      B realm-bags: %s\n' "$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
     printf '      A realm-bags: %s\n' "$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"bags":\[[^]]*\]' | head -1 | cut -c1-200)"
     printf '      B dial:       %s\n' "$($COMPOSE logs lararium-b 2>&1 | grep -E '\[nexus-join\] presenting|\[lar-leaf\] (verdict|ANERGIZED)' | tail -2 | tr '\n' ' ' | cut -c1-200)"
   fi
@@ -1216,7 +1230,7 @@ run_meme() {
 
   step "B projects it to md — the pair renders"
   local PJ
-  PJ=$($COMPOSE exec -T lararium-b $LARES meme project "$URI" --to md --bag lares --json 2>&1)
+  PJ=$($COMPOSE exec -T lararium-b $LARES meme project "$URI" --to md --bag lares --realm "$AID_A" --json 2>&1)
   if printf '%s' "$PJ" | grep -q '"ok":true' && printf '%s' "$PJ" | grep -q '"meta"'; then ok
   else bad "B's projection refused"; printf '%s\n' "$PJ" | tail -2 | cut -c1-300 | sed 's/^/      /'; fi
 
@@ -1230,9 +1244,9 @@ run_meme() {
   HASH_B=$(json_hash "$GB")
   meme_text a b | $COMPOSE exec -T lararium-b sh -c 'cat > /tmp/npc-b.mem'
   # CONTROL: before she asks, B's put refuses — a member at the read tier writes nothing.
-  if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
+  if $COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1 | grep -q '"ok":true'; then
     bad "B's put --bag lares LANDED BEFORE she asked — the read tier must refuse a placement"; clear_all; return; fi
-  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag lares --join --json 2>&1)
+  ASK=$($COMPOSE exec -T lararium-b $LARES nexus realm-bag lares --join --realm "$AID_A" --json 2>&1)
   # THE RECORD CROSSES BEFORE EACH NEXT HAND CAN ACT ON IT. B's ask rides the realm doc to A, and A's consent
   # rides it back; neither vessel reads the other's seal before the doc syncs. So each next act repeats until
   # the realm answers it or its budget ends (the budget only bounds the wait; the verb's own answer decides).
@@ -1244,7 +1258,7 @@ run_meme() {
   done
   until_ms=$((SECONDS + 90))
   while :; do
-    PUT=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
+    PUT=$($COMPOSE exec -T lararium-b $LARES meme put "$URI" --bag lares --realm "$AID_A" --base "$HASH_B" --file /tmp/npc-b.mem --json 2>&1)
     if printf '%s' "$PUT" | grep -q '"ok":true' || [ "$SECONDS" -ge "$until_ms" ]; then break; fi
     sleep 3
   done
@@ -1329,95 +1343,91 @@ run_meme_browser() {
 # … up the gradient`. They stand as REGRESSION GUARDS, and the label is the honest half.
 # ════════════════════════════════════════════════════════════════════════════════════════════════
 
-# ── ① THE BRICKING CLIMB ────────────────────────────────────────────────────────────────────────
-# THE WALK: `vessel found` → a face → USE IT → `nexus rite quorum` → restart. The founding face's
-# inception seats on the persona-KEL board keyed by the island resolved AT THAT MOMENT, which for an
-# unconnected hearth is its OWN key (`personaKelBoardDocUrl(nexusPubkey)`, deterministic-doc.ts:95).
-# Seating a charter re-keys that board to the charter's genesis epoch, and the Binding Gate refuses
-# rather than degrades — `open-node-vessel.ts:1174`.
+# ── ① THE ROLL THAT MOVES NO ISLAND ─────────────────────────────────────────────────────────────
+# THE WALK: the Stable founding act (a hearth with its one-seat seed charter) → the face is USED → the seed charter
+# ROLLS to more chairs → restart. A hearth's face binds its seed charter's Nexus AID from the founding, so its island
+# reads `(charter, shared)` from the first boot, and a roll moves the seats and never the AID: the persona-KEL board
+# keyed by that island stays the board the inception seated on, and the Binding Gate walks it after the restart.
 #
-# ⚠ THIS SCENARIO STANDS GREEN, AND THAT IS THE MEASUREMENT RATHER THAN A GAP IN IT.
-# `carryPersonaKelUpTheGradient` runs BEFORE the gate walks (open-node-vessel.ts:1168) and moves the
-# pinned chain onto the island this boot resolved. Walked in a container: the vessel
-# answered 15s after the restart, `restarts=0`, and the halt string appeared ZERO times. So this is
-# a regression guard on a cure that landed, never a repro of a live brick.
-#
-# WHAT WOULD MAKE IT RED AGAIN, quoted from the halt it guards:
+# WHAT WOULD MAKE IT RED, quoted from the halt it guards:
 #   "[lararium] persona-KEL chain for the pinned identifier … absent from the local board replica
 #    — the Binding Gate cannot reach a head (fail-closed)."
 # The `…` is a real U+2026 and the dash an em-dash, so the probe greps the ASCII-safe head.
 #
-# THE HARNESS HAS NEVER WALKED THIS ORDERING. `lararium-container-boot.sh` seats the cabal BEFORE it
-# serves, so every other scenario in this file stands a vessel whose charter was seated at genesis.
-# The climb seats one against a RUNNING vessel, after the face has already written — which is the
-# operator's actual lifecycle ("standing a hearth up and connecting it to a Nexus LATER is a
-# first-class flow", the vessel's own boot line) and the ordering the brick needed.
+# The card: on a staged root the boot prints the seed card's code (`[boot] staged seed card:`), since the founding's
+# read-back stood in; this scenario reveals it to roll. A live card never rests anywhere but on its paper.
 # COVERS: private/seed/unfed
 run_climb() {
-  say "CLIMB — a face is used, a charter seats after it, and the vessel still boots"
+  say "CLIMB — a hearth's face is used, its seed charter rolls, and the island stays the founding's"
   clear_all
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
   local URI="lar:///t.climb.witness/one"
 
-  # NO KAHU AT BOOT. `LAR_A_KAHU=` blanks `LAR_STAND_KAHU`, so the boot skips its seating block and
-  # this vessel stands the way an operator's actually does on day one: a face, and no charter.
-  step "A stands with a face and NO charter"
+  # NO KAHU AT BOOT. `LAR_A_KAHU=` blanks `LAR_STAND_KAHU`, so the boot founds the hearth by the Stable founding act
+  # and grows no quorum: a face, and its one-seat seed charter, the way an operator's hearth stands on day one.
+  step "A stands as a hearth: a face and its seed charter, NO kahu"
   if LAR_A_PEERS= LAR_A_KAHU= $COMPOSE up -d --no-deps lararium-a >/dev/null 2>&1; then ok
   else bad "up"; return; fi
   if up_and_answering lararium-a; then :; else
     bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
 
-  # NEGATIVE ①a — A VESSEL THAT NEVER SEATS A CHARTER STILL BOOTS. Without this the scenario cannot
-  # tell "the climb bricked it" from "this vessel never booted at all", and the whole reading would
-  # rest on a boot nobody proved.
-  step "NEG a — the island reads a PRIVATE NEXUS OF ONE, and a bounce keeps it"
-  if [ "$(logs_count '\[nexus\] island .* \(own\)' lararium-a)" -gt 0 ]; then
+  # NEGATIVE ①a — THE FIRST BOOT READS THE SEED CHARTER. A face binds its hearth's AID, so no boot of a hearth ever
+  # reads a private nexus of one; a bounce keeps the island.
+  step "NEG a — the island reads the SEED CHARTER from the first boot, never a private nexus of one, and a bounce keeps it"
+  local AID
+  AID=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
+        | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  if [ -n "$AID" ] && [ "$(logs_count '\(charter, shared\)' lararium-a)" -gt 0 ] \
+     && [ "$(logs_count '\[nexus\] island .* \(own\)' lararium-a)" -eq 0 ]; then
     $COMPOSE restart lararium-a >/dev/null 2>&1
-    if up_and_answering lararium-a; then ok; else bad "a charterless vessel did not survive a bounce"; fi
-  else bad "a charterless vessel did not read as a private nexus of one"; fi
+    if up_and_answering lararium-a; then ok; else bad "a hearth did not survive a bounce"; fi
+  else bad "the hearth's first boot did not read its seed charter (AID '${AID}')"; fi
 
   step "the face is WORN and USED — a carrier lands under it"
   $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
   $COMPOSE exec -T lararium-a sh -c "printf '<<^ code=\"&#x0001;\" from=\"?\" -> to=\"$URI\">>\n<<^ code=\"&#x0002;\">>\n\n\`\`\`toml meta\nuri-path = \"t.climb.witness/one\"\n\`\`\`\n\n<<^ code=\"&#x0003;\">>\n\n<<^ code=\"&#x0004;\" -> to=\"?\">>\n' > /tmp/climb.mem" 2>/dev/null
   if $COMPOSE exec -T lararium-a $LARES meme put "$URI" --recipe lares --file /tmp/climb.mem --json 2>&1 \
-     | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the climb has no inception to strand"; fi
+     | grep -q '"ok":true'; then ok; else bad "the face wrote nothing — the roll has no inception to strand"; fi
 
-  # THE RE-KEYING ACT. `rite quorum` composes seal seat · seal show; the seat writes the
-  # roster and `sealEpochCid` becomes the island every later boot resolves.
-  step "the charter seats AFTER the face — the board re-keys"
-  local i EPOCH
-  for i in 0 1 2; do
+  # THE ROLL. Two more chairs stand on faces of their own, the seed card reveals, and `seal rotate` rolls the charter
+  # to three chairs under a majority rule. The head moves; the AID stays.
+  step "the seed charter ROLLS after the face — the head moves, the AID stays"
+  local i CARD HEAD
+  CARD=$($COMPOSE logs lararium-a 2>&1 | grep -oE 'staged seed card: [0-9a-f-]+' | tail -1 | cut -d' ' -f4)
+  for i in 1 2; do
     $COMPOSE exec -T lararium-a $LARES persona new "$i" --name "kahu-$i" --handle "Kahu $i" --seat >/dev/null 2>&1 || true
   done
-  $COMPOSE exec -T lararium-a $LARES nexus rite quorum >/dev/null 2>&1
-  EPOCH=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
-          | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-  if [ -n "$EPOCH" ]; then ok; else bad "no charter seated — nothing re-keyed, so the climb never happened"; clear_all; return; fi
+  $COMPOSE exec -T lararium-a $LARES nexus seal rotate --cold-key "$CARD" --threshold 2 >/dev/null 2>&1
+  HEAD=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 \
+         | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  if [ -n "$CARD" ] && [ -n "$HEAD" ] && [ "$HEAD" != "$AID" ]; then ok
+  else bad "the seed charter did not roll (card '${CARD:0:9}…', head '${HEAD}', AID '${AID}')"; clear_all; return; fi
 
   # ★ THE READING THIS SCENARIO EXISTS FOR ★
-  # POLL FOR THE ISLAND LINE, never read once. The vessel answers its verb socket before it has
-  # printed the crossroads reading, so a single read here times the harness rather than the climb.
-  step "★ RESTART: the vessel boots, and the island CLIMBED ★"
+  # POLL FOR THE ISLAND LINE, never read once. The vessel answers its verb socket before it has printed the
+  # island reading, so a single read here times the harness rather than the roll.
+  step "★ RESTART: the vessel boots, and the island stands where the founding put it ★"
+  local before kept=0 cd=$((SECONDS + 240))
+  before=$(logs_count "island ${AID:0:18}" lararium-a)
   $COMPOSE restart lararium-a >/dev/null 2>&1
-  local climbed=0 cd=$((SECONDS + 240))
   if up_and_answering lararium-a 240; then
     while [ "$SECONDS" -lt "$cd" ]; do
-      [ "$(logs_count '\(charter, shared\)' lararium-a)" -gt 0 ] && { climbed=1; break; }
+      [ "$(logs_count "island ${AID:0:18}" lararium-a)" -gt "$before" ] && { kept=1; break; }
       sleep 5
     done
   fi
-  if [ "$climbed" -eq 1 ]; then ok
+  if [ "$kept" -eq 1 ]; then ok
   else
-    bad "the vessel never came back, or the island did not climb"
+    bad "the vessel never came back, or its island moved off the founding's AID"
     dump_boot_failure lararium-a
   fi
 
-  step "the carry ran, and the Binding Gate never halted"
+  step "the Binding Gate never halted"
   local HALTS
   HALTS=$($COMPOSE logs --since 6m lararium-a 2>&1 | grep -cF "persona-KEL chain for the pinned identifier")
-  if logs_have "up the gradient" lararium-a && [ "${HALTS:-0}" -eq 0 ]; then ok
+  if [ "${HALTS:-0}" -eq 0 ]; then ok
   else
-    bad "the carry did not run, or the gate halted ${HALTS} time(s)"
+    bad "the gate halted ${HALTS} time(s)"
     $COMPOSE logs --since 6m lararium-a 2>&1 | grep -E "persona-kel|Binding Gate" | tail -3 | cut -c1-220 | sed 's/^/      /'
   fi
 
@@ -1894,8 +1904,8 @@ run_board() {
 
   step "NEG a — two vessels under DIFFERENT charters compute DIFFERENT boards"
   local EA EB BA BB
-  EA=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
-  EB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  EA=$($COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  EB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1 | grep -oE '"sealEpochCid":"(nexus|epoch)-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   BA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
   BB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]+"' | head -1 | cut -d'"' -f4)
   if [ -n "$EA" ] && [ -n "$EB" ] && [ "$EA" != "$EB" ] && [ -n "$BA" ] && [ -n "$BB" ] && [ "$BA" != "$BB" ]; then ok
@@ -1909,9 +1919,9 @@ run_board() {
       "${EA:-none}" "${EB:-none}" "${BA:-none}" "${BB:-none}"
   fi
 
-  # B STARTS OVER CHARTERLESS for the headline: a plain charter import refuses beside a standing charter of her
-  # own, and a re-seat would re-derive the epoch. Her volume goes, and she founds afresh with no cabal.
-  step "B burns her own charter and founds afresh, charterless"
+  # B STARTS OVER for the headline: her kahu charter goes with her volume, and she founds afresh as a plain hearth,
+  # its one-seat seed charter her own; A's charter then reaches her CARRIED, never as her primary.
+  step "B burns her own charter and founds afresh, on a fresh seed of her own"
   $COMPOSE rm -sfv lararium-b >/dev/null 2>&1
   docker volume rm "${MESH_PROJECT}_lararium-b-data" >/dev/null 2>&1
   local SB=""
@@ -1919,7 +1929,7 @@ run_board() {
     SB=$($COMPOSE exec -T lararium-b $LARES nexus seal show --json 2>&1)
   fi
   case "$SB" in
-    ""|*'"quorumSeated":true'*) bad "B did not stand afresh without a charter"; dump_boot_failure lararium-b; clear_all; return ;;
+    ""|*"$EB"*) bad "B did not stand afresh on a seed of her own"; dump_boot_failure lararium-b; clear_all; return ;;
     *) ok ;;
   esac
 
@@ -1929,7 +1939,7 @@ run_board() {
   step "★ under ONE charter, both vessels compute ONE board ★"
   local RA RB
   RA=$($COMPOSE exec -T lararium-a $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
-  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
+  RB=$($COMPOSE exec -T lararium-b $LARES nexus realm-bags --realm "$AID_A" --json 2>&1 | grep -oE '"realmDoc":"[^"]*"' | head -1)
   if [ -n "$RA" ] && [ "$RA" = "$RB" ]; then ok
   else
     bad "the two sides name different boards under one charter"

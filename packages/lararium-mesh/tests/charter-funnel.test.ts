@@ -48,6 +48,8 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "packages/lares-cli/tests/nexus-seal-lineage.test.ts":                "rite-law",
   "packages/lares-cli/tests/seal-rotate-refusal-codes.test.ts":         "rite-law",
   "packages/lararium-node/tests/seat-arming.test.ts":                   "rite-law",
+  // What the Stable founding act writes: one seat at threshold one, committing its card's digest.
+  "packages/lararium-node/tests/found-hearth.test.ts":                  "rite-law",
   // The charter doc's reader and writer, a torn doc among the vectors.
   "packages/lararium-mesh/tests/nexus-seal-seed.test.ts":               "doc-law",
   "packages/lararium-node/tests/nexus-doc.test.ts":                     "doc-law",

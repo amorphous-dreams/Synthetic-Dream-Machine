@@ -213,9 +213,9 @@ export interface StageOptions {
   /** A port already chosen — so a rite that names this vessel's dial (`--sync-url`) can run before it stands. */
   readonly port?: number;
   /**
-   * The founding rite, run before the daemon stands. Defaults to `vessel found` on the marked scratch root (a place) and
-   * `persona new 0` (a face). A suite standing a JOINER performs its own rite here — admit, re-found —
-   * against the same root and env the daemon will then read.
+   * The founding rite, run before the daemon stands. Defaults to the Stable founding act on the marked scratch root
+   * (`vessel found --hearth`: the place, persona zero, the seed charter, the face). A suite standing a JOINER or a
+   * HERM performs its own rite here against the same root and env the daemon will then read.
    */
   readonly found?: (cli: (args: readonly string[]) => Promise<CliResult>, root: string) => Promise<void>;
   /** Extra environment the DAEMON stands with (a peer to dial, a gate to bind to). The CLI env stays the pair. */
@@ -250,27 +250,51 @@ export function unlockStaged(root: string): void {
 /** How many looks `unlockStaged` gives a daemon that does not answer yet. */
 const UNLOCK_LOOKS = 240;
 
-/** The default rite: a place, then a face. */
-async function foundHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
-  // Founding — `lares vessel found` seeds the marked scratch root (init runs inside).
-  //
-  // ── A WITNESS BUILDS NOTHING ──────────────────────────────────────────────────────────────────
-  // `vessel` doors carry a freshness gate that rebuilds the whole workspace (`pnpm -r build`) when any
-  // source under `packages/` moved since the last stamp — re-emitting every dist, re-rendering the
-  // engine, and writing into the shared tree beside whoever else is building there. A staged boot
-  // measures the dist that STANDS: the suite names the missing dist on stderr and skips; it never
-  // rebuilds. `--skip-build` is the gate's own sentinel for "already fresh — run the handler".
-  const found = await cli(["vessel", "found", "--root", root, "--skip-build"]);
-  if (found.code !== 0) throw new Error(`staged founding failed (${found.code}):\n${found.stderr.slice(-800)}`);
+/**
+ * The cold-key card each staged hearth's founding printed, by root. On a staged root the read-back stands in and the
+ * founding's JSON answer carries the card's code; a rite that grows the quorum reveals it to roll the seed charter.
+ * Test roots alone: a live card never rests anywhere but on its paper.
+ */
+const hearthCards = new Map<string, string>();
 
-  // ── THE RITE RUNS IN TWO STEPS, SO THE HARNESS PERFORMS BOTH ───────────────────────────────
-  // `vessel found` founds a PLACE: the daemon bag, the vessel's own Keyhive individual, the hearth
-  // true-name. A place stands and serves while holding no face — which is correct, and which is
-  // NOT what these suites test. They exercise a hearth: personas, wiki, catalog, the pairing the
-  // boot path derives. So the staged instance lights its face here, and a suite that wants the
-  // FLOOR asks for it deliberately rather than inheriting it from a founding that stopped early.
-  const face = await cli(["persona", "new", "0", "--name", "staged"]);
-  if (face.code !== 0) throw new Error(`staged face-founding failed (${face.code}):\n${face.stderr.slice(-800)}`);
+/**
+ * THE STABLE FOUNDING ACT on a staged root: the place, persona zero under `name`, its one-seat seed charter and the
+ * face that binds its AID, in one CLI act. Answers the card's code (the stand-in printed it into the JSON answer).
+ */
+export async function foundStagedHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string, name: string): Promise<string> {
+  const found = await cli(["vessel", "found", "--hearth", "--name", name, "--root", root, "--skip-build", "--json"]);
+  if (found.code !== 0) throw new Error(`staged hearth founding failed (${found.code}):\n${found.stdout.slice(-400)}\n${found.stderr.slice(-800)}`);
+  const data = (found.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> };
+  const code = data.cards?.[0]?.code ?? "";
+  if (!code) throw new Error(`staged hearth founding printed no card code (the read-back stand-in answers it on a staged root):\n${found.stdout.slice(-600)}`);
+  hearthCards.set(root, code);
+  return code;
+}
+
+/**
+ * GROW A STAGED HEARTH'S QUORUM by the roll its seed charter armed: each handle stands for a chair on a face of its
+ * own (h1, h2, …) beside the seed chair persona zero holds, then the seed card reveals and `seal rotate` rolls the
+ * charter to every chair that stands, under a majority rule. The AID the founding minted stays the hearth's name.
+ */
+export async function growStagedQuorum(cli: (args: readonly string[]) => Promise<CliResult>, root: string, handles: readonly string[]): Promise<void> {
+  const code = hearthCards.get(root);
+  if (!code) throw new Error(`no staged hearth card stands for ${root}: found it with foundStagedHearth first`);
+  let i = 1;
+  for (const handle of handles) {
+    const k = await cli(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
+    if (k.code !== 0) throw new Error(`kahu ${i} failed (${k.code})\n${k.stderr.slice(-800)}`);
+    i += 1;
+  }
+  const chairs = handles.length + 1;
+  const roll = await cli(["nexus", "seal", "rotate", "--cold-key", code, "--threshold", String(Math.floor(chairs / 2) + 1), "--json"]);
+  if (roll.code !== 0) throw new Error(`seal rotate failed (${roll.code})\n${roll.stdout.slice(-400)}\n${roll.stderr.slice(-800)}`);
+  const next = ((roll.json?.["data"] ?? {}) as { cards?: Array<{ code?: string }> }).cards?.map((c) => c.code ?? "").filter((c) => c.length > 0) ?? [];
+  hearthCards.set(root, next.join(","));
+}
+
+/** The default rite: the Stable founding act. */
+async function foundHearth(cli: (args: readonly string[]) => Promise<CliResult>, root: string): Promise<void> {
+  await foundStagedHearth(cli, root, "staged");
 }
 
 /** Stand ONE staged vessel under its own root and port. `targetInstance` calls this with the defaults. */
@@ -523,18 +547,12 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
     const pair = await openStagedJoinee({
       tag: `${tag}fleet`,
       daemonEnv: { LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
-      riteA: async (cliA) => {
+      riteA: async (cliA, rootA) => {
         // A registers a realm bag below, and a steward seals with the face she WEARS (`realm-steward`).
         const wear = await cliA(["persona", "wear", "0"]);
         if (wear.code !== 0) throw new Error(`A: persona wear 0 failed (${wear.code})\n${wear.stderr.slice(-800)}`);
-        let i = 1;
-        for (const handle of ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]) {
-          const k = await cliA(["persona", "new", String(i), "--name", `kahu-${i}`, "--handle", handle, "--seat"]);
-          if (k.code !== 0) throw new Error(`A: kahu ${i} failed (${k.code})\n${k.stderr.slice(-800)}`);
-          i += 1;
-        }
-        const rite = await cliA(["nexus", "rite", "quorum"]);
-        if (rite.code !== 0) throw new Error(`A: rite quorum failed (${rite.code})\n${rite.stderr.slice(-800)}`);
+        // The seed charter grows to three chairs by the roll its founding armed; its AID stays A's hearth.
+        await growStagedQuorum(cliA, rootA, ["Kahu Alpha", "Kahu Beta", "Kahu Gamma"]);
       },
       // ── THE CARRIAGE CROSSING, run while A stands live and C has not yet booted ──────────────────────
       // A Herm holds no face by class (`personaSlotCeiling("herm") === 0`), so it enters a Nexus by the
@@ -637,8 +655,8 @@ export interface JoineeOptions {
    * This changes only the requested read, never the admission or gate relation.
    */
   readonly joinDocUrl?: string | ((A: LarInstance) => string | null | Promise<string | null>);
-  /** A's own rite BEYOND place-and-face, run while NO daemon stands — where a suite seats a founding
-   *  quorum (`persona new <i> --seat` ×3 · `nexus rite quorum`). A charter seats before the daemon reads it. */
+  /** A's own rite BEYOND the Stable founding act, run while NO daemon stands — where a suite grows the seed
+   *  charter to a founding quorum (`growStagedQuorum`: chairs stand, the seed card reveals, `seal rotate`). */
   readonly riteA?: (cli: (args: readonly string[]) => Promise<CliResult>, root: string) => Promise<void>;
   /** How B learns A's dial: `"env"` (LAR_JOIN_SYNC/GATE/DOC off A's log and registry) or `"pin"`
    *  (nothing — B boots by the hearth its signed edge names). Default `"env"`. */
@@ -684,10 +702,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
     const A = await openStaged({
       tag: `${tag}A`, port: portA, daemonEnv: { ...(opts.daemonEnv ?? {}), ...(opts.daemonEnvA ?? {}) },
       found: async (cliA, rootA) => {
-        const found = await cliA(["vessel", "found", "--root", rootA, "--skip-build"]);
-        if (found.code !== 0) throw new Error(`A: founding failed (${found.code})\n${found.stderr.slice(-800)}`);
-        const face = await cliA(["persona", "new", "0", "--name", "alpha"]);
-        if (face.code !== 0) throw new Error(`A: face failed (${face.code})\n${face.stderr.slice(-800)}`);
+        await foundStagedHearth(cliA, rootA, "alpha");
         await opts.riteA?.(cliA, rootA);
         // B founds by A's genesis, copied whole: `vessel found --admit` reads the hearth true-name off
         // `<root>/genesis`, and A's founding derived it (the re-derive is an internal rite step).

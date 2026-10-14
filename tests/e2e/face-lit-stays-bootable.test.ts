@@ -77,10 +77,11 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
   });
 
   test("lighting a face PEERLESS does not move the place's daemon document", () => {
-    // The container lights with LAR_PEERS cleared, so the mint reaches only local disk. It writes the
-    // PersonaGroup id INTO this bootstrap — it must not re-seed the place underneath itself.
+    // The container lifts its place with LAR_PEERS cleared, so the mint reaches only local disk. The Stable founding
+    // act over the standing place writes the PersonaGroup id INTO this bootstrap — it must not re-seed the place
+    // underneath itself.
     const before = daemonUrlFromBootstrap();
-    lares(["persona", "new", "0", "--name", "alpha"], { LAR_PEERS: "" });
+    lares(["vessel", "found", "--hearth", "--name", "alpha", "--skip-build"], { LAR_PEERS: "" });
     expect(daemonUrlFromBootstrap()).toBe(before);
   });
 

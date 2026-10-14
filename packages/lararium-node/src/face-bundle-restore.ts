@@ -59,12 +59,13 @@ import {
 } from "./node-vessel-identity.js";
 import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./persona-admit-flow.js";
 import { RESTORE_PENDING_FILE } from "./vault-carriers.js";
+import { hearthAid } from "./hearth-aid.js";
 import { larBootstrapPath } from "./vessel-paths.js";
 
 /** The names a restore refuses under (custody#/the-restore). `bundle-malformed` and `no-slot-opens` belong to the command, which opens the file. */
 export const RESTORE_REFUSALS = [
   "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
-  "founding-face-unlit", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
+  "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
 ] as const;
 export type RestoreRefusal = (typeof RESTORE_REFUSALS)[number];
 
@@ -176,6 +177,10 @@ async function readPending(): Promise<Pending | null> {
 /** PREFLIGHT every target row and relation. Writes nothing. */
 async function preflight(body: FaceBundleBody, target: number): Promise<void> {
   if (!existsSync(larBootstrapPath())) refuse("place-unfounded", "no founded place stands here: a restore lands a face onto a vessel `lares vessel found` already stood. Nothing moved.");
+  // A RESTORED FACE BINDS THE HEARTH IT LANDS ON: its device edge names this vessel's seed charter, so a place with
+  // none holds no hearth for it. The person founds the fresh hearth first (`lares vessel found --hearth`), and the
+  // restore lands beside persona zero at a free index.
+  if (hearthAid() === null) refuse("no-hearth", "no seed charter stands on this vessel, so no hearth stands for the restored face to bind to. Nothing moved; found the hearth with `lares vessel found --hearth --name '<label>'`, then restore at a free index (--as <N>).");
   const roster = await listPersonaRosterLines();
   if (roster.some((l) => l.verifyingKey === body.root.verifyingKey)) {
     refuse("face-already-held", "this vessel already holds this face's root, and no restore of it stands pending: a second restore over it. Nothing moved.");
