@@ -122,6 +122,11 @@ export interface ClaimOptions {
    * boot learns that a reaper died mid-reap here.
    */
   readonly onReap?: (word: ReapWord) => void;
+  /**
+   * Hears each caller a vessel's claim PARKS, by the verb its line names (`"?"` for a line that names none), at
+   * the moment the park has read that line. A caller that only asks who holds never parks and gets no word.
+   */
+  readonly onPark?: (verb: string) => void;
 }
 
 /** The claim's shape apart from `holder`/`bootEpoch`, which {@link StoreClaim} discriminates on `holder`. */
@@ -230,7 +235,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
   }
 }
 
-async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => StoreHeld, parkLimit: number, hears: Pick<ClaimOptions, "onReap">): Promise<StoreClaimShape & { readonly holder: StoreHolder }> {
+async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => StoreHeld, parkLimit: number, hears: Pick<ClaimOptions, "onReap" | "onPark">): Promise<StoreClaimShape & { readonly holder: StoreHolder }> {
   const socketPath = rendezvousPath({ root: storageDir, uid: uid() });
   const heldBy = (why: string): string => JSON.stringify({ status: "error", errorMessage: why, holder }) + "\n";
   const answerHeld = (why: string) => (sock: Socket): void => {
@@ -301,10 +306,9 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
         try { sock.end(heldBy(`a vessel (pid ${process.pid}) holds the store at ${storageDir}`)); } catch { /* gone */ }
         return;
       }
-      parked.set(sock, {
-        verb: typeof parsed.verb === "string" ? parsed.verb : "?",
-        take: () => { sock.off("data", onData); return buf; },
-      });
+      const verb = typeof parsed.verb === "string" ? parsed.verb : "?";
+      parked.set(sock, { verb, take: () => { sock.off("data", onData); return buf; } });
+      try { hears.onPark?.(verb); } catch { /* a hearer never moves the park */ }
     };
     sock.on("data", onData);
     sock.on("close", () => {

@@ -16,6 +16,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 import { claimStore } from "../src/owned-store.js";
+import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 
 let dir: string;
 beforeEach(() => { dir = mkdtempSync(join(tmpdir(), "lares-park-limit-")); });
@@ -39,22 +40,38 @@ function openAndSend(path: string, verb: string): { sock: Socket; reply: Promise
   return { sock, reply };
 }
 
+/**
+ * The park's own word for "this caller's line stands parked" (`onPark`), kept per verb. A vector opens a caller
+ * and waits for that word before it opens the next, so the park's order follows the vector's order on any machine
+ * and no pause stands in for "the park read the line".
+ */
+function parkEar(): { onPark: (verb: string) => void; parked: (verb: string) => Promise<void> } {
+  const words = new Map<string, Arrival<void>>();
+  const of = (verb: string): Arrival<void> => {
+    let word = words.get(verb);
+    if (!word) { word = arrival<void>(`the park reading the line of verb "${verb}"`); words.set(verb, word); }
+    return word;
+  };
+  return { onPark: (verb) => { of(verb).arrive(); }, parked: (verb) => of(verb).arrived };
+}
+
 function settledWithin(p: Promise<unknown>, ms: number): Promise<"settled" | "pending"> {
   return Promise.race([p.then(() => "settled" as const), new Promise<"pending">((r) => setTimeout(() => r("pending"), ms))]);
 }
 
 describe("owned-store park — a COUNT bound, never an age bound (M8′)", () => {
   it("★ RED→cure: past parkLimit, the OLDEST parked caller is evicted by a NAMED refusal; the rest stay parked ★", async () => {
-    const claim = await claimStore(dir, { holder: "vessel", parkLimit: 3 });
+    const ear = parkEar();
+    const claim = await claimStore(dir, { holder: "vessel", parkLimit: 3, onPark: ear.onPark });
     try {
       const path = socketOf(dir);
-      const callers = [
-        openAndSend(path, "a"),
-        openAndSend(path, "b"),
-        openAndSend(path, "c"),
-      ];
-      // Give the park a moment to register all three before the 4th arrives.
-      await new Promise((r) => setTimeout(r, 30));
+      // One caller at a time, each parked by the park's own word before the next connects: "a" stands oldest
+      // because the park read it first, never because three dials happened to land in the order they started.
+      const callers: Array<ReturnType<typeof openAndSend>> = [];
+      for (const verb of ["a", "b", "c"]) {
+        callers.push(openAndSend(path, verb));
+        await ear.parked(verb);
+      }
       for (const c of callers) {
         expect(await settledWithin(c.reply, 50), "a caller within the bound must still be parked, unanswered").toBe("pending");
       }
@@ -66,7 +83,7 @@ describe("owned-store park — a COUNT bound, never an age bound (M8′)", () =>
       expect(oldestReply).toMatch(/verb \\"a\\"/);
 
       // "b", "c", and the newly-arrived "d" all stay parked — the eviction took exactly one.
-      await new Promise((r) => setTimeout(r, 30));
+      await ear.parked("d");
       expect(await settledWithin(callers[1]!.reply, 50)).toBe("pending");
       expect(await settledWithin(callers[2]!.reply, 50)).toBe("pending");
       expect(await settledWithin(fourth.reply, 50)).toBe("pending");
@@ -78,11 +95,12 @@ describe("owned-store park — a COUNT bound, never an age bound (M8′)", () =>
   });
 
   it("CONTROL: within parkLimit, nothing is evicted, and every caller replays once `serve` takes over", async () => {
-    const claim = await claimStore(dir, { holder: "vessel", parkLimit: 3 });
+    const ear = parkEar();
+    const claim = await claimStore(dir, { holder: "vessel", parkLimit: 3, onPark: ear.onPark });
     try {
       const path = socketOf(dir);
       const callers = [openAndSend(path, "x"), openAndSend(path, "y")];
-      await new Promise((r) => setTimeout(r, 30));
+      await Promise.all([ear.parked("x"), ear.parked("y")]);
       for (const c of callers) {
         expect(await settledWithin(c.reply, 50)).toBe("pending");
       }
@@ -109,11 +127,12 @@ describe("owned-store park — a COUNT bound, never an age bound (M8′)", () =>
   });
 
   it("CONTROL: the default parkLimit (PARK_LIMIT) requires no caller-side option", async () => {
-    const claim = await claimStore(dir, { holder: "vessel" });
+    const ear = parkEar();
+    const claim = await claimStore(dir, { holder: "vessel", onPark: ear.onPark });
     try {
       const path = socketOf(dir);
       const c = openAndSend(path, "solo");
-      await new Promise((r) => setTimeout(r, 30));
+      await ear.parked("solo");
       expect(await settledWithin(c.reply, 50)).toBe("pending"); // a lone caller well under any sane default stays parked
       c.sock.destroy();
     } finally {
