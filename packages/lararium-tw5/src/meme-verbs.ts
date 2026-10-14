@@ -443,7 +443,10 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
  * (`recipe-unshadowed`). The caps ride the order the read and the put keep: the read cap on the bag that
  * answered the root, then the admin cap on each bag a tombstone lands in, before any store of those bags
  * gets reached to write. A bag of the stack the island cannot reach shows no titles; the receipt names it
- * (`unreached`), as the listing does, since a child that bag holds stays unseen by this delete.
+ * (`unreached`), as the listing does, since a child that bag holds stays unseen by this delete. Where such a
+ * bag stands above the one that answered the root, the meme may still read through it: the decision reads
+ * `unconfirmed`. A tombstone write that throws leaves the rest to land and reads `partial`, naming each `failed`.
+ * The read cap gates every bag that answers a title of the group, since the receipt names those titles.
  */
 async function deleteThroughRecipe(
   opts: MemeVerbOptions, slug: string, uri: string, base: string | null | undefined, origin: ChangeOrigin,
@@ -476,13 +479,24 @@ async function deleteThroughRecipe(
   const titles = new Set<string>();
   for (const layer of layers) for (const t of groupOfMeme(await layer.store.listVisible(), uri)) titles.add(t);
   const shadowAt = new Map<string, string>();
+  const answeredIn = new Set<string>();
   for (const title of titles) {
     for (const layer of layers) {
       const record = await layer.store.get(title);
       if (!record) continue;
-      if (!record.meta?.deleted) shadowAt.set(title, stack.indexOf(layer.bag) < stack.indexOf(designated) ? layer.bag : designated);
+      if (!record.meta?.deleted) {
+        shadowAt.set(title, stack.indexOf(layer.bag) < stack.indexOf(designated) ? layer.bag : designated);
+        answeredIn.add(layer.bag);
+      }
       break;
     }
+  }
+  // THE READ CAP GATES EVERY BAG THAT ANSWERS A TITLE, before the receipt names one: a child a lower bag holds
+  // reaches the caller's answer by name, so a bag the caller may not read refuses the delete before any write.
+  for (const bag of answeredIn) {
+    if (bag === answered.bag) continue;
+    const proof = await cap("read", bag);
+    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
   }
   const writeBags = [...new Set(shadowAt.values())];
   for (const bag of writeBags) {
@@ -495,9 +509,22 @@ async function deleteThroughRecipe(
     if (!store) throw new Error(`meme: recipe "${slug}" tombstones ${uri} in bag "${bag}", which this island neither mounts writable nor reaches by access`);
     writers.set(bag, store);
   }
+  // EACH TOMBSTONE LANDS OR NAMES WHY: a write that throws stops none of the others, and the receipt names both
+  // halves (`partial`), so a caller never reads a delete that half-landed as one that did not move.
   const tombstoned: string[] = [];
-  for (const [title, bag] of shadowAt) { await writers.get(bag)!.tombstone(title, origin); tombstoned.push(title); }
-  return { uri, decision: "removed", tombstoned, canonicalHash: meme.canonicalHash, readFrom: answered.bag, tombstonedIn: writeBags, ...(unreached.length > 0 ? { unreached } : {}) };
+  const failed: Array<{ title: string; bag: string; why: string }> = [];
+  for (const [title, bag] of shadowAt) {
+    try { await writers.get(bag)!.tombstone(title, origin); tombstoned.push(title); }
+    catch (err) { failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+  }
+  // A BAG THE ISLAND CANNOT REACH, ABOVE THE ONE THAT ANSWERED, may still hold the meme the wiki reads: the
+  // delete names that `unconfirmed`, never `removed`.
+  const unreachedAbove = unreached.filter((bag) => stack.indexOf(bag) < stack.indexOf(answered.bag));
+  const decision = failed.length > 0 ? "partial" : unreachedAbove.length > 0 ? "unconfirmed" : "removed";
+  return {
+    uri, decision, tombstoned, ...(failed.length > 0 ? { failed } : {}), canonicalHash: meme.canonicalHash, readFrom: answered.bag,
+    tombstonedIn: writeBags, ...(unreached.length > 0 ? { unreached } : {}), ...(unreachedAbove.length > 0 ? { unreachedAbove } : {}),
+  };
 }
 
 export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
