@@ -371,7 +371,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 !!! GROUND
 * `G3` `KeyhiveIdentitySlot` wants a production caller, and rides its package barrel without one. House. G.
 * `G5` Retired bags: the write gate enumerates its verbs by hand (`action-handler.ts`); a wiki-island save and the watcher's ingest-back into a retired bag stand unprobed. Canon owes `action-handler.mem` the refusal that follows DROP. G.
-* `G6` The evergreen sweep. Stale prose in source: `open-node-vessel.ts` and `node-cas.ts` ("read fresh … never cached" over a captured boot epoch); `cabal-vouch.ts` ("an expiry already past"); lane labels in test titles. Back-compat wording or tolerant readers: `index.ts` (node), `open-browser-vessel.ts`, `residency-actions.ts`, `daemon-vm-core.ts`, `nexus-publish.ts`, `ingest-core.ts`, `device-delegation.ts`, `lar-uris.ts`, `seal-reserve.ts`, `mesh-palace.ts` (a carried `expiry` field), `cleanup-days.ts`, `nexus-seal-seed.ts`. G; the false source comments ride the code lane of #/side-lanes.
+* `G6` The evergreen sweep. Stale prose in source: `open-node-vessel.ts` and `node-cas.ts` ("read fresh … never cached" over a captured boot epoch); `cabal-vouch.ts` ("an expiry already past"); lane labels in test titles. Back-compat wording or tolerant readers: `index.ts` (node), `open-browser-vessel.ts`, `residency-actions.ts`, `daemon-vm-core.ts`, `nexus-publish.ts`, `ingest-core.ts`, `device-delegation.ts`, `lar-uris.ts`, `seal-reserve.ts`, `mesh-palace.ts` (a carried `expiry` field), `cleanup-days.ts`, `nexus-seal-seed.ts`. A comment that describes a caller no production path holds: `plane-secrets.ts`, `seed-wrap-prf.ts`; lane labels in a header: `receipt-cmd.ts`. G; the false source comments ride the code lane of #/side-lanes.
 * `G7` Custody's edges: the floor guard reads a carrier cut inside its 13-byte magic as `bare`; a short seat can write a charter that boots torn (`nexus-seal.ts`); a floor-class carrier standing alone founds; `setFoundingRoute` stands as a test seam in source (`found.ts`); the custody wait can refuse falsely where no holder answers. G.
 * `G8` Measures: the full-corpus per-verb flush re-measure; pack-PIN recursion; a production `assertBodyIndexTier` caller. G.
 * `G10` The wiki shore's echo law: every leaked change routes as a save. Verify at the shore lane's close. G.
@@ -498,6 +498,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `X2` The ceremony as a walk, in the runbook (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>). X.
 * `X3` The fresh start by hand on both machines. Operator's hands. X.
 * `X4` The parted-authors walk, in the dress rehearsal: two hearths edit one title while apart, rejoin, and each person opens the parallel draft the other left. The walk records whether each recognises their own words and reads why the other version stands live. X.
+* `X5` The departure walks, in the dress rehearsal, each on synthetic names and each recording the words the display gives at its incomplete crossing: a wiki closed over a refused save (`G33`); a browser profile reopened on the Archives it kept (`B1`); a public reference followed after its author's vessel went dark (`P10`); a command's outcome read through `lares receipt` after its caller gave up. X.
 
 !!! Carried lanes ~ designed or measured, on no train
 * A floor read carries no as-of stamp: `standAs` returns a bare class (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>).
@@ -772,6 +773,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;pYv9vJXUd6_Rb90zaFEh0q4-k6Tu2cE_5nxx6-jqq3s
+<<^ code="&#x0003;">>ni:///sha-256;EP199gRZDA54sHR88FZVej1V0Jv9luEIxVmS9JKBdOU
 
 <<^ code="&#x0004;" -> to="?">>
