@@ -585,6 +585,20 @@ describe("meme-list — a named recipe lists the roots its stack resolves", () =
     expect(second["next"]).toBeNull();
   });
 
+  test("★ a slot nobody registered answers no root and asks for no cap: the listing stands ★", async () => {
+    const r = rig();
+    const { canon } = stacked(r);
+    await land(canon, bagUri("garden"), A, ["a"]);
+    r.slots.set("garden/personal", new MemoryTiddlerStore(wikiSlotUri("garden", "personal")));
+    const personal = wikiSlotUri("garden", "personal");
+    const denying: VerbContext = { ...ctx(), cap: async (_access, bag) => (bag === personal ? { ok: false, reason: `bag not registered: ${bag}` } : { ok: true }) };
+    const out = await makeMemeListReactor(r.opts)({ recipe: "garden" }, denying);
+    expect((out["roots"] as { uri: string }[]).map((x) => x.uri)).toEqual([A]);
+    // CONTROL: a bag that ANSWERS a root the caller may not read refuses the listing by name.
+    const closed: VerbContext = { ...ctx(), cap: async (_access, bag) => (bag === bagUri("garden") ? { ok: false, reason: "no" } : { ok: true }) };
+    await expect(makeMemeListReactor(r.opts)({ recipe: "garden" }, closed)).rejects.toThrow(/cap-denied: read on .*bags\/garden/);
+  });
+
   test("CONTROL: a named bag still lists that bag's records alone", async () => {
     const r = rig();
     const { canon, work } = stacked(r);

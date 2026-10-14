@@ -375,14 +375,22 @@ async function listRecipeStack(
     // An instance slot with no store holds no record yet (nothing minted its doc), and `temp` lives in the
     // wiki island alone: neither hides a root. Any other bag with no store stands unreached, by name.
     if (!store) { if (!wikiSlotKindOf(slug, bag)) unreached.push(bag); continue; }
-    const proof = await cap("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
     const titles = await store.listVisible();
     const base = storeMemeSink(store, bag, origin);
     layers.push({ bag, store, sink: { titles: () => titles, read: (title) => base.read(title) } });
     // A root's title carries no `#`; a title at or before the cursor rode an earlier page.
     for (const title of titles) if (!title.includes("#") && (page.after === null || title > page.after)) candidates.add(title);
   }
+  // THE READ CAP GATES THE BAG THAT ANSWERS, as the read's own gate does (`meme-get` asks for the one bag
+  // its walk stopped at). A slot the wiki composes and nobody registered holds no root and answers none, so
+  // it asks for no cap; a bag that answers a root the caller may not read refuses the listing by name.
+  const allowed = new Set<string>();
+  const mayRead = async (bag: string): Promise<void> => {
+    if (allowed.has(bag)) return;
+    const proof = await cap("read", bag);
+    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    allowed.add(bag);
+  };
   const roots: StackListing[] = [];
   let next: string | null = null;
   for (const uri of [...candidates].sort()) {
@@ -396,6 +404,7 @@ async function listRecipeStack(
     }
     if (!answered) continue;
     if (roots.length >= page.limit) { next = roots[roots.length - 1]!.uri; break; }
+    await mayRead(answered.bag);
     const listed = await listOneMeme(uri, answered.sink, page.tree);
     if (listed) roots.push({ ...listed, bag: answered.bag });
   }
