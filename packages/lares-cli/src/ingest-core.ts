@@ -69,7 +69,7 @@ export interface ScanRow {
   readonly meta?:      string;
   /** R2 — set on a `renamed` row: the VANISHED source URI whose byte-identical
    *  observation this carrier re-homes. The row rides as an ADD (so the island
-   *  re-links records change-id-preserving via the delete-gate), the source rides
+   *  re-links records change-id-preserving, `pairRenames`), the source rides
    *  the wave as a rename-deletion, and the CLI moves the observation post-confirm. */
   readonly renameFrom?: string;
 }
@@ -79,8 +79,8 @@ export interface ScanResult {
   readonly skipped: string[];
   /** R2 — the rename-deletions a FULL scan discovered (each `renamed` row's gone
    *  source), threaded into the INGEST wave's `deletions[]` so the island pairs
-   *  them and re-homes records. Absent on a partial (watcher) scan, which keeps
-   *  its own grace-window + delete-gate rename path. */
+   *  them and re-homes records. Absent on a partial (watcher) scan, which pairs
+   *  its own vanished set by content (`pairedDeletions`). */
   readonly renameDeletions?: PendingDeletion[];
 }
 
@@ -346,7 +346,7 @@ export interface IngestSettlement {
   readonly conflicts: readonly AskingCarrier[];
   /** Carriers per decision over the whole gesture. */
   readonly tallies:  Readonly<Record<string, number>>;
-  /** The first wave's deletion summary (renames, tombstones, a tripped brake). */
+  /** The first wave's deletion summary: the re-links, the absent sources, the declined addresses. */
   readonly deletions: Record<string, unknown> | undefined;
   /** How many bases the gesture pinned. */
   readonly recorded: number;
@@ -356,37 +356,48 @@ export interface IngestSettlement {
 
 /** What a settled gesture says of itself: whether the run took everything it was handed, and why it did not. */
 export interface IngestVerdict {
-  /** True where the run refused a carrier, a later wave failed, or the mass-delete brake applied nothing. */
+  /** True where the run refused a carrier, a later wave failed, or a carrier drew no answer. */
   readonly failed:  boolean;
-  /** The brake's own reason where it tripped; null otherwise. */
-  readonly braked:  string | null;
   /** The sentence a person reads where the run failed; null where it took everything. */
   readonly message: string | null;
 }
 
 /**
- * A REFUSAL NEVER READS AS APPLIED. Four states end a run non-zero: a refused carrier (each one named), a
- * later wave that failed (the count that stays unread named), a carrier no answer accounts for, and a
- * tripped mass-delete brake, which applies nothing and answers no carrier row at all. A conflict gets named and leaves the verdict alone: the island
- * surfaced it for a hand, and the run took every carrier it could decide.
+ * A REFUSAL NEVER READS AS APPLIED. Three states fail a run: a refused carrier (each one named), a later
+ * wave that failed (the count that stays unread named), and a carrier no answer accounts for. A conflict
+ * gets named and leaves this verdict alone: the island surfaced it for a hand, and the run took every
+ * carrier it could decide. A door that speaks for one person's one gesture reads the conflicts beside the
+ * verdict and ends non-zero on its own account (`lares ingest`).
  */
 export function ingestVerdict(s: IngestSettlement): IngestVerdict {
-  const braked = s.deletions?.["decision"] === "suspend"
-    ? String(s.deletions["reason"] ?? "the wave would remove more carriers than the brake allows")
-    : null;
-  if (braked !== null) {
-    return { failed: true, braked, message: `INGEST applied nothing: the mass-delete brake tripped (${braked}); ${s.submitted} carrier(s) and the wave's deletions stand unapplied` };
-  }
   if (s.pageError !== undefined) {
-    return { failed: true, braked, message: `INGEST read ${s.refused.length} refusal(s) and then a later wave failed (${s.pageError.message}); ${s.pageError.unread} carrier(s) stay unread: run the ingest again` };
+    return { failed: true, message: `INGEST read ${s.refused.length} refusal(s) and then a later wave failed (${s.pageError.message}); ${s.pageError.unread} carrier(s) stay unread: run the ingest again` };
   }
   if (s.refused.length > 0) {
-    return { failed: true, braked, message: `INGEST refused ${s.refused.length} of ${s.submitted} carrier(s): ${s.refused.map((r) => r.uri).join(", ")}` };
+    return { failed: true, message: `INGEST refused ${s.refused.length} of ${s.submitted} carrier(s): ${s.refused.map((r) => r.uri).join(", ")}` };
   }
   if (s.unanswered.length > 0) {
-    return { failed: true, braked, message: `INGEST drew no answer for ${s.unanswered.length} of ${s.submitted} carrier(s): ${s.unanswered.join(", ")}; run the ingest again` };
+    return { failed: true, message: `INGEST drew no answer for ${s.unanswered.length} of ${s.submitted} carrier(s): ${s.unanswered.join(", ")}; run the ingest again` };
   }
-  return { failed: false, braked, message: null };
+  return { failed: false, message: null };
+}
+
+/** The re-links a wave's deletion summary names: each vanished source with the address its records moved to. */
+export function renamesOf(deletions: Record<string, unknown> | undefined): Array<{ fromUri: string; toUri: string }> {
+  const renames = deletions?.["renames"];
+  if (!Array.isArray(renames)) return [];
+  return (renames as Array<Record<string, unknown>>).map((r) => ({ fromUri: String(r["fromUri"]), toUri: String(r["toUri"]) }));
+}
+
+/** The vanished sources a wave's deletion summary names as re-linked. */
+export function renamedSources(deletions: Record<string, unknown> | undefined): Set<string> {
+  return new Set(renamesOf(deletions).map((r) => r.fromUri));
+}
+
+/** The vanished addresses a wave's deletion summary names `absent`: the records hold nothing under them. */
+export function absentSources(deletions: Record<string, unknown> | undefined): Set<string> {
+  const absent = deletions?.["absent"];
+  return new Set(Array.isArray(absent) ? (absent as unknown[]).map(String) : []);
 }
 
 /**
@@ -422,31 +433,25 @@ export function standingAfterFault(
  *
  *   · a carrier the wave refused, or that drew no answer, stands owed with the reason;
  *   · a carrier the answer proves landed (a row, a proving tally, a confirmed rename) leaves the set;
- *   · a wave the island answered with an error, or that the brake stopped, leaves everything it carried
- *     owed, its deletions too;
- *   · a deletion the summary names applied (a tombstone, a rename's source) leaves the set.
+ *   · a wave the island answered with an error leaves everything it carried owed, its deletions too;
+ *   · a vanished address the summary names settled (a rename's source, or one whose records hold
+ *     nothing) leaves the set; one the island declined stays owed, and the vessel's shore hears of it.
  *
  * A conflict stays out: the island surfaced it for a hand, and the wave took every carrier it could decide.
  * A long-lived watcher reads this at its stop and ends non-zero where anything stays owed.
  */
 export function standingAfterWave(standing: StandingAsks, s: IngestSettlement): StandingAsks {
   if (s.first.status === "error") return standingAfterFault(standing, s, s.first.errorMessage ?? "the daemon refused and named no reason");
-  const verdict = ingestVerdict(s);
-  if (verdict.braked !== null) return standingAfterFault(standing, s, `the mass-delete brake tripped (${verdict.braked})`);
   const owed = new Map(standing.owed);
   const owedDeletions = new Map(standing.owedDeletions);
   for (const uri of s.landed) owed.delete(uri);
   for (const r of s.refused) owed.set(r.uri, r.why);
   const unread = s.pageError !== undefined ? `a later wave failed (${s.pageError.message})` : "the island answered the wave without this carrier's row";
   for (const uri of s.unanswered) owed.set(uri, unread);
-  // The deletions the summary names applied. A summary that names none leaves each asked deletion owed.
-  const applied = new Set<string>();
-  if (s.deletions?.["decision"] === "apply") {
-    for (const uri of Array.isArray(s.deletions["tombstoned"]) ? (s.deletions["tombstoned"] as unknown[]) : []) applied.add(String(uri));
-    for (const r of Array.isArray(s.deletions["renames"]) ? (s.deletions["renames"] as Array<Record<string, unknown>>) : []) applied.add(String(r["fromUri"]));
-  }
+  // The vanished addresses the summary names settled. A summary that names none leaves each one owed.
+  const applied = new Set<string>([...renamedSources(s.deletions), ...absentSources(s.deletions)]);
   for (const uri of applied) owedDeletions.delete(uri);
-  for (const uri of s.askedDeletions) if (!applied.has(uri)) owedDeletions.set(uri, "the wave's deletion summary names no tombstone and no rename for it");
+  for (const uri of s.askedDeletions) if (!applied.has(uri)) owedDeletions.set(uri, "the island re-linked no record for it; it stands pending at the vessel's shore");
   return { owed, owedDeletions };
 }
 
@@ -507,10 +512,7 @@ export async function settleIngest(
   const provenLanded = new Set<string>();
   // A carrier the island re-homed from a vanished source rides the deletion summary and pins there
   // (`applyConfirmedRenames`).
-  const rehomed = new Set<string>();
-  if (deletions?.["decision"] === "apply" && Array.isArray(deletions["renames"])) {
-    for (const r of deletions["renames"] as Array<Record<string, unknown>>) rehomed.add(String(r["toUri"]));
-  }
+  const rehomed = new Set<string>(renamesOf(deletions).map((r) => r.toUri));
 
   if (!answer.bounded) {
     recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, answer.rows);
@@ -605,25 +607,27 @@ function diskHashNow(file: string): string | null {
  * is GONE from disk (not present among this full walk's live carriers — a COPY leaves
  * the source live and never qualifies), the row is a RENAME, not a fresh landing.
  *
- * The renamed row keeps riding as an ADD (so the island's delete-gate re-links its
+ * The renamed row keeps riding as an ADD (so the island's rename pairing re-links its
  * records change-id-preserving), and its gone source rides the wave as a
  * rename-deletion; the caller moves the Synced observation on confirm
  * (`applyConfirmedRenames`). A genuine EDIT never matches (its hash changed); two
- * carriers sharing content decline (the index answers null on a >1 collision), and so do two ARRIVED
- * files sharing content: the pair must stand unique on both sides, since the island's delete gate reads
- * an ambiguous pair as a tombstone, and no scan tombstones a carrier by itself.
+ * carriers sharing content decline (the index answers null on a >1 collision), and so do two files of
+ * the wave sharing content: the pair must stand unique on both sides, since the island re-links no
+ * ambiguous pair, and a source it declines stays where it stood.
  *
  * FULL-scan only: `liveUris` must be the WHOLE on-disk carrier set for the gone-guard
- * to read true, which a partial (watcher) wave cannot supply — so the watcher keeps
- * its grace-window + delete-gate path and never calls this.
+ * to read true, which a partial (watcher) wave cannot supply — so the watcher pairs
+ * its own vanished set by content and never calls this.
  */
 export function resolveRenames(rows: ScanRow[], toBag: string, tree: SyncedTree): { rows: ScanRow[]; renameDeletions: PendingDeletion[] } {
   const liveUris = new Set(rows.filter((r) => r.status !== "deleted").map((r) => r.uri));
   const renameDeletions: PendingDeletion[] = [];
   const claimedSources = new Set<string>();   // one source re-homes at most once per wave
-  // How many arrived files hold each content: a rename pairs one vanished source with ONE arrival.
+  // How many of the wave's carriers hold each content: a rename pairs one vanished source with ONE file.
+  // Every row that rides the wave counts (an arrival, and a standing carrier a hand edited into the same
+  // bytes), since the island reads them all and a pair it finds ambiguous re-links nothing.
   const arrivals = new Map<string, number>();
-  for (const r of rows) if (r.status === "new" && r.diskHash !== "") arrivals.set(r.diskHash, (arrivals.get(r.diskHash) ?? 0) + 1);
+  for (const r of rows) if ((r.status === "new" || r.status === "changed") && r.diskHash !== "") arrivals.set(r.diskHash, (arrivals.get(r.diskHash) ?? 0) + 1);
   const out = rows.map((r) => {
     if (r.status !== "new") return r;
     if ((arrivals.get(r.diskHash) ?? 0) !== 1) return r;
@@ -662,7 +666,7 @@ export function scanSource(
 }
 
 /** The rows an INGEST submission carries — NEW, CHANGED, and RENAMED. A `renamed`
- *  row rides as an ADD so the island's delete-gate pairs it with its gone source and
+ *  row rides as an ADD so the island pairs it with its gone source and
  *  re-links the records (change-id preserved); it returns `rename-target`, never a
  *  fresh re-land. */
 export function candidatesOf(rows: readonly ScanRow[]): ScanRow[] {
@@ -671,8 +675,8 @@ export function candidatesOf(rows: readonly ScanRow[]): ScanRow[] {
 
 /**
  * R2 — move the Synced observation for each rename the island CONFIRMED. Reads the
- * authoritative `deletions.renames` the gate returned (never the CLI's own guess),
- * so a suspended wave (mass-delete brake) moves nothing. For each `fromUri → toUri`
+ * authoritative `deletions.renames` the island returned (never the CLI's own guess),
+ * so a pair the island declined moves nothing. For each `fromUri → toUri`
  * it drops the source's base AT THE PATH THE FILE LEFT and records the moved carrier's hash at the
  * new location — so the NEXT scan reads the moved carrier `unchanged` and never
  * re-lands it. A base the source holds at another path (a holding copy that still stands) stays with
@@ -684,14 +688,9 @@ export function applyConfirmedRenames(
   candidates: readonly ScanRow[],
   deletionSummary: Record<string, unknown> | undefined,
 ): number {
-  if (!deletionSummary || deletionSummary["decision"] !== "apply") return 0;
-  const renames = deletionSummary["renames"];
-  if (!Array.isArray(renames)) return 0;
   const byUri = new Map(candidates.map((c) => [c.uri, c] as const));
   let moved = 0;
-  for (const r of renames as Array<Record<string, unknown>>) {
-    const fromUri = String(r["fromUri"]);
-    const toUri   = String(r["toUri"]);
+  for (const { fromUri, toUri } of renamesOf(deletionSummary)) {
     const arrived = byUri.get(toUri);
     if (arrived === undefined) continue;   // a rename we did not submit — leave it be
     const diskHash = arrived.diskHash;
@@ -732,6 +731,12 @@ export interface SubmitIngestOpts {
    * executes daemon-side (canon bags).
    */
   readonly inWiki?: boolean;
+  /**
+   * NO PERSON STANDS BEHIND THIS WAVE. The watcher sets it on every wave it settles by itself; `lares
+   * ingest` and every other gesture a person names leave it absent. The island's gate then never adopts
+   * a file that holds no base over records that say something else: it answers `conflict`, `no-base`.
+   */
+  readonly unattended?: boolean;
 }
 
 /**
@@ -766,6 +771,7 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
       };
     }),
     ...(deletions.length > 0 ? { deletions: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
+    ...(opts.unattended === true ? { unattended: true } : {}),
   };
   // --in-wiki: wrap the INGEST so it runs IN the active wiki island over its
   // composite (where working lives), mirroring `lares act --in-wiki`. The

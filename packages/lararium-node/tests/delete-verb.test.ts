@@ -5,8 +5,9 @@
  * wave carrying `deletions` and assert the gate's split applies correctly.
  *
  * Under proof:
- *   - a vanished carrier under the fraction → tombstone (group removed)
- *   - tombstones over the fraction → suspend (apply NOTHING)
+ *   - a vanished carrier that pairs with no arrival → declined; no wave tombstones a carrier
+ *   - a flood of vanished addresses → each declined, nothing removed, no brake named
+ *   - an ambiguous pair → declined on the island's own word
  *   - a unique hash-matched add → rename re-link, change-id PRESERVED
  */
 
@@ -56,7 +57,6 @@ async function seedOne(composite: CompositeStore, uri: string, changeId: string)
 function waveArgs(opts: {
   deletions?: Array<{ uri: string; syncedHash: string }>;
   carriers?: Array<{ uri: string; text: string; diskHash: string; syncedHash: string | null }>;
-  fraction?: number;
 }): Record<string, unknown> {
   return {
     "source-uri": "file:///staged",
@@ -64,7 +64,6 @@ function waveArgs(opts: {
     "change-id": "chg-wave",
     carriers: opts.carriers ?? [],
     ...(opts.deletions ? { deletions: opts.deletions } : {}),
-    ...(opts.fraction !== undefined ? { massDeleteFraction: opts.fraction } : {}),
   };
 }
 
@@ -75,24 +74,23 @@ async function liveTitles(composite: CompositeStore): Promise<string[]> {
 /** Carrier titles only — drops the withEffectRecord residency-ledger entries. */
 const carriersOnly = (titles: readonly string[]): string[] => titles.filter((t) => /^lar:\/\/\/[a-z-]+\d*$/.test(t));
 
-describe("INGEST — whole-carrier deletion wave", () => {
-  test("a vanished carrier under the fraction → tombstone (group removed)", async () => {
+describe("INGEST — the vanished addresses a wave names", () => {
+  test("★ a vanished carrier that pairs with no arrival tombstones nothing: the island declines it by name ★", async () => {
     const composite = makeComposite();
     await seedCarriers(composite, 10);
+    const before = await liveTitles(composite);
     const table = new VerbTable();
     registerActionReactors(table, { composite });
 
-    const args = waveArgs({ deletions: [{ uri: "lar:///c0", syncedHash: "h0" }], fraction: 0.5 });
+    const args = waveArgs({ deletions: [{ uri: "lar:///c0", syncedHash: "h0" }] });
     const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
 
-    expect((result["deletions"] as Record<string, unknown>)["decision"]).toBe("apply");
-    const after = await liveTitles(composite);
-    expect(after).not.toContain("lar:///c0");
-    expect(after).toContain("lar:///c1");
-    expect(carriersOnly(after).length).toBe(9); // 10 seeded − c0 tombstoned (ledger entries excluded)
+    expect(result["deletions"]).toEqual({ renames: [], absent: [], declined: ["lar:///c0"] });
+    expect(carriersOnly(await liveTitles(composite)), "a wave removed a carrier no person named").toEqual(carriersOnly(before));
+    expect((result["carriers"] as Array<Record<string, unknown>>).filter((c) => c["decision"] === "tombstone")).toEqual([]);
   });
 
-  test("tombstones over the fraction → suspend, apply nothing", async () => {
+  test("★ a flood of vanished addresses removes nothing, and the answer names no brake ★", async () => {
     const composite = makeComposite();
     await seedCarriers(composite, 10);
     const before = await liveTitles(composite);
@@ -100,40 +98,81 @@ describe("INGEST — whole-carrier deletion wave", () => {
     registerActionReactors(table, { composite });
 
     const deletions = [0, 1, 2, 3, 4, 5].map((i) => ({ uri: `lar:///c${i}`, syncedHash: `h${i}` }));
-    const args = waveArgs({ deletions, fraction: 0.5 }); // threshold 5; 6 > 5 → suspend
+    const args = waveArgs({ deletions });
     const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
 
-    expect((result["deletions"] as Record<string, unknown>)["decision"]).toBe("suspend");
-    expect(carriersOnly(await liveTitles(composite))).toEqual(carriersOnly(before)); // no carrier removed (a suspend still audits to the ledger)
+    expect(result["deletions"]).toEqual({ renames: [], absent: [], declined: deletions.map((d) => d.uri) });
+    expect(carriersOnly(await liveTitles(composite))).toEqual(carriersOnly(before));
   });
 
-  test("the brake counts CARRIERS: the bag's own residency ledger never dilutes the fraction", async () => {
-    // 7 carriers, 3 deletes at 0.25 → 3 > 1.75 → suspend. Every wave this bag takes leaves one effect
-    // record in its own ledger; five of them standing beside the carriers would read as 12 "carriers"
-    // (3 > 3 fails) and the brake would let the wave through.
+  test("★ one vanished address and two files of the wave that hold its bytes: nothing re-links and nothing leaves ★", async () => {
     const composite = makeComposite();
-    await seedCarriers(composite, 7);
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: "seed-ledger" };
-    for (let i = 0; i < 5; i++) {
-      await composite.put({ tiddler: { title: `${BAG}/ledger/residency/earlier-wave-${i}`, text: "" } as LarTiddlerRecord["tiddler"] }, origin, { bag: BAG });
-    }
+    await seedOne(composite, "lar:///old-name", "cid-keepme");
     const table = new VerbTable();
     registerActionReactors(table, { composite });
 
-    const deletions = [0, 1, 2].map((i) => ({ uri: `lar:///c${i}`, syncedHash: `h${i}` }));
-    const args = waveArgs({ deletions, fraction: 0.25 });
+    const args = waveArgs({
+      deletions: [{ uri: "lar:///old-name", syncedHash: "HMATCH" }],
+      carriers: [
+        { uri: "lar:///new-name", text: "renamed content", diskHash: "HMATCH", syncedHash: null },
+        { uri: "lar:///twin-name", text: "renamed content", diskHash: "HMATCH", syncedHash: null },
+      ],
+    });
     const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
 
-    expect((result["deletions"] as Record<string, unknown>)["decision"]).toBe("suspend");
-    expect(carriersOnly(await liveTitles(composite)).length).toBe(7);
+    expect((result["deletions"] as Record<string, unknown>)["declined"]).toEqual(["lar:///old-name"]);
+    expect(await liveTitles(composite), "the ambiguous source left the records").toContain("lar:///old-name");
+  });
 
-    // CONTROL: the same wave against 13 real carriers (3 > 3.25 fails) applies.
-    const roomy = makeComposite();
-    await seedCarriers(roomy, 13);
-    const roomyTable = new VerbTable();
-    registerActionReactors(roomyTable, { composite: roomy });
-    const applied = await roomyTable.get("INGEST")!(args, ctx(roomy, args)) as Record<string, unknown>;
-    expect((applied["deletions"] as Record<string, unknown>)["decision"]).toBe("apply");
+  test("a vanished source whose records hold nothing reads absent, and its arrival lands as itself", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    const args = waveArgs({
+      deletions: [{ uri: "lar:///never-landed", syncedHash: "HMATCH" }],
+      carriers: [{ uri: "lar:///new-name", text: "renamed content", diskHash: "HMATCH", syncedHash: null }],
+    });
+    const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
+    expect(result["deletions"]).toEqual({ renames: [], absent: ["lar:///never-landed"], declined: [] });
+    expect(await liveTitles(composite)).toContain("lar:///new-name");
+  });
+
+  test("★ a re-link never lands over records that stand at its target: the source declines and the target meets the gate ★", async () => {
+    const seeded = async (): Promise<CompositeStore> => {
+      const composite = makeComposite();
+      await seedOne(composite, "lar:///old-name", "cid-keepme");
+      const origin: ChangeOrigin = { kind: "crdt-remote", edgeIsland: BAG };
+      await composite.put({ tiddler: { title: "lar:///new-name", text: "words that already stand here" } as LarTiddlerRecord["tiddler"], meta: { changeId: "cid-there" } }, origin, { bag: BAG });
+      return composite;
+    };
+    const wave = (unattended: boolean): Record<string, unknown> => ({
+      ...waveArgs({
+        deletions: [{ uri: "lar:///old-name", syncedHash: "HMATCH" }],
+        carriers: [{ uri: "lar:///new-name", text: "renamed content", diskHash: "HMATCH", syncedHash: null }],
+      }),
+      ...(unattended ? { unattended: true } : {}),
+    });
+    const textAt = async (composite: CompositeStore, uri: string): Promise<unknown> =>
+      (await composite.resolveAll(uri)).find((e) => e.bagId === BAG)?.record.tiddler["text"];
+
+    // A wave no person stands behind: nothing re-links, nothing lands, both carriers stand as they stood.
+    const quiet = await seeded();
+    const quietTable = new VerbTable();
+    registerActionReactors(quietTable, { composite: quiet });
+    const stood = await quietTable.get("INGEST")!(wave(true), ctx(quiet, wave(true))) as Record<string, unknown>;
+    expect(stood["deletions"]).toEqual({ renames: [], absent: [], declined: ["lar:///old-name"] });
+    expect((stood["carriers"] as Array<Record<string, unknown>>).find((c) => c["uri"] === "lar:///new-name")).toMatchObject({ decision: "conflict", reason: "no-base" });
+    expect(await textAt(quiet, "lar:///new-name"), "a re-link replaced records that stood at its target, unweighed").toBe("words that already stand here");
+    expect(await liveTitles(quiet)).toContain("lar:///old-name");
+
+    // CONTROL: a person's wave adopts the file at the target; the source still declines and stands.
+    const named = await seeded();
+    const namedTable = new VerbTable();
+    registerActionReactors(namedTable, { composite: named });
+    const adopted = await namedTable.get("INGEST")!(wave(false), ctx(named, wave(false))) as Record<string, unknown>;
+    expect((adopted["deletions"] as Record<string, unknown>)["declined"]).toEqual(["lar:///old-name"]);
+    expect(await textAt(named, "lar:///new-name")).toBe("renamed content");
+    expect(await liveTitles(named)).toContain("lar:///old-name");
   });
 
   test("unique hash-matched add → rename re-link, change-id PRESERVED", async () => {
@@ -146,10 +185,10 @@ describe("INGEST — whole-carrier deletion wave", () => {
     const args = waveArgs({
       deletions: [{ uri: "lar:///old-name", syncedHash: "HMATCH" }],
       carriers: [{ uri: "lar:///new-name", text: "renamed content", diskHash: "HMATCH", syncedHash: null }],
-      fraction: 0.5,
     });
     const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
 
+    expect(result["deletions"]).toEqual({ renames: [{ fromUri: "lar:///old-name", toUri: "lar:///new-name" }], absent: [], declined: [] });
     const after = await liveTitles(composite);
     expect(after).not.toContain("lar:///old-name");
     expect(after).toContain("lar:///new-name");

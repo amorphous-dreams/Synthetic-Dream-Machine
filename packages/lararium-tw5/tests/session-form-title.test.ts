@@ -195,7 +195,7 @@ describe.skipIf(wikiSkip)(`ingest and LOAD: the title law through the residency 
     const r = rig(STORES[0]![1]);
     const lawful = "a lawful note\n";
     const args = {
-      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title", massDeleteFraction: 1,
+      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-title",
       carriers: [
         // A skinny handle lands before any parse: the row must refuse it first.
         { uri: BAD_URI, textCid: "ab".repeat(32), skinny: true, size: 9, diskHash: "sha256:" + "ab".repeat(32), syncedHash: null, ext: ".png" },

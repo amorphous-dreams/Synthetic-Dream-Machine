@@ -93,6 +93,27 @@ describe.skipIf(coreBlobSkip)(
     expect(String(rec.tiddler["text"])).toContain("records-side");
   });
 
+  test("★ a base never stands in for records that left: a disk edit over a record a hand deleted stands off ★", async () => {
+    const composite = makeComposite();
+    await seedNative(composite, "base body\n");
+    // The base names the record's own render: the disk and the records once agreed on exactly this.
+    const standing = (await composite.resolveAll(URI)).find((e) => e.bagId === BAG)!.record;
+    const rendered = makeTw5Deserializer(engine).renderCarrier(URI, standing.tiddler as unknown as Record<string, unknown>);
+    const base = carrierHash(rendered.body, rendered.metaBody);
+    // The record leaves (a hand's delete in the wiki); the disk then carries an edit under that base.
+    await composite.tombstone(URI, { kind: "crdt-remote", edgeIsland: BAG }, { bag: BAG });
+    const carrier = await runIngest(composite, engine, args("the disk-side body\n", base));
+    expect(carrier["decision"], "the gate read the base as the records' present word and brought a deleted record back").toBe("conflict");
+    expect(carrier["reason"]).toBe("both-moved");
+    expect((await composite.listVisible())).not.toContain(URI);
+  });
+
+  test("CONTROL: with no base, a file at an address whose record left lands as a fresh adoption", async () => {
+    const composite = makeComposite();
+    const carrier = await runIngest(composite, engine, { ...args("a first body\n", null), unattended: true });
+    expect(carrier["decision"]).toBe("ingest");
+  });
+
   test("canonical-equivalent: disk renders to what the records already hold → noop", async () => {
     const composite = makeComposite();
     // a SETTLED record already holds the registry-canonical type (a prior ingest

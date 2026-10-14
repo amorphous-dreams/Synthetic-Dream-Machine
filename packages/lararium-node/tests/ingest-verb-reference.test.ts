@@ -127,6 +127,44 @@ describe("INGEST by reference — summons lean, body resolved + landed", () => {
   });
 });
 
+describe("a pointer carrier meets the unattended rule at its own grain", () => {
+  const wave = (cid: string, unattended: boolean): Record<string, unknown> => ({
+    "source-uri": "file:///corpus/photo.png", "to-bag": BAG, "change-id": "chg-ptr",
+    carriers: [{ uri: URI, textCid: cid, size: 20_000_000, skinny: true, ext: ".png", diskHash: sha(cid), syncedHash: null }],
+    ...(unattended ? { unattended: true } : {}),
+  });
+  const cidHeld = async (composite: ReturnType<typeof makeComposite>): Promise<unknown> =>
+    (await composite.resolveAll(URI)).find((e) => e.bagId === BAG)!.record.tiddler["textCid"];
+
+  test("★ a wave no person stands behind never replaces a standing handle where the file holds no base ★", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    const first = wave(cidOf("the bytes the records name"), false);
+    await table.get("INGEST")!(first, ctx(composite, first));
+    const other = cidOf("other bytes a watcher heard");
+    const args = wave(other, true);
+    const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
+    const row = (result["carriers"] as Array<Record<string, unknown>>)[0]!;
+    expect(row["decision"], "an unattended wave replaced a standing handle over no base").toBe("conflict");
+    expect(row["reason"]).toBe("no-base");
+    expect(await cidHeld(composite)).toBe(cidOf("the bytes the records name"));
+  });
+
+  test("CONTROL: a person's wave over the same states lands the handle, and an unattended wave lands one where no record stands", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    const arrives = wave(cidOf("first bytes"), true);
+    const landed = await table.get("INGEST")!(arrives, ctx(composite, arrives)) as Record<string, unknown>;
+    expect((landed["carriers"] as Array<Record<string, unknown>>)[0]!["decision"]).toBe("ingest");
+    const named = wave(cidOf("a person's bytes"), false);
+    const adopted = await table.get("INGEST")!(named, ctx(composite, named)) as Record<string, unknown>;
+    expect((adopted["carriers"] as Array<Record<string, unknown>>)[0]!["decision"]).toBe("ingest");
+    expect(await cidHeld(composite)).toBe(cidOf("a person's bytes"));
+  });
+});
+
 describe("Stage 2 — oversized carrier → SKINNY HANDLE (body leaves the CRDT)", () => {
   test("a skinny-flagged INGEST carrier lands a handle: cid + integrity present, body ABSENT, never resolved", async () => {
     const body = "The Entire Works — a 16MB corpus.\n".repeat(500_000);

@@ -123,33 +123,43 @@ export class ShoreRig {
       .map((f) => f.split(path.sep).join("/")).sort();
   }
 
-  /** THE INGEST GESTURE over the whole mirror (or one file), against the island's reactor; then the wave lands in the wiki. */
-  async ingest(source: string = this.bagDir): Promise<IngestSettlement & { scanned: ScanRow[] }> {
+  /**
+   * ONE WAVE AGAINST THE ISLAND'S INGEST REACTOR, as the daemon answers it: the args the gesture sends, the
+   * reactor's own decision per carrier, and the outcome's row cap over the answer.
+   */
+  readonly submitWave = async (o: SubmitIngestOpts): Promise<SubmitResult> => {
+    const requestId = `req-rig-${++this.wave}`;
+    const args: Record<string, unknown> = {
+      "source-uri": `file://${o.source}`, "to-bag": o.toBag, "change-id": `rig-${this.wave}`,
+      carriers: o.candidates.map((r) => ({
+        uri: r.uri, file: r.file, size: Buffer.byteLength(r.text, "utf8"), diskHash: r.diskHash, syncedHash: r.syncedHash,
+        ...(r.syncedRecordsHash !== undefined ? { syncedRecordsHash: r.syncedRecordsHash } : {}),
+        ext: r.ext, text: r.text, ...(r.meta !== undefined ? { meta: r.meta } : {}),
+      })),
+      ...(o.deletions && o.deletions.length > 0 ? { deletions: o.deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
+      ...(o.unattended === true ? { unattended: true } : {}),
+    };
+    const invocation: Verb = {
+      requestId, title: `lar:///lararium.local.vm/verbs/${requestId}`, action: "INGEST", args, targets: [], batchMode: "best-effort",
+      status: "pending", requestedBy: "operator-test", requestedAt: "2026-10-13T00:00:00Z",
+    };
+    const ctx: VerbContext = { daemon: this.composite, invocation, cap: allowCap };
+    const result = await this.table.get("INGEST")!(args, ctx) as Record<string, unknown>;
+    return { status: "done", requestId, results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput(result) } } } as SubmitResult;
+  };
+
+  /**
+   * THE INGEST GESTURE over the whole mirror (or one file), against the island's reactor; then the wave
+   * lands in the wiki. `unattended` sends it as a watcher's wave: no person stands behind it.
+   */
+  async ingest(source: string = this.bagDir, opts: { readonly unattended?: boolean } = {}): Promise<IngestSettlement & { scanned: ScanRow[] }> {
     const scan = scanSource(this.scratch, source, RIG_BAG, this.tree)!;
     const candidates = candidatesOf(scan.rows);
-    const submit = async (o: SubmitIngestOpts): Promise<SubmitResult> => {
-      const requestId = `req-rig-${++this.wave}`;
-      const args: Record<string, unknown> = {
-        "source-uri": `file://${source}`, "to-bag": o.toBag, "change-id": `rig-${this.wave}`,
-        carriers: o.candidates.map((r) => ({
-          uri: r.uri, file: r.file, size: Buffer.byteLength(r.text, "utf8"), diskHash: r.diskHash, syncedHash: r.syncedHash,
-          ...(r.syncedRecordsHash !== undefined ? { syncedRecordsHash: r.syncedRecordsHash } : {}),
-          ext: r.ext, text: r.text, ...(r.meta !== undefined ? { meta: r.meta } : {}),
-        })),
-        ...(o.deletions && o.deletions.length > 0 ? { deletions: o.deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
-      };
-      const invocation: Verb = {
-        requestId, title: `lar:///lararium.local.vm/verbs/${requestId}`, action: "INGEST", args, targets: [], batchMode: "best-effort",
-        status: "pending", requestedBy: "operator-test", requestedAt: "2026-10-13T00:00:00Z",
-      };
-      const ctx: VerbContext = { daemon: this.composite, invocation, cap: allowCap };
-      const result = await this.table.get("INGEST")!(args, ctx) as Record<string, unknown>;
-      return { status: "done", requestId, results: { [VERB_RESULT_KEY]: { ok: true, output: boundOutcomeOutput(result) } } } as SubmitResult;
-    };
     const settled = await settleIngest({
       source, toBag: RIG_BAG, candidates, did: "did:test",
       ...(scan.renameDeletions && scan.renameDeletions.length > 0 ? { deletions: scan.renameDeletions } : {}),
-    }, this.tree, submit);
+      ...(opts.unattended === true ? { unattended: true } : {}),
+    }, this.tree, this.submitWave);
     await this.land();
     return { ...settled, scanned: scan.rows };
   }

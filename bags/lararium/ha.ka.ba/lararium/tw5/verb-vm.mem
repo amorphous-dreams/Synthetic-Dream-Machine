@@ -21,14 +21,14 @@ uri-path    = "ha.ka.ba/lararium/tw5/verb-vm"
 
 ''A row a person must act on stays named.'' A refusal nobody can find stays unfixable, so a summary never counts a refusal it does not name without saying so: zero in `heldMore` states that `held` names every one. An array whose rows carry no decision (a LOAD's titles) tallies nothing, so no tally invents a decision nobody made.
 
-''The reader asks again.'' The co-located CLI reads this same outcome as its answer. A caller that reads `heldMore` above zero, or a tally that proves less than it needs, asks again in waves under the cap, where every row rides whole; the ingest gesture pages so (`packages/lares-cli/src/ingest-core.ts`, `settleIngest`), prints each refused carrier with its refusal, and ends the run non-zero. A tripped mass-delete brake applies nothing, answers no carrier row, and ends the run non-zero under its own name; a carrier no answer accounts for ends it non-zero too. The watcher keeps what it still owes by address (each carrier that did not land, each deletion that did not apply), clears a debt only where a wave proves that address settled, and ends non-zero where any debt stands at its stop.
+''The reader asks again.'' The co-located CLI reads this same outcome as its answer. A caller that reads `heldMore` above zero, or a tally that proves less than it needs, asks again in waves under the cap, where every row rides whole; the ingest gesture pages so (`packages/lares-cli/src/ingest-core.ts`, `settleIngest`), prints each refused carrier with its refusal, and ends the run non-zero. A carrier no answer accounts for ends it non-zero too. The watcher keeps what it still owes by address (each carrier that did not land, each vanished address the island declined), clears a debt only where a wave proves that address settled, and ends non-zero where any debt stands at its stop.
 
-''A rename re-homes records that stand.'' A vanished source that holds no live record leaves nothing to re-home, so the island answers the arriving carrier as a plain ingest and the source as a tombstone that removes nothing (`packages/lararium-tw5/src/action-handler.ts`).
+''A rename re-homes records that stand.'' A vanished source that holds no live record leaves nothing to re-home, so the island answers the arriving carrier as a plain ingest and names the source `absent` in the wave's deletion summary (`packages/lararium-tw5/src/action-handler.ts`). No wave removes a carrier: a vanished address re-links, reads `absent`, or reads `declined`.
 
 Witnesses: `packages/lararium-tw5/tests/verb-vm.test.ts` · `packages/lararium-tw5/tests/rename-rehomes-standing-records.test.ts` · `packages/lares-cli/tests/ingest-settles-every-row.test.ts`.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;o9Odjo--MTX7ZUcwT1P9GNjB9NbynS1RACwHvgpDroE
+<<^ code="&#x0003;">>ni:///sha-256;0KNpaEiIlN4rHcmtrl9A-3fN9C1Qu9e07E2h9QcvlKM
 
 <<^ code="&#x0004;" -> to="?">>

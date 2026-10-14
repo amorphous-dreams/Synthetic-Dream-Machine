@@ -62,7 +62,7 @@ function island(decide: (c: ScanRow, wave: number) => Record<string, unknown>) {
   const submit = async (opts: SubmitIngestOpts): Promise<SubmitResult> => {
     const wave = waves.push(opts);
     const carriers = opts.candidates.map((c) => ({ uri: c.uri, ...decide(c, wave) }));
-    const output = boundOutcomeOutput({ carriers, ...(opts.deletions?.length ? { deletions: { decision: "apply", renames: [], tombstoned: opts.deletions.map((d) => d.uri) } } : {}) });
+    const output = boundOutcomeOutput({ carriers, ...(opts.deletions?.length ? { deletions: { renames: [], absent: opts.deletions.map((d) => d.uri), declined: [] } } : {}) });
     return { status: "done", requestId: `req-${wave}`, results: { [VERB_RESULT_KEY]: { ok: true, output } } } as SubmitResult;
   };
   return { waves, submit };
@@ -229,14 +229,14 @@ describe("past the cap every landed carrier still pins both sides of its base", 
       waves.push(o);
       const carriers = o.candidates.map((c) => (c.uri === moved.uri ? { uri: c.uri, decision: "rename-target" } : { uri: c.uri, ...landed(c) }));
       carriers.push({ uri: moved.uri, decision: "rename" });
-      const output = boundOutcomeOutput({ carriers, deletions: { decision: "apply", renames: [{ fromUri: "lar:///ha.ka.ba/lares/api/gone", toUri: moved.uri }], tombstoned: [] } });
+      const output = boundOutcomeOutput({ carriers, deletions: { renames: [{ fromUri: "lar:///ha.ka.ba/lares/api/gone", toUri: moved.uri }], absent: [], declined: [] } });
       return { status: "done", requestId: `req-${waves.length}`, results: { [VERB_RESULT_KEY]: { ok: true, output } } } as SubmitResult;
     };
     const s = await settleIngest({ ...opts(candidates), deletions: [{ uri: "lar:///ha.ka.ba/lares/api/gone", syncedHash: moved.diskHash }] }, tree, submit);
     expect(waves.length).toBe(1);
     expect(s.recorded).toBe(39);
     expect(tree.base(syncedTreeKey(BAG, moved.uri))).toBeNull();
-    expect(s.deletions?.["decision"]).toBe("apply");
+    expect(s.deletions?.["renames"]).toHaveLength(1);
   });
 
   test("a tally that proves less than every unnamed carrier landed sends them all again: each row decides", async () => {
@@ -270,28 +270,11 @@ describe("past the cap every landed carrier still pins both sides of its base", 
 });
 
 describe("a refusal never reads as applied", () => {
-  test("a tripped mass-delete brake fails the run and names itself, though no carrier row answers", async () => {
-    const { tree, candidates } = seed(8);
-    const submit = async (): Promise<SubmitResult> => ({
-      status: "done", requestId: "req-1",
-      results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: [], deletions: { decision: "suspend", reason: "6 of 8 carriers would tombstone", wouldTombstone: ["lar:///a"] } } } },
-    }) as SubmitResult;
-    const s = await settleIngest({ ...opts(candidates), deletions: [{ uri: "lar:///a", syncedHash: "sha256:aa" }] }, tree, submit);
-    expect(s.refused).toEqual([]);
-    expect(s.recorded).toBe(0);
-    const verdict = ingestVerdict(s);
-    expect(verdict.failed).toBe(true);
-    expect(verdict.braked).toBe("6 of 8 carriers would tombstone");
-    expect(verdict.message).toContain("applied nothing");
-    expect(verdict.message).toContain("6 of 8 carriers would tombstone");
-  });
-
   test("a refused carrier fails the run and the sentence names each one", async () => {
     const { tree, candidates } = seed(40);
     const isl = island((c) => (c.uri === candidates[9]!.uri ? refusal(c) : landed(c)));
     const verdict = ingestVerdict(await settleIngest(opts(candidates), tree, isl.submit));
     expect(verdict.failed).toBe(true);
-    expect(verdict.braked).toBeNull();
     expect(verdict.message).toBe(`INGEST refused 1 of 40 carrier(s): ${candidates[9]!.uri}`);
   });
 
@@ -308,7 +291,7 @@ describe("a refusal never reads as applied", () => {
 
   test("CONTROL: a clean run and a run holding a conflict alone both pass, and the conflict stays named", async () => {
     const { tree, candidates } = seed(40);
-    expect(ingestVerdict(await settleIngest(opts(candidates), tree, island(landed).submit))).toEqual({ failed: false, braked: null, message: null });
+    expect(ingestVerdict(await settleIngest(opts(candidates), tree, island(landed).submit))).toEqual({ failed: false, message: null });
     const s = await settleIngest(opts(candidates), tree, island((c) => (c.uri === candidates[4]!.uri ? { decision: "conflict" } : { decision: "noop", canonicalHash: islandRender(c) })).submit);
     expect(ingestVerdict(s).failed).toBe(false);
     expect(s.conflicts.map((c) => c.uri)).toEqual([candidates[4]!.uri]);
@@ -365,18 +348,18 @@ describe("a watcher reads what it still owes at its stop, by address", () => {
     expect([...after.owedDeletions]).toEqual([["lar:///gone", "socket closed"]]);
   });
 
-  test("a tripped brake leaves its carriers and its deletions owed; a later wave over OTHER deletions clears neither", async () => {
+  test("a vanished address the island declined stays owed; a later wave over OTHER addresses clears nothing; its own re-link clears it", async () => {
     const { tree, candidates } = seed(8);
-    const braked = async (): Promise<SubmitResult> => ({ status: "done", requestId: "req-b", results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: [], deletions: { decision: "suspend", reason: "6 of 8 would tombstone" } } } } }) as SubmitResult;
-    let standing = standingAfterWave(NO_STANDING_ASKS, await settleIngest({ ...opts(candidates.slice(0, 2)), deletions: [gone("lar:///gone-1"), gone("lar:///gone-2")] }, tree, braked));
+    const declining = async (o: SubmitIngestOpts): Promise<SubmitResult> => ({ status: "done", requestId: "req-d", results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: o.candidates.map((c) => ({ uri: c.uri, ...landed(c) })), deletions: { renames: [], absent: [], declined: (o.deletions ?? []).map((d) => d.uri) } } } } }) as SubmitResult;
+    let standing = standingAfterWave(NO_STANDING_ASKS, await settleIngest({ ...opts(candidates.slice(0, 2)), deletions: [gone("lar:///gone-1"), gone("lar:///gone-2")] }, tree, declining));
     expect([...standing.owedDeletions.keys()]).toEqual(["lar:///gone-1", "lar:///gone-2"]);
-    expect(standing.owed.size).toBe(2);
-    expect([...standing.owed.values()][0]).toContain("6 of 8 would tombstone");
-    // Another deletion applies in a later wave: the braked ones stay owed.
+    expect([...standing.owedDeletions.values()][0]).toContain("pending at the vessel's shore");
+    // The carriers of that wave landed: a declined address holds no carrier back.
+    expect(standing.owed.size).toBe(0);
+    // Another address settles in a later wave: the declined ones stay owed.
     standing = standingAfterWave(standing, await settleIngest({ ...opts(candidates.slice(0, 2)), deletions: [gone("lar:///gone-3")] }, tree, applying(landed).submit));
     expect([...standing.owedDeletions.keys()]).toEqual(["lar:///gone-1", "lar:///gone-2"]);
-    expect(standing.owed.size).toBe(0);
-    // The braked deletions ride again and apply: nothing stays owed.
+    // The declined addresses ride again and settle: nothing stays owed.
     standing = standingAfterWave(standing, await settleIngest({ ...opts([]), deletions: [gone("lar:///gone-1"), gone("lar:///gone-2")] }, tree, applying(landed).submit));
     expect(standsClean(standing)).toBe(true);
   });

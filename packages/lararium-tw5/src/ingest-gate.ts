@@ -49,7 +49,11 @@
  *       ∅ structure, so the guard is a no-op for it)
  *   4. current render == the base's records side → INGEST (records unmoved since the last
  *      agreement; the disk edit applies cleanly)
- *   5. both moved                → CONFLICT (surface, never overwrite —
+ *   4½. no base, and the records hold something else → a PERSON'S gesture adopts the file (the act
+ *      names itself: `lares ingest`, a put with no base); a wave NO PERSON stands behind (`unattended`,
+ *      a watcher's settle) stands off, CONFLICT `no-base`, as the projecting leg does where no base
+ *      names a last agreement. A file at an address whose records hold nothing lands either way.
+ *   5. both moved                → CONFLICT `both-moved` (surface, never overwrite —
  *      Unison's law; the CRDT diff-splice path refines this later)
  */
 
@@ -69,8 +73,21 @@ import { metaKeyRedefinitions } from "./root-meta.js";
 export type IngestDecision<R = TiddlerFields> =
   | { readonly kind: "noop"; readonly reason: "disk-matches-synced" | "canonical-equivalent" }
   | { readonly kind: "ingest"; readonly records: readonly R[]; readonly canonicalText: string; readonly diagnostics: readonly MemeDiagnostic[] }
-  | { readonly kind: "conflict"; readonly records: readonly R[]; readonly canonicalText: string; readonly diagnostics: readonly MemeDiagnostic[] }
+  | { readonly kind: "conflict"; readonly reason: IngestConflictReason; readonly records: readonly R[]; readonly canonicalText: string; readonly diagnostics: readonly MemeDiagnostic[] }
   | { readonly kind: "refuse"; readonly warnings: readonly string[]; readonly diagnostics: readonly MemeDiagnostic[] };
+
+/**
+ * Why the gate stood off. `both-moved`: the disk and the records each moved past the base. `no-base`: no
+ * base names a last agreement, the records say something else, and no person stands behind the wave.
+ */
+export type IngestConflictReason = "both-moved" | "no-base";
+
+/** What a conflict of each reason says to a person, in one spelling for every door that reports one. */
+export function conflictWhy(uri: string, reason: IngestConflictReason): string {
+  return reason === "no-base"
+    ? `${uri}: the file holds no base and the records say something else; no person stands behind this wave, so nothing lands (no-base)`
+    : `${uri}: the arriving text and the records both moved past the base the writer read (both-moved)`;
+}
 
 /**
  * The per-family congruence the gate reads through — the `≈` that decides what
@@ -225,6 +242,14 @@ export interface IngestGateInput {
   readonly currentRenderHash: string;
   /** The caller's hash function — applied to the candidate canonical render. */
   readonly hash: (text: string) => string;
+  /**
+   * NO PERSON STANDS BEHIND THIS WAVE. True for a wave a watcher settled by itself; absent for a gesture a
+   * person named (`lares ingest`, a put, a save). An unattended wave never adopts a file that holds no
+   * base over records that say something else: it answers `conflict`, `no-base`, and a person settles it.
+   */
+  readonly unattended?: boolean;
+  /** True where the records hold nothing under the carrier's root, so an arriving file overwrites no word. */
+  readonly recordsAbsent?: boolean;
 }
 
 export function decideIngest<R = TiddlerFields>(
@@ -326,12 +351,17 @@ function settle<R>(
   if (syncedHash !== null && recordsBase !== null && digestsEqual(currentRenderHash, recordsBase)) {
     return { kind: "ingest", records, canonicalText, diagnostics };
   }
-  // Never-projected carriers (syncedHash null) with no current-render match
-  // read as fresh adoptions — clean ingest by definition.
+  // 4½ — no base stands. Nothing names which side moved last: a hand may have edited the file while the
+  // vessel rested, or the records may hold the later word. A person's gesture NAMES the adoption and
+  // lands the file. A wave no person stands behind lands the file only where the records hold nothing
+  // under it; over records that say something else it stands off, and a person settles it.
   if (syncedHash === null) {
+    if (input.unattended === true && input.recordsAbsent !== true) {
+      return { kind: "conflict", reason: "no-base", records, canonicalText, diagnostics };
+    }
     return { kind: "ingest", records, canonicalText, diagnostics };
   }
 
   // 5 — both moved since the merge base: surface, never overwrite.
-  return { kind: "conflict", records, canonicalText, diagnostics };
+  return { kind: "conflict", reason: "both-moved", records, canonicalText, diagnostics };
 }

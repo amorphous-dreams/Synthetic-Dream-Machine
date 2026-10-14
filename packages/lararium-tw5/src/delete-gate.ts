@@ -1,22 +1,20 @@
 /**
- * delete-gate — the wave-level deletion decision for the watcher.
- * PURE: it compares, it never writes. The grace
- * window (~60s), durability, and the backup-before-tombstone write live in the
- * watcher; this layer splits a settled wave of vanished carriers into:
+ * delete-gate — which vanished carriers of a wave name a RENAME, and nothing else.
+ * PURE: it compares, it never writes.
  *
- *   - RENAMES  — a delete whose last-projected synced-hash UNIQUELY matches a
- *                fresh add's disk-hash (git/rclone exact-rename discipline);
- *                the record re-links, it does not tombstone+recreate.
- *   - TOMBSTONES — confirmed removals (no unique rename match).
- *   - SUSPEND  — if the tombstone count exceeds a FRACTION of the bag's
- *                carriers, the whole wave suspends and surfaces, applying
- *                nothing (Unison confirmbigdel / Nextcloud bulk-delete brake;
- *                a `git checkout` unlink flood trips this).
+ * A file that vanished from disk may name a delete, a branch switch, a checkout or a slip, and its bytes
+ * cannot say which. So no wave tombstones a carrier: a vanished file stands as a PENDING REMOVAL at the
+ * vessel's shore until a person answers (`lares shore remove | restore`,
+ * `lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`). The one thing a wave may carry for a
+ * vanished address is its RE-LINK: the same bytes arrived at another address, so the records move there
+ * and keep their identity.
  *
- * Ambiguity never guesses: a hash shared by more than one delete OR more than
- * one add re-links none of them — those deletes fall to tombstone (rclone's
- * decline-on-ambiguity). Renames are not losses, so they never count toward
- * the mass-delete brake.
+ *   - RENAMES  — a vanished address whose base hash UNIQUELY matches an arrived file's disk hash
+ *                (git/rclone exact-rename discipline); the record re-links, it never tombstones.
+ *   - DECLINED — every other vanished address the wave named. Its records stand as they stood.
+ *
+ * Ambiguity never guesses: a hash shared by more than one vanished address OR more than one arrived
+ * file re-links none of them (rclone's decline-on-ambiguity), and each such address reads declined.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/handoff (#watcher-talk-story)
  */
@@ -40,18 +38,17 @@ export interface RenameLink {
   readonly toUri: string;
 }
 
-export interface DeleteWaveInput {
+export interface RenameWaveInput {
   readonly deletes: readonly PendingDelete[];
   readonly adds: readonly FreshAdd[];
-  /** Carriers the destination bag currently holds — the brake's denominator. */
-  readonly liveCarrierCount: number;
-  /** Operator dial in (0,1]: tombstones strictly above this fraction suspend the wave. */
-  readonly massDeleteFraction: number;
 }
 
-export type DeleteWaveDecision =
-  | { readonly kind: "apply"; readonly renames: readonly RenameLink[]; readonly tombstones: readonly string[] }
-  | { readonly kind: "suspend"; readonly reason: string; readonly wouldTombstone: readonly string[] };
+export interface RenameWaveDecision {
+  /** Each vanished address that re-links to the one arrived file holding its bytes. */
+  readonly renames: readonly RenameLink[];
+  /** Each vanished address that pairs with no arrival: nothing moves and nothing tombstones. */
+  readonly declined: readonly string[];
+}
 
 /** Group a list by a key, preserving order within each bucket. */
 function groupBy<T>(xs: readonly T[], key: (x: T) => string): Map<string, T[]> {
@@ -65,8 +62,8 @@ function groupBy<T>(xs: readonly T[], key: (x: T) => string): Map<string, T[]> {
   return m;
 }
 
-export function decideDeletions(input: DeleteWaveInput): DeleteWaveDecision {
-  const { deletes, adds, liveCarrierCount, massDeleteFraction } = input;
+export function pairRenames(input: RenameWaveInput): RenameWaveDecision {
+  const { deletes, adds } = input;
 
   const deletesByHash = groupBy(deletes, (d) => d.syncedHash);
   const addsByHash = groupBy(adds, (a) => a.diskHash);
@@ -74,8 +71,8 @@ export function decideDeletions(input: DeleteWaveInput): DeleteWaveDecision {
   const renames: RenameLink[] = [];
   const renamedUris = new Set<string>();
 
-  // A rename re-link fires ONLY on a unique hash match: exactly one pending
-  // delete and exactly one fresh add sharing that hash. Any collision declines.
+  // A rename re-link fires ONLY on a unique hash match: exactly one vanished address and exactly one
+  // arrived file sharing that hash. Any collision declines.
   for (const [hash, dels] of deletesByHash) {
     const matchedAdds = addsByHash.get(hash);
     if (dels.length === 1 && matchedAdds && matchedAdds.length === 1) {
@@ -84,20 +81,5 @@ export function decideDeletions(input: DeleteWaveInput): DeleteWaveDecision {
     }
   }
 
-  const tombstones = deletes.map((d) => d.uri).filter((uri) => !renamedUris.has(uri));
-
-  // Mass-delete brake: renames are moves, not losses — only tombstones count.
-  const threshold = liveCarrierCount * massDeleteFraction;
-  if (tombstones.length > threshold) {
-    return {
-      kind: "suspend",
-      reason:
-        `mass-delete brake: ${tombstones.length} tombstones exceed the fraction ` +
-        `(${massDeleteFraction} of ${liveCarrierCount} carriers = ${threshold}); ` +
-        `surfaced, nothing applied`,
-      wouldTombstone: tombstones,
-    };
-  }
-
-  return { kind: "apply", renames, tombstones };
+  return { renames, declined: deletes.map((d) => d.uri).filter((uri) => !renamedUris.has(uri)) };
 }

@@ -65,7 +65,6 @@ describe("rename-survival — the observation moves with the carrier (R2)", () =
 
     // the island confirms the rename → the CLI moves the observation to the new location
     const moved = applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan2.rows), {
-      decision: "apply",
       renames: [{ fromUri: uriOf("old"), toUri: uriOf("new") }],
     });
     expect(moved).toBe(1);
@@ -96,7 +95,7 @@ describe("rename-survival — the observation moves with the carrier (R2)", () =
     writeFileSync(join(bagDir, "new.md"), body);
     const scan2 = scanSource(root, src, TO_BAG, tree)!;
     expect(scan2.rows.find((r) => r.uri === uriOf("new"))!.status).toBe("renamed");
-    expect(applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan2.rows), { decision: "apply", renames: [{ fromUri: uriOf("old"), toUri: uriOf("new") }] })).toBe(1);
+    expect(applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan2.rows), { renames: [{ fromUri: uriOf("old"), toUri: uriOf("new") }] })).toBe(1);
 
     for (const t of [tree, new SyncedTree(join(root, "synced.json"))]) {
       expect(t.baseAt(oldKey, join(bagDir, "old.md"))).toBeNull();                 // the file left: its base left with it
@@ -111,22 +110,39 @@ describe("rename-survival — the observation moves with the carrier (R2)", () =
     writeFileSync(join(bagDir, "newer.md"), body);
     tree.set(syncedTreeKey(TO_BAG, uriOf("new")), holding, landedHash);
     const scan3 = scanSource(root, src, TO_BAG, tree)!;
-    expect(applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan3.rows), { decision: "apply", renames: [{ fromUri: uriOf("new"), toUri: uriOf("newer") }] })).toBe(1);
+    expect(applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan3.rows), { renames: [{ fromUri: uriOf("new"), toUri: uriOf("newer") }] })).toBe(1);
     expect(tree.bases(syncedTreeKey(TO_BAG, uriOf("new")))).toEqual([]);
   });
 
-  test("a suspended wave (mass-delete brake) moves NO observation", () => {
+  test("a pair the island declined moves NO observation", () => {
     const body = "# a note\n\nbody\n";
     const { src, bagDir, tree } = seed("old.md", body);
     rmSync(join(bagDir, "old.md"));
     writeFileSync(join(bagDir, "new.md"), body);
     const scan2 = scanSource(root, src, TO_BAG, tree)!;
-    // the island suspended → nothing applied → the observation must NOT move
-    const moved = applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan2.rows), {
-      decision: "suspend", reason: "mass-delete brake", wouldTombstone: [uriOf("old")],
-    });
+    // the island re-linked nothing → the observation must NOT move
+    const moved = applyConfirmedRenames(tree, TO_BAG, candidatesOf(scan2.rows), { renames: [], absent: [], declined: [uriOf("old")] });
     expect(moved).toBe(0);
     expect(tree.get(syncedTreeKey(TO_BAG, uriOf("old")))).not.toBeNull();
+  });
+
+  test("★ a standing carrier a hand edited into the vanished one's bytes makes the pair ambiguous: the scan sends no deletion ★", () => {
+    // `old` vanished; `new` arrived with its bytes; and `twin`, a carrier that stood all along, now holds
+    // those bytes too. The island reads every carrier of the wave, finds two that hold the source's bytes
+    // and re-links none, so a deletion sent for `old` could only read as declined. The scan sends none.
+    const body = "# a note\n\nbody\n";
+    const { src, bagDir, tree } = seed("old.md", body);
+    writeFileSync(join(bagDir, "twin.md"), "# another\n\nits own body\n");
+    const first = scanSource(root, src, TO_BAG, tree)!;
+    const twin = first.rows.find((r) => r.uri === uriOf("twin"))!;
+    tree.set(syncedTreeKey(TO_BAG, twin.uri), twin.file, twin.diskHash);
+    rmSync(join(bagDir, "old.md"));
+    writeFileSync(join(bagDir, "new.md"), body);
+    writeFileSync(join(bagDir, "twin.md"), body);
+    const scan = scanSource(root, src, TO_BAG, tree)!;
+    expect(scan.rows.find((r) => r.uri === uriOf("twin"))!.status).toBe("changed");
+    expect(scan.renameDeletions ?? []).toEqual([]);
+    expect(scan.rows.find((r) => r.uri === uriOf("new"))!.status).toBe("new");
   });
 
   test("an in-place EDIT still re-lands (changed) — never swallowed as a rename", () => {

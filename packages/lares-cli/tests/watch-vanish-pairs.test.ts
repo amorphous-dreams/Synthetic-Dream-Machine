@@ -40,10 +40,10 @@ describe("pairedDeletions — content pairs, and nothing else rides", () => {
   });
 
   test("a source leaves the vanished set only where the island's summary names its re-link", () => {
-    expect([...confirmedRenames({ decision: "apply", renames: [{ fromUri: "lar:///x/a", toUri: "lar:///x/b" }], tombstoned: [] })]).toEqual(["lar:///x/a"]);
-    // CONTROL: a suspended wave, a summary naming no rename and no summary at all confirm nothing.
-    expect([...confirmedRenames({ decision: "suspend", renames: [{ fromUri: "lar:///x/a", toUri: "lar:///x/b" }] })]).toEqual([]);
-    expect([...confirmedRenames({ decision: "apply", renames: [], tombstoned: [] })]).toEqual([]);
+    expect([...confirmedRenames({ renames: [{ fromUri: "lar:///x/a", toUri: "lar:///x/b" }], absent: [], declined: [] })]).toEqual(["lar:///x/a"]);
+    // CONTROL: a summary that declined the pair, one naming no rename and no summary at all confirm nothing.
+    expect([...confirmedRenames({ renames: [], absent: [], declined: ["lar:///x/a"] })]).toEqual([]);
+    expect([...confirmedRenames({ renames: [], absent: ["lar:///x/a"], declined: [] })]).toEqual([]);
     expect([...confirmedRenames(undefined)]).toEqual([]);
   });
 
@@ -56,6 +56,14 @@ describe("pairedDeletions — content pairs, and nothing else rides", () => {
 describe("the watcher's source holds no clock over a vanish and no fraction", () => {
   const src = readFileSync(new URL("../src/commands/watch.ts", import.meta.url), "utf8")
     .split("\n").filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l)).join("\n");
+  test("★ every wave the watcher settles rides unattended: no person stands behind it ★", () => {
+    const sends = src.match(/settleIngest\(\{[^}]*\}/g) ?? [];
+    expect(sends.length).toBeGreaterThan(0);
+    for (const call of sends) expect(call).toMatch(/unattended: true/);
+  });
+  test("★ a carrier that stood off goes to the vessel's shore, where its alert rises ★", () => {
+    expect(src).toMatch(/for \(const c of settled\.conflicts\) unsensed\.add\(c\.uri\)/);
+  });
   test("no grace, no fraction, no monotonic or wall reading", () => {
     expect(src).not.toMatch(/delete-grace|delete-fraction|massDeleteFraction|performance\.now|Date\.now\(\)\s*-/);
     // The two timers that stand pace an edit's settle and the backend self-test; neither reads a vanish.

@@ -183,7 +183,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // run did not take everything it was handed. A conflict gets named the same way and leaves the exit alone.
   const { refused, conflicts } = settled;
   const pageError = settled.pageError;
-  const { failed, braked, message: refusedMessage } = ingestVerdict(settled);
+  const { failed, message: refusedMessage } = ingestVerdict(settled);
   const data = {
     verb: "INGEST", scanned: rows.length, submitted: candidates.length, ...summary,
     tallies: settled.tallies, refused, conflicts,
@@ -197,9 +197,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     requestId: result.requestId,
     data,
     human: () => {
-      console.log(braked !== null
-        ? `INGEST ✗ nothing applied: the mass-delete brake tripped (req ${result.requestId.slice(0, 8)})`
-        : pageError !== undefined
+      console.log(pageError !== undefined
         ? `INGEST ✗ ${refused.length} refusal(s) read, then a later wave failed; ${pageError.unread} carrier(s) stay unread (req ${result.requestId.slice(0, 8)})`
         : refused.length === 0
         ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
@@ -217,7 +215,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         console.error(`  ${r.decision.toUpperCase().padEnd(10)} ${r.uri}${r.file !== undefined ? `  (${r.file})` : ""}`);
         console.error(`    ⚠ ${r.why}`);
       }
-      if (pageError !== undefined || braked !== null) console.error(`  ⚠ ${refusedMessage}`);
+      if (pageError !== undefined) console.error(`  ⚠ ${refusedMessage}`);
       console.log(`\n  audit: ${auditUri}`);
     },
   });

@@ -25,6 +25,12 @@
  * unique in the wave, ride together as a re-link (the island re-homes the records). A pair that reads
  * ambiguous on either side sends no deletion at all.
  *
+ * NO PERSON STANDS BEHIND A WAVE HERE, and every wave says so (`unattended`). The island's gate then never
+ * adopts a file that holds no base over records that say something else: it stands off, as it does where
+ * the disk and the records both moved past a base. The watcher hands each carrier that stood off to the
+ * vessel's shore, where the projector weighs the same states, raises the one keyed alert, and a person
+ * settles it by name (`lares shore`).
+ *
  * OWED: the file-grain rolling backup (`.stversions`-style) belongs at the
  * PROJECTOR (backup-on-write) — content is gone from disk by the time a delete
  * is seen here. Tracked as a burr; the CRDT op-log covers recovery until epoch.
@@ -38,7 +44,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { exitFor, emit } from "../render.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
 import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
-import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
+import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
@@ -91,11 +97,7 @@ export function pairedDeletions(
 
 /** The vanished sources a settled wave's deletion summary names as re-linked. */
 export function confirmedRenames(deletions: Record<string, unknown> | undefined): Set<string> {
-  const from = new Set<string>();
-  if (deletions?.["decision"] === "apply" && Array.isArray(deletions["renames"])) {
-    for (const r of deletions["renames"] as Array<Record<string, unknown>>) from.add(String(r["fromUri"]));
-  }
-  return from;
+  return renamedSources(deletions);
 }
 
 function printUsage(): void {
@@ -103,7 +105,9 @@ function printUsage(): void {
   console.log("  default = preview (logs what each settle WOULD ingest, submits nothing);");
   console.log("  --apply submits each settled wave through the island's INGEST gate;");
   console.log("  a vanished file tombstones nothing: it stands pending at the vessel's shore until a person");
-  console.log("  answers with `lares shore remove` or `lares shore restore`.");
+  console.log("  answers with `lares shore remove` or `lares shore restore`;");
+  console.log("  a file that holds no base never lands over records that say something else, and a file that");
+  console.log("  moved while the records moved never lands: each stands off at the vessel's shore (`lares shore`).");
 }
 
 export async function cmdWatch(args: ParsedArgs): Promise<number> {
@@ -214,7 +218,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     try {
       // The settling gesture reads every row the wave needs, asking again under the outcome's row cap
       // where a flood crossed it, and pins what landed.
-      const settled = await settleIngest({ source, toBag, candidates, did, deletions: ride }, tree);
+      const settled = await settleIngest({ source, toBag, candidates, did, deletions: ride, unattended: true }, tree);
       standing = standingAfterWave(standing, settled);
       const result = settled.first;
       if (result.status === "error") {
@@ -228,10 +232,16 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       // Each source the island re-linked leaves the vanished set; one it declined stays vanished, and the
       // shore hears of it like any other vanish.
       const relinked = confirmedRenames(del);
+      const absent = absentSources(del);
       for (const d of ride) {
         if (relinked.has(d.uri)) vanished.delete(d.uri);
+        // The records hold nothing under it: nothing pends, and the shore hears so its base leaves.
+        else if (absent.has(d.uri)) { vanished.delete(d.uri); unsensed.add(d.uri); }
         else { unsensed.add(d.uri); buffer.add(d.file); }
       }
+      // A CARRIER THAT STOOD OFF GOES TO THE SHORE. The gate landed nothing for it; the projector weighs
+      // the same disk and records, raises the standoff's one keyed alert, and `lares shore` lists it.
+      for (const c of settled.conflicts) unsensed.add(c.uri);
       // The gesture pins what it landed; the projector pins what it projects;
       // both write the same key and the same base where they agree.
       // R2: a confirmed rename moves its observation to the new location, so a moved
@@ -240,6 +250,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit lar:///ha.ka.ba/bags/daemon/outcomes/${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
       for (const r of [...settled.refused, ...settled.conflicts]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
+      if (settled.conflicts.length > 0) console.error(`    ${settled.conflicts.length} carrier(s) stand off: nothing landed for them; \`lares shore\` names each with its key`);
       if (settled.pageError !== undefined) console.error(`    ⚠ a later wave failed (${settled.pageError.message}); ${settled.pageError.unread} carrier(s) stay unread until the next settle`);
       // A file at an address whose records never project refuses by name; the hand removes the file.
       for (const c of carriers) if (c["code"] === "never-projected-path") console.error(`    ⚠ ${String(c["reason"] ?? c["uri"])}`);

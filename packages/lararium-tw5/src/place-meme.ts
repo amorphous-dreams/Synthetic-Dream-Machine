@@ -34,7 +34,7 @@ module-type: library
  * Meme: lar:///ha.ka.ba/lararium/tw5/place-meme
  */
 
-import { decideIngest, QUOTEBLOCKED_CODE } from "./ingest-gate.js";
+import { conflictWhy, decideIngest, QUOTEBLOCKED_CODE } from "./ingest-gate.js";
 import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
 import { gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import type { TiddlerFields } from "./deserializer.js";
@@ -132,13 +132,16 @@ export interface PlaceMemeInput {
   readonly baseRecordsHash?: string | null;
   /** The digest the gate compares by; defaults to the tagged sha256 every other shore uses. */
   readonly hash?: (text: string) => string;
+  /** True where no person stands behind the placement (a watcher's wave): with no base it never adopts
+   *  over records that say something else, and answers `conflict`, `no-base` (`ingest-gate`, rule 4½). */
+  readonly unattended?: boolean;
 }
 
 export interface PlaceMemeReceipt {
   readonly uri: string;
   readonly decision: "ingest" | "noop" | "refuse" | "conflict";
   readonly grade: "clean" | MemeDiagnostic["severity"];
-  /** The gate's reason on a noop. */
+  /** The gate's reason on a noop, and on a conflict (`both-moved` · `no-base`). */
   readonly reason?: string;
   /** Titles landed (ingest only). */
   readonly landed: readonly string[];
@@ -278,6 +281,8 @@ async function evaluate(
     syncedRecordsHash: input.baseRecordsHash ?? null,
     currentRenderHash,
     hash,
+    ...(input.unattended === true ? { unattended: true } : {}),
+    recordsAbsent: !group.includes(uri),
   });
   return { group, decision, currentRenderHash };
 }
@@ -292,7 +297,7 @@ function receiptOfNonIngest(
   if (decision.kind === "refuse") {
     return { uri, decision: "refuse", grade, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: decision.warnings, diagnostics: decision.diagnostics };
   }
-  return { uri, decision: "conflict", grade, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [`${uri}: records moved past the base the writer read`], diagnostics: decision.diagnostics };
+  return { uri, decision: "conflict", grade, reason: decision.reason, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [conflictWhy(uri, decision.reason)], diagnostics: decision.diagnostics };
 }
 
 /**

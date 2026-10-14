@@ -82,6 +82,44 @@ describe("ingest-gate — the Confluence triangle decides", () => {
     expect(d.kind).toBe("ingest");
   });
 
+  /**
+   * NO BASE, AND THE RECORDS SAY SOMETHING ELSE. A person's gesture names the adoption (the vector above).
+   * A wave no person stands behind never adopts: it stands off by name, as the projecting leg does.
+   */
+  test("★ an unattended wave never adopts a file that holds no base over records that say something else ★", () => {
+    const d = decideIngest({
+      uri: URI, diskText: source, diskHash: sha(source),
+      syncedHash: null, currentRenderHash: sha("(unrelated records)"), hash: sha, unattended: true,
+    });
+    expect(d.kind).toBe("conflict");
+    if (d.kind === "conflict") expect(d.reason).toBe("no-base");
+  });
+
+  test("CONTROL: an unattended wave lands a file at an address whose records hold nothing", () => {
+    const d = decideIngest({
+      uri: URI, diskText: source, diskHash: sha(source),
+      syncedHash: null, currentRenderHash: sha(""), hash: sha, unattended: true, recordsAbsent: true,
+    });
+    expect(d.kind).toBe("ingest");
+  });
+
+  test("CONTROL: an unattended wave over a file that says what the records say reads noop, never a standoff", () => {
+    const d = decideIngest({
+      uri: URI, diskText: source, diskHash: sha(source),
+      syncedHash: null, currentRenderHash: sha(canonical), hash: sha, unattended: true,
+    });
+    expect(d).toEqual({ kind: "noop", reason: "canonical-equivalent" });
+  });
+
+  test("CONTROL: an unattended wave with a base still lands a clean disk edit", () => {
+    const edited = source.replace("! Entry ~ Lararium Hearth", "! Entry ~ Lararium Hearth (edited)");
+    const d = decideIngest({
+      uri: URI, diskText: edited, diskHash: sha(edited),
+      syncedHash: sha(canonical), currentRenderHash: sha(canonical), hash: sha, unattended: true,
+    });
+    expect(d.kind).toBe("ingest");
+  });
+
   test("both moved → conflict, surfaced never overwritten", () => {
     const diskEdit = source.replace("! Entry ~ Lararium Hearth", "! Entry (disk hand)");
     const recordsMovedRender = canonical.replace("! Entry ~ Lararium Hearth", "! Entry (record hand)");
@@ -92,6 +130,7 @@ describe("ingest-gate — the Confluence triangle decides", () => {
       syncedHash: sha(canonical), currentRenderHash: sha(recordsMovedRender), hash: sha,
     });
     expect(d.kind).toBe("conflict");
+    if (d.kind === "conflict") expect(d.reason).toBe("both-moved");
   });
 
   test("unparseable carrier → refuse, loudly", () => {

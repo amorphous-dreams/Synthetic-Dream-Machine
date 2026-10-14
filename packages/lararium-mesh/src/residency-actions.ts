@@ -265,9 +265,9 @@ export interface IngestCarrier {
   readonly skinny?:    boolean;
 }
 
-/** One vanished carrier riding an INGEST wave — a path gone from disk that the
- *  Synced tree still projects. The watcher confirms it (grace window + scan)
- *  before it rides; the gate splits the wave into renames vs tombstones. */
+/** One vanished carrier riding an INGEST wave — a path gone from disk where a base stands. A gesture
+ *  sends one only as a rename's source, paired by content with one arrived file; the island re-links the
+ *  records or declines, and tombstones nothing. */
 export interface IngestDeletion {
   /** The carrier-root lar: URI absent from disk, present in the Synced tree. */
   readonly uri:        string;
@@ -279,8 +279,9 @@ export interface IngestDeletion {
  *  LOAD lands unconditionally and never removes; INGEST decides (echo-noop ·
  *  refuse · canonical-equivalent · ingest · conflict) and tombstones group
  *  members that vanished from the re-parsed carrier. A wave MAY also carry
- *  whole-carrier `deletions` (vanished files): the gate re-links unique
- *  hash-matched renames and tombstones the rest, under a mass-delete brake. */
+ *  whole-carrier `deletions` (vanished files): the island re-links each unique
+ *  hash-matched rename and declines the rest. No wave tombstones a carrier: a
+ *  vanished file stands pending at the vessel's shore until a person answers. */
 export interface IngestAction extends ResidencyActionBase {
   readonly verb:      "INGEST";
   readonly sourceUri: string;
@@ -288,9 +289,10 @@ export interface IngestAction extends ResidencyActionBase {
   readonly changeId:  string;
   readonly carriers:  readonly IngestCarrier[];
   readonly deletions?: readonly IngestDeletion[];
-  /** Operator dial (0,1]: a wave whose tombstones exceed this fraction of the
-   *  bag's carriers SUSPENDS (mass-delete brake). Absent → island default. */
-  readonly massDeleteFraction?: number;
+  /** NO PERSON STANDS BEHIND THIS WAVE: a watcher settled it by itself. Such a wave never adopts a file
+   *  that holds no base over records that say something else; the gate answers `conflict`, `no-base`,
+   *  and a person settles it. Absent → a gesture a person named. */
+  readonly unattended?: boolean;
 }
 
 export type ResidencyAction =
@@ -377,7 +379,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         "change-id":  action.changeId,
         carriers:     action.carriers,
         ...(action.deletions ? { deletions: action.deletions } : {}),
-        ...(action.massDeleteFraction !== undefined ? { massDeleteFraction: action.massDeleteFraction } : {}),
+        ...(action.unattended === true ? { unattended: true } : {}),
       };
     default: {
       // Exhaustiveness guard: a new ResidencyAction variant that lands here without a case
@@ -474,12 +476,14 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     }
     // A wave MUST carry at least one carrier or one deletion.
     if (carriers.length === 0 && deletions.length === 0) return null;
-    const fracRaw = args["massDeleteFraction"];
-    const massDeleteFraction = typeof fracRaw === "number" && fracRaw > 0 && fracRaw <= 1 ? fracRaw : undefined;
+    // The flag reads true or absent: any other spelling refuses, since a wave that MEANT to ride
+    // unattended and read as a person's gesture would adopt where it must stand off.
+    const unattended = args["unattended"];
+    if (unattended !== undefined && unattended !== true) return null;
     return {
       ...base, verb: "INGEST", sourceUri, toBag, changeId, carriers,
       ...(deletions.length > 0 ? { deletions } : {}),
-      ...(massDeleteFraction !== undefined ? { massDeleteFraction } : {}),
+      ...(unattended === true ? { unattended: true } : {}),
     };
   }
 

@@ -67,14 +67,12 @@ import { frameAlt, maskedExec } from "@lararium/memetic-frame";
 import { isCarrierType } from "@lararium/mesh/carrier-type";
 import { SESSION_FORM_TITLE_CODE, assertStorableTitle, storableTitleFault } from "@lararium/mesh/lar-uris";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
-import { decideIngest } from "./ingest-gate.js";
+import { conflictWhy, decideIngest } from "./ingest-gate.js";
 import { placeMeme } from "./place-meme.js";
 import type { MemeSink } from "./place-meme.js";
 import type { IngestOps } from "./ingest-gate.js";
-import { decideDeletions } from "./delete-gate.js";
+import { pairRenames } from "./delete-gate.js";
 
-/** Island default mass-delete brake when the wave carries no operator dial. */
-const DEFAULT_MASS_DELETE_FRACTION = 0.25;
 
 /**
  * The render-leg digest the Confluence gate keys on — a native record's canonical
@@ -1011,62 +1009,48 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
   const o = origin(action);
   const deletions = action.deletions ?? [];
 
-  // ── deletion wave (whole-carrier files gone from disk) ───────────────────
-  // Split BEFORE the carrier loop: a rename's target carrier must skip normal
-  // ingest so the re-homed (change-id-preserving) records survive. On a
-  // suspended mass-delete brake the WHOLE wave applies nothing — a git-checkout
-  // flood carries adds and deletes together; the operator reviews it whole.
+  // ── the vanished addresses a wave names (whole-carrier files gone from disk) ──
+  // A WAVE TOMBSTONES NO CARRIER. A vanished file stands pending at the vessel's shore until a person
+  // answers; the one thing a wave carries for a vanished address is its RE-LINK to the arrived file that
+  // holds its bytes. Split BEFORE the carrier loop: a rename's target carrier must skip normal ingest so
+  // the re-homed (change-id-preserving) records survive.
   let deletionSummary: Record<string, unknown> | undefined;
   const renameTargets = new Set<string>();
   let renames: readonly { readonly fromUri: string; readonly toUri: string }[] = [];
-  let tombstoneUris: readonly string[] = [];
-  let suspended = false;
 
   if (deletions.length > 0) {
-    // THE BRAKE'S DENOMINATOR COUNTS CARRIERS. Every wave a bag takes leaves an effect record in that
-    // bag's own ledger; counted as carriers they would loosen the brake a little with each wave.
-    const liveTitles = (await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t));
-    const liveCarrierCount = new Set(liveTitles.map((t) => t.split("#")[0])).size;
-    const decision = decideDeletions({
+    const paired = pairRenames({
       deletes: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })),
       adds:    action.carriers.map((c) => ({ uri: c.uri, diskHash: c.diskHash })),
-      liveCarrierCount,
-      massDeleteFraction: action.massDeleteFraction ?? DEFAULT_MASS_DELETE_FRACTION,
     });
-    if (decision.kind === "suspend") {
-      suspended = true;
-      deletionSummary = { decision: "suspend", reason: decision.reason, wouldTombstone: [...decision.wouldTombstone] };
-    } else {
-      renames = decision.renames;
-      tombstoneUris = decision.tombstones;
-      // A re-link never re-homes a record onto an address whose records never project: that carrier falls to
-      // the gate below and refuses by name, and its vanished source stands as it stood.
-      // A rename onto a session-form address re-homes nothing: that carrier falls to the gate below and
-      // refuses by name (`title-law.ts`).
-      renames = renames.filter((r) => !neverProjects(r.toUri) && storableTitleFault(r.toUri) === null);
-      // A RE-LINK RE-HOMES RECORDS THAT STAND. A vanished source that holds no live record leaves nothing
-      // to re-home: answered as a rename, the target would skip its own ingest, land no record, and the
-      // gesture would still pin a base for it. So such a pair reads as no rename, and the target carrier
-      // falls to the gate below and lands as itself.
-      // The vanished source still rides the wave as a deletion: its group holds nothing live, so the
-      // tombstone removes nothing and the summary names the deletion applied.
-      const sources = liveTitles.filter((t) => !neverProjects(t));
-      const hollow = renames.filter((r) => groupOf(sources, r.fromUri).length === 0);
-      renames = renames.filter((r) => !hollow.includes(r));
-      tombstoneUris = [...tombstoneUris, ...hollow.map((r) => r.fromUri)];
-      for (const r of renames) renameTargets.add(r.toUri);
-    }
+    // A re-link never re-homes a record onto an address whose records never project, nor onto a
+    // session-form address (`title-law.ts`): that carrier falls to the gate below and refuses by name,
+    // and its vanished source stands as it stood.
+    const lawful = paired.renames.filter((r) => !neverProjects(r.toUri) && storableTitleFault(r.toUri) === null);
+    // A RE-LINK RE-HOMES RECORDS THAT STAND. A vanished source that holds no live record leaves nothing
+    // to re-home: answered as a rename, the target would skip its own ingest, land no record, and the
+    // gesture would still pin a base for it. So such a pair reads as no rename, the target carrier falls
+    // to the gate below and lands as itself, and the summary names the source `absent`: the records hold
+    // nothing under it, so nothing stays owed for it.
+    const sources = (await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t) && !neverProjects(t));
+    const absent = lawful.filter((r) => groupOf(sources, r.fromUri).length === 0).map((r) => r.fromUri);
+    // A RE-LINK NEVER LANDS OVER RECORDS THAT STAND AT ITS TARGET. A re-link skips the target's own gate,
+    // so over a target that already holds records it would replace them unweighed. Such a pair reads as
+    // no rename: the source stands declined, and the target falls to the gate below, where a person's
+    // gesture adopts the file and a wave no person stands behind stands off.
+    renames = lawful.filter((r) => !absent.includes(r.fromUri) && groupOf(sources, r.toUri).length === 0);
+    for (const r of renames) renameTargets.add(r.toUri);
+    const settled = new Set([...renames.map((r) => r.fromUri), ...absent]);
+    deletionSummary = {
+      renames: renames.map((r) => ({ ...r })),
+      absent,
+      // Every other vanished address the wave named: nothing moved and nothing tombstoned.
+      declined: deletions.map((d) => d.uri).filter((uri) => !settled.has(uri)),
+    };
   }
 
   const results: Array<Record<string, unknown>> = [];
-
-  if (suspended) {
-    // apply nothing — surface the whole wave for operator review
-    return {
-      sourceUri: action.sourceUri, toBag: action.toBag, changeId: action.changeId,
-      carriers: results, deletions: deletionSummary,
-    };
-  }
+  const unattended = action.unattended === true;
 
   for (const carrier of action.carriers) {
     // A rename's target re-homes from the vanished carrier's records (identity
@@ -1094,6 +1078,12 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         results.push({ uri, decision: "noop", reason: "cid-matches-current" });
         continue;
       }
+      // RULE 4½ AT THIS GRAIN: a wave no person stands behind never replaces a record that stands where
+      // the file holds no base. The handle's cid differs, so the records say something else.
+      if (unattended && carrier.syncedHash === null && current !== null && !current.meta?.deleted) {
+        results.push({ uri, decision: "conflict", reason: "no-base", grade: "clean", skinny: true, warnings: [conflictWhy(uri, "no-base")] });
+        continue;
+      }
       await landSkinnyHandle(access, action.toBag, uri, carrier.textCid, carrier.size ?? 0, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
       results.push({ uri, decision: "ingest", grade: "clean", skinny: true });
       continue;
@@ -1110,6 +1100,10 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       const currentCid = current && typeof current.tiddler["textCid"] === "string" ? (current.tiddler["textCid"] as string) : undefined;
       if (currentCid === carrier.textCid) {
         results.push({ uri, decision: "noop", reason: "cid-matches-current" });
+        continue;
+      }
+      if (unattended && carrier.syncedHash === null && current !== null && !current.meta?.deleted) {
+        results.push({ uri, decision: "conflict", reason: "no-base", grade: "clean", skinny: true, warnings: [conflictWhy(uri, "no-base")] });
         continue;
       }
       await landSkinnyHandle(access, action.toBag, uri, carrier.textCid, carrier.size ?? carrierText.length, carrier.ext, action.changeId, origin(action), tw5, carrier.meta);
@@ -1156,7 +1150,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
       // The gesture's Synced-tree hash rides as the base the gate merges against.
       const placed = await placeMeme(
-        { uri, text: carrierText, baseHash: carrier.syncedHash, baseRecordsHash: carrier.syncedRecordsHash ?? null, hash: renderHash },
+        { uri, text: carrierText, baseHash: carrier.syncedHash, baseRecordsHash: carrier.syncedRecordsHash ?? null, hash: renderHash, ...(unattended ? { unattended } : {}) },
         bagMemeSink(access, action.toBag, action.changeId, o),
       );
       // An `ingest` receipt carries the placement's warnings — the quoteblock floor's account of a fence
@@ -1166,7 +1160,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         placed.decision === "ingest"  ? withWarnings({ uri, decision: "ingest", grade: placed.grade, landed: placed.landed.length, tombstoned: placed.tombstoned, ...recordsSide(placed.canonicalHash) }, placed.warnings) :
         placed.decision === "noop"    ? { uri, decision: "noop", reason: placed.reason, ...recordsSide(placed.canonicalHash) } :
         placed.decision === "refuse"  ? { uri, decision: "refuse", grade: placed.grade, warnings: [...placed.warnings] } :
-                                        { uri, decision: "conflict", grade: placed.grade },
+                                        { uri, decision: "conflict", reason: placed.reason, grade: placed.grade, warnings: [...placed.warnings] },
       );
       continue;
     } else {
@@ -1280,6 +1274,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
             syncedHash:        memberSynced,
             currentRenderHash: memberCurrentHash,
             hash:              renderHash,
+            ...(unattended ? { unattended } : {}),
+            recordsAbsent:     currentRec === null,
           }, memberOps);
           if (decision.kind === "noop") {
             memberResults.push({ title, decision: "noop", reason: decision.reason });
@@ -1290,8 +1286,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
             // Surface, never overwrite: leave the record untouched and HOLD the old base so
             // the conflict re-surfaces next scan (never a silent last-write-wins on this member).
             anyConflict = true;
-            memberResults.push({ title, decision: "conflict" });
-            nextMemberHashes[title] = memberSynced!;        // conflict ⇒ synced non-null (decideIngest law)
+            memberResults.push({ title, decision: "conflict", reason: decision.reason });
+            // A `both-moved` conflict holds its base; a `no-base` one holds none, and none gets minted.
+            if (memberSynced !== null) nextMemberHashes[title] = memberSynced;
             continue;
           }
           if (decision.kind === "refuse") {
@@ -1356,13 +1353,17 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         declaredStructure: () => new Set<string>(),
         grade: () => "clean",
       };
-      // The current render hash the gate compares against: the records' present carrier hash
-      // when they hold this carrier, else the merge base (no records → a fresh adoption /
-      // re-land, never a phantom conflict — decideIngest routes both to ingest).
-      const currentRec = await readFromBag(access, action.toBag, uri);
+      // The current render hash the gate compares against: the records' present carrier hash when
+      // they hold this carrier, else the hash of NOTHING, as the memetic path reads an empty group. A
+      // base never stands in for records that left: with no base the file lands as a fresh adoption
+      // (rule 4½), and with a base the gate reads "the records moved" (they left) and stands off, so a
+      // record a hand deleted never returns under a stale base.
+      // A tombstoned record holds nothing live, as the memetic sink reads it: the carrier left.
+      const held = await readFromBag(access, action.toBag, uri);
+      const currentRec = held !== null && !held.meta?.deleted ? held : null;
       const currentRenderHash = currentRec
         ? renderHash(nativeRender(uri, [currentRec.tiddler as unknown as Record<string, unknown>]))
-        : (carrier.syncedRecordsHash ?? carrier.syncedHash ?? "");
+        : renderHash("");
       const decision = decideIngest<Record<string, unknown>>({
         uri,
         diskText:          carrierText,
@@ -1371,6 +1372,8 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         syncedRecordsHash: carrier.syncedRecordsHash ?? null,
         currentRenderHash,
         hash:              renderHash,
+        ...(unattended ? { unattended } : {}),
+        recordsAbsent:     currentRec === null,
       }, nativeOps);
       if (decision.kind === "noop") {
         // The records already say what the disk says: their standing render names the base's records side.
@@ -1384,7 +1387,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         continue;
       }
       if (decision.kind === "conflict") {
-        results.push({ uri, decision: "conflict", filetype: carrier.ext || "text/plain" });
+        results.push({ uri, decision: "conflict", reason: decision.reason, filetype: carrier.ext || "text/plain", warnings: [conflictWhy(uri, decision.reason)] });
         continue;
       }
       freshRecords = decision.records as Array<Record<string, unknown>>;
@@ -1411,10 +1414,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     results.push({ ...receipt, landed: freshTitles.size, tombstoned });
   }
 
-  // ── apply the deletion wave ──────────────────────────────────────────────
-  // Renames re-home the vanished carrier's whole group to the new URI,
-  // PRESERVING each record's change-id (the re-link, never a fresh create);
-  // tombstones remove the whole group (`groupOf`, the shared carrier-group law).
+  // ── apply the re-links ───────────────────────────────────────────────────
+  // A rename re-homes the vanished carrier's whole group to the new URI, PRESERVING each record's
+  // change-id (the re-link, never a fresh create). Nothing here removes a carrier the wave only named gone.
   for (const { fromUri, toUri } of renames) {
     const live = await listLiveTitlesInBag(access, action.toBag);
     let relinked = 0;
@@ -1440,20 +1442,6 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       relinked++;
     }
     results.push({ uri: toUri, decision: "rename", from: fromUri, relinked });
-  }
-
-  const tombstonedCarriers: string[] = [];
-  for (const uri of tombstoneUris) {
-    const live = await listLiveTitlesInBag(access, action.toBag);
-    // A file's deletion never reaches a record that no file ever stood for.
-    const group = groupOf(live, uri).filter((t) => !neverProjects(t));
-    for (const t of group) await tombstoneIn(access, action.toBag, t, o);
-    results.push({ uri, decision: "tombstone", removed: group.length });
-    tombstonedCarriers.push(uri);
-  }
-
-  if (deletions.length > 0 && !deletionSummary) {
-    deletionSummary = { decision: "apply", renames: renames.map((r) => ({ ...r })), tombstoned: tombstonedCarriers };
   }
 
   return {

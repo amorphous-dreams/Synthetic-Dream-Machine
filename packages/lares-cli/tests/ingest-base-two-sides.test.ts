@@ -123,7 +123,7 @@ describe("a confirmed rename moves the whole base", () => {
     expect(renamed.status).toBe("renamed");
     expect(renamed.renameFrom).toBe(URI);
     expect(full.renameDeletions).toEqual([{ uri: URI, syncedHash: carrierHash(DISK) }]);
-    const count = applyConfirmedRenames(tree, BAG, candidatesOf(full.rows), { decision: "apply", renames: [{ fromUri: URI, toUri: moved }] });
+    const count = applyConfirmedRenames(tree, BAG, candidatesOf(full.rows), { renames: [{ fromUri: URI, toUri: moved }] });
     expect(count).toBe(1);
     expect(tree.base(syncedTreeKey(BAG, URI))).toBeNull();
     expect(tree.base(syncedTreeKey(BAG, moved))).toEqual({ path: join(dir, "moved.mem"), disk: carrierHash(DISK), records: RENDER });

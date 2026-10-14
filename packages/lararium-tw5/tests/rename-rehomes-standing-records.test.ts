@@ -44,7 +44,7 @@ describe("a rename re-homes records that stand", () => {
     const table = new VerbTable();
     registerActionReactors(table, { composite });
     const args = {
-      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-rename", massDeleteFraction: 1,
+      "source-uri": "file:///scratch", "to-bag": BAG, "change-id": "chg-rename",
       carriers: [{ uri: URI, text: D, diskHash: carrierHash(D), syncedHash: null, ext: ".mem" }],
       // The vanished source shares the arriving carrier's bytes: the gate pairs the two as a rename.
       deletions: [{ uri: FROM, syncedHash: carrierHash(D) }],
@@ -59,9 +59,10 @@ describe("a rename re-homes records that stand", () => {
     expect(rows.find((r) => r["uri"] === URI)?.["decision"]).toBe("ingest");
     expect(rows.some((r) => r["decision"] === "rename" || r["decision"] === "rename-target")).toBe(false);
     expect((result["deletions"] as { renames: unknown[] }).renames).toEqual([]);
-    // The vanished source still answers as an applied deletion, removing nothing.
-    expect((result["deletions"] as { tombstoned: unknown[] }).tombstoned).toEqual([FROM]);
-    expect(rows.find((r) => r["uri"] === FROM)).toMatchObject({ decision: "tombstone", removed: 0 });
+    // The vanished source answers `absent`: the records hold nothing under it, and no row names a removal.
+    expect((result["deletions"] as { absent: unknown[] }).absent).toEqual([FROM]);
+    expect((result["deletions"] as { declined: unknown[] }).declined).toEqual([]);
+    expect(rows.find((r) => r["uri"] === FROM)).toBeUndefined();
     expect(await composite.get(URI)).not.toBeNull();
   });
 
