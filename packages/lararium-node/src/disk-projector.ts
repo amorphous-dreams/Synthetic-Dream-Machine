@@ -910,10 +910,17 @@ export class LarDiskProjector {
     }
     if (act === "remove") {
       if (!this.removeCarrier) return { ok: false, refusal: "no-delete-door", why: "this projector holds no wiki delete door" };
+      for (const uri of asked) await this.removeCarrier(uri);
+      // THE DELETE DOOR'S WORD PROVES NOTHING BY ITSELF. Each carrier gets read back from the wiki's resolved
+      // view: one that left it, or that the view now resolves from another bag, leaves this bag's pending
+      // set; one the view still holds here stays pending, and the answer names it as left. The view answers
+      // before the store weighs the tombstone: a store that refuses it returns the carrier to the view, and
+      // the reconcile that return marks pends it again, since the base stays. The read runs no reconcile, so
+      // the base stays in the tree.
+      const view = this._tw5?.$tw.wiki;
       for (const uri of asked) {
-        await this.removeCarrier(uri);
-        // The carrier left the resolved view by a hand's delete: nothing stands to write back.
-        this._leavePending(bagId, uri);
+        const origin = (view?.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];
+        if (origin !== bagId) this._leavePending(bagId, uri);
       }
     } else {
       for (const uri of asked) this.restoreAsked.add(sitedKey(bagId, uri));
