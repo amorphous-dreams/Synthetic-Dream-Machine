@@ -26,10 +26,10 @@ Oracle tiddlers (lararium, catalog, lares, wiki, corpus) carry their payload Aut
 
 !! Why here
 
-`open-node-lar-peer.ts` defined a local `recordText()`. `wiki-handlers.ts` defined an identical copy. Fifteen-plus inline `typeof rec?.tiddler.text === "string"` guards remain scattered across the node package. This file collapses them.
+One helper holds the guard on an oracle tiddler's text: a caller reads `tiddlerText(record)` rather than spelling the `typeof … === "string"` test again. It lives in `base-doc.ts` (`@lararium/mesh`), where every package reaches it.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UeWKTb40sYZMEdg9jLqtwvu1eHa12YsGJ6AVlTzi9-o
+<<^ code="&#x0003;">>ni:///sha-256;RKMpLQ05JyO6-cd1n14At8iHFUXmJNXlYNdoLKPR5-M
 
 <<^ code="&#x0004;" -> to="?">>

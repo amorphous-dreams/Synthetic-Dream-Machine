@@ -571,9 +571,9 @@ silent drop):
 
 <<~ scale defer "kapae ~ the forget/retract verb waits behind a GC/compaction story — nothing retracts until the palace knows what reclaims the space -> log-compression ~ waits behind a DECLARED irreversibility-boundary — a drawn line naming what compresses (lossy, summarized) versus what stays verbatim forever (the never-compressed core) -> bitemporality ~ runs LAZY / by-exception — the valid/transaction interval materializes only when a query asks the past, never eagerly per-drawer">>
 
-''Kapae resolves the retract gate'' (operator-ratified 2026-06-29). The forget/retract verb no longer
-merely waits: ''rewind = //kapae//'' (set-aside, never-erase) — a deleted turn tombstones-and-keeps, stamped
-so recall weights it down. The GC/compaction story it waited on reads: ''sweep at causal-stability or''
+''Kapae resolves the retract gate'' (operator-ratified 2026-06-29). The forget/retract verb answers
+as ''rewind = //kapae//'' (set-aside, never-erase) — a deleted turn tombstones-and-keeps, stamped
+so recall weights it down. The GC/compaction story beneath it reads: ''sweep at causal-stability or''
 ''a grace window, keep a thin tombstone'' (retraction never reads as absence); and the base already enacts
 the mechanism (mempalace `kg_invalidate` closes `valid_to` append-only; L7 dynamics decay salience to a
 floor, never zero). The fuller treatment — kapae + fork-as-concurrency + the ''rhizome'' (mid-flight
@@ -732,6 +732,6 @@ The geometry whole: ''one GROUND · the li spine (shape ↠ idiom) · cross-cutt
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4kR_Lfu58vI7KnAtI7eeX_0hAybIdYr3Y390DTMIVKo
+<<^ code="&#x0003;">>ni:///sha-256;Xjm32UJuI97_DskW_X6jfFb9cgrUlVSvjueU5Q8Qvms
 
 <<^ code="&#x0004;" -> to="?">>
