@@ -134,7 +134,9 @@ The terminator, the resolver and the issuer attach through profiles in the compo
 
 A harness proves the code a household runs only when it runs that code. So the mesh, kahu, crossing, swarm and burn harnesses run the built image, named by digest, and bind no source tree into a container. A harness may mount scratch state, scratch workspace and the staging tools; it mounts nothing that replaces the image's code. A browser runner needs a browser engine the product image lacks, so it runs from a browser image. The mesh's browser vessels still read their code from the product image, through a volume that image fills. One exception stands declared: the browser CI runner reads the repository read-only. A harness run names its own compose project, so two runs on one host share no container, network or volume.
 
-Every boot rests at the floor holding no vessel key, and a harness holds no terminal. A harness opens a vessel it staged through the test custody door alone (`tools/unlock-test-custody.mjs`; `tools/unlock-staged-container.sh` carries that door into a standing container), and the door refuses any root that carries no scratch marker. A harness reads a hearth as stood only once that door answered an open key.
+Every boot rests at the floor holding no vessel key, and a harness holds no terminal. A harness opens a vessel it staged through the test custody door alone (`tools/unlock-test-custody.mjs`; `tools/unlock-staged-container.sh` carries that door into a standing container), and the door refuses any root that carries no scratch marker. A harness reads a hearth as stood only once that door answered an open key. A harness that founds a vessel of its own, such as the reader the Herm mesh witness dials with, stages that root and founds its custody through the same door before the founding runs.
+
+The container drivers ride hosted runners on every pushed head (`.github/workflows/held-out.yml`). One job builds the product image and hands it on beside its digest; every cell that runs containers loads that image and refuses any other digest. Each driver that walks independent scenarios unfolds into one cell per scenario, and the scenario script's own list names them, so no cell stands written by hand. Each cell names its own compose project and records its own verdict; a merge job holds every verdict against the cell list and reads a red cell, a silent cell and a verdict for another head as red, each by name. `tools/ci-verdict.mjs` prints that run as its third reading, so a head no container driver measured reads unread.
 
 <<~/ahu>>
 
@@ -169,6 +171,6 @@ No verb of the host shim and no service of the compose file removes a state dire
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;C9rR-1VAVScpN5m1sh3y6kzrsWD36QzaxvbZk28V4Gw
+<<^ code="&#x0003;">>ni:///sha-256;NiQgSLkZRe9dlzYLtbgimIzIBdkmQp_wsx84TfyIsUQ
 
 <<^ code="&#x0004;" -> to="?">>

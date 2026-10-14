@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// held-out-steps — run one held-out driver's job the way a hosted runner runs it, read off the workflow itself.
+// held-out-steps — run one held-out job the way a hosted runner runs it, read off the workflow itself.
 //
-// The held-out workflow stands each driver on a fresh runner. A local proof that retypes those steps by hand
+// The held-out workflow stands each cell on a fresh runner. A local proof that retypes those steps by hand
 // proves the retyping, so this reader takes the steps from `.github/workflows/held-out.yml` and runs them in
 // order with the runner's own semantics:
 //   - a step's `if:` decides, with an implicit `success()` unless it names a status function;
@@ -9,7 +9,10 @@
 //     for `shell: bash`), and the lines it appends to `$GITHUB_ENV` reach every later step;
 //   - the job's `timeout-minutes` cancels the job, and only `always()` steps run after that;
 //   - a `uses:` step maps onto the local fact it guarantees: the checkout holds its submodules at their recorded
-//     commits, pnpm and node stand at the declared majors, and the evidence directory is non-empty, then copied;
+//     commits, pnpm and node stand at the declared majors, an upload copies a non-empty directory into the
+//     evidence root, and a download copies it back out (so the image job's upload feeds a cell's download);
+//   - a matrix the workflow reads from its `plan` job arrives from the same tool that job runs
+//     (`tools/held-out-cells.mjs`), and only while the plan job still runs that tool;
 //   - the `github` context (sha, ref, ref_name, repository, workspace, event_name, actor, run_id, run_attempt)
 //     reads the runner's own `GITHUB_*` variables first, then the checkout the job runs in, and every `run:` step
 //     reads it as `GITHUB_*`, as the runner exports it.
@@ -18,9 +21,10 @@
 // expression or action throws rather than skipping: a step this reader cannot run must never read as a step that
 // passed, and a job-level `defaults:`, `services:` or `container:` would change how every step runs.
 //
-//   node tools/held-out-steps.mjs <driver>             run the job; exit 0 only when every step that ran passed
-//   node tools/held-out-steps.mjs <driver> --plan      print the steps a green job runs, and run nothing
-//   node tools/held-out-steps.mjs --drivers            print the matrix's drivers
+//   node tools/held-out-steps.mjs <cell>               run that cell's job; exit 0 only when every step that ran passed
+//   node tools/held-out-steps.mjs <cell> --plan        print the steps a green job runs, and run nothing
+//   node tools/held-out-steps.mjs --job <name>         run a job that holds no matrix (`plan`, `image`, `merge`)
+//   node tools/held-out-steps.mjs --cells              print the matrix's cells
 // Env:  HELD_OUT_WORKFLOW (the workflow file), HELD_OUT_EVIDENCE (where uploads land; default under RUNNER_TEMP).
 //       RUNNER_TEMP must name a scratch directory; the caller owns HOME, XDG and docker isolation.
 import { spawn, spawnSync } from "node:child_process";
@@ -28,14 +32,19 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, 
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { cellMatrix } from "./held-out-cells.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const STEP_KEYS = new Set(["name", "if", "run", "uses", "shell", "with"]);
+const STEP_KEYS = new Set(["name", "id", "if", "run", "uses", "shell", "with", "continue-on-error"]);
 // The workflow-level and job-level keys this reader reads or that change nothing it runs. Any other key, such as a
 // job's `defaults:` (a different shell line), `services:` (sidecar containers) or `container:` (a different
 // image), changes how the runner runs every step, so it throws rather than reading as absent.
-const WORKFLOW_KEYS = new Set(["name", "on", "permissions", "jobs"]);
-const JOB_KEYS = new Set(["name", "runs-on", "timeout-minutes", "strategy", "env", "steps"]);
+const WORKFLOW_KEYS = new Set(["name", "on", "concurrency", "permissions", "env", "jobs"]);
+const JOB_KEYS = new Set(["name", "needs", "if", "runs-on", "timeout-minutes", "outputs", "strategy", "env", "steps"]);
+// The one dynamic matrix this reader knows: the plan job's output, which `tools/held-out-cells.mjs matrix` prints.
+const PLAN_MATRIX = /^\s*matrix:\s*\$\{\{\s*fromJSON\(needs\.plan\.outputs\.matrix\)\s*\}\}\s*$/;
+const PLAN_TOOL = 'node tools/held-out-cells.mjs matrix >> "$GITHUB_OUTPUT"';
+const PLAN_OUTPUT = /^      matrix:\s*\$\{\{\s*steps\.([a-z0-9_-]+)\.outputs\.matrix\s*\}\}\s*$/;
 
 // A ` #` after a plain scalar, or after a quoted one's closing quote, opens a YAML comment: an action pinned
 // by SHA carries its release tag there (`uses: actions/checkout@<sha> # v7.0.1`), and the runner never reads it.
@@ -52,19 +61,24 @@ const scalar = (v) => {
   return unquote(t);
 };
 
-/** The held-out job's env, matrix and steps, read from the workflow text. Throws on any shape it cannot read. */
-export function parseWorkflow(text) {
-  const lines = text.split("\n");
+/**
+ * One job's env, matrix and steps, read from the workflow text. Throws on any shape it cannot read.
+ *
+ * @param job     the job to read (default: the cell job, `held-out`)
+ * @param cells   the matrix a plan-fed job runs; default: what `tools/held-out-cells.mjs` derives
+ * @returns `matrix: null` for a job that declares no strategy
+ */
+export function parseWorkflow(text, { job = "held-out", cells = cellMatrix } = {}) {
+  const all = text.split("\n");
   const env = {};
-  const matrix = [];
+  let matrix = null;
   const steps = [];
   let timeout = null;
-  let i = 0;
   const indentOf = (l) => l.length - l.trimStart().length;
   const skippable = (l) => l.trim() === "" || l.trim().startsWith("#");
 
-  // Every key at indent 0 (the workflow), 2 (a job) and 4 (the job's own keys) must be one this reader reads.
-  let jobs = 0;
+  // Every key at indent 0 (the workflow) and 4 (a job's own keys) must be one this reader reads, in EVERY job:
+  // the job it runs leans on what the others hand it.
   let inJobs = false;
   const keyAt = (l, n) => {
     if (skippable(l)) return;
@@ -73,19 +87,54 @@ export function parseWorkflow(text) {
     if (n === 0) {
       inJobs = m[1] === "jobs";
       if (!WORKFLOW_KEYS.has(m[1])) throw new Error(`held-out-steps: workflow key "${m[1]}" has no local reading`);
-    } else if (n === 2 && inJobs && ++jobs > 1) {
-      throw new Error(`held-out-steps: the reader runs ONE job, and the workflow names a second ("${m[1]}")`);
     } else if (n === 4 && inJobs && !JOB_KEYS.has(m[1])) {
       throw new Error(`held-out-steps: job key "${m[1]}" has no local reading`);
     }
   };
-  const keysOf = (l) => { keyAt(l, 0); keyAt(l, 2); keyAt(l, 4); };
+  for (const l of all) { keyAt(l, 0); keyAt(l, 4); }
 
-  // Job-level scalars and blocks sit at indent 4 under the one job.
+  // The workflow's own env reaches every job; a job's env block overrides it below.
+  const top = all.findIndex((l) => /^env:\s*$/.test(l));
+  if (top >= 0) {
+    for (let k = top + 1; k < all.length && (skippable(all[k]) || indentOf(all[k]) > 0); k++) {
+      const m = /^  ([A-Z0-9_]+):\s*(.*)$/.exec(all[k]);
+      if (m) env[m[1]] = unquote(m[2]);
+    }
+  }
+
+  // The job's own block: from its name to the next key at its indent.
+  const blockOf = (name) => {
+    const start = all.findIndex((l) => l === `  ${name}:`);
+    if (start < 0) return null;
+    let end = start + 1;
+    while (end < all.length && (skippable(all[end]) || indentOf(all[end]) > 2)) end++;
+    return all.slice(start + 1, end);
+  };
+  const lines = blockOf(job);
+  if (!lines) throw new Error(`held-out-steps: the workflow names no job "${job}"`);
+  let i = 0;
+
+  // Job-level scalars and blocks sit at indent 4 under the job.
   for (; i < lines.length; i++) {
     const l = lines[i];
-    keysOf(l);
     if (/^    timeout-minutes:/.test(l)) timeout = unquote(l.split(":").slice(1).join(":"));
+    if (/^    strategy:\s*$/.test(l)) matrix = [];
+    if (/^      matrix:\s*\S/.test(l)) {
+      // A MATRIX READ FROM ANOTHER JOB. The reader runs the tool that job runs; a plan job that stopped running
+      // it would hand the runner a matrix this reader never sees, so that throws.
+      if (!PLAN_MATRIX.test(l)) throw new Error(`held-out-steps: matrix "${l.trim()}" has no local reading`);
+      // The whole wire, end to end: the tool's line lands in the step's output file, the step carries an id, and
+      // the job hands that step's `matrix` on. A wire cut anywhere leaves the runner with no matrix.
+      const plan = blockOf("plan") ?? [];
+      const handed = plan.map((p) => PLAN_OUTPUT.exec(p)?.[1]).find(Boolean);
+      if (!plan.some((p) => p.includes(PLAN_TOOL))) {
+        throw new Error(`held-out-steps: the matrix reads the plan job's output, and the plan job never runs \`${PLAN_TOOL}\``);
+      }
+      if (!handed || !plan.some((p) => p.trim() === `id: ${handed}`)) {
+        throw new Error("held-out-steps: the plan job hands on no step's `matrix` output (outputs.matrix must read a step that carries that id)");
+      }
+      matrix = cells();
+    }
     if (/^    env:\s*$/.test(l)) {
       for (i++; i < lines.length && (skippable(lines[i]) || indentOf(lines[i]) > 4); i++) {
         const m = /^      ([A-Z0-9_]+):\s*(.*)$/.exec(lines[i]);
@@ -104,18 +153,14 @@ export function parseWorkflow(text) {
     }
     if (/^    steps:\s*$/.test(l)) { i++; break; }
   }
-  if (!matrix.length) throw new Error("held-out-steps: the workflow names no matrix drivers");
+  if (matrix !== null && !matrix.length) throw new Error(`held-out-steps: the job "${job}" names no matrix cells`);
 
   let step = null;
   for (; i < lines.length; i++) {
     const l = lines[i];
     if (skippable(l)) continue;
     const ind = indentOf(l);
-    if (ind < 6) {
-      // The job's keys after its steps still decide how the runner runs them.
-      for (; i < lines.length; i++) keysOf(lines[i]);
-      break;
-    }
+    if (ind < 6) break;
     const open = /^      - ([a-z-]+):\s*(.*)$/.exec(l);
     const field = /^        ([a-z-]+):\s*(.*)$/.exec(l);
     const m = open ?? field;
@@ -137,6 +182,10 @@ export function parseWorkflow(text) {
         if (w) step.with[w[1]] = unquote(w[2]);
       }
       i--;
+    } else if (key === "continue-on-error") {
+      const v = scalar(raw);
+      if (typeof v !== "boolean") throw new Error(`held-out-steps: continue-on-error "${raw.trim()}" (line ${i + 1}) has no local reading`);
+      step.continueOnError = v;
     } else {
       step[key] = unquote(raw);
     }
@@ -144,7 +193,7 @@ export function parseWorkflow(text) {
   for (const s of steps) {
     if (!!s.run === !!s.uses) throw new Error(`held-out-steps: step "${s.name ?? s.uses}" must carry exactly one of run/uses`);
   }
-  return { env, matrix, steps, timeout };
+  return { job, env, matrix, steps, timeout };
 }
 
 /**
@@ -222,10 +271,21 @@ export function githubEnv(github) {
   return Object.fromEntries(Object.entries(github).map(([k, v]) => [`GITHUB_${k.toUpperCase()}`, v]));
 }
 
-/** The job context for one driver, its `github` context read off `env`, then the checkout at `cwd`. */
-export function jobContext(wf, driver, { cwd = ROOT, env = process.env } = {}) {
-  const row = wf.matrix.find((m) => m.driver === driver);
-  if (!row) throw new Error(`held-out-steps: no matrix driver "${driver}" (${wf.matrix.map((m) => m.driver).join(", ")})`);
+/** A matrix row's own name: the cell the plan names, or the driver of a matrix written in the workflow. */
+export const cellOf = (row) => row.cell ?? row.driver;
+
+/**
+ * The job context for one cell, its `github` context read off `env`, then the checkout at `cwd`. A job that
+ * holds no matrix takes no cell and reads an empty `matrix` context.
+ */
+export function jobContext(wf, cell, { cwd = ROOT, env = process.env } = {}) {
+  let row = {};
+  if (wf.matrix === null) {
+    if (cell != null) throw new Error(`held-out-steps: the job "${wf.job}" holds no matrix, so it takes no cell ("${cell}")`);
+  } else {
+    row = wf.matrix.find((m) => cellOf(m) === cell);
+    if (!row) throw new Error(`held-out-steps: no matrix cell "${cell}" (${wf.matrix.map(cellOf).join(", ")})`);
+  }
   const ctx = { matrix: row, github: githubContext(cwd, env), env: {} };
   for (const [k, v] of Object.entries(wf.env)) ctx.env[k] = expand(v, ctx);
   return ctx;
@@ -288,6 +348,24 @@ function runAction(step, ctx, { cwd, env, evidence }) {
     }
     case "actions/setup-node":
       return major("node", ["--version"]) === String(w["node-version"]) ? null : `node ${w["node-version"]} does not stand (found ${major("node", ["--version"])})`;
+    case "actions/download-artifact": {
+      // The runner fetches what an earlier job uploaded. Locally an upload lands under the evidence root, so a
+      // download copies it back out: one named artifact into `path`, or every artifact a pattern names into
+      // `path/<artifact name>`.
+      const names = existsSync(evidence) ? readdirSync(evidence) : [];
+      if (w.name) {
+        if (!names.includes(w.name)) return `no artifact named ${w.name} under ${evidence} — run the job that uploads it first`;
+        mkdirSync(w.path, { recursive: true });
+        cpSync(join(evidence, w.name), w.path, { recursive: true });
+        return null;
+      }
+      if (!w.pattern) return "a download names neither an artifact nor a pattern";
+      const shape = new RegExp(`^${w.pattern.split("*").map((p) => p.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*")}$`);
+      const hits = names.filter((n) => shape.test(n));
+      if (hits.length === 0) return `no artifact matches ${w.pattern} under ${evidence}`;
+      for (const n of hits) { mkdirSync(join(w.path, n), { recursive: true }); cpSync(join(evidence, n), join(w.path, n), { recursive: true }); }
+      return null;
+    }
     case "actions/upload-artifact": {
       const path = w.path;
       const files = existsSync(path) ? readdirSync(path, { recursive: true }) : [];
@@ -320,7 +398,7 @@ export function readEnvFile(text) {
   return out;
 }
 
-/** Run one driver's job. Resolves to { verdict, failed } — verdict GREEN | RED | CANCELLED. */
+/** Run one job, for one cell where it holds a matrix. Resolves to { verdict, failed } — verdict GREEN | RED | CANCELLED. */
 export async function runJob(wf, driver, { cwd = ROOT, env = process.env, log = console.log } = {}) {
   const runnerTemp = env.RUNNER_TEMP;
   if (!runnerTemp) throw new Error("held-out-steps: RUNNER_TEMP must name a scratch directory");
@@ -343,23 +421,28 @@ export async function runJob(wf, driver, { cwd = ROOT, env = process.env, log = 
     } else {
       const file = join(stepDir, `step-${n}.sh`);
       const envFile = join(stepDir, `env-${n}`);
+      const outFile = join(stepDir, `output-${n}`);
       writeFileSync(file, expand(step.run, { ...ctx, env: { ...ctx.env, ...jobEnv } }));
       writeFileSync(envFile, "");
+      writeFileSync(outFile, "");
       // After a cancel, an always() step runs on its own bounded clock, as the runner grants it.
       const stepDeadline = state === "cancelled" ? Date.now() + 10 * 60_000 : deadline;
-      const r = await runShell(step.shell, file, { cwd, env: { ...jobEnv, GITHUB_ENV: envFile }, deadline: stepDeadline });
+      const r = await runShell(step.shell, file, { cwd, env: { ...jobEnv, GITHUB_ENV: envFile, GITHUB_OUTPUT: outFile }, deadline: stepDeadline });
       jobEnv = { ...jobEnv, ...readEnvFile(readFileSync(envFile, "utf8")) };
       if (r.timedOut && state === "success") { state = "cancelled"; failed ??= label; log(`[held-out] ✗ ${label} — the job timeout (${minutes}m) cancelled it`); continue; }
       if (r.code !== 0) fault = `exit ${r.code}`;
     }
-    if (fault) {
+    if (fault && step.continueOnError) {
+      // The runner records the fault and lets the job go on as if the step had passed.
+      log(`[held-out] ✗ ${label} — ${fault} (continue-on-error: the job goes on)`);
+    } else if (fault) {
       log(`[held-out] ✗ ${label} — ${fault}`);
       if (state === "success") state = "failure";
       failed ??= label;
     } else log(`[held-out] ✓ ${label}`);
   }
   const verdict = state === "success" ? "GREEN" : state === "failure" ? "RED" : "CANCELLED";
-  log(`[held-out] ${driver}: ${verdict}${failed ? ` (first failure: ${failed})` : ""}`);
+  log(`[held-out] ${driver ?? wf.job}: ${verdict}${failed ? ` (first failure: ${failed})` : ""}`);
   return { verdict, failed };
 }
 
@@ -373,17 +456,22 @@ export function planFor(wf, driver, { cwd = ROOT, env = process.env } = {}) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const wf = parseWorkflow(readFileSync(process.env.HELD_OUT_WORKFLOW ?? join(ROOT, ".github/workflows/held-out.yml"), "utf8"));
-  const [driver, flag] = process.argv.slice(2);
-  if (driver === "--drivers") {
-    console.log(wf.matrix.map((m) => m.driver).join("\n"));
-  } else if (!driver) {
-    console.error("usage: held-out-steps.mjs <driver> [--plan] | --drivers");
-    process.exit(2);
-  } else if (flag === "--plan") {
-    for (const s of planFor(wf, driver)) console.log(`── ${s.name}\n${s.run ?? `(uses ${s.uses})`}`);
-  } else {
-    const { verdict } = await runJob(wf, driver, { env: { ...process.env, RUNNER_TEMP: process.env.RUNNER_TEMP ?? mkdtempSync(join(tmpdir(), "held-out-")) } });
+  const text = readFileSync(process.env.HELD_OUT_WORKFLOW ?? join(ROOT, ".github/workflows/held-out.yml"), "utf8");
+  const [first, second] = process.argv.slice(2);
+  const runAndExit = async (wf, cell) => {
+    const { verdict } = await runJob(wf, cell, { env: { ...process.env, RUNNER_TEMP: process.env.RUNNER_TEMP ?? mkdtempSync(join(tmpdir(), "held-out-")) } });
     process.exit(verdict === "GREEN" ? 0 : 1);
+  };
+  if (first === "--cells") {
+    console.log(parseWorkflow(text).matrix.map(cellOf).join("\n"));
+  } else if (first === "--job" && second) {
+    await runAndExit(parseWorkflow(text, { job: second }), undefined);
+  } else if (!first || first.startsWith("--")) {
+    console.error("usage: held-out-steps.mjs <cell> [--plan] | --job <name> | --cells");
+    process.exit(2);
+  } else if (second === "--plan") {
+    for (const p of planFor(parseWorkflow(text), first)) console.log(`── ${p.name}\n${p.run ?? `(uses ${p.uses})`}`);
+  } else {
+    await runAndExit(parseWorkflow(text), first);
   }
 }

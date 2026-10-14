@@ -1,42 +1,109 @@
 name: Held-out witnesses
 
-# The normal CI fleet names these witnesses but cannot raise their browser and Docker substrates.
-# This workflow gives each one its own hosted runner: a red civic matrix cannot conceal a red crossing
-# matrix, and the fixed `dreamnet-mesh` compose project never has a second writer on the same host.
+# The drivers that prove TRANSPORT across real containers and a real browser: the browser weld, the civic
+# families, the crossing matrix, the Herm mesh across three hops, and every mesh scenario. The per-push CI
+# fleet names these witnesses but cannot raise their browser and Docker substrates, so they ride here.
+#
+# EVERY PUSHED HEAD GETS READ. This workflow runs on each push to a feature branch and to `main`, on a
+# weekly clock, and by hand. `tools/ci-verdict.mjs` prints its verdict as the third reading beside the CI
+# workflow's own, so a head these drivers never measured reads UNREAD and never green.
+#
+# FOUR JOBS, ONE VERDICT.
+#   plan      prints the cell matrix. `tools/held-out-cells.mjs` derives it: one cell per whole driver, and one
+#             cell per scenario `tools/mesh-scenarios.sh --list` names. No cell stands written in this file.
+#   image     builds the product image ONCE and hands it to the cells as an artifact, beside its digest.
+#   held-out  one hosted job per cell. A cell that runs containers loads that image and refuses any other
+#             digest (`tools/harness-image.sh --no-build` must answer the digest the image job recorded).
+#   merge     reads every cell's recorded verdict against the matrix and fails closed: a red cell, a cell
+#             that never answered and a verdict for another head each read red, each by name. It prints one
+#             `HELD-OUT-DRIVER:` line per driver and one `HELD-OUT-VERIFY:` line for the run.
+#
+# ONE WRITER PER COMPOSE PROJECT. Each hosted job stands on its own virtual machine, so no two cells share a
+# docker host, and each mesh cell still names its own compose project (`held-<cell>`): a cell's containers,
+# network and volumes carry the cell's name on any host that runs it.
+#
+# THE RUNNER'S LIMITS. A hosted public runner gives four cores and docker, with no nested virtualization
+# promised beyond it. A job may run six hours; every cell's budget stays far inside that. The account runs
+# twenty jobs at once, and the CI workflow with its e2e shards takes up to twelve on the same push, so
+# `max-parallel` holds the cells to eight.
 on:
+  push:
+    branches: ["feature/**", main]
   schedule:
     - cron: "17 6 * * 0"
   workflow_dispatch:
 
+# A newer head supersedes an older run of the same ref.
+concurrency:
+  group: held-out-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
+env:
+  NODE_VERSION: "24"
+  # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
+  # written by any other pnpm rewrites its peer suffixes on its next write.
+  PNPM_VERSION: "11.28.5"
+
 jobs:
+  plan:
+    name: Plan the cells
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.cells.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Derive the cell matrix
+        id: cells
+        run: |
+          node tools/held-out-cells.mjs cells
+          node tools/held-out-cells.mjs matrix >> "$GITHUB_OUTPUT"
+
+  image:
+    name: Build the product image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+      # ONE BUILD SERVES EVERY CELL. The harness names the image by digest, so the digest travels beside the
+      # saved image and each cell holds its loaded copy to it.
+      - name: Build, name by digest, and save
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/held-out-image"
+          mkdir -p "$dir"
+          tools/harness-image.sh > "$dir/image.digest"
+          cat "$dir/image.digest"
+          docker save "${LARES_HARNESS_TAG:-lares-harness:local}" | zstd -T0 -3 -q -o "$dir/image.tar.zst"
+          ls -l "$dir"
+          echo "IMAGE_DIR=$dir" >> "$GITHUB_ENV"
+      - name: Upload the image
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: held-out-image-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.IMAGE_DIR }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
   held-out:
-    name: Held-out · ${{ matrix.driver }}
+    name: Held-out · ${{ matrix.cell }}
+    needs: [plan, image]
     runs-on: ubuntu-latest
     timeout-minutes: ${{ matrix.timeout_minutes }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - driver: browser-weld
-            timeout_minutes: 60
-          - driver: civic
-            timeout_minutes: 110
-          - driver: crossing
-            timeout_minutes: 45
-          - driver: herm-mesh
-            timeout_minutes: 45
-            mesh: "true"
-          - driver: mesh-scenarios
-            timeout_minutes: 225
-            mesh: "true"
-    env:
-      NODE_VERSION: "24"
-      # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
-      # written by any other pnpm rewrites its peer suffixes on its next write.
-      PNPM_VERSION: "11.28.5"
+      max-parallel: 8
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -52,9 +119,10 @@ jobs:
       # The runner context is unreadable in a job-level env block; the path is computed where it is.
       - name: Prepare held-out evidence directory
         run: |
-          dir="$RUNNER_TEMP/held-out/${{ matrix.driver }}"
+          dir="$RUNNER_TEMP/held-out/${{ matrix.cell }}"
           mkdir -p "$dir"
           echo "ARTIFACT_DIR=$dir" >> "$GITHUB_ENV"
+          echo "IMAGE_DIR=$RUNNER_TEMP/held-out-image" >> "$GITHUB_ENV"
       - name: Install workspace
         run: pnpm install --frozen-lockfile
       # THE ENGINE BLOB IS A DELIBERATE RENDER, NEVER A BUILD SIDE EFFECT. tw5-core/ stays gitignored because its
@@ -62,10 +130,10 @@ jobs:
       # submodule — and every vessel a driver founds reads the engine it names.
       - name: Render the TW5 core blob
         run: pnpm --filter @lararium/tw5 build:tw5-vendor
-      # The node containers run the product image each witness builds and names by digest
-      # (tools/harness-image.sh). This build serves the host side: the witness readers and the tools import the
-      # built packages, and the browser weld imports the workspace's Playwright package from this install. The
-      # mesh's two Playwright runners read the compiled browser probe from the product image.
+      # The node containers run the product image the image job built. This build serves the host side: the
+      # witness readers and the tools import the built packages, and the browser weld imports the workspace's
+      # Playwright package from this install. The mesh's two Playwright runners read the compiled browser probe
+      # from the product image.
       - name: Build the tree the host-side readers import
         run: pnpm -r build
       # A STAMP NAMES THE BYTES A BUILD THAT RAN CAME FROM. A step runs only after every earlier step passed, so
@@ -75,6 +143,35 @@ jobs:
         run: node tools/stamp-build.mjs .
       - name: Verify Docker Compose substrate
         run: docker compose version
+
+      # THE CELL RUNS THE IMAGE THE RUN BUILT, AND NO OTHER. The loaded image must answer the digest the image
+      # job recorded; from here every harness resolves `LARES_HARNESS_IMAGE` and builds nothing.
+      - name: Download the product image
+        if: matrix.image == 'true'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: held-out-image-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.IMAGE_DIR }}
+      - name: Load the product image and hold it to its digest
+        if: matrix.image == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          want="$(cat "$IMAGE_DIR/image.digest")"
+          zstd -d -q -c "$IMAGE_DIR/image.tar.zst" | docker load
+          rm -f "$IMAGE_DIR/image.tar.zst"
+          got="$(tools/harness-image.sh --no-build)"
+          if [ "$got" != "$want" ]; then
+            echo "the loaded image answers $got, and the image job recorded $want" >&2
+            exit 1
+          fi
+          echo "LARES_HARNESS_IMAGE=$want" >> "$GITHUB_ENV"
+      # Each mesh cell names its own compose project; the pins tool, the scenarios and the teardown read it.
+      - name: Name this cell's compose project
+        if: matrix.mesh == 'true'
+        run: |
+          echo "COMPOSE_PROJECT_NAME=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
+          echo "MESH_PROJECT=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
       - name: Install Playwright Chromium
         if: matrix.driver == 'browser-weld'
         run: pnpm exec playwright install --with-deps chromium
@@ -106,7 +203,7 @@ jobs:
           timeout --kill-after=60s 10m node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2 2>&1 \
             | tee "$ARTIFACT_DIR/mesh-setup.log"
 
-      - name: Run ${{ matrix.driver }}
+      - name: Run ${{ matrix.cell }}
         shell: bash
         run: |
           set -uo pipefail
@@ -122,6 +219,7 @@ jobs:
             run_captured "$ARTIFACT_DIR/driver.log" "$@"
           }
           set +e
+          SECONDS=0
           case "${{ matrix.driver }}" in
             browser-weld)
               run_logged 40m bash tools/browser-weld-witness.sh
@@ -139,10 +237,20 @@ jobs:
               # PEERS PROVE FIRST: a hop's oracle answers no stranger, so the witness dials as a READER
               # vessel founded in a scratch root. Its own attempt loop waits out the mesh coming up.
               reader_root="$(mktemp -d)"
+              # A FOUNDING GATHERS ITS ROUTE FROM A TERMINAL, AND A RUNNER HOLDS NONE. The harness stages the
+              # root as scratch and founds its custody through the test door first; the founding then meets a
+              # standing slot tree and asks for no credential. The reader dials with the key file its founding
+              # wrote, which rests outside the sealed custody, so it needs no unlock.
+              if ! run_captured "$ARTIFACT_DIR/reader-stage.log" 2m node tools/test-scratch-marker.mjs "$reader_root" \
+                || ! run_captured "$ARTIFACT_DIR/reader-custody.log" 2m node tools/seed-test-custody.mjs "$reader_root"; then
+                echo "the witness's reader root did not stage through the test door" | tee -a "$ARTIFACT_DIR/driver.log"
+                status=1
               # AN ISOLATED ROOT FOUNDS FROM THE TRACKED GENESIS. The engine CID that names the hearth rides
               # the seed, so the reader's root carries its own copy, as every mesh container's boot copies one.
-              git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$reader_root/"
-              if ! run_captured "$ARTIFACT_DIR/reader-found.log" 5m env LAR_ROOT="$reader_root" node packages/lares-cli/bin/lares.mjs vessel found --skip-build; then
+              elif ! git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$reader_root/"; then
+                echo "the witness's reader root took no genesis copy" | tee -a "$ARTIFACT_DIR/driver.log"
+                status=1
+              elif ! run_captured "$ARTIFACT_DIR/reader-found.log" 5m env LAR_ROOT="$reader_root" node packages/lares-cli/bin/lares.mjs vessel found --skip-build; then
                 echo "the witness's reader vessel did not found" | tee -a "$ARTIFACT_DIR/driver.log"
                 status=1
               else
@@ -152,7 +260,7 @@ jobs:
               rm -rf "$reader_root"
               ;;
             mesh-scenarios)
-              run_logged 205m bash tools/mesh-scenarios.sh all
+              run_logged 60m bash tools/mesh-scenarios.sh "${{ matrix.scenario }}"
               status=$?
               ;;
             *)
@@ -160,6 +268,10 @@ jobs:
               status=2
               ;;
           esac
+          # THE CELL RECORDS ITS OWN VERDICT. The merge job reads this file; a cell that dies before this line
+          # leaves none, and the merge names it missing.
+          node tools/held-out-cells.mjs record --dir "$ARTIFACT_DIR" --cell "${{ matrix.cell }}" \
+            --status "$status" --seconds "$SECONDS" --head "${{ github.sha }}"
           exit "$status"
 
       # A mesh driver's own trap tears down on a clean exit; a job timeout signals past it, so this step holds
@@ -179,7 +291,33 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: held-out-${{ matrix.driver }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: held-out-cell-${{ matrix.cell }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.ARTIFACT_DIR }}
           if-no-files-found: error
           retention-days: 14
+
+  merge:
+    name: Merge the cells
+    needs: [plan, image, held-out]
+    # Runs whatever the cells answered: a merge that waited on success would let one red cell SKIP the gate,
+    # and a skipped gate reads as nothing to report. A run a newer head superseded measured nothing whole, so
+    # its merge stays out and the run reads cancelled, never red.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      # A cell that uploaded nothing leaves no directory here; the gate below names it missing.
+      - name: Download every cell's evidence
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: held-out-cell-*
+          path: held-out-cells
+        continue-on-error: true
+      # The gate derives the matrix again from this head's own table, so a plan job that failed cannot hand
+      # it an empty one.
+      - name: Merge gate — fails closed on any red, missing or foreign cell
+        run: node tools/held-out-cells.mjs merge-verify --artifacts-dir held-out-cells --head "${{ github.sha }}"

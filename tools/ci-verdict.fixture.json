@@ -1,5 +1,6 @@
 {
  "recorded": "gh run list --branch feature/lararium-node-5 --workflow CI --limit 12 --json databaseId,headSha,status,conclusion,createdAt,url ; gh run view 38393357077 --json jobs (jobs trimmed to name, status, conclusion and each step name and conclusion)",
+ "heldOutRecorded": "gh run list --branch feature/lararium-node-5 --workflow held-out.yml --limit 4 --json databaseId,headSha,status,conclusion,createdAt,url ; gh run view 38491127984 --json jobs (jobs trimmed as above): the run that held one job per driver",
  "runs": [
   {
    "conclusion": "",
@@ -598,6 +599,541 @@
       {
        "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
        "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    }
+   ]
+  }
+ },
+ "heldOutRuns": [
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-14T00:36:23Z",
+   "databaseId": 38491127984,
+   "headSha": "cb8a1a9a88c752925eb97f01f0282b2ba51a5bfc",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38491127984"
+  },
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-10T08:54:07Z",
+   "databaseId": 38039486635,
+   "headSha": "7708fe6f8ac22e496081ee5939a83022babd08da",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/38039486635"
+  },
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-06T03:42:09Z",
+   "databaseId": 37410218004,
+   "headSha": "4af67fb7a7a442fec37835073ca2017d0fdde6b6",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/37410218004"
+  },
+  {
+   "conclusion": "failure",
+   "createdAt": "2026-10-06T01:33:56Z",
+   "databaseId": 37399809425,
+   "headSha": "d95a523529e1da7923ba75ab312eb99a0acc1575",
+   "status": "completed",
+   "url": "https://github.com/amorphous-dreams/Synthetic-Dream-Machine/actions/runs/37399809425"
+  }
+ ],
+ "heldOutViews": {
+  "38491127984": {
+   "jobs": [
+    {
+     "name": "Held-out · browser-weld",
+     "status": "completed",
+     "conclusion": "failure",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Prepare held-out evidence directory",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install workspace",
+       "conclusion": "success"
+      },
+      {
+       "name": "Render the TW5 core blob",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build the tree the host-side readers import",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stamp the build",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify Docker Compose substrate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install Playwright Chromium",
+       "conclusion": "success"
+      },
+      {
+       "name": "Crossing driver preserves a quiet compose verdict",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Browser weld driver preserves its entry contract",
+       "conclusion": "success"
+      },
+      {
+       "name": "Herm mesh readers read a known positive",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Mesh pins stand in the order the compose file derives",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Stand the Herm mesh in pin order",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run browser-weld",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Capture and tear down the mesh",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Upload held-out evidence",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Held-out · mesh-scenarios",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Prepare held-out evidence directory",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install workspace",
+       "conclusion": "success"
+      },
+      {
+       "name": "Render the TW5 core blob",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build the tree the host-side readers import",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stamp the build",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify Docker Compose substrate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install Playwright Chromium",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Crossing driver preserves a quiet compose verdict",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Browser weld driver preserves its entry contract",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Herm mesh readers read a known positive",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Mesh pins stand in the order the compose file derives",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stand the Herm mesh in pin order",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run mesh-scenarios",
+       "conclusion": "success"
+      },
+      {
+       "name": "Capture and tear down the mesh",
+       "conclusion": "success"
+      },
+      {
+       "name": "Upload held-out evidence",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Held-out · crossing",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Prepare held-out evidence directory",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install workspace",
+       "conclusion": "success"
+      },
+      {
+       "name": "Render the TW5 core blob",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build the tree the host-side readers import",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stamp the build",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify Docker Compose substrate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install Playwright Chromium",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Crossing driver preserves a quiet compose verdict",
+       "conclusion": "success"
+      },
+      {
+       "name": "Browser weld driver preserves its entry contract",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Herm mesh readers read a known positive",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Mesh pins stand in the order the compose file derives",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Stand the Herm mesh in pin order",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run crossing",
+       "conclusion": "success"
+      },
+      {
+       "name": "Capture and tear down the mesh",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Upload held-out evidence",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Held-out · civic",
+     "status": "completed",
+     "conclusion": "success",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Prepare held-out evidence directory",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install workspace",
+       "conclusion": "success"
+      },
+      {
+       "name": "Render the TW5 core blob",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build the tree the host-side readers import",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stamp the build",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify Docker Compose substrate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install Playwright Chromium",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Crossing driver preserves a quiet compose verdict",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Browser weld driver preserves its entry contract",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Herm mesh readers read a known positive",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Mesh pins stand in the order the compose file derives",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Stand the Herm mesh in pin order",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Run civic",
+       "conclusion": "success"
+      },
+      {
+       "name": "Capture and tear down the mesh",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Upload held-out evidence",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Complete job",
+       "conclusion": "success"
+      }
+     ]
+    },
+    {
+     "name": "Held-out · herm-mesh",
+     "status": "completed",
+     "conclusion": "failure",
+     "steps": [
+      {
+       "name": "Set up job",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",
+       "conclusion": "success"
+      },
+      {
+       "name": "Prepare held-out evidence directory",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install workspace",
+       "conclusion": "success"
+      },
+      {
+       "name": "Render the TW5 core blob",
+       "conclusion": "success"
+      },
+      {
+       "name": "Build the tree the host-side readers import",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stamp the build",
+       "conclusion": "success"
+      },
+      {
+       "name": "Verify Docker Compose substrate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Install Playwright Chromium",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Crossing driver preserves a quiet compose verdict",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Browser weld driver preserves its entry contract",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Herm mesh readers read a known positive",
+       "conclusion": "success"
+      },
+      {
+       "name": "Mesh pins stand in the order the compose file derives",
+       "conclusion": "success"
+      },
+      {
+       "name": "Stand the Herm mesh in pin order",
+       "conclusion": "success"
+      },
+      {
+       "name": "Run herm-mesh",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Capture and tear down the mesh",
+       "conclusion": "success"
+      },
+      {
+       "name": "Upload held-out evidence",
+       "conclusion": "success"
       },
       {
        "name": "Post Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1",

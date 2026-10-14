@@ -32,12 +32,52 @@
 #
 # The browser vessel shares its operator's network namespace, so both names ride together, always.
 #
-# Usage:  tools/mesh-scenarios.sh [operator-a | operator-b | nexus | quorum | relation | realm | open |
-#                                  crossing | open-relation | leaf | realm-crossing | quorum-realm | meme |
-#                                  climb | seal | title | wikis | conflict | board | all]
+# Usage:  tools/mesh-scenarios.sh <scenario> | all     run one scenario, or every one in table order
+#         tools/mesh-scenarios.sh --list               print `<scenario> <measured seconds>` per line; run nothing
 # Green:  every named scenario's browser vessel exits 0 and its hearth answers.
 set -uo pipefail
 cd "$(dirname "$0")/.."
+
+# ── THE ONE TABLE OF SCENARIOS ──────────────────────────────────────────────────────────────────
+# Every reader takes the scenario names from here: the argument check, the `all` walk, the unknown-name
+# refusal, and the held-out workflow's matrix (`tools/held-out-cells.mjs` reads `--list`). A scenario a
+# hand adds below and forgets here refuses as unknown on its first run, and a row here with no
+# `run_<name>` function fails that cell by name.
+#
+# The second column holds the scenario's own wall time on a hosted runner, in seconds, as last measured.
+# The workflow fits each cell's budget to it. Re-measure a scenario whose walk grows; a stale small
+# number costs one cancelled cell that names itself, never a silent pass.
+SCENARIOS="
+operator-a 102
+operator-b 39
+quorum 71
+relation 82
+realm 80
+open 106
+open-relation 115
+leaf 81
+crossing 88
+nexus 50
+realm-crossing 182
+quorum-realm 142
+meme 340
+climb 94
+seal 40
+title 42
+wikis 40
+conflict 39
+board 220
+"
+scenario_names() { printf '%s' "$SCENARIOS" | awk 'NF { print $1 }'; }
+# `--list` answers before any image resolves: a reader that asks for names must never start a build.
+if [ "${1:-}" = "--list" ]; then printf '%s' "$SCENARIOS" | awk 'NF { print $1, $2 }'; exit 0; fi
+# Reject a typo before any image resolves and before the EXIT trap arms: an invalid request must neither
+# start a build nor tear down a mesh another operator owns merely because this runner parsed its argument.
+WANT="${1:-all}"
+if [ "$WANT" != "all" ] && ! scenario_names | grep -qxF -- "$WANT"; then
+  echo "mesh-scenarios: unknown scenario \"$WANT\" ($(scenario_names | paste -sd'|' - | sed 's/|/ | /g') | all)" >&2
+  exit 2
+fi
 # One product image, named by digest, serves every container of this run.
 LARES_HARNESS_IMAGE="$(tools/harness-image.sh --resolve)" || exit $?
 export LARES_HARNESS_IMAGE
@@ -50,7 +90,6 @@ case "$MESH_PROJECT" in
 esac
 export COMPOSE_PROJECT_NAME="$MESH_PROJECT"
 COMPOSE="docker compose -f docker-compose.mesh.yml"
-WANT="${1:-all}"
 FAILED=0
 ARTIFACT_DIR="${ARTIFACT_DIR:-}"
 if [ -n "$ARTIFACT_DIR" ]; then mkdir -p "$ARTIFACT_DIR"; fi
@@ -89,12 +128,6 @@ clear_all() {
   done
 }
 
-# Reject a typo before arming the EXIT trap: an invalid request must not tear down a mesh another
-# operator owns merely because this runner parsed its argument.
-case "$WANT" in
-  operator-a|operator-b|nexus|quorum|relation|realm|realm-crossing|quorum-realm|open|crossing|open-relation|leaf|meme|climb|seal|title|wikis|conflict|board|all) ;;
-  *) echo "mesh-scenarios: unknown scenario \"$WANT\" (operator-a | operator-b | nexus | quorum | relation | realm | open | crossing | open-relation | leaf | realm-crossing | quorum-realm | meme | climb | seal | title | wikis | conflict | board | all)" >&2; exit 2 ;;
-esac
 
 # `all` already clears after each scenario. This covers early returns and CI cancellation, when the
 # compose project would otherwise be left holding volumes or a network for the next scheduled run.
@@ -1917,29 +1950,25 @@ run_board() {
   clear_all
 }
 
-case "$WANT" in
-  operator-a) run_operator a ;;
-  operator-b) run_operator b ;;
-  nexus)      run_nexus ;;
-  quorum)     run_quorum ;;
-  relation)   run_relation ;;
-  realm)      run_realm ;;
-  realm-crossing) run_realm_crossing ;;
-  quorum-realm)   run_quorum_realm ;;
-  open)       run_open ;;
-  crossing)   run_crossing ;;
-  open-relation) run_open_relation ;;
-  leaf)       run_leaf ;;
-  meme)       run_meme ;;
-  climb)      run_climb ;;
-  seal)       run_seal ;;
-  title)      run_title ;;
-  wikis)      run_wikis ;;
-  conflict)   run_conflict ;;
-  board)      run_board ;;
-  all)        run_operator a; run_operator b; run_quorum; run_relation; run_realm; run_open; run_open_relation; run_leaf; run_crossing; run_nexus; run_realm_crossing; run_quorum_realm; run_meme; run_climb; run_seal; run_title; run_wikis; run_conflict; run_board ;;
-  *) echo "mesh-scenarios: unknown scenario \"$WANT\" (operator-a | operator-b | nexus | quorum | relation | realm | open | crossing | open-relation | leaf | realm-crossing | quorum-realm | meme | climb | seal | title | wikis | conflict | board | all)" >&2; exit 2 ;;
-esac
+# One scenario by its table name. The two lone operators share one function; every other name maps onto
+# `run_<name>` with its hyphens read as underscores.
+walk_scenario() {
+  case "$1" in
+    operator-a) run_operator a ;;
+    operator-b) run_operator b ;;
+    *)
+      local fn="run_${1//-/_}"
+      if declare -F "$fn" >/dev/null; then "$fn"
+      else say "${1^^}"; step "the scenario table names a walk"; bad "no function $fn stands for the table row \"$1\""; fi
+      ;;
+  esac
+}
+
+if [ "$WANT" = "all" ]; then
+  for scenario in $(scenario_names); do walk_scenario "$scenario"; done
+else
+  walk_scenario "$WANT"
+fi
 
 say "═══ RESULT ═══"
 if [ "$FAILED" -eq 0 ]; then
