@@ -8,7 +8,7 @@ cacheable = true
 file-path = "bags/lararium/ha.ka.ba/lararium/mesh/custody.mem"
 hydrate   = true
 l-space   = "stable"
-role      = "custody at rest as law — the carrier table that names every private file a vessel keeps, its four custody classes, the law each row outside the vessel key rests bare under, the census that names any private file outside the table, and the readers that derive from it; the per-face backup bundle as a record (one face, one fresh key, one human route, a standing section and a memory section, and what it never carries); the cut and its refusals; the restore as a recovery act in five steps, each with its named refusals; what a thief of the medium learns and what a thief who opens a bundle learns; what the code holds and what stays owed"
+role      = "custody at rest as law — the carrier table that names every private file a vessel keeps, its five custody classes, the law each row outside every key rests bare under, the outbox's seal and its crash law, the census that names any private file outside the table, and the readers that derive from it; the per-face backup bundle as a record (one face, one fresh key, one human route, a standing section and a memory section, and what it never carries); the cut and its refusals; the restore as a recovery act in five steps, each with its named refusals, and the provisional standing a restored face holds until a party to its relation confirms its head; what a thief of the medium learns and what a thief who opens a bundle learns; what the code holds and what stays owed"
 title     = "lar:///ha.ka.ba/lararium/mesh/custody"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/mesh/custody"
@@ -24,7 +24,7 @@ A vessel keeps private files: keys, rosters, names, and the state its key shore 
 
 > ''Register.'' The operator approved the bundle's model as presented, the same-face continuity ruling and the statement of reach among its points (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The house settled the bytes, the row dispositions, the refusal names and each reading marked below under that approval.
 
-''Words.'' The ''vessel key'' seals a vessel's private files (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). A ''route'' names what a person holds to open a key: a passphrase, or a paper sheet. A ''seat'' names one vessel's own place in a face's key group. A ''content key'' opens the sealed values of one bag at one key version. A ''face's root'' names the persona root seed a face signs its lineage with.
+''Words.'' The ''vessel key'' seals a vessel's private files (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/keys">>). A ''route'' names what a person holds to open a key: a passphrase, or a paper sheet. A ''seat'' names one vessel's own place in a face's key group. A ''content key'' opens the sealed values of one bag at one key version. A ''face's root'' names the persona root seed a face signs its lineage with. The ''serving key'' (SK) seals the serving rows alone, and the vessel key and each ember slot wrap it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key">>). The ''outbox key'' seals the sealed store's outbox parcels, and the vessel key wraps it (#/the-table, the outbox).
 
 <<~/ahu>>
 
@@ -34,25 +34,28 @@ A vessel keeps private files: keys, rosters, names, and the state its key shore 
 
 ''One table names every private file a vessel keeps at rest'' (`packages/lararium-node/src/vault-carriers.ts`). Each row states the file's home, its custody class, its secret kind, its writer, whose it reads as, and how a bundle treats it. No second list of file names stands anywhere: a file a second list omits would stay unsealed while a sweep reports success, and a file a second list invents would get written over by an act nobody owns.
 
-!!! Four custody classes, no fifth
+!!! Five custody classes
 
 |! class |! what holds it |! who reads it |
-| `floor` | nothing: it rests outside the vessel key | the floor, before any key opens: the vessel's own key, its log and the slot tree that wraps the vessel key |
+| `floor` | nothing: it rests outside every key | the floor, before any key opens: the vessel's own key, its log, the slot tree that wraps the vessel key and the serving tree that wraps SK |
 | `floor-plain` | nothing of the vessel's: plain bytes, or bytes sealed under a key the vessel key never wraps | the floor's own doors, or anyone: bytes public by construction, or bytes a blind carrier may hold |
+| `serving` | SK, which the vessel key and each ember slot wrap | the vessel at SERVING, once its embers answer a raise, and the unlocked vessel, through the vessel key's entry in the serving tree |
 | `hot` | the vessel key | the vessel, once at unlock, for the life of that unlock |
 | `cold` | the vessel key | one act, which opens the row, uses it and drops it |
 
 A private file the floor never reads rides `hot`: the seal costs it nothing, and it closes the social graph at rest.
 
+''The `serving` class holds the serving rows and nothing beside them'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). SK seals exactly the rows a serving gate and blind carriage read and write for parties already standing (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-tiers">>), so a holder of the disk who gathers the embers' answers opens those rows and no `hot` or `cold` row. ''No serving row holds a minting secret'': no epoch secret, hosting key, leaf seed or signing key rests under SK, and a walker's grant checks at SERVING under a public half alone, a shape the hosted road's re-cut lands before the ember's walker arm. No serving row opens under the vessel key, and no vessel-key row opens under SK. A vessel-key rotation re-wraps the vessel key's entry in the serving tree and re-seals no serving row; an SK rotation re-seals every serving row and touches no `hot` or `cold` row. When an ember slot answers with no person's confirm, and what a hearth with no hardware anchor asks instead, reads in the ember's own law (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-raise">>).
+
 !!! What the table decides
 
 * ''The disk names the carriers.'' A carrier reads as a file that exists. No writer keeps a roster of its own files, and the census reads the directories the rows name. A stray file spelled like a row becomes that row: the census errs toward governing more, which refuses a write, and never toward governing less, which destroys a secret.
 * ''Rows span three homes'': the identity home, the storage home and the seal home. The census walks only the subtrees some row names.
-* ''The rotation reads the rows.'' Every `hot` and `cold` file standing counts as sealed under the vessel key, and a rotation re-seals exactly that list. A sealed file no row names refuses the rotation, so none stays behind under a retired key.
+* ''The rotation reads the rows.'' Every `hot` and `cold` file standing counts as sealed under the vessel key, and a rotation re-seals exactly that list. Every `serving` file counts as sealed under SK, and an SK rotation re-seals exactly that list. A sealed file no row names refuses either rotation, so none stays behind under a retired key.
 * ''An unbind that rotates runs as ONE act.'' `lares vault unbind <slot-id> --rotate` reads each staying slot's route again, then hands those slots to the rotation. The rotation's census and its opening of every carrier pass before any byte moves, and its one commit lands a tree that holds the staying slots under a new vessel key. A carrier that refuses the rotation therefore leaves the removed slot bound, and no tree ever stands between the two.
-* ''A row outside the vessel key names its law.'' Every `floor` and `floor-plain` row states, in the table's own column, why its bytes rest bare (#/the-table, the rows that rest bare). A `hot` or `cold` row states none, so a `hot` or `cold` file that reads anything but sealed reads as a FAULT.
-* ''A file spelled like a row answers to that row's law.'' A row never excuses the file it matched. A `floor` or `floor-plain` file that rests under the vessel key's seal reads as a FAULT, since no rotation re-seals it. A row that reads its law off the bytes (the sealed store's rests and its outbox) faults a file whose name fails to commit to its bytes, and a file whose bytes fail to read whole as the kind its shelf names, so a clear key under a rest's spelling reads as a FAULT. ''The census reads a vessel's own writers, and it catches no planted secret under a row's exact spelling where the row reads no law off the bytes.'' A note of the sealed store, a Keyhive chunk, a contact card, a charter, a consent and an admit pin carry no check of their bytes, so a clear key a hand drops under one of those spellings reads as that row, bare and with no fault, and stays off the list of files outside the table. Whoever writes such a file already holds the disk.
-* ''The census names the private files outside the table, within the three homes.'' One reader walks each home whole, the subtrees no row names among them, and names every file there that reads private and answers to no row: a file whose mode admits its owner alone, a file under the vessel key's seal, and a sidecar a writer left standing. `lares vault status` prints that list beside ONE reading of each standing file, and a witness refuses a founded vessel that holds one. ''Its reach ends at the three homes'': the config home, the projected files and a store a setting moved elsewhere stand outside it. Its mode sign reads what a writer chose: a file whose mode admits a group reads as no private file, a link reads as no file, and under a umask that strips group and other from every file the reading names files no writer marked. It errs toward naming more.
+* ''A row outside every key names its law.'' Every `floor` and `floor-plain` row states, in the table's own column, why its bytes rest bare (#/the-table, the rows that rest bare). A `serving`, `hot` or `cold` row states none, so a `serving`, `hot` or `cold` file that reads anything but sealed reads as a FAULT.
+* ''A file spelled like a row answers to that row's law.'' A row never excuses the file it matched. A `floor` or `floor-plain` file that rests under the vessel key's seal or under SK's reads as a FAULT, since no rotation re-seals it. A row that reads its law off the bytes (the sealed store's rests) faults a file whose name fails to commit to its bytes, and a file whose bytes fail to read whole as the kind its shelf names, so a clear key under a rest's spelling reads as a FAULT. An outbox parcel that fails to read as a sealed parcel reads as a FAULT (#/the-table, the outbox). ''The census reads a vessel's own writers, and it catches no planted secret under a row's exact spelling where the row reads no law off the bytes.'' A note of the sealed store, a Keyhive chunk, a contact card, a charter, a consent and an admit pin carry no check of their bytes, so a clear key a hand drops under one of those spellings reads as that row, bare and with no fault, and stays off the list of files outside the table. Whoever writes such a file already holds the disk.
+* ''The census names the private files outside the table, within the three homes.'' One reader walks each home whole, the subtrees no row names among them, and names every file there that reads private and answers to no row: a file whose mode admits its owner alone, a file under the vessel key's seal or SK's, and a sidecar a writer left standing. `lares vault status` prints that list beside ONE reading of each standing file, and a witness refuses a founded vessel that holds one. ''Its reach ends at the three homes'': the config home, the projected files and a store a setting moved elsewhere stand outside it. Its mode sign reads what a writer chose: a file whose mode admits a group reads as no private file, a link reads as no file, and under a umask that strips group and other from every file the reading names files no writer marked. It errs toward naming more.
 * ''A row names whose it reads as'': one face's own (its handle-index), or the vessel's.
 * ''The slot tree wraps a key under human routes'' (`packages/lararium-mesh/src/keyslot.ts`; the operator's rulings stand at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). Each slot wraps the key under a slot key, and splits that slot key across its pins: a passphrase, stretched by scrypt, or a paper sheet that carries 32 random bytes. Any one slot opens the key, and a tree always keeps one route. The tree commits to the one key it wraps, so a slot spliced in from another tree opens nothing. It rests as plain bytes: a random id for each slot, a threshold, each pin's kind, salts, nonces and wrapped bytes, and no version, counter or clock.
 * ''A row names how a bundle treats it'': `whole` (the row rides as it rests), `lines` (the one face's own lines ride, and nothing of another face), or `stays` (the row never leaves its vessel). A bundle's cut and a restore's check both derive from this column, so no hand picks the rows a bundle carries.
@@ -70,6 +73,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `veil-archive`, `keyhive-archive` | `stays` | a seat's own key state: a carried copy would let its holder sign as that seat |
 | `seat-key` | `stays` | a chair's own key in a charter: a carried copy would let its holder sign as that chair (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>) |
 | `restore-pending` | `stays` | a restore's own commit row: it holds what one restore still owes this vessel, and leaves once that restore lands (#/the-restore) |
+| `sk-slots`, `sk-rotation-owed`, every `serving` row | `stays` | the serving tier belongs to its hearth: a restored vessel mints its own SK and binds fresh embers (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/meets">>) |
 | `vessel-face-key`, `gate-memory`, `device-share`, `public-handles`, every other row | `stays` | each belongs to its vessel, or names another face, or rebuilds from a board |
 
 !!! The rows that rest bare, each by law
@@ -78,14 +82,29 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `vessel-key` | `floor` | the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it |
 | `vessel-kel` | `floor` | the floor reads the vessel key's own log at every boot; each event in it stands public and proves itself |
 | `vk-slots` | `floor` | the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it |
+| `sk-slots` | `floor` | the serving tree wraps SK under the vessel key's entry and each ember slot, so the key it wraps cannot seal it, and a raise reads it before any key opens (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key">>) |
+| `sk-rotation-owed` | `floor` | a deny-only mark in the serving tree: any counted removal sets it, and while it stands the serving tree refuses every ask, until the SK rotation at a human unlock clears it. It holds no secret, and a raise must read it with no key open |
 | `vessel-card` | `floor-plain` | a contact card holds public keys alone, and the vessel hands it to every peer it meets |
 | `charter`, `carried-charter` | `floor-plain` | the floor's gate reads each charter before any key opens, and a charter stands public and signed |
 | `carriage-consent`, `carriage-admit` | `floor-plain` | the floor reads a kept consent and an admit pin before any key opens; each names a charter, a reach and a gate's public key, and holds no secret |
 | `sealed-rest`, `sealed-chunk` | `floor-plain` | a lockbox, a record, an index row and a Keyhive chunk hold ciphertext, opaque ids and addresses, and no secret, name or key in the clear; a blind carrier may hold every one (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>) |
 | `sealed-own` | `floor-plain` | the vessel's own note for its sealed store holds opaque ids, a one-byte mark or nothing, under an opaque name |
-| `sealed-outbox` | `floor-plain` | a parcel holds no key: it holds public Keyhive operations that name reader identifiers, it stays on its vessel, and the island that writes it holds no vessel key |
 
-Every other row rests `hot` or `cold`, sealed under the vessel key.
+Every `serving` row rests sealed under SK. Every other row rests `hot` or `cold`, sealed under the vessel key, save the outbox's parcels, which rest sealed under the outbox key the vessel key wraps (below).
+
+''The `sk-rotation-owed` mark binds an honest disk alone'' (house ruling under the operator's delegation). A hand that writes an older serving tree onto the disk restores the removed pin and omits the mark, and that hand already holds the disk; no fence here detects the rollback (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/a-thief">>).
+
+!!! The outbox ~ sealed parcels, random names, and a crash law
+
+''A locked disk names no reader'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). A parcel carries Keyhive operations that name the readers a vessel wrapped a key for, so its row leaves `floor-plain` for a sealed class.
+
+* ''One outbox key, stable, wrapped by the vessel key.'' The vessel key wraps the outbox key, and an unlock hands it to the daemon island the way content keys reach that island. The bare outbox key rests nowhere beside the parcels: a locked vessel holds it wrapped alone, and a vessel-key rotation re-wraps it and re-seals no parcel.
+* ''Each parcel seals whole'' under randomized authenticated encryption keyed from the outbox key. The parcel's reader and its routing ride inside the sealed body.
+* ''A parcel's name carries no reader digest.'' Each parcel rests under a random name, so a holder of the disk counts parcels and weighs each, and reads no reader.
+* ''The crash law.'' A parcel commits by one atomic write of its whole sealed file. Before that commit nothing stands sendable. After it, and before the member lane ships the parcel, the parcel opens again at the next unlock and the lane retries it. After the ship and before the local delete, the lane may send the parcel again, and the receiver folds the repeat idempotently.
+* ''The island writes parcels only while unlocked'', since it holds the outbox key for the life of an unlock alone.
+
+''Which sealed class the row names'' (`hot` beside an outbox-key row, or a class of its own) rides the build that seals the outbox, under this law (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>).
 
 !!! What a row's name says at rest
 
@@ -95,7 +114,8 @@ Every other row rests `hot` or `cold`, sealed under the vessel key.
 * ''The carriage rows enumerate.'' A hearth's carriage for a walker rests one row per carried value, and each row's name carries the walker's own key segment, the value's address and its length. A holder of the disk therefore lists each walker's rows and weighs each walker's bytes, and opens none of them.
 * ''A name cut from a digest answers a test and no listing.'' A hosting home names itself by a digest of its Nexus's identifier, a walk row by a digest of its hearth's gate key, a spend row by a digest of its nonce or its marker, a face's key rows by a digest of the face key and its Nexus, a chair's key row by a digest of that key's public half, and a gate's memory row by its face's proof-subject digest. A holder of the disk who ALREADY holds one of those values tests whether its row stands: whether this vessel hosts that Nexus, walks at that hearth, burnt that leaf, or holds that chair's key. A holder who lacks the value recovers none of them from a name. A chair's key row takes its name from the key alone, with no Nexus in the digest, so one key gives one name on every disk that holds it: a chair's key mints at random for one chair on one vessel, and a second disk that shows the same name holds a copy of that row.
 * ''The plain rows name each carried Nexus.'' A carried charter, a kept consent and an admit pin rest in the clear by law, so a holder of the disk reads which Nexuses this vessel carries and where each gate answers.
-* ''The sealed store's rests link, and its outbox names readers.'' A lockbox's name leads with its key version and its bag's locator, and an index row's name and bytes carry the locator, the key version, the entry's locator, its role and its parents' addresses: opaque ids, which a holder of the disk counts and links to one another. A parcel in the outbox carries public Keyhive operations that name reader identifiers, under a name that leads with a digest of its reader, so a holder of the disk reads which readers this vessel wrapped a key for until the member lane takes the parcel.
+* ''The sealed store's rests link, and its outbox names no reader.'' A lockbox's name leads with its key version and its bag's locator, and an index row's name and bytes carry the locator, the key version, the entry's locator, its role and its parents' addresses: opaque ids, which a holder of the disk counts and links to one another. A parcel in the outbox rests sealed under a random name, so a holder of the disk counts the parcels, weighs each and sees when each arrives and leaves, and reads no reader.
+* ''The serving tree names its pins and its mark.'' `sk-slots` rests bare, so a holder of the disk counts the ember slots, reads each threshold, and reads whether `sk-rotation-owed` stands.
 
 <<~/ahu>>
 
@@ -199,6 +219,16 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 
 ''A face whose other vessels still stand takes the join door'' (house reading). A restore founds a fresh key group under the face's fixed prefix. Where another vessel of the face still holds the group, that vessel seats the new device through the fleet-join door, and the bundle serves that device's memory alone (`--memory`).
 
+!!! The provisional standing ~ a restored face waits on one party to its relation
+
+''A restored face stands PROVISIONAL'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The restore read the newest key history this vessel holds, and no vessel reads a head it never received, so the face waits until at least one party to its relation shows its own log view of the face and that view agrees with the head the restore read.
+
+* ''Who confirms'': a sibling device of the same human, a seated chair of a Nexus the face stands in, or one of the face's guardians. Each shows the log view it holds itself; the house keeps no registry of heads, and a confirm reads no list compiled about the face.
+* ''What the face does while provisional'': it reads, recovers and serves its own content. It signs no act that changes who holds authority, and each such act refuses by name and names who could confirm.
+* ''What the restore says'': which head it read and from where (this vessel's board, or the bundle's log), and, while the face stays provisional, the parties that could confirm it.
+* ''Where every such party stays unreachable'', the guardians' recovery path answers, under the impersonation quorum, and never the local read alone.
+* ''The residue, stated plainly'': one agreeing party may itself sit stale, so its agreement counts as evidence that no fork shows to that party, never as proof that no unseen head stands.
+
 !!! The restore's refusals
 
 |! refusal |! what stopped it |
@@ -240,7 +270,7 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 !!! A thief who opens it ~ the file and a route
 
-* ''The face's root.'' Wherever the face's current recovery history still accepts that root, the thief restores the face onto a vessel of their own, takes a NEW seat, and signs as the face from there. A guardian set grafted in since, or a rotation, ends that reach for readers who hold the newer head.
+* ''The face's root.'' Wherever the face's current recovery history still accepts that root, the thief restores the face onto a vessel of their own, takes a NEW seat, and signs as the face from there. That face stands provisional (#/the-restore), so it signs no act that changes who holds authority until a party to the face's relation shows a view that agrees with its head. A guardian set grafted in since, or a rotation, ends that reach for readers who hold the newer head.
 * ''The face's proof key'' at each Nexus the bundle carried a row for.
 * ''The face's private past under the carried versions'': every surviving value ever sealed under them, values written after the cut included, wherever the thief also obtains the sealed bytes.
 * ''Names'': the pet-name, the declared Handle, the handle-book records of that face with its labels, and every bag id and key version id the memory section names.
@@ -275,11 +305,17 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 ''Specified in code: the suites run it, and no production path completes it.''
 * ''The memory import'' (`face-bundle-restore.ts` `importFaceBundleMemory`; the act table's `bundle.import` row). The standing vessel places the island's door and its import under its own signed asks. An import signs a record, and no production path opens a session signer, so on a production vessel it refuses `signer-unavailable`. Caller that completes it: the wire cutover's session open (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
 
+''Owed: ruled, and no code holds it.'' Each rides a row of <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>.
+* ''The `serving` class'': the carrier table's class, `sk-slots`, `sk-rotation-owed`, the serving rows under SK, the SK rotation, and the census, `vault status` and the rotation's list reading all five classes (train E, beside the ember's serving tier).
+* ''The sealed outbox'': the outbox key under the vessel key and its hand-off to the daemon island at unlock, each parcel sealed whole under a random name, the crash law, and the row's sealed class (train K). Until it lands, the `sealed-outbox` row rests `floor-plain` in code (`vault-carriers.ts`, `packages/lararium-mesh/src/sealed-store-rest.ts`), and a parcel's name leads with a digest of its reader.
+* ''The provisional standing'': the restored face's provisional mark, the refusal of each authority-changing act while it stands, the confirm by a party's own log view, and the restore's line that names who could confirm (train K; `face-bundle-restore.ts`, `vault-restore.ts`).
+
 <<~/ahu>>
 
 <<~ ahu #/edges>>
 
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">> the sealed store states the content keys, the memory section's import door and the same-face ruling
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">> the ember states the serving tier SK seals, the serving tree and the raise
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-shape">> the waking floor states the custody door and its frames
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">> persona policy rules that lineage and memory recover apart
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/keys">> kapae rules the key side of a removal
@@ -287,6 +323,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DC09g3dG8xaWoipVTbZyNtVLGPksiV2kb1tjWvT36UA
+<<^ code="&#x0003;">>ni:///sha-256;NoyU0MJ0MzuK2_5OYu2f74XZj4NTo8ccmk-6YvysJA8
 
 <<^ code="&#x0004;" -> to="?">>
