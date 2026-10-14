@@ -361,9 +361,9 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await foundVessel("d");
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 2, withRepo }))).toBe("founding-face-unlit");
-    // A proof key row under other bytes for the same scope.
-    const clash = secretOf(3);
-    await storeFaceProofKey({ faceKey: await publicOf(clash), nexus: "nexus-test-one" }, clash, 4);
+    // A proof key row under other bytes for the same face at the same Nexus.
+    const clash = secretOf(9);
+    await storeFaceProofKey({ faceKey: await publicOf(clash), nexus: "nexus-test-one" }, clash, 0);
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("row-conflict");
     expect(homeTree()).toBe(before);

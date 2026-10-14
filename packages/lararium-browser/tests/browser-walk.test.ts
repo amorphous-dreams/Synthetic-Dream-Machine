@@ -16,7 +16,7 @@ import {
   type HostingGrant, type InviteToken,
 } from "@lararium/mesh";
 import { browserWalkStore, browserWalkLeaf } from "../src/browser-walk.js";
-import { generateOrLoadBrowserPersonaRoot, openVesselIdb, WALK_STORE } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserPersonaRoot, openVesselIdb, WALK_STORE, NEXUS_KEY_STORE } from "../src/browser-vessel-identity.js";
 
 let created = 0;
 const opened = new Set<string>();
@@ -88,6 +88,22 @@ describe("the browser walk", () => {
     expect(a.verifyingKey).toMatch(/^[0-9a-f]{64}$/);
     expect(a.verifyingKey).not.toBe(b.verifyingKey);
     expect((await browserWalkLeaf(name, AID, 0)).verifyingKey).toBe(a.verifyingKey);
+  });
+
+  test("RED: a face's key at a Nexus rests as the 32 bytes it signs with, in its own store, and a face this vessel holds no root for presents nowhere", async () => {
+    const name = idb();
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    const a = await browserWalkLeaf(name, AID, 0);
+    const db = await openVesselIdb(name);
+    try {
+      const kept = await new Promise<unknown>((resolve, reject) => {
+        const q = db.transaction(NEXUS_KEY_STORE, "readonly").objectStore(NEXUS_KEY_STORE).get(`h0:${AID}`);
+        q.onsuccess = () => resolve(q.result); q.onerror = () => reject(q.error);
+      });
+      const hexOf = (b: Uint8Array) => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
+      expect(kept instanceof Uint8Array && hexOf(kept) === hexOf(a.seed)).toBe(true);
+    } finally { db.close(); }
+    await expect(browserWalkLeaf(name, AID, 1)).rejects.toThrow();
   });
 
   test("RED: the newcomer-side burn store is gone; the walk store stands in its place", async () => {

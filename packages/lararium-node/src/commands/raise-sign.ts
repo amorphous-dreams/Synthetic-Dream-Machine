@@ -27,7 +27,7 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   signRaiseGrant, ed25519SignerFromSeed, foundingRoster, carriageDocUrl,
-  materializeSharedLarDoc, presentationFromBoardDoc, presentationFindingLine,
+  materializeSharedLarDoc, presentationFromBoardDoc, presentationFindingLine, admittedKeyOf,
   type RaiseChallenge, type RaiseGrant, type PresentationFinding,
 } from "@lararium/mesh";
 
@@ -37,6 +37,7 @@ import { charterHomeFor } from "../carried-set.js";
 import { readNexusDoc } from "../nexus-doc.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves } from "../nexus-leaf.js";
+import { keyLineAt } from "../nexus-carriage.js";
 
 export class RaiseSignError extends Error {}
 
@@ -103,15 +104,21 @@ export async function runRaiseSign(opts: {
     // genesis and still yields no head — its lineage or its seated keys do not verify.
     throw new RaiseSignError("the charter held for that Nexus carries no verified seal head — its lineage does not verify against the seated keys, so no admit can root on it.");
   }
-  const leaf = (await heldNexusLeaves(aid)).find((l) => l.handleIndex === opts.handleIndex);
-  if (!leaf) throw new RaiseSignError(`this vessel holds no persona at h${opts.handleIndex}.`);
+  const offered = (await heldNexusLeaves(aid)).filter((l) => l.handleIndex === opts.handleIndex);
+  if (offered.length === 0) throw new RaiseSignError(`this vessel holds no persona at h${opts.handleIndex}.`);
 
+  let leaf = offered[0]!;
   const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home });
   const repo   = opts.repo;
   let read;
   try {
     const handle = await materializeSharedLarDoc(repo, carriageDocUrl(island), "board:carriage-contracts");
-    read = await presentationFromBoardDoc(handle.doc(), leaf.verifyingKey, roster);
+    // The admit names the key the Nexus admitted; a hand-over may since have moved this face's key on. The key that
+    // heads the line signs; a key the line handed on presents no admit.
+    const line = keyLineAt(sealHome, aid, handle.doc());
+    leaf = offered.find((l) => admittedKeyOf({ nexus: aid, key: l.verifyingKey, carried: line }) !== null) ?? offered[0]!;
+    const admitted = admittedKeyOf({ nexus: aid, key: leaf.verifyingKey, carried: line });
+    read = admitted === null ? { presentation: null, findings: [] } : await presentationFromBoardDoc(handle.doc(), admitted, roster);
   } finally {
     await repo.flush().catch(() => { /* read-only: nothing owed */ });
   }

@@ -20,7 +20,7 @@
 
 import { decodeInvite, takeInvite, popInvite } from "@lararium/mesh";
 import { nodeWalkStore, listWalkRecords, WalksElsewhere } from "../node-walk-store.js";
-import { wornNexusLeaf } from "../nexus-leaf.js";
+import { mintWornNexusLeaf } from "../nexus-leaf.js";
 
 /** A refusal a walking door names, with nothing written. */
 export class WalkRefusal extends Error {}
@@ -72,7 +72,7 @@ export async function runWalkTake(opts: {
   if (!invite.relay && !here?.relay) {
     throw new WalkRefusal("the invite names no relay to dial — ask its giver for one that carries where the hearth answers");
   }
-  const leaf = await wornNexusLeaf(invite.nexusAid);
+  const leaf = await mintWornNexusLeaf(invite.nexusAid);
   if (!leaf) throw new WalkRefusal("this vessel wears no face — a walker walks as a person: `lares persona wear <N>` first");
   // THE KEEP COMMITS ONE HEARTH. The list above reads before the keep, so two takes for two hearths could each
   // read no other hearth; the store checks again inside the custody hold that seals the row.

@@ -99,6 +99,7 @@ const SOWN: Record<string, string> = {
   "nexus/carried/AID1/founding-roster.mem":     "charter",
   "nexus/nexus/carriage-consent/AID1.json":     "{}",
   "nexus/nexus/carriage-admit/AID1.json":       "{}",
+  "nexus/nexus/key-line/AID1.json":             "[]",
   "nexus/transition-pending.json":              "{}",
   "nexus/transitions.json":                     "{}",
 };
@@ -107,7 +108,7 @@ const SOWN: Record<string, string> = {
 const RULED: Record<string, CustodyClass> = {
   "vessel-key": "floor", "vessel-kel": "floor", "vk-slots": "floor",
   "vessel-card": "floor-plain", "charter": "floor-plain", "carried-charter": "floor-plain",
-  "carriage-consent": "floor-plain", "carriage-admit": "floor-plain",
+  "carriage-consent": "floor-plain", "carriage-admit": "floor-plain", "nexus-key-line": "floor-plain",
   // The sealed store's rests hold no secret in the clear, and a blind carrier may hold every one (sealed-store#/the-store).
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-outbox": "floor-plain", "sealed-chunk": "floor-plain",
   "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot",
@@ -162,6 +163,7 @@ describe("the carrier table", () => {
       expect(at("seal", "carried/AID1/founding-roster.mem")?.row).toBe("carried-charter");
       expect(at("seal", "nexus/carriage-consent/AID1.json")?.row).toBe("carriage-consent");
       expect(at("seal", "nexus/carriage-admit/AID1.json")?.row).toBe("carriage-admit");
+      expect(at("seal", "nexus/key-line/AID1.json")?.row).toBe("nexus-key-line");
       expect(at("seal", "transitions.json")?.custody).toBe("hot");
       expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", bare: null });
       expect(at("identity", "veil-archive-h0.bin")).toMatchObject({ row: "veil-archive", face: 0, bare: null });

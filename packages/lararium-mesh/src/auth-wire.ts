@@ -569,13 +569,15 @@ export async function signPresented(parts: {
  * vessel key the V3 proof proved. The signature must verify under the presentation's own leaf over those
  * values and the presentation's CID, so a proof minted for another nonce, gate, vessel or presentation, or by
  * any other hand (a root included), reads false. It answers possession only; whether the presentation holds
- * is the sorter's.
+ * is the sorter's. `signer` names the key the sorter read the presentation to stand under: for an admit, the head
+ * of the admitted nym's line at that Nexus (`readAdmitAtHeldRoot`); absent, the presentation's own leaf.
  */
 export async function verifyLeafProof(parts: {
   presented:  Presented;
   nonce:      string;
   gatePubKey: string;
   vesselKey:  string;
+  signer?:    string;
 }): Promise<boolean> {
   const { presented } = parts;
   const sig = presented?.leafProof;
@@ -584,7 +586,7 @@ export async function verifyLeafProof(parts: {
   if (typeof parts.nonce !== "string" || parts.nonce.length === 0) return false;
   let cid: string;
   let signer: string;
-  try { cid = presentedCid(presented); signer = presentedSigner(presented); } catch { return false; }
+  try { cid = presentedCid(presented); signer = (parts.signer ?? presentedSigner(presented)).toLowerCase(); } catch { return false; }
   if (!/^[0-9a-f]{64}$/.test(signer)) return false;
   return ed25519VerifyHex(sig, leafProofBytes({
     nonce: parts.nonce, gatePubKey: parts.gatePubKey, vesselKey: parts.vesselKey, presentedCid: cid,

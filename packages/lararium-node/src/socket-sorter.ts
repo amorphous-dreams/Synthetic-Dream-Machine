@@ -28,6 +28,7 @@
 
 import {
   classifySocket, answersStrangers, verifyLeafProof, presentedSigner, foldAntigenVerdicts, makeMultiSigQuorumVerifier,
+  admittedKeyOf, followNexusKeyLine,
   grantVerifiesAt, renewGrant, tokenVerifiesAt, issueGrant, lineageOf, claimDigest, carryRecordKey, HOSTING_GRANT_SESSION_KIND, HOSTING_NOTICE_SESSION_KIND,
   federationPostureFromDoc,
   type FederationPosture, type PeerClass, type PresentedGrantArm, type PresentedTokenArm, type HostingGrant, type NexusDoc,
@@ -90,10 +91,19 @@ export function ownPlacePosture(placeClass: PlaceClass, charter: NexusDoc | null
   return placeClass === "herm" ? "open" : federationPostureFromDoc(charter);
 }
 
-/** Is `leaf` held or unsettled on N's antigen? Either reads it out of the walker class. */
+/**
+ * Is any key of `leaf`'s line at N held or unsettled on N's antigen? Either reads it out of the walker class. The
+ * antigen follows the hand-over: a kapae on a key the line handed on still holds its successor. A key the line
+ * handed on itself, or a line that forks, reads held: it presents nowhere.
+ */
 async function antigenHolds(reading: CarriedNexusReading, leaf: string): Promise<boolean> {
+  const first = admittedKeyOf({ nexus: reading.aid, key: leaf, carried: reading.handOvers ?? [] });
+  if (first === null) return true;
+  const line = followNexusKeyLine({ nexus: reading.aid, admitted: first, carried: reading.handOvers ?? [] });
+  if (!("keys" in line)) return true;
+  const keys = new Set(line.keys);
   const verdicts = await foldAntigenVerdicts(reading.antigen, reading.antigenRoster, makeMultiSigQuorumVerifier());
-  for (const [nym, verdict] of verdicts) if (nym.toLowerCase() === leaf && verdict !== "withdrawn") return true;
+  for (const [nym, verdict] of verdicts) if (keys.has(nym.toLowerCase()) && verdict !== "withdrawn") return true;
   return false;
 }
 

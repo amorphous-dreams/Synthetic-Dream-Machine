@@ -356,7 +356,7 @@ const DYAD_VEIL_HMAC_KEY = new TextEncoder().encode(DYAD_VEIL_INFO);
  * dyadVeilIndex — the per-group hardened index for the dyad-veil leaf.
  *
  * Domain-separated HMAC-SHA256 over a GROUP TAG, masked to a 31-bit raw index — the same convention
- * `circleScopeIndex` runs one tree over. CASE-FOLDED like `nexusScopeIndex` (hex-shaped tags spell
+ * `circleScopeIndex` runs one tree over. CASE-FOLDED (hex-shaped tags spell
  * one group two ways; folding keeps one group from deriving two veils). Same tag → same leaf
  * (rejoin-stable); different tag → a different, unlinkable face.
  *

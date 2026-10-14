@@ -71,14 +71,17 @@ import {
   ed25519SignerFromSeed,
   carriageEntryActCid,
   presentedActCid,
+  nexusKeyHandOversFromBoard,
+  admittedKeyOf,
   type AdmitPresentation,
+  type NexusKeyHandOver,
   type PresentationFinding,
 } from "@lararium/mesh";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { DeviceDelegationTiddler } from "@lararium/mesh";
 import { readNexusDoc } from "./nexus-doc.js";
 import type { HeldNexusRoot } from "@lararium/mesh";
-import { carriedReadings, charterHomeFor } from "./carried-set.js";
+import { carriedReadings, charterHomeFor, readKeyLine } from "./carried-set.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
 import { heldNexusLeaves, type NexusLeaf } from "./nexus-leaf.js";
 import { admitBundleHolds, dialedNexusAid, readKeptAdmitBundle } from "./admit-bundle.js";
@@ -153,7 +156,8 @@ export async function readCarriedNexuses(opts: {
     const denyDoc    = await opts.open(carriageDocUrl(island), "board:carriage-contracts");
     const antigenDoc = await opts.open(kapaeAntigenDocUrl(island), "board:kapae-antigen");
     const root = heldNexusRoot({ nexus: aid, charter: doc, denyBoard: carriageEntriesFromBoard(denyDoc),
-      antigen: antigenEntriesFromBoard(antigenDoc), antigenVerifier: makeMultiSigQuorumVerifier() });
+      antigen: antigenEntriesFromBoard(antigenDoc), antigenVerifier: makeMultiSigQuorumVerifier(),
+      handOvers: keyLineAt(opts.sealHome, aid, denyDoc) });
     if ("absent" in root) continue;
     out.push({ ...root, sealLineage: root.sealLineage ?? [], aid, via: consented ? "consent" : "seat", island,
       posture: federationPostureFromDoc(doc) });
@@ -186,6 +190,17 @@ export function liveBoardOpener(repo: Repo, onChange: () => void): { readonly op
   };
 }
 
+/**
+ * Every per-Nexus key hand-over a reader holds at N: the records N's carriage board carries, every face's, and the
+ * ones this vessel keeps for its own faces (a hand-over it signed reads here before the board syncs). Each record
+ * proves itself, so the union adds no trust; the line's fold refuses a fork wherever it shows.
+ */
+export function keyLineAt(sealHome: string, aid: string, board: Parameters<typeof nexusKeyHandOversFromBoard>[0]): NexusKeyHandOver[] {
+  const out = new Map<string, NexusKeyHandOver>();
+  for (const r of [...nexusKeyHandOversFromBoard(board, aid), ...readKeyLine(sealHome, aid)]) out.set(`${r.from}>${r.to}`, r);
+  return [...out.values()];
+}
+
 /** A leaf a socket earned: the verdict's nym, and the carried Nexus whose deny board and antigen held it. */
 export interface LeafStanding {
   readonly nym: string;
@@ -195,10 +210,12 @@ export interface LeafStanding {
 /**
  * The leaf standing a socket's presentation earns, or null (STRANGER). Pure over its inputs; never throws.
  *
- *   (a) the leaf proof must verify for this socket's nonce, gate key and wire vessel key;
- *   (b) the admit must root on an epoch of a Nexus in `readings` — its head, or an epoch on its charter
+ *   (a) the admit must root on an epoch of a Nexus in `readings` — its head, or an epoch on its charter
  *       lineage the presentation's roll anchors carry to the head — and `readAdmitAtHeldRoot` must read it
- *       `held` against that Nexus's charter lineage, deny board and antigen;
+ *       `held` against that Nexus's charter lineage, deny board, antigen and key line;
+ *   (b) the leaf proof must verify for this socket's nonce, gate key and wire vessel key, under the HEAD of the
+ *       admitted nym's key line (the nym itself where no hand-over stands): a key the line handed on proves
+ *       nothing;
  *   (c) `readings` holds carried Nexuses only, so an admit for any other Nexus finds no reading.
  * The nym returned is the verdict's own.
  */
@@ -207,17 +224,17 @@ export async function leafReadingFor(binding: SocketBinding, readings: readonly 
   // `leaf-proof-failed` · `no-held-root` (the admit names no Nexus this vessel holds a root for) ·
   // `admit-<state>:<reason>` (the verifier's own verdict) · `admit-nym-unreadable` · `unreadable` (a throw).
   try {
-    if (!(await verifyLeafProof({
-      presented: { kind: "admit", ...binding.presentedAdmit }, nonce: binding.nonce,
-      gatePubKey: binding.gatePubKey, vesselKey: binding.vesselKey,
-    }))) return { refusal: "leaf-proof-failed" };
     const admit = binding.presentedAdmit.admit;
     const root = heldRootFor(admit, readings);
     if (!root) return { refusal: "no-held-root" };
     const read = await readAdmitAtHeldRoot({ admit, lineage: binding.presentedAdmit.lineage }, root);
     if ("refusal" in read) return read;
     if (read.verdict.state !== "held") return { refusal: `admit-${read.verdict.state}:${read.verdict.reason}` };
-    if (!NYM_RE.test(read.verdict.nym)) return { refusal: "admit-nym-unreadable" };
+    if (!NYM_RE.test(read.verdict.nym) || !NYM_RE.test(read.head)) return { refusal: "admit-nym-unreadable" };
+    if (!(await verifyLeafProof({
+      presented: { kind: "admit", ...binding.presentedAdmit }, nonce: binding.nonce,
+      gatePubKey: binding.gatePubKey, vesselKey: binding.vesselKey, signer: read.head,
+    }))) return { refusal: "leaf-proof-failed" };
     return { standing: { nym: read.verdict.nym, aid: root.nexus } };
   } catch { return { refusal: "unreadable" }; }
 }
@@ -318,11 +335,15 @@ async function ownPresentationFor(opts: {
     const island = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: home });
     const held = await (opts.leaves ?? heldNexusLeaves)(aid);
     const board = await opts.open(carriageDocUrl(island), "board:carriage-contracts");
+    // THE ADMITTED NYM OF EACH HELD KEY: the key itself, or the key its line leads from where a hand-over moved it.
+    // A key the line handed on admits nothing.
+    const line = keyLineAt(opts.sealHome, aid, board);
+    const admittedOf = (leaf: NexusLeaf): string | null => admittedKeyOf({ nexus: aid, key: leaf.verifyingKey, carried: line });
 
     const kept = readKeptAdmitBundle(opts.sealHome, aid);
-    const keptLeaf = kept ? held.find((l) => l.verifyingKey.toLowerCase() === kept.admit.nym.toLowerCase()) : undefined;
+    const keptLeaf = kept ? held.find((l) => admittedOf(l) === kept.admit.nym.toLowerCase()) : undefined;
     if (kept && keptLeaf && (await admitBundleHolds(kept, doc))) {
-      const head = await present(board, keptLeaf.verifyingKey, roster);
+      const head = await present(board, kept.admit.nym.toLowerCase(), roster);
       const keptCid = carriageEntryActCid(kept.admit);
       const extends_ = head !== null &&
         (carriageEntryActCid(head.admit) === keptCid || head.lineage.some((e) => presentedActCid(e) === keptCid));
@@ -330,7 +351,9 @@ async function ownPresentationFor(opts: {
       return { ...pick, aid, island, leaf: keptLeaf };
     }
     for (const leaf of held) {
-      const presented = await present(board, leaf.verifyingKey, roster);
+      const admitted = admittedOf(leaf);
+      if (admitted === null) continue;
+      const presented = await present(board, admitted, roster);
       if (presented) return { ...presented, aid, island, leaf };
     }
     return null;

@@ -35,7 +35,10 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { dirname, join } from "node:path";
-import { foundingRoster, nexusAidOf, NEXUS_AID_PATTERN, verifyCarriageConsent, type NexusDoc } from "@lararium/mesh";
+import {
+  admittedKeyOf, foundingRoster, nexusAidOf, readNexusKeyHandOver, NEXUS_AID_PATTERN, verifyCarriageConsent,
+  type NexusDoc, type NexusKeyHandOver,
+} from "@lararium/mesh";
 import { readNexusDoc, parseNexusDoc, nexusCharterDocRelPath } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
 import { listPersonaRoots } from "./node-vessel-identity.js";
@@ -62,6 +65,31 @@ export function carriedCharterHome(sealHome: string, aid: string): string {
 /** The kept consent for one Nexus: `<sealHome>/nexus/carriage-consent/<aid>.json`. */
 export function carriageConsentPathFor(sealHome: string, aid: string): string {
   return join(sealHome, "nexus", "carriage-consent", `${aidOrRefuse(aid)}.json`);
+}
+
+/** Where this vessel keeps its own faces' key hand-overs at N: `<seal>/nexus/key-line/<aid>.json`. */
+export function nexusKeyLinePathFor(sealHome: string, aid: string): string {
+  return join(sealHome, "nexus", "key-line", `${aidOrRefuse(aid)}.json`);
+}
+
+/** This vessel's kept key hand-overs at N: every record that reads whole and names N (a torn file keeps none). */
+export function readKeyLine(sealHome: string, aid: string): NexusKeyHandOver[] {
+  try {
+    const raw = JSON.parse(readFileSync(nexusKeyLinePathFor(sealHome, aid), "utf8")) as unknown;
+    if (!Array.isArray(raw)) return [];
+    return raw.map((r) => readNexusKeyHandOver(r)).filter((r): r is NexusKeyHandOver => r !== null && r.nexus === aid.trim().toLowerCase());
+  } catch { return []; }
+}
+
+/** Keep one hand-over in this vessel's own line at N, beside every record kept there. The record stands public on N's
+ *  carriage board; this copy lets the vessel present its line before that board syncs. */
+export function keepKeyLine(sealHome: string, aid: string, record: NexusKeyHandOver): void {
+  if (readNexusKeyHandOver(record) === null) throw new Error("carried-set: refusing to keep a hand-over that reads as none");
+  const kept = readKeyLine(sealHome, aid);
+  if (kept.some((r) => r.from === record.from && r.to === record.to)) return;
+  const path = nexusKeyLinePathFor(sealHome, aid);
+  mkdirSync(dirname(path), { recursive: true });
+  atomicWriteFileSync(path, JSON.stringify([...kept, record], null, 2));
 }
 
 /** The AID of the charter at the PRIMARY path, or null when none stands there. */
@@ -226,8 +254,9 @@ export function readConsent(sealHome: string, aid: string): CarriageConsent | nu
  *   · THE SEAL IS REAL. The signature binds nym and epoch together and only the holder of that nym's
  *     seed can produce it, so a planted record fails.
  *   · THE NYM IS OURS. Another operator's genuine consent proves that SHE joined; copied here it would let
- *     this vessel claim her relation. The nym must be the leaf one of this vessel's held personas presents
- *     to N — a root nym, or another vessel's leaf, reads false.
+ *     this vessel claim her relation. The nym must be the key one of this vessel's held personas holds at N,
+ *     or the key its own kept hand-overs lead from to that key — a root nym, or another vessel's key, reads
+ *     false.
  *
  * Grants nothing either way: it answers a reading for this vessel's own operator.
  */
@@ -240,7 +269,8 @@ export async function hasContractedInto(sealHome: string, aid: string): Promise<
   const head = foundingRoster(readNexusDoc(home)).sealEpochCid;
   if (head.length === 0 || head !== consent.sealEpochCid) return false;
   if (!(await verifyCarriageConsent(consent))) return false;
-  return (await heldNexusLeaves(aid)).some((leaf) => leaf.verifyingKey === consent.nym);
+  const line = readKeyLine(sealHome, aid);
+  return (await heldNexusLeaves(aid)).some((leaf) => admittedKeyOf({ nexus: aid, key: leaf.verifyingKey, carried: line }) === consent.nym);
 }
 
 // ── the set ───────────────────────────────────────────────────────────────────────────────────────

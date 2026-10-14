@@ -58,7 +58,7 @@ import {
 } from "@lararium/mesh";
 import { tiddlerText } from "@lararium/mesh";
 import type { DocHandle } from "@automerge/automerge-repo";
-import type { BoardOpener, CarriedNexusReading } from "./nexus-carriage.js";
+import { keyLineAt, type BoardOpener, type CarriedNexusReading } from "./nexus-carriage.js";
 import { charterHomeFor, primaryNexusAid, readCarriedCharters } from "./carried-set.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
@@ -197,9 +197,11 @@ export async function placeCarriedNexuses(opts: {
       const roster = foundingRoster(doc);
       if (roster.sealEpochCid.length === 0) continue;
       const island    = nodeNexusIsland({ ownVesselKey: opts.ownVesselKey, sealHome: home });
-      const denyBoard = carriageEntriesFromBoard(await opts.open(carriageDocUrl(island), "board:carriage-contracts"));
+      const carriage  = await opts.open(carriageDocUrl(island), "board:carriage-contracts");
+      const denyBoard = carriageEntriesFromBoard(carriage);
       const antigen = antigenEntriesFromBoard(await opts.open(kapaeAntigenDocUrl(island), "board:kapae-antigen"));
-      const root = heldNexusRoot({ nexus: aid, charter: doc, denyBoard, antigen, antigenVerifier: makeMultiSigQuorumVerifier() });
+      const root = heldNexusRoot({ nexus: aid, charter: doc, denyBoard, antigen, antigenVerifier: makeMultiSigQuorumVerifier(),
+        handOvers: keyLineAt(opts.sealHome, aid, carriage) });
       if ("absent" in root) continue;
       if (!(await foldCarrierSet(root.denyBoard, root.roster)).has(self)) continue;
       out.push({ ...root, sealLineage: root.sealLineage ?? [], aid, via: "carrier-seal", island, posture: federationPostureFromDoc(doc) });

@@ -29,7 +29,7 @@ import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
   sealPrivateBody, openPrivateBody, authorizeAddress, readContentKey, ciphertextCid, walkCarriageBagId, walkCarryDocumentKey, sha256HexBytesSync,
-  walkCarrySecret, carryRecordKey, hex, deriveNexusScopedKey,
+  walkCarrySecret, carryRecordKey, hex,
   hexToBytes, PERSONA_GLAMOUR_CONTEXT, mintHostToken, redeemClaim, utf8Bytes, makeMultiSigQuorumVerifier,
   HOSTING_NOTICE_SESSION_KIND, type KahuQuorumSeats, type UnsignedPresented,
 } from "@lararium/mesh";
@@ -72,6 +72,10 @@ async function everything(): Promise<string> {
   walk((await hostingDir(AID)));
   return out.join("\n");
 }
+
+/** A synthetic walker's key at the Nexus: its 32 bytes ARE the key, as a per-Nexus key mints at random. */
+const randomKeyOf = async (seed: Uint8Array): Promise<{ signingKey: string; verifyingKey: string }> =>
+  ({ signingKey: Buffer.from(seed).toString("hex"), verifyingKey: Buffer.from(await import("@noble/ed25519").then((m) => m.getPublicKeyAsync(seed))).toString("hex") });
 
 describe("carry ⊥ read", () => {
   test("RED: the hearth holds no plaintext and nothing it holds opens the bytes; CONTROL: the receipt does", async () => {
@@ -231,7 +235,7 @@ describe("through the sorter", () => {
       readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
       hosting: { leafSeedFor: async () => HEARTH },
     });
-    const kp = await deriveNexusScopedKey(WALKER, 0, PERSONA_GLAMOUR_CONTEXT, AID);
+    const kp = await randomKeyOf(WALKER);
     const leaf = { verifyingKey: kp.verifyingKey.toLowerCase(), seed: hexToBytes(kp.signingKey) };
     const vessel = await ed.getPublicKeyAsync(new Uint8Array(32).fill(63)).then(hex);
     const present = async (arm: UnsignedPresented) => sort({
@@ -291,7 +295,7 @@ describe("through the sorter", () => {
     await markPending(grant.leaf, depth);
     const before = await readCarryRecord(AID, keyOf(grant.leaf));
     // A second guest under its own leaf redeems its own invite at the same hearth.
-    const kp = await deriveNexusScopedKey(new Uint8Array(32).fill(66), 0, PERSONA_GLAMOUR_CONTEXT, AID);
+    const kp = await randomKeyOf(new Uint8Array(32).fill(66));
     const other = { verifyingKey: kp.verifyingKey.toLowerCase(), seed: hexToBytes(kp.signingKey) };
     const vessel = await ed.getPublicKeyAsync(new Uint8Array(32).fill(67)).then(hex);
     const token = mintHostToken(liveEpochs((await readHostingState(AID))!, HEARTH)!.current);

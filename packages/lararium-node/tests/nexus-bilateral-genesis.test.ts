@@ -40,9 +40,10 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   hex, foundingRoster, foldCarriageSet, holdsCarriage,
   carriageEntryBytes, signCarriageQuorum, ed25519SignerFromSeed,
-  deriveNexusScopedKey, nexusAidOf, PERSONA_GLAMOUR_CONTEXT,
+  nexusAidOf,
   type NexusDoc, type KahuQuorumSeats, type CarriageEntry,
 } from "@lararium/mesh";
+import { mintNexusKey, nexusKeyPublicOf } from "../src/face-key-custody.js";
 import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
   loadPersonaGroupRootSeed, loadVesselVerifyingKey,
@@ -121,8 +122,9 @@ async function standHearth(root: string, threshold = 2): Promise<Hearth> {
 async function leafAt(root: string, sealHome: string): Promise<string> {
   const aid = nexusAidOf(readNexusDoc(sealHome));
   if (!aid) throw new Error("no charter stands to derive a leaf for");
-  return asRoot(root, async () => (await deriveNexusScopedKey(
-    await loadPersonaGroupRootSeed(0), 0, PERSONA_GLAMOUR_CONTEXT, aid)).verifyingKey.toLowerCase());
+  return asRoot(root, async () => {
+    return nexusKeyPublicOf(await mintNexusKey(0, aid));
+  });
 }
 
 /**

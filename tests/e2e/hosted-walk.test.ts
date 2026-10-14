@@ -35,8 +35,8 @@ import { KeyhiveProvider } from "../../packages/lararium-keyhive/src/keyhive-pro
 import { InMemoryEventStore } from "../../packages/lararium-keyhive/src/event-store.js";
 import {
   LarWSClientAdapter, DAEMON_BAG_ID, ed25519SignerFromSeed, takeInvite, walkIdentity, walkOver, hostingDocUrl,
-  hostingActOn, materializeSharedLarDoc, carryDocument, fetchDocument, deriveNexusScopedKey, hexToBytes, utf8Bytes, hex,
-  PERSONA_GLAMOUR_CONTEXT, decodeInvite, isHostingGrant,
+  hostingActOn, materializeSharedLarDoc, carryDocument, fetchDocument, ed25519VerifyingKeyFromSeed, utf8Bytes, hex,
+  decodeInvite, isHostingGrant,
   type LeafIdentity, type WalkRecord, type WalkStore, type HostingAct,
 } from "../../packages/lararium-mesh/src/index.js";
 
@@ -216,8 +216,9 @@ describe.skipIf(gaps.length > 0)("★ a hosted walk, end to end, beside a standi
     const inv = await A!.cli(["host", "invite", "--relay", relayA, "--json"]);
     expect(inv.code, said(inv)).toBe(0);
     wBase = await realIdentity(171);
-    const kp = await deriveNexusScopedKey(new Uint8Array(32).fill(172), 0, PERSONA_GLAMOUR_CONTEXT, nexusA);
-    wLeaf = { verifyingKey: kp.verifyingKey.toLowerCase(), seed: hexToBytes(kp.signingKey) };
+    // A walker's key at the Nexus mints at random; its 32 bytes ARE the key, and no seed relates them.
+    const walkerKey = new Uint8Array(32).fill(172);
+    wLeaf = { verifyingKey: (await ed25519VerifyingKeyFromSeed(walkerKey)).toLowerCase(), seed: walkerKey };
     wStore = memoryStore();
     const taken = await takeInvite(wStore, String(dataOf(inv)["invite"]));
     const { adapter } = dialW(walkIdentity(wBase, taken!.record, wLeaf)!, { store: wStore, leaf: wLeaf, base: wBase });

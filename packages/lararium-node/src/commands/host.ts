@@ -41,7 +41,7 @@ async function signedActsOf(doc: LarDoc | undefined | null, hearthLeaf: string, 
   return signed;
 }
 import { primaryNexusAid, carriedSet, charterHomeFor } from "../carried-set.js";
-import { wornNexusLeaf, type NexusLeaf } from "../nexus-leaf.js";
+import { mintWornNexusLeaf, wornNexusLeaf, type NexusLeaf } from "../nexus-leaf.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import {
   readHostingState, rollHosting, liveEpochs, redeemedCount, HostingStateMoved, type HostingState,
@@ -89,10 +89,15 @@ async function hostedNexus(sealHome: string, nexusAid?: string): Promise<string>
   return aid;
 }
 
-/** The leaf the face this vessel WEARS presents to N — the face that hosts. Nothing worn hosts no one. */
-async function hostingLeaf(aid: string): Promise<NexusLeaf> {
-  const leaf = await wornNexusLeaf(aid);
-  if (!leaf) throw new HostRefusal("this vessel wears no face — a hearth hosts as the face it wears: `lares persona wear <N>` first");
+/** The key the face this vessel WEARS presents to N — the face that hosts. Nothing worn hosts no one. A roll
+ *  presents the face at N and mints its key where none stands; every other door reads the key that stands. */
+async function hostingLeaf(aid: string, mint: boolean): Promise<NexusLeaf> {
+  const leaf = mint ? await mintWornNexusLeaf(aid) : await wornNexusLeaf(aid);
+  if (!leaf) {
+    throw new HostRefusal(mint
+      ? "this vessel wears no face — a hearth hosts as the face it wears: `lares persona wear <N>` first"
+      : "the face this vessel wears holds no key in this Nexus, or this vessel wears no face — `lares host roll` opens hosting here");
+  }
   return leaf;
 }
 
@@ -146,7 +151,7 @@ export async function runHostRoll(opts: {
 }): Promise<HostRollResult> {
   const aid = await hostedNexus(opts.sealHome, opts.nexusAid);
   if (!charterHomeFor(opts.sealHome, aid)) throw new HostRefusal(`no charter for ${aid.slice(0, 18)}… stands here`);
-  const leaf = await hostingLeaf(aid);
+  const leaf = await hostingLeaf(aid, true);
   const docUrl = hostingDocUrl(aid, await loadVesselVerifyingKey());
   const land = async (repo: Repo): Promise<{ act: HostingAct; state: HostingState; unswept: readonly string[] }> => {
     const handle = await materializeSharedLarDoc(repo, docUrl, "hosting");
@@ -179,7 +184,7 @@ export async function runHostInvite(opts: {
   const aid = await hostedNexus(opts.sealHome, opts.nexusAid);
   const state: HostingState | null = await readHostingState(aid);
   if (!state) throw new HostRefusal("this hearth hosts no one here yet — `lares host roll` opens its first epoch");
-  const live = liveEpochs(state, (await hostingLeaf(aid)).seed);
+  const live = liveEpochs(state, (await hostingLeaf(aid, false)).seed);
   if (!live) throw new HostRefusal("the hosting act names a key this face's leaf does not derive — roll again");
   const invite = encodeInvite({
     nexusAid: aid, gatePubKey: await loadVesselVerifyingKey(), token: mintHostToken(live.current),

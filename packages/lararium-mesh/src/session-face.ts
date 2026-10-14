@@ -48,6 +48,9 @@ export interface FaceAdmitReading {
   readonly admitRef: string;
   /** The causal position the verdict got read at: the heads the verifier folded. */
   readonly revision: string;
+  /** The key the face must hold: the head of the admitted nym's line at that Nexus (the nym itself where no
+   *  hand-over stands). */
+  readonly head:     string;
 }
 
 /** The PersonaGroup's private, root-authorized record that one face key speaks for it at one Nexus. */

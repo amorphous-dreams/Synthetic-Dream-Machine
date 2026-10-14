@@ -7,7 +7,7 @@
  * `keptBy` in public. So whatever key seals here gets published.
  *
  * THE ONE SIGNER. This door hands out the key the vessel's WORN face presents to the Nexus the realm stands
- * under (`wornNexusLeaf`), and nothing else. No option names a persona index, no roster order picks a face,
+ * under (`mintWornNexusLeaf`), and nothing else. No option names a persona index, no roster order picks a face,
  * and no arm reaches a root: a vessel that wears no face refuses by name until its operator wears one.
  *
  * THE GUARD. Every signer passes `stewardGuard` before it seals, here and again inside the realm plane. The
@@ -37,7 +37,7 @@ import {
   CABAL_REALM_RE,
   type CapTier, type HeldKeys, type LarDoc, type RealmBagFoldOptions, type RealmBagRegistration, type StewardSigner,
 } from "@lararium/mesh";
-import { heldNexusLeaves, wornNexusLeaf } from "./nexus-leaf.js";
+import { heldNexusLeaves, mintWornNexusLeaf } from "./nexus-leaf.js";
 import { loadNodeHandleBook } from "./node-circle-store.js";
 import {
   listPersonaRoots, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
@@ -52,8 +52,9 @@ export type RealmDoorPlanes = RealmPlaneHolder & Partial<Pick<RealmPlanesHolder,
 
 /** What the door reads of this vessel's own keys. A test hands a fake; the standing vessel reads its vault. */
 export interface StewardVault {
-  /** The key the WORN face presents to the Nexus `nexusAid`, with its signing seed. Null when this vessel wears
-   *  no face, or holds no root for the worn index. */
+  /** The key the WORN face presents to the Nexus `nexusAid`, with its signing seed, minted at random where none
+   *  stands: a seal presents the face there. Null when this vessel wears no face, or holds no root for the worn
+   *  index. */
   wornLeaf(nexusAid: string): Promise<{ readonly verifyingKey: string; readonly seed: Uint8Array } | null>;
   /** This vessel's own keys by class; `nexusScopedKeys` holds its held personas' keys AT `nexusAid`. */
   heldKeys(nexusAid: string): Promise<HeldKeys>;
@@ -62,7 +63,7 @@ export interface StewardVault {
 /** The node vault's reading: the worn face's key at the Nexus, and every key class this vessel can name. */
 export const nodeStewardVault: StewardVault = {
   async wornLeaf(nexusAid) {
-    const leaf = await wornNexusLeaf(nexusAid);
+    const leaf = await mintWornNexusLeaf(nexusAid);
     return leaf ? { verifyingKey: leaf.verifyingKey.toLowerCase(), seed: leaf.seed } : null;
   },
   async heldKeys(nexusAid) {

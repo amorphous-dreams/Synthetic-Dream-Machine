@@ -48,12 +48,12 @@
 import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
-  isPresentedAdmit, makeMultiSigQuorumVerifier, NEXUS_AID_PATTERN, carriageEntryActCid, heldNexusRoot, readAdmitAtHeldRoot,
+  isPresentedAdmit, makeMultiSigQuorumVerifier, NEXUS_AID_PATTERN, carriageEntryActCid, heldNexusRoot, readAdmitAtHeldRoot, admittedKeyOf,
   type CarriageEntry, type PresentedLineageAct, type NexusDoc,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { readNexusDoc } from "./nexus-doc.js";
-import { charterHomeFor } from "./carried-set.js";
+import { charterHomeFor, readKeyLine } from "./carried-set.js";
 import { heldNexusLeaves, type NexusLeaf } from "./nexus-leaf.js";
 import { readHearthDialPin } from "./hearth-dial-pin.js";
 import { larBootstrapPath } from "./vessel-paths.js";
@@ -173,7 +173,10 @@ export async function takeAdmitBundle(opts: {
   }
   const nym = bundle.admit.nym.toLowerCase();
   const leaves = await (opts.leaves ?? heldNexusLeaves)(bundle.aid);
-  if (!leaves.some((leaf) => leaf.verifyingKey.toLowerCase() === nym)) {
+  // A held key answers for the admit where it IS the admitted nym, or where this vessel's own kept hand-overs lead
+  // from that nym to it (a re-issued face takes its old admit).
+  const line = readKeyLine(opts.sealHome, bundle.aid);
+  if (!leaves.some((leaf) => admittedKeyOf({ nexus: bundle.aid, key: leaf.verifyingKey, carried: line }) === nym)) {
     throw new AdmitBundleError(
       `the admit names ${nym.slice(0, 16)}…, which is not a leaf any persona this vessel holds presents to ${bundle.aid.slice(0, 18)}… — ` +
       "another vessel's admit grants this one nothing. Nothing was kept.",

@@ -1,63 +1,87 @@
 /**
  * nexus-leaf — the key a held persona presents to ONE Nexus.
  *
- * A stamp that travels into a Nexus names its subject publicly, so it never names the PersonaGroup
- * root: that key binds one human's own devices, and publishing it names the device-group and correlates
- * every island it appears in. The stamp names the persona's per-Nexus LEAF,
- * `m / handle' / context' / nexus-scope'`, derived from the persona's root seed under the NEXUS scope
- * domain (`deriveNexusScopedKey`).
+ * A stamp that travels into a Nexus names its subject publicly, so it never names the PersonaGroup root: that key
+ * binds one human's own devices, and publishing it names the device-group and correlates every island it appears
+ * in. The stamp names the persona's PER-NEXUS KEY instead: 32 bytes minted AT RANDOM, never derived from the persona
+ * seed, resting sealed and cold in the face's own row for that Nexus (`face-key-custody`, row `face-proof-key`).
  *
- *   · The same persona presents a different leaf to each Nexus — an observer reading two islands finds
- *     no shared key.
- *   · The same Nexus always receives the same leaf. The AID a caller passes is `nexusAidOf(doc)`,
- *     the genesis epoch CID, which a seal rotation leaves fixed.
+ *   · The same persona presents a different key to each Nexus — an observer reading two islands finds no shared
+ *     key, and no seed relates them.
+ *   · The same Nexus keeps receiving the key the row holds. The AID a caller passes is `nexusAidOf(doc)`, the
+ *     genesis epoch CID, which a seal rotation leaves fixed. The face's lineage moves the key only by a signed
+ *     hand-over (`nexus-key-reissue`), which the Nexus's gates read off its carriage board.
  *
- * THE CONTEXT INDEX IS THE PUBLIC FACE'S, `PERSONA_GLAMOUR_CONTEXT`. The leaf hangs one hardened level
- * beneath the face's inception rung `m / handle' / 0'`. Every level hardens, so neither the face's
- * public key nor the root's reveals which leaves descend from it. The face's rotation ladder walks
- * `m / handle' / 1'`, `2'`, … at depth two, so it never lands on a leaf and never moves one: a Nexus
- * keeps the key it was given across every rotation of the face.
+ * A READ NEVER MINTS. `nexusLeafFor`, `heldNexusLeaves` and `wornNexusLeaf` answer the keys that stand. Only an act
+ * that presents the face at a Nexus mints one (`mintNexusLeaf`, `mintWornNexusLeaf`): a walk taken, a contract
+ * signed, a hearth's hosting, a steward's seal.
  *
- * It reads the persona vault and returns key material; it writes nothing and mints no root.
+ * It reads the persona vault and the face's sealed rows and returns key material; it mints no root.
  */
 
-import { deriveNexusScopedKey, hexToBytes, PERSONA_GLAMOUR_CONTEXT } from "@lararium/mesh";
-import { listPersonaRoots, loadPersonaGroupRootSeed, makeNodeFsPersonaVault } from "./node-vessel-identity.js";
+import { listPersonaRoots, makeNodeFsPersonaVault } from "./node-vessel-identity.js";
+import { mintNexusKey, nexusKeyPublicOf, readNexusKey, readNexusKeys } from "./face-key-custody.js";
 
-/** One persona's leaf at one Nexus: the public half, and the 32-byte signing seed. */
+/** One persona's key at one Nexus: the public half, and the 32-byte signing seed. */
 export interface NexusLeaf {
   readonly handleIndex:  number;
   readonly verifyingKey: string;
-  /** The leaf's signing seed. The caller signs with it and keeps it nowhere. */
+  /** The key's signing seed. The caller signs with it and keeps it nowhere. */
   readonly seed:         Uint8Array;
 }
 
-/**
- * The leaf persona `handleIndex` presents to the Nexus named by `nexusAid`. Throws when this vessel holds
- * no root at that index — a leaf derives from a held seed or not at all.
- */
-export async function nexusLeafFor(handleIndex: number, nexusAid: string): Promise<NexusLeaf> {
-  const root = await loadPersonaGroupRootSeed(handleIndex);
-  const kp   = await deriveNexusScopedKey(root, handleIndex, PERSONA_GLAMOUR_CONTEXT, nexusAid);
-  return { handleIndex, verifyingKey: kp.verifyingKey.toLowerCase(), seed: hexToBytes(kp.signingKey) };
+const leafOf = (handleIndex: number, seed: Uint8Array): NexusLeaf => ({ handleIndex, verifyingKey: nexusKeyPublicOf(seed), seed });
+
+/** The key persona `handleIndex` holds at the Nexus named by `nexusAid`, or null where none stands. Never mints. */
+export async function nexusLeafFor(handleIndex: number, nexusAid: string): Promise<NexusLeaf | null> {
+  const seed = await readNexusKey(handleIndex, nexusAid);
+  return seed === null ? null : leafOf(handleIndex, seed);
 }
 
-/** Every leaf this vessel's held personas present to the Nexus named by `nexusAid`, in roster order. */
+/**
+ * The key persona `handleIndex` presents at the Nexus named by `nexusAid`, minted at random where none stands. Throws
+ * when this vessel holds no root at that index: a face this vessel does not hold presents nowhere from here.
+ */
+export async function mintNexusLeaf(handleIndex: number, nexusAid: string): Promise<NexusLeaf> {
+  const vault = await makeNodeFsPersonaVault();
+  if (!(await vault.hasRoot(handleIndex))) throw new Error(`nexus-leaf: this vessel holds no persona at h${handleIndex}`);
+  return leafOf(handleIndex, await mintNexusKey(handleIndex, nexusAid));
+}
+
+/**
+ * Every key this vessel's held personas may present at the Nexus named by `nexusAid`, in roster order. Never mints.
+ * A face whose re-issue stands half done offers its standing key and then its successor: a caller that holds the
+ * key line presents whichever heads it (`admittedKeyOf`), and a caller that reads the admitted nym alone matches
+ * the standing key.
+ */
 export async function heldNexusLeaves(nexusAid: string): Promise<readonly NexusLeaf[]> {
   const leaves: NexusLeaf[] = [];
-  for (const handleIndex of await listPersonaRoots()) leaves.push(await nexusLeafFor(handleIndex, nexusAid));
+  for (const handleIndex of await listPersonaRoots()) {
+    for (const seed of await readNexusKeys(handleIndex, nexusAid)) leaves.push(leafOf(handleIndex, seed));
+  }
   return leaves;
 }
 
-/**
- * The leaf the face this vessel WEARS presents to the Nexus named by `nexusAid` — or null when it wears none (an
- * unset selector, or a worn index whose root this vessel does not hold). A walker is a person, so its leaf is
- * the worn face's; nothing is picked by roster order, and a vessel that wears no face walks nowhere until the
- * operator puts one on (`lares persona wear N`).
- */
-export async function wornNexusLeaf(nexusAid: string): Promise<NexusLeaf | null> {
+/** The face this vessel WEARS, where it holds that face's root; null otherwise. */
+async function wornIndex(): Promise<number | null> {
   const vault = await makeNodeFsPersonaVault();
   const worn = await vault.selector.load();
-  if (worn === undefined || !(await vault.hasRoot(worn))) return null;
-  return nexusLeafFor(worn, nexusAid);
+  return worn === undefined || !(await vault.hasRoot(worn)) ? null : worn;
+}
+
+/**
+ * The key the face this vessel WEARS holds at the Nexus named by `nexusAid` — or null when it wears none (an unset
+ * selector, or a worn index whose root this vessel does not hold), or holds no key there yet. Never mints. A walker
+ * is a person, so its key is the worn face's; nothing is picked by roster order, and a vessel that wears no face
+ * walks nowhere until the operator puts one on (`lares persona wear N`).
+ */
+export async function wornNexusLeaf(nexusAid: string): Promise<NexusLeaf | null> {
+  const worn = await wornIndex();
+  return worn === null ? null : nexusLeafFor(worn, nexusAid);
+}
+
+/** The worn face's key at `nexusAid`, minted at random where none stands; null when the vessel wears no face. */
+export async function mintWornNexusLeaf(nexusAid: string): Promise<NexusLeaf | null> {
+  const worn = await wornIndex();
+  return worn === null ? null : leafOf(worn, await mintNexusKey(worn, nexusAid));
 }

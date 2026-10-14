@@ -509,15 +509,16 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
     const finished = readSessionSignature(session.read, "finish", payload, hex(finish.subarray(1)));
     if (!own(finished, "read")) return silence(`the finish refuses: ${finished.refusal}`);
 
-    // 6 · the arm. Its subject names the face key, and an admit reads held at this Nexus, or nothing follows.
-    if (read.armSubject !== null && read.armSubject !== scope.faceKey) return silence("the arm stands under another key");
+    // 6 · the arm. Its subject names the face key, and an admit reads held at this Nexus, or nothing follows. An
+    // admit names the key the Nexus admitted, and the face key must stand at the head of that key's line.
+    if (read.arm?.kind !== "admit" && read.armSubject !== null && read.armSubject !== scope.faceKey) return silence("the arm stands under another key");
     if ((read.arm?.kind === "grant" && read.arm.grant.nexusAid !== deps.nexus) || (read.arm?.kind === "claim" && read.arm.nexusAid !== deps.nexus)) return silence("the arm names another Nexus");
     let admit: FaceAdmitReading | null = null;
     if (read.arm?.kind === "admit") {
       const reading = await deps.admits.read({ admit: read.arm.admit, lineage: read.arm.lineage });
       if (own(reading, "refusal")) return silence(`the admit refuses: ${reading.refusal}`);
       if (reading.verdict.state !== "held") return silence(`the admit reads ${reading.verdict.state}: ${reading.verdict.reason}`);
-      if (reading.verdict.nym !== scope.faceKey) return silence("the admit names another face");
+      if (reading.head !== scope.faceKey) return silence("the arm stands under another key");
       if (reading.nexus !== deps.nexus) return silence("the admit stands in another Nexus");
       admit = reading;
     }

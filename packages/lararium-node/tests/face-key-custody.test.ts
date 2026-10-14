@@ -57,7 +57,7 @@ afterEach(async () => { await c.drop(); });
 describe("the face proof's custody rows and signing doors", () => {
   test("K1 — the face proof key rests sealed and cold; the door signs exactly the image", async () => {
     await storeFaceProofKey(scope, FACE_SECRET, 2);
-    const file = faceProofKeyFile(scope, 2);
+    const file = faceProofKeyFile(2, scope.nexus);
     expect(file).toMatch(/^face-proof-key-h2-[0-9a-f]{32}\.bin$/);
     const rest = readFileSync(at(file));
     expect(readVkCarrier(rest)).toBe("sealed");
@@ -91,17 +91,19 @@ describe("the face proof's custody rows and signing doors", () => {
   test("K4 — a store never lands over a different standing key; the same key again changes nothing", async () => {
     await storeFaceProofKey(scope, FACE_SECRET, 0);
     await storeVesselFaceKey(scope, VESSEL_SECRET);
-    const standing = [faceProofKeyFile(scope, 0), vesselFaceKeyFile(scope)].map((f) => readFileSync(at(f)));
+    const standing = [faceProofKeyFile(0, scope.nexus), vesselFaceKeyFile(scope)].map((f) => readFileSync(at(f)));
     await storeFaceProofKey(scope, FACE_SECRET, 0);
     await storeVesselFaceKey(scope, VESSEL_SECRET);
     await expect(storeVesselFaceKey(scope, secretOf(55))).rejects.toThrow(/reads names-another-key/);
-    [faceProofKeyFile(scope, 0), vesselFaceKeyFile(scope)].forEach((f, i) => expect(readFileSync(at(f)).equals(standing[i]!), f).toBe(true));
+    [faceProofKeyFile(0, scope.nexus), vesselFaceKeyFile(scope)].forEach((f, i) => expect(readFileSync(at(f)).equals(standing[i]!), f).toBe(true));
     // a face proof key that does not answer the scope's own face key never lands
-    const other = { faceKey: publicOf(secretOf(77)), nexus: scope.nexus };
+    const other = { faceKey: publicOf(secretOf(77)), nexus: "nexus-" + "cd".repeat(32) };
     await expect(storeFaceProofKey(other, FACE_SECRET, 0)).rejects.toThrow(/names-another-key/);
-    expect(existsSync(at(faceProofKeyFile(other, 0)))).toBe(false);
-    // one face key at one Nexus rests under ONE face: a second face's store of the same scope refuses
-    await expect(storeFaceProofKey(scope, FACE_SECRET, 1)).rejects.toThrow(/stands under another face/);
+    expect(existsSync(at(faceProofKeyFile(0, other.nexus)))).toBe(false);
+    // one face holds ONE key at one Nexus: a second key for the same face and Nexus refuses, the standing bytes untouched
+    const second = { faceKey: publicOf(secretOf(78)), nexus: scope.nexus };
+    await expect(storeFaceProofKey(second, secretOf(78), 0)).rejects.toThrow(/names-another-key/);
+    expect(readFileSync(at(faceProofKeyFile(0, scope.nexus))).equals(standing[0]!)).toBe(true);
     await expect(storeFaceProofKey(scope, new Uint8Array(31), 0)).rejects.toThrow(/32 secret bytes/);
   });
 
@@ -109,7 +111,7 @@ describe("the face proof's custody rows and signing doors", () => {
     await storeFaceProofKey(scope, FACE_SECRET, 0);
     await storeVesselFaceKey(scope, VESSEL_SECRET);
     const doors: Array<[string, () => Promise<unknown>]> = [
-      [faceProofKeyFile(scope, 0), () => nodeFaceKeyCustody.signAsFace(scope, IMAGE)],
+      [faceProofKeyFile(0, scope.nexus), () => nodeFaceKeyCustody.signAsFace(scope, IMAGE)],
       [vesselFaceKeyFile(scope), () => nodeVesselFaceKeyCustody.signAsVesselFace(scope, vesselFaceKey, IMAGE)],
     ];
     for (const [file, door] of doors) {
@@ -132,7 +134,7 @@ describe("the face proof's custody rows and signing doors", () => {
   test("K6 — at the floor both doors and both stores refuse CustodyLocked and no file moves", async () => {
     await storeFaceProofKey(scope, FACE_SECRET, 0);
     await storeVesselFaceKey(scope, VESSEL_SECRET);
-    const files = [faceProofKeyFile(scope, 0), vesselFaceKeyFile(scope)];
+    const files = [faceProofKeyFile(0, scope.nexus), vesselFaceKeyFile(scope)];
     const standing = files.map((f) => readFileSync(at(f)));
     await c.holder.lock();
     await expect(nodeFaceKeyCustody.signAsFace(scope, IMAGE)).rejects.toThrow(CustodyLocked);
@@ -145,7 +147,7 @@ describe("the face proof's custody rows and signing doors", () => {
   test("K7 — TAMPER PROBE: a retired key and a stranger key land nothing; the standing rows sign under the tree's key", async () => {
     await storeFaceProofKey(scope, FACE_SECRET, 0);
     await storeVesselFaceKey(scope, VESSEL_SECRET);
-    const files = [faceProofKeyFile(scope, 0), vesselFaceKeyFile(scope)];
+    const files = [faceProofKeyFile(0, scope.nexus), vesselFaceKeyFile(scope)];
     const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
     const standing = files.map((f) => readFileSync(at(f)));
     await expect(nodeFaceKeyCustody.signAsFace(scope, IMAGE)).rejects.toThrow(/reads key-fails/);
@@ -174,10 +176,10 @@ describe("the face proof's custody rows and signing doors", () => {
 
   test("K8 — the carrier table names both rows as the library names them", () => {
     const rowOf = (file: string) => carrierTable().find((r) => r.home === "identity" && r.match.test(file));
-    const face = rowOf(faceProofKeyFile(scope, 4))!;
+    const face = rowOf(faceProofKeyFile(4, scope.nexus))!;
     const vessel = rowOf(vesselFaceKeyFile(scope))!;
     expect([face.row, face.custody, face.keyClass]).toEqual(["face-proof-key", "cold", "seed"]);
-    expect(face.face(face.match.exec(faceProofKeyFile(scope, 4))!)).toBe(4);
+    expect(face.face(face.match.exec(faceProofKeyFile(4, scope.nexus))!)).toBe(4);
     expect([vessel.row, vessel.custody, vessel.keyClass]).toEqual(["vessel-face-key", "hot", "device-minted"]);
     expect(vessel.face(vessel.match.exec(vesselFaceKeyFile(scope))!)).toBe("vessel");
     expect(FACE_PROOF_CUSTODY_ROWS.map((r) => [r.row, r.custody])).toEqual([["face-proof-key", "cold"], ["vessel-face-key", "hot"]]);

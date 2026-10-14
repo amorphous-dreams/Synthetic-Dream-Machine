@@ -239,6 +239,8 @@ export const SEALED_RECORD_REST_DOMAIN = mint("sealed-record-rest");
 export const SEALED_INDEX_ROW_DOMAIN = mint("sealed-index-row");
 /** A HAND-OVER RECORD: its clear part hashes to the record id under this name. */
 export const SEALED_HAND_OVER_DOMAIN = mint("sealed-hand-over");
+/** A PER-NEXUS KEY HAND-OVER: a face's key at one Nexus hands its standing on to a fresh key; both keys sign. */
+export const NEXUS_KEY_HAND_OVER_DOMAIN = mint("nexus-key-hand-over");
 /** A KEY PARCEL: one lockbox, its key version record and the wrap's public operations, for one reader. */
 export const SEALED_KEY_PARCEL_DOMAIN = mint("sealed-key-parcel");
 /** A MEMORY-IMPORT RECORD: its clear part hashes to the record id under this name. */
@@ -427,9 +429,6 @@ export const SEED_WRAP_PRF_INFO = frozen("seed-wrap-prf");
 export const PERSONA_SCOPE_INFO = frozen("persona-scope");
 /** The per-circle hardened index — the key a persona presents to one circle. */
 export const CIRCLE_SCOPE_INFO = frozen("circle-scope");
-/** The per-NEXUS scope leaf. Distinct from `circle-scope`: a compartment and an island must never
- *  derive into one another, so their MAC domains stay apart. */
-export const NEXUS_SCOPE_INFO = frozen("nexus-scope");
 
 // ── ARTEFACTS + BOARDS ──────────────────────────────────────────────────────────────────────────
 /** The served `oracle` pointer doc. */

@@ -174,24 +174,28 @@ export async function verifyRaiseGrant(args: {
     : undefined;
   if (rootsOn && rootsOn.nexus !== reading.nexus) return refused("wrong-nexus", "admit-for-another-nexus");
 
-  let verdict;
+  let verdict, head: string;
   try {
     const answer = await readAdmitAtHeldRoot({ admit: admit as CarriageEntry, lineage: presented?.lineage as readonly PresentedLineageAct[] }, reading);
     if ("refusal" in answer) return refused("wrong-nexus", NO_HELD_ROOT);
     verdict = answer.verdict;
+    head = answer.head;
   } catch {
     return refused("rejected", "presented-admit-unreadable");
   }
   if (verdict.state !== "held") return refused(verdict.state, verdict.reason);
 
+  // THE SIGNER HOLDS THE LINE'S HEAD: the admitted leaf itself, or the key its hand-overs reached. A key the
+  // line handed on signs nothing here.
   const byNym = typeof grant.byNym === "string" ? grant.byNym.toLowerCase() : "";
-  if (byNym.length === 0 || byNym !== verdict.nym) return refused("rejected", "signer-is-not-the-admit-leaf");
+  if (byNym.length === 0 || byNym !== head) return refused("rejected", "signer-is-not-the-admit-leaf");
   if (!(await args.verify(byNym, raiseChallengeBytes(grant.challenge), grant.sig))) {
     return refused("bad-signature", "leaf-signature-does-not-verify");
   }
   // The caps bind to the epoch the CHALLENGE named, so the fence `raiseStands` reads is the one the
-  // recogniser actually consented under — never whatever the epoch has become since.
-  return { ok: true, caps: { byNym, nexus: live.nexus, boundEpoch: live.epoch } };
+  // recogniser actually consented under — never whatever the epoch has become since. They name the ADMITTED nym:
+  // a hand-over moves the key, never the relation.
+  return { ok: true, caps: { byNym: verdict.nym, nexus: live.nexus, boundEpoch: live.epoch } };
 }
 
 /** A recogniser's half — sign the challenge as handed, with its LEAF, and attach that leaf's admit. */

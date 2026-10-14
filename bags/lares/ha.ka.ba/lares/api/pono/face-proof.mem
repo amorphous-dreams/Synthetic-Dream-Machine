@@ -49,6 +49,8 @@ written           = "2026-10-11"
 | Herm relay identity | the dialer mints a separate fresh signer for each herm dial | one dial's memory | the herm sees this key and a face-scoped channel tag |
 | Gate bundle | the gate derives separate, domain-separated transport and signing keys per (tier, Nexus, route): a floor route's from the floor key, a serving route's from the serving key, a sovereign route's from the sealed custody root (#/the-gate-exchange) | nowhere: a bundle lives in memory from a derivation to a drop; a dialer pins it per (Nexus, route) | the dialer, and anyone handed the pin |
 
+''The face's lineage re-issues the face proof key.'' The standing key and a successor minted at random both sign one hand-over; the record rides the Nexus's carriage board, the admit keeps naming the key the Nexus admitted, and a gate reads that key's line, stands a presenter under its head alone, and reads a line that forks as denied. A kapae on any key of the line holds the whole line. A gate that has not yet read the hand-over still stands the key it handed on, and no shared moment closes that gap; a compromise of the key therefore takes the face-key roll (#/causal-withdrawal), never a hand-over. A Handle card names its handle-KEL prefix, which no per-Nexus key enters, so a hand-over moves no card (house reading).
+
 ''A vessel's face-scoped key never derives from, and never equals, a vessel root.'' It stands independently random per (PersonaGroup, Nexus, vessel), so no key and no certificate field repeats across two faces of one vessel. The types forbid a vessel-root key and any cross-face field in a proof.
 
 ''The signing face key never fills the transport's static slot.'' A fresh X25519 key per dial fills it; the Ed25519 face key signs and does nothing else.
@@ -370,6 +372,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2JfYd1OsR6z06bDPbjPi8OTC4wlOC96TEM4E3TUxg_8
+<<^ code="&#x0003;">>ni:///sha-256;XAFvxoMBvlOkTEhlhDcbsXEJ9VldiPvdoCKsGjMGQ3M
 
 <<^ code="&#x0004;" -> to="?">>

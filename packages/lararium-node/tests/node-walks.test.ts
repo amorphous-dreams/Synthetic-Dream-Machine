@@ -16,12 +16,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, encodeInvite, mintHostToken, takeInvite, walkIdentity, deriveNexusScopedKey, makeMultiSigQuorumVerifier,
+  hex, encodeInvite, mintHostToken, takeInvite, walkIdentity, makeMultiSigQuorumVerifier,
   hexToBytes, PERSONA_GLAMOUR_CONTEXT, type KahuQuorumSeats, type Presented, type WalkStore, type WalkRecord,
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
-import { heldNexusLeaves } from "../src/nexus-leaf.js";
+import { mintNexusLeaf } from "../src/nexus-leaf.js";
+import { signNexusKeyHandOver, signAntigenEntry, ed25519SignerFromSeed, type NexusKeyHandOver, type KapaeAntigenEntry } from "@lararium/mesh";
 import { carriedSet } from "../src/carried-set.js";
 import { nodeWalkStore } from "../src/node-walk-store.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
@@ -53,11 +54,12 @@ afterEach(() => {
   rmSync(hearthStore, { recursive: true, force: true });
 });
 
-async function hearth(): Promise<{ sort: ReturnType<typeof makeSocketSorter>; invite: () => string }> {
+async function hearth(board: { handOvers?: readonly NexusKeyHandOver[]; antigen?: (roster: KahuQuorumSeats) => Promise<readonly KapaeAntigenEntry[]> } = {}): Promise<{ sort: ReturnType<typeof makeSocketSorter>; invite: () => string }> {
   await rollHosting({ nexusAid: AID, leafSeed: HEARTH_LEAF });
   const keys = await Promise.all(SEEDS.map(pubOf));
   const roster: KahuQuorumSeats = { keys, threshold: 2, sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid };
-  const reading: CarriedNexusReading = { nexus: AID, aid: AID, revision: "fixture", via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen: [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
+  const antigen = board.antigen ? await board.antigen(roster) : [];
+  const reading: CarriedNexusReading = { nexus: AID, aid: AID, revision: "fixture", via: "consent", island: AID, roster, sealLineage: [], denyBoard: [], antigen, handOvers: board.handOvers ?? [], antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier(), posture: "private" };
   const sort = makeSocketSorter({
     readings: async () => [reading], carrier: () => false, primaryPosture: () => "private",
     hosting: { leafSeedFor: async () => HEARTH_LEAF },
@@ -74,12 +76,16 @@ async function sortInputFor(vesselKey: string, record: WalkRecord, leaf: { verif
   return { identifier: `0x${vesselKey}`, vesselKey, sameOperator: false, presented, challenge: { nonce: NONCE, gatePubKey: GATE } };
 }
 
+/** A synthetic walker's key at the Nexus: its 32 bytes ARE the key, as a per-Nexus key mints at random. */
+const randomKeyOf = async (seed: Uint8Array): Promise<{ signingKey: string; verifyingKey: string }> =>
+  ({ signingKey: Buffer.from(seed).toString("hex"), verifyingKey: Buffer.from(await import("@noble/ed25519").then((m) => m.getPublicKeyAsync(seed))).toString("hex") });
+
 describe("N — a node vessel walks like any leaf", () => {
   it("RED: a node holding an invite, then a grant, sorts walker exactly as a browser-shaped leaf does", async () => {
     const { sort, invite } = await hearth();
     const nodeVessel = (await generateOrLoadVesselIdentity()).verifyingKey;
     await generateOrLoadPersonaGroupRoot(0);
-    const nodeLeaf = (await heldNexusLeaves(AID))[0]!;
+    const nodeLeaf = await mintNexusLeaf(0, AID);
     const store: WalkStore = nodeWalkStore();
     const taken = await takeInvite(store, invite());
     const nodeRedeem = await sort(await sortInputFor(nodeVessel, taken!.record, nodeLeaf));
@@ -87,7 +93,7 @@ describe("N — a node vessel walks like any leaf", () => {
 
     // A browser-shaped leaf: another floor root, its own per-Nexus face, the same kind of record.
     const browserRoot = new Uint8Array(32).fill(77);
-    const kp = await deriveNexusScopedKey(browserRoot, 0, PERSONA_GLAMOUR_CONTEXT, AID);
+    const kp = await randomKeyOf(browserRoot);
     const browserLeaf = { verifyingKey: kp.verifyingKey.toLowerCase(), seed: hexToBytes(kp.signingKey) };
     const browserVessel = await pubOf(new Uint8Array(32).fill(78));
     const browserRedeem = await sort(await sortInputFor(browserVessel, { nexusAid: AID, invite: invite() }, browserLeaf));
@@ -104,7 +110,7 @@ describe("N — a node vessel walks like any leaf", () => {
   it("the sort input names no device type — only the proven key, the vouch, the presentation and the challenge", async () => {
     await hearth();
     const vessel = await pubOf(new Uint8Array(32).fill(79));
-    const kp = await deriveNexusScopedKey(new Uint8Array(32).fill(80), 0, PERSONA_GLAMOUR_CONTEXT, AID);
+    const kp = await randomKeyOf(new Uint8Array(32).fill(80));
     const input = await sortInputFor(vessel, { nexusAid: AID, invite: encodeInvite({ nexusAid: AID, gatePubKey: GATE, token: { purpose: "host-invite", n: "11".repeat(32), y: "22".repeat(64) } }) },
       { verifyingKey: kp.verifyingKey.toLowerCase(), seed: hexToBytes(kp.signingKey) });
     expect(Object.keys(input).sort()).toEqual(["challenge", "identifier", "presented", "sameOperator", "vesselKey"]);
@@ -122,3 +128,30 @@ describe("N — a node vessel walks like any leaf", () => {
     expect(readdirSync(join(larDataDir(), "walk"))).toHaveLength(1);
   });
 });
+
+describe("a walker's key follows its hand-over line at the hearth's sorter", () => {
+  const OLD = new Uint8Array(32).fill(91), NEW = new Uint8Array(32).fill(92);
+  const keyOf = async (seed: Uint8Array) => ({ verifyingKey: await pubOf(seed), seed });
+  const line = async () => [await signNexusKeyHandOver({ nexus: AID, from: await pubOf(OLD), to: await pubOf(NEW) }, ed25519SignerFromSeed(OLD), ed25519SignerFromSeed(NEW))];
+  const kapaeOn = (seed: Uint8Array) => async (roster: KahuQuorumSeats) => [await signAntigenEntry(
+    { nym: await pubOf(seed), action: "kapae", parents: [], sealEpochCid: roster.sealEpochCid },
+    await Promise.all(SEEDS.map(async (s) => ({ signer: await pubOf(s), sign: ed25519SignerFromSeed(s) }))))];
+  const redeem = async (sort: ReturnType<typeof makeSocketSorter>, invite: () => string, seed: Uint8Array, fill: number) => {
+    const vessel = await pubOf(new Uint8Array(32).fill(fill));
+    return sort(await sortInputFor(vessel, { nexusAid: AID, invite: invite() }, await keyOf(seed)));
+  };
+
+  it("W1 the key a hand-over moved on stands as no walker; its successor stands (CONTROL: no line, the first key stands)", async () => {
+    const plain = await hearth();
+    expect((await redeem(plain.sort, plain.invite, OLD, 93))?.class).toBe("walker");
+    const moved = await hearth({ handOvers: await line() });
+    expect((await redeem(moved.sort, moved.invite, OLD, 94))?.class).not.toBe("walker");
+    expect((await redeem(moved.sort, moved.invite, NEW, 95))?.class).toBe("walker");
+  });
+
+  it("W2 a kapae on the key a hand-over moved on holds its successor out of the walker class", async () => {
+    const held = await hearth({ handOvers: await line(), antigen: kapaeOn(OLD) });
+    expect((await redeem(held.sort, held.invite, NEW, 96))?.class).not.toBe("walker");
+  });
+});
+

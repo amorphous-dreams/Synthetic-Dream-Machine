@@ -33,6 +33,7 @@ import {
 } from "./carriage-registry.js";
 import type { KahuQuorumSeats, KapaeAntigenEntry, QuorumVerifier } from "./kapae-antigen.js";
 import { foundingRoster, type NexusDoc } from "./nexus-seal-seed.js";
+import { followNexusKeyLine, nexusKeyHandOverId, type NexusKeyHandOver } from "./nexus-key-line.js";
 import type { SealEpoch } from "./wax-stamp.js";
 
 /** The root of one Nexus as this vessel holds it locally: what a presented admit gets read against. */
@@ -50,6 +51,8 @@ export interface HeldNexusRoot {
   readonly denyBoard:       readonly CarriageEntry[];
   /** The Nexus's Kapae antigen entries. */
   readonly antigen:         readonly KapaeAntigenEntry[];
+  /** Every per-Nexus key hand-over the Nexus's carriage board holds for this Nexus, every face's together. */
+  readonly handOvers:       readonly NexusKeyHandOver[];
   /** The antigen quorum's roster, held apart from the membership roster. */
   readonly antigenRoster:   KahuQuorumSeats;
   readonly antigenVerifier: QuorumVerifier;
@@ -67,6 +70,7 @@ export const NO_HELD_ROOT = "no-held-root" as const;
 /** The causal position a reading stands at: the head epoch, the deny board's acts and the antigen's acts. */
 export function heldRootRevision(
   headEpochCid: string, denyBoard: readonly CarriageEntry[], antigen: readonly KapaeAntigenEntry[],
+  handOvers: readonly NexusKeyHandOver[] = [],
 ): string {
   const acts: string[] = [];
   for (const entry of denyBoard) {
@@ -74,7 +78,12 @@ export function heldRootRevision(
   }
   const bans: string[] = [];
   for (const entry of antigen) if (typeof entry?.actCid === "string") bans.push(entry.actCid);
-  return `held-${sha256HexSync(canonicalJson({ head: headEpochCid, deny: [...new Set(acts)].sort(), antigen: [...new Set(bans)].sort() }))}`;
+  const lines: string[] = [];
+  for (const h of handOvers) {
+    try { lines.push(nexusKeyHandOverId(h)); } catch { /* a record with no readable image holds no position */ }
+  }
+  return `held-${sha256HexSync(canonicalJson({ head: headEpochCid, deny: [...new Set(acts)].sort(), antigen: [...new Set(bans)].sort(),
+    ...(lines.length > 0 ? { handOvers: [...new Set(lines)].sort() } : {}) }))}`;
 }
 
 /**
@@ -91,6 +100,8 @@ export function heldNexusRoot(input: {
   readonly antigen:          readonly KapaeAntigenEntry[];
   readonly antigenVerifier:  QuorumVerifier;
   readonly antigenRoster?:   KahuQuorumSeats;
+  /** The per-Nexus key hand-overs off the Nexus's carriage board (`nexusKeyHandOversFromBoard`); absent → none. */
+  readonly handOvers?:       readonly NexusKeyHandOver[];
 }): HeldNexusRoot | { readonly absent: HeldRootAbsence } {
   const charter = input.charter ?? null;
   if (charter === null) return { absent: "no-charter" };
@@ -101,11 +112,12 @@ export function heldNexusRoot(input: {
   if (roster.sealEpochCid.length === 0) return { absent: "charter-unseated" };
   return {
     nexus: input.nexus,
-    revision: heldRootRevision(roster.sealEpochCid, input.denyBoard, input.antigen),
+    revision: heldRootRevision(roster.sealEpochCid, input.denyBoard, input.antigen, input.handOvers ?? []),
     roster,
     sealLineage: charter.sealLineage ?? [],
     denyBoard: input.denyBoard,
     antigen: input.antigen,
+    handOvers: input.handOvers ?? [],
     antigenRoster: input.antigenRoster ?? roster,
     antigenVerifier: input.antigenVerifier,
   };
@@ -126,7 +138,12 @@ export function heldRootFor(
 
 /** What a door reads of a presented admit: the verifier's own verdict at a held root, or the named refusal. */
 export type HeldAdmitReading =
-  | { readonly verdict: PresentedAdmitVerdict; readonly nexus: string; readonly admitRef: string; readonly revision: string }
+  | {
+      readonly verdict: PresentedAdmitVerdict; readonly nexus: string; readonly admitRef: string; readonly revision: string;
+      /** The key the presenter must hold: the head of the admitted nym's line at this Nexus, the nym itself where no
+       *  hand-over stands. Empty when the line refused (the verdict then names why). */
+      readonly head: string;
+    }
   | { readonly refusal: typeof NO_HELD_ROOT };
 
 /**
@@ -139,12 +156,20 @@ export async function readAdmitAtHeldRoot(
   root: HeldNexusRoot | null | undefined,
 ): Promise<HeldAdmitReading> {
   if (root === null || root === undefined) return { refusal: NO_HELD_ROOT };
+  let admitRef = "";
+  try { admitRef = carriageEntryActCid(arm.admit); } catch { /* a malformed admit reads rejected below and wears no reference */ }
+  // THE LINE. The admitted nym's keys at this Nexus, walked off the hand-overs the root's board holds. A line that
+  // forks or loops shows the face's key signed two standings: the admit reads denied, whatever else holds.
+  const nym = typeof arm.admit?.nym === "string" ? arm.admit.nym.toLowerCase() : "";
+  const line = followNexusKeyLine({ nexus: root.nexus, admitted: nym, carried: root.handOvers ?? [] });
+  if ("refusal" in line && /^[0-9a-f]{64}$/.test(nym)) {
+    return { verdict: { state: "denied", reason: `key-line-${line.refusal}`, nym }, nexus: root.nexus, admitRef, revision: root.revision, head: "" };
+  }
   const verdict = await verifyPresentedAdmit({
     admit: arm.admit, lineage: arm.lineage, roster: root.roster, denyBoard: root.denyBoard,
     antigen: root.antigen, antigenRoster: root.antigenRoster, antigenVerifier: root.antigenVerifier,
     ...(root.sealLineage ? { sealLineage: root.sealLineage } : {}),
+    ...("keys" in line ? { lineKeys: line.keys } : {}),
   });
-  let admitRef = "";
-  try { admitRef = carriageEntryActCid(arm.admit); } catch { /* a malformed admit reads rejected above and wears no reference */ }
-  return { verdict, nexus: root.nexus, admitRef, revision: root.revision };
+  return { verdict, nexus: root.nexus, admitRef, revision: root.revision, head: "head" in line ? line.head : "" };
 }

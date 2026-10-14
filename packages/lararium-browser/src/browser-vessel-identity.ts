@@ -51,7 +51,7 @@ export function browserIdentityContinuityKey(idbName: string): string {
 // social bootstrap (the founding floor); the persona-multitude stores mirror the node fs vault's
 // per-index files. Every store bumps the DB version together, so a reboot upgrades additively (the
 // device key + bootstrap survive; the new stores appear empty until a persona founds).
-const IDB_VERSION       = 7;
+const IDB_VERSION       = 8;
 const PERSONA_ROOTS_STORE  = "persona-roots";     // per-index persona-root keypairs (self-sovereign secret)
 const PERSONA_ROSTER_STORE = "persona-roster";    // the EXPLICIT held-root record (never a keys()-scan)
 const ACTIVE_PERSONA_STORE = "active-persona";    // the worn-mask pointer (one handle-index)
@@ -71,6 +71,9 @@ export const HANDLE_BOOK_STORE      = "handle-book";         // "snapshot" → H
 // v6 additive: the OPT-IN PRF wrap of a persona-root seed, BESIDE the cleartext root (seed-wrap-prf.ts). Keyed
 // `h${N}` like the root it wraps; absent = the root rests cleartext (today's finding, unchanged).
 export const SEED_WRAP_STORE        = "seed-wrap";           // handleIndex → SeedWrapRecord
+// v8 additive: each face's PER-NEXUS KEY, 32 bytes minted at random (never derived from the persona seed), keyed
+// `h${N}:${nexusAid}`. It rests beside the face's root and in the root's own class.
+export const NEXUS_KEY_STORE        = "nexus-keys";          // `h${N}:${aid}` → Uint8Array(32)
 const ROSTER_RECORD        = "roster";            // the single key both roster stores write under
 const ACTIVE_RECORD        = "active";            // the single key the selector writes under
 
@@ -122,6 +125,8 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
       // pushed. The newcomer-side burn store it replaces goes: the HEARTH burns an invite, at its own gate.
       if (!db.objectStoreNames.contains(WALK_STORE))             db.createObjectStore(WALK_STORE);
       if (db.objectStoreNames.contains("boot-invite-burned"))    db.deleteObjectStore("boot-invite-burned");
+      // v8: each face's per-Nexus key, minted at random where a face first presents at a Nexus.
+      if (!db.objectStoreNames.contains(NEXUS_KEY_STORE))        db.createObjectStore(NEXUS_KEY_STORE);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror   = () => reject(req.error);

@@ -388,8 +388,8 @@ host whose invite came in. The cryptography removes the record. It cannot remove
 
 ''WHAT WAITS FOR THE RE-FOUND.'' A per-Nexus wire key (one gate key serves every Nexus a hearth
 carries, so a gate's posture folds over all of them); full Noise IK (the transport and the knock path leak
-to a passive watcher). The hosting key derives from a per-Nexus leaf seed, which derives from a persona root
-that rests sealed under the vessel key; the hosting stores' own rows rest outside that key until the custody
+to a passive watcher). The hosting key derives from the worn face's per-Nexus key, which mints at random and
+rests sealed and cold under the vessel key; the hosting stores' own rows rest outside that key until the custody
 seal takes them (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>).
 
 ''The reputation-cost braid'' — the idea that an invite rides on the inviter's reputation as a cost
@@ -554,6 +554,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;-Wu_2-E0tw4gOBZ0I7AZCfmEqMTSaK8IovxpUL--F-w
+<<^ code="&#x0003;">>ni:///sha-256;Zz_444KxU3SABrLjx93XWMH5y9u3IWSwaAFw2GfMsDE
 
 <<^ code="&#x0004;" -> to="?">>

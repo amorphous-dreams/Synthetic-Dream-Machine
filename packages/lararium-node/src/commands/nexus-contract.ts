@@ -48,7 +48,7 @@ import { readNexusDoc } from "../nexus-doc.js";
 import { personaRootExists, loadVesselVerifyingKey, loadVesselSigningSeed } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
-import { heldNexusLeaves, nexusLeafFor } from "../nexus-leaf.js";
+import { heldNexusLeaves, mintNexusLeaf } from "../nexus-leaf.js";
 import { charterHomeFor, primaryNexusAid, writeConsent, type CarriageConsent } from "../carried-set.js";
 import type { AdmitBundle } from "../admit-bundle.js";
 
@@ -403,7 +403,7 @@ export async function runNexusAcceptCarriage(opts: {
   if (!(await personaRootExists(opts.handleIndex))) {
     throw new NexusContractError(`this vessel holds no persona at h${opts.handleIndex} — a contract-in signs with a held persona's leaf.`);
   }
-  const leaf = await nexusLeafFor(opts.handleIndex, aid);
+  const leaf = await mintNexusLeaf(opts.handleIndex, aid);
   const nym  = leaf.verifyingKey;
   const sig  = await signCarriageContract(nym, roster.sealEpochCid, ed25519SignerFromSeed(leaf.seed));
   // KEEP IT. The signature travels to the founding kahu, and a copy stays here so this vessel can read

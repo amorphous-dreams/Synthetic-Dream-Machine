@@ -61,7 +61,7 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     expect(existsSync(walkDirOf())).toBe(false);
     await wearPersona(0);
     const taken = await runWalkTake({ carried: await invite() });
-    expect(taken).toMatchObject({ gatePubKey: GATE, nexusAid: AID, relay: RELAY, leaf: (await nexusLeafFor(0, AID)).verifyingKey });
+    expect(taken).toMatchObject({ gatePubKey: GATE, nexusAid: AID, relay: RELAY, leaf: (await nexusLeafFor(0, AID))!.verifyingKey });
     expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);
   });
 
@@ -70,10 +70,13 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
     await wearPersona(1);
-    const h1 = (await nexusLeafFor(1, AID)).verifyingKey;
-    expect(h1).not.toBe((await nexusLeafFor(0, AID)).verifyingKey);
+    // A read never mints: neither face holds a key at the Nexus until the walk presents the worn one.
+    expect(await wornNexusLeaf(AID)).toBeNull();
+    const walked = (await runWalkTake({ carried: await invite() })).leaf;
+    const h1 = (await nexusLeafFor(1, AID))!.verifyingKey;
+    expect(walked).toBe(h1);
+    expect(await nexusLeafFor(0, AID)).toBeNull();
     expect((await wornNexusLeaf(AID))?.verifyingKey).toBe(h1);
-    expect((await runWalkTake({ carried: await invite() })).leaf).toBe(h1);
   });
 
   it("RED: two takes for two hearths that start together keep ONE hearth; the other refuses", async () => {

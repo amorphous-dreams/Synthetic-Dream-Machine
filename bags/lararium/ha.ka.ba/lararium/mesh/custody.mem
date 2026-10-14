@@ -64,7 +64,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 
 |! row |! bundle |! why |
 | `persona-root` | `whole` | the face's root: its lineage |
-| `face-proof-key` | `whole` | the face's own proof key at one Nexus, held by the root-holding vessel |
+| `face-proof-key` | `whole` | the face's own key at one Nexus, held by the root-holding vessel; while a re-issue stands half done the row holds the standing key and its successor, and a bundle refuses to cut until the re-issue lands |
 | `anchors` | `lines` | the face's fixed prefix and its signer's name ride; the veil tag, the device edge and the key group's ids name one vessel's seat, and stay |
 | `persona-roster` | `lines` | the one line that names this face's root |
 | `persona-petnames` | `lines` | this face's own pet-name |
@@ -87,6 +87,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `vessel-card` | `floor-plain` | a contact card holds public keys alone, and the vessel hands it to every peer it meets |
 | `charter`, `carried-charter` | `floor-plain` | the floor's gate reads each charter before any key opens, and a charter stands public and signed |
 | `carriage-consent`, `carriage-admit` | `floor-plain` | the floor reads a kept consent and an admit pin before any key opens; each names a charter, a reach and a gate's public key, and holds no secret |
+| `nexus-key-line` | `floor-plain` | a key hand-over names two public keys and both their signatures, and it stands public on the Nexus's carriage board |
 | `sealed-rest`, `sealed-chunk` | `floor-plain` | a lockbox, a record, an index row and a Keyhive chunk hold ciphertext, opaque ids and addresses, and no secret, name or key in the clear; a blind carrier may hold every one (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>) |
 | `sealed-own` | `floor-plain` | the vessel's own note for its sealed store holds opaque ids, a one-byte mark or nothing, under an opaque name |
 
@@ -112,7 +113,7 @@ Every `serving` row rests sealed under SK. Every other row rests `hot` or `cold`
 
 * ''A holder of the disk with no route counts the rows.'' The file names, their count and each file's length rest in the clear in all three homes.
 * ''The carriage rows enumerate.'' A hearth's carriage for a walker rests one row per carried value, and each row's name carries the walker's own key segment, the value's address and its length. A holder of the disk therefore lists each walker's rows and weighs each walker's bytes, and opens none of them.
-* ''A name cut from a digest answers a test and no listing.'' A hosting home names itself by a digest of its Nexus's identifier, a walk row by a digest of its hearth's gate key, a spend row by a digest of its nonce or its marker, a face's key rows by a digest of the face key and its Nexus, a chair's key row by a digest of that key's public half, and a gate's memory row by its face's proof-subject digest. A holder of the disk who ALREADY holds one of those values tests whether its row stands: whether this vessel hosts that Nexus, walks at that hearth, burnt that leaf, or holds that chair's key. A holder who lacks the value recovers none of them from a name. A chair's key row takes its name from the key alone, with no Nexus in the digest, so one key gives one name on every disk that holds it: a chair's key mints at random for one chair on one vessel, and a second disk that shows the same name holds a copy of that row.
+* ''A name cut from a digest answers a test and no listing.'' A hosting home names itself by a digest of its Nexus's identifier, a walk row by a digest of its hearth's gate key, a spend row by a digest of its nonce or its marker, a face's per-Nexus key row by the face's index and a digest of its Nexus, a chair's key row by a digest of that key's public half, and a gate's memory row by its face's proof-subject digest. A holder of the disk who ALREADY holds one of those values tests whether its row stands: whether this vessel hosts that Nexus, walks at that hearth, burnt that leaf, or holds that chair's key. A holder who lacks the value recovers none of them from a name. A chair's key row takes its name from the key alone, with no Nexus in the digest, so one key gives one name on every disk that holds it: a chair's key mints at random for one chair on one vessel, and a second disk that shows the same name holds a copy of that row.
 * ''The plain rows name each carried Nexus.'' A carried charter, a kept consent and an admit pin rest in the clear by law, so a holder of the disk reads which Nexuses this vessel carries and where each gate answers.
 * ''The sealed store's rests link, and its outbox names no reader.'' A lockbox's name leads with its key version and its bag's locator, and an index row's name and bytes carry the locator, the key version, the entry's locator, its role and its parents' addresses: opaque ids, which a holder of the disk counts and links to one another. A parcel in the outbox rests sealed under a random name, so a holder of the disk counts the parcels, weighs each and sees when each arrives and leaves, and reads no reader.
 * ''The serving tree names its pins and its mark.'' `sk-slots` rests bare, so a holder of the disk counts the ember slots, reads each threshold, and reads whether `sk-rotation-owed` stands.
@@ -323,6 +324,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NrRbMYqNyrFWPztvR-05fx4_EFML4NCc3TFPKcK7ckA
+<<^ code="&#x0003;">>ni:///sha-256;Hk2-DAp3s_CqD8JJm02glP09u_miIqvQ04NQTyqWi24
 
 <<^ code="&#x0004;" -> to="?">>

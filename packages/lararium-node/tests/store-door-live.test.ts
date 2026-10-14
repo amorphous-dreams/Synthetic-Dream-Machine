@@ -33,7 +33,7 @@ import {
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { larDataDir, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
-import { nexusLeafFor } from "../src/nexus-leaf.js";
+import { mintNexusLeaf } from "../src/nexus-leaf.js";
 import { admitBundlePathFor } from "../src/admit-bundle.js";
 import { storeDoorReactors, storeDoorDirect, type StoreDoorVerb } from "../src/store-door-verbs.js";
 import { claimStore, StoreHeld, ownedStore } from "../src/owned-store.js";
@@ -279,7 +279,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const aidP = nexusAidOf(doc)!;
     // The held persona's OWN per-Nexus leaf (h0, the face `seatVessel` wears) — the multitude-of-one self-admit
     // `runNexusContract` mints in production, built here with the same pure mesh signers it uses.
-    const leaf = await nexusLeafFor(0, aidP);
+    const leaf = await mintNexusLeaf(0, aidP);
     const sign = (seedBytes: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seedBytes).then(hex);
     const chairs = await seatChairs([0, 1, 2]);
     const quorum = chairs.hands.slice(0, 2);

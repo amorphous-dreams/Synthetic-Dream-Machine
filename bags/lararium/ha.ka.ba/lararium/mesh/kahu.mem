@@ -246,7 +246,7 @@ Each line reads whole at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-
 * ''A seat gets ADDED, never replaced'': the standing Kahu add a holder to both cabals, and the founders keep their chairs.
 * ''Paper'': the cold-key card takes the house format — 64 hex plus a checksum, in groups of four — and prints its purpose, its chair label, its generation and a short charter fingerprint.
 * ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by a rotation on the face's own log.
-* ''A per-Nexus key mints at random'', and the face's lineage re-issues one by a signed hand-over the gate verifies. `packages/lararium-node/src/nexus-leaf.ts` and #/nexus-scale still derive a Nexus-scope leaf from the persona seed; the charter train owes the move.
+* ''A per-Nexus key mints at random'', and the face's lineage re-issues one by a signed hand-over the gate verifies (#/nexus-scale).
 
 !!! OPEN ~ what the operator still owns
 
@@ -346,10 +346,15 @@ records. `foldCarriageSet` reads the board's RECORD (`nexus members --list`) and
 reads its answer as an allow set.
 
 ''The subject stamp keys on the Nexus scope.'' An admit signed by a PersonaGroup ROOT correlates one
-human across every Nexus that admits them, so the subject stamp signs with a leaf in the ''NEXUS scope
-domain'' (`nexusScopeIndex`, `nexus-leaf.ts`), never the circle domain. ''A seat holds its own key'', apart
-from the persona root and apart from the dialing leaf (#/seed-and-nexus), and the quorum's chairs sign with
-those seat keys.
+human across every Nexus that admits them, so the subject stamp signs with the face's own
+key at that Nexus: 32 bytes minted at random where the face first presents there, resting sealed and cold in
+the face's row for that Nexus (`nexus-leaf.ts`), and related by no seed to the root or to the face's key at any
+other Nexus. ''The face's lineage re-issues that key'' by a hand-over the standing key and its successor both
+sign (`lares persona reissue`). The record rides the Nexus's carriage board; the admit keeps naming the key the
+Nexus admitted; a gate stands a presenter under the HEAD of that key's line alone and reads a line that forks
+as denied; and a kapae on any key of the line holds the whole line. A compromise of the key takes the face-key
+roll (a revoke and a fresh admit), never a hand-over. ''A seat holds its own key'', apart from the persona root
+and apart from the dialing key (#/seed-and-nexus), and the quorum's chairs sign with those seat keys.
 
 ''The gate's shape, ruled'':
 
@@ -549,6 +554,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NCLlpCDc4kK0JFoVjxVcYv26uNc4A0AJh9M3yiWwchk
+<<^ code="&#x0003;">>ni:///sha-256;0BXb3WO0hKrWLKP0uzEIoz7cWq8wfJBpF3a2ddn9AaI
 
 <<^ code="&#x0004;" -> to="?">>

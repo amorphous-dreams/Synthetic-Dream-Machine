@@ -727,6 +727,12 @@ export interface PresentedAdmitInput {
   readonly antigenRoster:   KahuQuorumSeats;
   /** The antigen quorum verifier — held apart from the membership quorum check. */
   readonly antigenVerifier: QuorumVerifier;
+  /**
+   * Every key the admitted nym's line holds at this Nexus (`followNexusKeyLine`), the admitted nym first. A kapae on
+   * ANY of them closes the admit: the antigen follows the hand-over, so a key handed on never sheds a kapae and a
+   * kapae raised on the line's head reaches the admit. Absent → the admitted nym alone.
+   */
+  readonly lineKeys?:       readonly string[];
 }
 
 function presentedVerdict(state: PresentedAdmitState, reason: string, nym: string): PresentedAdmitVerdict {
@@ -913,8 +919,9 @@ export async function verifyPresentedAdmit(input: PresentedAdmitInput): Promise<
   const antigenVerdicts = await foldAntigenVerdicts(input.antigen, input.antigenRoster, input.antigenVerifier);
   let kapaeHeld = false;
   let kapaeUnsettled = false;
+  const lineKeys = new Set([nym, ...(input.lineKeys ?? []).map((k) => k.toLowerCase())]);
   for (const [antigenNym, verdict] of antigenVerdicts) {
-    if (antigenNym.toLowerCase() !== nym) continue;
+    if (!lineKeys.has(antigenNym.toLowerCase())) continue;
     if (verdict === "held") kapaeHeld = true;
     else if (verdict !== "withdrawn") kapaeUnsettled = true;
   }

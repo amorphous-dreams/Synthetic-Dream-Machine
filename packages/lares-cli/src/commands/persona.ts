@@ -100,6 +100,7 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "list":  return await personaList(args);
       case "sync":  return await personaSync(args);
       case "admit": return await cmdPersonaAdmit(args);
+      case "reissue": return await personaReissue(args);
       default:
         console.error(`lares persona: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -126,6 +127,30 @@ function fleetStores(): {
     petnames:     makeFleetPetnameStore(sealedPetnameStore()),
     declarations: makeFleetDeclarationStore(sealedDeclarationStore()),
   };
+}
+
+/**
+ * `lares persona reissue [--nexus <aid>]` — the face this vessel WEARS hands its key at one Nexus on to a fresh key
+ * minted at random. Both keys sign one hand-over; it lands on that Nexus's carriage board, where every gate reads
+ * it beside the face's admit, and the old key leaves this vessel. The admit keeps naming the key the Nexus admitted.
+ * A compromised key takes the face-key roll instead (a revoke and a fresh admit), never a re-issue.
+ */
+async function personaReissue(args: ParsedArgs): Promise<number> {
+  const raw = args.options["nexus"];
+  const nexusAid = typeof raw === "string" && raw.trim().length > 0 ? raw.trim() : undefined;
+  const r = await sealedAct("persona.reissue", nexusAid ? { nexusAid } : {});
+  emit(args, {
+    ok: true,
+    data: r,
+    human: () => {
+      console.log(`the face at h${String(r["handleIndex"])} handed its key in ${String(r["nexusAid"])} on to a fresh key`);
+      console.log(`  from:      ${String(r["from"])}`);
+      console.log(`  to:        ${String(r["to"])}`);
+      console.log(`  admitted:  ${String(r["admitted"])}  (the admit keeps naming this key; gates read the line to the new one)`);
+      console.log(`  hand-over: ${String(r["handOver"])}  (on the Nexus's carriage board)`);
+    },
+  });
+  return 0;
 }
 
 async function personaNew(args: ParsedArgs): Promise<number> {

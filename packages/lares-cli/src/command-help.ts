@@ -431,7 +431,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit | reissue [--nexus <aid>]>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
@@ -447,6 +447,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares persona wear 1                   # switch the active persona",
       "lares persona list                     # held indices · active marker · labels · declared Handles",
       "lares persona sync                     # carry labels + Handles up to the fleet (the persona plane)",
+      "lares persona reissue --nexus <aid>    # the worn face hands its key at that Nexus on to a fresh key",
     ],
     flags: [
       "--name <petname>   (new) the PRIVATE label at that handle-index",
@@ -455,6 +456,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--chair <label>    (new) private label for a seat claim; pass with --seat",
       "--split-root       (new) opt into arming the 2-of-3 recovery split",
       "admit <sub>        offer | grant | open | accept | list — airgapped device-to-device hand-off (QR 3-hop)",
+      "reissue            the worn face's key at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
+      "--nexus <aid>      (reissue) the Nexus; absent, this vessel's own charter",
     ],
     next: ["lares persona list", "lares handle publish '<glamour>'   # the outward announce"],
   },

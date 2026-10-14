@@ -4,18 +4,16 @@
  *
  * The walk itself is the platform-blind walk client (`walk-client`, mesh): the hearth's gate reads only what a
  * socket presents, so a browser and a node vessel walk alike. This module supplies the two things a browser holds
- * on its own: the store (IndexedDB, never federated) and the leaf (derived from this vessel's own persona root —
- * every leaf keeps its own floor root).
+ * on its own: the store (IndexedDB, never federated) and the face's key at the Nexus (32 bytes minted at random
+ * where the face first presents there, never derived from the persona seed; it rests beside the face's root).
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import {
-  deriveNexusScopedKey, hexToBytes, PERSONA_GLAMOUR_CONTEXT,
-  type WalkLeaf, type WalkRecord, type WalkStore,
-} from "@lararium/mesh";
+import * as ed25519 from "@noble/ed25519";
+import { hex, type WalkLeaf, type WalkRecord, type WalkStore } from "@lararium/mesh";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
-import { openVesselIdb, idbGet, WALK_STORE, loadBrowserPersonaRootSeed } from "./browser-vessel-identity.js";
+import { openVesselIdb, idbGet, WALK_STORE, NEXUS_KEY_STORE, loadBrowserPersonaRootSeed } from "./browser-vessel-identity.js";
 
 /**
  * A face join must follow the island the issuing hearth resolved when it minted admission. Earlier
@@ -78,9 +76,32 @@ export function browserWalkStore(idbName: string): WalkStore {
   };
 }
 
-/** This vessel's leaf in Nexus `nexusAid`, derived from the persona root at `handleIndex`. */
+/**
+ * The key the face at `handleIndex` presents in Nexus `nexusAid`: the one standing, or 32 bytes minted at random in
+ * one IndexedDB transaction where none stands (a walk presents the face there). Throws where this vessel holds no
+ * root at that index: a face it does not hold presents nowhere.
+ */
 export async function browserWalkLeaf(idbName: string, nexusAid: string, handleIndex: number): Promise<WalkLeaf> {
-  const root = await loadBrowserPersonaRootSeed(idbName, handleIndex);
-  const kp = await deriveNexusScopedKey(root, handleIndex, PERSONA_GLAMOUR_CONTEXT, nexusAid);
-  return { verifyingKey: kp.verifyingKey.toLowerCase(), seed: hexToBytes(kp.signingKey) };
+  (await loadBrowserPersonaRootSeed(idbName, handleIndex)).fill(0);
+  const key = `h${handleIndex}:${nexusAid.trim().toLowerCase()}`;
+  const db = await openVesselIdb(idbName);
+  try {
+    const seed = await new Promise<Uint8Array>((resolve, reject) => {
+      const tx = db.transaction(NEXUS_KEY_STORE, "readwrite");
+      const rows = tx.objectStore(NEXUS_KEY_STORE);
+      let held: Uint8Array | null = null;
+      const get = rows.get(key);
+      get.onsuccess = () => {
+        const standing = get.result as unknown;
+        if (standing instanceof Uint8Array && standing.length === 32) { held = Uint8Array.from(standing); return; }
+        if (standing !== undefined) { tx.abort(); return; }
+        held = crypto.getRandomValues(new Uint8Array(32));
+        rows.put(Uint8Array.from(held), key);
+      };
+      tx.oncomplete = () => (held ? resolve(held) : reject(new Error("browser-walk: the face's key at that Nexus would not read")));
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error ?? new Error("browser-walk: the face's key at that Nexus stands malformed"));
+    });
+    return { verifyingKey: hex(await ed25519.getPublicKeyAsync(seed)), seed };
+  } finally { db.close(); }
 }

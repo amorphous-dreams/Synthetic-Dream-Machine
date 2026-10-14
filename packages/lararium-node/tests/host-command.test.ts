@@ -31,7 +31,7 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
-import { heldNexusLeaves, nexusLeafFor } from "../src/nexus-leaf.js";
+import { heldNexusLeaves, mintNexusLeaf, mintWornNexusLeaf, nexusLeafFor } from "../src/nexus-leaf.js";
 import { runHostRoll, runHostInvite, runHostState, landEveryHostingAct, HostRefusal } from "../src/commands/host.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
@@ -129,7 +129,7 @@ describe("lares host — roll, invite, state", () => {
   it("RED: a roll that sealed its state and stopped before its act reached the doc lands that act at the next roll, and at a stand", async () => {
     const { aid } = await seatAndWear();
     const doc = hostingDocUrl(aid, await loadVesselVerifyingKey());
-    const leaf = (await heldNexusLeaves(aid))[0]!;
+    const leaf = (await mintWornNexusLeaf(aid))!;
     // The state row commits; the process stops before the hosting doc carries the act. Twice over: the state
     // then holds a previous act and a current one, and the doc carries neither.
     const first = await rollHosting({ nexusAid: aid, leafSeed: leaf.seed });
@@ -197,8 +197,8 @@ describe("lares host — roll, invite, state", () => {
     const { aid } = await seatOwnCharter();
     await wearPersona(1);
     const rolled = await direct(runHostRoll)({ sealHome: sealHome() });
-    expect(rolled.act.hearthLeaf).toBe((await nexusLeafFor(1, aid)).verifyingKey);
-    expect(rolled.act.hearthLeaf).not.toBe((await heldNexusLeaves(aid))[0]!.verifyingKey);
+    expect(rolled.act.hearthLeaf).toBe((await nexusLeafFor(1, aid))!.verifyingKey);
+    expect(rolled.act.hearthLeaf).not.toBe((await mintNexusLeaf(0, aid)).verifyingKey);
   });
 
   it("RED: a vessel wearing no face hosts no one — the roll refuses and writes nothing", async () => {
@@ -210,7 +210,7 @@ describe("lares host — roll, invite, state", () => {
   it("★ a FORGED act naming this face blocks nothing: only an act the face's own leaf signed counts as hosting elsewhere ★", async () => {
     const { aid } = await seatAndWear();
     const url = hostingDocUrl(aid, await loadVesselVerifyingKey());
-    const leaf = (await heldNexusLeaves(aid))[0]!.verifyingKey;
+    const leaf = (await mintWornNexusLeaf(aid))!.verifyingKey;
     // A board writer plants a well-shaped act under this face's leaf, with a signature nobody made.
     const forged = { kind: HOSTING_ACT_DOMAIN, nexusAid: aid, hearthLeaf: leaf, prev: null, oprfPub: "e2f2ae0a6abc4e71a884a961c500515f58e30b6aa582dd8db6a65945e08d2d76", cap: 3, sig: "00".repeat(64) };
     const repo = restingRepo(larDataDir());
@@ -227,7 +227,7 @@ describe("lares host — roll, invite, state", () => {
   it("an act this leaf signed for ANOTHER Nexus, copied onto this doc, blocks nothing", async () => {
     const { aid } = await seatAndWear();
     const url = hostingDocUrl(aid, await loadVesselVerifyingKey());
-    const held = (await heldNexusLeaves(aid))[0]!;
+    const held = (await mintWornNexusLeaf(aid))!;
     // A genuine act, signed by this very leaf, naming another Nexus: the signature verifies and the Nexus does not match.
     const elsewhere = await mintHostingAct({ leafSeed: held.seed, nexusAid: `nexus-${"e7".repeat(32)}`, prev: null, cap: 3 });
     const repo = restingRepo(larDataDir());

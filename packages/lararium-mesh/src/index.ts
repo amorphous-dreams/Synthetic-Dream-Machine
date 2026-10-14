@@ -294,6 +294,12 @@ export * from "./edge-partial.js";
 // PRIVATE AUTHORITY FOR THE FACE PROOF, named here by its first caller: the device removal door, which signs a
 // certificate withdrawal beside each dyad raise (`device-removal`).
 export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_ROWS } from "./face-authority.js";
+export {
+  NEXUS_KEY_HAND_OVER_DOMAIN, NEXUS_KEY_HAND_OVER_PREFIX, NEXUS_KEY_LINE_BOUND,
+  nexusKeyHandOverBytes, nexusKeyHandOverId, nexusKeyHandOverKey, signNexusKeyHandOver, readNexusKeyHandOver,
+  writeNexusKeyHandOver, nexusKeyHandOversFromBoard, followNexusKeyLine, admittedKeyOf,
+  type NexusKeyHandOver, type NexusKeyLine, type NexusKeyLineRefusal,
+} from "./nexus-key-line.js";
 export type { FaceKeyCustody, WithdrawalMemory, FaceAuthorityRefusal } from "./face-authority.js";
 export type { FaceScope, FaceWithdrawal } from "./face-proof-subjects.js";
 // THE GATE'S TWO ROOT DOORS, named here by the seats that mint them: the vessel identity mints the floor key's
@@ -430,7 +436,6 @@ export { climbNexusBoards, carryAntigenUpTheGradient,
 // housed HERE rather than on a shore, so the platform-blindness vow every shore composes it.
 export { carryPersonaKelUpTheGradient, type PersonaKelCarry } from "./persona-kel-climb.js";
 export { signerClass, type SignerClass, type SignerReading, type HeldKeys } from "./signer-class.js";
-export { nexusScopeIndex, deriveNexusScopedKey } from "./persona-identity.js";
 export { bagCopyPlan, type BagCopyPlan, type TitleAtRest } from "./bag-copy-plan.js";
 export { crossingDirection, type CrossingDirection, type CrossingCost } from "./crossing-direction.js";
 export { realmStanding, type RealmStanding, type RealmStandingName, type RealmFeedSlot } from "./realm-standing.js";

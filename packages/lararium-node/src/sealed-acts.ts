@@ -55,6 +55,7 @@ import type { BackupDoor } from "./face-bundle-cut.js";
 import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundle } from "./face-bundle-restore.js";
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
+import { NexusKeyReissueRefused, runNexusKeyReissue } from "./nexus-key-reissue.js";
 import {
   SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
   sealCrossing, signCrossing, signLicensedSealRoll, witnessCrossing,
@@ -273,6 +274,11 @@ async function hostOrRefuse<T>(run: Promise<T>): Promise<T> {
   catch (err) { if (err instanceof HostRefusal) throw refuse(err.message); throw err; }
 }
 
+async function reissueOrRefuse<T>(run: Promise<T>): Promise<T> {
+  try { return await run; }
+  catch (err) { if (err instanceof NexusKeyReissueRefused) throw refuse(err.message); throw err; }
+}
+
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
 function orRefuse<T extends object>(r: T | { readonly error: string }): T {
   if ("error" in r && typeof (r as { error: unknown }).error === "string") throw refuse((r as { error: string }).error);
@@ -460,6 +466,16 @@ export const SEALED_ACTS = Object.freeze({
       sealHome: larSealHome(), ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.relay !== undefined ? { relay: a.relay } : {}),
     }))),
   })),
+
+  // THE FACE'S KEY AT ONE NEXUS. The key rests sealed and cold, and the re-issue lands its signed hand-over on the
+  // Nexus's carriage board through the store the composition lends; the answer names public keys alone.
+  "persona.reissue": act({ nexusAid: optional(text) }, async (a, ctx) => {
+    const store = ctx.hosting;
+    if (!store) throw refuse("no store stands here to land a hand-over on");
+    return { ...(await reissueOrRefuse(store.withRepo((repo) => runNexusKeyReissue({
+      sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}),
+    })))) };
+  }),
 
   "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({
     ...(await offerAdmitFlow({
