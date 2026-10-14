@@ -49,6 +49,7 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "tests/e2e/hosted-walk.test.ts":                                   "other-owner",
   // Reads source text; speaks no frame.
   "packages/lararium-keyhive/tests/lease-epoch-doors-wired.test.ts": "source-weld",
+  "packages/lararium-mesh/tests/gate-cutover-reach.test.ts":        "source-weld",
 };
 
 /** What speaking the handshake looks like in code. */
