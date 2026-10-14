@@ -68,6 +68,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `persona-declarations` | `lines` | this face's declared Handle; the seat claim and the chair label name a seat on one node, and stay |
 | `handle-book` | `lines` | the records this face recognised, each with this face's own label. A record that names no recognising face stays on its vessel and enters no bundle (house reading) |
 | `veil-archive`, `keyhive-archive` | `stays` | a seat's own key state: a carried copy would let its holder sign as that seat |
+| `seat-key` | `stays` | a chair's own key in a charter: a carried copy would let its holder sign as that chair (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>) |
 | `restore-pending` | `stays` | a restore's own commit row: it holds what one restore still owes this vessel, and leaves once that restore lands (#/the-restore) |
 | `vessel-face-key`, `gate-memory`, `device-share`, `public-handles`, every other row | `stays` | each belongs to its vessel, or names another face, or rebuilds from a board |
 
@@ -92,7 +93,7 @@ Every other row rests `hot` or `cold`, sealed under the vessel key.
 
 * ''A holder of the disk with no route counts the rows.'' The file names, their count and each file's length rest in the clear in all three homes.
 * ''The carriage rows enumerate.'' A hearth's carriage for a walker rests one row per carried value, and each row's name carries the walker's own key segment, the value's address and its length. A holder of the disk therefore lists each walker's rows and weighs each walker's bytes, and opens none of them.
-* ''A name cut from a digest answers a test and no listing.'' A hosting home names itself by a digest of its Nexus's identifier, a walk row by a digest of its hearth's gate key, a spend row by a digest of its nonce or its marker, a face's key rows by a digest of the face key and its Nexus, and a gate's memory row by its face's proof-subject digest. A holder of the disk who ALREADY holds one of those values tests whether its row stands: whether this vessel hosts that Nexus, walks at that hearth, or burnt that leaf. A holder who lacks the value recovers none of them from a name.
+* ''A name cut from a digest answers a test and no listing.'' A hosting home names itself by a digest of its Nexus's identifier, a walk row by a digest of its hearth's gate key, a spend row by a digest of its nonce or its marker, a face's key rows by a digest of the face key and its Nexus, a chair's key row by a digest of that key's public half, and a gate's memory row by its face's proof-subject digest. A holder of the disk who ALREADY holds one of those values tests whether its row stands: whether this vessel hosts that Nexus, walks at that hearth, burnt that leaf, or holds that chair's key. A holder who lacks the value recovers none of them from a name. A chair's key row takes its name from the key alone, with no Nexus in the digest, so one key gives one name on every disk that holds it: a chair's key mints at random for one chair on one vessel, and a second disk that shows the same name holds a copy of that row.
 * ''The plain rows name each carried Nexus.'' A carried charter, a kept consent and an admit pin rest in the clear by law, so a holder of the disk reads which Nexuses this vessel carries and where each gate answers.
 * ''The sealed store's rests link, and its outbox names readers.'' A lockbox's name leads with its key version and its bag's locator, and an index row's name and bytes carry the locator, the key version, the entry's locator, its role and its parents' addresses: opaque ids, which a holder of the disk counts and links to one another. A parcel in the outbox carries public Keyhive operations that name reader identifiers, under a name that leads with a digest of its reader, so a holder of the disk reads which readers this vessel wrapped a key for until the member lane takes the parcel.
 
@@ -122,7 +123,7 @@ The body carries the face's root and the lines that let the face stand again: th
 
 ''The face's key history rides beside them.'' The body carries the face's key event log as the cutting vessel's board held it: public events, each one verifiable by itself, from the inception to the head. A restore therefore always reads a key history, on a vessel that reached no board too. The log adds no authority: every event in it already stood on a board.
 
-''What a bundle never carries.'' No veil key and no veil Archive of any vessel. No vessel key. No `vessel-face-key`. No gate memory. No seat claim and no chair label. No row of another face. No keyring. A bundle therefore carries LESS authority than the vessel it left: it holds no key that signs as any seat that ever stood.
+''What a bundle never carries.'' No veil key and no veil Archive of any vessel. No vessel key. No `vessel-face-key`. No gate memory. No seat claim, no chair label and no chair's key. No row of another face. No keyring. A bundle therefore carries LESS authority than the vessel it left: it holds no key that signs as any seat that ever stood.
 
 !!! The memory section ~ content keys, never a seat key
 
@@ -272,6 +273,7 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 ''Specified in code: the suites run it, and no production path completes it.''
 * ''The memory import'' (`face-bundle-restore.ts` `importFaceBundleMemory`; the act table's `bundle.import` row). The standing vessel places the island's door and its import under its own signed asks. An import signs a record, and no production path opens a session signer, so on a production vessel it refuses `signer-unavailable`. Caller that completes it: the wire cutover's session open (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
+* ''The chair's key row'' (`packages/lararium-node/src/seat-key-store.ts`; the table's `seat-key` row). One cold row holds one chair's key, 32 bytes minted at random, under a name that carries the face whose seat claim stood and a digest of the key's public half. The store mints, signs one image for one opening, lists by name alone, and retires a row its own vessel key opens once that row's bytes answer the key asked for. No production path calls it. Owed callers: the seal rite's `seat` and `rotate`, and the quorum doors' choice of signers.
 
 <<~/ahu>>
 
@@ -285,6 +287,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;w3NoX25b0CaP_zlzYVP09KoBSARf1XKp0u-M46k9JvE
+<<^ code="&#x0003;">>ni:///sha-256;n-D9DEtlagD-iHaY8dQB8o7dRjdGrFuXzMXSAr8iluI
 
 <<^ code="&#x0004;" -> to="?">>

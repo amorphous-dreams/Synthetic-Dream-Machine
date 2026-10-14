@@ -149,10 +149,11 @@ export async function removeCustodyRow(home: CustodyHome, file: string, when?: (
 
 /**
  * Remove one COLD row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
- * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays.
+ * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays. `when`, where
+ * given, reads the standing plaintext under the same hold: a row it declines stays, and the removal answers false.
  */
-export async function removeColdCustodyRow(home: CustodyHome, file: string): Promise<boolean> {
-  return (await openedCustody()).removeColdRow(home, file);
+export async function removeColdCustodyRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
+  return (await openedCustody()).removeColdRow(home, file, when);
 }
 
 /**

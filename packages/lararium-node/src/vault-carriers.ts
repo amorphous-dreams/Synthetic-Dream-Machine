@@ -324,6 +324,11 @@ function buildTable(): readonly CarrierRow[] {
     // the face, so that face's bundle carries it.
     id({ row: "face-proof-key", match: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
          writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf, bundle: "whole" }),
+    // A seat's own key, minted at random and apart from every root and leaf (`seat-key-store`). Its file names the
+    // face whose seat claim stood for the chair and a digest of the seat's public key. It stays on its vessel: a
+    // bundle carries no key of any seat.
+    id({ row: "seat-key", match: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
+         writer: "seat-key-store", name: (m) => `seat-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // A restore's own commit row: everything one restore will land, sealed in ONE write before any row moves. It
     // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
     id({ row: "restore-pending", match: file(RESTORE_PENDING_FILE), custody: "cold", keyClass: "seed",

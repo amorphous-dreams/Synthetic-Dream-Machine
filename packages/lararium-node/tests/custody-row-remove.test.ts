@@ -7,13 +7,15 @@
  *       `CustodyRowUnavailable` naming what stands, and the bytes stay.
  *   X3  RED: a locked seat refuses `CustodyLocked`; a file no carrier row names refuses `CustodyRowUnknown`; a cold
  *       row refuses this door.
+ *   X4  a COLD row's removal reads the row first, under the same hold: a row it declines stays byte for byte, and
+ *       the one it accepts leaves.                                   control: with no reading asked, the row leaves
  */
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { SEALING_SUFFIX } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown } from "../src/custody-holder.js";
-import { readCustodyRow, removeCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
+import { readCustodyRow, removeColdCustodyRow, removeCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const ROW = `hosting/${"a".repeat(32)}/spent-${"b".repeat(64)}-n-${"c".repeat(32)}`;
@@ -80,5 +82,22 @@ describe("the custody seat's removal door", () => {
     await c.holder.lock();
     expect(await refusal(removeCustodyRow("storage", ROW))).toBeInstanceOf(CustodyLocked);
     expect(existsSync(at(c, ROW))).toBe(true);
+  });
+
+  test("X4 — a cold row's removal reads the row first: a row it declines stays, and the one it accepts leaves", async () => {
+    const c = await custody("remove-x4");
+    const COLD = "recovery-device-share-h0.bin";
+    const cold = join(c.homes.identity, COLD);
+    await c.holder.writeRow("identity", COLD, text("a cold share"));
+    const standing = readFileSync(cold);
+    const seen: string[] = [];
+    expect(await removeColdCustodyRow("identity", COLD, (plaintext) => { seen.push(new TextDecoder().decode(plaintext)); return false; })).toBe(false);
+    expect(seen).toEqual(["a cold share"]);
+    expect(readFileSync(cold).equals(standing), "a declined row stays, byte for byte").toBe(true);
+    expect(await removeColdCustodyRow("identity", COLD, (plaintext) => new TextDecoder().decode(plaintext) === "a cold share")).toBe(true);
+    expect(existsSync(cold)).toBe(false);
+    // control: with no reading asked, a cold row its key opens leaves
+    await c.holder.writeRow("identity", COLD, text("a cold share"));
+    expect(await removeColdCustodyRow("identity", COLD)).toBe(true);
   });
 });

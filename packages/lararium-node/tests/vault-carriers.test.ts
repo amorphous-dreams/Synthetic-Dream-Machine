@@ -72,6 +72,7 @@ const SOWN: Record<string, string> = {
   "identity/.persona-group-root-joshua-h0.json": "{}",
   "identity/recovery-device-share-h0.bin":      "x",
   [`identity/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
+  [`identity/seat-key-h0-${"9e".repeat(16)}.bin`]:       "x",
   "identity/.restore-pending.json": "x",
   [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
   "identity/seal-reserve-mine-share.bin":       "x",
@@ -121,6 +122,8 @@ const RULED: Record<string, CustodyClass> = {
   "vessel-next": "cold", "persona-root": "cold", "device-share": "cold", "reserve-share": "cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
   "vessel-face-key": "hot", "face-proof-key": "cold",
+  // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).
+  "seat-key": "cold",
   // A restore's own commit row: one act writes it, one act removes it (custody#/the-restore).
   "restore-pending": "cold",
 };
