@@ -1,7 +1,8 @@
 /**
- * shore-core — the one line every shore act rides: `wiki-act` carrying the `shore` verb into the active
- * wiki's island, and the island's answer read whole. `lares shore` sends a person's answers through it;
- * `lares watch` sends what it sensed on disk.
+ * shore-core — the two lines every shore act rides: `wiki-act` carrying the `shore` verb into the active
+ * wiki's island, and the `shore` verb itself into the daemon island, each answer read whole and the two read
+ * as one shore (`askShore`). `lares shore` sends a person's answers through it; `lares watch` sends what it
+ * sensed on disk; `lares ingest --apply` asks its settle word.
  */
 
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
@@ -121,13 +122,123 @@ export async function askSettle(
   return { settled: true, mirrored: o["mirrored"] !== false, settledCount: count("settledCount"), elsewhereCount: count("elsewhereCount") };
 }
 
-/** Send one shore act to the active wiki's island and read its answer. Throws what `runVerb` throws. */
-export async function askShore(
-  shoreArgs: Readonly<Record<string, unknown>>, did: string,
-  run: (name: string, args: Record<string, unknown>, did: string, opts: { timeoutMs: number }) => Promise<SubmitResult> = runVerb,
+type RunVerb = (name: string, args: Record<string, unknown>, did: string, opts: { timeoutMs: number }) => Promise<SubmitResult>;
+
+/**
+ * THE TWO ISLANDS THAT MOUNT A DISK SHORE. The active wiki's island answers the shore verb for the mirrors its
+ * recipe designates, reached through `wiki-act`; the daemon island answers it for the mirrors it mounts (the
+ * daemon wiki's working layer and crossroads), reached by the verb itself (`shore`, registered where the
+ * node entry injects its door). Each answers for the standoffs and pending removals its own projector holds.
+ */
+export const SHORE_ISLANDS = ["wiki", "daemon"] as const;
+export type ShoreIsland = (typeof SHORE_ISLANDS)[number];
+
+/** Send one shore act to ONE island and read its answer. Throws what `runVerb` throws. */
+export async function askIsland(
+  island: ShoreIsland, shoreArgs: Readonly<Record<string, unknown>>, did: string, run: RunVerb = runVerb,
 ): Promise<ShoreAnswer> {
   // A sense, a settle or an answer over many carriers reconciles each one: the wait grows with the count.
   const many = (Array.isArray(shoreArgs["uris"]) ? (shoreArgs["uris"] as unknown[]).length : 0)
     + (Array.isArray(shoreArgs["carriers"]) ? (shoreArgs["carriers"] as unknown[]).length : 0);
-  return readShoreAnswer(await run("wiki-act", { verb: SHORE_VERB, args: { ...shoreArgs } }, did, { timeoutMs: 30_000 + many * 200 }));
+  const opts = { timeoutMs: 30_000 + many * 200 };
+  return readShoreAnswer(island === "wiki"
+    ? await run("wiki-act", { verb: SHORE_VERB, args: { ...shoreArgs } }, did, opts)
+    : await run(SHORE_VERB, { ...shoreArgs }, did, opts));
+}
+
+/** An island that mounts no projection holds nothing at its shore: its refusal reads as an empty shore. */
+const holdsNoShore = (a: ShoreAnswer): boolean => !a.ok && a.refusal === "no-disk-shore";
+
+/** An island's refusal, its name kept and the island named in its reason. */
+const refusedAt = (island: ShoreIsland, a: ShoreAnswer): ShoreAnswer =>
+  ({ ...a, why: `the ${island === "wiki" ? "active wiki's" : "daemon"} island: ${a.why ?? "refused"}` });
+
+/**
+ * Send one shore act to every island that mounts a disk shore, and answer as one shore. Throws what
+ * `runVerb` throws.
+ *
+ *   list     reads every page of each island (`readShoreList`) and answers both lists as one page, each
+ *            row naming its island; an island that mounts no projection lists nothing
+ *   sense    each island looks; the counts add
+ *   settle   each island answers for the mirrors it holds; the word stands where every island gave it, and
+ *            `mirrored` reads true where any island mirrors the bag
+ *   answers  (`take-records`, `restore`, `remove`) go to the island whose list holds the state: the standoff
+ *            under the named key, or the pending removals the answer names (by carrier, by bag, or all).
+ *            Where both islands hold it, or a set splits across them, the answer refuses by name
+ *            (`shore-answer-incomplete`) and names how to split it: two bags never fold into one answer.
+ *            Where neither holds it, the active wiki's island answers and names what stands there.
+ *
+ * Any other refusal keeps its name and says which island gave it. The CLI reaches a node vessel over its
+ * sock alone, and the node entry injects the daemon island's shore door at every boot
+ * (`node-daemon-island.ts`), so the second line stands wherever the first does; a line that fails refuses
+ * by name rather than reading as an empty shore.
+ */
+export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did: string, run: RunVerb = runVerb): Promise<ShoreAnswer> {
+  const ask = (island: ShoreIsland) => (a: Readonly<Record<string, unknown>>) => askIsland(island, a, did, run);
+  const op = typeof shoreArgs["op"] === "string" ? shoreArgs["op"] : "list";
+
+  if (op === "list") {
+    const standoffs: Array<Record<string, unknown>> = [];
+    const pending: Array<Record<string, unknown>> = [];
+    const marks: string[] = [];
+    let requestId: string | undefined;
+    for (const island of SHORE_ISLANDS) {
+      const listed = await readShoreList(ask(island), { ...shoreArgs, op: "list" });
+      if (!listed.ok) { if (holdsNoShore(listed)) { marks.push(`${island}:none`); continue; } return refusedAt(island, listed); }
+      requestId ??= listed.requestId;
+      standoffs.push(...listed.standoffs.map((r) => ({ ...r, island })));
+      pending.push(...listed.pending.map((r) => ({ ...r, island })));
+      marks.push(`${island}:${listed.standoffs.length}/${listed.pending.length}`);
+    }
+    return {
+      ok: true, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}),
+      output: { ok: true, op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length, mark: marks.join(" "), next: null },
+    };
+  }
+
+  if (op === "sense" || op === "settle") {
+    const answers: Array<{ island: ShoreIsland; answer: ShoreAnswer }> = [];
+    for (const island of SHORE_ISLANDS) answers.push({ island, answer: await ask(island)(shoreArgs) });
+    const refused = answers.find((a) => !a.answer.ok && !holdsNoShore(a.answer));
+    if (refused) return refusedAt(refused.island, refused.answer);
+    const held = answers.filter((a) => a.answer.ok).map((a) => a.answer.output);
+    const sum = (name: string): number => held.reduce((n, o) => n + (typeof o[name] === "number" ? (o[name] as number) : 0), 0);
+    const output: Record<string, unknown> = op === "sense"
+      ? { ok: true, op, standoffCount: sum("standoffCount"), pendingCount: sum("pendingCount") }
+      : { ok: true, op, ...(typeof shoreArgs["bag"] === "string" ? { bag: shoreArgs["bag"] } : {}), mirrored: held.some((o) => o["mirrored"] === true), settledCount: sum("settledCount"), elsewhereCount: sum("elsewhereCount") };
+    const requestId = answers.find((a) => a.answer.requestId !== undefined)?.answer.requestId;
+    return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
+  }
+
+  // AN ANSWER GOES TO THE ISLAND THAT HOLDS ITS STATE, read from what each island lists right now: a key
+  // folds the bag and the states, never the island, and a set of carriers may stand at either. Where the
+  // state stands at both islands, or a set splits across them, the answer refuses by name and changes nothing.
+  const uri = typeof shoreArgs["uri"] === "string" ? shoreArgs["uri"] : null;
+  const uris = Array.isArray(shoreArgs["uris"]) ? (shoreArgs["uris"] as unknown[]).filter((u): u is string => typeof u === "string") : [];
+  const bag = typeof shoreArgs["bag"] === "string" ? shoreArgs["bag"] : null;
+  const holders: ShoreIsland[] = [];
+  const keysSeen: string[] = [];
+  for (const island of SHORE_ISLANDS) {
+    const listed = await readShoreList(ask(island), { op: "list", ...(op === "take-records" && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}) });
+    if (!listed.ok) { if (holdsNoShore(listed)) continue; return refusedAt(island, listed); }
+    if (op === "take-records") {
+      const stands = listed.standoffs.filter((s) => s["uri"] === uri);
+      keysSeen.push(...stands.map((s) => String(s["standoff"])));
+      if (stands.some((s) => s["standoff"] === shoreArgs["key"])) holders.push(island);
+    } else if (listed.pending.length > 0) {
+      holders.push(island);
+    }
+  }
+  if (holders.length > 1) {
+    return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: op === "take-records"
+      ? `the standoff under key ${String(shoreArgs["key"])} stands at both islands over one bag; the door cannot name which one a person read, so it takes neither`
+      : `what the answer names stands pending at both islands; name one bag with \`bag\`, or answer each island's carriers apart` };
+  }
+  if (holders.length === 0 && op === "take-records" && keysSeen.length > 0) {
+    return { ok: false, output: {}, refusal: "standoff-key-moved", why: `the standoff for ${uri} stands under key ${keysSeen.join(", ")}; the answer names ${String(shoreArgs["key"])}` };
+  }
+  // No island lists the state: the active wiki's island answers, and names what stands there.
+  const island = holders[0] ?? "wiki";
+  const answer = await ask(island)(shoreArgs);
+  return answer.ok ? answer : refusedAt(island, answer);
 }

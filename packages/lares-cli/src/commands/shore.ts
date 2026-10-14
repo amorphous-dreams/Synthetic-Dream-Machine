@@ -23,8 +23,9 @@
  * names the state its giver read: a standoff's key, and for more than one pending removal the count. Where
  * that state moved, the island refuses by name and nothing changes.
  *
- * The verb rides one line over the daemon's sock into the active wiki's island (`wiki-act`), which answers
- * for the mirrors it holds.
+ * The verb rides two lines over the daemon's sock: into the active wiki's island (`wiki-act`) and into the
+ * daemon island (the `shore` verb itself), each answering for the mirrors it holds (`askShore`). The list
+ * reads both as one shore and names each row's island; an answer goes to the island that holds its state.
  */
 
 import { createInterface } from "readline/promises";
@@ -183,12 +184,12 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
         if (standoffs.length === 0 && pending.length === 0) { console.log("the disk shore holds nothing for a hand"); return; }
         if (standoffs.length > 0) {
           console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
-          for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
+          for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}${s["island"] === "daemon" ? " (daemon island)" : ""}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
           console.log("  settle one under its key: `lares shore take-disk <uri> --key <key>` lands the file's words · `lares shore take-records <uri> --key <key>` writes the records' render · or save in the wiki until both say the same");
         }
         if (pending.length > 0) {
           console.log(`${pending.length} pending removal(s): the file vanished where a base stands; nothing writes back and nothing tombstones`);
-          for (const p of pending) console.log(`  ${String(p["uri"])}  bag ${String(p["bagId"])}  ${String(p["path"])}`);
+          for (const p of pending) console.log(`  ${String(p["uri"])}  bag ${String(p["bagId"])}${p["island"] === "daemon" ? " (daemon island)" : ""}  ${String(p["path"])}`);
           console.log(`  answer: \`lares shore restore <uri>\` · \`lares shore remove <uri>\` · over all: \`--all --count <n>\` with the count one bag holds (and --bag where more than one bag stands pending)`);
         }
       },

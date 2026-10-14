@@ -61,7 +61,13 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
   if (!listed.ok) return { ok: false, refusal: listed.refusal ?? "verb-error", why: listed.why ?? "the island refused", ...(listed.requestId !== undefined ? { requestId: listed.requestId } : {}) };
   const stands = listed.standoffs.filter((s) => s["uri"] === uri);
   if (stands.length === 0) return { ok: false, refusal: "no-standoff-stands", why: `no standoff stands for ${uri} at this island's shore` };
-  const named = stands.find((s) => s["standoff"] === key);
+  // A key folds the bag and the states, never the island: where two islands list it, the door cannot name
+  // which standoff the person read, and takes neither.
+  const keyed = stands.filter((s) => s["standoff"] === key);
+  if (keyed.length > 1) {
+    return { ok: false, refusal: "shore-answer-incomplete", why: `the standoff under key ${key} stands at ${keyed.length} islands over one bag (${String(keyed[0]!["bagId"])}); the door cannot name which one a person read, so it takes neither` };
+  }
+  const named = keyed[0];
   if (named === undefined) {
     return { ok: false, refusal: "standoff-key-moved", why: `the standoff for ${uri} stands under key ${stands.map((s) => String(s["standoff"])).join(", ")}; the answer names ${key}` };
   }
@@ -97,7 +103,9 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
   const { syncedRecordsHash: _side, ...rest } = row;
   const candidate: ScanRow = { ...rest, status: "changed", syncedHash: records };
   const settled = await settleIngest(
-    { source: path, toBag: bag, candidates: [candidate], did: deps.did, ...(WIKI_SLOT_BAG_RE.test(bag) ? { inWiki: true } : {}) },
+    // A wiki's instance slot ingests inside the active wiki's island; the daemon island's own working layer
+    // ingests daemon-side, in the island that listed its standoff.
+    { source: path, toBag: bag, candidates: [candidate], did: deps.did, ...(WIKI_SLOT_BAG_RE.test(bag) && named["island"] !== "daemon" ? { inWiki: true } : {}) },
     deps.tree, deps.submit ?? submitIngest,
   );
   const requestId = settled.first.requestId;

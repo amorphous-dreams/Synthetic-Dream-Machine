@@ -64,15 +64,18 @@ describe("lares shore reads an answer to a pending removal", () => {
   });
 });
 
-describe("one line carries every shore act", () => {
-  test("askShore wraps the act in `wiki-act` under the shore verb and reads the island's answer", async () => {
+describe("two lines carry every shore act", () => {
+  test("askShore wraps the act in `wiki-act` for the active wiki's island, sends the verb itself to the daemon island, and reads both answers", async () => {
     const sent: Array<{ name: string; args: Record<string, unknown> }> = [];
     const answer = await askShore({ op: "sense", uris: ["lar:///a.b.c/x"] }, "did:test", async (name, args) => {
       sent.push({ name, args });
       return done({ ok: true, op: "sense", pendingCount: 1 });
     });
-    expect(sent).toEqual([{ name: "wiki-act", args: { verb: "shore", args: { op: "sense", uris: ["lar:///a.b.c/x"] } } }]);
-    expect(answer).toMatchObject({ ok: true, output: { pendingCount: 1 } });
+    expect(sent).toEqual([
+      { name: "wiki-act", args: { verb: "shore", args: { op: "sense", uris: ["lar:///a.b.c/x"] } } },
+      { name: "shore", args: { op: "sense", uris: ["lar:///a.b.c/x"] } },
+    ]);
+    expect(answer).toMatchObject({ ok: true, output: { pendingCount: 2 } });
   });
 });
 

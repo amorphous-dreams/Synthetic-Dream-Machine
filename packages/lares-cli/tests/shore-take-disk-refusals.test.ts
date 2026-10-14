@@ -26,19 +26,51 @@ let tmp = "";
 afterEach(() => { if (tmp) { rmSync(tmp, { recursive: true, force: true }); tmp = ""; } });
 
 /** A scratch file, and a shore that names one `sides` standoff for it under KEY with the file's own hash. */
-function standing(name: string, body: string, uri: string): { path: string; deps: (submit: TakeDiskDeps["submit"]) => TakeDiskDeps; waves: SubmitIngestOpts[] } {
+function standing(name: string, body: string, uri: string, rows: (one: Record<string, unknown>) => Array<Record<string, unknown>> = (one) => [one]): { path: string; deps: (submit: TakeDiskDeps["submit"]) => TakeDiskDeps; waves: SubmitIngestOpts[] } {
   tmp = mkdtempSync(join(tmpdir(), "take-disk-"));
   const dir = join(tmp, "bags", "x", "ha.ka.ba", "x");
   mkdirSync(dir, { recursive: true });
   const path = join(dir, name);
   writeFileSync(path, body);
   const waves: SubmitIngestOpts[] = [];
+  const standoffs = rows({ bagId: BAG, uri, standoff: KEY, kind: "sides", reason: "r", path, disk: carrierHash(body), records: "sha256:" + "0".repeat(64) });
   const ask = async (): Promise<ShoreAnswer> => ({
     ok: true, refusal: null, why: null,
-    output: { ok: true, standoffs: [{ bagId: BAG, uri, standoff: KEY, kind: "sides", reason: "r", path, disk: carrierHash(body), records: "sha256:" + "0".repeat(64) }], standoffCount: 1, pending: [], pendingCount: 0, mark: "one-shore", next: null },
+    output: { ok: true, standoffs, standoffCount: standoffs.length, pending: [], pendingCount: 0, mark: "one-shore", next: null },
   });
   return { path, waves, deps: (submit) => ({ ask, tree: new SyncedTree(join(tmp, "synced")), root: tmp, did: "did:test", submit: async (o) => { waves.push(o); return submit!(o); } }) };
 }
+
+const landing = async (o: SubmitIngestOpts): Promise<SubmitResult> => ({
+  status: "done", requestId: "req-note",
+  results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: o.candidates.map((c) => ({ uri: c.uri, decision: "ingest", grade: "clean", landed: 1 })) } } },
+}) as SubmitResult;
+
+describe("take-disk answers at the island that listed the standoff", () => {
+  test("a key two islands list refuses by name, and no wave leaves the door", async () => {
+    const uri = "lar:///ha.ka.ba/x/twice";
+    const s = standing("twice.md", "words\n", uri, (one) => [{ ...one, island: "wiki" }, { ...one, bagId: "lar:///ha.ka.ba/wikis/daemon/working", island: "daemon" }]);
+    const taken = await takeDisk({ uri, key: KEY }, s.deps(async () => { throw new Error("no wave may ride for a key two islands hold"); }));
+    expect(taken).toMatchObject({ ok: false, refusal: "shore-answer-incomplete" });
+    expect(s.waves).toEqual([]);
+  });
+
+  test("a standoff the daemon island lists in its own working layer ingests daemon-side, never through the active wiki", async () => {
+    const uri = "lar:///ha.ka.ba/x/daemon-note";
+    const s = standing("daemon-note.md", "words\n", uri, (one) => [{ ...one, bagId: "lar:///ha.ka.ba/wikis/daemon/working", island: "daemon" }]);
+    await takeDisk({ uri, key: KEY }, s.deps(landing));
+    expect(s.waves).toHaveLength(1);
+    expect(s.waves[0]!.inWiki).toBeUndefined();
+  });
+
+  test("CONTROL: a standoff a wiki's own working slot holds at the active wiki's island ingests inside that island", async () => {
+    const uri = "lar:///ha.ka.ba/x/wiki-note";
+    const s = standing("wiki-note.md", "words\n", uri, (one) => [{ ...one, bagId: "lar:///ha.ka.ba/wikis/garden/working", island: "wiki" }]);
+    await takeDisk({ uri, key: KEY }, s.deps(landing));
+    expect(s.waves).toHaveLength(1);
+    expect(s.waves[0]!.inWiki).toBe(true);
+  });
+});
 
 describe("lares shore take-disk — an answer that cannot prove its state takes nothing", () => {
   test("★ a pointer carrier refuses by name, and no wave leaves the door ★", async () => {
