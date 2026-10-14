@@ -43,6 +43,7 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "packages/lararium-mesh/tests/wax-stamp.test.ts":                     "roll-law",
   "packages/lararium-mesh/tests/wax-stamp-genesis-seats.test.ts":       "roll-law",
   "packages/lararium-mesh/tests/nexus-cofound-law.test.ts":             "roll-law",
+  "packages/lararium-mesh/tests/cofound.test.ts":                       "roll-law",
   "packages/lararium-mesh/tests/charter-fixture.test.ts":               "roll-law",
   "packages/lararium-node/tests/seal-ceremony.test.ts":                 "roll-law",
   // What the seat and rotate rites write and refuse.

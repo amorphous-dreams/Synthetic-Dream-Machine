@@ -102,6 +102,13 @@ export const SEAT_NEXT_KEY_DOMAIN = mint("seat-next-key");
  *  people read to each other over it. Apart from `guardian-confirm`: a seat's card and a guardian's share never
  *  speak one phrase. */
 export const COLD_KEY_CARD_DOMAIN = mint("cold-key-card");
+/** The CO-FOUNDING OFFER: the public material one founder hands the other (a seat key, its cold successor's
+ *  digest, the charter law and the release manifest's addresses), and the OFFER FINGERPRINT that digests it. It
+ *  signs nothing. Its own name: an offer's fingerprint never reads as a charter's. */
+export const COFOUND_OFFER_DOMAIN = mint("cofound-offer");
+/** A charter's INCEPTION: the exact genesis image every seated key signs before the genesis reads as a charter,
+ *  and the FINAL CHARTER FINGERPRINT that digests it. Its own name: an inception never verifies as a roll. */
+export const CHARTER_INCEPTION_DOMAIN = mint("charter-inception");
 
 // ── CUSTODY: THE VK, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
 /** The floor key's own inception: the key signed by itself, committing no next key. */
