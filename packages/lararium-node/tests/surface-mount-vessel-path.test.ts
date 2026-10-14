@@ -222,7 +222,7 @@ describe("a session surface through the node vessel's own parts", () => {
         { type: "doc:rest", fields: { documentIds: [v.faces.referee.working.documentId] } },
         { type: "custody:write", fields: { carrier: "archive", bytes: new Uint8Array([1, 2, 3]) } },
       ];
-      for (const ask of asks) expect(await v.probe(key, "door", ask)).toEqual({ answered: false });
+      for (const ask of asks) expect(await v.probe(key, "door", { ...ask, silentAfterMs: 600 })).toEqual({ answered: false });
       expect(reached).toEqual([]);
       // KNOWN POSITIVE: the same asks from an island mounted through the wiki door each draw an answer. A wiki
       // island reaches the FETCH door alone; its rest ask and its custody write refuse by name and reach no door

@@ -85,10 +85,12 @@ parentPort.on("message", async (msg) => {
         const answer = await askView("view:content", { cid: args.cid });
         result = { ok: answer.bytes instanceof Uint8Array && answer.bytes.length > 0, refusal: answer.refusal ?? null };
       } else if (verb === "door") {
-        const answered = await Promise.race([
-          askView(args.type, args.fields ?? {}),
-          new Promise((resolve) => setTimeout(() => resolve(null), 600)),
-        ]);
+        // An ask the caller expects an answer to waits for that answer, with no clock beside it. Only a caller that
+        // reads SILENCE names a window (`silentAfterMs`): silence has no event of its own to wait on.
+        const asked = askView(args.type, args.fields ?? {});
+        const answered = typeof args.silentAfterMs === "number"
+          ? await Promise.race([asked, new Promise((resolve) => setTimeout(() => resolve(null), args.silentAfterMs))])
+          : await asked;
         result = answered === null
           ? { answered: false }
           : { answered: true, type: answered.type, bytes: answered.bytes instanceof Uint8Array ? answered.bytes.length : null };

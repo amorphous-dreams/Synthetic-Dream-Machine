@@ -27,6 +27,7 @@ import {
 } from "@lararium/mesh";
 import { makeRealmPlane } from "../src/realm-plane.js";
 import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 
 const REALM = "epoch-cid-genesis";
 const BAG   = "lar:///ha.ka.ba/bags/lares";
@@ -92,26 +93,39 @@ describe("the realm fold moves the wire verdict, and the caller must hear it", (
     const repo = new Repo({});
     const oracleHandle = repo.create<LarDoc>(emptyLarDoc());
     const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
-    const refolds: number[] = [];
+    let refolds = 0;
+    let heard: Arrival<void> | null = null;
     const plane = makeRealmPlane({
       repo, oracleHandle, crossroadsHandle,
       membership: noMembers,
       base: denyAll,
-      onRefold: () => refolds.push(Date.now()),
+      onRefold: () => { refolds += 1; heard?.arrive(); },
     });
-    // The charter doc names REALM and carries no law for the plane to verify.
+    // The charter doc names REALM and carries no law for the plane to verify. Standing the plane awaits its own
+    // first fold, so the count reads the moment `refresh` answers.
     await plane.refresh(namedCharter(REALM));
-    await new Promise((r) => setTimeout(r, 50));
-    const standUp = refolds.length;
+    const standUp = refolds;
+    // The same charter again: the plane folds one at a time, so this call returns only after every fold asked so
+    // far has run. From here on a fold has one cause left: a change to the realm doc.
+    await plane.refresh(namedCharter(REALM));
+    const quiet = refolds;
 
-    // A member's co-signature arrives as a plain change on the shared realm doc — no verb runs here.
+    // A member's co-signature arrives as a plain change on the shared realm doc — no verb runs here. The vector
+    // waits on the caller's own word (`onRefold`), never on the clock.
     const realmHandle = await repo.find<LarDoc>(plane.realmUrl()!);
+    // The vector's own listener counts every change the realm doc ever emits from here on, so a fold heard below
+    // has exactly one change to answer for.
+    let realmChanges = 0;
+    realmHandle.on("change", () => { realmChanges += 1; });
+    heard = arrival<void>("the fold a realm-doc change owes its caller (`onRefold` after the change)");
     realmHandle.change((d) => { d.tiddlers["probe"] = mutableLarRecord("probe", { text: "co-sign" }, REALM); });
-    await new Promise((r) => setTimeout(r, 50));
+    await heard.arrived;
 
     expect(standUp, "standing the realm folds once").toBeGreaterThan(0);
-    expect(refolds.length, "a realm-doc change must reach the caller that holds the Repo's verdict cache")
-      .toBeGreaterThan(standUp);
+    expect(quiet, "CONTROL: the second refresh folded, so the count moves only by a fold").toBeGreaterThan(standUp);
+    expect(refolds, "a realm-doc change must reach the caller that holds the Repo's verdict cache")
+      .toBeGreaterThan(quiet);
+    expect(realmChanges, "the probe stands as the one change the realm doc took, so the fold answers it").toBe(1);
     plane.dispose();
   });
 });
