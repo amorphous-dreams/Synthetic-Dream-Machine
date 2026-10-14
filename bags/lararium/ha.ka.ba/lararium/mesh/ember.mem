@@ -106,7 +106,7 @@ The serving tier holds exactly the rows the serving gate and blind carriage read
 * ''The edge shadow ring reads at SERVING as it reads at the floor'' (`floor-fleet-lanes`): every device reads as set aside, and the one board its own device edge names folds in the clear, so the Binding Gate and the removal of an ember (#/removal) read it.
 * ''The daemon island stands at SERVING as it stands at the floor'': no VK, no Keyhive identity, no content-key holder, and no share of the daemon's own document to any socket. Blind carriage reads the walkers' rows through the custody seat on the main thread, which holds SK and nothing more.
 
-''Every other row stays under the VK and stays shut at SERVING'': the custody root, the Keyhive and veil archives, the anchors and the anchor roster, the persona roster and every names row, the handle-book, the admit family, the walk records, the hosting state and its spends, the seal ceremony's rows, `vessel-face-key`, and every cold row (each persona root, each face proof key, each seat key, the device recovery shares, the vessel's next-key seed, a restore's pending row).
+''Every other row stays under the VK and stays shut at SERVING'': the custody root, the Keyhive and veil archives, the anchors and the anchor roster, the persona roster and every names row, the handle-book, the admit family, the walk records, the hosting state and its spends, the seal ceremony's rows, `vessel-face-key`, and every cold row (each persona root, each face proof key, each seat key, the device recovery shares, a restore's pending row).
 
 !!! What SERVING refuses, by name
 
@@ -297,6 +297,6 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6jjpOC1qTDSj0QxFD-5Qqn0vZAClyjdWElaPNI_bjMs
+<<^ code="&#x0003;">>ni:///sha-256;64RClDKgg-A8m-DUJwk2ppsaD0WoMoQVXShc2yIODg8
 
 <<^ code="&#x0004;" -> to="?">>
