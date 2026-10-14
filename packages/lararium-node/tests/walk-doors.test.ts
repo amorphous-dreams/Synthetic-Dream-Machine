@@ -13,6 +13,8 @@
  *   · RED: the walk and hosting directories stand owner-only (0700), and an existing wider one is re-moded.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { seatedCustody } from "../src/custody-seat.js";
+import { holdSealsUntilBothArrive } from "./custody-seat-fixture.js";
 import { mkdtempSync, rmSync, mkdirSync, chmodSync, statSync, existsSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -79,10 +81,17 @@ describe("lares walk — take, as the worn face, at one hearth", () => {
     await generateOrLoadPersonaGroupRoot(0);
     await wearPersona(0);
     const [here, there] = [await invite(GATE), await invite(OTHER_GATE)];
-    const outcomes = await Promise.allSettled([runWalkTake({ carried: here }), runWalkTake({ carried: there })]);
-    expect(outcomes.map((o) => o.status)).toEqual(["fulfilled", "rejected"]);
-    expect((outcomes[1] as PromiseRejectedResult).reason).toBeInstanceOf(WalkRefusal);
-    expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);
+    // The handshake holds the overlap: neither take seals its row until both have read that this vessel walks
+    // nowhere. Which take seals first stays the machine's own choice; the vessel keeps that one hearth alone.
+    const gate = holdSealsUntilBothArrive(seatedCustody()!, /^walk\//);
+    let outcomes: PromiseSettledResult<Awaited<ReturnType<typeof runWalkTake>>>[];
+    try { outcomes = await Promise.allSettled([runWalkTake({ carried: here }), runWalkTake({ carried: there })]); }
+    finally { gate.release(); }
+    expect(outcomes.map((o) => o.status).sort()).toEqual(["fulfilled", "rejected"]);
+    const won = outcomes.find((o): o is PromiseFulfilledResult<Awaited<ReturnType<typeof runWalkTake>>> => o.status === "fulfilled")!;
+    expect(outcomes.find((o): o is PromiseRejectedResult => o.status === "rejected")!.reason).toBeInstanceOf(WalkRefusal);
+    expect([GATE, OTHER_GATE]).toContain(won.value.gatePubKey);
+    expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([won.value.gatePubKey]);
   });
 
   it("RED: a second hearth, or a dial pinned elsewhere, refuses and writes nothing; CONTROL: the same hearth takes a fresh invite", async () => {

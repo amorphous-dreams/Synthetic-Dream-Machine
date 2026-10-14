@@ -27,12 +27,12 @@ import { copyFileSync, existsSync, readFileSync, readdirSync, rmSync, writeFileS
 import { join } from "node:path";
 import { hostingActCid, claimDigest, lineageOf, mintHostingAct, readVkCarrier, redeemClaim } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
-import { writeCustodyRow } from "../src/custody-seat.js";
+import { seatedCustody, writeCustodyRow } from "../src/custody-seat.js";
 import {
   rollHosting, readHostingState, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir, hostingRowDir,
   DEFAULT_HOSTING_CAP, HostingStateMoved,
 } from "../src/hosting-store.js";
-import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { holdSealsUntilBothArrive, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const AID  = "epoch0-" + "a".repeat(64);
 const LEAF = new Uint8Array(32).fill(51);
@@ -77,12 +77,22 @@ describe("the roll — two live epochs, nothing older", () => {
   test("S8 — a roll another roll overtook refuses and writes nothing over the newer state", async () => {
     await custody("host-s8");
     await rollHosting({ nexusAid: AID, leafSeed: LEAF });
-    // Two rolls that start together read one state; the first to seal moves it, and the second refuses.
-    const outcomes = await Promise.allSettled([rollHosting({ nexusAid: AID, leafSeed: LEAF, cap: 4 }), rollHosting({ nexusAid: AID, leafSeed: LEAF, cap: 5 })]);
-    expect(outcomes.map((o) => o.status)).toEqual(["fulfilled", "rejected"]);
-    expect((outcomes[1] as PromiseRejectedResult).reason).toBeInstanceOf(HostingStateMoved);
+    // Two rolls read one state; the first to seal moves it, and the second refuses. The handshake holds the
+    // overlap: neither seals until both have read. Which roll seals first stays the machine's own choice.
+    const gate = holdSealsUntilBothArrive(seatedCustody()!, /state\.json$/);
+    let outcomes: PromiseSettledResult<Awaited<ReturnType<typeof rollHosting>>>[];
+    try { outcomes = await Promise.allSettled([rollHosting({ nexusAid: AID, leafSeed: LEAF, cap: 4 }), rollHosting({ nexusAid: AID, leafSeed: LEAF, cap: 5 })]); }
+    finally { gate.release(); }
+    expect(outcomes.map((o) => o.status).sort()).toEqual(["fulfilled", "rejected"]);
+    const won = outcomes.find((o): o is PromiseFulfilledResult<Awaited<ReturnType<typeof rollHosting>>> => o.status === "fulfilled")!;
+    expect(outcomes.find((o): o is PromiseRejectedResult => o.status === "rejected")!.reason).toBeInstanceOf(HostingStateMoved);
+    // The state holds the winner's act and nothing of the roll it overtook.
     expect(await readHostingState(AID)).toMatchObject({ depth: 2 });
-    expect((await readHostingState(AID))!.current.cap).toBe(4);
+    expect((await readHostingState(AID))!.current.cap).toBe(won.value.act.cap);
+    expect([4, 5]).toContain(won.value.act.cap);
+    // CONTROL: with no overlap the second roll reads the moved state and stands as the next roll.
+    await rollHosting({ nexusAid: AID, leafSeed: LEAF, cap: 6 });
+    expect(await readHostingState(AID)).toMatchObject({ depth: 3 });
   });
 });
 

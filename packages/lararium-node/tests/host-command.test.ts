@@ -16,6 +16,8 @@
  */
 import { HOSTING_ACT_DOMAIN, writeHostingAct, mintHostingAct } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { seatedCustody } from "../src/custody-seat.js";
+import { holdSealsUntilBothArrive } from "./custody-seat-fixture.js";
 import { mkdtempSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -141,8 +143,14 @@ describe("lares host — roll, invite, state", () => {
     const next = await direct(runHostRoll)({});
     expect(next.previous).toBe(hostingActCid(strandedAgain.act));
     expect((await docActs(doc)).map(hostingActCid).sort()).toEqual([first.act, stranded.act, strandedAgain.act, next.act].map(hostingActCid).sort());
-    // Two rolls that start together on one store: the second met a state the first moved, and refuses as the door's own refusal.
-    const together = await ownedStore(larDataDir(), (repo) => Promise.allSettled([runHostRoll({ sealHome: sealHome(), repo }), runHostRoll({ sealHome: sealHome(), repo })]));
+    // Two rolls on one store that read ONE state: the roll that seals second met a state the first moved, and
+    // refuses as the door's own refusal. The handshake holds the overlap (neither seals until both have read); on a
+    // slow machine two rolls merely started together may run one after the other, and the second then lawfully
+    // stands as the next roll.
+    const gate = holdSealsUntilBothArrive(seatedCustody()!, /state\.json$/);
+    let together: PromiseSettledResult<Awaited<ReturnType<typeof runHostRoll>>>[];
+    try { together = await ownedStore(larDataDir(), (repo) => Promise.allSettled([runHostRoll({ sealHome: sealHome(), repo }), runHostRoll({ sealHome: sealHome(), repo })])); }
+    finally { gate.release(); }
     expect(together.map((o) => o.status).sort()).toEqual(["fulfilled", "rejected"]);
     const overtaken = together.find((o): o is PromiseRejectedResult => o.status === "rejected")!;
     expect(overtaken.reason).toBeInstanceOf(HostRefusal);

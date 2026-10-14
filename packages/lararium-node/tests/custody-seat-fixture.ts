@@ -53,3 +53,40 @@ export async function seatScratchCustody(label = "seat"): Promise<SeatedScratchC
     },
   };
 }
+
+/**
+ * PIN THE OVERLAP OF TWO ACTS THAT RACE FOR ONE SEAL, by handshake and never by timing.
+ *
+ * Two acts that "start together" each read, decide and then seal a row under the one custody holder. Whether the
+ * second READS before the first SEALS depends on the machine: on a slow runner the first may seal before the
+ * second has read, and the second then lawfully stands as the next act. A vector that means to prove "the
+ * overtaken act refuses" must hold that overlap itself.
+ *
+ * This gate wraps the seated holder's `updateRow` for the rows `match` names. The first act to ARRIVE at its seal
+ * waits there until the second has arrived too: both have then finished their reads. The first then seals, and
+ * the second seals only once the first has settled. No clock, no sleep, no retry: the two arrivals shake hands.
+ * `release()` restores the holder. Which of the two arrives first stays the machine's own choice, so a vector
+ * reads WHO won off the outcome and never off the order it started them in.
+ */
+export function holdSealsUntilBothArrive(holder: CustodyHolder, match: RegExp): { release(): void } {
+  const real = holder.updateRow.bind(holder);
+  let arrived = 0;
+  let secondArrived!: () => void;
+  const second = new Promise<void>((resolve) => { secondArrived = resolve; });
+  let firstSettled!: () => void;
+  const first = new Promise<void>((resolve) => { firstSettled = resolve; });
+  (holder as { updateRow: CustodyHolder["updateRow"] }).updateRow = (async (home, file, decide) => {
+    if (!match.test(file)) return real(home, file, decide);
+    arrived += 1;
+    if (arrived === 1) {
+      await second;
+      try { return await real(home, file, decide); } finally { firstSettled(); }
+    }
+    if (arrived === 2) {
+      secondArrived();
+      await first;
+    }
+    return real(home, file, decide);
+  }) as CustodyHolder["updateRow"];
+  return { release() { (holder as { updateRow: CustodyHolder["updateRow"] }).updateRow = real as CustodyHolder["updateRow"]; } };
+}
