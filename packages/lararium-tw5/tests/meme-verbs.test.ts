@@ -244,6 +244,52 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     expect((got["meme"] as { text: string }).text).not.toContain("<<~ ahu #/a>>");
   });
 
+  /** The wiki's own delete of a canon carrier: a tombstone for the root and each slot child, in the working slot. */
+  const shadow = async (r: Rig, slots: readonly string[]) => {
+    const working = r.slots.get("garden/working")!;
+    for (const title of [URI, ...slots.map((s) => `${URI}#/${s}`)]) await working.tombstone(title, { kind: "canon-hydrate", receipt: "t" });
+  };
+
+  test("★ a tombstone in the working layer shadows canon: the recipe read answers no meme ★", async () => {
+    const r = rig();
+    const { canon } = stacked(r);
+    await land(canon, bagUri("garden"), ["a"]);
+    await shadow(r, ["a"]);
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
+    expect(got["meme"], "the recipe read stepped over the working layer's tombstone and answered canon").toBeNull();
+    // The bag beneath still holds its own record: a read of that one bag answers it.
+    const beneath = await makeMemeGetReactor(r.opts)({ bag: bagUri("garden"), uri: URI }, ctx());
+    expect((beneath["meme"] as { text: string }).text).toContain("<<~ ahu #/a>>");
+  });
+
+  test("★ a projection through the recipe meets the same shadow and names the absent meme ★", async () => {
+    const r = rig();
+    const { canon } = stacked(r);
+    await land(canon, bagUri("garden"), ["a"]);
+    await shadow(r, ["a"]);
+    await expect(makeMemeProjectReactor(r.opts)({ recipe: "garden", uri: URI, to: "mem" }, ctx())).rejects.toThrow(/no meme stands/);
+  });
+
+  test("CONTROL: a tombstone BENEATH a live record shadows nothing above it", async () => {
+    const r = rig();
+    const { canon, draft } = stacked(r);
+    await land(draft, wikiSlotUri("garden", "draft"), ["b"]);
+    await canon.tombstone(URI, { kind: "canon-hydrate", receipt: "t" });
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
+    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu #/b>>");
+  });
+
+  test("CONTROL: a record a hand REMOVED from the working layer (no tombstone) lets canon read through", async () => {
+    const r = rig();
+    const { canon } = stacked(r);
+    await land(canon, bagUri("garden"), ["a"]);
+    const working = r.slots.get("garden/working")!;
+    await land(working, wikiSlotUri("garden", "working"), ["b"]);
+    for (const title of [URI, `${URI}#/b`]) await working.remove(title, { kind: "canon-hydrate", receipt: "t" });
+    const got = await makeMemeGetReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
+    expect((got["meme"] as { text: string }).text).toContain("<<~ ahu #/a>>");
+  });
+
   test("CONTROL: an absent meme reads null through the stack, never a refusal", async () => {
     const r = rig();
     stacked(r);

@@ -36,8 +36,10 @@
  *       running wiki), else the bag's doc reached by access across the registry planes.
  *       GET READS THE STACK. The read walks the wiki's whole cascade top-down — the instance slots
  *       above, the canon and libraries beneath, the oracle floor — exactly as the wiki's own face
- *       reads it, and answers from the first bag holding the meme live. The draft shadows canon when
- *       both hold it; a meme living in canon reads through `--recipe` when the draft holds nothing.
+ *       reads it, and answers from the first bag holding a record under the meme's root. The draft
+ *       shadows canon when both hold it; a meme living in canon reads through `--recipe` when the draft
+ *       holds nothing; a TOMBSTONE in a bag above shadows canon too, so the read answers no meme (the
+ *       wiki's own delete of a canon carrier lands exactly that tombstone in the working layer).
  *     WRITE-THEN-SYNC: the daemon never reaches into that wiki's mounted island.
  *   · `bag: <slug>` — a residency placement through the island's writable layer for that bag. A bag
  *     the island cannot write fails loud, naming the bag; a placement never shadows up.
@@ -204,8 +206,9 @@ async function storeOfBag(opts: MemeVerbOptions, slug: string, bag: string, mode
 
 /**
  * Resolve a named wiki's bag + store for a verb. PUT: the recipe record's designated bag, its own
- * store. GET: the whole cascade top-down, the first bag holding the meme LIVE; when none does, the
- * designated bag's store (the read answers null there, never a refusal for an absent meme).
+ * store. GET: the whole cascade top-down, the first bag holding a record under the root, live or
+ * tombstoned; when none does, the designated bag's store (the read answers null there, never a refusal
+ * for an absent meme).
  */
 async function reachRecipeBag(
   opts: MemeVerbOptions, slug: string, mode: "put" | "get", uri?: string,
@@ -217,8 +220,10 @@ async function reachRecipeBag(
     for (const bag of expandRecipe(recipeFromRecord(rec, slug))) {
       const store = await storeOfBag(opts, slug, bag, "get");
       if (!store) continue;
-      const held = await store.get(uri);
-      if (held && !held.meta?.deleted) return { bag, store };
+      // THE FIRST BAG THAT HOLDS A RECORD ANSWERS, A TOMBSTONE INCLUDED. A tombstone shadows every bag
+      // beneath it, as the wiki's own composite reads it (`CompositeStore.get`): the read stops there and
+      // that bag's store answers the meme absent. A bag that holds no record at all lets the walk go on.
+      if (await store.get(uri)) return { bag, store };
     }
   }
   const store = await storeOfBag(opts, slug, designated, mode);
