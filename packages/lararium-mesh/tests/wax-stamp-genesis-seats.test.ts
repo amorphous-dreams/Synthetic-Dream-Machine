@@ -78,4 +78,20 @@ describe("a key the genesis seated never returns", () => {
     expect(verifySealRoll(first, await handRoll(first, [e2], [e3], seatsOf([g0])), [genesis])).toBe("roll-malformed");
     expect(verifySealRoll(first, await handRoll(first, [e2], [e3]), [genesis])).toBeNull();
   });
+
+  test("G5 CONTROL: both joint-genesis seats are revealed at its first roll and remain spent", async () => {
+    const [a, b, firstA, firstB, secondA, secondB, nextA, nextB] = await Promise.all(
+      [hand(41), hand(42), hand(43), hand(44), hand(45), hand(46), hand(47), hand(48)]);
+    const genesis = genesisCharterEpoch([a.pub, b.pub].sort(), 2, nextFor([firstA, firstB], 2));
+    const first = await rotateSealEpoch(genesis, seatsOf([firstA, firstB], 2), nextFor([secondA, secondB], 2),
+      [firstA.signer, firstB.signer], [], seatsOf([a, b], 2));
+    expect(first.ok).toBe(true);
+    if (!first.ok) throw new Error(first.reason);
+    const honest = await rotateSealEpoch(first.epoch, seatsOf([secondA, secondB], 2), nextFor([nextA, nextB], 2),
+      [secondA.signer, secondB.signer], [genesis]);
+    expect(honest.ok).toBe(true);
+    const returned = await rotateSealEpoch(first.epoch, { keys: [secondA.pub, secondB.pub, a.pub], threshold: 2 },
+      nextFor([nextA, nextB, await hand(49)], 2), [secondA.signer, secondB.signer, a.signer], [genesis]);
+    expect(returned.ok ? null : returned.code).toBe("roll-reuses-a-seated-key");
+  });
 });

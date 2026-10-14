@@ -429,9 +429,48 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
     expect(Object.keys(mesh)).toContain("forkStandsOver");
   });
 
-  test("A QUORUM ACT CROSSES BETWEEN VESSELS AS A PARTIAL — kapae#/edge-hands, the cosign door. A partial carries the whole act and its subject in plain keys; a reader refuses one whose subject names another edge, and judges staleness and replay by causal position alone.", () => {
+  test("A QUORUM EDGE ACT CROSSES BETWEEN VESSELS AS A PARTIAL — STANDING edge primitive; Nexus admit, revoke, kapae and roll-anchor callers remain owed. A partial carries the whole edge act and subject, and its reader refuses mismatched bytes.", () => {
     for (const name of ["edgeActPartial", "readEdgeActPartial", "judgeEdgeActPartial", "cosignEdgeActPartial"]) expect(Object.keys(mesh)).toContain(name);
     expect(mesh.readEdgeActPartial({ kind: "edge-act-partial", scope: "ab".repeat(32), subject: { kind: "member", member: "cd".repeat(32) }, act: {} })).toBeNull();
+  });
+
+  // WAVE-THREE PREP. Each row names one unbuilt law; its separately named behavioral file runs a green
+  // control by default and the red under LAR_UNBUILT_REDS=1. No production source or signed bytes move here.
+  test.skip("A JOINT GENESIS READS ONLY WITH BOTH FOUNDERS' INCEPTION SIGNATURES — COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES; nexus-cofound-law.test.ts. The current unsigned two-seat red must grow one-signature and split-image vectors when the inception image exists; every charter reader must refuse them.", () => {
+    expect(Object.keys(mesh)).toContain("verifySignedCofoundGenesis");
+  });
+  test.skip("A HOUSEHOLD SEED NEVER BECOMES A JOINT NEXUS — COFOUND_OFFER_IS_NOT_A_CHARTER; nexus-cofound-law.test.ts. The pending two-root door must keep both seed charter homes byte-identical while a fresh AID receives both founders' signatures.", () => {
+    expect(Object.keys(mesh)).toContain("readCofoundOffer");
+  });
+  test.skip("A NEXUS QUORUM PARTIAL IS JUDGED BEFORE A SECOND SEAT SIGNS — PARTIAL_COSIGN_JUDGES_BEFORE_SIGNING; nexus-partial-law.test.ts. The edge primitive stands; admission, revocation, kapae and roll-anchor callers must each judge their own exact image and causal fence.", () => {
+    expect(Object.keys(mesh)).toContain("judgeNexusActPartial");
+  });
+  test.skip("TWO VAULTS SIGN EACH FOUNDER'S SELF-CONTRACT — TWO_VAULT_SELF_CONTRACTS; nexus-contract-two-root design only until K14 releases nexus-contract.ts and its tests: each root consents once, neither holds two seat seeds, both sign the same act, and both independently fold both contracts after file courier and restart.", () => {
+    expect(Object.keys(mesh)).toContain("cosignNexusContractPartial");
+  });
+  test.skip("A FACE PRESENTS THE HEAD OF ITS ADMITTED NEXUS KEY LINE — REISSUED_FACE_OPENS_LOCAL_SESSION; session-face-reissue.test.ts. The gate's verified line head and the local session supplier must agree.", () => {
+    expect(Object.keys(mesh)).toContain("supplySessionFaceAtKeyHead");
+  });
+  test.skip("AN ADMIT SIGNS ITS CANON LIST AND GATE PIN — ADMIT_SIGNS_CANON_AND_PIN; gate-cutover-reach.test.ts. Mutating either carried field must fail a verifier, at two faces and two Nexuses.", () => {
+    expect(Object.keys(mesh)).toContain("verifySignedAdmitBundle");
+  });
+  test.skip("A JOINED VESSEL CERTIFIES ITS OWN FACE-SCOPED KEY — JOINED_VESSEL_CERTIFIES_OWN_KEY; session-face-reissue.test.ts. A borrowed certificate must not open that vessel's session.", () => {
+    expect(Object.keys(mesh)).toContain("openJoinedFaceSession");
+  });
+  test.skip("A VERIFIED GATE HOLDS THE FIRST APPLICATION FRAME UNTIL ITS SESSION OPENS — VERDICT_OPENS_BEFORE_FIRST_SYNC_FRAME; gate-session-order.test.ts. A real adapter must queue immediate traffic across verdict then open.", () => {
+    expect(Object.keys(mesh)).toContain("queueUntilGateSessionOpen");
+  });
+  test.skip("EVERY PRODUCTION DIAL REJECTS THE RETIRED HANDSHAKE — NO_OLD_WIRE_PRODUCTION_CALLER; gate-cutover-reach.test.ts. The built-image negative probe remains owed after the source inventory greens.", () => {
+    expect(Object.keys(mesh)).toContain("retiredHandshakeRejected");
+  });
+  test.skip("THE FLOOR ANNOUNCEMENT AND GATE SHARE ONE PIN — ANNOUNCEMENT_AND_GATE_SHARE_PIN; gate-announcement-law.test.ts. A verdict-only signing bundle cannot sign the announcement today.", () => {
+    expect(Object.keys(mesh)).toContain("gateAnnouncementImage");
+  });
+  test.skip("A GROUP FOUNDER'S REMOVAL DELIVERS ITS KEY ROLL AFTER A MUTATING THROW — FOUNDER_REMOVAL_DELIVERS_KEY_ROLL; persona-group-founder-removal.test.ts", () => {
+    expect(Object.keys(mesh)).toContain("settleFounderSeatRemoval");
+  });
+  test.skip("THE BROWSER'S IK FIRST FLIGHT SURVIVES THE TERMINATOR — BROWSER_IK_FIRST_FLIGHT_SURVIVES_TERMINATOR. Design only until the browser/proxy witness exists: fixed selected subprotocol, bounded header, no pre-finish application effect, no retained token in proxy logs.", () => {
+    expect(Object.keys(mesh)).toContain("browserIkUpgradeWitness");
   });
 
   test("A BAG'S CONTENT KEY ROLLS AT THE SEAT'S ROLL — kapae#/keys, the content-key seam. One production subscriber stands: the daemon island seats the content-key holder beside its Keyhive identities (`seatContentKeys`), that seat subscribes the content-key roll to the island's own seat rolls, and the node hands the island its sealed-store shore. The roll itself runs in `@lararium/node` `tests/sealed-store-vessel.test.ts` (through `announceSeatRoll`, over a founded island) and in `@lararium/keyhive` `tests/content-key-seat.test.ts` (through the real executor on real identities).", () => {
