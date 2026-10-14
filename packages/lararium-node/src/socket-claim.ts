@@ -71,6 +71,21 @@ export interface ClaimedName {
   readonly release: () => Promise<void>;
 }
 
+/**
+ * What a claimant says when it meets ANOTHER claimant's grave over the corpse it would reap. The grave's path
+ * rides each word, so a hearer names what stands on disk.
+ *   · `waits`: the grave stands taken and nothing answers at the name; this claimant gives the earlier one its
+ *     patience.
+ *   · `cleared`: the corpse or the grave moved within that patience; the earlier claimant finished, and this
+ *     one steps back to claim again.
+ *   · `took-over`: the patience ran out with the corpse and the grave unmoved; the earlier claimant reads as
+ *     dead, and this one has removed its grave. It reaps next.
+ */
+export interface ReapWord {
+  readonly kind: "waits" | "cleared" | "took-over";
+  readonly grave: string;
+}
+
 export interface ClaimNameOptions {
   /** Handle each connection reaching this holder. Default: accept and end at once (a pure presence
    *  lock — the use `claude-wire.ts`'s settings.json write-lock makes of this primitive). */
@@ -86,6 +101,9 @@ export interface ClaimNameOptions {
   /** The wait one look takes against a live holder, under `await`. Default: a timer of `pollMs`. A port, so a
    *  test counts looks and reads no clock. */
   readonly pace?: (pollMs: number) => Promise<void>;
+  /** Hears each reading this claim takes of another claimant's grave ({@link ReapWord}). A hearer that throws
+   *  changes nothing of the claim. */
+  readonly onReap?: (word: ReapWord) => void;
 }
 
 const uidOf = (): number => process.getuid?.() ?? 0;
@@ -146,8 +164,9 @@ const GRAVE_DEAD_INTERVAL_MS = 25;
  * derives from the corpse's own inode, so every claimant racing this corpse contends for ONE grave
  * name, and only the claimant whose grave still carries that inode unlinks `path`.
  */
-async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld): Promise<void> {
+async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld, onReap?: (word: ReapWord) => void): Promise<void> {
   const grave = `${path}.${seen.ino}.reap`;
+  const say = (kind: ReapWord["kind"]): void => { try { onReap?.({ kind, grave }); } catch { /* a hearer never moves the claim */ } };
   for (;;) {
     try { linkSync(path, grave); break; }
     catch (err) {
@@ -158,6 +177,7 @@ async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld): Pr
       if (!sameInode(statOf(path), seen)) return;
       if (await answers(path)) throw refuse();
 
+      say("waits");
       let stranded = true;
       for (let i = 0; i < GRAVE_DEAD_PATIENCE; i++) {
         await new Promise((r) => setTimeout(r, GRAVE_DEAD_INTERVAL_MS));
@@ -165,9 +185,10 @@ async function reapCorpse(path: string, seen: Stats, refuse: () => NameHeld): Pr
         if (await answers(path)) throw refuse();
         if (!sameInode(statOf(grave), seen)) { stranded = false; break; }
       }
-      if (!stranded) return;
+      if (!stranded) { say("cleared"); return; }
 
       unlinkIfPresent(grave);
+      say("took-over");
     }
   }
   try {
@@ -227,7 +248,7 @@ async function bindName(path: string, opts: ClaimNameOptions, refuse: () => Name
       const seen = statOf(path);
       if (seen === null) continue;
       if (await answers(path)) throw refuse();
-      await reapCorpse(path, seen, refuse);
+      await reapCorpse(path, seen, refuse, opts.onReap);
     }
   } catch (err) {
     await close();

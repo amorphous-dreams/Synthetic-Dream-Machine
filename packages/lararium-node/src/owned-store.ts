@@ -40,7 +40,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
 
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
-import { claimName, anchoredName, NameHeld, answers, letGo, type ClaimedName } from "./socket-claim.js";
+import { claimName, anchoredName, NameHeld, answers, letGo, type ClaimedName, type ReapWord } from "./socket-claim.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
 /** The key under which a store keeps its own id — the one write a Repo makes on opening a fresh store. */
@@ -116,6 +116,12 @@ export interface ClaimOptions {
   readonly onAwait?: (heldBy: string) => void;
   /** Override {@link PARK_LIMIT} — a test proving eviction without parking hundreds of real sockets. */
   readonly parkLimit?: number;
+  /**
+   * Hears each reading this claim takes of another claimant's grave over a dead holder's name: it waits, the
+   * grave cleared, or it took a dead reaper's grave over. A holder that boots says these, so a person reading the
+   * boot learns that a reaper died mid-reap here.
+   */
+  readonly onReap?: (word: ReapWord) => void;
 }
 
 /** The claim's shape apart from `holder`/`bootEpoch`, which {@link StoreClaim} discriminates on `holder`. */
@@ -196,7 +202,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
   let reaping = 0;
   for (;;) {
     try {
-      const claim = await bindClaim(storageDir, holder, refuse, opts.parkLimit ?? PARK_LIMIT);
+      const claim = await bindClaim(storageDir, holder, refuse, opts.parkLimit ?? PARK_LIMIT, opts);
       // THE BOOT EPOCH BUMPS HERE, ONLY FOR A VESSEL (M7′): a vessel's claim IS a boot — exactly the event
       // a `--held` pin means to die on next. A "direct" one-shot CLI act claims this same name for a single
       // command and releases it moments later; bumping on THAT claim would retire every `--held` pin on
@@ -224,7 +230,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
   }
 }
 
-async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => StoreHeld, parkLimit: number): Promise<StoreClaimShape & { readonly holder: StoreHolder }> {
+async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => StoreHeld, parkLimit: number, hears: Pick<ClaimOptions, "onReap">): Promise<StoreClaimShape & { readonly holder: StoreHolder }> {
   const socketPath = rendezvousPath({ root: storageDir, uid: uid() });
   const heldBy = (why: string): string => JSON.stringify({ status: "error", errorMessage: why, holder }) + "\n";
   const answerHeld = (why: string) => (sock: Socket): void => {
@@ -337,6 +343,7 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   let presence: ClaimedName;
   try {
     presence = await claimName(anchor.path, {
+      ...(hears.onReap ? { onReap: hears.onReap } : {}),
       refuse: () => new StoreHeldElsewhere(
         `another holder answers at ${storageDir}/${HOLDER_CLAIM_NAME} — a vessel in another container or namespace on this same state; nothing opened`),
     });
@@ -355,6 +362,7 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
         onConnection(sock);
       },
       refuse,
+      ...(hears.onReap ? { onReap: hears.onReap } : {}),
     });
   } catch (err) { await presence.release(); anchor.release(); throw err; }
 

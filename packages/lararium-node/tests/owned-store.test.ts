@@ -199,12 +199,16 @@ describe("claimStore — one holder at every instant", () => {
     // INSTANT: the window has not run yet, so a look taken right away still finds the grave untouched —
     // the claim has not yet earned the right to clean it up.
     const started = Date.now();
-    const claim = await claimStore(dir);
+    const said: string[] = [];
+    const claim = await claimStore(dir, { onReap: (word) => { said.push(word.kind); } });
     const elapsedMs = Date.now() - started;
     try {
       expect(await answersAt(path)).toBe(true);        // the claimant took the abandoned reap over and holds
+      // THE CLAIM SAYS WHICH READING IT TOOK: it met the grave and gave the earlier claimant its patience, then
+      // read that claimant as dead and took the grave over.
+      expect(said).toEqual(["waits", "took-over"]);
       // The window is bounded (20 * 25ms = 500ms) — a takeover never resolves FASTER than that window, or the
-      // "instant" assertion above would mean nothing; and it resolves well inside a 5s test timeout.
+      // "instant" assertion above would mean nothing. A lower bound: a slow machine only lengthens it.
       expect(elapsedMs).toBeGreaterThanOrEqual(450);
     } finally { await claim.release(); }
     expect(existsSync(path)).toBe(false);
@@ -218,16 +222,21 @@ describe("claimStore — one holder at every instant", () => {
     const grave = `${path}.${seen.ino}.reap`;
     linkSync(path, grave);
     // The earlier claimant finishes its OWN reap mid-window — exactly `reapCorpse`'s own success tail, run by
-    // hand here to stand in for that other process: it reaps the corpse and unlinks its own grave, well inside
-    // the 500ms patience window this claimant is watching.
-    setTimeout(() => { unlinkSync(path); unlinkSync(grave); }, 60);
-    const started = Date.now();
-    const claim = await claimStore(dir);
+    // hand here to stand in for that other process: it reaps the corpse and unlinks its own grave. It does so at
+    // this claimant's own word that it met the grave and waits, so the grave clears inside the patience window on
+    // any machine and no clock of the vector's decides when.
+    const said: string[] = [];
+    const claim = await claimStore(dir, {
+      onReap: (word) => {
+        said.push(word.kind);
+        if (word.kind === "waits") { unlinkSync(path); unlinkSync(grave); }
+      },
+    });
     try {
       expect(await answersAt(path)).toBe(true);
-      // A grave that clears mid-window is "someone else finished" (stranded=false) — the claimant steps back
-      // to the outer retry at once, well short of the full 500ms dead-holder patience.
-      expect(Date.now() - started).toBeLessThan(500);
+      // A grave that clears mid-window reads "someone else finished": the claim says so and steps back to its
+      // outer retry. It never says it took a grave over, so it never read the earlier claimant as dead.
+      expect(said).toEqual(["waits", "cleared"]);
     } finally { await claim.release(); }
   });
 
