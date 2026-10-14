@@ -6,6 +6,11 @@
  * whichever document its dial names; the request narrows B's read, it does not open the crossing.
  * B then inspects only its own cleartext CAS. The test seeds the good byte locally as a custody
  * control; it does not claim that generic plugin bytes already have a carriage path.
+ *
+ * AN INSPECTION WRITES NOTHING, READ OVER A STORE AT REST. A live daemon keeps saving and compacting the
+ * documents it syncs, the board among them, so two readings of its store differ with no inspection between
+ * them. The witness therefore waits for the receiver daemon's own exit (its stop flushes and closes the store),
+ * reads the WHOLE store, inspects through the direct holder, and reads the whole store again.
  */
 
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
@@ -24,44 +29,22 @@ const HIGHLIGHT_SOURCE = join(REPO_ROOT, "packages/lararium-tw5/offerings/highli
 
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** An Automerge NodeFS document lives under `<first two base58 chars>/<rest>/`. */
-const DOC_SHARD = /^[1-9A-HJ-NP-Za-km-z]{2}$/;
-
 /**
- * Snapshot the receiver's authority state plus the exact Crossroads board's own chunks.
- *
- * The receiver's daemon stays live and owns every other document it holds, so those documents and every
- * peer `sync-state` advance on their own; a witness over them would read the holder's churn as an
- * inspection write. What the inspection must leave untouched — the vessel's pointer and identity files and
- * the board record it reads — stays inside the snapshot. The plugin CAS path is deliberately mutated.
+ * Every regular file under a store at rest, by path and bytes. Nothing gets carved out: no holder stands, so no
+ * document, sync state or content byte moves on its own. The store's `.holder` claim is a socket, which carries
+ * no bytes and reads ENXIO; an observation error on any regular file fails the witness.
  */
-function snapshotInspectionSurface(root: string, boardDocId: string): string[] {
+function snapshotStoreAtRest(root: string): string[] {
   const out: string[] = [];
-  const boardShard = join(root, boardDocId.slice(0, 2), boardDocId.slice(2));
-  const walk = (dir: string, inBoard: boolean): void => {
-    if (!existsSync(dir)) return;
+  const walk = (dir: string): void => {
     for (const name of readdirSync(dir)) {
       const path = join(dir, name);
-      if (name === "cas" || name === "sync-state") continue;
-      // Regular files only: the store's `.holder` claim is a socket, which is no carrier and no write, and a read
-      // of it fails ENXIO.
-      // An observation error is itself a failed witness: silently dropping a file could hide a write.
       const stat = statSync(path);
-      if (stat.isDirectory()) {
-        if (inBoard) walk(path, true);
-        else if (DOC_SHARD.test(name)) walkShard(path);
-        else walk(path, false);
-      } else if (stat.isFile()) out.push(`${path.slice(root.length)}:${readFileSync(path).toString("hex")}`);
+      if (stat.isDirectory()) walk(path);
+      else if (stat.isFile()) out.push(`${path.slice(root.length)}:${readFileSync(path).toString("hex")}`);
     }
   };
-  // A shard directory holds documents; only the board's own document descends.
-  const walkShard = (shard: string): void => {
-    for (const rest of readdirSync(shard)) {
-      const doc = join(shard, rest);
-      if (doc === boardShard) walk(doc, true);
-    }
-  };
-  walk(root, false);
+  walk(root);
   return out.sort();
 }
 
@@ -146,9 +129,6 @@ describe("source offering → receiver Crossroads evidence", () => {
     expect(existsSync(receiverByte), "a fresh receiver starts with NO local bytes for an offered (never boot-set) plugin").toBe(false);
 
     const seedBefore = readFileSync(join(receiver.root, "genesis", "seed.json"));
-    const boardDocId = boardUrl.replace(/^automerge:/, "");
-    const surfaceBefore = snapshotInspectionSurface(vesselStorageDir(receiver), boardDocId);
-    expect(surfaceBefore.some((row) => row.startsWith(`/${boardDocId.slice(0, 2)}/${boardDocId.slice(2)}/`)), "the board's chunks sit inside the witnessed surface").toBe(true);
     const missing = await inspectUntil(receiver, offeringCid, "partial");
     expect(missing.json?.["data"]).toMatchObject({
       transport: { status: "complete", source: "local-crossroads", remoteFetch: false },
@@ -168,23 +148,49 @@ describe("source offering → receiver Crossroads evidence", () => {
     expect((corrupt.json?.["data"] as { bytes: { invalid: string[] } }).bytes.invalid).toEqual([pluginCid]);
 
     expect(readFileSync(join(receiver.root, "genesis", "seed.json"))).toEqual(seedBefore);
-    expect(snapshotInspectionSurface(vesselStorageDir(receiver), boardDocId)).toEqual(surfaceBefore);
   }, 120_000);
 
-  test("refuses an unknown record and a board from the wrong Nexus island", async () => {
+  test("refuses an unknown record", async () => {
     const wrongCid = `sha256:${"f".repeat(64)}`;
     const unknown = await receiver.cli(["nexus", "offering", "inspect", wrongCid, "--json"]);
     expect(unknown.code).not.toBe(0);
     expect(unknown.json?.["ok"]).toBe(false);
     expect(String((unknown.json?.["error"] as { message?: string } | undefined)?.message)).toMatch(/not present|offering/i);
 
+  }, 60_000);
+
+  // LAST IN THE FILE: this vector stops the receiver's daemon, and every reading below rides the store at rest.
+  test("an inspection writes nothing: the receiver's store at rest reads byte-equal across a direct inspect", async () => {
+    // THE HANDSHAKE: the daemon's own exit. Its stop flushes every save and closes its store before the process
+    // leaves, so from here on no holder writes this directory.
+    await receiver.stopDaemonOnly();
+    const store = vesselStorageDir(receiver);
+    const boardDocId = boardUrl.replace(/^automerge:/, "");
+    const before = snapshotStoreAtRest(store);
+    expect(before.some((row) => row.startsWith(`/${boardDocId.slice(0, 2)}/${boardDocId.slice(2)}/`)), "the board's chunks sit inside the witnessed store").toBe(true);
+
+    // The inspect runs through the direct holder: it claims the store for its act, and its adapter closes before
+    // the claim releases.
+    const inspected = await receiver.cli(["nexus", "offering", "inspect", offeringCid, "--json"]);
+    expect(inspected.json?.["ok"], inspected.stdout + inspected.stderr).toBe(true);
+    expect((inspected.json?.["data"] as { via?: string } | undefined)?.via, "no daemon stands: the act held the store itself").toBe("direct");
+    expect((inspected.json?.["data"] as { bytes?: { invalid?: string[] } }).bytes?.invalid, "the same reading the live inspect gave last").toEqual([pluginCid]);
+    expect(snapshotStoreAtRest(store)).toEqual(before);
+
+    // KNOWN POSITIVE for the instrument: one byte planted in the store moves the reading.
+    const planted = join(store, "known-positive-probe");
+    writeFileSync(planted, "x");
+    expect(snapshotStoreAtRest(store)).not.toEqual(before);
+    rmSync(planted);
+    expect(snapshotStoreAtRest(store)).toEqual(before);
+
+    // A board from the wrong Nexus island refuses. The read runs over a copy of the store, taken while it rests.
     const wrongRoot = mkdtempSync(join(tmpdir(), "lares-wrong-island-"));
     const priorRoot = process.env["LAR_ROOT"];
     process.env["LAR_ROOT"] = wrongRoot;
     try {
-      // The receiver stands and holds its own store, so the read runs over a copy of that store, held directly.
       const copy = join(wrongRoot, "store");
-      cpSync(vesselStorageDir(receiver), copy, { recursive: true });
+      cpSync(store, copy, { recursive: true });
       await expect(ownedStore(copy, (repo) => runNexusInspectOffering({
         offeringCid,
         storageDir: copy,
@@ -195,5 +201,5 @@ describe("source offering → receiver Crossroads evidence", () => {
       if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
       rmSync(wrongRoot, { recursive: true, force: true });
     }
-  }, 60_000);
+  }, 120_000);
 });
