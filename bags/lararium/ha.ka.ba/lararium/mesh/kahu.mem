@@ -318,7 +318,7 @@ A Nexus names vessels syncing across ley lines. Liveness reads off the traffic i
 <<~ has Stage Liveness "verb/none admin/none ~ ley-line traffic; nothing to build">>
 <<~ has Stage Quiet "verb/none admin/none ~ absence of traffic; no dissolution act">>
 
-Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu takes a chair by a quorum roll that seats a key; a seat needs no Handle. The reveal must match the prior epoch's pre-commitment, so no hand adds or drops a Kahu quietly. ''Owed in code'': `seal rotate` seats the vault personas that stood for a chair and reveals no per-seat cold key; a reserve-armed head refuses rotation, and no verb carries a reserve card into a roll (`packages/lares-cli/src/commands/nexus-seal.ts`).
+Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu takes a chair by a quorum roll that seats a key; a seat needs no Handle. The reveal must match the prior epoch's pre-commitment, so no hand adds or drops a Kahu quietly. ''What the code holds'': `seal rotate` takes each revealed chair's card back on a terminal and adopts its key as that chair's seat key (`packages/lares-cli/src/commands/nexus-seal.ts`); a hearth's seed charter founds in the Stable founding act and grows only by that roll, since a re-seat over it refuses (`hearth-bound`). ''Owed in code'': co-founding across two vaults, the roll that adds a seat with its new holder's contract, and a passed chair (the Nexus founding act's train).
 
 <<~/ahu>>
 
@@ -447,16 +447,18 @@ seat their own key (#/seed-and-nexus).
 
 ''Retired'': the shared reserve seed and the reserve-reveal verb.
 
-''Owed in code — the re-found.'' The per-seat commitment changes charter bytes, epoch CIDs and the Nexus
-AID, so it lands inside the re-found. The charter carries one digest per seat; the rite prints each chair's
-cold-key card and `seal rotate` takes the cards back; `seal reseat` and the catastrophe rite stand unbuilt. The field's principles for a recovery
+''Built — the re-found's seat half.'' The per-seat commitment moved charter bytes, epoch CIDs and the Nexus AID
+once, inside the re-found. The charter carries one digest per seat; the rite prints each chair's cold-key card and
+`seal rotate` takes the cards back; the Stable founding act founds a hearth's seed charter at one seat, threshold
+one, under its card (`found-hearth.ts`). ''Owed in code'': `seal reseat` and the catastrophe rite. The field's principles for a recovery
 object and its reader rest on the shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf">>).
 
 !!! Owed in code ~ names that blur the relations
 
 * ''The vessel key signs for two relations'' — the place's carrier seal and the wire's proof (the gate
   key every Nexus a hearth carries shares) — where each relation wants its own face. No invite
-  rides it: the hearth's per-Nexus leaf signs its hosting act. The per-Nexus wire key rides the re-found.
+  rides it: the hearth's per-Nexus leaf signs its hosting act. The per-Nexus wire key rides the wire's socket cutover, where every vessel-key gate proof leaves and the floor
+  announcement signs under the wire key.
 
 The cabal ⊥ quorum split stands in code where it can:
 
@@ -466,8 +468,9 @@ The cabal ⊥ quorum split stands in code where it can:
 * ''`KahuQuorumSeats`'' names the quorum's seats — a seated key-set, its threshold and the charter epoch
   it authorizes. Keys, never people.
 * ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) names the CABAL: a Keyhive membership document
-  whose members stand as PersonaGroups, with no threshold, AID or succession. Its digest seeds the document's
-  Keyhive ChangeId and rides Keyhive's signed events, so it renames only by a deliberate re-key.
+  whose members stand as PersonaGroups, with no threshold, AID or succession. A face founded at a hearth seeds it
+  under that hearth's seed-charter AID (`meshCabalSentinelUriFor`), so two hearths' cabals seed apart. Its digest
+  seeds the document's Keyhive ChangeId and rides Keyhive's signed events, so it renames only by a deliberate re-key.
 
 <<~/ahu>>
 
@@ -579,6 +582,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;lmRyWaka1SF-bzpxH03EOz-jcUFqKNfDTF71RssOOM0
+<<^ code="&#x0003;">>ni:///sha-256;0wTiRHc_WD1mXCjZTamL8s9kLDi1epqrSV7V0f1d0LY
 
 <<^ code="&#x0004;" -> to="?">>

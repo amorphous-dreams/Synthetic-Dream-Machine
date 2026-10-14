@@ -11,7 +11,7 @@ mana       = 15
 manao      = 15
 manaoio    = 14
 namespace  = "&#x2695;"
-revised-on = "2026-10-13"
+revised-on = "2026-10-14"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
 status-why = "a fresh household founding walk with explicit built steps and owed reach and browser work"
 tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/kahu", "kind/rite"]
@@ -30,7 +30,7 @@ written    = "2026-07-20"
 
 !! 1 · What founding makes
 
-A node founded by one operator stands as a SEED. A Nexus stands when two operators each seat their own key in a fresh charter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>). A fresh node mints its vessel identity and persona root, then seeds its corpus from the tracked bags. No prior CRDT document needs to survive. Each operator founds their own node on their own machine. A browser counts as a leaf of its human's Lararium; each device mints its own key, one face per device, and no device receives a seed.
+A node founded by one operator stands as a SEED. A Nexus stands when two operators each seat their own key in a fresh charter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>). One act founds the household's node, the Stable founding act (`lares vessel found --hearth`): under one human route it mints the custody, the place and persona zero, and a PRIVATE seed charter with one seat at threshold one, whose next key rests on a cold-key card; persona zero's face binds that charter's Nexus AID. No keyring rides it. The node then seeds its corpus from the tracked bags. No prior CRDT document needs to survive. Each operator founds their own node on their own machine. A browser counts as a leaf of its human's Lararium; each device mints its own key, one face per device, and no device receives a seed.
 
 <<~/ahu>>
 
@@ -103,7 +103,7 @@ The harbor witness gives each leg fresh scratch state and workspace, chooses its
 HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 ```
 
-''See'': `PASS` lines for both legs: the floor that holds no key, the unlock that composes a Lararium, the face lit after `up` with the shim's own restart, workspace projection, recipe resolution, and a final `PASS harbor walk`.
+''See'': `PASS` lines for both legs: the hearth founded before `up` (`found --hearth`, then `persona wear 0`, then `up`), the floor that holds no key, the unlock that composes a Lararium wearing the face, workspace projection, a place lifted to a hearth after `up` (a face refuses on a place with no seed charter; `found --hearth` lifts it once the vessel stops), and a final `PASS harbor walk`.
 
 ''Proves'': the shim routes a TTY-safe founding, persona, and corpus walk through the image under review. This rehearsal creates no keeper state.
 
@@ -113,28 +113,35 @@ HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 
 !! 5 · Found the first node
 
-The shim's founding order lights the face before `up`: found, create persona zero, wear persona zero, then bring the vessel up. `persona new` takes the credential route on the attached terminal. A persona's private label, optional public Handle, and private chair label each ride their own argument. A seat claim needs no Handle; `--chair` labels the seat privately and rides only beside `--seat`. `persona new` splits no root by default; `--split-root` arms the 2-of-3 memory split.
+One act founds the hearth, before `up`: `found --hearth`. Under ONE human route, typed on the attached terminal (a passphrase, a paper pin, or both), it mints the custody (the vessel key, the serving key and the custody root), the place, and persona zero with its private label and a claim on one chair. It then mints that chair's own seat key, prints the chair's NEXT key as a cold-key card, and asks the card back before the charter moves. Only then does it write the PRIVATE seed charter (one seat, threshold one, the card's digest committed) and persona zero's face, which binds the charter's Nexus AID: the device edge, the dyad scope and the face's cabal sentinel all name that AID. No keyring rides the act. A run that stops anywhere runs again and completes; a card that never reads back writes no charter and no face (`CardReadBackRefused`). `--name` carries persona zero's private label; `--chair` labels the chair privately.
+
+''The card.'' It prints 64 hex characters and a checksum in groups of four, with its purpose, the chair's label, its generation and a short charter fingerprint. Write it onto paper, then type it back; three readings that never match refuse. No copy rests on the node, and the act's answer carries the card's digest and confirm phrase alone. A live card prints on a terminal and never into `--json`, a redirect or a log; on a marked scratch root alone the read-back stands in, and the JSON answer carries the staged card's code for the harness.
 
 ''Do'': on the first operator's machine, replace the synthetic values and run each line in order.
 
 ```sh
-tools/lares-container.sh found
-tools/lares-container.sh persona new 0 --name 'operator-one' --handle 'Operator One' --seat --chair 'first-chair'
+tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
+tools/lares-container.sh persona new 0 --name 'operator-one' --handle 'Operator One'
 tools/lares-container.sh persona wear 0
 tools/lares-container.sh up
 tools/lares-container.sh vessel seed --apply --yes
 tools/lares-container.sh vessel read
 tools/lares-container.sh persona list --json
+tools/lares-container.sh nexus seal show
 tools/lares-container.sh meme list --recipe default --json
 ```
 
-The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key and composes with what the key opens. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag. `vessel rite founding` composes found, stand, and seed, but it does not create or wear the operator's persona, so this walk uses the shim's documented order.
+The second line declares persona zero's public Handle; skip it for a face that keeps none. Run it before `up`, with no vessel standing: the label then lands on the sealed rows alone. A face re-lit on a standing vessel writes its private label onto its persona plane, which rests in the clear (`S8` of the roadmap's loops).
+
+The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key, opens the serving key through the vessel key's own entry, and composes with what the keys open. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag.
+
+''A place that stands already lifts the same way.'' Stop the vessel (`tools/lares-container.sh vessel stop`), run `found --hearth` over the standing place, then `up`. A face on a place with no seed charter refuses by name and names the act. Bare `found` still founds a place with no face (a herm's rite), and `found --admit <file>` founds a joiner.
 
 ''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles">>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
 
-''See'': `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; the daemon recipe list returns seeded wiki entries.
+''See'': the act prints `the hearth stands: nexus-<sha>`, the seed charter at one seat and threshold one, PRIVATE, the seat's fingerprint, and persona zero's edge bound to this hearth. `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; `nexus seal show` reads SEED with one seated key; the daemon recipe list returns seeded wiki entries.
 
-''Proves'': the vessel mints its identity and persona root, seeds its corpus from the tracked bags, and serves as the first operator's live node.
+''Proves'': one act founds the hearth's custody, place, persona zero and seed charter, the vessel seeds its corpus from the tracked bags, and it serves as the first operator's live node.
 
 <<~/ahu>>
 
@@ -142,29 +149,28 @@ The host shim starts the container at `up`. The vessel stands holding no vessel 
 
 !! 6 · Establish custody
 
-Keep a recovery route for the persona root and for the Nexus seal. The CLI prints one-time recovery material at the acts that mint it. Write each recovery card onto its intended medium and move it to the holder and place chosen in step 3. Never treat a displayed secret as a backup until the human has copied it and checked that copy.
+Keep a recovery route for the persona root and for the seed charter. The CLI prints one-time recovery material at the acts that mint it. Write each card onto its intended medium and move it to the holder and place chosen in step 3. Never treat a displayed secret as a backup until the human has copied it and checked that copy.
 
-''Do'': inspect the vault, provision and seat the Nexus quorum, then inspect the resulting seal.
+''Do'': inspect the vault and the seal, rehearse the card, then cut persona zero's backup bundle.
 
 ```sh
 tools/lares-container.sh vault status
-tools/lares-container.sh nexus rite quorum
 tools/lares-container.sh nexus seal show
+tools/lares-container.sh nexus seal cold rehearse
+tools/lares-container.sh vault backup --face 0 --out /state/face-0.bundle
 ```
 
-The seed's seat holds its own key and commits its own cold next key, which rests on paper off the machine.
+The seed's seat holds its own key, sealed on the node, and its NEXT key rests on the card alone. Rehearse the card before the paper leaves the room: `nexus seal cold rehearse` asks for one or more cards on the terminal (a blank line skips a chair), reads each against the digests the head committed, names the chair each would roll, and moves nothing. A card that answers no digest refuses by its place in the typing and never by a byte of its code. The charter grows or rolls only by the roll its card arms (`nexus seal rotate`, which asks each card back the same way); the quorum rite (`nexus rite quorum`) refuses on a hearth, `hearth-bound`, since a re-seat would mint another AID and orphan every relation bound to the first (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
 
-The quorum rite composes `seal seat` and `seal show`: the seat gives each chair a seat key of its own, prints each chair's NEXT key as a cold-key card, asks each card back on the terminal before the charter moves, and commits one digest per chair. `seal rotate` asks each chair's card back the same way (`packages/lares-cli/src/commands/nexus-seal.ts`). Write each card onto paper before you type it back; no copy rests on the node.
+''The backup bundle carries one face.'' `vault backup --face <N> --out <file>` runs on the standing vessel, unlocked and wearing that face. It asks the vessel's own route again, then a NEW route for the bundle (a passphrase typed twice, or a paper sheet read back), and writes the file; it never writes over a standing one. The bundle carries the face's root with its own lines, its key history and its content keys, and no key of any seat; the serving tree stays on its hearth. Move the file off the machine. Its memory section holds keys alone: the sealed bytes they open must survive elsewhere, and on a production vessel that section stands empty until the wire cutover opens a session signer (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>).
 
-Rehearse each card before the paper leaves the room: `tools/lares-container.sh nexus seal cold rehearse` asks for one or more cards on the terminal (a blank line skips a chair), reads each against the digests the head committed, names the chair each would roll, and moves nothing. A card that answers no digest refuses by its place in the typing and never by a byte of its code.
+''A restore brings the face back as a recovery act'' onto a fresh hearth: found it first (`found --hearth`, which stands its own persona zero), then, on the standing vessel, `vault restore <file> --as 1`. The restored face takes a new seat under its fixed prefix and binds that hearth's seed charter. It lands at the handle-index its bundle named only where no root stands there; persona zero holds index zero, so a persona-zero bundle takes `--as <N>` at a free index and lands beside persona zero, never as it (`V5` of the roadmap's loops). `vault restore <file> --memory` lands the bundle's content keys once the vessel wears that face (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>).
 
-The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. Stop the vessel, then make one consistent backup of the full state mount, including its custody slots and relation carriers; that copy plus the custody passphrase (or paper pin) restores the vessel.
+The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. For the whole vessel, stop it, then make one consistent copy of the full state mount, including its custody slots and relation carriers; that copy plus the custody passphrase (or paper pin) restores the vessel whole.
 
-▢ ''OWED — the per-face backup bundle.'' A sealed bundle that carries one face's rows under its own route, and the verb that restores from it, stand unbuilt; the state-mount copy above stays the one backup road until they land.
+''See'': `vault status` reports held slots, names each sealed row, and reads the serving tree among the rows that rest bare by law; `nexus seal show` names the one seat and the head; the rehearsal names the chair the card would roll; the backup prints which bags and versions the bundle holds.
 
-''See'': vault status reports held slots and names each sealed row; the quorum report names its seats and head.
-
-''Proves'': the first operator has recorded the node's custody state and holds recovery material apart from the running machine.
+''Proves'': the first operator has recorded the node's custody state and holds recovery material, the card and the bundle, apart from the running machine.
 
 <<~/ahu>>
 
@@ -349,6 +355,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sIdUeprR7NK78xtks1bmdRVSG6YECxxMLQB1pRz5EQI
+<<^ code="&#x0003;">>ni:///sha-256;6GG7IXqxXK1VpJImDI6bpByr68XDMOimZAPy6vgQQ-Q
 
 <<^ code="&#x0004;" -> to="?">>
