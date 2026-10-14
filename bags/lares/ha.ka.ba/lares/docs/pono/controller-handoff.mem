@@ -56,12 +56,13 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 
 !! State ~ the controller trues this section at every handoff
 
-''As of 2026-10-14, evening.'' Branch `feature/lararium-node-5`; origin carries `e4b8bcc22`, its shards green and its full CI and container drivers in flight at writing.
+''As of 2026-10-14, night.'' Branch `feature/lararium-node-5`; origin carries the founding act's head, the closing commits of the seat train follow it through a shard lane.
 
-* ''Closed'': the custody seal train (every private row sealed under the vessel key, backup and restore of a face, the passphrase lifecycle retired); the disk shore (no-base standoff, pending removals, two doors under one key, paged lists, the settle word, the standing-instruction law); receipts that tell the truth; container drivers on every push.
-* ''The seat train (K)'': steps 1 to 10 stand landed, the flip and the genesis re-bake among them. Step 11 lands inside step 14 by a house reading: a fleet relation commits to the hearth's own seed-charter AID. The fifth seat lead runs step 12 (per-Nexus keys, the Kahu-plane movers) toward 13, 14 (the Stable founding act, which also mints the ember's serving key) and 15.
-* ''Ruled today under the operator's delegation'': eight questions, now in the roadmap's `#/rulings` with their flip conditions; the ember's anchor resolves to confirm-only raises on a WSL2 hearth (<<~ loulou "lar:///ha.ka.ba/lararium/docs/hearth-anchor">>).
-* ''Waiting on the operator'': the o-takiage ask list (eight items kept until a word); a hardware choice for unattended ember raises, whenever it suits.
+* ''Closed'': the custody seal train; the disk shore; truthful receipts; container drivers on every push; ''the seat train (K), steps 1 to 15'' with its one labelled re-bake. `lares vessel found --hearth` founds a hearth in one act under one passphrase: the place, persona zero, a private one-seat seed charter whose next key leaves on a card read back before the charter moves, the ember's serving key, and fleet edges bound to the seed-charter AID. The founding runbook walks it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>).
+* ''The operator's own vessel can stand.'' A founding now writes bytes no later train invalidates. The operator performs that founding by hand, on a TTY; no spirit founds it.
+* ''Ready to fire'': train N (the Nexus founding act) and train W (the wire and the socket cutover), each with a launch kit (<<~ loulou "lar:///ha.ka.ba/lararium/docs/train-n-launch">>, <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-w-launch">>), fixed module briefs, and twelve declared reds in the unbuilt-laws register waiting to turn green. Two operator questions stand before N seals a real joint genesis: the Offering Antigen scope, and the fork-resolve act (roadmap `#/open`).
+* ''Open rows from the seat train'': `S8` (a re-lit face's private label rests in the clear on its persona plane), `A13`, `V5`, `P17`, `K12`-`K14` riding past the train.
+* ''Waiting on the operator'': the o-takiage ask list (eight items kept until a word); the two N questions above; a hardware choice for unattended ember raises, whenever it suits.
 * ''The session folder'': `~/.claude/projects/-home-joshu-Synthetic-Dream-Machine/handoff-2026-10-12/` holds the shared lane law (`wave-law.md`), every lane's resume sheet, the rulings and research waves, the census, and the controller's running sheet (`CONTROLLER-HANDOFF.md`). It lives outside the repository and outside any clone: a session on another machine reads this carrier and the roadmap alone.
 
 <<~/ahu>>
@@ -81,6 +82,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;naHd1xzAazTIpRFHtC290svaFMsXcrmPjNdx9lOARjw
+<<^ code="&#x0003;">>ni:///sha-256;bx8WugUWdNuYgslJbR8XLn1jilT8OSfzsE7-LmU6dGY
 
 <<^ code="&#x0004;" -> to="?">>
