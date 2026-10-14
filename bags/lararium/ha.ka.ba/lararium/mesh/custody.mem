@@ -37,7 +37,7 @@ A vessel keeps private files: keys, rosters, names, and the state its key shore 
 !!! Five custody classes
 
 |! class |! what holds it |! who reads it |
-| `floor` | nothing: it rests outside every key | the floor, before any key opens: the vessel's own key, its log, the slot tree that wraps the vessel key and the serving tree that wraps SK |
+| `floor` | nothing: it rests outside every key | the floor, before any key opens: the vessel's own key, its inception, the slot tree that wraps the vessel key and the serving tree that wraps SK |
 | `floor-plain` | nothing of the vessel's: plain bytes, or bytes sealed under a key the vessel key never wraps | the floor's own doors, or anyone: bytes public by construction, or bytes a blind carrier may hold |
 | `serving` | SK, which the vessel key and each ember slot wrap | the vessel at SERVING, once its embers answer a raise, and the unlocked vessel, through the vessel key's entry in the serving tree |
 | `hot` | the vessel key | the vessel, once at unlock, for the life of that unlock |
@@ -80,7 +80,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 
 |! row |! class |! why it rests outside the vessel key |
 | `vessel-key` | `floor` | the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it |
-| `vessel-kel` | `floor` | the floor reads the vessel key's own log at every boot; each event in it stands public and proves itself |
+| `vessel-kel` | `floor` | the vessel key's own inception names that key and carries its signature: it stands public and proves itself, and a load of the key reads it before any person unlocks |
 | `vk-slots` | `floor` | the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it |
 | `sk-slots` | `floor` | the serving tree wraps SK under the vessel key's entry and each ember slot, so the key it wraps cannot seal it, and a raise reads it before any key opens (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-serving-key">>) |
 | `sk-rotation-owed` | `floor` | a deny-only mark in the serving tree: any counted removal sets it, and while it stands the serving tree refuses every ask, until the SK rotation at a human unlock clears it. It holds no secret, and a raise must read it with no key open |
@@ -323,6 +323,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NoyU0MJ0MzuK2_5OYu2f74XZj4NTo8ccmk-6YvysJA8
+<<^ code="&#x0003;">>ni:///sha-256;NrRbMYqNyrFWPztvR-05fx4_EFML4NCc3TFPKcK7ckA
 
 <<^ code="&#x0004;" -> to="?">>
