@@ -39,14 +39,17 @@ function withPidAliveSpy<T>(aliveFn: (pid: number) => boolean, fn: () => Promise
 describe("stopIncumbent — the holder's real exit, never a forced one", () => {
   it("RED: a delayed flush keeps the stop PENDING past its grace, with no SIGKILL ever sent", async () => {
     const kill = vi.fn();
-    let heldUntil = Date.now() + 300;   // frees well past a 40ms grace — the "delayed flush"
-    const probe = async () => Date.now() < heldUntil;
+    // THE DELAYED FLUSH, held by the door's own word: the holder lets go only once the door has reported the
+    // grace spent (`onPastGrace`). No clock of the test's decides when the holder frees, so the stop meets
+    // "past grace and still held" on any machine, and then meets the holder's real exit.
+    let held = true;
+    const probe = async () => held;
     const holderPids = () => [4242];
     let pastGraceHeldPids: readonly number[] | null = null;
 
-    const result = await withPidAliveSpy(() => Date.now() < heldUntil, () => stopIncumbent(PORT, {
+    const result = await withPidAliveSpy(() => held, () => stopIncumbent(PORT, {
       graceMs: 40, pollMs: 10, probe, holderPids, kill,
-      onPastGrace: (pids) => { pastGraceHeldPids = pids; },
+      onPastGrace: (pids) => { pastGraceHeldPids = pids; held = false; },
     }));
 
     expect(result).toEqual<StopResult>({ stopped: true });
@@ -54,7 +57,6 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
     expect(kill).not.toHaveBeenCalledWith(expect.anything(), "SIGKILL");
     expect(kill).toHaveBeenCalledTimes(1);          // one SIGTERM, never a second signal of any kind
     expect(pastGraceHeldPids).toEqual([4242]);       // the report fired — the wait kept going anyway
-    void heldUntil;
   });
 
   it("MUTATION PROOF: the old escalate-to-SIGKILL shape would have failed the RED test above", async () => {
@@ -100,20 +102,25 @@ describe("stopIncumbent — the holder's real exit, never a forced one", () => {
 
   it("`cut: true` delivers exactly ONE further signal past grace — never a ladder, never SIGKILL", async () => {
     const kill = vi.fn();
-    let heldUntil = Date.now() + 300;
-    const probe = async () => Date.now() < heldUntil;
+    // The holder outlasts the door's own SECOND signal by six more of the door's looks, then lets go: the
+    // door's `kill` calls and its own looks decide, and no clock of the test's does. Each of those looks gives
+    // a ladder its chance to send a third signal.
+    let looksAfterCut = 0;
+    const held = (): boolean => kill.mock.calls.length < 2 || ++looksAfterCut <= 6;
+    const probe = async () => held();
     const holderPids = () => [4242];
-    const result = await withPidAliveSpy(() => Date.now() < heldUntil, () => stopIncumbent(PORT, {
+    let reported = 0;
+    const result = await withPidAliveSpy(() => held(), () => stopIncumbent(PORT, {
       graceMs: 20, pollMs: 5, probe, holderPids, kill, cut: true,
-      onPastGrace: () => {},
+      onPastGrace: () => { reported += 1; },
     }));
+    expect(reported).toBe(1);                         // the cut followed the one report of a spent grace
     expect(result).toEqual<StopResult>({ stopped: true });
     // The initial SIGTERM plus exactly one cut SIGTERM — never a SIGKILL, never a third signal.
     expect(kill).toHaveBeenCalledTimes(2);
     expect(kill).toHaveBeenNthCalledWith(1, 4242, "SIGTERM");
     expect(kill).toHaveBeenNthCalledWith(2, 4242, "SIGTERM");
     expect(kill).not.toHaveBeenCalledWith(expect.anything(), "SIGKILL");
-    void heldUntil;
   });
 
   it("H5′ RED→GREEN: --cut reaches the CAPTURED pid even once a past-grace port re-read would find nobody", async () => {
@@ -342,9 +349,12 @@ describe("waitForPortBudgeted — a declared budget per named boot phase", () =>
   });
 
   it("a port already open resolves at once, spending none of either phase's budget", async () => {
-    const started = Date.now();
-    await waitForPortBudgeted(54_324, PHASES, { phase: () => "starting", pollMs: 5, probe: async () => true });
-    expect(Date.now() - started).toBeLessThan(30);
+    // "At once" reads off the door's own acts, never off a clock: it probed once, and never asked who holds.
+    const probe = vi.fn(async () => true);
+    const holderPids = vi.fn(() => []);
+    await waitForPortBudgeted(54_324, PHASES, { phase: () => "starting", pollMs: 5, probe, holderPids });
+    expect(probe).toHaveBeenCalledTimes(1);
+    expect(holderPids).not.toHaveBeenCalled();
   });
 });
 
