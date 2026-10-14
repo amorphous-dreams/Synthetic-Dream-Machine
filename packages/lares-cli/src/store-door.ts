@@ -11,10 +11,10 @@
  * caller names exactly as it names a refusal on the direct path.
  */
 
-import { storeDoorDirect, type StoreDoorVerb } from "@lararium/node";
+import { storeDoorDirect, StoreHeld, type StoreDoorVerb } from "@lararium/node";
 import { vesselDid, larSealHome } from "./env.js";
-import { DaemonUnreachable } from "./verb-call.js";
-import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable } from "./local-connector.js";
+import { DaemonUnreachable, refusalCode, refusalHint, verbFailure } from "./verb-call.js";
+import { udsAlive, udsSocketPresent, udsSocketPath, whoHolds, invokeLocal, UdsUnreachable, LocalWaitExpired } from "./local-connector.js";
 import { waitForResourceBudgeted, SlowBootTimeout, type BootPhase } from "./port-control.js";
 import { summaryOutput } from "./verb-result.js";
 import type { SubmitResult } from "./verb-result.js";
@@ -110,7 +110,8 @@ export async function throughStoreDoor(opts: {
       throw err;
     }
     const r = raced.quiet ? await verbPromise : raced.v;
-    if (r.status === "error") throw new Error(r.errorMessage ?? "verb failed");
+    // The vessel's own name for the refusal rides out with its words: a floor, a retired bag, an abandoned id.
+    if (r.status === "error") throw new RoutedVerbRefused(r.errorMessage ?? "verb failed", r.refusal?.reason);
     return { output: summaryOutput(r) ?? {}, via: "daemon" };
   }
   return { output: await opts.direct(), via: "direct" };
@@ -120,6 +121,49 @@ export { SlowBootTimeout };
 
 /** A door's refusal, when the calling command names no refusal class of its own. */
 export class StoreDoorRefusal extends Error {}
+
+/** A verb routed through the standing vessel ended in an error. `reason` holds the vessel's own name for it, where it gave one. */
+export class RoutedVerbRefused extends Error {
+  constructor(message: string, readonly reason?: string) { super(message); }
+}
+
+/** The name each row refusal left the door under, kept beside the error a command catches. */
+const REFUSAL_NAMES = new WeakMap<Error, string>();
+
+/**
+ * NAME A FAILURE THAT CAME THROUGH THE STORE DOOR, by the fault's own type and never by its words. Every command
+ * that catches around a store verb reads its JSON `error.code` here, so no store refusal reaches a script as a
+ * bare `refused` or `error`:
+ *
+ *   a row's refusal                 → the name its row answered (`nexus-kapae-refused`, `cabal-join-refused`, …)
+ *   the vessel refused by name      → that name's code (`waking-floor`, `bag-retired`, `request-abandoned`, …)
+ *   another holder holds the store  → `store-held`
+ *   the door's wait named a holder  → `store-door-timeout`
+ *   this process stopped listening  → `outcome-unknown`, with the request id and its cure
+ *   no vessel answered              → `daemon-unreachable`
+ *
+ * Anything else keeps `fallback`: the word the command already gave a fault it could not name.
+ */
+export function storeFailure(err: unknown, fallback = "error"): { readonly code: string; readonly message: string; readonly hint?: string } {
+  const message = err instanceof Error ? err.message : String(err);
+  if (err instanceof Error) {
+    const named = REFUSAL_NAMES.get(err);
+    if (named !== undefined) return { code: named, message };
+  }
+  if (err instanceof RoutedVerbRefused) {
+    if (err.reason === undefined) return { code: fallback, message };
+    const code = refusalCode(err.reason);
+    const hint = refusalHint(code, undefined);
+    return { code: code === "verb-error" ? err.reason : code, message, ...(hint !== undefined ? { hint } : {}) };
+  }
+  if (err instanceof StoreHeld) return { code: "store-held", message, hint: "another holder holds this store: a standing vessel, or a command mid-act. Run again once it has gone." };
+  if (err instanceof SlowBootTimeout) return { code: "store-door-timeout", message, hint: "the vessel's store door gave no answer inside its budget. `lares vessel read` names what holds it." };
+  if (err instanceof LocalWaitExpired || err instanceof DaemonUnreachable) {
+    const f = verbFailure(err);
+    return { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) };
+  }
+  return { code: fallback, message };
+}
 
 /**
  * Run one row of the store's door table: through the standing vessel when one stands, or here, holding the
@@ -133,7 +177,11 @@ export async function storeVerb(
   Refusal: new (message: string) => Error = StoreDoorRefusal,
 ): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   const r = await throughStoreDoor({ verb, args, direct: () => storeDoorDirect(verb, args, { sealHome: larSealHome() }) });
-  if (typeof r.output["refused"] === "string") throw new Refusal(r.output["refused"]);
+  if (typeof r.output["refused"] === "string") {
+    const refusal = new Refusal(r.output["refused"]);
+    if (typeof r.output["refusal"] === "string") REFUSAL_NAMES.set(refusal, r.output["refusal"]);
+    throw refusal;
+  }
   const { verb: _echo, ...output } = r.output;
   return { output, via: r.via };
 }

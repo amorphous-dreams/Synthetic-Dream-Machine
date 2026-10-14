@@ -24,7 +24,7 @@
  * This door holds no reference back into `nexus.ts`; the dependency runs one way, parent to child.
  */
 import { NexusKapaeError, type NexusKapaeResult, type NexusKapaeListResult } from "@lararium/node";
-import { storeVerb } from "../store-door.js";
+import { storeVerb, storeFailure } from "../store-door.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -76,9 +76,9 @@ async function kapaeRaise(args: ParsedArgs, action: "kapae" | "un_kapae", nym: s
     return 0;
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof NexusKapaeError ? "refused" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus ${action}: ${msg}`) });
-    return exitFor("error");
+    const failure = storeFailure(err, err instanceof NexusKapaeError ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action}: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
@@ -107,7 +107,8 @@ async function kapaeList(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus kapae --list: ${msg}`) });
-    return exitFor("error");
+    const failure = storeFailure(err);
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus kapae --list: ${msg}`) });
+    return exitFor(failure.code);
   }
 }

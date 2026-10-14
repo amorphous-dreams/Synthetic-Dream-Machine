@@ -30,8 +30,8 @@
  *                                                (`commands/nexus-offering-inspect`)
  *   raise-sign                                   a raise grant off the carriage board (`commands/raise-sign`)
  *
- * A REFUSAL is an answer, never a fault: it comes back as `{ refused }`, so the CLI names it exactly as the direct
- * path does. A row hands back what its command prints; the command's own process prints it, so a row that ran
+ * A REFUSAL is an answer, never a fault: it comes back as `{ refused, refusal }` (the door's words, and the name
+ * the row refuses under), so the CLI names it exactly as the direct path does. A row hands back what its command prints; the command's own process prints it, so a row that ran
  * inside the standing vessel never speaks into the vessel's log, and no secret rides a row's answer.
  *
  * ONE AFTER-WRITE HOOK, not a refresh VERB. `onRolled` is this door's one hook for "something just landed on a
@@ -149,11 +149,14 @@ const strs = (v: unknown): readonly string[] | undefined =>
 const opt = <K extends string, V>(key: K, v: V | undefined): { [P in K]?: V } =>
   (v === undefined ? {} : { [key]: v }) as { [P in K]?: V };
 
-/** Run a row, answering a refusal as `{ refused }`. */
+/** The name a row's refusal answers under: the row's own verb, so no two doors share one word for "refused". */
+export const storeRefusalName = (verb: string): string => `${verb}-refused`;
+
+/** Run a row, answering a refusal as `{ refused, refusal }`: the door's words, and the name it refuses under. */
 async function answer(verb: string, run: () => Promise<Record<string, unknown>>): Promise<Record<string, unknown>> {
   try { return { verb, ...(await run()) }; }
   catch (err) {
-    if (REFUSALS.some((R) => err instanceof R)) return { verb, refused: (err as Error).message };
+    if (REFUSALS.some((R) => err instanceof R)) return { verb, refused: (err as Error).message, refusal: storeRefusalName(verb) };
     throw err;
   }
 }

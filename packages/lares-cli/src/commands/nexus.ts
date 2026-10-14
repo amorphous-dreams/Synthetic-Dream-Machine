@@ -51,7 +51,7 @@ import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { storeVerb, StoreDoorRefusal, pokeSealHomeRefold } from "../store-door.js";
+import { storeVerb, StoreDoorRefusal, pokeSealHomeRefold, storeFailure } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
 import { cmdPublish } from "./nexus-publish.js";
@@ -168,8 +168,9 @@ async function cmdRealmBag(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus realm-bag: ${msg}`) });
-    return 1;
+    const failure = storeFailure(err);
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus realm-bag: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
@@ -200,8 +201,9 @@ async function cmdRealmBags(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus realm-bags: ${msg}`) });
-    return 1;
+    const failure = storeFailure(err);
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus realm-bags: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
@@ -281,9 +283,9 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
     return 0;
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof NexusContractError ? "refused" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus ${action}: ${msg}`) });
-    return exitFor("error");
+    const failure = storeFailure(err, err instanceof NexusContractError ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus ${action}: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
@@ -329,8 +331,9 @@ async function cmdMembers(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, { ok: false, error: { code: "error", message: msg }, human: () => console.error(`lares nexus members --list: ${msg}`) });
-    return exitFor("error");
+    const failure = storeFailure(err);
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus members --list: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
@@ -373,9 +376,9 @@ async function cmdAcceptCarriage(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof NexusContractError || (err instanceof SealedActRefused && err.reason === "act-refused") ? "refused" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus accept-carriage: ${msg}`) });
-    return exitFor("error");
+    const failure = storeFailure(err, err instanceof NexusContractError || (err instanceof SealedActRefused && err.reason === "act-refused") ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus accept-carriage: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
@@ -423,9 +426,9 @@ async function cmdAdmitTake(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof AdmitBundleError ? "refused" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus admit-take: ${msg}`) });
-    return exitFor("error");
+    const failure = storeFailure(err, err instanceof AdmitBundleError ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus admit-take: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
@@ -453,9 +456,9 @@ async function cmdCarryFor(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof NexusContractError ? "refused" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus carry-for: ${msg}`) });
-    return exitFor("error");
+    const failure = storeFailure(err, err instanceof NexusContractError ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus carry-for: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
@@ -502,8 +505,8 @@ async function cmdPosture(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg  = err instanceof Error ? err.message : String(err);
-    const code = err instanceof StoreDoorRefusal ? "refused" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares nexus posture: ${msg}`) });
-    return exitFor("error");
+    const failure = storeFailure(err, err instanceof StoreDoorRefusal ? "refused" : "error");
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus posture: ${msg}`) });
+    return exitFor(failure.code);
   }
 }

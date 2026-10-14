@@ -5,7 +5,7 @@
  * against the Repo it holds, or here, holding the store for the moment of the read, when none stands.
  */
 import { NexusOfferingInspectError, type NexusOfferingInspectResult } from "@lararium/node";
-import { storeVerb } from "../store-door.js";
+import { storeVerb, storeFailure } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -44,8 +44,9 @@ export async function cmdOffering(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    const code = err instanceof NexusOfferingInspectError ? "not-found" : "error";
-    emit(args, { ok: false, error: { code, message }, human: () => console.error(`lares nexus offering inspect: ${message}`) });
-    return exitFor(code);
+    // A carried offering this vessel holds nothing for keeps its own word; every other fault names itself.
+    const failure = err instanceof NexusOfferingInspectError ? { code: "not-found", message } : storeFailure(err);
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus offering inspect: ${message}`) });
+    return exitFor(failure.code);
   }
 }

@@ -104,6 +104,11 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   "waking-floor":      2,
   // The cap-denied family (5): the crossing relaxes confinement and wants the kahu quorum.
   "crossing-outward":  5,
+  // The CONFLICT family (4): another holder holds the store this command would open: a standing vessel that
+  // answers no socket here, or another command mid-act.
+  "store-held":        4,
+  // The "nothing answered" family (3): the store door's own budgeted wait named a holder and gave up.
+  "store-door-timeout": 3,
   error:               1,
 };
 

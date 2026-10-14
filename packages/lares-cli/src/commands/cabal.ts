@@ -35,7 +35,7 @@ import {
   CabalVouchError, CabalJoinError,
   type CabalVouchResult, type CabalJoinResult,
 } from "@lararium/node";
-import { storeVerb } from "../store-door.js";
+import { storeVerb, storeFailure } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
@@ -166,9 +166,9 @@ async function cmdClock(args: ParsedArgs): Promise<number> {
 
 function cabalFailure(args: ParsedArgs, verb: string, err: unknown): number {
   const msg  = err instanceof Error ? err.message : String(err);
-  const code = err instanceof CabalUsageError ? "usage" : "error";
-  emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares cabal ${verb}: ${msg}`) });
-  return exitFor(code);
+  const failure = err instanceof CabalUsageError ? { code: "usage", message: msg } : storeFailure(err);
+  emit(args, { ok: false, error: failure, human: () => console.error(`lares cabal ${verb}: ${msg}`) });
+  return exitFor(failure.code);
 }
 
 async function cmdVouch(args: ParsedArgs): Promise<number> {

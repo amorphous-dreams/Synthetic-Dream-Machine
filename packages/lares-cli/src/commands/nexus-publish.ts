@@ -25,7 +25,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { NexusPublishError, type NexusPublishPluginsResult } from "@lararium/node";
 import { computePluginsCid } from "@lararium/mesh";
-import { storeVerb } from "../store-door.js";
+import { storeVerb, storeFailure } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -82,9 +82,9 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
       return 0;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const code = err instanceof NexusPublishError ? "refused" : "error";
-      emit(args, { ok: false, error: { code, message }, human: () => console.error(`lares nexus publish plugins: ${message}`) });
-      return exitFor(code);
+      const failure = storeFailure(err, err instanceof NexusPublishError ? "refused" : "error");
+      emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus publish plugins: ${message}`) });
+      return exitFor(failure.code);
     }
   }
 

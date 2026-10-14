@@ -46,6 +46,8 @@ import { cmdHooks }                   from "../commands/hooks.js";
 import { cmdSensorium }               from "../commands/sensorium.js";
 import { cmdCleanupDays }             from "../commands/cleanup-days.js";
 import { renderCommandHelp, helpDoor } from "../command-help.js";
+import { emit, exitFor } from "../render.js";
+import { storeFailure } from "../store-door.js";
 import { reachHelpMeme }              from "../help-meme.js";
 import { cmdTestQuine } from "../commands/scripted.js";
 import { cmdDeviceAdmit }             from "../commands/device-admit.js";
@@ -328,6 +330,13 @@ export async function dispatch(argv: readonly string[]): Promise<number> {
     if (err instanceof OfflineCustodyRefused || err instanceof CustodyLocked || err instanceof CustodyRowUnavailable) {
       console.error(`lares ${cmd.name}: ${err.message}`);
       return 1;
+    }
+    // A failure that came through the store door names itself wherever no command caught it: a refusal travels
+    // as one parseable object under its own code, never as a stack trace.
+    const failure = storeFailure(err, "");
+    if (failure.code !== "") {
+      emit(args, { ok: false, error: failure, human: () => console.error(`lares ${cmd.name}: ${failure.message}`) });
+      return exitFor(failure.code);
     }
     throw err;
   }

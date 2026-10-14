@@ -21,9 +21,9 @@
 import { RaiseSignError, type RaiseSignResult } from "@lararium/node";
 import { presentationFindingLine } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
-import { emit, refuseUsage } from "../render.js";
+import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { storeVerb } from "../store-door.js";
+import { storeVerb, storeFailure } from "../store-door.js";
 
 function usage(args: ParsedArgs, detail?: string): number {
   return refuseUsage(args, "raise", helpLines("raise"), detail);
@@ -70,11 +70,9 @@ export async function cmdRaise(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    emit(args, {
-      ok: false,
-      error: { code: err instanceof RaiseSignError ? "usage" : "error", message: msg },
-      human: () => console.error(`lares raise sign: ${msg}`),
-    });
-    return 1;
+    // A challenge this door cannot sign keeps its own word; a store fault names itself and takes its own exit.
+    const failure = err instanceof RaiseSignError ? { code: "usage", message: msg } : storeFailure(err);
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares raise sign: ${msg}`) });
+    return err instanceof RaiseSignError ? 1 : exitFor(failure.code);
   }
 }

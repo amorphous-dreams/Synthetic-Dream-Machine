@@ -34,7 +34,7 @@ import {
   refuseSlot, personaSlotCeiling, defaultChairLabel, type VesselClass,
 } from "@lararium/mesh";
 import { cmdPersonaAdmit } from "./persona-admit-cmd.js";
-import { storeVerb } from "../store-door.js";
+import { storeVerb, storeFailure } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { vesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
@@ -106,9 +106,9 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
     }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    const code = err instanceof UsageError ? "usage" : "error";
-    emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares persona ${sub}: ${msg}`) });
-    return exitFor(code);
+    const failure = err instanceof UsageError ? { code: "usage", message: msg } : storeFailure(err);
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares persona ${sub}: ${msg}`) });
+    return exitFor(failure.code);
   }
 }
 
