@@ -22,18 +22,18 @@
  * parallel guesses never outrun the bound.
  *
  * ── A FOUNDING HANDS ITS KEY STRAIGHT IN ────────────────────────────────────────────────────────
- * The act that minted the vessel key holds it already; `adopt` takes that key, opens the custody root under it and
- * holds both. It asks no credential and spends no attempt, and it refuses a key the custody root does not open
+ * The act that minted the vessel key holds it already; `adopt` takes that key, opens the custody root and the
+ * serving key (SK) under it and holds all three, as an unlock does. It asks no credential and spends no attempt, and it refuses a key the custody root does not open
  * under, so a stranger key never sits here.
  *
  * Node-main only: a worker never imports this module.
  */
 import {
   openSealedCarrier, writeSealedCarrier, updateSealedCarrier, removeSealedCarrier, CustodyRefusal, vkEquals,
-  type Credential, type CustodyIo, type VesselKey,
+  type Credential, type CustodyIo, type ServingKey, type VesselKey,
 } from "@lararium/mesh";
 import { custodyDerive, custodyRootFromBytes, custodyVeil, openCustodyRootCarrier, type CustodyRoot } from "./custody-root.js";
-import { unlockCustody } from "./custody-session.js";
+import { openCustodyVk, openServingTree, unlockCustody } from "./custody-session.js";
 import { carrierTable, vkSlotsPath, type CustodyHome, type CustodyHomes } from "./vault-carriers.js";
 
 export type HolderUnlock =
@@ -43,6 +43,7 @@ export type HolderUnlock =
   | { readonly reading: "attempts-spent" }
   | { readonly reading: "tree-absent" }
   | { readonly reading: "tree-unreadable"; readonly why: string }
+  | { readonly reading: "serving-unopenable"; readonly why: string }
   | { readonly reading: "root-unopenable"; readonly why: string };
 
 /** What `proves` answers: whether a person presented a route of the tree this holder's own key rests in. */
@@ -149,6 +150,9 @@ export class CustodyAdoptRefused extends Error {
 
 export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: CustodyHomes }): CustodyHolder {
   let vk: VesselKey | null = null;
+  // The serving key, opened through the serving tree's VK entry at every unlock and held beside the VK. No serving
+  // row stands yet for it to open (the rows move under it with the ember's serving tier); the lock zero-fills it.
+  let sk: ServingKey | null = null;
   let root: CustodyRoot | null = null;
   let slot: string | null = null;
   let spent = 0;
@@ -173,9 +177,11 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     const opened = await openCustodyRootCarrier({ io: a.io, vk: result.vk, identityDir: a.homes.identity });
     if (opened.reading !== "opens") {
       result.vk.fill(0);
+      result.sk.fill(0);
       return { reading: "root-unopenable", why: opened.reading };
     }
     vk = result.vk;
+    sk = result.sk;
     root = custodyRootFromBytes(opened.opened);
     slot = result.slot;
     return { reading: "opens", slot };
@@ -183,7 +189,7 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
   const doProve = async (credentials: readonly Credential[]): Promise<HolderProof> => {
     if (vk === null || !accepting) return { reading: "locked" };
     if (spent >= UNLOCK_ATTEMPTS_PER_BOOT) return { reading: "attempts-spent" };
-    const result = await unlockCustody({ io: a.io, homes: a.homes, credentials });
+    const result = await openCustodyVk({ io: a.io, homes: a.homes, credentials });
     if (result.reading === "no-slot-opens") {
       spent++;
       return { reading: "no-slot-opens", attemptsLeft: UNLOCK_ATTEMPTS_PER_BOOT - spent };
@@ -219,7 +225,10 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
     if (vk !== null) return;
     const opened = await openCustodyRootCarrier({ io: a.io, vk: handed, identityDir: a.homes.identity });
     if (opened.reading !== "opens") throw new CustodyAdoptRefused(opened.reading);
+    const served = await openServingTree({ io: a.io, homes: a.homes, vk: handed });
+    if (served.reading !== "opens") throw new CustodyAdoptRefused(`${served.reading} at the serving tree`);
     vk = Uint8Array.from(handed) as VesselKey;
+    sk = served.sk;
     root = custodyRootFromBytes(opened.opened);
     slot = null;
   };
@@ -244,8 +253,10 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
       const drop = async (): Promise<void> => {
         await Promise.allSettled([...active]);
         vk?.fill(0);
+        sk?.fill(0);
         root?.bytes.fill(0);
         vk = null;
+        sk = null;
         root = null;
         slot = null;
         accepting = true;

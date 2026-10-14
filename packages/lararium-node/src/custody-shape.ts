@@ -70,7 +70,7 @@ function opensWithRetiredMagic(head: Uint8Array): boolean {
   return head.length >= LARK_MAGIC.length && LARK_MAGIC.every((b, i) => head[i] === b);
 }
 
-const isSecret = (e: CarrierEntry): boolean => e.custody === "hot" || e.custody === "cold";
+const isSecret = (e: CarrierEntry): boolean => e.custody === "serving" || e.custody === "hot" || e.custody === "cold";
 
 /** Read the shape every home stands in. Reads only. */
 export function readCustodyShape(homes: CustodyHomes, reading: CustodyShapeReading): CustodyShape {

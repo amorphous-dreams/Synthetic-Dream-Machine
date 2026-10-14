@@ -162,6 +162,7 @@ async function openOrRefuse(args: ParsedArgs, verb: string, homes: CustodyHomes,
   const why =
     u.reading === "no-slot-opens" ? `no slot opens under what was presented${u.notes.length ? ` (${u.notes.join("; ")})` : ""} — nothing was changed`
     : u.reading === "tree-absent"  ? "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth)"
+    : u.reading === "serving-unopenable" ? `the vessel key opened and the serving key did not (${u.why}) — nothing stays held; a vessel whose serving tree stands torn or apart from its key re-founds`
     : `the slot tree reads unreadable: ${u.why} — a torn tree is not a credential error; nothing was changed`;
   emit(args, { ok: false, error: { code: u.reading, message: why }, data: { reading: u.reading }, human: () => console.error(`lares vault ${verb}: ${why}`) });
   return null;
@@ -181,6 +182,7 @@ function unlockLine(a: CustodyDoorAnswer): string {
     case "tree-absent":      return "no slot tree stands at the identity home — nothing to unlock (a founding seals custody from birth).";
     case "tree-unreadable":  return `the slot tree reads unreadable: ${String(a["why"])} — a torn tree is not a credential error; nothing was changed.`;
     case "root-unopenable":  return `the vessel key opened and the custody root did not (${String(a["why"])}) — nothing stays held; recover the custody root from a backup.`;
+    case "serving-unopenable": return `the vessel key opened and the serving key did not (${String(a["why"])}) — nothing stays held; a vessel whose serving tree stands torn or apart from its key re-founds.`;
     default:                 return typeof a["errorMessage"] === "string" ? a["errorMessage"] : `the vessel answered ${JSON.stringify(a)}`;
   }
 }

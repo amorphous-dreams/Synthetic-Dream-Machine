@@ -32,7 +32,7 @@ export function custodyReading(root, env = {}) {
 export function custodyBreaches(custody) {
   const out = [];
   for (const r of custody.rows) {
-    const underKey = r.custody === "hot" || r.custody === "cold";
+    const underKey = r.custody === "serving" || r.custody === "hot" || r.custody === "cold";
     if (underKey && r.reading !== "sealed") out.push(`unsealed: ${r.home}/${r.file} (${r.custody}) reads ${r.reading}`);
     if (underKey !== (r.bare === null)) out.push(`no law: ${r.home}/${r.file} (${r.custody}) ${underKey ? "names a law for resting bare" : "rests outside the vessel key and names no law"}`);
     if (underKey && !r.fault && r.reading !== "sealed") out.push(`fault misread: ${r.home}/${r.file} (${r.custody}, ${r.reading}) reads fault=${r.fault}`);

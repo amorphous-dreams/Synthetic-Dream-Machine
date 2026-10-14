@@ -32,9 +32,9 @@ test("C1 — a clean reading names nothing", () => {
   assert.deepEqual(custodyBreaches(clean()), []);
 });
 
-test("C2 — a hot or cold row that reads anything but sealed reads unsealed", () => {
+test("C2 — a serving, hot or cold row that reads anything but sealed reads unsealed", () => {
   for (const reading of ["bare", "torn", "old-shape", "unopenable"]) {
-    for (const custody of ["hot", "cold"]) {
+    for (const custody of ["serving", "hot", "cold"]) {
       const c = clean();
       c.rows[0] = row({ custody, reading, fault: true });
       assert.deepEqual(custodyBreaches(c), [`unsealed: identity/custody-root.bin (${custody}) reads ${reading}`]);

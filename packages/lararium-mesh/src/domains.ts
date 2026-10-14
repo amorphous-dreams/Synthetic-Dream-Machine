@@ -112,6 +112,11 @@ export const VK_SLOT_WRAP_INFO = mint("vk-slot-wrap");
 /** The HKDF `info` of the slot tree's VK check: the keyed digest a tree carries so every writer proves the VK
  *  in hand against the standing tree before any byte moves. */
 export const VK_CHECK_INFO = mint("vk-check");
+/** The HKDF `info` of the serving tree's VK entry: the key the VK derives to wrap the serving key (SK). Its own
+ *  name: no slot wrap and no VK check ever derives the same key from the VK. */
+export const SK_VK_WRAP_INFO = mint("sk-vk-wrap");
+/** The HKDF `info` of the serving tree's SK check: the keyed digest that commits the tree to the one SK it wraps. */
+export const SK_CHECK_INFO = mint("sk-check");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 export const PERSONA_ENROLL_DOMAIN = frozen("persona-enroll");

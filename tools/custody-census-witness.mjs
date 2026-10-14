@@ -102,8 +102,8 @@ try {
   const byLaw = clean.rows.filter((r) => r.bare !== null);
   step("the reading holds rows under the vessel key and rows outside it by law", sealed.length >= 8 && byLaw.length >= 4 && sealed.length + byLaw.length === clean.rows.length,
     `${sealed.length} sealed, ${byLaw.length} by law, ${clean.rows.length} rows`);
-  step("each bare row names its law: the vessel key, its log, the slot tree, the contact card",
-    ["vessel-key", "vessel-kel", "vk-slots", "vessel-card"].every((row) => byLaw.some((r) => r.row === row && r.reading === "bare")),
+  step("each bare row names its law: the vessel key, its log, the slot tree, the serving tree, the contact card",
+    ["vessel-key", "vessel-kel", "vk-slots", "sk-slots", "vessel-card"].every((row) => byLaw.some((r) => r.row === row && r.reading === "bare")),
     byLaw.map((r) => r.row).join(", "));
 
   // ── RED: an owner-only file no row names ──────────────────────────────────────────────────────────────────

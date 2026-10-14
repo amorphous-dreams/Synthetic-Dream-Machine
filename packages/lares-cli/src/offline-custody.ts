@@ -56,6 +56,7 @@ function refusal(reading: string): OfflineCustodyRefused {
     case "tree-absent":     return new OfflineCustodyRefused("no custody stands at this root (a founding seals custody from birth: `lares vessel found`).");
     case "attempts-spent":  return new OfflineCustodyRefused("three routes failed in this run; run the command again.");
     case "root-unopenable": return new OfflineCustodyRefused("the vessel key opened and the custody root did not; recover the custody root from a backup.");
+    case "serving-unopenable": return new OfflineCustodyRefused("the vessel key opened and the serving tree's key did not; a vessel whose serving tree stands torn or apart from its key re-founds.");
     default:                return new OfflineCustodyRefused(`the slot tree reads ${reading}.`);
   }
 }

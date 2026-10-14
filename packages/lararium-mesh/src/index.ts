@@ -453,6 +453,9 @@ export type {
 export { bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper } from "./keyslot.js";
 export type { PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, Credential, VkUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintVk, vkEquals } from "./vk.js";
+// The serving key and the serving tree that wraps it under the VK's entry — see `serving-key`.
+export { mintServingKey, foundServingTree, openServingKey, encodeServingTree, decodeServingTree, skCheckOf, SK_LENGTH } from "./serving-key.js";
+export type { ServingKey, ServingTree, ServingVkEntry, ServingKeyOpening, ServingTreeReading } from "./serving-key.js";
 export type { VesselKey, VkOpening } from "./vk.js";
 // The VK's sealed-carrier frame: the magic that names the scheme, with no version byte — see `vk-envelope`.
 export { VK_SEAL_MAGIC, LARK_MAGIC, VK_SEAL_NONCE_LENGTH, VK_SEAL_TAG_LENGTH, VK_SEAL_MIN_LENGTH, readVkCarrier, splitVkFrame, joinVkFrame } from "./vk-envelope.js";

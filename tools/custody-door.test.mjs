@@ -88,7 +88,7 @@ function privateRows(node, root) {
     const homes = { identity: node.larIdentityDir(), storage: node.larDataDir(), seal: node.larSealHome() };
     const out = {};
     for (const e of node.carrierCensus(homes)) {
-      if (e.custody === "hot" || e.custody === "cold" || e.row === "vk-slots") out[e.path] = createHash("sha256").update(readFileSync(e.path)).digest("hex");
+      if (e.custody === "serving" || e.custody === "hot" || e.custody === "cold" || e.row === "vk-slots" || e.row === "sk-slots") out[e.path] = createHash("sha256").update(readFileSync(e.path)).digest("hex");
     }
     return out;
   } finally {

@@ -2,12 +2,16 @@
  * vault-carriers — THE ONE CARRIER TABLE. Every carrier a vessel keeps at rest names its home, its custody
  * class, its secret kind and its writer in exactly one row here.
  *
- * ── FOUR CUSTODY CLASSES, NO FIFTH ──────────────────────────────────────────────────────────────
- *   `floor`       — outside the vessel KEK (VK): the floor key, its own log, and the slot tree that wraps the
- *                   VK. The floor signs and unlocks before any VK opens, so nothing here may need one.
+ * ── FIVE CUSTODY CLASSES ────────────────────────────────────────────────────────────────────────
+ *   `floor`       — outside the vessel KEK (VK): the floor key, its own log, the slot tree that wraps the VK, and
+ *                   the serving tree that wraps the serving key (SK). The floor signs and unlocks before any VK
+ *                   opens, so nothing here may need one.
  *   `floor-plain` — plain bytes the floor reads (the gate, the arrival page, the raise door), bytes public by
  *                   construction, or bytes sealed under a key the VK never wraps (the sealed store's rests).
  *                   Sealing them would lock the floor out of its own door, or wrap what a blind carrier holds.
+ *   `serving`     — sealed under SK, which the VK's entry in the serving tree wraps (ember#/the-serving-key). It
+ *                   holds the serving rows and nothing beside them; no VK rotation re-seals one. No serving row
+ *                   stands yet: the rows move under SK with the ember's serving tier.
  *   `hot`         — sealed under the VK, opened once at unlock and held for the process life.
  *   `cold`        — sealed under the VK, opened for one act and then dropped.
  * A private file the floor never reads rides `hot`: sealing costs it nothing and closes the social graph
@@ -27,8 +31,8 @@
  * success; a carrier a sweep invents gets written over by an act nobody owns.
  *
  * ── A ROW OUTSIDE THE VESSEL KEY NAMES ITS LAW ──────────────────────────────────────────────────
- * Every `floor` and `floor-plain` row states, in its `bare` column, why its bytes rest outside the VK. A hot or
- * cold row states none: a hot or cold file that reads bare reads as a fault.
+ * Every `floor` and `floor-plain` row states, in its `bare` column, why its bytes rest outside the VK. A serving,
+ * hot or cold row states none: such a file that reads bare reads as a fault.
  *
  * ── THE CENSUS NAMES WHAT STANDS OUTSIDE THE TABLE ──────────────────────────────────────────────
  * `outsideTheTable` walks the three homes whole and names each file there that reads private and matches no row:
@@ -72,7 +76,7 @@ import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
 
 /** The custody classes, closed. */
-export const CUSTODY_CLASSES = ["floor", "floor-plain", "hot", "cold"] as const;
+export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold"] as const;
 export type CustodyClass = (typeof CUSTODY_CLASSES)[number];
 
 /** The homes a row may name. */
@@ -89,6 +93,18 @@ export interface CustodyHomes {
 export function vkSlotsPath(identityDir: string = larIdentityDir()): string {
   return join(identityDir, "vk-slots.bin");
 }
+
+/** The serving tree's path: the one file outside every key that wraps SK (ember#/the-serving-key). */
+export function skSlotsPath(identityDir: string = larIdentityDir()): string {
+  return join(identityDir, "sk-slots.bin");
+}
+
+/**
+ * The suffix of the serving tree a VK rotation re-wraps: it lands beside `sk-slots.bin` before the rotation commits,
+ * and the next opening of SK settles it (`openServingTree`). Its own suffix: the VK rotation's settle sweeps every
+ * `.vk-rotating` file, and this one must outlive that sweep.
+ */
+export const SK_REWRAP_SUFFIX = ".sk-rewrap";
 
 /** The homes the running vessel's own resolvers name. */
 export function vesselCustodyHomes(): CustodyHomes {
@@ -122,8 +138,8 @@ export interface CarrierRow {
   /** The census entry's name for one match. */
   readonly name:     (m: RegExpExecArray) => string;
   /**
-   * Why this row rests outside the vessel key, by law: one sentence on every `floor` and `floor-plain` row, and
-   * null on every `hot` and `cold` row. A reader prints it beside a row that reads bare.
+   * Why this row rests outside every key, by law: one sentence on every `floor` and `floor-plain` row, and null on
+   * every `serving`, `hot` and `cold` row. A reader prints it beside a row that reads bare.
    */
   readonly bare:     string | null;
   /**
@@ -179,7 +195,7 @@ const HOSTING = "hosting/[0-9a-f]{32}/";
  * outside the vessel key states its law, and a row under it states none.
  */
 type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds">>
-  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "hot" | "cold" });
+  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" });
 
 /** A row of the identity home's top level: the same line with its home and subtree left to the helper. */
 type IdentityRowSpec = RowSpec extends infer R ? (R extends unknown ? Omit<R, "home" | "under"> : never) : never;
@@ -225,6 +241,9 @@ function buildTable(): readonly CarrierRow[] {
     id({ row: "vk-slots", match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
          writer: "vault bind",
          bare: "the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it" }),
+    id({ row: "sk-slots", match: exact(skSlotsPath()), custody: "floor", keyClass: null,
+         writer: "custody-session (founding)",
+         bare: "the serving tree wraps the serving key under the vessel key's entry, so the key it wraps cannot seal it, and a raise reads it before any key opens" }),
 
     // ── floor-plain: the floor reads it, or it reads public ────────────────────────────────────
     id({ row: "vessel-card", match: loginKeyed("vessel-card"), custody: "floor-plain", keyClass: null,
@@ -443,8 +462,8 @@ export interface OutsideFile {
   readonly why:  OutsideWhy;
 }
 
-/** A name a writer gives a file it has not landed yet: the sealed writer's two sidecars, a port's or a rest's temporary file. */
-const SIDECAR_NAME = new RegExp(`(?:${escape(SEALING_SUFFIX)}|${escape(ROTATING_SUFFIX)}|\\.io-tmp)$|(?:^|/)TMP-[0-9a-f]+$`);
+/** A name a writer gives a file it has not landed yet: the sealed writer's two sidecars, the serving tree's re-wrap, a port's or a rest's temporary file. */
+const SIDECAR_NAME = new RegExp(`(?:${escape(SEALING_SUFFIX)}|${escape(ROTATING_SUFFIX)}|${escape(SK_REWRAP_SUFFIX)}|\\.io-tmp)$|(?:^|/)TMP-[0-9a-f]+$`);
 
 /** The first bytes of a file, enough to read a VK frame's magic and its least length; nothing on any fault. */
 function headOf(path: string): Uint8Array {

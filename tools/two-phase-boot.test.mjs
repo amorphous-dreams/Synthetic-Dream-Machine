@@ -163,14 +163,14 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     floor = await node.standNodeFloor(storageDir);
     assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "the floor's name answers before any composition");
 
-    // The carrier table names every private row: a path under a home that a hot or cold row matches.
+    // The carrier table names every private row: a path under a home that a serving, hot or cold row matches.
     const homes = { identity: node.larIdentityDir(), storage: node.larDataDir(), seal: node.larSealHome() };
     const privateRow = (path) => {
       for (const [home, dir] of Object.entries(homes)) {
         if (!path.startsWith(dir + "/")) continue;
         const file = path.slice(dir.length + 1);
         for (const row of node.carrierTable()) {
-          if (row.home === home && (row.custody === "hot" || row.custody === "cold") && row.match.test(file)) return row.row;
+          if (row.home === home && (row.custody === "serving" || row.custody === "hot" || row.custody === "cold") && row.match.test(file)) return row.row;
         }
       }
       return null;

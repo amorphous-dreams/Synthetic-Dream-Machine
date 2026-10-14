@@ -457,7 +457,7 @@ export type { KeyClass } from "@lararium/mesh";
 // rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {
   CUSTODY_CLASSES, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
-  vkSlotsPath, vkSealedCarriers, rotateVesselVk,
+  vkSlotsPath, skSlotsPath, vkSealedCarriers, rotateVesselVk,
 } from "./vault-carriers.js";
 export type {
   CustodyClass, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,
