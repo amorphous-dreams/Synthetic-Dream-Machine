@@ -36,7 +36,8 @@ import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import { CAS_WANT_BLOCK, CAS_BLOCK, CAS_MU, muWireBytes, type CasWireServerDeps } from "../src/cas-wire.js";
 import { AuthenticatedWSMembershipChannel } from "../src/authenticated-membership-relay.js";
 import { startCarriageRelay, resolveRelayGateSeed, type CarriageRelay } from "../src/carriage-relay.js";
-import { startCarriageServeLoop, type CarriageServeLoop } from "../src/carriage-serve-loop.js";
+import { type CarriageServeLoop } from "../src/carriage-serve-loop.js";
+import { standServeLoop } from "./carriage-stand.js";
 import { membershipOf, antigenOf, bytesFromPayload, freshTestBodyKey, TEST_SCOPE, openAsMember } from "./cas-test-setup.js";
 
 const BODY = utf8Bytes("a family body one hearth seals and another carries over the Herm's crossroads");
@@ -47,7 +48,10 @@ async function fetchOverCarriage(args: {
   channel: MembershipChannel; requester: string; holderAddr: string; cid: string;
 }): Promise<MembershipEnvelope | null> {
   await args.channel.offer({ kind: CAS_WANT_BLOCK, from: args.requester, to: args.holderAddr, payload: { cid: args.cid } });
-  for (let i = 0; i < 60; i++) {
+  // The channel names no arrival, so the asker reads its inbox until the answer stands. The deadline only FAILS
+  // (it sits inside the vector's own timeout); no outcome depends on its length.
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
     const responses = await args.channel.poll(args.requester);
     if (responses.length > 0) return responses[0]!;
     await sleep(25);
@@ -118,7 +122,11 @@ describe("herm-carriage-relay-stand — a Herm stands the crossroads; a member c
     const url = `ws://127.0.0.1:${relay!.port}#${relay!.gatePubKey}`;
 
     // A holder hearth serves its sealed body over the Herm's crossroads; two requester hearths dial the same URL.
-    loops.push(startCarriageServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 }));
+    // The crossroads keeps no want-block for a holder that has not proven its key yet: the requesters ask
+    // once the holder's loop stands, by its own word.
+    const holder = standServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 });
+    loops.push(holder.loop);
+    await holder.stands;
     const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
     const strangerCh = await AuthenticatedWSMembershipChannel.connect(url, strangerSeed);
     channels.push(memberCh, strangerCh);

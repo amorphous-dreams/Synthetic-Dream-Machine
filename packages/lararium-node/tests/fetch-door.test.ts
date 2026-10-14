@@ -18,7 +18,8 @@ import { DeterministicFederationGate, utf8Bytes, hex, sha256HexBytesSync, makeCi
 import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import type { CasWireServerDeps } from "../src/cas-wire.js";
 import { startCarriageRelay, type CarriageRelay } from "../src/carriage-relay.js";
-import { startCarriageServeLoop, type CarriageServeLoop } from "../src/carriage-serve-loop.js";
+import { type CarriageServeLoop } from "../src/carriage-serve-loop.js";
+import { standServeLoop } from "./carriage-stand.js";
 import { readCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
 import { membershipOf, antigenOf } from "./cas-test-setup.js";
 
@@ -56,11 +57,14 @@ describe("the fetch door — a fleet peer's read pulls a cleartext blob across S
     relay = await startCarriageRelay({ gateSeed: seedA });
     const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     // A: fleet = {B}; members (CONTRACT) = {C}. C stands as a contracted cabal's hearth, never fleet.
-    const loopA = startCarriageServeLoop({ relayUrl: url, vesselSeed: seedA, serverAddr: keyA, deps: depsFor(cidA, [keyB], [keyC], keyA), pollIntervalMs: 25 });
-    const loopB = startCarriageServeLoop({ relayUrl: url, vesselSeed: seedB, serverAddr: keyB, deps: depsFor(cidB, [], [], keyB), pollIntervalMs: 25 });
-    const loopC = startCarriageServeLoop({ relayUrl: url, vesselSeed: seedC, serverAddr: keyC, deps: depsFor(cidC, [], [], keyC), pollIntervalMs: 25 });
-    loops.push(loopA, loopB, loopC);
-    await new Promise((r) => setTimeout(r, 400));   // the three dials land
+    const stoodA = standServeLoop({ relayUrl: url, vesselSeed: seedA, serverAddr: keyA, deps: depsFor(cidA, [keyB], [keyC], keyA), pollIntervalMs: 25 });
+    const stoodB = standServeLoop({ relayUrl: url, vesselSeed: seedB, serverAddr: keyB, deps: depsFor(cidB, [], [], keyB), pollIntervalMs: 25 });
+    const stoodC = standServeLoop({ relayUrl: url, vesselSeed: seedC, serverAddr: keyC, deps: depsFor(cidC, [], [], keyC), pollIntervalMs: 25 });
+    const loopB = stoodB.loop, loopC = stoodC.loop;
+    loops.push(stoodA.loop, loopB, loopC);
+    // Each loop says when its channel stands. A read that starts before its own loop stands answers null at
+    // once, and a want-block that reaches the relay before the holder stands goes to no one.
+    await stoodA.stands; await stoodB.stands; await stoodC.stands;
 
     const resolveB = makeCidResolver((cid) => readCasBlobFromFs(cid, cidB), loopB.transit(() => [keyA]),
                                      (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidB); });
@@ -83,9 +87,13 @@ describe("the fetch door — a fleet peer's read pulls a cleartext blob across S
     relay = await startCarriageRelay({ gateSeed: seedA });
     const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
     // Only B dials; A (the named holder) never stands.
-    const loopB = startCarriageServeLoop({ relayUrl: url, vesselSeed: seedB, serverAddr: keyB, deps: depsFor(cidB, [], [], keyB), pollIntervalMs: 25, fetchTimeoutMs: 300 });
+    const stoodB = standServeLoop({ relayUrl: url, vesselSeed: seedB, serverAddr: keyB, deps: depsFor(cidB, [], [], keyB), pollIntervalMs: 25, fetchTimeoutMs: 300 });
+    const loopB = stoodB.loop;
     loops.push(loopB);
-    await new Promise((r) => setTimeout(r, 300));
+    // B's own channel stands, so the read below truly asks the dead holder and waits out its window; a read
+    // over a channel that had not stood yet would answer null without asking anyone.
+    await stoodB.stands;
+    expect(await loopB.transit(() => [keyA]).discover()).toEqual([keyA]);
     const resolveB = makeCidResolver((cid) => readCasBlobFromFs(cid, cidB), loopB.transit(() => [keyA]),
                                      (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidB); });
     await expect(resolveB(CLEAR_CID)).resolves.toBeNull();

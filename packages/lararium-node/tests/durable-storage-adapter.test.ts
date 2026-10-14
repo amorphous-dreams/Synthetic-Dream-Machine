@@ -271,11 +271,15 @@ describe("a stranded temp after a death mid-write", () => {
 
   /** Store one document under `adapter`, then kill a writer mid-chunk beside its chunks. Returns the doc and the temp. */
   async function strandTemp(dir: string): Promise<{ url: AutomergeUrl; docId: string; temp: string }> {
-    const repo = new Repo({ storage: new DurableNodeFSStorageAdapter(dir) });
+    const storage = new DurableNodeFSStorageAdapter(dir);
+    const repo = new Repo({ storage });
     const h = repo.create<{ text: string }>({ text: "kept" });
     h.change((d) => { d.text = "kept, and changed"; });
     await repo.flush();
     await repo.shutdown();
+    // The store rests before anyone counts its temps: a save this Repo's own debounce starts after its shutdown
+    // would stage a second temp beside the one the killed writer leaves.
+    await storage.close();
     const docId = h.documentId as string;
     const chunkDir = filesUnder(join(dir, docId.slice(0, 2), docId.slice(2)))[0]!.replace(/\/[^/]+$/, "");
     const script = join(dir, "die-mid-write.mjs");

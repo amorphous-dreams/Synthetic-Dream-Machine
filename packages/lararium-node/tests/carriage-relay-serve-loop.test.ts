@@ -32,10 +32,12 @@ import { makeSealedPlaneRegistry } from "../src/plane-seal.js";
 import {
   CAS_WANT_BLOCK, CAS_BLOCK, CAS_MU, muWireBytes, type CasWireServerDeps,
 } from "../src/cas-wire.js";
-import { AuthenticatedWSMembershipChannel } from "../src/authenticated-membership-relay.js";
+import { AuthenticatedWSMembershipChannel, startAuthenticatedMembershipRelay, type AuthenticatedMembershipRelay } from "../src/authenticated-membership-relay.js";
 import { startCarriageRelay, type CarriageRelay } from "../src/carriage-relay.js";
 import { startCarriageServeLoop, type CarriageServeLoop } from "../src/carriage-serve-loop.js";
 import { membershipOf, antigenOf, bytesFromPayload, freshTestBodyKey, TEST_SCOPE, openAsMember } from "./cas-test-setup.js";
+import { standServeLoop } from "./carriage-stand.js";
+import { arrival } from "../../lararium-mesh/tests/handshake.js";
 
 const BODY = utf8Bytes("a family body one hearth seals and another carries over the live carriage");
 const pubOf = (seed: Uint8Array): Promise<string> => ed.getPublicKeyAsync(seed).then(hex);
@@ -59,7 +61,7 @@ async function fetchOverCarriage(args: {
 }
 
 describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a stranger draws Mu; off = inert", () => {
-  let relay: CarriageRelay | null = null;
+  let relay: CarriageRelay | AuthenticatedMembershipRelay | null = null;
   const loops: CarriageServeLoop[] = [];
   const channels: AuthenticatedWSMembershipChannel[] = [];
   const dirs: string[] = [];
@@ -98,13 +100,18 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     };
 
     // The carriage relay capability: the authenticated transport + a DHT-free bag-tracker, one service.
-    relay = await startCarriageRelay({ gateSeed: holderSeed });
-    expect(relay.port).toBeGreaterThan(0);
-    expect(relay.tracker.size).toBe(0);   // the composed hint index stands empty until a body announces
+    const carriage = await startCarriageRelay({ gateSeed: holderSeed });
+    relay = carriage;
+    expect(carriage.port).toBeGreaterThan(0);
+    expect(carriage.tracker.size).toBe(0);   // the composed hint index stands empty until a body announces
     const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
 
     // The HOLDER hearth runs the serve-loop (B3): it dials + auto-answers want-blocks — no hand-driven serve turn.
-    loops.push(startCarriageServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 }));
+    // The relay keeps no want-block for a holder that has not proven its key yet, so the requesters ask only
+    // once the holder's loop STANDS (its own word, never a wait).
+    const holder = standServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 });
+    loops.push(holder.loop);
+    await holder.stands;
 
     // Two requester hearths, each its OWN authenticated channel (its proven key stamps every offer).
     const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
@@ -144,7 +151,9 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     };
     relay = await startCarriageRelay({ gateSeed: holderSeed });
     const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
-    loops.push(startCarriageServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps: bypassedDeps, pollIntervalMs: 25 }));
+    const holder = standServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps: bypassedDeps, pollIntervalMs: 25 });
+    loops.push(holder.loop);
+    await holder.stands;                 // a want-block offered before the holder stands reaches no one
     const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
     channels.push(memberCh);
 
@@ -217,41 +226,82 @@ describe("carriage-relay-serve-loop — a sealed body crosses two hearths; a str
     }
   }, 20_000);
 
-  test("CLEAN TEARDOWN: stop() halts serving over a live relay — a want-block after stop draws no answer", async () => {
+  test("CLEAN TEARDOWN: stop() takes the loop's socket off the relay and the loop knows itself down", async () => {
     const holderSeed = new Uint8Array(32).fill(7);
     const memberSeed = new Uint8Array(32).fill(8);
     const [holderKey, memberKey] = await Promise.all([pubOf(holderSeed), pubOf(memberSeed)]);
-    const { registry, cadDir, installed, under } = sealBody();
+    const { registry, cadDir, installed } = sealBody();
     const deps: CasWireServerDeps = {
       cadDir, seal: registry.seal,
       membership: membershipOf([memberKey]), antigen: antigenOf([]),
       fedGate: new DeterministicFederationGate(holderKey),
     };
-    relay = await startCarriageRelay({ gateSeed: holderSeed });
-    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
-    const loop = startCarriageServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25 });
+    // The relay tells the vector when the holder's proven socket leaves it: its own departure hook.
+    const holderLeft = arrival<void>("the holder's socket leaving the relay after stop()");
+    let holderLeaves = 0;
+    const stood = await startAuthenticatedMembershipRelay(holderSeed, 0, { onLeave: (key) => { if (key === holderKey) { holderLeaves += 1; holderLeft.arrive(); } } });
+    relay = stood;
+    const url = `ws://127.0.0.1:${stood.port}#${stood.gatePubKey}`;
+    const said: string[] = [];
+    const { loop, stands } = standServeLoop({ relayUrl: url, vesselSeed: holderSeed, serverAddr: holderKey, deps, pollIntervalMs: 25, onLog: (line) => { said.push(line); } });
+    loops.push(loop);
+    await stands;
     const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
     channels.push(memberCh);
 
-    // The loop is UP: a member's want-block draws the carried body. Its own measured round
-    // trip becomes the LIVE MARKER the absence check below calibrates against.
-    const liveT0 = performance.now();
+    // The loop is UP: a member's want-block draws the carried body, and the loop names its holders.
     const up = await fetchOverCarriage({ channel: memberCh, requester: memberKey, holderAddr: holderKey, cid: installed.cid });
-    const liveRoundTripMs = performance.now() - liveT0;
     expect(up?.kind).toBe(CAS_BLOCK);
+    expect(await loop.transit(() => [memberKey]).discover()).toEqual([memberKey]);
+    expect(holderLeft.came).toBe(false);                                   // control: the socket stood while the loop served
 
-    // stop() clears the timer + closes the channel — the holder no longer serves, so a fresh want-block draws NOTHING.
+    // stop() latches the loop, and the relay sees the holder's socket leave. No answer can ride a socket that
+    // left: the relay sends a want-block only to a socket proven under the key it names, and none stands.
+    // The vector waits for that departure by the relay's own hook, and for no silence at all: a silence
+    // measured against the clock stretches with the machine, and a stopped loop and a slow one look alike in it.
     await loop.stop();
+    await holderLeft.arrived;
+    expect(await loop.transit(() => [memberKey]).discover()).toEqual([]);  // the loop knows no holder: its channel left
+    expect(await loop.announce([installed.cid])).toBe(0);                  // and offers nothing over a channel it gave up
+    await loop.stop();                                                     // a second stop changes nothing
+    expect(said.filter((line) => /re-dialing|retrying/.test(line))).toEqual([]);   // a stopped loop schedules no dial
+    // The relay closes and every socket it still held leaves through the same hook: the holder's key left
+    // once, at the stop. A loop that dialed again after its stop would leave a second time here.
+    await stood.close();
+    relay = null;
+    expect(holderLeaves).toBe(1);
+  }, 20_000);
 
-    // §0.2 (episkopos) — the original absence check waited a FLAT 2s wall-clock budget and
-    // declared the loop dead on silence alone; under a saturated box that same flat budget could
-    // just as easily starve a REAL answer, so a silence-by-elapsed-time check with a GUESSED
-    // constant proves nothing load-bearing. The fix derives the wait from a MEASURED live
-    // round trip taken in this same run (above) rather than a guessed number: the down-check
-    // waits a comfortable multiple of how long an actual answer just took, floored so a very
-    // fast live round trip still leaves a real window to detect a leak.
-    const silenceBudgetMs = Math.max(1_000, liveRoundTripMs * 20);
-    const afterStop = await fetchOverCarriage({ channel: memberCh, requester: memberKey, holderAddr: holderKey, cid: installed.cid, budgetMs: silenceBudgetMs });
-    expect(afterStop).toBeNull();   // no timer polls, no socket carries — the serve-loop is truly down (no leak)
+  test("the relay keeps no envelope for a key no socket has proven: a holder that proves it afterwards never meets it", async () => {
+    // THE LAW THAT MAKES "START THE HOLDER AND ASK AT ONCE" A RACE. An envelope reaches the sockets proven under
+    // its `to` at the moment the relay carries it, and no other. Each step below waits on the step before by the
+    // relay's own carry hook, so the order holds on any machine.
+    const holderSeed = new Uint8Array(32).fill(9);
+    const memberSeed = new Uint8Array(32).fill(10);
+    const [holderKey, memberKey] = await Promise.all([pubOf(holderSeed), pubOf(memberSeed)]);
+    const early = arrival<void>("the relay carrying the early want-block");
+    const late = arrival<void>("the relay carrying the late want-block");
+    relay = await startAuthenticatedMembershipRelay(holderSeed, 0, {
+      onEnvelope: (env) => {
+        const cid = (env.payload as { cid?: string }).cid;
+        if (cid === "early") early.arrive();
+        if (cid === "late") late.arrive();
+      },
+    });
+    const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
+    const memberCh = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
+    channels.push(memberCh);
+    await memberCh.offer({ kind: CAS_WANT_BLOCK, from: memberKey, to: holderKey, payload: { cid: "early" } });
+    await early.arrived;                                                   // carried, to no one: no socket proves the holder's key
+    const holderCh = await AuthenticatedWSMembershipChannel.connect(url, holderSeed);
+    channels.push(holderCh);
+    await memberCh.offer({ kind: CAS_WANT_BLOCK, from: memberKey, to: holderKey, payload: { cid: "late" } });
+    await late.arrived;
+    // The relay wrote the late want-block to the holder's socket before the hook returned; the holder reads it
+    // off its own socket in a later turn. This loop waits for that one envelope and bounds only a failure.
+    const met: MembershipEnvelope[] = [];
+    const deadline = Date.now() + 10_000;
+    while (met.length === 0 && Date.now() < deadline) { met.push(...await holderCh.poll(holderKey)); if (met.length === 0) await sleep(5); }
+    expect(met.map((e) => (e.payload as { cid: string }).cid)).toEqual(["late"]);   // the early one reached no one, and never will
   }, 20_000);
 });

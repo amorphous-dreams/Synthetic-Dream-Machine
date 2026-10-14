@@ -37,6 +37,7 @@
  *     stands under) the standing a verified KEL gives it; a leaf holding no seal stands `unsealed`.
  */
 import { describe, test, expect } from "vitest";
+import { arrival } from "./handshake.js";
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import * as A from "@automerge/automerge";
@@ -432,11 +433,21 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     for (const withholding of [[true, false], [true, true]] as const) {
       const relay = memoryRelay();
       for (const store of relay.stores) chain.slice(1).forEach((e, i) => store.deposit(personaKelDropName(e.prevEventCid!, store.gatePubKey), copy({ prev: chain[i]!, event: e })));
-      const herms = relay.stores.map((store, i) => memoryDropHerm(store, relay.timeline, withholding[i] ? { serve: () => [] } : {}));
+      // Each withholding herm says when the leaf asked it: the moment it answered with nothing.
+      const asked = relay.stores.map((_, i) => arrival<void>(`the leaf asking herm ${i} for its successor`));
+      const herms = relay.stores.map((store, i) => memoryDropHerm(store, relay.timeline, withholding[i] ? { serve: () => { asked[i]!.arrive(); return []; } } : {}));
       const y = standLeaf(SEEDS.deviceY, ey, await leafOf(SEEDS.deviceY, ey, [inception]), relay, { drops: siblingKelDropsOf(herms) });
       try {
-        await sleep(300);
-        expect(y.adapter.kel, `withholding ${withholding.join("/")}`).toHaveLength(withholding[1] ? 1 : 2);
+        if (withholding[1]) {
+          // Both herms withheld, and the leaf asked both: nothing reached it, so it stands where it stood.
+          await Promise.all(asked.map((a) => a.arrived));
+          expect(y.adapter.kel, "withholding true/true").toHaveLength(1);
+        } else {
+          // The second herm serves: the leaf's KEL takes the successor. The wait hangs on that state itself.
+          await until(() => y.adapter.kel.length === 2, "the leaf to catch up through the second herm");
+          expect(asked[0]!.came, "the withholding herm got asked too").toBe(true);
+          expect(y.adapter.kel, "withholding true/false").toHaveLength(2);
+        }
       } finally { await shutdown(y); }
     }
   });
@@ -521,7 +532,7 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
       const stripped = [chain[0]!, { ...chain[1]!, enrolments: chain[1]!.enrolments!.filter((e) => !mine.includes(e)) }];
       void keyY;
       await y.adapter.relicense(stripped);
-      await sleep(200);
+      await until(() => y.refusals.length > 0, "y to say its own enrolment reads unreadable");
       expect(y.refusals).toEqual([expect.objectContaining({ suspect: "self", cause: "unreadable" })]);
       expect(peersOf(x).length).toBe(1);
       expect(peersOf(y).length).toBe(1);
@@ -582,7 +593,7 @@ describe("sibling channel — leaves of one PersonaGroup sync through a relay th
     try {
       await until(() => peersOf(x1).length === 1, "the pair over one herm");
       for (const key of [x1.self.deviceKey, y1.self.deviceKey]) c.drop(key);
-      await sleep(100);
+      await until(() => peersOf(x1).length === 0, "the leaf pinned through one herm to lose its sibling");
       expect(peersOf(x1)).toHaveLength(0);
     } finally { await shutdown(x1, y1); }
   });
