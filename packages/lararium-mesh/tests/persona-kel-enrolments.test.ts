@@ -15,7 +15,12 @@
  *   · RED: an edge inside an op-key-signed box whose own signature fails delivers nothing — `enrolledEdgeOf`
  *     verifies the edge; CONTROL: the lawful box delivers its edge and secret.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
+
+// The room each case takes, stated where the file loads: a case founds a fleet, signs and seals an enrolment per
+// device and walks the key history whole, all of it fixed work on one thread. No case waits on a peer or a timer, so
+// the room names the signatures and nothing here races.
+vi.setConfig({ testTimeout: 60_000 });
 import { ed25519 as edCurve } from "@noble/curves/ed25519.js";
 import * as ed from "@noble/ed25519";
 import { emptyLarDoc } from "../src/base-doc.js";

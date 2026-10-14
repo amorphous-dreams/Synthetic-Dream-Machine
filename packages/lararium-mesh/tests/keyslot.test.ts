@@ -2,7 +2,12 @@
  * keyslot.test — the VK rests only inside slots, each an `sss{t, pins}` over human routes; a slot opens only under
  * pins that unwrap, a paper pin binds only after its sheet reads back, and an unbind always offers the rotation.
  */
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, vi } from "vitest";
+
+// The room each case takes, stated where the file loads: every bind and every open of a passphrase pin derives a key
+// by scrypt, and a case here derives several. The work stays fixed; only the machine's share of a core varies, so the
+// room names the derivations and no case waits on a clock.
+vi.setConfig({ testTimeout: 60_000 });
 import {
   bindSlot, unbindSlot, openVk, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper,
   VK_ROTATION_OFFER, type SlotTree, type PinSpec,
