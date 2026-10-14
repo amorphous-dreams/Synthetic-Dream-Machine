@@ -11,7 +11,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { canonicalJsonBytes, hex, utf8Bytes } from "../src/crypto.js";
-import { FACE_BUNDLE_DOMAIN } from "../src/domains.js";
+import { FACE_BUNDLE_BODY_INFO, FACE_BUNDLE_DOMAIN } from "../src/domains.js";
 import {
   bindBundleRoutes, bundleMemoryKeypair, encodeFaceBundle, faceBundleBodyBytes, faceBundleMark, faceBundleResidue,
   mintBundleKey, openBundleKey, openFaceBundleBody, readFaceBundle, readFaceBundleBody, sealFaceBundleBody,
@@ -22,6 +22,8 @@ import { openMemorySection, sealMemorySection } from "../src/memory-section.js";
 import { mintPersonaInception } from "../src/persona-kel.js";
 import { mintVk } from "../src/vk.js";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { hkdf } from "@noble/hashes/hkdf.js";
+import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
 
 // Every bind and every open runs a slot's own key derivation, priced to cost a guesser; the suite waits it out.
@@ -141,6 +143,41 @@ describe("authenticated encryption covers the whole inner body", () => {
     const entries = openMemorySection(section, bundleMemoryKeypair(made.bundleKey).secret);
     expect(entries).toHaveLength(1);
     expect(hex(entries![0]!.key)).toBe(hex(KEY));
+  });
+});
+
+describe("the format mark rides the body's seal as associated data", () => {
+  // An INDEPENDENT hand of the same construction: the cipher and the key derivation spelled here, apart from the
+  // module's own seal and open. A seal and an open that both dropped the mark would still open each other; neither
+  // opens, nor gets opened by, this hand.
+  const bodyKey = (bundleKey: Uint8Array): Uint8Array => hkdf(sha256, bundleKey, faceBundleMark(), utf8Bytes(FACE_BUNDLE_BODY_INFO), 32);
+  const plain = utf8Bytes("a body's bytes, whatever they hold");
+
+  it("RED: a body the module sealed opens under the mark by an independent hand, and under no other associated data", () => {
+    const bundleKey = mintBundleKey();
+    const sealed = sealFaceBundleBody(plain, bundleKey);
+    const nonce = sealed.subarray(0, 24), ciphertext = sealed.subarray(24);
+    expect(hex(xchacha20poly1305(bodyKey(bundleKey), nonce, faceBundleMark()).decrypt(ciphertext))).toBe(hex(plain));
+    expect(() => xchacha20poly1305(bodyKey(bundleKey), nonce).decrypt(ciphertext)).toThrow();
+    expect(() => xchacha20poly1305(bodyKey(bundleKey), nonce, utf8Bytes("another format")).decrypt(ciphertext)).toThrow();
+  });
+
+  it("RED: the module opens a body an independent hand sealed under the mark, and refuses the same body sealed under none or another", () => {
+    const bundleKey = mintBundleKey();
+    const nonce = Uint8Array.from({ length: 24 }, (_, i) => i + 1);
+    const sealedWith = (aad?: Uint8Array): Uint8Array => {
+      const ciphertext = (aad ? xchacha20poly1305(bodyKey(bundleKey), nonce, aad) : xchacha20poly1305(bodyKey(bundleKey), nonce)).encrypt(plain);
+      const out = new Uint8Array(24 + ciphertext.length);
+      out.set(nonce, 0);
+      out.set(ciphertext, 24);
+      return out;
+    };
+    // CONTROL: the independent hand builds what the module reads.
+    expect(hex(openFaceBundleBody(sealedWith(faceBundleMark()), bundleKey) ?? new Uint8Array())).toBe(hex(plain));
+    // THE ENCODING MOVED: each probe hands in other bytes than the control.
+    expect(hex(sealedWith())).not.toBe(hex(sealedWith(faceBundleMark())));
+    expect(openFaceBundleBody(sealedWith(), bundleKey)).toBeNull();
+    expect(openFaceBundleBody(sealedWith(utf8Bytes("another format")), bundleKey)).toBeNull();
   });
 });
 
