@@ -19,6 +19,7 @@ import {
 import { mountFlowMapReadFace, mountOracleReadFace } from "../src/oracle-read-face.js";
 import { provingShore, readerIdentity, openSorter } from "./oracle-proof-fixture.js";
 import { ed25519VerifyingKeyFromSeed } from "@lararium/mesh";
+import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 
 const SEED = new Uint8Array(32).fill(7); // a fixed, valid ed25519 seed (deterministic)
 const READER = new Uint8Array(32).fill(9);
@@ -75,16 +76,19 @@ describe("the FLOW-map read-face — a Herm serves the public projection, shore 
     const first = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
     const p1 = await pointerAt();
     first.dispose();
-    const second = await mountOracleReadFace({ httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter, exportSnapshot: (doc) => exportOracleSnapshot(doc as never) });
+    // The face's own line for "a new act stands" carries the wait: it says it after the pointer moved and rests.
+    let reissued: Arrival<void> | null = null;
+    const second = await mountOracleReadFace({
+      httpServer: server, oracleHandle: handle, signerSeed: SEED, storageDir, authShore, sort: openSorter, exportSnapshot: (doc) => exportOracleSnapshot(doc as never),
+      onLog: (line) => { if (/^oracle read-face: act=/.test(line)) reissued?.arrive(); },
+    });
     const p1Restart = await pointerAt();
     expect(p1Restart).toEqual(p1);
 
+    reissued = arrival<void>("the read face saying a new act stands (its \"oracle read-face: act=\" line)");
     handle.change((d) => { d.tiddlers["new"] = { public: true }; });
-    let p2 = p1Restart;
-    for (let i = 0; i < 20 && p2.actCid === p1.actCid; i++) {
-      await new Promise((r) => setTimeout(r, 10));
-      p2 = await pointerAt();
-    }
+    await reissued.arrived;
+    const p2 = await pointerAt();
     expect(p2.actCid).not.toBe(p1.actCid);
     expect(p2.parents).toEqual([p1.actCid]);
 
