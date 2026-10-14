@@ -445,7 +445,7 @@ async function main(): Promise<void> {
     // what it reads and answers, and the standing composition lends it the board it may read a KEL head from.
     runAct: (act, args) => runSealedAct(act, args, {
       kelHead: composition?.kelHead ?? null, personaSelves: composition?.personaSelves ?? null, walk: composition?.walk ?? null,
-      hosting: composition?.hosting ?? null,
+      hosting: composition?.hosting ?? null, backup: composition?.backup ?? null,
     }),
     // A BACKUP'S CUT RUNS HERE TOO, against the same seated holder, once the frame's own route proves: the
     // standing composition lends it the worn face, its own edge's shadow, the island's memory section and the

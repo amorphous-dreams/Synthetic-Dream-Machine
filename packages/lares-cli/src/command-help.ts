@@ -457,12 +457,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | seal | rotate | repair | passphrase> [--yes] [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] | seal | rotate | repair | passphrase> [--yes] [--passphrase | --paper] [--rotate]",
     synopsis:
       "The VESSEL KEY custody door (unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
       "`backup` cuts ONE face's bundle: its root, its own lines and the content keys this vessel holds for it, sealed " +
       "under a new route of its own; it carries no veil key and no seat, and the sealed bytes must survive elsewhere. " +
+      "`restore` brings a face back from its bundle as a recovery act: the vessel derives its own veil and takes a NEW seat " +
+      "under the face's fixed prefix, and `--memory` lands the bundle's content keys on that seat. " +
       "Beside it, the passphrase LIFECYCLE for the share carriers (the device recovery shares and the reserve share). " +
       "DAEMON-FIRST: a mutating lifecycle verb routes through the daemon while it stands, so its in-memory policy " +
       "moves with the carriers and nothing un-rotates; it falls to a direct file op only when the daemon " +
@@ -476,6 +478,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault bind [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back)",
       "lares vault unbind <slot-id> [--rotate]   # unlock, remove a slot; the rotation offer prints EVERY time",
       "lares vault backup --face <N> --out <file>   # cut ONE face's backup bundle, sealed under a route of its own",
+      "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",
+      "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked, wearing the face)",
       "lares vault status --check             # ... probing a passphrase → split-KEK detection",
       "lares vault seal                       # seal cleartext share carriers under a NEW passphrase",
       "lares vault rotate                     # re-seal the share carriers old → new",
@@ -489,7 +493,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--rotate           (unbind) mint a new vessel key and re-bind each staying slot; put <slot-id> BEFORE it",
       "--face <N>         (backup) the handle-index of the face to cut; the standing vessel wears it",
       "--out <file>       (backup) the bundle file to write; a file already standing there refuses",
-      "unlock | bind | unbind | backup read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
+      "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
+      "--memory           (restore) import the bundle's memory section instead of its lineage",
+      "unlock | bind | unbind | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
       "LARES_ARCHIVE_PASSPHRASE       the current passphrase (non-interactive, with --yes)",
       "LARES_ARCHIVE_PASSPHRASE_NEW   the new passphrase for seal / rotate",
     ],

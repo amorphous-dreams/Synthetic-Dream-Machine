@@ -100,7 +100,7 @@ describe("lares host — roll, invite, state", () => {
     // The running vessel holds its store and already carries its hosting doc in its replica.
     const live = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
     const told: string[] = [];
-    const beside = (hosting: SealedActContext["hosting"]): SealedActContext => ({ kelHead: null, personaSelves: null, walk: null, hosting });
+    const beside = (hosting: SealedActContext["hosting"]): SealedActContext => ({ kelHead: null, personaSelves: null, walk: null, hosting, backup: null });
     try {
       const held = await materializeSharedLarDoc(live, doc, "hosting");
       const rolled = await runSealedAct("host.roll", {}, beside({ withRepo: (act) => act(live), rolled: async (nexusAid) => { told.push(nexusAid); } }));

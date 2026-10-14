@@ -224,3 +224,44 @@ describe("CustodyHolder.proves — a person stands at an unlocked vessel", () =>
     expect(text).not.toContain("holder-wrong-P6");
   });
 });
+
+describe("CustodyHolder.removeColdRow — an act removes the cold row it committed", () => {
+  const COLD = ".restore-pending.json";
+  const HOT = ".persona-roster.json";
+  test("C1 a cold row leaves, and a second removal answers that none stood", async () => {
+    const h = await found(); await h.unlock([pass(RIGHT)]);
+    await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
+    expect(existsSync(join(homes.identity, COLD))).toBe(true);
+    expect(await h.removeColdRow("identity", COLD)).toBe(true);
+    expect(existsSync(join(homes.identity, COLD))).toBe(false);
+    expect(await h.removeColdRow("identity", COLD)).toBe(false);
+  });
+
+  test("C2 a hot row refuses the cold removal and stays; an unknown address refuses", async () => {
+    const h = await found(); await h.unlock([pass(RIGHT)]);
+    await h.writeRow("identity", HOT, new TextEncoder().encode('{"roots":[]}'));
+    await expect(h.removeColdRow("identity", HOT)).rejects.toBeInstanceOf(CustodyRowUnknown);
+    expect(existsSync(join(homes.identity, HOT))).toBe(true);
+    await expect(h.removeColdRow("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRowUnknown);
+  });
+
+  test("C3 a locked holder removes nothing", async () => {
+    const h = await found(); await h.unlock([pass(RIGHT)]);
+    await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
+    await h.lock();
+    await expect(h.removeColdRow("identity", COLD)).rejects.toBeInstanceOf(CustodyLocked);
+    expect(existsSync(join(homes.identity, COLD))).toBe(true);
+  });
+
+  test("C4 a cold row another vessel's key sealed stays, and the removal refuses by name", async () => {
+    const h = await found(); await h.unlock([pass(RIGHT)]);
+    const other = stage("c4-other");
+    const o = await found(other); await o.unlock([pass(RIGHT)]);
+    await o.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"of another vessel"}'));
+    mkdirSync(homes.identity, { recursive: true });
+    writeFileSync(join(homes.identity, COLD), readFileSync(join(other.homes.identity, COLD)));
+    const before = readFileSync(join(homes.identity, COLD));
+    await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/\.restore-pending\.json reads/);
+    expect(readFileSync(join(homes.identity, COLD)).equals(before)).toBe(true);
+  });
+});

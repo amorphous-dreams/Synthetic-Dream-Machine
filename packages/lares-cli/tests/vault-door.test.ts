@@ -216,3 +216,37 @@ describe("vault door — backup asks the standing vessel", () => {
     }
   });
 });
+
+describe("vault door — restore reads the bundle's route on a terminal", () => {
+  it("restore without a file, with a bad index, or with --memory and --as together refuses as a usage error", async () => {
+    for (const argv of [["restore"], ["restore", join(root, "x.bundle"), "--as", "one"], ["restore", join(root, "x.bundle"), "--as", "-1"], ["restore", join(root, "x.bundle"), "--memory", "--as", "1"]]) {
+      out.length = 0;
+      expect(await run(...argv)).toBe(2);
+      expect(out.join("")).toMatch(/"code":\s*"usage"/);
+    }
+  });
+
+  it("restore --memory with no vessel standing refuses `no-vessel` and reads no credential", async () => {
+    answers.push("p", "a-bundle-route");
+    expect(await run("restore", join(root, "x.bundle"), "--memory")).toBe(1);
+    expect(out.join("")).toMatch(/"code":\s*"no-vessel"/);
+    expect(answers.length).toBe(2);
+  });
+
+  it("★ with no TTY, backup's route and restore's route refuse BY NAME ★", async () => {
+    tty = false;
+    out.length = 0;
+    expect(await run("restore", join(root, "x.bundle"))).toBe(1);
+    expect(out.join("")).toMatch(/CredentialTtyRefusal/);
+  });
+
+  it("restore of a file that reads as no bundle refuses `bundle-malformed`, and moves no row", async () => {
+    const bent = join(root, "bent.bundle");
+    writeFileSync(bent, "no bundle here");
+    const before = tree(root);
+    answers.push("p", "a-bundle-route", "n");
+    expect(await run("restore", bent)).toBe(1);
+    expect(out.join("")).toMatch(/"code":\s*"bundle-malformed"/);
+    expect(tree(root)).toBe(before);
+  });
+});

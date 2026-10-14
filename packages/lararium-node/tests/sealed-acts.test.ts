@@ -4,7 +4,9 @@
  *   T1  the table bounds the acts: a name outside it refuses `unknown-act`; an argument a row does not name
  *       refuses `bad-args`; both refuse BEFORE any row opens (a locked seat would otherwise answer first).
  *                                                                 control: a sound call at a locked seat reads CustodyLocked
- *   T2  no row takes a credential: no act's shape names one, and a credential handed in refuses by its key's name.
+ *   T2  no row takes a credential of this vessel: no act's shape names one, and a credential handed in refuses by
+ *       its key's name. The restore's two rows take a BUNDLE's own key, as 64 lower hex and nothing else: the one
+ *       stated exception, and it opens nothing this vessel holds.
  *   T3  the roster reads as one answer and opens no root. `seal.sign` signs no image a caller hands it on the
  *       image's form alone: with no charter standing a well-formed roll refuses, and so does every other image
  *       (bytes that spell no record, a record of another name, a crossing record, a roll out of its canonical
@@ -14,6 +16,8 @@
  *       names no recovery split.                                  control: the search finds a seed laid in on purpose
  *   T5  the pet-name, declaration and handle-book rows round-trip through their acts, and rest sealed.
  *   T6  an act that meets a row it cannot open refuses under the row's own name, never an empty answer.
+ *   T7  the restore's two rows answer a named refusal as an ANSWER (`refused`), never a thrown fault: a body that
+ *       fails its tag, an import with no composition standing. A restore with no store to land on refuses the act.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -27,7 +31,7 @@ import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fi
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
-const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null, hosting: null };
+const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null, hosting: null, backup: null };
 const drops: SeatedScratchCustody[] = [];
 async function vessel(label: string): Promise<SeatedScratchCustody> {
   const c = await seatScratchCustody(label);
@@ -70,7 +74,21 @@ describe("the sealed-act table", () => {
     const credentialish = /credential|passphrase|password|sheet|secret|seed|vk\b|key$/i;
     const named = SEALED_ACT_NAMES.flatMap((name) => Object.keys(SEALED_ACTS[name].shape).map((arg) => `${name}:${arg}`));
     expect(named.length).toBeGreaterThan(8);                           // CONTROL: the scan read real shapes
-    expect(named.filter((n) => credentialish.test(n.split(":")[1]!))).toEqual([]);
+    // ONE STATED EXCEPTION, and it names no credential of this vessel: the restore's two rows take a BUNDLE's own
+    // key, which the person's route already opened in the command's process. It opens that one bundle's body and
+    // nothing this vessel holds (custody#/the-restore).
+    expect(named.filter((n) => credentialish.test(n.split(":")[1]!))).toEqual(["bundle.restore:key", "bundle.import:key"]);
+    for (const row of ["bundle.restore", "bundle.import"] as const) {
+      const body = Buffer.from("a sealed body").toString("base64");
+      // A bundle row reads a key as 64 lower hex and nothing else, and takes no route beside it.
+      for (const key of ["a-passphrase-not-a-key", "AB".repeat(32), "ab".repeat(31), 7, ["ab".repeat(32)]]) {
+        expect(await reasonOf(runSealedAct(row, { body, key }, ctx)), `${row} ${String(key).slice(0, 12)}`).toBe("bad-args");
+      }
+      for (const stray of ["credentials", "passphrase", "sheets"]) {
+        expect(await reasonOf(runSealedAct(row, { body, key: "ab".repeat(32), [stray]: "a-synthetic-credential" }, ctx))).toBe("bad-args");
+      }
+      expect(await reasonOf(runSealedAct(row, { body: "not base64 !", key: "ab".repeat(32) }, ctx))).toBe("bad-args");
+    }
     for (const key of ["credentials", "passphrase", "sheets"]) {
       const refusal = await runSealedAct("persona.roots", { [key]: "a-synthetic-credential" }, ctx).catch((e: unknown) => e);
       expect(refusal).toBeInstanceOf(SealedActRefused);
@@ -158,5 +176,21 @@ describe("the sealed-act table", () => {
     expect(refusal).toMatchObject({ home: "identity", file: HANDLE_BOOK_FILE });
     await expect(runSealedAct("handle-book.save", { snapshot: { era: 1, records: [] } }, ctx)).rejects.toBeInstanceOf(CustodyRowUnavailable);
     expect(readFileSync(join(c.homes.identity, HANDLE_BOOK_FILE), "utf8")).toBe("{\"cleartext\":true}");
+  });
+
+  test("T7 — the restore's rows answer a named refusal, and a restore with no store refuses the act", async () => {
+    await vessel("acts-t7");
+    const key = "ab".repeat(32);
+    const body = Buffer.from(new Uint8Array(64).fill(7)).toString("base64");
+    // No store stands to land on: the act refuses before the body opens.
+    expect(await reasonOf(runSealedAct("bundle.restore", { body, key }, ctx))).toBe("act-refused");
+    // With a store lent, a body that fails its tag answers its own name and moves nothing.
+    const lent: SealedActContext = { ...ctx, hosting: { withRepo: async () => { throw new Error("no restore reaches the store before its body opens"); }, rolled: async () => {} } };
+    expect(await runSealedAct("bundle.restore", { body, key }, lent)).toMatchObject({ refused: "bundle-refused" });
+    expect(await runSealedAct("bundle.import", { body, key }, ctx)).toMatchObject({ refused: "bundle-refused" });
+    // An answer names no key and no body.
+    const said = JSON.stringify([await runSealedAct("bundle.restore", { body, key }, lent), await runSealedAct("bundle.import", { body, key }, ctx)]);
+    expect(said).not.toContain(key);
+    expect(said).not.toContain(body);
   });
 });

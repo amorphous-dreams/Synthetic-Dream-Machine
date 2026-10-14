@@ -47,7 +47,7 @@ export class BackupRefused extends Error {
   constructor(readonly reason: CutRefusal, message: string) { super(message); }
 }
 
-/** What the standing composition lends a cut. */
+/** What the standing composition lends a bundle's cut, and the import of a bundle's memory section. */
 export interface BackupDoor {
   /** The face this composition wears, by handle-index: the one its island counts keys for. Null where no face stands lit. */
   readonly wornFace: () => number | null;
@@ -61,6 +61,17 @@ export interface BackupDoor {
   readonly cutMemory: ((to: Uint8Array) => Promise<{ readonly section: string; readonly holds: readonly FaceBundleHolding[] }>) | null;
   /** The face's key event log as this vessel's board holds it, inception first; empty where the board holds none. */
   readonly kel: (prefix: string) => Promise<readonly PersonaKelEvent[]>;
+  /**
+   * Ask the daemon island to name a door for ONE import: a fresh public key the section pair's secret half seals
+   * to. Null where no daemon island stands.
+   */
+  readonly memoryDoor: (() => Promise<Uint8Array>) | null;
+  /**
+   * Hand the island a bundle's memory section (base64) and its pair's secret half sealed to the door the island
+   * named (base64); answers one outcome per entry. Null where no daemon island stands. A refusal of the island's
+   * rides out as `IslandVerbRefused`, its name in `reason`.
+   */
+  readonly importMemory: ((section: string, sealedSecret: string) => Promise<ReadonlyArray<{ readonly bagId: string; readonly keyVersion: string; readonly outcome: string; readonly cause?: string }>>) | null;
 }
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };

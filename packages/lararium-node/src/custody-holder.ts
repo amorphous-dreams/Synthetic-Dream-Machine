@@ -112,6 +112,12 @@ export interface CustodyHolder {
    * key opens: a row that stands and does not open refuses `CustodyRowUnavailable` and stays.
    */
   removeRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean>;
+  /**
+   * Remove one COLD row as ONE custody holder; answers whether a row stood. As `removeRow` does for a hot row,
+   * the holder removes only a row its own key opens: a row that stands and does not open refuses
+   * `CustodyRowUnavailable` and stays. An act removes a cold row once what the row committed stands done.
+   */
+  removeColdRow(home: CustodyHome, file: string): Promise<boolean>;
   openColdRow<T>(home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T): Promise<T>;
   /**
    * Read a cold row, decide, and write it as ONE custody holder, for a cold row whose mint must never land over a
@@ -276,6 +282,20 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
       return operation(async () => {
         try {
           return await removeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass }, ...(when ? { when } : {}) });
+        } catch (err) {
+          if (err instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, err.reading);
+          throw err;
+        }
+      });
+    },
+    async removeColdRow(home, file) {
+      if (vk === null || !accepting) throw new CustodyLocked();
+      const { row, path, name } = address(home, file, true);
+      if (row.custody !== "cold") throw new CustodyRowUnknown(home, file, "removeColdRow requires a cold row");
+      const key = vk;
+      return operation(async () => {
+        try {
+          return await removeSealedCarrier({ io: a.io, vk: key, treePath: vkSlotsPath(a.homes.identity), carrier: { name, path, keyClass: row.keyClass } });
         } catch (err) {
           if (err instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, err.reading);
           throw err;

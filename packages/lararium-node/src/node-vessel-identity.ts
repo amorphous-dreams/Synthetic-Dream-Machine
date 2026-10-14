@@ -683,6 +683,37 @@ async function commitRoot(login: string | null, handleIndex: number, keypair: Pe
   return kept;
 }
 
+/**
+ * LAND A CARRIED ROOT at `handleIndex` and record the roster line that commits it (a restore). Nothing standing
+ * takes the root; the same root standing changes nothing; any other root row or roster line at the index refuses
+ * `names-another-key` with its bytes untouched. The keypair's public half must derive from its seed.
+ */
+export async function landPersonaRoot(handleIndex: number, keypair: { readonly signingKey: string; readonly verifyingKey: string }): Promise<void> {
+  assertHandleIndex(handleIndex);
+  const login = await loginHint();
+  const file = personaGroupRootFileName(login, handleIndex);
+  if (!HEX64.test(keypair.signingKey) || !HEX64.test(keypair.verifyingKey) || verifyingKeyOfSeed(keypair.signingKey) !== keypair.verifyingKey) throw malformed(file);
+  // EVERY STANDING ROW READS BEFORE ANY WRITE: a roster line or an orphan root under another key refuses here, so
+  // a refused landing adopts no orphan and records no line.
+  const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
+  if (line && line.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  const orphan = line ? null : await orphanPersonaRootKey(handleIndex);
+  if (orphan !== null && orphan !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  const kept = await commitRoot(login, handleIndex, { signingKey: keypair.signingKey, verifyingKey: keypair.verifyingKey });
+  if (kept.root.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+}
+
+/**
+ * The public key of the ORPHAN root row at `handleIndex`: a root row that stands while the roster holds no line
+ * for it. Null where no such row stands. Opens that one cold row for the length of this read.
+ */
+export async function orphanPersonaRootKey(handleIndex: number): Promise<string | null> {
+  assertHandleIndex(handleIndex);
+  if (!(await orphanPersonaRoots()).includes(handleIndex)) return null;
+  const file = personaGroupRootFileName(await loginHint(), handleIndex);
+  return openColdCustodyRow("identity", file, (bytes) => parseRootRow(bytes, file).verifyingKey);
+}
+
 /** The sealed ActivePersonaStore — one pointer row, read whole or refused. */
 function nodeActivePersonaStore(login: string | null): ActivePersonaStore {
   const file = activePersonaFileName(login);

@@ -24,7 +24,7 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   mintEnrollmentOffer, sealPersonaGrant, openPersonaGrant, mintJoinAck, verifyJoinAck,
-  headOpKey, personaKelChainForPrefix, personaKelBoardDocUrl, materializeSharedLarDoc, type PersonaKelEvent,
+  headOpKey, personaKelChainForPrefix, personaKelEventsFromBoard, personaKelBoardDocUrl, materializeSharedLarDoc, writePersonaKelEvent, type LarDoc, type PersonaKelEvent,
   type PersonaRef, type AdmitSigner, type JoinRecord, type EnrollmentOffer, type SealedGrant, type JoinAck,
 } from "@lararium/mesh";
 import {
@@ -33,6 +33,7 @@ import {
 } from "./persona-admit-carriage.js";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { nodeNexusIsland } from "./nexus-standing.js";
+import { resolveBootDoc } from "./repo-helpers.js";
 import {
   recordAdmittedPersona, stashEnrollmentSecret, peekEnrollmentSecrets, takeEnrollmentSecret,
   peekSentMemo, stashSentMemo, takeSentMemo, withdrawAdmitOffer, withdrawAdmitGrant, bindEnrollmentToGrant,
@@ -61,10 +62,15 @@ async function render(carriage: string): Promise<HopRender> {
  * regardless of how many resolver SHAPES are built off it (op-key, KEL seq, …). `repo` names the store's one
  * holder — the standing vessel's own Repo, or the direct holder's (`ownedStore`).
  */
-async function localPersonaKelBoard(repo: Repo) {
+/** The address of THIS vessel's local persona-KEL board: the one place this module composes the resolved island. */
+async function localPersonaKelBoardUrl() {
   const nexusPubkey = await loadVesselVerifyingKey();
   const boardIsland = nodeNexusIsland({ ownVesselKey: nexusPubkey });
-  return materializeSharedLarDoc(repo, personaKelBoardDocUrl(boardIsland), "board:persona-kel");
+  return personaKelBoardDocUrl(boardIsland);
+}
+
+async function localPersonaKelBoard(repo: Repo) {
+  return materializeSharedLarDoc(repo, await localPersonaKelBoardUrl(), "board:persona-kel");
 }
 
 /**
@@ -75,6 +81,29 @@ async function localPersonaKelBoard(repo: Repo) {
 export async function readLocalPersonaKelChain(repo: Repo, prefix: string): Promise<PersonaKelEvent[]> {
   const board = await localPersonaKelBoard(repo);
   return [...(personaKelChainForPrefix(board.doc(), prefix) ?? [])];
+}
+
+/**
+ * EVERY event THIS vessel's local persona-KEL board holds under `prefix`, verified or not, in no order: what a
+ * reader hands the one fold (`foldPersonaContests`), which judges each. Empty where the board holds none.
+ */
+export async function readLocalPersonaKelEvents(repo: Repo, prefix: string): Promise<PersonaKelEvent[]> {
+  // A READ THAT WRITES NOTHING: a board this vessel never held reads as holding no event. `localPersonaKelBoard`
+  // materializes a blank board where none stands, and a reader that only checks must leave the store as it found it.
+  let doc: LarDoc | undefined;
+  try { doc = (await resolveBootDoc<LarDoc>(repo, await localPersonaKelBoardUrl(), { tideline: "hearth-private", label: "board:persona-kel" })).doc(); }
+  catch { return []; }
+  return personaKelEventsFromBoard(doc).filter((event) => event.prefix === prefix);
+}
+
+/**
+ * Seat a face's carried key history on THIS vessel's local persona-KEL board (a restore's re-admission). Every
+ * event already stood on a board somewhere and verifies by itself, so the write adds no authority; an event the
+ * board already holds lands as the same entry.
+ */
+export async function seatLocalPersonaKelChain(repo: Repo, events: readonly PersonaKelEvent[]): Promise<void> {
+  const board = await localPersonaKelBoard(repo);
+  board.change((draft) => { for (const event of events) writePersonaKelEvent(draft, event); });
 }
 
 /**

@@ -148,6 +148,14 @@ export async function removeCustodyRow(home: CustodyHome, file: string, when?: (
 }
 
 /**
+ * Remove one COLD row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
+ * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays.
+ */
+export async function removeColdCustodyRow(home: CustodyHome, file: string): Promise<boolean> {
+  return (await openedCustody()).removeColdRow(home, file);
+}
+
+/**
  * Open one COLD row for one act. `act` receives the row's plaintext, which zero-fills when the act settles, so the
  * act copies out what it keeps. A row with nothing at its path refuses `CustodyRowUnavailable` reading `absent`,
  * as every reading but a whole one does: a cold row holds a secret some act already counted on.

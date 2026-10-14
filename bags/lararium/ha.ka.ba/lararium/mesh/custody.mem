@@ -151,25 +151,28 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 
 !! The restore ~ a recovery act, never a row copy
 
-''`lares vault restore <file>` brings a face back onto a vessel that never held it.'' The fresh vessel derives its OWN veil from its own custody root and takes a NEW seat. No seat of the lost vessel stands again.
+''`lares vault restore <file>` brings a face back onto a vessel that never held it.'' The fresh vessel derives its OWN veil from its own custody root and takes a NEW seat. No seat of the lost vessel stands again. The face lands at the handle-index its bundle named, or at the index a person names (`--as <N>`).
 
 !!! The steps
 
 # ''Open.'' The command reads the bundle's route on a terminal, opens the slot tree and hands the body and the bundle key to the vessel's custody door. The body's tag verifies before any field reads.
-# ''Preflight, before any write.'' The vessel reads every target row and every relation. The root's public key derives from its seed, the roster line names that key, and the prefix and signer name match what the root itself derives. The carried key history verifies whole, from the inception that root derives. ''The face's CURRENT key history still accepts the root'': the newest head this vessel reads, among the carried log and its own board, still commits recovery to this root's own recovery key and still names this root as the operating key. No root of this face stands here. The target handle-index holds no other root, no other roster line and no lit face; an orphan root row there matches the bundle's key. No `face-proof-key` row stands there under other bytes.
+# ''Preflight, before any write.'' The vessel reads every target row and every relation, the names rows and the handle-book among them: a row that stands and does not read whole refuses here, by its own name. The check of the board reads and never writes: a board this vessel never held reads as holding no event. A founded place stands here, and a face above index zero rides beside a lit founding face. The root's public key derives from its seed, the roster line names that key, and the prefix and signer name match what the root itself derives. The carried key history verifies whole, from the inception that root derives. ''The face's CURRENT key history still accepts the root'': every key event this vessel reads for the face, off the carried log and off its own board, folds through the one reader of key histories, and the newest event of that lineage still commits recovery to this root's own recovery key and still names this root as the operating key. A rotation still open to contest counts as the newest event. A history that forks refuses: no reader settles a fork by order. An event that fails its own proof moves nothing, so nobody blocks a restore by planting one. No root of this face stands here. The target handle-index holds no other root, no other roster line and no lit face; an orphan root row there matches the bundle's key. No `face-proof-key` row stands there under other bytes.
 # ''One durable commit.'' The vessel seals ONE row, `restore-pending`, that holds everything the restore will land. That one write commits the restore: before it nothing moved, and after it the restore completes, in this run or the next. The vessel then lands each row from it: the proof-key rows, the names, the handle-book records, the root row and its roster line. Each lands only where nothing stands or where the same bytes stand, so a run that stops anywhere lands the rest when the same command runs again.
-# ''Re-admit.'' The vessel seats the carried key history on its own board and lights the face under its own veil: a fresh key group, the same fixed prefix, and a device edge the root signs for this vessel's key. The pending row leaves once the face stands lit. The face mounts at the vessel's next unlock.
+# ''Re-admit.'' The vessel seats the carried key history on its own board and lights the face under its own veil: a fresh key group, the same fixed prefix, and a device edge the root signs for this vessel's key. The pending row leaves once the face stands lit. The face mounts when the vessel stands again and a person unlocks it.
 # ''Import'' (`lares vault restore <file> --memory`). The vessel, standing unlocked and wearing the face, hands the memory section to its daemon island's import door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>). The command prints each version's outcome, and that the sealed bytes must stand in this vessel's rests for a body to open.
+
+''A stopped restore completes.'' A pending row that names the same root resumes at the landing, from the row and never from the bundle handed in. The key history check runs again first, over the row's log, the handed bundle's log and the board, so another cut of the face that carries a newer head refuses the resume. A pending row that names another face refuses, and so does another index named over a restore that stands pending.
 
 ''Restore lands additively.'' It never replaces a newer lockbox, record, key, name or label with a bundle's snapshot. A name fills only where the vessel holds none. An old bundle over a newer holder adds what the holder lacks and moves nothing it holds.
 
-''A vessel checks the newest key history it reads, and every honest reader checks its own.'' The carried log reaches as far as the cut. A rotation that landed after the cut shows only on a board, so a fresh vessel that reached no board passes a root the face has since superseded. That vessel's seat then stands for itself alone: every reader that holds the newer head refuses the edge the superseded root signed, at its own gate, and this vessel's own gate refuses it too once its board carries that head.
+''A vessel checks the newest key history it reads, and every honest reader checks its own'' (house reading). The house keeps no registry of heads, and no vessel reads a head it never received. The restore answers which head its check read, by sequence, and whether it read that head off this vessel's own board or off the bundle's log. The carried log reaches as far as the cut. A rotation that landed after the cut shows only on a board, so a fresh vessel that reached no board passes a root the face has since superseded. That vessel's seat then stands for itself alone: every reader that holds the newer head refuses the edge the superseded root signed, at its own gate, and this vessel's own gate refuses it too once its board carries that head.
 
 ''A face whose other vessels still stand takes the join door'' (house reading). A restore founds a fresh key group under the face's fixed prefix. Where another vessel of the face still holds the group, that vessel seats the new device through the fleet-join door, and the bundle serves that device's memory alone (`--memory`).
 
 !!! The restore's refusals
 
 |! refusal |! what stopped it |
+| `bundle-unreadable` | no file reads at the path the person named |
 | `bundle-malformed` | the file carries no format mark, or no slot tree that reads whole |
 | `no-slot-opens` | the route opened no slot of the bundle |
 | `bundle-refused` | the body's tag failed: altered bytes, or another bundle's key |
@@ -177,13 +180,20 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 | `root-superseded` | the newest head this vessel reads commits recovery to another key set, or names another operating key |
 | `face-already-held` | this vessel holds this face's root and no restore of it stands pending: a second restore over it |
 | `restore-pending` | another face's restore stands pending here; the same command over that face's own bundle completes it first |
+| `place-unfounded` | no founded place stands here: a restore lands a face onto a vessel `lares vessel found` already stood |
+| `founding-face-unlit` | the target index lies above zero, and no founding face stands lit on this vessel |
 | `index-held` | the target handle-index holds another root or a lit face |
 | `roster-names-another-key` | a roster line at the target index names another key |
 | `orphan-names-another-key` | a root row stands at the target index under another key |
 | `row-conflict` | a row the restore would write stands under other bytes |
+| `face-not-worn` | `--memory` met a vessel that stands wearing no face |
 | `another-face` | `--memory` met a bundle whose root differs from the face this vessel wears |
+| `memory-unavailable` | `--memory` met a vessel with no daemon island, or no vessel standing |
+| `signer-unavailable` | `--memory` met an island that holds no session signer: an import signs a record |
 
-Every refusal lands before the commit row, so before any row moves.
+Every refusal of a restore lands before the commit row, so before any row moves. An import that refuses lands no key; each entry of an import that runs draws one outcome of its own (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>).
+
+''The restore's two acts ride the custody door's act table'' (house reading). The table takes no credential of the vessel, and nothing a row takes opens the vessel key. The two rows take a bundle's body still sealed and the bundle's own key, which the person's route already opened in the command's process: that key opens one bundle's body and nothing this vessel holds. A root comes in through the restore's row, and no row answers one. With no vessel standing the command runs the same restore in its own process; an import needs the standing vessel's island.
 
 <<~/ahu>>
 
@@ -223,11 +233,14 @@ Every refusal lands before the commit row, so before any row moves.
 * ''`lares vault backup --face <N> --out <file>`'' (`packages/lares-cli/src/vault-backup.ts`, `commands/vault.ts`): the command reads the vessel's route and the bundle's new route on a terminal, binds the slot tree in its own process and writes the file owner-only. The test door for marked scratch roots (`tools/backup-test-custody.mjs`) runs the same cut under the published test route.
 * ''The handle-book's tag for the recognising face'' (`packages/lararium-mesh/src/handle-book.ts`): a recognition made while a face stands worn tags that face's root key, `snapshotFor` answers one face's own records under that face's own labels, and a record no face tagged enters no bundle. The node command line tags; a browser vessel cuts no bundle and tags nothing.
 
-''Specified in code: the suites run it, and no production path reaches it.''
-* The memory section's import door, inside the key island (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/what-the-code-holds">>). Caller: the restore's import act.
+* ''The restore'' (`packages/lararium-node/src/face-bundle-restore.ts`; the act table's `bundle.restore` row, `sealed-acts.ts`): the five steps of #/the-restore, each refusal by name before the one commit row, and a stopped restore that completes from that row. The face lights through the same rite that lights any face, over the root the restore landed.
+* ''`lares vault restore <file>`'' (`packages/lares-cli/src/vault-restore.ts`, `commands/vault.ts`): the command reads the bundle's route on a terminal, opens the slot tree in its own process and hands the body still sealed, beside the bundle key, to one act. The test door for marked scratch roots (`tools/restore-test-custody.mjs`) runs the same restore under the published test route.
+* ''The end-to-end rehearsal'' (`packages/lararium-node/tests/face-bundle-rehearsal.test.ts`, on the real founding, the real face rite and each vessel's own key island; `tools/vault-restore-door.test.mjs`, on the built tree and standing vessels): found, light a face, seal a private body, cut, destroy the vessel's home, found fresh, restore, import, open the body and a second body sealed after the cut under the same version; a second restore and another identity refuse.
+
+''Specified in code: the suites run it, and no production path completes it.''
+* ''The memory import'' (`face-bundle-restore.ts` `importFaceBundleMemory`; the act table's `bundle.import` row). The standing vessel places the island's door and its import under its own signed asks. An import signs a record, and no production path opens a session signer, so on a production vessel it refuses `signer-unavailable`. Caller that completes it: the wire cutover's session open (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
 
 ''Owed: the law above stands, and no code holds it.''
-* The restore, its commit row's writer and the `lares vault restore` command.
 * A witness that derives from the table and refuses any private file or seal outside it.
 
 <<~/ahu>>
@@ -242,6 +255,6 @@ Every refusal lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zmkYGM8llUO1mptYLaJ2P-j-XT-xUWz8ez4CATbqJVE
+<<^ code="&#x0003;">>ni:///sha-256;fax_RaQMsFKLD90kkddDqeSipOSS3e57gkFvu6kBam8
 
 <<^ code="&#x0004;" -> to="?">>

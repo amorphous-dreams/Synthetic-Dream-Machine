@@ -16,11 +16,15 @@
  * ── WHAT BOUNDS AN ACT ──────────────────────────────────────────────────────────────────────────
  *   · The table names every act. A name outside it refuses `unknown-act`, by name.
  *   · Each row names its arguments and their types. An argument the row does not name refuses `bad-args`, so a
- *     frame carries nothing a row did not ask for; no row asks for a credential.
+ *     frame carries nothing a row did not ask for; no row asks for a credential of this vessel, and nothing a row
+ *     takes opens the vessel key. The restore's two rows take a BUNDLE's own key, which a person's route already
+ *     opened in the command's process: it opens that one bundle's body and nothing this vessel holds.
  *   · An act answers a plain record for its caller to print. The door logs the act's name and how it ended, and
  *     never an argument, an answer or a refusal's own words.
  *   · No row hands out a root seed, a vessel key, the vessel's key session, or anything that rebuilds one: the
- *     recovery split, whose shares rebuild a root, runs in a command's own process alone and never here.
+ *     recovery split, whose shares rebuild a root, runs in a command's own process alone and never here. A
+ *     backup's cut, which does hand a root off the vessel sealed, rides a frame of its own that asks the vessel's
+ *     route again (`custody-frames`, `backup`). The restore's two rows take a root IN, sealed; neither answers one.
  *   · No row signs whatever it gets handed. The row that signs a charter roll as a persona root (`seal.sign`)
  *     reads the charter that stands and signs only a roll its standing head licenses; the crossing rows take no
  *     image at all, and sign the crossing that stands open.
@@ -47,6 +51,8 @@ import {
   type SealReserveState,
 } from "./seal-reserve-store.js";
 import type { Repo } from "@automerge/automerge-repo";
+import type { BackupDoor } from "./face-bundle-cut.js";
+import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundle } from "./face-bundle-restore.js";
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import {
@@ -83,6 +89,12 @@ export interface SealedActContext {
     readonly withRepo: <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
     readonly rolled:   (nexusAid: string) => Promise<void>;
   } | null;
+  /**
+   * What the standing composition lends a bundle's memory import: the face it wears and its daemon island's
+   * import door. `null` where no composition stands (a command running an act in its own process), so an import
+   * there refuses by name.
+   */
+  readonly backup: BackupDoor | null;
 }
 
 /** One own persona as the persona plane holds it: the two names that ride a face's fleet. */
@@ -190,6 +202,17 @@ const reserveState: Kind<SealReserveState> = {
   },
 };
 const flag: Kind<boolean> = { label: "true or false", read: (v) => (typeof v === "boolean" ? v : undefined) };
+/** The largest sealed bundle body a row takes, as the characters of its base64 spelling. */
+export const BUNDLE_BODY_ARG_LIMIT = 16 * 1024 * 1024;
+const BASE64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+const sealedBody: Kind<Uint8Array> = {
+  label: `a bundle's sealed body, base64, ${BUNDLE_BODY_ARG_LIMIT} characters at most`,
+  read: (v) => (typeof v === "string" && v.length > 0 && v.length <= BUNDLE_BODY_ARG_LIMIT && BASE64.test(v) ? Uint8Array.from(Buffer.from(v, "base64")) : undefined),
+};
+const bundleKey: Kind<Uint8Array> = {
+  label: "a bundle key, 64 lower hex",
+  read: (v) => (typeof v === "string" && /^[0-9a-f]{64}$/.test(v) ? Uint8Array.from(Buffer.from(v, "hex")) : undefined),
+};
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
 
 type Shape = Readonly<Record<string, Kind<unknown>>>;
@@ -286,6 +309,13 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *                         cross this door, and one share alone rebuilds nothing
  *   admit.*               the persona admission's hops and its pending rows
  *   handle-book.load|save the recogniser's private memory, as one snapshot
+ *   bundle.restore        bring ONE face back from its backup bundle, as a recovery act: the row takes the bundle's
+ *                         body still sealed and the bundle key, opens the body behind this door, and lands the face
+ *                         at a NEW seat (`face-bundle-restore`). A root comes IN through this row; nothing of it
+ *                         answers. A refusal answers its own name (`refused`) and moves nothing
+ *   bundle.import         land a bundle's memory section on the restored seat: the standing vessel, wearing that
+ *                         face, hands the section to its daemon island's import door. A command running the act in
+ *                         its own process holds no island, and refuses by name
  */
 export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {
@@ -477,6 +507,28 @@ export const SEALED_ACTS = Object.freeze({
     // not verify drops there, exactly as it would on a load.
     await saveNodeHandleBook(await HandleBook.restore(a.snapshot));
     return {};
+  }),
+
+  // A NAMED REFUSAL ANSWERS, IT DOES NOT THROW: the command prints the refusal's own name (custody#/the-restore),
+  // and the door's log carries the act's name and how it ended, never the name of a face or a word of a bundle.
+  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index) }, async (a, ctx) => {
+    try {
+      if (!ctx.hosting) throw refuse("no store stands to land a face on: stand the vessel, or run the restore with no vessel standing");
+      const restored = await restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: ctx.hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}) });
+      return { ...restored };
+    } catch (err) {
+      if (err instanceof RestoreRefused) return { refused: err.reason, message: err.message };
+      throw err;
+    } finally { a.key.fill(0); }
+  }),
+  "bundle.import": act({ body: sealedBody, key: bundleKey }, async (a, ctx) => {
+    try {
+      const imported = await importFaceBundleMemory({ sealedBody: a.body, bundleKey: a.key, door: ctx.backup });
+      return { face: imported.face, results: imported.results.map((r) => ({ ...r })) };
+    } catch (err) {
+      if (err instanceof ImportRefused) return { refused: err.reason, message: err.message };
+      throw err;
+    } finally { a.key.fill(0); }
   }),
 } satisfies Record<string, ActRow>);
 

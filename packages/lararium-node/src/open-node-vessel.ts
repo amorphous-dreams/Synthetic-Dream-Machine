@@ -2900,6 +2900,31 @@ async function prepareNodeBootOn(
         };
       },
       kel: (prefix) => readLocalPersonaKelChain(repo, prefix),
+      // THE IMPORT'S TWO ASKS (custody#/the-restore), each signed as the vessel: the island names a door for one
+      // import, then takes the section beside its pair's secret half sealed to that door.
+      get memoryDoor() {
+        if (!daemonVm) return null;
+        const vm = daemonVm;
+        return async () => {
+          const out = await askIslandMemory({
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "door", facts: {},
+            vesselKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+          }).answer;
+          if (typeof out["door"] !== "string" || !/^[0-9a-f]{64}$/.test(out["door"])) throw new Error("the island named no door");
+          return Uint8Array.from(Buffer.from(out["door"], "hex"));
+        };
+      },
+      get importMemory() {
+        if (!daemonVm) return null;
+        const vm = daemonVm;
+        return async (section: string, sealedSecret: string) => {
+          const out = await askIslandMemory({
+            daemonHandle: vm.daemonHandle, placeVerb: (o) => vm.placeVerb(o), act: "import", facts: { section, secret: sealedSecret },
+            vesselKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+          }).answer;
+          return Array.isArray(out["results"]) ? out["results"] as Array<{ bagId: string; keyVersion: string; outcome: string; cause?: string }> : [];
+        };
+      },
     },
     residency, carriageLoop, carriageRelay, nexusDial, bulb, emit, orchestration,
     siblingChannel:   () => siblings?.status() ?? null,

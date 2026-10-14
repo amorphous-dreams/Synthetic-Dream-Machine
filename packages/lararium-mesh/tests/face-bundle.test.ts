@@ -9,7 +9,7 @@
  *
  * Synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { canonicalJsonBytes, hex, utf8Bytes } from "../src/crypto.js";
 import { FACE_BUNDLE_DOMAIN } from "../src/domains.js";
 import {
@@ -23,6 +23,9 @@ import { mintPersonaInception } from "../src/persona-kel.js";
 import { mintVk } from "../src/vk.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { ed25519 } from "@noble/curves/ed25519.js";
+
+// Every bind and every open runs a slot's own key derivation, priced to cost a guesser; the suite waits it out.
+vi.setConfig({ testTimeout: 120_000 });
 
 const PASS = { kind: "passphrase", passphrase: "a bundle route for a test" } as const;
 const WRONG = { kind: "passphrase", passphrase: "another route entirely" } as const;

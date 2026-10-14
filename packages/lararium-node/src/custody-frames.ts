@@ -39,7 +39,7 @@
  * sealed row for an unsealed document. An `act` frame never becomes an invocation: no digest, no receipt, no
  * outcome and no worker message carries its arguments or its answer. The frame names an act of the table and
  * that act's typed arguments and nothing else: a key beside `op`, `act` and `args` refuses the frame, an act the
- * table does not name refuses by name, and no act takes a credential. The door logs the act's NAME and how it
+ * table does not name refuses by name, and no act takes a credential of this vessel. The door logs the act's NAME and how it
  * ended, and never an argument, an answer or a refusal's own words.
  */
 import type { Socket } from "node:net";

@@ -198,8 +198,11 @@ moved.
 ''THE `vault` DOOR CARRIES A FACE'S BACKUP.'' `lares vault backup --face <N> --out <file>` cuts one face's
 backup bundle through the standing vessel's custody door: it reads the vessel's own route and the bundle's new
 route on a terminal, and no flag, environment variable or pipe carries either
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>). The verb lives on `vault` because it opens
-nothing of the vessel's substrate: it asks the custody door, as `unlock` and `lock` do.
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>). `lares vault restore <file>` brings a face back from
+its bundle as a recovery act: it reads the bundle's route on a terminal, and the vessel takes a NEW seat under the
+face's fixed prefix (`--as <N>` names the index; `--memory` lands the bundle's content keys on that seat)
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>). Both verbs live on `vault` because they move
+nothing of the vessel's substrate: they ask the custody door, as `unlock` and `lock` do.
 
 ''ONE FLAG ASKS FOR KEYHIVE'S OWN TRACE, BY NAME.'' `--keyhive-trace` on any command sets `LAR_KEYHIVE_TRACE=1`
 for that command's process, and the same variable set in a daemon's environment asks it of the daemon. Keyhive's
@@ -260,6 +263,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;n2cf3HAn3YDNKBkhoduCHDKkRyfWsOAOVNJ75plrIH0
+<<^ code="&#x0003;">>ni:///sha-256;hcH-hV134NQOmRAUEqSssIyjON0KobHKeZnkHBXUMQ4
 
 <<^ code="&#x0004;" -> to="?">>

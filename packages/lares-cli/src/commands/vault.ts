@@ -30,6 +30,8 @@ import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@larariu
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
 import { gatherBundleRoute, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
+import { importLines, restoreFromBundle, restoreLines } from "../vault-restore.js";
+import { sealedActVia } from "../sealed-act-door.js";
 import { discordianReading } from "@lararium/node";
 import { throughStoreDoor } from "../store-door.js";
 import { udsAlive } from "../local-connector.js";
@@ -162,6 +164,7 @@ export async function cmdVault(args: ParsedArgs): Promise<number> {
       case "bind":       return await vaultBind(args);
       case "unbind":     return await vaultUnbind(args);
       case "backup":     return await vaultBackup(args, daemonUp);
+      case "restore":    return await vaultRestore(args, daemonUp);
       case "passphrase": return vaultPassphrase(args);
       case "seal":    return await vaultSeal(args, daemonUp);
       case "rotate":  return await vaultRotate(args, daemonUp);
@@ -448,6 +451,38 @@ async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number>
     return 1;
   }
   emit(args, { ok: true, data: { ...result }, human: () => { for (const line of backupLines(result)) console.log(line); } });
+  return 0;
+}
+
+/**
+ * `vault restore <file> [--as <N>] [--memory]`: bring one face back from its backup bundle. The command reads the
+ * bundle's route on a terminal and opens the slot tree; the vessel opens the body behind its custody door and lands
+ * the face as a recovery act, at a NEW seat. `--memory` lands the bundle's content keys on that seat instead: it
+ * needs the vessel standing unlocked and wearing the face.
+ */
+async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  const file = args.positional[1];
+  if (!file) throw new UsageError("restore needs the bundle's file: `lares vault restore <file> [--as <N>] [--memory]`");
+  const asRaw = args.options["as"];
+  if (asRaw !== undefined && (!/^(0|[1-9]\d*)$/.test(asRaw) || !Number.isSafeInteger(Number(asRaw)))) throw new UsageError("--as takes a handle-index: `lares vault restore <file> --as <N>`");
+  const memory = args.flags["memory"] === true;
+  if (memory && asRaw !== undefined) throw new UsageError("--memory lands keys on the seat of the face the vessel wears, and takes no --as");
+  if (memory && !daemonUp) {
+    const why = "an import needs the vessel standing unlocked and wearing the restored face: its island wraps each key for this vessel's own seat. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then import.";
+    emit(args, { ok: false, error: { code: "no-vessel", message: why }, human: () => console.error(`lares vault restore: ${why}`) });
+    return 1;
+  }
+  if (!wantsJson(args)) console.log("The bundle's own route: the passphrase or the paper sheet it got sealed under.");
+  const credentials = await gatherCredentials("lares vault restore", routeFlag(args));
+  const result = await restoreFromBundle({
+    file, credentials, memory, ...(asRaw !== undefined ? { as: Number(asRaw) } : {}),
+    run: (act, actArgs) => sealedActVia(act, actArgs),
+  });
+  if (!result.ok) {
+    emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore: ${result.reason}: ${result.message}`) });
+    return 1;
+  }
+  emit(args, { ok: true, data: { ...result }, human: () => { for (const line of result.kind === "restore" ? restoreLines(result) : importLines(result)) console.log(line); } });
   return 0;
 }
 

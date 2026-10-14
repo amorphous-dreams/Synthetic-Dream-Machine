@@ -46,7 +46,7 @@ import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fi
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
-const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null, hosting: null };
+const ctx: SealedActContext = { kelHead: null, personaSelves: null, walk: null, hosting: null, backup: null };
 const drops: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const drop of drops.splice(0).reverse()) await drop(); });
 async function custody(label: string): Promise<SeatedScratchCustody> {

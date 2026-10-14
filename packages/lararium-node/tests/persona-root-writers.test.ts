@@ -12,6 +12,10 @@
  *
  * Every other reader loads a HELD root through a non-minting read and refuses when none is held.
  *
+ * ONE DOOR LANDS A ROOT IT DID NOT MINT: the restore of a face's backup bundle (`face-bundle-restore`), a recovery
+ * act a person performs with the bundle's own route in hand. It lands a root a founding minted elsewhere, through
+ * `landPersonaRoot`, and mints none. That door stands named here too, so no second caller lands a carried root.
+ *
  * Proven, over every package's `src/`:
  *   · RED: no file outside the founding doors calls a root-minting function;
  *   · CONTROL: the scanner finds a planted call in a sample, so a zero means none, never a blind instrument.
@@ -55,7 +59,38 @@ function sources(dir: string): string[] {
   return out;
 }
 
+/** The function that LANDS a carried root, and the only files that may call it: its definition and the restore. */
+const LANDERS = ["landPersonaRoot"];
+const LANDING = new Set(["lararium-node/src/node-vessel-identity.ts", "lararium-node/src/face-bundle-restore.ts"]);
+
 describe("ROOT-ON-FOUNDER — only the founding act writes a persona root", () => {
+  test("RED: no file outside the restore lands a carried root", () => {
+    const calls = (text: string): string[] => text.split("\n").flatMap((line) => {
+      const code = line.replace(/\/\/.*$/, "").trim();
+      if (code.startsWith("*") || code.startsWith("/*")) return [];
+      return LANDERS.filter((name) => new RegExp(`\\b${name}\\s*\\(`).test(code) && !new RegExp(`function\\s+${name}\\b`).test(code));
+    });
+    // CONTROL: the scan finds a planted call, and passes a definition and a comment.
+    expect(calls("  await landPersonaRoot(target, keypair);")).toEqual(["landPersonaRoot"]);
+    expect(calls("export async function landPersonaRoot(handleIndex: number) {")).toEqual([]);
+    expect(calls("  // landPersonaRoot(0, k) lands a carried root")).toEqual([]);
+    const offenders: string[] = [];
+    const callers = new Set<string>();
+    for (const pkg of readdirSync(PACKAGES)) {
+      const src = join(PACKAGES, pkg, "src");
+      try { if (!statSync(src).isDirectory()) continue; } catch { continue; }
+      for (const file of sources(src)) {
+        const rel = relative(PACKAGES, file);
+        const found = calls(readFileSync(file, "utf8"));
+        if (found.length > 0) callers.add(rel);
+        if (!LANDING.has(rel)) for (const name of found) offenders.push(`${rel}: ${name}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+    // CONTROL: the restore does call it, so an empty offender list reads a real scan.
+    expect([...callers]).toEqual(["lararium-node/src/face-bundle-restore.ts"]);
+  });
+
   test("CONTROL: the scanner finds a planted mint call, and passes a definition and a comment", () => {
     expect(mintCalls("  const root = await generateOrLoadPersonaGroupRoot(index);")).toEqual(["generateOrLoadPersonaGroupRoot"]);
     expect(mintCalls("export async function generateOrLoadPersonaGroupRoot(handleIndex = 0) {")).toEqual([]);

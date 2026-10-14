@@ -39,6 +39,9 @@ export type SealedActVia = "vessel" | "direct";
  */
 const directContext: SealedActContext = {
   personaSelves: null,
+  // No composition stands in a command's own process, so no island takes a bundle's memory section: an import
+  // there refuses by name and names the standing vessel.
+  backup: null,
   // The gate key a stopped vessel's hearth dial would pin at its next stand (an admit's pin, or `LAR_JOIN_GATE`);
   // no walk dial stands in a command's own process, so a kept invite waits for the next stand.
   walk: { dialGate: () => process.env["LAR_JOIN_GATE"] ?? readHearthDialPin(larBootstrapPath())?.gatePubKey ?? null, represent: null },
