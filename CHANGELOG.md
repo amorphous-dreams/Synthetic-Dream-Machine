@@ -7,6 +7,9 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **The household resolver refuses what would break it.** A zero-led octet refuses by name, private reverse lookups answer inside the house, the records check runs as the vessel's own user so the records file need not stay world-readable, and certificate renewal asks public resolvers (`LARES_ISSUER_RESOLVERS`), refusing any resolver inside the house.
+- **The settle word and the removal read-back tell the whole truth.** A settle waits while the view's origin sits below the bag, a later settle supersedes an earlier wait, and a cut or failed reconcile reads `stopped` or `failed`; `lares shore remove` refuses with no wiki view and names a carrier a removal only unshadowed; `lares ingest` says when no shore or mirror follows.
+- **The island-door inventory measures what it claims.** Browser islands run their own pool's spawn, a door it cannot drive reads `unmeasured`, and a spawn passed by reference or a repeated call site reads red.
 - **A first unlock leaves an exported checkout clean.** The daemon's protocol records, rewritten from source at every boot, no longer project to disk, so `git status` stops showing twelve untracked files under `wikis/daemon/`.
 - **`lares shore` lists every row.** Past 32 standoffs or pending removals the list once collapsed into a count; it now reads every page, and a list that moves between pages or comes up short refuses by name.
 - **`lares shore remove` reads the wiki back.** A carrier the wiki's view still holds stays pending, gets named, and the command exits non-zero; it once cleared on the delete door's word alone.
