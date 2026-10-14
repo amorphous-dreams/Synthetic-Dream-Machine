@@ -1,0 +1,86 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/controller-handoff">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/controller-handoff.mem"
+l-space   = "adjacent"
+role      = "the controlling session's handoff: what the controller does, the practice its lanes keep, the state it hands on, and how two live sessions pass the controller's seat between them while both stand"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/controller-handoff"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/controller-handoff"
+```
+
+<<~ ahu #/purpose>>
+
+!! The controller's handoff ~ one seat, passed in the open
+
+A session that holds the CONTROLLER's seat drives the build toward the roadmap's attractor (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-attractor">>): it briefs lanes, routes their handbacks, pushes green heads, keeps canon and the changelog true, and brings the operator only what changes authority, custody at rest or identity bytes. This carrier holds what a session needs to take that seat: the practice, the state, and the way two live sessions pass the seat while both stand.
+
+Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>), the roadmap's cold start (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">>), then the session folder named in #/state.
+
+<<~/ahu>>
+
+<<~ ahu #/the-seat>>
+
+!! The seat ~ what the controller does
+
+* ''It briefs lanes.'' One lane per piece of road, each led by one Claude Opus spirit (the Episkopos), with one `gpt-6-sol` reviewer and one `gpt-6-luna` builder at medium effort available when the lane needs them (operator, 2026-10-14). A brief stays short and points at the shared law; it names the lane's ground, the ground it leaves alone, its first line of handback, and where it stops.
+* ''It routes handbacks.'' A handback answers with one status line and plain notes. A finding on another lane's ground travels to that lane as a message or a patch; a slot that frees gets filled from the roadmap's order without asking.
+* ''It pushes green heads, and only those.'' A lane pushes a throwaway `ci/<lane>` branch through `node tools/e2e-shards.mjs push <lane>` and reports `MERGE-VERIFY`. The controller pushes a shard-green SHA to the feature branch while no run stands in flight, then reads `node tools/ci-verdict.mjs --head <sha>`: three readings, the shards, the full CI workflow, and the container drivers that run on every push (`held-out.yml`). A red reading routes to the lane whose ground it touches.
+* ''It keeps the record.'' Changelog bullets for what a person can do, written after reading `git diff HEAD -- CHANGELOG.md` clean (a shared file committed with another hand's lines once claimed work before it landed). Canon true-ups by a read-only collision of the roadmap against the tree, then hand-applied high-confidence lines.
+* ''It decides in forge mode.'' A question reaches the operator only where its answer changes who holds authority, custody at rest or identity bytes and no ruling settles it; otherwise the controller takes a house reading, marks it as one, and builds. A parked item stays parked; a turn ends on an act taken.
+
+<<~/ahu>>
+
+<<~ ahu #/the-practice>>
+
+!! The practice ~ what every lane keeps, each line earned by a real stumble
+
+* ''A refused command stops the lane.'' Never retry it, reshape it, split it, switch tools for it, or hand it to another spirit. The lane reports it; the controller surfaces it to the operator. A sidestep that reaches the same end counts as a retry.
+* ''Edits happen in the lane's own worktree.'' The main tree receives a whole, tested patch by one plain `git apply`, then one plain `git commit -F <msg> --only -- <paths>`, after `git status --short` and `git diff HEAD -- <path>` show only the lane's lines. One write per command line. No inline script writes into the main tree. A worktree leaves by a plain `git worktree remove`; where that refuses, it stays and the lane says so.
+* ''Never `git stash`'' in any form, `git stash list` included; never `--no-verify`; never a foreground `sleep`, alone or chained: a long run goes in the foreground with a long timeout, or in the background with its completion notice.
+* ''Red first, with a control''; a race gets pinned by the product's own event, never by a sleep, a retry loop or load. A load probe lives only as an opt-in triage script under `tools/`.
+* ''The plugin bundle and genesis move only by the controller's word.'' A lane that changes `packages/lararium-tw5/` source or tiddlers rebuilds the bundle in the same commit and declares the gap in `genesis/unbaked.json`; one labelled `GENESIS RE-BAKE` folds every declared row.
+* ''Scratch roots alone'' for founding, standing or unlocking (`tools/test-scratch-marker.mjs`, then `tools/seed-test-custody.mjs`); never the operator's homes; never a real passphrase, domain or credential.
+* ''After a machine restart'' the session scratchpad empties and every worktree under it vanishes. Durable state lives in git and in the session folder; a resumed lane re-reads its resume sheet, provisions a fresh worktree at HEAD, and rebuilds.
+* ''A Codex resume takes the config's default model'': name the model again (`-c model=<id>`). A resume cannot open a fresh worktree; `codex exec fork --worktree <session>` can.
+* ''O-takiage burns only what a later carrier or module plainly superseded'', or what states a retired shape as live. Unwired, uncalled or unlinked work stays by default in early alpha; doubt goes on an ask list.
+
+<<~/ahu>>
+
+<<~ ahu #/state>>
+
+!! State ~ the controller trues this section at every handoff
+
+''As of 2026-10-14, evening.'' Branch `feature/lararium-node-5`; origin carries `e4b8bcc22`, its shards green and its full CI and container drivers in flight at writing.
+
+* ''Closed'': the custody seal train (every private row sealed under the vessel key, backup and restore of a face, the passphrase lifecycle retired); the disk shore (no-base standoff, pending removals, two doors under one key, paged lists, the settle word, the standing-instruction law); receipts that tell the truth; container drivers on every push.
+* ''The seat train (K)'': steps 1 to 10 stand landed, the flip and the genesis re-bake among them. Step 11 lands inside step 14 by a house reading: a fleet relation commits to the hearth's own seed-charter AID. The fifth seat lead runs step 12 (per-Nexus keys, the Kahu-plane movers) toward 13, 14 (the Stable founding act, which also mints the ember's serving key) and 15.
+* ''Ruled today under the operator's delegation'': eight questions, now in the roadmap's `#/rulings` with their flip conditions; the ember's anchor resolves to confirm-only raises on a WSL2 hearth (<<~ loulou "lar:///ha.ka.ba/lararium/docs/hearth-anchor">>).
+* ''Waiting on the operator'': the o-takiage ask list (eight items kept until a word); a hardware choice for unattended ember raises, whenever it suits.
+* ''The session folder'': `~/.claude/projects/-home-joshu-Synthetic-Dream-Machine/handoff-2026-10-12/` holds the shared lane law (`wave-law.md`), every lane's resume sheet, the rulings and research waves, the census, and the controller's running sheet (`CONTROLLER-HANDOFF.md`). It lives outside the repository and outside any clone: a session on another machine reads this carrier and the roadmap alone.
+
+<<~/ahu>>
+
+<<~ ahu #/the-live-handoff>>
+
+!! The live handoff ~ two sessions, one seat, passed by word
+
+A session can close and a fresh one boot from carriers; a ''live'' handoff lets both stand for a while, so the new seat can ask the old one what no carrier caught. The seat passes by explicit word, never by drift.
+
+# ''One controller at a time.'' Only the seat-holder pushes the feature branch, fills lane slots and commits to `CHANGELOG.md` or the roadmap. The other session reads, asks, and works only lanes the seat-holder hands it by name.
+# ''The outgoing seat trues #/state'' in this carrier, commits it, and names its lanes in flight: which will finish under it, and which pass to the incoming seat with their resume sheets.
+# ''The incoming seat reads first'': the boot seed, the roadmap's cold start, this carrier, the session folder's `wave-law.md` and `CONTROLLER-HANDOFF.md`. Then it asks the outgoing seat, by session name over the message channel, whatever stays unclear: a lane's intent, a house reading's reason, a red that looked like a flake.
+# ''The seat passes by message.'' The outgoing seat sends "the seat passes to <session>" once no push stands in flight and every lane it keeps has a named owner; the incoming seat answers "the seat holds". Until that answer, the outgoing seat still holds it.
+# ''Lanes keep their spirit.'' A running lane answers the session that launched it. A lane that passes gets a new lead launched by the incoming seat from its resume sheet, never a message to a subagent of another session.
+# ''Questions flow both ways after the pass''; the outgoing session may keep a lane to finish, and reports its handback to the new seat-holder as a lane would.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;naHd1xzAazTIpRFHtC290svaFMsXcrmPjNdx9lOARjw
+
+<<^ code="&#x0004;" -> to="?">>
