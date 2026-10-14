@@ -43,26 +43,45 @@ import {
 } from "@lararium/mesh";
 import { DROP_CONNECTION_BUDGET } from "../src/authenticated-membership-relay.js";
 import { dialerDouble } from "./gate-dial-fixture.js";
+import { arrival, type Arrival } from "../../lararium-mesh/tests/handshake.js";
 
 const BODY = utf8Bytes("the sealed carrier body a member blind-transits over a real authenticated socket");
 const pubOf = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** Drive one fetch over the async WS hop: the requester offers a want-block; the holder serves a turn (retried
- *  until the async socket delivers it); the requester polls for the response. Returns the response envelope. */
+/**
+ * A channel with its own word for each envelope that lands in its inbox (`onEnvelope`). `next` resolves when the
+ * next envelope this vector has not yet waited for has landed, so a vector reads the inbox at the channel's own
+ * word and no pause stands in for "the socket delivered it".
+ */
+async function hearing(url: string, seed: Uint8Array, who: string): Promise<{ ch: AuthenticatedWSMembershipChannel; next: () => Promise<void> }> {
+  let landed = 0;
+  let awaited = 0;
+  const owed: Array<{ n: number; word: Arrival<void> }> = [];
+  const ch = await AuthenticatedWSMembershipChannel.connect(url, seed, {
+    onEnvelope: () => { landed += 1; for (const o of owed) if (landed >= o.n) o.word.arrive(); },
+  });
+  const next = (): Promise<void> => {
+    const n = ++awaited;
+    const word = arrival<void>(`envelope ${n} landing in ${who}'s channel (its \`onEnvelope\`)`, 10_000);
+    if (landed >= n) word.arrive(); else owed.push({ n, word });
+    return word.arrived;
+  };
+  return { ch, next };
+}
+type Hearing = Awaited<ReturnType<typeof hearing>>;
+
+/** Drive one fetch over the WS hop, each step at the receiving channel's own word: the requester offers a
+ *  want-block; it lands at the holder, who serves one turn; the answer lands at the requester, who reads it. */
 async function driveFetch(args: {
-  requesterCh: MembershipChannel; requesterAddr: string;
-  holderCh: MembershipChannel; holderAddr: string;
+  requester: Hearing; requesterAddr: string;
+  holder: Hearing; holderAddr: string;
   deps: CasWireServerDeps; cid: string;
 }): Promise<MembershipEnvelope | null> {
-  await args.requesterCh.offer({ kind: "cas-want-block", from: args.requesterAddr, to: args.holderAddr, payload: { cid: args.cid } });
-  for (let i = 0; i < 40 && (await serveCasWire(args.holderCh, args.holderAddr, args.deps)) === 0; i++) await sleep(10);
-  for (let i = 0; i < 40; i++) {
-    const responses = await args.requesterCh.poll(args.requesterAddr);
-    if (responses.length > 0) return responses[0]!;
-    await sleep(10);
-  }
-  return null;
+  await args.requester.ch.offer({ kind: "cas-want-block", from: args.requesterAddr, to: args.holderAddr, payload: { cid: args.cid } });
+  await args.holder.next();
+  expect(await serveCasWire(args.holder.ch, args.holderAddr, args.deps), "the holder serves the one want that landed").toBe(1);
+  await args.requester.next();
+  return (await args.requester.ch.poll(args.requesterAddr))[0] ?? null;
 }
 
 describe("authenticated-membership-relay — cas-wire over a live authenticated WS hop", () => {
@@ -95,12 +114,13 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     // Stand the AUTHENTICATED relay + three real socket connections (each proves possession of its key).
     relay = await startAuthenticatedMembershipRelay(holderSeed);
     const url = `ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`;
-    const holderCh   = await AuthenticatedWSMembershipChannel.connect(url, holderSeed);
-    const memberCh   = await AuthenticatedWSMembershipChannel.connect(url, memberSeed);
-    const strangerCh = await AuthenticatedWSMembershipChannel.connect(url, strangerSeed);
+    const holder   = await hearing(url, holderSeed, "the holder");
+    const member   = await hearing(url, memberSeed, "the member");
+    const stranger = await hearing(url, strangerSeed, "the stranger");
+    const [holderCh, memberCh, strangerCh] = [holder.ch, member.ch, stranger.ch];
     try {
       // ── MEMBER carries the ciphertext over the wire + reads it. ──
-      const memberResp = await driveFetch({ requesterCh: memberCh, requesterAddr: memberKey, holderCh, holderAddr: holderKey, deps, cid: installed.cid });
+      const memberResp = await driveFetch({ requester: member, requesterAddr: memberKey, holder, holderAddr: holderKey, deps, cid: installed.cid });
       expect(memberResp?.kind).toBe("cas-block");
       const carried = (memberResp!.payload as { bytes?: Record<string, number> }).bytes;
       const ciphertext = Uint8Array.from(Object.values(carried!));   // JSON round-trip of the byte array
@@ -108,15 +128,16 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
       expect([...ciphertext]).not.toEqual([...BODY]);                                  // carried bytes are CIPHERTEXT
 
       // ── NON-member draws Mu (no carry). ──
-      const strangerResp = await driveFetch({ requesterCh: strangerCh, requesterAddr: strangerKey, holderCh, holderAddr: holderKey, deps, cid: installed.cid });
+      const strangerResp = await driveFetch({ requester: stranger, requesterAddr: strangerKey, holder, holderAddr: holderKey, deps, cid: installed.cid });
       expect(strangerResp?.kind).toBe("cas-mu");
 
       // ── IMPERSONATION defeated: the stranger forges `from = memberKey`; the relay stamps it back to strangerKey. ──
       await strangerCh.offer({ kind: "cas-want-block", from: memberKey /* forged */, to: holderKey, payload: { cid: installed.cid } });
-      for (let i = 0; i < 40 && (await serveCasWire(holderCh, holderKey, deps)) === 0; i++) await sleep(10);
+      await holder.next();
+      expect(await serveCasWire(holderCh, holderKey, deps)).toBe(1);
       // The response is addressed to the stranger's PROVEN key (the relay overrode the forged `from`), and it is Mu.
-      let forgedResp: MembershipEnvelope | null = null;
-      for (let i = 0; i < 40 && !forgedResp; i++) { const r = await strangerCh.poll(strangerKey); if (r.length) forgedResp = r[0]!; else await sleep(10); }
+      await stranger.next();
+      const forgedResp: MembershipEnvelope | null = (await strangerCh.poll(strangerKey))[0] ?? null;
       expect(forgedResp?.kind).toBe("cas-mu");
       // The member never receives a response to a request it did not make (the forged `from` never reached the gate as memberKey).
       expect((await memberCh.poll(memberKey)).length).toBe(0);
@@ -131,22 +152,24 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     const [seedA, seedB, seedC] = [22, 23, 24].map((n) => new Uint8Array(32).fill(n)) as [Uint8Array, Uint8Array, Uint8Array];
     const [keyA, keyB] = await Promise.all([pubOf(seedA), pubOf(seedB)]);
     const a = await AuthenticatedWSMembershipChannel.connect(url, seedA);
-    const b = await AuthenticatedWSMembershipChannel.connect(url, seedB);
-    const c = await AuthenticatedWSMembershipChannel.connect(url, seedC);
+    const atBsEar = await hearing(url, seedB, "the addressee");
+    const atCsEar = await hearing(url, seedC, "the third peer");
+    const [b, c] = [atBsEar.ch, atCsEar.ch];
     try {
       const cid = "bafy-the-kel-event-a-sibling-asks-for";
       await a.offer({ kind: "cas-want-block", from: keyA, to: keyB, payload: { cid } });
       await a.offer({ kind: "cas-have", from: keyA, to: "*", payload: { cid: "bafy-announced" } });
       // CONTROL: the addressee receives the addressed envelope, stamped with the sender's proven key.
-      let atB: MembershipEnvelope[] = [];
-      for (let i = 0; i < 40 && atB.length < 2; i++) { atB = [...atB, ...(await b.poll(keyB))]; if (atB.length < 2) await sleep(10); }
+      await atBsEar.next();
+      await atBsEar.next();
+      const atB = await b.poll(keyB);
       expect(atB.map((e) => [e.kind, e.from])).toEqual([["cas-want-block", keyA], ["cas-have", keyA]]);
       // The third peer reads its socket under the ADDRESSEE's name, so nothing the wire delivered hides from it:
       // the broadcast reaches it, the addressed envelope never does.
-      let atC: MembershipEnvelope[] = [];
-      for (let i = 0; i < 40 && atC.length < 1; i++) { atC = [...atC, ...(await c.poll(keyB))]; if (atC.length < 1) await sleep(10); }
-      await sleep(50);
-      atC = [...atC, ...(await c.poll(keyB))];
+      // A's one socket carried the addressed envelope before the broadcast, and the relay carries in that order:
+      // once the broadcast has landed at the third peer, nothing of the addressed envelope remains to arrive.
+      await atCsEar.next();
+      const atC = await c.poll(keyB);
       expect(atC.map((e) => e.kind)).toEqual(["cas-have"]);
       expect(JSON.stringify(atC)).not.toContain(cid);
     } finally {
@@ -230,7 +253,8 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
     // An OBSERVER peer reads the stamped `from` — the relay broadcasts to other clients, never back to the sender.
     const observerSeed = new Uint8Array(32).fill(16);
     const observerKey = await pubOf(observerSeed);
-    const observer = await AuthenticatedWSMembershipChannel.connect(`ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`, observerSeed);
+    const observing = await hearing(`ws://127.0.0.1:${relay.port}#${relay.gatePubKey}`, observerSeed, "the observer");
+    const observer = observing.ch;
 
     // One socket sends TWO valid lar:auth frames (different keys) back to back. Only the FIRST may bind.
     const raw = new WS(knockedUrl(`ws://127.0.0.1:${relay.port}`, relay.gatePubKey));
@@ -259,8 +283,8 @@ describe("authenticated-membership-relay — cas-wire over a live authenticated 
         raw.on("error", () => resolve());
       });
 
-      let seen: MembershipEnvelope | undefined;
-      for (let i = 0; i < 40 && !seen; i++) { const r = await observer.poll(observerKey); if (r.length) seen = r[0]!; else await sleep(10); }
+      await observing.next();
+      const seen: MembershipEnvelope | undefined = (await observer.poll(observerKey))[0];
       // Exactly one lar:auth bound, and it was the FIRST — the second never re-bound the socket.
       expect(seen?.from).toBe(keyA);
       expect(seen?.from).not.toBe(keyB);

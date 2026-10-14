@@ -332,11 +332,15 @@ export class AuthenticatedWSMembershipChannel implements MembershipChannel {
    * `onClose` fires when a LIVE (verified) channel's socket drops — the shore a reconnecting dialer watches to
    * re-dial + re-fold its board. A drop BEFORE the verdict rejects the pending connect instead, so a dialer
    * reschedules on it too (never hangs a half-open dial). Both settle exactly once.
+   *
+   * `onEnvelope` hears each envelope the relay delivers to this channel, after it lands in the inbox: the next
+   * `poll` for its recipient returns it. A reader that would otherwise ask the inbox again and again waits on this
+   * word instead. A hearer that throws changes nothing of the channel.
    */
   static connect(
     address: string,
     peerSeed: Uint8Array,
-    opts?: { readonly onClose?: () => void },
+    opts?: { readonly onClose?: () => void; readonly onEnvelope?: (env: MembershipEnvelope) => void },
   ): Promise<AuthenticatedWSMembershipChannel> {
     return new Promise((resolve, reject) => {
       let pinned: { url: string; gatePubKey: string };
@@ -360,6 +364,7 @@ export class AuthenticatedWSMembershipChannel implements MembershipChannel {
         if (verified) {
           if (isLarSessionMsg(msg) && msg.kind === MEMBERSHIP_ENVELOPE_KIND && typeof msg.body === "object" && msg.body !== null) {
             inbox.push(msg.body as MembershipEnvelope);
+            try { opts?.onEnvelope?.(msg.body as MembershipEnvelope); } catch { /* a hearer never moves the channel */ }
           }
           return;
         }
