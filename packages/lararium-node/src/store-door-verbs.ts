@@ -20,6 +20,7 @@
  *   edge-seat-facts · edge-seat-marks            the key side's facts and marks (`commands/edge-seats`)
  *   edge-partial · edge-cosign                   a quorum edge act between seats on separate vessels (`commands/edge-cosign`)
  *   cabal-vouch · cabal-join                     the vouch board (`commands/cabal-vouch`, `commands/cabal-join`)
+ *   cabal-face                                   the worn face's key in one realm (`commands/cabal-face`)
  *   device-admit                                 a device edge off the persona-KEL board (`commands/device-admit`)
  *   handle-publish · handle-burn · handle-rotate · handle-attest
  *                                                the WHO board (`commands/handle`)
@@ -62,6 +63,7 @@ import { runEdgeRollAnchors, EdgeRollAnchorError } from "./commands/edge-roll-an
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-cosign.js";
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
+import { runCabalFace, CabalFaceError } from "./commands/cabal-face.js";
 import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 import { runDeviceAdmit } from "./commands/device-admit.js";
 import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest } from "./commands/handle.js";
@@ -128,7 +130,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-contract", "nexus-roll-anchor", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
-  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "device-admit",
+  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "device-admit",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
 ] as const;
@@ -138,7 +140,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
-  NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError,
+  NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
   NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError,
 ] as const;
 
@@ -247,7 +249,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         raised: args["raised"] !== false, sealHome, repo,
         ...opt("edgeId", str(args["edgeId"])), ...opt("member", str(args["member"])), ...opt("device", str(args["device"])),
         ...(args["hand"] === "quorum" ? { hand: "quorum" as const } : {}), ...opt("realm", str(args["realm"])),
-        ...opt("handleIndex", int(args["handleIndex"])), ...opt("parents", strs(args["parents"])),
+        ...opt("handleIndex", int(args["handleIndex"])), ...opt("nexusAid", str(args["nexusAid"])), ...opt("parents", strs(args["parents"])),
       })),
     })),
     // THE KEY SIDE OF A REMOVAL, the vessel's two short acts around the island's `seat-duties` verb (kapae#/keys).
@@ -275,6 +277,7 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runEdgePartial({
         realm: str(args["realm"]) ?? "", raised: args["raised"] !== false, sealHome, repo,
         ...opt("member", str(args["member"])), ...opt("voucher", str(args["voucher"])), ...opt("joiner", str(args["joiner"])),
+        ...opt("nexusAid", str(args["nexusAid"])),
       })),
     })),
     "edge-cosign": (args) => answer("edge-cosign", async () => ({
@@ -282,8 +285,16 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     })),
     "cabal-vouch": (args) => answer("cabal-vouch", async () => ({
       ...(await runCabalVouch({
-        joiner: str(args["joiner"]) ?? "", realm: str(args["realm"]) ?? "", repo,
-        ...opt("handleIndex", int(args["handleIndex"])),
+        joiner: str(args["joiner"]) ?? "", realm: str(args["realm"]) ?? "", sealHome, repo,
+        ...opt("nexusAid", str(args["nexusAid"])),
+      })),
+    })),
+    // THE WORN FACE'S KEY IN A REALM: `present` stands the face there (mints its key, notes the realm under its
+    // Nexus); a read mints nothing (`commands/cabal-face`).
+    "cabal-face": (args) => answer("cabal-face", async () => ({
+      ...(await runCabalFace({
+        realm: str(args["realm"]) ?? "", present: args["present"] === true, sealHome, repo,
+        ...opt("nexusAid", str(args["nexusAid"])),
       })),
     })),
     "cabal-join": (args) => answer("cabal-join", async () => ({

@@ -162,12 +162,13 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 * ''A write to one realm never appears in another's plane.'' Each realm keeps its own shared doc, its own standing registrations, its own steward pin and its own gate.
 * ''An act stands the vessel in a realm; a read never does.'' Registering, asking and consenting in a cabal realm stand its plane and note the realm in the vessel's own ledger. Naming a realm the vessel never entered reads empty.
 * ''A cabal takes no key and no roster.'' Standing in a cabal realm reads as a live query over its vouch lineage (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/reach">>). The plane holds no member list, and a steward's key there derives against the Nexus the realm stands under.
+* ''A realm stands under one Nexus'' (a house reading, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands">>). The vessel's own ledger keeps the Nexus its first act there named. The planes stand each realm the ledger notes under the Nexus that stands here, or under none yet; a realm noted under another Nexus stands no plane here, and an act that would enter it refuses `realm-under-another-nexus`.
 * ''A Nexus member outside a cabal reads nothing of its realm.'' The Nexus lane and the charter-hearth lane answer for the charter-derived realm alone. A contracted carrier still carries a cabal realm's PUBLIC-tier book by hash.
 * ''Wire access attaches to the document, never to the record that named it.'' Where the vessel's own steward keeps a book in some realm, those realms alone answer for it: a record another hand wrote in another realm neither opens that book nor shuts it. A book two answering realms both hold crosses to a peer every one of them admits. The vessel's own hand in a realm reads as the name its steward pin holds there, the face it last sealed with.
 * ''A registration widens who reads a book and never narrows it.'' Whatever the vessel already carries to every peer, its public and infrastructure planes, stays carried once a realm registers it.
 * ''The daemon island reads its own vessel's verdict.'' The plane folds each realm's standing registrations and rests the verdict on the vessel's own plane; the island reads that and folds nothing. A Nexus the vessel leaves takes every realm's pins and verdict along, a stand that fails leaves none, and a verdict with no doc pin beside it answers nothing.
 
-''OWED.'' A cabal realm's documents cross between two operators only once the realm's member consult answers for a peer, and that consult reads the node's root map, which nothing fills. It waits on three things: the vouch door and the member edge naming the key a worn face presents to the Nexus, where they name a persona root; a seat that proves that key per Nexus (the wire train's face-scoped proof subject); and how a seat-holder's face stands in a realm once chairs sign with seat keys.
+''OWED.'' A cabal realm's documents cross between two operators only once the realm's member consult answers for a peer, and that consult reads the node's root map, which nothing fills. The vouch door and the member edge name the key a worn face presents to the Nexus. The consult still waits on two things: a socket that proves that key per Nexus (the wire train's face-scoped proof subject), and how a seat-holder's face stands in a realm once chairs sign with seat keys (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/what-the-code-holds">>).
 
 <<~/ahu>>
 
@@ -196,7 +197,9 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 
 > ''A house reading, marked as one.'' The order of naming (the joining hand asks, the standing hands consent) follows from the door's own limit: it cannot class another hand's key. The ruling names who signs and leaves the order open.
 
-''OWED.'' The Handle arm stands specified in code: no vessel holds a collective Handle's key and no door offers a Handle signer, and the chartered promotion act will reach it. The vouch door, the feed's writer and an edge's holder hand sign under a persona root on boards that cross to a realm's members; each takes this same door, and each move changes an edge's id. A steward leaves a bag by no act yet: the widest set stands until the lease lapses.
+* ''Every hand in a realm takes this key.'' The vouch door signs a vouch with it (`cabal-vouch.ts`), so a vouch edge's id and a member edge's id name it; an edge's holder hand on a realm's board signs with it (`edge-kapae-cmd.ts`); and the feed's writer and the crossing's applicant read it through one door (`cabal-face.ts`, `lares cabal face`, `feed`, `join`). No verb names a persona index, and none reaches a root: a person wears the face that acts.
+
+''OWED.'' The Handle arm stands specified in code: no vessel holds a collective Handle's key and no door offers a Handle signer, and the chartered promotion act will reach it. A steward leaves a bag by no act yet: the widest set stands until the lease lapses.
 
 <<~/ahu>>
 
@@ -300,6 +303,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
 <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
 
-<<^ code="&#x0003;">>ni:///sha-256;taLduyuXMVtetIg8Am1Xj8RQ8KEQJpoxHLHag7FjOUU
+<<^ code="&#x0003;">>ni:///sha-256;KQT3lgJvCMqin7u7aaWJZgDZAuVYr-FeKQxwhn8QjL8
 
 <<^ code="&#x0004;" -> to="?">>

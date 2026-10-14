@@ -26,6 +26,7 @@ import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { runCabalJoin, CabalJoinError } from "../src/commands/cabal-join.js";
 import { direct } from "./direct-store.js";
 import { fixtureKey } from "./fixture-keys.js";
+import { seatOwnCharter, wear } from "./worn-face-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -63,7 +64,11 @@ beforeEach(async () => {
   await generateOrLoadVesselIdentity();
   await generateOrLoadPersonaGroupRoot();
   await seedDaemonBootstrap();
+  // The realm stands under this vessel's own charter, and the worn face's key there vouches.
+  await seatOwnCharter([0]);
+  face = await wear(0);
 });
+let face: string;
 afterEach(async () => {
   if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
   else process.env["LAR_ROOT"] = priorLarRoot;
@@ -86,7 +91,8 @@ describe("cabal join — the crossing, and what it refuses", () => {
 
     expect(v.admitted).toBe(true);
     // The co-pay charges the hand that staked; an admission that forgot who vouched charges nobody.
-    expect(v.voucherDid).toBe((await loadPersonaGroupRootVerifyingKey(0))?.toLowerCase());
+    expect(v.voucherDid).toBe(face);
+    expect(v.voucherDid).not.toBe((await loadPersonaGroupRootVerifyingKey(0))?.toLowerCase());
   });
 
   it("refuses a joiner nobody vouched for — invite-only is the fail-closed default", async () => {

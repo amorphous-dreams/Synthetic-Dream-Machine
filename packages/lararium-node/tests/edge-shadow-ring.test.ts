@@ -19,8 +19,9 @@ import {
   type FederationGate, type NexusMembership, type PlaneSeal, type AntigenRing,
 } from "@lararium/mesh";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona,
 } from "../src/node-vessel-identity.js";
+import { signCabalInvite, writeVouch, type NexusDoc } from "@lararium/mesh";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { ownedStore } from "../src/owned-store.js";
@@ -65,11 +66,30 @@ afterEach(async () => {
   rmSync(root, { recursive: true, force: true });
 });
 
-/** Seat a charter over root 0 alone: the one seat whose key roots this vessel's lineage reads. */
+/**
+ * Seat a charter over chair 0's own seat key, wear face 0, and root that face in REALM: the seat vouches the face
+ * (by its own hand, outside every door), so a vouch the worn face makes through the door roots in the seat. The
+ * lineage's roots stay the seats of the charter the realm stands under; a face's key at that Nexus never sits
+ * among them, since the Nexus names itself after its seats.
+ */
+let seatKey = "";
+let charterDoc: NexusDoc | null = null;
 async function seatOwnCharter(): Promise<void> {
-  const key = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-  const charter = heldCharter({ keys: [key], threshold: 1 });
-  writeNexusDoc(larSealHome(), charter.doc({ labels: ["Kahu 0"] }));
+  await generateOrLoadPersonaGroupRoot(0);
+  const seat = (await seatChairs([0])).hands[0]!;
+  seatKey = seat.signer;
+  charterDoc = heldCharter({ keys: [seat.signer], threshold: 1 }).doc({ labels: ["Kahu 0"] });
+  writeNexusDoc(larSealHome(), charterDoc);
+  await wearPersona(0);
+}
+async function rootFaceInRealm(face: string): Promise<void> {
+  const invite = await signCabalInvite({ realmDocIdHex: REALM, joinerIdentityHex: face, voucherDid: seatKey, boundEpoch: "0" },
+    (await seatChairs([0])).hands[0]!.sign);
+  await ownedStore(larDataDir(), async (repo) => {
+    const board = await materializeSharedLarDoc(repo, realmVouchBoardDocUrl(REALM), "board:vouch-registry");
+    board.change((d) => writeVouch(d, invite));
+    await repo.flush();
+  });
 }
 
 /** Stand a ring over this vessel's store for one read, and hand the caller the ring while the store stays held. */
@@ -313,8 +333,9 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
   it("★ a withdrawn vouch sets its joiner aside at the realm's gate and closes the realm's boards to it ★", async () => {
     await seatOwnCharter();
     const joiner = await nymOf(61), bystander = await nymOf(62);
-    const vouch = await direct(runCabalVouch)({ joiner, realm: REALM });
-    const peers = { "peer-j": { nym: joiner }, "peer-b": { nym: bystander }, "peer-root": { nym: vouch.voucherDid } };
+    const vouch = await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 });
+    await rootFaceInRealm(vouch.voucherDid);
+    const peers = { "peer-j": { nym: joiner }, "peer-b": { nym: bystander }, "peer-root": { nym: seatKey } };
     const realmUrl = realmDocUrl(REALM);
     const deny: FederationGate = { mayFederate: () => false };
     const everyone: NexusMembership = { holdsCarriagePeer: () => true };
@@ -379,21 +400,28 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
     });
     await ownedStore(larDataDir(), async (repo) => {
       const board = await materializeSharedLarDoc(repo, vouchUrl, "board:vouch-registry");
-      expect(Object.keys(board.doc()!.tiddlers)).toHaveLength(1);
+      // Both vouches this vessel read come back: the seat's over the face, and the face's over the joiner.
+      expect(Object.keys(board.doc()!.tiddlers)).toHaveLength(2);
     });
   });
 
-  it("★ a vessel that holds no charter reads no joiner as standing: nothing else roots a lineage ★", async () => {
+  it("★ a vessel that holds no charter of the realm's Nexus reads no joiner as standing: nothing else roots a lineage ★", async () => {
+    await seatOwnCharter();
     const joiner = await nymOf(65);
-    await direct(runCabalVouch)({ joiner, realm: REALM });
+    const vouch = await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 });
+    await rootFaceInRealm(vouch.voucherDid);
+    // The vessel's charter moves to ANOTHER Nexus: the realm still stands under the first one, whose charter it no
+    // longer holds.
+    const held = charterDoc!;
+    writeNexusDoc(larSealHome(), heldCharter({ keys: [await nymOf(66)], threshold: 1 }).doc({ labels: ["Kahu 0"] }));
     await withRing({ "peer-j": { nym: joiner } }, async (ring) => {
       const fold = await ring.refold();
       expect(fold.realms[0]!.roots).toEqual([]);
       expect(ring.standsInRealm("peer-j", REALM)).toBe(false);
       expect(ring.memberAside(REALM)("peer-j")).toBe(true);
     });
-    // CONTROL: with the voucher's key seated in this vessel's charter, the same vouch gives its joiner standing.
-    await seatOwnCharter();
+    // CONTROL: holding the charter of the Nexus the realm stands under, the same lineage gives its joiner standing.
+    writeNexusDoc(larSealHome(), held);
     await withRing({ "peer-j": { nym: joiner } }, async (ring) => {
       await ring.refold();
       expect(ring.standsInRealm("peer-j", REALM)).toBe(true);

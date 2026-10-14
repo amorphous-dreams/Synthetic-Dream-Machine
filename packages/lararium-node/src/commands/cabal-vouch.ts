@@ -12,8 +12,14 @@
  * `admitOnLineage`, which folds this board and prices the applicant. Minting a vouch for someone who never
  * crosses costs the voucher their dilution and buys them nothing — the intended asymmetry.
  *
- * FAIL CLOSED: an unknown persona root, a malformed joiner nym, an expiry already past, or a signature that
- * does not read back off the board REFUSES before anything lands. Never write a vouch the fold would drop.
+ * WHOSE HAND VOUCHES. The worn face's key at the Nexus the realm stands under, picked by the steward door
+ * (`wornStewardSigner`), never a persona root: a vouch names its voucher in the clear on a board that crosses to
+ * the realm's members, so a root there would name the human's device group (cabal-realm#/the-steward-signer).
+ * The realm stands under the Nexus the vessel's own ledger names for it, or, at the vessel's first act there,
+ * the one the call names (default the primary charter's), and the ledger keeps that word (kapae#/edge-hands).
+ *
+ * FAIL CLOSED: a vessel that wears no face, a malformed joiner nym, a realm under another Nexus, or a signature
+ * that does not read back off the board REFUSES before anything lands. Never write a vouch the fold would drop.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
  */
@@ -21,14 +27,14 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   signCabalInvite, writeVouch, verifiedVouchesFromBoard, vouchDagFromInvites, vouchEdgeId,
-  realmVouchBoardDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed,
+  realmVouchBoardDocUrl, materializeSharedLarDoc,
   type CabalInvite,
 } from "@lararium/mesh";
-import {
-  listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
-} from "../node-vessel-identity.js";
+import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { daemonDocUrlFromBootstrap, cabalAdmissionEpoch } from "./cabal-join.js";
-import { noteVesselRealm } from "../edge-board.js";
+import { actingRealmNexus, noteVesselRealm } from "../edge-board.js";
+import { nodeStewardVault, wornStewardSigner, StewardRefused, type StewardVault } from "../realm-steward.js";
+import { wornNexusLeaf } from "../nexus-leaf.js";
 import { verifyEd25519 } from "@lararium/mesh";
 
 /** A nym reads valid only at the exact ed25519 verifying-key shape — a stray value never becomes an edge. */
@@ -43,14 +49,21 @@ export interface CabalVouchOptions {
   readonly realm:       string;
   /** The realm lease epoch to bind to — the fence that actually gates. Absent → 0 (genesis). */
   readonly boundEpoch?: number;
-  /** WHICH held persona root vouches — the human's own face. Absent → the first held root. */
-  readonly handleIndex?: number;
+  /** The Nexus the realm stands under, for this vessel's first act there. Absent → the primary charter's. */
+  readonly nexusAid?:   string;
+  /** The charter DOC's authority home (the door supplies `larSealHome()`). */
+  readonly sealHome:    string;
+  /** What the steward door reads of this vessel's keys; a test hands a fake. Absent → the node vault. */
+  readonly vault?:      StewardVault;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:       Repo;
 }
 
 export interface CabalVouchResult {
+  /** The worn face's key at the realm's Nexus: the key that signed. */
   readonly voucherDid:  string;
+  /** The Nexus the realm stands under at this vessel. */
+  readonly nexusAid:    string;
   readonly joiner:      string;
   readonly realm:       string;
   readonly boundEpoch:  string;
@@ -120,31 +133,37 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
   // replica, with no clock consulted; only this fence decides whether a vouch stands.
   const boundEpoch = String(opts.boundEpoch ?? await resolveBoundEpoch(realm, opts.repo));
 
-  // WHICH FACE VOUCHES. A human holds a multitude; the vouch stakes ONE of them, named here rather than
-  // guessed, because the standing it dilutes belongs to that face alone.
-  const held = await listPersonaRoots();
-  if (held.length === 0) {
-    throw new CabalVouchError("no persona root held on this vessel — a vouch stakes a face, and this vessel holds none.");
-  }
-  const handleIndex = opts.handleIndex ?? held[0]!;
-  if (!held.includes(handleIndex)) {
-    throw new CabalVouchError(`persona root ${handleIndex} is not held here (held: ${held.join(", ")}).`);
-  }
+  // THE REALM'S NEXUS, and the ledger that keeps it: a vouch stands the vessel in the realm under one Nexus.
+  const vesselKey = await loadVesselVerifyingKey().catch(() => "");
+  if (!vesselKey) throw new CabalVouchError("this vessel surfaces no verifying key — it keeps no ledger to note the realm in.");
+  const nexusAid = await actingRealmNexus({
+    repo: opts.repo, vesselKey, realm, sealHome: opts.sealHome,
+    ...(opts.nexusAid !== undefined ? { named: opts.nexusAid } : {}), refuse: (m) => new CabalVouchError(m),
+  });
 
-  // The vault may hold a root it cannot surface a key for (a torn or half-written slot). Refuse rather than
-  // vouch under a face nobody can verify — an unverifiable voucher yields a vouch the board's read drops.
-  const voucherDid = await loadPersonaGroupRootVerifyingKey(handleIndex);
-  if (!voucherDid || !NYM_RE.test(voucherDid.toLowerCase())) {
-    throw new CabalVouchError(`persona root ${handleIndex} surfaces no usable verifying key — nothing to stake.`);
-  }
-  if (voucherDid.toLowerCase() === joiner) {
+  // A FACE NEVER VOUCHES FOR ITSELF, and the refusal mints nothing: the key the worn face already holds there
+  // answers it, and a key minted below stands fresh, so no joiner named before it can name it.
+  const standing = await wornNexusLeaf(nexusAid);
+  if (standing && standing.verifyingKey.toLowerCase() === joiner) {
     throw new CabalVouchError("a face cannot vouch for itself — self-boosting is unrepresentable on a lineage.");
   }
 
-  const seed   = await loadPersonaGroupRootSeed(handleIndex);
+  // WHICH FACE VOUCHES: the worn one, by the key it presents at that Nexus. The steward door mints it where none
+  // stands (a vouch presents the face there) and passes it through the guard; no option names a persona index.
+  let signer;
+  try { signer = await wornStewardSigner(nexusAid, opts.vault ?? nodeStewardVault); }
+  catch (err) {
+    if (err instanceof StewardRefused) throw new CabalVouchError(err.message.replace(/^realm-bag: /, ""));
+    throw err;
+  }
+  const voucherDid = signer.signer.toLowerCase();
+  if (voucherDid === joiner) {
+    throw new CabalVouchError("a face cannot vouch for itself — self-boosting is unrepresentable on a lineage.");
+  }
+
   const invite = await signCabalInvite(
     { realmDocIdHex: realm, joinerIdentityHex: joiner, voucherDid, boundEpoch },
-    ed25519SignerFromSeed(seed),
+    signer.sign,
   );
 
   // THE BOARD KEYS ON THE REALM, never on a Nexus: a vouch names its voucher in the clear, so its record
@@ -160,9 +179,9 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
     const reMinted = before.some((i) => i.voucherDid === voucherDid && i.joinerIdentityHex === joiner);
 
     handle.change((d) => writeVouch(d, invite));
-    // This vessel reads this realm's boards from here on: its gates consult every shadow raised there.
-    const vesselKey = await loadVesselVerifyingKey().catch(() => "");
-    if (vesselKey) await noteVesselRealm(repo, vesselKey, realm);
+    // This vessel reads this realm's boards from here on, under the Nexus the vouch named: its gates consult
+    // every shadow raised there, and the realm's quorum reads off that Nexus's charter.
+    await noteVesselRealm(repo, vesselKey, realm, nexusAid);
     await repo.flush();
 
     // NEVER leave a vouch the fold would drop. Read it BACK through the verifying read — the only read that
@@ -176,7 +195,7 @@ export async function runCabalVouch(opts: CabalVouchOptions): Promise<CabalVouch
     }
 
     const outDegreeFloor = vouchDagFromInvites(after).edges.filter((e) => e.voucher === voucherDid).length;
-    return { voucherDid, joiner, realm, boundEpoch, boardUrl, edgeId: vouchEdgeId(invite), outDegreeFloor, reMinted };
+    return { voucherDid, nexusAid, joiner, realm, boundEpoch, boardUrl, edgeId: vouchEdgeId(invite), outDegreeFloor, reMinted };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }

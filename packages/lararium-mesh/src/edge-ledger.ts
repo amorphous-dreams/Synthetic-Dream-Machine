@@ -28,6 +28,7 @@ import { verifyEd25519 } from "./ed25519-door.js";
 import { verifiedVouchesFromBoard, verifiedVouchesFromRecords, vouchEdgeId, vouchEntryKey, writeVouch } from "./vouch-board.js";
 import { tiddlerText } from "./base-doc.js";
 import { storedLarRecord } from "./stored-record.js";
+import { NEXUS_AID_PATTERN } from "./wax-stamp.js";
 import type { SeatRoll } from "./seat-duties.js";
 import {
   edgeKapaeActsFromRecords, edgeRollAnchorsFromRecords, edgeRollAnchorCid, writeEdgeKapae, writeEdgeRollAnchor, mergeEdgeActs, mergeEdgeRollAnchors,
@@ -37,7 +38,7 @@ import {
 /** The tiddler-key prefix every ledger row rides under: `<prefix><scope>/<act|anchor|rolled>/<cid>`. */
 export const EDGE_LEDGER_PREFIX = "lar:///ha.ka.ba/dreamnet/edge-ledger/" as const;
 
-const rowKey = (scope: string, kind: "act" | "anchor" | "rolled" | "seen" | "realm" | "vouch", cid: string): string =>
+const rowKey = (scope: string, kind: "act" | "anchor" | "rolled" | "seen" | "realm" | "vouch" | "nexus", cid: string): string =>
   `${EDGE_LEDGER_PREFIX}${scope}/${kind}/${cid}`;
 
 /** The ledger's stored rows of one kind for one board. */
@@ -71,10 +72,45 @@ export function keptFromLedger(ledger: LarDoc | undefined | null, scope: string)
  * Remember that this vessel reads one REALM's boards: it vouched there, crossed there, or acted on an edge
  * there. The vessel's own note of its own relations, kept where no other operator reads it; the gates read the
  * boards of every realm so noted. Call INSIDE a `handle.change()` callback.
+ *
+ * A REALM STANDS UNDER ONE NEXUS (kapae#/edge-hands). An ACT names that Nexus (`nexusAid`, the AID of the
+ * charter the realm's quorum answers to), and the first act's word stands: a later act never adds a second pin,
+ * so no other Nexus's quorum ever counts on this realm's boards here. Each pin rests under a key of its own, so
+ * two replicas that each pinned a different Nexus before they met keep BOTH pins, and the realm then reads as
+ * conflicted (`ledgerRealmNexus` answers none) until a person settles it. A READ notes the realm and pins nothing.
  */
-export function noteRealm(draft: LarDoc, realm: string): void {
-  const key = rowKey(realm.trim().toLowerCase(), "realm", "known");
+export function noteRealm(draft: LarDoc, realm: string, nexusAid?: string): void {
+  const scope = realm.trim().toLowerCase();
+  const key = rowKey(scope, "realm", "known");
   if (draft.tiddlers[key] === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: "realm" }, "edge-ledger");
+  if (nexusAid === undefined) return;
+  const aid = nexusAid.trim().toLowerCase();
+  if (!NEXUS_AID_PATTERN.test(aid)) throw new Error(`edge-ledger: a realm stands under a Nexus AID, and "${nexusAid}" reads as none`);
+  if (ledgerRealmNexuses(draft, scope).length > 0) return;
+  const pin = rowKey(scope, "nexus", aid);
+  draft.tiddlers[pin] = storedLarRecord(pin, { text: aid }, "edge-ledger");
+}
+
+/** Every Nexus pin the ledger holds for a realm, sorted: none, one, or (after two replicas met) a conflict. */
+export function ledgerRealmNexuses(ledger: LarDoc | undefined | null, realm: string): string[] {
+  const prefix = `${EDGE_LEDGER_PREFIX}${realm.trim().toLowerCase()}/nexus/`;
+  const out = new Set<string>();
+  for (const [key, record] of Object.entries(ledger?.tiddlers ?? {})) {
+    if (!key.startsWith(prefix)) continue;
+    const aid = key.slice(prefix.length);
+    // A pin reads only where its key and its text name the same Nexus AID.
+    if (NEXUS_AID_PATTERN.test(aid) && tiddlerText(record)?.trim().toLowerCase() === aid) out.add(aid);
+  }
+  return [...out].sort();
+}
+
+/**
+ * The Nexus a realm stands under at this vessel: the one AID its first act pinned, or null where no act pinned
+ * one OR two pins conflict. A null reads no quorum hand on that realm's boards.
+ */
+export function ledgerRealmNexus(ledger: LarDoc | undefined | null, realm: string): string | null {
+  const pins = ledgerRealmNexuses(ledger, realm);
+  return pins.length === 1 ? pins[0]! : null;
 }
 
 /** The realms this vessel noted. Sorted. */

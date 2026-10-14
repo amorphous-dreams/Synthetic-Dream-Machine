@@ -532,9 +532,12 @@ run_open_relation() {
   local REALM; REALM=$(printf 'f%.0s' $(seq 1 64))
   local okc=1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" --as 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" >/dev/null 2>&1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" --as 1 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"many-faces"' || okc=0
   if [ "$okc" -eq 1 ]; then ok; else
     bad "the OPEN posture moved what the realm reads"
@@ -571,7 +574,8 @@ run_crossing() {
     bad "a hearth never answered"; clear_all; return; fi
 
   step "A feeds a realm — VISIT, while the phase stays SEED"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" --as 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
   if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' \
      && $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
   else bad "feeding a realm moved the phase, or did not register"; fi
@@ -644,9 +648,12 @@ run_open() {
   local REALM; REALM=$(printf 'e%.0s' $(seq 1 64))
   local okc=1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"unfed"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" --as 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" >/dev/null 2>&1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"visit"' || okc=0
-  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" --as 1 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed  --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
   $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 | grep -q '"standing":"many-faces"' || okc=0
   if [ "$okc" -eq 1 ]; then ok; else
     bad "the OPEN posture moved what the realm reads"
@@ -683,8 +690,10 @@ run_realm() {
   fi
 
   step "ONE face feeds — a VISIT, and depth changes nothing"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" --as 0 >/dev/null 2>&1
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" --as 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
   if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
      | grep -q '"standing":"visit"'; then ok; else bad "one face twice did not read as a visit"; fi
 
@@ -692,7 +701,9 @@ run_realm() {
   # and not a second hand; naming it belonging would manufacture the reciprocity the model requires
   # be earned.
   step "a SECOND face feeds — MANY-FACES, and never belonging"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" --as 1 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
   local CLK
   CLK=$($COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1)
   if printf '%s' "$CLK" | grep -q '"standing":"many-faces"' \
@@ -878,7 +889,8 @@ run_realm_crossing() {
   else bad "B's immune surface folded somebody else's admits"; fi
 
   step "A feeds her own face — a VISIT on A's side"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" --as 0 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
   if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
      | grep -q '"standing":"visit"'; then ok; else bad "A's own offering did not read as a visit"; fi
 
@@ -886,12 +898,15 @@ run_realm_crossing() {
   # reached the only way this system can reach it — two faces of ONE operator. The cross-operator
   # walk below measures whether it could ever be reached the other way, and it cannot yet.
   step "A's SECOND face feeds — MANY-FACES under a standing relation"
-  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" --as 1 >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$REALM" >/dev/null 2>&1
+  $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
   if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$REALM" --json 2>&1 \
      | grep -q '"standing":"many-faces"'; then ok; else bad "two faces did not read as many-faces"; fi
 
   step "B feeds HER face, on her own contracted vessel"
-  if $COMPOSE exec -T lararium-b $LARES cabal feed --realm "$REALM" --as 0 >/dev/null 2>&1; then ok
+  $COMPOSE exec -T lararium-b $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+  if $COMPOSE exec -T lararium-b $LARES cabal feed --realm "$REALM" >/dev/null 2>&1; then ok
   else bad "B could not feed"; fi
 
   # THE MEASUREMENT THIS SCENARIO EXISTS FOR. Three faces have now fed one realm — two of A's and one
@@ -999,12 +1014,15 @@ run_quorum_realm() {
     fi
 
     step "under $label one face feeds — a VISIT"
-    $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$realm" --as 0 >/dev/null 2>&1
+    $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+    $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$realm" >/dev/null 2>&1
     if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$realm" --json 2>&1 | grep -q '"standing":"visit"'; then ok
     else bad "one face did not read as a visit under $label"; fi
 
     step "under $label a second face feeds — MANY-FACES"
-    $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$realm" --as 1 >/dev/null 2>&1
+    $COMPOSE exec -T lararium-a $LARES persona wear 1 >/dev/null 2>&1   # the worn face feeds (cabal-realm#/the-steward-signer)
+    $COMPOSE exec -T lararium-a $LARES cabal feed --realm "$realm" >/dev/null 2>&1
+    $COMPOSE exec -T lararium-a $LARES persona wear 0 >/dev/null 2>&1
     if $COMPOSE exec -T lararium-a $LARES cabal clock --realm "$realm" --json 2>&1 | grep -q '"standing":"many-faces"'; then ok
     else bad "two faces did not read as many-faces under $label"; fi
   }

@@ -18,6 +18,7 @@ import { larDataDir } from "../src/vessel-paths.js";
 import { runEdgeKapae, EdgeKapaeError } from "../src/commands/edge-kapae-cmd.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
+import { seatOwnCharter, wear } from "./worn-face-fixture.js";
 
 let root: string;
 let priorLarRoot: string | undefined;
@@ -48,12 +49,14 @@ async function boardState(url: string, authority: string) {
 }
 
 describe("runEdgeKapae", () => {
-  it("a realm holder raise stands under its signer", async () => {
+  it("a realm holder raise stands under its signer: the worn face's key at the realm's Nexus", async () => {
+    await seatOwnCharter([0]);
+    const face = await wear(0);
     const vouch = await direct(runCabalVouch)({ joiner: MEMBER, realm: REALM, boundEpoch: 0 });
     const r = await direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true });
     expect(r.board).toBe("realm");
     expect(r.boardUrl).toBe(realmEdgeBoardDocUrl(REALM));
-    expect(r.signers).toEqual([await loadPersonaGroupRootVerifyingKey(0)]);
+    expect(r.signers).toEqual([face]);
     expect(r.shadowStands).toBe(true);
     const state = await boardState(r.boardUrl, r.signers[0]!);
     expect(state.readings.get(vouch.edgeId)?.stands).toBe(true);
@@ -106,8 +109,9 @@ describe("runEdgeKapae", () => {
   });
 
   it("refuses realm holder acts without authority over the named edge", async () => {
+    await seatOwnCharter([0]);
+    await wear(0);
     const vouch = await direct(runCabalVouch)({ joiner: MEMBER, realm: REALM, boundEpoch: 0 });
-    await generateOrLoadPersonaGroupRoot(1);
     const url = realmEdgeBoardDocUrl(REALM);
     const assertEmpty = async () => {
       const repo = restingRepo(larDataDir());
@@ -119,7 +123,11 @@ describe("runEdgeKapae", () => {
     await assertEmpty();
     await expect(direct(runEdgeKapae)({ member: MEMBER, realm: REALM, raised: true })).rejects.toThrow(EdgeKapaeError);
     await assertEmpty();
-    await expect(direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true, handleIndex: 1 })).rejects.toThrow(EdgeKapaeError);
+    // `--as` names no hand on a realm's board, and another worn face holds no vouch there.
+    await expect(direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true, handleIndex: 0 })).rejects.toThrow(EdgeKapaeError);
+    await assertEmpty();
+    await wear(1);
+    await expect(direct(runEdgeKapae)({ edgeId: vouch.edgeId, realm: REALM, raised: true })).rejects.toThrow(EdgeKapaeError);
     await assertEmpty();
   });
 

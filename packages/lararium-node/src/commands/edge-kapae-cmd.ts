@@ -2,11 +2,16 @@
  * runEdgeKapae — set a relationship aside, or take the marker back down.
  *
  * TWO HANDS, TWO BOARDS (kapae#/edge-hands · #/four-edges).
- *   · The HOLDER hand signs with one persona root this vessel holds: a voucher over their own vouch, on the
- *     realm's edge board; or a fleet root over a device of its fleet, on the fleet's edge board.
- *   · The QUORUM hand signs with the seats of this vessel's charter that it holds, at the charter's head
- *     epoch, on the realm's edge board: a vouch struck, or a member's whole relation to the realm set aside.
- *     Fewer held seats than the threshold refuses before any write.
+ *   · The HOLDER hand on a realm's edge board signs with the key the WORN face presents at the Nexus the realm
+ *     stands under: a voucher over their own vouch, the same key that signed it. No option names a persona
+ *     index there (cabal-realm#/the-steward-signer). On a fleet's edge board the holder signs with one persona
+ *     root this vessel holds, over a device of its fleet: the dyad's hands stay the fleet root's.
+ *   · The QUORUM hand signs with the seats this vessel holds of the charter the realm stands under, at that
+ *     charter's head epoch, on the realm's edge board: a vouch struck, or a member's whole relation to the
+ *     realm set aside. Fewer held seats than the threshold refuses before any write.
+ *
+ * A REALM STANDS UNDER ONE NEXUS (kapae#/edge-hands): the act reads it off the vessel's own ledger, or names it
+ * (`nexusAid`, default the primary charter's) where no act came before, and the ledger keeps the first word.
  *
  * THE DOOR READS AUTHORITY THE WAY EVERY READER DOES. On a realm's board the holder of a vouch edge reads off
  * the verified vouches this vessel holds (`realmEdgeAuthority`): its voucher, and no other key. A root that
@@ -36,7 +41,8 @@ import {
   listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
 } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
-import { readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
+import { actingRealmNexus, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
+import { wornNexusLeaf } from "../nexus-leaf.js";
 
 export class EdgeKapaeError extends Error {}
 
@@ -55,8 +61,11 @@ export interface EdgeKapaeOptions {
   readonly hand?:        EdgeHand;
   /** The realm whose edge board carries the act. Absent → the fleet's own board, under the signing root. */
   readonly realm?:       string;
-  /** The holder hand: WHICH held persona root signs. Absent → the first held root. */
+  /** The holder hand on a FLEET's board: WHICH held persona root signs. Absent → the first held root. A realm's
+   *  board takes none: its holder hand signs with the worn face's key at the realm's Nexus. */
   readonly handleIndex?: number;
+  /** The Nexus a realm stands under, for a vessel's first act there. Absent → the primary charter's. */
+  readonly nexusAid?:    string;
   /** Explicit causal parents; absent means the line's own heads as this vessel counts them. */
   readonly parents?:     readonly string[];
   /** The charter DOC's authority home (the door supplies `larSealHome()`). */
@@ -139,7 +148,14 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
 
   const vesselKey = await loadVesselVerifyingKey();
   if (!vesselKey) throw new EdgeKapaeError("this vessel surfaces no verifying key — it keeps no ledger to read a board against.");
-  const charter = realm !== undefined ? vesselEdgeCharter(realm, opts.sealHome) : null;
+  if (realm !== undefined && opts.handleIndex !== undefined) {
+    throw new EdgeKapaeError("a realm's holder hand signs with the key the worn face presents at the realm's Nexus — `--as` names a fleet root, on a fleet's board alone.");
+  }
+  if (realm === undefined && opts.nexusAid !== undefined) throw new EdgeKapaeError("a fleet's board stands under no Nexus — `--nexus` names a realm's.");
+  const realmNexus = realm !== undefined
+    ? await actingRealmNexus({ repo: opts.repo, vesselKey, realm, sealHome: opts.sealHome, ...(opts.nexusAid !== undefined ? { named: opts.nexusAid } : {}), refuse: (m) => new EdgeKapaeError(m) })
+    : null;
+  const charter = realm !== undefined ? vesselEdgeCharter(realm, opts.sealHome, realmNexus) : null;
 
   let signers: EdgeSigner[];
   let authority: EdgeAuthority;
@@ -148,7 +164,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   let epochCid: string | undefined;
 
   if (hand === "quorum") {
-    if (!charter) throw new EdgeKapaeError("no seated charter stands on this vessel — the quorum hand has no seats to sign with.");
+    if (!charter) throw new EdgeKapaeError("no seated charter of the Nexus this realm stands under stands on this vessel — the quorum hand has no seats to sign with.");
     const selected = await selectHeldQuorumSigners(charter.head, (held, k) => new EdgeKapaeError(
       `REFUSED (fail-closed): this vessel holds ${held} seat(s) of the charter's quorum and the act takes ${k}. ` +
       "A quorum act never lands short of its threshold.",
@@ -158,6 +174,24 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     scope = realm!;
     boardUrl = realmEdgeBoardDocUrl(realm!);
     epochCid = charter.head.sealEpochCid;
+  } else if (realm !== undefined) {
+    // THE WORN FACE'S HAND. The key that made a vouch withdraws it: the worn face's key at the realm's Nexus.
+    // A read never mints, so a face that holds no key there holds no vouch there either. A member's edge answers
+    // to the seat quorum alone, whatever face stands worn.
+    if (member !== undefined) {
+      throw new EdgeKapaeError("REFUSED: no single key holds a member's edge on this realm's board — it answers to the seat quorum (--quorum).");
+    }
+    const leaf = await wornNexusLeaf(realmNexus!);
+    if (!leaf) {
+      throw new EdgeKapaeError("the worn face holds no key at the Nexus this realm stands under, so it holds no vouch here — wear the face that vouched (`lares persona wear N`).");
+    }
+    const signerDid = leaf.verifyingKey.toLowerCase();
+    signers = [{ signer: signerDid, sign: ed25519SignerFromSeed(leaf.seed) }];
+    authority = { holder: signerDid };
+    scope = realm;
+    boardUrl = realmEdgeBoardDocUrl(realm);
+    // A holder act names no epoch: its hand holds no roster (kapae#/rolls).
+    epochCid = undefined;
   } else {
     const held = await listPersonaRoots();
     if (held.length === 0) {
@@ -174,8 +208,8 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     signers = [{ signer: signerDid, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)) }];
     authority = { holder: signerDid };
     if (device !== undefined) edgeId = deviceEdgeId(signerDid, device);   // the fleet root and the device key name it
-    scope = realm ?? signerDid;
-    boardUrl = realm !== undefined ? realmEdgeBoardDocUrl(realm) : fleetEdgeBoardDocUrl(signerDid);
+    scope = signerDid;
+    boardUrl = fleetEdgeBoardDocUrl(signerDid);
     // A holder act names no epoch: its hand holds no roster (kapae#/rolls).
     epochCid = undefined;
   }
@@ -195,7 +229,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
           holder === undefined
             ? "REFUSED: no single key holds that edge on this realm's board. A voucher holds their own vouch " +
               "(name its edge id, as `lares cabal vouch` printed it); a member's edge answers to the seat quorum (--quorum)."
-            : "REFUSED: that vouch belongs to another voucher. Only the root that made a vouch withdraws it; the seat quorum may strike it (--quorum).",
+            : "REFUSED: that vouch belongs to another voucher. Only the face key that made a vouch withdraws it; the seat quorum may strike it (--quorum).",
         );
       }
     }
@@ -215,6 +249,9 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
 
     const act = await signEdgeKapae({ edgeId, raised: opts.raised, hand, parents, ...(epochCid === undefined ? {} : { epochCid }) }, signers);
     before.handle.change((d) => writeEdgeKapae(d, act));
+    // AN ACT STANDS THE REALM UNDER ITS NEXUS, once it landed: the ledger keeps the first act's word
+    // (kapae#/edge-hands), and an act refused before its write pins nothing.
+    if (realm !== undefined) await noteVesselRealm(repo, vesselKey, realm, realmNexus!);
     await repo.flush();
 
     // Read the act BACK through the counting fold. A caller learns whether the shadow now STANDS rather than

@@ -214,6 +214,7 @@ export type { NexusOfferingInspectOptions, NexusOfferingInspectResult } from "./
 // admit/revoke onto the members board (the antigen's ALLOW-twin); `accept-carriage` mints the operator contract-in.
 export { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
 export { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
+export { runCabalFace, CabalFaceError, type CabalFaceResult } from "./commands/cabal-face.js";
 export { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 export type { EdgeKapaeOptions, EdgeKapaeResult } from "./commands/edge-kapae-cmd.js";
 export { runEdgeRollAnchors, EdgeRollAnchorError, type EdgeRollAnchorLanded } from "./commands/edge-roll-anchor.js";

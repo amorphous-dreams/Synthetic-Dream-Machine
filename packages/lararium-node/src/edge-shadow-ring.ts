@@ -23,7 +23,7 @@ import {
   readLedgeredVouches, canonicalIdentity, edgeLedgerDocUrl, ledgerRealms, edgeStandingOf, raisesSeenThrough,
   type CabalInvite, type EdgeReading, type EdgeStanding, type LarDoc, type ShadowConsult,
 } from "@lararium/mesh";
-import { readVesselEdgeBoard, vesselEdgeCharter } from "./edge-board.js";
+import { readVesselEdgeBoard, realmNexusIn, vesselEdgeCharter } from "./edge-board.js";
 
 const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "").slice(-64);
 
@@ -216,14 +216,15 @@ export function makeEdgeShadowRing(deps: EdgeShadowRingDeps): EdgeShadowRing {
         // The vouches read through the vessel's own ledger: a vouch a hand deleted still names its joiner here.
         const vouches = await readLedgeredVouches({ repo: deps.repo, realm, vesselKey: deps.vesselKey });
         const invites = vouches.invites;
-        const charter = vesselEdgeCharter(realm, deps.sealHome);
+        // The realm's quorum and its lineage roots read off the charter of the Nexus the realm stands under here.
+        const charter = vesselEdgeCharter(realm, deps.sealHome, realmNexusIn(ledger.doc(), realm));
         const read = await readVesselEdgeBoard({
           repo: deps.repo, scope: realm, kind: "realm", boardUrl: edgeUrl, label: "board:edge-kapae", vesselKey: deps.vesselKey,
           authorityFor: realmEdgeAuthority(invites),
           charter,
         });
-        // THE LINEAGE'S ROOTS: the seats of the charter this vessel holds. Nothing else roots a lineage, so a
-        // vessel that holds no charter reads no joiner as standing.
+        // THE LINEAGE'S ROOTS: the seats of the charter the realm stands under. Nothing else roots a lineage, so a
+        // vessel that holds no charter of that Nexus, or notes the realm under none, reads no joiner as standing.
         const roots = charter?.head.keys ?? [];
         follow(vouchUrl, vouches.handle);
         follow(edgeUrl, read.handle);

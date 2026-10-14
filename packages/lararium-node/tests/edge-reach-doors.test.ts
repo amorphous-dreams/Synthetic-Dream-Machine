@@ -17,7 +17,7 @@ import {
   edgeKapaeActsFromBoard,
 } from "@lararium/mesh";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona,
 } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc, readNexusDoc } from "../src/nexus-doc.js";
@@ -48,6 +48,8 @@ async function seatCharter() {
   const rolled = await genesis.roll(next.hands);
   const opened = rolled.roster;
   const roll = (): void => writeNexusDoc(larSealHome(), rolled.doc({ labels: chairs(newKeys) }));
+  // The worn face vouches, with its key at this charter's Nexus (cabal-realm#/the-steward-signer).
+  await wearPersona(0);
   return { e0: genesis.head, opened, roll };
 }
 

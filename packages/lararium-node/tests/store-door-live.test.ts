@@ -82,6 +82,9 @@ async function seatVessel(root: string): Promise<void> {
   const doc: NexusDoc = charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
   writeNexusDoc(sealHome(), doc);
   await wearPersona(0);
+  // The worn face's key at this Nexus mints HERE, before a twin copies the root: a vouch signs with it, and the
+  // twin and the original sign one act only while both hold the same random key.
+  await mintNexusLeaf(0, nexusAidOf(doc)!);
   // §2.1 — `cabal-vouch`'s `resolveBoundEpoch` reads the social bootstrap for a daemon doc URL
   // (`daemonDocUrlFromBootstrap`) and refuses fail-closed when it finds none. Seed a REAL daemon doc +
   // the bootstrap pointer in the EXACT shape `runInit` writes (flat `tiddlers[DAEMON_BAG_ID].text`), so

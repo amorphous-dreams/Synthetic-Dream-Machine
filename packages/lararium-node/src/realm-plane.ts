@@ -41,6 +41,10 @@ import {
 } from "@lararium/mesh";
 
 /** Why a seal on this vessel refused. */
+/** One realm the vessel's ledger notes, and the Nexus it stands under there (null where no act named one);
+ *  `conflict` where two pins disagree, and then it stands under none. */
+export interface NotedRealm { readonly realm: string; readonly nexus: string | null; readonly conflict?: boolean }
+
 export type StewardRefusal =
   | "no-realm"                 // the plane never stood, or stands in no realm
   | "no-face-worn"             // this vessel wears no face, or holds no root for the worn index
@@ -49,6 +53,7 @@ export type StewardRefusal =
   | "steward-name-unreadable"  // a name that reads neither a face key nor a Handle prefix
   | "steward-name-unproven"    // a name another hand would write, whose own holder sealed nothing in this realm
   | "handle-chain-mismatch"   // a Handle signer whose chain does not open on its own name
+  | "realm-under-another-nexus" // a realm this vessel's ledger stands under another Nexus than the one standing here
   | "realm-unreadable";
 
 /** A refusal to seal or to name, by name. Nothing got sealed and nothing got written when one throws. */
@@ -163,13 +168,14 @@ export function makeRealmPlane(opts: {
    */
   readonly onRefold?: () => void;
   readonly onLog?: (line: string) => void;
-  /** The cabal realms this vessel noted in its OWN ledger: the holder's own memory, never a roster of a mesh. */
-  readonly realms?: () => readonly string[] | Promise<readonly string[]>;
+  /** The cabal realms this vessel noted in its OWN ledger, each with the Nexus its first act named (null where
+   *  no act named one): the holder's own memory, never a roster of a mesh. */
+  readonly realms?: () => readonly NotedRealm[] | Promise<readonly NotedRealm[]>;
   /** Does this peer hold lineage standing in this realm (the edge shadow ring's live reading)? Absent, a cabal
    *  realm's documents cross to nobody past the base gate. */
   readonly standsInRealm?: (peerId: string, realm: string) => boolean;
-  /** Note a realm in the vessel's own ledger: `enter` calls it once per realm. */
-  readonly noteRealm?: (realm: string) => Promise<void>;
+  /** Note a realm in the vessel's own ledger under the Nexus that stands here: `enter` calls it once per realm. */
+  readonly noteRealm?: (realm: string, nexusAid: string) => Promise<void>;
 }): RealmPlanesHolder {
   const { repo, oracleHandle, crossroadsHandle, membership, base } = opts;
   const log = opts.onLog ?? (() => {});
@@ -420,11 +426,18 @@ export function makeRealmPlane(opts: {
     oracleHandle.change((d) => { for (const k of keys) delete d.tiddlers[k]; });
   };
 
-  /** The cabal realms the vessel's own ledger notes: names that read as a cabal realm, apart from the Nexus's own. */
+  /** The ledger's notes, read whole; a ledger that will not read notes nothing. */
+  const readNoted = async (): Promise<readonly NotedRealm[]> => {
+    try { return (await opts.realms?.()) ?? []; } catch { return []; }
+  };
+  /**
+   * The cabal realms the vessel's own ledger notes UNDER THE NEXUS THAT STANDS HERE (or under none yet), apart from
+   * the Nexus's own. A realm stands under one Nexus (kapae#/edge-hands): one noted under another Nexus stands no
+   * plane here, since its steward's key derives against that other Nexus.
+   */
   const notedRealms = async (): Promise<string[]> => {
-    let named: readonly string[] = [];
-    try { named = (await opts.realms?.()) ?? []; } catch { named = []; }
-    return [...new Set(named.map((r) => r.trim().toLowerCase()))].filter((r) => CABAL_REALM_RE.test(r) && r !== charterRealm).sort();
+    const named = (await readNoted()).filter((n) => !n.conflict && (n.nexus === null || n.nexus === charterRealm)).map((n) => n.realm.trim().toLowerCase());
+    return [...new Set(named)].filter((r) => CABAL_REALM_RE.test(r) && r !== charterRealm).sort();
   };
 
   // ONE HOLDER ACT AT A TIME: a refresh and an entry each run whole, so an entry never commits a plane across a
@@ -439,14 +452,27 @@ export function makeRealmPlane(opts: {
 
   async function refreshNow(charter: NexusDoc | null): Promise<void> {
     const id = nexusAidOf(charter);
-    if (!id) return;                   // no charter → inert (a vessel outside every realm)
+    // NO CHARTER → INERT (a vessel outside every realm). A Nexus this vessel stood under and no longer holds takes
+    // every plane and pin with it: no realm stays standing under a Nexus no charter here names.
+    if (!id) {
+      if (charterRealm !== null) {
+        const left = [...stood.keys()];
+        dropAll();
+        for (const realm of left) unpin(realm);
+        charterRealm = null;
+        entered.clear();
+      }
+      return;
+    }
     if (id !== charterRealm) {
       // ANOTHER NEXUS: every plane re-stands under it, since a steward's key derives against the Nexus.
       // Every plane leaves with its pins: a steward's key derives against the Nexus, so no pin of the Nexus
-      // this vessel left answers under the next, and a failed stand leaves no realm readable.
+      // this vessel left answers under the next, and a failed stand leaves no realm readable. A realm this run
+      // entered under the Nexus it left stands again only where the ledger notes it under the next one, or under none.
       const left = [...stood.keys()];
       dropAll();
       for (const realm of left) unpin(realm);
+      entered.clear();
       // The holder names its Nexus only while that Nexus's own plane stands: a stand that fails leaves the holder
       // inert, and the next refresh stands it again.
       charterRealm = id;
@@ -455,9 +481,20 @@ export function makeRealmPlane(opts: {
     } else {
       for (const s of stood.values()) await s.refold();
     }
-    // Every cabal realm this run entered, and every one the ledger notes, stands under the Nexus that stands now.
+    // Every cabal realm this run entered, and every one the ledger notes, stands under the Nexus that stands now,
+    // save one the ledger notes under ANOTHER Nexus (kapae#/edge-hands).
     for (const realm of await notedRealms()) entered.add(realm);
-    for (const realm of [...entered].sort()) if (realm !== charterRealm && !stood.has(realm)) stood.set(realm, await standPlane(realm, "cabal"));
+    const elsewhere = new Set((await readNoted()).filter((n) => n.conflict || (n.nexus !== null && n.nexus !== charterRealm)).map((n) => n.realm.trim().toLowerCase()));
+    // A realm already standing that the ledger now pins elsewhere, or reads conflicted (two replicas met), leaves
+    // with its pins: no plane stands under a Nexus the realm does not stand under here.
+    for (const realm of [...stood.keys()]) {
+      if (realm === charterRealm || !elsewhere.has(realm)) continue;
+      stood.get(realm)!.drop(); stood.delete(realm); unpin(realm); entered.delete(realm);
+    }
+    for (const realm of [...entered].sort()) {
+      if (realm === charterRealm || stood.has(realm) || elsewhere.has(realm)) continue;
+      stood.set(realm, await standPlane(realm, "cabal"));
+    }
   }
 
   function dispose(): void { dropAll(); }
@@ -489,13 +526,22 @@ export function makeRealmPlane(opts: {
       const name = realm.trim().toLowerCase();
       if (!CABAL_REALM_RE.test(name)) throw new StewardRefused("realm-unreadable", `"${realm}" reads as no cabal realm — a cabal realm wears 64 lower-case hex, the name its vouch board and its feed already wear`);
       return inTurn(async () => {
+        if (!charterRealm) throw new StewardRefused("no-realm", "a cabal realm stands under a Nexus, and this vessel holds no charter — seat one (`lares nexus rite quorum`) or import one (`lares nexus seal import`)");
+        // THE LEDGER READS FIRST, a plane already standing included: a realm the ledger now pins elsewhere, or
+        // reads conflicted, answers no act through a plane that stood before.
+        const noted = (await readNoted()).find((n) => n.realm.trim().toLowerCase() === name);
+        if (noted?.conflict) throw new StewardRefused("realm-under-another-nexus", "this vessel's ledger stands this realm under two Nexuses at once, and no act here picks one");
+        const under = noted?.nexus ?? null;
+        if (under !== null && under !== charterRealm) {
+          throw new StewardRefused("realm-under-another-nexus", `this realm stands under ${under.slice(0, 22)}… here, and this vessel's planes stand under ${charterRealm.slice(0, 22)}…`);
+        }
         const already = stood.get(name);
         if (already) return already.plane;
-        if (!charterRealm) throw new StewardRefused("no-realm", "a cabal realm stands under a Nexus, and this vessel holds no charter — seat one (`lares nexus rite quorum`) or import one (`lares nexus seal import`)");
+        const nexus = charterRealm;
         const fresh = await standPlane(name, "cabal");
         // THE LEDGER NOTES FIRST: a realm the vessel's own ledger failed to note stands nowhere, so the next
         // boot and this run agree on which realms the vessel entered.
-        try { await opts.noteRealm?.(name); }
+        try { await opts.noteRealm?.(name, nexus); }
         catch (e) { fresh.drop(); unpin(name); throw e; }
         stood.set(name, fresh);
         entered.add(name);

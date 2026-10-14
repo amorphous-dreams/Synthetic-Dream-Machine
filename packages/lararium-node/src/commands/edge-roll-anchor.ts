@@ -8,7 +8,8 @@
  * later head; an act the closed keys mint afterwards sits in no anchor's past, and counts nowhere. Each anchor
  * cites the one before it, so a reader walks every roll from its charter head down.
  *
- * WHICH BOARDS. The vessel's own ledger names them: every board it has kept a quorum act for. A board this
+ * WHICH BOARDS. The vessel's own ledger names them: every board it has kept a quorum act for, of a realm that
+ * stands under the Nexus whose charter rolls (kapae#/edge-hands); another Nexus's roll anchors nothing there. A board this
  * vessel never read takes no anchor from it; a vessel that counted a raise there before the roll keeps
  * counting it by its own ledger's word (`seenAtHead`), and a lift there waits on a hand that reads the board.
  *
@@ -26,7 +27,8 @@ import {
 import { readNexusDoc } from "../nexus-doc.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
-import { readVesselEdgeBoard } from "../edge-board.js";
+import { readVesselEdgeBoard, realmNexusIn } from "../edge-board.js";
+import { primaryNexusAid } from "../carried-set.js";
 
 export class EdgeRollAnchorError extends Error {}
 
@@ -52,7 +54,11 @@ export async function runEdgeRollAnchors(opts: {
   const ledger = await materializeSharedLarDoc(repo, edgeLedgerDocUrl(vesselKey), "ledger:edge");
   // A board with no quorum act in this vessel's ledger carries nothing a roll could strand (a fleet's board
   // holds holder acts alone).
-  const realms = ledgerScopes(ledger.doc()).filter((scope) => keptFromLedger(ledger.doc(), scope).acts.some((a) => a.hand === "quorum"));
+  // The roll belongs to the charter at `sealHome`: a realm standing under any other Nexus takes no anchor from it.
+  const rolling = primaryNexusAid(opts.sealHome);
+  if (rolling === null) return [];
+  const realms = ledgerScopes(ledger.doc()).filter((scope) =>
+    realmNexusIn(ledger.doc(), scope) === rolling && keptFromLedger(ledger.doc(), scope).acts.some((a) => a.hand === "quorum"));
   if (realms.length === 0) return [];
 
   const selected = await selectHeldQuorumSigners(opts.opened, (held, k) => new EdgeRollAnchorError(

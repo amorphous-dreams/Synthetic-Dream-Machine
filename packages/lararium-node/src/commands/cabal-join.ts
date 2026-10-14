@@ -31,7 +31,7 @@ import { tiddlerText, type LarDoc } from "@lararium/mesh";
 import { admitOnLineage, type LineageAdmission } from "../realm-admission.js";
 import { larBootstrapPath } from "../vessel-paths.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
-import { readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
+import { readVesselEdgeBoard, realmEdgeCharter } from "../edge-board.js";
 import { verifyEd25519, cabalInviteBytes } from "@lararium/mesh";
 
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -204,7 +204,9 @@ export async function runCabalJoin(
     const edges = await readVesselEdgeBoard({
       repo, scope: realm, kind: "realm", boardUrl: realmEdgeBoardDocUrl(realm), label: "board:edge-kapae", vesselKey,
       authorityFor: realmEdgeAuthority(candidates),
-      charter: vesselEdgeCharter(realm, opts.sealHome),
+      // THE QUORUM THE REALM ANSWERS TO: the charter of the Nexus the realm stands under here, never this
+      // vessel's own primary charter by default (kapae#/edge-hands).
+      charter: await realmEdgeCharter(repo, vesselKey, realm, opts.sealHome),
     });
     // ONLY A CAUSAL LOWER LIFTS: a contested or unreadable edge stays aside.
     const shadowOver = (i: CabalInvite): SetAsideVouch | null => {

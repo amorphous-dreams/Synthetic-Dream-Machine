@@ -11,16 +11,25 @@
  * R8 steward pins stay per realm / control: the charter key and cabal key occupy separate pointers.
  * R10 a book two realms register crosses where every holding realm admits / control: a peer standing in both.
  * R11 a named plane's gate answers its own realm alone / control: the holder's gate answers both.
- * R12 a left Nexus takes every pin / control: the cabal realm stands again with its doc pin and its verdict.
+ * R12 a left Nexus takes every pin / control: a cabal realm the ledger notes under none stands again with its doc
+ *     pin and its verdict.
  * R13 concurrent entries stand one plane / control: a second realm notes apart.
  * R14 folds run one at a time / control: every act lands.
  * R15 a realm the ledger failed to note stands nowhere / control: the next entry stands.
  * R16 the vessel's ledger reads back its realms / control: another vessel's ledger reads none.
  * R17 an own-kept book answers by the realms its own steward keeps it in / control: a carried book answers by every holding realm.
- * R18 a failed stand leaves the holder inert / control: the next refresh stands.
+ * R18 a failed stand leaves the holder inert / control: the next refresh stands the realms the ledger notes.
  * R19 an entry and a Nexus change each run whole / control: a lone entry stands and pins.
  * R20 a same-Nexus refresh folds every plane again / control: nothing re-pins.
- * R9 a new Nexus re-stands cabal planes beneath it / control: the cabal id stays while its nexusAid changes.
+ * R9 a new Nexus re-stands the cabal planes the ledger notes under none, and none this run entered under the
+ *     Nexus it left / control: the cabal id stays while its nexusAid changes.
+ * R21 a realm the ledger stands under another Nexus stands no plane and refuses entry / control: an entry notes
+ *     the realm under the Nexus that stands.
+ * R23 a standing realm the ledger comes to read conflicted, or pinned elsewhere, leaves with its pins at the next
+ *     refresh, and an entry refuses it though it stood / control: an untouched realm keeps standing.
+ * R22 a realm entered under one Nexus stands no plane under the next when the ledger pins it to the first; a
+ *     conflicted realm stands nowhere; a charter that leaves takes every plane and pin / control: a realm under
+ *     none re-stands under the next.
  */
 import { createHash } from "node:crypto";
 import { describe, expect, test, vi } from "vitest";
@@ -31,7 +40,7 @@ import {
   realmDocPointer, realmEdgeBoardDocUrl, realmStandingPointer, realmStewardPointer, realmVouchBoardDocUrl,
   REALM_ID_TIDDLER, RealmBagGate, RealmBoardGate, signRealmBagRegistration, writeRealmBagRegistration, type FederationGate, type LarDoc, type NexusDoc, type NexusMembership,
 } from "@lararium/mesh";
-import { makeRealmPlane, type RealmPlaneHolder } from "../src/realm-plane.js";
+import { makeRealmPlane, type NotedRealm, type RealmPlaneHolder } from "../src/realm-plane.js";
 import { noteVesselRealm, readVesselRealms } from "../src/edge-board.js";
 import { runRealmBag, runRealmBags, stewardGuard, type RealmDoorPlanes, type StewardVault } from "../src/realm-steward.js";
 import { namedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
@@ -63,14 +72,16 @@ function registryDoc(bags: ReadonlyArray<[string, string]>): LarDoc {
 }
 const oracles = new WeakMap<object, DocHandle<LarDoc>>();
 function makeHolder(repo: Repo, options: {
-  realms?: () => readonly string[] | Promise<readonly string[]>; noteRealm?: (realm: string) => Promise<void>;
+  realms?: () => readonly (string | NotedRealm)[] | Promise<readonly (string | NotedRealm)[]>; noteRealm?: (realm: string, nexusAid: string) => Promise<void>;
   standsInRealm?: (peer: string, realm: string) => boolean;
   membership?: NexusMembership; base?: FederationGate;
 } = {}) {
   const oracleHandle = repo.create<LarDoc>(emptyLarDoc());
   const crossroadsHandle = repo.create<LarDoc>(emptyLarDoc());
   const holder = makeRealmPlane({ repo, oracleHandle, crossroadsHandle, membership: options.membership ?? noMembers,
-    base: options.base ?? denyAll, ...(options.realms ? { realms: options.realms } : {}),
+    base: options.base ?? denyAll,
+    // A bare name reads as a realm the ledger notes under no Nexus yet.
+    ...(options.realms ? { realms: async () => (await options.realms!()).map((r) => typeof r === "string" ? { realm: r, nexus: null } : r) } : {}),
     ...(options.noteRealm ? { noteRealm: options.noteRealm } : {}),
     ...(options.standsInRealm ? { standsInRealm: options.standsInRealm } : {}),
   });
@@ -226,11 +237,11 @@ async function realmDoc(repo: Repo, id: string): Promise<LarDoc> { return (await
   });
 
   // R9
-  test("R9 a different genesis re-stands C and A under the new Nexus; control: A keeps its id", async () => {
-    const repo = new Repo({}), { holder } = makeHolder(repo); await holder.refresh(charter("charter-old")); await holder.enter(A);
+  test("R9 a different genesis re-stands A, which the ledger notes under none, and not B, entered under the Nexus it left; control: A keeps its id", async () => {
+    const repo = new Repo({}), { holder } = makeHolder(repo, { realms: () => [A] }); await holder.refresh(charter("charter-old")); await holder.enter(B);
     expect(holder.plane(A)!.nexusAid()).toBe(holder.realmId());
     await holder.refresh(charter("charter-new"));
-    expect(holder.realmId()).not.toBe(aidOf("charter-old")); expect(holder.realms()).toContain(A);
+    expect(holder.realmId()).not.toBe(aidOf("charter-old")); expect(holder.realms()).toContain(A); expect(holder.realms()).not.toContain(B);
     expect(holder.plane(A)!.nexusAid()).toBe(holder.realmId()); expect(holder.plane(A)!.realmId()).toBe(A); holder.dispose();
   });
   // R10
@@ -263,7 +274,7 @@ async function realmDoc(repo: Repo, id: string): Promise<LarDoc> { return (await
 
   // R12
   test("R12 a Nexus this vessel left takes every pin with it; control: the cabal realm stands again with its doc pin and its verdict", async () => {
-    const repo = new Repo({}), { holder } = makeHolder(repo); await holder.refresh(charter("charter-r12-old"));
+    const repo = new Repo({}), { holder } = makeHolder(repo, { realms: () => [A] }); await holder.refresh(charter("charter-r12-old"));
     const c = await actor(18), a = await actor(19);
     await bag(holder, { bag: BAG_A }, c, [[BAG_A, DOC_A]]);
     await bag(holder, { bag: BAG_B, realm: A }, a, [[BAG_B, DOC_B]]);
@@ -330,10 +341,10 @@ async function realmDoc(repo: Repo, id: string): Promise<LarDoc> { return (await
     const repo = new Repo({}), mine = "1".repeat(64), other = "2".repeat(64);
     expect(await readVesselRealms(repo, mine)).toEqual([]);
     await noteVesselRealm(repo, mine, A); await noteVesselRealm(repo, mine, B); await noteVesselRealm(repo, mine, A);
-    expect([...(await readVesselRealms(repo, mine))].sort()).toEqual([A, B]);
+    expect([...(await readVesselRealms(repo, mine))].map((n) => n.realm).sort()).toEqual([A, B]);
     expect(await readVesselRealms(repo, other)).toEqual([]);
     // The ledger feeds the holder: a boot stands what the ledger notes.
-    const { holder } = makeHolder(repo, { realms: () => readVesselRealms(repo, mine), noteRealm: (r) => noteVesselRealm(repo, mine, r) });
+    const { holder } = makeHolder(repo, { realms: () => readVesselRealms(repo, mine), noteRealm: (r, n) => noteVesselRealm(repo, mine, r, n) });
     await holder.refresh(charter("charter-r16"));
     expect(holder.realms()).toEqual([holder.realmId(), A, B]); holder.dispose();
   });
@@ -389,7 +400,8 @@ async function realmDoc(repo: Repo, id: string): Promise<LarDoc> { return (await
       const after = await oracleDoc(repo, holder);
       expect(Object.keys(after.tiddlers).filter((k) => k.includes("/doc/") || k.includes("/standing/") || k.includes("/steward/"))).toEqual([]);
       await holder.refresh(charter("charter-r18b"));
-      expect(holder.realms()).toEqual([holder.realmId(), A, B]);
+      // B entered under the Nexus this vessel left, so it waits for an act under the next; A, noted under none, stands.
+      expect(holder.realms()).toEqual([holder.realmId(), A]);
     } finally { spy.mockRestore(); holder.dispose(); }
   });
   // R19
@@ -431,5 +443,64 @@ async function realmDoc(repo: Repo, id: string): Promise<LarDoc> { return (await
       expect([...folded].sort()).toEqual([holder.realmId()!, A].sort());
       expect(JSON.stringify((await oracleDoc(repo, holder)).tiddlers)).toBe(before); expect(holder.realms()).toEqual(realms);
     } finally { spy.mockRestore(); holder.dispose(); }
+  });
+
+  // R21
+  test("R21 A REALM STANDS UNDER ONE NEXUS: a realm the ledger notes under another Nexus stands no plane here and refuses entry; control: one noted under the standing Nexus stands, and an entry notes it there", async () => {
+    const repo = new Repo({}), noted: [string, string][] = [];
+    const standing = aidOf("charter-r21"), elsewhere = aidOf("charter-r21-elsewhere");
+    const { holder } = makeHolder(repo, {
+      realms: () => [{ realm: A, nexus: elsewhere }, { realm: B, nexus: standing }],
+      noteRealm: async (r, n) => { noted.push([r, n]); },
+    });
+    await holder.refresh(charter("charter-r21"));
+    expect(holder.realms()).toEqual([standing, B]);
+    expect(holder.plane(A)).toBeNull();
+    await expect(holder.enter(A)).rejects.toMatchObject({ refusal: "realm-under-another-nexus" });
+    expect(holder.plane(A)).toBeNull(); expect(noted).toEqual([]);
+    // CONTROL: a realm under no Nexus yet enters here and gets noted under the Nexus that stands.
+    const C = "c".repeat(64);
+    await holder.enter(C);
+    expect(noted).toEqual([[C, standing]]); expect(holder.plane(C)).not.toBeNull(); holder.dispose();
+  });
+  // R22
+  test("R22 a Nexus switch re-stands no realm pinned to the Nexus it left; a conflict stands nowhere; a charter that leaves takes every plane", async () => {
+    const repo = new Repo({});
+    const first = aidOf("charter-r22-first"), C = "c".repeat(64), D = "d".repeat(64);
+    const noted: NotedRealm[] = [{ realm: D, nexus: null, conflict: true }];
+    const { holder } = makeHolder(repo, {
+      realms: () => noted,
+      noteRealm: async (r, n) => { noted.push({ realm: r, nexus: n }); },
+    });
+    await holder.refresh(charter("charter-r22-first"));
+    await holder.enter(A);                      // pinned to the first Nexus
+    await holder.enter(C);
+    await expect(holder.enter(D)).rejects.toMatchObject({ refusal: "realm-under-another-nexus" });
+    expect(holder.realms()).toEqual([first, A, C]);
+    // C's pin leaves the ledger (a realm under none): it re-stands under the next Nexus; A stays with the first.
+    noted.splice(noted.findIndex((n) => n.realm === C), 1, { realm: C, nexus: null });
+    await holder.refresh(charter("charter-r22-next"));
+    expect(holder.realms()).toEqual([aidOf("charter-r22-next"), C]);
+    expect(holder.plane(A)).toBeNull(); expect(holder.plane(D)).toBeNull();
+    // The charter leaves: every plane and pin goes with it.
+    await holder.refresh(null);
+    expect(holder.realms()).toEqual([]); expect(holder.plane(C)).toBeNull();
+    expect((await oracleDoc(repo, holder)).tiddlers[realmDocPointer(C)]).toBeUndefined();
+    holder.dispose();
+  });
+  // R23
+  test("R23 a standing realm the ledger comes to read conflicted leaves with its pins, and an entry refuses it; control: an untouched realm keeps standing", async () => {
+    const repo = new Repo({}), noted: NotedRealm[] = [];
+    const { holder } = makeHolder(repo, { realms: () => noted, noteRealm: async (r, n) => { noted.push({ realm: r, nexus: n }); } });
+    await holder.refresh(charter("charter-r23"));
+    await holder.enter(A); await holder.enter(B);
+    expect(holder.realms()).toEqual([aidOf("charter-r23"), A, B]);
+    // A second replica of the ledger met this one: A now carries two pins.
+    noted.splice(noted.findIndex((n) => n.realm === A), 1, { realm: A, nexus: null, conflict: true });
+    await expect(holder.enter(A)).rejects.toMatchObject({ refusal: "realm-under-another-nexus" });
+    await holder.refresh(charter("charter-r23"));
+    expect(holder.plane(A)).toBeNull(); expect(holder.realms()).toEqual([aidOf("charter-r23"), B]);
+    expect((await oracleDoc(repo, holder)).tiddlers[realmDocPointer(A)]).toBeUndefined();
+    holder.dispose();
   });
 });

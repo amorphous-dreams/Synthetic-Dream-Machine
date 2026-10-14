@@ -9,14 +9,18 @@ import {
   DAEMON_BAG_ID, realmEdgeBoardDocUrl, materializeSharedLarDoc,
   edgeKapaeActsFromBoard, foldEdgeReadings, countEdgeActs, hex,
 } from "@lararium/mesh";
-import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
+import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { ownedStore } from "../src/owned-store.js";
-import { vesselEdgeCharter } from "../src/edge-board.js";
+import { noteVesselRealm, vesselEdgeCharter } from "../src/edge-board.js";
+import { carriedCharterHome, primaryNexusAid } from "../src/carried-set.js";
 import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "../src/commands/edge-cosign.js";
-import { seatChairs } from "./seat-fixture.js";
+import { chairKey, chairSeed, seatChairs } from "./seat-fixture.js";
+import { ed25519SignerFromSeed, nexusAidOf } from "@lararium/mesh";
+
+let genesis: ReturnType<typeof heldCharter> | null = null;
 
 let roots: string[];
 let chairA: string;
@@ -30,7 +34,7 @@ async function stand(index: number, seatIndex: number, keys: string[]) {
   await generateOrLoadPersonaGroupRoot(seatIndex);
   await seatChairs([seatIndex]);
   await generateOrLoadPersonaGroupRoot(8);
-  writeNexusDoc(larSealHome(), heldCharter({ keys, threshold: 2 }).doc());
+  writeNexusDoc(larSealHome(), genesis!.doc());
   await ownedStore(larDataDir(), async (repo) => {
     const daemon = await import("@lararium/mesh").then((m) => m.seedDaemonDoc(repo));
     const { mkdirSync, writeFileSync } = await import("node:fs");
@@ -53,6 +57,8 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity(); await generateOrLoadPersonaGroupRoot(1);
   chairB = (await seatChairs([1])).keys[0]!;
   const keys = [chairA, chairB];
+  // The charter commits to the chairs' next keys, so a roll moves its head and keeps its Nexus.
+  genesis = heldCharter({ keys, threshold: 2, successors: { keys: [await chairKey(0, 1), await chairKey(1, 1)], threshold: 2 } });
   await stand(0, 0, keys); await stand(1, 1, keys);
 });
 afterEach(async () => {
@@ -75,7 +81,7 @@ async function board(index: number) {
   return withRepo(index, async (repo) => {
     const handle = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
     const acts = edgeKapaeActsFromBoard(handle.doc());
-    const counted = await countEdgeActs(acts, [], () => ({ quorum: true }), vesselEdgeCharter(REALM, larSealHome()));
+    const counted = await countEdgeActs(acts, [], () => ({ quorum: true }), vesselEdgeCharter(REALM, larSealHome(), primaryNexusAid(larSealHome())));
     await repo.flush();
     return { readings: foldEdgeReadings(counted.acts), acts };
   });
@@ -97,6 +103,23 @@ describe("the cross-vessel quorum cosign door", () => {
     // CONTROL: the other member edge remains absent on both independent boards.
     const control = "de".repeat(32);
     expect((await board(1)).readings.get(control)).toBeUndefined();
+  });
+
+  it("a cosigning vessel whose primary charter differs reads the partial's Nexus off its epoch (a carried charter) / CONTROL: a realm it pinned elsewhere refuses", async () => {
+    // B carries the shared charter and stands under another primary one.
+    process.env["LAR_ROOT"] = roots[1]!;
+    const shared = genesis!.doc();
+    writeNexusDoc(carriedCharterHome(larSealHome(), nexusAidOf(shared)!), shared);
+    writeNexusDoc(larSealHome(), heldCharter({ keys: [chairB], threshold: 1 }).doc());
+    const a = await partial(0);
+    const landed = await withRepo(1, (repo) => cosign(repo, a.partial));
+    expect(landed.landed).toBe(true); expect(landed.added).toEqual([chairB]);
+    // CONTROL: on a realm B pinned under its own primary Nexus, the same act answers to no charter there.
+    const other = "ab".repeat(32);
+    await withRepo(1, async (repo) => noteVesselRealm(repo, (await loadVesselVerifyingKey())!, other, primaryNexusAid(larSealHome())!));
+    process.env["LAR_ROOT"] = roots[0]!;
+    const elsewhere = await withRepo(0, (repo) => runEdgePartial({ realm: other, member: MEMBER, raised: true, sealHome: larSealHome(), repo }));
+    await expect(withRepo(1, (repo) => cosign(repo, elsewhere.partial))).rejects.toThrow(/realm-under-another-nexus/);
   });
 
   it("requires a seat on another vessel to finish a fresh partial", async () => {
@@ -164,11 +187,12 @@ describe("the cross-vessel quorum cosign door", () => {
     const fresh = await partial(0, false);
     expect((await land(fresh.partial)).shadowStands).toBe(false);
 
-    // THE EPOCH ROAD. B's charter head moves to another epoch after A cut a partial under the earlier one.
+    // THE EPOCH ROAD. B's charter head moves to another epoch after A cut a partial under the earlier one: a
+    // roll, which keeps the Nexus the realm stands under.
     const underOldHead = await partial(0);
     process.env["LAR_ROOT"] = roots[1]!;
-    const keys = [chairA, chairB];
-    writeNexusDoc(larSealHome(), heldCharter({ keys, threshold: 2, variant: 1 }).doc());
+    const next = await Promise.all([0, 1].map(async (face) => ({ signer: await chairKey(face, 1), sign: ed25519SignerFromSeed(chairSeed(face, 1)) })));
+    writeNexusDoc(larSealHome(), (await genesis!.roll(next)).doc());
     await expect(withRepo(1, (repo) => cosign(repo, underOldHead.partial)))
       .rejects.toMatchObject({ verdict: "stale" });
   });

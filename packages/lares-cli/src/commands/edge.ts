@@ -108,9 +108,12 @@ const subjectLine = (s: EdgeCosignResult["subject"]): string =>
 async function cmdPartial(args: ParsedArgs, raised: boolean): Promise<number> {
   const { member, voucher, joiner, realm } = args.options;
   if (realm === undefined) return usage(args, "a partial names its realm: --realm <realm-id>");
+  const nexusRaw = args.options["nexus"];
+  const nexusAid = typeof nexusRaw === "string" && nexusRaw.trim().length > 0 ? nexusRaw.trim().toLowerCase() : undefined;
   try {
     const r = (await storeVerb("edge-partial", {
       realm, raised, ...(member !== undefined ? { member } : {}), ...(voucher !== undefined ? { voucher } : {}), ...(joiner !== undefined ? { joiner } : {}),
+      ...(nexusAid !== undefined ? { nexusAid } : {}),
     }, EdgeCosignError)).output as unknown as EdgePartialResult;
     console.log(`PARTIAL — ${r.signed.length} of ${r.threshold} seats signed; the act counts for nothing until the threshold meets`);
     console.log(`  gesture:  ${raised ? "raise (set aside)" : "lower (re-admit)"} over ${subjectLine(r.partial.subject)}`);
@@ -197,12 +200,14 @@ export async function cmdEdge(args: ParsedArgs): Promise<number> {
     console.error(`--as expects a persona-root index, got "${asRaw}"`);
     return 2;
   }
+  const nexusRaw = args.options["nexus"];
+  const nexusAid = typeof nexusRaw === "string" && nexusRaw.trim().length > 0 ? nexusRaw.trim().toLowerCase() : undefined;
   try {
     const r = (await storeVerb("edge-kapae", {
       raised: verb === "kapae",
       ...(edgeId !== undefined ? { edgeId } : {}), ...(member !== undefined ? { member } : {}), ...(device !== undefined ? { device } : {}),
       ...(realm !== undefined ? { realm } : {}), ...(quorum ? { hand: "quorum" } : {}),
-      ...(handleIndex !== undefined ? { handleIndex } : {}),
+      ...(handleIndex !== undefined ? { handleIndex } : {}), ...(nexusAid !== undefined ? { nexusAid } : {}),
     }, EdgeKapaeError)).output as unknown as EdgeKapaeResult;
     // THE HEADLINE REPORTS STANDING, never the gesture: a lower may land while a raise it never cited still
     // stands beside it, and "stands again" would then tell a person the opposite of what every reader reads.

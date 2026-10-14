@@ -500,15 +500,18 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   cabal: {
-    usage: "usage: lares cabal <vouch | join | feed | clock>",
+    usage: "usage: lares cabal <face | vouch | join | feed | clock>",
     synopsis:
       "The JOIN AXIS — a mutual-hold relation with a cabal-realm, orthogonal to the CARRIAGE contract " +
-      "`nexus contract` writes. A vouch stakes ONE held face's OWN standing on one joiner and needs no kahu " +
+      "`nexus contract` writes. ONE KEY ACTS IN A REALM: the key the WORN face presents at the Nexus the realm " +
+      "stands under; no verb here names a persona index, and a person wears the face that acts. A vouch stakes " +
+      "that face's OWN standing on one joiner and needs no kahu " +
       "quorum, because it performs no steward act. IT ADMITS NOBODY: the vouch rides as signal-2 on the " +
       "lineage the admission price walks, and the cost lands at the moment of vouching, since a voucher's " +
       "score SPLITS across everyone they vouch for. Re-vouching the same joiner stays ONE edge — re-minting " +
       "never buys out-degree.",
     examples: [
+      "lares cabal face --realm <realm-doc-id>                        # your worn face's key there: the nym a voucher names",
       "lares cabal vouch <joiner-nym> --realm <realm-doc-id>          # dilutes you, admits nobody",
       "lares cabal join --realm <realm-doc-id>                        # PRESENT and cross",
       "lares cabal feed --realm <realm-doc-id>                        # the OFFERING — roll your lease slot",
@@ -516,21 +519,22 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     ],
     flags: [
       "--realm <doc-id>   the cabal-realm every verb here addresses",
-      "--as <root-index>  which held persona root signs",
+      "--nexus <aid>      the Nexus the realm stands under, at this vessel's first act there (default: the primary charter's)",
       "--cap <n>          (join) the price ceiling this crossing accepts",
     ],
     next: ["lares cabal clock --realm <realm-doc-id>", "lares nexus seal show"],
   },
 
   edge: {
-    usage: "usage: lares edge <kapae | un-kapae> (<edge-id> | --member <key> | --device <key>) [--realm <realm-id>] [--quorum] [--as <root-index>]\n       lares edge settle [--fleet <fleet-root>]\n       lares edge <kapae | un-kapae> (--member <key> | --voucher <key> --joiner <key>) --realm <realm-id> --quorum --partial\n       lares edge cosign (<partial-json> | --from <file>) [--act <act-cid>]",
+    usage: "usage: lares edge <kapae | un-kapae> (<edge-id> | --member <key> | --device <key>) [--realm <realm-id> [--nexus <aid>]] [--quorum] [--as <root-index>]\n       lares edge settle [--fleet <fleet-root>]\n       lares edge <kapae | un-kapae> (--member <key> | --voucher <key> --joiner <key>) --realm <realm-id> --quorum --partial\n       lares edge cosign (<partial-json> | --from <file>) [--act <act-cid>]",
     synopsis:
       "Set one RELATIONSHIP aside, or take the marker back down — the kāpae raised over an EDGE rather than " +
       "over a party. Scoped under `edge` to mirror `nexus kapae` / `nexus un_kapae` and stay apart from " +
       "them: that pair shadows a PRESENTER at a Nexus, this pair shadows one RELATIONSHIP. TWO HANDS ACT. The " +
-      "HOLDER signs with the one key the edge names: a voucher over their own vouch (`--realm`), or a fleet " +
+      "HOLDER signs with the one key the edge names: a voucher over their own vouch (`--realm`), with the key " +
+      "the worn face presents at the Nexus the realm stands under, or a fleet " +
       "root over a device of its fleet (`--device`, on the fleet's own board). The QUORUM (`--quorum`) signs " +
-      "with the seats of this vessel's charter, at the charter's head epoch: it strikes a vouch, or sets a " +
+      "with the seats this vessel holds of the charter the realm stands under, at that charter's head epoch: it strikes a vouch, or sets a " +
       "MEMBER's whole relation to a realm aside (`--member`), which holds against a fresh vouch. A lower " +
       "lifts only its own hand's raises. RAISING WINS A TIE: a lower lifts the shadow only when it causally " +
       "follows every raise, so a lower racing a raise leaves the shadow up and shows a fork for people to " +
@@ -563,7 +567,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--member <key>     name a member's whole relation to the realm (the quorum's edge)",
       "--device <key>     name a device's relation to the signing root's fleet",
       "--quorum           sign with this vessel's held seats of the charter's quorum",
-      "--as <root-index>  which held persona root signs as the holder (default: the active one)",
+      "--as <root-index>  (--device) which held fleet root signs as the holder (default: the first held one); a realm's holder is the worn face",
+      "--nexus <aid>      the Nexus the realm stands under, at this vessel's first act there (default: the primary charter's)",
       "--fleet <root>     (settle) one fleet root to settle (default: the root of every face this vessel holds)",
       "--partial          with --quorum: sign with the seats held here and print a partial, landing nothing",
       "--voucher <key>    (partial) with --joiner: name one vouch by its two ends",

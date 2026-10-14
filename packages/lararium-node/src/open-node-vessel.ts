@@ -1764,12 +1764,13 @@ async function prepareNodeBootOn(
         stewardGuard:     stewardGuard(),
         // THE HANDLE BOOK: a Handle steward's seal reads against the chain this vessel's own book holds for it.
         sealReading:      nodeHandleBookReading(),
-        // MANY REALMS. The planes stand each cabal realm this vessel's own ledger notes, read a peer's lineage
-        // standing in a realm off the edge shadow ring, and note a realm the moment an act enters it. A cabal
-        // takes no key and no roster: the ledger holds this vessel's own memory of where it acted.
+        // MANY REALMS. The planes stand each cabal realm this vessel's own ledger notes under the Nexus standing
+        // here, read a peer's lineage standing in a realm off the edge shadow ring, and note a realm under that
+        // Nexus the moment an act enters it. A cabal takes no key and no roster: the ledger holds this vessel's
+        // own memory of where it acted, and under which Nexus.
         realms:           () => readVesselRealms(repo, vesselIdentity.verifyingKey),
         standsInRealm:    shadowRing.standsInRealm,
-        noteRealm:        (realm) => noteVesselRealm(repo, vesselIdentity.verifyingKey, realm),
+        noteRealm:        (realm, nexusAid) => noteVesselRealm(repo, vesselIdentity.verifyingKey, realm, nexusAid),
         // THE REFOLD REVERDICT. The fold decides which documents the realm leg opens, and it moves on a change
         // ANOTHER member writes — a co-signature completing a proposal re-seats a registration this vessel
         // itself un-seated when the proposal replaced it. The Repo caches its verdict per (doc, peer), so the

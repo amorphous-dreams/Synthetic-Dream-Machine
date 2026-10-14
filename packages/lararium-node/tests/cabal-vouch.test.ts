@@ -1,7 +1,8 @@
 /**
  * cabal-vouch — one hand stakes its own standing, end-to-end through the node.
  *
- * Proven against a real vessel identity and real persona roots on a temp LAR_ROOT: a vouch lands on the
+ * Proven against a real vessel identity, a seated charter and a worn face on a temp LAR_ROOT: the worn face's key
+ * at the charter's Nexus signs (never a persona root, cabal-realm#/the-steward-signer); a vouch lands on the
  * board and reads back through the VERIFYING read (the only read that stands), a voucher's out-degree grows
  * with each distinct joiner and NOT with re-minting, and every fail-closed shore refuses before writing.
  *
@@ -22,6 +23,7 @@ import {
   generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot,
   loadPersonaGroupRootVerifyingKey,
 } from "../src/node-vessel-identity.js";
+import { seatOwnCharter, wear } from "./worn-face-fixture.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { runCabalVouch, CabalVouchError } from "../src/commands/cabal-vouch.js";
 import { direct } from "./direct-store.js";
@@ -42,7 +44,10 @@ beforeEach(async () => {
   process.env["LAR_ROOT"] = root;
   await generateOrLoadVesselIdentity();   // the REALM's key — scopes the board
   await generateOrLoadPersonaGroupRoot(); // the HUMAN's face — the hand that stakes
+  await seatOwnCharter([0]);              // the Nexus the realm stands under
+  face = await wear(0);                   // the worn face's key there — the key that signs
 });
+let face: string;
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
@@ -61,10 +66,11 @@ async function boardVouches(realm = REALM) {
 }
 
 describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that made it", () => {
-  it("mints a vouch that reads back through the VERIFYING read, signed by the held face", async () => {
+  it("mints a vouch that reads back through the VERIFYING read, signed by the worn face's key at the realm's Nexus", async () => {
     const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 });
 
-    expect(r.voucherDid).toBe(await loadPersonaGroupRootVerifyingKey(0));
+    expect(r.voucherDid).toBe(face);
+    expect(r.voucherDid).not.toBe((await loadPersonaGroupRootVerifyingKey(0))!.toLowerCase());
     expect(r.outDegreeFloor).toBe(1);
     expect(r.reMinted).toBe(false);
 
@@ -90,8 +96,7 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
   });
 
   it("REFUSES to vouch for itself — self-boosting is unrepresentable on a lineage", async () => {
-    const self = (await loadPersonaGroupRootVerifyingKey(0))!;
-    await expect(direct(runCabalVouch)({ joiner: self, realm: REALM, boundEpoch: 0 }))
+    await expect(direct(runCabalVouch)({ joiner: face, realm: REALM, boundEpoch: 0 }))
       .rejects.toThrow(CabalVouchError);
     expect(await boardVouches()).toHaveLength(0);   // and nothing landed
   });
@@ -155,10 +160,10 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
     expect(await boardVouches()).toHaveLength(0);
   });
 
-  it("REFUSES a malformed joiner or realm, and an unheld persona root — before anything is written", async () => {
+  it("REFUSES a malformed joiner or realm, and a name that reads as no Nexus — before anything is written", async () => {
     await expect(direct(runCabalVouch)({ joiner: "nope", realm: REALM })).rejects.toThrow(CabalVouchError);
     await expect(direct(runCabalVouch)({ joiner: JOINER, realm: "nope" })).rejects.toThrow(CabalVouchError);
-    await expect(direct(runCabalVouch)({ joiner: JOINER, realm: REALM, handleIndex: 99 })).rejects.toThrow(CabalVouchError);
+    await expect(direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0, nexusAid: "nexus-zz" })).rejects.toThrow(CabalVouchError);
     expect(await boardVouches()).toHaveLength(0);
   });
 
@@ -177,7 +182,7 @@ describe("runCabalVouch — the vouch lands, verified, and dilutes the hand that
     expect(src).not.toMatch(/expiresAt/);
     const r = await direct(runCabalVouch)({ joiner: JOINER, realm: REALM, boundEpoch: 0 });
     expect(Object.keys(r).sort()).toEqual(
-      ["boardUrl", "boundEpoch", "edgeId", "joiner", "outDegreeFloor", "reMinted", "realm", "voucherDid"],
+      ["boardUrl", "boundEpoch", "edgeId", "joiner", "nexusAid", "outDegreeFloor", "reMinted", "realm", "voucherDid"],
     );
   });
 });

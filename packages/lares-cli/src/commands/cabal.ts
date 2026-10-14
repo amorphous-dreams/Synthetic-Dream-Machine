@@ -1,9 +1,17 @@
 /**
- * `lares cabal <vouch | feed | clock>` — the three doors onto a cabal-realm: stake standing on a joiner, make
- * the offering that keeps a realm alive, and read who feeds it.
+ * `lares cabal <face | vouch | join | feed | clock>` — the doors onto a cabal-realm: name the worn face's key
+ * there, stake standing on a joiner, cross, make the offering that keeps a realm alive, and read who feeds it.
  *
- * `vouch <joiner-nym> --realm <realm-doc-id> [--as <n>]` — the JOIN axis's
- * write side: one held face stakes its OWN standing on one joiner, onto the Nexus vouch board.
+ * ONE KEY ACTS IN A REALM: the key the WORN face presents at the Nexus the realm stands under
+ * (cabal-realm#/the-steward-signer). No verb here names a persona index; a person wears the face that acts
+ * (`lares persona wear N`). `--nexus <aid>` names the Nexus at this vessel's first act in a realm; the vessel's
+ * own ledger keeps that word, and every later act answers to it.
+ *
+ * `face --realm <realm-doc-id>` — stand the worn face in the realm and print its key there: the joiner nym a
+ * voucher names.
+ *
+ * `vouch <joiner-nym> --realm <realm-doc-id>` — the JOIN axis's write side: the worn face stakes its OWN standing
+ * on one joiner, onto the realm's vouch board.
  *
  * THE CONTRAST WITH `nexus contract`. Contracting a vessel into carriage needs the kahu quorum AND the
  * joiner's own consent — a Nexus may not conscript, and no single kahu seats a carrier alone. A vouch runs the
@@ -14,7 +22,7 @@
  * later. The vouching itself already paid the cost: the voucher's score SPLITS across everyone they
  * vouch for, so each vouch dilutes the hand that made it. That carries the whole payment, and it needs no ledger.
  *
- * `feed --realm <id> [--as <n>]` — THE OFFERING. A realm lives by being fed: members roll a per-realm lease
+ * `feed --realm <id>` — THE OFFERING. A realm lives by being fed: members roll a per-realm lease
  * epoch, one slot per writer, and the realm's liveness reads off that max-register. A FACE feeds, never a
  * device, so adding vessels never inflates a standing. Feeding twice rolls twice — the clock measures how hard
  * each hand feeds, so a repeated offering SHOULD register.
@@ -32,8 +40,8 @@
 
 import { realmStanding } from "@lararium/mesh";
 import {
-  CabalVouchError, CabalJoinError,
-  type CabalVouchResult, type CabalJoinResult,
+  CabalVouchError, CabalJoinError, CabalFaceError,
+  type CabalVouchResult, type CabalJoinResult, type CabalFaceResult,
 } from "@lararium/node";
 import { storeVerb, storeFailure } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
@@ -42,7 +50,6 @@ import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { helpLines } from "../command-help.js";
-import { readPersonaRoots, personaRootKey } from "../sealed-rows.js";
 
 function usage(args: ParsedArgs, detail?: string): number {
   return refuseUsage(args, "cabal", helpLines("cabal"), detail);
@@ -51,6 +58,7 @@ function usage(args: ParsedArgs, detail?: string): number {
 /** `lares cabal …` — the realm doors: the JOIN axis, the offering, and the clock. */
 export async function cmdCabal(args: ParsedArgs): Promise<number> {
   switch (args.positional[0]) {
+    case "face":  return await cmdFace(args);
     case "vouch": return await cmdVouch(args);
     case "join":  return await cmdJoin(args);
     case "feed":  return await cmdFeed(args);
@@ -70,25 +78,40 @@ function realmOf(args: ParsedArgs): string {
   return realm;
 }
 
+/** The Nexus a first act in a realm names (`--nexus`), absent where the caller named none. */
+function nexusOf(args: ParsedArgs): Record<string, string> {
+  const raw = args.options["nexus"];
+  return typeof raw === "string" && raw.trim().length > 0 ? { nexusAid: raw.trim().toLowerCase() } : {};
+}
+
 /**
- * WHICH FACE ACTS — the persona root the operator named, or the first held one.
- *
- * A realm is fed by a face, so the writer resolves from a root this vessel HOLDS and never from a value the
- * caller typed. Naming a root the vault does not custody refuses here rather than writing a slot under a face
- * nobody can stand behind.
+ * WHICH FACE ACTS — the key the WORN face presents at the Nexus the realm stands under, read by the vessel's own
+ * door and never typed by the caller. `present` stands the face there (an act: a feed, a face named to a voucher);
+ * without it the door only reads, and a face that holds no key there refuses by name.
  */
-async function actingFace(args: ParsedArgs): Promise<string> {
-  const held = (await readPersonaRoots()).roots.map(({ handleIndex }) => handleIndex);
-  if (held.length === 0) {
-    throw new CabalUsageError("no persona root held on this vessel — a realm is fed by a face, and this vessel holds none.");
+async function actingFace(args: ParsedArgs, realm: string, present: boolean): Promise<CabalFaceResult> {
+  return (await storeVerb("cabal-face", { realm, present, ...nexusOf(args) }, CabalFaceError)).output as unknown as CabalFaceResult;
+}
+
+/** `lares cabal face` — stand the worn face in a realm and print its key there: the nym a voucher names. */
+async function cmdFace(args: ParsedArgs): Promise<number> {
+  try {
+    const realm = realmOf(args);
+    const face = await actingFace(args, realm, true);
+    emit(args, {
+      ok: true,
+      data: face,
+      human: () => {
+        console.log(face.face);
+        console.log(`  realm:  ${face.realm}`);
+        console.log(`  nexus:  ${face.nexusAid}  (the Nexus this realm stands under here)`);
+        console.log("  (a voucher names this key: `lares cabal vouch <key> --realm <realm-doc-id>`)");
+      },
+    });
+    return 0;
+  } catch (err) {
+    return cabalFailure(args, "face", err);
   }
-  const asRaw = args.options["as"];
-  const index = asRaw === undefined ? held[0]! : Number(asRaw);
-  if (!Number.isInteger(index)) throw new CabalUsageError(`--as expects a persona-root index, got "${asRaw}"`);
-  if (!held.includes(index)) throw new CabalUsageError(`persona root ${index} is not held here (held: ${held.join(", ")}).`);
-  const did = await personaRootKey(index);
-  if (!did) throw new CabalUsageError(`persona root ${index} surfaces no usable verifying key — nothing to feed with.`);
-  return did.toLowerCase();
 }
 
 /** Drive one realm verb through the daemon, surfacing its refusal as itself. */
@@ -105,7 +128,8 @@ async function realmVerb(verb: string, verbArgs: Record<string, unknown>): Promi
 async function cmdFeed(args: ParsedArgs): Promise<number> {
   try {
     const realm  = realmOf(args);
-    const writer = await actingFace(args);
+    // A FEED PRESENTS THE FACE: the worn face's key at the realm's Nexus, stood there by this act.
+    const writer = (await actingFace(args, realm, true)).face;
     const out = await realmVerb("realm-feed", { realm, writer });
     emit(args, {
       ok: true,
@@ -176,20 +200,11 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
   const realm  = args.options["realm"];
   // The words for this door live in the registry alone; the refusal names only what THIS call lacks.
   if (!joiner || !realm) return usage(args, `vouch wants ${!joiner ? "<joiner-nym>" : "--realm <realm-doc-id>"}`);
-  const asRaw = args.options["as"];
-  const handleIndex = asRaw === undefined ? undefined : Number(asRaw);
-  if (handleIndex !== undefined && !Number.isInteger(handleIndex)) {
-    console.error(`--as expects a persona-root index, got "${asRaw}"`);
-    return 2;
-  }
 
   try {
-    const r = (await storeVerb("cabal-vouch", {
-      joiner, realm,
-      ...(handleIndex !== undefined ? { handleIndex } : {}),
-    }, CabalVouchError)).output as unknown as CabalVouchResult;
+    const r = (await storeVerb("cabal-vouch", { joiner, realm, ...nexusOf(args) }, CabalVouchError)).output as unknown as CabalVouchResult;
     console.log(r.reMinted ? "RE-VOUCHED (one edge, not two)" : "VOUCHED");
-    console.log(`  voucher:   ${r.voucherDid}`);
+    console.log(`  voucher:   ${r.voucherDid}  (the worn face's key at ${r.nexusAid.slice(0, 22)}…)`);
     console.log(`  joiner:    ${r.joiner}`);
     console.log(`  realm:     ${r.realm}`);
     console.log(`  bound at:  epoch ${r.boundEpoch}  (the fence — the only thing that lapses a vouch)`);
@@ -209,9 +224,9 @@ async function cmdVouch(args: ParsedArgs): Promise<number> {
 async function cmdJoin(args: ParsedArgs): Promise<number> {
   try {
     const realm = realmOf(args);
-    // Names a face outright, else this vessel's acting one — a steward reads a crossing for a face
-    // they do not hold.
-    const applicant = (args.options["applicant"] ?? await actingFace(args)).trim().toLowerCase();
+    // Names a face outright, else the worn face's key at the realm's Nexus, read and never minted — a steward
+    // reads a crossing for a face they do not hold.
+    const applicant = (args.options["applicant"] ?? (await actingFace(args, realm, false)).face).trim().toLowerCase();
     const capRaw = args.options["cap"];
     const cap = capRaw === undefined ? undefined : Number(capRaw);
     if (cap !== undefined && !Number.isInteger(cap)) {
