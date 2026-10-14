@@ -29,12 +29,20 @@ Two doors hold the crossing. `stored-record.ts` wraps on the way in (`storedReco
 
 A write merges a record field by field at its base. A field whose value did not move takes no assignment, and Automerge writes no operation for a scalar set to an equal value. Two writers that set one field to different values leave a multi-value conflict that `parallel-drafts.ts` surfaces as attributed drafts; two writers that set different fields both land.
 
+!! A removal no reader can keep refuses by name
+
+''The store decides nothing and authors nothing'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). A based removal that drops fields a concurrent writer set leaves the concurrent values live in the merged record, and the hand's own record, without those fields, surfaces to each parallel-drafts reader, which keeps it beside the live record until a person settles the two. Where no parallel-drafts reader stands to keep the concurrent words, or every reader failed, the based removal refuses by name and nothing lands: the store writes no parallel draft of its own, since that draft would rest in a bag whose tier and steward the store never weighed. A reader's failure reads as no reader. The hand keeps its words in its own editor, reads the concurrent value and answers again against it, as a write over a stale base answers `conflict`.
+
+''The refusal carries a durable conflict handle'': the document, the removal's request id, and the identities of the conflicting change and of the heads it stands against, and never the hand's text. A hand whose editor went offline finds the same conflict on its return under that handle.
+
+''Owed.'' The store lands a based removal first and surfaces it after: with no reader it drops the surfacing with no word, and a reader that throws earns one console line while the write stands (`_surfaceRemoval`). The refusal before any change lands, and the handle's durable home, ride the roadmap's loop `G34`.
+
 !! One change per family
 
 `writeFamily` lands its puts and tombstones in one Automerge change, so a peer receives a root, its children and its orphans' tombstones together. LOAD hands the store a slice of whole carriers per call, so a LOAD slice lands as one change.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OIX7RBhSlR0Ppwe8m7rLUnhI_HEuTakknhwthkhThGM
+<<^ code="&#x0003;">>ni:///sha-256;cshNW28Pt79Lexjxr90x92RNyKMHnmoEHSw_U08oRw4
 
 <<^ code="&#x0004;" -> to="?">>
