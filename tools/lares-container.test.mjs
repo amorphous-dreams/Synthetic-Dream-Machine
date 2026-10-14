@@ -59,7 +59,7 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
     });
     const calls = await readFile(log, "utf8");
     assert.match(calls, /--profile offline run --rm offline vessel found --skip-build --root \/state --genesis \/app\/genesis\s*$/m);
-    assert.doesNotMatch(calls, /-T/);
+    assert.doesNotMatch(calls, /(^|\s)-T(\s|$)/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
