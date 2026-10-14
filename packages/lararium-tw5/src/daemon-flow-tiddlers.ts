@@ -15,6 +15,7 @@
 
 import { enactableFlows, buildFlowTiddler, HULLS_TS_ONLY, type RunnableHulls } from "@lararium/mesh";
 import type { TW5Engine } from "./tw5-vm.js";
+import { SEED_OFF_DISK } from "./daemon-ui-tiddlers.js";
 
 /** A stable seed timestamp — the flow tiddlers ride the cache-stable boot, so they carry a FIXED marker,
  *  never a wall-clock stamp (a Date.now() would break the deterministic genesis quine). */
@@ -40,6 +41,8 @@ export function seedDaemonFlowTiddlers(
       // The compact list form: `instrument:hull instrument:hull …` (parseCapStack reads it back).
       capStack:  t.capStack.map((s) => `${s.instrument}:${s.hull}`).join(" "),
       "flow-seed": "true",
+      // The seed writes this record from code at every boot: no file of it reaches the workspace.
+      ...SEED_OFF_DISK,
     });
   }
 }

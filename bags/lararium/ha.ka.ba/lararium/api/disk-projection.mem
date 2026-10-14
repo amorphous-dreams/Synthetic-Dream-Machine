@@ -63,7 +63,7 @@ Disk projection serves ''content'' bags (definitions + instances). ''State / vie
 | `@temp` | volatile session layer | ''none'' — runtime |
 | `@daemon` | operator's sovereign authority doc | ''none'' — private; syncs to operator devices via the admin-doc surface |
 
-The daemon wiki's working layer projects under `wikis/daemon/`, while the daemon control bag projects nowhere.
+The daemon wiki's working layer projects under `wikis/daemon/`, while the daemon control bag projects nowhere. The records the daemon seeds from source at every boot, its UI surfaces and its flow set, carry the per-record opt-out below (`SEED_OFF_DISK`, `packages/lararium-tw5/src/daemon-ui-tiddlers.ts`): a file of one would hold nothing the source lacks, and the next boot's seed would write over a hand's edit to it. So a founding leaves no file under `wikis/daemon/`, and a record a person writes into that layer projects like any other.
 
 The projector enforces this structurally: ''a bag absent from the mirror list never writes to disk.'' A tiddler MAY also opt out per-record with `disk-projection: no`. The opt-out holds in both directions: an address whose records never project (a receipt fact, a verb summons, a ward audit; `neverProjects`) and a carrier that declares `disk-projection: no` never ingest, so a file standing there refuses by name (`never-projected-path`), creates nothing, and leaves the wave's other carriers to land.
 
@@ -223,6 +223,6 @@ between casual chat-use and the defined parser core.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;QDv8sMDnFBnhBlquopVUnTGMLwt3SxtCUOOgDH8CtrM
+<<^ code="&#x0003;">>ni:///sha-256;BwJeJFq8UqZADhtztmU3Lv9MycSwXRdx1OZmaOumxW4
 
 <<^ code="&#x0004;" -> to="?">>

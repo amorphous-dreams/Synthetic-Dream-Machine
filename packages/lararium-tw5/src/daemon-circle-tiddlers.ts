@@ -22,7 +22,7 @@
  */
 
 import { LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
-import { LARES_SURFACE_STATE, LARES_SURFACE_TAG } from "./daemon-ui-tiddlers.js";
+import { LARES_SURFACE_STATE, LARES_SURFACE_TAG, SEED_OFF_DISK } from "./daemon-ui-tiddlers.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
@@ -94,7 +94,7 @@ export const DAEMON_CIRCLE_TIDDLERS: readonly TiddlerSpec[] = [
  * camera's first render (a headless node daemon simply rests these, never painting).
  */
 export function seedDaemonCircleTiddlers(tw5: TW5Engine): void {
-  for (const spec of DAEMON_CIRCLE_TIDDLERS) tw5.setTiddler(spec as Record<string, string>);
+  for (const spec of DAEMON_CIRCLE_TIDDLERS) tw5.setTiddler({ ...spec, ...SEED_OFF_DISK } as Record<string, string>);
 }
 
 // ── The circle-state worker verb (the IN path: main → LOCAL push) ─────────────

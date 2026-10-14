@@ -21,7 +21,7 @@
 
 import { LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
 import type { TW5Engine } from "./tw5-vm.js";
-import { LARES_SURFACE_TAG, LARES_SURFACE_STATE } from "./daemon-ui-tiddlers.js";
+import { LARES_SURFACE_TAG, LARES_SURFACE_STATE, SEED_OFF_DISK } from "./daemon-ui-tiddlers.js";
 
 /** LOCAL state: the live sensorium roster list (name · lifecycle), pushed by the roster worker-verb. Never
  *  synced — a volatile temp slot, like the switcher's. Empty until the IN-path push lands (deferred). */
@@ -103,5 +103,5 @@ export const DAEMON_ROSTER_TIDDLERS: readonly TiddlerSpec[] = [
 /** Seed the roster surface tiddlers into the live wiki. Idempotent (setTiddler overwrites). Rides the ONE
  *  cap-gated protocol seed beside the switcher UI (seedDaemonProtocol). Rests unpainted on a headless node. */
 export function seedDaemonRosterTiddlers(tw5: TW5Engine): void {
-  for (const spec of DAEMON_ROSTER_TIDDLERS) tw5.setTiddler(spec as Record<string, string>);
+  for (const spec of DAEMON_ROSTER_TIDDLERS) tw5.setTiddler({ ...spec, ...SEED_OFF_DISK } as Record<string, string>);
 }

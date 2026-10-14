@@ -130,7 +130,7 @@ tools/lares-container.sh meme list --recipe default --json
 
 The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key and composes with what the key opens. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag. `vessel rite founding` composes found, stand, and seed, but it does not create or wear the operator's persona, so this walk uses the shim's documented order.
 
-''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. A later change to a record writes that one carrier in its canonical render.
+''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles">>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
 
 ''See'': `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; the daemon recipe list returns seeded wiki entries.
 
@@ -349,6 +349,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_ibquqpURYgW5R2ReeaoSsb9V5wOZhL41bfatKgc1L8
+<<^ code="&#x0003;">>ni:///sha-256;N7lJ3tfKyy5CH7D5PL2ORTEBeNyTseYMhDmGKdsdOOs
 
 <<^ code="&#x0004;" -> to="?">>

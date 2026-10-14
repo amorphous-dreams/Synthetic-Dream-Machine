@@ -7,11 +7,13 @@
  * that feeds the switcher its LIVE state.
  *
  * SOVEREIGNTY SPLIT (hard rule):
- *   CODE  → born-from-source at daemon boot (in-memory addTiddler, deterministic
- *           per device). NOT CRDT-bag-seeded — the $:/ live-surface filter
- *           (meme-provider) drops a $:/ put on the writing boot, so a bag-seed
- *           would not paint until a second boot. Born-from-source paints at once
- *           and keeps UI code OUT of the CRDT entirely.
+ *   CODE  → born-from-source at daemon boot (setTiddler, deterministic per
+ *           device). NOT bag-seeded — the $:/ live-surface filter (meme-provider)
+ *           drops a $:/ put on the writing boot, so a bag-seed would not paint
+ *           until a second boot. Born-from-source paints at once. The write lands
+ *           in the daemon wiki's working layer like any hand's save, and each
+ *           record carries the disk opt-out ({@link SEED_OFF_DISK}), so the
+ *           workspace never receives a file the next boot would write over.
  *   STATE → LOCAL/unsynced. $:/lares/surface (which panel) matches no bag-paths
  *           cascade rule → pure in-memory. $:/temp/lares/switcher (the live list)
  *           → the volatile temp slot. Neither ever syncs cross-device.
@@ -27,6 +29,14 @@
 import { LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
+
+/**
+ * The per-record disk opt-out every born-from-source daemon record carries (the projector's
+ * `disk-projection: "no"`, as a receipt, a summons and a ward audit carry it). The seed writes these
+ * records from source at every boot, so a file under `wikis/daemon/` would hold nothing the source lacks,
+ * and the next seed would write over a hand's edit to it.
+ */
+export const SEED_OFF_DISK = { "disk-projection": "no" } as const;
 
 // ── Titles ─────────────────────────────────────────────────────────────────
 /** The parallel-cap surface tag (organizational; the wrapper drives by state, not tag). */
@@ -162,7 +172,7 @@ export const DAEMON_UI_TIDDLERS: readonly TiddlerSpec[] = [
  * On a headless node daemon (no projection) the tiddlers simply rest, never painting.
  */
 export function seedDaemonUiTiddlers(tw5: TW5Engine): void {
-  for (const spec of DAEMON_UI_TIDDLERS) tw5.setTiddler(spec as Record<string, string>);
+  for (const spec of DAEMON_UI_TIDDLERS) tw5.setTiddler({ ...spec, ...SEED_OFF_DISK } as Record<string, string>);
 }
 
 // ── The switcher-state worker verb (the IN path: main → LOCAL push) ──────────
