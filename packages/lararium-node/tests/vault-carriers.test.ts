@@ -63,7 +63,6 @@ function treeHash(root: string): string {
 const SOWN: Record<string, string> = {
   "identity/.vessel-key-joshua.json":           "{}",
   "identity/.vessel-kel-joshua.json":           "{}",
-  "identity/.vessel-next-joshua.json":          "{}",
   "identity/.vessel-card-joshua.json":          "{}",
   "identity/vk-slots.bin":                      "slots",
   "identity/custody-root.bin":                  "root",
@@ -117,7 +116,7 @@ const RULED: Record<string, CustodyClass> = {
   "public-handles": "hot", "handle-book": "hot",
   "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot", "gate-memory": "hot",
   "transition-pending": "hot", "transitions": "hot",
-  "vessel-next": "cold", "persona-root": "cold", "device-share": "cold",
+  "persona-root": "cold", "device-share": "cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
   "vessel-face-key": "hot", "face-proof-key": "cold",
   // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).
@@ -127,13 +126,14 @@ const RULED: Record<string, CustodyClass> = {
 };
 
 describe("the carrier table", () => {
-  test("RED — the census names the vessel KEL's next seed COLD", () => {
+  test("RED — the floor key commits no next key, so no row names a next-key seed and a file spelled like one answers to no row", () => {
     const { homes, root } = freshHomes();
     try {
-      sow(homes, { "identity/.vessel-next-joshua.json": "{}", "identity/.vessel-next.json": "{}" });
-      const census = carrierCensus(homes).filter((e) => e.row === "vessel-next");
-      expect(census.map((e) => e.file)).toEqual([".vessel-next-joshua.json", ".vessel-next.json"]);
-      expect(census.map((e) => [e.custody, e.keyClass])).toEqual([["cold", "device-minted"], ["cold", "device-minted"]]);
+      sow(homes, { "identity/.vessel-next-joshua.json": "{}", "identity/.vessel-next.json": "{}", "identity/.vessel-kel.json": "{}" });
+      expect(carrierTable().map((r) => r.row)).not.toContain("vessel-next");
+      const census = carrierCensus(homes);
+      expect(census.filter((e) => e.file.startsWith(".vessel-next"))).toEqual([]);
+      expect(census.filter((e) => e.file === ".vessel-kel.json").map((e) => e.row)).toEqual(["vessel-kel"]);   // control
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 

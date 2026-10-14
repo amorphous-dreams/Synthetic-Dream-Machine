@@ -104,7 +104,7 @@ export const SEAT_NEXT_KEY_DOMAIN = mint("seat-next-key");
 export const COLD_KEY_CARD_DOMAIN = mint("cold-key-card");
 
 // ── CUSTODY: THE VK, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
-/** The vessel's own key-event log: the inception that commits the next floor key's digest. */
+/** The floor key's own inception: the key signed by itself, committing no next key. */
 export const VESSEL_KEL_DOMAIN = mint("vessel-kel");
 /** The HKDF `info` every keyslot wrap derives under: a pin's KEK wrapping its share of the slot key, and the
  *  slot key wrapping the VK. */

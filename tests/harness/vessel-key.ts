@@ -21,9 +21,9 @@ export function mintVesselKey(root: string): Promise<string> {
   // A founding seals custody before the first identity file, so the joiner's custody is founded (with the harness's
   // explicit test route) before its key mints; the later `vessel found --admit` then finds the tree standing.
   seedTestCustody(root);
-  // THE MINT STANDS INSIDE THE CUSTODY THE SEEDING FOUNDED. A vessel key seals its next-key seed under the vessel
-  // key, so the subprocess seats a holder over the staged root and opens it under the published test route before
-  // it mints, and locks it once the key stands.
+  // THE MINT STANDS INSIDE THE CUSTODY THE SEEDING FOUNDED. A vessel key mints only inside a held custody, under its
+  // one claim, so the subprocess seats a holder over the staged root and opens it under the published test route
+  // before it mints, and locks it once the key stands.
   const script =
     `import { generateOrLoadVesselIdentity } from ${JSON.stringify(IDENTITY)};\n` +
     `import { FsCustodyIo, makeCustodyHolder, seatCustody, vesselCustodyHomes } from ${JSON.stringify(NODE)};\n` +

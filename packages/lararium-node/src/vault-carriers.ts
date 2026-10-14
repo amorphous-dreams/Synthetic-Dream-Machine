@@ -221,7 +221,7 @@ function buildTable(): readonly CarrierRow[] {
          bare: "the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it" }),
     id({ row: "vessel-kel", match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
          writer: "node-vessel-identity (founding)",
-         bare: "the floor reads the vessel key's own log at every boot; each event in it stands public and proves itself" }),
+         bare: "the vessel key's own inception names that key and carries its signature: it stands public and proves itself, and a load of the key reads it before any person unlocks" }),
     id({ row: "vk-slots", match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
          writer: "vault bind",
          bare: "the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it" }),
@@ -313,8 +313,6 @@ function buildTable(): readonly CarrierRow[] {
           custody: "hot", keyClass: null, writer: "seal-ceremony" }),
 
     // ── cold: sealed under the VK, opened per act ──────────────────────────────────────────────
-    id({ row: "vessel-next", match: loginKeyed("vessel-next"), custody: "cold", keyClass: "device-minted",
-         writer: "node-vessel-identity (founding)" }),
     id({ row: "persona-root", match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names

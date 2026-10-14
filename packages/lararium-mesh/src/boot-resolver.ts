@@ -46,7 +46,7 @@ const SCALE_PATIENCE_MS: Record<MeshScale, number> = {
  * This budget covers a LOCAL read, so it never waits on the mesh — an absent hearth-private doc
  * answers `unavailable` and fails fast on that signal rather than on this clock. What it must cover is
  * the moment a vessel asks for a doc IT JUST WROTE, and a cold founding puts real work in that window:
- * keypair generation, a pre-rotation inception, keyhive wasm init, the ContactCard and the bootstrap,
+ * keypair generation, the key's own inception, keyhive wasm init, the ContactCard and the bootstrap,
  * all in one process before the daemon doc is read back.
  *
  * MEASURED: at 3s a relay founding on a cold volume failed to resolve the very doc id it had just

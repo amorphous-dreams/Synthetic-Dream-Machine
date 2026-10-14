@@ -30,6 +30,8 @@
  *                      refuses and stays.
  *   `openColdCustodyRow` / `updateColdCustodyRow`  the same two doors for a COLD row: its plaintext lives for one
  *                      act and zero-fills when the act settles.
+ *   `exclusiveCustody` one act under the custody claim while the key stands open, for a FLOOR row whose mint must
+ *                      land once (the vessel key and its inception). It opens no row.
  * No reader folds a refusal to empty, so no caller mints over a row it could not read.
  *
  * Node-main only: a worker never imports this module.
@@ -182,6 +184,15 @@ export async function updateColdCustodyRow<T>(
     if (r.reading === "locked") throw new CustodyLocked();
     throw new CustodyRowUnavailable(home, file, r.why);
   });
+}
+
+/**
+ * Run `act` as ONE custody holder, while this home's holder holds its key: no sealed write in any process lands
+ * while it runs. For a floor row whose mint must land once (the vessel key and its inception). Locked refuses
+ * `CustodyLocked` before `act` runs, and `act` touches no sealed row.
+ */
+export async function exclusiveCustody<T>(act: () => Promise<T>): Promise<T> {
+  return (await openedCustody()).exclusive(act);
 }
 
 /** The dyad veil for `groupTag`, derived from the custody root the seat holds. */

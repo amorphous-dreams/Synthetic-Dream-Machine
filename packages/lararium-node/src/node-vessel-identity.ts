@@ -32,11 +32,11 @@
  *   law below (the key MUST NOT sit inside an Automerge doc storage path) and the
  *   keypair-wipe lesson: a destructive storage verb cannot reach identity.
  *
- * Custody law — the FLOOR reads the vessel key, its inception commitment and its card, and nothing else here:
- *   the vessel keypair, the KEL and the ContactCard rest in the clear (mode 0o600), since a vessel stands and
+ * Custody law — the FLOOR reads the vessel key, its inception and its card, and nothing else here:
+ *   the vessel keypair, the inception and the ContactCard rest in the clear (mode 0o600), since a vessel stands and
  *   answers its public name before any person unlocks it. Every other row this module writes rests sealed under
  *   the vessel key and passes through the custody seat: the persona roster, the selector, the three name maps
- *   (hot), each persona root and the vessel's next-key seed (cold). The persona section below states that law.
+ *   (hot) and each persona root (cold). The persona section below states that law.
  *
  * Key file naming (inside the identity dir):
  *   git email configured:  .vessel-key-{email-slug}.json
@@ -72,8 +72,9 @@ import {
   type PersonaDeclarationStore,
   type OwnPublicHandleStore,
   type PersonaPublicHandleRecord,
-  sha256HexBytesSync,
-  hexToBytes,
+  inceptVesselKel,
+  decodeVesselKelInception,
+  verifyVesselKelInception,
   ALL_DOMAINS,
   GATE_BUNDLE_INFO,
   floorKeyDoor,
@@ -83,7 +84,7 @@ import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import {
-  openedCustody, readCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow,
+  openedCustody, exclusiveCustody, readCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow,
 } from "./custody-seat.js";
 
 /**
@@ -194,89 +195,70 @@ function fileKeypairStore(keyFile: string, login: string | null): KeypairStore {
   };
 }
 
-// ── KERI-style pre-rotation (the can't-retrofit root-rotation hook) ──────────
+// ── THE INCEPTION: the floor key signed by itself, and no next key ───────────
 //
-// At key GENERATION (the only window before the key ever signs), commit the DIGEST
-// of the NEXT root key. A thief of the current key still cannot rotate the identifier,
-// because a rotation must reveal a pre-image hashing to this committed digest — which
-// the thief never saw. Pre-rotation CANNOT be retrofitted: a key that has already
-// signed has no valid inception window.
-//
-// MINIMAL hook: the load-bearing part is the
-// commit-the-next-key-digest-BEFORE-first-use ordering, captured here. The full KERI
-// KEL / CESR / SAID encoding + the `lares rotate-root` ceremony land later (the
-// `digestAlgo` field keeps the digest swappable to blake3-256 SAID at KERI-interop).
-//
-// CUSTODY: the next-root private seed rests on the SAME disk as the key it succeeds, as a COLD row sealed
-// under the vessel key (`<lares>/identity`): the floor reads the vessel key and never the seed. Full
-// pre-rotation (a thief of the CURRENT key cannot rotate) needs the next seed in OFFLINE custody — an
-// operator-arranged follow-on. The commitment (`n`) carries load now; it upgrades when the seed moves offline.
+// The floor key stands NON-TRANSFERABLE (lar:///ha.ka.ba/lararium/mesh/identity-classes): it commits no next key, so
+// it cannot rotate by construction, and a lost or stolen floor key gets answered by founding the place afresh. Its
+// one inception (`packages/lararium-mesh/src/vessel-kel.ts`) names the key and carries the key's own signature, and
+// nothing beside: no next-key digest, no next threshold, no clock, no version. The same seed mints the same bytes.
+// It rests in the clear beside the key (a `floor` row), and every load of a standing key reads it: an inception that
+// fails to prove that key refuses by name (`VesselInceptionRefused`), and nothing writes one over a standing key.
 function kelFileName(login: string | null): string {
   return login ? `.vessel-kel-${login}.json` : ".vessel-kel.json";
 }
-function nextSeedFileName(login: string | null): string {
-  return login ? `.vessel-next-${login}.json` : ".vessel-next.json";
+
+/** A standing vessel key whose own files fail to prove it (its inception, or a seed that derives another key); nothing gets written over either file. */
+export class VesselInceptionRefused extends Error {
+  override readonly name = "VesselInceptionRefused";
+  constructor(readonly kelFile: string, readonly reading: "absent" | "malformed" | "names-another-key" | "signature-fails" | "seed-names-another-key") {
+    super(
+      `the vessel key's inception at ${kelFile} reads ${reading}: a floor key proves itself by its own inception, ` +
+      `and none gets written over a standing key — found the place afresh on a fresh root`,
+    );
+  }
 }
 
-interface InceptionKel {
-  v:          string;   // "lares-prerotation/v1" — minimal; full KERI KEL/CESR lands later
-  t:          string;   // "icp" — inception (KEL entry 0)
-  s:          string;   // sequence — "0" at inception
-  k:          string[]; // current verifying key(s), revealed (hex)
-  nt:         string;   // next signing threshold
-  n:          string[]; // DIGEST(s) of the next key(s) — the pre-rotation commitment
-  digestAlgo: string;   // "sha256" now; swappable to "blake3-256-said" at KERI-interop
-  createdAt:  string;   // ISO-8601
-}
-
-/** The next-root keypair a pre-rotation commitment hides until a rotation reveals it. */
-interface NextSeed { nextVerifyingKey: string; nextSigningKey: string }
-
-/** Generate the next-root keypair. */
-function mintNextSeed(): NextSeed {
-  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
-  const pubJwk  = publicKey.export({ format: "jwk" })  as { x: string };
-  const privJwk = privateKey.export({ format: "jwk" }) as { d: string };
-  return {
-    nextVerifyingKey: Buffer.from(pubJwk.x,  "base64url").toString("hex"),
-    nextSigningKey:   Buffer.from(privJwk.d, "base64url").toString("hex"),
-  };
-}
-
-/** The inception commitment: the current key revealed, the digest of the next key committed. */
-function inceptionKel(currentVerifyingKey: string, nextVerifyingKey: string): InceptionKel {
-  return {
-    v: "lares-prerotation/v1", t: "icp", s: "0",
-    k: [currentVerifyingKey], nt: "1", n: [sha256HexBytesSync(hexToBytes(nextVerifyingKey))],
-    digestAlgo: "sha256", createdAt: new Date().toISOString(),
-  };
+/** Read the inception standing at `kelFile` and hold it to `verifyingKey`; refuse by name where it fails. */
+function proveInception(kelFile: string, verifyingKey: string): void {
+  if (!existsSync(kelFile)) throw new VesselInceptionRefused(kelFile, "absent");
+  const inception = decodeVesselKelInception(readFileSync(kelFile));
+  if (inception === null) throw new VesselInceptionRefused(kelFile, "malformed");
+  if (inception.k.length !== 1 || inception.k[0] !== verifyingKey) throw new VesselInceptionRefused(kelFile, "names-another-key");
+  if (!verifyVesselKelInception(inception)) throw new VesselInceptionRefused(kelFile, "signature-fails");
 }
 
 /**
- * Land `text` at `file` whole or not at all (mode 0o600), and durably: a sidecar written and synced, a rename,
- * then the directory synced. No reader meets half a file, and a file landed here outlives a power loss before the
- * next one lands, so the commitment a key answers to never trails the key.
+ * Hold the keypair a key file carries to itself and to its inception: the seed derives the public key the file
+ * names (`seed-names-another-key` where it does not), and the inception proves that key. Every load of a standing
+ * key passes here, so no door signs or derives under a seed its inception never named.
  */
-function publishFile(file: string, text: string): void {
+function proveStandingKey(kelFile: string, raw: { readonly verifyingKey?: unknown; readonly signingKey?: unknown }): void {
+  if (typeof raw.signingKey !== "string" || !/^[0-9a-f]{64}$/.test(raw.signingKey)
+    || typeof raw.verifyingKey !== "string" || verifyingKeyOfSeed(raw.signingKey) !== raw.verifyingKey) {
+    throw new VesselInceptionRefused(kelFile, "seed-names-another-key");
+  }
+  proveInception(kelFile, raw.verifyingKey);
+}
+
+/**
+ * Land `bytes` at `file` whole or not at all (mode 0o600), and durably: a sidecar written and synced, a rename,
+ * then the directory synced. No reader meets half a file, and a file landed here outlives a power loss before the
+ * next one lands, so the inception a key answers to never trails the key.
+ */
+function publishFile(file: string, bytes: string | Uint8Array): void {
   const side = `${file}.landing`;
+  const data = typeof bytes === "string" ? Buffer.from(bytes, "utf8") : bytes;
   const fd = openSync(side, "w", 0o600);
-  try { writeSync(fd, text); fsyncSync(fd); } finally { closeSync(fd); }
+  try {
+    for (let off = 0; off < data.length;) off += writeSync(fd, data, off, data.length - off);
+    fsyncSync(fd);
+  } finally { closeSync(fd); }
   chmodSync(side, 0o600);
   renameSync(side, file);
   let dir: number | undefined;
   try { dir = openSync(dirname(file), "r"); fsyncSync(dir); }
   catch { /* a filesystem that syncs no directory still holds the rename */ }
   finally { if (dir !== undefined) closeSync(dir); }
-}
-
-/** The next seed a sealed row's plaintext carries; any other shape refuses `malformed`. */
-function parseNextSeed(bytes: Uint8Array, file: string): NextSeed {
-  let raw: Partial<NextSeed> | null;
-  try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as Partial<NextSeed> | null; }
-  catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
-  if (!raw || typeof raw !== "object" || typeof raw.nextVerifyingKey !== "string" || !/^[0-9a-f]{64}$/.test(raw.nextVerifyingKey)
-    || typeof raw.nextSigningKey !== "string" || !/^[0-9a-f]{64}$/.test(raw.nextSigningKey)) throw new CustodyRowUnavailable("identity", file, "malformed");
-  return { nextVerifyingKey: raw.nextVerifyingKey, nextSigningKey: raw.nextSigningKey };
 }
 
 /**
@@ -290,13 +272,13 @@ function parseNextSeed(bytes: Uint8Array, file: string): NextSeed {
  * cold-boot ceremony which writes the IdentityTiddler into IdentitiesDoc via
  * direct handle.change() — not through the TW5 sync adaptor (wrong island).
  */
-/** A vessel key that could not mint: no custody stands open to seal its next-key seed under. */
+/** A vessel key that could not mint: no custody stands open, so no founding holds this place. */
 export class VesselKeyMintRefused extends Error {
   override readonly name = "VesselKeyMintRefused";
   constructor(keyFile: string, cause: unknown) {
     super(
-      `no vessel key stands at ${keyFile}, and a vessel key mints only inside a held custody (its next-key seed ` +
-      `seals under the vessel key): found the vessel with \`lares vessel found\` — ${cause instanceof Error ? cause.message : String(cause)}`,
+      `no vessel key stands at ${keyFile}, and a vessel key mints only inside a held custody (a founding seals its ` +
+      `custody first, and the mint lands under its one claim): found the vessel with \`lares vessel found\` — ${cause instanceof Error ? cause.message : String(cause)}`,
       { cause },
     );
   }
@@ -312,41 +294,30 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
   const keyFile  = join(idDir, keyFileName(hint.login));
   const base     = fileKeypairStore(keyFile, hint.login);
 
-  // THE MINT'S ORDER: the next-key seed, then the inception commitment, then the key file, and THE KEY FILE
-  // COMMITS THE MINT. Each step runs as the one custody holder (the seed row's own cold door), so no two acts in
-  // any two processes interleave inside a step:
-  //   1. the seed seals cold under the vessel key. A mint runs only inside a held custody and refuses by name
-  //      outside one, before any byte lands. A key already standing ends the act here: another act committed.
-  //   2. under one hold: the commitment gets written over the seed THAT STANDS (this act's, or the seed a racing
-  //      act sealed a moment later), then the key file lands whole by rename. A key already standing ends the
-  //      act with nothing written.
-  // So a key file that stands always stands beside the commitment that names it and the seed that commitment
-  // hides: no reader meets a key ahead of its commitment, and of two racing acts one key commits and both answer
-  // it. An act that stops ahead of the key leaves a seed or a commitment no key answers to, and the next mint
-  // writes both afresh. Pre-rotation commits the next key's digest BEFORE this key ever signs (first use is
-  // `keyhive.init`, downstream of founding): the only valid window, and nothing retrofits one.
+  // THE MINT: the inception, then the key file, and THE KEY FILE COMMITS THE MINT. Both land inside ONE hold of the
+  // custody claim (`exclusiveCustody`), the same claim every sealed write in every process takes, so two racing acts
+  // never interleave: the first lands both files, and the later act meets the key that stands, writes nothing and
+  // answers that key. A mint runs only inside a held custody and refuses by name outside one, before any byte lands:
+  // a founding seals its custody first (`lares vessel found`), so the place's key mints inside the act that holds
+  // its custody open. A key file that stands always stands beside the inception that names it; an act that stops
+  // between the two leaves an inception no key answers to, and the next mint writes it afresh.
   let lostTo: PersistedKeypair | undefined;
+  const kelFile = join(idDir, kelFileName(hint.login));
   const minting: KeypairStore = {
     load: () => base.load(),
     async save(keypair) {
       try { await openedCustody(); } catch (err) { throw new VesselKeyMintRefused(keyFile, err); }
-      const nextFile = nextSeedFileName(hint.login);
-      const kelFile  = join(idDir, kelFileName(hint.login));
-      const standsAlready = (): boolean => existsSync(keyFile);
-      const sealed = await updateColdCustodyRow("identity", nextFile, () => (standsAlready()
-        ? { plaintext: null, value: false }
-        : { plaintext: utf8.encode(JSON.stringify(mintNextSeed(), null, 2)), value: true }));
-      const committed = sealed && await updateColdCustodyRow("identity", nextFile, (bytes) => {
-        if (standsAlready() || bytes === null) return { plaintext: null, value: false };
-        const standing = parseNextSeed(bytes, nextFile);
-        publishFile(kelFile, JSON.stringify(inceptionKel(keypair.verifyingKey, standing.nextVerifyingKey), null, 2));
+      const committed = await exclusiveCustody(async () => {
+        if (existsSync(keyFile)) return false;
+        const seed = signingSeedFromHex(keypair.signingKey);
+        try { publishFile(kelFile, inceptVesselKel(seed).bytes); } finally { seed.fill(0); }
         const persisted: PersistedKey = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey, ...(hint.login ? { gitEmail: hint.login } : {}) };
         publishFile(keyFile, JSON.stringify(persisted, null, 2));
-        return { plaintext: null, value: true };
+        return true;
       });
       if (committed) return;
       lostTo = await base.load();   // another act's key stands: this act's keypair goes nowhere
-      if (!lostTo) throw new VesselKeyMintRefused(keyFile, new Error("the mint's seed row vanished between its two steps; run the founding again"));
+      if (!lostTo) throw new VesselKeyMintRefused(keyFile, new Error("the key another act landed vanished before this act read it; run the founding again"));
     },
   };
   const minted = await generateOrLoadKeypair(minting, nodeKeypairCrypto);
@@ -354,21 +325,13 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
   const created = minted.created && !lostTo;
 
   if (!created) {
+    // A standing key proves itself by its own inception, or the act refuses by name and writes nothing.
+    const standing = JSON.parse(readFileSync(keyFile, "utf8")) as PersistedKey;
+    if (standing.verifyingKey !== verifyingKey) throw new VesselInceptionRefused(kelFile, "names-another-key");
+    proveStandingKey(kelFile, standing);
     console.log(`[vessel-identity] loaded keypair${hint.login ? ` for ${hint.login}` : ""}`);
-    // No-retrofit guard: a key with no inception commitment has no valid inception window —
-    // NEVER fake one (it has already signed; the thief-can't-rotate guarantee is unrecoverable).
-    const kelAt = join(idDir, kelFileName(hint.login));
-    if (!existsSync(kelAt)) {
-      console.log(`[vessel-identity] key predates pre-rotation — non-pre-rotating (not retrofitted)`);
-    } else {
-      // A commitment that names another key commits nothing for this one: say so, and never rewrite it.
-      let names: unknown;
-      try { names = (JSON.parse(readFileSync(kelAt, "utf8")) as { k?: unknown[] }).k?.[0]; } catch { names = undefined; }
-      if (names !== verifyingKey) console.warn(`[vessel-identity] the inception commitment at ${kelAt} names another key — this key reads non-pre-rotating (not retrofitted)`);
-    }
   } else {
-    console.log(`[vessel-identity] generated new Ed25519 keypair${hint.login ? ` for ${hint.login}` : ""}`);
-    console.log(`[vessel-identity] committed pre-rotation inception (next-key digest sealed)${hint.login ? ` for ${hint.login}` : ""}`);
+    console.log(`[vessel-identity] generated new Ed25519 keypair and its inception (no next key)${hint.login ? ` for ${hint.login}` : ""}`);
   }
 
   const base2: VesselIdentity = { verifyingKey };
@@ -377,7 +340,7 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
 
 /**
  * The vessel's identity as a BOOT reads it: the public key off the key file and the display name off git config.
- * Load-only. A boot mints no key (the mint seals a seed under the vessel key, and a boot holds none), so a vessel
+ * Load-only. A boot mints no key (a key mints only inside a held custody, and a boot holds none), so a vessel
  * with no key file refuses here by name and points at the founding.
  */
 export async function loadVesselIdentity(): Promise<VesselIdentity> {
@@ -403,13 +366,13 @@ export async function loadVesselIdentity(): Promise<VesselIdentity> {
  * `generateOrLoadVesselIdentity()` first to ensure one is on disk.
  */
 /**
- * Load the operator's hex-encoded Ed25519 PUBLIC verifying key from disk.
- * Cheap read — no crypto. Returns the same `verifyingKey` field
- * generateOrLoadVesselIdentity surfaces, without regenerating if missing.
+ * Load the operator's hex-encoded Ed25519 PUBLIC verifying key from disk, proven: the file's seed derives it and
+ * its inception signs it (`proveStandingKey`; one key derivation and one signature check). Returns the same
+ * `verifyingKey` field generateOrLoadVesselIdentity surfaces, without regenerating if missing.
  *
  * Used by the CLI to populate verb-tiddler `requested-by` with a
  * Keyhive-recognizable DID (`0x` + verifyingKey hex). Throws when no key
- * file exists.
+ * file exists, and refuses `VesselInceptionRefused` by name where the key fails its proof.
  */
 export async function loadVesselVerifyingKey(): Promise<string> {
   const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
@@ -423,6 +386,7 @@ export async function loadVesselVerifyingKey(): Promise<string> {
   if (typeof raw.verifyingKey !== "string" || raw.verifyingKey.length !== 64) {
     throw new Error(`[vessel-identity] malformed verifyingKey in ${keyFile}`);
   }
+  proveStandingKey(join(identityDir(), kelFileName(hint.login)), raw);
   return raw.verifyingKey;
 }
 
@@ -475,6 +439,7 @@ export async function loadVesselSigningSeed(): Promise<Uint8Array> {
   if (typeof raw.signingKey !== "string" || raw.signingKey.length !== 64) {
     throw new Error(`[vessel-identity] malformed signingKey in ${keyFile}`);
   }
+  proveStandingKey(join(identityDir(), kelFileName(hint.login)), raw);
   return signingSeedFromHex(raw.signingKey);
 }
 
@@ -487,7 +452,8 @@ export class FloorKeyDoorRefused extends Error {
  * THE FLOOR KEY'S DERIVE DOOR: one child of the vessel's floor key under one registered domain.
  *
  * The floor key rests outside the vessel key, so this door answers while the vessel stands LOCKED: a floor
- * gate's bundle derives through it at every standing. Each call reads the key file, derives (RFC 5869
+ * gate's bundle derives through it at every standing. Each call reads the key file, proves its inception
+ * (`VesselInceptionRefused` by name where it fails), derives (RFC 5869
  * HKDF-SHA256, empty salt, the domain's address as `info`, 32 bytes), overwrites the seed it read, and answers
  * a FRESH buffer its caller owns and overwrites. The door never answers the floor key itself, and the seed
  * rests in no closure between two calls.
@@ -499,6 +465,7 @@ export class FloorKeyDoorRefused extends Error {
 export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
   const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
   const keyFile = join(identityDir(), keyFileName(hint.login));
+  const kelFile = join(identityDir(), kelFileName(hint.login));
   return floorKeyDoor({
     derive(domain: string): Uint8Array {
       if (!ALL_DOMAINS.includes(domain)) {
@@ -514,6 +481,7 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
       if (typeof raw.signingKey !== "string" || raw.signingKey.length !== 64) {
         throw new FloorKeyDoorRefused(`the vessel key at ${keyFile} reads malformed`);
       }
+      proveStandingKey(kelFile, raw);
       const seed = signingSeedFromHex(raw.signingKey);
       try { return new Uint8Array(hkdfSync("sha256", seed, new Uint8Array(0), domain, 32)); }
       finally { seed.fill(0); }
@@ -534,12 +502,12 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 // ROOT-ON-FOUNDER: `generateOrLoadPersonaGroupRoot` mints founder-side only; a joinee holds the founder's public
 // DID + a signed edge at admit, so its roster reads empty. UNIFORM KEYING — every persona-root spells `-h${N}`.
 //
-// ── AT REST: SEVEN ROWS, ONE CUSTODY BOUNDARY ────────────────────────────────────────────────────
+// ── AT REST: SIX ROWS, ONE CUSTODY BOUNDARY ────────────────────────────────────────────────────
 // Every row of this family rests sealed under the vessel key and passes through the custody seat
 // (`custody-seat`): the one sealed writer on the way down, the sealed open on the way up.
 //   HOT (read while the vessel stays unlocked): the persona ROSTER, the active-persona selector, the private
 //       pet-name map, the declaration map, the published-face record.
-//   COLD (opened for one act, then dropped): each persona ROOT (`…-h<N>.json`) and the vessel's next-key seed.
+//   COLD (opened for one act, then dropped): each persona ROOT (`…-h<N>.json`).
 // At the floor every door here refuses `CustodyLocked`. A hot row with nothing at its path reads as holding
 // nothing (no root, no worn face, no label), which states a fact about a vessel that never wrote it. A row that
 // stands and does not open (torn, bare, another key's) refuses `CustodyRowUnavailable`, and so does one that

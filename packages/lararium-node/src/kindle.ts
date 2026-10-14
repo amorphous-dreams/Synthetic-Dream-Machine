@@ -160,7 +160,7 @@ export async function kindleFromBulb(args: {
   const seed = bulbSeed(bulb);
 
   // 0. THE CUSTODY STANDS OPEN BEFORE THE FIRST BYTE LANDS. A kindle mints this device's vessel key, and a vessel
-  //    key mints only inside a held custody (its next-key seed seals under the vessel key). A device with no open
+  //    key mints only inside a held custody (under the custody's one claim). A device with no open
   //    custody refuses here, by name, with no blob mirrored and no island materialized.
   await openedCustody();
 

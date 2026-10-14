@@ -77,7 +77,7 @@ const TREE = "/id/vk-slots.json";
 const CARRIERS: SealedCarrier[] = [
   { name: "keyring", path: "/id/keyring.sealed" },
   { name: "walk", path: "/store/walk.sealed" },
-  { name: "vessel-next", path: "/id/vessel-next.sealed" },
+  { name: "seat-key", path: "/id/seat-key.sealed" },
 ];
 
 /** Found a scratch vessel: a passphrase slot over a fresh VK, and every carrier written through the writer. */

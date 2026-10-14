@@ -60,8 +60,8 @@ function stage(tag, { found }) {
     mkdirSync(dir, { recursive: true });
     cpSync(join(repo, "genesis", "seed.json"), join(dir, "seed.json"));
     symlinkSync(join(repo, "genesis", "cas"), join(dir, "cas"));
-    // A vessel key, minted inside the staged custody (its next-key seed seals under the vessel key, so a boot at
-    // the floor mints none): the boot then reaches its caps and refuses there, over the bootstrap.
+    // A vessel key, minted inside the staged custody (a key mints only inside a held custody, so a boot at the
+    // floor mints none): the boot then reaches its caps and refuses there, over the bootstrap.
     const mint = spawnSync(process.execPath, ["--input-type=module", "-e", `
       import { generateOrLoadVesselIdentity } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/node-vessel-identity.js"))};
       import { FsCustodyIo, makeCustodyHolder, seatCustody, vesselCustodyHomes } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/index.js"))};

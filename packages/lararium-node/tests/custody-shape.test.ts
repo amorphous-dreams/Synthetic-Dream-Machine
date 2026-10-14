@@ -148,14 +148,14 @@ describe("readCustodyShape — the old-shape refusal reads before any write", ()
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 
-  test("CONTROL: a herm-shaped home (a tree guarding its cold next seed) reads SLOTTED", () => {
+  test("CONTROL: a herm-shaped home (a tree guarding its custody root) reads SLOTTED", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, {
         "identity/.vessel-key.json": "{}",
         "identity/.vessel-kel.json": "{}",
         "identity/vk-slots.bin": "slots",
-        "identity/.vessel-next.json": sealedBytes("next"),
+        "identity/custody-root.bin": sealedBytes("root"),
       });
       expect(readCustodyShape(homes, reading)).toEqual({ kind: "slotted" });
     } finally { rmSync(root, { recursive: true, force: true }); }

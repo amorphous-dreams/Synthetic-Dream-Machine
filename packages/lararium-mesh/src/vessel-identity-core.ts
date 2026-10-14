@@ -10,7 +10,7 @@
  *   · KeypairStore  — how this runtime persists ONE keypair slot
  *     (node 0o600 file in the wipe-zone-sibling dir; browser IndexedDB),
  *
- * and keeps its OWN platform law on top (node: KERI pre-rotation, git-hint file
+ * and keeps its OWN platform law on top (node: the floor key's own inception, git-hint file
  * naming, ContactCard custody; browser: IDB store names). The core owns only the
  * shared SHAPE + the control flow — never the platform secrets handling.
  *
@@ -43,8 +43,8 @@ export interface KeypairCrypto {
 /**
  * The generate-or-load skeleton: returns the verifying key and whether THIS call
  * minted a fresh pair (`created`). On a fresh mint the keypair persists through the
- * store BEFORE returning — so a caller layering an inception commitment (KERI
- * pre-rotation) runs strictly AFTER the key reaches durable storage.
+ * store BEFORE returning — so whatever the store lands beside the key (the node's
+ * inception) stands before any caller reads the key.
  */
 export async function generateOrLoadKeypair(
   store: KeypairStore,

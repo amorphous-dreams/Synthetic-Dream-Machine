@@ -128,6 +128,14 @@ export interface CustodyHolder {
    * what it needs and nothing else.
    */
   updateColdRow<T>(home: CustodyHome, file: string, decide: (standing: RowReading) => RowUpdate<T>): Promise<T>;
+  /**
+   * Run `act` as ONE custody holder, while this holder holds its key: no sealed write in any process lands while it
+   * runs, and no other `exclusive` act either. For a floor row whose mint must land once and never over another
+   * act's (the vessel key and its inception): `act` writes those bytes itself, outside the vessel key, and touches
+   * no sealed row, since a sealed write inside it would wait on the claim it already holds. Locked refuses
+   * `CustodyLocked` before `act` runs.
+   */
+  exclusive<T>(act: () => Promise<T>): Promise<T>;
   derive(domain: string): Uint8Array;
   /** The dyad veil for `groupTag`, derived from the custody root. */
   veil(groupTag: string): Promise<{ signingKey: string; verifyingKey: string }>;
@@ -336,6 +344,9 @@ export function makeCustodyHolder(a: { readonly io: CustodyIo; readonly homes: C
         if (opened.reading !== "opens") throw new CustodyRowUnavailable(home, file, opened.reading);
         try { return await act(opened.plaintext); } finally { opened.plaintext.fill(0); }
       });
+    },
+    exclusive(act) {
+      return operation(() => a.io.exclusive(act));
     },
     derive(domain) {
       if (!accepting || root === null) throw new CustodyLocked();

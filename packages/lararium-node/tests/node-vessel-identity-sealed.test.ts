@@ -5,17 +5,26 @@
  * V4 ABSENT HOT ROWS HOLD NOTHING. Each map and selector gives its empty answer. Control: a written row opens whole.
  * V5 SEALED ROWS THAT DO NOT OPEN REFUSE EVERY DOOR. Tampered, truncated, and bare bytes move no further. Control: intact rows work.
  * V6 OPEN ROWS WITH ANOTHER SHAPE REFUSE EVERY DOOR. Control: well-shaped rows round-trip.
- * V7 THE FLOOR CLOSES EVERY DOOR. Control: an existing vessel key loads at the floor.
- * V8 THE VESSEL MINT COMMITS ITS NEXT KEY. Control: a second call reads all three standing files unchanged.
+ * V7 THE FLOOR CLOSES EVERY DOOR, the vessel key's mint among them. Control: an existing vessel key loads at the floor.
+ * V8 THE VESSEL MINT COMMITS NO NEXT KEY. It lands the key and its one signed inception, which names that key and
+ *    holds no next key, no clock and no version; no next-key seed stands. Control: a second call reads both files unchanged.
  * V9 WEAR REQUIRES A HELD ROOT. Control: a held root wears through its sealed selector.
  * V10 THREE MAPS SEAL AND ROUND-TRIP. Control: entries sort and absent clears leave a readable row.
  * V11 TAMPER PROBE RETIRES THE SEATED KEY. Control: the new tree key opens every row whole.
  * V12 TWO HOLDERS SHARE ONE TREE. Control: both pet-name updates and the raced root mint remain whole.
  * V13 FACE ONE OPENS WITH FACE ZERO UNTOUCHED. Control: corrupting zero leaves one readable from the roster.
  * V14 A NO-OP ROOT MINT WRITES NOTHING. Control: the first mint lands both root and roster.
- * V15 TWO VESSEL-KEY MINTS RACE AND ONE COMMITS. Both acts answer one key; the KEL names that key and commits to the seed the cold row holds; a mint over a commitment whose key went missing rewrites the commitment. Control: a standing key ends a later mint with no byte moved.
+ * V15 TWO VESSEL-KEY MINTS RACE AND ONE COMMITS. Both acts answer one key and the inception names it; a mint over an inception whose key went missing writes a fresh one. Control: a standing key ends a later mint with no byte moved.
  * V16 AN ORPHAN'S NAME READS CANONICAL. A root file spelled `h01` names no orphan. Control: `h1` does.
- * V17 TWO ACTS CROSS AT THE MINT'S STEP BOUNDARY, IN BOTH ORDERS. Two module graphs, each with its own seat, holder and custody io over one tree, share one runtime and nothing else but the files and the cross-process claim (a two-graph race, never two operating-system processes). Both acts seal a seed while no key stands; one commits; the other reaches step two after that key landed, writes nothing and answers the standing key. The vector runs once with each graph committing first. Control: each act ran both of its steps, so the vector crossed the boundary it names.
+ * V17 TWO ACTS MEET AT THE CUSTODY CLAIM, IN BOTH ORDERS. Two module graphs, each with its own seat, holder and custody io over one tree, share one runtime and nothing else but the files and the cross-process claim (a two-graph race, never two operating-system processes). Both acts find no key and ask the claim; the first commits inside it while the later act waits on it; the later act then meets that key, writes nothing and answers it. The vector runs once with each graph committing first. Control: each act asked the claim and each act's mint ran, so the vector reached the hold it names.
+ * V18 A STANDING KEY WHOSE INCEPTION FAILS TO PROVE IT REFUSES BY NAME, and nothing gets written over it: no inception,
+ *    a torn one, one that names another key, one whose signature fails, and one that commits a next key. Control: the
+ *    intact inception loads the key.
+ * V19 EVERY LOAD DOOR OF A STANDING KEY PROVES ITS INCEPTION: the boot's identity read, the public key, the signing
+ *    seed and the floor key's derive door each refuse by name over an absent inception or one of another key, and
+ *    write nothing. Control: over the intact inception each door answers.
+ * V20 A KEY FILE WHOSE SEED DERIVES ANOTHER KEY REFUSES AT EVERY DOOR, the found act's load among them, though its
+ *    public key and its inception still agree. Control: the intact file answers at every door.
  */
 import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
@@ -23,13 +32,18 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { mkdtempSync, rmSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mintVk, readVkCarrier, writeSealedCarrier, TreeVkRefusal } from "@lararium/mesh";
+import {
+  mintVk, readVkCarrier, writeSealedCarrier, TreeVkRefusal,
+  inceptVesselKel, decodeVesselKelInception, verifyVesselKelInception, canonicalJsonBytes, VESSEL_KEL_DOMAIN, ed25519SignerFromSeed,
+  GATE_FLOOR_BUNDLE_INFO,
+} from "@lararium/mesh";
 import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
   listPersonaRoots, listPersonaRosterLines, personaRootExists, orphanPersonaRoots,
   makeNodeFsPersonaVault, loadActivePersonaIndex, wearPersona,
   makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, makeNodePublicHandleStore,
-  generateOrLoadVesselIdentity, VesselKeyMintRefused,
+  generateOrLoadVesselIdentity, VesselKeyMintRefused, VesselInceptionRefused,
+  loadVesselIdentity, loadVesselVerifyingKey, loadVesselSigningSeed, vesselFloorKeyDoor,
 } from "../src/node-vessel-identity.js";
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
@@ -206,19 +220,25 @@ describe("sealed vessel identity family", () => {
     await c.holder.lock();
     for (const door of doors) await expect(Promise.resolve().then(door)).rejects.toThrow(CustodyLocked);
     await expect(generateOrLoadVesselIdentity()).rejects.toThrow(VesselKeyMintRefused);
-    expect(existsSync(at(".vessel-key.json"))).toBe(false); expect(existsSync(at(".vessel-kel.json"))).toBe(false); expect(existsSync(at(".vessel-next.json"))).toBe(false);
+    expect(existsSync(at(".vessel-key.json"))).toBe(false); expect(existsSync(at(".vessel-kel.json"))).toBe(false);
+    expect(readdirSync(c.homes.identity).filter((f) => f.startsWith(".vessel-"))).toEqual([]);
   });
 
-  test("V8 vessel key mint seals next seed and second call preserves all bytes", async () => {
+  test("V8 vessel key mint commits no next key, and a second call preserves both files", async () => {
     const first = await generateOrLoadVesselIdentity();
-    const next = read(".vessel-next.json"); const kel = read(".vessel-kel.json"); const key = read(".vessel-key.json");
-    expect(readVkCarrier(next)).toBe("sealed");
-    const opened = await cold<{ nextVerifyingKey: string; nextSigningKey: string }>(".vessel-next.json");
-    expect(opened.nextVerifyingKey).toMatch(HEX); expect(opened.nextSigningKey).toMatch(HEX);
-    expect(next.includes(Buffer.from(opened.nextVerifyingKey))).toBe(false);
-    expect(next.includes(Buffer.from(opened.nextSigningKey))).toBe(false);
-    expect(JSON.parse(kel.toString()).k[0]).toBe(first.verifyingKey);
-    expect(JSON.parse(kel.toString()).n[0]).toBe(createHash("sha256").update(Buffer.from(opened.nextVerifyingKey, "hex")).digest("hex"));
+    const kel = read(".vessel-kel.json"); const key = read(".vessel-key.json");
+    // The one signed inception: the key, its signature, and nothing that commits a next key or tells a time.
+    expect(Object.keys(JSON.parse(kel.toString())).sort()).toEqual(["k", "sig", "t"]);
+    const inception = decodeVesselKelInception(kel);
+    expect(inception).not.toBeNull();
+    expect(verifyVesselKelInception(inception!)).toBe(true);
+    expect(inception!.k).toEqual([first.verifyingKey]);
+    expect(kel.toString()).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
+    // No next-key seed stands, under any spelling, sealed or bare.
+    expect(readdirSync(c.homes.identity).filter((f) => f.startsWith(".vessel-")).sort()).toEqual([".vessel-kel.json", ".vessel-key.json"]);
+    // The same seed mints the same inception, so the bytes on disk carry nothing but the key's own act.
+    const signing = JSON.parse(key.toString()) as { signingKey: string };
+    expect(Buffer.from(inceptVesselKel(Uint8Array.from(Buffer.from(signing.signingKey, "hex"))).bytes).equals(kel)).toBe(true);
     const floorHolder = c.holder;
     await floorHolder.lock();
     const locked = await generateOrLoadVesselIdentity();
@@ -226,7 +246,7 @@ describe("sealed vessel identity family", () => {
     await floorHolder.adopt(c.vk);
     seatCustody(floorHolder);
     expect((await generateOrLoadVesselIdentity()).verifyingKey).toBe(first.verifyingKey);
-    expect(read(".vessel-next.json").equals(next)).toBe(true); expect(read(".vessel-kel.json").equals(kel)).toBe(true); expect(read(".vessel-key.json").equals(key)).toBe(true);
+    expect(read(".vessel-kel.json").equals(kel)).toBe(true); expect(read(".vessel-key.json").equals(key)).toBe(true);
   });
 
   test("V9 wear requires a committed persona root", async () => {
@@ -306,55 +326,52 @@ describe("sealed vessel identity family", () => {
     expect(first.created).toBe(true);
   });
 
-  test("V15 two vessel-key mints race and the key, the KEL and the sealed seed name one mint", async () => {
+  test("V15 two vessel-key mints race and the key and its inception name one mint", async () => {
     const [a, b] = await Promise.all([generateOrLoadVesselIdentity(), generateOrLoadVesselIdentity()]);
     expect(a.verifyingKey).toBe(b.verifyingKey);
     const key = JSON.parse(read(".vessel-key.json").toString()) as { verifyingKey: string };
-    const kel = JSON.parse(read(".vessel-kel.json").toString()) as { k: string[]; n: string[] };
-    const next = await cold<{ nextVerifyingKey: string }>(".vessel-next.json");
+    const kel = decodeVesselKelInception(read(".vessel-kel.json"));
     expect(key.verifyingKey).toBe(a.verifyingKey);
-    expect(kel.k).toEqual([a.verifyingKey]);
-    expect(kel.n[0]).toBe(createHash("sha256").update(Buffer.from(next.nextVerifyingKey, "hex")).digest("hex"));
-    // A SECOND PROCESS's mint, stood in for by a second holder over the same tree with the first act's key
-    // file moved aside: its seed replaces the standing one, and the commitment it then writes names ITS key over
-    // the seed that stands. The three records always name one mint.
+    expect(kel?.k).toEqual([a.verifyingKey]); expect(verifyVesselKelInception(kel!)).toBe(true);
+    // A mint over an inception whose key went missing: the fresh key lands beside a fresh inception that names it,
+    // so a stale inception never outlives its key.
     expect(readdirSync(c.homes.identity).filter((f) => f.endsWith(".landing"))).toEqual([]);
     const firstKel = read(".vessel-kel.json");
     rmSync(at(".vessel-key.json"));
     const again = await generateOrLoadVesselIdentity();
     expect(again.verifyingKey).not.toBe(a.verifyingKey);
-    const kel2 = JSON.parse(read(".vessel-kel.json").toString()) as { k: string[]; n: string[] };
-    const next2 = await cold<{ nextVerifyingKey: string }>(".vessel-next.json");
-    expect(read(".vessel-kel.json").equals(firstKel)).toBe(false);          // a stale commitment never outlives its key
-    expect(kel2.k).toEqual([again.verifyingKey]);
-    expect(kel2.n[0]).toBe(createHash("sha256").update(Buffer.from(next2.nextVerifyingKey, "hex")).digest("hex"));
-    expect(next2.nextVerifyingKey).not.toBe(next.nextVerifyingKey);
+    const kel2 = decodeVesselKelInception(read(".vessel-kel.json"));
+    expect(read(".vessel-kel.json").equals(firstKel)).toBe(false);
+    expect(kel2?.k).toEqual([again.verifyingKey]); expect(verifyVesselKelInception(kel2!)).toBe(true);
     // control: a key that stands ends a later mint with nothing written
-    const standing = [".vessel-key.json", ".vessel-kel.json", ".vessel-next.json"].map(read);
+    const standing = [".vessel-key.json", ".vessel-kel.json"].map(read);
     expect((await generateOrLoadVesselIdentity()).verifyingKey).toBe(again.verifyingKey);
-    [".vessel-key.json", ".vessel-kel.json", ".vessel-next.json"].forEach((f, i) => expect(read(f).equals(standing[i]!), f).toBe(true));
+    [".vessel-key.json", ".vessel-kel.json"].forEach((f, i) => expect(read(f).equals(standing[i]!), f).toBe(true));
   });
 
-  test.each([["a", "b"], ["b", "a"]] as const)("V17 two graphs cross at the step boundary: %s commits first and %s's step two writes nothing", async (first, later) => {
-    // Each act's holder counts its cold updates and waits at a gate, so the order reads: both step ones (each seals
-    // a seed while no key stands), the first act's step two (commits), the later act's step two (meets that key).
-    let release = (): void => undefined;
-    const laterSealed = new Promise<void>((r) => { release = r; });
-    let landed = (): void => undefined;
-    const firstCommitted = new Promise<void>((r) => { landed = r; });
-    const steps = { a: 0, b: 0 };
+  test.each([["a", "b"], ["b", "a"]] as const)("V17 two graphs meet at the custody claim: %s commits first and %s writes nothing", async (first, later) => {
+    // Each act's holder counts its asks of the claim and waits at a gate, so the order reads: the first act enters
+    // the claim, the later act asks for it while the first still holds it, the first commits and lets go, and the
+    // later act then runs its mint inside the claim and meets the key that landed.
+    let entered = (): void => undefined;
+    const firstInside = new Promise<void>((r) => { entered = r; });
+    let asked = (): void => undefined;
+    const laterAsked = new Promise<void>((r) => { asked = r; });
+    const asks = { a: 0, b: 0 };
+    const runs = { a: 0, b: 0 };
+    const order: string[] = [];
     type Holder = typeof c.holder;
     const gated = (holder: Holder, who: "a" | "b"): Holder => ({
       ...holder,
-      async updateColdRow(home, file, decide) {
-        const step = (steps[who] += 1);
-        if (who === first && step === 2) await laterSealed;
-        if (who === later && step === 2) await firstCommitted;
-        try { return await holder.updateColdRow(home, file, decide); }
-        finally {
-          if (who === later && step === 1) release();
-          if (who === first && step === 2) landed();
-        }
+      async exclusive(fn) {
+        asks[who] += 1;
+        if (who === later) { await firstInside; asked(); }
+        return holder.exclusive(async () => {
+          if (who === first) { entered(); await laterAsked; }
+          runs[who] += 1;
+          order.push(`${who}:in`);
+          try { return await fn(); } finally { order.push(`${who}:out`); }
+        });
       },
     });
     seatCustody(gated(c.holder, "a"));
@@ -371,14 +388,14 @@ describe("sealed vessel identity family", () => {
     seatB.seatCustody(gated(second as unknown as Holder, "b") as unknown as Parameters<typeof seatB.seatCustody>[0]);
     try {
       const [a, b] = await Promise.all([generateOrLoadVesselIdentity(), identityB.generateOrLoadVesselIdentity()]);
-      expect(steps).toEqual({ a: 2, b: 2 });                                  // control: both acts ran both steps
+      expect(asks).toEqual({ a: 1, b: 1 });                                   // control: both acts asked the claim
+      expect(runs).toEqual({ a: 1, b: 1 });                                   // control: both mints ran inside it
+      expect(order).toEqual([`${first}:in`, `${first}:out`, `${later}:in`, `${later}:out`]);   // the claim held them apart
       const key = JSON.parse(read(".vessel-key.json").toString()) as { verifyingKey: string };
-      const kel = JSON.parse(read(".vessel-kel.json").toString()) as { k: string[]; n: string[] };
-      const next = await cold<{ nextVerifyingKey: string }>(".vessel-next.json");
+      const kel = decodeVesselKelInception(read(".vessel-kel.json"));
       expect(b.verifyingKey).toBe(a.verifyingKey);                            // both acts answer the one standing key
       expect(key.verifyingKey).toBe(a.verifyingKey);
-      expect(kel.k).toEqual([a.verifyingKey]);
-      expect(kel.n[0]).toBe(createHash("sha256").update(Buffer.from(next.nextVerifyingKey, "hex")).digest("hex"));
+      expect(kel?.k).toEqual([a.verifyingKey]); expect(verifyVesselKelInception(kel!)).toBe(true);
       expect(readdirSync(c.homes.identity).filter((f) => f.endsWith(".landing"))).toEqual([]);
     } finally {
       await second.lock();
@@ -396,5 +413,88 @@ describe("sealed vessel identity family", () => {
     rmSync(at(rootFile(1)));
     expect(await orphanPersonaRoots()).toEqual([]);           // `h01` alone names none
     expect(minted.created).toBe(true);
+  });
+
+  test("V18 a standing key whose inception fails to prove it refuses by name, and nothing moves", async () => {
+    const minted = await generateOrLoadVesselIdentity();
+    const key = read(".vessel-key.json"); const kel = read(".vessel-kel.json");
+    const seedHex = (JSON.parse(key.toString()) as { signingKey: string }).signingKey;
+    const parsed = JSON.parse(kel.toString()) as { t: string; k: string[]; sig: string };
+    const foreign = inceptVesselKel(new Uint8Array(32).fill(9));
+    // An inception the floor key itself signed over a next-key commitment: a well-signed record of the retired shape.
+    const committingCore = { t: "icp", k: parsed.k, nt: "1", n: [createHash("sha256").update("next").digest("hex")] };
+    const committing = { ...committingCore, sig: await ed25519SignerFromSeed(Uint8Array.from(Buffer.from(seedHex, "hex")))(canonicalJsonBytes({ domain: VESSEL_KEL_DOMAIN, ...committingCore })) };
+    const cases: ReadonlyArray<readonly [string, Buffer | null, string]> = [
+      ["no inception", null, "absent"],
+      ["a torn inception", kel.subarray(0, kel.length - 3), "malformed"],
+      ["an inception of another key", Buffer.from(foreign.bytes), "names-another-key"],
+      ["a signature that fails", Buffer.from(JSON.stringify({ ...parsed, sig: foreign.inception.sig })), "signature-fails"],
+      ["an inception that commits a next key", Buffer.from(JSON.stringify(committing)), "malformed"],
+    ];
+    for (const [what, planted, reading] of cases) {
+      if (planted === null) rmSync(at(".vessel-kel.json"));
+      else { expect(planted.equals(kel), `${what}: the probe moved the bytes`).toBe(false); writeFileSync(at(".vessel-kel.json"), planted); }
+      const refused = await generateOrLoadVesselIdentity().then(() => null, (err: unknown) => err);
+      expect(refused, what).toBeInstanceOf(VesselInceptionRefused);
+      expect((refused as VesselInceptionRefused).reading, what).toBe(reading);
+      expect(read(".vessel-key.json").equals(key), `${what}: the key stays`).toBe(true);
+      if (planted === null) expect(existsSync(at(".vessel-kel.json")), `${what}: nothing written in its place`).toBe(false);
+      else expect(read(".vessel-kel.json").equals(planted), `${what}: nothing written over it`).toBe(true);
+    }
+    writeFileSync(at(".vessel-kel.json"), kel);
+    expect((await generateOrLoadVesselIdentity()).verifyingKey).toBe(minted.verifyingKey);        // control
+  });
+
+  test("V19 every load door of a standing key proves its inception, and writes nothing", async () => {
+    const minted = await generateOrLoadVesselIdentity();
+    const key = read(".vessel-key.json"); const kel = read(".vessel-kel.json");
+    const doors: ReadonlyArray<readonly [string, () => Promise<unknown>]> = [
+      ["the boot's identity read", () => loadVesselIdentity()],
+      ["the public key", () => loadVesselVerifyingKey()],
+      ["the signing seed", () => loadVesselSigningSeed()],
+      ["the floor key's derive door", async () => (await vesselFloorKeyDoor()).derive(GATE_FLOOR_BUNDLE_INFO)],
+    ];
+    // control: over the intact inception every door answers
+    for (const [what, door] of doors) await expect(door(), what).resolves.toBeDefined();
+    expect(await loadVesselVerifyingKey()).toBe(minted.verifyingKey);
+    const foreign = Buffer.from(inceptVesselKel(new Uint8Array(32).fill(9)).bytes);
+    for (const [planted, reading] of [[null, "absent"], [foreign, "names-another-key"]] as const) {
+      if (planted === null) rmSync(at(".vessel-kel.json")); else writeFileSync(at(".vessel-kel.json"), planted);
+      for (const [what, door] of doors) {
+        const refused = await door().then(() => null, (err: unknown) => err);
+        expect(refused, `${what} over ${reading}`).toBeInstanceOf(VesselInceptionRefused);
+        expect((refused as VesselInceptionRefused).reading, what).toBe(reading);
+      }
+      expect(read(".vessel-key.json").equals(key)).toBe(true);
+      if (planted === null) expect(existsSync(at(".vessel-kel.json"))).toBe(false);
+      else expect(read(".vessel-kel.json").equals(planted)).toBe(true);
+    }
+    writeFileSync(at(".vessel-kel.json"), kel);
+  });
+
+  test("V20 a key file whose seed derives another key refuses at every door, and nothing moves", async () => {
+    const minted = await generateOrLoadVesselIdentity();
+    const key = read(".vessel-key.json"); const kel = read(".vessel-kel.json");
+    const doors: ReadonlyArray<readonly [string, () => Promise<unknown>]> = [
+      ["the found act's load", () => generateOrLoadVesselIdentity()],
+      ["the boot's identity read", () => loadVesselIdentity()],
+      ["the public key", () => loadVesselVerifyingKey()],
+      ["the signing seed", () => loadVesselSigningSeed()],
+      ["the floor key's derive door", async () => (await vesselFloorKeyDoor()).derive(GATE_FLOOR_BUNDLE_INFO)],
+    ];
+    for (const [what, door] of doors) await expect(door(), what).resolves.toBeDefined();          // control
+    // Another valid seed under the same public key and the same inception: the decoded seed moves, nothing else.
+    const raw = JSON.parse(key.toString()) as { verifyingKey: string; signingKey: string };
+    const swapped = Buffer.from(JSON.stringify({ ...raw, signingKey: "5a".repeat(32) }, null, 2));
+    expect((JSON.parse(swapped.toString()) as { signingKey: string }).signingKey).not.toBe(raw.signingKey);
+    expect((JSON.parse(swapped.toString()) as { verifyingKey: string }).verifyingKey).toBe(minted.verifyingKey);
+    writeFileSync(at(".vessel-key.json"), swapped);
+    for (const [what, door] of doors) {
+      const refused = await door().then(() => null, (err: unknown) => err);
+      expect(refused, what).toBeInstanceOf(VesselInceptionRefused);
+      expect((refused as VesselInceptionRefused).reading, what).toBe("seed-names-another-key");
+    }
+    expect(read(".vessel-key.json").equals(swapped)).toBe(true); expect(read(".vessel-kel.json").equals(kel)).toBe(true);
+    writeFileSync(at(".vessel-key.json"), key);
   });
 });

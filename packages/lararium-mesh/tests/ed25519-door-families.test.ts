@@ -217,11 +217,11 @@ describe("persona KEL", () => {
 });
 
 describe("vessel KEL (verifyVesselKelInception)", () => {
-  test("CONTROL: a minted inception verifies", () => { expect(verifyVesselKelInception(inceptVesselKel(seed(1), seed(2)).inception)).toBe(true); });
+  test("CONTROL: a minted inception verifies", () => { expect(verifyVesselKelInception(inceptVesselKel(seed(1)).inception)).toBe(true); });
   test("nobody signs an inception for a small-order key", () => {
     // The signature covers `k`, and no digest binds it elsewhere: the identity key with nobody's signature
     // satisfies a lenient verifier over the re-read bytes.
-    const { inception } = inceptVesselKel(seed(1), seed(2));
+    const { inception } = inceptVesselKel(seed(1));
     expect(verifyVesselKelInception({ ...inception, k: [IDENTITY_KEY], sig: NOBODYS_SIGNATURE })).toBe(false);
   });
 });
