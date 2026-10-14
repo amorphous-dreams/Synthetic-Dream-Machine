@@ -10,41 +10,25 @@
  * that stands and the crossing that stands open, and signs only what that standing state licenses. A caller names
  * an act and a hand; it never hands in a well-formed image and gets a signature back for it.
  *
- * ── THE RITE ARMS ITSELF ────────────────────────────────────────────────────────────────────────
- * `armGenesis` gives each chair that stands a seat key and a NEXT seat key, both sealed rows of the face whose
- * seat claim stood for the chair, and answers the roster and the digest of the next set. `armRoll` finds the next
- * set the standing head committed among this vessel's own rows, seats it, and mints the set after. No caller
- * names a key or a commitment: a chair's keys mint here, behind the door, and only their public halves answer.
- *   · THE NEXT KEY RESTS BESIDE THE CURRENT ONE. A head armed here commits keys that rest on the same disk as
- *     the keys it seats, so the commitment protects nothing against a holder of that disk.
- *   · NO INDEX NAMES THE NEXT SET. The rows' names commit to keys and say nothing of their turn, so a roll finds
- *     the committed set by its digest: for each seated key it reads the face that holds it, takes that face's
- *     unseated keys as candidates, and keeps the one choice whose key-set digest equals the head's commitment.
- *   · A SEAT CHANGE RIDES THE REVEAL. A roll seats the chairs that STAND. A chair that stood at the arming seats
- *     its committed key; a chair that joined seats a fresh key and signs by possession; a chair that left drops.
- *     Whenever the seated set differs from the committed one, the roll carries the committed set as its reveal.
+ * ── THE RITE ARMS ITSELF, AND A CHAIR'S NEXT KEY RESTS ON PAPER ──────────────────────────────────
+ * `armGenesis` gives each chair that stands a seat key of its own, a sealed row of the face whose seat claim
+ * stood for the chair, and answers the roster. The rite mints each chair's NEXT key in its own process as a COLD
+ * key on a card, and the charter commits one digest per seat (`nextKeyDigests`, positional over the sorted
+ * seated keys). `armRoll` takes the cards a person typed back, checks each revealed key against the digest the
+ * standing head committed for that chair's seat, and ADOPTS it as that chair's seat key; a chair that joins
+ * mints a fresh seat key and signs by possession; a chair that left drops. No caller names a key the head did
+ * not commit, and no next key rests on this vessel.
  *   · A SUPERSEDED KEY RETIRES ONCE NOTHING NEEDS IT. `retireSeats` removes a seat row only when no held charter
- *     seats its key, the standing head did not commit it, and no open crossing names it. A crossing that stands
- *     open keeps the outgoing keys until its seal, since the outgoing hands still owe it their marks.
+ *     seats its key and no open crossing names it. A crossing that stands open keeps the outgoing keys until its
+ *     seal, since the outgoing hands still owe it their marks. An arming settles the faces it touches first.
  *
  * ── A ROLL THE STANDING HEAD LICENSES ───────────────────────────────────────────────────────────
  * `signLicensedSealRoll` reads a roll image against the charter at this vessel's seal home:
  *   · a sealed charter stands, and the roll steps from ITS head (`prevEpochCid` names the standing head's cid);
- *   · the head pre-committed a next key-set, and either the roll seats exactly that set, or this vessel holds the
- *     set that head committed (a seat change, which the roll law judges whole);
- *   · every seated key passes the Ed25519 door, and the signing seat sits in the seated set or the committed one;
- *   · every key the roll seats rests here as a seat row, and its forward commitment names a set that rests here;
+ *   · the head committed its seats' next keys, and the roll reveals at least the head's count of them;
+ *   · every seated key passes the Ed25519 door, rests here as a seat row, and the signing seat sits among them;
+ *   · the roll re-arms every seat it seats: one digest per seat, distinct, under the roll's own threshold.
  * Any other roll refuses by name, however well formed.
- *
- * ── THE GROWTH RITE'S TWO ROWS (the `nexus seal` writer family) ─────────────────────────────────
- * Both rest HOT under the vessel key in the seal home:
- *   · `transition-pending.json` PREPARES: the crossing that stands open, its two key-sets, and the signatures and
- *     witness marks gathered so far.
- *   · `transitions.json` COMMITS: every sealed crossing record this vessel keeps, in order.
- * `sealCrossing` verifies the pending crossing whole, appends its record to `transitions.json` (the commit point),
- * then removes the pending row. A rite that stops after the commit and before the removal resumes: the same seal
- * finds its record already kept, keeps one copy, and removes the pending row. A pending row with no commit simply
- * stands open; kept records with no pending row read as a clean state.
  *
  * Every step reads the standing row, decides and seals under one custody holder, and a row that stands and does
  * not open, or opens to another shape, refuses by name.
@@ -52,11 +36,11 @@
  * Node-main only: a worker never imports this module.
  */
 import {
-  SEAL_ROLL_DOMAIN, canonicalJsonBytes, charterSealState, ed25519SignerFromSeed, emptyFoundingCharterDoc, foundingRoster,
+  CHARTER_SEAT_ROLL_DOMAIN, canonicalJsonBytes, coldKeyFromSeed, seatNextDigest, charterSealState, ed25519SignerFromSeed, emptyFoundingCharterDoc, foundingRoster,
   majorityThreshold, personasStandingForSeat, sealKeySetHash, sealLineageHead, seatFingerprint, seatedKahuKeys, weakSeatOf,
-  type NexusCharterKahu, type NexusDoc, type QuorumSignature, type SealEpoch, type SealKeySet,
+  type NexusCharterKahu, type NexusDoc, type QuorumSignature, type SealEpoch,
 } from "@lararium/mesh";
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { primaryNexusAid, readCarriedCharters } from "./carried-set.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
@@ -64,7 +48,7 @@ import { openedCustody, readCustodyRow, removeCustodyRow, updateCustodyRow } fro
 import { nexusCharterStands, readNexusDoc } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
 import { listPersonaRosterLines, loadPersonaGroupRootSeed, makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
-import { heldSeatKey, mintSeatKey, retireSeatKey, seatKeysOfFace, signAsSeat } from "./seat-key-store.js";
+import { heldSeatKey, mintSeatKey, retireSeatKey, seatKeysOfFace, signAsSeat, storeSeatKey } from "./seat-key-store.js";
 import {
   reserveTransitionBytes, reserveTransitionCidOf, verifyReserveTransition, witnessSignBytes,
   type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
@@ -134,44 +118,6 @@ async function signAsSeatHex(verifyingKey: string, bytes: Uint8Array): Promise<s
 
 // ── the arming ──────────────────────────────────────────────────────────────────────────────────
 
-/** The most choices a search for a committed set weighs before it refuses by name. */
-export const COMMITTED_SET_SEARCH_LIMIT = 4096;
-
-/**
- * The next key-set a head committed, where this vessel holds it: one key per seated key, in the order of
- * `seated`, lower-case. For each seated key it reads the face whose row holds that key, takes that face's keys no
- * seat of `seated` holds as candidates, and keeps the one choice whose digest at `threshold` equals `commit`.
- * Null where a seated key rests in no row here, where no choice matches, or where `commit` stands empty. The rows
- * open for their public halves alone.
- */
-export async function committedNextSeats(seated: readonly string[], threshold: number, commit: string): Promise<string[] | null> {
-  if (commit.length === 0 || seated.length === 0) return null;
-  const standing = new Set(seated.map(lower));
-  const ofFace = new Map<number, string[]>();
-  const candidates: string[][] = [];
-  let choices = 1;
-  for (const key of standing) {
-    const held = heldSeatKey(key);
-    if (held === null) return null;
-    let keys = ofFace.get(held.handleIndex);
-    if (!keys) { keys = (await seatKeysOfFace(held.handleIndex)).filter((k) => !standing.has(k)); ofFace.set(held.handleIndex, keys); }
-    if (keys.length === 0) return null;
-    candidates.push(keys);
-    choices *= keys.length;
-    if (choices > COMMITTED_SET_SEARCH_LIMIT) {
-      throw refuse("committed-set-search-too-wide", `the faces that hold this charter's seats hold more unseated seat keys than a search weighs (${COMMITTED_SET_SEARCH_LIMIT} choices) — retire the rows no charter seats, then roll`);
-    }
-  }
-  const pick = new Array<number>(candidates.length).fill(0);
-  for (;;) {
-    const chosen = candidates.map((keys, slot) => keys[pick[slot]!]!);
-    if (new Set(chosen).size === chosen.length && sealKeySetHash(chosen, threshold) === lower(commit)) return chosen;
-    let slot = 0;
-    while (slot < pick.length && ++pick[slot]! === candidates[slot]!.length) { pick[slot] = 0; slot += 1; }
-    if (slot === pick.length) return null;
-  }
-}
-
 /** The chairs that STAND: each face this vessel holds a root for whose declaration claims a seat, with its chair label. */
 async function standingChairs(): Promise<ReadonlyArray<readonly [number, string]>> {
   const held = new Set((await listPersonaRosterLines()).map((l) => l.handleIndex));
@@ -228,13 +174,11 @@ function facesOfSeats(seated: readonly string[]): number[] {
   });
 }
 
-/** What an arming answers its rite: the roster to write, its seated keys and rule, and the digest of the next set. */
+/** What an arming answers its rite: the roster to write, its seated keys and rule. The rite mints the next keys. */
 export interface ArmedGenesis {
   readonly kahu:          readonly NexusCharterKahu[];
   readonly seatedKeys:    readonly string[];
   readonly threshold:     number;
-  /** The digest of the next key-set; empty where the roster seats fewer keys than its rule, so no epoch roots. */
-  readonly nextKeyCommit: string;
   /** Seat keys this arming left behind: the rite retires them once the charter it writes stands. */
   readonly superseded:    readonly string[];
   /** The keys this arming minted: a rite that writes no charter after all retires them. */
@@ -244,9 +188,8 @@ export interface ArmedGenesis {
 /**
  * ARM A GENESIS. Each chair that stands takes a seat key of its own: the key the charter already seats for that
  * chair where this vessel holds it under the same face, else a fresh one. A chair nobody stands for keeps what it
- * holds. Where the roster meets its rule, each seated chair's face takes a NEXT key too, and the digest of that
- * set answers. A charter that already stands at its genesis, seating the same keys under the same rule, keeps the
- * next set it committed: the same seat run again answers the same genesis.
+ * holds. The rite then mints each seated chair's NEXT key as a cold card in its own process, and the genesis
+ * commits their digests: no next key rests here.
  *
  * It writes no charter. A chain that rolled past its genesis refuses: a roll advances it.
  */
@@ -254,14 +197,14 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
   const sealHome = larSealHome();
   const standingDoc = readNexusDoc(sealHome);
   if (standingDoc === null && nexusCharterStands(sealHome)) {
-    throw refuse("charter-torn", "the charter doc stands here but reads TORN — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
+    throw refuse("charter-torn", "the charter doc stands here but reads TORN or in an earlier shape — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
   }
   const doc = standingDoc ?? emptyFoundingCharterDoc();
   if ((doc.sealLineage?.length ?? 0) > 1) {
     throw refuse("charter-rolled", "the charter chain has already ROTATED past genesis — advance it with `lares nexus seal rotate`, never re-seat");
   }
   const priorSeated = seatedKahuKeys(doc).map(lower);
-  // BOTH REFUSALS LAND BEFORE ANY KEY MINTS. A chair that holds a root or a leaf as its key refuses by that name.
+  // EVERY REFUSAL LANDS BEFORE ANY KEY MINTS. A chair that holds a root or a leaf as its key refuses by that name.
   // A SEAT NEVER BUILDS ON A CHARTER THIS VESSEL DID NOT FOUND: a seated key that rests in no seat row here belongs
   // to another vault, and seating beside it would merge that vault's quorum with this one.
   await refuseBorrowedSeats(priorSeated);
@@ -269,7 +212,6 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
   if (foreign.length > 0) {
     throw refuse("foreign-seat", `the charter standing here seats ${foreign.length} chair(s) this vessel did not found — fingerprints ${foreign.join(", ")} — keys this vault cannot produce. Seating onto it would MERGE their quorum with yours: they would hold quorum over your Nexus using their own keys, with no further act by you. A partner's charter belongs beside yours, never beneath your seat.`);
   }
-  // THE ROSTER AND ITS RULE SETTLE BEFORE ANY KEY MINTS, so a refusal leaves no row behind.
   const chairs = await standingChairs();
   if (chairs.length === 0) {
     throw refuse("no-chair-stands", "no persona stands for a chair — stand one first:\n  lares persona new <index> --name '<label>' --seat [--chair '<chair label>']");
@@ -285,99 +227,107 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
     if (seated && heldSeatKey(seated)?.handleIndex === index) kahu[at] = { displayName: kahu[at]!.displayName, verifyingKey: lower(seated) };
     else mints.push({ at, face: index });
   }
-  if (kahu.length === 0) {
-    throw refuse("no-chair-stands", "no persona stands for a chair — stand one first:\n  lares persona new <index> --name '<label>' --seat [--chair '<chair label>']");
-  }
   const threshold = thresholdFor(opts.threshold, doc, kahu.length);
-  // The faces this arming touches settle first, and the next set the standing genesis committed reads before
-  // this arming adds a row to any face.
   await settleSeats([...chairs.map(([index]) => index), ...priorSeated.map((key) => heldSeatKey(key)?.handleIndex).filter((f): f is number => f !== undefined)]);
-  const head = sealLineageHead(doc);
-  const prior = head && head.nextKeyCommit.length > 0 ? await committedNextSeats(priorSeated, doc.threshold, head.nextKeyCommit) : null;
 
   const minted: string[] = [];
-  const mint = async (face: number): Promise<string> => { const key = await mintSeatKey(face); minted.push(key); return key; };
-  for (const { at, face } of mints) kahu[at] = { displayName: kahu[at]!.displayName, verifyingKey: await mint(face) };
+  for (const { at, face } of mints) {
+    const key = await mintSeatKey(face);
+    minted.push(key);
+    kahu[at] = { displayName: kahu[at]!.displayName, verifyingKey: key };
+  }
   const seatedKeys = kahu.map((k) => k.verifyingKey).filter((k): k is string => typeof k === "string" && k.length > 0).map(lower);
-  const left = (kept: readonly string[]): string[] => [...priorSeated, ...(prior ?? [])].filter((k) => !kept.includes(k));
-  if (seatedKeys.length < threshold) return { kahu, seatedKeys, threshold, nextKeyCommit: "", superseded: left(seatedKeys), minted };
-
-  // THE SAME SEAT AGAIN ANSWERS THE SAME GENESIS: the next set the standing genesis committed for these very
-  // seats, under this very rule, stays.
-  const same = prior !== null && threshold === doc.threshold
-    && seatedKeys.length === priorSeated.length && seatedKeys.every((k) => priorSeated.includes(k));
-  const next: string[] = [];
-  if (same) next.push(...prior);
-  else for (const face of facesOfSeats(seatedKeys)) next.push(await mint(face));
-  return { kahu, seatedKeys, threshold, nextKeyCommit: sealKeySetHash(next, threshold), superseded: left([...seatedKeys, ...next]), minted };
+  return { kahu, seatedKeys, threshold, superseded: priorSeated.filter((k) => !seatedKeys.includes(k)), minted };
 }
 
-/** What a roll's arming answers its rite: the roster to seat, the reveal where seats changed, and the digest after. */
+/** What a roll's arming answers its rite: the roster to seat and the hands that sign. The rite mints the next keys. */
 export interface ArmedRoll {
-  readonly kahu:          readonly NexusCharterKahu[];
-  readonly seatedKeys:    readonly string[];
-  readonly threshold:     number;
-  /** The key-set the standing head committed, where the seated set differs from it; null where the two agree. */
-  readonly revealed:      SealKeySet | null;
-  /** Every hand that signs the roll: the seated keys and, at a seat change, the committed ones beside them. */
-  readonly signers:       readonly string[];
-  /** The digest of the key-set after this one. */
-  readonly nextKeyCommit: string;
+  readonly kahu:       readonly NexusCharterKahu[];
+  readonly seatedKeys: readonly string[];
+  readonly threshold:  number;
+  /** Every hand that signs the roll: each seated key, adopted or minted here. */
+  readonly signers:    readonly string[];
   /**
-   * The keys this roll spends: those the closing head seats, and those it committed that the roll leaves unseated
-   * (a revealed key spends once). The rite retires them once the rolled charter stands.
+   * The keys this roll spends: those the closing head seats, and the revealed keys of chairs that left. The rite
+   * retires them once the rolled charter stands.
    */
-  readonly spent:         readonly string[];
-  /** The keys this arming minted: a rite whose roll refuses retires them. */
-  readonly minted:        readonly string[];
+  readonly spent:      readonly string[];
+  /** The keys this arming adopted or minted: a rite whose roll refuses retires them. */
+  readonly minted:     readonly string[];
 }
 
 /**
- * ARM A ROLL. It finds the next key-set the standing head committed among this vessel's own rows and seats the
- * chairs that STAND: a chair whose face held a seat at the closing head seats its committed key, a chair that
- * joined seats a fresh key, and a chair nobody stands for drops. Each seated chair's face then takes the key
- * after, and the digest of that set answers. It writes no charter and signs nothing.
+ * ARM A ROLL from the cards a person typed back. Each card's key must answer a digest the standing head committed,
+ * and the digest's place names the chair: digest i commits the successor of the i-th sorted seated key, so the
+ * revealed key becomes a seat row of that key's face. The chairs that STAND then seat: a chair whose card revealed
+ * seats its revealed key, any other chair that stands seats a fresh key and signs by possession, and a chair
+ * nobody stands for drops. It writes no charter and signs nothing. Every refusal lands before any row moves.
  */
-export async function armRoll(opts: { readonly threshold?: number } = {}): Promise<ArmedRoll> {
+export async function armRoll(opts: { readonly cards: readonly Uint8Array[]; readonly threshold?: number }): Promise<ArmedRoll> {
   const { doc, head } = standingHead("roll from");
-  if (head.nextKeyCommit.length === 0) {
-    throw refuse("rotation-unarmed", "rotation unarmed — the head epoch pre-committed no next key-set, so no roll from it stands licensed");
+  if (head.nextKeyDigests.length === 0) {
+    throw refuse("rotation-unarmed", "rotation unarmed — the head epoch pre-committed no next keys, so no roll from it stands licensed");
   }
-  const closing = seatedKeysOf(doc).map(lower);
+  const closing = [...new Set(seatedKeysOf(doc).map(lower))].sort();
   const closingFaces = facesOfSeats(closing);
-  await settleSeats(closingFaces);
-  const committed = await committedNextSeats(closing, doc.threshold, head.nextKeyCommit);
-  if (committed === null) {
-    throw refuse("reveal-unheld", "this vessel holds no key-set the standing head pre-committed, so it reveals none — the next keys rest on the vessel that armed that head");
+  await refuseBorrowedSeats(closing);
+  // THE CARDS READ BEFORE ANY ROW MOVES: each answers a committed digest, once, for a seat this vessel holds.
+  const revealed = new Map<number, Uint8Array>();
+  for (const card of opts.cards) {
+    if (!(card instanceof Uint8Array) || card.length !== 32) throw refuse("card-unreadable", "a cold-key card holds 32 bytes");
+    const digest = seatNextDigest((await coldKeyFromSeed(card)).verifyingKey);
+    const slot = head.nextKeyDigests.indexOf(digest);
+    if (slot < 0) throw refuse("card-not-committed", "a card answers no digest the standing head committed — a card of another chair's generation, another charter, or a slip of the pen");
+    if (revealed.has(slot)) throw refuse("card-twice", "two cards answer one chair's digest");
+    revealed.set(slot, card);
   }
-  await refuseBorrowedSeats([...closing, ...committed]);
-  const nextOfFace = new Map<number, string>(closingFaces.map((face, slot) => [face, committed[slot]!]));
-
-  // THE ROSTER AND ITS RULE SETTLE BEFORE ANY KEY MINTS, so a refusal leaves no row behind.
+  if (revealed.size < head.nextThreshold) {
+    throw refuse("cards-short-of-the-revealed-quorum", `the head committed ${head.nextKeyDigests.length} chair(s) and a roll reveals ${head.nextThreshold} of them — ${revealed.size} card(s) answered`);
+  }
   const chairs = await standingChairs();
   if (chairs.length === 0) {
     throw refuse("no-chair-stands", "no persona stands for a chair — a rotation seats the roster that STANDS, and none does. Stand them first: lares persona new <index> --name '<label>' --seat [--chair '<chair label>']");
   }
   const threshold = thresholdFor(opts.threshold, doc, chairs.length);
+  await settleSeats([...closingFaces, ...chairs.map(([index]) => index)]);
+
+  // ADOPT: each revealed key becomes a seat row of the face whose closing seat its digest committed.
   const minted: string[] = [];
-  const mint = async (face: number): Promise<string> => { const key = await mintSeatKey(face); minted.push(key); return key; };
+  const adoptedOfFace = new Map<number, string>();
+  for (const [slot, card] of revealed) {
+    const face = closingFaces[slot]!;
+    const key = await storeSeatKey(face, card);
+    minted.push(key);
+    adoptedOfFace.set(face, key);
+  }
   const kahu: NexusCharterKahu[] = [];
-  const faces: number[] = [];
   for (const [index, chair] of chairs) {
-    kahu.push({ displayName: chair, verifyingKey: nextOfFace.get(index) ?? await mint(index) });
-    faces.push(index);
+    let key = adoptedOfFace.get(index);
+    if (key === undefined) { key = await mintSeatKey(index); minted.push(key); }
+    kahu.push({ displayName: chair, verifyingKey: key });
   }
   const seatedKeys = kahu.map((k) => k.verifyingKey!);
-  const changed = threshold !== doc.threshold || seatedKeys.length !== committed.length || seatedKeys.some((k) => !committed.includes(k));
-  const next: string[] = [];
-  for (const face of faces) next.push(await mint(face));
   return {
-    kahu, seatedKeys, threshold,
-    revealed: changed ? { keys: committed, threshold: doc.threshold } : null,
-    signers: [...new Set([...seatedKeys, ...committed])],
-    nextKeyCommit: sealKeySetHash(next, threshold), minted,
-    spent: [...closing, ...committed.filter((k) => !seatedKeys.includes(k))],
+    kahu, seatedKeys, threshold, signers: seatedKeys, minted,
+    spent: [...closing, ...[...adoptedOfFace.values()].filter((k) => !seatedKeys.includes(k))],
   };
+}
+
+/** The marker a harness writes at a root it staged, and the route a staged root's custody founds under (both published). */
+const TEST_SCRATCH_MARKER = ".lar-test-scratch";
+const TEST_ROUTE_PASSPHRASE = "test-founding-passphrase";
+
+/**
+ * WHETHER A CARD'S READ-BACK STANDS IN. A person reads each cold-key card back on a terminal before the charter moves;
+ * a harness can type nothing, so on a STAGED test root the read-back stands in. A marker alone proves nothing: a
+ * marker copied onto a root sealed under another passphrase stands in for nothing, so the custody this vessel holds
+ * must also prove under the published test route. A miss there spends one unlock attempt, as any miss does.
+ */
+export async function readBackStandsIn(): Promise<boolean> {
+  const root = process.env["LAR_ROOT"];
+  if (!root || !existsSync(join(root, TEST_SCRATCH_MARKER))) return false;
+  const proof = await (await openedCustody()).proves([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
+  return proof.reading === "proves";
 }
 
 /** Which seat keys this vessel holds among `keys`, lower-case, in the order asked. Reads names alone. */
@@ -386,7 +336,7 @@ export function heldSeatsAmong(keys: readonly string[]): string[] {
 }
 
 /** Why a seat key asked to retire stays. */
-export type SeatKept = "seated" | "committed" | "crossing-open";
+export type SeatKept = "seated" | "crossing-open";
 
 /** The seat keys some standing record still needs, by why. Refuses where a record that might name one reads unwhole. */
 async function neededSeats(): Promise<ReadonlyMap<string, SeatKept>> {
@@ -407,27 +357,8 @@ async function neededSeats(): Promise<ReadonlyMap<string, SeatKept>> {
   const needed = new Map<string, SeatKept>();
   const pending = await readPending();
   for (const key of [...(pending?.oldKeys ?? []), ...(pending?.newKeys ?? [])]) needed.set(lower(key), "crossing-open");
-  const head = sealLineageHead(doc);
-  if (doc && head && head.nextKeyCommit.length > 0) {
-    // A COMMITMENT THIS VESSEL CANNOT NAME PROTECTS EVERYTHING: an unresolved set never reads as no set.
-    const committed = await committedNextSeats(seatedKahuKeys(doc), doc.threshold, head.nextKeyCommit);
-    if (committed === null) {
-      throw refuse("commitment-unresolved", "the standing head commits a next key-set this vessel cannot name among its rows — nothing retires while it might hold one.");
-    }
-    for (const key of committed) needed.set(key, "committed");
-  }
   for (const carried of readCarriedCharters(sealHome).values()) {
     for (const key of seatedKahuKeys(carried)) needed.set(lower(key), "seated");
-    // A carried head whose seats this vessel holds commits next keys that may rest here too: they stay, and a
-    // commitment there this vessel cannot name protects everything, as the primary's does.
-    const carriedHead = sealLineageHead(carried);
-    if (carriedHead && carriedHead.nextKeyCommit.length > 0 && seatedKahuKeys(carried).some((key) => heldSeatKey(lower(key)) !== null)) {
-      const committed = await committedNextSeats(seatedKahuKeys(carried), carried.threshold, carriedHead.nextKeyCommit);
-      if (committed === null) {
-        throw refuse("commitment-unresolved", "a carried head whose seats this vessel holds commits a next key-set this vessel cannot name among its rows — nothing retires while it might hold one.");
-      }
-      for (const key of committed) needed.set(key, "committed");
-    }
   }
   for (const key of seatedKahuKeys(doc)) needed.set(lower(key), "seated");
   return needed;
@@ -435,9 +366,8 @@ async function neededSeats(): Promise<ReadonlyMap<string, SeatKept>> {
 
 /**
  * RETIRE THE SEAT KEYS NOTHING NEEDS. Of `keys`, each one this vessel holds leaves unless a held charter seats
- * it (the primary or a carried one, as its doc reads), the standing head committed it as a next key, or a crossing
- * that stands open names it. A key no row holds reads as done. A charter that stands and reads torn, primary or
- * carried, refuses the whole act, and so does a standing commitment this vessel cannot name: nothing tells a
+ * it (the primary or a carried one, as its doc reads) or a crossing that stands open names it. A key no row holds
+ * reads as done. A charter that stands and reads torn, primary or carried, refuses the whole act: nothing tells a
  * needed key from a spent one there.
  */
 export async function retireSeats(keys: readonly string[]): Promise<{ readonly retired: readonly string[]; readonly kept: ReadonlyArray<{ readonly key: string; readonly why: SeatKept }> }> {
@@ -482,45 +412,45 @@ export async function signLicensedSealRoll(verifyingKey: string, image: Uint8Arr
   try { record = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(image)); } catch { record = null; }
   const f = record !== null && typeof record === "object" && !Array.isArray(record) ? record as Record<string, unknown> : null;
   const keys = f?.["keys"];
-  const shaped = f !== null && Object.keys(f).length === 5 && f["kind"] === SEAL_ROLL_DOMAIN
-    && typeof f["prevEpochCid"] === "string" && typeof f["next"] === "string"
+  const digests = f?.["nextKeyDigests"];
+  const shaped = f !== null && Object.keys(f).length === 6 && f["kind"] === CHARTER_SEAT_ROLL_DOMAIN
+    && typeof f["prevEpochCid"] === "string"
     && typeof f["threshold"] === "number" && Number.isInteger(f["threshold"]) && f["threshold"] >= 1
-    && Array.isArray(keys) && keys.length > 0 && keys.every((k): k is string => typeof k === "string" && HEX64.test(k));
+    && typeof f["nextThreshold"] === "number" && Number.isInteger(f["nextThreshold"])
+    && Array.isArray(keys) && keys.length > 0 && keys.every((k): k is string => typeof k === "string" && HEX64.test(k))
+    && Array.isArray(digests) && digests.every((d): d is string => typeof d === "string" && HEX64.test(d));
   if (!shaped || Buffer.compare(Buffer.from(canonicalJsonBytes(f)), Buffer.from(image)) !== 0) {
     throw refuse("not-a-roll", "this door signs a charter roll in its canonical spelling, and no other image");
   }
-  const roll = { prevEpochCid: f["prevEpochCid"] as string, next: f["next"] as string, threshold: f["threshold"] as number, keys: keys as string[] };
-  const { doc, head } = standingHead("roll from");
+  const roll = {
+    prevEpochCid: f["prevEpochCid"] as string, threshold: f["threshold"] as number, keys: keys as string[],
+    nextKeyDigests: digests as string[], nextThreshold: f["nextThreshold"] as number,
+  };
+  const { head } = standingHead("roll from");
   // THE STANDING STATE LICENSES THE ROLL, or nothing signs.
   if (roll.prevEpochCid !== head.epochCid) {
     throw refuse("roll-off-the-standing-head", "the roll steps from another epoch than the head this charter stands at; a root signs a roll from the standing head alone");
   }
-  if (head.nextKeyCommit.length === 0) {
-    throw refuse("rotation-unarmed", "the standing head pre-committed no next key-set, so no roll from it stands licensed");
+  if (head.nextKeyDigests.length === 0) {
+    throw refuse("rotation-unarmed", "the standing head pre-committed no next keys, so no roll from it stands licensed");
   }
   const weak = weakSeatOf(roll.keys);
   if (weak !== null) throw refuse("roll-holds-a-weak-key", `the roll seats a key the Ed25519 door refuses (${weak.refusal})`);
-  // THE REVEAL. A roll that seats exactly the committed set reveals it by itself. Any other roll changes seats,
-  // and its reveal stands as the committed set this vessel holds; the roll law then judges the step whole.
-  const committed = sealKeySetHash(roll.keys, roll.threshold) === head.nextKeyCommit
-    ? roll.keys.map(lower)
-    : await committedNextSeats(seatedKeysOf(doc), doc.threshold, head.nextKeyCommit);
-  if (committed === null) {
-    throw refuse("reveal-mismatch", "the roll seats another key-set than the one the standing head pre-committed, and this vessel holds no key-set that head committed");
+  // THE REVEAL: the seats whose next key the head committed, at least the head's count of them.
+  const revealedSeats = roll.keys.filter((k) => head.nextKeyDigests.includes(seatNextDigest(lower(k))));
+  if (revealedSeats.length < head.nextThreshold) {
+    throw refuse("reveal-short", "the roll reveals fewer of the seats the standing head committed than that head's count");
   }
-  if (!roll.keys.some((k) => lower(k) === signer) && !committed.includes(signer)) {
-    throw refuse("signer-unseated", "that seat sits neither in the roll's key-set nor in the set the standing head committed, so it signs no part of the roll");
+  if (!roll.keys.some((k) => lower(k) === signer)) {
+    throw refuse("signer-unseated", "that seat sits outside the roll's key-set, so it signs no part of the roll");
   }
-  // THE ROLL SEATS AND COMMITS ONLY WHAT THIS VESSEL'S ARMING HOLDS. Every key the roll seats rests here as a seat
-  // row, and its forward commitment names a set that rests here too, so no hand of this vessel signs a roster or a
-  // successor some other hand chose.
+  // THE ROLL SEATS ONLY KEYS THIS VESSEL HOLDS, and re-arms every seat it seats.
   if (!roll.keys.every((k) => heldSeatKey(lower(k)) !== null)) {
     throw refuse("roll-seats-an-unheld-key", "the roll seats a key that rests in no seat row on this vessel, so this vessel's hands sign no part of it");
   }
-  // The forward set takes no key the closing head seats: a successor never commits a key already spent.
-  const following = roll.next.length === 0 ? null : await committedNextSeats(roll.keys.map(lower), roll.threshold, roll.next);
-  if (following === null || following.some((k) => seatedKeysOf(doc).map(lower).includes(k))) {
-    throw refuse("roll-commits-an-unheld-set", "the roll's forward commitment names no key-set this vessel's arming holds, so this vessel's hands sign no part of it");
+  const following = roll.nextKeyDigests;
+  if (following.length !== new Set(roll.keys.map(lower)).size || new Set(following).size !== following.length || roll.nextThreshold !== roll.threshold) {
+    throw refuse("roll-unarmed-successor", "the roll re-arms its seats short of one distinct digest each under its own threshold, so the chain would stall at the head it opens");
   }
   return { signer, sig: await signAsSeatHex(signer, image) };
 }

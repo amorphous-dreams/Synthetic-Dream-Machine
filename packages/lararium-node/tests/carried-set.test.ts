@@ -13,6 +13,7 @@
  *   · the primary's own charter, or a torn one, refuses to land as a carried charter.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -70,8 +71,23 @@ function partnerHands(keys: readonly string[]): { signer: string; sign: (b: Uint
 
 const partnerLabels = (keys: readonly string[]): string[] => keys.map((_, i) => `Partner ${i}`);
 
-/** A partner charter at genesis: two of its seats sign, and it names the same seats at three for its first roll. */
-const partnerGenesis = (keys: string[]): HeldCharter => heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
+/**
+ * The partner's seats at generation `g`: generation 0 names `keys`; each later one draws fresh seeds off the first
+ * key (and `fork`), so no roll re-seats a key an earlier roll seated. Each seed lands in `seedOf`, so its hand signs.
+ */
+function partnerGeneration(keys: readonly string[], g: number, fork = 0): string[] {
+  if (g === 0) return [...keys];
+  return keys.map((_, i) => {
+    const seed = Uint8Array.from(createHash("sha256").update(`carried-set|partner|${keys[0]}|${g}|${fork}|${i}`).digest());
+    const der = Buffer.concat([Buffer.from("302e020100300506032b657004220420", "hex"), Buffer.from(seed)]);
+    const pub = Buffer.from((createPublicKey(createPrivateKey({ key: der, format: "der", type: "pkcs8" })).export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
+    seedOf.set(pub, seed);
+    return pub;
+  });
+}
+
+/** A partner charter at genesis: two of its seats sign, and it names the next generation's seats for its first roll. */
+const partnerGenesis = (keys: string[]): HeldCharter => heldCharter({ keys, threshold: 2, successors: { keys: partnerGeneration(keys, 1), threshold: 2 } });
 
 /** A partner Nexus at genesis only: one epoch, no roll. */
 function genesisCharter(keys: string[]): { doc: NexusDoc; lineage: readonly SealEpoch[] } {
@@ -80,15 +96,15 @@ function genesisCharter(keys: string[]): { doc: NexusDoc; lineage: readonly Seal
 }
 
 /**
- * A partner Nexus with a signed lineage that alternates its quorum between 2 and 3 over the same seats, so
- * each rotation seats what its predecessor named, under those seats' hands. `fork` varies what the last
- * rotation names for the roll after it.
+ * A partner Nexus with a signed lineage that rolls to a fresh generation of seats at each step, so each rotation
+ * seats what its predecessor named, under those seats' hands. `fork` varies what the last rotation names for the
+ * roll after it.
  */
 async function lineageCharter(keys: string[], depth: number, fork = 0): Promise<{ doc: NexusDoc; lineage: readonly SealEpoch[] }> {
   let standing = partnerGenesis(keys);
   for (let d = 1; d < depth; d++) {
-    const named = d === depth - 1 && fork > 0 ? 1 + fork : standing.threshold;
-    standing = await standing.roll(partnerHands(keys), { keys, threshold: named });
+    const named = partnerGeneration(keys, d + 1, d === depth - 1 ? fork : 0);
+    standing = await standing.roll(partnerHands(partnerGeneration(keys, d)), { keys: named, threshold: 2 });
   }
   return { doc: standing.doc({ labels: partnerLabels(keys) }), lineage: standing.chain };
 }

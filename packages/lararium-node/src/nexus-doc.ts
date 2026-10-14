@@ -130,13 +130,18 @@ function coerceSealLineage(raw: unknown): SealEpoch[] | "torn" | undefined {
     const e = item as Record<string, unknown>;
     if (typeof e["epochCid"]      !== "string")    return "torn";
     if (typeof e["keySetHash"]    !== "string")    return "torn";
-    if (typeof e["nextKeyCommit"] !== "string")    return "torn";
+    // The previous charter shape had one commitment for the whole successor set. Keep it
+    // distinguishable at the document boundary so callers can refuse it explicitly.
+    if (Object.prototype.hasOwnProperty.call(e, "nextKeyCommit")) return "torn";
+    if (!Array.isArray(e["nextKeyDigests"]) || !(e["nextKeyDigests"] as unknown[]).every((d) => typeof d === "string" && /^[0-9a-f]{64}$/.test(d))) return "torn";
+    if (!Number.isInteger(e["nextThreshold"]) || (e["nextThreshold"] as number) < 0) return "torn";
     const prev = e["prevEpochCid"];
     if (prev !== null && typeof prev !== "string") return "torn";
     const epoch: SealEpoch = {
       epochCid:      e["epochCid"] as string,
       keySetHash:    e["keySetHash"] as string,
-      nextKeyCommit: e["nextKeyCommit"] as string,
+      nextKeyDigests: [...(e["nextKeyDigests"] as string[])],
+      nextThreshold: e["nextThreshold"] as number,
       prevEpochCid:  (prev ?? null) as string | null,
     };
     if (e["roll"] === undefined) { lineage.push(epoch); continue; }
@@ -173,10 +178,8 @@ function coerceSealRoll(raw: unknown): SealRoll | "torn" {
     if (typeof q["signer"] !== "string" || typeof q["sig"] !== "string") return "torn";
     signatures.push({ signer: q["signer"], sig: q["sig"] });
   }
-  if (r["revealed"] === undefined) return { ...seated, signatures };
-  const revealed = coerceKeySet(r["revealed"]);
-  if (revealed === "torn") return "torn";
-  return { ...seated, revealed, signatures };
+  if (Object.prototype.hasOwnProperty.call(r, "revealed")) return "torn";
+  return { ...seated, signatures };
 }
 
 /** Fold the three read blocks into one composed `NexusDoc`, or null when seal or kahu fails its guards. */
@@ -238,6 +241,21 @@ function readBody(bagsDir: string): string | null {
  */
 export function nexusCharterStands(bagsDir: string): boolean {
   return existsSync(nexusCharterDocPath(bagsDir));
+}
+
+/** What stands at a charter path: nothing, a whole charter, a torn one, or one written in the earlier charter shape. */
+export type NexusCharterShape = "absent" | "whole" | "torn" | "earlier-shape";
+
+/** Classify the charter at the same path used by `readNexusDoc`. */
+export function nexusCharterShape(bagsDir: string): NexusCharterShape {
+  const body = readBody(bagsDir);
+  if (body === null) return existsSync(nexusCharterDocPath(bagsDir)) ? "torn" : "absent";
+  const seal = readFence(body, SEAL_BLOCK);
+  if (typeof seal === "object" && seal !== null) {
+    const lineage = (seal as Record<string, unknown>)["sealLineage"];
+    if (Array.isArray(lineage) && lineage.some((e) => typeof e === "object" && e !== null && Object.prototype.hasOwnProperty.call(e, "nextKeyCommit"))) return "earlier-shape";
+  }
+  return parseNexusDoc(body) === null ? "torn" : "whole";
 }
 
 /**

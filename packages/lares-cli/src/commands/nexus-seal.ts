@@ -3,11 +3,11 @@
  * chain, and the growth rite that records a crossing.
  *
  * ── A SEAT HOLDS ITS OWN KEY, AND THE RITE ARMS ITSELF ──────────────────────────────────────────
- * A chair's key mints behind the custody door (`seat.arm-genesis`, `seat.arm-roll`), apart from every persona
- * root and every dialing leaf, and so does the chair's NEXT key. This door names acts and holds public halves
- * alone: it takes no key and no commitment from its caller, writes the charter those acts arm, and asks the door
- * to retire the seat keys the written charter left behind. Two inner functions, `armGenesis` and `armRoll`, hold
- * every line that says how a head commits its successors.
+ * A chair's key mints behind the custody door (`seat.arm-genesis`), apart from every persona root and every
+ * dialing leaf. A chair's NEXT key mints here, in this process, as a COLD key on a card: the charter commits one
+ * digest per seat, the card prints once, the person reads it back before the charter moves, and no next key rests
+ * on the vessel. A roll takes the cards back (`seat.arm-roll` adopts each revealed key as its chair's seat key).
+ * Two inner functions, `armGenesis` and `armRoll`, hold every line that says how a head commits its successors.
  *
  * ── WHY THE CHAIN IS PRE-ROTATED ────────────────────────────────────────────────────────────────
  * Every epoch commits to the digest of the key-set that will REPLACE it, before that key-set is ever
@@ -43,7 +43,8 @@ import {
 } from "@lararium/node";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
-  genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, seatedKahuKeys,
+  genesisCharterEpoch, rotateSealEpoch, seatedKahuKeys,
+  mintColdKey, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode, ColdKeyCardError, type SealNext,
   federationPostureFromDoc,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats, type RotateResult,
   type CharterSealState, seatFingerprint,
@@ -58,7 +59,8 @@ import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { sealedAct } from "../sealed-act-door.js";
-import { sealHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats } from "../sealed-rows.js";
+import { sealHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-rows.js";
+import { canPromptSecret, promptSecret } from "../prompt-secret.js";
 
 /** A refusal the operator can fix by retyping — rendered as `usage`, never as an internal error. */
 class UsageError extends Error {}
@@ -96,18 +98,18 @@ function sealedCharterOrRefuse(sealHome: string, act: string): { doc: NexusDoc; 
 }
 
 const SEAL_USAGE: readonly string[] = [
-  "usage: lares nexus seal <seat | rotate | commit | show | export | import | grow>",
+  "usage: lares nexus seal <seat | rotate | show | export | import | grow>",
   "",
   "  seat    form the roster from the personas that STOOD for a chair, give each chair a seat key",
-  "          of its own, and establish the GENESIS epoch over those keys. The rite arms itself: each",
-  "          chair's next key mints sealed beside its seat key, and the genesis commits that set.",
+  "          of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints",
+  "          as a cold key on a card: the card prints once, you type it back, and the genesis commits",
+  "          one digest per chair. No next key rests on this machine.",
   "          [--threshold <k>]            the quorum rule (default: majority of those that stood)",
-  "  rotate  seat the next key-set the head committed, held on this vessel, and advance the chain.",
-  "          The roster becomes exactly what STANDS — the succession door: a kahu steps down by",
-  "          no longer standing, a new one takes a chair by standing and signs with a fresh key.",
-  "          The hands the head committed sign every roll, so no seat moves without them.",
+  "  rotate  type back each chair's card: each revealed key becomes its chair's seat key, and the",
+  "          chain advances. The roster becomes exactly what STANDS — the succession door: a kahu",
+  "          steps down by no longer standing, a new one takes a chair by standing and signs with a",
+  "          fresh key. Fresh cards print for the rolled head, and you type them back.",
   "          [--threshold <k>]  the quorum rule for the new roster (default: majority)",
-  "  commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>",
   "  show    read the kahu quorum's seats + chain head + quorum verdict + the carried set",
   "  import <file>          land a charter at the primary path — only where none stands, or the same one",
   "  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for",
@@ -159,7 +161,6 @@ export async function cmdSeal(args: ParsedArgs): Promise<number> {
     switch (sub) {
       case "seat":    return await sealSeat(args);
       case "rotate":  return await sealRotate(args);
-      case "commit":  return sealCommit(args);
       case "show":    return await sealShow(args);
       case "export":  return sealExport(args);
       case "import":  return await sealImport(args);
@@ -199,49 +200,144 @@ function askedThreshold(args: ParsedArgs): number | undefined {
 // outside them names a commitment, so a change to how a head commits edits these bodies and no line beside them.
 
 /** Whether a head commits successors at all. */
-const headArmed = (head: SealEpoch | null | undefined): boolean => Boolean(head) && head!.nextKeyCommit.length > 0;
+const headArmed = (head: SealEpoch | null | undefined): boolean => Boolean(head) && head!.nextKeyDigests.length > 0;
 
-/** What an arming hands the rite: the roster to write, and the epoch it arms (null where no epoch roots). */
+/** One chair's cold next key, minted in this process. Its card prints once; its seed zero-fills once read back. */
+interface ColdCard { readonly chair: string; readonly seed: Uint8Array; readonly digest: string }
+
+/** What an arming hands the rite: the roster to write, and the cards of the next keys its epoch commits. */
 interface ArmedSeat {
   readonly kahu:       NexusCharterKahu[];
   readonly seatedKeys: string[];
   readonly threshold:  number;
+  readonly cards:      readonly ColdCard[];
   /** Seat keys the rite asks the door to retire once the charter it wrote stands. */
   readonly spent:      readonly string[];
-  /** Seat keys this arming minted: a rite that writes nothing after all asks the door to retire them. */
+  /** Seat keys this arming minted or adopted: a rite that writes nothing after all asks the door to retire them. */
   readonly minted:     readonly string[];
 }
 
 /**
- * ARM A GENESIS. The door gives each standing chair a seat key and a next key, both minted behind it, and
- * answers the roster and the digest of the next set; the genesis epoch binds the seated keys and commits that
- * digest. Below the quorum rule no epoch roots, and nothing arms.
+ * Mint one cold key per seated key, in the SORTED order of the seated keys, and the commitment they make: digest i
+ * commits the successor of the i-th sorted seated key, under the roster's own threshold.
+ */
+async function mintColdCards(kahu: readonly NexusCharterKahu[], seatedKeys: readonly string[], threshold: number): Promise<{ cards: ColdCard[]; next: SealNext }> {
+  const chairOf = new Map(kahu.filter((k) => k.verifyingKey).map((k) => [k.verifyingKey!.toLowerCase(), k.displayName]));
+  const cards: ColdCard[] = [];
+  for (const key of [...new Set(seatedKeys.map((k) => k.toLowerCase()))].sort()) {
+    const cold = await mintColdKey();
+    cards.push({ chair: chairOf.get(key) ?? "a chair", seed: cold.seed, digest: cold.digest });
+  }
+  return { cards, next: { digests: cards.map((c) => c.digest), threshold } };
+}
+
+/**
+ * ARM A GENESIS. The door gives each standing chair a seat key minted behind it and answers the roster; this
+ * process mints each seated chair's cold next key, and the genesis commits their digests. Below the quorum rule no
+ * epoch roots, and no card mints.
  */
 async function armGenesis(args: ParsedArgs): Promise<ArmedSeat & { readonly genesis: SealEpoch | null }> {
   const armed = await riteStep(() => armGenesisSeats(askedThreshold(args)));
   const seatedKeys = [...armed.seatedKeys];
-  const genesis = seatedKeys.length >= armed.threshold ? genesisCharterEpoch(seatedKeys, armed.threshold, armed.nextKeyCommit) : null;
-  return { kahu: armed.kahu.map((k) => ({ ...k })), seatedKeys, threshold: armed.threshold, genesis, spent: armed.superseded, minted: armed.minted };
+  const kahu = armed.kahu.map((k) => ({ ...k }));
+  if (seatedKeys.length < armed.threshold) return { kahu, seatedKeys, threshold: armed.threshold, genesis: null, cards: [], spent: armed.superseded, minted: armed.minted };
+  const { cards, next } = await mintColdCards(kahu, seatedKeys, armed.threshold);
+  const genesis = genesisCharterEpoch(seatedKeys, armed.threshold, next);
+  return { kahu, seatedKeys, threshold: armed.threshold, genesis, cards, spent: armed.superseded, minted: armed.minted };
 }
 
 /**
- * ARM A ROLL. The door finds the key-set the head committed among this vessel's own seat keys, seats the chairs
- * that stand, mints the set after, and answers the roster, the reveal and the following digest. The hands it
- * names sign the step through the door, each as its own seat; the roll law judges the signed step whole.
+ * ARM A ROLL. The person's cards cross the custody door, where each revealed key that answers a digest the head
+ * committed becomes its chair's seat key; the door answers the roster that stands. This process mints the rolled
+ * head's cold cards, and the seated hands sign the step through the door, each as its own seat.
  */
-async function armRoll(args: ParsedArgs, head: SealEpoch): Promise<ArmedSeat & { readonly result: RotateResult }> {
-  // A head that committed nothing licenses no roll: it refuses under the roll law's own name, before any key mints.
+async function armRoll(args: ParsedArgs, doc: NexusDoc, head: SealEpoch): Promise<ArmedSeat & { readonly result: RotateResult }> {
+  // A head that committed nothing licenses no roll: it refuses under the roll law's own name, before any card reads.
   if (!headArmed(head)) {
-    return { kahu: [], seatedKeys: [], threshold: 0, spent: [], minted: [],
-      result: { ok: false, code: "rotation-unarmed", reason: "rotation unarmed — the head epoch pre-committed no next key-set" } };
+    return { kahu: [], seatedKeys: [], threshold: 0, cards: [], spent: [], minted: [],
+      result: { ok: false, code: "rotation-unarmed", reason: "rotation unarmed — the head epoch pre-committed no next keys" } };
   }
-  const armed = await riteStep(() => armRollSeats(askedThreshold(args)));
+  const seeds = await gatherCards(args, head.nextKeyDigests.length);
+  let armed: Awaited<ReturnType<typeof armRollSeats>>;
+  try { armed = await riteStep(() => armRollSeats(seeds, askedThreshold(args))); }
+  finally { for (const seed of seeds) seed.fill(0); }
   const seatedKeys = [...armed.seatedKeys];
-  const seat = armed.revealed
-    ? { keys: seatedKeys, threshold: armed.threshold, revealed: { keys: [...armed.revealed.keys], threshold: armed.revealed.threshold } }
-    : { keys: seatedKeys, threshold: armed.threshold };
-  const result = await riteStep(() => rotateSealEpoch(head, seat, armed.nextKeyCommit, armed.signers.map(sealHand)));
-  return { kahu: armed.kahu.map((k) => ({ ...k })), seatedKeys, threshold: armed.threshold, result, spent: armed.spent, minted: armed.minted };
+  const kahu = armed.kahu.map((k) => ({ ...k }));
+  const { cards, next } = await mintColdCards(kahu, seatedKeys, armed.threshold);
+  const result = await riteStep(() => rotateSealEpoch(head, { keys: seatedKeys, threshold: armed.threshold }, next,
+    armed.signers.map(sealHand), (doc.sealLineage ?? []).slice(0, -1)));
+  return { kahu, seatedKeys, threshold: armed.threshold, result, cards, spent: armed.spent, minted: armed.minted };
+}
+
+/**
+ * The cards a roll reveals. On a terminal the rite asks for each chair's card in turn, and a blank line skips one.
+ * The `--cold-key <code,code,…>` flag stands in for the terminal on a staged test root alone: a card typed into a
+ * flag on a live machine rests in the shell's history.
+ */
+async function gatherCards(args: ParsedArgs, chairs: number): Promise<Uint8Array[]> {
+  const read = (code: string): Uint8Array => {
+    try { return coldKeySeedFromCode(code); }
+    catch (err) { if (err instanceof ColdKeyCardError) throw new UsageError(err.message); throw err; }
+  };
+  const flagged = args.options["cold-key"];
+  if (flagged !== undefined) {
+    if (!(await readBackStandsIn())) throw new UsageError("--cold-key stands in for the terminal on a staged test root alone: type each card when the rite asks for it");
+    return flagged.split(",").map((code) => code.trim()).filter((code) => code.length > 0).map(read);
+  }
+  if (!canPromptSecret()) throw new UsageError("a roll reads each chair's cold-key card on a terminal; run it on one");
+  const seeds: Uint8Array[] = [];
+  for (let i = 0; i < chairs; i++) {
+    const code = (await promptSecret(`cold-key card ${i + 1} of ${chairs} (blank to skip)`)).trim();
+    if (code.length > 0) seeds.push(read(code));
+  }
+  return seeds;
+}
+
+/**
+ * PRINT EACH CARD ONCE, AND READ IT BACK BEFORE THE CHARTER MOVES. A card a person mis-copies would freeze the
+ * chair at its next roll, so the rite asks each one back on the terminal and writes nothing until every card reads
+ * true. On a staged test root whose custody opens under the published test route the read-back stands in, and the
+ * JSON answer carries each card's code; anywhere else the answer carries the digest and the confirm phrase alone.
+ * Every seed zero-fills before this returns.
+ */
+async function readBack(args: ParsedArgs, cards: readonly ColdCard[], generation: number, charterFingerprint: string): Promise<Array<Record<string, string>>> {
+  try {
+    if (cards.length === 0) return [];
+    const standIn = await readBackStandsIn();
+    const json = args.flags["json"] === true;
+    // A LIVE CARD PRINTS ON THE TERMINAL ALONE: never into a JSON answer, a redirected stream or a log.
+    if (!standIn && (json || !canPromptSecret())) {
+      throw new UsageError(json
+        ? "the rite prints each chair's cold-key card on the terminal and asks it back there; run it without --json. Nothing was written."
+        : "the rite prints each chair's cold-key card and asks it back on a terminal; run it on one. Nothing was written.");
+    }
+    const say = (line: string): void => { process.stdout.write(`${line}\n`); };
+    for (const card of cards) {
+      if (!json) {
+        say(`── cold-key card · ${card.chair} ──`);
+        for (const line of coldKeyCardLines(card.seed, { purpose: "the next key of one chair; it rolls the charter once", chairLabel: card.chair, generation, charterFingerprint })) say(`  ${line}`);
+      }
+      if (standIn) continue;
+      for (let tries = 0; ; tries++) {
+        const typed = (await promptSecret(`type the card for ${card.chair} back`)).trim();
+        let back: Uint8Array | null = null;
+        try { back = coldKeySeedFromCode(typed); } catch { back = null; }
+        const same = back !== null && Buffer.from(back).equals(Buffer.from(card.seed));
+        back?.fill(0);
+        if (same) break;
+        if (tries >= 2) throw new UsageError(`the card for ${card.chair} read back three times and never matched — nothing was written; run the rite again`);
+        say("  that card reads otherwise — try again");
+      }
+    }
+    return cards.map((card) => {
+      const code = coldKeyCode(card.seed);
+      return standIn
+        ? { chair: card.chair, digest: card.digest, confirm: coldKeyConfirm(code), code }
+        : { chair: card.chair, digest: card.digest, confirm: coldKeyConfirm(code) };
+    });
+  } finally {
+    for (const card of cards) card.seed.fill(0);
+  }
 }
 
 /** Ask the door to retire seat keys the rite left behind; answers how many left and how many an open crossing keeps. */
@@ -274,7 +370,11 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   // from what STOOD, never from a list this build shipped; the threshold comes from the operator's `--threshold`,
   // else the charter's own, else a MAJORITY of the chairs.
   // A seed turns to a Nexus when a second operator seats their own key in a fresh charter. A contract moves no phase.
-  const { kahu, seatedKeys, threshold, genesis, spent } = await armGenesis(args);
+  const { kahu, seatedKeys, threshold, genesis, spent, minted, cards } = await armGenesis(args);
+  // THE CARDS READ BACK BEFORE THE CHARTER MOVES: a refusal here writes nothing, and the keys the arming minted retire.
+  let printed: Array<Record<string, string>>;
+  try { printed = await readBack(args, cards, 1, genesis ? genesis.epochCid.slice(-16) : ""); }
+  catch (err) { await retireSpent(minted); throw err; }
 
   // Establish the genesis epoch only once a quorum is seatable — below threshold, no epoch roots (inert).
   const sealLineage: SealEpoch[] | undefined = genesis ? [genesis] : undefined;
@@ -297,7 +397,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
     ok: true,
     data: {
       path, threshold: next.threshold, sealEpochCid, quorumSeated: quorum,
-      rotationArmed: armed, retiredSeatKeys: left.retired,
+      rotationArmed: armed, retiredSeatKeys: left.retired, cards: printed,
       kahu: kahu.map((k) => ({ displayName: k.displayName, seated: Boolean(k.verifyingKey), verifyingKey: k.verifyingKey,
         fingerprint: k.verifyingKey ? seatFingerprint(k.verifyingKey) : null })),
     },
@@ -320,7 +420,7 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
       if (quorum) {
         console.log(`  quorum STANDS — the antigen now reads a live roster rooted on the genesis epoch.`);
         console.log(`  seat keys:  each chair holds its own key, sealed on this vessel, apart from every persona root.`);
-        console.log(`  rotation:   ${armed ? "ARMED (each chair's next key rests sealed on this vessel, and the genesis commits that set)" : "UNARMED"}`);
+        console.log(`  rotation:   ${armed ? "ARMED (each chair's next key rests on its card alone, and the genesis commits one digest per chair)" : "UNARMED"}`);
       } else {
         const missing = kahu.filter((k) => !k.verifyingKey).map((k) => `"${k.displayName}"`);
         console.log(`  quorum SHORT (fail-closed; the antigen stays inert). Unseated: ${missing.join(", ") || "(none)"}`);
@@ -422,8 +522,9 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   // Neither needs an admin verb, because the hands the head COMMITTED sign every roll: a seat moves only under
   // the quorum the prior epoch named.
   // FAIL CLOSED: a roll the law refuses writes nothing, and the keys its arming minted retire.
-  const { kahu, seatedKeys, threshold, result, spent, minted } = await armRoll(args, head);
+  const { kahu, seatedKeys, threshold, result, spent, minted, cards } = await armRoll(args, doc, head);
   if (!result.ok) {
+    for (const card of cards) card.seed.fill(0);
     await retireSpent(minted);
     emit(args, {
       ok: false,
@@ -440,6 +541,10 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   const sealEpochCid = result.epoch.epochCid;
   const next: NexusDoc = { kind: doc.kind, threshold, sealEpochCid, sealLineage, kahu };
 
+  // THE ROLLED HEAD'S CARDS READ BACK BEFORE ANYTHING LANDS: the anchor and the charter wait on every card.
+  let printed: Array<Record<string, string>>;
+  try { printed = await readBack(args, cards, sealLineage.length, doc.sealLineage![0]!.epochCid.slice(-16)); }
+  catch (err) { await retireSpent(minted); throw err; }
   // THE ROLL ANCHOR LANDS FIRST. The new quorum signs the closing head, its key-set and the board's causal
   // heads, so an admit already in those heads carries across the roll; one the closing keys mint afterwards
   // does not. It lands BEFORE the charter moves: a roll whose anchor cannot land writes nothing, and an anchor
@@ -456,6 +561,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       anchored = output as unknown as NexusRollAnchorResult;
     } catch (err) {
       if (!(err instanceof NexusContractError)) throw err;
+      for (const card of cards) card.seed.fill(0);
       await retireSpent(minted);
       emit(args, {
         ok: false,
@@ -483,45 +589,22 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       chainDepth: sealLineage.length, rotationArmed: armed,
       quorumSeated: foundingQuorumSeated(next),
       rollAnchor: anchored ? { cid: anchored.anchorCid, parents: anchored.parents.length } : null,
-      retiredSeatKeys: left.retired, seatKeysKeptForCrossing: left.keptForCrossing,
+      retiredSeatKeys: left.retired, seatKeysKeptForCrossing: left.keptForCrossing, cards: printed,
     },
     human: () => {
       console.log(`nexus seal ROTATED → chain depth ${sealLineage.length} → ${path}`);
-      console.log(`  reveal VERIFIED against the prior epoch's pre-commitment; the committed hands SIGNED the roll.`);
+      console.log(`  each card's key VERIFIED against the digest the prior epoch committed; the seated hands SIGNED the roll.`);
       console.log(`  head epoch: ${sealEpochCid}`);
       console.log(`  prev link:  ${result.epoch.prevEpochCid}`);
       console.log(anchored
         ? `  anchor:     ${anchored.anchorCid.slice(0, 16)}… over ${anchored.parents.length} board head(s) — admits in its past carry to the new head`
         : `  anchor:     none — the closing head rooted no roster, so no admit stood to carry`);
       console.log(`  seat keys:  ${left.retired} of the closing head retired${left.keptForCrossing > 0 ? `; ${left.keptForCrossing} kept until the open crossing seals` : ""}`);
-      console.log(`  rotation:   ${armed ? "ARMED (each chair's next key rests sealed on this vessel)" : "UNARMED"}`);
+      console.log(`  rotation:   ${armed ? "ARMED (each chair's next key rests on its card alone)" : "UNARMED"}`);
     },
   });
   return 0;
 }
-
-function sealCommit(args: ParsedArgs): number {
-  const raw = args.options["keys"];
-  if (!raw) throw new UsageError("provide the next epoch's verifying keys: --keys <k1,k2,...> [--threshold <k>]");
-  const keys = raw.split(",").map((k) => k.trim().toLowerCase()).filter((k) => k.length > 0);
-  if (keys.length === 0) throw new UsageError("no keys supplied to --keys");
-  const thRaw = args.options["threshold"];
-  const threshold = thRaw !== undefined ? Number.parseInt(thRaw, 10) : keys.length;
-  if (!Number.isInteger(threshold) || threshold < 1) throw new UsageError(`--threshold must be a positive integer (got "${thRaw}")`);
-  const digest = sealKeySetHash(keys, threshold);
-
-  emit(args, {
-    ok: true,
-    data: { digest, keys: keys.length, threshold },
-    human: () => {
-      console.log(`key-set commitment digest (${keys.length} keys, ${threshold}-of-${keys.length}):`);
-      console.log(`  ${digest}`);
-      console.log(`  a digest to compare by hand: the seat and rotate rites commit their own next sets.`);
-    },
-  });
-  return 0;
-}
-
 
 /**
  * `lares nexus seal export` — the public charter material, for a partner who must consent to it.

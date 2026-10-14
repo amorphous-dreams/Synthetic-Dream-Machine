@@ -28,8 +28,10 @@
  *   · No row signs whatever it gets handed. The row that signs a charter roll as a seat (`seal.sign`) reads the
  *     charter that stands and signs only a roll its standing head licenses; the crossing rows take no image at
  *     all, and sign the crossing that stands open.
- *   · No row takes a seat's key or answers one. The arming rows mint a chair's keys behind this door and answer
- *     their public halves; the retirement row removes only a seat key nothing needs.
+ *   · No row answers a seat's key. The genesis arming mints a chair's key behind this door and answers its public
+ *     half; the retirement row removes only a seat key nothing needs. ONE STATED EXCEPTION takes a key IN: the roll's
+ *     arming takes the cold keys a person typed back from their cards, each of which the standing head committed,
+ *     adopts each as its chair's seat key, and answers public halves alone.
  *
  * Node-main only: a worker never imports this module.
  */
@@ -54,8 +56,8 @@ import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundl
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import {
-  SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readCrossing, retireSeats, sealCrossing,
-  signCrossing, signLicensedSealRoll, witnessCrossing,
+  SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
+  sealCrossing, signCrossing, signLicensedSealRoll, witnessCrossing,
 } from "./seal-ceremony.js";
 import { larSealHome } from "./vessel-paths.js";
 
@@ -189,6 +191,13 @@ const flag: Kind<boolean> = { label: "true or false", read: (v) => (typeof v ===
 const HEX64 = /^[0-9a-f]{64}$/;
 /** The most seat keys one row takes: a roster and the set beside it fit well inside. */
 export const SEAT_KEYS_ARG_LIMIT = 128;
+/** The most cards one roll takes: one per chair of a charter. */
+export const COLD_CARDS_ARG_LIMIT = 64;
+const coldCards: Kind<Uint8Array[]> = {
+  label: `the revealed cold keys a person typed back, each 64 lower hex, ${COLD_CARDS_ARG_LIMIT} at most`,
+  read: (v) => (Array.isArray(v) && v.length <= COLD_CARDS_ARG_LIMIT && v.every((k) => typeof k === "string" && /^[0-9a-f]{64}$/.test(k))
+    ? (v as string[]).map((k) => Uint8Array.from(Buffer.from(k, "hex"))) : undefined),
+};
 const seatKey: Kind<string> = { label: "a seat's public key, 64 lower hex", read: (v) => (typeof v === "string" && HEX64.test(v) ? v : undefined) };
 const seatKeys: Kind<string[]> = {
   label: `a list of seats' public keys, each 64 lower hex, ${SEAT_KEYS_ARG_LIMIT} at most`,
@@ -276,10 +285,11 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   persona.roots         the roster: each held handle-index with its root's public key, the worn index, the orphans
  *   persona.wear          wear the face at an index this vessel holds a root for
  *   seat.held             which of the public keys asked this vessel holds a seat key for: a reading of row names
- *   seat.arm-genesis      give each chair that stands a seat key and a next seat key, minted behind this door, and
- *                         answer the roster and the digest of the next set; it writes no charter
- *   seat.arm-roll         find the next key-set the standing head committed among this vessel's rows, seat the
- *                         chairs that stand, mint the set after, and answer the roster, the reveal and the digest
+ *   seat.arm-genesis      give each chair that stands a seat key minted behind this door, and answer the roster;
+ *                         the command mints each chair's next key as a card in its own process; it writes no charter
+ *   seat.arm-roll         take the cards a person typed back, adopt each revealed key the standing head committed
+ *                         as its chair's seat key, seat the chairs that stand, and answer the roster and its hands
+ *   seat.readback-stand-in  whether a card's read-back stands in: a staged root whose custody proves the test route
  *   seat.retire           retire the seat keys nothing needs: one no held charter seats, the standing head did not
  *                         commit and no open crossing names
  *   seal.sign             sign one charter roll as the seat a public key names, when the charter that stands
@@ -332,9 +342,12 @@ export const SEALED_ACTS = Object.freeze({
   "seat.arm-genesis": act({ threshold: optional(count) }, async (a) => ({
     ...(await ceremonyOrRefuse(armGenesis(a.threshold !== undefined ? { threshold: a.threshold } : {}))),
   })),
-  "seat.arm-roll": act({ threshold: optional(count) }, async (a) => ({
-    ...(await ceremonyOrRefuse(armRoll(a.threshold !== undefined ? { threshold: a.threshold } : {}))),
-  })),
+  "seat.arm-roll": act({ cards: coldCards, threshold: optional(count) }, async (a) => {
+    try {
+      return { ...(await ceremonyOrRefuse(armRoll({ cards: a.cards, ...(a.threshold !== undefined ? { threshold: a.threshold } : {}) }))) };
+    } finally { for (const card of a.cards) card.fill(0); }
+  }),
+  "seat.readback-stand-in": act({}, async () => ({ standIn: await readBackStandsIn() })),
   "seat.retire": act({ keys: seatKeys }, async (a) => ({ ...(await ceremonyOrRefuse(retireSeats(a.keys))) })),
   // THE SEAL CEREMONY'S HANDS (`seal-ceremony`). A seat signs a roll only when the charter that stands licenses
   // it, and marks a crossing only through the rite's own steps, which read the crossing that stands open. No row

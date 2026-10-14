@@ -21,13 +21,13 @@ import { verifyBcc } from "@lararium/memetic-frame";
 import { readCarrierShape } from "@lararium/tw5";
 import {
   emptyFoundingCharterDoc, genesisSealEpochCid, foundingRoster, foundingQuorumSeated,
-  genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, sealLineageHead, ed25519SignerFromSeed, hex,
+  genesisCharterEpoch, rotateSealEpoch, sealLineageHead, ed25519SignerFromSeed, hex, UNARMED, seatNextDigest,
   renameOwnPersona, ownPersonaPetname, declarePersonaHandle, standForKahuSeat,
   personasStandingForSeat, majorityThreshold, type NexusDoc, type NexusCharterKahu,
 } from "@lararium/mesh";
 import {
   readNexusDoc, writeNexusDoc, nexusCharterDocPath, renderNexusDoc, parseNexusDoc,
-  writeNexusSeal, writeNexusKahu, writeNexusPractice,
+  writeNexusSeal, writeNexusKahu, writeNexusPractice, nexusCharterShape,
 } from "../src/nexus-doc.js";
 import {
   generateOrLoadPersonaGroupRoot, listPersonaRoots, makeNodePersonaPetnameStore,
@@ -48,12 +48,13 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
 
   test("an absent doc reads null (fail closed → empty roster)", () => {
     expect(readNexusDoc(bags)).toBeNull();
+    expect(nexusCharterShape(bags)).toBe("absent");
     expect(foundingRoster(readNexusDoc(bags)).keys).toEqual([]);
   });
 
   test("a seated doc writes in house form and reads back faithfully", () => {
     const keys = [fixtureKey(0xa), fixtureKey(0xb)];
-    const genesis = genesisCharterEpoch(keys, 2, "");
+    const genesis = genesisCharterEpoch(keys, 2, UNARMED);
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
       sealEpochCid: genesis.epochCid, sealLineage: [genesis],
@@ -67,6 +68,8 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     expect(path).toBe(nexusCharterDocPath(bags));
     const back = readNexusDoc(bags);
     expect(back).toEqual(doc);
+    expect(nexusCharterShape(bags)).toBe("whole");
+    expect(parseNexusDoc(renderNexusDoc(doc))).toEqual(doc);
     // fail-closed math: 2 seated + epoch → quorum stands
     expect(foundingQuorumSeated(back)).toBe(true);
     expect(foundingRoster(back).keys.sort()).toEqual([...keys].sort());
@@ -90,6 +93,26 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     // CONTROL: torn bytes read null, never a partial guess.
     expect(parseNexusDoc(body.slice(0, Math.floor(body.length / 2)))).toBeNull();
     expect(parseNexusDoc("")).toBeNull();
+  });
+
+  test("charter shape distinguishes earlier, torn and whole epochs", () => {
+    const keys = [fixtureKey(0xc), fixtureKey(0xd)];
+    const genesis = genesisCharterEpoch(keys, 2, UNARMED);
+    const doc: NexusDoc = {
+      kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid,
+      sealLineage: [genesis], kahu: keys.map((verifyingKey, i) => ({ displayName: `Kahu ${i}`, verifyingKey })),
+    };
+    const whole = renderNexusDoc(doc);
+    const old = whole.replace('"nextKeyDigests": [],', '"nextKeyCommit": "legacy",');
+    writeFileSync(nexusCharterDocPath(bags), old, "utf8");
+    expect(nexusCharterShape(bags)).toBe("earlier-shape");
+    expect(readNexusDoc(bags)).toBeNull();
+
+    writeFileSync(nexusCharterDocPath(bags), whole.replace('"nextKeyDigests": [],', '"nextKeyDigests": ["xyz"],'), "utf8");
+    expect(nexusCharterShape(bags)).toBe("torn");
+    writeFileSync(nexusCharterDocPath(bags), whole.replace('"nextThreshold": 0,', ''), "utf8");
+    expect(nexusCharterShape(bags)).toBe("torn");
+    expect(nexusCharterShape(bags)).not.toBe("whole");
   });
 
   test("★ the unseated scaffold NAMES NOBODY, and reads back exactly as an ABSENT doc does ★", () => {
@@ -125,7 +148,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
 
   test("a pre-rotated CHAIN doc round-trips through disk + roots the roster on the head epoch (#68)", () => {
     const keys = [fixtureKey(0xa), fixtureKey(0xb)];
-    const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash([fixtureKey(0xc), fixtureKey(0xd)], 2));
+    const genesis = genesisCharterEpoch(keys, 2, { digests: [seatNextDigest(fixtureKey(0xc)), seatNextDigest(fixtureKey(0xd))], threshold: 2 });
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
       sealEpochCid: genesis.epochCid,
@@ -151,15 +174,15 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
       "```json nexus-charter\n" +
       JSON.stringify({ kind: NEXUS_DOC_DOMAIN, threshold: 2, kahu: [], sealLineage: [{ epoch: 0, epochCid: "e0" }] }) +
       "\n```\n", "utf8");
-    expect(readNexusDoc(bags)).toBeNull();                        // an epoch missing keySetHash/nextKeyCommit → torn → closed
+    expect(readNexusDoc(bags)).toBeNull();                        // an epoch missing the new commitment fields → torn → closed
   });
 
   /** A genesis over one pair, rolled signed to a second pair. */
   async function rolledDoc(): Promise<NexusDoc> {
     const seeds = [1, 2, 3, 4].map((n) => new Uint8Array(32).fill(60 + n));
     const keys = await Promise.all(seeds.map(async (s) => hex(await ed.getPublicKeyAsync(s))));
-    const genesis = genesisCharterEpoch(keys.slice(0, 2), 2, sealKeySetHash(keys.slice(2), 2));
-    const r = await rotateSealEpoch(genesis, { keys: keys.slice(2), threshold: 2 }, "",
+    const genesis = genesisCharterEpoch(keys.slice(0, 2), 2, { digests: keys.slice(2).map(seatNextDigest), threshold: 2 });
+    const r = await rotateSealEpoch(genesis, { keys: keys.slice(2), threshold: 2 }, { digests: keys.slice(0, 2).map(seatNextDigest), threshold: 2 },
       seeds.slice(2).map((s, i) => ({ signer: keys[i + 2]!, sign: ed25519SignerFromSeed(s) })));
     if (!r.ok) throw new Error(r.reason);
     return {
@@ -190,6 +213,8 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     // Tear the roll: a signature record without its sig.
     writeFileSync(path, whole.replace(/"sig": "[0-9a-f]+"/, '"sig": 7'), "utf8");
     expect(readNexusDoc(bags)).toBeNull();
+    writeFileSync(path, whole.replace('"signatures": [', '"revealed": {"keys": [], "threshold": 1},\n      "signatures": ['), "utf8");
+    expect(nexusCharterShape(bags)).toBe("torn");
   });
 });
 
@@ -241,7 +266,7 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
     }
     const seated    = kahu.map((k) => k.verifyingKey).filter((v): v is string => Boolean(v));
     const threshold = majorityThreshold(kahu.length);          // 3 chairs → 2, derived, never a constant
-    const genesis   = seated.length >= threshold ? genesisCharterEpoch(seated, threshold, "") : null;
+    const genesis   = seated.length >= threshold ? genesisCharterEpoch(seated, threshold, UNARMED) : null;
     const doc: NexusDoc = {
       kind: emptyFoundingCharterDoc().kind, threshold,
       sealEpochCid: genesis?.epochCid ?? null,

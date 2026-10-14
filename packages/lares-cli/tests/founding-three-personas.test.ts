@@ -21,7 +21,7 @@
  *   · a persona that declares a Handle but does NOT stand for a seat stays UNSEATED — standing is its own act.
  */
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
-import { mkdtempSync, rmSync, cpSync } from "node:fs";
+import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdPersona } from "../src/commands/persona.js";
@@ -68,6 +68,9 @@ describe("the three symmetric founding commands (CLI, real vault + disk)", () =>
     vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
     root = mkdtempSync(join(tmpdir(), "lares-founding3-"));
     setEnv("LAR_ROOT", root);                       // isolates bags + vault-state + petname store under one tree
+    // A STAGED root, as a harness stages one: the marker beside custody under the published test route, so the seat
+    // rite's card read-back stands in.
+    writeFileSync(join(root, ".lar-test-scratch"), "");
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
     // An isolated root carries no hearth true-name until the tracked genesis seed rides into it — the engine

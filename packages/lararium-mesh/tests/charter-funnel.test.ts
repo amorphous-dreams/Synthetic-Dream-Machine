@@ -43,10 +43,9 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "packages/lararium-mesh/tests/wax-stamp.test.ts":                     "roll-law",
   "packages/lararium-mesh/tests/charter-fixture.test.ts":               "roll-law",
   "packages/lararium-node/tests/seal-ceremony.test.ts":                 "roll-law",
-  // What the seat and rotate rites write and refuse, and what the door's arming answers them.
+  // What the seat and rotate rites write and refuse.
   "packages/lares-cli/tests/nexus-seal-lineage.test.ts":                "rite-law",
   "packages/lares-cli/tests/seal-rotate-refusal-codes.test.ts":         "rite-law",
-  "packages/lares-cli/tests/sealed-act-door.test.ts":                   "rite-law",
   "packages/lararium-node/tests/seat-arming.test.ts":                   "rite-law",
   // The charter doc's reader and writer, a torn doc among the vectors.
   "packages/lararium-mesh/tests/nexus-seal-seed.test.ts":               "doc-law",

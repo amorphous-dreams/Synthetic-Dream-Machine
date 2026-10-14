@@ -1,329 +1,99 @@
-/**
- * wax-stamp.test — the provenance trichotomy: a seal traces to the CURRENT charter, a PAST-authentic
- * one, or a SPOOF; the charter chain verifies content-addresses, hash-links, pre-rotation AND the signed
- * roll at every step; duplicity is detectable while fork-legitimacy is deliberately NOT decided.
- */
+/** The charter roll law binds positional cold successors and verifies every signed transition. */
 import { describe, test, expect } from "vitest";
-import * as ed25519 from "@noble/ed25519";
-import {
-  verifySealLineage, verifySealRoll, classifySeal, detectDuplicity,
-  mintWaxStamp, verifyWaxStampSig, singleKeySetHash,
-  sealKeySetHash, sealEpochCidOf, mintCharterEpoch, sealRollBytes,
-  genesisCharterEpoch, rotateSealEpoch, weakSeatOf,
-  type SealEpoch, type SealRollSigner, type WaxStamp,
-} from "../src/wax-stamp.js";
-import { foundingRoster, emptyFoundingCharterDoc } from "../src/nexus-seal-seed.js";
-import { IDENTITY_KEY, NOBODYS_SIGNATURE, torsionHand } from "./ed25519-torsion.js";
+import * as ed from "@noble/ed25519";
+import { hex } from "../src/crypto.js";
 import { ed25519SignerFromSeed } from "../src/auth-wire.js";
-import { SEAL_ROLL_DOMAIN } from "../src/domains.js";
+import { seatNextDigest } from "../src/cold-key-card.js";
+import { CHARTER_SEAT_ROLL_DOMAIN } from "../src/domains.js";
+import { genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, sealRollBytes, mintCharterEpoch,
+  verifySealRoll, verifySealLineage, classifySeal, detectDuplicity, weakSeatOf, type SealEpoch, type SealNext,
+  type SealRollSigner } from "../src/wax-stamp.js";
 
-const hexOf = (b: Uint8Array): string => Buffer.from(b).toString("hex");
+interface Hand { seed: Uint8Array; pub: string; signer: SealRollSigner }
+const hand = async (n: number): Promise<Hand> => { const seed = new Uint8Array(32).fill(n); const pub = await ed.getPublicKeyAsync(seed).then(hex); return { seed, pub, signer: { signer: pub, sign: b => ed25519SignerFromSeed(seed)(b) } }; };
+const nextFor = async (hands: readonly Hand[]): Promise<SealNext> => ({ digests: await Promise.all(hands.map(h => seatNextDigest(h.pub))).then(a => a.sort()), threshold: hands.length });
+const genesis = async (old: readonly Hand[], next: readonly Hand[]) => genesisCharterEpoch(old.map(h => h.pub), old.length, await nextFor(next));
+const roll = async (prev: SealEpoch, seats: readonly Hand[], then: readonly Hand[], history: readonly SealEpoch[] = []) => rotateSealEpoch(prev,
+  { keys: seats.map(h => h.pub), threshold: seats.length }, await nextFor(then), seats.map(h => h.signer), history);
 
-interface Hand { readonly seed: Uint8Array; readonly pub: string; readonly signer: SealRollSigner }
-async function hand(): Promise<Hand> {
-  const seed = ed25519.utils.randomSecretKey();
-  const pub = hexOf(await ed25519.getPublicKeyAsync(seed));
-  return { seed, pub, signer: { signer: pub, sign: ed25519SignerFromSeed(seed) } };
-}
-async function hands(n: number): Promise<Hand[]> { return Promise.all(Array.from({ length: n }, () => hand())); }
-const pubs = (hs: readonly Hand[]): string[] => hs.map((h) => h.pub);
-const signersOf = (hs: readonly Hand[]): SealRollSigner[] => hs.map((h) => h.signer);
+// Fixed seeds keep vectors repeatable and each generation disjoint.
+const batch = async (start: number, count: number) => Promise.all(Array.from({ length: count }, (_, i) => hand(start + i)));
 
-/** A lawful three-epoch chain: GEN seats, E1 rolls in signed, E2 rolls in signed. */
-async function lawfulChain(): Promise<{ chain: SealEpoch[]; GEN: Hand[]; E1: Hand[]; E2: Hand[]; E3: Hand[] }> {
-  const [GEN, E1, E2, E3] = await Promise.all([hands(2), hands(2), hands(2), hands(2)]);
-  const g = genesisCharterEpoch(pubs(GEN), 2, sealKeySetHash(pubs(E1), 2));
-  const r1 = await rotateSealEpoch(g, { keys: pubs(E1), threshold: 2 }, sealKeySetHash(pubs(E2), 2), signersOf(E1));
-  if (!r1.ok) throw new Error(`fixture: ${r1.reason}`);
-  const r2 = await rotateSealEpoch(r1.epoch, { keys: pubs(E2), threshold: 2 }, sealKeySetHash(pubs(E3), 2), signersOf(E2));
-  if (!r2.ok) throw new Error(`fixture: ${r2.reason}`);
-  return { chain: [g, r1.epoch, r2.epoch], GEN, E1, E2, E3 };
-}
-
-const stampUnder = (epochCid: string, sig = `sig-${epochCid}`): WaxStamp =>
-  ({ artifactHash: "art-1", epochCid, sealedAt: "itc:[0,4]", signature: sig });
-// A faithful sig-verify stub: the signature is "sig-<epochCid>" iff genuinely sealed under that epoch.
-const verifySig = (s: WaxStamp, e: SealEpoch): boolean => s.signature === `sig-${e.epochCid}`;
-
-describe("wax-stamp — charter-epoch provenance", () => {
-  test("verifySealLineage accepts a pre-rotated, hash-linked, signed lineage", async () => {
-    const { chain } = await lawfulChain();
-    expect(verifySealLineage(chain)).toBe(true);
+describe("charter seat roll", () => {
+  test("one-seat and two-seat controls verify complete lineages", async () => {
+    for (const n of [1, 2]) { const [g, e1, e2] = await Promise.all([batch(1, n), batch(10, n), batch(20, n)]); const a = await genesis(g!, e1!); const b = await roll(a, e1!, e2!); expect(b.ok).toBe(true); if (b.ok) expect(verifySealLineage([a, b.epoch])).toBe(true); }
   });
-
-  test("verifySealLineage rejects a broken hash-link, a moved cid, a genesis with a prev or a roll, and an empty chain", async () => {
-    const { chain } = await lawfulChain();
-    expect(verifySealLineage([{ ...chain[0]!, prevEpochCid: "x" }])).toBe(false);                 // genesis has a prev
-    expect(verifySealLineage([{ ...chain[0]!, roll: chain[1]!.roll! }])).toBe(false);             // genesis carries a roll
-    expect(verifySealLineage([chain[0]!, { ...chain[1]!, prevEpochCid: "wrong" }, chain[2]!])).toBe(false);   // hash-link
-    expect(verifySealLineage([chain[0]!, chain[1]!, { ...chain[2]!, epochCid: "epoch-forged" }])).toBe(false); // cid moved
-    expect(verifySealLineage([])).toBe(false);
+  test("a seat added by possession succeeds; a seat may drop while the revealed quorum signs", async () => {
+    const [g0, old, add, then3, then1] = await Promise.all([batch(1, 2), batch(10, 2), batch(12, 1), batch(20, 3), batch(30, 1)]);
+    const g = await genesisCharterEpoch(g0!.map(h => h.pub), 1, { digests: [...old!.map(h => seatNextDigest(h.pub))].sort(), threshold: 1 });
+    const added = await rotateSealEpoch(g, { keys: [...old!, ...add!].map(h => h.pub), threshold: 1 }, { ...(await nextFor(then3!)), threshold: 1 }, [...old!.map(h => h.signer), ...add!.map(h => h.signer)]);
+    expect(added.ok).toBe(true);
+    const dropped = await rotateSealEpoch(g, { keys: [old![0]!.pub], threshold: 1 }, await nextFor(then1!), [old![0]!.signer]);
+    expect(dropped.ok).toBe(true);
   });
-
-  test("a seal under the HEAD epoch reads CURRENT; under an ANCESTOR, PAST_AUTHENTIC", async () => {
-    const { chain } = await lawfulChain();
-    expect(classifySeal(stampUnder(chain[2]!.epochCid), chain, verifySig)).toBe("CURRENT");
-    expect(classifySeal(stampUnder(chain[1]!.epochCid), chain, verifySig)).toBe("PAST_AUTHENTIC");
-    expect(classifySeal(stampUnder(chain[0]!.epochCid), chain, verifySig)).toBe("PAST_AUTHENTIC");
+  test("an armed genesis rejects a successor rule with the wrong count, duplicate, digest or threshold", async () => {
+    const [a, b] = await Promise.all([batch(1, 2), batch(10, 2)]); const next = await nextFor(b!);
+    for (const bad of [{ digests: next.digests.slice(1), threshold: 2 }, { digests: [next.digests[0]!, next.digests[0]!], threshold: 2 }, { digests: ["A".repeat(64), next.digests[1]!], threshold: 2 }, { digests: next.digests, threshold: 1 }])
+      expect(() => genesisCharterEpoch(a!.map(h => h.pub), 2, bad)).toThrow(/roll-malformed/);
   });
-
-  test("SPOOF: an unknown epoch, a failed signature, or a broken chain", async () => {
-    const { chain } = await lawfulChain();
-    const head = chain[2]!.epochCid;
-    expect(classifySeal(stampUnder("epoch-unknown"), chain, verifySig)).toBe("SPOOF");            // no such epoch
-    expect(classifySeal(stampUnder(head, "forged"), chain, verifySig)).toBe("SPOOF");             // sig fails
-    const unsigned = [chain[0]!, chain[1]!, { ...chain[2]!, roll: { ...chain[2]!.roll!, signatures: [] } }];
-    expect(classifySeal(stampUnder(head), unsigned, verifySig)).toBe("SPOOF");                    // lineage broken
+  test("refusal vectors name each first broken clause", async () => {
+    const [g0, a, b, c] = await Promise.all([batch(1, 2), batch(10, 2), batch(20, 2), batch(30, 2)]);
+    const g = await genesis(g0!, a!), valid = await roll(g, a!, b!); if (!valid.ok) throw Error(valid.reason);
+    const good = valid.epoch;
+    expect(verifySealRoll(g, { ...good, roll: undefined })).toBe("roll-unsigned");
+    expect(verifySealRoll(g, { ...good, roll: { ...good.roll!, threshold: 3 } })).toBe("roll-malformed");
+    const weak = mintCharterEpoch({ ...good, keySetHash: sealKeySetHash(["00".repeat(32)], 1) }, { keys: ["00".repeat(32)], threshold: 1, signatures: [] });
+    expect(verifySealRoll(g, weak)).toBe("roll-holds-a-weak-key");
+    expect(verifySealRoll(g, mintCharterEpoch({ ...good, keySetHash: "bad" }, good.roll))).toBe("roll-key-set-unbound");
+    expect(verifySealRoll({ ...g, nextKeyDigests: [], nextThreshold: 0 }, good)).toBe("rotation-unarmed");
+    expect(verifySealRoll(g, mintCharterEpoch({ ...good, nextKeyDigests: [], nextThreshold: 0 }, good.roll))).toBe("roll-unarmed-successor");
+    const replay = mintCharterEpoch({ ...good, nextKeyDigests: g.nextKeyDigests }, good.roll);
+    expect(verifySealRoll(g, replay)).toBe("roll-respends-a-digest");
+    // An earlier epoch whose roll seated these very keys, under digests this roll does not re-spend.
+    expect(verifySealRoll(g, good, [{ ...good, nextKeyDigests: [], nextThreshold: 0 }])).toBe("roll-reuses-a-seated-key");
+    expect(verifySealRoll(g, { ...good, roll: { ...good.roll!, signatures: [] } })).toBe("roll-short-of-revealed-quorum");
+    const half = await roll(g, a!, c!); if (!half.ok) throw Error(half.reason);
+    expect(verifySealRoll(g, { ...half.epoch, roll: { ...half.epoch.roll!, signatures: half.epoch.roll!.signatures.slice(0, 1) } })).toBe("roll-short-of-revealed-quorum");
+    const addedForQuorum = await batch(41, 1), then3 = await batch(43, 3), all3 = [...a!, ...addedForQuorum!];
+    const bytes3 = sealRollBytes({ prevEpochCid: g.epochCid, keys: all3.map(h => h.pub), threshold: 3,
+      nextKeyDigests: (await nextFor(then3!)).digests, nextThreshold: 3 });
+    const sigs3 = await Promise.all(a!.map(async h => ({ signer: h.pub, sig: await h.signer.sign(bytes3) })));
+    const shortSeated = mintCharterEpoch({ keySetHash: sealKeySetHash(all3.map(h => h.pub), 3), nextKeyDigests: (await nextFor(then3!)).digests,
+      nextThreshold: 3, prevEpochCid: g.epochCid }, { keys: all3.map(h => h.pub), threshold: 3, signatures: sigs3 });
+    expect(verifySealRoll(g, shortSeated)).toBe("roll-short-of-seated-quorum");
+    const added = await batch(40, 1); const seated3 = [...a!, ...added!];   // three seats at two-of-three, re-armed three ways
+    const withAdded = await rotateSealEpoch(g, { keys: seated3.map(h => h.pub), threshold: 2 }, { ...(await nextFor(await batch(50, 3))), threshold: 2 }, seated3.map(h => h.signer)); if (!withAdded.ok) throw Error(withAdded.reason);
+    const noPop = { ...withAdded.epoch, roll: { ...withAdded.epoch.roll!, signatures: withAdded.epoch.roll!.signatures.filter(s => s.signer !== added![0]!.pub) } };
+    expect(verifySealRoll(g, noPop)).toBe("seat-change-without-proof-of-possession");
   });
-
-  test("duplicity: two SIGNED successors of one predecessor name that predecessor; a consistent pair is clean", async () => {
-    const { chain, E1, E3 } = await lawfulChain();
-    // The epoch-1 hands sign a SECOND successor — a different next commitment — from the same genesis.
-    const fork = await rotateSealEpoch(chain[0]!, { keys: pubs(E1), threshold: 2 }, sealKeySetHash(pubs(E3), 2), signersOf(E1));
-    if (!fork.ok) throw new Error(fork.reason);
-    const forked = [chain[0]!, fork.epoch];
-    expect(verifySealLineage(forked)).toBe(true);                       // both forks verify on their own…
-    expect(detectDuplicity(chain, forked)).toBe(chain[0]!.epochCid);    // …and together prove misbehavior at genesis
-    expect(detectDuplicity(chain, chain)).toBeNull();                   // the same lineage duplicates nothing
-    // Two distinct geneses share no predecessor: two lineages, never one controller's duplicity.
-    const other = genesisCharterEpoch(pubs(E3), 2, "");
-    expect(detectDuplicity(chain, [other])).toBeNull();
-    // NOTE: which fork is "legitimate" is NOT decided here — higher-order social acceptance, never a signature.
+  test("a lineage walks every earlier roll: a key a roll added by possession never seats again two rolls on", async () => {
+    const [g0, b, x, c, d] = await Promise.all([batch(1, 2), batch(10, 2), batch(15, 1), batch(20, 3), batch(30, 2)]);
+    const g = await genesis(g0!, b!);                                                  // commits B
+    const e1 = await rotateSealEpoch(g, { keys: [...b!, ...x!].map(h => h.pub), threshold: 2 }, { ...(await nextFor(c!)), threshold: 2 },
+      [...b!, ...x!].map(h => h.signer));                                              // seats B and X (by possession), commits C
+    if (!e1.ok) throw Error(e1.reason);
+    const e2 = await rotateSealEpoch(e1.epoch, { keys: c!.map(h => h.pub), threshold: 2 }, { ...(await nextFor([...d!, ...x!])), threshold: 2 },
+      c!.map(h => h.signer), [g]);                                                     // seats C, commits D and X again
+    if (!e2.ok) throw Error(e2.reason);
+    const e3 = await rotateSealEpoch(e2.epoch, { keys: [...d!, ...x!].map(h => h.pub), threshold: 2 }, { ...(await nextFor(await batch(40, 3))), threshold: 2 },
+      [...d!, ...x!].map(h => h.signer), [g, e1.epoch]);
+    expect(e3.ok ? null : e3.code).toBe("roll-reuses-a-seated-key");                   // X sat in e1's roll
+    // The same step, signed whole by every seated hand: only the earlier rolls tell it apart from a lawful one.
+    const seated = [...d!, ...x!], following = (await nextFor(await batch(50, 3))).digests;
+    const bytes = sealRollBytes({ prevEpochCid: e2.epoch.epochCid, keys: seated.map(h => h.pub), threshold: 2, nextKeyDigests: following, nextThreshold: 2 });
+    const signatures = await Promise.all(seated.map(async h => ({ signer: h.pub, sig: await h.signer.sign(bytes) })));
+    const stitched = mintCharterEpoch({ keySetHash: sealKeySetHash(seated.map(h => h.pub), 2), nextKeyDigests: following,
+      nextThreshold: 2, prevEpochCid: e2.epoch.epochCid }, { keys: seated.map(h => h.pub), threshold: 2, signatures });
+    expect(verifySealRoll(e2.epoch, stitched)).toBeNull();                              // CONTROL: against its predecessor alone it reads lawful
+    expect(verifySealLineage([g, e1.epoch, e2.epoch, stitched])).toBe(false);
+    expect(verifySealRoll(e2.epoch, stitched, [g, e1.epoch])).toBe("roll-reuses-a-seated-key");   // the lineage reads it so
   });
-});
-
-describe("wax-stamp R1 — a no-membership reader verifies provenance from the PUBLIC charter, no roster", () => {
-  test("the reader classifies CURRENT / PAST-AUTHENTIC / SPOOF from the public charter alone", async () => {
-    // Single-signer epochs: each epoch's key-set is one key at threshold 1.
-    const [k0, k1, k2, k3] = await hands(4);
-    const g = genesisCharterEpoch([k0!.pub], 1, sealKeySetHash([k1!.pub], 1));
-    const r1 = await rotateSealEpoch(g, { keys: [k1!.pub], threshold: 1 }, sealKeySetHash([k2!.pub], 1), [k1!.signer]);
-    if (!r1.ok) throw new Error(r1.reason);
-    const r2 = await rotateSealEpoch(r1.epoch, { keys: [k2!.pub], threshold: 1 }, sealKeySetHash([k3!.pub], 1), [k2!.signer]);
-    if (!r2.ok) throw new Error(r2.reason);
-    const CHARTER = [g, r1.epoch, r2.epoch];
-    expect(verifySealLineage(CHARTER)).toBe(true);
-
-    const inSet = (k: string, h: string): boolean => sealKeySetHash([k], 1) === h;
-    const sign = (h: Hand) => ed25519SignerFromSeed(h.seed);
-    const current = await mintWaxStamp({ artifactHash: "art-current", epoch: CHARTER[2]!, sealedAt: "itc:[8,12]", sign: sign(k2!) });
-    const currentOk = await verifyWaxStampSig(current, CHARTER[2]!, k2!.pub, inSet);
-    expect(classifySeal(current, CHARTER, () => currentOk)).toBe("CURRENT");
-
-    const past = await mintWaxStamp({ artifactHash: "art-past", epoch: CHARTER[1]!, sealedAt: "itc:[4,8]", sign: sign(k1!) });
-    const pastOk = await verifyWaxStampSig(past, CHARTER[1]!, k1!.pub, inSet);
-    expect(classifySeal(past, CHARTER, () => pastOk)).toBe("PAST_AUTHENTIC");
-
-    // A SPOOF: signed by a key the cited epoch does NOT authorize (k0 signing under the head epoch).
-    const spoof = await mintWaxStamp({ artifactHash: "art-spoof", epoch: CHARTER[2]!, sealedAt: "itc:[8,12]", sign: sign(k0!) });
-    const spoofOk = await verifyWaxStampSig(spoof, CHARTER[2]!, k0!.pub, inSet);
-    expect(spoofOk).toBe(false);
-    expect(classifySeal(spoof, CHARTER, () => spoofOk)).toBe("SPOOF");
-    void singleKeySetHash;
-  });
-
-  test("the public charter exposes KEYS/THRESHOLDS, never a roster or a sequence", async () => {
-    const { chain, E2 } = await lawfulChain();
-    expect(Object.keys(chain[0]!).sort()).toEqual(["epochCid", "keySetHash", "nextKeyCommit", "prevEpochCid"]);
-    for (const e of chain.slice(1)) {
-      expect(Object.keys(e).sort()).toEqual(["epochCid", "keySetHash", "nextKeyCommit", "prevEpochCid", "roll"]);
-      expect(Object.keys(e.roll!).sort()).toEqual(["keys", "signatures", "threshold"]);
-    }
-    // The roll carries the epoch's PUBLIC keys (charter material); the digest itself reveals nothing.
-    expect(chain[2]!.keySetHash).not.toContain(E2[0]!.pub);
-  });
-});
-
-describe("charter-epoch CHAIN minter — pre-rotation seat + SIGNED rotate ceremony", () => {
-  test("sealKeySetHash is order-blind + threshold-bound; sealEpochCidOf is tamper-evident; genesis reads epoch0-", () => {
-    const K = ["a".repeat(64), "b".repeat(64)];
-    expect(sealKeySetHash(K, 2)).toBe(sealKeySetHash([...K].reverse(), 2));
-    expect(sealKeySetHash(K, 2)).not.toBe(sealKeySetHash(K, 1));
-    const f = { keySetHash: "k0", nextKeyCommit: "k1", prevEpochCid: null };
-    expect(sealEpochCidOf(f)).toBe(mintCharterEpoch(f).epochCid);
-    expect(sealEpochCidOf(f)).toMatch(/^epoch0-[0-9a-f]{64}$/);
-    expect(sealEpochCidOf({ ...f, prevEpochCid: "p" })).toMatch(/^epoch-[0-9a-f]{64}$/);
-    expect(sealEpochCidOf({ ...f, nextKeyCommit: "TAMPERED" })).not.toBe(sealEpochCidOf(f));
-  });
-
-  test("the roll signs under its own domain, binding the predecessor, the seated set, the threshold and the next commitment", () => {
-    const parts = { prevEpochCid: "epoch0-x", keys: ["b".repeat(64), "a".repeat(64)], threshold: 2, nextKeyCommit: "n" };
-    const text = new TextDecoder().decode(sealRollBytes(parts));
-    expect(text).toContain(SEAL_ROLL_DOMAIN);
-    expect(sealRollBytes(parts)).toEqual(sealRollBytes({ ...parts, keys: [...parts.keys].reverse() }));   // order-blind
-    for (const moved of [{ prevEpochCid: "epoch0-y" }, { threshold: 1 }, { nextKeyCommit: "m" }, { keys: ["c".repeat(64)] }]) {
-      expect(sealRollBytes({ ...parts, ...moved })).not.toEqual(sealRollBytes(parts));
-    }
-  });
-
-  test("CONTROL — a lawful roll holds: genesis has no prev and no roll, the signed successor verifies", async () => {
-    const [GEN, E1, E2] = await Promise.all([hands(2), hands(2), hands(2)]);
-    const g = genesisCharterEpoch(pubs(GEN), 2, sealKeySetHash(pubs(E1), 2));
-    expect(g.prevEpochCid).toBeNull();
-    expect(g.roll).toBeUndefined();
-    expect(verifySealLineage([g])).toBe(true);
-
-    const r = await rotateSealEpoch(g, { keys: pubs(E1), threshold: 2 }, sealKeySetHash(pubs(E2), 2), signersOf(E1));
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-    expect(r.epoch.prevEpochCid).toBe(g.epochCid);
-    expect(r.epoch.keySetHash).toBe(sealKeySetHash(pubs(E1), 2));
-    expect(verifySealRoll(g, r.epoch)).toBeNull();
-    expect(verifySealLineage([g, r.epoch])).toBe(true);
-  });
-
-  test("★ a forged N+1′ built from the revealed PUBLIC keys and no private key REFUSES ★", async () => {
-    const { chain, E1, E3 } = await lawfulChain();
-    const [g, e1] = [chain[0]!, chain[1]!];
-    // The attacker knows E1's public keys (epoch 1 revealed them) and holds no E1 seed. It mints a
-    // competing epoch 1′ with its own next commitment, carrying a roll that names E1's keys.
-    const attacker = await hands(2);
-    const forgedFields = { keySetHash: sealKeySetHash(pubs(E1), 2), nextKeyCommit: sealKeySetHash(pubs(attacker), 2), prevEpochCid: g.epochCid };
-    const bytes = sealRollBytes({ prevEpochCid: g.epochCid, keys: pubs(E1), threshold: 2, nextKeyCommit: forgedFields.nextKeyCommit });
-    // Its best signatures: attacker keys claiming E1 signers, and E1's real signatures lifted off epoch 1.
-    const lifted = e1.roll!.signatures;
-    const claimed = await Promise.all(attacker.map(async (a, i) => ({ signer: E1[i]!.pub, sig: await a.signer.sign(bytes) })));
-    for (const signatures of [[], lifted, claimed]) {
-      const forged = mintCharterEpoch(forgedFields, { keys: pubs(E1), threshold: 2, signatures });
-      expect(verifySealRoll(g, forged)).toBe("roll-short-of-revealed-quorum");
-      expect(verifySealLineage([g, forged])).toBe(false);
-    }
-    // Nor can it forge N+2 on the lawful chain: epoch 2's keys need E2's seeds, which it lacks.
-    const forgedNext = await rotateSealEpoch(chain[2]!, { keys: pubs(E3), threshold: 2 }, "", signersOf(attacker));
-    expect(forgedNext.ok).toBe(false);
-  });
-
-  test("★ a roll short of threshold REFUSES — one of a 2-of-2 reveal signs ★", async () => {
-    const [GEN, E1] = await Promise.all([hands(2), hands(2)]);
-    const g = genesisCharterEpoch(pubs(GEN), 2, sealKeySetHash(pubs(E1), 2));
-    const r = await rotateSealEpoch(g, { keys: pubs(E1), threshold: 2 }, "", [E1[0]!.signer]);
-    expect(r.ok).toBe(false);
-    if (r.ok) return;
-    expect(r.reason).toMatch(/roll-short-of-revealed-quorum/);
-    // The same signer twice counts once.
-    const twice = await rotateSealEpoch(g, { keys: pubs(E1), threshold: 2 }, "", [E1[0]!.signer, E1[0]!.signer]);
-    expect(twice.ok).toBe(false);
-  });
-
-  test("★ a seat-change key without proof of possession REFUSES; with it, the roll holds ★", async () => {
-    const [GEN, E1, [added]] = await Promise.all([hands(2), hands(3), hands(1)]);
-    const g = genesisCharterEpoch(pubs(GEN), 2, sealKeySetHash(pubs(E1), 2));   // committed: E1, 2-of-3
-    const revealed = { keys: pubs(E1), threshold: 2 };
-    const seat = { keys: [...pubs(E1), added!.pub], threshold: 2, revealed };   // a fourth seat the commitment never named
-
-    const without = await rotateSealEpoch(g, seat, "", signersOf(E1));
-    expect(without.ok).toBe(false);
-    if (without.ok) return;
-    expect(without.reason).toMatch(/seat-change-without-proof-of-possession/);
-
-    // A signature by some OTHER key under the added key's name proves nothing.
-    const bytes = sealRollBytes({ prevEpochCid: g.epochCid, keys: seat.keys, threshold: 2, nextKeyCommit: "" });
-    const impostor = { signer: added!.pub, sign: async () => E1[0]!.signer.sign(bytes) };
-    expect((await rotateSealEpoch(g, seat, "", [...signersOf(E1), impostor])).ok).toBe(false);
-
-    // CONTROL: the added key signs the same bytes — the seat change holds.
-    const withPop = await rotateSealEpoch(g, seat, "", [...signersOf(E1.slice(0, 2)), added!.signer]);
-    expect(withPop.ok).toBe(true);
-    if (!withPop.ok) return;
-    expect(verifySealLineage([g, withPop.epoch])).toBe(true);
-    // The added key alone carries no prior authority: the revealed quorum still has to sign.
-    const popOnly = await rotateSealEpoch(g, seat, "", [E1[0]!.signer, added!.signer]);
-    expect(popOnly.ok).toBe(false);
-  });
-
-  test("a mismatched reveal REFUSES (fail-closed): the revealed key-set is not the pre-committed one", async () => {
-    const [GEN, E1, E2] = await Promise.all([hands(2), hands(2), hands(2)]);
-    const g = genesisCharterEpoch(pubs(GEN), 2, sealKeySetHash(pubs(E1), 2));
-    const r = await rotateSealEpoch(g, { keys: pubs(E2), threshold: 2 }, "", signersOf(E2));
-    expect(r.ok).toBe(false);
-    if (r.ok) return;
-    expect(r.reason).toMatch(/reveal mismatch/);
-  });
-
-  test("an UNARMED head (no pre-commitment) REFUSES rotation — nothing was committed to verify", async () => {
-    const [GEN, E1] = await Promise.all([hands(2), hands(2)]);
-    const g = genesisCharterEpoch(pubs(GEN), 2, "");
-    const r = await rotateSealEpoch(g, { keys: pubs(E1), threshold: 2 }, "", signersOf(E1));
-    expect(r.ok).toBe(false);
-    if (r.ok) return;
-    expect(r.reason).toMatch(/unarmed/);
-  });
-
-  test("a signed roll does not travel: re-pointing it at another predecessor or commitment breaks it", async () => {
-    const { chain } = await lawfulChain();
-    const [g, e1] = [chain[0]!, chain[1]!];
-    const repointed = mintCharterEpoch({ ...e1, nextKeyCommit: "moved" }, e1.roll);
-    expect(verifySealRoll(g, repointed)).toBe("roll-short-of-revealed-quorum");
-    const otherPrev = genesisCharterEpoch([(await hand()).pub], 1, g.nextKeyCommit);
-    const spliced = mintCharterEpoch({ ...e1, prevEpochCid: otherPrev.epochCid }, e1.roll);
-    expect(verifySealLineage([otherPrev, spliced])).toBe(false);
-  });
-});
-
-// ── THE STRICT DOOR ──────────────────────────────────────────────────────────────────────────────────────────
-// A roll, a stamp and a seat read through `ed25519-door.ts`. The torsion hand (`./ed25519-torsion.ts`) holds a
-// key that seats lawfully and signs what only a lenient verifier reads; the identity key holds no secret at all.
-interface DoorHand { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }
-const honestHand = async (n: number): Promise<DoorHand> => {
-  const seed = new Uint8Array(32).fill(n);
-  return { key: hexOf(await ed25519.getPublicKeyAsync(seed)), sign: ed25519SignerFromSeed(seed) };
-};
-
-describe("charter roll under the strict door (verifySealRoll)", () => {
-  const roll = async (next: DoorHand) => {
-    const founder = await honestHand(1);
-    const genesis = genesisCharterEpoch([founder.key], 1, sealKeySetHash([next.key], 1));
-    return rotateSealEpoch(genesis, { keys: [next.key], threshold: 1 }, sealKeySetHash([(await honestHand(3)).key], 1),
-      [{ signer: next.key, sign: next.sign }]);
-  };
-  test("CONTROL: the committed hand rolls the charter", async () => { expect((await roll(await honestHand(2))).ok).toBe(true); });
-  test("a signature only a lenient verifier reads rolls nothing", async () => {
-    expect(await roll(torsionHand(2))).toMatchObject({ ok: false, code: "roll-short-of-revealed-quorum" });
-  });
-  test("a founding seat the door refuses seats nothing, by name", async () => {
-    expect(() => genesisCharterEpoch([IDENTITY_KEY], 1, "")).toThrow(/charter-seats-a-weak-key.*key-small-order/);
-    expect(weakSeatOf([(await honestHand(1)).key, IDENTITY_KEY])).toEqual({ key: IDENTITY_KEY, refusal: "key-small-order" });
-    expect(weakSeatOf([(await honestHand(1)).key])).toBeNull();
-  });
-  test("a committed small-order key surfaces at its reveal: the roll refuses whole, by name", async () => {
-    // The commitment hides the key, so the genesis reads lawful; the reveal names it, and nobody's signature rides it.
-    const founder = await honestHand(1), genesis = genesisCharterEpoch([founder.key], 1, sealKeySetHash([IDENTITY_KEY], 1));
-    const rolled = await rotateSealEpoch(genesis, { keys: [IDENTITY_KEY], threshold: 1 }, "", [{ signer: IDENTITY_KEY, sign: async () => NOBODYS_SIGNATURE }]);
-    expect(rolled).toMatchObject({ ok: false, code: "roll-holds-a-weak-key" });
-    // A hand-built epoch carrying that roll reads the same refusal, and the lineage with it.
-    const honest = await roll(await honestHand(2));
-    if (!honest.ok) throw new Error("control roll refused");
-    const forged = { ...honest.epoch, roll: { ...honest.epoch.roll!, revealed: { keys: [IDENTITY_KEY, honest.epoch.roll!.keys[0]!], threshold: 1 } } };
-    expect(verifySealRoll(genesisCharterEpoch([founder.key], 1, sealKeySetHash([(await honestHand(2)).key], 1)), forged)).toBe("roll-holds-a-weak-key");
-    expect(verifySealLineage([genesis, forged])).toBe(false);
-  });
-});
-
-describe("wax stamp under the strict door (verifyWaxStampSig)", () => {
-  const stands = async (h: DoorHand): Promise<boolean> => {
-    const epoch = genesisCharterEpoch([h.key], 1, "");
-    const stamp = await mintWaxStamp({ artifactHash: "ab".repeat(32), epoch, sealedAt: "itc:1", sign: h.sign });
-    return verifyWaxStampSig(stamp, epoch, h.key, (k, hash) => sealKeySetHash([k], 1) === hash);
-  };
-  test("CONTROL: an honest seat's stamp stands", async () => { expect(await stands(await honestHand(11))).toBe(true); });
-  test("a stamp only a lenient verifier reads stands nowhere", async () => { expect(await stands(torsionHand(11))).toBe(false); });
-});
-
-describe("charter doc (foundingRoster)", () => {
-  test("a doc that seats a key the door refuses roots nothing", async () => {
-    const good = await honestHand(1);
-    const lawful = {
-      ...emptyFoundingCharterDoc(), threshold: 1, kahu: [{ displayName: "chair", verifyingKey: good.key }],
-      sealLineage: [genesisCharterEpoch([good.key], 1, "")],
-    };
-    expect(foundingRoster(lawful).keys).toEqual([good.key]);                                     // CONTROL
-    // Built past `genesisCharterEpoch`, which would refuse: a doc arrives from disk or a peer, never from the builder.
-    const keys = [good.key, IDENTITY_KEY].sort();
-    const weak = {
-      ...lawful, kahu: keys.map((k) => ({ displayName: "chair", verifyingKey: k })),
-      sealLineage: [mintCharterEpoch({ keySetHash: sealKeySetHash(keys, 1), nextKeyCommit: "", prevEpochCid: null })],
-    };
-    expect(verifySealLineage(weak.sealLineage)).toBe(true);                                      // the lineage alone hides the seat
-    expect(foundingRoster(weak)).toMatchObject({ keys: [], sealEpochCid: "" });
+  test("roll bytes carry the six-field seat-roll domain and lineage classification keeps its trichotomy", async () => {
+    const [g0, a, b] = await Promise.all([batch(1, 1), batch(10, 1), batch(20, 1)]); const g = await genesis(g0!, a!); const r = await roll(g, a!, b!); if (!r.ok) throw Error(r.reason);
+    const bytes = sealRollBytes({ prevEpochCid: g.epochCid, keys: [a![0]!.pub], threshold: 1, nextKeyDigests: (await nextFor(b!)).digests, nextThreshold: 1 });
+    expect(new TextDecoder().decode(bytes)).toContain(CHARTER_SEAT_ROLL_DOMAIN);
+    expect(classifySeal({ artifactHash: "a", epochCid: r.epoch.epochCid, sealedAt: "t", signature: "ok" }, [g, r.epoch], () => true)).toBe("CURRENT");
+    expect(detectDuplicity([g, r.epoch], [g, r.epoch])).toBeNull();
+    expect(weakSeatOf(["00".repeat(32)])).not.toBeNull();
   });
 });

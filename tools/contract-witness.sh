@@ -44,9 +44,11 @@
 # presentation captured before the roll, carrying no anchor, reads WRONG-EPOCH too.
 #
 # ── THE RITE ARMS ITSELF ────────────────────────────────────────────────────────────────────────────────
-# Each chair holds a SEAT key of its own, minted sealed on A apart from every persona root. `seal seat` mints
-# each chair's next key beside it and commits that set; `seal rotate` seats the committed set, the committed
-# hands SIGN the roll, and the closing keys retire once the charter moved — the lineage verifies whole.
+# Each chair holds a SEAT key of its own, minted sealed on A apart from every persona root. `seal seat` prints
+# each chair's NEXT key as a cold-key card and commits one digest per chair; on this staged root the read-back
+# stands in and the answer carries each card's code. `seal rotate --cold-key` takes the cards back, each revealed
+# key becomes its chair's seat key, the seated hands SIGN the roll, and the closing keys retire once the charter
+# moved — the lineage verifies whole.
 #
 # Exit 0 = the door opened for a foreign key, refused every forgery, the presented admit read held, denied
 # and wrong-epoch where it should, the raise door raised a leaf and refused a stranger, the board closed by
@@ -177,7 +179,12 @@ for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
     ok; KAHU_KEYS="$KAHU_KEYS${KAHU_KEYS:+,}$(printf '%s' "$MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)"
   else bad "$?"; printf '%s\n' "$MINT" | tail -4 | sed 's/^/      /'; fi
 done
-run_a "A seats the genesis epoch (the rite arms itself)"     nexus seal seat
+step "A seats the genesis epoch (the rite prints each chair's card)"
+CARDS=""
+if SEAT=$(as_a nexus seal seat --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
+  CARDS=$(printf '%s' "$SEAT" | grep -oE '"code":"[0-9a-f-]+"' | cut -d'"' -f4 | paste -sd, -)
+  if [ -n "$CARDS" ]; then ok; else bad "the seat printed no card on a staged root"; fi
+else bad "$(printf '%s' "$SEAT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 step "A's quorum STANDS"
 if as_a nexus seal show --json 2>/dev/null | grep -q '"quorumSeated":true'; then ok; else bad "quorum not seated"; fi
 
@@ -524,7 +531,7 @@ if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && SC=$(s6_a sign-closing "$B_NYM" "$B_SIG
 else bad "${SC:-no token}"; fi
 
 step "A rotates the charter (the committed reveal)"
-if ROT=$(as_a nexus seal rotate --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+if ROT=$(as_a nexus seal rotate --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
 else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 
 step "the rotate landed a ROLL ANCHOR on A's board"

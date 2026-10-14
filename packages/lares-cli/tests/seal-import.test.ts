@@ -88,15 +88,19 @@ function partnerHands(keys: readonly string[]): { signer: string; sign: (b: Uint
 }
 
 /**
- * A charter over `keys` with a signed lineage `rotations` epochs past genesis. The lineage alternates its
- * quorum between two and three over the same seats, and the seats' own hands sign each roll.
+ * A charter over `keys` with a signed lineage `rotations` epochs past genesis. Each roll seats a fresh
+ * generation at the same threshold, and the new seats' own hands sign it.
  */
 async function charter(keys: string[], rotations = 0): Promise<NexusDoc> {
-  let standing = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
+  let seated = keys;
+  let successors = rotations ? await foreignKeys(20) : await foreignKeys(20);
+  let standing = heldCharter({ keys: seated, threshold: 2, successors: { keys: successors, threshold: 2 } });
   for (let i = 0; i < rotations; i++) {
-    standing = await standing.roll(partnerHands(keys), { keys, threshold: standing.threshold });
+    seated = successors;
+    successors = await foreignKeys(30 + i * 10);
+    standing = await standing.roll(partnerHands(seated), { keys: successors, threshold: 2 });
   }
-  return standing.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
+  return standing.doc({ labels: seated.map((_, i) => `Kahu ${i}`) });
 }
 
 async function foreignKeys(salt: number): Promise<string[]> {

@@ -5,8 +5,12 @@
  * Call it AFTER the test names its scratch `LAR_ROOT`: the homes resolve under that root, so no write reaches a
  * real identity home. The custody founds under the suite's fixed test passphrase (`found-route`) and the holder
  * adopts the minted key. `drop()` locks the holder and clears its seat; the test removes its own root.
+ *
+ * The root stands STAGED, as a harness stages one: it carries the scratch marker beside custody founded under the
+ * published test route, so a rite's card read-back stands in there and nowhere else.
  */
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   FsCustodyIo, foundCustody, makeCustodyHolder, seatCustody, unseatCustody, vesselCustodyHomes,
   type CustodyHolder, type CustodyHomes,
@@ -29,5 +33,6 @@ export async function seatScratchCustody(): Promise<ScratchCustody> {
   const holder = makeCustodyHolder({ io, homes });
   await holder.adopt(founded.vk);
   seatCustody(holder);
+  writeFileSync(join(process.env["LAR_ROOT"]!, ".lar-test-scratch"), "");
   return { homes, holder, async drop() { await holder.lock(); unseatCustody(holder); } };
 }

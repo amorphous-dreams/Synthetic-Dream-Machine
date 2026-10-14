@@ -67,18 +67,18 @@ Examples:
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `
 "lares nexus seal: unknown sub-verb "not-a-subverb"
-usage: lares nexus seal <seat | rotate | commit | show | export | import | grow>
+usage: lares nexus seal <seat | rotate | show | export | import | grow>
 
   seat    form the roster from the personas that STOOD for a chair, give each chair a seat key
-          of its own, and establish the GENESIS epoch over those keys. The rite arms itself: each
-          chair's next key mints sealed beside its seat key, and the genesis commits that set.
+          of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints
+          as a cold key on a card: the card prints once, you type it back, and the genesis commits
+          one digest per chair. No next key rests on this machine.
           [--threshold <k>]            the quorum rule (default: majority of those that stood)
-  rotate  seat the next key-set the head committed, held on this vessel, and advance the chain.
-          The roster becomes exactly what STANDS — the succession door: a kahu steps down by
-          no longer standing, a new one takes a chair by standing and signs with a fresh key.
-          The hands the head committed sign every roll, so no seat moves without them.
+  rotate  type back each chair's card: each revealed key becomes its chair's seat key, and the
+          chain advances. The roster becomes exactly what STANDS — the succession door: a kahu
+          steps down by no longer standing, a new one takes a chair by standing and signs with a
+          fresh key. Fresh cards print for the rolled head, and you type them back.
           [--threshold <k>]  the quorum rule for the new roster (default: majority)
-  commit  compute a key-set commitment digest:  --keys <k1,k2,...> --threshold <k>
   show    read the kahu quorum's seats + chain head + quorum verdict + the carried set
   import <file>          land a charter at the primary path — only where none stands, or the same one
   import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for

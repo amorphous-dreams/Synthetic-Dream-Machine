@@ -34,9 +34,10 @@
 import * as ed from "@noble/ed25519";
 import { sha256BytesSync, utf8Bytes, hex } from "../src/crypto.js";
 import {
-  genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, verifySealLineage,
+  genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, verifySealLineage, type SealNext,
   type SealEpoch, type SealRollSigner,
 } from "../src/wax-stamp.js";
+import { seatNextDigest } from "../src/cold-key-card.js";
 import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
 import { NEXUS_DOC_DOMAIN } from "../src/domains.js";
 import type { NexusDoc } from "../src/nexus-seal-seed.js";
@@ -108,9 +109,10 @@ interface Standing {
 const lawfulShape = (seats: number, threshold: number): boolean =>
   Number.isInteger(seats) && Number.isInteger(threshold) && seats >= 1 && threshold >= 1 && threshold <= seats;
 
-/** The digest a head carries for the generation after it: the next generation at the head's own count and threshold. */
-async function successorCommitment(st: Pick<Standing, "fixtureSeed" | "seats" | "threshold">, generation: number): Promise<string> {
-  return sealKeySetHash(await keysOf(charterSeatSeeds(st.fixtureSeed, generation + 1, st.seats)), st.threshold);
+/** One positional cold-key digest for each sorted seated key. */
+async function successorCommitment(st: Pick<Standing, "fixtureSeed" | "seats" | "threshold">, generation: number): Promise<SealNext> {
+  const keys = await keysOf(charterSeatSeeds(st.fixtureSeed, generation + 1, st.seats));
+  return { digests: [...keys].sort().map(seatNextDigest), threshold: st.threshold };
 }
 
 async function stand(st: Standing): Promise<SeatedCharter> {
@@ -136,16 +138,13 @@ async function stand(st: Standing): Promise<SeatedCharter> {
       if (!lawfulShape(seats, threshold)) throw refusal("roll-malformed");
       // The head committed the next generation at ITS OWN count and threshold. A roll that changes either
       // reveals that committed set beside the seated one; the committed hands and every seated hand sign.
-      const widest = Math.max(seats, st.seats);
-      const nextSeeds = charterSeatSeeds(st.fixtureSeed, generation + 1, widest);
+      const nextSeeds = charterSeatSeeds(st.fixtureSeed, generation + 1, seats);
       const nextKeys = await keysOf(nextSeeds);
       const seated = { keys: nextKeys.slice(0, seats), threshold };
-      const committed = { keys: nextKeys.slice(0, st.seats), threshold: st.threshold };
-      const changed = seats !== st.seats || threshold !== st.threshold;
       const grownShape = { fixtureSeed: st.fixtureSeed, seats, threshold };
       const result = await rotateSealEpoch(
-        head, changed ? { ...seated, revealed: committed } : seated,
-        await successorCommitment(grownShape, generation + 1), handsOf(nextSeeds, nextKeys),
+        head, seated,
+        await successorCommitment(grownShape, generation + 1), handsOf(nextSeeds, nextKeys), st.chain.slice(0, -1),
       );
       if (!result.ok) throw refusal(result.code);
       const chain = [...st.chain, result.epoch];
@@ -166,7 +165,7 @@ export async function seatedCharter(opts: {
   const shape = { fixtureSeed: opts.seed ?? 1, seats: opts.seats, threshold: opts.threshold };
   const armed = opts.armed !== false;
   const keys = await keysOf(charterSeatSeeds(shape.fixtureSeed, 0, shape.seats));
-  const genesis = genesisCharterEpoch(keys, shape.threshold, armed ? await successorCommitment(shape, 0) : "");
+  const genesis = genesisCharterEpoch(keys, shape.threshold, armed ? await successorCommitment(shape, 0) : undefined);
   return stand({ ...shape, chain: [genesis], armed });
 }
 
@@ -181,16 +180,32 @@ export interface HeldSeats {
 export interface HeldCharter extends StandingCharter {
   /**
    * One lawful roll: seat the successors this head committed, under the hands of those successors. `then`
-   * names the generation the rolled head commits; absent, the rolled head stands unarmed.
+   * names the generation the rolled head commits; absent, the rolled head commits a set nobody holds, so it stands
+   * armed and never rolls on.
    */
   roll(hands: readonly SealRollSigner[], then?: HeldSeats): Promise<HeldCharter>;
 }
 
 const lawfulSeats = (seats: HeldSeats): boolean => lawfulShape(new Set(seats.keys.map((k) => k.toLowerCase())).size, seats.threshold);
 
-/** The digest a head carries for the successors a caller named; none named, none committed. */
-const heldCommitment = (successors: HeldSeats | undefined): string =>
-  successors ? sealKeySetHash(successors.keys, successors.threshold) : "";
+/**
+ * A commitment to successors NOBODY holds, one digest per seat under the seats' own threshold: a head armed so
+ * stands lawful and never rolls. `tag` keeps two such commitments apart.
+ */
+const nobodysCommitment = (seats: HeldSeats, tag: string): SealNext => ({
+  digests: Array.from({ length: new Set(seats.keys.map((k) => k.toLowerCase())).size },
+    (_, i) => hex(sha256BytesSync(utf8Bytes(`charter-fixture|nobody|${tag}|${i}`)))),
+  threshold: seats.threshold,
+});
+
+/** Successor i belongs to caller key i; commitments follow sorted current seats. */
+const heldCommitment = (seats: HeldSeats, successors: HeldSeats | undefined): SealNext => {
+  if (!successors) return { digests: [], threshold: 0 };
+  if (successors.keys.length !== new Set(seats.keys.map(k => k.toLowerCase())).size || successors.threshold !== seats.threshold) throw refusal("roll-malformed");
+  const pairs = seats.keys.map((key, i) => ({ key: key.toLowerCase(), successor: successors.keys[i]! }));
+  pairs.sort((a, b) => a.key.localeCompare(b.key));
+  return { digests: pairs.map(pair => seatNextDigest(pair.successor)), threshold: successors.threshold };
+};
 
 function standHeld(chain: readonly SealEpoch[], seats: HeldSeats, successors: HeldSeats | undefined): HeldCharter {
   const head = chain[chain.length - 1]!;
@@ -202,7 +217,9 @@ function standHeld(chain: readonly SealEpoch[], seats: HeldSeats, successors: He
     roll: async (hands, then) => {
       if (!successors) throw refusal("rotation-unarmed");
       if (then && !lawfulSeats(then)) throw refusal("roll-malformed");
-      const result = await rotateSealEpoch(head, { keys: successors.keys, threshold: successors.threshold }, heldCommitment(then), hands);
+      // EVERY ROLL RE-ARMS: a roll that names no successors commits a set nobody holds, so it never rolls on.
+      const next = then ? heldCommitment(successors, then) : nobodysCommitment(successors, head.epochCid);
+      const result = await rotateSealEpoch(head, { keys: successors.keys, threshold: successors.threshold }, next, hands, chain.slice(0, -1));
       if (!result.ok) throw refusal(result.code);
       const grown = [...chain, result.epoch];
       if (!verifySealLineage(grown)) throw refusal("roll-lineage-invalid");
@@ -220,9 +237,7 @@ export function heldCharter(opts: HeldSeats & { readonly successors?: HeldSeats;
   if (!lawfulSeats(opts)) throw refusal("roll-malformed");
   if (opts.successors && !lawfulSeats(opts.successors)) throw refusal("roll-malformed");
   if (opts.successors && opts.variant !== undefined) throw refusal("variant-never-rolls");
-  const commitment = opts.variant === undefined
-    ? heldCommitment(opts.successors)
-    : hex(sha256BytesSync(utf8Bytes(`charter-fixture|variant|${opts.variant}`)));
+  const commitment = opts.variant === undefined ? heldCommitment(opts, opts.successors) : nobodysCommitment(opts, `variant|${opts.variant}`);
   const genesis = genesisCharterEpoch(opts.keys, opts.threshold, commitment);
   return standHeld([genesis], { keys: opts.keys, threshold: opts.threshold }, opts.successors);
 }
@@ -236,6 +251,6 @@ export function heldCharter(opts: HeldSeats & { readonly successors?: HeldSeats;
 export function namedCharter(aid: string): NexusDoc {
   return {
     kind: NEXUS_DOC_DOMAIN, threshold: 0, sealEpochCid: aid, kahu: [],
-    sealLineage: [{ epochCid: aid, keySetHash: "", nextKeyCommit: "", prevEpochCid: null }],
+    sealLineage: [{ epochCid: aid, keySetHash: "", nextKeyDigests: [], nextThreshold: 0, prevEpochCid: null }],
   };
 }

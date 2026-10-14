@@ -33,7 +33,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   NEXUS_DOC_DOMAIN, RESERVE_TRANSITION_DOMAIN, canonicalJsonBytes, ed25519SignerFromSeed, genesisCharterEpoch, hex, mintCharterEpoch, readVkCarrier,
-  rotateSealEpoch, sealKeySetHash, sealLineageHead, sealRollBytes, verifyEd25519,
+  rotateSealEpoch, sealKeySetHash, sealLineageHead, sealRollBytes, seatNextDigest, verifyEd25519,
   type NexusDoc, type SealEpoch,
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
@@ -88,96 +88,106 @@ async function successor(prev: SealEpoch, generation: number, n: number, thresho
   const keys = await seats(n, generation);
   const hands = await handsOf(n, generation);
   const signers = indexes.map((i) => hands[i]!);
-  const rolled = await rotateSealEpoch(prev, { keys, threshold }, sealKeySetHash(await seats(n, generation + 1), threshold), signers);
+  const rolled = await rotateSealEpoch(prev, { keys, threshold }, await commitOf(keys, await seats(n, generation + 1), threshold), signers, earlierOf(prev));
   if (!rolled.ok) throw new Error(`the fixture's roll refused: ${rolled.reason}`);
   return rolled.epoch;
 }
-const rollImage = (parts: { prevEpochCid: string; keys: readonly string[]; threshold: number; nextKeyCommit?: string }): string =>
-  hex(sealRollBytes({ nextKeyCommit: "", ...parts }));
+/** The commitment a head makes to `successors`: successor i of key i, one digest per seat in the sorted order of `keys`. */
+async function commitOf(keys: readonly string[], successors: readonly string[], threshold: number): Promise<{ digests: string[]; threshold: number }> {
+  const pairs = keys.map((key, i) => ({ key: key.toLowerCase(), next: successors[i]! })).sort((a, b) => a.key.localeCompare(b.key));
+  return { digests: pairs.map((p) => seatNextDigest(p.next.toLowerCase())), threshold };
+}
+const flat = (next: { digests: string[]; threshold: number }): { nextKeyDigests: string[]; nextThreshold: number } => ({ nextKeyDigests: next.digests, nextThreshold: next.threshold });
+/** The epochs of the standing lineage before `head`: the roll law reads them for re-seated keys and re-spent digests. */
+function earlierOf(head: SealEpoch): SealEpoch[] {
+  const lineage = readNexusDoc(larSealHome())?.sealLineage ?? [];
+  const at = lineage.findIndex((e) => e.epochCid === head.epochCid);
+  return at > 0 ? lineage.slice(0, at) : [];
+}
+const rollImage = (parts: { prevEpochCid: string; keys: readonly string[]; threshold: number; next: { digests: string[]; threshold: number } }): string =>
+  hex(sealRollBytes({ prevEpochCid: parts.prevEpochCid, keys: parts.keys, threshold: parts.threshold, ...flat(parts.next) }));
 const pendingPath = (): string => join(larSealHome(), TRANSITION_PENDING_FILE);
 const keptPath = (): string => join(larSealHome(), TRANSITIONS_FILE);
 
 describe("a roll signs only under the charter that licenses it", () => {
   test("L1/L2 — the licensed roll signs; every well-formed roll the standing state does not license refuses by name", async () => {
     await custody("ceremony-l");
-    const [k0, k1, k2] = await seats(3) as [string, string, string];
+    const [k0, k1, k2] = await seats(3);
     const root = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey.toLowerCase();
-    const committed = [k0, k1];                                                     // the key-set the genesis head pre-commits, 2-of-2
-    const genesis = genesisCharterEpoch([k0], 1, sealKeySetHash(committed, 2));
-    charter([k0], 1, [genesis]);
-    const sign = (image: string, verifyingKey = k0): Promise<Record<string, unknown>> => act("seal.sign", { seat: verifyingKey, image });
+    // The genesis seats faces 0 and 1 at 2-of-2 and commits their generation-1 keys, one digest per seat.
+    const [n0, n1] = await seats(2, 1);
+    const genesis = genesisCharterEpoch([k0!, k1!], 2, await commitOf([k0!, k1!], [n0!, n1!], 2));
+    charter([k0!, k1!], 2, [genesis]);
+    const sign = (image: string, verifyingKey: string = n0!): Promise<Record<string, unknown>> => act("seal.sign", { seat: verifyingKey, image });
+    const following = await commitOf([n0!, n1!], await seats(2, 2), 2);
+    const licensed = rollImage({ prevEpochCid: genesis.epochCid, keys: [n0!, n1!], threshold: 2, next: following });
 
-    // L1 CONTROL: the roll this head licenses signs, for each seated root, and the signature verifies.
-    // The roll commits the set after it, which rests here too (faces 0 and 1 at generation 1).
-    const following = sealKeySetHash((await seatChairs([0, 1], { generation: 1 })).keys, 2);
-    const licensed = rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 2, nextKeyCommit: following });
-    // RED: a roll that commits a set no row here holds, or leaves its successor unarmed, signs nothing.
-    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 2, nextKeyCommit: "cd".repeat(32) })))).toMatch(/^act-refused: the roll's forward commitment names no key-set this vessel's arming holds/);
-    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 2 })))).toMatch(/^act-refused: the roll's forward commitment names no key-set/);
-    for (const key of [k0, k1]) {
+    // L1 CONTROL: the roll this head licenses signs, for each seated seat, and the signature verifies.
+    for (const key of [n0!, n1!]) {
       const signed = await sign(licensed, key) as { signer: string; sig: string };
       expect(signed.signer).toBe(key);
       expect(verifyEd25519(signed.sig, Uint8Array.from(Buffer.from(licensed, "hex")), key)).toBe(true);
     }
 
     // L2 RED: each of these spells a whole, canonical roll. None stands licensed, and none signs.
-    expect(await why(sign(rollImage({ prevEpochCid: "epoch-" + "ab".repeat(32), keys: committed, threshold: 2 })))).toMatch(/^act-refused: the roll steps from another epoch/);
-    // k1 rests under face 1, which holds no seat at this head, so this vessel finds no committed set to reveal, and
-    // a roll that seats another set than the commitment's refuses.
-    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: [k0, k2], threshold: 2 })))).toMatch(/^act-refused: the roll seats another key-set/);
-    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: [k0], threshold: 1 })))).toMatch(/^act-refused: the roll seats another key-set/);
-    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: committed, threshold: 1 })))).toMatch(/^act-refused: the roll seats another key-set/);
-    expect(await why(sign(licensed, k2))).toMatch(/^act-refused: that seat sits neither in the roll's key-set nor in the set the standing head committed/);
+    expect(await why(sign(rollImage({ prevEpochCid: "epoch-" + "ab".repeat(32), keys: [n0!, n1!], threshold: 2, next: following })))).toMatch(/^act-refused: the roll steps from another epoch/);
+    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: [n0!, k2!], threshold: 2, next: await commitOf([n0!, k2!], await seats(2, 3), 2) }))))
+      .toMatch(/^act-refused: the roll reveals fewer of the seats the standing head committed/);                    // one of two committed seats
+    expect(await why(sign(licensed, k2!))).toMatch(/^act-refused: that seat sits outside the roll's key-set/);
     expect(await why(sign(licensed, "7".repeat(64)))).toMatch(/^act-refused: this vessel holds no seat key under that public key/);
-    // A PERSONA ROOT SIGNS NO ROLL: it holds no seat row.
-    expect(await why(sign(licensed, root))).toMatch(/^act-refused: this vessel holds no seat key under that public key/);
-    expect(await why(act("seal.sign", { handleIndex: 0, image: licensed }))).toMatch(/^bad-args/);   // a hand names a seat, never a face
+    expect(await why(sign(licensed, root))).toMatch(/^act-refused: this vessel holds no seat key under that public key/);   // A PERSONA ROOT SIGNS NO ROLL
+    expect(await why(act("seal.sign", { handleIndex: 0, image: licensed }))).toMatch(/^bad-args/);                   // a hand names a seat, never a face
+    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: [n0!, n1!], threshold: 2, next: { digests: following.digests.slice(1), threshold: 2 } }))))
+      .toMatch(/^act-refused: the roll re-arms its seats short of one distinct digest each/);
+    const stranger = hex(await (await import("@noble/ed25519")).getPublicKeyAsync(new Uint8Array(32).fill(66)));
+    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: [n0!, n1!, stranger], threshold: 2, next: { digests: [...following.digests, "ee".repeat(32)], threshold: 2 } }))))
+      .toMatch(/^act-refused: the roll seats a key that rests in no seat row on this vessel/);
 
     // A head that pre-committed nothing licenses no roll.
-    const unarmed = genesisCharterEpoch([k0], 1, "");
-    charter([k0], 1, [unarmed]);
-    expect(await why(sign(rollImage({ prevEpochCid: unarmed.epochCid, keys: [k0], threshold: 1 })))).toMatch(/^act-refused: the standing head pre-committed no next key-set/);
+    const unarmed = genesisCharterEpoch([k0!, k1!], 2);
+    charter([k0!, k1!], 2, [unarmed]);
+    expect(await why(sign(rollImage({ prevEpochCid: unarmed.epochCid, keys: [n0!, n1!], threshold: 2, next: following })))).toMatch(/^act-refused: the standing head pre-committed no next keys/);
 
-    // A committed set that holds a key the Ed25519 door refuses licenses no roll, though it hashes true.
-    const weak = "00".repeat(32);
-    const weakHead = genesisCharterEpoch([k0], 1, sealKeySetHash([k0, weak], 1));
-    charter([k0], 1, [weakHead]);
-    expect(await why(sign(rollImage({ prevEpochCid: weakHead.epochCid, keys: [k0, weak], threshold: 1 })))).toMatch(/^act-refused: the roll seats a key the Ed25519 door refuses/);
+    // A roll that seats a key the Ed25519 door refuses licenses nothing, whatever it reveals.
+    charter([k0!, k1!], 2, [genesis]);
+    expect(await why(sign(rollImage({ prevEpochCid: genesis.epochCid, keys: [n0!, "00".repeat(32)], threshold: 1, next: { digests: ["11".repeat(32), "22".repeat(32)], threshold: 1 } }))))
+      .toMatch(/^act-refused: the roll seats a key the Ed25519 door refuses/);
 
     // A CHARTER THAT PARSES AND CARRIES A LINEAGE THAT DOES NOT VERIFY LICENSES NOTHING: a head forged onto the
     // chain with no roll, and a true head that does not bind the chairs the charter seats.
-    const forged = mintCharterEpoch({ keySetHash: sealKeySetHash(committed, 2), nextKeyCommit: sealKeySetHash(committed, 2), prevEpochCid: genesis.epochCid });
-    charter(committed, 2, [genesis, forged]);
-    expect(await why(sign(rollImage({ prevEpochCid: forged.epochCid, keys: committed, threshold: 2 })))).toMatch(/^act-refused: the charter's seal lineage does not verify/);
-    charter([k0, k2], 1, [genesis]);                                                // the true genesis, under chairs it never bound
+    const forged = mintCharterEpoch({ keySetHash: sealKeySetHash([n0!, n1!], 2), nextKeyDigests: following.digests, nextThreshold: 2, prevEpochCid: genesis.epochCid });
+    charter([n0!, n1!], 2, [genesis, forged]);
+    expect(await why(sign(rollImage({ prevEpochCid: forged.epochCid, keys: [n0!, n1!], threshold: 2, next: following })))).toMatch(/^act-refused: the charter's seal lineage does not verify/);
+    charter([k0!, k2!], 2, [genesis]);                                                 // the true genesis, under chairs it never bound
     expect(await why(sign(licensed))).toMatch(/^act-refused: the charter's seal lineage does not verify/);
-    charter([k0], 1, [genesis]);
-    expect(await why(sign(licensed))).toBe("ran");                                  // CONTROL: the true charter licenses its roll again
+    charter([k0!, k1!], 2, [genesis]);
+    expect(await why(sign(licensed))).toBe("ran");                                     // CONTROL: the true charter licenses its roll again
 
     // An unsealed charter, a torn one and none at all each license nothing.
-    charter([k0], 1, null);
+    charter([k0!, k1!], 2, null);
     expect(await why(sign(licensed))).toMatch(/^act-refused: the charter stands UNSEALED/);
     writeFileSync(nexusCharterDocPath(larSealHome()), "a charter that stands and will not read");
     expect(await why(sign(licensed))).toMatch(/^act-refused: the charter stands but reads TORN/);
   });
 
-  test("L3 — no other image signs: a crossing record, a roll with a sixth field, a roll out of its canonical spelling", async () => {
+  test("L3 — no other image signs: a crossing record, a roll with a seventh field, a roll out of its canonical spelling", async () => {
     await custody("ceremony-l3");
-    const [k0] = await seats(1) as [string];
-    const genesis = genesisCharterEpoch([k0], 1, sealKeySetHash([k0], 1));
-    charter([k0], 1, [genesis]);
-    const roll = sealRollBytes({ prevEpochCid: genesis.epochCid, keys: [k0], threshold: 1, nextKeyCommit: sealKeySetHash((await seatChairs([0], { generation: 1 })).keys, 1) });
-    expect(await why(act("seal.sign", { seat: k0, image: hex(roll) }))).toBe("ran");          // CONTROL
+    const [k0] = await seats(1);
+    const [n0] = await seats(1, 1);
+    const genesis = genesisCharterEpoch([k0!], 1, await commitOf([k0!], [n0!], 1));
+    charter([k0!], 1, [genesis]);
+    const roll = sealRollBytes({ prevEpochCid: genesis.epochCid, keys: [n0!], threshold: 1, ...flat(await commitOf([n0!], await seats(1, 2), 1)) });
+    expect(await why(act("seal.sign", { seat: n0, image: hex(roll) }))).toBe("ran");          // CONTROL
     const text = new TextDecoder().decode(roll);
     const images: Array<[string, Uint8Array]> = [
       ["a crossing record", canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN, fromEpochCid: genesis.epochCid, toEpochCid: "b", oldKeySetHash: "c", newKeySetHash: "d", rite: "e" })],
-      ["a roll with a sixth field", canonicalJsonBytes({ ...(JSON.parse(text) as Record<string, unknown>), note: "also sign this" })],
+      ["a roll with a seventh field", canonicalJsonBytes({ ...(JSON.parse(text) as Record<string, unknown>), note: "also sign this" })],
       ["a roll out of its canonical spelling", new TextEncoder().encode(text.replace("{", "{ "))],
       ["a roll with bytes after it", Uint8Array.from([...roll, 0x20])],
-      ["a roll whose keys read upper-case", new TextEncoder().encode(text.replace(k0, k0.toUpperCase()))],
+      ["a roll whose keys read upper-case", new TextEncoder().encode(text.replace(n0!, n0!.toUpperCase()))],
       ["bytes that spell no record", new TextEncoder().encode("a synthetic image to sign")],
     ];
-    for (const [name, image] of images) expect(await why(act("seal.sign", { seat: k0, image: hex(image) })), name).toMatch(/^act-refused: this door signs a charter roll/);
+    for (const [name, image] of images) expect(await why(act("seal.sign", { seat: n0, image: hex(image) })), name).toMatch(/^act-refused: this door signs a charter roll/);
   });
 });
 
@@ -191,7 +201,7 @@ describe("the growth rite's rows", () => {
     const keys = await seats(3);
     for (let i = 0; i < 4; i++) await generateOrLoadPersonaGroupRoot(i);
     const witness = (await generateOrLoadPersonaGroupRoot(3)).verifyingKey.toLowerCase();
-    const genesis = genesisCharterEpoch(keys, 2, sealKeySetHash(await seats(3, 1), 2));
+    const genesis = genesisCharterEpoch(keys, 2, await commitOf(keys, await seats(3, 1), 2));
     charter(keys, 2, [genesis]);
     generation = 0;
     return { c, keys, witness, genesis };
@@ -336,7 +346,7 @@ describe("the growth rite's rows", () => {
     const as = (c: SeatedScratchCustody): void => { process.env["LAR_ROOT"] = c.root; };
     const walk = async (): Promise<void> => {
       const keys = await seats(3);
-      charter(keys, 2, [genesisCharterEpoch(keys, 2, sealKeySetHash(await seats(3, 1), 2))]);
+      charter(keys, 2, [genesisCharterEpoch(keys, 2, await commitOf(keys, await seats(3, 1), 2))]);
       await act("crossing.open");
       const doc = readNexusDoc(larSealHome())!;
       charter(await seats(3, 1), 2, [...doc.sealLineage!, await successor(sealLineageHead(doc)!, 1, 3, 2, [0, 1])]);

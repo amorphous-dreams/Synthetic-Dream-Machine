@@ -32,11 +32,11 @@ import { hex, materializeSharedLarDoc, carriageDocUrl, carriageEntriesFromBoard,
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadVesselVerifyingKey,
   listPersonaRoots } from "../src/node-vessel-identity.js";
 
-/** The hands over `keys`: the seat keys this suite names (faces 0-6, generations 0 and 1), each signing by hand. */
+/** The hands over `keys`: the seat keys this suite names (faces 0-6 across the used generations). */
 async function heldHands(keys: readonly string[]): Promise<{ signer: string; sign: (b: Uint8Array) => Promise<string> }[]> {
   const want = new Set(keys.map((k) => k.toLowerCase()));
   const hands: { signer: string; sign: (b: Uint8Array) => Promise<string> }[] = [];
-  for (const generation of [0, 1]) {
+  for (const generation of [0, 1, 2, 3, 4]) {
     for (let face = 0; face < 7; face++) {
       const key = await chairKey(face, generation);
       if (want.has(key)) hands.push({ signer: key, sign: ed25519SignerFromSeed(chairSeed(face, generation)) });
@@ -327,11 +327,12 @@ describe("the subject stamps with its per-Nexus leaf — never its PersonaGroup 
 
   it("★ one Nexus across a seal ROTATION keeps one nym — the AID is the genesis epoch ★", async () => {
     const keys = await standKahu();
-    const genesis = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
+    const successors = (await seatChairs([3, 4, 5], { generation: 1 })).keys;
+    const genesis = heldCharter({ keys, threshold: 2, successors: { keys: successors, threshold: 2 } });
     writeNexusDoc(sealHome(), genesis.doc({ labels: chairs(keys) }));
     const before = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
 
-    const rotated = await genesis.roll(await heldHands(keys), { keys, threshold: 2 });
+    const rotated = await genesis.roll(await heldHands(successors));
     writeNexusDoc(sealHome(), rotated.doc({ labels: chairs(keys) }));
     const after = await runNexusAcceptCarriage({ handleIndex: 0, sealHome: sealHome() });
 
@@ -450,11 +451,15 @@ describe("accept-carriage — this vessel keeps its own half of the relation", (
 
   /** A charter with a signed lineage that alternates its quorum between 2 and 3, so a rotation moves the head and keeps the AID. */
   async function seatLineage(keys: string[], rotations: number): Promise<void> {
-    let standing = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 3 } });
+    let seated = keys;
+    let successors = (await seatChairs([3, 4, 5], { generation: 1 })).keys;
+    let standing = heldCharter({ keys: seated, threshold: 2, successors: { keys: successors, threshold: 2 } });
     for (let i = 0; i < rotations; i++) {
-      standing = await standing.roll(await heldHands(keys), { keys, threshold: standing.threshold });
+      seated = successors;
+      successors = (await seatChairs([3, 4, 5], { generation: i + 2 })).keys;
+      standing = await standing.roll(await heldHands(seated), { keys: successors, threshold: 2 });
     }
-    writeNexusDoc(sealHome(), standing.doc({ labels: chairs(keys) }));
+    writeNexusDoc(sealHome(), standing.doc({ labels: chairs(seated) }));
   }
 
   it("★ a signed contract-in is KEPT per Nexus, bound to the epoch it consented under ★", async () => {

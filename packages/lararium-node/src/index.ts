@@ -309,8 +309,9 @@ export type { HopRender } from "./persona-admit-flow.js";
 // The `bags/nexus` charter DOC adapter — the antigen roster's authority home read/written on disk (#66).
 export {
   readNexusDoc, parseNexusDoc, writeNexusDoc, renderNexusDoc, writeNexusSeal, writeNexusKahu, writeNexusPractice,
-  nexusCharterDocPath, nexusCharterDocRelPath, nexusCharterStands,
+  nexusCharterDocPath, nexusCharterDocRelPath, nexusCharterStands, nexusCharterShape,
 } from "./nexus-doc.js";
+export type { NexusCharterShape } from "./nexus-doc.js";
 export { loadLeafIdentity } from "./leaf-identity.js";
 export type { LeafIdentity } from "./leaf-identity.js";
 // A seat's own key: one cold sealed row per key, minted at random, apart from every persona root and every leaf.

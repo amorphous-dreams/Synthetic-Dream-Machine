@@ -152,9 +152,11 @@ tools/lares-container.sh nexus rite quorum
 tools/lares-container.sh nexus seal show
 ```
 
-The seed's seat holds its own key and commits its own next key.
+The seed's seat holds its own key and commits its own cold next key, which rests on paper off the machine.
 
-▢ ''OWED — the cold-key rite.'' The quorum rite composes `seal seat` and `seal show`: the seat gives each chair a seat key of its own and mints the chair's next key beside it, sealed on this node, and the genesis commits that set; `seal rotate` seats it. The next key therefore rests on the same disk as the seat key, and no card prints and no verb carries a card into a rotation (`packages/lares-cli/src/commands/nexus-seal.ts`).
+The quorum rite composes `seal seat` and `seal show`: the seat gives each chair a seat key of its own, prints each chair's NEXT key as a cold-key card, asks each card back on the terminal before the charter moves, and commits one digest per chair. `seal rotate` asks each chair's card back the same way (`packages/lares-cli/src/commands/nexus-seal.ts`). Write each card onto paper before you type it back; no copy rests on the node.
+
+▢ ''OWED — the card's rehearsal.'' `seal cold rehearse` reads a card back against the charter head and moves nothing.
 
 The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. Stop the vessel, then make one consistent backup of the full state mount, including its custody slots and relation carriers; that copy plus the custody passphrase (or paper pin) restores the vessel.
 
@@ -174,7 +176,7 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 `persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. The persona-KEL threshold-attest core accepts independent guardian signatures; this founding supplies no guardian-enrollment command. `identity-classes.mem` tracks that unfinished path.
 
-▢ ''OWED — card-backed charter rotation.'' The cold-key rite at #/reserve holds the card-backed rotation ruling. `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
+▢ ''OWED — the catastrophe rite.'' A lost card at a two-seat Nexus ends that Nexus (#/reserve holds the cold-key rite). `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
 
 ''Do'': compare each physical or offline copy with the CLI's printed destination instructions, then confirm an independent second location.
 
@@ -338,6 +340,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DHdtMQRwZdC6tWPTQJmsjmuuyaJ8ldR9W5JM8vdr5cc
+<<^ code="&#x0003;">>ni:///sha-256;ZHGWi5WAs-oE5Ffx_0_TOORO6nnR1GpOSBOMNBETGuc
 
 <<^ code="&#x0004;" -> to="?">>

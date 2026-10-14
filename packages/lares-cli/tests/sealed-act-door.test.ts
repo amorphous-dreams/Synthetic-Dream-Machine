@@ -27,8 +27,9 @@
  *   D7  `lares persona sync` FILLS: each held name rides one `selves.carry` frame marked `fill`, so a name the
  *       face's plane already holds stands, and the command says which names landed and which the fleet kept.
  *                                 control: a rename (`makeFleetPetnameStore.set`) sends its carry with no `fill`
- *   D8  RED: A SEAT'S KEY NEVER CROSSES THE DOOR. `lares nexus seal seat` beside a standing vessel sends ONE
- *       arming frame that carries no key, takes public halves back, and opens no key session of its own.
+ *   D8  RED: A SEAT'S KEY NEVER CROSSES THE DOOR. `lares nexus seal seat` beside a standing vessel sends an arming
+ *       frame that carries no key and asks whether the read-back stands in; it takes public halves back, mints each
+ *       chair's cold card in its own process, and opens no key session of its own. No frame carries a card.
  *                                 control: the charter the command wrote seats exactly the halves the door answered
  *   D9  RED: A CARRIED INVITE RIDES NO VERB. `lares walk`, `walk take` and `walk invite` beside a standing vessel
  *       send act frames alone (`walk.state`, `walk.take`, `walk.invite`); the invite a person carries in, and the
@@ -314,14 +315,17 @@ describe("a command beside a standing vessel", () => {
     const { getPublicKeyAsync } = await import("@noble/ed25519");
     const keys = await Promise.all([1, 2, 3].map(async (i) => Buffer.from(await getPublicKeyAsync(new Uint8Array(32).fill(40 + i))).toString("hex")));
     const vessel = await standVessel({ unlocked: true, table: (act) => (act === "seat.arm-genesis"
-      ? { kahu: keys.map((verifyingKey, i) => ({ displayName: `Chair ${i}`, verifyingKey })), seatedKeys: keys, threshold: 2, nextKeyCommit: "ab".repeat(32), superseded: [], minted: keys }
-      : {}) });
+      ? { kahu: keys.map((verifyingKey, i) => ({ displayName: `Chair ${i}`, verifyingKey })), seatedKeys: keys, threshold: 2, superseded: [], minted: keys }
+      : act === "seat.readback-stand-in" ? { standIn: true } : {}) });
     const r = await run(["nexus", "seal", "seat", "--json"]);
     expect(r.code).toBe(0);
     expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
     const frames = vessel.frames as Array<{ act: string; args: Record<string, unknown> }>;
-    expect(frames.map((f) => f.act)).toEqual(["seat.arm-genesis"]);
+    expect(frames.map((f) => f.act)).toEqual(["seat.arm-genesis", "seat.readback-stand-in"]);
     expect(frames[0]!.args).toEqual({});                                             // the arming takes no key and no commitment
+    const printed = (JSON.parse(r.out.trim().split("\n").at(-1)!) as { data: { cards: Array<{ code: string }> } }).data.cards;
+    expect(printed).toHaveLength(3);                                                 // one card per chair, printed by the command
+    for (const card of printed) expect(JSON.stringify(frames)).not.toContain(card.code.replace(/-/g, "").slice(0, 16));
     // CONTROL: the charter the command wrote seats exactly the public halves the door answered.
     expect(readNexusDoc(larSealHome())!.kahu.map((k) => k.verifyingKey)).toEqual(keys);
   });

@@ -9,7 +9,7 @@
  *   · a mint draws 32 random bytes once and derives from nothing else;
  *   · a card prints purpose, chair label, generation and the charter fingerprint; no display field enters
  *     the code, the checksum or the digest; a card with and without a fingerprint round-trips one code;
- *   · the module stays out of the package barrel.
+ *   · the package barrel exports the module: the seal rite prints and reads its cards.
  */
 import { readFileSync } from "node:fs";
 import { describe, test, expect } from "vitest";
@@ -219,10 +219,10 @@ describe("the confirm phrase", () => {
   });
 });
 
-describe("the barrel stays shut until a caller consumes the card", () => {
-  test("the package barrel names the module nowhere", () => {
+describe("the barrel opens the card to the rite that consumes it", () => {
+  test("the package barrel exports the module: the seal rite prints and reads its cards", () => {
     const barrel = readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
-    expect(barrel).not.toContain("cold-key-card");
+    expect(barrel).toContain(`export * from "./cold-key-card.js";`);
     expect(barrel).toContain("guardian-card");                 // KNOWN POSITIVE: the probe reads the barrel
   });
 });

@@ -4,7 +4,7 @@
  *
  * ── WHY A RECORD AND NOT JUST A ROTATION ────────────────────────────────────────────────────────
  * The epoch chain already proves the KEY handoff: the revealed, pre-committed keys SIGN each roll
- * (`wax-stamp` — `seal-roll`). That roll is signed by the INCOMING hands alone, and must be, since the
+ * (`wax-stamp` — `charter-seat-roll`). That roll is signed by the INCOMING hands alone, and must be, since the
  * outgoing keys may be the very reason for the roll. So the two records never fold into one: the roll
  * carries authority and asks nothing of the outgoing set; this record carries the outgoing set's
  * consent and the witnesses, and grants no authority. A roll stands without a crossing record.

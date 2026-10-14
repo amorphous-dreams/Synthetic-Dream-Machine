@@ -1,49 +1,51 @@
 /**
- * seat-arming — the seal rite arms its heads behind the custody door, and a SEAT holds its own key.
+ * seat-arming — the seal rite arms its heads behind the custody door, a SEAT holds its own key, and a chair's NEXT
+ * key rests on a cold-key card alone.
  *
- * The rite's acts (`seat.arm-genesis`, `seat.arm-roll`, `seat.retire`, `seat.held`, `seal.sign`) run here through
- * the act table, as a command reaches them; the epochs the arming answers get built and written the way the rite
- * writes them, so the vectors walk a head from its genesis through its rolls.
+ * The rite's acts (`seat.arm-genesis`, `seat.arm-roll`, `seat.retire`, `seat.held`, `seal.sign`,
+ * `seat.readback-stand-in`) run here through the act table, as a command reaches them. The vectors mint each
+ * chair's cold card themselves, as the command does, and build and write each epoch the way the rite writes it.
  *
- *   A1  A GENESIS ARMS ITSELF. Each chair that stands takes a seat key of its own and a NEXT key, both sealed rows
- *       of its face, apart from every persona root; the digest the arming answers commits that next set.
- *                                                          control: the same seat again answers the same genesis
- *   A2  RED: EVERY REFUSAL LANDS BEFORE ANY KEY MINTS. A chair that holds a persona root as its key, a charter that
- *       seats a key no row here holds, a roster nobody stands for, a rule past the roster: each refuses by name,
- *       and no seat row lands.
- *   A3  A HEAD THE RITE ARMED ROLLS, AND ROLLS AGAIN. The roll seats the committed set (found among the faces'
- *       rows by its digest), the committed hands sign through `seal.sign`, the lineage verifies, and the rolled
- *       head arms its own successor.                       control: the closing keys retire once the charter moved
- *   A4  A SEAT CHANGE RIDES THE REVEAL. A chair that joins seats a fresh key and signs by possession; a chair that
- *       left drops; the committed hands sign; the roll verifies whole.
- *   A5  THE RETIREMENT'S LICENCE. A seated key, a committed next key and a key an open crossing names each stay,
- *       by name; a superseded key leaves; a key no row holds reads as done; a torn charter refuses the whole act.
- *   A6  RED: a head that commits a set this vessel does not hold refuses `reveal-unheld`; an unarmed head refuses.
- *   A7  AT THE FLOOR every arming, the retirement and the roll's hand refuse `CustodyLocked`; `seat.held` reads row
- *       names and answers.
- *   A8  ONE FACE'S PUBLIC HALVES: the reader opens that face's rows alone, and a row whose secret answers another
- *       key than its name refuses by name.
- *   A9  RED: THE ROLL'S HAND SIGNS ONLY WHAT THIS VESSEL'S ARMING HOLDS: a seat change that seats a key no row here
- *       holds, or a roll whose forward commitment names a set no row here holds, signs nothing.
- *                                                          control: the arming's own roll signs (A3)
- *   A10 RED: THE RETIREMENT REFUSES WHERE A RECORD READS UNWHOLE (a carried charter that stands torn, a standing
- *       commitment this vessel cannot name), and an ARMING SETTLES its faces first: the rows a stopped arming
- *       minted leave, and every row a record needs stays.
+ *   A1  A GENESIS ARMS ITS SEATS. Each chair that stands takes a seat key of its own, a sealed row of its face,
+ *       apart from every persona root; no next key rests on the vessel.  control: the same seat again keeps the keys
+ *   A2  RED: EVERY REFUSAL LANDS BEFORE ANY KEY MINTS: a chair that holds a persona root, a seated key no row here
+ *       holds, no chair standing, a rule past the roster.
+ *   A3  A HEAD THE RITE ARMED ROLLS FROM ITS CARDS, AND ROLLS AGAIN. Each card's key becomes its chair's seat key, the
+ *       seated hands sign through `seal.sign`, the lineage verifies, the closing keys retire once the charter moved.
+ *   A4  A SEAT CHANGE: a chair that joins signs by possession; a chair that steps down drops, and its revealed key
+ *       spends with the closing ones.
+ *   A5  THE RETIREMENT'S LICENCE: a seated key and a key an open crossing names stay, by name; a spare row leaves; a
+ *       key no row holds reads as done; a torn charter, primary or carried, refuses the whole act.
+ *   A6  RED: THE CARDS READ BEFORE ANY ROW MOVES: a card the head never committed, two cards for one chair, fewer
+ *       cards than the head's count, an unarmed head: each refuses by name and no row moves.
+ *   A7  AT THE FLOOR every arming, the retirement, the roll's hand and the stand-in reading refuse `CustodyLocked`;
+ *       `seat.held` answers.
+ *   A8  ONE FACE'S PUBLIC HALVES: the reader opens that face's rows alone; a row that answers another key refuses.
+ *   A9  RED: THE ROLL'S HAND SIGNS ONLY A LAWFUL ROLL OF THIS VESSEL'S SEATS: a key no row here holds, a successor
+ *       short of one distinct digest per seat or under another rule, a roll revealing fewer seats than the head's
+ *       count.                                                 control: the arming's own roll signs
+ *   A10 AN ARMING SETTLES ITS FACES FIRST: a spare row of a touched face leaves, and every row a record needs stays.
+ *   A11 A standing chair keeps only a key of its OWN face.
+ *   A12 RED: A COPIED MARKER STANDS IN FOR NO READ-BACK. A root that carries the scratch marker over custody sealed
+ *       under another passphrase reads no stand-in.   control: the marker beside custody under the test route does
  */
-import { copyFileSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  NEXUS_DOC_DOMAIN, genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, sealLineageHead, sealRollBytes, verifySealLineage,
-  type NexusCharterKahu, type NexusDoc, type SealEpoch, type SealKeySet,
+  NEXUS_DOC_DOMAIN, genesisCharterEpoch, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
+  type NexusCharterKahu, type SealEpoch,
 } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
+import { FsCustodyIo } from "../src/custody-io.js";
+import { seatCustody, unseatCustody, updateColdCustodyRow } from "../src/custody-seat.js";
+import { foundCustody } from "../src/custody-session.js";
 import { nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore } from "../src/node-vessel-identity.js";
-import { committedNextSeats } from "../src/seal-ceremony.js";
 import { listSeatKeys, seatKeyFile, seatKeysOfFace } from "../src/seat-key-store.js";
-import { updateColdCustodyRow } from "../src/custody-seat.js";
 import { SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
+import { vesselCustodyHomes } from "../src/vault-carriers.js";
 import { larIdentityDir, larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { chairSeed, seatChairs } from "./seat-fixture.js";
@@ -61,9 +63,11 @@ async function custody(label: string): Promise<SeatedScratchCustody> {
 const act = (name: string, args: Record<string, unknown> = {}): Promise<Record<string, unknown>> => runSealedAct(name, args, ctx);
 const why = async (run: Promise<unknown>): Promise<string> =>
   run.then(() => "ran", (e: unknown) => (e instanceof SealedActRefused ? `${e.reason}: ${e.message}` : (e as Error).constructor.name));
+const hexOf = (b: Uint8Array): string => Buffer.from(b).toString("hex");
+const publicOf = async (seed: Uint8Array): Promise<string> => hexOf(await (await import("@noble/ed25519")).getPublicKeyAsync(seed));
 
-interface Armed { kahu: NexusCharterKahu[]; seatedKeys: string[]; threshold: number; nextKeyCommit: string; superseded: string[]; minted: string[] }
-interface ArmedRoll { kahu: NexusCharterKahu[]; seatedKeys: string[]; threshold: number; revealed: SealKeySet | null; signers: string[]; nextKeyCommit: string; spent: string[]; minted: string[] }
+interface Armed { kahu: NexusCharterKahu[]; seatedKeys: string[]; threshold: number; superseded: string[]; minted: string[] }
+interface ArmedRoll { kahu: NexusCharterKahu[]; seatedKeys: string[]; threshold: number; signers: string[]; spent: string[]; minted: string[] }
 
 /** Stand faces `faces` as persona roots that claim a chair each. Answers the roots' public keys. */
 async function stand(faces: readonly number[]): Promise<string[]> {
@@ -75,240 +79,240 @@ async function stand(faces: readonly number[]): Promise<string[]> {
   }
   return roots;
 }
-/** Step face `face` down: its seat claim leaves. */
-async function stepDown(face: number): Promise<void> {
-  await (await makeNodePersonaDeclarationStore()).set(face, { seat: false });
-}
+const stepDown = async (face: number): Promise<void> => { await (await makeNodePersonaDeclarationStore()).set(face, { seat: false }); };
 const seatRows = (): number => listSeatKeys().length;
 
-/** Write the charter a genesis arming answered, as the rite writes it. */
-async function writeGenesis(): Promise<{ armed: Armed; genesis: SealEpoch }> {
-  const armed = await act("seat.arm-genesis") as unknown as Armed;
-  const genesis = genesisCharterEpoch(armed.seatedKeys, armed.threshold, armed.nextKeyCommit);
-  writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: armed.threshold, sealEpochCid: genesis.epochCid, sealLineage: [genesis], kahu: armed.kahu });
-  return { armed, genesis };
+/** Mint one cold card per seated key, in the sorted order the digests commit, as the command does. */
+async function cardsFor(seatedKeys: readonly string[], threshold: number): Promise<{ seeds: Uint8Array[]; next: { digests: string[]; threshold: number } }> {
+  const seeds: Uint8Array[] = [];
+  const digests: string[] = [];
+  for (let i = 0; i < new Set(seatedKeys.map((k) => k.toLowerCase())).size; i++) {
+    const cold = await mintColdKey();
+    seeds.push(cold.seed);
+    digests.push(cold.digest);
+  }
+  return { seeds, next: { digests, threshold } };
 }
-/** Roll the standing head as the rite rolls it: arm, sign through the door, write, retire the closing keys. */
-async function roll(threshold?: number): Promise<{ armed: ArmedRoll; epoch: SealEpoch; retired: string[] }> {
+
+/** Write the charter a genesis arming answered, as the rite writes it; answers the cards it committed. */
+async function writeGenesis(): Promise<{ armed: Armed; genesis: SealEpoch; cards: Uint8Array[] }> {
+  const armed = await act("seat.arm-genesis") as unknown as Armed;
+  const { seeds, next } = await cardsFor(armed.seatedKeys, armed.threshold);
+  const genesis = genesisCharterEpoch(armed.seatedKeys, armed.threshold, next);
+  writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: armed.threshold, sealEpochCid: genesis.epochCid, sealLineage: [genesis], kahu: armed.kahu });
+  return { armed, genesis, cards: seeds };
+}
+/** Roll the standing head as the rite rolls it, from `cards`: arm, sign through the door, write, retire. */
+async function roll(cards: readonly Uint8Array[], threshold?: number): Promise<{ armed: ArmedRoll; epoch: SealEpoch; retired: string[]; cards: Uint8Array[] }> {
   const doc = readNexusDoc(larSealHome())!;
-  const armed = await act("seat.arm-roll", threshold === undefined ? {} : { threshold }) as unknown as ArmedRoll;
+  const armed = await act("seat.arm-roll", { cards: cards.map(hexOf), ...(threshold === undefined ? {} : { threshold }) }) as unknown as ArmedRoll;
+  const { seeds, next } = await cardsFor(armed.seatedKeys, armed.threshold);
   const hands = armed.signers.map((signer) => ({
-    signer, sign: async (bytes: Uint8Array) => ((await act("seal.sign", { seat: signer, image: Buffer.from(bytes).toString("hex") })) as { sig: string }).sig,
+    signer, sign: async (bytes: Uint8Array) => ((await act("seal.sign", { seat: signer, image: hexOf(bytes) })) as { sig: string }).sig,
   }));
-  const seat = armed.revealed ? { keys: armed.seatedKeys, threshold: armed.threshold, revealed: armed.revealed } : { keys: armed.seatedKeys, threshold: armed.threshold };
-  const rolled = await rotateSealEpoch(sealLineageHead(doc)!, seat, armed.nextKeyCommit, hands);
+  const rolled = await rotateSealEpoch(sealLineageHead(doc)!, { keys: armed.seatedKeys, threshold: armed.threshold }, next, hands, doc.sealLineage!.slice(0, -1));
   if (!rolled.ok) throw new Error(`the roll refused: ${rolled.reason}`);
   const lineage = [...doc.sealLineage!, rolled.epoch];
   expect(verifySealLineage(lineage)).toBe(true);
   writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: armed.threshold, sealEpochCid: rolled.epoch.epochCid, sealLineage: lineage, kahu: armed.kahu });
   const { retired } = await act("seat.retire", { keys: armed.spent }) as { retired: string[] };
-  return { armed, epoch: rolled.epoch, retired };
+  return { armed, epoch: rolled.epoch, retired, cards: seeds };
 }
 
 describe("the rite arms its heads behind the door", () => {
-  test("A1 — a genesis arms itself: each chair a seat key and a next key of its own; the same seat again answers the same genesis", async () => {
+  test("A1 — a genesis arms its seats: each chair a seat key of its own, and no next key rests here", async () => {
     await custody("arm-a1");
     const roots = await stand([0, 1, 2]);
-    const { armed, genesis } = await writeGenesis();
+    const { armed } = await writeGenesis();
     expect(armed.kahu.map((k) => k.displayName)).toEqual(["Chair 0", "Chair 1", "Chair 2"]);
-    expect(armed.threshold).toBe(2);                                                 // a majority of three
-    expect(armed.seatedKeys).toHaveLength(3);
+    expect(armed.threshold).toBe(2);
     for (const key of armed.seatedKeys) expect(roots, "a seat key never equals a root").not.toContain(key);
-    // Each face holds two rows: its seat key and its next key, and the digest commits the next set.
-    expect(seatRows()).toBe(6);
-    for (const [face, key] of armed.seatedKeys.entries()) expect(await seatKeysOfFace(face)).toContain(key);
-    const next = await committedNextSeats(armed.seatedKeys, 2, armed.nextKeyCommit);
-    expect(next).not.toBeNull();
-    expect(sealKeySetHash(next!, 2)).toBe(armed.nextKeyCommit);
-    for (const key of next!) { expect(armed.seatedKeys).not.toContain(key); expect(roots).not.toContain(key); }
+    expect(seatRows()).toBe(3);                                                      // the seat keys alone: the next keys rest on cards
+    for (const [face, key] of armed.seatedKeys.entries()) expect(await seatKeysOfFace(face)).toEqual([key]);
     expect(await act("seat.held", { keys: [...armed.seatedKeys, ...roots] })).toEqual({ held: armed.seatedKeys });
-    // CONTROL: the same seat again keeps every key and the commitment, so the genesis it answers stands identical.
-    const again = await act("seat.arm-genesis") as unknown as Armed;
+    const again = await act("seat.arm-genesis") as unknown as Armed;                 // CONTROL: the same seat keeps the keys
     expect(again.seatedKeys).toEqual(armed.seatedKeys);
-    expect(genesisCharterEpoch(again.seatedKeys, again.threshold, again.nextKeyCommit).epochCid).toBe(genesis.epochCid);
     expect(again.minted).toEqual([]);
-    expect(seatRows()).toBe(6);
+    expect(seatRows()).toBe(3);
   });
 
   test("A2 — every refusal lands before any key mints", async () => {
     await custody("arm-a2");
-    // No chair stands.
     expect(await why(act("seat.arm-genesis"))).toMatch(/^act-refused: no persona stands for a chair/);
     const roots = await stand([0, 1]);
     expect(await why(act("seat.arm-genesis", { threshold: 3 }))).toMatch(/^act-refused: --threshold 3 sits past the 2 chairs that stood/);
-    // A chair nobody stands for keeps its key, and that key reads as a persona root: the seat refuses by that name.
     writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ displayName: "Kept", verifyingKey: roots[1]! }] });
     expect(await why(act("seat.arm-genesis"))).toMatch(/^act-refused: a chair holds the persona root at h1 as its key/);
-    // A chair whose key rests in no row here belongs to another vault: the seat refuses by fingerprint.
     writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ displayName: "Theirs", verifyingKey: "3d".repeat(32) }] });
     expect(await why(act("seat.arm-genesis"))).toMatch(/^act-refused: the charter standing here seats 1 chair\(s\) this vessel did not found/);
-    expect(seatRows()).toBe(0);                                                      // no refusal minted a row
+    expect(seatRows()).toBe(0);
     writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [] });
     expect(await why(act("seat.arm-genesis"))).toBe("ran");                          // CONTROL
-    expect(seatRows()).toBe(4);
+    expect(seatRows()).toBe(2);
   });
 
-  test("A3 — a head the rite armed rolls, and rolls again; the closing keys retire once the charter moved", async () => {
+  test("A3 — a head rolls from its cards, and rolls again; each card's key becomes its chair's seat key", async () => {
     await custody("arm-a3");
     await stand([0, 1, 2]);
-    const { armed: genesisArmed } = await writeGenesis();
-    const committed = await committedNextSeats(genesisArmed.seatedKeys, 2, genesisArmed.nextKeyCommit);
-    const first = await roll();
-    expect(first.armed.revealed).toBeNull();                                         // the same chairs: the seated set IS the reveal
-    expect(first.armed.seatedKeys).toEqual(committed);
-    expect([...first.retired].sort()).toEqual([...genesisArmed.seatedKeys].sort());
-    expect(await act("seat.held", { keys: genesisArmed.seatedKeys })).toEqual({ held: [] });
-    expect(seatRows()).toBe(6);                                                      // each face: its seated key and its next one
-    const second = await roll();
-    expect(second.armed.spent).toEqual(first.armed.seatedKeys);
+    const { armed: g, cards } = await writeGenesis();
+    const revealed = await Promise.all(cards.map(publicOf));
+    const first = await roll(cards);
+    expect([...first.armed.seatedKeys].sort()).toEqual([...revealed].sort());          // each card's key, seated
+    expect([...first.armed.minted].sort()).toEqual([...revealed].sort());             // adopted as rows here
+    expect([...first.retired].sort()).toEqual([...g.seatedKeys].sort());              // the closing keys left
+    expect(seatRows()).toBe(3);
+    const second = await roll(first.cards);
+    expect([...second.armed.spent].sort()).toEqual([...first.armed.seatedKeys].sort());
     expect(readNexusDoc(larSealHome())!.sealLineage).toHaveLength(3);
-    expect(seatRows()).toBe(6);
+    expect(seatRows()).toBe(3);
   });
 
-  test("A4 — a seat change rides the reveal: a chair joins by possession, a chair that left drops", async () => {
+  test("A4 — a seat change: a chair joins by possession, a chair that left drops and its revealed key spends", async () => {
     await custody("arm-a4");
     await stand([0, 1, 2]);
-    const { armed: g } = await writeGenesis();
-    const committed = (await committedNextSeats(g.seatedKeys, 2, g.nextKeyCommit))!;
-    await stand([3]);                                                                // a fourth chair stands
-    const grown = await roll();
-    expect(grown.armed.revealed).toEqual({ keys: committed, threshold: 2 });
+    const { cards } = await writeGenesis();
+    await stand([3]);
+    const grown = await roll(cards);
     expect(grown.armed.kahu.map((k) => k.displayName)).toEqual(["Chair 0", "Chair 1", "Chair 2", "Chair 3"]);
-    expect(grown.armed.seatedKeys.slice(0, 3)).toEqual(committed);
-    expect(grown.armed.threshold).toBe(2);                                           // the charter's own rule still fits
-    await stepDown(1);                                                               // chair 1 steps down
-    const shrunk = await roll();
+    expect(grown.armed.minted).toHaveLength(4);                                       // three adopted, one minted by possession
+    await stepDown(1);
+    const shrunk = await roll(grown.cards);
     expect(shrunk.armed.kahu.map((k) => k.displayName)).toEqual(["Chair 0", "Chair 2", "Chair 3"]);
-    expect(shrunk.armed.revealed).not.toBeNull();
-    // The face that stepped down held a committed key the roll left unseated: it spends with the closing keys.
-    expect(shrunk.retired).toHaveLength(5);
-    expect(seatRows()).toBe(6);                                                      // three chairs: a seated key and a next key each
-    expect(readNexusDoc(larSealHome())!.sealLineage).toHaveLength(3);
+    expect(shrunk.retired).toHaveLength(5);                                           // four closing keys and the leaving chair's revealed key
+    expect(seatRows()).toBe(3);
   });
 
-  test("A5 — the retirement's licence: seated, committed and crossing keys stay; a superseded key leaves", async () => {
+  test("A5 — the retirement's licence", async () => {
     await custody("arm-a5");
     await stand([0, 1, 2]);
-    const { armed: g } = await writeGenesis();
-    const committed = (await committedNextSeats(g.seatedKeys, 2, g.nextKeyCommit))!;
-    const spare = (await seatChairs([0], { family: "spare" })).keys[0]!;            // a row no charter seats
-    const said = await act("seat.retire", { keys: [g.seatedKeys[0]!, committed[0]!, spare, "4e".repeat(32)] }) as { retired: string[]; kept: unknown[] };
-    expect(said).toEqual({ retired: [spare], kept: [{ key: g.seatedKeys[0], why: "seated" }, { key: committed[0], why: "committed" }] });
-    // An open crossing keeps the outgoing keys after the roll, until its seal.
+    const { armed: g, cards } = await writeGenesis();
+    const spare = (await seatChairs([0], { family: "spare" })).keys[0]!;
+    expect(await act("seat.retire", { keys: [g.seatedKeys[0]!, spare, "4e".repeat(32)] }))
+      .toEqual({ retired: [spare], kept: [{ key: g.seatedKeys[0], why: "seated" }] });
     await act("crossing.open");
-    const { retired } = await roll();
-    expect(retired).toEqual([]);
+    const { retired } = await roll(cards);
+    expect(retired).toEqual([]);                                                      // an open crossing keeps the outgoing keys
     const again = await act("seat.retire", { keys: g.seatedKeys }) as { kept: Array<{ why: string }> };
     expect(again.kept.map((k) => k.why)).toEqual(["crossing-open", "crossing-open", "crossing-open"]);
-    // A torn charter refuses the whole act: nothing tells a seated key from a spent one there.
+    const carried = join(larSealHome(), "carried", "epoch0-" + "ab".repeat(32));
+    mkdirSync(carried, { recursive: true });
+    writeFileSync(nexusCharterDocPath(carried), "a carried charter that will not read");
+    expect(await why(act("seat.retire", { keys: g.seatedKeys }))).toMatch(/^act-refused: a carried charter stands and reads TORN/);
+    rmSync(join(larSealHome(), "carried"), { recursive: true, force: true });
     writeFileSync(nexusCharterDocPath(larSealHome()), "a charter that stands and will not read");
     expect(await why(act("seat.retire", { keys: g.seatedKeys }))).toMatch(/^act-refused: the charter stands but reads TORN/);
   });
 
-  test("A6 — a head that commits a set this vessel does not hold refuses; an unarmed head refuses", async () => {
+  test("A6 — the cards read before any row moves", async () => {
     await custody("arm-a6");
-    await stand([0]);
-    const { armed } = await writeGenesis();
-    const elsewhere = genesisCharterEpoch(armed.seatedKeys, 1, sealKeySetHash(["5a".repeat(32)], 1));
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: elsewhere.epochCid, sealLineage: [elsewhere], kahu: armed.kahu });
-    const before = seatRows();
-    expect(await why(act("seat.arm-roll"))).toMatch(/^act-refused: this vessel holds no key-set the standing head pre-committed/);
-    const unarmed = genesisCharterEpoch(armed.seatedKeys, 1, "");
-    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: unarmed.epochCid, sealLineage: [unarmed], kahu: armed.kahu });
-    expect(await why(act("seat.arm-roll"))).toMatch(/^act-refused: rotation unarmed/);
-    expect(seatRows()).toBe(before);                                                 // neither refusal minted a row
+    await stand([0, 1, 2]);
+    const { cards, armed } = await writeGenesis();
+    const rows = seatRows();
+    const stranger = new Uint8Array(32).fill(9);
+    expect(await why(act("seat.arm-roll", { cards: [hexOf(stranger), hexOf(cards[0]!)] }))).toMatch(/^act-refused: a card answers no digest the standing head committed/);
+    expect(await why(act("seat.arm-roll", { cards: [hexOf(cards[0]!), hexOf(cards[0]!)] }))).toMatch(/^act-refused: two cards answer one chair's digest/);
+    expect(await why(act("seat.arm-roll", { cards: [hexOf(cards[0]!)] }))).toMatch(/^act-refused: the head committed 3 chair\(s\) and a roll reveals 2 of them — 1 card\(s\) answered/);
+    expect(seatRows()).toBe(rows);                                                    // no refusal moved a row
+    const unarmed = genesisCharterEpoch(armed.seatedKeys, armed.threshold);
+    writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: armed.threshold, sealEpochCid: unarmed.epochCid, sealLineage: [unarmed], kahu: armed.kahu });
+    expect(await why(act("seat.arm-roll", { cards: cards.map(hexOf) }))).toMatch(/^act-refused: rotation unarmed/);
+    expect(seatRows()).toBe(rows);
   });
 
-  test("A7 — at the floor the armings, the retirement and the roll's hand refuse; the held reading answers", async () => {
+  test("A7 — at the floor the armings, the retirement, the roll's hand and the stand-in refuse; the held reading answers", async () => {
     const c = await custody("arm-a7");
     await stand([0]);
-    const { armed } = await writeGenesis();
+    const { armed, cards } = await writeGenesis();
     await c.holder.lock();
-    const steps = [() => act("seat.arm-genesis"), () => act("seat.arm-roll"), () => act("seat.retire", { keys: armed.seatedKeys }),
+    const steps = [() => act("seat.arm-genesis"), () => act("seat.arm-roll", { cards: cards.map(hexOf) }), () => act("seat.retire", { keys: armed.seatedKeys }),
       () => act("seal.sign", { seat: armed.seatedKeys[0], image: "ab" })];
     for (const step of steps) expect(await step().catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
+    writeFileSync(join(c.root, ".lar-test-scratch"), "");
+    expect(await act("seat.readback-stand-in").catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
     expect(await act("seat.held", { keys: armed.seatedKeys })).toEqual({ held: armed.seatedKeys });
   });
 
   test("A8 — one face's public halves: that face's rows alone; a row that answers another key refuses by name", async () => {
     await custody("arm-a8");
-    const zero = await seatChairs([0, 0], { family: "a8" });                        // two calls, one face: the same key
+    const zero = await seatChairs([0, 0], { family: "a8" });
     const one = (await seatChairs([1], { family: "a8" })).keys[0]!;
     expect(await seatKeysOfFace(0)).toEqual([zero.keys[0]]);
     expect(await seatKeysOfFace(1)).toEqual([one]);
-    // A row copied under another face's name fails its own seal: the name rides the sealed bytes.
     const rows = readdirSync(larIdentityDir()).filter((f) => f.startsWith("seat-key-h0-"));
     copyFileSync(join(larIdentityDir(), rows[0]!), join(larIdentityDir(), `seat-key-h2-${"0".repeat(32)}.bin`));
     expect(await seatKeysOfFace(2).catch((e: unknown) => e)).toMatchObject({ reading: "key-fails" });
-    // A row sealed whole under a name that commits to ANOTHER key opens, and its secret answers the wrong key.
     await updateColdCustodyRow("identity", seatKeyFile(one, 3), () => ({ plaintext: chairSeed(0, 0, "a8"), value: undefined }));
     expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toBeInstanceOf(CustodyRowUnavailable);
     expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toMatchObject({ reading: "names-another-key" });
   });
 
-  test("A9 — the roll's hand signs only what this vessel's arming holds", async () => {
+  test("A9 — the roll's hand signs only a lawful roll of this vessel's seats", async () => {
     await custody("arm-a9");
     await stand([0, 1, 2]);
-    const { armed: g, genesis } = await writeGenesis();
-    const committed = (await committedNextSeats(g.seatedKeys, 2, g.nextKeyCommit))!;
-    const following = (await seatChairs([0, 1, 2], { family: "a9-next" })).keys;
-    const image = (keys: readonly string[], next: string): string =>
-      Buffer.from(sealRollBytes({ prevEpochCid: genesis.epochCid, keys, threshold: 2, nextKeyCommit: next })).toString("hex");
-    const stranger = Buffer.from(await (await import("@noble/ed25519")).getPublicKeyAsync(new Uint8Array(32).fill(77))).toString("hex");
-    // A seat change that adds a key no row here holds: the committed hands sign none of it.
-    expect(await why(act("seal.sign", { seat: committed[0], image: image([...committed, stranger], sealKeySetHash(following, 2)) })))
+    const { genesis, cards } = await writeGenesis();
+    const armed = await act("seat.arm-roll", { cards: cards.map(hexOf) }) as unknown as ArmedRoll;
+    const { next } = await cardsFor(armed.seatedKeys, armed.threshold);
+    const image = (keys: readonly string[], digests: readonly string[], threshold = 2, nextThreshold = threshold): string =>
+      hexOf(sealRollBytes({ prevEpochCid: genesis.epochCid, keys, threshold, nextKeyDigests: digests, nextThreshold }));
+    const stranger = await publicOf(new Uint8Array(32).fill(77));
+    const seat = armed.seatedKeys[0]!;
+    expect(await why(act("seal.sign", { seat, image: image([...armed.seatedKeys, stranger], [...next.digests, "aa".repeat(32)]) })))
       .toMatch(/^act-refused: the roll seats a key that rests in no seat row on this vessel/);
-    // A roll whose forward commitment names a set no row here holds: refused, though it seats the committed set.
-    expect(await why(act("seal.sign", { seat: committed[0], image: image(committed, sealKeySetHash(["5b".repeat(32), "6c".repeat(32), "7d".repeat(32)], 2)) })))
-      .toMatch(/^act-refused: the roll's forward commitment names no key-set this vessel's arming holds/);
-    // A roll whose forward set names the closing keys, which rest here and which the roll spends: refused.
-    expect(await why(act("seal.sign", { seat: committed[0], image: image(committed, sealKeySetHash(g.seatedKeys, 2)) })))
-      .toMatch(/^act-refused: the roll's forward commitment names no key-set this vessel's arming holds/);
-    expect(await why(act("seal.sign", { seat: committed[0], image: image(committed, sealKeySetHash(following, 2)) }))).toBe("ran");   // CONTROL
+    expect(await why(act("seal.sign", { seat, image: image(armed.seatedKeys, next.digests.slice(1)) })))
+      .toMatch(/^act-refused: the roll re-arms its seats short of one distinct digest each/);
+    expect(await why(act("seal.sign", { seat, image: image(armed.seatedKeys, next.digests, 2, 1) })))
+      .toMatch(/^act-refused: the roll re-arms its seats short of one distinct digest each/);           // a successor under another rule
+    const fresh = (await seatChairs([0], { family: "a9-fresh" })).keys[0]!;
+    expect(await why(act("seal.sign", { seat: fresh, image: image([fresh], [next.digests[0]!], 1) })))
+      .toMatch(/^act-refused: the roll reveals fewer of the seats the standing head committed/);
+    expect(await why(act("seal.sign", { seat, image: image(armed.seatedKeys, next.digests) }))).toBe("ran");   // CONTROL
   });
 
-  test("A10 — the retirement refuses where a record reads unwhole; an arming settles its faces first", async () => {
+  test("A10 — an arming settles its faces first: a spare row leaves, every needed row stays", async () => {
     await custody("arm-a10");
     await stand([0, 1, 2]);
-    const { armed: g } = await writeGenesis();
-    // A stopped arming's rows (a spare row on face 0) leave at the next arming; every needed row stays.
+    await writeGenesis();
     const spare = (await seatChairs([0], { family: "a10-spare" })).keys[0]!;
-    expect(seatRows()).toBe(7);
-    await act("seat.arm-genesis");                                                   // the same seat again
-    expect(await act("seat.held", { keys: [spare] })).toEqual({ held: [] });
-    expect(seatRows()).toBe(6);
-    // A carried charter whose seat this vessel holds commits a next key that rests here: an arming that settles
-    // the same face leaves both standing.
-    const [carriedSeat, carriedNext] = (await seatChairs([0, 0], { family: "a10-carried" }).then(() => Promise.all([
-      seatChairs([0], { family: "a10-carried-seat" }), seatChairs([0], { family: "a10-carried-next" }),
-    ]))).map((c) => c.keys[0]!) as [string, string];
-    const carriedGenesis = genesisCharterEpoch([carriedSeat], 1, sealKeySetHash([carriedNext], 1));
-    writeNexusDoc(join(larSealHome(), "carried", carriedGenesis.epochCid), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: carriedGenesis.epochCid, sealLineage: [carriedGenesis], kahu: [{ displayName: "Carried", verifyingKey: carriedSeat }] });
+    expect(seatRows()).toBe(4);
     await act("seat.arm-genesis");
-    expect(await act("seat.held", { keys: [carriedSeat, carriedNext] })).toEqual({ held: [carriedSeat, carriedNext] });
-    rmSync(join(larSealHome(), "carried"), { recursive: true, force: true });
-    // A carried charter that stands and reads torn: nothing retires.
-    mkdirSync(join(larSealHome(), "carried", "epoch0-" + "ab".repeat(32)), { recursive: true });
-    writeFileSync(nexusCharterDocPath(join(larSealHome(), "carried", "epoch0-" + "ab".repeat(32))), "a carried charter that will not read");
-    expect(await why(act("seat.retire", { keys: g.seatedKeys }))).toMatch(/^act-refused: a carried charter stands and reads TORN/);
-    rmSync(join(larSealHome(), "carried"), { recursive: true, force: true });
-    // A standing commitment this vessel cannot name protects every row: nothing retires.
-    const doc = readNexusDoc(larSealHome())!;
-    const elsewhere = genesisCharterEpoch(g.seatedKeys, 2, sealKeySetHash(["5a".repeat(32)], 1));
-    writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: elsewhere.epochCid, sealLineage: [elsewhere] });
-    const spare2 = (await seatChairs([1], { family: "a10-spare" })).keys[0]!;
-    expect(await why(act("seat.retire", { keys: [spare2] }))).toMatch(/^act-refused: the standing head commits a next key-set this vessel cannot name/);
-    expect(await act("seat.held", { keys: [spare2] })).toEqual({ held: [spare2] });
+    expect(await act("seat.held", { keys: [spare] })).toEqual({ held: [] });
+    expect(seatRows()).toBe(3);
   });
 
-  test("A11 — a standing chair keeps only a key of its OWN face; a key another face holds gives way to a fresh one", async () => {
+  test("A11 — a standing chair keeps only a key of its OWN face", async () => {
     await custody("arm-a11");
     await stand([0]);
-    const borrowed = (await seatChairs([1], { family: "a11" })).keys[0]!;           // a seat row of face 1
+    const borrowed = (await seatChairs([1], { family: "a11" })).keys[0]!;
     writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: 1, sealEpochCid: null, kahu: [{ displayName: "Chair 0", verifyingKey: borrowed }] });
     const armed = await act("seat.arm-genesis") as unknown as Armed;
-    expect(armed.seatedKeys).toHaveLength(1);
-    expect(armed.seatedKeys[0]).not.toBe(borrowed);                                  // face 0's chair takes a key of its own
+    expect(armed.seatedKeys[0]).not.toBe(borrowed);
     expect(armed.superseded).toContain(borrowed);
+  });
+
+  test("A12 — a copied marker stands in for no read-back; the marker beside the test route does", async () => {
+    const c = await custody("arm-a12");                                               // custody under another passphrase
+    expect(await act("seat.readback-stand-in")).toEqual({ standIn: false });          // no marker
+    writeFileSync(join(c.root, ".lar-test-scratch"), "");
+    expect(await act("seat.readback-stand-in")).toEqual({ standIn: false });          // RED: a copied marker alone
+    // CONTROL: a root staged as a harness stages one, custody founded under the published test route.
+    const root = mkdtempSync(join(tmpdir(), "lar-custody-staged-"));
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    const homes = vesselCustodyHomes();
+    mkdirSync(homes.identity, { recursive: true, mode: 0o700 });
+    const io = new FsCustodyIo(homes);
+    const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }] });
+    const holder = makeCustodyHolder({ io, homes });
+    await holder.adopt(founded.vk);
+    seatCustody(holder);
+    try {
+      writeFileSync(join(root, ".lar-test-scratch"), "");
+      expect(await act("seat.readback-stand-in")).toEqual({ standIn: true });
+    } finally {
+      await holder.lock();
+      unseatCustody(holder);
+      process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

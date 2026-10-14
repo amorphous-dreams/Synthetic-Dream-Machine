@@ -276,12 +276,12 @@ produce, and seated keys it cannot (`nexus-phase.ts`) — and claims no proof of
 seat claim takes no Handle and carries a private chair label; `nexus seal export` carries fingerprints and
 no label. A chair's key rests as a sealed seat row on the vessel whose face stood for it, minted at random
 apart from every persona root (`seat-key-store.ts`, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>):
-`seal seat` mints it with the chair's NEXT key beside it and commits the next set, `seal rotate` seats the
-committed set it finds among those rows, and the quorum doors sign with the rows (`held-quorum.ts`).
-''Owed in code'': the next key rests on the same disk as the seat key, so the commitment protects nothing
-against a holder of that disk, where the law wants it on paper (the per-seat cold digest and its card); every
-chair of a charter comes from one vault; no co-founding verb and no cross-vault countersign stand; the
-cold-key card's codec stands in mesh with no caller (`cold-key-card.ts`).
+`seal seat` mints it, prints the chair's NEXT key as a cold-key card the operator reads back before the charter
+moves, and commits one digest per chair (`nextKeyDigests`); `seal rotate` takes each card back on a terminal and
+adopts each revealed key as its chair's seat key; the quorum doors sign with the rows (`held-quorum.ts`). An
+earlier charter shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. ''Owed in code'': the
+card's rehearsal (`seal cold rehearse`); every chair of a charter comes from one vault; no co-founding verb and no
+cross-vault countersign stand.
 
 <<~/ahu>>
 
@@ -413,9 +413,8 @@ seat their own key (#/seed-and-nexus).
 ''Retired'': the shared reserve seed and the reserve-reveal verb.
 
 ''Owed in code — the re-found.'' The per-seat commitment changes charter bytes, epoch CIDs and the Nexus
-AID, so it lands inside the re-found. Until then the charter carries one `nextKeyCommit` over the next set
-the rite minted, sealed on the arming vessel beside each chair's seat key; no verb carries a card into a
-rotation; and `seal reseat` and the catastrophe rite stand unbuilt. The field's principles for a recovery
+AID, so it lands inside the re-found. The charter carries one digest per seat; the rite prints each chair's
+cold-key card and `seal rotate` takes the cards back; `seal reseat` and the catastrophe rite stand unbuilt. The field's principles for a recovery
 object and its reader rest on the shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf">>).
 
 !!! Owed in code ~ names that blur the relations
@@ -427,8 +426,8 @@ object and its reader rest on the shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/
 The cabal ⊥ quorum split stands in code where it can:
 
 * ''`lares nexus rite quorum`'' seats the kahu QUORUM: it gives each chair that stands a seat key, seats the
-  genesis epoch, arms it with each chair's next key, prints no card, and mints no person. ''Owed in code'':
-  each seat's COLD next digest and its card, in place of a next key that rests on the vessel.
+  genesis epoch, prints each chair's cold-key card, arms the genesis with one digest per chair, and mints no
+  person.
 * ''`KahuQuorumSeats`'' names the quorum's seats — a seated key-set, its threshold and the charter epoch
   it authorizes. Keys, never people.
 * ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) names the CABAL: a Keyhive membership document
@@ -545,6 +544,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;XITHdxmBdVfSHZh1ntU203kJuD6EnFITaHND5XgbOwI
+<<^ code="&#x0003;">>ni:///sha-256;Oj-4LWtSu3lliFP1jroErN14BTtQVcp6Z3beiwRGE8Y
 
 <<^ code="&#x0004;" -> to="?">>

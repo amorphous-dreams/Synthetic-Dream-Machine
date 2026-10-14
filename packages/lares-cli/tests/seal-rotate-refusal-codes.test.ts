@@ -8,6 +8,7 @@ import { larSealHome } from "../src/env.js";
 import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "@lararium/node";
 import { genesisCharterEpoch, renameOwnPersona, sealKeySetHash, standForKahuSeat } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
+import { sealRite, type SealRite } from "./seal-rite-fixture.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -35,6 +36,9 @@ describe("seal rotate refusal codes", () => {
   let custody: ScratchCustody;
   beforeEach(async () => { vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 }); custody = await seatScratchCustody(); });
   afterEach(async () => { await custody.drop(); });
+  // One rite per charter: it carries each chair's cold-key card from the seat to the roll, as a person does.
+  let rite: SealRite;
+  beforeEach(() => { rite = sealRite(); });
   async function roster(): Promise<string[]> {
     const petnames = await makeNodePersonaPetnameStore(); const declarations = await makeNodePersonaDeclarationStore(); const keys: string[] = [];
     for (let i = 0; i < 3; i++) { const face = await generateOrLoadPersonaGroupRoot(i); await renameOwnPersona(petnames, i, `veil-${i}`); await standForKahuSeat(declarations, i, true); keys.push(face.verifyingKey); }
@@ -42,26 +46,26 @@ describe("seal rotate refusal codes", () => {
   }
   test("an unarmed head and a head this vessel cannot reveal refuse by name, and preserve bytes", async () => {
     await roster();
-    expect((await run(args(["seal", "seat"]))).code).toBe(0);
+    expect((await rite.seat()).code).toBe(0);
     const path = nexusCharterDocPath(larSealHome());
     const doc = readNexusDoc(larSealHome())!;
     const seated = doc.kahu.map((k) => k.verifyingKey!);
     // An UNARMED head: it committed nothing, so the roll refuses under the roll law's own name.
-    const unarmed = genesisCharterEpoch(seated, 2, "");
+    const unarmed = genesisCharterEpoch(seated, 2);
     writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: unarmed.epochCid, sealLineage: [unarmed] });
     const unarmedBefore = readFileSync(path);
-    const refusedUnarmed = await run(args(["seal", "rotate"]));
+    const refusedUnarmed = await rite.rotate() as { code: number; out: Record<string, any> };
     expect(refusedUnarmed.code).not.toBe(0); expect(refusedUnarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
 
     // A head that commits a set this vessel holds no row of: nothing reveals it.
-    const stranger = genesisCharterEpoch(seated, 2, sealKeySetHash(["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], 2));
+    const stranger = genesisCharterEpoch(seated, 2, { digests: ["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], threshold: 2 });
     writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: stranger.epochCid, sealLineage: [stranger] });
     const strangerBefore = readFileSync(path);
-    const refusedStranger = await run(args(["seal", "rotate"]));
-    expect(refusedStranger.code).not.toBe(0); expect(refusedStranger.out.error.message).toMatch(/holds no key-set the standing head pre-committed/); expect(readFileSync(path).equals(strangerBefore)).toBe(true);
+    const refusedStranger = await rite.rotate() as { code: number; out: Record<string, any> };
+    expect(refusedStranger.code).not.toBe(0); expect(refusedStranger.out.error.message).toMatch(/a card answers no digest the standing head committed/); expect(readFileSync(path).equals(strangerBefore)).toBe(true);
 
     // CONTROL: the head the rite armed rolls.
     writeNexusDoc(larSealHome(), doc);
-    expect((await run(args(["seal", "rotate"]))).code).toBe(0);
+    expect((await rite.rotate() as { code: number; out: Record<string, any> }).code).toBe(0);
   });
 });

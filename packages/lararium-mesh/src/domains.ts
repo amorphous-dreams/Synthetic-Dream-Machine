@@ -91,10 +91,10 @@ export const GUARDIAN_REGISTRATION_DOMAIN = frozen("guardian-registration");
 /** The growth rite's crossing record: old quorum signs the handoff, new quorum the receipt, witnesses
  *  outside both sets attest the rite — the checkable form of the ceremony witness report. */
 export const RESERVE_TRANSITION_DOMAIN = frozen("reserve-transition");
-/** A charter epoch's ROLL: the revealed, pre-committed keys sign the predecessor's cid, the seated key-set,
- *  its threshold and the next commitment — the KERI rotation event. Its own name: a roll must never verify
+/** A charter epoch's ROLL: the revealed cold-key quorum signs the predecessor's cid, the seated key-set,
+ *  its threshold and the next per-seat commitments — the KERI rotation event. Its own name: a roll must never verify
  *  as a crossing record, a roll anchor, or any carriage act. */
-export const SEAL_ROLL_DOMAIN = mint("seal-roll");
+export const CHARTER_SEAT_ROLL_DOMAIN = mint("charter-seat-roll");
 /** A seat's NEXT-KEY commitment: the digest of one cold verifying key, the value a charter carries until that
  *  seat reveals the key to roll. Its own name: a seat digest must never read as a key-set hash or a bare hash. */
 export const SEAT_NEXT_KEY_DOMAIN = mint("seat-next-key");

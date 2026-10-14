@@ -100,14 +100,24 @@ export async function heldSeats(keys: readonly string[]): Promise<string[]> {
   return (await sealedAct<{ held: string[] }>("seat.held", { keys: keys.map((k) => k.toLowerCase()) })).held;
 }
 
-/** Arm a genesis behind the door: each standing chair's seat key and next key mint there; the roster and a digest answer. */
+/** Arm a genesis behind the door: each standing chair's seat key mints there, and the roster answers. */
 export function armGenesisSeats(threshold?: number): Promise<ArmedGenesis> {
   return sealedAct<ArmedGenesis>("seat.arm-genesis", threshold === undefined ? {} : { threshold });
 }
 
-/** Arm a roll behind the door: the committed set this vessel holds, the chairs that stand, and the digest after. */
-export function armRollSeats(threshold?: number): Promise<ArmedRoll> {
-  return sealedAct<ArmedRoll>("seat.arm-roll", threshold === undefined ? {} : { threshold });
+/**
+ * Arm a roll behind the door from the cards a person typed back: each revealed key the standing head committed
+ * becomes its chair's seat key there, and the door answers the roster that stands and its hands. The cards cross the
+ * custody door alone, never a store verb.
+ */
+export function armRollSeats(cards: readonly Uint8Array[], threshold?: number): Promise<ArmedRoll> {
+  const hex = cards.map((card) => Buffer.from(card).toString("hex"));
+  return sealedAct<ArmedRoll>("seat.arm-roll", threshold === undefined ? { cards: hex } : { cards: hex, threshold });
+}
+
+/** Whether a card's read-back stands in: a staged test root whose custody proves the published test route. */
+export async function readBackStandsIn(): Promise<boolean> {
+  return (await sealedAct<{ standIn: boolean }>("seat.readback-stand-in")).standIn;
 }
 
 /** Retire the seat keys among `keys` that nothing needs; the door's own licence decides, whatever this names. */

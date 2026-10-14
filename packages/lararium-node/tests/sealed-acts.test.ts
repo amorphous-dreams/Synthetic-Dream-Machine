@@ -110,7 +110,7 @@ describe("the sealed-act table", () => {
     const sign = (args: Record<string, unknown>) => runSealedAct("seal.sign", { seat, ...args }, ctx) as Promise<{ signer: string; sig: string }>;
     // A WELL-FORMED ROLL SIGNS ONLY UNDER A CHARTER THAT LICENSES IT (`seal-ceremony.test.ts` walks the license).
     // No charter stands here: the roll the parent commit's row signed for any caller refuses.
-    const roll = sealRollBytes({ prevEpochCid: "epoch0-" + "ab".repeat(32), keys: [seat], threshold: 1, nextKeyCommit: "cd".repeat(32) });
+    const roll = sealRollBytes({ prevEpochCid: "epoch0-" + "ab".repeat(32), keys: [seat], threshold: 1, nextKeyDigests: ["cd".repeat(32)], nextThreshold: 1 });
     expect(await reasonOf(sign({ image: hex(roll) }))).toBe("act-refused");
     // EVERY OTHER IMAGE REFUSES TOO, a crossing record among them: the crossing's hands mark through the rite's own acts.
     const crossing = canonicalJsonBytes({ domain: RESERVE_TRANSITION_DOMAIN, fromEpochCid: "a", toEpochCid: "b" });
