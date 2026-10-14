@@ -7,6 +7,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 ### The working layer and the founded seat
 
 **Fixed**
+- **An input past the page's bound says so.** A field whose text outgrows the relay's bound raises a word beside the pane that names the field's count and the bound, and the word stays until that field relays within the bound; the page once kept the characters on screen while the wiki never received them.
 - **A holding copy keeps its base when the wiki drops or renames its carrier.** A base leaves with its own file alone, so a later ingest of that holding directory lands nothing; it once re-landed a carrier the wiki had dropped.
 - **The shore's base tree writes each base at once.** A row rests the moment it gets recorded and a removal unlinks before it returns, so no second writer lays an older base over a newer one; a row the disk refuses gets named once and counted.
 - **`lares cancel` answers the ledger's verdict.** A cancel that reached the vessel after it committed the request once read as a withdrawal. The door reports `withdrawn: true` and exits 0 where the vessel holds the id abandoned, and `cancel-lost` with the state the vessel holds where the act already stood; that act runs on, and `lares receipt <id>` reads its outcome.
@@ -106,6 +107,7 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 - **The container offers a one-shot certificate issuer.** Compose profile `issuer` asks for one DNS-01 wildcard certificate per machine. It reads the registrar's credential from two owner-read files in a directory outside both mounts, and it refuses by name on a missing or misplaced directory, a loose file or directory mode, or unaccepted authority terms.
 
 **Changed**
+- **The share gate's comments state its reach.** A bag's declared tier bites at the crossing gate and the bulb read face; the tier's own share decision stands specified and reaches no vessel's share config, and an absent secrets reading floors a federatable document public.
 - **`lares vault` answers seven verbs.** `status`, `unlock`, `lock`, `bind`, `unbind`, `backup` and `restore` stand; `vault seal`, `vault rotate`, `vault repair` and `vault passphrase` refuse as unknown sub-verbs, and `LARES_ARCHIVE_PASSPHRASE` and `LARES_ARCHIVE_PASSPHRASE_NEW` open nothing. The vessel key seals every private row, and a credential rides a terminal alone.
 - **`lares vault status` gives one reading of each file.** Every standing file the carrier table names prints once: a row under the vessel key reads sealed or prints `FAULT`, a row outside it prints the law it rests bare under, and a private file no row names prints `OUTSIDE THE TABLE` with its reason. The JSON answer carries `custody` and `door`; `--check` leaves.
 - **`lares vault unbind <slot-id> --rotate` runs as one act.** The rotation checks every sealed file before any byte moves, so a carrier that refuses it leaves the slot bound and the tree untouched.
