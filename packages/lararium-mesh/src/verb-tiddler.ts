@@ -154,11 +154,11 @@ interface ReceiptFactCommon {
   readonly seq:        number;
 }
 
-/** `abandoned` is the ONE state that may carry no digest — and only via an explicit
- *  `{op:"cancel"}` withdrawal, which compares no content claim at all (an EOF-drop
- *  still records the invocation's own digest before refusing by state). Every other
- *  state names a claim this ledger arbitrated or observed, so its digest is required,
- *  never a legacy-shaped optional absence (early alpha, no shim). */
+/** `abandoned` may carry no digest — and only via an explicit `{op:"cancel"}` withdrawal,
+ *  which compares no content claim at all (an EOF-drop still records the invocation's
+ *  own digest before refusing by state). The ring carries that absence into `evicted`.
+ *  Every other state names a claim this ledger arbitrated or observed, so its digest is
+ *  required, never a legacy-shaped optional absence (early alpha, no shim). */
 export interface ReceiptFactAbandoned extends ReceiptFactCommon {
   readonly state:       "abandoned";
   readonly inputDigest?: string;
@@ -185,11 +185,15 @@ export interface ReceiptFactLanded extends ReceiptFactCommon {
   readonly outcomeBytes: number;
 }
 
-/** A request the ring dropped: it keeps its digest, effect key and terminal, and no outcome record to measure. */
+/**
+ * A request the ring dropped: it keeps its digest, effect key and terminal, and no outcome record to measure.
+ * One evicted fact names no digest: the id a person cancelled before any request reached the vessel, which held
+ * none while it stood `abandoned`. That fact names no terminal either, since a verdict always names its digest.
+ */
 export interface ReceiptFactEvicted extends ReceiptFactCommon {
-  readonly state:       "evicted";
-  readonly inputDigest: string;
-  readonly bootEpoch?:  number;
+  readonly state:        "evicted";
+  readonly inputDigest?: string;
+  readonly bootEpoch?:   number;
 }
 
 /** A request that reached a verdict. */
@@ -258,8 +262,15 @@ export function parseReceiptFact(fields: Record<string, unknown>): ReceiptFact |
       ...(terminal    !== undefined && { terminal }),
     };
   }
-  // Every state but `abandoned` claims a digest — a committed/done/error/evicted fact with
-  // none on the wire reads as torn, never as a legacy-shaped "unverifiable" absence.
+  // A cancelled id the ring let go: it held no digest while it stood abandoned, and it holds none evicted. A
+  // digest-less evicted fact that names a verdict reads as torn, since no verdict lands without its digest.
+  if (state === "evicted" && inputDigest === undefined) {
+    // A cancel names no content: any `terminal` or `effect-key` field beside it, sound or not, reads torn.
+    if (fields["terminal"] !== undefined || fields["effect-key"] !== undefined) return null;
+    return { requestId, state, seq };
+  }
+  // Every other state claims a digest — a committed/done/error fact with none on the wire reads as torn,
+  // never as a legacy-shaped "unverifiable" absence.
   if (inputDigest === undefined) return null;
   const epochRaw = fields["boot-epoch"];
   const epoch = typeof epochRaw === "string" && /^\d+$/.test(epochRaw) ? Number.parseInt(epochRaw, 10)

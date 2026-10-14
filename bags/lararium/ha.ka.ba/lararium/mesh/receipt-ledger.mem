@@ -57,7 +57,7 @@ The vessel keeps one ''receipt fact'' per request id at `@daemon/receipts/<reque
 | `interrupted` | an earlier boot committed it, and that boot ended before an outcome landed; its effect may have landed in part | the same |
 | `abandoned` | this vessel refused the request before commit, and this channel never ran it | id, `seq`; the input digest where the request itself reached the vessel |
 | `done` · `error` | the outcome landed, and the vessel keeps its record | id, `seq`, input digest, `terminal`, `outcome-bytes` |
-| `evicted` | the ring let the request go | id, `seq`, input digest, and `terminal` where a verdict stood |
+| `evicted` | the ring let the request go | id, `seq`, and `terminal` where a verdict stood; the input digest, save for an id a person cancelled before any request reached the vessel, which held none |
 
 * ''`seq` orders one vessel's own facts.'' A counter, never a time; it names which fact leaves the ring first.
 * ''The boot epoch fences a restart.'' At boot the ledger reads each `committed` fact of an earlier epoch: where its outcome landed unobserved the fact takes that verdict, and where none landed it reads `interrupted`. No timer decides either.
@@ -113,7 +113,7 @@ The ledger keeps outcome records inside two bounds, and either one evicts.
 * ''Count'': past `ring` tracked requests, the oldest by `seq` leaves.
 * ''Bytes'': each landed fact names what its outcome record weighs. While the kept records weigh more than `ringBytes`, the oldest kept record leaves. The record that just landed stays for the caller that awaits it.
 
-''Eviction keeps the fact and drops the outcome record where one stands.'' The count bound takes the oldest fact whatever its state, so a request still in flight, an interrupted one or an abandoned one leaves with no record to drop. The fact flips to `evicted`, and the id answers `retention-gap` from then on: never a second run, and never "did not happen". The record leaves before the fact says so, so a stop between the two leaves a verdict with no body, which the next pass finishes. The byte bound takes only facts that keep a record.
+''Eviction keeps the fact and drops the outcome record where one stands.'' The count bound takes the oldest fact whatever its state, so a request still in flight, an interrupted one or an abandoned one leaves the same way, with or without a record to drop. A cancelled id carries no digest into `evicted`, and such a fact names no verdict; one that names a verdict and no digest reads as torn. The fact flips to `evicted`, and the id answers `retention-gap` from then on: never a second run, and never "did not happen". The record leaves before the fact says so, so a stop between the two leaves a verdict with no body, which the next pass finishes. The byte bound takes only facts that keep a record.
 
 ''A stored fact never leaves the store.'' The ring bounds the outcome records and the verdicts that still stand; every id the vessel ever met keeps its fact, so an old id answers `retention-gap` and never reads as fresh.
 
@@ -176,7 +176,6 @@ The relay leg therefore owes three choices, each above a lane. It stands parked 
 
 * ''The ledger, arbitration, both abandonment events, the boot fence and the ring'': `packages/lararium-node/src/uds-channel.ts`. The fact's shapes and parser: `packages/lararium-mesh/src/verb-tiddler.ts`.
 * ''The CLI's doors'': `packages/lares-cli/src/local-connector.ts` (`invokeLocal`, `queryReceipt`, `cancelRequest`), `packages/lares-cli/src/commands/receipt-cmd.ts`, and the refusal codes of `packages/lares-cli/src/verb-call.ts`.
-* ''Owed on the direct leg'': a cancelled id holds no digest, and the count bound passes over it, so it leaves the ring's count and keeps reading `abandoned`.
 * ''Owed across a herm'': the whole relay leg of #/the-relay-leg.
 
 <<~/ahu>>
@@ -191,6 +190,6 @@ The relay leg therefore owes three choices, each above a lane. It stands parked 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;GVOowRQ-Gt6QhpJqJArwF4RtaU2yrhSQon49h3GTaWI
+<<^ code="&#x0003;">>ni:///sha-256;qPlqTaJad5FUJN1PPNCtXq7JMY_7_spT-MEBdLu0ZYg
 
 <<^ code="&#x0004;" -> to="?">>

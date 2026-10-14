@@ -470,15 +470,16 @@ export class FactLedger {
   }
 
   /** Drop one fact to `evicted` — keep its digest, effect key and terminal (a dedup/replay reader still needs
-   *  those), tombstone the full durable outcome body, and take its weight out of the tally. `evicted` is a
-   *  digest-REQUIRED state (it names a claim this ledger arbitrated or observed): a victim that never
-   *  arbitrated one (the one `cancel`-abandoned, no-digest shape) carries nothing to tombstone either, so it
-   *  leaves untouched, its `abandoned` verdict left standing. Answers whether it wrote. */
+   *  those), tombstone the full durable outcome body, and take its weight out of the tally. A victim that never
+   *  named a digest (the id a person cancelled before any request reached this vessel) leaves the same way and
+   *  names none evicted: every fact past the ring reads `evicted`, whatever it read before. Answers whether it
+   *  wrote. */
   private async evict(victimId: string): Promise<boolean> {
     const victim = this.cache.get(victimId);
-    if (!victim || victim.state === "evicted" || victim.inputDigest === undefined) return false;
+    if (!victim || victim.state === "evicted") return false;
     const evicted: ReceiptFact = {
-      requestId: victim.requestId, state: "evicted", seq: victim.seq, inputDigest: victim.inputDigest,
+      requestId: victim.requestId, state: "evicted", seq: victim.seq,
+      ...(victim.inputDigest !== undefined && { inputDigest: victim.inputDigest }),
       ...(victim.effectKey !== undefined && { effectKey: victim.effectKey }),
       ...(victim.terminal  !== undefined && { terminal:  victim.terminal }),
     };

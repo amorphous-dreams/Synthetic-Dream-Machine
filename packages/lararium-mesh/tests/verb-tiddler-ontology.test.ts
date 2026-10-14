@@ -101,10 +101,11 @@ describe("receipt facts — single-writer ledger codec (D1)", () => {
     expect(parsed).toEqual(fact);
   });
 
-  test("EVERGREEN: a non-abandoned fact with no digest refuses by name — parseReceiptFact returns null, never a legacy-shaped optional absence", () => {
+  test("EVERGREEN: a fact that claims content with no digest refuses by name — parseReceiptFact returns null, never a legacy-shaped optional absence", () => {
     // CONTROL: the identical field bag with `state: "abandoned"` instead parses fine (proven above),
-    // so this refusal is keyed on the state/digest pairing, not on a malformed bag in general.
-    for (const state of ["committed", "interrupted", "done", "error", "evicted"] as const) {
+    // so this refusal is keyed on the state/digest pairing, not on a malformed bag in general. `evicted`
+    // carries a cancelled id's absence onward (its own block below).
+    for (const state of ["committed", "interrupted", "done", "error"] as const) {
       expect(parseReceiptFact({ title: `${RECEIPT_FACT_URI_PREFIX}r2c`, "request-id": "r2c", state, seq: 3 })).toBeNull();
     }
   });
@@ -226,5 +227,28 @@ describe("DaemonMsg_PlaceVerb — effectKey rides the wire, whitelist unchanged 
     const noEffect = mkDaemonPlaceVerb({ verb: "load", args: {}, requestedBy: "did:key:zOp" });
     expect(noEffect.effectKey).toBeUndefined();
     expect(isVesselToIslandMsg(noEffect)).toBe(true);
+  });
+});
+
+describe("an evicted fact may name no digest, and then names no verdict", () => {
+  const title = `${RECEIPT_FACT_URI_PREFIX}req-evicted-cancel`;
+  const base = { title, "request-id": "req-evicted-cancel", state: "evicted", seq: "4" };
+
+  test("★ a cancelled id the ring let go parses: id, state and place in the order ★", () => {
+    expect(parseReceiptFact(base)).toEqual({ requestId: "req-evicted-cancel", state: "evicted", seq: 4 });
+    // It round-trips through the builder with no digest field minted.
+    expect(buildReceiptFact(parseReceiptFact(base)!).tiddler).not.toHaveProperty("input-digest");
+  });
+
+  test("a digest-less evicted fact that names a verdict reads torn", () => {
+    expect(parseReceiptFact({ ...base, terminal: "done" })).toBeNull();
+    // A field a cancel never mints reads torn too, whatever it holds.
+    expect(parseReceiptFact({ ...base, terminal: "later" })).toBeNull();
+    expect(parseReceiptFact({ ...base, "effect-key": "sha256:e" })).toBeNull();
+  });
+
+  test("CONTROL: an evicted fact with its digest keeps its verdict; a digest-less committed fact reads torn", () => {
+    expect(parseReceiptFact({ ...base, "input-digest": "sha256:d", terminal: "done" })).toMatchObject({ state: "evicted", inputDigest: "sha256:d", terminal: "done" });
+    expect(parseReceiptFact({ ...base, state: "committed", "boot-epoch": "1" })).toBeNull();
   });
 });

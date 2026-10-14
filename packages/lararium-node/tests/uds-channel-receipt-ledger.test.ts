@@ -1059,3 +1059,78 @@ describe("a cancel's answer carries the vessel's outcome, never the caller's aba
     } finally { await v.teardown(); }
   });
 });
+
+describe("a cancelled id leaves the ring as every other fact does", () => {
+  const ORIGIN = { kind: "lares-verb", requestId: "cancel-ring-fixture" } as const;
+  const WORKING = wikiSlotUri("daemon", "working");
+
+  function stores() {
+    const repo = new Repo({ sharePolicy: async () => true });
+    const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+    const workingHandle = repo.create<LarDoc>(emptyLarDoc());
+    let boot = 0;
+    const ledgerAt = (ring: number) => {
+      const c = new CompositeStore();
+      c.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(daemonHandle as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+      c.addLayer({ bagId: WORKING, store: new AutomergeDocStore(workingHandle as never, WORKING), writable: true });
+      return { ledger: new FactLedger(c, repo, ring, ++boot), composite: c };
+    };
+    /** The fields of the fact the store holds for `id`, as a later boot would read them. */
+    const stored = (id: string): Record<string, unknown> =>
+      plainRecord((workingHandle.doc() as LarDoc).tiddlers[`${RECEIPT_FACT_URI_PREFIX}${id}`]!).tiddler as Record<string, unknown>;
+    return { repo, ledgerAt, stored };
+  }
+  const IDS = ["req-c1", "req-c2", "req-c3", "req-c4", "req-c5"];
+
+  test("★ ring 2, five cancels: three facts read `evicted`, and at most the ring's count keep a standing verdict ★", async () => {
+    const s = stores();
+    const b = s.ledgerAt(2);
+    for (const id of IDS) await b.ledger.cancel(id);
+    expect(IDS.map((id) => s.stored(id)["state"])).toEqual(["evicted", "evicted", "evicted", "abandoned", "abandoned"]);
+    // What a stored record holds once a cancelled id left the ring: its id, its place in the order, its state.
+    expect(Object.keys(s.stored("req-c1")).sort()).toEqual(["disk-projection", "request-id", "seq", "state", "title"]);
+    expect(await b.ledger.arbitrate("req-c1", "sha256:any")).toEqual({ verdict: "refuse", reason: "retention-gap" });
+    expect(await b.ledger.arbitrate("req-c5", "sha256:any")).toEqual({ verdict: "refuse", reason: "abandoned" });
+    await s.repo.shutdown();
+  });
+
+  test("a later boot reads the same: the digest-less evicted fact parses, and never as torn", async () => {
+    const s = stores();
+    const first = s.ledgerAt(2);
+    for (const id of IDS) await first.ledger.cancel(id);
+    const second = s.ledgerAt(2);
+    const read = await second.ledger.get("req-c1");
+    expect(read).not.toBe("torn");
+    expect(read).toMatchObject({ requestId: "req-c1", state: "evicted", seq: 0 });
+    expect(await second.ledger.arbitrate("req-c1", "sha256:any")).toEqual({ verdict: "refuse", reason: "retention-gap" });
+    await s.repo.shutdown();
+  });
+
+  test("an outcome record that stands under a cancelled id leaves with it", async () => {
+    const s = stores();
+    const b = s.ledgerAt(1);
+    await b.ledger.cancel("req-c1");
+    // A record no digest names: the ledger promotes nothing from it, and the cancelled fact keeps its verdict.
+    const outcome = concludeVerb({ requestId: "req-c1", verb: "nexus-kapae", status: "done", requestedBy: "did:key:test", cause: "test-worker", batchMode: "best-effort" });
+    await b.composite.put(outcome, ORIGIN, { bag: DAEMON_BAG_ID });
+    await b.ledger.observeOutcome("req-c1", "done", undefined, outcomeBytesOf(outcome.tiddler as Record<string, unknown>));
+    expect(s.stored("req-c1")["state"]).toBe("abandoned");
+    await b.ledger.cancel("req-c2");
+    expect(s.stored("req-c1")["state"]).toBe("evicted");
+    expect(await b.composite.getLive(`${OUTCOME_URI_PREFIX}req-c1`)).toBeNull();
+    await s.repo.shutdown();
+  });
+
+  test("CONTROL: a fact that names a digest and no state but `evicted` or `abandoned` may stand without one", async () => {
+    const s = stores();
+    const b = s.ledgerAt(8);
+    // An abandoned id that carries its digest (a caller that hung up before the read) evicts with the digest kept.
+    await b.ledger.abandonDrop("req-d1", "sha256:d1");
+    const tight = s.ledgerAt(0);
+    expect(await tight.ledger.get("req-d1")).toMatchObject({ state: "evicted", inputDigest: "sha256:d1" });
+    // A landed fact with no digest still reads torn.
+    await tight.composite.put({ tiddler: { title: `${RECEIPT_FACT_URI_PREFIX}req-t1`, "request-id": "req-t1", state: "done", seq: "9", "outcome-bytes": "1" }, meta: {} } as never, ORIGIN);
+    expect(await s.ledgerAt(8).ledger.get("req-t1")).toBe("torn");
+    await s.repo.shutdown();
+  });
+});
