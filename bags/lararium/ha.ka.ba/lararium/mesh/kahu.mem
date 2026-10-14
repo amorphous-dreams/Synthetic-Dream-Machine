@@ -147,7 +147,16 @@ window above reads, and each device adopts at reboot.
 ''EXIT RUNS BY FORK.'' Any hearth may stop following the lineage, and no act of the lineage reaches a
 hearth that declined it.
 
-''Owed in code'': the cadence lineage stands unbuilt — no inception, no seat event, no offer verifier.
+''The inception names the Nexus, and the Nexus never names it'' (house reading on the shape). The inception
+record carries the Nexus AID it fences, the first cadence set's per-seat next-key digests and the cadence
+threshold, and takes a content address of its own. The charter's genesis carries no cadence field, so the AID
+derives from the charter alone, and an inception written after a founding moves none of that founding's bytes.
+The founding act's one citation lands as the founding writing that record beside its seed charter.
+
+''Owed in code'': the cadence lineage stands unbuilt — no inception, no seat event, no offer verifier — and the
+Stable founding act cites no inception yet. Its caller stands named: that act (`lares vessel found --hearth`). It
+waits on who holds a cadence share at a seed (an operator question, <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/open">>): a cadence key of its own, apart from the
+seat key (the two thresholds never reach into each other), with its own cold card at the founding.
 
 ''Still open'', each unruled:
 
@@ -559,6 +568,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;V0VXdihnSvusUM2L4vtxrZSWt-qB6BFAtV9PcDPyjfA
+<<^ code="&#x0003;">>ni:///sha-256;YOF23wvZwsQJJH51NJB1O3KqwXHVjBSPb-jflzwTeiU
 
 <<^ code="&#x0004;" -> to="?">>
