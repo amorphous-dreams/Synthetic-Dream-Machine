@@ -48,8 +48,10 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
   const bag = text(args["bag"]);
   if (op === "list") {
     // WHAT A PERSON READS STANDS TRUE TO THE DISK: the list looks first, at every carrier that stands in a
-    // standoff or a pending removal, so a file a hand put back or edited since reads as it stands.
-    await projector.sense([...new Set([...projector.standing().map((s) => s.uri), ...projector.pendingRemovals().map((p) => p.uri)])]);
+    // standoff or a pending removal, so a file a hand put back or edited since reads as it stands, and at
+    // every carrier whose file left where its base stands, so a file a hand removed with no watcher running
+    // pends by the time the list answers.
+    await projector.sense([...new Set([...projector.standing().map((s) => s.uri), ...projector.pendingRemovals().map((p) => p.uri), ...projector.vanished()])]);
     return { ok: true, op, ...shoreList(projector, bag) };
   }
   if (op === "sense") {
