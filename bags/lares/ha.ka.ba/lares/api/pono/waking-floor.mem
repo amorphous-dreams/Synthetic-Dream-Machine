@@ -80,7 +80,9 @@ floor reads as real structure rather than as a special case either occasion inve
 <<~ has Wake Announce "loudly/what-it-cannot-do signed/always ~ an unsigned announcement spoofs and targets">>
 <<~ has Wake Stamp "every-read/as-of-my-last-sync ~ a bare answer from the floor opens split-brain">>
 <<~ has Wake Raise "by/recognition on/a-nonce-THIS-vessel-emitted ~ never a pre-baked blob">>
-<<~ has Wake Expire "the-raise/lapses-back-to-the-floor ~ nobody lowers it; it simply stops being renewed">>
+<<~ has Wake Expire "the-raise/lapses-at-its-next-causal-boundary ~ nobody lowers it; no timer and no heartbeat ends it">>
+
+''A RAISE'S EXPIRY IS ITS NEXT CAUSAL BOUNDARY'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). An ember's raise lives one boot and lapses at the first of a lock, a restart, a human unlock or a counted removal; that boundary satisfies the expiry this carrier requires, and the custody ruling's //non-renewal// reads as it. A raise fenced on a Nexus's lease epoch lapses at the causal event that rolls the frontier past it (#/the-breaks). No timer and no heartbeat ends a standing: a quiet ember, a quiet peer and a quiet clock each leave a raise standing until a boundary arrives. An ember's raise spends its count at the raise ledger's durable commit, before SERVING composes: a crash before the commit spends nothing and serves nothing, and a crash after it burns that raise. ''The residue, stated plainly'': a hand that writes an older raise ledger onto a disk copy restores spent raises, and no count detects it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-raise">>).
 
 ''ANNOUNCING carries more weight than it looks, and MORE than the first draft granted it.'' A vessel
 standing at the floor and quiet reads worse than one refusing, because a caller cannot tell a held act from
@@ -195,7 +197,7 @@ point the same way — the strongest signal available here.
 
 ''The 2026 rhyme carries it plainest'': a tablet left on a shelf, doing nothing anyone would call infrastructure, becomes the household's sync-node the day somebody needs one — and stops serving as one when nobody does. Same stone, same shelf; what changed reads as ''who came''.
 
-''SEATED ⊥ RAISED, and the pair lets both laws hold.'' The Herm's `personaSlotCeiling === 0` bars a ''SEATED'' persona root — a human's key RESTING on a crossroads, the one thing the class exists to prevent. A raise seats nothing: caps arrive ''WITH'' a recognised operator, ride that operator's own keys, and stop standing when nobody renews the recognition. ''The vessel's at-rest state never changes'', so a stolen disk still yields nothing of anybody's person. Storage stays barred; presence stays welcome.
+''SEATED ⊥ RAISED, and the pair lets both laws hold.'' The Herm's `personaSlotCeiling === 0` bars a ''SEATED'' persona root — a human's key RESTING on a crossroads, the one thing the class exists to prevent. A raise seats nothing: caps arrive ''WITH'' a recognised operator, ride that operator's own keys, and stop standing at the raise's next causal boundary (#/the-shape). ''The vessel's at-rest state never changes'', so a stolen disk still yields nothing of anybody's person. Storage stays barred; presence stays welcome.
 
 ''MAY-HOLD-A-FACE ⊥ HOLDS-ONE-NOW — and `standAs` keeps the ARCHIVE question ALONE.'' `standAs(asked, archiveOpens)` answers ONE thing: what this vessel can OPEN right now. Whether a FACE stands — whether an operator has landed a PersonaGroup here — reads separately, because folding the two would make a faceless place class-`herm`, where `personaSlotCeiling("herm") === 0` bars the very face that would lift it. A face lit names what a vessel HOLDS; the archive opening names what it can OPEN, and a place founded with no face yet holds a crossroads that a founding act lifts.
 
@@ -209,7 +211,7 @@ point the same way — the strongest signal available here.
 
 ''AND BELONGING TO A NEXUS CARRIES TWO CONDITIONS, not one.'' A node belongs by ''contract'' — the signed carriage relation — AND by ''agreeing with the grammar vectors traded on that Nexus''. The second carries more than ceremony: a node that cannot read what a Nexus trades cannot carry it faithfully, cannot verify what it relays, and nothing it never parsed can bind it. ''Contract without grammar-agreement reads as a signature over an unread page.'' — the grammar half stands UNBUILT and unnamed in code; its meme names a source file that does not exist.
 
-''AND THE RAISE ENDS BY SUPERSESSION, never by a duration.'' A first cut expressed the expiry as a wall-clock interval, which fails twice: two islands with different clocks disagree about whether a raise stands, and a vessel AT THE FLOOR holds no trustworthy wall time at all — precisely the vessel this law governs. The clockless model already rules the form: a raise carries a ''corm epoch'' (a fencing token, never a timer), the vessel holds its highest-admitted epoch, and refuses anything beneath it. A paused, forwarded or replayed raise ''self-revokes the instant a higher epoch lands'' — no broadcast, no clock. Deciding //stop waiting for a renewal// rides the separate LIVENESS wire (local, suspicion-accruing, never leaving its island as a timestamp anyone must agree on); acting on a wrong suspicion stays safe because the fence still holds. ''Fusing the two wires smuggles a global now back in.''
+''AND THE RAISE ENDS BY SUPERSESSION, never by a duration.'' A first cut expressed the expiry as a wall-clock interval, which fails twice: two islands with different clocks disagree about whether a raise stands, and a vessel AT THE FLOOR holds no trustworthy wall time at all — precisely the vessel this law governs. The clockless model already rules the form: a raise carries a ''corm epoch'' (a fencing token, never a timer), the vessel holds its highest-admitted epoch, and refuses anything beneath it. A paused, forwarded or replayed raise ''self-revokes the instant a higher epoch lands'' — no broadcast, no clock. The separate LIVENESS wire (local, suspicion-accruing, never leaving its island as a timestamp anyone must agree on) paces its own holder alone: it tells a holder when to stop waiting, and it never ends a standing (#/the-shape). ''Fusing the two wires smuggles a global now back in.''
 
 ''AND THE FENCE CARRIES TWO CONDITIONS the raise cannot hold without.''
 
@@ -231,7 +233,7 @@ for calibrating a rate and load-bearing for neither ordering nor revocation. Ask
 for a tight answer smuggles the global now back under a different name, and a raise stays generous
 against a witness radius rather than tuned to it.
 
-''What stays OPEN, the whole of the remaining design'': what ''recognition'' means here (which edge, presented how, verified against what), and whether a season-long raise differs from a visit by anything but its renewal interval. The house already rules the shape — the raise expires, nobody lowers it, the operator seats a renewal interval rather than a rate — so the open part reads as ''whom the house recognises'', never ''how does it end''.
+''What stays OPEN, the whole of the remaining design'': what ''recognition'' means here (which edge, presented how, verified against what), and whether a season-long raise differs from a visit at all, since each lapses at its next causal boundary. The house already rules the shape — the raise expires at its next causal boundary, nobody lowers it, and no timer ends it (#/the-shape) — so the open part reads as ''whom the house recognises'', never ''how does it end''.
 
 !! ★ THE RAISE STANDS AS A VESSEL-LAYER ACT — the layer error, named ★
 
@@ -249,13 +251,13 @@ against a witness radius rather than tuned to it.
 
 !!! ★ AND THE MECHANISM MATCHES THE ONE THE MESH ALREADY ROLLS — a lease, not a third invention ★
 
-''A raise ENDS by non-renewal, exactly as every other grant in this house does.'' `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that `device-delegation` already makes. The Nexus serves as the resource; its lease epoch, as the fence.
+''A raise ENDS by non-renewal, exactly as every other grant in this house does, and non-renewal reads as the raise's next causal boundary'' (#/the-shape). `raiseStands` reads `boundEpoch >= effective` against the Nexus's own lease epoch — the same comparison, against the same fold, that `device-delegation` already makes. The Nexus serves as the resource; its lease epoch, as the fence.
 
 ''Supersession and expiry come from that one mechanism, with no clock anywhere.'' A newer grant binds a higher epoch; an old one goes stale when the frontier rolls past it. A paused, forwarded or replayed raise self-revokes at the next roll — no global broadcast, no duration anybody must agree on, and a returning holder stays fenced whether or not anyone suspected it. This matters most for the vessel this law governs: ''a vessel AT THE FLOOR holds no trustworthy wall time at all''.
 
 ''A rolling WINDOW of markers stands STRUCK.'' A set answers //is this listed// and never //is this newer//, so a partitioned island could not reason about it locally; whatever fell off its far end encoded a retention policy nobody wrote; and a list of valid markers makes a roster of moments, which this house does not hold. The full reasoning, and the ownership cut that separates our fence from Keyhive's CGKA epoch and POSIX's time origin, stands at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">>.
 
-''The ending rides a SECOND wire, deliberately unfused.'' Deciding //stop waiting for a renewal// cannot come from safety alone — under asynchrony nothing tells a slow recogniser from a departed one. That belongs to the liveness wire: local, monotone, suspicion-accruing, never leaving its island as a timestamp anyone else must agree on. Fusing the two smuggles a global now back in.
+''Waiting rides a SECOND wire, deliberately unfused, and that wire ends nothing.'' Under asynchrony nothing tells a slow recogniser from a departed one, so a holder's choice to stop waiting belongs to the liveness wire: local, monotone, suspicion-accruing, never leaving its island as a timestamp anyone else must agree on. That wire paces its own holder and never ends a standing; a standing ends at a causal boundary alone (#/the-shape). Fusing the two smuggles a global now back in.
 
 ''The unattended crossroads therefore stays a ① problem.'' A vessel whose holder sleeps needs a way to open its OWN archive without a human — not a Nexus voting on it.
 
@@ -264,12 +266,13 @@ against a witness radius rather than tuned to it.
 ''(a) WE DESIGNED THE RAISE AND NEVER THE LOWERING.'' The biggest hole. A raised vessel that stays raised
 forever turns the floor into a one-time inconvenience and hands an adversary a fleet of permanently-raised
 boxes — which is precisely why Android added its 72-hour forced return. ''The raise MUST expire back to the
-floor on idle.''
+floor'', and its expiry arrives at its next causal boundary, never at a timer that reads idleness (#/the-shape).
 
 ''AND THE HOUSE ALREADY RULED THE CURE, one plane over.'' The identity plane holds that a standing lift
 ''EXPIRES rather than decays'', that ''no party exercises a lowering act'', and that the operator seats a
 ''renewal interval'' rather than a rate. ''Third occasion, same law'': the raise expires, nobody lowers it,
-and a vessel nobody recognises any longer simply falls back to its floor.
+and the vessel falls back to its floor at the raise's next causal boundary, never because recognition went
+quiet. At the vessel layer the interval counts causal boundaries and never a duration (#/the-shape).
 
 ''(b) "k-of-n material PRESENTED to it" describes a BEARER CREDENTIAL.'' A vessel at the floor holds no
 clock and no trustworthy wall time, so signed material presented to it ''replays forever'' — a thief with
@@ -363,12 +366,15 @@ it. A human's unlock raises the vessel. The keyhive archive, each face's veil ar
 anchors rest sealed under the vessel key from the founding's first write, so no stored passphrase and no
 unsealed archive lifts a boot.
 
-''OWED'': a bounded ember, held as design input and unbuilt. It raises to SERVING alone and never
+''OWED'': a bounded ember, its law stated and unbuilt (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember">>). It raises to SERVING alone and never
 signs or admits; a count dial bounds it, and no clock; it wants the device's own unlock plus a second
-signal; each raise gets recorded; any other device of the human removes it.
+signal; each raise gets recorded at the ledger's durable commit; the raise lapses at its next causal
+boundary (#/the-shape); any other device of the human removes it.
 
-''One key seals every private row'': the vessel key holds the device recovery shares and the reserve share
-beside every other private row, and no second key governs a file at rest. A credential reaches the vessel
+''The vessel key seals every private row, or wraps the key that does'' (house rulings under the operator's
+delegation): the serving key seals the serving rows alone, the outbox key seals the outbox's parcels
+alone, the vessel key wraps both, and the vessel key seals every other private row, the device recovery
+shares and the reserve share among them. A credential reaches the vessel
 on a terminal alone, so no environment variable, flag or stored file opens a key or lifts a boot
 (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>).
 
@@ -402,6 +408,6 @@ keeps ''the place'' — which is precisely the floor. The myth bore this load be
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;oVWEeoKLjcRdnhMkHJ1VuZ74koJL_wMd83HYFwqNXew
+<<^ code="&#x0003;">>ni:///sha-256;urSdOVdpOVf2dU5vmRsX4A5p-Wl3oxTCTHxP77XtSw4
 
 <<^ code="&#x0004;" -> to="?">>
