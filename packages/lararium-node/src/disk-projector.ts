@@ -77,6 +77,11 @@ import type { ReadinessMap } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
 import type { BagMirrorConfig } from "./bag-paths.js";
 
+/** One settle wait's inbox: the carrier roots changes named since its last look; `all` names every root. */
+interface SettleInbox { readonly bagId: string; readonly roots: Set<string>; all: boolean; readonly waiting: Map<string, string>; readonly superseded: string[] }
+/** One settle wait's watch on a carrier's next reconcile. */
+interface ReconcileWatch { ran: boolean; threw: boolean }
+
 export interface LarDiskProjectorOptions {
   /** Bag mirrors. Bags absent from this list never write to disk. */
   readonly mirrors: readonly BagMirrorConfig[];
@@ -104,6 +109,12 @@ export interface LarDiskProjectorOptions {
    * true MOVE/promotion). Absent → the unlink clears every other mirror by path.
    */
   readonly bagsHolding?: (tiddlerUri: string) => Promise<readonly string[]>;
+  /**
+   * Where a bag stands in the island's composition (`composite.layerIndexOf`): higher answers higher, `-1` names
+   * a bag the composition does not mount. The settle word reads it to tell a carrier a higher bag shadows from
+   * one whose records have not reached the view yet. Absent, the word reads every other origin as not arrived.
+   */
+  readonly layerIndexOf?: (bagId: string) => number;
   /** Fired on every disk-ward refusal — the island routes it to the daemon VM. */
   readonly onRefusal?: (info: { bagId: string; uri: string; reason: string }) => void;
   /**
@@ -330,6 +341,7 @@ export class LarDiskProjector {
   private readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
   private readonly resolveByCid: ((cid: string) => Promise<Uint8Array | null>) | undefined;
   private readonly bagsHolding: ((tiddlerUri: string) => Promise<readonly string[]>) | undefined;
+  private readonly layerIndexOf: ((bagId: string) => number) | undefined;
   private readonly onRefusal: ((info: { bagId: string; uri: string; reason: string }) => void) | undefined;
   private readonly onConflict: ((info: { bagId: string; uri: string; reason: string; standoff: string }) => void) | undefined;
   private readonly onConflictResolved: ((info: { bagId: string; uri: string; standoff: string }) => void) | undefined;
@@ -365,6 +377,7 @@ export class LarDiskProjector {
     this.carrierFileFn = opts.carrierFileFn;
     this.resolveByCid = opts.resolveByCid;
     this.bagsHolding  = opts.bagsHolding;
+    this.layerIndexOf = opts.layerIndexOf;
     this.onRefusal    = opts.onRefusal;
     this.onConflict   = opts.onConflict;
     this.onConflictResolved = opts.onConflictResolved;
@@ -414,7 +427,7 @@ export class LarDiskProjector {
     // destination-add mark one root. Reconcile reads settled VM state, so the last owner is visible;
     // a mark during that read sets dirty and causes one more read when it completes.
     const gate = new KeyedReconcileGate<string>({
-      reconcile: (rootUri) => this.reconcile(rootUri),
+      reconcile: (rootUri) => this.reconcileWatched(rootUri),
     });
     this.gate = gate;
     // NO FORM CUT. Every changed title reaches the gate — a `lar:` URI, `My Notes`, `$:/config/Foo`
@@ -432,8 +445,10 @@ export class LarDiskProjector {
       this.measure.lastChangeAt = performance.now();
       this.measure.holdsSinceChange = 0;
       this.measure.wroteSinceChange = false;
-      for (const title of Object.keys(changes)) gate.mark(routeToRoot(title));
-      this.wakeWaiters();
+      const roots = new Set<string>();
+      for (const title of Object.keys(changes)) roots.add(routeToRoot(title));
+      for (const rootUri of roots) gate.mark(rootUri);
+      this.wakeWaiters(roots);
     };
     wiki.addEventListener?.("change", handler);
     // The scan follows subscription in this synchronous turn. The gate starts in a microtask and
@@ -1049,20 +1064,36 @@ export class LarDiskProjector {
   /**
    * THE SETTLE WORD. A gesture that landed records names each carrier and the hash its records render
    * (`records`, the records side the gesture pinned). This answers once the projection those records cause
-   * has run: for each carrier the wiki's resolved view holds records that render to that hash (or names
-   * another bag as the carrier's origin, where this mirror projects nothing of it), a reconcile of that
-   * carrier marked after the look has run, and the queue then stands drained. So the base each reconcile
-   * pins stands in the tree, and a scan that follows reads what the projection left.
+   * has run: for each carrier the wiki's resolved view holds records from this bag that render to that hash,
+   * a reconcile of that carrier marked after the look has run to its end, and the queue then stands drained.
+   * So the base each reconcile pins stands in the tree, and a scan that follows reads what the projection left.
+   *
+   * Each carrier ends in one of five readings:
+   *   settled    the view held the named records from this bag, and the reconcile marked after that look ran;
+   *   elsewhere  the view's origin names a bag the composition ranks ABOVE this one: that bag shadows the
+   *              carrier, and this mirror projects nothing of it. An origin ranked below this bag, or one the
+   *              composition cannot rank, names records that have not reached the view yet: the wait goes on;
+   *   superseded a later settle word asked for the same carrier in the same bag while this one still waited
+   *              for its records: the later wait carries it, and this one ends naming it and claiming no
+   *              projection for it. So at most one word per bag waits for a carrier's records, and words a caller
+   *              gave up on never pile; a word that already marked the carrier's reconcile waits for that
+   *              reconcile alone;
+   *   stopped    the projector stopped before the records arrived, or before the reconcile marked for them ran;
+   *   failed     the reconcile marked for them threw: the file stands as the failure left it.
    *
    * A HANDSHAKE, NO CLOCK. Records a gesture landed elsewhere reach this wiki by sync, at no instant a caller
    * can name, and the wiki raises its change event on a later tick than the view moves. So the word never
    * rests on that event: once the look finds the named records in the view, the wait marks the carrier
    * itself (the reconcile reads settled state and writes nothing where nothing moved; a mark during a
-   * running reconcile runs it once more) and the drain at the end waits for that reconcile. The wait wakes
-   * at each change event (TW5 raises one for every move of its view, on a later tick, never none), and holds
-   * no timer of its own: the caller's wait bounds the caller, and a projector that stops ends it (`stopped`).
-   * A wait whose caller gave up holds one waiter and renders its carriers at each change event until their
-   * records arrive or the projector stops. A view that names no origin yet counts as not arrived.
+   * running reconcile runs it once more) and the drain at the end waits for that reconcile. Each change event
+   * drops the carriers it names into the wait's own inbox, so no event goes unread between two looks, and a
+   * later look renders only the carriers a change named. The wait holds no timer of its own: the caller's
+   * wait bounds the caller, a later word for the same carrier supersedes it, and a projector that stops ends
+   * it. A view that renders other words than the named ones keeps the wait: a carrier lands as a root and its
+   * fragments, title by title, so a look may read a family halfway landed, and no byte the view holds tells
+   * that state from a later one. A wait whose caller gave up holds its inbox, and renders only at changes
+   * naming its own carriers, until they settle, a later word supersedes them or the projector stops. A view
+   * that names no origin yet counts as not arrived.
    *
    * THE WORD NAMES THE STATE OR A LATER ONE. Where the view moves past the named records before the marked
    * reconcile runs, that reconcile projects the later state, and the word still holds: a scan that follows
@@ -1071,42 +1102,106 @@ export class LarDiskProjector {
    */
   async settled(bagId: string, carriers: ReadonlyArray<{ readonly uri: string; readonly records: string }>): Promise<
     | { readonly mirrored: false }
-    | { readonly mirrored: true; readonly settled: readonly string[]; readonly elsewhere: readonly string[]; readonly stopped: readonly string[] }
+    | {
+        readonly mirrored: true; readonly settled: readonly string[]; readonly elsewhere: readonly string[];
+        readonly superseded: readonly string[]; readonly stopped: readonly string[]; readonly failed: readonly string[];
+      }
   > {
     if (!this.mirrors.some((m) => m.bagId === bagId)) return { mirrored: false };
     const waiting = new Map(carriers.map((c) => [c.uri, c.records] as const));
-    const settled: string[] = [];
+    const marked: string[] = [];
     const elsewhere: string[] = [];
-    for (;;) {
-      // Arm the wake BEFORE the look, so an event that comes while the look awaits a render wakes the next look.
-      const wake = this.nextWake();
-      try {
-        for (const [uri, records] of [...waiting]) {
-          const origin = (this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];
-          if (typeof origin !== "string") continue;
-          if (origin !== bagId) { waiting.delete(uri); elsewhere.push(uri); continue; }
-          const file = await this.carrierFileFn(uri);
-          if (file === null) continue;
-          const { output } = await this.renderedOutput(uri, file);
-          if (!digestsEqual(carrierHash(output, file.metaBody), records)) continue;
-          // The view holds the named records: a reconcile marked now reads them, and the drain below waits for it.
-          waiting.delete(uri);
-          settled.push(uri);
-          if (this.gate !== null) this.gate.mark(uri);
-          else await this.reconcile(uri);
-        }
-        if (waiting.size === 0 || this.stopping) break;
-        await wake.promise;
-      } finally {
-        wake.cancel();
-      }
+    const failed: string[] = [];
+    const watches = new Map<string, ReconcileWatch>();
+    const inbox: SettleInbox = { bagId, roots: new Set(), all: true, waiting, superseded: [] };
+    // A LATER WORD SUPERSEDES AN EARLIER ONE OF THE SAME BAG: every earlier wait over this bag gives up the
+    // carriers this one names while it still waits for their records, and wakes. A wait over another bag keeps
+    // its own records' wait.
+    let took = false;
+    for (const other of this.settleInboxes) {
+      if (other.bagId !== bagId) continue;
+      for (const uri of waiting.keys()) if (other.waiting.delete(uri)) { other.superseded.push(uri); took = true; }
     }
-    await this.idle();
-    return { mirrored: true, settled, elsewhere, stopped: [...waiting.keys()] };
+    this.settleInboxes.add(inbox);
+    if (took) this.wakeWaiters(new Set());
+    try {
+      for (;;) {
+        // Arm the wake BEFORE the look, so an event that comes while the look awaits a render wakes the next look.
+        const wake = this.nextWake();
+        try {
+          const look = inbox.all ? null : new Set(inbox.roots);
+          inbox.roots.clear(); inbox.all = false;
+          for (const [uri, records] of [...waiting]) {
+            if (look !== null && !look.has(uri)) continue;
+            const originOf = (): unknown => (this._tw5?.$tw.wiki.getTiddler?.(uri)?.fields as Record<string, unknown> | undefined)?.["$origin-bag"];
+            const origin = originOf();
+            if (typeof origin !== "string") continue;
+            if (origin !== bagId && this.ranksAbove(origin, bagId)) { waiting.delete(uri); elsewhere.push(uri); continue; }
+            // Only this bag's own records can settle the word: a view another bag answers renders nothing here.
+            if (origin !== bagId) continue;
+            let hash: string;
+            try {
+              const file = await this.carrierFileFn(uri);
+              if (file === null) continue;
+              const { output } = await this.renderedOutput(uri, file);
+              hash = carrierHash(output, file.metaBody);
+            } catch {
+              // A look that cannot render the carrier claims nothing for it: the word names it failed, unless a
+              // later word took the carrier while the look rendered, or the view moved off this bag meanwhile
+              // (the change event that moved it brings the next look).
+              if (originOf() !== bagId) continue;
+              if (waiting.delete(uri)) failed.push(uri);
+              continue;
+            }
+            if (!waiting.has(uri)) continue;   // a later word took it while this look rendered
+            // The view may have moved while the look rendered: a render counts for the origin it read alone, and
+            // the change event that moved it brings the next look.
+            if (originOf() !== bagId) continue;
+            if (digestsEqual(hash, records)) {
+              // The view holds the named records: a reconcile marked now reads them, and the drain below waits for it.
+              waiting.delete(uri);
+              marked.push(uri);
+              watches.set(uri, this.watchReconcile(uri));
+              if (this.gate !== null) this.gate.mark(uri);
+              else await this.reconcileWatched(uri).catch(() => undefined);
+              continue;
+            }
+          }
+          if (waiting.size === 0 || this.stopping) break;
+          if (inbox.all || inbox.roots.size > 0) continue;   // a change came during the look: look again now
+          await wake.promise;
+        } finally {
+          wake.cancel();
+        }
+      }
+      await this.idle();
+    } finally {
+      this.settleInboxes.delete(inbox);
+      for (const [uri, watch] of watches) this.releaseWatch(uri, watch);
+    }
+    const settled: string[] = [];
+    const stopped = [...waiting.keys()];
+    for (const uri of marked) {
+      const watch = watches.get(uri)!;
+      if (watch.threw) failed.push(uri);
+      else if (watch.ran) settled.push(uri);
+      else stopped.push(uri);   // the projector stopped before the marked reconcile ran
+    }
+    return { mirrored: true, settled, elsewhere, superseded: inbox.superseded, stopped, failed };
+  }
+
+  /** True where the composition ranks `origin` above `bagId`; false where below, unmounted or unknown. */
+  private ranksAbove(origin: string, bagId: string): boolean {
+    if (!this.layerIndexOf) return false;
+    const at = this.layerIndexOf(origin);
+    const of = this.layerIndexOf(bagId);
+    return at >= 0 && of >= 0 && at > of;
   }
 
   /** Settle waits for the next wake: a change event, or the projector stopping. */
   private settleWakes: Set<() => void> = new Set();
+  /** Each settle wait's inbox: the carrier roots changes named since its last look (`all` after a stop). */
+  private settleInboxes: Set<SettleInbox> = new Set();
   /** True once `stop` began: a settle wait ends, naming what never settled. */
   private stopping = false;
 
@@ -1119,11 +1214,46 @@ export class LarDiskProjector {
     return { promise, cancel: () => { this.settleWakes.delete(wake); } };
   }
 
-  /** Wake every settle wait. */
-  private wakeWaiters(): void {
+  /** Wake every settle wait, dropping the changed roots into each wait's inbox (every root when none named). */
+  private wakeWaiters(roots?: ReadonlySet<string>): void {
+    for (const inbox of this.settleInboxes) {
+      if (roots === undefined) inbox.all = true;
+      else for (const root of roots) inbox.roots.add(root);
+    }
     const waiters = [...this.settleWakes];
     this.settleWakes.clear();
     for (const wake of waiters) wake();
+  }
+
+  /** The watches on each carrier's next reconcile: a settle word reads whether the reconcile it marked ran or threw. */
+  private reconcileWatches: Map<string, Set<ReconcileWatch>> = new Map();
+
+  /** Watch the next reconcile of `uri` that STARTS from now on. */
+  private watchReconcile(uri: string): ReconcileWatch {
+    const watch: ReconcileWatch = { ran: false, threw: false };
+    let set = this.reconcileWatches.get(uri);
+    if (!set) { set = new Set(); this.reconcileWatches.set(uri, set); }
+    set.add(watch);
+    return watch;
+  }
+
+  private releaseWatch(uri: string, watch: ReconcileWatch): void {
+    const set = this.reconcileWatches.get(uri);
+    if (!set) return;
+    set.delete(watch);
+    if (set.size === 0) this.reconcileWatches.delete(uri);
+  }
+
+  /** Reconcile one carrier and tell every watch that stood when it started how it ended (the last run counts). */
+  private async reconcileWatched(rootUri: string): Promise<void> {
+    const watching = [...(this.reconcileWatches.get(rootUri) ?? [])];
+    try {
+      await this.reconcile(rootUri);
+      for (const watch of watching) { watch.ran = true; watch.threw = false; }
+    } catch (error) {
+      for (const watch of watching) watch.threw = true;
+      throw error;
+    }
   }
 
   private async flush(bagId: string, tiddlerUri: string): Promise<void> {

@@ -242,8 +242,10 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       }
       if (pageError !== undefined) console.error(`  ⚠ ${refusedMessage}`);
       if (settle !== undefined) {
-        if (settle.settled) console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from another bag` : ""}${"mirrored" in settle && !settle.mirrored ? " (no mirror holds this bag)" : ""}`);
-        else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
+        if (settle.settled) {
+          console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from a higher bag` : ""}${"mirrored" in settle && !settle.mirrored ? " (no mirror holds this bag)" : ""}`);
+          if ("supersededCount" in settle && settle.supersededCount > 0) console.error(`  ⚠ a later settle word took ${settle.supersededCount} carrier(s) over; this run claims no projection for them, and a scan now may read a file the projection still moves`);
+        } else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
       }
       if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
       console.log(`\n  audit: ${auditUri}`);

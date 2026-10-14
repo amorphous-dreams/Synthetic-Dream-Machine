@@ -73,8 +73,8 @@ describe("sense and settle reach both islands", () => {
   });
 
   test("settle: the island that mirrors the bag gives the word; the other answers it mirrors nothing", async () => {
-    const v = vessel(() => ({ ok: true, op: "settle", mirrored: false, settledCount: 0, elsewhereCount: 0 }), () => ({ ok: true, op: "settle", mirrored: true, settledCount: 2, elsewhereCount: 0 }));
-    expect((await askShore({ op: "settle", bag: "b", carriers: [] }, "did:test", v.run)).output).toMatchObject({ ok: true, mirrored: true, settledCount: 2 });
+    const v = vessel(() => ({ ok: true, op: "settle", mirrored: false, settledCount: 0, elsewhereCount: 0, supersededCount: 0 }), () => ({ ok: true, op: "settle", mirrored: true, settledCount: 2, elsewhereCount: 0, supersededCount: 1 }));
+    expect((await askShore({ op: "settle", bag: "b", carriers: [] }, "did:test", v.run)).output).toMatchObject({ ok: true, mirrored: true, settledCount: 2, supersededCount: 1 });
   });
 
   test("settle: an island that stopped before its carriers settled refuses the word by name", async () => {

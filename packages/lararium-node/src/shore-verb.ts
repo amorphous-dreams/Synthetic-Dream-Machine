@@ -147,11 +147,16 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
       : null;
     if (bag === null || carriers === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "settle names the bag the records landed in (`bag`) and each carrier with the hash its records render (`carriers`: `{ uri, records }`)" };
     const answer = await projector.settled(bag, carriers);
-    if (!answer.mirrored) return { ok: true, op, bag, mirrored: false, settledCount: 0, elsewhereCount: 0 };
-    // Counts ride every answer; the rows of what never settled ride too (the outcome caps them past 32).
+    if (!answer.mirrored) return { ok: true, op, bag, mirrored: false, settledCount: 0, elsewhereCount: 0, supersededCount: 0 };
+    // Counts ride every answer; the rows of what never settled ride too (the outcome caps them past 32). A
+    // carrier a later word took answers too: this word ends, naming it, and claims no projection for it.
+    const counts = { settledCount: answer.settled.length, elsewhereCount: answer.elsewhere.length, supersededCount: answer.superseded.length, ...(answer.superseded.length > 0 ? { superseded: answer.superseded } : {}) };
+    if (answer.failed.length > 0) {
+      return { ok: false, op, bag, refusal: "projection-failed", why: `the reconcile threw for ${answer.failed.length} carrier(s); their files stand as the failure left them`, failed: answer.failed, failedCount: answer.failed.length, ...(answer.stopped.length > 0 ? { stopped: answer.stopped, stoppedCount: answer.stopped.length } : {}), ...counts };
+    }
     return answer.stopped.length > 0
-      ? { ok: false, op, bag, refusal: "projector-stopped", why: `the projection stopped before ${answer.stopped.length} carrier(s) settled`, stopped: answer.stopped, stoppedCount: answer.stopped.length }
-      : { ok: true, op, bag, mirrored: true, settledCount: answer.settled.length, elsewhereCount: answer.elsewhere.length };
+      ? { ok: false, op, bag, refusal: "projector-stopped", why: `the projection stopped before ${answer.stopped.length} carrier(s) settled`, stopped: answer.stopped, stoppedCount: answer.stopped.length, ...counts }
+      : { ok: true, op, bag, mirrored: true, ...counts };
   }
   if (op === "restore" || op === "remove") {
     const uris = args["uris"] === undefined ? [] : uriList(args["uris"]);

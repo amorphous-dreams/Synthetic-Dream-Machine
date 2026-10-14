@@ -102,6 +102,8 @@ export interface SettleReading {
   readonly mirrored: boolean;
   readonly settledCount: number;
   readonly elsewhereCount: number;
+  /** Carriers a later settle word took over: this word ended, claiming no projection for them. */
+  readonly supersededCount: number;
   readonly refusal?: string;
   readonly why?: string;
 }
@@ -118,8 +120,8 @@ export async function askSettle(
   const answer = await ask({ op: "settle", bag, carriers: carriers.map((c) => ({ uri: c.uri, records: c.records })) });
   const o = answer.output;
   const count = (name: string): number => (typeof o[name] === "number" ? (o[name] as number) : 0);
-  if (!answer.ok) return { settled: false, mirrored: true, settledCount: 0, elsewhereCount: 0, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused" };
-  return { settled: true, mirrored: o["mirrored"] !== false, settledCount: count("settledCount"), elsewhereCount: count("elsewhereCount") };
+  if (!answer.ok) return { settled: false, mirrored: true, settledCount: 0, elsewhereCount: 0, supersededCount: 0, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused" };
+  return { settled: true, mirrored: o["mirrored"] !== false, settledCount: count("settledCount"), elsewhereCount: count("elsewhereCount"), supersededCount: count("supersededCount") };
 }
 
 type RunVerb = (name: string, args: Record<string, unknown>, did: string, opts: { timeoutMs: number }) => Promise<SubmitResult>;
@@ -205,7 +207,7 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     const sum = (name: string): number => held.reduce((n, o) => n + (typeof o[name] === "number" ? (o[name] as number) : 0), 0);
     const output: Record<string, unknown> = op === "sense"
       ? { ok: true, op, standoffCount: sum("standoffCount"), pendingCount: sum("pendingCount") }
-      : { ok: true, op, ...(typeof shoreArgs["bag"] === "string" ? { bag: shoreArgs["bag"] } : {}), mirrored: held.some((o) => o["mirrored"] === true), settledCount: sum("settledCount"), elsewhereCount: sum("elsewhereCount") };
+      : { ok: true, op, ...(typeof shoreArgs["bag"] === "string" ? { bag: shoreArgs["bag"] } : {}), mirrored: held.some((o) => o["mirrored"] === true), settledCount: sum("settledCount"), elsewhereCount: sum("elsewhereCount"), supersededCount: sum("supersededCount") };
     const requestId = answers.find((a) => a.answer.requestId !== undefined)?.answer.requestId;
     return { ok: true, output, refusal: null, why: null, ...(requestId !== undefined ? { requestId } : {}) };
   }

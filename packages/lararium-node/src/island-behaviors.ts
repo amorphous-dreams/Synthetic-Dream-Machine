@@ -92,6 +92,9 @@ export function mountDiskProjection(manifest: IslandMsg_Manifest, ctx: IslandCon
   // (bags/slug) never loses its file just because the carrier surfaced in a
   // working layer above it (the boot-seed-deletion cure).
   bagsHolding: (uri) => ctx.composite.listBagsHolding(uri),
+  // Where a bag stands in this island's composition: the settle word tells a carrier a higher bag shadows from one
+  // whose records have not reached the view yet.
+  layerIndexOf: (bagId) => ctx.composite.layerIndexOf(bagId),
   // Disk-ward refusal → the daemon VM (the generic worker.event → placeVerb
   // bridge routes any event whose payload carries `verb`). The daemon audits
   // it durably and injects a $:/tags/Alert into the operator's pinned VM.
