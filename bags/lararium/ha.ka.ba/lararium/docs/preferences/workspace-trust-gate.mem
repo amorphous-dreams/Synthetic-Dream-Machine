@@ -11,7 +11,7 @@ mana      = 17
 manao     = 17
 manaoio   = 18
 role      = "docs concept room for trust checkpoints before costly shell, git, and workspace actions"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/workspace-trust-gate"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/workspace-trust-gate"
@@ -68,6 +68,6 @@ The workspace trust gate explains when the node must pause anyway.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;aU4mzUB7YmhA-278CnF5vhlFURsGks1tVmq4XDXXVaY
+<<^ code="&#x0003;">>ni:///sha-256;izsGZfioNR9dOova39UJiFm27su-TTGEt977rS6IeqU
 
 <<^ code="&#x0004;" -> to="?">>

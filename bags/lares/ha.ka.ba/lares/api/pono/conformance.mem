@@ -11,7 +11,7 @@ manao     = 13
 manaoio   = 12
 namespace = "&#x2299;"
 role      = "invokable lens --- conformance-checks external content against the OODA-HA reference loop"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/conformance"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/conformance"
@@ -121,6 +121,6 @@ By the speech-act test the invocation reads as a first-person present-tense act 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;1RuvstMMjfopy76wbhDgERMMT1euinzZGAoiO_nLam4
+<<^ code="&#x0003;">>ni:///sha-256;CY0OjPd5dqU-qHpEnrdR6TDL92agLzfkBu50VgGko7s
 
 <<^ code="&#x0004;" -> to="?">>

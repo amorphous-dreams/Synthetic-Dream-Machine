@@ -11,7 +11,7 @@ mana      = 18
 manao     = 17
 manaoio   = 17
 role      = "docs concept room for operator-node collaboration, steering authority, and non-sycophantic co-navigation in the recovered Lares stack"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/collaboration-model"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/collaboration-model"
@@ -83,6 +83,6 @@ This room leans toward future deeper articulation in:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jYLipEhNgIIA-4-Ah0rdj4_W-K32yx6eFfSJpUgRqJE
+<<^ code="&#x0003;">>ni:///sha-256;v4M8iZ8xkkCm9Z0ue9IFt5R0Z0Zj8Z7KG1KU_Y8nkcw
 
 <<^ code="&#x0004;" -> to="?">>

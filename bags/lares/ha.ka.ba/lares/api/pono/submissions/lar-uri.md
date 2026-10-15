@@ -6,7 +6,7 @@ docname: "draft-fontany-lar-uri-scheme-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
-source-check: "ni:///sha-256;uZ6j-LdWKxhdqvUU3PeEOFPlqEiH4Vfw0TFya07ZrsQ"
+source-check: "ni:///sha-256;16mZgEj_dxJys93WSAj4E4iV29zVEUHEXLCQwp2g9hY"
 title: "lar:///ha.ka.ba/lares/docs/pono/lar-uri"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -248,7 +248,7 @@ The marker grammar — the meme span opener `? ->` and closer `→ ?`, the `ahu`
 - `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext` — the writing-system law, and its docs companion `docs/pono/memetic-wikitext`
 - `lar:///ha.ka.ba/lares/api/pono/ahu` — the waypoint marker
 - `lar:///ha.ka.ba/lares/api/pono/kahea` — the transclusion marker
-- `lar:///ha.ka.ba/lares/api/pono/meme` — meme shape; `loci` — stable-address coherence
+- `lar:///ha.ka.ba/lares/api/pono/meme` — meme shape; `lar-uri` — address syntax and resolution
 
 A `lar:` URI *names* a meme; how memes, waypoints, and transclusions get *written* belongs to the authoring surface above. The per-marker semantics — what each marker settles and what it leaves open — live rigorously in `ahu` and `kahea`.
 

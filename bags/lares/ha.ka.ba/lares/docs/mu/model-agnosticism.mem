@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 16
 role      = "staging docs shelf for Wilson/Korzybski model-agnosticism braid behind Mu-facing invariants"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/model-agnosticism"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/model-agnosticism"
@@ -136,6 +136,6 @@ The Kūkā cycle names the OODA-HA phases in Hawaiian, grounding the loop in a c
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HRKfQLQRDS0LtHuMcZUzAfnF_kbMhL0BbsVBkQVZT9E
+<<^ code="&#x0003;">>ni:///sha-256;EGcaU8CsxlbQ8DzOJB5whiTirkjk-yKg8WC_SPdqedc
 
 <<^ code="&#x0004;" -> to="?">>

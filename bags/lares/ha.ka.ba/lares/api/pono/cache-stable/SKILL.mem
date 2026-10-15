@@ -18,7 +18,7 @@ manao              = 15
 manaoio            = 14
 role               = "cache-stable skill, conformance checker, and companion-meme splitter"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/cache-stable"
-tags               = ["api/pono/meme", "api/pono/loci"]
+tags               = ["api/pono/meme"]
 title              = "lar:///ha.ka.ba/lares/api/pono/cache-stable/SKILL"
 type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/pono/cache-stable/SKILL"
@@ -250,6 +250,6 @@ Aftermath — name the residue honestly: companion matter not yet split, ambiguo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BVJMTsdWIQUmC3po_RKzdCbyODLT3LEqQgwB1heYe9c
+<<^ code="&#x0003;">>ni:///sha-256;aI9cU2E-1Dx_-cZq7jDznis67qRxH-trSudgr3JbGkQ
 
 <<^ code="&#x0004;" -> to="?">>

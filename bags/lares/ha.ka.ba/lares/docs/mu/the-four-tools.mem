@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 17
 role      = "witness shelf and source braid for the four tools of Chapel Perilous"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/the-four-tools"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-four-tools"
@@ -88,6 +88,6 @@ one clean preference for model agnosticism over paranoia.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;djUJgf6LY4dWlH1ikut-fvbP4g2iIK93JRC2PNxHwVE
+<<^ code="&#x0003;">>ni:///sha-256;oSzQXah4qPhNSDhvrM4h8gegDPfuwoRWckqt5hFGN4w
 
 <<^ code="&#x0004;" -> to="?">>

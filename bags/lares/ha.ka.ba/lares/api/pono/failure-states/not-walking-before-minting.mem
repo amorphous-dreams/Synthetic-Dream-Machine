@@ -11,7 +11,7 @@ manao     = 15
 manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — deriving from context what the graph already holds, at the cost of the derivation"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/not-walking-before-minting"
@@ -71,6 +71,6 @@ If the graph's version reads WORSE than the derivation, that reads as a genuine 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TIdH8vgrBjJUumiMejX6bH2eerHocUmt0muM5lZDNqY
+<<^ code="&#x0003;">>ni:///sha-256;NsoI4zq49DpuiJB6RuSwylsjPL_xJqtbi8uFVn0Roa0
 
 <<^ code="&#x0004;" -> to="?">>

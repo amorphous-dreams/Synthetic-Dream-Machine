@@ -12,7 +12,7 @@ manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 6962 by its own bibliographic metadata"
-tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+tags           = ["lar:///ha.ka.ba/lares/ref"]
 title          = "lar:///ha.ka.ba/lares/ref/RFC-6962"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/ref/RFC-6962"
@@ -44,6 +44,6 @@ both versions.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;YnZmNa-dJsVmfa0XELB-Wkjw3lB5Ux_ETyCY4hpsNO8
+<<^ code="&#x0003;">>ni:///sha-256;Ap8_icCSz5FM9gM7g0tPLaEB2v8ql43uCIef7kVOKAQ
 
 <<^ code="&#x0004;" -> to="?">>

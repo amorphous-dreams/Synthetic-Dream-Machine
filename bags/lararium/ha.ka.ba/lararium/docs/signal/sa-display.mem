@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 16
 role      = "docs room for shared-situation-awareness framing, prospective display theory, and research grounding behind lar signal"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal/sa-display"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/sa-display"
@@ -119,6 +119,6 @@ Per-position stance modifier glyph design remains in motion; current record-form
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;0ZphYv5HpmQfR41LlNqqO8-uVGMaUXNq19b1MISJ9Qo
+<<^ code="&#x0003;">>ni:///sha-256;gQ7VHyO8vScxJuvZxqYKqyc03QnKLKB7Pc-dHG5hyUQ
 
 <<^ code="&#x0004;" -> to="?">>

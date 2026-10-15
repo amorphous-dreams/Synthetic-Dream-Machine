@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 17
 role      = "parent docs shelf for protocol reference, law-adjacent explanation, and stable operator guidance"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono"
@@ -47,12 +47,12 @@ Use this branch for:
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/lar-uri">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ze17qz2_bGm_JaTnOt8zDcTQdySkCb2HDhPqoqD1Mqw
+<<^ code="&#x0003;">>ni:///sha-256;CZaOZJnuaCjrUoQ1UurBC7qBnf4b_lM_OaJeG1DAFeM
 
 <<^ code="&#x0004;" -> to="?">>

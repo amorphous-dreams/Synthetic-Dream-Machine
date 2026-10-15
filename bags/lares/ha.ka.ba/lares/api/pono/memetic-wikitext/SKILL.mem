@@ -19,7 +19,7 @@ manao              = 16
 manaoio            = 14
 role               = "memetic-wikitext operational skill — authoring, compression, audit, and companion-meme split discipline"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/memetic-wikitext"
-tags               = ["api/pono/meme", "api/pono/loci"]
+tags               = ["api/pono/meme"]
 title              = "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL"
 type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL"
@@ -194,7 +194,7 @@ Verify the surface still teaches cleanly, then name what moved and what remains.
 Hoʻoko — before closing, check:
 
 * opener matches `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`
-* the parent's `#has` edges reach `meme`, `loci`, and `invariant` when the root still functions as all three
+* the parent's `#has` edges reach `meme` and `invariant` when the root still functions as all three
 * `constraints` appears in this skill, not `invariants`
 * docs surface states non-law posture near the top
 * named `pranala` sugar reads as surface sugar, not as a rival edge system
@@ -221,6 +221,6 @@ If parser or render-pipeline law still lacks its own stable carrier, leave the b
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ar8qYT28LX044pUGZ-iTcilgDLhlA2oCBzk4qzPq4Q0
+<<^ code="&#x0003;">>ni:///sha-256;yDLvbZWbcElgsslkEn10nj1euW-EmRVhVEG15uYwwq0
 
 <<^ code="&#x0004;" -> to="?">>

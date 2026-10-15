@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 16
 role      = "parent docs shelf for interpretive frames, stance-conditioned reading, and Chapel Perilous witness bundles"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu"
@@ -73,6 +73,6 @@ AST reader: read the sockets, then route.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p0AygCPlmW99IBSlet-VTjYZjLzftAC8EKHZZP9u2Ws
+<<^ code="&#x0003;">>ni:///sha-256;wHa4cOO2N-k4g3tBDVSY5qzK-2wb2EMgn70Twyd-SkQ
 
 <<^ code="&#x0004;" -> to="?">>

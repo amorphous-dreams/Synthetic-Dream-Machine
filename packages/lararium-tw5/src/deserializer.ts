@@ -395,7 +395,7 @@ function safeSplitMeme(read: CarrierRead, fields: TiddlerFields): TiddlerFields[
 
 // The head line, stripped at ingest. Control sigils live on ONE line by law — the shore's line pattern
 // never crosses one (a greedy multi-line match once swallowed from a quoted `<<~` mention down to the
-// real closer; found on loci.md).
+// real closer; formerly recorded in the retired address memo).
 const SOH_LINE_RE = carrierHeadLinePattern();
 
 function stripLeadingNewlines(text: string): string {

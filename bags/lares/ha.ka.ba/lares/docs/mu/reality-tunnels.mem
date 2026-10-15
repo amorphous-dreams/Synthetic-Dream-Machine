@@ -11,7 +11,7 @@ mana      = 15
 manao     = 17
 manaoio   = 17
 role      = "staging docs shelf for reality tunnels, catma, and observer-position pressure behind Mu-facing invariants"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/reality-tunnels"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/reality-tunnels"
@@ -89,6 +89,6 @@ This node holds its own architecture as Catma — the thirteen voices, the Worke
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;TZr4-IfB4CiGebuPOa94-b7fA3Z4NNDPoVajI_VdGbM
+<<^ code="&#x0003;">>ni:///sha-256;U4nbf8SXnkLd_DRFFQF7f5q8XuyFBFnYjJ-OT86xUxw
 
 <<^ code="&#x0004;" -> to="?">>

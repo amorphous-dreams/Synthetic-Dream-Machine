@@ -11,7 +11,7 @@ manao       = 17
 manaoio     = 16
 role        = "content-addressed artifact contract for boot closure compilation — SHA256 scheme, three artifact classes, compaction rules, cache compatibility"
 status-date = "2026-04-24"
-tags        = ["api/pono/meme", "api/pono/loci"]
+tags        = ["api/pono/meme"]
 title       = "lar:///ha.ka.ba/lares/docs/graph/artifacts"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/graph/artifacts"
@@ -94,7 +94,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
       "exists": true,
       "role": "threshold constitution, boot router",
       "hydration_socket": "entry",
-      "implements": ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"],
+      "implements": ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/lar-uri"],
       "depth": 0
     }
   ],
@@ -160,7 +160,7 @@ Clients that carry the previous receipt can compare: if `sha256` matches, the co
     "lar:///ha.ka.ba/lares/api/pono/meme": ["lar:///ha.ka.ba/lares/api/noosphere-boot", "..."]
   },
   "invariant_index": {
-    "lar:///ha.ka.ba/lares/api/pono/loci": ["lar:///ha.ka.ba/lares/api/noosphere-boot", "..."]
+    "lar:///ha.ka.ba/lares/api/pono/lar-uri": ["lar:///ha.ka.ba/lares/api/noosphere-boot", "..."]
   },
   "validation": {
     "all_resolved": true,
@@ -305,6 +305,6 @@ Full boot may trigger compaction once the relation expansion reaches larger grap
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Ki567jVnzi68zYI79MUwufl5eOq-3X7fEySmBuCnYZU
+<<^ code="&#x0003;">>ni:///sha-256;ku1s8euo8dC16QerYBgwXQdukv43JIuXRsAHoq0XUbw
 
 <<^ code="&#x0004;" -> to="?">>

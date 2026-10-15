@@ -11,7 +11,7 @@ mana      = 15
 manao     = 16
 manaoio   = 13
 role      = "docs sister for exchange vector law — record form, HUD example, and pattern-training guidance"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/exchange-vector"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/exchange-vector"
@@ -105,6 +105,6 @@ Long-term, the server should validate the vector and render the HUD from the par
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bLIg65POgswPYWcTD_R4RuXkq7ZUvOfsWoZQvP8bX9E
+<<^ code="&#x0003;">>ni:///sha-256;pN2Z0rJUhSjaMDSkTOHkJdSn8V_vcanu6oMJmW_zrzg
 
 <<^ code="&#x0004;" -> to="?">>

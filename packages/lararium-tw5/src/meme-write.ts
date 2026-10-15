@@ -71,13 +71,13 @@ export interface CarrierFile {
    *  `.meta` alone. Absent for every carrier whose bytes ride in `body`. */
   readonly pointerCid?: string;
   /** The mirror-relative path a `$:/config/FileSystemPaths` rule sited this carrier at, extension
-   *  included — present ONLY when a rule reached the title. Absent, the projector sites by the loci
+   *  included — present ONLY when a rule reached the title. Absent, the projector sites by the address siting rule
    *  law (`carrierBaseRelPath`), which is where a stock server with no such rule and an island
    *  part ways: the server flattens the title, the island reads the uri-path. */
   readonly relPath?:  string;
   /** TW5's FLATTENED-TITLE default path, extension included — `generateTiddlerFilepath`'s no-rule
    *  branch, the file a stock folder wiki would write. Distinct from `relPath` on purpose: the
-   *  projector's precedence reads off the shape alone — a RULE (`relPath`) first, then the loci law
+   *  projector's precedence reads off the shape alone — a RULE (`relPath`) first, then the address siting rule
    *  for a `lar:` name, then this. A foreign title (`My Notes`, `$:/config/Foo`) has no uri-path, so
    *  this is the ONLY thing that sites it, and two titles MAY flatten alike (`A/B`, `A_B`) — the
    *  projector's free-or-mine uniquifier settles that, since only the disk knows what sits there. */
@@ -158,8 +158,8 @@ function nativeCarrierFile(info: Tw5FileInfo): CarrierFile {
     body: info.body,
     ...(info.hasMetaFile && info.metaBody !== undefined ? { metaBody: info.metaBody } : {}),
     ...(info.encoding === "base64" ? { encoding: "base64" } : {}),
-    // A rule's path rides as `relPath` (it OVERRIDES the loci law); TW5's flattened default rides as
-    // `defaultRelPath` (it sites what the loci law cannot name at all). Two fields, two precedences.
+    // A rule's path rides as `relPath` (it OVERRIDES the address siting rule); TW5's flattened default rides as
+    // `defaultRelPath` (it sites what the address siting rule cannot name at all). Two fields, two precedences.
     ...(info.pathRuled ? { relPath: info.relPath } : { defaultRelPath: info.relPath }),
   };
 }

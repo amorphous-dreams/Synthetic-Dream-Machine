@@ -291,10 +291,11 @@ def _classify(role: str, text: str) -> tuple:
     return "harness", "scaffold"
 
 
-def _parse_claude_lines(lines: Iterable[str], *, stats: "dict | None" = None) -> list:
+def _parse_claude_lines(lines: Iterable[str], *, stats: "dict | None" = None,
+                        source_positions: "list[tuple[int, int, int]] | None" = None) -> list:
     """Parse Claude JSONL lines into typed blocks from either a file or custody bytes."""
     blocks: list = []
-    for line in lines:
+    for row_index, line in enumerate(lines):
         line = line.strip()
         if not line:
             continue
@@ -322,8 +323,13 @@ def _parse_claude_lines(lines: Iterable[str], *, stats: "dict | None" = None) ->
         for speaker, function, text, bi in _claude_blocks(rtype, row.get("message")):
             if not text.strip():
                 continue
-            blocks.append({"uuid": uuid, "bi": bi, "parent": parent, "speaker": speaker,
-                          "function": function, "text": text, "ts": ts})
+            block = {"uuid": uuid, "bi": bi, "parent": parent, "speaker": speaker,
+                     "function": function, "text": text, "ts": ts}
+            if source_positions is not None:
+                source_row, byte_start, byte_length = source_positions[row_index]
+                block.update({"source_row": source_row, "byte_start": byte_start,
+                              "byte_length": byte_length})
+            blocks.append(block)
         if stats is not None and len(blocks) == before:
             stats["unprojected_eligible_rows"] = stats.get("unprojected_eligible_rows", 0) + 1
             content = row.get("message")

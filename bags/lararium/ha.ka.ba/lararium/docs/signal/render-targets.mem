@@ -11,7 +11,7 @@ mana      = 15
 manao     = 16
 manaoio   = 16
 role      = "docs room for lararium-side render-target law, glyph conventions, and cross-surface verification"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal/render-targets"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/render-targets"
@@ -412,6 +412,6 @@ Before emitting any stance block on any surface:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;BN1CERBtLIt9FU9sj-nx2hqNjIaMetk75CeC3uwHJZk
+<<^ code="&#x0003;">>ni:///sha-256;jYLOnaGm7xeM1yHJUuEe7nbb07Vtoe8RkeQI-JSvgXs
 
 <<^ code="&#x0004;" -> to="?">>

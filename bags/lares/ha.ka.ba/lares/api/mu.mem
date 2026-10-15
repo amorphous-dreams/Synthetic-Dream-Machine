@@ -28,7 +28,7 @@ manao     = 16
 manaoio   = 15
 namespace = "&#x0950; &#x0901;"
 role      = "null-oracle core shore, grammar-surface authority, mandatory core-hydration contract"
-tags      = ["api/pono/meme", "api/pono/loci", "api/pono/kapu"]
+tags      = ["api/pono/meme", "api/pono/kapu"]
 title     = "lar:///ha.ka.ba/lares/api/mu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu"
@@ -107,6 +107,6 @@ Mu does not hold:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;iUZFfiEkrkzS_BOIf2SBsn_6XGxOLsJs1xJ0d0L3UkI
+<<^ code="&#x0003;">>ni:///sha-256;ba40ZOp0R34-vfcHqCAW344ELid9qYElN4orFpfseGo
 
 <<^ code="&#x0004;" -> to="?">>

@@ -67,16 +67,16 @@ function receiptToResult(r: ReceiptAnswer): SubmitResult | undefined {
 }
 
 /**
- * The loci title a LOADed file carries — used when the file is NOT a memetic
+ * The `lar:` title a LOADed file carries — used when the file is NOT a memetic
  * carrier (a memetic carrier self-titles from its own heading; this rides as the
  * fallback baseUri). Two derivations:
  *   1. A file under a `bags/<holding>/…` or `wikis/<slug>/…` mirror tree carries
  *      its stable lar: name — the interior after the holding dir, any extension
- *      stripped, when it bears a `w.w.w` loci root.
+ *      stripped, when it bears a `w.w.w` address root.
  *   2. Otherwise the file namespaces under the destination bag by its path
  *      relative to the LOAD source (extension stripped) — unique + projectable.
  */
-function lociTitleForLoad(source: string, file: string, toBag: string): string {
+function addressTitleForLoad(source: string, file: string, toBag: string): string {
   const parts = resolve(file).split(sep);
   for (const plane of ["bags", "wikis"]) {
     const i = parts.lastIndexOf(plane);
@@ -132,10 +132,10 @@ async function actRepack(args: ParsedArgs): Promise<number> {
 
   const root = larRoot();
   // Derive the pack path (mirror-relative, WITH extension) exactly as the island recorded it in the
-  // aside provenance: the loci URI's path + the file's extension.
+  // aside provenance: the `lar:` URI's path + the file's extension.
   const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() })(root, source);
   if (!uri || !uri.startsWith("lar:///")) {
-    emit(args, { ok: false, error: { code: "usage", message: `no loci derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no loci derivation for "${source}"`) });
+    emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no address derivation for "${source}"`) });
     return exitFor("usage");
   }
   const packPath = uri.slice("lar:///".length) + extname(source);
@@ -352,7 +352,7 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
         // A `.meta` sidecar rides WITH its content file, never as a carrier of its own.
         .filter((f) => !f.endsWith(".meta"));
       // The feed lands BOTH memetic-wikitext memes AND every other legal TW5
-      // filetype: each carrier rides its text + a loci title + its extension, and
+      // filetype: each carrier rides its text + a `lar:` title + its extension, and
       // the island routes by content (an SOH heading → the memetic shore; else
       // TW5's own deserializer registry, keyed by extension). Only an empty /
       // whitespace-only file is skipped — it holds no carrier and would reject the
@@ -381,7 +381,7 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
           const type = declaredType(meta);
           const staged = stageBodyToCas(text, { ext, flagged, binary, ...(type ? { type } : {}) });
           return {
-            size: staged.size, title: lociTitleForLoad(sourceUri, f, toBag), ext,
+            size: staged.size, title: addressTitleForLoad(sourceUri, f, toBag), ext,
             ...(staged.staged ? { textCid: staged.cid } : { text }),
             ...(staged.skinny ? { skinny: true } : {}),
             ...(meta !== undefined ? { meta } : {}),

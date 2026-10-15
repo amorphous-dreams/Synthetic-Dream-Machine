@@ -14,7 +14,7 @@ manaoio       = 18
 namespace     = "&#x0950; &#x0901;"
 role          = "syad reading invariant --- five naya standpoints licensing the saptabhaṅgī predications; stance-conditioned confidence law"
 source-symbol = "STANCES SYAD_7 STANCE_LICENSES SATIRIST_OPERATIONAL"
-tags          = ["api/pono/meme", "api/pono/loci"]
+tags          = ["api/pono/meme"]
 title         = "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/mu/the-syad-perspectives"
@@ -306,6 +306,6 @@ satirist-operational = "nasti-avaktavya"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qZXGdSe2lpZ5Q_OHIzwWCwac13zUTozEhU5dWj6FfVY
+<<^ code="&#x0003;">>ni:///sha-256;A-0sEEDE4LV1VqkMfKg-BphH9QS1I_JeqkC1dQo7V-0
 
 <<^ code="&#x0004;" -> to="?">>

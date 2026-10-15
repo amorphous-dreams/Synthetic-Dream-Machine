@@ -754,16 +754,15 @@ def _unreliable_witness_timestamp() -> str:
 
 
 class FormPalaceStore:
-    """One open "form" collection; store (RMW count) + query (form-similarity) + get."""
+    """One owned Form root, using its default collection; store, query and get."""
 
     def __init__(self, palace_path: str) -> None:
         from mempalace.palace import get_collection
 
-        # create-or-open the SECOND ("form") collection; identity check skipped — we
-        # never run the embedder (we always pass our own dense form-vector).
-        self._col = get_collection(
-            palace_path, collection_name=FORM_COLLECTION, create=True, _skip_identity_check=True
-        )
+        # The Form path already separates this plane from Content. The pinned
+        # MemPalace wrapper rejects an ad-hoc collection_name="form"; use its
+        # configured default collection within the owned Form root instead.
+        self._col = get_collection(palace_path, create=True, _skip_identity_check=True)
 
     def _get_raw(self, key: str) -> dict | None:
         got = self._col.get(ids=[key], include=["documents", "metadatas"])

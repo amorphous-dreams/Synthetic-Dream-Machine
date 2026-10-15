@@ -11,7 +11,7 @@ manao     = 16
 manaoio   = 16
 namespace = "&#x2299;"
 role      = "invariant law for canonical lar URI exchange vectors and HUD emission order"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/exchange-vector"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/exchange-vector"
@@ -100,6 +100,6 @@ The sigils carry the panel inline. Each renders as a SharktoothSigil (`<<~ WORD 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;tT8Wl6zdmGWWrcZ4MP7dU3b3PUHGvWgNy32mw0SEYv0
+<<^ code="&#x0003;">>ni:///sha-256;69_sizth97u9VAGvgDQHfM7rwZOcp2HffeKdcrSqgPY
 
 <<^ code="&#x0004;" -> to="?">>

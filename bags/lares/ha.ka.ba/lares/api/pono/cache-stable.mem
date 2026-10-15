@@ -11,7 +11,7 @@ manao     = 10
 manaoio   = 10
 namespace = "&#x2299;"
 role      = "cache-stable law and cache-stable pressure surface"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/cache-stable"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/cache-stable"
@@ -100,6 +100,6 @@ Cache-Stable-compliant memes MUST fill the OODA-HA phase line with their own pre
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4uiBBC2moBTghJ-MsOR8dzKHQNBoNB8q-085cit_Qvc
+<<^ code="&#x0003;">>ni:///sha-256;_2WFHeXCZb38OzJYfulIqkY3NDTiWpEyUiACAD3Cj_A
 
 <<^ code="&#x0004;" -> to="?">>

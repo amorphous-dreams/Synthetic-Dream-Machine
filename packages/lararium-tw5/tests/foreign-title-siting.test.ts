@@ -67,7 +67,7 @@ describe.skipIf(wikiSkip)(`foreign-title siting — the flattened default${skipN
     expect(file!.body).not.toContain("title: loose meme");   // nothing on disk can prove ownership
   });
 
-  test("CONTROL — a `lar:` carrier still hands back NO ruled path; the loci law owns it", () => {
+  test("CONTROL — a `lar:` carrier still hands back NO ruled path; the address siting rule owns it", () => {
     const file = exportCarrierFile(engine, "lar:///ha.ka.ba/lares/api/native/leaf");
     expect(file!.relPath).toBeUndefined();
     // the flattened default rides too, but the projector never reaches it for a lar: name

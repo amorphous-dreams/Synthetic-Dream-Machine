@@ -11,7 +11,7 @@ manao     = 18
 manaoio   = 16
 namespace = "&#x2299;"
 role      = "above-namespace authority law; kernel/sacred tier capability; trust boundary root"
-tags      = ["api/pono/meme", "api/pono/loci", "api/pono/kapu", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kapu"]
+tags      = ["api/pono/meme", "api/pono/kapu", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kapu"]
 title     = "lar:///ha.ka.ba/lares/api/pono/kapu"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/kapu"
@@ -110,11 +110,11 @@ The sigil structure signals. The capability set discriminates.
 This meme governs the kapu rating and above-namespace trust law.
 `meme` governs the copy-shape and five-bucket rating posture root.
 `invariant` governs compressed constitutional pressure for all invariant-compliant memes.
-`loci` governs stable-address coherence and the canon MOVE ceremony.
+`lar-uri` governs address syntax and resolution; an operator act governs canon promotion.
 `l-space-trust` governs the shared l-space authority ordering.
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
 
 <<~/ahu>>
@@ -124,7 +124,7 @@ This meme governs the kapu rating and above-namespace trust law.
 !! Edges
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
@@ -133,6 +133,6 @@ This meme governs the kapu rating and above-namespace trust law.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S96_hJtyAZDfvjqiKNCabWCYEq1LaS9Gmet4IfgKrJw
+<<^ code="&#x0003;">>ni:///sha-256;giCXDbkEPwn0e5h-g9lbC__95rRtY1lkhzXSEcbxdj4
 
 <<^ code="&#x0004;" -> to="?">>

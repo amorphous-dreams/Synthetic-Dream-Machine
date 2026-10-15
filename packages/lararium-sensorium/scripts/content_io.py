@@ -201,6 +201,18 @@ class ContentStore:
             return None
         return {"cid": raw["cid"], "document": raw["document"] or "", "metadata": raw["metadata"]}
 
+    def get_with_vector(self, cid: str) -> "dict | None":
+        """Read back the whole durable row for a projection receipt or restart witness."""
+        got = self._col.get(ids=[cid], include=["documents", "metadatas", "embeddings"])
+        ids = got.get("ids") or []
+        if not ids:
+            return None
+        vectors = got.get("embeddings")
+        vector = ([float(x) for x in vectors[0]] if vectors is not None and len(vectors)
+                  and vectors[0] is not None else None)
+        return {"cid": ids[0], "document": (got.get("documents") or [""])[0] or "",
+                "metadata": (got.get("metadatas") or [{}])[0] or {}, "embedding": vector}
+
     def put(self, cid: str, text: str, embedding: list, metadata: dict) -> dict:
         """Durable write of ONE record — validate its floors, then upsert. The floor raises land verbatim: a
         systemic ContentFloorError (dim/model) fails loud, a per-record ValueError (non-finite/schema) rides

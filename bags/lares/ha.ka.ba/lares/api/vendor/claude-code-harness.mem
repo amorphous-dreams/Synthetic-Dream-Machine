@@ -11,7 +11,7 @@ mana      = 15
 manao     = 16
 manaoio   = 16
 role      = "vendor declaration: the Claude Code harness — its extension seams, their contracts and stability grades, the design law it publishes, and where a sovereign system owns its own ground"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/vendor/claude-code-harness"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/vendor/claude-code-harness"
@@ -196,6 +196,6 @@ built against them tests behaviour, never a schema.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;VweIORxS-g1fJhueY8wcVGJeo5vdRQtO0Tq60XsCVFw
+<<^ code="&#x0003;">>ni:///sha-256;XayZJYVMFSaDAluntbmvS6FJCS97P_3wVhLc8o7KFj8
 
 <<^ code="&#x0004;" -> to="?">>

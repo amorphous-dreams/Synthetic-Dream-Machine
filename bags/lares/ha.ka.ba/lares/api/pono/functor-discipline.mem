@@ -26,7 +26,7 @@ written   = "2026-06-29"
 ! The Functor Discipline — the architectural keel
 
 The whole house carries ''one shape''. A carrier reads as a
-''nameless entity'' ([[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]]) — essence lives nowhere; identity rides the address ([[loci|lar:///ha.ka.ba/lares/api/pono/loci]]),
+''nameless entity'' ([[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]]) — essence lives nowhere; identity rides the address ([[lar-uri|lar:///ha.ka.ba/lares/api/pono/lar-uri]]),
 meaning rides the `#has` cap-stack it wears and what its body says. This meme names what that nameless
 entity //does// when it composes: it ''acts as a functor'' — a structure-preserving map between two
 categories. The recognition unifies the architecture's recurring move under one discipline; the
@@ -340,6 +340,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WQACRqbZ8FQNmlm97UfAiffaQnch_t5uEHA0v7OSYA4
+<<^ code="&#x0003;">>ni:///sha-256;qR6jViObAY6FpLi0eUgOPXuZEto3cHvXIZRYoBaHCWg
 
 <<^ code="&#x0004;" -> to="?">>

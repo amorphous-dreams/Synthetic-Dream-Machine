@@ -11,7 +11,7 @@ mana      = 15
 manao     = 17
 manaoio   = 16
 role      = "condensed syad research shelf, stance-reading summary, bridge to the archive bundle"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives"
@@ -117,6 +117,6 @@ The archive-derived research bundle lives at:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KOy6NVN8xDSSGfFhsTMfYTC0ev14nR1u6bMk8K0aPfI
+<<^ code="&#x0003;">>ni:///sha-256;GCUfLXzzUuXe-5b5y-Ize6EGqVWtlsQCn0ZGBy4-MfY
 
 <<^ code="&#x0004;" -> to="?">>

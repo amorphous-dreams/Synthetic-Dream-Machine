@@ -95,6 +95,8 @@ ENV LARES_PYTHON=/usr/local/bin/python3 \
     HF_HOME=/state/cache/huggingface
 RUN PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/content_io.py --help >/dev/null && \
     PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_project.py --help >/dev/null && \
+    PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_owned_content.py --help >/dev/null && \
+    PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_owned_li.py --help >/dev/null && \
     PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_model_check.py --help >/dev/null && \
     PYTHONPATH=/app/mempalace python3 -c 'import chromadb, mempalace; from mcp.server.mcpserver import MCPServer'
 

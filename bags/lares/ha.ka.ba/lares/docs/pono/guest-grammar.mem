@@ -11,7 +11,7 @@ mana      = 15
 manao     = 16
 manaoio   = 14
 role      = "extended documentation surface for guest-grammar examples, ownership notes, fixture seeds, and migration residue"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/guest-grammar"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/guest-grammar"
@@ -94,6 +94,6 @@ The current shape keeps:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;qbpXEsHxgGS_S9Vzd4JDOHcVwC1sHZzF2st4doKH4Zo
+<<^ code="&#x0003;">>ni:///sha-256;hN27dXV3D7NBOHVYs567EzOIDV0h8m1xaegprpitBEY
 
 <<^ code="&#x0004;" -> to="?">>

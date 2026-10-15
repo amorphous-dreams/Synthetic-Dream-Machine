@@ -3,7 +3,7 @@
  * one-shot CLI command AND the long-lived watcher daemon run the SAME path.
  *
  * Two legs live here; the third leg lives on the island:
- *   scan  — walk source for carriers, derive each uri by the loci law,
+ *   scan  — walk source for carriers, derive each uri by the address siting rule,
  *           NFC-assert at the shore, hash, diff the disk hash against the base's disk side
  *   submit — pack NEW+CHANGED carriers (hashes riding with the text) into one
  *            INGEST verb; the island's gate supplies currentRenderHash (leg 3)
@@ -135,7 +135,7 @@ export function listCarriers(source: string): string[] | null {
 
 /** Derive a file's carrier-root URI for one mirror plane (bags/ canon vs
  *  wikis/ working write-layer). The watcher and CLI both feed a source; this
- *  names which loci reverse-derivation a row carries. */
+ *  names which address reverse-derivation a row carries. */
 export type FileToUriFn = (root: string, file: string) => string | null;
 
 /** The two mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
@@ -143,7 +143,7 @@ export type FileToUriFn = (root: string, file: string) => string | null;
 export interface MirrorDirs { readonly bags: string; readonly wikis: string }
 
 /**
- * Pick the loci reverse-derivation by which mirror plane the source sits in.
+ * Pick the address reverse-derivation by which mirror plane the source sits in.
  * Under the wikis dir → the working write-layer ingest-back derivation
  * (the editing plane); else the bags dir canon derivation. Designation of the
  * target bag stays the caller's (`--to`); the plane only drives the URI.

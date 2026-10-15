@@ -12,7 +12,7 @@ manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 3986 by its own bibliographic metadata"
-tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+tags           = ["lar:///ha.ka.ba/lares/ref"]
 title          = "lar:///ha.ka.ba/lares/ref/RFC-3986"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/ref/RFC-3986"
@@ -40,6 +40,6 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4vYbudrgWiurJ8F_L2c0bJUtqFLx80IB9ycYCTiHK24
+<<^ code="&#x0003;">>ni:///sha-256;5kYwKetuW9fu26-0NMwmA05_HdAvxLLDvvxfSB5oxVc
 
 <<^ code="&#x0004;" -> to="?">>

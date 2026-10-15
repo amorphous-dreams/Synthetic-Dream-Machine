@@ -115,14 +115,34 @@ def test_cmd_form_embeddings_dumps_flat_keyed_by_sha(monkeypatch, capsys, tmp_pa
     assert rows[0]["embedding"] == [0.9]
 
 
+def test_owned_form_root_round_trips_under_pinned_collection_guard(monkeypatch, capsys, tmp_path):
+    from form_encoder import FormPalaceStore
+
+    form_root = tmp_path / "sensorium" / "form"
+    store = FormPalaceStore(str(form_root))
+    store.store("occurrence-a", {"indices": [0], "values": [1.0]}, 2,
+                {"verbatim_sha": "occurrence-a"})
+    monkeypatch.setattr(dio, "PALACE", str(form_root))
+    dio.cmd_form_embeddings(argparse.Namespace())
+    rows = _lines(capsys)
+    assert len(rows) == 1 and rows[0]["id"] == "occurrence-a"
+    assert rows[0]["embedding"] == [1.0, 0.0]
+
+
 def test_cmd_form_embeddings_degrades_when_no_form_collection(monkeypatch, capsys, tmp_path):
+    monkeypatch.setattr(dio, "PALACE", str(tmp_path / "absent-form"))
+    dio.cmd_form_embeddings(argparse.Namespace())
+    assert _lines(capsys) == []
+
+
+def test_cmd_form_embeddings_surfaces_unexpected_open_failure(monkeypatch, tmp_path):
     def _boom(*a, **k):
-        raise RuntimeError("no such collection: form")
+        raise RuntimeError("form backend failed")
 
     monkeypatch.setattr(dio, "PALACE", str(tmp_path))  # named palace; unnamed refuses LOUD
     monkeypatch.setattr(dio, "get_collection", _boom)
-    dio.cmd_form_embeddings(argparse.Namespace())  # must NOT raise
-    assert _lines(capsys) == []  # 0 rows ⇒ the orchestrator stays 1-plane
+    with pytest.raises(RuntimeError, match="form backend failed"):
+        dio.cmd_form_embeddings(argparse.Namespace())
 
 
 # ---------------------------------------------------------------------------

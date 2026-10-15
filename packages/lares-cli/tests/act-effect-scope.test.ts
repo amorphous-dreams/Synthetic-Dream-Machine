@@ -78,7 +78,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** A bundle file under a `bags/<holding>/<w.w.w>/…` mirror tree, so REPACK's loci derivation names it. */
+/** A bundle file under a `bags/<holding>/<w.w.w>/…` mirror tree, so REPACK's address derivation names it. */
 function bundleUnderBags(): string {
   const root = mkdtempSync(join(tmpdir(), "lares-effect-scope-")); dirs.push(root);
   const dir = join(root, "bags", "sdm", "ha.ka.ba", "packs");

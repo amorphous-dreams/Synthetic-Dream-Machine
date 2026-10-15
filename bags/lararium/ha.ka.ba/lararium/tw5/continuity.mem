@@ -13,7 +13,7 @@ manao     = 14
 manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "lararium child invariant for continuity, crystal carry, and memory-as-hint boundaries"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/tw5/continuity"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/tw5/continuity"
@@ -84,6 +84,6 @@ This child meme keeps the cold-hydration contract small.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Op7xed2CjEzm11LJoF6VW_Vj2oOi1t3Wge35eXK4uEg
+<<^ code="&#x0003;">>ni:///sha-256;3JegfqlwAbM-nJFbesoIE98XIqNzN2ujNaEzbm8KGAQ
 
 <<^ code="&#x0004;" -> to="?">>
