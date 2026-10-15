@@ -15,7 +15,8 @@
  */
 
 import { describe, test, expect } from "vitest";
-import { KeyhiveProvider, KeyhiveIdentitySlot } from "@lararium/keyhive";
+import { KeyhiveProvider } from "@lararium/keyhive";
+import { KeyhiveIdentitySlot } from "@lararium/keyhive/keyhive-identity-slot";
 
 const memStore = () => ({ put: async () => {}, list: async () => [] });
 const BAG = "lar:///ha.ka.ba/bags/test/keyhive-identity-slot";

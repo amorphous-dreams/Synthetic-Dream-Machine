@@ -20,7 +20,8 @@ import {
 import {
   DeterministicFederationGate, identityShareDecision, type IdentityRing,
 } from "@lararium/mesh";
-import { KeyhiveProvider, KeyhiveIdentitySlot } from "@lararium/keyhive";
+import { KeyhiveProvider } from "@lararium/keyhive";
+import { KeyhiveIdentitySlot } from "@lararium/keyhive/keyhive-identity-slot";
 
 const memStore = () => ({ put: async () => {}, list: async () => [] });
 const NX  = "abcdef0123456789";

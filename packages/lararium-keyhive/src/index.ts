@@ -15,8 +15,8 @@ export { seatContentKeys } from "./content-key-seat.js";
 export type { ContentKeySeat, ContentKeySeatInput, ContentKeyProvider, SessionProof } from "./content-key-seat.js";
 export type { ProviderChunkRest } from "./capability-provider.js";
 export { memoryProviderChunkRest } from "./capability-provider.js";
-export { KeyhiveIdentitySlot } from "./keyhive-identity-slot.js";
-export type { KeyhiveIdentitySlotOpts } from "./keyhive-identity-slot.js";
+// `KeyhiveIdentitySlot` stays out of this barrel: it stands specified in code, and no production path constructs it
+// (its header names the caller it waits on).
 export { packPersonaCrossing, applyPersonaCrossing } from "./persona-crossing.js";
 export type { PersonaCrossingBundle, CrossingContent, CrossingPlaintext } from "./persona-crossing.js";
 export { runFaceJoin, gateFaceJoin } from "./face-join.js";

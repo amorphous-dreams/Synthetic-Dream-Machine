@@ -147,7 +147,8 @@ plane's random 16-byte id carries its confidentiality against a peer that cannot
 ''receives an "add member" signed op referencing its Ed25519 key, then joins''
 ''via `repo.find(url)`, with the url exchanged out-of-band (invitation link, DID''
 ''service endpoint, or social graph record)'', and a Keyhive capability check answers `sharePolicy`.
-`KeyhiveIdentitySlot` stands built and tested as that check; no production call site constructs it
+`KeyhiveIdentitySlot` stands specified in code and tested as that check, out of its package barrel; no
+production call site constructs it, and both vessels fill the inner ring with the PersonaGroup ring
 (`packages/lararium-keyhive/src/keyhive-identity-slot.ts`).
 
 !! Reaction Write-Back Invariants
@@ -226,6 +227,6 @@ doc bundle to new nodes.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_HVbXsDTI6I_Vsff4KumdelZ7I825d4Clnz05TUkcmw
+<<^ code="&#x0003;">>ni:///sha-256;RJxTx9znYbRKdMcGWE2jJFuyAlx5wh5g9hTa-D8vjBY
 
 <<^ code="&#x0004;" -> to="?">>

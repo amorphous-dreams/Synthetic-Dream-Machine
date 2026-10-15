@@ -24,11 +24,13 @@
  *     satisfies admin (KeyhiveProvider.verify §402-419).
  *
  * OUT OF SCOPE (the held wiring second-half + BeeKEM):
- *   · NOTHING in production calls these methods yet. This class is the built,
- *     tested crypto-backed slot; wiring a sharePolicy / LarVessel call site to
- *     construct it (retiring the OpenIdentitySlot default) is a SEPARATE thread.
- *     Until then it enforces at runtime only where a call site chooses to invoke
- *     it — construction alone gates nothing.
+ *   · NO production path constructs this class: it stands SPECIFIED in code,
+ *     tested, and out of the package barrel. Both vessels fill the inner ring
+ *     with the PersonaGroup ring (`assemblePersonaGroupRing`; ruling B in
+ *     `identity-slot.ts`). The caller it waits on stands named in
+ *     `federation-gate.ts` (`identityShareDecision`): a main-thread capability
+ *     provider with the docId→bagUrl map carried across, a `tokenSeal` and a
+ *     `leaseEpochOf`. Construction alone gates nothing.
  *   · TRUE read-confidentiality — denying a *guessed* doc id and hiding the
  *     bytes at rest — is BeeKEM (Keyhive's encryption layer), not this shore.
  *     This slot gates the sharePolicy ACCESS decision; it does not encrypt.
