@@ -10,7 +10,7 @@ l-space   = "stable"
 mana      = 14
 manao     = 14
 manaoio   = 13
-role      = "operator how-to: federate a second vessel into your PersonaGroup via lares vessel stand --admit — what github carries vs what travels out-of-band, the TRUE NAME MODEL (a distinct key per vessel, delegated in at the hearth's True Name) and the retired copy-the-key stopgap it supersedes, the witnessed procedure kept as record"
+role      = "operator how-to: join a vessel to one face through fleet join, with a distinct key per vessel and a checked device edge"
 title     = "lar:///ha.ka.ba/lares/docs/federation"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/federation"
@@ -31,7 +31,7 @@ A Lararium runs as a ''swarm of one operator's vessels'' (a PersonaGroup) — ea
 * `<lares>/identity/.vessel-key*.json` — this vessel's OWN private signing key. The device mints it and it never leaves the device.
 * `<lares>/vessel/social-bootstrap.json` — the PersonaGroup pointers (admin/identities/circles/sessions doc-URLs + the PersonaGroup's id and the MeshCabal sentinel's id). Each vessel writes its own, at founding or at join.
 
-''What crosses between two vessels'': the joinee's PUBLIC verifying key one way, and the signed admit payload the other (`device-admit/v1` — the device-delegation edge, the pinned persona-KEL chain, the PersonaGroup secret sealed to the joinee's key, and the doc pointers). The signed edge binds the joinee's key to the hearth's True Name and the sealed secret carries its own signature, so a hostile carrier may withhold either and forge neither; the remaining payload fields ride as untrusted carriage. The payload rides whatever channel the operator already trusts — a file, a paste, a QR — never the public remote. A clone alone cannot join a PersonaGroup; joining requires what the founding vessel hands over deliberately.
+''What crosses between two vessels'': `lares fleet join offer` → `request` → `answer` → `land`, with `abandon` for an unlanded exchange. The request names the joinee's key. The face root signs the answer: the `device-admit/v1` edge, the gate pin, canon list, island reach, that face's sealed address secret, vessel face-key certificates and add-a-face grants. The edge format stays internal; `cabal-join` still names people and realm admission. A clone alone grants no fleet standing.
 
 <<~/ahu>>
 
@@ -41,18 +41,9 @@ A Lararium runs as a ''swarm of one operator's vessels'' (a PersonaGroup) — ea
 
 > ''THE TRUE NAME MODEL HOLDS; the copy-the-key stopgap is RETIRED'' (operator ruling). Copying one key across vessels names the ''antipattern'' the multi-device literature warns against — SSB-fusion and Veilid both copy-the-key and both lose per-device revocation; Keybase built its per-device model precisely to escape "one PGP key everywhere." The pono target rides the ''two-axis model'': each vessel mints its OWN distinct key — the ''user×vessel bond'' — delegated into the operator ''PersonaGroup'' by a signed edge. The signed-delegation edge composes up the ''SOCIAL axis'' `device-vessel → PersonaGroup → CabalGroup` (who reads); above it, ''NexusGroup'' and ''DreamNet'' federate across the ''INFRA axis'' by treaty / mutual carriage-contract (who relays), not by delegation-up — the two axes cross at the vessel (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>). The key is the node; the ''delegation is the relationship''. The identity model — the two axes, the per-vessel key, the delegation edge — stands whole at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>; its mesh topology at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>.
 
-''THE RETIRED STOPGAP — one operator identity copied across devices.'' Every vessel carries the //same// operator key, so every vessel presents the //same// DID — already a member of the PersonaGroup. The QA box receives the operator key and a device-admit payload out-of-band, loads them, and boots as the same operator on another device.
+''THE TRUE NAME MODEL — a distinct key per vessel, delegated in at the hearth's True Name.'' Each joinee mints its own key. `fleet join` carries one face's root-signed device edge and grants to that joinee; The face index belongs to the join request; face zero supplies the default until the named `--face <index>` door lands. The Binding Gate checks the signed edge against the fleet board. The founder keeps its own key and hands no seed to the joinee.
 
-''THE TRUE NAME MODEL — a distinct key per vessel, delegated in at the hearth's True Name.'' Each vessel forges its //own// key, and ''the joinee mints first'': for the `device-admit` mint, only its PUBLIC verifying key crosses to the founder. The founder's PersonaGroup root signs a root→joinee ''device-delegation edge'' over that key and the hearth's True Name, and in the same enrolment seals the PersonaGroup secret to that device key (`lares device-admit --joinee-key <hex>` → `runDeviceAdmit` → `runDeviceAdmitEdge`, `packages/lararium-keyhive/src/ceremony-core.ts`). The joinee verifies the edge at its Binding Gate against the pinned persona-KEL signer. This path stands BUILT: it carries no Keyhive cap events, waits on no Beelay, and the verb refuses without the joinee's key. Boot holds no membership gate for a fresh key to fail — it proves identity alone (#/the-gate).
-
-''The ground of the model'' (operator ruling 2026-06-23): ''roll our OWN per-vessel keying'' rather than wait on the pre-alpha Rust branch. As measured at that ruling, a joining device needs ''two'' things to read a Keyhive group, and Keyhive's JS surface delivers only the first:
-
-# the ''key-chain + membership'' (CGKA + delegation ops) — JS-available via `eventsForAgent` / ingest; necessary but not sufficient; and
-# the encrypted ''Document content'' itself — which Keyhive moves via ''sedimentree'' (content-addressed strata sync) under ''Beelay'' (the auth-sync RPC; zero-knowledge server). ''Both stood Rust-only at that measure — absent from the `keyhive_wasm` JS surface'' (the `automerge/beelay` repo lay dead; the live code sat in `beelay-core` inside the keyhive monorepo), and the keyhive repo carried the cross-peer admit + offline-device work as open PRs (#205 prekey-archives / offline-admit, #116 doc-sync listener, #110 reachable-docs).
-
-So a join that waited on Keyhive's own document sync would never read the group. The house holds its own public-events-and-ciphertext crossing (`packages/lararium-keyhive/src/persona-crossing.ts`), and the `device-admit` payload itself carries the delegation edge and the sealed PersonaGroup secret, never content. A distinct per-vessel key gains admission by a signed delegation edge; the design then has the joinee decrypt WITHOUT Beelay by ingesting only ''PUBLIC bytes'' — the CGKA / membership ops plus the ciphertext — because keyhive's add-member keys the content to the joinee's OWN leaf. A probe on `@keyhive/keyhive@0.1.0-alpha.6` proved that reading (the house pins `0.1.0-alpha.8`): a DISTINCT-identity device reads the group from public bytes + its own prekey secret, ''no sealed box, no secret in transit'' for that content crossing — it carries transport, not crypto (the admit payload's sealed PersonaGroup secret rides apart from it). keyhive read runs ''FORWARD-ONLY'' (a member reads content encrypted at or after its add), so the founder ADDs then ENCRYPTs, and grants a new member ''pre-existing'' content by RE-ENCRYPTing each chunk (route A — still public ops + ciphertext). Only the `*Keyed` shortcut (route B — hand the joinee a 32-byte application secret) ships a secret and demands a sealed channel; the default never does. The PROPOSED four-port swap surface names where Beelay slots in later with low churn (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/four-port-swap">>, #encrypt-from-start). Per-vessel keying stands built, so ''the True Name Model holds'' and the stopgap stands retired. Track under <<~ loulou "lar:///ha.ka.ba/lares/docs/mesh-governance">>.
-
-The procedure below enacts ''the retired stopgap'' — kept as the witnessed record of how a second vessel joined before per-vessel keying, never as the path to walk.
+''The ground of the model'': each device keeps its own private key. Fleet join carries the signed `device-admit/v1` edge, the face's certificates and grants, and the sealed address secret. Keyhive's public events and ciphertext cross through `persona-crossing.ts`; a recipient opens content through its own membership state and a bag's key delivery. No copied operator key crosses.
 
 <<~/ahu>>
 
@@ -118,28 +109,9 @@ and it stays the operator's seat (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/per
 
 <<~ ahu #/procedure>>
 
-!! The Procedure (the retired stopgap, witnessed 2026-06-21)
+!! The Procedure ~ one face joins its fleet
 
-''On the founding vessel'' — mint a clean admit payload (sentinel IDs + the group's signed cap-events):
-
-```
-lares device-admit --out admit.json
-```
-
-(The verb as built refuses this line: it demands `--joinee-key <hex>`, the joining vessel's PUBLIC verifying key, and it signs a delegation edge over that key where the stopgap payload carried cap-events for a shared one.)
-
-Transmit ''out-of-band'' to the new vessel: `admit.json`, and the operator key (`.lararium/.vessel-key-*.json`). Never the public remote.
-
-''On the new vessel'' — bootstrap the CLI once (it cannot build itself into existence), place the operator key under `<LAR_ROOT>/.lararium/`, then stand up and join:
-
-```
-pnpm install && pnpm -r build      # bootstrap the lares CLI + node
-lares vessel stand --admit admit.json      # idempotent join-standup
-```
-
-`lares vessel stand --admit` runs the same found-if-absent standup as `--install` — build, mempalace, genesis (skipped; `island.bin` rides the clone) — but the init step ''joins'' the PersonaGroup from the payload instead of founding a new one: it loads the operator key (same DID = a member), applies the cap-events, writes the local `social-bootstrap.json` into the vessel's own store, and stands the node up. The keyhive boot gates then verify its identity and the vessel goes live. Re-running skips the init step (the bootstrap already lives).
-
-This procedure records the retired copied-key flow and cannot serve as instructions for the built admit path. The flag itself stands built and keeps the same found-if-absent shape (`packages/lares-cli/src/standup.ts`): given an admit payload, the init step joins under the vessel's OWN keypair into the same group; a present bootstrap skips the init ceremony while `stand` still performs its remaining steps. The clone carries `genesis/seed.json` and `genesis/cas/` where this record names `island.bin`.
+On the face's root holder, run `lares fleet join offer` and carry the offer to the joining place. The joinee runs `lares fleet join request <offer-file>` and carries its request back. The root holder runs `lares fleet join answer <request-file>` under that face's root. Carry the root-signed answer to the joinee and run `lares fleet join land <answer-file>`. `lares fleet join abandon` clears an unlanded exchange. The node and browser use the same offer, request, answer and land shape. The signed answer carries the internal `device-admit/v1` edge and that face's certificates, grants and address secret.
 
 <<~/ahu>>
 
@@ -159,9 +131,9 @@ A ''browser'' vessel meets one more gate before any of this — the ''secure-con
 
 !! The Windows Surface
 
-A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the same `lares vessel stand --install` / `--admit`, with these surface notes:
+A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the same `lares vessel stand --install` and `lares fleet join`, with these surface notes:
 
-* ''`lares` global'' — `--install`/`--admit` writes a `lares.cmd` shim beside the bin (on Unix it symlinks into `~/.local/bin`). Add that directory to PATH so `lares` runs bare. The link step stays self-contained — it does not depend on `pnpm setup`/`PNPM_HOME`.
+* ''`lares` global'' — `--install` writes a `lares.cmd` shim beside the bin (on Unix it symlinks into `~/.local/bin`). Add that directory to PATH so `lares` runs bare. The link step stays self-contained — it does not depend on `pnpm setup`/`PNPM_HOME`.
 * ''Python'' — the integration check resolves `python3` → `python` → `py`, so the check finds Windows' `python`/`py`.
 * ''The wake hook stays portable'' — it runs node exec-form (`node lares-wake-hook.mjs`), no shell, identical on Windows and Unix.
 * ''mempalace's keep-hooks run in bash'' (`Stop` / `PreCompact`) — on native Windows they need ''Git for Windows'' (which Claude Code already requires for its bash tool). With Git Bash present, `lares vessel stand --claude` wires them as `bash "<path>"`; without it, the verbatim keep-leg stays dark until someone installs Git for Windows.
@@ -177,6 +149,6 @@ A QA vessel on native Windows 11 (PowerShell, not WSL) stands up through the sam
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;7VZychZKrATcPZ_BHEQHF91OnOXIhFOAFNsVx8c_iDc
+<<^ code="&#x0003;">>ni:///sha-256;uymsbajcrmSqCUVTPwipUddRtyJFdL2dmLw0_gpsPQI
 
 <<^ code="&#x0004;" -> to="?">>

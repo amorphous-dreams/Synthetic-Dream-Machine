@@ -10,7 +10,7 @@ l-space     = "lararium"
 mana        = 17
 manao       = 16
 manaoio     = 15
-role        = "isomorphic keyhive ceremony provider: founding, device-admit, and apply-admit functions; three-gate identity lattice"
+role        = "isomorphic keyhive ceremony provider: founding and the internal device-admit/v1 edge functions; three-gate identity lattice"
 source-file = "packages/lararium-keyhive/src/keyhive-provider.ts"
 title       = "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -131,6 +131,6 @@ would turn admission into cloning, and every admitted vessel would hold the huma
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sV2hD1WvuFKyYjmVE2Ips06GQOUVsUx-LZjmRxZxkwg
+<<^ code="&#x0003;">>ni:///sha-256;h6FgHLO17QzVdsPmLp06xyRE2qdXC2BnlTZdtXagDSM
 
 <<^ code="&#x0004;" -> to="?">>

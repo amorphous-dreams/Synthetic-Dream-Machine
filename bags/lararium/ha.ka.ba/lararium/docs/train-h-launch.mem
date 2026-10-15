@@ -36,8 +36,8 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 
 !! Commit walk
 
-# ''PURE: authority and dials.'' Fix the operator-seat delegation, hosting-key public identity, act image and three dial fields in one vector set. The act reader verifies the delegation and the hosting-key signature. Changing the seat, delegation, key, Nexus, epoch parent or any dial breaks verification. The hosting key seeds each epoch; an ended session changes no signed act.
-# ''PURE: H8 grant.'' Replace the keyed tag check with a signed grant shape and a public-half verifier. Derive the public halves for serving rows during the same hosting-act re-cut. Withhold every minting secret from a SERVING checker. Test grant class, Nexus, epoch, leaf, lineage, roll and revocation separately.
+# ''SPECIFIED: authority and dials.'' `hosting-delegation.ts` carries H2's delegation, hosting key and three dials; its named red reads unskipped. The live issuer and reader still need the same signed shape. Their cut verifies the seat, delegation, key, Nexus, epoch parent and each dial; the hosting key seeds each epoch across session endings.
+# ''SPECIFIED: H8 grant.'' `walker-grant.ts` signs the grant and verifies under a public half; its named red reads unskipped. The serving rows and live cut remain owed. Derive the public halves for serving rows during the hosting-act re-cut; a SERVING checker holds no minting secret.
 # ''LIVE: one signed-byte cut.'' Move issuer, reader, hosting store and socket sorter together. Preserve each spend as one sealed HOT row and each roll as one committed state row. Re-derive hosting-doc acts from committed state. A row that refuses to open refuses by name. Keep the floor sorter free of hosting rows.
 # ''LIVE: introduction and answer.'' A token buys a knock. Only the operator's answer or a pre-answer gives standing. A walker's invitation vests at the host's next roll; a host invitation receives floor 1 at once. Wire the strangers' three-dial decision and the host door. Fold H7 invite canon after the live reader passes.
 # ''GATE: E's walker arm.'' Prove a SERVING hearth checks the walker grant with its public half and no minting secret in its serving tier. Only then arm E's walker path.
@@ -48,7 +48,7 @@ Start pure signed-act and grant vectors beside N and W on disjoint files. Start 
 
 !! Witness and red window
 
-Unskip `HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS` after the coordinated act re-cut. Unskip `SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF` after H8. A signed-byte change can redden issuer, reader, store and sorter together; one commit moves their fixtures and consumers. Prove that a token alone grants no standing, an answer or pre-answer grants exactly the intended class, and all three dials survive roll and restart. Run the grant verifier under a serving view that holds no minting secret.
+`HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS` and `SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF` read unskipped for the pure modules. A signed-byte change can redden issuer, reader, store and sorter together; one commit moves their fixtures and consumers. Prove that a token alone grants no standing, an answer or pre-answer grants exactly the intended class, and all three dials survive roll and restart. Run the grant verifier under a serving view that holds no minting secret.
 
 <<~/ahu>>
 
@@ -82,6 +82,6 @@ The hosting-key and worn-face rulings already stand at the roadmap's `#/rulings`
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;DenJCCbciux3SCPdolQAID-KYVzE9TnlY8JhVETDN08
+<<^ code="&#x0003;">>ni:///sha-256;Ddom9J6mK5CGGkXJD1qENIJ4Thy7nU_QZ6xCWEubpN4
 
 <<^ code="&#x0004;" -> to="?">>

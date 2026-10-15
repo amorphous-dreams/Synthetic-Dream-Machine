@@ -6,7 +6,19 @@ No release has shipped, and no version tag exists. The eras below name turns in 
 
 ### The working layer and the founded seat
 
+**Added**
+- **A vessel joins one face's fleet.** `lares fleet join offer|request|answer|land|abandon` runs on node and browser. The root-signed answer carries the device edge, gate pin, canon list, island reach, sealed face address secret, vessel face-key certificates and add-a-face grants.
+- **Bundles carry guardian sets.** A bundle cut after enrolment restores while its enrolled set still heads the face log. A later guardian rotation cuts earlier bundles off.
+- **A restored face stands provisional.** `lares persona provisional|confirm|view` and `lares persona guardian view` show the mark and accept a guardian or chair's agreeing signed view. The marked face refuses guardian enrolment and Nexus key re-issue until confirmation.
+- **Outbox parcels rest sealed.** Each parcel takes randomized authenticated encryption under an outbox key the vessel key wraps, a random name, and the `outbox` carrier class.
+- **Two root cards rebuild a face.** `lares vault restore --cards` reads the cards and custodians on a terminal, then runs the bundle body's checked restore path; paper opens no memory.
+- **A bundle founds a fresh hearth.** `lares vessel found --hearth --restore <bundle>` restores its face as persona zero under a fresh seed charter and chair.
+- **A realm carries its own edge roll anchor.** `lares nexus seal anchor --edge --out <partial>` opens one partial per realm for two-vault rolls; `--from` lands each and names `anchored` or `owed` per realm.
+
 **Fixed**
+- **Retired join doors leave the CLI and browser.** `lares persona admit`, `lares device-admit`, `vessel found|stand --admit`, the browser's bare `#admit=` reader and browser-ci `qa-admit` give way to fleet join and `qa-join`. `device-admit/v1` stays as the internal edge format; `cabal-join` keeps people and realm admission.
+- **A seal roll waits for its prior anchor.** `lares nexus seal rotate` and `seal roll open`, including the custody door's two roll opens, refuse `prior-roll-unanchored` before a card read, signature or write.
+- **Sensorium recall reads its own metadata.** Self-discount sees the root handle and turn ordinal again after the mempalace move.
 - **A retired bag takes nothing.** A wiki save, a delete or `lares shore remove` into a bag that DROP retired refuses `bag-retired` at the write door and lands nothing; the hand stays owed on the alert rail.
 - **`vault status` names a cut seal.** A floor carrier cut inside the vessel key's magic reads `torn` and a fault, and a short frame of another house seal reads `unopenable`, never bare.
 - **The custody wait refuses only for a holder that answers.** A holder that leaves mid-wait lets the contender in.

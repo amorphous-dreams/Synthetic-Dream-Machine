@@ -169,6 +169,7 @@ Two hands act on an edge. The ''holder'' hand signs with the one key the edge's 
 * ''Citation alone orders acts.'' An act cites its parents by content id, and a parent may root on any epoch. No scalar, clock or arrival order ranks.
 * ''The epoch names a roster and ranks nothing.'' A quorum act counts under the roster of the seal epoch it names. A holder act names no epoch, since its hand signs with the one key the edge's id names and holds no roster; a holder act that names one, and a quorum act that names none, read as no act. The charter's own lineage names each rolled epoch's seats, and a hash binds the first epoch's seats.
 * ''Every roll writes an edge anchor'' on each realm board standing under the Nexus that rolls (#/edge-hands). The quorum of the epoch the roll opens signs the closed epoch's id, the closed epoch's seated keys and threshold, the causal heads of the quorum acts that counted at the closed epoch, and the anchor that opened it. The closed keys never sign an anchor, since they may stand as the reason for the roll. The anchor follows the carriage board's roll anchor in shape and law (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>).
+* ''A two-vault edge anchor crosses per realm.'' `lares nexus seal anchor --edge --out <partial>` opens one signed partial for each realm board under the closed charter, and `--from` judges each against the receiving vault's own board before signature and before landing. A vault with no board for that realm answers `unavailable`; a moved head answers `stale`; an anchor that already counts answers `replay`. The answer names each realm `anchored` or `owed`. The signed image follows `signEdgeRollAnchor`.
 * ''The anchors chain from the head down.'' An anchor counts under the roster it opens, and below the head it must sit in the causal past of the anchor that closed that roster's own epoch. A key-set that retired therefore signs no anchor after its roll, exactly as it signs no act.
 * ''A quorum act at an earlier epoch counts through the anchors.'' The act must sit in the causal past of a counted anchor that closed its epoch. A retired key-set mints nothing after its roll: no raise and no lift.
 * ''A vessel keeps counting a raise it counted at its head.'' A roller anchors the boards it reads. Where no anchor carries a raise, each vessel that counted it while its epoch still stood as that vessel's charter head keeps counting it. A lift never rides that road: it waits for an anchor.
@@ -299,6 +300,6 @@ The hand that raised lowers, by an act that cites every raise head, and an effec
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KVlAD7KGm5En07ynHzqkpWlZfzk3lbIv7FQ6Upy01QM
+<<^ code="&#x0003;">>ni:///sha-256;8sXEyPHXAGoy5CzYkvu2JbW8qybH11EjlY5owGWQRyA
 
 <<^ code="&#x0004;" -> to="?">>

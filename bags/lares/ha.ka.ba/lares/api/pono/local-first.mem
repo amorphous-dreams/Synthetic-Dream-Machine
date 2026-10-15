@@ -63,13 +63,13 @@ A device holds first-class standing; the cloud serves as an optional relay.
 
 ''Lararium:'' SATISFIED between node vessels; a browser device stands built in code
 with no e2e witness. A second device mints its OWN key and joins by a signed
-device-delegation edge (`lares device-admit` → `runDeviceAdmitEdge`,
+device-delegation edge (`lares fleet join` carries the internal `device-admit/v1` edge from `runDeviceAdmitEdge`,
 `packages/lararium-keyhive/src/ceremony-core.ts`), and its boot proves that edge at the
 Binding Gate (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts`). The e2e set carries
 the witness: two vessels of one operator sync a bag both ways
 (`tests/e2e/meme-two-vessel-bag.test.ts`), and two devices of one PersonaGroup sync
 through a herm that reads none of it (`tests/e2e/leaf-sibling-sync.test.ts`). The browser
-vessel persists its Repo through `IndexedDBStorageAdapter` and carries its own admit path
+vessel persists its Repo through `IndexedDBStorageAdapter` and carries its own fleet-join path
 (`packages/lararium-browser/src/open-browser-vessel.ts` · `admit-carriage.ts`). The model
 stands whole at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>.
 
@@ -312,6 +312,6 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;45qL8ETi7uayX21EhC4cIcIIqmZWRPVMgP-xMTW29CQ
+<<^ code="&#x0003;">>ni:///sha-256;9DYk5MK0NL2CsTo7xVfjFvS0B2l0ieGgDEAltPze9l8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -113,7 +113,7 @@ The serving tier holds exactly the rows the serving gate and blind carriage read
 Each refusal names `serving-standing` and `lares vault unlock`.
 
 * ''No act's signature.'' The custody root rests shut, so no veil, no Keyhive signer, no hosting key and no seat key stands. No roll, no hosting act, no invite mint, no grant, no dyad act, no quorum signature, no seal act. The serving gate's own bundle holds a handshake signing key, as every gate bundle does: it signs that gate's handshake and no act.
-* ''No admission.'' An invite's redemption mints a grant under the hosting key and burns a spend, so it refuses. A fleet join, a persona admit, add-a-face and every crossing refuse.
+* ''No admission.'' An invite's redemption mints a grant under the hosting key and burns a spend, so it refuses. A fleet join, add-a-face and every crossing refuse.
 * ''No face on the hearth.'' `vessel-face-key` rests shut, so the hearth opens no session of its own, dials no gate as a face and presents no hand-over. It verifies presentations, hand-overs included, since each stands public and signed.
 * ''No plaintext.'' No content-key holder stands in the daemon island, and no Keyhive identity: the sealed store's rests serve as ciphertext alone. No wiki island stands.
 * ''No same-operator sort.'' The fleet's roots rest under the VK, so the sorter sorts nobody same-operator, exactly as at the floor. A device of the person's own fleet reaches what its arm earns at the gate; the blind carriage of its own sealed history rides the sealed store's fourth step and stands owed with it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
@@ -297,6 +297,6 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KbDwCu9Ji01YQ1UjkW_-h0VlVahPBt1BZVMFekjKGEg
+<<^ code="&#x0003;">>ni:///sha-256;cgFio9s5oCJeYXEK8jrs_6ZBiGPSEr8menVgE5O17G4
 
 <<^ code="&#x0004;" -> to="?">>

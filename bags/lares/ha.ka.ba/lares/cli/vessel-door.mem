@@ -93,7 +93,7 @@ Every substrate motion in this CLI composes from these, and no composition earns
 presence, storage size, port, seal state, personas, quorum).
 
 `build` compiles the workspace and stamps its source digest inside `rite refresh`; it names no vessel door.
-`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, `--init`, and `--admit <file>` postures. The sub-doors `card`, `wire`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, and run the named compositions. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing.
+`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, and `--init` postures. The sub-doors `card`, `wire`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, and run the named compositions. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing. `lares fleet join` carries a new vessel into one face's fleet.
 
 ''What a stand's `ok` answers.'' `ok` reads true where the vessel stands and no organ a hand installed stands broken. The memory library keeps its own door (`lares mempalace install`) and never rides a founding, so a machine that holds none of it reads `mempalace: absent` beside a true `ok`: an absent optional organ never reads as a failed stand. A half-installed library reads `incomplete` and fails the reading (one half of the library standing without the other, or a source directory that holds files and lacks its entry), and a node that fails to answer fails the stand whatever the library says (`packages/lares-cli/src/integration-check.ts`, `mempalaceStanding`, `standOk`; `packages/lares-cli/tests/stand-ok-reads-the-vessel.test.ts`).
 
@@ -218,7 +218,7 @@ tracing installs a global dispatcher, so it stands off unless this name asks for
 corpus island rather than the vessel island. They may want their own door one day; that is a separate
 reading and it does not belong in this act.
 
-''NOT the identity verbs.'' `device-admit` and `raise` name ceremonies between vessels, not motions of
+''NOT the identity verbs.'' `fleet join` and `raise` name ceremonies between vessels, not motions of
 one vessel's substrate. ''An OWED capability carries no door at all'' — the Nexus invite ceremony rides
 no verb until its transport lands, the same way `cabal feed` stands built and unspelled.
 
@@ -268,6 +268,6 @@ because a verification an operator has to remember to run is a verification that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;mLPZorSLoBc2QWkOMbWeJ5J-U_-9FxjtiWwj4EUXP8A
+<<^ code="&#x0003;">>ni:///sha-256;RgLtQoEsWD22hOH2PhZ_xXq2pFCzHcemdOfUcHGHuis
 
 <<^ code="&#x0004;" -> to="?">>

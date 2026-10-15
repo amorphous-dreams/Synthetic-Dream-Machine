@@ -315,7 +315,7 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 # `oracle-substrate.ts` verify + doc-comment, red-first off the rewritten `:153`/`:165`. ''~3 spirit-hours.''
 # `oracle-read-client.ts` fence carriage + the per-peer high-water the client must now hold. ''~3 spirit-hours'' — this one touches state the client never kept.
 # The two mint sites under Q2's ruling, with the `clockKind`-style naming if the wall unit stays. ''~2 spirit-hours.''
-# Sweep every other `nowMs`-gated validity branch for the same inversion (`persona-admit.ts:201`, `:275` name two candidates) and report rather than cure. ''~2 spirit-hours.''
+# Sweep every live `nowMs`-gated validity branch for the same inversion and report rather than cure. ''~2 spirit-hours.''
 # Aftermath: `meme check --edges`, the carrier ledger line, the CHANGELOG row. ''~1 spirit-hour.''
 
 ''~11 spirit-hours'', gated behind two operator rulings.
@@ -353,6 +353,6 @@ All in `packages/lararium-mesh/tests/oracle-substrate.test.ts`, added by `e2da72
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;hXeBVuq1HuM464hnCrIdus7RaGLetRyewAOU4w6l92w
+<<^ code="&#x0003;">>ni:///sha-256;GmPGlV10pVChhfvUPORXb01lOWT5B5jqjiUOGClqjss
 
 <<^ code="&#x0004;" -> to="?">>

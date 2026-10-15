@@ -155,7 +155,7 @@ The second line declares persona zero's public Handle; skip it for a face that k
 
 The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key, opens the serving key through the vessel key's own entry, and composes with what the keys open. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag.
 
-''A place that stands already lifts the same way.'' Stop the vessel (`tools/lares-container.sh vessel stop`), run `found --hearth` over the standing place, then `up`. A face on a place with no seed charter refuses by name and names the act. Bare `found` still founds a place with no face (a herm's rite), and `found --admit <file>` founds a joiner.
+''A place that stands already lifts the same way.'' Stop the vessel (`tools/lares-container.sh vessel stop`), run `found --hearth` over the standing place, then `up`. A face on a place with no seed charter refuses by name and names the act. Bare `found` still founds a place with no face (a herm's rite). `lares fleet join` carries a joiner through offer, request, answer and land.
 
 ''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles">>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
 
@@ -239,9 +239,9 @@ Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and on
 
 !! 8 · Add the first operator's browser, then tablet or phone leaves
 
-The first operator starts with a browser leaf; a tablet or phone forms a separate leaf. Each device mints its own key and receives admission for that key. Admission never transfers a seed. `device-admit` accepts a public verifying key and prints a signed carry payload; it does not supply the complete browser onboarding path.
+The first operator starts with a browser leaf; a tablet or phone forms a separate leaf. Each device mints its own key and receives one face's fleet-join answer for that key. The answer transfers no seed; it carries the internal `device-admit/v1` edge, that face's certificates and grants, and its sealed address secret.
 
-▢ ''OWED — browser and phone leaf ceremony.'' Browser crossing and render rungs run, and a leaf-side edit survives a reload. Node-side durability and the complete household phone admission walk remain OWED: secure-origin boot, on-device key minting, payload transfer, admission, and a verified live leaf. Do not use a desktop seed on a phone or call an HTTP LAN page a secure context. Measure actual device capabilities with `tools/capability-probe/`. Carriers: `stable-founding-road.mem` (browser rungs and HARBOR), `secure-context.mem`, `persona-circle.mem`, and `packages/lares-cli/src/commands/device-admit.ts`.
+▢ ''OWED — browser and phone leaf ceremony.'' Browser crossing and render rungs run, and a leaf-side edit survives a reload. Fleet join runs on node and browser. The complete household phone walk still needs secure-origin boot, on-device key minting and a verified live leaf. Do not use a desktop seed on a phone or call an HTTP LAN page a secure context. Measure actual device capabilities with `tools/capability-probe/`. Carriers: `stable-founding-road.mem` (browser rungs and HARBOR), `secure-context.mem`, and `persona-circle.mem`.
 
 ''See'': no supported command sequence can yet show a household phone leaf online.
 
@@ -375,6 +375,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HaEjequylLOMG_HSvShd8QRPGq-kAWyOwICoUgQ9XcY
+<<^ code="&#x0003;">>ni:///sha-256;pxv_c0scqXVgYXXaMi1729Ezc43pbUJLgTw2px2Zh_k
 
 <<^ code="&#x0004;" -> to="?">>

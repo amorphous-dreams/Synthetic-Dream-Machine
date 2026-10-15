@@ -93,38 +93,21 @@ A cloud session opens on branch `feature/green-jello-dinosaur-5`, stands the hou
 
 A cloud lane commits on its OWN branch, `feature/green-jello-dinosaur-5--<lane>`, cut from `feature/green-jello-dinosaur-5`, and pushes that branch alone; CI and held-out fire on it. It shards each burst with `node tools/e2e-shards.mjs push <lane>-<n>` and reads `node tools/ci-verdict.mjs --head <sha>`. It never pushes `feature/green-jello-dinosaur-5` or `main`: the controller merges each lane branch after reading its three readings. Before its final push it merges `feature/green-jello-dinosaur-5` into its lane branch. It lists canon and changelog lines for the roadmap and `CHANGELOG.md` in its handback, and edits neither. It stops at a clean boundary when context runs short and hands back in the lane law's shape, with its lane branch and head.
 
-!!! Lane `cutover` ~ train W, to the socket cutover
-Kit: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-w-launch">>, with the scout's report `bags/lararium/ha.ka.ba/lararium/docs/next-path-scout.md` section 1 as its map of the tree.
-# Step two's remainder, LIVE: the fleet-join door, the vessel face-key certificate and the add-a-face grant; `openSignedSession` and `openJoinedFaceSession` reach production; `device-admit.ts` stops carrying the gate pin and canon list beside its signed payload; the old join doors retire (the CLI and node `device-admit`, `persona-admit-cmd.ts`, `cabal-join.ts`, the `LAR_JOIN_GATE` and `LAR_JOIN_SYNC` boot path, the bare-token reader).
-# Widen `gate-cutover-reach.test.ts` to derive its inventory from source, and see it name today's old-wire sites red.
-# THE SOCKET CUTOVER, one assembled commit, in the scout's order: the funnel (both `gate-dial-fixture.ts` helpers), the narrow patches, the old wire retired, the admit pin moved to the wire key, `NO_OLD_WIRE_PRODUCTION_CALLER` unskipped, then the kit's proof order.
-# The dials, where the span carries it: one per (hearth, Nexus), and the sibling at face scope.
-Ground: both vessel composers, `device-admit.ts`, the admit carriage in `nexus-contract.ts`, every gate, socket, sorter, relay, oracle and dial file, and the probes the cutover moves. Leaves alone: lane `nexus-host`'s files.
+!!! Lane `wire-socket` ~ train W's assembled cutover
+Kit: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-w-launch">>; the cutover handback's slices A–G set the file order.
+# Freeze D1's full route pin, D2's sealed application frame and the `GateSessionChannel` seam with vectors.
+# Land the assembled socket cutover in the W kit's order: the founder's checked self-certificate; D3's face-scoped sharing; D4's fleet-shadow consult with restart and two-face witnesses; the walker, sibling and herm routes SHUT by name; the oracle route converted where `pullAndVerifyOracle` reaches browser boot, otherwise SHUT by name; `waking-floor-announce`; the admit repin; and retirement of the `LAR_JOIN_GATE` and `LAR_JOIN_SYNC` boot dial.
+# Unskip `NO_OLD_WIRE_PRODUCTION_CALLER`. Stop at a green assembled cutover and per-(hearth, Nexus) dials.
+Ground: both vessel composers, the gate, socket, sorter, relay, oracle, dial, fleet answer and admit-carriage hunk of `nexus-contract.ts`. Leave browser custody slots and H's live hosting cut to their owners.
 
-!!! Lane `nexus-host` ~ the base turns green, then N's remainder and H's pure steps
-Kits: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-n-launch">> and <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-h-launch">>, with the scout's report sections 2 and 3.
-# The base's two reds, first, as one burst: the sensorium's `form` collection opens with `_skip_name_check=True` at its three sites (`form_encoder.py`, `loci_io.py`, and `content_io.py` on its named-collection branch), with the fake at `test_loci.py` widened; `tools/turn-parity.mjs` skips `.jsonl` beside `.json`. Never edit the `mempalace` submodule.
-# `N4`, red first: a roll refuses by name while the prior roll stands with no anchor (operator ruling), at the roll's open and the two-vault rotate, with the single-vault rotate as the control.
-# `N2`: the realm edge anchors cross through the same two-vault partial. `N5`: a dormant vault catches up its missed board acts along one lineage, on the two-root witness.
-# H, pure: the hosting act's image with the operator-seat delegation, the hosting key and three dials; then H8's signed walker grant and its public-half verifier (unskip `HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS` and `SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF` as each greens). The live cut of the issuer, reader, store and sorter waits on lane `cutover`.
-Ground: the sensorium form-store scripts, `tools/turn-parity.mjs`, the seal, roll, kapae and anchor files (`seal-ceremony.ts`, `nexus-partial.ts`, `nexus-contract.ts` outside the admit carriage, the rotate paths), and mesh `hosting.ts` for its pure re-cut. Leaves alone: lane `cutover`'s files.
+!!! Lane `browser-custody` ~ B1's sealed browser slots
+Kit: the roadmap's B1 and the custody carrier.
+# A passphrase slot wraps the browser device seed and Keyhive Archives. Add a passkey slot only after measurement, never alone.
+# Prove refusal and reopen on disposable storage. Stop at a tested custody API.
+Ground: browser keystore, archives, slots and custody tests. Leave `open-browser-vessel.ts`, `browser-fleet-join.ts`, web boot, gate and dial files to `wire-socket`.
 
-!!! Lane `pre-fence` ~ the shapes at rest the fence wants first
-Each row changes a shape at rest or in signed bytes, so each lands before the fence (#/rulings, the fence). Red first, a control, and a vector per refusal.
-# Restore after enrolment, built to its ruling: a face's own bundle restores after it enrols guardians while its log holds the set its root enrolled by the typed first event (the restore-after-enrolment ruling); the bundle then carries an enrolled guardian set.
-# `K13`, the sealed outbox: each parcel seals under a stable outbox key the vessel key wraps, rests under a random name with its routing inside, and retries after its atomic commit (the outbox-at-rest ruling).
-# `K14`, a restored face stands provisional until a party to its relation agrees with its head (the restore's key-history ruling).
-# V3, the root-card reader: the split-root cards re-land the face's lineage and root, and open no memory; and V5, a restore as persona zero through the founding act.
-# `S2`, the engine fold's live image proof: one shard push on the rebuilt image, read with held-out.
-Ground: custody, vault, keyring and restore files, `face-bundle-restore.ts`, the outbox, and `found-hearth.ts` for V5's road. Leaves alone: the `cutover` and `nexus-host` lanes' files; it fires once either frees its slot.
-
-!!! Lane `scout` ~ the next path, read-only
-A scouting lane changes no code. It writes ONE plain report, `bags/lararium/ha.ka.ba/lararium/docs/next-path-scout.md`, commits it alone on `feature/green-jello-dinosaur-5--scout` and pushes that branch. Grounded in file-and-line reads of the tree, it reports:
-# W's remaining walk: what the socket cutover still needs, file by file against the W kit's #/cutover list; every production caller of `runPeerHandshake`, `lar:challenge` and vessel-key gate proof that still stands; the order that lands it as one assembled commit; its red window.
-# The two sensorium reds on the base: the sensorium Python suite's `CollectionNameMismatchError: collection 'form'` after the `mempalace` submodule moved to clean upstream `develop`, and `turn-parity-witness` reading live sigils in `packages/lararium-sensorium/fixtures/claude-week-2026-10-07/`; each one's root cause and its smallest pono cure.
-# The next two lanes after W: O1, sealed-store step three, H with H8, E, B and N's remainder (`N2`, `N4`, `N5`), ranked by what inherits shape from what, each with its first three commits and its gates.
-# The critical path to two PCs and one Nexus: every train and every act of the operator's hands between the tree and the two-hearth ceremony (X), as one ordered list, marking what a cloud session can do and what needs the operator's machines.
-# Risks and unknowns, each with the one check that settles it.
+!!! Lane `scout` ~ past report
+The dated `next-path-scout.md` report records the earlier tree; its top line names the commits that supersede its stale observations.
 
 <<~/ahu>>
 
@@ -132,18 +115,16 @@ A scouting lane changes no code. It writes ONE plain report, `bags/lararium/ha.k
 
 !! State ~ the controller trues this section at every handoff
 
-''As of 2026-10-15.'' The road landed on `main` by one merge commit (pull request #39), and the branch `feature/green-jello-dinosaur-5`, cut from that merge, carries the span to a persistent Lararium on two machines, the first Nexus of the DreamNet, as cloud sessions; this carrier, the roadmap and git hold every state a session needs. The first two lanes: train W's live admit and socket cutover, and train N's remaining doors and witness.
+The merged road carries the fleet-join door, the recovery doors, N's anchor guards and witness, and H's pure delegation and grant. The two cloud briefs name the socket cutover and browser custody.
 
-* ''Closed'': the custody seal train; the disk shore; truthful receipts; container drivers on every push; the seat train (K); side lane S8.
-* ''Train N'': the seal record's shape stands closed (every genesis carries its signed inception, the Nexus AID commits it, seal records name a predecessor set); two operators found one Nexus across two vaults with `lares nexus seal cofound open|join|seal`; two vaults admit and revoke through one judged partial. Owed: the kapae and roll-anchor two-vault doors, the two-root witness, rolls with fresh successors and chairs, the Offering act's scope field (roadmap `#/the-trains`, N).
-* ''Train W'': its pure step stands (the measured browser envelope, the gate's fixed silences). Its live admit and the assembled socket cutover stand unblocked, since N's contract seam landed; the cutover stays the largest single item on the road.
-* ''Train V'': guardian enrolment's typed event and its command stand. Owed: a bundle that carries an enrolled set and its restore (a held patch waits on a rebase), the root-card reader, a restore as persona zero through the founding act.
-* ''Ground'': the residue lane closed its free rows; the rest wait on held ground, each named with its owner.
-* ''Kits ready'': launch kits for O1, sealed-store step three, H and X beside N's and W's, their reds declared in the unbuilt-laws register.
-* ''Rulings'': seventeen questions stand ruled under the operator's delegation (roadmap `#/rulings`), each with what flips it.
-* ''The pace'': two lanes run at once, by the operator's word, so a speed reading with bursts, co-building and the lane tools stays legible. One wave of three lanes landed 18 commits in about two and a half hours, over 10 shards with no red burst.
+* ''Closed'': the custody seal train; the disk shore; truthful receipts; container drivers on every push; the seat train (K); side lane S8; fleet join; restore after guardian enrolment; root cards; restore as persona zero.
+* ''Train N'': two-vault kapae and roll-anchor doors stand. N2's per-realm edge anchor, N4's prior-roll refusal and N5's two-root charter re-import witness stand. A newcomer's board catch-up of unseen acts stays outside N5.
+* ''Train W'': fleet join reaches node and browser. The grant ring stands uncalled. The full route pin, sealed application frames, face-scoped sharing, fleet-shadow consult and assembled socket cutover remain owed.
+* ''Train H'': H2's delegation and three dials and H8's signed grant and public-half verifier stand specified. The live issuer, reader, store, sorter and serving rows remain owed.
+* ''Recovery'': guardian sets ride bundles; provisional standing and its view verbs, sealed outbox, root-card restore and restore founding stand. Parcel ship and delete, remaining provisional guards and sibling proof stay owed.
+* ''Ground'': each remaining loop names its owner in the roadmap. Browser custody holds its own brief.
 * ''The operator's own founding'': the persistent node vessel founds after the roadmap's work and its aftermath land, by hand, on a TTY; no spirit founds it. The two-hearth ceremony, HARBOR's live steps and the hardware choice for unattended ember raises stay the operator's hands.
-* ''Notes outside the repository'': a laptop session also keeps a session folder of resume sheets, research waves and patches under `~/.claude/projects/`; nothing there binds a lane, and a cloud session runs without it.
+
 <<~/ahu>>
 
 <<~ ahu #/the-live-handoff>>
@@ -161,6 +142,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;sCfwGUAjWgDOYwdxeSBpPGhkf-zJSAUcQRlUAlBFxUY
+<<^ code="&#x0003;">>ni:///sha-256;KfZh5zyys54I7mEDG1bPTpkdW-O-ZCuftaqvtZoGPBo
 
 <<^ code="&#x0004;" -> to="?">>

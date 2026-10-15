@@ -43,7 +43,7 @@ The Stable founding supplies the seed charter, persona zero, private charter and
 # ''Signed inception stands.'' `wax-stamp.ts` commits the inception image to the AID and requires every seat's signature. Charter readers, import, the seed founding and fixture factories follow that law. The two-vault cofound caller signs one image through separate custody doors. The offer fingerprint never substitutes for the final charter fingerprint.
 # ''Partial law and two-vault contracts stand.'' `nexus-partial.ts` supplies separate images and subject and parent checks for Nexus admit, revoke, kapae and roll anchor. `lares nexus contract|revoke <nym> --nexus <aid> --out <file>` opens a partial; `lares nexus contract --from <file>` judges, cosigns and lands it against the receiving vault's head and board. The landing judges again against a fresh head and board before its write. The kapae door (`lares nexus kapae|un_kapae <nym> --nexus <aid> --out`, `--from`) and the roll-anchor door (`lares nexus seal anchor --out`, `--from`) carry the same judge before every signature and again before the write, bounded by a count. Stale head, missing parent, replay and wrong subject must write no second signature or board act.
 # ''Contracts and rolls stand.'' Each founder consents to their own carriage contract; both seat signatures admit it. `resolveContractIn` guards the local consent. Read both contracts from each root after courier and restart in the two-root witness. Arm and verify fresh successor cards on both roots before the add roll. The first roll reveals genesis seats; `verifySealRoll` bars every seated key from returning. Then add the third holder with possession and its contract; pass a chair in a later roll. `lares nexus seal roll open|join|sign|file|abandon` carries each roll as one circle file: every holder contributes its own chair and fresh successor, types the rule and every other chair's fingerprint as heard, and signs one image; the roll anchor follows the filed head. A dormant root catches up by importing the newest charter along the one lineage. A lost two-of-two cold card invokes the loss law.
-# ''PROOF and canon.'' Read the joint AID, contracts and final roll independently after both roots restart and unlock. Re-import one verified lineage into a dormant root. A fork remains a fork until the operator rules its resolving act. The controller folds the charter and command canon after the witness passes.
+# ''PROOF and canon.'' The two-root witness re-imports one verified lineage into a dormant root after restart and refuses the charter behind it. N2's per-realm edge anchor and N4's prior-roll refusal stand at both doors. A newcomer's board catch-up of acts it never saw stays outside N5. A fork remains a fork until its resolving act lands.
 
 <<~/ahu>>
 
@@ -89,6 +89,6 @@ Offering Antigen scope and the fork-resolve act stand as house rulings under the
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2sczaamkgtF3KHmny3BBBrftqig3pYzl0Mj523tmXxY
+<<^ code="&#x0003;">>ni:///sha-256;FwCWpgAlOsUTanXT3U8MRZntBNBM8xMMwRrFG8Ap7Nw
 
 <<^ code="&#x0004;" -> to="?">>

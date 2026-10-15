@@ -213,7 +213,7 @@ The root. Each vessel mints its ''own'' Ed25519 keypair, stored locally (disk `0
 
 !!! personaGroup (veiled)
 
-One operator, N device-vessels. The `PersonaGroup`, a Keyhive group, proves which vessels speak for the same operator. The group faces the mesh ''veiled'' — anon by default, a first-class veil, not a deficit (see the veil doctrine at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil">>). The ''device-admit'' ceremony transfers membership out-of-band (QR, file, direct message) — no server participates.
+One operator, N device-vessels. The `PersonaGroup`, a Keyhive group, proves which vessels speak for the same operator. The group faces the mesh ''veiled'' — anon by default, a first-class veil, not a deficit (see the veil doctrine at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil">>). The fleet-join ceremony transfers one face's membership out-of-band (QR, file, direct message) — no server participates.
 
 !!! cabalGroup (neighborhood shrine)
 
@@ -304,7 +304,7 @@ The Nexus AID (`nexus-…`, `sealEpochCidOf` at genesis, read by `nexusAidOf`) c
 
 !!! What landed, 2026-09-18
 
-The A1 sweep wired all 12 CLI-verb board-read sites through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring `device-admit.ts`'s worked example (`0b085461c`, red-first, WELD sweep 8→10 green); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). Behind it, `ac9a645ba` cured a real product gap the board-keying fork exposed once measured: the only KEL-chain migration (`carryPersonaKelUpTheGradient`) ran only at daemon boot, so a store-direct sequence (`persona new 0` then `nexus rite quorum` with no restart) left `admitBoardIsland` reading a charter-island board nothing had written. The cure carries ''ON READ'' at device-admit's own seam, reusing the boot's own idempotent climb.
+The A1 sweep wired all 12 CLI-verb board-read sites through `nodeNexusIsland({ ownVesselKey })` rather than a raw vessel key, mirroring the internal `device-admit/v1` edge mint's board reading (`0b085461c`, red-first, WELD sweep 8→10 green); a 13th site (`runNexusMembersList`'s `carriageDocUrl`) stays per-vessel BY DESIGN (own board only, the carry-split registry). Behind it, `ac9a645ba` cured a real product gap the board-keying fork exposed once measured: the only KEL-chain migration (`carryPersonaKelUpTheGradient`) ran only at daemon boot, so a store-direct sequence (`persona new 0` then `nexus rite quorum` with no restart) left `admitBoardIsland` reading a charter-island board nothing had written. The cure carries ''ON READ'' at the internal device-edge seam, reusing the boot's own idempotent climb.
 
 <<~/ahu>>
 
@@ -498,7 +498,7 @@ The earlier cap-wall — an anonymous vessel ''DENIED'' at the relay door — re
 A fresh browser spore dials in along one of ''three distinct crossings'', each clearing a different door:
 
 * ''anon → public-lararium'' — the ''veil'' path: public-read off the content-addressed floor (#/the-cas-substrate), no pledge, no admission; the relay-forward gate runs near-open. WITNESSED: an anon browser boots live against a public lararium and renders the public plane (the browser-wiki witness, commit 0c379598). This older direct browser projection witness does not prove the current Pronaos target or an NGINX/Caddy carrier deployment.
-* ''anon → walking'' — the ''invite'': any member face (a Kahu, a Lamplighter, another user) hands a burned-once invite, and the spore boots onto the road — no quorum, no board trace, hospitality rather than admission (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). A realm's own JOIN rides apart: a held face ''vouches'' and stakes its own standing, which decays if the joiner sours (the siege-gate `rb>c`, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>); and a ''device-admit edge'' binds one human's own instruments into their PersonaGroup, never a second human (#/social-axis). ''No invite → anergy:'' the spore draws no ban, it ''stays anon at the floor'', free to re-present later with an invite.
+* ''anon → walking'' — the ''invite'': any member face (a Kahu, a Lamplighter, another user) hands a burned-once invite, and the spore boots onto the road — no quorum, no board trace, hospitality rather than admission (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). A realm's own JOIN rides apart: a held face ''vouches'' and stakes its own standing, which decays if the joiner sours (the siege-gate `rb>c`, <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-siege-gate">>); and a fleet-join `device-admit/v1` edge binds one human's own instruments into their PersonaGroup, never a second human (#/social-axis). ''No invite → anergy:'' the spore draws no ban, it ''stays anon at the floor'', free to re-present later with an invite.
 * ''operator'' — ''runs-INFRA'', orthogonal to the two WHO crossings: a browser carrying the operator's own infrastructure standing reaches its own sovereign plane. The vertical-on-INFRA position (#/two-axis-topology), never a social tier.
 
 ''The keystone (PROPOSED, unbuilt):'' a ''tiered verdict in the keyholder worker'' — the gate reads the dialing spore and returns one of ''veil · PersonaGroup · owner'', routing each crossing to its right door (the split-gate made operational). The earlier single DENIED verdict read as a fused gate; the tiered verdict dissolves it. the matrix stands ruled; the tiered keyholder-worker verdict awaits build and witness.
@@ -509,7 +509,7 @@ Each door of the tiered gate names a built mechanism, so the abstract split runs
 
 * ''WHO · read-door'' — a bag declares its read-scope as self-describing TIGHTEN-ONLY data (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>: `VEIL ⊂ PERSONAGROUP ⊂ CONTRACT ⊂ PUBLIC`), and the gate enforces `declared ∧ structural-floor` — a declaration only ever tightens below what the crypto permits. The four tiers carry the WHO-axis read-scope made into a datum.
 * ''INFRA · relay-forward door'' — an authenticated membership relay carries sealed envelopes carry ⊥ read: it stamps each envelope with the sender's proven key and reads nothing (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>). The read-cap NEVER rides this door; in the ruled model it reaches a member on the WHO door as its bag's content key, carried by a lockbox to the bag's key group, and the lockbox store stands owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>). A ''standing relay'' keeps this door open always: a carry-only cap, MANDATORY-infra, never a reader.
-* ''SOCIAL admin-sync door'' — same-operator vessels join through the device-admit PersonaGroup edge (full private sync); a cross-operator hearth joins by a quorum-signed carriage contract, never the admin door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>). Two sovereign hearths on one LAN CONTRACT; they never merge.
+* ''SOCIAL admin-sync door'' — same-operator vessels join through the fleet-join PersonaGroup edge (full private sync); a cross-operator hearth joins by a quorum-signed carriage contract, never the admin door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>). Two sovereign hearths on one LAN CONTRACT; they never merge.
 
 ''The browser clears the WHO/INFRA doors only from a secure context'' — `crypto.subtle` + OPFS demand `https`/`localhost`, so a phone reaches the doors through a DNS-01 trusted name on the kahu domain, not a bare LAN IP (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>).
 
@@ -638,6 +638,6 @@ The clocks split by scope: the ''DreamNet CID / CRDT layer runs in TS'' — ''st
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OYQCyX98bDmi96F9zvdUuPhUEXSKDrMKHRm2J3P9bd4
+<<^ code="&#x0003;">>ni:///sha-256;BzHVWdXtWdJAKaxDR3P30gjXvxIRpPIClUDQ79HpR-Q
 
 <<^ code="&#x0004;" -> to="?">>

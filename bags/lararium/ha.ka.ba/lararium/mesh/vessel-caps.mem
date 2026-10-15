@@ -29,7 +29,7 @@ The mesh untangles into ''five distinct capabilities in two families'' — the m
 | family | cap | verb | what it does | already enacted as |
 |---|---|---|---|---|
 | ''CARRIAGE'' | ''rhizome'' | connect / spread | persistent lateral backbone; forwards sealed bytes | the ''relay / leyline'' |
-| | ''stolon'' | propagate-at-distance | runs out, drops a clone, then withers | the ''device-admit / invite'' ceremony — it carries a house's joining pointers |
+| | ''stolon'' | propagate-at-distance | runs out, drops a clone, then withers | the fleet-join / invite ceremony — it carries a house's joining pointers |
 | ''VESSEL'' | ''tuber'' | store + seed | sovereign state store + genesis-buds | the ''lararium'' |
 | | ''bulb'' | seed-inside | a snapshot carrying its own next generation | the ''coal'': the genesis seed and the engine/plugin CAS blobs it names |
 | | ''corm'' | renew-by-self-replacement | spent each cycle, a fresh one forms on the husk | the ''epoch-as-lease'' — a charter's epoch pin, a herm's own freshness |
@@ -198,6 +198,6 @@ What stays to ''write'' runs narrow and named — the cap //vocabulary// itself 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9Thgfw6XW1ajgz4at_IhcAhKnHyL2EyCijhVt12vDeU
+<<^ code="&#x0003;">>ni:///sha-256;MOheNH9wmEPUMp_gYTPHGqW5B_9uoqGB9z3RPteAsSg
 
 <<^ code="&#x0004;" -> to="?">>

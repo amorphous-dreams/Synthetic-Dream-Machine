@@ -285,13 +285,7 @@ hearth's next roll. The cap rides the hosting act: `lares host roll --cap <n>` n
 the standing cap, and a first roll takes `DEFAULT_HOSTING_CAP`, three (`packages/lararium-node/src/hosting-store.ts`).
 The hearth's own `lares host invite` mints with no count check (`packages/lararium-node/src/commands/host.ts`).
 
-▢ ''OWED'': the signed introduction act, the operator's answer and the door that shows what waits; the re-cut of
-the walker-invite path, where a `walker-invite` token earns a grant at the gate with no operator answer and its
-budget vests by a roll alone (`packages/lararium-node/src/socket-sorter.ts`), so that a guest's token buys a knock
-unless the operator pre-answered; the two other dials on the hosting act, which carries the allowance cap alone;
-a design for the strangers' dial that resists flooding with no clock; which session's face signs a hearth's
-standing hosting act, and how that act stands on after its signing session ends; how a standing hearth dial binds
-to the session whose face it walks as.
+▢ ''OWED'': the signed introduction act, the operator's answer and the door that shows what waits; the live issuer, reader, hosting store and socket sorter that carry H2's specified delegation and three dials (`hosting-delegation.ts`) into the standing hosting act; the walker-invite path where a token buys a knock until an answer or pre-answer grants standing; and the strangers' flood-resistant dial. H8's signed walker grant and public-half verifier stand specified in `walker-grant.ts`; the serving rows and live reader stay owed.
 
 ''HOSPITALITY RIDES A HEARTH'' (operator-ruled). A hearth that carries a Nexus HOSTS walkers in it. The
 hearth publishes a ''hosting act'' on its own HOSTING DOC in the Nexus, one doc per (Nexus, hearth gate
@@ -554,6 +548,6 @@ someone asks for "just a little telemetry." Built as the floor, it stays the flo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Zz_444KxU3SABrLjx93XWMH5y9u3IWSwaAFw2GfMsDE
+<<^ code="&#x0003;">>ni:///sha-256;OFyNb44iZmKy2IMlgCH0BugG0WLPP3vmtDs58nkoITw
 
 <<^ code="&#x0004;" -> to="?">>
