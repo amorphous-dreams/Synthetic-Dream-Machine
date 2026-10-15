@@ -29,6 +29,7 @@ export interface RestoreLanded {
   readonly prefix: string;
   readonly resumed: boolean;
   readonly checked: { readonly seq: number; readonly from: "board" | "bundle" };
+  readonly guardianSet: "none" | "landed" | "held" | "absent";
   readonly landed: { readonly faceProofKeys: number; readonly petname: boolean; readonly handle: boolean; readonly handleBook: { readonly landed: number; readonly kept: number } };
   readonly holds: ReadonlyArray<{ readonly bagId: string; readonly founding: string; readonly keyVersion: string }>;
 }
@@ -74,7 +75,7 @@ export async function restoreFromBundle(args: {
     if (args.memory) return { ok: true, kind: "import", face: result["face"] as ImportLanded["face"], results: (result["results"] ?? []) as ImportLanded["results"] };
     return {
       ok: true, kind: "restore", via, face: result["face"] as RestoreLanded["face"], prefix: String(result["prefix"]), resumed: result["resumed"] === true,
-      checked: result["checked"] as RestoreLanded["checked"], landed: result["landed"] as RestoreLanded["landed"], holds: (result["holds"] ?? []) as RestoreLanded["holds"],
+      checked: result["checked"] as RestoreLanded["checked"], guardianSet: (result["guardianSet"] ?? "none") as RestoreLanded["guardianSet"], landed: result["landed"] as RestoreLanded["landed"], holds: (result["holds"] ?? []) as RestoreLanded["holds"],
     };
   } finally { opened.bundleKey.fill(0); }
 }
@@ -89,6 +90,7 @@ export function restoreLines(landed: RestoreLanded): string[] {
     landed.checked.from === "board"
       ? `  key history: this vessel's own board held the face's history, and its newest head (sequence ${landed.checked.seq}) still accepts this root.`
       : `  key history: this vessel's board held no history for the face, so the check read the bundle's own log, as far as its cut (sequence ${landed.checked.seq}). A rotation that landed after the cut shows only on a board: every reader that holds the newer head refuses this seat at its own gate.`,
+    ...guardianLines(landed.guardianSet),
     landed.via === "vessel"
       ? "  the face mounts when the vessel stands again: `lares vessel stand --restart`, then `lares vault unlock`."
       : "  the face mounts when the vessel stands: `lares vessel stand`, then `lares vault unlock`.",
@@ -100,6 +102,16 @@ export function restoreLines(landed: RestoreLanded): string[] {
   }
   lines.push(`  ${SEALED_BYTES_LINE}`);
   return lines;
+}
+
+/** What a restore says of the face's guardian set, where its key history commits one. */
+function guardianLines(set: RestoreLanded["guardianSet"]): string[] {
+  if (set === "landed") return ["  guardians: the bundle carried the set the face's key history commits, and this vessel now holds its sealed row."];
+  if (set === "held") return ["  guardians: this vessel already held the set the face's key history commits; it stays as it stood."];
+  if (set === "absent") {
+    return ["  guardians: the face's key history commits a guardian set this bundle did not carry (it was cut before the enrolment). The guardians still hold their own keys; cut a fresh bundle from a vessel that holds the set to carry it."];
+  }
+  return [];
 }
 
 /** The lines an import prints: each version's outcome, and the half the bundle never held. */

@@ -29,7 +29,7 @@ export interface BackupLanded {
   readonly face:    { readonly handleIndex: number; readonly verifyingKey: string };
   readonly slots:   number;
   readonly holds:   readonly FaceBundleHolding[];
-  readonly carries: { readonly keyEvents: number; readonly faceProofKeys: number; readonly handleBookRecords: number; readonly petname: boolean; readonly handle: boolean };
+  readonly carries: { readonly keyEvents: number; readonly faceProofKeys: number; readonly handleBookRecords: number; readonly petname: boolean; readonly handle: boolean; readonly guardians: number };
 }
 /** A cut that refused, under the name the vessel or this command gave it. No file was written. */
 export interface BackupRefusal { readonly ok: false; readonly reason: string; readonly message: string; readonly attemptsLeft?: number }
@@ -79,7 +79,8 @@ export function backupLines(landed: BackupLanded): string[] {
   const lines = [
     `cut: face h${landed.face.handleIndex} (root ${landed.face.verifyingKey.slice(0, 16)}…) rests sealed in ${landed.out} (${landed.bytes} bytes, ${landed.slots} route(s)).`,
     `  standing: the root, its roster line, ${landed.carries.keyEvents} key event(s), ${landed.carries.faceProofKeys} face proof key(s), ${landed.carries.handleBookRecords} handle-book record(s)` +
-      `${landed.carries.petname ? ", its pet-name" : ""}${landed.carries.handle ? ", its declared Handle" : ""}.`,
+      `${landed.carries.petname ? ", its pet-name" : ""}${landed.carries.handle ? ", its declared Handle" : ""}` +
+      `${landed.carries.guardians > 0 ? `, the guardian set its key history commits (${landed.carries.guardians} guardian key(s))` : ""}.`,
     "  never in a bundle: a veil key, a vessel key, a seat, or a row of another face. A restore takes a NEW seat.",
   ];
   if (landed.holds.length === 0) {

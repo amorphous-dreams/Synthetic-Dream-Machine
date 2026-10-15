@@ -64,6 +64,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 
 |! row |! bundle |! why |
 | `persona-root` | `whole` | the face's root: its lineage |
+| `guardian-set` | `whole` | one face's guardian set as its typed first enrolment committed it: the keys a later rotation reveals, and what another face's enrolment reads to refuse a shared key. It rides only where the face's key history, as the cutting vessel's board holds it, commits that very set; a record the history does not show yet stands pending, still reserves its keys on its vessel, and stays |
 | `face-proof-key` | `whole` | the face's own key at one Nexus, held by the root-holding vessel; while a re-issue stands half done the row holds the standing key and its successor, and a bundle refuses to cut until the re-issue lands |
 | `anchors` | `lines` | the face's fixed prefix and its signer's name ride; the veil tag, the device edge and the key group's ids name one vessel's seat, and stay |
 | `persona-roster` | `lines` | the one line that names this face's root |
@@ -73,7 +74,6 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `veil-archive`, `keyhive-archive` | `stays` | a seat's own key state: a carried copy would let its holder sign as that seat |
 | `seat-key` | `stays` | a chair's own key in a charter: a carried copy would let its holder sign as that chair (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>) |
 | `cadence-key` | `stays` | a hearth's own cadence key and its next key: a carried copy would let its holder offer an engine as that hearth (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>) |
-| `guardian-set` | `stays` | one face's guardian set as its typed first enrolment committed it: the keys a later rotation reveals, and what another face's enrolment reads to refuse a shared key. A record the face's key history does not show yet stands pending and still reserves its keys. It stays until the bundle's body carries a guardian set (owed) |
 | `restore-pending` | `stays` | a restore's own commit row: it holds what one restore still owes this vessel, and leaves once that restore lands (#/the-restore) |
 | `sk-slots`, `sk-rotation-owed`, every `serving` row | `stays` | the serving tier belongs to its hearth: a restored vessel mints its own SK and binds fresh embers (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/meets">>) |
 | `vessel-face-key`, `gate-memory`, `device-share`, `public-handles`, every other row | `stays` | each belongs to its vessel, or names another face, or rebuilds from a board |
@@ -144,6 +144,8 @@ Every `serving` row rests sealed under SK. Every other row rests `hot` or `cold`
 
 The body carries the face's root and the lines that let the face stand again: the root row, the roster line that names it, the anchors' prefix and signer name, each of the face's `face-proof-key` rows, its pet-name, its declared Handle, and the handle-book records that face itself recognised.
 
+''The face's guardian set rides where its history commits one.'' A face that enrolled guardians by its typed first event carries the set that event committed: the digest, the threshold and each guardian's registration, public halves alone. A face whose history still stands one-of-one carries none, and no guardian's key secret ever rides: each guardian holds its own.
+
 ''The face's key history rides beside them.'' The body carries the face's key event log as the cutting vessel's board held it: public events, each one verifiable by itself, from the inception to the head. A restore therefore always reads a key history, on a vessel that reached no board too. The log adds no authority: every event in it already stood on a board.
 
 ''What a bundle never carries.'' No veil key and no veil Archive of any vessel. No vessel key. No `vessel-face-key`. No gate memory. No seat claim, no chair label and no chair's key. No row of another face. No keyring. A bundle therefore carries LESS authority than the vessel it left: it holds no key that signs as any seat that ever stood.
@@ -209,7 +211,7 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 !!! The steps
 
 # ''Open.'' The command reads the bundle's route on a terminal, opens the slot tree and hands the body and the bundle key to the vessel's custody door. The body's tag verifies before any field reads.
-# ''Preflight, before any write.'' The vessel reads every target row and every relation, the names rows and the handle-book among them: a row that stands and does not read whole refuses here, by its own name. The check of the board reads and never writes: a board this vessel never held reads as holding no event. A founded place stands here, the hearth the restored face binds stands (its seed charter, or the hearth an admit joined it to), and a face above index zero rides beside a lit founding face. The root's public key derives from its seed, the roster line names that key, and the prefix and signer name match what the root itself derives. The carried key history verifies whole, from the inception that root derives. ''The face's CURRENT key history still accepts the root'': every key event this vessel reads for the face, off the carried log and off its own board, folds through the one reader of key histories, and the newest event of that lineage still commits recovery to this root's own recovery key and still names this root as the operating key. A rotation still open to contest counts as the newest event. A history that forks refuses: no reader settles a fork by order. An event that fails its own proof moves nothing, so nobody blocks a restore by planting one. No root of this face stands here. The target handle-index holds no other root, no other roster line and no lit face; an orphan root row there matches the bundle's key. No `face-proof-key` row stands there under other bytes.
+# ''Preflight, before any write.'' The vessel reads every target row and every relation, the names rows and the handle-book among them: a row that stands and does not read whole refuses here, by its own name. The check of the board reads and never writes: a board this vessel never held reads as holding no event. A founded place stands here, the hearth the restored face binds stands (its seed charter, or the hearth an admit joined it to), and a face above index zero rides beside a lit founding face. The root's public key derives from its seed, the roster line names that key, and the prefix and signer name match what the root itself derives. The carried key history verifies whole, from the inception that root derives. ''The face's CURRENT key history still accepts the root'': every key event this vessel reads for the face, off the carried log and off its own board, folds through the one reader of key histories, and the newest event of that lineage still names this root as the operating key and still commits recovery to this root's own recovery key, or reads as the typed first enrolment this root signed. A rotation still open to contest counts as the newest event. A history that forks refuses: no reader settles a fork by order. An event that fails its own proof moves nothing, so nobody blocks a restore by planting one. No root of this face stands here. The target handle-index holds no other root, no other roster line and no lit face; an orphan root row there matches the bundle's key. No `face-proof-key` row stands there under other bytes.
 # ''One durable commit.'' The vessel seals ONE row, `restore-pending`, that holds everything the restore will land. That one write commits the restore: before it nothing moved, and after it the restore completes, in this run or the next. The vessel then lands each row from it: the proof-key rows, the names, the handle-book records, the root row and its roster line. Each lands only where nothing stands or where the same bytes stand, so a run that stops anywhere lands the rest when the same command runs again.
 # ''Re-admit.'' The vessel seats the carried key history on its own board and lights the face under its own veil: a fresh key group, the same fixed prefix, and a device edge the root signs for this vessel's key. The pending row leaves once the face stands lit. The face mounts when the vessel stands again and a person unlocks it.
 # ''Import'' (`lares vault restore <file> --memory`). The vessel, standing unlocked and wearing the face, hands the memory section to its daemon island's import door (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store">>). The command prints each version's outcome, and that the sealed bytes must stand in this vessel's rests for a body to open.
@@ -218,7 +220,7 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 
 ''Restore lands additively.'' It never replaces a newer lockbox, record, key, name or label with a bundle's snapshot. A name fills only where the vessel holds none. An old bundle over a newer holder adds what the holder lacks and moves nothing it holds.
 
-''An enrolment needs its set after restore.'' The typed first guardian event rides the face's key history, while the sealed `guardian-set` row stays on the cutting vessel. A bundle that carries that event without its set cannot restore the complete guardian relation. The restore-after-enrolment patch owes the bundle's per-face set, a check that its keys and digest match the carried event, a check against this vault's other faces, and an additive landing of the sealed row. Until that patch, a restore from a bundle cut after enrolment lacks this guardian-set carriage.
+''A face's own bundle restores after it enrols guardians'' (house ruling under the operator's delegation; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The newest event may read as the typed first enrolment the root itself signed: the root still operates, and the rolling commitment names the set that event committed. A guardians' rotation that moves the set cuts every earlier bundle off (`root-superseded`), so the rotation, never the enrolment, ends a stolen bundle's reach. A bundle cut after the enrolment carries the set: its registrations recompute the digest it names, its own carried history commits it, the newest head commits the same set, no carried key guards another face of this vessel, and the face's sealed `guardian-set` row lands at the target index beside the root, where none stands or where the same set stands. A bundle cut before the enrolment still restores where the board holds the event, and the restore says the set rode no bundle: the guardians still hold their keys, and a fresh cut from a vessel that holds the set carries it. The restored face stands provisional either way (#/the-restore, the provisional standing).
 
 ''A vessel checks the newest key history it reads, and every honest reader checks its own'' (house reading). The house keeps no registry of heads, and no vessel reads a head it never received. The restore answers which head its check read, by sequence, and whether it read that head off this vessel's own board or off the bundle's log. The carried log reaches as far as the cut. A rotation that landed after the cut shows only on a board, so a fresh vessel that reached no board passes a root the face has since superseded. That vessel's seat then stands for itself alone: every reader that holds the newer head refuses the edge the superseded root signed, at its own gate, and this vessel's own gate refuses it too once its board carries that head.
 
@@ -241,8 +243,8 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 | `bundle-malformed` | the file carries no format mark, or no slot tree that reads whole |
 | `no-slot-opens` | the route opened no slot of the bundle |
 | `bundle-refused` | the body's tag failed: altered bytes, or another bundle's key |
-| `bundle-inconsistent` | the body's root, roster line, prefix or signer name disagree with one another, or the carried key history fails to verify from that root's own inception |
-| `root-superseded` | the newest head this vessel reads commits recovery to another key set, or names another operating key |
+| `bundle-inconsistent` | the body's root, roster line, prefix or signer name disagree with one another, the carried key history fails to verify from that root's own inception, or a carried guardian set fails to recompute its digest or names a set no enrolment in the carried history commits |
+| `root-superseded` | the newest head this vessel reads names another operating key, commits recovery to another key set than the root's own or the set the root itself enrolled, or commits another guardian set than the bundle carries |
 | `face-already-held` | this vessel holds this face's root and no restore of it stands pending: a second restore over it |
 | `restore-pending` | another face's restore stands pending here; the same command over that face's own bundle completes it first |
 | `place-unfounded` | no founded place stands here: a restore lands a face onto a vessel `lares vessel found` already stood |
@@ -251,7 +253,8 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 | `index-held` | the target handle-index holds another root or a lit face |
 | `roster-names-another-key` | a roster line at the target index names another key |
 | `orphan-names-another-key` | a root row stands at the target index under another key |
-| `row-conflict` | a row the restore would write stands under other bytes |
+| `row-conflict` | a row the restore would write stands under other bytes, a guardian-set row at the target among them |
+| `guardian-key-serves-another-face` | a guardian key the bundle carries already guards another face of this vessel |
 | `face-not-worn` | `--memory` met a vessel that stands wearing no face |
 | `another-face` | `--memory` met a bundle whose root differs from the face this vessel wears |
 | `memory-unavailable` | `--memory` met a vessel with no daemon island, or no vessel standing |
@@ -331,6 +334,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gDuKrshfUO_x10xgcXHlJwTSu7MczVHXaCqsRKgDvxE
+<<^ code="&#x0003;">>ni:///sha-256;NNeOJ1D9O1yaGDdp3lKRegqceCKvvfBNuJD4QQQHiUw
 
 <<^ code="&#x0004;" -> to="?">>

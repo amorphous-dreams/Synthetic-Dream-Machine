@@ -12,13 +12,15 @@
  *       history that fails to verify; a history under another prefix), memory-unavailable (no island; an island
  *       that refuses), and the island's own shadow refusal.
  *   C5  the memory section seals to the pair the bundle key derives: the island gets a public key and nothing else.
+ *   C6  the guardian set rides where the face's key history commits it: a record the head does not show (pending)
+ *       stays, and so does another face's record; the committed set rides whole.
  *
  * Scratch roots, synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-cut
  */
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  HandleBook, bundleMemoryKeypair, hex, mintBundleKey, mintHandleInception, mintPersonaInception, openFaceBundleBody,
+  HandleBook, bundleMemoryKeypair, guardianRecoveryRegistrationCard, hex, mintGuardianEnrolment, sealKeySetHash, mintBundleKey, mintHandleInception, mintPersonaInception, openFaceBundleBody,
   openMemorySection, readFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
@@ -32,6 +34,8 @@ import {
 } from "../src/node-vessel-identity.js";
 import * as carriers from "../src/vault-carriers.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { writeCustodyRow } from "../src/custody-seat.js";
+import { guardianSetFile } from "../src/guardian-enrolment.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -134,7 +138,8 @@ describe("a cut carries one face's standing section and its memory section", () 
     expect(body.memory.holds).toEqual([HOLD]);
     expect(cut.holds).toEqual([HOLD]);
     expect(cut.face).toEqual({ handleIndex: 0, verifyingKey: keys.face0 });
-    expect(cut.carries).toEqual({ keyEvents: 1, faceProofKeys: 1, handleBookRecords: 1, petname: true, handle: true });
+    expect(cut.carries).toEqual({ keyEvents: 1, faceProofKeys: 1, handleBookRecords: 1, petname: true, handle: true, guardians: 0 });
+    expect(body.guardianSet, "a one-of-one face carries no guardian set").toBeNull();
     // Another bundle's key opens nothing.
     expect(openFaceBundleBody(cut.sealedBody, mintBundleKey())).toBeNull();
   });
@@ -177,9 +182,9 @@ describe("a cut carries one face's standing section and its memory section", () 
 describe("the table picks the rows a bundle carries", () => {
   test("C3 — the bundle column and the cut's extractors name the same rows", () => {
     expect([...BUNDLE_EXTRACTOR_ROWS].sort()).toEqual(carriers.bundleRows().map((r) => r.row).sort());
-    // The law's table (custody#/the-table): two rows ride whole, five ride as one face's lines, the rest stay.
+    // The law's table (custody#/the-table): three rows ride whole, five ride as one face's lines, the rest stay.
     const by = (t: string): string[] => carriers.bundleRows().filter((r) => r.bundle === t).map((r) => r.row).sort();
-    expect(by("whole")).toEqual(["face-proof-key", "persona-root"]);
+    expect(by("whole")).toEqual(["face-proof-key", "guardian-set", "persona-root"]);
     expect(by("lines")).toEqual(["anchors", "handle-book", "persona-declarations", "persona-petnames", "persona-roster"]);
     for (const stays of ["veil-archive", "keyhive-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "custody-root", "seat-key"]) {
       expect(carriers.carrierTable().find((r) => r.row === stays)?.bundle, stays).toBe("stays");
@@ -252,5 +257,33 @@ describe("a cut refuses by name, and a refused cut seals nothing", () => {
     // A fault that names no refusal passes through under its own words.
     const faulting = door({ cutMemory: async () => { throw new Error("the port closed"); } }).door;
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: faulting }))).toBe("threw: the port closed");
+  });
+});
+
+describe("the guardian set rides where the face's key history commits it", () => {
+  test("C6 — a pending record stays, another face's record stays, and the committed set rides whole", async () => {
+    const guardian = await publicOf(secretOf(81));
+    const set = { guardianSetHash: sealKeySetHash([guardian], 1), threshold: 1, guardians: [guardianRecoveryRegistrationCard("guardian-a", guardian, null)] };
+    const recordOf = (prefix: string) => new TextEncoder().encode(JSON.stringify({ prefix, ...set }));
+    await writeCustodyRow("identity", guardianSetFile(0), recordOf(kel0[0]!.prefix));
+    // PENDING: the record stands and the head still stands one-of-one.
+    let key = mintBundleKey();
+    let cut = await cutFaceBundle({ face: 0, bundleKey: key, door: door().door });
+    expect(opened(cut.sealedBody, key).body.guardianSet).toBeNull();
+    expect(cut.carries.guardians).toBe(0);
+    // COMMITTED: the face's own key signs the typed first enrolment of that set.
+    const seed = await loadPersonaGroupRootSeed(0);
+    const minted = await mintGuardianEnrolment({ head: kel0[0]!, guardianSetHash: set.guardianSetHash, sign: async (b) => hex(await ed.signAsync(b, seed)) });
+    if (!minted.ok) throw new Error(`setup: the enrolment refused: ${minted.reason}`);
+    const enrolled = [...kel0, minted.event];
+    key = mintBundleKey();
+    cut = await cutFaceBundle({ face: 0, bundleKey: key, door: door({ kel: async () => enrolled }).door });
+    expect(opened(cut.sealedBody, key).body.guardianSet).toEqual(JSON.parse(JSON.stringify(set)));
+    expect(cut.carries.guardians).toBe(1);
+    // A RECORD UNDER ANOTHER PREFIX stays, even beside a head that commits its digest.
+    await writeCustodyRow("identity", guardianSetFile(0), recordOf("persona-" + "ee".repeat(32)));
+    key = mintBundleKey();
+    cut = await cutFaceBundle({ face: 0, bundleKey: key, door: door({ kel: async () => enrolled }).door });
+    expect(opened(cut.sealedBody, key).body.guardianSet).toBeNull();
   });
 });

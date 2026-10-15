@@ -311,7 +311,7 @@ describe("the custody door's backup frame", () => {
   const cut: FaceBundleCut = {
     sealedBody: BODY, holds: [{ bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) }],
     face: { handleIndex: 2, verifyingKey: "ab".repeat(32) },
-    carries: { keyEvents: 1, faceProofKeys: 0, handleBookRecords: 0, petname: false, handle: false },
+    carries: { keyEvents: 1, faceProofKeys: 0, handleBookRecords: 0, petname: false, handle: false, guardians: 0 },
   };
   const backupFrame = (passphrase: string, over: Record<string, unknown> = {}) => ({ op: "backup", credentials: [{ kind: "passphrase", passphrase }], face: 2, key: KEY, ...over });
   function cutting(run?: (face: number, bundleKey: Uint8Array) => Promise<FaceBundleCut>) {

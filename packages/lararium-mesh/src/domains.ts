@@ -290,8 +290,9 @@ export const MEMORY_ASK_DOMAIN = mint("memory-ask");
 // ── THE BACKUP BUNDLE ───────────────────────────────────────────────────────────────────────────
 // Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle.
 /** The BACKUP BUNDLE's own name: its SHA-256 prefix stands as the format mark, and it leads the associated
- *  data of the bundle's sealed body. A changed format takes a new name. */
-export const FACE_BUNDLE_DOMAIN = mint("face-bundle");
+ *  data of the bundle's sealed body. A changed format takes a new name: the body that carries the face's
+ *  enrolled guardian set took this one. */
+export const FACE_BUNDLE_DOMAIN = mint("face-bundle-guardian-set");
 /** The HKDF `info` a bundle's BODY KEY derives under, from the bundle key. */
 export const FACE_BUNDLE_BODY_INFO = mint("face-bundle-body");
 /** The HKDF `info` a bundle's MEMORY SECTION key pair derives under, from the bundle key. Apart from the

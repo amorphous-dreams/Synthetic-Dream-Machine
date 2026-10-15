@@ -4,8 +4,8 @@
  *
  * The vectors pin what the law promises of the bytes: any one route opens the bundle; one altered bit of the
  * body opens for nobody; another bundle's key opens nothing; two bundles of one body share no key, salt, nonce
- * or identifier; a holder with no route reads the residue and nothing more; and the body's shape gives a veil
- * key, a vessel key or a seat no home.
+ * or identifier; a holder with no route reads the residue and nothing more; the body's shape gives a veil
+ * key, a vessel key or a seat no home; and it carries the face's enrolled guardian set, or null, and nothing beside.
  *
  * Synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-bundle
  */
@@ -54,6 +54,10 @@ function bodyFor(bundleKey: Uint8Array): FaceBundleBody {
     names: { petname: "the gardener" },
     faceProofKeys: [{ scope: "0f".repeat(16), secret: "c3".repeat(32) }],
     handleBook: { records: [{ nym: "nym-test", card: null, heads: [], accepted: [], petname: "a friend", recognisedBy: [{ face: ROOT_KEY, petname: "a friend" }] }] },
+    guardianSet: {
+      guardianSetHash: "9a".repeat(32), threshold: 1,
+      guardians: [{ slot: "guardian-a", label: "Recovery-guardian-A (unassigned)", recoveryPubKey: "7b".repeat(32), confirmPhrase: "" }],
+    },
     memory: { section: b64(section), holds: [{ bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) }] },
   };
 }
@@ -271,11 +275,23 @@ describe("the body's shape gives a seat key no home", () => {
     ["a handle-book record with a part the shape does not name", (b: Record<string, unknown>) => { ((b["handleBook"] as { records: Record<string, unknown>[] }).records[0]!)["veilKey"] = "aa".repeat(32); }],
     ["a handle-book record tagged by two faces", (b: Record<string, unknown>) => { ((b["handleBook"] as { records: Record<string, unknown>[] }).records[0]!)["recognisedBy"] = [{ face: "a1".repeat(32), petname: null }, { face: "b2".repeat(32), petname: "other" }]; }],
     ["a handle-book record whose tag carries a stray part", (b: Record<string, unknown>) => { ((b["handleBook"] as { records: Record<string, unknown>[] }).records[0]!)["recognisedBy"] = [{ face: "a1".repeat(32), petname: null, seat: true }]; }],
+    ["no guardian-set part", (b: Record<string, unknown>) => { delete b["guardianSet"]; }],
+    ["a guardian set with a part the shape does not name", (b: Record<string, unknown>) => { (b["guardianSet"] as Record<string, unknown>)["seat"] = true; }],
+    ["a guardian set whose threshold no quorum meets", (b: Record<string, unknown>) => { (b["guardianSet"] as Record<string, unknown>)["threshold"] = 2; }],
+    ["a guardian set with no guardian", (b: Record<string, unknown>) => { (b["guardianSet"] as Record<string, unknown>)["guardians"] = []; }],
+    ["a guardian registration carrying a secret beside its public key", (b: Record<string, unknown>) => { ((b["guardianSet"] as { guardians: Record<string, unknown>[] }).guardians[0]!)["seed"] = "aa".repeat(32); }],
+    ["a guardian registration under a slot no card names", (b: Record<string, unknown>) => { ((b["guardianSet"] as { guardians: Record<string, unknown>[] }).guardians[0]!)["slot"] = "guardian-z"; }],
     ["a handle-book record with no cards list", (b: Record<string, unknown>) => { delete ((b["handleBook"] as { records: Record<string, unknown>[] }).records[0]!)["accepted"]; }],
   ])("%s refuses the body", (_name, bend) => {
     const body = whole();
     bend(body);
     expect(readFaceBundleBody(canonicalJsonBytes(body))).toBeNull();
+  });
+
+  it("CONTROL: a body whose log commits no guardian set carries null there, and reads back", () => {
+    const body = whole();
+    body["guardianSet"] = null;
+    expect(readFaceBundleBody(canonicalJsonBytes(body))?.guardianSet).toBeNull();
   });
 
   it("the sealer refuses a body that reads as no body, and seals nothing", () => {
