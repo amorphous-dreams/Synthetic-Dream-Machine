@@ -46,6 +46,7 @@ interface RidNode {
   setAttribute(name: string, value: string): void;
   _larListeners?: { type: string; handler: ((ev: unknown) => void) | { handleEvent(ev: unknown): void } }[];
   parentNode?: RidNode | null;
+  children?: RidNode[];
   /** The field's live text. TW5's edit widgets read `domNodes[0].value`, so the input leg writes it here. */
   value?: string;
   selectionStart?: number;
@@ -60,6 +61,7 @@ const ridMap = new Map<string, RidNode>();
 interface ProjectionEventScope {
   wikiUri: string;
   popupRoot: RidNode;
+  readonly roots: readonly RidNode[];
   renderIds: Set<string>;
   liveIds: Set<string>;
   mark?: () => void;
@@ -116,6 +118,24 @@ export function patchFakeElementForEvents(fakeDoc: { createElement(t: string): R
 }
 
 /**
+ * Whether `el` still stands in the projected tree: a walk up through each parent's `children` reaches one of
+ * the scope's roots. TW5's fakedom `removeChild` leaves a detached node's `parentNode` standing, so the walk
+ * reads each parent's children, never `parentNode` alone.
+ */
+function standsAttached(el: RidNode, roots: readonly RidNode[]): boolean {
+  const visited = new Set<RidNode>();
+  let current = el;
+  while (!visited.has(current)) {
+    if (roots.includes(current)) return true;
+    visited.add(current);
+    const parent = current.parentNode;
+    if (!parent || !parent.children?.includes(current)) return false;
+    current = parent;
+  }
+  return false;
+}
+
+/**
  * TW5 installs its Animator only in a browser startup. A retained reveal nevertheless calls
  * `$tw.anim.perform()` unconditionally, even in the fake-DOM worker, and relies on the close
  * callback to apply its final `hidden` state. Supply that missing capability at the projection
@@ -152,12 +172,12 @@ export function patchFakeDomAnimation(tw: Record<string, any>): void {
  * The caret rides to the end of the written value, because the main thread holds the real caret and the
  * fake node holds none — a widget that reads a selection reads a coherent one rather than a stale one.
  *
- * A miss (an unknown render-id) drops silently: it names a stale frame, never an error (Hiatus).
+ * A node detached by a re-render fires nothing, even before the next frame lands. A miss names a stale frame.
  */
 export function dispatchProjectedInput(renderId: string, eventType: string, value: string): "dispatched" | "stale-target" {
   const el = ridMap.get(renderId);
   const scope = eventScopes.get(renderId);
-  if (!el || (scope && !scope.liveIds.has(renderId))) return answerStaleTarget(renderId, eventType, scope);
+  if (!el || (scope && (!scope.liveIds.has(renderId) || !standsAttached(el, scope.roots)))) return answerStaleTarget(renderId, eventType, scope);
   if (scope) activeEventScope = scope;
   el.value = value;
   el.selectionStart = el.selectionEnd = value.length;
@@ -170,7 +190,8 @@ export function dispatchProjectedInput(renderId: string, eventType: string, valu
 
 /**
  * Dispatch a relayed main-thread DOM event into TW5's NATIVE path: resolve the fake node by its
- * render-id and invoke the handler TW5 itself stored. From there (handleClickEvent → tm-navigate →
+ * render-id and invoke the handler TW5 itself stored. A node detached by a re-render fires nothing,
+ * even before the next frame lands. From there (handleClickEvent → tm-navigate →
  * navigator → story change → re-project) the widget tree runs as if the event were local — TW5
  * never learns it crossed a thread. A miss answers `stale-target` to the page and marks that result
  * into the next absolute projection.
@@ -182,7 +203,7 @@ export function dispatchProjectedInput(renderId: string, eventType: string, valu
 export function dispatchProjectedEvent(renderId: string, eventType: string, fields: Record<string, number | boolean>): "dispatched" | "stale-target" {
   const el = ridMap.get(renderId);
   const scope = eventScopes.get(renderId);
-  if (!el || (scope && !scope.liveIds.has(renderId))) return answerStaleTarget(renderId, eventType, scope);
+  if (!el || (scope && (!scope.liveIds.has(renderId) || !standsAttached(el, scope.roots)))) return answerStaleTarget(renderId, eventType, scope);
   if (scope) activeEventScope = scope;
   const left = numericField(fields, "rectLeft");
   const top = numericField(fields, "rectTop");
@@ -282,8 +303,10 @@ export function mountProjection(ctx: IslandContext): () => void {
   // The worker's fake document has no browser startup, which normally stands TW5's Popup. Reuse
   // TW5's own manager over a fake root so popup state remains ordinary wiki state and every frame
   // remains a complete HTML+CSS snapshot.
+  const popupRoot = fakeDoc.createElement("div");
+  const storyContainer = fakeDoc.createElement("div");
   const scope: ProjectionEventScope = {
-    wikiUri: ctx.wikiUri, popupRoot: fakeDoc.createElement("div"), renderIds: new Set(), liveIds: new Set(),
+    wikiUri: ctx.wikiUri, popupRoot, roots: [storyContainer, popupRoot], renderIds: new Set(), liveIds: new Set(),
     alert: (title, text) => tw.wiki.addTiddler(new tw.Tiddler({ title, text, tags: ["$:/tags/Alert"], component: "projection", modified: new Date() })),
   };
   activeEventScope = scope;
@@ -298,7 +321,6 @@ export function mountProjection(ctx: IslandContext): () => void {
 
   // Story camera — the default TW5 view frustum, rendered into the fake DOM. mountCamera owns
   // the live `change → widget.refresh()` loop; we re-snapshot on the same change beat.
-  const storyContainer = fakeDoc.createElement("div");
   const stopStory = mountCamera(ctx.tw5, {
     rootTiddler: TW5_ROOT_TEMPLATE,
     document:    fakeDoc,
