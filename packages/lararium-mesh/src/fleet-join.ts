@@ -3,8 +3,10 @@
  *
  * Three files cross by courier, in order, and each binds the one before it:
  *
- *   OFFER    the root holder names the face (its PersonaGroup), a fresh nonce, and every (face key, Nexus)
- *            scope the face stands at. It signs nothing: the answer carries the root's word.
+ *   OFFER    the root holder names the face (its PersonaGroup and the root's public key), a fresh nonce, and
+ *            every (face key, Nexus) scope the face stands at, none where it stands at no Nexus yet. It signs
+ *            nothing: the answer carries the root's word. The joinee keeps the offer, so the root key it reads
+ *            the answer under came by the courier BEFORE the answer did, never out of the answer itself.
  *   REQUEST  the joining vessel mints one face-scoped key per offered scope, signs a certificate request with
  *            each, and signs the whole under its own vessel key beside a fresh X25519 key the answer seals to.
  *   ANSWER   the root holder answers ONE request: the device edge it signed, one certificate per requested
@@ -24,7 +26,7 @@
  *     record a session's face reads (`session-face` `FaceGrantReading`).
  *
  * Pure: no custody, no I/O, no clock. The secret seal draws fresh randomness through `sealed-box`.
- * Stands specified in code until the node's fleet-join door consumes it; out of the package barrel till then.
+ * The node's fleet-join door (`commands/fleet-join`) composes it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  * (the working address: the fleet-join door delivers the face address secret).
@@ -82,11 +84,13 @@ export const FLEET_JOIN_EDGE_BOUND = 65536;
 
 export interface FleetJoinOffer {
   readonly kind:         "fleet-join-offer";
-  /** The face's PersonaGroup id, bare lower-case hex. */
+  /** The face's PersonaGroup id: lower-case hex, with the `0x` the group's own id carries where it carries one. */
   readonly personaGroup: string;
+  /** The PersonaGroup root's Ed25519 verifying key: the key the answer verifies under. */
+  readonly rootKey:      string;
   /** 32 fresh bytes, 64 lower-case hex: binds the request and the answer to this offer. */
   readonly nonce:        string;
-  /** Every scope the face stands at, sorted by Nexus then face key. */
+  /** Every scope the face stands at, sorted by Nexus then face key; none where it stands at no Nexus yet. */
   readonly scopes:       readonly FaceScope[];
 }
 
@@ -154,7 +158,7 @@ export interface VerifiedFleetJoin {
 const HEX64 = /^[0-9a-f]{64}$/;
 const HEX128 = /^[0-9a-f]{128}$/;
 const HEX = /^(?:[0-9a-f]{2})+$/;
-const PERSONA_GROUP = /^(?:[0-9a-f]{2}){4,64}$/;
+const PERSONA_GROUP = /^(?:0x)?(?:[0-9a-f]{2}){4,64}$/;
 const REACH_TEXT = /^[\x21-\x7e]{1,2048}$/;
 
 const record = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -252,12 +256,12 @@ function openAddressSecret(sealed: SealedAddressSecret, sealSecret: Uint8Array, 
 
 // ── The offer ───────────────────────────────────────────────────────────────────────────────────
 
-/** Read an offer at its exact shape; its scopes read sorted, distinct, at least one, and one face key each. */
+/** Read an offer at its exact shape; its scopes read sorted and distinct, one face key each, none the root's. */
 export function readFleetJoinOffer(value: unknown): FleetJoinOffer | FleetJoinRefusal {
   return guarded("offer-malformed", () => {
-    if (!record(value) || !exactly(value, ["kind", "personaGroup", "nonce", "scopes"])) return refuse("offer-malformed");
-    const { kind, personaGroup, nonce, scopes } = value;
-    if (kind !== "fleet-join-offer" || typeof personaGroup !== "string" || !PERSONA_GROUP.test(personaGroup)) return refuse("offer-malformed");
+    if (!record(value) || !exactly(value, ["kind", "personaGroup", "rootKey", "nonce", "scopes"])) return refuse("offer-malformed");
+    const { kind, personaGroup, rootKey, nonce, scopes } = value;
+    if (kind !== "fleet-join-offer" || typeof personaGroup !== "string" || !PERSONA_GROUP.test(personaGroup) || !isKey(rootKey)) return refuse("offer-malformed");
     if (typeof nonce !== "string" || !HEX64.test(nonce) || !Array.isArray(scopes) || scopes.length > FLEET_JOIN_SCOPE_BOUND) return refuse("offer-malformed");
     const read: FaceScope[] = [];
     for (const s of scopes) {
@@ -265,20 +269,20 @@ export function readFleetJoinOffer(value: unknown): FleetJoinOffer | FleetJoinRe
       if (!own(scope, "read")) return refuse("offer-malformed", scope);
       read.push(scope.read);
     }
-    if (read.length === 0) return refuse("offer-malformed");
     for (let i = 1; i < read.length; i++) if (compareScope(read[i - 1]!, read[i]!) >= 0) return refuse("offer-malformed");
     // One face key per Nexus: the per-Nexus nym never speaks at two.
-    if (new Set(read.map((s) => s.faceKey)).size !== read.length) return refuse("offer-malformed");
-    return Object.freeze({ kind, personaGroup, nonce, scopes: Object.freeze(read) });
+    const faceKeys = new Set<string>(read.map((s) => s.faceKey));
+    if (faceKeys.size !== read.length || faceKeys.has(rootKey)) return refuse("offer-malformed");
+    return Object.freeze({ kind, personaGroup, rootKey, nonce, scopes: Object.freeze(read) });
   });
 }
 
 /** Build an offer: the scopes sorted and deduplicated. */
-export function fleetJoinOffer(args: { personaGroup: string; nonce: string; scopes: readonly FaceScope[] }): FleetJoinOffer {
+export function fleetJoinOffer(args: { personaGroup: string; rootKey: string; nonce: string; scopes: readonly FaceScope[] }): FleetJoinOffer {
   const seen = new Map<string, FaceScope>();
   for (const s of args.scopes) seen.set(scopeName(s), { faceKey: s.faceKey, nexus: s.nexus });
-  const offer = readFleetJoinOffer({ kind: "fleet-join-offer", personaGroup: args.personaGroup, nonce: args.nonce, scopes: [...seen.values()].sort(compareScope) });
-  if (isRefusal(offer)) throw new RangeError(`fleet-join: the offer refuses (${offer.refusal})`);
+  const offer = readFleetJoinOffer({ kind: "fleet-join-offer", personaGroup: args.personaGroup, rootKey: args.rootKey, nonce: args.nonce, scopes: [...seen.values()].sort(compareScope) });
+  if (isRefusal(offer)) throw new RangeError(`fleet-join: the offer refuses (${offer.refusal}${offer.cause ? `: ${offer.cause.refusal}` : ""})`);
   return offer;
 }
 
@@ -286,8 +290,9 @@ export function fleetJoinOffer(args: { personaGroup: string; nonce: string; scop
 
 /**
  * Read a request against the offer it answers. `apart` names the keys the reader holds for anything else; a
- * face-scoped key that repeats, equals the vessel key or an offered face key, or stands apart refuses. A request
- * takes at least one scope. Each nonce answers ONE request: the root holder keeps that ledger, not this reader.
+ * face-scoped key that repeats, equals the vessel key, the root key or an offered face key, or stands apart
+ * refuses. A request takes any of the offered scopes, none included: a face standing at no Nexus yet still
+ * joins the vessel, and its address secret still crosses. Each nonce answers ONE request: the root holder keeps that ledger, not this reader.
  */
 export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apart: KeysHeldApart = []): FleetJoinRequest | FleetJoinRefusal {
   return guarded("request-malformed", () => {
@@ -295,11 +300,11 @@ export function readFleetJoinRequest(value: unknown, offer: FleetJoinOffer, apar
     const { kind, nonce, vesselKey, sealKey, requests, signature } = value;
     if (kind !== "fleet-join-request" || typeof nonce !== "string" || !HEX64.test(nonce)) return refuse("request-malformed");
     if (!isKey(vesselKey) || !isSealKey(sealKey)) return refuse("request-malformed");
-    if (!Array.isArray(requests) || requests.length === 0 || requests.length > FLEET_JOIN_SCOPE_BOUND || typeof signature !== "string" || !HEX128.test(signature)) return refuse("request-malformed");
+    if (!Array.isArray(requests) || requests.length > FLEET_JOIN_SCOPE_BOUND || typeof signature !== "string" || !HEX128.test(signature)) return refuse("request-malformed");
     if (nonce !== offer.nonce) return refuse("request-other-offer");
     const offered = new Set(offer.scopes.map(scopeName));
     const scopes = new Set<string>();
-    const faceKeys = new Set<string>(offer.scopes.map((s) => s.faceKey));
+    const faceKeys = new Set<string>([...offer.scopes.map((s) => s.faceKey), offer.rootKey]);
     if (faceKeys.has(vesselKey)) return refuse("request-key-reused");
     const keys = new Set<string>([vesselKey]);
     const read: VesselFaceCertificateRequest[] = [];
@@ -353,8 +358,8 @@ function readReach(value: unknown): FleetJoinReach | null {
  * secret with the request's X25519 secret. Every requested scope must carry exactly one certificate over the key
  * requested for it, and every certified scope one grant under the root.
  *
- * `rootKey` and `personaGroup` MUST come from outside the answer (the operator's own word, or the face record the
- * joinee already trusts): the answer authenticates under the key it is read with, and binds nothing to it.
+ * `rootKey` and `personaGroup` MUST come from outside the answer: the offer the joinee kept, or the operator's own
+ * word. The answer authenticates under the key it is read with, and binds nothing to it.
  * The root key, the vessel key and every face-scoped and face key stand apart from one another here whatever
  * `apart` names.
  */

@@ -665,7 +665,18 @@ export interface JoineeOptions {
   readonly beforeB?: (A: LarInstance) => Promise<void>;
   /** Boot B at all? A suite measuring a founding alone passes false. Default true. */
   readonly bootB?: boolean;
+  /**
+   * Which door B joins by. `"device-admit"` (the default): B mints its key, A signs an edge, B founds by it.
+   * `"fleet-join"`: B founds a PLACE, then the three files cross by hand (`fleet join offer` on A, `request` on
+   * B, `answer` on A) and B lands the answer onto its place. `admitted` then holds the land's result.
+   */
+  readonly door?: "device-admit" | "fleet-join";
+  /** On the fleet-join door, runs once the answer stands on disk and before B lands it (a suite's tamper vector). */
+  readonly beforeLand?: (cliB: (args: readonly string[]) => Promise<CliResult>, files: FleetJoinFiles) => Promise<void>;
 }
+
+/** Where the fleet-join door's three files rest under B's root. */
+export interface FleetJoinFiles { readonly offer: string; readonly request: string; readonly answer: string }
 export interface StagedJoinee {
   readonly A: LarInstance;
   /** null when B never reached live (its boot line rides in `joinGate`) or `bootB: false`. */
@@ -673,8 +684,10 @@ export interface StagedJoinee {
   readonly rootB: string;
   readonly portA: number;
   readonly portB: number;
-  /** What B's `vessel found --admit` said. */
+  /** What B's `vessel found --admit` said, or on the fleet-join door, its `fleet join land`. */
   readonly admitted: CliResult;
+  /** The fleet-join door's three files, on that door. */
+  readonly fleet: FleetJoinFiles | null;
   /** The line B's daemon died on, when it did. */
   readonly joinGate: string | null;
   /** A's gate key and lares doc url, as B's env dial reads them. */
@@ -692,6 +705,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
   const cliB  = cliFor({ LAR_ROOT: rootB, LAR_PORT: String(portB) });
   const admit = join(rootB, "admit.json");
   let admitted: CliResult | null = null;
+  let fleet: FleetJoinFiles | null = null;
   const stood: LarInstance[] = [];
   const stop = async (): Promise<void> => {
     for (const v of stood.reverse()) await v.stop();
@@ -707,6 +721,22 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         // B founds by A's genesis, copied whole: `vessel found --admit` reads the hearth true-name off
         // `<root>/genesis`, and A's founding derived it (the re-derive is an internal rite step).
         cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
+        if (opts.door === "fleet-join") {
+          // THE FLEET-JOIN DOOR: B stands as a place first, so its own custody holds the keys it mints for the face.
+          const place = await cliB(["vessel", "found", "--skip-build"]);
+          if (place.code !== 0) throw new Error(`B: vessel found (a place) failed (${place.code})\n${place.stderr.slice(-2500)}`);
+          const files = { offer: join(rootB, "fleet-offer.json"), request: join(rootB, "fleet-request.json"), answer: join(rootB, "fleet-answer.json") };
+          const offer = await cliA(["fleet", "join", "offer", "--out", files.offer]);
+          if (offer.code !== 0) throw new Error(`A: fleet join offer failed (${offer.code})\n${offer.stderr.slice(-2500)}`);
+          const request = await cliB(["fleet", "join", "request", files.offer, "--out", files.request]);
+          if (request.code !== 0) throw new Error(`B: fleet join request failed (${request.code})\n${request.stderr.slice(-2500)}`);
+          const answer = await cliA(["fleet", "join", "answer", files.request, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", files.answer]);
+          if (answer.code !== 0) throw new Error(`A: fleet join answer failed (${answer.code})\n${answer.stderr.slice(-2500)}`);
+          await opts.beforeLand?.(cliB, files);
+          admitted = await cliB(["fleet", "join", "land", files.answer]);
+          fleet = files;
+          return;
+        }
         // The joinee mints FIRST, under its own root: admission signs a key the joiner already holds.
         const { mintVesselKey } = await import("./vessel-key.js");
         const keyB = await mintVesselKey(rootB);
@@ -751,7 +781,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         B = null;
       }
     }
-    return { A, B, rootB, portA, portB, admitted: admitted!, joinGate, gateA, laresA, stop };
+    return { A, B, rootB, portA, portB, admitted: admitted!, fleet, joinGate, gateA, laresA, stop };
   } catch (err) {
     await stop();
     throw err;

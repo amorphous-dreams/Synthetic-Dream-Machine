@@ -189,6 +189,10 @@ export type { InitOptions, InitResult, FoundFaceOptions, FoundFaceResult } from 
 
 export { runDeviceAdmit } from "./commands/device-admit.js";
 export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "./commands/device-admit.js";
+// THE FLEET-JOIN DOOR: the root holder's offer and answer ride the store door; the joining vessel requests, lands
+// and abandons in its own process, with no vessel standing.
+export { runFleetJoinOffer, runFleetJoinAnswer, runFleetJoinRequest, runFleetJoinLand, runFleetJoinAbandon, FleetJoinRefused } from "./commands/fleet-join.js";
+export type { FleetJoinAnswerOptions } from "./commands/fleet-join.js";
 export { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest, resolveOwnerBurnHand } from "./commands/handle.js";
 export type { HandlePublishOptions, HandleBurnOptions, HandleRotateOptions, HandleAttestOptions, OwnerAuthHand } from "./commands/handle.js";
 

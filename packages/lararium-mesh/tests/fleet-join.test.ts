@@ -31,7 +31,7 @@ async function world(): Promise<World> {
   const joinee = await pair("fleet joinee");
   const a = await chain("fleet face a", "nexus-a.synthetic");
   const b = await chain("fleet face b", "nexus-b.synthetic");
-  const offer = fleetJoinOffer({ personaGroup: GROUP, nonce: NONCE, scopes: [b.scope, a.scope, a.scope] });
+  const offer = fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce: NONCE, scopes: [b.scope, a.scope, a.scope] });
   const sealSecret = new Uint8Array(32).fill(9);
   const seal = { secret: sealSecret, key: hex(x25519.getPublicKey(sealSecret)) };
   const body = { nonce: NONCE, vesselKey: joinee.key, sealKey: seal.key, requests: [a.request, b.request] };
@@ -142,23 +142,30 @@ describe("the fleet-join door's files", () => {
     expect(readFleetJoinRequest(asVessel, w.offer)).toEqual({ refusal: "request-key-reused" });
     const vesselIsFace = await signRequest(w, { ...body(w), vesselKey: w.a.face.key }, w.a.face);
     expect(readFleetJoinRequest(vesselIsFace, w.offer)).toEqual({ refusal: "request-key-reused" });
+    const vesselIsRoot = await signRequest(w, { ...body(w), vesselKey: w.root.key }, w.root);
+    expect(readFleetJoinRequest(vesselIsRoot, w.offer)).toEqual({ refusal: "request-key-reused" });
     // CONTROL: the honest request, re-signed by the same helper, reads.
     expect(readFleetJoinRequest(await signRequest(w, body(w)), w.offer)).toMatchObject({ kind: "fleet-join-request" });
   });
 
-  test("an offer refuses no scope, one face key at two Nexus, past its bound, or a short PersonaGroup", async () => {
+  test("an offer refuses one face key at two Nexus, the root as a face key, past its bound, or a short PersonaGroup", async () => {
     const w = await world();
-    expect(readFleetJoinOffer({ ...w.offer, scopes: [] })).toEqual({ refusal: "offer-malformed" });
-    expect(() => fleetJoinOffer({ personaGroup: GROUP, nonce: NONCE, scopes: [w.a.scope, { ...w.b.scope, faceKey: w.a.scope.faceKey }] })).toThrow(/offer-malformed/);
+    // CONTROL: a face standing at no Nexus yet offers no scope, and still joins a vessel.
+    expect(readFleetJoinOffer({ ...w.offer, scopes: [] })).toMatchObject({ scopes: [] });
+    expect(() => fleetJoinOffer({ personaGroup: GROUP, rootKey: w.root.key, nonce: NONCE, scopes: [w.a.scope, { ...w.b.scope, faceKey: w.a.scope.faceKey }] })).toThrow(/offer-malformed/);
+    expect(() => fleetJoinOffer({ personaGroup: GROUP, rootKey: w.a.face.key, nonce: NONCE, scopes: [w.a.scope] })).toThrow(/offer-malformed/);
+    expect(readFleetJoinOffer({ ...w.offer, rootKey: "00".repeat(32) })).toEqual({ refusal: "offer-malformed" });
     const many = await Promise.all(Array.from({ length: 65 }, (_, i) => pair(`bound ${i}`)));
-    expect(() => fleetJoinOffer({ personaGroup: GROUP, nonce: NONCE, scopes: many.map((p, i) => ({ faceKey: p.key, nexus: `n${String(i).padStart(3, "0")}.synthetic` }) as FaceScope) })).toThrow(/offer-malformed/);
+    expect(() => fleetJoinOffer({ personaGroup: GROUP, rootKey: w.root.key, nonce: NONCE, scopes: many.map((p, i) => ({ faceKey: p.key, nexus: `n${String(i).padStart(3, "0")}.synthetic` }) as FaceScope) })).toThrow(/offer-malformed/);
     expect(readFleetJoinOffer({ ...w.offer, scopes: [w.a.scope, w.a.scope] })).toEqual({ refusal: "offer-malformed" });
     expect(readFleetJoinOffer({ ...w.offer, personaGroup: "c0ff" })).toEqual({ refusal: "offer-malformed" });
+    // CONTROL: the group's own id spelling, `0x` and all, reads.
+    expect(readFleetJoinOffer({ ...w.offer, personaGroup: `0x${GROUP}` })).toMatchObject({ personaGroup: `0x${GROUP}` });
   });
 
-  test("a request refuses no scope and a low-order seal key", async () => {
+  test("a request refuses a low-order seal key, and may take no scope at all", async () => {
     const w = await world();
-    expect(readFleetJoinRequest(await signRequest(w, { ...body(w), requests: [] }), w.offer)).toEqual({ refusal: "request-malformed" });
+    expect(readFleetJoinRequest(await signRequest(w, { ...body(w), requests: [] }), w.offer)).toMatchObject({ requests: [] });
     expect(readFleetJoinRequest(await signRequest(w, { ...body(w), sealKey: "00".repeat(32) }), w.offer)).toEqual({ refusal: "request-malformed" });
   });
 
@@ -230,6 +237,6 @@ describe("the fleet-join door's files", () => {
     const throwing = { ...w.offer };
     Object.defineProperty(throwing, "scopes", { get() { throw new Error("boom"); }, enumerable: true });
     expect(readFleetJoinOffer(throwing)).toEqual({ refusal: "offer-malformed" });
-    expect(readFleetJoinOffer(JSON.parse(`{"kind":"fleet-join-offer","personaGroup":"${GROUP}","nonce":"${NONCE}","scopes":[],"__proto__":{}}`))).toEqual({ refusal: "offer-malformed" });
+    expect(readFleetJoinOffer(JSON.parse(`{"kind":"fleet-join-offer","personaGroup":"${GROUP}","rootKey":"${w.root.key}","nonce":"${NONCE}","scopes":[],"__proto__":{}}`))).toEqual({ refusal: "offer-malformed" });
   });
 });

@@ -65,6 +65,9 @@ export interface InitOptions {
    * Use for same-operator second vessel. A second OPERATOR joins by carriage contract-receive.
    */
   readonly admitPayloadPath?: string;
+  /** The same payload already read and verified: the fleet-join door's landing hands it here, over a place that
+   *  stands, with `force`. */
+  readonly admitPayload?: CarriedAdmitPayload;
   /**
    * The human route the founding binds. REQUIRED: a founding seals the slot tree and the custody root from birth,
    * and a vessel with no passphrase or paper route has no way back in, so a founding without one refuses by name.
@@ -234,15 +237,15 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
 
   const repo = opts.repo;
 
-  if (opts.admitPayloadPath) {
+  if (opts.admitPayloadPath !== undefined || opts.admitPayload !== undefined) {
     // ── Vessel-admission path = the UPGRADE event (a fresh vessel joins a PersonaGroup) ──
     // The joinee's vessel key (above) is the DELEGATE; the payload carries the pinned signer +
     // the root→joinee edge (the founder's PersonaGroup root signed it). The joinee writes that
     // binding into its OWN daemon doc and boots through its Binding Gate — no Beelay, no cap events.
-    if (!existsSync(opts.admitPayloadPath)) {
+    if (opts.admitPayload === undefined && !existsSync(opts.admitPayloadPath!)) {
       throw new Error(`[lares vessel found --admit] payload file not found: ${opts.admitPayloadPath}`);
     }
-    const payload = JSON.parse(readFileSync(opts.admitPayloadPath, "utf8")) as CarriedAdmitPayload;
+    const payload = opts.admitPayload ?? JSON.parse(readFileSync(opts.admitPayloadPath!, "utf8")) as CarriedAdmitPayload;
     if (payload.kind !== "device-admit/v1") {
       throw new Error(`[lares vessel found --admit] unexpected payload kind: ${payload.kind}`);
     }

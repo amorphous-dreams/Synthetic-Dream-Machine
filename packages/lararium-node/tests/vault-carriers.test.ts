@@ -76,6 +76,9 @@ const SOWN: Record<string, string> = {
   [`identity/cadence-key-${"7c".repeat(16)}.bin`]:       "x",
   "identity/.restore-pending.json": "x",
   [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
+  [`identity/face-address-secret-${"5e".repeat(16)}.bin`]: "x",
+  "identity/fleet-join-pending.json":           "{}",
+  [`identity/face-join-record-${"6f".repeat(16)}.json`]: "{}",
   "identity/.persona-enroll-pending.json":      "{}",
   "identity/.persona-grant-pending.json":       "{}",
   "identity/.persona-admissions.json":          "{}",
@@ -124,6 +127,8 @@ const RULED: Record<string, CustodyClass> = {
   "persona-root": "cold", "device-share": "cold",
   // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
   "vessel-face-key": "hot", "face-proof-key": "cold",
+  // The fleet-join door's two rows: a face's address secret on each of its vessels, and a join half done.
+  "face-address-secret": "hot", "fleet-join-pending": "hot", "face-join-record": "hot",
   // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).
   "seat-key": "cold",
   // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).

@@ -314,6 +314,19 @@ function buildTable(): readonly CarrierRow[] {
     // names the row). It stays on its vessel: no bundle carries it.
     id({ row: "vessel-face-key", match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
          writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
+    // One face's address secret (`fleet-join-custody`): minted once on the root holder, carried to each joined
+    // vessel by the fleet-join door alone. Its file names a digest of the face's PersonaGroup. No rotation
+    // regenerates it, and it stays on its vessels until the bundle's body carries it.
+    id({ row: "face-address-secret", match: /^face-address-secret-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `face-address-secret-${m[1]}` }),
+    // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
+    // answer seals to. The landing removes it.
+    id({ row: "fleet-join-pending", match: file("fleet-join-pending.json"), custody: "hot", keyClass: "relation",
+         writer: "fleet-join-custody" }),
+    // A joined face's record (`fleet-join-custody`): its root key, the certificates over this vessel's face-scoped
+    // keys and the root's grants, as the fleet-join answer carried them. It stays on its vessel.
+    id({ row: "face-join-record", match: /^face-join-record-([0-9a-f]{32})\.json$/, custody: "hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `face-join-record-${m[1]}` }),
     id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
          writer: "node-circle-store", bundle: "lines" }),
     // One face's guardian set as its typed first enrolment committed it (`guardian-enrolment`): the keys a later

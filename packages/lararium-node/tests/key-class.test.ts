@@ -89,12 +89,20 @@ describe("custody ⊥ secret-kind — one reading names both axes", () => {
   });
 });
 
+const RELATION_ROWS = ["admissions", "enroll-pending", "face-address-secret", "face-join-record", "fleet-join-pending", "grant-pending"];
+
 describe("the relation class — a secret only the other party re-issues", () => {
-  test("the three relation rows read `relation` and hot", async () => {
+  // The persona admit's three rows, and the fleet-join door's three: the face's address secret and the grants the
+  // root re-issues, and a join's seal secret its answer alone consumes.
+  test("the six relation rows read `relation` and hot", async () => {
     const v = scratch();
     try {
-      const rows = await rowsOf(v.homes, { ".persona-enroll-pending.json": "{}", ".persona-grant-pending.json": "{}", ".persona-admissions.json": "{}" });
-      expect([...rows.keys()].sort()).toEqual(["admissions", "enroll-pending", "grant-pending"]);
+      const rows = await rowsOf(v.homes, {
+        ".persona-enroll-pending.json": "{}", ".persona-grant-pending.json": "{}", ".persona-admissions.json": "{}",
+        [`face-address-secret-${"5e".repeat(16)}.bin`]: "x", "fleet-join-pending.json": "{}", [`face-join-record-${"6f".repeat(16)}.json`]: "{}",
+      });
+      // A row the table names by a digest reads under its name with that digest.
+      expect([...rows.values()].map((r) => r.row).sort()).toEqual(RELATION_ROWS);
       for (const r of rows.values()) expect(r, r.name).toMatchObject({ keyClass: "relation", custody: "hot" });
     } finally { v.drop(); }
   });
@@ -106,7 +114,7 @@ describe("the relation class — a secret only the other party re-issues", () =>
     } finally { v.drop(); }
   });
 
-  test("every relation row in the table is exactly the three", () => {
-    expect(carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort()).toEqual(["admissions", "enroll-pending", "grant-pending"]);
+  test("every relation row in the table is exactly the six", () => {
+    expect(carrierTable().filter((r) => r.keyClass === "relation").map((r) => r.row).sort()).toEqual(RELATION_ROWS);
   });
 });

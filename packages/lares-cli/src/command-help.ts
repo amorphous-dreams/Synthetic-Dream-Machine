@@ -592,6 +592,30 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares cabal join --realm <realm-id>   # reads every shadow the crossing meets", "lares nexus kapae --list   # the PRESENTER board — a different kind of setting-aside"],
   },
 
+  fleet: {
+    usage: "usage: lares fleet join <offer | request <offer-file> | answer <request-file> | land <answer-file> | abandon>",
+    synopsis:
+      "THE FLEET-JOIN DOOR: one face's fleet takes a new vessel of the same human, by three files carried by hand. " +
+      "The joining vessel founds a PLACE first and mints its own face-scoped keys there; the root holder's answer " +
+      "carries the device edge, a certificate and a grant per scope, the gate pin and canon list inside the root's " +
+      "signature, and the face's address secret sealed to the request. The joining vessel's acts run with no vessel standing.",
+    details: [
+      "  join offer [--out FILE]                     on the root holder: the face, its root key, a nonce, the scopes it stands at",
+      "  join request <offer-file> [--out FILE]      on the joining place: its face-scoped keys mint; the join stays pending",
+      "  join answer <request-file> [--out FILE] [--sync-url URL]   on the root holder: the signed answer",
+      "  join land <answer-file>                     on the joining place: the face lands",
+      "  join abandon                                on the joining place: the pending join leaves",
+    ],
+    examples: [
+      "lares fleet join offer --out offer.json                      # on the root holder",
+      "lares fleet join request offer.json --out request.json       # on the new vessel, a place already founded",
+      "lares fleet join answer request.json --sync-url ws://hearth:7777/ws --out answer.json",
+      "lares fleet join land answer.json                            # on the new vessel",
+    ],
+    flags: ["--out FILE        write the file the next vessel reads, instead of printing it", "--sync-url URL    the url the new vessel dials this hearth at"],
+    next: ["lares vessel stand --with-web"],
+  },
+
   raise: {
     usage: "usage: lares raise sign <challenge-json-text> [--as <persona-index>]",
     synopsis:

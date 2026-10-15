@@ -306,6 +306,12 @@ export {
 } from "./nexus-key-line.js";
 export type { FaceKeyCustody, WithdrawalMemory, FaceAuthorityRefusal } from "./face-authority.js";
 export type { FaceScope, FaceWithdrawal } from "./face-proof-subjects.js";
+// THE FLEET-JOIN DOOR, named here by its first caller: the node's `fleet join` (`commands/fleet-join`). A joining
+// vessel mints and requests its own face-scoped keys, and the root holder certifies them in its answer.
+export { requestCertificate, issueCertificate, mintVesselFaceKey } from "./face-authority.js";
+export type { VesselFaceKeyCustody, MintedKey } from "./face-authority.js";
+export type { VesselFaceCertificate, VesselFaceCertificateRequest, VesselFaceKey, FaceKey } from "./face-proof-subjects.js";
+export * from "./fleet-join.js";
 // THE GATE'S TWO ROOT DOORS, named here by the seats that mint them: the vessel identity mints the floor key's
 // door and the custody seat the custody root's. The bundle itself stays out of the barrel until the socket cutover.
 export { floorKeyDoor, custodyRootDoor } from "./gate-bundle.js";
