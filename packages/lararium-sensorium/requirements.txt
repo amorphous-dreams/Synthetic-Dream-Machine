@@ -21,8 +21,9 @@ mcp==1.28.1
 
 # The STRUCTURE-plane parse router (scripts/structure_router.py). The runtime loads the committed
 # carrier grammar (tree-sitter-memetic-wikitext) and refuses on an ABI outside its range. The
-# binding and the CLI that generates the artifact run different minors (0.26 here, 0.27 for the
-# CLI), and the ABI is what must agree: both read grammar ABI 15. The individual grammar wheels, never
+# pin-pair law binds the grammar package's CLI to its wasm runtime (web-tree-sitter, one minor);
+# this native binding answers to the grammar ABI alone (0.26 here beside the CLI's 0.27, both reading
+# grammar ABI 15, inside the binding's own window). The individual grammar wheels, never
 # tree-sitter-languages / -language-pack, whose bundled binaries mismatch the modern ABI.
 tree-sitter==0.26.0
 tree-sitter-javascript==0.25.0
