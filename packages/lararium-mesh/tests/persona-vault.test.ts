@@ -1,5 +1,5 @@
 /**
- * persona-vault.test — the isomorphic persona core over an IN-MEMORY PersonaVault (#64 stage 1).
+ * persona-vault.test — the isomorphic persona core over an IN-MEMORY PersonaVault.
  *
  * The control flow (generate/list/wear/custody-refuse/recovery-split-per-persona) lives in @lararium/mesh,
  * platform-blind. This exercises it against a Map-backed vault — the browser/node adapters supply the same
@@ -76,7 +76,7 @@ function makeInMemoryVault(): PersonaVault {
 const pubHexOf = async (seed: Uint8Array): Promise<string> =>
   Buffer.from(await ed25519.getPublicKeyAsync(seed)).toString("hex");
 
-describe("persona-vault core (#64 stage 1)", () => {
+describe("persona-vault core", () => {
   test("generate is idempotent per index; two indices mint DISTINCT sovereign roots", async () => {
     const v = makeInMemoryVault();
     const p0 = await generateOrLoadPersonaRoot(v, memCrypto, 0);

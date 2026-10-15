@@ -9,7 +9,7 @@
  * outranks every zero-padded decimal counter forever, so the operator's own follow could never be unfollowed.
  * Membership now rides DOTTED fields (`mbr+:<nym>#<replica>.<n>` / `mbr-:<nym>#<replica>.<n>`) whose VALUE is
  * the comma-joined set of opposite-kind dots that write OBSERVED — never a clock, never compared by magnitude.
- * EVERGREEN (gp25-SW2): a legacy, undotted `mbr+:<nym>` / `mbr-:<nym>` (any value) no longer parses as a
+ * A legacy, undotted `mbr+:<nym>` / `mbr-:<nym>` (any value) no longer parses as a
  * dot at all — `parseDotKey` refuses it by name and logs it once per process (a module-level `Set`), never
  * repeating the log on a later fold over the same stale key.
  */
@@ -136,7 +136,7 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     expect(membersOf(store, "operators")).toEqual([]);
   });
 
-  test("EVERGREEN (gp25-SW2) — a LEGACY undotted mbr+ (any value, ISO included) REFUSES by name: ignored, "
+  test("a LEGACY undotted mbr+ (any value, ISO included) REFUSES by name: ignored, "
     + "never counted present, never removable", async () => {
     // Before this sweep: an undotted mbr+ parsed as a dot (reserved id "~") that a remove could dominate.
     // After: `parseDotKey` does not recognize the undotted shape AT ALL — it is not a dot, so `foldMembers`
@@ -155,7 +155,7 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     expect(membersOf(store, "following")).toEqual([]);
   });
 
-  test("EVERGREEN (gp25-SW2) — parseDotKey logs a retired, undotted key ONCE PER PROCESS, not once per fold "
+  test("parseDotKey logs a retired, undotted key ONCE PER PROCESS, not once per fold "
     + "(a module-level Set, never a per-call guard)", () => {
     // PROOF: two separate folds over the SAME undotted key yield exactly ONE log line — the second fold's
     // parseDotKey call recognizes the key as already-logged (the module-level Set persists across calls)
@@ -180,7 +180,7 @@ describe("circle-verbs — the per-nym observed-remove follow-graph over the cir
     expect(mutatedLogCount).toBe(2); // the retired, memory-less guard WOULD have logged twice
   });
 
-  test("EVERGREEN (gp25-SW2) — a pre-M5 undotted add+remove pair is IGNORED wholesale; a fresh dotted "
+  test("a pre-M5 undotted add+remove pair is IGNORED wholesale; a fresh dotted "
     + "follow lands clean (observing nothing stale, not even its own legacy history)", async () => {
     // L1 shape (probe-m5-legacy.mjs), inverted: before, the legacy remove dominated the legacy add. Now
     // NEITHER legacy key parses as a dot at all, so there is no add and no remove to fold — a fresh,

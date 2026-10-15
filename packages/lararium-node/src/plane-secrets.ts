@@ -44,8 +44,9 @@ export const NO_CONTRACT_SECRETS_PLANE: ContractSecretsPlane = {
  * A LIVE, growable secrets-plane registry. `plane` reads the CURRENT set, so a store registered after a
  * gate closed over the oracle takes its floor immediately; `register` is the only door in.
  *
- * The sole caller is whatever act STANDS a secrets store — the same discipline the sealed registry keeps,
- * so the set records what a creating path did rather than what a doc asserts about itself.
+ * No production path stands a secrets store, so this registry stands SPECIFIED in code. The caller it waits
+ * on: the act that stands such a store — the same discipline the sealed registry keeps, so the set records
+ * what a creating path did rather than what a doc asserts about itself.
  */
 export interface ContractSecretsRegistry {
   /** The reading a floor oracle holds — live over the current set. */

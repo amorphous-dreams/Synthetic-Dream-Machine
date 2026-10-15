@@ -169,7 +169,7 @@ export interface DaemonVmCoreOptions {
   daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
   /** Storage config delivered in the manifest (node nodefs; browser omits). */
   storage?:        IslandStorageConfig;
-  /** One bounded D-VR-C worker-owned document; absent preserves the legacy shape. */
+  /** One bounded D-VR-C worker-owned document; absent, the worker owns no document and its doc syncs over the host's channel alone. */
   ownedDocument?:  { documentUrl: string; storage?: IslandStorageConfig };
   /** The daemon wiki's disk mirrors (its working layer → `<root>/wikis/daemon/`); a node host mints
    *  them, a browser passes none. Rides the manifest's `diskMirrors` so the worker's `onBoot` can

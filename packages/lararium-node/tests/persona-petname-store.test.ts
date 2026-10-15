@@ -1,5 +1,5 @@
 /**
- * persona-petname-store.test — the node fs adapters for the two-layer pet-names (#64 stage 4).
+ * persona-petname-store.test — the node fs adapters for the two-layer pet-names.
  *
  * The PRIVATE own-persona label map + the PUBLIC own-published-face record, each a 0o600 JSON file in the
  * identity home separate from the runtime store. The isomorphic logic (rename/multitude-view/glamour-mint) is
@@ -37,7 +37,7 @@ const SEED = Uint8Array.from(Array.from({ length: 32 }, (_, i) => (i * 3 + 7) & 
 // The owning persona's KEL prefix — a personal face is owned by its persona, so the mint takes it.
 const OWNER = "persona-" + "ab".repeat(32);
 
-describe("node persona pet-name stores (#64 stage 4)", () => {
+describe("node persona pet-name stores", () => {
   let root: string;
   let seated: Awaited<ReturnType<typeof seatScratchCustody>>;
   const dataDir = () => root;

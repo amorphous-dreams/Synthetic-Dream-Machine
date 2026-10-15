@@ -1,5 +1,5 @@
 /**
- * persona-group-root.test.ts — PersonaGroup-root key custody (operator-root capability, Phase 0.2).
+ * persona-group-root.test.ts — PersonaGroup-root key custody (operator-root capability).
  *
  * Proves the custody helper the meshed founding consumes: a founder-only root key, minted once and
  * loaded idempotently, persisted into `<lares>/identity` — a SIBLING of the substrate a rite reforges,
@@ -25,7 +25,7 @@ const idDirOf = (_dataDir: string): string => larIdentityDir();
 const find = (idDir: string, prefix: string): string | undefined =>
   readdirSync(idDir).find((f) => f.startsWith(prefix));
 
-describe("PersonaGroup-root custody (operator-root capability — genesis Phase 0.2)", () => {
+describe("PersonaGroup-root custody (operator-root capability)", () => {
   // `LAR_ROOT` reroots every lares home, so a mint here never reads or writes the operator's OWN root
   // key — a founder-only capability must never be touched by a test run.
   let larRoot: string;

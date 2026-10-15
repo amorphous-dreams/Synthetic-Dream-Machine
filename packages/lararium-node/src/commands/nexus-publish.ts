@@ -66,7 +66,7 @@ export interface NexusPublishPluginsOptions {
   readonly storageDir: string;
   /** A LOCAL offering source directory: `offering.json` plus each blob's bytes beside it. */
   readonly source: string;
-  /** Test/legacy seam only — `boot-set-collision` reads this genesis dir's blob ids. */
+  /** The genesis directory whose blob ids `boot-set-collision` reads; absent, the vessel's own (`readGenesisSeed`'s default). */
   readonly genesisDir?: string;
 }
 

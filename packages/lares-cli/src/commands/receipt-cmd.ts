@@ -1,16 +1,15 @@
 /**
- * `lares receipt <requestId>` / `lares cancel <requestId>` — the two doors M14 names: a verb that
- * outcome-unknown (and now `request-abandoned`, M3′) tells an operator to "check a request" had no
- * door to walk through until these two existed.
+ * `lares receipt <requestId>` / `lares cancel <requestId>` — the two doors a verb's outcome names when it
+ * tells an operator to check a request (outcome-unknown, `request-abandoned`).
  *
- *   receipt <requestId>   — a READ (`queryReceipt`, H1). Never dispatches anything; answers from the
+ *   receipt <requestId>   — a READ (`queryReceipt`). Never dispatches anything; answers from the
  *                           vessel's own ledger + durable outcome doc exactly as a `runVerb` read-back
  *                           would, without running a second attempt.
- *   cancel  <requestId>   — the OPERATOR's own explicit withdrawal (`cancelRequest`, M8). Marks the
- *                           id abandoned on the vessel's ledger so a LATER line under the same id (a
- *                           stray retry, a re-run) refuses rather than running. Never sent on a bare
- *                           timeout by any automated path — council ruling 4: a caller's own local
- *                           wait ending is not a withdrawal, only this operator-typed command is.
+ *   cancel  <requestId>   — the OPERATOR's own explicit withdrawal (`cancelRequest`). Marks the id
+ *                           abandoned on the vessel's ledger so a LATER line under the same id (a stray
+ *                           retry, a re-run) refuses rather than running. No automated path sends it on
+ *                           a bare timeout: a caller's own local wait ending withdraws nothing; only this
+ *                           operator-typed command does.
  *                           The door reports TWO receipts and keeps them apart
  *                           (lar:///ha.ka.ba/lararium/mesh/receipt-ledger#/three-receipts): the
  *                           caller's abandonment (this command, sent) and the vessel's outcome (the
@@ -18,8 +17,9 @@
  *                           true only where that state reads `abandoned`; a cancel that met a commit
  *                           reads `cancel-lost`, and the act it met runs on.
  *
- * Both route through the ordinary `{dataDir}` resolution every other command uses; both carry M13's
- * bounded read patience, so a frozen/wedged vessel answers `unanswered` rather than hanging the CLI.
+ * Both route through the ordinary `{dataDir}` resolution every other command uses; both carry the
+ * bounded read patience every read-back carries, so a frozen or wedged vessel answers `unanswered`
+ * rather than hanging the CLI.
  */
 
 import { queryReceipt, cancelRequest, UdsUnreachable, type ReceiptAnswer } from "../local-connector.js";

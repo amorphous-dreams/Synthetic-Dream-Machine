@@ -369,7 +369,7 @@ describe("★ the child gate writes only on a bag this hearth keeps ★", () => 
  * carries no congruence that reads a fragment body as a gradeable unit on its own. That remains the
  * operator's call; the probe below is the measurement any such instrument must answer to.
  */
-describe("★ PHASE 5 RE-MEASURED: re-placing a root from its records refuses two shapes, fences two, still misses three ★", () => {
+describe("★ RE-MEASURED: re-placing a root from its records refuses two shapes, fences two, still misses three ★", () => {
   const sinkOf = (store: Map<string, TiddlerFields>) => ({
     allTitles: () => [...store.keys()],
     getTiddler: (t: string) => (store.has(t) ? { fields: store.get(t)! } : undefined),

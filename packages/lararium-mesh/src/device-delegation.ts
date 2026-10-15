@@ -157,7 +157,7 @@ export async function verifyDeviceDelegation(
  * signature is still reported as cryptographically valid, but the evidence is
  * `unavailable`; callers that mutate authority must choose a named local
  * refusal or pending path rather than treating omission as a current lease.
- * The legacy `verifyDeviceDelegation` wrapper remains signature-compatible.
+ * `verifyDeviceDelegation` wraps this evaluation and keeps its own signature for its callers.
  */
 export async function evaluateDeviceDelegation(
   edge: DeviceDelegationTiddler,

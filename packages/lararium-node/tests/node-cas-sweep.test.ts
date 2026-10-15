@@ -249,11 +249,11 @@ describe("readCasPins — M7′ fails toward KEEPING, never toward deleting", ()
   });
 });
 
-// ── evergreen sweep (gp25-SW2): a retired `expiry` field (or any unknown field) REFUSES the whole sidecar ──
+// ── evergreen sweep: a retired `expiry` field (or any unknown field) REFUSES the whole sidecar ──
 // Spec: `.pins.json` is not a legacy-acceptance surface. A record carrying the retired `expiry` field, or
 // any field `PinCap` never named, is malformed — the WHOLE read refuses by name (never "ignore the stray
 // field and keep going"), so the sweep that depends on it fails toward KEEPING every blob.
-describe("readCasPins — evergreen sweep retires old-shape acceptance (gp25-SW2)", () => {
+describe("readCasPins — evergreen sweep retires old-shape acceptance", () => {
   test("RED: a record carrying the retired `expiry` field REFUSES the whole sidecar", () => {
     const cid = "d".repeat(64);
     writeFileSync(join(casDir, ".pins.json"), JSON.stringify([{ cid, tier: "veil", holder: "x", expiry: 123 }]));

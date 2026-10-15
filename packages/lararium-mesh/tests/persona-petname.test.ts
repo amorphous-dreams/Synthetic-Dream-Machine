@@ -1,5 +1,5 @@
 /**
- * persona-petname.test — the two-layer pet-names over the isomorphic persona core (#64 stage 4).
+ * persona-petname.test — the two-layer pet-names over the isomorphic persona core.
  *
  * The PRIVATE own-persona label map (fleet-only, never PUBLICLY federates), the multitude-view over the
  * whole self, and the
@@ -81,7 +81,7 @@ const SEED = Uint8Array.from(Array.from({ length: 32 }, (_, i) => (i * 5 + 1) & 
 // The owning persona's KEL prefix — a personal face is owned by its persona, so the mint takes it.
 const OWNER = "persona-" + "ab".repeat(32);
 
-describe("persona-petname — the PRIVATE own-persona label (#64 stage 4)", () => {
+describe("persona-petname — the PRIVATE own-persona label", () => {
   test("rename sets a private label; clear drops it; a blank rename is refused", async () => {
     const store = makeInMemoryPetnameStore();
     await renameOwnPersona(store, 0, "work");
@@ -102,7 +102,7 @@ describe("persona-petname — the PRIVATE own-persona label (#64 stage 4)", () =
   });
 });
 
-describe("persona-petname — the MULTITUDE-VIEW (#64 stage 4)", () => {
+describe("persona-petname — the MULTITUDE-VIEW", () => {
   test("enumerates the whole self: held roots, anchored joinee-faces, named + federated indices", async () => {
     const vault = makeInMemoryVault();
     const petnames = makeInMemoryPetnameStore();
@@ -153,7 +153,7 @@ describe("persona-petname — the MULTITUDE-VIEW (#64 stage 4)", () => {
   });
 });
 
-describe("persona-petname — the pet-name NEVER PUBLICLY FEDERATES (#64 stage 4)", () => {
+describe("persona-petname — the pet-name NEVER PUBLICLY FEDERATES", () => {
   test("the private label never rides onto a PUBLIC board; only an announced Handle binds a glamour", async () => {
     const petnames = makeInMemoryPetnameStore();
     const publicStore = makeInMemoryPublicStore();
@@ -174,7 +174,7 @@ describe("persona-petname — the pet-name NEVER PUBLICLY FEDERATES (#64 stage 4
   });
 });
 
-describe("persona-glamour — the persona-index → HandleCard wire (#64 stage 4)", () => {
+describe("persona-glamour — the persona-index → HandleCard wire", () => {
   test("mint derives the veiled key as the card nym; the card certifies itself", async () => {
     const store = makeInMemoryPublicStore();
     const { card, record } = await mintPersonaGlamour({ seed: SEED, handleIndex: 4, glamour: "Tide-Caller", store, ownerPersonaKelPrefix: OWNER });

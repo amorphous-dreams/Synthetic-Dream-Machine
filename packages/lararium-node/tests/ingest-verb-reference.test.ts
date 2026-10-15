@@ -165,7 +165,7 @@ describe("a pointer carrier meets the unattended rule at its own grain", () => {
   });
 });
 
-describe("Stage 2 — oversized carrier → SKINNY HANDLE (body leaves the CRDT)", () => {
+describe("oversized carrier → SKINNY HANDLE (body leaves the CRDT)", () => {
   test("a skinny-flagged INGEST carrier lands a handle: cid + integrity present, body ABSENT, never resolved", async () => {
     const body = "The Entire Works — a 16MB corpus.\n".repeat(500_000);
     const cid  = cidOf(body);

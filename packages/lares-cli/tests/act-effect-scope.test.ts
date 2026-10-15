@@ -26,7 +26,7 @@
  * the live-dispatch (`result.refusal`) boundary, mirroring how the OTHER refusal names are proven in
  * `act-load-effect-split.test.ts`.
  *
- * K2, P2.5 iteration 7: the LIVE (synchronous) refusal branch now carries the SAME hint text as the
+ * The LIVE (synchronous) refusal branch carries the SAME hint text as the
  * read-back branches, for the SAME code — both call the one shared `refusalHint` helper in
  * `verb-call.ts`. Before this, a caller whose refusal rode straight back on the socket (the
  * connection never dropped) read no hint at all, while the identical refusal discovered only after
@@ -196,7 +196,7 @@ describe("a read-back that finds the request interrupted names the code and the 
   });
 });
 
-describe("K2, P2.5 iteration 7 — the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back", () => {
+describe("the SYNCHRONOUS (live) refusal carries the SAME hint as the read-back", () => {
   test("★ a live retention-gap refusal carries the hint on both error.hint and the human line ★", async () => {
     // The connection never drops here — the refusal rides straight back as `result.refusal`,
     // never through `LocalWaitExpired`/`queryReceipt`. Mirrors probe-h7b.sh's live E2.

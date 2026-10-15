@@ -341,12 +341,12 @@ export { heedSummons } from "@lararium/tw5";
 export type { SummonsRelayOptions, SummonsRequest } from "@lararium/tw5";
 export { runLocalVerb, makeCapVerify } from "@lararium/tw5";
 
-// where + resolve reactors RELOCATED to @lararium/tw5 (worker-data-verbs) — they now
-// run in the daemon worker (sovereign-worker, verify-then-delegate). Re-export from there.
+// The where + resolve reactors live in @lararium/tw5 (worker-data-verbs) and run in the daemon worker
+// (sovereign-worker, verify-then-delegate); a node caller reads them through this barrel.
 export { makeWhereReactor, makeResolveReactor } from "@lararium/tw5";
 
-// Verb-plane reactors relocated to their pono home @lararium/tw5 (composite/repo-only,
-// not node-specific; both vessels hold them). Re-exported here for surface stability.
+// The verb-plane reactors live at their pono home @lararium/tw5 (composite/repo-only, not
+// node-specific; both vessels hold them); a node caller reads them through this barrel.
 export {
   makeListWikisReactor, makeInitWikiReactor, makeOpenWikiReactor,
   makeWikiPinReactor, makeWikiUnpinReactor,

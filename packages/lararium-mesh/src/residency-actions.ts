@@ -176,9 +176,9 @@ export interface LoadCarrier {
    *  Absent → the island treats the text as a memetic-wikitext carrier. */
   readonly ext?:   string;
   /** The carrier body. A verb NEVER inlines a body: the operator gesture stages it
-   *  to the corpus CAS and rides `textCid` instead. `text` stays for a small in-line
-   *  carrier and for backward-compat (the island resolves `textCid` → `text` before
-   *  use). Exactly one of `text` / `textCid` MUST hold. */
+   *  to the corpus CAS and rides `textCid` instead. `text` carries a small in-line
+   *  carrier, and the island resolves `textCid` → `text` before use. Exactly one of
+   *  `text` / `textCid` MUST hold. */
   readonly text?:  string;
   /** Content-address (hex sha256) of the carrier body staged in the corpus CAS.
    *  The island resolves it via `resolveByCid` and re-verifies `cid == hash(bytes)`
@@ -221,8 +221,8 @@ export interface IngestCarrier {
   readonly file?:      string;
   /** The settled carrier body (quiet + stat-stable + hash-confirmed by the gesture).
    *  A verb NEVER inlines a body: the gesture stages it to the corpus CAS and rides
-   *  `textCid` instead. `text` stays for backward-compat (the island resolves
-   *  `textCid` → `text` before the Confluence gate). Exactly one of `text` /
+   *  `textCid` instead. `text` carries a small in-line carrier, and the island
+   *  resolves `textCid` → `text` before the Confluence gate. Exactly one of `text` /
    *  `textCid` MUST hold. */
   readonly text?:      string;
   /** Content-address (hex sha256) of the carrier body staged in the corpus CAS. The
@@ -250,7 +250,7 @@ export interface IngestCarrier {
    *  gesture read it from disk. The island routes by it: a memetic carrier (SOH
    *  heading / `.mem`) decomposes at the memetic shore; any other legal TW5
    *  filetype rides TW5's OWN deserializer registry, keyed by this extension.
-   *  Absent → the island treats the carrier as memetic (back-compat). */
+   *  Absent → the island treats the carrier as memetic. */
   readonly ext?:       string;
   /** Raw `.meta` sidecar text a content filetype keeps beside its body; the
    *  island parses it and seeds the deserialize so a body-only edit never drops

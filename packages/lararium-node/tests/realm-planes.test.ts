@@ -257,7 +257,7 @@ describe("a plane's lanes scope to its own Nexus", () => {
   });
 
   // R5
-  test("R5 cabal wire lanes require realm standing; control: C keeps its Nexus lane and unknown docs use base", async () => {
+  test("cabal wire lanes require realm standing; control: C keeps its Nexus lane and unknown docs use base", async () => {
     const repo = new Repo({}), membership: NexusMembership = { holdsCarriagePeer: (peer) => peer === "peer-m" };
     const { holder } = makeHolder(repo, { membership, standsInRealm: (peer, realm) => peer === "peer-a" && realm === A });
     await holder.refresh(charter("charter-r5")); const a = await actor(7), b = await actor(8);
