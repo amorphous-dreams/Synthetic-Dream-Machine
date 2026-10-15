@@ -592,7 +592,8 @@ export interface NexusRollPriorAnchor {
  * A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15; roadmap `#/rulings`). A seal roll refuses by name
  * while the head's own roll stands with no counted anchor on this vessel's carriage board: an admit carries across a
  * roll only through its roll anchors, and a roll laid over an anchorless one strands every admit between them. The
- * roll's open (`lares nexus seal rotate`, `seal roll open`) asks here before any card reads or any seat signs.
+ * roll's open (`lares nexus seal rotate`, `seal roll open`) asks here before any card reads or any seat signs, and the
+ * custody door's two roll opens (`seat.arm-roll`, `roll-circle.open`) ask again against the store their door lends.
  *
  * A genesis closes no roll, so the first roll opens. A head that closed an epoch reading no seats, or a reunion
  * head joining two branches, carries no anchor this door can ask for, so neither waits. The single-vault rotate

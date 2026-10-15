@@ -18,7 +18,9 @@
  *       the row's own name; an open over a board that holds the counted anchor refuses before any seat signs.
  *   R5  RED: a roll waits on its prior anchor (operator ruling 2026-10-15): the check refuses by name while the head's
  *       own roll stands with no counted anchor on the board, passes at a genesis and once the anchor lands, and its
- *       store row answers under the row's own name; no seat signs on the refusal.
+ *       store row answers under the row's own name; the custody door's two roll opens refuse the same way against
+ *       the store their door lends, and a door that lends none leaves the ask to the command; no seat signs on any
+ *       refusal.
  *   R6  The realm edge anchors cross as their own partials, one per realm (kapae#/rolls): the opener signs each realm
  *       board it keeps a quorum act for; a vault that holds no board for the realm reads `unavailable` and signs
  *       nothing; a board whose heads moved reads `stale`; the cosigner lands the anchor and the first vault lands the
@@ -49,6 +51,7 @@ import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesse
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
+import { runSealedAct, SealedActRefused, type SealedActContext } from "../src/sealed-acts.js";
 import { heldSeatKey } from "../src/seat-key-store.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
@@ -253,6 +256,18 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     const row = await storeDoorReactors({ storageDir: larDataDir(), sealHome: larSealHome(), repo: A.repo })["nexus-roll-prior-anchor"]({ aid }, {} as never);
     expect(row["refusal"]).toBe("nexus-roll-prior-anchor-refused");
     expect(String(row["refused"])).toMatch(/prior-roll-unanchored/);
+    // The custody door's roll opens ask the same check against the store their door lends, before any card reads.
+    const lent: SealedActContext = {
+      kelHead: null, personaSelves: null, walk: null, backup: null, hosting: { withRepo: (act) => act(A.repo), rolled: async () => {} },
+    };
+    const card = "0b".repeat(32);
+    const door = (name: string, args: Record<string, unknown>, ctx: SealedActContext): Promise<string> => runSealedAct(name, args, ctx)
+      .then(() => "ran", (e: unknown) => (e instanceof SealedActRefused ? `${e.reason}: ${e.message}` : `${(e as Error).constructor.name}: ${(e as Error).message}`));
+    expect(await door("seat.arm-roll", { cards: [card, card] }, lent)).toMatch(/^act-refused: .*prior-roll-unanchored/);
+    expect(await door("roll-circle.open", { aid, face: 0, next: "0c".repeat(32), threshold: 2 }, lent)).toMatch(/^act-refused: .*prior-roll-unanchored/);
+    // CONTROL: a door that lends no store reads no board, so its refusal comes from the cards, never the anchor.
+    expect(await door("seat.arm-roll", { cards: [card, card] }, { ...lent, hosting: null })).not.toMatch(/prior-roll-unanchored/);
+    expect(signing.calls).toBe(before);
 
     // The anchor crosses and lands on both vaults; the wait ends there.
     at(A);
