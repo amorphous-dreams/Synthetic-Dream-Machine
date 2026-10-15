@@ -78,7 +78,7 @@ import { larBootstrapPath } from "./vessel-paths.js";
 export const RESTORE_REFUSALS = [
   "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
   "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
-  "guardian-key-serves-another-face",
+  "guardian-key-serves-another-face", "hearth-stands",
 ] as const;
 export type RestoreRefusal = (typeof RESTORE_REFUSALS)[number];
 
@@ -211,13 +211,20 @@ async function readPending(): Promise<Pending | null> {
   }
 }
 
+/** The root key of the face whose restore stands pending on this vessel, or null where none stands. Writes nothing. */
+export async function restorePendingRoot(): Promise<string | null> {
+  return (await readPending())?.body.root.verifyingKey ?? null;
+}
+
 /** PREFLIGHT every target row and relation. Writes nothing. */
-async function preflight(body: FaceBundleBody, target: number): Promise<void> {
+async function preflight(body: FaceBundleBody, target: number, founding = false): Promise<void> {
   if (!existsSync(larBootstrapPath())) refuse("place-unfounded", "no founded place stands here: a restore lands a face onto a vessel `lares vessel found` already stood. Nothing moved.");
   // A RESTORED FACE BINDS THE HEARTH IT LANDS ON: its device edge names this vessel's seed charter, so a place with
   // none holds no hearth for it. The person founds the fresh hearth first (`lares vessel found --hearth`), and the
   // restore lands beside persona zero at a free index.
-  if (hearthAid() === null) refuse("no-hearth", "no seed charter stands on this vessel, so no hearth stands for the restored face to bind to. Nothing moved; found the hearth with `lares vessel found --hearth --name '<label>'`, then restore at a free index (--as <N>).");
+  // The founding act's own restore seats that charter itself, after the root lands and before the face lights.
+  if (founding && hearthAid() !== null) refuse("hearth-stands", "a seed charter already stands on this vessel, so the founding act lands no restored face as its persona zero here. Nothing moved; restore beside persona zero with `lares vault restore <file> --as <N>`.");
+  if (!founding && hearthAid() === null) refuse("no-hearth", "no seed charter stands on this vessel, so no hearth stands for the restored face to bind to. Nothing moved; found the hearth FROM this bundle, its face as persona zero (`lares vessel found --hearth --restore <file>`), or found it with `lares vessel found --hearth --name '<label>'`, then restore at a free index (--as <N>).");
   const roster = await listPersonaRosterLines();
   if (roster.some((l) => l.verifyingKey === body.root.verifyingKey)) {
     refuse("face-already-held", "this vessel already holds this face's root, and no restore of it stands pending: a second restore over it. Nothing moved.");
@@ -309,8 +316,11 @@ export async function restoreFaceBundle(args: {
   /** The handle-index the face lands at here; absent, the index the bundle's own roster line named. */
   readonly as?:        number;
   readonly withRepo:   <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
+  readonly genesisDir?: string;
+  readonly founding?:   () => Promise<void>;
 }): Promise<FaceBundleRestored> {
-  return restoreFaceBody({ body: openRestoreBody(args.sealedBody, args.bundleKey), ...(args.as !== undefined ? { as: args.as } : {}), withRepo: args.withRepo });
+  const { sealedBody, bundleKey, ...rest } = args;
+  return restoreFaceBody({ body: openRestoreBody(sealedBody, bundleKey), ...rest });
 }
 
 /**
@@ -322,6 +332,15 @@ export async function restoreFaceBody(args: {
   readonly body:     FaceBundleBody;
   readonly as?:      number;
   readonly withRepo: <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
+  /** The genesis the face's rite reads (the founding's own, where a founding act runs the restore). */
+  readonly genesisDir?: string;
+  /**
+   * THE FOUNDING ACT'S OWN STEP (a restore as persona zero, `found --hearth` from a bundle). Present, the face lands
+   * at h0 on a place that holds no seed charter yet, and this step runs after the rows land and the history seats
+   * and before the face lights: it seats the seed charter over the restored root, so the face lights bound to that
+   * charter's AID. A resumed restore runs it again, and it answers what an earlier run already wrote.
+   */
+  readonly founding?: () => Promise<void>;
 }): Promise<FaceBundleRestored> {
   const { body } = args;
   const { signerDid, recoveryCommit } = await consistent(body);
@@ -341,7 +360,8 @@ export async function restoreFaceBody(args: {
     }
     if (pending === null) {
       const target = args.as ?? body.rosterLine.handleIndex;
-      await preflight(body, target);
+      if (args.founding && target !== 0) refuse("index-held", `the founding act lands its restored face as persona zero, at h0, never at h${target}. Nothing moved.`);
+      await preflight(body, target, args.founding !== undefined);
       // ONE DURABLE COMMIT. Before this write nothing moved; after it the restore completes, in this run or the next.
       pending = { target, body };
       const row = canonicalJsonBytes(pending);
@@ -357,7 +377,8 @@ export async function restoreFaceBody(args: {
     // veil. `runFoundTheFace` reads the root the roster now names and founds: the same fixed prefix, a fresh key
     // group, a device edge the root signs for this vessel's key. A face that already stands lit reads so and moves nothing.
     await seatLocalPersonaKelChain(repo, pending.body.kel);
-    const lit = await runFoundTheFace({ repo, handleIndex: pending.target });
+    if (args.founding) await args.founding();
+    const lit = await runFoundTheFace({ repo, handleIndex: pending.target, ...(args.genesisDir ? { genesisDir: args.genesisDir } : {}) });
     if (!lit.alreadyStood && lit.personaKelPrefix !== pending.body.anchors.personaKelPrefix) {
       throw new Error(`face-bundle-restore: the face lit under prefix ${lit.personaKelPrefix}, and the bundle carried ${pending.body.anchors.personaKelPrefix}; the pending row stays for a person to read`);
     }

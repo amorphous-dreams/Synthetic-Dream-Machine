@@ -425,7 +425,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect([...RESTORE_REFUSALS]).toEqual([
       "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
       "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
-      "guardian-key-serves-another-face",
+      "guardian-key-serves-another-face", "hearth-stands",
     ]);
   });
 
