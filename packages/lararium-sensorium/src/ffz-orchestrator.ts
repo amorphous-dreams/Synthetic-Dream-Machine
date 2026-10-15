@@ -542,10 +542,9 @@ interface PyContext {
 /**
  * Resolve the python + loci_io.py + PYTHONPATH + THE HOLDER CAP (the same setup telemetry-writeback runs).
  *
- * `resolveHolderCapEnv` folds three policies every python leg must run under: write-routing `require`, so a
- * write routes through the daemon SINGLETON instead of opening its own chroma handle (the concurrent-HNSW
- * writer corruption); the lazy-embedder flag; and the GPU compute cap, without which `loci_io.py` hard-fails
- * importing onnxruntime-gpu on a GPU box. A shore that spawns python without it holds none of the three.
+ * `resolveHolderCapEnv` folds the pinned upstream's write-routing policy and the GPU compute cap.
+ * A shore that spawns Python without it can inherit the guest's routing policy or load the wrong
+ * onnxruntime variant on a GPU box.
  */
 function pyContext(): PyContext {
   const PY = resolveMempalacePython();

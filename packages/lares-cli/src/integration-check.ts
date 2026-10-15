@@ -11,10 +11,9 @@ import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
-import { resolveMempalacePython } from "@lararium/mempalace";
+import { mempalaceHolderPresent, resolveMempalacePython } from "@lararium/mempalace";
 
 const MEMPALACE_DIR = join(repoRoot, "mempalace");
-const MEMPALACE_HOLDER_ENTRY = join(MEMPALACE_DIR, "mempalace", "mcp_server.py");
 const MEMPALACE_PKG = join(repoRoot, "packages", "lararium-mempalace");
 const MEMPALACE_PLUGIN = join(MEMPALACE_DIR, ".claude-plugin", "plugin.json");
 
@@ -77,7 +76,7 @@ export function standOk(nodeUp: boolean, standing: MempalaceStanding, refused = 
 export function checkMempalaceIntegration(): IntegrationReport {
   const checks: IntegrationCheck[] = [];
 
-  const submoduleOk = existsSync(MEMPALACE_HOLDER_ENTRY);
+  const submoduleOk = mempalaceHolderPresent(MEMPALACE_DIR);
   // A source directory that holds files and lacks its entry names a checkout a hand began: a part stands.
   // An empty directory (a submodule nobody initialized) and no directory at all both read as nothing here.
   const submodulePartial = !submoduleOk && (() => { try { return readdirSync(MEMPALACE_DIR).length > 0; } catch { return false; } })();
@@ -143,10 +142,10 @@ export interface InstallStep {
 export function installMempalaceIntegration(): InstallStep[] {
   const steps: InstallStep[] = [];
 
-  if (!existsSync(MEMPALACE_HOLDER_ENTRY)) {
+  if (!mempalaceHolderPresent(MEMPALACE_DIR)) {
     try {
       execFileSync("git", ["submodule", "update", "--init", "mempalace"], { cwd: repoRoot, stdio: "pipe", timeout: 120_000 });
-      steps.push({ step: "submodule-init", ran: true, ok: existsSync(MEMPALACE_HOLDER_ENTRY), detail: "git submodule update --init mempalace" });
+      steps.push({ step: "submodule-init", ran: true, ok: mempalaceHolderPresent(MEMPALACE_DIR), detail: "git submodule update --init mempalace" });
     } catch (e) {
       steps.push({ step: "submodule-init", ran: true, ok: false, detail: errText(e) });
     }

@@ -12,7 +12,7 @@ mana      = 19
 manao     = 18
 manaoio   = 17
 namespace = "&#x0950; &#x0901;"
-role      = "THE holistic capture & annotation model — the implement-from keel that fills mempalace's holes (multi-agent topology · subagent/swarm capture · gradient annotation · ephemeral noise · agent identity). Ties lar-telemetry + agent-worldline + lararium-memory into one layered spec: capture (surfaces·shores·verbatim-always/gradient-eventual) → annotation (lar_* instrument readings, gradient-not-verdict) → multi-agent (identity·provenance·relationship spawn-graph) → ephemeral (lares ephemeral launcher·blind dir·hardening). Carries the operator rulings ledger + the implementation backlog (built/specified/blocked)."
+role      = "the June capture-and-annotation design history — preserves the intent to keep verbatim worldlines, gradient readings, agent provenance and ephemeral exclusion; its fork-specific source-adapter and flush route are superseded by the current mempalace-integration redesign plan"
 tags      = ["api/pono/meme", "api/lararium"]
 title     = "lar:///ha.ka.ba/lararium/api/capture-annotation-model"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -28,7 +28,16 @@ written   = "2026-06-25"
 
 ! Capture & Annotation ~ the holistic model
 
-''The implement-from keel.'' mempalace captures //verbatim single-agent sessions//
+''Reorientation, October 2026.'' This June proposal keeps the intent to capture verbatim
+operator and agent worldlines, preserve their causal graph, and derive navigational
+annotations without changing the ground. Its `mine --source lares` daemon drain and
+born-annotated drawer route describe a historical implementation proposal, not a
+capability of the newly pinned upstream MemPalace. The sovereign Sensorium now owns
+source parsing and durable landing through its Python source caps; MemPalace supplies
+library functions behind that boundary. The current integration contract stands at
+<<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration">>.
+
+''The original implement-from keel.'' mempalace captures //verbatim single-agent sessions//
 faithfully — that is its gift. But the lararium runs many agents across many
 surfaces, scores every turn on a 0–20 gradient, and spawns throwaway swarms — and
 mempalace's native model has ''holes'' at exactly those shores. This meme states the
@@ -296,6 +305,8 @@ tmpfs is the never-touch-disk option). Depth: `agent-worldline#lifecycle`.
 
 !! Implementation Backlog
 
+''Historical June ledger.'' `BUILT`, `SPECIFIED` and `BLOCKED` below describe the design's state at that time. The current upstream pin, container intake, identity revision and acceptance gates live at <<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration#/redesign-plan">>. In particular, a fork-side `mine --source` route below grants no capability to today's upstream pin.
+
 ''BUILT (committed):''
 * lar-telemetry READ shore (`recall` verb · `lares recall` · MempalaceClient.search · spawn-resolve) — `35a3dfc8`.
 * lar-telemetry WRITE shore (`lar-telemetry` verb · `lares telemetry` · telemetry-writeback core · hook routed through @daemon) — `63d3c1c7`.
@@ -345,6 +356,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fra2oBAVGfU96RU7Ue4J3Labh7X7dx9iehuzO4adGw4
+<<^ code="&#x0003;">>ni:///sha-256;ocf1JJeRsy71jnyJT2429yoTucgoAYgWTTSofn8t6cc
 
 <<^ code="&#x0004;" -> to="?">>

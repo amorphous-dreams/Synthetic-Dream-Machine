@@ -104,7 +104,7 @@ realm-public controls remain the source-backed red/green witness for the Herm re
 
 `@lararium/keyhive` carries the capability layer — a pre-alpha integration of `@keyhive/keyhive` WASM bindings. One Keyhive Doc = one bag (1:1). Keyhive's four native grades read `relay` < `read` < `edit` < `admin`; the provider's gate stays binary (`read` or `admin`), and the wider access axis lives as a model at `lar:///ha.ka.ba/lares/api/pono/causal-islands`. Cap-event home and γ-with-operator-α-mirror sync stay in design flux — touch with care.
 
-`@lararium/mempalace` carries the session-memory integration — a local-only read leg over the pinned mempalace sidecar plus the declared `lar_*` writeback (the tensegrity that binds verbatim drawers to domain bearings). mempalace itself rides **behind a causal-island boundary** as a vendored substrate — the memory-library, accessed-not-loaded — never a citizen of the stack. See `packages/MEMPALACE-INTEGRATION.md` + `lar:///ha.ka.ba/lararium/api/mempalace-integration`.
+`@lararium/mempalace` resolves the pinned Python library and its holders for sovereign Sensoriums, and keeps the separate upstream `~/.mempalace` installation reachable as a guest comparator by deliberate operator act. `@lararium/sensorium` carries the Python perception machina and capture scripts. The guest never owns the lararium's memory Sensorium, and neither store federates. See `lar:///ha.ka.ba/lararium/api/mempalace-integration` and `lar:///ha.ka.ba/lares/api/pono/sensorium-machina`.
 
 `@lares/cli` carries the operator-facing surface: the `lares` binary, arg parsing, process spawn, the socket invoker, the harness-wiring on `wake`, and the verb family in `commands/`. The CLI carries no protocol logic and **no transport of its own beyond one socket** — every verb dispatches to `@lararium/node` handlers through the daemon's UDS verb-channel (`verb-call.runVerb` → `local-connector.invokeLocal` → `<dataDir>/lares.sock`); an absent socket raises `DaemonUnreachable`, never a fallback. WS lives at the daemon's relay, for genuine remote peers; the CLI holds no Automerge dependency at all.
 
@@ -252,7 +252,7 @@ Watch these current weak spots:
 * **Generated files** in `@lararium/tw5/src/generated-*` come from `scripts/`; do not hand-edit unless you intend to replace the generator output.
 * **`pnpm-workspace.yaml` globs `packages/*`.** A directory added there without a `package.json` and source will surface install errors.
 * **Open IDE tabs** may name stale files; trust filesystem scans over editor ghosts.
-* **mempalace stays vendored.** Never edit the `mempalace/` submodule; it rides behind the causal-island boundary. Tune behavior through `~/.mempalace/config.json` (e.g. `hooks.auto_save=false`) and our `@lararium/mempalace` layer. Bumping the `lar_*` enrichment ⇒ bump `lar_hv` in lockstep (`harvest.ts buildPatch` ⟷ `drawer_io.py HARVEST_VERSION`). Run `lares sense pour --all` only on a **fresh** palace — re-staging existing drawers under a new `source_file` duplicates them.
+* **mempalace stays vendored.** Integration behavior belongs in `@lararium/mempalace` and `@lararium/sensorium`; the operator-raised guest comparator keeps `hooks.auto_save=false`. A bulk capture must keep stable source identity and replay receipts; a changed `source_file` can duplicate existing drawers. The pinned submodule now follows clean upstream `develop` on local branch `dev/sdm-upstream-base`; the old integration branch is preserved for reference. Upstream hook scripts carry no Lararium pause checks.
 
 <<~/ahu>>
 

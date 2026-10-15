@@ -25,115 +25,188 @@ uri-path  = "ha.ka.ba/lararium/api/mempalace-integration"
 
 <<~ ahu #/entry>>
 
-! mempalace ~ the lararium's memory-library
+! mempalace ~ the guest comparator and the library shore
 
-''mempalace holds the journey; the lararium holds the canon; the curated notes hold the conclusions.'' Three strands of memory pull against each other — and the work tends the pulling, never any one strand alone. In Elyncian terms: ''mempalace keeps the PLACE memory'' (the hearth's verbatim record, for the Lar guards place), the ''quine keeps the astral ley-line-mesh memory'' (the canon that runs between shrines). The whole topology — four registers, two peers, one mesh — stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>.
+''The lararium owns its memory Sensorium.'' Its append-only content records hold the AI–operator journey; its structure, form, persistence and worldline capabilities read that journey at their own grains. The pinned mempalace Python package supplies storage, embedding and search functions to the local holders. The upstream installation at `~/.mempalace/palace` stands separately as a ''guest comparator'', raised by an operator act and never written by the Sensorium's capture path.
 
-mempalace serves as a ''library-kind member of the bag stack'', accessed-not-loaded: the keeper reaches its verbatim drawers on demand, never hydrates 27k drawers into the VM. It rides ''behind the causal-island boundary'' — web2 substrate (ChromaDB/SQLite/Python), a vendored sibling, never a citizen of the Lares stack proper (web3-only law). The `@daemon` island keeps it; the rest of the house never touches it directly.
+''October 2026 upstream reset.'' The pinned submodule now names upstream `develop` at `d9bf01e` on local branch `dev/sdm-upstream-base`. The earlier `dev/sdm-integration` merge at `1798186` remains available as history, not as the runtime dependency. Its extra daemon, NDJSON adapter, lazy embedder, search-hit metadata and test changes carry no implicit authority into this branch. A capability returns only after a fresh contract and a witness against the pinned upstream API. The three temporary pause checks in upstream hook scripts were removed after preserving their patch; the Lararium's own hook pause path remains a separate concern.
 
-<<~/ahu>>
-
-<<~ ahu #/the-tensegrity>>
-
-!! The Tensegrity ~ compression members + tension
-
-The verbatim ''drawers'' stand as compression members — hard, isolated, local-only, ground-truth-of-//what-was-said//. Our ''`lar_*` metadata'' rides as the continuous tension spanning them — the bearing, the Voices, the confidence marks, the function-hall, the surface — ground-truth-of-//what-it-means//. Neither bears the load alone; each multiplies the other.
-
-The founder's own thesis names the shape: //remember the way I remember — not the conclusions alone, but the journey.// The drawer keeps the journey; the `lar_` net makes it walkable; the lararium graph names where it leads.
+Three memory registers continue to pull against one another: the verbatim journey in the owned Sensorium, curated `CLAUDE.md` / `MEMORY.md` / `AGENTS.md` conclusions, and the lararium quine's domain canon. Recall may compare them and surface conflict; no register silently overwrites another. The fuller relation stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>.
 
 <<~/ahu>>
 
-<<~ ahu #/the-shore>>
+<<~ ahu #/boundary>>
 
-!! The @daemon Memory-Shore ~ the verb flow
+!! One library, two stores, separate authority
 
-The `@daemon` wiki-island serves as the ''causal-island shore'' between the chat session and the mempalace metadata. One pure ''`enrich()`'' (the sovereign TS gradient parser, `@lararium/mesh` `harvestTurnGradient`) reads a turn and yields its `lar_*` structure; one ''idempotent upsert'' writes it, keyed `(id, content_hash, lar_hv)`. The shape follows Kappa: ''the mode lives in the //feeder// only, never in the transform.''
+The vendored Python package rides behind a local causal-island boundary. The Node coordinator names a Sensorium root, spawns holders and reads receipts; the Python machina consumes the library and owns content/structure/form computation. A holder's process does not make the upstream guest its store: every sovereign read and write names the owned root beneath `<lararium>/sensoriums/<name>`. The memory instance resolves under `<lararium>/sensoriums/memory`; each corpus or other input stream composes its own store. Sensoriums do not federate. Only a deliberate operator Act may carry a distilled finding out to a federated surface.
 
-* ''Live'' ~ a thin Stop/SessionEnd hook calls the shore per turn; new drawers carry `lar_*` from birth.
-* ''Backfill'' ~ the same pair sweeps the corpus (`lares harvest --all`).
+The guest comparator remains a separately tended upstream palace at `~/.mempalace/palace`. `lares mempalace setup` raises it deliberately and pins `hooks.auto_save=false`; `lares mempalace harvest` fills it with vanilla transcript drawers for comparison. Upstream 3.10 moved fresh installs to XDG config and palace homes while preserving detected legacy installs: the guest door must explicitly name its config and palace roots before a fresh post-merge setup can claim this legacy path. `lares sense` addresses the sovereign Sensorium. The comparator never supplies the owned store's ground truth, and a re-pour of either store never reaches the other by an ambient default.
 
-The CLI projects the verb; the verb's true home rises into the `@daemon` VM as verb-tiddlers, composed into a JS TiddlyWiki plugin (VM-primacy, #has). The mesh parser stays isomorphic; only the orchestration migrates.
-
-<<~/ahu>>
-
-<<~ ahu #/lar-net>>
-
-!! The `lar_` Net ~ declared, never smuggled
-
-The maintainer's anti-pattern names //undeclared// writes, not chroma writes. So every `lar_*` field declares itself as a ''RFC-002 source-adapter schema'' (`mempalace_source_lares`, `BaseSourceAdapter.describe_schema`), and every write validates against it and stamps the adapter identity. A declared write serves as sovereign enrichment; the same write undeclared collapses to the anti-pattern.
-
-The net (flat scalars — chroma's law):
-
-<<~ scale lar-net "lar_hv ~ enrich-version gate -> lar_surface ~ originating harness -> -> lar_bearing_conf ~ 0..20 gradient -> lar_aim · lar_yield ~ bearing -> lar_voices ~ who held it -> lar_feedback ~ the closing tally -> lar_drift ~ parse drift -> lar_hall ~ function-hall">>
-
-`lar_hv` carries the Kappa upgrade gate: a logic change bumps it, and the next sweep re-enriches exactly the stale drawers.
+''The good tensegrity cut survives at the right address:'' verbatim drawers keep what happened; derived bearings, annotations and projections make them traversable. The `lar_*` enrichment schema belongs to the sovereign Sensorium's telemetry and capture flow, not to a blanket writeback into the guest. An enrichment version changes with its transform; a replay keeps stable source identity so it does not mint duplicate drawers under a renamed stage path.
 
 <<~/ahu>>
 
-<<~ ahu #/the-surfaces>>
+<<~ ahu #/capability-settlement>>
 
-!! The Surfaces ~ every harness, one sweep
+!! Re-earn capabilities against the upstream pin
 
-Memory recalls //and// captures across every harness, and each drawer carries its origin in `lar_surface`:
+The old fork's commits are an evidence shelf, not a patch queue. The upstream pin already carries the config-directory override and the RFC-002 source registry; the Lararium may consume those documented entry points after an adapter witness. The fork's NDJSON source adapter and `mine --source` daemon forwarding do not define the sovereign capture route. The Sensorium's own source caps read native harness records and land into its owned root; an upstream source adapter is useful only if a future guest-comparator operation actually needs it. The old lazy-embedder flag has no handler in the pin and is no longer exported by the holder cap. Search-hit metadata and daemon contention behavior need separate API and load probes before a parent feature depends on them.
 
-<<~ has Surface Claude "store/~~/.claude/projects route/cwd parse/native ~ CLI + VS Code ext share the store">>
-<<~ has Surface Codex "store/~~/.codex/sessions/rollout-*.jsonl route/session_meta.cwd parse/native ~ Codex CLI + VS Code ChatGPT ext share the store">>
-<<~ has Surface Copilot-Vscode "store/workspaceStorage/<hash>/GitHub.copilot-chat/transcripts route/path-scrape parse/normalize ~ own store, no cwd">>
-<<~ has Surface Copilot-Cli "store/~~/.copilot/session-state/<id>/events.jsonl route/path-scrape parse/normalize ~ standalone CLI">>
+The redesign crosses these gates in order:
 
-''Recall'' rides MCP (`mempalace-mcp`, a generic stdio server) into each harness home + every VS Code variant (stable + Insiders, remote + local). ''Capture'' mines the stored transcripts — editors fire no CLI hooks, so capture sweeps after the fact, //transcripts only//.
-
-<<~/ahu>>
-
-<<~ ahu #/flat-md>>
-
-!! The Flat-MD Stance ~ complement, never replace
-
-The curation files (CLAUDE.md · AGENTS.md · MEMORY.md · Copilot `memory-tool`) hold the ''DO/conclusions'' layer; mempalace holds the ''verbatim/journey'' layer; the lararium holds the ''domain/canon'' layer. The maintainer leaves the MD files to the human: ''keep them, trim recall portions to a thin pointer at the palace, mine transcripts — never curation'' (curation-of-curation inverts the verbatim thesis and double-files).
-
-Mining `bags/` design memes through `--mode projects` clears, as docs-substrate. Mining `MEMORY.md` / `project_*.md` does not.
-
-''Settled (the operator's hand, 2026-06-24):'' the question MU'd — not //which// layer owns recall but ''what context each owns''. The curated notes (Agent.MEMORY) keep the distilled conclusions; mempalace keeps the verbatim PLACE journey; the quine keeps the ley-line canon. Recall ''composes across all four registers'' and surfaces conflict to Talk-Story, never arbitrating one over another. Full model: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory#/shared-mesh">>.
+# ''Source identity.'' A host adapter names surface, harness, native session/thread, execution host, format version and source event; it sends a stable pointer or staged bytes across the container boundary.
+# ''Durable ground.'' The intake cursor advances only after its raw evidence and receipt commit; the content frontier advances only after the Sensorium lands the corresponding verbatim blocks. Retry replays the same intent at each boundary. The guest comparator never joins this write path.
+# ''Causal reading.'' Given turn, subagent, fork, handback and related-session events become typed edges with provenance; unknown edges remain unknown. Annotation and retrieval derive from the landed ground.
+# ''Capability proof.'' Test each pinned MemPalace API the holder calls, then probe live Claude, Codex and Copilot payloads on every claimed host surface. A feature that passes a unit fixture but has no accessible producer remains unclaimed.
 
 <<~/ahu>>
 
-<<~ ahu #/federation>>
+<<~ ahu #/capture>>
 
-!! The Privacy Line ~ a gift, not a fence
+!! Capture reads native sources, then lands once per source identity
 
-The verbatim journey stays on the island — ''local-only, always''. Only the distilled domain bearings cross, and only as they earn the `meme` rating (federation gate, #law-of-5s). The line itself grants both intimacy and reach; blurring it to win one loses both.
+The current memory source caps read Claude and Codex JSONL, Copilot CLI SQLite, and Copilot VS Code event streams. This list describes existing adapters, not complete coverage. Current Copilot CLI documentation places a fuller event log under `~/.copilot/session-state/<session-id>/events.jsonl` and describes `session-store.db` as cross-session data; Codex documents its hook transcript pointer but warns that the transcript format may change. Each harness source therefore needs its own versioned adapter and a probe before it claims completeness. Live capture and bulk replay must pass through the same Python composition after intake: source → embedding → append-only content → derived planes and worldline. The content frontier advances after content landing; a separate source-intake cursor advances after raw evidence and its receipt commit. Neither frontier claims that the other has caught up.
 
-<<~/ahu>>
+The source envelope must retain the declared surface and harness, native session ID, thread/agent ID where supplied, event or format version, execution host, source pointer and source event identity. `cwd` contributes routing context; it does not stand alone as session identity. The harness's turn and subagent events supply the Beat and causal edges when present. A missing edge stays unknown, never inferred from prose. A related chat, fork, or remote session names a new graph relation, never a duplicate drawer. These are redesign contracts; today's parsers have not yet earned all of them. See the current [Claude hook reference](https://code.claude.com/docs/en/hooks), [Codex hook reference](https://learn.chatgpt.com/docs/hooks), and [Copilot CLI directory reference](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference).
 
-<<~ ahu #/the-flow>>
-
-!! The Blank-Slate Flow
-
-```bash
-rm -rf ~/.mempalace ~/.lares ~/.mempalace.bak.pre350     # palace + derived stage + stale backup
-pnpm -r build                                            # CLI carries the latest (no-op if current)
-lares mempalace install && lares mempalace setup   # the library, then the guest (auto_save=false)
-lares vessel rite founding                        # found · stand · seed
-lares vessel wire                                 # every AI surface points here
-lares harvest --all                                      # sweep every transcript surface → per-project wings
-# then reload the editor / fresh session so the live hooks fire
-```
-
-`--init` pins `hooks.auto_save=false` — the gate that keeps the vendored hook from re-paving the old `sessions` mega-wing. Full reference: <<~ loulou "lar:///packages/MEMPALACE-INTEGRATION">>.
+Static corpus Sensoriums use the same composition with a different source and order declaration. The memory rhizome receives its turn Beat and fork/handback edges from the harness; a corpus with no grounded Beat must earn any temporal reading. The design of record, including li/ki limits, stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>.
 
 <<~/ahu>>
 
-<<~ ahu #/forward>>
+<<~ ahu #/hooks>>
 
-!! Forward ~ where the deepening pulls
+!! Pause the minting, drain the holders
 
-* ''Recall rises into the wake'' ~ the boot climbs already holding the relevant journey, filtered by `lar_surface` · `lar_voices` · `lar_feedback`.
-* ''The kupono seat'' ~ a local, sovereign embedder behind the island earns the tier-2 shore — its first vow rejoins the turns the tools tore apart, lifting fragmented frames toward canon. No cloud breath in the parse path.
-* ''The @daemon VM home'' ~ lift the orchestration from the CLI projection into verb-tiddlers + the TW5 plugin.
-* ''The source-adapter shore'' ~ when upstream wires `mempalace mine --source`, the declared `lares` schema slots in whole.
+`lares hooks pause` writes `<state>/hooks.paused`; the parent ingest hook checks that marker before starting a job. The upstream hook scripts now match upstream `develop` and carry no Lararium pause check. The marker stops new Lararium hook work, but never proves an existing holder drained or an independently enabled upstream hook stopped. A teardown or comparator re-pave must pause its actual intake, drain and verify holders, act on the named store, then resume only the intake it held. Host hooks and a containerized vessel inhabit different path namespaces; a host marker does not automatically appear under `/state`.
+
+The current `lares mempalace repave` still expects the operator to quiesce holders first. Its preview's quiesce wording must not be read as an enacted drain. The current operator lifecycle and measure-first law stand at <<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">>.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yyB8v66iiiy3-1xYMJXHnB2xE_JsmXbWns1aJHUChCs
+<<~ ahu #/container-crossing>>
+
+!! The container crossing waits for a packaged Python seat
+
+The surface vessel mounts `/state` for durable house data and `/workspace` for the corpus. Its product image currently carries Node package output but omits the pinned Python package, the interpreter and the Sensorium scripts. Host transcript paths also need an explicit, read-only path mapping or a host capture adapter before a container can consume them. The memory store stays under `/state/data/lararium/sensoriums/memory`; the guest comparator, when raised, takes a separate mount and lifecycle.
+
+The first deployment keeps the Node-supervised stdio holders and packages their Python dependencies in the vessel image. The host collector must copy or stream only an explicitly named source into an intake under `/state`; the vessel verifies its declared source identity and reads that intake without assuming the host's home path exists inside the container. The source adapter owns parsing; the Sensorium owns derived records; the guest comparator owns neither. A later independent Python service would earn a new versioned transport, health and store-ownership contract; a container label alone grants none of those. This paragraph records the current migration bearing, never claims that the image already passes it.
+
+<<~/ahu>>
+
+<<~ ahu #/redesign-plan>>
+
+!! The redesign plan ~ source evidence, owned ground, earned readings
+
+''Status: PLAN, not a claim of deployed coverage.'' This plan starts from the clean upstream pin and the present Sensorium code. It preserves the memory and li/ki intent while replacing assumptions tied to one WSL home, one mutable transcript path, and our retired MemPalace fork. One operator holds the alpha; the old derived palaces have been burned. The first trials build fresh disposable Sensoriums over bounded inputs, and the persistent memory palace waits for the parallel Lararium's founding and repeated proofs. Native AI chat history remains untouched throughout. Each phase has an observable exit; a green fixture without a reachable producer leaves that surface unclaimed. The host may receive hook signals; the container holds `/state` and `/workspace`; the guest comparator remains an operator-raised separate store. The current execution order sits at #/provisional-roadmap.
+
+''Golden rules.'' Producer bytes precede interpretation. An occurrence names ''which act'', a hash names ''which bytes'', and an observation names ''when this version was seen''. An intake cursor proves custody of raw evidence; a content frontier proves landing of typed blocks; neither stands in for the other. Retries reuse intent IDs and return prior receipts. Inventory bounds every completeness claim by source and horizon. Every derived reading carries its algorithm/model version and a path to its evidence. Locality follows the actual execution host and store mount. The shortcuts that fail these rules are path-as-identity, hash-as-occurrence, timestamp-as-causal-edge, hook-success-as-complete-capture, cursor-before-commit, silent parser skip, mutable-transcript-as-permanent-WAL, and an end-to-end `exactly once` promise across unrelated stores.
+
+!!! ① Name the source before giving it a parser
+
+Build a capability inventory for each ''harness × surface × execution host × installed version'': discoverability, native session/thread/agent IDs, source format, hook events, retention settings, compaction behavior, local or remote execution, permissions, and how a full inventory can be replayed. Start with local Claude Code, local Codex, Copilot CLI, and VS Code Copilot; cloud and remote targets receive `unknown` or `unsupported` until a supported source and a live probe exist. A hook wakes capture but never certifies that a local transcript exists or that its bytes remain available. A periodic inventory reconciles the hook's hints with native sources.
+
+The October research changes three starting assumptions. Claude supplies `transcript_path` and `agent_transcript_path` in documented hooks, while [an environment setting](https://code.claude.com/docs/en/env-vars) can suppress local prompt history. Codex's `transcript_path` may be null and its format is explicitly unstable. Copilot CLI documents per-session `events.jsonl` plus a separately managed SQLite cross-session index; VS Code and SDK-backed harnesses need their own adapter claims. A path found on one host never certifies another host's coverage. See #/grounds.
+
+!!! ② Give occurrence, evidence, and observation different names
+
+One ''source namespace'' names the actual producer instance and execution host, never a staging path. Within it, a ''logical locator'' names an occurrence: use the producer's stable message/event ID where one is documented and probed; otherwise declare a source generation plus record position/byte range or row key. A content hash does not identify an occurrence: two separate turns can carry equal bytes.
+
+An ''evidence revision'' names `(source namespace, logical locator, raw-byte hash)`. It keeps the exact source bytes and parser-independent provenance: source generation or snapshot hash, original path or API resource as a sighting, byte range or SQLite row key where meaningful, and collection method/version. An ''observation'' records that an adapter saw this revision at a particular inventory pass. Its stable retry intent returns the earlier receipt; the same intent with different bytes is a conflict, requiring a new observation intent and an explicit revision. A later A→B→A at one locator makes three observations over two byte revisions, with the supersession chain on the observations. A changed hash under one logical locator is a revision to preserve, never an overwrite of an append-only drawer or a silent `is_landed` skip.
+
+The current `sha256(source_file)_chunk` cid is a source-position key. Its `lar_chain` detects changed bytes, but muting that cid alone cannot give the new bytes an appendable identity. The redesign must key new content on evidence revision identity and keep the currently selected observation separate from historical verbatim evidence. The old derived palaces were burned, so the alpha pilot has no legacy-cid migration; a future retained store would need its own explicit migration witness. A path rename and an intake copy must not mint a new occurrence. If a producer offers no stable native ID, the adapter's fallback locator and its limitations become part of the receipt.
+
+!!! ③ Cross the host/container shore with a durable intake
+
+Prefer a small host collector with read access only to declared harness sources. It stages exact source evidence into an authenticated local intake under the host directory mounted as `/state`; no host transcript path is handed to a container as though both namespaces shared one home. It reports an explicit ephemeral verdict ''per session'' before staging lasting content, including a SQLite-backed Copilot session; a `.jsonl` filename suffix cannot decide that policy. Scratch work kept blind by its launcher never enters the memory intake. Logs and receipts carry identifiers and counts, not transcript text.
+
+The intake keeps a source snapshot or generation manifest and exact record bytes with offsets where the native format permits. Retain a full generation snapshot where parsing depends on cross-record context or a format remains uncertain; use bounded record slices only after an adapter witness shows they permit faithful reparse. JSONL takes complete line bytes and records any torn tail as uncommitted. A live SQLite database is read through a consistent SQLite backup or read transaction, not a raw `cp` of its main file while a WAL may hold committed rows. A future API source keeps its response bytes and API cursor with the same scoped receipt law. The byte unit, retention footprint and source-specific recovery route are measured in phase ①; an oversized or unavailable source yields an explicit coverage limit, never silent truncation. The host collector owns a restricted intake directory; the container accepts only descriptors naming an allowed adapter and paths beneath that root, with source lengths and hashes checked before a receipt. Source-specific readers get only the source access they require, and the host collector receives no general palace-write authority.
+
+For modest evidence, put raw bytes, uniqueness receipt, source snapshot/coverage, intake cursor and a durable projection intent in ONE local SQLite transaction under `/state`. The intake cursor may advance once ''that'' transaction commits, even if the asynchronous content projector later fails; the projector then reports lag and retries. If a measured source requires external blob files, use a recoverable same-filesystem protocol: write a unique temporary file, verify length/hash, `fsync` it, publish without replacing an existing hash path, `fsync` the parent directory, then commit its reference and receipt in SQLite. Recovery removes only unreferenced old blobs after a grace period and flags any referenced missing or mismatched blob. A plain rename can overwrite its target, and an atomic rename alone does not promise durable bytes.
+
+One local writer serializes the intake transaction. The state mount must sit on a local Linux filesystem; a WSL distro's Linux filesystem and a `/mnt/c` mount do not offer the same filesystem semantics. Use WAL with `synchronous=FULL` if choosing WAL; do not infer power-loss survival from a kill-9 test. The host-to-container transport remains at-least-once. The receipt binds intent ID, source namespace, locator, source generation, byte hash and length, observation ID and committed intake cursor. An exact intent retry returns that receipt; an intent with different evidence fails closed and is surfaced for adapter reconciliation. A new observation intent records changed bytes under the same occurrence. No end-to-end exactly-once claim crosses the host, intake SQLite, content store and any outside effect.
+
+!!! ④ Project once per evidence revision and algorithm version
+
+The intake archive is custody of producer evidence; the Sensorium's content plane remains the house's typed, verbatim block ground. The projector reads committed intake intents and lands blocks under `(evidence revision, parser version, block locator)` with a stable key. A parse failure gets a durable, visible quarantine disposition with its evidence pointer and parser version; it cannot advance a successful content frontier as a silent skip. The projector's durable frontier advances only after content landing. Structure, form, worldline, embeddings, lexical views and annotations derive from that ground under their own named algorithm/model versions; their failure leaves a retryable intent and an honest lag reading. A reparse reads the original source bytes, creates a new projection version and keeps old results inspectable until a deliberate switch. Replay sends no external effect by accident; a deliberate outward act needs its own durable outbox identity and operator authority.
+
+A worldline edge carries its type, source evidence pointers, source IDs and provenance grade: `source-declared`, `hook-observed`, or `inferred`. Subagent spawn, handback, fork, injection and related-session links can have multiple predecessors or an unresolved parent. Timestamp order, file adjacency and an FFZ address alone never assert a causal edge. The harness-given Beat stays distinct from a derived rhythmic boundary. A reader may inspect the historical observation and revision even when current recall favors the latest one.
+
+!!! ⑤ Report the area actually observed
+
+Per source instance, retain inventory generation, native cursor if offered, observed snapshot/hash, scanned range or row set, intake receipt frontier, content projection frontier, last reconciliation and any missing interval. Coverage reads `observed`, `reconciled`, `gap`, or `unknown` over a named source and horizon. `Reconciled` means a stable inventory at that horizon matched committed evidence; it never means every session the vendor ever held. Rotation, truncation, retention expiry, disabled history, a lost remote host or an expired API cursor may force a fresh inventory and may leave a permanent gap. Report that gap rather than filling it from adjacent timestamps or calling an empty scan complete.
+
+The pause lever stops new Lararium intake work. Draining must separately witness in-flight host collectors, intake transactions and content projectors before a re-pour or teardown. Resume only what the operation paused. The runbook's measure-first law still governs before/after comparisons: a later replay can restore retained bytes but cannot recreate a baseline never taken.
+
+!!! ⑥ Earn the library and the image seat
+
+Pin upstream MemPalace as a dependency, probe the exact imports and methods each holder calls, and version those probes with the pin. Package the Python interpreter, pinned dependencies, MemPalace package and Sensorium scripts into the product image; verify the holder import and stdio handshake ''inside'' that image with `/state` and `/workspace` mounted. The Node coordinator names roots, supervises and reads receipts; the Python holder owns source parsing and store computation. A second Python service remains a later transport decision, not a prerequisite for this redesign.
+
+The guest comparator keeps its own config, palace, hooks and lifecycle. It can consume a deliberate export for a comparison, but its result never supplies a missing source event, overwrites the owned ground, or silently becomes a Sensorium dependency. The old fork's NDJSON and lazy-embedder changes return only if a measured need and an upstream-compatible API justify them.
+
+!!! Ordered implementation and exit witnesses
+
+These are technical exit witnesses; #/provisional-roadmap gives the alpha execution order and its promotion gates.
+
+# ''Inventory.'' Record the installed versions, settings, source roots, IDs, format samples, retention, ephemeral evidence and access rights for the four local surfaces. Exit when each adapter row names `documented`, `probed`, `inferred`, or `unknown` per capability; cloud rows remain honest unknowns.
+# ''Identity and custody.'' Define the source namespace, logical locator, byte revision, observation, intake receipt and current-revision view. Exercise A→B→A and staging-path renames on a fresh trial store. Exit when immutable evidence and retry identity survive both.
+# ''Container and intake.'' Package the Python seat, then stand a host collector and `/state` receipt store. Exit when the mounted container can accept a replayed source, answer one receipt, recover each crash cut and leave the submodule tree clean.
+# ''Adapters and reconciliation.'' Migrate Claude and Codex local JSONL, Copilot CLI session files/SQLite and VS Code by harness version. Hooks trigger; inventory verifies. Exit per surface only after live hook and bulk inventory produce the same evidence identities and explicit gaps.
+# ''Content and causal projection.'' Re-land typed blocks from evidence revisions, project independently versioned planes, and attach only evidence-backed worldline edges. Exit when reparse and projector failure preserve old bytes and report lag without duplicate outward work.
+# ''Operations and comparator.'' Wire pause/drain/verify/resume, coverage status and the before/after baseline. Raise the guest only through its deliberate command. Exit when a re-pour proves source count, evidence count, content count and claimed coverage agree at a named horizon.
+
+!!! Six required adversarial witnesses
+
+# ''Rewrite and return.'' At one source locator ingest A, then B, then A again: three observations, two immutable byte revisions, an A→B→A observation chain, current A, historical B; re-sending any intent adds no duplicate. The new content key admits B without overwriting A.
+# ''Crash at every intake cut.'' Stop after partial temp, verified temp, publication, directory sync, precommit and postcommit/preack. No receipt points to missing bytes; retry returns one receipt; orphan cleanup never removes a referenced blob. If the first implementation uses SQLite BLOBs only, test its transaction cuts and add blob-file cuts when that route is enabled.
+# ''Live source and ephemeral.'' Snapshot a Copilot SQLite database during a concurrent write through its backup API; parse a consistent snapshot and classify a SQLite-only scratch session from its session metadata. A torn JSONL final line remains pending rather than counted as evidence.
+# ''Loss and reconciliation.'' Truncate, rotate and edit a JSONL; suppress local history and expire a simulated API cursor. Inventory discovers revisions or marks a bounded gap, never advances `reconciled` past an unknown interval, and never treats absence of a file as proof the session never existed.
+# ''Projection failure and replay.'' Inject failure after raw intake commit and during a v2 parser/projector run. Intake cursor may advance; projection frontier stays behind and reports lag. Original bytes and v1 results survive; retry completes v2 once with no outbound effect.
+# ''Causal disagreement.'' Main session → subagent → handback with a missing parent, conflicting IDs and skewed timestamps. Only source-backed edges assert reachability; inferred links stay labeled and removable; changing FFZ placement cannot change the source-declared DAG.
+
+<<~/ahu>>
+
+<<~ ahu #/provisional-roadmap>>
+
+!! Final provisional roadmap ~ trial first, founding after proof
+
+''Standing.'' This is the execution order for the one-operator alpha, not a declaration that the final Lararium or its persistent memory palace already stands. The old derived palaces have been burned; no compatibility migration earns a place in the first trial. The parallel Lararium crew owns founding, keys, vessel startup and its broader image lifecycle. This Sensorium work owns source ingress, dependency closure, the Python/R seat, stores, projections and their receipts. The crews exchange an image digest, code-root/interpreter contract, `/state` ownership and one joint mounted-runtime witness before a persistent handoff. The guest MemPalace comparator stays a separate, deliberate operation.
+
+''Never-burn boundary.'' Native Claude JSONL, Codex, Copilot and other AI chat history stay read-only and outside every Sensorium teardown target. The operator's separate per-machine history-stamping repository remains independent of this work. A trial may discard its copied intake evidence and derived store ''after'' the named test series and its receipts finish; until then, its frozen evidence manifest and exact selected bytes must survive every rebuild, crash probe and comparison. A trial never deletes or edits the native source. The founded memory Sensorium gets its own durable evidence, state and backup contract rather than inheriting a trial directory by renaming it.
+
+!!! Ordered gates and exit witnesses
+
+# ''0 · Name the trial and protect the sources.'' Inventory each reachable harness × surface × execution host × installed version, with native paths, formats, IDs, retention, ephemeral policy and read permissions. Select a fixed seven-day ''event-time'' interval `[t0,t1)` for the first retained-history chat trial and record the included hosts/surfaces before reading results. A session crossing the boundary contributes only records an adapter can reparse faithfully; otherwise record a partial/unknown coverage limit. Selection and metadata inventory may inspect native sources, but no trial imports the whole chat history. Exit with a source manifest, an empty isolated trial root, and an explicit no-write/no-delete witness against native history. A separate short live hook probe later tests arrival; it does not turn a historical week into a claim of continuous live coverage.
+# ''1 · Close and lock the runnable dependency set.'' Trace direct and transitive Python, R, MemPalace, Chroma, embedding, parser, model, TypeScript and system-library inputs. Classify each as required, optional, test-only or retired. Pin a reviewed upstream MemPalace commit, Python 3.12 resolution, R package closure where used, model revisions/hashes, grammar ABI, pnpm lock and image base. The MCP 2.3.0 source port has passed focused host tests and a 31-tool scratch stdio handshake, but still needs the exact-image handshake. Keep `ecp` boundary and `RTransferEntropy` coupling as named candidates; settle early-warning semantics before packaging archived `earlywarnings` or claiming its surrogate guard. The old EWT/ssqueezepy band-servo dependencies leave production only after active callers and fixtures are accounted for. Exit with a reproducible manifest and fixed expected engine names per trial reading.
+# ''2 · Make one CPU Sensorium seat run in the product image.'' The current `serve` target copies Node output but omits Python, R, MemPalace and Sensorium scripts; `Dockerfile.dockerignore` excludes the submodule. Package installed code and its fixed interpreter into the image, set the holder's explicit interpreter/root contract, and route writable models/caches into the declared state or bake immutable assets. Upstream MemPalace strips leaked `PYTHONPATH` entries on import, so a host path trick cannot serve as the deployment contract. Start under the compose arbitrary UID with `/state` and `/workspace`, import every required holder, run one stdio request and the MCP initialize/tools-list/read route, restart and reopen the owned store. Report optional R engine availability by package, not by `Rscript` alone. Exit only from the built image, never from `~/.venv`.
+# ''3 · Land one source through custody and content.'' Define source namespace, logical locator, byte revision, observation intent and receipt. Start with one reachable local JSONL adapter and a restricted host collector; no broad host-home mount enters the vessel. Stage selected exact bytes and commit raw evidence, source manifest, uniqueness receipt, intake cursor and projection intent together in `/state` (SQLite BLOB first unless measured source size proves the need for external blobs). Project typed blocks into a fresh named Sensorium under `(revision, parser version, block locator)`. Exit when hook pointer and bounded inventory agree on evidence identities, a path rename changes no occurrence, A→B→A keeps three observations/two revisions, and pre/post-commit crash retries produce one receipt. The content frontier may lag intake visibly; a parser fault gets a durable quarantine disposition.
+# ''4 · Widen the bounded chat trial by producer, then repeat it.'' Add only probed local Claude, Codex, Copilot CLI and VS Code surfaces, one version and host at a time; a live SQLite source uses SQLite backup/read transaction and a SQLite-only scratch session receives a per-session ephemeral verdict. Reconcile each source inventory, receipt set and typed content at the frozen horizon; absent files and torn tails never become empty-success claims. Run at least three clean rebuilds from the same frozen evidence into sibling disposable roots, using predeclared output tolerances and seeds. Compare occurrence/revision/content counts, exclusions, causal provenance, recall fixtures, quarantine/lag and resource use. Run a separate live hook/bulk reconciliation for each claimed surface. Exit with a scoped coverage report, never a blanket claim over every AI chat the vendors held.
+# ''5 · Exercise the general Sensorium on books and larger corpora.'' Give each book or other text corpus its own named trial root, source manifest, record unit, order and exclusions. Preregister small, full-book and larger-corpus sizes and matched null/positive fixtures before measuring. Reuse custody, content and versioned projection contracts while keeping chat-only Beat, fork and handback claims out of book readings. Exercise structure, form, lexical/vector recall, boundary tree, coupling and early warning only where their inputs and engine names qualify; keep statistical lead-lag distinct from source-declared causality. Repeat clean builds and measure throughput, storage slope, handle growth, restart/recovery and model identity. Exit when fixed-source replay stays within declared semantic and numeric tolerances and larger inputs stay inside the chosen resource envelope.
+# ''6 · Harden failure and operations gates.'' Repeat the six adversarial witnesses above after changes to intake, parser, holder or model. Drill pause → collector/intake/projector drain → before measurement → rebuild → after comparison → resume of only what paused. Exercise source truncation/rotation and retention loss, projection failure and reparse, and sustained operation over restart and reconciliation cycles. A passed fixture from a fallback engine cannot certify the missing R or model engine. Exit with an operator-readable receipt showing source count, evidence count, content count, derived versions, frontiers, gaps, engine availability and recovery result at one named horizon.
+# ''7 · Found a new persistent memory Sensorium only after both lanes pass.'' The parallel crew first proves its vessel founding and mounted runtime; this crew proves the chat and general-corpus gates. Together run one end-to-end witness against the agreed image digest, state mount, ownership, interpreter, source handoff and lifecycle. Create a fresh persistent memory root with explicit input horizon, retained evidence, backup/restore and tending runbook; replay approved sources into it rather than promoting a disposable trial root. Expanding toward older chat history receives its own bounded decision and receipts, never an implicit `--all`. Only then call the memory palace persistent.
+
+''Promotion rule.'' Choose numeric limits for coverage gaps, projection lag, recovery time, retrieval quality and resource slope before observing the trial results; publish both passes and unknowns. Books prove general corpus machinery, not chat-source completeness. A week of chat proves the selected source horizon, not all history. Repeated green runs prove stability only against their frozen inputs, versions and declared tolerances. The permanent palace waits for both Sensorium proofs and the parallel founding witness.
+
+<<~/ahu>>
+
+<<~ ahu #/grounds>>
+
+!! Prior-art grounds and the limits of their rhyme
+
+CloudEvents [source plus id](https://github.com/cloudevents/spec/blob/v1.0.2/cloudevents/spec.md) and GitHub's [redelivery ID practice](https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks) inform stable retry intent; neither guarantees a harness supplies a usable native message ID. [Debezium's snapshot-to-stream handoff](https://debezium.io/documentation/reference/stable/connectors/postgresql.html) and [Kubernetes watch recovery](https://kubernetes.io/docs/reference/using-api/api-concepts) inform inventory plus cursor reconciliation; Claude, Codex and Copilot do not thereby become CDC databases. [SQLite's commit](https://www.sqlite.org/atomiccommit.html), [WAL](https://www.sqlite.org/wal.html), [synchronous modes](https://www.sqlite.org/pragma.html#pragma_synchronous), [backup API](https://www.sqlite.org/backup.html), Linux [file and directory sync](https://man7.org/linux/man-pages/man2/fsync.2.html) and [no-replace rename](https://man7.org/linux/man-pages/man2/rename.2.html) bound the proposed local durability protocol; the actual WSL and host mount still need a fault probe. [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) informs replayable projections, while the [outbox pattern](https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html) keeps outside effects separate. [W3C PROV-DM](https://www.w3.org/TR/prov-dm/) and [OpenTelemetry trace links](https://opentelemetry.io/docs/specs/otel/trace/api/) inform typed, evidence-backed worldline relations. The official [Claude](https://code.claude.com/docs/en/hooks), [Codex](https://learn.chatgpt.com/docs/hooks) and [Copilot CLI](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference) references bound the initial surface claims. Every mapping here is a Lararium design inference until its producer and crash witnesses pass.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-memory">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;62Xc-KxdWS39rpIOQpuks3Qz1xACXT7tBveIxMAQF7A
 
 <<^ code="&#x0004;" -> to="?">>

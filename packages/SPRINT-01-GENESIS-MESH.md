@@ -1,6 +1,6 @@
 # Sprint Board — Genesis Ceremony + Pono Federated Mesh
 
-> **Session scope.** This board belongs to the **genesis + magically-federated-mesh** session. The **memory-architecture** work runs in a *parallel session* — its files (`packages/MEMPALACE-INTEGRATION.md`, the `@lararium/mempalace` surfaces) stay out of this board to keep the shared tree clean.
+> **Session scope.** This board belongs to the **genesis + magically-federated-mesh** session. The **memory-architecture** work runs in a *parallel session* — its `@lararium/mempalace` and `@lararium/sensorium` surfaces stay out of this board to keep the shared tree clean.
 >
 > **Method (the discipline carries the weight):** scout-before-build · surface-at-a-real-wall · YIN (clear by subtracting) · crucible-before-binding (PROPOSED until a floor passes) · prove-by-witness (strict typecheck + tests + real run) · ASK before every commit.
 >

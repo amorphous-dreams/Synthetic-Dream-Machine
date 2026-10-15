@@ -642,10 +642,9 @@ describe("per-frontier keying — two forks sharing a source_file do not bleed",
 /**
  * EVERY PYTHON SHORE CARRIES THE HOLDER CAP.
  *
- * `resolveHolderCapEnv` folds three policies a python leg must run under: `MEMPALACE_WRITE_ROUTING=require`
- * (so a write routes through the daemon SINGLETON rather than opening its own chroma handle — the
- * concurrent-HNSW-writer corruption this house has already paid for once), the lazy-embedder flag, and the
- * GPU compute cap (without which `loci_io.py` hard-fails importing onnxruntime-gpu on a GPU box).
+ * `resolveHolderCapEnv` folds two policies a python leg must run under: `MEMPALACE_WRITE_ROUTING=require`
+ * (so a write routes through the daemon instead of opening its own chroma handle), and the GPU compute
+ * cap (without which `loci_io.py` hard-fails importing onnxruntime-gpu on a GPU box).
  *
  * `telemetry-writeback`, `worldline-kg` and `ffz-enrich` each compose it into their spawn env. This module
  * hand-built a `pyEnv` carrying `PYTHONPATH` alone — under a comment reading "mirrors telemetry-writeback's
@@ -670,7 +669,7 @@ describe("the python spawn shores", () => {
     ).toEqual([]);
   });
 
-  test("CONTROL — the cap folds the three policies the shores depend on", async () => {
+  test("CONTROL — the cap folds the upstream-supported policies the shores depend on", async () => {
     const { resolveHolderCapEnv } = await import("@lararium/mempalace");
     const env = resolveHolderCapEnv(null);
     // Read the KEYS rather than the values: the values vary by host (a GPU box caps differently), the

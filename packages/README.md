@@ -7,10 +7,9 @@ Short orientation for humans and agents reviewing `packages/`.
 - `packages/AGENTS.md` carries package-boundary law.
 - `packages/HANDOFF.md` carries active work only.
 - `packages/ROADMAP.md` carries near-term path order.
-- `packages/MEMPALACE-INTEGRATION.md` carries the mempalace ↔ `lares` memory
-  integration — the `wake` harness-wiring flags, `harvest` modes, the `lar_*`
-  metadata net, and the blank-slate refresh flow. Design/canon lives at
-  `lar:///ha.ka.ba/lararium/api/mempalace-integration`.
+- `lar:///ha.ka.ba/lararium/api/mempalace-integration` carries the current
+  guest-comparator and Python-library boundary; the Sensorium's design of
+  record lives at `lar:///ha.ka.ba/lares/api/pono/sensorium-machina`.
 - Source lives under each package's `src/`.
 - Unit tests live under each package's `tests/`.
 - Cross-package and daemon/CLI integration flows live under repo-root `tests/`.
