@@ -65,7 +65,7 @@ A session reads this carrier and the roadmap alone; no note outside the reposito
 * A lane hands back plainly: one `<<~ status "…">>` line, then what a person can do (each act BUILT, SPECIFIED with its named caller, or OWED), commits, shards, Sol's findings and how each closed, suites, house readings, canon still stale, changelog bullets owed, slips and refusals, and its span's start, end, commits, rows closed and shards for the speed ledger.
 
 !!! Git
-* A git command that writes runs alone on its line. Never `git stash` in any form, `git stash list` included; never `--no-verify`; never touch `.git/config`; never push `feature/*` or `main` (the controller pushes); never `git worktree remove --force`.
+* A git command that writes runs alone on its line. Never `git stash` in any form, `git stash list` included (a PreToolUse hook, `tools/stash-guard.mjs`, refuses any Bash call that reaches it, and `.codex/rules/stash.rules` forbids its prefix to Codex); never `--no-verify`; never touch `.git/config`; never push `feature/*` or `main` (the controller pushes); never `git worktree remove --force`.
 * A lead works in its own worktree (`node tools/provision-worktree.mjs <empty-dir>` provisions one: inputs copied, every package built and stamped, no link left pointing into the main tree), and checks `git config core.bare` reads `false` before and after.
 * A lead lands from the main tree: it rebuilds and re-stamps every package whose source it touched (`node tools/stamp-build.mjs . --pkg <dir>`), confirms the built CLI answers, reads `git status --porcelain -- <paths>` and `git diff -- <paths>` showing only its lines, then commits with `git commit -F <msg> --only -- <paths>`. It never commits or reverts a line another hand wrote. A subject reads `lar:///ha.ka.ba/<pkg-or-bag>/<area>/<w1.w2.w3> — plain summary`; `-F`, never `-m`.
 
@@ -143,6 +143,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9bmBjPM5-tO5ESAxmg-rDktZ6UQdlfSq3j3dGph5MvI
+<<^ code="&#x0003;">>ni:///sha-256;8EuunelfsUZeAxq3x-n0xOK0TzLtKp7I9ds5yoIkzjM
 
 <<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,9 @@
+# The stash stack spans every worktree and session over this repository, so the lane law forbids
+# `git stash` in any form, `stash list` included. Codex compares argument prefixes and splits only
+# simple chains: a stash spelled inside a compound shell script can slip past this rule, and the
+# lane briefs carry the law beside it.
+prefix_rule(
+    pattern = ["git", "stash"],
+    decision = "forbidden",
+    justification = "Never git stash in any form: the stash stack spans every worktree and session over this repository.",
+)
