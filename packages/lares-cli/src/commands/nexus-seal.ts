@@ -51,11 +51,13 @@ import {
   CHARTER_INCEPTION_KIND, COFOUND_JOIN_KIND, cidV1Sha256FromHex, cofoundReadBack, composeCharterInception, fingerprintGroups,
   inceptionAid, offerFingerprint, readCofoundInception, readCofoundJoin, readCofoundOffer,
   type CofoundInception, type CofoundJoin, type CofoundOffer, type ReleaseManifestAddresses,
+  hex, readRollCircle, type RollCircle, type RollCircleVerdict,
 } from "@lararium/mesh";
 import { rosterStanding } from "../roster-standing.js";
 import { nexusPhase } from "../nexus-phase.js";
 import { sealImportVerdict, foreignSeats } from "../seal-import.js";
 import { existsSync, readFileSync, mkdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { larSealHome } from "../env.js";
 import { storeVerb, pokeSealHomeRefold, storeFailure } from "../store-door.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
@@ -102,7 +104,7 @@ function sealedCharterOrRefuse(sealHome: string, act: string): { doc: NexusDoc; 
 }
 
 const SEAL_USAGE: readonly string[] = [
-  "usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse | cofound>",
+  "usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse | cofound | roll>",
   "",
   "  seat    form the roster from the personas that STOOD for a chair, give each chair a seat key",
   "          of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints",
@@ -129,6 +131,14 @@ const SEAL_USAGE: readonly string[] = [
   "          heard it (--heard <fp>); both signatures land, and the joint charter files under its own AID",
   "  cofound seal <inception>   the joining founder: the inception reads against the image you joined, and",
   "          the joint charter files under its own AID. Neither household seed moves.",
+  "  roll open --nexus <aid> --threshold <n> --out <circle>   roll a joint Nexus across its vaults: type this",
+  "          chair's revealed cold card, a fresh successor card prints, and the circle file goes to the next holder",
+  "          [--face <i>] [--added]  --added = a chair the head never committed (a new holder): no card reads",
+  "  roll join <circle> --out <circle>   contribute this vault's chair to a carried circle (same flags)",
+  "  roll sign <circle> --out <circle>   sign the circle with the seats this vault contributed, once you type what you",
+  "          heard from the other holders: the rule and every other chair's fingerprint [--heard-threshold <n> --heard <fp,…>]",
+  "  roll file <circle>   file the rolled charter once the circle reads complete; the roll anchor crosses next",
+  "  roll abandon --nexus <aid>   drop this vault's open circle and retire the seats it contributed",
 ];
 
 /**
@@ -182,6 +192,7 @@ export async function cmdSeal(args: ParsedArgs): Promise<number> {
       case "grow":    return await sealGrow(args);
       case "cold":    return await sealCold(args);
       case "cofound": return await sealCofoundVerb(args);
+      case "roll":    return await sealRollVerb(args);
       default:
         return refuseUsage(args, "nexus seal", SEAL_USAGE, sub ? `unknown sub-verb "${sub}"` : undefined);
     }
@@ -1068,6 +1079,184 @@ async function cofoundAcceptVerb(args: ParsedArgs, file: Record<string, unknown>
       console.log(`cofound accepted — nexus ${accepted.charter.aid}`);
       console.log(`  charter: ${accepted.charter.path} (${accepted.charter.outcome}); your household seed stands untouched`);
     },
+  });
+  return 0;
+}
+
+// ── THE ROLL CIRCLE — `seal roll open|join|sign|file` ───────────────────────────────────────────────
+//
+// A joint Nexus rolls across its vaults: each holder contributes its own chair (the revealed cold card, or none for a
+// chair the head never committed), a fresh successor card mints and reads back, each vault signs the one image, and
+// each files the rolled charter. The circle file is the only courier; every key and signature stays behind the
+// custody door (`roll-circle.*`).
+
+const ROLL_USAGE = "usage: lares nexus seal roll <open --nexus <aid> --threshold <n> --out <circle> | join <circle> --out <circle> | sign <circle> --out <circle> [--heard-threshold <n>] [--heard <fp,fp,…>] | file <circle> | abandon --nexus <aid>> [--face <i>] [--added]";
+
+type RollStepAnswer = { circle: RollCircle; verdict: RollCircleVerdict; signed: readonly string[]; why?: string };
+
+/** A circle step on the custody door; the ceremony's own refusal reads as a usage refusal here. */
+async function rollStep<T>(act: "roll-circle.open" | "roll-circle.join" | "roll-circle.sign" | "roll-circle.file" | "roll-circle.abandon", args: Record<string, unknown>): Promise<T> {
+  try { return await sealedAct<T>(act, args); }
+  catch (err) {
+    if (err instanceof SealedActRefused && err.reason === "act-refused") throw new UsageError(err.message);
+    throw err;
+  }
+}
+
+async function sealRollVerb(args: ParsedArgs): Promise<number> {
+  const step = args.positional[2];
+  switch (step) {
+    case "open": return await rollContributeVerb(args, "open");
+    case "join": return await rollContributeVerb(args, "join");
+    case "sign": return await rollSignVerb(args);
+    case "file": return await rollFileVerb(args);
+    case "abandon": return await rollAbandonVerb(args);
+    default: throw new UsageError(step ? `unknown roll step "${step}" — ${ROLL_USAGE}` : ROLL_USAGE);
+  }
+}
+
+/** A carried circle file, read at its exact shape. */
+function readCircleFile(path: string | undefined): { readonly file: Record<string, unknown>; readonly circle: RollCircle } {
+  const file = readFoundingFile(path, "the circle");
+  const circle = file["kind"] === "nexus-roll-circle" ? readRollCircle(file) : null;
+  if (!circle) throw new UsageError(`${path} reads as no roll circle`);
+  return { file, circle };
+}
+
+/** `--out <circle>` for a step that grows a carried circle: named, and never the input file itself. */
+function rollOut(args: ParsedArgs, input: string | undefined): string {
+  const out = args.options["out"];
+  if (!out) throw new UsageError(`--out <circle> names where the circle lands — ${ROLL_USAGE}`);
+  if (input !== undefined && resolve(out) === resolve(input)) throw new UsageError(`--out names the input file (${out}); write the grown circle to a new file`);
+  return out;
+}
+
+/** This chair's contribution: the revealed cold card (exactly one) unless the chair is added. */
+async function rollContribution(args: ParsedArgs): Promise<{ readonly face: number; readonly cards: string[] | undefined }> {
+  const added = args.flags["added"] === true;
+  if (added && args.options["cold-key"] !== undefined) throw new UsageError("--added names a chair the head never committed, so it reveals no card: drop --cold-key");
+  const face = await foundingFace(args);
+  if (added) return { face, cards: undefined };
+  const seeds = await gatherCards(args, 1);
+  try {
+    if (seeds.length !== 1) throw new UsageError("a roll reveals exactly one chair's cold-key card per contribution (or --added for a chair the head never committed)");
+    return { face, cards: [hex(seeds[0]!)] };
+  } finally { for (const seed of seeds) seed.fill(0); }
+}
+
+async function rollContributeVerb(args: ParsedArgs, which: "open" | "join"): Promise<number> {
+  let input: string | undefined;
+  let nexusAid: string | undefined;
+  let threshold = 0;
+  if (which === "open") {
+    nexusAid = args.options["nexus"];
+    if (!nexusAid) throw new UsageError(`--nexus <aid> names the joint Nexus to roll — ${ROLL_USAGE}`);
+    const raw = args.options["threshold"];
+    threshold = Number(raw);
+    if (raw === undefined || !Number.isSafeInteger(threshold) || threshold < 1) throw new UsageError(`--threshold <n> names the new rule, a count of seats of one or more — ${ROLL_USAGE}`);
+  } else {
+    input = args.positional[3];
+    readCircleFile(input);
+  }
+  const out = rollOut(args, input);
+  const { face, cards } = await rollContribution(args);
+  const { digest, printed } = await cofoundCard(args, "your chair in the rolled Nexus");
+  const base = cards ? { face, cards, next: digest } : { face, next: digest };
+  const step = which === "open"
+    ? await rollStep<RollStepAnswer>("roll-circle.open", { aid: nexusAid, threshold, ...base })
+    : await rollStep<RollStepAnswer>("roll-circle.join", { circle: readCircleFile(input).file, ...base });
+  const path = writeFoundingFile(out, step.circle);
+  emit(args, {
+    ok: true,
+    data: { path, aid: step.circle.aid, verdict: step.verdict, signed: step.signed, chairs: step.circle.chairs.length, threshold: step.circle.threshold, ...(step.why ? { why: step.why } : {}), cards: printed },
+    human: () => {
+      console.log(`roll circle ${which} → ${path}`);
+      console.log(`  nexus:   ${step.circle.aid}`);
+      console.log(`  chairs:  ${step.circle.chairs.length} contributed, rule ${step.circle.threshold}; verdict ${step.verdict}${step.why ? ` (${step.why})` : ""}`);
+      console.log("  carry the circle file to the next holder: `lares nexus seal roll join <circle>`, or, once every chair has joined, `lares nexus seal roll sign <circle>`.");
+    },
+  });
+  return 0;
+}
+
+/**
+ * What the person heard from the other holders before any hand signs: the rule, and every other chair's seat
+ * fingerprint. A signature consents to the whole image, so a chair a courier slipped in, or a rule it lowered,
+ * refuses behind the door. The flags stand in for the terminal; on a terminal the rite asks.
+ */
+async function heardImage(args: ParsedArgs, circle: RollCircle): Promise<{ readonly heardThreshold: number; readonly heard: string[] }> {
+  if (!wantsQuiet(args)) {
+    console.error(`  the circle seats ${circle.chairs.length} chair(s) at rule ${circle.threshold}:`);
+    for (const c of circle.chairs) console.error(`    ${seatFingerprint(c.seat)}`);
+  }
+  const rawRule = args.options["heard-threshold"];
+  const flaggedSeats = args.options["heard"];
+  if ((rawRule === undefined || flaggedSeats === undefined) && !canPromptSecret()) {
+    throw new UsageError("type the rule and every other chair's seat fingerprint as you heard them from their holders: --heard-threshold <n> --heard <fp,fp,…>, or run on a terminal");
+  }
+  const ruleText = rawRule ?? (await promptLine("the rule (seats that must sign), as you heard it: ")).trim();
+  const heardThreshold = Number(ruleText);
+  if (!Number.isSafeInteger(heardThreshold) || heardThreshold < 1) throw new UsageError("the rule as heard reads as a count of seats of one or more");
+  let heard: string[];
+  if (flaggedSeats !== undefined) heard = flaggedSeats.split(",").map((h) => h.trim()).filter((h) => h.length > 0);
+  else {
+    heard = [];
+    for (;;) {
+      const line = (await promptLine("another chair's seat fingerprint, as heard (blank when done): ")).trim();
+      if (line.length === 0) break;
+      heard.push(line);
+    }
+  }
+  return { heardThreshold, heard };
+}
+
+async function rollSignVerb(args: ParsedArgs): Promise<number> {
+  const input = args.positional[3];
+  const { file, circle } = readCircleFile(input);
+  const out = rollOut(args, input);
+  const step = await rollStep<RollStepAnswer>("roll-circle.sign", { circle: file, ...(await heardImage(args, circle)) });
+  const path = writeFoundingFile(out, step.circle);
+  emit(args, {
+    ok: true,
+    data: { path, aid: step.circle.aid, verdict: step.verdict, signed: step.signed, threshold: step.circle.threshold, ...(step.why ? { why: step.why } : {}) },
+    human: () => {
+      console.log(`roll circle signed → ${path}`);
+      console.log(`  verdict: ${step.verdict}${step.why ? ` (${step.why})` : ""}; ${step.signed.length} seat${step.signed.length === 1 ? "" : "s"} signed, rule ${step.circle.threshold}`);
+      console.log(step.verdict === "complete"
+        ? "  the circle is complete: carry it to every holder to sign what remains, and each files it with `lares nexus seal roll file <circle>`."
+        : "  carry the circle on to the next holder to sign; once it reads complete, each files it with `lares nexus seal roll file <circle>`.");
+    },
+  });
+  return 0;
+}
+
+async function rollFileVerb(args: ParsedArgs): Promise<number> {
+  const { file } = readCircleFile(args.positional[3]);
+  const filed = await rollStep<{ aid: string; sealEpochCid: string; outcome: string; path: string; retired: readonly string[] }>("roll-circle.file", { circle: file });
+  const refold = await pokeSealHomeRefold();
+  emit(args, {
+    ok: true,
+    data: { aid: filed.aid, head: filed.sealEpochCid, outcome: filed.outcome, charter: filed.path, retired: filed.retired, refold },
+    human: () => {
+      console.log(`roll filed — nexus ${filed.aid}`);
+      console.log(`  new head: ${filed.sealEpochCid} (${filed.outcome}); ${filed.retired.length} closed seat${filed.retired.length === 1 ? "" : "s"} retired`);
+      console.log(`  charter:  ${filed.path}`);
+      console.log("  the roll anchor crosses next: `nexus-roll-anchor-open` writes the partial the other vault carries on.");
+    },
+  });
+  return 0;
+}
+
+async function rollAbandonVerb(args: ParsedArgs): Promise<number> {
+  const aid = args.options["nexus"];
+  if (!aid) throw new UsageError(`--nexus <aid> names the joint Nexus whose open circle this vault drops — ${ROLL_USAGE}`);
+  const r = await rollStep<{ aid: string; abandoned: boolean; retired: readonly string[] }>("roll-circle.abandon", { aid });
+  emit(args, {
+    ok: true,
+    data: { aid: r.aid, abandoned: r.abandoned, retired: r.retired },
+    human: () => console.log(r.abandoned
+      ? `roll circle abandoned — nexus ${r.aid}; ${r.retired.length} contributed seat${r.retired.length === 1 ? "" : "s"} retired. A new circle may open from the head.`
+      : `no roll circle stands open here for nexus ${r.aid}; nothing moved.`),
   });
   return 0;
 }

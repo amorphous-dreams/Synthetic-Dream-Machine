@@ -20,7 +20,7 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry |
 
 lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
 
-  seal <seat | rotate | show | export | import | grow | cold | cofound>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal)
+  seal <seat | rotate | show | export | import | grow | cold | cofound | roll>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal); roll = roll a joint Nexus across its vaults (open | join | sign | file | abandon)
   kapae <nym> [--reason <text>] [--nexus <aid>]   raise a quorum-signed ban on a presenter nym
   kapae <nym> [--nexus <aid>] --out <partial>   sign the seats held here, write a PARTIAL (two-vault Nexus)
   kapae --from <partial> [--out <file>]     judge a partial, cosign it, land the ban once the quorum counts
@@ -73,7 +73,7 @@ Examples:
 
 exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `
 "lares nexus seal: unknown sub-verb "not-a-subverb"
-usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse | cofound>
+usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse | cofound | roll>
 
   seat    form the roster from the personas that STOOD for a chair, give each chair a seat key
           of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints
@@ -99,5 +99,13 @@ usage: lares nexus seal <seat | rotate | show | export | import | grow | cold re
   cofound seal <join> --out <inception>   the offering founder: type the joining seat's fingerprint as you
           heard it (--heard <fp>); both signatures land, and the joint charter files under its own AID
   cofound seal <inception>   the joining founder: the inception reads against the image you joined, and
-          the joint charter files under its own AID. Neither household seed moves."
+          the joint charter files under its own AID. Neither household seed moves.
+  roll open --nexus <aid> --threshold <n> --out <circle>   roll a joint Nexus across its vaults: type this
+          chair's revealed cold card, a fresh successor card prints, and the circle file goes to the next holder
+          [--face <i>] [--added]  --added = a chair the head never committed (a new holder): no card reads
+  roll join <circle> --out <circle>   contribute this vault's chair to a carried circle (same flags)
+  roll sign <circle> --out <circle>   sign the circle with the seats this vault contributed, once you type what you
+          heard from the other holders: the rule and every other chair's fingerprint [--heard-threshold <n> --heard <fp,…>]
+  roll file <circle>   file the rolled charter once the circle reads complete; the roll anchor crosses next
+  roll abandon --nexus <aid>   drop this vault's open circle and retire the seats it contributed"
 `;

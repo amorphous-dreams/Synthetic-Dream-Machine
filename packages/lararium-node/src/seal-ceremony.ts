@@ -56,6 +56,7 @@ import {
 import { larSealHome } from "./vessel-paths.js";
 import { aFaceBinds } from "./hearth-aid.js";
 import { recordedJointImage, sameInceptionImage } from "./cofound-record.js";
+import { RollCircleRecordTorn, readRollCircleRecords } from "./roll-circle-record.js";
 
 /** The row a crossing stands open in (it prepares), relative to the seal home. */
 export const TRANSITION_PENDING_FILE = "transition-pending.json";
@@ -344,7 +345,7 @@ export function heldSeatsAmong(keys: readonly string[]): string[] {
 }
 
 /** Why a seat key asked to retire stays. */
-export type SeatKept = "seated" | "crossing-open";
+export type SeatKept = "seated" | "crossing-open" | "roll-circle-open";
 
 /** The seat keys some standing record still needs, by why. Refuses where a record that might name one reads unwhole. */
 async function neededSeats(): Promise<ReadonlyMap<string, SeatKept>> {
@@ -365,6 +366,11 @@ async function neededSeats(): Promise<ReadonlyMap<string, SeatKept>> {
   const needed = new Map<string, SeatKept>();
   const pending = await readPending();
   for (const key of [...(pending?.oldKeys ?? []), ...(pending?.newKeys ?? [])]) needed.set(lower(key), "crossing-open");
+  // A seat this vault contributed to a roll circle that stands open signs that circle yet (`roll-circle-record`).
+  let records: ReturnType<typeof readRollCircleRecords>;
+  try { records = readRollCircleRecords(); }
+  catch (err) { if (err instanceof RollCircleRecordTorn) throw refuse("roll-circle-record-torn", err.message); throw err; }
+  for (const r of records) for (const c of r.chairs) needed.set(lower(c.seat), "roll-circle-open");
   for (const carried of readCarriedCharters(sealHome).values()) {
     for (const key of seatedKahuKeys(carried)) needed.set(lower(key), "seated");
   }
