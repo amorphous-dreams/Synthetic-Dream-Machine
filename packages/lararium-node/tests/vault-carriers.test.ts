@@ -2,9 +2,9 @@
  * vault-carriers.test — THE ONE CARRIER TABLE names every carrier at rest, by home, by class and by writer,
  * and the census reads the table rather than a second list.
  *
- * Four custody classes and no fifth: `floor` (outside the VK, the floor's own key material), `floor-plain`
- * (plain bytes the floor reads, or public by construction), `hot` (VK-sealed, opened at unlock), `cold`
- * (VK-sealed, opened per act). Rows span three homes: the identity home, the storage directory (its
+ * Six custody classes: `floor` (outside the VK, the floor's own key material), `floor-plain` (plain bytes the
+ * floor reads, or public by construction), `serving` (under SK), `hot` (VK-sealed, opened at unlock), `cold`
+ * (VK-sealed, opened per act) and `outbox` (under the outbox key the VK wraps in its own hot row). Rows span three homes: the identity home, the storage directory (its
  * `hosting/` and `walk/` subtrees) and the seal home.
  */
 import { describe, test, expect } from "vitest";
@@ -19,7 +19,7 @@ import {
 import { custodyRootCarrier } from "../src/custody-root.js";
 import {
   bindSlot, commitSlotTree, mintVk, openSealedCarrier, openVk, decodeSlotTree, writeSealedCarrier, CensusRefusal,
-  TreeVkRefusal, type SealedCarrier, type VesselKey,
+  TreeVkRefusal, mintOutboxKey, openOutboxParcel, readOutboxKey, restDigest, sealOutboxParcel, type SealedCarrier, type VesselKey,
 } from "@lararium/mesh";
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 
@@ -67,6 +67,7 @@ const SOWN: Record<string, string> = {
   "identity/vk-slots.bin":                      "slots",
   "identity/sk-slots.bin":                      "serving",
   "identity/custody-root.bin":                  "root",
+  "identity/outbox-key.bin":                    "x",
   "identity/keyhive-archive.bin":               "x",
   "identity/veil-archive-h0.bin":               "x",
   "identity/.persona-group-root-joshua-h0.json": "{}",
@@ -115,7 +116,9 @@ const RULED: Record<string, CustodyClass> = {
   "vessel-card": "floor-plain", "charter": "floor-plain", "carried-charter": "floor-plain",
   "carriage-consent": "floor-plain", "carriage-admit": "floor-plain", "nexus-key-line": "floor-plain",
   // The sealed store's rests hold no secret in the clear, and a blind carrier may hold every one (sealed-store#/the-store).
-  "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-outbox": "floor-plain", "sealed-chunk": "floor-plain",
+  "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-chunk": "floor-plain",
+  // The outbox's parcels rest under the outbox key, which the VK wraps in its own hot row (custody#/the-table, the outbox).
+  "sealed-outbox": "outbox", "outbox-key": "hot",
   "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot",
   "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
@@ -289,6 +292,30 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
     } finally { v.drop(); }
   });
 
+  test("RED (the outbox): the rotation re-seals the outbox key's row and reads no parcel — a sealed parcel stays byte-identical and the key opens under the new VK", async () => {
+    const v = await founded();
+    try {
+      const keyCarrier: SealedCarrier = { name: "identity/outbox-key.bin", path: join(v.homes.identity, "outbox-key.bin") };
+      const outboxKey = mintOutboxKey();
+      await writeSealedCarrier({ io: v.io, vk: v.vk, treePath: vkSlotsPath(v.homes.identity), carrier: keyCarrier, plaintext: outboxKey });
+      const parcel = sealOutboxParcel(outboxKey, "reader-one", text("a parcel"));
+      const parcelPath = join(v.homes.storage, "sealed", "outbox", `${"ab".repeat(16)}.${restDigest(parcel)}`);
+      mkdirSync(dirname(parcelPath), { recursive: true });
+      writeFileSync(parcelPath, parcel);
+      const names = vkSealedCarriers(v.homes).map((c) => c.name);
+      expect(names).toContain("identity/outbox-key.bin");
+      expect(names.some((n) => n.includes("sealed/outbox"))).toBe(false);
+      const newVk = mintVk();
+      await rotateVesselVk({ io: v.io, homes: v.homes, oldVk: v.vk, newVk, slots: [{ t: 1, pins: [right] }] });
+      expect(Array.from(readFileSync(parcelPath))).toEqual(Array.from(parcel));
+      const tree = decodeSlotTree(await v.io.read(vkSlotsPath(v.homes.identity)));
+      const o = tree.reading === "readable" ? openVk(tree.tree, [right]) : null;
+      const opened = await openSealedCarrier({ io: v.io, vk: (o as { vk: VesselKey }).vk, carrier: keyCarrier });
+      expect(opened.reading === "opens" && Array.from(opened.plaintext)).toEqual(Array.from(outboxKey));
+      expect(openOutboxParcel(readOutboxKey(opened.reading === "opens" ? opened.plaintext : null)!, readFileSync(parcelPath))?.reader).toBe("reader-one");
+    } finally { v.drop(); }
+  });
+
   test("RED (P5-2): a VK-sealed file no row names refuses the rotation before any write, and every carrier still opens", async () => {
     const v = await founded();
     try {
@@ -315,7 +342,7 @@ describe("the VK rotation reads its carriers from the table", { timeout: 30_000 
 });
 
 describe("a row that rests outside the vessel key names its law", () => {
-  test("RED: every floor and floor-plain row states why it rests bare; CONTROL: no hot or cold row states one", () => {
+  test("RED: every floor and floor-plain row states why it rests bare; CONTROL: no serving, hot, cold or outbox row states one", () => {
     for (const r of carrierTable()) {
       if (r.custody === "floor" || r.custody === "floor-plain") expect(typeof r.bare === "string" && r.bare.length > 20, r.row).toBe(true);
       else expect(r.bare, r.row).toBeNull();
@@ -323,7 +350,7 @@ describe("a row that rests outside the vessel key names its law", () => {
     const { homes, root } = freshHomes();
     try {
       sow(homes, SOWN);
-      for (const e of carrierCensus(homes)) expect(e.bare === null, e.file).toBe(e.custody === "hot" || e.custody === "cold");
+      for (const e of carrierCensus(homes)) expect(e.bare === null, e.file).toBe(e.custody === "serving" || e.custody === "hot" || e.custody === "cold" || e.custody === "outbox");
     } finally { rmSync(root, { recursive: true, force: true }); }
   });
 });

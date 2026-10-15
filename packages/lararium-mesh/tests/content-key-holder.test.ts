@@ -1208,3 +1208,27 @@ describe("one act at a time", () => {
     expect(said(await a!.holder.sealBlob({ bagId: BAG, plaintext: body("second"), signer: a!.signer }))).toBe("OK");
   });
 });
+
+describe("a parcel shipped twice folds once (custody#/the-table, the outbox's crash law)", () => {
+  it("the receiver folds a repeat idempotently: the same parcels again rest nothing new and move no reading — CONTROL: the first receipt rests lockboxes and opens the body", async () => {
+    const { v: [a, b] } = await fleet("a", "b");
+    const sealed = await seal(a!, "shipped before the local delete");
+    const parcels = await a!.holder.parcelsFor({ bagId: BAG, reader: b!.id });
+    if (!Array.isArray(parcels)) throw new Error("setup: parcelsFor refused");
+    expect(parcels.length).toBeGreaterThan(0);
+    const records = await a!.store.records("manifest");
+    for (const [address, bytes] of a!.values) b!.values.set(address, Uint8Array.from(bytes));
+    const restingNames = () => [...b!.rest.values.keys()].sort();
+    const before = restingNames();
+    expect(said(await b!.holder.receive({ parcels, records }))).toBe("OK");
+    const once = restingNames();
+    expect(once.filter((k) => k.startsWith("lockbox/")).length).toBeGreaterThan(before.filter((k) => k.startsWith("lockbox/")).length);   // CONTROL: the first receipt rested
+    expect(await opens(b!, sealed.body.ref)).toBe("shipped before the local delete");
+    const reading = await heads(b!);
+    // The lane ships the same parcels again (a stop after the ship and before the local delete).
+    expect(said(await b!.holder.receive({ parcels, records }))).toBe("OK");
+    expect(restingNames()).toEqual(once);
+    expect(await heads(b!)).toEqual(reading);
+    expect(await opens(b!, sealed.body.ref)).toBe("shipped before the local delete");
+  });
+});

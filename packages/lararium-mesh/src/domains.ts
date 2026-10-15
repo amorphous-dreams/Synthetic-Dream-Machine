@@ -274,6 +274,10 @@ export const SEALED_HAND_OVER_DOMAIN = mint("sealed-hand-over");
 export const NEXUS_KEY_HAND_OVER_DOMAIN = mint("nexus-key-hand-over");
 /** A KEY PARCEL: one lockbox, its key version record and the wrap's public operations, for one reader. */
 export const SEALED_KEY_PARCEL_DOMAIN = mint("sealed-key-parcel");
+/** An OUTBOX PARCEL'S SEAL: the image a parcel and its reader ride in under the outbox key, and the AAD it binds. */
+export const SEALED_OUTBOX_PARCEL_DOMAIN = mint("sealed-outbox-parcel");
+/** The AEAD key an OUTBOX KEY derives for its parcels' seals (HKDF `info`). */
+export const SEALED_OUTBOX_KEY_INFO = mint("sealed-outbox-key");
 /** A MEMORY-IMPORT RECORD: its clear part hashes to the record id under this name. */
 export const SEALED_MEMORY_IMPORT_DOMAIN = mint("sealed-memory-import");
 /** A backup bundle's MEMORY SECTION: the image of its entries, each a bag's id, its locator, a key version

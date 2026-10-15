@@ -13,9 +13,13 @@
  * finds what a vessel held and no second copy of it. The one exception, `own`, holds a vessel's local notes:
  * an opaque id under an opaque name, where the latest write replaces.
  *
- * THE OUTBOX ALONE STAYS ON ITS VESSEL. A parcel carries the key shore's public operations, which name reader
- * identifiers, so it rides the member lane and never a carrier. A parcel a vessel wrapped rests in its outbox,
- * under a digest of its reader, until that lane takes it.
+ * THE OUTBOX ALONE STAYS ON ITS VESSEL, AND RESTS SEALED. A parcel carries the key shore's public operations,
+ * which name reader identifiers, so it rides the member lane and never a carrier. A parcel a vessel wrapped rests in
+ * its outbox until that lane takes it, sealed whole under the vessel's OUTBOX KEY (XChaCha20-Poly1305, a fresh
+ * nonce per seal), with its reader inside the sealed body and a random lead in its name. A locked disk therefore
+ * names no reader: a holder of it counts the parcels and weighs each, and opens none. A parcel lands by one whole
+ * write under its final name (`put`), so before that commit nothing lists and after it the parcel opens again at
+ * every unlock that hands back the same key.
  *
  * A HOLDER OF NO KEY ANSWERS FROM NAMES ALONE. A lockbox's name leads with its key version and its bag
  * locator; an index row's name leads with the locator, the key version and the entry locator. `heldNames`
@@ -27,9 +31,13 @@
  * Platform-blind: a platform answers `SealedStoreRest` (the node answers it over files).
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store
  */
+import { xchacha20poly1305 } from "@noble/ciphers/chacha.js";
+import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { canonicalJson, hex, hexToBytes, utf8Bytes } from "./crypto.js";
-import { SEALED_INDEX_ROW_DOMAIN, SEALED_LOCKBOX_RECORD_DOMAIN, SEALED_RECORD_REST_DOMAIN } from "./domains.js";
+import { canonicalJson, defaultCryptoProvider, hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
+import {
+  SEALED_INDEX_ROW_DOMAIN, SEALED_LOCKBOX_RECORD_DOMAIN, SEALED_OUTBOX_KEY_INFO, SEALED_OUTBOX_PARCEL_DOMAIN, SEALED_RECORD_REST_DOMAIN,
+} from "./domains.js";
 import { isChunkRole, readKeyVersionId, readSealedAddress, readSealedImage, sealedImage, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
 import {
   RECORD_KINDS, readBagLocator, readRecordId, recordIdOf,
@@ -198,11 +206,81 @@ export function recordNameOf(record: SealedRecord): string { return `${recordIdO
 /** `<bag locator>.<key version>.<entry locator>.<digest>`: an entry's rows list by prefix. */
 export function indexRowNameOf(row: SealedChunkIndexRow): string { return `${row.bag}.${row.keyVersion}.${row.locator}.${restDigest(encodeIndexRow(row))}`; }
 
+// ── The outbox's seal ───────────────────────────────────────────────────────────────────────────
+declare const outboxKeyBrand: unique symbol;
+/** The OUTBOX KEY: 32 random bytes, minted once per vessel, resting under the vessel key and handed to the daemon
+ *  island at unlock. No key derives it, and it derives only its parcels' AEAD key. */
+export type OutboxKey = Uint8Array & { readonly [outboxKeyBrand]: true };
+export const OUTBOX_KEY_LENGTH = 32;
+/** The magic that names the outbox seal: a scheme of the house family, so no VK census reads it as its own. */
+export const OUTBOX_SEAL_MAGIC: Uint8Array = utf8Bytes("lares-outbox-seal");
+const OUTBOX_NONCE_LENGTH = 24;
+const OUTBOX_TAG_LENGTH = 16;
+/** The random lead of an outbox name: sixteen bytes, as lower-case hex. */
+const OUTBOX_NAME_LEAD = 16;
+
+/** Mint a fresh outbox key. */
+export function mintOutboxKey(rng: RandomProvider = defaultCryptoProvider): OutboxKey {
+  return rng.getRandomValues(new Uint8Array(OUTBOX_KEY_LENGTH)) as OutboxKey;
+}
+/** Read 32 bytes back as an outbox key; null for any other width or type. */
+export function readOutboxKey(bytes: unknown): OutboxKey | null {
+  return bytes instanceof Uint8Array && bytes.length === OUTBOX_KEY_LENGTH ? (Uint8Array.from(bytes) as OutboxKey) : null;
+}
+
+/** The outbox holds shut: no unlock handed this island an outbox key, so no parcel seals and none opens. */
+export class OutboxShut extends Error {
+  override readonly name = "OutboxShut";
+  constructor() { super("sealed-store-rest: the outbox holds shut — no unlock handed this vessel its outbox key, so no parcel seals or opens"); }
+}
+
+const bareReader = (reader: string): string => reader.trim().toLowerCase().replace(/^0x/, "");
+const outboxAeadKey = (key: OutboxKey): Uint8Array => hkdf(sha256, key, new Uint8Array(0), utf8Bytes(SEALED_OUTBOX_KEY_INFO), 32);
+const OUTBOX_AAD = utf8Bytes(SEALED_OUTBOX_PARCEL_DOMAIN);
+
+/** Seal one parcel whole, its reader inside: `magic ‖ nonce(24) ‖ ciphertext‖tag(16)` under a fresh nonce. */
+export function sealOutboxParcel(key: OutboxKey, reader: string, parcel: Uint8Array, rng: RandomProvider = defaultCryptoProvider): Uint8Array {
+  if (readOutboxKey(key) === null) throw new TypeError("sealed-store-rest: an outbox key holds 32 bytes");
+  const named = bareReader(reader);
+  if (named.length === 0) throw new TypeError("sealed-store-rest: a parcel names its reader");
+  const nonce = rng.getRandomValues(new Uint8Array(OUTBOX_NONCE_LENGTH));
+  const ciphertext = xchacha20poly1305(outboxAeadKey(key), nonce, OUTBOX_AAD).encrypt(sealedImage(SEALED_OUTBOX_PARCEL_DOMAIN, utf8Bytes(named), parcel));
+  const out = new Uint8Array(OUTBOX_SEAL_MAGIC.length + nonce.length + ciphertext.length);
+  out.set(OUTBOX_SEAL_MAGIC, 0);
+  out.set(nonce, OUTBOX_SEAL_MAGIC.length);
+  out.set(ciphertext, OUTBOX_SEAL_MAGIC.length + nonce.length);
+  return out;
+}
+/** Does `bytes` frame as an outbox seal (its magic over room for a nonce and a tag)? Reads no key. */
+export function readsAsOutboxSeal(bytes: unknown): boolean {
+  return bytes instanceof Uint8Array && bytes.length >= OUTBOX_SEAL_MAGIC.length + OUTBOX_NONCE_LENGTH + OUTBOX_TAG_LENGTH
+    && OUTBOX_SEAL_MAGIC.every((b, i) => bytes[i] === b);
+}
+/** Open one sealed parcel; null on any failure (a wrong key, a moved byte, a malformed frame), naming none. */
+export function openOutboxParcel(key: OutboxKey, bytes: unknown): { readonly reader: string; readonly parcel: Uint8Array } | null {
+  if (readOutboxKey(key) === null || !readsAsOutboxSeal(bytes)) return null;
+  const frame = bytes as Uint8Array;
+  try {
+    const nonce = frame.subarray(OUTBOX_SEAL_MAGIC.length, OUTBOX_SEAL_MAGIC.length + OUTBOX_NONCE_LENGTH);
+    const plain = xchacha20poly1305(outboxAeadKey(key), nonce, OUTBOX_AAD).decrypt(frame.subarray(OUTBOX_SEAL_MAGIC.length + OUTBOX_NONCE_LENGTH));
+    const fields = readSealedImage(SEALED_OUTBOX_PARCEL_DOMAIN, plain, 2);
+    if (fields === null || fields[0]!.length === 0) return null;
+    return { reader: utf8(fields[0]!), parcel: fields[1]! };
+  } catch { return null; }
+}
+
 // ── The store ───────────────────────────────────────────────────────────────────────────────────
 /** The store a vessel asks, over one rest. Every read checks a value against its own name. */
 export class SealedStore {
   readonly #rest: SealedStoreRest;
-  constructor(rest: SealedStoreRest) { this.#rest = rest; }
+  readonly #outboxKey: OutboxKey | null;
+  readonly #rng: RandomProvider;
+  /** `outboxKey`: the key an unlock handed this vessel's island; absent, the outbox stays shut (`OutboxShut`). */
+  constructor(rest: SealedStoreRest, opts: { readonly outboxKey?: OutboxKey | null; readonly rng?: RandomProvider } = {}) {
+    this.#rest = rest;
+    this.#outboxKey = opts.outboxKey ?? null;
+    this.#rng = opts.rng ?? defaultCryptoProvider;
+  }
 
   /** A resting value whose bytes still hash to the digest its name ends in; null otherwise. */
   async #whole(kind: RestKind, name: string): Promise<Uint8Array | null> {
@@ -279,22 +357,33 @@ export class SealedStore {
     return this.#rows(`${bag}.${keyVersion}.${locator}.`);
   }
 
-  /** Rest one encoded parcel for the member lane, under a digest of its reader. Answers its name. Vessel-local:
-   *  no carrier takes it. */
+  /** Seal one encoded parcel for the member lane under the outbox key, its reader inside the seal, and rest it
+   *  under a random name by one whole write. Answers its name. Vessel-local: no carrier takes it. A shut outbox
+   *  refuses (`OutboxShut`) before any byte moves. */
   async putOutbox(reader: string, parcel: Uint8Array): Promise<string> {
-    const name = `${restDigest(utf8Bytes(reader.trim().toLowerCase().replace(/^0x/, "")))}.${restDigest(parcel)}`;
-    await this.#rest.put("outbox", name, parcel);
+    const key = this.#openOutbox();
+    const sealed = sealOutboxParcel(key, reader, parcel, this.#rng);
+    const name = `${hex(this.#rng.getRandomValues(new Uint8Array(OUTBOX_NAME_LEAD)))}.${restDigest(sealed)}`;
+    await this.#rest.put("outbox", name, sealed);
     return name;
   }
-  /** The parcels that rest for one reader (every reader where absent), each whole under its own name. */
-  async outbox(reader?: string): Promise<{ readonly name: string; readonly parcel: Uint8Array }[]> {
-    const prefix = reader === undefined ? undefined : `${restDigest(utf8Bytes(reader.trim().toLowerCase().replace(/^0x/, "")))}.`;
-    const out: { name: string; parcel: Uint8Array }[] = [];
-    for (const name of await this.#rest.list("outbox", prefix)) {
-      const parcel = await this.#whole("outbox", name);
-      if (parcel !== null) out.push({ name, parcel });
+  /** The parcels that rest for one reader (every reader where absent): each opens under the outbox key and names its
+   *  reader inside the seal, and the filter reads that name after the opening. A parcel that opens under no key this
+   *  vessel holds, or whose bytes fail its name, lists nowhere. A shut outbox refuses (`OutboxShut`). */
+  async outbox(reader?: string): Promise<{ readonly name: string; readonly reader: string; readonly parcel: Uint8Array }[]> {
+    const key = this.#openOutbox();
+    const wanted = reader === undefined ? undefined : bareReader(reader);
+    const out: { name: string; reader: string; parcel: Uint8Array }[] = [];
+    for (const name of await this.#rest.list("outbox")) {
+      const sealed = await this.#whole("outbox", name);
+      const opened = sealed === null ? null : openOutboxParcel(key, sealed);
+      if (opened !== null && (wanted === undefined || opened.reader === wanted)) out.push({ name, ...opened });
     }
     return out;
+  }
+  #openOutbox(): OutboxKey {
+    if (this.#outboxKey === null) throw new OutboxShut();
+    return this.#outboxKey;
   }
 
   /** A vessel-local note: an opaque id under an opaque name. The latest write replaces. */

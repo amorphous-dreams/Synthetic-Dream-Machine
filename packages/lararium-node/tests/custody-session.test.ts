@@ -16,7 +16,7 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CensusRefusal, OldShapeRefusal, VK_SEAL_MAGIC, encodeIndexRow, readIndexRow, restDigest, writeSealedCarrier } from "@lararium/mesh";
+import { CensusRefusal, OldShapeRefusal, VK_SEAL_MAGIC, encodeIndexRow, mintOutboxKey, readIndexRow, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { custodyRootPath, custodyVeil, openCustodyRootCarrier, custodyRootFromBytes } from "../src/custody-root.js";
 import {
@@ -274,6 +274,24 @@ describe("custodyStatus", () => {
     expect(at(`sealed/index/aa.ee.${restDigest(key)}`)).toMatchObject({ row: "sealed-rest", reading: "bare", fault: true });
     expect(at("nexus/carriage-consent/plain.json")).toMatchObject({ row: "carriage-consent", reading: "bare", fault: false });
     expect(at("nexus/carriage-consent/sealed.json")).toMatchObject({ row: "carriage-consent", reading: "sealed", fault: true });
+    expect(s.outside).toEqual([]);
+  });
+  test("RED (the outbox): a parcel at the outbox's spelling reads under its own class — a sealed parcel stands clean, while a clear parcel and a name its bytes fail each read as a fault", async () => {
+    await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const outbox = join(homes.storage, "sealed", "outbox");
+    mkdirSync(outbox, { recursive: true });
+    const sealed = sealOutboxParcel(mintOutboxKey(), "reader-one", new TextEncoder().encode("a parcel"));
+    const clear = new TextEncoder().encode("a clear parcel that names reader-one");
+    expect(readsAsOutboxSeal(sealed)).toBe(true);
+    expect(readsAsOutboxSeal(clear)).toBe(false);
+    writeFileSync(join(outbox, `${"aa".repeat(16)}.${restDigest(sealed)}`), sealed, { mode: 0o600 });           // CONTROL: a sealed parcel under its own name
+    writeFileSync(join(outbox, `${"bb".repeat(16)}.${restDigest(clear)}`), clear, { mode: 0o600 });             // a clear parcel named by its own digest
+    writeFileSync(join(outbox, `${"cc".repeat(16)}.${restDigest(clear)}`), sealed, { mode: 0o600 });            // a seal under a name it does not hold
+    const s = await custodyStatus({ io, homes });
+    const at = (lead: string) => s.rows.find((r) => r.file.startsWith(`sealed/outbox/${lead}`));
+    expect(at("aa".repeat(16))).toMatchObject({ row: "sealed-outbox", custody: "outbox", bare: null, fault: false });
+    expect(at("bb".repeat(16))).toMatchObject({ row: "sealed-outbox", custody: "outbox", bare: null, fault: true });
+    expect(at("cc".repeat(16))).toMatchObject({ row: "sealed-outbox", custody: "outbox", bare: null, fault: true });
     expect(s.outside).toEqual([]);
   });
   test("RED: a floor row whose file stops inside the seal's magic reads torn and a fault, never bare — CONTROL: its cleartext reads bare", async () => {

@@ -274,6 +274,12 @@ export interface IslandMsg_Manifest {
      *  replaying daemon cap-events. Absent on a first boot / a vessel that never persisted one. */
     archiveBytes?:         Uint8Array;
     /**
+     * THE OUTBOX KEY, opened from its hot row under the vessel key and handed across at unlock, the road the Archive
+     * rides (custody#/the-table, the outbox). The island seals and opens its outbox's parcels under it for the life
+     * of this composition. Absent on a floor composition: the outbox holds shut and every parcel verb refuses.
+     */
+    outboxKey?:            Uint8Array;
+    /**
      * WHETHER THIS VESSEL'S IDENTITY ARCHIVE OPENS — true only when the composition stands holding the vessel
      * key (it was handed the sovereign rows), carried
      * across the worker boundary so the worker's archive-write DOOR can refuse on its OWN reading.

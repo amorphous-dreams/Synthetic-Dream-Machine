@@ -146,6 +146,7 @@ import { multiGraphRecall, makeFormSearch, makeStructureSearch }  from "./sensor
 import { waitHandle, resolveBootDoc } from "./repo-helpers.js";
 import { makeChildProcessDocLoadProbe, quarantineDoc, recoverCleanTail } from "./doc-load-probe.js";
 import { listAnchoredPersonas, loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "./identity-anchors.js";
+import { openOutboxKey } from "./outbox-key.js";
 import { custodyHeld, custodyVeilKeys } from "./custody-seat.js";
 import { readWornPersonaMount } from "./worn-mount.js";
 import { openDaemonVm }                    from "./open-daemon-vm.js";
@@ -386,13 +387,15 @@ export interface SovereignReaders {
   readonly writeArchive: (bytes: Uint8Array) => Promise<void>;
   /** Seal one face's veil archive at rest. */
   readonly writeVeilArchive: (bytes: Uint8Array, handleIndex: number) => Promise<void>;
+  /** The vessel's outbox key, minted into its hot row on the first ask and opened on every later one (`outbox-key`). */
+  readonly outboxKey: () => Promise<Uint8Array>;
 }
 
 /** The sovereign rows, read and written through the custody seated in this process (`custody-seat`). */
 export function seatedSovereignReaders(): SovereignReaders {
   return { wornMount: readWornPersonaMount, personaRoots: listPersonaRoots, walkRecords: listWalkRecords,
     archive: loadIdentityArchive, veilArchive: loadVeilArchive, veil: custodyVeilKeys,
-    writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive };
+    writeArchive: persistIdentityArchive, writeVeilArchive: persistVeilArchive, outboxKey: openOutboxKey };
 }
 
 /**
@@ -1965,6 +1968,16 @@ async function prepareNodeBootOn(
       ? { tag: dyadVeilTag, signingKey: (await sovereign.veil(dyadVeilTag)).signingKey }
       : null;
     const veilArchiveBytes = sovereign && dyadVeil ? await sovereign.veilArchive(mountedFace) : null;
+    // THE OUTBOX KEY rides to the island the way the Archive does: opened here under the vessel key this thread holds,
+    // and never at the floor, where the island's outbox holds shut (custody#/the-table, the outbox).
+    // A row that stands and opens to no outbox key stops no boot: the island stands with its outbox shut, each parcel
+    // verb refuses `outbox-shut`, and `lares vault status` names the row.
+    const outboxKey = sovereign
+      ? await sovereign.outboxKey().catch((err: unknown) => {
+        console.log(`[outbox] the outbox key's row opens to no key (${err instanceof Error ? err.message : String(err)}) — the daemon island stands with its outbox shut`);
+        return null;
+      })
+      : null;
     // THE CUSTODY WRITE DOOR stands with a sovereign composition and drops at its teardown: the island's archive
     // exports reach the sealed writer here, under the key this thread holds. At the floor no door stands, so an
     // island's ask answers unwritten.
@@ -2002,6 +2015,7 @@ async function prepareNodeBootOn(
         : {}),
       ...(deviceEdge ? { deviceEdge } : {}),
       ...(archiveBytes ? { archiveBytes } : {}),
+      ...(outboxKey ? { outboxKey } : {}),
     };
     // R3 — the daemon VM resolves its plugins through the SAME selector + CAS path every wiki
     // island does (`resolveNodeIslandPluginCids`), never the retired vessel-wide hand-off. The

@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { operatorDaemonOptions, SealedStoreUnavailable } from "@lararium/keyhive/operator-daemon-behavior";
 import { announceSeatRoll, type SessionProof } from "@lararium/keyhive";
-import { hex, isVerbRefusal, sha256HexBytesSync, utf8Bytes, type RecordSigner, type SeatRoll } from "@lararium/mesh";
+import { hex, isVerbRefusal, mintOutboxKey, openOutboxParcel, readKeyParcel, readsAsOutboxSeal, restDigest, sha256HexBytesSync, utf8Bytes, type OutboxKey, type RecordSigner, type SeatRoll } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import { sessionSignatureImage } from "../../lararium-mesh/src/face-proof-subjects.js";
 import { chain, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
@@ -56,9 +56,9 @@ function tree(dir: string): { path: string; bytes: Uint8Array }[] {
 const holds = (files: { bytes: Uint8Array }[], needle: string): boolean => files.some((f) => hex(f.bytes).includes(hex(utf8Bytes(needle))));
 
 /** Boot the real daemon options over one founded island and one scratch storage root; answer its verbs. */
-async function stand(st: Awaited<ReturnType<typeof standFoundedIsland>>, root: string, over: { session?: SessionProof; archive?: Uint8Array; archiveOpens?: boolean; boot?: boolean } = {}) {
+async function stand(st: Awaited<ReturnType<typeof standFoundedIsland>>, root: string, over: { session?: SessionProof; archive?: Uint8Array; archiveOpens?: boolean; boot?: boolean; outboxKey?: OutboxKey } = {}) {
   const archives: Uint8Array[] = [];
-  const daemonAuth = { ...st.daemonAuth, ...(over.archive ? { archiveBytes: over.archive } : {}), ...(over.archiveOpens === false ? { archiveOpens: false } : {}) };
+  const daemonAuth = { ...st.daemonAuth, ...(over.archive ? { archiveBytes: over.archive } : {}), ...(over.archiveOpens === false ? { archiveOpens: false } : {}), ...(over.outboxKey ? { outboxKey: over.outboxKey } : {}) };
   const opts = operatorDaemonOptions({ daemonAuth } as never, {
     dyadReading: () => "clear",
     sealedStore: nodeSealedStoreShore(join(root, "daemon")),
@@ -167,6 +167,47 @@ describe("a private body seals on a real founded vessel, end to end", () => {
     // A missing `bag`, and a body nobody staged, refuse before the holder gets asked.
     await expect(bareVessel.run("sealed-seal", { text: BODY })).rejects.toThrow(/`bag` required/);
     await expect(bareVessel.run("sealed-seal", { bag: BAG, cid: "ab".repeat(32) })).rejects.toThrow(/no staged body/);
+  }, 120_000);
+});
+
+describe("the outbox at rest names no reader, on a real founded vessel (custody#/the-table, the outbox)", () => {
+  const READER = "ab".repeat(32);
+  test("the island seals each parcel whole under the outbox key its unlock handed it, under a random name, its reader inside — CONTROL: the key opens it and names the reader", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const outboxKey = mintOutboxKey();
+    const vessel = await stand(st, root, { session: await proof(), outboxKey });
+    await vessel.run("sealed-seal", { bag: BAG, text: BODY });
+    const handed = await vessel.run("sealed-parcels", { bag: BAG, reader: READER });
+    const names = handed["outbox"] as string[];
+    expect(names.length).toBeGreaterThan(0);
+    const files = tree(join(sealedStoreDir(root), "outbox"));
+    expect(files.map((f) => f.path.split("/").at(-1)).sort()).toEqual([...names].sort());
+    for (const f of files) {
+      const name = f.path.split("/").at(-1)!;
+      expect(name.startsWith(restDigest(utf8Bytes(READER)))).toBe(false);   // the name carries no reader digest
+      expect(readsAsOutboxSeal(f.bytes)).toBe(true);
+      expect(readKeyParcel(f.bytes)).toBeNull();                              // no clear parcel rests
+      expect(holds([f], READER)).toBe(false);
+      const opened = openOutboxParcel(outboxKey, f.bytes);
+      expect(opened?.reader).toBe(READER);                                     // CONTROL: the routing rides inside the seal
+      expect(readKeyParcel(opened!.parcel)).not.toBeNull();
+      expect(openOutboxParcel(mintOutboxKey(), f.bytes)).toBeNull();
+    }
+  }, 120_000);
+
+  test("A SHUT OUTBOX REFUSES BY NAME: an island no unlock handed an outbox key answers `outbox-shut` before any parcel, and nothing rests in the outbox", async () => {
+    const root = scratch();
+    const st = await standFoundedIsland(teardown);
+    const vessel = await stand(st, root, { session: await proof() });
+    await vessel.run("sealed-seal", { bag: BAG, text: BODY });
+    for (const [verb, args] of [["sealed-parcels", { bag: BAG, reader: READER }], ["sealed-hand-over", { bag: BAG, reader: READER }], ["sealed-serve", {}]] as const) {
+      const err = await vessel.run(verb, args as never).catch((e: unknown) => e);
+      expect(isVerbRefusal(err), verb).toBe(true);
+      expect((err as { reason: string }).reason, verb).toBe("outbox-shut");
+    }
+    expect(tree(join(sealedStoreDir(root), "outbox"))).toEqual([]);
+    expect(tree(sealedStoreDir(root)).some((f) => f.path.includes("/hand-over/"))).toBe(false);   // the hand-over wrote no record ahead of a parcel it could not rest
   }, 120_000);
 });
 

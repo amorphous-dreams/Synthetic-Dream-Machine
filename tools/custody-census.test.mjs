@@ -7,6 +7,7 @@
 //   C4  an unsealed row with no fault mark reads `fault misread`; a faulted file outside the vessel key reads `fault`.
 //   C5  each file outside the table reads `outside`, with its reason.
 //   C6  a root that holds no vessel answers a reading all the same: no tree, no row, nothing outside.
+//   C7  an outbox row names no law and reads its own seal: clean while unfaulted, `fault` when its check fails.
 //   D1  the route door refuses an unmarked root (rc 2) before it reads a tree, for a bind and for an unbind.
 //   D2  the route door refuses a call that names both acts, or neither (rc 2).
 import assert from "node:assert/strict";
@@ -49,6 +50,19 @@ test("C3 — a row outside the vessel key names its law, and a row under it name
   const d = clean();
   d.rows[0] = row({ bare: LAW });
   assert.deepEqual(custodyBreaches(d), ["no law: identity/custody-root.bin (hot) names a law for resting bare"]);
+});
+
+test("C7 — an outbox parcel rests under a key and reads its own seal: no law, no unsealed line, and a fault only where its check fails", () => {
+  const parcel = (over) => ({ row: "sealed-outbox", home: "storage", file: "sealed/outbox/aa.bb", custody: "outbox", reading: "unopenable", bare: null, fault: false, ...over });
+  const c = clean();
+  c.rows.push(parcel({}));
+  assert.deepEqual(custodyBreaches(c), []);
+  const d = clean();
+  d.rows.push(parcel({ fault: true, reading: "bare" }));
+  assert.deepEqual(custodyBreaches(d), ["fault: storage/sealed/outbox/aa.bb (outbox) reads bare and breaks its row's law"]);
+  const e = clean();
+  e.rows.push(parcel({ bare: "a parcel holds no key" }));
+  assert.deepEqual(custodyBreaches(e), ["no law: storage/sealed/outbox/aa.bb (outbox) names a law for resting bare"]);
 });
 
 test("C4 — a fault mark that disagrees with its row reads as misread", () => {
