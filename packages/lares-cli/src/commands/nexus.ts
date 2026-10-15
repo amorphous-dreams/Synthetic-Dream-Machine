@@ -37,10 +37,9 @@
  * GOVERNING A REALM ⊥ GOVERNING THE METAL (operator ruling). This door is the metal.
  */
 
-import { accessSync, constants as fsConstants, existsSync, readFileSync, statSync } from "node:fs";
-import { dirname, resolve as resolvePath } from "node:path";
+import { readFileSync } from "node:fs";
 import {
-  runNexusCarryFor, NexusContractError, SealedActRefused, atomicWriteFileSync,
+  runNexusCarryFor, NexusContractError, SealedActRefused,
   AdmitBundleError, type NexusContractResult, type NexusContractPartialResult, type NexusMembersListResult,
 } from "@lararium/node";
 import { presentationFindingLine } from "@lararium/mesh";
@@ -55,6 +54,7 @@ import { cmdKahuli, runKahuliRite } from "./nexus-kahuli.js";
 import { cmdPublish } from "./nexus-publish.js";
 import { cmdOffering } from "./nexus-offering.js";
 import { cmdKapae, cmdUnKapae } from "./nexus-kapae-cmd.js";
+import { partialOutOrRefuse, writePartialFile, type PartialWritten } from "./partial-file.js";
 import { cmdSeal, runQuorumRite } from "./nexus-seal.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -291,32 +291,13 @@ async function cmdContract(args: ParsedArgs, action: "admit" | "revoke" | "carry
   }
 }
 
+/** The contract door's refusal, handed to the shared partial-file checks. */
+const refuseContract = (msg: string): Error => new NexusContractError(msg);
+
 const PARTIAL_USAGE = "usage: lares nexus <contract | revoke> <operator-pubkey> [--sig <hex>] [--nexus <aid>] --out <partial> | lares nexus contract --from <partial> [--out <file>]";
 
-/**
- * Refuse an `--out` the write could not take BEFORE the act runs: a landed act whose grown partial never reached
- * its file would strand the other vault (a retry here reads replay). The input file stays as the person carried it.
- */
-function partialOutOrRefuse(out: string, from?: string): string {
-  if (from !== undefined && resolvePath(out) === resolvePath(from)) throw new NexusContractError(`--out names the partial you carried (${from}); name another file, so the carried one stays as it came`);
-  const dir = dirname(resolvePath(out));
-  if (!existsSync(dir)) throw new NexusContractError(`--out ${out}: its directory does not exist, so the partial could not land there`);
-  if (existsSync(out) && statSync(out).isDirectory()) throw new NexusContractError(`--out ${out} names a directory; name a file`);
-  try { accessSync(dir, fsConstants.W_OK); } catch { throw new NexusContractError(`--out ${out}: its directory refuses a write`); }
-  return out;
-}
-
-/**
- * Write one partial file a person carries to the other vault; it holds public material alone. A write that fails
- * after the act ran never hides the act: the step still reports, and prints the partial for the person to carry.
- */
-function writePartialFile(path: string, partial: unknown): { readonly path: string | null; readonly error?: string } {
-  try { atomicWriteFileSync(path, `${JSON.stringify(partial, null, 2)}\n`, `${path}.writing`); return { path }; }
-  catch (err) { return { path: null, error: `--out ${path}: ${err instanceof Error ? err.message : String(err)}` }; }
-}
-
 /** Report one partial step: the verdict here, the seats signed, where the file landed, and the act once it lands. */
-function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResult, written: { readonly path: string | null; readonly error?: string } | null): number {
+function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResult, written: PartialWritten | null): number {
   const path = written?.path ?? null;
   emit(args, {
     ok: true,
@@ -357,7 +338,7 @@ async function cmdContractOpen(args: ParsedArgs, action: "admit" | "revoke" | "c
   const out = args.options["out"]!;
   if (!nym || (action !== "admit" && action !== "revoke")) { console.error(PARTIAL_USAGE); return 2; }
   try {
-    partialOutOrRefuse(out);
+    partialOutOrRefuse(refuseContract, out);
     const contractSig = action === "admit" ? (args.options["sig"] ?? args.options["contract"]) : undefined;
     const aid = args.options["nexus"];
     const { output } = await storeVerb("nexus-contract-open", {
@@ -384,7 +365,7 @@ async function cmdContractPartial(args: ParsedArgs, action: "admit" | "revoke" |
   const out = args.options["out"];
   if (action !== "admit" && action !== "revoke") { console.error(PARTIAL_USAGE); return 2; }
   try {
-    if (out !== undefined) partialOutOrRefuse(out, from);
+    if (out !== undefined) partialOutOrRefuse(refuseContract, out, from);
     let partial: unknown;
     try { partial = JSON.parse(readFileSync(from, "utf8")); }
     catch { throw new NexusContractError(`cannot read ${from} as a partial file`); }

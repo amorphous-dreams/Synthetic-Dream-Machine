@@ -16,6 +16,9 @@
  * this test measures the SOURCE STRUCTURE (the same class of proof the device-admit weld already
  * trusts) rather than driving each verb's full ceremony.
  *
+ * `nexus-kapae.ts` carries ONE `kapaeAntigenDocUrl(` call (`antigenBoardFor`), which the raise, the list and the
+ * two-vault kapae door share, so a ban and its read land on one board.
+ *
  * `nexus-contract.ts` carries THREE `carriageDocUrl(` calls - the admit and revoke WRITE (`carriageBoardFor`, which
  * `runNexusContract` and the two-vault door share), the
  * roll-anchor WRITE (`runNexusRollAnchor`) and the members-list READ (`runNexusMembersList`). All read the
@@ -40,7 +43,7 @@ const SITES: Array<{ file: string; door: RegExp; count: number }> = [
   { file: "commands/handle.ts",         door: /whoBoardDocUrl\(([^)]*)\)/g,        count: 2 },
   { file: "commands/handle.ts",         door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 2 },
   { file: "persona-admit-flow.ts",      door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
-  { file: "commands/nexus-kapae.ts",    door: /kapaeAntigenDocUrl\(([^)]*)\)/g,    count: 2 },
+  { file: "commands/nexus-kapae.ts",    door: /kapaeAntigenDocUrl\(([^)]*)\)/g,    count: 1 },
   { file: "commands/nexus-contract.ts", door: /carriageDocUrl\(([^)]*)\)/g,        count: 3 },
 ];
 

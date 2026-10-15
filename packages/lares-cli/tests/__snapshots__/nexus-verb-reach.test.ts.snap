@@ -21,9 +21,11 @@ usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry |
 lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
 
   seal <seat | rotate | show | export | import | grow | cold | cofound>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal)
-  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym
-  kapae --list                              read the currently-Kapae'd set (the fold)
-  un_kapae <nym>                            mint a quorum-signed causal lift
+  kapae <nym> [--reason <text>] [--nexus <aid>]   raise a quorum-signed ban on a presenter nym
+  kapae <nym> [--nexus <aid>] --out <partial>   sign the seats held here, write a PARTIAL (two-vault Nexus)
+  kapae --from <partial> [--out <file>]     judge a partial, cosign it, land the ban once the quorum counts
+  kapae --list [--nexus <aid>]              read the currently-Kapae'd set (the fold)
+  un_kapae <nym> [--nexus <aid>]            mint a quorum-signed causal lift (--out / --from carry it across two vaults)
   contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);
                                             --json emits the admit BUNDLE the joinee takes by hand
   revoke <operator-pubkey>                  revoke a member (quorum-only)

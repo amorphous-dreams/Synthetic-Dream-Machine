@@ -193,7 +193,7 @@ export { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest, reso
 export type { HandlePublishOptions, HandleBurnOptions, HandleRotateOptions, HandleAttestOptions, OwnerAuthHand } from "./commands/handle.js";
 
 // The Kapae antigen RAISE side (#65) — the founding kahu writes a quorum-signed ban/lift onto the board.
-export { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
+export { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError, type NexusKapaePartialResult } from "./commands/nexus-kapae.js";
 export { runHostState, runHostRoll, runHostInvite, HostRefusal } from "./commands/host.js";
 export type { HostedNexusReading, HostRollResult } from "./commands/host.js";
 export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
@@ -231,7 +231,7 @@ export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/rai
 export type { RaiseSignResult } from "./commands/raise-sign.js";
 export { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   runNexusContractOpen, runNexusContractPartial, type NexusContractPartialResult,
-  runNexusRollAnchor, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
+  runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, type NexusRollAnchorPartialResult, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
 // The carried set — the Nexuses this vessel carries for, one contract-in each; partner charters land beside the primary.
 export { importCarriedCharter, readCarriedCharters, writeConsent, readConsent, carriedSet, carriedReadings,
   carriedCharterHome, carriageConsentPathFor, charterHomeFor, primaryNexusAid, CarriedCharterError,

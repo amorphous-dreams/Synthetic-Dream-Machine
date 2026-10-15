@@ -49,7 +49,7 @@ import {
   signCarrierContract, verifyCarrierContract, verifyCarriageConsent, carriageEntryCounts, foldCarriageDetails, foldCarriageSet,
   holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, nexusAidOf,
-  rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor,
+  rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor, epochSeats,
   type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
 } from "@lararium/mesh";
@@ -61,6 +61,7 @@ import { nodeNexusIsland } from "../nexus-standing.js";
 import { heldNexusLeaves, mintNexusLeaf } from "../nexus-leaf.js";
 import { charterHomeFor, primaryNexusAid, writeConsent, type CarriageConsent } from "../carried-set.js";
 import { heldSeatSigners } from "../held-quorum.js";
+import { judgeStillBeforeWrite } from "../partial-landing.js";
 import type { AdmitBundle } from "../admit-bundle.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
@@ -352,9 +353,6 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   }
 }
 
-/** How many whole judgements the landing runs before a board that keeps moving refuses. */
-const LANDING_PASSES = 8;
-
 /** What a partial step answers: the partial as it stands, the judge's verdict over it here, and the act it landed. */
 export interface NexusContractPartialResult {
   readonly partial: NexusActPartial;
@@ -446,21 +444,14 @@ export async function runNexusContractPartial(opts: { readonly partial: unknown;
     // where it still reads `complete` against the head and the board as they stand at the write.
     const fresh: ContractCore = { ...core, roster: seatedRosterOrRefuse(home) };
     // The judge itself awaits, so it runs again until the board AND the charter head hold still across one whole
-    // judgement: the write then follows the last judge with no await between. A board that moves through every pass
-    // of a bounded count refuses, and the person carries the partial again; a count bounds it, never a clock.
+    // judgement (`partial-landing`): the write follows the last judge with no await between, and a count bounds it.
     const mark = (): string =>
       `${seatedRosterOrRefuse(home).sealEpochCid}|${carriageEntriesFromBoard(fresh.handle.doc()).map(carriageEntryActCid).sort().join(",")}`;
-    const landed = await landEntry(fresh, repo, act.family, act.entry, judged.signed, async () => {
-      for (let pass = 0; ; pass++) {
-        if (pass === LANDING_PASSES) throw new NexusContractError(`the board moved through ${LANDING_PASSES} judgements in a row; nothing lands — carry the partial again.`);
-        const before = mark();
-        const last = await judgeNexusActPartial(partial, partialReader(read.aid, { ...fresh, roster: seatedRosterOrRefuse(home) }));
-        if (last.verdict !== "complete") {
-          throw new NexusContractError(`the partial reads ${last.verdict} on this vessel at the write${last.why ? `: ${last.why}` : ""}; nothing lands.`);
-        }
-        if (mark() === before) return;
-      }
-    });
+    const landed = await landEntry(fresh, repo, act.family, act.entry, judged.signed, () => judgeStillBeforeWrite({
+      mark,
+      judge: () => judgeNexusActPartial(partial, partialReader(read.aid, { ...fresh, roster: seatedRosterOrRefuse(home) })),
+      refuse: (message) => new NexusContractError(message),
+    }));
     return { partial, verdict: judged.verdict, signed: judged.signed, landed };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
@@ -524,6 +515,140 @@ export async function runNexusRollAnchor(opts: {
     handle.change((d) => writeRollAnchor(d, anchor));
     await repo.flush();
     return { anchor, anchorCid: rollAnchorCid(anchor), parents, boardUrl };
+  } finally {
+    await repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+}
+
+/** What one step of a two-vault roll anchor answers: the partial as it stands, the judge's verdict over it here, and the anchor it landed. */
+export interface NexusRollAnchorPartialResult {
+  readonly partial: NexusActPartial;
+  readonly verdict: PartialVerdict;
+  /** The seats of the head (opened) roster whose signature the partial carries, sorted. */
+  readonly signed:  readonly string[];
+  /** The landed anchor, once the partial read `complete` here and counted; null short of the threshold. */
+  readonly landed:  NexusRollAnchorResult | null;
+}
+
+/**
+ * The two rosters a rolled head joins, read off this vessel's OWN verified lineage, never off a file: the head opens,
+ * the epoch before it closes. FAIL CLOSED: an unseated head, or a head that rolled from nothing (a genesis), names
+ * no anchor.
+ */
+function rolledRostersOrRefuse(home: string): { readonly opened: KahuQuorumSeats; readonly closing: KahuQuorumSeats } {
+  const doc = readNexusDoc(home);
+  const opened = foundingRoster(doc);
+  if (opened.sealEpochCid.length === 0 || opened.keys.length < opened.threshold) {
+    throw new NexusContractError("no seated head to anchor a roll under — the charter's lineage roots no roster here.");
+  }
+  const lineage = doc!.sealLineage!;
+  const head = lineage[lineage.length - 1]!;
+  // The head names what it closed: one predecessor, looked up by its address, never by its place in the array.
+  if (head.predecessors.length === 0) throw new NexusContractError("the head closes no epoch (a genesis), so no roll anchor joins it to one.");
+  if (head.predecessors.length !== 1) throw new NexusContractError("the head joins two branches (a reunion), and no two-vault anchor joins a reunion yet.");
+  const prev = lineage.find((e) => e.epochCid === head.predecessors[0]) ?? null;
+  const seats = prev ? epochSeats(prev) : null;
+  if (!prev || !seats) throw new NexusContractError("the epoch the head closed reads no seats in this vessel's lineage, so no anchor joins it.");
+  return { opened, closing: { keys: [...seats.keys], threshold: seats.threshold, sealEpochCid: prev.epochCid } };
+}
+
+/** The reader one vessel judges a roll-anchor partial with: the head it holds, the epoch that head closed, and its board. */
+function anchorReader(home: string, handle: ContractCore["handle"]): NexusPartialReader {
+  const aid = nexusAidOrRefuse(home);
+  const { opened, closing } = rolledRostersOrRefuse(home);
+  const doc = handle.doc();
+  return { aid, head: opened, closing, board: { carriage: carriageEntriesFromBoard(doc), anchors: rollAnchorsFromBoard(doc), antigen: [] } };
+}
+
+/**
+ * OPEN a two-vault roll anchor (kapae#/rolls): the head this vessel holds has already rolled, and every seat of that
+ * head's roster this vessel holds signs the anchor that joins it to the epoch it closed, citing the board's causal
+ * heads there. The act leaves as a PARTIAL for the vault that holds the other new seats; nothing lands here. Where
+ * the seats rest in two vaults no rotate signs its anchor whole, so the anchor follows the rolled head rather than
+ * preceding it: an admit made at the closed epoch reads stranger at the new head until the anchor lands. The door
+ * anchors the head to the ONE epoch it closed, so a second roll before this anchor lands leaves the first roll
+ * unanchored for good: carry the anchor before the next roll. It anchors the carriage board alone; the realm edge
+ * boards the single-vault rotate also anchors (`runEdgeRollAnchors`) stay OWED across two vaults, and the store
+ * row says so in its answer. A vessel that holds the whole new quorum anchors through `runNexusRollAnchor`, inside
+ * its rotate.
+ */
+export async function runNexusRollAnchorOpen(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }):
+  Promise<NexusRollAnchorPartialResult> {
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  const { opened, closing } = rolledRostersOrRefuse(home);
+  const held = heldSeatSigners(opened);
+  if (held.length === 0) throw new NexusContractError("this vessel holds no seat of the head roster, so it opens no anchor for it.");
+  if (held.length >= opened.threshold) {
+    throw new NexusContractError("this vessel holds the whole new quorum: the anchor lands here whole, inside the rotate, and no partial crosses.");
+  }
+  const repo = opts.repo;
+  try {
+    const { handle } = await carriageBoardFor(repo, home);
+    // No seat signs an anchor this board already holds for the same roll: a counted anchor from the closed epoch
+    // to the head refuses here, before any custody opens.
+    for (const a of rollAnchorsFromBoard(handle.doc())) {
+      if (a.prevEpochCid === closing.sealEpochCid && a.sealEpochCid === opened.sealEpochCid && await rollAnchorCounts(a, opened)) {
+        throw new NexusContractError("this board already holds a counted anchor for this roll; nothing signs.");
+      }
+    }
+    const parents = await rollAnchorParents(carriageEntriesFromBoard(handle.doc()), rollAnchorsFromBoard(handle.doc()), closing);
+    const anchor = await signRollAnchor({
+      prevEpochCid: closing.sealEpochCid, sealEpochCid: opened.sealEpochCid, prevKeys: closing.keys, prevThreshold: closing.threshold, parents,
+    }, held.map((s) => ({ signer: s.verifyingKey, sign: s.sign })));
+    const aid = nexusAidOrRefuse(home);
+    const partial = nexusActPartial(aid, { family: "roll-anchor", anchor });
+    const judged = await judgeNexusActPartial(partial, anchorReader(home, handle));
+    if (judged.verdict !== "ready") throw new NexusContractError(`the partial this vessel signed reads ${judged.verdict} here${judged.why ? `: ${judged.why}` : ""}; nothing crosses.`);
+    return { partial, verdict: judged.verdict, signed: judged.signed, landed: null };
+  } finally {
+    await repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+}
+
+/**
+ * Take a roll-anchor partial another vault opened or cosigned. The judge reads it against this vessel's own rolled
+ * head, the epoch that head closed and its own board BEFORE any signature: `ready` takes the signature of every seat
+ * of the head this vessel holds that has not signed; `complete` lands the anchor once a fresh judgement against the
+ * head and the board as they stand at the write still reads `complete`. Any other verdict refuses by name, and
+ * nothing signs or lands.
+ */
+export async function runNexusRollAnchorPartial(opts: { readonly partial: unknown; readonly sealHome: string; readonly repo: Repo }):
+  Promise<NexusRollAnchorPartialResult> {
+  const read = readNexusActPartial(opts.partial);
+  if (!read || read.act.family !== "roll-anchor") throw new NexusContractError("the file reads as no roll-anchor partial");
+  const home = charterHomeOrRefuse(opts.sealHome, read.aid);
+  const { opened } = rolledRostersOrRefuse(home);
+  const repo = opts.repo;
+  try {
+    const { boardUrl, handle } = await carriageBoardFor(repo, home);
+    let partial: NexusActPartial = read;
+    let judged = await judgeNexusActPartial(partial, anchorReader(home, handle));
+    if (judged.verdict === "ready") {
+      const hands = heldSeatSigners(opened, new Set(judged.signed));
+      if (hands.length === 0) throw new NexusContractError("the partial waits on a seat this vessel does not hold; carry it to the vault that holds one.");
+      try { partial = await cosignNexusActPartial(partial, anchorReader(home, handle), hands.map((h) => ({ signer: h.verifyingKey, sign: h.sign }))); }
+      catch (err) { if (err instanceof NexusPartialRefusal) throw new NexusContractError(`the partial refuses a cosign here: ${err.message}`); throw err; }
+      judged = await judgeNexusActPartial(partial, anchorReader(home, handle));
+    }
+    if (judged.verdict === "ready") return { partial, verdict: judged.verdict, signed: judged.signed, landed: null };
+    if (judged.verdict !== "complete") {
+      throw new NexusContractError(`the partial reads ${judged.verdict} on this vessel${judged.why ? `: ${judged.why}` : ""}; nothing signs or lands.`);
+    }
+    const anchor = (partial.act as Extract<NexusActPartial["act"], { family: "roll-anchor" }>).anchor;
+    if (!(await rollAnchorCounts(anchor, rolledRostersOrRefuse(home).opened))) {
+      throw new NexusContractError("refusing to write: the roll anchor does not count under the head roster (fail-closed).");
+    }
+    await judgeStillBeforeWrite({
+      mark: () => {
+        const doc = handle.doc();
+        return `${rolledRostersOrRefuse(home).opened.sealEpochCid}|${carriageEntriesFromBoard(doc).map(carriageEntryActCid).sort().join(",")}|${rollAnchorsFromBoard(doc).map(rollAnchorCid).sort().join(",")}`;
+      },
+      judge: () => judgeNexusActPartial(partial, anchorReader(home, handle)),
+      refuse: (message) => new NexusContractError(message),
+    });
+    handle.change((d) => writeRollAnchor(d, anchor));
+    await repo.flush();
+    return { partial, verdict: judged.verdict, signed: judged.signed, landed: { anchor, anchorCid: rollAnchorCid(anchor), parents: anchor.parents, boardUrl } };
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }
