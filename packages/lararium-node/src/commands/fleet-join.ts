@@ -35,6 +35,7 @@ import {
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin } from "@lararium/keyhive";
 import { primaryNexusAid, readCarriedCharters } from "../carried-set.js";
+import { FaceProvisional, refuseWhileProvisional } from "../face-provisional.js";
 import { nexusKeyPublicOf, nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readNexusKey, readVesselFaceKeyPublic, storeVesselFaceKey } from "../face-key-custody.js";
 import {
   clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, landFaceAddressSecret, mintFaceAddressSecret, readFaceAddressSecret, readFaceJoinRecord,
@@ -126,6 +127,14 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   const apart = [rootKey, (await loadVesselVerifyingKey()).toLowerCase()];
   const request = readFleetJoinRequest(opts.request, offer, apart);
   if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request does not read against this face's offer as it stands now.");
+
+  // A restored root may read and serve this face, but cannot add a vessel to its authority.
+  // Check before the device edge, certificates, grants, address secret or answer can be made.
+  try { await refuseWhileProvisional(FACE, "fleet join answer"); }
+  catch (error) {
+    if (error instanceof FaceProvisional) throw new FleetJoinRefused(error.reason, error.message);
+    throw error;
+  }
 
   // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet.
   const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}) });

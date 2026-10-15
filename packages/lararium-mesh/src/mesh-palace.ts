@@ -78,7 +78,7 @@ export function isCap(c: string): c is Cap {
  */
 export const WIRE_CAPS = {
   "rhizome.forward": "carriage: forward sealed bytes blind (the relay/leyline)",
-  "stolon.admit":    "carriage: deploy/admit a remote vessel (device-admit, then wither)",
+  "stolon.admit":    "carriage: bring a new vessel into one face's fleet (fleet join)",
   "tuber.author":    "vessel: author sovereign causal state",
   "tuber.store":     "vessel: hold sovereign state + genesis-buds (the lararium)",
   "bulb.seed":       "vessel: carry a boot-seed snapshot, next-gen inside (cacheable genesis)",
