@@ -91,20 +91,13 @@ export async function foundIfAbsent(args: ParsedArgs, ctx: FoundContext): Promis
     if (built !== 0) return steps; // nothing downstream can serve without dist
   }
 
-  // 2. Init — FOUND a new PersonaGroup, or JOIN an existing one when an admit payload
-  //    is provided (--admit FILE → cmdFound routes admitPayloadPath). Self-guards on the
-  //    bootstrap (idempotent: already founded/joined → skip); the keypair is never wiped.
+  // 2. Init — FOUND a vessel. A vessel joins a face afterwards, by the fleet-join door. Self-guards on the
+  //    bootstrap (idempotent: already founded or joined → skip); nothing wipes the keypair.
   if (present("init")) {
     steps.push({ step: "init", action: "skip", detail: "bootstrap present — already founded/joined; keypair intact" });
   } else {
-    const admit = args.options["admit"];
     const code = await cmdFound(args);
-    const detail =
-      code !== 0
-        ? `init exited ${code}`
-        : admit
-          ? `JOINED PersonaGroup via admit payload (${admit}) — own keypair, same group`
-          : "lares vessel found (founded a new PersonaGroup)";
+    const detail = code !== 0 ? `init exited ${code}` : "lares vessel found (founded a new PersonaGroup)";
     steps.push({ step: "init", action: code === 0 ? "ran" : "failed", detail });
     if (code !== 0) return steps;
   }

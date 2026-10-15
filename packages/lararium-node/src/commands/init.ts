@@ -33,7 +33,7 @@ import { hearthDialTiddlers, readHearthDialPin } from "../hearth-dial-pin.js";
 import { hearthAid } from "../hearth-aid.js";
 import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { admittedJoineeIsland } from "../nexus-standing.js";
-import type { CarriedAdmitPayload } from "./device-admit.js";
+import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
 import { persistIdentityAnchors, loadIdentityAnchors, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive } from "../identity-anchors.js";
 import { custodyVeilKeys, openedCustody, seatCustody } from "../custody-seat.js";
@@ -59,14 +59,9 @@ export interface InitOptions {
   readonly storageDir?: string;
   readonly genesisDir?: string;
   readonly force?:      boolean;
-  /**
-   * Path to a device-admit/v1 JSON payload. When provided, skips the founding
-   * ceremony and admits this vessel to the operator's existing PersonaGroup + MeshCabal.
-   * Use for same-operator second vessel. A second OPERATOR joins by carriage contract-receive.
-   */
-  readonly admitPayloadPath?: string;
-  /** The same payload already read and verified: the fleet-join door's landing hands it here, over a place that
-   *  stands, with `force`. */
+  /** A device-admit/v1 payload the fleet-join door's landing read out of a verified answer: it skips the founding
+   *  ceremony and joins this vessel, a place that stands (with `force`), to the face's PersonaGroup. A second
+   *  OPERATOR joins by carriage contract-receive. */
   readonly admitPayload?: CarriedAdmitPayload;
   /**
    * The human route the founding binds. REQUIRED: a founding seals the slot tree and the custody root from birth,
@@ -237,17 +232,14 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
 
   const repo = opts.repo;
 
-  if (opts.admitPayloadPath !== undefined || opts.admitPayload !== undefined) {
+  if (opts.admitPayload !== undefined) {
     // ── Vessel-admission path = the UPGRADE event (a fresh vessel joins a PersonaGroup) ──
     // The joinee's vessel key (above) is the DELEGATE; the payload carries the pinned signer +
     // the root→joinee edge (the founder's PersonaGroup root signed it). The joinee writes that
     // binding into its OWN daemon doc and boots through its Binding Gate — no Beelay, no cap events.
-    if (opts.admitPayload === undefined && !existsSync(opts.admitPayloadPath!)) {
-      throw new Error(`[lares vessel found --admit] payload file not found: ${opts.admitPayloadPath}`);
-    }
-    const payload = opts.admitPayload ?? JSON.parse(readFileSync(opts.admitPayloadPath!, "utf8")) as CarriedAdmitPayload;
+    const payload = opts.admitPayload;
     if (payload.kind !== "device-admit/v1") {
-      throw new Error(`[lares vessel found --admit] unexpected payload kind: ${payload.kind}`);
+      throw new Error(`[lares fleet join land] unexpected payload kind: ${payload.kind}`);
     }
     // The joinee's OWN seed — the admit supplies the BINDING; the vessel supplies the SELF. The ceremony
     // mints this vessel's self-certifying ContactCard from it, and a cardless vessel cannot speak at a gate.
@@ -306,12 +298,12 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     });
     await repo.flush();
 
-    console.log(`[lares vessel found --admit] vessel ${operatorIdentity.verifyingKey.slice(0, 16)}… admitted`);
+    console.log(`[lares fleet join land] vessel ${operatorIdentity.verifyingKey.slice(0, 16)}… admitted`);
     console.log(`  persona plane ${personaUrl}${payload.personaUrl ? " (synced from founder)" : " (fresh local — payload carried none)"}`);
     console.log(`  PersonaGroup ${payload.personaGroupId.slice(0, 20)}…`);
     console.log(`  signer pin   ${payload.signerDid.slice(0, 20)}…`);
     console.log(`  hearth-name  ${payload.hearthTrueName.slice(0, 20)}…  (binding: device × hearthTrueName)`);
-    console.log("[lares vessel found --admit] done — joined the PersonaGroup. Start with: lares vessel stand --with-web");
+    console.log("[lares fleet join land] done — joined the PersonaGroup. Start with: lares vessel stand --with-web");
     return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
   }
 

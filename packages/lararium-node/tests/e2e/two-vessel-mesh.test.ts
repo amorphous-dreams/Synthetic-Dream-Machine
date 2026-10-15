@@ -3,14 +3,14 @@
  *
  * Scenario:
  *   Vessel A = founding operator node (runs lares vessel found, becomes Gate A/B/C passing)
- *   Vessel B = second vessel admitted via device-admit payload (same operator, second machine)
+ *   Vessel B = second vessel joined by the fleet-join door (same operator, second machine)
  *
  * Assertions:
  *   1. Vessel A: runInit produces sentinel oracle tiddlers in daemon doc + bootstrap
  *   2. Vessel A: daemon doc cap events carry lar URI tags (not $:/tags/CapEvent)
  *   3. Vessel A: cap events parse cleanly as Keyhive event records — the founder MINTS the
  *      capability history, so the event records live in A's bag
- *   4. Vessel A: runDeviceAdmit signs an edge over the key B already holds, and emits admit.json
+ *   4. Vessel A: its fleet-join answer signs an edge over the key B already holds
  *   5. Vessel B: admission delivers a LINEAGE — the persona KEL prefix, the signer that vouched,
  *      the hearth the edge binds to, and a self-delegation — and copies NO cap events
  *
@@ -31,7 +31,7 @@
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { mkdirSync, rmSync, existsSync, readFileSync, cpSync, writeFileSync } from "fs";
+import { mkdirSync, rmSync, existsSync, readFileSync, cpSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { Repo } from "@automerge/automerge-repo";
@@ -45,8 +45,8 @@ import {
   HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
 } from "@lararium/mesh";
 import { InMemoryEventStore } from "@lararium/keyhive";
-import { runFoundTheFace, runDeviceAdmit } from "../../src/index.js";
-import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js";
+import { runFoundTheFace, runFleetJoinOffer, runFleetJoinRequest, runFleetJoinAnswer, runFleetJoinLand } from "../../src/index.js";
+import { larSealHome } from "../../src/vessel-paths.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
 import { foundDirect, sealTestCustody, seatSeedCharter } from "../found-route.js";
@@ -61,7 +61,6 @@ const VESSEL_A_ROOT = join(TEST_ROOT, "a");
 const VESSEL_B_ROOT = join(TEST_ROOT, "b");
 const VESSEL_A   = { root: VESSEL_A_ROOT, storage: join(VESSEL_A_ROOT, "data", "lares", "vessel"), genesis: join(VESSEL_A_ROOT, "genesis") };
 const VESSEL_B   = { root: VESSEL_B_ROOT, storage: join(VESSEL_B_ROOT, "data", "lares", "vessel"), genesis: join(VESSEL_B_ROOT, "genesis") };
-const ADMIT_FILE = join(TEST_ROOT, "admit.json");
 
 // The built hearth artifact, which `pnpm --filter @lararium/node build:genesis` produces.
 const BUILT_GENESIS = join(new URL("../../", import.meta.url).pathname, "..", "..", "genesis");
@@ -165,7 +164,7 @@ beforeAll(async () => {
   }
 
   // Step 1b — A wears a FACE. `runInit` founds the PLACE alone (faceless: `foundThePlace` writes no
-  // PersonaGroup / mesh-cabal sentinel IDs); the FACE lands by a distinct act, and `runDeviceAdmit` (Step 3)
+  // PersonaGroup / mesh-cabal sentinel IDs); the FACE lands by a distinct act, and the fleet-join answer (Step 3)
   // needs the face's sentinel oracle IDs to sign an edge — mirrors the founder in `persona-ring-cross-operator-admit`.
   // The seed charter seats first, as the Stable founding act seats it: A's face and every edge A signs bind its AID.
   await withLarRoot(VESSEL_A.root, () => seatSeedCharter({ name: "vessel-a" }));
@@ -177,29 +176,24 @@ beforeAll(async () => {
   if (!daemonUrlA) throw new Error("Vessel A: daemon URL missing from bootstrap");
   vesselADaemonTiddlers = await openDaemonDocTiddlers(VESSEL_A.storage, daemonUrlA);
 
-  // Step 2 — B mints its OWN vessel key, before anyone admits it.
+  // Step 2 — B founds a PLACE under its OWN root, before anyone admits it.
   //
-  // Admission SIGNS a key the joinee already holds; it never issues one. B's private seed is born on
-  // B and stays there, and only the public verifying key crosses to A — which is what lets the QR
-  // ceremony stay photograph-inert, and why `runDeviceAdmit` refuses to run without that key.
-  // `generateOrLoadVesselIdentity` reads through on a second call, so B's `runInit` below loads this
-  // same identity rather than minting a second one.
-  const vesselB = await withLarRoot(VESSEL_B.root, async () => { await sealTestCustody(); return generateOrLoadVesselIdentity(); });
+  // Admission SIGNS a key the joinee already holds; it never issues one. B's private seed is born on B and stays
+  // there, and only public keys cross to A, inside B's fleet-join request.
+  await withLarRoot(VESSEL_B.root, async () => { await sealTestCustody(); });
+  await withLarRoot(VESSEL_B.root, () => foundDirect({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis }));
 
-  // Step 3 — A's PersonaGroup root signs B's edge
-  const minted = await withLarRoot(VESSEL_A.root, () => direct(runDeviceAdmit)({
-      storageDir:         VESSEL_A.storage,
-      genesisDir:         VESSEL_A.genesis,
-      syncUrl:            "ws://localhost:3000/automerge",
-      joineeVerifyingKey: vesselB.verifyingKey,
-    }));
-  // The door hands back the carried form; the caller writes the file a joinee founds against.
-  writeFileSync(ADMIT_FILE, JSON.stringify(minted.carried, null, 2), "utf8");
-  admitPayload = JSON.parse(readFileSync(ADMIT_FILE, "utf8"));
+  // Step 3 — the fleet-join door: A offers, B requests, A's PersonaGroup root signs B's edge into its answer.
+  const offer   = await withLarRoot(VESSEL_A.root, () => runFleetJoinOffer({ sealHome: larSealHome() }));
+  const request = await withLarRoot(VESSEL_B.root, () => runFleetJoinRequest({ offer: JSON.parse(JSON.stringify(offer)) }));
+  const answer  = await withLarRoot(VESSEL_A.root, () => direct(runFleetJoinAnswer)({
+    storageDir: VESSEL_A.storage, request: JSON.parse(JSON.stringify(request)), syncUrl: "ws://localhost:3000/automerge",
+  }));
+  admitPayload = JSON.parse(JSON.stringify(answer.edge)) as Record<string, unknown>;
 
-  // Step 4 — Vessel B founds against the signed payload
-  const initB = await withLarRoot(VESSEL_B.root, () =>
-    foundDirect({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis, admitPayloadPath: ADMIT_FILE }));
+  // Step 4 — Vessel B lands the answer: the face founds on B's place through the edge the root signed
+  await withLarRoot(VESSEL_B.root, () => direct(runFleetJoinLand)({ storageDir: VESSEL_B.storage, answer: JSON.parse(JSON.stringify(answer)) }));
+  const initB = { bootstrapPath: join(VESSEL_B.storage, "social-bootstrap.json") };
   vesselBBootstrapPath = initB.bootstrapPath;
   if (vesselBBootstrapPath !== join(VESSEL_B.storage, "social-bootstrap.json")) {
     throw new Error(`Vessel B: runInit returned an unexpected bootstrap path: ${vesselBBootstrapPath}`);

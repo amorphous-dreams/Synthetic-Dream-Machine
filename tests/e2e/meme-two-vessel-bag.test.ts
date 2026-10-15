@@ -21,9 +21,8 @@
  *
  *   A JOINER STANDS BY ITS EDGE ALONE. The join copies no cap events (two-vessel-mesh asserts it as
  *   design), so B's veil holds no seat in the PersonaGroup until a face-join lands; B's first wiki-binding
- *   mint reads `faceSeated` false and stays on B's own key (`resolve-binding.ts`), and B boots. B's key is
- *   minted under B's root (`harness/vessel-key.ts`) — the identity dir resolves from `LAR_ROOT`, never from
- *   a path argument, so an in-process mint would have admitted the operator's home key instead.
+ *   mint reads `faceSeated` false and stays on B's own key (`resolve-binding.ts`), and B boots. B's key
+ *   mints under B's root when B founds as a place, before its fleet-join request names it.
  *
  *   THE SHARED-BAG WRITE DOOR. `--recipe lares` writes the recipe's designated bag — the wiki's WORKING
  *   layer (`wikis/lares/working`, `wiki which` says so below), the doc the running wiki island mounts as

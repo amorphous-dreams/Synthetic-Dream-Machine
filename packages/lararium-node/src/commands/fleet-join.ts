@@ -45,7 +45,7 @@ import { larBootstrapPath } from "../vessel-paths.js";
 import { runDeviceAdmit } from "./device-admit.js";
 import { runInit } from "./init.js";
 
-/** The face this door joins: the founding face, as `device-admit` signs for it. */
+/** The face this door joins: the founding face, as `runDeviceAdmit` signs for it. */
 const FACE = 0;
 
 /** A fleet join refused by name: the mesh readers' refusal, or this door's own. */
@@ -112,7 +112,7 @@ export interface FleetJoinAnswerOptions {
   readonly sealHome: string;
   /** The request file as the joinee wrote it. */
   readonly request:  unknown;
-  /** The url the joinee dials this hearth at (`device-admit --sync-url`). */
+  /** The url the joinee dials this hearth at (`--sync-url`). */
   readonly syncUrl?: string;
 }
 
@@ -127,9 +127,8 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
   const request = readFleetJoinRequest(opts.request, offer, apart);
   if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request does not read against this face's offer as it stands now.");
 
-  // THE DEVICE EDGE: the same door `device-admit` runs, binding the joinee's vessel key to this hearth.
-  const { payload, carried } = await runDeviceAdmit({ repo: opts.repo, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}) });
-  if (typeof carried.hearthGatePubKey !== "string") throw new FleetJoinRefused("pin-absent", "the hearth names no gate key to pin.");
+  // THE DEVICE EDGE (`runDeviceAdmit`): the root signs the joinee's vessel key into this hearth's fleet.
+  const { payload, hearth } = await runDeviceAdmit({ repo: opts.repo, joineeVerifyingKey: request.vesselKey, ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}) });
 
   // ONE CERTIFICATE PER REQUESTED SCOPE, under that scope's face key. The issuer's history stands at its genesis:
   // no removal of a face-scoped key lands a withdrawal on this vessel yet.
@@ -153,8 +152,8 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
     try { sealed = sealAddressSecret({ secret, request }); } finally { secret.fill(0); }
     const body = {
       nonce, vesselKey: request.vesselKey, personaGroup, edge: payload,
-      carriage: { gatePin: carried.hearthGatePubKey, canon: carried.hearthCanonDocs ?? {} },
-      reach: { syncUrl: payload.syncUrl, islandKind: carried.hearthIslandKind ?? null, islandScope: carried.hearthIslandScope ?? null },
+      carriage: { gatePin: hearth.gatePin, canon: { ...hearth.canon } },
+      reach: { syncUrl: payload.syncUrl, islandKind: hearth.islandKind ?? null, islandScope: hearth.islandScope ?? null },
       secret: sealed,
     };
     return { kind: "fleet-join-answer", ...body, certificates, grants, signature: await signHex(fleetJoinAnswerImage(body), seed) };

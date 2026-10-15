@@ -733,7 +733,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   console.log("[lararium] browser crossing — open one of these on the device that crosses:");
   const crossings = reachFaces.map((face, i) => ({ face, composition: originCompositions[i]! }));
   for (const line of crossingBannerLines("lararium", crossings, gateIdentity.verifyingKey)) console.log(`[lararium]   ${line}`);
-  console.log("[lararium]   (a leaf still needs an ADMIT — the leaf's page shows its own key + the `lares device-admit` line to run here)");
+  console.log("[lararium]   (a leaf joins by the fleet-join door: `lares fleet join offer` here, the offer pasted on the leaf's page)");
 
   // The CLIENT dial-out (Socket A) — announced when a peer sync URL rides the config (the same-operator device
   // breath: this vessel DIALS a peer node's /ws carrying the operator's own identity). Read inside the vessel;

@@ -327,8 +327,8 @@ describe("device-admit carries the founder's RESOLVED island, not just its gate 
     expect(standingSrc, "nexus-standing.ts re-exports it rather than restating it")
       .toMatch(/export \{ admittedJoineeIsland \} from "@lararium\/mesh";/);
     expect(initSrc, "init.ts composes the shared resolution rather than restating it").toMatch(/admittedJoineeIsland\(/);
-    expect(admitSrc, "device-admit.ts carries the resolved kind").toMatch(/hearthIslandKind/);
-    expect(admitSrc, "device-admit.ts carries the resolved scope").toMatch(/hearthIslandScope/);
+    expect(admitSrc, "device-admit.ts reads the resolved kind").toMatch(/islandKind: founderIdentity\.kind/);
+    expect(admitSrc, "device-admit.ts reads the resolved scope").toMatch(/islandScope: founderIdentity\.scope/);
     // The old defect's own spelling must not survive as the ONLY read: init.ts must not force
     // `anchorGateKey` straight off `hearthGatePubKey` outside of `admittedJoineeIsland`'s own body.
     const code = initSrc.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");

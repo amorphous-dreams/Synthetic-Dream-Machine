@@ -1,18 +1,13 @@
 /**
- * admit-carriage — decode a carried `device-admit/v1` payload.
+ * admit-carriage — encode and decode the tab-local carriage of a `device-admit/v1` payload.
  *
- * THE ADMIT IS CARRIED, NEVER FETCHED. It is a capability the founder's root already signed, so it
- * verifies on its own and needs no trusted channel: a carrier may WITHHOLD it, never forge it. The bytes
- * may therefore ride anything — a paste, a QR code held up to a screen, a file on a stick, a URL fragment.
- *
- * The fragment earns its place because browsers never transmit one: the payload reaches the vessel and no
- * server sees it in transit, not the relay and not the issuer. The alternative — a vessel that FETCHES its
- * own admission from an endpoint — makes the vessel a client petitioning an authority, and demands that
- * authority be REACHABLE at the moment of asking. That is a global now, and this house does not have one.
+ * The fleet-join landing writes the admit it carries into a carriage string; the next boot reads that
+ * string back into a payload. The admit verifies on its own (the founder's root signed it), so the
+ * carriage needs no trusted channel: a carrier may withhold it, never forge it.
  *
  * `parseAdmitCarriage` takes the carriage as a STRING and returns a payload or nothing. It touches no
- * platform: no `location`, no `history`, no clock, no network. Same bytes in, same payload out — which is
- * what lets the crossing be tested without standing a relay up.
+ * platform: no `location`, no `history`, no clock, no network. Same bytes in, same payload out, so the
+ * crossing tests without standing a relay up.
  */
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
 
@@ -28,7 +23,7 @@ function fromBase64Url(b64url: string): string {
 }
 
 /**
- * Decode `#admit=<base64url>` (or a bare `admit=<base64url>`) from a carriage string.
+ * Decode `#admit=<base64url>` from a carriage string.
  *
  * Returns the payload, or `null` when the carriage holds none, holds a malformed one, or holds something
  * that is not a device-admit. A refusal is never a throw: a garbled carriage means the admit DID NOT
@@ -36,7 +31,7 @@ function fromBase64Url(b64url: string): string {
  * outcome. A vessel that crashed on a bad paste would fail a human's typo as if it were an attack.
  */
 export function parseAdmitCarriage(carriage: string): CarriedAdmitPayload | null {
-  const m = /(?:^|[#&?])admit=([A-Za-z0-9_-]+)/.exec(carriage);
+  const m = /^#admit=([A-Za-z0-9_-]+)$/.exec(carriage);
   if (!m?.[1]) return null;
   let payload: unknown;
   try {
@@ -59,36 +54,6 @@ export function parseAdmitCarriage(carriage: string): CarriedAdmitPayload | null
 }
 
 /**
- * Take a carriage a HUMAN pasted, in whichever of its forms they had to hand.
- *
- * The CLI prints two things and a browser shows a third, so a human arrives holding any of: the whole
- * `#admit=…` line, a URL that ends in one, the bare base64url token with the `admit=` rubbed off by a
- * chat client, or the pretty-printed JSON payload written to stdout. Every one of them carries the SAME
- * signed capability; refusing four of the five would make the human retype bytes they already hold.
- *
- * The recognition stays one function deep: each form normalizes to a carriage string and goes through
- * `parseAdmitCarriage` — so the kind-check and the binding-field refusal live in exactly one place, and a
- * paste never reaches a second, looser door. Returns null on anything it cannot read; a typo fails soft.
- */
-export function parseAdmitPaste(text: string): CarriedAdmitPayload | null {
-  const trimmed = text.trim();
-  if (!trimmed) return null;
-  const direct = parseAdmitCarriage(trimmed);
-  if (direct) return direct;
-  // The JSON the CLI writes to stdout — re-encoded into a carriage so ONE parser adjudicates it.
-  if (trimmed.startsWith("{")) {
-    try {
-      return parseAdmitCarriage(toAdmitCarriage(JSON.parse(trimmed) as CarriedAdmitPayload));
-    } catch {
-      return null;
-    }
-  }
-  // A bare token: the `admit=` rubbed off in transit. Re-attach the label and re-read.
-  if (/^[A-Za-z0-9_-]+$/.test(trimmed)) return parseAdmitCarriage(`#admit=${trimmed}`);
-  return null;
-}
-
-/**
  * Write the exact line the operator runs on the NODE to admit the vessel that shows it.
  *
  * The vessel is the only place its own key exists, so the vessel says it — as the command, not as a fact
@@ -101,7 +66,7 @@ export function formatAdmitCommand(verifyingKey: string): string {
   return `lares device-admit --joinee-key ${hex}`;
 }
 
-/** Encode a payload into the carriage form the CLI prints and a vessel reads. The round-trip inverse. */
+/** Encode a payload into the carriage form that the boot reads. The round-trip inverse. */
 export function toAdmitCarriage(payload: CarriedAdmitPayload): string {
   const json = JSON.stringify(payload);
   const bytes = new TextEncoder().encode(json);

@@ -18,7 +18,7 @@
  */
 import {
   openBrowserVessel,
-  parseAdmitCarriage, parseAdmitPaste, toAdmitCarriage,
+  parseAdmitCarriage, toAdmitCarriage,
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
 } from "@lararium/browser";
@@ -117,29 +117,11 @@ async function readOracle(read: OracleReader): Promise<void> {
 const projectionSink = createProjectionSink($("projection"), { inputMaxChars: DOM_INPUT_MAX_CHARS });
 
 /**
- * Take a carried `device-admit/v1` payload off `location.hash`, and CLEAR the fragment once taken.
+ * The tab-local hand-off the fleet-join landing writes: a carriage waiting for the boot that consumes it.
+ * The admit enters the vessel at the identity seat — before the PersonaGroup, the relay caps, and the
+ * Handle stand — so a landed admission re-enters through boot rather than reaching behind a live cap stack. This page performs that re-entry itself; the human pastes and taps.
  *
- * The DECODE lives in `@lararium/browser` (parseAdmitCarriage) and is tested there against fixed bytes;
- * this half holds only what needs a browser: reading the fragment, and clearing it. Clearing matters —
- * a URL left holding a delegation leaves it in the address bar, the history, and every screenshot of the
- * tab, and the payload has already reached the vessel by then.
- */
-function takeAdmitFromLocation(): DeviceAdmitPayload | null {
-  const payload = parseAdmitCarriage(location.hash);
-  if (!payload) return null;
-  history.replaceState(null, "", location.pathname + location.search);
-  console.log("[vessel] ADMIT carried in — this vessel JOINS an existing PersonaGroup rather than founding one.");
-  return payload;
-}
-
-/**
- * The tab-local hand-off the PASTE door writes: a carriage the human handed to this page, waiting for the
- * boot that consumes it. The admit enters the vessel at the identity seat — before the PersonaGroup, the
- * relay caps, and the Handle stand — so a pasted admission re-enters through boot rather than reaching
- * behind a live cap stack. This page performs that re-entry itself; the human pastes and taps, once.
- *
- * The stash rides sessionStorage, never the URL: a fragment left in the address bar carries a signed
- * delegation into the history and into every screenshot of the tab. sessionStorage closes with the tab,
+ * The stash rides sessionStorage, never the URL. sessionStorage closes with the tab,
  * and this read REMOVES the entry — the carriage exists for exactly one boot.
  */
 const ADMIT_STASH_KEY = "lares:admit-carriage";
@@ -149,7 +131,7 @@ function takeStashedAdmit(): DeviceAdmitPayload | null {
   if (!carriage) return null;
   try { sessionStorage.removeItem(ADMIT_STASH_KEY); } catch { /* the read already holds the bytes */ }
   const payload = parseAdmitCarriage(carriage);
-  if (payload) console.log("[vessel] ADMIT taken from the paste door — this vessel JOINS an existing PersonaGroup.");
+  if (payload) console.log("[vessel] ADMIT taken from the fleet-join landing — this vessel JOINS an existing PersonaGroup.");
   return payload;
 }
 
@@ -165,11 +147,11 @@ function fleetJoinFileOf(text: string): { readonly kind: "fleet-join-offer" | "f
  * Mount the identity + admit surface: this vessel names its own key, writes the command that starts a fleet join,
  * and takes the files back as pastes. THE FLEET-JOIN DOOR: the root holder's offer pastes in, and this browser
  * answers with its request (its face-scoped keys mint here); the root holder's answer pastes in, and this browser
- * lands it and re-enters boot on the admit it carried. A bare `#admit=` carriage reads too.
+ * lands it and re-enters boot on the admit it carried. The paste box reads a fleet-join offer or answer only.
  *
  * The alternative path costs a human a devtools console on a phone. The key, the command, and the door
  * all live on the page instead — the vessel says the one thing only it holds, and reads back the one
- * thing only the node can sign. `parseAdmitPaste` adjudicates: a refusal states itself and the page
+ * thing only the node can sign. `fleetJoinFileOf` adjudicates: a refusal states itself and the page
  * stands unchanged, because a garbled paste means the admit DID NOT ARRIVE, never that an attack landed.
  */
 function mountAdmitSurface(verifyingKeyHex: string): void {
@@ -242,16 +224,8 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
       })();
       return;
     }
-    const payload = parseAdmitPaste(paste.value);
-    if (!payload) {
-      statusEl.textContent = "✗ nothing read in that paste — carry the whole fleet-join offer or answer file.";
-      statusEl.className = "err";
-      return;
-    }
-    statusEl.textContent = `✓ admit read — signed by ${payload.signerDid.slice(0, 12)}… · re-entering boot`;
-    statusEl.className = "ok";
-    paste.value = "";
-    stashAndReboot(toAdmitCarriage(payload));
+    statusEl.textContent = "✗ not a fleet-join offer or answer — paste the whole offer or answer file.";
+    statusEl.className = "err";
   });
 }
 
@@ -272,15 +246,8 @@ async function bootVessel(): Promise<void> {
   // its own, and the proof fails closed — a correct refusal that looks exactly like a broken socket.
   // The node vessel prints this key in its boot banner.
   const relayGatePubKey = new URLSearchParams(location.search).get("gate") ?? undefined;
-  // #admit=<base64url> → a device-admit/v1 payload. It rides the FRAGMENT because a browser never
-  // transmits one: the bytes reach this vessel by whatever the human carried them with, and no server —
-  // not even the relay — sees them in transit. A signed capability needs no trusted channel; a carrier
-  // may withhold it, never forge it. Fetching it instead would make this vessel a client petitioning an
-  // authority for its own admission, and would demand that authority be reachable at the moment of asking.
-  // Two doors, one seat. A URL fragment carries an admit from a scan or a click; the on-page paste door
-  // stashes one for the next boot. The fragment leads (a human who just opened a carried link means that
-  // link), and the stash answers when no fragment stands.
-  const admit = takeAdmitFromLocation() ?? takeStashedAdmit();
+  // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
+  const admit = takeStashedAdmit();
   // A local boot and a CROSSED boot look identical from the outside: both render, both say "ready". So
   // the vessel names which one it just performed. A shore nobody can see is a shore nobody watches, and an
   // absent crossing that reports nothing reads exactly like a crossing that worked.

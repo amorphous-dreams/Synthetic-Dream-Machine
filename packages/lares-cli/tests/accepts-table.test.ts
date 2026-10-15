@@ -44,7 +44,7 @@ const HANDLER_FILE: Readonly<Record<string, string>> = {
   "wing-of": "commands/wing-of", mempalace: "commands/mempalace", hooks: "commands/hooks",
   sensorium: "commands/sensorium", "test-quine": "commands/scripted", vault: "commands/vault",
   library: "commands/library", persona: "commands/persona", circle: "commands/circle", cabal: "commands/cabal",
-  edge: "commands/edge", raise: "commands/raise", nexus: "commands/nexus", "device-admit": "commands/device-admit",
+  edge: "commands/edge", raise: "commands/raise", nexus: "commands/nexus",
   handle: "commands/handle", fleet: "commands/fleet",
 };
 

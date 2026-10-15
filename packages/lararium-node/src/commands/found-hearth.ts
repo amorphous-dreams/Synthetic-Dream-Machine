@@ -45,7 +45,7 @@ export interface HearthCard {
   readonly digest: string;
 }
 
-export interface FoundHearthOptions extends Omit<InitOptions, "admitPayloadPath"> {
+export interface FoundHearthOptions extends Omit<InitOptions, "admitPayload"> {
   /** Persona zero's private pet-name. */
   readonly name:     string;
   /** The private label of the one chair the seat claim stands for (default: the face's own chair label). */

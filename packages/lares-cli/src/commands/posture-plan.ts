@@ -29,7 +29,7 @@ export type Posture = (typeof POSTURES)[number];
  * defers to `pnpm dev`, so it reads NOTHING — its own port and root included.
  */
 const READS: Record<Posture, readonly string[]> = {
-  "report":     ["observe", "init", "install", "admit", "claude", "codex", "copilot", "vscode", "port", "root", "json"],
+  "report":     ["observe", "init", "install", "claude", "codex", "copilot", "vscode", "port", "root", "json"],
   "foreground": ["wiki", "port", "root", "json"],
   "restart":    ["port", "wiki", "root", "json"],
   "with-web":   [],

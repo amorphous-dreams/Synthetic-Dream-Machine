@@ -1,10 +1,10 @@
 /**
  * device-admit names the hearth's canon documents — the per-relation pointer a joinee mounts by.
  *
- * A leaf opens its hearth's wiki. The documents that wiki reads (`@lares`, `@lararium`) ride the carried admit
- * by name, beside the gate key, so the joinee's gate widens by exactly those documents and the hearth's
- * oracle plane never crosses to it. The oracle names far more than canon — this vessel's catalog, its daemon
- * doc, its faces' planes — and none of that rides the admit.
+ * A leaf opens its hearth's wiki. The documents that wiki reads (`@lares`, `@lararium`) ride the fleet-join answer's
+ * signed carriage by name, beside the gate pin, so the joinee's gate widens by exactly those documents and the
+ * hearth's oracle plane never crosses to it. The oracle names far more than canon — this vessel's catalog, its
+ * daemon doc, its faces' planes — and none of that rides the answer.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/device-admit
  */
@@ -42,10 +42,11 @@ describe("admitCanonDocs — the canon documents the carried admit names", () =>
     expect(await admitCanonDocs(repo)).toEqual({ [LARES_DOC_URI]: lares });
   });
 
-  test("★ the door carries the named canon beside the gate key, outside the signed payload ★", () => {
+  test("★ the door reads the named canon into the hearth reading the fleet-join answer signs ★", () => {
     const src = readFileSync(new URL("../src/commands/device-admit.ts", import.meta.url), "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    const carried = src.slice(src.indexOf("const carried: CarriedAdmitPayload = {"));
-    expect(carried.slice(0, carried.indexOf("};")), "the carried admit names no canon documents").toMatch(/hearthCanonDocs:\s*await admitCanonDocs\(repo\)/);
+    const hearth = src.slice(src.indexOf("const hearth: AdmitHearthReading = {"));
+    expect(hearth.slice(0, hearth.indexOf("};")), "the hearth reading names no canon documents").toMatch(/canon:\s*await admitCanonDocs\(repo\)/);
+    expect(src, "a carried admit composes beside the signed edge").not.toMatch(/CarriedAdmitPayload\s*=/);
   });
 });

@@ -14,15 +14,14 @@
  *   --root DIR       (or --root=DIR) Isolate storage + genesis under DIR (overrides LAR_ROOT env).
  *   --storage DIR    Explicit override for Automerge NodeFS storage directory.
  *   --genesis DIR    Explicit override for genesis/ directory (else LAR_GENESIS, else <root>/genesis).
- *   --admit FILE     Apply a device-admit/v1 JSON payload instead of founding a new Nexus.
  *   --hearth         THE STABLE FOUNDING ACT: the place, persona zero, its one-seat PRIVATE seed charter (the seat's
  *                    own key, its cold next key printed on a card and read back), and the face that binds the
  *                    charter's Nexus AID. Needs --name '<label>' (persona zero's private label); --chair '<label>'
  *                    names the chair privately.
  *
- * THREE ROADS, ONE VERB. Bare, it founds a PLACE with no face (a herm's rite); `--admit` founds a joiner through
- * its admit; `--hearth` runs the Stable founding act. A face founds at a hearth alone: `persona new 0` on a place
- * with no seed charter refuses by name.
+ * TWO ROADS, ONE VERB. Bare, it founds a PLACE with no face (a herm's rite, or a vessel about to join a face by
+ * `lares fleet join`); `--hearth` runs the Stable founding act. A face founds at a hearth alone: `persona new 0` on
+ * a place with no seed charter refuses by name.
  */
 
 import { OldShapeRefusal, assertNoOldCustodyShape, seatFingerprint, type SlotSpec } from "@lararium/mesh";
@@ -81,7 +80,6 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
   // storage (runtime) → <lares>/vessel (larDataDir); genesis (the baked seed) stays corpus-relative.
   const storageDir = args.options["storage"] ?? larDataDir();
   const genesisDir = args.options["genesis"] ?? larGenesisDir();   // --genesis → LAR_GENESIS → <root>/genesis
-  const admitPayloadPath = args.options["admit"];
   try {
     const homes = { identity: larIdentityDir(), storage: storageDir, seal: larSealHome() };
     const io = new FsCustodyIo(homes);
@@ -98,7 +96,6 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
     await ownedStore(storageDir, (repo) => runInit({
       repo, storageDir, genesisDir, custody: { slots },
       ...(args.flags["force"] ? { force: true } : {}),
-      ...(admitPayloadPath ? { admitPayloadPath } : {}),
     }));
   } catch (err) {
     const refusal = foundingRefusal(err);
@@ -116,7 +113,6 @@ export async function cmdFound(args: ParsedArgs): Promise<number> {
  * test root the read-back stands in, and the JSON answer then carries the card's code).
  */
 async function foundHearth(args: ParsedArgs, at: { storageDir: string; genesisDir: string; slots: readonly SlotSpec[] }): Promise<number> {
-  if (args.options["admit"]) throw new HearthFoundingRefused("--hearth founds a hearth of its own; a joiner founds through --admit alone. Nothing was written.");
   const name = typeof args.options["name"] === "string" ? args.options["name"].trim() : "";
   if (name.length === 0) throw new HearthFoundingRefused("persona zero needs a private label: --name '<label>'. Nothing was written.");
   const chair = typeof args.options["chair"] === "string" ? args.options["chair"].trim() : "";

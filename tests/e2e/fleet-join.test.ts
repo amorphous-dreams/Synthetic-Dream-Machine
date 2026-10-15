@@ -31,7 +31,7 @@ const bootstrapOf = (root: string): string => {
 
 beforeAll(async () => {
   pair = await openStagedJoinee({
-    tag: "fleet-join", door: "fleet-join", dial: "pin",
+    tag: "fleet-join", dial: "pin",
     // The face stands at its own hearth's Nexus, so the offer names one scope and the answer certifies B's key there.
     riteA: async (_cli, rootA) => { stoodAt = await mintStagedNexusKey(rootA); },
     beforeLand: async (cliB, files) => {

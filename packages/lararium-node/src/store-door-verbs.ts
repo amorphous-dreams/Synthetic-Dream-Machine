@@ -21,7 +21,6 @@
  *   edge-partial · edge-cosign                   a quorum edge act between seats on separate vessels (`commands/edge-cosign`)
  *   cabal-vouch · cabal-join                     the vouch board (`commands/cabal-vouch`, `commands/cabal-join`)
  *   cabal-face                                   the worn face's key in one realm (`commands/cabal-face`)
- *   device-admit                                 a device edge off the persona-KEL board (`commands/device-admit`)
  *   fleet-join-offer · fleet-join-answer         the root holder's half of the fleet-join door (`commands/fleet-join`)
  *   handle-publish · handle-burn · handle-rotate · handle-attest
  *                                                the WHO board (`commands/handle`)
@@ -66,7 +65,6 @@ import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
 import { runCabalFace, CabalFaceError } from "./commands/cabal-face.js";
 import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
-import { runDeviceAdmit } from "./commands/device-admit.js";
 import { runFleetJoinAnswer, runFleetJoinOffer, FleetJoinRefused } from "./commands/fleet-join.js";
 import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest } from "./commands/handle.js";
 import { runFoundTheFace } from "./commands/init.js";
@@ -132,7 +130,7 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
-  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "device-admit",
+  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
   "fleet-join-offer", "fleet-join-answer",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
@@ -342,9 +340,6 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         realm: str(args["realm"]) ?? "", applicant: str(args["applicant"]) ?? "", sealHome, repo,
         ...opt("maxVouchesPerVoucher", int(args["maxVouchesPerVoucher"])),
       })),
-    })),
-    "device-admit": (args) => answer("device-admit", async () => ({
-      ...(await runDeviceAdmit({ joineeVerifyingKey: str(args["joineeVerifyingKey"]) ?? "", repo, ...opt("syncUrl", str(args["syncUrl"])) })),
     })),
     // The fleet-join door's root half: an offer, and the answer to one carried request. The answer carries the face's
     // address secret SEALED to the request's own key; no secret rides it in the clear.

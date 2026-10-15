@@ -250,7 +250,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
       "stand --install      found a vessel that holds none, then link `lares` globally — the founding runs first and stays inside LAR_ROOT; the mempalace sidecar has its own door, `mempalace install`",
       "stand --init         founds the same, AND wires every AI surface (reaches ~/.claude etc; `vessel wire` is the door for that alone)",
-      "stand --admit <file>        join an existing operator PersonaGroup",
       "wire [--claude|--codex|--copilot|--vscode]   aim that surface here; no flag aims them all",
       "wire --observe       REPORT what a wiring would touch; write nothing",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",

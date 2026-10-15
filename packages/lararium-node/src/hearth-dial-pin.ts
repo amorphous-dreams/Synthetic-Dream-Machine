@@ -1,11 +1,11 @@
 /**
  * hearth-dial-pin — THE PIN NAMES THE DIAL.
  *
- * A joinee founded by an admit edge (`lares vessel found --admit`) boots for years after it spent its payload,
+ * A joinee founded by a fleet-join landing (`lares fleet join land`) boots for years after it spent its answer,
  * and the one address it cannot derive from anything it holds is where its hearth LISTENS: the `ws://` sync
- * url the hearth's `device-admit --sync-url` named, and the hearth's gate key — the anti-relay binding the
- * V3 proof commits to, known out-of-band (the admit payload IS the out-of-band channel; a key read off the
- * wire would bind the proof to whoever answered). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC
+ * url the hearth's `fleet join answer --sync-url` named, and the hearth's gate key — the anti-relay binding the
+ * gate proof commits to, known out-of-band (the root-signed answer carries both; a key read off the wire would
+ * bind the proof to whoever answered). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC
  * url (an `automerge:` address) and dials nothing.
  *
  * So the two ride the bootstrap beside the sentinel ids, packed at admission (`hearthDialTiddlers`) and read
