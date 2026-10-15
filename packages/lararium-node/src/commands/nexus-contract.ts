@@ -508,15 +508,9 @@ export async function runNexusRollAnchor(opts: {
     `roll anchor REFUSED (fail-closed): the vessel holds ${held} seat key(s) the new roster seats, but the anchor ` +
     `carries ${k} distinct signatures of the NEW quorum — the closing keys never sign it.`,
   ));
-  // The board keys on the charter's genesis island — a rotating vessel holds a charter, and a charter outranks
-  // every lower rung of the gradient. The vessel key rides in only as that gradient's floor, so a seal home
-  // whose vessel holds no key of its own still anchors on its charter's board.
-  const ownVesselKey = await loadVesselVerifyingKey().catch(() => "");
-  const boardIsland  = nodeNexusIsland({ ownVesselKey, sealHome: opts.sealHome });
-  const boardUrl     = carriageDocUrl(boardIsland);
   const repo         = opts.repo;
   try {
-    const handle  = await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts");
+    const { boardUrl, handle } = await rollAnchorBoardFor(repo, opts.sealHome);
     const parents = await rollAnchorParents(
       carriageEntriesFromBoard(handle.doc()), rollAnchorsFromBoard(handle.doc()), opts.closing);
     const signers = selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign }));
@@ -570,6 +564,60 @@ function rolledRostersOrRefuse(home: string): { readonly opened: KahuQuorumSeats
   return { opened, closing: { keys: [...seats.keys], threshold: seats.threshold, sealEpochCid: prev.epochCid } };
 }
 
+/**
+ * The carriage board a roll anchor rides. The board keys on the charter's genesis island — a rotating vessel holds a
+ * charter, and a charter outranks every lower rung of the gradient. The vessel key rides in only as that gradient's
+ * floor, so a seal home whose vessel holds no key of its own still anchors on its charter's board.
+ */
+async function rollAnchorBoardFor(repo: Repo, sealHome: string): Promise<Pick<ContractCore, "boardUrl" | "handle">> {
+  const ownVesselKey = await loadVesselVerifyingKey().catch(() => "");
+  const boardIsland  = nodeNexusIsland({ ownVesselKey, sealHome });
+  const boardUrl     = carriageDocUrl(boardIsland);
+  return { boardUrl, handle: await materializeSharedLarDoc(repo, boardUrl, "board:carriage-contracts") };
+}
+
+/** What the roll's open reads of the head's own roll: no prior roll (a genesis), no anchor owed, or the counted anchor that stands. */
+export interface NexusRollPriorAnchor {
+  readonly state:      "no-prior-roll" | "nothing-to-anchor" | "anchored";
+  /** The counted anchor that joins the head to the epoch it closed, once one stands. */
+  readonly anchorCid?: string;
+}
+
+/**
+ * A ROLL WAITS ON ITS PRIOR ANCHOR (operator ruling 2026-10-15; roadmap `#/rulings`). A seal roll refuses by name
+ * while the head's own roll stands with no counted anchor on this vessel's carriage board: an admit carries across a
+ * roll only through its roll anchors, and a roll laid over an anchorless one strands every admit between them. The
+ * roll's open (`lares nexus seal rotate`, `seal roll open`) asks here before any card reads or any seat signs.
+ *
+ * A genesis closes no roll, so the first roll opens. A head that closed an epoch reading no seats, or a reunion
+ * head joining two branches, carries no anchor this door can ask for, so neither waits. The single-vault rotate
+ * anchors inside itself and so leaves a counted anchor for the next open to find.
+ */
+export async function runNexusRollPriorAnchorCheck(opts: { readonly sealHome: string; readonly repo: Repo; readonly aid?: string }):
+  Promise<NexusRollPriorAnchor> {
+  const home = charterHomeOrRefuse(opts.sealHome, opts.aid);
+  const doc = readNexusDoc(home);
+  const lineage = doc?.sealLineage ?? [];
+  const head = lineage[lineage.length - 1];
+  if (!head || head.predecessors.length === 0) return { state: "no-prior-roll" };
+  const opened = foundingRoster(doc);
+  const closed = head.predecessors.length === 1 ? lineage.find((e) => e.epochCid === head.predecessors[0]) : undefined;
+  if (!closed || !epochSeats(closed) || opened.sealEpochCid.length === 0 || opened.keys.length < opened.threshold) return { state: "nothing-to-anchor" };
+  try {
+    const { handle } = await rollAnchorBoardFor(opts.repo, home);
+    for (const a of rollAnchorsFromBoard(handle.doc())) {
+      if (a.prevEpochCid === closed.epochCid && a.sealEpochCid === opened.sealEpochCid && await rollAnchorCounts(a, opened)) {
+        return { state: "anchored", anchorCid: rollAnchorCid(a) };
+      }
+    }
+  } finally {
+    await opts.repo.flush().catch(() => { /* best-effort final flush */ });
+  }
+  throw new NexusContractError(
+    "roll REFUSED (prior-roll-unanchored): the head's own roll stands with no counted anchor on this board, so a roll laid " +
+    "over it would strand every admit between them. Land the head's anchor first (`lares nexus seal anchor`), then roll.");
+}
+
 /** The reader one vessel judges a roll-anchor partial with: the head it holds, the epoch that head closed, and its board. */
 function anchorReader(home: string, handle: ContractCore["handle"]): NexusPartialReader {
   const aid = nexusAidOrRefuse(home);
@@ -584,9 +632,9 @@ function anchorReader(home: string, handle: ContractCore["handle"]): NexusPartia
  * heads there. The act leaves as a PARTIAL for the vault that holds the other new seats; nothing lands here. Where
  * the seats rest in two vaults no rotate signs its anchor whole, so the anchor follows the rolled head rather than
  * preceding it: an admit made at the closed epoch reads stranger at the new head until the anchor lands. The door
- * anchors the head to the ONE epoch it closed, so a second roll before this anchor lands leaves the first roll
- * unanchored for good: carry the anchor before the next roll. It anchors the carriage board alone; the realm edge
- * boards the single-vault rotate also anchors (`runEdgeRollAnchors`) stay OWED across two vaults, and the store
+ * anchors the head to the ONE epoch it closed, so a second roll before this anchor lands would leave the first roll
+ * unanchored for good: the next roll's open refuses by name until this anchor lands (`runNexusRollPriorAnchorCheck`).
+ * It anchors the carriage board alone; the realm edge boards the single-vault rotate also anchors (`runEdgeRollAnchors`) stay OWED across two vaults, and the store
  * row says so in its answer. A vessel that holds the whole new quorum anchors through `runNexusRollAnchor`, inside
  * its rotate.
  */

@@ -126,6 +126,18 @@ describe("lares nexus seal roll", () => {
       expect(head(B, aid)).toBe(newHead);
       // Filed, no circle stands open here: abandon moves nothing.
       expect((await roll(["abandon"], { nexus: aid })).out["data"]).toMatchObject({ abandoned: false, retired: [] });
+
+      // A ROLL WAITS ON ITS PRIOR ANCHOR: the filed head stands with no anchor, so a next circle refuses by name
+      // on either vault, before any card reads and with no circle file written.
+      const c5 = join(courier, "c5.json");
+      const aNext = opened.out["data"]["cards"][0]["code"] as string;
+      at(A);
+      const seats = listSeatKeys().length;
+      const waits = await roll(["open"], { nexus: aid, threshold: "2", "cold-key": aNext, out: c5 });
+      expect(waits.code).not.toBe(0);
+      expect(waits.out["error"]["message"]).toMatch(/prior-roll-unanchored/);
+      expect(existsSync(c5)).toBe(false);
+      expect(listSeatKeys().length).toBe(seats);
     } finally { rmSync(courier, { recursive: true, force: true }); }
   });
 

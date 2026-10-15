@@ -16,6 +16,9 @@
  *       `unavailable`; a partial its own vault cannot advance waits. No seat signs on any of them.
  *   R3  The store door's rows carry the same act, say the realm edge anchors stay owed, and a refusal answers under
  *       the row's own name; an open over a board that holds the counted anchor refuses before any seat signs.
+ *   R5  RED: a roll waits on its prior anchor (operator ruling 2026-10-15): the check refuses by name while the head's
+ *       own roll stands with no counted anchor on the board, passes at a genesis and once the anchor lands, and its
+ *       store row answers under the row's own name; no seat signs on the refusal.
  *   R4  RED: the same anchor again (`replay`), a partial under another Nexus, a torn file and a kapae partial sign
  *       and land nothing.
  */
@@ -31,7 +34,7 @@ import {
   foundingRoster, carriageDocUrl, materializeSharedLarDoc, rollAnchorsFromBoard, rollAnchorCid, presentationFromBoardDoc,
   nexusAidOf, nexusActPartial, KAPAE_ANTIGEN_DOMAIN, antigenActCid, type KapaeAntigenEntry,
 } from "@lararium/mesh";
-import { NexusContractError, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchorOpen, runNexusRollAnchorPartial } from "../src/commands/nexus-contract.js";
+import { NexusContractError, runNexusContractOpen, runNexusContractPartial, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runNexusRollPriorAnchorCheck } from "../src/commands/nexus-contract.js";
 import { readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
@@ -220,5 +223,38 @@ describe("a two-founder Nexus anchors its roll across its two vaults", () => {
     const twice = await rows(A)["nexus-roll-anchor-open"]({}, {} as never);
     expect(String(twice["refused"])).toMatch(/already holds a counted anchor for this roll/);
     expect(signing.calls).toBe(before);
+  });
+
+  test("R5 — a roll waits on its prior anchor: the check refuses by name until the head's anchor lands", async () => {
+    const A = await vault("anc-pa"), B = await vault("anc-pb");
+    const { aid, roll } = await twoVaultCharter(A, B);
+    const check = (v: Vault) => { at(v); return runNexusRollPriorAnchorCheck({ sealHome: larSealHome(), repo: v.repo, aid }); };
+    const before = signing.calls;
+    // CONTROL: a genesis closes no roll, so nothing waits and the first roll opens.
+    expect((await check(A)).state).toBe("no-prior-roll");
+    roll();
+    // The head rolled and no anchor stands on either board: a next roll refuses by name on both vaults.
+    for (const v of [A, B]) {
+      expect(await refusal(check(v))).toMatch(/prior-roll-unanchored.*no counted anchor/);
+    }
+    expect(signing.calls).toBe(before);
+    // The store row answers under its own name.
+    at(A);
+    const row = await storeDoorReactors({ storageDir: larDataDir(), sealHome: larSealHome(), repo: A.repo })["nexus-roll-prior-anchor"]({ aid }, {} as never);
+    expect(row["refusal"]).toBe("nexus-roll-prior-anchor-refused");
+    expect(String(row["refused"])).toMatch(/prior-roll-unanchored/);
+
+    // The anchor crosses and lands on both vaults; the wait ends there.
+    at(A);
+    const opened = await runNexusRollAnchorOpen({ sealHome: larSealHome(), repo: A.repo });
+    at(B);
+    const cosigned = await runNexusRollAnchorPartial({ partial: courier(opened.partial), sealHome: larSealHome(), repo: B.repo });
+    expect((await check(B)).state).toBe("anchored");
+    expect(await refusal(check(A))).toMatch(/prior-roll-unanchored/);
+    at(A);
+    await runNexusRollAnchorPartial({ partial: courier(cosigned.partial), sealHome: larSealHome(), repo: A.repo });
+    const done = await check(A);
+    expect(done.state).toBe("anchored");
+    expect(done.anchorCid).toBe(cosigned.landed?.anchorCid);
   });
 });
