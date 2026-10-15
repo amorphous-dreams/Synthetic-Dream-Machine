@@ -330,10 +330,9 @@ function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResu
       console.log(`nexus ${step} → ${r.verdict.toUpperCase()} (${r.signed.length} seat(s) signed under ${r.partial.aid.slice(0, 22)}…)`);
       for (const s of r.signed) console.log(`    ${s.slice(0, 16)}…`);
       if (path) console.log(`  partial:     ${path}`);
-      if (written?.error) {
-        console.error(`lares nexus ${step}: the act ran, and the partial file did not land (${written.error}); carry this partial instead:`);
-        console.log(JSON.stringify(r.partial));
-      }
+      if (written?.error) console.error(`lares nexus ${step}: the act ran, and the partial file did not land (${written.error}); carry the partial below instead`);
+      // No file holds the partial as it stands now: print it whole, so a landed or cosigned act never strands.
+      if (!path) console.log(`  partial (carry this): ${JSON.stringify(r.partial)}`);
       if (r.landed) {
         console.log(`  landed:      act ${r.landed.evidenceCid.slice(0, 16)}… on this vessel's board (${r.landed.memberHeld ? "MEMBER" : "NOT a member"})`);
         console.log("  next:        carry the partial back, so the other vault lands the same act (`lares nexus contract --from <partial>`)");
@@ -342,7 +341,9 @@ function emitPartial(args: ParsedArgs, step: string, r: NexusContractPartialResu
       }
     },
   });
-  return 0;
+  // A write that failed after the act ran answers non-zero, so automation that reads the status alone never drops the
+  // partial; the JSON still carries the partial and the act.
+  return written?.error ? 1 : 0;
 }
 
 /**

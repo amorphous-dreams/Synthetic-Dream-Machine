@@ -352,6 +352,9 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
   }
 }
 
+/** How many whole judgements the landing runs before a board that keeps moving refuses. */
+const LANDING_PASSES = 8;
+
 /** What a partial step answers: the partial as it stands, the judge's verdict over it here, and the act it landed. */
 export interface NexusContractPartialResult {
   readonly partial: NexusActPartial;
@@ -443,11 +446,13 @@ export async function runNexusContractPartial(opts: { readonly partial: unknown;
     // where it still reads `complete` against the head and the board as they stand at the write.
     const fresh: ContractCore = { ...core, roster: seatedRosterOrRefuse(home) };
     // The judge itself awaits, so it runs again until the board AND the charter head hold still across one whole
-    // judgement: the write then follows the last judge with no await between. Progress ends the loop, never a clock.
+    // judgement: the write then follows the last judge with no await between. A board that moves through every pass
+    // of a bounded count refuses, and the person carries the partial again; a count bounds it, never a clock.
     const mark = (): string =>
       `${seatedRosterOrRefuse(home).sealEpochCid}|${carriageEntriesFromBoard(fresh.handle.doc()).map(carriageEntryActCid).sort().join(",")}`;
     const landed = await landEntry(fresh, repo, act.family, act.entry, judged.signed, async () => {
-      for (;;) {
+      for (let pass = 0; ; pass++) {
+        if (pass === LANDING_PASSES) throw new NexusContractError(`the board moved through ${LANDING_PASSES} judgements in a row; nothing lands — carry the partial again.`);
         const before = mark();
         const last = await judgeNexusActPartial(partial, partialReader(read.aid, { ...fresh, roster: seatedRosterOrRefuse(home) }));
         if (last.verdict !== "complete") {
