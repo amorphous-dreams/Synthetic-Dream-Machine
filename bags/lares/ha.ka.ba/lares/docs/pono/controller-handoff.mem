@@ -85,6 +85,31 @@ A session reads this carrier and the roadmap alone; no note outside the reposito
 
 <<~/ahu>>
 
+<<~ ahu #/the-cloud-lanes>>
+
+!! The cloud lanes ~ two briefs a cloud session takes by name
+
+A cloud session opens on branch `feature/green-jello-dinosaur-5`, stands the house from the boot seed, reads the roadmap's #/the-attractor, #/cold-start and #/rulings, this carrier whole (#/the-lane-law binds it), `working-procedures`, and its lane's kit, then walks its lane below. It leads as the Episkopos with one Opus and one Sonnet worker who trade masks (builder, reviewer, aftermath sweeper); whichever did not build a piece reviews it.
+
+A cloud lane commits on its OWN branch, `feature/green-jello-dinosaur-5--<lane>`, cut from `feature/green-jello-dinosaur-5`, and pushes that branch alone; CI and held-out fire on it. It shards each burst with `node tools/e2e-shards.mjs push <lane>-<n>` and reads `node tools/ci-verdict.mjs --head <sha>`. It never pushes `feature/green-jello-dinosaur-5` or `main`: the controller merges each lane branch after reading its three readings. Before its final push it merges `feature/green-jello-dinosaur-5` into its lane branch. It lists canon and changelog lines for the roadmap and `CHANGELOG.md` in its handback, and edits neither. It stops at a clean boundary when context runs short and hands back in the lane law's shape, with its lane branch and head.
+
+!!! Lane `wire` ~ train W's live span
+Kit: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-w-launch">>, with <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>.
+# Walk step two, LIVE: one face-subject and join slice on N's landed cosign seam (`runNexusContractOpen` and `runNexusContractPartial`). `device-admit.ts` signs its canon list and gate pin inside its payload; the producer, the board verifier, `readAdmitAtHeldRoot`, the import reader and N's contract fixtures move with those bytes in one commit. Repair `supplySessionFace` after `REISSUED_FACE_OPENS_LOCAL_SESSION` reads red first. Build the fleet-join door, the vessel face-key certificate and the add-a-face grant; retire the bare import and old join doors.
+# Walk step three, LIVE: THE SOCKET CUTOVER as one assembled commit, by the kit's #/cutover list and proof order.
+# Walk step four, the sibling and herm leg, where the span carries it.
+Ground: both vessel composers, `device-admit.ts`, the admit carriage inside `nexus-contract.ts`, and every gate, socket, sorter and dial-fixture file the kit names. Leaves alone: lane `nexus`'s files.
+
+!!! Lane `nexus` ~ train N's closing span
+Kit: <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-n-launch">>; the Offering Antigen scope, fork-resolve and engine cadence rulings bind it.
+# The kapae and roll-anchor two-vault doors: `nexus-partial.ts`'s two families wired into `runNexusKapae` and `runNexusRollAnchor` the way the admit and revoke doors run, each partial judged before a second seat signs and judged fresh again right before the write, bounded by a count and never a clock.
+# The two-root witness: two scratch `LAR_ROOT`s founded by the test door, files as the only courier, independent restart, one joint AID on both, an unsigned or half-signed charter refused at both imports, both seeds intact.
+# Walk steps four and five: rolls with fresh successor cards on both roots, a third chair with possession and its carriage contract, a chair passed in a later roll, and a dormant root's catch-up along one lineage.
+# The Offering act's scope field bound to the joint AID, with the receiver's check, where the span carries it.
+Ground: the cofound, charter, seal, kapae, roll-anchor and partial files (`seal-ceremony.ts`, `init.ts`, `found.ts`, `found-hearth.ts`, `wax-stamp.ts`, `cofound.ts`, `nexus-partial.ts`) and `nexus-contract.ts` outside the admit carriage. Leaves alone: lane `wire`'s files. A line one lane needs on the other's ground travels in its handback as a patch.
+
+<<~/ahu>>
+
 <<~ ahu #/state>>
 
 !! State ~ the controller trues this section at every handoff
@@ -118,6 +143,6 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uXLNPk71SIAdaYjmvCMkgAzDu0DzmP8mpOq85MFlpRc
+<<^ code="&#x0003;">>ni:///sha-256;kxS9ApKQJbgwlC1cYJm5Gqzziz4XsKD5J-KnQDZ4E2E
 
 <<^ code="&#x0004;" -> to="?">>
