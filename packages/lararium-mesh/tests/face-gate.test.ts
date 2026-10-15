@@ -19,10 +19,11 @@
  *   · THE PROFILE a session carries comes from its certificate, and no dialer widens it;
  *   · TWO NEXUSES on one vessel share no gate, no knock, no posture and no admit.
  */
-import { describe, expect, test } from "vitest";
+import { readFileSync } from "node:fs";
+import { describe, expect, test, vi } from "vitest";
 import { canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
 import { learnWithdrawals, type WithdrawalMemory } from "../src/face-authority.js";
-import { memoryBackedWithdrawals } from "../src/face-gate.js";
+import { GATE_SILENCE_REASONS, memoryBackedWithdrawals } from "../src/face-gate.js";
 import { MIN_MESSAGE2_BYTES, NOISE_MAX_MESSAGE_BYTES } from "../src/noise-ik.js";
 import { custodyRootDoor, deriveGateBundle, gateFields, gateKnock, readGateSignature, sovereignGateRoot, sovereignRoute } from "../src/gate-bundle.js";
 import { GATE_FINISH_DOMAIN, GATE_PLACE_FINISH_DOMAIN } from "../src/domains.js";
@@ -188,7 +189,7 @@ describe("nothing leaves the gate before a valid first message", () => {
     while (w.gate.pending < 1) await settle(1);
     expect(w.gate.pending).toBe(1);
     const refused = await w.gate.accept(await second.accepted);
-    expect(refused).toEqual({ outcome: "silence", reason: "too many pending sockets" });
+    expect(refused).toEqual({ outcome: "silence", reason: "pending-full" });
     expect(second.log.toDialer).toEqual([]);
     void first;
     await stalled;
@@ -203,7 +204,7 @@ describe("nothing leaves the gate before a valid first message", () => {
     const outcome = dialFaceGate({ pin: w.pin, tier: "sovereign", socket, audience: AUDIENCE, certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history, deadlines: { draw: () => ({ cancel() {} }) } });
     const gateSocket = await accepted;
     const first = w.gate.accept(gateSocket);
-    expect(await w.gate.accept(gateSocket)).toEqual({ outcome: "silence", reason: "the socket already carried its one flight" });
+    expect(await w.gate.accept(gateSocket)).toEqual({ outcome: "silence", reason: "socket-reused" });
     expect(await first).toEqual({ outcome: "attached", class: "contracted" });                 // CONTROL: the first run stood untouched
     expect((await outcome).state).toBe("verified");
     expect(log.toDialer.filter((frame) => frame.length === MIN_MESSAGE2_BYTES).length).toBe(1);
@@ -228,7 +229,7 @@ describe("nothing leaves the gate before a valid first message", () => {
       return outcome;
     });
     w.seatFault = new Error("the door stuck");
-    expect(await run()).toEqual({ outcome: "silence", reason: "the session could not open: the door stuck" });
+    expect(await run()).toEqual({ outcome: "silence", reason: "session-unopened" });
     expect(cut).toEqual(["cuts:1"]);
     expect(w.asked.slice(-3)).toEqual(["attach", "open", "abandon"]);
     expect(w.attached).toEqual([]);
@@ -238,12 +239,122 @@ describe("nothing leaves the gate before a valid first message", () => {
   });
 });
 
+describe("fixed silence readings", () => {
+  test("a fault's message never reaches the log", async () => {
+    const logged: Array<[string, string | undefined]> = [];
+    const w = await world({ onRefuse: (reason, detail) => logged.push([reason, detail]) });
+    const p = await presenter(w, "fault silence");
+    w.sorterAnswer = () => { throw new Error("leak-" + "ab".repeat(32)); };
+    const result = await dial(w, p);
+    expect(result.gate).toEqual({ outcome: "silence", reason: "fault" });
+    expect(logged).toEqual([["fault", undefined]]);
+    expect(JSON.stringify(result.gate)).not.toContain("abab");
+    expect(JSON.stringify(logged)).not.toContain("abab");
+  });
+
+  test("a collaborator's free refusal never reaches the log", async () => {
+    const logged: Array<[string, string | undefined]> = [];
+    const w = await world({ admitRefusal: "leak-" + "cd".repeat(32), onRefuse: (reason, detail) => logged.push([reason, detail]) });
+    const p = await presenter(w, "free refusal");
+    const result = await dial(w, p);
+    expect(result.gate).toEqual({ outcome: "silence", reason: "admit-refused" });
+    expect(logged).toEqual([["admit-refused", undefined]]);
+    expect(JSON.stringify(result.gate)).not.toContain("cdcd");
+    expect(JSON.stringify(logged)).not.toContain("cdcd");
+  });
+
+  test("a typed detail reaches the log beside its reason", async () => {
+    const logged: Array<[string, string | undefined]> = [];
+    const w = await world({ onRefuse: (reason, detail) => logged.push([reason, detail]) });
+    const p = await presenter(w, "detail logged");
+    w.sorterAnswer = () => ({ class: "walker" });                                              // an admit never earns a walker
+    expect((await dial(w, p)).gate).toEqual({ outcome: "silence", reason: "sorter-class-unearned", detail: "walker" });
+    expect(logged).toEqual([["sorter-class-unearned", "walker"]]);
+  });
+
+  test("a detail the outcome does not own never reaches the log", async () => {
+    const logged: Array<[string, string | undefined]> = [];
+    const w = await world({ onRefuse: (reason, detail) => logged.push([reason, detail]) });
+    const p = await presenter(w, "inherited detail");
+    w.sorterAnswer = () => { throw new Error("boom"); };
+    const prior = Object.getOwnPropertyDescriptor(Object.prototype, "detail");
+    Object.defineProperty(Object.prototype, "detail", { value: "leak-" + "aa".repeat(32), configurable: true, writable: true });
+    try {
+      expect(({} as { detail?: string }).detail).toMatch(/^leak-/);                              // the setup took
+      const result = await dial(w, p);
+      expect(Object.hasOwn(result.gate, "detail")).toBe(false);
+    } finally {
+      if (prior === undefined) delete (Object.prototype as { detail?: string }).detail;
+      else Object.defineProperty(Object.prototype, "detail", prior);
+    }
+    expect(Object.getOwnPropertyDescriptor(Object.prototype, "detail")).toEqual(prior);         // the setup undid itself, exactly
+    expect(logged).toEqual([["fault", undefined]]);
+  });
+
+  test("a collaborator that spells a foreign class leaves no detail behind", async () => {
+    const logged: Array<[string, string | undefined]> = [];
+    const w = await world({ onRefuse: (reason, detail) => logged.push([reason, detail]) });
+    const p = await presenter(w, "foreign class");
+    w.sorterAnswer = () => ({ class: ("leak-" + "ef".repeat(32)) as never });
+    const result = await dial(w, p);
+    expect(result.gate).toEqual({ outcome: "silence", reason: "sorter-class-unearned" });
+    expect(logged).toEqual([["sorter-class-unearned", undefined]]);
+    expect(JSON.stringify([result.gate, logged])).not.toContain("efef");
+  });
+
+  test("wrong first-flight lengths refuse before Noise responds", async () => {
+    let responds = 0;
+    const w = await world({ gateBundle: (bundle) => ({ ...bundle, respond(message) { responds++; return bundle.respond(message); } }) });
+    const p = await presenter(w, "flight length");
+    const honest = await dial(w, p);
+    expect(honest.gate.outcome).toBe("attached");
+    expect(responds).toBe(1);
+    responds = 0;
+    const flight = honest.log.flight!;
+    for (const message1 of [flight.message1.slice(0, 95), new Uint8Array(97), [] as unknown as Uint8Array]) {
+      const result = await replayFlight(w, { knock: flight.knock, message1 });
+      expect(result.gate).toEqual({ outcome: "silence", reason: "flight-length" });
+      expect(responds).toBe(0);
+    }
+    // A plain array of the right length reads as no flight: bytes, or nothing. The fixture's wire copies into
+    // bytes, so this socket hands the gate the array itself.
+    const sent: Uint8Array[] = [];
+    const bare = { flight: { knock: flight.knock, message1: Array.from(flight.message1) as unknown as Uint8Array }, send: (frame: Uint8Array) => { sent.push(frame); }, recv: async () => null, cut: () => {} };
+    const accepting = w.gate.accept(bare);
+    w.deadlines.fire();
+    expect(await accepting).toEqual({ outcome: "silence", reason: "flight-length" });
+    expect(responds).toBe(0);
+    expect(sent).toEqual([]);
+  });
+
+  test("the gate emits exactly its declared silence vocabulary", () => {
+    const source = readFileSync(new URL("../src/face-gate.ts", import.meta.url), "utf8");
+    const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, "");
+    expect(code.trim().length).toBeGreaterThan(0);
+    const emitted = [...code.matchAll(/(?:silence\(\s*|reason:\s*)["']([a-z]+(?:-[a-z]+)*)["']/g)].map((match) => match[1]!);
+    // Every silence names its reason as a literal: a reason a variable carries escapes this census.
+    const calls = [...code.matchAll(/\bsilence\(/g)].length;
+    const literal = [...code.matchAll(/\bsilence\(\s*["'][a-z-]+["']/g)].length;
+    expect(calls).toBeGreaterThan(30);
+    expect(literal).toBe(calls);
+    // Presence first: two empty sets agree about nothing.
+    expect(GATE_SILENCE_REASONS.length).toBeGreaterThan(30);
+    expect(emitted.length).toBeGreaterThanOrEqual(GATE_SILENCE_REASONS.length);
+    expect(new Set(emitted)).toEqual(new Set(GATE_SILENCE_REASONS));
+  });
+
+  test("every declared silence reason is unique and kebab-case", () => {
+    expect(new Set(GATE_SILENCE_REASONS).size).toBe(GATE_SILENCE_REASONS.length);
+    for (const reason of GATE_SILENCE_REASONS) expect(reason).toMatch(/^[a-z]+(-[a-z]+)*$/);
+  });
+});
+
 describe("one silence: every refusal past the first flight reads alike, up to the one deadline", () => {
   test("RED: a stranger, a failed finish, a shadowed presenter, a denied admit, a withdrawn key and a replay draw one transcript", async () => {
     const w = await world({ posture: "private" });
     const p = await presenter(w, "silence");
     const transcripts: Record<string, { frames: number[]; cuts: number }> = {};
-    const reasons: Record<string, string> = {};
+    const reasons: Record<string, { reason: string; detail?: unknown }> = {};
     const note = (name: string, run: { gate: { outcome: string; reason?: string }; log: { toDialer: Uint8Array[]; cuts: number }; cutsBeforeLapse: number; pendingBeforeLapse: number }): void => {
       expect(run.gate.outcome, name).toBe("silence");
       expect(run.cutsBeforeLapse, `${name}: the gate cut before its deadline`).toBe(0);
@@ -251,7 +362,8 @@ describe("one silence: every refusal past the first flight reads alike, up to th
       expect(run.pendingBeforeLapse, `${name}: the socket left its place before the deadline`).toBe(1);
       expect(w.gate.pending, name).toBe(0);
       transcripts[name] = heard(run.log);
-      reasons[name] = (run.gate as { reason: string }).reason;
+      const { reason, detail } = run.gate as { reason: string; detail?: unknown };
+      reasons[name] = detail === undefined ? { reason } : { reason, detail };
     };
 
     // A stranger at a private gate: a sound chain and a sound finish, and no arm.
@@ -294,20 +406,20 @@ describe("one silence: every refusal past the first flight reads alike, up to th
     for (const [name, transcript] of Object.entries(transcripts)) expect(transcript, name).toEqual(ONE_SILENCE);
     // The causes differ on the vessel's own log and nowhere else: each case refused for the reason it names.
     expect(reasons).toEqual({
-      "a stranger at a private gate":            "sorted to silence",
-      "a failed finish":                         "the finish refuses: signature-refused",
-      "a shadowed presenter":                    "a standing shadow sets the presenter aside",
-      "a denied admit":                          "the admit reads denied: revoke-descends-from-admit",
-      "a withdrawn key under no held admit":     "the chain reads withdrawn under no held admit",
-      "a finish over another handshake":         "the finish refuses: signature-refused",
-      "a finish over another audience":          "the finish refuses: signature-refused",
-      "a finish over another gate's bundle":     "the finish refuses: signature-refused",
-      "a presentation moved after the finish":   "the finish refuses: signature-refused",
-      "a presentation and no finish":            "no signed finish",
-      "a sorter that faults":                    "a fault: boom",
-      "a session table that refuses":            "a fault: no seat",
-      "a place whose contract a quorum closed":  "the contract reads denied: uncarry-descends-from-contract",
-      "a replayed first flight":                 "no presentation",
+      "a stranger at a private gate":            { reason: "sorted-silent" },
+      "a failed finish":                         { reason: "finish-refused", detail: "signature-refused" },
+      "a shadowed presenter":                    { reason: "presenter-shadowed" },
+      "a denied admit":                          { reason: "admit-unheld", detail: "denied" },
+      "a withdrawn key under no held admit":     { reason: "chain-named-without-admit", detail: "withdrawn" },
+      "a finish over another handshake":         { reason: "finish-refused", detail: "signature-refused" },
+      "a finish over another audience":          { reason: "finish-refused", detail: "signature-refused" },
+      "a finish over another gate's bundle":     { reason: "finish-refused", detail: "signature-refused" },
+      "a presentation moved after the finish":   { reason: "finish-refused", detail: "signature-refused" },
+      "a presentation and no finish":            { reason: "finish-absent" },
+      "a sorter that faults":                    { reason: "fault" },
+      "a session table that refuses":            { reason: "fault" },
+      "a place whose contract a quorum closed":  { reason: "place-contract-unheld", detail: "denied" },
+      "a replayed first flight":                 { reason: "presentation-absent" },
     });
   });
 
@@ -320,11 +432,11 @@ describe("one silence: every refusal past the first flight reads alike, up to th
     w.sorterAnswer = (input) => { w.deadlines.fire(); return { class: "contracted", standing: { nym: input.scope!.faceKey, aid: input.scope!.nexus } }; };
     const attached = w.attached.length;
     const verified = await dial(w, honest);
-    expect(verified.gate).toEqual({ outcome: "silence", reason: "the deadline lapsed before the verdict" });
+    expect(verified.gate).toEqual({ outcome: "silence", reason: "deadline-before-verdict" });
     expect(heard(verified.log)).toEqual(ONE_SILENCE);
     expect(verified.outcome).toEqual({ state: "silence" });
     const named = await dial(w, gone);                                                         // a withdrawn key: a named answer stood ready
-    expect(named.gate).toEqual({ outcome: "silence", reason: "the deadline lapsed before the answer" });
+    expect(named.gate).toEqual({ outcome: "silence", reason: "deadline-before-answer" });
     expect(heard(named.log)).toEqual(ONE_SILENCE);
     expect(w.attached.length).toBe(attached);
   });
@@ -338,7 +450,7 @@ describe("one silence: every refusal past the first flight reads alike, up to th
     let ended: string | null = null;
     const outcome = dialFaceGate({ pin: w.pin, tier: "sovereign", socket, audience: AUDIENCE, certificate: p.certificate, signer: p.signer, arm: null, history: p.history, deadlines: patience }).then((result) => { ended = result.state; return result; });
     // The gate refuses the stranger and stays quiet; nobody fires ITS deadline, so it never cuts.
-    expect(await w.gate.accept(await accepted)).toEqual({ outcome: "silence", reason: "sorted to silence" });
+    expect(await w.gate.accept(await accepted)).toEqual({ outcome: "silence", reason: "sorted-silent" });
     await settle();
     expect(ended).toBeNull();                                                                  // the dial still waits
     expect(patience.standing).toBe(1);
@@ -416,12 +528,12 @@ describe("what a gate checks before it answers", () => {
     // A walker's arm for another Nexus names the face key and still earns nothing here.
     const grantElsewhere = { nexusAid: "nexus-b.synthetic", leaf: p.scope.faceKey, epoch: "ab".repeat(32), lineage: "cd".repeat(32), survived: 0, from: "host" as const, tag: "ef".repeat(64) };
     const astray = await bentDial(w, p, {}, { arm: { kind: "grant", grant: grantElsewhere } });
-    expect(astray.gate).toEqual({ outcome: "silence", reason: "the arm names another Nexus" });
-    expect((runs.audience.gate as { reason: string }).reason).toBe("the dial names another audience");
-    expect((runs.nexus.gate as { reason: string }).reason).toBe("the chain names another Nexus");
-    expect((runs.chains.gate as { reason: string }).reason).toBe("the session certificate stands under another chain");
-    expect((runs.arm.gate as { reason: string }).reason).toBe("the arm stands under another key");
-    expect((runs.extra.gate as { reason: string }).reason).toBe("the presentation reads as none");
+    expect(astray.gate).toEqual({ outcome: "silence", reason: "arm-other-nexus" });
+    expect((runs.audience.gate as { reason: string }).reason).toBe("audience-foreign");
+    expect((runs.nexus.gate as { reason: string }).reason).toBe("chain-other-nexus");
+    expect((runs.chains.gate as { reason: string }).reason).toBe("session-certificate-other-chain");
+    expect((runs.arm.gate as { reason: string }).reason).toBe("arm-other-key");
+    expect((runs.extra.gate as { reason: string }).reason).toBe("presentation-none");
     expect(w.attached).toEqual([]);
     expect((await dial(w, p)).outcome.state).toBe("verified");                                 // CONTROL
     expect((await dial(w, p, { arm: { kind: "grant", grant: { ...grantElsewhere, nexusAid: w.nexus } } })).gate).toEqual({ outcome: "attached", class: "walker" });   // CONTROL
@@ -434,18 +546,18 @@ describe("what a gate checks before it answers", () => {
     const held = w.held!;
     w.held = null;
     const rootless = await dial(w, p);
-    expect(rootless.gate).toEqual({ outcome: "silence", reason: "the admit refuses: no-held-root" });
+    expect(rootless.gate).toEqual({ outcome: "silence", reason: "admit-refused" });
     expect(rootless.outcome).toEqual({ state: "silence" });
     // A root this vessel holds for another Nexus reads no admit for this gate.
     w.held = { ...held, nexus: "nexus-b.synthetic" };
-    expect((await dial(w, p)).gate).toEqual({ outcome: "silence", reason: "the admit stands in another Nexus" });
+    expect((await dial(w, p)).gate).toEqual({ outcome: "silence", reason: "admit-other-nexus" });
     // An admit another quorum signed, for the same face key, counts under no roster this vessel holds.
     w.held = held;
     const other = await world({ nexus: "nexus-b.synthetic" });
     const foreign = await other.admitFor(p.chain.face);
     const run = await bentDial(w, p, {}, { arm: { kind: "admit", admit: foreign, lineage: [] } });
     expect(run.gate.outcome).toBe("silence");
-    expect((run.gate as { reason: string }).reason).toMatch(/^the admit reads (rejected|wrong-epoch)/);
+    expect((run.gate as { reason: string }).reason).toBe("admit-unheld");
   });
 
   test("RED: the profile a session carries comes from its certificate, and a widened one fails its signature", async () => {
@@ -456,7 +568,7 @@ describe("what a gate checks before it answers", () => {
     expect(w.sorted[0]!.profile).toBe("seat");
     const widened = await bentDial(w, seat, { presentation: (honest) => ({ ...honest, sessionCertificate: { ...honest.sessionCertificate, profile: "face" } }) });
     expect(widened.gate.outcome).toBe("silence");
-    expect((widened.gate as { reason: string }).reason).toMatch(/^the session certificate refuses: signature-refused/);
+    expect(widened.gate).toEqual({ outcome: "silence", reason: "session-certificate-refused", detail: "signature-refused" });
     expect(w.attached.length).toBe(1);
   });
 });
@@ -475,11 +587,11 @@ describe("the sorter: once, inside the gate, before any answer", () => {
     // Whether a grant or a claim HOLDS stays the sorter's own reading (its hosting store, its epochs, its burn):
     // the gate binds the arm to the face key and the Nexus, and a sorter that reads no walker in it draws silence.
     w.sorterAnswer = (input) => (input.arm?.kind === "grant" ? null : { class: "stranger" });
-    expect((await dial(w, walker, { arm: { kind: "grant", grant } })).gate).toEqual({ outcome: "silence", reason: "sorted to silence" });
+    expect((await dial(w, walker, { arm: { kind: "grant", grant } })).gate).toEqual({ outcome: "silence", reason: "sorted-silent" });
     w.sorterAnswer = null;
     expect((await dial(w, contracted, { arm: null })).gate).toEqual({ outcome: "attached", class: "stranger" });
     w.posture = "private";
-    expect((await dial(w, contracted, { arm: null })).gate).toEqual({ outcome: "silence", reason: "sorted to silence" });
+    expect((await dial(w, contracted, { arm: null })).gate).toEqual({ outcome: "silence", reason: "sorted-silent" });
     expect((await dial(w, contracted)).gate).toEqual({ outcome: "attached", class: "contracted" });   // an admitted face still crosses
   });
 
@@ -512,7 +624,7 @@ describe("the sorter: once, inside the gate, before any answer", () => {
     w.sorterAnswer = () => ({ class: "stranger" });
     expect((await dial(w, p)).gate.outcome).toBe("silence");                            // an admit never sorts down to a stranger
     w.sorterAnswer = () => ({ class: "same-operator" });
-    expect((await dial(w, p)).gate).toMatchObject({ outcome: "silence", reason: expect.stringContaining("same-operator over no private grant") });
+    expect((await dial(w, p)).gate).toEqual({ outcome: "silence", reason: "sorter-same-operator-unproven" });
     w.grants.set(p.scope.faceKey, { personaGroup: GROUP, faceKey: p.scope.faceKey, nexus: w.nexus, revision: "g" });
     expect((await dial(w, p)).gate).toEqual({ outcome: "attached", class: "same-operator" });   // CONTROL: the grant earns it
     w.fleetAside.add(p.vessel.key);
@@ -669,7 +781,7 @@ describe("two Nexuses on one vessel", () => {
     // Posture reads per Nexus exactly: the open Nexus answers a stranger, and the private one beside it answers none.
     expect((await dial(open, p, { arm: null })).gate).toEqual({ outcome: "attached", class: "stranger" });
     const atShut = await presenter(shut, "two-nexus shut");
-    expect((await dial(shut, atShut, { arm: null })).gate).toEqual({ outcome: "silence", reason: "sorted to silence" });
+    expect((await dial(shut, atShut, { arm: null })).gate).toEqual({ outcome: "silence", reason: "sorted-silent" });
     // A dial pinned to one Nexus reaches no gate of the other: the knock, the flight and the chain each refuse.
     const { dialFaceGate } = await import("../src/face-dial.js");
     expect(await dialFaceGate({ pin: shut.pin, tier: "sovereign", socket: wire().dial, audience: AUDIENCE, certificate: p.certificate, signer: p.signer, arm: p.arm, history: p.history, deadlines: { draw: () => ({ cancel() {} }) } }))
@@ -679,7 +791,7 @@ describe("two Nexuses on one vessel", () => {
     // An admit the open Nexus's quorum signed earns nothing at the private Nexus, under a chain scoped there.
     const run = await bentDial(shut, atShut, {}, { arm: { kind: "admit", admit: await open.admitFor(atShut.chain.face), lineage: [] } });
     expect(run.gate.outcome).toBe("silence");
-    expect((run.gate as { reason: string }).reason).toMatch(/^the admit reads/);
+    expect((run.gate as { reason: string }).reason).toBe("admit-unheld");
     // A gate refuses to stand over a bundle derived for another Nexus.
     const { makeFaceGate } = await import("../src/face-gate.js");
     expect(() => makeFaceGate({ bundle: deriveGateBundle(sovereignGateRoot(custodyRootDoor(root)), utf8Bytes("nexus-b.synthetic"), sovereignRoute("/ws")), nexus: "nexus-a.synthetic" } as never)).toThrow(/Nexus/);
@@ -799,7 +911,7 @@ describe("two tiers of gate: the floor seats no fleet lane", () => {
     expect(await floor.withdrawals.read(honest.scope)).toBeNull();                                     // it learned nothing it keeps
     // The withdrawn vessel, carrying its own denial: a sovereign gate would answer `withdrawn`; the floor says nothing.
     const run = await dial(floor, gone, { carry: events });
-    expect(run.gate).toEqual({ outcome: "silence", reason: "the chain reads withdrawn at a floor gate" });
+    expect(run.gate).toEqual({ outcome: "silence", reason: "chain-named-at-floor", detail: "withdrawn" });
     expect(heard(run.log)).toEqual(ONE_SILENCE);
     const raised = await world();
     const pair = await withdrawnPair(raised, "floor memory control");
@@ -826,12 +938,13 @@ describe("the place arm: a faceless place proves its own key, outside the face p
     const w = await world({ posture: "open" });
     const other = await world({ nexus: "nexus-b.synthetic" });
     const herm = await place(w, "refused herm");
-    const reasons: string[] = [];
+    const reasons: Array<{ reason: string; detail?: unknown }> = [];
     const silent = async (run: Promise<{ gate: { outcome: string; reason?: string }; log: { toDialer: Uint8Array[]; cuts: number } }>): Promise<void> => {
       const done = await run;
       expect(done.gate.outcome).toBe("silence");
       expect(heard(done.log)).toEqual(ONE_SILENCE);
-      reasons.push((done.gate as { reason: string }).reason);
+      const { reason, detail } = done.gate as { reason: string; detail?: unknown };
+      reasons.push(detail === undefined ? { reason } : { reason, detail });
     };
     const elsewhere = await other.carryFor(herm.seed);
     await silent(dialPlace(w, herm, { arm: { kind: "place", contract: elsewhere, lineage: [] } }));
@@ -850,11 +963,11 @@ describe("the place arm: a faceless place proves its own key, outside the face p
     expect(thief.contract.sealEpochCid).toBe(herm.contract.sealEpochCid);                      // the setup took: only the signer differs
     await silent(dialPlace(w, herm, { arm: { kind: "place", contract: forged, lineage: [] } }));
     expect(reasons).toEqual([
-      "the contract reads wrong-epoch: contract-not-at-head-epoch",
-      "a standing shadow sets the place aside",
-      "the contract refuses: no-held-root",
-      "the contract stands in another Nexus",
-      "the contract reads rejected: contract-not-counted",
+      { reason: "place-contract-unheld", detail: "wrong-epoch" },
+      { reason: "place-shadowed" },
+      { reason: "place-contract-refused" },
+      { reason: "place-contract-other-nexus" },
+      { reason: "place-contract-unheld", detail: "rejected" },
     ]);
     expect(w.attached).toEqual([]);
     expect((await dialPlace(w, herm)).gate).toEqual({ outcome: "attached", class: "contracted" });   // CONTROL
@@ -864,7 +977,7 @@ describe("the place arm: a faceless place proves its own key, outside the face p
     const w = await world({ posture: "open" });
     const herm = await place(w, "one arm");
     const p = await presenter(w, "one arm face");
-    const none = "the presentation reads as none";
+    const none = "presentation-none";
     expect((await bentPlaceDial(w, herm, { presentation: (honest) => ({ ...honest, certificate: p.certificate }) })).gate).toEqual({ outcome: "silence", reason: none });
     expect((await bentPlaceDial(w, herm, { presentation: (honest) => ({ ...honest, arm: p.arm }) })).gate).toEqual({ outcome: "silence", reason: none });
     expect((await bentPlaceDial(w, herm, { presentation: (honest) => ({ ...honest, arm: { ...herm.arm, contract: { ...herm.contract, nym: p.scope.faceKey } } }) })).gate).toEqual({ outcome: "silence", reason: none });
@@ -879,7 +992,7 @@ describe("the place arm: a faceless place proves its own key, outside the face p
     const w = await world();
     const herm = await place(w, "finish");
     const thief = await place(w, "finish thief");
-    const refused = { outcome: "silence", reason: "the place's finish refuses" };
+    const refused = { outcome: "silence", reason: "place-finish-refused" };
     expect((await bentPlaceDial(w, herm, { signWith: thief.seed })).gate).toEqual(refused);
     // The same four fields a face's session key signs, signed by the place's own key: the name differs, so it verifies for no place.
     expect((await bentPlaceDial(w, herm, { image: (parts) => gateFinishPayload(parts) })).gate).toEqual(refused);
@@ -890,7 +1003,7 @@ describe("the place arm: a faceless place proves its own key, outside the face p
     expect(hex(gatePlaceFinishImage(parts))).toBe(hex(gateFields(GATE_PLACE_FINISH_DOMAIN, parts.handshakeHash, hexToBytes(parts.bundleDigest), hexToBytes(parts.presentationDigest), utf8Bytes(AUDIENCE), hexToBytes(herm.key))));
     expect(GATE_PLACE_FINISH_DOMAIN).not.toBe(GATE_FINISH_DOMAIN);
     // A place that names another audience draws silence, as a face does.
-    expect((await dialPlace(w, herm, { audience: "lar:///ha.ka.ba/bags/other" })).gate).toEqual({ outcome: "silence", reason: "the dial names another audience" });
+    expect((await dialPlace(w, herm, { audience: "lar:///ha.ka.ba/bags/other" })).gate).toEqual({ outcome: "silence", reason: "audience-foreign" });
     expect((await bentPlaceDial(w, herm)).gate).toEqual({ outcome: "attached", class: "contracted" });   // CONTROL
   });
 
@@ -904,16 +1017,16 @@ describe("the place arm: a faceless place proves its own key, outside the face p
     // A standing the sorter names under another key, or another Nexus, seats nobody: for a place and for a face.
     const face = await presenter(w, "classes face");
     w.sorterAnswer = () => ({ class: "contracted", standing: { nym: face.scope.faceKey, aid: w.nexus } });
-    expect((await dialPlace(w, herm)).gate).toEqual({ outcome: "silence", reason: "the sorter named a standing under another key or another Nexus" });
+    expect((await dialPlace(w, herm)).gate).toEqual({ outcome: "silence", reason: "sorter-standing-foreign" });
     w.sorterAnswer = () => ({ class: "contracted", standing: { nym: herm.key, aid: w.nexus } });
-    expect((await dial(w, face)).gate).toEqual({ outcome: "silence", reason: "the sorter named a standing under another key or another Nexus" });
+    expect((await dial(w, face)).gate).toEqual({ outcome: "silence", reason: "sorter-standing-foreign" });
     w.sorterAnswer = () => ({ class: "contracted", standing: { nym: herm.key, aid: "nexus-b.synthetic" } });
     expect((await dialPlace(w, herm)).gate.outcome).toBe("silence");
     w.sorterAnswer = () => ({ class: "contracted", standing: { nym: herm.key, aid: w.nexus } });
     expect((await dialPlace(w, herm)).gate).toEqual({ outcome: "attached", class: "contracted" });   // CONTROL
     w.sorterAnswer = null;
     // No contract: a private gate says nothing; an open floor gate seats it as a stranger, under the carriage profile.
-    expect((await dialPlace(w, herm, { arm: null })).gate).toEqual({ outcome: "silence", reason: "sorted to silence" });
+    expect((await dialPlace(w, herm, { arm: null })).gate).toEqual({ outcome: "silence", reason: "sorted-silent" });
     const floor = await world({ tier: "floor", posture: "open" });
     const run = await dialPlace(floor, herm, { arm: null });
     expect(run.gate).toEqual({ outcome: "attached", class: "stranger" });

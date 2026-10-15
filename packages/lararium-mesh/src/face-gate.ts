@@ -6,8 +6,8 @@
  *
  *   1. THE DEADLINE gets drawn at accept, once, before the gate reads a byte.
  *   2. THE KNOCK must name this gate's own bundle. A wrong knock draws nothing.
- *   3. THE FIRST FLIGHT (Noise IK message one, empty payload) must decrypt under the bundle's transport key
- *      and prologue. Until it does the gate emits NOTHING. It buys provisional work alone: the same bytes
+ *   3. THE FIRST FLIGHT (Noise IK message one, empty payload) weighs exactly 96 bytes, or it draws silence
+ *      before any Noise work; it must then decrypt under the bundle's transport key and prologue. Until it does the gate emits NOTHING. It buys provisional work alone: the same bytes
  *      replay, so the gate attaches nothing and performs no act on its strength.
  *   4. The gate answers MESSAGE TWO, empty: no verdict rides it.
  *   5. THE PRESENTATION and THE SIGNED FINISH arrive sealed. The gate reads the two certificates, checks
@@ -46,16 +46,16 @@
  */
 import {
   carriageEntryActCid, carriageEntryCounts, isCarriageDescendant,
-  type CarriageEntry, type PresentedAdmitVerdict, type PresentedLineageAct,
+  type CarriageEntry, type PresentedAdmitVerdict, type PresentedAdmitState, type PresentedLineageAct,
 } from "./carriage-registry.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { hex, utf8Bytes } from "./crypto.js";
 import {
-  checkFaceChain, foldWithdrawals, heldWithdrawals, isWithdrawalMemory, learnWithdrawals, type WithdrawalMemory,
+  FACE_CHAIN_REFUSALS, FACE_CHAIN_VERDICTS, checkFaceChain, foldWithdrawals, heldWithdrawals, isWithdrawalMemory, learnWithdrawals, type FaceChainRefusal, type FaceChainVerdictName, type WithdrawalMemory,
 } from "./face-authority.js";
 import {
-  own, readCertificate, readSessionCertificate, readSessionSignature, sameFaceScope,
-  type FaceScope, type NexusAid, type SessionKey, type VesselFaceKey,
+  FACE_PROOF_REFUSALS, own, readCertificate, readSessionCertificate, readSessionSignature, sameFaceScope,
+  type FaceProofRefusalName, type FaceScope, type NexusAid, type SessionKey, type VesselFaceKey,
 } from "./face-proof-subjects.js";
 import type { GateBundle, GateTier } from "./gate-bundle.js";
 import {
@@ -65,7 +65,7 @@ import {
 } from "./gate-exchange.js";
 import type { PeerClass } from "./island-protocol.js";
 import { foldAntigenVerdicts } from "./kapae-antigen.js";
-import type { NoiseTransport } from "./noise-ik.js";
+import { MIN_MESSAGE1_BYTES, type NoiseTransport } from "./noise-ik.js";
 import { PLACE_PROFILE, type SeatProfile } from "./session-contract.js";
 import type { FaceAdmitReading, FaceGrantReading } from "./session-face.js";
 import { NO_HELD_ROOT, readAdmitAtHeldRoot } from "./held-nexus-root.js";
@@ -325,14 +325,40 @@ export interface FaceGateDeps {
   /** How many sockets may stand accepted and neither attached nor cut at once. */
   readonly maxPending?: number;
   /** Where a refusal's cause goes. The wire never carries it. */
-  readonly onRefuse?:   (reason: string) => void;
+  readonly onRefuse?:   (reason: GateSilenceReason, detail?: GateSilenceDetail) => void;
 }
+
+export const GATE_SILENCE_REASONS = [
+  "socket-reused", "pending-full", "fault",
+  "knock-foreign", "flight-length", "flight-undecrypted",
+  "presentation-absent", "presentation-frames", "finish-absent", "presentation-none",
+  "audience-foreign",
+  "place-finish-refused", "place-contract-refused", "place-contract-unheld", "place-contract-other-place", "place-contract-other-nexus", "place-shadowed",
+  "certificate-refused", "session-certificate-refused", "chain-other-nexus", "session-certificate-other-chain", "finish-refused",
+  "arm-other-key", "arm-other-nexus", "admit-refused", "admit-unheld", "admit-other-nexus",
+  "scope-unfolded", "chain-invalid", "presenter-shadowed", "chain-named-without-admit", "chain-named-at-floor",
+  "sorted-silent", "sorter-class-unearned", "sorter-standing-foreign", "sorter-same-operator-unproven",
+  "deadline-before-verdict", "deadline-before-answer", "verdict-unsent", "session-unopened",
+] as const;
+export type GateSilenceReason = (typeof GATE_SILENCE_REASONS)[number];
+/** A detail names a member of a vocabulary the gate already types, and nothing a collaborator or an error spelled. */
+export type GateSilenceDetail = FaceProofRefusalName | FaceChainRefusal | PresentedAdmitState | FaceChainVerdictName | PeerClass;
+
+/**
+ * Every detail vocabulary as a runtime set. A union type checks nothing a collaborator returns, so a value
+ * outside these sets leaves no detail at all. A record keyed by its union fails to compile when that union moves.
+ */
+const ADMIT_STATE_DETAILS: Readonly<Record<PresentedAdmitState, true>> = Object.freeze({ held: true, denied: true, unsettled: true, "wrong-epoch": true, rejected: true });
+const PEER_CLASS_DETAILS: Readonly<Record<PeerClass, true>> = Object.freeze({ "same-operator": true, contracted: true, walker: true, stranger: true });
+const SILENCE_DETAILS: ReadonlySet<string> = new Set<string>([
+  ...FACE_PROOF_REFUSALS, ...FACE_CHAIN_REFUSALS, ...FACE_CHAIN_VERDICTS, ...Object.keys(ADMIT_STATE_DETAILS), ...Object.keys(PEER_CLASS_DETAILS),
+]);
 
 /** What one accept came to, for the vessel's own log. Nothing of it crosses the wire. */
 export type GateOutcome =
   | { readonly outcome: "attached"; readonly class: PeerClass }
   | { readonly outcome: "answered"; readonly state: Exclude<GateAnswer["state"], "verified"> }
-  | { readonly outcome: "silence";  readonly reason: string };
+  | { readonly outcome: "silence"; readonly reason: GateSilenceReason; readonly detail?: GateSilenceDetail };
 
 export interface FaceGate {
   /** Run the exchange on one accepted socket. It never throws and never rejects. */
@@ -380,18 +406,20 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
     standing === undefined || (standing.nym === key && standing.aid === deps.nexus);
 
   async function run(socket: GateSocket, state: AcceptState): Promise<GateOutcome> {
-    const silence = (reason: string): GateOutcome => ({ outcome: "silence", reason });
+    // The one door every detail passes: a member of a fixed vocabulary, or no detail.
+    const silence = (reason: GateSilenceReason, detail?: GateSilenceDetail): GateOutcome =>
+      ({ outcome: "silence", reason, ...(typeof detail === "string" && SILENCE_DETAILS.has(detail) ? { detail } : {}) });
 
     // 2 · the knock, 3 · the first flight. Nothing leaves before both hold.
-    if (!sameText(socket.flight.knock, bundle.knock)) return silence("the knock names another gate");
+    if (!sameText(socket.flight.knock, bundle.knock)) return silence("knock-foreign");
+    if (!(socket.flight.message1 instanceof Uint8Array) || socket.flight.message1.length !== MIN_MESSAGE1_BYTES) return silence("flight-length");
     let transport: NoiseTransport;
     try {
       const flight = bundle.respond(socket.flight.message1);
-      if (flight.payload.length !== 0) return silence("the first flight carries a payload");
       const answered = flight.writeMessage2();
       transport = answered.transport;
       socket.send(answered.message2);                       // 4 · message two, empty: no verdict rides it
-    } catch { return silence("the first flight decrypts nothing"); }
+    } catch { return silence("flight-undecrypted"); }
 
     /** The next sealed frame, opened; null where the peer left or the frame opens nothing. */
     const next = async (): Promise<Uint8Array | null> => {
@@ -405,13 +433,13 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
     let presented: Uint8Array | null = null;
     while (presented === null) {
       const plain = await next();
-      if (plain === null) return silence("no presentation");
+      if (plain === null) return silence("presentation-absent");
       const pushed = reader.push(plain);
-      if (pushed === "refused") return silence("the presentation's frames read as none");
+      if (pushed === "refused") return silence("presentation-frames");
       presented = pushed;
     }
     const finish = await next();
-    if (finish === null || finish.length !== 65 || finish[0] !== GATE_FRAME.finish) return silence("no signed finish");
+    if (finish === null || finish.length !== 65 || finish[0] !== GATE_FRAME.finish) return silence("finish-absent");
 
     /** Sign and send one answer, sealed. False where the deadline already lapsed: nothing then leaves. */
     const answer = async (named: GateAnswer): Promise<boolean> => {
@@ -429,9 +457,9 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
      * the seat opens.
      */
     const seat = async (session: GateSession): Promise<GateOutcome> => {
-      if (state.lapsed) return silence("the deadline lapsed before the verdict");
+      if (state.lapsed) return silence("deadline-before-verdict");
       const taken = await deps.sessions.attach(socket, Object.freeze(session));
-      if (state.lapsed) { taken.abandon(); return silence("the deadline lapsed before the verdict"); }
+      if (state.lapsed) { taken.abandon(); return silence("deadline-before-verdict"); }
       state.attached = true;
       state.standDown();
       try {
@@ -440,7 +468,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
         // The verdict could not leave and no deadline stands to cut the socket: the gate cuts it here.
         taken.abandon();
         try { socket.cut(); } catch { /* already gone */ }
-        return silence(`the verdict could not leave: ${error instanceof Error ? error.message : String(error)}`);
+        return silence("verdict-unsent");
       }
       try {
         taken.open();
@@ -449,7 +477,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
         // since no deadline stands to cut it.
         try { taken.abandon(); } catch { /* the table already faulted */ }
         try { socket.cut(); } catch { /* already gone */ }
-        return silence(`the session could not open: ${error instanceof Error ? error.message : String(error)}`);
+        return silence("session-unopened");
       }
       return { outcome: "attached", class: session.class };
     };
@@ -460,28 +488,28 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
      * or nothing.
      */
     const place = async (shown: ReadPlacePresentation): Promise<GateOutcome> => {
-      if (shown.audience !== deps.audience) return silence("the dial names another audience");
+      if (shown.audience !== deps.audience) return silence("audience-foreign");
       const image = gatePlaceFinishImage({
         handshakeHash: transport.handshakeHash, bundleDigest: bundle.digest, presentationDigest: shown.digest, audience: shown.audience, placeKey: shown.placeKey,
       });
-      if (!verifyEd25519(finish.subarray(1), image, shown.placeKey)) return silence("the place's finish refuses");
+      if (!verifyEd25519(finish.subarray(1), image, shown.placeKey)) return silence("place-finish-refused");
       let contract: PlaceContractReading | null = null;
       if (shown.arm !== null) {
         const reading = await deps.admits.readPlace({ contract: shown.arm.contract, lineage: shown.arm.lineage });
-        if (own(reading, "refusal")) return silence(`the contract refuses: ${reading.refusal}`);
-        if (reading.verdict.state !== "held") return silence(`the contract reads ${reading.verdict.state}: ${reading.verdict.reason}`);
-        if (reading.verdict.nym !== shown.placeKey) return silence("the contract names another place");
-        if (reading.nexus !== deps.nexus) return silence("the contract stands in another Nexus");
-        if (deps.shadows.consultPlace({ nexus: deps.nexus, placeKey: shown.placeKey }).aside) return silence("a standing shadow sets the place aside");
+        if (own(reading, "refusal")) return silence("place-contract-refused");
+        if (reading.verdict.state !== "held") return silence("place-contract-unheld", reading.verdict.state);
+        if (reading.verdict.nym !== shown.placeKey) return silence("place-contract-other-place");
+        if (reading.nexus !== deps.nexus) return silence("place-contract-other-nexus");
+        if (deps.shadows.consultPlace({ nexus: deps.nexus, placeKey: shown.placeKey }).aside) return silence("place-shadowed");
         contract = reading;
       }
       const sorted = await deps.sorter.sort({
         tier: bundle.pin.tier, scope: null, placeKey: shown.placeKey, place: contract, profile: PLACE_PROFILE,
         admit: null, sameGroup: null, fleetAside: true, arm: shown.arm,
       });
-      if (sorted === null) return silence("sorted to silence");
-      if (!ARM_CLASSES[shown.arm?.kind ?? "none"].includes(sorted.class)) return silence(`the sorter answered ${sorted.class} over an arm that never earns it`);
-      if (!standsAs(sorted.standing, shown.placeKey)) return silence("the sorter named a standing under another key or another Nexus");
+      if (sorted === null) return silence("sorted-silent");
+      if (!ARM_CLASSES[shown.arm?.kind ?? "none"].includes(sorted.class)) return silence("sorter-class-unearned", sorted.class);
+      if (!standsAs(sorted.standing, shown.placeKey)) return silence("sorter-standing-foreign");
       return seat({
         tier: bundle.pin.tier, scope: null, sessionKey: null, placeKey: shown.placeKey, profile: PLACE_PROFILE, class: sorted.class,
         ...(sorted.standing ? { standing: sorted.standing } : {}),
@@ -492,54 +520,54 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
     const read = readGatePresentation(presented);
     if (read === null) {
       const shown = readPlacePresentation(presented);
-      return shown === null ? silence("the presentation reads as none") : place(shown);
+      return shown === null ? silence("presentation-none") : place(shown);
     }
-    if (read.audience !== deps.audience) return silence("the dial names another audience");
+    if (read.audience !== deps.audience) return silence("audience-foreign");
     const certificate = readCertificate(read.certificate);
-    if (!own(certificate, "read")) return silence(`the certificate refuses: ${certificate.refusal}`);
+    if (!own(certificate, "read")) return silence("certificate-refused", certificate.refusal);
     const session = readSessionCertificate(read.sessionCertificate);
-    if (!own(session, "read")) return silence(`the session certificate refuses: ${session.refusal}`);
+    if (!own(session, "read")) return silence("session-certificate-refused", session.refusal);
     const scope = certificate.read.scope;
-    if (scope.nexus !== deps.nexus) return silence("the chain names another Nexus");
-    if (!sameFaceScope(session.read.scope, scope) || session.read.vesselFaceKey !== certificate.read.vesselFaceKey) return silence("the session certificate stands under another chain");
+    if (scope.nexus !== deps.nexus) return silence("chain-other-nexus");
+    if (!sameFaceScope(session.read.scope, scope) || session.read.vesselFaceKey !== certificate.read.vesselFaceKey) return silence("session-certificate-other-chain");
 
     const payload = gateFinishPayload({
       handshakeHash: transport.handshakeHash, bundleDigest: bundle.digest, presentationDigest: read.digest, audience: read.audience,
     });
     const finished = readSessionSignature(session.read, "finish", payload, hex(finish.subarray(1)));
-    if (!own(finished, "read")) return silence(`the finish refuses: ${finished.refusal}`);
+    if (!own(finished, "read")) return silence("finish-refused", finished.refusal);
 
     // 6 · the arm. Its subject names the face key, and an admit reads held at this Nexus, or nothing follows. An
     // admit names the key the Nexus admitted, and the face key must stand at the head of that key's line.
-    if (read.arm?.kind !== "admit" && read.armSubject !== null && read.armSubject !== scope.faceKey) return silence("the arm stands under another key");
-    if ((read.arm?.kind === "grant" && read.arm.grant.nexusAid !== deps.nexus) || (read.arm?.kind === "claim" && read.arm.nexusAid !== deps.nexus)) return silence("the arm names another Nexus");
+    if (read.arm?.kind !== "admit" && read.armSubject !== null && read.armSubject !== scope.faceKey) return silence("arm-other-key");
+    if ((read.arm?.kind === "grant" && read.arm.grant.nexusAid !== deps.nexus) || (read.arm?.kind === "claim" && read.arm.nexusAid !== deps.nexus)) return silence("arm-other-nexus");
     let admit: FaceAdmitReading | null = null;
     if (read.arm?.kind === "admit") {
       const reading = await deps.admits.read({ admit: read.arm.admit, lineage: read.arm.lineage });
-      if (own(reading, "refusal")) return silence(`the admit refuses: ${reading.refusal}`);
-      if (reading.verdict.state !== "held") return silence(`the admit reads ${reading.verdict.state}: ${reading.verdict.reason}`);
-      if (reading.head !== scope.faceKey) return silence("the arm stands under another key");
-      if (reading.nexus !== deps.nexus) return silence("the admit stands in another Nexus");
+      if (own(reading, "refusal")) return silence("admit-refused");
+      if (reading.verdict.state !== "held") return silence("admit-unheld", reading.verdict.state);
+      if (reading.head !== scope.faceKey) return silence("arm-other-key");
+      if (reading.nexus !== deps.nexus) return silence("admit-other-nexus");
       admit = reading;
     }
 
     // 7 · the chain, against what this gate learned of the face. It learns only under an admitted face key.
     const fresh = foldWithdrawals(scope);
-    if (!own(fresh, "memory")) return silence("the face's scope folds no history");
+    if (!own(fresh, "memory")) return silence("scope-unfolded");
     const learned = admit === null || floor ? null : await deps.withdrawals.read(scope);
     const verdict = checkFaceChain({
       admitted: scope, certificate: read.certificate, sessionCertificate: read.sessionCertificate,
       frontier: read.frontier, carried: read.carried, memory: learned ?? fresh.memory,
     });
-    if (verdict.verdict === "invalid") return silence(`the chain reads invalid: ${verdict.refusal}`);
+    if (verdict.verdict === "invalid") return silence("chain-invalid", verdict.refusal);
     if (admit !== null && !floor) await deps.withdrawals.keep(verdict.memory);
 
     // 8 · the shadow ring, then the sorter, once, before any answer of any kind.
     const shadow = deps.shadows.consult({ scope, vesselFaceKey: certificate.read.vesselFaceKey });
-    if (shadow.aside) return silence("a standing shadow sets the presenter aside");
+    if (shadow.aside) return silence("presenter-shadowed");
     // A named state goes only to a presenter of an admitted face. Every other presenter hears nothing.
-    if (verdict.verdict !== "verified" && admit === null) return silence(`the chain reads ${verdict.verdict} under no held admit`);
-    if (verdict.verdict !== "verified" && floor) return silence(`the chain reads ${verdict.verdict} at a floor gate`);
+    if (verdict.verdict !== "verified" && admit === null) return silence("chain-named-without-admit", verdict.verdict);
+    if (verdict.verdict !== "verified" && floor) return silence("chain-named-at-floor", verdict.verdict);
     let sameGroup: FaceGrantReading | null = null;
     if (admit !== null && !floor) {
       const grant = await deps.grants.grantFor(scope);
@@ -549,10 +577,10 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       tier: bundle.pin.tier, scope, placeKey: null, place: null, profile: session.read.profile, admit, sameGroup,
       fleetAside: shadow.fleetAside || floor, arm: read.arm,
     });
-    if (sorted === null) return silence("sorted to silence");
-    if (!ARM_CLASSES[read.arm?.kind ?? "none"].includes(sorted.class)) return silence(`the sorter answered ${sorted.class} over an arm that never earns it`);
-    if (!standsAs(sorted.standing, scope.faceKey)) return silence("the sorter named a standing under another key or another Nexus");
-    if (sorted.class === "same-operator" && (sameGroup === null || shadow.fleetAside || floor)) return silence("the sorter answered same-operator over no private grant, or over a device set aside");
+    if (sorted === null) return silence("sorted-silent");
+    if (!ARM_CLASSES[read.arm?.kind ?? "none"].includes(sorted.class)) return silence("sorter-class-unearned", sorted.class);
+    if (!standsAs(sorted.standing, scope.faceKey)) return silence("sorter-standing-foreign");
+    if (sorted.class === "same-operator" && (sameGroup === null || shadow.fleetAside || floor)) return silence("sorter-same-operator-unproven");
 
     if (verdict.verdict !== "verified") {
       const named: GateAnswer =
@@ -560,7 +588,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
         : verdict.verdict === "withdrawn" ? { state: "withdrawn", events: verdict.evidence }
         : verdict.verdict === "incomplete" ? { state: "incomplete", frontier: verdict.frontier }
         : { state: "forked", events: verdict.evidence };
-      return (await answer(named)) ? { outcome: "answered", state: named.state } : silence("the deadline lapsed before the answer");
+      return (await answer(named)) ? { outcome: "answered", state: named.state } : silence("deadline-before-answer");
     }
 
     const chain = verdict.chain;
@@ -577,7 +605,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       // One socket carries one first flight. A second run on it draws no deadline of its own, sends nothing and
       // touches nothing: the first run's deadline alone governs the socket.
       if (ACCEPTED.has(socket)) {
-        const refused: GateOutcome = { outcome: "silence", reason: "the socket already carried its one flight" };
+        const refused: GateOutcome = { outcome: "silence", reason: "socket-reused" };
         try { deps.onRefuse?.(refused.reason); } catch { /* a log never decides */ }
         return refused;
       }
@@ -595,14 +623,15 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       });
       state.standDown = () => { deadline.cancel(); leave(); };
       let outcome: GateOutcome;
-      if (pending >= maxPending) outcome = { outcome: "silence", reason: "too many pending sockets" };
+      if (pending >= maxPending) outcome = { outcome: "silence", reason: "pending-full" };
       else {
         placed = true;
         pending++;
         try { outcome = await run(socket, state); }
-        catch (error) { outcome = { outcome: "silence", reason: `a fault: ${error instanceof Error ? error.message : String(error)}` }; }
+        catch { outcome = { outcome: "silence", reason: "fault" }; }
       }
-      if (outcome.outcome === "silence") { try { deps.onRefuse?.(outcome.reason); } catch { /* a log never decides */ } }
+      // A detail passes as the outcome's OWN property alone: an inherited one names nothing the gate read.
+      if (outcome.outcome === "silence") { try { deps.onRefuse?.(outcome.reason, Object.hasOwn(outcome, "detail") ? outcome.detail : undefined); } catch { /* a log never decides */ } }
       return outcome;
     },
   };

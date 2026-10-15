@@ -20,7 +20,7 @@ import { dialFaceGate, dialPlaceGate, type DialSocket, type FaceDialArgs, type F
 import {
   makeFaceGate, memoryBackedWithdrawals, presentedAdmitReader, type FaceGate, type GateOutcome, type GateSession,
   type GateShadowReading, type GateSocket, type GateSortInput, type GateSortVerdict, type GateWithdrawalMemory,
-  type HeldNexusRoot,
+  type HeldNexusRoot, type GateSilenceDetail, type GateSilenceReason,
 } from "../src/face-gate.js";
 import type { FaceScope, NexusAid, VesselFaceCertificate } from "../src/face-proof-subjects.js";
 import { classifySocket, type FederationPosture } from "../src/federation-gate.js";
@@ -203,7 +203,7 @@ export interface World {
 }
 
 /** Stand one gate for `nexus` on `route`, under the vessel root `root`. */
-export async function world(opts: { nexus?: string; route?: string; root?: GateRootDoor; tier?: GateTier; posture?: FederationPosture; maxPending?: number; audience?: string; withdrawals?: GateWithdrawalMemory; gateBundle?: (derived: GateBundle) => GateBundle } = {}): Promise<World> {
+export async function world(opts: { nexus?: string; route?: string; root?: GateRootDoor; tier?: GateTier; posture?: FederationPosture; maxPending?: number; audience?: string; withdrawals?: GateWithdrawalMemory; gateBundle?: (derived: GateBundle) => GateBundle; onRefuse?: (reason: GateSilenceReason, detail?: GateSilenceDetail) => void; admitRefusal?: string } = {}): Promise<World> {
   const nexus = (opts.nexus ?? "nexus-a.synthetic") as NexusAid;
   const epoch = `epoch-${nexus}`;
   // Each Nexus seats its own quorum: an admit one Nexus signed counts under no other's roster.
@@ -233,7 +233,7 @@ export async function world(opts: { nexus?: string; route?: string; root?: GateR
     bundle: opts.gateBundle ? opts.gateBundle(bundle) : bundle, nexus, audience: opts.audience ?? AUDIENCE, deadlines, withdrawals,
     ...(opts.maxPending !== undefined ? { maxPending: opts.maxPending } : {}),
     admits: {
-      read: (arm) => { w.asked.push("admit"); return admits.read(arm); },
+      read: (arm) => { w.asked.push("admit"); return opts.admitRefusal === undefined ? admits.read(arm) : Promise.resolve({ refusal: opts.admitRefusal }); },
       readPlace: (arm) => { w.asked.push("contract"); return admits.readPlace(arm); },
     },
     shadows: {
@@ -271,7 +271,7 @@ export async function world(opts: { nexus?: string; route?: string; root?: GateR
         };
       },
     },
-    onRefuse: (reason) => { w.refusals.push(reason); },
+    onRefuse: (reason, detail) => { w.refusals.push(reason); opts.onRefuse?.(reason, detail); },
   });
   return w;
 }

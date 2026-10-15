@@ -348,7 +348,7 @@ The design names that unavailability and does not cure it. A recovery authority 
 * ''The session signer'' (`packages/lararium-mesh/src/session-signer.ts`). Its callers: the node's session open on the local socket, and the browser holder. One door opens a session and mints its signer (`openSignedSession`), so no session stands live without one.
 * ''The gate bundle'' (`packages/lararium-mesh/src/gate-bundle.ts`): the floor and sovereign tiers with their typed routes and roots (the serving tier stands owed with the ember's train E), the pin, its digest, the knock, the prologue, and the transport and signing keys one gate derives per (tier, Nexus, route). Nothing rests. Its caller: the vessel's gate composer.
 * ''The exchange's subjects'' (`packages/lararium-mesh/src/gate-exchange.ts`): the presentation and the answer with their readers, the image of the finish, the image of the verdict, the browser's first-flight envelope with its reader and its refusals (#/the-browser-envelope), and the house's sealed frame layout.
-* ''The gate'' (`packages/lararium-mesh/src/face-gate.ts`): the whole exchange against a socket and the collaborators it asks: a deadline source, an admit reader over the one presenter-verifier, the shadow ring, the grant ring, the sorter, a withdrawal memory and a session table. Its caller: the socket cutover.
+* ''The gate'' (`packages/lararium-mesh/src/face-gate.ts`): the whole exchange against a socket and the collaborators it asks: a deadline source, an admit reader over the one presenter-verifier, the shadow ring, the grant ring, the sorter, a withdrawal memory and a session table. Every silence names ONE reason from the gate's fixed vocabulary on the vessel's own log (`GATE_SILENCE_REASONS`), with at most one detail drawn from a vocabulary the gate already types; no thrown error's text and no string a collaborator spelled reaches that log. A first flight of any length but 96 bytes draws silence before any Noise work. Its caller: the socket cutover.
 * ''The dialers'' (`packages/lararium-mesh/src/face-dial.ts`): the other half of the exchange, for a face and for a faceless place, one function each for a node and a browser. Their callers: both client transports, at the cutover.
 * ''The gate's stored memory'' (`packages/lararium-mesh/src/gate-withdrawal-store.ts`): one row of signed events per face key, verified again at every load, accreting under one writer. Its caller: the gate composer, over rows the vessel seals.
 * ''The session face supplier'' (`packages/lararium-mesh/src/session-face.ts`): it joins a verified chain, this vessel's own key for the face, the admit's verdict and the private grant into the face a session wears, and verifies none of the last three itself (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries">>). Its callers: the same two.
@@ -397,6 +397,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zOQKk6O5FCRk5wojlkZqoAKj7FNYf9W7zwmDh90ybFQ
+<<^ code="&#x0003;">>ni:///sha-256;tXB-qdEjmiOPP1WgSFAtuoltY3BpyJ4CFm08e9OhjwM
 
 <<^ code="&#x0004;" -> to="?">>
