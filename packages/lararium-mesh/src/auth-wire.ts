@@ -34,7 +34,7 @@ import * as ed25519 from "@noble/ed25519";
 import { canonicalJsonBytes, hex, sha256HexBytesSync } from "./crypto.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
-import { carriageEntryActCid, isRollAnchor, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
+import { carriageEntryActCid, isRollAnchor, readAdmitCarriage, type CarriageEntry, type PresentedLineageAct } from "./carriage-registry.js";
 import { isHostingGrant, isInviteToken, type HostingGrant, type InviteToken } from "./hosting.js";
 import { AUTH_OK_DOMAIN, AUTH_PROOF_DOMAIN, CARRIAGE_ENTRY_DOMAIN, PRESENTED_LEAF_PROOF_DOMAIN } from "./domains.js";
 import { webGetRandomValues } from "./crypto.js";
@@ -99,7 +99,8 @@ function isCarriageEntryShape(v: unknown): v is CarriageEntry {
     Array.isArray(x["parents"]) && x["parents"].every((p) => typeof p === "string") &&
     typeof x["sealEpochCid"] === "string" && x["sealEpochCid"].length > 0 &&
     Array.isArray(x["signatures"]) && x["signatures"].every(isQuorumSignatureShape) &&
-    (x["contractSig"] === undefined || isQuorumSignatureShape(x["contractSig"]));
+    (x["contractSig"] === undefined || isQuorumSignatureShape(x["contractSig"])) &&
+    (x["carriage"] === undefined || (x["action"] === "admit" && readAdmitCarriage(x["carriage"]) !== null));
 }
 
 /**

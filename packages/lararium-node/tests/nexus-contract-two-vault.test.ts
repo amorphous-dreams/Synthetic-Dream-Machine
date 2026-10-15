@@ -41,6 +41,7 @@ import { mintColdKey, seatFingerprint, cidV1Sha256, foldCarriageDetails, carriag
   holdsCarriage, foundingRoster, KAPAE_ANTIGEN_DOMAIN, antigenActCid, nexusActPartial, type CofoundOffer, type KapaeAntigenEntry } from "@lararium/mesh";
 import { charterHomeFor } from "../src/carried-set.js";
 import { NexusContractError, runNexusContractOpen, runNexusContractPartial } from "../src/commands/nexus-contract.js";
+import { takeAdmitBundle } from "../src/admit-bundle.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { mintNexusLeaf } from "../src/nexus-leaf.js";
@@ -121,6 +122,10 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     const opened = await runNexusContractOpen({ action: "admit", nym: leaf.verifyingKey, sealHome: larSealHome(), repo: A.repo, aid });
     expect(opened.verdict).toBe("ready");
     expect(opened.signed).toEqual([aSeat]);
+    // The admit SIGNS the opening hearth's gate pin and canon list (face-proof#/the-gate-exchange, step 5).
+    const aGate = (await loadVesselVerifyingKey()).toLowerCase();
+    const signedCarriage = opened.partial.act.family === "admit" ? opened.partial.act.entry.carriage : undefined;
+    expect(signedCarriage?.gatePin).toBe(aGate);
     expect(opened.landed).toBeNull();
     expect(await memberHere(A, aid, leaf.verifyingKey)).toBe(false);
 
@@ -131,6 +136,10 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     expect(cosigned.signed).toEqual([aSeat, bSeat].sort());
     expect(cosigned.landed?.memberHeld).toBe(true);
     expect(cosigned.landed?.contractIn).toBe("supplied");
+    // B lands A's act, so B's bundle names the pin the admit signed, never B's own gate key.
+    const bGate = (await loadVesselVerifyingKey()).toLowerCase();
+    expect(bGate).not.toBe(aGate);
+    expect(cosigned.landed?.bundle?.gatePubKey).toBe(aGate);
 
     at(A);
     const landed = await runNexusContractPartial({ partial: courier(cosigned.partial), sealHome: larSealHome(), repo: A.repo });
@@ -138,6 +147,12 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     expect(landed.landed?.evidenceCid).toBe(cosigned.landed?.evidenceCid);
     expect(await memberHere(A, aid, leaf.verifyingKey)).toBe(true);
     expect(await memberHere(B, aid, leaf.verifyingKey)).toBe(true);
+
+    // The bundle B landed takes on A, and hands out the canon list the quorum signed.
+    at(A);
+    const taken = await takeAdmitBundle({ sealHome: larSealHome(), raw: JSON.stringify(cosigned.landed!.bundle) });
+    expect(taken.gatePubKey).toBe(aGate);
+    expect(taken.canon).toEqual(signedCarriage?.canon);
   });
 
   test("V2 — nothing signs or lands where the judge refuses", async () => {

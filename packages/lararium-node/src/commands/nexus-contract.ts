@@ -50,7 +50,7 @@ import {
   holdsCarriage, holdsCarrier, foundingRoster, presentationFromBoardDoc,
   carriageDocUrl, materializeSharedLarDoc, ed25519SignerFromSeed, nexusAidOf,
   rollAnchorsFromBoard, rollAnchorParents, signRollAnchor, rollAnchorCounts, rollAnchorCid, writeRollAnchor,
-  type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
+  type AdmitCarriage, type CarriageAction, type CarriageEntry, type KahuQuorumSeats, type QuorumSignature, type RollAnchor,
   type PresentationFinding,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -62,6 +62,7 @@ import { heldNexusLeaves, mintNexusLeaf } from "../nexus-leaf.js";
 import { charterHomeFor, primaryNexusAid, writeConsent, type CarriageConsent } from "../carried-set.js";
 import { heldSeatSigners } from "../held-quorum.js";
 import type { AdmitBundle } from "../admit-bundle.js";
+import { admitCanonDocs } from "./device-admit.js";
 
 /** An operator nym reads clean only at the exact ed25519 verifying-key length — a stray value never admits. */
 const NYM_RE = /^[0-9a-f]{64}$/;
@@ -246,6 +247,9 @@ interface ContractCore {
   readonly boardUrl: string;
   readonly handle:   Awaited<ReturnType<typeof materializeSharedLarDoc>>;
   readonly parents:  readonly string[];
+  /** An admit's signed carriage: this hearth's gate key as the pin, and the canon documents it names. Null for every
+   *  other act. */
+  readonly carriage: AdmitCarriage | null;
 }
 
 /** The carriage board one charter home's island names on this vessel, with the gate key that resolved the island. */
@@ -272,7 +276,12 @@ async function contractCore(opts: NexusContractOptions): Promise<ContractCore> {
   const { gateKey, boardUrl, handle } = await carriageBoardFor(opts.repo, home);
   const boardFold = await foldCarriageDetails(carriageEntriesFromBoard(handle.doc()), roster);
   const parents  = causalHeadsForNym(boardFold.entries, nym, opts.action, roster.sealEpochCid);
-  return { nym, home, roster, contract, gateKey, boardUrl, handle, parents };
+  // THE ADMIT SIGNS WHAT IT CARRIES (face-proof#/the-gate-exchange, step 5): the joinee takes this hearth's gate pin
+  // and canon list off the admit's own signed bytes, never off a field beside them.
+  const carriage: AdmitCarriage | null = opts.action === "admit"
+    ? { gatePin: gateKey.toLowerCase(), canon: await admitCanonDocs(opts.repo) }
+    : null;
+  return { nym, home, roster, contract, gateKey, boardUrl, handle, parents, carriage };
 }
 
 /**
@@ -313,8 +322,10 @@ async function landEntry(core: ContractCore, repo: Repo, action: CarriageAction,
     const read = await presentationFromBoardDoc(handle.doc(), nym, roster);
     findings = read.findings;
     const presented = read.presentation;
-    if (presented && carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
-      bundle = { aid: nexusAidOrRefuse(core.home), gatePubKey: core.gateKey.toLowerCase(), admit: presented.admit, lineage: presented.lineage };
+    // The bundle names the hearth the admit SIGNED as its pin: the vault that opened the act, wherever it lands.
+    const pin = presented?.admit.carriage?.gatePin;
+    if (presented && pin && carriageEntryActCid(presented.admit) === carriageEntryActCid(entry)) {
+      bundle = { aid: nexusAidOrRefuse(core.home), gatePubKey: pin, admit: presented.admit, lineage: presented.lineage };
     }
   }
   return {
@@ -342,7 +353,7 @@ export async function runNexusContract(opts: NexusContractOptions): Promise<Nexu
     const core = await contractCore(opts);
     // The quorum signs with the seats' own keys: each hand opens its one cold row for its one signature.
     const entry: CarriageEntry = await signCarriageQuorum(
-      { nym: core.nym, action: opts.action, parents: core.parents, sealEpochCid: core.roster.sealEpochCid },
+      { nym: core.nym, action: opts.action, parents: core.parents, sealEpochCid: core.roster.sealEpochCid, ...(core.carriage ? { carriage: core.carriage } : {}) },
       selected.map((s) => ({ signer: s.verifyingKey, sign: s.sign })),
       core.contract?.contractSig,
     );
@@ -394,7 +405,7 @@ export async function runNexusContractOpen(opts: NexusContractOptions): Promise<
   try {
     const core = await contractCore(opts);
     const entry = await signCarriageQuorum(
-      { nym: core.nym, action: family, parents: core.parents, sealEpochCid: core.roster.sealEpochCid },
+      { nym: core.nym, action: family, parents: core.parents, sealEpochCid: core.roster.sealEpochCid, ...(core.carriage ? { carriage: core.carriage } : {}) },
       held.map((s) => ({ signer: s.verifyingKey, sign: s.sign })),
       core.contract?.contractSig,
     );
@@ -426,7 +437,7 @@ export async function runNexusContractPartial(opts: { readonly partial: unknown;
   const repo = opts.repo;
   try {
     const { gateKey, boardUrl, handle } = await carriageBoardFor(repo, home);
-    const core: ContractCore = { nym: entry0.nym, home, roster, contract: null, gateKey, boardUrl, handle, parents: entry0.parents };
+    const core: ContractCore = { nym: entry0.nym, home, roster, contract: null, gateKey, boardUrl, handle, parents: entry0.parents, carriage: entry0.carriage ?? null };
     const reader = partialReader(read.aid, core);
     let partial: NexusActPartial = read;
     let judged = await judgeNexusActPartial(partial, reader);

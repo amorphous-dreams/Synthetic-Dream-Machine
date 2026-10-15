@@ -39,7 +39,7 @@
  */
 import {
   CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN, carriageEntryActCid, carriageEntryBytes, carriageEntryCounts,
-  rollAnchorBytes, rollAnchorCid, rollAnchorCounts, rollAnchorParents, verifyCarriageConsent,
+  readAdmitCarriage, rollAnchorBytes, rollAnchorCid, rollAnchorCounts, rollAnchorParents, verifyCarriageConsent,
   type CarriageEntry, type RollAnchor,
 } from "./carriage-registry.js";
 import {
@@ -122,7 +122,8 @@ function readSignatures(v: unknown): QuorumSignature[] | null {
 
 function readCarriage(v: unknown, family: "admit" | "revoke"): CarriageEntry | null {
   const e = record(v);
-  const keys = family === "admit" ? ["kind", "nym", "action", "parents", "sealEpochCid", "signatures", "contractSig"]
+  const keys = family === "admit"
+    ? ["kind", "nym", "action", "parents", "sealEpochCid", "signatures", "contractSig", ...(e && "carriage" in e ? ["carriage"] : [])]
     : ["kind", "nym", "action", "parents", "sealEpochCid", "signatures"];
   if (!e || !exactKeys(e, keys) || e["kind"] !== CARRIAGE_ENTRY_DOMAIN || e["action"] !== family) return null;
   if (typeof e["nym"] !== "string" || !HEX64.test(e["nym"]) || !sortedSet(e["parents"], HEX64)) return null;
@@ -133,7 +134,10 @@ function readCarriage(v: unknown, family: "admit" | "revoke"): CarriageEntry | n
     sealEpochCid: e["sealEpochCid"], signatures };
   if (family === "revoke") return entry;
   const contract = readSignatures([e["contractSig"]]);
-  return contract && contract[0]!.signer === entry.nym ? { ...entry, contractSig: contract[0]! } : null;
+  if (!contract || contract[0]!.signer !== entry.nym) return null;
+  if (!("carriage" in e)) return { ...entry, contractSig: contract[0]! };
+  const carriage = readAdmitCarriage(e["carriage"]);
+  return carriage ? { ...entry, contractSig: contract[0]!, carriage } : null;
 }
 
 function readAntigen(v: unknown): KapaeAntigenEntry | null {
@@ -205,7 +209,7 @@ export function nexusActPartial(aid: string, act: NexusPartialAct): NexusActPart
 export function nexusPartialBytes(act: NexusPartialAct): Uint8Array {
   if (act.family === "roll-anchor") { const { signatures: _s, ...body } = act.anchor; return rollAnchorBytes(body); }
   if (act.family === "kapae") { const { signatures: _s, ...body } = act.entry; return antigenEntryBytes(body); }
-  const { signatures: _s, contractSig: _c, ...body } = act.entry;
+  const { signatures: _s, contractSig: _c, ...body } = act.entry;   // a carriage stays in the body the quorum signs
   return carriageEntryBytes(body);
 }
 

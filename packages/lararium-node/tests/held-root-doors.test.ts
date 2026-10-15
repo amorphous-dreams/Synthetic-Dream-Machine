@@ -61,7 +61,8 @@ async function act(doc: NexusDoc, kahu: Uint8Array[], action: "admit" | "revoke"
   const nym = await pubOf(LEAF), epoch = doc.sealEpochCid!;
   const quorum = await Promise.all(kahu.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const consent = action === "admit" ? await signCarriageContract(nym, epoch, signerOf(LEAF)) : undefined;
-  return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch }, quorum, consent);
+  const carriage = action === "admit" ? { carriage: { gatePin: GATE, canon: {} } } : {};   // the pin its bundle names
+  return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch, ...carriage }, quorum, consent);
 }
 /** A carried reading over a REAL held root: the charter filed under its own genesis, with a deny board. */
 function readingOf(doc: NexusDoc, denyBoard: CarriageEntry[] = []): CarriedNexusReading {

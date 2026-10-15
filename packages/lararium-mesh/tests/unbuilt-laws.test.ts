@@ -459,9 +459,6 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
   test.skip("TWO VAULTS SIGN EACH FOUNDER'S SELF-CONTRACT — TWO_VAULT_SELF_CONTRACTS; nexus-contract-two-root design only until K14 releases nexus-contract.ts and its tests: each root consents once, neither holds two seat seeds, both sign the same act, and both independently fold both contracts after file courier and restart.", () => {
     expect(Object.keys(mesh)).toContain("cosignNexusContractPartial");
   });
-  test.skip("AN ADMIT SIGNS ITS CANON LIST AND GATE PIN — ADMIT_SIGNS_CANON_AND_PIN; gate-cutover-reach.test.ts. Mutating either carried field must fail a verifier, at two faces and two Nexuses.", () => {
-    expect(Object.keys(mesh)).toContain("verifySignedAdmitBundle");
-  });
   test.skip("A JOINED VESSEL CERTIFIES ITS OWN FACE-SCOPED KEY — JOINED_VESSEL_CERTIFIES_OWN_KEY; session-face-reissue.test.ts. A borrowed certificate must not open that vessel's session.", () => {
     expect(Object.keys(mesh)).toContain("openJoinedFaceSession");
   });

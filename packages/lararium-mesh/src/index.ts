@@ -192,7 +192,8 @@ export * from "./carriage-registry.js";
 // seat, the raise and the admit bundle hand the verifier a held root, never a roster of their own making.
 export {
   heldNexusRoot, heldRootFor, heldRootRevision, readAdmitAtHeldRoot, NO_HELD_ROOT,
-  type HeldNexusRoot, type HeldRootAbsence, type HeldAdmitReading,
+  verifySignedAdmitBundle, SIGNED_ADMIT_BUNDLE_REFUSALS,
+  type HeldNexusRoot, type HeldRootAbsence, type HeldAdmitReading, type SignedAdmitBundleRefusal,
 } from "./held-nexus-root.js";
 export {
   carriageEntriesFromBoard, writeCarriageEntry, carriageEntryKey, CARRIAGE_ENTRY_PREFIX,

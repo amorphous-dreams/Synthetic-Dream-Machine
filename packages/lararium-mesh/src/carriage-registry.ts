@@ -69,6 +69,44 @@ export { CARRIAGE_CARRIER_DOMAIN } from "./domains.js";
 export type CarriageAction = "admit" | "revoke" | "carry" | "uncarry";
 
 /**
+ * WHAT AN ADMIT CARRIES TO THE JOINEE, SIGNED (face-proof#/the-gate-exchange, step 5): the gate pin of the hearth
+ * the joinee dials, and the canon documents that hearth names to it, by canon title. The quorum signs both inside
+ * the act image (`carriageEntryBytes`), so a joinee accepts either value only off an admit whose quorum verified
+ * (`verifySignedAdmitBundle`), and a hand that moves either one moves the act it rides.
+ *
+ * A canon title names a carried canon document, never a derivable system plane (`hearth-canon.ts`). The map
+ * stays small: a hearth names a handful of canon documents, never a catalog.
+ */
+export interface AdmitCarriage {
+  /** The hearth's gate pin, 64 lower-case hex. */
+  readonly gatePin: string;
+  /** Canon title → document url. */
+  readonly canon:   Readonly<Record<string, string>>;
+}
+
+/** How many canon documents one admit may name. */
+export const ADMIT_CANON_BOUND = 16;
+const ADMIT_CANON_TEXT = /^[\x21-\x7e]{1,512}$/;
+
+/** Read an admit's carriage at its exact shape, or null. It copies the two fields alone. */
+export function readAdmitCarriage(v: unknown): AdmitCarriage | null {
+  if (typeof v !== "object" || v === null || Array.isArray(v)) return null;
+  const keys = Object.keys(v);
+  if (keys.length !== 2 || !Object.hasOwn(v, "gatePin") || !Object.hasOwn(v, "canon")) return null;
+  const { gatePin, canon } = v as { gatePin: unknown; canon: unknown };
+  if (typeof gatePin !== "string" || !/^[0-9a-f]{64}$/.test(gatePin)) return null;
+  if (typeof canon !== "object" || canon === null || Array.isArray(canon)) return null;
+  const entries = Object.entries(canon);
+  if (entries.length > ADMIT_CANON_BOUND) return null;
+  const read: Record<string, string> = {};
+  for (const [title, url] of entries) {
+    if (!ADMIT_CANON_TEXT.test(title) || typeof url !== "string" || !ADMIT_CANON_TEXT.test(url)) return null;
+    read[title] = url;
+  }
+  return { gatePin, canon: read };
+}
+
+/**
  * One entry in the members set — a quorum-signed admit or revoke of ONE operator nym. Monotone/additive
  * CRDT (entries only accrete; the fold reads causal heads per nym). The signatures
  * ride OUTSIDE the signed content, so re-carrying an entry never re-signs it (the antigen's discipline).
@@ -100,6 +138,9 @@ export interface CarriageEntry {
    * Nexus could conscript an operator by re-presenting a place's seal, or the reverse.
    */
   readonly contractSig?:    QuorumSignature;
+  /** An ADMIT's carriage: the hearth's gate pin and canon list, signed inside the act image. An admit may carry
+   *  none, and then hands out none; any other act that carries one never counts. */
+  readonly carriage?:       AdmitCarriage;
 }
 
 /**
@@ -117,6 +158,8 @@ export function carriageEntryBytes(
     action: entry.action,
     parents: [...new Set(entry.parents)].sort(),
     sealEpochCid: entry.sealEpochCid,
+    // Absent, the image stays byte-identical to an entry that never knew the field.
+    ...(entry.carriage !== undefined ? { carriage: entry.carriage } : {}),
   });
 }
 
@@ -292,6 +335,9 @@ function entryShapeIsReadable(entry: CarriageEntry): boolean {
 
 async function countReason(entry: CarriageEntry, roster: KahuQuorumSeats): Promise<{ counted: boolean; reason: string }> {
   if (!entryShapeIsReadable(entry)) return { counted: false, reason: "malformed-entry" };
+  if (entry.carriage !== undefined && (entry.action !== "admit" || readAdmitCarriage(entry.carriage) === null)) {
+    return { counted: false, reason: "carriage-malformed" };
+  }
   if (entry.sealEpochCid !== roster.sealEpochCid) return { counted: false, reason: "wrong-charter-epoch" };
   if (entry.action !== "admit" && entry.action !== "revoke" && entry.action !== "carry" && entry.action !== "uncarry") {
     return { counted: false, reason: "unsupported-action" };

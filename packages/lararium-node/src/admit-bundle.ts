@@ -13,19 +13,19 @@
  *   · `lineage`    — its closed, tight causal lineage (`presentationFromBoardDoc`), with the roll anchors
  *                    that carry it to the head when its epoch has rolled;
  *   · `aid`        — the Nexus the admit belongs to (the charter's genesis epoch);
- *   · `gatePubKey` — the gate key the bundle NAMES as the hearth that wrote it: the key the joinee's dial
- *                    commits its proof to, exactly as the admit payload's hearth pin carries it
- *                    (`hearth-dial-pin.ts`). Nothing in the bundle proves that hearth holds it; the take
- *                    trusts the operator's hand that carried the file for this one value.
+ *   · `gatePubKey` — the gate key of the hearth that wrote it: the key the joinee's dial commits its proof to.
+ *                    It must equal the gate pin the quorum SIGNED inside the admit (`AdmitCarriage`), beside
+ *                    the canon documents that hearth names; the take hands out neither value any other way
+ *                    (`verifySignedAdmitBundle`, face-proof#/the-gate-exchange step 5).
  * Every byte already stands on the Nexus's board or on the wire at that hearth's challenge. No key travels.
  *
  * ── THE TAKE ──────────────────────────────────────────────────────────────────────────────────────
  * `takeAdmitBundle` refuses, writing nothing, unless all of these hold:
  *   · the bundle parses whole (`isPresentedAdmit` over admit + lineage, a path-safe AID, a 64-hex gate key);
- *   · this vessel holds a charter for the AID, and `verifyPresentedAdmit` reads the admit HELD against that
+ *   · this vessel holds a charter for the AID, and `verifySignedAdmitBundle` reads the admit HELD against that
  *     charter's head roster and epoch lineage with an EMPTY deny board and antigen — the admit counts, its
  *     lineage chains, and it roots on the head epoch or on an ancestor its roll anchors carry to the head
- *     (offline: no board is consulted);
+ *     (offline: no board is consulted) — and the bundle's gate key equals the pin the admit's quorum signed;
  *   · the admit's nym is one of this vessel's OWN leaves for that AID.
  * It then writes the bundle atomically at `<sealHome>/nexus/carriage-admit/<aid>.json`, beside the kept
  * consent. The write touches no sealed carrier.
@@ -33,7 +33,7 @@
  * ── THE DIALED NEXUS (F2) ─────────────────────────────────────────────────────────────────────────
  * A dial presents an admit only for the Nexus POSITIVELY tied to the gate key it dials (`dialedNexusAid`).
  * Two records tie a gate key to an AID, and both are the operator's own out-of-band act:
- *   · a KEPT BUNDLE whose `gatePubKey` is the dialed gate key — the hearth that wrote the admit;
+ *   · a KEPT BUNDLE whose admit SIGNED the dialed gate key as its pin, and names it as `gatePubKey`;
  *   · the HEARTH PIN, when it names the dialed gate key and a `charter` island whose scope is the AID.
  * The AID must name a charter this vessel holds. No tie, or ties naming two Nexuses → no Nexus, and the dial
  * presents no admit. The primary charter is never assumed: a vessel whose primary is P that dials Q's hearth
@@ -49,6 +49,7 @@ import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
   isPresentedAdmit, makeMultiSigQuorumVerifier, NEXUS_AID_PATTERN, carriageEntryActCid, heldNexusRoot, readAdmitAtHeldRoot, admittedKeyOf,
+  verifySignedAdmitBundle,
   type CarriageEntry, type PresentedLineageAct, type NexusDoc,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
@@ -135,6 +136,8 @@ export interface AdmitTakeResult {
   readonly nym:        string;
   readonly admitCid:   string;
   readonly gatePubKey: string;
+  /** The canon documents the issuing hearth names, as the admit's quorum signed them. */
+  readonly canon:      Readonly<Record<string, string>>;
   readonly lineage:    number;
   readonly path:       string;
 }
@@ -164,11 +167,18 @@ export async function takeAdmitBundle(opts: {
   if ("absent" in root) {
     throw new AdmitBundleError(`no-held-root (${root.absent}): this vessel holds no charter for ${bundle.aid.slice(0, 18)}… — import it (\`lares nexus seal import\`) before taking its admit.`);
   }
-  const read = await readAdmitAtHeldRoot({ admit: bundle.admit, lineage: bundle.lineage }, root);
-  if (!("verdict" in read) || read.verdict.state !== "held") {
+  const signed = await verifySignedAdmitBundle(bundle, root);
+  if ("refusal" in signed) {
+    if (signed.refusal === "admit-carries-no-pin") {
+      throw new AdmitBundleError("the admit's quorum signed no gate pin and no canon list — a bundle carries only an admit that names its hearth. Nothing was kept.");
+    }
+    if (signed.refusal === "pin-differs") {
+      throw new AdmitBundleError("the bundle's gate key differs from the pin the admit's quorum signed — the file names another hearth than its admit. Nothing was kept.");
+    }
     throw new AdmitBundleError(
-      "the admit does not hold at the charter this vessel holds — it does not count under the seated quorum, its " +
-      "lineage does not chain, or it roots on an epoch no roll anchor it carries reaches the head from. Nothing was kept.",
+      `the admit does not hold at the charter this vessel holds (${signed.refusal}${signed.state ? `: ${signed.state}` : ""}) — it does not count ` +
+      "under the seated quorum, its signed pin or canon moved, its lineage does not chain, or it roots on an epoch no roll anchor it carries " +
+      "reaches the head from. Nothing was kept.",
     );
   }
   const nym = bundle.admit.nym.toLowerCase();
@@ -192,7 +202,7 @@ export async function takeAdmitBundle(opts: {
   }
   return {
     aid: bundle.aid, nym, admitCid: carriageEntryActCid(bundle.admit), gatePubKey: bundle.gatePubKey,
-    lineage: bundle.lineage.length, path,
+    canon: signed.carriage.canon, lineage: bundle.lineage.length, path,
   };
 }
 
@@ -210,7 +220,8 @@ export function dialedNexusAid(opts: {
   if (!KEY_RE.test(gate)) return null;
   const tied = new Set<string>();
   for (const kept of readKeptAdmitBundles(opts.sealHome)) {
-    if (kept.gatePubKey === gate) tied.add(kept.aid);
+    // The tie reads the pin the admit signed; its quorum gets read again where the admit gets presented.
+    if (kept.gatePubKey === gate && kept.admit.carriage?.gatePin === gate) tied.add(kept.aid);
   }
   const pin = readHearthDialPin(opts.bootstrapPath ?? larBootstrapPath());
   if (pin && pin.gatePubKey === gate && pin.islandKind === "charter" && pin.islandScope) tied.add(pin.islandScope);

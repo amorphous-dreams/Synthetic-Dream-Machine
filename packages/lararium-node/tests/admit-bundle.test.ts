@@ -53,12 +53,14 @@ async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
   return heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
 }
 
-async function act(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, action: "admit" | "revoke", parents: string[] = []): Promise<CarriageEntry> {
+/** An admit signs the pin of the hearth its bundle names (face-proof#/the-gate-exchange, step 5). */
+async function act(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, action: "admit" | "revoke", parents: string[] = [], pin = GATE_P): Promise<CarriageEntry> {
   const nym = await pubOf(leafSeed);
   const epoch = doc.sealEpochCid!;
   const quorum = await Promise.all(kahuSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const consent = action === "admit" ? await signCarriageContract(nym, epoch, signerOf(leafSeed)) : undefined;
-  return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch }, quorum, consent);
+  const carriage = action === "admit" ? { carriage: { gatePin: pin, canon: {} } } : {};
+  return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch, ...carriage }, quorum, consent);
 }
 
 function boardOf(entries: CarriageEntry[]): LarDoc {
@@ -111,6 +113,26 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     expect(existsSync(admitBundlePathFor(w.sealHome, w.aidP))).toBe(false);
     // CONTROL: the bundle for this vessel's own leaf lands.
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText(w.bundleP), leaves: w.leaves })).resolves.toMatchObject({ aid: w.aidP });
+  });
+
+  test("TAKE hands out only the pin and canon the admit signed — a moved pin or a pinless admit keeps nothing", async () => {
+    const w = await stand();
+    // A bundle naming another hearth than the admit's signed pin.
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: GATE_Q }), leaves: w.leaves }))
+      .rejects.toThrow(/differs from the pin the admit's quorum signed/);
+    // The admit's own carriage moved after the quorum signed: the act no longer counts.
+    const moved: CarriageEntry = { ...w.admitP, carriage: { gatePin: GATE_Q, canon: {} } };
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: GATE_Q, admit: moved }), leaves: w.leaves }))
+      .rejects.toThrow(/does not hold/);
+    // An admit whose quorum signed no carriage at all.
+    const nym = await pubOf(LEAF_P), epoch = w.P.sealEpochCid!;
+    const quorum = await Promise.all(P_KAHU.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+    const pinless = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: epoch }, quorum, await signCarriageContract(nym, epoch, signerOf(LEAF_P)));
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, admit: pinless }), leaves: w.leaves }))
+      .rejects.toThrow(/signed no gate pin/);
+    expect(existsSync(admitBundlePathFor(w.sealHome, w.aidP))).toBe(false);
+    // CONTROL: the signed bundle lands and names its signed canon.
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText(w.bundleP), leaves: w.leaves })).resolves.toMatchObject({ gatePubKey: GATE_P, canon: {} });
   });
 
   test("TAKE refuses a tampered or forged admit — nothing written", async () => {
@@ -253,7 +275,7 @@ describe("a bundle taken across a seal roll carries the anchor, and the dial pre
     const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
       a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
 
-    const admit = await act(genesis.doc(), OLD, LEAF, "admit");
+    const admit = await act(genesis.doc(), OLD, LEAF, "admit", [], GATE);
     const anchor = await signRollAnchor(
       { prevEpochCid: e0.epochCid, sealEpochCid: e1.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents: [carriageEntryActCid(admit)] },
       await Promise.all(NEW.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) }))),
@@ -302,7 +324,7 @@ describe("the dial surfaces what the presenter noticed — two roll anchors open
     const aid = nexusAidOf(rolled)!;
     const leaves = async (a: string): Promise<readonly NexusLeaf[]> =>
       a === aid ? [{ handleIndex: 0, verifyingKey: await pubOf(LEAF), seed: LEAF }] : [];
-    const admit = await act(genesis.doc(), OLD, LEAF, "admit");
+    const admit = await act(genesis.doc(), OLD, LEAF, "admit", [], GATE);
     const anchorOf = async (parents: string[]) => signRollAnchor(
       { prevEpochCid: e0.epochCid, sealEpochCid: e1.epochCid, prevKeys: oldKeys, prevThreshold: 2, parents },
       newHands.slice(0, 2),

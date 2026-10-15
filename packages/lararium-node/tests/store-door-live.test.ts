@@ -287,7 +287,8 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     const chairs = await seatChairs([0, 1, 2]);
     const quorum = chairs.hands.slice(0, 2);
     const consent = await signCarriageContract(leaf.verifyingKey, doc.sealEpochCid!, sign(leaf.seed));
-    const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid! }, quorum, consent);
+    const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid!,
+      carriage: { gatePin: "c3".repeat(32), canon: {} } }, quorum, consent);
     const raw = JSON.stringify({ aid: aidP, gatePubKey: "c3".repeat(32), admit, lineage: [] });
 
     const live = restingRepo(larDataDir());

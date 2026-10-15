@@ -28,8 +28,8 @@
  */
 import { canonicalJson, sha256HexSync } from "./crypto.js";
 import {
-  carriageEntryActCid, verifyPresentedAdmit,
-  type CarriageEntry, type PresentedAdmitVerdict, type PresentedLineageAct,
+  carriageEntryActCid, readAdmitCarriage, verifyPresentedAdmit,
+  type AdmitCarriage, type CarriageEntry, type PresentedAdmitVerdict, type PresentedLineageAct,
 } from "./carriage-registry.js";
 import type { KahuQuorumSeats, KapaeAntigenEntry, QuorumVerifier } from "./kapae-antigen.js";
 import { foundingRoster, type NexusDoc } from "./nexus-seal-seed.js";
@@ -143,6 +143,9 @@ export type HeldAdmitReading =
       /** The key the presenter must hold: the head of the admitted nym's line at this Nexus, the nym itself where no
        *  hand-over stands. Empty when the line refused (the verdict then names why). */
       readonly head: string;
+      /** The gate pin and canon list the admit's quorum signed, or null where it signed none. Trust it only where
+       *  the verdict reads `held` (`verifySignedAdmitBundle` reads it no other way). */
+      readonly carriage: AdmitCarriage | null;
     }
   | { readonly refusal: typeof NO_HELD_ROOT };
 
@@ -157,13 +160,14 @@ export async function readAdmitAtHeldRoot(
 ): Promise<HeldAdmitReading> {
   if (root === null || root === undefined) return { refusal: NO_HELD_ROOT };
   let admitRef = "";
+  const carriage = arm.admit?.carriage === undefined ? null : readAdmitCarriage(arm.admit.carriage);
   try { admitRef = carriageEntryActCid(arm.admit); } catch { /* a malformed admit reads rejected below and wears no reference */ }
   // THE LINE. The admitted nym's keys at this Nexus, walked off the hand-overs the root's board holds. A line that
   // forks or loops shows the face's key signed two standings: the admit reads denied, whatever else holds.
   const nym = typeof arm.admit?.nym === "string" ? arm.admit.nym.toLowerCase() : "";
   const line = followNexusKeyLine({ nexus: root.nexus, admitted: nym, carried: root.handOvers ?? [] });
   if ("refusal" in line && /^[0-9a-f]{64}$/.test(nym)) {
-    return { verdict: { state: "denied", reason: `key-line-${line.refusal}`, nym }, nexus: root.nexus, admitRef, revision: root.revision, head: "" };
+    return { verdict: { state: "denied", reason: `key-line-${line.refusal}`, nym }, nexus: root.nexus, admitRef, revision: root.revision, head: "", carriage };
   }
   const verdict = await verifyPresentedAdmit({
     admit: arm.admit, lineage: arm.lineage, roster: root.roster, denyBoard: root.denyBoard,
@@ -171,5 +175,43 @@ export async function readAdmitAtHeldRoot(
     ...(root.sealLineage ? { sealLineage: root.sealLineage } : {}),
     ...("keys" in line ? { lineKeys: line.keys } : {}),
   });
-  return { verdict, nexus: root.nexus, admitRef, revision: root.revision, head: "head" in line ? line.head : "" };
+  return { verdict, nexus: root.nexus, admitRef, revision: root.revision, head: "head" in line ? line.head : "", carriage };
+}
+
+/** Why a carried admit bundle hands out no pin and no canon. */
+export const SIGNED_ADMIT_BUNDLE_REFUSALS = [
+  "bundle-malformed",       // no AID, no 64-hex gate key, or no admit and lineage
+  NO_HELD_ROOT,             // this vessel holds no root to read the admit against
+  "bundle-other-nexus",     // the bundle names another Nexus than the held root
+  "admit-not-held",         // the admit reads anything but held at that root; `state` names which
+  "admit-carries-no-pin",   // the quorum signed no carriage into this admit
+  "pin-differs",            // the bundle's gate key names another key than the pin the quorum signed
+] as const;
+export type SignedAdmitBundleRefusal = (typeof SIGNED_ADMIT_BUNDLE_REFUSALS)[number];
+
+/**
+ * THE ONE DOOR A CARRIED ADMIT'S PIN AND CANON PASS (face-proof#/the-gate-exchange, step 5). A bundle carries an
+ * admit by hand from the hearth that wrote it, with that hearth's gate key beside it. The quorum signed the pin
+ * and the canon list inside the admit; this door reads the admit at the root this vessel holds for the bundle's
+ * Nexus and hands out the carriage only where the admit reads `held` and the bundle's gate key equals the signed
+ * pin. A moved pin, a moved canon entry, a carriage lifted from another admit or another Nexus each refuse here.
+ */
+export async function verifySignedAdmitBundle(
+  bundle: unknown, root: HeldNexusRoot | null | undefined,
+): Promise<{ readonly carriage: AdmitCarriage; readonly reading: Extract<HeldAdmitReading, { verdict: unknown }> }
+  | { readonly refusal: SignedAdmitBundleRefusal; readonly state?: string }> {
+  if (typeof bundle !== "object" || bundle === null) return { refusal: "bundle-malformed" };
+  const { aid, gatePubKey, admit, lineage } = bundle as Record<string, unknown>;
+  if (typeof aid !== "string" || aid.length === 0 || typeof gatePubKey !== "string" || !/^[0-9a-f]{64}$/.test(gatePubKey)) {
+    return { refusal: "bundle-malformed" };
+  }
+  if (typeof admit !== "object" || admit === null || !Array.isArray(lineage)) return { refusal: "bundle-malformed" };
+  if (root === null || root === undefined) return { refusal: NO_HELD_ROOT };
+  if (root.nexus !== aid) return { refusal: "bundle-other-nexus" };
+  const reading = await readAdmitAtHeldRoot({ admit: admit as CarriageEntry, lineage: lineage as PresentedLineageAct[] }, root);
+  if ("refusal" in reading) return { refusal: reading.refusal };
+  if (reading.verdict.state !== "held") return { refusal: "admit-not-held", state: reading.verdict.state };
+  if (reading.carriage === null) return { refusal: "admit-carries-no-pin" };
+  if (reading.carriage.gatePin !== gatePubKey) return { refusal: "pin-differs" };
+  return { carriage: reading.carriage, reading };
 }

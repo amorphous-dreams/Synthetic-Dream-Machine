@@ -30,13 +30,13 @@ describe("W cutover reach", () => {
     expect(carriageEntryActCid({ ...entry, parents: ["different-parent"] })).not.toBe(carriageEntryActCid(entry));
   });
 
-  red("ADMIT_SIGNS_CANON_AND_PIN: changing the carried canon or gate pin changes the signed admit image", async () => {
-    const entry = await carriageAct(new Uint8Array(32).fill(31), "admit", { kahu: [new Uint8Array(32).fill(32)], epoch: "epoch-cutover" });
-    // A surrogate until the signed carried-admit shape exists: the current act image discards both added fields.
-    const withPin = { ...entry, gatePubKey: "aa".repeat(32), canon: ["hearth-a"] };
-    const withOtherPin = { ...withPin, gatePubKey: "bb".repeat(32) };
-    const withOtherCanon = { ...withPin, canon: ["hearth-b"] };
-    expect.soft(carriageEntryActCid(withOtherPin)).not.toBe(carriageEntryActCid(withPin));
-    expect.soft(carriageEntryActCid(withOtherCanon)).not.toBe(carriageEntryActCid(withPin));
+  // ADMIT_SIGNS_CANON_AND_PIN stands built: admit-carriage.test.ts holds its two-face, two-Nexus vectors.
+  test("ADMIT_SIGNS_CANON_AND_PIN: changing the carried canon or gate pin changes the signed admit image", async () => {
+    const carriage = { gatePin: "aa".repeat(32), canon: { "bags/lares": "automerge:hearth-a" } };
+    const withPin = await carriageAct(new Uint8Array(32).fill(31), "admit", { kahu: [new Uint8Array(32).fill(32)], epoch: "epoch-cutover", carriage });
+    const withOtherPin = { ...withPin, carriage: { ...carriage, gatePin: "bb".repeat(32) } };
+    const withOtherCanon = { ...withPin, carriage: { ...carriage, canon: { "bags/lares": "automerge:hearth-b" } } };
+    expect(carriageEntryActCid(withOtherPin)).not.toBe(carriageEntryActCid(withPin));
+    expect(carriageEntryActCid(withOtherCanon)).not.toBe(carriageEntryActCid(withPin));
   });
 });
