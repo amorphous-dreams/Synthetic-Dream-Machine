@@ -276,6 +276,17 @@ describe("custodyStatus", () => {
     expect(at("nexus/carriage-consent/sealed.json")).toMatchObject({ row: "carriage-consent", reading: "sealed", fault: true });
     expect(s.outside).toEqual([]);
   });
+  test("RED: a floor row whose file stops inside the seal's magic reads torn and a fault, never bare — CONTROL: its cleartext reads bare", async () => {
+    await foundCustody({ io, homes, slots: [TEST_SLOT] });
+    const cut = VK_SEAL_MAGIC.subarray(0, 8);
+    writeFileSync(join(homes.identity, ".vessel-key.json"), cut, { mode: 0o600 });
+    expect(Array.from(readFileSync(join(homes.identity, ".vessel-key.json")))).toEqual(Array.from(cut));
+    const s = await custodyStatus({ io, homes });
+    expect(s.rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "torn", custody: "floor", fault: true });
+    writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
+    const control = await custodyStatus({ io, homes });
+    expect(control.rows.find((r) => r.row === "vessel-key")).toMatchObject({ reading: "bare", custody: "floor", fault: false });
+  });
   test("an unfounded home reads the tree absent", async () => {
     expect((await custodyStatus({ io, homes })).tree).toEqual({ reading: "absent" });
   });

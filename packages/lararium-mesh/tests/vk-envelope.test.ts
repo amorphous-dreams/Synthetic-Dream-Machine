@@ -74,6 +74,27 @@ describe("the readings stay apart", () => {
     expect(openUnderVk(mintVk(), "c", torn).reading).toBe("torn");
   });
 
+  test("RED: a carrier cut inside its magic reads torn, never bare, at every cut", () => {
+    const sealed = sealUnderVk(mintVk(), "c", text("secret"));
+    for (let cut = 1; cut < VK_SEAL_MAGIC.length; cut++) {
+      const head = sealed.subarray(0, cut);
+      expect(readVkCarrier(head), `a cut after ${cut} bytes`).toBe("torn");
+      expect(openUnderVk(mintVk(), "c", head).reading, `a cut after ${cut} bytes`).toBe("torn");
+    }
+  });
+
+  test("RED: a short frame in the house family under another magic reads unopenable, never bare", () => {
+    const short = text("lares-xy-seal\u0001\u0002");
+    expect(short.length).toBeLessThan(VK_SEAL_MIN_LENGTH);
+    expect(readVkCarrier(short)).toBe("unopenable");
+  });
+
+  test("CONTROL: short bytes that leave the magic before the family prefix, or never meet it, read bare", () => {
+    expect(readVkCarrier(text("lax"))).toBe("bare");
+    expect(readVkCarrier(text("{}"))).toBe("bare");
+    expect(readVkCarrier(text("x"))).toBe("bare");
+  });
+
   test("cleartext JSON reads bare", () => {
     expect(readVkCarrier(text(JSON.stringify({ signingKey: "00".repeat(32) })))).toBe("bare");
     expect(readVkCarrier(new Uint8Array(0))).toBe("bare");

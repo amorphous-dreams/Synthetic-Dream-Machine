@@ -10,12 +10,14 @@
  *
  *  · `absent`     — nothing stands. A write may found the carrier.
  *  · `sealed`     — the house magic over a frame long enough to hold a nonce and a tag. A VK may be tried.
- *  · `torn`       — the house magic over a frame too short to hold them. The bytes never framed, so no key is at
- *                   fault; the route out is a backup, never a re-typed credential.
+ *  · `torn`       — the house magic over a frame too short to hold them, or a file cut inside the magic itself (its
+ *                   bytes a proper prefix of the magic). The bytes never framed, so no key is at fault; the route
+ *                   out is a backup, never a re-typed credential.
  *  · `old-shape`  — the four bytes `LARK` lead the file. No custody of this house writes that frame and no
  *                   reader here opens it; the fresh-start runbook answers it, and no write here replaces it.
  *  · `unopenable` — a seal stands that this build cannot frame: the house magic with damaged bytes, or another
- *                   scheme of the house family (`lares-…`). No key can be judged against it, so none may replace it.
+ *                   scheme of the house family (`lares-…`) at any length. No key can be judged against it, so none
+ *                   may replace it.
  *  · `bare`       — nothing frames as a seal: cleartext, or bytes of no seal this house writes.
  *
  * Only `absent`, and a `sealed` carrier the current VK OPENS, earn a write (`sealed-writer`). Pure codec: no key,
@@ -41,6 +43,10 @@ export type VkCarrierReading = "absent" | "sealed" | "torn" | "old-shape" | "uno
 const startsWith = (bytes: Uint8Array, prefix: Uint8Array): boolean =>
   bytes.length >= prefix.length && prefix.every((b, i) => bytes[i] === b);
 
+/** Bytes that stop inside the magic: a non-empty proper prefix of it. */
+const cutInsideMagic = (bytes: Uint8Array): boolean =>
+  bytes.length > 0 && bytes.length < VK_SEAL_MAGIC.length && bytes.every((b, i) => VK_SEAL_MAGIC[i] === b);
+
 function magicDistance(bytes: Uint8Array): number {
   let d = 0;
   for (let i = 0; i < VK_SEAL_MAGIC.length; i++) if (bytes[i] !== VK_SEAL_MAGIC[i]) d++;
@@ -51,11 +57,10 @@ function magicDistance(bytes: Uint8Array): number {
 export function readVkCarrier(bytes: Uint8Array | null): VkCarrierReading {
   if (bytes === null) return "absent";
   if (startsWith(bytes, VK_SEAL_MAGIC)) return bytes.length >= VK_SEAL_MIN_LENGTH ? "sealed" : "torn";
+  if (cutInsideMagic(bytes)) return "torn";
   if (startsWith(bytes, LARK_MAGIC)) return "old-shape";
-  if (bytes.length >= VK_SEAL_MIN_LENGTH) {
-    if (startsWith(bytes, HOUSE_FAMILY_PREFIX)) return "unopenable";
-    if (magicDistance(bytes) <= DAMAGED_MAGIC_TOLERANCE) return "unopenable";
-  }
+  if (startsWith(bytes, HOUSE_FAMILY_PREFIX)) return "unopenable";
+  if (bytes.length >= VK_SEAL_MIN_LENGTH && magicDistance(bytes) <= DAMAGED_MAGIC_TOLERANCE) return "unopenable";
   return "bare";
 }
 
