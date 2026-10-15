@@ -180,6 +180,7 @@ jobs:
           ~/.venv/bin/python3 -m pip install --upgrade pip
           ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
       - name: Witness the holder answers
+        id: holder
         run: ~/.venv/bin/python3 -c "import mempalace; print('holder ok')"
       # `pnpm test` reaches the sensorium's two TypeScript tests only.  The
       # holder suite is Python and lives beside its modules under scripts/, so
@@ -188,13 +189,18 @@ jobs:
       # in for the holder environment the suite actually requires.
       - name: Run lararium-sensorium Python suite
         run: ~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q
+      # Keep the package verdict visible if the independent Python suite fails.
+      # The holder still gates package tests that exercise its real subprocess.
       - name: Install Playwright Chromium (browser-vessel suite)
+        if: ${{ !cancelled() && steps.holder.outcome == 'success' }}
+        id: browser
         run: pnpm exec playwright install --with-deps chromium
       # ONE SERIALIZATION, BOTH PLACES. The root `test` script pins `--workspace-concurrency=1`
       # because packages share a build tree and a rendezvous directory; running them in parallel
       # measures a different repository than the one an operator measures locally, and its flakes
       # are unreproducible by construction.
       - name: Run all package suites
+        if: ${{ !cancelled() && steps.holder.outcome == 'success' && steps.browser.outcome == 'success' }}
         run: pnpm test
 
   # ─── witnesses (the whole fleet, under its own name) ───────────────────────
