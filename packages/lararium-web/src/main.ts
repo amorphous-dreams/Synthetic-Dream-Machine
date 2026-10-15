@@ -214,6 +214,7 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
   apply.addEventListener("click", () => {
     const file = fleetJoinFileOf(paste.value);
     if (file) {
+      apply.disabled = true;
       void (async () => {
         try {
           if (file.kind === "fleet-join-offer") {
@@ -238,7 +239,7 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
         } catch (err) {
           statusEl.textContent = err instanceof BrowserFleetJoinRefused ? `✗ refused — ${err.message}` : `✗ ${String(err)}`;
           statusEl.className = "err";
-        }
+        } finally { apply.disabled = false; }
       })();
       return;
     }

@@ -9,6 +9,8 @@
  *       until settled, then refuses `join-absent`; a standing secret under other bytes refuses untouched
  *   B4  the custody door signs only under the key its row holds
  *   B5  a request that broke after minting retries clean over the same offer, on the key it left at rest
+ *   B6  a second face's root landing under a group this browser joined refuses `record-other`, and writes nothing
+ *   B7  two requests at once keep one pending join: the other answers it, or refuses `join-pending`
  */
 import { describe, expect, test } from "vitest";
 import {
@@ -90,6 +92,11 @@ describe("the browser's fleet join", () => {
     await expect(browserFleetJoinLand({ answer: { ...good, carriage: { ...good.carriage, gatePin: "ee".repeat(32) } }, idbName: s.idbName }))
       .rejects.toThrow(/answer-unsigned/);
     expect(await pendingOf(s.idbName)).not.toHaveProperty("landed");
+    const bare = await openVesselIdb(s.idbName);
+    try {
+      expect(await idbGet(bare, FLEET_JOIN_STORE, `secret:${GROUP}`)).toBeUndefined();
+      expect(await idbGet(bare, FLEET_JOIN_STORE, `record:${GROUP}`)).toBeUndefined();
+    } finally { bare.close(); }
     // CONTROL: settling a join whose answer never landed leaves it standing.
     expect(await browserFleetJoinSettle(s.idbName)).toBe(false);
     await browserFleetJoinLand({ answer: good, idbName: s.idbName });
@@ -122,5 +129,37 @@ describe("the browser's fleet join", () => {
     try { await idbDelete(db, FLEET_JOIN_STORE, "pending"); } finally { db.close(); }
     const again = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
     expect(again.requests[0]!.vesselFaceKey).toBe(first.requests[0]!.vesselFaceKey);
+  });
+
+  test("B6 — another root's landing under a group this browser joined refuses record-other and writes nothing", async () => {
+    const s = await stage();
+    await browserFleetJoinLand({ answer: await answerTo(s, await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName })), idbName: s.idbName });
+    expect(await browserFleetJoinSettle(s.idbName)).toBe(true);
+    // A second root claims the same group; its offer reaches this same browser.
+    const other = { ...s, root: await pair("browser fleet other root") };
+    const nonce = "ab".repeat(32);
+    const offer = fleetJoinOffer({ personaGroup: GROUP, rootKey: other.root.key, nonce, scopes: [s.face.scope] });
+    const request = await browserFleetJoinRequest({ offer, idbName: s.idbName });
+    await expect(browserFleetJoinLand({ answer: await answerTo({ ...other, offer }, request), idbName: s.idbName })).rejects.toThrow(/record-other/);
+    const db = await openVesselIdb(s.idbName);
+    try {
+      expect(await idbGet(db, FLEET_JOIN_STORE, `record:${GROUP}`)).toMatchObject({ rootKey: s.root.key });
+      expect(Array.from((await idbGet<Uint8Array>(db, FLEET_JOIN_STORE, `secret:${GROUP}`))!)).toEqual(Array.from(SECRET));
+    } finally { db.close(); }
+    expect(await pendingOf(s.idbName)).not.toHaveProperty("landed");
+  });
+
+  test("B7 — two requests at once keep one pending join", async () => {
+    const s = await stage();
+    const both = await Promise.allSettled([
+      browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName }),
+      browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName }),
+    ]);
+    const kept = (await pendingOf(s.idbName)) as { request: FleetJoinRequest };
+    for (const r of both) {
+      if (r.status === "fulfilled") expect(r.value.sealKey).toBe(kept.request.sealKey);
+      else expect(String(r.reason)).toMatch(/join-pending/);
+    }
+    expect(both.some((r) => r.status === "fulfilled" && r.value.sealKey === kept.request.sealKey)).toBe(true);
   });
 });

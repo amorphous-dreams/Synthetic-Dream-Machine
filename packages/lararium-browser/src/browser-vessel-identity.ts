@@ -136,8 +136,14 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(VESSEL_FACE_KEY_STORE))  db.createObjectStore(VESSEL_FACE_KEY_STORE);
       if (!db.objectStoreNames.contains(FLEET_JOIN_STORE))       db.createObjectStore(FLEET_JOIN_STORE);
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      // A newer version opening in another tab closes this connection, so that open never waits on this one.
+      req.result.onversionchange = () => req.result.close();
+      resolve(req.result);
+    };
     req.onerror   = () => reject(req.error);
+    // Blocked waits rather than fails: the older connection may close on its own versionchange.
+    req.onblocked = () => console.warn(`[vessel] ${idbName}: another tab holds an older version of this store open; the open waits until it closes.`);
   });
 }
 

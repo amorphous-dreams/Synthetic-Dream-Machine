@@ -26,7 +26,7 @@ import {
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
-  FLEET_JOIN_STORE, VESSEL_FACE_KEY_STORE, idbDelete, idbGet, loadBrowserSigningSeed, openVesselIdb,
+  FLEET_JOIN_STORE, VESSEL_FACE_KEY_STORE, idbGet, loadBrowserSigningSeed, openVesselIdb,
 } from "./browser-vessel-identity.js";
 
 /** A fleet join this browser refused, by name: a mesh reader's refusal, or this door's own. */
@@ -134,18 +134,32 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
     await withDb(idbName, (db) => inOneTransaction<void>(db, FLEET_JOIN_STORE, (os, refuse, done) => {
       const added = os.add(kept, PENDING);
       added.onsuccess = () => done(undefined);
-      added.onerror = (e) => { e.preventDefault(); refuse(new BrowserFleetJoinRefused("join-pending", "another fleet join came to stand pending in this browser meanwhile.")); };
+      added.onerror = (e) => {
+        if (added.error?.name !== "ConstraintError") return;   // the transaction aborts on the error itself
+        e.preventDefault();
+        refuse(new BrowserFleetJoinRefused("join-pending", "another fleet join came to stand pending in this browser meanwhile."));
+      };
     }));
     return request;
   } finally { seed.fill(0); seal.secret.fill(0); }
 }
 
+/** Clear the pending row inside one transaction, when `keep` reads it as the one to clear; answers whether it went. */
+function clearPendingWhere(idbName: string, clear: (p: PendingJoin) => boolean): Promise<boolean> {
+  return withDb(idbName, (db) => inOneTransaction<boolean>(db, FLEET_JOIN_STORE, (os, _refuse, done) => {
+    const got = os.get(PENDING);
+    got.onsuccess = () => {
+      const p = got.result as PendingJoin | undefined;
+      if (p === undefined || !clear(p)) { done(false); return; }
+      os.delete(PENDING);
+      done(true);
+    };
+  }));
+}
+
 /** Abandon the join pending here; answers whether one stood. Its face-scoped keys stay at rest. */
 export async function browserFleetJoinAbandon(idbName = "lares:vessel"): Promise<boolean> {
-  const pending = await readPending(idbName);
-  if (pending === null) return false;
-  await withDb(idbName, (db) => idbDelete(db, FLEET_JOIN_STORE, PENDING));
-  return true;
+  return clearPendingWhere(idbName, () => true);
 }
 
 /**
@@ -191,7 +205,7 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
           const stillPending = os.get(PENDING);
           stillPending.onsuccess = () => {
             const p = stillPending.result as PendingJoin | undefined;
-            if (p?.request?.nonce !== request.nonce) {
+            if (p?.request?.nonce !== request.nonce || p.request.sealKey !== request.sealKey) {
               refuse(new BrowserFleetJoinRefused("join-absent", "the join this answer lands no longer stands pending here.")); return;
             }
             os.put(Uint8Array.from(addressSecret), secretRow);
@@ -207,10 +221,7 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
 }
 
 /** The boot on a landed join stands: the pending join leaves. Answers whether a landed join stood; a join whose
- *  answer has not landed stays pending. */
+ *  answer has not landed stays pending, whichever tab kept it. */
 export async function browserFleetJoinSettle(idbName = "lares:vessel"): Promise<boolean> {
-  const pending = await readPending(idbName);
-  if (pending?.landed !== true) return false;
-  await withDb(idbName, (db) => idbDelete(db, FLEET_JOIN_STORE, PENDING));
-  return true;
+  return clearPendingWhere(idbName, (p) => p.landed === true);
 }
