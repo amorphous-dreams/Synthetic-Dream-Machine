@@ -180,7 +180,7 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 `persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. No card restores a charter. Guardians and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
 
-`persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. The persona-KEL threshold-attest core accepts independent guardian signatures; this founding supplies no guardian-enrollment command. `identity-classes.mem` tracks that unfinished path.
+`persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. `lares persona guardian show <index>` reads a face's prefix and set. `lares persona guardian offer --prefix <prefix>` cuts one guardian key for that face; the guardian keeps its card and hands over its offer. `lares persona guardian enrol <index> --threshold <k> <offer>…` lets the face's current key sign its typed first enrolment. The vessel keeps that set in a sealed `guardian-set` row and refuses a key another face holds. A later guardian rotation needs the guardian quorum; the root-card reader and the bundle's carriage of an enrolled set still stand owed.
 
 ▢ ''OWED — the catastrophe rite.'' A lost card at a two-seat Nexus ends that Nexus (#/reserve holds the cold-key rite). `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
 
@@ -233,9 +233,9 @@ The first operator starts with a browser leaf; a tablet or phone forms a separat
 
 !! 9 · The second operator founds a seed, then both found the Nexus
 
-The second operator founds a separate SEED on their own machine (steps 2, 5 and 6), with their own state, persona, custody, seat and device keys. The Nexus founding ceremony runs in five steps: (1) each founder mints a seat key for the new Nexus in their own vault and its cold next key on paper; (2) the two exchange seat public keys and cold digests as files; (3) each reads the other's seat fingerprint aloud, in person; (4) both compose one fresh inception image at two of two, compare its Nexus AID, and each signs that image through their custody door's `seal.incept` after their cards read back; (5) each signs a carriage contract and both seats countersign it.
+The second operator founds a separate SEED on their own machine (steps 2, 5 and 6), with their own state, persona, custody, seat and device keys. `lares nexus seal cofound open --release <manifest> --out <offer>` mints the first founder's seat and cadence keys and prints a cold successor card for read-back. Carry the offer file to the second vault. There, `lares nexus seal cofound join <offer> --out <join>` asks for the first seat's fingerprint as heard, mints the second founder's seat and cadence keys, prints its card, and half-signs the joint inception. Carry the join file back. The first founder runs `lares nexus seal cofound seal <join> --out <inception>`, types the second fingerprint as heard, signs, and files the charter. The second founder runs `lares nexus seal cofound seal <inception>` and files the same charter under the same AID. One signed cadence inception rides the joint founding; each hearth signs it. Each seed keeps `founding: null` and its own AID.
 
-▢ ''OWED — the Nexus founding act.'' Pure offer, join and signed-inception images stand. The CLI still owes cofound open, join and seal verbs across two vaults, the live joint signing ceremony, and both founders' countersigned carriage contracts.
+Each founder then consents to their own carriage contract. `lares nexus contract <nym> --nexus <aid> --out <file>` opens a partial; the other vault runs `lares nexus contract --from <file> --out <grown-file>` to judge and cosign it. Carry the grown file back so the opener lands the act too. `lares nexus revoke <nym> --nexus <aid> --out <file>` takes the same two-vault path. Each receiving vault judges against its own charter head and board before signing and again before landing. The independent two-root import, boot and restart witness still stands owed, along with the kapae and roll-anchor doors and later multi-chair rolls.
 
 !!! Carriage into one household's seed (built)
 
@@ -355,6 +355,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gdXLwJeHIbAaEln0ZDR_RO50NgJvMbgtB5KRCUjWcss
+<<^ code="&#x0003;">>ni:///sha-256;AZKLCOXxQhO6ftRFogkMue9xZ_ZxBNBZ2R9BcFAXcEw
 
 <<^ code="&#x0004;" -> to="?">>

@@ -147,13 +147,14 @@ window above reads, and each device adopts at reboot.
 ''EXIT RUNS BY FORK.'' Any hearth may stop following the lineage, and no act of the lineage reaches a
 hearth that declined it.
 
-''The inception names the Nexus, and the Nexus never names it'' (house reading on the shape). The inception
-record carries the Nexus AID it fences, the first cadence set's per-seat next-key digests and the cadence
-threshold, and takes a content address of its own. The charter's genesis carries no cadence field, so the AID
-derives from the charter alone, and an inception written after a founding moves none of that founding's bytes.
-The joint founding's one citation writes that record beside its charter.
+''The joint founding cites the cadence inception once.'' The cadence inception image carries the first cadence
+set's keys, per-seat next-key digests and threshold. Its digest names the image's canonical bytes. A joint
+charter's genesis carries `founding: { offer, cadence }`; `cadence` cites that digest, and the charter AID
+commits the citation. The cadence image names no Nexus AID. Every holder signs the image; the charter reader
+binds those holders to the founding seats and checks each signature. A household seed carries `founding: null`
+and no cadence inception.
 
-''Owed in code'': the cadence lineage stands unbuilt — no inception, no seat event, no offer verifier. The joint Nexus founding act owes its one citation and each holder's separate cadence key. The household seed cites none; its one holder chooses each reboot.
+''What the code holds'': `cadence-lineage.ts` signs and verifies the cadence inception. The joint founding cites one inception signed by both hearths; each hearth keeps its own `cadence-key` row. ''Owed in code'': cadence seat events and the offer verifier. The household seed cites none; its one holder chooses each reboot.
 
 ''Still open'', each unruled:
 
@@ -298,8 +299,9 @@ earlier charter shape (one `nextKeyCommit` per epoch) reads by name and licenses
 reads a card back against the head's digests, names the chair it would roll, and moves nothing; `--cold-key`
 stands in for its terminal only on a staged root whose custody proves the published test route. The Stable founding
 act stands in code (`found-hearth.ts`, `hearth-aid.ts`): one seat, its card, the PRIVATE seed charter, persona zero's
-face binding its AID; `seal-ceremony.ts` refuses a re-seat over it (`hearth-bound`). ''Owed in code'': every chair of
-a charter comes from one vault; no co-founding verb and no cross-vault countersign stand.
+face binding its AID; `seal-ceremony.ts` refuses a re-seat over it (`hearth-bound`). `seal cofound open|join|seal`
+founds a joint charter with one key from each vault and one cadence inception signed by both hearths. The two-root
+import and boot witness still stands owed.
 
 <<~/ahu>>
 
@@ -315,7 +317,7 @@ A Nexus names vessels syncing across ley lines. Liveness reads off the traffic i
 <<~ has Stage Liveness "verb/none admin/none ~ ley-line traffic; nothing to build">>
 <<~ has Stage Quiet "verb/none admin/none ~ absence of traffic; no dissolution act">>
 
-Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu takes a chair by a quorum roll that seats a key; a seat needs no Handle. The reveal must match the prior epoch's pre-commitment, so no hand adds or drops a Kahu quietly. ''What the code holds'': `seal rotate` takes each revealed chair's card back on a terminal and adopts its key as that chair's seat key (`packages/lares-cli/src/commands/nexus-seal.ts`); a hearth's seed charter founds in the Stable founding act and grows only by that roll, since a re-seat over it refuses (`hearth-bound`). ''Owed in code'': co-founding across two vaults, the roll that adds a seat with its new holder's contract, and a passed chair (the Nexus founding act's train).
+Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu takes a chair by a quorum roll that seats a key; a seat needs no Handle. The reveal must match the prior epoch's pre-commitment, so no hand adds or drops a Kahu quietly. ''What the code holds'': `seal rotate` takes each revealed chair's card back on a terminal and adopts its key as that chair's seat key (`packages/lares-cli/src/commands/nexus-seal.ts`); a hearth's seed charter founds in the Stable founding act and grows only by that roll, since a re-seat over it refuses (`hearth-bound`). `seal cofound open|join|seal` founds a two-of-two charter across two vaults. ''Owed in code'': the two-vault roll that adds a seat with its new holder's contract, and a passed chair.
 
 <<~/ahu>>
 
@@ -578,6 +580,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;b-iYx9KQduY3Y0EUC5rIHz3ozzSmlL3436Lf_q7LK0o
+<<^ code="&#x0003;">>ni:///sha-256;2cou-rE1igwl1SLhq7H-DPfegnrvqhfyMN9t583k43k
 
 <<^ code="&#x0004;" -> to="?">>

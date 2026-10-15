@@ -218,6 +218,8 @@ A cut that refuses writes no file, and a cut never writes over one: a standing f
 
 ''Restore lands additively.'' It never replaces a newer lockbox, record, key, name or label with a bundle's snapshot. A name fills only where the vessel holds none. An old bundle over a newer holder adds what the holder lacks and moves nothing it holds.
 
+''An enrolment needs its set after restore.'' The typed first guardian event rides the face's key history, while the sealed `guardian-set` row stays on the cutting vessel. A bundle that carries that event without its set cannot restore the complete guardian relation. The restore-after-enrolment patch owes the bundle's per-face set, a check that its keys and digest match the carried event, a check against this vault's other faces, and an additive landing of the sealed row. Until that patch, a restore from a bundle cut after enrolment lacks this guardian-set carriage.
+
 ''A vessel checks the newest key history it reads, and every honest reader checks its own'' (house reading). The house keeps no registry of heads, and no vessel reads a head it never received. The restore answers which head its check read, by sequence, and whether it read that head off this vessel's own board or off the bundle's log. The carried log reaches as far as the cut. A rotation that landed after the cut shows only on a board, so a fresh vessel that reached no board passes a root the face has since superseded. That vessel's seat then stands for itself alone: every reader that holds the newer head refuses the edge the superseded root signed, at its own gate, and this vessel's own gate refuses it too once its board carries that head.
 
 ''A face whose other vessels still stand takes the join door'' (house reading). A restore founds a fresh key group under the face's fixed prefix. Where another vessel of the face still holds the group, that vessel seats the new device through the fleet-join door, and the bundle serves that device's memory alone (`--memory`).
@@ -329,6 +331,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;zv4n-_gRyX7kJ-KxEoOP4Sp2Dmf0kuOhki4mGMlTSfQ
+<<^ code="&#x0003;">>ni:///sha-256;OT71PVNQGe7lIfIlqdbmehNp83JAejUtGxNMMER542I
 
 <<^ code="&#x0004;" -> to="?">>
