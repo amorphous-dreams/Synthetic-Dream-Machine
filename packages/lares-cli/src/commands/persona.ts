@@ -26,7 +26,7 @@
  */
 
 import {
-  faceStands, armRecoveryAtFounding, type FoundFaceResult,
+  faceStands, armRecoveryAtFounding, guardianOffer, type FoundFaceResult,
 } from "@lararium/node";
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
@@ -101,6 +101,7 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "sync":  return await personaSync(args);
       case "admit": return await cmdPersonaAdmit(args);
       case "reissue": return await personaReissue(args);
+      case "guardian": return await personaGuardian(args);
       default:
         console.error(`lares persona: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -151,6 +152,80 @@ async function personaReissue(args: ParsedArgs): Promise<number> {
     },
   });
   return 0;
+}
+
+/**
+ * `lares persona guardian show <index>` — the face's prefix (what a guardian's offer names) and the set it holds.
+ *
+ * `lares persona guardian offer --prefix <persona-…>` — the GUARDIAN's half: mint a fresh recovery key for ONE face,
+ * print the card the guardian keeps and the offer line the face's holder enrols. The key never rests on a vessel.
+ *
+ * `lares persona guardian enrol <index> --threshold <k> <offer>…` — the face at `<index>` enrols its FIRST guardian
+ * set: its own key signs one typed event on its key history, and the set's record rests sealed here. A key another
+ * face of this vessel already holds refuses (`guardian-key-serves-another-face`); every later change to the set
+ * takes the guardians' quorum. The count and the threshold stay the person's.
+ */
+async function personaGuardian(args: ParsedArgs): Promise<number> {
+  const verb = args.positional[1];
+  if (verb === "offer") {
+    const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
+    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona guardian offer` names the face it guards: --prefix persona-<64 hex>");
+    const o = await guardianOffer(prefix);
+    emit(args, {
+      ok: true,
+      // The card rides to this process's own output alone: the key rests nowhere else, so a reading without it
+      // would leave an offer for a key nobody holds.
+      data: { prefix, recoveryPubKey: o.recoveryPubKey, offer: o.offer, card: o.code },
+      human: () => {
+        console.log(`[lares persona guardian offer] a fresh recovery key for the face ${prefix.slice(0, 24)}…`);
+        console.log("  KEEP THIS CARD: it signs this face's recovery. Write it down now; it rests nowhere else.");
+        console.log(`  card   ${o.code}`);
+        console.log("  hand the face's holder this offer line:");
+        console.log(`  ${o.offer}`);
+      },
+    });
+    return 0;
+  }
+  if (verb === "show") {
+    const index = parseIndex(args.positional[2]);
+    const r = await sealedAct("persona.guardian.show", { handleIndex: index });
+    emit(args, {
+      ok: true,
+      data: r,
+      human: () => {
+        console.log(`the face at h${index}: ${String(r["prefix"])}`);
+        if (r["guardianSetHash"] === null && r["headSet"] === null) {
+          console.log("  one-of-one: no guardians enrolled; a guardian cuts its offer with `lares persona guardian offer --prefix <the prefix above>`");
+        } else if (r["committed"] === true) {
+          console.log(`  guardians: ${String(r["guardians"])} at threshold ${String(r["threshold"])} (set ${String(r["guardianSetHash"])})`);
+        } else {
+          console.log(`  PENDING: this vessel's record names the set ${String(r["guardianSetHash"])}, and the key history it reads commits ${String(r["headSet"] ?? "none yet")}`);
+          console.log("  the same offers complete a stopped enrolment; a set another vessel of this face enrolled first stands as the face's");
+        }
+      },
+    });
+    return 0;
+  }
+  if (verb === "enrol") {
+    const index = parseIndex(args.positional[2]);
+    const raw = args.options["threshold"];
+    const threshold = typeof raw === "string" ? Number(raw) : NaN;
+    if (!Number.isSafeInteger(threshold) || threshold < 1) throw new UsageError("`persona guardian enrol` needs --threshold <k>, a whole number from 1");
+    const offers = args.positional.slice(3);
+    if (offers.length === 0) throw new UsageError("`persona guardian enrol` takes one guardian offer line per guardian");
+    const r = await sealedAct("persona.guardian.enrol", { handleIndex: index, offers: offers.join(" "), threshold });
+    emit(args, {
+      ok: true,
+      data: r,
+      human: () => {
+        console.log(`the face at h${String(r["handleIndex"])} enrolled ${String(r["guardians"])} guardian(s) at threshold ${String(r["threshold"])}`);
+        console.log(`  set:   ${String(r["guardianSetHash"])}  (on its key history, sequence ${String(r["seq"])})`);
+        console.log("  every later change to this set takes the guardians' quorum");
+      },
+    });
+    return 0;
+  }
+  return usage(args, "guardian");
 }
 
 async function personaNew(args: ParsedArgs): Promise<number> {

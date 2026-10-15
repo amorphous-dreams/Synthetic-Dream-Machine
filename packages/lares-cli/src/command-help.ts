@@ -435,7 +435,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit | reissue [--nexus <aid>]>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>…>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
@@ -452,6 +452,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares persona list                     # held indices · active marker · labels · declared Handles",
       "lares persona sync                     # carry labels + Handles up to the fleet (the persona plane)",
       "lares persona reissue --nexus <aid>    # the worn face hands its key at that Nexus on to a fresh key",
+      "lares persona guardian offer --prefix <persona-…>         # a guardian cuts a fresh key for one face",
+      "lares persona guardian enrol 0 --threshold 2 <offer> <offer> <offer>   # the face's first guardian set",
     ],
     flags: [
       "--name <petname>   (new) the PRIVATE label at that handle-index",
@@ -462,6 +464,11 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "admit <sub>        offer | grant | open | accept | list — airgapped device-to-device hand-off (QR 3-hop)",
       "reissue            the worn face's key at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
       "--nexus <aid>      (reissue) the Nexus; absent, this vessel's own charter",
+      "guardian show      the face's prefix, which a guardian's offer names, and the set it holds",
+      "guardian offer     a guardian's fresh recovery key for one face: a card it keeps and an offer line it hands over",
+      "guardian enrol     the face's own key enrols its first guardian set; a key another face holds refuses",
+      "--prefix <p>       (guardian offer) the face the guardian guards",
+      "--threshold <k>    (guardian enrol) how many guardians sign a later rotation",
     ],
     next: ["lares persona list", "lares handle publish '<glamour>'   # the outward announce"],
   },

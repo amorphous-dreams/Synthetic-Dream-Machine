@@ -316,6 +316,11 @@ function buildTable(): readonly CarrierRow[] {
          writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
     id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
          writer: "node-circle-store", bundle: "lines" }),
+    // One face's guardian set as its typed first enrolment committed it (`guardian-enrolment`): the keys a later
+    // rotation reveals, and what another face's enrolment reads to refuse a shared key. It stays on its vessel
+    // until the bundle's body carries a guardian set.
+    id({ row: "guardian-set", match: /^guardian-set-h(\d+)\.json$/, custody: "hot", keyClass: null,
+         writer: "guardian-enrolment", name: (m) => `guardian-set-h${m[1]}`, face: faceOf }),
     row({ row: "hosting-state", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
           custody: "hot", keyClass: null, writer: "hosting-store" }),
     row({ row: "hosting-spent", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),

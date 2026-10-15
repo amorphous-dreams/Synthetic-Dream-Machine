@@ -73,6 +73,7 @@ A private file the floor never reads rides `hot`: the seal costs it nothing, and
 | `veil-archive`, `keyhive-archive` | `stays` | a seat's own key state: a carried copy would let its holder sign as that seat |
 | `seat-key` | `stays` | a chair's own key in a charter: a carried copy would let its holder sign as that chair (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>) |
 | `cadence-key` | `stays` | a hearth's own cadence key and its next key: a carried copy would let its holder offer an engine as that hearth (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>) |
+| `guardian-set` | `stays` | one face's guardian set as its typed first enrolment committed it: the keys a later rotation reveals, and what another face's enrolment reads to refuse a shared key. A record the face's key history does not show yet stands pending and still reserves its keys. It stays until the bundle's body carries a guardian set (owed) |
 | `restore-pending` | `stays` | a restore's own commit row: it holds what one restore still owes this vessel, and leaves once that restore lands (#/the-restore) |
 | `sk-slots`, `sk-rotation-owed`, every `serving` row | `stays` | the serving tier belongs to its hearth: a restored vessel mints its own SK and binds fresh embers (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/meets">>) |
 | `vessel-face-key`, `gate-memory`, `device-share`, `public-handles`, every other row | `stays` | each belongs to its vessel, or names another face, or rebuilds from a board |
@@ -328,6 +329,6 @@ Every refusal of a restore lands before the commit row, so before any row moves.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;gvYTprzUMmNv2neuFVt6wgpikdAEqNChkDM61ZebmiA
+<<^ code="&#x0003;">>ni:///sha-256;DZcVIGEYxmSibLB3wsC7ToJNLtErzqgaojLRXUmu2Ew
 
 <<^ code="&#x0004;" -> to="?">>

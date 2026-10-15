@@ -57,6 +57,7 @@ import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundl
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import { NexusKeyReissueRefused, runNexusKeyReissue } from "./nexus-key-reissue.js";
+import { GuardianEnrolmentRefused, guardianStanding, runGuardianEnrolment } from "./guardian-enrolment.js";
 import {
   SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
   sealCrossing, signCrossing, signLicensedInception, signLicensedSealRoll, witnessCrossing,
@@ -307,6 +308,14 @@ async function reissueOrRefuse<T>(run: Promise<T>): Promise<T> {
 }
 
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
+/** A guardian enrolment's refusal reaches the caller by its own name. */
+async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
+  try { return await run; } catch (err) {
+    if (err instanceof GuardianEnrolmentRefused) throw refuse(`${err.refusal}: ${err.message}`);
+    throw err;
+  }
+}
+
 function orRefuse<T extends object>(r: T | { readonly error: string }): T {
   if ("error" in r && typeof (r as { error: unknown }).error === "string") throw refuse((r as { error: string }).error);
   return r as T;
@@ -534,6 +543,23 @@ export const SEALED_ACTS = Object.freeze({
     return { ...(await reissueOrRefuse(store.withRepo((repo) => runNexusKeyReissue({
       sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}),
     })))) };
+  }),
+
+  // THE FACE'S FIRST GUARDIANS. The face's own root signs the typed first enrolment; its record rests sealed and
+  // the event lands on the face's KEL board through the store the composition lends. The answer names the set's
+  // digest and counts alone.
+  "persona.guardian.enrol": act({ handleIndex: index, offers: text, threshold: count }, async (a, ctx) => {
+    const store = ctx.hosting;
+    if (!store) throw refuse("no store stands here to land a guardian enrolment on");
+    return { ...(await enrolOrRefuse(store.withRepo((repo) => runGuardianEnrolment({
+      repo, handleIndex: a.handleIndex, offers: a.offers.split(/\s+/).filter((o) => o.length > 0), threshold: a.threshold,
+    })))) };
+  }),
+
+  "persona.guardian.show": act({ handleIndex: index }, async (a, ctx) => {
+    const store = ctx.hosting;
+    if (!store) throw refuse("no store stands here to read the face's key history from");
+    return { ...(await enrolOrRefuse(store.withRepo((repo) => guardianStanding(repo, a.handleIndex)))) };
   }),
 
   "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({

@@ -173,10 +173,10 @@ describe("⑨ the dyad, specified and unwired", () => {
     expect(Object.keys(mesh)).toContain("riteContingency");
   });
 
-  // KEPT — ONE GUARDIAN SET NEVER SPANS COMPARTMENTS greened in the library: the enrolment's core refuses a key the
-  // caller names as held in another face's set (`guardian-key-serves-another-face`, persona-policy#/distinct-recovery).
-  // Witnessed in tests/guardian-enrolment.test.ts. The vessel path that gathers every other face's set, and so
-  // enforces it on a live enrolment, rides `lares persona guardian enrol` (SPECIFIED: H/keel-compose-1.patch).
+  // KEPT — ONE GUARDIAN SET NEVER SPANS COMPARTMENTS: `lares persona guardian enrol` gathers every other face's set off
+  // this vessel's own rows and refuses a key one of them holds (`guardian-key-serves-another-face`,
+  // persona-policy#/distinct-recovery). Witnessed in mesh tests/guardian-enrolment.test.ts and node
+  // tests/guardian-enrolment.test.ts (G2).
   test("the guardian compartment check is exported", () => {
     expect(Object.keys(mesh)).toContain("guardianCompartmentCheck");
   });

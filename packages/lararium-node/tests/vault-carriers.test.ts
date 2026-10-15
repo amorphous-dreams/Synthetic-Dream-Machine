@@ -87,6 +87,7 @@ const SOWN: Record<string, string> = {
   "identity/.persona-declarations-joshua.json": "{}",
   "identity/.persona-public-handles-joshua.json": "{}",
   "identity/.handle-book.json":                 "{}",
+  "identity/guardian-set-h0.json":              "{}",
   [`vessel/hosting/${HOST}/state.json`]:        "{}",
   [`vessel/hosting/${HOST}/spent-bafyepoch`]:   "n a b\n",
   [`vessel/hosting/${HOST}/carry/guest/record.json`]: "{}",
@@ -115,7 +116,7 @@ const RULED: Record<string, CustodyClass> = {
   // The sealed store's rests hold no secret in the clear, and a blind carrier may hold every one (sealed-store#/the-store).
   "sealed-rest": "floor-plain", "sealed-own": "floor-plain", "sealed-outbox": "floor-plain", "sealed-chunk": "floor-plain",
   "custody-root": "hot", "keyhive-archive": "hot", "veil-archive": "hot",
-  "enroll-pending": "hot", "grant-pending": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
+  "enroll-pending": "hot", "grant-pending": "hot", "guardian-set": "hot", "admissions": "hot", "anchors": "hot", "anchor-roster": "hot",
   "persona-roster": "hot", "active-persona": "hot", "persona-petnames": "hot", "persona-declarations": "hot",
   "public-handles": "hot", "handle-book": "hot",
   "hosting-state": "hot", "hosting-spent": "hot", "hosting-carry": "hot", "walk": "hot", "gate-memory": "hot",

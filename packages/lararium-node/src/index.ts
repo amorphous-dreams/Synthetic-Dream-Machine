@@ -179,6 +179,7 @@ export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase 
 export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri } from "./bag-paths.js";
 
 export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
+export { guardianOffer } from "./guardian-enrolment.js";
 // THE STABLE FOUNDING ACT: place, persona zero, the one-seat seed charter and the face that binds its AID — see `found-hearth`.
 export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./commands/found-hearth.js";
 export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./commands/found-hearth.js";
