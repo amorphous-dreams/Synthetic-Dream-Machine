@@ -1,0 +1,25 @@
+# Bounded custody witness: only one private staged source crosses as read-only
+# input; /state is a separate disposable trial directory, never native history.
+services:
+  sensorium-trial:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: sensorium-trial
+    user: ${SENSORIUM_TRIAL_UID:?use the host owner uid}:${SENSORIUM_TRIAL_GID:?use the host owner gid}
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ${SENSORIUM_TRIAL_HANDOFF_ROOT:?stage one source first}:/handoff:ro
+      - ${SENSORIUM_TRIAL_STATE_ROOT:?name a disposable state root}:/state:rw
+    command:
+      - --state-root
+      - /state
+      - --freeze-receipt
+      - /handoff/freeze-receipt.json
+      - --intent
+      - ${SENSORIUM_TRIAL_INTENT:?name one observation intent}
+      - --source-host
+      - ${SENSORIUM_TRIAL_SOURCE_HOST:?name the execution host}

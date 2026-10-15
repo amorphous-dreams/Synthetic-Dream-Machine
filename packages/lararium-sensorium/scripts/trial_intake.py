@@ -121,7 +121,19 @@ def _load_frozen(receipt_path: Path, source_host: str) -> tuple[dict, bytes, str
         freeze = json.load(handle)
     if freeze.get("schema") != "lararium.sensorium.trial-freeze.claude.v1":
         raise ValueError("unsupported freeze receipt")
-    evidence = Path(freeze["evidence"]).resolve()
+    if freeze.get("handoff_schema") is not None:
+        if (freeze["handoff_schema"] != "lararium.sensorium.trial-handoff.v1"
+                or freeze.get("source_host") != source_host):
+            raise ValueError("handoff host namespace disagrees with intake")
+        with (receipt_path.parent / "handoff-ready.json").open(encoding="utf-8") as handle:
+            ready = json.load(handle)
+        if (ready.get("schema") != freeze["handoff_schema"]
+                or ready.get("source_host") != source_host
+                or ready.get("evidence_sha256") != freeze.get("evidence_sha256")):
+            raise ValueError("handoff is not ready for this evidence and host")
+    evidence_locator = Path(freeze["evidence"])
+    evidence = (receipt_path.parent / evidence_locator if not evidence_locator.is_absolute()
+                else evidence_locator).resolve()
     if not evidence.is_relative_to(receipt_path.parent):
         raise ValueError("evidence must live beneath its private freeze receipt")
     if evidence.stat().st_size > MAX_EVIDENCE_BYTES:

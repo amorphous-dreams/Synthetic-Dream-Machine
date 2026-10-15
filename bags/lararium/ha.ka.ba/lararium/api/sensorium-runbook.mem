@@ -66,6 +66,8 @@ the consecration. ''This one runs the daily offering.''
 
 ''Take custody as one transaction.'' `trial_intake.py` reads only a verified frozen receipt and its private evidence copy. It derives the source key from an explicit execution-host namespace plus native `sessionId` and, for a child, `agentId`; the path remains provenance. A provisional trial host label cannot silently become the founded machine identity. One SQLite BLOB transaction commits the source, immutable byte revision, source manifest, observation, exact-intent receipt, frozen-evidence observation frontier and pending projection intent. A replayed intent returns its prior receipt after re-verifying stored bytes; a changed source or scope under the same intent refuses. A→B→A keeps three observations and two byte revisions. The observation frontier never claims a native tail offset or successful content projection. The first trial caps one evidence copy at 32 MiB and uses rollback `DELETE` with `synchronous=EXTRA`; the actual `/state` mount still needs the built-image fault witness.
 
+''Cross one source into a trial container.'' `trial_handoff.py` verifies a frozen receipt and copies only that source's selected bytes into a fresh private handoff directory. It writes a readiness marker last; intake refuses an incomplete handoff. Its receipt uses a relative evidence path, so mounting that directory read-only at `/handoff` preserves the evidence identity. `docker-compose.sensorium-trial.yml` builds the small `sensorium-trial` target from a pinned Python 3.12 image, disables its network and root filesystem writes, and mounts only `/handoff:ro` plus a disposable `/state:rw` under the host owner's UID/GID. The built-image main-session witness committed 9,848,331 evidence bytes with revision `c84088c89fdd5e07af0c49e2c630e095a64e9cc1adf8ccf1670e0c7d3a94662a` as one observation. That witness proves bounded raw custody inside this one-shot image; it does not package the Node-supervised holder, MemPalace, R, or content projection. Keep the handoff and state directories outside native history and the repository, and keep both until their repeat and crash probes finish.
+
 These scripts live under `packages/lararium-sensorium/scripts/`. Their manifests, copied evidence and host-side trial ledger live in private disposable trial directories, with fresh outputs on each run. Keep a trial's exact bytes and receipts together until its named repeat and crash tests finish. The next build gate connects a restricted host collector to the mounted `/state` intake, then lands typed content and advances a separate content frontier; it must not treat a pending projection intent as a projected block. No trial root becomes the founded memory palace by renaming it.
 
 <<~/ahu>>
@@ -453,6 +455,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5R0LV9-_fWI6WFrShbthzgIM_RSck2L1s2FzDtNCxNU
+<<^ code="&#x0003;">>ni:///sha-256;0fc9Db-Ni1wc40I8dmIRolLbR82s9CKspmIJWaXaBWM
 
 <<^ code="&#x0004;" -> to="?">>

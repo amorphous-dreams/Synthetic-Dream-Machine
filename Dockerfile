@@ -168,3 +168,13 @@ VOLUME /app/lares
 ENV NODE_ENV=production
 
 ENTRYPOINT ["node", "packages/lararium-mcp/dist/stdio.js"]
+
+# Bounded custody witness. This stdlib-only trial seat is separate from the
+# product holder until the pinned Python/MemPalace dependency closure lands.
+FROM python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 AS sensorium-trial
+WORKDIR /app/packages/lararium-sensorium/scripts
+COPY packages/lararium-sensorium/scripts/trial_inventory.py ./
+COPY packages/lararium-sensorium/scripts/trial_intake.py ./
+RUN mkdir -p /handoff /state
+USER 65532:65532
+ENTRYPOINT ["python", "trial_intake.py"]
