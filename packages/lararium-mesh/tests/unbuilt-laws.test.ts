@@ -459,7 +459,7 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
   test.skip("TWO VAULTS SIGN EACH FOUNDER'S SELF-CONTRACT — TWO_VAULT_SELF_CONTRACTS; nexus-contract-two-root design only until K14 releases nexus-contract.ts and its tests: each root consents once, neither holds two seat seeds, both sign the same act, and both independently fold both contracts after file courier and restart.", () => {
     expect(Object.keys(mesh)).toContain("cosignNexusContractPartial");
   });
-  test.skip("A JOINED VESSEL CERTIFIES ITS OWN FACE-SCOPED KEY — JOINED_VESSEL_CERTIFIES_OWN_KEY; session-face-reissue.test.ts. A borrowed certificate must not open that vessel's session.", () => {
+  test("A JOINED VESSEL CERTIFIES ITS OWN FACE-SCOPED KEY — JOINED_VESSEL_CERTIFIES_OWN_KEY; session-face-reissue.test.ts. A borrowed certificate must not open that vessel's session.", () => {
     expect(Object.keys(mesh)).toContain("openJoinedFaceSession");
   });
   test.skip("A VERIFIED GATE HOLDS THE FIRST APPLICATION FRAME UNTIL ITS SESSION OPENS — VERDICT_OPENS_BEFORE_FIRST_SYNC_FRAME; gate-session-order.test.ts. A real adapter must queue immediate traffic across verdict then open.", () => {

@@ -27,17 +27,24 @@
  * owe the verification, and the caller owes the reads: a caller that spells one by hand breaks the contract
  * this function states. It supplies a face; it stands as no verifier of an admit or of a grant.
  *
- * Pure: no key, no I/O, no timer, no clock.
- * Stands specified in code until its callers land: the node's session open on the local socket, and the
- * browser holder. Out of the package barrel till then.
+ * `supplySessionFace` stays pure: no key, no I/O, no timer, no clock. `openJoinedFaceSession` composes it for a
+ * vessel the fleet-join door joined: the chain checked over the vessel's own certificate, the face supplied,
+ * then the session opened and its signer minted through `openSignedSession`. The node's joined-face proof
+ * (`readJoinedFaceProof`) supplies its vessel-side inputs; the dial that holds the table lands at the socket
+ * cutover, and the browser holder stays owed.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/session-contract#/what-a-session-carries
  */
 import type { PresentedAdmitVerdict } from "./carriage-registry.js";
-import { isVerifiedVesselChain, type VerifiedVesselChain } from "./face-authority.js";
-import { faceProofSubjectRef } from "./face-proof-subjects.js";
+import {
+  checkVesselChain, isVerifiedVesselChain,
+  type FaceChainRefusal, type VerifiedVesselChain, type VesselFaceKeyCustody, type WithdrawalMemory,
+} from "./face-authority.js";
+import type { RandomProvider } from "./crypto.js";
+import { faceProofSubjectRef, type FaceProofRefusal, type FaceScope, type KeysHeldApart } from "./face-proof-subjects.js";
 import { personaScopedBagIds } from "./persona-scope.js";
-import { validateSessionFace, type SessionFace } from "./session-contract.js";
+import { validateSessionFace, type Session, type SessionBinding, type SessionFace, type SessionTable } from "./session-contract.js";
+import { openSignedSession, type SessionSigner, type SessionSignerRefusal } from "./session-signer.js";
 
 /** The admit a face rides at one Nexus, as its verifier read it. */
 export interface FaceAdmitReading {
@@ -56,7 +63,8 @@ export interface FaceAdmitReading {
 
 /** The PersonaGroup's private, root-authorized record that one face key speaks for it at one Nexus. */
 export interface FaceGrantReading {
-  /** The PersonaGroup's own document id, bare lower-case hex. */
+  /** The PersonaGroup's own document id, lower-case hex as Keyhive spells it, its `0x` kept: the planes derive
+   *  from the id's exact text, so a stripped prefix names other planes. */
   readonly personaGroup: string;
   readonly faceKey:      string;
   readonly nexus:        string;
@@ -82,7 +90,7 @@ export type SessionFaceSupply =
 
 /** A reference: printable ASCII with no space and no bar, so a revision joins three of them unambiguously. */
 const REFERENCE = /^[\x21-\x7b\x7d\x7e]{1,512}$/;
-const PERSONA_GROUP = /^(?:[0-9a-f]{2}){4,64}$/;
+const PERSONA_GROUP = /^(?:0x)?(?:[0-9a-f]{2}){4,64}$/;
 const reference = (value: unknown): value is string => typeof value === "string" && REFERENCE.test(value);
 
 /** An OWN field of a record, read once; `undefined` where the record holds none. A prototype supplies nothing. */
@@ -163,4 +171,45 @@ export function supplySessionFace(input: { chain: unknown; vesselFaceKey: unknow
   // Every field above reads non-empty, so the validator refuses only a contract that moved under this module.
   if (face === null) throw new Error("session-face: the supplied face fails the session contract's own reader");
   return { face };
+}
+
+/** Why a joined vessel's session stayed shut: its chain, its face, or its open. */
+export type JoinedFaceSessionRefusal =
+  | { readonly refusal: "chain-refused"; readonly verdict: "withdrawn" | "incomplete" | "forked" | "invalid"; readonly cause?: FaceChainRefusal; readonly proof?: FaceProofRefusal }
+  | { readonly refusal: SessionFaceRefusalName; readonly state?: string }
+  | SessionSignerRefusal
+  | { readonly refusal: "session-malformed"; readonly open: string };
+
+/**
+ * Open the local session of a vessel that joined its face's fleet, and mint its signer.
+ *
+ * A JOINED VESSEL CERTIFIES ITS OWN FACE-SCOPED KEY. `certificate` names the certificate the root holder issued
+ * over the key THIS vessel minted at its join; `vesselFaceKey` names that key as this vessel's custody row holds
+ * it, read apart from the certificate. A certificate another vessel of the same face carries verifies as well as
+ * this one's own, and the supplier refuses it `chain-other-vessel`: a borrowed certificate opens nothing here.
+ *
+ * `admitted` names this vessel's own ground at the Nexus (the face key and the Nexus), `memory` the withdrawals
+ * it has learned there; `admit` and `grant` come from the held-root reader and the face's join record. The
+ * order: the chain, the face, then the open and the mint, which `openSignedSession` closes again on a refusal.
+ */
+export async function openJoinedFaceSession(args: {
+  table: SessionTable; binding: SessionBinding; profile: unknown; caps?: readonly string[];
+  admitted: FaceScope; certificate: unknown; memory: WithdrawalMemory; vesselFaceKey: unknown;
+  admit: unknown; grant: unknown;
+  apart: KeysHeldApart; custody: VesselFaceKeyCustody; random?: RandomProvider;
+}): Promise<{ readonly session: Session; readonly signer: SessionSigner } | JoinedFaceSessionRefusal> {
+  const checked = checkVesselChain({ admitted: args.admitted, certificate: args.certificate, memory: args.memory });
+  if (checked.verdict !== "verified") {
+    if (checked.verdict !== "invalid") return { refusal: "chain-refused", verdict: checked.verdict };
+    return checked.cause === undefined
+      ? { refusal: "chain-refused", verdict: "invalid", cause: checked.refusal }
+      : { refusal: "chain-refused", verdict: "invalid", cause: checked.refusal, proof: checked.cause };
+  }
+  const supplied = supplySessionFace({ chain: checked.chain, vesselFaceKey: args.vesselFaceKey, admit: args.admit, grant: args.grant });
+  if (!("face" in supplied)) return supplied;
+  return openSignedSession({
+    table: args.table, binding: args.binding, face: supplied.face, profile: args.profile,
+    certificate: args.certificate, apart: args.apart, custody: args.custody,
+    ...(args.caps ? { caps: args.caps } : {}), ...(args.random ? { random: args.random } : {}),
+  });
 }

@@ -193,6 +193,8 @@ export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "
 // and abandons in its own process, with no vessel standing.
 export { runFleetJoinOffer, runFleetJoinAnswer, runFleetJoinRequest, runFleetJoinLand, runFleetJoinAbandon, FleetJoinRefused } from "./commands/fleet-join.js";
 export type { FleetJoinAnswerOptions } from "./commands/fleet-join.js";
+export { readJoinedFaceProof } from "./joined-face-proof.js";
+export type { JoinedFaceProof, JoinedFaceAbsence } from "./joined-face-proof.js";
 export { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest, resolveOwnerBurnHand } from "./commands/handle.js";
 export type { HandlePublishOptions, HandleBurnOptions, HandleRotateOptions, HandleAttestOptions, OwnerAuthHand } from "./commands/handle.js";
 
