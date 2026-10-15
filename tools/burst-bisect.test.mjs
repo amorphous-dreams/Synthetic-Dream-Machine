@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { burstBisect, parseArgs } from './burst-bisect.mjs';
 
 const S = n => n.toString(16).padStart(40, '0');
-function fake({ count = 3, reds = [], unknown = [], failPush = null, stale = false } = {}) {
+function fake({ count = 3, reds = [], unknown = [], failPush = null, failWatch = [], failDelete = false, stale = false } = {}) {
   const calls = [], events = [], shas = Array.from({ length: count }, (_, i) => S(i + 2));
   let active = 0, peak = 0;
   const run = async (cmd, args) => {
@@ -16,7 +16,7 @@ function fake({ count = 3, reds = [], unknown = [], failPush = null, stale = fal
       if (args[0] === 'rev-list' && args[1] === '--parents') {
         const sha = args[4]; return `${sha} ${S(Number.parseInt(sha, 16) - 1)}`;
       }
-      if (args[0] === 'push' && args[2] === '--delete') { events.push(`delete:${args[3]}`); return ''; }
+      if (args[0] === 'push' && args[2] === '--delete') { events.push(`delete:${args[3]}`); if (failDelete) throw new Error('delete refused'); return ''; }
       if (args[0] === 'push') {
         active++; peak = Math.max(peak, active); events.push(`push:${args[2]}`);
         await new Promise(done => setTimeout(done, 1)); active--;
@@ -32,7 +32,7 @@ function fake({ count = 3, reds = [], unknown = [], failPush = null, stale = fal
         return JSON.stringify(entries);
       }
       if (args[1] === 'watch') {
-        if (reds.includes(Number(args[2]) - 100)) throw new Error('red watch');
+        if (reds.includes(Number(args[2]) - 100) || failWatch.includes(Number(args[2]) - 100)) throw new Error('watch failed');
         return '';
       }
       if (args[1] === 'view') {
@@ -85,4 +85,19 @@ test('push failure cleans every attempted branch', async () => {
   const f = fake({ failPush: 2 });
   await assert.rejects(burstBisect(opts(f)), /push failed/);
   assert.equal(f.events.filter(s => s.startsWith('delete:')).length, 3);
+});
+
+test('failed watch with a successful view never reads green', async () => {
+  const f = fake({ failWatch: [1] });
+  const result = await burstBisect(opts(f));
+  assert.equal(result.verdicts[0].status, 'unknown');
+  assert.equal(result.firstRed, null);
+});
+
+test('discovery and deletion match shard helper policy', async () => {
+  const f = fake({ failDelete: true });
+  const result = await burstBisect(opts(f));
+  assert.ok(result.verdicts.every(v => v.status === 'green'));
+  assert.equal(f.events.filter(s => s.startsWith('delete:')).length, 3);
+  assert.ok(f.calls.filter(c => c[0] === 'gh' && c[1] === 'run' && c[2] === 'list').every(c => c[c.indexOf('--limit') + 1] === '10'));
 });

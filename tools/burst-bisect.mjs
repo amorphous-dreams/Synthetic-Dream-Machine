@@ -40,7 +40,9 @@ function verdictFrom(run, view, log, watched) {
   const ok = summary && /MERGE-VERIFY:\s+ok=true\b/.test(summary);
   const failed = summary && /MERGE-VERIFY:\s+ok=false\b/.test(summary);
   const shard = lines.find(line => /MERGE-VERIFY problem:.*(?:shard|set )/i.test(line))?.match(/MERGE-VERIFY problem:\s*(.*)/)?.[1] ?? null;
-  const status = view.status === 'completed' && watched ? (view.conclusion === 'success' && ok ? 'green' : view.conclusion === 'failure' && failed && shard ? 'red' : 'unknown') : 'unknown';
+  const status = view.status === 'completed'
+    ? (view.conclusion === 'success' && watched && ok ? 'green' : view.conclusion === 'failure' && failed && shard ? 'red' : 'unknown')
+    : 'unknown';
   return { ...run, runId: view.databaseId ?? run.runId, url: view.url ?? null, status, shard, lines };
 }
 
@@ -86,7 +88,7 @@ export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, ma
         const deadline = now() + findBudgetMs;
         let found;
         do {
-          const runs = JSON.parse(await call('gh', ['run', 'list', '--branch', job.branch, '--event', 'push', '--json', 'databaseId,headSha,url', '--limit', '20']));
+          const runs = JSON.parse(await call('gh', ['run', 'list', '--branch', job.branch, '--event', 'push', '--json', 'databaseId,headSha,url', '--limit', '10']));
           found = runs.find(item => item.headSha === job.sha);
           if (found) break;
           if (now() >= deadline) break;
@@ -95,11 +97,11 @@ export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, ma
         if (!found) throw new Error('run not found by head SHA');
         let watched = true;
         try { await call('gh', ['run', 'watch', String(found.databaseId), '--exit-status', '--interval', '30']); }
-        catch { watched = false; } // A failed watch can mean a red run or an unread run; view decides.
+        catch { watched = false; } // A failed watch can mean a red run or an unread run; only a successful watch proves green.
         const view = JSON.parse(await call('gh', ['run', 'view', String(found.databaseId), '--json', 'databaseId,status,conclusion,url']));
         const body = await call('gh', ['run', 'view', String(found.databaseId), '--log']);
         // A completed red watch exits nonzero by design. Completion + logs can still prove red.
-        verdicts[job.index - 1] = verdictFrom({ ...job, runId: found.databaseId }, view, body, watched || view.status === 'completed');
+        verdicts[job.index - 1] = verdictFrom({ ...job, runId: found.databaseId }, view, body, watched);
       } catch (error) {
         verdicts[job.index - 1] = { ...job, status: 'unknown', url: null, reason: String(error.message ?? error) };
       }
@@ -112,12 +114,11 @@ export async function burstBisect({ repoRoot = resolve('.'), lane, good, bad, ma
     else log('FIRST RED UNKNOWN: no proven green prefix followed by a red verdict');
     result = { verdicts, firstRed };
   } catch (error) { mainError = error; }
-  const cleanupErrors = [];
+  // Match e2e-shards' best-effort deletion: a missing or already removed branch cannot mask the verdict.
   for (const branch of attempted) {
     try { await call('git', ['push', 'origin', '--delete', branch]); log(`DELETED ${branch}`); }
-    catch (error) { cleanupErrors.push(`${branch}: ${error.message}`); }
+    catch (error) { log(`DELETE REFUSED ${branch}: ${error.message}`); }
   }
-  if (cleanupErrors.length) throw new Error(`${mainError ? `${mainError.message}; ` : ''}cleanup failed: ${cleanupErrors.join('; ')}`);
   if (mainError) throw mainError;
   return result;
 }

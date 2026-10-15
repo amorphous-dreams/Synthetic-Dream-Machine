@@ -70,9 +70,14 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   const bare = () => run('git', ['-C', source, 'config', '--get', 'core.bare'], source).trim();
   if (bare() !== 'false') throw new Error('core.bare must read false before worktree add');
   run('git', ['-C', source, 'worktree', 'add', '--detach', destination, 'HEAD'], source);
+  try {
   if (bare() !== 'false') throw new Error('core.bare must read false after worktree add');
   const head = run('git', ['-C', destination, 'rev-parse', 'HEAD'], destination).trim();
   log(`HEAD ${head}`);
+  run('git', ['-C', destination, 'submodule', 'update', '--init', '--', 'TiddlyWiki5', 'mempalace'], destination);
+  for (const name of ['TiddlyWiki5/tiddlywiki.js', 'mempalace']) {
+    if (!existsSync(join(destination, name))) throw new Error(`required submodule input absent: ${name}`);
+  }
 
   // Preserve pnpm's relative links and package-local bins. Never carry source build stamps.
   const modulePaths = ['node_modules', 'tests/node_modules', 'TiddlyWiki5/node_modules'];
@@ -89,12 +94,6 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   }
   rmSync(join(destination, 'node_modules/.lares-build'), { recursive: true, force: true });
 
-  copy(source, destination, 'TiddlyWiki5', log, { filter: path => !['.git', 'node_modules'].includes(path.slice(path.lastIndexOf(sep) + 1)) });
-  const core = 'packages/lararium-tw5/tw5-core';
-  const coreFiles = readdirSync(join(source, core)).filter(name => name.endsWith('.js'));
-  if (!coreFiles.some(name => name.includes('5.5.0'))) throw new Error('5.5.0 TW5 core blob absent');
-  for (const name of coreFiles) copy(source, destination, `${core}/${name}`, log);
-
   const grammar = `packages/${WASM}`;
   const wasmFiles = readdirSync(join(source, grammar)).filter(name => name.endsWith('.wasm'));
   if (wasmFiles.length !== 1) throw new Error(`expected one grammar wasm; found ${wasmFiles.length}`);
@@ -108,6 +107,10 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
   copy(source, destination, stamp, log);
   log(`COPIED provenance grammar wasm: ${expected.trim().replaceAll('\n', ' | ')}`);
 
+  const tw5 = join(destination, 'packages/lararium-tw5');
+  rmSync(join(tw5, 'tw5-core'), { recursive: true, force: true });
+  run('npm', ['run', 'build:tw5-vendor'], tw5);
+  log('BUILT packages/lararium-tw5 TW5 vendor from destination submodule');
   for (const dir of packageOrder(destination)) {
     const cwd = join(destination, 'packages', dir);
     if (dir === 'lararium-tw5') run('npm', ['run', 'build'], cwd);
@@ -116,11 +119,21 @@ export function provision({ source = ROOT, destination, run = defaultRun, log = 
     run(process.execPath, [join(destination, 'tools/stamp-build.mjs'), destination, '--pkg', dir], destination);
     log(`STAMPED packages/${dir}`);
   }
+  rmSync(join(destination, 'packages/lararium-web/dist'), { recursive: true, force: true });
+  rmSync(join(destination, '.pronaos-build/pronaos-artifact.json'), { force: true });
+  run('npm', ['run', 'build'], join(destination, 'packages/lararium-web'));
   for (const rel of ['packages/lararium-web/dist', '.pronaos-build/pronaos-artifact.json']) {
-    copy(source, destination, rel, log);
-    log(`COPIED provenance ${rel}: source checkout ${source}; destination HEAD ${head} (not rebuilt)`);
+    if (!existsSync(join(destination, rel))) throw new Error(`web build output absent: ${rel}`);
   }
+  log('BUILT packages/lararium-web dist and Pronaos record');
+  run(process.execPath, [join(destination, 'tools/stamp-build.mjs'), destination], destination);
+  log('STAMPED workspace');
   return { destination, head };
+  } catch (error) {
+    try { run('git', ['-C', source, 'worktree', 'remove', destination], source); }
+    catch (cleanupError) { throw new Error(`${error.message}; plain git worktree remove refused: ${cleanupError.message}`, { cause: error }); }
+    throw error;
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
