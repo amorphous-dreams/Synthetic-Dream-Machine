@@ -34,6 +34,10 @@ written    = "2026-08-04"
 > against this document. ''Where a run contradicts a movement here, the run wins'' and the movement gets
 > rewritten — the same self-amending law the founding rite carries.
 
+''October 2026 intake redesign.'' The source and content frontiers, scoped coverage receipts, and host-to-container ingress remain planned at <<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration#/redesign-plan">>. Until its witnesses land, a green `pour` or an empty source scan cannot certify complete capture, and the movement below remains a proposed rite rather than a deployed drain guarantee.
+
+The one-operator alpha trial at #/alpha-trial precedes any `pour --all`. Its private frozen evidence supplies a bounded source witness; it does not yet supply the `/state` intake receipt or content frontier that the redesigned tending rite requires.
+
 ''Two rites stand, and they never merge.'' The founding rite consecrates: irreversible, once, governed by
 quorum and custody and succession. This rite tends: repeatable, operational, governed by measurement and
 cadence and capacity.
@@ -47,6 +51,22 @@ whose recovery move reads //do it again, watching//.
 ''The lore already names this rite.'' A lararium stabilizes THROUGH USE — fed daily at the shrine, food and
 drink and incense and coin; a fed node hums and a neglected one flickers (`noosphere-boot.mem`). The founding rite runs
 the consecration. ''This one runs the daily offering.''
+
+<<~/ahu>>
+
+<<~ ahu #/alpha-trial>>
+
+!! The bounded alpha trial ~ inventory, freeze, probe
+
+''Choose the event-time interval first.'' `trial_inventory.py` reads Claude JSONL under an explicit native root and writes a private manifest outside both the history tree and repository. Its half-open interval selects row timestamps, never file modification times. The scan includes main and `subagents/agent-*.jsonl` files as separate sources. Rows without an outer timestamp and malformed rows remain counted unknowns; a selected row carries its native offset, length and SHA-256, with no transcript text in the manifest. Name the interval, host and surface before inspecting the counts.
+
+''Freeze only a declared pair.'' `trial_freeze.py` verifies each selected row against its native bytes and writes one source into a new private trial root; `trial_freeze_linked.py` does that for one main session and one child beneath its native `<session>/subagents/` path. It checks the child's `sessionId` and `agentId` against the native folder and filename, preserves that folder shape for the parser's sub-agent source key, and receipts each evidence hash separately. All timestamped row types remain in evidence; the current Claude content parser projects only `user` and `assistant`. A cross-window main session receives a partial-session verdict, and a changed source refuses the freeze. Native history stays read-only and outside every trial root.
+
+''Probe the source-declared link.'' `trial_link_probe.py` verifies both frozen hashes and requires an assistant `Agent` tool-use ID, a user tool result with the same ID and parent UUID, a labeled `agentId` in that result, and matching child record IDs. A free-text mention never creates that edge. The probe receipts only what the frozen pair shows; it cannot certify the omitted session prefix, other sub-agents, or full history.
+
+''Take custody as one transaction.'' `trial_intake.py` reads only a verified frozen receipt and its private evidence copy. It derives the source key from an explicit execution-host namespace plus native `sessionId` and, for a child, `agentId`; the path remains provenance. A provisional trial host label cannot silently become the founded machine identity. One SQLite BLOB transaction commits the source, immutable byte revision, source manifest, observation, exact-intent receipt, frozen-evidence observation frontier and pending projection intent. A replayed intent returns its prior receipt after re-verifying stored bytes; a changed source or scope under the same intent refuses. A→B→A keeps three observations and two byte revisions. The observation frontier never claims a native tail offset or successful content projection. The first trial caps one evidence copy at 32 MiB and uses rollback `DELETE` with `synchronous=EXTRA`; the actual `/state` mount still needs the built-image fault witness.
+
+These scripts live under `packages/lararium-sensorium/scripts/`. Their manifests, copied evidence and host-side trial ledger live in private disposable trial directories, with fresh outputs on each run. Keep a trial's exact bytes and receipts together until its named repeat and crash tests finish. The next build gate connects a restricted host collector to the mounted `/state` intake, then lands typed content and advances a separate content frontier; it must not treat a pending projection intent as a projected block. No trial root becomes the founded memory palace by renaming it.
 
 <<~/ahu>>
 
@@ -433,6 +453,6 @@ reports whether they carry a flow between them.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;jeydR8GMUQXTuDIsHpNA6eIEpv5C15jB5fJ3Jaj_Pic
+<<^ code="&#x0003;">>ni:///sha-256;5R0LV9-_fWI6WFrShbthzgIM_RSck2L1s2FzDtNCxNU
 
 <<^ code="&#x0004;" -> to="?">>
