@@ -19,7 +19,7 @@
 import {
   openBrowserVessel,
   parseAdmitCarriage, parseAdmitPaste, toAdmitCarriage,
-  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, BrowserFleetJoinRefused,
+  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
@@ -217,7 +217,13 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
       void (async () => {
         try {
           if (file.kind === "fleet-join-offer") {
-            const request = await browserFleetJoinRequest({ offer: file.value });
+            // Another join standing pending would strand this page: the human may abandon it here, by name.
+            const request = await browserFleetJoinRequest({ offer: file.value }).catch(async (err: unknown) => {
+              if (!(err instanceof BrowserFleetJoinRefused && err.refusal === "join-pending")) throw err;
+              if (!confirm("Another fleet join stands pending in this browser. Abandon it, and request against this offer instead?")) throw err;
+              await browserFleetJoinAbandon();
+              return browserFleetJoinRequest({ offer: file.value });
+            });
             paste.value = JSON.stringify(request, null, 2);
             paste.select();
             statusEl.textContent = "✓ request minted — carry it back to the root holder: `lares fleet join answer <request-file>`, then paste the answer here.";

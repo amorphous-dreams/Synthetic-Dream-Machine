@@ -37,7 +37,7 @@ import { carriedAdmitOfFleetJoin } from "@lararium/keyhive";
 import { primaryNexusAid, readCarriedCharters } from "../carried-set.js";
 import { nexusKeyPublicOf, nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readNexusKey, readVesselFaceKeyPublic, storeVesselFaceKey } from "../face-key-custody.js";
 import {
-  clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, landFaceAddressSecret, mintFaceAddressSecret,
+  clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, landFaceAddressSecret, mintFaceAddressSecret, readFaceJoinRecord,
   readPendingFleetJoin,
 } from "../fleet-join-custody.js";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselSigningSeed, loadVesselVerifyingKey } from "../node-vessel-identity.js";
@@ -227,6 +227,12 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   const { answer, addressSecret } = verified;
   const admit = carriedAdmitOfFleetJoin(answer);
   if ("refusal" in admit) { addressSecret.fill(0); throw new FleetJoinRefused(admit.refusal, "the answer's device edge does not found this face."); }
+  // A record standing under another root refuses before the secret lands, so a refused landing writes nothing.
+  const standing = await readFaceJoinRecord(answer.personaGroup);
+  if (standing !== null && standing.rootKey !== offer.rootKey) {
+    addressSecret.fill(0);
+    throw new FleetJoinRefused("record-other", "this vessel holds that face's record under another root key.");
+  }
   try { await landFaceAddressSecret(answer.personaGroup, addressSecret); } finally { addressSecret.fill(0); }
   await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants });
   await runInit({ repo: opts.repo, force: true, admitPayload: admit, custody: { slots: [] } });

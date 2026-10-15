@@ -187,10 +187,18 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
           if (r !== undefined && r.rootKey !== offer.rootKey) {
             refuse(new BrowserFleetJoinRefused("record-other", "this browser holds that face's record under another root key.")); return;
           }
-          os.put(Uint8Array.from(addressSecret), secretRow);
-          os.put({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants }, recordRow);
-          os.put({ ...pending, landed: true } satisfies PendingJoin, PENDING);
-          done(undefined);
+          // The pending row reads again inside this transaction: a join another tab kept meanwhile stays its own.
+          const stillPending = os.get(PENDING);
+          stillPending.onsuccess = () => {
+            const p = stillPending.result as PendingJoin | undefined;
+            if (p?.request?.nonce !== request.nonce) {
+              refuse(new BrowserFleetJoinRefused("join-absent", "the join this answer lands no longer stands pending here.")); return;
+            }
+            os.put(Uint8Array.from(addressSecret), secretRow);
+            os.put({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants }, recordRow);
+            os.put({ ...p, landed: true } satisfies PendingJoin, PENDING);
+            done(undefined);
+          };
         };
       };
     }));

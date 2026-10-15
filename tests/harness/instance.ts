@@ -666,9 +666,9 @@ export interface JoineeOptions {
   /** Boot B at all? A suite measuring a founding alone passes false. Default true. */
   readonly bootB?: boolean;
   /**
-   * Which door B joins by. `"device-admit"` (the default): B mints its key, A signs an edge, B founds by it.
-   * `"fleet-join"`: B founds a PLACE, then the three files cross by hand (`fleet join offer` on A, `request` on
-   * B, `answer` on A) and B lands the answer onto its place. `admitted` then holds the land's result.
+   * Which door B joins by. `"fleet-join"` (the default): B founds a PLACE, then the three files cross by hand
+   * (`fleet join offer` on A, `request` on B, `answer` on A) and B lands the answer onto its place. `admitted`
+   * then holds the land's result. `"device-admit"`: B mints its key, A signs an edge, B founds by it.
    */
   readonly door?: "device-admit" | "fleet-join";
   /** On the fleet-join door, runs once the answer stands on disk and before B lands it (a suite's tamper vector). */

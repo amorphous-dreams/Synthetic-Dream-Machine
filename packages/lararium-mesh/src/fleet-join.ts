@@ -18,8 +18,10 @@
  * The invariants:
  *   · A JOINED VESSEL RECEIVES NO ROOT BYTES AND NO PRIVATE FACE KEY. It mints its own face-scoped keys; the
  *     only secret that crosses is the face's address secret, sealed to a key the request named.
- *   · ONE NONCE BINDS THE THREE FILES. A request answers one offer, and an answer one request: a stale or a
- *     foreign file refuses by name.
+ *   · ONE NONCE BINDS THE THREE FILES, AT THE JOINING VESSEL. Its request answers the offer it kept, and it lands
+ *     only the answer to the request it kept: a stale or a foreign file refuses there by name. The root keeps no
+ *     ledger of the nonces it offered, so it may answer an old request again; that answer opens nothing without
+ *     the joinee's own seal and vessel keys.
  *   · EVERY KEY AND SIGNATURE PASSES THE ONE DOOR (`ed25519-door`), and every certificate passes the face
  *     proof's own readers (`face-proof-subjects`).
  *   · A GRANT NAMES ONE FACE KEY FOR ONE PersonaGroup AT ONE NEXUS, under the PersonaGroup root: the private
