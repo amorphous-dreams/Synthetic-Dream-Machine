@@ -164,7 +164,7 @@ const files = execSync(
 )
   .split("\n")
   .filter(Boolean)
-  .filter((f) => !/\.(pyc|json)$/.test(f))
+  .filter((f) => !/\.(pyc|jsonl?)$/.test(f))
   .map((f) => f.replace(/^\.\//, ""));
 
 const turns = [];
