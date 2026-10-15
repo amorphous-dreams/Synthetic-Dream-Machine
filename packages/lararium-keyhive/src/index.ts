@@ -177,16 +177,16 @@ export interface DeviceAdmitPayload {
  * documents that hearth names to the joinee, and the founder's RESOLVED island at mint time — a SNAPSHOT, kind + scope, so a climbed founder's joinee seats
  * where the founder actually stood rather than where its raw vessel key falls.
  *
- * KEPT DISTINCT from `DeviceAdmitPayload` on purpose, not merged into it: these fields are added
- * by object-spread AFTER the ceremony signature is computed (both the node CLI's `runDeviceAdmit` and the
- * browser's admit-apply path add them post-signing), so they never enter the SIGNED byte image
- * (`delegationProofBytes`, device-delegation.ts). Widening the base interface would blur that boundary —
- * a reader of `DeviceAdmitPayload` alone should not have to ask which of its fields the signature covers.
+ * KEPT DISTINCT from `DeviceAdmitPayload` on purpose, not merged into it: these fields sit outside the device
+ * edge's own signed image (`delegationProofBytes`, device-delegation.ts) and ride instead inside the root-signed
+ * fleet-join answer, as its carriage and reach. `carriedAdmitOfFleetJoin` builds this shape from an answer that
+ * already read under the face's root key, and from nothing else. Widening the base interface would blur which
+ * signature covers which field: the edge's covers `DeviceAdmitPayload`, the answer's covers the rest.
  *
  * Exported here (not `@lararium/node`) for the same reason `DeviceAdmitPayload` is — so browser and
- * mobile vessels can read a payload carrying these fields without taking a Node dependency. The node CLI
- * mints this shape (`commands/device-admit.ts`); the browser's `admit-carriage.ts`/`open-browser-vessel.ts`
- * read it, isomorphically, off a `#admit=` carriage.
+ * mobile vessels can read a payload carrying these fields without taking a Node dependency. The node land
+ * (`commands/fleet-join.ts`) and the browser land (`browser-fleet-join.ts`) build it from a verified answer; the
+ * browser's `#admit=` stash carries it across the page's own reload alone.
  */
 export type CarriedAdmitPayload = DeviceAdmitPayload & {
   readonly hearthGatePubKey?: string;

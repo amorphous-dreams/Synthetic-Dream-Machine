@@ -61,7 +61,7 @@
 # (tools/unlock-staged-container.sh; the door refuses any root without the scratch marker the seed wrote).
 #
 # The host script alone touches Docker. No container receives the Docker socket; the qa runner cannot answer a
-# fleet join. Face names are synthetic.
+# fleet join. Every face name stays synthetic.
 set -eu
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)

@@ -9,6 +9,7 @@
  *   G4  the union: a record and a holding that agree answer once; two groups that claim one scope read null
  *   G5  the ring asks its readers afresh at every presenter, and a reader's fault throws through `grantFor`
  *   G6  the ring stands where `face-gate` asks a `GateFaceGrantRing`
+ *   G7  a record naming a held face under another root key reads as no grant      control: under the held root, it answers
  */
 import { createPrivateKey, createPublicKey, sign } from "node:crypto";
 import { describe, expect, test } from "vitest";
@@ -57,7 +58,7 @@ describe("the grant ring", () => {
   });
 
   test("G3 — a root holder answers each standing scope at the revision its root's signed grant reads", () => {
-    const holdings: GateRootHolding[] = [{ personaGroup: GROUP, scopes: [A, B] }];
+    const holdings: GateRootHolding[] = [{ personaGroup: GROUP, rootKey: publicOf(ROOT), scopes: [A, B] }];
     expect(gateGrantFor(A, [], holdings)).toEqual(expected(A));
     expect(gateGrantFor(B, [], holdings)).toEqual(expected(B));
     expect(gateGrantFor(C, [], holdings)).toBeNull();
@@ -66,9 +67,9 @@ describe("the grant ring", () => {
   });
 
   test("G4 — the union: sources that agree answer once; two groups that claim one scope read null", () => {
-    expect(gateGrantFor(A, [record([grant(A)])], [{ personaGroup: GROUP, scopes: [A] }])).toEqual(expected(A));
-    expect(gateGrantFor(B, [record([grant(A)])], [{ personaGroup: GROUP, scopes: [B] }])).toEqual(expected(B));
-    expect(gateGrantFor(A, [record([grant(A)])], [{ personaGroup: OTHER_GROUP, scopes: [A] }])).toBeNull();
+    expect(gateGrantFor(A, [record([grant(A)])], [{ personaGroup: GROUP, rootKey: publicOf(ROOT), scopes: [A] }])).toEqual(expected(A));
+    expect(gateGrantFor(B, [record([grant(A)])], [{ personaGroup: GROUP, rootKey: publicOf(ROOT), scopes: [B] }])).toEqual(expected(B));
+    expect(gateGrantFor(A, [record([grant(A)])], [{ personaGroup: OTHER_GROUP, rootKey: publicOf(ROOT), scopes: [A] }])).toBeNull();
     expect(gateGrantFor(A, [record([grant(A)]), record([grant(A, ROOT, OTHER_GROUP)], OTHER_GROUP)], [])).toBeNull();
   });
 
@@ -85,7 +86,14 @@ describe("the grant ring", () => {
   });
 
   test("G6 — the ring stands where face-gate asks a GateFaceGrantRing", async () => {
-    const ring: GateFaceGrantRing = gateGrantRing({ joinRecords: () => [], rootHoldings: () => [{ personaGroup: GROUP, scopes: [C] }] });
+    const ring: GateFaceGrantRing = gateGrantRing({ joinRecords: () => [], rootHoldings: () => [{ personaGroup: GROUP, rootKey: publicOf(ROOT), scopes: [C] }] });
     expect(await ring.grantFor(C)).toEqual(expected(C));
+  });
+
+  test("G7 — a record that names a held face under another root key reads as no grant", () => {
+    const held: GateRootHolding[] = [{ personaGroup: GROUP, rootKey: publicOf(ROOT), scopes: [B] }];
+    expect(gateGrantFor(A, [record([grant(A, STRANGER)], GROUP, STRANGER)], held)).toBeNull();
+    // CONTROL: the same record under the held root answers its scope.
+    expect(gateGrantFor(A, [record([grant(A)])], held)).toEqual(expected(A));
   });
 });

@@ -162,7 +162,7 @@ describe("THE LIVE DOMAINS — each protocol's constant pinned from outside its 
     const sealed = sealAddressSecret({ secret: new Uint8Array(32).fill(7), request });
     const box = { senderEphemeralPub: hexToBytes(sealed.epk), aeadNonce: hexToBytes(sealed.nonce), ciphertext: hexToBytes(sealed.ciphertext) };
     // The seal additionally salts with the request's nonce and vessel key. This replicates the private `secretSalt`
-    // of `fleet-join.ts` ON PURPOSE: a change to the salt SHAPE must be mirrored here consciously, never absorbed
+    // of `fleet-join.ts` ON PURPOSE: a change to the salt SHAPE mirrors here consciously, never absorbed
     // silently, which an imported helper would hide.
     const salt = [hexToBytes(request.nonce), hexToBytes(request.vesselKey)];
 

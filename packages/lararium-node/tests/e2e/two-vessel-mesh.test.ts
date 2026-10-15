@@ -178,7 +178,7 @@ beforeAll(async () => {
 
   // Step 2 — B founds a PLACE under its OWN root, before anyone admits it.
   //
-  // Admission SIGNS a key the joinee already holds; it never issues one. B's private seed is born on B and stays
+  // Admission SIGNS a key the joinee already holds; it never issues one. B's private seed mints on B and stays
   // there, and only public keys cross to A, inside B's fleet-join request.
   await withLarRoot(VESSEL_B.root, async () => { await sealTestCustody(); });
   await withLarRoot(VESSEL_B.root, () => foundDirect({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis }));
@@ -193,11 +193,8 @@ beforeAll(async () => {
 
   // Step 4 — Vessel B lands the answer: the face founds on B's place through the edge the root signed
   await withLarRoot(VESSEL_B.root, () => direct(runFleetJoinLand)({ storageDir: VESSEL_B.storage, answer: JSON.parse(JSON.stringify(answer)) }));
-  const initB = { bootstrapPath: join(VESSEL_B.storage, "social-bootstrap.json") };
-  vesselBBootstrapPath = initB.bootstrapPath;
-  if (vesselBBootstrapPath !== join(VESSEL_B.storage, "social-bootstrap.json")) {
-    throw new Error(`Vessel B: runInit returned an unexpected bootstrap path: ${vesselBBootstrapPath}`);
-  }
+  vesselBBootstrapPath = join(VESSEL_B.storage, "social-bootstrap.json");
+  if (!existsSync(vesselBBootstrapPath)) throw new Error(`Vessel B: the land founded no bootstrap at ${vesselBBootstrapPath}`);
 
   const bootstrapB = readBootstrap(vesselBBootstrapPath);
   const daemonUrlB  = bootstrapB[DAEMON_BAG_ID]?.text;

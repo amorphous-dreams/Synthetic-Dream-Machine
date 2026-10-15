@@ -471,16 +471,19 @@ run_leaf() {
   N2=$(printf '%s' "$OFFER2" | sed -n 's/^ *"nonce": "\([0-9a-f]\{64\}\)".*/\1/p')
   if [ -n "$N1" ] && [ -n "$N2" ] && [ "$N1" != "$N2" ]; then ok; else bad "two offers carried one nonce (\"$N1\" / \"$N2\")"; fi
 
-  # THE ROOT HOLDS NO LEDGER, so the answer reads each request against the offer rebuilt over today's scopes:
-  # a request naming this browser's key but signed by no vessel refuses by name, and the hearth signs nothing.
-  step "a request the offer never met refuses by name"
-  local FORGED ANSWER
-  FORGED="{\"kind\":\"fleet-join-request\",\"nonce\":\"$N1\",\"vesselKey\":\"$KEY\",\"requests\":[],\"signature\":\"00\"}"
+  # THE ROOT HOLDS NO LEDGER, so the answer reads each request against the offer rebuilt over the scopes the face
+  # stands at: a well-formed request naming this browser's key but signed by no vessel refuses as
+  # `request-unsigned`, and the hearth signs nothing.
+  step "a request no vessel signed refuses by name"
+  local FORGED ANSWER ZSIG SEAL
+  ZSIG=$(printf '0%.0s' $(seq 128))
+  SEAL="09$(printf '0%.0s' $(seq 62))"
+  FORGED="{\"kind\":\"fleet-join-request\",\"nonce\":\"$N1\",\"vesselKey\":\"$KEY\",\"sealKey\":\"$SEAL\",\"requests\":[],\"signature\":\"$ZSIG\"}"
   if printf '%s' "$FORGED" | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/leaf-forged-request.json'; then
     if ANSWER=$($COMPOSE exec -T lararium-a $LARES fleet join answer /tmp/leaf-forged-request.json 2>&1); then
       bad "the hearth answered a request no vessel signed"; printf '%s\n' "$ANSWER" | head -3 | sed 's/^/      /'
-    elif printf '%s' "$ANSWER" | grep -q 'refused' && ! printf '%s' "$ANSWER" | grep -q 'fleet-join-answer'; then ok
-    else bad "the forged request failed without a named refusal"; printf '%s\n' "$ANSWER" | tail -3 | sed 's/^/      /'; fi
+    elif printf '%s' "$ANSWER" | grep -q 'request-unsigned' && ! printf '%s' "$ANSWER" | grep -q 'fleet-join-answer'; then ok
+    else bad "the forged request failed without refusing as request-unsigned"; printf '%s\n' "$ANSWER" | tail -3 | sed 's/^/      /'; fi
   else bad "the forged request never reached A"; fi
 
   # REACH, NEVER DEPTH. A fleet binds one principal's instruments, so offering a device a join must not move

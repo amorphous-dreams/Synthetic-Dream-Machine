@@ -174,9 +174,10 @@ beforeAll(async () => {
   // throwaway joinee requests under its own key (its face-scoped keys rest in this process alone), the hearth answers.
   courier = mkdtempSync(join(tmpdir(), "lares-face-join-courier-"));
   const files = { offer: join(courier, "offer.json"), request: join(courier, "request.json"), answer: join(courier, "answer.json") };
-  if ((await lar.cli(["fleet", "join", "offer", "--out", files.offer])).code !== 0) return;
+  const offered = await lar.cli(["fleet", "join", "offer", "--out", files.offer]);
+  if (offered.code !== 0) throw new Error(`fleet join offer failed (${offered.code})\n${offered.stderr.slice(-800)}`);
   const offer = readFleetJoinOffer(JSON.parse(readFileSync(files.offer, "utf8")));
-  if ("refusal" in offer) return;
+  if ("refusal" in offer) throw new Error(`the hearth's offer refuses: ${offer.refusal}`);
   const faceKeys = new Map<string, Uint8Array>();
   const request = await composeFleetJoinRequest({
     offer, vesselKey: joineeKey, sealKey: fleetJoinSealPair().key,
@@ -184,9 +185,10 @@ beforeAll(async () => {
     custody: { signAsVesselFace: async (_scope, key, image) => signUnder(faceKeys.get(key)!, image) },
     sign: async (image) => Buffer.from(signUnder(seed, image)).toString("hex"),
   });
-  if ("refusal" in request) return;
+  if ("refusal" in request) throw new Error(`the joinee's request refuses: ${request.refusal}`);
   writeFileSync(files.request, JSON.stringify(request));
-  if ((await lar.cli(["fleet", "join", "answer", files.request, "--out", files.answer])).code !== 0) return;
+  const answered = await lar.cli(["fleet", "join", "answer", files.request, "--out", files.answer]);
+  if (answered.code !== 0) throw new Error(`fleet join answer failed (${answered.code})\n${answered.stderr.slice(-800)}`);
   edge = (JSON.parse(readFileSync(files.answer, "utf8")) as { edge?: { deviceEdge?: DeviceDelegationTiddler } }).edge?.deviceEdge ?? null;
 }, 240_000);
 

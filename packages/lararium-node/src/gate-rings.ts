@@ -13,7 +13,8 @@
  *     the grant that root would sign. Its revision digests the signed image alone, so the ring signs nothing
  *     and touches no seed to answer it.
  * Two sources that name one scope agree, or the ring answers null: one face key speaks for one PersonaGroup,
- * and a scope two groups claim reads as no grant.
+ * and a scope two groups claim reads as no grant. A landed record that names a face this vessel holds the root of
+ * reads only under that held root key.
  *
  * ── PURE OVER INJECTED READERS ──────────────────────────────────────────────────────────────────
  * `gateGrantFor` decides over values it receives. `gateGrantRing` asks its readers afresh at every presenter
@@ -37,6 +38,8 @@ import type { FaceJoinRecord } from "./fleet-join-custody.js";
 /** A face whose root this vessel holds, and the scopes the face stands at here. */
 export interface GateRootHolding {
   readonly personaGroup: string;
+  /** The root key this vessel holds for the face; a record naming the face under another root speaks for nothing. */
+  readonly rootKey:      string;
   readonly scopes:       readonly FaceScope[];
 }
 
@@ -69,6 +72,10 @@ function reading(personaGroup: string, scope: FaceScope): FaceGrantReading {
 export function gateGrantFor(scope: FaceScope, records: readonly FaceJoinRecord[], holdings: readonly GateRootHolding[]): FaceGrantReading | null {
   const found: FaceGrantReading[] = [];
   for (const record of records) {
+    // A grant's revision digests its group and scope alone, never its root, so a record that names a held face
+    // under another root key reads as no grant rather than as the held face's.
+    const held = holdings.find((h) => h.personaGroup === record.personaGroup);
+    if (held !== undefined && held.rootKey.toLowerCase() !== record.rootKey.toLowerCase()) continue;
     for (const raw of record.grants) {
       const grant = readFaceKeyGrant(raw, record.rootKey);
       if (grant === null || grant.personaGroup !== record.personaGroup || !atScope(grant.scope, scope)) continue;

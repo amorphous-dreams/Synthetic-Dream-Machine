@@ -7,7 +7,7 @@
  * tested this way — it would need a server, a reachable issuer, and a moment at which both were true.
  */
 import { describe, test, expect } from "vitest";
-import { parseAdmitCarriage, formatAdmitCommand, toAdmitCarriage, ADMIT_KIND } from "../src/admit-carriage.js";
+import { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND } from "../src/admit-carriage.js";
 import type { DeviceAdmitPayload } from "@lararium/keyhive";
 
 /** A payload shaped like the founder's root signs — fixed bytes, so the test is a constant. */
@@ -71,16 +71,5 @@ describe("the carried admission", () => {
   test("an EMPTY binding field refuses as hard as a missing one", () => {
     const hollow = toAdmitCarriage({ ...PAYLOAD, signerDid: "" } as unknown as DeviceAdmitPayload);
     expect(parseAdmitCarriage(hollow)).toBeNull();
-  });
-});
-
-describe("the on-screen command", () => {
-  test("the on-screen command names the key in the ONE form the node accepts", () => {
-    const hex = "a".repeat(64);
-    expect(formatAdmitCommand(hex)).toBe(`lares device-admit --joinee-key ${hex}`);
-    // A `0x`-decorated or upper-cased key produces a command the node REFUSES (64-char lowercase hex
-    // only), with the human standing at a different device — so the vessel strips the decoration here.
-    expect(formatAdmitCommand(`0x${hex.toUpperCase()}`)).toBe(`lares device-admit --joinee-key ${hex}`);
-    expect(formatAdmitCommand(` ${hex} `)).toBe(`lares device-admit --joinee-key ${hex}`);
   });
 });

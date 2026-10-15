@@ -63,7 +63,7 @@ export type {
   BrowserDaemonVmOptions,
   BrowserVerbTable, VerbReactor, BrowserVerbPlacementRequest,
 } from "./open-browser-daemon-vm.js";
-export { parseAdmitCarriage, formatAdmitCommand, toAdmitCarriage, ADMIT_KIND } from "./admit-carriage.js";
+export { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND } from "./admit-carriage.js";
 // THE FLEET-JOIN DOOR's joining half: this browser requests a face's fleet, then lands the answer into an admit.
 export {
   browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, browserVesselFaceKeyCustody, BrowserFleetJoinRefused,

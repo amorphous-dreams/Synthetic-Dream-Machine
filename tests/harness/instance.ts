@@ -541,9 +541,9 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
     let herm = await openStaged({ tag: `${tag}herm`, port: portHerm, daemonEnv: hermEnv, found: hermFound });
     stood.push(herm);
 
-    // A founds (seating a founding quorum, so a charter exists to carry FOR); C mints under its own root; A
-    // signs the edge naming its dial; C founds by that payload — the joinee rite, one door, with both hearths
-    // dialing the Herm's crossroads and shore.
+    // A founds (seating a founding quorum, so a charter exists to carry FOR); C founds a place under its own root
+    // and joins A's face through the fleet-join door, A's answer naming its dial — the joinee rite, one door, with
+    // both hearths dialing the Herm's crossroads and shore.
     const pair = await openStagedJoinee({
       tag: `${tag}fleet`,
       daemonEnv: { LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
@@ -665,7 +665,7 @@ export interface JoineeOptions {
   readonly beforeB?: (A: LarInstance) => Promise<void>;
   /** Boot B at all? A suite measuring a founding alone passes false. Default true. */
   readonly bootB?: boolean;
-  /** Once the answer, runs once the answer stands on disk and before B lands it (a suite's tamper vector). */
+  /** Runs once the answer stands on disk and before B lands it (a suite's tamper vector). */
   readonly beforeLand?: (cliB: (args: readonly string[]) => Promise<CliResult>, files: FleetJoinFiles) => Promise<void>;
 }
 
@@ -716,7 +716,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         await foundStagedHearth(cliA, rootA, "alpha");
         await opts.riteA?.(cliA, rootA);
         // B founds by A's genesis, copied whole: the land reads the hearth true-name off `<root>/genesis`, and A's
-        // founding derived it (the re-derive is an internal rite step).
+        // founding derived it (an internal rite step re-derives it).
         cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
         // THE FLEET-JOIN DOOR: B stands as a place first, so its own custody holds the keys it mints for the face;
         // then the three files cross by hand (`offer` on A, `request` on B, `answer` on A) and B lands the answer.

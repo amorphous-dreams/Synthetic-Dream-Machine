@@ -53,19 +53,6 @@ export function parseAdmitCarriage(carriage: string): CarriedAdmitPayload | null
   return payload as CarriedAdmitPayload;
 }
 
-/**
- * Write the exact line the operator runs on the NODE to admit the vessel that shows it.
- *
- * The vessel is the only place its own key exists, so the vessel says it — as the command, not as a fact
- * the human must assemble. The key rides as 64-char lowercase hex with no `0x`: that is the one form
- * `runDeviceAdmitEdge` accepts, and a decorated key produces a command that fails at the node with the
- * human standing at a different device.
- */
-export function formatAdmitCommand(verifyingKey: string): string {
-  const hex = verifyingKey.trim().replace(/^0x/i, "").toLowerCase();
-  return `lares device-admit --joinee-key ${hex}`;
-}
-
 /** Encode a payload into the carriage form that the boot reads. The round-trip inverse. */
 export function toAdmitCarriage(payload: CarriedAdmitPayload): string {
   const json = JSON.stringify(payload);
