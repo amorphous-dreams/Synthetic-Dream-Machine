@@ -13,12 +13,21 @@
 #   GITHUB_CLIENT_SECRET  GitHub OAuth App client secret
 #   NODE_ENV              development | qa | production
 
-ARG NODE_VERSION=24
+ARG NODE_IMAGE=node:24-slim@sha256:d6aa754f16b3197301076f047b5def2f02ea1dbbc2ca920407d46d7ec7f87b20
+
+# Python and Node both ride Debian Bookworm in the combined serve image. Pin
+# the Python image digest so a mutable tag cannot silently change its ABI.
+FROM python:3.12-slim-bookworm@sha256:34386ef0cb081344d7ec1c103ba398e6e9f64e9ab3a1509accc92a4e24a07258 AS sensorium-python-seat
+WORKDIR /app
+COPY mempalace/pyproject.toml mempalace/README.md ./mempalace/
+COPY mempalace/mempalace/ ./mempalace/mempalace/
+COPY packages/lararium-sensorium/requirements-image.lock ./sensorium-requirements.lock
+RUN pip install --no-cache-dir --no-deps -r sensorium-requirements.lock ./mempalace && pip check
 
 # ---------------------------------------------------------------------------
 # Stage 1: deps
 # ---------------------------------------------------------------------------
-FROM node:${NODE_VERSION}-slim AS deps
+FROM ${NODE_IMAGE} AS deps
 
 WORKDIR /app
 
@@ -63,9 +72,28 @@ RUN pnpm --filter @lares/cli build
 # LAR_PRONAOS_* paths; copying bytes alone never widens Node's route ownership.
 # lares/ is always mounted at runtime — never baked in.
 # ---------------------------------------------------------------------------
-FROM node:${NODE_VERSION}-slim AS serve
+FROM ${NODE_IMAGE} AS serve
 
 WORKDIR /app
+
+# The Node slim base omits Python's runtime libraries even though both images
+# use Bookworm. Install the shared libraries explicitly before probing imports.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libsqlite3-0 libbz2-1.0 liblzma5 libffi8 libexpat1 libgomp1 libssl3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# One explicit Python interpreter and installed dependency closure live beside
+# Node. Python's Debian release matches Node's; scripts and vendored source
+# stay in /app while every writable cache/store belongs beneath /state.
+COPY --from=sensorium-python-seat /usr/local /usr/local
+COPY --from=sensorium-python-seat /app/mempalace/mempalace ./mempalace/mempalace
+COPY --from=build /app/packages/lararium-sensorium/scripts ./packages/lararium-sensorium/scripts
+ENV LARES_PYTHON=/usr/local/bin/python3 \
+    PYTHONPATH=/app/mempalace \
+    XDG_CACHE_HOME=/state/cache \
+    HF_HOME=/state/cache/huggingface
+RUN PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/content_io.py --help >/dev/null && \
+    PYTHONPATH=/app/mempalace python3 -c 'import chromadb, mempalace; from mcp.server.mcpserver import MCPServer'
 
 COPY --from=build /app/node_modules                         ./node_modules
 COPY --from=build /app/package.json                         ./package.json
@@ -150,7 +178,7 @@ CMD ["--root", "/workspace", "--genesis", "/app/genesis"]
 # ---------------------------------------------------------------------------
 # Stage 4: mcp-runtime — minimal stdio MCP server (unchanged)
 # ---------------------------------------------------------------------------
-FROM node:${NODE_VERSION}-slim AS mcp-runtime
+FROM ${NODE_IMAGE} AS mcp-runtime
 
 WORKDIR /app
 

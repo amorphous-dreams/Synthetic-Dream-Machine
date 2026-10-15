@@ -90,10 +90,18 @@ export interface MempalaceSpawn {
   readonly holderPresent: boolean;
 }
 
+/** Upstream moved its MCP entry from a module file into a package in 3.11.
+ * Accept both pinned layouts; the import/handshake probe still decides runtime health. */
+export function mempalaceHolderPresent(submoduleRoot: string): boolean {
+  const pkg = join(submoduleRoot, "mempalace");
+  return existsSync(join(pkg, "mcp_server", "__main__.py"))
+      || existsSync(join(pkg, "mcp_server.py"));
+}
+
 /** Resolve everything MempalaceClient needs to spawn the read-only holder. */
 export function resolveMempalaceSpawn(): MempalaceSpawn {
   const submoduleRoot = join(repoRoot, "mempalace");
-  const holderPresent = existsSync(join(submoduleRoot, "mempalace", "mcp_server.py"));
+  const holderPresent = mempalaceHolderPresent(submoduleRoot);
   return { submoduleRoot, python: resolveMempalacePython(), holderPresent };
 }
 

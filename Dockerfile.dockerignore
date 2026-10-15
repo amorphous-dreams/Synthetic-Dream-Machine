@@ -9,7 +9,12 @@
 **/.pnpm-store
 .pronaos-build
 wikis
-mempalace
+mempalace/tests
+mempalace/benchmarks
+mempalace/website
+mempalace/landing
+mempalace/docs
+mempalace/uv.lock
 VSCode-TW5-Syntax
 .env
 .env.*
