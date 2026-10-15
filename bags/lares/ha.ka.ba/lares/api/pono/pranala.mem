@@ -12,7 +12,7 @@ manao           = 16
 manaoio         = 14
 namespace       = "&#x2299;"
 role            = "pranala law (kānāwai): the anchored-pointer sigil — NARROWED 2026-06-12 under the has-stack model; typed-edge anatomy moved to api/pono/wire; role/family attribute vocabulary retired-reserved"
-tags            = ["api/pono/meme", "api/pono/loci", "api/pono/has-stack", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala"]
+tags            = ["api/pono/meme", "api/pono/has-stack", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala"]
 title           = "lar:///ha.ka.ba/lares/api/pono/pranala"
 type            = "text/memetic-wikitext+tiddlywiki"
 uri-path        = "ha.ka.ba/lares/api/pono/pranala"
@@ -80,6 +80,6 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;kvwpDGCEgnE_eUUczkUnjGo7VJE6-yRN6l6xl8Fq1eE
+<<^ code="&#x0003;">>ni:///sha-256;h_mxOkkE3zBjPpzz2YSczojKzVT860itKiAZM5-j5_c
 
 <<^ code="&#x0004;" -> to="?">>

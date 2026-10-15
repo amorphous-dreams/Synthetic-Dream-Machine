@@ -11,7 +11,7 @@ manao       = 17
 manaoio     = 17
 role        = "three-tier traversal model, DFS cycle detection, Kahn topological sort, and declared-unresolved law for the pranala-edge DAG compiler"
 status-date = "2026-04-24"
-tags        = ["api/pono/meme", "api/pono/loci"]
+tags        = ["api/pono/meme"]
 title       = "lar:///ha.ka.ba/lares/docs/graph/traversal"
 type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/docs/graph/traversal"
@@ -239,6 +239,6 @@ The boot receipt hash changes to reflect the newly resolved carrier.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;O1xESGq54CxfgAApt7dDOMu7mzf_x1EdYNK0m1uNGy0
+<<^ code="&#x0003;">>ni:///sha-256;nyYFdiL0eDzvYz3jf1o9Z4MmrFnvtVfWxAJ2SHGmQw0
 
 <<^ code="&#x0004;" -> to="?">>

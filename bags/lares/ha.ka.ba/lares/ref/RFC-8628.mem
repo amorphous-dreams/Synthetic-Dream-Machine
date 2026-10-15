@@ -12,7 +12,7 @@ manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 8628 by its own bibliographic metadata"
-tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+tags           = ["lar:///ha.ka.ba/lares/ref"]
 title          = "lar:///ha.ka.ba/lares/ref/RFC-8628"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/ref/RFC-8628"
@@ -40,6 +40,6 @@ never invented — in `[reference]` above, so a pin at this address cites the wo
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Q25kxI4AwIFxBlal5aTM5Uk_PaCb-1fWERQNcTCPBkM
+<<^ code="&#x0003;">>ni:///sha-256;WbkHPKoqmwwg65r-WhUZ0X1L-nKzoenVslnr2Dkhh7Y
 
 <<^ code="&#x0004;" -> to="?">>

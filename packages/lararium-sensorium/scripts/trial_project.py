@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import io
 import json
 import sqlite3
 from pathlib import Path
@@ -23,6 +22,18 @@ def _block_cid(source_key: str, revision: str, index: int) -> str:
 
 def _content_digest(rows: list[tuple[str, str, str]]) -> str:
     return hashlib.sha256(_canonical({"blocks": rows}).encode()).hexdigest()
+
+
+def _positioned_lines(raw: bytes) -> tuple[list[str], list[tuple[int, int, int]]]:
+    """Keep native byte offsets while decoding only the parser's view of each JSONL row."""
+    lines: list[str] = []
+    positions: list[tuple[int, int, int]] = []
+    offset = 0
+    for row, line in enumerate(raw.splitlines(keepends=True)):
+        lines.append(line.decode("utf-8", errors="replace"))
+        positions.append((row, offset, len(line)))
+        offset += len(line)
+    return lines, positions
 
 
 def _advance_frontier(conn: sqlite3.Connection, source_key: str) -> int:
@@ -89,8 +100,8 @@ def project_observation(state_root: Path | str, observation_id: int,
 
         try:
             stats: dict = {}
-            parsed = _parse_claude_lines(io.StringIO(raw.decode("utf-8", errors="replace")),
-                                         stats=stats)
+            lines, positions = _positioned_lines(raw)
+            parsed = _parse_claude_lines(lines, stats=stats, source_positions=positions)
             if stats.get("invalid_json", 0) or stats.get("non_object_rows", 0):
                 raise ValueError("committed evidence contains malformed or non-object rows")
             extra = {"lar_surface": "claude"}
@@ -112,6 +123,13 @@ def project_observation(state_root: Path | str, observation_id: int,
         kept: list[tuple[str, str, str]] = []
         for index, (_old_cid, text, metadata) in enumerate(blocks):
             cid = _block_cid(source_key, revision, index)
+            native = parsed[index]
+            metadata.update({"lar_source_row": native["source_row"],
+                             "lar_source_byte_start": native["byte_start"],
+                             "lar_source_byte_length": native["byte_length"],
+                             "lar_native_uuid": native["uuid"],
+                             "lar_native_block_index": native["bi"],
+                             "lar_native_timestamp": native["ts"]})
             meta_json = _canonical(metadata)
             expected = (cid, text, meta_json)
             conn.execute("INSERT OR IGNORE INTO typed_content "

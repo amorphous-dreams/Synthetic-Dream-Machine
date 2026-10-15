@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 17
 role      = "staging docs shelf for the explicit complementarity claim between epistemic register and discourse stance"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/preferences/register-stance-complementarity"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/preferences/register-stance-complementarity"
@@ -75,6 +75,6 @@ Current comparison surfaces:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CUmS9Wvd-4bV1fCFDgGBOyxVA11tSrpMTbd8FwOkCA4
+<<^ code="&#x0003;">>ni:///sha-256;WuTUW02iUI-5iMEd2X8pF6YcKKrri_zybCmEYT3wckQ
 
 <<^ code="&#x0004;" -> to="?">>

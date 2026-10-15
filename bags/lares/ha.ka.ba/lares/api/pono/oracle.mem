@@ -14,7 +14,7 @@ manaoio       = 15
 namespace     = "&#x2299;"
 role          = "the oracle sigil — the turn's drift register: the sanctioned drain that fires first in the close, bleeding the warm-tone pull ahead of the Sword; spend-ebb · scatter · die · count · sentinel · random tail, the marks cross-checking as a render-tell"
 source-symbol = "ORACLE_MARKS ORACLE_GLYPHS ORACLE_CROSSCHECK"
-tags          = ["api/pono/meme", "api/pono/loci"]
+tags          = ["api/pono/meme"]
 title         = "lar:///ha.ka.ba/lares/api/pono/oracle"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/oracle"
@@ -210,6 +210,6 @@ certifies  = "nothing"
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EJSgbsMJ6eMSCyTKFMCVloHhFPxXiTW_KaT9ppfIfKs
+<<^ code="&#x0003;">>ni:///sha-256;ryoV39IryBgMXJFMSIsscVmAeHh0MWnwCuwXf_YLEZs
 
 <<^ code="&#x0004;" -> to="?">>

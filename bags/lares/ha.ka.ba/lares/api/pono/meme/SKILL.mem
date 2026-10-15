@@ -37,7 +37,7 @@ This skill carries the working procedure.
 Keep these points active when the skill loads:
 
 * the parent invariant binds the copy-shape
-* memetic-wikitext, loci, invariant, and subtype laws stay distinct
+* memetic-wikitext, lar-uri, invariant, and subtype laws stay distinct
 * `#meta` should appear early and carry the canonical rating cluster
 * the six-glyph phase map stays visible even when deeper phase sections stay absent
 * `loulou` and other named `pranala` sugar should signal real outward pressure, not decorative motion
@@ -89,7 +89,7 @@ Use this skill when the request asks to:
 
 Prefer another surface when the work concerns only:
 
-* stable-address coherence under `loci`
+* address syntax and resolution under `lar-uri`
 * authoring-surface semantics under `memetic-wikitext`
 * one subtype law with no meme-shape pressure
 
@@ -213,7 +213,7 @@ When writing or revising:
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 <<~ pranala #has-meme from="?" -> to="lar:///ha.ka.ba/lares/api/pono/meme" family=control role=has>>
-<<~ pranala #has-loci from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci" family=control role=has>>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 
 <<~/ahu>>
 
@@ -259,6 +259,6 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;UV6EYh479ETkNb0VeaFsmCNpxPIyZH1gG_7vpl24fFg
+<<^ code="&#x0003;">>ni:///sha-256;tQaMoTrWLQnp5PqtEAVFuQN223Lw8rv8aYYUJVwqxAg
 
 <<^ code="&#x0004;" -> to="?">>

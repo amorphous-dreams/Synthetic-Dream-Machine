@@ -56,7 +56,7 @@ export interface NativeCanonicalCarrier {
  * (`action-handler.ts`).
  *
  * @param deserializer - the island's live native congruence (`makeTw5Deserializer`).
- * @param uri           - the carrier's own loci URI — the fallback title when the
+ * @param uri           - the carrier's own `lar:` URI — the fallback title when the
  *                        deserialized record carries none (a title-less `.md`/content
  *                        file; a `.tid`/`.json` almost always names its own).
  * @param ext           - the extension the disk file sited at (`.tid`, `.json`, …);

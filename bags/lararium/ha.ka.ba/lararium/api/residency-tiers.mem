@@ -17,7 +17,7 @@ revised-on    = "2026-06-01"
 revision-note = "warm (mahana) tier CUT after adversarial+kupono+YIN research; two states (wela/anu) only"
 role          = "load-bearing architectural invariant — ONE island-owned residency model: two-state ʻōlelo thermal axis wela/anu + orthogonal pin-flag; bag residency DERIVED from referencing islands"
 status-why    = "rides the residency substrate; the tier read stands with it"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci", "lifecycle/standing"]
+tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
 title         = "lar:///ha.ka.ba/lararium/api/residency-tiers"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
@@ -152,6 +152,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9-MKPTSQAbibdMFiUtKg7QI38S7u0nYQk1EOrT1KncE
+<<^ code="&#x0003;">>ni:///sha-256;QabgdAncRSUbA4A9tECCBiXan2r-6efpc9cLTwqUIB4
 
 <<^ code="&#x0004;" -> to="?">>

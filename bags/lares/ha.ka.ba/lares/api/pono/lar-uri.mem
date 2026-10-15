@@ -13,7 +13,7 @@ manaoio    = 17
 namespace  = "&#x2299;"
 role       = "submission-grade specification for the lar: URI scheme — abstract, ABNF, five-planes reading (Provisional), resolution model, conformance, scheme registration, security; sibling submission to memetic-wikitext"
 status-why = "submission-draft"
-tags       = ["api/pono/meme", "api/pono/loci", "lifecycle/standing"]
+tags       = ["api/pono/meme", "lifecycle/standing"]
 title      = "lar:///ha.ka.ba/lares/api/pono/lar-uri"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lares/api/pono/lar-uri"
@@ -289,11 +289,29 @@ The schema carries five independent planes; conflating them trips residency, pro
 
 # ''NAME'' — the URI identifies, full stop. A bare `child[1]` segment names the ''minting namespace'' (the authority that named the unit), never a residency claim. The name survives COPY, MOVE, multi-bag presence, deletion, and federation unchanged (coordinate ⊥ change-identity).
 # ''RESIDENCY'' — which surfaces hold a manifestation NOW = a queried relation (`listBagsHolding`, catalog holdings, recipe stacks), never derived from the path. The same URI lawfully exists in a draft layer AND a canon bag AND a personal layer at once, shadowed by layer order. Name and holding surface coincide only by convention.
-# ''SITING'' — where a projection of a manifestation lands on disk: a per-bag mirror convention (`loci` derivation = the canon-bag rule, one projection rule among possible many), gated by the disk-mirror GRANT, never implied by the name.
+# ''SITING'' — where a projection of a manifestation lands on disk: a per-bag mirror convention, gated by the disk-mirror GRANT, never implied by the name.
 # ''SPEECH'' — the ''userinfo'' subcomponent (`lar://alias:grant@host/...`): who speaks, under what grant — a speech-act envelope for exchange spans, never a storage title (#/security). The plane rides the userinfo alone, never the host: a bare `lar://host/path` names an attribution and a sync scope and speaks for nobody, so it carries no SPEECH at all and MAY title storage like any other address.
 # ''STABILITY'' — literal `ha.ka.ba` (settled namespace) vs unstable attitude roots (session bearing, declared-unresolved until adopted into a bag).
 
 The planes compose: a turn of live exchange mints SPEECH + STABILITY-unstable names; adoption moves a unit to NAME-stable; LOAD/INGEST set RESIDENCY; the mirror grant sets SITING. No plane ever answers for another.
+
+<<~/ahu>>
+
+<<~ ahu #/disk-siting>>
+
+!! Disk Siting — a projection rule, not an address component
+
+For a local-form stable title under a bag mirror, the current projector places the full
+root and interior path beneath that bag: `lar:///ha.ka.ba/lares/api/pono/meme` in the
+`lares` bag projects to `bags/lares/ha.ka.ba/lares/api/pono/meme.mem`. A child projects
+beneath a sibling directory named for its parent's last segment. The holding bag names
+residency; the URI names the carrier. Neither fact substitutes for the other.
+
+The extension follows the carrier's file type, not a fixed `.md` suffix. A declared
+`file-path` must agree with the projection that actually stands. A missing projection
+remains unresolved; a near path must never stand in for the named carrier. Hostful
+titles still need the lossless siting repair in #/reach, so this local-form example
+does not license dropping their authority.
 
 <<~/ahu>>
 
@@ -327,7 +345,7 @@ A record MUST reach every surface its residency admits it to. A processor MUST N
 # ''Volatile residency.'' A layer declared volatile — a VM scratch plane, pending surface state, an uncommitted keystroke — never persists. The refusal MUST sit ahead of any routing cascade, so that no edit of the cascade can re-open it.
 # ''A named routing gap.'' A router that cannot place a record MUST say so. A router MUST NOT decide WHETHER a record lands; it decides WHICH surface holds it.
 
-''Therefore a permitted title reaches everything a hostless one reaches.'' Every authority form but the session form MAY stand as a storage title, and a title so standing syncs, projects to disk, mints its edges, and sites at its loci on exactly the terms a `lar:///` title does. The authority changes which address the record carries; it changes nothing about the record's reach.
+''Therefore a permitted title reaches everything a hostless one reaches.'' Every authority form but the session form MAY stand as a storage title, and a title so standing syncs, projects to disk, mints its edges, and receives a site on exactly the terms a `lar:///` title does. The authority changes which address the record carries; it changes nothing about the record's reach.
 
 ''Form-based withholding reads as a defect.'' A processor that admits a record into the store under one rule and then drops it at projection under a narrower one holds a ''silent'' inconsistency: the record syncs to every peer and lands in no file, and no instrument reports the difference. Wherever that shape stands, it names repair pressure, never a property of the world — and a processor that cannot yet site an address MUST surface the gap rather than return empty.
 
@@ -349,7 +367,7 @@ A hostful address carries an authority that a local-form address does not, and t
 # ''Lossless.'' The authority MUST survive the derivation. An address and its hostless twin name two different things (#/equality), so a derivation that discards the authority collapses two lawful addresses onto one file — a first-writer-wins collision between a canon carrier and a foreign one.
 # ''Unambiguous against the local form.'' The derived interior path MUST NOT collide with any interior path a local-form address can produce. Stripping a fixed prefix fails this: `lar://a.b.c/x.y.z/s` and `lar:///a.b.c/x.y.z/s` both strip to `a.b.c/x.y.z/s`, because a three-label host spells the same shape as a root.
 
-The loci law's present derivation admits an authority and then drops it, meeting the first constraint not at all. A candidate family that meets both (non-normative): carry the authority under a ''reserved'' segment that no root can equal — a root MUST hold exactly two dots and lowercase stems alone, so any reserved word carrying no dot separates the two interiors by construction. The spelling stays open; the constraints do not.
+The current mirror derivation admits an authority and then drops it, meeting the first constraint not at all. A candidate family that meets both (non-normative): carry the authority under a ''reserved'' segment that no root can equal — a root MUST hold exactly two dots and lowercase stems alone, so any reserved word carrying no dot separates the two interiors by construction. The spelling stays open; the constraints do not.
 
 <<~/ahu>>
 
@@ -528,6 +546,6 @@ lar:///ha.ka.ba/bags/catalog/corpus/elyncia   → (text) AutomergeUrl of lar:///
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;NjN5Gqrxqpwm3h_ASbp0aIDdf3Aifix2019A58sbcuk
+<<^ code="&#x0003;">>ni:///sha-256;VGavUZ5UfTHYiWjy0U8UySFGNi7mYWFLLb4vIkXZpmw
 
 <<^ code="&#x0004;" -> to="?">>

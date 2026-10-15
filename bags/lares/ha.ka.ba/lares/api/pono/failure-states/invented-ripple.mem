@@ -11,7 +11,7 @@ manao     = 15
 manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — a cost asserted to justify a deferral, never measured"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/invented-ripple"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/invented-ripple"
@@ -67,6 +67,6 @@ If the node took the change and the footprint was genuinely large, that reads as
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LzgSSqsFHdJbUqCT-ijxbv22zsZPJ8qo4lAS1u_t07k
+<<^ code="&#x0003;">>ni:///sha-256;KILZfp_yimwrDuYMmvqJjsal2xsKYaLUjq1BshAKc10
 
 <<^ code="&#x0004;" -> to="?">>

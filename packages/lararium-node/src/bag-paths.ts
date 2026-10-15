@@ -102,7 +102,7 @@ function splitHash(s: string): [string, string | null] {
  *
  * Carrier-whole at rest (disk-projection#granularity): a fragment record
  * (`…#slot`) never owns a disk file — its carrier root does; a fragment URI (and
- * an unstable root) resolves to null (loci law).
+ * an unstable root) resolves to null (address siting rule).
  */
 export function carrierBaseRelPath(uri: string): string | null {
   if (!uri.startsWith("lar:///")) return null;
@@ -141,7 +141,7 @@ export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
 // ── Loci reverse-derivation (the ingest gesture's scan leg) ─────────────────
 
 /**
- * One mirror plane's reverse-derivation — the loci law run backward under the
+ * One mirror plane's reverse-derivation — the address siting rule run backward under the
  * full-path-inside-bag ruling, shared by every disk mirror:
  *   `<root>/<rootDirName>/<holding-dir>/<full-uri-path>.mem` ⇄ `lar:///<full-uri-path>`
  * The first segment under the plane dir names the HOLDING SLOT (a residency
@@ -157,7 +157,7 @@ export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
  * Any registered TW5 filetype extension strips the same way `.mem` does: the
  * name is the interior MINUS its trailing filetype extension, so a `.tid`,
  * `.json`, `.md`, or content-type carrier derives its lar: URI exactly as a
- * `.mem` carrier does (filetype-agnostic mirror, one loci law).
+ * `.mem` carrier does (filetype-agnostic mirror, one address siting rule).
  */
 export function mirrorDirFileToUri(mirrorDir: string, filePath: string): string | null {
   const mirrorRoot = resolvePath(mirrorDir);

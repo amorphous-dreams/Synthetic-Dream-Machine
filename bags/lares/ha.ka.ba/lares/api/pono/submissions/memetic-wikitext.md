@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
-source-check: "ni:///sha-256;iv7WaSfL6OjUxMd7GfC6FXbIlLjnUx8pIUw8FhQKdiM"
+source-check: "ni:///sha-256;xKXlIo3DZv054qRp4zf2UFgOkXewXLl_Zs0x1iYQHUY"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -574,7 +574,7 @@ carrier states first ([FRAMING] #declaration-register):
 
 <<~ ahu #/head>>
 Body text, with a live embed: <<~ kahea "lar:///ha.ka.ba/lares/api/pono/meme">>.
-<<~ pranala #governs from="?" -> to="lar:///ha.ka.ba/lares/api/pono/loci" family="control" role="has">>
+<<~ pranala #governs from="?" -> to="lar:///ha.ka.ba/lares/api/pono/lar-uri" family="control" role="has">>
 
 <<~/ahu>>
 

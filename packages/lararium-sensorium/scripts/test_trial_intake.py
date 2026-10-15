@@ -51,6 +51,7 @@ def test_atomic_custody_and_same_intent_retry(tmp_path):
         "sources": 1, "revisions": 1, "observations": 1,
         "source_manifests": 1, "receipts": 1, "projection_pending": 1,
         "source_frontiers": {"claude:test-host:session": 1}, "content_frontiers": {},
+        "semantic_frontiers": {},
     }
 
 

@@ -13,7 +13,7 @@ manao     = 16
 manaoio   = 14
 namespace = "&#x0950; &#x0901;"
 role      = "sacred chao boot, ha/ka/ba triad instantiator, address-space semantics"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/mu/chao"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/chao"
@@ -156,6 +156,6 @@ A lar URI with all three slots aligned reads the address back at the Chao's rota
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;g7SYSsrQMvXLaJkij-zjIHPmjI5CyJGtK6qdW5WJN6A
+<<^ code="&#x0003;">>ni:///sha-256;pKViishT1guZb2QFHMwFvGHGzVfRnsfELoiehBczXfw
 
 <<^ code="&#x0004;" -> to="?">>

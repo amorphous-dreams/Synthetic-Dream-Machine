@@ -11,7 +11,7 @@ manao     = 16
 manaoio   = 14
 namespace = "&#x2299;"
 role      = "index and law for named failure modes; parent of the failure-states/ subtree"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/failure-states"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states"
@@ -76,6 +76,6 @@ Naming a failure mode carries no condemnation. The name itself opens the ceremon
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;i-TiNl9r7JwC-vMigAzHKRKeRFk5z7sFghqyV7YkFWA
+<<^ code="&#x0003;">>ni:///sha-256;uhqSCv__Xv0tM0gIOOpR3Zr46qMUcHpD3_YMZuSjzaA
 
 <<^ code="&#x0004;" -> to="?">>

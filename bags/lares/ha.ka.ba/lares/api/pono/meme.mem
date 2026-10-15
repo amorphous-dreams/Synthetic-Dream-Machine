@@ -145,13 +145,18 @@ Use outward callouts only when they carry real pressure, real backlog, or real a
 
 This root governs meme shape.
 `memetic-wikitext` governs the authoring surface.
-`loci` governs stable-address coherence — the one mandatory component, held by title.
+`lar-uri` governs address syntax and local resolution; the title carries identity without adding a has-stack component.
 `has-stack` governs composition — what a carrier wears and how short names qualify.
 `invariant` governs compressed constitutional pressure.
 Procedure, skeleton blocks, conformance checklists, and research backlog move outward.
 
+Keep metadata fields only where they change identity, parsing, routing, execution, or truth.
+Derive repeated facts where possible; do not mint a new field to hide an unresolved
+claim. A rating derives from a carrier's structure, while promotion to canon follows
+its own ceremony.
+
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 
@@ -163,7 +168,7 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
 <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
@@ -172,6 +177,6 @@ Procedure, skeleton blocks, conformance checklists, and research backlog move ou
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L9fu6UTHRicOFXdD1_XL1uqzksYcmCZLDcV93szqpv8
+<<^ code="&#x0003;">>ni:///sha-256;QA98AXF-tihgHS1JsBLZZjrv7dM0_PyZweESkdz4MKQ
 
 <<^ code="&#x0004;" -> to="?">>

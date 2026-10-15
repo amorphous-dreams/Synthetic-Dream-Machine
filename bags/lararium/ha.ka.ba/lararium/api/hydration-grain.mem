@@ -15,7 +15,7 @@ manaoio    = 11
 namespace  = "&#x0950; &#x0901;"
 role       = "the ONE pattern integrity — carry the name, defer the body — read across three grains (tiddler · body · bag); names the RUNG the bag grain lacks and gates it behind research"
 status-why = "the grain ruled; no source carries it yet"
-tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci", "lifecycle/designed"]
+tags       = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/designed"]
 title      = "lar:///ha.ka.ba/lararium/api/hydration-grain"
 type       = "text/memetic-wikitext+tiddlywiki"
 uri-path   = "ha.ka.ba/lararium/api/hydration-grain"
@@ -117,6 +117,6 @@ Any snapshot design MUST satisfy these; none of them awaits research.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PFOw6RZnkCTJuKYnqDwhAafyRXF6VA2RIUH6OLpHy34
+<<^ code="&#x0003;">>ni:///sha-256;7VTLOhbDdPEIXuQo9WwD5OTqC2Re01ytakmAxQoiZZs
 
 <<^ code="&#x0004;" -> to="?">>

@@ -11,7 +11,7 @@ manao     = 17
 manaoio   = 15
 namespace = "&#x2299;"
 role      = "canon residency-MOVE ceremony; harmony restoration law for the live-session → canon-bag crossing"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/hooponopono"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/hooponopono"
@@ -67,7 +67,7 @@ The ceremony MUST NOT be skipped when a kapu carrier or invariant meme is the ta
 live exchange record
   → session crystal / mempalace
   → proposed docs meme (reviewed)
-  → loci meme with explicit authority
+  → addressed meme with explicit authority
   → invariant meme (admin-tier ceremony)
 ```
 
@@ -109,11 +109,11 @@ Boundary event fields:
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
 <<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;xRYomunynQkUb2phlJ4Yb_QvyeCWqdYu-i31RL2sqa8
+<<^ code="&#x0003;">>ni:///sha-256;qdskfoxhIpAGbHHJjFFcVO5q8k15vFUsS7R6RuaR1A4
 
 <<^ code="&#x0004;" -> to="?">>

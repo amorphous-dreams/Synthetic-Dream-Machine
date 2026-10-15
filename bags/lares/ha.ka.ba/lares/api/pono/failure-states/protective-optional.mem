@@ -11,7 +11,7 @@ manao     = 15
 manaoio   = 13
 namespace = "&#x2299;"
 role      = "craft failure law — an optional parameter protecting the author's own tests in a codebase with no consumers"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/protective-optional"
@@ -67,6 +67,6 @@ If the parameter is optional and a real outside consumer needs the default, that
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;l2Az7myQOXU9wUZtzhKgi2ab95ESQZpG3pVK05431a8
+<<^ code="&#x0003;">>ni:///sha-256;afGeSFo_zi2CaF2dWdvu_hkhBb-wyg2oq5cm3fOfRhY
 
 <<^ code="&#x0004;" -> to="?">>

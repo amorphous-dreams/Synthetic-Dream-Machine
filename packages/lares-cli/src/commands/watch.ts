@@ -53,7 +53,7 @@ const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well u
 /**
  * Editor litter, our own observation state, and the `.meta` field-sidecar never
  * count as carrier events. The watcher fires on EVERY filetype the mirror holds
- * (the ruling: bags/wikis hold all TW5 filetypes); the scan's loci derivation
+ * (the ruling: bags/wikis hold all TW5 filetypes); the scan's address derivation
  * (`fileToUri`) skips anything that carries no stable name — no extension gate
  * here decides the filetype. A `.meta` rides with its content file, so its own
  * write never opens a fresh wave.

@@ -11,7 +11,7 @@ mana      = 16
 manao     = 16
 manaoio   = 16
 role      = "specification for the mask layer: character overlays, corpus references, stacking law, worker coloring, and reference examples"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/voices/masks"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/masks"
@@ -393,6 +393,6 @@ The mask layer spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST impleme
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;vnCkLofgNu-GmKsa7OheTg2GjaOS809xZFBE1SZZWEU
+<<^ code="&#x0003;">>ni:///sha-256;t-4TwkqMwyg_lHmjpHQZRd21dWkDXnEfiYKrq2Ux9cc
 
 <<^ code="&#x0004;" -> to="?">>

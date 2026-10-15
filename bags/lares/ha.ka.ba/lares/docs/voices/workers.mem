@@ -11,7 +11,7 @@ mana      = 18
 manao     = 17
 manaoio   = 17
 role      = "specification for the worker swarm: tasked spirits as temporary masks, lifecycle, tag format, handback dissolving to the full house"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/voices/workers"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/voices/workers"
@@ -146,6 +146,6 @@ The worker swarm spec defines what `lar:///ha.ka.ba/lares/api/voices` MUST imple
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;S8N1iv8xHEUqzzH4mEjwmQCNNwcpGyEkOoBEEjXCqXI
+<<^ code="&#x0003;">>ni:///sha-256;DZv3Nrtovd06j8HBwOlIq4ifMce0Q15F9Gqq3lo6JO8
 
 <<^ code="&#x0004;" -> to="?">>

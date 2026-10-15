@@ -5,7 +5,7 @@
  *
  * The gesture holds the disk grant and the Synced tree (the island holds
  * neither — readiness reads local on both sides of the shore):
- *   scan      walk source for `.mem` carriers; derive each uri by the loci law
+ *   scan      walk source for `.mem` carriers; derive each uri by the address siting rule
  *   diff      disk-hash vs synced-hash per carrier (the cheap two legs)
  *   preview   (default) print NEW / UNCHANGED / CHANGED; submit nothing
  *   --apply   send NEW+CHANGED carriers with their hashes riding an INGEST
@@ -55,7 +55,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   const { rows, skipped } = scan;
   // A scan that skipped every carrier is no success: say which mirror directories it derived against.
   if (rows.length === 0 && skipped.length > 0) {
-    const message = `scanned 0 carriers; ${skipped.length} skipped (no loci derivation). Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]}`;
+    const message = `scanned 0 carriers; ${skipped.length} skipped (no address derivation). Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]}`;
     emit(args, {
       ok: false,
       error: { code: "usage", message, hint: "the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as <holding>/<w.w.w>/…/<name>.<ext>" },
@@ -105,7 +105,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       },
       human: () => {
         for (const r of rows) console.log(`  ${r.status.toUpperCase().padEnd(10)} ${r.uri}`);
-        for (const f of skipped) console.log(`  SKIPPED    ${f} (no loci derivation — outside bags//wikis/, non-.md, or rootless interior)`);
+        for (const f of skipped) console.log(`  SKIPPED    ${f} (no address derivation — outside bags//wikis/, non-.md, or rootless interior)`);
         console.log(`\n  ${rows.length} scanned · ${candidates.length} would submit · preview only (pass --apply)`);
         if (wouldFault.length > 0) console.log(`  ${wouldFault.length} large un-flagged file(s) would fault during ingest — run \`--tag-blobs\` to flag them.`);
       },

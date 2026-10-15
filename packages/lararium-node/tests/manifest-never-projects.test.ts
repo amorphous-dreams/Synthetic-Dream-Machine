@@ -3,7 +3,7 @@
  *
  * The bag manifest (`bags/<bag>/meta.mem`) addresses `lar:///ha.ka.ba/bags/<bag>` — the bag's own name.
  * Ingest carries it into the store like any carrier, `[lar-kind[]]` reads it as `content` (no `$:/`, no
- * draft field), and the loci law then sited it at `<uri-path>.mem` INSIDE the bag it describes:
+ * draft field), and the address siting rule then sited it at `<uri-path>.mem` INSIDE the bag it describes:
  * `bags/crossroads/ha.ka.ba/bags/crossroads.mem` — a second copy of the manifest, at an address the
  * manifest itself mints, written by a projector that never owned it. `bag-declare` owns `meta.mem`.
  *

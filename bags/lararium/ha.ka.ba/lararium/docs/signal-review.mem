@@ -11,7 +11,7 @@ mana      = 16
 manao     = 17
 manaoio   = 17
 role      = "review memo for lararium signal branch boundaries, settlement pressure, and rewrite sequencing"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal-review"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal-review"
@@ -253,6 +253,6 @@ That order should reduce churn and keep the branch from freezing unresolved FFZ 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;_Jyi7jI6jOtQLeJpaj828YgMCoO9_7uEMms7LpEVK-c
+<<^ code="&#x0003;">>ni:///sha-256;qQwmwwOlfWcY2ajiLLms51Z9nTlLKtNE3LkzOS7pCP8
 
 <<^ code="&#x0004;" -> to="?">>

@@ -19,7 +19,7 @@ manao              = 16
 manaoio            = 14
 role               = "guest-grammar operational skill — admission audit, hana shaping, and companion-meme split discipline"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/pono/guest-grammar"
-tags               = ["api/pono/meme", "api/pono/loci"]
+tags               = ["api/pono/meme"]
 title              = "lar:///ha.ka.ba/lares/api/pono/guest-grammar/SKILL"
 type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/pono/guest-grammar/SKILL"
@@ -235,6 +235,6 @@ Aftermath — close by naming:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;OoNKuJ1wWIYJQ4F1qCxBdVY7F09foDEJa00I6-ugxnE
+<<^ code="&#x0003;">>ni:///sha-256;9nlKb61i3EWY8wcdrbKjseHaaY3XzbDC-fDyS_qaGyE
 
 <<^ code="&#x0004;" -> to="?">>

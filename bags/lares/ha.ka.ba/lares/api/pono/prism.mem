@@ -11,7 +11,7 @@ manao     = 16
 manaoio   = 15
 namespace = "&#x2299;"
 role      = "the lens-harness --- references existing content and refracts it through declared lenses into composed readings"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/prism"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/prism"
@@ -115,6 +115,6 @@ Prism keeps the worthwhile half --- //reference a piece of content and read its 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;96-26R4_zG0OAx_h62Arn61mQqLNRhbXlp_V-wIbMH0
+<<^ code="&#x0003;">>ni:///sha-256;QfsqJsDiMx_11U-YQ7EoGvJJtCHmWOMKWgltcWfxQf0
 
 <<^ code="&#x0004;" -> to="?">>

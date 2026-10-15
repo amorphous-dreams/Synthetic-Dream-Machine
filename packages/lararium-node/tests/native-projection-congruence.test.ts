@@ -80,7 +80,7 @@ function rig(recordsFields: Record<string, unknown>, syncedHash: string | null):
 
 describe("the projecting leg's native congruence, wired into LarDiskProjector.flush", () => {
   // A FOREIGN title (no `lar:` uri-path) so the flattened default sites the file at the path this
-  // rig computes directly — the loci law governs a `lar:///…` name instead, which is exercised by
+  // rig computes directly — the address siting rule governs a `lar:///…` name instead, which is exercised by
   // `native-canonical.test.ts` and `foreign-title-projection.test.ts` already.
   const URI = "My JSON Doc";
 

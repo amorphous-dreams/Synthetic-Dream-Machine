@@ -13,7 +13,7 @@ manao     = 17
 manaoio   = 16
 namespace = "&#x0950; &#x0901;"
 role      = "load-bearing invariant for the three-layer lararium voice-house: Voice house (the Thirteen), worker swarm, and mask layer"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/voices"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/voices"
@@ -393,6 +393,6 @@ payload = { priority = "support", retain = false }
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;j8AdE8jCB4TUYpXMfeJTmMPVnzTbw5K7JTYJBCtQ7tE
+<<^ code="&#x0003;">>ni:///sha-256;xHUcaPpNZGLqUu_HjoKfsPWTdxwR_Ckdf05cesxDtwQ
 
 <<^ code="&#x0004;" -> to="?">>

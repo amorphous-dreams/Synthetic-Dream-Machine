@@ -35,7 +35,7 @@ describe("has-stack — relative-name qualification", () => {
   });
 
   test("a lar:/// tag passes through already qualified, any scope", () => {
-    const uri = "lar:///ha.ka.ba/lares/api/pono/loci";
+    const uri = "lar:///ha.ka.ba/lares/api/pono/lar-uri";
     expect(qualifyStackTag(uri, "ha.ka.ba/bags/sdm")).toBe(uri);
     expect(qualifyStackTag(uri, null)).toBe(uri);
   });
@@ -51,12 +51,12 @@ describe("has-stack — relative-name qualification", () => {
 
   test("stackOf maps a tags field to qualified entries, non-stack tags carried with null uri", () => {
     const entries = stackOf(
-      ["components/hook/attack", "lar:///ha.ka.ba/lares/api/pono/loci", "$:/tags/Alert"],
+      ["components/hook/attack", "lar:///ha.ka.ba/lares/api/pono/lar-uri", "$:/tags/Alert"],
       CARRIER,
     );
     expect(entries).toEqual([
       { tag: "components/hook/attack", uri: "lar:///ha.ka.ba/sdm/components/hook/attack" },
-      { tag: "lar:///ha.ka.ba/lares/api/pono/loci", uri: "lar:///ha.ka.ba/lares/api/pono/loci" },
+      { tag: "lar:///ha.ka.ba/lares/api/pono/lar-uri", uri: "lar:///ha.ka.ba/lares/api/pono/lar-uri" },
       { tag: "$:/tags/Alert", uri: null },
     ]);
   });

@@ -14,7 +14,7 @@ manaoio       = 16
 role          = "lararium-node host: path roots + corpus-source structural contract"
 source-symbol = "*"
 status-date   = "2026-04-30"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags          = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title         = "lar:///ha.ka.ba/lararium/docs/node-host"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/docs/node-host"
@@ -128,6 +128,6 @@ export interface CorpusSource {
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;CgaKy1jf5GfeNyjuWZyuBt-zxgILPYaQ7Ri0pcI5A34
+<<^ code="&#x0003;">>ni:///sha-256;MPevK6S__86iJArpfImavZ7BoWZf3kLm0yZUHC3F2IE
 
 <<^ code="&#x0004;" -> to="?">>

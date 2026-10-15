@@ -11,7 +11,7 @@ mana      = 17
 manao     = 17
 manaoio   = 18
 role      = "docs room for definitional lar l-space semantics and address-slot framing"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal/l-space"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/l-space"
@@ -71,6 +71,6 @@ Working definition:
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3oMGVaro1VTCpVckosaeKWi8jY1SI6FxOq8YGGTtsQ0
+<<^ code="&#x0003;">>ni:///sha-256;1EpmoyR1QLnOhfL2lEdsXBoXxMSbVhbE6FSrxqFLmOg
 
 <<^ code="&#x0004;" -> to="?">>

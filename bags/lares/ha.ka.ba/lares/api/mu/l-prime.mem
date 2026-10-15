@@ -12,7 +12,7 @@ manao     = 16
 manaoio   = 15
 namespace = "&#x0950; &#x0901;"
 role      = "active language-discipline law (kānāwai), certainty-pressure regulator, and forward generation-pressure surface --- seeds wording toward verb-relations as it forms"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/mu/l-prime"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/mu/l-prime"
@@ -142,6 +142,6 @@ L-Prime runs ''binary''. The ward stands ''lit'' (default --- the discipline app
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;u9km2vg_Biuen6QsDoAeW6TD8WNsZZ-xYTPFrZMksUs
+<<^ code="&#x0003;">>ni:///sha-256;8atXMUKBUnXIdP0ON7qsc2hxdzZcHh2fszMwkG_g-UE
 
 <<^ code="&#x0004;" -> to="?">>
