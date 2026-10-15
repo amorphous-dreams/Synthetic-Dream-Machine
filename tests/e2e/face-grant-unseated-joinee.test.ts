@@ -7,13 +7,13 @@
  * takes the seat by its own act. THAT joinee dials the founder by hand (`LAR_JOIN_SYNC` · `LAR_JOIN_GATE` ·
  * `LAR_JOIN_DOC`), so the plane it reads crosses a socket the operator opened at boot.
  *
- * THIS joinee holds the same admit edge — the PIN names the hearth's dial (`device-admit --sync-url`, pinned in
- * the bootstrap at founding) — and boots with NO `LAR_JOIN_*`. The question the drift-ward asks: does the
+ * THIS joinee holds the same admit edge — the PIN names the hearth's dial (the fleet-join answer signs it, and
+ * the landing pins it in the bootstrap) — and boots with NO `LAR_JOIN_*`. The question the drift-ward asks: does the
  * record reach it at all? The CONTROL is the founder's side — the record lands on A's plane regardless
  * (`recordTitle`).
  *
- * THE PIN NAMES THE DIAL. `device-admit --sync-url` packs the hearth's `ws://` relay AND the hearth's gate key
- * into the payload; `vessel found --admit` pins both in the joinee's bootstrap (`hearth-dial-pin.ts`), and the
+ * THE PIN NAMES THE DIAL. The root's fleet-join answer carries the hearth's `ws://` relay AND the hearth's gate
+ * key inside its signature; `fleet join land` pins both in the joinee's bootstrap (`hearth-dial-pin.ts`), and the
  * boot dials them where no `LAR_JOIN_*` rides the env (an explicit env still wins; no pin and no env dials
  * nobody). `HEARTH_DAEMON_URL_TIDDLER` keeps the hearth's daemon DOC url — an `automerge:` address that dials
  * nothing — so the dial needed a pin of its own.

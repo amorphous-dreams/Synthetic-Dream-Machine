@@ -8,9 +8,9 @@
  *
  * THE RITE, every step through the built CLI:
  *   ① A founds (a place, a face)                          `vessel found` on a marked scratch root · `persona new 0`
- *   ② B mints its OWN key first, under its OWN root       the vessel-identity mint (the genesis island stands repo-wide off A's founding)
- *   ③ A signs the edge over B's key, naming A's dial      `device-admit --joinee-key … --sync-url …`
- *   ④ B founds BY that payload                            `vessel found --admit`
+ *   ② B founds a place under its OWN root                 `vessel found` on B's own marked scratch root
+ *   ③ A offers its face's fleet; B requests over it       `fleet join offer` · `fleet join request`
+ *   ④ A answers, naming A's dial; B lands the answer      `fleet join answer --sync-url …` · `fleet join land`
  *   ⑤ A stands; the meme lands on A's wiki                `meme put --recipe lares`
  *   ⑥ B stands dialing A                                  LAR_JOIN_SYNC · LAR_JOIN_GATE · LAR_JOIN_DOC
  *   ⑦ A promotes into the bag both mount; B reads it      `act MOVE --to lar:///ha.ka.ba/bags/lares` · `meme get --bag lares`
@@ -19,7 +19,7 @@
  *
  * TWO SEATS THE PAIR RIDES, each measured 2026-09-11:
  *
- *   A JOINER STANDS BY ITS EDGE ALONE. `device-admit` copies no cap events (two-vessel-mesh asserts it as
+ *   A JOINER STANDS BY ITS EDGE ALONE. The join copies no cap events (two-vessel-mesh asserts it as
  *   design), so B's veil holds no seat in the PersonaGroup until a face-join lands; B's first wiki-binding
  *   mint reads `faceSeated` false and stays on B's own key (`resolve-binding.ts`), and B boots. B's key is
  *   minted under B's root (`harness/vessel-key.ts`) — the identity dir resolves from `LAR_ROOT`, never from
