@@ -197,6 +197,9 @@ export const CARRIAGE_CARRIER_DOMAIN = frozen("carriage-carrier");
  *  public key-set, and the board's causal heads at the roll, so an admit already in those heads carries
  *  across the roll. Its own name: an anchor must never verify as a carriage act, nor an act as an anchor. */
 export const CARRIAGE_ROLL_ANCHOR_DOMAIN = mint("carriage-roll-anchor");
+/** The hiding commitment an ADMIT's quorum signs over the hearth's gate pin and canon list. The members board
+ *  carries the commitment alone, so the floor travels unwidened; the opening rides only to the subject's hands. */
+export const CARRIAGE_ADMIT_OPENING_DOMAIN = mint("carriage-admit-opening");
 export const MEMBERSHIP_RELAY_DOMAIN = frozen("membership-relay");
 /** One hand's act over one RELATIONSHIP — a raise or a lower, by the edge's holder or by the seat quorum. */
 export const EDGE_KAPAE_DOMAIN = mint("edge-act");

@@ -14,9 +14,11 @@
  *                    that carry it to the head when its epoch has rolled;
  *   · `aid`        — the Nexus the admit belongs to (the charter's genesis epoch);
  *   · `gatePubKey` — the gate key of the hearth that wrote it: the key the joinee's dial commits its proof to.
- *                    It must equal the gate pin the quorum SIGNED inside the admit (`AdmitCarriage`), beside
- *                    the canon documents that hearth names; the take hands out neither value any other way
- *                    (`verifySignedAdmitBundle`, face-proof#/the-gate-exchange step 5).
+ *                    It must equal the gate pin the bundle's `opening` carries;
+ *   · `opening`    — the carriage (that gate pin and the canon documents the hearth names) under the salt whose
+ *                    commitment the quorum SIGNED inside the admit. The board carries the commitment alone; the
+ *                    opening rides to the subject's hands here, and the take hands out neither value any other
+ *                    way (`verifySignedAdmitBundle`, face-proof#/the-gate-exchange step 5).
  * Every byte already stands on the Nexus's board or on the wire at that hearth's challenge. No key travels.
  *
  * ── THE TAKE ──────────────────────────────────────────────────────────────────────────────────────
@@ -25,7 +27,8 @@
  *   · this vessel holds a charter for the AID, and `verifySignedAdmitBundle` reads the admit HELD against that
  *     charter's head roster and epoch lineage with an EMPTY deny board and antigen — the admit counts, its
  *     lineage chains, and it roots on the head epoch or on an ancestor its roll anchors carry to the head
- *     (offline: no board is consulted) — and the bundle's gate key equals the pin the admit's quorum signed;
+ *     (offline: it consults no board) — its opening hashes to the commitment the quorum signed, and the
+ *     bundle's gate key equals the opened pin;
  *   · the admit's nym is one of this vessel's OWN leaves for that AID.
  * It then writes the bundle atomically at `<sealHome>/nexus/carriage-admit/<aid>.json`, beside the kept
  * consent. The write touches no sealed carrier.
@@ -33,7 +36,8 @@
  * ── THE DIALED NEXUS (F2) ─────────────────────────────────────────────────────────────────────────
  * A dial presents an admit only for the Nexus POSITIVELY tied to the gate key it dials (`dialedNexusAid`).
  * Two records tie a gate key to an AID, and both are the operator's own out-of-band act:
- *   · a KEPT BUNDLE whose admit SIGNED the dialed gate key as its pin, and names it as `gatePubKey`;
+ *   · a KEPT BUNDLE whose opening names the dialed gate key as its pin, opens its admit's signed commitment,
+ *     and names it as `gatePubKey`;
  *   · the HEARTH PIN, when it names the dialed gate key and a `charter` island whose scope is the AID.
  * The AID must name a charter this vessel holds. No tie, or ties naming two Nexuses → no Nexus, and the dial
  * presents no admit. The primary charter is never assumed: a vessel whose primary is P that dials Q's hearth
@@ -49,7 +53,7 @@ import { mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
   isPresentedAdmit, makeMultiSigQuorumVerifier, NEXUS_AID_PATTERN, carriageEntryActCid, heldNexusRoot, readAdmitAtHeldRoot, admittedKeyOf,
-  verifySignedAdmitBundle,
+  verifySignedAdmitBundle, readAdmitOpening, admitCarriageCommit, type AdmitOpening,
   type CarriageEntry, type PresentedLineageAct, type NexusDoc,
 } from "@lararium/mesh";
 import { atomicWriteFileSync } from "./fs-atomic.js";
@@ -68,6 +72,8 @@ export interface AdmitBundle {
   readonly gatePubKey: string;
   readonly admit:      CarriageEntry;
   readonly lineage:    readonly PresentedLineageAct[];
+  /** The opening of the admit's carriage commitment; a bundle without one takes nowhere. */
+  readonly opening?:   AdmitOpening;
 }
 
 /** An AID addresses a file, so only a Nexus AID passes (`NEXUS_AID_PATTERN`): no separator, no dot-segment, no other name. */
@@ -80,7 +86,8 @@ export function isAdmitBundle(v: unknown): v is AdmitBundle {
   const x = v as Record<string, unknown>;
   return typeof x["aid"] === "string" && AID_RE.test(x["aid"]) && !x["aid"].includes("..") &&
     typeof x["gatePubKey"] === "string" && KEY_RE.test(x["gatePubKey"].toLowerCase()) &&
-    isPresentedAdmit({ admit: x["admit"], lineage: x["lineage"] });
+    isPresentedAdmit({ admit: x["admit"], lineage: x["lineage"] }) &&
+    (x["opening"] === undefined || readAdmitOpening(x["opening"]) !== null);
 }
 
 /** Where the bundle for one Nexus is kept: `<sealHome>/nexus/carriage-admit/<aid>.json`, beside the consent. */
@@ -113,7 +120,7 @@ export function readKeptAdmitBundles(sealHome: string): readonly AdmitBundle[] {
 }
 
 function normalized(b: AdmitBundle): AdmitBundle {
-  return { aid: b.aid, gatePubKey: b.gatePubKey.toLowerCase(), admit: b.admit, lineage: b.lineage };
+  return { aid: b.aid, gatePubKey: b.gatePubKey.toLowerCase(), admit: b.admit, lineage: b.lineage, ...(b.opening ? { opening: b.opening } : {}) };
 }
 
 /**
@@ -170,15 +177,18 @@ export async function takeAdmitBundle(opts: {
   const signed = await verifySignedAdmitBundle(bundle, root);
   if ("refusal" in signed) {
     if (signed.refusal === "admit-carries-no-pin") {
-      throw new AdmitBundleError("the admit's quorum signed no gate pin and no canon list — a bundle carries only an admit that names its hearth. Nothing was kept.");
+      throw new AdmitBundleError("the admit's quorum signed no gate pin and no canon list, or the bundle opens none — a bundle carries only an admit that names its hearth. This vessel kept nothing.");
     }
     if (signed.refusal === "pin-differs") {
-      throw new AdmitBundleError("the bundle's gate key differs from the pin the admit's quorum signed — the file names another hearth than its admit. Nothing was kept.");
+      throw new AdmitBundleError("the bundle's gate key differs from the pin its opening carries — the file names another hearth than its admit. This vessel kept nothing.");
+    }
+    if (signed.refusal === "opening-differs") {
+      throw new AdmitBundleError("the bundle's opening does not answer the commitment the admit's quorum signed — its pin, canon list or salt moved. This vessel kept nothing.");
     }
     throw new AdmitBundleError(
       `the admit does not hold at the charter this vessel holds (${signed.refusal}${signed.state ? `: ${signed.state}` : ""}) — it does not count ` +
-      "under the seated quorum, its signed pin or canon moved, its lineage does not chain, or it roots on an epoch no roll anchor it carries " +
-      "reaches the head from. Nothing was kept.",
+      "under the seated quorum, its carriage commitment moved, its lineage does not chain, or it roots on an epoch no roll anchor it carries " +
+      "reaches the head from. This vessel kept nothing.",
     );
   }
   const nym = bundle.admit.nym.toLowerCase();
@@ -221,7 +231,8 @@ export function dialedNexusAid(opts: {
   const tied = new Set<string>();
   for (const kept of readKeptAdmitBundles(opts.sealHome)) {
     // The tie reads the pin the admit signed; its quorum gets read again where the admit gets presented.
-    if (kept.gatePubKey === gate && kept.admit.carriage?.gatePin === gate) tied.add(kept.aid);
+    const opening = kept.opening;
+    if (kept.gatePubKey === gate && opening?.carriage.gatePin === gate && admitCarriageCommit(opening) === kept.admit.carriageCommit) tied.add(kept.aid);
   }
   const pin = readHearthDialPin(opts.bootstrapPath ?? larBootstrapPath());
   if (pin && pin.gatePubKey === gate && pin.islandKind === "charter" && pin.islandScope) tied.add(pin.islandScope);

@@ -25,7 +25,8 @@ import {
   hex, nexusAidOf, signCarriageQuorum, signCarriageContract, makeMultiSigQuorumVerifier,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, foundingRoster,
   signRollAnchor, writeRollAnchor, isRollAnchor, rollAnchorCid,
-  type NexusDoc, type CarriageEntry, type LarDoc,
+  admitCarriageCommit,
+  type NexusDoc, type CarriageEntry, type LarDoc, type AdmitOpening,
 } from "@lararium/mesh";
 import { takeAdmitBundle, readKeptAdmitBundle, admitBundlePathFor, dialedNexusAid, AdmitBundleError, type AdmitBundle } from "../src/admit-bundle.js";
 import { dialPresentation, makeNexusMembership, type CarriedNexusReading } from "../src/nexus-carriage.js";
@@ -59,7 +60,7 @@ async function act(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array,
   const epoch = doc.sealEpochCid!;
   const quorum = await Promise.all(kahuSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const consent = action === "admit" ? await signCarriageContract(nym, epoch, signerOf(leafSeed)) : undefined;
-  const carriage = action === "admit" ? { carriage: { gatePin: pin, canon: {} } } : {};
+  const carriage = action === "admit" ? { carriageCommit: admitCarriageCommit(openingFor(pin)) } : {};
   return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch, ...carriage }, quorum, consent);
 }
 
@@ -69,7 +70,11 @@ function boardOf(entries: CarriageEntry[]): LarDoc {
   return doc;
 }
 
-const bundleText = (b: AdmitBundle): string => JSON.stringify(b);
+/** A fixed test salt, so a bundle opens the commitment its pin's admit signed (`openingFor`). */
+const SALT = "5a".repeat(32);
+const openingFor = (gatePin: string): AdmitOpening => ({ carriage: { gatePin, canon: {} }, salt: SALT });
+/** A bundle as the producer writes it: the opening for the pin it names rides beside the admit. */
+const bundleText = (b: AdmitBundle): string => JSON.stringify({ opening: openingFor(b.gatePubKey), ...b });
 
 describe("the carried admit — take, keep, and present at the issuing hearth alone", () => {
   let root: string;
@@ -119,9 +124,9 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const w = await stand();
     // A bundle naming another hearth than the admit's signed pin.
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: GATE_Q }), leaves: w.leaves }))
-      .rejects.toThrow(/differs from the pin the admit's quorum signed/);
+      .rejects.toThrow(/does not answer the commitment/);
     // The admit's own carriage moved after the quorum signed: the act no longer counts.
-    const moved: CarriageEntry = { ...w.admitP, carriage: { gatePin: GATE_Q, canon: {} } };
+    const moved: CarriageEntry = { ...w.admitP, carriageCommit: admitCarriageCommit(openingFor(GATE_Q)) };
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, gatePubKey: GATE_Q, admit: moved }), leaves: w.leaves }))
       .rejects.toThrow(/does not hold/);
     // An admit whose quorum signed no carriage at all.
@@ -130,6 +135,11 @@ describe("the carried admit — take, keep, and present at the issuing hearth al
     const pinless = await signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: epoch }, quorum, await signCarriageContract(nym, epoch, signerOf(LEAF_P)));
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText({ ...w.bundleP, admit: pinless }), leaves: w.leaves }))
       .rejects.toThrow(/signed no gate pin/);
+    // A bundle whose opening names another hearth than its own gate key.
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: JSON.stringify({ ...w.bundleP, opening: openingFor(GATE_P), gatePubKey: GATE_Q }), leaves: w.leaves }))
+      .rejects.toThrow(/differs from the pin its opening carries/);
+    // A bundle that opens nothing.
+    await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: JSON.stringify(w.bundleP), leaves: w.leaves })).rejects.toThrow(/opens none/);
     expect(existsSync(admitBundlePathFor(w.sealHome, w.aidP))).toBe(false);
     // CONTROL: the signed bundle lands and names its signed canon.
     await expect(takeAdmitBundle({ sealHome: w.sealHome, raw: bundleText(w.bundleP), leaves: w.leaves })).resolves.toMatchObject({ gatePubKey: GATE_P, canon: {} });

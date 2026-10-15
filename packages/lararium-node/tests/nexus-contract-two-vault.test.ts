@@ -37,7 +37,7 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
     },
   };
 });
-import { mintColdKey, seatFingerprint, cidV1Sha256, foldCarriageDetails, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
+import { admitCarriageCommit, mintColdKey, seatFingerprint, cidV1Sha256, foldCarriageDetails, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
   holdsCarriage, foundingRoster, KAPAE_ANTIGEN_DOMAIN, antigenActCid, nexusActPartial, type CofoundOffer, type KapaeAntigenEntry } from "@lararium/mesh";
 import { charterHomeFor } from "../src/carried-set.js";
 import { NexusContractError, runNexusContractOpen, runNexusContractPartial } from "../src/commands/nexus-contract.js";
@@ -122,10 +122,12 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     const opened = await runNexusContractOpen({ action: "admit", nym: leaf.verifyingKey, sealHome: larSealHome(), repo: A.repo, aid });
     expect(opened.verdict).toBe("ready");
     expect(opened.signed).toEqual([aSeat]);
-    // The admit SIGNS the opening hearth's gate pin and canon list (face-proof#/the-gate-exchange, step 5).
+    // The admit's quorum signs a commitment to the opening hearth's gate pin and canon list (face-proof#/the-gate-exchange,
+    // step 5); the opening crosses with the partial, never onto a board.
     const aGate = (await loadVesselVerifyingKey()).toLowerCase();
-    const signedCarriage = opened.partial.act.family === "admit" ? opened.partial.act.entry.carriage : undefined;
-    expect(signedCarriage?.gatePin).toBe(aGate);
+    const opening = opened.partial.act.family === "admit" ? opened.partial.act.opening : undefined;
+    expect(opening?.carriage.gatePin).toBe(aGate);
+    expect(opened.partial.act.family === "admit" && opened.partial.act.entry.carriageCommit).toBe(admitCarriageCommit(opening!));
     expect(opened.landed).toBeNull();
     expect(await memberHere(A, aid, leaf.verifyingKey)).toBe(false);
 
@@ -152,7 +154,7 @@ describe("a two-founder Nexus contracts across its two vaults", () => {
     at(A);
     const taken = await takeAdmitBundle({ sealHome: larSealHome(), raw: JSON.stringify(cosigned.landed!.bundle) });
     expect(taken.gatePubKey).toBe(aGate);
-    expect(taken.canon).toEqual(signedCarriage?.canon);
+    expect(taken.canon).toEqual(opening?.carriage.canon);
   });
 
   test("V2 — nothing signs or lands where the judge refuses", async () => {

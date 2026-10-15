@@ -37,7 +37,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-operator-contract
  */
 
-import { CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
+import { CARRIAGE_ADMIT_OPENING_DOMAIN, CARRIAGE_CARRIER_DOMAIN, CARRIAGE_CONTRACT_DOMAIN, CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import type { QuorumSignature, KahuQuorumSeats } from "./kapae-antigen.js";
 import { foldAntigenVerdicts, type KapaeAntigenEntry, type QuorumVerifier } from "./kapae-antigen.js";
@@ -69,13 +69,20 @@ export { CARRIAGE_CARRIER_DOMAIN } from "./domains.js";
 export type CarriageAction = "admit" | "revoke" | "carry" | "uncarry";
 
 /**
- * WHAT AN ADMIT CARRIES TO THE JOINEE, SIGNED (face-proof#/the-gate-exchange, step 5): the gate pin of the hearth
- * the joinee dials, and the canon documents that hearth names to it, by canon title. The quorum signs both inside
- * the act image (`carriageEntryBytes`), so a joinee accepts either value only off an admit whose quorum verified
- * (`verifySignedAdmitBundle`), and a hand that moves either one moves the act it rides.
+ * WHAT AN ADMIT CARRIES TO THE JOINEE, BOUND BY ITS SIGNATURE (face-proof#/the-gate-exchange, step 5): the gate pin
+ * of the hearth the joinee dials, and the canon documents that hearth names to it, by canon title.
  *
- * A canon title names a carried canon document, never a derivable system plane (`hearth-canon.ts`). The map
- * stays small: a hearth names a handful of canon documents, never a catalog.
+ * THE FLOOR STAYS THE FLOOR. A membership entry carries the operator's pubkey, the accepts-carriage proof and the
+ * charter epoch, and nothing above it (membership-doctrine#/the-operator-contract, operator-ruled), and the members
+ * board travels. So the quorum signs a HIDING COMMITMENT to the carriage (`carriageCommit`, a digest over a fresh
+ * random salt beside the pin and the canon list) and the board carries that commitment alone: no hearth key and
+ * no document address rides the board, and no two admits share a value. The OPENING (the carriage and its salt)
+ * rides only where the subject's own hands carry it: the admit bundle, and the partial that crosses between the
+ * founders' vaults. A joinee accepts either value only off an opening whose commitment the held quorum signed
+ * (`verifySignedAdmitBundle`).
+ *
+ * A canon title names a carried canon document, never a derivable system plane (`hearth-canon.ts`). The map stays
+ * small: a hearth names a handful of canon documents, never a catalog.
  */
 export interface AdmitCarriage {
   /** The hearth's gate pin, 64 lower-case hex. */
@@ -84,18 +91,26 @@ export interface AdmitCarriage {
   readonly canon:   Readonly<Record<string, string>>;
 }
 
+/** The carriage and the salt its commitment hides it under. */
+export interface AdmitOpening {
+  readonly carriage: AdmitCarriage;
+  /** 32 random bytes, 64 lower-case hex. */
+  readonly salt:     string;
+}
+
 /** How many canon documents one admit may name. */
 export const ADMIT_CANON_BOUND = 16;
 const ADMIT_CANON_TEXT = /^[\x21-\x7e]{1,512}$/;
+const HEX64 = /^[0-9a-f]{64}$/;
+const plain = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+const exactly = (v: Record<string, unknown>, keys: readonly string[]): boolean =>
+  Object.keys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k));
 
 /** Read an admit's carriage at its exact shape, or null. It copies the two fields alone. */
 export function readAdmitCarriage(v: unknown): AdmitCarriage | null {
-  if (typeof v !== "object" || v === null || Array.isArray(v)) return null;
-  const keys = Object.keys(v);
-  if (keys.length !== 2 || !Object.hasOwn(v, "gatePin") || !Object.hasOwn(v, "canon")) return null;
-  const { gatePin, canon } = v as { gatePin: unknown; canon: unknown };
-  if (typeof gatePin !== "string" || !/^[0-9a-f]{64}$/.test(gatePin)) return null;
-  if (typeof canon !== "object" || canon === null || Array.isArray(canon)) return null;
+  if (!plain(v) || !exactly(v, ["gatePin", "canon"])) return null;
+  const { gatePin, canon } = v;
+  if (typeof gatePin !== "string" || !HEX64.test(gatePin) || !plain(canon)) return null;
   const entries = Object.entries(canon);
   if (entries.length > ADMIT_CANON_BOUND) return null;
   const read: Record<string, string> = {};
@@ -104,6 +119,28 @@ export function readAdmitCarriage(v: unknown): AdmitCarriage | null {
     read[title] = url;
   }
   return { gatePin, canon: read };
+}
+
+/** Read an opening at its exact shape, or null. */
+export function readAdmitOpening(v: unknown): AdmitOpening | null {
+  if (!plain(v) || !exactly(v, ["carriage", "salt"])) return null;
+  const carriage = readAdmitCarriage(v["carriage"]);
+  const salt = v["salt"];
+  return carriage !== null && typeof salt === "string" && HEX64.test(salt) ? { carriage, salt } : null;
+}
+
+/** The commitment an admit's quorum signs: one digest over the opening under its own domain. */
+export function admitCarriageCommit(opening: AdmitOpening): string {
+  return sha256HexBytesSync(canonicalJsonBytes({
+    domain: CARRIAGE_ADMIT_OPENING_DOMAIN, salt: opening.salt, gatePin: opening.carriage.gatePin, canon: opening.carriage.canon,
+  }));
+}
+
+/** Hide a carriage under a fresh random salt. */
+export function openAdmitCarriage(carriage: AdmitCarriage): AdmitOpening {
+  const salt = new Uint8Array(32);
+  globalThis.crypto.getRandomValues(salt);
+  return { carriage, salt: Array.from(salt, (b) => b.toString(16).padStart(2, "0")).join("") };
 }
 
 /**
@@ -138,9 +175,9 @@ export interface CarriageEntry {
    * Nexus could conscript an operator by re-presenting a place's seal, or the reverse.
    */
   readonly contractSig?:    QuorumSignature;
-  /** An ADMIT's carriage: the hearth's gate pin and canon list, signed inside the act image. An admit may carry
-   *  none, and then hands out none; any other act that carries one never counts. */
-  readonly carriage?:       AdmitCarriage;
+  /** An ADMIT's hiding commitment to its carriage (`admitCarriageCommit`), 64 lower-case hex, signed inside the act
+   *  image. An admit may carry none, and then hands out no carriage; any other act that carries one never counts. */
+  readonly carriageCommit?: string;
 }
 
 /**
@@ -159,7 +196,7 @@ export function carriageEntryBytes(
     parents: [...new Set(entry.parents)].sort(),
     sealEpochCid: entry.sealEpochCid,
     // Absent, the image stays byte-identical to an entry that never knew the field.
-    ...(entry.carriage !== undefined ? { carriage: entry.carriage } : {}),
+    ...(entry.carriageCommit !== undefined ? { carriageCommit: entry.carriageCommit } : {}),
   });
 }
 
@@ -335,7 +372,7 @@ function entryShapeIsReadable(entry: CarriageEntry): boolean {
 
 async function countReason(entry: CarriageEntry, roster: KahuQuorumSeats): Promise<{ counted: boolean; reason: string }> {
   if (!entryShapeIsReadable(entry)) return { counted: false, reason: "malformed-entry" };
-  if (entry.carriage !== undefined && (entry.action !== "admit" || readAdmitCarriage(entry.carriage) === null)) {
+  if (entry.carriageCommit !== undefined && (entry.action !== "admit" || typeof entry.carriageCommit !== "string" || !HEX64.test(entry.carriageCommit))) {
     return { counted: false, reason: "carriage-malformed" };
   }
   if (entry.sealEpochCid !== roster.sealEpochCid) return { counted: false, reason: "wrong-charter-epoch" };

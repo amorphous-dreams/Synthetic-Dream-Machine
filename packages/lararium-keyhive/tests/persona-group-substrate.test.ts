@@ -165,7 +165,7 @@ describe("the PersonaGroup as a Keyhive group", () => {
   test("G8 CANARY (a measurement of Keyhive 0.3.0-alpha.1): the founder's own departure throws, and its seat leaves", async () => {
     const { f, groupId, ids } = await found(0x80);
     await f.addGroupMember(ids.a, groupId);
-    // The measurement watches Keyhive's own revoke, under the shore that now reads the seat again after a throw.
+    // The measurement watches Keyhive's own revoke, under the shore that reads the seat again after a throw.
     const kh = (f as unknown as { requireKh(): { revokeMember: (...args: unknown[]) => Promise<unknown> } }).requireKh();
     const own = kh.revokeMember.bind(kh);
     const faults: unknown[] = [];
