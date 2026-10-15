@@ -41,6 +41,7 @@ import {
 } from "@lararium/mesh";
 import { CarriedCharterError, carriedReadings } from "./carried-set.js";
 import { acceptCofound, joinCofound, openCofound, sealCofoundAct } from "./cofound-ceremony.js";
+import { abandonRollCircleAct, cardOf, fileRollCircleAct, joinRollCircleAct, openRollCircleAct, signRollCircleAct } from "./roll-circle-ceremony.js";
 import { NexusContractError, runNexusAcceptCarriage } from "./commands/nexus-contract.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
 import { clearPersonaAdmitPending, listAdmittedPersonas } from "./node-persona-admit-store.js";
@@ -237,6 +238,11 @@ const foundingFile: Kind<Record<string, unknown>> = {
     return spelled.length <= TEXT_ARG_LIMIT ? (v as Record<string, unknown>) : undefined;
   },
 };
+/** The seat fingerprints a person typed as heard, one per other chair of a roll circle. */
+const heardSeats: Kind<string[]> = {
+  label: `a list of seat fingerprints as heard, each a non-empty string, ${SEAT_KEYS_ARG_LIMIT} at most`,
+  read: (v) => (Array.isArray(v) && v.length <= SEAT_KEYS_ARG_LIMIT && v.every((h) => typeof h === "string" && h.length > 0 && h.length <= LABEL_ARG_LIMIT) ? [...(v as string[])] : undefined),
+};
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
 
 type Shape = Readonly<Record<string, Kind<unknown>>>;
@@ -344,6 +350,15 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   cofound.seal          judge a join against the recorded offer and the joining seat's fingerprint as heard, record
  *                         the judged image, sign as the seat and the hearth, and file the joint charter under its AID
  *   cofound.accept        judge a sealed inception against the image this vessel joined, and file the joint charter
+ *   roll-circle.open      roll a joint charter across its vaults: name the head and the new rule, and contribute
+ *                         this vault's chair (the successor its card reveals, or a seat key minted fresh for an added
+ *                         chair, beside the digest of the fresh successor card the command read back); record it
+ *   roll-circle.join      contribute this vault's chair to a circle another vault opened, from the same head
+ *   roll-circle.sign      sign the circle's one image with every seat this vault contributed, once the person typed
+ *                         the rule and every other chair's fingerprint as heard, and the circle carries exactly the
+ *                         chairs and the rule this vault recorded
+ *   roll-circle.abandon   drop this vault's open circle for one Nexus, and retire the seats it contributed
+ *   roll-circle.file      file the rolled charter a complete circle mints, beside the seed, and retire the closed seats
  *   crossing.*            the growth rite's steps over the crossing that stands open: state, open, bind, sign,
  *                         witness, seal. A hand names itself; the row reads what it signs off its own sealed row
  *   carriage.accept       sign this operator's own consent to one Nexus's carriage, under the face's leaf for it
@@ -424,6 +439,25 @@ export const SEALED_ACTS = Object.freeze({
   "cofound.accept": act({ inception: foundingFile }, async (a) => ({
     ...(await foundingOrRefuse(acceptCofound({ inception: a.inception }))),
   })),
+  // THE ROLL CIRCLE (`roll-circle-ceremony`). Each vault speaks for its own chairs and signs one image; the cards a
+  // person typed back cross this door once and zero-fill here.
+  "roll-circle.open": act({ aid: text, face: index, cards: optional(coldCards), next: digest, threshold: count }, async (a) => {
+    try {
+      const card = cardOf(a.cards);
+      return { ...(await foundingOrRefuse(openRollCircleAct({ aid: a.aid, face: a.face, next: a.next, threshold: a.threshold, ...(card ? { card } : {}) }))) };
+    } finally { for (const c of a.cards ?? []) c.fill(0); }
+  }),
+  "roll-circle.join": act({ circle: foundingFile, face: index, cards: optional(coldCards), next: digest }, async (a) => {
+    try {
+      const card = cardOf(a.cards);
+      return { ...(await foundingOrRefuse(joinRollCircleAct({ circle: a.circle, face: a.face, next: a.next, ...(card ? { card } : {}) }))) };
+    } finally { for (const c of a.cards ?? []) c.fill(0); }
+  }),
+  "roll-circle.sign": act({ circle: foundingFile, heardThreshold: count, heard: heardSeats }, async (a) => ({
+    ...(await foundingOrRefuse(signRollCircleAct({ circle: a.circle, heardThreshold: a.heardThreshold, heard: a.heard }))),
+  })),
+  "roll-circle.abandon": act({ aid: text }, async (a) => ({ ...(await foundingOrRefuse(abandonRollCircleAct({ aid: a.aid }))) })),
+  "roll-circle.file": act({ circle: foundingFile }, async (a) => ({ ...(await foundingOrRefuse(fileRollCircleAct({ circle: a.circle }))) })),
   "crossing.state": act({}, async () => {
     const { pending, kept } = await readCrossing();
     return {

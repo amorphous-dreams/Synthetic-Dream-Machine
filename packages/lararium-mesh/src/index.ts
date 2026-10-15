@@ -294,6 +294,7 @@ export * from "./edge-fork.js";
 export * from "./edge-partial.js";
 // A Nexus quorum act that crosses between vaults before its threshold meets (kapae#/edge-hands); the two-vault contract door calls it.
 export * from "./nexus-partial.js";
+export * from "./roll-circle.js";
 // PRIVATE AUTHORITY FOR THE FACE PROOF, named here by its first caller: the device removal door, which signs a
 // certificate withdrawal beside each dyad raise (`device-removal`).
 export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_ROWS } from "./face-authority.js";

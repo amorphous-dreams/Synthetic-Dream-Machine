@@ -28,6 +28,14 @@
  * function for a live one. `offering-antigen.test.ts` fails the moment a production caller appears and
  * names the cure: re-word this section as live enforcement and delete that test.
  *
+ * ── ONE SCOPE, ITS OWN LINEAGE (the Offering Antigen scope ruling) ─────────────────────────────────
+ * A quorum act names its SCOPE, the Nexus AID its charter's signed inception mints, beside `sealEpochCid`, the
+ * epoch that authorized it; both enter the signed bytes. A receiver folds an act only after it reads that scope as
+ * its own charter's, finds that epoch inside the lineage it holds, and counts the quorum of THAT epoch's seats. An
+ * act under another scope stays foreign evidence outside the fold (the audit names it), so a neighbour's
+ * condemnation copied onto this board reads as testimony, never as this Nexus's verdict. An epoch the receiver's
+ * lineage lacks reads `unavailable`: the receiver cannot count a quorum it cannot see.
+ *
  * ── NO ROSTER OF TENDERS ────────────────────────────────────────────────────────────────────────
  * A presentation names the DARK STRETCH (the offering) and its own presenter, and accrues nowhere. The
  * Union keeps "no central register of who tends what", so this module builds none: there is no list to
@@ -38,6 +46,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN } from "./domains.js";
 import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
 import { verifyEd25519 } from "./ed25519-door.js";
+import { NEXUS_AID_PATTERN, epochSeats, verifySealLineage, type SealEpoch } from "./wax-stamp.js";
 
 // ── THE INNATE LAYER: a tender presents ─────────────────────────────────────────────────────────
 
@@ -91,6 +100,8 @@ export type OfferingKapaeAction = "kapae" | "un_kapae";
 /** A quorum act over ONE offering. Same shape the presenter-antigen carries, its own domain and subject. */
 export interface OfferingKapaeEntry {
   readonly kind:         typeof OFFERING_KAPAE_DOMAIN;
+  /** The Nexus whose quorum acts: the AID its charter's signed inception mints. */
+  readonly scope:        string;
   /** The offering's region cid — a COLLECTION, never an identity. */
   readonly pluginsCid:   string;
   readonly action:       OfferingKapaeAction;
@@ -98,14 +109,42 @@ export interface OfferingKapaeEntry {
   readonly actCid:       string;
   /** Canonical causal parents in this offering + charter relation family. */
   readonly parents:      readonly string[];
+  /** The epoch whose seats authorized the act, inside the scope's lineage. */
   readonly sealEpochCid: string;
   readonly signatures:   readonly QuorumSignature[];
+}
+
+/**
+ * What a receiver folds with: its own charter's scope, and the seats of each epoch of the lineage it holds. A
+ * receiver builds it from its charter (`offeringReaderOfLineage`); an epoch it cannot read answers null.
+ */
+export interface OfferingReader {
+  readonly scope:   string;
+  readonly seatsAt: (sealEpochCid: string) => KahuQuorumSeats | null;
+}
+
+/**
+ * The reader a VERIFIED charter lineage names: its genesis AID as the scope, and each epoch's own seats. A lineage
+ * that fails the roll law reads every epoch as unseen, so nothing folds against it.
+ */
+export function offeringReaderOfLineage(lineage: readonly SealEpoch[]): OfferingReader {
+  const scope = lineage[0]?.epochCid ?? "";
+  if (lineage.length === 0 || !verifySealLineage(lineage)) return { scope, seatsAt: () => null };
+  const byCid = new Map(lineage.map((e) => [e.epochCid, e] as const));
+  return {
+    scope,
+    seatsAt: (cid) => {
+      const epoch = byCid.get(cid);
+      const seats = epoch ? epochSeats(epoch) : null;
+      return seats ? { keys: [...seats.keys], threshold: seats.threshold, sealEpochCid: cid } : null;
+    },
+  };
 }
 
 export function offeringKapaeBytes(parts: Omit<OfferingKapaeEntry, "kind" | "signatures">): Uint8Array {
   const parents = [...new Set(parts.parents)].sort();
   return canonicalJsonBytes({
-    kind: OFFERING_KAPAE_DOMAIN, pluginsCid: parts.pluginsCid, action: parts.action,
+    kind: OFFERING_KAPAE_DOMAIN, scope: parts.scope, pluginsCid: parts.pluginsCid, action: parts.action,
     actCid: parts.actCid, parents, sealEpochCid: parts.sealEpochCid,
   });
 }
@@ -146,6 +185,8 @@ export type OfferingAntigenVerdict = "held" | "withdrawn" | "unsettled" | "unava
 export interface OfferingAntigenAudit {
   readonly verdict: OfferingAntigenVerdict | null;
   readonly rejectedActCids: readonly string[];
+  /** Acts signed under another Nexus's scope: kept as evidence, never folded. */
+  readonly foreignActCids?: readonly string[];
   readonly diagnostics?: readonly string[];
 }
 
@@ -166,6 +207,7 @@ export function normalizeOfferingKapaeEntry(raw: unknown): {
   const actCid = typeof p["actCid"] === "string" && p["actCid"].length > 0 ? p["actCid"] : undefined;
   const fail = (reason: string) => ({ entry: null, diagnostic: { ...(pluginsCid ? { pluginsCid } : {}), ...(actCid ? { actCid } : {}), reason } });
   if (p["kind"] !== OFFERING_KAPAE_DOMAIN) return fail("wrong offering-kapae domain");
+  if (typeof p["scope"] !== "string" || !NEXUS_AID_PATTERN.test(p["scope"])) return fail("invalid scope");
   if (!pluginsCid) return fail("missing pluginsCid");
   if (p["action"] !== "kapae" && p["action"] !== "un_kapae") return fail("invalid action");
   if (!actCid) return fail("missing actCid");
@@ -191,12 +233,16 @@ export function normalizeOfferingKapaeEntry(raw: unknown): {
  */
 export async function foldOfferingAntigenVerdicts(
   entries: readonly OfferingKapaeEntry[],
-  roster:  KahuQuorumSeats,
+  reader:  OfferingReader,
 ): Promise<ReadonlyMap<string, OfferingAntigenVerdict>> {
   const grouped = new Map<string, OfferingKapaeEntry[]>();
+  const unseen = new Set<string>();
   for (const e of entries) {
     const normalized = normalizeOfferingKapaeEntry(e).entry;
-    if (!normalized) continue;
+    // Another Nexus's act stays foreign evidence: it never enters this scope's fold.
+    if (!normalized || normalized.scope !== reader.scope) continue;
+    // An epoch this lineage lacks: the receiver cannot count that quorum, so the offering reads unavailable.
+    if (reader.seatsAt(normalized.sealEpochCid) === null) { unseen.add(normalized.pluginsCid); continue; }
     (grouped.get(normalized.pluginsCid) ?? (grouped.set(normalized.pluginsCid, []), grouped.get(normalized.pluginsCid)!)).push(normalized);
   }
   const validOwners = new Map<string, string>();
@@ -206,9 +252,9 @@ export async function foldOfferingAntigenVerdicts(
     for (const entry of group) {
       const canonical = isCanonicalParents(entry.parents);
       const identity = canonical && entry.actCid === offeringKapaeActCid({
-        pluginsCid: entry.pluginsCid, action: entry.action, parents: entry.parents, sealEpochCid: entry.sealEpochCid,
+        scope: entry.scope, pluginsCid: entry.pluginsCid, action: entry.action, parents: entry.parents, sealEpochCid: entry.sealEpochCid,
       });
-      if (identity && await verifyOfferingQuorum(entry, roster)) {
+      if (identity && await verifyOfferingQuorum(entry, reader.seatsAt(entry.sealEpochCid))) {
         verified.push(entry);
         validOwners.set(entry.actCid, pluginsCid);
       }
@@ -237,6 +283,7 @@ export async function foldOfferingAntigenVerdicts(
     else if (heads.some((e) => e.action === "un_kapae")) verdicts.set(pluginsCid, "withdrawn");
     else verdicts.set(pluginsCid, "unavailable");
   }
+  for (const pluginsCid of unseen) verdicts.set(pluginsCid, "unavailable");
   return verdicts;
 }
 
@@ -247,10 +294,11 @@ export async function foldOfferingAntigenVerdicts(
  * surface `rejectedActCids` to an operator.
  */
 export async function auditOfferingAntigen(
-  entries: readonly OfferingKapaeEntry[], roster: KahuQuorumSeats,
+  entries: readonly OfferingKapaeEntry[], reader: OfferingReader,
 ): Promise<ReadonlyMap<string, OfferingAntigenAudit>> {
-  const verdicts = await foldOfferingAntigenVerdicts(entries, roster);
+  const verdicts = await foldOfferingAntigenVerdicts(entries, reader);
   const grouped = new Map<string, string[]>();
+  const foreign = new Map<string, string[]>();
   const diagnostics = new Map<string, string[]>();
   const owners = new Map<string, string>();
   for (const entry of entries) {
@@ -266,10 +314,15 @@ export async function auditOfferingAntigen(
       continue;
     }
     const entryValue = normalized.entry;
+    if (entryValue.scope !== reader.scope) {
+      (foreign.get(entryValue.pluginsCid) ?? (foreign.set(entryValue.pluginsCid, []), foreign.get(entryValue.pluginsCid)!)).push(entryValue.actCid);
+      continue;
+    }
+    if (reader.seatsAt(entryValue.sealEpochCid) === null) continue;   // unseen: the verdict reads unavailable
     const identity = isCanonicalParents(entryValue.parents) && entryValue.actCid === offeringKapaeActCid({
-      pluginsCid: entryValue.pluginsCid, action: entryValue.action, parents: entryValue.parents, sealEpochCid: entryValue.sealEpochCid,
+      scope: entryValue.scope, pluginsCid: entryValue.pluginsCid, action: entryValue.action, parents: entryValue.parents, sealEpochCid: entryValue.sealEpochCid,
     });
-    if (!identity || !(await verifyOfferingQuorum(entryValue, roster))) {
+    if (!identity || !(await verifyOfferingQuorum(entryValue, reader.seatsAt(entryValue.sealEpochCid)))) {
       (grouped.get(entryValue.pluginsCid) ?? (grouped.set(entryValue.pluginsCid, []), grouped.get(entryValue.pluginsCid)!)).push(entryValue.actCid);
     } else owners.set(entryValue.actCid, entryValue.pluginsCid);
   }
@@ -292,14 +345,18 @@ export async function auditOfferingAntigen(
   for (const [pluginsCid, verdict] of verdicts) {
     if (!out.has(pluginsCid)) out.set(pluginsCid, { verdict, rejectedActCids: [] });
   }
+  for (const [pluginsCid, actCids] of foreign) {
+    const standing = out.get(pluginsCid);
+    out.set(pluginsCid, { ...(standing ?? { verdict: verdicts.get(pluginsCid) ?? null, rejectedActCids: [] }), foreignActCids: actCids });
+  }
   return out;
 }
 
 export async function foldOfferingAntigen(
-  entries: readonly OfferingKapaeEntry[], roster: KahuQuorumSeats,
+  entries: readonly OfferingKapaeEntry[], reader: OfferingReader,
 ): Promise<Set<string>> {
   const aside = new Set<string>();
-  for (const [pluginsCid, verdict] of await foldOfferingAntigenVerdicts(entries, roster)) {
+  for (const [pluginsCid, verdict] of await foldOfferingAntigenVerdicts(entries, reader)) {
     if (verdict === "held") aside.add(pluginsCid);
   }
   return aside;
@@ -315,13 +372,14 @@ export async function foldOfferingAntigen(
  * this subject: fail-closed on a short or unbound roster, a foreign epoch, a stranger's signature, or a
  * signer counted twice. Each of those has its own CONTROL in `offering-antigen.test.ts`.
  */
-async function verifyOfferingQuorum(entry: OfferingKapaeEntry, roster: KahuQuorumSeats): Promise<boolean> {
+async function verifyOfferingQuorum(entry: OfferingKapaeEntry, roster: KahuQuorumSeats | null): Promise<boolean> {
+  if (roster === null)                             return false;   // an epoch outside the lineage → deny
   if (roster.threshold < 1)                        return false;
   if (roster.keys.length < roster.threshold)       return false;   // unbound/short roster → deny
   if (entry.sealEpochCid !== roster.sealEpochCid)  return false;   // roots on an unknown epoch → deny
   if (!isCanonicalParents(entry.parents)) return false;
   if (entry.actCid !== offeringKapaeActCid({
-    pluginsCid: entry.pluginsCid, action: entry.action, parents: entry.parents, sealEpochCid: entry.sealEpochCid,
+    scope: entry.scope, pluginsCid: entry.pluginsCid, action: entry.action, parents: entry.parents, sealEpochCid: entry.sealEpochCid,
   })) return false;
 
   const rosterKeys = new Set(roster.keys);

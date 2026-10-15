@@ -29,10 +29,11 @@
  * the head roster that have not signed may add. A stale head, a missing parent, a replay or a wrong subject
  * writes no second signature.
  *
- * CALLERS. The admit and revoke families ride the two-vault contract door (`runNexusContractOpen` and
- * `runNexusContractPartial` in `packages/lararium-node/src/commands/nexus-contract.ts`), which passes the file
- * across vaults. The kapae and roll-anchor families stand SPECIFIED: their callers, the two-vault doors of
- * `runNexusKapae` and `runNexusRollAnchor`, stay owed.
+ * CALLERS. Each family rides a two-vault door that passes the file across vaults, judges before every signature
+ * and judges again right before the write: admit and revoke ride `runNexusContractOpen` / `runNexusContractPartial`,
+ * the roll anchor rides `runNexusRollAnchorOpen` / `runNexusRollAnchorPartial` (all in
+ * `packages/lararium-node/src/commands/nexus-contract.ts`), and kapae rides `runNexusKapaeOpen` /
+ * `runNexusKapaePartial` (`packages/lararium-node/src/commands/nexus-kapae.ts`).
  *
  * Pure: no I/O, no clock. Platform-blind.
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands

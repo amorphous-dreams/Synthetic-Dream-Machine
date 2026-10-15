@@ -121,8 +121,10 @@ bothHands("offering presentation (verifyOfferingPresentation)", async (hand) =>
   (await verifyOfferingPresentation(await presentOffering({ pluginsCid: "bafyOffering", noticed: "noticed", presenter: hand.key }, hand.sign))).ok);
 
 bothHands("offering quorum (foldOfferingAntigen)", async (kahu) => {
-  const entry = await signOfferingKapae({ pluginsCid: "bafyOffering", action: "kapae", parents: [], sealEpochCid: EPOCH }, [{ signer: kahu.key, sign: kahu.sign }]);
-  return (await foldOfferingAntigen([entry], { keys: [kahu.key], threshold: 1, sealEpochCid: EPOCH })).has("bafyOffering");
+  const scope = `nexus-${"ab".repeat(32)}`;
+  const entry = await signOfferingKapae({ scope, pluginsCid: "bafyOffering", action: "kapae", parents: [], sealEpochCid: EPOCH }, [{ signer: kahu.key, sign: kahu.sign }]);
+  const seats = { keys: [kahu.key], threshold: 1, sealEpochCid: EPOCH };
+  return (await foldOfferingAntigen([entry], { scope, seatsAt: (cid) => (cid === EPOCH ? seats : null) })).has("bafyOffering");
 });
 
 bothHands("plugin offering (verifyPluginOffering)", async (hand) => {
