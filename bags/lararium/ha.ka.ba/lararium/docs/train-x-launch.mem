@@ -47,7 +47,7 @@ Start the automated witness after N, W, O1, sealed-store step 3, H, E, browser c
 
 !! Witness and driver contract
 
-The driver reports separate root and image evidence, both seed fingerprints, one final AID, each founder's admitted gate verdict, both directional edits after both restarts, the third seat and carrier contract, dormant import and browser crossing. A missing driver reports no result; it never counts as a red law. Keep `TWO_HEARTHS_RESTART_READS_BOTH_EDIT_DIRECTIONS` in this contract until the driver can call real nodes. The witness records every readback and refusal under the node's own output.
+The driver reports separate root and image evidence, both seed fingerprints, one final AID, each founder's admitted gate verdict, both directional edits after both restarts, the third seat and carrier contract, dormant import and browser crossing. A missing driver reports no result; it never counts as a red law. Keep the two-direction restart readback in this driver contract until the driver can call real nodes; no unbuilt-laws red stands for it. The witness records every readback and refusal under the node's own output.
 
 <<~/ahu>>
 
@@ -82,6 +82,6 @@ The roadmap's TWO HEARTHS path and fresh-start instructions hold the driver and 
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;WbgP_z8Hk2BtP2r8Q1GAScqCvdBzF3AqOV6On3hc0vc
+<<^ code="&#x0003;">>ni:///sha-256;SbYPqMp0nCzWcaUy0U1NO7jiQba3RMcdsGCrG8a9wQU
 
 <<^ code="&#x0004;" -> to="?">>

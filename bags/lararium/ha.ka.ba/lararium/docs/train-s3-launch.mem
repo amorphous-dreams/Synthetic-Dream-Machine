@@ -47,7 +47,7 @@ Start the live storage cut after O1 supplies a production verified face, signer 
 
 !! Witness and red window
 
-Unskip `SEALED_CHANGE_HYDRATES_ONLY_FOR_ITS_FACE` at the production reader. Unskip `FRESH_BASE_PRECEDES_FROM_NOW_CHANGE` when the node supplies and exercises its callback. Use a valid key with the wrong face: neither change nor catalog name returns. Then prove authenticated hydration, a fresh base before the first from-now change, and restart from sealed values. The holder's existing port refusal supplies the control; the document store supplies the missing witness.
+Face-checked hydration takes a behavioural witness at the production reader, never a declared red that pins an export name: fetch a sealed change and resolve its catalog name under the authorized session face, then repeat under another verified face holding the same content key and expect both requests to refuse without bytes or a name. Unskip `FRESH_BASE_PRECEDES_FROM_NOW_CHANGE` when the node supplies and exercises its callback. Use a valid key with the wrong face: neither change nor catalog name returns. Then prove authenticated hydration, a fresh base before the first from-now change, and restart from sealed values. The holder's existing port refusal supplies the control; the document store supplies the missing witness.
 
 <<~/ahu>>
 
@@ -81,6 +81,6 @@ The roadmap's sealed-store ruling and step-3 pointer hold this cut (<<~ loulou "
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Vkwnh5AePaGpSWNRc9xjuUutKqEG9fhKAkvk-RcPi0c
+<<^ code="&#x0003;">>ni:///sha-256;sFnpYQXeT0dde9231nM0z6WqPCYYIjzKDAiaIZ_zIBc
 
 <<^ code="&#x0004;" -> to="?">>

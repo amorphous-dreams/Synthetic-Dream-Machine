@@ -38,7 +38,7 @@ The working address derives from three inputs: a verified face secret scoped to 
 
 !! Commit walk
 
-# ''PURE: address and receipt vectors.'' Fix the working-address image with N's identity lead, then derive offline convergence and separation vectors. Define a durability receipt that binds the session face, working document, change and persisted readback. Keep receipt truth behind the vessel owner's storage acknowledgement.
+# ''PURE: address and receipt vectors.'' Fix the working-address image with N's identity lead, then derive offline convergence and separation vectors. Define a durability receipt on the authenticated session carrying `docUrl`, the stored heads and the holder's boot epoch; send it only after the holder commits those heads, with no clock in the frame. Keep receipt truth behind the vessel owner's storage acknowledgement.
 # ''LIVE: scoped surface mounts.'' Open the verified session, resolve its recipe once, construct its face facets and call `mountSurface` from node and browser production sites. The share verdict guards the offered facet list. The leaf and hearth each wear their one-way canon gate. A catalog ask and a content read cross the same view as document fetch, write and announce.
 # ''LIVE: hands and controls.'' Move node verbs, watcher, seat, effect index and outcome reader to session scope. Give the browser holder unicast replies and one control-event leg for keys, files, drops, Escape, Ctrl-Enter and import. Bind parallel-draft attribution to the authenticated session face.
 # ''LIVE: switch and fleet.'' Switch one tab's session without ending another. Retire the vessel-wide selector and the last `mountWiki` production caller. Expose the person's fleet view and removal through the verified session door.
@@ -49,7 +49,7 @@ The working address derives from three inputs: a verified face secret scoped to 
 
 !! Witness and red window
 
-Unskip `WORKING_ADDRESS_FOLLOWS_FACE_WIKI_SLOT` after the lead fixes input bytes. Unskip `PRODUCTION_SURFACES_USE_SCOPED_VIEW` when both callers mount surfaces. Keep the broad-port red until the last interactive `mountWiki` path leaves. Prove that two faces cannot fetch each other's document or catalog name, two offline vessels derive one working address, restart reads a persisted receipt, and one tab's switch leaves the second tab live. A failed attach refuses boot visibly.
+The working address takes a behavioural witness, never a declared red that pins an export name: open the same face secret, wiki relation and slot on two independent offline vessels and expect one address; vary each input alone and expect a different one; refuse an attach without the secret. Unskip `PRODUCTION_SURFACES_USE_SCOPED_VIEW` when both callers mount surfaces. Keep the broad-port red until the last interactive `mountWiki` path leaves. Prove that two faces cannot fetch each other's document or catalog name, two offline vessels derive one working address, restart reads a persisted receipt, and one tab's switch leaves the second tab live. A failed attach refuses boot visibly.
 
 <<~/ahu>>
 
@@ -83,6 +83,6 @@ The roadmap's ONE FACE path and `F1`–`F12` name the session debt (<<~ loulou "
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ZqkPocsH63ROMY_6aJmLyL5H8pGi_e4JTxBzvbSE12o
+<<^ code="&#x0003;">>ni:///sha-256;Bg6xhePRLL1WsfVKIwkyPdVU3JqWV6x7w2Yb027fdGQ
 
 <<^ code="&#x0004;" -> to="?">>
