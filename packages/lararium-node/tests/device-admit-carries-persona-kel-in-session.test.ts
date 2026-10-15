@@ -5,10 +5,10 @@
  * `device-admit-reads-the-resolved-island.test.ts` pins that `admitBoardIsland` resolves the RIGHT
  * KEY once a founder climbs — `91ce09afb`'s cure. But resolving the right key only helps if that
  * island's BOARD carries the chain, and the ONLY place anything carries it sits at `open-node-vessel.ts`'s
- * boot, which `lares device-admit` never runs: `device-admit.ts`'s own docblock says it opens the
+ * boot, which the fleet-join answer's edge mint never runs: `device-admit.ts`'s own docblock says it opens the
  * store directly and exits (Node adapter, no daemon boot). So the ordinary walk —
  *
- *     lares vessel found → lares persona new 0 → lares nexus rite quorum → lares device-admit
+ *     lares vessel found → lares persona new 0 → lares nexus rite quorum → lares fleet join answer
  *
  * — with NO daemon ever booted in between (nothing here starts one; `nexus rite quorum` and
  * `device-admit` both run as store-direct doors, exactly like the fleet harness's `found:` callback in

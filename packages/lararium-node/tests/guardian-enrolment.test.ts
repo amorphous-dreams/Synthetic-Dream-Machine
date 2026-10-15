@@ -29,7 +29,7 @@ import {
 } from "../src/guardian-enrolment.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { ownedStore } from "../src/owned-store.js";
-import { readLocalPersonaKelEvents } from "../src/persona-admit-flow.js";
+import { readLocalPersonaKelEvents } from "../src/local-persona-kel.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";

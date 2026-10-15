@@ -18,22 +18,23 @@
  *   ④ The salt binds `senderPub ‖ recipientPub` ALWAYS, then the caller's session challenges — so a mismatched
  *     `extraSalt` cannot open a box.
  *
- * THE LIVE DOMAINS: the final describe seals through the persona grant's PUBLIC ceremony and re-opens the raw box
- * under its own domain and under another live one, so a grant key that derived under a neighbour's name reds here.
+ * THE LIVE DOMAINS: the final describe seals through the fleet-join door's PUBLIC seal and re-opens the raw box
+ * under its own domain and under another live one, so an address-secret key that derived under a neighbour's name
+ * reds here.
  *
  * THIS FILE RIDES `lararium-mesh` AND MUST STAY HERE. `packages/lararium-browser/vitest.config.ts` aliases
  * `node:crypto` to a stub; a randomness property written in the browser hull could go deterministic and pass
  * BECAUSE the property under test had been removed. The randomness guards below need the real platform RNG.
  */
-import { PERSONA_ADMIT_SEAL_INFO, SEED_WRAP_PRF_INFO } from "../src/domains.js";
+import { FLEET_JOIN_SECRET_INFO, SEED_WRAP_PRF_INFO } from "../src/domains.js";
 import { describe, test, expect } from "vitest";
 import { x25519 } from "@noble/curves/ed25519.js";
 import * as ed from "@noble/ed25519";
 import {
   sealToRecipient, openFromSender, SEALED_BOX_AEAD_NONCE_LEN,
 } from "../src/sealed-box.js";
-import { hex, hexToBytes, utf8Bytes, base64UrlDecode } from "../src/crypto.js";
-import { mintEnrollmentOffer, sealPersonaGrant } from "../src/persona-admit.js";
+import { hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
+import { fleetJoinSealPair, sealAddressSecret } from "../src/fleet-join.js";
 
 const INFO_A = utf8Bytes("lar-test/protocol-a");
 const INFO_B = utf8Bytes("lar-test/protocol-b");
@@ -152,37 +153,24 @@ describe("④ the salt binds the pubkey pair ALWAYS, then the session challenges
 });
 
 describe("THE LIVE DOMAINS — each protocol's constant pinned from outside its module", () => {
-  const PERSONA_GRANT_SEAL_INFO = utf8Bytes(PERSONA_ADMIT_SEAL_INFO);
-  const SEED_WRAP_INFO          = utf8Bytes(SEED_WRAP_PRF_INFO);
+  const ADDRESS_SECRET_INFO = utf8Bytes(FLEET_JOIN_SECRET_INFO);
+  const SEED_WRAP_INFO      = utf8Bytes(SEED_WRAP_PRF_INFO);
 
-  test("the persona grant derives under PERSONA_ADMIT_SEAL_INFO and NOT under another live domain", async () => {
-    const deviceSeed = new Uint8Array(32).fill(9);
-    const targetVesselId = hex(await ed.getPublicKeyAsync(deviceSeed));
-    const { offer, secret } = mintEnrollmentOffer({ targetVesselId });
+  test("the face's address secret derives under FLEET_JOIN_SECRET_INFO and NOT under another live domain", async () => {
+    const seal = fleetJoinSealPair();
+    const request = { nonce: "ab".repeat(32), vesselKey: hex(await ed.getPublicKeyAsync(new Uint8Array(32).fill(9))), sealKey: seal.key };
+    const sealed = sealAddressSecret({ secret: new Uint8Array(32).fill(7), request });
+    const box = { senderEphemeralPub: hexToBytes(sealed.epk), aeadNonce: hexToBytes(sealed.nonce), ciphertext: hexToBytes(sealed.ciphertext) };
+    // The seal additionally salts with the request's nonce and vessel key. This replicates the private `secretSalt`
+    // of `fleet-join.ts` ON PURPOSE: a change to the salt SHAPE mirrors here consciously, never absorbed
+    // silently, which an imported helper would hide.
+    const salt = [hexToBytes(request.nonce), hexToBytes(request.vesselKey)];
 
-    const personaSeed = new Uint8Array(32).fill(5);
-    const personaKey  = hex(await ed.getPublicKeyAsync(personaSeed));
-    const { sealed } = await sealPersonaGrant({
-      offer,
-      personaRef:    { prefix: "lar:///ha.ka.ba/persona/test", verifyingKey: personaKey },
-      personaSigner: (bytes) => ed.signAsync(bytes, personaSeed).then(hex),
-    });
-
-    const box = {
-      senderEphemeralPub: hexToBytes(sealed.senderEphemeralPubkey),
-      aeadNonce:          hexToBytes(sealed.aeadNonce),
-      ciphertext:         base64UrlDecode(sealed.ciphertext),
-    };
-    // The grant additionally salts with the session challenges. This replicates the private `grantSaltParts`
-    // of `persona-admit.ts` ON PURPOSE: a change to the salt SHAPE must be mirrored here consciously, never
-    // absorbed silently, which an imported helper would hide.
-    const salt = [hexToBytes(secret.nonceB), hexToBytes(sealed.nonceA)];
-
-    expect(openFromSender({ recipientSecret: secret.ephemeralSecret, ...box, info: PERSONA_GRANT_SEAL_INFO, extraSalt: salt })).not.toBeNull();
-    expect(openFromSender({ recipientSecret: secret.ephemeralSecret, ...box, info: SEED_WRAP_INFO,          extraSalt: salt })).toBeNull();
+    expect(openFromSender({ recipientSecret: seal.secret, ...box, info: ADDRESS_SECRET_INFO, extraSalt: salt })).not.toBeNull();
+    expect(openFromSender({ recipientSecret: seal.secret, ...box, info: SEED_WRAP_INFO,      extraSalt: salt })).toBeNull();
   });
 
   test("two live domains never read as the same string", () => {
-    expect(hex(SEED_WRAP_INFO)).not.toBe(hex(PERSONA_GRANT_SEAL_INFO));
+    expect(hex(SEED_WRAP_INFO)).not.toBe(hex(ADDRESS_SECRET_INFO));
   });
 });

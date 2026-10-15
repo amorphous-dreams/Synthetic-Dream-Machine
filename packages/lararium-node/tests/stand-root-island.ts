@@ -26,7 +26,7 @@ import { readFileSync } from "node:fs";
 import { custodyVeilKeys } from "../src/custody-seat.js";
 import { loadIdentityAnchors, loadIdentityArchive, loadVeilArchive, persistIdentityArchive, persistVeilArchive } from "../src/identity-anchors.js";
 import { loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
-import { readLocalPersonaKelChain } from "../src/persona-admit-flow.js";
+import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { islandStorageDirOf, nodeSealedStoreShore } from "../src/sealed-store-island.js";
 import { larBootstrapPath, larDataDir } from "../src/vessel-paths.js";
 

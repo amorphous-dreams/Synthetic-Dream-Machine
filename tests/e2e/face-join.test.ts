@@ -44,12 +44,25 @@ import { personaBagIdFor } from "../../packages/lararium-mesh/src/persona-scope.
 import { plainField } from "../../packages/lararium-mesh/src/stored-value.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 import type { DeviceDelegationTiddler } from "../../packages/lararium-mesh/src/device-delegation.js";
+import { composeFleetJoinRequest, fleetJoinSealPair, readFleetJoinOffer } from "../../packages/lararium-mesh/src/fleet-join.js";
+import { mintVesselFaceKey } from "../../packages/lararium-mesh/src/face-authority.js";
+import { createPrivateKey, sign as edSign } from "node:crypto";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 let lar: LarInstance;
 let dataDir = "";
 let joineeCard = "";
 let joineeKey = "";
 let edge: DeviceDelegationTiddler | null = null;
+let courier = "";
+
+/** An Ed25519 signature under a raw 32-byte seed, through node's own key door (PKCS#8 wraps the seed). */
+function signUnder(seed: Uint8Array, image: Uint8Array): Uint8Array {
+  const key = createPrivateKey({ key: Buffer.concat([Buffer.from("302e020100300506032b657004220420", "hex"), seed]), format: "der", type: "pkcs8" });
+  return new Uint8Array(edSign(null, image, key));
+}
 
 /** Wait for the daemon's UDS home to appear under this root. The socket lands a beat AFTER the boot phase
  *  resolves, so a single sample races it — and a raced sample reads as "no socket" rather than "not yet". */
@@ -151,18 +164,35 @@ beforeAll(async () => {
   dataDir = (await awaitRendezvous(lar)) ? vesselStorageDir(lar) : "";
 
   // A THROWAWAY vessel stands its own keyhive and offers its own card — the joinee half, never this hearth's.
+  const seed = new Uint8Array(32).fill(88);
   const p = new KeyhiveProvider();
-  await p.init({ seed: new Uint8Array(32).fill(88), eventStore: { put: async () => {}, list: async () => [] } });
+  await p.init({ seed, eventStore: { put: async () => {}, list: async () => [] } });
   joineeKey  = (await p.whoami()).replace(/^0x/, "");
   joineeCard = new TextDecoder().decode(await p.contactCard());
 
-  // The hearth's OWN root signs the edge that licenses it.
-  const admit = await lar.cli(["device-admit", "--joinee-key", joineeKey]);
-  const b64 = /#admit=([A-Za-z0-9_-]+)/.exec(admit.stdout)?.[1];
-  if (b64) edge = JSON.parse(Buffer.from(b64, "base64url").toString("utf8")).deviceEdge;
+  // The hearth's OWN root signs the edge that licenses it, through the fleet-join door: the hearth offers, the
+  // throwaway joinee requests under its own key (its face-scoped keys rest in this process alone), the hearth answers.
+  courier = mkdtempSync(join(tmpdir(), "lares-face-join-courier-"));
+  const files = { offer: join(courier, "offer.json"), request: join(courier, "request.json"), answer: join(courier, "answer.json") };
+  const offered = await lar.cli(["fleet", "join", "offer", "--out", files.offer]);
+  if (offered.code !== 0) throw new Error(`fleet join offer failed (${offered.code})\n${offered.stderr.slice(-800)}`);
+  const offer = readFleetJoinOffer(JSON.parse(readFileSync(files.offer, "utf8")));
+  if ("refusal" in offer) throw new Error(`the hearth's offer refuses: ${offer.refusal}`);
+  const faceKeys = new Map<string, Uint8Array>();
+  const request = await composeFleetJoinRequest({
+    offer, vesselKey: joineeKey, sealKey: fleetJoinSealPair().key,
+    mintFaceKey: async () => { const m = await mintVesselFaceKey(); faceKeys.set(m.publicKey, m.secret); return m.publicKey; },
+    custody: { signAsVesselFace: async (_scope, key, image) => signUnder(faceKeys.get(key)!, image) },
+    sign: async (image) => Buffer.from(signUnder(seed, image)).toString("hex"),
+  });
+  if ("refusal" in request) throw new Error(`the joinee's request refuses: ${request.refusal}`);
+  writeFileSync(files.request, JSON.stringify(request));
+  const answered = await lar.cli(["fleet", "join", "answer", files.request, "--out", files.answer]);
+  if (answered.code !== 0) throw new Error(`fleet join answer failed (${answered.code})\n${answered.stderr.slice(-800)}`);
+  edge = (JSON.parse(readFileSync(files.answer, "utf8")) as { edge?: { deviceEdge?: DeviceDelegationTiddler } }).edge?.deviceEdge ?? null;
 }, 240_000);
 
-afterAll(async () => { await lar?.stop(); });
+afterAll(async () => { await lar?.stop(); if (courier) rmSync(courier, { recursive: true, force: true }); });
 
 describe("e2e/face-join — the join against a live hearth", () => {
   test("the rig stands: a socket to summon through, and a signed edge to present", () => {

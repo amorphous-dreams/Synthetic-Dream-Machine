@@ -7,8 +7,10 @@
 #                                           restart so the vessel stands as a Lararium, wait healthy, open its key again.
 #                                           Refuses by name when the port already answers or the project already stands.
 #   browser-ci.sh restart                   restart the node container WITHOUT removing its volumes; wait healthy; open its key
-#   browser-ci.sh admit [--fragment] <key>  `lares device-admit --joinee-key …` inside the node; prints the carriage
-#                                           payload. --fragment prints ONLY the `#admit=…` line, for a script to hand the page
+#   browser-ci.sh join offer                `lares fleet join offer` inside the node (it rides the store door, so it runs
+#                                           against the standing hearth); prints the offer JSON alone
+#   browser-ci.sh join answer <request>     pipe a host-side request file into the node and `lares fleet join answer` it;
+#                                           prints the answer JSON alone. BROWSER_CI_SYNC_URL, when set, rides as --sync-url
 #   browser-ci.sh bag <name>                stand a writable scratch bag (`lares act CREATE --bag … --yes`); prints its URI.
 #                                           A bare name becomes lar:///ha.ka.ba/bags/<name>; a lar: URI passes through
 #   browser-ci.sh ingest <path>             copy a repo carrier (bags/<bag>/<w.w.w>/…) into the scratch workspace volume and
@@ -20,22 +22,31 @@
 #                                           `lares meme get`, JSON on stdout (the text rides in data.text). Default reads
 #                                           AS the mounted wiki (`--recipe <slug>`)
 #   browser-ci.sh info                      one JSON object for the host QA driver: origin (qa and host views), relay URL,
-#                                           gate public key, the worn face (`worn`), the wiki slug, the wiki document the
-#                                           mount resolves (`wikiDoc`) and every document registered under the slug, the
-#                                           recipe URI and its bag stack in order, and the registered bag URIs
+#                                           gate public key (the node's `[lararium] gate key:` boot line), the worn face
+#                                           (`worn`), the wiki slug, the wiki document the mount resolves (`wikiDoc`) and
+#                                           every document registered under the slug, the recipe URI and its bag stack in
+#                                           order, and the registered bag URIs
 #   browser-ci.sh qa <cmd…>                 run <cmd> in the disposable Chromium runner (repo at /repo; the runner shares the node's network, node at http://localhost:4321);
 #                                           LARES_URL, BROWSER_CI_* and LIVE_WIKI_* from the caller's env ride through
-#   browser-ci.sh qa-admit <cmd…>           `qa`, plus the ADMIT EXCHANGE below: the host answers the runner's carriage requests
+#   browser-ci.sh qa-join <cmd…>            `qa`, plus the JOIN EXCHANGE below: the host carries the node's half of each
+#                                           browser profile's fleet join
 #   browser-ci.sh down                      remove containers, network AND the scratch volumes
 #
-# ADMIT EXCHANGE (`qa-admit`). Each fresh browser profile mints its own joinee key, and the runner holds no Docker, so it
-# cannot issue an admit. The host drives a one-shot exchange over a small host directory bind-mounted at /exchange:
-#   runner -> host   one stdout line   ADMIT-REQUEST <64-hex joinee key>
-#   host -> runner   the file /exchange/<key>.admit holding the single `#admit=…` fragment, written whole (tmp + mv), or
-#                    /exchange/<key>.refused holding the refusal text when the key is malformed or the node refuses
-# One run may send any number of requests, one per key; the host answers each as it reads the line. The runner WAITS
-# by polling for either file (a timeout only bounds the wait). The runner sees BROWSER_CI_EXCHANGE=/exchange, and
-# tools/browser-ci-admit.mjs (`requestAdmit(key)`) speaks the runner side. Every other stdout line passes through
+# JOIN EXCHANGE (`qa-join`). Each fresh browser profile joins the node's face through the fleet-join door: three files
+# by courier, offer -> request -> answer. The page mints the request, and the runner holds no Docker, so the host
+# carries the node's two acts over a small host directory bind-mounted at /exchange. One join runs two legs under one
+# id the runner picks (1-64 lowercase letters, digits or dashes):
+#   runner -> host   one stdout line   JOIN-OFFER <id>
+#   host -> runner   the file /exchange/<id>.offer holding the offer JSON, written whole (tmp + mv)
+#   runner           pastes the offer into the page, reads back the request the page minted, and writes it whole to
+#                    /exchange/<id>.request
+#   runner -> host   one stdout line   JOIN-REQUEST <id>
+#   host -> runner   the file /exchange/<id>.answer holding the answer JSON, written whole (tmp + mv)
+# Either leg answers /exchange/<id>.refused instead, holding the refusal text, when the id reads malformed, the request
+# file stands absent, or the node refuses. The runner then pastes the answer, and the page lands it and re-enters boot.
+# One run may hold any number of joins, one id each; the host answers each line as it reads it. The runner WAITS by
+# polling for the answering file (a timeout only bounds the wait). The runner sees BROWSER_CI_EXCHANGE=/exchange, and
+# tools/browser-ci-join.mjs (`joinThroughPage(page)`) speaks the runner side. Every other stdout line passes through
 # untouched, and the host exits with the runner's status.
 #
 # PARALLEL SAFETY. Every verb honors the pair
@@ -49,8 +60,8 @@
 # its own scratch vessel, so after each start the driver opens the key through the test door
 # (tools/unlock-staged-container.sh; the door refuses any root without the scratch marker the seed wrote).
 #
-# The host script alone touches Docker. No container receives the Docker socket; the qa runner cannot issue an
-# admit. Face names are synthetic.
+# The host script alone touches Docker. No container receives the Docker socket; the qa runner cannot answer a
+# fleet join. Every face name stays synthetic.
 set -eu
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -112,6 +123,11 @@ walk_document_preflight() {
   '
 }
 
+# Answer one join leg with a refusal, written whole: refuse_join <id> <text>. The exchange directory rides $xdir.
+refuse_join() {
+  printf '%s\n' "$2" >"$xdir/$1.tmp"; mv "$xdir/$1.tmp" "$xdir/$1.refused"
+}
+
 bag_uri() {
   case "$1" in
     lar:*) printf '%s\n' "$1" ;;
@@ -120,7 +136,7 @@ bag_uri() {
   esac
 }
 
-[ "$#" -gt 0 ] || die "usage: browser-ci.sh up|restart|admit|bag|ingest|recipe|get|info|qa|qa-admit|down"
+[ "$#" -gt 0 ] || die "usage: browser-ci.sh up|restart|join|bag|ingest|recipe|get|info|qa|qa-join|down"
 verb=$1; shift
 
 case "$verb" in
@@ -146,18 +162,31 @@ case "$verb" in
     compose restart lares
     compose up -d --wait lares
     unlock ;;
-  admit)
-    frag=0
-    if [ "${1:-}" = "--fragment" ]; then frag=1; shift; fi
-    [ "$#" -eq 1 ] || die "admit wants one joinee key (and optionally --fragment first)"
-    if [ "$frag" -eq 1 ]; then
-      out=$(lares device-admit --joinee-key "$1")
-      line=$(printf '%s\n' "$out" | sed -n 's/^ *\(#admit=.*\)$/\1/p' | head -n 1)
-      [ -n "$line" ] || { printf '%s\n' "$out" >&2; die "device-admit answered no #admit= line"; }
-      printf '%s\n' "$line"
-    else
-      lares device-admit --joinee-key "$1"
-    fi ;;
+  join)
+    [ "$#" -ge 1 ] || die "join wants offer, or answer and one request file"
+    case "$1" in
+      offer)
+        [ "$#" -eq 1 ] || die "join offer takes no argument"
+        out=$(lares fleet join offer) || { printf '%s\n' "$out" >&2; exit 4; }
+        # The CLI prints the offer JSON, then one hint line; the JSON alone crosses.
+        json=$(printf '%s\n' "$out" | sed -n '/^{/,/^}/p')
+        [ -n "$json" ] || { printf '%s\n' "$out" >&2; die "fleet join offer printed no offer"; }
+        printf '%s\n' "$json" ;;
+      answer)
+        [ "$#" -eq 2 ] || die "join answer wants one request file"
+        [ -f "$2" ] || die "no request file at $2"
+        req=$2
+        set --
+        [ -z "${BROWSER_CI_SYNC_URL:-}" ] || set -- --sync-url "$BROWSER_CI_SYNC_URL"
+        # The request rides stdin into a file inside the node (its own /tmp), and the answer reads it there.
+        # shellcheck disable=SC2016
+        out=$(compose exec -T lares sh -c 'f=$(mktemp) && cat >"$f" && node "$0" fleet join answer "$f" "$@"; rc=$?; rm -f "$f"; exit "$rc"' "$CLI" "$@" <"$req") \
+          || { printf '%s\n' "$out" >&2; exit 4; }
+        json=$(printf '%s\n' "$out" | sed -n '/^{/,/^}/p')
+        [ -n "$json" ] || { printf '%s\n' "$out" >&2; die "fleet join answer printed no answer"; }
+        printf '%s\n' "$json" ;;
+      *) die "join wants offer, or answer and one request file" ;;
+    esac ;;
   bag)
     [ "$#" -eq 1 ] || die "bag wants one name"
     uri=$(bag_uri "$1")
@@ -223,20 +252,22 @@ case "$verb" in
     # `persona new 0` is idempotent on a lit face and answers its verifying key.
     key=$(lares persona new 0 --name "$FACE" 2>/dev/null | sed -n 's/.*"verifyingKey":"\([0-9a-f]*\)".*/\1/p' | tail -n 1)
     [ -n "$key" ] || die "no face stands; run up first"
-    admit=$(lares device-admit --joinee-key "$key" | awk '/^}/ {print; exit} {print}')
+    # The gate key: the hearth's own `[lararium] gate key:` boot line (its vessel key, which the gate arms with). A
+    # crossroads prints a `[herm]   gate key:` line too; the read names the hearth's line alone, and the last boot.
+    gate=$(compose logs --no-color lares 2>/dev/null | sed -n 's/^.*\[lararium\] gate key: \([0-9a-f]\{64\}\)[[:space:]]*$/\1/p' | tail -n 1)
+    [ -n "$gate" ] || die "the node's log names no [lararium] gate key; run up first"
     bags=$(lares bag stats | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p')
     # Every document the catalog and oracle plane register is data in the JSON wiki list.
     wikis=$(lares wiki list --json)
     # The recipe's bag stack, in order. No read-only verb names it; `wiki pin` walks it (and re-asserts the stowage of
     # those same bags, which a mounted wiki wants held anyway). A wiki without a catalog recipe yet answers no stack.
     stack=$(lares wiki pin "$slug" 2>/dev/null | sed -n 's/^  \(lar:[^ ]*\).*$/\1/p' || true)
-    INFO_ORIGIN_QA=$origin INFO_PORT=$PORT INFO_SLUG=$slug INFO_FACES=$faces INFO_ADMIT=$admit INFO_BAGS=$bags \
+    INFO_ORIGIN_QA=$origin INFO_PORT=$PORT INFO_SLUG=$slug INFO_FACES=$faces INFO_GATE=$gate INFO_BAGS=$bags \
     INFO_KEY=$key INFO_WIKIS=$wikis INFO_STACK=$stack \
     node -e '
       const e = process.env;
       const faces = JSON.parse(e.INFO_FACES).data.personas;
       const face = faces.find((p) => p.active) || faces[0] || null;
-      const admit = JSON.parse(e.INFO_ADMIT);
       const host = "http://127.0.0.1:" + e.INFO_PORT;
       const ws = (o) => o.replace(/^http/, "ws") + "/ws";
       const reply = JSON.parse(e.INFO_WIKIS);
@@ -256,7 +287,7 @@ case "$verb" in
       process.stdout.write(JSON.stringify({
         origin: { qa: e.INFO_ORIGIN_QA, host },
         relay: { qa: ws(e.INFO_ORIGIN_QA), host: ws(host) },
-        gateKey: admit.hearthGatePubKey,
+        gateKey: e.INFO_GATE,
         face: face && { name: face.petname, handleIndex: face.handleIndex, worn: face.active === true, verifyingKey: e.INFO_KEY },
         worn: face ? face.active === true : false,
         wiki: e.INFO_SLUG,
@@ -271,7 +302,7 @@ case "$verb" in
         },
         bags: e.INFO_BAGS.split("\n").filter((l) => l.startsWith("lar:")),
       }) + "\n");' ;;
-  qa|qa-admit)
+  qa|qa-join)
     [ "$#" -gt 0 ] || die "$verb wants a command"
     for arg do
       case "$arg" in
@@ -297,19 +328,29 @@ case "$verb" in
     child=$!
     while IFS= read -r line; do
       printf '%s\n' "$line"
-      [ "$verb" = "qa-admit" ] || continue
+      [ "$verb" = "qa-join" ] || continue
       case "$line" in
-        "ADMIT-REQUEST "*)
-          key=${line#ADMIT-REQUEST }
-          safe=$(printf '%s' "$key" | tr -c 'A-Za-z0-9' '_' | cut -c1-80)
-          case "$key" in
-            ""|*[!0-9a-f]*) printf 'the joinee key must be 64 lowercase hex characters\n' >"$xdir/$safe.tmp"; mv "$xdir/$safe.tmp" "$xdir/$safe.refused"; continue ;;
+        "JOIN-OFFER "*|"JOIN-REQUEST "*)
+          leg=${line%% *}
+          id=${line#* }
+          safe=$(printf '%s' "$id" | tr -c 'a-z0-9-' '_' | cut -c1-64)
+          case "$id" in
+            ""|*[!a-z0-9-]*) refuse_join "$safe" 'the join id must be 1-64 lowercase letters, digits or dashes'; continue ;;
           esac
-          [ "${#key}" -eq 64 ] || { printf 'the joinee key must be 64 lowercase hex characters\n' >"$xdir/$safe.tmp"; mv "$xdir/$safe.tmp" "$xdir/$safe.refused"; continue; }
-          if frag=$("$0" admit --fragment "$key" 2>"$xdir/$key.err"); then
-            printf '%s\n' "$frag" >"$xdir/$key.tmp"; mv "$xdir/$key.tmp" "$xdir/$key.admit"
+          [ "${#id}" -le 64 ] || { refuse_join "$safe" 'the join id must be 1-64 lowercase letters, digits or dashes'; continue; }
+          if [ "$leg" = "JOIN-OFFER" ]; then
+            if out=$("$0" join offer 2>"$xdir/$id.err"); then
+              printf '%s\n' "$out" >"$xdir/$id.tmp"; mv "$xdir/$id.tmp" "$xdir/$id.offer"
+            else
+              refuse_join "$id" "$(cat "$xdir/$id.err"; printf '%s' "$out")"
+            fi
           else
-            { cat "$xdir/$key.err"; printf '%s\n' "$frag"; } >"$xdir/$key.tmp"; mv "$xdir/$key.tmp" "$xdir/$key.refused"
+            [ -f "$xdir/$id.request" ] || { refuse_join "$id" "no request file stands at $id.request"; continue; }
+            if out=$("$0" join answer "$xdir/$id.request" 2>"$xdir/$id.err"); then
+              printf '%s\n' "$out" >"$xdir/$id.tmp"; mv "$xdir/$id.tmp" "$xdir/$id.answer"
+            else
+              refuse_join "$id" "$(cat "$xdir/$id.err"; printf '%s' "$out")"
+            fi
           fi ;;
       esac
     done <"$fifo"

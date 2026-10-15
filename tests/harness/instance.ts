@@ -23,7 +23,7 @@ import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/auth-wire.js";
 import { randomBytes } from "node:crypto";
-import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync, appendFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 
 /**
@@ -495,7 +495,7 @@ export function bootDocUrl(instance: LarInstance, key: string): string | null {
 //
 // The three-vessel shape basket-one #/the-fetch-door names: a HERM stands the carriage crossroads (Socket B)
 // and the public read-face (`/bulb/…` · `/cas/<cid>`); A founds a hearth and dials the Herm's crossroads; C
-// founds by A's signed device edge (the admit rite `meme-two-vessel-bag` proves), dials A's `/ws` for the CRDT
+// joins A's face by the fleet-join door (the rite `fleet-join` proves), dials A's `/ws` for the CRDT
 // (Socket A) and the Herm's crossroads for bytes (Socket B), and names the Herm's read-face as its public shore
 // (`LAR_HERM_SHORE`). The Herm lights NO face — `vessel found` founds a PLACE, and a place with no face
 // stands at the waking floor as a Herm by class.
@@ -508,7 +508,7 @@ export interface StagedFleet {
   readonly relayUrl: string;
   /** The Herm's public read-face (`http://127.0.0.1:<port>`) — `/cas/<cid>` answers here. */
   readonly hermShore: string;
-  /** What C's `vessel found --admit` said. */
+  /** What C's `fleet join land` said. */
   readonly admitted: CliResult;
   /** Every line of the carriage crossing (export · import · carry-for · carry · re-stand · public registration). */
   readonly crossing: string;
@@ -541,9 +541,9 @@ export async function openStagedFleet(opts: { readonly tag?: string } = {}): Pro
     let herm = await openStaged({ tag: `${tag}herm`, port: portHerm, daemonEnv: hermEnv, found: hermFound });
     stood.push(herm);
 
-    // A founds (seating a founding quorum, so a charter exists to carry FOR); C mints under its own root; A
-    // signs the edge naming its dial; C founds by that payload — the joinee rite, one door, with both hearths
-    // dialing the Herm's crossroads and shore.
+    // A founds (seating a founding quorum, so a charter exists to carry FOR); C founds a place under its own root
+    // and joins A's face through the fleet-join door, A's answer naming its dial — the joinee rite, one door, with
+    // both hearths dialing the Herm's crossroads and shore.
     const pair = await openStagedJoinee({
       tag: `${tag}fleet`,
       daemonEnv: { LAR_CARRIAGE_RELAY: relayUrl, LAR_HERM_SHORE: hermShore },
@@ -665,6 +665,15 @@ export interface JoineeOptions {
   readonly beforeB?: (A: LarInstance) => Promise<void>;
   /** Boot B at all? A suite measuring a founding alone passes false. Default true. */
   readonly bootB?: boolean;
+  /** Runs once the answer stands on disk and before B lands it (a suite's tamper vector). */
+  readonly beforeLand?: (cliB: (args: readonly string[]) => Promise<CliResult>, files: FleetJoinFiles) => Promise<void>;
+}
+
+/** Where the fleet-join door's three files rest under B's root. */
+export interface FleetJoinFiles { readonly offer: string; readonly request: string; readonly answer: string }
+/** The device edge B's join carried: the signed edge inside the fleet-join answer. */
+export function joinedDeviceEdge(pair: Pick<StagedJoinee, "fleet">): unknown {
+  return (JSON.parse(readFileSync(pair.fleet.answer, "utf8")) as { edge?: { deviceEdge?: unknown } }).edge?.deviceEdge;
 }
 export interface StagedJoinee {
   readonly A: LarInstance;
@@ -673,8 +682,10 @@ export interface StagedJoinee {
   readonly rootB: string;
   readonly portA: number;
   readonly portB: number;
-  /** What B's `vessel found --admit` said. */
+  /** What B's `fleet join land` said. */
   readonly admitted: CliResult;
+  /** The fleet-join door's three files. */
+  readonly fleet: FleetJoinFiles;
   /** The line B's daemon died on, when it did. */
   readonly joinGate: string | null;
   /** A's gate key and lares doc url, as B's env dial reads them. */
@@ -690,29 +701,37 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
   stageGenesis(rootB);
   seedTestCustody(rootB);
   const cliB  = cliFor({ LAR_ROOT: rootB, LAR_PORT: String(portB) });
-  const admit = join(rootB, "admit.json");
   let admitted: CliResult | null = null;
+  let fleet: FleetJoinFiles | null = null;
   const stood: LarInstance[] = [];
   const stop = async (): Promise<void> => {
     for (const v of stood.reverse()) await v.stop();
     if (existsSync(rootB)) removeStagedRoot(rootB);
   };
   try {
-    // ①–④ run while NO daemon stands: `device-admit` opens A's store directly, and a store has one owner.
+    // ①–④ run while A's daemon stands down: B's request and land open B's store directly, and a store has one owner.
     const A = await openStaged({
       tag: `${tag}A`, port: portA, daemonEnv: { ...(opts.daemonEnv ?? {}), ...(opts.daemonEnvA ?? {}) },
       found: async (cliA, rootA) => {
         await foundStagedHearth(cliA, rootA, "alpha");
         await opts.riteA?.(cliA, rootA);
-        // B founds by A's genesis, copied whole: `vessel found --admit` reads the hearth true-name off
-        // `<root>/genesis`, and A's founding derived it (the re-derive is an internal rite step).
+        // B founds by A's genesis, copied whole: the land reads the hearth true-name off `<root>/genesis`, and A's
+        // founding derived it (an internal rite step re-derives it).
         cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
-        // The joinee mints FIRST, under its own root: admission signs a key the joiner already holds.
-        const { mintVesselKey } = await import("./vessel-key.js");
-        const keyB = await mintVesselKey(rootB);
-        const edge = await cliA(["device-admit", "--joinee-key", keyB, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", admit]);
-        if (edge.code !== 0) throw new Error(`A: device-admit failed (${edge.code})\n${edge.stderr.slice(-800)}`);
-        admitted = await cliB(["vessel", "found", "--admit", admit, "--skip-build"]);
+        // THE FLEET-JOIN DOOR: B stands as a place first, so its own custody holds the keys it mints for the face;
+        // then the three files cross by hand (`offer` on A, `request` on B, `answer` on A) and B lands the answer.
+        const place = await cliB(["vessel", "found", "--skip-build"]);
+        if (place.code !== 0) throw new Error(`B: vessel found (a place) failed (${place.code})\n${place.stderr.slice(-2500)}`);
+        const files = { offer: join(rootB, "fleet-offer.json"), request: join(rootB, "fleet-request.json"), answer: join(rootB, "fleet-answer.json") };
+        const offer = await cliA(["fleet", "join", "offer", "--out", files.offer]);
+        if (offer.code !== 0) throw new Error(`A: fleet join offer failed (${offer.code})\n${offer.stderr.slice(-2500)}`);
+        const request = await cliB(["fleet", "join", "request", files.offer, "--out", files.request]);
+        if (request.code !== 0) throw new Error(`B: fleet join request failed (${request.code})\n${request.stderr.slice(-2500)}`);
+        const answer = await cliA(["fleet", "join", "answer", files.request, "--sync-url", `ws://127.0.0.1:${portA}/ws`, "--out", files.answer]);
+        if (answer.code !== 0) throw new Error(`A: fleet join answer failed (${answer.code})\n${answer.stderr.slice(-2500)}`);
+        await opts.beforeLand?.(cliB, files);
+        admitted = await cliB(["fleet", "join", "land", files.answer]);
+        fleet = files;
       },
     });
     stood.push(A);
@@ -751,7 +770,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         B = null;
       }
     }
-    return { A, B, rootB, portA, portB, admitted: admitted!, joinGate, gateA, laresA, stop };
+    return { A, B, rootB, portA, portB, admitted: admitted!, fleet: fleet!, joinGate, gateA, laresA, stop };
   } catch (err) {
     await stop();
     throw err;

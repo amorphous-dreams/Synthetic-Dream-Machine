@@ -21,11 +21,11 @@
  *   edge-partial · edge-cosign                   a quorum edge act between seats on separate vessels (`commands/edge-cosign`)
  *   cabal-vouch · cabal-join                     the vouch board (`commands/cabal-vouch`, `commands/cabal-join`)
  *   cabal-face                                   the worn face's key in one realm (`commands/cabal-face`)
- *   device-admit                                 a device edge off the persona-KEL board (`commands/device-admit`)
+ *   fleet-join-offer · fleet-join-answer         the root holder's half of the fleet-join door (`commands/fleet-join`)
  *   handle-publish · handle-burn · handle-rotate · handle-attest
  *                                                the WHO board (`commands/handle`)
  *   persona-new                                  a face onto a standing place (`commands/init`)
- *   persona-kel-head                             a persona-KEL head off the local board (`persona-admit-flow`)
+ *   persona-kel-head                             a persona-KEL head off the local board (`local-persona-kel`)
  *   nexus-publish                                the Crossroads offering (`commands/nexus-publish`)
  *   nexus-offering-inspect                       one carried offering, read off the Crossroads board
  *                                                (`commands/nexus-offering-inspect`)
@@ -65,13 +65,13 @@ import { runEdgePartial, runEdgeCosign, EdgeCosignError } from "./commands/edge-
 import { runCabalVouch, CabalVouchError } from "./commands/cabal-vouch.js";
 import { runCabalFace, CabalFaceError } from "./commands/cabal-face.js";
 import { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
-import { runDeviceAdmit } from "./commands/device-admit.js";
+import { runFleetJoinAnswer, runFleetJoinOffer, FleetJoinRefused } from "./commands/fleet-join.js";
 import { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest } from "./commands/handle.js";
 import { runFoundTheFace } from "./commands/init.js";
 import { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
 import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
-import { makeLocalPersonaKelHeadAndSeqResolver } from "./persona-admit-flow.js";
+import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 import { ownedStore } from "./owned-store.js";
 import { larDataDir } from "./vessel-paths.js";
 import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
@@ -130,7 +130,8 @@ export async function awaitOnRolled(call: boolean | void | Promise<boolean | voi
 export const STORE_DOOR_VERBS = [
   "nexus-kapae", "nexus-kapae-list", "nexus-kapae-open", "nexus-kapae-partial", "nexus-contract", "nexus-contract-open", "nexus-contract-partial", "nexus-roll-anchor", "nexus-roll-anchor-open", "nexus-roll-anchor-partial", "nexus-roll-anchor-edge-open", "nexus-roll-prior-anchor", "nexus-members-list",
   "nexus-posture", "nexus-admit-take", "seal-home-refold",
-  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face", "device-admit",
+  "edge-kapae", "edge-seat-facts", "edge-seat-duties", "edge-seat-marks", "edge-partial", "edge-cosign", "cabal-vouch", "cabal-join", "cabal-face",
+  "fleet-join-offer", "fleet-join-answer",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest", "persona-new", "persona-kel-head",
   "nexus-publish", "nexus-offering-inspect", "raise-sign",
 ] as const;
@@ -141,7 +142,7 @@ type Row = (args: Readonly<Record<string, unknown>>) => Promise<Record<string, u
 /** The refusals a row answers as `{ refused }` — every class a command names as a clean refusal. */
 const REFUSALS = [
   NexusKapaeError, NexusContractError, EdgeKapaeError, EdgeRollAnchorError, EdgeSeatError, EdgeCosignError, CabalVouchError, CabalJoinError, CabalFaceError,
-  NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError,
+  NexusPublishError, NexusOfferingInspectError, RaiseSignError, AdmitBundleError, FleetJoinRefused,
 ] as const;
 
 const str = (v: unknown): string | undefined => (typeof v === "string" && v.length > 0 ? v : undefined);
@@ -351,8 +352,11 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
         ...opt("maxVouchesPerVoucher", int(args["maxVouchesPerVoucher"])),
       })),
     })),
-    "device-admit": (args) => answer("device-admit", async () => ({
-      ...(await runDeviceAdmit({ joineeVerifyingKey: str(args["joineeVerifyingKey"]) ?? "", repo, ...opt("syncUrl", str(args["syncUrl"])) })),
+    // The fleet-join door's root half: an offer, and the answer to one carried request. The answer carries the face's
+    // address secret SEALED to the request's own key; no secret rides it in the clear.
+    "fleet-join-offer": () => answer("fleet-join-offer", async () => ({ offer: await runFleetJoinOffer({ sealHome }) })),
+    "fleet-join-answer": (args) => answer("fleet-join-answer", async () => ({
+      answer: await runFleetJoinAnswer({ repo, sealHome, request: args["request"], ...opt("syncUrl", str(args["syncUrl"])) }),
     })),
     "handle-publish": (args) => answer("handle-publish", async () => ({
       card: await runHandlePublish({ glamour: need("handle-publish", args, "glamour"), repo, ...opt("handleIndex", int(args["handleIndex"])) }),
@@ -370,12 +374,8 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])) })),
     })),
     // M12′/L11: the SAME board resolves BOTH the head op-key and that head's KEL seq, off ONE materialize
-    // (`makeLocalPersonaKelHeadAndSeqResolver`) — a caller that needs the seq (`persona-admit-cmd.ts` `open`,
-    // feeding `JoinRecord.granterSeq` for the per-vessel view's causal supersede order) never stands up a
-    // second board read, and head/seq can never straddle a sync landing between two separate materializes
-    // (the gap the prior two-builder shape left open despite its comment claiming one read). `seq` is
-    // ADVISORY-ONLY end to end — omitted when the resolver found none; the caller folds it in only as a hint,
-    // never a verdict.
+    // (`makeLocalPersonaKelHeadAndSeqResolver`), so head and seq never straddle a sync landing between two
+    // reads. `seq` reads ADVISORY-ONLY end to end: omitted when the resolver found none, a hint and never a verdict.
     "persona-kel-head": (args) => answer("persona-kel-head", async () => {
       const prefix = need("persona-kel-head", args, "prefix");
       const { head, seq } = await (await makeLocalPersonaKelHeadAndSeqResolver(repo))(prefix);

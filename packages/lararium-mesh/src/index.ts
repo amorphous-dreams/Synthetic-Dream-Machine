@@ -306,6 +306,16 @@ export {
 } from "./nexus-key-line.js";
 export type { FaceKeyCustody, WithdrawalMemory, FaceAuthorityRefusal } from "./face-authority.js";
 export type { FaceScope, FaceWithdrawal } from "./face-proof-subjects.js";
+// THE FLEET-JOIN DOOR, named here by its first caller: the node's `fleet join` (`commands/fleet-join`). A joining
+// vessel mints and requests its own face-scoped keys, and the root holder certifies them in its answer.
+export { requestCertificate, issueCertificate, mintVesselFaceKey } from "./face-authority.js";
+export type { VesselFaceKeyCustody, MintedKey } from "./face-authority.js";
+export type { VesselFaceCertificate, VesselFaceCertificateRequest, VesselFaceKey, FaceKey } from "./face-proof-subjects.js";
+export * from "./fleet-join.js";
+// THE JOINED VESSEL'S SESSION, named here by its first caller: the node's joined-face proof (`joined-face-proof`)
+// hands it the vessel's own certificate, grant, key and custody door. The session table stays private to the mesh.
+export { openJoinedFaceSession } from "./session-face.js";
+export type { JoinedFaceSessionRefusal, FaceGrantReading } from "./session-face.js";
 // THE GATE'S TWO ROOT DOORS, named here by the seats that mint them: the vessel identity mints the floor key's
 // door and the custody seat the custody root's. The bundle itself stays out of the barrel until the socket cutover.
 export { floorKeyDoor, custodyRootDoor } from "./gate-bundle.js";
@@ -328,7 +338,6 @@ export * from "./handle-book.js";
 // an unmet nym WITHOUT the CLI's `--card <file>` (the card arrives as data, carried as an invite is).
 // The type-blind PERSONA-ADMISSION ceremony (airgapped device-to-device persona handoff) — the 3-hop ECDH-sealed
 // choreography + its carried QR envelopes. A photographed tabletop stays inert; the join writes per-vessel only.
-export * from "./persona-admit.js";
 // The IoC follow — composeFollow braids the three LOCAL stores (handle-book · petname · circle) into one
 // gesture; the CircleStore shore stays local-only, so a follow leaves NO central trace (membership-doctrine).
 export * from "./compose-follow.js";

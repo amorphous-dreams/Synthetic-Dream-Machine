@@ -186,7 +186,7 @@ describe("the table picks the rows a bundle carries", () => {
     const by = (t: string): string[] => carriers.bundleRows().filter((r) => r.bundle === t).map((r) => r.row).sort();
     expect(by("whole")).toEqual(["face-proof-key", "guardian-set", "persona-root"]);
     expect(by("lines")).toEqual(["anchors", "handle-book", "persona-declarations", "persona-petnames", "persona-roster"]);
-    for (const stays of ["veil-archive", "keyhive-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "custody-root", "seat-key"]) {
+    for (const stays of ["veil-archive", "keyhive-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "custody-root", "seat-key", "face-address-secret", "fleet-join-pending", "face-join-record"]) {
       expect(carriers.carrierTable().find((r) => r.row === stays)?.bundle, stays).toBe("stays");
     }
   });

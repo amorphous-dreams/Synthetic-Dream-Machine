@@ -8,9 +8,9 @@
  *
  * THE RITE, every step through the built CLI:
  *   ① A founds (a place, a face)                          `vessel found` on a marked scratch root · `persona new 0`
- *   ② B mints its OWN key first, under its OWN root       the vessel-identity mint (the genesis island stands repo-wide off A's founding)
- *   ③ A signs the edge over B's key, naming A's dial      `device-admit --joinee-key … --sync-url …`
- *   ④ B founds BY that payload                            `vessel found --admit`
+ *   ② B founds a place under its OWN root                 `vessel found` on B's own marked scratch root
+ *   ③ A offers its face's fleet; B requests over it       `fleet join offer` · `fleet join request`
+ *   ④ A answers, naming A's dial; B lands the answer      `fleet join answer --sync-url …` · `fleet join land`
  *   ⑤ A stands; the meme lands on A's wiki                `meme put --recipe lares`
  *   ⑥ B stands dialing A                                  LAR_JOIN_SYNC · LAR_JOIN_GATE · LAR_JOIN_DOC
  *   ⑦ A promotes into the bag both mount; B reads it      `act MOVE --to lar:///ha.ka.ba/bags/lares` · `meme get --bag lares`
@@ -19,11 +19,10 @@
  *
  * TWO SEATS THE PAIR RIDES, each measured 2026-09-11:
  *
- *   A JOINER STANDS BY ITS EDGE ALONE. `device-admit` copies no cap events (two-vessel-mesh asserts it as
+ *   A JOINER STANDS BY ITS EDGE ALONE. The join copies no cap events (two-vessel-mesh asserts it as
  *   design), so B's veil holds no seat in the PersonaGroup until a face-join lands; B's first wiki-binding
- *   mint reads `faceSeated` false and stays on B's own key (`resolve-binding.ts`), and B boots. B's key is
- *   minted under B's root (`harness/vessel-key.ts`) — the identity dir resolves from `LAR_ROOT`, never from
- *   a path argument, so an in-process mint would have admitted the operator's home key instead.
+ *   mint reads `faceSeated` false and stays on B's own key (`resolve-binding.ts`), and B boots. B's key
+ *   mints under B's root when B founds as a place, before its fleet-join request names it.
  *
  *   THE SHARED-BAG WRITE DOOR. `--recipe lares` writes the recipe's designated bag — the wiki's WORKING
  *   layer (`wikis/lares/working`, `wiki which` says so below), the doc the running wiki island mounts as
@@ -41,7 +40,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { joinedDeviceEdge, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -264,9 +263,8 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     const cardFile = readdirSync(idDir).find((f) => f.startsWith(".vessel-card"));
     expect(cardFile, `no vessel card under ${idDir}`).toBeDefined();
     const contactCard = readFileSync(join(idDir, cardFile!), "utf8");
-    const payload = JSON.parse(readFileSync(join(rootB, "admit.json"), "utf8")) as Record<string, unknown>;
-    const deviceEdge = payload["deviceEdge"] ?? (JSON.parse(Buffer.from(String(payload["admit"] ?? ""), "base64url").toString("utf8") || "{}") as Record<string, unknown>)["deviceEdge"];
-    expect(deviceEdge, `admit.json carries no deviceEdge: ${Object.keys(payload).join(",")}`).toBeDefined();
+    const deviceEdge = joinedDeviceEdge(pair!);
+    expect(deviceEdge, "the join carried no device edge").toBeDefined();
     // A seats B — the verb runs where A's booted provider lives; the record lands on the plane.
     const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
       `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as

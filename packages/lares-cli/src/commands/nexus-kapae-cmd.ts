@@ -15,7 +15,7 @@
  * `@lararium/node` already carries a `commands/nexus-kapae.ts`, and THIS file imports from it
  * (`runNexusKapae`, `runNexusKapaeList`, `NexusKapaeError`). Two same-basename modules with a live
  * import between them is a reader trap, so this takes the `-cmd` suffix the house already uses where a
- * child holds command handlers (`bag-declare-cmd.ts`, `persona-admit-cmd.ts`).
+ * child holds command handlers (`bag-declare-cmd.ts`).
  *
  * ONE STORE DOOR. While the vessel stands, the act runs inside it (`nexus-kapae` over the local socket), so a ban
  * lands on the replica the running gate folds; with no vessel standing, it runs here, holding the store for the

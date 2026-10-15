@@ -236,7 +236,7 @@ test("CONTROL: the door scanners read each planted bare door, and pass a gated o
   const gated = gatedVesselSubs();
   const ts = [
     `lares(["vessel", "found"]);`,                                           // 1
-    `await cliB(["vessel", "found", "--admit", admit]);`,                    // 2
+    `await cliB(["vessel", "found", "--genesis", genesis]);`,                // 2
     `spawn(process.execPath, [CLI, "vessel", "stand",\n  "--json"])`,        // 3-4
     `cli(["vessel", "found", "--root", root, "--skip-build"]);`,  // 5
     `lares(["vessel", "stop"]);`,                                            // 6

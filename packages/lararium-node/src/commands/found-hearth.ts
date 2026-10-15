@@ -54,7 +54,7 @@ export interface HearthCard {
   readonly digest: string;
 }
 
-export interface FoundHearthOptions extends Omit<InitOptions, "admitPayloadPath"> {
+export interface FoundHearthOptions extends Omit<InitOptions, "admitPayload"> {
   /** Persona zero's private pet-name. Under `restore` it may stand empty: the bundle's own pet-name lands. */
   readonly name:     string;
   /**

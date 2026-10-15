@@ -142,12 +142,13 @@ export const SK_VK_WRAP_INFO = mint("sk-vk-wrap");
 export const SK_CHECK_INFO = mint("sk-check");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
+// The persona admission's five names stand RESERVED: no protocol signs or seals under them, and none may take one
+// up, so a byte string once signed under one never verifies as another protocol's.
 export const PERSONA_ENROLL_DOMAIN = frozen("persona-enroll");
 export const PERSONA_GRANT_DOMAIN = frozen("persona-grant");
 export const PERSONA_SEALED_DOMAIN = frozen("persona-sealed-grant");
 export const PERSONA_JOIN_DOMAIN = frozen("persona-join");
-/** The grant seal's HKDF `info`. A NAME of its own — never a version digit carrying the separation from
- *  the four signing domains above. */
+/** The persona grant seal's HKDF `info`, reserved with the four signing names above. */
 export const PERSONA_ADMIT_SEAL_INFO = frozen("persona-admit-grant-seal");
 /** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key
  *  and the act it rolls from. The act's CID names the hosting epoch; the act grants nothing and names no one but
@@ -400,6 +401,19 @@ export const SESSION_CERTIFICATE_DOMAIN = mint("session-certificate");
 export const SESSION_FINISH_DOMAIN = mint("session-finish");
 export const SESSION_ACT_DOMAIN = mint("session-act");
 export const SESSION_AUTHORITY_DOMAIN = mint("session-authority");
+// ── THE FLEET-JOIN DOOR: one face's fleet takes a new vessel of the same human ───────────────────
+// Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain. Three files cross by courier; each signed image
+// and the secret's seal carry their own name.
+/** A joining vessel's REQUEST: its own vessel key signs the nonce, its seal key and its certificate requests. */
+export const FLEET_JOIN_REQUEST_DOMAIN = mint("fleet-join-request");
+/** The ANSWER the PersonaGroup root signs: the edge by digest, the hearth's carriage and reach, the sealed secret. */
+export const FLEET_JOIN_ANSWER_DOMAIN = mint("fleet-join-answer");
+/** The digest an answer binds its device edge by. A digest name, signed by nobody. */
+export const FLEET_JOIN_EDGE_DOMAIN = mint("fleet-join-edge");
+/** The HKDF `info` of the face address secret's seal to the joining vessel. Apart from every other box. */
+export const FLEET_JOIN_SECRET_INFO = mint("fleet-join-address-secret");
+/** A FACE-KEY GRANT: the PersonaGroup root names one face key as its own at one Nexus. */
+export const FACE_KEY_GRANT_DOMAIN = mint("face-key-grant");
 // ── THE GATE: one bundle per (Nexus, route), and the exchange it answers ────────────────────────
 // Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange. A gate derives its keys and never
 // stores them; each name below separates one derivation, one digest or one signed image from the rest.

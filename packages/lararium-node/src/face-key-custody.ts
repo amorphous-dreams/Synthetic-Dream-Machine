@@ -237,6 +237,18 @@ export async function storeVesselFaceKey(scope: FaceKeyScope, secret: Uint8Array
   });
 }
 
+/** The public half of this vessel's face-scoped key for `scope`, or null where no row stands. The secret opens for
+ *  this one read and leaves zero-filled; a session names its own key from here, never from a certificate. */
+export async function readVesselFaceKeyPublic(scope: FaceKeyScope): Promise<string | null> {
+  const file = vesselFaceKeyFile(scope);
+  const secret = await readCustodyRow("identity", file);
+  if (secret === null) return null;
+  try {
+    if (secret.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
+    return publicOf(secret);
+  } finally { secret.fill(0); }
+}
+
 /**
  * Every per-Nexus key this vessel holds for face `handleIndex`, each beside its row's own name, for that face's
  * backup bundle. Each cold row opens for the length of this one read; the caller owns the bytes and zero-fills

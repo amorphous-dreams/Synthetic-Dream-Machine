@@ -12,16 +12,12 @@ import {
   buildDeviceDelegation,
   buildAuthResponse,
   DEFAULT_JOIN_POLICY,
-  mintEnrollmentOffer,
-  sealPersonaGrant,
-  openPersonaGrant,
   signCabalInvite,
   signHandleCard,
   verifyAuthProof,
   verifyDeviceDelegation,
   verifyHandleCard,
   mintHandleInception,
-  ed25519SignerFromSeed,
   type AdmissionDials,
   type DeviceDelegationTiddler,
 } from "@lararium/mesh";
@@ -107,32 +103,6 @@ describe("P1 authority relations — characterization witness", () => {
     expect(replay).toMatchObject({ ok: false });
   });
 
-  test("records persona admission as a local KEL-head relation bound by nonce, never a clock", async () => {
-    const persona = new Uint8Array(32).fill(34);
-    const device = await pubOf(deviceSeed);
-    const personaKey = await pubOf(persona);
-    const prefix = "persona-audit-prefix";
-    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: device });
-    const { sealed } = await sealPersonaGrant({
-      offer,
-      personaRef: { prefix, verifyingKey: personaKey },
-      personaSigner: ed25519SignerFromSeed(persona),
-    });
-    const admitted = await openPersonaGrant({
-      sealed,
-      secret,
-      resolveHeadOpKey: (candidate) => candidate === prefix ? personaKey : null,
-    });
-    const unknownHead = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: () => null });
-    auditRows.push({
-      relation: "persona-admission",
-      inputs: { prefix, targetVessel: device, headResolver: "local KEL" },
-      outcome: { admitted: admitted.ok, unknownHead: unknownHead.reason, authority: "prefix head + nonce (consume-once); no clock on the wire" },
-    });
-    expect(admitted.ok).toBe(true);
-    expect(unknownHead).toMatchObject({ ok: false });
-  });
-
   test("records handle recognition from a self-certifying causal act", async () => {
     const handleSeed = new Uint8Array(32).fill(35);
     const handleKey = `0x${await pubOf(handleSeed)}`;
@@ -186,11 +156,10 @@ describe("P1 authority relations — characterization witness", () => {
   });
 
   test("keeps the audit rows machine-readable and relation-scoped", () => {
-    expect(auditRows).toHaveLength(5);
+    expect(auditRows).toHaveLength(4);
     expect(auditRows.map((row) => row.relation)).toEqual([
       "device-face-delegation",
       "daemon-proof-of-possession",
-      "persona-admission",
       "handle-recognition",
       "cabal-vouch-admission",
     ]);

@@ -35,7 +35,7 @@ import {
   faceLogViewImage, faceLogViewSigned, foldPersonaContests, nexusAidOf, readFaceLogViewLine,
   type FaceLogView, type FaceLogViewParty, type NexusDoc,
 } from "@lararium/mesh";
-import { readLocalPersonaKelEvents } from "./persona-admit-flow.js";
+import { readLocalPersonaKelEvents } from "./local-persona-kel.js";
 import { readCarriedCharters } from "./carried-set.js";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { readGuardianSet } from "./guardian-enrolment.js";

@@ -413,17 +413,24 @@ run_quorum() {
 # faces of ONE operator are MANY-FACES rather than a mutual hold — the slots carry faces, and a human
 # running several of their own reads as the Sybil-of-one this plane prices socially.
 # ── THE LEAF CONTRACT: A BROWSER INTO ITS OPERATOR'S FLEET ──────────────────────────────────────
-# CANON CALLS THIS "named, never walked" — and the pieces are all BUILT: `lares device-admit`,
-# `runDeviceAdmitEdge`, the browser's own `admit-carriage`. Five test files exercise it in process and
-# NO harness had ever walked it across real vessels, which is where every real defect this harness
-# found today has lived: the seam between built pieces, never the pieces.
+# A browser joins its operator's fleet through the FLEET-JOIN DOOR: three files by courier. The hearth
+# offers (`lares fleet join offer`: the face, its root key, a fresh nonce, the scopes the face stands at), the
+# joining vessel mints its own face-scoped keys and answers with a request, the hearth signs the answer (the
+# device edge, a certificate per scope, the gate pin and canon), and the joining vessel lands it.
 #
 # THE ACT IS ONE DELEGATION EDGE, and the leaf mints no root. A browser is a DEVICE of its operator,
 # so this rides the fleet axis — `compose` binding one principal's instruments, which buys REACH and
 # deposits no depth. It is emphatically not a carriage contract and not a realm dwelling.
+#
+# WHAT THIS SCENARIO WALKS, and where the rest stands. The browser here runs a probe that mints and names its
+# key; it holds no paste door, so it mints no request. This walk proves the hearth's half across real
+# containers: the browser mints in a secure context, the hearth offers its face, a request the offer never
+# met refuses by name, and the phase stays put. The joining half (the page mints the request, lands the
+# answer, re-enters boot on the face) runs where a page runs: the crossing walk
+# (`tools/browser-ci.sh qa-join node packages/lararium-web/tests/live-wiki.mjs crossing`).
 # COVERS: private/seed/unfed
 run_leaf() {
-  say "LEAF — an operator mints a device edge naming her browser, and it parses back"
+  say "LEAF — an operator offers her face's fleet to a browser, and refuses a request it never met"
   clear_all
   local LARES="node packages/lares-cli/dist/src/bin/lares.js"
 
@@ -434,8 +441,8 @@ run_leaf() {
   if up_and_answering lararium-a; then ok; else
     bad "no lararium answering"; dump_boot_failure lararium-a; clear_all; return; fi
 
-  # THE BROWSER SAYS WHAT IT MINTED. A vessel that mints and cannot name its own key leaves the admit
-  # unwalkable — the operator's node has nothing to point at.
+  # THE BROWSER SAYS WHAT IT MINTED. A vessel that mints and cannot name its own key mints nothing a request
+  # could carry — the operator's hearth has nothing to certify.
   step "the browser mints and NAMES its verifying key"
   local deadline=$((SECONDS + 240)) KEY=""
   while [ -z "$KEY" ] && [ "$SECONDS" -lt "$deadline" ]; do
@@ -445,41 +452,45 @@ run_leaf() {
   if [ -n "$KEY" ]; then ok; else
     bad "the browser named no key"; $COMPOSE logs browser-a 2>&1 | tail -4 | sed 's/^/      /'; clear_all; return; fi
 
-  step "A admits it — one delegation edge, the leaf minting no root"
-  local OUT
-  # THE PAYLOAD IS THE OUTPUT — `device-admit --json` emits the admit itself, with no `ok` envelope,
-  # because what the operator carries to the joining vessel IS the artifact. A first draft asserted
-  # `"ok":true` and read a successful admit as a refusal.
-  #
-  # And the edge must NAME THIS BROWSER: an admit that verified but bound some other device would
-  # satisfy any check that only asked whether one was produced.
-  OUT=$($COMPOSE exec -T lararium-a $LARES device-admit --joinee-key "$KEY" --json 2>/dev/null)
-  if printf '%s' "$OUT" | grep -q 'device-admit/v1' \
-     && printf '%s' "$OUT" | grep -q "$KEY"; then ok; else
-    bad "the admit refused, or bound a different device"; printf '%s\n' "$OUT" | head -3 | sed 's/^/      /'; fi
+  # THE ARTIFACT A PERSON CARRIES. The offer rides the store door into the standing hearth, and prints the
+  # offer JSON a person pastes into the page. An offer must name the face's root key and a fresh nonce: the
+  # joining vessel reads the answer under that key, and the answer binds that nonce.
+  step "A offers her face's fleet — the offer names its root key and a fresh nonce"
+  local OFFER OFFER2
+  OFFER=$($COMPOSE exec -T lararium-a $LARES fleet join offer 2>&1 | sed -n '/^{/,/^}/p')
+  if printf '%s' "$OFFER" | grep -q '"kind": "fleet-join-offer"' \
+     && printf '%s' "$OFFER" | grep -qE '"rootKey": "[0-9a-f]{64}"' \
+     && printf '%s' "$OFFER" | grep -qE '"nonce": "[0-9a-f]{64}"'; then ok; else
+    bad "the hearth offered no fleet join"; printf '%s\n' "$OFFER" | head -3 | sed 's/^/      /'; fi
 
-  # REACH, NEVER DEPTH. A fleet binds one principal's instruments, so admitting a device must not move
+  # EACH OFFER MINTS ITS OWN NONCE: a request answers one offer, never every offer the hearth makes.
+  step "a second offer carries a fresh nonce"
+  OFFER2=$($COMPOSE exec -T lararium-a $LARES fleet join offer 2>&1 | sed -n '/^{/,/^}/p')
+  local N1 N2
+  N1=$(printf '%s' "$OFFER" | sed -n 's/^ *"nonce": "\([0-9a-f]\{64\}\)".*/\1/p')
+  N2=$(printf '%s' "$OFFER2" | sed -n 's/^ *"nonce": "\([0-9a-f]\{64\}\)".*/\1/p')
+  if [ -n "$N1" ] && [ -n "$N2" ] && [ "$N1" != "$N2" ]; then ok; else bad "two offers carried one nonce (\"$N1\" / \"$N2\")"; fi
+
+  # THE ROOT HOLDS NO LEDGER, so the answer reads each request against the offer rebuilt over the scopes the face
+  # stands at: a well-formed request naming this browser's key but signed by no vessel refuses as
+  # `request-unsigned`, and the hearth signs nothing.
+  step "a request no vessel signed refuses by name"
+  local FORGED ANSWER ZSIG SEAL
+  ZSIG=$(printf '0%.0s' $(seq 128))
+  SEAL="09$(printf '0%.0s' $(seq 62))"
+  FORGED="{\"kind\":\"fleet-join-request\",\"nonce\":\"$N1\",\"vesselKey\":\"$KEY\",\"sealKey\":\"$SEAL\",\"requests\":[],\"signature\":\"$ZSIG\"}"
+  if printf '%s' "$FORGED" | $COMPOSE exec -T lararium-a sh -c 'cat > /tmp/leaf-forged-request.json'; then
+    if ANSWER=$($COMPOSE exec -T lararium-a $LARES fleet join answer /tmp/leaf-forged-request.json 2>&1); then
+      bad "the hearth answered a request no vessel signed"; printf '%s\n' "$ANSWER" | head -3 | sed 's/^/      /'
+    elif printf '%s' "$ANSWER" | grep -q 'request-unsigned' && ! printf '%s' "$ANSWER" | grep -q 'fleet-join-answer'; then ok
+    else bad "the forged request failed without refusing as request-unsigned"; printf '%s\n' "$ANSWER" | tail -3 | sed 's/^/      /'; fi
+  else bad "the forged request never reached A"; fi
+
+  # REACH, NEVER DEPTH. A fleet binds one principal's instruments, so offering a device a join must not move
   # the Nexus phase — a browser is not a second operator however many of them an operator runs.
-  # THE ARTIFACT A PERSON CARRIES. The prose form of `device-admit` prints the `#admit=…` fragment an operator
-  # pastes into the page or hands over as a link; an admit that printed none would hand the operator nothing.
-  #
-  # WHAT THIS STEP DOES NOT PROVE, and where that proof stands. The browser's own reader
-  # (`parseAdmitCarriage`, `packages/lararium-browser`) rides the built web bundle alone: the product image
-  # carries no importable copy, so a node probe inside a hearth cannot run it, and a host copy would read
-  # bytes of another build. The consuming half runs where a browser runs: the crossing walk
-  # (`tools/browser-ci.sh qa-admit node packages/lararium-web/tests/live-wiki.mjs crossing`) hands a
-  # host-issued fragment to a live page and reads the proven gate key back.
-  step "the admit prints a carriage fragment to hand over"
-  local CARRIAGE
-  # The fragment stands WHOLE on its own line: a line that carries anything past the base64url run names no
-  # fragment a page could take.
-  CARRIAGE=$($COMPOSE exec -T lararium-a $LARES device-admit --joinee-key "$KEY" 2>&1 \
-             | sed -n 's/^[[:space:]]*\(#admit=[A-Za-z0-9_-]\{1,\}\)[[:space:]]*$/\1/p' | tail -1)
-  if [ -n "$CARRIAGE" ]; then ok; else bad "the admit printed no whole carriage line to hand over"; fi
-
   step "the phase is UNMOVED — a fleet buys reach, never depth"
   if $COMPOSE exec -T lararium-a $LARES nexus seal show --json 2>&1 | grep -q '"phase":{"phase":"seed"'; then ok
-  else bad "admitting a device moved the Nexus phase"; fi
+  else bad "a fleet join moved the Nexus phase"; fi
   clear_all
 }
 

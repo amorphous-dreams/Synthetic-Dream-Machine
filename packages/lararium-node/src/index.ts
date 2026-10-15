@@ -192,6 +192,12 @@ export type { InitOptions, InitResult, FoundFaceOptions, FoundFaceResult } from 
 
 export { runDeviceAdmit } from "./commands/device-admit.js";
 export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "./commands/device-admit.js";
+// THE FLEET-JOIN DOOR: the root holder's offer and answer ride the store door; the joining vessel requests, lands
+// and abandons in its own process, with no vessel standing.
+export { runFleetJoinOffer, runFleetJoinAnswer, runFleetJoinRequest, runFleetJoinLand, runFleetJoinAbandon, FleetJoinRefused } from "./commands/fleet-join.js";
+export type { FleetJoinAnswerOptions } from "./commands/fleet-join.js";
+export { readJoinedFaceProof } from "./joined-face-proof.js";
+export type { JoinedFaceProof, JoinedFaceAbsence } from "./joined-face-proof.js";
 export { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest, resolveOwnerBurnHand } from "./commands/handle.js";
 export type { HandlePublishOptions, HandleBurnOptions, HandleRotateOptions, HandleAttestOptions, OwnerAuthHand } from "./commands/handle.js";
 
@@ -291,14 +297,6 @@ export { makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
 // The IoC follow — the node-fs LOCAL adapters for the private circle-graph + the recogniser's handle-book.
 // Both under the identity home, sealed under the vessel key, never federated (the `lares circle` door drives them via composeFollow).
 export { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE } from "./node-circle-store.js";
-// The persona-admission PER-VESSEL multitude-view (never fleet-syncs) and the airgapped ceremony's pending state:
-// three rows sealed under the vessel key, which the `lares persona admit` door drives.
-export {
-  recordAdmittedPersona, listAdmittedPersonas, isPersonaAdmitted,
-  stashEnrollmentSecret, bindEnrollmentToGrant, takeEnrollmentSecret, peekEnrollmentSecrets, stashSentMemo, peekSentMemo, takeSentMemo, clearPersonaAdmitPending,
-  withdrawAdmitOffer, withdrawAdmitGrant, PENDING_OFFER_LIMIT, SENT_MEMO_LIMIT,
-  ADMISSIONS_FILE, PENDING_ENROLL_FILE, PENDING_GRANT_FILE,
-} from "./node-persona-admit-store.js";
 // QR transport — GENERATE a scannable carriage QR (terminal / PNG / SVG / matrix, ECC H) + DECODE a still PNG
 // through an injected decoder shore (the headless node scanner + the browser camera both plug in behind it).
 export {
@@ -306,15 +304,8 @@ export {
   pngToImageData, decodeQrPng, HANDSHAKE_QR_ECC,
 } from "./qr-transport.js";
 export type { QrImageDecoder } from "./qr-transport.js";
-// The airgapped persona-admission ORCHESTRATION — the 5 flow functions the `lares persona admit` CLI thin-wraps
-// (mint/seal/open/ack composing the ceremony + the per-vessel store + the QR render), plus the §2a withdrawal
-// pair + M12's KEL-seq resolver.
-export {
-  offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
-  makeLocalPersonaKelHeadResolver, makeLocalPersonaKelHeadSeqResolver,
-  withdrawOfferFlow, withdrawGrantFlow,
-} from "./persona-admit-flow.js";
-export type { HopRender } from "./persona-admit-flow.js";
+// THIS vessel's local persona-KEL board, read: a KEL's head and its sequence off one board read.
+export { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 // The `bags/nexus` charter DOC adapter — the antigen roster's authority home read/written on disk (#66).
 export {
   readNexusDoc, parseNexusDoc, writeNexusDoc, renderNexusDoc, writeNexusSeal, writeNexusKahu, writeNexusPractice,
@@ -493,6 +484,8 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
 export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
 export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused, GATE_MEMORY_DIR } from "./gate-memory-rows.js";
+export { gateGrantFor, gateGrantRing } from "./gate-rings.js";
+export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gate-rings.js";
 export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow, custodyVeilKeys } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";

@@ -43,7 +43,7 @@ import {
   listPersonaRosterLines, loadVesselVerifyingKey, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
 } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
-import { readLocalPersonaKelChain, seatLocalPersonaKelChain } from "../src/persona-admit-flow.js";
+import { readLocalPersonaKelChain, seatLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";

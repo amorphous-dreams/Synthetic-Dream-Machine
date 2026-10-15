@@ -27,7 +27,9 @@ case "$*" in
   *"printenv LAR_PORT"*) echo 4321 ;;
   *"persona list --json"*) echo '{"ok":true,"data":{"personas":[]}}' ;;
   *"persona new 0"*) echo '{"verifyingKey":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}' ;;
-  *"device-admit --joinee-key"*) echo '{"hearthGatePubKey":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}' ;;
+  *"logs --no-color lares"*) printf 'lares-1  | [herm]   gate key: %s\nlares-1  | [lararium] gate key: %s\n' "$(printf 'c%.0s' $(seq 64))" "$(printf 'b%.0s' $(seq 64))" ;;
+  *"fleet join offer"*) printf '{\n  "kind": "fleet-join-offer",\n  "nonce": "n1"\n}\n[lares fleet join] carry the offer to the joining vessel\n' ;;
+  *"fleet join answer"*) printf '{\n  "kind": "fleet-join-answer",\n  "request": %s\n}\n[lares fleet join] carry the answer to the joining vessel\n' "$(cat)" ;;
   *"wiki list --json"*) printf '%s\\n' "$INFO_WIKIS" ;;
   *" --json"*) echo '{"ok":true}' ;;
   *"wiki active"*) printf "\\nactive wikis (1/4):\\n     lares\\n  rotatable pin budget: 3\\n" ;;
@@ -46,10 +48,29 @@ test("down removes containers and the scratch volumes", async () => {
   assert.match(r.calls, /down -v --remove-orphans/);
 });
 
-test("admit runs device-admit inside the node, with no TTY", async () => {
-  const r = await run(["admit", "abc"]);
-  assert.equal(r.status, 0);
-  assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs device-admit --joinee-key abc/);
+test("join offer runs fleet join offer inside the node, with no TTY, and prints the offer JSON alone", async () => {
+  const r = await run(["join", "offer"]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs fleet join offer$/m);
+  assert.deepEqual(JSON.parse(r.stdout), { kind: "fleet-join-offer", nonce: "n1" });
+  assert.doesNotMatch(r.stdout, /carry the offer/);
+});
+
+test("join answer pipes a host request file into the node and prints the answer JSON alone", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "browser-ci-req-"));
+  try {
+    const req = join(dir, "request.json");
+    await writeFile(req, '{"kind":"fleet-join-request","nonce":"n1"}');
+    const r = await run(["join", "answer", req]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec -T lares sh -c .*fleet join answer "\$f" "\$@".* packages\/lares-cli\/bin\/lares\.mjs$/m);
+    assert.doesNotMatch(r.calls, /--sync-url/);
+    assert.deepEqual(JSON.parse(r.stdout), { kind: "fleet-join-answer", request: { kind: "fleet-join-request", nonce: "n1" } });
+    const synced = await run(["join", "answer", req], { BROWSER_CI_SYNC_URL: "ws://lares:4321/ws" });
+    assert.match(synced.calls, /lares\.mjs --sync-url ws:\/\/lares:4321\/ws$/m);
+    assert.equal((await run(["join", "answer", join(dir, "absent.json")])).status, 2);
+    assert.equal((await run(["join", "bogus"])).status, 2);
+  } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
 test("ingest refuses an absolute or climbing path, and a missing carrier, by name", async () => {
@@ -180,17 +201,6 @@ test("get reads AS the mounted wiki by default, and takes an explicit --bag or -
   assert.equal((await run(["get", u, "--tag", "z"])).status, 2);
 });
 
-test("admit --fragment prints only the #admit= line", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "browser-ci-frag-"));
-  try {
-    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '{\\n  "kind": "x"\\n}\\n\\n[lares device-admit] carry this:\\n  #admit=QUJD\\n'\n`);
-    await chmod(join(dir, "docker"), 0o755);
-    const r = spawnSync("sh", [SH, "admit", "--fragment", "k"], { env: { PATH: `${dir}:${process.env.PATH}`, HOME: process.env.HOME }, encoding: "utf8" });
-    assert.equal(r.status, 0);
-    assert.equal(r.stdout, "#admit=QUJD\n");
-  } finally { await rm(dir, { recursive: true, force: true }); }
-});
-
 test("qa passes LARES_URL, BROWSER_CI_* and LIVE_WIKI_* through by name, never by value", async () => {
   const r = await run(["qa", "true"], { LARES_URL: "http://lares:4321", LIVE_WIKI_TOKEN: "s3cret", UNRELATED: "no" });
   assert.match(r.calls, /-e LARES_URL/);
@@ -215,10 +225,11 @@ test("an unknown verb and a bare call refuse by name", async () => {
   assert.equal((await run(["bogus"])).status, 2);
 });
 
-// ── the admit exchange (qa-admit) ─────────────────────────────────────────────────────────────────────────────
-// The fake runner asks for two carriages (a second fresh profile), a malformed key, and echoes what the host wrote
-// into the shared directory. The fake `exec … device-admit` answers a fragment derived from the key it was handed.
-async function runAdmit(runnerLines, env = {}, command = ["node", "x.mjs"]) {
+// ── the join exchange (qa-join) ───────────────────────────────────────────────────────────────────────────────
+// The fake runner runs one join per id (two fresh profiles, a malformed id, a node refusal), each in two legs: it asks
+// for an offer, writes the request a page would mint, asks for the answer, and echoes what the host wrote into the
+// shared directory. The fake `exec … fleet join answer` answers with the request it read on stdin.
+async function runJoin(runnerIds, env = {}, command = ["node", "x.mjs"]) {
   const dir = await mkdtemp(join(tmpdir(), "browser-ci-xchg-"));
   const log = join(dir, "calls.log");
   try {
@@ -227,47 +238,63 @@ printf '%s\\n' "$*" >> "$CALL_LOG"
 case "$*" in
   *"wiki list --json"*) printf '%s\\n' "$INFO_WIKIS"; exit 0 ;;
 esac
+await_file() { i=0; while [ ! -f "$1" ] && [ ! -f "$2" ] && [ "$i" -lt 100 ]; do i=$((i+1)); sleep 0.05; done; }
+got() { for f in "$@"; do [ -f "$f" ] && echo "GOT $(basename "$f"): $(cat "$f" | tr '\\n' ' ')"; done; return 0; }
 case "$*" in
   *" run "*)
-    for k in ${runnerLines.map((l) => `"${l}"`).join(" ")}; do
-      echo "ADMIT-REQUEST $k"
-      safe=$(printf '%s' "$k" | tr -c 'A-Za-z0-9' '_' | cut -c1-80)
-      i=0
-      while [ ! -f "$BROWSER_CI_EXCHANGE_DIR/$k.admit" ] && [ ! -f "$BROWSER_CI_EXCHANGE_DIR/$k.refused" ] && [ ! -f "$BROWSER_CI_EXCHANGE_DIR/$safe.refused" ] && [ "$i" -lt 100 ]; do i=$((i+1)); sleep 0.05; done
-      for f in "$BROWSER_CI_EXCHANGE_DIR/$k.admit" "$BROWSER_CI_EXCHANGE_DIR/$k.refused" "$BROWSER_CI_EXCHANGE_DIR/$safe.refused"; do [ -f "$f" ] && echo "GOT $(basename "$f"): $(cat "$f")"; done
+    x=$BROWSER_CI_EXCHANGE_DIR
+    for k in ${runnerIds.map((l) => `"${l}"`).join(" ")}; do
+      echo "JOIN-OFFER $k"
+      safe=$(printf '%s' "$k" | tr -c 'a-z0-9-' '_' | cut -c1-64)
+      await_file "$x/$k.offer" "$x/$safe.refused"
+      got "$x/$k.offer" "$x/$safe.refused"
+      [ -f "$x/$k.offer" ] || continue
+      if [ "$k" != "no-request" ]; then printf '{"kind":"fleet-join-request","id":"%s"}' "$k" >"$x/$k.request"; fi
+      echo "JOIN-REQUEST $k"
+      await_file "$x/$k.answer" "$x/$k.refused"
+      got "$x/$k.answer" "$x/$k.refused"
     done
     echo "passthrough line"
     exit \${RUNNER_EXIT:-0} ;;
-  *"device-admit --joinee-key cccc"*) echo "node refuses" >&2; exit 1 ;;
-  *"device-admit --joinee-key "*) k=\${*##*--joinee-key }; printf '{\\n}\\n\\n[lares device-admit] carry:\\n  #admit=FRAG-%s\\n' "$k" ;;
+  *"fleet join offer"*) [ -z "$OFFER_REFUSES" ] || { echo "node refuses the offer" >&2; exit 1; }
+    printf '{\\n  "kind": "fleet-join-offer"\\n}\\n[lares fleet join] carry the offer\\n' ;;
+  *"fleet join answer"*) req=$(cat)
+    case "$req" in *refuse-me*) echo "node refuses the request" >&2; exit 1 ;; esac
+    printf '{\\n  "kind": "fleet-join-answer",\\n  "request": %s\\n}\\n[lares fleet join] carry the answer\\n' "$req" ;;
 esac
 `);
     await chmod(join(dir, "docker"), 0o755);
-    const r = spawnSync("sh", [SH, "qa-admit", ...command], { env: { PATH: `${dir}:${process.env.PATH}`, HOME: process.env.HOME, CALL_LOG: log, BROWSER_CI_PORT: "5499", ...env }, encoding: "utf8" });
+    const r = spawnSync("sh", [SH, "qa-join", ...command], { env: { PATH: `${dir}:${process.env.PATH}`, HOME: process.env.HOME, CALL_LOG: log, BROWSER_CI_PORT: "5499", ...env }, encoding: "utf8" });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     return { ...r, calls };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
-test("qa-admit answers each ADMIT-REQUEST with that key's fragment, any number of times per run", async () => {
-  const a = "a".repeat(64), b = "b".repeat(64);
-  const r = await runAdmit([a, b]);
+test("qa-join answers each JOIN-OFFER with an offer and each JOIN-REQUEST with that request's answer, any number of joins per run", async () => {
+  const a = "a".repeat(32), b = "join-b";
+  const r = await runJoin([a, b]);
   assert.equal(r.status, 0, r.stderr);
-  assert.match(r.stdout, new RegExp(`GOT ${a}\\.admit: #admit=FRAG-${a}`));
-  assert.match(r.stdout, new RegExp(`GOT ${b}\\.admit: #admit=FRAG-${b}`));
+  for (const id of [a, b]) {
+    assert.match(r.stdout, new RegExp(`GOT ${id}\\.offer: \\{ +"kind": "fleet-join-offer" \\}`));
+    assert.match(r.stdout, new RegExp(`GOT ${id}\\.answer: \\{ +"kind": "fleet-join-answer", +"request": \\{"kind":"fleet-join-request","id":"${id}"\\} \\}`));
+  }
+  assert.doesNotMatch(r.stdout, /carry the (offer|answer)/, "the JSON alone crosses");
   assert.match(r.stdout, /passthrough line/, "every other runner line passes through");
 });
 
-test("qa-admit refuses a malformed key by name and a node refusal by name, and the runner status carries through", async () => {
-  const bad = await runAdmit(["not-a-key"]);
-  assert.match(bad.stdout, /\.refused: the joinee key must be 64 lowercase hex characters/);
-  const hex = "c".repeat(64);
-  const refused = await runAdmit([hex]);
-  assert.match(refused.stdout, new RegExp(`GOT ${hex}\\.refused: node refuses`));
-  assert.equal((await runAdmit([], { RUNNER_EXIT: "7" })).status, 7);
+test("qa-join refuses a malformed id, an absent request and a node refusal by name, and the runner status carries through", async () => {
+  const bad = await runJoin(["Not_An_Id"]);
+  assert.match(bad.stdout, /\.refused: the join id must be 1-64 lowercase letters, digits or dashes/);
+  const absent = await runJoin(["no-request"]);
+  assert.match(absent.stdout, /GOT no-request\.refused: no request file stands at no-request\.request/);
+  const offerRefused = await runJoin(["join-c"], { OFFER_REFUSES: "1" });
+  assert.match(offerRefused.stdout, /GOT join-c\.refused: node refuses the offer/);
+  const answerRefused = await runJoin(["refuse-me"]);
+  assert.match(answerRefused.stdout, /GOT refuse-me\.refused: node refuses the request/);
+  assert.equal((await runJoin([], { RUNNER_EXIT: "7" })).status, 7);
 });
 
-test("plain qa answers no request and the runner gets the exchange directory by name", async () => {
+test("plain qa answers no join leg and the runner gets the exchange directory by name", async () => {
   const r = await run(["qa", "true"]);
   assert.match(r.calls, /-e BROWSER_CI_EXCHANGE=\/exchange/);
 });
@@ -300,6 +327,9 @@ test("CONTROL: info reads the mounted wiki document from a registered JSON syste
     url: "automerge:21Bk4FPMkZ6Gpbde8XXvZfxhCZcg", kind: "system", bag: "lar:///ha.ka.ba/bags/lares",
   });
   assert.deepEqual(info.wikiDocsRegistered, [{ url: info.wikiDoc.url, kind: "system" }]);
+  assert.equal(info.gateKey, "b".repeat(64), "the gate key reads off the hearth's own boot line, never the crossroads line");
+  assert.match(r.calls, /logs --no-color lares/);
+  assert.doesNotMatch(r.calls, /device-admit|fleet join/);
   assert.equal(info.recipe.leafReadsDefaultRecipe, true);
   assert.match(r.calls, /wiki list --json/);
 });
@@ -314,8 +344,8 @@ test("info refuses a walk start by name when the wiki has no document", async ()
   assert.equal(r.stdout, "");
 });
 
-test("qa-admit refuses a live walk before the runner starts when its wiki document is absent", async () => {
-  const r = await runAdmit([], {
+test("qa-join refuses a live walk before the runner starts when its wiki document is absent", async () => {
+  const r = await runJoin([], {
     BROWSER_CI_WIKI: "lares",
     INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [] } }),
   }, ["node", "packages/lararium-web/tests/live-wiki.mjs", "crossing"]);
@@ -325,9 +355,9 @@ test("qa-admit refuses a live walk before the runner starts when its wiki docume
   assert.doesNotMatch(r.calls, / run .*qa /, "the QA container stays unstarted");
 });
 
-test("qa-admit treats empty and non-Automerge document URLs as absent", async () => {
+test("qa-join treats empty and non-Automerge document URLs as absent", async () => {
   for (const automergeUrl of ["", "https://example.test/doc"]) {
-    const r = await runAdmit([], {
+    const r = await runJoin([], {
       BROWSER_CI_WIKI: "lares",
       INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [
         { slug: "lares", uri: "lar:///ha.ka.ba/bags/lares", kind: "system", automergeUrl },
@@ -340,8 +370,8 @@ test("qa-admit treats empty and non-Automerge document URLs as absent", async ()
   }
 });
 
-test("CONTROL: qa-admit starts a live walk when the registered document is an Automerge URL", async () => {
-  const r = await runAdmit([], {
+test("CONTROL: qa-join starts a live walk when the registered document is an Automerge URL", async () => {
+  const r = await runJoin([], {
     BROWSER_CI_WIKI: "lares",
     INFO_WIKIS: JSON.stringify({ ok: true, data: { wikis: [
       { slug: "lares", uri: "lar:///ha.ka.ba/bags/lares", kind: "system", automergeUrl: "automerge:21Bk4FPMkZ6Gpbde8XXvZfxhCZcg" },
@@ -370,4 +400,39 @@ test("the live wiki walk requires its document and asserts that quick edit flows
   assert.match(source, /viewFrame\(page, AKI\)\.waitFor\(\{ state: "visible"/);
   assert.match(source, /Confirm changes to this tiddler/);
   assert.match(source, /level\.fill\("3"\)/, "CONTROL: the standard field edit and save remain in the walk");
+});
+
+test("the runner side speaks both legs: JOIN-OFFER waits on <id>.offer, JOIN-REQUEST writes <id>.request whole and waits on <id>.answer", async () => {
+  const { requestOffer, requestAnswer, JoinRefused } = await import("./browser-ci-join.mjs");
+  const dir = await mkdtemp(join(tmpdir(), "browser-ci-runner-"));
+  const lines = [];
+  const log = console.log;
+  console.log = (line) => { lines.push(String(line)); };
+  try {
+    // A fake host: answer each line it sees by writing the leg's file.
+    const host = setInterval(async () => {
+      for (const line of lines.splice(0)) {
+        const [verb, id] = line.split(" ");
+        if (verb === "JOIN-OFFER") await writeFile(join(dir, `${id}.offer`), '{\n  "kind": "fleet-join-offer"\n}\n');
+        if (verb === "JOIN-REQUEST") {
+          const request = JSON.parse(await readFile(join(dir, `${id}.request`), "utf8"));
+          await writeFile(join(dir, `${id}.answer`), JSON.stringify({ kind: "fleet-join-answer", request }));
+        }
+      }
+    }, 20);
+    try {
+      const { id, offer } = await requestOffer({ dir, timeoutMs: 5_000 });
+      assert.match(id, /^[0-9a-f]{32}$/);
+      assert.deepEqual(offer, { kind: "fleet-join-offer" });
+      const answer = await requestAnswer(id, { kind: "fleet-join-request", n: 1 }, { dir, timeoutMs: 5_000 });
+      assert.deepEqual(answer, { kind: "fleet-join-answer", request: { kind: "fleet-join-request", n: 1 } });
+      await writeFile(join(dir, "x.refused"), "node refuses\n");
+      await assert.rejects(requestAnswer("x", { kind: "fleet-join-request" }, { dir, timeoutMs: 5_000 }), (e) => e instanceof JoinRefused && /node refuses/.test(e.message));
+      await assert.rejects(requestAnswer(id, { kind: "fleet-join-offer" }, { dir }), /not fleet-join-request/);
+      await assert.rejects(requestOffer({ dir: "" }), /BROWSER_CI_EXCHANGE stands unset/);
+    } finally { clearInterval(host); }
+  } finally {
+    console.log = log;
+    await rm(dir, { recursive: true, force: true });
+  }
 });

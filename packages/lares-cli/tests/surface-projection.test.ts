@@ -57,7 +57,7 @@ describe("the signing hand stays the human's", () => {
     const signing = new Set(projectCommands("cli").filter((e) => e.signs).map((e) => e.name));
     // each of these runs a key: founding (`vessel found`/`seed`), minting a face, staking standing,
     // sealing an invite, quorum acts
-    for (const name of ["vessel", "vault", "persona", "cabal", "edge", "nexus", "device-admit"]) {
+    for (const name of ["vessel", "vault", "persona", "cabal", "edge", "nexus", "fleet"]) {
       expect(signing.has(name)).toBe(true);
     }
     // and a read-only verb never claims to hold one

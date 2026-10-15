@@ -18,7 +18,8 @@
  */
 import {
   openBrowserVessel,
-  parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage,
+  parseAdmitCarriage, toAdmitCarriage,
+  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, BrowserFleetJoinRefused,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
@@ -116,29 +117,11 @@ async function readOracle(read: OracleReader): Promise<void> {
 const projectionSink = createProjectionSink($("projection"), { inputMaxChars: DOM_INPUT_MAX_CHARS });
 
 /**
- * Take a carried `device-admit/v1` payload off `location.hash`, and CLEAR the fragment once taken.
+ * The tab-local hand-off the fleet-join landing writes: a carriage waiting for the boot that consumes it.
+ * The admit enters the vessel at the identity seat — before the PersonaGroup, the relay caps, and the
+ * Handle stand — so a landed admission re-enters through boot rather than reaching behind a live cap stack. This page performs that re-entry itself; the human pastes and taps.
  *
- * The DECODE lives in `@lararium/browser` (parseAdmitCarriage) and is tested there against fixed bytes;
- * this half holds only what needs a browser: reading the fragment, and clearing it. Clearing matters —
- * a URL left holding a delegation leaves it in the address bar, the history, and every screenshot of the
- * tab, and the payload has already reached the vessel by then.
- */
-function takeAdmitFromLocation(): DeviceAdmitPayload | null {
-  const payload = parseAdmitCarriage(location.hash);
-  if (!payload) return null;
-  history.replaceState(null, "", location.pathname + location.search);
-  console.log("[vessel] ADMIT carried in — this vessel JOINS an existing PersonaGroup rather than founding one.");
-  return payload;
-}
-
-/**
- * The tab-local hand-off the PASTE door writes: a carriage the human handed to this page, waiting for the
- * boot that consumes it. The admit enters the vessel at the identity seat — before the PersonaGroup, the
- * relay caps, and the Handle stand — so a pasted admission re-enters through boot rather than reaching
- * behind a live cap stack. This page performs that re-entry itself; the human pastes and taps, once.
- *
- * The stash rides sessionStorage, never the URL: a fragment left in the address bar carries a signed
- * delegation into the history and into every screenshot of the tab. sessionStorage closes with the tab,
+ * The stash rides sessionStorage, never the URL. sessionStorage closes with the tab,
  * and this read REMOVES the entry — the carriage exists for exactly one boot.
  */
 const ADMIT_STASH_KEY = "lares:admit-carriage";
@@ -148,17 +131,27 @@ function takeStashedAdmit(): DeviceAdmitPayload | null {
   if (!carriage) return null;
   try { sessionStorage.removeItem(ADMIT_STASH_KEY); } catch { /* the read already holds the bytes */ }
   const payload = parseAdmitCarriage(carriage);
-  if (payload) console.log("[vessel] ADMIT taken from the paste door — this vessel JOINS an existing PersonaGroup.");
+  if (payload) console.log("[vessel] ADMIT taken from the fleet-join landing — this vessel JOINS an existing PersonaGroup.");
   return payload;
 }
 
+/** The fleet-join file a paste carries, by its `kind`: an offer to request against, an answer to land, or neither. */
+function fleetJoinFileOf(text: string): { readonly kind: "fleet-join-offer" | "fleet-join-answer"; readonly value: unknown } | null {
+  let value: unknown;
+  try { value = JSON.parse(text.trim()); } catch { return null; }
+  const kind = typeof value === "object" && value !== null ? (value as { kind?: unknown }).kind : undefined;
+  return kind === "fleet-join-offer" || kind === "fleet-join-answer" ? { kind, value } : null;
+}
+
 /**
- * Mount the identity + admit surface: this vessel names its own key, writes the command that admits it,
- * and takes the answer back as a paste.
+ * Mount the identity + admit surface: this vessel names its own key, writes the command that starts a fleet join,
+ * and takes the files back as pastes. THE FLEET-JOIN DOOR: the root holder's offer pastes in, and this browser
+ * answers with its request (its face-scoped keys mint here); the root holder's answer pastes in, and this browser
+ * lands it and re-enters boot on the admit it carried. The paste box reads a fleet-join offer or answer only.
  *
  * The alternative path costs a human a devtools console on a phone. The key, the command, and the door
  * all live on the page instead — the vessel says the one thing only it holds, and reads back the one
- * thing only the node can sign. `parseAdmitPaste` adjudicates: a refusal states itself and the page
+ * thing only the node can sign. `fleetJoinFileOf` adjudicates: a refusal states itself and the page
  * stands unchanged, because a garbled paste means the admit DID NOT ARRIVE, never that an attack landed.
  */
 function mountAdmitSurface(verifyingKeyHex: string): void {
@@ -166,7 +159,7 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
   const paste = document.getElementById("admit-paste") as HTMLTextAreaElement | null;
   const apply = document.getElementById("admit-apply") as HTMLButtonElement | null;
   keyEl.textContent = verifyingKeyHex;
-  cmdEl.textContent = formatAdmitCommand(verifyingKeyHex);
+  cmdEl.textContent = "lares fleet join offer --out offer.json";
 
   // Copy where the platform grants a clipboard; SELECT where it does not (an insecure origin, an older
   // browser). A selected span is a thumb away from the OS copy affordance, so the path never dead-ends.
@@ -190,23 +183,49 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
   }
 
   if (!paste || !apply) return;
-  apply.addEventListener("click", () => {
-    const payload = parseAdmitPaste(paste.value);
-    if (!payload) {
-      statusEl.textContent = "✗ no admit read in that paste — carry the whole `#admit=…` line from the node.";
-      statusEl.className = "err";
-      return;
-    }
-    statusEl.textContent = `✓ admit read — signed by ${payload.signerDid.slice(0, 12)}… · re-entering boot`;
-    statusEl.className = "ok";
-    paste.value = "";
-    try { sessionStorage.setItem(ADMIT_STASH_KEY, toAdmitCarriage(payload)); }
+  const stashAndReboot = (carriage: string): void => {
+    try { sessionStorage.setItem(ADMIT_STASH_KEY, carriage); }
     catch {
-      statusEl.textContent = "✗ this browser withholds sessionStorage — the admit cannot be handed to boot here.";
+      statusEl.textContent = "✗ this browser withholds sessionStorage — the admit cannot reach boot here.";
       statusEl.className = "err";
       return;
     }
     location.reload();
+  };
+  apply.addEventListener("click", () => {
+    const file = fleetJoinFileOf(paste.value);
+    if (file) {
+      apply.disabled = true;
+      void (async () => {
+        try {
+          if (file.kind === "fleet-join-offer") {
+            // Another join standing pending would strand this page: the human may abandon it here, by name.
+            const request = await browserFleetJoinRequest({ offer: file.value }).catch(async (err: unknown) => {
+              if (!(err instanceof BrowserFleetJoinRefused && err.refusal === "join-pending")) throw err;
+              if (!confirm("Another fleet join stands pending in this browser. Abandon it, and request against this offer instead?")) throw err;
+              await browserFleetJoinAbandon();
+              return browserFleetJoinRequest({ offer: file.value });
+            });
+            paste.value = JSON.stringify(request, null, 2);
+            paste.select();
+            statusEl.textContent = "✓ request minted — carry it back to the root holder: `lares fleet join answer <request-file>`, then paste the answer here.";
+            statusEl.className = "ok";
+            return;
+          }
+          const { admit } = await browserFleetJoinLand({ answer: file.value });
+          statusEl.textContent = `✓ answer landed — signed by ${admit.signerDid.slice(0, 12)}… · re-entering boot`;
+          statusEl.className = "ok";
+          paste.value = "";
+          stashAndReboot(toAdmitCarriage(admit));
+        } catch (err) {
+          statusEl.textContent = err instanceof BrowserFleetJoinRefused ? `✗ refused — ${err.message}` : `✗ ${String(err)}`;
+          statusEl.className = "err";
+        } finally { apply.disabled = false; }
+      })();
+      return;
+    }
+    statusEl.textContent = "✗ not a fleet-join offer or answer — paste the whole offer or answer file.";
+    statusEl.className = "err";
   });
 }
 
@@ -227,15 +246,8 @@ async function bootVessel(): Promise<void> {
   // its own, and the proof fails closed — a correct refusal that looks exactly like a broken socket.
   // The node vessel prints this key in its boot banner.
   const relayGatePubKey = new URLSearchParams(location.search).get("gate") ?? undefined;
-  // #admit=<base64url> → a device-admit/v1 payload. It rides the FRAGMENT because a browser never
-  // transmits one: the bytes reach this vessel by whatever the human carried them with, and no server —
-  // not even the relay — sees them in transit. A signed capability needs no trusted channel; a carrier
-  // may withhold it, never forge it. Fetching it instead would make this vessel a client petitioning an
-  // authority for its own admission, and would demand that authority be reachable at the moment of asking.
-  // Two doors, one seat. A URL fragment carries an admit from a scan or a click; the on-page paste door
-  // stashes one for the next boot. The fragment leads (a human who just opened a carried link means that
-  // link), and the stash answers when no fragment stands.
-  const admit = takeAdmitFromLocation() ?? takeStashedAdmit();
+  // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
+  const admit = takeStashedAdmit();
   // A local boot and a CROSSED boot look identical from the outside: both render, both say "ready". So
   // the vessel names which one it just performed. A shore nobody can see is a shore nobody watches, and an
   // absent crossing that reports nothing reads exactly like a crossing that worked.
@@ -288,10 +300,12 @@ async function bootVessel(): Promise<void> {
     // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
     // by that opening instead of opening the key store a second time just to paint it.
     const did = didFromVerifyingKey(result.identity.verifyingKey);
+    // A landed fleet join leaves its pending row only now that the vessel stood on its admit.
+    if (admit) void browserFleetJoinSettle().catch((err: unknown) => console.warn("[vessel] the landed fleet join did not settle:", err));
     mountAdmitSurface(result.identity.verifyingKey);
     if (relayUrl) {
       console.log(`[vessel] this leaf's key: ${did}`);
-      console.log(`[vessel] to admit it, on the node:  ${formatAdmitCommand(did)}`);
+      console.log("[vessel] to join a face's fleet, on the root holder: lares fleet join offer --out offer.json, then paste the offer here");
     }
     void readOracle(result.readOracle);         // the vessel stands, so it can prove at the peer's gate
     // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.

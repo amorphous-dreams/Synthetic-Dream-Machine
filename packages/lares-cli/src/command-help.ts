@@ -250,7 +250,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
       "stand --install      found a vessel that holds none, then link `lares` globally — the founding runs first and stays inside LAR_ROOT; the mempalace sidecar has its own door, `mempalace install`",
       "stand --init         founds the same, AND wires every AI surface (reaches ~/.claude etc; `vessel wire` is the door for that alone)",
-      "stand --admit <file>        join an existing operator PersonaGroup",
       "wire [--claude|--codex|--copilot|--vscode]   aim that surface here; no flag aims them all",
       "wire --observe       REPORT what a wiring would touch; write nothing",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
@@ -437,14 +436,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>… | guardian view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>… | guardian view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
       "`lares handle publish` performs the announce); the SEAT stands it for a Kahu chair on this node and " +
       "needs no Handle and carries a private chair label. `--split-root` opts into recovery shares. `wear` switches the active persona (reboot-to-switch — one face to the " +
-      "mesh). Local-first: a write lands on this node first and rides up when a hearth answers. A joinee " +
-      "receives a root by admit and never mints here.",
+      "mesh). Local-first: a write lands on this node first and rides up when a hearth answers. A joining " +
+      "vessel takes a face by `lares fleet join` and never mints its root here.",
     examples: [
       "lares persona new 0 --name '<label>' --seat [--chair '<chair label>']",
       "lares persona new 1 --name '<label>' --seat [--chair '<chair label>']",
@@ -467,7 +466,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--seat             (new) stand it for a Kahu chair on THIS node (no Handle needed)",
       "--chair <label>    (new) private label for a seat claim; pass with --seat",
       "--split-root       (new) opt into arming the 2-of-3 recovery split",
-      "admit <sub>        offer | grant | open | accept | list — airgapped device-to-device hand-off (QR 3-hop)",
       "reissue            the worn face's key at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
       "--nexus <aid>      (reissue) the Nexus; absent, this vessel's own charter",
       "guardian show      the face's prefix, which a guardian's offer names, and the set it holds",
@@ -597,6 +595,30 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--act <act-cid>    (cosign) sign and land that act; absent, the verb only reads the partial",
     ],
     next: ["lares cabal join --realm <realm-id>   # reads every shadow the crossing meets", "lares nexus kapae --list   # the PRESENTER board — a different kind of setting-aside"],
+  },
+
+  fleet: {
+    usage: "usage: lares fleet join <offer | request <offer-file> | answer <request-file> | land <answer-file> | abandon>",
+    synopsis:
+      "THE FLEET-JOIN DOOR: one face's fleet takes a new vessel of the same human, by three files carried by hand. " +
+      "The joining vessel founds a PLACE first and mints its own face-scoped keys there; the root holder's answer " +
+      "carries the device edge, a certificate and a grant per scope, the gate pin and canon list inside the root's " +
+      "signature, and the face's address secret sealed to the request. The joining vessel's acts run with no vessel standing.",
+    details: [
+      "  join offer [--out FILE]                     on the root holder: the face, its root key, a nonce, the scopes it stands at",
+      "  join request <offer-file> [--out FILE]      on the joining place: its face-scoped keys mint; the join stays pending",
+      "  join answer <request-file> [--out FILE] [--sync-url URL]   on the root holder: the signed answer",
+      "  join land <answer-file>                     on the joining place: the face lands",
+      "  join abandon                                on the joining place: the pending join leaves",
+    ],
+    examples: [
+      "lares fleet join offer --out offer.json                      # on the root holder",
+      "lares fleet join request offer.json --out request.json       # on the new vessel, a place already founded",
+      "lares fleet join answer request.json --sync-url ws://hearth:7777/ws --out answer.json",
+      "lares fleet join land answer.json                            # on the new vessel",
+    ],
+    flags: ["--out FILE        write the file the next vessel reads, instead of printing it", "--sync-url URL    the url the new vessel dials this hearth at"],
+    next: ["lares vessel stand --with-web"],
   },
 
   raise: {

@@ -154,7 +154,7 @@ import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { askIslandMemory, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
-import { readLocalPersonaKelChain }       from "./persona-admit-flow.js";
+import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 
@@ -1324,7 +1324,7 @@ async function prepareNodeBootOn(
   // `lares vessel found`-ed) → skip the dial rather than crash the boot (fail-open to inert; a dial needs a real card).
   let nexusDial: NexusClientDial | null = null;
   // The dial itself fires in `openDaemon`, once the daemon doc is read — the identity it presents carries this vessel's OWN
-  // device-delegation edge (the one `vessel found --admit` seated), so the peer's keyholder vouches it
+  // device-delegation edge (the one a fleet-join landing seated), so the peer's keyholder vouches it
   // `same-operator` (the FLEET class every same-operator door reads) rather than the cross-operator floor.
 
   // ── Main-resident residency MECHANISM (sovereign-worker: policy in the worker,

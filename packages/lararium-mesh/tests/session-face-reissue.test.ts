@@ -1,12 +1,12 @@
 /** The gate accepts the verified hand-over head; local session supply must read the same head. */
 import { describe, expect, test } from "vitest";
-import { readFileSync } from "node:fs";
-import { checkVesselChain, foldWithdrawals } from "../src/face-authority.js";
+import * as ed25519 from "@noble/ed25519";
+import { checkVesselChain, foldWithdrawals, type VesselFaceKeyCustody } from "../src/face-authority.js";
 import { followNexusKeyLine, signNexusKeyHandOver } from "../src/nexus-key-line.js";
-import { supplySessionFace, type FaceAdmitReading } from "../src/session-face.js";
-import { chain, pair, signHex } from "./face-proof-fixture.js";
+import { SessionTable, sessionBinding } from "../src/session-contract.js";
+import { openJoinedFaceSession, supplySessionFace, type FaceAdmitReading } from "../src/session-face.js";
+import { chain, history, pair, signHex, vesselOf, type Pair } from "./face-proof-fixture.js";
 
-const red = process.env.LAR_UNBUILT_REDS === "1" ? test : test.skip;
 const NEXUS = "nexus-reissue.synthetic";
 const GROUP = "b7f1c2a9d4e60381";
 
@@ -48,19 +48,41 @@ describe("a reissued face opens its local session", () => {
       .toEqual({ refusal: "admit-other-face" });
   });
 
-  red("JOINED_VESSEL_CERTIFIES_OWN_KEY: a borrowed face certificate cannot open a local session", async () => {
+  test("JOINED_VESSEL_CERTIFIES_OWN_KEY: a borrowed face certificate cannot open a local session", async () => {
     const c = await chain("joined-vessel", NEXUS);
     const other = await chain("joined-vessel-other", NEXUS);
     const fold = foldWithdrawals(c.scope);
     if (!("memory" in fold)) throw new Error(fold.refusal);
-    const checked = checkVesselChain({ admitted: c.scope, certificate: c.certificate, memory: fold.memory });
-    if (checked.verdict !== "verified") throw new Error(checked.verdict);
     const admit = { verdict: { state: "held", reason: "held", nym: c.face.key }, head: c.face.key,
       nexus: NEXUS, admitRef: "admit-ref", revision: "board-head" };
     const grant = { personaGroup: GROUP, faceKey: c.face.key, nexus: NEXUS, revision: "grant-head" };
-    // The pure supplier already refuses this. The red asks for the missing production join/session caller.
-    expect(supplySessionFace({ chain: checked.chain, vesselFaceKey: other.vessel.key, admit, grant })).toEqual({ refusal: "chain-other-vessel" });
-    const caller = readFileSync(new URL("../src/session-face.ts", import.meta.url), "utf8");
-    expect(/openJoinedFaceSession/.test(caller)).toBe(true);
+    const custodyOf = (by: Pair): VesselFaceKeyCustody => ({ signAsVesselFace: (_scope, _key, image) => ed25519.signAsync(image, by.secret) });
+    const base = { binding: sessionBinding("socket"), profile: "verb", admitted: c.scope, memory: fold.memory, admit, grant, apart: [] };
+
+    // CONTROL: the vessel's own certificate, over the key its custody row names, opens and mints its signer.
+    const table = new SessionTable("owner-epoch-joined");
+    const opened = await openJoinedFaceSession({ ...base, table, certificate: c.certificate, vesselFaceKey: c.vessel.key, custody: custodyOf(c.vessel) });
+    if (!("signer" in opened)) throw new Error(opened.refusal);
+    expect(opened.signer.certificate.vesselFaceKey).toBe(c.vessel.key);
+    expect(table.size).toBe(1);
+
+    // A sibling vessel of the same face holds its own certificate, which verifies under the face key as well as
+    // this vessel's own. Borrowed here, it opens nothing: this vessel's custody row names another key.
+    const sibling = await vesselOf(c, "joined-vessel-sibling");
+    const shut = new SessionTable("owner-epoch-joined");
+    expect(await openJoinedFaceSession({ ...base, table: shut, certificate: sibling.certificate, vesselFaceKey: c.vessel.key, custody: custodyOf(c.vessel) }))
+      .toEqual({ refusal: "chain-other-vessel" });
+    // Nor does the sibling's certificate open with the sibling's key named, where this vessel's custody signs.
+    expect(await openJoinedFaceSession({ ...base, table: shut, certificate: sibling.certificate, vesselFaceKey: sibling.vessel.key, custody: custodyOf(c.vessel) }))
+      .toEqual({ refusal: "custody-astray", cause: expect.anything() });
+    // A withdrawn key opens nothing, whoever holds its certificate.
+    const learned = foldWithdrawals(c.scope, await history(c, [c.vessel.key]));
+    if (!("memory" in learned)) throw new Error(learned.refusal);
+    expect(await openJoinedFaceSession({ ...base, table: shut, memory: learned.memory, certificate: c.certificate, vesselFaceKey: c.vessel.key, custody: custodyOf(c.vessel) }))
+      .toEqual({ refusal: "chain-refused", verdict: "withdrawn" });
+    // The other face's certificate refuses at this vessel's ground.
+    expect(await openJoinedFaceSession({ ...base, table: shut, certificate: other.certificate, vesselFaceKey: c.vessel.key, custody: custodyOf(c.vessel) }))
+      .toEqual({ refusal: "chain-refused", verdict: "invalid", cause: "certificate-other-face" });
+    expect(shut.size).toBe(0);
   });
 });

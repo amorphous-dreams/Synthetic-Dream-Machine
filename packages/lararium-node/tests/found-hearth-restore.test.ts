@@ -30,7 +30,7 @@ import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
 import { listPersonaRosterLines, makeNodePersonaPetnameStore } from "../src/node-vessel-identity.js";
 import { ownedStore } from "../src/owned-store.js";
-import { readLocalPersonaKelChain } from "../src/persona-admit-flow.js";
+import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { heldSeatKey } from "../src/seat-key-store.js";
 import { RESTORE_PENDING_FILE } from "../src/vault-carriers.js";
 import { larDataDir, larIdentityDir, larSealHome } from "../src/vessel-paths.js";

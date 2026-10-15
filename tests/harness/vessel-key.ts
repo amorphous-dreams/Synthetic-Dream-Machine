@@ -1,54 +1,50 @@
 /**
- * harness/vessel-key — mint (or load) a staged vessel's OWN key under ITS root.
+ * harness/vessel-key — mint a staged vessel's OWN per-Nexus key under ITS root.
  *
  * The identity dir resolves from `LAR_ROOT` at call time, never from a path argument; a test process
- * carries no `LAR_ROOT`, so calling the identity mint in-process reaches the operator's home key. The
- * mint runs in a subprocess under the joiner's env instead — the same function `lares vessel found`
- * loads from, so the key the founder admits is the key the joiner's daemon boots on.
+ * carries no `LAR_ROOT`, so calling a key mint in-process reaches the operator's home. The mint runs in
+ * a subprocess under the vessel's env instead, inside the custody its staging founded.
  */
 
 import { spawn } from "node:child_process";
 import { join } from "node:path";
-import { seedTestCustody } from "./test-door.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
-const IDENTITY  = join(REPO_ROOT, "packages/lararium-node/dist/src/node-vessel-identity.js");
 const NODE      = join(REPO_ROOT, "packages/lararium-node/dist/src/index.js");
 const ROUTE     = join(REPO_ROOT, "tools/test-custody-route.mjs");
 
-/** The joiner's Ed25519 verifying key (hex), minted under `root` if absent. */
-export function mintVesselKey(root: string): Promise<string> {
-  // A founding seals custody before the first identity file, so the joiner's custody is founded (with the harness's
-  // explicit test route) before its key mints; the later `vessel found --admit` then finds the tree standing.
-  seedTestCustody(root);
-  // THE MINT STANDS INSIDE THE CUSTODY THE SEEDING FOUNDED. A vessel key mints only inside a held custody, under its
-  // one claim, so the subprocess seats a holder over the staged root and opens it under the published test route
-  // before it mints, and locks it once the key stands.
+const FACE_KEYS = join(REPO_ROOT, "packages/lararium-node/dist/src/face-key-custody.js");
+
+/**
+ * Stand face `handleIndex` at the staged vessel's own (primary) Nexus: mint its per-Nexus key under `root`, as an
+ * act that presents the face there would. Answers the scope it stands at. Runs in a subprocess under the
+ * vessel's env, inside the custody its staging founded.
+ */
+export function mintStagedNexusKey(root: string, handleIndex = 0): Promise<{ readonly nexus: string; readonly faceKey: string }> {
   const script =
-    `import { generateOrLoadVesselIdentity } from ${JSON.stringify(IDENTITY)};\n` +
-    `import { FsCustodyIo, makeCustodyHolder, seatCustody, vesselCustodyHomes } from ${JSON.stringify(NODE)};\n` +
+    `import { FsCustodyIo, makeCustodyHolder, seatCustody, vesselCustodyHomes, primaryNexusAid, larSealHome } from ${JSON.stringify(NODE)};\n` +
+    `import { mintNexusKey, nexusKeyPublicOf } from ${JSON.stringify(FACE_KEYS)};\n` +
     `import { TEST_PASSPHRASE } from ${JSON.stringify(ROUTE)};\n` +
     `const homes = vesselCustodyHomes();\n` +
     `const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });\n` +
     `const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);\n` +
     `if (opened.reading !== "opens") throw new Error("the staged custody reads " + opened.reading + " under the test route");\n` +
     `seatCustody(holder);\n` +
-    `const id = await generateOrLoadVesselIdentity();\n` +
+    `const nexus = primaryNexusAid(larSealHome());\n` +
+    `if (!nexus) throw new Error("no primary charter stands under this root");\n` +
+    `const seed = await mintNexusKey(${handleIndex}, nexus);\n` +
     `await holder.lock();\n` +
-    `process.stdout.write("KEY " + id.verifyingKey + "\\n");\n`;
+    `process.stdout.write("SCOPE " + nexus + " " + nexusKeyPublicOf(seed) + "\\n");\n`;
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ["--input-type=module", "-e", script], {
-      env: { ...process.env, LAR_ROOT: root },
-      cwd: REPO_ROOT,
-    });
+    const child = spawn(process.execPath, ["--input-type=module", "-e", script], { env: { ...process.env, LAR_ROOT: root }, cwd: REPO_ROOT });
     let out = "";
     let err = "";
     child.stdout.on("data", (d) => { out += String(d); });
     child.stderr.on("data", (d) => { err += String(d); });
     child.on("close", (code) => {
-      const key = /^KEY ([0-9a-f]{64})$/m.exec(out)?.[1];
-      if (code === 0 && key) resolve(key);
-      else reject(new Error(`mintVesselKey(${root}) failed (${code})\n${out}\n${err}`));
+      const m = /^SCOPE (\S+) ([0-9a-f]{64})$/m.exec(out);
+      if (code === 0 && m) resolve({ nexus: m[1]!, faceKey: m[2]! });
+      else reject(new Error(`mintStagedNexusKey(${root}) failed (${code})\n${out}\n${err}`));
     });
   });
 }

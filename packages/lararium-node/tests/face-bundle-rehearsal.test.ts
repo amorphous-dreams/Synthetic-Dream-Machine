@@ -33,7 +33,7 @@ import { IslandVerbRefused } from "../src/island-verb-ask.js";
 import { listPersonaRosterLines, loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readVerifiedCasBlobFromFs, casDirForStorage } from "../src/node-cas.js";
 import { ownedStore } from "../src/owned-store.js";
-import { readLocalPersonaKelChain } from "../src/persona-admit-flow.js";
+import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";

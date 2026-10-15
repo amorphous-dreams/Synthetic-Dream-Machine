@@ -90,7 +90,7 @@ interface Reading {
   readonly subtle: boolean;
   readonly ed25519: string;
   /**
-   * The minted vessel's PUBLIC verifying key, hex — the value a `device-admit` needs.
+   * The minted vessel's PUBLIC verifying key, hex — the value a fleet-join request names.
    *
    * A browser vessel that mints and cannot say WHAT it minted leaves the admit unwalkable: the
    * operator's node has nothing to name. Public material by construction, and the private half never
