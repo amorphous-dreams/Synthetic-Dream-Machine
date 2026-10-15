@@ -104,7 +104,7 @@ const ADMIT_CANON_TEXT = /^[\x21-\x7e]{1,512}$/;
 const HEX64 = /^[0-9a-f]{64}$/;
 const plain = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const exactly = (v: Record<string, unknown>, keys: readonly string[]): boolean =>
-  Object.keys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k));
+  Reflect.ownKeys(v).length === keys.length && keys.every((k) => Object.hasOwn(v, k));
 
 /** Read an admit's carriage at its exact shape, or null. It copies the two fields alone. */
 export function readAdmitCarriage(v: unknown): AdmitCarriage | null {

@@ -378,6 +378,19 @@ export const SESSION_CERTIFICATE_DOMAIN = mint("session-certificate");
 export const SESSION_FINISH_DOMAIN = mint("session-finish");
 export const SESSION_ACT_DOMAIN = mint("session-act");
 export const SESSION_AUTHORITY_DOMAIN = mint("session-authority");
+// ── THE FLEET-JOIN DOOR: one face's fleet takes a new vessel of the same human ───────────────────
+// Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain. Three files cross by courier; each signed image
+// and the secret's seal carry their own name.
+/** A joining vessel's REQUEST: its own vessel key signs the nonce, its seal key and its certificate requests. */
+export const FLEET_JOIN_REQUEST_DOMAIN = mint("fleet-join-request");
+/** The ANSWER the PersonaGroup root signs: the edge by digest, the hearth's carriage and reach, the sealed secret. */
+export const FLEET_JOIN_ANSWER_DOMAIN = mint("fleet-join-answer");
+/** The digest an answer binds its device edge by. A digest name, signed by nobody. */
+export const FLEET_JOIN_EDGE_DOMAIN = mint("fleet-join-edge");
+/** The HKDF `info` of the face address secret's seal to the joining vessel. Apart from every other box. */
+export const FLEET_JOIN_SECRET_INFO = mint("fleet-join-address-secret");
+/** A FACE-KEY GRANT: the PersonaGroup root names one face key as its own at one Nexus. */
+export const FACE_KEY_GRANT_DOMAIN = mint("face-key-grant");
 // ── THE GATE: one bundle per (Nexus, route), and the exchange it answers ────────────────────────
 // Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange. A gate derives its keys and never
 // stores them; each name below separates one derivation, one digest or one signed image from the rest.
