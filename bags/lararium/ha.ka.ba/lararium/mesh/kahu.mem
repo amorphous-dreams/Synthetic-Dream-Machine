@@ -301,7 +301,8 @@ stands in for its terminal only on a staged root whose custody proves the publis
 act stands in code (`found-hearth.ts`, `hearth-aid.ts`): one seat, its card, the PRIVATE seed charter, persona zero's
 face binding its AID; `seal-ceremony.ts` refuses a re-seat over it (`hearth-bound`). `seal cofound open|join|seal`
 founds a joint charter with one key from each vault and one cadence inception signed by both hearths. The two-root
-import and boot witness still stands owed.
+witness (`tests/e2e/nexus-two-root.test.ts`) founds, contracts, rolls and restarts two staged hearths with files as
+the only courier, and refuses an unsigned or half-signed charter at both imports.
 
 <<~/ahu>>
 
@@ -317,7 +318,7 @@ A Nexus names vessels syncing across ley lines. Liveness reads off the traffic i
 <<~ has Stage Liveness "verb/none admin/none ~ ley-line traffic; nothing to build">>
 <<~ has Stage Quiet "verb/none admin/none ~ absence of traffic; no dissolution act">>
 
-Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu takes a chair by a quorum roll that seats a key; a seat needs no Handle. The reveal must match the prior epoch's pre-commitment, so no hand adds or drops a Kahu quietly. ''What the code holds'': `seal rotate` takes each revealed chair's card back on a terminal and adopts its key as that chair's seat key (`packages/lares-cli/src/commands/nexus-seal.ts`); a hearth's seed charter founds in the Stable founding act and grows only by that roll, since a re-seat over it refuses (`hearth-bound`). `seal cofound open|join|seal` founds a two-of-two charter across two vaults. ''Owed in code'': the two-vault roll that adds a seat with its new holder's contract, and a passed chair.
+Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu takes a chair by a quorum roll that seats a key; a seat needs no Handle. The reveal must match the prior epoch's pre-commitment, so no hand adds or drops a Kahu quietly. ''What the code holds'': `seal rotate` takes each revealed chair's card back on a terminal and adopts its key as that chair's seat key (`packages/lares-cli/src/commands/nexus-seal.ts`); a hearth's seed charter founds in the Stable founding act and grows only by that roll, since a re-seat over it refuses (`hearth-bound`). `seal cofound open|join|seal` founds a two-of-two charter across two vaults. `seal roll open|join|sign|file` rolls a charter whose seats rest in several vaults as one carried circle: each holder contributes its own chair and fresh successor, types the rule and every other chair's fingerprint as heard, and signs one image (`packages/lararium-node/src/roll-circle-ceremony.ts`); a new holder joins with a key the head never committed and signs it (possession), a later roll passes a chair, and a vault that sat a roll out catches up by importing the newest charter along the one lineage. The roll's anchor follows the filed head (`seal anchor`).
 
 <<~/ahu>>
 
@@ -580,6 +581,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;2cou-rE1igwl1SLhq7H-DPfegnrvqhfyMN9t583k43k
+<<^ code="&#x0003;">>ni:///sha-256;7l_01pLJ07kXjY0P94Ce6sn0lqUOvZa-u6ibhpDgBaA
 
 <<^ code="&#x0004;" -> to="?">>

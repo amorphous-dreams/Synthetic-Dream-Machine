@@ -4,9 +4,10 @@
  * the OPENED roster's seats sign it, one in each vault. Each vault reads both rosters off its own verified lineage,
  * never off the file: the head opens, the epoch before it closes.
  *
- * The roll itself crosses two vaults through a ceremony the train still owes (walk step four), so this fixture rolls
- * the 2-of-2 charter by hand with chair keys each vault holds as its own seat rows, and writes the same rolled doc
- * on both. The admit that should carry lands first through the two-vault contract door.
+ * This fixture rolls the 2-of-2 charter by hand, with chair keys each vault holds as its own seat rows, and writes the
+ * same rolled doc on both: it pins the anchor door alone. The roll through the two-vault ceremony itself, followed by
+ * this door, reads in `roll-circle-ceremony.test.ts` (W1). The admit that should carry lands first through the
+ * two-vault contract door.
  *
  *   R1  A opens the anchor (A's successor seat signs); B judges it `ready`, cosigns and lands it; A lands it too. On
  *       both boards the admit made at the closed epoch presents at the new head, where before the anchor it did not.
@@ -74,7 +75,7 @@ async function twoVaultCharter(A: Vault, B: Vault) {
   at(B); await seatChairs([1]); const { hands: bNext } = await seatChairs([1], { generation: 1 });
   const genesis = heldCharter({ keys: old, threshold: 2, successors: { keys: next, threshold: 2 } });
   for (const v of [A, B]) { at(v); writeNexusDoc(larSealHome(), genesis.doc({ labels: ["Kahu A", "Kahu B"] })); }
-  // The roll's signatures come by hand: the ceremony that gathers them across two vaults stays owed.
+  // The roll's signatures come by hand here; the two-vault roll circle gathers them in `roll-circle-ceremony.test.ts`.
   const rolled = await genesis.roll([...aNext, ...bNext]);
   const aid = nexusAidOf(genesis.doc())!;
   const roll = (): void => { for (const v of [A, B]) { at(v); writeNexusDoc(larSealHome(), rolled.doc({ labels: ["Kahu A", "Kahu B"] })); } };

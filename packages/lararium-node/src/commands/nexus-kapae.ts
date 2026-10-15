@@ -119,14 +119,14 @@ function charterHomeOrRefuse(sealHome: string, aid: string | undefined): string 
 
 const nymOrRefuse = (raw: string): string => {
   const nym = raw.trim().toLowerCase();
-  if (!NYM_RE.test(nym)) throw new NexusKapaeError(`"${raw}" is not a valid presenter nym — expected a 64-hex ed25519 verifying key.`);
+  if (!NYM_RE.test(nym)) throw new NexusKapaeError(`"${raw}" reads as no presenter nym — expected a 64-hex ed25519 verifying key.`);
   return nym;
 };
 
 /**
  * The antigen board one charter's island names on this vessel. The PRIMARY charter's board resolves exactly as the
- * boot resolves the island it hands the antigen ring (the vessel's own seal home), so a ban the door lands is the
- * ban the ring folds. A CARRIED charter (`carried` names its home) keys on that charter's own home, the way the
+ * boot resolves the island it hands the antigen ring (the vessel's own seal home), so the ring folds the very ban
+ * the door lands. A CARRIED charter (`carried` names its home) keys on that charter's own home, the way the
  * contract door keys its carriage board.
  */
 async function antigenBoardFor(repo: Repo, carried?: string): Promise<{ boardUrl: string; handle: Awaited<ReturnType<typeof materializeSharedLarDoc>> }> {
@@ -140,7 +140,7 @@ async function antigenBoardFor(repo: Repo, carried?: string): Promise<{ boardUrl
 const carriedHome = (sealHome: string, home: string): string | undefined => (home === sealHome ? undefined : home);
 
 /**
- * The observed local causal frontier for one nym's antigen line. Raw board records are untrusted input: a tampered
+ * The observed local causal frontier for one nym's antigen line. Raw board records arrive as untrusted input: a tampered
  * semantic CID, wrong-charter quorum, or missing parent must never become a parent of this act.
  */
 async function antigenFrontier(entries: readonly KapaeAntigenEntry[], nym: string, roster: KahuQuorumSeats): Promise<string[]> {
@@ -150,7 +150,7 @@ async function antigenFrontier(entries: readonly KapaeAntigenEntry[], nym: strin
     if (!(await verifier.verifyQuorum(e, roster))) return null;
     return e;
   }))).filter((e): e is NonNullable<typeof e> => e !== null);
-  // Causal closure is iterative: a locally present parent may itself name an absent grandparent.
+  // Causal closure runs iteratively: a locally present parent may itself name an absent grandparent.
   // Remove that branch until no unavailable ancestry remains; one pass would poison the next frontier.
   let admissible = verified;
   for (;;) {

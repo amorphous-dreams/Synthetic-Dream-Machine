@@ -1,10 +1,10 @@
 /**
  * roll-circle-record — what this vault contributed to a roll circle that stands open, one record per Nexus.
  *
- * A circle crosses vaults as a file anyone may edit in transit. The record is how this vault knows which chairs are
- * its own: the seat key it revealed or minted, and the digest of the successor card its person printed and read
- * back. Its signing step signs only a circle that carries exactly those chairs, so a courier who swaps a successor
- * digest moves no chair's next roll into another hand. The record also keeps the contributed seat keys from
+ * A circle crosses vaults as a file anyone may edit in transit. The record tells this vault which chairs it owns:
+ * the seat key it revealed or minted, and the digest of the successor card its person printed and read back. Its
+ * signing step signs only a circle that carries exactly those chairs, so a courier who swaps a successor digest moves
+ * no chair's next roll into another hand. The record also keeps the contributed seat keys from
  * retiring while the circle stands open (`seal-ceremony`'s `neededSeats`).
  *
  * Public material alone: seat keys and successor digests. It rests at `<sealHome>/roll-circle/<aid>.json`.
@@ -60,7 +60,7 @@ export function readRollCircleRecord(aid: string): RollCircleRecord | null {
 export function readRollCircleRecords(): RollCircleRecord[] {
   let names: string[];
   try { names = readdirSync(dir()); } catch { return []; }
-  // A name that spells no Nexus is no record: a stray file never wedges the seats' retirement.
+  // A name that spells no Nexus names no record: a stray file never wedges the seats' retirement.
   return names.filter((n) => n.endsWith(".json") && AID.test(n.slice(0, -".json".length))).sort()
     .map((n) => readRollCircleRecord(n.slice(0, -".json".length))!).filter(Boolean);
 }

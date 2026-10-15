@@ -28,8 +28,9 @@
  *                  as it stands. The seat that signed first lands the finished act this way.
  *
  * THE SMALL INTERFACE. `PartialVerdict` and the envelope's shape (`scope`, a readable `subject`, the whole act)
- * serve any quorum act that gathers signatures across vessels. The Nexus founding train's door for admit,
- * revoke, kapae and the roll anchor may adopt both as they stand.
+ * serve any quorum act that gathers signatures across vessels. The Nexus doors for admit, revoke, kapae and the roll
+ * anchor (`nexus-partial`) read every partial in this verdict vocabulary, and keep an envelope of their own, one
+ * image per family.
  *
  * Platform-blind: rides ./edge-kapae + ./realm-edges + ./vouch-board. NO node: imports.
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands

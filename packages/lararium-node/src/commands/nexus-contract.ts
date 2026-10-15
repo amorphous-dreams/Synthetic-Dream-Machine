@@ -468,7 +468,9 @@ export interface NexusRollAnchorResult {
 
 /**
  * Land a seal roll's ANCHOR on this Nexus's carriage board — called by the rotate BEFORE it writes the new
- * head, so a roll whose anchor cannot land writes nothing at all. The anchor names the epoch `closing` heads
+ * head, so a roll whose anchor cannot land writes nothing at all. That order holds where one vessel holds the whole
+ * new quorum; where the seats rest in two vaults, the anchor follows the filed head as a partial instead
+ * (`runNexusRollAnchorOpen` / `runNexusRollAnchorPartial`). The anchor names the epoch `closing` heads
  * and the epoch `opened` heads, carries `closing`'s public key-set, cites the board's causal heads at the roll
  * (`rollAnchorParents`: the acts and anchors that count at the closing epoch and nothing cites), and is signed
  * by `opened`'s quorum out of the held seat keys it seats. The closing keys never sign it.

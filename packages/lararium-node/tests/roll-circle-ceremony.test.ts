@@ -26,7 +26,7 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  cidV1Sha256, coldKeyFromSeed, foundingRoster, hex, mintColdKey, seatFingerprint, type CofoundOffer, type ColdKey,
+  cidV1Sha256, foundingRoster, hex, mintColdKey, seatFingerprint, type CofoundOffer, type ColdKey,
 } from "@lararium/mesh";
 import { charterHomeFor, importCarriedCharter, primaryNexusAid } from "../src/carried-set.js";
 import { runNexusRollAnchorOpen, runNexusRollAnchorPartial } from "../src/commands/nexus-contract.js";
@@ -34,7 +34,8 @@ import { nexusCharterDocRelPath, readNexusDoc, writeNexusDoc } from "../src/nexu
 import { seatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
-import { heldSeatKey } from "../src/seat-key-store.js";
+import { heldSeatKey, listSeatKeys } from "../src/seat-key-store.js";
+import { readRollCircleRecord } from "../src/roll-circle-record.js";
 import { larDataDir, larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { restEvery, restingRepo, type RestingRepo } from "./resting-repo.js";
@@ -193,6 +194,7 @@ describe("a joint Nexus rolls across its vaults as a circle", () => {
     const head0 = charterAt(A, aid).head;
 
     at(A);
+    const rowsBefore = listSeatKeys().length;
     // A card the head never committed; a successor the founding already spent; the household seed.
     expect(await refusal(act("roll-circle.open", { aid, face: 0, cards: card(stray), next: aNext.digest, threshold: 2 }))).toMatch(/card answers no successor the head committed/);
     expect(await refusal(act("roll-circle.open", { aid, face: 0, cards: card(aCard), next: bCard.digest, threshold: 2 }))).toMatch(/already stands in a charter or a circle/);
@@ -201,7 +203,9 @@ describe("a joint Nexus rolls across its vaults as a circle", () => {
     const seed = primaryNexusAid(larSealHome());
     expect(seed).toMatch(/^nexus-/);
     expect(await refusal(act("roll-circle.open", { aid: seed, face: 0, next: aNext.digest, threshold: 1 }))).toMatch(/rolls by `lares nexus seal rotate`/);
-    expect(heldSeatKey((await coldKeyFromSeed(stray.seed)).verifyingKey)).toBeNull();
+    // CENSUS: no refusal above stored a seat row or recorded a circle.
+    expect(listSeatKeys().length).toBe(rowsBefore);
+    expect(readRollCircleRecord(aid)).toBeNull();
 
     const opened = await act("roll-circle.open", { aid, face: 0, cards: card(aCard), next: aNext.digest, threshold: 2 });
     at(B);
