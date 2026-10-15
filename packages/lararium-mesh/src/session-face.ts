@@ -11,8 +11,9 @@
  *     opens on the face this supplier answers, and its signer mints the session's key after the open;
  *   · THIS VESSEL'S OWN KEY for that face, as its custody row names it: a chain another vessel presented
  *     verifies as well as this vessel's own, and only this vessel's chain opens a session here;
- *   · the ADMIT'S VERDICT, as the one presenter-verifier reads it (`carriage-registry`): the Nexus's quorum
- *     admitted this nym, and the relation reads `held`;
+ *   · the ADMIT'S VERDICT, as the one held-root door reads it (`readAdmitAtHeldRoot`): the Nexus's quorum
+ *     admitted this nym, the relation reads `held`, and the HEAD of the nym's key line names the face key. The
+ *     nym stays the anchor the Nexus admitted; a face re-issued by a signed hand-over answers at the head;
  *   · the PRIVATE GRANT: the PersonaGroup's own root-authorized record that this face key speaks for the
  *     group at this Nexus.
  *
@@ -68,7 +69,7 @@ export const SESSION_FACE_REFUSALS = [
   "chain-other-vessel",     // the chain's vessel key names another key than this vessel's custody row
   "admit-malformed",
   "admit-not-held",         // the admit reads denied, unsettled, rejected or at a wrong epoch; `state` names which
-  "admit-other-face",       // the admit's nym names another key than the chain's face key
+  "admit-other-face",       // the head of the admitted nym's key line names another key than the chain's face key
   "admit-other-nexus",
   "grant-malformed",
   "grant-other-face",       // the private grant names another face key than the chain's
@@ -89,16 +90,17 @@ function field(record: object, key: string): unknown {
   return Object.hasOwn(record, key) ? (record as Record<string, unknown>)[key] : undefined;
 }
 
-interface ReadAdmit { state: string; nym: string; nexus: string; admitRef: string; revision: string }
+interface ReadAdmit { state: string; head: string; nexus: string; admitRef: string; revision: string }
 function readAdmit(value: unknown): ReadAdmit | null {
   try {
     if (typeof value !== "object" || value === null) return null;
-    const [verdict, nexus, admitRef, revision] = [field(value, "verdict"), field(value, "nexus"), field(value, "admitRef"), field(value, "revision")];
+    const [verdict, head, nexus, admitRef, revision] =
+      [field(value, "verdict"), field(value, "head"), field(value, "nexus"), field(value, "admitRef"), field(value, "revision")];
     if (typeof verdict !== "object" || verdict === null) return null;
-    const [state, nym] = [field(verdict, "state"), field(verdict, "nym")];
-    if (typeof state !== "string" || typeof nym !== "string") return null;
+    const state = field(verdict, "state");
+    if (typeof state !== "string" || typeof head !== "string") return null;
     if (!reference(nexus) || !reference(admitRef) || !reference(revision)) return null;
-    return { state, nym, nexus, admitRef, revision };
+    return { state, head, nexus, admitRef, revision };
   } catch { return null; }
 }
 
@@ -141,7 +143,9 @@ export function supplySessionFace(input: { chain: unknown; vesselFaceKey: unknow
   const admit = readAdmit(taken.admit);
   if (admit === null) return { refusal: "admit-malformed" };
   if (admit.state !== "held") return { refusal: "admit-not-held", state: admit.state };
-  if (admit.nym !== chain.scope.faceKey) return { refusal: "admit-other-face" };
+  // THE ADMITTED NYM ANCHORS; THE LINE'S HEAD ANSWERS. The admit keeps naming the key the Nexus admitted, and a
+  // face re-issued by a signed hand-over holds the head of that key's line, as the gate reads it (`face-gate`).
+  if (admit.head !== chain.scope.faceKey) return { refusal: "admit-other-face" };
   if (admit.nexus !== chain.scope.nexus) return { refusal: "admit-other-nexus" };
 
   const grant = readGrant(taken.grant);

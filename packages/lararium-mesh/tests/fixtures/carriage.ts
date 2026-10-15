@@ -50,14 +50,14 @@ export async function carrierSeal(seed: Uint8Array, sealEpochCid: string): Promi
 export async function carriageAct(
   subject: Uint8Array,
   action: CarriageAction,
-  opts: { kahu: readonly Uint8Array[]; epoch: string; parents?: readonly string[]; seal?: QuorumSignature },
+  opts: { kahu: readonly Uint8Array[]; epoch: string; parents?: readonly string[]; seal?: QuorumSignature; carriageCommit?: string },
 ): Promise<CarriageEntry> {
   const seal = opts.seal ?? (
     action === "admit" ? await contractIn(subject, opts.epoch)
     : action === "carry" ? await carrierSeal(subject, opts.epoch)
     : undefined);
   return signCarriageQuorum(
-    { nym: await pubOf(subject), action, parents: opts.parents ?? [], sealEpochCid: opts.epoch },
+    { nym: await pubOf(subject), action, parents: opts.parents ?? [], sealEpochCid: opts.epoch, ...(opts.carriageCommit !== undefined ? { carriageCommit: opts.carriageCommit } : {}) },
     await kahuSigners(opts.kahu), seal,
   );
 }

@@ -40,8 +40,8 @@
  */
 import {
   CARRIAGE_ENTRY_DOMAIN, CARRIAGE_ROLL_ANCHOR_DOMAIN, carriageEntryActCid, carriageEntryBytes, carriageEntryCounts,
-  rollAnchorBytes, rollAnchorCid, rollAnchorCounts, rollAnchorParents, verifyCarriageConsent,
-  type CarriageEntry, type RollAnchor,
+  admitCarriageCommit, readAdmitOpening, rollAnchorBytes, rollAnchorCid, rollAnchorCounts, rollAnchorParents, verifyCarriageConsent,
+  type AdmitOpening, type CarriageEntry, type RollAnchor,
 } from "./carriage-registry.js";
 import {
   KAPAE_ANTIGEN_DOMAIN, antigenActCid, antigenEntryBytes, makeMultiSigQuorumVerifier,
@@ -61,7 +61,9 @@ export type NexusPartialSubject =
 
 /** The act itself, by family; each keeps its own image. */
 export type NexusPartialAct =
-  | { readonly family: "admit" | "revoke"; readonly entry: CarriageEntry }
+  /** An admit may carry the OPENING of its carriage commitment beside it: the partial crosses between the founders'
+   *  vaults by hand, so whichever vault lands the act can hand the subject its bundle. The board never holds it. */
+  | { readonly family: "admit" | "revoke"; readonly entry: CarriageEntry; readonly opening?: AdmitOpening }
   | { readonly family: "kapae"; readonly entry: KapaeAntigenEntry }
   | { readonly family: "roll-anchor"; readonly anchor: RollAnchor };
 
@@ -123,7 +125,8 @@ function readSignatures(v: unknown): QuorumSignature[] | null {
 
 function readCarriage(v: unknown, family: "admit" | "revoke"): CarriageEntry | null {
   const e = record(v);
-  const keys = family === "admit" ? ["kind", "nym", "action", "parents", "sealEpochCid", "signatures", "contractSig"]
+  const keys = family === "admit"
+    ? ["kind", "nym", "action", "parents", "sealEpochCid", "signatures", "contractSig", ...(e && "carriageCommit" in e ? ["carriageCommit"] : [])]
     : ["kind", "nym", "action", "parents", "sealEpochCid", "signatures"];
   if (!e || !exactKeys(e, keys) || e["kind"] !== CARRIAGE_ENTRY_DOMAIN || e["action"] !== family) return null;
   if (typeof e["nym"] !== "string" || !HEX64.test(e["nym"]) || !sortedSet(e["parents"], HEX64)) return null;
@@ -134,7 +137,10 @@ function readCarriage(v: unknown, family: "admit" | "revoke"): CarriageEntry | n
     sealEpochCid: e["sealEpochCid"], signatures };
   if (family === "revoke") return entry;
   const contract = readSignatures([e["contractSig"]]);
-  return contract && contract[0]!.signer === entry.nym ? { ...entry, contractSig: contract[0]! } : null;
+  if (!contract || contract[0]!.signer !== entry.nym) return null;
+  if (!("carriageCommit" in e)) return { ...entry, contractSig: contract[0]! };
+  const commit = e["carriageCommit"];
+  return typeof commit === "string" && HEX64.test(commit) ? { ...entry, contractSig: contract[0]!, carriageCommit: commit } : null;
 }
 
 function readAntigen(v: unknown): KapaeAntigenEntry | null {
@@ -176,10 +182,14 @@ export function readNexusActPartial(parsed: unknown): NexusActPartial | null {
   if (!s || !a) return null;
   const family = a["family"];
   if (family === "admit" || family === "revoke" || family === "kapae") {
-    if (!exactKeys(a, ["family", "entry"]) || !exactKeys(s, ["kind", "nym"]) || s["kind"] !== "nym") return null;
+    const opened = family === "admit" && "opening" in a;
+    if (!exactKeys(a, opened ? ["family", "entry", "opening"] : ["family", "entry"]) || !exactKeys(s, ["kind", "nym"]) || s["kind"] !== "nym") return null;
     const entry = family === "kapae" ? readAntigen(a["entry"]) : readCarriage(a["entry"], family);
     if (!entry || s["nym"] !== entry.nym) return null;
-    const act = (family === "kapae" ? { family, entry } : { family, entry }) as NexusPartialAct;
+    // An opening reads only beside the commitment it opens.
+    const opening = opened ? readAdmitOpening(a["opening"]) : null;
+    if (opened && (opening === null || !("carriageCommit" in entry) || admitCarriageCommit(opening) !== entry.carriageCommit)) return null;
+    const act = (opening ? { family, entry, opening } : { family, entry }) as NexusPartialAct;
     return { kind: NEXUS_PARTIAL_KIND, aid: p["aid"], subject: { kind: "nym", nym: entry.nym }, act };
   }
   if (family === "roll-anchor") {
@@ -206,7 +216,7 @@ export function nexusActPartial(aid: string, act: NexusPartialAct): NexusActPart
 export function nexusPartialBytes(act: NexusPartialAct): Uint8Array {
   if (act.family === "roll-anchor") { const { signatures: _s, ...body } = act.anchor; return rollAnchorBytes(body); }
   if (act.family === "kapae") { const { signatures: _s, ...body } = act.entry; return antigenEntryBytes(body); }
-  const { signatures: _s, contractSig: _c, ...body } = act.entry;
+  const { signatures: _s, contractSig: _c, ...body } = act.entry;   // a carriage commitment stays in the body the quorum signs
   return carriageEntryBytes(body);
 }
 
@@ -335,6 +345,6 @@ export async function cosignNexusActPartial(parsed: unknown, reader: NexusPartia
     ? { family: "roll-anchor", anchor: { ...partial.act.anchor, signatures } }
     : partial.act.family === "kapae"
       ? { family: "kapae", entry: { ...partial.act.entry, signatures } }
-      : { family: partial.act.family, entry: { ...partial.act.entry, signatures } };
+      : { ...partial.act, entry: { ...partial.act.entry, signatures } };   // an admit keeps the opening it carried
   return { ...partial, act };
 }

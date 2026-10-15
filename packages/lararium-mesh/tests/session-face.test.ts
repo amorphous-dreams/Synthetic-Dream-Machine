@@ -29,7 +29,7 @@ async function verified(c: Chain, withdrawn: readonly string[] = []): Promise<Ve
   return verdict.chain;
 }
 const admitOf = (c: Chain, over: Partial<FaceAdmitReading> = {}): FaceAdmitReading => ({
-  verdict: { state: "held", reason: "held", nym: c.scope.faceKey }, nexus: c.scope.nexus, admitRef: "admit-cid-synthetic", revision: "board-heads-1", ...over,
+  verdict: { state: "held", reason: "held", nym: c.scope.faceKey }, head: c.scope.faceKey, nexus: c.scope.nexus, admitRef: "admit-cid-synthetic", revision: "board-heads-1", ...over,
 });
 const grantOf = (c: Chain, personaGroup: string, over: Partial<FaceGrantReading> = {}): FaceGrantReading => ({
   personaGroup, faceKey: c.scope.faceKey, nexus: c.scope.nexus, revision: "group-heads-1", ...over,
@@ -101,14 +101,20 @@ describe("the session face supplier", () => {
     }
   });
 
-  test("an admit for another nym or another Nexus supplies no face", async () => {
+  test("an admit whose key line heads at another key, or reads at another Nexus, supplies no face", async () => {
     const c = await chain("admit-join", NEXUS_A);
     const other = await chain("admit-join other", NEXUS_A);
     const real = await verified(c);
-    const otherNym = admitOf(c, { verdict: { state: "held", reason: "held", nym: other.scope.faceKey } });
-    expect(supplySessionFace({ chain: real, vesselFaceKey: c.vessel.key, admit: otherNym, grant: grantOf(c, GROUP_ONE) })).toEqual({ refusal: "admit-other-face" });
+    // The head answers, never the nym: an admit for this face's own nym whose line heads at another key refuses.
+    const otherHead = admitOf(c, { head: other.scope.faceKey });
+    expect(supplySessionFace({ chain: real, vesselFaceKey: c.vessel.key, admit: otherHead, grant: grantOf(c, GROUP_ONE) })).toEqual({ refusal: "admit-other-face" });
+    const otherLine = admitOf(c, { verdict: { state: "held", reason: "held", nym: other.scope.faceKey }, head: other.scope.faceKey });
+    expect(supplySessionFace({ chain: real, vesselFaceKey: c.vessel.key, admit: otherLine, grant: grantOf(c, GROUP_ONE) })).toEqual({ refusal: "admit-other-face" });
+    // A refused line reads head "" at the held-root door; that never names this face.
+    expect(supplySessionFace({ chain: real, vesselFaceKey: c.vessel.key, admit: admitOf(c, { head: "" }), grant: grantOf(c, GROUP_ONE) })).toEqual({ refusal: "admit-other-face" });
     expect(supplySessionFace({ chain: real, vesselFaceKey: c.vessel.key, admit: admitOf(c, { nexus: NEXUS_B }), grant: grantOf(c, GROUP_ONE) })).toEqual({ refusal: "admit-other-nexus" });
-    for (const malformed of [null, {}, admitOf(c, { admitRef: "" }), admitOf(c, { revision: "a|b" }), admitOf(c, { nexus: "nex us" })]) {
+    const { head: _dropped, ...headless } = admitOf(c);
+    for (const malformed of [null, {}, headless, admitOf(c, { admitRef: "" }), admitOf(c, { revision: "a|b" }), admitOf(c, { nexus: "nex us" })]) {
       expect(supplySessionFace({ chain: real, vesselFaceKey: c.vessel.key, admit: malformed, grant: grantOf(c, GROUP_ONE) })).toEqual({ refusal: "admit-malformed" });
     }
   });

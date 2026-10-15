@@ -311,7 +311,7 @@ async function seat(c: Chain, vessel: Pair, certificate: VesselFaceCertificate, 
   if (verdict.verdict !== "verified") throw new Error(`the vessel's own chain reads ${verdict.verdict}`);
   const supply = supplySessionFace({
     chain: verdict.chain, vesselFaceKey: vessel.key,
-    admit: { verdict: { state: "held", reason: "held", nym: c.scope.faceKey }, nexus: c.scope.nexus, admitRef, revision: "board-heads-1" },
+    admit: { verdict: { state: "held", reason: "held", nym: c.scope.faceKey }, head: c.scope.faceKey, nexus: c.scope.nexus, admitRef, revision: "board-heads-1" },
     grant: { personaGroup: GROUP, faceKey: c.scope.faceKey, nexus: c.scope.nexus, revision: "group-heads-1" },
   });
   if (!("face" in supply)) throw new Error(`no face supplied: ${supply.refusal}`);

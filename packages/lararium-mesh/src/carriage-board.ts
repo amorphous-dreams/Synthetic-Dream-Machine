@@ -58,7 +58,7 @@ export const CARRIAGE_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/carriage-registry
  * signed entry ACCRETES and NOTHING overwrites a standing entry. Concurrent branches therefore survive
  * storage and the causal fold, never the write, adjudicates.
  */
-export function carriageEntryKey(entry: Pick<CarriageEntry, "kind" | "nym" | "action" | "parents" | "sealEpochCid">): string {
+export function carriageEntryKey(entry: Pick<CarriageEntry, "kind" | "nym" | "action" | "parents" | "sealEpochCid" | "carriageCommit">): string {
   return `${CARRIAGE_ENTRY_PREFIX}${carriageEntryActCid(entry)}`;
 }
 
@@ -107,6 +107,12 @@ function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
     if (cs === null) return null;
     contractSig = cs;
   }
+  // An admit's carriage commitment rides at its exact shape; a torn one reads the whole entry closed.
+  let carriageCommit: string | undefined;
+  if (p["carriageCommit"] !== undefined) {
+    if (typeof p["carriageCommit"] !== "string" || !/^[0-9a-f]{64}$/.test(p["carriageCommit"])) return null;
+    carriageCommit = p["carriageCommit"];
+  }
   // Copy the FLOOR fields ALONE — any extra field a forged tiddler smuggled in is dropped here, never carried
   // into the folded record (track contracts, never identities).
   const entry: CarriageEntry = {
@@ -117,7 +123,7 @@ function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
     sealEpochCid: p["sealEpochCid"],
     signatures,
   };
-  return contractSig ? { ...entry, contractSig } : entry;
+  return { ...entry, ...(contractSig ? { contractSig } : {}), ...(carriageCommit ? { carriageCommit } : {}) };
 }
 
 /**

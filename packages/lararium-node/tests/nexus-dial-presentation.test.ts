@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import {
-  hex, hexToBytes, nexusAidOf, signCarriageQuorum, signCarriageContract,
+  hex, hexToBytes, nexusAidOf, signCarriageQuorum, signCarriageContract, admitCarriageCommit,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc,
   type NexusDoc, type CarriageEntry, type LarDoc, type LeafIdentity, type DeviceDelegationTiddler,
 } from "@lararium/mesh";
@@ -37,11 +37,14 @@ async function charter(kahuSeeds: Uint8Array[]): Promise<NexusDoc> {
   return heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
 }
 
-async function admitOn(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, parents: string[] = []): Promise<CarriageEntry> {
+/** An admit commits to the pin of the hearth its bundle names (face-proof#/the-gate-exchange, step 5), under a fixed test salt. */
+const openingFor = (gatePin: string) => ({ carriage: { gatePin, canon: {} }, salt: "5a".repeat(32) });
+async function admitOn(doc: NexusDoc, kahuSeeds: Uint8Array[], leafSeed: Uint8Array, parents: string[] = [], pin = "a1".repeat(32)): Promise<CarriageEntry> {
   const nym = await pubOf(leafSeed);
   const epoch = doc.sealEpochCid!;
   const quorum = await Promise.all(kahuSeeds.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
-  return signCarriageQuorum({ nym, action: "admit", parents, sealEpochCid: epoch }, quorum, await signCarriageContract(nym, epoch, signerOf(leafSeed)));
+  return signCarriageQuorum({ nym, action: "admit", parents, sealEpochCid: epoch, carriageCommit: admitCarriageCommit(openingFor(pin)) }, quorum,
+    await signCarriageContract(nym, epoch, signerOf(leafSeed)));
 }
 
 function boardOf(entries: CarriageEntry[]): LarDoc {
@@ -88,7 +91,7 @@ describe("the dial presents the DIALED island's admit only", () => {
       return s ? [{ handleIndex: 0, verifyingKey: await pubOf(s), seed: s }] : [];
     };
     const admitP = await admitOn(primary, P_KAHU, seed(21));
-    const admitC = await admitOn(carried, C_KAHU, seed(22));
+    const admitC = await admitOn(carried, C_KAHU, seed(22), [], GATE_C);
     // The islands are the charters' genesis epochs: each board keys on its own Nexus.
     const boards = new Map<string, LarDoc>([
       [carriageDocUrl(aidP), boardOf(opts.primaryAdmit ? [admitP] : [])],
@@ -97,7 +100,7 @@ describe("the dial presents the DIALED island's admit only", () => {
     const asked: string[] = [];
     const open = async (url: string) => { asked.push(url); return boards.get(url); };
     const take = (aid: string, gatePubKey: string, admit: CarriageEntry) =>
-      takeAdmitBundle({ sealHome, raw: JSON.stringify({ aid, gatePubKey, admit, lineage: [] }), leaves });
+      takeAdmitBundle({ sealHome, raw: JSON.stringify({ aid, gatePubKey, admit, lineage: [], opening: openingFor(gatePubKey) }), leaves });
     return { sealHome, aidP, aidC, admitP, admitC, leaves, open, asked, take };
   }
 
