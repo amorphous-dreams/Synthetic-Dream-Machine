@@ -471,9 +471,6 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
   test.skip("THE FLOOR ANNOUNCEMENT AND GATE SHARE ONE PIN — ANNOUNCEMENT_AND_GATE_SHARE_PIN; gate-announcement-law.test.ts. A verdict-only signing bundle cannot sign the announcement today.", () => {
     expect(Object.keys(mesh)).toContain("gateAnnouncementImage");
   });
-  test.skip("A GROUP FOUNDER'S REMOVAL DELIVERS ITS KEY ROLL AFTER A MUTATING THROW — FOUNDER_REMOVAL_DELIVERS_KEY_ROLL; persona-group-founder-removal.test.ts", () => {
-    expect(Object.keys(mesh)).toContain("settleFounderSeatRemoval");
-  });
   test.skip("THE BROWSER'S IK FIRST FLIGHT SURVIVES THE TERMINATOR — BROWSER_IK_FIRST_FLIGHT_SURVIVES_TERMINATOR. Design only until the browser/proxy witness exists: fixed selected subprotocol, bounded header, no pre-finish application effect, no retained token in proxy logs.", () => {
     expect(Object.keys(mesh)).toContain("browserIkUpgradeWitness");
   });

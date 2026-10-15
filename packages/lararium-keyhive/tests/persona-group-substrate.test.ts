@@ -14,7 +14,8 @@
  *   G5  a seat reaches a bag the group already held with no re-delegation; only the chunks before it stay shut.
  *   G6  the members the group reaches, and a revoked party gone from them.
  *   G7  an id that names no group refuses by name, never as an empty answer.
- *   G8  CANARY: the founder's own departure while it seated others throws, and its seat leaves anyway.
+ *   G8  CANARY: the founder's own departure while it seated others throws, and its seat leaves anyway; the shore
+ *       reads the seat again and answers `revoked`.
  *   G10 a Document's read on a group id answers "no access" in silence: the reason the group surface stands apart.
  *   G11 a party that reaches the group only through a member group holds no seat here: its revoke reads `gone`
  *       and moves nothing, while the member group's own seat revokes.
@@ -164,7 +165,13 @@ describe("the PersonaGroup as a Keyhive group", () => {
   test("G8 CANARY (a measurement of Keyhive 0.3.0-alpha.1): the founder's own departure throws, and its seat leaves", async () => {
     const { f, groupId, ids } = await found(0x80);
     await f.addGroupMember(ids.a, groupId);
-    await expect(f.revokeGroupSeat(ids.f, groupId)).rejects.toThrow(/redel/i);
+    // The measurement watches Keyhive's own revoke, under the shore that now reads the seat again after a throw.
+    const kh = (f as unknown as { requireKh(): { revokeMember: (...args: unknown[]) => Promise<unknown> } }).requireKh();
+    const own = kh.revokeMember.bind(kh);
+    const faults: unknown[] = [];
+    kh.revokeMember = (...args) => own(...args).catch((err: unknown) => { faults.push(err); throw err; });
+    expect(await f.revokeGroupSeat(ids.f, groupId)).toEqual({ how: "revoked" });
+    expect(faults.map((e) => (e instanceof Error ? e.message : String(e)))).toEqual([expect.stringMatching(/redel/i)]);
     expect(await f.groupMembers(groupId)).not.toContain(ids.f);
     expect(await f.groupMembers(groupId)).toContain(ids.a);
   });
