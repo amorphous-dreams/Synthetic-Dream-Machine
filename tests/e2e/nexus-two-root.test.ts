@@ -15,6 +15,11 @@
  *       judges, cosigns and lands it; the opener lands the completed file. Partials cross as files alone.
  *   T4  INDEPENDENT RESTART: each daemon stops and a fresh one stands the same root; after the unlock, each hearth
  *       reads the same joint AID, its two seats and both founders' admits off its OWN board.
+ *   T6  THE ROLL ACROSS TWO ROOTS: each hearth reveals its own cold successor card and mints a fresh one; the circle
+ *       crosses as a file (open, join, sign as heard, sign as heard, file, file), the anchor crosses after it and lands
+ *       complete on both, and after a second independent restart both hearths read one new head and its two seats.
+ *       (An admit made before the roll carries only as a presented lineage through the anchor, never by the board's
+ *       own fold at the new head; the node's anchor vectors read that carry.)
  *   T5  BOTH SEEDS INTACT: each hearth's own household seed charter reads byte-identical to its bytes before the
  *       founding, through every act and restart above.
  */
@@ -42,6 +47,8 @@ let A: Hearth;
 let B: Hearth;
 let courier = "";
 let aid = "";
+/** Each founder's cold successor card code, as the staged read-back stand-in answers it (test roots alone). */
+const cards = new Map<string, string>();
 const seeds = new Map<string, string>();
 
 /** The seal home under one staged root: the household seed's charter rests here, and a carried charter beside it. */
@@ -128,8 +135,10 @@ describe("two hearths found one Nexus with files as the only courier", () => {
   test("T1 — open, join, seal, accept: one joint AID on both hearths", async () => {
     const opened = await ok(A, ["nexus", "seal", "cofound", "open", "--face", "0", "--release", file("release.json"), "--out", file("offer.json")]);
     const aSeat = String(data(opened)["seat"]);
+    cards.set(A.lar.root, String((data(opened)["cards"] as Array<{ code: string }>)[0]!.code));
     const joined = await ok(B, ["nexus", "seal", "cofound", "join", file("offer.json"), "--face", "0", "--heard", seatFingerprint(aSeat), "--out", file("join.json")]);
     const bSeat = String(data(joined)["seat"]);
+    cards.set(B.lar.root, String((data(joined)["cards"] as Array<{ code: string }>)[0]!.code));
     aid = String(data(joined)["aid"]);
     expect(aid).toMatch(/^nexus-[0-9a-f]{64}$/);
     expect(bSeat).not.toBe(aSeat);
@@ -196,6 +205,39 @@ describe("two hearths found one Nexus with files as the only courier", () => {
       expect((read["members"] as string[]).length).toBe(2);
     }
   }, 600_000);
+
+  test("T6 — the roll crosses both roots with fresh successors, its anchor after, and survives a restart", async () => {
+    const before = data(await ok(A, ["nexus", "members", "--list", "--nexus", aid]));
+    const opened = await ok(A, ["nexus", "seal", "roll", "open", "--nexus", aid, "--threshold", "2", "--face", "0", "--cold-key", cards.get(A.lar.root)!, "--out", file("circle-1.json")]);
+    expect(data(opened)["verdict"]).toBe("ready");
+    const joined = await ok(B, ["nexus", "seal", "roll", "join", file("circle-1.json"), "--face", "0", "--cold-key", cards.get(B.lar.root)!, "--out", file("circle-2.json")]);
+    expect(data(joined)["chairs"]).toBe(2);
+    const chairs = JSON.parse(readFileSync(file("circle-2.json"), "utf8"))["chairs"] as Array<{ seat: string }>;
+    const aChair = (JSON.parse(readFileSync(file("circle-1.json"), "utf8"))["chairs"] as Array<{ seat: string }>)[0]!.seat;
+    const bChair = chairs.find((c) => c.seat !== aChair)!.seat;
+    await ok(B, ["nexus", "seal", "roll", "sign", file("circle-2.json"), "--heard-threshold", "2", "--heard", seatFingerprint(aChair), "--out", file("circle-3.json")]);
+    const signed = await ok(A, ["nexus", "seal", "roll", "sign", file("circle-3.json"), "--heard-threshold", "2", "--heard", seatFingerprint(bChair), "--out", file("circle-4.json")]);
+    expect(data(signed)["verdict"]).toBe("complete");
+    for (const h of [A, B]) expect(data(await ok(h, ["nexus", "seal", "roll", "file", file("circle-4.json")]))["outcome"]).toBe("extended");
+
+    // THE ANCHOR crosses after the filed head, as partial files.
+    expect(data(await ok(A, ["nexus", "seal", "anchor", "--nexus", aid, "--out", file("anchor-1.json")]))["verdict"]).toBe("ready");
+    expect(data(await ok(B, ["nexus", "seal", "anchor", "--from", file("anchor-1.json"), "--out", file("anchor-2.json")]))["verdict"]).toBe("complete");
+    expect(data(await ok(A, ["nexus", "seal", "anchor", "--from", file("anchor-2.json")]))["verdict"]).toBe("complete");
+
+    await restand(A);
+    await restand(B);
+    const heads = new Set<string>();
+    for (const h of [A, B]) {
+      const read = data(await ok(h, ["nexus", "members", "--list", "--nexus", aid]));
+      expect(read["aid"]).toBe(aid);
+      expect(read["sealEpochCid"]).not.toBe(before["sealEpochCid"]);
+      expect(read["threshold"]).toBe(2);
+      expect(read["seatedKeys"]).toBe(2);
+      heads.add(String(read["sealEpochCid"]));
+    }
+    expect(heads.size).toBe(1);
+  }, 900_000);
 
   test("T5 — both household seeds stand byte-identical", () => {
     for (const h of [A, B]) expect(seedBytes(h)).toBe(seeds.get(h.lar.root));
