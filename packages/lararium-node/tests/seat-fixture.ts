@@ -15,6 +15,7 @@
  */
 import { ed25519SignerFromSeed, hex, sha256BytesSync, utf8Bytes } from "@lararium/mesh";
 import { storeSeatKey } from "../src/seat-key-store.js";
+import { bookSeat } from "../../lararium-mesh/tests/charter-fixture.js";
 
 /** One hand that signs as a seat: its public key and a signer over bytes (lower-case hex out). */
 export interface SeatHand {
@@ -44,6 +45,7 @@ export async function seatChairs(faces: readonly number[], opts: { readonly gene
   for (const face of faces) {
     const seed = chairSeed(face, opts.generation ?? 0, opts.family ?? "chairs");
     const key = (await storeSeatKey(face, seed)).toLowerCase();
+    bookSeat(seed);
     keys.push(key);
     seeds.push(seed);
     hands.push({ signer: key, sign: ed25519SignerFromSeed(seed) });
@@ -53,6 +55,5 @@ export async function seatChairs(faces: readonly number[], opts: { readonly gene
 
 /** The public key `chairSeed(face, generation, family)` derives, without storing anything. */
 export async function chairKey(face: number, generation = 0, family = "chairs"): Promise<string> {
-  const { getPublicKeyAsync } = await import("@noble/ed25519");
-  return hex(await getPublicKeyAsync(chairSeed(face, generation, family)));
+  return bookSeat(chairSeed(face, generation, family));
 }

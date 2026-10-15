@@ -34,7 +34,7 @@ import { readFileSync, mkdirSync, existsSync } from "node:fs";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { join, dirname } from "node:path";
 import {
-  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI,
+  NEXUS_DOC_DOMAIN, NEXUS_CHARTER_URI, readCharterInception,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type SealRoll, type SealKeySet, type QuorumSignature,
   type FederationPosture, type CabalJoinPolicy, type AdmissionDials,
 } from "@lararium/mesh";
@@ -133,17 +133,27 @@ function coerceSealLineage(raw: unknown): SealEpoch[] | "torn" | undefined {
     // The previous charter shape had one commitment for the whole successor set. Keep it
     // distinguishable at the document boundary so callers can refuse it explicitly.
     if (Object.prototype.hasOwnProperty.call(e, "nextKeyCommit")) return "torn";
+    // The earlier link shape named one `prevEpochCid`; a seal record names a set of predecessors.
+    if (Object.prototype.hasOwnProperty.call(e, "prevEpochCid")) return "torn";
     if (!Array.isArray(e["nextKeyDigests"]) || !(e["nextKeyDigests"] as unknown[]).every((d) => typeof d === "string" && /^[0-9a-f]{64}$/.test(d))) return "torn";
     if (!Number.isInteger(e["nextThreshold"]) || (e["nextThreshold"] as number) < 0) return "torn";
-    const prev = e["prevEpochCid"];
-    if (prev !== null && typeof prev !== "string") return "torn";
+    const preds = e["predecessors"];
+    if (!Array.isArray(preds) || preds.length > 2 || !preds.every((p) => typeof p === "string")) return "torn";
     const epoch: SealEpoch = {
       epochCid:      e["epochCid"] as string,
       keySetHash:    e["keySetHash"] as string,
       nextKeyDigests: [...(e["nextKeyDigests"] as string[])],
       nextThreshold: e["nextThreshold"] as number,
-      prevEpochCid:  (prev ?? null) as string | null,
+      predecessors:  [...(preds as string[])],
     };
+    if (e["roll"] !== undefined && e["inception"] !== undefined) return "torn";
+    if (e["inception"] !== undefined) {
+      // Shape only, through the mesh's strict reader: `verifySealLineage` judges the signatures.
+      const inception = readCharterInception(e["inception"]);
+      if (inception === null) return "torn";
+      lineage.push({ ...epoch, inception });
+      continue;
+    }
     if (e["roll"] === undefined) { lineage.push(epoch); continue; }
     const roll = coerceSealRoll(e["roll"]);
     if (roll === "torn") return "torn";
@@ -254,14 +264,15 @@ export type NexusCharterShape = "absent" | "whole" | "torn" | "earlier-shape";
 export function nexusCharterShape(bagsDir: string): NexusCharterShape {
   const body = readBody(bagsDir);
   if (body === null) return existsSync(nexusCharterDocPath(bagsDir)) ? "torn" : "absent";
-  // THE EARLIER SHAPES, each by its own mark: one `nextKeyCommit` per epoch, and a seat that carries `displayName`
+  // THE EARLIER SHAPES, each by its own mark: one `nextKeyCommit` per epoch, one `prevEpochCid` link where a seal
+  // record names its predecessors, and a seat that carries `displayName`
   // where a chair carries `chairLabel`. Every charter written before the Nexus AID took its `nexus-` name carries the
   // second mark, so no reader needs the earlier name itself.
   const own = (e: unknown, key: string): boolean => typeof e === "object" && e !== null && Object.prototype.hasOwnProperty.call(e, key);
   const seal = readFence(body, SEAL_BLOCK);
   if (typeof seal === "object" && seal !== null) {
     const lineage = (seal as Record<string, unknown>)["sealLineage"];
-    if (Array.isArray(lineage) && lineage.some((e) => own(e, "nextKeyCommit"))) return "earlier-shape";
+    if (Array.isArray(lineage) && lineage.some((e) => own(e, "nextKeyCommit") || own(e, "prevEpochCid"))) return "earlier-shape";
   }
   const kahu = readFence(body, KAHU_BLOCK);
   const seats = typeof kahu === "object" && kahu !== null ? (kahu as Record<string, unknown>)["kahu"] : undefined;

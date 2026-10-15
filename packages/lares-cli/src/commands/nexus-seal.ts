@@ -43,7 +43,7 @@ import {
 } from "@lararium/node";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated, sealLineageHead, charterSealState,
-  genesisCharterEpoch, rotateSealEpoch, seatedKahuKeys,
+  charterInceptionImage, genesisOfInception, inceptCharterEpoch, rotateSealEpoch, seatedKahuKeys, type CharterInceptionImage,
   mintColdKey, coldKeyFromSeed, coldKeySeedFromCode, ColdKeyCardError, type SealNext,
   federationPostureFromDoc,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats, type RotateResult,
@@ -59,7 +59,7 @@ import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { sealedAct } from "../sealed-act-door.js";
-import { sealHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-rows.js";
+import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-rows.js";
 import { canPromptSecret, promptSecret } from "../prompt-secret.js";
 import { CardReadBackRefused, readBack as printAndReadBack, type ColdCard } from "../cold-card-readback.js";
 
@@ -238,14 +238,19 @@ async function mintColdCards(kahu: readonly NexusCharterKahu[], seatedKeys: read
  * process mints each seated chair's cold next key, and the genesis commits their digests. Below the quorum rule no
  * epoch roots, and no card mints.
  */
-async function armGenesis(args: ParsedArgs): Promise<ArmedSeat & { readonly genesis: SealEpoch | null }> {
+async function armGenesis(args: ParsedArgs): Promise<ArmedSeat & { readonly image: CharterInceptionImage | null }> {
   const armed = await riteStep(() => armGenesisSeats(askedThreshold(args)));
   const seatedKeys = [...armed.seatedKeys];
   const kahu = armed.kahu.map((k) => ({ ...k }));
-  if (seatedKeys.length < armed.threshold) return { kahu, seatedKeys, threshold: armed.threshold, genesis: null, cards: [], spent: armed.superseded, minted: armed.minted };
+  if (seatedKeys.length < armed.threshold) return { kahu, seatedKeys, threshold: armed.threshold, image: null, cards: [], spent: armed.superseded, minted: armed.minted };
   const { cards, next } = await mintColdCards(kahu, seatedKeys, armed.threshold);
-  const genesis = genesisCharterEpoch(seatedKeys, armed.threshold, next);
-  return { kahu, seatedKeys, threshold: armed.threshold, genesis, cards, spent: armed.superseded, minted: armed.minted };
+  const image = charterInceptionImage(seatedKeys, armed.threshold, next);
+  return { kahu, seatedKeys, threshold: armed.threshold, image, cards, spent: armed.superseded, minted: armed.minted };
+}
+
+/** Every seated hand signs the inception through the door, each as its own seat; the genesis reads only so. */
+async function incept(image: CharterInceptionImage): Promise<SealEpoch> {
+  return riteStep(() => inceptCharterEpoch(image, image.keys.map(inceptHand)));
 }
 
 /**
@@ -340,11 +345,15 @@ async function sealSeat(args: ParsedArgs): Promise<number> {
   // from what STOOD, never from a list this build shipped; the threshold comes from the operator's `--threshold`,
   // else the charter's own, else a MAJORITY of the chairs.
   // A seed turns to a Nexus when a second operator seats their own key in a fresh charter. A contract moves no phase.
-  const { kahu, seatedKeys, threshold, genesis, spent, minted, cards } = await armGenesis(args);
+  const { kahu, seatedKeys, threshold, image, spent, minted, cards } = await armGenesis(args);
   // THE CARDS READ BACK BEFORE THE CHARTER MOVES: a refusal here writes nothing, and the keys the arming minted retire.
+  // The seats sign the inception only after the cards read back.
   let printed: Array<Record<string, string>>;
-  try { printed = await readBack(args, cards, 1, genesis ? genesis.epochCid.slice(-16) : ""); }
-  catch (err) { await retireSpent(minted); throw err; }
+  let genesis: SealEpoch | null = null;
+  try {
+    printed = await readBack(args, cards, 1, image ? genesisOfInception(image).epochCid.slice(-16) : "");
+    if (image) genesis = await incept(image);
+  } catch (err) { await retireSpent(minted); throw err; }
 
   // Establish the genesis epoch only once a quorum is seatable — below threshold, no epoch roots (inert).
   const sealLineage: SealEpoch[] | undefined = genesis ? [genesis] : undefined;
@@ -617,7 +626,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true,
     data: {
-      path, sealEpochCid, prevEpochCid: result.epoch.prevEpochCid,
+      path, sealEpochCid, predecessors: result.epoch.predecessors,
       chainDepth: sealLineage.length, rotationArmed: armed,
       quorumSeated: foundingQuorumSeated(next),
       rollAnchor: anchored ? { cid: anchored.anchorCid, parents: anchored.parents.length } : null,
@@ -627,7 +636,7 @@ async function sealRotate(args: ParsedArgs): Promise<number> {
       console.log(`nexus seal ROTATED → chain depth ${sealLineage.length} → ${path}`);
       console.log(`  each card's key VERIFIED against the digest the prior epoch committed; the seated hands SIGNED the roll.`);
       console.log(`  head epoch: ${sealEpochCid}`);
-      console.log(`  prev link:  ${result.epoch.prevEpochCid}`);
+      console.log(`  prev link:  ${result.epoch.predecessors.join(", ")}`);
       console.log(anchored
         ? `  anchor:     ${anchored.anchorCid.slice(0, 16)}… over ${anchored.parents.length} board head(s) — admits in its past carry to the new head`
         : `  anchor:     none — the closing head rooted no roster, so no admit stood to carry`);

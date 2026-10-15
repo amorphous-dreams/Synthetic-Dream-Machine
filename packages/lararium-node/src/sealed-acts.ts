@@ -58,7 +58,7 @@ import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./command
 import { NexusKeyReissueRefused, runNexusKeyReissue } from "./nexus-key-reissue.js";
 import {
   SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
-  sealCrossing, signCrossing, signLicensedSealRoll, witnessCrossing,
+  sealCrossing, signCrossing, signLicensedInception, signLicensedSealRoll, witnessCrossing,
 } from "./seal-ceremony.js";
 import { larSealHome } from "./vessel-paths.js";
 
@@ -360,6 +360,11 @@ export const SEALED_ACTS = Object.freeze({
   // takes a crossing record's bytes from its caller, and the roll row reads the standing head before it signs.
   "seal.sign": act({ seat: seatKey, image }, async (a) => ({
     ...(await ceremonyOrRefuse(signLicensedSealRoll(a.seat, Uint8Array.from(Buffer.from(a.image, "hex"))))),
+  })),
+  // A seat signs an INCEPTION only when the image licenses it (`signLicensedInception`): its own seat seated, every
+  // seat armed, a seed's seats all held here, a joint founding at two of two, and no successor a held charter used.
+  "seal.incept": act({ seat: seatKey, image }, async (a) => ({
+    ...(await ceremonyOrRefuse(signLicensedInception(a.seat, Uint8Array.from(Buffer.from(a.image, "hex"))))),
   })),
   "crossing.state": act({}, async () => {
     const { pending, kept } = await readCrossing();

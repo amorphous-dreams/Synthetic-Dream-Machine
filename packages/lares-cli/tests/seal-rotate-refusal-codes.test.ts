@@ -5,10 +5,19 @@ import { join } from "node:path";
 import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
-import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "@lararium/node";
-import { genesisCharterEpoch, renameOwnPersona, sealKeySetHash, standForKahuSeat } from "@lararium/mesh";
+import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, signAsSeat, writeNexusDoc } from "@lararium/node";
+import { charterInceptionBytes, charterInceptionImage, genesisOfInception, renameOwnPersona, sealKeySetHash, standForKahuSeat, type SealEpoch } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 import { sealRite, type SealRite } from "./seal-rite-fixture.js";
+
+/** A genesis over the vault's own seat keys, each seat signing its inception by hand, outside the door: the head
+ *  a test plants to read a refusal the rite names. */
+async function incepted(keys: readonly string[], threshold: number, next?: { digests: string[]; threshold: number }): Promise<SealEpoch> {
+  const image = charterInceptionImage(keys, threshold, next);
+  const bytes = charterInceptionBytes(image);
+  return genesisOfInception(image, await Promise.all(image.keys.map(async (k) => ({ signer: k, sig: Buffer.from(await signAsSeat(k, bytes)).toString("hex") }))));
+}
+
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -51,7 +60,7 @@ describe("seal rotate refusal codes", () => {
     const doc = readNexusDoc(larSealHome())!;
     const seated = doc.kahu.map((k) => k.verifyingKey!);
     // An UNARMED head: it committed nothing, so the roll refuses under the roll law's own name.
-    const unarmed = genesisCharterEpoch(seated, 2);
+    const unarmed = await incepted(seated, 2);
     writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: unarmed.epochCid, sealLineage: [unarmed] });
     const unarmedBefore = readFileSync(path);
     const refusedUnarmed = await rite.rotate() as { code: number; out: Record<string, any> };
@@ -61,7 +70,7 @@ describe("seal rotate refusal codes", () => {
     expect(rehearsedUnarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
 
     // A head that commits a set this vessel holds no row of: nothing reveals it.
-    const stranger = genesisCharterEpoch(seated, 2, { digests: ["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], threshold: 2 });
+    const stranger = await incepted(seated, 2, { digests: ["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], threshold: 2 });
     writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: stranger.epochCid, sealLineage: [stranger] });
     const strangerBefore = readFileSync(path);
     const refusedStranger = await rite.rotate() as { code: number; out: Record<string, any> };

@@ -25,7 +25,7 @@
  * names the Nexus AID and the AID never names it, so its later inception moves no byte this act writes.
  */
 import {
-  emptyFoundingCharterDoc, federationPostureFromDoc, genesisCharterEpoch, mintColdKey, nexusAidOf, sealKeySetHash, seatedKahuKeys, standForKahuSeat,
+  charterInceptionBytes, charterInceptionImage, emptyFoundingCharterDoc, federationPostureFromDoc, genesisOfInception, mintColdKey, nexusAidOf, sealKeySetHash, seatedKahuKeys, standForKahuSeat,
   renameOwnPersona, type NexusDoc,
 } from "@lararium/mesh";
 import { aFaceBinds } from "../hearth-aid.js";
@@ -34,7 +34,7 @@ import { nexusCharterStands, readNexusDoc, writeNexusDoc } from "../nexus-doc.js
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
 } from "../node-vessel-identity.js";
-import { armGenesis, retireSeats } from "../seal-ceremony.js";
+import { armGenesis, retireSeats, signLicensedInception } from "../seal-ceremony.js";
 import { larSealHome } from "../vessel-paths.js";
 import { runFoundTheFace, runInit, type InitOptions, type FoundFaceResult } from "./init.js";
 
@@ -125,9 +125,13 @@ export async function foundSeedCharter(opts: {
   const cold = await mintColdKey();
   const card: HearthCard = { chair: armed.kahu.find((k) => k.verifyingKey?.toLowerCase() === seatKey)?.chairLabel ?? "a chair", seed: cold.seed, digest: cold.digest };
   try {
-    const genesis = genesisCharterEpoch([seatKey], 1, { digests: [cold.digest], threshold: 1 });
+    // The seed's inception: its one seat signs the image through the door, after the card reads back. The AID the
+    // card names commits the image, so it names this founding and no other.
+    const image = charterInceptionImage([seatKey], 1, { digests: [cold.digest], threshold: 1 });
+    let genesis;
     try {
-      await opts.readBack([card], genesis.epochCid.slice(-16));
+      await opts.readBack([card], genesisOfInception(image).epochCid.slice(-16));
+      genesis = genesisOfInception(image, [await signLicensedInception(seatKey, charterInceptionBytes(image))]);
     } catch (err) {
       await retireSeats(armed.minted);
       throw err;

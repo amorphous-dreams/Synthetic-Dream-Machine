@@ -2,14 +2,14 @@
 import { describe, test, expect } from "vitest";
 import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
-import { genesisCharterEpoch, sealKeySetHash, verifySealLineage } from "../src/wax-stamp.js";
+import { genesisCharterEpoch, sealKeySetHash, verifyInception, verifySealLineage } from "../src/wax-stamp.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import { NEXUS_DOC_DOMAIN } from "../src/domains.js";
 import { nexusAidOf } from "../src/nexus-seal-seed.js";
-import { charterSeatSeeds, heldCharter, namedCharter, seatedCharter } from "./charter-fixture.js";
+import { bookSeat, charterSeatSeeds, heldCharter, namedCharter, seatedCharter } from "./charter-fixture.js";
 
 const seeds = (ns: number[]) => ns.map(n => new Uint8Array(32).fill(n));
-const keys = (ns: number[]) => Promise.all(seeds(ns).map(s => ed.getPublicKeyAsync(s).then(hex)));
+const keys = async (ns: number[]) => seeds(ns).map(bookSeat);
 const hands = (ns: number[]) => Promise.all(ns.map(async n => { const seed = seeds([n])[0]!; const signer = await ed.getPublicKeyAsync(seed).then(hex); return { signer, sign: (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex) }; }));
 
 describe("a seated fixture charter stands under the roll law", () => {
@@ -33,6 +33,13 @@ describe("a seated fixture charter stands under the roll law", () => {
     const rolled = await c.roll(await hands([3, 4])); expect(verifySealLineage(rolled.chain)).toBe(true);
     expect(() => heldCharter({ keys: current, threshold: 2, successors: { keys: successor.slice(0, 1), threshold: 2 } })).toThrow(/roll-malformed/);
     expect(() => heldCharter({ keys: current, threshold: 2, successors: { keys: successor, threshold: 1 } })).toThrow(/roll-malformed/);
+  });
+  test("every fixture genesis carries its seats' inception; a key the book holds no seed for refuses", async () => {
+    expect(verifyInception((await seatedCharter({ seats: 2, threshold: 2, seed: 5 })).chain[0]!)).toBeNull();
+    const held = heldCharter({ keys: await keys([61, 62]), threshold: 1 });
+    expect(verifyInception(held.chain[0]!)).toBeNull();
+    const stranger = await ed.getPublicKeyAsync(Uint8Array.from({ length: 32 }, (_, i) => i + 1)).then(hex);   // no one-byte seed
+    expect(() => heldCharter({ keys: [stranger], threshold: 1 })).toThrow(/unbooked-seat/);
   });
   test("named charter carries no forward commitment", () => {
     const aid = `nexus-${"7e".repeat(32)}`; const doc = namedCharter(aid); expect(doc.kind).toBe(NEXUS_DOC_DOMAIN); expect(doc.sealLineage![0]).toMatchObject({ nextKeyDigests: [], nextThreshold: 0 });

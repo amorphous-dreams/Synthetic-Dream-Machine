@@ -12,17 +12,21 @@
  *     names them, and names the keys of the next generation where it means to roll.
  *   · `namedCharter`: a doc that names a charter and verifies under no law. A test that feeds a reader the
  *     name alone.
+ *   · `bookSeat(seed)`: a seat key whose seed this helper holds, so a `heldCharter` over it signs its inception.
+ *     The one-byte seeds (`fill(n)`) stand booked already.
  *   · `doc()`, on either charter: the charter doc at the head, the shape a vessel stores and carries.
  *
  * The invariants this helper holds for its callers:
  *   · ONE DOOR. No caller names how an epoch commits its successors: a caller names seats, and passes no
  *     commitment value and no reveal. A charter's `head` and `chain` carry whole epochs, and a caller reads
- *     `epochCid`, `keySetHash`, `prevEpochCid` and `roll` off one; a test that reads how an epoch commits
+ *     `epochCid`, `keySetHash`, `predecessors` and `roll` off one; a test that reads how an epoch commits
  *     stands outside the funnel, by name. A change to the charter's shape edits this file and no test that
  *     leans on it.
  *   · A ROLL SEATS WHAT ITS HEAD COMMITTED. A caller names seats by their keys and their threshold; the
  *     helper alone turns a named generation into whatever the head carries for it.
  *   · A FIXTURE NEVER MUTATES. `roll()` returns the grown charter and leaves its receiver as it stood.
+ *   · EVERY GENESIS CARRIES ITS SEATS' INCEPTION. The helper signs it with each seat's seed: its own for a
+ *     `seatedCharter`, and the KEY BOOK's for a `heldCharter`, where a key the book holds no seed for refuses.
  * And for `seatedCharter`, whose keys the helper derives:
  *   · DETERMINISTIC. A seat seed derives from (fixture seed, generation, seat index), so two calls agree
  *     on every key and every cid, and a test may name a generation's seeds before the charter exists.
@@ -32,15 +36,61 @@
  *     unarmed (`armed: false`), and it refuses to roll.
  */
 import * as ed from "@noble/ed25519";
+import { createPrivateKey, createPublicKey, sign as nodeSign } from "node:crypto";
 import { sha256BytesSync, utf8Bytes, hex } from "../src/crypto.js";
 import {
-  genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, verifySealLineage, type SealNext,
-  type SealEpoch, type SealRollSigner,
+  charterInceptionBytes, charterInceptionImage, genesisOfInception, rotateSealEpoch, sealKeySetHash, verifySealLineage,
+  type CharterFounding, type SealNext, type SealEpoch, type SealRollSigner,
 } from "../src/wax-stamp.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
 import { NEXUS_DOC_DOMAIN } from "../src/domains.js";
 import type { NexusDoc } from "../src/nexus-seal-seed.js";
+
+// ── The key book ─────────────────────────────────────────────────────────────────────────────────
+
+const PKCS8_ED25519_PREFIX = Buffer.from("302e020100300506032b657004220420", "hex");
+const privateOf = (seed: Uint8Array) => createPrivateKey({ key: Buffer.concat([PKCS8_ED25519_PREFIX, Buffer.from(seed)]), format: "der", type: "pkcs8" });
+/** Every seat key whose seed a test handed this helper, by its lower-case verifying key. */
+const BOOK = new Map<string, Uint8Array>();
+
+/** Book a seat seed and answer its verifying key: a `heldCharter` over that key signs its inception with it. Sync. */
+export function bookSeat(seed: Uint8Array): string {
+  const key = Buffer.from(createPublicKey(privateOf(seed)).export({ format: "jwk" }).x!, "base64url").toString("hex");
+  BOOK.set(key, new Uint8Array(seed));
+  return key;
+}
+
+/**
+ * The one-byte seeds (`new Uint8Array(32).fill(n)`) stand booked by default: tests across the tree derive "some
+ * seat" from them, and a test that holds such a key holds its seed. Read once, on the first miss.
+ */
+let oneByteBooked = false;
+function bookOneByteSeeds(): void {
+  if (oneByteBooked) return;
+  oneByteBooked = true;
+  for (let n = 0; n < 256; n++) {
+    const seed = new Uint8Array(32).fill(n);
+    const key = Buffer.from(createPublicKey(privateOf(seed)).export({ format: "jwk" }).x!, "base64url").toString("hex");
+    if (!BOOK.has(key)) BOOK.set(key, seed);
+  }
+}
+
+/** Sign `bytes` with a booked seed, synchronously, as lower hex. */
+function signBooked(key: string, bytes: Uint8Array): string {
+  if (!BOOK.has(key.toLowerCase())) bookOneByteSeeds();
+  const seed = BOOK.get(key.toLowerCase());
+  if (!seed) throw refusal("unbooked-seat");
+  return Buffer.from(nodeSign(null, bytes, privateOf(seed))).toString("hex");
+}
+
+/** The genesis of `keys` at `threshold`, armed by `next`, its inception signed by every seat's booked seed. A test
+ *  whose subject stands as the charter doc's own shape takes one here. */
+export function bookedGenesis(keys: readonly string[], threshold: number, next: SealNext = { digests: [], threshold: 0 }, founding: CharterFounding | null = null): SealEpoch {
+  const image = charterInceptionImage(keys, threshold, next, founding);
+  const bytes = charterInceptionBytes(image);
+  return genesisOfInception(image, image.keys.map((k) => ({ signer: k, sig: signBooked(k, bytes) })));
+}
 
 /** A refusal that carries its code, so a test reads WHY a fixture declined. */
 function refusal(code: string): Error & { readonly code: string } {
@@ -54,7 +104,7 @@ export function charterSeatSeeds(seed: number, generation: number, seats: number
 }
 
 const keysOf = (seeds: readonly Uint8Array[]): Promise<string[]> =>
-  Promise.all(seeds.map((s) => ed.getPublicKeyAsync(s).then(hex)));
+  Promise.all(seeds.map(async (s) => { const key = hex(await ed.getPublicKeyAsync(s)); BOOK.set(key, new Uint8Array(s)); return key; }));
 
 const handsOf = (seeds: readonly Uint8Array[], keys: readonly string[]): SealRollSigner[] =>
   seeds.map((s, i) => ({ signer: keys[i]!, sign: (bytes: Uint8Array) => ed.signAsync(bytes, s).then(hex) }));
@@ -166,7 +216,7 @@ export async function seatedCharter(opts: {
   const shape = { fixtureSeed: opts.seed ?? 1, seats: opts.seats, threshold: opts.threshold };
   const armed = opts.armed !== false;
   const keys = await keysOf(charterSeatSeeds(shape.fixtureSeed, 0, shape.seats));
-  const genesis = genesisCharterEpoch(keys, shape.threshold, armed ? await successorCommitment(shape, 0) : undefined);
+  const genesis = bookedGenesis(keys, shape.threshold, armed ? await successorCommitment(shape, 0) : { digests: [], threshold: 0 });
   return stand({ ...shape, chain: [genesis], armed });
 }
 
@@ -240,7 +290,7 @@ export function heldCharter(opts: HeldSeats & { readonly successors?: HeldSeats;
   if (opts.successors && !lawfulSeats(opts.successors)) throw refusal("roll-malformed");
   if (opts.successors && opts.variant !== undefined) throw refusal("variant-never-rolls");
   const commitment = opts.variant === undefined ? heldCommitment(opts, opts.successors) : nobodysCommitment(opts, `variant|${opts.variant}`);
-  const genesis = genesisCharterEpoch(opts.keys, opts.threshold, commitment);
+  const genesis = bookedGenesis(opts.keys, opts.threshold, commitment);
   return standHeld([genesis], { keys: opts.keys, threshold: opts.threshold }, opts.successors);
 }
 
@@ -253,6 +303,6 @@ export function heldCharter(opts: HeldSeats & { readonly successors?: HeldSeats;
 export function namedCharter(aid: string): NexusDoc {
   return {
     kind: NEXUS_DOC_DOMAIN, threshold: 0, sealEpochCid: aid, kahu: [],
-    sealLineage: [{ epochCid: aid, keySetHash: "", nextKeyDigests: [], nextThreshold: 0, prevEpochCid: null }],
+    sealLineage: [{ epochCid: aid, keySetHash: "", nextKeyDigests: [], nextThreshold: 0, predecessors: [] }],
   };
 }

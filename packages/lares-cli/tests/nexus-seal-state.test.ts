@@ -26,7 +26,7 @@ import {
   charterSealState, emptyFoundingCharterDoc, type NexusDoc,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
-import { heldCharter, sealRite, type SealRite } from "./seal-rite-fixture.js";
+import { bookSeat, heldCharter, sealRite, type SealRite } from "./seal-rite-fixture.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -69,6 +69,9 @@ describe("the charter's seal reading — pure", () => {
   test("CONTROL — a doc carrying a lineage reads SEALED", () => {
     // Real verifying keys (RFC 8032 §7.1 TEST 1 and 2): a charter seats only a key the Ed25519 door accepts.
     const keys = ["d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c"];
+    // Their RFC secret keys stand booked, so the fixture signs the genesis's inception as each seat.
+    bookSeat(Buffer.from("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60", "hex"));
+    bookSeat(Buffer.from("4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb", "hex"));
     const doc = heldCharter({ keys, threshold: 2, successors: { keys, threshold: 2 } }).doc({ labels: ["K0", "K1"] });
     expect(charterSealState(doc)).toBe("sealed");
   });

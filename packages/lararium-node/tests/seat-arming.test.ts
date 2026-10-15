@@ -34,7 +34,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  NEXUS_DOC_DOMAIN, foundingRoster, genesisCharterEpoch, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
+  NEXUS_DOC_DOMAIN, charterInceptionBytes, charterInceptionImage, foundingRoster, genesisOfInception, hex, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
   type NexusCharterKahu, type SealEpoch,
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
@@ -43,7 +43,7 @@ import { seatCustody, unseatCustody, updateColdCustodyRow } from "../src/custody
 import { foundCustody } from "../src/custody-session.js";
 import { nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore } from "../src/node-vessel-identity.js";
-import { listSeatKeys, seatKeyFile, seatKeysOfFace } from "../src/seat-key-store.js";
+import { listSeatKeys, seatKeyFile, seatKeysOfFace, signAsSeat } from "../src/seat-key-store.js";
 import { SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { vesselCustodyHomes } from "../src/vault-carriers.js";
 import { larIdentityDir, larSealHome } from "../src/vessel-paths.js";
@@ -94,11 +94,22 @@ async function cardsFor(seatedKeys: readonly string[], threshold: number): Promi
   return { seeds, next: { digests, threshold } };
 }
 
+/** The genesis of `keys` whose every seat signs its inception: through the door, as the rite signs it, or by hand
+ *  for an image the door licenses no signature for (an unarmed one). */
+async function incepted(keys: readonly string[], threshold: number, next?: { digests: string[]; threshold: number }): Promise<SealEpoch> {
+  const image = charterInceptionImage(keys, threshold, next);
+  const bytes = charterInceptionBytes(image);
+  const signatures = await Promise.all(image.keys.map(async (k) => ({ signer: k, sig: next
+    ? (await act("seal.incept", { seat: k, image: hex(bytes) }))["sig"] as string
+    : hex(await signAsSeat(k, bytes)) })));
+  return genesisOfInception(image, signatures);
+}
+
 /** Write the charter a genesis arming answered, as the rite writes it; answers the cards it committed. */
 async function writeGenesis(): Promise<{ armed: Armed; genesis: SealEpoch; cards: Uint8Array[] }> {
   const armed = await act("seat.arm-genesis") as unknown as Armed;
   const { seeds, next } = await cardsFor(armed.seatedKeys, armed.threshold);
-  const genesis = genesisCharterEpoch(armed.seatedKeys, armed.threshold, next);
+  const genesis = await incepted(armed.seatedKeys, armed.threshold, next);
   writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: armed.threshold, sealEpochCid: genesis.epochCid, sealLineage: [genesis], kahu: armed.kahu });
   return { armed, genesis, cards: seeds };
 }
@@ -215,7 +226,7 @@ describe("the rite arms its heads behind the door", () => {
     expect(await why(act("seat.arm-roll", { cards: [hexOf(cards[0]!), hexOf(cards[0]!)] }))).toMatch(/^act-refused: two cards answer one chair's digest/);
     expect(await why(act("seat.arm-roll", { cards: [hexOf(cards[0]!)] }))).toMatch(/^act-refused: the head committed 3 chair\(s\) and a roll reveals 2 of them — 1 card\(s\) answered/);
     expect(seatRows()).toBe(rows);                                                    // no refusal moved a row
-    const unarmed = genesisCharterEpoch(armed.seatedKeys, armed.threshold);
+    const unarmed = await incepted(armed.seatedKeys, armed.threshold);
     writeNexusDoc(larSealHome(), { kind: NEXUS_DOC_DOMAIN, threshold: armed.threshold, sealEpochCid: unarmed.epochCid, sealLineage: [unarmed], kahu: armed.kahu });
     expect(await why(act("seat.arm-roll", { cards: cards.map(hexOf) }))).toMatch(/^act-refused: rotation unarmed/);
     expect(seatRows()).toBe(rows);
@@ -255,7 +266,7 @@ describe("the rite arms its heads behind the door", () => {
     const armed = await act("seat.arm-roll", { cards: cards.map(hexOf) }) as unknown as ArmedRoll;
     const { next } = await cardsFor(armed.seatedKeys, armed.threshold);
     const image = (keys: readonly string[], digests: readonly string[], threshold = 2, nextThreshold = threshold): string =>
-      hexOf(sealRollBytes({ prevEpochCid: genesis.epochCid, keys, threshold, nextKeyDigests: digests, nextThreshold }));
+      hexOf(sealRollBytes({ predecessor: genesis.epochCid, keys, threshold, nextKeyDigests: digests, nextThreshold }));
     const stranger = await publicOf(new Uint8Array(32).fill(77));
     const seat = armed.seatedKeys[0]!;
     expect(await why(act("seal.sign", { seat, image: image([...armed.seatedKeys, stranger], [...next.digests, "aa".repeat(32)]) })))

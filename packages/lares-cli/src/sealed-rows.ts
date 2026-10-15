@@ -94,6 +94,15 @@ export function sealHand(verifyingKey: string): SealHand {
   };
 }
 
+/** The inception hand of the seat `verifyingKey` names. The door signs only an inception the image licenses. */
+export function inceptHand(verifyingKey: string): SealHand {
+  const signer = verifyingKey.toLowerCase();
+  return {
+    signer,
+    sign: async (bytes) => (await sealedAct<{ sig: string }>("seal.incept", { seat: signer, image: Buffer.from(bytes).toString("hex") })).sig,
+  };
+}
+
 /** Which of `keys` this vessel holds a seat key for, lower-case. A reading of row names: it opens nothing. */
 export async function heldSeats(keys: readonly string[]): Promise<string[]> {
   if (keys.length === 0) return [];

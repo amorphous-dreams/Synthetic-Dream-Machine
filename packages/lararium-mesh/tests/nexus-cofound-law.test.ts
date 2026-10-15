@@ -1,24 +1,21 @@
 /**
- * Red-first N contract: the charter lineage reader takes a joint genesis only with every seated key's inception
- * signature over one image. No test here mints a charter in a vessel. The reds run under LAR_UNBUILT_REDS=1 and
- * turn green in the signed-inception commit, which also moves the seed fixtures and every charter reader.
+ * The charter lineage reader takes a genesis only with every seated key's inception signature over one image,
+ * and a joint genesis only as both founders sealed it. No test here mints a charter in a vessel.
  *
- * The signed genesis carries its inception beside its fields (`inception`); the PIN below holds that shape, so a
- * signed-inception commit that carries the signatures elsewhere moves the pin and the reds together.
+ * The signed genesis carries its inception beside its fields (`inception`), and its AID commits the image.
  */
 import { describe, expect, test } from "vitest";
 import * as ed from "@noble/ed25519";
 import { cidV1Sha256, hex } from "../src/crypto.js";
 import { coldKeyFromSeed } from "../src/cold-key-card.js";
 import { seatFingerprint } from "../src/nexus-seal-seed.js";
-import { genesisCharterEpoch, verifySealLineage, type SealEpoch, type SealRollSigner } from "../src/wax-stamp.js";
 import {
-  charterInceptionBytes, cofoundJoin, cofoundOffer, composeCharterInception, inceptionGenesis, sealCofound,
-  verifyCharterInception, type CharterInception,
-} from "../src/cofound.js";
+  charterInceptionBytes, charterInceptionImage, genesisCharterEpoch, genesisOfInception, readSealLineage, verifyInception,
+  verifySealLineage, type SealRollSigner,
+} from "../src/wax-stamp.js";
+import { cofoundGenesis, cofoundJoin, cofoundOffer, composeCharterInception, sealCofound } from "../src/cofound.js";
 import { seatedCharter } from "./charter-fixture.js";
 
-const red = process.env.LAR_UNBUILT_REDS === "1" ? test : test.skip;
 const seedOf = (n: number): Uint8Array => new Uint8Array(32).fill(n);
 const key = async (n: number) => hex(await ed.getPublicKeyAsync(seedOf(n)));
 const hand = async (n: number): Promise<SealRollSigner> => ({ signer: await key(n), sign: async (b) => hex(await ed.signAsync(b, seedOf(n))) });
@@ -33,10 +30,8 @@ async function joint() {
   const offer = cofoundOffer({ ...a, charterLaw: LAW, manifest: MANIFEST });
   const join = await cofoundJoin(offer, b, seatFingerprint(a.seat), await hand(72));
   const inception = await sealCofound(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }, await hand(71));
-  return { a, b, offer, inception, genesis: inceptionGenesis(inception.image) };
+  return { a, b, offer, inception, genesis: cofoundGenesis(inception) };
 }
-/** The genesis carrying its inception: the shape the signed-inception commit reads. */
-const incepted = (genesis: SealEpoch, inception: CharterInception): SealEpoch => ({ ...genesis, inception } as SealEpoch);
 
 describe("N's joint genesis", () => {
   test("CONTROL: the ordinary one-founder seed reads, as the fixture factory builds it, and names another AID", async () => {
@@ -46,61 +41,71 @@ describe("N's joint genesis", () => {
     expect(verifySealLineage(seed.chain)).toBe(true);
   });
 
-  test("PIN: a joint genesis carrying both seats' inception reads, and its inception binds it", async () => {
-    const { genesis, inception } = await joint();
-    expect(verifyCharterInception(inception, genesis)).toBeNull();
-    expect(verifySealLineage([incepted(genesis, inception)])).toBe(true);
-  });
-
-  red("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: an unsigned two-seat genesis fails the charter lineage reader", async () => {
+  test("a joint genesis carrying both seats' inception reads, and its inception binds it", async () => {
     const { genesis } = await joint();
-    expect(verifySealLineage([genesis])).toBe(false);
+    expect(verifyInception(genesis)).toBeNull();
+    expect(verifySealLineage([genesis])).toBe(true);
   });
 
-  red("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: zero signatures or one fail the charter lineage reader", async () => {
-    const { genesis, inception } = await joint();
-    for (const signatures of [[], inception.signatures.slice(0, 1), inception.signatures.slice(1)]) {
-      const partial = { ...inception, signatures };
-      expect(verifyCharterInception(partial, genesis)).not.toBeNull();
-      expect(verifySealLineage([incepted(genesis, partial)])).toBe(false);
+  test("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: an unsigned two-seat genesis fails the charter lineage reader", async () => {
+    const { genesis } = await joint();
+    expect(readSealLineage([{ ...genesis, inception: { ...genesis.inception!, signatures: [] } }])).toBe("inception-unsigned");
+    const { inception: _i, ...bare } = genesis;
+    expect(readSealLineage([bare])).toBe("inception-absent");
+  });
+
+  test("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: one signature of two fails the charter lineage reader", async () => {
+    const { genesis } = await joint();
+    for (const signatures of [genesis.inception!.signatures.slice(0, 1), genesis.inception!.signatures.slice(1)]) {
+      expect(readSealLineage([{ ...genesis, inception: { ...genesis.inception!, signatures } }])).toBe("inception-short-of-seats");
     }
   });
 
-  red("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: two signatures over different images fail the charter lineage reader", async () => {
-    const { a, genesis, inception } = await joint();
-    const split = { ...inception.image, charterLaw: `${LAW}-other` };
+  test("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: two signatures over different images fail the charter lineage reader", async () => {
+    const { a, genesis } = await joint();
+    const split = { ...genesis.inception!.image, founding: { offer: "ab".repeat(32) } };
     const aHand = await hand(71);
-    const signatures = [...inception.signatures.filter((s) => s.signer !== a.seat), { signer: a.seat, sig: await aHand.sign(charterInceptionBytes(split)) }];
-    expect(verifyCharterInception({ ...inception, signatures }, genesis)).toBe("inception-signature-invalid");
-    expect(verifySealLineage([incepted(genesis, { ...inception, signatures })])).toBe(false);
+    const signatures = [...genesis.inception!.signatures.filter((s) => s.signer !== a.seat), { signer: a.seat, sig: await aHand.sign(charterInceptionBytes(split)) }];
+    expect(readSealLineage([{ ...genesis, inception: { ...genesis.inception!, signatures } }])).toBe("inception-signature-invalid");
   });
 
-  red("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: a signer named twice or a signer outside the seats fails the charter lineage reader, beside both seats' signatures", async () => {
-    const { genesis, inception } = await joint();
+  test("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: a signer named twice or a signer outside the seats fails, beside both seats' signatures", async () => {
+    const { genesis } = await joint();
     const foreign = await hand(79);
-    const foreignSig = { signer: foreign.signer, sig: await foreign.sign(charterInceptionBytes(inception.image)) };
-    for (const signatures of [[...inception.signatures, inception.signatures[0]!], [...inception.signatures, foreignSig]]) {
-      expect(verifyCharterInception({ ...inception, signatures }, genesis)).toBe("inception-foreign-signer");
-      expect(verifySealLineage([incepted(genesis, { ...inception, signatures })])).toBe(false);
+    const foreignSig = { signer: foreign.signer, sig: await foreign.sign(charterInceptionBytes(genesis.inception!.image)) };
+    const signed = genesis.inception!.signatures;
+    for (const signatures of [[...signed, signed[0]!], [...signed, foreignSig]]) {
+      expect(readSealLineage([{ ...genesis, inception: { ...genesis.inception!, signatures } }])).toBe("inception-foreign-signer");
     }
   });
 
-  red("EVERY GENESIS CARRIES ITS SEATS' INCEPTION: an unsigned one-seat genesis fails the charter lineage reader, so the seed fixture moves with the seal", async () => {
-    const { a } = await joint();
-    expect(verifySealLineage([genesisCharterEpoch([a.seat], 1, { digests: [(await coldKeyFromSeed(seedOf(75))).digest], threshold: 1 })])).toBe(false);
+  test("an inception moved onto another genesis reads unbound: the AID commits the image", async () => {
+    const { genesis } = await joint();
+    const other = genesisCharterEpoch([await key(77)], 1);
+    expect(readSealLineage([{ ...other, inception: genesis.inception! }])).toBe("inception-unbound");
   });
 
-  red("COFOUND_OFFER_IS_NOT_A_CHARTER: a genesis composed from an offer's material alone fails the charter lineage reader", async () => {
+  test("EVERY GENESIS CARRIES ITS SEATS' INCEPTION: an unsigned one-seat genesis fails; signed by its seat, it reads", async () => {
+    const seat = await hand(75);
+    const image = charterInceptionImage([seat.signer], 1, { digests: [(await coldKeyFromSeed(seedOf(76))).digest], threshold: 1 });
+    expect(readSealLineage([genesisOfInception(image)])).toBe("inception-unsigned");
+    const signed = genesisOfInception(image, [{ signer: seat.signer, sig: await seat.sign(charterInceptionBytes(image)) }]);
+    expect(verifySealLineage([signed])).toBe(true);
+  });
+
+  test("COFOUND_OFFER_IS_NOT_A_CHARTER: a genesis composed from an offer's material alone fails the charter lineage reader", async () => {
     const { offer, genesis } = await joint();
     const fromOffer = genesisCharterEpoch([offer.seat], 1, { digests: [offer.next], threshold: 1 });
     expect(fromOffer.epochCid).not.toBe(genesis.epochCid);
     expect(verifySealLineage([fromOffer])).toBe(false);
   });
 
-  test("CONTROL: the pure inception judge already refuses what the reds name", async () => {
-    const { genesis, inception, offer, b } = await joint();
-    expect(verifyCharterInception({ ...inception, signatures: [] }, genesis)).toBe("inception-unsigned");
-    expect(verifyCharterInception({ ...inception, signatures: inception.signatures.slice(0, 1) }, genesis)).toBe("inception-short-of-seats");
-    expect(composeCharterInception(offer, b)).toEqual(inception.image);
+  test("SAME ROSTER, TWO FOUNDINGS: one roster and rule, founded twice with fresh successors, mints two AIDs", async () => {
+    const { a, b, genesis } = await joint();
+    const again = composeCharterInception(cofoundOffer({ seat: a.seat, next: (await coldKeyFromSeed(seedOf(83))).digest, charterLaw: LAW, manifest: MANIFEST }),
+      { seat: b.seat, next: (await coldKeyFromSeed(seedOf(84))).digest });
+    expect(again.keys).toEqual(genesis.inception!.image.keys);
+    expect(again.threshold).toBe(genesis.inception!.image.threshold);
+    expect(genesisOfInception(again).epochCid).not.toBe(genesis.epochCid);
   });
 });

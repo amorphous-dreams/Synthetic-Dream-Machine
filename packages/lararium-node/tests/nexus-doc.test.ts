@@ -21,7 +21,7 @@ import { verifyBcc } from "@lararium/memetic-frame";
 import { readCarrierShape } from "@lararium/tw5";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated,
-  genesisCharterEpoch, rotateSealEpoch, sealLineageHead, ed25519SignerFromSeed, hex, UNARMED, seatNextDigest,
+  rotateSealEpoch, sealLineageHead, ed25519SignerFromSeed, hex, UNARMED, seatNextDigest,
   renameOwnPersona, ownPersonaPetname, declarePersonaHandle, standForKahuSeat,
   personasStandingForSeat, majorityThreshold, type NexusDoc, type NexusCharterKahu,
 } from "@lararium/mesh";
@@ -30,12 +30,12 @@ import {
   writeNexusSeal, writeNexusKahu, writeNexusPractice, nexusCharterShape,
 } from "../src/nexus-doc.js";
 import {
-  generateOrLoadPersonaGroupRoot, listPersonaRoots, makeNodePersonaPetnameStore,
+  generateOrLoadPersonaGroupRoot, listPersonaRoots, loadPersonaGroupRootSeed, makeNodePersonaPetnameStore,
   makeNodePersonaDeclarationStore,
 } from "../src/node-vessel-identity.js";
 
 import { fixtureKey } from "./fixture-keys.js";
-import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
+import { bookSeat, bookedGenesis, heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
   saved[k] = process.env[k];
@@ -55,7 +55,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
 
   test("a seated doc writes in house form and reads back faithfully", () => {
     const keys = [fixtureKey(0xa), fixtureKey(0xb)];
-    const genesis = genesisCharterEpoch(keys, 2, UNARMED);
+    const genesis = bookedGenesis(keys, 2, UNARMED);
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
       sealEpochCid: genesis.epochCid, sealLineage: [genesis],
@@ -98,7 +98,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
 
   test("charter shape distinguishes earlier, torn and whole epochs", () => {
     const keys = [fixtureKey(0xc), fixtureKey(0xd)];
-    const genesis = genesisCharterEpoch(keys, 2, UNARMED);
+    const genesis = bookedGenesis(keys, 2, UNARMED);
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2, sealEpochCid: genesis.epochCid,
       sealLineage: [genesis], kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Kahu ${i}`, verifyingKey })),
@@ -106,6 +106,12 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     const whole = renderNexusDoc(doc);
     const old = whole.replace('"nextKeyDigests": [],', '"nextKeyCommit": "legacy",');
     writeFileSync(nexusCharterDocPath(bags), old, "utf8");
+    expect(nexusCharterShape(bags)).toBe("earlier-shape");
+    expect(readNexusDoc(bags)).toBeNull();
+    // A seal record that names one `prevEpochCid` where it names a set of predecessors: the earlier link shape.
+    const linked = whole.replace('"predecessors": []', '"prevEpochCid": null');
+    expect(linked).not.toBe(whole);
+    writeFileSync(nexusCharterDocPath(bags), linked, "utf8");
     expect(nexusCharterShape(bags)).toBe("earlier-shape");
     expect(readNexusDoc(bags)).toBeNull();
     // A seat that carries `displayName` where a chair carries `chairLabel`: the earlier shape, by name.
@@ -154,7 +160,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
 
   test("a pre-rotated CHAIN doc round-trips through disk + roots the roster on the head epoch (#68)", () => {
     const keys = [fixtureKey(0xa), fixtureKey(0xb)];
-    const genesis = genesisCharterEpoch(keys, 2, { digests: [seatNextDigest(fixtureKey(0xc)), seatNextDigest(fixtureKey(0xd))], threshold: 2 });
+    const genesis = bookedGenesis(keys, 2, { digests: [seatNextDigest(fixtureKey(0xc)), seatNextDigest(fixtureKey(0xd))], threshold: 2 });
     const doc: NexusDoc = {
       kind: NEXUS_DOC_DOMAIN, threshold: 2,
       sealEpochCid: genesis.epochCid,
@@ -168,7 +174,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     writeNexusDoc(bags, doc);
     const back = readNexusDoc(bags);
     expect(back).toEqual(doc);                                          // the chain survives disk byte-faithful
-    expect(sealLineageHead(back)!.prevEpochCid).toBeNull();
+    expect(sealLineageHead(back)!.predecessors).toEqual([]);
     expect(foundingRoster(back).sealEpochCid).toBe(genesis.epochCid);   // antigen roots on the head
     expect(foundingQuorumSeated(back)).toBe(true);
   });
@@ -187,7 +193,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
   async function rolledDoc(): Promise<NexusDoc> {
     const seeds = [1, 2, 3, 4].map((n) => new Uint8Array(32).fill(60 + n));
     const keys = await Promise.all(seeds.map(async (s) => hex(await ed.getPublicKeyAsync(s))));
-    const genesis = genesisCharterEpoch(keys.slice(0, 2), 2, { digests: keys.slice(2).map(seatNextDigest), threshold: 2 });
+    const genesis = bookedGenesis(keys.slice(0, 2), 2, { digests: keys.slice(2).map(seatNextDigest), threshold: 2 });
     const r = await rotateSealEpoch(genesis, { keys: keys.slice(2), threshold: 2 }, { digests: keys.slice(0, 2).map(seatNextDigest), threshold: 2 },
       seeds.slice(2).map((s, i) => ({ signer: keys[i + 2]!, sign: ed25519SignerFromSeed(s) })), [], { keys: keys.slice(0, 2), threshold: 2 });
     if (!r.ok) throw new Error(r.reason);
@@ -211,16 +217,23 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     writeNexusDoc(bags, doc);
     const path = nexusCharterDocPath(bags);
     const whole = readFileSync(path, "utf8");
+    // The genesis's inception carries signatures too, so each edit lands on the LAST record: the head's roll.
+    expect(whole.split('"signatures": [').length).toBe(3);   // the inception's, then the roll's
+    const atRoll = (from: string, to: string): string => {
+      const i = whole.lastIndexOf(from);
+      return whole.slice(0, i) + to + whole.slice(i + from.length);
+    };
     // Smuggle a field onto the roll: the coercion copies the known fields alone.
-    writeFileSync(path, whole.replace('"signatures": [', '"smuggled": true,\n      "signatures": ['), "utf8");
+    writeFileSync(path, atRoll('"signatures": [', '"smuggled": true,\n      "signatures": ['), "utf8");
     const smuggled = readNexusDoc(bags);
     expect(smuggled).not.toBeNull();
     // The head rolled off the genesis, so its roll keeps the genesis seats it revealed beside the known three.
     expect(Object.keys(sealLineageHead(smuggled)!.roll!).sort()).toEqual(["genesis", "keys", "signatures", "threshold"]);
     // Tear the roll: a signature record without its sig.
-    writeFileSync(path, whole.replace(/"sig": "[0-9a-f]+"/, '"sig": 7'), "utf8");
+    const lastSig = [...whole.matchAll(/"sig": "[0-9a-f]+"/g)].at(-1)![0];
+    writeFileSync(path, atRoll(lastSig, '"sig": 7'), "utf8");
     expect(readNexusDoc(bags)).toBeNull();
-    writeFileSync(path, whole.replace('"signatures": [', '"revealed": {"keys": [], "threshold": 1},\n      "signatures": ['), "utf8");
+    writeFileSync(path, atRoll('"signatures": [', '"revealed": {"keys": [], "threshold": 1},\n      "signatures": ['), "utf8");
     expect(nexusCharterShape(bags)).toBe("torn");
     // A genesis reveal that reads as no key-set tears the roll too.
     const tornGenesis = whole.replace(/"genesis": \{/, '"genesis": {"keys": 7},\n      "was": {');
@@ -274,10 +287,11 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
       if (!held.has(index)) continue;
       const rt = await generateOrLoadPersonaGroupRoot(index);
       kahu.push({ chairLabel: chair, verifyingKey: rt.verifyingKey });
+      bookSeat(await loadPersonaGroupRootSeed(index));   // the fixture signs the genesis's inception as each root
     }
     const seated    = kahu.map((k) => k.verifyingKey).filter((v): v is string => Boolean(v));
     const threshold = majorityThreshold(kahu.length);          // 3 chairs → 2, derived, never a constant
-    const genesis   = seated.length >= threshold ? genesisCharterEpoch(seated, threshold, UNARMED) : null;
+    const genesis   = seated.length >= threshold ? bookedGenesis(seated, threshold, UNARMED) : null;
     const doc: NexusDoc = {
       kind: emptyFoundingCharterDoc().kind, threshold,
       sealEpochCid: genesis?.epochCid ?? null,

@@ -27,12 +27,22 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome, larDataDir } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, nexusCharterDocPath,
-  heldSeatKey, listSeatKeys, writeNexusDoc,
+  heldSeatKey, listSeatKeys, signAsSeat, writeNexusDoc,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage, genesisCharterEpoch,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealKeySetHash, sealLineageHead, verifySealLineage,
+  charterInceptionBytes, charterInceptionImage, genesisOfInception, type SealEpoch,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
+
+/** A genesis over the vault's own seat keys, each seat signing its inception by hand, outside the door: the head
+ *  a test plants to read a refusal the rite names. */
+async function incepted(keys: readonly string[], threshold: number, next?: { digests: string[]; threshold: number }): Promise<SealEpoch> {
+  const image = charterInceptionImage(keys, threshold, next);
+  const bytes = charterInceptionBytes(image);
+  return genesisOfInception(image, await Promise.all(image.keys.map(async (k) => ({ signer: k, sig: Buffer.from(await signAsSeat(k, bytes)).toString("hex") }))));
+}
+
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -97,7 +107,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const doc = readNexusDoc(larSealHome());
     expect(doc?.sealLineage?.length).toBe(1);
     const head = sealLineageHead(doc)!;
-    expect(head.prevEpochCid).toBeNull();
+    expect(head.predecessors).toEqual([]);
     expect(head.roll).toBeUndefined();
     expect(head.nextKeyDigests).toHaveLength(3);          // rotation armed by the rite itself: one cold digest per chair
     expect(head.nextThreshold).toBe(2);
@@ -121,7 +131,7 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     const doc = readNexusDoc(larSealHome());
     expect(doc?.sealLineage?.length).toBe(2);
     const head = sealLineageHead(doc)!;
-    expect(head.prevEpochCid).toBe(genesis.epochCid);     // hash-linked to genesis
+    expect(head.predecessors).toEqual([genesis.epochCid]);     // hash-linked to genesis
     // The committed hands SIGNED the roll: they ARE the seated set, fresh keys apart from the genesis's.
     const rolled = doc!.kahu.map((k) => k.verifyingKey!.toLowerCase());
     expect(head.roll!.signatures.map((s) => s.signer).sort()).toEqual([...rolled].sort());
@@ -210,14 +220,14 @@ describe("lares nexus seal — the pre-rotated chain ceremony (CLI, real vault +
     // The head commits STRANGER digests, which no card of this seat answers.
     const doc = readNexusDoc(larSealHome())!;
     const seated = doc.kahu.map((k) => k.verifyingKey!);
-    const stranger = genesisCharterEpoch(seated, 2, { digests: ["f".repeat(64), "e".repeat(64), "d".repeat(64)], threshold: 2 });
+    const stranger = await incepted(seated, 2, { digests: ["f".repeat(64), "e".repeat(64), "d".repeat(64)], threshold: 2 });
     writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: stranger.epochCid, sealLineage: [stranger] });
     const rows = listSeatKeys().length;
 
     expect(await code(rite.rotate())).not.toBe(0);                // fail-closed: no card answers the head
     const after = readNexusDoc(larSealHome());
     expect(after?.sealLineage?.length).toBe(1);            // nothing written — still at genesis
-    expect(sealLineageHead(after)!.prevEpochCid).toBeNull();
+    expect(sealLineageHead(after)!.predecessors).toEqual([]);
     expect(listSeatKeys()).toHaveLength(rows);             // and no key minted
   });
 

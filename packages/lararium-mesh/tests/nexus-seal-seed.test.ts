@@ -138,7 +138,7 @@ describe("foundingRoster — the PRE-ROTATED CHAIN roots the antigen on the veri
   test("after a valid rotate, the roster roots on epoch1's head (the seat→rotate round-trip)", async () => {
     const doc = await chainedDoc(2, true);
     const head = sealLineageHead(doc)!;
-    expect(head.prevEpochCid).toBe(doc.sealLineage![0]!.epochCid);
+    expect(head.predecessors).toEqual([doc.sealLineage![0]!.epochCid]);
     expect(foundingRoster(doc).sealEpochCid).toBe(head.epochCid);
     expect(foundingQuorumSeated(doc)).toBe(true);
   });
@@ -155,8 +155,8 @@ describe("foundingRoster — the PRE-ROTATED CHAIN roots the antigen on the veri
   test("a BROKEN chain fails closed to the empty (inert) roster", async () => {
     const doc = await chainedDoc(2);
     const head = doc.sealLineage![0]!;
-    const tampered: NexusDoc = { ...doc, sealLineage: [mintCharterEpoch({ ...head, prevEpochCid: "forged" })] };
-    expect(foundingRoster(tampered).keys).toEqual([]);           // genesis with a non-null prev → broken lineage
+    const tampered: NexusDoc = { ...doc, sealLineage: [mintCharterEpoch({ ...head, predecessors: ["forged"] })] };
+    expect(foundingRoster(tampered).keys).toEqual([]);           // a genesis that names a predecessor → broken lineage
     expect(foundingQuorumSeated(tampered)).toBe(false);
   });
 

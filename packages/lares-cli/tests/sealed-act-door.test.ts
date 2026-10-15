@@ -53,6 +53,7 @@ import {
   larDataDir, larSealHome, loadIdentityAnchors, makeCustodyHolder, persistIdentityAnchors, readNexusDoc, seatCustody, seatedCustody, serveUdsFront,
   vesselCustodyHomes, type CustodyHolder,
 } from "@lararium/node";
+import { foundingRoster } from "@lararium/mesh";
 import { dispatch } from "../src/bin/lares.js";
 import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_SCRATCH_MARKER } from "../src/offline-custody.js";
 import { sealedActVia } from "../src/sealed-act-door.js";
@@ -314,20 +315,32 @@ describe("a command beside a standing vessel", () => {
     await stage();
     const { getPublicKeyAsync } = await import("@noble/ed25519");
     const keys = await Promise.all([1, 2, 3].map(async (i) => Buffer.from(await getPublicKeyAsync(new Uint8Array(32).fill(40 + i))).toString("hex")));
-    const vessel = await standVessel({ unlocked: true, table: (act) => (act === "seat.arm-genesis"
-      ? { kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Chair ${i}`, verifyingKey })), seatedKeys: keys, threshold: 2, superseded: [], minted: keys }
-      : act === "seat.readback-stand-in" ? { standIn: true } : {}) });
+    // The stub door signs each seat's inception with that seat's seed, as a vessel's door signs it with the seat row.
+    const { createPrivateKey, sign } = await import("node:crypto");
+    const seatSign = (seat: string, image: string): string => Buffer.from(sign(null, Buffer.from(image, "hex"), createPrivateKey({
+      key: Buffer.concat([Buffer.from("302e020100300506032b657004220420", "hex"), Buffer.alloc(32, 41 + keys.indexOf(seat))]), format: "der", type: "pkcs8" }))).toString("hex");
+    const vessel = await standVessel({ unlocked: true, table: (act, args) => {
+      if (act === "seat.arm-genesis") return { kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Chair ${i}`, verifyingKey })), seatedKeys: keys, threshold: 2, superseded: [], minted: keys };
+      if (act === "seat.readback-stand-in") return { standIn: true };
+      if (act === "seal.incept") { const { seat, image } = args as { seat: string; image: string }; return { signer: seat, sig: seatSign(seat, image) }; }
+      return {};
+    } });
     const r = await run(["nexus", "seal", "seat", "--json"]);
     expect(r.code).toBe(0);
     expect(seatedCustody()?.isUnlocked() ?? false, "the command's own seat stays locked").toBe(false);
     const frames = vessel.frames as Array<{ act: string; args: Record<string, unknown> }>;
-    expect(frames.map((f) => f.act)).toEqual(["seat.arm-genesis", "seat.readback-stand-in"]);
+    // The arming, the read-back stand-in, then one inception frame per seat: each carries the seat's public key and
+    // the image alone, after the cards read back.
+    expect(frames.map((f) => f.act)).toEqual(["seat.arm-genesis", "seat.readback-stand-in", "seal.incept", "seal.incept", "seal.incept"]);
+    for (const f of frames.slice(2)) expect(Object.keys(f.args).sort()).toEqual(["image", "seat"]);
+    expect(frames.slice(2).map((f) => f.args["seat"]).sort()).toEqual([...keys].sort());
     expect(frames[0]!.args).toEqual({});                                             // the arming takes no key and no commitment
     const printed = (JSON.parse(r.out.trim().split("\n").at(-1)!) as { data: { cards: Array<{ code: string }> } }).data.cards;
     expect(printed).toHaveLength(3);                                                 // one card per chair, printed by the command
     for (const card of printed) expect(JSON.stringify(frames)).not.toContain(card.code.replace(/-/g, "").slice(0, 16));
     // CONTROL: the charter the command wrote seats exactly the public halves the door answered.
     expect(readNexusDoc(larSealHome())!.kahu.map((k) => k.verifyingKey)).toEqual(keys);
+    expect(foundingRoster(readNexusDoc(larSealHome())).keys).toEqual([...keys].sort());   // the genesis reads: every seat incepted
   });
 
   test("D9 — the walk commands send act frames alone, and a carried invite rides no verb", async () => {

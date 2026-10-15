@@ -113,7 +113,7 @@ describe("lares nexus seal rotate — the anchor lands before the head, or nothi
     expect(r.code).toBe(0);
     expect(anchorStep.charterDepthAtAnchor).toEqual([1]);          // the anchor step ran against the closing head
     const head = sealLineageHead(readNexusDoc(larSealHome()))!;
-    expect(head.prevEpochCid).toBe(genesis.epochCid);
+    expect(head.predecessors).toEqual([genesis.epochCid]);
     const data = r.out["data"] as { rollAnchor: { cid: string; parents: number } | null; sealEpochCid: string };
     expect(data.rollAnchor, "the rotate wrote a head with no anchor").not.toBeNull();
     expect(data.sealEpochCid).toBe(head.epochCid);

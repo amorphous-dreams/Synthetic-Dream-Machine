@@ -24,7 +24,7 @@
  *
  * ── A ROLL THE STANDING HEAD LICENSES ───────────────────────────────────────────────────────────
  * `signLicensedSealRoll` reads a roll image against the charter at this vessel's seal home:
- *   · a sealed charter stands, and the roll steps from ITS head (`prevEpochCid` names the standing head's cid);
+ *   · a sealed charter stands, and the roll steps from ITS head (its one predecessor names the standing head's cid);
  *   · the head committed its seats' next keys, and the roll reveals at least the head's count of them;
  *   · every seated key passes the Ed25519 door, rests here as a seat row, and the signing seat sits among them;
  *   · the roll re-arms every seat it seats: one digest per seat, distinct, under the roll's own threshold.
@@ -36,7 +36,7 @@
  * Node-main only: a worker never imports this module.
  */
 import {
-  CHARTER_SEAT_ROLL_DOMAIN, canonicalJsonBytes, coldKeyFromSeed, seatNextDigest, charterSealState, ed25519SignerFromSeed, emptyFoundingCharterDoc, foundingRoster,
+  CHARTER_SEAT_ROLL_DOMAIN, canonicalJsonBytes, charterInceptionBytes, readCharterInceptionImage, coldKeyFromSeed, seatNextDigest, charterSealState, ed25519SignerFromSeed, emptyFoundingCharterDoc, foundingRoster,
   majorityThreshold, nexusAidOf, personasStandingForSeat, sealKeySetHash, sealLineageHead, seatFingerprint, seatedKahuKeys, weakSeatOf,
   type NexusCharterKahu, type NexusDoc, type QuorumSignature, type SealEpoch,
 } from "@lararium/mesh";
@@ -421,7 +421,7 @@ export async function signLicensedSealRoll(verifyingKey: string, image: Uint8Arr
   const keys = f?.["keys"];
   const digests = f?.["nextKeyDigests"];
   const shaped = f !== null && Object.keys(f).length === 6 && f["kind"] === CHARTER_SEAT_ROLL_DOMAIN
-    && typeof f["prevEpochCid"] === "string"
+    && Array.isArray(f["predecessors"]) && f["predecessors"].length === 1 && typeof f["predecessors"][0] === "string"
     && typeof f["threshold"] === "number" && Number.isInteger(f["threshold"]) && f["threshold"] >= 1
     && typeof f["nextThreshold"] === "number" && Number.isInteger(f["nextThreshold"])
     && Array.isArray(keys) && keys.length > 0 && keys.every((k): k is string => typeof k === "string" && HEX64.test(k))
@@ -430,12 +430,12 @@ export async function signLicensedSealRoll(verifyingKey: string, image: Uint8Arr
     throw refuse("not-a-roll", "this door signs a charter roll in its canonical spelling, and no other image");
   }
   const roll = {
-    prevEpochCid: f["prevEpochCid"] as string, threshold: f["threshold"] as number, keys: keys as string[],
+    predecessor: (f["predecessors"] as string[])[0]!, threshold: f["threshold"] as number, keys: keys as string[],
     nextKeyDigests: digests as string[], nextThreshold: f["nextThreshold"] as number,
   };
   const { head } = standingHead("roll from");
   // THE STANDING STATE LICENSES THE ROLL, or nothing signs.
-  if (roll.prevEpochCid !== head.epochCid) {
+  if (roll.predecessor !== head.epochCid) {
     throw refuse("roll-off-the-standing-head", "the roll steps from another epoch than the head this charter stands at; a root signs a roll from the standing head alone");
   }
   if (head.nextKeyDigests.length === 0) {
@@ -458,6 +458,65 @@ export async function signLicensedSealRoll(verifyingKey: string, image: Uint8Arr
   const following = roll.nextKeyDigests;
   if (following.length !== new Set(roll.keys.map(lower)).size || new Set(following).size !== following.length || roll.nextThreshold !== roll.threshold) {
     throw refuse("roll-unarmed-successor", "the roll re-arms its seats short of one distinct digest each under its own threshold, so the chain would stall at the head it opens");
+  }
+  return { signer, sig: await signAsSeatHex(signer, image) };
+}
+
+// ── the inception ───────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Every successor commitment a charter this vessel holds has made: the primary's and each carried charter's. A
+ * charter that stands and reads torn hides its commitments, so it refuses the reading rather than reading empty.
+ */
+function successorsHeldHere(): Set<string> {
+  const sealHome = larSealHome();
+  const homes = [sealHome];
+  const carried = join(sealHome, "carried");
+  if (existsSync(carried)) for (const name of readdirSync(carried).sort()) homes.push(join(carried, name));
+  const used = new Set<string>();
+  for (const home of homes) {
+    const doc = readNexusDoc(home);
+    if (doc === null && nexusCharterStands(home)) {
+      throw refuse("charter-torn", "a charter this vessel holds reads TORN, so its committed successors cannot be read; nothing incepts until it is repaired or moved");
+    }
+    for (const e of doc?.sealLineage ?? []) for (const d of e.nextKeyDigests) used.add(d);
+  }
+  return used;
+}
+
+/**
+ * Sign one charter INCEPTION as the seat `verifyingKey` names, when the image licenses it. `image` holds the
+ * inception image's bytes in their one canonical spelling. The door signs only:
+ *   · an image that reads at its exact shape, seats this signer, and arms every seat (no genesis arms itself blind);
+ *   · a household seed (no founding) whose every seat this vessel holds: a seed never takes a foreign seat;
+ *   · no joint founding yet: a joint inception signs only for an offer this vessel recorded and judged, and the
+ *     cofound verbs that record one stand owed (`lares nexus seal cofound open|join|seal`);
+ *   · an image whose every successor commitment no charter this vessel holds has made: a reused card would let
+ *     two foundings share a successor, and the AID names one founding statement.
+ * Every refusal names its reason and signs nothing.
+ */
+export async function signLicensedInception(verifyingKey: string, image: Uint8Array): Promise<{ readonly signer: string; readonly sig: string }> {
+  const signer = typeof verifyingKey === "string" ? lower(verifyingKey) : "";
+  if (!HEX64.test(signer)) throw refuse("not-a-seat-key", "a seat names itself by its public key, 64 hex");
+  await openedCustody();
+  if (heldSeatKey(signer) === null) throw refuse("no-seat-key", "this vessel holds no seat key under that public key, so nothing signs there");
+  let parsed: unknown;
+  try { parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(image)); } catch { parsed = null; }
+  const read = readCharterInceptionImage(parsed);
+  if (!read || Buffer.compare(Buffer.from(charterInceptionBytes(read)), Buffer.from(image)) !== 0) {
+    throw refuse("not-an-inception", "this door signs a charter inception in its canonical spelling, and no other image");
+  }
+  if (!read.keys.includes(signer)) throw refuse("signer-unseated", "that seat sits outside the inception's key-set, so it signs no part of it");
+  if (read.nextKeyDigests.length === 0) throw refuse("inception-unarmed", "the inception commits no successor, so the charter it founds could never roll");
+  if (read.founding === null && !read.keys.every((k) => heldSeatKey(k) !== null)) {
+    throw refuse("seed-takes-a-foreign-seat", "a household seed seats only keys this vessel holds; a partner founds a Nexus fresh, beside the seed");
+  }
+  if (read.founding !== null) {
+    throw refuse("cofound-offer-unrecorded", "this vessel holds no judged offer for that joint founding, so no seat signs its inception");
+  }
+  const used = successorsHeldHere();
+  if (read.nextKeyDigests.some((d) => used.has(d))) {
+    throw refuse("successor-reused", "the inception commits a successor a charter this vessel holds already committed; each founding mints fresh cold keys");
   }
   return { signer, sig: await signAsSeatHex(signer, image) };
 }

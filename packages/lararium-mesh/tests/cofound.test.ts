@@ -8,10 +8,10 @@ import * as ed from "@noble/ed25519";
 import { cidV1Sha256, hex } from "../src/crypto.js";
 import { coldKeyCardLines, coldKeyCode, coldKeyFromSeed } from "../src/cold-key-card.js";
 import { seatFingerprint } from "../src/nexus-seal-seed.js";
-import { genesisCharterEpoch, verifySealLineage, type SealRollSigner } from "../src/wax-stamp.js";
+import { charterInceptionImage, genesisCharterEpoch, verifyInception, verifySealLineage, type SealRollSigner } from "../src/wax-stamp.js";
 import {
   CofoundRefusal, cofoundJoin, cofoundOffer, cofoundReadBack, coldCardOpens, composeCharterInception, finalCharterFingerprint,
-  inceptionGenesis, judgeCharterInception, judgeCofoundJoin, offerFingerprint, readCharterInception, readCharterInceptionImage,
+  cofoundGenesis, inceptionAid, judgeCharterInception, judgeCofoundJoin, offerFingerprint, readCofoundInception, readCharterInceptionImage,
   readCofoundJoin, readCofoundOffer, sealCofound, seatCommitment, verifyCharterInception, charterInceptionBytes,
   type CofoundOffer, type CharterInceptionImage,
 } from "../src/cofound.js";
@@ -76,14 +76,30 @@ describe("the join", () => {
     const { a, b, offer, image } = await sealed();
     const fromB = readCofoundJoin(courier(await cofoundJoin(offer, b, seatFingerprint(a.seat), await handOf(21))))!;
     expect(fromB.image).toEqual(image);
-    expect(image.aid).toMatch(/^nexus-[0-9a-f]{64}$/);
-    expect(image.aid).toBe(inceptionGenesis(image).epochCid);
-    for (const seedSeat of [a.seat, b.seat]) expect(genesisCharterEpoch([seedSeat], 1).epochCid).not.toBe(image.aid);
+    expect(inceptionAid(image)).toMatch(/^nexus-[0-9a-f]{64}$/);
+    expect(image.founding).toEqual({ offer: offerFingerprint(offer) });
+    for (const seedSeat of [a.seat, b.seat]) expect(genesisCharterEpoch([seedSeat], 1).epochCid).not.toBe(inceptionAid(image));
     expect(finalCharterFingerprint(image)).toMatch(/^[0-9a-f]{64}$/);
     expect(finalCharterFingerprint(image)).not.toBe(offerFingerprint(offer));
     expect(image.keys).toEqual([a.seat, b.seat].sort());
     expect(seatCommitment(image, a.seat)).toBe(a.next);
     expect(seatCommitment(image, b.seat)).toBe(b.next);
+  });
+
+  test("one roster founding twice mints two AIDs: each founding commits fresh successors and its own offer", async () => {
+    const { a, b, image } = await sealed();
+    const [aCold2, bCold2] = await Promise.all([coldKeyFromSeed(seedOf(15)), coldKeyFromSeed(seedOf(25))]);
+    const again = composeCharterInception(cofoundOffer({ seat: a.seat, next: aCold2.digest, charterLaw: LAW, manifest: MANIFEST }),
+      { seat: b.seat, next: bCold2.digest });
+    expect(again.keys).toEqual(image.keys);
+    expect(again.threshold).toBe(image.threshold);
+    expect(inceptionAid(again)).not.toBe(inceptionAid(image));
+    // The same offer under another law alone moves the AID too: the offer fingerprint rides the image.
+    const lawOnly = composeCharterInception(cofoundOffer({ ...a, charterLaw: `${LAW}-other`, manifest: MANIFEST }), b);
+    expect(lawOnly.nextKeyDigests).toEqual(image.nextKeyDigests);
+    expect(inceptionAid(lawOnly)).not.toBe(inceptionAid(image));
+    // CONTROL: the same founding material composes the same AID on either side.
+    expect(inceptionAid(composeCharterInception(cofoundOffer({ ...a, charterLaw: LAW, manifest: MANIFEST }), b))).toBe(inceptionAid(image));
   });
 
   test("B's signer never runs on a misheard fingerprint or a foreign hand", async () => {
@@ -137,9 +153,10 @@ describe("the inception", () => {
   test("both seats sign one image, it binds its genesis, and B accepts exactly the image B composed", async () => {
     const { inception, image } = await sealed();
     expect(verifyCharterInception(inception)).toBeNull();
-    expect(verifyCharterInception(inception, inceptionGenesis(image))).toBeNull();
+    expect(verifyInception(cofoundGenesis(readCofoundInception(inception)!))).toBeNull();
+    expect(verifySealLineage([cofoundGenesis(readCofoundInception(inception)!)])).toBe(true);
     expect(judgeCharterInception(inception, image).ok).toBe(true);
-    const other = { ...image, charterLaw: `${LAW}-other` } as CharterInceptionImage;
+    const other = { ...image, founding: { offer: "ab".repeat(32) } } as CharterInceptionImage;
     expect(judgeCharterInception(inception, other)).toMatchObject({ ok: false, code: "cofound-image-mismatch" });
   });
 
@@ -151,7 +168,7 @@ describe("the inception", () => {
     expect(verifyCharterInception({ ...i, signatures: [s0] })).toBe("inception-short-of-seats");
     expect(verifyCharterInception({ ...i, signatures: [s0, s0] })).toBe("inception-foreign-signer");
     expect(verifyCharterInception({ ...i, signatures: [s0, s1, s0] })).toBe("inception-foreign-signer");
-    const split = { ...image, charterLaw: `${LAW}-other` };
+    const split = { ...image, founding: { offer: "ab".repeat(32) } };
     const aOnSplit = { signer: aHand.signer, sig: await aHand.sign(charterInceptionBytes(split)) };
     const bSig = [s0, s1].find((s) => s.signer !== aHand.signer);
     expect(verifyCharterInception({ ...i, signatures: [bSig, aOnSplit] })).toBe("inception-signature-invalid");
@@ -161,35 +178,37 @@ describe("the inception", () => {
     expect(verifyCharterInception({ ...i, signatures: [s0, s1, foreignSig] })).toBe("inception-foreign-signer");
     // A seed's one seat signs its own inception under the same law; only the founder's judge holds the two-of-two shape.
     const lone = await handOf(61);
-    const loneImage = { ...image, keys: [lone.signer], threshold: 1, nextThreshold: 1, nextKeyDigests: [image.nextKeyDigests[0]!],
-      aid: genesisCharterEpoch([lone.signer], 1, { digests: [image.nextKeyDigests[0]!], threshold: 1 }).epochCid };
-    const loneInception = { kind: i.kind, image: loneImage, signatures: [{ signer: lone.signer, sig: await lone.sign(charterInceptionBytes(loneImage)) }] };
+    const loneImage = charterInceptionImage([lone.signer], 1, { digests: [image.nextKeyDigests[0]!], threshold: 1 }, image.founding);
+    const loneInception = { kind: i.kind, offer: i.offer, image: loneImage, signatures: [{ signer: lone.signer, sig: await lone.sign(charterInceptionBytes(loneImage)) }] };
     expect(verifyCharterInception(loneInception)).toBeNull();
     expect(judgeCharterInception(loneInception, image)).toMatchObject({ ok: false, code: "cofound-image-mismatch" });
   });
 
   test("an inception binds its own genesis and no other", async () => {
     const { inception, a } = await sealed();
-    expect(verifyCharterInception(inception, genesisCharterEpoch([a.seat], 1))).toBe("inception-unbound");
+    const genesis = cofoundGenesis(readCofoundInception(inception)!);
+    expect(verifyInception({ ...genesis, epochCid: genesisCharterEpoch([a.seat], 1).epochCid })).toBe("inception-unbound");
+    expect(verifyInception({ ...genesis, nextThreshold: 1 })).toBe("inception-unbound");
   });
 
   test("the inception reader takes no other file, and no file reads as another", async () => {
     const { offer, join, inception, image } = await sealed();
-    expect(readCharterInception(inception)).not.toBeNull();
+    expect(readCofoundInception(inception)).not.toBeNull();
     expect(readCharterInceptionImage(courier(image))).toEqual(image);
-    for (const wrong of [offer, join, image]) expect(readCharterInception(courier(wrong))).toBeNull();
+    for (const wrong of [offer, join, image]) expect(readCofoundInception(courier(wrong))).toBeNull();
     for (const wrong of [join, inception, image]) expect(readCofoundOffer(courier(wrong))).toBeNull();
     for (const wrong of [offer, inception, image]) expect(readCofoundJoin(courier(wrong))).toBeNull();
     const i = inception as Record<string, any>;
-    expect(readCharterInception({ ...i, image: { ...i.image, aid: `nexus-${"00".repeat(32)}` } })).toBeNull();
-    expect(readCharterInception({ ...i, image: { ...i.image, keys: [...i.image.keys].reverse() } })).toBeNull();
-    expect(readCharterInception({ ...i, extra: 1 })).toBeNull();
+    expect(readCofoundInception({ ...i, image: { ...i.image, founding: { offer: "00".repeat(32) } } })).toBeNull();
+    expect(readCofoundInception({ ...i, image: { ...i.image, founding: null } })).toBeNull();
+    expect(readCofoundInception({ ...i, image: { ...i.image, keys: [...i.image.keys].reverse() } })).toBeNull();
+    expect(readCofoundInception({ ...i, extra: 1 })).toBeNull();
     // An image assembled by hand whose successor resolves to a seated key reads nowhere, signed or not.
     const { a, b } = await founders();
     const bCold = await coldKeyFromSeed(seedOf(22));
     const pairs = [{ seat: a.seat, next: a.next }, { seat: bCold.verifyingKey, next: b.next }].sort((x, y) => (x.seat < y.seat ? -1 : 1));
     const keys = pairs.map((p) => p.seat), nextKeyDigests = pairs.map((p) => p.next);
-    const crafted = { ...i.image, keys, nextKeyDigests, aid: genesisCharterEpoch(keys, 2, { digests: nextKeyDigests, threshold: 2 }).epochCid };
+    const crafted = { ...i.image, keys, nextKeyDigests };
     expect(readCharterInceptionImage(crafted)).toBeNull();
     expect(readCharterInceptionImage({ ...crafted, keys: [...keys] })).toBeNull();
   });
@@ -203,7 +222,7 @@ describe("the read-back", () => {
     expect(text).toContain(offerFingerprint(offer).slice(0, 4));
     expect(lines[0]).toMatch(/^offer fingerprint: [0-9a-f]{4}(-[0-9a-f]{4}){15}$/);
     expect(lines[1]).toMatch(/^final charter fingerprint: [0-9a-f]{4}(-[0-9a-f]{4}){15}$/);
-    expect(text).toContain(image.aid);
+    expect(text).toContain(inceptionAid(image));
     expect(text).toContain(`offer seat: ${seatFingerprint(a.seat)} key ${a.seat}`);
     expect(text).toContain(`joining seat: ${seatFingerprint(b.seat)} key ${b.seat}`);
     expect(() => cofoundReadBack(cofoundOffer({ ...a, charterLaw: `${LAW}-other`, manifest: MANIFEST }), image)).toThrow(/cofound-image-mismatch/);
@@ -215,8 +234,7 @@ describe("the read-back", () => {
     const c = { seat: await keyOf(31), next: (await coldKeyFromSeed(seedOf(32))).digest };
     const pairs = [a, b, c].sort((x, y) => (x.seat < y.seat ? -1 : 1));
     const keys = pairs.map((p) => p.seat), nextKeyDigests = pairs.map((p) => p.next);
-    const three = readCharterInceptionImage({ ...image, keys, nextKeyDigests,
-      aid: genesisCharterEpoch(keys, 2, { digests: nextKeyDigests, threshold: 2 }).epochCid })!;
+    const three = readCharterInceptionImage({ ...image, keys, nextKeyDigests })!;
     expect(three).not.toBeNull();
     expect(() => cofoundReadBack(offer, three)).toThrow(/cofound-image-mismatch/);
   });
@@ -233,9 +251,10 @@ describe("the read-back", () => {
   });
 });
 
-describe("CONTROL: today's lineage reader", () => {
-  test("reads the bare genesis an inception seats, as it reads any genesis (the signed-inception commit changes that)", async () => {
-    const { image } = await sealed();
-    expect(verifySealLineage([inceptionGenesis(image)])).toBe(true);
+describe("the lineage reader", () => {
+  test("reads the genesis a sealed inception seats, and never the bare image's unsigned genesis", async () => {
+    const { image, inception } = await sealed();
+    expect(verifySealLineage([cofoundGenesis(readCofoundInception(inception)!)])).toBe(true);
+    expect(verifySealLineage([genesisCharterEpoch(image.keys, 2, { digests: image.nextKeyDigests, threshold: 2 }, image.founding)])).toBe(false);
   });
 });

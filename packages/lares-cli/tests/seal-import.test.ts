@@ -26,7 +26,7 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import {
-  generateOrLoadPersonaGroupRoot, mintSeatKey, renderNexusDoc, writeNexusDoc, nexusCharterDocPath, carriedCharterHome, readConsent,
+  generateOrLoadPersonaGroupRoot, storeSeatKey, renderNexusDoc, writeNexusDoc, nexusCharterDocPath, carriedCharterHome, readConsent,
   parseNexusDoc,
 } from "@lararium/node";
 import {
@@ -145,7 +145,8 @@ describe("lares nexus seal import --carry · accept-carriage --nexus · seal sho
   async function found(): Promise<string[]> {
     // Each chair holds a seat key of its own, filed under a face this vessel holds a root for.
     const keys: string[] = [];
-    for (const i of [0, 1, 2]) { await generateOrLoadPersonaGroupRoot(i); keys.push(await mintSeatKey(i)); }
+    // A one-byte seed per chair, so the charter fixture signs the genesis's inception as each seat.
+    for (const i of [0, 1, 2]) { await generateOrLoadPersonaGroupRoot(i); keys.push((await storeSeatKey(i, new Uint8Array(32).fill(150 + i))).toLowerCase()); }
     writeNexusDoc(larSealHome(), (await charter(keys)));
     return keys;
   }

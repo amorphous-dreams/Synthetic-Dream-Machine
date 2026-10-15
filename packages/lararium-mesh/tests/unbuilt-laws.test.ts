@@ -30,6 +30,8 @@ import * as mesh from "../src/index.js";
 import { realmFeedPrefix } from "../src/cabal-realm.js";
 import { crossingDirection } from "../src/crossing-direction.js";
 import { resolveDiskMirrors } from "../src/vessel-island-pool-core.js";
+// `../tests/` so the witness's stripped copy under `.unbuilt-laws/` resolves the fixture too.
+import { seatedCharter } from "../tests/charter-fixture.js";
 
 const REALM_A = "0x" + "aa".repeat(32);
 const FACE_1  = "0x" + "11".repeat(32);
@@ -436,8 +438,11 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
 
   // WAVE-THREE PREP. Each row names one unbuilt law; its separately named behavioral file runs a green
   // control by default and the red under LAR_UNBUILT_REDS=1. No production source or signed bytes move here.
-  test.skip("A JOINT GENESIS READS ONLY WITH BOTH FOUNDERS' INCEPTION SIGNATURES — COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES; nexus-cofound-law.test.ts. The current unsigned two-seat red must grow one-signature and split-image vectors when the inception image exists; every charter reader must refuse them.", () => {
-    expect(Object.keys(mesh)).toContain("verifySignedCofoundGenesis");
+  test("A GENESIS READS ONLY WITH EVERY SEAT'S INCEPTION SIGNATURE — COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES; nexus-cofound-law.test.ts holds the one-signature, split-image, doubled and foreign vectors.", async () => {
+    const { inception, ...bare } = (await seatedCharter({ seats: 2, threshold: 2, seed: 77 })).chain[0]!;
+    expect(mesh.verifySealLineage([bare])).toBe(false);
+    expect(mesh.verifySealLineage([{ ...bare, inception: { ...inception!, signatures: inception!.signatures.slice(0, 1) } }])).toBe(false);
+    expect(mesh.verifySealLineage([{ ...bare, inception }])).toBe(true);
   });
   test.skip("A HOUSEHOLD SEED NEVER BECOMES A JOINT NEXUS — COFOUND_OFFER_IS_NOT_A_CHARTER; nexus-cofound-law.test.ts. The pending two-root door must keep both seed charter homes byte-identical while a fresh AID receives both founders' signatures.", () => {
     expect(Object.keys(mesh)).toContain("readCofoundOffer");

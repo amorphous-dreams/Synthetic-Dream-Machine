@@ -20,7 +20,7 @@
  *
  * ── A CARRIED CHARTER MOVES FORWARD ONLY ────────────────────────────────────────────────────────
  * This vessel learns of N's rotation when its operator re-imports N's charter. The re-import lands only
- * when the incoming lineage EXTENDS the held head: walking the incoming chain's `prevEpochCid` links back
+ * when the incoming lineage EXTENDS the held head: walking the incoming chain's predecessor links back
  * from its head reaches the held head. A charter for a different Nexus has a different AID and lands in
  * its own directory; a charter that forks, rewinds, or tears is refused and the held bytes stay.
  *
@@ -132,7 +132,7 @@ function lineageExtends(incoming: NexusDoc, incomingHead: string, heldHead: stri
   while (cursor !== null && !seen.has(cursor)) {
     if (cursor === heldHead) return true;
     seen.add(cursor);
-    cursor = byCid.get(cursor)?.prevEpochCid ?? null;
+    cursor = byCid.get(cursor)?.predecessors[0] ?? null;   // a verified lineage runs one predecessor per roll
   }
   return false;
 }

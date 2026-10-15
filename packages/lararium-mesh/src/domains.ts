@@ -109,6 +109,12 @@ export const COFOUND_OFFER_DOMAIN = mint("cofound-offer");
 /** A charter's INCEPTION: the exact genesis image every seated key signs before the genesis reads as a charter,
  *  and the FINAL CHARTER FINGERPRINT that digests it. Its own name: an inception never verifies as a roll. */
 export const CHARTER_INCEPTION_DOMAIN = mint("charter-inception");
+/** A branch's ABANDON: the quorum of a forked branch, at its own head, closes that branch for every reader who holds
+ *  the record. Its own name: an abandon never verifies as a roll, an inception or a reunion. */
+export const CHARTER_ABANDON_DOMAIN = mint("charter-abandon");
+/** A REUNION: one image naming the scope AID, both held branch heads and the new seats, signed by each branch's
+ *  quorum at its head over identical bytes. Its own name: a reunion never verifies as a roll. */
+export const CHARTER_REUNION_DOMAIN = mint("charter-reunion");
 
 // ── CUSTODY: THE VK, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
 /** The floor key's own inception: the key signed by itself, committing no next key. */

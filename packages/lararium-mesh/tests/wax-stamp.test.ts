@@ -5,7 +5,7 @@ import { hex } from "../src/crypto.js";
 import { ed25519SignerFromSeed } from "../src/auth-wire.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import { CHARTER_SEAT_ROLL_DOMAIN } from "../src/domains.js";
-import { genesisCharterEpoch, rotateSealEpoch, sealKeySetHash, sealRollBytes, mintCharterEpoch,
+import { charterInceptionImage, genesisCharterEpoch, inceptCharterEpoch, rotateSealEpoch, sealKeySetHash, sealRollBytes, mintCharterEpoch,
   verifySealRoll, verifySealLineage, classifySeal, detectDuplicity, weakSeatOf, type SealEpoch, type SealKeySet, type SealNext,
   type SealRollSigner } from "../src/wax-stamp.js";
 
@@ -15,8 +15,11 @@ const nextFor = async (hands: readonly Hand[]): Promise<SealNext> => ({ digests:
 /** Each genesis the helper seats, by its CID: the seats a first roll off it reveals. */
 const genesisSeats = new Map<string, SealKeySet>();
 const seatsOf = (hands: readonly Hand[], threshold = hands.length): SealKeySet => ({ keys: hands.map(h => h.pub.toLowerCase()).sort(), threshold });
+/** A genesis every seat of `old` incepts, at `threshold`, committing `next`. */
+const incept = (old: readonly Hand[], threshold: number, next: SealNext) =>
+  inceptCharterEpoch(charterInceptionImage(old.map(h => h.pub), threshold, next), old.map(h => h.signer));
 const genesis = async (old: readonly Hand[], next: readonly Hand[]) => {
-  const g = genesisCharterEpoch(old.map(h => h.pub), old.length, await nextFor(next));
+  const g = await incept(old, old.length, await nextFor(next));
   genesisSeats.set(g.epochCid, seatsOf(old));
   return g;
 };
@@ -32,7 +35,7 @@ describe("charter seat roll", () => {
   });
   test("a seat added by possession succeeds; a seat may drop while the revealed quorum signs", async () => {
     const [g0, old, add, then3, then1] = await Promise.all([batch(1, 2), batch(10, 2), batch(12, 1), batch(20, 3), batch(30, 1)]);
-    const g = await genesisCharterEpoch(g0!.map(h => h.pub), 1, { digests: [...old!.map(h => seatNextDigest(h.pub))].sort(), threshold: 1 });
+    const g = await incept(g0!, 1, { digests: [...old!.map(h => seatNextDigest(h.pub))].sort(), threshold: 1 });
     const added = await rotateSealEpoch(g, { keys: [...old!, ...add!].map(h => h.pub), threshold: 1 }, { ...(await nextFor(then3!)), threshold: 1 }, [...old!.map(h => h.signer), ...add!.map(h => h.signer)], [], seatsOf(g0!, 1));
     expect(added.ok).toBe(true);
     const dropped = await rotateSealEpoch(g, { keys: [old![0]!.pub], threshold: 1 }, await nextFor(then1!), [old![0]!.signer], [], seatsOf(g0!, 1));
@@ -62,11 +65,11 @@ describe("charter seat roll", () => {
     const half = await roll(g, a!, c!); if (!half.ok) throw Error(half.reason);
     expect(verifySealRoll(g, { ...half.epoch, roll: { ...half.epoch.roll!, signatures: half.epoch.roll!.signatures.slice(0, 1) } })).toBe("roll-short-of-revealed-quorum");
     const addedForQuorum = await batch(41, 1), then3 = await batch(43, 3), all3 = [...a!, ...addedForQuorum!];
-    const bytes3 = sealRollBytes({ prevEpochCid: g.epochCid, keys: all3.map(h => h.pub), threshold: 3,
+    const bytes3 = sealRollBytes({ predecessor: g.epochCid, keys: all3.map(h => h.pub), threshold: 3,
       nextKeyDigests: (await nextFor(then3!)).digests, nextThreshold: 3 });
     const sigs3 = await Promise.all(a!.map(async h => ({ signer: h.pub, sig: await h.signer.sign(bytes3) })));
     const shortSeated = mintCharterEpoch({ keySetHash: sealKeySetHash(all3.map(h => h.pub), 3), nextKeyDigests: (await nextFor(then3!)).digests,
-      nextThreshold: 3, prevEpochCid: g.epochCid }, { keys: all3.map(h => h.pub), threshold: 3, signatures: sigs3, genesis: seatsOf(g0!) });
+      nextThreshold: 3, predecessors: [g.epochCid] }, { keys: all3.map(h => h.pub), threshold: 3, signatures: sigs3, genesis: seatsOf(g0!) });
     expect(verifySealRoll(g, shortSeated)).toBe("roll-short-of-seated-quorum");
     const added = await batch(40, 1); const seated3 = [...a!, ...added!];   // three seats at two-of-three, re-armed three ways
     const withAdded = await rotateSealEpoch(g, { keys: seated3.map(h => h.pub), threshold: 2 }, { ...(await nextFor(await batch(50, 3))), threshold: 2 }, seated3.map(h => h.signer), [], seatsOf(g0!)); if (!withAdded.ok) throw Error(withAdded.reason);
@@ -87,17 +90,17 @@ describe("charter seat roll", () => {
     expect(e3.ok ? null : e3.code).toBe("roll-reuses-a-seated-key");                   // X sat in e1's roll
     // The same step, signed whole by every seated hand: only the earlier rolls tell it apart from a lawful one.
     const seated = [...d!, ...x!], following = (await nextFor(await batch(50, 3))).digests;
-    const bytes = sealRollBytes({ prevEpochCid: e2.epoch.epochCid, keys: seated.map(h => h.pub), threshold: 2, nextKeyDigests: following, nextThreshold: 2 });
+    const bytes = sealRollBytes({ predecessor: e2.epoch.epochCid, keys: seated.map(h => h.pub), threshold: 2, nextKeyDigests: following, nextThreshold: 2 });
     const signatures = await Promise.all(seated.map(async h => ({ signer: h.pub, sig: await h.signer.sign(bytes) })));
     const stitched = mintCharterEpoch({ keySetHash: sealKeySetHash(seated.map(h => h.pub), 2), nextKeyDigests: following,
-      nextThreshold: 2, prevEpochCid: e2.epoch.epochCid }, { keys: seated.map(h => h.pub), threshold: 2, signatures });
+      nextThreshold: 2, predecessors: [e2.epoch.epochCid] }, { keys: seated.map(h => h.pub), threshold: 2, signatures });
     expect(verifySealRoll(e2.epoch, stitched)).toBeNull();                              // CONTROL: against its predecessor alone it reads lawful
     expect(verifySealLineage([g, e1.epoch, e2.epoch, stitched])).toBe(false);
     expect(verifySealRoll(e2.epoch, stitched, [g, e1.epoch])).toBe("roll-reuses-a-seated-key");   // the lineage reads it so
   });
   test("roll bytes carry the six-field seat-roll domain and lineage classification keeps its trichotomy", async () => {
     const [g0, a, b] = await Promise.all([batch(1, 1), batch(10, 1), batch(20, 1)]); const g = await genesis(g0!, a!); const r = await roll(g, a!, b!); if (!r.ok) throw Error(r.reason);
-    const bytes = sealRollBytes({ prevEpochCid: g.epochCid, keys: [a![0]!.pub], threshold: 1, nextKeyDigests: (await nextFor(b!)).digests, nextThreshold: 1 });
+    const bytes = sealRollBytes({ predecessor: g.epochCid, keys: [a![0]!.pub], threshold: 1, nextKeyDigests: (await nextFor(b!)).digests, nextThreshold: 1 });
     expect(new TextDecoder().decode(bytes)).toContain(CHARTER_SEAT_ROLL_DOMAIN);
     expect(classifySeal({ artifactHash: "a", epochCid: r.epoch.epochCid, sealedAt: "t", signature: "ok" }, [g, r.epoch], () => true)).toBe("CURRENT");
     expect(detectDuplicity([g, r.epoch], [g, r.epoch])).toBeNull();

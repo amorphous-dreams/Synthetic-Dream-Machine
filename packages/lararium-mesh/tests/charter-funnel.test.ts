@@ -7,7 +7,8 @@
  * Python), strips comments, and refuses any file that builds a charter by hand outside the helper.
  *
  * Building by hand reads as any of:
- *   · an epoch constructor (`genesisCharterEpoch`, `rotateSealEpoch`, `mintCharterEpoch`), by any import;
+ *   · an epoch constructor (`genesisCharterEpoch`, `rotateSealEpoch`, `mintCharterEpoch`), or an inception's
+ *     (`charterInceptionImage`, `genesisOfInception`, `inceptCharterEpoch`), by any import;
  *   · a field or a flag that says how an epoch commits its successors (`nextKeyCommit`, `next-key-commit`,
  *     and the per-seat spelling `nextKeyDigests`, `nextThreshold`);
  *   · a charter doc written as a literal (`kind: NEXUS_DOC_DOMAIN`, the key quoted or bare).
@@ -44,6 +45,7 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "packages/lararium-mesh/tests/wax-stamp-genesis-seats.test.ts":       "roll-law",
   "packages/lararium-mesh/tests/nexus-cofound-law.test.ts":             "roll-law",
   "packages/lararium-mesh/tests/cofound.test.ts":                       "roll-law",
+  "packages/lararium-mesh/tests/seal-fork.test.ts":                     "roll-law",
   "packages/lararium-mesh/tests/charter-fixture.test.ts":               "roll-law",
   "packages/lararium-node/tests/seal-ceremony.test.ts":                 "roll-law",
   // What the seat and rotate rites write and refuse.
@@ -61,7 +63,7 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
 
 /** What building a charter by hand looks like in code. */
 const BUILDS = new RegExp([
-  String.raw`\b(?:genesisCharterEpoch|rotateSealEpoch|mintCharterEpoch)\b`,
+  String.raw`\b(?:genesisCharterEpoch|rotateSealEpoch|mintCharterEpoch|charterInceptionImage|genesisOfInception|inceptCharterEpoch)\b`,
   String.raw`\b(?:nextKeyCommit|nextKeyDigests|nextThreshold)\b`,
   String.raw`next-key-commit`,
   String.raw`(?:\bkind|["'\x60]kind["'\x60])\s*:\s*NEXUS_DOC_DOMAIN\b`,
@@ -117,8 +119,8 @@ describe("the charter funnel", () => {
     expect(buildsIn("/* genesisCharterEpoch */ // rotateSealEpoch\nconst x = 1;")).toBe(false);
     expect(buildsIn("const url = \"lar://h\"; const e = genesisCharterEpoch(keys, 2, \"\");")).toBe(true);
     expect(buildsIn("import { rotateSealEpoch as roll } from \"@lararium/mesh\";")).toBe(true);
-    expect(buildsIn("const forged = mintCharterEpoch({ ...head, prevEpochCid: \"forged\" });")).toBe(true);
-    expect(buildsIn("const e = { epochCid, keySetHash: \"\", nextKeyCommit: \"\", prevEpochCid: null };")).toBe(true);
+    expect(buildsIn("const forged = mintCharterEpoch({ ...head, predecessors: [\"forged\"] });")).toBe(true);
+    expect(buildsIn("const e = { epochCid, keySetHash: \"\", nextKeyCommit: \"\", predecessors: [] };")).toBe(true);
     expect(buildsIn("const e = { nextKeyDigests: [], nextThreshold: 1 };")).toBe(true);
     expect(buildsIn("run(args([\"seal\", \"seat\"], { \"next-key-commit\": commit }))")).toBe(true);
     expect(buildsIn("as_a nexus seal seat --next-key-commit \"$COMMIT\"", "tools/x.sh")).toBe(true);
