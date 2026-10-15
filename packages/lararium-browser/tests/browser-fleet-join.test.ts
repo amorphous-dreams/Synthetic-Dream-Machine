@@ -4,10 +4,11 @@
  *   B1  the browser reads an offer, mints its own face-scoped key per scope, and requests; the request reads back
  *       against the offer, and the same offer again answers the request already kept
  *   B2  an answer the root signed lands: the admit carries the signed pin, canon and reach, the address secret and
- *       the record rest in this browser's store, and the pending join leaves
- *   B3  an answer whose pin a carrier moved refuses `answer-unsigned` and lands nothing; a second landing of the good
- *       answer refuses `join-absent`
+ *       the record rest in this browser's store, and the pending join stays, landed, until the boot settles it
+ *   B3  an answer whose pin a carrier moved refuses `answer-unsigned` and lands nothing; the good answer lands again
+ *       until settled, then refuses `join-absent`; a standing secret under other bytes refuses untouched
  *   B4  the custody door signs only under the key its row holds
+ *   B5  a request that broke after minting retries clean over the same offer, on the key it left at rest
  */
 import { describe, expect, test } from "vitest";
 import {
@@ -15,9 +16,9 @@ import {
   type FleetJoinOffer, type FleetJoinRequest, type VesselFaceKey,
 } from "@lararium/mesh";
 import { certificateImage } from "../../lararium-mesh/src/face-proof-subjects.js";
-import { generateOrLoadBrowserVesselIdentity, openVesselIdb, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserVesselIdentity, openVesselIdb, idbDelete, idbGet, FLEET_JOIN_STORE } from "../src/browser-vessel-identity.js";
 import {
-  browserFleetJoinAbandon, browserFleetJoinLand, browserFleetJoinRequest, browserVesselFaceKeyCustody,
+  browserFleetJoinAbandon, browserFleetJoinLand, browserFleetJoinRequest, browserFleetJoinSettle, browserVesselFaceKeyCustody,
 } from "../src/browser-fleet-join.js";
 import { chain, pair, signHex } from "../../lararium-mesh/tests/face-proof-fixture.js";
 
@@ -35,13 +36,13 @@ async function stage(): Promise<{ idbName: string; offer: FleetJoinOffer; root: 
   return { idbName, root, face, offer: fleetJoinOffer({ personaGroup: GROUP, rootKey: root.key, nonce, scopes: [face.scope] }) };
 }
 
-async function answerTo(s: Awaited<ReturnType<typeof stage>>, request: FleetJoinRequest) {
+async function answerTo(s: Awaited<ReturnType<typeof stage>>, request: FleetJoinRequest, secret: Uint8Array = SECRET) {
   const body = {
     nonce: request.nonce, vesselKey: request.vesselKey, personaGroup: GROUP,
     edge: { kind: "device-admit/v1", personaGroupId: GROUP, deviceEdge: "synthetic" },
     carriage: { gatePin: PIN, canon: { "lar:///ha.ka.ba/bags/lares": "automerge:canon-lares" } },
     reach: { syncUrl: "ws://hearth.synthetic:7777/ws", islandKind: "anchor", islandScope: null },
-    secret: sealAddressSecret({ secret: SECRET, request }),
+    secret: sealAddressSecret({ secret, request }),
   };
   const key = request.requests[0]!.vesselFaceKey as VesselFaceKey;
   const certificates = [{ scope: s.face.scope, vesselFaceKey: key, signature: await signHex(certificateImage(s.face.scope, key), s.face.face) }];
@@ -77,6 +78,8 @@ describe("the browser's fleet join", () => {
       expect(Array.from((await idbGet<Uint8Array>(db, FLEET_JOIN_STORE, `secret:${GROUP}`))!)).toEqual(Array.from(SECRET));
       expect(await idbGet(db, FLEET_JOIN_STORE, `record:${GROUP}`)).toMatchObject({ personaGroup: GROUP, rootKey: s.root.key });
     } finally { db.close(); }
+    expect(await pendingOf(s.idbName)).toMatchObject({ landed: true });
+    expect(await browserFleetJoinSettle(s.idbName)).toBe(true);
     expect(await pendingOf(s.idbName)).toBeUndefined();
   });
 
@@ -86,8 +89,18 @@ describe("the browser's fleet join", () => {
     const good = await answerTo(s, request);
     await expect(browserFleetJoinLand({ answer: { ...good, carriage: { ...good.carriage, gatePin: "ee".repeat(32) } }, idbName: s.idbName }))
       .rejects.toThrow(/answer-unsigned/);
-    expect(await pendingOf(s.idbName)).toBeDefined();
+    expect(await pendingOf(s.idbName)).not.toHaveProperty("landed");
+    // CONTROL: settling a join whose answer never landed leaves it standing.
+    expect(await browserFleetJoinSettle(s.idbName)).toBe(false);
     await browserFleetJoinLand({ answer: good, idbName: s.idbName });
+    // A boot that never came up retries from the same paste.
+    await browserFleetJoinLand({ answer: good, idbName: s.idbName });
+    // An answer sealing another secret for the same face refuses, and the landed secret stands.
+    await expect(browserFleetJoinLand({ answer: await answerTo(s, request, new Uint8Array(32).fill(9)), idbName: s.idbName }))
+      .rejects.toThrow(/secret-other/);
+    const db = await openVesselIdb(s.idbName);
+    try { expect(Array.from((await idbGet<Uint8Array>(db, FLEET_JOIN_STORE, `secret:${GROUP}`))!)).toEqual(Array.from(SECRET)); } finally { db.close(); }
+    expect(await browserFleetJoinSettle(s.idbName)).toBe(true);
     await expect(browserFleetJoinLand({ answer: good, idbName: s.idbName })).rejects.toThrow(/join-absent/);
   });
 
@@ -99,5 +112,15 @@ describe("the browser's fleet join", () => {
     expect(await custody.signAsVesselFace(s.face.scope, request.requests[0]!.vesselFaceKey, image)).toHaveLength(64);
     await expect(custody.signAsVesselFace(s.face.scope, request.vesselKey, image)).rejects.toThrow(/face-key-other/);
     await expect(custody.signAsVesselFace({ ...s.face.scope, nexus: "nexus-other.synthetic" } as never, request.vesselKey, image)).rejects.toThrow(/face-key-absent/);
+  });
+
+  test("B5 — a request that broke after minting retries clean over the same offer, on the key it left at rest", async () => {
+    const s = await stage();
+    const first = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
+    // The break: the key rests, but the pending row never came to stand.
+    const db = await openVesselIdb(s.idbName);
+    try { await idbDelete(db, FLEET_JOIN_STORE, "pending"); } finally { db.close(); }
+    const again = await browserFleetJoinRequest({ offer: s.offer, idbName: s.idbName });
+    expect(again.requests[0]!.vesselFaceKey).toBe(first.requests[0]!.vesselFaceKey);
   });
 });

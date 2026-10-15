@@ -9,6 +9,8 @@
  *   LAND     read the answer under the root key the KEPT offer named, land the face's address secret and the
  *            face's record, and hand back the admit the answer carried. The caller boots the vessel on it, as the
  *            admit door always has; the gate pin and the canon list rode INSIDE the root's signature.
+ *   SETTLE   once that boot stands, the landed join leaves. Until then the same answer lands again, so a boot
+ *            that never came up retries from the same paste.
  *
  * The request composes through the one composer the node's door uses (`composeFleetJoinRequest`), and the admit
  * reads through the one reader (`carriedAdmitOfFleetJoin`), so a browser and a node spell one join alike. This
@@ -24,7 +26,7 @@ import {
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin, type CarriedAdmitPayload } from "@lararium/keyhive";
 import {
-  FLEET_JOIN_STORE, VESSEL_FACE_KEY_STORE, idbDelete, idbGet, idbPut, loadBrowserSigningSeed, openVesselIdb,
+  FLEET_JOIN_STORE, VESSEL_FACE_KEY_STORE, idbDelete, idbGet, loadBrowserSigningSeed, openVesselIdb,
 } from "./browser-vessel-identity.js";
 
 /** A fleet join this browser refused, by name: a mesh reader's refusal, or this door's own. */
@@ -39,21 +41,41 @@ const PENDING = "pending";
 const isRefusal = (v: unknown): v is { refusal: string } => typeof v === "object" && v !== null && "refusal" in v;
 const faceKeyRow = (scope: FaceScope): string => `${scope.nexus}|${scope.faceKey.toLowerCase()}`;
 
-/** What this browser keeps while its join stands pending. */
-interface PendingJoin { readonly offer: FleetJoinOffer; readonly request: FleetJoinRequest; readonly sealSecret: string }
+/** What this browser keeps while its join stands pending; `landed` once its answer landed, awaiting the boot. */
+interface PendingJoin { readonly offer: FleetJoinOffer; readonly request: FleetJoinRequest; readonly sealSecret: string; readonly landed?: true }
 
 async function withDb<T>(idbName: string, act: (db: IDBDatabase) => Promise<T>): Promise<T> {
   const db = await openVesselIdb(idbName);
   try { return await act(db); } finally { db.close(); }
 }
 
-/** Seal this browser's freshly minted face-scoped key for `scope`. A key standing there already refuses. */
-async function storeVesselFaceKey(idbName: string, scope: FaceScope, secret: Uint8Array): Promise<void> {
-  await withDb(idbName, async (db) => {
-    const standing = await idbGet<Uint8Array>(db, VESSEL_FACE_KEY_STORE, faceKeyRow(scope));
-    if (standing !== undefined) throw new BrowserFleetJoinRefused("face-key-standing", `this browser already holds a key for the face at ${scope.nexus}.`);
-    await idbPut(db, VESSEL_FACE_KEY_STORE, faceKeyRow(scope), Uint8Array.from(secret));
+/** One readwrite transaction over `store`, settled on its commit: `act` stages its requests and names a refusal to
+ *  abort on, and the promise resolves only once the browser committed every write. */
+function inOneTransaction<T>(db: IDBDatabase, store: string, act: (os: IDBObjectStore, refuse: (e: Error) => void, done: (v: T) => void) => void): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, "readwrite");
+    let refusal: Error | null = null;
+    let value: T;
+    tx.oncomplete = () => resolve(value);
+    tx.onabort = () => reject(refusal ?? tx.error);
+    tx.onerror = () => { /* onabort carries the refusal */ };
+    act(tx.objectStore(store), (e) => { refusal = e; tx.abort(); }, (v) => { value = v; });
   });
+}
+const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((v, i) => v === b[i]);
+
+/** The face-scoped key standing for `scope`, or `fresh` sealed there when none stands, read and written in one
+ *  transaction: a key an earlier request left at rest answers again, so the same offer retries clean. */
+async function standOrStoreVesselFaceKey(idbName: string, scope: FaceScope, fresh: Uint8Array): Promise<Uint8Array> {
+  return withDb(idbName, (db) => inOneTransaction<Uint8Array>(db, VESSEL_FACE_KEY_STORE, (os, refuse, done) => {
+    const got = os.get(faceKeyRow(scope));
+    got.onsuccess = () => {
+      const standing: unknown = got.result;
+      if (standing === undefined) { os.put(Uint8Array.from(fresh), faceKeyRow(scope)); done(Uint8Array.from(fresh)); return; }
+      if (!(standing instanceof Uint8Array) || standing.length !== 32) { refuse(new BrowserFleetJoinRefused("face-key-malformed", `the key standing for ${scope.nexus} does not read.`)); return; }
+      done(Uint8Array.from(standing));
+    };
+  }));
 }
 
 /** This browser's custody door for its face-scoped keys (`VesselFaceKeyCustody`): the row at the scope signs, once
@@ -97,17 +119,23 @@ export async function browserFleetJoinRequest(opts: { readonly offer: unknown; r
       offer, vesselKey: hex(await ed25519.getPublicKeyAsync(seed)), sealKey: seal.key,
       custody: browserVesselFaceKeyCustody(idbName),
       mintFaceKey: async (scope) => {
-        const secret = crypto.getRandomValues(new Uint8Array(32));
+        const fresh = crypto.getRandomValues(new Uint8Array(32));
+        let held: Uint8Array | null = null;
         try {
-          await storeVesselFaceKey(idbName, scope, secret);
-          return hex(await ed25519.getPublicKeyAsync(secret));
-        } finally { secret.fill(0); }
+          held = await standOrStoreVesselFaceKey(idbName, scope, fresh);
+          return hex(await ed25519.getPublicKeyAsync(held));
+        } finally { fresh.fill(0); held?.fill(0); }
       },
       sign: async (image) => hex(await ed25519.signAsync(image, seed)),
     });
     if (isRefusal(request)) throw new BrowserFleetJoinRefused(request.refusal, "the request this browser composed does not read back.");
     const kept: PendingJoin = { offer, request, sealSecret: hex(seal.secret) };
-    await withDb(idbName, (db) => idbPut(db, FLEET_JOIN_STORE, PENDING, kept));
+    // `add`, never `put`: a join another tab kept in the meantime refuses rather than vanishing under this one.
+    await withDb(idbName, (db) => inOneTransaction<void>(db, FLEET_JOIN_STORE, (os, refuse, done) => {
+      const added = os.add(kept, PENDING);
+      added.onsuccess = () => done(undefined);
+      added.onerror = (e) => { e.preventDefault(); refuse(new BrowserFleetJoinRefused("join-pending", "another fleet join came to stand pending in this browser meanwhile.")); };
+    }));
     return request;
   } finally { seed.fill(0); seal.secret.fill(0); }
 }
@@ -122,7 +150,9 @@ export async function browserFleetJoinAbandon(idbName = "lares:vessel"): Promise
 
 /**
  * Land an answer: read it under the root key the kept offer named, land the face's address secret and its record,
- * and hand back the admit it carried for the vessel's boot. The pending join leaves once the answer verified.
+ * and hand back the admit it carried for the vessel's boot. The pending join stays, marked landed, until
+ * `browserFleetJoinSettle` once the boot stands: the same answer lands again meanwhile, and a standing secret or
+ * record under other bytes refuses untouched. Every row commits in one transaction, or none does.
  */
 export async function browserFleetJoinLand(opts: { readonly answer: unknown; readonly idbName?: string }): Promise<{ readonly answer: FleetJoinAnswer; readonly admit: CarriedAdmitPayload }> {
   const idbName = opts.idbName ?? "lares:vessel";
@@ -141,14 +171,38 @@ export async function browserFleetJoinLand(opts: { readonly answer: unknown; rea
   const { answer, addressSecret } = verified;
   const admit = carriedAdmitOfFleetJoin(answer);
   if (isRefusal(admit)) { addressSecret.fill(0); throw new BrowserFleetJoinRefused(admit.refusal, "the answer's device edge does not found this face."); }
+  const secretRow = `secret:${answer.personaGroup}`;
+  const recordRow = `record:${answer.personaGroup}`;
   try {
-    await withDb(idbName, async (db) => {
-      await idbPut(db, FLEET_JOIN_STORE, `secret:${answer.personaGroup}`, Uint8Array.from(addressSecret));
-      await idbPut(db, FLEET_JOIN_STORE, `record:${answer.personaGroup}`, {
-        personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants,
-      });
-      await idbDelete(db, FLEET_JOIN_STORE, PENDING);
-    });
+    await withDb(idbName, (db) => inOneTransaction<void>(db, FLEET_JOIN_STORE, (os, refuse, done) => {
+      const standingSecret = os.get(secretRow);
+      standingSecret.onsuccess = () => {
+        const s: unknown = standingSecret.result;
+        if (s !== undefined && !(s instanceof Uint8Array && sameBytes(s, addressSecret))) {
+          refuse(new BrowserFleetJoinRefused("secret-other", "this browser holds another address secret for that face.")); return;
+        }
+        const standingRecord = os.get(recordRow);
+        standingRecord.onsuccess = () => {
+          const r = standingRecord.result as { rootKey?: unknown } | undefined;
+          if (r !== undefined && r.rootKey !== offer.rootKey) {
+            refuse(new BrowserFleetJoinRefused("record-other", "this browser holds that face's record under another root key.")); return;
+          }
+          os.put(Uint8Array.from(addressSecret), secretRow);
+          os.put({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants }, recordRow);
+          os.put({ ...pending, landed: true } satisfies PendingJoin, PENDING);
+          done(undefined);
+        };
+      };
+    }));
   } finally { addressSecret.fill(0); }
   return { answer, admit };
+}
+
+/** The boot on a landed join stands: the pending join leaves. Answers whether a landed join stood; a join whose
+ *  answer has not landed stays pending. */
+export async function browserFleetJoinSettle(idbName = "lares:vessel"): Promise<boolean> {
+  const pending = await readPending(idbName);
+  if (pending?.landed !== true) return false;
+  await withDb(idbName, (db) => idbDelete(db, FLEET_JOIN_STORE, PENDING));
+  return true;
 }

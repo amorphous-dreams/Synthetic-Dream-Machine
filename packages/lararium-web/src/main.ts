@@ -19,7 +19,7 @@
 import {
   openBrowserVessel,
   parseAdmitCarriage, parseAdmitPaste, toAdmitCarriage,
-  browserFleetJoinRequest, browserFleetJoinLand, BrowserFleetJoinRefused,
+  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, BrowserFleetJoinRefused,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
@@ -327,6 +327,8 @@ async function bootVessel(): Promise<void> {
     // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
     // by that opening instead of opening the key store a second time just to paint it.
     const did = didFromVerifyingKey(result.identity.verifyingKey);
+    // A landed fleet join leaves its pending row only now that the vessel stood on its admit.
+    if (admit) void browserFleetJoinSettle().catch((err: unknown) => console.warn("[vessel] the landed fleet join did not settle:", err));
     mountAdmitSurface(result.identity.verifyingKey);
     if (relayUrl) {
       console.log(`[vessel] this leaf's key: ${did}`);

@@ -66,7 +66,7 @@ export type {
 export { parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage, ADMIT_KIND } from "./admit-carriage.js";
 // THE FLEET-JOIN DOOR's joining half: this browser requests a face's fleet, then lands the answer into an admit.
 export {
-  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinAbandon, browserVesselFaceKeyCustody, BrowserFleetJoinRefused,
+  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, browserVesselFaceKeyCustody, BrowserFleetJoinRefused,
 } from "./browser-fleet-join.js";
 
 // The mint-time context gate — refuse where a browser withholds, and name the cause and the cure.

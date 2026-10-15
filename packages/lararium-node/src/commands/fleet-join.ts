@@ -35,7 +35,7 @@ import {
 } from "@lararium/mesh";
 import { carriedAdmitOfFleetJoin } from "@lararium/keyhive";
 import { primaryNexusAid, readCarriedCharters } from "../carried-set.js";
-import { nexusKeyPublicOf, nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readNexusKey, storeVesselFaceKey } from "../face-key-custody.js";
+import { nexusKeyPublicOf, nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readNexusKey, readVesselFaceKeyPublic, storeVesselFaceKey } from "../face-key-custody.js";
 import {
   clearPendingFleetJoin, keepFaceJoinRecord, keepPendingFleetJoin, landFaceAddressSecret, mintFaceAddressSecret,
   readPendingFleetJoin,
@@ -180,21 +180,23 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
   const vesselKey = (await loadVesselVerifyingKey()).toLowerCase();
   const seal = fleetJoinSealPair();
   const seed = await loadVesselSigningSeed();
-  let request;
   try {
-    request = await composeFleetJoinRequest({
+    const request = await composeFleetJoinRequest({
       offer, vesselKey, sealKey: seal.key, custody: nodeVesselFaceKeyCustody,
+      // A key a broken request left at rest answers again, so the same offer retries clean.
       mintFaceKey: async (scope) => {
+        const standing = await readVesselFaceKeyPublic(scope);
+        if (standing !== null) return standing;
         const minted = await mintVesselFaceKey();
         try { await storeVesselFaceKey(scope, minted.secret); } finally { minted.secret.fill(0); }
         return minted.publicKey;
       },
       sign: (image) => signHex(image, seed),
     });
-  } finally { seed.fill(0); }
-  if (isRefusal(request)) { seal.secret.fill(0); throw new FleetJoinRefused(request.refusal, "the request this vessel composed does not read back."); }
-  try { await keepPendingFleetJoin({ request, offer, sealSecret: hex(seal.secret) }); } finally { seal.secret.fill(0); }
-  return request;
+    if (isRefusal(request)) throw new FleetJoinRefused(request.refusal, "the request this vessel composed does not read back.");
+    await keepPendingFleetJoin({ request, offer, sealSecret: hex(seal.secret) });
+    return request;
+  } finally { seed.fill(0); seal.secret.fill(0); }
 }
 
 /** Abandon the join pending here; answers whether one stood. Its face-scoped keys stay at rest. */
@@ -224,7 +226,7 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   if (isRefusal(verified)) throw new FleetJoinRefused(verified.refusal, "the answer does not read against the request this vessel sent.");
   const { answer, addressSecret } = verified;
   const admit = carriedAdmitOfFleetJoin(answer);
-  if ("refusal" in admit) throw new FleetJoinRefused(admit.refusal, "the answer's device edge does not found this face.");
+  if ("refusal" in admit) { addressSecret.fill(0); throw new FleetJoinRefused(admit.refusal, "the answer's device edge does not found this face."); }
   try { await landFaceAddressSecret(answer.personaGroup, addressSecret); } finally { addressSecret.fill(0); }
   await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants });
   await runInit({ repo: opts.repo, force: true, admitPayload: admit, custody: { slots: [] } });

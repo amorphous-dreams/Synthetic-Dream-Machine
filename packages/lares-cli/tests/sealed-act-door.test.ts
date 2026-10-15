@@ -198,7 +198,7 @@ describe("a command beside a standing vessel", () => {
     const vessel = await standVessel({ unlocked: true, table: (act) => {
       if (act === "persona.roots") throw new CustodyRowUnavailable("identity", ".persona-roster.json", "torn");
       if (act === "persona.wear") throw new SealedActRefused("act-refused", "this vessel holds no persona root there");
-      if (act === "admit.reset") throw new Error("a plain fault");
+      if (act === "persona.reissue") throw new Error("a plain fault");
       return { ran: act };
     } });
     const torn = await sealedActVia("persona.roots").catch((e: unknown) => e);
@@ -207,7 +207,7 @@ describe("a command beside a standing vessel", () => {
     const refused = await sealedActVia("persona.wear", { handleIndex: 4 }).catch((e: unknown) => e);
     expect(refused).toBeInstanceOf(SealedActRefused);
     expect(refused).toMatchObject({ reason: "act-refused", message: "this vessel holds no persona root there" });
-    await expect(sealedActVia("admit.reset")).rejects.toThrow("a plain fault");
+    await expect(sealedActVia("persona.reissue")).rejects.toThrow("a plain fault");
     expect(await sealedActVia("petname.entries")).toEqual({ result: { ran: "petname.entries" }, via: "vessel" });   // CONTROL
     for (const frame of vessel.frames) expect(Object.keys(frame as object).sort()).toEqual(["act", "args", "op"]);
   });
