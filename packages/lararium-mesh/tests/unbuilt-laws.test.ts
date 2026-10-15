@@ -32,6 +32,10 @@ import { crossingDirection } from "../src/crossing-direction.js";
 import { resolveDiskMirrors } from "../src/vessel-island-pool-core.js";
 // `../tests/` so the witness's stripped copy under `.unbuilt-laws/` resolves the fixture too.
 import { seatedCharter } from "../tests/charter-fixture.js";
+import * as ed25519 from "@noble/ed25519";
+import { mintDelegatedHostingAct, signHostingDelegation, verifyDelegatedHostingAct } from "../src/hosting-delegation.js";
+import { grantPublicHalf, issueWalkerGrant, verifyWalkerGrant } from "../src/walker-grant.js";
+import { hex } from "../src/crypto.js";
 
 const REALM_A = "0x" + "aa".repeat(32);
 const FACE_1  = "0x" + "11".repeat(32);
@@ -531,24 +535,32 @@ describe("⑫ session, sealed rest and hosting launch gates", () => {
     expect(node).toMatch(/freshBase\s*:/);
   });
 
-  test.skip("HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS — DEFERRED: `hosting.ts` signs a leaf and one cap, so altered delegation and dial fields survive verification; H recuts issuer, reader, store and sorter under the operator-seat delegation together.", async () => {
-    const epoch = await mesh.mintHostingAct({ leafSeed: new Uint8Array(32).fill(41), nexusAid: "nexus-" + "a".repeat(64), prev: null, cap: 3 });
+  test("HOSTING_ACT_BINDS_OPERATOR_SEAT_AND_THREE_DIALS — the pure act stands in `hosting-delegation.ts`: the seat's delegation and the hosting key's signature bind the Nexus, the epoch parent and the three dials, so a moved seat or dial refuses. Behaviour and the vector set in hosting-delegation.test.ts; the live cut of issuer, reader, store and sorter waits on W", async () => {
+    const seat = new Uint8Array(32).fill(41), hostingSeed = new Uint8Array(32).fill(42), nexusAid = "nexus-" + "a".repeat(64);
+    const hostingKey = hex(await ed25519.getPublicKeyAsync(hostingSeed));
+    const delegation = await signHostingDelegation({ seatSeed: seat, nexusAid, hostingKey });
+    const epoch = await mintDelegatedHostingAct({ hostingSeed, delegation, prev: null, dials: { openIntroductions: 1, preAnswered: 3, strangersHeld: 0 } });
     const mutations: Record<string, unknown>[] = [
-      { operatorSeat: "different-seat" },
-      { admissionDial: 1 },
-      { strangerDial: 1 },
-      { walkerDial: 1 },
+      { seat: hex(await ed25519.getPublicKeyAsync(new Uint8Array(32).fill(43))) },
+      { dials: { ...epoch.act.dials, openIntroductions: 2 } },
+      { dials: { ...epoch.act.dials, preAnswered: 4 } },
+      { dials: { ...epoch.act.dials, strangersHeld: 1 } },
     ];
+    expect(verifyDelegatedHostingAct(epoch.act)).toBe(true);
     for (const mutation of mutations) {
-      expect(await mesh.verifyHostingAct({ ...epoch.act, ...mutation })).toBe(false);
+      expect(verifyDelegatedHostingAct({ ...epoch.act, ...mutation })).toBe(false);
     }
   });
 
-  test.skip("SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF — DEFERRED: `hosting.ts` verifies by calling `issueGrant` with the epoch secret; H8 adds a signed grant and public-half reader before E arms the serving walker tier.", async () => {
-    const epoch = await mesh.mintHostingAct({ leafSeed: new Uint8Array(32).fill(41), nexusAid: "nexus-" + "a".repeat(64), prev: null, cap: 3 });
-    const grant = mesh.issueGrant(epoch, { leaf: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", lineage: "d".repeat(64), survived: 0, from: "walker" });
-    const publicOnly = { ...epoch, secretKey: undefined as unknown as Uint8Array };
-    expect(mesh.grantVerifiesAt(publicOnly, grant)).toBe(true);
+  test("SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF — H8's signed grant stands in `walker-grant.ts`: the epoch's grant key signs it and a serving checker reads it under the public half alone, holding no minting secret. Behaviour per axis in walker-grant.test.ts; E's walker arm and the serving rows wait on the live cut", async () => {
+    const hostingSeed = new Uint8Array(32).fill(42), nexusAid = "nexus-" + "a".repeat(64);
+    const hostingKey = hex(await ed25519.getPublicKeyAsync(hostingSeed));
+    const delegation = await signHostingDelegation({ seatSeed: new Uint8Array(32).fill(41), nexusAid, hostingKey });
+    const epoch = await mintDelegatedHostingAct({ hostingSeed, delegation, prev: null, dials: { openIntroductions: 1, preAnswered: 3, strangersHeld: 0 } });
+    const grant = await issueWalkerGrant(epoch, { leaf: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", lineage: "d".repeat(64), survived: 0, from: "walker" });
+    const publicOnly = grantPublicHalf(epoch);
+    expect(Object.keys(publicOnly).sort()).toEqual(["epoch", "grantKey", "nexusAid"]);
+    expect(verifyWalkerGrant(publicOnly, grant)).toBe(true);
   });
 
 });

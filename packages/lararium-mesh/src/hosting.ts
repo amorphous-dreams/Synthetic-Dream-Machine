@@ -38,6 +38,12 @@
  * Group System line). Renewal is deterministic: a grant at the previous epoch renews to `{L, e_cur, s+1}`, the
  * same grant in yielding the same grant out, so renewal burns nothing.
  *
+ * ── WHAT RETIRES THIS SHAPE ────────────────────────────────────────────────────────────────────────
+ * A serving checker that runs `grantVerifiesAt` holds `k_e`, a minting secret. H8's signed grant
+ * (`walker-grant`) and the seat-delegated act with its three dials (`hosting-delegation`) stand pure beside this
+ * file; the one signed-byte cut moves the issuer, the reader, `hosting-store` and the socket sorter onto them
+ * together and retires the leaf-signed act and the keyed tag here.
+ *
  * ── THE CLAIM AND THE LINEAGE ──────────────────────────────────────────────────────────────────────
  * A newcomer redeems with a CLAIM `r = H(claim-tag, its leaf seed, n)`, derived and never stored: a retry
  * after a dropped answer re-derives the same `r`, so refuse-before-destroy holds without a pending record.
