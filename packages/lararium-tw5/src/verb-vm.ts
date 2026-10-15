@@ -1,0 +1,271 @@
+/**
+ * verb-vm — volatile verb invocation lifecycle for the daemon causal island.
+ *
+ * Manages the in-TW5-wiki invocation tiddlers (volatile scratch, never synced)
+ * and writes durable outcome tiddlers to the Automerge-backed daemon bag.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/tw5/verb-vm
+ */
+
+import type { BatchMode, CompositeStore, Verb, VerbTargetResult } from "@lararium/mesh";
+import {
+  DAEMON_BAG_ID, VERB_RESULT_KEY, concludeVerb, buildVerb, buildRunningPatch,
+  canonicalJsonBytes, sha256HexBytesSync, verbInputDigest, isVerbRefusal,
+} from "@lararium/mesh";
+import type { TW5Engine } from "./tw5-vm.js";
+
+// ── Effect index — single writer: the daemon worker (D1, P2.5 iter 4) ──────
+// `<daemon bag>/effects/<effectKey>` names the ONE prior `done` attempt that produced
+// this effect, so a later attempt under a NEW requestId with the SAME effectKey can
+// find it (verb-dispatcher.ts owns the reuse decision; this module owns the write).
+export const EFFECT_URI_PREFIX = `${DAEMON_BAG_ID}/effects/`;
+
+// ── audit-doc write-amplification cure (the dd4da8481 class, a new site) ────────────────────────────
+//
+// A verb's durable outcome (`writeOutcome` below → `bags/daemon/outcomes/<id>`) embeds the handler's
+// FULL return value under `results[summary].output` — for a batch verb (e.g. INGEST) that means a
+// per-carrier result array, unbounded across a corpus seed (214 entries measured for one lararium
+// ingest). That array lands in an Automerge doc that syncs to every vessel and never shrinks — the
+// SAME write-amplification class the FLOW-map carried (4571c394b), at a new site (the audit bag).
+//
+// Cure: any top-level array field in the outcome's `output` that crosses AUDIT_ARRAY_CAP entries is
+// replaced by a BOUNDED summary — count, a per-"decision"/"grade" tally, a content-hash of the full
+// array (so a full-detail re-derivation stays possible/verifiable), and a small sample — never the
+// full body. Below the cap, the array rides FAITHFULLY (a small outcome needs no compaction; a caller
+// polling for a normal-sized ingest's outcome still reads exact per-carrier detail).
+//
+// Read-path note: the co-located CLI (`lararium-node/src/uds-channel.ts`) reads this SAME durable
+// `results` field back as its own printed/returned answer — there is no separate "live response"
+// distinct from the stored doc for that path. So capping the durable field also caps what a
+// large-batch CLI invocation reads; that is the intended trade (a durable receipt the mesh must
+// carry forever cannot hold an unbounded per-run body).
+//
+// A ROW A PERSON MUST ACT ON STAYS NAMED. A summary that counted refusals and named none would leave a
+// refused carrier unfindable, and a refusal nobody can find stays unfixable. So the summary HOLDS every
+// row whose decision applied nothing and asks for a hand (`refuse`, `conflict`), whole, up to the cap,
+// and states how many more such rows it leaves unnamed (`heldMore`). Zero says the summary names every
+// one. A caller that reads `heldMore` above zero asks again in waves under the cap, where every row
+// rides whole (the ingest gesture pages so: `lares-cli/src/ingest-core.ts` `settleIngest`).
+
+/** Past this many entries a top-level array of an outcome's output rides as a bounded summary. */
+export const AUDIT_ARRAY_CAP = 32;
+
+/** The decisions that apply nothing and ask a person to act: each such row stays named in a summary. */
+const HELD_DECISIONS: ReadonlySet<string> = new Set(["refuse", "conflict"]);
+
+/** The bounded stand-in for an oversized array field — a summary, not the body. */
+export interface BoundedArraySummary {
+  readonly boundedArrayCount: number;
+  /** Rows per `decision`, over the rows that carry one. An array whose rows carry none (titles, plain
+   *  strings) tallies nothing, so the tally never invents a decision nobody made. */
+  readonly tallies: Readonly<Record<string, number>>;
+  readonly sha256: string;
+  readonly sample: readonly unknown[];
+  /** Every row whose decision reads `refuse` or `conflict`, whole, in wave order, up to the cap. */
+  readonly held: readonly unknown[];
+  /** How many `refuse` and `conflict` rows `held` leaves unnamed; zero says it names every one. */
+  readonly heldMore: number;
+}
+
+function decisionOf(item: unknown): string | null {
+  const raw = item !== null && typeof item === "object" ? (item as Record<string, unknown>)["decision"] : undefined;
+  return typeof raw === "string" ? raw : null;
+}
+
+function tallyByDecision(items: readonly unknown[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const item of items) {
+    const k = decisionOf(item);
+    if (k !== null) out[k] = (out[k] ?? 0) + 1;
+  }
+  return out;
+}
+
+function boundArray(items: readonly unknown[], cap: number): BoundedArraySummary {
+  const asks = items.filter((item) => HELD_DECISIONS.has(decisionOf(item) ?? ""));
+  return {
+    boundedArrayCount: items.length,
+    tallies: tallyByDecision(items),
+    sha256:  sha256HexBytesSync(canonicalJsonBytes(items)),
+    sample:  items.slice(0, 3),
+    held:    asks.slice(0, cap),
+    heldMore: Math.max(0, asks.length - cap),
+  };
+}
+
+/**
+ * Cap any top-level array field of `result` past `AUDIT_ARRAY_CAP` entries — the durable-outcome
+ * shape the write-amplification cure applies to. Exported for the CLI's read-path (and tests) to
+ * recognize a bounded field via `boundedArrayCount`, distinct from a genuine small array.
+ */
+export function boundOutcomeOutput(
+  result: Record<string, unknown>, cap: number = AUDIT_ARRAY_CAP,
+): Record<string, unknown> {
+  const bounded: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(result)) {
+    bounded[key] = Array.isArray(value) && value.length > cap ? boundArray(value, cap) : value;
+  }
+  return bounded;
+}
+
+export interface VerbPlacement {
+  readonly verb:        string;
+  readonly args:        Record<string, unknown>;
+  readonly requestedBy: string;
+  readonly targets?:    string[];
+  readonly batchMode?:  BatchMode;
+  readonly requestId?:  string;
+  readonly fromUri?:    string;
+  readonly listenable?: string;
+  /** The effect this attempt would produce (D1, P2.5 iter 4) — see `Verb.effectKey`. */
+  readonly effectKey?:  string;
+}
+
+export function placeVerb(tw5: TW5Engine, opts: VerbPlacement): string {
+  const fields = buildVerb(opts);
+  const Tiddler = tw5.$tw.Tiddler;
+  tw5.$tw.wiki.addTiddler(new Tiddler(fields));
+  return fields["request-id"] as string;
+}
+
+export function patchVerb(tw5: TW5Engine, title: string, patch: Record<string, string>): void {
+  const wiki = tw5.$tw.wiki;
+  const existing = wiki.getTiddler(title) as { fields: Record<string, unknown> } | undefined;
+  if (!existing) return;
+  const Tiddler = tw5.$tw.Tiddler;
+  wiki.addTiddler(new Tiddler({ ...existing.fields, ...patch }));
+}
+
+export function removeVerb(tw5: TW5Engine, title: string): void {
+  tw5.$tw.wiki.deleteTiddler(title);
+}
+
+export async function writeOutcome(
+  daemon: CompositeStore,
+  opts: {
+    invocation:    Verb;
+    status:        "done" | "error";
+    result?:       Record<string, unknown>;
+    errorMessage?: string;
+    /** Machine-readable refusal reason (e.g. "retention-gap") — additive alongside
+     *  `errorMessage`; see `concludeVerb`. */
+    refusal?:      string;
+  },
+): Promise<void> {
+  const origin = { kind: "lares-verb" as const, requestId: opts.invocation.requestId };
+  // Digest-on-outcome (D1): stamp the request's input digest onto the outcome so a later
+  // reader (the effect-dedup check, the channel's own arbitration) can re-check reuse
+  // without re-walking the originating fact.
+  const inputDigest = await verbInputDigest({
+    verb:        opts.invocation.action,
+    args:        opts.invocation.args,
+    requestedBy: opts.invocation.requestedBy,
+    ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
+  });
+  const outcome = concludeVerb({
+    requestId:   opts.invocation.requestId,
+    verb:        opts.invocation.action,
+    status:      opts.status,
+    requestedBy: opts.invocation.requestedBy,
+    cause:       opts.invocation.title,
+    batchMode:   opts.invocation.batchMode,
+    results: {
+      [VERB_RESULT_KEY]: {
+        ok: opts.status === "done",
+        ...(opts.result       !== undefined && { output: boundOutcomeOutput(opts.result) }),
+        ...(opts.errorMessage !== undefined && { error:  opts.errorMessage }),
+      },
+    },
+    ...(opts.errorMessage !== undefined && { errorMessage: opts.errorMessage }),
+    ...(opts.refusal      !== undefined && { refusal:      opts.refusal }),
+    inputDigest,
+    ...(opts.invocation.effectKey !== undefined && { effectKey: opts.invocation.effectKey }),
+  });
+  await daemon.put(outcome, origin, { bag: DAEMON_BAG_ID });
+
+  // Effect index — single writer (the daemon worker). Only a `done` outcome with an
+  // effect key indexes; an `error` outcome indexes nothing, so a failed effect may be
+  // retried under a fresh requestId without the dedup path ever shadowing it.
+  if (opts.status === "done" && opts.invocation.effectKey !== undefined) {
+    await daemon.put({
+      tiddler: {
+        title:          `${EFFECT_URI_PREFIX}${opts.invocation.effectKey}`,
+        "effect-key":   opts.invocation.effectKey,
+        "request-id":   opts.invocation.requestId,
+        "disk-projection": "no",
+      },
+      meta: { authority: "lares-dispatcher" },
+    }, origin, { bag: DAEMON_BAG_ID });
+  }
+}
+
+/**
+ * Effect-dedup shortcut (D1, P2.5 iter 4): write a COPY of a prior `done` attempt's outcome
+ * for THIS invocation — `effect-of: priorRequestId` — instead of invoking the handler, then
+ * tombstone the volatile invocation exactly as `dispatchVerb` does on a real run. The caller
+ * (verb-dispatcher.ts) is the one that decided the digests match; this function only performs
+ * the write + cleanup, mirroring `dispatchVerb`'s own lifecycle so the two paths read alike.
+ */
+export async function copyEffectOutcome(
+  tw5: TW5Engine,
+  daemon: CompositeStore,
+  invocation: Verb,
+  opts: { priorRequestId: string; priorResults: Record<string, VerbTargetResult>; inputDigest: string },
+): Promise<void> {
+  const origin = { kind: "lares-verb" as const, requestId: invocation.requestId };
+  const outcome = concludeVerb({
+    requestId:   invocation.requestId,
+    verb:        invocation.action,
+    status:      "done",
+    requestedBy: invocation.requestedBy,
+    cause:       invocation.title,
+    batchMode:   invocation.batchMode,
+    results:     opts.priorResults,
+    inputDigest: opts.inputDigest,
+    ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
+    effectOf:    opts.priorRequestId,
+  });
+  await daemon.put(outcome, origin, { bag: DAEMON_BAG_ID });
+  removeVerb(tw5, invocation.title);
+}
+
+/**
+ * Render any thrown value to a readable message. A non-Error throw (a plain object,
+ * e.g. a `{ok:false,reason}` verify result) yields its message/reason/error field,
+ * else a compact JSON — never the bare "[object Object]" cast.
+ */
+function errorText(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  if (err && typeof err === "object") {
+    const o = err as Record<string, unknown>;
+    for (const k of ["message", "reason", "error"]) {
+      if (typeof o[k] === "string" && o[k]) return o[k] as string;
+    }
+    try { return JSON.stringify(err); } catch { /* circular — fall through */ }
+  }
+  return String(err);
+}
+
+export async function dispatchVerb(
+  tw5: TW5Engine,
+  daemon: CompositeStore,
+  invocation: Verb,
+  run: () => Promise<Record<string, unknown>>,
+): Promise<void> {
+  patchVerb(tw5, invocation.title, buildRunningPatch());
+
+  try {
+    const result = await run();
+    await writeOutcome(daemon, { invocation, status: "done", result });
+  } catch (err) {
+    await writeOutcome(daemon, {
+      invocation, status: "error", errorMessage: errorText(err),
+      // A reactor that refuses by name hands its machine-read reason to the outcome; a plain
+      // failure carries none.
+      ...(isVerbRefusal(err) && { refusal: err.reason }),
+    });
+  }
+
+  removeVerb(tw5, invocation.title);
+}

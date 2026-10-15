@@ -1,0 +1,87 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/verb-tiddler">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/verb-tiddler.mem"
+l-space     = "lararium"
+mana        = 14
+role        = "the verb/summons/outcome task surface — verb (invocation), summons (edge transport), outcome (result); LANGUAGE-protocol register internal, the UCAN Invocation/Receipt/Task ontology held as boundary projection for lineage + interop"
+source-file = "packages/lararium-mesh/src/verb-tiddler.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/verb-tiddler"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/verb-tiddler"
+```
+
+<<~ ahu #/contract>>
+
+!! The surface this file owns
+
+Three lar: URIs carry one request through its life, request and result held apart:
+
+* ''`lararium.local.vm/verbs/<requestId>`'' — the VOLATILE invocation tiddler. A local caller writes it to the admin wiki; the dispatcher picks it up on the next change. Vessel-local scratch, never shared truth.
+* ''`@daemon/summons/<requestId>`'' — the edge TRANSPORT. An external vessel writes a summons to the Automerge doc; the dispatcher relays it into a volatile invocation, then tombstones the summons. Edge transport, not durable coordination. ("signal" names a different layer — the Agent↔Operator HUD frame.)
+* ''`@daemon/outcomes/<requestId>`'' — the DURABLE outcome tiddler (the result). Syncs to all vessels via CRDT. Durable shared meaning begins at the outcome, never at the summons.
+
+<<~/ahu>>
+
+<<~ ahu #/the-record-over-the-summary>>
+
+!! The record over the summary ~ the outcome may carry a VIEW (RULED)
+
+''Consumers and tests read the authoritative RECORD.'' A verb whose act writes its own record — a signed,
+re-readable entry at an address the outcome names (a face-join grant at the outcome's `recordTitle` stands
+as the instance) — answers every question about the act from that record, never from the outcome's copy of it.
+
+''A bounded summary stands as a VIEW.'' The outcome bounds any array past its cap
+(`boundOutcomeOutput`, `packages/lararium-tw5/src/verb-vm.ts`, cap 32) to a count, tallies, a short sample,
+and the digest of the whole array. That shape keeps the durable outcome small; it stands beside the record,
+never in place of it. The view MUST carry the record's digest, so any reader can check
+the view against the record without trusting the view — the Certificate Transparency shape, where a signed
+head carries the root of the log it summarises and a client audits the log, never the head's say-so. ''The
+target shape names the record's CID'' as that digest: one content address joins view to record.
+
+''A test that reads a summary's shape measures the VIEW, not the ACT.'' Asserting a bounded field's length
+asserts where the cap fell, and it reads differently the day the act grows past 32 entries while the act
+itself stayed correct. A test of the act reads the record; a test of the view checks that the view's digest
+and count agree with the record.
+
+<<~/ahu>>
+
+<<~ ahu #/ontology-attractor>>
+
+!! The internal register (LANGUAGE-protocol frame) + the nakama boundary
+
+Operator decision 2026-06-07: this system reads as a ''language / protocol'', not a compute runtime. So the task layer keeps its own ''grammar register'' internally — ''verb · summons · outcome'', locked — and holds the nakama's ocap/compute register (UCAN Invocation/Receipt/Task) as ''lineage + a possible boundary projection for interop'', never the internal canon. The UCAN nouns carry an app-stack latent freight the language frame declines inside the house; they earn a home only where the wire meets another peer.
+
+Internal register (the house grammar):
+* ''verb'' — the action invoked (a part of speech, not a "method invocation").
+* ''summons'' — the edge transport: a CRDT fact a peer writes to call another peer to act. ("signal" names a DIFFERENT layer — the Agent↔Operator HUD/legibility frame, `docs/lararium/signal`; the task-transport noun reads `summons`, by research verdict 2026-06-07.)
+* ''outcome'' — the durable result that syncs to all (deliberately chosen over "receipt" — `job→verb`, `receipt→outcome`, commit `0cfb88a0`).
+
+Boundary projection (lineage + possible interop, NOT internal canon — `project_ipvm_adoption`):
+* verb ↔ UCAN ''Invocation'' · outcome ↔ ''Receipt'' · the work-unit ↔ ''Task'' (identity from the content-address of `{subject, command, args, nonce}`). Projected only at the peer boundary — the way Kowloon=web2.5 sits behind the causal-island shore. The house speaks its grammar; the wire may speak UCAN.
+
+The cuts that pull this surface forward (each its own loop, none forced now):
+# ''Content-addressed identity'' — derive the requestId from the hash of `{subject, command, args, nonce}` (Automerge change-hash, our native content-address), not a UUID. The durable-idempotency keystone (`lar:///verb.replayed.dedups`) then keys off content, and cross-peer memoization falls out free.
+# ''Forward-effects on the outcome'' — an outcome that enqueues successor verb-tiddlers (`fx: {fork, join}`): fork = concurrent successors, join = continuation. The outcome becomes a dataflow node, not a terminal record.
+# ''Promise pipelining'' — a verb's args referencing a not-yet-existing result by CID (`await/ok | await/error | await/ptr`); whole dependent pipelines authored before results land.
+# ''Determinism / managed-effect boundary'' — verb bodies stay deterministic so any peer re-verifies by re-running; non-determinism (disk, net, time, sends) hides behind a managed-effect descriptor that returns its own receipt. This makes "signed receipt = verifiable outcome" true rather than hoped.
+# ''Invoker / executor split + arg-policy as the execution gate'' — composes with the verify-then-delegate decision (`project_verification_placement`).
+
+Audit/ledger note: durable residency audit lives at `@<bag>/ledger/residency/<event-id>` (the indelible effect-record ledger), distinct from the per-request receipt at `@daemon/outcomes/`. The web2 word "log" left the surface 2026-06-07.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/task-graph-geometry">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verification-placement">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;_IilO_DNhrqKEaJ2_13gbUehc1p0urApZ11KoIHkqfc
+
+<<^ code="&#x0004;" -> to="?">>

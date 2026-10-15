@@ -1,0 +1,117 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/corpus-sources">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable     = true
+file-path     = "bags/lararium/ha.ka.ba/lararium/docs/corpus-sources.mem"
+l-space       = "stable"
+mana          = 18
+manao         = 18
+manaoio       = 17
+role          = "invariant law: how a vessel DISCOVERS its corpora — a catalog walk plus a derived bag URI, never a compiled table. Names the loader, the optional scale declaration, and the quine corpus precedence."
+source-symbol = "loadCatalogCorpora"
+status-date   = "2026-04-30"
+tags          = ["api/pono/meme"]
+title         = "lar:///ha.ka.ba/lararium/docs/corpus-sources"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/docs/corpus-sources"
+```
+
+<<~ ahu #/head>>
+
+! Corpus Sources — the registry that DERIVES
+
+A corpus is a read-only top-level bag, one Automerge doc per corpus, composed into any room or view by
+the recipe layer.
+
+''The registry is not a table any more.'' A vessel discovers its corpora by walking the CATALOG plane
+for entries under `CATALOG_CORPUS_PREFIX` — each entry's title carries the corpus id and its text
+carries the doc url — and derives the bag URI from the id with `corpusLarUri(slug)`. Nothing enumerates
+them ahead of time, so a corpus added to the catalog is a corpus the next boot loads, with no constant
+to edit and none to go stale.
+
+''This room held that enumeration, and the enumeration rotted while the derivation ran'' — three of its
+seven listed paths no longer exist, and it counted five. The derive-don't-enumerate law, learned on this
+carrier's own body.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! Law
+
+A corpus source MUST carry:
+
+```toml
+name  — pnpm workspace package name (@lararium/corpus-<slug>)
+path  — relative path from monorepo root
+bag   — Automerge bag name (matches LarTiddlerRecord["bag"])
+```
+
+The loader discovers carrier files by walking the corpus path at hydration time.
+It produces `LarTiddlerRecord[]` via the projection codec — one record per tiddler.
+Carrier text does not travel to Automerge directly.
+
+The quine-corpus (`lares`) differs: it also defines the infrastructure the machinery reads.
+It hydrates before all other corpora. All other corpora treat it as read-only at runtime.
+
+<<~/ahu>>
+
+<<~ ahu #/registry>>
+
+!! Where a corpus comes from
+
+# ''The catalog names it.'' A `corpus:` entry lives in the catalog plane at
+`lar:///ha.ka.ba/bags/catalog/corpus/<slug>`, its text the corpus doc's AutomergeUrl. The catalog
+CATALOGS; it does not host.
+# ''The id derives the bag.'' `corpusLarUri(slug)` reads `lar:///ha.ka.ba/bags/<slug>`. Every corpus is
+a first-class bag at child[1] under the bag-tag rule.
+# ''The entry MAY declare a scale.'' An entry carrying a mesh scale federates through the tideline
+resolver; an undeclared entry mints local. A peer still joining SKIPS its layer and reconciles later —
+never a blank ghost standing in for content that has not arrived.
+# ''The loader is ONE body for both vessels.'' `loadCatalogCorpora` adds each entry as a read-only layer
+on the composite; node and browser differ only in an injected local-mint factory and a provenance string.
+
+''The `lares` corpus differs'': it defines the infrastructure the machinery itself reads, so it hydrates
+before the others, which treat it as read-only at runtime.
+
+''Carrier text never travels to Automerge directly.'' The loader walks a corpus's carriers at hydration
+and produces `LarTiddlerRecord[]` through the projection codec — one record per tiddler.
+
+<<~/ahu>>
+
+<<~ ahu #/bag-recipe-topology>>
+
+!! Bag/Recipe Topology
+
+```
+system bag    ← invariant TW5 boot corpus (read-only)
+lararium bag  ← engine self-doc memes for the TypeScript packages
+lares bag     ← infrastructure-as-myth; the QUINE corpus, read at runtime by the machinery itself
+elyncia bag   ← setting content
+sdm bag       ← SDM core rules
+crossroads    ← the announce plane
+room bag      ← situated meaning: pins, notes, active artifacts
+draft bag     ← local high-churn drafts (not synced to peers)
+projection    ← rebuildable shadow; receipt-tagged
+```
+
+A recipe composes any subset of these bags for a given view.
+SDM+ as a combined view composes: lares + elyncia + sdm + room.
+A setting-only table composes: lares + elyncia + room.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/tiddler-record">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
+<<~ pranala #source-file from="?" -> to="packages/lararium-tw5/src/load-corpora.ts" family="code" role="has">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;5n0jL6uX0R-LZjEJVWfeFuptfumIgLLF_FhTZqpeAvY
+
+<<^ code="&#x0004;" -> to="?">>

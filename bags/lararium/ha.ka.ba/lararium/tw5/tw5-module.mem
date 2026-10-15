@@ -1,0 +1,74 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-module">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-module.mem"
+mana      = 18
+manao     = 18
+manaoio   = 17
+role      = "a component a carrier wears: kernel-injectable TW5 module meme; capability gate for corpus-carried executable code"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/kapu"]
+title     = "lar:///ha.ka.ba/lararium/tw5/tw5-module"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/tw5/tw5-module"
+```
+
+!! TW5 Module Interface
+
+A carrier that wears `lar:///ha.ka.ba/lararium/tw5/tw5-module` declares its intent to supply a
+kernel-injectable TW5 module. The boot gate `bootTrustedModules` (`packages/lararium-tw5/src/tw5-module-gate.ts`)
+queries for every carrier wearing this component (`stack:has`), evaluates the capability threshold, and
+adds each passing body as a JavaScript tiddler. `TW5Engine.boot` runs the gate in the host boot callback,
+after TW5 completes its own module collection — so execution of a gated body during that boot reads UNBUILT.
+
+!!! Required `#meta` Fields
+
+| field | meaning |
+|---|---|
+| `content-type` | MUST read `"application/javascript"`; the built gate checks no such field and stamps the injected tiddler's `type` itself |
+| `module-type` | MUST name one of `"parser"`, `"widget"`, `"library"`, `"startup"`; the built gate checks no list and reads an absent value as `"library"` |
+| `tw5-module-name` | Proposed module registration key (e.g. `"text/memetic-wikitext"` for parsers); UNBUILT — the gate reads no such field, and TW5 registers a tiddler module under its `title` |
+| `mana` | MUST reach ≥ 18 to pass gate layer 1 (threshold) |
+| `manao` | MUST reach ≥ 17 to pass gate layer 1 (threshold) |
+| `manaoio` | MUST reach ≥ 17 to pass gate layer 1 (threshold) |
+| `confidence` | MUST reach ≥ 18; UNBUILT as a gate — the built gate reads no `confidence` field |
+| `source-sha256` | tagged SHA-256 digest (`sha256:…`) of the module record's `text`; MUST match at inject time (gate layer 2 — content integrity); checked by `scripts/sync-heleuma.ts` during the build, which writes the field only under `--sync-modules --commit` |
+
+!!! Body
+
+The module record's `text` — what the deserializer yields for the carrier — MUST hold a self-contained CJS JS
+bundle with no unresolved external imports. The bundle MAY reference `tiddlywiki` as the global `$tw` — the host
+TW5 instance provides it at injection time. The gate skips an empty body.
+
+!!! Capability Model
+
+The kernel holds the `$tw.wiki` reference. Injecting a module meme into TW5 hands that reference
+to the bundle's execution context. Three gate layers must all pass before the kernel hands `$tw.wiki`
+to any meme body:
+
+# ''Threshold'' (`mana` ≥ 18, `manao` ≥ 17, `manaoio` ≥ 17; the built gate reads no `confidence`) — declared intent
+# ''Content hash'' (`source-sha256` matches the tagged `sha256(text)`) — body integrity; checked by `scripts/sync-heleuma.ts` during `pnpm --filter @lararium/tw5 build` and verified at inject time; a tampered or stale body fails here
+# ''Keyhive capability proof'' — UNBUILT: an Ed25519-signed authorization from a keyhive principal. As built the gate passes on layers 1–2 alone
+
+The built gate skips a meme that fails its level or digest check, and it executes no skipped body; the keyhive proof reads UNBUILT.
+The build (`sync-heleuma`) anchors trust for layers 1–2; keyhive anchors layer 3 once built.
+
+!!! Fallback
+
+The gate carries no fallback of its own: when no module meme passes, it injects nothing. In the genesis
+boot path the packed `lares-memetic-wikitext` plugin supplies the grammar, and TW5 collects its module
+tiddlers natively. No `_registerMemeticParser()` and no `_registerWidgets()` stand in source.
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/tw5-modules">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Q5sEqhY7k9aCyzQS91D-MPsvKi35X8aI8R3ZYx4RBHY
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,303 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/secure-context.mem"
+hydrate    = true
+l-space    = "lararium"
+mana       = 15
+manao      = 15
+manaoio    = 14
+namespace  = "&#x2695;"
+role       = "the browser vessel's SECURE-CONTEXT WALL and the path through it: crypto.subtle + OPFS demand https/localhost, so a family phone on http://192.168.x.x cannot mint a key → the vessel never boots (dragging the relay to wss://). The prior-art answer — a Let's Encrypt DNS-01 wildcard over a zone the serving entity holds a DNS-DELEGATION CAP over, + split-horizon DNS, ZERO per-device install. SPLIT device-key TOFU (who-syncs) from real-cert TLS (the padlock). Cert-renewal = the one island-able web2 bridge, on its own clock beside registrar tenure and serve. A NAME grants RENDEZVOUS (how to reach); a KEY grants IDENTITY (who) — the ORIGIN-ATTESTATION cap composes with nothing on the spine, so revoking a name withholds a signpost and never touches sovereignty. Researched (two-lens swarm converged 2026-07-23), NOT built. AND (2026-08-09, MEASURED in Chromium 151 + Firefox 153) what a key FORMAT buys: a non-extractable handle works and survives a restart, yet the raw seed still sits CLEARTEXT ON DISK — so the win reads NON-PORTABILITY, never non-compromise; and the origin-attestation cap is untouched by it, because that entity serves the CODE. Two key classes, two cures: a device key MAY go opaque (never resurrected), a persona root STRUCTURALLY CANNOT (hierarchical derivation needs parent bytes) and wants an at-rest seal instead. Storage evicts: seven days without interaction clears an origin on WebKit, and home-screen installation is the exemption."
+status-why = "researched by two-lens swarm; the path NOT built"
+tags       = ["mesh/cap-tier", "mesh/carry-contract", "api/pono/lararium-identity", "api/pono/causal-islands", "api/pono/persona-circle", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/secure-context"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/secure-context"
+written    = "2026-07-23"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Secure Context ~ the browser vessel's crypto wall and the DNS-01 path that clears it
+
+> Status: PROPOSED — researched (a two-lens swarm converged 2026-07-23: an infrastructure/cert lens and a
+> human-onboarding lens landed independently on the same shape). NOT built. The recommended path reshapes
+> the founding runbook.
+
+A browser grants `crypto.subtle` and OPFS ''only in a secure context'' — `https://` with a browser-trusted cert, or `localhost`. A family phone reaching a home node at `http://192.168.x.x` gets ''none'' of them, so the vessel cannot mint its identity key and never boots. The way through does not weaken the wall — it ''earns a trusted https origin on the LAN'' through a cert the phone already trusts, with ''zero per-device install''.
+
+<<~/ahu>>
+
+<<~ ahu #/the-wall>>
+
+!! The wall ~ why a LAN IP over http cannot boot a vessel
+
+The browser vessel mints its sovereign key via `crypto.subtle.generateKey({name:"Ed25519"})` and rests state in OPFS — both ''secure-context-gated''. `localhost` earns the exemption; `http://192.168.1.x:5173` from a phone does not, so `crypto.subtle` reads `undefined` and the key never mints. The wall ''cascades'': an `https://` page cannot open a `ws://` socket (mixed content), so clearing it for the app drags the membership relay to `wss://` too. One trusted origin lights all three at once.
+
+<<~/ahu>>
+
+<<~ ahu #/split-auth-from-tls>>
+
+!! Split auth from TLS ~ two concerns the CA question fuses
+
+The move that dissolves the wall: ''split the two concerns.'' AUTHENTICATION (who may sync) stays on ''device keys'': each device mints its own keypair, and the built `device-admit/v1` path accepts one founder PersonaGroup root signature. The Tailnet-Lock shape — physical co-presence human-gating admission, ≥2 household devices co-signing so no single device stands as the trust root, and a household-visible, instantly revocable join event on every admit — stands UNBUILT. TLS (the padlock + the secure-context boot) rides a ''separate real cert''. They compose: device-key TOFU for who-syncs, a publicly-trusted cert for the browser's trust store, and ''the family installs nothing''.
+
+<<~/ahu>>
+
+<<~ ahu #/why-dns-01>>
+
+!! Why DNS-01 ~ the only challenge that never reaches inward, the only wildcard
+
+Given an entity holding a ''DNS-delegation cap'' over some zone (`kahu.tld` below, a worked placeholder), a ''Let's Encrypt DNS-01 wildcard'' `*.home.kahu.tld` pointed at LAN IPs by ONE split-horizon resolver (AdGuard Home / dnsmasq / Pi-hole the router advertises) clears the wall. DNS-01 proves control by writing a TXT record via the DNS-provider API — ''the only ACME challenge that never needs the validation server to reach the CGNAT'd box'', and the only one that issues a ''wildcard''. Let's Encrypt already sits in every phone's root store, so `https://freyja.home.kahu.tld` gives a genuine secure context with ''zero device steps''. The CA-install alternative runs HOSTILE to a non-technical family — iOS needs two disjoint trust journeys, Android 7+ apps ignore user-installed CAs outright — so never route a family through it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-web2-bridge>>
+
+!! The web2 bridge ~ issuance and renewal touch the internet, on the middle of three clocks
+
+''Three clocks run here, and a single "the name lapses" story fuses them.'' ''REGISTRAR TENURE'' — years, human-paced, ends by non-payment or death of the holder; the remedy reads as succession, never automation. ''ISSUANCE / RENEWAL'' — ~60d, automatable, the declared bridge below. ''SERVE'' — offline for the cert's full validity, no internet at all. Each wants its own drill; a failure on one says nothing about the others, and only ''serve'' failing shuts a door the same day.
+
+DNS-01 needs the internet ''only at issuance / renewal (~every 60d), never at serve time'' — a minted cert serves the LAN for its full validity with the home internet fully down. So the causal-island law falls out clean (`causal-islands.mem`): ''cert-renewal STANDS AS the one declared web2 bridge'' — alarm it, retry it, tolerate a lapse; only a renewal that fails for the ''entire'' validity window breaks trust. The ''zero-internet sovereign fallback'' = a name-constrained local CA (RFC 5280 constraints bind it to `*.home.kahu.tld`, so a leaked root cannot MITM `bank.com`) — it issues offline forever, at the cost of the per-device install tax the DNS-01 path avoids.
+
+<<~/ahu>>
+
+<<~ ahu #/behind-the-terminator>>
+
+!! Behind the terminator ~ one setting names the reach face, and no request renames the vessel
+
+Something ''in front of'' the vessel earns the trusted origin: the certificate lives at a terminator, and the vessel serves plaintext to that terminator alone. That topology carries the cure, and it turns every URL the vessel writes about ''itself'' into a hazard.
+
+* ''PUBLISH ON LOOPBACK.'' The vessel publishes its port on `127.0.0.1`; the terminator reaches it across the private compose network. Any wider bind names an override the operator turned by name.
+* ''ONE SETTING NAMES THE REACH FACE.'' `LAR_PUBLIC_URL` holds the one name a browser or a peer dials. Every URL the vessel prints about itself derives from that setting: the relay address an admit carries, the crossing URL, the boot banner (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor#/household-https">>).
+* ''NOTHING A REQUEST SAYS NAMES THE VESSEL.'' `Host`, `X-Forwarded-Proto`, `X-Forwarded-Host` and every other header arrive from whoever sent the request. A vessel that built its own name from them would hand the pen to any caller: one forged `Host` would steer an admit's address or a relay URL toward a stranger's machine. The terminator may forward such headers; the vessel reads them as a description of one request and never as its own name.
+* ''THE SCHEME TRAVELS WITH THE SETTING.'' An `https` reach face carries `wss` for the relay, since a page served over the earned origin cannot open `ws:` (#/the-wall names the cascade). The scheme comes from the setting's own scheme, never from a forwarded header. A served page dials the relay at the origin its own address bar holds, which a browser reports and no request header supplies.
+* ''A MISMATCH LOGS ONCE.'' When a request arrives under a host other than the one the setting names, the vessel logs that mismatch once per boot and keeps serving under the setting. The line tells the operator that a resolver, a terminator or the setting itself fell out of step. The watch reads the request's own `Host` and no forwarded header, and it reads a socket upgrade as it reads a request. A loopback host draws no line and spends none: the vessel publishes on loopback by this law, and the operator's own machine and a container's health probe dial it there.
+* ''NO SETTING EARNS A LOUD NOTICE AT BOOT.'' A vessel standing without `LAR_PUBLIC_URL` says so at boot, in one loud line that names the loopback address it will print in its place. A household then learns of the gap from the log, never from a phone that cannot connect. A setting that names a loopback host leaves the same gap and earns a line of its own, and so does a setting that names no bare http origin: another scheme, a path, a query or credentials.
+
+⚠ ''The failure survives testing by its shape.'' Loopback development runs no terminator and knows one name, so a wrong or missing setting runs green on the desk and breaks on the LAN, the crossing this whole carrier exists to make. The boot notice and the mismatch line guard that crossing.
+
+''The notice, the watch and the forged-header test stand'' (`packages/lararium-node/src/reach-face-watch.ts`, seated by the node entry). The entry reads `LAR_PUBLIC_URL` and derives no self-URL from a request header. One test holds a forged `Host`, `X-Forwarded-Host`, `X-Forwarded-Proto` and `Forwarded` to change no byte of four public answers (the arrival page with its members, the descriptor, the readiness answer, the closed door) and no URL the vessel derives about itself, and it holds every node source file to read none of those headers, by the spellings it knows, outside the watch. The entry binds every interface; the loopback publication of the first bullet rests with the compose file that publishes the port.
+
+<<~/ahu>>
+
+<<~ ahu #/name-and-key>>
+
+!! A name grants rendezvous, a key grants identity ~ two caps that never compose
+
+Both research lenses converged on what reads as a ''two-layer'' split. Stated in the mesh's own terms it lands cleaner as ''two capabilities an entity may hold independently'':
+
+* ''ORIGIN-ATTESTATION'' (a CA-trusted name + its cert key) — what a browser demands before it grants `crypto.subtle`. It answers ''where to reach'', and it authenticates ''the origin'', never the peer.
+* ''PEER-IDENTITY'' (self-certifying, key-derived) — libp2p's PeerID (a multihash of the pubkey), Yggdrasil's key-derived address, Mazières' SFS self-certifying names. The handshake proves the far key hashes to the name dialed. No DNS, no CA.
+
+''The composition law: holding one grants nothing on the other.'' The mesh already runs this way — ''our identities STAND AS keys'' (#lararium-identity, #publish-a-face); Matrix and ActivityPub lean on public PKI at their federation boundary, and the mesh keeps a CA only where a browser demands one.
+
+Two consequences fall straight out, and both dissolve worries the role-shaped reading manufactures:
+
+* An entity holding the DNS-delegation cap can ''withhold a signpost'' — availability. Every key, byte, and peer relation survives; nothing about sovereignty passes through a name. No delegation makes a landlord.
+* A name carried in a ''first-reach bootstrap'' leaks a rendezvous hint, never an identity. The spine stays key-derived by construction, so web2 naming cannot enter it through the bootstrap; what remains reads as ''publication'' (#/the-caps-added), not authority.
+
+<<~/ahu>>
+
+<<~ ahu #/the-caps-added>>
+
+!! The caps this path adds ~ what stays open once the roles drop out
+
+Read from caps rather than from tiers, the landlord and bootstrap worries dissolve (#/name-and-key) and ''four'' concerns survive — each a property of a capability, none of a class of person.
+
+* ''ORIGIN-ATTESTATION CUSTODY.'' The wildcard's private key stands up ANY name under its zone, so whoever holds it presents trusted glass for the whole zone. This rhymes exactly with a ruling already made at the person layer — ''the recovery quorum and the impersonation quorum stand as ONE quorum, so no safe custodial escrow'' (`identity-classes.mem`). OPEN: whether the origin-attestation cap wants the same quorum treatment, or whether forging a door while forging no peer stays tolerable.
+* ''PERMANENT PUBLICATION.'' Certificate Transparency logs every issued cert to public, append-only logs. A ''wildcard publishes only the wildcard'' — which makes wildcard-only a ''privacy requirement, not a convenience''; any per-name cert publishes that name to the world forever. Sits beside the Herm's anon-veil path (`the-veil-ladder.mem`), and bounds what a rendezvous hint may safely carry.
+* ''REVOCATION ASYMMETRY.'' Keys revoke by quorum, locally, immediately. Browser cert revocation runs soft-fail, so short validity carries the real mitigation. An entity whose peer-identity gets expelled keeps a working trusted origin until its cert expires — two planes, two speeds.
+* ''THE REACH PLANE RAISES THE FIRST TWO.'' Once a vessel holds foreign app credentials so a human posts outward from their wiki (`reach-plane.mem`), ''the browser origin stops guarding one identity and starts guarding many instruments''. Nothing about origin-attestation custody changes; its weight roughly multiplies, and it takes the fallback question up with it — a fallback that silently degrades reads tolerable when the loss costs reachability and reads very differently when the vessel holds a credential store. ''The vault needs no keychain to begin'' — the scrypt passphrase KEK already carries it, and a keychain leg suits the reach plane BETTER than the sovereign floor (#reach-plane, the carrier prices the key).
+* ''THE FALLBACK'S TAX LANDS AT THE WORST MOMENT.'' The name-constrained local CA issues offline forever, at the per-device install cost this path exists to avoid — so the sovereign fallback demands precisely the ceremony ruled HOSTILE to a non-technical family (#/why-dns-01), in the crisis where it gets reached for. OPEN: whether a household rehearses that install BEFORE it needs it, or the fallback stays honestly unavailable.
+
+<<~/ahu>>
+
+<<~ ahu #/what-the-key-format-buys>>
+
+!! What a key format buys, MEASURED ~ non-portability, never non-compromise
+
+A browser vessel persists its signing key as a hex seed, so a same-origin read yields raw key material. The obvious cure — mint the key `extractable: false` and keep only a handle — WORKS, and buys less than its name suggests. Measurement, not reading, grounds both halves (Playwright Chromium 151 + Firefox 153, 2026-08-09).
+
+''IT WORKS.'' An Ed25519 key generated non-extractable structured-clones into IndexedDB, survives a full browser restart, signs afterward, and refuses every export. Ed25519 reached WebCrypto across the field in 2024–25 (Firefox 129, Safari 17, Chrome 137). ''One gap:'' Safari can MAKE an X25519 key and cannot PERSIST one as a CryptoKey — Ed25519 persists there, X25519 does not.
+
+''AND THE SEED SITS ON DISK IN THE CLEAR REGARDLESS.'' The spec says so normatively — the flag *"does not guarantee that the underlying cryptographic key material will not be persisted to disk, possibly unencrypted"* — and a probe confirmed it: mint, re-import non-extractable, store only the handle, close the browser, then grep the profile directory and the seed appears, in Chromium's leveldb log and in Firefox's idb sqlite alike. Devtools cannot show it; script cannot export it; ''the disk can''.
+
+''So the honest frame reads NON-PORTABILITY.'' A hostile script gets a live signing oracle rather than a portable secret — and, because a CryptoKey structured-clones, it can hand that oracle to another origin permanently. Anyone with the filesystem, a backup, or a stolen laptop takes the seed either way. What genuinely changes: WebCrypto refuses script export of the non-extractable handle, which binds a device key to its ''device'' at that API boundary — what a mesh wants where nobody but its holder reopens a key and every other recovery runs as re-admission (#/two-key-classes); profile files and backups can still carry raw key material.
+
+''AND IT DOES NOT CLOSE THE WALL ABOVE IT.'' An entity holding the origin-attestation cap ''serves the vessel's code''. Once it does, key format stops mattering: it replaces the signer, replaces the admit flow, and holds a permanent remote oracle. The field's incident ledger reads entirely this shape, up to a 2025 supply-chain tampering that moved roughly a billion and a half dollars through a wallet's own served bundle. ''Two separate problems'' — custody of a key, and custody of the code that uses it — and only the second one the wildcard cap touches. That second one closes by moving code delivery off the served page: an installed application surface, a signed bundle, a separately-originated holder. Every serious browser key-holder in the field made that move OUTWARD, and none of them made it by changing a key's format.
+
+<<~/ahu>>
+
+<<~ ahu #/two-key-classes>>
+
+!! Two key classes, two cures ~ and only one of them may go opaque
+
+''The vessel's own insight applies to exactly one of the two keys the browser holds.''
+
+<<~ has KeyClass Device "opaque/YES resurrection/through its own holder's custody slot alone — else re-mint and re-admit cure/a non-extractable handle, or a secret wrapped under the holder's own slots">>
+<<~ has KeyClass PersonaRoot "opaque/STRUCTURALLY-NO resurrection/losing it loses the persona cure/an at-rest seal">>
+
+''Why a persona root cannot go opaque:'' hierarchical derivation feeds the PARENT PRIVATE KEY back in as bytes at every step. A handle can never supply them. So the durable identity keeps needing a seed, and the seal that protects it stays owed — the code already says as much beside the store: the browser holds no seal for self-sovereign secrets, and a persona root persists cleartext exactly as the device key beside it does.
+
+''The instrument that fits the persona root'' reads as authenticator-derived envelope encryption — a key derived per-authenticator, wrapping one content key, one wrapped copy per device. It suits the root's needs (bytes, and multi-device recovery) and suits the device key's not at all. ''Two keys, two cures, and a design that gives both the same treatment gets one of them wrong.''
+
+''The migration preserves identity.'' Re-importing an existing seed as non-extractable keeps the same key, the same verifying key, and the same address — no re-mint, no re-admission. It runs ONE-WAY through WebCrypto: afterward the handle supplies no paper backup of that key; an earlier backup, or a seed recovered from profile storage, may still supply one. Costs nothing where a key never reopens; a trap anywhere else, so a vessel takes the move only where its holder wants no slot.
+
+!!! How a vessel's key reopens ~ by its own holder's slot, and by nothing else
+
+''A vessel's key reopens ONLY through that vessel holder's own custody slot'': a passkey slot, a passphrase, or paper. Three things follow, and together they hold both halves of this section.
+
+* ''Nobody else restores it.'' No host, no herm, no operator and no sibling vessel holds a way in. A herm may carry the wrapped bytes and reads none of them (#/custody-leans).
+* ''Nothing derives it from a seed.'' A vessel's key stays device-minted; no persona root and no recovery phrase of another key regenerates it.
+* ''When no slot opens, a new vessel stands and contracts in again.'' It mints new roots and gets re-admitted under the standing relation; nothing above the vessel layer gets lost with the old key (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key">>).
+
+So //a device key never gets resurrected// reads: nobody ELSE raises it, and nothing rebuilds it. A key resting as a non-extractable handle offers no bytes for a slot to wrap, so it reopens through none; a key resting as a secret wrapped under its holder's slots reopens through any one of them. (The house reconciled the two sentences this way under the operator's custody rulings of 2026-10-11, #/custody-rulings.)
+
+<<~/ahu>>
+
+<<~ ahu #/storage-that-vanishes>>
+
+!! Storage that vanishes ~ the eviction clock nobody hears
+
+A minted key rests in browser storage, and browsers reclaim it. ''WebKit clears ALL script-writable storage for an origin after seven days of browser use without interaction there'' — which reads as an occasionally-opened vessel simply disappearing, with no event and no warning. Elsewhere, eviction runs least-recently-used under storage pressure and lands ''all-or-nothing per origin''; a vessel never half-survives.
+
+''HOME-SCREEN INSTALLATION ESCAPES THAT CLOCK.'' So //install this// outgrows a nicety and joins the identity's durability story — the one act that keeps an occasionally-used vessel alive on the surface a family most often carries.
+
+''And a vessel may ASK for the eviction-resistant class.'' One call requests it, another reports what the browser granted; some browsers prompt, others decide from interaction history. The answer belongs in the HUD rather than in an assumption: ''best-effort'' names a real and reportable state, and a vessel that never asked cannot tell a household which one it holds.
+
+''THE FAILURE THAT MUST NEVER STAY SILENT.'' Where a secure context stands absent, a signer whose platform path throws may fall back to an EXTRACTABLE in-memory key — an identity nobody chose, weaker than the one asked for, surfaced only through a getter nobody reads. That degrade sits on precisely the household path this meme opens with. ''Refuse and explain; never substitute.'' A vessel with no identity stays honest.
+
+<<~/ahu>>
+
+<<~ ahu #/custody-leans>>
+
+!! Custody across a storage reset ~ operator-approved LEANS, with a crucible's conditions
+
+> ''Register: APPROVED LEANS (operator, 2026-10-11), never rulings and never built.'' Quote license: //"Approve the leans; send a Luna pair to crucible it"//. A two-lens crucible then tested them across two traded waves, read-only; its conditions ride below as research the leans must meet.
+
+# ''PRF-wrapped custody REPLACES the cleartext resting form'' of a browser vessel's roots (the cleartext stands measured at #/what-the-key-format-buys). It replaces; it never sits beside the cleartext as an opt-in. PRF wraps and never mints.
+# ''The herm carries the wrapped blob'': carry, never read. Ciphertext rests with the party that cannot read it, and the unwrapping key rests behind the passkey, which a storage reset cannot reach. After an eviction the human presents the passkey, fetches the blob and unwraps it.
+# ''The install gets offered, never required'' (#/storage-that-vanishes). The passkey gives an uninstalled phone its reason to keep its memory.
+# ''Three cautions ride with them.'' A synced passkey reads `cloud-synced`, a seed-class secret, and `vault status` names the class. The served-page hole stays open, since PRF cures nothing there. The herm's blob locator stays an opaque address and never grows into a roster.
+
+!!! The crucible's conditions
+
+* ''A passkey opens ONE keyslot and never names a person.'' It stands as one custody slot beside passphrase and paper. Both lenses rejected a passkey as a pinned identity-as-relation. The rpId, DNS and TLS, the provider's account and device roster, ceremony timeouts and counters all stay at the web2.5 edge and decide no relation verdict.
+* ''Three recovery products never share one "restore".'' A ''vessel reopened'' recovers its own key from a wrapped vessel secret. A ''vessel re-founded'' mints a new key and gets re-admitted under the standing relation; a host may help. ''Memory restored'' rides the user's own route alone.
+* ''Cross-device PRF stays UNMEASURED.'' Field reports name a mismatch on one platform's hybrid (QR) flow. A PRF-only wrap MUST NOT stand as the sole copy.
+* ''The served page counts as part of the custody boundary'': it receives the PRF output.
+
+!!! What the code holds, and what it owes
+
+* The browser's PRF wrap (`packages/lararium-browser/src/seed-wrap-prf.ts`) sits BESIDE the cleartext root and wraps a persona-root seed, never the device signer.
+* The mesh slot tree (`packages/lararium-mesh/src/keyslot.ts`) builds `passphrase` and `paper` pins alone and refuses any other kind; a passkey slot stands unbuilt.
+* Walk carriage (`packages/lararium-mesh/src/walk-carry.ts`) keeps its receipt and read cap ON the walker's device, and the hearth may reclaim the bytes. It serves as no backup until a locator and a retention promise survive a wipe.
+
+''A //vessel reopened// and #/two-key-classes agree.'' A wrapped blob holds a vessel's own secret for that vessel holder's own slots to open, and it opens for nobody else (#/two-key-classes, #/custody-rulings).
+
+!!! OPEN ~ the operator's question
+
+Quote license: //"Does Passkey-as-pinned-identity-as-relation read 'No global now' pono? Maybe we need a new combination of capabilities no-one has reached for yet... Mu?"// The question stands unruled. The crucible's answer rides as research: a passkey as the identity, no; a passkey as one keyslot, pono under the first condition above. Its candidate shapes: a vessel-key envelope with two independent routes (a PRF slot and a paper or passphrase slot), herm-carried under opaque per-vessel locators, with a causal relation check after reopening · cross-device authentication used ONLY as a witness to re-admit a newly minted vessel, never as a source of root bytes · a credential-derived dead-drop locator with a causally versioned relation capsule. Both lenses advised against combining the passkey's PRF with a herm-held oblivious PRF share as a first move: it turns the herm from a carrier into an online evaluator, and a partitioned herm cannot learn of a burn.
+
+<<~/ahu>>
+
+<<~ ahu #/custody-rulings>>
+
+!! Whose hands open the box ~ an invited user's root, and a child's guardian share
+
+> ''RULED (operator ruling, 2026-10-11).'' Quote license: //"Approve the story leans; a user introduces, an operator admits."// The leans that sentence approved carry the two rulings below. Neither stands built.
+
+!!! An invited user's root
+
+* ''It gets minted on HER device and rests there sealed.'' No host mints it for her, and no host holds it in the clear.
+* ''The herm carries a sealed copy only she opens'', by her passkey slot or her paper. The herm carries and never reads (#/custody-leans).
+* ''If she loses every way in, the host restores her NAME and the box stays shut.'' She stands again under the standing relation, as a vessel re-founded; her memory behind the lost slots stays sealed, since //memory restored// rides her own route alone (#/custody-leans, the three recovery products).
+
+!!! A child's guardian share
+
+* ''It never opens alone.''
+* ''Alone, it restores her NAME.'' Her MEMORY opens only jointly: the guardian share together with something she holds, or together with a second guardian.
+* ''She sees it in her own `vault status`.'' No guardian share stands hidden from the child it guards.
+* ''It ends by HER act.'' No age timer ends it, and no clock decides when a guardian leaves (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/no-global-now">>).
+
+It bears on the standing finding that no shipped guardianship design gives its subject an exit (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-managed-persona">>): here the subject sees the share and ends it herself.
+
+▢ ''OWED'': a passkey slot in the slot tree; a herm-carried sealed copy whose locator survives a wipe; the guardian share's split and its joint-opening rule; the `vault status` line that names a guardian share to its subject; the act by which she ends it.
+
+<<~/ahu>>
+
+<<~ ahu #/admit-inertness>>
+
+!! Admit inertness ~ SAS, not a proximity radio
+
+The QR admit ceremony (`persona-circle.mem`) stays ''photograph-inert by construction'': the offer carries the target vessel's device key, an ephemeral pubkey and a nonce, the grant rides ECDH-sealed to a secret that never leaves the joinee, and whatever travels beside the grant binds by a digest into the persona-signed transcript (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier#/key-delivery">>). ''Under camera-to-screen, the ceremony needs nothing more'' — nonce consumption, local session patience and who-scans-whom carry it.
+
+FIDO caBLE leans on a ''BLE proximity gate'' ONLY because its QR bootstraps a tunnel-SERVER relay (the QR opens no channel itself) — so a photographed / remote QR could drive auth from afar, and BLE re-adds the proximity the relay threw away. ''Our QR carries the channel'', so the property BLE restores never left; and BLE runs beacon-relayable (~150m) and platform-broken for our surfaces (no Web Bluetooth on Safari/Firefox/iOS; no Web NFC on any desktop/home-node). ''The one residual'' — an active relay over a MODIFIABLE channel (the admit surface accepts paste; a relayed 3-hop to a distant victim) — wants a ''short-authentication-string'' (SAS), never a radio: derive a short compare (Vaudenay CRYPTO-2005; Matrix/Signal) by HKDF over material already in the signed transcript — ''bind it to the TRANSCRIPT HASH, not raw DH'', or a same-DH-different-payload substitution slips under it — render ~5-7 emoji / 3×4-digit, one human glance, gated to the relayed case only. Zero new dependency, web3-native. Skip rotating-QR (nonce consumption and local session patience bound the ceremony) and NFC (Android-only). ''NOT built'' — a flagged follow; the SAS length + whether the relayed path stays in-scope read as operator rulings.
+
+<<~/ahu>>
+
+<<~ ahu #/groundings>>
+
+!! Groundings ~ the falsifiable rhymes
+
+| Rhyme | Grounds | Field |
+|---|---|---|
+| ''Tailscale Tailnet Lock'' — new nodes locked out until an existing signing node co-signs, ≥2 signers, no central CA | the device-key TOFU auth layer, structure-for-structure | overlay-network trust |
+| ''Let's Encrypt DNS-01 wildcard'' + split-horizon DNS | the zero-install trusted-origin path; TXT-via-API never reaches inward, the only wildcard | web PKI / ACME |
+| ''libp2p PeerID · Yggdrasil · SFS'' (Mazières) self-certifying names | the key-derived spine identity — names STAND AS keys, no CA at the boundary | distributed systems |
+| ''RFC 5280 Name Constraints'' | the sovereign fallback CA bounded to `*.home.kahu.tld` — a leaked root cannot MITM the world | X.509 |
+| ''Vaudenay SAS'' (CRYPTO 2005); Matrix cross-signing emoji; Signal safety numbers | the relayed-channel residual: a short human compare over the signed ECDH transcript kills an active MITM, ≈2^−k independent of compute | applied cryptography |
+| ''FIDO caBLE proximity'' | the anti-pattern: BLE's rationale couples to a tunnel-server relay our airgapped QR does not have — borrow the threat-model clarity, NOT the radio | authentication UX |
+
+''The honest guard:'' the prior art illuminates the ''path'' (DNS-01, TOFU, SAS) but the mesh borrows only what survives its own law — the runtime cloud control plane a Tailscale-style overlay assumes reads as a ''web2 bridge behind a causal-island boundary'' (#/web3-only-lares), never a core dependency. Take the DNS-01 zero-install, the co-sign TOFU, the SAS compare; leave the coordination server at the island edge.
+
+<<~/ahu>>
+
+<<~ ahu #/provenance>>
+
+!! Provenance ~ a built slot, an issuer proven against a test authority, and an operator-supplied household
+
+The `https` compose profile supplies a TLS terminator and a split-horizon resolver. The `issuer` profile runs one ACME client as a one-shot: it asks for one wildcard certificate over the household zone, answers the DNS-01 challenge through the DNS host's API, and writes the certificate where the terminator reads it. The DNS credential rests as two owner-read files in a host directory the operator names, outside both vessel mounts; the issuer alone mounts that directory, read-only, refuses by name a directory inside either mount or a file wider than its owner, asks public resolvers for the zone (`LARES_ISSUER_RESOLVERS`) and refuses one it reads as inside the house, and no credential value enters the compose file, an environment variable, the image, the state mount or the workspace mount. The first always-on node issues one certificate per machine, and a human carries a second machine's certificate to it by hand.
+
+`tools/household-https-witness.sh` walks the slot with no real credential, domain or zone: a test certificate authority issues the wildcard through the same issuer service, a stand-in answers for the DNS host's API, the terminator serves the issued certificate, a knocked socket upgrade passes through, a header of the measured tablet size passes both ways, and the vessel's container, state and workspace show no trace of the credential. The stand-in leaves the registrar's own provider code unwalked.
+
+`tools/household-resolver-witness.sh` walks the resolver against a test zone: the records check refuses each malformed records file by name and stands no resolver behind one, two hearths answer with two addresses, a name the file does not list answers NXDOMAIN, a private reverse lookup answers NXDOMAIN and never reaches the upstream, a file only the vessel's uid reads passes the check, a name outside the zone reaches a stand-in upstream that hears no household name, and an edit lands once the check passed and the resolver restarted.
+
+`LAR_PUBLIC_URL` names the vessel's reach face (#/behind-the-terminator), and `deviceAdmitSyncUrl` derives its relay URL. The operator supplies the domain, the registrar's API key pair, the records file naming each machine's LAN address and the router's DNS setting. A live issuance against the public authority through the registrar's API, a renewal on its ~60d clock with the terminator's restart, installed-PWA and Android-WebView TLS behavior, encrypted-DNS interaction with split horizon, and certificate-renewal behavior at the browser remain unverified.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> harbor defines the household HTTPS slot and operator-supplied reach
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/publish-a-face">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/federation">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;knbiTDLKZAaCwKvrBAwFWKtX0d87mmE-D9ATJoijORA
+
+<<^ code="&#x0004;" -> to="?">>

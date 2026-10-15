@@ -1,0 +1,188 @@
+/**
+ * genesis-intake.test.ts — the ONE genesis intake core (isomorphism sweep).
+ *
+ * Node and browser carried near-identical validate→import→verify and
+ * CID-reconcile logic (genesis-artifact.ts ⇆ browser-genesis.ts), already
+ * drifted (record shape, authority string). This core lives beside the
+ * emitter (genesis-doc.ts) in mesh; the platform wrappers keep only their
+ * byte SOURCES (fs · bundle/IDB/OPFS/peer).
+ *
+ * Meme: lar:///ha.ka.ba/lararium/mesh/genesis-intake
+ */
+
+import { describe, test, expect, afterEach } from "vitest";
+import { Repo } from "@automerge/automerge-repo";
+import {
+  validateGenesisBytes,
+  importGenesisIsland,
+  reconcileGenesisCid,
+  materializeGenesisIsland,
+  genesisCasCidsFromOracle,
+} from "../src/genesis-intake.js";
+import {
+  emptyLarDoc,
+  ENGINE_CORE_ID,
+  LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
+  GENESIS_CID_ENGINE_TIDDLER,
+  GENESIS_CID_PLUGINS_TIDDLER,
+  GENESIS_CID_GRAMMAR_TIDDLER,
+  cidV1Sha256,
+  type LarDoc,
+} from "../src/index.js";
+import { GENESIS_SEED_FORMAT, oracleGenesisDocUrl } from "../src/genesis-doc.js";
+import { plainField, plainMeta } from "../src/index.js";
+
+const CORE_BYTES = new TextEncoder().encode("fake-tw5-core");
+
+const RESTART_SEED = {
+  format: GENESIS_SEED_FORMAT,
+  actorSeed: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  blobs: {
+    [ENGINE_CORE_ID]: { id: ENGINE_CORE_ID, version: "test", sha256: "1".repeat(64), mimeType: "application/javascript" },
+    [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: {
+      id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "test", sha256: "2".repeat(64), mimeType: "application/javascript",
+    },
+  },
+  tiddlers: {},
+} as const;
+
+function blobEntry(id: string, payload: string) {
+  return {
+    id,
+    version:  "test",
+    sha256:   "00",
+    mimeType: "application/javascript",
+    blob:     new TextEncoder().encode(payload),
+  };
+}
+
+describe("genesis-intake — the one intake core", () => {
+  const repos: Repo[] = [];
+
+  afterEach(async () => {
+    for (const r of repos.splice(0)) await r.shutdown();
+  });
+
+  function newRepo(): Repo {
+    const r = new Repo({ sharePolicy: async () => true });
+    repos.push(r);
+    return r;
+  }
+
+  test("restart reloads the persisted oracle without consulting seed input", async () => {
+    const repo = newRepo();
+    const first = await materializeGenesisIsland(repo, RESTART_SEED, "first-breath");
+    const restarted = await materializeGenesisIsland(repo, undefined, "restart");
+
+    expect(restarted.url).toBe(first.url);
+    expect(restarted.url).toBe(oracleGenesisDocUrl());
+    expect(genesisCasCidsFromOracle(restarted.doc()!)).toEqual(["1".repeat(64), "2".repeat(64)]);
+  });
+
+  test("first breath without seed refuses before an oracle or worker can stand", async () => {
+    await expect(materializeGenesisIsland(newRepo(), undefined, "first-breath"))
+      .rejects.toThrow(/oracle seed required for first materialization/);
+  });
+
+  /** Author a genesis-shaped doc and export its bytes. */
+  async function genesisBytes(mutate?: (d: LarDoc) => void): Promise<Uint8Array> {
+    const repo   = newRepo();
+    const handle = repo.create<LarDoc>(emptyLarDoc());
+    handle.change((d) => {
+      const doc = d as { blobs?: Record<string, unknown>; tiddlers: Record<string, unknown> };
+      doc.blobs = {
+        [ENGINE_CORE_ID]:                    blobEntry(ENGINE_CORE_ID, "fake-tw5-core"),
+        [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: blobEntry(LARES_MEMETIC_WIKITEXT_PLUGIN_URI, "fake-plugin"),
+      };
+      if (mutate) mutate(d);
+    });
+    const bytes = await repo.export(handle.url);
+    if (!bytes) throw new Error("export failed");
+    return new Uint8Array(bytes);
+  }
+
+  test("valid bytes validate, import, and verify whole", async () => {
+    const bytes  = await genesisBytes();
+    const repo   = newRepo();
+
+    const preview = validateGenesisBytes(bytes, "test-intake");
+    expect(preview.blobs?.[ENGINE_CORE_ID]).toBeTruthy();
+
+    const handle = await importGenesisIsland(repo, bytes, "test-intake");
+    expect(handle.doc()?.blobs?.[ENGINE_CORE_ID]).toBeTruthy();
+  });
+
+  test("missing TW5 core blob refuses loudly, naming the blob id", async () => {
+    const repo   = newRepo();
+    const handle = repo.create<LarDoc>(emptyLarDoc());
+    const bytes  = new Uint8Array((await repo.export(handle.url))!);
+
+    expect(() => validateGenesisBytes(bytes, "test-intake")).toThrow(new RegExp(ENGINE_CORE_ID));
+  });
+
+  test("CID reconcile: divergence merges + records both regions; equality no-ops", async () => {
+    const engineCid  = cidV1Sha256(new TextEncoder().encode("engine-region"));
+    const pluginsCid = cidV1Sha256(new TextEncoder().encode("plugins-region"));
+    // The incoming genesis carries both region witness tiddlers (the source of truth).
+    const bytes = await genesisBytes((d) => {
+      const t = (d as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[GENESIS_CID_ENGINE_TIDDLER]  = { tiddler: { title: GENESIS_CID_ENGINE_TIDDLER,  cid: engineCid  }, meta: { authority: "genesis" } };
+      t[GENESIS_CID_PLUGINS_TIDDLER] = { tiddler: { title: GENESIS_CID_PLUGINS_TIDDLER, cid: pluginsCid }, meta: { authority: "genesis" } };
+    });
+
+    const repo     = newRepo();
+    const live     = repo.create<LarDoc>(emptyLarDoc());
+    const incoming = await importGenesisIsland(repo, bytes, "test-intake");
+
+    // Divergence: live carries no recorded region CIDs → merge + record both.
+    const first = reconcileGenesisCid(live, incoming);
+    expect(first.updated).toBe(true);
+    expect(first.previousEngineCid).toBeNull();
+    expect(first.previousPluginsCid).toBeNull();
+    expect(first.incomingEngineCid).toBe(engineCid);
+    expect(first.incomingPluginsCid).toBe(pluginsCid);
+    expect(live.doc()?.blobs?.[ENGINE_CORE_ID]).toBeTruthy();             // merge landed
+    const engRec = live.doc()?.tiddlers?.[GENESIS_CID_ENGINE_TIDDLER];
+    expect(plainField(engRec, "cid")).toBe(engineCid);                    // engine cid recorded
+    expect(plainMeta(engRec, "authority")).toBe("genesis-reconcile");     // ONE record shape
+    expect(plainField(live.doc()?.tiddlers?.[GENESIS_CID_PLUGINS_TIDDLER], "cid")).toBe(pluginsCid);
+
+    // Equality: second pass reads current → no-op.
+    const second = reconcileGenesisCid(live, incoming);
+    expect(second.updated).toBe(false);
+    expect(second.previousEngineCid).toBe(engineCid);
+    expect(second.previousPluginsCid).toBe(pluginsCid);
+  });
+
+  test("★ a GRAMMAR-only overturn RECONCILES — kāhuli's fast ratchet is not invisible to intake ★", async () => {
+    // The grammar region folds the required grammar ALONE and the plugins region now EXCLUDES it, so a
+    // pure grammar overturn moves grammarCid and NOTHING else. A reconcile that reads only engine+plugins
+    // sees two stable regions and declines the merge — the fast ratchet would advance and never land.
+    const engineCid  = cidV1Sha256(new TextEncoder().encode("engine-region"));
+    const pluginsCid = cidV1Sha256(new TextEncoder().encode("plugins-region"));
+    const grammarWas = cidV1Sha256(new TextEncoder().encode("grammar-region-v1"));
+    const grammarNow = cidV1Sha256(new TextEncoder().encode("grammar-region-v2"));
+    const withRegions = (grammarCid: string) => (d: LarDoc) => {
+      const t = (d as { tiddlers: Record<string, unknown> }).tiddlers;
+      t[GENESIS_CID_ENGINE_TIDDLER]  = { tiddler: { title: GENESIS_CID_ENGINE_TIDDLER,  cid: engineCid  }, meta: { authority: "genesis" } };
+      t[GENESIS_CID_GRAMMAR_TIDDLER] = { tiddler: { title: GENESIS_CID_GRAMMAR_TIDDLER, cid: grammarCid }, meta: { authority: "genesis" } };
+      t[GENESIS_CID_PLUGINS_TIDDLER] = { tiddler: { title: GENESIS_CID_PLUGINS_TIDDLER, cid: pluginsCid }, meta: { authority: "genesis" } };
+    };
+
+    const repo = newRepo();
+    const live = repo.create<LarDoc>(emptyLarDoc());
+    const before = await importGenesisIsland(repo, await genesisBytes(withRegions(grammarWas)), "grammar-was");
+    expect(reconcileGenesisCid(live, before).updated, "the first intake records all three regions").toBe(true);
+    expect(plainField(live.doc()?.tiddlers?.[GENESIS_CID_GRAMMAR_TIDDLER], "cid")).toBe(grammarWas);
+
+    // THE OVERTURN: the grammar moves, the engine true-name and this operator's collection stand.
+    const after = await importGenesisIsland(repo, await genesisBytes(withRegions(grammarNow)), "grammar-now");
+    const moved = reconcileGenesisCid(live, after);
+    expect(moved.updated, "a grammar-only overturn must land").toBe(true);
+    expect(plainField(live.doc()?.tiddlers?.[GENESIS_CID_GRAMMAR_TIDDLER], "cid"), "the new grammar epoch is recorded").toBe(grammarNow);
+
+    // CONTROL — with every region stable the reconcile still no-ops (the guard is not simply disabled).
+    expect(reconcileGenesisCid(live, after).updated).toBe(false);
+  });
+
+});

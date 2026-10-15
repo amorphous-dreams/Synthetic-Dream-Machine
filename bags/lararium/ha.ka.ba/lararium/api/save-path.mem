@@ -1,0 +1,185 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/save-path">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/api/save-path.mem"
+hydrate   = true
+l-space   = "stable"
+mana      = 18
+manao     = 17
+manaoio   = 17
+namespace = "&#x0950; &#x0901;"
+role      = "invariant spec for the outbound TW5→CRDT save path: the per-title pacing gate, draft routing, ephemeral truncation"
+title     = "lar:///ha.ka.ba/lararium/api/save-path"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/api/save-path"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Save-Path Invariants — IslandAdaptor Outbound
+
+Path K / F-arc: outbound hygiene for sustained live wiki authoring.
+
+<<~/ahu>>
+
+<<~ ahu #/problem>>
+
+!! Problem Space
+
+`IslandAdaptor.saveTiddler` acts as the boundary where TW5 wiki edits cross
+into the Automerge store. Without hygiene here, sustained editing produces:
+
+* ''Write amplification'' — every keystroke fires a store write + CRDT patch +
+  disk-projector file write. At 5 keystrokes/sec over a 10-minute session:
+  3 000 store writes, 3 000 disk writes, all for the same tiddler.
+* ''Noisy projection state'' — parse-warning tiddlers, `$:/state/*` fragments,
+  and boot-splash signals accumulate in the wiki. Some carry `lar:` URIs and
+  could bleed into the store without guards.
+* ''Draft routing confusion'' — draft tiddlers from TW5 editing UX
+  should reach the per-wiki draft bag, not get silently dropped.
+
+The law this path enacts stands at `lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`.
+
+<<~/ahu>>
+
+<<~ ahu #/invariants>>
+
+!! Invariants
+
+!!! SP-1 — The Pacing Gate
+
+`saveTiddler` and `deleteTiddler` MUST mark their TITLE in one per-title gate (`HandGate`,
+`packages/lararium-tw5/src/hand-gate.ts`): a trailing window of ''400 ms'' under a non-resetting cap
+of ''2 s''.
+
+* A later mark of the same title restarts the trailing window and leaves the cap running, so
+  continuous typing reaches the store within the cap.
+* What leaves at the flush MUST equal the title's state in the wiki at that flush, never the value
+  a mark carried. A state equal to the landed value with nothing sent since leaves nothing. One
+  exception: a direct caller that hands in a tiddler the wiki does not hold rides pinned, and its
+  value stands in for the wiki's.
+* The returned promise settles at flush time, not at call time; every caller that marked the title
+  settles with that flush. Callers MUST tolerate asynchronous settlement.
+* A discrete act (a draft's save, rename or cancel) MUST take its titles out of the gate and leave
+  in the dispatch turn, with no wait.
+* `stop()` MUST flush every marked title and MUST NOT drop a pending write.
+* The timers pace and decide nothing; a refused write arms no timer.
+
+Rationale: human keystroke rate typically runs 3–8 chars/sec. A 400 ms window
+coalesces a full word or short phrase into a single store write. Stays below
+perceived lag threshold (< 1 s).
+
+!!! SP-2 — Ephemeral Truncation
+
+The VOLATILE VM PLANE (`lar:///lararium.local.vm/…`, `VOLATILE_VM_PREFIX` in
+`packages/lararium-mesh/src/lar-uris.ts`) MUST NOT reach the Automerge store.
+`saveTiddler` and `deleteTiddler` refuse it by `isVolatileVmUri`, ahead of the
+cascade, so no cascade edit can lift the refusal (`island-adaptor.ts`).
+
+Once the shore turns resident, every OTHER title a wiki write touches reaches the outbound
+bridge, whichever door wrote it: the bridge skips foam, sends a standing hand to `saveTiddler` and a gone hand
+to `deleteTiddler`, and the cascade's
+`[prefix[lar:]]` rule routes a `lar:` title to `current-wiki-bag`. So wiki
+scratch that must stay off the store lives under the volatile plane; a scratch
+title spelled anywhere else (`lar:///ha.ka.ba/state/…`, a parse-warning title)
+persists like any authored tiddler. The alert rail (`$:/temp/lares/alert/…`) never
+persists either (`neverPersists`).
+
+!!! SP-3 — Draft Routing
+
+Draft tiddlers from TW5 editing UX (a `draft.of` field standing) MUST route to the wiki's per-wiki
+draft slot (`wikis/{slug}/draft`, a CRDT layer: the face's binding where the vessel holds a seated
+PersonaGroup, so the layer follows the operator's fleet, and a floor document keyed by the vessel's
+own DID where it holds none; `packages/lararium-keyhive/src/slot-doc-resolver.ts`)
+and MUST NOT be silently dropped. The in-wiki bag-paths cascade carries the rule
+(`[is[draft]then{…/current-wiki-draft}]`), read against TW5's `draft.of` FIELD,
+never the title; the matching delete routes by the bag the draft last wrote to or
+landed from, since the field has gone by then, and a draft's deletion inside a save, rename or
+cancel leaves with that act. No guard in `saveTiddler` withholds a
+draft. The cascade names its withholdings (`$:/core`, `$:/library/sjcl.js`) and
+ends in a catch-all — a title no rule reaches lands at the write layer and says
+so (wiki-layer-ontology#/totality-law). The measured routing table rides
+recipe-layer-model#/as-routed.
+
+!!! SP-4 — Ceremony Routing
+
+No field on a saved tiddler names its destination bag: `draft.of` selects the draft route, and a
+draft's store-only base fields record its target's base and route nothing. Residency rides the ENVELOPE: the store fires
+each change with its own bag, the nalu stamps `$origin-bag` on the wiki side for
+the projector, and the outbound save strips that stamp before the write. `bag`
+stays the author's own field and never routes. A ceremony that targets one
+specific bag (MOVE, promotion, `meme put --bag`) carries the bag on the write
+OPTION (`store.put(record, origin, { bag })`) — never on the record — and a
+bag with no writable layer refuses loud rather than falling through to the
+default writable (wiki-layer-ontology#/write-law).
+
+Live TW5 edits route by the cascade and the composition's layer order: `_saveBag(title)` names the layer, at or above the working layer, and the write carries it as the `{ bag }` option.
+
+!!! SP-5 — Single Parser Law
+
+All inbound meme text passes through `splitBodyTiddler()` (ONE parser,
+FOUR call sites law). `_writeMeme` upholds this; do not add a second parse
+site.
+
+<<~/ahu>>
+
+<<~ ahu #/debounce-design>>
+
+!! Gate Design
+
+This section, anchored `#/debounce-design`, holds the pacing gate's design: the save flow, the flush and the state the gate keeps per marked title.
+
+```
+saveTiddler(tiddler): Promise<void>
+  → refuse a title that never persists (the volatile VM plane · the alert rail)
+  → teach the draft book when the tiddler carries draft.of
+  → remember the hand's base (the ledger's bag + heads) at the first mark
+  → gate.mark(title, flush)        trailing 400 ms · cap 2 s
+
+_flushHand(title)
+  → wait for any in-flight write of the title
+  → read the title's state in the wiki
+  → settled (equal to the landed value, or to the value already sent)? leave nothing
+  → _saveBag(title) · _basePlan(title, bag)      a refused route stays owed
+  → _writeMeme(title, fields, origin, bag, base) → store.writeFamily
+  → settle every waiter of the mark on resolve/reject
+```
+
+State the gate holds per marked title (`hand-gate.ts`):
+
+| Field | Lifecycle |
+|---|---|
+| `trailing` | the resetting timer; cleared at flush or when a discrete act consumes the title |
+| `cap` | the non-resetting timer armed at the first mark; cleared the same way |
+| `flush` | the latest flush closure for the title |
+| `waiters` | every caller's resolve/reject pair, settled together |
+
+On `stop()`: the adaptor awaits discrete acts in flight, stops the landing queue, flushes every
+marked title, and unsubscribes from the projection bus. A write that fails at teardown reports its
+title on the console.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;oaYPIfzMitesTkrQFM0OUlbOc7PLxzi7dFzEUioSiSE
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,730 @@
+{
+ "corpus": {
+  "README.mem": {
+   "hash": "17ddd8d2f0df23af11c31b03965c93ca8e41b5ddca5a357617391a2d3ad7d571"
+  },
+  "ha.ka.ba/lares/AGENTS.mem": {
+   "hash": "6f5ad8a570f9bf9f36448efff71a9003d0d80ddffaacfc487bfebab3c783ee82"
+  },
+  "ha.ka.ba/lares/LARES.mem": {
+   "hash": "bb9a6b02a5699dd655e926a37a2a502b71483c48339bf5f688463a7d6850ac02"
+  },
+  "ha.ka.ba/lares/api/lararium.mem": {
+   "hash": "3e49aef00f10a30382416cf3f01e9a5fd050535f2a6eb60b3d7930c938fbcff1"
+  },
+  "ha.ka.ba/lararium/api/bag-wiki-uri-split.mem": {
+   "hash": "c514872b24d7bd550ffa57dd5a9da70f2e99168a3a1c848799bfd1304e00bce5"
+  },
+  "ha.ka.ba/lares/api/corpus.mem": {
+   "hash": "4cf0f47a7613a686a2b98b4c2bb543a8c66c28541a5008d927970d621dc24fa0"
+  },
+  "ha.ka.ba/lares/api/hud.mem": {
+   "hash": "7dfcf3a5ced970e61f9e8e7f1f77f1ed173ea3dd6c71866af9b80c85c52b2ccc"
+  },
+  "ha.ka.ba/lares/api/masks.mem": {
+   "hash": "8736dc0f506edf6e1dd0530bf8860c5ee0710fc01f92e9612851215d552621a3"
+  },
+  "ha.ka.ba/lares/api/masks/character/friend-computer.mem": {
+   "hash": "d5db3b4ebe2abddfb8296f93d49795f1adb71a7b1d948399523774263474d401"
+  },
+  "ha.ka.ba/lares/api/masks/character/ghost-of-mark-twain.mem": {
+   "hash": "99222772568ed7f0e71f79a74858ed046c379c0004ecd9a108ba651f3ce32cd0"
+  },
+  "ha.ka.ba/lares/api/masks/chorus/lagrange-chorus.mem": {
+   "hash": "49a969f794e46ce2b8044c345c97b917394712c5288276da687931ebe63acb1b"
+  },
+  "ha.ka.ba/lares/api/masks/named/breach-watch.mem": {
+   "hash": "8e4111feb54239a991081d8694e2ff92f09f5f742b019f3d5ba14721f1aa62d5"
+  },
+  "ha.ka.ba/lares/api/masks/named/ink-clerk.mem": {
+   "hash": "0f3e5bd8d71343efda9a49983979531cc8fae0404e62d228dfd7bb2be268a6ab"
+  },
+  "ha.ka.ba/lares/api/masks/named/map-wisp.mem": {
+   "hash": "b277223870a7e24089e4f448f6590e7dfe27673da42ba3330251139156a05c89"
+  },
+  "ha.ka.ba/lares/api/masks/named/mischief-muse.mem": {
+   "hash": "46392c2587302eca8c76fe915ea9e0cfe88b9e7b17eaac42ab34bcbaf21bc86e"
+  },
+  "ha.ka.ba/lares/api/masks/named/tide-caller.mem": {
+   "hash": "6b354d3886604170e183f2eb7d3e41f938d818a2074ac98a8dbe1a02f736f4ae"
+  },
+  "ha.ka.ba/lares/api/memetic-wikitext-sensorium.mem": {
+   "hash": "82355a05253ce9d1d88c8bb89c202cf2b4867b0272135eec4cb22eaadcfc30db"
+  },
+  "ha.ka.ba/lares/api/noosphere-boot.mem": {
+   "hash": "6a1aa6015381938fc381c20f9330881233765454fd78917d17ed978970155ed0"
+  },
+  "ha.ka.ba/lares/api/voices.mem": {
+   "hash": "aaaddd29a2db1fd64b84003e3aab30ca2140dd19305cfe1742cbebb10bc7c1ec"
+  },
+  "ha.ka.ba/lares/api/mu.mem": {
+   "hash": "f7a3dacc52fa56148dd9ee82cebc3ff0a8d042d24567eb97fce3dde1106f1d96"
+  },
+  "ha.ka.ba/lares/api/mu/chao.mem": {
+   "hash": "41cb49d14af4a623391ed1e9b97499e8162413c261f312fd13d974ba263d396f"
+  },
+  "ha.ka.ba/lares/api/mu/l-prime.mem": {
+   "hash": "ec0e6dc0b2ca67bf52f71c7e6c763f4ac5d57f34118706976af10175a659bb02"
+  },
+  "ha.ka.ba/lares/api/mu/ooda-ha.mem": {
+   "hash": "ab36bce27cfeef1006ef91689a1827d6fbb7dcf412f4ae65164539435abe8d5d"
+  },
+  "ha.ka.ba/lares/api/mu/pattern-integrity.mem": {
+   "hash": "3e6a063d00d9a72b2c39aa975828537f57e64a790629b0788ee051e77efa08a0"
+  },
+  "ha.ka.ba/lares/api/mu/the-four-tools.mem": {
+   "hash": "0f1366b99756a3a69bdfadceea3fdf0c17287e622d852a573fe50eeead1b598a"
+  },
+  "ha.ka.ba/lares/api/mu/the-law-of-5s.mem": {
+   "hash": "6038f41864a46d3ffd77abbd142dabaf351504e549f2024e9a69e5cb383edd09"
+  },
+  "ha.ka.ba/lares/api/mu/the-syad-perspectives.mem": {
+   "hash": "95ab54891058ba19e0f4f8b2ac88dcfea5aa88f7bb06c7a053de62bbbe52a11e"
+  },
+  "ha.ka.ba/lares/api/pono.mem": {
+   "hash": "f48cc3d9c152b6a129fcbc9dc2c669ef4092ace63c0f8c76eb0c3fb96ee9b75b"
+  },
+  "ha.ka.ba/lares/api/pono/RFC-2119.mem": {
+   "hash": "1e4eab68180659a241749e589daebe8b20104d0ff58581f27df9247d06c7a20f"
+  },
+  "ha.ka.ba/lares/api/pono/ability-implies.mem": {
+   "hash": "f0b7d7d61b33876da291d7b8480b93791162586c1ca7af89470234add485264e"
+  },
+  "ha.ka.ba/lares/api/pono/ahu.mem": {
+   "hash": "da340bf8aeaccd654b52dbebbc165ab9fdb72cec06377b5259854cfaaf38a5db"
+  },
+  "ha.ka.ba/lares/api/pono/aka.mem": {
+   "hash": "03b6afafb581e566653ec17790fa986833b1218d48fc4d4f458b69d8c35b9f78"
+  },
+  "ha.ka.ba/lares/api/pono/alignment-layer.mem": {
+   "hash": "6062d27b398718d182a48083f56be82ece068adf5f87a82a6aa9ac2b170354eb"
+  },
+  "ha.ka.ba/lares/api/pono/aniani.mem": {
+   "hash": "bc67965e4482fd2255961f2910af3af1a70184b1633528a62581bd1b5d7ccfa2"
+  },
+  "ha.ka.ba/lares/api/pono/antigonish-driving-test.mem": {
+   "hash": "9b4669a4df585f1e4b8bf2ee9091b064ef95fe61ec3956a751b3481717f8e18c"
+  },
+  "ha.ka.ba/lares/api/pono/attention-scale.mem": {
+   "hash": "98550ecea1564b8b5b5f12c2b6ea15d52b7016a622b14e724c47053c0e77f89a"
+  },
+  "ha.ka.ba/lares/api/pono/automerge-tiga.mem": {
+   "hash": "fe399ae3834b53009901787f0468671749431f9c958ebfd0b2622e9a3ffbd273"
+  },
+  "ha.ka.ba/lares/api/pono/cache-stable.mem": {
+   "hash": "078b36d43cff252190e4569b494248f85d832fe9053cf62b2ffbb0370cb60ad6"
+  },
+  "ha.ka.ba/lares/api/pono/cache-stable/SKILL.mem": {
+   "hash": "6e6610250abca2ff1b2a7a98d18b9979c38c545018bc12b4384ff2cb9cabdfe7"
+  },
+  "ha.ka.ba/lares/api/pono/carrier-sigils.mem": {
+   "hash": "402ac9b0e3953af3ac74423168b24c1dffa7bd5830cd17aa02b3be5e53fcd3df"
+  },
+  "ha.ka.ba/lares/api/pono/causal-islands.mem": {
+   "hash": "7bb1d5ada19f6875ca89fe9f818d47ffe57ff99dd2fbe7a86b81d70cbb0cdaf1"
+  },
+  "ha.ka.ba/lares/api/pono/cohomological-gate.mem": {
+   "hash": "b4c2ef463cb051cc3670fa220b97db2cd2d2357c14a96a81c65272eb84568776"
+  },
+  "ha.ka.ba/lares/api/pono/conformance.mem": {
+   "hash": "9349f8a6a29e43f5aaa2879c8f4954fb1abbd9e9ee21d4ee40889d15f953959a"
+  },
+  "ha.ka.ba/lares/api/pono/convergent-mesh.mem": {
+   "hash": "864ba64bd4b2579f483fc28fbcb13306dd7c853db30269d105d97f0604337933"
+  },
+  "ha.ka.ba/lares/api/pono/dispatcher.mem": {
+   "hash": "862a0f6949d1bea89db1b9b80c40bde95286028aa2faf70dc29993f32d2e1747"
+  },
+  "ha.ka.ba/lares/api/pono/ea.mem": {
+   "hash": "be2424fa88fcbab26fe32d90ff1b125a736dcb0be9ba2275b8349906b78e4907"
+  },
+  "ha.ka.ba/lares/api/pono/entrance-block.mem": {
+   "hash": "b2e10d897ed3e835d76bbb4f6d1935a55765c7ff2f5d80f2d4b84ee1d100bc9b"
+  },
+  "ha.ka.ba/lares/api/pono/exchange-vector.mem": {
+   "hash": "04df9febf7380a384b61615d3e3fecaad4d3e630f20525fb95cfb2f85ffecbd9"
+  },
+  "ha.ka.ba/lares/api/pono/failure-states.mem": {
+   "hash": "81b46d8ee173776bdda3008be2d90d59ba3cb1c431e050e465ff603026bef342"
+  },
+  "ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite.mem": {
+   "hash": "0e7c004b240a064349590a34cdb29d6c10de07248762ceb93f0076595dee5867"
+  },
+  "ha.ka.ba/lares/api/pono/failure-states/reference-fusion.mem": {
+   "hash": "06f16d087d3df5f6cd73ff18ad2d47d4046f3336e9cb6eac483908af3ab16fc9"
+  },
+  "ha.ka.ba/lares/api/pono/federated-causal-islands.mem": {
+   "hash": "a5799cb8ec3ad3f47dcde52fae0c4c5a322376ebbdc4e2992f16313225c3fb5d"
+  },
+  "ha.ka.ba/lares/api/pono/for.mem": {
+   "hash": "d0c4297534ca1a8e257caf83fba243ea51ba441d63e6b9cbb7d8647b77fa4564"
+  },
+  "ha.ka.ba/lares/api/pono/function.mem": {
+   "hash": "b753d2ca500da0e83594e236b305b3fd03cfaba5bb57aa7f55260756f42523da"
+  },
+  "ha.ka.ba/lares/api/pono/functor-discipline.mem": {
+   "hash": "58a81d2ffde491894e935eaa13e0edc21dfbf5e2baf7e7719ed14b8ca027ebf3"
+  },
+  "ha.ka.ba/lares/api/pono/gold-anchor.mem": {
+   "hash": "c6e1302022eac5a874e145b1fa65e2387f9ce00aadb9f763926d1a384a2ebfeb"
+  },
+  "ha.ka.ba/lares/api/pono/group-as-closure.mem": {
+   "hash": "b2cd8d2d027f0864825cc5a225927e36ca0bad27e2213fb08bcc2cafcfc61f16"
+  },
+  "ha.ka.ba/lares/api/pono/guest-grammar.mem": {
+   "hash": "857d61a620841a29e999d0da12e7bb052517f141e8714957ccabb54f975fc33f"
+  },
+  "ha.ka.ba/lares/api/pono/guest-grammar/SKILL.mem": {
+   "hash": "7fd2a9f24f340548698856989787d88e05996aebcfd2368ddb08ccfbe44fb937"
+  },
+  "ha.ka.ba/lares/api/pono/hana.mem": {
+   "hash": "175710647c96805c3d10588e0456c98f9fa101b203ebebc99a06a8187ec772e2"
+  },
+  "ha.ka.ba/lares/api/pono/has-stack.mem": {
+   "hash": "a7af41b11f26d8367ed42a809a963e3660641dcec88fe96fb4c25ad189971bb2"
+  },
+  "ha.ka.ba/lares/api/pono/heihei.mem": {
+   "hash": "c7fa81837b642492c1009e15e831b29c7fcdab5305b1bc419e661df40a8be571"
+  },
+  "ha.ka.ba/lares/api/pono/heleuma.mem": {
+   "hash": "f791d71fdb5199f85ed176e28033872c2c91349bfbdbed3104dc8de6485b896c"
+  },
+  "ha.ka.ba/lares/api/pono/heleuma/ba.mem": {
+   "hash": "068254eff50434eb38d4ff258c36bfb38a41a0ca418c1494f7db1cb133b812f8"
+  },
+  "ha.ka.ba/lares/api/pono/heleuma/ha.mem": {
+   "hash": "3e61f0fa5b62010e10b3c1a7bcd87267217dc2de3c1ce9dabef7f722d1fba653"
+  },
+  "ha.ka.ba/lares/api/pono/heleuma/ka.mem": {
+   "hash": "5f373f0a75e1d97f16d668ed4ff84a60ec7b762feb9bf4606fb91c6bc0e07592"
+  },
+  "ha.ka.ba/lares/api/pono/helu.mem": {
+   "hash": "b9d25a916c1d202525b0b4ece48c559f43082fe5e47b9b677746bc9dbe72eed9"
+  },
+  "ha.ka.ba/lares/api/pono/hoike.mem": {
+   "hash": "776010f3859ce6a093fba3a53b7e8084a973efb5497e493a62292c17b4cfbc03"
+  },
+  "ha.ka.ba/lares/api/pono/hoike/SKILL.mem": {
+   "hash": "006b3b94adcf9f9512ef05b7d888f98ff281d604e0a827a108ca41a7b4256e1a"
+  },
+  "ha.ka.ba/lares/api/pono/holds.mem": {
+   "hash": "d06c8f4d901c780b9b43c00d5915622d8b3a3fb4ca241c6ca85b835f89c294ac"
+  },
+  "ha.ka.ba/lares/api/pono/holo.mem": {
+   "hash": "33e3419efbeec972e8d4a1bec9c81759899279650cd988c857cb5e89cd3c230a"
+  },
+  "ha.ka.ba/lares/api/pono/hoolele.mem": {
+   "hash": "47b885d08b67ed9236adbc03e9b952586290b35f5d6ee1908e8fd8d4ca170aad"
+  },
+  "ha.ka.ba/lares/api/pono/hooponopono.mem": {
+   "hash": "d440bafe4fca8dfb6fc555d518877e7f0787f100c275afa1d68c31a9a5d80352"
+  },
+  "ha.ka.ba/lares/api/pono/hui.mem": {
+   "hash": "b722cd80d49268e143c6e54c717a31f91e63f2921e938111d4dcd84b762153b1"
+  },
+  "ha.ka.ba/lares/api/pono/huli.mem": {
+   "hash": "dd6cd57b680518ed14a4d0bce79eea9d1278fcef835687600765b86123fcd5f5"
+  },
+  "ha.ka.ba/lares/api/pono/if.mem": {
+   "hash": "a12cd92e19e281ba3f7f03809afcc7018d7c298c1c3012e09b9efcea22bb0951"
+  },
+  "ha.ka.ba/lares/api/pono/kahawai.mem": {
+   "hash": "4a53e756588836962bcfbb692ffb9c2f0ec2e36a0569b15b1a05861ad3790366"
+  },
+  "ha.ka.ba/lares/api/pono/kahea.mem": {
+   "hash": "5e7df03efb53650b63a39ea5c65fee75af22578e27bc29357b08c9cabb9d5c31"
+  },
+  "ha.ka.ba/lares/api/pono/kapae.mem": {
+   "hash": "86650bb4b49dfe95648514618dcd933a32e78a519cadda2d0c9bac0bfe3256b8"
+  },
+  "ha.ka.ba/lares/api/pono/kapu.mem": {
+   "hash": "fe42270fc5458b28e20eb64fdb6c53a3cc9277e4791acc4d40b112bf6b1615c0"
+  },
+  "ha.ka.ba/lares/api/pono/kau.mem": {
+   "hash": "93d873e2a84096f1bc7d287da102e442089c6dff5420bc5f2263c7d74e9a8a2f"
+  },
+  "ha.ka.ba/lares/api/pono/kukali.mem": {
+   "hash": "b903745465ac5ec89414a9e91443097bb0dc6f40c1aab4f9aa85b07e4f6f1553"
+  },
+  "ha.ka.ba/lares/api/pono/kumu.mem": {
+   "hash": "7c23328a23be7fe70e9ea87b4f63d00a2383e4f169fc6ba6c50761ff3dbbe504"
+  },
+  "ha.ka.ba/lares/api/pono/l-prime/SKILL.mem": {
+   "hash": "7206bf9e672839648629f1ddabddf93b7705cb61ed414b5201a7a9e80c4fa90b"
+  },
+  "ha.ka.ba/lares/api/pono/l-space-trust.mem": {
+   "hash": "4cf568a2ae1bbedc6b4839915a393079db4c68a7568d742c47d9fcfb5962b073"
+  },
+  "ha.ka.ba/lares/api/pono/l-space.mem": {
+   "hash": "847e9b44f4bd5f05eecb7d931388f3aa436cad5c6e6231949042e7bd03d45f0f"
+  },
+  "ha.ka.ba/lares/api/pono/lar-uri.mem": {
+   "hash": "30ceba26443447ad618ae6cf1dd2550dd2b699c7fcbc8642b767303c33884fd0"
+  },
+  "ha.ka.ba/lares/api/pono/lar-uri/SKILL.mem": {
+   "hash": "4c9da1f4a0f2e21ef992b06ef69ef2c203740a2ac819040472ec4659f924ef3a"
+  },
+  "ha.ka.ba/lares/api/pono/lararium-identity.mem": {
+   "hash": "3aa3a010410e09e70fc25070b0f4ee42735d48a13db8e0c6944a1eb6b2c24c77"
+  },
+  "ha.ka.ba/lares/api/pono/lararium-memory.mem": {
+   "hash": "b5da68f2cbd1abb9a3eee84dce68e318c7925ca2cdaae8390b6c8cd3bd04ae46"
+  },
+  "ha.ka.ba/lares/api/pono/lele.mem": {
+   "hash": "8f01f2671771c4be79f9800632a418406c8d0f5cc94e1cb7efc2211db62158d8"
+  },
+  "ha.ka.ba/lares/api/pono/li-ki-integrities.mem": {
+   "hash": "7dddbe02828f2162be7d9654312f5ae9c5774f4b3e9bca07507bad7cdacf2ac5"
+  },
+  "ha.ka.ba/lares/api/pono/living-grammar.mem": {
+   "hash": "e91e59697cf4ce96f4420ecdedfd489df629d67881b6042a2377529c35d96c67"
+  },
+  "ha.ka.ba/lares/api/pono/local-first.mem": {
+   "hash": "79a36c601eb33f77608f46fd37156f7e1fe035d1bab5e76248c94519ae61603d"
+  },
+  "ha.ka.ba/lares/api/pono/loci.mem": {
+   "hash": "f0c37c3982d12d8a191cb94bc1167e85a38beca47344db5aeaea538ca5606177"
+  },
+  "ha.ka.ba/lares/api/pono/loci/SKILL.mem": {
+   "hash": "9de4525564c1aba07f4a997b50cab1d38978af6639a3f67f5a10c234bd8b652d"
+  },
+  "ha.ka.ba/lares/api/pono/loci/iam.mem": {
+   "hash": "cc654379ee0b057437a48b8ade4070e12b2728ec81964d5830576680df6c69a2"
+  },
+  "ha.ka.ba/lares/api/pono/loulou.mem": {
+   "hash": "8e15b65d2bffbf9b878a62ef19d045430617f0da7166db059fd4cdf87720a7e1"
+  },
+  "ha.ka.ba/lares/api/pono/meme.mem": {
+   "hash": "3a0892076f2b8f6a48c235acdc3f060509a140941af8204d48d9f317bc1338f4"
+  },
+  "ha.ka.ba/lares/api/pono/meme/SKILL.mem": {
+   "hash": "9a6efce377b97d95ef344e6ea1b5cce4d172f898f0e0d4e3759e0907b99b653d"
+  },
+  "ha.ka.ba/lares/api/pono/memetic-wikitext.mem": {
+   "hash": "4e8e787bcf5107d8464c25dc9f4a344523ac37c035f5e8ab4302036e06025ef2"
+  },
+  "ha.ka.ba/lares/api/pono/memetic-wikitext/SKILL.mem": {
+   "hash": "6d1697030d5b3119201bc97369bc9cbbb744d99f712f437f9373802534bc271b"
+  },
+  "ha.ka.ba/lares/api/pono/mukuwai.mem": {
+   "hash": "229a1e399e097224416a591d1a0afdbbb4393844c8403151b3dd67c910345345"
+  },
+  "ha.ka.ba/lares/api/pono/multi-fractal.mem": {
+   "hash": "ef0d6e5c6e0fb36d0156d68fefdc8548d9d0f9e274daa34e0ddfa4198899f9e5"
+  },
+  "ha.ka.ba/lares/api/pono/nalu.mem": {
+   "hash": "1ac03229904a8312ccfcc152a73b9808d146576ee542f4dbda2824bb4ec7e4af"
+  },
+  "ha.ka.ba/lares/api/pono/nihomano-sigils.mem": {
+   "hash": "136390d7d658e1dce157ce31f2d42d4f820ef2dabc74b3674da45a7ecec76595"
+  },
+  "ha.ka.ba/lares/api/pono/oracle.mem": {
+   "hash": "73e4fafd9aa7c477099c950fd6388f71ff17454e78aa2fdca58406b48e9f44b2"
+  },
+  "ha.ka.ba/lares/api/pono/orichalcum-capabilities.mem": {
+   "hash": "40242b34107c96b8a71a61ccb7bfba0b2356f55bad4a2f29a8a1203aa5375d87"
+  },
+  "ha.ka.ba/lares/api/pono/pae.mem": {
+   "hash": "a8673f0fa72ac6e7ff8d31c5ff7d46ac999f45b05ad94eb98ca7c57571719070"
+  },
+  "ha.ka.ba/lares/api/pono/papalohe.mem": {
+   "hash": "38d3bd2a9e38892f25ffdb64919404405fd07c51975a91c25a689845dbb784b4"
+  },
+  "ha.ka.ba/lares/api/pono/parser.mem": {
+   "hash": "c82596c878b8218a6df5737ef856faa7007f1cb2594239be835f1040be02b64f"
+  },
+  "ha.ka.ba/lares/api/pono/persona-circle.mem": {
+   "hash": "8051a0fe85b2db2d344a2f36ec552a60c496e816a14b3b6249e3493811752ffd"
+  },
+  "ha.ka.ba/lares/api/pono/pono-sigil.mem": {
+   "hash": "05647f79406670dbd90804f25a691edb2f4c727135a0a82bbdf0e3b66c1d47b9"
+  },
+  "ha.ka.ba/lares/api/pono/pranala-families.mem": {
+   "hash": "8d3a5eeaabdbe1c2e64371905976eb3d81589ecf190f54f420e66ee4bc21e7dc"
+  },
+  "ha.ka.ba/lares/api/pono/pranala-header.mem": {
+   "hash": "f3832f8d553b6c39f532d34d5d8f9429ed8881101e3576bdfbc8f7911e3d1acc"
+  },
+  "ha.ka.ba/lares/api/pono/pranala.mem": {
+   "hash": "b10aa6e73315040310e5e1c9b23214bb189abba2d4df4d14754530e70c22e281"
+  },
+  "ha.ka.ba/lares/api/pono/prism.mem": {
+   "hash": "62d013a0aba70776df11ca93676d6a7df321daf5dbd2cd2f0716d2d68c928f9f"
+  },
+  "ha.ka.ba/lares/api/pono/procedure.mem": {
+   "hash": "df1c74bb012ffc56331405f941f89bf3d812e418bcff346fec20435c71ca2647"
+  },
+  "ha.ka.ba/lares/api/pono/puka.mem": {
+   "hash": "4b2dbaa67172722e5362c596356e780581195ec9acbc42281d3396e4830da183"
+  },
+  "ha.ka.ba/lares/api/pono/quine-principles.mem": {
+   "hash": "4521a828167429fd82edf698c2bc799cc6c125715f0d7ed5a51f6fe6108914f9"
+  },
+  "ha.ka.ba/lares/api/pono/reaction-graph.mem": {
+   "hash": "866bcd83bf016cc90199479ccac8d37161707a504ae2f01b76463740962f3129"
+  },
+  "ha.ka.ba/lares/api/pono/render-pipeline.mem": {
+   "hash": "60cb2cc78588f3faacbd87d5981c9b897d4c8cbcc740f790dfd57d17c7b45d95"
+  },
+  "ha.ka.ba/lares/api/pono/rewind-adapter.mem": {
+   "hash": "eed0e419b2ff4fa52a4c4a07e2d3d52293662816ee2cac9dfff838464e209883"
+  },
+  "ha.ka.ba/lares/api/pono/scale-architecture.mem": {
+   "hash": "ee17680ad177fc2c8d8647a3205639639b449578256a8e40a25cef087ad5dd7d"
+  },
+  "ha.ka.ba/lares/api/pono/sensorium-machina.mem": {
+   "hash": "ce7e1458300abd6e6bdb0d64a0b4a95cb518882761b62698fcffb1fa017f249a"
+  },
+  "ha.ka.ba/lares/api/pono/servo.mem": {
+   "hash": "29ed6a528227b356f050a709dc9c9df7a466dc5d9d52c854f50680d6abf5b61c"
+  },
+  "ha.ka.ba/lares/api/pono/sharktooth-sigils.mem": {
+   "hash": "fae2e08d11a1113439e5b2a7fd42b76b3579b7643754f85abc8195c51ab3daff"
+  },
+  "ha.ka.ba/lares/api/pono/system-pattern-integrities.mem": {
+   "hash": "a76aba10a101b7045901ae29ca452e4048d7bcc5dd8853dc764c6e5011dc1367"
+  },
+  "ha.ka.ba/lares/api/pono/talk-story.mem": {
+   "hash": "38d5c42ec11de58d2904a9a7136da723bfb2ced3686b7bdef7db0641ada8fe3e"
+  },
+  "ha.ka.ba/lares/api/pono/talk-story/SKILL.mem": {
+   "hash": "06932bba1199c80629dc8fba68575a36d985cd7ceb0ff62f302fe6c0badf2770"
+  },
+  "ha.ka.ba/lares/api/pono/the-veil-ladder.mem": {
+   "hash": "b61d63a07889a569786e6cf868d458a72a7c3c30a8eb988b89111a39c7ac8b45"
+  },
+  "ha.ka.ba/lares/api/pono/tick.mem": {
+   "hash": "494a55aaec72009ad6eb3cb601bfb6e5b3039dfc31bd6d5c53006d5fe2f7e046"
+  },
+  "ha.ka.ba/lares/api/pono/tiddler-record.mem": {
+   "hash": "3fa16b7390bbe2751b22bd602c84cefcb29d17d077735e1069a900f60391bf23"
+  },
+  "ha.ka.ba/lares/api/pono/uefn-scene.mem": {
+   "hash": "1db6e0cfe401fab043917d53c7a87e100f7248cfc3543fbe54e33afef700ea9e"
+  },
+  "ha.ka.ba/lares/api/pono/ui.mem": {
+   "hash": "39427c4d8cdbaf58080f1e5b6a1d74e46839da1e31989ad46ddd0333d2dedcbd"
+  },
+  "ha.ka.ba/lares/api/pono/verse-event-lattice.mem": {
+   "hash": "084fdd7ce1db3a45d056c86ad3728ef167922c3543defa39bdca19a64c2103ec"
+  },
+  "ha.ka.ba/lares/api/pono/verse-task-tree.mem": {
+   "hash": "178ad25c1c0181e3a2a59a75902866792579d2492bdef421576ba895dc3d80f9"
+  },
+  "ha.ka.ba/lares/api/pono/verse-type-lattice.mem": {
+   "hash": "a95221868ff4f0691871ac2af4272f6f074c28a525ba6297277eff3f416ccea0"
+  },
+  "ha.ka.ba/lares/api/pono/vm-projection-bus.mem": {
+   "hash": "777e9c98fa03f9d2f3844445cca058e582fa301d8fb5be1aba87a21f0d3a1a4a"
+  },
+  "ha.ka.ba/lares/api/pono/wai.mem": {
+   "hash": "e25054f6ece46237718a1096a7907d7c18fabc34e740f41e00b2333f8b788854"
+  },
+  "ha.ka.ba/lares/api/pono/waiho.mem": {
+   "hash": "bc65d626299e255807257ad5c72ef7b92eec30c962877b557e2fad2f67a86072"
+  },
+  "ha.ka.ba/lares/api/pono/wehe.mem": {
+   "hash": "c0f7e2a00b1342dc8b0cbd233a82eb37f4ae22f550e2c9c65f86fd965059a3b6"
+  },
+  "ha.ka.ba/lares/api/pono/widget.mem": {
+   "hash": "2391a5f700c6757cea6afc441e108da0fb1b218fc4e2030075401cc29ec3dd6c"
+  },
+  "ha.ka.ba/lares/api/pono/wikitext-filter.mem": {
+   "hash": "baf706422be8f84d640b930b60636e8ea92969a7ed90b7e726f7b31ad23899bb"
+  },
+  "ha.ka.ba/lares/api/pono/wire.mem": {
+   "hash": "b7fdddac99e3f8d11d8c3e4e8aa5e4d0d239d26e4246d36fbc94e5d44a54efa0"
+  },
+  "ha.ka.ba/lares/api/pono/x-tiddlywiki-filter.mem": {
+   "hash": "f08782c8fa96338439665446977b8ff98c66bb777d985657f66b1d8bd7ef9920"
+  },
+  "ha.ka.ba/lares/api/vendor/sq-streams.mem": {
+   "hash": "23c2d94b0a435dfb5927d397a337f2aa8fe570798b54ef0f9a193d8ed1777a9e"
+  },
+  "ha.ka.ba/lares/cli/bin/lares.mem": {
+   "hash": "fa51bcafae633d88a1576544e61b4817a1fb7b6c464d460c0f06218305b8773a"
+  },
+  "ha.ka.ba/lares/docs/crystal.mem": {
+   "hash": "97ccffaa077b39c67baeed8e65744a1eda76bd153903c60f159d93d613910bdc"
+  },
+  "ha.ka.ba/lares/docs/graph.mem": {
+   "hash": "7df10690b854a4bfe3bbd654f5850dc51c5e7da11385ffa96ee6112e8241ff34"
+  },
+  "ha.ka.ba/lares/docs/graph/artifacts.mem": {
+   "hash": "cd088c3f5dcb2e67540f47f4ba2a79579c348b8c9ca4ac9125a95fee2d2c473b"
+  },
+  "ha.ka.ba/lares/docs/graph/meme.mem": {
+   "hash": "dbe5752ba21ff74ddf83061d93a64fe3c9ea6c8ef5d1b85dd01cb0fc03fb7329"
+  },
+  "ha.ka.ba/lares/docs/graph/pranala-parser.mem": {
+   "hash": "588587d1977f9596abc2f1e32aee210624c755e95e0aa65da19bee909ba93f6a"
+  },
+  "ha.ka.ba/lares/docs/graph/traversal.mem": {
+   "hash": "77ae22b7016f4ad3a006631adeb501215d7203086835dd0a8bc8e83e1be08c1c"
+  },
+  "ha.ka.ba/lares/docs/lararium.mem": {
+   "hash": "314b8d32c12dffeb9ee9b4974819a4bb947aad2864aac9c3149f6394d64887f9"
+  },
+  "ha.ka.ba/lares/docs/lares/alignment-architecture.mem": {
+   "hash": "d25cde1c2da68416e74ce3e52a9180e05073a9ac74530cf185688229b2ddf90d"
+  },
+  "ha.ka.ba/lares/docs/lares/cloud-settings.mem": {
+   "hash": "5308a1b4bdab51bf17db1c704d10e34f8b9d9f7896ac07e85e8a5b61af2b5f48"
+  },
+  "ha.ka.ba/lares/docs/lares/dreamnet-rhizome.mem": {
+   "hash": "7cebb69f4755280e5a36ce94c86aecc2cc2661780c5d16fd103a42d7215e4bab"
+  },
+  "ha.ka.ba/lares/docs/lares/federation.mem": {
+   "hash": "52323032fbc976c494b089af8903ea2c79389db0735e914fdfcf48ea2850be88"
+  },
+  "ha.ka.ba/lares/docs/lares/handoff.mem": {
+   "hash": "03c15d317182f4d14da52c886b15c8fd2321c8dc3145bc96635adcf916e220a9"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/consumption-ledger.mem": {
+   "hash": "91bff6eb6fbc6d129f1db4e48adadec21e8a9a5817179802a8c3677788d00ec5"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/daemon-in-the-walls.mem": {
+   "hash": "495fb807823fe01ccb426521c036b8bc36e8ffcdbf1be27450c32df5a85da1f5"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/dreamdeck-feed-architecture.mem": {
+   "hash": "6025789618b8ec4c56eae1f69fc891457ac79116bc0592b6f19f26bb997714b1"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/hoard-origin-architecture.mem": {
+   "hash": "2b5a7be5942caf8b65a237c8f8ee38fd923407c5d65920f4558988c4aec424c1"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/index.mem": {
+   "hash": "d1946d7b90788ec441f1617d3eb5417b540b4fefe7964b978de5f4ed7aa468c5"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/kindling-of-the-crossroads-node.mem": {
+   "hash": "96dc03ba74dcc1b8e3d6fba0c60bb662b3cd1aab9e1e87a9d75b746de7f13ebc"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/self-booting-lararium.mem": {
+   "hash": "dddfc8ab56500f0aae1d61bb3728d6327ca392bd8a7b47d5aa23dd3711425cb8"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/the-hoard-disclosed.mem": {
+   "hash": "99e09c8b6c9265ede7e0dca1f7f488ae10827aa6059f4d4d503166becee26bdb"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/the-lar-names-itself.mem": {
+   "hash": "17b44f8925c5c9d1a656540c2bb78e07558e1fdfb35f76613d0a8eb677c9b300"
+  },
+  "ha.ka.ba/lares/docs/lares/history/lindwyrm/vault-and-repo.mem": {
+   "hash": "c06ac757f52e71b862d216579199eb4df797e6f6ea5a2ceeef42fb3292fa7bc9"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-bridge-takes-shape.mem": {
+   "hash": "a8a5c4b94b533c29216b363720c4232a52e39ca35c5ed66b8e9360b70bd6c1b5"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-first-breath.mem": {
+   "hash": "092881b75618a396d1274fbb1a03cf5ba7710eca1fc189aa8b7438b373702429"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-grammar-wakes-prior-art.mem": {
+   "hash": "f936002dc430f4aae4bed1fa8f213ad0dff1b230f6bb5860c38490d9807986e0"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-grammar-wakes.mem": {
+   "hash": "c36bccbee32fa7c2051aafbd468b54ff5563efe48f62da55a7f87e4f1e8a6f3d"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-lar-builds-its-house/index.mem": {
+   "hash": "d4735bf7bf5dfe141200a246f02a5daa9e7711dfe3c450fb2979b18cc43182b3"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-lar-builds-its-house/the-addresses.mem": {
+   "hash": "fd1f322563e0e634c0461fd0e36003226b16c95d7086414540ca91b9b0ef4fbb"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-lar-builds-its-house/the-bright-vein.mem": {
+   "hash": "aa0b7577be2c38bd72b57749c71379b00cba5c149767cbb373ce26a3e3c24087"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-lar-builds-its-house/the-necroscript.mem": {
+   "hash": "24dd6b0815b6c730adde4f3555b1cdfd6fc63263c371b060a727907b7c1fc68c"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-lar-builds-its-house/the-quine.mem": {
+   "hash": "61ec88e5375223fb0afc014ed116d7d70430e3a2e77ab6227df9d348e20fe7e3"
+  },
+  "ha.ka.ba/lares/docs/lares/history/the-lar-builds-its-house/the-shore.mem": {
+   "hash": "d04a446a9f1d4d7b9c424f8bad2f62af4375cde85eadce5c18386affe4996a9c"
+  },
+  "ha.ka.ba/lares/docs/lares/hud.mem": {
+   "hash": "c1348cde28eac83e2cf0aba9d3ef349c0a19f3f2628733d0afe8c817e1f72027"
+  },
+  "ha.ka.ba/lares/docs/lares/infrastructure-as-myth.mem": {
+   "hash": "e4539198031ba6030edd13995e187ad1b836262bac7e3585de15f2bcf9ed58f9"
+  },
+  "ha.ka.ba/lares/docs/lares/pattern-integrities.mem": {
+   "hash": "638330f296cce9d16d32d0e3d6c98d15f2d2162019925e6755fc29900b49c2c3"
+  },
+  "ha.ka.ba/lares/docs/lares/the-lares-protocols.mem": {
+   "hash": "a73f863e457afb92a4346174537794d817c12d1ba40964b5729311004d768823"
+  },
+  "ha.ka.ba/lares/docs/lares/voices.mem": {
+   "hash": "265015fb48f03f087c91416eac6ec72e33f1a78e9794b1c01f8fdec4064d272e"
+  },
+  "ha.ka.ba/lares/docs/lares/voices/masks-tree-plan.mem": {
+   "hash": "3f0b74a71f837302ea52ca192a0df05c8a17ab736bece95dcbefda0026dab9ab"
+  },
+  "ha.ka.ba/lares/docs/lares/voices/masks.mem": {
+   "hash": "c8368edbe56bdd974c48224386d47387155e56a23a702afec88b55e672104b46"
+  },
+  "ha.ka.ba/lares/docs/lares/voices/voices-review.mem": {
+   "hash": "f9190255fcc39842aa106190a138de322c265168c9c3900cd5a34fe6d99650d6"
+  },
+  "ha.ka.ba/lares/docs/lares/voices/witnesses/mischief-muse-coffee-oracle.mem": {
+   "hash": "8f8633b90934ab6de04398c936354bc642ba2c9cf70c1aae6b994ec12a97ec47"
+  },
+  "ha.ka.ba/lares/docs/lares/voices/workers.mem": {
+   "hash": "addde5cea8ebb5fc8c501ef67d39e87a9f997b489250c3f422079bd1e2d9fbb6"
+  },
+  "ha.ka.ba/lares/docs/mu.mem": {
+   "hash": "dc33882750b551d44c016d5be559a721f2f48a5c142336660ef6a1126aa3689f"
+  },
+  "ha.ka.ba/lares/docs/mu/model-agnosticism.mem": {
+   "hash": "794e8e13e8c6093f46152554dabe56c619c6cbf0e389ad5e41495fe5be0771f6"
+  },
+  "ha.ka.ba/lares/docs/mu/reality-tunnels.mem": {
+   "hash": "a16657e1a3fabe7b7d8dad138f6c3bcac1e1e87e6c1c758f9cc0fcea19c19da6"
+  },
+  "ha.ka.ba/lares/docs/mu/the-four-tools.mem": {
+   "hash": "973a8aba53e7ef6462a66030076605e21fde3951ac86c48330949ef276fd26cd"
+  },
+  "ha.ka.ba/lares/docs/mu/the-syad-perspectives.mem": {
+   "hash": "08fecd2a8e268cba188b655eb0b9b59e04609c0782a5a10b6da871ebb841cd34"
+  },
+  "ha.ka.ba/lares/docs/mu/the-syad-perspectives/README.mem": {
+   "hash": "2305a26355b0e1b42f650d88a633550d0ac6239cf21e004eed7ceafe78ee2286"
+  },
+  "ha.ka.ba/lares/docs/pono.mem": {
+   "hash": "abd8c6d01a0218573b800252d749564dc62705dbc47b6a43b4841dad11ab0121"
+  },
+  "ha.ka.ba/lares/docs/pono/RFC-2119.mem": {
+   "hash": "63d6b27b75aebfd5e267de8170940db343d3f7ce911f7fad059f2565e2dab20f"
+  },
+  "ha.ka.ba/lares/docs/pono/canon-boundary.mem": {
+   "hash": "767a280e9430f6bb73564c70e47bb2a5c7a5956a0eae175f3484d376e062a25c"
+  },
+  "ha.ka.ba/lares/docs/pono/circles-kowloon.mem": {
+   "hash": "bfcdd4453321b0e9b94a4b08d17ac2454948ec34aaa93a92f6f16b745e63fff9"
+  },
+  "ha.ka.ba/lares/docs/pono/exchange-vector.mem": {
+   "hash": "2abbab1cddc965a364e0fdd279ce05f48d58987ced92c268673d7b42b8e26a47"
+  },
+  "ha.ka.ba/lares/docs/pono/glyph-codeset.mem": {
+   "hash": "38a10adc8b0fd2b99c1d560b542750d699608df0b8fcfbda160e3b6431e2ae84"
+  },
+  "ha.ka.ba/lares/docs/pono/guest-grammar.mem": {
+   "hash": "ce0ac762a0d63a541aedfa7bec0f85d718caaa2c9b842a17a1be68aa81c6d1a5"
+  },
+  "ha.ka.ba/lares/docs/pono/identity-stack.mem": {
+   "hash": "2b772e79e5c0af9682a1dd4c9f2599aac8e323daf5a4e4293ae4505ee7721e36"
+  },
+  "ha.ka.ba/lares/docs/pono/l-prime.mem": {
+   "hash": "2da0702cf64a9a36cbd393ac4f375cebf2ac2a9566369432381255002ff7dee9"
+  },
+  "ha.ka.ba/lares/docs/pono/l-space-trust.mem": {
+   "hash": "1bd62ca80f7fc33d2a695b19554ef8eceeb7b8b1fc549a04f01d199a06dd36dc"
+  },
+  "ha.ka.ba/lares/docs/pono/lar-uri-namespace.mem": {
+   "hash": "45a4e73dba21b694c4d39f27d78db417e84f9dfc1abd96bda5135a67bbee9943"
+  },
+  "ha.ka.ba/lares/docs/pono/lar-uri-roots.mem": {
+   "hash": "ea84f74ab14ec049f8886ed89a01356057a3ab2b2537aa158fe62010d373f40e"
+  },
+  "ha.ka.ba/lares/docs/pono/lar-uri.mem": {
+   "hash": "3ab3283b75f5feb2ded15c6d4728c849e9063a04250798a5aeb7f2e3bc050cb9"
+  },
+  "ha.ka.ba/lares/docs/pono/law-of-5s.mem": {
+   "hash": "267092756aa0bfad12f8e655b2e622a8ef935d3b2af854ddc11d7305870d8412"
+  },
+  "ha.ka.ba/lares/docs/pono/live-session-overwrite.mem": {
+   "hash": "24ff1e742b82b31ead8aa844503e632c83324bdccaba55c857a0fc2ddd2bc92f"
+  },
+  "ha.ka.ba/lares/docs/pono/loci.mem": {
+   "hash": "eb8f5cdb95b815bae89f58e8da8b7af5c1457a010cade808ef8941f05a348ae3"
+  },
+  "ha.ka.ba/lares/docs/pono/meme.mem": {
+   "hash": "0596990e3be26a1779784d2d085f93f23809316f8337f31993fff4ca5c918bee"
+  },
+  "ha.ka.ba/lares/docs/pono/memetic-wikitext.mem": {
+   "hash": "0fe5dd3111c939d44f4bda085063d4ae5e6cdd09f1477720e63e4a394532e85c"
+  },
+  "ha.ka.ba/lares/docs/pono/message-routing.mem": {
+   "hash": "5d2e1e48565696e62ae0981d503f1e5c662c55a01cdd22f1cf05393d4e028e1b"
+  },
+  "ha.ka.ba/lares/docs/pono/pranala.mem": {
+   "hash": "ae72a77067f4e35ff1816d240aac030678e153107b1be5e41ca9a802c54902f7"
+  },
+  "ha.ka.ba/lares/docs/pono/research-streams.mem": {
+   "hash": "fcc675edcb40b00f66c02d0fe41fd0079342b39f7424fdb4d3bf37799b25b2ab"
+  },
+  "ha.ka.ba/lares/docs/pono/research-streams/adversarial-testing.mem": {
+   "hash": "d87de22dfc94f8b43d52bc52138fef4d273d64e7aef222e5b7dbbf046a758425"
+  },
+  "ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_Research.mem": {
+   "hash": "3e32921011f661e1d1b44f761df669f3784052ab17e52780f94612288f8da373"
+  },
+  "ha.ka.ba/lares/docs/pono/research-streams/chronometer/FFZ_Chronometer_SPEC_OUTLINE.mem": {
+   "hash": "22afdd6ebd4637c73f1155fc5d94c15db1d4f252b39e992959543629e22fc6a9"
+  },
+  "ha.ka.ba/lares/docs/pono/research-streams/chronometer/Vector_Chronometer_Research_Seed.mem": {
+   "hash": "9ea91432ab1757053777be0cf7b420ebf45ca1e45c9933466e332792f9b289a8"
+  },
+  "ha.ka.ba/lares/docs/pono/research-streams/gaps-tensions.mem": {
+   "hash": "850f6f8073443ba3cb215cf891ae73b0c169f5a26a3901c3055553ebfa21af70"
+  },
+  "ha.ka.ba/lares/docs/pono/research-streams/prior-art.mem": {
+   "hash": "88bfabbf8cc6b08d74fd8545ad65c25dd5b1b987295ee538f2acffb6405b7dda"
+  },
+  "ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds.mem": {
+   "hash": "421d3a360146ccf138efba8acebdb9ab93e70f771f147e17886508e3b9f50bf1"
+  },
+  "ha.ka.ba/lares/docs/pono/sigil-grammar-research.mem": {
+   "hash": "db06906e5347f41eeeaf86ca90a24b1b18993722e9845f210b4133cf039a4f55"
+  },
+  "ha.ka.ba/lares/docs/pono/sigil-kind.mem": {
+   "hash": "caa94aa5e99423bac99e30bfb2999da1f5b058275dbe02f00897924c8f9c26db"
+  },
+  "ha.ka.ba/lares/docs/pono/sigil-shape-motion.mem": {
+   "hash": "f920709a6a3ecd2826a407b36c00565904fe54de8299186b7fd8940dac584e0a"
+  },
+  "ha.ka.ba/lares/docs/pono/tiddlywiki-filter.mem": {
+   "hash": "b54edeec99e7d23a52589c01fb3fa1e7e911bf9769a5faf63035cc2754cfe470"
+  },
+  "ha.ka.ba/lares/docs/pono/wiki-layer-ontology.mem": {
+   "hash": "e2de4a37a7bc12f5e19e01222b0a78781c5c90a2a9b7b3c4fcde97f882a72ec2"
+  },
+  "ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology.mem": {
+   "hash": "e3dc26e9e2d5b5246dfcfd6f9d4b00f5aa1c37c671f5aeb66134b74b42b4b7e7"
+  },
+  "ha.ka.ba/lares/docs/story.mem": {
+   "hash": "c56e9cab05149761b56a76b8f2a13b512ea3cc97fdf7bc77f6fc2776622a0b0c"
+  },
+  "ha.ka.ba/lares/library/discordia/malaclypse-the-younger/are-discordians-serious.mem": {
+   "hash": "fc3fa71717fda5e1d7f33275ee7aef04c0c733372d71b3dd876f064731409f07"
+  },
+  "ha.ka.ba/lares/library/discordia/mordecai-malignatus/cosmic-trigger-i/cosmic-trigger-i-chapel-perilous-prologue.mem": {
+   "hash": "848b4de066a644297e991cc12152a09540700627aaf03fbc7e88782846a2e05f"
+  },
+  "ha.ka.ba/lares/library/discordia/mordecai-malignatus/prometheus-rising/prometheus-rising-ch-8-the-4-tools.mem": {
+   "hash": "2c966a60d06349d38f986412b1b183f5f1fab01520aef33342ba4321562e9806"
+  },
+  "ha.ka.ba/lares/library/discordia/the-count-of-5s/common-sense-tarot.mem": {
+   "hash": "1930450bc3fd697758ae14c22c73fde97594906817c29ed33669a1cd934af5a1"
+  },
+  "ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/G_deep_research_meaning.mem": {
+   "hash": "20a3cca0f4fc9e53ebb7e771d4460548d48e618df71cb973af12e7e27f6ab318"
+  },
+  "ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/STANCE_LOCI.mem": {
+   "hash": "90c14ab163369a0fd5079320a4ab20ce1adc09bd4df7a37825d61056d074c6d2"
+  },
+  "ha.ka.ba/lares/library/docs/mu/the-syad-perspectives/SYADASTI_READING_RULE.mem": {
+   "hash": "444905370aefa9a684996fac4d66f28a8607fd30bb0bad1530e6e5f994ea92a9"
+  },
+  "ha.ka.ba/lares/library/docs/story/dreamdeck/README.mem": {
+   "hash": "d51ea6ae15662ba3a38aa74666c7883c069117b7a9c060ba90531ee8dacde9ef"
+  },
+  "ha.ka.ba/lares/library/hawaii/kumulipo/kumulipo-beckwith.mem": {
+   "hash": "bfce72f280004cae71543bfe5c5bc6a8dd8a029c9b997efe00aa9236df26311c"
+  },
+  "ha.ka.ba/lares/library/hawaii/kumulipo/kumulipo-liliuokalani.mem": {
+   "hash": "7c64222b24d8dabeb682197486a3bcf16f6867f84b375652ff140b2fb22729f1"
+  }
+ },
+ "grammar_version": "0.1.0",
+ "memeastSchema": "1",
+ "skip": {}
+}

@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# founding-witness — found a vessel in a throwaway root and prove the boot path reads back what the
+# founding wrote — in BOTH halves, because a founding stands two things.
+#
+# ── WHY A WITNESS AND NOT A UNIT TEST ───────────────────────────────────────────────────────────
+# The founding writes a plane's name; the boot path reads it back. Both sides derive it, so a unit test on
+# either side passes while they disagree — the pairing is the thing, and only a real founding exercises it.
+# Everything between them runs here too: the keyhive ceremony, the ordering that mints a PersonaGroup before
+# seeding its plane, the genesis seed, the on-disk bootstrap artifact.
+#
+# ── TWO HALVES, TWO WITNESSES ───────────────────────────────────────────────────────────────────
+# A founding stands a PLACE (`vessel found`) and later a FACE (`persona new 0`). One assertion cannot
+# cover both: demanding a plane after the place alone fails a vessel that stands exactly as designed,
+# and it fails identically whether the floor works or not — which makes it useless as a gate.
+#
+# So the PLACE half asserts a POSITIVE absence: @daemon named, and no persona pin anywhere. A place that
+# quietly wrote a face would pass a looser check and break the facelessness the class rests on.
+# The FACE half then lands and runs the pairing assertions, unchanged — the name the founding wrote
+# against the name the boot path derives.
+#
+# It founds under LAR_ROOT in a temp dir, so it never touches the operator's own vessel state.
+#
+# Usage:  tools/founding-witness.sh          (exits non-zero on any disagreement)
+set -uo pipefail
+cd "$(dirname "$0")/.." || exit 1
+REPO=$PWD
+
+# DIST-FRESHNESS PREFLIGHT. A WITNESS BUILDS NOTHING: `vessel found` rides `--skip-build`, so the CLI's
+# fresh-build gate never rewrites the shared dist beneath a concurrent run. The witness therefore asks
+# freshness itself, of the CLI it drives and of the mesh dist its two inline `node --input-type=module -e`
+# blocks import BY PATH, and a stale build refuses here naming its cure.
+node "$REPO/tools/corpus-read.mjs" --assert-fresh "$REPO/packages/lares-cli/dist/src/bin/lares.js" "$REPO/packages/lararium-mesh/dist/index.js"
+if [ $? -ne 0 ]; then exit 2; fi
+
+TB=$(mktemp -d -t lares-founding-witness-XXXXXX)
+trap 'rm -rf "$TB"' EXIT
+
+# The genesis seed carries the hearth true-name; an isolated root needs its own copy.
+git ls-files -z genesis/ | xargs -0 -I{} cp --parents "{}" "$TB/" 2>/dev/null
+
+echo "founding-witness: founding under $TB"
+# The founding seals custody from birth; the scripted witness names its test route explicitly.
+node "$REPO/tools/test-scratch-marker.mjs" "$TB" && node "$REPO/tools/seed-test-custody.mjs" "$TB" || { echo "  could not seed the test custody route"; exit 1; }
+if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found --skip-build >"$TB/init.log" 2>&1; then
+  echo "  FOUNDING FAILED — tail of the log:"; tail -15 "$TB/init.log" | sed 's/^/    /'; exit 1
+fi
+
+# ── HALF ONE — the PLACE stands, and stands FACELESS ────────────────────────────────────────────
+LAR_ROOT="$TB" node --input-type=module -e '
+import { readPersonaPlanes, PERSONA_GROUP_ID_TIDDLER } from "'"$REPO"'/packages/lararium-mesh/dist/index.js";
+import fs from "node:fs";
+const path = process.argv[1] + "/data/lares/vessel/social-bootstrap.json";
+const t = JSON.parse(JSON.parse(fs.readFileSync(path, "utf8")).text).tiddlers;
+const entries = Object.entries(t).map(([title, v]) => ({ title, text: v.text ?? null }));
+const fail = (m) => { console.error("  MISMATCH (place): " + m); process.exitCode = 1; };
+
+if (!t["lar:///ha.ka.ba/bags/daemon"]?.text?.startsWith("automerge:")) {
+  fail("the place names no @daemon island — a founding that writes nothing else must still write this");
+}
+// FACELESS BY POSITIVE ASSERTION. A place that wrote a persona pin would pass any looser reading.
+const planes = readPersonaPlanes(entries);
+if (planes.length !== 0) fail(`the place wrote ${planes.length} persona plane(s); a place holds none until a face lands`);
+if (t[PERSONA_GROUP_ID_TIDDLER]) {
+  fail("the place wrote a PersonaGroup pin — the cabal and the group ride with the FACE");
+}
+if (!process.exitCode) console.log("  ok (place) — @daemon stands, and nothing of a person");
+' "$TB"
+
+echo "founding-witness: a face refuses on a place with no seed charter"
+if LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" persona new 0 --name founding-witness >"$TB/refused.log" 2>&1; then
+  echo "  MISMATCH: a face founded on a place with no seed charter — a face binds its hearth"; exit 1
+fi
+grep -q "no seed charter stands here" "$TB/refused.log" || { echo "  MISMATCH: the refusal names no seed charter:"; tail -5 "$TB/refused.log" | sed 's/^/    /'; exit 1; }
+echo "  ok (place) — persona zero refuses by name until the hearth founds"
+
+echo "founding-witness: the Stable founding act lifts the place to a hearth"
+if ! LAR_ROOT="$TB" node "$REPO/packages/lares-cli/bin/lares.mjs" vessel found --hearth --name founding-witness --skip-build >"$TB/face.log" 2>&1; then
+  echo "  FACE FAILED — tail of the log:"; tail -15 "$TB/face.log" | sed 's/^/    /'; exit 1
+fi
+
+# ── HALF TWO — the FACE landed, and the boot path derives what it wrote ──────────────────────────
+LAR_ROOT="$TB" node --input-type=module -e '
+import { readPersonaPlanes, personaBagIdFor, mountedPlaneBagId, PERSONA_GROUP_ID_TIDDLER } from "'"$REPO"'/packages/lararium-mesh/dist/index.js";
+import fs from "node:fs";
+const path = process.argv[1] + "/data/lares/vessel/social-bootstrap.json";
+const t = JSON.parse(JSON.parse(fs.readFileSync(path, "utf8")).text).tiddlers;
+const entries = Object.entries(t).map(([title, v]) => ({ title, text: v.text ?? null }));
+
+const fail = (m) => { console.error("  MISMATCH (face): " + m); process.exitCode = 1; };
+const planes = readPersonaPlanes(entries);
+if (planes.length !== 1) fail(`the face wrote ${planes.length} readable planes, expected 1`);
+
+const active = t[PERSONA_GROUP_ID_TIDDLER]?.text;
+if (!active) fail("no active PersonaGroup pin — the boot path has no gesture to resolve");
+else {
+  // The pairing itself: the name the founding wrote, and the name the boot path derives.
+  const derived = personaBagIdFor(active);
+  if (!t[derived]) fail(`the boot path derives ${derived}, which the founding never wrote`);
+  const mounted = mountedPlaneBagId(planes, active);
+  if (mounted !== derived) fail(`mount resolves ${mounted}, derivation says ${derived}`);
+  if (planes[0].personaGroupId !== active) fail("the plane read back belongs to another group");
+  if (!planes[0].url?.startsWith("automerge:")) fail("the plane resolves to no document");
+}
+if (!process.exitCode) console.log("  ok — written, read back, derived and mounted all name one plane");
+' "$TB"

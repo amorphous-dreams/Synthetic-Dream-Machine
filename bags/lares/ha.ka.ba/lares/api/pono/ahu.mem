@@ -1,0 +1,184 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/ahu">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/ahu.mem"
+mana      = 18
+manao     = 18
+manaoio   = 18
+namespace = "&#x2299;"
+role      = "child-slot sigil — addressable worksite scope boundary; named ahu slots form the meme's tiddler structure"
+tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ahu"]
+title     = "lar:///ha.ka.ba/lares/api/pono/ahu"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/ahu"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Ahu
+
+//ahu// — Hawaiian: heap, pile, mound, cairn; altar, shrine; a sacred stone structure.
+Used in spiritual and ceremonial contexts — the //ahu// becomes sacred through human intention
+and accumulated offering placed upon it. A landmark made from accumulation; addressable because
+someone named and tended it.
+
+A child-slot sigil. Each `ahu` block declares a named scope boundary within a meme — an
+addressable child tiddler at `parentUri + slot`. The slot name becomes the tiddler title suffix.
+Slots compose the structural skeleton of a meme's content; each MAY hold its own TOML meta header (set of tiddler fields)
+and wikitext body.
+
+<<~/ahu>>
+
+<<~ ahu #/ooda-ha>>
+
+✶ sense the slot name — a `#/name` anchor, rooted at the carrier; the boundary scope of this content unit
+⏿ orient: child-slot, parent-relative addressing; slot name becomes tiddler title suffix
+◇ parent at `lar:///uri`; this slot creates child at `lar:///uri#/name`; content stays inside boundary
+▶ emit child-slot block node; deserializer produces a separate tiddler for each slot
+↺ parent tiddler references child via `<<~ kahea ahu #/name>>`; child answers at its own address; confirm round-trip: parent body contains kahea~ahu summons; child has meta fields + content
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! Law (Kānāwai)
+
+An ahu block slot name MUST begin with `#/`. The slash roots the path at the carrier, so a slot names the same string it addresses; a nested slot extends it (`#/parent/child`). A bare `#name` belongs to no ahu slot grammar: a processor MUST preserve that source verbatim, surface a diagnostic to the operator, and MUST NOT normalize it or mint a child address from it. A CONTROL slot carries structural metadata rather than addressable content and takes no root — it opens no child to address.
+A slot token admits `[a-z0-9āēīōūʻ-]` — lowercase ASCII letters and digits, a hyphen, the Hawaiian long vowels ā ē ī ō ū (precomposed), and the ʻokina (U+02BB); `/` nests, and `$` stays reserved as a leading carriage marker (RULED, operator, slot-grammar-orthography). `lares meme normalize` folds a slot name — and only a slot name, fence-masked — to NFC first (so a decomposed vowel, a base letter plus the combining macron U+0304, precomposes to its canonical letter), then folds the three ʻokina look-alikes (the curly quotes U+2018/U+2019 and the typable straight apostrophe U+0027) to U+02BB, reporting each fold as a diagnostic. Kahakō and ʻokina stand RULED; a kahakō look-alike (a folding macron on any other vowel, or any other Hawaiian orthographic mark) carries NO ruling — it stays unfolded, and MUST pass through unchanged.
+An ahu block MUST close with `<<~/ahu>>`.
+An ahu block MAY nest inside another ahu block. A nested slot extends its enclosing slot path (`#/parent/child`), while a top-level slot begins a path at the carrier root.
+An ahu slot MUST produce an independently addressable tiddler at `parentUri + slot`.
+The tiddler representing an enclosing scope MUST reference each child slot via `<<~ kahea ahu #/slot>>` in its body.
+Child slot tiddlers MUST NOT duplicate the parent's meta TOML — they carry their own.
+
+By convention the slot name `#/head` carries the meme's primary content body.
+By convention the slot name `#source-shelf` carries pranala edge declarations.
+
+<<~/ahu>>
+
+<<~ ahu #/syntax>>
+
+!! Syntax
+
+Decomposed at the wiki's causal island boundaries:
+
+```text
+<<~ ahu #/slot-name>>
+content body
+
+<<~/ahu>>
+```
+
+Compound kahea-ahu summons form (in parent tiddler body after decomposition):
+```text
+<<~ kahea ahu #/slot-name>>
+```
+
+Regex (open, canonical):
+```
+/<<~[^>]*\bahu\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>/
+```
+
+Close tag: `<<~/ahu>>`
+
+<<~/ahu>>
+
+<<~ ahu #/schema>>
+
+!! Schema (machine-readable)
+
+```toml
+sigil          = "ahu"
+kind           = "child-slot"
+layer          = "block"
+default-family = null
+
+open-pattern  = '<<~[^>]*\bahu\s+(#\/[\w-]+(?:\/[\w-]+)*)\s*>>'
+close-pattern = '<<~\/ahu\s*>>'
+
+[captures]
+slot = 1
+```
+
+<<~/ahu>>
+
+<<~ ahu #/quoteblock-floor>>
+
+!! The quoteblock floor — un-decomposable content fences, never drops
+
+Content that will not decompose fences to a quoteblock. The fence stands as the artifact a writer surfaces to the operator: a demotion, never an overwrite, never a drop.
+
+The grain matches the write that produces the un-decomposable content:
+
+* ''Whole-chunk ingest'' — a carrier arrives through the deserializer, or from outside the wiki into it, whole and partially un-decomposable. The whole chunk quoteblocks; no family stands yet at that point, so the carrier offers the only grain available.
+* ''In-place ahu update'' — an ahu tiddler that already stands, edited to un-decomposable content. ONLY that ahu's body quoteblocks; the `<<~ ahu #/slot>>…<<~/ahu>>` wrapper survives untouched, and the rest of the family stands untouched. A paste into the live TW5 browser counts as a write: the save lands in the CRDT store, and the house projects it back to disk — so this grain governs there too (fix on write).
+
+A fenced span needs no new law to keep the ahu-fidelity guard honest. Fence-mask covers it (#/syntax, #/schema; the shared scanner at `packages/lararium-tw5/src/meme-ast/ahu-scan.ts`), so the span declares zero slots, so `collectAhuSlots` finds nothing to drop. Un-decomposable content can never mint a phantom slot or a false conflict — the guard passes by construction.
+
+Quoteblocking runs as a one-way demotion: every sigil inside goes inert until the operator resolves it. The surfacing rail that carries that demotion to the operator stays MANDATORY — a quoteblock nobody sees reads as a drop wearing a cure's face. Blast radius equals the write's grain: a per-tiddler edit never demotes the whole meme.
+
+A child-slot save re-grades its root through the backstop's child gate (`packages/lararium-tw5/src/modules/meme-backstop.ts`, `runChildGate`), which runs the ingest gate's READ HALF — `evaluateMeme`, never `placeMeme` — over the composed root and surfaces what it finds on the SAME alert rail the quoteblock uses: a second live ETX, `frame-malformed`, `postamble-content` at error grade, and, widened past that leg, a composed-altitude ahu balance fault (`ahu-unbalanced-open`, `ahu-orphan-close` — the dangling opener eating the parent's closer, or the orphan closing the parent early) that the gate's own NOOP-equivalence leg grades below error and would otherwise drop. This never lands or refuses anything on the stock syncer path; the root door gate's own ingest grades stand untouched.
+
+!!! WHERE the floor sits ~ BUILT
+
+''The whole-chunk floor runs inside the deserializer, directly after the frame `verdict()`'' — a pure,
+idempotent text transform, so every door that reads a carrier fences by construction. No door carries
+its own copy, and no door skips it. The order runs fixed:
+
+# ''Frame verdict first.'' The frame reads before any grammar does (`packages/lararium-memetic-frame/src/verdict.ts`).
+# ''A torn frame never decomposes.'' TiddlyWiki's deserializer contract runs synchronous, fields out, with no refuse channel — so the deserializer holds a torn carrier verbatim as ONE record (`text/plain`, the frame's faults on `$torn`). No fence repairs a tear: quoteblocking a torn frame would hide the tear inside a span that reads sound. ''Which doors refuse, and which hold'' — a door that HAS a refuse channel refuses the tear before it writes, because the verbatim hold lands at the carrier's root title and would replace a family standing there with bytes no reader can divide (refuse before destroy). Exactly the doors with no refuse channel hold it verbatim, and each puts the hold in front of the operator rather than over a family (the surfacing list below).
+# ''Else decompose'' — the family split runs over the framed body.
+# ''If any ERROR or MISSING node remains'' anywhere in that decomposition, ''the WHOLE chunk fences'' and the fence surfaces. A partial fence over only the faulted span stays forbidden at this grain: no family stands yet to hold the sound remainder.
+
+''The seat.'' `quoteblockFloor` (`packages/lararium-tw5/src/deserializer.ts`), laid by `memeticWikitextDeserializer` itself, reads each carrier's framed body through the family split's own machine reader — `scanAhu` over the fence mask, never the grammar: ONE stack whose top-level blocks the split cuts and whose balance faults the floor fences on — where an ERROR reads as `ahu-orphan-close` (a closer that closes nothing) and a MISSING as `ahu-unbalanced-open` (an opener whose closer never arrives). The head, the frame and the root meta stay outside the fence, a check that matched re-stamps over the fenced body, and the fenced root record carries `$quoteblocked` — the floor's own account of what it fenced and why (`$`-opening, so it never re-emits into the meta fence or moves the canonical render). A fenced body masks every sigil it holds, so a second pass finds nothing left to fence.
+
+''One reading.'' The deserializer reads the frame's shape (`frameShape`) and takes its digest only where a fence lands, to decide whether a matching check re-stamps. The reader divides each carrier and scans its ahu stack ONCE, and the floor, the split and the carrier check (`checkCarrier`) all read that one reading (`CarrierReading`). The Confluence gate reads the frame verdict once and hands it to the family's `deserialize`, and reads the structure the disk declares off the text the floor already laid, never laying it twice.
+
+''Every door, one fence.'' Each reads the carrier through that deserializer:
+
+* the Confluence gate (`decideIngest`, through `deserializeCarrier`), and with it `placeMeme` on every door that places — the meme face, the `/memes/` routes, the syncer INGEST, the backstop — and `canonicalizeCarrierText` on the projecting leg;
+* the bag doors: LOAD, a native single-carrier INGEST and each pack member, whenever TiddlyWiki's registry hands the bytes to the memetic type;
+* TiddlyWiki's own doors — import, drag-drop, paste and the boot-folder load — through the registered `text/memetic-wikitext+tiddlywiki` deserializer.
+
+''The tear, door by door.''
+
+* ''REFUSE'' — the Confluence gate (on the frame's own error grade, so `placeMeme` lands and tombstones nothing); LOAD, which reads every carrier first and lands none when any one reads torn; and a native INGEST, whose receipt reads `refuse` for the torn carrier, a pack included, before any member lands or tombstones. A family standing under the carrier's title stands byte-identical.
+* ''HOLD VERBATIM'' — TiddlyWiki's own doors (import, drop, paste: the hold waits in `$:/Import` for the operator's review, never over a family; and the boot-folder load, where `$torn` rides the record itself).
+
+''Every door, surfaced.'' A fence nobody sees reads as a drop wearing a cure's face:
+
+* ''a wiki sink'' raises the one alert rail (`surfaceMemeAlert`, `packages/lararium-tw5/src/place-meme.ts`) the child gate shares;
+* ''a bag door'' holds no rail, so its receipt carries the warning: LOAD's summary, the syncer INGEST's `ingest` receipt, a native INGEST's receipt and each pack member's own receipt; a tear it refuses names its faults in the refusal;
+* ''import, drop and paste'' stage every record in `$:/Import` for the operator, and the `import-floor-upgrader` module (`packages/lararium-tw5/src/modules/import-floor-upgrader.ts`) speaks beside each fenced or torn title in that listing — it unchecks nothing and edits nothing;
+* ''the boot-folder load'' stages nothing for review; its fence and its torn hold surface on the record itself, through `$quoteblocked` and `$torn`.
+
+Witness: `packages/lararium-tw5/tests/quoteblock-floor-ingest.test.ts` (the gate, the projecting leg, the backstop) and `packages/lararium-tw5/tests/quoteblock-floor-doors.test.ts` (the deserializer contract, every bag door, the import listing, a booted wiki).
+
+''The stock syncer keeps NEVER-REFUSE.'' A child-slot save on the stock syncer path lands as written and only re-grades its root (the backstop paragraph above); the WHERE above governs the ingest gate's whole-chunk door and changes nothing about that path.
+
+This law lifts [[graceful-parsing|lar:///ha.ka.ba/lararium/api/graceful-parsing#/recovery-policy]]'s panic-to-water floor from Layer 1 (the meme-ast builder, one sigil) to Layer 2 (the family split, one ahu or one whole carrier): water never regresses, never lies about structure, and composes with repair added later.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kahea">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/child-grade-decision">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;o-zRJcYNgA_OzgTn0l-7Mlbag8mgrWIe7bpY5SHhPFY
+
+<<^ code="&#x0004;" -> to="?">>

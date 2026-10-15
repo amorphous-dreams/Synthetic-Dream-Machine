@@ -1,38 +1,85 @@
+import type {
+  CapabilityAccess,
+  CapabilityPresenter,
+  CapabilityVerifyArgs,
+  CapabilityVerifyResult,
+  CapabilityVerifier,
+} from "@lararium/mesh";
+
 /**
  * CapabilityProvider — narrow interface over Keyhive's pre-alpha API.
  *
- * Two-tier policy (decided after D.1.5):
- *   * Tier 1 (this interface) — Keyhive's binary access gate. read or admin.
- *     Cryptographic. Per-bag (one Keyhive Document per Lararium bag URL).
- *   * Tier 2 (application layer) — finer-grained ABILITY_LADDER caveats
- *     (promote, write, propose, …) checked AFTER Keyhive's admin proof
- *     verifies. Lives in promote-handler and friends, not here.
+ * WHAT THIS GATE ANSWERS, AND WHAT IT DOES NOT.
+ *
+ * This interface carries Keyhive's binary access gate — `read` or `admin`, cryptographic, one Keyhive
+ * Document per Lararium bag URL. That is the whole of what any code here checks.
+ *
+ * The ACCESS axis — `pull · read · edit · admin`, a 1:1 lexical mirror of Keyhive's native verbs — is
+ * a MODEL and not a second gate. `CapabilityAccess` admits two values at every call site in this tree,
+ * so nothing narrows an action by verb today. Naming the axis here as a checked tier would promise a
+ * reader a gate they could then fail to find. The model stands at
+ * lar:///ha.ka.ba/lares/api/pono/causal-islands, where a reader meets it as doctrine.
+ *
+ * Not rungs even in the model: `promote`/`propose` (ceremony), `sync` (pull-at-scale),
+ * `revoke` (an admin op).
  *
  * The interface is provider-shaped so implementations can swap:
- *   * KeyhiveProvider (D.2) — wraps @keyhive/keyhive WASM
+ *   * KeyhiveProvider — wraps @keyhive/keyhive WASM
  *   * NoopProvider (test) — always-allows, no crypto
  *   * Future: a Beelay-shaped provider when upstream stabilizes
  */
 
 /** Keyhive's binary access enum. Mirrors what `Access.tryFromString` accepts. */
-export type KeyhiveAccess = "read" | "admin";
+export type KeyhiveAccess = CapabilityAccess;
 
 /** Opaque identifier for a peer — typically the hex-encoded Identifier bytes. */
-export type PeerDID = string;
+export type PeerDID = CapabilityPresenter;
 
 export interface CapabilityProviderInitOpts {
-  /** 32-byte ed25519 seed. Matches operator-key.ts shape so the operator's
+  /** 32-byte ed25519 seed. Matches node-vessel-identity.ts shape so the operator's
    *  existing identity feeds straight in. */
   readonly seed:        Uint8Array;
   /** Where Keyhive events get persisted. */
   readonly eventStore:  EventStoreRef;
+  /**
+   * OPTIONAL prior-identity Archive bytes (from a previous `exportArchive()`). When present, the provider
+   * RESTORES the whole keyhive identity from it — prekey SECRETS + the stable contact card — instead of
+   * generating fresh prekeys. A joinee MUST restore from its archive so membership sealed to its earlier
+   * card still decrypts after a reboot (keyhive prekeys generate per-init otherwise). Raw secret material:
+   * the caller persists it ENCRYPTED-AT-REST.
+   */
+  readonly archiveBytes?: Uint8Array;
+  /** Durable rest for the Keyhive ciphertext the provider tracks per bag. Absent: it rests in memory alone. */
+  readonly chunkRest?: ProviderChunkRest;
+}
+
+/** Durable rest for the Keyhive ciphertext a provider tracks per bag. It holds ciphertext under opaque names:
+ *  `shelf` reads as a digest of the bag URL and its document, and the URL itself never reaches the port. */
+export interface ProviderChunkRest {
+  put(shelf: string, refHex: string, ciphertext: Uint8Array): Promise<void>;
+  list(shelf: string): Promise<{ refHex: string; ciphertext: Uint8Array }[]>;
+  drop(shelf: string): Promise<void>;
+}
+
+export function memoryProviderChunkRest(): ProviderChunkRest {
+  const shelves = new Map<string, Map<string, Uint8Array>>();
+  return {
+    async put(shelf, refHex, ciphertext) {
+      let chunks = shelves.get(shelf);
+      if (!chunks) { chunks = new Map(); shelves.set(shelf, chunks); }
+      chunks.set(refHex, Uint8Array.from(ciphertext));
+    },
+    async list(shelf) { return [...(shelves.get(shelf) ?? new Map()).entries()].map(([refHex, ciphertext]) => ({ refHex, ciphertext: Uint8Array.from(ciphertext) })); },
+    async drop(shelf) { shelves.delete(shelf); },
+  };
 }
 
 /** Lightweight reference shape so this file doesn't depend on event-store.ts.
- *  Real implementations import EventStore from event-store.ts directly. */
+ *  Real implementations import EventStore from event-store.ts directly. The optional `island` scope
+ *  (CIV-3) rides each record; `list(islandId)` fetches one island's slice + cross-cutting (CIV-2b). */
 export interface EventStoreRef {
-  put(rec: { hash: string; variant: string; bytes: Uint8Array }): Promise<void>;
-  list(): Promise<readonly { hash: string; variant: string; bytes: Uint8Array }[]>;
+  put(rec: { hash: string; variant: string; bytes: Uint8Array; island?: string }): Promise<void>;
+  list(islandId?: string): Promise<readonly { hash: string; variant: string; bytes: Uint8Array; island?: string }[]>;
 }
 
 export interface DelegateArgs {
@@ -41,11 +88,7 @@ export interface DelegateArgs {
   readonly access:    KeyhiveAccess;
 }
 
-export interface VerifyArgs {
-  readonly presenter: PeerDID;
-  readonly bagUrl:    string;
-  readonly access:    KeyhiveAccess;
-}
+export type VerifyArgs = CapabilityVerifyArgs;
 
 export interface DelegateResult {
   /** Stable id we use to refer to this delegation later (e.g. for revocation). */
@@ -55,12 +98,9 @@ export interface DelegateResult {
   readonly bytes:        Uint8Array;
 }
 
-export interface VerifyResult {
-  readonly ok:      boolean;
-  readonly reason?: string;
-}
+export type VerifyResult = CapabilityVerifyResult;
 
-export interface CapabilityProvider {
+export interface CapabilityProvider extends CapabilityVerifier {
   init(opts: CapabilityProviderInitOpts): Promise<void>;
   whoami(): Promise<PeerDID>;
 
@@ -73,13 +113,36 @@ export interface CapabilityProvider {
    *  Document for the bag (or looks up one already minted). */
   registerBag(bagUrl: string): Promise<{ docId: string }>;
 
+  /** Restore the process-local mapping for a document whose identity is carried by a binding record. */
+  adoptBag(bagUrl: string, docIdHex: string): void;
+
+  /** Whether this provider can still act as a member of the bag's Keyhive document: add a member to it, or seal
+   *  into it. A document it knows from replayed events alone, created by a stand whose Archive nobody kept,
+   *  answers false: its key agreement state left with that stand. */
+  holdsHand(bagUrl: string): Promise<boolean>;
+
+  /** Mint a FRESH Keyhive document for a bag this provider holds no hand in, replacing the process-local
+   *  mapping. The caller records the returned identity wherever it recorded the one it replaces. */
+  remintBag(bagUrl: string): Promise<{ docId: string }>;
+
   delegate(args: DelegateArgs): Promise<DelegateResult>;
   revoke(delegationId: string): Promise<{ bytes: Uint8Array }>;
   verify(args: VerifyArgs): Promise<VerifyResult>;
 
-  /** Replay events from the event store back into Keyhive's in-memory
-   *  state. Called once at boot. */
-  hydrateFromEventStore(): Promise<{ ingested: number }>;
+  /** Replay events from the event store back into Keyhive's in-memory state. Called once at
+   *  boot. Torn-tolerant: `skipped` counts cap-events a corrupt record forced past (they
+   *  degrade a membership slice, never down the boot). CIV-2 boot-flatness: pass `selfIslands`
+   *  (the vessel's own sentinel doc-ids) to load only the self slice + cross-cutting events
+   *  eagerly; held/foreign islands defer (`deferred`) to lazy first-access. Absent → all eager
+   *  (the N=1 daemon default). */
+  hydrateFromEventStore(selfIslands?: readonly string[]): Promise<{ ingested: number; skipped: number; deferred: number }>;
+
+  /** CIV-2b — the lazy island-materialization kernel: hydrate ONE deferred foreign island's events into
+   *  memory on first access. Boot loads the self slice eagerly (CIV-2) and DEFERS every held/foreign
+   *  island; this pulls just that island's own deferred events (CIV-3 per-island `list`) and ingests them.
+   *  Noops when the island is already resident (self slice, N=1 default, or a prior materialization) — so
+   *  it stays cheap and idempotent to re-call. Called automatically at each island-access shore. */
+  materializeIsland(islandId: string): Promise<{ ingested: number; skipped: number }>;
 
   /** Tear down. Frees WASM resources. */
   dispose(): Promise<void>;

@@ -1,0 +1,52 @@
+/**
+ * `lares nexus offering inspect <offering-cid>` — read one exact local gift.
+ *
+ * The read routes through the store's door (`storeVerb`, row `nexus-offering-inspect`): inside the standing vessel
+ * against the Repo it holds, or here, holding the store for the moment of the read, when none stands.
+ */
+import { NexusOfferingInspectError, type NexusOfferingInspectResult } from "@lararium/node";
+import { storeVerb, storeFailure } from "../store-door.js";
+import { emit, exitFor, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
+import type { ParsedArgs } from "../parse-args.js";
+
+
+export async function cmdOffering(args: ParsedArgs): Promise<number> {
+  const verb = args.positional[1];
+  const cid = args.positional[2];
+  const unsupportedFlags = Object.keys(args.flags).filter((name) => name !== "json");
+  const unsupportedOptions = Object.keys(args.options);
+  if (unsupportedFlags.length > 0 || unsupportedOptions.length > 0) {
+    const name = unsupportedFlags[0] ?? unsupportedOptions[0];
+    return refuseUsage(args, "nexus offering", helpLines("nexus offering"), `unsupported option --${name}`);
+  }
+  if (verb !== "inspect" || !cid || args.positional.length > 3) {
+    return refuseUsage(args, "nexus offering", helpLines("nexus offering"), verb === "inspect" && !cid ? "name one offering CID" : undefined);
+  }
+  try {
+    const { output, via } = await storeVerb("nexus-offering-inspect", { offeringCid: cid }, NexusOfferingInspectError);
+    const result = output as unknown as NexusOfferingInspectResult;
+    emit(args, {
+      ok: true,
+      data: { ...result, via } as unknown as Record<string, unknown>,
+      human: () => {
+        console.log("nexus offering inspect — local immutable gift:");
+        console.log(`  offering: ${result.offeringCid}`);
+        console.log(`  board:    ${result.boardUrl}`);
+        console.log(`  transport: ${result.transport.status} · ${result.transport.source} · remote fetch ${result.transport.remoteFetch ? "used" : "none"}`);
+        console.log(`  inspection: ${result.inspection.status} · bytes ${result.inspection.byteStatus} · adoption ${result.inspection.adoption}`);
+        console.log(`  signed:   yes · ${result.verification.blobCount ?? 0} blob(s)`);
+        console.log(`  bytes:    ${result.bytes.held.length} held · ${result.bytes.missing.length} missing · ${result.bytes.invalid.length} invalid`);
+        console.log("  antigen:  unavailable · not configured");
+        console.log("  no bytes fetched; no installation or grammar mutation occurred");
+      },
+    });
+    return 0;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    // A carried offering this vessel holds nothing for keeps its own word; every other fault names itself.
+    const failure = err instanceof NexusOfferingInspectError ? { code: "not-found", message } : storeFailure(err);
+    emit(args, { ok: false, error: failure, human: () => console.error(`lares nexus offering inspect: ${message}`) });
+    return exitFor(failure.code);
+  }
+}

@@ -1,0 +1,288 @@
+/**
+ * vessel-residency-wiring — the ONE residency/vessel-wiring factory both vessels compose.
+ *
+ * The pool-collapse already made the island POOL platform-blind (VesselIslandPoolCore + a
+ * per-vessel VesselIslandHost). This collapses the WIRING that stood around the pool twice —
+ * near byte-identical in open-node-vessel.ts and open-browser-vessel.ts:
+ *
+ *   A. the BagStowage construction (onHydrate → ensureWiki; onEvict → unmountWiki),
+ *   B. resolveWikiSpec (the UNKNOWN-grain branch: read a wiki's canon-doc off the catalog registry),
+ *   C. makeWikiActivationCap (activation-on-reference, the vessel's grant point),
+ *   D. the sovereign-worker residency binding (daemon onEvictRequest / onResidencyOp),
+ *   E. wiki-alert delivery (the single-flight ensureActive → placeWikiVerb orchestration).
+ *
+ * Everything genuinely vessel-specific rides a HOOK or a CONFIG value, never a copy-pasted block:
+ *   - the live-wiki cap + pin budget (node runs the full grant, browser the minimal one) → config,
+ *   - the onEvict LOG (node narrates the cool; browser stays silent) → hooks.onWikiCooled/onBagCooled,
+ *   - the undeliverable-alert TAIL (node PARKS in the durable mailbox; browser WARNS + drops
+ *     best-effort) → hooks.onUndeliverableAlert,
+ *   - the system-alert arg augmentation (node stamps `kind`; browser stamps nothing) → hooks.alertArgs.
+ *
+ * A THIRD vessel type adds zero duplication: it supplies its own VesselIslandHost (pool) + this
+ * config + these hooks, and the shared body wires the rest. Isomorphism-by-composition.
+ *
+ * Home: tw5 (not mesh) — resolveWikiSpec calls buildWikiMountSpec, which lives in tw5; the layer
+ * law forbids mesh importing tw5. Both vessels already import tw5, so this shore sits below both.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/tw5/vessel-residency-wiring
+ */
+
+import {
+  BagStowage,
+  makeWikiActivationCap,
+  slugFromUri, wikiBagUri, tiddlerText, recipeUri, recipeFromRecord,
+  DEFAULT_HOT_CAP, DEFAULT_IDLE_MS, DEFAULT_SWEEP_INTERVAL_MS,
+  pinTiddlerUri, pinTiddlerRecord, scanPinTiddlers,
+} from "@lararium/mesh";
+import { plainRecordOrNull, storedRecord } from "@lararium/mesh";
+import type {
+  ActivationPool, WikiActivationCap, ResolveWikiSpec,
+  LarDoc, DocHandle,
+} from "@lararium/mesh";
+import { buildWikiMountSpec } from "./vessel-steps.js";
+import type { DaemonVmCore } from "./daemon-vm-core.js";
+
+/** The pool surface the residency HYDRATE/EVICT hooks drive — a wiki grain heats by re-mounting,
+ *  cools by unmounting. Both vessel pools (extending VesselIslandPoolCore) satisfy it. */
+export interface VesselResidencyPool {
+  ensureWiki(wikiId: string): Promise<boolean>;
+  /** Returns whatever the pool wants to report about the teardown (H3/M4: whether the island
+   *  acked its own teardown or got cut past the handshake timeout) — the residency hydrate/evict
+   *  wiring only ever awaits it, never reads the value, so any shape satisfies this. */
+  unmountWiki(wikiId: string): Promise<unknown>;
+}
+
+/** A system-alert job placed into a wiki island (the daemon's operator-facing alert). */
+export interface VesselAlertVerbOpts {
+  verb: string;
+  args: Record<string, unknown>;
+  requestedBy: string;
+}
+
+/** Why a wiki-alert could not land on a live island — passed to the vessel's undeliverable hook.
+ *  node ignores the reason (it parks regardless); browser maps it to a distinct warn line. */
+export type AlertDropReason = "raced-cold" | "unmounted-no-mailbox" | "not-activatable";
+
+/** The per-vessel divergences the shared body delegates — never a copy-pasted block. */
+export interface VesselResidencyHooks {
+  /** A wiki grain cooled (after the island unmounted). node narrates it; browser stays silent. */
+  onWikiCooled?: (wikiId: string) => void;
+  /** A non-wiki bag grain cooled. node narrates the repo#358 reserve; browser stays silent. */
+  onBagCooled?: (bagId: string) => void;
+  /** Extra system-alert args this vessel folds into the delivery (node stamps `kind`; browser none). */
+  alertArgs?: (kind: string | undefined) => Record<string, unknown>;
+  /** An alert that could NOT reach a live island. node PARKS it durably (the mailbox, reason-blind);
+   *  browser WARNS + drops (best-effort — a browser holds no durable mailbox). */
+  onUndeliverableAlert: (wikiId: string, verbOpts: VesselAlertVerbOpts, reason: AlertDropReason) => void;
+}
+
+/** The vessel's grant point on the residency spectrum + the shared collector dials. */
+export interface VesselResidencyConfig {
+  /** Concurrent live-wiki cap — the collector's `wiki` typeCap (node 4, browser 2). */
+  wikiActivationCap: number;
+  /** Rotatable wiki-pin budget BESIDES the daemon bag (node 3, browser 1). */
+  wikiPinBudget: number;
+  /** Bag hot-cap override (default DEFAULT_HOT_CAP). */
+  hotCap?: number;
+  /** Idle-cool threshold override on the wall floor (default DEFAULT_IDLE_MS). Read only without `clock`. */
+  idleMs?: number;
+  /** THE REALM'S OWN CLOCK — a monotonic roll count; with it the stowage cools by rolls (`idle`, default
+   *  DEFAULT_IDLE_ROLLS) and a day of wall-silence ages nothing. Absent, the wall floor stands, named. */
+  clock?: () => number;
+  /** Idle threshold in rolls, read with `clock`. */
+  idle?: number;
+  /** Sweeper tick override (default DEFAULT_SWEEP_INTERVAL_MS). */
+  sweepIntervalMs?: number;
+}
+
+/** The now-live pieces `wireToPool` composes over — supplied inside the vessel's makePool, once
+ *  the pool + daemon + genesis assembly stand. */
+export interface WireToPoolArgs {
+  /** The sovereign daemon core — carries resolveBinding (for the resolver) + the residency/alert shores. */
+  daemon: DaemonVmCore;
+  /** The live island pool — the activation cap reads it + the alert delivery places verbs into it. */
+  pool: ActivationPool & VesselResidencyPool & {
+    placeWikiVerb(wikiId: string, opts: VesselAlertVerbOpts): Promise<Record<string, unknown>>;
+  };
+  /** The engine core hash (genesis assembly). */
+  coreHash: string;
+  /** The oracle island doc url (genesis assembly). */
+  islandUrl: string;
+  /** The catalog handle — resolveWikiSpec reads a wiki's canon-doc url off it. */
+  catalogHandle: DocHandle<LarDoc>;
+}
+
+/** The factory's product: the collector (built now) + the pool-wiring continuation (run in makePool). */
+export interface VesselResidency {
+  residency: BagStowage;
+  /** Wire the activation cap + daemon binding + alert delivery once the pool + daemon stand.
+   *  Returns the activation-on-reference cap the vessel's verb plane reads. */
+  wireToPool(args: WireToPoolArgs): WikiActivationCap;
+}
+
+// ── Pin durability — the admin-doc write/read half of residency-tiers.mem#/pin-flag ─────────────
+//
+// `BagStowage.pin()` is purely in-memory; nothing before this made an operator pin survive a
+// daemon restart, though the canon and the (until now unused) `pinTiddlerUri` both assumed one
+// did. `writePinTiddler`/`removePinTiddler` persist the durable half under the daemon bag;
+// `replayPinsFromDaemonDoc` — called at boot, BEFORE `residency.startSweeper()`, so a replayed
+// pin can never lose a race to the first sweep tick — restores them into a fresh collector.
+
+/** Persist a pin as a tiddler under the daemon doc (write half of durability). Mutates via
+ *  `daemonHandle.change()` the same way `AutomergeDocStore.put` does; kept as a direct mutation
+ *  rather than routed through the store so this stays a small, dependency-free bookkeeping write
+ *  (no MemeProvider projection fan-out for an internal residency marker). */
+export function writePinTiddler(daemonHandle: DocHandle<LarDoc>, bagUrl: string, reason?: string): void {
+  const record = pinTiddlerRecord(bagUrl, reason);
+  daemonHandle.change((doc) => {
+    doc.tiddlers[record.tiddler.title] = storedRecord(record);
+  });
+}
+
+/** Hard-remove a pin tiddler on unpin (never a tombstone — an unpinned bag carries no residual
+ *  durability claim; see `scanPinTiddlers`' tombstone-skip for why a lagging delete must not
+ *  resurrect). */
+export function removePinTiddler(daemonHandle: DocHandle<LarDoc>, bagUrl: string): void {
+  const title = pinTiddlerUri(bagUrl);
+  daemonHandle.change((doc) => {
+    delete doc.tiddlers[title];
+  });
+}
+
+/** Boot-time replay (read half of durability) — re-pin every bag the daemon doc's pin tiddlers
+ *  still name, into `residency`. Call this BEFORE `residency.startSweeper()` starts: a pin
+ *  replayed after the sweeper's first tick raced the very idle-cool it exists to prevent.
+ *  Idempotent (`BagStowage.pin()` no-ops an already-wela+pinned bag), so a double call is safe. */
+export async function replayPinsFromDaemonDoc(daemonHandle: DocHandle<LarDoc>, residency: BagStowage): Promise<void> {
+  const pins = scanPinTiddlers(daemonHandle.doc()?.tiddlers);
+  for (const { url, reason } of pins) await residency.pin(url, reason);
+}
+
+/**
+ * Build the ONE residency + pool-wiring for a vessel.
+ *
+ * `getPool` reads the pool LAZILY (the forward `let vmManager!` pattern both vessels already run):
+ * the collector is built BEFORE the pool (it rides the mesh caps + the boot pins), so its
+ * onHydrate/onEvict reach the pool through this getter at call time, never at construction.
+ */
+export function makeVesselResidency(
+  getPool: () => VesselResidencyPool,
+  config:  VesselResidencyConfig,
+  hooks:   VesselResidencyHooks,
+): VesselResidency {
+  // ── A. The ONE residency collector — bags AND wiki islands, per-grain-type dials. Sole
+  //    authority for reachability + eviction (the pool never self-evicts). wiki grains heat by
+  //    re-mounting (onHydrate → ensureWiki) and cool by unmounting (onEvict → unmountWiki); the
+  //    cool NARRATION rides the vessel hook (node speaks, browser stays silent). ──
+  const residency = new BagStowage({
+    hotCap:          config.hotCap ?? DEFAULT_HOT_CAP,
+    typeCaps:        { wiki: config.wikiActivationCap },
+    idleMs:          config.idleMs ?? DEFAULT_IDLE_MS,
+    ...(config.clock ? { clock: config.clock, ...(config.idle !== undefined ? { idle: config.idle } : {}) } : {}),
+    sweepIntervalMs: config.sweepIntervalMs ?? DEFAULT_SWEEP_INTERVAL_MS,
+    onHydrate: async (id, grainType) => {
+      if (grainType === "wiki") await getPool().ensureWiki(id);
+    },
+    onEvict: async (id, grainType) => {
+      if (grainType === "wiki") {
+        await getPool().unmountWiki(id);
+        hooks.onWikiCooled?.(id);
+      } else {
+        hooks.onBagCooled?.(id);
+      }
+    },
+  });
+
+  const wireToPool = ({ daemon, pool, coreHash, islandUrl, catalogHandle }: WireToPoolArgs): WikiActivationCap => {
+    // ── B. resolveWikiSpec — the UNKNOWN-grain branch of activation-on-reference (the true
+    //    multi-wiki swap). READ-ONLY catalog lookup: a bare reference to a never-opened wiki
+    //    resolves its mount spec from the recipe/catalog; a slug with no automerge canon-doc
+    //    returns null (the caller parks/drops — never a phantom mint). The island self-resolves
+    //    its composition from the grants (buildWikiMountSpec), and the daemon reaches any bag by
+    //    ACCESS, so no vessel-composite layer mount is needed here. ──
+    const resolveWikiSpec: ResolveWikiSpec = async (wikiId) => {
+      const slug    = slugFromUri(wikiId);
+      const wikiUrl = tiddlerText(catalogHandle.doc()?.tiddlers?.[wikiBagUri(slug)]) ?? null;
+      if (!wikiUrl || !wikiUrl.startsWith("automerge:")) return null;   // unknown → park/drop
+      // The libraries AND the plugin offerings the wiki's recipe record names lay at boot
+      // (`recipeFromRecord`) — R3: this grain's OWN recipe, never the vessel-wide floor.
+      const rec = plainRecordOrNull(catalogHandle.doc()?.tiddlers?.[recipeUri("catalog", slug)]);
+      const grainRecipe = rec ? recipeFromRecord(rec, slug) : undefined;
+      const libraryBags = grainRecipe?.libraryBags;
+      const pluginOfferings = grainRecipe?.pluginOfferings;
+      // M2 — threaded alongside, never thrown: a torn plugin-offerings field on THIS grain's
+      // record refuses only its own plugin resolution; the grain swap itself (library bags, the
+      // slots) proceeds exactly as it would with no fault.
+      const pluginOfferingsFault = grainRecipe?.pluginOfferingsFault;
+      const { spec } = await buildWikiMountSpec(daemon, {
+        activeWikiId: wikiId,
+        wikiSlug:     slug,
+        coreHash,
+        islandUrl,
+        wikiUrl,
+        catalogUrl:   catalogHandle.url,
+        ...(libraryBags ? { libraryBags } : {}),
+        ...(pluginOfferings ? { pluginOfferings } : {}),
+        ...(pluginOfferingsFault !== undefined ? { pluginOfferingsFault } : {}),
+      });
+      return spec;
+    };
+
+    // ── C. The activation-on-reference CAP the vessel HOLDS + the resolver READS. Its grant is
+    //    this vessel's point on the spectrum (node the full grant, browser the minimal one). ──
+    const wikiActivation = makeWikiActivationCap(
+      residency,
+      pool,
+      { activationCap: config.wikiActivationCap, pinBudget: config.wikiPinBudget },
+      resolveWikiSpec,
+    );
+
+    // ── D. Sovereign-worker residency binding: a daemon evict routes THROUGH the ONE collector
+    //    (cool → onEvict → unmountWiki) so the collector stays authoritative — never a direct
+    //    unmount that would desync its wela/anu view (and it refuses a pinned grain, correctly).
+    //    The daemon's pin/unpin/register-cold ops drive the same collector. Pin/unpin ALSO write
+    //    through to the daemon-doc tiddler (the durability half — see `writePinTiddler` above) so
+    //    an operator pin survives the restart `replayPinsFromDaemonDoc` recovers at boot. ──
+    // "reclaimed": an evict request is this vessel freeing memory, never the grain going unfed. A
+    // reader converting temperature into a claim about a polity must not read a resource act as one.
+    daemon.onEvictRequest(async (bagId) => { await residency.cool(bagId, "reclaimed"); });
+    daemon.onResidencyOp(async (op, bagId, reason) => {
+      if (op === "pin") {
+        await residency.pin(bagId, reason);
+        writePinTiddler(daemon.daemonHandle, bagId, reason);
+      } else if (op === "unpin") {
+        residency.unpin(bagId);
+        removePinTiddler(daemon.daemonHandle, bagId);
+      } else {
+        residency.registerCold(bagId);
+      }
+    });
+
+    // ── E. Wiki-alert delivery. The worker names an affected wiki; place a system-alert verb into
+    //    that wiki's live island. The SHARED part is the resolver-as-activator single-flight
+    //    orchestration: a REFERENCE to a cold wiki ACTIVATES it (ensureActive re-mounts a known
+    //    grain, or resolves a never-opened grain's spec through resolveWikiSpec, single-flight),
+    //    THEN delivers. The per-vessel part is the UNDELIVERABLE tail — node parks the verb durably
+    //    (a dropped verb stays observable, never nowhere — the Akka /deadLetters lesson); browser
+    //    holds no durable mailbox, so an un-activatable grain is a best-effort drop, warned LOUD.
+    //    Every failure path routes to the vessel's undeliverable hook, reason-named. ──
+    daemon.onWikiAlert((wikiSlug, message, cause, kind, instance) => {
+      const wikiId = wikiSlug;
+      const verbOpts: VesselAlertVerbOpts = {
+        verb: "system-alert",
+        // A keyed alert (a projection standoff) carries its key, and its clear, to the wiki that shows it.
+        args: { message, cause: cause ?? "", ...(hooks.alertArgs?.(kind) ?? {}), ...(instance?.key ? { key: instance.key } : {}), ...(instance?.clear === true ? { clear: true } : {}) },
+        requestedBy: "daemon",
+      };
+      void wikiActivation.ensureActive(wikiId)
+        .then((live) => (live
+          ? pool.placeWikiVerb(wikiId, verbOpts).then(() => {}).catch(() => hooks.onUndeliverableAlert(wikiId, verbOpts, "raced-cold"))
+          : hooks.onUndeliverableAlert(wikiId, verbOpts, "unmounted-no-mailbox")))
+        .catch(() => hooks.onUndeliverableAlert(wikiId, verbOpts, "not-activatable"));
+    });
+
+    return wikiActivation;
+  };
+
+  return { residency, wireToPool };
+}

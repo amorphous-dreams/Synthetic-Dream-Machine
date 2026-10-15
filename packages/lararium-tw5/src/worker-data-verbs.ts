@@ -1,0 +1,327 @@
+/**
+ * worker-data-verbs — read-only data-plane reactors that run IN the daemon worker.
+ *
+ * Sovereign-worker model (lararium-canonical-model, project-sovereign-worker-model):
+ * the data-plane lives in the worker, registered via makeDaemonBehavior's `wireWorkerVerbs`
+ * hook over the IslandContext, riding the dispatcher's verify-then-delegate gate for free.
+ *
+ * Two shapes here, per the grounded read/command rule:
+ *  - READS (where · resolve · list-wikis) — read the worker's OWN synced replica
+ *    (ctx.composite over syncPort); zero round-trip to main.
+ *  - MUTATORS (pin · unpin · register-cold) — gate in-worker, then COMMAND the
+ *    main-resident BagStowage fire-and-forget via daemon:residency-op (policy
+ *    decides in the worker; the main mechanism executes).
+ * Runtime-only reads (residency `stats`) stay at the resource (main) — no askMain.
+ */
+
+import { tiddlerText, mkDaemonResidencyOp, mkDaemonWikiAlert, bagStackFromRec, recipeUri, SYSTEM_BAGS, wikiBagUri, wikiSlotUri, WARD_AUDIT_URI_PREFIX, type CompositeStore, type DaemonMsg_ResidencyOp, type DaemonMsg_WikiAlert, type LarDoc, type LarTiddlerRecord, type Repo, type WikiSlotKind } from "@lararium/mesh";
+import { plainEntries, storedDeleted } from "@lararium/mesh";
+import { ACTIVE_WIKI_URI } from "./active-wiki.js";
+import type { VerbReactor } from "./verb-dispatcher.js";
+import { findOrThrow, makeCatalogAccessor, type CatalogAccessor } from "./catalog-accessor.js";
+import { effectiveRecipeOf } from "./recipe-planes.js";
+
+/** True for a draft floor's registry key (`wikis/<slug>/drafts/<did>`) — a doc the slot walk names. */
+function isDraftFloorKey(key: string): boolean {
+  return /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/drafts\//.test(key);
+}
+
+/** The slug a registry key names when it is a wiki's CANON bag (`bags/<slug>`), else null. */
+function wikiSlugOfBagUri(bagUri: string): string | null {
+  const m = /^lar:\/\/\/ha\.ka\.ba\/bags\/([^/]+)$/.exec(bagUri);
+  return m ? m[1]! : null;
+}
+
+/** Registry options for access-based reads: the daemon reaches ANY registered bag
+ *  across both oracle planes (catalog user + oracle system) without mounting it. */
+export interface RegistryReach {
+  repo:       Repo;
+  catalogUrl: string | null;
+  oracleUrl:  string | null;
+  /** A registered wiki's INSTANCE slot doc (draft · working · personal) by THE ONE slot-doc
+   *  resolver — null when none stands. Absent = `where` reaches the registry planes alone. */
+  slotDocUrl?: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>;
+}
+
+/** Titles in a registry doc that point at a resolvable doc (an `automerge:` URL) —
+ *  the bags/wikis/drafts the accessor can reach. */
+function listRegisteredDocUris(doc: LarDoc | undefined): string[] {
+  const out: string[] = [];
+  for (const [title, rec] of Object.entries(doc?.tiddlers ?? {})) {
+    const text = tiddlerText(rec);
+    if (text && text.startsWith("automerge:")) out.push(title);
+  }
+  return out;
+}
+
+/** A fire-and-forget poster for worker→main commands: residency-op (pin/unpin/
+ *  register-cold) and wiki-alert (reboot-pending notice to affected live islands). */
+export type ResidencyOpPost = (msg: DaemonMsg_ResidencyOp | DaemonMsg_WikiAlert) => void;
+let _opSeq = 0;
+
+/** Build a residency mutator reactor: gate the verb in-worker, command main's manager. */
+function residencyVerb(op: "pin" | "unpin" | "register-cold", post: ResidencyOpPost): VerbReactor {
+  return async (args) => {
+    const bagId  = typeof args["url"] === "string" ? args["url"] : "";
+    if (!bagId) throw new Error("args.url is required");
+    const reason = typeof args["reason"] === "string" ? args["reason"] : undefined;
+    post(mkDaemonResidencyOp({ requestId: `resop-${++_opSeq}`, op, bagId, ...(reason !== undefined ? { reason } : {}) }));
+    // Policy granted in-worker (keyhive-gated); main's BagStowage executes.
+    return { url: bagId, op, commanded: true, ...(reason !== undefined ? { reason } : {}) };
+  };
+}
+
+/** `pin` — grant a bag pinned residency (worker policy → main manager). */
+export const makePinReactor = (post: ResidencyOpPost): VerbReactor => residencyVerb("pin", post);
+/** `unpin` — release a pin. */
+export const makeUnpinReactor = (post: ResidencyOpPost): VerbReactor => residencyVerb("unpin", post);
+/** `register-cold` — mark a bag known-but-not-loaded. */
+export const makeRegisterColdReactor = (post: ResidencyOpPost): VerbReactor => residencyVerb("register-cold", post);
+
+/** `where` — global membership query: which registered bags hold a tiddler.
+ *  Access≠load: the daemon reaches
+ *  EVERY registered bag across both oracle planes (catalog user + oracle
+ *  system) plus its mounted composite — no mounting required. Returns membership.
+ *  `scope` names the horizon: THIS operator's registry, never the DreamNet
+ *  universe (no global now). Cascade-`primaryBag` only means something inside a
+ *  recipe — it lives in `resolve`, recipe-scoped; here `primaryBag` is just the
+ *  first holder found (membership convenience, not a cascade verdict). */
+export function makeWhereReactor(composite: CompositeStore, reach?: RegistryReach): VerbReactor {
+  return async (args) => {
+    const tiddler = typeof args["tiddler"] === "string" ? args["tiddler"] : "";
+    if (!tiddler) throw new Error("args.tiddler is required");
+    // Fast base: the mounted composite (cascade order preserved here).
+    const holding = new Set<string>(await composite.listBagsHolding(tiddler));
+    // Extend by ACCESS across both registry planes — reach each registered doc.
+    const planes = [reach?.catalogUrl, reach?.oracleUrl].filter((u): u is string => !!u);
+    for (const planeUrl of planes) {
+      if (!reach?.repo) break;
+      const accessor = makeCatalogAccessor(reach.repo, planeUrl);
+      const regDoc   = (await accessor.handle().catch(() => null))?.doc();
+      for (const bagUri of listRegisteredDocUris(regDoc)) {
+        const mounted = holding.has(bagUri) || composite.hasBag(bagUri);
+        // A draft FLOOR doc (`wikis/<slug>/drafts/<did>`) answers under its slot name below, never its key.
+        if (!mounted && !isDraftFloorKey(bagUri)) {
+          const h   = await accessor.find(bagUri).catch(() => null);
+          const rec = h?.doc()?.tiddlers?.[tiddler];
+          if (rec && !storedDeleted(rec)) holding.add(bagUri);
+        }
+        // A registered WIKI's live instance slots — the docs THE ONE slot-doc resolver names (the
+        // same docs its island mounts), reached by access, never mounted here. This probe must still
+        // run when the wiki's canon bag is mounted: membership of that bag says nothing about its
+        // typed working/personal/draft slots.
+        const slug = wikiSlugOfBagUri(bagUri);
+        if (!slug || !reach.slotDocUrl) continue;
+        for (const kind of ["draft", "working", "personal"] as const) {
+          const url = await reach.slotDocUrl(slug, kind, { mint: false }).catch(() => null);
+          if (!url) continue;
+          const sh  = await findOrThrow(reach.repo, url, `${wikiSlotUri(slug, kind)}`).catch(() => null);
+          const sr  = sh?.doc()?.tiddlers?.[tiddler];
+          if (sr && !storedDeleted(sr)) holding.add(wikiSlotUri(slug, kind));
+        }
+      }
+    }
+    const bags = [...holding];
+    return { tiddler, bags, primaryBag: bags[0] ?? null, scope: "operator-registry" };
+  };
+}
+
+/** `resolve` — Residency Model coordinate-inspection: live manifestations + tombstones. */
+export function makeResolveReactor(composite: CompositeStore): VerbReactor {
+  return async (args) => {
+    const tiddler = typeof args["tiddler"] === "string" ? args["tiddler"] : "";
+    if (!tiddler) throw new Error("args.tiddler is required");
+    const live       = await composite.resolveAll(tiddler);
+    const tombstones = await composite.listKapaeBags(tiddler);
+    const top = await composite.resolveLayered(tiddler);
+    const hiddenBy = top?.record.meta?.deleted ? top.bagId : null;
+    const manifestations = live.map((entry) => {
+      const changeId = entry.record.meta?.changeId;
+      return changeId !== undefined ? { bagId: entry.bagId, changeId } : { bagId: entry.bagId };
+    });
+    return { tiddler, manifestations, tombstones, hiddenBy, winningBag: hiddenBy ? null : live[0]?.bagId ?? null };
+  };
+}
+
+/** `list-wikis` — enumerate the wikis registered in the catalog (oracle tiddlers).
+ *  Reads the catalog plane via the accessor (access≠load) — the registry is NOT a loaded
+ *  composite layer, so the accessor reads it directly, never through the composite. */
+export function makeListWikisReactor(catalog: CatalogAccessor, sysPlane?: CatalogAccessor): VerbReactor {
+  return async () => {
+    const wikis: Array<{ slug: string; uri: string; automergeUrl: string | null; kind: string; composition?: "own" | "default"; defaultDiffers?: boolean }> = [];
+    const cat = await catalog.handle();
+    const catTiddlers: Record<string, LarTiddlerRecord> = Object.fromEntries(plainEntries(cat.doc()?.tiddlers));
+    // System wikis — oracle-plane recipes (the lares/lararium quine system bags) carry the DEFAULT.
+    // The vessel's own catalog record for the same slug is its composition: the row lists ONCE, as
+    // the system row, and reads `composition: "own"` with whether the own stack differs from the default.
+    const systemSlugs = new Set<string>();
+    if (sysPlane) {
+      const sys = await sysPlane.handle();
+      const recipePrefix = recipeUri("oracle", "");
+      for (const [title, rec] of plainEntries(sys.doc()?.tiddlers)) {
+        if (!title.startsWith(recipePrefix)) continue;
+        if (rec.meta?.deleted) continue;
+        const slug = title.slice(recipePrefix.length);
+        if (!slug || slug.includes("/")) continue;
+        const bagUri = wikiBagUri(slug);
+        const own = catTiddlers[recipeUri("catalog", slug)];
+        const row: (typeof wikis)[number] = { slug, uri: bagUri, automergeUrl: await sysPlane.urlOf(bagUri), kind: "system", composition: "default" };
+        if (own && !own.meta?.deleted) {
+          row.composition = "own";
+          row.defaultDiffers = bagStackFromRec(own).join(" ") !== bagStackFromRec(rec).join(" ");
+        }
+        systemSlugs.add(slug);
+        wikis.push(row);
+      }
+    }
+    // User wikis — the catalog RECIPE entries `wiki init` writes (`catalog/recipes/{slug}`).
+    const userRecipePrefix = recipeUri("catalog", "");
+    const userRows: typeof wikis = [];
+    for (const [title, rec] of Object.entries(catTiddlers)) {
+      if (!title.startsWith(userRecipePrefix)) continue;
+      if (rec.meta?.deleted) continue;               // skip tombstones (listVisible parity)
+      const slug = title.slice(userRecipePrefix.length);
+      if (!slug || slug.includes("/") || systemSlugs.has(slug)) continue;
+      const bagUri = wikiBagUri(slug);
+      userRows.push({ slug, uri: bagUri, automergeUrl: await catalog.urlOf(bagUri), kind: "user" });
+    }
+    return { wikis: [...userRows, ...wikis] };
+  };
+}
+
+// ── Whole-wiki residency policy (pin-wiki / unpin-wiki) — worker-ward ──────────
+// Pure policy: read the recipe (USER registry data in the catalog plane, via the accessor —
+// access≠load), walk its bag-stack, COMMAND main's BagStowage per bag via
+// daemon:residency-op (the mechanism stays at the resource — the manager is pool-driven
+// bookkeeping). No live composite layer mutation, so unlike add-bag/remove-bag these
+// move cleanly.
+
+/** The refusal for a slug with no effective recipe. A system wiki's recipe stands in the oracle plane
+ *  and `wiki init` mints nothing for it, so its advice names the oracle, never `wiki init`. */
+function recipeNotFound(slug: string, userAdvice: string): Error {
+  return new Error(SYSTEM_BAGS.has(wikiBagUri(slug))
+    ? `recipe not found for "${slug}" — the oracle plane carries no default recipe for this system wiki`
+    : `recipe not found for "${slug}"${userAdvice}`);
+}
+
+/** `pin-wiki` — pin every bag in the wiki's recipe (worker policy → main manager). */
+export function makeWikiPinReactor(catalog: CatalogAccessor, post: ResidencyOpPost, oracle?: CatalogAccessor): VerbReactor {
+  return async (args) => {
+    const slug = typeof args["slug"] === "string" ? args["slug"] : "";
+    if (!slug) throw new Error("args.slug is required");
+    const effective = await effectiveRecipeOf(slug, { catalog, oracle });
+    if (!effective) throw recipeNotFound(slug, ` — run \`lares wiki init ${slug}\` first`);
+    const { record: recipeRec, title: recipeTitle } = effective;
+    const bagStack = bagStackFromRec(recipeRec);
+    const pinned: Array<{ bagUrl: string; reason: string }> = [];
+    for (const bagUrl of bagStack) {
+      const reason = `wiki:${slug}`;
+      post(mkDaemonResidencyOp({ requestId: `resop-${++_opSeq}`, op: "pin", bagId: bagUrl, reason }));
+      pinned.push({ bagUrl, reason });
+    }
+    return { slug, recipeUri: recipeTitle, pinned, commanded: true };
+  };
+}
+
+/** `unpin-wiki` — unpin every bag in the wiki's recipe (worker policy → main manager). */
+export function makeWikiUnpinReactor(catalog: CatalogAccessor, post: ResidencyOpPost, oracle?: CatalogAccessor): VerbReactor {
+  return async (args) => {
+    const slug = typeof args["slug"] === "string" ? args["slug"] : "";
+    if (!slug) throw new Error("args.slug is required");
+    const effective = await effectiveRecipeOf(slug, { catalog, oracle });
+    if (!effective) throw recipeNotFound(slug, "");
+    const { record: recipeRec, title: recipeTitle } = effective;
+    const bagStack = bagStackFromRec(recipeRec);
+    const unpinned: string[] = [];
+    for (const bagUrl of bagStack) {
+      post(mkDaemonResidencyOp({ requestId: `resop-${++_opSeq}`, op: "unpin", bagId: bagUrl }));
+      unpinned.push(bagUrl);
+    }
+    return { slug, recipeUri: recipeTitle, unpinned, commanded: true };
+  };
+}
+
+// ── ward-alert — the disk ward's signal surfaces in the daemon VM ────────────
+//
+// A wiki island's projector refused a write (sovereign-island disk ward,
+// disk-projection#write-ward). The signal rides the generic worker.event →
+// placeVerb bridge into the daemon VM, which (a) writes a DURABLE audit record
+// into the composite's default writable working layer and (b) injects a
+// $:/tags/Alert into the operator's currently PINNED VM via the existing
+// wiki-alert rail (kind "disk-ward"). No cap-gate: the signal originates from
+// the island's own mechanism, grants nothing, and only writes audit + alert.
+
+/** Register as "ward-alert". `post` = ctx.post (DaemonMsg_WikiAlert rides it). */
+export function makeWardAlertReactor(
+  composite: CompositeStore,
+  post: (msg: DaemonMsg_WikiAlert) => void,
+): VerbReactor {
+  return async (args) => fileWardRefusal(composite, post, args);
+}
+
+/**
+ * FILE ONE WARD REFUSAL, directly — the same act the "ward-alert" verb performs, reachable by a
+ * caller that already stands INSIDE the worker and holds no verb invocation to dispatch.
+ *
+ * The archive-floor write is that caller: it refuses three frames from the reactor's own registry, so
+ * routing its refusal back out through a verb envelope would mint a hop with nothing on the far end.
+ * ONE body, two doors — the reactor wraps this, and nothing here reads a `VerbContext`.
+ */
+export async function fileWardRefusal(
+  composite: CompositeStore,
+  post: (msg: DaemonMsg_WikiAlert) => void,
+  args: Readonly<Record<string, unknown>>,
+): Promise<Record<string, unknown>> {
+  {
+    const bagId  = typeof args["bagId"]  === "string" ? args["bagId"]  : "(unknown bag)";
+    const uri    = typeof args["uri"]    === "string" ? args["uri"]    : "(unknown uri)";
+    const reason = typeof args["reason"] === "string" ? args["reason"] : "(no reason)";
+    // WHICH WARD REFUSED. The disk projector was the first caller and is no longer the only one: the
+    // M3 archive-floor write files its own refusals here rather than minting a fourth rail
+    // (`archive-floor-write`, waking-floor). A seal refusal recorded as a disk-ward refusal would
+    // send an operator to the wrong mechanism, so the LEDGER record and the operator-facing message
+    // name the ward that actually refused. Absent → "disk-ward", so the original caller is unchanged.
+    //
+    // THE WIRE KIND STAYS `disk-ward` DELIBERATELY. `kind`/`cause` are Rail A's TRANSPORT names, and
+    // the residency delivery keys off them (`hooks.alertArgs?.(kind)`, the browser drop diagnostics).
+    // Varying them here would be minting a fourth rail under the name of reusing one.
+    const wardKind = typeof args["wardKind"] === "string" && args["wardKind"] ? args["wardKind"] : "disk-ward";
+    const headline = wardKind === "disk-ward"
+      ? `Disk ward refused a write (${bagId})`
+      : `${wardKind} refused a write (${bagId})`;
+    const ts     = new Date().toISOString();
+    // A STANDOFF CARRIES ITS KEY (bag, carrier and the two hashes, folded by the projector). The key names
+    // the audit row and the live alert, so one standoff files one row however often the rail hears of it,
+    // two standoffs show two alerts, and a resolution clears exactly its own.
+    const standoff = typeof args["standoff"] === "string" && /^[0-9a-f]{8,64}$/.test(args["standoff"]) ? args["standoff"] : null;
+    const marker = await composite.get(ACTIVE_WIKI_URI);
+    const slug   = tiddlerText(marker) ?? null;
+
+    if (standoff !== null && args["resolved"] === true) {
+      if (slug) post(mkDaemonWikiAlert({ wikiSlug: slug, message: `${headline}: resolved`, cause: "disk-ward", kind: "disk-ward", key: standoff, clear: true }));
+      return { cleared: standoff, alerted: slug ?? "none", bagId, uri };
+    }
+
+    // (a) Durable audit in the composite's default writable working layer: append-only, never coalesced.
+    // A standoff's row carries its key as its title and lands on ENTERING the standoff, once.
+    const auditTitle = `${WARD_AUDIT_URI_PREFIX}${standoff ?? crypto.randomUUID()}`;
+    if (standoff === null || (await composite.get(auditTitle)) === null) {
+      await composite.put(
+        { tiddler: { title: auditTitle, "alert-kind": wardKind, bag: bagId, uri, reason, ts, ...(standoff !== null ? { standoff } : {}), "disk-projection": "no" }, meta: { authority: "disk-ward" } },
+        { kind: "lares-verb", requestId: `ward-${ts}` },
+      );
+    }
+
+    // (b) Alert the operator's currently pinned VM (the active wiki marker in the daemon bag).
+    if (slug) {
+      post(mkDaemonWikiAlert({
+        wikiSlug: slug,
+        message:  `${headline}: ${reason}`,
+        cause:    "disk-ward",
+        kind:     "disk-ward",
+        ...(standoff !== null ? { key: standoff } : {}),
+      }));
+    }
+    return { audited: auditTitle, alerted: slug ?? "none", bagId, uri };
+  }
+}

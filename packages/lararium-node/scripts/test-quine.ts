@@ -2,104 +2,105 @@
  * test-quine — genesis boot smoke.
  *
  * Proves: the genesis artifact contains a bootable TW5 core + compiled plugin,
- * and the compiled plugin carries the grammar meme as a shadow tiddler.
+ * and the compiled plugin carries the full SharktoothSigil grammar tiddler set.
  *
  * Steps:
- *   1. Load genesis/island.bin
+ *   1. Load genesis/seed.json and materialize the test witness
  *   2. Verify genesis-cid self-ref tiddler
  *   3. Extract TW5 core blob + compiled plugin blob from the artifact
  *   4. Boot TW5Engine with compiled plugin preloaded
- *   5. Assert grammar shadow tiddler is accessible via $tw.wiki.getTiddlerText
- *   6. Assert grammarRulesFromText() produces valid rules from the shadow tiddler
+ *   5. Assert SharktoothSigil tiddlers present via wiki.filterTiddlers
+ *   6. Assert required sigils present: ahu, pranala, aka, loulou, toml
  *
  * Run via:  tsx scripts/test-quine.ts
  * Or via:   pnpm --filter @lararium/node test:quine
  */
 
-import * as Automerge      from "@automerge/automerge";
-import { createHash }      from "crypto";
-import { readFileSync, existsSync } from "fs";
-import { join, dirname }   from "path";
-import { fileURLToPath }   from "url";
+import { automergeLoad, GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER } from "@lararium/mesh";
+import { existsSync } from "fs";
 
 import { TW5Engine }       from "@lararium/tw5";
-import type { LarariumDoc } from "@lararium/core";
-import { ENGINE_CORE_ID, GRAMMAR_MEME_URI, grammarRulesFromText } from "@lararium/core";
+import type { TW5TiddlerFields } from "@lararium/tw5";
+import type { LarDoc } from "@lararium/mesh";
+import { ENGINE_CORE_ID, GRAMMAR_TAG, LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "@lararium/mesh";
+import { readGenesisCasManifest, genesisCasDir } from "../src/genesis-artifact.js";
+import { readCasBlobFromFs } from "../src/node-cas.js";
+import { GENESIS_SEED, loadGenesisBytes } from "../tests/genesis-test-source.js";
 
-const LARES_TW5_PLUGIN_TITLE = "lar:///plugins/lares/memetic-wikitext";
+const LARES_TW5_PLUGIN_TITLE = LARES_MEMETIC_WIKITEXT_PLUGIN_URI;
 
-const __dir       = dirname(fileURLToPath(import.meta.url));
-const GENESIS_BIN = join(__dir, "../genesis/island.bin");
-const GENESIS_PRE = join(__dir, "../genesis/island.sha256-pre");
-
-function sha256hex(input: string | Uint8Array): string {
-  return createHash("sha256").update(input).digest("hex");
-}
-
+// One root law: genesis lives at <root>/genesis (the repo IS the vessel).
 async function main(): Promise<void> {
   console.log("[quine] genesis boot smoke");
 
   // ------------------------------------------------------------------
   // 1. Load the genesis artifact
   // ------------------------------------------------------------------
-  if (!existsSync(GENESIS_BIN)) {
+  if (!existsSync(GENESIS_SEED)) {
     throw new Error(
-      `[quine] genesis/island.bin not found.\n  → run: pnpm --filter @lararium/node build:genesis`,
+      `[quine] genesis/seed.json not found.\n  → run: pnpm --filter @lararium/node build:genesis`,
     );
   }
-  const genesisBytes = new Uint8Array(readFileSync(GENESIS_BIN));
-  const doc          = Automerge.load<LarariumDoc>(genesisBytes);
+  const genesisBytes = loadGenesisBytes();
+  const doc          = automergeLoad<LarDoc>(genesisBytes);
 
   const blobCount    = Object.keys(doc.blobs ?? {}).length;
   const tiddlerCount = Object.keys(doc.tiddlers ?? {}).length;
   console.log(`[quine] artifact loaded  blobs=${blobCount}  tiddlers=${tiddlerCount}`);
 
   // ------------------------------------------------------------------
-  // 2. Verify the genesis-cid self-ref tiddler (two-pass build check)
+  // 2. Verify the region witness tiddlers (engine = the true-name and slow ratchet; grammar = the fast
+  //    ratchet kāhuli overturns; plugins = this operator's own collection)
   // ------------------------------------------------------------------
-  const GENESIS_CID_TIDDLER = "lar:///ha.ka.ba/@lararium/genesis-cid";
-  const cidTiddler = doc.tiddlers?.[GENESIS_CID_TIDDLER] as
-    { fields?: { sha256?: string } } | undefined;
-
-  if (!cidTiddler?.fields?.sha256) {
-    throw new Error("[quine] genesis-cid tiddler missing — re-run build:genesis.");
-  }
-  const storedPreSha = cidTiddler.fields.sha256;
-  console.log(`[quine] stored sha256-pre = ${storedPreSha.slice(0, 16)}…`);
-
-  if (existsSync(GENESIS_PRE)) {
-    const diskPreSha = readFileSync(GENESIS_PRE, "utf8").trim();
-    if (diskPreSha !== storedPreSha) {
-      console.warn(`[quine] ⚠ sha256-pre mismatch: disk=${diskPreSha.slice(0, 16)}… stored=${storedPreSha.slice(0, 16)}…`);
-    } else {
-      console.log("[quine] ✓ sha256-pre matches disk record");
+  const readWitnessCid = (title: string): string => {
+    const rec = doc.tiddlers?.[title] as { tiddler?: { cid?: string } } | undefined;
+    if (!rec?.tiddler?.cid) {
+      throw new Error(`[quine] witness tiddler ${title} missing or has no cid field — re-run build:genesis.`);
     }
-  }
+    return rec.tiddler.cid;
+  };
+  const engineCid  = readWitnessCid(GENESIS_CID_ENGINE_TIDDLER);
+  const pluginsCid = readWitnessCid(GENESIS_CID_PLUGINS_TIDDLER);
+  console.log(`[quine] engineCid (true-name) = ${engineCid.slice(0, 20)}…  pluginsCid = ${pluginsCid.slice(0, 20)}…`);
 
   // ------------------------------------------------------------------
-  // 3. Extract TW5 core blob + compiled plugin blob
+  // 3. Extract TW5 core blob + compiled plugin blob — from the CAS plane.
+  //    The CRDT carries METADATA only; the bytes ride genesis/cas/<cid> (G-CAS slice 1).
   // ------------------------------------------------------------------
+  const manifest = readGenesisCasManifest();
+  if (!manifest) {
+    throw new Error(`[quine] genesis seed absent or malformed — re-run build:genesis`);
+  }
+  const casDir = genesisCasDir();
   const coreEntry = doc.blobs?.[ENGINE_CORE_ID];
-  if (!coreEntry?.blob) {
-    throw new Error(`[quine] TW5 core blob (${ENGINE_CORE_ID}) missing from artifact`);
+  if (!coreEntry?.sha256) {
+    throw new Error(`[quine] TW5 core blob metadata (${ENGINE_CORE_ID}) missing from artifact`);
+  }
+  const coreBytes = readCasBlobFromFs(coreEntry.sha256, casDir);
+  if (!coreBytes) {
+    throw new Error(`[quine] TW5 core bytes absent from CAS for cid ${coreEntry.sha256} — re-run build:genesis`);
   }
   const coreBlob = {
-    bytes:  new Uint8Array(coreEntry.blob as unknown as ArrayBuffer),
+    bytes:  coreBytes,
     sha256: coreEntry.sha256,
     source: coreEntry.source ?? ENGINE_CORE_ID,
   };
-  console.log(`[quine] TW5 core blob  ${(coreBlob.bytes.byteLength / 1024).toFixed(0)} KB`);
+  console.log(`[quine] TW5 core blob  ${(coreBlob.bytes.byteLength / 1024).toFixed(0)} KB (from CAS)`);
 
   const pluginEntry = doc.blobs?.[LARES_TW5_PLUGIN_TITLE];
-  if (!pluginEntry?.blob) {
+  if (!pluginEntry?.sha256) {
     throw new Error(
-      `[quine] compiled plugin blob (${LARES_TW5_PLUGIN_TITLE}) missing from artifact\n` +
+      `[quine] compiled plugin blob metadata (${LARES_TW5_PLUGIN_TITLE}) missing from artifact\n` +
       `  → run: pnpm --filter @lararium/tw5 build:plugin && pnpm --filter @lararium/node build:genesis`,
     );
   }
-  const pluginJson = new TextDecoder().decode(new Uint8Array(pluginEntry.blob as unknown as ArrayBuffer));
+  const pluginBytes = readCasBlobFromFs(pluginEntry.sha256, casDir);
+  if (!pluginBytes) {
+    throw new Error(`[quine] compiled plugin bytes absent from CAS for cid ${pluginEntry.sha256} — re-run build:genesis`);
+  }
+  const pluginJson = new TextDecoder().decode(pluginBytes);
   const pluginTiddler = JSON.parse(pluginJson) as Record<string, unknown>;
-  console.log(`[quine] compiled plugin  sha=${pluginEntry.sha256.slice(0, 12)}…`);
+  console.log(`[quine] compiled plugin  sha=${pluginEntry.sha256.slice(0, 12)}… (from CAS)`);
 
   // ------------------------------------------------------------------
   // 4. Boot TW5Engine with compiled plugin preloaded
@@ -110,44 +111,45 @@ async function main(): Promise<void> {
   console.log("[quine] TW5Engine ready");
 
   // ------------------------------------------------------------------
-  // 5. Assert grammar shadow tiddler accessible
+  // 5. Assert SharktoothSigil grammar tiddlers present
   // ------------------------------------------------------------------
-  const grammarText = vm.$tw.wiki.getTiddlerText(GRAMMAR_MEME_URI) ?? "";
-  if (!grammarText) {
+  // Plugin contents load as TW5 shadow tiddlers; include shadows in the filter.
+  const sigilTitles = vm.$tw.wiki.filterTiddlers(`[all[tiddlers+shadows]tag[${GRAMMAR_TAG}]]`);
+  if (!sigilTitles.length) {
     throw new Error(
-      `[quine] FAIL — grammar shadow tiddler not found: ${GRAMMAR_MEME_URI}\n` +
-      `  The grammar meme was not packed into the compiled plugin.\n` +
+      `[quine] FAIL — no SharktoothSigil tiddlers found (tag: ${GRAMMAR_TAG})\n` +
+      `  Grammar tiddlers were not packed into the compiled plugin.\n` +
       `  → run: pnpm --filter @lararium/tw5 build:plugin`,
     );
   }
-  console.log(`[quine] ✓ grammar shadow tiddler present  ${grammarText.length} chars`);
+  console.log(`[quine] ✓ SharktoothSigil tiddlers present  count=${sigilTitles.length}`);
 
   // ------------------------------------------------------------------
-  // 6. Assert grammarRulesFromText produces valid rules
+  // 6. Assert required sigils present by lar-name field
   // ------------------------------------------------------------------
-  const rules = grammarRulesFromText(GRAMMAR_MEME_URI, grammarText);
-  if (!rules || rules.sigils.length === 0) {
-    throw new Error("[quine] FAIL — grammarRulesFromText returned no sigils from shadow tiddler");
-  }
-  const sigilNames = rules.sigils.map(s => s.name);
-  for (const required of ["ahu", "pranala", "aka", "loulou"]) {
+  const sigilNames = sigilTitles.map((t: string) => {
+    const fields: Readonly<TW5TiddlerFields> = vm.$tw.wiki.getTiddler(t)?.fields ?? { title: t };
+    const larName = fields["lar-name"];
+    if (larName) return String(larName);
+    const last = t.split("/").at(-1) ?? t;
+    return last.startsWith("sigil-") ? last.slice(6) : last;
+  });
+  for (const required of ["ahu", "pranala", "aka", "loulou", "toml"]) {
     if (!sigilNames.includes(required)) {
-      throw new Error(`[quine] FAIL — grammar missing expected sigil: "${required}"`);
+      throw new Error(`[quine] FAIL — grammar missing required sigil: "${required}"`);
     }
   }
-  const sha = sha256hex(grammarText);
-  console.log(`[quine] ✓ grammar rules valid  sigils=${rules.sigils.length}  families=${rules.families.length}  sha=${sha.slice(0, 16)}…`);
+  console.log(`[quine] ✓ required sigils present  ${["ahu", "pranala", "aka", "loulou", "toml"].join(", ")}`);
 
   vm.dispose?.();
 
   console.log("");
   console.log("=== Genesis Boot Smoke: PASS ===");
-  console.log(`  blobs in artifact   : ${blobCount}`);
-  console.log(`  tiddlers in artifact: ${tiddlerCount}`);
-  console.log(`  grammar sigils      : ${rules.sigils.length}`);
-  console.log(`  grammar families    : ${rules.families.length}`);
+  console.log(`  blobs in artifact        : ${blobCount}`);
+  console.log(`  tiddlers in artifact     : ${tiddlerCount}`);
+  console.log(`  SharktoothSigil tiddlers : ${sigilTitles.length}`);
   console.log("");
-  console.log("[quine] ✓ genesis carries bootable engine + compiled plugin + grammar shadow tiddler");
+  console.log("[quine] ✓ genesis carries bootable engine + compiled plugin + self-hosted grammar");
 }
 
 main().catch(err => {

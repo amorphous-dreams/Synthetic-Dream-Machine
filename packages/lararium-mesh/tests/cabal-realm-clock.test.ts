@@ -1,0 +1,150 @@
+/**
+ * cabal-realm-clock — the capture-CLOCK reads a realm's maintenance provenance from its
+ * lease slots: who feeds it, how deep each has rolled, and the SPREAD (a minority far
+ * ahead = the visible capture signal). Verdict-free: it surfaces numbers, never a
+ * "captured" judgement (the threshold sits in the operator's calibration seat).
+ */
+import { describe, test, expect } from "vitest";
+import {
+  cabalRealmMaintenanceProvenance,
+  realmMaintenanceFromBoard,
+  realmLeaseSlotsFromBoard,
+  cabalRealmLeaseSlot,
+  emptyLarDoc,
+  type CabalRealm,
+  type LarDoc,
+} from "../src/index.js";
+
+const REALM: CabalRealm = {
+  realmDocIdHex:   "0xrealm_under_watch",
+  realmAgentIdHex: "0xrealm_agent",
+  substrateUrl:    "automerge:realm-substrate",
+  genesisUri:      "lar:///crossroads.cabal.gathers/watched",
+};
+
+/** Build a lease-slot map for a realm from {writerId: epoch} pairs (the real slot URIs). */
+function slotsFor(realm: CabalRealm, standing: Record<string, number>): Map<string, string> {
+  const m = new Map<string, string>();
+  for (const [writerId, epoch] of Object.entries(standing)) {
+    m.set(cabalRealmLeaseSlot(realm.realmDocIdHex, writerId), String(epoch));
+  }
+  return m;
+}
+
+describe("cabalRealmMaintenanceProvenance — the capture-clock", () => {
+  test("an unfed realm reads no maintainers, effective 0, spread 0", () => {
+    const p = cabalRealmMaintenanceProvenance(REALM, new Map());
+    expect(p.maintainerCount).toBe(0);
+    expect(p.effectiveEpoch).toBe(0);
+    expect(p.trailingEpoch).toBe(0);
+    expect(p.spread).toBe(0);
+    expect(p.leadingCount).toBe(0);
+    expect(p.maintainers).toEqual([]);
+  });
+
+  test("reports each maintainer's standing, sorted leaders-first", () => {
+    const p = cabalRealmMaintenanceProvenance(REALM, slotsFor(REALM, { alice: 3, bob: 7, carol: 5 }));
+    expect(p.maintainerCount).toBe(3);
+    expect(p.maintainers.map((m) => m.writerId)).toEqual(["bob", "carol", "alice"]);
+    expect(p.effectiveEpoch).toBe(7);
+    expect(p.trailingEpoch).toBe(3);
+    expect(p.spread).toBe(4);
+    expect(p.leadingCount).toBe(1);   // only bob sits at the effective epoch
+  });
+
+  test("THE CAPTURE SIGNAL is VISIBLE — a minority far ahead reads as a large spread + small leading set", () => {
+    // One writer out-feeds an apathetic majority: it rolls deep while the rest stall.
+    const p = cabalRealmMaintenanceProvenance(
+      REALM,
+      slotsFor(REALM, { captor: 40, m1: 2, m2: 2, m3: 1, m4: 3 }),
+    );
+    expect(p.effectiveEpoch).toBe(40);
+    expect(p.trailingEpoch).toBe(1);
+    expect(p.spread).toBe(39);        // a glaring gap — the majority can SEE it
+    expect(p.leadingCount).toBe(1);   // one principal alone at the top
+    expect(p.maintainers[0].writerId).toBe("captor");
+    // ...but the clock draws NO conclusion — it returns no "captured" field. The
+    // operator reads the spread + concentration and calibrates. Verdict-free by design.
+    expect(p).not.toHaveProperty("captured");
+    expect(p).not.toHaveProperty("verdict");
+  });
+
+  test("a co-maintained realm reads a wide leading set + small spread (the healthy shape)", () => {
+    const p = cabalRealmMaintenanceProvenance(REALM, slotsFor(REALM, { a: 9, b: 9, c: 9, d: 8 }));
+    expect(p.effectiveEpoch).toBe(9);
+    expect(p.spread).toBe(1);
+    expect(p.leadingCount).toBe(3);   // three of four at the front — broadly held
+  });
+
+  test("filters foreign slots (another realm's lease) and skips malformed values", () => {
+    const slots = slotsFor(REALM, { alice: 4 });
+    // A different realm's slot must NOT count.
+    const other: CabalRealm = { ...REALM, realmDocIdHex: "0xsome_other_realm" };
+    slots.set(cabalRealmLeaseSlot(other.realmDocIdHex, "intruder"), "99");
+    // A malformed value in THIS realm's namespace must be skipped, not crash.
+    slots.set(cabalRealmLeaseSlot(REALM.realmDocIdHex, "broken"), "not-a-number");
+    const p = cabalRealmMaintenanceProvenance(REALM, slots);
+    expect(p.maintainerCount).toBe(1);
+    expect(p.maintainers[0]).toEqual({ writerId: "alice", epoch: 4 });
+    expect(p.effectiveEpoch).toBe(4);  // the foreign 99 did not leak in
+  });
+
+  test("the read takes the realm's DOC ID alone — a vessel holding only an id may still ask", () => {
+    // The clock wants one field. A reader asked about a realm it does not dwell in holds the id and nothing
+    // else, and narrowing the demand lets it ask without fabricating a realm it cannot know.
+    const byRealm = cabalRealmMaintenanceProvenance(REALM, slotsFor(REALM, { alice: 3, bob: 7 }));
+    const byId    = cabalRealmMaintenanceProvenance(REALM.realmDocIdHex, slotsFor(REALM, { alice: 3, bob: 7 }));
+    expect(byId).toEqual(byRealm);
+  });
+});
+
+describe("realmMaintenanceFromBoard — the clock read off a board replica", () => {
+  /** A board carrying lease slots as tiddlers, the shape a real replica holds them in. */
+  function board(realmDocIdHex: string, standing: Record<string, number>, extra: Record<string, string> = {}): LarDoc {
+    const doc = emptyLarDoc();
+    for (const [writerId, epoch] of Object.entries(standing)) {
+      const key = cabalRealmLeaseSlot(realmDocIdHex, writerId);
+      doc.tiddlers[key] = { id: key, tiddler: { title: key, text: String(epoch) } } as never;
+    }
+    for (const [key, text] of Object.entries(extra)) {
+      doc.tiddlers[key] = { id: key, tiddler: { title: key, text } } as never;
+    }
+    return doc;
+  }
+
+  test("★ gathers this realm's slots off the board and reads the same standing the pure fold reads ★", () => {
+    const doc = board(REALM.realmDocIdHex, { alice: 3, bob: 7, carol: 5 });
+    const p   = realmMaintenanceFromBoard(doc, REALM.realmDocIdHex);
+    expect(p.maintainers.map((m) => m.writerId)).toEqual(["bob", "carol", "alice"]);
+    expect(p.effectiveEpoch).toBe(7);
+    expect(p.spread).toBe(4);
+    expect(realmLeaseSlotsFromBoard(doc, REALM.realmDocIdHex).size).toBe(3);
+  });
+
+  test("a FOREIGN realm's slots and unrelated tiddlers never leak in", () => {
+    const doc = board(REALM.realmDocIdHex, { alice: 4 }, {
+      [cabalRealmLeaseSlot("0xsome_other_realm", "intruder")]: "99",
+      "$:/lar/something/else": "not a lease at all",
+    });
+    const p = realmMaintenanceFromBoard(doc, REALM.realmDocIdHex);
+    expect(p.maintainerCount).toBe(1);
+    expect(p.effectiveEpoch).toBe(4);
+  });
+
+  test("★ an EMPTY board reads UNFED, and that never means nobody feeds it ★", () => {
+    // Under no-global-now a realm nobody synced and a realm nobody feeds generate identically. The numbers
+    // name a local sighting; nothing here may present them as a total.
+    const p = realmMaintenanceFromBoard(emptyLarDoc(), REALM.realmDocIdHex);
+    expect(p.maintainerCount).toBe(0);
+    expect(p.effectiveEpoch).toBe(0);
+  });
+
+  test("★ NO liveness verdict rides out — deriving alive/dissolved would need an unseated erosion rate ★", () => {
+    const p = realmMaintenanceFromBoard(board(REALM.realmDocIdHex, { alice: 1 }), REALM.realmDocIdHex);
+    expect(Object.keys(p).sort())
+      .toEqual(["effectiveEpoch", "leadingCount", "maintainerCount", "maintainers", "spread", "trailingEpoch"]);
+    for (const verdict of ["liveness", "alive", "dissolved", "cooling", "captured", "verdict"]) {
+      expect(p).not.toHaveProperty(verdict);
+    }
+  });
+});

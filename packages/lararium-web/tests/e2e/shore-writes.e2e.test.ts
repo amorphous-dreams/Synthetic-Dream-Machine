@@ -1,0 +1,161 @@
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { afterAll, beforeAll, test } from "vitest";
+import { resolve } from "node:path";
+import { chromium } from "playwright";
+
+const root = resolve(import.meta.dirname, "../../../..");
+const port = Number(process.env.LAR_WEB_E2E_PORT ?? 5418);
+const baseUrl = process.env.LAR_WEB_E2E_URL ?? `http://127.0.0.1:${port}`;
+let preview;
+let browser;
+let context;
+let page;
+let previewExitCode = null;
+const wikiWorkerErrors = [];
+const browserConsole = [];
+
+beforeAll(async () => {
+  if (!process.env.LAR_WEB_E2E_URL) {
+    preview = spawn(process.execPath, [
+      resolve(root, "packages/lararium-web/node_modules/vite/bin/vite.js"), "preview", "--host", "127.0.0.1",
+      "--port", String(port), "--strictPort",
+    ], { cwd: resolve(root, "packages/lararium-web"), stdio: "ignore" });
+    preview.on("exit", (code) => { previewExitCode = code; });
+    await waitForPreview();
+  }
+  browser = await chromium.launch({ headless: true });
+  context = await browser.newContext();
+  page = await context.newPage();
+  page.on("console", (message) => {
+    browserConsole.push(message.text());
+    if (message.text().includes("[wiki-worker] error")) wikiWorkerErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => wikiWorkerErrors.push(`[page] ${error.message}`));
+});
+
+afterAll(async () => {
+  await context?.close();
+  await browser?.close();
+  if (preview && preview.exitCode === null) preview.kill("SIGTERM");
+});
+
+async function waitForPreview(): Promise<void> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 80; attempt++) {
+    if (preview?.exitCode !== null || previewExitCode !== null) break;
+    try {
+      const response = await fetch(baseUrl);
+      if (response.ok) return;
+    } catch (error) { lastError = error; }
+    await new Promise((resolve) => setTimeout(resolve, 125));
+  }
+  assert.fail(`built Pronaos preview did not open on ${baseUrl}: ${String(lastError ?? previewExitCode)}`);
+}
+
+test("served wiki saves a draft tiddler without worker errors", async () => {
+  wikiWorkerErrors.length = 0;
+  browserConsole.length = 0;
+  await page.goto(baseUrl);
+  await waitForLivePage();
+
+  const wiki = page.locator("#projection");
+  await wiki.evaluate((host) => host.shadowRoot.querySelector('button[title="Create a new tiddler"]').click());
+  await wiki.locator("input.tc-titlebar").fill("Shore Write Probe");
+  const bodyEditor = wiki.locator("textarea.tc-edit-texteditor-body");
+  await bodyEditor.evaluate((editor) => {
+    editor.value = "newer local composition — 漢字";
+    editor.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true, composed: true }));
+    editor.dispatchEvent(new InputEvent("input", {
+      bubbles: true, composed: true, inputType: "insertCompositionText", data: "字", isComposing: true,
+    }));
+    editor.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+  });
+  // This title edit causes a worker frame while the body field still carries an unfinished composition.
+  // The returned frame must not replace the newer page-side value or relay the composing change.
+  await wiki.locator("input.tc-titlebar").fill("Shore Write Probe Updated");
+  await page.waitForTimeout(80);
+  assert.equal(await bodyEditor.inputValue(), "newer local composition — 漢字");
+  await bodyEditor.evaluate((editor) => {
+    editor.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, composed: true, data: "字" }));
+    editor.dispatchEvent(new InputEvent("input", {
+      bubbles: true, composed: true, inputType: "insertText", data: "", isComposing: false,
+    }));
+  });
+
+  // The editor's TW5 save action receives a worker-local view contract, never a global window.
+  await wiki.locator('button[title="Confirm changes to this tiddler"]').click();
+  await page.waitForFunction(() => document.querySelector("#projection")?.shadowRoot
+    ?.querySelector(".lar-projection")?.innerText.includes("newer local composition — 漢字") ?? false,
+    undefined, { timeout: 20_000 });
+
+  assert.deepEqual(wikiWorkerErrors, [], "the served save walk emits zero [wiki-worker] error lines");
+
+  // Only an admitted writable node fixture stands as a reload durability witness. Local preview
+  // proves the browser input/save/projection leg and does not claim node persistence.
+  if (process.env.LAR_WEB_E2E_RELOAD_PROOF === "1") {
+    await page.reload();
+    await page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
+      .some((phase) => phase.textContent === "live"), undefined, { timeout: 60_000 });
+    const reloadedWiki = page.locator("#projection");
+    await reloadedWiki.locator('input[type="search"]').fill("Shore Write Probe");
+    await reloadedWiki.locator("button").filter({ hasText: "matches" }).first().click();
+    await reloadedWiki.locator(".tc-search-drop-down").waitFor({ state: "visible", timeout: 20_000 });
+    await page.waitForFunction(() => document.querySelector("#projection")?.shadowRoot
+      ?.querySelector(".tc-search-drop-down")?.innerText.includes("Shore Write Probe") ?? false,
+      undefined, { timeout: 20_000 });
+  }
+
+});
+
+test("a stale render target answers on its originating projected surface", async () => {
+  wikiWorkerErrors.length = 0;
+  await page.goto(baseUrl);
+  await waitForLivePage();
+  const wiki = page.locator("#projection");
+  const link = wiki.locator("[data-lar-rid]").first();
+  const staleRid = `stale-${crypto.randomUUID()}`;
+  await link.evaluate((element, rid) => element.setAttribute("data-lar-rid", rid), staleRid);
+  await link.click();
+  const result = wiki.locator('[data-lar-interaction-result="stale-target"]');
+  await result.waitFor({ state: "visible", timeout: 20_000 });
+  assert.equal(await result.getAttribute("data-lar-source-rid"), staleRid);
+  assert.equal(await result.getAttribute("data-lar-source-event"), "click");
+  assert.ok(await result.getAttribute("data-lar-source-wiki"), "the refusal remains bound to its source wiki surface");
+  assert.deepEqual(wikiWorkerErrors, [], "stale target is an answer, not a worker error");
+});
+
+test("served wiki opens the TW5 search dropdown without worker errors", async () => {
+  wikiWorkerErrors.length = 0;
+  browserConsole.length = 0;
+  await page.goto(baseUrl);
+  await waitForLivePage();
+  const wiki = page.locator("#projection");
+  await wiki.locator('input[type="search"]').fill("no-such-shore-result");
+  await wiki.locator("button").filter({ hasText: "matches" }).first().click();
+  const dropdown = wiki.locator(".tc-search-drop-down");
+  await dropdown.waitFor({ state: "visible", timeout: 20_000 });
+  const placement = await dropdown.evaluate((element) => ({
+    position: (element as HTMLElement).style.position,
+    top: (element as HTMLElement).style.top,
+    left: (element as HTMLElement).style.left,
+  }));
+  assert.equal(placement.position, "fixed", "the page places the open popup from its click-time geometry");
+  assert.match(placement.top, /^-?\d+(?:\.\d+)?px$/);
+  assert.match(placement.left, /^-?\d+(?:\.\d+)?px$/);
+  assert.deepEqual(wikiWorkerErrors, [], "the served popup walk emits zero [wiki-worker] error lines");
+});
+
+async function waitForLivePage(): Promise<void> {
+  try {
+    await page.waitForFunction(() => [...document.querySelectorAll("#phases .phase")]
+      .some((phase) => phase.textContent === "live"), undefined, { timeout: 20_000 });
+    await page.waitForFunction(() => {
+      const pane = document.querySelector("#projection")?.shadowRoot?.querySelector(".lar-projection");
+      return pane !== null && pane !== undefined && pane.childElementCount > 0;
+    }, undefined, { timeout: 20_000 });
+  } catch (error) {
+    const faults = browserConsole.filter((line) => line.includes("[daemon-island:fault]"));
+    assert.fail(`${String(error)}\nphases=${await page.locator("#phases").innerText()}\nfaults=${faults.join("\n")}`);
+  }
+}

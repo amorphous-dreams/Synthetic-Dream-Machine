@@ -13,10 +13,11 @@ import * as KH from "@keyhive/keyhive";
 
 console.log("[probe] === A: Access string enumeration ===");
 
-// Try every plausible UCAN-style + filesystem-style + role-style ability string.
+// Try the Access values plus plausible UCAN-style, filesystem-style, and role-style strings.
 const candidates = [
+  "relay", "read", "edit", "admin",
   // UCAN/our ABILITY_LADDER
-  "pull", "read", "sync", "write", "propose", "promote", "admin", "revoke",
+  "pull", "sync", "write", "propose", "move", "revoke",
   // Filesystem-style
   "none", "r", "rw", "rwx", "owner",
   // Role-style
@@ -94,15 +95,15 @@ const baseline = events.length;
 
 const operatorCard = await operator.contactCard();
 const deviceCard   = await device.contactCard();
-const deviceIndividual = await operator.receiveContactCard(deviceCard);
+const deviceIndividualId = await operator.receiveContactCard(deviceCard);
 await device.receiveContactCard(operatorCard);
 
 const cid = new KH.ChangeId(new Uint8Array(32));
-const doc = await operator.generateDocument([], cid, []);
-const deviceAgent = await operator.getAgent(deviceIndividual.id);
+const docId = await operator.generateDocument([], cid, []);
+const deviceAgent = await operator.getAgent(deviceIndividualId.toIdentifier());
 const access = KH.Access.tryFromString("admin");
 if (access && deviceAgent) {
-  await operator.addMember(deviceAgent, doc.toMembered(), access, []);
+  await operator.addMember(deviceIndividualId.toIdentifier(), KH.MemberedId.document(docId), access, []);
 }
 
 console.log(`[probe] events fired during ceremony: ${events.length - baseline}`);

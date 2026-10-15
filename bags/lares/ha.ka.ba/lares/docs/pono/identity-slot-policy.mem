@@ -1,0 +1,192 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = false
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/identity-slot-policy.mem"
+l-space    = "stable"
+mana       = 14
+manao      = 16
+manaoio    = 13
+revised-on = "2026-10-08"
+role       = "what OpenIdentitySlot's sharePolicy could key on with the realm leg standing — measured first: the allow-all is UNREACHED on every live path, so the hole is an unwired socket and not an open door. The cure wants a ruling this carrier names and does not take."
+status-why = "the fork CLOSED 2026-09-13 on arm (B) — the PersonaGroup owns the verdict; the reader stands as `makePersonaGroupIdentityRing`, ONE assembly (`assemblePersonaGroupRing`) composes it on both vessel shores, and it runs on every leaf kind — a leaf that dials a listening vessel reads the gate's signed verdict, and a fleet with no listening vessel reads the device keys its siblings prove through a herm (#/the-leaf-taxonomy)"
+tags       = ["docs/pono/design", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/identity-slot-policy"
+```
+
+<<~ ahu #/the-measurement-first>>
+
+! The measurement, before the design (a dated record, 2026-09-13; `OpenIdentitySlot` leaves the tree at #/the-ruling)
+
+The standing reading calls `OpenIdentitySlot.verifyCapability`'s `return true; // alpha: open` (`packages/lararium-mesh/src/identity-slot.ts:134-136`) the most-urgent crypto hole. ''Measured, it reaches no live path at all.''
+
+* The ONE call site of any slot's `verifyCapability` in source stands at `packages/lararium-mesh/src/federation-gate.ts:192`, inside `identityShareDecision`.
+* That line runs only past `:186` — `if (!identity) return true;`.
+* The BROWSER holds no identity-ring socket: `browserShareConfig` reads the federation gate alone, through `federationShareDecision`, and the PersonaGroup ring composes onto that gate (`open-browser-vessel.ts`, the `assemblePersonaGroupRing` call).
+* The NODE hands its whole verdict to `selfSlotShareDecision`, which passes `null` for the identity ring at BOTH exits (`self-slot-share.ts:91-100` · `:103`) — and says why in its own header: the split rides the OUTER deterministic gate, never the inner verify-for-self ring, ''sidestepping the allow-all self-grant trap''.
+* `OpenIdentitySlot` is constructed in exactly one place, `lar-vessel.ts:98`, and nothing reads `vessel.identity` to build an `IdentityRing`.
+
+''So the socket stands unwired, and the stub's allow-all is dead code on every live path.'' That matters for how the cure is ranked: nothing leaks today through this line, and lighting the ring NAIVELY would introduce the regression `federation-gate.ts:238-241` already warns of — the self-slot answers //may I sync my own doc// with the presenter equal to self, which reads as an allow-all the moment it is consulted.
+
+<<~/ahu>>
+
+<<~ ahu #/what-decides-today>>
+
+!! What decided a verdict at the measurement, in order
+
+The slot is absent from this stack entirely.
+
+# ''the deterministic set'' (`federation-gate.ts:78-96`) — a pure function of the Nexus gate pubkey: crossroads · WHO · Kapae-antigen · carriage · persona-KEL boards, plus caller-supplied extras. Set membership, nothing else.
+# ''the peer ring'' (`:108-118`) — an in-process island peer syncs whole; a same-operator relay peer syncs whole; a doc-less ask denies.
+# ''the antigen ring'' (`:205-224`) — the quorum-signed Kapae denylist against the presenter's resolved nym. Additive deny only.
+# ''the members board'' (`nexus-carriage.ts:219-225`) — the folded carriage contracts, keyed on the PROVEN contract nym ahead of the raw wire key. Fail-closed: unknown reads STRANGER. This ring folds an allow set, and the presented-admit ruling retires it as the gate — the subject presents its quorum-signed admit against the deny-only antigen ring — with the build owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+# ''the plane seal'' (`:295-298`) — provable ciphertext, fail-closed.
+# ''the realm leg'' (`realm-bag.ts:490-512`) — the charter's own hearth · the registration's `keptBy` stewards · `holdsCharter(nym, charterId)` at CONTRACT · a faceless carrier PLACE at `readTier === "public"` alone · else the members board.
+# ''the posture'' (`:405-424`) — `private` by default; `open` admits cross-operator.
+
+''And the tier ladder that would carry an answer is itself unlit.'' `capTierShareDecision` (`:485-506`) has no live caller — grep finds it in `cap-tier.test.ts` alone — and `declaredTierForDoc` returns null for every doc because no bag carries a `capTier` datum. `structuralFloorFor` (`cap-tier.ts:187-193`) therefore governs, floored at VEIL.
+
+<<~/ahu>>
+
+<<~ ahu #/what-the-slot-could-key-on>>
+
+!! What the slot could key on, with the realm leg standing
+
+Three readings are available to a share verdict, and NONE of them is a roster (`lar:///ha.ka.ba/lares/api/pono/registry-filter` — a compiled-about registry at any scope rejects the fork).
+
+# ''THE CAP TIER, resolved.'' `resolveTierForDoc(declared, floor) = meet(declared, floor)` (`cap-tier.ts:246-250`) — declared may only TIGHTEN, and `mayDeclassify` (`:135-138`) makes loosening a one-way ratchet requiring operator-root. `tierPermitsRelayPeer` (`:267-273`) then answers: `public` → any relay peer · `contract` and `personagroup` → `holdsCarriagePeer` only · `veil` → false. ''This reading stands built and needs only lighting'' — a declared datum on the bag and a live caller.
+# ''THE REALM REGISTRATION.'' A doc the realm names carries its own declared tier and its own `keptBy`; `RealmBagGate.mayFederate` already reads both. An identity-slot-shaped doc could register at CONTRACT and inherit the whole leg — steward-write, charter-read, carrier-never.
+# ''THE PERSONA PLANE'S OWN MEMBERSHIP.'' The reading the task asks for — //a member of that persona's plane is admitted, a stranger refused//. ''It does not exist in code.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-fork-that-wants-a-ruling>>
+
+!! ★ The fork — which plane owns the verdict ★
+
+''The persona-plane reading has no reader, and the shape of the missing reader is itself the ruling.''
+
+Measured: no function in `packages/lararium-mesh/src` answers //does this peer stand in this persona's plane//. `persona-planes.ts` and `persona-scope.ts` are name-derivation and LOCAL family logic — zero occurrences of `peerId` in any `persona-*.ts` file. `personaGroupMembers` and `membersOf` do not exist. A persona plane is protected today by sitting OUTSIDE the deterministic federatable set and by the same-operator peer class, never by a reader that knows which persona a peer belongs to.
+
+''And the wire cannot tell the two apart.'' `cap-tier.ts:271` says it in its own comment: the shore ''cannot split fleet from cabal'', so `contract` and `personagroup` collapse to the same `holdsCarriagePeer` answer. A persona-plane verdict would need a distinction the transport does not carry.
+
+So the fork stands, and it is a ruling and not a patch — the three answers differ in WHO the authority is:
+
+* ''(A) THE VEIL OWNS IT.'' An identity-slot doc floors at VEIL and never leaves the vessel; the fleet reaches it by the same-operator class alone, which is a DEVICE answer and not a persona one. Cheapest, and it forecloses a genuinely shared account.
+* ''(B) THE PERSONAGROUP OWNS IT.'' The slot keys on the persona plane's own membership — which needs the reader above, and needs the wire to carry a persona distinction it does not carry. Truest to `lar:///ha.ka.ba/lares/docs/pono/face-planes` (relations travel with the FACE), and the most build.
+* ''(C) THE REALM OWNS IT.'' The doc registers on the realm at CONTRACT and the realm leg answers; the persona never enters the verdict. Reuses everything that stands, and it puts a CABAL between a person and their own identity material — which `lar:///ha.ka.ba/lararium/mesh/reach-plane#/the-truncated-chain` already rules out for credentials by TYPE, and an identity slot sits adjacent to that refusal.
+
+''The reach plane's own ceiling is the nearest standing law and it points at (A)-or-(B), never (C):'' a reach credential fleet-syncs and delivers to a contracted set, ''and it crosses no Nexus boundary in either case''; PUBLIC is refused by type, and the truncation falls out of a FLOOR (`isContractSecretsPlane` read FIRST, ahead of the public reading, `cap-tier.ts:189`) rather than a ceiling, so protection by omission never enters. Whether an identity SLOT reads as that same kind of thing is the operator's call, and it decides the fork.
+
+<<~/ahu>>
+
+<<~ ahu #/the-ruling>>
+
+! ★ The fork CLOSED — arm (B), 2026-09-13 ★
+
+The operator ruled: ''a slot doc's verdict = the face's grant records (the joinee's own act), never the realm's `keptBy`, never a roster; the realm never reads persona planes.''
+
+!! What stands
+
+`makePersonaGroupIdentityRing` (`packages/lararium-mesh/src/persona-group-ring.ts`) — the reader this carrier measured as missing. Pure, and it reads exactly three things, each injected: the docs it GOVERNS (this face's own planes), the vessel key a peer PROVED at this vessel's gate, and the grant records resting on the PersonaGroup plane with the seal check that judges one. That check rides in as a function, so `verifyFaceGrantRecord` — the same verify the joinee's own kit runs — answers here too, and mesh takes no keyhive dependency to do it.
+
+''It refuses the other two readings by having no field for them.'' No realm input, so a name in a registration's `keptBy` grants nothing (its own CONTROL). No roster, so the registry filter never fires.
+
+''It widens and never narrows.'' `compose(base)` is the realm leg's shape: the base's allow stands untouched and the ring adds ONE admit path. A wired ring can open a door and can never close one that stood — pinned against a permissive base.
+
+''And the red never measures the base.'' This carrier's own warning (#/what-a-red-would-need) said the stranger half already passes for a reason that has nothing to do with the slot; every vector asks `admitsPeer` directly, so the ring alone decides.
+
+No `OpenIdentitySlot` stands — no alias, the alpha line's own law. `LarVessel.identity` reads `IdentitySlot | null`, and a vessel given none carries none; no slot grants everything.
+
+!! Two shores, one assembly
+
+`assemblePersonaGroupRing` (`packages/lararium-keyhive/src/persona-group-ring-assembly.ts`) hands the ring its inputs, and BOTH vessel shores call it — the node at `open-node-vessel.ts`, composed onto its self-slot fed gate; the browser at `open-browser-vessel.ts`, composed onto its cross-operator gate. It reads the face's four planes off the vessel's own catalog (`governedPlaneDocIds`), the face-join grant records on the PersonaGroup plane, and the founder's persona-KEL, and it binds the ONE `verifyFaceGrantRecord`. `tools/vessel-parity-witness.sh` holds the two shores to it.
+
+''Only the PROOF SOURCE differs, and neither source makes a claim.''
+
+* A NODE listens. Its `DaemonAuthGate` proves the dialer's key (the V3 proof) and the ring reads the identifier that gate proved.
+* A LEAF dials out. The gate it dials signs its `lar:auth-ok` with the gate key over the leaf's own fresh nonce (`authOkBytes`, domain `auth-ok`), the leaf checks it against the key it pinned, and `LarWSClientAdapter.provenKeyOf` names that key for the peer the verified socket yields. A gate that cannot sign under the pin answers nothing the leaf reads as a pass. Authentication runs both ways on one socket.
+* Two LEAVES of one PersonaGroup meet through a herm. Each proves its device key to the other (`packages/lararium-mesh/src/leaf-peer-proof.ts`): its DeviceDelegation edge, licensed by the verifier's own persona-KEL head and the lease epoch the verifier holds (an edge a rotated-away op-key signed reads as rolled past; an edge bound below the held epoch reads as lapsed), plus a signature by the device key over the exchange's whole transcript — both nonces, both ephemeral keys, the prover's role. The PersonaGroup secret gates every box (#/the-persona-group-secret): a hello carries a hint only a member computes, and every box mixes the secret into its key, so a herm reads no leaf↔root link even when it acts — a hello it forges draws no box. The proof binds the session it admits (`LeafPeerSession`): both siblings derive per-direction keys from the very ephemerals their device keys signed, every later frame seals under them, and a hash chain orders the frames, so a herm that injects, replays or reorders one meets a refusal that names the relay as its suspect, and both siblings close the session and prove again. `SiblingNetworkAdapter.provenKeyOf` names the device key a sibling proved.
+
+''No clock enters any of the three.'' Freshness rides a nonce the verifying side chose; licensing rides KEL event order and the lease epoch the verifier holds — `standSiblingChannel` hands the proof the vessel's own read of it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-leaf-taxonomy>>
+
+!! The leaf taxonomy — where the ring runs
+
+The ring runs on EVERY vessel that holds a face, because a leaf comes in more than one kind. The operator's taxonomy names three:
+
+# ''A face of an operator's PersonaGroup where a listening vessel exists.'' The leaf dials a node of its own PersonaGroup; that node's gate proves the leaf, and the node's signed verdict proves the node back.
+# ''A single user device.'' One leaf, one face, dialing the hearth that hosts it. The same two-way proof on the one socket.
+# ''One device in a user-caps-only fleet, where no vessel listens.'' No node stands to prove anyone, so the fleet's devices prove each other leaf to leaf through a relay that reads nothing (#/the-ruling, the third proof source). This kind explains why the ring must run on leaves at all: with no listening vessel, no other hand could decide. Each device dials EVERY herm it pins, each through the knock that herm's pinned gate key derives, proves its device key at each one gate, and joins ONE sibling channel at each: the tag the secret its KEL head sealed to it keys, an HMAC under that secret over the herm's gate key (`siblingChannelTag`), so a non-member holding the group's id computes none and two herms see two tags. A later join replaces the channel it held. Each herm carries its own exchange and session, so a herm that drops or hangs closes only the sessions it carried, and a sibling stands as one repo peer while any of its sessions stands. Siblings run the proof through the herm, and Automerge sync rides only the session a passing proof binds (`SiblingNetworkAdapter`, in the automerge-repo `NetworkAdapter` shape), under the repo peer id the proven device key derives (`siblingPeerIdOf`): a sibling naming any other id is refused, and an id the repo already routes through another adapter gives it no route. Both vessel shores compose it by one call (`standSiblingChannel`) over every pinned herm, and the face's own KEL board re-licenses every standing session as it moves. Two herms under distinct gate keys make the condition for tolerance, never a boot precondition. ONE herm stands the channel in a named DEGRADED mode: the channel dials and syncs over it, and says on every dial (`pins`, standing) and in the vessel's `siblingChannel()` status that withholding cannot be tolerated through one herm, since what that herm withholds no other herm answers. No herm, or an address that pins no gate key, refuses the CHANNEL and never the vessel: the channel dials nothing and says why as `pins` on every dial and in that status. Either way the rest of the vessel boots.
+
+''A proven sibling holds STANDING, and nothing more.'' The PersonaGroup ring's sibling path (`composeSiblings`, reading the device key the sibling session proved) admits it to this face's own planes and the public boards — never the vessel's @daemon, and never another face's planes. A vessel that holds many faces keeps each face's siblings to that face (a session wears a face, the vessel wears none: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/the-session">>); neither shore shares a sibling freely, and both read sibling-ness before any other ring, so an id a sibling and another carrier both claim denies. An impostor, a sibling whose lease lapsed, and a frame the herm forged each meet a refusal that surfaces and names its suspect (`peer`, `relay`, `route`, `pins`, or `self` by cause: `revoked`, `unreadable`, `unsealed`, `fork`); none drops in silence. A KEL head that rolls a sibling's edge past closes the session inside it and the pair proves again under the head. A leaf its own KEL revokes says goodbye inside every session it held, so no sibling stands half-open. Every KEL source — the board, a herm's drops, a chain a caller hands — folds through ONE reader (`foldPersonaContests`, `packages/lararium-mesh/src/persona-kel.ts`): VERIFY, THEN FOLD. At each seat of the lineage only an event that verifies against the head already folded may compete, a rotation by its guardian quorum, a veto by the head's own op-key. An event that does not verify moves nothing and revokes no one: neither a junk veto nor a junk rotation planted ahead of a lawful one rolls a revocation back, and the leaf and every gate door name it `unreadable`. A veto kills only a provisional it names, never a hardened rotation. Two events that verify at one seat stand as a FORK, which only duplicity mints (a quorum that signed twice, or two recoveries that raced): no reader settles it by board order or herm order, the leaf says `fork` and keeps the standing it last read, and the Binding Gate admits no edge under it.
+
+''The threshold keeps two faces'' (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>):
+
+* ''Outward — the herm's face: carriage of sealed frames.'' The herm routes on the channel tags and the key its gate proved, and holds no secret, no session key, no edge in the clear — even when it acts, since a hello it forges draws no box — no group id and no document byte. Every act it takes on a session (a forged `here`, an injected frame, a frame reflected to its own sender) surfaces as a refusal that names the relay.
+* ''Inward — the siblings' face: the PersonaGroup secret and the proven session.'' Only members hold the secret, and only the two siblings hold the session's keys. The herm's stamp of a sender key must agree with the proven edge, and it never stands in for one.
+
+Nothing of the inward face rides the outward one.
+
+A leaf holds only its own device key, its own edge, its sealed secret and its PersonaGroup's KEL; none of the three proofs asks it for a key it does not hold, and no persona root signs anything on any wire.
+
+<<~/ahu>>
+
+<<~ ahu #/the-persona-group-secret>>
+
+!! The PersonaGroup secret — what keeps a forged hello from reading an edge
+
+* ''Delivered at enrolment.'' When the persona root signs a DeviceDelegation it seals the group's secret to that device key beside the edge, in the same act (`enrolDevice`, `packages/lararium-mesh/src/persona-group-secret.ts`) — at founding, at device admit, and inside a contracted binding. The device's own daemon doc rests the seal, keyed by the group; it never crosses.
+* ''Derived from the root's own seed, never from the KEL.'' The KEL rides public boards. The secret derives from the op-key's seed, salted by the KEL prefix, so the root reads it again whenever it signs and keeps no copy.
+* ''Rolled with the op-key, sealed and attested on the KEL.'' A rotation seats a fresh op-key, whose seed derives the next secret, and in the same act re-enrols every remaining device: one box per device, sealed to that device's key, holding its re-delegated edge and the next secret, signed by the fresh op-key and naming no device (`rollEnrolments`). The KEL rides public boards, so no edge rides it in the clear; each device finds its own box by trial-open. The digest of the whole list rides inside the event's content address and the guardians' quorum bytes, so a board writer who strips, adds, swaps or reorders a box breaks the chain's walk and revokes no one. A device reads an edge out of its box only when that edge verifies under the event's op-key. A revoking rotation leaves the revoked device out: no box opens for it, it holds no secret under the new head, stands revoked and says so.
+* ''A leaf stands under its KEL head.'' It holds every enrolment its KEL delivers and stands under the one its head op-key sealed (`enrolmentUnderHead`): it proves with that edge, hellos under that secret, answers only a hint under it, and joins that one channel. A provisional rotation confers nothing until accepted, so a leaf that holds a provisional's enrolment and not its veto still stands under the head, and a withheld veto never reads as a revocation. Siblings under two heads never prove to each other, so no sibling ever hands another a KEL.
+* ''A leaf behind the head catches up off the herms' successor drops'' (`packages/lararium-mesh/src/persona-kel-drop.ts`). The drop `H(persona-kel-drop ‖ H.eventCid ‖ gate)` at a herm holds the events whose predecessor names `H`: the leaf brings the name, and the herm lists nothing unasked. A deposit carries the successor AND its predecessor event, and the herm keeps the successor only when it VERIFIES against that predecessor: the predecessor's cid recomputes, the name derives from it, and the successor passes the one reader's own successor check — a rotation's guardian quorum against the predecessor's committed next keys (the pre-rotation), a veto's signature under the predecessor's op-key, every enrolment's seal. So no one who lacks the persona's keys files anything under a name a leaf pulls, and every quota counts verified values alone: a name holds a bounded count of rotations and, apart from them, of vetoes, so an op-key holder's vetoes never crowd out a quorum's rotation. The herm keeps the bytes and no holder hint, holds plural values (a provisional and its veto share a predecessor), caps a deposit's bytes and what one connection spends, and may refuse any deposit. A drop rides the herm's floor voice, availability by content address and never a vouch; its sealed acting voice never touches one. Deposit and pull ride a plain request on the herm's relay port, apart from every proven socket, so no drop request carries a proven key. The reader asks every herm at once, each under a deadline and a body cap, folds every value through the one reader, and names every value it refused, every herm that answered nothing and any fork, so a herm that strips, swaps or withholds a successor surfaces as `relay`.
+* ''Every leaf acts alike.'' Every leaf pulls before it joins, on every dial and whenever a sibling closes a session because the head rolled, and re-deposits its own head chain on every dial. A leaf whose KEL moves deposits the move at every pinned herm before it closes a session, waiting on no herm past its deadline, so the sibling that hears the close finds the move waiting. A leaf that pins two herms or more tolerates one herm that withholds, floods or hangs through another: a third party files nothing under a name a leaf pulls, and a herm that never answers costs a dial or a move its deadline and no more. A revoked leaf leaves every channel and keeps pulling, so a later rotation that re-enrols it stands it again when it wakes.
+
+''What newest-tag-only closes, and what it leaves open.''
+
+* ''A revoked leaf acting alone, through an honest herm, sees no sibling.'' Its kept secret keys only the old channel, and no sibling standing under the head joins it.
+* ''A herm colluding with the revoked leaf still reads presence.'' The relay stamps every frame with the long-lived device key each leaf proved at its gate, and the revoked leaf knows every sibling's device key from the sessions it held, so the herm reads who stands online, and when, off its own gate; the tag set a socket joins groups the current siblings besides. Only per-dial transport keys bound into the leaf-peer transcript, in place of the device key the herm stamps, close this, and R-WIRE owns them (`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`).
+* ''The watcher window stretches under a withholding herm.'' Until a stale sibling learns the revoking rotation, it treats the revoked leaf as a member: they meet under the old head and sync documents, not presence alone. A herm that withholds the drop stretches that window without bound, and one herm's withholding reads as "no rotation yet", undetectable from that herm alone. A second pinned herm that answers closes it, whatever the first withholds, floods or hangs; the KERI watcher bound stands for the rest.
+* ''A pull speaks to a pin-holder.'' A drop's name needs the herm's gate key, so a stranger computes none and meets silence, the knock's own bar. A pin-holder who reads the persona's public KEL computes every name, so the drop door answers it "this herm serves persona P", and the name a leaf pulls says which head that leaf holds, how far behind it stands; its address and timing link the pull to the proven socket it opens next. Every leaf acting alike hides nothing of this.
+* ''A self-minted flood spends the herm's budget.'' Anyone may mint a persona of their own, and its events verify under names no other persona's leaf pulls. The herm caps every drop's bytes in all and, past that cap, lets go of the drops it heard from least lately: a flood displaces values, never fills a name a leaf pulls, and every leaf's re-deposit on its next dial files its chain again.
+* ''A drop outlives a restart.'' A herm that journals its drops (the node vessel's carriage relay does, beside its storage) reads them back on start, each verified again as any deposit, so a rotator that deposited and went offline leaves its move waiting.
+
+<<~/ahu>>
+
+<<~ ahu #/what-a-red-would-need>>
+
+!! What the smallest red would need, and why none is written here
+
+The asked-for red — //a stranger asking an identity-slot doc is refused; a member of that persona's plane is admitted; the founder's own reads unchanged// — could not stand honestly while the fork stood open:
+
+* the ''stranger'' half already passes, for a reason that has nothing to do with the slot: an identity-slot doc sits outside the deterministic federatable set and a WS peer absent from `peerIdentifierMap` draws `false` at `open-node-vessel.ts:497`. A red that goes green on that answer measures the fed gate and names the slot — the exact instrument-lie shape.
+* the ''member of that persona's plane'' half has no function to call. Writing one binds the fork above, which is the ruling.
+* the ''founder's own reads'' CONTROL stands as the one half worth keeping whichever way the fork closes: the same-operator class answer must not move.
+
+''Once the fork closes, the red that pins it is ONE vector per arm'': under (A), a fleet device reads and a contracted cabal member does not; under (B), a member of the persona's plane reads and a fleet device of a DIFFERENT persona does not — the vector that proves the wire carries the distinction at all, and one that could not pass at the measurement; under (C), a charter holder reads and a carrier place does not. Each arm's CONTROL is the other two arms' admit drawing a refusal.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reach-plane">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-slot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;0cPr9mMIn05GpB8g01_R-vYfw_pJApD73TmipGhQ0so
+
+<<^ code="&#x0004;" -> to="?">>

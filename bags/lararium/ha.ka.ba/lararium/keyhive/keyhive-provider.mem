@@ -1,0 +1,136 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/keyhive/keyhive-provider.mem"
+l-space     = "lararium"
+mana        = 17
+manao       = 16
+manaoio     = 15
+role        = "isomorphic keyhive ceremony provider: founding, device-admit, and apply-admit functions; three-gate identity lattice"
+source-file = "packages/lararium-keyhive/src/keyhive-provider.ts"
+title       = "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/keyhive/keyhive-provider"
+```
+
+! Keyhive Provider
+
+The isomorphic ceremony surface for the Lararium identity lattice.
+Lives in `@lararium/keyhive` — no TW5, no Node I/O, no DOM.
+Takes a `Repo` and a seed; returns unforgeable membership proofs stored as Automerge CRDT events.
+
+<<~ ahu #/contract>>
+
+!! Contract
+
+Three ceremony functions. All three run in any vessel context (node, browser, worker).
+
+''`runFoundingCeremony(repo: Repo, operatorSeed: Uint8Array): FoundingResult`''
+
+Produces the three-doc identity lattice:
+* `Individual` — Ed25519 device keypair derived from seed; the Keyhive identity for this vessel.
+* `PersonaGroup` — sentinel Automerge doc proving "this device belongs to this operator."
+* `MeshCabal` — sentinel Automerge doc proving "this PersonaGroup belongs to this mesh."
+
+Gate B and Gate C tiddlers write into the admin doc. Gate A verifies the Keyhive DID
+matches the local verifying key; throws on mismatch — no silent drift.
+
+''`runDeviceAdmitCore(repo: Repo, operatorSeed: Uint8Array): AdmitPayload`''
+
+Produces an out-of-band admission payload (`admit.json`) for a second vessel.
+The payload carries the MeshCabal and PersonaGroup doc URLs, the founding Keyhive
+Individual's public keys, and a signed delegation token.
+Vessels transfer this payload out-of-band: QR code, file, direct message.
+
+''`runApplyAdmitPayload(repo: Repo, receivingSeed: Uint8Array, payload: AdmitPayload): void`''
+
+Applies the payload to the receiving vessel's Repo. Writes oracle tiddlers for
+Gate B and Gate C into the admin doc. The receiving vessel can verify its own
+lattice membership from cold — no network request, no authority server.
+
+<<~/ahu>>
+
+<<~ ahu #/three-gate-lattice>>
+
+!! Three-Gate Lattice
+
+```text
+Vessel Individual (Ed25519 device keypair, local storage only)
+  └─▶ PersonaGroup, a Keyhive group    ← Gate B: vessel ∈ PersonaGroup
+           └─▶ MeshCabal sentinel Document  ← Gate C: PersonaGroup ∈ MeshCabal
+```
+
+Gate A — local key integrity: Keyhive DID MUST match disk or WebCrypto verifying key.
+Throws `EaKeyMismatch` on any divergence. No silent corruption path.
+
+Gate B — device membership: the PersonaGroup, a Keyhive group, seats this vessel's identity as a member.
+Verified by reading the oracle tiddler written at founding or admit-apply time.
+
+Gate C — cabal membership: MeshCabal sentinel doc carries this PersonaGroup as a member.
+Verified by the same oracle tiddler chain.
+
+All three gates pass before a vessel may open wiki VM lanes or sync its admin doc
+to any remote vessel.
+
+<<~/ahu>>
+
+<<~ ahu #/isomorphic-law>>
+
+!! Isomorphic Law
+
+These functions accept `Repo` and `Uint8Array` only. They carry no:
+* filesystem imports (`fs`, `path`)
+* DOM imports (`window`, `indexedDB`, `crypto`)
+* Node worker imports (`worker_threads`)
+* TW5 imports
+
+The calling vessel supplies: a `Repo` (constructed with a vessel-appropriate adapter)
+and the operator seed (read from disk at 0o600 for node, derived from WebCrypto for browser).
+The ceremony functions run identically in both contexts.
+
+The `@lararium/keyhive` package depends on `@lararium/mesh` and `@keyhive/keyhive` (WASM).
+It does not depend on `@lararium/tw5`, `@lararium/node`, or `@lararium/browser`.
+
+<<~/ahu>>
+
+<<~ ahu #/ea-notes>>
+
+!! Ea Notes
+
+The founding ceremony produces an unforgeable membership proof that any vessel holding
+the operator seed can verify from cold. No server participates in this verification.
+The CRDT events that carry the Gates B and C proofs travel in the admin doc — the
+same doc that syncs only to `cap=admin` vessels.
+
+The operator seed MUST NOT enter any Automerge doc. The ceremony reads it to derive
+the Individual keypair and then releases it. The keypair itself (public material only)
+enters the PersonaGroup doc. The private scalar never leaves the memory of the function call.
+
+''A crossing carries no seed; the root SIGNS and never travels.'' The same law extends past founding to every
+admit crossing. A `PersonaCrossingBundle` (`packages/lararium-keyhive/src/persona-crossing.ts`) holds exactly
+the founder's public contact card, public CGKA/membership ops, and already-E2E ciphertext — no seed slot
+stands there, and none may be added. The persona root seed enters the tree ONLY as a ''signing input''
+(`device-delegation` · `ceremony-core`), never as a payload field; a joinee decrypts with its OWN prekey
+secret. A crossed vessel therefore receives ''standing'', never the key that grants it — a seed on the wire
+would turn admission into cloning, and every admitted vessel would hold the human entire.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/operator-peer">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/capability-provider">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/event-store">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/two-vessel-mesh">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;sV2hD1WvuFKyYjmVE2Ips06GQOUVsUx-LZjmRxZxkwg
+
+<<^ code="&#x0004;" -> to="?">>

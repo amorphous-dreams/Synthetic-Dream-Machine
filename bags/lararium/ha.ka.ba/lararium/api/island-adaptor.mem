@@ -1,0 +1,143 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
+file-path = "bags/lararium/ha.ka.ba/lararium/api/island-adaptor.mem"
+mana      = 18
+manao     = 18
+manaoio   = 17
+namespace = "&#x0950; &#x0901;"
+role      = "TS wiki shore between CompositeStore and the wiki's in-process nalu engine — owns the landing queue and its door, the landed ledger, the per-title hand gate and the draft book; lands each inbound change as the composition resolves it and routes a hand's saveTiddler/deleteTiddler at or above the working layer; the outbound bridge reads the wiki's change dispatches for it; the law it enacts lives at docs/pono/outbound-bridge"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title     = "lar:///ha.ka.ba/lararium/api/island-adaptor"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/api/island-adaptor"
+```
+
+! IslandAdaptor — Invariant
+
+!! Identity
+
+`IslandAdaptor` provides the narrow TS shore between `CompositeStore` and the wiki.
+It implements `MemeProjection` (inbound) and exposes `saveTiddler` / `deleteTiddler` (outbound).
+It does NOT implement the TW5 `syncadaptor` module contract — `$tw.syncer` does not run. The outbound bridge (`packages/lararium-tw5/src/outbound-bridge.ts`, stood per island in `sovereign-kernel.ts`) reads every live `$tw.wiki` `change` dispatch for it ([[outbound-bridge|lar:///ha.ka.ba/lares/docs/pono/outbound-bridge]]).
+
+Under the yin-collapse law (lar:///ha.ka.ba/lares/api/pono/nalu), the wiki IS the
+reactive engine. The adaptor holds the shore work that TW5 cannot do from inside itself:
+subscribing to the CompositeStore projection bus, queueing each inbound change and landing it as
+the composition resolves it, keeping the account of what each wave left, and carrying a hand's
+edit to the store with its base. The law it enacts stands at
+`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law`; this carrier names the adaptor's
+own invariants and no more.
+
+!! Responsibility Split
+
+| Concern | Owner |
+|---|---|
+| Subscribe to CompositeStore projection bus | IslandAdaptor (`start`) |
+| The ordered landing queue, its 200-change slices, the host-task yield between them, the seed checkpoint | IslandAdaptor through `WaveLanding` (`wave-landing.ts`) |
+| The queue's door at `$tw.lares.enqueueNalu` | IslandAdaptor (`installLandingQueue`; removed at `stop`) |
+| Resolve a bagged change through the composition (`store.resolveLayered`) | IslandAdaptor (`_landOne`) |
+| Apply ONE change to the wiki | nalu-engine (`$tw.lares.applyNalu`, in-wiki) |
+| The landed ledger: per title the value, bag and heads the last wave left | IslandAdaptor (`LandedLedger`, `landed-ledger.ts`) |
+| Read a live wiki `change` dispatch: discrete acts first, then foam or a hand per title | the outbound bridge (`outbound-bridge.ts`) |
+| Pace a hand per title (trailing window + non-resetting cap), flush at teardown | IslandAdaptor through `HandGate` (`hand-gate.ts`) |
+| Outbound save → the meme family through `store.writeFamily` in the layer the cascade names at or above the working layer, or the higher layer where the title already lives | IslandAdaptor (`_saveBag`, `_writeMeme`) |
+| Outbound delete → `tombstoneInBag` in the bag the composition's layer order picks | IslandAdaptor (`_tombstoneBag`) |
+| A draft's target, wanted title and draft-open base | IslandAdaptor (the draft book, `draft-book.ts`) |
+| Echo guard for a synchronous caller during an apply | `$tw.lares.isApplyingNalu()` |
+
+!! Wiring — One Projection, One Door
+
+```typescript
+const adaptor = new IslandAdaptor(tw5, composite, wikiSlug);
+adaptor.installLandingQueue();
+adaptor.start();
+```
+
+No accumulator. No `flushAll`. The adaptor owns the queue and the door; the wiki's nalu engine owns the apply.
+
+!! Invariants
+
+''I-1 Every envelope reads as a wave.''
+`onUriChanged` queues every change, this shore's own writes included. An own-origin envelope
+(`origin.kind === "tw-local"` with this `instanceId`) counts as the store's acknowledgment of the
+write, and its `writtenAt` heads become the base the hand's next write builds on. No origin filter
+decides what lands; the landed ledger does.
+
+''I-2 The wiki shows what the composition resolves.''
+A bagged change lands the record `store.resolveLayered(title)` answers: the topmost layer holding any
+record for the title, a tombstone included (the ''kāpae'' semantics), with that layer's bag and
+heads. A tombstone in a higher-priority bag SHADOWS the bags beneath it and the wiki title reads
+gone; a lower layer's record never lands over a higher layer's; where no layer holds a record the
+title lands absent. Only an unbagged change lands its own record. (the shadow-vs-fall-through cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]])
+
+''I-3 Single forwarding path for all origins.''
+Every inbound change — `crdt-remote`, `canon-hydrate`, `lares-verb`, `tw-local` — flows through
+the one landing queue. No origin gets special-cased to bypass it. Seed replay and live changes share
+the queue and its slices.
+
+''I-4 Outbound save.''
+`saveTiddler` refuses a title that never persists (`neverPersists`: the volatile VM plane and the
+alert rail, ahead of any cascade edit), teaches the draft book when the tiddler carries `draft.of`,
+and marks the title in the hand gate. The flush reads the title's state in the wiki (a direct caller that hands in a tiddler the wiki does not hold rides pinned, its value standing in), routes BY KIND
+through the cascade (`lar-bag-paths.tid`): a `draft.of` tiddler to the draft slot, `$:/temp/*` and
+most `$:/state/*` to the temp store, the personal kind to the personal slot, the catch-all to
+`current-wiki-bag`. `_settle` accepts only a layer the composition mounts at or above the working
+layer and refuses every other answer by name (`UnroutedSaveRefusal`, raised on the alert rail). The
+write reaches `store.writeFamily()` via the Path-H auto-split (`splitBodyTiddler`), carrying its base.
+
+''I-5 Outbound delete.''
+`deleteTiddler` refuses a title that never persists and marks the title like a save. A delete
+routes LIKE A SAVE, and the tiddler has left the wiki by then, so no field answers: the bag of this shore's own last acknowledged write of the title answers first, then the landed ledger's bag,
+a title never seen this session falls to the cascade's title read, and `_tombstoneBag` picks the bag by the composition's layer order (the landed layer at or
+above the working layer; else where a save of the title would land; else the working layer). The
+tombstone lands through `tombstoneInBag` with its base, then ahu fragment-parent children
+get removed from the wiki directly (outbound housekeeping). A composition with no working layer
+refuses the delete by name.
+
+''I-6 onSyncComplete is observability-only.''
+The shore keeps no per-island pre-sync buffer. The method exists for
+projection-protocol compatibility and may carry future telemetry; it does not
+mutate adaptor or wiki state.
+
+''I-7 onChangeset enters the queue as one grain.''
+A changeset carries the complete envelopes of whole store changes: a local family write, or the union of
+the change events the provider gathered for a bag, whatever its size. The adaptor hands it to the landing
+queue as ONE family (`enqueueFamily`), and the queue lands it inside one slice.
+
+''I-8 A stopped shore holds no account of the wiki.''
+`stop()` awaits acts in flight, stops the queue, flushes every marked hand, removes the door it
+installed, and clears the ledger, the sent values, the hand bases, the last-write bags and the
+unlanded marks. A restart seeds afresh and turns resident at its own seed checkpoint.
+
+!! The seed
+
+The recipe (`buildIslandRecipe`) installs the landing queue and starts the adaptor, then drives
+`AutomergeDocStore.emitInitialReplay()` per bag. Each existing record flows through
+the provider → `adaptor.onUriChanged` → the landing queue.
+The recipe then arms the seed checkpoint (`armSeedCheckpoint`), which resolves once the queue and
+its tracked work settle and turns the shore resident (a seed landing that fails twice rejects it); the kernel awaits it before `behavior.onEa` runs.
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/nalu-engine">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge#/the-shore-law">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/sync-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;saD5V81jn4QTjW-ZFPbOlpE6dLuOxRDRNvdJvXqTR4g
+
+<<^ code="&#x0004;" -> to="?">>

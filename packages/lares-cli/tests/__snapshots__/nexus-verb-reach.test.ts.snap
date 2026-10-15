@@ -1,0 +1,101 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > kahuli usage 1`] = `
+"lares nexus kahuli: unknown tier "not-a-tier"
+usage: lares nexus kahuli <engine | grammar>
+
+  the OVERTURN — advance one ratchet tier of this Nexus's genesis composition:
+    engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device
+             delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;
+             the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.
+    grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —
+             never the true-name. Reads the current epoch; --apply re-derives the island (the bake).
+
+  a read NEVER builds — the deliberate build+push lives behind --apply and in \`nexus rite kahuli\`."
+`;
+
+exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > nexus usage 1`] = `
+"lares nexus: unknown verb "definitely-not-a-verb"
+usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering>
+
+lares nexus — the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.
+
+  seal <seat | rotate | show | export | import | grow | cold | cofound>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal)
+  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym
+  kapae --list                              read the currently-Kapae'd set (the fold)
+  un_kapae <nym>                            mint a quorum-signed causal lift
+  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);
+                                            --json emits the admit BUNDLE the joinee takes by hand
+  revoke <operator-pubkey>                  revoke a member (quorum-only)
+  contract|revoke <nym> --nexus <aid> --out <partial>   a Nexus whose seats rest in two vaults: sign with the
+                                            seats held here and write the act as a PARTIAL file; nothing lands
+  contract --from <partial> [--out <file>]  judge a partial against this vessel's own charter head and board;
+                                            ready → this vessel's seats cosign; complete → it lands here
+  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own
+                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is
+                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)
+  uncarry <place-vessel-key>                end a carrier contract (quorum-only)
+  members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never
+                                            authority (default: the primary charter's Nexus)
+  accept-carriage [--index N] [--nexus <aid>]  (joining operator) mint + keep the 'accepts carriage' contract-in
+                                            for one Nexus (default: the primary charter's)
+  admit-take <bundle-file>                  (joining operator) verify the admit bundle a founding kahu handed over
+                                            against the charter held for its Nexus, keep it, and re-present a
+                                            running vessel's dial to the hearth that wrote it
+  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel
+                                            key — reads no persona, because a crossroads holds none
+  posture [private | open]                  read / flip the cross-Nexus federation posture
+  rite <petname>                            the pet-named procedures — \`cabal\` seats the founding quorum, \`kahuli\` overturns a ratchet tier
+  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition
+  realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);
+                                            the WORN face's key for this Nexus seals it (\`lares persona wear N\` first)
+            [--realm <id>]                  the realm the act lands in: a cabal realm (64 hex) or the charter-derived realm (the default)
+            [--join]                        ASK to keep a bag another hand keeps — the record waits on each standing steward
+            [--cosign [--with <key>]]       consent as a named steward to a record that waits on this hand;
+                                            \`--with\` names the asker where several records wait
+            [--steward <key>[,<key>]]       also NAME those stewards, each a key that already sealed a record of this realm
+            [--tier contract|public]        the DECLARED read — public names a book the Herm carries by hash
+            [--expiry <rolls>]              lease the registration against the realm's own pace
+            [--charter <nym>=<realm-id>]    the charter a named hand holds (a book spanning two charters)
+  publish <plugins>                         THE OFFERING DOOR — what THIS operator publishes for others to take;
+                                            held apart from \`kahuli\`, which overturns what the MESH shares
+  offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install
+  realm-bags [--realm <id>]                 the bags a realm carries, and who keeps each; a listing never enters a realm
+
+Examples:
+  lares nexus rite quorum
+  lares nexus contract <operator-pubkey> --json
+  lares nexus admit-take ./admit-bundle.json
+  lares nexus offering inspect sha256:<offering-cid>"
+`;
+
+exports[`lares nexus — every verb reaches its door > the three usage surfaces read byte-for-byte as they stand > seal usage 1`] = `
+"lares nexus seal: unknown sub-verb "not-a-subverb"
+usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse | cofound>
+
+  seat    form the roster from the personas that STOOD for a chair, give each chair a seat key
+          of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints
+          as a cold key on a card: the card prints once, you type it back, and the genesis commits
+          one digest per chair. No next key rests on this machine.
+          [--threshold <k>]            the quorum rule (default: majority of those that stood)
+  rotate  type back each chair's card: each revealed key becomes its chair's seat key, and the
+          chain advances. The roster becomes exactly what STANDS — the succession door: a kahu
+          steps down by no longer standing, a new one takes a chair by standing and signs with a
+          fresh key. Fresh cards print for the rolled head, and you type them back.
+          [--threshold <k>]  the quorum rule for the new roster (default: majority)
+  show    read the kahu quorum's seats + chain head + quorum verdict + the carried set
+  cold rehearse  type back one or more chairs' cards: each reads against the digests the head
+          committed and names the chair it would roll. Nothing moves: no key, row or charter.
+  import <file>          land a charter at the primary path — only where none stands, or the same one
+  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for
+                         that AID lands only when its seal lineage extends the held head
+  cofound open --release <manifest> --out <offer>   found a Nexus with a second operator, two of two:
+          a seat key for your face and your hearth's cadence key mint here, your chair's next key prints
+          on a card you type back, and the offer file goes to the other founder. [--face <i>] [--charter-law <lar:>]
+  cofound join <offer> --out <join>   answer an offer: type the offer seat's fingerprint as you heard it
+          (--heard <fp>), and your own seat, cadence key and card mint; the join half-signs the inception
+  cofound seal <join> --out <inception>   the offering founder: type the joining seat's fingerprint as you
+          heard it (--heard <fp>); both signatures land, and the joint charter files under its own AID
+  cofound seal <inception>   the joining founder: the inception reads against the image you joined, and
+          the joint charter files under its own AID. Neither household seed moves."
+`;

@@ -1,0 +1,45 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-8145">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable      = true
+file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-8145.mem"
+mana           = 14
+manao          = 14
+manaoio        = 13
+namespace      = "&#x2299;"
+reference-kind = "rfc"
+role           = "reference meme — cites IETF RFC 8145 by its own bibliographic metadata"
+tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+title          = "lar:///ha.ka.ba/lares/ref/RFC-8145"
+type           = "text/memetic-wikitext+tiddlywiki"
+uri-path       = "ha.ka.ba/lares/ref/RFC-8145"
+
+[reference]
+author     = "D. Wessels, W. Kumari, P. Hoffman"
+date       = "April 2017"
+seriesinfo = "Proposed Standard"
+target     = "https://www.rfc-editor.org/info/rfc8145"
+title      = "Signaling Trust Anchor Knowledge in DNS Security Extensions (DNSSEC)"
+```
+
+<<~ ahu #/head>>
+
+! RFC 8145 — Signaling Trust Anchor Knowledge in DNS Security Extensions (DNSSEC)
+
+A reference meme. It carries RFC 8145's own bibliographic facts — fetched from rfc-editor.org,
+never invented — in `[reference]` above, so a pin at this address cites the work itself.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;EmzNcXY3GFZGe5jWaps_8N3yiCn_K7RA4YCTbYhAVY4
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,111 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/kumu">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/kumu.mem"
+namespace = "&#x2299;"
+role      = "device-template declaration pragma — kumu as a Verse-style messaging edge widget set: @editable slots placed by kau, KumuListenable/KumuSubscribable reaction pins wired via papalohe; \\type/\\typos stand as native TW5 pragmas, carrying no mirror relation to kumu"
+tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-kumu"]
+title     = "lar:///ha.ka.ba/lares/api/pono/kumu"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/kumu"
+```
+
+<<~ ahu #/head>>
+
+! Kumu
+
+//kumu// — Hawaiian: teacher, origin, source, trunk; the base from which things grow. In botany,
+the trunk of a tree; in cultural life, the teacher who holds the root knowledge and passes it
+forward. A kumu functions as more than a fact-holder — it grounds the structural origin of a lineage of forms.
+
+A kumu names a template of a Verse-style messaging edge widget set — a `creative_device`-shaped
+device definition, carrying `@editable` slots and reaction pins for `kau` to place. The
+definition teaches; the placement creates
+(`lar:///ha.ka.ba/lares/api/pono/kau#/etymology`).
+
+Where `wehe` / `\procedure` declares a named callable body, `kumu` declares a named
+//device type// — a reusable widget-set shape that `kau` instances stand up on the island map.
+The distinction: a procedure executes; a kumu holds the form other nodes instantiate.
+
+<<~/ahu>>
+
+<<~ ahu #/device-model>>
+
+!! The Device Model
+
+A kumu declaration carries three parts, mapped from the Verse `creative_device` model
+(`lar:///ha.ka.ba/lararium/mesh/kumu-device#/verse-model`):
+
+* ''`@editable` slots'' — properties the declaration exposes as ahu slot URIs; `kau` supplies
+  the value at placement time (`lar:///ha.ka.ba/lares/api/pono/kau#/law`).
+* ''OUTPUT pins, `KumuListenable`'' — the device's outgoing events, carried as
+  `reaction:listenable` pranala edges on the type meme.
+* ''INPUT pins, `KumuSubscribable`'' — the device's handler surface, carried as
+  `reaction:subscribable` pranala edges on the type meme.
+
+Wiring between two kau instances' pins runs through `papalohe`
+(`lar:///ha.ka.ba/lares/api/pono/papalohe`); a kumu declaration never wires directly to another
+kumu declaration — only placed instances wire.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! Law (Kānāwai)
+
+A kumu declaration MUST carry a unique type name.
+A kumu declaration body defines the widget-set template for instances of that type.
+A kumu declaration MUST register a type definition only, producing no render output.
+A kumu declaration's `@editable` slots MUST resolve as ahu slot URIs.
+A kumu declaration's OUTPUT/INPUT pins derive from the type meme's `reaction:listenable` /
+`reaction:subscribable` pranala edges, not a TS class hierarchy
+(`lar:///ha.ka.ba/lararium/mesh/kumu-device#/exports`).
+
+<<~/ahu>>
+
+<<~ ahu #/syntax>>
+
+!! Syntax
+
+```text
+<<~ kumu TypeName(params)>>
+  body template
+<<~/kumu>>
+```
+
+The TW5 `\type` and `\typos` pragmas run as native TW5 pragmas in their own right, carrying no
+Hawaiian headword and no mirror relation to `kumu`
+(`lar:///ha.ka.ba/lares/api/pono/nihomano-sigils#/first-discovered-set`).
+
+<<~/ahu>>
+
+<<~ ahu #/pending>>
+
+!! Pending
+
+A `kahea` name-form call resolves a kumu type at widget-build time through the `KumuRegistry`
+into a `WidgetNode`; the registry's own resolution step stays open, held at Gap 8 of the
+research stream <confidence:0.6 — design resolved, implementation pending>
+(`lar:///ha.ka.ba/lares/docs/pono/research-streams/gaps-tensions#/gaps`).
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/wehe">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kumu-device">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kau">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/gaps-tensions">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;6KF5j4g5fOBVFjKd1LFYZzkKjpKAYvM079_6f-1rDCA
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,243 @@
+/**
+ * build-freshness — the Fresh-Build Invariant for daemon-lifecycle commands.
+ *
+ * A `lares` run loads the workspace packages from their BUILT dist. A stale dist
+ * silently runs OLD code — and for a found/boot/mutate verb that means founding an
+ * identity or booting the daemon with superseded logic — e.g. a `vessel found` against
+ * a stale `@lararium/node` dist calls the keyhive ceremony without the signer seed and
+ * crashes mid-ceremony, leaving a half-founded vessel.
+ *
+ * Node caches modules at import, so building MID-process cannot reload them. The only
+ * sound cure is **build-then-re-exec**: build the whole workspace, then re-run the SAME
+ * command in a FRESH process (clean module cache → loads the just-built dist).
+ *
+ * Best-practice shape for these CLI-managed daemon verbs:
+ *   - Fresh-build invariant — never found/boot from stale dist (this module).
+ *   - Idempotent          — every verb re-runs safely (`found` skips-if-founded, `stand`
+ *                           attaches-or-starts, the build no-ops when current).
+ *   - Fail-loud           — a build failure ABORTS; the daemon never runs from stale code.
+ *   - Composable          — install = build + found + stand + wire, each step re-runnable.
+ *
+ * An invocation `needsFreshBuild` accepts routes through `freshBuildGate` before its handler.
+ * The `--skip-build` sentinel marks the re-exec'd child (build already done) so it runs
+ * its handler directly — ending the recursion.
+ */
+
+import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { pathToFileURL } from "node:url";
+import { repoRoot } from "@lararium/mesh/node";
+import { udsAlive } from "./local-connector.js";
+import { VESSEL_SUBS } from "./commands/vessel.js";
+import type { ParsedArgs } from "./parse-args.js";
+
+/**
+ * Does this invocation found / boot / mutate identity from workspace code?
+ *
+ * DERIVED, never rostered. A remembered list of verb names drifts the moment a surface changes — the
+ * same defect the vessel door exists to close. Every substrate motion rides ONE door, so membership
+ * reads off that door rather than off a name someone has to recall.
+ *
+ * The test states the EXCEPTIONS, so it fails safe: a sub-door added later is gated until someone
+ * argues otherwise. Only two motions neither found nor boot — `read` inspects and starts nothing, and
+ * `stop` is pure port-control that loads no vessel logic.
+ */
+const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help", "unbound"]);
+
+/**
+ * The vessel door's own sub-door names, DERIVED from its SUBS table — never a second roster to drift.
+ * `cmdVessel` dispatches exclusively through that table, so this set is the exact catalogue of names
+ * that run vessel logic; anything outside it returns an "unknown sub-door" error and loads nothing.
+ */
+const VESSEL_SUB_SET: ReadonlySet<string> = new Set(VESSEL_SUBS);
+
+export function needsFreshBuild(args: ParsedArgs): boolean {
+  if (args.command !== "vessel") return false;
+  const sub = args.positional[0];
+  if (sub === undefined) return false;
+  // A name absent from the vessel door dispatches to an error and runs no vessel logic, so it cannot
+  // run STALE logic — building for it would tax a plain typo (or `status`, whose read verb is `read`)
+  // with a full workspace rebuild ahead of the error. Only the REAL sub-doors reach the gate.
+  if (!VESSEL_SUB_SET.has(sub)) return false;
+  // Of the real sub-doors, the reads and port-control start nothing; every founding/booting one builds.
+  return !NEVER_STALE.has(sub);
+}
+
+const BUILT_LARES_BIN = join(repoRoot, "packages", "lares-cli", "dist", "src", "bin", "lares.js");
+/** The digest the current dist was built from, and the lock that keeps one writer. Both sit beside dist. */
+const BUILD_STAMP = join(repoRoot, "node_modules", ".lares-build", "source-digest");
+const BUILD_LOCK  = join(repoRoot, "node_modules", ".lares-build", "build.lock");
+
+/**
+ * A digest of every source carrier under `dir` — path + bytes, walked in a stable order.
+ *
+ * FRESHNESS READS CONTENT RATHER THAN CLOCKS. An mtime comparison calls a tree stale whenever a
+ * checkout, a `touch`, a restored file or a skewed clock moves a timestamp without moving a byte —
+ * and a spurious "stale" is not merely wasteful here, because the rebuild it triggers is the thing
+ * that has repeatedly broken the tree. It also runs the other way: an editor that preserves mtimes
+ * hides a real change, and a false "fresh" runs superseded logic against real identity.
+ *
+ * Content answers both. Two trees with the same bytes ARE the same build, whatever their clocks say.
+ *
+ * ONE implementation: `tools/stamp-build.mjs` computes this digest to WRITE the stamp (it runs
+ * before the CLI exists, so it cannot import from here); this reads it back to CHECK the stamp, by
+ * importing the very function stamp-build.mjs runs — a dynamic import, since this module's own
+ * callers stay synchronous-shaped elsewhere in the file but this one path now awaits. The import
+ * resolves off `repoRoot` (the house's own repo-root walker, `@lararium/mesh/node`) rather than a
+ * relative `../../../` — a relative path reads differently from `src/` than from the compiled
+ * `dist/src/`, and this module runs from BOTH. `repoRoot` walks up from its OWN file regardless of
+ * which copy of itself is running, so one absolute join holds from either depth with no hard-coded
+ * climb.
+ */
+export async function sourceDigest(dir: string, root: string = repoRoot): Promise<string> {
+  const stampBuildUrl = pathToFileURL(stampToolPath(root)).href;
+  const { sourceDigest: stampSourceDigest } = await import(stampBuildUrl);
+  return stampSourceDigest(dir) as string;
+}
+
+/** The stamp tool: the one implementation of the digest, and the first link of the build chain. */
+function stampToolPath(root: string): string {
+  return join(root, "tools", "stamp-build.mjs");
+}
+
+/**
+ * Did this tree ARRIVE BUILT, holding no source and no build chain?
+ *
+ * A CHECKOUT holds sources, the stamp tool and the workspace build. The product image holds each package's `dist`
+ * and neither `tools/` nor any package `src/`: nothing there can drift from a source the tree never held, and
+ * nothing there could rebuild. The gate's question ("does dist come from the source this tree holds?") has one
+ * answer in such a tree: no source stands to compare, so the dist reads current. Measured in the image:
+ * `lares vessel seed` died `ERR_MODULE_NOT_FOUND … /app/tools/stamp-build.mjs` before its handler ran.
+ *
+ * BOTH absences together name the built tree. A tree that holds the CLI's source and lost its stamp tool (a
+ * sparse or partial checkout) still holds source its dist may trail, so it never reads as arrived built.
+ */
+export function treeArrivedBuilt(root: string = repoRoot): boolean {
+  return !existsSync(stampToolPath(root)) && !existsSync(join(root, "packages", "lares-cli", "src"));
+}
+
+/**
+ * Does the built dist come from THESE bytes? Fresh when the recorded digest matches what the tree
+ * currently holds; stale on any mismatch, and stale when no build has ever stamped one. A tree that
+ * arrived built holds no source to differ from, and reads fresh. A tree that holds source and no stamp
+ * tool cannot prove its dist and reads stale.
+ */
+export async function isWorkspaceStale(root: string = repoRoot): Promise<boolean> {
+  if (treeArrivedBuilt(root)) return false;
+  if (!existsSync(join(root, "packages", "lares-cli", "dist", "src", "bin", "lares.js"))) return true;
+  if (!existsSync(stampToolPath(root))) return true;
+  const digest = await sourceDigest(join(root, "packages"), root);
+  let stamped: string | null = null;
+  try { stamped = readFileSync(join(root, "node_modules", ".lares-build", "source-digest"), "utf8").trim(); } catch { stamped = null; }
+  return stamped !== digest;
+}
+
+/** Record the digest the current dist was built FROM — written only after a build succeeds. */
+async function stampBuild(): Promise<void> {
+  try {
+    mkdirSync(dirname(BUILD_STAMP), { recursive: true });
+    writeFileSync(BUILD_STAMP, await sourceDigest(join(repoRoot, "packages")));
+  } catch { /* a stamp we cannot write costs one extra build, never correctness */ }
+}
+
+/**
+ * The gate. Returns `null` when the workspace is already fresh (the `--skip-build`
+ * child) — the caller then runs the command handler directly. Otherwise builds the
+ * workspace (idempotent) and re-execs the SAME command in a fresh process, returning
+ * that process's exit code for the caller to propagate. A build failure aborts and
+ * returns its non-zero code — the daemon NEVER runs from stale dist.
+ */
+/**
+ * The gate's four reaches, injectable so a witness fakes a socket rather than standing a daemon.
+ */
+export interface FreshBuildDeps {
+  /** Does a daemon answer at the vessel's socket? */
+  readonly alive: () => Promise<boolean>;
+  /** Does the built dist come from bytes other than the tree's? */
+  readonly stale: () => boolean | Promise<boolean>;
+  /** Build the workspace; the exit status. */
+  readonly build: () => number;
+  /** Re-run the same invocation against the just-built bin; the child's exit status. */
+  readonly reexec: (argv: readonly string[]) => number;
+}
+
+const REAL_DEPS: FreshBuildDeps = {
+  alive: () => udsAlive(),
+  stale: () => isWorkspaceStale(),
+  build: () => {
+    const build = spawnSync("pnpm", ["-r", "build"], {
+      cwd:   repoRoot,
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    });
+    return build.status ?? 1;
+  },
+  reexec: (argv) => {
+    const child = spawnSync(process.execPath, [BUILT_LARES_BIN, ...argv, "--skip-build"], {
+      stdio: "inherit",
+      env:   process.env,
+    });
+    return child.status ?? 1;
+  },
+};
+
+/**
+ * Does this invocation ATTACH when a daemon answers? `stand` in its default posture attaches-or-starts:
+ * with a daemon up it reports and boots nothing, so the socket's answer settles the gate before the tree
+ * is read. A restart tears the daemon down and boots — it founds or boots regardless of what answers,
+ * as every other gated sub-door does — so those never ask the socket.
+ */
+function attachesWhenAlive(args: ParsedArgs): boolean {
+  return args.command === "vessel" && args.positional[0] === "stand"
+    && !args.flags["restart"] && !args.flags["foreground"];
+}
+
+export async function freshBuildGate(argv: readonly string[], args: ParsedArgs, deps: FreshBuildDeps = REAL_DEPS): Promise<number | null> {
+  if (args.flags["skip-build"]) return null;   // re-exec'd child — already fresh
+  // OBSERVING NEVER FOUNDS OR BOOTS, so it never earns a rebuild. The gate exists because founding or
+  // booting from stale dist runs superseded logic against real identity; a caller holding the observe cap
+  // alone mutates nothing, so the danger it guards cannot arise.
+  //
+  // And the rebuild is not free to attempt: it re-emits every package's dist while a daemon runs from it.
+  // Measured, when a liveness check reached for the stand door: the gate fired, the build cleared dist,
+  // and the running node lost `node-host.js` mid-flight — the probe killed what it was measuring, then
+  // reported it dead. `build` re-emits without clearing today (`build:clean` holds the clearing), so the
+  // sharpest edge has moved; the rule stands on the principle rather than on that one blast radius. A
+  // reading must not be able to disturb what it reads, and this is where that promise gets kept.
+  if (args.flags["observe"]) return null;
+  // SOCKET FIRST. A daemon that answers turns `stand` into a reading — it attaches and reports — and a
+  // reading never earns a rebuild (the same promise as `--observe`, kept by asking the socket rather than
+  // the caller). The tree is asked only on a MISS, where standing would boot.
+  if (attachesWhenAlive(args) && await deps.alive()) return null;
+  if (!(await deps.stale())) return null;      // dist clearly current — run the handler in-process
+
+  // ONE WRITER. Two builds over one dist race with nothing between them, and the loser writes into a
+  // tree the winner is mid-way through replacing. An exclusive create IS the lock: the filesystem
+  // settles it, so no check-then-act window opens between asking and holding.
+  let held = false;
+  try {
+    mkdirSync(dirname(BUILD_LOCK), { recursive: true });
+    writeFileSync(BUILD_LOCK, String(process.pid), { flag: "wx" });
+    held = true;
+  } catch {
+    console.error("[lares] fresh-build: another build holds the lock — refusing to race it.");
+    console.error(`  wait for it, or clear a lock no process holds: rm ${BUILD_LOCK}`);
+    return 1;
+  }
+
+  console.error("[lares] fresh-build: source changed since the last build — rebuilding before the daemon-lifecycle step…");
+  const status = deps.build();
+  if (held) rmSync(BUILD_LOCK, { force: true });
+  if (status !== 0) {
+    console.error("[lares] fresh-build: workspace build FAILED — aborting (never run the daemon from stale dist).");
+    console.error("  the previous output stands: `build` re-emits dist without clearing it, so nothing was destroyed.");
+    return status;
+  }
+  await stampBuild();   // only a SUCCEEDING build earns a stamp — a failed one leaves the tree reading stale
+
+  // Re-exec the SAME invocation against the just-built bin, in a fresh process. The
+  // `--skip-build` sentinel (appended last) ends the recursion and tells the child to
+  // run its handler directly.
+  return deps.reexec(argv);
+}

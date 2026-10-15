@@ -1,0 +1,45 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-3986">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable      = true
+file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-3986.mem"
+mana           = 14
+manao          = 14
+manaoio        = 13
+namespace      = "&#x2299;"
+reference-kind = "rfc"
+role           = "reference meme — cites IETF RFC 3986 by its own bibliographic metadata"
+tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+title          = "lar:///ha.ka.ba/lares/ref/RFC-3986"
+type           = "text/memetic-wikitext+tiddlywiki"
+uri-path       = "ha.ka.ba/lares/ref/RFC-3986"
+
+[reference]
+author     = "T. Berners-Lee, R. Fielding, L. Masinter"
+date       = "January 2005"
+seriesinfo = "STD 66"
+target     = "https://www.rfc-editor.org/info/rfc3986"
+title      = "Uniform Resource Identifier (URI): Generic Syntax"
+```
+
+<<~ ahu #/head>>
+
+! RFC 3986 — Uniform Resource Identifier (URI): Generic Syntax
+
+A reference meme. It carries RFC 3986's own bibliographic facts — fetched from rfc-editor.org,
+never invented — in `[reference]` above, so a pin at this address cites the work itself.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;4vYbudrgWiurJ8F_L2c0bJUtqFLx80IB9ycYCTiHK24
+
+<<^ code="&#x0004;" -> to="?">>

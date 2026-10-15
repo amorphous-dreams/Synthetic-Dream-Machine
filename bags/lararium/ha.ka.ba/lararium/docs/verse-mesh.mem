@@ -1,0 +1,267 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/verse-mesh">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
+file-path = "bags/lararium/ha.ka.ba/lararium/docs/verse-mesh.mem"
+mana      = 18
+manao     = 18
+manaoio   = 17
+role      = "design narrative for the Verse polychronous CRDT mesh — peer model, VM pool, camera model, landing-queue wiring"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title     = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/docs/verse-mesh"
+```
+
+! Verse Mesh — Design Narrative
+
+!! What a Peer Owns
+
+A lararium peer owns ''bags'' (Automerge documents), not wikis.
+A wiki is a ''recipe'' — an ordered composition of bags.
+The peer assembles a wiki on demand by stacking bags in priority order.
+The same CRDT source bags yield different rendered views for different operators
+and different application surfaces.
+
+The invariant: bags persist, wikis compose.
+
+!! N Local Clocks — Polychronous CRDT Mesh
+
+The Verse mesh runs ''N local clocks'', one per TW5 VM instance.
+Each VM constitutes one clock domain (Signal/INRIA polychronous model, Berry 1991).
+Rendezvous between clock domains happens ''only at CRDT merge boundaries'' —
+when Automerge delivers a remote change, the island's wiki shore queues it for a
+landing paced by host task.
+
+No global conductor exists.
+No peer commands another peer's tick rate.
+Each island owns its own pacing, inside its own worker.
+The CRDT carries state across the water in causal order.
+The wiki shore lands it in TW5 slice by slice.
+
+!! VM Pool — Every Engine in a Worker
+
+''No TW5 engine runs on a main thread, on any platform.'' The vessel's main thread coordinates a
+pool and holds no engine: it keeps `DocHandle` references, the transferred sync ports and the
+painted surface. Each island boots its own Repo over a transferred port and derives its tiddlers
+from its own CRDT doc (`packages/lararium-mesh/src/island-protocol.ts`, the Island Sovereignty Law).
+
+```
+Vessel main thread (coordinates; holds no engine)
+ ├── island pool            ← VesselIslandPoolCore: wela / anu residency + pin, LRU
+ │    ├── island[wiki A]    ← a Worker (worker_threads on node, Web Worker in a browser)
+ │    │    ├── Repo-in-island        ← CRDT sync over the transferred syncPort
+ │    │    ├── TW5Engine             ← one TW5 wiki — the shared world graph
+ │    │    ├── nalu engine           ← applies ONE change, synchronously
+ │    │    ├── IslandAdaptor         ← the wiki shore: one landing queue across all bags; outbound writes
+ │    │    └── Camera[story-river]
+ │    │         ├── widget tree      ← wiki.makeTranscludeWidget("$:/core/ui/RootTemplate", ...)
+ │    │         └── VM-side document ← $tw.fakeDocument; frames cross to the main thread
+ │    └── island[wiki B] …
+ │
+ └── painted surfaces (browser) ← each camera's frames applied as real HTML in a shadow root;
+                                   DOM events and field values return to the island
+```
+
+Residency runs ''two-state'': an island stands `wela` (a live worker) or `anu` (no worker), with an
+orthogonal pin that exempts an island from cooling. No warm middle tier stands
+(`lar:///ha.ka.ba/lararium/api/residency-tiers#/third-tier-gate`); heating an island spawns a fresh
+worker, which declares `ea` when it breathes.
+
+A node vessel paints nothing. Its islands project to disk in-island, and a headless render reads
+`$tw.fakeDocument`.
+
+!! Camera Model — Story River Is the First Camera
+
+A ''camera'' = one view frustum over the TW5 wiki world-state.
+
+!!! Three-Tree Chain — Per Camera
+
+Each camera runs its own three-tree chain, the same chain TW5 already runs for
+the Story River:
+
+```
+wikitext source (tiddler body)
+    ↓  wiki.parseTiddler() / wiki.parseText()
+parse tree  (ParseTreeNode[])
+    ↓  widget.makeChildWidgets()
+widget tree (Widget graph)
+    ↓  widget.render(container, null)
+VM-side document (TW5FakeElement tree)
+    ↓  serialize → frame → paint
+rendered output
+```
+
+`wiki.makeTranscludeWidget(rootTiddler, { document, parentWidget })` creates the
+widget tree and binds it to a `document`.
+Each camera receives its own `document` instance — the render surfaces stay separate.
+
+`mountCamera(engine, { rootTiddler, document, container })` (`packages/lararium-tw5/src/tw5-camera.ts`)
+wires the parse→widget→document chain for one camera, registers the camera's `change` listener, and
+returns a teardown.
+
+!!! Camera Surface Contract
+
+Each camera holds:
+* its own ''widget tree'' — TW5 widget graph rooted at a filter or transclusion tiddler
+* its own ''VM-side document'' — the render target, living in the island beside the engine
+* its own ''frame grain'', declared at mount — the unit of absolute state its frames key by (`camera-mount` C-6)
+* its own input/output surface — user events in, wiki writes out
+
+A browser camera's widget tree never binds `window.document`. The camera renders into its VM-side
+document; the main thread paints that camera's frames and returns events and sensed state
+(`camera-mount` C-7). Every frame carries absolute state for its key with a monotone revision, and no
+frame carries a delta (`lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`).
+
+!!! Shared World Graph — Inverted Control
+
+All cameras in one island ''share one TW5 wiki'' (world graph).
+The wiki fires one `change` event for the titles its `nextTick` queue gathered.
+Each widget tree registered via `wiki.addEventListener("change", tree.refresh)`
+reacts independently — widget trees with no dependency on the changed tiddlers
+return `refresh()` in O(1) without repaint.
+
+The ''view frustum'' lives in the widget tree's root filter tiddler, not in the landing queue.
+The landing queue carries no camera identity — ''inverted control''.
+
+!!! Input Path — No New Machinery
+
+Cameras that accept user input (typing in the Story River, drawing on a canvas camera)
+dispatch events through the widget tree's standard TW5 event bus.
+A `dispatchEvent({ type: "tm-verse-event", uri, listenable })` call travels up the
+widget tree to the root widget, where `reaction-router.ts` catches it.
+Outbound writes — when a user saves a tiddler from any camera — go through
+`IslandAdaptor.saveTiddler → store.writeFamily()`, the same path the Story River uses.
+No new write-back machinery is necessary for additional cameras.
+
+A browser camera's input starts on the painted surface. The main thread relays a DOM event by the
+render-id the island stamped on the node (`wiki:dom-event`), and a text field's whole current value
+on a sibling message (`wiki:dom-input`); the island invokes the handler TW5 itself bound, and from
+there the widget tree runs as if the event had fired locally.
+
+The TW5 Story River is the ''first camera'' — the primary rendered view
+into the Verse graph for browser peers.
+It does not occupy the only camera slot.
+
+The ''second camera slot'' targets a ''canvas camera'': a DOM-hosting surface that never rasterises
+and takes no vendor's name (`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology#/the-surface-law`).
+It renders a different projection of the same bag state —
+spatial, relational, or visual-graph views of the same Automerge documents. Verse-style cameras
+stand beside other camera mounts; one protocol carries them, and the grain varies per camera.
+
+Further camera slots remain open for:
+* Mobile native views (React Native / Capacitor)
+* Background portal-spaces, comms links, nexus leyline feeds, remote signal feeds
+* Household / community / civil / interplanetary lararium implementations
+* Headless render targets (PDF export, MCP tool surface, LLM context projection)
+* Spectator/witness views with different read authority
+
+''Causal islands, fractal:'' causal islands exist inside the lararium (bag boundaries),
+outside the lararium (peer-to-peer CRDT sync), inside the TW5 VM (per-camera tick
+domains), and outside the TW5 VM (each island in its own worker, on its own clock).
+As above, so below.
+
+!!! Multi-Camera Example
+
+```
+Island (one worker, one TW5 wiki)
+├── Story River camera
+│   ├── document: VM-side; frames painted main-side into a shadow root
+│   ├── root: $:/core/ui/RootTemplate
+│   ├── frame grain: the whole surface (stands); tiddler frame + the river's order (ruled, unbuilt)
+│   └── wiki.addEventListener("change", storyWidget.refresh)
+│
+├── Canvas camera                                   (unbuilt)
+│   ├── document: its own VM-side DreamDOM document — hosts DOM, never rasterises
+│   ├── root filter: [tag[lar:///ha.ka.ba/tags/kumu-device]]
+│   ├── frame grain: the shape
+│   └── wiki.addEventListener("change", canvasWidget.refresh)
+│
+└── Mini-map camera                                 (unbuilt)
+    ├── document: its own VM-side document
+    ├── root filter: [all[tiddlers]tag[lar:///ha.ka.ba/tags/spatial]]
+    ├── cadence: a slower emit than the river's — background priority
+    └── wiki.addEventListener("change", minimapWidget.refresh)
+```
+
+Cameras that accept user input (typing, drawing) register outbound handlers
+(`saveTiddler`, `dispatchEvent`) on their widget tree.
+Input from any camera writes back through `IslandAdaptor.saveTiddler` →
+`store.put()` — the same outbound path the Story River uses.
+
+!! Visibility Gate — The Scale Boundary
+
+The wiki shore lands the changes of every queued bag, in slices of at most 200.
+
+A visibility gate would defer part of that work:
+land only the tiddlers the ''active story river currently renders'', and hold
+background bags (cold layers not in the active recipe view) until the next explicit
+navigation event.
+
+This gate stands unbuilt.
+It names the correct scale boundary before the project reaches it.
+
+!! Wiring Law — What Stands, and What Stays Unbuilt
+
+''What stands.'' One queue per wiki, at the wiki shore: `IslandAdaptor` holds one landing queue
+across every CRDT bag and lands it in slices, and the nalu engine
+(`packages/lararium-tw5/src/modules/nalu-engine.ts`) applies each change synchronously. The wiki
+fires `change` on its own `nextTick` schedule, apart from the shore's slices;
+every mounted widget tree sees it, and only trees depending on the changed tiddlers repaint.
+
+```typescript
+// In the island, beside the engine (packages/lararium-tw5/src/tw5-projection.ts):
+const stop = mountCamera(engine, {
+  rootTiddler: TW5_ROOT_TEMPLATE,
+  document:    $tw.fakeDocument,     // VM-side; never window.document
+  container:   storyContainer,
+});
+// Each wiki `change` marks a coalesce gate; the gate posts the newest whole-surface
+// snapshot as one `projection:frame` event, carrying html, css and a monotone rev.
+```
+
+The browser island mounts one story camera and one stylesheet reader this way, and the main thread
+applies each frame to a shadow root. The coalesce window stays pinned near one display frame:
+newest wins, and a burst of changes collapses to one post.
+
+''What stays unbuilt.''
+* A second camera on one island, and with it a document per camera beyond `$tw.fakeDocument`.
+* Per-camera tick rates and drain budgets. No `startRenderLoop` and no per-camera accumulator
+  stand in code; one coalesce gate paces the frames of the whole surface.
+* A frame grain finer than the whole surface. The ruling names where the grain goes and orders no
+  build: whole-surface frames stand until a measurement says a camera needs finer
+  (`dreamdom#/the-ruling`).
+* The DreamDOM document itself, which grows out of the standing projection, never beside it.
+
+!! Tick Sources by Platform
+
+Every row names a pace ''inside a worker''; no row places an engine on a main thread.
+
+| Platform | Where the engine runs | Landing pace (wiki shore) | Paint |
+|---|---|---|---|
+| Browser | Web Worker | a host task between slices: `scheduler.yield` where the worker offers one, else a `MessageChannel` message | main thread applies `projection:frame` to a shadow root |
+| Node | `worker_threads` Worker | a host task between slices: `setImmediate` | none — disk projection in-island; `$tw.fakeDocument` for a headless render |
+| Mobile, civil, interplanetary | a worker of that runtime (unbuilt) | that runtime's host task | that platform's surface |
+
+The landing queue stays identical across all platforms.
+The host-task seat changes; the landing contract does not. The nalu engine holds no timer.
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/camera-mount">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;5OuBEshOBcpxQ4CzqKQMIQZG4qG2HXgZ9Nbkpur9Qtw
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,430 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+hydrate   = false
+mana      = 18
+manao     = 18
+manaoio   = 18
+title     = "lar:///ha.ka.ba/lararium/api/graceful-parsing"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/api/graceful-parsing"
+```
+
+<<~ ahu #/head>>
+
+! Graceful Parsing ~ all of TiddlyWiki on a gradient
+
+''The principle (operator, 2026-06-27):'' scale "parse on a GRADIENT, degrade GRACEFULLY" to ALL of
+TiddlyWiki5 parsing, beyond the `<<~` memetic sigils. No parse SHALL break badly: every parse
+yields a best-effort tree; malformation rides the tree as graded nodes, never a throw, never a
+confidently-wrong structure. A five-spirit research swarm (2026-06-27) found the field converging on
+this model with rare unanimity. This carrier holds the design; each section marks what stands in
+code and what stands UNBUILT.
+
+The house invents nothing here: it NAMES what the island grammar and its Water half-do, and FINISHES it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-tower>>
+
+!! The superset tower ~ HTML ⊂ TW5 wikitext ⊂ memetic-wikitext
+
+The grammar forms a NESTED SUPERSET TOWER, each layer a strict superset of the one below, and the
+WHOLE stack degrades on the same gradient:
+
+* ''HTML'' — the base. TW5 wikitext parses raw HTML inline (the core `html.js` · `entity.js`
+  · `commentblock.js` · `commentinline.js` wikirules), so ''TW5 wikitext ⊃ HTML''.
+* ''TW5 wikitext'' ⊃ HTML — and memetic INHERITS it: the `MemeticParser` subclass filters the core
+  rule classes by a deny-list that defaults EMPTY (`DEFAULT_RULES_EXCEPT` in `memetic-parser.ts`), so
+  every core rule (incl. `html`) fires in a memetic doc.
+* ''memetic-wikitext'' ⊃ TW5 wikitext (lock 10: the `<<~` overlay, disjoint-match) — an ISLAND
+  GRAMMAR that panics-to-water.
+
+''The never-fail FLOOR (the deep elegance).'' Panic-to-water at the memetic layer yields VERBATIM
+TEXT; verbatim text renders as escaped HTML text; ''HTML text always renders.'' So water falls all the
+way down the tower to HTML-text, which cannot fail — the tower has a GUARANTEED never-fail ground.
+Every malformation, however severe, degrades to "verbatim bytes shown as text," never a crash. The
+gradient and its floor stand structural, not aspirational.
+
+''HTML5 stands as the canonical exemplar.'' The HTML5 parsing algorithm (tag-soup → a valid DOM,
+explicit error-recovery for every malformation, a browser that NEVER fails to parse) sets the gold
+standard for a never-fail parser — the property the whole tower emulates upward. The tower's work:
+TW5 wikitext and memetic-wikitext come to match the never-fail guarantee HTML holds at the base.
+
+''No HTML5 library sits at the floor.'' The TW5-native parser degrades without loss on its own (a
+malformed open tag reads as literal text; an unclosed element keeps every byte and runs on to the end
+of the tiddler), and "water → verbatim text → HTML text always renders" gives the never-fail floor with no
+dependency. The source carries no `parse5` dependency and no HTML5 tag module. HTML5-era behaviours
+(modern attribute grammar, foreign content, custom elements) belong in `html.js` itself, in the fork
+this house owns: UNBUILT.
+
+''Why a generic HTML parser cannot govern the tag grammar.'' TW5's `html` wikirule reads
+WIKITEXT-AWARE: its `parse()` reads an element's children as wikitext (`parseBlocks`,
+`parseInlineRun`), so `<div>''bold'' and a <$widget/></div>` interleaves HTML + wikitext + widgets. A
+whole-subtree HTML5 pass swallows that interior as opaque HTML and DESTROYS widget invocation. TW5's
+`html`-rule attributes THEMSELVES form a superset of HTML5 attributes: they interleave WIKITEXT into
+attribute VALUES — `attr={{transclusion}}` (indirect) · `attr={{{filter}}}` (filtered) ·
+`attr=<<macro>>` (macro) · bare `attr`→`value:"true"` (per `test-wikitext-parser.js`). A pure HTML5
+parser holds no `{{}}`/`<<>>` grammar. Three measurements against parse5 (2026-06-27): it flattens
+`attr={{X}}` to `value:"{{X}}"`, BREAKING transclusion/macro/filter attributes; it stays BLIND to
+`$`-widgets (`$` opens no legal HTML name); and it CANNOT even find tag BOUNDARIES — an unquoted
+`<<macro>>` value's `>` ends the tag early under the HTML5 unquoted-attribute-value state. So the live
+rule keeps TW5's own `parseTag` and `parseAttribute`.
+
+''What TW5's `html.js` lacks against HTML5'' (it holds NO insertion-mode state machine): real tag-soup
+recovery (insertion modes + adoption agency), HTML5-complete foreign-content handling, and dedicated
+raw-text/RCDATA handling (`<style>`/`<textarea>`/`<title>`). What it holds: the tag scanner accepts
+hyphenated custom-element names and `<template>` · `<slot>` tags (`isLegalTag` rejects only a
+leading-dash tag); `element.js` keeps hyphens (it strips every character outside `[0-9a-zA-Z-]` from a
+tag name) and assigns the SVG and MathML namespaces.
+
+''SECURITY AUDIT — the render gates and the holes they leave.'' TW5's only render gates: `script`→
+`safe-script` (`element.js`, over `config.js` `htmlUnsafeElements` — `script` ALONE), the `on*`-strip
+(`excludeEventAttributes` in `widget.js`, passed by `element.js`), and the tag-name clean to
+`[0-9a-zA-Z-]` (`element.js`). OPEN HOLES TW5 leaves: `javascript:`/`vbscript:`/non-image-`data:`
+schemes in URL-bearing attributes such as `href`, `src`, `xlink:href` and `action`; HTML content in
+`srcdoc`; and `iframe`/`object`/`embed`/`base`/`form`/`frame*`/`noscript`. No sanitizer in this house
+closes them. The allowlist sanitizer stands UNBUILT: a pure function with a tag allowlist, a per-tag
+attribute allowlist, a URL-protocol check (dropping `javascript:`/`data:` except image data-URLs) and
+`on*` removal, seeded from sanitize-html's default set, layered over TW5's render gates as defense in
+depth. Its placement in a TW5-native parse path awaits an operator ruling. DOMPurify stays ruled out:
+it needs a real DOM/`window` (not Worker-safe), and `isomorphic-dompurify` drags jsdom (heavy, plus a
+second redundant parser).
+
+''The PARSER loses nothing (deep-read in the fork, 2026-06-27).'' A malformed open tag → `parseTag`
+returns null → `findNextTag` skips it → LITERAL TEXT (lossless). Where the expected `</tag>` never
+appears, the element's body parses on through the end of the tiddler, past any ancestor's closer
+(`parseBlocksTerminatedExtended` and `parseInlineRunTerminatedExtended` in `wikiparser.js`): no byte
+drops, the rule records a `hint` diagnostic, `unterminated-html`, and the resulting nesting can remain
+a guess. For a `<<` attribute value with `>>` ahead that fails macro parsing, `parseAttribute` returns
+null (its guard in `parseutils.js`), so the enclosing tag fails to parse and never silently binds
+`"true"`; without `>>` ahead, that guard does not fire.
+
+''The parse receipt stands in the fork's core.'' `WikiParser` carries a `diagnostics` array
+(`addDiagnostic`; each entry normalised by `$tw.utils.makeParseDiagnostic`): the rules that recover
+silently record what they did — unterminated code block, inline code, emphasis, html, macro and
+function definition, quote block, style block, typed block, conditional, hard line breaks. The block
+driver catches a `RecoverableParseError`, keeps the block's source as a text node marked
+`isRecovered`, records a diagnostic and resyncs at the next blank line, always advancing ≥1 char
+(`recoverBlock`); no core rule throws that error at the pinned fork commit. `wiki.parseText` catches
+the same error escaping a parser constructor and returns the error's tree, or the whole text as one
+text node, with one diagnostic. The `parse-diagnostics` filter operator reads the array from the parse
+cache (`grade` · `count` · `codes`).
+
+''A finer `parseTag` rung — designed, UNBUILT.'' Recovery lives in the `parseTag` DRIVER;
+`parseAttribute` (the value grammar) stays INTACT. The three driver changes (`html.js`):
+# `parseTag` contract `node|null` → ''always-a-tree + diagnostics''. On a missing `>`: synthesize a
+   zero-width ''MISSING `>`'', set `openTagEnd = pos`, keep the attrs parsed so far, emit a
+   diagnostic. Recovery-set = next `>` | newline | `<`.
+# Bad/unterminated tag-name: emit an ''Error node'' wrapping the `<…` span VERBATIM
+   (`recoveredAs:"water"`, raw confidence), advance ''≥1 char'' (progress invariant).
+# Attribute loop: when `parseAttribute` returns null on a malformed `<<` (it MUST NOT silently bind
+   `"true"`), don't abort the tag — skip to the recovery-set, wrap the bad span as a graded
+   attribute-error, continue under the ≥1-char invariant.
+
+`parseAttribute` stays UNTOUCHED under that design — its extended value-branches (string/bare-
+`"true"` · `{{indirect}}` · `{{{filtered}}}` · `<<macro>>` · `((mvv))` · `` `substituted` `` ·
+unquoted) ride verbatim. MUST keep byte-exact: per-attr `start/end`; element `openTagStart/openTagEnd/
+closeTagStart/closeTagEnd/rule:"html"/orderedAttributes` (set in `html.js` `parse()`, asserted by
+`test-wikitext-parser.js`). Confidence shore: clean = `recoveredAs` absent / 20 · resynced =
+`recoveredAs:"repaired"` mid · verbatim-wrapped = `recoveredAs:"water"` raw (water ships first).
+
+''The integration GATE holds for any change to the live `html` rule:'' that rule dispatches EVERY
+widget, so a change rides only with the fork's own suite green (`test-wikitext-parser.js` +
+`test-wikitext.js` + widget specs, byte-exact node shapes incl.
+`openTagStart/openTagEnd/closeTagStart/closeTagEnd/rule:"html"/orderedAttributes` + per-attr `start/end`
++ the extended-attribute types). Test vehicle: `node $TW/tiddlywiki.js ++packages/lararium-tw5/tiddlers
+$TW/editions/test --test` (or the in-house `pnpm --filter @lararium/tw5 smoke:plugin-boot`).
+
+''PRIOR ART (the field hand-writes the tag grammar + delegates values):'' MDX's
+`micromark-extension-mdx-jsx` gives the near-exact analog (markdown-superset with `{expression}` in
+attr values) — it HAND-WRITES the tag tokenizer and delegates ONLY the value-expression to acorn,
+refusing a generic HTML parser for tags for //our// interleaving reason. TW5 holds this shape
+(hand-written `parseTag` + `parseAttribute` delegating `{{}}`/`<<>>`). BurningTreeC's Lezer serves
+editor-side reuse only. matklad's Resilient-LL supplies the recovery-set/≥1-char/Error-MISSING model.
+
+''The break-badly sits at RENDER:'' a widget whose `render()`/`execute()` THROWS runs UNCONTAINED —
+`renderChildren` (`widget.js`) loops `children[i].render()` with no try/catch, so one throwing
+widget crashes the whole render tree. (An unknown widget degrades gracefully to `"Undefined widget"`
+text; the gap covers //throwing// widgets.)
+
+''The parser carries the recovery; the render gap stays open.'' The fork recovers at the PARSER: an
+unmatched inline delimiter renders literally, an unclosed emphasis recovers, a block construct that
+never terminates gets reported, each recovery stands visible in the parse tree, and the
+`parse-diagnostics` filter reads them out. A per-widget render boundary (a try/catch around each child's
+`render()` and `refresh()`, opt-in by a config flag) stands WITHDRAWN: its author backed it out in
+favour of the parser recovery, and no branch of the fork carries it. A widget that throws at render
+still takes its render tree down. Whoever closes that gap owes three answers the withdrawn design left
+open: partial DOM a child inserted before it threw, a failure inside the error path itself, and the
+cost of the check on a hot render.
+
+''ERROR-SURFACING — TWO channels (operator: TW5 messages the user via `$:/alert` + system tags):''
+(1) IN-PLACE — the inline `tc-error` span at the failure site (the gradient, in-render); (2) USER-
+NOTIFICATION — a `$:/tags/Alert` tiddler so the user //knows// a degradation occurred (TW5's native
+dismissible alert, same channel as the reboot-alert shore). CAVEAT: NEVER raise `$:/alert` from inside
+`renderChildren` (mutating the wiki during render risks a re-render loop) — collect render-errors
+in-render, raise the alert OUT-of-render (a hook/sweep, eventual-send), per the reboot-alert discipline.
+Both channels stand UNBUILT, and no builder holds them.
+
+<<~/ahu>>
+
+<<~ ahu #/the-model>>
+
+!! The model ~ the five production invariants (the keel)
+
+Six production parsers (Roslyn · TypeScript · rust-analyzer · Babel · Lezer · Tree-sitter) converge on
+five invariants — independent of hand-written vs table-generated:
+
+<<~Inv 1-always-a-tree "the parse CONTRACT changes from `tree | throw` to `tree + diagnostics[]` (Babel's `errorRecovery`). Never throw, never null. matklad: this is the whole game — every 'break badly' today is a thrown/aborted parse">>
+<<~Inv 2-error-missing-nodes "ERROR + MISSING nodes ARE the gradient primitive — present-but-wrong (ERROR, wraps the unparsable span) vs expected-but-gone (MISSING, zero-width inserted). Everything between clean and garbage is expressible">>
+<<~Inv 3-lossless "lossless / full-fidelity trees — the ERROR node holds the bytes VERBATIM, so concatenating the tree reproduces source. This IS our verbatim+AST drawer; the error span lands in the tree, not the floor">>
+<<~Inv 4-untyped-typed "a homogeneous untyped tree underneath (every node a kind tag) + typed views on top — so error nodes live ANYWHERE without special-casing every rule">>
+<<~Inv 5-bounded-recovery "bounded recovery: recovery-SETS (tokens that signal 'parent resumes here') + the ≥1-char PROGRESS INVARIANT (a skip-loop MUST consume ≥1 char) — kills both hard-fail AND the infinite-loop failure mode">>
+
+''The theory name (it already exists):'' ISLAND GRAMMARS + Water/Lake (Moonen, //Generating Robust//
+//Parsers Using Island Grammars//, WCRE 2001 — "Water" = the non-terminal that swallows non-islands;
+arXiv 2010.16306 adds "Lakes" = tolerant regions inside islands). The `meme-ast` regex-islands +
+Text-gap parser forms an island grammar. It carries a per-node recovery grade (`standing`, 0–20 on
+the `aperture` ladder, set only on a recovered node) + an explicit `ErrorNode` (à la
+tree-sitter/Lezer/Roslyn). Diagnostics ride OUT-OF-BAND, span-keyed (rust-analyzer's model), on
+`ParseMemeResult.failures` — the gradient-annotation drawer over verbatim.
+
+<<~/ahu>>
+
+<<~ ahu #/engine-verdict>>
+
+!! Engine verdict ~ steal the model, don't swap the engine
+
+TW5's parser runs HAND-WRITTEN rule recursion — so the generated-GLR families offer the wrong SHAPE
+to copy; RESILIENT RECURSIVE DESCENT sets the gold pattern (Roslyn / rust-analyzer / matklad's
+//Resilient LL Parsing Tutorial//, the canonical modern reference).
+
+* ''Tree-sitter'' — STEAL its `ERROR`/`MISSING`/`error-cost` node model (the cleanest gradient
+  formalization, maps 1:1 onto our ladder). REJECT the engine: no TW5-wikitext grammar exists (author
+  from zero), markup RESISTS tree-sitter (its own markdown maintainers call it correctness-unsafe +
+  needs a C external scanner), recovery runs as an UN-TUNABLE BLACK BOX (fights "steer the
+  degradation"), C toolchain in a TS/WASM shop. (WASM-in-3-runtimes actually PASSES — not the blocker.)
+* ''Lezer'' — adopt the never-fail discipline + `@lezer/markdown`'s hand-written-incremental
+  architecture (BlockParser/InlineParser/NodeSpec) as a template IF we ever build editor-grade. NOT a
+  render-parser replacement (its CST ≠ TW5's attribute-rich widget tree; error nodes carry NO
+  confidence — the gradient stays ours to derive). NOTE: BurningTreeC shipped a WORKING Lezer wikitext
+  parser (CM6 plugin, Jan 2026) — reuse it EDITOR-side, don't rebuild.
+* ''Chevrotain'' — the strongest JS-native error-recovery ENGINE (pure-JS, no codegen/WASM, built-in
+  recovery; `recoveredNode` + `parser.errors[]` + `recoveryValueFunc` = the graded API) — but adopting
+  it = REPLACE (rebuild the widget pipeline). Hold as the escalation option only. (Langium = its LSP
+  upgrade; ANTLR loses on Java codegen; nearley/ohm/peggy = weak recovery for MALFORMED input.)
+
+<<~/ahu>>
+
+<<~ ahu #/architecture>>
+
+!! The lift architecture ~ AUGMENT + WRAP, reject REPLACE
+
+''REJECT REPLACE'' (re-host wikitext on Lezer/tree-sitter/Chevrotain): violates plugin-not-fork (TW5's
+widget render pipeline BONDS to the core WikiParser's `{type,attributes,children}` tree shape —
+swapping the parser = re-implementing the widget tree = forking `$:/core`) + isomorphism (a WASM/
+non-iso dep fights the node/browser/cli/worker quad our island layer runs in) + throws away a working,
+island-shaped parser.
+
+''AUGMENT'' the `meme-ast/` island layer (an island grammar from the start, so the lift stays purely
+additive). STANDS in `types.ts`, `builder.ts` and `parse.ts`:
+# an ''`Error` node kind'' in `MemeAstKind` (`ErrorNode`: `reason`, `recoveredAs`, `standing`, `pos`,
+   `raw`, and the verbatim span in `content`) — the builder emits it for an orphan close; a mis-nest
+   and an unclosed frame at EOF force-close MARKED (`recoveredAs`, `standing`), never silently.
+# ''`standing: number`'' on `MemeAstBase` (0–20 aperture ladder), set ONLY on a recovered node —
+   orphan close 2 · force-closed frame 9 (2 where the sigil declares water) · partial form 13; a clean
+   node carries none.
+# every recovery recorded out-of-band on `ParseMemeResult.failures`.
+UNBUILT: ''phrase-level recovery'' — bounding a force-closed frame at the next blank line / next
+opener instead of swallowing to EOF. `findCloseEnd` (`lar-sigil-shared.ts`) returns `null` where no
+closer arrives, and the builder's EOF sweep closes the frame over the rest of the document.
+
+''WRAP'' for full TW5 core wikitext. STANDS: the fork's core `WikiParser` keeps the recovery receipt
+itself (#/the-tower), and `MemeticParser` appends the sigil recoveries to that one `diagnostics` array
+(`failuresToDiagnostics` in `meme-ast/diagnostics.ts`), so a memetic carrier reports an unclosed
+emphasis delimiter and an unplaceable sigil on one channel, graded on one ladder. UNBUILT: a
+whole-parser tolerant guard as a plugin. The mechanism it would ride: TW5 builds its parser registry
+in `wiki.js` via `forEachModuleOfType("parser", … $tw.Wiki.parsers[f] = module[f])` —
+''LAST-REGISTERED WINS'' on a duplicate content-type, and plugin modules load AFTER core. So a plugin
+`module-type: parser` that does `exports["text/vnd.tiddlywiki"] = TolerantWikiParser` (subclass the
+core `WikiParser` and run `parse()` inside a tolerant guard that catches throws + downgrades the
+malformed span to a graded `Error`/Text node) ''OVERRIDES core for ALL standard wikitext'' — the way
+`memetic-parser.ts` registers `MemeticParser` for the memetic type, aimed at the default type.
+Panic-mode-to-water at the WHOLE-parser boundary, zero `$:/core` edits. The same last-wins rule
+reaches FINER per-rule recovery: a `module-type: wikirule` exporting an existing rule name shadows it
+(`createClassesFromModules` keys rule classes by name). No `TolerantWikiParser` stands in source.
+
+''THE REUSABLE MODULE (the operator's "lift complexity into another module") — UNBUILT:'' extract a
+tolerant-parse substrate — `meme-ast/recover.ts` (or `@lararium/parse-substrate`) — exporting:
+Water/Island/Lake segmentation · `ErrorNode` + grade constructors · recovery policies
+(`syncToNextOpener`, `boundAtBlankLine`, `forceCloseGraded`) · a ''`withRecovery(parseFn)`'' guard
+wrapping any throwing parser into a graded result. `builder.ts` · `scanner.ts` · the `MemeticParser`
+wrap all consume this ONE module. The rule classes NEVER learn recovery — the substrate owns it
+(matklad: recovery lives in the driver, not the grammar). Clean upstream-plugin boundary. The recovery
+helpers (`errorNode`, `markRecovered`) live inside `buildMemeAst`.
+
+<<~/ahu>>
+
+<<~ ahu #/tw5-break-modes>>
+
+!! TW5's actual break-badly modes (grounded, file and symbol)
+
+Three layers, failing differently:
+* ''Layer A — `meme-ast/` (island, regex + Text water):'' never throws, and records each recovery
+  (`builder.ts`): an orphan close lands as a water `Error` node holding its verbatim span; a mis-nest
+  force-closes the frames between, each marked `repaired`; a near-miss sigil the generic catch-all scan
+  recognizes grades `missing` (the partial rung) instead of vanishing; an unknown sigil lands as a
+  `Dynamic` node of kind `unknown`. Two breaks stand: an unclosed frame SWALLOWS the rest of the doc
+  before the EOF sweep force-closes it (marked and recorded, though the tree shape stays a guess), and
+  `safeRegex` drops a sigil's scan in silence where its pattern fails to compile (`scanner.ts`).
+* ''Layer B — the wikirule (`lar-sigil.ts`):'' a block opener with no closer matches as the opener
+  alone, its would-be body parsing on as ordinary wikitext, with no diagnostic recorded; a generic
+  `<<~` form no specific rule renders → `__literal__` water — a registered sigil as plain literal
+  text, an unknown form as a marked span (`partial` · `water`) with an `unrecognized-sigil-…`
+  diagnostic.
+* ''Layer C — the standard `$:/core` WikiParser'' (`MemeticParser` only filters its rule classes and
+  appends diagnostics; the engine runs unchanged): a regex-rule pump where every parse "succeeds" by
+  consuming all input. An unterminated construct consumes-to-EOF or mis-structures; the fork's rules
+  record a diagnostic for it (#/the-tower) and grade no node. A throw at RENDER stays uncontained.
+
+Edge hooks: `PranalaEdge` carries `confidence: number | null` (`types.ts`), written `null` by the
+edge projection (`edges.ts`), beside `PranalaEdgeViolation{severity}` — the gradient vocabulary on
+EDGES, populated by nothing; nodes carry theirs as `standing` + `recoveredAs`.
+
+<<~/ahu>>
+
+<<~ ahu #/recovery-policy>>
+
+!! Recovery policy ~ RESOLVED: water-floor, repair-as-gated-upgrade (2026-06-27)
+
+The choice never stood as water VERSUS repair: ''water holds the floor, repair arrives as a
+per-construct upgrade.''
+
+''LOCK — the WRAP guard ships PANIC-TO-WATER first.'' On any malformed span: catch, wrap the VERBATIM
+bytes in a graded `Error` node (`recoveredAs: "water"`, low/raw confidence), parse cleanly around it.
+Four reasons water holds the floor: (1) it CAN'T regress — water never forms a wrong tree (verbatim
+preserved, zero fabricated structure); (2) it keeps the gradient HONEST — it marks "structure
+unknown," it cannot lie, where a mis-repair claims structure it guessed wrong (the
+confidently-incorrect-tree failure this whole design kills); (3) it COMPOSES — repair adds on top,
+purely additive; (4) it ships cheap (a catch + downgrade vs the per-construct repair tail).
+`lar-sigil.ts`'s `__literal__` move does exactly this, scaled here to the parser boundary.
+
+''Repair follows, GATED.'' Add phrase-level repair (insert the MISSING token, resync to a
+recovery-set, re-parse) ONLY per-construct, ONLY where the fix reads UNAMBIGUOUS and FREQUENT — an
+unclosed `}}}` / `<<~>>` makes a safe insert; a broken table row makes a risky guess and stays water. A
+repaired node carries `recoveredAs: "repaired"` at MID (synthesis) confidence — honestly weaker than a
+clean parse, honestly stronger than water. The `recoveredAs` field carries the shore: `"water"`,
+`"repaired"` and `"missing"` (the partial rung) stand in `types.ts`, and the builder grades a
+force-closed frame `repaired`; token-inserting repair stands UNBUILT, landing per-construct. The
+gradient stays truthful end to end: clean=canon · repaired=synthesis · water=raw.
+
+<<~/ahu>>
+
+<<~ ahu #/sigil-self-defined-gradient>>
+
+!! Self-defining sigil failure-gradients ~ #has cap-stacks (3-spirit swarm, 2026-06-27)
+
+The meme-ast SIGIL builder (our island layer, distinct from the TW5 render boundary) hardens into a
+RESILIENT DRIVER that READS each sigil's OWN declared failure-gradient — a sigil self-defines how //it//
+degrades, via the EXISTING `#has` cap-stack. Two prior-art realms + our ground converged on one design.
+
+''THE CONVERGENCE.''
+* GRAMMAR side (SDF3 permissive-grammars [de Jonge/Kats/Visser] · PEG labeled-failures [+2025 semi-auto]
+  · matklad Resilient-LL · tree-sitter MISSING/ERROR · Ohm grammar-as-object): recovery lives in a
+  resilient DRIVER that READS per-entity declarations — the HYBRID. matklad's objection targets error
+  PRODUCTIONS (grammar alternatives that rot + change the accepted language), NOT per-entity recovery
+  HINTS the driver reads. Auto-derive each rule's recovery from its own production by default; let the
+  entity override.
+* COMPOSITION side (ECS behavior-by-having · ocap attenuation [Miller] · algebraic effect-handlers ·
+  OTP supervisor-trees · decorator/Tower/resilience4j): the per-entity declaration = an ORDERED
+  cap-stack (DATA); ONE dispatcher walks it as a nearest-handler CASCADE; ORDER = the gradient; each
+  lower rung an ATTENUATION (strictly weaker); a mandatory inert "water" rung at the floor; resilience4j
+  SHIPS this exact shape.
+* OUR GROUND: ''`#has` ALREADY runs as an ordered cap-stack'' — `has-stack.mem` (the Seven Clauses,
+  ratified 2026-06-12) + `island-caps.ts` (`composeIsland`: onSignal first-wins, ORDER = precedence,
+  teardown LIFO). island-caps' first-wins-by-order enacts the nearest-handler cascade the
+  effect-handler prior art names. We EXTEND the substrate to grammar entities; we do NOT invent it.
+
+''THE SOUNDNESS INVARIANT (load-bearing):'' a sigil declares its failure-gradient ONLY as recovery that
+fires AFTER a parse failure — NEVER as a normal grammar alternative. The clean grammar's accepted
+language stays unchanged (the permissive grammar forms a SUPERSET used only for recovery).
+
+''THE 4-RUNG GRADIENT (declared as data; each rung = named prior art):'' (1) clean — normal parse · (2)
+partial — minimal-edit completion (tree-sitter MISSING; declare a completion template / required
+trailers) · (3) degraded — skip-to-resync, wrap in an Error node (recovery/FOLLOW set; matklad/ANTLR) ·
+(4) inert — island/water, opaque span, parse around it (SDF3 water; MANDATORY floor). DEFAULT:
+auto-derive from the sigil's own open/close pattern (FIRST → start; FOLLOW → resync) so an un-annotated
+sigil degrades for free. OVERRIDE: a declared recovery cap-stack (the `#has` mechanism) / `lar-recover-*`
+fields.
+
+''THE DESIGN.'' The sigil tiddler `#has` a recovery cap-stack (the 4 rungs) as DATA. The hardened
+builder = the resilient DRIVER: at each failure site it CONSULTS the sigil's gradient and WALKS the
+cascade (first rung that can answer), enacting the MECHANISM (minimal-edit · skip-to-resync · water).
+Driver owns the mechanism; the sigil declares the policy. Out-of-band failure record on
+`ParseMemeResult.failures` (span-keyed — tree stays clean + carries Error/MISSING nodes; diagnostics
+ride beside, rust-analyzer-style + our drawer).
+
+''GOLDEN PRACTICES:'' order = the gradient (declared, not emergent — our has-stack order=precedence
+already satisfies this) · the inert water rung MANDATORY · attenuation-monotonic (each lower rung
+weaker — ocap) · resumable-vs-abortive tagged per rung (effect-handler discipline; resume = degraded,
+abort = inert) · the gradient as DATA, the cascade in ONE driver · clean path free of defensive tangle
+("let it crash" into the driver).
+
+''THE BUILD.'' STANDS: `SigilRule.recoverAs` (`"water" | "repaired"`), read by `grammar-cache.ts`
+from the sigil tiddler's `lar-recover-as` field (no shipped sigil tiddler sets it); the builder
+consults it at ONE site, the unclosed frame at EOF (`builder.ts`), where it sets the mark and the
+standing — a `"water"` declaration keeps the force-closed structured node; `parseMemeText` threads every recovery out on `ParseMemeResult.failures`
+(`parse.ts`), and `failuresToDiagnostics` reads them onto the core parse-diagnostics contract.
+UNBUILT: an inert verbatim-water rung for a declared sigil · the orphan-close and unknown-sigil
+sites consulting a declared gradient · scanner per-sigil error-accumulation (`scanner.ts`) · the
+recovery cap-stack itself (`has-stack`/`island-caps` extended to grammar entities).
+
+<<~/ahu>>
+
+<<~ ahu #/references>>
+
+!! Load-bearing references
+
+* matklad, //Resilient LL Parsing Tutorial// (2023) — https://matklad.github.io/2023/05/21/resilient-ll-parsing-tutorial.html
+* Roslyn Red-Green Trees — https://github.com/dotnet/roslyn/blob/main/docs/compilers/Design/Red-Green%20Trees.md
+* rust-analyzer syntax (lossless + resilient + errors out-of-band) — https://github.com/rust-lang/rust-analyzer/blob/master/docs/book/src/contributing/syntax.md
+* Moonen, //Generating Robust Parsers Using Island Grammars// (WCRE 2001) · Lake symbols — https://arxiv.org/pdf/2010.16306
+* Lezer System Guide — https://lezer.codemirror.net/docs/guide/ · `@lezer/markdown` — https://github.com/lezer-parser/markdown
+* Tree-sitter ERROR/MISSING — https://tree-sitter.github.io/tree-sitter/using-parsers/queries/1-syntax.html
+* Chevrotain Fault Tolerance — https://chevrotain.io/docs/tutorial/step4_fault_tolerance.html
+* BurningTreeC CM6 wikitext parser (2026) — https://talk.tiddlywiki.org/t/new-codemirror-6-tiddlywiki5-plugin-2026/14689
+* Babel `errorRecovery` — https://babeljs.io/blog/2019/11/05/7.7.0
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+''Tie ~ degrade-down-the-tower runs as the form gradient.'' The superset-tower graceful-degradation this meme
+locks (`x-memetic → wikitext → HTML → raw`, never hard-fault) carries directly into the FORM-capture: a
+botched construction lights its parent schema AND its lower grammar-layer, degrading up and down the
+same tower ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/two-planes]]). The cross-substrate GRADED-CORRECTION invariant
+behind that — correction by degree, never a binary gate — lives at [[living-grammar|lar:///ha.ka.ba/lares/api/pono/living-grammar]].
+
+''Tie ~ the ahu-family quoteblock floor lifts this law a layer.'' #/recovery-policy's panic-to-water
+floor governs Layer 1 (the meme-ast builder, one sigil at a time). [[ahu #/quoteblock-floor|lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor]]
+states the same floor at Layer 2, the family split: an un-decomposable ahu body, or an un-decomposable
+whole carrier on ingest, fences to a quoteblock rather than dropping — water, never a wrong tree, at
+the grain a write actually lands in.
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/living-grammar">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;nQoiwFmLx-aJBAP4X3adkIXEJb2Y8aFuXvfCWJZGmN8
+
+<<^ code="&#x0004;" -> to="?">>

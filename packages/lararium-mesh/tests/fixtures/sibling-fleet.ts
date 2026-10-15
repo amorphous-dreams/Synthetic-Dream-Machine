@@ -1,0 +1,315 @@
+/**
+ * sibling-fleet — one PersonaGroup's devices as the sibling tests stand them: a founded KEL, each device
+ * enrolled (its edge and its sealed PersonaGroup secret), a rotation that re-enrols the devices it keeps in the
+ * same attested act, an in-memory relay that routes by channel tag as the herm's does (a test can turn it
+ * hostile) beside two in-memory herms' successor drops, and the CARRY instrument that reads every frame DECODED —
+ * Automerge payloads included.
+ */
+import * as ed from "@noble/ed25519";
+import * as A from "@automerge/automerge";
+import { Repo, cbor, type PeerId } from "@automerge/automerge-repo";
+import { base64UrlDecode, hex, hexToBytes } from "../../src/crypto.js";
+import { mintVeto, type PersonaKelEvent } from "../../src/persona-kel.js";
+import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../../src/recovery-keel-core.js";
+import { guardianRecoveryRegistrationCard } from "../../src/recovery-registration.js";
+import {
+  enrolDevice, rollEnrolments, leafStandingUnder, enrolmentUnderHead, groupSecretOpenerFromSeed, type PersonaGroupEnrolment,
+} from "../../src/persona-group-secret.js";
+import type { LeafPeerSelf } from "../../src/leaf-peer-proof.js";
+import { shareConfigOf } from "../../src/federation-gate.js";
+import {
+  SiblingNetworkAdapter, siblingChannelTag, siblingKelDropsOf,
+  type SiblingTransport, type SiblingWireFrame, type SiblingRefusal, type SiblingLeaf, type SiblingKelDrops,
+} from "../../src/sibling-channel.js";
+import {
+  makePersonaKelDropStore, localPersonaKelDropHerm, type PersonaKelDropHerm, type PersonaKelDropStore,
+} from "../../src/persona-kel-drop.js";
+
+export const SEEDS = {
+  opA: new Uint8Array(32).fill(11), opB: new Uint8Array(32).fill(22), opC: new Uint8Array(32).fill(77), stranger: new Uint8Array(32).fill(9),
+  deviceX: new Uint8Array(32).fill(33), deviceY: new Uint8Array(32).fill(44), deviceZ: new Uint8Array(32).fill(55),
+  deviceW: new Uint8Array(32).fill(66),
+  g1: new Uint8Array(32).fill(1), g2: new Uint8Array(32).fill(2), g3: new Uint8Array(32).fill(3),
+};
+export const pubOf    = (s: Uint8Array): Promise<string> => ed.getPublicKeyAsync(s).then(hex);
+export const didOf    = async (s: Uint8Array): Promise<string> => `0x${await pubOf(s)}`;
+export const signerOf = (s: Uint8Array) => async (bytes: Uint8Array): Promise<string> => hex(await ed.signAsync(bytes, s));
+
+/** The founded PersonaGroup: an inception under opA with a 2-of-3 guardian set armed. */
+export async function founded(): Promise<{ inception: PersonaKelEvent; guardianRecoveryKeys: string[]; recoveryThreshold: number }> {
+  const guardianRecoveryKeys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
+  const slots = ["mine", "guardian-a", "guardian-b"] as const;
+  const guardians = guardianRecoveryKeys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null));
+  const prov = provisionThresholdRecoveryAtFounding({ foundingOpKeyDid: await didOf(SEEDS.opA), guardians, recoveryThreshold: 2 });
+  return { inception: prov.inception, guardianRecoveryKeys, recoveryThreshold: prov.recoveryThreshold };
+}
+
+/** A root enrols a device: the edge and the sealed secret, under the KEL prefix. */
+export async function enrol(root: Uint8Array, device: Uint8Array, prefix: string, boundEpoch = 0): Promise<PersonaGroupEnrolment> {
+  return enrolDevice({ opSeed: root, prefix, deviceVerifyingKey: await pubOf(device), hearthTrueName: "", boundEpoch });
+}
+
+/** The KEL rotated to opB, re-enrolling exactly `keep` — a device left out is revoked by this rotation. */
+export async function rotatedKeeping(keep: readonly Uint8Array[]): Promise<PersonaKelEvent[]> {
+  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
+  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
+  const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  if (!rot.ok) throw new Error(rot.reason);
+  return [inception, rot.event];
+}
+
+/** The KEL rotated twice — opB re-enrolling `first`, then opC re-enrolling `second`. */
+export async function rotatedTwice(first: readonly Uint8Array[], second: readonly Uint8Array[]): Promise<PersonaKelEvent[]> {
+  const { guardianRecoveryKeys, recoveryThreshold } = await founded();
+  const once = await rotatedKeeping(first);
+  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const devices = await Promise.all(second.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
+  const enrolments = await rollEnrolments({ prefix: once[0]!.prefix, opSeed: SEEDS.opC, devices });
+  const rot = await attestAndRotate({ head: once[1]!, freshOpKeyDid: await didOf(SEEDS.opC), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  if (!rot.ok) throw new Error(rot.reason);
+  return [...once, rot.event];
+}
+
+/** A PROVISIONAL rotation to opB re-enrolling `keep`, and the standing op-key's veto of it. The provisional
+ *  confers nothing until accepted; the veto, folded, kills it. */
+export async function provisionalKeeping(keep: readonly Uint8Array[]): Promise<{ inception: PersonaKelEvent; provisional: PersonaKelEvent; veto: PersonaKelEvent }> {
+  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
+  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
+  const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: SEEDS.opB, devices });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments, provisional: true });
+  if (!rot.ok) throw new Error(rot.reason);
+  const veto = await mintVeto({ contested: rot.event, standing: inception, sign: signerOf(SEEDS.opA) });
+  return { inception, provisional: rot.event, veto };
+}
+
+/** A leaf as the adapter reads it off a KEL: its key, signer and every enrolment it holds. */
+export async function leafOf(
+  device: Uint8Array, enrolment: PersonaGroupEnrolment, kel: readonly PersonaKelEvent[], expectedEpoch?: number,
+): Promise<SiblingLeaf> {
+  const deviceKey = await pubOf(device);
+  const standing = await leafStandingUnder({ kel, deviceKey, enrolment, open: groupSecretOpenerFromSeed(device) });
+  return { deviceKey, sign: signerOf(device), kel, standing, ...(expectedEpoch !== undefined ? { expectedEpoch } : {}) };
+}
+
+/** A leaf as it proves under a KEL: the edge and secret its head op-key sealed to it. Throws for a leaf the head
+ *  holds no enrolment of. */
+export async function leafUnder(
+  device: Uint8Array, enrolment: PersonaGroupEnrolment, kel: readonly PersonaKelEvent[], expectedEpoch?: number,
+): Promise<LeafPeerSelf> {
+  const leaf = await leafOf(device, enrolment, kel, expectedEpoch);
+  const under = await enrolmentUnderHead(kel, leaf.standing);
+  if (!under) throw new Error("the KEL head holds no enrolment of this device");
+  return {
+    deviceKey: leaf.deviceKey, sign: leaf.sign, edge: under.edge, kel, secret: { opKeyDid: under.opKeyDid, secret: under.secret },
+    ...(expectedEpoch !== undefined ? { expectedEpoch } : {}),
+  };
+}
+
+/** The gate keys the two in-memory herms' drops derive their names under. */
+export const DROP_GATES = ["a1".repeat(32), "b2".repeat(32)] as const;
+
+/** A drop herm a test can turn hostile: `serve` rewrites what a pull reads, `accept` decides what a deposit keeps. */
+export function memoryDropHerm(store: PersonaKelDropStore, timeline: string[], opts: {
+  serve?: (values: readonly unknown[]) => readonly unknown[];
+  accept?: boolean;
+} = {}): PersonaKelDropHerm {
+  const local = localPersonaKelDropHerm(store);
+  return {
+    gatePubKey: store.gatePubKey,
+    pull: async (name) => (opts.serve ?? ((v) => v))(await local.pull(name)),
+    deposit: async (name, deposit) => {
+      if (opts.accept === false) return;
+      timeline.push(`deposit ${deposit.event.eventCid}`);
+      await local.deposit(name, deposit);
+    },
+  };
+}
+
+/**
+ * An in-memory relay that routes as the herm's does: a frame reaches a member that shares one of the sender's
+ * channels (the tag each joined secret keys), addressed or to every such member; a later join REPLACES a member's
+ * channels. It stamps every frame with the key it "proved" for the sender and keeps every frame it carried, as it
+ * carried it. `inject` stands a HOSTILE relay that injects, replays or forges past the routing. Two in-memory
+ * herms' drops stand beside it (`drops`), and `timeline` orders every deposit against every frame carried.
+ */
+export function memoryRelay() {
+  const members = new Map<string, { frame: Set<(from: string, f: unknown) => void>; close: Set<() => void>; tags: Set<string> }>();
+  const carried: string[] = [];
+  const timeline: string[] = [];
+  const deliver = (from: string, to: string, frame: unknown): void => {
+    const text = JSON.stringify(frame);
+    carried.push(text);
+    queueMicrotask(() => { for (const l of members.get(to)?.frame ?? []) l(from, JSON.parse(text)); });
+  };
+  const share = (a: string, b: string): boolean => {
+    const mine = members.get(a)?.tags, theirs = members.get(b)?.tags;
+    if (!mine || !theirs) return false;
+    for (const t of mine) if (theirs.has(t)) return true;
+    return false;
+  };
+  const stores = DROP_GATES.map((gatePubKey) => makePersonaKelDropStore({ gatePubKey }));
+  const relay = {
+    carried,
+    timeline,
+    /** The two herms' drop stores. */
+    stores,
+    /** The two herms' drops, honest. */
+    drops: stores.map((s) => memoryDropHerm(s, timeline)) as PersonaKelDropHerm[],
+    /** Every frame a member handed the relay, carried or not, with its sender and its addressee (null: its channels). */
+    sent: [] as Array<{ from: string; to: string | null; frame: SiblingWireFrame }>,
+    /** Every frame the relay carried, with its sender and its addressee. */
+    log: [] as Array<{ from: string; to: string; frame: SiblingWireFrame }>,
+    /** Every sealed frame the relay carried from `from` to `to`, as it carried it. */
+    sealedFrom: [] as Array<{ from: string; to: string; frame: SiblingWireFrame }>,
+    inject(from: string, to: string, frame: unknown): void { deliver(from, to, frame); },
+    /** The herm drops `key`'s socket: its transport closes, and the leaf hears it. */
+    drop(key: string): void {
+      const m = members.get(key);
+      members.delete(key);
+      for (const l of m?.close ?? []) l();
+    },
+    /** True while `key` holds a transport to this relay. */
+    holds(key: string): boolean { return members.has(key); },
+    transportFor(key: string): () => Promise<SiblingTransport> {
+      return async () => {
+        const m = { frame: new Set<(from: string, f: unknown) => void>(), close: new Set<() => void>(), tags: new Set<string>() };
+        members.set(key, m);
+        return {
+          join: (secrets) => { m.tags = new Set(secrets.map((s) => siblingChannelTag(s, "00".repeat(32)))); },
+          send: (to, frame) => {
+            relay.sent.push({ from: key, to, frame });
+            if (frame.t === "seal" && to) relay.sealedFrom.push({ from: key, to, frame });
+            for (const target of to ? [to] : [...members.keys()].filter((k) => k !== key)) {
+              if (!share(key, target)) continue;
+              relay.log.push({ from: key, to: target, frame });
+              timeline.push(`frame ${key.slice(0, 8)}>${target.slice(0, 8)} ${frame.t}`);
+              deliver(key, target, frame);
+            }
+          },
+          onFrame: (l) => { m.frame.add(l); return () => { m.frame.delete(l); }; },
+          onClose: (l) => { m.close.add(l); return () => { m.close.delete(l); }; },
+          close: () => { members.delete(key); },
+        };
+      };
+    },
+  };
+  return relay;
+}
+
+export interface Leaf { repo: Repo; adapter: SiblingNetworkAdapter; refusals: SiblingRefusal[]; self: SiblingLeaf }
+
+/** Stand a leaf on the relay: a repo whose only network is the sibling channel, sharing every doc, its drops the
+ *  relay's two herms unless a test hands its own. */
+export function standLeaf(
+  device: Uint8Array, enrolment: PersonaGroupEnrolment, self: SiblingLeaf, relay: ReturnType<typeof memoryRelay>,
+  opts: {
+    readonly sharePolicy?: (peerId: PeerId, documentId?: string) => Promise<boolean>;
+    /** An edge the leaf presents whatever its KEL re-delegated — an impostor's. */
+    readonly presents?: LeafPeerSelf["edge"];
+    /** The drops this leaf pins; null pins none. */
+    readonly drops?: SiblingKelDrops | null;
+    /** More herms' relays the leaf dials beside `relay`. */
+    readonly alsoVia?: readonly ReturnType<typeof memoryRelay>[];
+    /** Delay before the leaf re-dials a herm that dropped it. */
+    readonly retryInterval?: number;
+  } = {},
+): Leaf {
+  const sharePolicy = opts.sharePolicy ?? (async () => true);
+  const refusals: SiblingRefusal[] = [];
+  const drops = opts.drops === undefined ? siblingKelDropsOf(relay.drops) : opts.drops;
+  const adapter = new SiblingNetworkAdapter({
+    transports: [relay, ...(opts.alsoVia ?? [])].map((r) => r.transportFor(self.deviceKey)),
+    ...(opts.retryInterval !== undefined ? { retryInterval: opts.retryInterval } : {}),
+    kel: self.kel,
+    leaf: async (kel) => {
+      const leaf = await leafOf(device, enrolment, kel, self.expectedEpoch);
+      return opts.presents ? { ...leaf, standing: { held: leaf.standing.held.map((h) => ({ ...h, edge: opts.presents! })) } } : leaf;
+    },
+    ...(drops ? { drops } : {}),
+    onRefusal: (r) => refusals.push(r),
+  });
+  // The verdict seats on announce AND access (`shareConfigOf`), as every vessel's does: a legacy `sharePolicy`
+  // fills announce alone and leaves a request by id wide open.
+  const repo = new Repo({ network: [adapter], shareConfig: shareConfigOf(async (peerId, documentId) => sharePolicy(peerId, documentId)) });
+  adapter.bindRepo(repo);
+  return { repo, adapter, refusals, self };
+}
+
+export async function until(cond: () => boolean, label: string, ms = 3000): Promise<void> {
+  const start = Date.now();
+  while (!cond()) {
+    if (Date.now() - start > ms) throw new Error(`timed out waiting for ${label}`);
+    await new Promise((r) => setTimeout(r, 10));
+  }
+}
+export const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+export const peersOf = (l: Leaf): PeerId[] => l.repo.peers;
+export const shutdown = async (...leaves: Leaf[]): Promise<void> => { for (const l of leaves) await l.repo.shutdown(); };
+
+// ── THE CARRY INSTRUMENT: every frame read DECODED ─────────────────────────────────────────────────────────────
+//
+// A carried string is read in every view it can hold: its UTF-8, its base64url and hex decodings, JSON or CBOR
+// inside any of those, and — for any byte run — the Automerge payload it might be: a sync message's changes, a
+// change, or a whole document, each DECODED, because Automerge deflates any column of 256 bytes or more and a
+// leaked document line past that size reads as nothing in its raw bytes.
+
+const B64URL_RE = /^[A-Za-z0-9_-]+$/;
+const HEX_RE = /^(?:[0-9a-fA-F]{2})+$/;
+
+/** Every structured reading of a byte run: JSON, CBOR, and the Automerge sync message, change or document it holds. */
+function structuresOf(bytes: Uint8Array): unknown[] {
+  const out: unknown[] = [];
+  try { out.push(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes))); } catch { /* not JSON */ }
+  try { out.push(cbor.decode(bytes)); } catch { /* not CBOR */ }
+  try { out.push(A.decodeSyncMessage(bytes).changes); } catch { /* not a sync message — each change it carries reads below */ }
+  try { out.push(A.decodeChange(bytes)); } catch { /* not a change */ }
+  try { out.push(A.toJS(A.load(bytes))); } catch { /* not a document */ }
+  return out;
+}
+
+/** Every byte view a carried string can hold: its own UTF-8, its base64url decoding, its hex decoding — and,
+ *  where a view reads as a structure, every view of every value inside it. */
+function viewsOf(text: string, depth: number, out: Uint8Array[]): void {
+  out.push(new TextEncoder().encode(text));
+  const decoded: Uint8Array[] = [];
+  if (HEX_RE.test(text)) decoded.push(hexToBytes(text.toLowerCase()));
+  if (B64URL_RE.test(text) && text.length >= 4) { try { decoded.push(base64UrlDecode(text)); } catch { /* not base64url */ } }
+  for (const bytes of decoded) bytesViews(bytes, depth, out);
+}
+
+function bytesViews(bytes: Uint8Array, depth: number, out: Uint8Array[]): void {
+  out.push(bytes);
+  if (depth <= 0) return;
+  for (const inner of structuresOf(bytes)) walk(inner, depth - 1, out);
+}
+
+function walk(value: unknown, depth: number, out: Uint8Array[]): void {
+  if (typeof value === "string") { viewsOf(value, depth, out); return; }
+  if (value instanceof Uint8Array) { bytesViews(value, depth, out); return; }
+  if (Array.isArray(value)) { for (const v of value) walk(v, depth, out); return; }
+  if (value && typeof value === "object") for (const [k, v] of Object.entries(value)) { viewsOf(k, 0, out); walk(v, depth, out); }
+}
+
+function contains(hay: Uint8Array, needle: Uint8Array): boolean {
+  outer: for (let i = 0; i + needle.length <= hay.length; i++) {
+    for (let j = 0; j < needle.length; j++) if (hay[i + j] !== needle[j]) continue outer;
+    return true;
+  }
+  return false;
+}
+
+/** Does any carried frame, DECODED — base64url, hex, nested JSON — hold `needle`'s bytes anywhere? */
+export function carriedReads(carried: readonly string[], needle: string): boolean {
+  const bytes = new TextEncoder().encode(needle);
+  for (const text of carried) {
+    let parsed: unknown;
+    try { parsed = JSON.parse(text); } catch { parsed = text; }
+    const views: Uint8Array[] = [];
+    walk(parsed, 5, views);
+    if (views.some((v) => contains(v, bytes))) return true;
+  }
+  return false;
+}

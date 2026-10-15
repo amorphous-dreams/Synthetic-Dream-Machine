@@ -11,9 +11,6 @@ import { buildPluginCjsTiddlers } from "./plugin-build/vite-plugin-build.js";
 export { buildPluginCjsTiddlers };
 export { MODULE_MANIFEST, SOURCE_MANIFEST, TIDDLERS_DIR, TIDDLER_SRC_DIR } from "./plugin-build/paths.js";
 
-/** Kept for build-plugin-tiddler.ts compatibility; anchor patching now driven by bags/ scan. */
-export const PLUGIN_ENTRIES: Array<{ name: string; anchor?: string }> = [];
-
 if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   buildPluginCjsTiddlers().catch((err) => { console.error(err); process.exit(1); });
 }

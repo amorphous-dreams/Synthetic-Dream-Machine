@@ -1,0 +1,147 @@
+#!/usr/bin/env node
+/**
+ * gen_cli_verbs — emit fixtures/cli-verbs.json from the ACTUAL `lares` command table.
+ *
+ * Derives the verb list from the built `COMMAND_NAMES` export (packages/lares-cli), so the
+ * fixture never drifts from the real CLI surface: re-run after adding/renaming a command.
+ * YIN's three-way parity test (CLI command-table ↔ MCP tool-set ↔ VERB_SEATS) reads the output.
+ *
+ * The isomorphism (operator ruling): `lares`-CLI ↔ `lares`-MCP across the WHOLE verb-set. The six
+ * lifecycle tools mirror today; every other verb reads NOT-YET-MIRRORED (the MCP surface grows into
+ * it), never permanently CLI-only. `cli_forms` maps each MCP tool name to its CLI spelling — each
+ * mirror rides the one `sense` door (`sense pour`, `sense status`, `sense worldline kapae`).
+ *
+ * Usage:  node scripts/gen_cli_verbs.mjs        (writes fixtures/cli-verbs.json)
+ *         node scripts/gen_cli_verbs.mjs --check (fails if the on-disk fixture drifts)
+ *
+ * Meme: lar:///ha.ka.ba/lararium/sensorium/cli-verbs-fixture
+ */
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const CLI_DIST = resolve(HERE, "../../lares-cli/dist/src/bin/lares.js");
+const OUT = join(HERE, "fixtures", "cli-verbs.json");
+
+// The MCP lifecycle tool names (mirror YIN's py `LIFECYCLE_VERBS`) → their CLI spelling. After the
+// radical two-door collapse EVERY sovereign lifecycle tool mirrors through the one `sense` door — one
+// host, no top-level twins. `pour` names the SOVEREIGN capture on both surfaces, never the guest miner.
+const CLI_FORMS = {
+  pour:      "sense pour",
+  sweep:     "sense sweep",
+  recall:    "sense recall",
+  status:    "sense status",
+  worldline: "sense worldline",
+  kapae:     "sense worldline kapae",
+  un_kapae:  "sense worldline un-kapae",
+  // The human-query INSTRUMENTS — all mirror through the one `sense` door. `rejim` reads the rhythm/geology
+  // plane; `analyze` runs the DETECT-ONLY change-point arms; `ki` reads the H¹-gated coupling verdict. `ki`
+  // is ROUTED-ONLY on the MCP side — its cohomology compute lives in TS @lararium/mesh (the hull a browser
+  // carries), so the tool reaches the node daemon's compute; no python standalone twin, but it mirrors.
+  rejim:     "sense rejim",
+  analyze:   "sense analyze",
+  ki:        "sense ki",
+  // `li` reads the H¹-gated li-radius (gluing) verdict — the sheaf twin of `ki`. Same ROUTED-only posture:
+  // the cohomology compute lives in TS @lararium/mesh, so the tool reaches the node daemon's compute.
+  li:        "sense li",
+  // `jing` (勁) reads the li∘ki SQUARE — the extend→restrict round-trip over a child-host's lobes (the
+  // mesh's who/authority/flow). Same ROUTED-only posture: the cohomology hull is TS, reached via the daemon.
+  jing:      "sense jing",
+  // `couple_r` runs the R effective-TE coupling reference (coupling.R) — the py/R twin of `ki`, the machine-
+  // code plane behind the causal-island boundary. Routed to the daemon's py serve-op (Rscript shells there).
+  couple_r:  "sense couple-r",
+  // `forecast` runs the R early-warning plane (ews.R critical-slowing-down); `mismatch` diffs the TS-hull
+  // ki coupling against the R effective-TE over the same signals — the parity check made a human command.
+  forecast:  "sense forecast",
+  mismatch:  "sense mismatch",
+  // `flow` runs a pet-named COMPOSED cap-stack (crystal · rhythm · couple) against an explicit signal —
+  // the anti-verb-sprawl surface. A REAL top-level CLI command (`lares flow`), so it hosts its OWN mirror
+  // (not a `sense` sub-verb); the daemon routes each cap-step by hull (crystallize/couple TS · phase py).
+  flow:      "flow",
+  // The wiki-SWITCHER: one MCP `wiki` tool mirrors the `lares wiki <verb>` namespace
+  // (switch/hold/release/active) — the host verb is `wiki`, a real top-level CLI command.
+  wiki:      "wiki switch",
+  // The MEME door — the MCP skin of the meme family's DAEMON-seated verbs. `meme_put` lands a meme's
+  // text at a `lar:` uri through the island's Confluence gate; `meme_get` reads the text + canonical
+  // hash back; `meme_list` names every root a seat holds (`--tree` on the CLI, `tree` on the tool);
+  // `meme_delete` removes the whole group (`--if-match` on the CLI, `base` on the tool); `meme_project`
+  // renders the meme the island holds to a target (`--to` on the CLI, `to` on the tool — the target
+  // rides as a parameter, never a suffix on the verb). The host `meme` is a real top-level CLI command,
+  // so each mirrors as `<host> <sub>` — ONE host, five tools, the shape kapae/un_kapae ride under
+  // `sense worldline`. The family's LOCAL seats ride LOCAL_SEAT below.
+  meme_put:     "meme put",
+  meme_get:     "meme get",
+  meme_list:    "meme list",
+  meme_delete:  "meme delete",
+  meme_project: "meme project",
+  // The DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` (the one `sense` door),
+  // routed over the @daemon wire to the pure manifest.json reducer. Reads + reversible re-settle seat HOTL;
+  // promote·retire·purge carry HITL (the operator-approval capability, the twin of the CLI's `--approve`).
+  // `un_retire` (a py identifier) spells the CLI form `sense un-retire`, twinning un_kapae's shape.
+  roster:    "sense roster",
+  inspect:   "sense inspect",
+  build:     "sense build",
+  reconcile: "sense reconcile",
+  promote:   "sense promote",
+  retire:    "sense retire",
+  un_retire: "sense un-retire",
+  purge:     "sense purge",
+};
+// A VERB DECLARES ITS SEAT. These CLI sub-verbs run LOCAL over a file with no daemon in reach (the
+// offline re-stamp of a stale block check must keep working with no socket), so they hold NO MCP tool by
+// law — the MCP mirrors the daemon-seated verbs only. Named here so the parity test reads the allowance
+// as declared, never as a tool that went missing.
+const LOCAL_SEAT = ["meme normalize", "meme check"];
+// The CLI TOP-LEVEL verbs that HOST a mirror — DERIVED from the cli_forms value-heads (single source,
+// never drifts): `sensorium status` → sensorium, `worldline kapae` → worldline, harvest → harvest. The
+// coverage partition rides these CLI-form heads, NOT the MCP tool-names (kapae/un_kapae are worldline
+// sub-verbs, not top-level verbs; status mirrors under `sensorium`, not bare `status` = node-health).
+const MIRROR_HOSTS = new Set(Object.values(CLI_FORMS).map((f) => f.split(" ")[0]));
+
+async function loadCommandNames() {
+  const mod = await import(pathToFileURL(CLI_DIST).href);
+  if (!Array.isArray(mod.COMMAND_NAMES)) {
+    throw new Error(`COMMAND_NAMES not found in ${CLI_DIST} — build lares-cli first (pnpm -C packages/lares-cli build)`);
+  }
+  return mod.COMMAND_NAMES;
+}
+
+function buildFixture(verbs) {
+  const mirrored = Object.keys(CLI_FORMS); // MCP tool names — set-equal to py LIFECYCLE_VERBS (the MCP anchor)
+  const mirrorHosts = [...MIRROR_HOSTS].sort(); // CLI top-level verbs hosting a mirror (the coverage partition)
+  const notYet = verbs.filter((v) => !MIRROR_HOSTS.has(v));
+  return {
+    _doc: "Isomorphism fixture — the `lares` CLI verb surface for the three-way parity test " +
+      "(CLI command-table ↔ MCP tool-set ↔ VERB_SEATS). `mirrored` = the MCP tool-names that mirror " +
+      "today (set-equal to py LIFECYCLE_VERBS, the MCP anchor); `cli_forms` maps each MCP tool to its " +
+      "CLI spelling (some ride sub-verbs); `mirror_hosts` = the CLI TOP-LEVEL verbs those spellings land " +
+      "on (the coverage partition); `not_yet_mirrored` = verbs − mirror_hosts (the surface grows into " +
+      "them); `local_seat` = CLI sub-verbs that run over a file with no daemon and hold no MCP tool by law. " +
+      "Invariant: mirror_hosts ∪ not_yet_mirrored == verbs. Generated by gen_cli_verbs.mjs.",
+    verbs,
+    mirrored,
+    cli_forms: CLI_FORMS,
+    mirror_hosts: mirrorHosts,
+    not_yet_mirrored: notYet,
+    local_seat: LOCAL_SEAT,
+  };
+}
+
+const verbs = await loadCommandNames();
+const fixture = buildFixture(verbs);
+const rendered = JSON.stringify(fixture, null, 2) + "\n";
+
+if (process.argv.includes("--check")) {
+  let onDisk = "";
+  try { onDisk = readFileSync(OUT, "utf8"); } catch { /* absent → drift */ }
+  if (onDisk !== rendered) {
+    console.error("cli-verbs.json DRIFT — re-run `node scripts/gen_cli_verbs.mjs` to sync.");
+    process.exit(1);
+  }
+  console.log("cli-verbs.json up to date.");
+} else {
+  mkdirSync(dirname(OUT), { recursive: true });
+  writeFileSync(OUT, rendered);
+  console.log(`wrote ${OUT} — ${verbs.length} verbs, ${fixture.mirrored.length} mirrored.`);
+}

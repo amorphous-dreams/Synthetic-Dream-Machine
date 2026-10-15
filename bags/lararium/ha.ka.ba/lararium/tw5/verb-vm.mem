@@ -1,0 +1,34 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/verb-vm">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/verb-vm.mem"
+l-space     = "lararium"
+mana        = 3
+role        = "verb-vm — the verb VM's durable outcome and its bound: an outcome rests in the daemon bag and never shrinks, so an array past the cap rides as a summary that still names every refused or conflicting row; the reader asks again in waves under the cap; a rename re-homes only records that stand"
+source-file = "packages/lararium-tw5/src/verb-vm.ts"
+title       = "lar:///ha.ka.ba/lararium/tw5/verb-vm"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/tw5/verb-vm"
+```
+
+<<~ ahu #/contract>>
+
+''The outcome bound.'' A verb's durable outcome rests in the daemon bag, syncs to every vessel and never shrinks, so `writeOutcome` bounds it. Any top-level array of the handler's result past `AUDIT_ARRAY_CAP` rows (32) rides as a summary in place of its rows: the row count, a tally per `decision` over the rows that carry one, a hash of the whole array, a sample of three, and every row whose decision reads `refuse` or `conflict`, whole, up to the cap (`held`), beside the count of such rows the summary leaves unnamed (`heldMore`). An array at or under the cap rides whole.
+
+''A row a person must act on stays named.'' A refusal nobody can find stays unfixable, so a summary never counts a refusal it does not name without saying so: zero in `heldMore` states that `held` names every one. An array whose rows carry no decision (a LOAD's titles) tallies nothing, so no tally invents a decision nobody made.
+
+''The reader asks again.'' The co-located CLI reads this same outcome as its answer. A caller that reads `heldMore` above zero, or a tally that proves less than it needs, asks again in waves under the cap, where every row rides whole; the ingest gesture pages so (`packages/lares-cli/src/ingest-core.ts`, `settleIngest`), prints each refused carrier with its refusal, and ends the run non-zero. A carrier no answer accounts for ends it non-zero too. The watcher keeps what it still owes by address (each carrier that did not land, each vanished address the island declined), clears a debt only where a wave proves that address settled, and ends non-zero where any debt stands at its stop.
+
+''A rename re-homes records that stand.'' A vanished source that holds no live record leaves nothing to re-home, so the island answers the arriving carrier as a plain ingest and names the source `absent` in the wave's deletion summary (`packages/lararium-tw5/src/action-handler.ts`). No wave removes a carrier: a vanished address re-links, reads `absent`, or reads `declined`.
+
+Witnesses: `packages/lararium-tw5/tests/verb-vm.test.ts` · `packages/lararium-tw5/tests/rename-rehomes-standing-records.test.ts` · `packages/lares-cli/tests/ingest-settles-every-row.test.ts`.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;0KNpaEiIlN4rHcmtrl9A-3fN9C1Qu9e07E2h9QcvlKM
+
+<<^ code="&#x0004;" -> to="?">>

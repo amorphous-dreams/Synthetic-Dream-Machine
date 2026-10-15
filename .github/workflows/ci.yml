@@ -1,8 +1,43 @@
 name: CI
 
+# Golden-principle gates for the Lararium monorepo, mapped to the project's
+# domains + models (web3 local-first · causal-islands · the meme graph):
+#   typecheck       — every package's types hold
+#   build-freshness — `build` is deterministic AND emits no stale tracked source:
+#                     the checked-in generated plugin artifacts — the lar:// canonical copy AND
+#                     the `$:/` standalone distribution (plugins/standalone/) — must match a fresh
+#                     build (the canonical "regenerate + git diff --exit-code" gate;
+#                     catches a hand-edited / forgotten-regen generated file)
+#   test            — every package's suite, incl. the meme round-trip laws
+#                     (meme-corpus-roundtrip) and the two plugin-artifact parity gates (lar:// +
+#                     the standalone `$:/` distribution)
+#   witnesses       — the whole `tools/*witness*.sh` fleet through `witness-all`, under its own
+#                     name so a red suite cannot swallow it; the docker/browser hold-outs are
+#                     named with their reasons in the job's log; beside it, every
+#                     `tools/*.test.mjs` self-test the instruments carry
+#   e2e             — every e2e set through the real CLI + vessels, sharded: this workflow calls
+#                     `e2e-shards.yml` and takes its merge gate's verdict
+#   boot-budget     — the cache-stable boot stays under its char ceiling
+#   pristine-upstream — the meme routes AND a stock single-file build meet a PUBLISHED tiddlywiki
+#                     (npm), not only the fork, against the COMMITTED standalone artifact (never a
+#                     fresh dist-plugin rebuild) — the plugin drops into stock, and the log names
+#                     the version it met
+#
+# Defense-in-depth, not a single flag: build-freshness (CI, authoritative) is
+# backed by the always-on plugin-artifact-parity unit test in `test` (local-first,
+# runs in every `pnpm test`). Dropping one gate does not open the hole.
+
 on:
   push:
-    branches: ["**"]
+    # `branches` and `branches-ignore` cannot both sit under the same `push:` event (GitHub
+    # workflow syntax), so this replaces the blanket `branches: ["**"]` rather than sitting beside
+    # it — the two names mean the same "every branch" before the exclusion.
+    #
+    # A lane push to `ci/<lane>` is e2e-shards.yml's own single-fire trigger (tools/e2e-shards.mjs
+    # pushes it and watches that ONE run). Without this exclusion the same push would also raise the
+    # whole full-CI matrix here — two answers to one push, and the shard lane's point (a cheap,
+    # throwaway proof run) would cost a full CI run every time.
+    branches-ignore: ["ci/**"]
   pull_request:
     branches: [main]
 
@@ -12,126 +47,423 @@ concurrency:
 
 env:
   NODE_VERSION: "24"
-  PNPM_VERSION: "10"
+  # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
+  # written by any other pnpm rewrites its peer suffixes on its next write.
+  PNPM_VERSION: "11.28.5"
+  # The published tiddlywiki the plugin proves it drops into (the `pristine-upstream` job). ONE
+  # version, one place: the job's name, its cache key, its pack and its log-line check all read it.
+  TW5_PRISTINE: "5.4.1"
 
 jobs:
-
-  # ─── typecheck ──────────────────────────────────────────────────────────────
+  # ─── typecheck ────────────────────────────────────────────────────────────
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
+          # root. Without them the tw5 build cannot run, so every downstream job fails on an
+          # artifact the repo never had a chance to produce.
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-
       - run: pnpm install --frozen-lockfile
-
+      # `@lararium/mesh` publishes its subpaths (`./lar-uris`, `./harvest`, …) into a GITIGNORED
+      # dist/, so `tsc` cannot resolve a single one of them on an unbuilt tree. Locally the tree is
+      # always built, which is why this passed on every desk and failed on every runner.
+      - name: Build (typecheck resolves workspace subpaths through dist/)
+        run: pnpm -r build
+      # A range in a manifest is a version nobody chose. This costs no build, so it rides the cheapest
+      # job and fails before anything downstream spends time on a tree whose bytes are not pinned.
+      - name: Every dependency names ONE version
+        run: tools/exact-deps-witness.sh
       - name: Typecheck all packages
         run: pnpm -r typecheck
 
-  # ─── build ──────────────────────────────────────────────────────────────────
-  build:
-    name: Build
+  # ─── build + generated-artifact freshness ─────────────────────────────────
+  build-freshness:
+    name: Build + generated freshness
     runs-on: ubuntu-latest
-    needs: typecheck
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
+          # root. Without them the tw5 build cannot run, so every downstream job fails on an
+          # artifact the repo never had a chance to produce.
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-
       - run: pnpm install --frozen-lockfile
-
-      - name: Build TW5 browser filter bundle
-        run: pnpm --filter @lararium/core tw:build-browser
-
       - name: Build all packages
         run: pnpm -r build
+      - name: Generated artifacts must be fresh (build emits no tracked diff)
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::A fresh build changed tracked files — committed generated artifacts are stale."
+            echo "Regenerate and commit them: pnpm --filter @lararium/tw5 build"
+            git --no-pager diff --stat
+            git --no-pager diff
+            exit 1
+          fi
+          echo "Generated artifacts are fresh."
 
-      - name: Build snapshot.json
-        run: pnpm --filter @lararium/node build-snapshot
-
-      - name: Upload dist artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: |
-            packages/lararium-core/dist
-            packages/lararium-node/dist
-            packages/lararium-mcp/dist
-            packages/lararium-tldraw/dist
-            packages/lararium-web/dist
-            lares/lararium-node/snapshot.json
-          retention-days: 1
-
-  # ─── parity-tests ───────────────────────────────────────────────────────────
-  parity-tests:
-    name: Parity Tests
+  # ─── test (all package suites) ─────────────────────────────────────────────
+  test:
+    name: Test
     runs-on: ubuntu-latest
-    needs: build
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # `doctype-render-parity` proves a property of one past sweep by reading its two fixed
+          # forms from committed fixtures (`fixtures/doctype-render-parity/`), never from history —
+          # a depth-1 checkout runs it the same as a whole one. No other suite or witness reads git
+          # history, so the default shallow checkout stands.
+          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
+          # root. Without them the tw5 build cannot run, so every downstream job fails on an
+          # artifact the repo never had a chance to produce.
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-
       - run: pnpm install --frozen-lockfile
-
-      - name: Download dist
-        uses: actions/download-artifact@v4
+      # Eight suites guard on `existsSync` of tw5-core/ and dist/ — both gitignored build output.
+      # Unbuilt, they SKIP and the job still exits 0, so the run reads green while 35 tests never ran.
+      # THE ENGINE BLOB IS A DELIBERATE RENDER, NEVER A BUILD SIDE EFFECT. tw5-core/ stays gitignored
+      # because its sha256 IS the hearth's true name, so `build` refuses to render it and the bake reads
+      # the blob that stands. A runner holds none until this step renders it from the submodule.
+      - name: Render the TW5 core blob (suites guard on tw5-core/ and skip without it)
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
+      # The root `build` stamps the source digest after `pnpm -r build`; an unstamped dist reads as
+      # stale to every freshness gate and witness that compares against it.
+      - name: Build (suites guard on built artifacts and silently skip without them)
+        run: pnpm build
+      # THE HOLDER IS A DEPENDENCY, NOT AN OPTIONAL EXTRA. `content-palace` drives the python
+      # mempalace holder live, and with no interpreter holding it the suite fails on an absent
+      # dependency rather than on anything about the code. Skipping it instead would be worse:
+      # absence-of-finding and absence-of-looking read identically in a green run.
+      #
+      # ONE VENV — `~/.venv`, the same path `spawn-resolve` probes and `lares vessel stand --install`
+      # stands. A venv anywhere else is an interpreter with different powers, which is the whole
+      # hazard that rule exists to close.
+      #
+      # ONE LIST. The suite's own dependencies live in `packages/lararium-sensorium/requirements.txt`,
+      # which the root `requirements.txt` (the operator's ~/.venv manifest) includes. The root list's
+      # prose-tier NLP stack stays out: it needs downloaded models and the router degrades through it.
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          name: dist
-          path: packages
+          python-version: '3.12'
+      - name: Cache the holder venv
+        id: venv-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.venv
+          key: holder-venv-${{ runner.os }}-py312-${{ hashFiles('mempalace/pyproject.toml', 'packages/lararium-sensorium/requirements.txt') }}
+      - name: Stand the holder venv (~/.venv)
+        if: steps.venv-cache.outputs.cache-hit != 'true'
+        run: |
+          python3 -m venv ~/.venv
+          ~/.venv/bin/python3 -m pip install --upgrade pip
+          ~/.venv/bin/python3 -m pip install -e ./mempalace -r packages/lararium-sensorium/requirements.txt
+      - name: Witness the holder answers
+        run: ~/.venv/bin/python3 -c "import mempalace; print('holder ok')"
+      # `pnpm test` reaches the sensorium's two TypeScript tests only.  The
+      # holder suite is Python and lives beside its modules under scripts/, so
+      # invoke it through the same venv that holds mempalace.  Calling bare
+      # `pytest` here would let the runner's global interpreter silently stand
+      # in for the holder environment the suite actually requires.
+      - name: Run lararium-sensorium Python suite
+        run: ~/.venv/bin/python3 -m pytest packages/lararium-sensorium/scripts -q
+      - name: Install Playwright Chromium (browser-vessel suite)
+        run: pnpm exec playwright install --with-deps chromium
+      # ONE SERIALIZATION, BOTH PLACES. The root `test` script pins `--workspace-concurrency=1`
+      # because packages share a build tree and a rendezvous directory; running them in parallel
+      # measures a different repository than the one an operator measures locally, and its flakes
+      # are unreproducible by construction.
+      - name: Run all package suites
+        run: pnpm test
 
-      - name: Run parity tests (lararium-node)
-        run: pnpm --filter @lararium/node test
-
-  # ─── mcp-stdio-smoke ────────────────────────────────────────────────────────
-  mcp-stdio-smoke:
-    name: MCP stdio smoke
+  # ─── witnesses (the whole fleet, under its own name) ───────────────────────
+  # THE FLEET RODE INSIDE `test`, WHICH IS A PLACE IT CAN BE HIDDEN. `witness-all` exists because
+  # chaining gates with `&&` lets the first red swallow every one after it; a step that runs AFTER
+  # `pnpm test` in the same job inherits exactly that failure — one red suite and the whole fleet (34 `tools/*witness*.sh` files at this writing — the glob reads the live count)
+  # witnesses never run, and the PR shows one red where there were two questions. Its own job asks
+  # the fleet's question whatever the suites answer.
+  #
+  # WHAT THIS JOB CAN HONESTLY RUN: the witnesses `tools/*witness*.sh` globs (34 files at this writing — never a hand count) minus the
+  # declared hold-outs. They need node, a pnpm install, python3 (domain-registry · exact-deps ·
+  # meme-coordinates · mesh-coverage · mirror-parity · rendezvous-parity · rite-commands ·
+  # surface-parity) and a BUILT tree — `frame-shape`, `surface-parity`, `rite-commands` and
+  # `meme-check-hook` all read dist/ and refuse (or skip) without it.
+  #
+  # WHAT IT MUST SKIP, AND WHY: the five hold-outs `witness-all.sh` declares in HELD_OUT — civic ·
+  # crossing · herm-mesh · mesh-scenarios stand docker-compose meshes this runner does not raise,
+  # and browser-weld drives a real browser against a standing app. The script prints each one with
+  # its reason under `── held out of this run ──`, so the skip is named IN THIS JOB'S LOG rather
+  # than in a comment nobody reads; the step below fails if that roll call is missing, because a
+  # skip that stops announcing itself is the silence these witnesses exist to break.
+  witnesses:
+    name: Witnesses
     runs-on: ubuntu-latest
-    needs: build
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
+          # root. Without them the tw5 build cannot run, so every downstream job fails on an
+          # artifact the repo never had a chance to produce.
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - name: Download dist
-        uses: actions/download-artifact@v4
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          name: dist
-          path: packages
+          python-version: "3.12"
+      - run: pnpm install --frozen-lockfile
+      # Four witnesses read dist/ and one founds a vessel from the built CLI. Unbuilt they refuse or
+      # skip, and a skip reads green — the exact shape this job exists to close.
+      # call-reach · head-parity · sigil-parity · turn-parity read the engine blob; see the `test` job.
+      - name: Render the TW5 core blob (four witnesses read it)
+        run: pnpm --filter @lararium/tw5 build:tw5-vendor
+      - name: Build (the fleet measures the built tree)
+        id: build
+        run: pnpm build
+      # `ahu-pair-parity` reads the grammar wasm, which `pnpm build` never compiles: `*.wasm` stays
+      # gitignored and the whole-tree build leaves it out. ONE COMMAND BUILDS IT EVERYWHERE — the
+      # package's `build:wasm`, which `grammar-artifact` runs too and which strikes the wasm stamp the
+      # witness's freshness door reads. The fleet runs whatever this answers, so a failed wasm build
+      # reads as the witness naming the missing grammar rather than as a skipped fleet.
+      - name: Build the grammar wasm (ahu-pair-parity reads it)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: pnpm --filter ./packages/tree-sitter-memetic-wikitext build:wasm
+      - name: Run every witness (never short-circuits; the worst exit wins)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          tools/witness-all.sh 2>&1 | tee "$RUNNER_TEMP/witnesses.log"
+      # THE ROLL CALL IS PART OF THE VERDICT. A held-out witness that stops naming itself has become
+      # an unmeasured gate wearing a green check.
+      - name: The held-out witnesses are named in this log
+        if: always()
+        run: |
+          if ! grep -q "held out of this run" "$RUNNER_TEMP/witnesses.log"; then
+            echo "::error::the run named no held-out witnesses — the fleet's own roll call went silent"
+            exit 1
+          fi
+          sed -n '/held out of this run/,$p' "$RUNNER_TEMP/witnesses.log"
+      # THE INSTRUMENTS' OWN SELF-TESTS. Each `tools/*.test.mjs` plants the reds its tool owes against fakes
+      # and scratch trees — no docker, no browser, no standing app — and reads the built tree, so it runs
+      # here beside the fleet it keeps honest. The glob reads the live set; a new self-test joins without a
+      # hand edit. It runs whatever the fleet answered, so one red cannot hide the other question.
+      - name: Run every tool self-test (tools/*.test.mjs)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        run: node --test tools/*.test.mjs
 
-      - name: Run MCP stdio smoke
-        run: NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs --testPathPattern=tests/stdio-smoke
-        working-directory: packages/lararium-mcp
-        timeout-minutes: 2
+  # ─── e2e (every e2e set, sharded, behind one merge gate) ───────────────────────────────────
+  # ONE E2E VERDICT, AND THE SHARDS GIVE IT. Every e2e set rides the shard matrix of `e2e-shards.yml`
+  # (the table `E2E_SETS` in tools/e2e-shards.mjs) and ends on its merge gate, which fails closed on a
+  # missing, empty, red or mismatched shard. This job CALLS that workflow, so a push to a branch and a
+  # lane push to `ci/<lane>` run the same matrix under the same gate, and the workflow file holds the
+  # one statement of it.
+  #
+  # A single runner walking the whole set one file at a time outgrew its own 45-minute ceiling and timed
+  # out; a job that cannot finish reports nothing about the code. MEASURED on the shard lane (run
+  # 38409777858): five shard runners at 15 + 11 + 10 + 10 + 2 minutes and a one-minute merge, about 48
+  # runner-minutes and 16 minutes of wall clock, against 45 runner-minutes spent on no verdict.
+  #
+  # The called jobs read on the run as `E2E / Shard <set> <k>/<n>` and `E2E / Merge shard reports`.
+  e2e:
+    name: E2E
+    uses: ./.github/workflows/e2e-shards.yml
+
+  # ─── boot budget (cache-stable boot ceiling) ───────────────────────────────
+  boot-budget:
+    name: Boot budget
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
+          # root. Without them the tw5 build cannot run, so every downstream job fails on an
+          # artifact the repo never had a chance to produce.
+          submodules: recursive
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: noosphere-boot.mem must stay under the 40000-char ceiling
+        run: |
+          # The single quotes hold a node program whole: its backticks are JavaScript, never the shell's.
+          # shellcheck disable=SC2016
+          node -e '
+            const fs = require("node:fs");
+            const p = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem";
+            // A MISSING SEED IS ITS OWN FAULT, NEVER A BUDGET ONE. This gate read a path with a doubled
+            // `lares/` segment — left behind by the ha.ka.ba reshuffle — so it threw ENOENT and reported
+            // as a budget failure for two days while the seed sat 34 code points UNDER the ceiling.
+            if (!fs.existsSync(p)) {
+              console.error("::error::" + p + " does not exist — the budget gate cannot measure a seed it cannot find.");
+              process.exit(1);
+            }
+            // CODE POINTS, never bytes: the seed carries sigils, Hawaiian and Devanagari, so a byte count
+            // reads ~480 high and would send a reader trimming prose that was never over.
+            const n = [...fs.readFileSync(p, "utf8")].length;
+            console.log("boot code points:", n, "/ 40000");
+            if (n >= 40000) {
+              console.error("::error::" + p + " is " + n + " chars — over the cache-stable boot budget (40000). Reclaim before editing.");
+              process.exit(1);
+            }
+          '
+
+  # ─── pristine upstream (the plugin drops into a PUBLISHED tiddlywiki) ──────
+  # THE INSTRUMENT AND ITS INVOKER. `meme-routes.e2e` takes `LARES_TW5_JS` and runs the whole
+  # contact — PUT · GET · DELETE · memes.json · the native door · the readers/writers case · the
+  # `--render` door — against any `tiddlywiki.js`. The `test` job runs it against the FORK
+  # (the submodule); nothing ran it against the published line, so "the plugin drops into stock"
+  # stood as an operator's local measurement. This job is its invoker, and it stands ALONE so the
+  # verdict reads on the PR under its own name rather than inside a job that measures the fork.
+  #
+  # THE SUITE SKIPS LOUDLY WHEN ITS ENGINE IS MISSING, AND A SKIP READS GREEN. So the job greps the
+  # contact line for the pinned version: a run that met no engine, or met the wrong one, fails here
+  # even though vitest exited 0.
+  pristine-upstream:
+    name: Pristine upstream (stock tiddlywiki from npm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The packed plugin builds from the vendored core; the contact itself runs against npm's.
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      # THE NODE FLOOR, NAMED. A plain TW5 server evaluates modules in a sandbox carrying none of
+      # TextEncoder/TextDecoder/crypto; `host-globals-lend.ts` lends the host's own copies through
+      # `process.getBuiltinModule` (Node >=24) and silently no-ops without it (a browser or older
+      # Node is a legitimate no-op case elsewhere — here it is a floor violation). Absent, the meme
+      # laws' hashing dies deep inside the contact as a bare "TextEncoder is not defined", naming
+      # nothing about why; this step names the real floor before that cryptic failure ever fires.
+      - name: Node floor — process.getBuiltinModule must be present
+        run: |
+          node -e '
+            if (typeof process.getBuiltinModule !== "function") {
+              console.error("::error::Node " + process.version + " lacks process.getBuiltinModule — the plugin cannot lend TextEncoder/TextDecoder/crypto into the stock TW5 sandbox (host-globals-lend.ts). Pin Node >=24 (root package.json engines); below that floor the hashing paths fail deep in the contact as a bare \"TextEncoder is not defined\".");
+              process.exit(1);
+            }
+            console.log("process.getBuiltinModule present on " + process.version);
+          '
+      - run: pnpm install --frozen-lockfile
+      - name: Build (dependency packages; the tw5 plugin build also runs here)
+        run: pnpm -r build
+      # THE COMMITTED ARTIFACT, NOT A FRESH REBUILD. `pnpm -r build` above regenerates
+      # dist-plugin/ as the tw5 package's own side effect; this job's whole point is to prove
+      # what SHIPS, so the pristine engine meets the TRACKED `$:/` distribution — the sibling
+      # `build-freshness` job is what already proves a fresh build and the tracked copy agree.
+      - name: Point dist-plugin at the committed standalone artifact
+        run: cp packages/lararium-tw5/plugins/standalone/lares-memetic-wikitext.tid packages/lararium-tw5/dist-plugin/lares-memetic-wikitext.tid
+      - name: Install Playwright Chromium (standalone single-file suite)
+        run: pnpm exec playwright install --with-deps chromium
+      # ONE VERSION, ONE PLACE. The tarball caches by the pinned version; a bump re-packs.
+      - name: Cache the published tiddlywiki
+        id: pristine-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/lares-pristine/tiddlywiki-${{ env.TW5_PRISTINE }}
+          key: pristine-tiddlywiki-${{ env.TW5_PRISTINE }}
+      - name: Pack tiddlywiki@${{ env.TW5_PRISTINE }} from npm
+        if: steps.pristine-cache.outputs.cache-hit != 'true'
+        run: |
+          dir=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE
+          mkdir -p "$dir" && cd "$dir"
+          npm pack "tiddlywiki@$TW5_PRISTINE" --silent
+          tar xzf "tiddlywiki-$TW5_PRISTINE.tgz"
+      - name: Witness the engine is the one pinned
+        run: |
+          pkg=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package
+          test -f "$pkg/tiddlywiki.js"
+          node -e 'const v=require(process.argv[1]+"/package.json").version; console.log("pristine engine: tiddlywiki@"+v); if(v!==process.env.TW5_PRISTINE){console.error("::error::packed "+v+", pinned "+process.env.TW5_PRISTINE);process.exit(1)}' "$pkg"
+      - name: meme-routes + standalone single-file contact against the pristine engine
+        run: |
+          export LARES_TW5_JS=~/.cache/lares-pristine/tiddlywiki-$TW5_PRISTINE/package/tiddlywiki.js
+          export LARES_E2E_TMP="$RUNNER_TEMP/pristine-e2e"
+          pnpm --filter @lararium/tw5 exec vitest run tests/meme-routes.e2e.test.ts tests/standalone-single-file.e2e.test.ts 2>&1 | tee "$RUNNER_TEMP/pristine.log"
+          test "${PIPESTATUS[0]}" -eq 0
+      - name: The log names the engine it met
+        run: |
+          line=$(grep -a "meme-routes.e2e: contact with TiddlyWiki" "$RUNNER_TEMP/pristine.log" || true)
+          echo "$line"
+          if ! grep -aq "contact with TiddlyWiki $TW5_PRISTINE " "$RUNNER_TEMP/pristine.log"; then
+            echo "::error::the contact never named tiddlywiki@$TW5_PRISTINE — the suite skipped or met another engine"
+            exit 1
+          fi
+
+  # ─── grammar artifact (ship step 0: the quad-pinned carrier stays truth) ───
+  grammar-artifact:
+    name: Grammar artifact gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # TiddlyWiki5 IS the vendored-core build input and mempalace IS the python import
+          # root. Without them the tw5 build cannot run, so every downstream job fails on an
+          # artifact the repo never had a chance to produce.
+          submodules: recursive
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: pnpm install --frozen-lockfile
+      # The py host's three imports, each at the version the house venv runs (tree-sitter and pytest
+      # as `packages/lararium-sensorium/requirements.txt` pins them, pygls as the root
+      # manifest pins it), so this gate measures the same runtime the operator does.
+      - name: Install py host deps
+        run: pip install tree-sitter==0.26.0 pytest==9.1.1 pygls==2.1.1
+      - name: generate-parity — the committed parser.c stays the truth
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run gate:generate-parity
+      # The py host's cross-language weld frame-checks a carrier through `lares meme normalize`. The
+      # bin shim stands from install, so `lares` is on PATH either way; unbuilt, it exits 1.
+      - name: Build (the weld runs the lares CLI from dist)
+        run: pnpm build
+      - name: fold + golden manifest gates (py host)
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run gate:fold
+      # THE TS HOST LOADS THE WASM, SO THE WASM BUILDS FIRST. `*.wasm` is gitignored in this package;
+      # a runner holds none until `build:wasm` emits it. The pinned tree-sitter CLI fetches its own
+      # wasi-sdk clang and wasm-opt on first use, so the build needs neither emscripten nor docker.
+      # The same script builds it for the Witnesses job, and strikes the wasm stamp on both.
+      - name: wasm builds under the pinned CLI
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run build:wasm
+      # TWO HOSTS, TWO GATES. `gates` chains all three with `&&`; this job named two of them and the
+      # TS host's fold + parity ran nowhere. Kept as its own step rather than folded into the chain,
+      # so a red in the py host cannot hide a red here.
+      - name: fold + parity gates (ts host)
+        working-directory: packages/tree-sitter-memetic-wikitext
+        run: pnpm run gate:fold-ts

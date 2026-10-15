@@ -1,0 +1,94 @@
+/**
+ * browser-circle-panel.test.ts — the daemon follow surface's data flow, over REAL IndexedDB.
+ *
+ * The panel is projection-rendered (a worker+camera boot vitest-browser can't easily drive), so these tests
+ * stand the SHORES the panel rides: the vessel-side follow→list→unfollow round-trip against the IDB
+ * circle-graph + handle-book (exactly what the circle-refresh / circle-remove main-verbs orchestrate), the
+ * never-federates proof (the graph stays in the vessel's OWN IDB), and the pure panel-state shaping
+ * (circlePanelStateArgs) the `circle-state` worker verb writes.
+ */
+import { describe, test, expect, afterEach } from "vitest";
+import { signHandleCard, ed25519SignerFromSeed, derivePersonaKeypair, signingSeedFromHex, mintHandleInception, type FollowView } from "@lararium/mesh";
+import {
+  browserComposeFollow, browserComposeUnfollow, browserListFollows, makeBrowserCircleStore,
+} from "../src/browser-circle-store.js";
+import { openVesselIdb, idbGet, idbPut, HANDLE_BOOK_STORE } from "../src/browser-vessel-identity.js";
+import { circlePanelStateArgs } from "../src/circle-panel-state.js";
+
+let created = 0;
+const opened = new Set<string>();
+function idb(): string { const n = `lares:test-circle-panel:${created++}`; opened.add(n); return n; }
+function deleteIdb(name: string): Promise<void> {
+  return new Promise((resolve) => {
+    const req = indexedDB.deleteDatabase(name);
+    req.onsuccess = req.onerror = req.onblocked = () => resolve();
+  });
+}
+afterEach(async () => { for (const n of opened) await deleteIdb(n); opened.clear(); });
+
+async function card(seedByte: number, glamour: string) {
+  const { signingKey, verifyingKey } = await derivePersonaKeypair(new Uint8Array(32).fill(seedByte), [0]);
+  const did = `0x${verifyingKey}`;
+  // the personal 1-of-1 handle-KEL — the veiled key is the Handle key AND its sole owner (nym on the chain)
+  const chain = [mintHandleInception(did, did, "ab".repeat(32), `hkeynext-${"cd".repeat(32)}`)];
+  const nym = chain[0]!.prefix;
+  const c = await signHandleCard(
+    { nym, chain, glamour, parents: [], standing: null },
+    ed25519SignerFromSeed(signingSeedFromHex(signingKey)),
+  );
+  return { nym, card: c };
+}
+
+describe("browser follow — the IoC graph, local + traceless (real IDB)", () => {
+  test("follow lands in the vessel's OWN IDB graph, under the OWN names; federated:false", async () => {
+    const name = idb();
+    const { nym, card: c } = await card(3, "Discordia");
+    const result = await browserComposeFollow({ idbName: name, nym, circleId: "following", petname: "my-eris", card: c });
+    expect(result.federated).toBe(false);
+
+    // The graph holds the edge in THIS vessel's IDB; the follow-view reads it back under the OWN names.
+    expect(await makeBrowserCircleStore(name).members("following")).toEqual([nym]);
+    const view = await browserListFollows("following", name);
+    expect(view).toEqual([{ nym, petname: "my-eris", glamour: "Discordia" }]);
+  });
+
+  test("unfollow drops the edge (the book memory stays)", async () => {
+    const name = idb();
+    const { nym, card: c } = await card(7, "TheGuru");
+    await browserComposeFollow({ idbName: name, nym, circleId: "following", petname: "guru", card: c });
+    const un = await browserComposeUnfollow({ idbName: name, nym, circleId: "following" });
+    expect(un.federated).toBe(false);
+    expect(await makeBrowserCircleStore(name).members("following")).toEqual([]);
+  });
+
+  test("a fresh load restores a valid closure, while a tampered closure drops before recognition", async () => {
+    const name = idb();
+    const { nym, card: c } = await card(9, "Eris");
+    await browserComposeFollow({ idbName: name, nym, circleId: "following", petname: "eris", card: c });
+    expect(await browserListFollows("following", name)).toEqual([{ nym, petname: "eris", glamour: "Eris" }]);
+
+    const db = await openVesselIdb(name);
+    const snapshot = await idbGet<{ records: Array<{ accepted: Array<{ glamour: string }> }> }>(db, HANDLE_BOOK_STORE, "snapshot");
+    snapshot!.records[0]!.accepted[0]!.glamour = "forged";
+    await idbPut(db, HANDLE_BOOK_STORE, "snapshot", snapshot);
+    db.close();
+
+    expect(await browserListFollows("following", name)).toEqual([{ nym, petname: null, glamour: null }]);
+  });
+
+  test("circlePanelStateArgs shapes the follow-view into the flat, positional, string-only field bag", () => {
+    const follows: FollowView[] = [
+      { nym: "aa".repeat(32), petname: "eris", glamour: "Discordia" },
+      { nym: "bb".repeat(32), petname: null,   glamour: null },
+    ];
+    const args = circlePanelStateArgs("following", follows);
+    expect(args.circle).toBe("following");
+    expect(args.count).toBe("2");
+    expect(args.list).toBe("0 1");
+    expect(args["nym-0"]).toBe("aa".repeat(32));
+    expect(args["petname-0"]).toBe("eris");
+    expect(args["glamour-0"]).toBe("Discordia");
+    expect(args["petname-1"]).toBe("");   // unnamed → blank, never a nym as a field name
+    expect(args["glamour-1"]).toBe("");
+  });
+});

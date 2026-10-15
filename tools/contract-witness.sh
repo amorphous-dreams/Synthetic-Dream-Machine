@@ -1,0 +1,632 @@
+#!/usr/bin/env bash
+# contract-witness — the operator handshake across TWO vessels that share no key.
+#
+# ── WHAT A ONE-VESSEL WALK CANNOT SEE ─────────────────────────────────────────────────
+# Walking movement ⑦ on one hearth runs both halves of the handshake there, so the joiner's
+# contract-in gets signed by a persona that same vessel holds. Every byte verifies, and the one property
+# the whole ceremony exists for goes unmeasured: that a Nexus admits a key it has NEVER HELD.
+#
+# So this stands two roots. Vessel A founds a Nexus and seats its quorum. Vessel B founds independently —
+# its own device key, its own persona roots, its own custody route — and A holds no seed of B's. The
+# handshake then has to cross a real custody boundary, which is the only boundary this ceremony defends.
+#
+# ── THE PREREQUISITE THE ONE-VESSEL RUN HID ─────────────────────────────────────────────────────
+# `nexus accept-carriage` reads the roster from the JOINER'S OWN seal home, because a contract-in binds to
+# the charter epoch it consents under. On one vessel that read is invisible — one seal home serves both
+# hands. Across two it becomes a step somebody has to perform: B cannot consent to a Nexus whose charter
+# it has never seen. This harness carries A's `founding-roster.mem` to B by hand and SAYS that it did,
+# because a witness that quietly satisfies a prerequisite has measured a system that does not exist.
+#
+# The charter carries public material only — seated verifying keys, threshold, epoch lineage. Holding it
+# lets B name the epoch it consents under; it grants B no quorum, since B holds no kahu signing key.
+#
+# ── WHAT STAYS UNMEASURED, NAMED ────────────────────────────────────────────────────────────────
+# Both vessels sit on one filesystem, and the two artifacts move by `cp`. That matches the CLI's own
+# instruction — `hand this to a founding kahu` — so the token IS an out-of-band bearer artifact by design.
+# What this does not walk is a NETWORK carry, nor two machines with two clocks. `herm-mesh-witness` and
+# the container harness cover the wire; this one covers CUSTODY.
+#
+# ── THE PRESENTED ADMIT (S6), AND THE RAISE DOOR THAT READS IT ───────────────────────────────────────
+# Once A admits B, B's admit is a PRESENTATION: the counted admit head for B's leaf and its closed, tight
+# lineage, derived off A's board by `presentationFromBoardDoc` — the same derivation a dial presents after
+# sync. A small node helper (written to the transfer dir, importing the BUILT dist of @lararium/mesh and
+# @lararium/node) reads it against A's own replica with `verifyPresentedAdmit`: HELD after the admit, DENIED
+# after a descending revoke. It checks that only B's leaf proves the
+# admit to a socket, and that the wire guard refuses the admit beside a root edge. The raise door then
+# walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
+# `verifyRaiseGrant` raises it against A's readings; a foreign signer carrying the same admit refuses.
+#
+# ── ANCHORED ANCESTRY ──────────────────────────────────────────────────────────────────────────────────
+# The rotate lands a ROLL ANCHOR on A's board before the charter moves: the new quorum signs the closing
+# epoch, its key-set and the board's causal heads. B's admit stood in those heads, so the presentation
+# derived after the roll carries the anchor and reads HELD at the new head. CONTROL: an admit the closing
+# keys mint at the closed epoch AFTER the anchor stands in no anchor's past and reads WRONG-EPOCH; the
+# presentation captured before the roll, carrying no anchor, reads WRONG-EPOCH too.
+#
+# ── THE RITE ARMS ITSELF ────────────────────────────────────────────────────────────────────────────────
+# Each chair holds a SEAT key of its own, minted sealed on A apart from every persona root. The Stable founding act
+# seats persona zero's chair alone and prints its NEXT key as a cold-key card; the first roll reveals it and seats
+# the three chairs, printing each chair's next card; on this staged root every read-back stands in and the answer
+# carries each card's code. `seal rotate --cold-key` takes the cards back, each revealed key becomes its chair's
+# seat key, the seated hands SIGN the roll, and the closing keys retire once the charter moved — the lineage
+# verifies whole.
+#
+# Exit 0 = the door opened for a foreign key, refused every forgery, the presented admit read held, denied
+# and wrong-epoch where it should, the raise door raised a leaf and refused a stranger, the board closed by
+# supersession, and an admit in the roll anchor's past read held at the new head.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+REPO_ROOT=$(pwd)
+LARES="$REPO_ROOT/packages/lares-cli/dist/src/bin/lares.js"
+
+FAILED=0
+say()  { printf '\n\033[1m%s\033[0m\n' "$*"; }
+step() { printf '  %-52s' "$*"; }
+ok()   { printf '\033[32mok\033[0m\n'; }
+bad()  { printf '\033[31mFAILED (%s)\033[0m\n' "$1"; FAILED=$((FAILED + 1)); }
+note() { printf '      \033[90m%s\033[0m\n' "$*"; }
+
+A_ROOT=$(mktemp -d /tmp/lares-contract-A-XXXXXX)
+B_ROOT=$(mktemp -d /tmp/lares-contract-B-XXXXXX)
+XFER=$(mktemp -d /tmp/lares-contract-xfer-XXXXXX)
+
+# ── THE OS NAMES BOTH PORTS ─────────────────────────────────────────────────────────────────────────────────
+# A literal port refuses a second copy of this witness, and the second reads as a founding fault. One node
+# process holds both listeners open at once before it releases them, so the two ports are distinct.
+read -r A_PORT B_PORT < <(node -e '
+const net = require("node:net");
+const take = () => new Promise((ok) => { const s = net.createServer(); s.listen(0, "127.0.0.1", () => ok(s)); });
+Promise.all([take(), take()]).then((ss) => { console.log(ss.map((s) => s.address().port).join(" ")); ss.forEach((s) => s.close()); });
+')
+if [ -z "${A_PORT:-}" ] || [ -z "${B_PORT:-}" ]; then echo "contract-witness: the OS named no free ports" >&2; exit 2; fi
+
+# Both vessels stand DETACHED, so the witness stops each before it removes the root beneath it.
+cleanup() {
+  ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT"; node "$LARES" vessel stop >/dev/null 2>&1 )
+  ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT"; node "$LARES" vessel stop >/dev/null 2>&1 )
+  rm -rf "$A_ROOT" "$B_ROOT" "$XFER"
+}
+trap cleanup EXIT
+
+# EACH VESSEL DECLARES ITS ORIGIN COMPOSITION. A lararium composes its relay, read and Web origins before it
+# listens and refuses an undeclared one by name; both witness vessels serve every surface from the one loopback
+# face, so both declare `sameOrigin`.
+export LAR_SAME_ORIGIN=true
+
+# Each vessel runs in its OWN environment. A subshell per call keeps A's LAR_ROOT from leaking into B's —
+# a single exported root would silently make this a one-vessel test again, which is the exact failure the
+# harness exists to rule out.
+as_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT"; node "$LARES" "$@" ); }
+as_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT"; node "$LARES" "$@" ); }
+run_a() { step "$1"; shift; if out=$(as_a "$@" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
+run_b() { step "$1"; shift; if out=$(as_b "$@" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
+# `as_a` PREFIXES the binary, so a pipeline cannot ride it — `as_a sh -c ...` hands `sh` to the CLI as a
+# subcommand. A grep-the-output check needs a shell that inherits the vessel's environment instead.
+sh_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT"; sh -c "$1" ); }
+run_sh_a() { step "$1"; if out=$(sh_a "$2" 2>&1); then ok; else bad "$?"; printf '%s\n' "$out" | tail -5 | sed 's/^/      /'; fi; }
+unlock_root() {
+  root=$1 label=$2 tries=0 rc=0
+  while [ "$tries" -lt 30 ]; do
+    node "$REPO_ROOT/tools/unlock-test-custody.mjs" "$root"
+    rc=$?
+    [ "$rc" -eq 0 ] && return 0
+    [ "$rc" -eq 3 ] || break
+    sleep 0.2
+    tries=$((tries + 1))
+  done
+  bad "$label test-door unlock rc $rc"
+  return 1
+}
+
+say "contract-witness — two vessels, no shared key"
+echo "  A (the Nexus):  $A_ROOT"
+echo "  B (the joiner): $B_ROOT"
+
+say "⓪ preflight"
+# A WITNESS BUILDS NOTHING. Every gated vessel door below rides `--skip-build`, so the witness measures the
+# dist that stands and never rewrites it beneath a concurrent run; a dist built from older source refuses
+# here, naming its cure, rather than running superseded logic.
+step "the CLI dist was built from the source it stands beside"
+if fresh=$(node "$REPO_ROOT/tools/corpus-read.mjs" --assert-fresh "$LARES" 2>&1); then ok; else bad "stale dist"; printf '%s\n' "$fresh" | sed 's/^/      /'; exit 2; fi
+step "the binary answers"
+if node "$LARES" help >/dev/null 2>&1; then ok; else bad "build first: pnpm build"; exit 1; fi
+
+# ── ① VESSEL A — found the Nexus, seat the quorum ────────────────────────────────────────────────
+# THE SEED EACH FOUNDING READS. `lares vessel found` resolves the hearth true-name (the engine CID) from the
+# tracked genesis tree, so an isolated root must carry it before a founding can stand. Its own error names
+# this step verbatim — the harness performs it rather than making a reader discover it.
+# SEED FROM DISK, NEVER FROM THE INDEX. `git ls-files` names what the index tracks, and a genesis rebake
+# writes new content-addressed blobs while the old ones stay listed until someone commits the change. A
+# seed built from that list fails on files the disk no longer holds — and worse, when it succeeds it
+# founds from a genesis no vessel would ever read, because a vessel reads the disk.
+seed_genesis() {
+  ( cd "$REPO_ROOT" && find genesis -type f -print0 | xargs -0 -I{} cp --parents "{}" "$1/" ) 2>/dev/null
+}
+
+# THE FOUNDING'S ROUTE. A founding seals custody from birth and gathers its human route from a TTY alone; this
+# scripted witness has no TTY, so it STAGES each root (the scratch marker the test door demands) and names the test
+# route through the door before the founding runs. And a founding command's exit code never proves a founding:
+# `assert_founded` stops the run, by name, when the root holds no vessel identity.
+stage_custody() {
+  step "stage $2's root and name its test route"
+  if node "$REPO_ROOT/tools/test-scratch-marker.mjs" "$1" && node "$REPO_ROOT/tools/seed-test-custody.mjs" "$1"; then ok
+  else bad "test door"; exit 2; fi
+}
+assert_founded() {
+  step "$2's founding left an identity on disk"
+  # The social bootstrap is the founding's invariant artifact: it stands under every identity name, with or without a git email.
+  if [ -f "$1/data/lares/vessel/social-bootstrap.json" ]; then ok
+  else bad "NoIdentityAfterFounding"; say "ABANDONED — $2's founding wrote no identity; every check below would measure an unfounded vessel."; exit 2; fi
+}
+
+say "① vessel A — the Nexus founds and seats its quorum"
+step "seed A's genesis (the hearth true-name lives there)"
+if seed_genesis "$A_ROOT"; then ok; else bad "cp genesis"; fi
+stage_custody "$A_ROOT" A
+# A HEARTH FOUNDS BY THE STABLE FOUNDING ACT: the place, persona zero, its one-seat seed charter and the face. On this
+# staged root the seed card's read-back stands in, and the answer carries its code for the roll below.
+step "A founds its hearth (the Stable founding act)"
+SEEDCARD=""
+A_AID=""
+if FOUND=$(as_a vessel found --hearth --name adc-0 --skip-build --json 2>&1) && printf '%s' "$FOUND" | grep -q '"ok":true'; then
+  SEEDCARD=$(printf '%s' "$FOUND" | grep -oE '"code":"[0-9a-f-]+"' | head -1 | cut -d'"' -f4)
+  A_AID=$(printf '%s' "$FOUND" | grep -oE '"nexusAid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  if [ -n "$SEEDCARD" ]; then ok; else bad "the founding printed no seed card on a staged root"; fi
+else bad "$(printf '%s' "$FOUND" | tail -3 | tr '\n' ' ')"; fi
+run_a "A stands"                        vessel stand --install --skip-build
+unlock_root "$A_ROOT" A || exit 1
+assert_founded "$A_ROOT" A
+# A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
+# with green that means nothing — the cascade a founding check must refuse.
+if [ "$FAILED" -ne 0 ]; then
+  say "ABANDONED — A's founding failed; every check below would measure an unfounded vessel."
+  exit "$FAILED"
+fi
+KAHU_KEYS=""
+for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
+  IFS=: read -r idx name handle <<<"$spec"
+  step "A mints kahu $idx"
+  if MINT=$(as_a persona new "$idx" --name "$name" --handle "$handle" --seat --json 2>&1); then
+    ok; KAHU_KEYS="$KAHU_KEYS${KAHU_KEYS:+,}$(printf '%s' "$MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)"
+  else bad "$?"; printf '%s\n' "$MINT" | tail -4 | sed 's/^/      /'; fi
+done
+step "A rolls its seed charter to the three chairs (the seed card reveals; the roll prints each chair's card)"
+CARDS=""
+if SEAT=$(as_a nexus seal rotate --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
+  CARDS=$(printf '%s' "$SEAT" | grep -oE '"code":"[0-9a-f-]+"' | cut -d'"' -f4 | paste -sd, -)
+  if [ -n "$CARDS" ]; then ok; else bad "the roll printed no card on a staged root"; fi
+else bad "$(printf '%s' "$SEAT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
+step "A's quorum STANDS"
+if as_a nexus seal show --json 2>/dev/null | grep -q '"quorumSeated":true'; then ok; else bad "quorum not seated"; fi
+
+# ── ② VESSEL B — found independently ─────────────────────────────────────────────────────────────
+say "② vessel B — an INDEPENDENT operator founds their own hearth"
+step "seed B's genesis"
+if seed_genesis "$B_ROOT"; then ok; else bad "cp genesis"; fi
+stage_custody "$B_ROOT" B
+BEFORE=$FAILED
+# The name doubles as the ABSENCE PROBE below, so it must not collide with ordinary prose. A bare
+# "joiner" matched "zero-width joiner" inside vendored engine text and read A's root as leaking B's
+# key. A probe that can appear by accident measures the corpus, never the boundary.
+B_PROBE="bjoiner-$$-xqz"
+run_b "B founds its own hearth (own device key, own vault, own seed charter)"  vessel found --hearth --name "$B_PROBE" --skip-build
+# Persona zero declares its Handle and reads its key back BEFORE B stands, with no vessel holding the store: the
+# label lands on B's sealed rows alone, as it did when the face founded in this same step.
+step "B names its own persona"
+if B_MINT=$(as_b persona new 0 --name "$B_PROBE" --handle 'Independent Operator' --json 2>&1); then
+  ok; B_PERSONA_KEY=$(printf '%s' "$B_MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+else bad "$?"; printf '%s\n' "$B_MINT" | tail -4 | sed 's/^/      /'; B_PERSONA_KEY=""; fi
+run_b "B stands"                              vessel stand --install --skip-build
+unlock_root "$B_ROOT" B || exit 1
+if [ "$FAILED" -ne "$BEFORE" ]; then
+  say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."
+  exit "$FAILED"
+fi
+assert_founded "$B_ROOT" B
+
+step "★ B's key is FOREIGN to A — no shared seed on disk ★"
+# The whole ceremony defends one boundary; measure it rather than assume it. If any of B's persona
+# material sat under A's root, every signature below would verify for the wrong reason.
+#
+# THE PROBE MUST BE FINDABLE FIRST, THROUGH THE DOOR THAT HOLDS IT. A pet-name rests sealed under its vessel's
+# own key, so no grep of a root finds one, on either vessel. B's own `persona list` opens B's custody and names
+# the probe; an absence claim over a name nothing ever wrote would read green by vacancy. Then A answers, and its
+# answer must read as an answer: a `persona list` that faulted names nothing either. A's custody names no such
+# persona, A's root holds the name in no cleartext file, the key B's mint printed sits among none of the kahu
+# keys A minted, and the two vessels' own floor keys differ.
+# UNMEASURED HERE: whether a sealed copy of B's seed rests under A's root. Nothing in this run carries one there,
+# and no reading of A's sealed rows by this harness could tell B's seed from A's own.
+vessel_key_of() { cat "$1"/data/lares/identity/.vessel-key*.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
+A_LIST=$(as_a persona list --json 2>/dev/null); B_LIST=$(as_b persona list --json 2>/dev/null)
+A_VESSEL=$(vessel_key_of "$A_ROOT"); B_VESSEL=$(vessel_key_of "$B_ROOT")
+if ! printf '%s' "$B_LIST" | grep -qs '"ok":true'; then bad "B's persona list gave no answer"
+elif ! printf '%s' "$B_LIST" | grep -qs "$B_PROBE"; then bad "the probe names nothing under B — the absence below would measure the grep"
+elif ! printf '%s' "$A_LIST" | grep -qs '"ok":true'; then bad "A's persona list gave no answer — an absence read off it would measure a fault"
+elif printf '%s' "$A_LIST" | grep -qs "$B_PROBE"; then bad "A's custody names B's persona"
+elif [ -z "$B_PERSONA_KEY" ] || [ -z "$KAHU_KEYS" ]; then bad "a persona key went unread — the key comparison would measure nothing"
+elif printf '%s' "$KAHU_KEYS" | grep -qs "$B_PERSONA_KEY"; then bad "B's persona key stands among A's kahu keys"
+elif [ -z "$A_VESSEL" ] || [ -z "$B_VESSEL" ]; then bad "a vessel key went unread"
+elif [ "$A_VESSEL" = "$B_VESSEL" ]; then bad "the two vessels share one floor key"
+elif [ -d "$A_ROOT" ] && ! grep -rqs "$B_PROBE" "$A_ROOT" 2>/dev/null; then ok
+else bad "B's material reachable from A's root"; fi
+step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root"
+if grep -rqs "$B_PROBE" "$B_ROOT" 2>/dev/null; then bad "B's pet-name reads in the clear at rest"; else ok; fi
+
+# ── ③ THE PREREQUISITE — carry A's public charter to B ───────────────────────────────────────────
+say "③ the prerequisite the one-vessel run hid"
+note "B stands on its own seed charter; A's Nexus reaches B as a CARRIED charter, beside B's own."
+note "B cannot consent to a charter epoch it has never seen — so A's charter must travel FIRST."
+B_AID_BEFORE=$(as_b nexus seal show --json 2>/dev/null | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+step "B refuses to consent to A's Nexus with A's charter not in hand"
+if [ -z "$A_AID" ]; then bad "A's founding named no AID"
+elif as_b nexus accept-carriage --index 0 --nexus "$A_AID" --json >/dev/null 2>&1; then
+  bad "B signed a contract-in for a Nexus whose charter it never held — fail-closed did not hold"
+else ok; fi
+
+step "carry A's charter → B, beside B's own seed charter (public material)"
+A_CHARTER="$XFER/a-charter.mem"
+if as_a nexus seal export --no-json > "$A_CHARTER" 2>/dev/null && [ -s "$A_CHARTER" ] \
+   && as_b nexus seal import --carry "$A_CHARTER" --json 2>&1 | grep -q '"ok":true'; then ok
+else bad "A's charter did not carry to B"; fi
+
+step "★ the carried charter grants B no QUORUM — B's own seed charter stands as it stood ★"
+# B now holds A's charter beside its own. If carrying it moved B's primary, A's public charter would BE B's quorum.
+B_AID_AFTER=$(as_b nexus seal show --json 2>/dev/null | grep -oE '"sealEpochCid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+if [ -n "$B_AID_BEFORE" ] && [ "$B_AID_BEFORE" = "$B_AID_AFTER" ] && [ "$B_AID_AFTER" != "$A_AID" ]; then ok
+else bad "B's primary charter moved (${B_AID_BEFORE:-none} → ${B_AID_AFTER:-none})"; fi
+
+# ── ④ THE HANDSHAKE ──────────────────────────────────────────────────────────────────────────────
+say "④ the handshake — B consents, A's quorum admits"
+step "B signs its contract-in (the joiner's half)"
+if CARRIAGE=$(as_b nexus accept-carriage --index 0 --nexus "$A_AID" --json 2>&1); then
+  ok
+  B_NYM=$(printf '%s' "$CARRIAGE" | grep -oE '"nym":"[0-9a-fx]+"' | head -1 | cut -d'"' -f4)
+  B_SIG=$(printf '%s' "$CARRIAGE" | grep -oE '"contractSig":"[0-9a-f]+"' | head -1 | cut -d'"' -f4)
+  printf '%s\n%s\n' "$B_NYM" "$B_SIG" > "$XFER/contract-in.txt"
+  note "token written to the transfer dir — the out-of-band hand-off the CLI instructs"
+else bad "$?"; printf '%s\n' "$CARRIAGE" | tail -4 | sed 's/^/      /'; B_NYM=""; B_SIG=""; fi
+
+step "★ A has never held this key ★"
+if [ -n "$B_NYM" ] && ! as_a persona list --json 2>/dev/null | grep -q "${B_NYM#0x}"; then ok
+elif [ -z "$B_NYM" ]; then bad "no nym to check"
+else bad "B's nym appears among A's own personas"; fi
+
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
+  run_sh_a "★ A's quorum ADMITS a foreign key ★" \
+    "node '$LARES' nexus contract '$B_NYM' --sig '$B_SIG' --json | grep -q '\"memberHeld\":true'"
+  step "A's members board folds B IN"
+  if as_a nexus members --list --json 2>/dev/null | grep -q "${B_NYM#0x}"; then ok; else bad "B absent from the fold"; fi
+else
+  step "A's quorum admits a foreign key"; bad "no token captured"
+fi
+
+# ── THE S6 HELPER — public reads over the BUILT dist, run inside one vessel's environment ─────────────
+# Written to the transfer dir, which links the node package's dependency tree so the bare specifiers
+# resolve to the same builds the binary runs. Every mode READS a vessel's replica and seal home; none writes.
+ln -s "$REPO_ROOT/packages/lararium-node/node_modules" "$XFER/node_modules"
+S6="$XFER/s6.mjs"
+cat > "$S6" <<'JSEOF'
+import { randomBytes } from "node:crypto";
+import { readFileSync, writeFileSync } from "node:fs";
+import * as M from "@lararium/mesh";
+import { Repo } from "@automerge/automerge-repo";
+import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
+const D = `${process.env.REPO_ROOT}/packages/lararium-node/dist/src`;
+const { larSealHome, larDataDir } = await import(`${D}/vessel-paths.js`);
+const { readNexusDoc }            = await import(`${D}/nexus-doc.js`);
+const { nodeNexusIsland }         = await import(`${D}/nexus-standing.js`);
+const { heldNexusLeaves }         = await import(`${D}/nexus-leaf.js`);
+const { loadVesselVerifyingKey } = await import(`${D}/node-vessel-identity.js`);
+// The persona roster and each root rest sealed under the vessel key. This helper stands where a command stands with
+// no vessel answering it: it seats its own holder and opens it, under the staged root's published test route, at the
+// first sealed row a mode reads.
+const { FsCustodyIo, makeCustodyHolder, seatCustodyWhenNeeded, vesselCustodyHomes, signAsSeat } = await import(`${D}/index.js`);
+const { TEST_PASSPHRASE } = await import(`${process.env.REPO_ROOT}/tools/test-custody-route.mjs`);
+seatCustodyWhenNeeded(
+  () => { const homes = vesselCustodyHomes(); return makeCustodyHolder({ io: new FsCustodyIo(homes), homes }); },
+  async (holder) => {
+    const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+    if (opened.reading !== "opens" && opened.reading !== "already-unlocked") throw new Error(`the staged custody reads ${opened.reading} under the test route`);
+  },
+);
+
+/** This vessel's reading of the Nexus at its primary charter: roster head, board as deny board, antigen. */
+async function reading() {
+  const sealHome = larSealHome();
+  const doc    = readNexusDoc(sealHome);
+  const roster = M.foundingRoster(doc);
+  const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome });
+  const repo   = new Repo({ storage: new NodeFSStorageAdapter(larDataDir()) });
+  try {
+    const board   = await M.materializeSharedLarDoc(repo, M.carriageDocUrl(island), "board:carriage-contracts");
+    const antigen = await M.materializeSharedLarDoc(repo, M.kapaeAntigenDocUrl(island), "board:kapae-antigen");
+    // The anchors are the PRESENTER's read; the verdict reads the board as a deny board and nothing more.
+    return { aid: M.nexusAidOf(doc), doc, roster, sealLineage: doc?.sealLineage ?? [], boardDoc: board.doc(),
+             denyBoard: M.carriageEntriesFromBoard(board.doc()), anchors: M.rollAnchorsFromBoard(board.doc()),
+             antigen: M.antigenEntriesFromBoard(antigen.doc()), antigenRoster: roster };
+  } finally { await repo.flush().catch(() => {}); }
+}
+const verdictOf = async (p, r) => M.verifyPresentedAdmit({ admit: p.admit, lineage: p.lineage, roster: r.roster,
+  sealLineage: r.sealLineage, denyBoard: r.denyBoard, antigen: r.antigen, antigenRoster: r.antigenRoster,
+  antigenVerifier: M.makeMultiSigQuorumVerifier() });
+const json = (f) => JSON.parse(readFileSync(f, "utf8"));
+const hex32 = () => randomBytes(32).toString("hex");
+
+const [mode, a1, a2] = process.argv.slice(2);
+switch (mode) {
+  case "present": {            // the presentation a nym's admit head makes off this replica — the one presenter
+    const r = await reading();
+    const { presentation: p } = await M.presentationFromBoardDoc(r.boardDoc, a1, r.roster);
+    if (!p) { console.log("none"); process.exit(1); }
+    writeFileSync(a2, JSON.stringify(p));
+    console.log("captured");
+    break;
+  }
+  case "verdict": {            // verifyPresentedAdmit against this replica, as of now
+    console.log((await verdictOf(json(a1), await reading())).state);
+    break;
+  }
+  case "lineage": {            // does the charter lineage verify whole, and how many hands signed the head's roll
+    const r = await reading();
+    const head = r.sealLineage[r.sealLineage.length - 1];
+    console.log(`verified=${M.verifySealLineage(r.sealLineage)} sigs=${head?.roll?.signatures?.length ?? 0}`);
+    break;
+  }
+  case "anchored": {           // how many roll anchors a captured presentation carries
+    console.log(json(a1).lineage.filter((e) => M.isRollAnchor(e)).length);
+    break;
+  }
+  case "sign-closing": {       // the CLOSING seats sign an admit at the standing epoch, landed on no board
+    const [nym, contractSig, out] = [a1, a2, process.argv[5]];
+    const r = await reading();
+    const signers = r.roster.keys.slice(0, r.roster.threshold).map((signer) => ({
+      signer, sign: async (bytes) => M.hex(await signAsSeat(signer, bytes)),
+    }));
+    const act = await M.signCarriageQuorum({ nym, action: "admit", parents: [], sealEpochCid: r.roster.sealEpochCid }, signers,
+      { signer: nym, sig: contractSig });
+    writeFileSync(out, JSON.stringify(act));
+    console.log("signed");
+    break;
+  }
+  case "late-admit": {         // the admit the CLOSING seats signed at the closed epoch, beside the roll's anchor
+    const [actFile, out] = [a1, a2];
+    const r = await reading();
+    const closed = r.sealLineage.length >= 2 ? r.sealLineage[r.sealLineage.length - 2].epochCid : null;
+    const late = json(actFile);
+    if (!closed || late.sealEpochCid !== closed) { console.log("no-roll"); process.exit(1); }
+    const anchors = r.anchors.filter((a) => a.sealEpochCid === r.roster.sealEpochCid);
+    writeFileSync(out, JSON.stringify({ admit: late, lineage: anchors }));
+    console.log(`minted anchors=${anchors.length}`);
+    break;
+  }
+  case "leafproof": {          // only the admit's own leaf proves it to a socket
+    const p = json(a1);
+    // The Nexus the admit names: the one passed (a charter this vessel carries), else the primary charter's.
+    const aid = a2 || M.nexusAidOf(readNexusDoc(larSealHome()));
+    const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
+    if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
+    const bind = { nonce: hex32(), gatePubKey: hex32(), vesselKey: await loadVesselVerifyingKey() };
+    const arm = { kind: "admit", ...p };
+    const proof = async (seed) => M.signLeafProof({ presented: arm, ...bind, sign: M.ed25519SignerFromSeed(seed) });
+    const honest = await M.verifyLeafProof({ presented: { ...arm, leafProof: await proof(leaf.seed) }, ...bind });
+    const forged = await M.verifyLeafProof({ presented: { ...arm, leafProof: await proof(randomBytes(32)) }, ...bind });
+    console.log(`honest=${honest} forged=${forged}`);
+    break;
+  }
+  case "wire": {               // one socket, one face: the admit never rides beside a root edge
+    const p = json(a1);
+    const base = { type: "lar:auth", contactCard: "{}", nonce: hex32(), leafNonce: hex32(), presented: { kind: "admit", ...p, leafProof: "ab".repeat(64) } };
+    console.log(`alone=${M.isLarAuthMsg(base)} beside-edge=${M.isLarAuthMsg({ ...base, edge: { deviceVerifyingKey: hex32() } })}`);
+    break;
+  }
+  case "challenge": {          // what a herm carrying this Nexus would emit
+    const r = await reading();
+    console.log(JSON.stringify(M.mintRaiseChallenge({ vesselId: hex32(), nexus: r.aid, epoch: 0, nonce: hex32() })));
+    break;
+  }
+  case "raise": {              // the door's verifier route over this replica's reading
+    const live = json(a1);
+    const grant = json(a2);
+    // THE DOOR READS A HELD ROOT, built where the vessel builds its own (`vessel-raise.ts`): from the charter this
+    // vessel keeps for the Nexus, never from a roster a caller assembled by hand.
+    const at = await reading();
+    const root = M.heldNexusRoot({ nexus: at.aid, charter: at.doc, denyBoard: at.denyBoard, antigen: at.antigen,
+      antigenVerifier: M.makeMultiSigQuorumVerifier() });
+    if ("absent" in root) { console.log(`refused no-held-root ${root.absent}`); break; }
+    const r = await M.verifyRaiseGrant({ grant, live, readings: [root],
+      verify: (nym, bytes, sig) => M.ed25519VerifyHex(sig, bytes, nym) });
+    console.log(r.ok ? `raised by=${r.caps.byNym}` : `refused ${r.why} ${r.detail}`);
+    break;
+  }
+  case "stranger-grant": {     // the same admit, carried by a key that is not its leaf
+    const live = json(a1);
+    const grant = json(a2);
+    const seed = randomBytes(32);
+    const byNym = M.hex(await (await import("@noble/ed25519")).getPublicKeyAsync(seed));
+    writeFileSync(a2 + ".stranger", JSON.stringify(await M.signRaiseGrant({
+      challenge: live, byNym, presentedAdmit: grant.presentedAdmit, sign: M.ed25519SignerFromSeed(seed) })));
+    console.log("written");
+    break;
+  }
+  default: console.error(`s6: unknown mode ${mode}`); process.exit(2);
+}
+JSEOF
+s6_a() { ( export LAR_ROOT="$A_ROOT" LAR_PORT="$A_PORT" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
+s6_b() { ( export LAR_ROOT="$B_ROOT" LAR_PORT="$B_PORT" REPO_ROOT="$REPO_ROOT"; node "$S6" "$@" ); }
+PRESENTED="$XFER/presented-admit.json"
+
+# ── ⑤ S6 — B's admit as a PRESENTATION ───────────────────────────────────────────────────────────────
+say "⑤ S6 — B's admit, presented"
+note "the presentation derives off A's board (presentationFromBoardDoc) — what B presents once it holds the board"
+step "B's admit head and lineage derive off A's replica"
+if [ -n "$B_NYM" ] && out=$(s6_a present "$B_NYM" "$PRESENTED" 2>&1) && [ "$out" = "captured" ]; then ok
+else bad "${out:-no nym}"; fi
+
+step "★ (1) B's presented admit reads HELD at A ★"
+if [ -s "$PRESENTED" ] && [ "$(s6_a verdict "$PRESENTED" 2>&1)" = "held" ]; then ok
+else bad "$(s6_a verdict "$PRESENTED" 2>&1 | tail -1)"; fi
+
+step "★ (2) a leaf proof by ANOTHER key refuses — B's own leaf proves ★"
+# CONTROL inside the check: the honest proof by B's own leaf (derived in B's environment) must verify,
+# or a refusing forged proof would measure a verifier that refuses everything.
+LP=$(s6_b leafproof "$PRESENTED" "$A_AID" 2>&1)
+if [ "$LP" = "honest=true forged=false" ]; then ok; else bad "$LP"; fi
+
+step "★ (5) the admit beside a root edge fails the wire guard ★"
+WG=$(s6_a wire "$PRESENTED" 2>&1)
+if [ "$WG" = "alone=true beside-edge=false" ]; then ok; else bad "$WG"; fi
+
+# ── ⑥ THE REFUSALS ───────────────────────────────────────────────────────────────────────────────
+say "⑥ the refusals — a gate only shown saying yes is no gate"
+step "a foreign nym with NO contract-in refuses"
+if as_a nexus contract 1111111111111111111111111111111111111111111111111111111111111111 --json 2>&1 | grep -q '"ok":true'; then
+  bad "admitted without consent"; else ok; fi
+
+step "a FORGED signature refuses"
+if [ -n "$B_NYM" ]; then
+  FORGED=$(printf '%0128d' 0 | tr '0' 'a')
+  if as_a nexus contract "$B_NYM" --sig "$FORGED" --json 2>&1 | grep -q '"ok":true'; then
+    bad "a forged contract-in verified"; else ok; fi
+else bad "no nym"; fi
+
+# ── ⑦ THE RAISE DOOR (O9) — the verifier reads the presented admit ───────────────────────────────────
+say "⑦ the raise door — a leaf raises through its presented admit"
+note "A's kahu-0 consents as its own LEAF and A's quorum admits it, so A's replica holds a leaf admit to sign with"
+step "A's kahu-0 leaf is admitted on A's board"
+if SELF=$(as_a nexus accept-carriage --index 0 --json 2>&1); then
+  A_LEAF=$(printf '%s' "$SELF" | grep -oE '"nym":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
+  A_LEAF_SIG=$(printf '%s' "$SELF" | grep -oE '"contractSig":"[0-9a-f]+"' | head -1 | cut -d'"' -f4)
+  if as_a nexus contract "$A_LEAF" --sig "$A_LEAF_SIG" --json 2>&1 | grep -q '"memberHeld":true'; then ok
+  else bad "the leaf admit did not land"; fi
+else bad "$?"; A_LEAF=""; fi
+
+CHALLENGE="$XFER/raise-challenge.json"; GRANT="$XFER/raise-grant.json"
+step "a challenge names A's Nexus by its AID"
+if s6_a challenge > "$CHALLENGE" 2>&1 && grep -q '"nexus"' "$CHALLENGE"; then ok; else bad "$(tail -1 "$CHALLENGE")"; fi
+
+step "lares raise sign signs as the LEAF, carrying its admit"
+if as_a raise sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2>&1 \
+   && node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.ok) process.exit(1); require("fs").writeFileSync(process.argv[2], JSON.stringify(o.data));' "$XFER/raise-sign.out" "$GRANT" \
+   && grep -q "\"byNym\":\"$A_LEAF\"" "$GRANT"; then ok
+else bad "$(tail -c 300 "$XFER/raise-sign.out")"; fi
+
+step "★ the door RAISES the leaf's grant ★"
+RAISE=$(s6_a raise "$CHALLENGE" "$GRANT" 2>&1)
+if [ "$RAISE" = "raised by=$A_LEAF" ]; then ok; else bad "$RAISE"; fi
+
+step "★ CONTROL: a stranger carrying the same admit refuses ★"
+if s6_a stranger-grant "$CHALLENGE" "$GRANT" >/dev/null 2>&1; then
+  STRANGER=$(s6_a raise "$CHALLENGE" "$GRANT.stranger" 2>&1)
+  case "$STRANGER" in "refused rejected signer-is-not-the-admit-leaf") ok ;; *) bad "$STRANGER" ;; esac
+else bad "no stranger grant"; fi
+
+# ── ⑧ SUPERSESSION ───────────────────────────────────────────────────────────────────────────────
+say "⑧ closing — non-renewal, never deletion"
+if [ -n "$B_NYM" ]; then
+  run_sh_a "A revokes — the board SUPERSEDES" \
+    "node '$LARES' nexus revoke '$B_NYM' --json | grep -q '\"memberHeld\":false'"
+else step "A revokes"; bad "no nym"; fi
+
+step "★ (3) a revoke descending from the admit reads DENIED ★"
+VD=$(s6_a verdict "$PRESENTED" 2>&1)
+if [ "$VD" = "denied" ]; then ok; else bad "$VD"; fi
+
+# ── ⑨ THE EPOCH ROLL ─────────────────────────────────────────────────────────────────────────────
+say "⑨ the epoch roll — consent to one epoch is not consent to the next"
+# THE CONTROL FIRST: before the roll, B's same token re-admits, so the refusal after the roll is the roll's.
+step "CONTROL: before the roll, B's token re-admits"
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && as_a nexus contract "$B_NYM" --sig "$B_SIG" --json 2>&1 | grep -q '"memberHeld":true'; then ok
+else bad "the token did not re-admit before the roll"; fi
+
+# THE CLOSING KEYS SIGN ONE ADMIT NOW, at the epoch the roll closes, and it lands on no board: after the roll it
+# stands in no anchor's past. They sign before the roll, since the roll retires them.
+LATE_ACT="$XFER/late-admit-act.json"
+step "the closing seats sign an admit at the closing epoch that no board holds"
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && SC=$(s6_a sign-closing "$B_NYM" "$B_SIG" "$LATE_ACT" 2>&1) && [ "$SC" = "signed" ]; then ok
+else bad "${SC:-no token}"; fi
+
+step "A rotates the charter (the committed reveal)"
+if ROT=$(as_a nexus seal rotate --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
+
+step "the rotate landed a ROLL ANCHOR on A's board"
+if printf '%s' "$ROT" | grep -qE '"rollAnchor":\{"cid":"[0-9a-f]{64}"'; then ok
+else bad "no anchor in the rotate's report"; fi
+
+step "★ the committed hands SIGNED the roll, and the lineage verifies whole ★"
+LN=$(s6_a lineage 2>&1)
+case "$LN" in verified=true\ sigs=[1-9]*) ok ;; *) bad "$LN" ;; esac
+
+step "★ a REPLAY across an epoch roll refuses ★"
+# The sharpest property: a contract-in binds to the epoch it consented under. Roll A's charter and the
+# old token must stop verifying — consent to one epoch is not consent to the next.
+if [ -n "$B_NYM" ] && [ -n "$B_SIG" ]; then
+  if as_a nexus contract "$B_NYM" --sig "$B_SIG" --json 2>&1 | grep -q '"ok":true'; then
+    bad "a contract-in signed under the PRIOR epoch still verified"
+  else ok; fi
+else bad "no token"; fi
+
+# ── ⑩ ANCHORED ANCESTRY ──────────────────────────────────────────────────────────────────────────────
+say "⑩ anchored ancestry — an admit in the roll anchor's past carries to the new head"
+ANCHORED="$XFER/presented-after-roll.json"
+step "B's admit head re-derives off A's replica after the roll"
+if [ -n "$B_NYM" ] && out=$(s6_a present "$B_NYM" "$ANCHORED" 2>&1) && [ "$out" = "captured" ]; then ok
+else bad "${out:-no nym}"; fi
+
+step "the presentation carries the roll anchor"
+NA=$(s6_a anchored "$ANCHORED" 2>&1)
+if [ "$NA" = "1" ]; then ok; else bad "anchors=$NA"; fi
+
+step "★ (4) an admit in the anchor's past reads HELD at the new head ★"
+VH=$(s6_a verdict "$ANCHORED" 2>&1)
+if [ "$VH" = "held" ]; then ok; else bad "$VH"; fi
+
+step "★ CONTROL: an admit the closing seats signed at the closed epoch, landed on no board, reads WRONG-EPOCH ★"
+# The closing seats signed at the closed epoch — the act counts there, and stands in no anchor's past.
+# CONTROL inside the check: it carries the same anchor the held presentation carries.
+LATE="$XFER/late-admit.json"
+if [ -s "$LATE_ACT" ] && LM=$(s6_a late-admit "$LATE_ACT" "$LATE" 2>&1) && [ "$LM" = "minted anchors=1" ]; then
+  VL=$(s6_a verdict "$LATE" 2>&1)
+  if [ "$VL" = "wrong-epoch" ]; then ok; else bad "$VL"; fi
+else bad "${LM:-no token}"; fi
+
+step "★ CONTROL: the pre-roll presentation, carrying no anchor, reads WRONG-EPOCH ★"
+VE=$(s6_a verdict "$PRESENTED" 2>&1)
+if [ "$VE" = "wrong-epoch" ]; then ok; else bad "$VE"; fi
+
+# ── ⑪ THE RE-LIGHT ───────────────────────────────────────────────────────────────────────────────────
+# B named its face before it stood, so that label rests on B's sealed rows alone. A person who names the face
+# again while it stands lit re-lights it, and the face's persona plane stands open beside the act. That plane's
+# document rests through the vessel's own storage, in the clear, so the label never rides onto it: it rests on the
+# sealed row and nowhere else (lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed). B stops before
+# the search, so every write its Repo holds reaches rest first, and nothing below needs B standing.
+say "⑪ the re-light — a lit face's new label rests sealed"
+B_RELIT="brelit-$$-qzx"
+run_b "B re-lights its lit face under a fresh label"   persona new 0 --name "$B_RELIT"
+step "the fresh label reads through B's own custody"
+if as_b persona list --json 2>/dev/null | grep -qs "$B_RELIT"; then ok
+else bad "the label names nothing under B — the absence below would measure the grep"; fi
+run_b "B stops, so its Repo's writes reach rest"       vessel stop
+step "CONTROL: the search reads B's own root"
+if [ -n "$B_VESSEL" ] && grep -rqs "$B_VESSEL" "$B_ROOT" 2>/dev/null; then ok
+else bad "B's own vessel key reads nowhere under B's root"; fi
+step "★ B's re-lit label rests in no cleartext file of B's own root ★"
+if grep -rqs "$B_RELIT" "$B_ROOT" 2>/dev/null; then
+  bad "the re-lit label reads in the clear at rest: $(grep -rls "$B_RELIT" "$B_ROOT" 2>/dev/null | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
+else ok; fi
+
+say "═══ RESULT ═══"
+if [ "$FAILED" -eq 0 ]; then
+  echo "  the door opened for a key A never held, refused every forgery, read the presented admit held,"
+  echo "  denied and wrong-epoch, raised a leaf through it, closed by supersession, and carried an admit"
+  echo "  in the roll anchor's past to the new head."
+  # THE CARRY NOW STANDS WALKED. `herm-mesh-witness` carries a dial across three hops between four
+  # containers, pointer-signed and hash-matched at the last — so naming it unwalked here would send a
+  # reader to build an instrument that already passes. What this witness still does NOT reach is the
+  # part no single machine can stage: two machines, two clocks, and a partition between them.
+  echo "  This runs in ONE process-space. WALKED ELSEWHERE: the network carry (herm-mesh-witness,"
+  echo "  three hops, verified). UNWALKED ANYWHERE: two machines with two clocks."
+else
+  echo "  $FAILED check(s) failed."
+fi
+exit "$FAILED"

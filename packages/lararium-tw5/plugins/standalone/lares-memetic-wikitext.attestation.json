@@ -1,0 +1,15 @@
+{
+  "format": "lararium-tw5-plugin-build/v1",
+  "canonicalTitle": "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext",
+  "compatibilityTitle": "$:/plugins/lares/memetic-wikitext",
+  "moduleManifestPath": "dist-plugin/module-manifest.json",
+  "moduleManifestSha256": "ee3e915c089830734a335261a59d36f338a4c2eb2ad7eeb2c2c026643b609eb1",
+  "sourceManifestPath": "dist-plugin/plugin-source-manifest.json",
+  "sourceManifestSha256": "d7771b07480d6a58d7ad792f53d0b3a6673271c028b91f5da08e5088cf38d692",
+  "packTranscriptPath": "dist-plugin/pack-transcript.json",
+  "packTranscriptSha256": "ee79b641830283d5fa65ce4332a5f35eaf131825589ce821f051fa139f621b8f",
+  "moduleCount": 44,
+  "packedTiddlerCount": 171,
+  "pluginJsonSha256": "26d101748538b52349bd7cafc0b8f587058d6228e0d59dffcf574ee5c5de3536",
+  "pluginTw5Sha256": "28b92032dd405052e4a97c37787666e3b7ffff0a0125fb6aad8be76c8cb5f341"
+}

@@ -1,0 +1,425 @@
+import { digestsEqual, parseDigest, formatDigest, SHA256_ALGO } from "./agile-digest.js";
+import { sha256HexBytesSync } from "./crypto.js";
+
+/**
+ * The platform-blind Pronaos inventory.
+ *
+ * A Pronaos names a finite public first face.  This module only describes and
+ * validates that face; it does not serve bytes, interpret HTTP, or grant a
+ * capability.  Carriers (Node, a static host, or a reverse proxy) consume the
+ * validated inventory in their own platform layer.
+ */
+
+export const PRONAOS_ROUTE_KINDS = [
+  "web-artifact",
+  "genesis-seed",
+  "genesis-member",
+  "public-projection",
+  "live-transport",
+] as const;
+
+export type PronaosRouteKind = (typeof PRONAOS_ROUTE_KINDS)[number];
+
+/** Cache behavior belongs to delivery, never to authority or causal order. */
+export type PronaosCacheClass = "immutable" | "revalidate" | "no-store";
+const PRONAOS_CACHE_CLASSES: readonly PronaosCacheClass[] = ["immutable", "revalidate", "no-store"];
+
+/**
+ * Refusal causes that a carrier may expose for an already-known route.
+ * Undeclared/private/traversal routes share the uniform class in the policy
+ * below so the boundary does not become an existence oracle.
+ */
+export type PronaosRefusalClass = "integrity" | "unavailable" | "uniform";
+
+export interface PronaosRefusalPolicy {
+  readonly undeclared: "uniform";
+  readonly private: "uniform";
+  readonly traversal: "uniform";
+  readonly integrity: "integrity";
+  readonly unavailable: "unavailable";
+}
+
+export const DEFAULT_PRONAOS_REFUSALS: PronaosRefusalPolicy = {
+  undeclared: "uniform",
+  private: "uniform",
+  traversal: "uniform",
+  integrity: "integrity",
+  unavailable: "unavailable",
+};
+
+interface PronaosRouteBase {
+  /** Canonical absolute path, without query or fragment. */
+  readonly path: string;
+  readonly cache: PronaosCacheClass;
+  /** Refusal for a known route after its declared target cannot be delivered. */
+  readonly refusal: PronaosRefusalClass;
+}
+
+export interface PronaosWebArtifactRoute extends PronaosRouteBase {
+  readonly kind: "web-artifact";
+  /** Opaque content identifier; the carrier preserves it byte-for-byte. */
+  readonly artifactCid: string;
+  /** Exact integrity identifier for the artifact bytes. */
+  readonly integrity: string;
+}
+
+export interface PronaosGenesisSeedRoute extends PronaosRouteBase {
+  readonly kind: "genesis-seed";
+  readonly seedCid: string;
+  readonly integrity: string;
+}
+
+export interface PronaosGenesisMemberRoute extends PronaosRouteBase {
+  readonly kind: "genesis-member";
+  /** The member CID also names the required path segment. */
+  readonly cid: string;
+}
+
+export interface PronaosPublicProjectionRoute extends PronaosRouteBase {
+  readonly kind: "public-projection";
+  /** Stable operator-selected projection name, not a filesystem path or CID query. */
+  readonly projection: string;
+}
+
+export interface PronaosLiveTransportRoute extends PronaosRouteBase {
+  readonly kind: "live-transport";
+  /** Carrier-local upstream reference; mesh does not interpret its syntax. */
+  readonly target: string;
+}
+
+export type PronaosRoute =
+  | PronaosWebArtifactRoute
+  | PronaosGenesisSeedRoute
+  | PronaosGenesisMemberRoute
+  | PronaosPublicProjectionRoute
+  | PronaosLiveTransportRoute;
+
+export interface PronaosRouteInventory {
+  readonly routes: readonly PronaosRoute[];
+  readonly refusals: PronaosRefusalPolicy;
+}
+
+/**
+ * The build handoff for a Web Pronaos.  This is deliberately separate from
+ * the public route inventory: the record names files held by the operator,
+ * while the carrier decides which of those files becomes publicly reachable.
+ */
+export interface PronaosArtifactEntry {
+  readonly path: string;
+  /** Relative to the explicitly supplied Web artifact root. */
+  readonly file: string;
+  readonly contentType: string;
+  readonly cache: PronaosCacheClass;
+  /** Lowercase SHA-256 of the held bytes. */
+  readonly sha256: string;
+}
+
+export interface PronaosArtifactRecord {
+  readonly schema: "lararium-pronaos-artifact/v1";
+  readonly routes: readonly PronaosArtifactEntry[];
+}
+
+/** The one public action a persona-free Herm may receive from an operator. */
+export const PUBLIC_ARTIFACT_DELIVERY_ABILITY = "public-artifact:deliver" as const;
+
+/**
+ * These abilities are deliberately absent from `PublicArtifactPublication`.
+ * Keeping the refusal vocabulary beside the narrow grant makes an accidental
+ * widening visible at the type and test seams instead of hiding it in a
+ * carrier adapter.
+ */
+export const PUBLIC_ARTIFACT_FORBIDDEN_ABILITIES = [
+  "document-read",
+  "document-write",
+  "persona",
+  "admission",
+  "delegate",
+  "arbitrary-cas-read",
+] as const;
+
+export type PublicArtifactForbiddenAbility = (typeof PUBLIC_ARTIFACT_FORBIDDEN_ABILITIES)[number];
+
+/**
+ * An operator-authenticated, local publication of one finite artifact route.
+ *
+ * This is a publication record, not a CAS resolver or deployment receipt.  It
+ * names exactly one route and one digest; a carrier must be handed the bytes
+ * by its own platform layer and this module verifies those bytes before they
+ * leave the Pronaos boundary.  `authentication: "local-operator"` records the
+ * alpha trust boundary.  Cross-operator signed delegation is a later crossing
+ * and is intentionally not represented here.
+ */
+export interface PublicArtifactPublication {
+  readonly schema: "lararium-pronaos-public-artifact/v1";
+  readonly operator: {
+    readonly id: string;
+    readonly authentication: "local-operator";
+  };
+  /** Content identifier for the exact bytes; must be sha256-tagged (`sha256:<hex>`) — every digest
+   *  in the house rides tagged, no bare-hex dual-read. */
+  readonly artifactCid: string;
+  /** Independent integrity spelling for the same bytes; it must name sha256 and equal the CID. */
+  readonly integrity: string;
+  readonly route: {
+    readonly path: string;
+    readonly contentType: string;
+    readonly cache: PronaosCacheClass;
+  };
+  readonly ability: typeof PUBLIC_ARTIFACT_DELIVERY_ABILITY;
+}
+
+export interface PublicArtifactDelivery {
+  readonly path: string;
+  readonly artifactCid: string;
+  readonly contentType: string;
+  readonly bytes: Uint8Array;
+}
+
+export interface ValidatePronaosRouteInventoryOptions {
+  /** Startup requires `/` and `/genesis/seed.json` by default. */
+  readonly requireStartup?: boolean;
+}
+
+const CID_SEGMENT = /^[^/\\?#%\s]+$/;
+const OPAQUE_VALUE = /^\S+$/;
+const SHA256 = /^[0-9a-f]{64}$/;
+const ARTIFACT_FILE = /^(?:index\.html|manifest\.webmanifest|assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm))$/;
+
+function fail(message: string): never {
+  throw new TypeError(`[pronaos] ${message}`);
+}
+
+function exactOpaque(value: unknown, label: string): asserts value is string {
+  if (typeof value !== "string" || value.length === 0 || value.trim() !== value || !OPAQUE_VALUE.test(value)) {
+    fail(`${label} must be a non-empty exact identifier`);
+  }
+}
+
+function exactCidSegment(value: unknown, label: string): asserts value is string {
+  exactOpaque(value, label);
+  if (!CID_SEGMENT.test(value)) fail(`${label} must be one canonical path segment`);
+}
+
+function validatePath(path: unknown): asserts path is string {
+  if (typeof path !== "string" || path.length === 0 || path[0] !== "/") {
+    fail("route path must be an absolute path");
+  }
+  if (path === "/") return;
+  if (path.trim() !== path || path.includes("\\") || path.includes("?") || path.includes("#") || path.includes("%")) {
+    fail(`route path is not canonical: ${path}`);
+  }
+  if (path.endsWith("/") || path.includes("//") || path.includes("*") || path.includes("{") || path.includes("}")) {
+    fail(`route path is not a finite file/endpoint path: ${path}`);
+  }
+  const segments = path.slice(1).split("/");
+  if (segments.some((segment) => segment === "." || segment === ".." || segment.length === 0 || segment.startsWith(":"))) {
+    fail(`route path contains traversal or a dynamic segment: ${path}`);
+  }
+}
+
+function validateBase(route: PronaosRoute): void {
+  validatePath(route.path);
+  if (!["immutable", "revalidate", "no-store"].includes(route.cache)) {
+    fail(`route ${route.path} has an unknown cache class`);
+  }
+  if (!["integrity", "unavailable", "uniform"].includes(route.refusal)) {
+    fail(`route ${route.path} has an unknown refusal class`);
+  }
+}
+
+function validateRoute(route: PronaosRoute): void {
+  if (!route || typeof route !== "object" || !PRONAOS_ROUTE_KINDS.includes(route.kind)) {
+    fail("route has an unknown kind");
+  }
+  validateBase(route);
+  switch (route.kind) {
+    case "web-artifact":
+      if (route.refusal !== "integrity") fail(`Web artifact ${route.path} must be integrity-refusing`);
+      exactCidSegment(route.artifactCid, `artifactCid for ${route.path}`);
+      exactOpaque(route.integrity, `integrity for ${route.path}`);
+      return;
+    case "genesis-seed":
+      if (route.path !== "/genesis/seed.json") fail("genesis seed must use /genesis/seed.json");
+      if (route.refusal !== "integrity") fail("genesis seed must be integrity-refusing");
+      exactCidSegment(route.seedCid, "seedCid");
+      exactOpaque(route.integrity, "genesis seed integrity");
+      return;
+    case "genesis-member":
+      if (route.refusal !== "integrity") fail(`genesis member ${route.path} must be integrity-refusing`);
+      exactCidSegment(route.cid, `cid for ${route.path}`);
+      if (route.path !== `/genesis/cas/${route.cid}`) {
+        fail(`genesis member path must name its CID exactly: ${route.path}`);
+      }
+      return;
+    case "public-projection":
+      if (route.refusal === "uniform") fail(`public projection ${route.path} needs a delivery refusal class`);
+      exactOpaque(route.projection, `projection for ${route.path}`);
+      return;
+    case "live-transport":
+      if (route.cache !== "no-store" || route.refusal !== "unavailable") {
+        fail(`live transport ${route.path} must be no-store and unavailable-refusing`);
+      }
+      exactOpaque(route.target, `transport target for ${route.path}`);
+      return;
+  }
+}
+
+function validateRefusals(refusals: PronaosRefusalPolicy): void {
+  if (!refusals || refusals.undeclared !== "uniform" || refusals.private !== "uniform" ||
+      refusals.traversal !== "uniform" || refusals.integrity !== "integrity" ||
+      refusals.unavailable !== "unavailable") {
+    fail("refusal policy must keep undeclared, private, and traversal uniform");
+  }
+}
+
+function validateArtifactPath(path: unknown): asserts path is string {
+  validatePath(path);
+  if (path !== "/" && path !== "/manifest.webmanifest" && !/^\/assets\/[A-Za-z0-9._-]+\.(?:m?js|css|wasm)$/.test(path)) {
+    fail(`artifact path is outside the finite Web surface: ${path}`);
+  }
+}
+
+function validatePublicArtifactDigest(value: unknown, label: string): asserts value is string {
+  let parsed: ReturnType<typeof parseDigest>;
+  try {
+    parsed = parseDigest(value as string);
+  } catch {
+    fail(`${label} must be a sha256 digest`);
+  }
+  if (parsed.algo !== "sha256" || parsed.hex.length !== 64) {
+    fail(`${label} must be a sha256 digest`);
+  }
+}
+
+/** Validate the narrow local-operator publication record before a carrier uses it. */
+export function validatePublicArtifactPublication(publication: PublicArtifactPublication): void {
+  if (!publication || publication.schema !== "lararium-pronaos-public-artifact/v1") {
+    fail("public artifact publication has an unsupported schema");
+  }
+  if (!publication.operator || typeof publication.operator.id !== "string" ||
+      publication.operator.id.length === 0 || publication.operator.id.trim() !== publication.operator.id ||
+      !OPAQUE_VALUE.test(publication.operator.id)) {
+    fail("public artifact publication needs a local operator id");
+  }
+  if (publication.operator.authentication !== "local-operator") {
+    fail("public artifact publication requires local-operator authentication");
+  }
+  if (publication.ability !== PUBLIC_ARTIFACT_DELIVERY_ABILITY) {
+    fail("public artifact publication grants only public-artifact:deliver");
+  }
+  if (!publication.route || typeof publication.route !== "object") {
+    fail("public artifact publication needs one declared route");
+  }
+  validateArtifactPath(publication.route.path);
+  if (typeof publication.route.contentType !== "string" || publication.route.contentType.length === 0 ||
+      publication.route.contentType.trim() !== publication.route.contentType) {
+    fail("public artifact publication needs a content type");
+  }
+  if (!PRONAOS_CACHE_CLASSES.includes(publication.route.cache)) {
+    fail("public artifact publication has an unknown cache class");
+  }
+  validatePublicArtifactDigest(publication.artifactCid, "public artifact CID");
+  validatePublicArtifactDigest(publication.integrity, "public artifact integrity");
+  if (!digestsEqual(publication.artifactCid, publication.integrity)) {
+    fail("public artifact CID and integrity must name the same bytes");
+  }
+}
+
+/**
+ * Verify and release exactly the bytes named by a local publication.
+ *
+ * The carrier supplies bytes; this function never opens a CAS, document,
+ * persona, admission, or delegation store.  A caller must present both the
+ * declared route and CID, so a publication cannot turn into an arbitrary
+ * public read path.
+ */
+export function deliverPublicArtifact(
+  publication: PublicArtifactPublication,
+  request: { readonly path: string; readonly artifactCid: string },
+  bytes: Uint8Array,
+): PublicArtifactDelivery {
+  validatePublicArtifactPublication(publication);
+  if (request.path !== publication.route.path) {
+    fail("public artifact route is not declared");
+  }
+  if (!digestsEqual(request.artifactCid, publication.artifactCid)) {
+    fail("public artifact CID is not declared");
+  }
+  if (!(bytes instanceof Uint8Array)) {
+    fail("public artifact bytes are not a Uint8Array");
+  }
+  const computed = formatDigest(SHA256_ALGO, sha256HexBytesSync(bytes));
+  if (!digestsEqual(computed, publication.artifactCid) || !digestsEqual(computed, publication.integrity)) {
+    fail("public artifact bytes fail integrity");
+  }
+  return {
+    path: publication.route.path,
+    artifactCid: publication.artifactCid,
+    contentType: publication.route.contentType,
+    bytes: bytes.slice(),
+  };
+}
+
+/** Validate the operator-held Web build receipt without touching a filesystem. */
+export function validatePronaosArtifactRecord(record: PronaosArtifactRecord): void {
+  if (!record || record.schema !== "lararium-pronaos-artifact/v1" || !Array.isArray(record.routes)) {
+    fail("artifact record has an unknown schema or routes are not finite");
+  }
+  const paths = new Set<string>();
+  let hasRoot = false;
+  for (const entry of record.routes) {
+    if (!entry || typeof entry !== "object") fail("artifact entry must be an object");
+    validateArtifactPath(entry.path);
+    if (paths.has(entry.path)) fail(`artifact record contains duplicate route: ${entry.path}`);
+    paths.add(entry.path);
+    if (entry.path === "/") hasRoot = true;
+    if (typeof entry.file !== "string" || !ARTIFACT_FILE.test(entry.file) || entry.file.includes("..")) {
+      fail(`artifact file is not a canonical relative file: ${entry.file}`);
+    }
+    if (entry.path === "/" && entry.file !== "index.html") fail("root artifact must be index.html");
+    if (entry.path === "/manifest.webmanifest" && entry.file !== "manifest.webmanifest") {
+      fail("manifest route must be manifest.webmanifest");
+    }
+    const expectedType = entry.path === "/" ? "text/html; charset=utf-8" :
+      entry.path === "/manifest.webmanifest" ? "application/manifest+json" :
+      entry.path.endsWith(".css") ? "text/css" : entry.path.endsWith(".wasm") ? "application/wasm" : "application/javascript";
+    const expectedCache = entry.path === "/" || entry.path === "/manifest.webmanifest" ? "no-store" : "immutable";
+    if (entry.contentType !== expectedType) fail(`artifact ${entry.path} must use ${expectedType}`);
+    if (entry.cache !== expectedCache) fail(`artifact ${entry.path} must use ${expectedCache}`);
+    if (typeof entry.sha256 !== "string" || !SHA256.test(entry.sha256)) {
+      fail(`artifact ${entry.path} needs a lowercase SHA-256 digest`);
+    }
+  }
+  if (!hasRoot) fail("artifact record must name /");
+}
+
+/** Validate a finite, carrier-neutral Pronaos route inventory. */
+export function validatePronaosRouteInventory(
+  inventory: PronaosRouteInventory,
+  options: ValidatePronaosRouteInventoryOptions = {},
+): void {
+  if (!inventory || !Array.isArray(inventory.routes)) fail("routes must be a finite array");
+  validateRefusals(inventory.refusals);
+  const paths = new Set<string>();
+  for (const route of inventory.routes) {
+    validateRoute(route);
+    if (paths.has(route.path)) fail(`conflicting route ownership at ${route.path}`);
+    paths.add(route.path);
+  }
+  if (options.requireStartup !== false) {
+    const root = inventory.routes.find((route) => route.path === "/");
+    if (!root || root.kind !== "web-artifact") fail("startup requires a web artifact at /");
+    const seed = inventory.routes.find((route) => route.path === "/genesis/seed.json");
+    if (!seed || seed.kind !== "genesis-seed") fail("startup requires /genesis/seed.json");
+  }
+}
+
+/** Boolean boundary for callers inspecting untrusted inventory data. */
+export function isPronaosRouteInventory(value: unknown): value is PronaosRouteInventory {
+  try {
+    validatePronaosRouteInventory(value as PronaosRouteInventory);
+    return true;
+  } catch {
+    return false;
+  }
+}

@@ -1,0 +1,172 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/wild-bytes">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/wild-bytes.mem"
+hydrate   = true
+l-space   = "stable"
+mana      = 15
+manao     = 15
+manaoio   = 14
+namespace = "&#x2299;"
+role      = "the wild-bytes line — what the FRAME says decides admission at the disk→records edge: bare bytes carry whole as one text/plain record, flagged on the receipt; torn bytes refuse and stay on disk; stale warns and decides. Provenance (authored vs outside) reaches no gate — a READER over outside text tolerates every grammar it meets, scoped and named at its seat (the turn harvester), and that tolerance lives outside the four store layers. Prior art: RFC 9413, Hyrum's law, Parse-don't-validate. OWED: a durable mark on a bare record; admission policy by bag grade."
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/api/pono/wild-bytes"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/wild-bytes"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! Wild bytes ~ the frame decides at the edge, the reader tolerates outside it
+
+''Two seats meet bytes the house never framed, and they hold different offices.''
+
+* ''At the disk→records edge'', the ingest gate reads the FRAME, never the author: `bare` carries whole;
+  `torn` refuses and leaves the file where it stands; `stale` warns and still decides.
+* ''Outside every bag, wiki, doc and carrier'', a READER over text the house never authored (a month of
+  transcripts) tolerates every grammar it meets and names that tolerance at its seat.
+
+The house CARRIES wild bytes FLAGGED — a bare carrier lands whole as readable text, its demotion named on
+the receipt — and never repair-tolerates state it can re-found.
+
+> ''At the edge the frame decides; outside the edge the reader tolerates; nowhere does a gate guess who wrote the bytes.''
+
+<<~/ahu>>
+
+<<~ ahu #/the-line>>
+
+!! The line ~ by FRAME at the edge, by SEAT outside it
+
+''At the edge, the frame verdict decides'' (`packages/lararium-memetic-frame/src/verdict.ts`, the
+`FrameVerdict` union; policy composed in `packages/lararium-tw5/src/ingest-gate.ts`):
+
+|! verdict |! what the gate does |
+| `bare` | carried whole as ONE `text/plain` record, never parsed, never refused; WARNING on the receipt (OWED: a mark on the record) |
+| `torn` | REFUSED; the bytes stay on disk; nothing rewrites them |
+| `stale` | WARNING; the edit still gets a real decision — noop, ingest, or conflict |
+| `match` · `absent` | decided — the parse runs and the gate rules noop, ingest, or conflict |
+
+''Across the layers, the law holds one seat each:''
+
+|! layer |! what the wild-bytes law asks of it |
+| meme on disk | the gate reads the frame; re-make means RENDER from records |
+| CRDT doc | the record seat; holds the bare record; the mark stays OWED; the doc paves only by the founding rite, and that pave retires with the alpha |
+| bag | the law's home as admission policy per grade — canon bags admit framed carriers alone; a capture bag may admit bare, flagged; unbuilt, OWED |
+| wiki | the law does not apply: a recipe holds no bytes; the cascade routes and never decides whether to write |
+| reader over outside text | tolerates, scoped, outside the four layers |
+
+A gate MUST NOT read provenance it cannot observe; it reads the frame.
+A reader of outside text MAY tolerate a retired shape, scoped to that reader, its docblock naming the wild
+source.
+A store layer MUST NOT carry a reading alias for a house-authored anchor.
+
+<<~/ahu>>
+
+<<~ ahu #/parse-dont-validate>>
+
+!! Parse, don't validate ~ the edge types the bytes once
+
+''A reader turns wild bytes into a typed reading at the edge, exactly once'' (Alexis King, //Parse, don't
+validate//). Everything past the edge holds the typed reading and never re-inspects the raw bytes; a
+validator that answers yes-or-no and hands the raw bytes onward leaves every later reader to re-decide, and
+each one decides a little differently.
+
+A reading the edge cannot type takes no default shape. Three floors hold it at three grains, each a
+demotion the operator sees and never a drop:
+
+* ''FRAME floor'' — a bare carrier holds as one record.
+* ''BODY floor'' — a malformed span wraps as water
+  (<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing#/recovery-policy">>).
+* ''AHU floor'' — un-decomposable content fences
+  (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>); RULED, UNBUILT.
+
+A reader names which floor it stands on. Water never lies about structure.
+
+<<~/ahu>>
+
+<<~ ahu #/the-alpha-line>>
+
+!! With the alpha line ~ one law seen from two sides
+
+''The alpha line rules no back-compat and no shims'' for anything the house authored: a ruling that obsoletes
+a shape deletes the old reading whole. Its standing text lives in the roadmap's ''Early alpha'' entry
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">>), and the fence of
+`stable-founding-road#/rulings` ends it; the alpha line
+awaits its own carrier.
+
+A pre-ruling shape meets its layer's own act, never a second reading:
+
+* a disk carrier re-renders from records;
+* a doc paves only by the founding rite, and that pave retires with the alpha;
+* a bag re-mints a new doc under a new pointer;
+* a wiki re-mints its record and strands its fingerprint-keyed mounts.
+
+''Wild bytes mark the one place that line does not reach'', and the reason stays structural rather than
+lenient: no rite re-makes a transcript somebody already spoke, so no layer act applies. The two laws
+partition the corpus and never overlap — ''authored → the layer's act; wild → carry and flag''. A
+tolerance found anywhere else reads as a shim wearing this law's name.
+
+<<~/ahu>>
+
+<<~ ahu #/prior-art>>
+
+!! Prior art ~ the robustness principle, measured
+
+* ''RFC 9413, Maintaining Robust Protocols'' (Thomson & Schinazi) — the IETF's own reckoning with
+  Postel's //be liberal in what you accept//. Tolerance of malformed input does not stay tolerance: peers
+  come to depend on it, the protocol's real grammar drifts away from its written one, and the cure names
+  ACTIVE maintenance — specify the error handling, and keep the tolerated set from growing.
+* ''Hyrum's law'' — with enough consumers, every observable behaviour of an interface gets depended on.
+  A tolerance a reader extends to re-foundable state becomes, in time, a contract nobody wrote. Scoping
+  tolerance to bytes the house cannot re-make bounds what Hyrum's law can capture.
+
+<<~/ahu>>
+
+<<~ ahu #/standing-instance>>
+
+!! The standing instance ~ a reader, outside the four layers
+
+The harvester (`packages/lararium-mesh/src/capture/turn-harvest.ts`) reads `.jsonl` transcripts and lands
+drawers in mempalace; no bag, wiki, doc or carrier holds those bytes, which keeps this tolerance from ever
+reaching a gate. It reads a month of real turns written under whatever the frame said that week, and keeps
+its retired-head tolerance — a retired sigil head stays readable there — under this law: no rite re-makes
+those transcripts, and refusing a retired head would read a turn that fired its instrument as a turn that
+fired nothing. Its own docblock states the same cut: //a corpus states one grammar; a reader tolerates
+every grammar it will meet//. Canon bags admit framed carriers alone; the pre-commit frame check holds that
+line, and no bag-grade policy yet enforces it in the sink.
+
+<<~/ahu>>
+
+<<~ ahu #/owed>>
+
+!! Owed
+
+* ''A durable mark on a bare record'' — a field or meta the record carries, so the demotion survives sync
+  and projection rather than living on one receipt.
+* ''Admission policy by bag grade, at the sink'' — canon bags admit framed carriers alone; a capture bag
+  may admit bare, flagged.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ahu#/quoteblock-floor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;A-TFbs7_cZVyFcWy4ks3spe4uoF4OWCWpHK7-cdR1tM
+
+<<^ code="&#x0004;" -> to="?">>

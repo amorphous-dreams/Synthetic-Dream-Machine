@@ -1,0 +1,147 @@
+/**
+ * export-carrier-file — a carrier projects back to ITS OWN filetype.
+ *
+ * The projection reciprocal of the filetype-native ingest: a memetic carrier
+ * recomposes to `.mem`; ANY other TW5 filetype rides TW5's own file-info
+ * cascade to its native file (a content filetype adds a `.meta` sidecar). The
+ * VM registry decides type + extension + bytes; the projector only sites them.
+ */
+
+import { describe, test, expect, beforeAll } from "vitest";
+import { readFileSync, existsSync } from "node:fs";
+import path from "node:path";
+import { TW5Engine } from "../src/tw5-vm.js";
+import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { exportCarrierFile } from "../src/meme-write.js";
+
+
+describe.skipIf(wikiSkip)(
+  `exportCarrierFile — native filetype projection${skipNote}`,
+() => {
+  let engine: TW5Engine;
+
+  beforeAll(async () => {
+    engine = await bootTestWiki();
+    engine.setTiddler({
+      title: "lar:///ha.ka.ba/lares/api/native/note",
+      type:  "text/markdown",
+      text:  "# a markdown carrier\n\nprose that projects to `.md`, fields to `.meta`.\n",
+      tags:  "api/native",
+    });
+    engine.setTiddler({
+      title: "lar:///ha.ka.ba/lares/api/native/leaf",
+      type:  "text/vnd.tiddlywiki",
+      text:  "a wikitext tiddler projects to a self-contained .tid.\n",
+    });
+    engine.setTiddler({
+      title: "lar:///ha.ka.ba/lares/api/native/carrier",
+      type:  CARRIER_TYPE,
+      text:  "a memetic carrier still recomposes to .mem.\n",
+    });
+    // A skinny handle whose body left the CRDT for the cid/ tier — NO text.
+    engine.setTiddler({
+      title:          "lar:///ha.ka.ba/bags/crossroads/library/skinny-book",
+      _is_skinny:     "yes",
+      _canonical_uri: "lar:///ha.ka.ba/cid/deadbeef",
+      _integrity:     "ni:///sha-256;deadbeef",
+      textCid:        "deadbeef",
+      size:           "18000000",
+      _source_ext:    ".txt",
+    });
+    // A skinny handle the read-side resolver ALREADY rehydrated into the VM (text present) —
+    // the projection MUST still write only the handle, never the whole body.
+    engine.setTiddler({
+      title:          "lar:///ha.ka.ba/bags/crossroads/library/rehydrated-book",
+      _is_skinny:     "yes",
+      _canonical_uri: "lar:///ha.ka.ba/cid/cafef00d",
+      _integrity:     "ni:///sha-256;cafef00d",
+      textCid:        "cafef00d",
+      size:           "18000000",
+      text:           "THE ENTIRE 18MB BOOK BODY THAT MUST NOT REACH DISK ".repeat(4),
+    });
+    // A POINTER for a base64 family (THE BLOB LAW): `type` set, NO `_canonical_uri`, NO text —
+    // the bytes rest in cid/; the projector writes `photo.png` + `photo.png.meta` from them.
+    engine.setTiddler({
+      title:       "lar:///ha.ka.ba/lares/api/native/photo",
+      _is_skinny:  "yes",
+      _integrity:  "ni:///sha-256;abad1dea",
+      textCid:     "abad1dea",
+      size:        "3072",
+      type:        "image/png",
+      _source_ext: ".png",
+      tags:        "gallery",
+    });
+  }, 60_000);
+
+  test("★ a base64-family POINTER projects as `<stem>.png` + `.meta` with the bytes to come from cid/ ★", () => {
+    const file = exportCarrierFile(engine, "lar:///ha.ka.ba/lares/api/native/photo");
+    expect(file).not.toBeNull();
+    expect(file!.ext).toBe(".png");
+    expect(file!.encoding).toBe("base64");
+    expect(file!.pointerCid).toBe("abad1dea");
+    expect(file!.body).toBe("");
+    // the `.meta` carries every field but text — the pointer fields ride as ordinary fields
+    const meta = file!.metaBody ?? "";
+    expect(meta).toContain("_is_skinny: yes");
+    expect(meta).toContain("textCid: abad1dea");
+    expect(meta).toContain("_integrity: ni:///sha-256;abad1dea");
+    expect(meta).toContain("type: image/png");
+    expect(meta).toContain("tags: gallery");
+    expect(meta).not.toContain("_canonical_uri");
+  });
+
+  test("a content filetype projects to its native file + a .meta sidecar", () => {
+    const file = exportCarrierFile(engine, "lar:///ha.ka.ba/lares/api/native/note");
+    expect(file).not.toBeNull();
+    expect(file!.ext).toBe(".md");
+    expect(file!.body).toContain("a markdown carrier");
+    // the sidecar carries the FIELDS, never the text (the body file owns the text)
+    expect(file!.metaBody).toBeDefined();
+    expect(file!.metaBody!).toContain("type: text/markdown");
+    expect(file!.metaBody!).not.toContain("markdown carrier");
+  });
+
+  test("a wikitext tiddler projects to a self-contained .tid (no sidecar)", () => {
+    const file = exportCarrierFile(engine, "lar:///ha.ka.ba/lares/api/native/leaf");
+    expect(file).not.toBeNull();
+    expect(file!.ext).toBe(".tid");
+    expect(file!.body).toContain("self-contained .tid");
+    expect(file!.metaBody).toBeUndefined();
+  });
+
+  test("a memetic carrier still recomposes to .mem", () => {
+    const file = exportCarrierFile(engine, "lar:///ha.ka.ba/lares/api/native/carrier");
+    expect(file).not.toBeNull();
+    expect(file!.ext).toBe(".mem");
+    expect(file!.metaBody).toBeUndefined();
+    // the SOH carrier envelope surfaces — the shore recompose ran
+    expect(file!.body).toContain("&#x0001;");
+  });
+
+  test("a skinny handle projects its handle alone — the pointer, never the body", () => {
+    const file = exportCarrierFile(engine, "lar:///ha.ka.ba/bags/crossroads/library/skinny-book");
+    expect(file).not.toBeNull();
+    // small handle file — carries the content-address + integrity + metadata
+    expect(file!.body).toContain("deadbeef");
+    expect(file!.body).toContain("_is_skinny");
+    // the bytes stay in the cid/ CAS — the size metadata rides, the 18MB body does NOT
+    expect(file!.body.length).toBeLessThan(2000);
+    expect(file!.encoding).toBeUndefined();
+    expect(file!.pointerCid).toBeUndefined();   // a `.tid` handle carries its own bytes
+  });
+
+  test("a rehydrated skinny handle STRIPS the body — no re-overflow to disk", () => {
+    const file = exportCarrierFile(engine, "lar:///ha.ka.ba/bags/crossroads/library/rehydrated-book");
+    expect(file).not.toBeNull();
+    // even with `text` present in the VM, the projected handle omits the body entirely
+    expect(file!.body).not.toContain("THE ENTIRE 18MB BOOK BODY");
+    expect(file!.body).toContain("cafef00d");
+    expect(file!.body).toContain("_is_skinny");
+    expect(file!.body.length).toBeLessThan(2000);
+  });
+
+  test("an absent tiddler projects nothing", () => {
+    expect(exportCarrierFile(engine, "lar:///ha.ka.ba/lares/api/native/ghost")).toBeNull();
+  });
+});

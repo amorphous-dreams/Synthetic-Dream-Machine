@@ -1,0 +1,21 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-procedure
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: pragma-alias
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/procedure
+lar-mirror-of: wehe
+lar-see-also: wehe
+lar-open-pattern: <<~\s*procedure\s+(~?[\w-]+)(?:\s*\(([^)]*)\))?(?:\s+([^>]*?))?\s*>>
+lar-close-pattern: <<~\/procedure\s*>>
+lar-render: declares
+type: text/vnd.tiddlywiki
+
+<!-- \procedure — English alias for the TW5 \procedure pragma.
+     Hawaiian equivalent: wehe (procedure/function executor; outside/exit boundary).
+     lar-see-also: wehe
+
+     <<~ procedure name(params)>>body<<~/procedure>> declares a named
+     procedure in memetic-wikitext. The sigil form serves as the declaration mechanism —
+     it produces no render output of its own (lar-kind: pragma-alias).
+
+     Operator-readable: <<~ procedure greet(name:"world")>>Hello <<name>>!<<~/procedure>>
+     Same semantic as native TW5: \procedure greet(name:"world") Hello <<name>>! \end -->

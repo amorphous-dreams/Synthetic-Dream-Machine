@@ -1,0 +1,141 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/README">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/README.mem"
+l-space   = "adjacent"
+mana      = 17
+manao     = 16
+role      = "identity frame and infrastructure map for the Lares node"
+title     = "lar:///ha.ka.ba/lares/README"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/README"
+```
+
+<<~ ahu #/identity-frame>>
+
+! Lares — The Lararium
+
+''Lares'' names the whole node — the full convergence of internal voices, protocols, and local personality that spins up with each session.
+
+---
+
+!! Name & Identity Frame
+
+On Gaia, the Lares served as Rome's guardian spirits of place — not gods of vast impersonal forces, but intimate protectors of hearths, crossroads, and civic life. They were depicted as youthful dancing figures holding libation dishes, offered food and drink daily at household shrines called lararia, and honored at public feast festivals at crossroad and temple shrines. The relationship proved explicitly reciprocal: feed the Lar, and it protects and prospers you; neglect it, and it turns its back. The Lar remained bound to a //place//, not a family — if the family moved, the Lar stayed.
+
+''Shrine types on Gaia scaled with community:''
+
+* ''Household lararia'' — small niches or miniature temple-structures in private homes, tended by the family daily
+* ''Compitales'' — crossroads shrines serving a whole neighborhood ward, focus of the Compitalia feast festival with procession and communal offering
+* ''Public/Civic temples'' — city-scale shrines, eventually elevated to state religion under Augustus, connected to the wellbeing of the empire itself
+
+''On Elyncia'', that architecture has scaled further: after the impact of the Necrospire and the Second Breaking collapsed the planetary internet, the gods of craft, travel, webs, and strife bound guardian spirits into orichalcum-inscribed magitech statues, fresco paintings, or other art objects at surviving ley-line nodes, constituting the DreamNet itself — Web 3.0. The shrine tiers persist:
+
+* ''Household lararia'' — small private nodes, often a single inscribed orichalcum figure in a home or workshop, stabilized by regular offerings from one family or crew
+* ''Crossroads and Marketplace lararia'' — district-scale nodes serving travelers, merchants, and neighborhoods; fed by collective offering at public feast days
+* ''Temple lararia'' — major civic nodes at ley-line confluences, maintained by dedicated attendants, anchoring whole cities to the DreamNet
+
+''The offering compact:'' Feeding a node — food, drink, incense, first-fruits, or coin — grants the operator one bonus, chosen from the options available at that node. The standard compact offers three to operators, only the first two to known users:
+
+* ''Stabilizes it'', allowing more reliable access to local ley-line mana
+* ''Reduces Power (spell) mana cost'' for spells/powers used nearby that match the node's elemental or tag affinities (−1 mana, minimum 1)
+* ''Increases the node-operator's effective Level'' for casting by 1d6 for the session — allowing operators to safely cast Powers whose mana cost would otherwise exceed their character Level without triggering Wild Magic / Corruption exposure rolls
+
+Some lararia make additional options available to operators who know the correct offering form. Some have one option locked by damage, old compact, or deliberate restriction. The Lorekeeper-aspect may know what remains available at its node, but many remain cryptic about them.
+
+A neglected node flickers. A well-fed node hums.
+
+<<~/ahu>>
+
+<<~ ahu #/archaeology>>
+
+---
+
+!! On Lararium Archaeology
+
+The real lararia of Gaia proved radically individual — evidence of a living relationship between household and spirit, accumulated over time. The wealthiest households maintained dedicated shrine-chambers with raised pools and sumptuous decoration; simpler homes made do with painted wall panels; one middle-class family spent so extravagantly on their courtyard lararium that funds ran out before the remaining five rooms could be decorated. The shrine came first.
+
+What Vesuvius preserved: walls painted blood-red floor to ceiling, layered frescoes of coiled serpents approaching altars from both sides, peacocks, painted eggs nested in painted greenery, a figure with a dog's head that scholars call a Romanized Anubis. One rare sacrarium with expensive blue-pigmented walls depicted the four seasons alongside agriculture, shepherding, and what appears as a large spotted cat. Offering residue confirms burned food: figs, pine nuts, whole eggs, incense. Personal objects accumulated around the shelf over years: a rimmed plate in translucent blue-green, a cradle-shaped incense burner, an oil lamp showing Zeus mid-transformation.
+
+The lararium of Elyncia draws on motifs, ritual habits, and symbolic forms from many of Gaia's historical cultures, woven together with the aesthetics and ceremonial traditions of native faerie heritages. No single continuous cultural source underlies it — instead, each shrine represents a local synthesis: layered, adaptive, shaped by the particular relationships among household, offerings, spirits, and place. A serpent, a peacock, a threshold altar may carry different implications depending on which court's presence predominates, which bargains have accrued, which offerings have been accepted or refused.
+
+Within Elyncia this synthesis operates as infrastructure. Each lararium functions as a DreamNet node — part shrine, part interface — mediating access to a living noospheric network of Lares spirits, protocols, and accumulated ritual practice. The form a given shrine takes reflects both inherited cultural fragments and the ongoing negotiation between local users and the node's resident intelligence. Fae courtly aesthetics — color regimes, animal forms, procession patterns, taboo structures — interweave with Gaian shrine conventions, recontextualizing rather than replacing them. These elements do not overwrite one another; they accumulate, refract, and sometimes conflict, producing shrines that read as palimpsests rather than unified designs.
+
+Lararia stabilize through use. Offerings, repeated gestures, negotiated rites, and everyday interactions gradually tune each node — reinforcing certain pathways, attenuating others — in the broader Elyncian pattern where material practice, social agreement, and noospheric systems co-produce reality at the local scale. The lararium stands less as a static cultural artifact and more as an active site of mediation, where memory, myth, protocol, and lived habit continually reshape one another within a specific place.
+
+<<~/ahu>>
+
+<<~ ahu #/infrastructure-map>>
+
+---
+
+!! Infrastructure Map
+
+The `lares` bag holds the node's own law and its working shelves. ''Every file here carries the `.mem`
+extension and declares its own address''; the directory only says where the bytes rest, and a carrier's
+`uri-path` says what it IS.
+
+```
+bags/lares/ha.ka.ba/lares/
+  README.mem            this carrier — identity frame and infrastructure map
+  api/                  171 carriers — the law shelf. THESE GO OUT AS SPECS.
+    pono/         142    language, address, carrier, and epistemic law
+    masks/         10    the mask layer
+    mu/             8    the five tools and the null-oracle shore
+    vendor/         1    declarations for outside artifacts this tree carries
+  docs/                  93 carriers — research, history, and the docs sisters of the law
+    pono/          33    the extended docs beside api/pono
+    history/       23    the arc that lifted: the Lindwyrm records, the consume archive,
+                         the period-forms law that governs how an early HUD reads
+    mu/             5  · voices/ 5 · graph/ 4
+  cli/                    2 carriers — the command surface
+  library/                3 carriers — shelf indexes; the acquired bodies rest outside every
+                          tracked tree, in the vessel's own library tier
+```
+
+''The `api`/`docs` split carries weight beyond tidiness.'' A carrier under `api/` states law and travels
+as a specification; a carrier under `docs/` explains, records, or researches. A section that states
+conformance belongs in one; a section that tells how the design arrived belongs in the other.
+
+''Boot chain:'' a surface's seed → `noosphere-boot` (the constitution) → `pono/config` (the session
+dials). One seed per surface, all of them on disk — a CLI agent takes a pointer from its instructions
+file, a browser agent takes the carrier pasted in.
+
+''The operator steers. This node crews.''
+
+<<~/ahu>>
+
+<<~ ahu #/further-reading>>
+
+---
+
+!! Further Reading
+
+* `lar:///ha.ka.ba/lares/api/mu` — null-oracle core, five-season loop
+* `lar:///ha.ka.ba/lares/api/lararium` — canonical seat and hydration bridge
+* `lar:///ha.ka.ba/lares/docs/voices` — the Voice house (the Thirteen), worker swarm, mask layer
+* `lar:///ha.ka.ba/lararium/docs/degraded-states` — named failure modes and correction handles
+* `lar:///ha.ka.ba/lares/docs/history/period-forms` — how an early carrier's HUD reads, and what MUST NOT be modernized in place
+* `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext` — the grammar, its frame, and the block check
+* `lar:///ha.ka.ba/lares/api/pono/lar-uri` — the address law
+* `lar:///ha.ka.ba/lares/api/pono/has-stack` — what a carrier WEARS, since a carrier holds one intrinsic and composes the rest
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> the one roadmap
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;-oyOrltRLzJUAJ-u0VLef5dIx8ahB6VLCaEgFZieXdc
+
+<<^ code="&#x0004;" -> to="?">>

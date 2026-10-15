@@ -1,0 +1,185 @@
+/**
+ * pin-live-render — aka/kanawai RENDER BY TARGET, in a live wiki.
+ *
+ * `api/pono/kahea.mem #/head` holds `aka` to the PINNED pole: the shared pin template
+ * (`templates/pin/html`, reached through the `meme-pin` filter operator) renders a REFERENCE meme
+ * as a citation card and a CONTENT slot as the frozen image — the target's current bytes, pinned
+ * with its own `ni:` check — the same split `readPin`/`weaveAka` hold for the outward markdown
+ * weave (see weave.test.ts). `aka`/`kanawai` differ ONLY in `pin-role` (informative/binding): the
+ * SIGIL decides the role, never the target.
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
+ */
+import { describe, test, expect, beforeAll } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { bootTestWiki, renderWikitext, wikiSkip, skipNote } from "./test-wiki.js";
+import type { TW5Engine } from "../src/tw5-vm.js";
+import type { LaresMemeFace } from "../src/types/lares-globals.js";
+import { CITATION_FIELD_KEYS } from "../src/weave/index.js";
+
+const REF_URI = "lar:///t/pin-ref";
+const CONTENT_URI = "lar:///t/pin-content";
+const NOWHERE_URI = "lar:///t/pin-nowhere";
+const BARE_REF_URI = "lar:///t/pin-ref-bare";
+
+const refMeme = (uri: string): string =>
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
+  "```toml meta\n" +
+  'reference-author     = "A. Author"\n' +
+  'reference-date       = "January 2024"\n' +
+  'reference-kind       = "rfc"\n' +
+  'reference-seriesinfo = "Informational"\n' +
+  'reference-target     = "https://example.org/ref"\n' +
+  'reference-title      = "An Example Reference"\n' +
+  `uri-path             = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
+  "```\n\n" +
+  "! Target body heading — must not render\n\n" +
+  '<<^ code="&#x0003;">>ni:///sha-256;REFCHECK\n' +
+  '<<^ code="&#x0004;" -> to="?">>\n';
+
+// A reference meme carrying no `reference-seriesinfo`/`reference-target` — the absent-field case:
+// a citation row with no data renders no row, never an empty placeholder.
+const bareRefMeme = (uri: string): string =>
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
+  "```toml meta\n" +
+  'reference-author = "B. Author"\n' +
+  'reference-date   = "February 2024"\n' +
+  'reference-kind   = "rfc"\n' +
+  'reference-title  = "A Bare Reference"\n' +
+  `uri-path         = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
+  "```\n\n" +
+  "! Target body heading — must not render\n\n" +
+  '<<^ code="&#x0003;">>ni:///sha-256;BARECHECK\n' +
+  '<<^ code="&#x0004;" -> to="?">>\n';
+
+const contentMeme = (uri: string, slotText: string): string =>
+  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
+  "```toml meta\n" +
+  `uri-path = "${uri.replace(/^lar:\/\/\//, "")}"\n` +
+  "```\n\n" +
+  `<<~ ahu #/s>>\n\n! Slot S\n\n${slotText}\n\n<<~/ahu>>\n\n` +
+  '<<^ code="&#x0003;">>ni:///sha-256;WHOLECHECK\n' +
+  '<<^ code="&#x0004;" -> to="?">>\n';
+
+describe.skipIf(wikiSkip)(`aka/kanawai render by target — reference card or frozen image${skipNote}`, () => {
+  let engine: TW5Engine;
+  let face: LaresMemeFace;
+
+  beforeAll(async () => {
+    engine = await bootTestWiki();
+    face = (engine.$tw as unknown as { lares: { meme: LaresMemeFace } }).lares.meme;
+    await face.place(REF_URI, refMeme(REF_URI));
+    await face.place(BARE_REF_URI, bareRefMeme(BARE_REF_URI));
+    await face.place(CONTENT_URI, contentMeme(CONTENT_URI, "Slot s content, version one."));
+  });
+
+  const render = (src: string) => renderWikitext(engine, src);
+
+  test("★ (a) aka of a REFERENCE meme renders a citation card — title, author, date, seriesinfo, a link to target — never the target's body ★", () => {
+    const html = render(`<<~ aka "${REF_URI}">>`);
+    expect(html).toContain("lar-pin-card");
+    expect(html).toContain("An Example Reference");
+    expect(html).toContain("A. Author");
+    expect(html).toContain("January 2024");
+    expect(html).toContain("Informational");
+    expect(html).toMatch(/<a[^>]*href="https:\/\/example\.org\/ref"[^>]*>/);
+    expect(html).not.toContain("Target body heading");
+  });
+
+  test("★ (b) kanawai of the SAME reference meme renders the same card shape, with the BINDING role ★", () => {
+    const html = render(`<<~ kanawai "${REF_URI}">>`);
+    expect(html).toContain("lar-pin-card");
+    expect(html).toContain("An Example Reference");
+    expect(html).toContain("A. Author");
+    expect(html).toMatch(/<a[^>]*href="https:\/\/example\.org\/ref"[^>]*>/);
+    expect(html).toContain("binding");
+    expect(html).not.toContain("Target body heading");
+  });
+
+  test("★ (c) aka of a CONTENT slot renders the slot's own body plus a badge equal to meme-pin[check] for that slot; editing the slot changes the badge ★", () => {
+    const checkNow = (): string =>
+      (engine.wiki.filterTiddlers(`[[${CONTENT_URI}#/s]] +[meme-pin[check]]`) as string[])[0] ?? "";
+
+    const before = checkNow();
+    expect(before).toMatch(/^ni:\/\/\/sha-256;/);
+    const html1 = render(`<<~ aka "${CONTENT_URI}#/s">>`);
+    expect(html1).toContain("Slot s content, version one.");
+    expect(html1).toContain("lar-pin-digest");
+    expect(html1).toContain(before);
+
+    // CONTROL — editing the target slot changes the badge.
+    return face.place(CONTENT_URI, contentMeme(CONTENT_URI, "Slot s content, version TWO.")).then(() => {
+      const after = checkNow();
+      expect(after).toMatch(/^ni:\/\/\/sha-256;/);
+      expect(after).not.toBe(before);
+      const html2 = render(`<<~ aka "${CONTENT_URI}#/s">>`);
+      expect(html2).toContain("Slot s content, version TWO.");
+      expect(html2).toContain(after);
+      expect(html2).not.toContain(before);
+    });
+  });
+
+  test("★ (d) pin/law render identically to aka/kanawai ★", () => {
+    expect(render(`<<~ pin "${REF_URI}">>`)).toBe(render(`<<~ aka "${REF_URI}">>`));
+    expect(render(`<<~ law "${REF_URI}">>`)).toBe(render(`<<~ kanawai "${REF_URI}">>`));
+  });
+
+  test("★ (e) an unresolved target renders a clearly marked unresolved line, naming the uri ★", () => {
+    const html = render(`<<~ aka "${NOWHERE_URI}">>`);
+    expect(html).toContain("lar-pin-unresolved");
+    expect(html).toContain("unresolved");
+    expect(html).toContain(NOWHERE_URI);
+  });
+
+  test("★ (f) meme-pin — an unknown part THROWS, naming the registered parts ★", () => {
+    expect(() => engine.wiki.filterTiddlers(`[[${REF_URI}]] +[meme-pin[bogus]]`)).toThrow(/meme-pin.*bogus/);
+  });
+
+  test("★ (g) meme-pin's unknown-part message names every exported CITATION_FIELD_KEYS member ★", () => {
+    let message = "";
+    try {
+      engine.wiki.filterTiddlers(`[[${REF_URI}]] +[meme-pin[bogus]]`);
+    } catch (err) {
+      message = (err as Error).message;
+    }
+    for (const key of CITATION_FIELD_KEYS) {
+      expect(message).toContain(key);
+    }
+  });
+
+  test("★ (h) a reference meme with no reference-seriesinfo/reference-target renders no placeholder row for either ★", () => {
+    const html = render(`<<~ aka "${BARE_REF_URI}">>`);
+    expect(html).toContain("lar-pin-card");
+    expect(html).toContain("A Bare Reference");
+    expect(html).toContain("B. Author");
+    expect(html).not.toContain("lar-pin-card-seriesinfo");
+    expect(html).not.toContain('href=""');
+    expect(html).not.toContain("lar-pin-card-target");
+  });
+
+  test("★ (i) the card's citation rows derive from meme-pin[citation-keys] — one row per CITATION_FIELD_KEYS member present, never five hand-spelled rows ★", () => {
+    const html = render(`<<~ aka "${REF_URI}">>`);
+    for (const key of CITATION_FIELD_KEYS) {
+      const count = (html.match(new RegExp(`class="lar-pin-card-${key}"`, "g")) ?? []).length;
+      expect(count).toBe(1);
+    }
+    const templateText = readFileSync(
+      fileURLToPath(new URL("../tiddlers/pin-card-template-html.tid", import.meta.url)),
+      "utf8",
+    );
+    const handSpelled = CITATION_FIELD_KEYS.filter((key) => templateText.includes(`meme-pin[${key}]`));
+    // target alone renders as a link and keeps its own row; every other citation part rides
+    // meme-pin[citation-keys].
+    expect(handSpelled).toEqual(["target"]);
+  });
+
+  test("CONTROL — meme-pin[kind] answers unresolved for a target no record stands at", () => {
+    expect((engine.wiki.filterTiddlers(`[[${NOWHERE_URI}]] +[meme-pin[kind]]`) as string[])[0]).toBe("unresolved");
+  });
+
+  test("CONTROL — meme-pin[kind] answers reference/content for the two fixtures", () => {
+    expect((engine.wiki.filterTiddlers(`[[${REF_URI}]] +[meme-pin[kind]]`) as string[])[0]).toBe("reference");
+    expect((engine.wiki.filterTiddlers(`[[${CONTENT_URI}]] +[meme-pin[kind]]`) as string[])[0]).toBe("content");
+  });
+});

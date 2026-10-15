@@ -1,0 +1,18 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/draft-probe-missing-keys">>
+<<^ code="&#x0002;">>
+
+```toml meta
+title    = "lar:///ha.ka.ba/lares/api/pono/draft-probe-missing-keys"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/api/pono/draft-probe-missing-keys"
+```
+
+! A Probe Draft
+
+Fixture for the REFUSAL control: title stands, but docname/cat/ipr/author/date do not — this must
+never weave under kramdown-rfc2629, whatever the live corpus carries on any given day.
+
+<<^ code="&#x0003;">>ni:///sha-256;MYTAvMb9JaKa2IX4W614JA4gGDEWRoIjcQp2b079SQk
+<<^ code="&#x0004;" -> to="?">>

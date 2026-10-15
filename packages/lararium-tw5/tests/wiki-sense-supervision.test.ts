@@ -1,0 +1,338 @@
+/**
+ * wiki-sense-supervision (node tier) — the supervision-reads witness, node substrate.
+ *
+ * Stands a REAL perceiver island (the consistency keystone's GLUE corpus + `hasWikiSensorium`) behind an in-process
+ * channel shaped exactly like the worker wire (signal message in → SENSORIUM_FRAME back), then
+ * drives the supervisor across it: a cohere read flows daemon→island→back and leaves a proof-hold
+ * record in the daemon's own store, re-readable; recall rides the same surface; an ask naming an
+ * UN-supervised island fails loud (the confused-deputy ward, both legs); proof-federate refuses
+ * typed. The Chromium twin (browser/tests) drives the SAME asks over a real Web Worker wire.
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/wiki-sense-supervision
+ */
+
+import { describe, test, expect } from "vitest";
+import { CompositeStore, isVesselToIslandMsg, mkSensoriumSignal } from "@lararium/mesh";
+import {
+  createWikiSenseSupervisor,
+  buildProofRecordTiddler,
+  parseProofRecord,
+  proofRecordUri,
+  isProofRecordUri,
+} from "../src/wiki-sense-supervision.js";
+import type { WikiSenseSupervisor, WikiSenseShores } from "../src/wiki-sense-supervision.js";
+import { hasWikiSensorium, SENSORIUM_FRAME } from "../src/wiki-sensorium-cap.js";
+import { buildFixtureIsland, GLUE_SEEDS } from "../src/wiki-store-adapter.js";
+import { MemoryTiddlerStore } from "../src/memory-store.js";
+import type { IslandContext } from "../src/island-context.js";
+import type { IslandCap } from "../src/island-caps.js";
+
+const ISLAND_A = "lar:///ha.ka.ba/bags/sense-supervised";
+const ISLAND_B = "lar:///ha.ka.ba/bags/sense-elsewhere";
+const STRANGER = "lar:///ha.ka.ba/bags/sense-unsupervised";
+
+/** One supervised island behind an in-process channel wearing the wire's message shape. */
+interface ChannelHarness {
+  shores: WikiSenseShores;
+  /** binds the supervisor the frames route back to (the vessel's onWorkerEvent leg). */
+  bind(supervisor: WikiSenseSupervisor): void;
+  /** re-route frames as if they arrived from a different island (the return-leg ward probe). */
+  spoofFramesFrom(designation: string | null): void;
+  teardown(): Promise<void>;
+}
+
+async function standChannel(designations: readonly string[]): Promise<ChannelHarness> {
+  let supervisor: WikiSenseSupervisor | null = null;
+  let spoof: string | null = null;
+  const caps = new Map<string, { cap: IslandCap; ctx: IslandContext; down: (() => void | Promise<void>) | void }>();
+
+  for (const designation of designations) {
+    const island = await buildFixtureIsland(designation, GLUE_SEEDS);
+    const cap = hasWikiSensorium();
+    const ctx = {
+      composite: island,
+      wikiUri: designation,
+      post: (msg: unknown) => {
+        const m = msg as { listenable?: string; payload?: Record<string, string | number | boolean> };
+        if (m.listenable !== SENSORIUM_FRAME || !m.payload) return;
+        // the vessel's return leg: the FRAME's origin island pins the answer to its designation.
+        supervisor?.acceptFrame(spoof ?? designation, m.payload);
+      },
+    } as unknown as IslandContext;
+    const down = await cap.onEa!(ctx);
+    caps.set(designation, { cap, ctx, down: typeof down === "function" ? down : undefined });
+  }
+
+  return {
+    shores: {
+      supervises: (designation) => caps.has(designation),
+      sendSignal: (designation, msg) => {
+        const c = caps.get(designation);
+        // the mechanism-level ward (the pool's placeSensoriumSignal twin): no live island → loud.
+        if (!c) throw new Error(`no live island for ${designation} — sensorium signal refused`);
+        // the wire shape: type = the signal name itself; fields ride `args` (mkSensoriumSignal).
+        const wire = mkSensoriumSignal(msg);
+        c.cap.onSignal!(wire.type, wire, c.ctx);
+      },
+    },
+    bind: (s) => { supervisor = s; },
+    spoofFramesFrom: (d) => { spoof = d; },
+    teardown: async () => {
+      for (const c of caps.values()) await c.down?.();
+      caps.clear();
+    },
+  };
+}
+
+describe("wiki-sense supervision reads — node tier", () => {
+  test("the wire admits the sensorium signals — mkSensoriumSignal passes the vessel→island guard", () => {
+    const msg = mkSensoriumSignal({ signal: "sensorium:cohere", requestId: "r1" });
+    expect(isVesselToIslandMsg(msg)).toBe(true);
+    expect(msg.args?.["requestId"]).toBe("r1");
+    expect(isVesselToIslandMsg(mkSensoriumSignal({ signal: "sensorium:recall", requestId: "r2", args: { likeTitle: "canon-a" } }))).toBe(true);
+  });
+
+  test("a cohere read flows daemon→island→back and holds the PROOF in the daemon's own store", async () => {
+    const harness = await standChannel([ISLAND_A]);
+    const proofStore = new MemoryTiddlerStore("lar:///ha.ka.ba/bags/daemon");
+    const supervisor = createWikiSenseSupervisor(harness.shores, { proofStore });
+    harness.bind(supervisor);
+    try {
+      const reading = await supervisor.cohere(ISLAND_A, { hold: true });
+      // the verdict — the wiki-sensorium cap's verbs answered, un-re-implemented (GLUE corpus glues, gate reconcilable).
+      expect(reading.island).toBe(ISLAND_A);
+      expect(reading.verdict.consistency.glues).toBe(true);
+      expect(reading.verdict.gate.kind).toBe("reconcilable");
+      expect(reading.verdict.corpusSize).toBe(3);
+      // the as-of stamp rides the verdict (memory-backed fixture → no CRDT heads → empty, honest).
+      expect(Array.isArray(reading.verdict.asOf)).toBe(true);
+
+      // the proof-hold record persisted + re-readable — the effect-record ledger idiom.
+      expect(reading.proof).toBeDefined();
+      const proof = reading.proof!;
+      expect(proof.island).toBe(ISLAND_A);
+      expect(proof.glues).toBe(true);
+      expect(proof.gateKind).toBe("reconcilable");
+      const title = proofRecordUri("lar:///ha.ka.ba/bags/daemon", proof.eventId);
+      expect(isProofRecordUri(title)).toBe(true);
+      const stored = await proofStore.get(title);
+      expect(stored).not.toBeNull();
+      const parsed = parseProofRecord(stored!.tiddler as Record<string, unknown>);
+      expect(parsed).toEqual(proof);
+
+      // "serialize the PROOF, never the carrier" — no tiddler body text rides the record.
+      const serialized = JSON.stringify(stored!.tiddler);
+      for (const seed of GLUE_SEEDS) expect(serialized).not.toContain(seed.text);
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  });
+
+  test("recall rides the same supervised surface — all the cap's tiers answer unchanged", async () => {
+    const harness = await standChannel([ISLAND_A]);
+    const supervisor = createWikiSenseSupervisor(harness.shores);
+    harness.bind(supervisor);
+    try {
+      const result = await supervisor.recall(ISLAND_A, { likeTitle: "canon-a" });
+      expect(result.form.length).toBeGreaterThan(0);
+      expect(result.form[0]!.title).toBe("canon-b");
+      expect(result.semantic).toBeNull();   // no embedder rides the island — honest absence carries over
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  });
+
+  test("an ask naming an UN-supervised island FAILS LOUD — designation carries the authority", async () => {
+    const harness = await standChannel([ISLAND_A]);
+    const supervisor = createWikiSenseSupervisor(harness.shores);
+    harness.bind(supervisor);
+    try {
+      await expect(supervisor.cohere(STRANGER)).rejects.toThrow(/does not supervise/);
+      await expect(supervisor.recall(STRANGER, { text: "canon" })).rejects.toThrow(/does not supervise/);
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  });
+
+  test("a frame from the WRONG island never settles the ask — the return-leg ward", async () => {
+    const harness = await standChannel([ISLAND_A, ISLAND_B]);
+    const supervisor = createWikiSenseSupervisor(harness.shores, { timeoutMs: 60 });
+    harness.bind(supervisor);
+    try {
+      // every frame now claims to arrive from ISLAND_B; the ask names ISLAND_A → nothing settles.
+      harness.spoofFramesFrom(ISLAND_B);
+      await expect(supervisor.cohere(ISLAND_A)).rejects.toThrow(/timed out/);
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  });
+
+  test("a proof-hold without a daemon store fails loud — never a silent drop", async () => {
+    const harness = await standChannel([ISLAND_A]);
+    const supervisor = createWikiSenseSupervisor(harness.shores);   // no proofStore
+    harness.bind(supervisor);
+    try {
+      await expect(supervisor.cohere(ISLAND_A, { hold: true })).rejects.toThrow(/no proofStore/);
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  });
+
+  test("proof-federate refuses typed — the shore Act stays the operator's", async () => {
+    const harness = await standChannel([ISLAND_A]);
+    const supervisor = createWikiSenseSupervisor(harness.shores);
+    harness.bind(supervisor);
+    try {
+      expect(supervisor.proofFederate(ISLAND_A)).toEqual({
+        status:   "operator-gated",
+        awaits:   "shore-Act",
+        crossing: "proof-hold(local daemon ledger) -> proof-federate(disclosure shore)",
+        island:   ISLAND_A,
+      });
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  });
+
+  test("the proof tiddler round-trips through the ledger idiom (build → parse)", () => {
+    const proof = {
+      eventId: "ev-1", seq: 1, island: ISLAND_A, requestId: "sense-r1",
+      asOf: ["h1", "h2"] as readonly string[],
+      radius: 0.42, glues: false, vacuous: false,
+      gateKind: "ontological" as const, dimH1: 2, cost: 1,
+      obstructionLoci: ["ornate-novel"] as readonly string[], lociTotal: 1, corpusSize: 4,
+    };
+    const rec = buildProofRecordTiddler(proof, "lar:///ha.ka.ba/bags/daemon");
+    expect(parseProofRecord(rec.tiddler as Record<string, unknown>)).toEqual(proof);
+  });
+
+  test("a record with no seq reads torn; one with a seq round-trips", () => {
+    const proof = {
+      eventId: "ev-2", seq: 7, island: ISLAND_A, requestId: "sense-r2",
+      asOf: [] as readonly string[],
+      radius: 0, glues: true, vacuous: false,
+      gateKind: "reconcilable" as const, dimH1: 0, cost: 0,
+      obstructionLoci: [] as readonly string[], lociTotal: 0, corpusSize: 1,
+    };
+    const rec = buildProofRecordTiddler(proof, "lar:///ha.ka.ba/bags/daemon");
+    expect(parseProofRecord(rec.tiddler as Record<string, unknown>)).toEqual(proof);
+    const { seq: _drop, ...bare } = rec.tiddler as Record<string, unknown>;
+    expect(parseProofRecord(bare)).toBeNull();
+    expect(parseProofRecord({ ...bare, seq: "1.5" })).toBeNull();
+    expect(parseProofRecord({ ...bare, seq: "abc" })).toBeNull();
+    expect(parseProofRecord({ ...bare, seq: "0" })).toBeNull();
+  });
+});
+
+describe("the proof ring keeps its newest by sequence, never by clock", () => {
+  const DAEMON = "lar:///ha.ka.ba/bags/daemon";
+
+  /** An id mint answering from a fixed list: a cohere hold mints a request id, then the record's id. */
+  function mint(ids: readonly string[]): () => string {
+    let i = 0;
+    return () => ids[i++] ?? `spare-${i}`;
+  }
+
+  async function holds(
+    islands: readonly string[], order: readonly string[], ids: readonly string[], proofRing: number,
+    seed?: (store: MemoryTiddlerStore) => Promise<void>,
+  ): Promise<{ standing: Array<{ eventId: string; island: string; seq: number }>; titles: string[] }> {
+    const harness = await standChannel(islands);
+    const proofStore = new MemoryTiddlerStore(DAEMON);
+    if (seed) await seed(proofStore);
+    const supervisor = createWikiSenseSupervisor(harness.shores, { proofStore, newId: mint(ids), proofRing });
+    harness.bind(supervisor);
+    try {
+      for (const island of order) await supervisor.cohere(island, { hold: true });
+      const standing: Array<{ eventId: string; island: string; seq: number }> = [];
+      for (const title of await proofStore.listVisible()) {
+        const rec = await proofStore.get(title);
+        const parsed = rec ? parseProofRecord(rec.tiddler as Record<string, unknown>) : null;
+        if (parsed) standing.push({ eventId: parsed.eventId, island: parsed.island, seq: parsed.seq });
+      }
+      standing.sort((a, b) => a.seq - b.seq);
+      return { standing, titles: await proofStore.listVisible() };
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  }
+
+  test("ids running backwards: the two newest holds stand", async () => {
+    const { standing } = await holds([ISLAND_A], [ISLAND_A, ISLAND_A, ISLAND_A],
+      ["r1", "zzz", "r2", "mmm", "r3", "aaa"], 2);
+    expect(standing.map((r) => r.eventId)).toEqual(["mmm", "aaa"]);
+    expect(standing.map((r) => r.seq)).toEqual([2, 3]);
+  });
+
+  test("control: ids running forwards keep the same two newest", async () => {
+    const { standing } = await holds([ISLAND_A], [ISLAND_A, ISLAND_A, ISLAND_A],
+      ["r1", "aaa", "r2", "mmm", "r3", "zzz"], 2);
+    expect(standing.map((r) => r.eventId)).toEqual(["mmm", "zzz"]);
+  });
+
+  test("a record seeded with a far-future id leaves once the ring fills past it", async () => {
+    const { standing } = await holds([ISLAND_A], [ISLAND_A, ISLAND_A],
+      ["r1", "aaa", "r2", "bbb"], 2,
+      async (store) => {
+        const seeded = buildProofRecordTiddler({
+          eventId: "zzzzzzzz-future", seq: 1, island: ISLAND_A, requestId: "sense-seed",
+          asOf: [], radius: 0, glues: true, vacuous: false, gateKind: "reconcilable",
+          dimH1: 0, cost: 0, obstructionLoci: [], lociTotal: 0, corpusSize: 1,
+        }, DAEMON);
+        await store.put(seeded, { kind: "lares-verb", requestId: "seed" }, { bag: DAEMON });
+      });
+    expect(standing.map((r) => r.eventId)).toEqual(["aaa", "bbb"]);
+    expect(standing.map((r) => r.seq)).toEqual([2, 3]);
+  });
+
+  test("each island's ring counts its own records only", async () => {
+    const { standing } = await holds([ISLAND_A, ISLAND_B], [ISLAND_A, ISLAND_B, ISLAND_A, ISLAND_B, ISLAND_A],
+      ["r1", "e1", "r2", "e2", "r3", "e3", "r4", "e4", "r5", "e5"], 2);
+    expect(standing.filter((r) => r.island === ISLAND_A).map((r) => r.eventId)).toEqual(["e3", "e5"]);
+    expect(standing.filter((r) => r.island === ISLAND_B).map((r) => r.eventId)).toEqual(["e2", "e4"]);
+  });
+
+  test("a torn record under the prefix stands untouched", async () => {
+    const { standing, titles } = await holds([ISLAND_A], [ISLAND_A, ISLAND_A, ISLAND_A],
+      ["r1", "a", "r2", "b", "r3", "c"], 2,
+      async (store) => {
+        await store.put(
+          { tiddler: { title: `${DAEMON}/ledger/proof/torn`, island: ISLAND_A }, meta: { authority: "lares-proof-holder" } },
+          { kind: "lares-verb", requestId: "seed" }, { bag: DAEMON });
+      });
+    expect(standing.map((r) => r.eventId)).toEqual(["b", "c"]);
+    expect(titles).toContain(`${DAEMON}/ledger/proof/torn`);
+  });
+
+  test("over a composite with no default writable, the 33rd hold prunes the oldest from the bag the put named", async () => {
+    const harness = await standChannel([ISLAND_A]);
+    const composite = new CompositeStore();
+    const bag = new MemoryTiddlerStore(DAEMON);
+    composite.addLayer({ bagId: DAEMON, store: bag, writable: true, defaultWritable: false });
+    const ids = Array.from({ length: 33 }, (_, n) => [`r${n}`, `e${String(n).padStart(2, "0")}`]).flat();
+    const supervisor = createWikiSenseSupervisor(harness.shores, { proofStore: composite, newId: mint(ids) });
+    harness.bind(supervisor);
+    try {
+      for (let n = 0; n < 33; n++) await supervisor.cohere(ISLAND_A, { hold: true });
+      const standing: number[] = [];
+      for (const title of await bag.listVisible()) {
+        const parsed = parseProofRecord(((await bag.get(title))!.tiddler) as Record<string, unknown>);
+        if (parsed) standing.push(parsed.seq);
+      }
+      standing.sort((a, b) => a - b);
+      expect(standing).toHaveLength(32);
+      expect(standing[0], "the oldest proof stayed in the bag").toBe(2);
+      expect(composite.defaultWritableBagId()).toBeNull();
+    } finally {
+      supervisor.dispose();
+      await harness.teardown();
+    }
+  }, 60_000);
+});

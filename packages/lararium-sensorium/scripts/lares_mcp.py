@@ -1,0 +1,1309 @@
+"""lares_mcp — the /mcp surface mirroring the `lares` CLI (ISOMORPHIC verb parity: CLI commands <-> MCP
+tools, one verb-ontology across two surfaces). A fresh py MCPServer routing to the lares house's own
+py sensorium backend (capture_session · content_io · worldline_io). The coordinator-seat ruling: the MCP
+verb-surface lives py; the TS @daemon supervises the fleet + keeps the surface-wiring. The vendored
+mempalace mcp_server.py stays for the upstream nakama on their causal island — this serves the lares house.
+
+The isomorphism lives in `LaresCoordinator` (the verb-router both surfaces call); the CLI commands and the
+MCP tools stay thin skins over it, each verb named the same on both — pour · recall · status · worldline
+· kapae · un_kapae (Phase-6a lifecycle floor; the extensions declare/attach/reconcile/release/daydream/
+deep-dream + the HITL/HOTL grid ride in at 6b).
+
+Meme: lar:///ha.ka.ba/lararium/sensorium/lares-mcp (the isomorphic surface).
+"""
+from __future__ import annotations
+
+import os
+
+import content_io as cio
+import worldline_io as wl
+import lares_uds as uds
+from capture_session import capture_and_observe, worldline_path
+from embed_cap import make_embed_cap
+from plane_query import (crossplane_hit as _crossplane_hit, open_plane_store, plane_record_witness,
+                         reads_as_cid as _reads_as_cid,
+                         structure_entry_for_cid as _structure_entry_for_cid)
+from sensorium import sensorium_paths, read_stream_manifest, sensorium_dir, derived_views
+
+# The lifecycle-floor verbs the MCP surface mirrors from the `lares` CLI. Each name reads identically on
+# both surfaces (the isomorphism contract); a parity test asserts the two sets agree.
+LIFECYCLE_VERBS = ("pour", "sweep", "recall", "status", "worldline", "kapae", "un_kapae", "rejim", "analyze", "ki", "li", "jing", "couple_r", "forecast", "mismatch", "flow")
+
+# The per-plane QUERY DOOR verb — read-only cross-plane interrogation of a 3-plane test-bed sensorium
+# (content · structure · form, one cid keying all three planes; corpus_testbed/plane_fanout land it).
+# The per-plane READS (structure · form) fold onto `recall --lens <plane>` — the plane rides as a
+# parameter, so only the cross-plane WITNESS keeps its own verb here.
+# THE PARITY SHORE: this rides the MCP surface AHEAD of its CLI spelling — the CLI form + the cli-verbs
+# fixture grow with the projector arc, so the parity test carries it as a NAMED allowance
+# (mcp_tools − PLANE_VERBS mirrors the fixture) until the CLI catches up.
+PLANE_VERBS = ("plane_record",)
+
+# The wiki-SWITCHER namespace — ONE flat `wiki` MCP tool (a `verb` arg: switch/hold/release/active)
+# mirrors the `lares wiki <verb>` CLI namespace, honest to its subcommand shape (never 4 flat tools that
+# would flatten the namespace). A PROPER CLI mirror — the host `wiki` is a real top-level command — so it
+# rides `mirrored`/`cli_forms` in the fixture, not an ahead-of-CLI allowance. All four sub-verbs are
+# uniformly low-trust · reversible · LOCAL residency ops (one conservative VERB_SEATS seat covers them).
+WIKI_VERBS = ("wiki",)
+
+# The MEME namespace — the MCP skin of the meme family's DAEMON-seated verbs: `meme_put` lands a meme's
+# text at a `lar:` uri through the island's Confluence gate (the ONE placement function); `meme_get` reads
+# the text + its canonical hash back; `meme_list` names every ROOT a seat holds with its canonical hash
+# (`tree` nests the slot tree); `meme_delete` removes the whole group through the one removal law (a stale
+# `base` reads `conflict` and moves nothing); `meme_project` renders the meme the island holds to a target
+# (`mem` · `md` · `html` · `tid` · `json`) — the TARGET rides as a parameter, never a suffix on the verb.
+# Each mirrors `lares meme put|get|list|delete|project` (the host `meme` is a real top-level command, so `mirrored`/
+# `cli_forms` carry it). A VERB DECLARES ITS SEAT: the CLI's `meme normalize` and `meme check` run LOCAL
+# over a file with no daemon, so they hold NO MCP tool — the MCP mirrors the daemon-seated verbs only, and
+# the fixture names that allowance as `local_seat`. THE CONTAINER LAW: exactly one of `recipe`/`bag` names
+# where the meme lands; neither, or both, refuses as `no-container` before the wire. `recipe: "default"`
+# names the host's ANCHOR (@daemon's own wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its top bag); `bag: <slug>` = a
+# residency placement (fails loud if the island cannot write it). Slugs ride BARE (`sdm`, `lares`); the
+# `@` spelling stands retired. All three ride `lares_uds.call` to the @daemon — never a store (the
+# single-writer law).
+MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project")
+
+# The targets `meme_project` renders — the same list `lares meme project --to` takes.
+PROJECT_TARGETS = ("mem", "md", "html", "tid", "json")
+
+# The DURABLE sensorium LIFECYCLE sub-verbs — roster · inspect · build · reconcile · promote · retire ·
+# un-retire · purge. Each mirrors `lares sense <verb>` (CLI-direct over manifest.json) three-way now: an
+# @mcp.tool routes over the @daemon wire to the house-consistent routed executor in open-node-vessel.ts
+# (the ki/li/couple_r pattern — pure manifest.json reducers, no store holder), and the CLI form rides the
+# one `sense` door. UNLIKE the HOTL LIFECYCLE_VERBS, these carry the REAL reversibility×trust seats: the
+# reads + reversible re-settle run HOTL; promote·retire·purge cross HITL (an operator-approval capability,
+# the surface twin of the CLI's `--approve`), so an irreversible verb gates the SAME on both surfaces.
+# un-retire spells `un_retire` here (a python identifier) → the CLI form `sense un-retire`, twinning the
+# un_kapae → `worldline un-kapae` shape.
+SENSE_LIFECYCLE_VERBS = ("roster", "inspect", "build", "reconcile", "promote", "retire", "un_retire", "purge")
+
+# The reversibility×trust GRID: each verb declares (reversible, trust_crossing). The seat follows —
+# HOTL (reversible AND trusted) runs on the operator's loop, no pause; HITL (irreversible OR trust-
+# crossing) blocks for the operator's hand. One grid across both surfaces (CLI + MCP). The @daemon holds
+# the LaresCoordinator cap in its wiki-island VM worker; it reads a verb's seat and grants the operator-
+# authorized approval capability an HITL verb needs (capability-based — the @daemon is the cap-holder).
+VERB_SEATS = {
+    "pour": (True, False),       # append-only capture — reversible (an edit rides kapae), trusted
+    "sweep": (True, False),      # append-only BULK capture — reversible (an edit rides kapae), trusted
+    "recall": (True, False),     # read — reversible, trusted
+    "status": (True, False),     # read — reversible, trusted
+    "worldline": (True, False),  # read — reversible, trusted
+    "kapae": (True, False),      # move-not-delete mute — reversible, trusted
+    "un_kapae": (True, False),   # restore — reversible, trusted
+    "plane_record": (True, False),      # cross-plane read — reversible, trusted (structure/form fold onto recall --lens)
+    "rejim": (True, False),             # read the landed rhythm/geology (repour rides the reversible refresh) — trusted
+    "analyze": (True, False),           # DETECT-ONLY change-point compute — read-only, mutates nothing → HOTL
+    "ki": (True, False),                # the Ki coupling verdict — routed read (the TS hull's H¹ fuse) → HOTL
+    "li": (True, False),                # the Li gluing verdict — routed read (the TS hull's li-radius + H¹) → HOTL
+    "jing": (True, False),              # the Jing (勁) li∘ki square — routed read (the TS hull's round-trip) → HOTL
+    "couple_r": (True, False),          # the R effective-TE coupling reference (coupling.R) — py/R compute, read-only → HOTL
+    "forecast": (True, False),          # the R early-warning plane (ews.R) — critical-slowing-down forecast, read-only → HOTL
+    "mismatch": (True, False),          # the ki↔R coupling comparator — read-only, TS-hull ⋈ R diff → HOTL
+    "flow": (True, False),              # the pet-named composed cap-stack runner — read-only compute, routed → HOTL
+    "wiki": (True, False),              # switcher (switch/hold/release/active) — reversible, low-trust, LOCAL residency → HOTL
+    # The meme placement pair — a put lands through the gate (a re-put restores; tombstones move, never
+    # delete) and a get reads; both stay on the operator's own island → HOTL.
+    "meme_put": (True, False),          # place a meme's text at a lar: uri through the Confluence gate — reversible, trusted → HOTL
+    "meme_get": (True, False),          # read a meme's text + canonical hash — reversible, trusted → HOTL
+    "meme_list": (True, False),         # list the roots a seat holds + their canonical hashes — a read → HOTL
+    "meme_delete": (True, False),       # remove a meme's group — a kāpae tombstone a re-put restores; stale base → conflict → HOTL
+    "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
+    # teardown tears a whole sensorium store DOWN — IRREVERSIBLE → HITL. It rides the CLI today, gated
+    # by --confirm (the operator's hand at the door); the grid NAMES its HITL seat so a future MCP mirror
+    # inherits the gate rather than crossing the surface ungated.
+    "teardown": (False, False),
+    # 6b control verbs — the SEAT stands now; execution rides in after the HITL talk-story locks.
+    "purge": (False, False),     # HARD-delete — IRREVERSIBLE → HITL
+    "attach": (True, True),      # admit a guest sensorium — TRUST-CROSSING → HITL
+    "release": (False, False),   # let a guest sensorium GO (drops its handle) — IRREVERSIBLE → HITL
+    "reconcile": (True, False),  # re-settle a sensorium against its source — reversible, trusted → HOTL
+    # The DURABLE sensorium-lifecycle sub-verbs (SENSE_LIFECYCLE_VERBS) — the TS twin of mesh LIFECYCLE_SEATS,
+    # so an HITL verb refuses on BOTH surfaces. Reads + reversible re-settle/restore/build run HOTL; the
+    # in-loop-human graduation (promote) and judged deaccession (retire) carry HITL, as does purge above.
+    "roster": (True, False),     # read every sensorium's lifecycle — reversible, trusted → HOTL
+    "inspect": (True, False),    # read one sensorium's manifest facets — reversible, trusted → HOTL
+    "build": (True, False),      # mint an ephemeral pioneer (a retire undoes it) — reversible, trusted → HOTL
+    "un_retire": (True, False),  # restore a tombstoned sensorium (move-not-delete) — reversible, trusted → HOTL
+    "promote": (False, False),   # climb a rung — a designed one-way commitment → HITL
+    "retire": (False, False),    # a judged deaccession (undoable only by un-retire) → HITL
+}
+
+
+def seat_of(verb: str) -> str:
+    """HOTL when a verb runs reversible AND trusted; HITL (needs the operator's hand) when it turns
+    irreversible OR crosses a trust boundary."""
+    reversible, trust_crossing = VERB_SEATS[verb]
+    return "HOTL" if (reversible and not trust_crossing) else "HITL"
+
+
+def guard_hitl(verb: str, approval=None) -> None:
+    """Gate a verb by its seat: a HOTL verb passes freely; an HITL verb needs a truthy operator-approval
+    capability (the @daemon grants it out-of-band). Raise when an HITL verb rides without one."""
+    if seat_of(verb) == "HITL" and not approval:
+        why = "irreversible" if not VERB_SEATS[verb][0] else "trust-crossing"
+        raise PermissionError(f"{verb} sits HITL ({why}) — an operator-approval capability is required; "
+                              "the @daemon grants it out-of-band. A reversible verb (e.g. kapae) needs none.")
+
+
+# The stamp-filter → metadata-key map: each recall filter narrows on the key the py CAPTURE actually
+# stamps (filter and stamp share ONE key so they never drift). PHYSICS/STRUCTURAL filters ONLY — the
+# ENRICHMENT filters (voice/band/agent-handle/drift) drop from the surface until enrichment EMERGES from
+# the breathing sensorium (the Li/Ki nameless-entity detection); stamping them at capture would freeze a
+# guess the detection should discover. Keys match capture_sources: `wing` (raw, structural), `lar_surface`
+# + `lar_agent` (physics stream-provenance; lar_agent on sub-agent turns).
+_STAMP_KEYS = {
+    "wing": "wing",
+    "surface": "lar_surface",
+    "agent": "lar_agent",
+    # the block taxonomy axes — recall the operator's steering as its own stratum (speaker="operator"),
+    # the loud voices (channel="speech"), or one communicative role (function="steering").
+    "speaker": "lar_speaker",
+    "channel": "lar_channel",
+    "function": "lar_function",
+}
+
+
+def _recall_where(*, wing=None, agent=None, surface=None, speaker=None, channel=None, function=None):
+    """Build a chroma `where` from the recall filters — one clause per provided filter, keyed to the slot
+    the capture stamps. The taxonomy axes (speaker/channel/function) let a recall surface ONE stratum: the
+    operator's steering (speaker="operator"), the loud voices (channel="speech"), a single role. Returns
+    None when no filter narrows (the pool stays open); a many-clause filter ANDs (chroma `$and`)."""
+    clauses = {"wing": wing, "agent": agent, "surface": surface,
+               "speaker": speaker, "channel": channel, "function": function}
+    where = {_STAMP_KEYS[name]: val for name, val in clauses.items() if val is not None}
+    return where or None
+
+
+def _where_matches(meta: dict, where: "dict | None") -> bool:
+    """Does a record's metadata satisfy a chroma-shaped `where`? A flat clause ANDs key==val; an `$and`
+    recurses. The predicate the projection filter reads (the projection owns no metadata — the content
+    store backs it)."""
+    if not where:
+        return True
+    if "$and" in where:
+        return all(_where_matches(meta, c) for c in where["$and"])
+    return all(meta.get(kk) == vv for kk, vv in where.items())
+
+
+def _make_where_predicate(content_store, where: "dict | None"):
+    """A `cid -> bool` predicate that narrows the mempalace PROJECTION leg to the cids whose CONTENT
+    metadata satisfies `where` — so a FILTERED recall (speaker="operator", …) keeps combined-arms fusion
+    rather than falling to the content-vector alone (the SPEAKER-stratum tension). The projection holds no
+    metadata, so the content store backs the check. None where nothing narrows."""
+    if not where:
+        return None
+
+    def keep(cid: str) -> bool:
+        rec = content_store.get(cid) or {}
+        return _where_matches(rec.get("metadata") or {}, where)
+
+    return keep
+
+
+def _rrf_fuse(ranked_lists: "list[list[str]]", k: int, rrf_k: int = 60) -> "list[str]":
+    """Reciprocal Rank Fusion over several ordered cid lists → ONE ranked cid list. Rank-only, so surfaces
+    whose scores live on incomparable scales (cosine distance ⊥ lexical BM25 ⊥ entity co-occurrence) fuse
+    without a shared metric: `score(cid) = Σ 1/(rrf_k + rank_i)`. This is the merge the combined-arms recall
+    rides over whatever recall-surfaces the sensorium #has."""
+    scores: "dict[str, float]" = {}
+    for cids in ranked_lists:
+        for rank, cid in enumerate(cids):
+            scores[cid] = scores.get(cid, 0.0) + 1.0 / (rrf_k + rank)
+    return [cid for cid, _ in sorted(scores.items(), key=lambda kv: kv[1], reverse=True)[:k]]
+
+
+class LaresCoordinator:
+    """The verb-router BOTH surfaces (CLI + MCP) call — it holds a warm embedder + a content-store and a
+    worldline handle on ONE sensorium palace, and drives the capture engine. Naming each method for its
+    CLI verb keeps the isomorphism honest; the surfaces stay thin skins."""
+
+    def __init__(self, sensorium_root: str, *, wing: str = "wing_default", embed_factory=None) -> None:
+        self._paths = sensorium_paths(sensorium_root)
+        self._palace = self._paths.root
+        self._wing = wing
+        embed_factory = embed_factory or make_embed_cap
+        self._embed_one, self._model = embed_factory()
+        self._dim = len(self._embed_one("probe"))           # pin the width off the warm cap
+        self._plane_stores: dict = {}                        # lazy structure/form handles, opened on first read
+        self._content = cio.ContentStore(self._paths.content, expected_dim=self._dim, expected_model=self._model)
+        # The fork-DAG rides the ONE canonical `worldline/` dir the capture wire builds into — the same
+        # helper both sides call, so a pour's braid IS the DAG this coordinator reads (no path split).
+        self._worldline = wl.WorldlineStore(worldline_path(self._palace))
+
+    def pour(self, surface: str, pointer: str, *, all: bool = False, writeback: bool = False,
+             dry_run: bool = False, wing: "str | None" = None,
+             room: str = "conversations") -> dict:
+        """Capture a surface's transcript into the Memory sensorium (mirrors `lares sense pour`).
+        Idempotent re-derivation — a re-run lands only the un-landed tail (the crash-cure).
+
+        The isomorphism contract carries the CLI's rich args onto this one spine: `all` sweeps every
+        surface, `writeback` re-enriches a wing's drawers, `dry_run` previews without landing. The
+        per-pointer capture rides `capture_and_observe` here — it lands the content AND builds the
+        worldline fork-DAG into the shared `worldline/`, so `worldline()`/`kapae` read a REAL braid on
+        the shipping path; the sweep/writeback/preview SHAPING rides the CLI skin + the deferred
+        @daemon-cap-wire, so the params stand in the signature and thread through as the wire lands them."""
+        if all:
+            # `pour --all` = the bulk backfill across EVERY surface, on the ONE spine: it rides `sweep`,
+            # which is the drawers leg of the re-pave the CLI's `pour --all` walks. Both surfaces reach the
+            # same discovery, gate and tally, so a daemon-DOWN standalone captures identically.
+            return self.sweep("all", wing=wing, room=room)
+        if writeback or dry_run:
+            # STILL refuse honestly: dry_run especially would otherwise LAND on the append-only ground (the
+            # tool advertises a preview it can't yet give). Writeback/preview shaping rides the deferred wire.
+            raise NotImplementedError(
+                "pour writeback/dry_run: the writeback/preview shaping rides the deferred @daemon-cap-wire "
+                "(not yet wired) — refusing rather than capturing for real")
+        return capture_and_observe(self._palace, surface, pointer, wing=wing or self._wing, room=room,
+                                   embed_factory=lambda: (self._embed_one, self._model))
+
+    def sweep(self, surface: str = "all", *, wing: "str | None" = None, project: "str | None" = None,
+              limit: "int | None" = None, room: str = "conversations") -> dict:
+        """Capture/RECAPTURE every local operator-AI chat transcript into this Memory sensorium in ONE pass —
+        the bulk backfill that `pour` handles one pointer at a time (mirrors `lares sense sweep`). `surface`
+        `all` folds claude+codex+copilot+copilot-vscode; else names one. Rides the SAME bulk-sweep spine the
+        daemon holder drives (`session_discovery.run_bulk_sweep`): the shared `session_discovery` (per-project
+        wings + tasked-spirits→`<wing>__spirits` + ephemeral gate + copilot's threaded store), so a
+        daemon-DOWN standalone re-pour captures IDENTICALLY to the daemon path — no forked discovery.
+
+        Composes the Memory stream ONCE (`compose_memory_stream_sensorium` over THIS coordinator's warm
+        embedder, so the model never reloads) and passes its `.capture` — never `capture_and_observe`
+        per-pointer, which recomposes the stream on every call (slow over ~1700 sessions). IDEMPOTENT: a
+        re-run lands only the un-landed tail (the crash cure). `project` narrows claude to one project;
+        `limit` caps each surface (oldest first); the passed `wing` rides only as the cwd-less fallback."""
+        from capture_session import compose_memory_stream_sensorium
+        from session_discovery import run_bulk_sweep
+        default_wing = wing or self._wing
+        stream, model, _dim, _paths = compose_memory_stream_sensorium(
+            self._palace, embed_factory=lambda: (self._embed_one, self._model))
+        out = run_bulk_sweep(stream.capture, surface=surface, default_wing=default_wing,
+                             project=project, limit=limit, room=room)
+        out["root"] = self._palace
+        out["embedder_model"] = model
+        return out
+
+    def _exchange_view(self, matches: list) -> list:
+        """Pair matched blocks into EXCHANGES — the read-time view the ontology names. Group the matches
+        by lar_turn_key, fetch each turn's FULL block-set (its siblings via content.cids_for_turn), order
+        by chunk_index. So a bare matched block recalls WITH its turn's context — the operator's steering
+        beside the agent's surface — the merge done as a VIEW, never baked into content. Turn order follows
+        the match ranking (the best-matching turn first); a turn surfaces once however many blocks matched."""
+        exchanges: list = []
+        seen: "set[str]" = set()
+        for m in matches:
+            tk = (m.get("metadata") or {}).get("lar_turn_key")
+            if not tk or tk in seen:
+                continue
+            seen.add(tk)
+            blocks = []
+            for cid in self._content.cids_for_turn(tk):
+                rec = self._content.get(cid)
+                if not rec:
+                    continue
+                meta = rec.get("metadata") or {}
+                blocks.append({"cid": cid, "chunk_index": meta.get("chunk_index", 0),
+                               "speaker": meta.get("lar_speaker"), "function": meta.get("lar_function"),
+                               "channel": meta.get("lar_channel"), "text": rec.get("document", "")})
+            blocks.sort(key=lambda b: b["chunk_index"])
+            exchanges.append({"turn_key": tk, "blocks": blocks})
+        return exchanges
+
+    def recall(self, query: str, k: int = 8, *, wing: "str | None" = None, imago: "str | None" = None,
+               list: bool = False, agent: "str | None" = None, surface: "str | None" = None,
+               speaker: "str | None" = None, channel: "str | None" = None, function: "str | None" = None,
+               pair: bool = False, lens: str = "content") -> dict:
+        """Recall the nearest turns to a query (mirrors `lares sense recall`); kapae-muted turns stay excluded.
+
+        The `lens` folds the per-plane reads onto this one verb — the plane rides as a parameter, so the
+        surface stays one recall however many planes stand: `content` (default) rides the combined-arms
+        engine below; `structure` and `form` ride their plane doors (the SAME bespoke reads, one surface).
+
+        COMBINED-ARMS (content lens): the recall FUSES every recall-surface this sensorium #has — the
+        content-vector (the eidetic ground, always) plus the mempalace projection (lexical + entity) when the
+        #has stack declares it and it is paved — by reciprocal rank fusion, resolving verbatim from content.
+        Isomorphic: a bare stream sensorium recalls by vector alone; a memory sensorium fuses
+        lexical+entity+vector — the SAME machinery reading whatever the stack composes (never a hardcoded list).
+
+        Read modes + filters shed onto this spine: `imago` fetches ONE verbatim entry by turn-key; `list`
+        reports the taxonomy. A `wing`/`agent`/`surface` filter narrows by provenance; the TAXONOMY filters
+        `speaker`/`channel`/`function` narrow by the block's own axis — so a recall can surface the operator's
+        steering as its own stratum (speaker="operator"), the loud voices (channel="speech"), or one role.
+        A FILTERED recall now KEEPS combined-arms: the `where` rides INTO every surface — the content-vector
+        filters natively (chroma), the mempalace projection rides a content-backed `cid_filter` — so the
+        SPEAKER stratum no longer falls to the content-vector alone."""
+        if lens == "structure":
+            return self.recall_structure(query, k)
+        if lens == "form":
+            return self.recall_form(query, k)
+        if lens == "persistence":
+            return self.recall_persistence(query, k)
+        if lens == "crossplane":
+            return self.recall_crossplane(query, k, wing=wing, agent=agent, surface=surface,
+                                          speaker=speaker, channel=channel, function=function)
+        if lens != "content":
+            raise ValueError(
+                f"recall lens {lens!r} unknown — name one of: content · structure · form · persistence · crossplane")
+        if imago:
+            return self._content.get(imago) or {}
+        if list:
+            return self._content.taxonomy()
+        where = _recall_where(wing=wing, agent=agent, surface=surface,
+                              speaker=speaker, channel=channel, function=function)
+        surfaces = self._recall_surfaces(where)
+        if len(surfaces) <= 1:
+            # a bare single-surface sensorium → the content-vector path (the where filters natively).
+            out = self._content.search(self._embed_one(query), k, where)
+        else:
+            # FUSE the #has surfaces: each yields ordered cids; RRF merges; content resolves the verbatim.
+            # The `where` rode INTO each surface (content-vector native · projection cid_filter), so a
+            # FILTERED recall keeps combined-arms rather than dropping to the content-vector alone.
+            pool = max(k * 2, 16)
+            ranked = [fn(query, pool) for _name, fn in surfaces]
+            fused = _rrf_fuse(ranked, k)
+            matches = []
+            for cid in fused:
+                rec = self._content.get(cid)
+                if rec:
+                    matches.append({"cid": cid, "distance": None,
+                                    "document": rec.get("document", ""), "metadata": rec.get("metadata", {})})
+            out = {"matches": matches, "scanned": pool, "matched": len(matches),
+                   "surfaces": [name for name, _ in surfaces]}
+        if pair:
+            # the exchange-VIEW: pair the matched blocks into their turns (steering beside surface).
+            rest = {kk: vv for kk, vv in out.items() if kk != "matches"}
+            return {"exchanges": self._exchange_view(out.get("matches", [])), **rest}
+        return out
+
+    def _recall_surfaces(self, where: "dict | None" = None) -> list:
+        """The recall-surface caps this sensorium #has — each `(name, search(query, k) -> ordered cids)`.
+
+        Discovered from the manifest #has stack (the nameless-entity composition), never a hardcoded list:
+        the content-vector rides the eidetic ground always; the mempalace projection (lexical + entity) rides
+        when the stack declares a `mempalace` cap AND its projection is paved on disk. A future recall-capable
+        cap joins the fusion simply by standing in the stack — the recall composes what the sensorium has.
+
+        A `where` narrows EVERY surface uniformly — the content-vector filters natively (chroma); the
+        projection rides a content-backed `cid_filter` — so a FILTERED recall keeps combined-arms rather
+        than dropping to the content-vector alone (the SPEAKER-stratum fix)."""
+        def _vector(query: str, k: int) -> "list[str]":
+            res = self._content.search(self._embed_one(query), k, where)
+            return [m["cid"] for m in res.get("matches", [])]
+        surfaces: list = [("content-vector", _vector)]
+        manifest = read_stream_manifest(self._palace, absent_ok=True) or {}
+        mp = (manifest.get("has") or {}).get("mempalace")
+        if isinstance(mp, dict):
+            mp_db = os.path.join(self._palace, mp.get("dir") or "mempalace", "mempalace")
+            if os.path.exists(mp_db + ".lex"):                 # the projection is paved (realized on disk)
+                keep = _make_where_predicate(self._content, where)
+                def _projection(query: str, k: int) -> "list[str]":
+                    from mempalace_projection import MempalaceProjection
+                    proj = MempalaceProjection(db_path=mp_db)   # read-only: hybrid_search reads the stored graph
+                    try:
+                        return proj.hybrid_search(
+                            query, lambda cid: (self._content.get(cid) or {}).get("document"), k,
+                            cid_filter=keep)
+                    finally:
+                        proj.close()
+                surfaces.append(("mempalace", _projection))
+        return surfaces
+
+    def status(self) -> dict:
+        """What the sensorium holds — the content taxonomy PLUS the DERIVED layer (mempalace projection ·
+        rejim geology), so status names the eidetic ground AND the rebuildable views (mirrors `lares vessel read`)."""
+        return {**self._content.taxonomy(), "derived": derived_views(self._palace)}
+
+    def worldline(self, selector: "str | None" = None, *, as_of=None) -> dict:
+        """The fork-DAG rhizome (mirrors `lares worldline`). `selector` names which run/handle the CLI
+        walks; the py `dag` renders the whole edge-DAG and the selector-narrowing rides the CLI skin.
+        `diff` stays a CLI-only delta (it refuses honestly on the persisted-ITC gap) — never a method
+        here."""
+        return self._worldline.dag(as_of=as_of)
+
+    def kapae(self, branch: str, tick) -> dict:
+        """Mute a worldline branch + cascade the mute across the sensorium (mirrors `lares worldline kapae`).
+        Reversible — un_kapae restores; move-not-delete throughout."""
+        return wl.cascade_kapae(self._worldline, [self._content], branch, tick)
+
+    def un_kapae(self, branch: str, tick) -> dict:
+        """Restore a muted branch across the sensorium (mirrors `lares worldline un-kapae`)."""
+        return wl.cascade_un_kapae(self._worldline, [self._content], branch, tick)
+
+    # ── the rhythm + change-point READS (human-query instruments; read-only) ─────────────────
+
+    def rejim(self, *, repour: bool = False, channel: str = "content") -> dict:
+        """The landed rejim (rhythm/geology) plane made ASKABLE (mirrors `lares sense rejim`) — the nameless
+        regimes the stream's own recurrence holds, or an honest absence until the plane is repoured. `repour`
+        RE-DERIVES from content first (the reversible refresh, reusing THIS holder's ONE content handle — never
+        a second writer), then reads. `channel` names the stream channel a repour reads (default content)."""
+        from rejim_io import read_rejim, repour_rejim, CONTENT
+        if repour:
+            # "content" is the friendly alias for the content-borne (recurrence) channel; any other token
+            # passes through to the detector, which validates it against the poured signals.
+            ch = CONTENT if channel in (None, "content") else channel
+            repour_rejim(self._paths.content, self._paths.rejim, channel=ch, content_store=self._content)
+        geology = read_rejim(self._paths.rejim)
+        if geology is None:
+            return {"repoured": False, "geology": None,
+                    "note": "rejim: never repoured — run `lares sense rejim --repour` (or pass repour=True)"}
+        return {"repoured": True, "geology": geology}
+
+    def analyze(self, *, spectral: bool = False, halves=None, span: int = 6) -> dict:
+        """DETECT-ONLY change-point analysis over this sensorium's poured content stream (mirrors `lares sense
+        analyze`) — the isomorphic `sense_analyze` instrument reads the reconstructed stream word-grained and
+        reports where vocabulary + grammar change HANDS, every cut a word index. Blind to any ground-truth
+        (the answer-key wall stays uncrossed); it never scores, only locates. `spectral` switches to the
+        embedding-geometry surface; `halves` (comma-string or list) sets the Foote kernel widths. REUSES the
+        coordinator's ONE content handle — no second store client opens on the palace."""
+        import sense_analyze
+        if isinstance(halves, str) and halves.strip():
+            halves_t = tuple(int(h) for h in halves.split(",") if h.strip())
+        elif isinstance(halves, (list, tuple)) and halves:
+            halves_t = tuple(int(h) for h in halves)
+        else:
+            halves_t = sense_analyze.DEFAULT_HALVES
+        if spectral:
+            return sense_analyze.spectral(self._palace)
+        res = sense_analyze.detect(self._palace, halves=halves_t, content_store=self._content)
+        return {k: v for k, v in res.items() if not k.startswith("_")}   # drop the in-memory word cache
+
+    def ki(self, **_) -> dict:
+        """The Ki (氣) corpus-coupling verdict is TS-native — the H¹ cohomology lives in @lararium/mesh, the
+        hull a browser carries. A python STANDALONE can't compute it, so this raises: reach it through the
+        node daemon (`lares sense ki`, or the routed MCP with the @daemon up), never the standalone coordinator."""
+        raise RuntimeError("ki: the coupling verdict is TS-native (the H¹ cohomology lives in @lararium/mesh) — "
+                           "reach it via the @daemon (`lares sense ki`), not the standalone python coordinator")
+
+    def li(self, **_) -> dict:
+        """The Li (理) gluing verdict is TS-native — the Robinson li-radius and the H¹ cohomology live in
+        @lararium/mesh, the hull a browser carries. A python STANDALONE can't compute it, so this raises:
+        reach it through the node daemon (`lares sense li`, or the routed MCP with the @daemon up)."""
+        raise RuntimeError("li: the gluing verdict is TS-native (the li-radius + H¹ cohomology live in @lararium/mesh) — "
+                           "reach it via the @daemon (`lares sense li`), not the standalone python coordinator")
+
+    def jing(self, **_) -> dict:
+        """The Jing (勁) coherence verdict is TS-native — the li∘ki square (extend→restrict round-trip) rides
+        the H¹ cohomology hull in @lararium/mesh. A python STANDALONE can't compute it, so this raises: reach
+        it through the node daemon (`lares sense jing`, or the routed MCP with the @daemon up)."""
+        raise RuntimeError("jing: the coherence verdict is TS-native (the li∘ki square rides @lararium/mesh) — "
+                           "reach it via the @daemon (`lares sense jing`), not the standalone python coordinator")
+
+    def couple_r(self, *, rows=None, names=None, shuffles: int = 100, nboot: int = 100,
+                 seed: int = 1, alpha: float = 0.05, **_) -> dict:
+        """The R effective-transfer-entropy coupling reference (coupling.R RTransferEntropy::calc_ete) over an
+        N-signal matrix — the py/R twin of the TS-hull `ki`. UNLIKE ki/li/jing (TS cohomology, routed to the
+        @daemon), this COMPUTES right here: the coupling plane IS the py/R plane (the machine-code-runs-py
+        ruling), behind the causal-island boundary. Stateless matrix→verdict; graceful coupling-skipped when
+        R / RTransferEntropy is absent."""
+        import numpy as np
+        from bands import couple_streams
+        M = np.asarray(rows or [], dtype=float)
+        return couple_streams(M, names=list(names) if names else None,
+                              shuffles=shuffles, nboot=nboot, seed=seed, alpha=alpha)
+
+    def forecast(self, *, rows=None, window: int = 50, nsurr: int = 200, alpha: float = 0.05,
+                 minbands: int = 2, seed: int = 1, **_) -> dict:
+        """The R early-warning plane (ews.R critical-slowing-down forecast) over an N-signal matrix — like
+        couple_r, this COMPUTES py-side (the predictive plane is the R plane). Stateless matrix→verdict."""
+        import numpy as np
+        from bands import forecast_ews
+        M = np.asarray(rows or [], dtype=float)
+        return forecast_ews(M, window=window, n_surr=nsurr, alpha=alpha, min_bands=minbands, seed=seed)
+
+    def mismatch(self, **_) -> dict:
+        """The ki↔R coupling comparator is TS-orchestrated — it runs the TS-hull Gaussian-CMI coupling
+        (@lararium/mesh coupleMesh) beside the R effective-TE (coupling.R) and diffs the directed edges. The
+        TS hull rides the browser-carried @daemon, so this raises: reach it via the @daemon (`lares sense
+        mismatch`), not the standalone python coordinator."""
+        raise RuntimeError("mismatch: the ki↔R comparator is TS-orchestrated (the TS-hull coupling lives in "
+                           "@lararium/mesh) — reach it via the @daemon (`lares sense mismatch`), not standalone")
+
+    def flow(self, **_) -> dict:
+        """The pet-named composed-flow RUNNER is TS-orchestrated — it looks a flow's cap-stack up and runs
+        each step routed by hull (crystallize + the coupleMesh capstone ride the TS hull; phase rides the py
+        serve-op; mismatch reaches both hulls). Only the @daemon reaches every hull, so this raises: reach it
+        via the @daemon (`lares flow <petname>`), not the standalone python coordinator."""
+        raise RuntimeError("flow: the composed-flow runner is TS-orchestrated (it routes cap-steps across "
+                           "both hulls) — reach it via the @daemon (`lares flow <petname>`), not standalone")
+
+    # ── the per-plane QUERY DOOR (read-only; PLANE_VERBS) ────────────────────────────────────
+
+    def _plane_store(self, plane: str):
+        """Open the named plane palace (<palace>/structure | <palace>/form) lazily and cache the
+        handle. Returns None when the plane carries no store yet — the query verbs answer an
+        honest null rather than PLANTING an empty palace (the read verbs never write the ground)."""
+        cached = self._plane_stores.get(plane)
+        if cached is not None:
+            return cached
+        store = open_plane_store(self._palace, plane)
+        if store is not None:
+            self._plane_stores[plane] = store
+        return store
+
+    def recall_structure(self, query_or_cid: str, k: int = 8) -> dict:
+        """Interrogate the STRUCTURE plane (read-only). A 64-hex cid resolves through the provenance
+        join to the structural entry binding it; any other string parses to a content-free tree
+        (markdown-hinted; a sigil-dense query still promotes to memetic-wikitext) and rides the
+        STRUCTURAL embedding into nearest-shape recall — never the content vector (the independence
+        law holds through the door). Honest nulls where the plane or the record stays absent."""
+        store = self._plane_store("structure")
+        if store is None:
+            return {"plane": "structure", "present": False, "matches": [],
+                    "note": "structure: this palace carries no structure store"}
+        if _reads_as_cid(query_or_cid):
+            entry = _structure_entry_for_cid(store, query_or_cid)
+            return {"plane": "structure", "present": True, "cid": query_or_cid,
+                    "entry": entry, "matches": []}
+        # The store now #has a clean query face (text → detect_kind + parse_to_tree → structural embed →
+        # nearest shapes) — the coordinator stops reaching `_col` directly.
+        res = store.query(query_or_cid, k)
+        if res.get("note") and not res.get("matches"):
+            return {"plane": "structure", "present": True, "matches": [],
+                    "note": f"structure: {res['note']}"}
+        return {"plane": "structure", "present": True, "kind": res.get("kind"), "matches": res["matches"]}
+
+    def recall_form(self, query_or_cid: str, k: int = 8) -> dict:
+        """Interrogate the FORM plane (read-only): a cid fetches its induced-template membership row,
+        then rides its OWN stored vector into nearest-by-membership neighbors (self dropped). A text
+        query answers an honest null — text→membership needs the induced constructicon, which the
+        store keeps only as per-record vectors, never as a queryable grammar."""
+        store = self._plane_store("form")
+        if store is None:
+            return {"plane": "form", "present": False, "matches": [],
+                    "note": "form: this palace carries no form store"}
+        if not _reads_as_cid(query_or_cid):
+            return {"plane": "form", "present": True, "matches": [],
+                    "note": "form: text queries need the induced constructicon (not persisted as a "
+                            "queryable grammar) — query by cid, or ride recall_structure/plane_record"}
+        row = store.get(query_or_cid)
+        if row is None:
+            return {"plane": "form", "present": True, "cid": query_or_cid, "record": None, "matches": []}
+        got = store._col.get(ids=[query_or_cid], include=["embeddings"])  # noqa: SLF001 — the stored vector drives the neighbor read
+        embs = got.get("embeddings")
+        vec = [float(x) for x in embs[0]] if embs is not None and len(embs) else []
+        meta = row.get("metadata") or {}
+        record = {"dimension": meta.get("dimension"), "count": meta.get("count"),
+                  "struct_hash": meta.get("struct_hash", ""),
+                  "active_templates": sum(1 for v in vec if v > 0.0)}
+        res = store._col.query(query_embeddings=[vec], n_results=max(k, 1) + 1,  # noqa: SLF001 — +1 covers the self-hit
+                               include=["metadatas", "distances"])
+        ids = (res.get("ids") or [[]])[0]
+        dists = (res.get("distances") or [[]])[0]
+        matches = [{"cid": ids[i], "distance": dists[i] if i < len(dists) else None}
+                   for i in range(len(ids)) if ids[i] != query_or_cid][:max(k, 1)]
+        return {"plane": "form", "present": True, "cid": query_or_cid, "record": record, "matches": matches}
+
+    def recall_persistence(self, query_or_cid: str, k: int = 8) -> dict:
+        """Interrogate the PERSISTENCE plane (read-only) — the plane where a ki finding earns standing
+        through witness. A cid fetches its testimony (kind · provenance · witness-count) and rides its OWN
+        stored assertion vector into the nearest ki-findings (self dropped). A text query answers an honest
+        null: the assertion IS the vector (the plane runs no embedder), so text→assertion carries no bridge
+        — query by cid. Symmetric with `recall_form` (the by-cid + neighbors shape)."""
+        store = self._plane_store("persistence")
+        if store is None:
+            return {"plane": "persistence", "present": False, "matches": [],
+                    "note": "persistence: this palace carries no persistence store"}
+        if not _reads_as_cid(query_or_cid):
+            return {"plane": "persistence", "present": True, "matches": [],
+                    "note": "persistence: text queries need an assertion vector (the plane runs no "
+                            "embedder) — query by cid"}
+        testimony = store.get(query_or_cid)
+        if testimony is None:
+            return {"plane": "persistence", "present": True, "cid": query_or_cid, "record": None, "matches": []}
+        assertion = testimony.get("assertion") or []
+        record = {"kind": testimony.get("kind", ""),
+                  "signer": (testimony.get("provenance") or {}).get("signer", ""),
+                  "witnesses": len(testimony.get("witnesses") or [])}
+        matches = []
+        if assertion:
+            got = store._col.query(query_embeddings=[assertion], n_results=max(k, 1) + 1,  # noqa: SLF001 — +1 covers the self-hit
+                                   include=["distances"])
+            ids = (got.get("ids") or [[]])[0]
+            dists = (got.get("distances") or [[]])[0]
+            matches = [{"cid": ids[i], "distance": dists[i] if i < len(dists) else None}
+                       for i in range(len(ids)) if ids[i] != query_or_cid][:max(k, 1)]
+        return {"plane": "persistence", "present": True, "cid": query_or_cid, "record": record, "matches": matches}
+
+    def recall_crossplane(self, query: str, k: int = 8, *, wing: "str | None" = None,
+                          agent: "str | None" = None, surface: "str | None" = None,
+                          speaker: "str | None" = None, channel: "str | None" = None,
+                          function: "str | None" = None) -> dict:
+        """HUMAN-QUERY ALL PLANES — one TEXT query → the content combined-arms recall → each top hit WIDENED
+        across the tri-plane by the cross-plane cid-join. Form answers by-cid only (no text→form) and
+        structure keys by shape, so a bare human text query cannot hit them directly; this bridges it — the
+        content recall finds the cids, then the form-vector + structure-tree ride back per hit
+        ({@link plane_query.crossplane_hit}). Read-only; the filters narrow the CONTENT leg (the operator's
+        steering stratum, etc.). Returns {plane, query, hits:[{cid, join_key, content, structure, form}]}."""
+        base = self.recall(query, k, wing=wing, agent=agent, surface=surface,
+                           speaker=speaker, channel=channel, function=function, lens="content")
+        hits = [_crossplane_hit(self._palace, m) for m in base.get("matches", [])]
+        return {"plane": "crossplane", "query": query, "hits": hits,
+                "scanned": base.get("scanned"), "matched": len(hits)}
+
+    def plane_record(self, cid: str) -> dict:
+        """The cross-plane witness read: ONE cid → its presence + payload summary across content ·
+        structure · form, honest nulls where a plane lacks the record. READ-only — it witnesses
+        co-presence and scores nothing. THE COHERE SHORE: cross-plane AGREEMENT (cohere) lands its
+        organs with the projector arc; this verb stays the bare 3-plane witness until then.
+
+        The witness itself lives in `plane_query` (neutral, no circular import) — this coordinator holds
+        the ONE content handle and passes it in; the capture holder's `plane_record` serve-op rides the
+        SAME implementation over the store it owns."""
+        return plane_record_witness(self._content, self._palace, cid)
+
+
+def build_mcp(coordinator: LaresCoordinator):
+    """Wrap the coordinator in an MCPServer — one @tool per lifecycle verb, each a thin skin that
+    routes straight to the coordinator (the isomorphism holds because both surfaces share it).
+
+    HITL-GATE PIN (6b): the six lifecycle tools below all seat HOTL, so `guard_hitl` no-ops on them.
+    When the 6b control verbs (purge/attach/release) wire in as tools here, each MUST call
+    `guard_hitl(verb, approval)` before executing — the grid SEATS them HITL, but nothing structurally
+    forces the gate until the tool calls it. The @daemon (holding this cap in its wiki-island VM worker)
+    supplies the approval capability out-of-band (ask→confirm→cap→wiki-audit)."""
+    from mcp.server.mcpserver import MCPServer
+
+    mcp = MCPServer("lares")
+
+    # The addressed-sensorium shore: an AI names a sensorium; the tool resolves the name to its root and
+    # threads it up the @daemon cap-ladder (the routed recall/capture/refresh verbs pick the holder by
+    # root). Absent → the memory default. A standalone coordinator binds ONE palace at construction, so a
+    # name resolving to a DIFFERENT root refuses rather than reading the wrong store; the routed router
+    # holds no palace, so it carries the root across to whichever holder owns it.
+    bound_root = getattr(coordinator, "_palace", None)   # standalone holds one root; the router holds none
+    routed = bound_root is None
+
+    def _address(sensorium: "str | None") -> "str | None":
+        if not sensorium:
+            return None
+        root = sensorium_dir(sensorium)
+        if bound_root is not None and os.path.realpath(root) != os.path.realpath(bound_root):
+            raise ValueError(f"--standalone opens ONE sensorium ({bound_root}); addressing {sensorium!r} "
+                             "rides the routed @daemon (drop --standalone, or name the bound sensorium)")
+        return root
+
+    def _call(verb: str, sensorium: "str | None", *args, **kwargs):
+        """Resolve the addressed sensorium and drive the shared coordinator: the router carries the root
+        across; the bound standalone already owns its one palace, so it needs no root threaded in."""
+        root = _address(sensorium)
+        method = getattr(coordinator, verb)
+        return method(*args, sensorium_root=root, **kwargs) if routed else method(*args, **kwargs)
+
+    @mcp.tool()
+    def pour(surface: str, pointer: str, all: bool = False, writeback: bool = False,
+             dry_run: bool = False, wing: "str | None" = None,
+             room: str = "conversations", sensorium: "str | None" = None) -> dict:
+        """Capture a surface's transcript (claude/codex/copilot) into a sensorium (`sensorium` names it;
+        absent → memory). `all` sweeps every surface, `writeback` re-enriches a wing, `dry_run` previews."""
+        return _call("pour", sensorium, surface, pointer, all=all, writeback=writeback, dry_run=dry_run,
+                     wing=wing, room=room)
+
+    @mcp.tool()
+    def sweep(surface: str = "all", wing: "str | None" = None, project: "str | None" = None,
+              limit: "int | None" = None, sensorium: "str | None" = None) -> dict:
+        """Capture/RECAPTURE every local operator-AI chat transcript into a sensorium in ONE pass — the bulk
+        backfill / re-pour that `pour` handles one pointer at a time (mirrors `lares sensorium memory sweep`).
+        `surface` `all` folds claude+codex+copilot; else names one; `project` narrows claude; `limit` caps
+        each surface (oldest first); `sensorium` names the root (absent → memory). IDEMPOTENT — already-landed
+        turns skip, so a re-run catches up and a fresh sensorium fills fully; the tri-plane witness rides back.
+
+        Routes through the shared coordinator (the same method `lares sensorium memory sweep` calls). Runs
+        STANDALONE — the sensorium must NOT be held by a live @daemon, so the routed surface refuses and points
+        you at `lares_mcp --standalone --sensorium <root>` (or the CLI's --standalone)."""
+        return _call("sweep", sensorium, surface, wing=wing, project=project, limit=limit)
+
+    @mcp.tool()
+    def recall(query: str, k: int = 8, wing: "str | None" = None, imago: "str | None" = None,
+               list: bool = False, agent: "str | None" = None, surface: "str | None" = None,
+               speaker: "str | None" = None, channel: "str | None" = None, function: "str | None" = None,
+               pair: bool = False, lens: str = "content", sensorium: "str | None" = None) -> dict:
+        """Recall the nearest turns to a query from a sensorium (`sensorium` names it; absent → memory).
+        `lens` names the plane: `content` (default, combined-arms) · `structure` (nearest shapes) · `form`
+        (induced-template membership, by cid) · `persistence` (a witnessed ki-finding + neighbors, by cid) ·
+        `crossplane` (HUMAN-QUERY ALL PLANES: a text query → content hits widened across form+structure by
+        the cid-join). `imago` fetches one verbatim; `list` reports the taxonomy.
+        Filters narrow the pool: wing/agent/surface by provenance; the block-taxonomy `speaker` (operator/
+        agent/harness) · `channel` (speech/thought/tool) · `function` (steering/surface/…) surface ONE
+        stratum — the operator's steering alone, the loud voices, a single role. `pair` returns the
+        exchange-view (each block paired with its turn's siblings). Mirrors `lares sense recall` exactly —
+        two surfaces, one API."""
+        return _call("recall", sensorium, query, k, wing=wing, imago=imago, list=list,
+                     agent=agent, surface=surface, speaker=speaker, channel=channel, function=function,
+                     pair=pair, lens=lens)
+
+    @mcp.tool()
+    def status(sensorium: "str | None" = None) -> dict:
+        """Report what a sensorium holds (the taxonomy). `sensorium` names it; absent → memory."""
+        return _call("status", sensorium)
+
+    @mcp.tool()
+    def worldline(selector: "str | None" = None, sensorium: "str | None" = None) -> dict:
+        """Render the fork-DAG rhizome of turns. `selector` names which run/handle to walk; `sensorium`
+        names the sensorium (absent → memory)."""
+        return _call("worldline", sensorium, selector)
+
+    @mcp.tool()
+    def kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
+        """Mute a worldline branch (a fork-path-dead-end) + cascade the mute across a sensorium
+        (`sensorium` names it; absent → memory)."""
+        return _call("kapae", sensorium, branch, tick)
+
+    @mcp.tool()
+    def un_kapae(branch: str, tick: int, sensorium: "str | None" = None) -> dict:
+        """Restore a previously kapae-muted branch across a sensorium (`sensorium` names it; absent → memory)."""
+        return _call("un_kapae", sensorium, branch, tick)
+
+    @mcp.tool()
+    def rejim(repour: bool = False, channel: str = "content", sensorium: "str | None" = None) -> dict:
+        """Read a sensorium's landed rejim (rhythm/geology) plane — the nameless regimes the stream's own
+        recurrence holds, with the cepat⊥lambat couples — or an honest absence until it is repoured. `repour`
+        RE-DERIVES from content first (the reversible refresh), then reads. Mirrors `lares sense rejim`.
+        `sensorium` names the sensorium (absent → memory)."""
+        return _call("rejim", sensorium, repour=repour, channel=channel)
+
+    @mcp.tool()
+    def analyze(spectral: bool = False, halves: "str | None" = None, span: int = 6,
+                sensorium: "str | None" = None) -> dict:
+        """DETECT-ONLY change-point analysis over a sensorium's poured content stream (mirrors `lares sense
+        analyze`) — the isomorphic detection arms (Foote novelty · sequitur depth+shore · sequitur-MDL ·
+        branching entropy) read the reconstructed stream word-grained and report where the content changes
+        HANDS, every boundary a word index. Blind to any ground-truth (it locates, never scores). `spectral`
+        switches to the embedding-geometry surface; `halves` (comma-separated words, e.g. `4,8,16`) sets the
+        Foote kernel widths. `sensorium` names the sensorium (absent → memory)."""
+        return _call("analyze", sensorium, spectral=spectral, halves=halves, span=span)
+
+    @mcp.tool()
+    def ki(sensorium: "str | None" = None) -> dict:
+        """The Ki (氣) corpus-coupling verdict — do the memetic-wikitext sensorium's formal ⋈ informal peers
+        RECONCILE (H¹ fuse) or hold open a genuine cocycle, and does the reconciliation hold power? TS-native
+        (the cohomology hull the browser carries) — routed to the node daemon; no python standalone computes
+        it. `lares sense ki` reads the same verdict."""
+        return _call("ki", sensorium)
+
+    @mcp.tool()
+    def li(sensorium: "str | None" = None) -> dict:
+        """The Li (理) gluing verdict — do the ADDRESSED sensorium's sheaf planes GLUE (H¹ fuse) or hold
+        open a genuine cocycle, and does a global section stand? TS-native (the li-radius + cohomology hull
+        the browser carries) — routed to the node daemon; no python standalone computes it. The default
+        single-stream cover reads as a nested-cover PLUMBING witness (flagged), never health. `lares sense
+        li` reads the same verdict."""
+        return _call("li", sensorium)
+
+    @mcp.tool()
+    def jing(sensorium: "str | None" = None) -> dict:
+        """The Jing (勁) coherence verdict — do a child-hosting sensorium's lobes express ONE coherent self,
+        or does the grain fail to round-trip with the flow? The li∘ki square: EXTEND the lobes to a
+        reconciled self, RESTRICT back, read the round-trip. TS-native (the H¹ hull the browser carries) —
+        routed to the node daemon. Bare reads the MESH (who/authority/flow). `lares sense jing` reads it."""
+        return _call("jing", sensorium)
+
+    @mcp.tool()
+    def couple_r(rows: "list | None" = None, names: "list | None" = None) -> dict:
+        """The R effective-TE coupling reference — coupling.R (RTransferEntropy::calc_ete) over an N-signal
+        `rows` matrix (rows=time, cols=signals) → the directional who-leads-whom edges. The py/R twin of the
+        TS-hull `ki`: this is the coupling PLANE's reference compute, behind the causal-island boundary.
+        `lares sense couple-r --signal <ndjson>` reads the same. Graceful coupling-skipped when R is absent."""
+        return _call("couple_r", rows=rows, names=names)
+
+    @mcp.tool()
+    def forecast(rows: "list | None" = None) -> dict:
+        """The R early-warning plane — ews.R (critical-slowing-down) over an N-signal `rows` matrix → a
+        fired/WATCH/QUIET forecast of an approaching regime-shift, BEFORE `analyze`'s change-point commits.
+        Computes py-side (the predictive plane is the R plane). `lares sense forecast --signal <ndjson>`."""
+        return _call("forecast", rows=rows)
+
+    @mcp.tool()
+    def mismatch(rows: "list | None" = None, names: "list | None" = None) -> dict:
+        """The ki↔R coupling comparator — run the TS-hull Gaussian-CMI coupling BESIDE the R effective-TE
+        over the SAME `rows` signals and diff the directed edges. A disagreement means the vessel's local
+        coherence read and the R reference part ways on whether two streams couple — the parity check the
+        RUN-arc owed, made live. `lares sense mismatch --signal <ndjson>` reads the same."""
+        return _call("mismatch", rows=rows, names=names)
+
+    @mcp.tool()
+    def flow(petname: "str | None" = None, target: "list | None" = None,
+             signal: "list | None" = None, names: "list | None" = None,
+             sensorium: "str | None" = None) -> dict:
+        """The pet-named COMPOSED-FLOW surface — one tool, N flows (the anti-verb-sprawl door). Bare (no
+        `petname`) lists the flow-set (crystal · rhythm · couple) with their cap-stacks. `petname` + a
+        `signal` matrix (rows=time, cols=signals; `names` labels the columns) RUNS that flow: the @daemon
+        looks its cap-stack up and runs each step routed by hull, threading each outcome to the next. New
+        capability arrives as a new FLOW, never another raw verb. `lares flow <petname> --signal <ndjson>`
+        reads the same. A `target` without a `signal` auto-extracts one from the target's child streams
+        (feature-gated: the projector runs now, empty until the re-pour lands child signals)."""
+        return _call("flow", sensorium, petname=petname, targets=target, rows=signal, names=names)
+
+    @mcp.tool()
+    def plane_record(cid: str, sensorium: "str | None" = None) -> dict:
+        """The cross-plane witness: one cid -> presence + payload summary across content,
+        structure and form (honest nulls where a plane lacks it). `sensorium` names the sensorium
+        (absent → memory)."""
+        return _call("plane_record", sensorium, cid)
+
+    @mcp.tool()
+    def wiki(verb: str, slug: "str | None" = None) -> dict:
+        """The wiki-SWITCHER — mirrors `lares wiki <verb>` over the @daemon activation cap:
+        `switch <slug>` LIVE-activates a wiki (no reboot — the true swap; wakes it cold from its
+        recipe; a browser flips its projection surface). `hold`/`release <slug>` rotate the
+        active-wiki pin (budget-enforced: @daemon always + N rotatable). `active` reports the live
+        state (running wikis + which are held). One namespace, four sub-verbs — never top-level twins.
+        Rides the @daemon cap-wire like every verb (uds), never a local store."""
+        allowed = {"switch", "hold", "release", "active"}
+        if verb not in allowed:
+            raise ValueError(f"wiki: `verb` must be one of {sorted(allowed)}, got {verb!r}")
+        args: dict = {"slug": slug} if slug else {}
+        return uds.output(f"wiki-{verb}", args)
+
+    # ── the MEME namespace — `meme_put` / `meme_get`, the MCP skin of the one placement function ──
+
+    def _meme_container(verb: str, recipe: "str | None", bag: "str | None") -> dict:
+        """THE CONTAINER LAW, validated CLIENT-SIDE before anything rides the wire: a content verb names
+        its container. Exactly one of `recipe`/`bag` stands; neither, or both, refuses as `no-container`
+        (the code the CLI and the daemon door answer). No default wiki exists: the daemon's own wiki
+        answers to its explicit name, `recipe="default"`. A slug rides bare (the `@` spelling stands
+        retired: refused, never stripped)."""
+        if recipe is not None and bag is not None:
+            raise ValueError(f"{verb}: no-container — name one of `recipe`/`bag`, never both "
+                             f"(got recipe={recipe!r}, bag={bag!r})")
+        if recipe is None and bag is None:
+            raise ValueError(f"{verb}: no-container — name where this verb reads or writes: `recipe` (as that "
+                             "wiki, e.g. \"lares\"; the daemon's own wiki answers to \"default\") or `bag` "
+                             "(that one bag). No default wiki exists.")
+        for key, slug in (("recipe", recipe), ("bag", bag)):
+            if slug is not None and (not slug or slug.startswith("@")):
+                raise ValueError(f"{verb}: `{key}` takes a bare slug (`sdm`, `lares`), got {slug!r} — "
+                                 "the `@` spelling stands retired")
+        return {"recipe": recipe} if recipe is not None else {"bag": bag}
+
+    def _meme_wire(verb: str, args: dict):
+        """Ride `lares_uds.call` and peel the receipt to the verb's own payload — a `null` output stays
+        `None` (an absent meme reads null, never the receipt envelope `uds.output` would hand back)."""
+        out = uds.call(verb, args)
+        summary = ((out.get("results") or {}).get("summary")) or {}
+        if summary.get("ok") is False:
+            raise uds.LaresVerbError(str(summary.get("error") or f"verb {verb!r} failed"))
+        return summary.get("output")
+
+    @mcp.tool()
+    def meme_put(uri: str, text: str, recipe: "str | None" = None, bag: "str | None" = None,
+                 base: "str | None" = None) -> dict:
+        """PLACE a meme's `text` at its `lar:` `uri` through the island's Confluence gate — mirrors
+        `lares meme put`. CONTAINER LAW: name exactly one of `recipe` (an edit AS that wiki; lands in its top
+        bag; `"default"` names the @daemon's own wiki) / `bag` (a residency placement; fails loud if the
+        island cannot write it); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). `base` carries the
+        canonical hash the writer read back from `meme_get` — the merge base: stale → the receipt's
+        `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
+        tombstoned, canonicalHash, warnings, diagnostics}. Rides the @daemon wire, never a store."""
+        args: dict = {**_meme_container("meme_put", recipe, bag), "uri": uri, "text": text}
+        if base is not None:
+            args["base"] = base
+        return _meme_wire("meme-put", args)
+
+    @mcp.tool()
+    def meme_get(uri: str, recipe: "str | None" = None, bag: "str | None" = None) -> "dict | None":
+        """READ a meme's text + canonical hash at its `lar:` `uri` — mirrors `lares meme get`. CONTAINER
+        LAW: exactly one of `recipe` / `bag` names where to read (`recipe="default"` names the @daemon's
+        own wiki); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). Returns {text, canonicalHash} — carry the
+        `canonicalHash` into `meme_put`'s `base` to write against what you read — or null when the meme
+        stands absent. Rides the @daemon wire, never a store."""
+        args: dict = {**_meme_container("meme_get", recipe, bag), "uri": uri}
+        # A reactor outcome never rides bare null, so the daemon answers `{uri, meme}`; the tool hands
+        # back the meme alone, as the contract spells it.
+        out = _meme_wire("meme-get", args) or {}
+        return out.get("meme")
+
+    @mcp.tool()
+    def meme_list(recipe: "str | None" = None, bag: "str | None" = None, tree: bool = False,
+                  after: "str | None" = None) -> dict:
+        """LIST every meme ROOT a seat holds, each with the canonical hash a writer hands back as `base` —
+        mirrors `lares meme list`. CONTAINER LAW: exactly one of `recipe` / `bag` names the seat
+        (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as `no-container`. Slugs ride bare. `tree` nests each root's slot tree
+        (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. A `bag` lists that bag's own
+        records; a named `recipe` lists the roots its whole stack resolves, each row naming the `bag` that
+        answered. THE LISTING PAGES: one answer carries a bounded page of roots in title order and `next`
+        names the cursor of the page behind it; hand it back as `after` until `next` reads null. Returns
+        {bag | recipe, roots, next}. A plain tiddler never lists. Rides the @daemon wire, never a store."""
+        args: dict = _meme_container("meme_list", recipe, bag)
+        if tree:
+            args["tree"] = True
+        if after:
+            args["after"] = after
+        return _meme_wire("meme-list", args)
+
+    @mcp.tool()
+    def meme_delete(uri: str, recipe: "str | None" = None, bag: "str | None" = None,
+                    base: "str | None" = None) -> dict:
+        """REMOVE the whole meme at its `lar:` `uri` — the root, its `#slot` fragments, its `/path`
+        children — through the one removal law; mirrors `lares meme delete`. CONTAINER LAW: exactly one
+        of `recipe` / `bag` (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as
+        `no-container`. Slugs ride bare. `base` carries the canonical
+        hash the writer read (the CLI's `--if-match`, the route's `If-Match`): stale → the receipt's
+        `decision` reads "conflict" and NOTHING moves; absent → the removal proceeds. Returns {uri,
+        decision: removed|absent|conflict, tombstoned, canonicalHash}. A tombstone hides (kāpae) — a
+        re-put restores. Rides the @daemon wire, never a store."""
+        args: dict = {**_meme_container("meme_delete", recipe, bag), "uri": uri}
+        if base is not None:
+            args["base"] = base
+        return _meme_wire("meme-delete", args)
+
+    @mcp.tool()
+    def meme_project(uri: str, to: str, recipe: "str | None" = None, bag: "str | None" = None) -> dict:
+        """RENDER the meme the island holds at its `lar:` `uri` to a target — mirrors `lares meme project
+        <uri> --to <target>`. `to` names the target: `mem` (the canonical carrier text) · `md` (the
+        submission markdown) · `html` · `tid` · `json`; the target rides as a parameter, never a suffix on
+        the verb. CONTAINER LAW: exactly one of `recipe` / `bag` names where to read
+        (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as `no-container`. Slugs ride bare. Returns {uri, to, text, contentType, meta?} — `meta` rides beside `text` for `md` (the `.md.meta` sidecar; the pair is one carrier in two files). Deterministic
+        and clock-free — currency proves by re-projecting, never by a stamp. Rides the @daemon wire."""
+        if to not in PROJECT_TARGETS:
+            raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
+        args: dict = {**_meme_container("meme_project", recipe, bag), "uri": uri, "to": to}
+        return _meme_wire("meme-project", args)
+
+    # ── the DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` and routes over the
+    #    @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The reads + reversible
+    #    re-settle run HOTL; promote·retire·purge gate HITL right here (guard_hitl, the surface twin of the
+    #    CLI's `--approve`) BEFORE routing, and the daemon executor re-checks the seat (E5, both surfaces). ──
+
+    @mcp.tool()
+    def roster() -> dict:
+        """ROSTER — every durable sensorium + its lifecycle facet (state · caps · half-life · retirement).
+        Mirrors `lares sense roster`. A read (HOTL). Routes over the @daemon wire."""
+        return uds.output("roster", {})
+
+    @mcp.tool()
+    def inspect(name: str) -> dict:
+        """INSPECT one sensorium's full manifest facets (caps · coupling · apertures · retirement) by name.
+        Mirrors `lares sense inspect <name>`. A read (HOTL)."""
+        return uds.output("inspect", {"name": name})
+
+    @mcp.tool()
+    def build(name: str, half_life: "int | None" = None) -> dict:
+        """BUILD a fresh EPHEMERAL pioneer sensorium (agent self-service; a retire undoes it → HOTL). Refuses
+        a name-collision LOUD. Mirrors `lares sense build <name> --ephemeral`; `half_life` tunes the hardening
+        decay (default the house floor)."""
+        args: dict = {"name": name}
+        if half_life is not None:
+            args["halfLife"] = half_life
+        return uds.output("build", args)
+
+    @mcp.tool()
+    def reconcile(name: "str | None" = None, all: bool = False) -> dict:
+        """RECONCILE — re-settle one sensorium (`name`) or every sensorium (`all`) against its evidence
+        (idempotent; the pure reducer writes only on change). Reversible re-settle → HOTL. Mirrors
+        `lares sense reconcile <name> | --all`."""
+        if not all and not name:
+            raise ValueError("reconcile: pass a sensorium `name` or `all=True`")
+        args: dict = {}
+        if all:
+            args["all"] = True
+        if name:
+            args["name"] = name
+        return uds.output("reconcile", args)
+
+    @mcp.tool()
+    def promote(name: str, approve: bool = False, store_swap: "str | None" = None) -> dict:
+        """PROMOTE a sensorium one rung (in-place field-flip: pioneer→hardening→durable). A designed one-way
+        commitment → HITL: `approve` MUST carry the operator-approval capability, else it refuses (the surface
+        twin of `lares sense promote <name> --approve`). `store_swap` re-points an alias (gated OFF)."""
+        guard_hitl("promote", approve or None)
+        args: dict = {"name": name, "approve": approve}
+        if store_swap:
+            args["storeSwap"] = store_swap
+        return uds.output("promote", args)
+
+    @mcp.tool()
+    def retire(name: str, grounds: str, approve: bool = False) -> dict:
+        """RETIRE a sensorium — a JUDGED tombstone recording the MUSTIE `grounds` (NO byte-delete; un-retire
+        restores). → HITL: `approve` MUST carry the operator-approval capability (twin of `lares sense retire
+        <name> --grounds <g> --approve`). Refuses LOUD without a valid ground."""
+        guard_hitl("retire", approve or None)
+        return uds.output("retire", {"name": name, "grounds": grounds, "approve": approve})
+
+    @mcp.tool()
+    def un_retire(name: str) -> dict:
+        """UN-RETIRE — restore a tombstoned sensorium to the state it stood at before the retire (pure
+        move-not-delete; the bytes never left). Reversible → HOTL. Mirrors `lares sense un-retire <name>`."""
+        return uds.output("un-retire", {"name": name})
+
+    @mcp.tool()
+    def purge(name: str, approve: bool = False) -> dict:
+        """PURGE — the irreversible byte GC (tombstone-only; refuses a live sensorium — retire it first).
+        → HITL: `approve` MUST carry the operator-approval capability (twin of `lares sense purge <name>
+        --approve`). This is the one verb that removes bytes; every other lifecycle verb moves-not-deletes."""
+        guard_hitl("purge", approve or None)
+        return uds.output("purge", {"name": name, "approve": approve})
+
+    return mcp
+
+
+class DaemonCoordinator:
+    """The verb-router that HOLDS NOTHING — every verb rides the @daemon cap-wire (`lares_uds`).
+
+    MCP speaks stdio-per-client, so a harness running N sessions runs N of these processes. A coordinator
+    that opened a ContentStore would therefore put N unsynchronized chroma clients on one index — and no
+    lock cures that, because the palace serve-holders speak NDJSON on raw stdin and answer only the
+    process that spawned them. Exactly ONE OWNER holds the palace — the @daemon — and everyone else asks it.
+
+    All the COMPUTE still runs py: the daemon routes to the py holders it owns, which embed, search, and
+    store. The TS coordinator carries the verb across and nothing else. This surface holds nothing.
+
+    A verb the daemon does not yet answer REFUSES. It never falls back to opening a store — a fallback
+    puts a second writer on the palace, the one thing this wire stands to prevent.
+    """
+
+    # The verbs the @daemon answers over the UDS cap-wire (`registry.register(...)` on the TS side): the
+    # read `recall`, the per-pointer `capture` (pour), plus the five lifecycle/plane verbs now wired onto
+    # the capture holder — `status`/taxonomy, the worldline `dag` read, the `cascade_kapae`/`cascade_un_kapae`
+    # branch-mute, and the cross-plane `plane_record`. Each routes to a serve-op on the ONE holder that owns
+    # the palace (content_io · worldline_io · structurepalace_io · form_encoder), serialized with capture so a
+    # mutation never races the live writer. A verb the wire does NOT yet carry refuses honestly through
+    # `_owed` rather than route to an unknown verb (the wall this surface names, not hides).
+    ROUTED = {"recall", "pour", "sweep", "status", "worldline", "kapae", "un_kapae", "plane_record", "rejim", "analyze", "ki", "li", "jing", "couple_r", "forecast", "mismatch"}
+
+    def __init__(self, wing: str = "wing_default") -> None:
+        self._wing = wing
+
+    def _owed(self, verb: str):
+        raise RuntimeError(
+            f"lares_mcp: `{verb}` has no @daemon verb yet, and this surface holds no store of its own. "
+            "Opening one would put a second writer on the palace (N sessions, N clients, one index). "
+            f"Owed: a node verb for `{verb}` that routes to the holder the daemon already owns."
+        )
+
+    def sweep(self, surface: str = "all", *, wing: "str | None" = None, project: "str | None" = None,
+              limit: "int | None" = None, room: str = "conversations",
+              sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the BULK backfill through the @daemon `sweep` op — the daemon's capture holder iterates every
+        # transcript through its ONE warm writer (model + store loaded once), so the compute lands there and
+        # this surface holds nothing. The routed spine both `lares sense sweep` (CLI) and the MCP `sweep` /
+        # `pour --all` reach. `surface` `all` folds claude+codex+copilot; project/limit narrow it.
+        args: dict = {"surface": surface, "wing": wing or self._wing, "room": room}
+        if project:
+            args["project"] = project
+        if limit is not None:
+            args["limit"] = limit
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("sweep", args)
+
+    def recall(self, query: str, k: int = 8, *, wing: "str | None" = None,
+               imago: "str | None" = None, sensorium_root: "str | None" = None,
+               lens: str = "content", **_) -> dict:
+        # The plane lenses (structure/form) ride the py engine directly; the daemon read-holder threads
+        # the CONTENT lens today, so a plane lens over the routed wire OWES the routing generalization.
+        if lens != "content":
+            self._owed(f"recall --lens {lens}")
+        args: dict = {"limit": k}
+        if imago:
+            args["imago"] = imago
+        else:
+            args["query"] = query
+        if wing or self._wing != "wing_default":
+            args["wing"] = wing or self._wing
+        # The addressed sensorium (an AI names it; the tool resolved it to a root) — the @daemon recall
+        # verb picks the holder by root up the cap-ladder. Absent → the memory default the daemon holds.
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("recall", args)
+
+    def pour(self, surface: str, pointer: str, *, all: bool = False, writeback: bool = False,
+             dry_run: bool = False, wing: "str | None" = None, room: str = "conversations",
+             sensorium_root: "str | None" = None, **_) -> dict:
+        # Route ONE pointer's capture through the @daemon `capture` verb (the same verb `lares sense pour`
+        # / harvest drives) — the daemon owns the capture holder, so the compute lands there, this surface
+        # holds nothing. Mirrors `recall` above: build the daemon's camelCase args, ride `uds.output`.
+        #
+        # The shaping args (all/writeback/dry_run) carry NO holder-side support on the `capture` verb (it
+        # accepts surface/pointer/wing/room/sensoriumRoot alone), so they REFUSE here rather than route and
+        # get silently dropped — dry_run=True would otherwise LAND for real on the append-only ground, the
+        # same footgun the standalone `LaresCoordinator.pour` guards. The sweep/writeback/preview shaping
+        # rides in when the @daemon (or capture_and_observe) grows it; until then, refusing keeps the wire
+        # honest.
+        if all:
+            # `pour --all` = the bulk backfill, now ROUTED onto the @daemon `sweep` op (the SAME spine `sweep`
+            # rides) — no refusal where the holder answers it.
+            return self.sweep(surface="all", wing=wing, room=room, sensorium_root=sensorium_root)
+        if writeback or dry_run:
+            raise NotImplementedError(
+                "pour writeback/dry_run: the @daemon `capture` verb carries no writeback/preview shaping, so "
+                "this routed surface refuses rather than silently drop them (dry_run would LAND on the "
+                "append-only ground) — owed: the shaping verb on the daemon or in capture_and_observe")
+        args: dict = {"surface": surface, "pointer": pointer, "wing": wing or self._wing, "room": room}
+        # The addressed sensorium (an AI names it; the tool resolved it to a root) — the @daemon capture
+        # verb picks the holder by root up the cap-ladder. Absent → the memory default the daemon holds.
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("capture", args)
+
+    def status(self, *, sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the taxonomy read through the @daemon `status` verb — the daemon's capture holder owns the
+        # ONE content store and answers `content_store.taxonomy()`. Mirrors `recall`/`pour`: no store here.
+        args: dict = {}
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("status", args)
+
+    def worldline(self, selector: "str | None" = None, *, as_of=None,
+                  sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the fork-DAG read through the @daemon `worldline` verb. `selector` stays a CLI-skin concern
+        # (it narrows the RETURNED whole edge-DAG); the py `dag` renders whole and never reads it, so it does
+        # NOT cross the wire — the arg is accepted for CLI-parity, applied caller-side. `as_of` rides the slice.
+        args: dict = {}
+        if as_of is not None:
+            args["asOf"] = as_of
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("worldline", args)
+
+    def kapae(self, branch: str, tick, *, sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the branch-mute cascade through the @daemon `kapae` verb — the holder mutes across the ONE
+        # content store it owns, serialized with capture (never a second writer). Move-not-delete; un_kapae restores.
+        args: dict = {"branch": branch, "tick": tick}
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("kapae", args)
+
+    def un_kapae(self, branch: str, tick, *, sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the branch RESTORE cascade through the @daemon `un_kapae` verb — the reverse of `kapae`.
+        args: dict = {"branch": branch, "tick": tick}
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("un_kapae", args)
+
+    def plane_record(self, cid: str, *, sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the cross-plane witness through the @daemon `plane_record` verb — the holder reads its own
+        # content handle + fresh structure/form readers (one shared `plane_query` implementation).
+        args: dict = {"cid": cid}
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("plane_record", args)
+
+    def rejim(self, *, repour: bool = False, channel: str = "content",
+              sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the rhythm/geology READ through the @daemon `rejim` verb (registry.register("rejim") →
+        # readRejim on the holder that owns the store). `repour` first rides the reversible `refresh` verb
+        # narrowed to the rejim enrichment (which="rejim") — re-derives on the holder's serialized pipe,
+        # never a second writer — then reads the landed plane.
+        args: dict = {}
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        if repour:
+            refresh_args: dict = {"which": "rejim"}
+            if sensorium_root:
+                refresh_args["sensoriumRoot"] = sensorium_root
+            uds.output("refresh", refresh_args)
+        return uds.output("rejim", args)
+
+    def analyze(self, *, spectral: bool = False, halves=None, span: int = 6,
+                sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the DETECT-ONLY change-point read through the @daemon `analyze` verb (registry.register
+        # ("analyze") → the holder's analyze serve-op over the store it owns). Read-only, blind to any
+        # ground-truth (the wall stays uncrossed). The wire names the span `sample`.
+        args: dict = {}
+        if spectral:
+            args["spectral"] = spectral
+        if halves:
+            args["halves"] = halves
+        if span is not None:
+            args["sample"] = span
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("analyze", args)
+
+    def ki(self, *, sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the Ki coupling verdict to the @daemon `ki` verb (registry.register("ki") → the node's TS
+        # readMemeticWikitextCoupling, the H¹-gated fuse). Routed-only: the cohomology lives in the hull, not python.
+        args: dict = {}
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("ki", args)
+
+    def li(self, *, sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the Li gluing verdict to the @daemon `li` verb (registry.register("li") → the node's TS
+        # readCohere, the li-radius + H¹-gated fuse). Routed-only: the cohomology lives in the hull, not python.
+        args: dict = {}
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("li", args)
+
+    def jing(self, *, sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the Jing coherence verdict to the @daemon `jing` verb (registry.register("jing") → the node's
+        # TS readJing, the li∘ki round-trip). Routed-only: the cohomology lives in the hull, not python.
+        args: dict = {}
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("jing", args)
+
+    def couple_r(self, *, rows=None, names=None, **kw) -> dict:
+        # Route the R coupling reference to the @daemon `couple-r` verb (registry.register("couple-r") → the
+        # capture_session couple_r serve-op → couple_streams → coupling.R). Stateless matrix→verdict.
+        args: dict = {"rows": rows or [], **({"names": list(names)} if names else {})}
+        for k in ("shuffles", "nboot", "seed", "alpha"):
+            if k in kw and kw[k] is not None:
+                args[k] = kw[k]
+        return uds.output("couple-r", args)
+
+    def forecast(self, *, rows=None, **kw) -> dict:
+        # Route the R early-warning forecast to the @daemon `forecast` verb (→ capture_session forecast
+        # serve-op → forecast_ews → ews.R). Stateless matrix→verdict.
+        args: dict = {"rows": rows or []}
+        for k in ("window", "nsurr", "alpha", "minbands", "seed"):
+            if k in kw and kw[k] is not None:
+                args[k] = kw[k]
+        return uds.output("forecast", args)
+
+    def mismatch(self, *, rows=None, names=None, **_) -> dict:
+        # Route the ki↔R comparator to the @daemon `mismatch` verb — the daemon runs the TS-hull coupling
+        # (coupleMesh) beside the R couple_r serve-op and diffs. Only the daemon reaches BOTH hulls.
+        args: dict = {"rows": rows or [], **({"names": list(names)} if names else {})}
+        return uds.output("mismatch", args)
+
+    def flow(self, *, petname=None, targets=None, rows=None, names=None,
+             sensorium_root: "str | None" = None, **_) -> dict:
+        # Route the composed-flow runner to the @daemon `flow` verb — the daemon looks the pet-named cap-stack
+        # up (flowSeedByPetname) and runs each step routed by hull. Bare (no petname) lists the flow-set. Only
+        # the daemon reaches both hulls, so every flow routes here. A target without a signal auto-extracts
+        # one from the target's child streams (feature-gated: empty until the re-pour lands child signals).
+        args: dict = {}
+        if petname:
+            args["petname"] = petname
+        if targets:
+            args["targets"] = list(targets)
+        if rows:
+            args["rows"] = rows
+        if names:
+            args["names"] = list(names)
+        if sensorium_root:
+            args["sensoriumRoot"] = sensorium_root
+        return uds.output("flow", args)
+
+
+def main() -> None:
+    import argparse
+
+    ap = argparse.ArgumentParser(description="lares_mcp — the isomorphic /mcp surface over the lares sensorium")
+    ap.add_argument("--sensorium", help="the sensorium dir (STANDALONE only — opens the stores directly; "
+                                     "unsafe with more than one live session)")
+    ap.add_argument("--wing", default="wing_default", help="the default wing for captures lacking one")
+    ap.add_argument("--standalone", action="store_true",
+                    help="open the stores directly instead of routing through the @daemon. ONE session only.")
+    args = ap.parse_args()
+
+    # ROUTED runs by default, and alone survives multiple sessions: the @daemon owns the holders, this
+    # process owns nothing. `--standalone` opens the single-session escape hatch (a test-bed, a dead
+    # node), and names its cost rather than pretending the direct open comes free.
+    if args.standalone:
+        if not args.sensorium:
+            ap.error("--standalone needs --sensorium")
+        coordinator = LaresCoordinator(args.sensorium, wing=args.wing)
+    else:
+        if not uds.available():
+            raise SystemExit(
+                f"lares_mcp: no lares daemon at {uds.socket_path()} — start one with `lares vessel stand --foreground`.\n"
+                "  This surface routes every verb through the @daemon so the palace keeps ONE owner.\n"
+                "  For a single-session direct open, pass --standalone --sensorium <dir>."
+            )
+        coordinator = DaemonCoordinator(wing=args.wing)
+
+    build_mcp(coordinator).run()   # stdio MCP serve
+
+
+if __name__ == "__main__":
+    main()

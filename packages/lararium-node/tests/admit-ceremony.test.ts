@@ -1,0 +1,232 @@
+/**
+ * admit-ceremony.test.ts — the whole crossing, end to end, as a PURE FUNCTION OF ITS BYTES.
+ *
+ * A vessel FOUNDS a PersonaGroup. It ADMITS a second vessel by signing that vessel's edge. The admit is
+ * CARRIED (never fetched) as bytes. The second vessel APPLIES it and comes up BOUND to the first — pinned
+ * to a signer it could not have written for itself.
+ *
+ * Nothing here stands a relay, opens a socket, or reads a clock. That is not a convenience; it is the
+ * DESIGN showing through. The admit is a signed capability, so it needs no trusted channel and no reachable
+ * issuer — and a thing that needs neither is a thing you can test with two Repos and a string. A design in
+ * which the vessel FETCHED its own admission could never be tested this way: it would need a server, a
+ * reachable authority, and a moment at which both were true.
+ *
+ * The ceremony is platform-blind (ceremony-core imports no `node:` anything), so what passes here is what
+ * runs in Ichi the browser vessel. This suite lives in node because it runs in milliseconds there.
+ */
+import { describe, test, expect } from "vitest";
+import { Repo } from "@automerge/automerge-repo";
+import type { AutomergeUrl } from "@automerge/automerge-repo";
+import { runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload, veilFromDeviceKey, mintDeviceMintedKey, KeyhiveProvider, InMemoryEventStore } from "@lararium/keyhive";
+import * as ed25519 from "@noble/ed25519";
+import { hex, personaKelBoardDocUrl, materializeSharedLarDoc, personaKelChainForPrefix } from "@lararium/mesh";
+import { tiddlerText } from "@lararium/mesh";
+
+/** The founder's own persona-KEL chain, read back off the per-Nexus board the founding seated — REQUIRED
+ *  on every device-admit payload now (early alpha, no back-compat): a payload minted without it would have
+ *  the joinee RE-FOUND rather than join, so this reads it the same way the production CLI does. */
+async function founderPersonaKelChain(founder: Awaited<ReturnType<typeof found>>) {
+  const kelBoard = await materializeSharedLarDoc(founder.repo, personaKelBoardDocUrl(founder.verifyingKey), "board:persona-kel");
+  const chain = personaKelChainForPrefix(kelBoard.doc(), founder.f.personaKelPrefix);
+  if (!chain) throw new Error("test fixture: founder seated no KEL chain for its own prefix");
+  return chain;
+}
+
+/** The verifying key a seed yields — the vessel's public half, hex, as the ceremony wants it. */
+const pubOf = async (seed: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(seed));
+
+/**
+ * The carriage, round-tripped HERE rather than borrowed from @lararium/browser — node must not depend on
+ * browser, and the FRAGMENT is a browser concern. What matters to this test is the invariant both sides
+ * share: the admit crosses as BYTES. @lararium/browser tests the fragment parser against fixed strings;
+ * this proves the payload itself survives being reduced to a string and back, which is the only property
+ * the ceremony actually leans on.
+ */
+const carry = <T>(payload: T): T =>
+  JSON.parse(Buffer.from(Buffer.from(JSON.stringify(payload), "utf8").toString("base64url"), "base64url").toString("utf8")) as T;
+
+/** Fixed seeds — the test is a constant, never a sample. */
+const FOUNDER_SEED = new Uint8Array(32).fill(7);
+const JOINEE_SEED  = new Uint8Array(32).fill(11);
+
+/** The founder's vessel: its own Repo, its own PersonaGroup. */
+async function found() {
+  const repo = new Repo({ sharePolicy: async () => true });
+  const verifyingKey = await pubOf(FOUNDER_SEED);
+  const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
+    repo,
+    vesselSeed:         FOUNDER_SEED,
+    vesselVerifyingKey: verifyingKey,
+    vesselDisplayName:  "The Strandbeest Shrine",
+    binding: { mode: "self-stood", signerSeed: FOUNDER_SEED },
+    hearthTrueName:       "",
+    nexusPubkey:          verifyingKey,
+  });
+  return { repo, f, verifyingKey };
+}
+
+describe("the admit ceremony — found · admit · carry · apply · BOUND", () => {
+  test("a joinee comes up pinned to a signer it could not have written for itself", async () => {
+    const founder = await found();
+    const joineeKey = await pubOf(JOINEE_SEED);
+
+    // ── ADMIT. The founder's PersonaGroup ROOT signs the joinee's edge. The joinee is not present; it
+    //    supplies only its PUBLIC key. Nothing secret crosses.
+    const payload = await runDeviceAdmitEdge({
+      signerSeed:         FOUNDER_SEED,
+      joineeVerifyingKey: joineeKey,
+      personaKelPrefix:   founder.f.personaKelPrefix,
+      personaKelChain:    await founderPersonaKelChain(founder),
+      hearthTrueName:     founder.f.hearthTrueName ?? "bafyHearth",
+      personaGroupId:   founder.f.personaGroupId,
+      meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
+      syncUrl:      null,
+      islandDocUrl: null,
+      hearthDaemonUrl: founder.f.daemonUrl,
+      personaUrl:   founder.f.personaUrl,
+    } as Parameters<typeof runDeviceAdmitEdge>[0]);
+
+    // ── CARRY. The payload leaves as bytes and arrives as bytes. This IS the channel — a paste, a QR, a
+    //    fragment, a stick. A carrier may withhold it; none can forge it.
+    const carried = carry(payload);
+    expect(carried, "the carriage must survive the round trip").toEqual(payload);
+
+    // ── APPLY. A DIFFERENT Repo — a different vessel entirely.
+    const joineeRepo = new Repo({ sharePolicy: async () => true });
+    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
+      repo:                 joineeRepo,
+      vesselSeed:         JOINEE_SEED,
+      vesselVerifyingKey: joineeKey,
+      vesselDisplayName:  "Ichi",
+      payload:              carried,
+      nexusPubkey:          joineeKey,
+    });
+
+    // ── THE ADMIT HANDS OUT THE JOINEE'S ARCHIVE, AND A SECOND ADMIT OVER A KEPT ARCHIVE RESTORES FROM IT. The
+    //    archive behind the card: it restores the joinee's own individual. Handed back in as `archiveBytes` with a
+    //    sentinel only the kept archive holds, the next archive still knows that sentinel.
+    const kept = new KeyhiveProvider();
+    await kept.init({ seed: JOINEE_SEED, eventStore: new InMemoryEventStore(), archiveBytes: applied.archive });
+    const marker = await kept.createSentinelDoc("lar:///t.witness/kept-by-the-joinee-archive");
+    const again = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
+      repo: new Repo({ sharePolicy: async () => true }), vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey,
+      vesselDisplayName: "Ichi", payload: carried, nexusPubkey: joineeKey, archiveBytes: await kept.exportArchive(),
+    });
+    const restored = new KeyhiveProvider();
+    await restored.init({ seed: JOINEE_SEED, eventStore: new InMemoryEventStore(), archiveBytes: again.archive });
+    expect(await restored.knowsAgent(marker.agentIdHex), "the admit kept what the standing archive held").toBe(true);
+    const fresh = new KeyhiveProvider();
+    await fresh.init({ seed: JOINEE_SEED, eventStore: new InMemoryEventStore(), archiveBytes: applied.archive });
+    expect(await fresh.knowsAgent(marker.agentIdHex), "control: the first archive never held it").toBe(false);
+
+    // ── BOUND. The joinee pins the FOUNDER's signer — the whole difference between joining a group and
+    //    declaring one. A vessel cannot mint this for itself; that is what makes it an admission.
+    expect(carried.signerDid).toBe(payload.signerDid);
+    expect(carried.signerDid).not.toBe(joineeKey);
+    expect(carried.deviceEdge).toBeTruthy();
+
+    // It seeds its OWN sovereign social docs (the daemon bag stays sovereign-per-vessel) …
+    for (const url of [applied.identitiesUrl, applied.circlesUrl, applied.sessionsUrl, applied.daemonUrl]) {
+      expect(url, "the joinee seeds its own sovereign docs").toMatch(/^automerge:/);
+    }
+    // … and adopts the founder's persona doc — membership is what CROSSES.
+    expect(applied.personaUrl).toBe(founder.f.personaUrl);
+  });
+
+  test("payload capEvents land in the daemon doc as cap-events — ready for boot hydration into the keyhive", async () => {
+    // The daemon packs these (packPersonaCrossing) to admit the vessel into the KEYHIVE PersonaGroup so it
+    // can decrypt content shared through the catalog registry. Here dummy blobs prove the joinee-side WRITE
+    // lands them in the store format boot's hydrateFromEventStore reads even when keyhive REFUSES to read
+    // them — the read may fail, the record may not (the typed-ingest path is proven in lararium-keyhive's
+    // cap-event-absorption).
+    const founder = await found();
+    const joineeKey = await pubOf(JOINEE_SEED);
+    const base = await runDeviceAdmitEdge({
+      signerSeed:             FOUNDER_SEED,
+      joineeVerifyingKey:     joineeKey,
+      personaKelPrefix:       founder.f.personaKelPrefix,
+      personaKelChain:        await founderPersonaKelChain(founder),
+      hearthTrueName:         "bafyHearth",
+      personaGroupId:   founder.f.personaGroupId,
+      meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
+      syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+    } as Parameters<typeof runDeviceAdmitEdge>[0]);
+    const capEvents = ["bWVtYmVyc2hpcC1vcC0x", "bWVtYmVyc2hpcC1vcC0y"];   // base64 blobs
+    const payload = { ...base, capEvents };
+
+    const joineeRepo = new Repo({ sharePolicy: async () => true });
+    const applied = await runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
+      repo: joineeRepo, vesselSeed: JOINEE_SEED, vesselVerifyingKey: joineeKey,
+      vesselDisplayName: "Ichi", payload, nexusPubkey: joineeKey,
+    });
+
+    const handle = await joineeRepo.find(applied.daemonUrl as AutomergeUrl);
+    const doc = await handle.doc() as { tiddlers: Record<string, unknown> };
+    const capTiddlers = Object.keys(doc.tiddlers).filter((t) => t.includes("/cap/"));
+    // The crossing's own events, PLUS the ones the joinee's keyhive fires standing itself (its card mint) —
+    // the admit path writes its event store to the daemon doc the same way the founding path does, so a
+    // boot replays this vessel's whole lattice rather than the crossing alone.
+    const texts = capTiddlers.map((t) => tiddlerText(doc.tiddlers[t] as never));
+    for (const ev of capEvents) expect(texts, "a crossing event never reached the doc").toContain(ev);
+    expect(capTiddlers.length).toBeGreaterThanOrEqual(capEvents.length);
+  });
+
+  test("the ceremony is DETERMINISTIC — the same seeds yield the same binding, every run", async () => {
+    const mint = async () => {
+      const founder = await found();
+      const joineeKey = await pubOf(JOINEE_SEED);
+      const payload = await runDeviceAdmitEdge({
+        signerSeed:         FOUNDER_SEED,
+        joineeVerifyingKey: joineeKey,
+        personaKelPrefix:   founder.f.personaKelPrefix,
+        personaKelChain:    await founderPersonaKelChain(founder),
+        hearthTrueName:     "bafyHearth",
+        personaGroupId:   founder.f.personaGroupId,
+        meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
+        syncUrl: null, islandDocUrl: null, hearthDaemonUrl: founder.f.daemonUrl, personaUrl: founder.f.personaUrl,
+      } as Parameters<typeof runDeviceAdmitEdge>[0]);
+      return payload;
+    };
+    const a = await mint();
+    const b = await mint();
+
+    // THE BINDING is a constant of the seeds — the signer, the delegate, the hearth. Two mints agree.
+    expect(a.signerDid).toBe(b.signerDid);
+    expect(a.deviceEdge.personaRootDid).toBe(b.deviceEdge.personaRootDid);
+    expect(a.deviceEdge.deviceVerifyingKey).toBe(b.deviceEdge.deviceVerifyingKey);
+    expect(a.deviceEdge.hearthTrueName).toBe(b.deviceEdge.hearthTrueName);
+
+    // THE LEASE decays the edge, never a clock: no instant rides it, so two mints at one lease epoch are
+    // the same bytes. Standing still decays unless fed — the PersonaGroup's lease epoch rolls past
+    // `boundEpoch` and the edge reads stale at every door that reads the frontier.
+    expect(a.deviceEdge).not.toHaveProperty("issuedAt");
+    expect(a.deviceEdge).not.toHaveProperty("expiresAt");
+    expect(a.deviceEdge.boundEpoch).toBe(b.deviceEdge.boundEpoch);
+    expect(a.deviceEdge).toEqual(b.deviceEdge);
+  });
+
+  test("a joinee REFUSES a payload whose binding is incomplete — never a half-bound daemon doc", async () => {
+    const founder = await found();
+    const joineeKey = await pubOf(JOINEE_SEED);
+    const repo    = new Repo({ sharePolicy: async () => true });
+
+    // The binding IS the joinee's whole authority. A half-applied admit is the confused-deputy hole: a
+    // vessel that believes it holds a delegation nobody signed.
+    await expect(runApplyAdmitPayload({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(JOINEE_SEED)),
+      repo,
+      vesselSeed:         JOINEE_SEED,
+      vesselVerifyingKey: joineeKey,
+      vesselDisplayName:  "Ichi",
+      nexusPubkey:          joineeKey,
+      payload: {
+        kind: "device-admit/v1",
+        signerDid: "",                       // ← the binding is hollow
+        deviceEdge: { title: "e" },
+        hearthTrueName: "bafyHearth",
+        personaGroupId:   founder.f.personaGroupId,
+        meshCabalDocIdHex:      founder.f.meshCabalDocIdHex,
+        syncUrl: null,
+      } as never,
+    })).rejects.toThrow(/refusing to admit/i);
+  });
+});

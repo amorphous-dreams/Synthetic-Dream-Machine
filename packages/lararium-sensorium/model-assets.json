@@ -1,0 +1,11 @@
+{
+  "schema": "lararium.sensorium.trial-model-assets.v1",
+  "model": "minilm",
+  "dimensions": 384,
+  "package": "chromadb==1.5.9",
+  "cache_path": ".cache/chroma/onnx_models/all-MiniLM-L6-v2",
+  "files": {
+    "onnx.tar.gz": "913d7300ceae3b2dbc2c50d1de4baacab4be7b9380491c27fab7418616a16ec3",
+    "onnx/model.onnx": "4f148ba8ae9c2c7fbee4af2b132db8d06c6a6545b47fc83bbb98c3d22b8393e6"
+  }
+}

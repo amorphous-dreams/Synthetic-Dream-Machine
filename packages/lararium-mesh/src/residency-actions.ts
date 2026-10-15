@@ -1,0 +1,554 @@
+/**
+ * residency-actions — SPARQL-derived ALL-CAPS ACTION verbs for the residency
+ * model. Operator gestures over multi-bag tiddler residency.
+ *
+ * The ACTION verb surface composes ON TOP of verb-tiddler.ts (M.2 pipeline).
+ * An ACTION arrives as a Verb whose `verb` field carries one of
+ * ACTION_VERBS; per-verb arguments ride inside the existing JSON `args` field.
+ * No new URI prefix exists for actions — they reuse:
+ *
+ *   VERB_URI_PREFIX         volatile local invocation (daemon VM scratch)
+ *   SUMMONS_URI_PREFIX  Automerge-backed remote vessel signal
+ *   OUTCOME_URI_PREFIX Automerge-backed durable outcome
+ *
+ * Verb semantics (SPARQL Update derivation):
+ *
+ *   ADD    grant <title> residency in <toBag>; <fromBag> retains its copy.
+ *   COPY   overwrite <toBag>'s version of <title> with <fromBag>'s; both keep history.
+ *   MOVE   atomic ADD to <toBag> + CLEAR <title> from <fromBag> (transfer pair).
+ *   CLEAR  empty <bag> (preserve bag identity; effect log retained).
+ *   DROP   retire <bag> entirely (with disposition record).
+ *   LOAD   bring external content from <sourceUri> into <toBag>.
+ *
+ * change-id discipline (Anti-pattern #1 defense):
+ *   Every ADD / COPY / MOVE / LOAD carries a `changeId`. The same tiddler-content
+ *   identity travels across bags through ADD / COPY / MOVE so that downstream
+ *   tooling recognises "same change, different bag" rather than minting a new
+ *   identity on copy. LOAD mints a fresh changeId (external content carries no
+ *   prior mesh identity). CLEAR / DROP operate on whole bags and carry no
+ *   changeId.
+ *
+ * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
+ * Source:  packages/lararium-mesh/src/residency-actions.ts
+ */
+
+import {
+  VERB_URI_PREFIX, SUMMONS_URI_PREFIX,
+} from "./verb-tiddler.js";
+import type { Verb } from "./verb-tiddler.js";
+
+// ── ACTION verb set ────────────────────────────────────────────────────────
+
+/**
+ * The single tagged base every verb-membership set derives from by filter — one row per
+ * ACTION verb, ALL-CAPS by convention. A single table keeps ACTION_VERBS / TRANSFER_VERBS /
+ * BAG_VERBS from drifting out of step as three independently hand-typed lists would (a verb
+ * added to ACTION_VERBS but forgotten in TRANSFER_VERBS would silently fall through isTransferVerb).
+ * This table is the one place a verb's membership gets declared; the subsets below read it off.
+ */
+const ACTION_VERB_TABLE = [
+  { verb: "ADD",    transfer: true,  bagOp: false, writesBag: true  },
+  { verb: "COPY",   transfer: true,  bagOp: false, writesBag: true  },
+  { verb: "MOVE",   transfer: true,  bagOp: false, writesBag: true  },
+  { verb: "CLEAR",  transfer: false, bagOp: true,  writesBag: true  },
+  { verb: "DROP",   transfer: false, bagOp: true,  writesBag: false },
+  { verb: "LOAD",   transfer: false, bagOp: false, writesBag: true  },
+  { verb: "INGEST", transfer: false, bagOp: false, writesBag: true  },
+  { verb: "CREATE", transfer: false, bagOp: false, writesBag: false },
+] as const;
+
+export type ActionVerb = typeof ACTION_VERB_TABLE[number]["verb"];
+
+/** Canonical ACTION verb tuple. ALL-CAPS by convention. Derived from ACTION_VERB_TABLE. */
+export const ACTION_VERBS: readonly ActionVerb[] = ACTION_VERB_TABLE.map((e) => e.verb);
+
+const ACTION_VERB_SET: ReadonlySet<string> = new Set(ACTION_VERBS);
+
+/** Type guard for ACTION verbs. */
+export function isActionVerb(verb: string): verb is ActionVerb {
+  return ACTION_VERB_SET.has(verb);
+}
+
+export type TransferVerb = Extract<typeof ACTION_VERB_TABLE[number], { readonly transfer: true }>["verb"];
+
+/** ACTION verbs that transfer a tiddler between bags (carry title + fromBag + toBag + changeId).
+ *  Derived by filtering ACTION_VERB_TABLE's `transfer` flag — never a separately hand-typed list. */
+export const TRANSFER_VERBS: readonly TransferVerb[] =
+  ACTION_VERB_TABLE.filter((e): e is typeof ACTION_VERB_TABLE[number] & { transfer: true } => e.transfer)
+    .map((e) => e.verb);
+const TRANSFER_VERB_SET: ReadonlySet<string> = new Set(TRANSFER_VERBS);
+export function isTransferVerb(verb: string): verb is TransferVerb {
+  return TRANSFER_VERB_SET.has(verb);
+}
+
+export type BagVerb = Extract<typeof ACTION_VERB_TABLE[number], { readonly bagOp: true }>["verb"];
+
+/** ACTION verbs that operate on a whole bag (carry bag only).
+ *  Derived by filtering ACTION_VERB_TABLE's `bagOp` flag — never a separately hand-typed list. */
+export const BAG_VERBS: readonly BagVerb[] =
+  ACTION_VERB_TABLE.filter((e): e is typeof ACTION_VERB_TABLE[number] & { bagOp: true } => e.bagOp)
+    .map((e) => e.verb);
+const BAG_VERB_SET: ReadonlySet<string> = new Set(BAG_VERBS);
+export function isBagVerb(verb: string): verb is BagVerb {
+  return BAG_VERB_SET.has(verb);
+}
+
+export type BagWritingVerb = Extract<typeof ACTION_VERB_TABLE[number], { readonly writesBag: true }>["verb"];
+
+/** ACTION verbs that write into a standing bag's doc, so a retired bag refuses them.
+ *  Derived by filtering ACTION_VERB_TABLE's `writesBag` flag — never a separately hand-typed list.
+ *  CLEAR tombstones into the bag's doc; DROP only retires (a re-DROP answers retiredCount 0);
+ *  CREATE is the cure that stands a fresh bag. */
+export const BAG_WRITING_VERBS: readonly BagWritingVerb[] =
+  ACTION_VERB_TABLE.filter((e): e is typeof ACTION_VERB_TABLE[number] & { writesBag: true } => e.writesBag)
+    .map((e) => e.verb);
+const BAG_WRITING_VERB_SET: ReadonlySet<string> = new Set(BAG_WRITING_VERBS);
+export function writesBag(verb: string): verb is BagWritingVerb {
+  return BAG_WRITING_VERB_SET.has(verb);
+}
+
+// ── ResidencyAction discriminated union ────────────────────────────────────
+
+/** Common fields carried by every ACTION. */
+interface ResidencyActionBase {
+  readonly requestId:   string;
+  readonly requestedBy: string;
+}
+
+/** ADD — grant title residency in toBag; fromBag retains its copy. */
+export interface AddAction extends ResidencyActionBase {
+  readonly verb:        "ADD";
+  readonly title:       string;
+  readonly fromBag:     string;
+  readonly toBag:       string;
+  readonly changeId:    string;
+}
+
+/** COPY — overwrite toBag's version of title with fromBag's; both keep history. */
+export interface CopyAction extends ResidencyActionBase {
+  readonly verb:        "COPY";
+  readonly title:       string;
+  readonly fromBag:     string;
+  readonly toBag:       string;
+  readonly changeId:    string;
+}
+
+/** MOVE — atomic ADD to toBag + CLEAR title from fromBag (transfer pair). */
+export interface MoveAction extends ResidencyActionBase {
+  readonly verb:        "MOVE";
+  readonly title:       string;
+  readonly fromBag:     string;
+  readonly toBag:       string;
+  readonly changeId:    string;
+  readonly shadow?:    true;
+}
+
+/** CLEAR — empty bag (preserve bag identity; effect log retained). */
+export interface ClearAction extends ResidencyActionBase {
+  readonly verb:        "CLEAR";
+  readonly bag:         string;
+}
+
+/** DROP — retire bag entirely with disposition record. */
+export interface DropAction extends ResidencyActionBase {
+  readonly verb:        "DROP";
+  readonly bag:         string;
+}
+
+/** CREATE — mint a NEW empty bag at `bag` (fresh AutomergeUrl), register it in
+ *  the plane's registry. `plane` designates the authority root: `catalog`
+ *  (user/household plane, default) vs `oracle` (system/temple plane). The cap-gate
+ *  reads the plane (read@catalog / admin@oracle). */
+export interface CreateAction extends ResidencyActionBase {
+  readonly verb:        "CREATE";
+  readonly bag:         string;
+  readonly plane:       "catalog" | "oracle";
+}
+
+/** One carrier of external content riding a LOAD verb. The operator-side
+ *  gesture (which holds the disk/fetch grant) reads the source and sends the
+ *  content WITH the verb — eventual-send, no island reach-back. `title` is
+ *  optional when the carrier's own meta block names its uri-path. */
+export interface LoadCarrier {
+  readonly title?: string;
+  /** File extension (e.g. ".mem", ".tid", ".json") — lets the island route a
+   *  non-memetic carrier through TW5's own deserializer registry by content-type.
+   *  Absent → the island treats the text as a memetic-wikitext carrier. */
+  readonly ext?:   string;
+  /** The carrier body. A verb NEVER inlines a body: the operator gesture stages it
+   *  to the corpus CAS and rides `textCid` instead. `text` carries a small in-line
+   *  carrier, and the island resolves `textCid` → `text` before use. Exactly one of
+   *  `text` / `textCid` MUST hold. */
+  readonly text?:  string;
+  /** Content-address (hex sha256) of the carrier body staged in the corpus CAS.
+   *  The island resolves it via `resolveByCid` and re-verifies `cid == hash(bytes)`
+   *  — content-addressed trust, no host trust. This keeps the giant Text out of the
+   *  daemon command doc (the automerge scalar-string capacity wall). */
+  readonly textCid?: string;
+  /** Raw `.meta` sidecar text for a content filetype (a `.md`/image/… carrier
+   *  keeps its fields beside the body). The island parses it (TW5's own field
+   *  parser) and seeds the deserialize, so an edit to the body never drops the
+   *  sidecar's type/tags/custom fields. Absent → no sidecar. */
+  readonly meta?:  string;
+  /** The body's byte length — metadata; the body lives in the CAS. Lets the island decide
+   *  skinny-vs-inline WITHOUT resolving the bytes. */
+  readonly size?:  number;
+  /** The gesture flags an OVERSIZED RAW shard: the island writes a skinny handle (cid +
+   *  integrity, no body) rather than materialize the body as a CRDT text field
+   *  (content-resolution.mem Scenario B). */
+  readonly skinny?: boolean;
+}
+
+/** LOAD — bring external content from sourceUri into toBag. Mints fresh changeId.
+ *  `sourceUri` carries provenance for the audit trail; the CONTENT rides in
+ *  `carriers` (islands hold no fetch capability — web3-only law: no reach-out). */
+export interface LoadAction extends ResidencyActionBase {
+  readonly verb:        "LOAD";
+  readonly sourceUri:   string;
+  readonly toBag:       string;
+  readonly changeId:    string;
+  readonly carriers?:   readonly LoadCarrier[];
+}
+
+/** One carrier riding an INGEST verb — the Confluence triangle's inputs travel WITH
+ *  the content: the gesture (which holds the disk grant + the Synced tree)
+ *  computes diskHash and reads syncedHash; the island computes only the
+ *  currentRenderHash from its own merge seat (readiness reads local). */
+export interface IngestCarrier {
+  /** The carrier-root lar: URI this disk path projects. */
+  readonly uri:        string;
+  /** The local file path the gesture read this carrier from, when it read one; a refusal names it. */
+  readonly file?:      string;
+  /** The settled carrier body (quiet + stat-stable + hash-confirmed by the gesture).
+   *  A verb NEVER inlines a body: the gesture stages it to the corpus CAS and rides
+   *  `textCid` instead. `text` carries a small in-line carrier, and the island
+   *  resolves `textCid` → `text` before the Confluence gate. Exactly one of `text` /
+   *  `textCid` MUST hold. */
+  readonly text?:      string;
+  /** Content-address (hex sha256) of the carrier body staged in the corpus CAS. The
+   *  island resolves it via `resolveByCid` and re-verifies `cid == hash(bytes)`. This
+   *  keeps a 16MB carrier out of the daemon command doc, whose automerge scalar-string
+   *  value overflows past ~2^24 chars. */
+  readonly textCid?:   string;
+  /** Hash of text, computed gesture-side. */
+  readonly diskHash:   string;
+  /** The MERGE BASE — the hash the writer last read, whichever door it wrote
+   *  through: a disk gesture carries the Synced tree's last-projected hash; a
+   *  text-writer (`meme put`) carries the `canonicalHash` it read back from
+   *  `meme get`. One slot, one truth: the Confluence gate reads it as the base
+   *  a writer stood on, so a stale base surfaces as a conflict rather than a
+   *  silent overwrite. null = the writer read nothing (never projected / never
+   *  read) → the gate adopts. */
+  readonly syncedHash: string | null;
+  /** THE BASE'S RECORDS SIDE. Disk and records co-project one carrier, each in its own grain, so the
+   *  last agreement holds two hashes: what the disk held (`syncedHash`) and what the records rendered.
+   *  The two differ where the disk stands in a framing the render would normalize. The gate reads the
+   *  disk side for its echo and this side for "the records stand where the base left them". Absent =
+   *  one hash names both sides (a text-writer's base, or a disk that held the canonical render). */
+  readonly syncedRecordsHash?: string;
+  /** The carrier's file extension (".mem" / ".tid" / ".json" / ".md" …) as the
+   *  gesture read it from disk. The island routes by it: a memetic carrier (SOH
+   *  heading / `.mem`) decomposes at the memetic shore; any other legal TW5
+   *  filetype rides TW5's OWN deserializer registry, keyed by this extension.
+   *  Absent → the island treats the carrier as memetic. */
+  readonly ext?:       string;
+  /** Raw `.meta` sidecar text a content filetype keeps beside its body; the
+   *  island parses it and seeds the deserialize so a body-only edit never drops
+   *  the sidecar's fields. Absent → no sidecar (or a self-contained filetype). */
+  readonly meta?:      string;
+  /** The body's byte length — metadata; the body lives in the CAS. Lets the island decide
+   *  skinny-vs-inline WITHOUT resolving the bytes. */
+  readonly size?:      number;
+  /** The gesture flags an OVERSIZED RAW shard: the island writes a skinny handle (cid +
+   *  integrity, no body) rather than materialize the body as a CRDT text field
+   *  (content-resolution.mem Scenario B). */
+  readonly skinny?:    boolean;
+}
+
+/** One vanished carrier riding an INGEST wave — a path gone from disk where a base stands. A gesture
+ *  sends one only as a rename's source, paired by content with one arrived file; the island re-links the
+ *  records or declines, and tombstones nothing. */
+export interface IngestDeletion {
+  /** The carrier-root lar: URI absent from disk, present in the Synced tree. */
+  readonly uri:        string;
+  /** Its last-projected canonical hash (the Synced tree value). */
+  readonly syncedHash: string;
+}
+
+/** INGEST — disk → records through the Confluence gate, replace-by-group apply.
+ *  LOAD lands unconditionally and never removes; INGEST decides (echo-noop ·
+ *  refuse · canonical-equivalent · ingest · conflict) and tombstones group
+ *  members that vanished from the re-parsed carrier. A wave MAY also carry
+ *  whole-carrier `deletions` (vanished files): the island re-links each unique
+ *  hash-matched rename and declines the rest. No wave tombstones a carrier: a
+ *  vanished file stands pending at the vessel's shore until a person answers. */
+export interface IngestAction extends ResidencyActionBase {
+  readonly verb:      "INGEST";
+  readonly sourceUri: string;
+  readonly toBag:     string;
+  readonly changeId:  string;
+  readonly carriers:  readonly IngestCarrier[];
+  readonly deletions?: readonly IngestDeletion[];
+  /** NO PERSON STANDS BEHIND THIS WAVE: a watcher settled it by itself. Such a wave never adopts a file
+   *  that holds no base over records that say something else; the gate answers `conflict`, `no-base`,
+   *  and a person settles it. Absent → a gesture a person named. */
+  readonly unattended?: boolean;
+}
+
+export type ResidencyAction =
+  | AddAction
+  | CopyAction
+  | MoveAction
+  | ClearAction
+  | DropAction
+  | LoadAction
+  | IngestAction
+  | CreateAction;
+
+// ── changeId factory ───────────────────────────────────────────────────────
+
+/**
+ * Mint a fresh changeId. Anti-pattern #1 defense: change-id stays stable across
+ * ADD / COPY / MOVE so downstream tooling recognises "same change, different bag."
+ * Callers MUST pass through an existing changeId when lifting a tiddler that
+ * already carries one in another bag; only mint fresh on first-write or LOAD.
+ *
+ * Format: base-32 timestamp + 8-char random (unlike verb-tiddler.newRequestId(), which carries no
+ * time prefix — a changeId names a lineage, not an attempt, and MAY legitimately sort by mint time).
+ */
+export function newChangeId(): string {
+  const ms = Date.now().toString(32).padStart(9, "0");
+  let rand = "";
+  for (let i = 0; i < 8; i++) rand += Math.floor(Math.random() * 32).toString(32);
+  return `${ms}-${rand}`;
+}
+
+// ── Args field encoding ────────────────────────────────────────────────────
+//
+// ResidencyAction fields use camelCase (TypeScript convention).
+// Verb.args fields use kebab-case (tiddler field convention).
+// Mapping:
+//   title       <-> "title"
+//   fromBag     <-> "from-bag"
+//   toBag       <-> "to-bag"
+//   bag         <-> "bag"
+//   sourceUri   <-> "source-uri"
+//   changeId    <-> "change-id"
+
+interface ResidencyArgs {
+  readonly title?:       string;
+  readonly "from-bag"?:  string;
+  readonly "to-bag"?:    string;
+  readonly bag?:         string;
+  readonly "source-uri"?: string;
+  readonly "change-id"?:  string;
+  readonly shadow?:      true;
+  readonly carriers?:    readonly LoadCarrier[];
+  readonly plane?:       "catalog" | "oracle";
+}
+
+/** Encode a ResidencyAction's verb-specific fields into the JSON args bag. */
+export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
+  switch (action.verb) {
+    case "ADD":
+    case "COPY":
+    case "MOVE":
+      return {
+        title:        action.title,
+        "from-bag":   action.fromBag,
+        "to-bag":     action.toBag,
+        "change-id":  action.changeId,
+        ...(action.verb === "MOVE" && action.shadow === true ? { shadow: true as const } : {}),
+      };
+    case "CLEAR":
+    case "DROP":
+      return { bag: action.bag };
+    case "CREATE":
+      return { bag: action.bag, plane: action.plane };
+    case "LOAD":
+      return {
+        "source-uri": action.sourceUri,
+        "to-bag":     action.toBag,
+        "change-id":  action.changeId,
+        ...(action.carriers ? { carriers: action.carriers } : {}),
+      };
+    case "INGEST":
+      return {
+        "source-uri": action.sourceUri,
+        "to-bag":     action.toBag,
+        "change-id":  action.changeId,
+        carriers:     action.carriers,
+        ...(action.deletions ? { deletions: action.deletions } : {}),
+        ...(action.unattended === true ? { unattended: true } : {}),
+      };
+    default: {
+      // Exhaustiveness guard: a new ResidencyAction variant that lands here without a case
+      // above fails to COMPILE (never-typed), rather than silently falling through undefined.
+      const _exhaustive: never = action;
+      throw new Error(`encodeResidencyArgs: unhandled ACTION verb ${(_exhaustive as ResidencyAction).verb}`);
+    }
+  }
+}
+
+// ── Parser ─────────────────────────────────────────────────────────────────
+
+/**
+ * Parse a Verb into a ResidencyAction when the verb belongs to
+ * ACTION_VERBS and all required args validate. Returns null otherwise.
+ *
+ * Validation rules:
+ *   - verb MUST belong to ACTION_VERBS.
+ *   - ADD / COPY / MOVE require title, from-bag, to-bag, change-id (all non-empty strings).
+ *   - CLEAR / DROP require bag (non-empty string).
+ *   - LOAD requires source-uri, to-bag, change-id (all non-empty strings).
+ */
+export function parseResidencyAction(inv: Verb): ResidencyAction | null {
+  if (!isActionVerb(inv.action)) return null;
+  const args = inv.args as Readonly<Record<string, unknown>>;
+  const base = { requestId: inv.requestId, requestedBy: inv.requestedBy };
+
+  const str = (key: string): string | null => {
+    const v = args[key];
+    return typeof v === "string" && v.length > 0 ? v : null;
+  };
+
+  if (isTransferVerb(inv.action)) {
+    const title    = str("title");
+    const fromBag  = str("from-bag");
+    const toBag    = str("to-bag");
+    const changeId = str("change-id");
+    if (!title || !fromBag || !toBag || !changeId) return null;
+    const shadow = inv.action === "MOVE" && args["shadow"] === true ? { shadow: true as const } : {};
+    // The shadow ask rides a MOVE alone, and only as `true`.
+    if (args["shadow"] !== undefined && (inv.action !== "MOVE" || args["shadow"] !== true)) return null;
+    return { ...base, verb: inv.action, title, fromBag, toBag, changeId, ...shadow };
+  }
+
+  if (isBagVerb(inv.action)) {
+    const bag = str("bag");
+    if (!bag) return null;
+    return { ...base, verb: inv.action, bag };
+  }
+
+  if (inv.action === "INGEST") {
+    const sourceUri = str("source-uri");
+    const toBag     = str("to-bag");
+    const changeId  = str("change-id");
+    if (!sourceUri || !toBag || !changeId) return null;
+    const carriers: IngestCarrier[] = [];
+    const rawCarriers = args["carriers"];
+    if (rawCarriers !== undefined) {
+      if (!Array.isArray(rawCarriers)) return null;
+      for (const c of rawCarriers) {
+        if (!c || typeof c !== "object") return null;
+        const o = c as Record<string, unknown>;
+        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"];
+        if (typeof uri !== "string" || !uri) return null;
+        if (file !== undefined && typeof file !== "string") return null;
+        // A verb NEVER inlines a body: a carrier rides EITHER an inline `text` OR a
+        // corpus-CAS `textCid`, never neither. The island resolves the ref before the gate.
+        const hasText = typeof text === "string" && text.length > 0;
+        const hasCid  = typeof textCid === "string" && textCid.length > 0;
+        if (!hasText && !hasCid) return null;
+        if (typeof diskHash !== "string" || !diskHash) return null;
+        if (syncedHash !== null && typeof syncedHash !== "string") return null;
+        // The records side rides only beside a disk side: a base holds both or neither.
+        if (syncedRecordsHash !== undefined && (typeof syncedRecordsHash !== "string" || !syncedRecordsHash || syncedHash === null)) return null;
+        if (ext !== undefined && typeof ext !== "string") return null;
+        if (meta !== undefined && typeof meta !== "string") return null;
+        if (size !== undefined && typeof size !== "number") return null;
+        if (skinny !== undefined && typeof skinny !== "boolean") return null;
+        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}) });
+      }
+    }
+    const deletions: IngestDeletion[] = [];
+    const rawDeletions = args["deletions"];
+    if (rawDeletions !== undefined) {
+      if (!Array.isArray(rawDeletions)) return null;
+      for (const d of rawDeletions) {
+        if (!d || typeof d !== "object") return null;
+        const o = d as Record<string, unknown>;
+        const uri = o["uri"]; const syncedHash = o["syncedHash"];
+        if (typeof uri !== "string" || !uri) return null;
+        if (typeof syncedHash !== "string" || !syncedHash) return null;
+        deletions.push({ uri, syncedHash });
+      }
+    }
+    // A wave MUST carry at least one carrier or one deletion.
+    if (carriers.length === 0 && deletions.length === 0) return null;
+    // The flag reads true or absent: any other spelling refuses, since a wave that MEANT to ride
+    // unattended and read as a person's gesture would adopt where it must stand off.
+    const unattended = args["unattended"];
+    if (unattended !== undefined && unattended !== true) return null;
+    return {
+      ...base, verb: "INGEST", sourceUri, toBag, changeId, carriers,
+      ...(deletions.length > 0 ? { deletions } : {}),
+      ...(unattended === true ? { unattended: true } : {}),
+    };
+  }
+
+  if (inv.action === "CREATE") {
+    const bag = str("bag");
+    if (!bag) return null;
+    // PLANE DECLARATION (by designation): default catalog; explicit "oracle" signal
+    // designates the system/temple plane. TODO(name): plane-signal name co-designed
+    // with the operator (the `--plane` flag below is a provisional placeholder).
+    const plane = str("plane") === "oracle" ? "oracle" : "catalog";
+    return { ...base, verb: "CREATE", bag, plane };
+  }
+
+  // verb === "LOAD" — only ActionVerb left after the guards above.
+  const sourceUri = str("source-uri");
+  const toBag     = str("to-bag");
+  const changeId  = str("change-id");
+  if (!sourceUri || !toBag || !changeId) return null;
+
+  // Optional carriers — each MUST hold a non-empty text; a malformed carrier
+  // rejects the whole action (no partial-trust ingest).
+  const rawCarriers = args["carriers"];
+  let carriers: LoadCarrier[] | undefined;
+  if (rawCarriers !== undefined) {
+    if (!Array.isArray(rawCarriers)) return null;
+    carriers = [];
+    for (const c of rawCarriers) {
+      if (!c || typeof c !== "object") return null;
+      const text    = (c as Record<string, unknown>)["text"];
+      const textCid = (c as Record<string, unknown>)["textCid"];
+      const title   = (c as Record<string, unknown>)["title"];
+      const ext     = (c as Record<string, unknown>)["ext"];
+      const meta    = (c as Record<string, unknown>)["meta"];
+      const size    = (c as Record<string, unknown>)["size"];
+      const skinny  = (c as Record<string, unknown>)["skinny"];
+      // EITHER an inline `text` OR a corpus-CAS `textCid` — never neither.
+      const hasText = typeof text === "string" && text.length > 0;
+      const hasCid  = typeof textCid === "string" && textCid.length > 0;
+      if (!hasText && !hasCid) return null;
+      if (title !== undefined && typeof title !== "string") return null;
+      if (ext !== undefined && typeof ext !== "string") return null;
+      if (meta !== undefined && typeof meta !== "string") return null;
+      if (size !== undefined && typeof size !== "number") return null;
+      if (skinny !== undefined && typeof skinny !== "boolean") return null;
+      carriers.push({
+        ...(typeof title === "string" && title ? { title } : {}),
+        ...(typeof ext === "string" && ext ? { ext } : {}),
+        ...(typeof meta === "string" && meta ? { meta } : {}),
+        ...(hasText ? { text: text as string } : {}),
+        ...(hasCid ? { textCid: textCid as string } : {}),
+        ...(typeof size === "number" ? { size } : {}),
+        ...(skinny === true ? { skinny: true } : {}),
+      });
+    }
+  }
+  return { ...base, verb: "LOAD", sourceUri, toBag, changeId, ...(carriers ? { carriers } : {}) };
+}
+
+// ── URI predicates (compose with verb-tiddler URI grammar) ─────────────────
+
+/**
+ * Recognise a tiddler URI that MAY carry an ACTION verb. The URI alone does
+ * not confirm ACTION semantics — the tiddler's `verb` field decides. Use this
+ * predicate to short-circuit obviously-non-action titles before parse.
+ */
+export function isResidencyActionUri(title: string): boolean {
+  return title.startsWith(VERB_URI_PREFIX) || title.startsWith(SUMMONS_URI_PREFIX);
+}

@@ -1,0 +1,88 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/node/disk-projector">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/node/disk-projector.mem"
+l-space     = "lararium"
+mana        = 8
+role        = "self-documentation: LarDiskProjector — the node-side enactment of the disk-projection law. Carries what the FILE owns and the law carrier does not: the one render shore, the holding gate that fences a cross-mirror unlink, what the in-flight write set does and does not guarantee, and the level-triggered reconcile gate. Surface law, granularity and routing live at api/disk-projection."
+source-file = "packages/lararium-node/src/disk-projector.ts"
+title       = "lar:///ha.ka.ba/lararium/node/disk-projector"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/node/disk-projector"
+```
+
+<<~ ahu #/contract>>
+
+! LarDiskProjector ~ the node hand on the projection law
+
+''The law lives at'' `lar:///ha.ka.ba/lararium/api/disk-projection` — two surfaces, bag roles,
+carrier-whole granularity, routing, the write ward. This carrier names what the enacting file owns on
+top of that law, and nothing the law already states.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! What the projector itself binds
+
+# ''One render shore.'' `carrierFileFn` — the VM's `exportCarrierFile` — returns the carrier's own
+filetype as bytes plus extension, and the projector only sites the result at `<uri-path><ext>` (plus
+a `.meta` sidecar where the type calls for one). A null answer skips the write. The VM registry
+decides type and bytes; the projector decides nothing about either.
+# ''The reads compare, never source.'' The projector opens files to answer two questions: //do these
+bytes already match//, and //may this file leave//. No byte it reads reaches a record. A file that
+fails to read never reads as equal: the byte skip falls through to the gate, which decides, and at an
+unlink the file stays.
+# ''An unlink needs a holding answer and a reading.'' A cross-mirror unlink weighs a file only where
+`bagsHolding` reports the carrier gone from that bag — a true MOVE or promotion. A carrier still held
+there, a working edit SHADOWING its canon copy, keeps its file. Without that callback every other
+mirror's files get weighed by path, so its absence widens the sweep. Every file weighed, at every
+unlink, then meets one judge (`judgeHome`, under `settleHomes`): it leaves only where its bytes stand
+agreed, and a file that holds a hand's words stays while the carrier stands off (the law:
+`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-law`, an unlink reads the file first).
+# ''A base names a home only where its mirror may write.'' The base's `path` remembers an earlier
+home across a restart, and the ingest gesture pins a base at whatever source it read, in a row of its own beside the mirror's. `basedHomes`
+passes each such path through the mirror's own ward (`confineMirrorWrite`: the mirror's root, or a file
+directly in the bags root under `allowBagsRootFiles`): a path the ward would refuse names no home, so a source kept
+in a holding directory beside the mirror never meets the judge and never leaves.
+# ''A stem match binds the WHOLE stem.'' `carrierDiskFiles` resolves a carrier's actual files by the
+full extension-less stem plus one extension segment, so a sibling carrier sharing only a prefix never
+gets swept. A missing directory reads as no files.
+# ''The in-flight set carries no correctness.'' The content-hash gates hold the echo law — ingest
+drops a disk-hash matching its synced-hash, projection skips a byte-identical write. The `writing`
+set survives beneath them as latency optimization alone: it spares a stat on our own in-flight write,
+and every guarantee stands without it.
+
+<<~/ahu>>
+
+<<~ ahu #/the-servo>>
+
+!! The level-triggered reconcile gate
+
+This section, anchored `#/the-servo`, holds the disk shore's level-triggered reconcile gate, its teardown and its measure; no servo and no timer stand in it.
+
+`LarDiskProjector.start` keys the timer-free `KeyedReconcileGate` by carrier root; a child change climbs `$fragment-parent` to that root. A clean mark queues one reconcile, a queued mark changes nothing, and a mark during a running reconcile makes the key run once more on completion. M marks to one key cost at most M + 1 reconciles, and no mark storm starves a key. One drain owns the queue until it empties, reconciling keys one at a time in first-marked order and yielding to the host between reconciles. The mount scan marks mirror-backed roots in the same synchronous turn as change-bus subscription; the first reconcile starts in a microtask. Each reconcile reads settled wiki state. The unsubscribe removes the listener and awaits `stop()`, which stops admission, drops waiting work, and waits for a running reconcile. The Synced tree holds nothing to flush: each observation rests as it gets recorded. The measure fields count change events, elapsed time from the last change event to the first file write, `bagsHolding` calls in that window, and file writes.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-node/src/disk-projector.ts" family="code" role="has">>
+<<~ pranala #siting from="?" -> to="packages/lararium-node/src/bag-paths.ts" family="code" role="has">>
+<<~ pranala #law from="?" -> to="lar:///ha.ka.ba/lararium/api/disk-projection" family="relation" role="has">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/schema/projection-codec">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu#/guards">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/servo">>
+
+<<^ code="&#x0003;">>ni:///sha-256;oiKpw4soxuoh_pEskOZE5KbuxfMxlmUrVCaGhyZbDx4
+
+<<^ code="&#x0004;" -> to="?">>

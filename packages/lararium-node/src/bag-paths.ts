@@ -1,84 +1,200 @@
 /**
  * bag-paths — URI → mirror-relative-path factories.
  *
- * The named-bag layout (`bags/@NAME`) makes per-scope path computation
+ * The named-bag layout (`bags/NAME`) makes per-scope path computation
  * derivable from the bag scope alone. No oracle tiddler `path-filter` field
  * needed. Factories are pure functions; no I/O, no module state.
  */
 
-export type MirrorPathFn = (uri: string) => string | null;
+import { resolve as resolvePath, join as joinPath, dirname, basename, isAbsolute, sep } from "path";
+import { stripMemeExt, wikiSlotUri, isBagManifestUri } from "@lararium/mesh";
 
 export interface BagMirrorConfig {
   /** The bag whose changes this mirror reflects. */
   readonly bagId: string;
   /** Absolute filesystem path; all writes are constrained under this root. */
   readonly mirrorRoot: string;
-  /** URI → relative path under mirrorRoot. */
-  readonly toRelPath: MirrorPathFn;
+  /**
+   * Widened grant (capability, rides the manifest's diskMirrors): the mirror
+   * MAY place files DIRECTLY in the root-bags-dir — the nearest ancestor of
+   * mirrorRoot named `bags`, the dir holding every @{bagname} subdir — one
+   * level up. It MUST NEVER escape the bags dir or write inside another
+   * bag's subdir; `confineMirrorWrite` enforces this structurally
+   * (dirname(candidate) === bagsDir exactly). Default: own subdir only.
+   */
+  readonly allowBagsRootFiles?: boolean;
+  /**
+   * The charter-only mirror guard (crossroads WHO-board leak, 2026-09-20): when true, a per-Nexus
+   * WHO-face pointer (`isNexusHandlesUri`) never projects through THIS mirror. Baked in at grant
+   * construction time from the RESOLVED `nexusIdentity().kind` — never re-derived from the tiddler
+   * itself, which carries no kind. A private-nexus-of-one (`own`) or a dialed anchor (`anchor`)
+   * mints this pointer into the crossroads doc on first boot (who-face.ts `resolveOracleDoc`), and
+   * without this guard every such boot's throwaway pointer disk-mirrors alongside the REAL
+   * charter-backed crossroads library content. Curated library carriers are untouched — the guard
+   * matches ONLY the handles-pointer shape, never the whole bag.
+   */
+  readonly guardNexusHandles?: boolean;
 }
 
-const HA_KA_BA_PREFIX = "lar:///ha.ka.ba/";
+// ── Write confinement — the sovereign-island disk ward ─────────────────────
+//
+// Cascade tiddlers (`$:/config/FileSystemPaths` overlays) compose through the RECIPE —
+// a library bag can overlay them — so every relative path reaching the
+// projector counts as UNTRUSTED input. Policy lives in the cascade; this gate
+// (the mechanism) holds at the write choke-point regardless of what the
+// cascade emitted.
+
+export type ConfineResult =
+  | { readonly ok: true; readonly path: string }
+  | { readonly ok: false; readonly reason: string };
+
+/** Nearest ancestor of `root` whose basename reads `bags`, or null. */
+function findBagsDir(root: string): string | null {
+  let dir = root;
+  for (;;) {
+    if (basename(dir) === "bags") return dir;
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+
+/**
+ * Confine a mirror write. Allowed:
+ *   - any path resolving UNDER mirrorRoot (the bag's own subdir), or
+ *   - with `allowBagsRootFiles`: a file DIRECTLY in the root-bags-dir
+ *     (never inside another bag's subdir, never above bags, never deeper).
+ * Everything else refuses with a reason the projector surfaces loudly.
+ */
+export function confineMirrorWrite(
+  mirrorRoot: string,
+  relPath: string,
+  allowBagsRootFiles = false,
+): ConfineResult {
+  if (isAbsolute(relPath)) return { ok: false, reason: `absolute path refused: ${relPath}` };
+  const root      = resolvePath(mirrorRoot);
+  const candidate = resolvePath(joinPath(root, relPath));
+  if (candidate === root) return { ok: false, reason: "write to mirror root itself refused" };
+  if (candidate.startsWith(root + "/")) return { ok: true, path: candidate };
+  if (allowBagsRootFiles) {
+    const bagsDir = findBagsDir(root);
+    if (!bagsDir) return { ok: false, reason: `mirror root carries no bags ancestor; widened grant inert (${root})` };
+    if (dirname(candidate) === bagsDir) return { ok: true, path: candidate };
+    return { ok: false, reason: `widened grant covers files DIRECTLY in ${bagsDir} only — refused: ${candidate}` };
+  }
+  return { ok: false, reason: `escapes mirror root ${root}: ${candidate}` };
+}
 
 function splitHash(s: string): [string, string | null] {
   const i = s.indexOf("#");
   return i >= 0 ? [s.slice(0, i), s.slice(i + 1)] : [s, null];
 }
 
-function toRelMd(pathPart: string, frag: string | null): string {
-  const base = pathPart.endsWith(".md") ? pathPart.slice(0, -3) : pathPart;
-  return frag ? `${base}/${frag}.md` : `${base}.md`;
+/**
+ * The siting function (lar-uri #five-planes) — the ONE URI → disk-path map: every
+ * carrier lives at its FULL uri-path inside its holding bag's mirror (directory =
+ * residency, interior path = the name, whole). This returns the path up to (but
+ * NOT including) the filetype extension — the render shore owns the extension
+ * (`.mem` for memetic, TW5's chosen extension for a native filetype), so both
+ * filetypes site at the SAME `<uri-path>` and only the extension differs.
+ *
+ *   lar:///ha.ka.ba/lares/api/pono/meme → ha.ka.ba/lares/api/pono/meme
+ *
+ * Carrier-whole at rest (disk-projection#granularity): a fragment record
+ * (`…#slot`) never owns a disk file — its carrier root does; a fragment URI (and
+ * an unstable root) resolves to null (loci law).
+ */
+export function carrierBaseRelPath(uri: string): string | null {
+  if (!uri.startsWith("lar:///")) return null;
+  // A bag's MANIFEST sites nowhere here: its file is `meta.mem` at the bag root, owned by the
+  // declare verb. Sited by uri-path it would land as `bags/<bag>/ha.ka.ba/bags/<bag>.mem`.
+  if (isBagManifestUri(uri)) return null;
+  const bare = uri.slice("lar:///".length);
+  if (!/^\w+\.\w+\.\w+\//.test(bare)) return null;
+  const [pathPart, frag] = splitHash(bare);
+  if (frag || !pathPart) return null;                    // a fragment never owns a file
+  return stripMemeExt(pathPart);
 }
 
 /**
- * Factory for single-scope named bags (e.g. "@lares", "@lararium").
- *
- * Maps `lar:///ha.ka.ba/@SCOPE/X` → `X.md` relative to the bag mirror root.
- * Returns null for any URI outside the scope.
+ * Construct a BagMirrorConfig for a named bag. `scope` rides as grant
+ * metadata only — the siting function (`carrierBaseRelPath`) carries every
+ * stable name whole; the mirrorRoot = the bag's residency dir.
  */
-export function namedBagPath(scope: string): MirrorPathFn {
-  const prefix = HA_KA_BA_PREFIX + scope + "/";
-  return (uri) => {
-    if (!uri.startsWith(prefix)) return null;
-    const rest = uri.slice(prefix.length);
-    if (!rest) return null;
-    const [pathPart, frag] = splitHash(rest);
-    return toRelMd(pathPart, frag);
-  };
+export function namedBagMirror(
+  bagId: string, scope: string, mirrorRoot: string, guardNexusHandles?: boolean,
+): BagMirrorConfig {
+  void scope;
+  return { bagId, mirrorRoot, ...(guardNexusHandles ? { guardNexusHandles } : {}) };
 }
 
 /**
- * Factory for wiki shadow bags (corpus view inside a wiki).
- *
- * Maps:
- *   `lar:///ha.ka.ba/@lares/X`      → `lares/X.md`
- *   `lar:///ha.ka.ba/@lararium/X`   → `lararium/X.md`
- *   Other `lar:///ha.ka.ba/X`       → `lares/X.md`  (bare ha.ka.ba path)
- *
- * Returns null for URIs outside `lar:///ha.ka.ba/`.
+ * The daemon wiki's disk mirror: its working layer projects to `<rootDir>/wikis/daemon/`, the same
+ * shape `resolveDiskMirrors` fills for every wiki's `wikiSlot: "working"` grant from the slug at
+ * mount. The daemon island mounts outside the pool, so this mints the grant once, by name. The
+ * daemon bag beneath (the control plane) holds no mirror.
  */
-export function wikiBagPath(): MirrorPathFn {
-  const LARES_SCOPE    = "@lares/";
-  const LARARIUM_SCOPE = "@lararium/";
-  return (uri) => {
-    if (!uri.startsWith(HA_KA_BA_PREFIX)) return null;
-    let rest = uri.slice(HA_KA_BA_PREFIX.length);
-    let dirPrefix: string;
+export function daemonWorkingMirror(rootDir: string): BagMirrorConfig {
+  return { bagId: wikiSlotUri("daemon", "working"), mirrorRoot: joinPath(rootDir, "wikis", "daemon") };
+}
 
-    if (rest.startsWith(LARES_SCOPE)) {
-      rest = rest.slice(LARES_SCOPE.length);
-      dirPrefix = "lares/";
-    } else if (rest.startsWith(LARARIUM_SCOPE)) {
-      rest = rest.slice(LARARIUM_SCOPE.length);
-      dirPrefix = "lararium/";
-    } else if (rest.startsWith("@")) {
-      return null;
-    } else {
-      dirPrefix = "lares/";
-    }
+// ── Loci reverse-derivation (the ingest gesture's scan leg) ─────────────────
 
-    if (!rest) return null;
-    const [pathPart, frag] = splitHash(rest);
-    const rel = toRelMd(pathPart, frag);
-    return `${dirPrefix}${rel}`;
-  };
+/**
+ * One mirror plane's reverse-derivation — the loci law run backward under the
+ * full-path-inside-bag ruling, shared by every disk mirror:
+ *   `<root>/<rootDirName>/<holding-dir>/<full-uri-path>.mem` ⇄ `lar:///<full-uri-path>`
+ * The first segment under the plane dir names the HOLDING SLOT (a residency
+ * bag under bags/, a wiki slug under wikis/) and never enters the name; the
+ * interior IS the name, whole. Returns null outside the plane dir, for a `.meta`
+ * sidecar (it rides with its content file, never a carrier root of its own), or
+ * when the interior carries no w.w.w root — the gesture reports those as
+ * skipped, never guesses.
+ *
+ * The mirror directory is given itself (`LAR_BAGS` / `LAR_WIKIS` may sit outside the vessel
+ * root), so `<root>/bags` is only the default a caller derives, never a law this function holds.
+ *
+ * Any registered TW5 filetype extension strips the same way `.mem` does: the
+ * name is the interior MINUS its trailing filetype extension, so a `.tid`,
+ * `.json`, `.md`, or content-type carrier derives its lar: URI exactly as a
+ * `.mem` carrier does (filetype-agnostic mirror, one loci law).
+ */
+export function mirrorDirFileToUri(mirrorDir: string, filePath: string): string | null {
+  const mirrorRoot = resolvePath(mirrorDir);
+  const abs = resolvePath(filePath);
+  if (!abs.startsWith(mirrorRoot + sep)) return null;
+  const rel = abs.slice(mirrorRoot.length + 1).split(sep);
+  if (rel.length < 2) return null;                       // needs holding dir + interior
+  const interior = rel.slice(1).join("/");
+  if (interior.endsWith(".meta")) return null;           // sidecar, not a carrier root
+  // Strip the trailing filetype extension from the last path segment only (the
+  // w.w.w root's own dots live in the FIRST segment and never match here).
+  const namePath = interior.replace(/\.[^/.]+$/, "");
+  if (namePath === interior) return null;                // no extension → not a projected carrier file
+  if (!/^\w+\.\w+\.\w+\//.test(namePath)) return null;   // loci: stable names carry a w.w.w root
+  return `lar:///${namePath}`;
+}
+
+/**
+ * Derive the carrier-root lar: URI a bags/ file projects — the canon plane:
+ *   `bags/<residency-dir>/<full-uri-path>.mem` ⇄ `lar:///<full-uri-path>`
+ * The first segment under bags/ names the HOLDING BAG (residency plane).
+ */
+export function bagsFileToUri(instanceRoot: string, filePath: string): string | null {
+  return mirrorDirFileToUri(joinPath(instanceRoot, "bags"), filePath);
+}
+
+/**
+ * Derive the carrier-root lar: URI a wikis/ file projects — the per-wiki working
+ * write-layer's disk surface run backward (the ingest-BACK leg). The working
+ * layer (`wikis/{slug}/working`) projects per-wiki to
+ * `wikis/{slug}/<full-uri-path>.mem`; the first segment under wikis/ names the
+ * WIKI SLUG (the write-layer instance), never the carrier name. The derived
+ * records home to the working layer (the editing plane), not the named bag —
+ * the ingest caller carries that designation in `--to`. Symmetric with the
+ * disk-projector's working projection: strip wikis/ + the @{slug} leaf, read
+ * the interior whole.
+ */
+export function wikisFileToUri(instanceRoot: string, filePath: string): string | null {
+  return mirrorDirFileToUri(joinPath(instanceRoot, "wikis"), filePath);
 }

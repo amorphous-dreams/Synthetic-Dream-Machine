@@ -1,0 +1,19 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-suspends
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: leaf
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kukali
+lar-mirror-of: kukali
+lar-see-also: kukali
+lar-pattern: <<~\s*suspends(?:\s+trigger[=:]"?([\w.-]+)"?)?\s*>>
+lar-example: <<~ suspends trigger="on-score">>
+type: text/vnd.tiddlywiki
+
+<!-- suspends — the English mirror of `kukali`, the wait that parks a causal island until a named
+     trigger fires. The island parks rather than freezes, and it resumes exactly once.
+
+     ONE DEFINITION ANSWERS FOR BOTH. The mirror delegates to the head rather than restating it, so
+     the discipline moves in one place. -->
+
+\procedure ~suspends(trigger:"")
+<$transclude $variable="~kukali" trigger=<<trigger>>/>
+\end

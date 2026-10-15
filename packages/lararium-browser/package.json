@@ -1,0 +1,46 @@
+{
+  "name": "@lararium/browser",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./browser-wiki-worker": {
+      "import": "./dist/browser-wiki-worker.js"
+    },
+    "./browser-daemon-island": {
+      "import": "./dist/browser-daemon-island.js"
+    },
+    "./shared-holder-worker": {
+      "import": "./dist/shared-holder.worker.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "node ../../tools/clean-output.mjs dist",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@automerge/automerge": "3.4.1",
+    "@automerge/automerge-repo": "2.6.0-alpha.5",
+    "@automerge/automerge-repo-network-messagechannel": "2.6.0-alpha.5",
+    "@automerge/automerge-repo-storage-indexeddb": "2.6.0-alpha.5",
+    "@noble/ed25519": "3.2.0",
+    "@lararium/keyhive": "workspace:*",
+    "@lararium/mesh": "workspace:*",
+    "@lararium/tw5": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitest/browser": "5.0.3",
+    "@vitest/browser-playwright": "5.0.3",
+    "tsx": "4.23.15",
+    "vite-plugin-wasm": "3.6.0",
+    "vitest": "5.0.3"
+  }
+}

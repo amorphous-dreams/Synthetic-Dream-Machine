@@ -1,0 +1,159 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+hydrate   = true
+l-space   = "stable"
+mana      = 17
+manao     = 17
+manaoio   = 17
+namespace = "&#x0950; &#x0901;"
+reflexive = true
+title     = "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/li-ki-integrities"
+```
+
+<<~ aka "lar:///ha.ka.ba/lares/api/memetic-wikitext-sensorium#/autosegmental">>
+
+<<~ ahu #/entry>>
+
+! Li × Ki ~ the two postures of pattern-integrity a sensorium reads
+
+''The generalization the memetic-wikitext instance harvests.'' A sensorium senses ''pattern-integrities'' ~ waves the house holds invariant, never the water. `li` (理) and `ki` (氣) name the two postures that integrity takes: ''li carries the pattern of //structure//'' (the grain, static, the jade-vein) · ''ki carries the pattern of //flow//'' (the rhythm, the coupling, dynamic). The sensorium never touches the raw substance ~ it reads integrities alone.
+
+The silat correction (operator, guru-defined): //ki carries the pattern-integrity of energy-flows, irrespective of the specific flavor or instance of energy// ~ never a separate thing-that-flows. So `ki` sits beside `li` as a fellow integrity, not below it as substance. The library reading "the truest qi is the raw stream" ''retires here'': no plane the sensorium runs touches raw substance; every plane already reads pattern.
+
+<<~/ahu>>
+
+<<~ ahu #/the-five-planes>>
+
+!! The five planes split along li / ki
+
+''This meme holds the POSTURE; the machina's design-of-record moves to [[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina]].'' Two roles, two memes: 理/氣 name the two stances a pattern-integrity takes (the argument below, unchanged); the machina names what runs, what it may claim, and what it may never claim. Read the machina for the planes, the arrow, the grain, and the family.
+
+<<~ scale li-planes "content ~ recurring coherence -> structure ~ the AST grain, literally the jade-vein -> form ~ the induced grammar qi already obeys">>
+<<~ scale ki-planes "boundary ~ where the generating regime turns over -> coupling ~ the directed nagare between streams -> standing ~ what witnesses OUTSIDE the trace vouch for">>
+
+* ''coupling = ki, cleanest in the scheme'' ~ 氣-no-nagare, "the flow of ki," reads inherently //directional//; transfer-entropy reads the nagare //between// streams (informs, never causes; effective + surrogate-null-gated). It stands as the ''one irreducibly cosheaf'' reading: every li plane coarsens ONE stream, and no coarsening of one stream reaches a fact about two.
+* ''bands RETIRES as a plane'' ~ the retired "hinge" reading treats it as energy read through a fixed scale-lattice. That lattice forms a ''frequency ladder'', and a bandpass reports where //energy at its scale// concentrates while a change-point reports where the //generating regime// turns over — a ''category error, never a tuning failure'' ([[sensorium-machina|lar:///ha.ka.ba/lares/api/pono/sensorium-machina#/ki]]). ''Bands never formed a plane; it names an ADDRESS'', and the address moves into ''li'' as a stored prefix code (the membership tree, [[ffz-clock|lar:///ha.ka.ba/lararium/mesh/ffz-clock#/the-spine]]).
+
+''The cut re-seats on VARIANCE, never on storage'' ~ a reading rides ''li'' iff it computes from the moment's own span (RESTRICT, contravariant); it rides ''ki'' iff its computation //cannot// proceed without data outside that span (EXTEND, covariant). The reading //li = stored · ki = computed-on-read// ''retires'': the FFZ address gets computed and then stored; STANDING gets stored as a witness-log and derived at read. ''Storage names a caching decision, never an ontology.'' A second, orthogonal axis carries what storage gestured at — ''given ⊥ induced'' (what the source handed us vs. what we computed) — and precisely the fusion of the two axes makes bands look like a plane.
+
+<<~/ahu>>
+
+<<~ ahu #/fractal-co-location>>
+
+!! The fractal co-location ~ neither-top, at two scales
+
+The ''same'' "neither-top, co-located peers" wave recurs, and one atom serves both:
+
+<<~ loops "stratum ~ red-sigil ⋈ black-prose (one text) -> corpus ~ formal-liturgy ⋈ informal-pidgin (two corpora)">>
+
+* ''Stratum:'' the red classifier register co-located with the black propositional stream ~ "the black speaks, the red steers" ~ li/qi //verbatim// (red = the silent pattern-marks that steer without sounding; black = the breath that sounds and moves). not analogy, the same structure.
+* ''Corpus:'' formal memes-on-disk (crystallized ritual grammar, high-li) ⋈ informal chat (raw generative flow, high-qi) ~ neither the root of the other.
+
+`coupleAligned()` folds an aligned-tick stream through the coupling runtime at ''both'' scales ~ one fractal atom. ''Neither-top grounds on the qi-monist / inseparability reading'' (Wang Fuzhi: no li apart from qi; Zhu Xi: "cannot be spoken of as prior or posterior") ~ not a tie the house invented, but a 500-year unresolved fork (school-of-li ⋈ school-of-qi) re-inhabited, productive //because// never healed.
+
+<<~/ahu>>
+
+<<~ ahu #/ki-anchoring>>
+
+!! Ki-anchoring ~ integrity over instance (the stability law)
+
+''The deep move, proven in the instance:'' anchor every read to the //ki// ~ the flow's pattern-integrity ~ ''never to the instance'' (the byte-offset, the ordinal window, the energy-flavor).
+
+* ''Stratum stability (the F1 cure):'' the red register associates to skeletal //units//, not byte-offsets ~ so splice or rewrite the black stream and the confidence/ward autosegment re-docks (Goldsmith's Stability). Robust under CRDT char-level edits, no re-projection tax ~ //because nothing ever bound it to the flavor//.
+* ''Corpus soundness (the FFZ contract):'' two peers join only on a ''shared FFZ address'' (the worldline's rhythmic grain). No shared grain ⇒ no ticks ⇒ warming, no coupling. An ordinal join of two unrelated texts //fabricates// a coupling ~ it reads the flavor, not the ki ~ and construction refuses it.
+* ''Anti-false-sovereign:'' thin data warms below the estimator floor; the runtime ''refuses to emit'' rather than declare a coupling it cannot ground. The honest zero, not the fabricated edge.
+
+This states the pattern-integrity in one law: //read the wave, never the water.// The instance sets the correct behavior early ~ a system amounts to what it does, so the shortcut comes out, never shelved beside the true path.
+
+<<~/ahu>>
+
+<<~ ahu #/the-reader>>
+
+!! The reader ~ autosegmental within the block, tree-sitter across it
+
+The li face (the pattern) reads through an ''autosegmental'' engine (Goldsmith 1976; Bird & Ellison 1994):
+
+* ''Skeletal tier'' = the black prose/char stream (the anchor); the ''red register'' = a ''typed overlap multigraph'' associating by lines, not shared position (confidence-line ≠ ward-line ≠ voice-line).
+* ''Two axes:'' span (the aperture ladder ~ bands read it) × channel (the red/black classifier ~ categorical). A control-glyph at fine grain carries a //cross-band signal//, never forced to an outer band.
+* ''Gifts for free:'' WFC + minimal-repair ≡ graceful-parsing (repair, never reject; ambient register spreads to fill) · the No-Crossing Constraint makes cross-frame steering a //detectable// breach with a canonical ''float+dock'' rewrite · OCP normalization · tier-isolation ≡ the layer-isolation house law · a decidable finite-state check (the parse = the synchronized intersection of per-tier automata; well-formed ⟺ non-empty) · left-to-right ''spread'' ≡ the seed-forward / marker-leads law.
+* ''Where memetic-wikitext exceeds phonology'' (reach past autosegmental): the skeleton nests recursively (tree-sitter / RAPTOR) · the tiers themselves form //languages// · the red goes ''never realized'' (its true cousin: the classifier/determinative channel, not tone).
+
+<<~/ahu>>
+
+<<~ ahu #/generalization>>
+
+!! Generalizing ~ sense any li/ki/* flow
+
+The sensorium runs ''~90% modality-invariant'' ~ content=embed · structure=shape-vector · form=subpattern-mining //all// apply generally, and the ki readings (boundary=changepoint · coupling=transfer-entropy · standing=witness-edges) read any stream (that literature covers EEG, vibration, finance, never text). ''Only the parse stays modality-specific'', and the StreamAdapter lifts that shore.
+
+''To sense a new li/ki/* flow'' ~ a MUD, a market feed, a DAW, a CI-CD pipeline, an IoT stream ~ write ''one'' StreamAdapter (the modality-specific parse + signal-map); every integrity below applies unchanged:
+
+<<~ scale integrities "the-li-chain-read (content↠structure↠form) -> the-three-ki-readings (boundary·coupling·standing) -> the #has-cap-composition -> couple-then-decouple-sovereignty -> the-skeletal-tier-+-association-graph -> the-two-axes-span×channel -> ki-anchoring-integrity-over-instance">>
+
+The sensorium does not amount to a text tool that generalizes ~ it carries a ''li/ki sensor'' and currently wears a text intake.
+
+<<~/ahu>>
+
+<<~ ahu #/li-as-coherence>>
+
+!! Li ~ the grain the house cuts along
+
+`li` names the pattern-integrities aptly because Ziporyn reads 理 as ''ironic coherence'' ~ "inclusivity of contradictions, no ultimate favored perspective." That //names// Plurality Pono: thirteen reality tunnels, none crowned, unity through non-ultimate perspectives, the house holding competing readings. The thirteen Voices carry no thirteen essences ~ each acts as a ''functor'' that picks out a reading of the same integrity; `li` (the pattern-integrity) holds as the invariant, the Voice-functors' images give the plural readings, and //none crowned// names exactly that no Voice stands as the invariant. The jade-vein etymology seals it ~ the integrities form the grain the house cuts along, made legible, never imposed.
+
+<<~/ahu>>
+
+<<~ ahu #/crucible-tested>>
+
+!! Crucible-tested ~ what survived the fire (2026-07-01)
+
+Three adversarial spirits put the intent on the anvil before its setting. What held, what demoted, what re-cut:
+
+''Perceiver, not agent.'' The sensorium runs precision-weighted variational PERCEPTION, never yet active-inference AGENCY. `F = Σπε² + complexity` earns "the accuracy term of VFE" ~ "IS VFE" waits on a named per-plane generative prior `p(x)` in the complexity term (else it reads as regression in FEP costume; the missing `−ln π` gives the tell). Precision = the confidence register stands as the STRONGEST leg ~ a true role-isomorphism ~ but load-bearing only while the register stays vowed FORWARD (which L-Prime already demands). Sovereignty carries a BOUNDARY, called a "blanket" only on credit (the conditional independence fails during coupling). Agency stays a named future with a price: a generative prior · a checkable per-episode factorization · an explicit EFE-vs-FEEF choice · exogenous preference priors ~ never "the path."
+
+''Li forms a sheaf, ki forms a cosheaf.'' content/structure/form RESTRICT (contravariant, global→local) = the SHEAF side = li. bands/coupling EXTEND (covariant, local→global ~ a coarse wavelet coefficient depends on data outside its span) = the COSHEAF side = ki. They hold as a DUAL PAIR over the shared skeletal complex, variance-tagged, consistency computed SEPARATELY (li-restriction-consistency · ki-co-consistency); one merged contravariant gluing SILENTLY corrupts (it penalizes the flow for failing to hold static). The consistency-radius (Robinson) reads 0 iff the li-planes glue — and ''on a TOWER it reads ~0 for the WRONG REASON, so it certifies nothing.'' The radius earns its keep only across genuinely distinct contexts (engineered redundancy: disjoint planes glue vacuously and buy nothing). The li planes hold neither disjoint NOR independent — ''they NEST'': content ↠ structure ↠ form, each a coarsening, and structure carries ''97.8%'' of the record's own bits (measured, `plane_capacity`; the keystone, [[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/unification]]). ''A chain of quotients holds no obstruction to gluing — `dim H1 = 0` BY CONSTRUCTION'' — so the radius reports health on every bed it reads, and the health names a tautology: one plane heard three times. ''The gate keeps its job at a FEDERATION boundary (genuinely distinct contexts) and loses it at a PLANE boundary.'' The li-disagreement question re-seats on the two-part code: an event that moves the corpus LENGTHENS `l(G)+l(D|G)` until the grammar re-earns its bits — one currency, one ledger, no pooling.
+
+''The four-fold naming makes a partial rhyme, not an identity.'' The pattern-integrity stands as an INVARIANT OF A SELF-REFERENTIAL ENDO-PROCESS ~ the shared schema (Lawvere's fixed-point abstraction) the four traditions each realize DIFFERENTLY. Two bridges hold strong: sheaf-`H⁰` ↔ `argmin F` (both the argmin of an agreement functional) · `H⁰` ↔ order-parameter (zero/slow modes of a Laplacian, linear case). Eigenform stands as the NONLINEAR general case; NESS/`H⁰` the linear-spectral special case nested inside it (cognate, not identical). The order parameter names a MODE (a direction), not a point ~ it pairs with the center MANIFOLD, never the slow variable. Claim the schema-level kinship; never the literal one-object identity.
+
+''The slogan, re-cut.'' "no-global-now = failure to be a sheaf" commits a category error (sheaf-ness belongs to the model, global-now to the data). Exact: ''no-global-now = the assignment carries positive consistency radius = it fails as a global SECTION.'' A valid sheaf routinely carries a non-global assignment.
+
+<<~/ahu>>
+
+<<~ ahu #/the-lattice>>
+
+!! The Lattice ~ the chain rides as one spine
+
+* ''The chain claims per-axis.'' The li spine (ground ↠ shape ↠ idiom) holds as a true chain; the joint li/ki structure forms a LATTICE, and the chain names one spine of it. Witness instrument: li∘ki vs ki∘li commutation on a bed.
+* ''`dim H1 = 0` reads cover-relative.'' The chain cover's nerve forms a contractible stick — it cannot hold a loop, so its vanishing H1 proves the cover, never the data. The gate holds its seats at FEDERATION boundaries and at the ''li/ki cross-cover'': a non-commuting square there carries a nonzero class the gate certifies exactly.
+* ''The li/ki cut indexes by GRAIN.'' Sheaf and cosheaf structures ride the same stalk data (derived-equivalent); a feature files li at one span-grain and ki at a wider one. Consistency-per-side holds per-grain.
+* ''The grammar CLASS names the description-language knob.'' The KMSS stands uncomputable; two-part MDL depends on its description language (Rissanen → NML). The class (maximal-repeats + subtrees under the house codelength) stays fixed AND reported, its sensitivity a measured hyperparameter (the gap-witness pattern, generalized); the cut-by-code-length law carries the Vereshchagin–Vitanyi proofs (MDL-optimality, witness realizability).
+
+Companion instruments: the Equitz–Cover Markov criterion gates any proposed plane's chain admission · quasi-lumpability bounds gauge the shape quotient's drift online. Research grounds: hearth memory `li-chain-research-braid`.
+
+<<~/ahu>>
+
+<<~ ahu #/the-flow-and-apertures>>
+
+!! The Flow and its Apertures ~ ki reads as (flow, focus), never the flow alone
+
+Ki flows undifferentiated by type until a focus narrows it — as li holds pattern undifferentiated by material until a corpus narrows it. Both sides obey ''one law: a reading names the PAIR (flow, focus)'' — the type arrives with the narrowing (disintegration of measures carries the existence theorem: a non-admissible focus yields NO reading), and invariants leash the relativism on both sides (Kolmogorov invariance on li; the gauge lesson on ki: some quantities live IN the flow, and every admissible aperture must agree on them).
+
+The members compose as nameless entities carrying `#has` capability-stacks:
+
+<<~ scale flow-members """reading ~ #has [flow-ref · aperture · watermark · value] — the watermark vows "as of my last sync"; a bare reading without its aperture reads as degraded -> aperture ~ #has [focus-spec · admissibility-witness · grain(support × locus)] — first-class, named, checkable; reach spans TWO axes, temporal support ⊥ epistemic locus, so apertures cover rather than chain -> obstruction-reading ~ #has [cover-ref · obstruction-class] — a gluing failure rides as a FIRST-CLASS reading (contextuality: locally-consistent readings may admit no global joint, and the cohomology class measures exactly that) -> invariants-ledger ~ #has [invariant …] — the causal order, the log itself, conserved counts: what no aperture may contradict; co-consistency = invariants + overlap-agreement, never a master focus -> trust-valuation ~ #has [opinion(b,d,u,a) · discount-op · fusion-op] — STANDING modulates every reading as the site's lighting; it composes by discount-and-fuse (order-sensitive), never by colimit, so it rides beside the apertures, not among them""">>
+
+The named apertures the house already holds, honored and explained: ''boundary'' (own-history martingale reading — anytime-valid, island-local guarantee) · ''three coupling apertures'', each its own entity (surrogate-gated effective TE · Gaussian conditional-TE with parametric gate · salience-sidecar fusion) — three focusings of one flow, never one plane wearing three estimators; coupling claims ''directed predictive dependence'', never causation (transfer entropy conflates dyadic and polyadic dependence; the PID synergy atom names what no coarsening of one stream reaches). The one shore where the flow already runs undifferentiated in the machinery: the FFZ AlignedTick — any two streams join iff their addresses meet, no type on what flows.
+
+Named empty seats, held open: ''value/preference'' (nothing yet reads what the node prefers) · ''provenance'' (the derivation ledger — distinct in kind from the trust valuation that judges it).
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Fq0RbEWKwi4XsxT5LPd6yv0P7QHBHkS9rvzuBSua0Po
+
+<<^ code="&#x0004;" -> to="?">>

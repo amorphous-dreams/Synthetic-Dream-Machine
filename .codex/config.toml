@@ -1,5 +1,4 @@
 # .codex/config.toml
-model_instructions_file = "../bags/@lares/AGENTS.md"
 
 [mcp_servers.lararium]
 command = "node"

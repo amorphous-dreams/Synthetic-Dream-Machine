@@ -1,31 +1,26 @@
 /**
  * `lares draft <uri> [--to <bag>] [--yes]`
  *
- * Pull-into-draft ceremony — the missing third leg between `wiki sync` and
- * `promote`. Copies a tiddler currently resolving from a lower bag into a
- * writable draft bag (default: the active room's draft / composite default
- * writable). The source bag is left intact; the new copy overlays via
- * composite priority. Operator can then edit the draft and `lares promote`
- * it later to publish into canon.
+ * Pull-into-draft ceremony — copies a tiddler currently resolving from a
+ * lower bag into a writable draft bag (default: the active wiki draft /
+ * composite default writable). The source bag stays intact; the new copy
+ * overlays via composite priority. Operator can then edit the draft and
+ * land it into another bag through a residency ACTION verb (`lares act`).
  *
  * Flags:
- *   --to <bag>     target draft bag (default: active room's draft)
+ *   --to <bag>     target draft bag (default: active wiki draft)
  *   --yes          skip confirmation
- *   --port <n>     daemon port
  */
 
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { join } from "node:path";
-import { loadOperatorVerifyingKey } from "@lararium/node";
-import { repoRoot } from "@lares/core";
-import { connectAdminPeer, submitCommand } from "../admin-peer.js";
+import { vesselDid } from "../env.js";
+import { summaryOutput } from "../verb-result.js";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
+import { runVerb, verbFailure } from "../verb-call.js";
+import { emit, wantsJson, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-async function operatorDid(): Promise<string> {
-  const dataDir = join(repoRoot, "packages", "lararium-node", ".lararium");
-  return "0x" + (await loadOperatorVerifyingKey(dataDir));
-}
 
 export async function cmdDraft(args: ParsedArgs): Promise<number> {
   const tiddler = args.positional[0];
@@ -36,73 +31,109 @@ export async function cmdDraft(args: ParsedArgs): Promise<number> {
     return 2;
   }
 
-  const portOpt = args.options["port"];
-  const connectOpts: Parameters<typeof connectAdminPeer>[0] = portOpt
-    ? { port: Number(portOpt) }
-    : {};
-
   let did: string;
   try {
-    did = await operatorDid();
+    did = await vesselDid();
   } catch (err) {
-    console.error(`lares draft: ${err instanceof Error ? err.message : String(err)}`);
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, { ok: false, error: msg, human: () => console.error(`lares draft: ${msg}`) });
     return 3;
   }
 
-  let peer;
+  // UDS fast path, WS fallback (the lares↔lararium binding).
+  let where;
   try {
-    peer = await connectAdminPeer(connectOpts);
+    where = await runVerb("where", { tiddler }, did);
   } catch (err) {
-    console.error(`lares draft: ${err instanceof Error ? err.message : String(err)}`);
-    console.error("  Start the daemon with `lares serve` and try again.");
-    return 3;
+    // M3′: a LOCAL WAIT ENDING is not an absent daemon — told apart by the error's own TYPE.
+    const f = verbFailure(err);
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => { console.error(`lares draft: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+    });
+    return exitFor(f.code);
+  }
+  if (where.status === "error") {
+    const msg = where.errorMessage ?? "unknown";
+    emit(args, { ok: false, error: msg, human: () => console.error(`recipe-presence query failed: ${msg}`) });
+    return 4;
+  }
+  const whereSummary = summaryOutput(where) ?? {};
+  const bags    = (whereSummary["bags"] ?? []) as string[];
+  const primary = whereSummary["primaryBag"] as string | null;
+  if (!primary) {
+    emit(args, {
+      ok: false, error: `tiddler not found in any bag: ${tiddler}`,
+      data: { tiddler },
+      human: () => console.error(`tiddler not found in any bag: ${tiddler}`),
+    });
+    return 5;
   }
 
-  try {
-    const where = await submitCommand(peer, "where", { tiddler }, did);
-    if (where.status === "error") {
-      console.error(`recipe-presence query failed: ${where.errorMessage ?? "unknown"}`);
-      return 4;
+  // The confirmation prompt belongs to the HUMAN/TTY path only — an agent
+  // (JSON / off-TTY) MUST carry intent explicitly via --yes.
+  if (!args.flags["yes"]) {
+    if (wantsJson(args)) {
+      emit(args, {
+        ok: false, error: "confirmation required: pass --yes for non-interactive (agent) invocation",
+        human: () => { /* unreachable on the JSON path */ },
+      });
+      return 1;
     }
-    const bags    = (where.result?.["bags"] ?? []) as string[];
-    const primary = where.result?.["primaryBag"] as string | null;
-    if (!primary) {
-      console.error(`tiddler not found in any bag: ${tiddler}`);
-      return 5;
-    }
-
     console.log("");
     console.log(`  tiddler:   ${tiddler}`);
     console.log(`  currently: ${bags.join(", ")}`);
-    console.log(`  draft to:  ${toBag ?? "(active room draft)"}`);
+    console.log(`  draft to:  ${toBag ?? "(active wiki draft)"}`);
     console.log("");
-
-    if (!args.flags["yes"]) {
-      const rl = createInterface({ input: stdin, output: stdout });
-      const answer = await rl.question("Proceed? [y/N] ");
-      rl.close();
-      if (answer.trim().toLowerCase() !== "y") {
-        console.log("aborted.");
-        return 0;
-      }
+    const rl = createInterface({ input: stdin, output: stdout });
+    const answer = await rl.question("Proceed? [y/N] ");
+    rl.close();
+    if (answer.trim().toLowerCase() !== "y") {
+      console.log("aborted.");
+      return 0;
     }
-
-    const draftArgs: Record<string, string> = { tiddler };
-    if (toBag) draftArgs["toBag"] = toBag;
-
-    const result = await submitCommand(peer, "draft", draftArgs, did);
-    if (result.status === "error") {
-      console.error(`draft failed: ${result.errorMessage ?? "unknown"}`);
-      return 6;
-    }
-
-    const r = result.result ?? {};
-    console.log(`drafted: ${tiddler}`);
-    console.log(`  ${r["fromBag"] ?? "(none)"} → ${r["toBag"]}`);
-    console.log(`  status: ${r["status"]}`);
-    console.log(`  audit:  lar:///ha.ka.ba/@lararium/@admin/log/${result.requestId}`);
-    return 0;
-  } finally {
-    await peer.disconnect();
   }
+
+  const draftArgs: Record<string, string> = { tiddler };
+  if (toBag) draftArgs["toBag"] = toBag;
+
+  let result;
+  try {
+    result = await runVerb("draft", draftArgs, did);
+  } catch (err) {
+    // M3′: this door's SECOND submit went uncaught entirely — an outcome-unknown read-back from
+    // `where` just above surfaced it, but a wait expiring on the actual draft-land left the CLI to
+    // crash on an unhandled rejection instead of telling the operator anything.
+    const f = verbFailure(err);
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => { console.error(`lares draft: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+    });
+    return exitFor(f.code);
+  }
+  if (result.status === "error") {
+    const msg = result.errorMessage ?? "unknown";
+    emit(args, {
+      ok: false, requestId: result.requestId, error: msg,
+      human: () => console.error(`draft failed: ${msg}`),
+    });
+    return 6;
+  }
+
+  const r = summaryOutput(result) ?? {};
+  const receiptUri = `${OUTCOME_URI_PREFIX}${result.requestId}`;
+  emit(args, {
+    ok: true,
+    requestId: result.requestId,
+    data: { tiddler, fromBag: r["fromBag"] ?? null, toBag: r["toBag"], status: r["status"], receipt: receiptUri },
+    human: () => {
+      console.log(`drafted: ${tiddler}`);
+      console.log(`  ${r["fromBag"] ?? "(none)"} → ${r["toBag"]}`);
+      console.log(`  status: ${r["status"]}`);
+      console.log(`  receipt: ${receiptUri}`);
+    },
+  });
+  return 0;
 }

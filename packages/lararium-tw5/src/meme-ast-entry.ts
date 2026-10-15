@@ -1,5 +1,5 @@
 /*\
-title: lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast
+title: lar:///ha.ka.ba/lararium/tw5/modules/meme-ast
 type: application/javascript
 module-type: library
 \*/
@@ -9,11 +9,14 @@ module-type: library
  * Compiled by vite.plugin.config.ts → packages/lararium-tw5/tiddlers/src/meme-ast.js
  * as a native TW5 CJS tiddler with a comment-block header.
  *
- * module-type: library — accessible via require("lar:///ha.ka.ba/@lararium/tw5/modules/meme-ast")
+ * module-type: library — accessible via require("lar:///ha.ka.ba/lararium/tw5/modules/meme-ast")
  * inside the TW5 VM. The deserializer and other TW5 modules use parseMemeText() from here.
  */
 
 export {
+  failuresToDiagnostics,
+  gradeOf,
+  severityOf,
   parseMemeText,
   parseMemeNodes,
   parseMemeEdges,
@@ -21,11 +24,29 @@ export {
   buildMemeAst,
   edgesFromMemeAst,
   BOOTSTRAP_SCANS,
-} from "@lararium/core/meme-ast";
+} from "./meme-ast/index.js";
+
+// the ahu slot grammar — the deserializer requires these off the library in-VM.
+export {
+  AHU_OPEN_RE,
+  AHU_CLOSE_RE,
+  SLOT_SEGMENT_SRC,
+  SLOT_PATH_SRC,
+  KAHEA_REF_RE,
+  findTopLevelAhuBlocks,
+  scanAhu,
+  composeChildPath,
+  childUri,
+} from "./meme-ast/index.js";
+// the declared-structure scan — the Confluence gate (place-meme) requires it off the library in-VM
+// when a re-placement compares the slots the new text declares against the group it holds.
+// findAhuBalanceFaults — the child gate (meme-backstop) requires it off the library in-VM to report
+// unbalanced ahu opens/orphan closes at composed altitude.
+export { collectAhuSlots, findAhuBalanceFaults } from "./meme-ast/ahu-scan.js";
 
 export type {
   MemeAstNode,
   MemeNode,
   PranalaEdge,
   ParseMemeResult,
-} from "@lararium/core/meme-ast";
+} from "./meme-ast/index.js";

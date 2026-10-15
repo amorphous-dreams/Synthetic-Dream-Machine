@@ -1,0 +1,68 @@
+/**
+ * wiki-corpus-reader — the corpus-reader SHORE the perceiver hull consumes. Each reader yields the
+ * WHOLE tiddler as an open field record ({@link WikiSenseDoc} — operator law: title = pet-name key
+ * only, `text` = one field among many, unknown fields flow untouched) plus a change subscription.
+ *
+ * PONO-HOME LAW (operator): a wiki that RUNS as a TW5 VM senses itself IN-VM — the WikiSenseIndexer
+ * + `wikisense` filter operator shipped in the plugin blob carry that beat; no host-side reader
+ * doubles it. THIS shore serves the wikis that hold NO VM: {@link compositeCorpusReader} stands the
+ * hull over a composite-store island (resolved, kāpae-honored, causal-stamped — heads/changeId/bagId
+ * ride through as provenance).
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/wiki-sensorium-cap
+ */
+
+import type { CompositeStore, CompositeEntry } from "@lararium/mesh";
+import { deriveDocStalk, senseBodyOf, type DocStalk, type WikiSenseDoc } from "./wiki-sense-fold.js";
+
+/** The shore ONE perceiver hull consumes — whole-record docs + a change pulse. Read-only. */
+export interface WikiCorpusReader {
+  /** the corpus as sensed entities — WHOLE open records, causal-stamped where the face carries stamps. */
+  docs(): Promise<readonly WikiSenseDoc[]>;
+  /** change subscription — fires when the corpus moves; returns the unsubscribe. */
+  subscribe(listener: () => void): () => void;
+  /** OPTIONAL per-title stalk supplier — a reader with its own cache law fills foldCorpus's stalkOf
+   *  shore (the composite face memos per title on the body; the VM face rides getCacheForTiddler instead). */
+  stalkOf?: (doc: WikiSenseDoc) => DocStalk;
+}
+
+/** Lift ONE composite entry onto the sensed-entity shape — the WHOLE record, pass-through. The one
+ *  mapper every composite face rides (the reader here; the snapshot adapter imports it too). */
+export function senseDocOfEntry(e: CompositeEntry): WikiSenseDoc {
+  return {
+    title: e.title,
+    // the WHOLE record, pass-through — the store's tiddler object carries every field it holds.
+    fields: e.record.tiddler as Readonly<Record<string, unknown>>,
+    heads: e.heads,
+    bagId: e.bagId,
+    changeId: e.changeId,
+  };
+}
+
+/** Stand the shore over one VM-less wiki island's composite — resolved, kāpae-honored, causal-stamped.
+ *  Carries a PER-TITLE stalk memo keyed on the BODY the stalk came from: a refold after one write
+ *  re-derives ONE stalk, not the whole corpus — the composite face's warm-refold cure (the VM face
+ *  already rides TW5's getCacheForTiddler for the same law). A record's `changeId` names a title's
+ *  lineage and survives an edit, so it never keys derived text. */
+export function compositeCorpusReader(store: CompositeStore): WikiCorpusReader {
+  const memo = new Map<string, { body: string; stalk: DocStalk }>();
+  return {
+    async docs(): Promise<readonly WikiSenseDoc[]> {
+      const entries = await store.entries();
+      const docs = entries.map(senseDocOfEntry);
+      // move-not-leak: memo entries for titles absent from the read die with it.
+      const live = new Set(docs.map((d) => d.title));
+      for (const title of memo.keys()) if (!live.has(title)) memo.delete(title);
+      return docs;
+    },
+    subscribe: (listener) => store.subscribe(listener),
+    stalkOf: (doc) => {
+      const body = senseBodyOf(doc.fields);
+      const hit = memo.get(doc.title);
+      if (hit && hit.body === body) return hit.stalk;
+      const stalk = deriveDocStalk(body);
+      memo.set(doc.title, { body, stalk });
+      return stalk;
+    },
+  };
+}

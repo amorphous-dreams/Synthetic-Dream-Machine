@@ -1,0 +1,243 @@
+/**
+ * genesis-artifact — node genesis byte SOURCE + the node genesis office.
+ *
+ * The intake core (validate → import → verify, CID reconcile) lives ONCE in
+ * @lararium/mesh `genesis-intake`; this file
+ * keeps only what genuinely belongs to node:
+ *   - the fs byte source (genesis/seed.json + cas/)
+ *   - mintLaresIfAbsent — the operator's node genesis office (gate by placement)
+ *   - reconcileWellKnownTiddlers — runtime oracle tiddler writer (the lares url alone)
+ */
+
+import { daemonGenesisDir } from "./lares-config.js";
+import { readFileSync, existsSync }  from "fs";
+import { join }                      from "path";
+import type { Repo, DocHandle }      from "@automerge/automerge-repo";
+import type { LarDoc }               from "@lararium/mesh";
+import {
+  LARES_DOC_URI,
+  LARARIUM_DOC_URI,
+  storedLarRecord,
+  tiddlerText,
+  emptyLarDoc,
+  materializeGenesisIsland,
+  genesisCasManifestFromSeed,
+  GENESIS_SEED_FORMAT, genesisSeedCarriesAVersion,
+  sha256HexBytesSync,
+  utf8Bytes,
+  type GenesisCasManifest,
+  type GenesisSeed,
+} from "@lararium/mesh";
+
+// ---------------------------------------------------------------------------
+// Genesis bytes source
+// ---------------------------------------------------------------------------
+
+/** The genesis dir when a caller sites none — resolves through the composable genesis cap
+ *  (`LAR_GENESIS` → `~/.lares/config.json` → repo-relative `<corpus>/genesis`). Genesis stays
+ *  checked-in-by-default, so a no-config boot lands on the repo's tracked seed exactly as before. */
+function defaultGenesisDir(): string {
+  return daemonGenesisDir();
+}
+
+function genesisArtifactPaths(genesisDir?: string): {
+  seed: string; casDir: string;
+} {
+  const root = genesisDir ?? defaultGenesisDir();
+  return {
+    seed:       join(root, "seed.json"),           // the PLAIN-DATA oracle seed (the boot artifact)
+    casDir:     join(root, "cas"),                 // the byte SOURCE: genesis/cas/<cid> files
+  };
+}
+
+/**
+ * The seed.json bytes the genesis build publishes: the ONE serialization of a seed. The build writes these bytes,
+ * and every in-memory seed that stands for a published one serializes through here.
+ */
+export function genesisSeedFileBytes(seed: GenesisSeed): Uint8Array {
+  return utf8Bytes(JSON.stringify(seed, null, 2) + "\n");
+}
+
+/**
+ * ONE SEED, ONE CID: sha256 over the seed.json bytes AS PUBLISHED. A herm hands the bulb over under this CID
+ * (`/bulb/<cid>.bin`), and a lararium's Pronaos names the same bytes `seedCid` at `/genesis/seed.json`, so a
+ * traveler holding the stock seed CID finds the same coal at either door. A CID over a re-serialization of the
+ * parsed seed would name the one seed twice.
+ */
+export function genesisSeedCid(seedBytes: Uint8Array): string {
+  return sha256HexBytesSync(seedBytes);
+}
+
+/** Parse seed bytes as a genesis seed, or null when they are not JSON or not a genesis seed. */
+export function parseGenesisSeed(seedBytes: Uint8Array): GenesisSeed | null {
+  try {
+    const parsed = JSON.parse(new TextDecoder().decode(seedBytes)) as GenesisSeed;
+    return parsed?.format === GENESIS_SEED_FORMAT && !genesisSeedCarriesAVersion(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/** The seed.json bytes exactly as published, or null when absent or not a genesis seed. */
+export function readGenesisSeedBytes(genesisDir?: string): Uint8Array | null {
+  const { seed } = genesisArtifactPaths(genesisDir);
+  let bytes: Uint8Array;
+  try { bytes = new Uint8Array(readFileSync(seed)); } catch { return null; }
+  return parseGenesisSeed(bytes) ? bytes : null;
+}
+
+/**
+ * Read the plain-data genesis seed (seed.json) — the oracle doc's initial state the boot MATERIALIZES fresh.
+ * Returns null when absent or malformed.
+ */
+export function readGenesisSeed(genesisDir?: string): GenesisSeed | null {
+  const bytes = readGenesisSeedBytes(genesisDir);
+  return bytes ? parseGenesisSeed(bytes) : null;
+}
+
+/** The genesis CAS dir (genesis/cas) — the content-addressed byte SOURCE. */
+export function genesisCasDir(genesisDir?: string): string {
+  return genesisArtifactPaths(genesisDir).casDir;
+}
+
+/** Derive the logical CAS inventory from seed.json; no manifest file is read. */
+export function readGenesisCasManifest(genesisDir?: string): GenesisCasManifest | null {
+  const seed = readGenesisSeed(genesisDir);
+  if (!seed) return null;
+  try { return genesisCasManifestFromSeed(seed); } catch { return null; }
+}
+
+/**
+ * The genesis blobs the CAS sweep must NEVER delete — or `"unreadable"` when a seed STANDS at this
+ * home and will not read.
+ *
+ * THE PROTECT SET GOVERNS A DELETION, so its empty value carries weight. An empty set does not say
+ * "protection pending"; it says "nothing here needs protecting", and the sweep acts on that by deleting.
+ * Folding a torn seed into an empty set therefore strips the engine and plugin blobs of the one guard
+ * that keeps them, and the vessel eats its own genesis once they age past the grace.
+ *
+ * The ABSENT case keeps its empty set on purpose: a vessel carrying no seed holds no genesis blobs, so
+ * protecting nothing states a fact rather than losing one. Only a seed that stands and refuses to read
+ * answers `"unreadable"`, and a caller holding that answer must not sweep at all.
+ */
+export function genesisProtectSet(genesisDir?: string): ReadonlySet<string> | "unreadable" {
+  const { seed } = genesisArtifactPaths(genesisDir);
+  if (!existsSync(seed)) return new Set<string>();
+  const read = readGenesisCasManifest(genesisDir);
+  if (read === null) return "unreadable";
+  return new Set(read.blobs.map((b) => b.cid));
+}
+
+// ---------------------------------------------------------------------------
+// Region content-CIDs (G-D2 two ratchets; G-D3 engineCid = the hearth true-name).
+// ---------------------------------------------------------------------------
+
+export function readGenesisEngineCid(genesisDir?: string): string | undefined {
+  return readGenesisCasManifest(genesisDir)?.engineCid;
+}
+export function readGenesisPluginsCid(genesisDir?: string): string | undefined {
+  return readGenesisCasManifest(genesisDir)?.pluginsCid;
+}
+/** The GRAMMAR region — the required memetic-wikitext grammar alone; kāhuli's fast ratchet. Held apart
+ *  from `pluginsCid`, which names only THIS operator's own collection. */
+export function readGenesisGrammarCid(genesisDir?: string): string | undefined {
+  return readGenesisCasManifest(genesisDir)?.grammarCid;
+}
+
+/** The engine content-CID (slow ratchet) — the hearth's stable true-name (G-D3). */
+export function GENESIS_ENGINE_CID(genesisDir?: string): string | undefined {
+  return readGenesisEngineCid(genesisDir);
+}
+
+// ---------------------------------------------------------------------------
+// hearthTrueName — the hearth's PUBLIC true-name (the place's public face).
+// ---------------------------------------------------------------------------
+//
+// The hearth wears two faces, never fused (lar:///ha.ka.ba/lares/api/pono/
+// lararium-identity#head). The PUBLIC face = the content-address of the place's
+// GRAMMAR — the engine content-CID ALONE (G-D3), the TW5 core + version, NOT the
+// plugins. Plugins compose per-operator (DreamNet-offered) and ride their own fast
+// ratchet, so a plugin change MUST NEVER perturb the true-name. The engine face is
+// shared DreamNet-wide, ratchets by engine-epoch, checked into git, holds NO secret.
+// The PRIVATE face = a secret root minted per-founding (node-vessel-identity,
+// gitignored), NEVER derived from this public content. This accessor surfaces the
+// public engine face ONLY.
+//
+// Under capability-is-identity + petnames (#capability-and-petnames), this is the
+// hearth's canonical STABLE petname — a content-addressed name for "which grammar/
+// lineage this place speaks," legible across the mesh with no registry. It returns
+// `undefined` when the genesis artifact is absent (mirrors GENESIS_ENGINE_CID).
+export function hearthTrueName(genesisDir?: string): string | undefined {
+  return GENESIS_ENGINE_CID(genesisDir);
+}
+
+// ---------------------------------------------------------------------------
+// loadOrMaterializeOracle — the slice-2 boot path (no Automerge-binary seed)
+// ---------------------------------------------------------------------------
+//
+// No binary import, no merge-into-stale reconcile. The oracle island is a LIVE CRDT: reload it under the
+// deterministic id when persisted, else materialize it FRESH from the plain-data
+// seed (seed.json). One call, no merge.
+
+export async function loadOrMaterializeOracle(repo: Repo, genesisDir?: string): Promise<DocHandle<LarDoc>> {
+  const seed = readGenesisSeed(genesisDir);
+  return materializeGenesisIsland(repo, seed ?? undefined, "genesis-artifact");
+}
+
+// ---------------------------------------------------------------------------
+// mintLaresIfAbsent — operator(admin) mint of the lares protocol-invariant bag
+// ---------------------------------------------------------------------------
+
+/**
+ * Gate: the most-restricted grant — operator(admin), timed. Only the node home
+ * (the base lararium node) mints protocol invariants; wild vessels receive
+ * the plane by federating the lararium doc, and the keel (assembleVessel)
+ * only READS the oracle. Grant-proof enforcement arrives with keyhive;
+ * placement enforces the gate today — this code runs solely in the operator's
+ * node genesis office.
+ */
+export function mintLaresIfAbsent(repo: Repo, islandHandle: DocHandle<LarDoc>): string {
+  const existing = tiddlerText(islandHandle.doc()?.tiddlers?.[LARES_DOC_URI]) ?? null;
+  if (existing) return existing;
+  const minted = repo.create<LarDoc>(emptyLarDoc());
+  islandHandle.change((d) => {
+    d.tiddlers[LARES_DOC_URI] = storedLarRecord(LARES_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
+  });
+  // Two node homes federating one oracle doc may still race; LWW settles
+  // it — re-read and adopt the winner (an orphaned empty mint costs nothing).
+  return tiddlerText(islandHandle.doc()?.tiddlers?.[LARES_DOC_URI]) ?? minted.url;
+}
+
+/**
+ * mintLarariumIfAbsent — the lararium memetic corpus as its OWN doc (the oracle,
+ * lararium and lares docs stand separate). Mirror
+ * of mintLaresIfAbsent: the corpus pointer rides the oracle plane (the
+ * island doc), never the catalog registry. The minted doc starts empty; corpus content fills
+ * it by LOAD/ingest (`lares act LOAD … --to lar:///ha.ka.ba/bags/lararium`) and the
+ * disk mirror carries it back to `bags/lararium`. Node genesis office only.
+ */
+export function mintLarariumIfAbsent(repo: Repo, islandHandle: DocHandle<LarDoc>): string {
+  const existing = tiddlerText(islandHandle.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? null;
+  if (existing) return existing;
+  const minted = repo.create<LarDoc>(emptyLarDoc());
+  islandHandle.change((d) => {
+    d.tiddlers[LARARIUM_DOC_URI] = storedLarRecord(LARARIUM_DOC_URI, { text: minted.url, kind: "oracle" }, "operator-mint");
+  });
+  return tiddlerText(islandHandle.doc()?.tiddlers?.[LARARIUM_DOC_URI]) ?? minted.url;
+}
+
+// ---------------------------------------------------------------------------
+// reconcileWellKnownTiddlers — runtime oracle tiddler writer
+// ---------------------------------------------------------------------------
+
+export function reconcileWellKnownTiddlers(
+  handle:    DocHandle<LarDoc>,
+  laresUrl?: string,
+): void {
+  const tiddlers = handle.doc()?.tiddlers ?? {};
+  if (!laresUrl || tiddlerText(tiddlers[LARES_DOC_URI]) === laresUrl) return;
+  handle.change((d) => {
+    d.tiddlers[LARES_DOC_URI] = storedLarRecord(LARES_DOC_URI, { text: laresUrl, kind: "oracle" }, "lararium-seed");
+  });
+  console.log("[genesis-artifact] oracle tiddlers  lares=patched");
+}

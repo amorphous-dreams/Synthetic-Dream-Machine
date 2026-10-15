@@ -1,0 +1,96 @@
+/**
+ * delegation-edge — ONE primitive for "a signer vouched for this subject, at this epochCid".
+ *
+ * The shape kept re-appearing under different names. A fleet-proof binds a published face to the persona
+ * root that speaks for it; a dyad-binding binds a vessel×veil relationship into a fleet. Both carry a
+ * signer, an epochCid, and a signature over a canonical subject — the same act, twice named, with two
+ * byte-builders and two verify paths that could drift apart without anyone noticing.
+ *
+ * They differ in exactly one thing: WHAT the signature covers. So the subject rides as a caller-supplied
+ * record and a DOMAIN separates the uses, which keeps an edge minted for one purpose from verifying at
+ * another. One primitive, many bindings, no drift.
+ *
+ * WHAT AN EDGE DECLINES TO CARRY stays as load-bearing as what it holds. No member list, no device key,
+ * no roster — a verifier learns that the named signer vouched for this subject and nothing else, because
+ * nothing else was ever put in. The privacy rests on absence rather than on a proof system, which keeps
+ * the whole instrument one signature-verify wide.
+ *
+ * THE EPOCH ORDERS IT, NEVER A TIMESTAMP. A binding roots on a content-addressed epochCid, walkable from a
+ * local replica; a wall-clock reading would assert a global instant that a causal island cannot hold.
+ *
+ * Platform-blind: rides ./crypto only. NO node: imports.
+ * Meme: lar:///ha.ka.ba/lararium/mesh/attestation-plane
+ */
+
+import { DYAD_BINDING_DOMAIN, FLEET_PROOF_DOMAIN } from "./domains.js";
+import { canonicalJsonBytes } from "./crypto.js";
+
+import { verifyEd25519 } from "./ed25519-door.js";
+/** A signer's vouch for one subject, at one epochCid. The only delegation shape this stack mints. */
+export interface DelegationEdge {
+  /** "0x"+hex or raw hex — the key that signed, and all a verifier needs beside the edge itself. */
+  readonly signer: string;
+  /** The epochCid this vouch roots on. An ORDER, never an instant. */
+  readonly epochCid:  string;
+  /** ed25519 over `delegationBytes(domain, subject, signer, epochCid)`, by `signer`. */
+  readonly sig:    string;
+}
+
+/**
+ * The bytes an edge signs.
+ *
+ * `domain` separates the uses so an edge minted to bind a face cannot verify as one binding a device —
+ * the same reason the antigen and the members board sign under distinct domains. `subject` names exactly
+ * what this vouch covers, so an edge cannot lift off one subject and land on another.
+ */
+export function delegationBytes(
+  domain: string,
+  subject: Readonly<Record<string, string>>,
+  signer: string,
+  epochCid: string,
+): Uint8Array {
+  return canonicalJsonBytes({ kind: domain, subject, signer, epochCid });
+}
+
+/** Mint an edge — run where the signing key lives, never on the vessel that will present it. */
+export async function signDelegationEdge(
+  domain: string,
+  subject: Readonly<Record<string, string>>,
+  signer: string,
+  epochCid: string,
+  sign: (bytes: Uint8Array) => Promise<string>,
+): Promise<DelegationEdge> {
+  return { signer, epochCid, sig: await sign(delegationBytes(domain, subject, signer, epochCid)) };
+}
+
+/**
+ * Does this edge hold? One verify through the Ed25519 door, offline — no lookup, no clock, no pairing.
+ *
+ * An ABSENT edge reads false without reading dishonest: a subject that claims no binding fails no claim.
+ * A caller separates "unbound" from "refuted" by checking for the edge itself.
+ */
+export async function verifyDelegationEdge(
+  domain: string,
+  subject: Readonly<Record<string, string>>,
+  edge: DelegationEdge | null | undefined,
+): Promise<boolean> {
+  if (!edge?.signer || !edge.sig || !edge.epochCid) return false;
+  return verifyEdgeSignature(delegationBytes(domain, subject, edge.signer, edge.epochCid), edge.sig, edge.signer);
+}
+
+/**
+ * One signature under a signer's key, read through the house's one Ed25519 door. The signer rides bare
+ * lower-case hex or as a `0x` did. No caller hands in a verifier: a function handed its verifier verifies as
+ * leniently as its caller chose. Never throws.
+ */
+export function verifyEdgeSignature(bytes: Uint8Array, sigHex: string, signer: string): boolean {
+  return typeof signer === "string" && verifyEd25519(sigHex, bytes, signer.replace(/^0x/, ""));
+}
+
+/** The domains this stack mints edges under. A new use adds a string here, never a second primitive. */
+export const DELEGATION_DOMAIN = {
+  /** A published face ← the persona root that speaks for its fleet. */
+  fleetProof:  FLEET_PROOF_DOMAIN,
+  /** A vessel×veil relationship ← the group root that gathered it. */
+  dyadBinding: DYAD_BINDING_DOMAIN,
+} as const;

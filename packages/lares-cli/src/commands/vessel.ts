@@ -1,0 +1,216 @@
+/**
+ * `lares vessel` — THE VESSEL DOOR. One namespace for the vessel's own causal island.
+ *
+ * ── THE LAW THIS ENACTS ─────────────────────────────────────────────────────────────────────────
+ * ONE NAMESPACE PER CAUSAL ISLAND; THE PLANE IS A PARAMETER, NEVER A NEW VERB. That law already
+ * governs every other plane in this CLI — `nexus`, `persona`, `vault`, `library`, `circle`, `cabal`,
+ * `sense`, `sensorium` each hold one door over one island. The vessel — its store, its genesis
+ * artifact, its daemon, its corpus — forms an island by every test this house applies, and it holds
+ * this door. A door absorbs new capability; a plane with no door has nowhere to put it but the top,
+ * and that is how a top-level verb count grows back.
+ *
+ * ── FOUR PRIMITIVES + ONE READ ─────────────────────────────────────────────────────────────────
+ * A primitive names ONE motion and cannot be expressed as a sequence of the others. Everything else
+ * composes, and a composition earns a pet-name rather than a top-level name:
+ *
+ *   stop   ends a running daemon by port, graceful then forced — never a restart in disguise
+ *   found  mints the vessel identity, the persona root, the social planes and the bootstrap —
+ *          idempotent, skips what stands
+ *   stand  brings the daemon up, foreground or detached, and reports what it found
+ *   seed   plants every bags holding back into its doc, kind-routed, diff-gated — idempotent
+ *   read   the pure inspection that starts nothing
+ *
+ * Re-deriving the genesis island is NOT a standalone door: advancing the composition is a MESH act that
+ * rides `nexus kahuli` (the engine/grammar ratchet, past a single vessel), and the LOCAL re-derive lives
+ * only as an internal step of the rebuild rite + the `build:genesis` build script.
+ *
+ * `build` — compile the workspace and stamp the source digest — rides inside `rite refresh` rather
+ * than standing alone: it moves the TREE, not the vessel, and a door over one island should not hold
+ * a motion that belongs to the workspace.
+ *
+ * ── WHAT THIS DOOR DOES NOT DO ──────────────────────────────────────────────────────────────────
+ * It adds and removes NOTHING. Every sub-door hands the operator's own args straight to the handler
+ * beneath and changes nothing on the way: behaviour lives in the handlers, dispatch lives here. A door
+ * that also moved behaviour could not be verified — a green suite would prove neither half.
+ *
+ * Meme: lar:///ha.ka.ba/lares/cli/vessel-door
+ */
+
+import type { ParsedArgs } from "../parse-args.js";
+import { cmdFound }     from "./found.js";
+import { cmdStand }     from "./stand.js";
+import { posturePlan, posturePlanNotice } from "./posture-plan.js";
+import { cmdSeed }     from "./seed.js";
+import { cmdRead, cmdStop } from "./read.js";
+import { cmdWire } from "./wire.js";
+import { cmdVesselCard } from "./vessel-card.js";
+import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
+import { vesselDid } from "../env.js";
+import { runVerb } from "../verb-call.js";
+import { summaryOutput } from "../verb-result.js";
+
+type Sub = (args: ParsedArgs) => Promise<number>;
+
+/**
+ * Hand the sub-door's own args down, with the sub-door NAME consumed.
+ *
+ * The handlers beneath read `positional[0]` as their first real argument, so leaving "seed" or "read"
+ * sitting there would silently feed each handler its own name — the kind of defect that reads as a
+ * mysterious argument rather than as a dispatch bug.
+ */
+const under = (args: ParsedArgs): ParsedArgs => ({ ...args, positional: args.positional.slice(1) });
+
+/**
+ * `vessel stand` — the ENTRY POINT, and the one sub-door that carries modes.
+ *
+ * Standing a vessel runs ONE motion with several postures, and each posture rides a flag:
+ * `--foreground` chooses who owns the terminal, `--with-web` adds the Vite face beside it, `--restart`
+ * frees the port first. None of them names a different motion.
+ *
+ * THEY DO, HOWEVER, REACH IT THROUGH FOUR PROGRAMS, and each program reads a different slice of the
+ * command line — `cmdStandWithWeb` reads none of it. `posturePlan` holds that difference so a flag
+ * the chosen posture cannot carry names itself, and `--observe` refuses rather than performing the
+ * act it vowed to withhold.
+ */
+async function standVessel(args: ParsedArgs): Promise<number> {
+  const a = under(args);
+
+  const plan = posturePlan(Object.keys(a.flags).filter((k) => a.flags[k] === true));
+  if (plan.refuse !== null) { console.error(`lares vessel stand: ${plan.refuse}`); return 2; }
+  for (const line of posturePlanNotice(plan)) console.error(`lares vessel stand: ${line}`);
+
+  if (a.flags["with-web"])    return cmdStandWithWeb(a);
+  if (a.flags["restart"])     return cmdRestart(a);
+  if (a.flags["foreground"])  return cmdStandForeground(a);
+  return cmdStand(a);                 // the default posture: attach-or-start, detached, and REPORT
+}
+
+/**
+ * `vessel rite <petname>` — the pet-named cap-stacks over the primitives.
+ *
+ * Each of these composes a SEQUENCE, and naming a sequence at the top level is exactly how a surface
+ * grows back. They live behind one sub-door so a new composition arrives as a new RITE rather than a new
+ * verb.
+ *
+ * A RITE names a complex multi-verb procedure — the same word the runbooks carry as their own status, and
+ * the same slot every door offers: `<door> rite <petname>`. It sits at second position deliberately, so a
+ * composition never competes with a primitive for the top-level namespace. `flow` names a sensory MODALITY
+ * in this house (a mesh senses who · authority · transit), never a procedure, so a composition wearing it
+ * squatted on a word that already meant something.
+ */
+const RITES: Readonly<Record<string, { readonly composes: string; readonly run: Sub }>> = {
+  // THE FOUNDING. A vessel stands from nothing: mint what it needs, bring it up, plant the corpus.
+  //
+  // WHAT CLASS IT STANDS AS IS NOT THIS RITE'S CHOICE. The boot reads whether the identity archive opens
+  // and stands the vessel accordingly — a HERM at the waking floor when it holds shut, a LARARIUM when a
+  // key is present. So an unsealed founding lights a hearth, and a sealed one with no passphrase in the
+  // environment stands a crossroads that carries, routes and serves the public shelf while every sovereign
+  // act waits. Neither is a failure and neither is a degradation: a vessel that cannot open never rose.
+  //
+  // The rite REPORTS which one it got, because the two look identical from outside and an operator who
+  // expected a hearth reads a crossroads as a broken founding rather than an unlit one.
+  founding: { composes: "found · stand · seed", run: runFoundingRite },
+  refresh:  { composes: "build · stop · stand",         run: cmdRiteRefresh },
+  rebuild:  { composes: "re-derive · stand",            run: cmdRiteRebuild },
+};
+
+/**
+ * The founding rite — found · stand · seed, halting at the first step that refuses.
+ *
+ * It runs the primitives rather than reimplementing them, so the rite carries no behaviour of its own and
+ * every fix to a primitive reaches it for free. A composition that grows its own logic stops being a
+ * composition and becomes a fourteenth verb wearing a pet-name.
+ */
+async function runFoundingRite(args: ParsedArgs): Promise<number> {
+  const steps: ReadonlyArray<readonly [string, Sub]> = [
+    ["found", (a) => cmdFound(a)],
+    ["stand", (a) => standVessel({ ...a, positional: ["stand"] })],
+    ["seed",  (a) => cmdSeed({ ...a, flags: { ...a.flags, apply: true, yes: true } })],
+  ];
+  for (const [name, run] of steps) {
+    const code = await run({ ...args, positional: [] });
+    if (code !== 0) {
+      console.error(`lares vessel rite founding: halted at ${name} (exit ${code}) — the rite runs the`);
+      console.error("  primitives, so re-run it after curing that step; every one of them is idempotent.");
+      return code;
+    }
+  }
+  // THE CLASS IS THE BOOT'S TO REPORT, and it already does. `standAs` reads THREE things — whether the
+  // archive opens, whether a face stands, and whether the operator asked for a herm — and the node prints
+  // the matching line with the matching cure. A second report here could only re-derive that from what the
+  // rite happens to see, and the one signal reachable from this side (a passphrase in the environment)
+  // names none of the three: a FRESH founding is faceless, so it stands at the waking floor whatever the
+  // environment holds, and a line keyed on the env var would call that a sealed archive.
+  //
+  // One reading, in `standAs`, printed by the boot that performed it.
+  return 0;
+}
+
+async function runRite(args: ParsedArgs): Promise<number> {
+  const petname = args.positional[1];
+  const rite = petname ? RITES[petname] : undefined;
+  if (!rite) {
+    if (petname) console.error(`lares vessel rite: unknown rite "${petname}"\n`);
+    console.error("lares vessel rite <petname> — the pet-named procedures over the vessel primitives\n");
+    for (const [name, r] of Object.entries(RITES)) {
+      console.error(`  ${name.padEnd(9)} ${r.composes}`);
+    }
+    return petname ? 2 : 0;
+  }
+  // Two names come off: "rite" and the petname.
+  return rite.run({ ...args, positional: args.positional.slice(2) });
+}
+
+/** The door's map. Every entry names a primitive, a read, or the one composed sub-door. */
+const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Sub }>> = {
+  unbound: { summary: "list minted documents with no binding; removes nothing", run: async () => {
+    const result = await runVerb("unbound-docs", {}, await vesselDid());
+    if (result.status === "error") { console.error(result.errorMessage ?? "daemon refused the read"); return 2; }
+    const output = summaryOutput(result);
+    console.log(JSON.stringify(output?.unbound ?? [], null, 2));
+    return 0;
+  } },
+  found: { summary: "mint the vessel identity, persona root, social planes and bootstrap (idempotent)", run: (a) => cmdFound(under(a)) },
+  // THE HANDOFF ARTIFACT. A second operator cannot enter a relation with this vessel until she holds
+  // its card; the founding mints one and nothing surfaced it.
+  card: { summary: "print this vessel's ContactCard — the artifact another operator needs to relate to it", run: cmdVesselCard },
+  stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
+  // THE ONE VESSEL VERB THAT REACHES OUTSIDE THE ROOT. Standing stays inside `LAR_ROOT`; wiring
+  // always touches the operator's home. Two radii, two verbs — a reader sees the reach in the name.
+  wire:  { summary: "point every AI surface on this machine at this vessel — idempotent, re-aims drift",  run: (a) => cmdWire(under(a)) },
+  stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
+  seed:  { summary: "plant every bags/* holding back into its doc, kind-routed and diff-gated",         run: (a) => cmdSeed(under(a)) },
+  read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
+  rite:  { summary: "the pet-named procedures: founding · refresh · rebuild",                            run: runRite },
+};
+
+function printVesselHelp(): void {
+  console.log("lares vessel — the vessel's own door (one namespace, one causal island)\n");
+  for (const [name, s] of Object.entries(SUBS)) {
+    console.log(`  ${name.padEnd(7)} ${s.summary}`);
+  }
+  // THE WHOLE ARC, not the third of it this door owns. A founding leaves a vessel standing at the
+  // WAKING FLOOR — carrying, serving the public shelf, every sovereign act waiting — and the two acts
+  // that follow live at other doors. A reader who meets only the first stops there and reads the floor
+  // as a fault.
+  console.log("\n  A fresh founding, end to end:");
+  console.log("    lares vessel rite founding            found · stand · seed");
+  console.log("    lares persona new 0 --name '<label>'  light a face — this lifts it off the floor");
+  console.log("    lares vessel stand                    stand again; the lift lands here");
+  console.log("    lares vessel wire                     point this machine's AI surfaces at it");
+}
+
+export async function cmdVessel(args: ParsedArgs): Promise<number> {
+  const sub = args.positional[0];
+  if (!sub || sub === "help") { printVesselHelp(); return 0; }
+  const entry = SUBS[sub];
+  if (!entry) {
+    console.error(`lares vessel: unknown sub-door "${sub}"\n`);
+    printVesselHelp();
+    return 2;
+  }
+  return entry.run(args);
+}
+
+/** The sub-door names, for the surfaces that mirror this table rather than keeping their own. */
+export const VESSEL_SUBS: readonly string[] = Object.keys(SUBS);

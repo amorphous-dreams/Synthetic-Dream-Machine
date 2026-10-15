@@ -1,0 +1,253 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology.mem"
+l-space   = "stable"
+mana      = 16
+manao     = 16
+manaoio   = 15
+role      = "doctrine: one meme-graph model, two surface projections (Story-River + DreamDOM canvas); graph-primacy; view-state as its own lar-URI-addressed region; the nine families classified by surface; transclusion's surface-split. CARRIES THE SURFACE CORRECTION (2026-09-02): the canvas camera is a DOM-HOSTING DreamDOM document, never a rasterising OffscreenCanvas, and TLDraw is a STUDIED model rather than a named dependency — its licence forbids the deployment shape this house is"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Wikispace × Canvasspace Ontology
+
+Lares fuses three traditions nobody has fused whole: a ''transclude-capable wiki'' (TiddlyWiki5 / Xanadu lineage) × an ''infinite canvas'' × ''visual scripting''. This doctrine holds how they cohere as ''one meme-graph model projected onto two surfaces'' — the wiki document surface and the infinite canvas — without either surface's concerns leaking into the model.
+
+<<~/ahu>>
+
+<<~ ahu #/one-model-two-cameras>>
+
+!! One Model, Two Cameras
+
+The meme-graph holds composition in the has-stack (meta tags), adjacency in `loulou`, embedding in `aka`/`kahea`, and every relation that //does// something as a ''wire entity'' — a `lar:` addressed record wearing its family as a stack component. ''A relation stands as an ENTITY, never as an attribute on an edge'' — reification lets a wire take an address, receive transclusion, and carry versions like anything else. Two cameras project that one graph (`render-pipeline#render-axes`):
+
+* the ''Story-River camera'' — `window.document`, the page/document surface;
+* the ''DreamDOM canvas camera'' — a ''DreamDOM'' document, the infinite flow surface (#the-surface-law).
+
+The worn family component carries the ''meaning''; the surface picks the ''render template''. A `wires/dataflow` entity //means// "typed value between pins" whether the canvas draws it as a wire or the Story River renders it as a dependency note. The discipline mirrors projectional editing (JetBrains MPS): ''the model node carries no intrinsic surface form'' — every appearance reads as a projection. Confirmed novel — no prior system fuses content-identity transclusion + infinite canvas + typed-pin dataflow under one addressed graph.
+
+<<~/ahu>>
+
+<<~ ahu #/the-surface-law>>
+
+!! ⚠ The surface law ~ the camera hosts DOM, never rasterises
+
+''THE CANVAS CAMERA MUST NOT RASTERISE.'' A rasterised camera holds pixels and ''has nothing left to ask'', which forecloses every law this doctrine rests on — semantic zoom, graph primacy, the model/view boundary. Sutherland stated the objection in 1963 — //"the computer 'knows' that a 'transistor' is intended at that place… It has no need to interpret the collection of lines"//. The cost stands measured elsewhere, and it exceeds the marginal: a 10k-line text field renders in ''0.49 s'' under an HTML renderer and ''90.3 s'' under a rasterising one; two independent engines (Flutter, Qt) each lost the semantic layer and had to rebuild accessibility as an opt-in, off-by-default, absolutely-positioned overlay; and WebAIM ''tested and refused'' the assurance, shipped with a canvas move, that the move left accessibility unaffected. ''The camera stands as a DreamDOM document — real nodes, real selection, real focus, a real accessibility tree — positioned by one shared CSS transform per layer.''
+
+⚠ ''THE CAMERA TAKES NO VENDOR'S NAME AND NO VENDOR'S LICENCE.'' TLDraw's forbids production use without a key, forbids interfering with key enforcement, describes technical measures that ''detect deployment environments and transmit usage data'', and requires an unmodified watermark. Against a sovereign, self-hosted, forkable vessel that reads as ''enclosure in clause form''. ''TLDraw remains the best STUDIED implementation of this camera's category and never stands as a dependency of it'' — its passthrough HTML container, its one-shared-transform-per-layer, its fixed-precision clamp and its measured object budget stand as patterns, and ''a pattern carries no encumbrance where its code does''.
+
+''What the surface law leaves untouched, and this part bears the load.'' One model, two cameras. Graph primacy. Separate render documents over one shared world graph (`camera-mount` C-2). And the renderer stays ''document-parameterized'' — //only the DOM-tree target differs// — which explains precisely why the camera's document enters as a parameter and never as an architecture.
+
+⚠ ''Object budget, measured on the best shipped implementation of this category'': a DOM-hosting canvas begins reporting a cached rather than live zoom above ''~500'' objects, and declares a ceiling at ''~4000''. Culling by `display:none` removes a node from the accessibility tree; `content-visibility: auto` stands as the correct instrument, and that same implementation tried it and BACKED it OUT. ''Read that before trusting either.''
+
+!!! ⚠ What the spiral found, and what it did NOT move
+
+''No licence exposure stands.'' Measured 2026-09-02: ''no tldraw dependency in any manifest, no submodule, nothing installed'', and neither `packages/lararium-tldraw` nor `packages/dreamdeck-tldraw` exists. Three carriers named files in those packages as //sources of truth//; each reads corrected in place. ''A pointer that names an absent file repeats the same defect this house keeps finding at every scale — a claim that reads as present while the thing stays absent.''
+
+✓ ''ADDRESSES RENAMED, WELD-TESTED FIRST (2026-09-02).'' The weld test ran before any edit: the address `camera/tldraw-root` stood at ''three meme sites and no code''; the readiness key `tldraw-doc` stood in ''`packages/lararium-mesh/src/readiness.ts`'' as well as its meme, and `READINESS_KEYS` proved to have ''no consumer anywhere'' — exported, typed, unimported, with no key used as a literal. So both moved: `camera/tldraw-root` → ''`camera/canvas-root`'', `tldraw-doc` → ''`canvas-doc`''.
+
+''SURFACE NAMES BOTH, NEVER IMPLEMENTATION'' — the whole repair. A camera stands as a //canvas camera// whatever document backs it; naming an address after a vendor made this rename necessary at all, and a surface name will not need moving when the document type changes again.
+
+▢ ''OWED — a descriptive pass'': `verse-mesh`, `lar-hud`, `rooms` and the DreamDeck backlog carry vendor-named prose. No addresses stand among them, so none points live.
+
+<<~/ahu>>
+
+<<~ ahu #/semantic-zoom>>
+
+!! Semantic zoom ~ MEANING chooses the level of detail, never scale
+
+''The zoom level selects a TEMPLATE, not a magnification.'' A node renders differently because the reader asks a different question, and the store knows what the node IS — Sutherland's //the computer 'knows' that a 'transistor' is intended//, cashed out as a navigation affordance.
+
+|!Level |!Threshold |!Template |!`ahu` visible |!Ownership arrows |!OODA-HA phase |
+|strategic |< 0.15 |`meme-strategic` |✗ |✗ |aftermath |
+|operational |0.15–0.35 |`meme-operational` |✗ |✗ |observe |
+|tactical |0.35–0.80 |`meme-tactical` |✗ |✗ |orient |
+|combat |0.80–1.50 |`meme-combat` |✓ |✓ |decide |
+
+''WHY THIS STANDS AS THE HOUSE'S STRONGEST POSITION, measured elsewhere.'' A study of overview+detail found users //preferred// an overview yet //worked faster without it//, and its authors conjectured the cause: the one map that made the overview unnecessary ''had semantic zoom''. On a small viewport the case worsens further — navigation cost scales in ''window widths'', so almost every traversal a desktop reader would pan falls, on a phone, on the zoom side of the crossover, while a minimap there costs time and buys no preference.
+
+''A rasterising camera cannot do this'' — not for want of the idea, but because it holds pixels and has nothing to ask. ''Only a store that knows what a thing IS can choose what to show of it.'' That makes #the-surface-law and this section one ruling wearing two coats.
+
+⚠ ''Untested on a phone by anyone.'' The literature points here and never surveyed it. This house would arrive first, on ground the field abandoned rather than ground it settled.
+
+<<~/ahu>>
+
+<<~ ahu #/graph-primacy>>
+
+!! Graph-Primacy — the Inversion
+
+Lares runs the ''opposite'' of Shipman-Marshall spatial hypertext. There, canvas proximity //infers// structure (near-means-related). Here, ''the explicit graph entity (worn stack, loulou, wire) comes first, and the canvas renders it'': explicit-graph → spatial-form, never spatial-arrangement → inferred-edge.
+
+A reader may drag two node-shapes adjacent without intending a relation; bare proximity creates no edge. The canvas reads as the ''reading surface''; the graph reads as the ''authority surface''.
+
+<<~/ahu>>
+
+<<~ ahu #/the-proposal-channel>>
+
+!! The proposal channel ~ arrangement may SPEAK, and still never assert
+
+''Graph-primacy forbids INFERENCE. It does not forbid PROPOSAL, and the difference carries the whole of it.''
+
+Nothing lifts the ban on `spatial-arrangement → inferred-edge`: a reader may drag two shapes adjacent without meaning anything, and a surface that quietly mints an edge from that has fabricated a relation nobody made. ''No arrangement ever becomes an edge.''
+
+But a surface may ''RECOGNISE'' an arrangement and ''OFFER'' it:
+
+```
+spatial-arrangement  →  PROPOSED entity  →  (a hand accepts)  →  explicit graph entity
+```
+
+The proposal carries no edge and renders as none. It becomes an entity ''only when a hand takes it'', at which point it enters the graph as an ordinary explicit entity and graph-primacy's arrow runs unbroken.
+
+!!! What the channel earns
+
+Spatial hypertext's own measurement — the programme this doctrine inverts — reads: ''users avoid explicit linking mechanisms in favour of expressing relationships through proximity and visual attributes''. That behaviour does not stop because a system forbids inference; it simply goes ''unrecorded''. A house with no proposal channel loses exactly the structure its readers work hardest to express.
+
+Its second finding names the state the channel carries: ''placement close but not quite with others can imply indecision, or POTENTIAL for a relation''. //"Constructive ambiguity is a first-class state and no shipped tool has one"// — every relation elsewhere reads as an edge or as nothing, and a boolean edge cannot hold a hedge.
+
+!!! What this house can do that the original could not
+
+The system that first built a spatial parser promoted by ''destructive edit''. Here a proposal ''stands versioned, attributable and declinable'' — a hand can refuse it, undo it, and read it back to whoever made it. ''The store earns that improvement rather than suffering it.''
+
+⚠ ''AND THE TRAP, which recurs in this house's own shape.'' Spatial hypertext arose to ESCAPE a system carrying ''predefined types and relations'', whose overhead made mid-task revision //overwhelming and very unlikely to occur//, and whose users' visual languages ''co-evolved with the task'' — colour meaning usefulness early and something domain-specific later. ''A fixed vocabulary of spatial relation types rebuilds precisely that system.'' The vocabulary stays DERIVED, never enumerated (#/derive-dont-enumerate).
+
+<<~/ahu>>
+
+<<~ ahu #/model-view-boundary>>
+
+!! The Model/View Boundary — Both Sides Addressed
+
+The boundary runs not between "graph" and "not-graph" — ''both sides carry `lar:` URIs''. It runs between //which entity holds what//:
+
+* ''Model'' — a meme, its has-stack, and its wire entities: identity (`lar:` URI), the worn components, wire records (`from`/`to` / `lifecycle` / `traversal` / `propagation`), `confidence`, the `#meta` ledger (`mana` / `manao` / `manaoio`), and pin-type declarations on `kumu` node-types.
+* ''View'' — stored as ''its own lar-URI-addressed entities'', separate from any meme's `#meta`: canvas shape position / extent / z-order, camera pan+zoom, Story-River order, level-of-detail, render-template selection.
+
+TW5 already proves the pattern — `$:/StoryList`, `$:/HistoryList`, and palette state hold view-state as system tiddlers; per `lar-uri#tw5-system-boundary`, the view-state that persists or federates carries a `lar:///` title and syncs. So a canvas node exists as a lar-URI entity (the model meme) ''and'' its canvas/camera state exists as lar-URI entities (the view tiddlers) — distinct, uniformly addressable. ''The quine reaches into the view layer.''
+
+''The one hard rule:'' a meme MUST NOT carry its own canvas coordinates in `#meta`. Position lives in a view-state entity the camera reads (the Obsidian-Canvas lesson). The meme stays surface-agnostic; the view-state tiddler holds the placement.
+
+<<~/ahu>>
+
+<<~ ahu #/a-place-is-a-scope>>
+
+!! A place stands as a scope over the corpus ~ never a partition of it
+
+A named place — a room, a board, a shelf — ''carries a capability-and-view scope'': a recipe that selects from the one corpus. ''It owns none of what it shows.'' The same meme stands in as many places as select it, and it stays one meme in all of them.
+
+''What partitioning would cost, stated as the failures it produces:'' a meme placed in two rooms becomes two memes that drift; an edge between memes in different rooms has nowhere to live; moving a meme between rooms becomes a copy, so its history forks at the move. Every one of those follows from the data model, and none of them shows while a single room stands open, so the choice falls due before the second room exists.
+
+''The scoping reading keeps all three'': one meme, one history, edges that cross freely, and a place that says only //which of them you look at, and by what right//. `#/graph-primacy` states the same law from the other end — the graph holds the model and the arrangement renders a view, so a view cannot own what it shows.
+
+<<~/ahu>>
+
+<<~ ahu #/ownership-is-a-graph-fact>>
+
+!! Containment stands as a graph fact ~ never the surface's parent hierarchy
+
+A meme owns its blocks, and a block owns its ports. ''The model carries that containment as a queryable relation, and the render tree's parent pointer never holds it.'' A camera reads the relation; it never authors it.
+
+''Why this needs stating rather than assuming:'' at coarse level-of-detail a meme's frame shrinks toward a label, while the blocks it owns keep their own extent and ''leave the parent's visible bounds''. A surface that answers "what does this contain?" by asking its own tree then reports children that no longer look contained — and a drag that crosses those bounds ''reparents'' by the surface's rules rather than the model's. The containment relation stays true through every zoom because it never depended on the drawing.
+
+* the relation ''declares itself'' — a `control:owns` edge in the model, distinguished from a semantic `pranala` edge by kind, never by appearance
+* it ''holds structure rather than appearance'' — no hand drags it; a camera may render it at zero opacity and it still stands
+* a template asks ''"what blocks does this meme own?"'' of the graph, and gets the same answer at every level of detail
+* it ''plays the widget tree's part on the model side'': the render pass walks OWNERSHIP to find its targets, ''never'' the surface's own hierarchy
+
+⚠ A surface that lets its render tree carry containment has fused the two halves of `#/model-view-boundary` in the one place the fusion looks harmless — and the break only shows at the zoom where the rendering stops agreeing with the model.
+
+<<~/ahu>>
+
+<<~ ahu #/family-classification>>
+
+!! The Nine Families by Surface
+
+| Class | Families | Reading |
+|---|---|---|
+| ''Surface-invariant'' | `control` · `relation` · `observe` · `message` · `constraint` | render legibly on both cameras (hierarchy/arrow, citation/connection, monitoring-wire/citation) |
+| ''Wikispace-primary (dual-meaning)'' | `transclusion` | inline document embed ↔ canvas content-window (#/transclusion) |
+| ''Canvasspace-primary'' | `dataflow` · `reaction` · `spatial` | typed value-wires, event-wires, spatial topology |
+
+`observe` reads ''surface-invariant'' (monitoring-wire on canvas, source-citation in prose) — no rename needed.
+
+<<~/ahu>>
+
+<<~ ahu #/transclusion>>
+
+!! Transclusion — Surface-Split
+
+The ''core holds surface-invariant'': content-identity (Nelson — "the same thing knowably in two places", //not// a copy), `aka` (frozen/likeness-image) vs `kahea` (live/subscription-fresh), acyclicity, and the firm line ''transclusion carries content-identity; `dataflow` carries a computed value'' — these never blur, even where both render as arrows on canvas.
+
+The ''split falls at the content-position'':
+
+* ''Into a node — coherent, no new primitive.'' A node's body (an `ahu` slot) carries `aka`/`kahea`; the Story-River camera resolves the embed; the canvas camera displays the result inside the node shape.
+* ''Into an edge — BY REIFICATION.'' A wire reads as its own entity, so "embedding into an edge" means transcluding into a wire entity's body — ordinary kahea into an ordinary carrier, no schema extension. (RDF reification reached the same shape; here it arrives as law, not workaround.) ''Annotation //on// a wire ≠ transclusion //into// a wire'' — the distinction stands; both read lawful.
+
+<<~/ahu>>
+
+<<~ ahu #/wires>>
+
+!! The Wire Ontology (Visual Scripting)
+
+`dataflow` / `reaction` (papalohe) / `message` / `spatial` / `control` map cleanly onto the universal node-graph wire kinds. Two settled points:
+
+* ''No naked execution wire — by Verse alignment.'' Verse sequences through fibers / suspension / `spawn`, not visual "do-this-then-that" arrows. So ''`reaction:papalohe` (listenable→subscribable) //constitutes// the Verse-native execution wire'' — same "this causes that to run", carried as a named, event-conditional arc. Fine-grained `A(); B(); C()` stays //inside// node bodies as Verse code; only coarse event-causation becomes a wire.
+* ''Pin //types// live on the node, not the edge.'' A `dataflow` edge names the role (reads/writes/streams/buffers/pipes); the data ''type'' (float / vector / geometry) declares on the `kumu` node-type's pin. The edge inherits the type by endpoint; the canvas colors the wire from the pin type (the Blender pattern). The edge schema stays clean.
+
+When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-event fires → the node updates).
+
+<<~/ahu>>
+
+<<~ ahu #/spatial>>
+
+!! The Spatial Family + Watch-Outs
+
+`spatial` (`contains` / `portal` / `adjacent` / `layer`) names ''graph-layer claims the canvas renders'' — they hold whether or not the canvas currently shows them. Guard the surface-meaning splits:
+
+* ''Bare proximity ≠ `spatial:adjacent`'' — graph-primacy: edges drive proximity rendering, not the reverse.
+* ''A tldraw Frame ≠ `spatial:contains`'' — dropping a shape in a frame stays a view act; the containment edge declares explicitly. (Frames render `contains`; Groups carry no graph claim.)
+* ''Z-order ≠ `spatial:layer`'' — render-on-top within a viewport differs from ontological stratum membership.
+* ''`spatial:portal` crosses the surface'' — uniquely it carries a //camera-navigation// payload (click → the viewport moves to the target); it reads as more than a connector.
+* ''Zoom level-of-detail'' stays ''view-intrinsic'' — no graph analog; the camera owns which detail a meme reveals at which zoom.
+
+<<~/ahu>>
+
+<<~ ahu #/forks-resolved>>
+
+!! Forks — Resolved (operator 2026-06-06)
+
+* ''Canvas-position storage + `lar:` URI as shape-id — APPROVED, unified.'' A node //is// a lar-URI entity; its view-state (position, camera, z-order, LoD) lives in //separate// lar-URI-addressed view-state entities (the `$:/StoryList` pattern). Both addressed; coordinates never in the meme `#meta`.
+* ''`transclusion` on canvas — APPROVED'' as one family with a content-window render template (not a `spatial:portal` split); the model-meaning stays unified.
+* ''`dataflow` / `reaction` in Story-River — APPROVED:'' they carry prose render templates where useful; an omitted wire reads as a view choice, not a model loss.
+* ''`spatial:portal` navigation payload — APPROVED.''
+* ''Zoom-LoD — APPROVED'' as view-intrinsic render-logic (revisit if a graph-level mode parameter proves needed).
+* ''Transclude-into-an-edge — DEFERRED (provisional)'', per #transclusion.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;ajvBSx_yUahdSObKDWxAE-DUyQogfM-eXvKfeGhJ_fQ
+
+<<^ code="&#x0004;" -> to="?">>

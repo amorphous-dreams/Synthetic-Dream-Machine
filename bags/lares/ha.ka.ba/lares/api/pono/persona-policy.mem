@@ -1,0 +1,270 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/persona-policy">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable         = true
+file-path         = "bags/lares/ha.ka.ba/lares/api/pono/persona-policy.mem"
+hydrate           = true
+l-space           = "stable"
+mana              = 17
+manao             = 16
+manaoio           = 15
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "persona-policy — the operator's rulings on the multi-persona identity core: a SESSION wears the face and the vessel wears none, so every act carries exactly ONE face (PRIVATE-all, PUBLIC-one); a switch runs as ONE session's act, recorded on the vessel and never on the wire; two faces live from one vessel never link on the wire · each PersonaGroup a CRYPTOGRAPHIC INDIVIDUAL (Sybil-of-one the accepted IoC cost, answered socially never in crypto) · DISTINCT recovery custodians per persona. Plus the two-layer pet-names (private map ⊥ public glamour) under Zooko — the pet-name FLEET-SYNCS among the human's own vessels and never PUBLICLY federates — under THE BINDING LAW: only a publicly announced Handle binds a PersonaGroup to a public glamour, so no other path may carry a persona's name onto a federating surface. Identity carries no universal index; the mesh refuses to build the SIN even to defend itself"
+tags              = ["api/pono/meme"]
+title             = "lar:///ha.ka.ba/lares/api/pono/persona-policy"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/api/pono/persona-policy"
+written           = "2026-07-20"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Persona-Policy ~ one face out, the multitude within
+
+The multi-persona identity core (persona-circle: a human as a private Circle of selves, each an all-hardened key at its own handle-index) ''carries three operator rulings'' that fix how a human's selves get worn over a vessel and how they recover. Each ruling ''bends toward the same law'': the mesh refuses a global identity-now, so it never builds the Single Identity Number even to defend itself. The rulings land 2026-07-20, dispatched to code at #64 stage 4; the session ruling (#/the-session) lands 2026-10-11 and names WHAT wears a face.
+
+<<~/ahu>>
+
+<<~ ahu #/one-face>>
+
+!! Ruling 1 ~ one face per act (PRIVATE-all, PUBLIC-one)
+
+''Every act carries exactly ONE face.'' A SESSION wears it, and the vessel wears none (#/the-session). A session's public/carry shore serves ''only the persona that session WEARS''; the human's own private pool sees ''all N''. So the disclosure asymmetry reads: ''PRIVATE-all, PUBLIC-one'' — the multitude stays whole inside, one persona reaches outward.
+
+''A face names WHO ANSWERS for an act'' — one blame-bearer per act; correlation stays secondary. The ruling calls for recording outgoing and incoming faces locally with causal position and rebind/re-dial results, closing the switching session's Nexus links, then re-dialing as the incoming face (#/the-session: the switch belongs to ONE session and touches no other). The recorded switch act stands ruled, unbuilt: the code as it stands keeps ONE vessel-wide selector and resolves one worn face at vessel boot, so a switch takes a restart until that act lands. A session wears ONE face at a time, either a private face alone or paired with its public Handle; a personal Handle never rides without its owning face.
+
+''The human keeps many faces and many Handles across many cabals.'' Faces and Handles relate many-to-many with cabals; one current personal Handle belongs to each PersonaGroup, and a renamed face rotates its Handle. A collective quorum Handle stays separate and speaks only for its chartered acts. No root or switch notice joins face names.
+
+The wall stays custody-by-TYPE: wearing a persona ''REQUIRES that this vessel HOLD its sovereign root'' — you sign only as a self whose secret you carry (persona-vault#wearPersona).
+
+<<~/ahu>>
+
+<<~ ahu #/the-session>>
+
+!! Ruling 1b ~ a SESSION wears the face; the vessel wears none (operator ruling, 2026-10-11)
+
+''A SESSION wears the face — a browser tab, a CLI run — and the vessel wears none.'' Quote license: //"Consider a human might want a tab open as one Persona, and a tab open as another Persona... same vessel. Identity as relation."// and //"Yes, a CLI session wears its own face too. Pono question, as those act as ephemeral UX."// Sessions stand as ephemeral UX over a vessel. Several may live at once over one vessel, each wearing its own persona, and ''every act carries exactly one face''.
+
+''One Lararium per human, never one per face'' (operator ruling, 2026-10-11; quote license: //"I don't think running 3 docker images for 1 human shall hold up at civic scale … what if every human I invite has 10 'faces' (they need their data together, I need maintainable/manageable IaC for the IaMyth)."//). A human's faces keep their data together in the one vessel (#/one-face, PRIVATE-all). Plurality rides sessions and the switch act, never a fleet of per-face vessels. Face plurality stands as an ordinary case from the first Nexus onward (quote license: //"Both Freyja and I shall 'wear' many personas (w/ public Handles) on the first Nexus of the DreamNet. We both have at least 3."//).
+
+!!! Three layers ~ where each object lives
+
+|! VESSEL |! PERSONA |! SESSION |
+| its own roots, device-minted (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key">>) | the persona root, held in the vessel's custody; it never travels | the worn face |
+| the one store and its one backing Repo | its planes (`@persona` · `@circles` · `@identities` · `@sessions`) | a capability-limited view of that Repo |
+| the device key, serving custody and local identity ONLY | its admit relation | access to the worn face's planes and to no other face's |
+| custody, the store lock, the holder | its ONE current public Handle | the EFFECTIVE recipe |
+| the daemon island, face-blind | a face-scoped proof subject | fresh transport keys per dial; ONE face's proof and admit, presented |
+| the switch RECORD, vessel-private | | the switch ACT |
+
+''What the ruling states outright'': a vessel holds its roots and one store; a session contracts in as ONE persona; the vessel-wide parts (custody, the daemon island) serve every session and let none read another's planes; each session proves itself under its own face-scoped key. ''The remaining cells place objects as a model study read them against canon and code (2026-10-11)'': builders read those cells as the standing model, unbuilt, and a later ruling may move one. Two carriers state the model as a contract: what a session carries and how its vessel answers it (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>), and the face-scoped proof subject a session presents at a gate (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>).
+
+!!! What never links on the wire
+
+''Two faces live from one vessel never link on the wire.'' Each session proves itself under its own face-scoped key, never under a key the vessel shares across sessions. So the protocol carries no shared vessel identifier across faces, no cross-face proof, and no artifact that joins two faces. No root or switch notice joins face names (#/one-face).
+
+''The residuals, named.'' The promise reads as SCOPED separation, never blanket unlinkability. The protocol cannot hide: a network address · timing · a shared destination · a human's own self-disclosure · hostile same-origin code · the device owner · co-residency on one device. A herm's carriage still shows locators and timing. The field's precedents (browser containers, Tor stream isolation, pairwise identifiers, Noise identity hiding) each promise the scoped kind and no more.
+
+!!! The switch ~ one session's act
+
+''A switch belongs to ONE session.'' It closes that session's Nexus links, resolves the incoming face, and re-dials as that face; every other session the vessel holds stays untouched. `persona wear` acts on a session. A face resolves once per session's island boot, never once per vessel boot. The vessel keeps the record (#/one-face) as a vessel-local causal act; the record never crosses the wire. The act's five steps stand at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-switch">>.
+
+!!! OWED ~ the build
+
+The code as it stands cracks against the ruling in three places (read 2026-10-11, nothing run):
+
+# ''One vessel-wide selector.'' `wearPersona` (`packages/lararium-mesh/src/persona-vault.ts`) moves one active pointer; the node and browser boots each resolve ONE worn face, and `persona wear` asks for a reboot.
+# ''The gate proof names the VESSEL.'' The leaf identity loads the vessel seed and ContactCard (`packages/lararium-node/src/leaf-identity.ts`), and the auth wire proves the vessel key and binds the admit to it (`packages/lararium-mesh/src/auth-wire.ts`). Two sessions of one vessel that wear different faces correlate at any gate both dial.
+# ''The holder broadcasts.'' The shared holder forwards every island message to every tab (`packages/lararium-browser/src/shared-holder-core.ts`), and the PersonaGroup ring's own-hand path skips the grant check (`packages/lararium-mesh/src/persona-group-ring.ts`), so plane names separate bags without authorizing sessions.
+
+''A per-Nexus wire key alone does not close crack 2.'' It removes the vessel's cross-Nexus link (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>) and leaves two faces of one vessel on the SAME Nexus sharing it; per-dial transport keys serve the sibling channel, never the gate proof. The gate owes a face-scoped proof subject.
+
+''Five seams carry the build'' (the model study's cut; a lane plan, never law): a session face contract replaces the vessel selector's live authority · mounts, planes and the effective recipe resolve at SESSION-island boot · leaf identity, gate proof, admit binding and the PersonaGroup grant lookup move to a face-scoped proof subject that exposes no root bytes · each session takes a capability-limited Repo path, and the holder answers the requesting session alone · the switch records as a vessel-local causal act scoped to one session. The debts those seams break into stand in order at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/standing-and-owed">> and <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/owed">>.
+
+!!! Three bounds, ruled (operator ruling, 2026-10-11)
+
+Quote license: //"approve your leans, let's get this Craft across a goalpost line"//. The three leans the model study carried now stand as law:
+
+* ''Two sessions wearing the SAME face may correlate.'' A face's proof identity and its public Handle link that face's own acts by design. Only a link BETWEEN faces stays forbidden.
+* ''Plane isolation inside a vessel runs by CAPABILITY-LIMITED sessions, and the vessel's own daemon stands TRUSTED.'' No per-plane encryption stands against the vessel's own daemon; a session reaches the planes its face grants and no other.
+* ''The browser's protection stops at two named residuals'': hostile same-origin code, and the device owner.
+
+!!! How a face-scoped proof key comes into being
+
+''By certification, never by derivation, and no persona root moves.'' The root-holding vessel keeps the face proof key; each joined vessel mints its OWN face-scoped key, and the face key certifies it once at the join. No private face key travels. The house adopted that per-vessel shape under the operator's standing grant, and the operator read it and overruled nothing (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">>). What stays unproven stands at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/owed">>, and a builder MUST NOT harden an unproven part into code as law.
+
+<<~/ahu>>
+
+<<~ ahu #/cryptographic-individual>>
+
+!! Ruling 2 ~ each PersonaGroup a cryptographic individual (Sybil-of-one, the accepted cost)
+
+''You CANNOT pin "one human = one custodian" in crypto — that pinning IS the sin.'' A cryptographic layer that asserted "these N faces trace to one person" would rebuild the global identity-now the mesh forbids (the Nymwars root, persona-circle#the-vault). So the ruling ''declines the pin'': each ''PersonaGroup stands as its OWN cryptographic individual'', with its own root, its own device-delegation edge, and its own escrow (#/distinct-recovery).
+
+''A human faking a cabal of their own PersonaGroups — a Sybil-of-one — reads as the ACCEPTED COST'' of the inversion-of-control. The crypto ''prices'' Sybil per-scope; it never eliminates it (persona-circle#honest-scope: scarcity lives outside the math). The answer runs ''SOCIAL, never cryptographic'': ''kahu as custodians, NOT rulers'' — vouch-and-price, exit-not-voice, legitimacy-held-in-talk-story (cabal-realm#the-unswept-corner; carry-contract#the-frame). The mesh ''holds the residual adversary in story tension'' rather than pretending a signature closes it.
+
+The honest wall stays lit, dual to the wax-stamp's: ''"a valid key" reads as crypto fact; "one person behind these keys" does NOT'' — and the mesh ''wants it that way'', because the alternative wears N masks over a smuggled root.
+
+<<~/ahu>>
+
+<<~ ahu #/the-managed-persona>>
+
+!! Ruling 2b ~ the MANAGED persona, and why the human stays unbound (operator ruling, 2026-09-04)
+
+''A human `#has` multiple PersonaGroups, and WEARS a Persona on a device.'' The Persona carries identity here; the human enters as no object at all. The session ruling sharpens the grain: the wearing binds a SESSION over that device's vessel, so one device may carry several worn Personas at once (#/the-session).
+
+''A PERSONA MANAGES A PERSONAGROUP — never a device owner, and never a human.'' Management runs ''inside'' the persona layer, and that keeps the human unbound: no owner-of-record stands anywhere for a chain to climb to.
+
+''THE MANAGER ROUTINELY DIFFERS FROM THE WEARER, and the design intends it.'' The canonical shape: //mom hands the kid the phone, and the kid wears "Mom's Kid" on that device// — where ''one of mom's Personas'' manages "Mom's Kid", never mom herself. PersonaGroups stand local-first and fleet-sync across the managing Persona's own device group.
+
+⚠ ''SHARED DEVICES NAME NO EDGE CASE HERE — they give the model its shape.'' A design that bound one human to one device would have to call the majority of the world's households an exception. This one calls the managed persona ordinary and has nothing to except.
+
+!!! Blind veils ~ Personas need not know about each other
+
+''Personas can sometimes NOT EVEN KNOW ABOUT EACH OTHER.'' Each logged-in Persona carries a ''pet-name address-book device switcher'', and ''that Persona controls what appears in it''. So no Persona reads the multitude as a roster; it resolves into ''per-Persona views'', each authored by the Persona it belongs to.
+
+⚠ ''This refines Ruling 1's "PRIVATE-all".'' The human may hold every thread — and ''the human never enters the system'', so no system-level all-N view stands to read, seize, or subpoena. ''A Persona sees what its own switcher shows and nothing behind the veil.'' Read together: PUBLIC-one, PERSONA-some, ''SYSTEM-none''.
+
+The switcher ''applies the two-layer petname law'' (#/two-layer-petnames) to the multitude itself: the private map runs per-Persona, authored locally, never a public glamour.
+
+!!! Why the model REFUSES the human rather than merely omitting them
+
+''Ruling 2 declines to pin one-human-to-one-custodian because the pinning IS the sin.'' This ruling reads the same refusal forward: ''nothing binds the human to the system''. No human node, no human key, no human record stands — because ''binding a person creates the thing a hand can seize, correlate, or lose''.
+
+⚠ ''The field converged on the same instinct and stopped one step short.'' Ink & Switch's Keyhive models //"a person (or more specifically **their authority**) as a group, with each of the persons devices being an individual member"// — the same refusal to name the human, expressed as ''a group of DEVICE KEYS''. This model keeps the layer they collapsed: ''a Persona holds a wearable role with a manager, never a bag of a device's keys'', and that lets the wearer differ from the manager. (`docs/pono/dyad-ladder-scout#the-convergent-shape` carries the field's reading and the challenge it puts back.)
+
+⚠ ''A DEVICE OWNER NAMES THE NEAR MISS, and it reads identical until you ask what it binds.'' A reader reaches for "the owner sets up the personas", and an owner ''wears an infrastructure name over a human'' — naming one re-binds the human this model declines to bind, and hands any chain somewhere to climb. ''A Persona manages.'' The distance between the two words measures the distance between this model and every model carrying an owner-of-record.
+
+!!! ⚠ The field's answer to this shape, and what it costs
+
+A sweep of the measured abuse literature (`docs/pono/managed-identity-scout`) returns one finding aimed straight here:
+
+> ''Nobody verifies who the manager is.'' Not one of forty supervised-identity products implemented multi-guardian consent; vendors assert //"only the device owner's consent is required"//; a regulator's own remedy accepts an unverified self-attestation checkbox.
+>
+> ⚠ //"A design where the manager is a persona with no human owner-of-record removes the last thing every existing system nominally relies on — an attributable person to attest."//
+
+''The refusal to bind a human buys the privacy property and spends the field's only accountability anchor'' — an anchor that measured out as a checkbox nobody checked. So the question this ruling inherits reads: ''what stands in for attestation when no person stands behind the manager?'' The sweep found no system that answers it.
+
+⚠ And it found ''no exit anywhere'': across every shipped supervised-identity system and every guardianship design, the subject's exit gates on the manager. The nearest thing standing is ''a petition right that cannot be confiscated'', never an exit — while the primitive that WOULD work (guardians who recover but never transact, removable unilaterally after a timelock) ''has never been pointed at a manager→subject relation''.
+
+''What stands open'': how management TRANSFERS, whether a managed wearer can ever LEAVE with their Persona, what a blind veil costs when a managing Persona goes dark, and the abuse surface the manager relation opens — priced nowhere yet, against a literature that has already measured the household's authorized principal as its adversary.
+
+<<~/ahu>>
+
+<<~ ahu #/distinct-recovery>>
+
+!! Ruling 3 ~ distinct recovery custodians per persona
+
+''Each persona recovers through its OWN custodians.'' Shared custodians across personas would ''correlate them'' — a custodian holding shares for both Guru-Josh and Telarus-KSC learns they name one human, and web2's global-now walks back in through the recovery door. So the recovery split runs ''PER persona-root'' (persona-vault: a persona-1 quorum reconstructs persona-1's root, never persona-0's), and the ''guardian KEYS stay disjoint'' by ruling (sharpened below). Recovery re-admits a device; it never re-fuses the selves.
+
+!!! Ruling 3, sharpened ~ no guardian key ever serves two faces (operator-ruled)
+
+''Each face recovers through its own guardian set, and NO GUARDIAN KEY EVER SERVES TWO FACES.'' A guardian cuts a fresh key for each face they guard, so no two faces' logs carry a matching key or a matching set digest. ''The leak runs through the key and the committed set digest more than through the person'': anyone who reads two logs reads a shared key or a shared digest, while only the guardian reads what the guardian knows.
+
+''A PERSON may guard two faces of one human only by that human's own deliberate act'', named and warned at the moment of enrolment, because that guardian then knows the two faces share a human. A vessel refuses, by name, a guardian key it already holds in another face's set. One vault sees every face it holds, so the check stays local and builds no roster.
+
+''Guardians stay optional and per face.'' Every face starts one-of-one self: paper in the holder's own hand. A guardian set turns over on the face's own log while the hands still live; a guardian key passes to no heir.
+
+!!! Lineage and memory recover apart
+
+''A face's KEY LINEAGE names its identifier prefix and its key event log'' (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/reading-b-recovery">>). Guardians and a paper key restore the lineage: they rotate a fresh key in beneath the fixed prefix. Whatever points at the prefix survives a recovery untouched. The key stays the only global name (#/two-layer-petnames), and this section uses no other sense of "name".
+
+''A Handle needs no recovery of its own: by design it rides the lineage.'' A Handle's inception carries its owning persona prefix, and the persona's log head authorizes its rotations (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/the-handle-chain">>). A face that gets RE-MADE holds a new lineage, so its former Handle binding does not follow: the re-made face announces afresh and can prove no continuity with the former one.
+
+''A pet-name counts as MEMORY.'' The own-side map rests sealed on each vessel and rides the human's private fleet in the `@persona` bag once that plane's rest seals, so it returns with any vessel or backup that holds it, and otherwise the human types it again. The labels other people keep for the face live in their own handle-books and never moved.
+
+''A pet-name pins to an identifier.'' In this law the word names one thing: a private label a person pins to a key or an identifier. A working name used loosely in talk pins to nothing and falls outside it, and so does the Mask a tasked spirit wears (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract#/the-hands">>).
+
+''Nothing but key material restores a face's MEMORY'' — its private documents and its working layer. The rule names four roads: another vessel that still wears the face · a sealed backup with its passphrase · an opt-in memory card (`persona new --split-root` prints one; its reader stands unbuilt) · for a shared document, a fellow member who admits the returning face. With none of those the documents stay sealed for good, by design.
+
+''Which faces recover reads off the class ladder'', never off a separate word (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/the-identity-class-ladder">>): a non-transferable face gets re-made; a delegated leaf gets re-delegated from its root; a transferable face recovers its lineage by paper or guardians. Memory recovers by key material on every class alike, so a face that holds private documents wants a memory road even when it takes no guardians.
+
+''What the code holds'': `lares persona guardian enrol` refuses a key this vessel holds in another face's set (`guardian-key-serves-another-face`) before the face's own key signs the typed first enrolment (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>); each face's set rests in its own sealed row, and a guardian cuts a fresh key per face with `lares persona guardian offer`. ''Owed in code'': the bundle's carriage of a face's guardian set; the memory-card reader. The per-face sealed backup bundle stands built with its restore, rehearsed under scratch roots (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/what-the-code-holds">>); its memory import completes once a session signer stands. The shared-document road rests on Keyhive group membership, and nobody has walked it here. Three sites still bind a raw key where the lineage belongs — the antigen's presenter `nym`, the handle-card's `nym`, and the per-Nexus leaf an admit names, derived from the persona seed — so a recovery re-issues those until each re-sites (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/the-honest-edges">>). Guardian count, request authentication, the veto and succession stand open at <<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>.
+
+<<~/ahu>>
+
+<<~ ahu #/two-layer-petnames>>
+
+!! The Two-Layer Pet-Names ~ private label ⊥ public glamour (Zooko)
+
+A persona carries ''two names beside its key'', and the key stays the only global one. ''Zooko's triangle resolves'' the same way handle-card proves it: the ''GLOBAL name STAYS the pubkey'' — the veiled-user key the persona-HD tree derives — secure-and-decentralised because it IS the key; ''memorability rides a LOCAL name'':
+
+* ''The OWN side ~ the private pet-name map'' (`{handleIndex -> petname}`, persona-petname). The human's own label for their own faces — "work", "the-guru", "my-burner" — ''freely renamable'' and ''never PUBLICLY federated''. It ''RIDES the human's own private fleet'': the map private-federates over the ''@persona bag'' across their own vessel-pool (the fleet ride, below). The wall the shore holds runs ''PUBLIC, not cross-vessel'': no board write exists in it. A ''multitude-view'' reads the whole self across the vessel — `{persona → pet-name, held-here?, has-public-handle?}` — so the human sees every face while the mesh sees one.
+* ''The OTHER side ~ the handle-book'' (handle-book). The recogniser's local labels for ''OTHERS'' nyms' — never on any wire.
+* ''The ONLY name that federates PUBLICLY ~ the public glamour'' (persona-glamour). The persona's veiled key ''signs a HandleCard'' whose `glamour` shows a chosen display (never a legal identity); it ''announces onto the per-Nexus @crossroads WHO board'' (who-face), self-certifying and causally linked. ''What supersedes it is a verified settled frontier'' — a reader folds complete causal ancestry, retains concurrent heads rather than choosing an arrival or numeric winner, and never consults a shared now. A later local freshness observation may describe liveness, but it never changes causal validity.
+
+!!! The Binding Law
+
+> ''Only a PUBLICLY ANNOUNCED HANDLE binds a PersonaGroup to a public glamour.''
+
+The announce IS the binding act — a persona's veiled key signs its own HandleCard and puts it on the board. ''No other path may carry a persona's name onto a federating surface.'' A pet-name string that reaches a published document publishes a face the human never announced, and the string's own harmlessness never licenses it: the ''declaring act'' makes a name public, never the characters in it. The two MAY read word-for-word identical — the operator's `Telarus, KSC` names a compartment privately AND announces publicly — and they stay ''two acts with two owners'' (declaration ⊥ measurement, identity-enacts-relation). ''A private label reaching a board reads as a leak, never a shortcut.''
+
+!!! The announce IS a kūkala ~ so the board's two authorities govern it
+
+A HandleCard announce lands on the crossroads as a ''kūkala'' — a public cry pinned to a board that only grows — and it inherits that board's whole grammar rather than needing a rule of its own:
+
+* the announce reads as a ''notice'': this persona cries this Handle here.
+* a withdrawal reads as a ''tombstone'' the persona signs over its OWN cry. Taking a face down is as public as putting it up, because a board where things vanish quietly cannot be read — and a tombstone over ANOTHER persona's card does nothing at all, which is what keeps every member from holding a delete button over the board.
+* a Nexus refusal reads as a ''kāpae'', shadowing the SUBJECT rather than one cry, ''remove-wins'', before or after. Two islands with no shared now cannot agree which act came first; if a later cry could outlive a refusal, anyone refused at the Gate re-pins from a partition and stands again, and the Gate becomes a request.
+
+So the fold answers //what stands// order-independently, and the ''two authorities never blur'': a persona governs only its own cries, and the Nexus governs the board. The declaring-act law rides underneath both — the cry makes the name public, never the characters in it.
+
+!!! The declaration ~ the store that keeps the other two apart
+
+Between the private label and the published record sits ''a name the human MEANS to wear and has not yet announced''. Reading that intent off the pet-name would ''weld the two registers'': a human whose compartment reads `wyrm-burner` could then never stand as `The Lindwyrm`, and every private label would quietly become a public commitment. So the intent takes ''its own store and its own act'' (persona-declare): `--handle` declares what a persona answers to outward; `--seat` stands it for a Kahu chair on this node. Neither implies the other; ''a seat needs no public Handle''. A seat claim carries a PRIVATE chair label (`--chair`, defaulting to a label derived from the handle-index) and its key's fingerprint.
+
+The seal joins on the SEAT CLAIM; the chair label stays on the vessel that seated it. The exported charter carries each seat's key and fingerprint and no Handle, pet-name or display name. The declaring act, never the characters, makes a name public.
+
+!!! The fleet ride ~ what travels between a human's own vessels
+
+''A label a human sets on one vessel and loses on the next names the compartment badly.'' So the two NAMES ride the ''@persona bag'' — the PersonaGroup's own private plane, which the self-slot ''FLEET-syncs same-operator'' and the DeterministicFederationGate never volunteers to a cross-operator. One multitude, every device of the one human, no stranger. No verb carries either name: a store verb's outcome and its receipt digest rest in the daemon's document in the clear, so the names ride the custody door instead. The act `selves.carry` names a face and which name; the vessel reads that name off its own sealed row and writes it onto that face's own plane from its main thread, `selves.clear` follows the row's own clear, and `selves.read` answers each carried face as its own plane names it. A face's name lands on its own plane and on no other face's, so one face's fleet learns nothing of another face (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-shape">>). ''A name rides only onto a plane whose rest seals'': while a plane's document rests in the clear on a vessel's disk, `selves.carry` refuses by that rest and the name stays on its sealed row (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>). ''No board shore stands reachable from either act'' — the wall runs structural, as it does for the follow-graph one plane over.
+
+''The SEAT claim does NOT ride.'' A Kahu chair names a seat on a ''PARTICULAR node'', so syncing it would let one device seat a persona on another device's seal. ''The fleet carries what a persona IS called; each node keeps what it stands for HERE.''
+
+''The per-field stamp refuses the clobber.'' Each name carries its own value+stamp pair (`petname` beside `petname@`), so two vessels renaming ''different'' names — or different personas — touch disjoint keys and the field-merge keeps both. Where two renamed the ''same'' field, the later stamp reads; the stamp orders concurrent edits and ''settles nothing else'' (no shared now rides between a human's own islands), so a human overrules it by renaming again.
+
+''Local-first, never daemon-required.'' A vessel FOUNDS before it breathes, so every write lands on the local floor first and mirrors up when the sock answers; a quiet sock reports ''NODE-LOCAL, never failure'', and `lares persona sync` carries the names up once the hearth stands and the face's plane rests sealed.
+
+''Four stores, never fused'': private-own (pet-name) ⊥ declared-own (Handle + seat) ⊥ public-own (glamour record) ⊥ others (handle-book). The pet-name map ''wants to sync'' across the human's own PersonaGroup vessel-pool — private-federated over a PRIVATE BAG — but that ride waits on the ''device-fleet'' (not yet built; blocks on Beelay). So the shore stands ''LOCAL-FIRST'', shaped so the cross-pool sync drops into the same store shape when the fleet lands.
+
+<<~/ahu>>
+
+<<~ ahu #/no-global-now-for-identity>>
+
+!! The Deep Frame ~ no global-now for identity
+
+The three rulings ''share one root'': the causal-islands law (#causal-islands: no global present, each island its own partial log) ''extended to IDENTITY''. There sits ''no global now for who-someone-is'' — no mesh-wide instant of "this human = these faces = one custodian". Every attempt to assert it manufactures the very global-now the substrate forbids (the same move carry-contract's immune system refuses for revocation, one plane over).
+
+So the mesh ''declines to build the SIN even to defend itself''. It could bind personas to one custodian and catch the Sybil-of-one — and it ''MUST NOT'', because that catch IS the sin it refuses. The residual adversary (a human forging a cabal of their own selves) stays ''bounded where a mythos wants it'': answered by ''kahu as custodians not rulers'' (vouch, price, watch, exit), by ''fork-as-exit'' (cabal-realm: leave the captured realm, re-point your own petname), and by ''legitimacy-held-in-talk-story'' — never by a signature claiming a global identity-now. //Shadowland's refusal made law//: the net heals faster than the corps can burn a runner, and it never installs the corps' own registry to do it.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/crossroads">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/two-maps">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/session-contract">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;8Ix-ibBk7x10B0p37tyieDcUXyE8_L_CbL2K-h00DU4
+
+<<^ code="&#x0004;" -> to="?">>

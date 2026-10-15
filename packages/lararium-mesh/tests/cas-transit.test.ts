@@ -1,0 +1,158 @@
+/**
+ * cas-transit.test.ts — the cad REMOTE leg: DHT-free discovery + secret-free BLAKE3(bytes)==cid verify.
+ *
+ * The load-bearing proofs against the REAL seal primitive (`sealPrivateBody`) + a MODELED member↔relay transport:
+ *   · a member fetches a REMOTE-ONLY body via the transport's holder index (a bag-tracker stand-in) — no DHT,
+ *   · a TAMPERED byte fails `verifyCiphertextCid` and is REJECTED at the fetcher (never returned, never cached),
+ *   · the transport (relay) serves + the fetcher verifies holding NO secret (verify-cap ⊥ read-cap),
+ *   · `dont-have` everywhere → an explicit `null` miss (fail-closed, never a partial/unverified body),
+ *   · `makeCidResolver` is LOCAL-FIRST: a local hit never touches transit; a miss fetches, verifies, caches.
+ */
+import { describe, test, expect } from "vitest";
+import { randomBytes } from "node:crypto";
+import {
+  sealPrivateBody, readContentKey,
+  fetchCidOverTransit, makeCidResolver,
+  type CasTransitTransport, type CasHolder,
+} from "../src/index.js";
+
+const key = readContentKey(new Uint8Array(randomBytes(32)))!;
+const sealedBody = sealPrivateBody(new TextEncoder().encode("a sealed body that lives only on a remote holder"), { bagId: "lar:///ha.ka.ba/@test/bags/transit", key });
+if (!("body" in sealedBody)) throw new Error(`setup: ${sealedBody.refusal}`);
+const sealed = sealedBody.body;
+
+/**
+ * A modeled transport over a holder→bytes store — the relay/bag-tracker stand-in. `discover` returns the holders
+ * the store knows (DHT-free hint); `fetchBlock` returns a holder's bytes or `null`. It holds NO secret — only
+ * cids + ciphertext, exactly the relay's surface.
+ */
+function makeStoreTransport(store: Map<string, Map<CasHolder, Uint8Array | null>>): CasTransitTransport {
+  return {
+    async discover(cid: string): Promise<readonly CasHolder[]> {
+      const holders = store.get(cid);
+      return holders === undefined ? [] : [...holders.keys()];
+    },
+    async fetchBlock(cid: string, holder: CasHolder): Promise<Uint8Array | null> {
+      return store.get(cid)?.get(holder) ?? null;
+    },
+  };
+}
+
+describe("a local hit proves itself before it returns", () => {
+  test("RED: bytes altered at rest under a held address read as a miss, and the remote answer wins; CONTROL: an untouched hit returns with no transit", async () => {
+    const altered = new Uint8Array(sealed.ciphertext); altered[altered.length - 1] ^= 0x01;
+    expect([...altered]).not.toEqual([...sealed.ciphertext]);                   // the setup took
+    const asked: string[] = [];
+    const transit: CasTransitTransport = {
+      discover: async (cid) => { asked.push(cid); return ["relay-A"]; },
+      fetchBlock: async () => sealed.ciphertext,
+    };
+    const cached: Uint8Array[] = [];
+    const corrupt = makeCidResolver(() => altered, transit, (_cid, bytes) => { cached.push(bytes); });
+    expect(await corrupt(sealed.cid)).toEqual(sealed.ciphertext);
+    expect(asked).toEqual([sealed.cid]);
+    expect(cached).toEqual([sealed.ciphertext]);
+    // No holder anywhere: the altered bytes never return.
+    const alone = makeCidResolver(() => altered, { discover: async () => [], fetchBlock: async () => null }, () => {});
+    expect(await alone(sealed.cid)).toBeNull();
+    // CONTROL: an untouched local hit returns and asks nobody.
+    asked.length = 0;
+    const sound = makeCidResolver(() => sealed.ciphertext, transit, () => { throw new Error("a local hit caches nothing"); });
+    expect(await sound(sealed.cid)).toEqual(sealed.ciphertext);
+    expect(asked).toEqual([]);
+  });
+});
+
+describe("DHT-free remote fetch — the member finds a holder via the tracker index, no DHT", () => {
+  test("a remote-only body fetches + verifies secret-free", async () => {
+    const store = new Map([[sealed.cid, new Map<CasHolder, Uint8Array | null>([["relay-A", sealed.ciphertext]])]]);
+    const bytes = await fetchCidOverTransit(sealed.cid, makeStoreTransport(store));
+    expect(bytes).not.toBeNull();
+    expect(bytes).toEqual(sealed.ciphertext);   // the ONE right answer, verified BLAKE3(bytes)==cid, no secret used
+  });
+
+  test("a TAMPERED byte fails verify at the fetcher → rejected; a later good holder still wins", async () => {
+    const bad = new Uint8Array(sealed.ciphertext); bad[0] ^= 0xff;   // flip one byte
+    const store = new Map([[sealed.cid, new Map<CasHolder, Uint8Array | null>([
+      ["hostile-relay", bad],          // returns bytes, but BLAKE3(bytes) != cid
+      ["honest-relay",  sealed.ciphertext],
+    ])]]);
+    const bytes = await fetchCidOverTransit(sealed.cid, makeStoreTransport(store));
+    expect(bytes).toEqual(sealed.ciphertext);   // the hostile block was skipped, the honest one verified
+  });
+
+  test("a lone tampered holder → NULL (fail-closed: never a corrupt body)", async () => {
+    const bad = new Uint8Array(sealed.ciphertext); bad[3] ^= 0x01;
+    const store = new Map([[sealed.cid, new Map<CasHolder, Uint8Array | null>([["hostile", bad]])]]);
+    expect(await fetchCidOverTransit(sealed.cid, makeStoreTransport(store))).toBeNull();
+  });
+
+  test("dont-have everywhere → explicit NULL miss", async () => {
+    const store = new Map([[sealed.cid, new Map<CasHolder, Uint8Array | null>([["peer-x", null], ["peer-y", null]])]]);
+    expect(await fetchCidOverTransit(sealed.cid, makeStoreTransport(store))).toBeNull();
+    // No holder known at all → also NULL.
+    expect(await fetchCidOverTransit(sealed.cid, makeStoreTransport(new Map()))).toBeNull();
+  });
+});
+
+describe("makeCidResolver — LOCAL-FIRST, remote leg verifies + caches write-through", () => {
+  test("a local hit never touches transit", async () => {
+    let discovered = 0;
+    const transit: CasTransitTransport = {
+      async discover(_cid) { discovered++; return []; },
+      async fetchBlock() { return null; },
+    };
+    const resolve = makeCidResolver(() => sealed.ciphertext, transit, () => {});
+    expect(await resolve(sealed.cid)).toEqual(sealed.ciphertext);
+    expect(discovered).toBe(0);   // local-first: no discovery ran
+  });
+
+  test("a local miss fetches over transit, verifies, and caches the VERIFIED body write-through", async () => {
+    const store = new Map([[sealed.cid, new Map<CasHolder, Uint8Array | null>([["relay-A", sealed.ciphertext]])]]);
+    const cache = new Map<string, Uint8Array>();
+    const resolve = makeCidResolver(
+      (cid) => cache.get(cid) ?? null,                 // local reads the cache
+      makeStoreTransport(store),
+      (cid, bytes) => { cache.set(cid, bytes); },      // write-through
+    );
+    expect(cache.has(sealed.cid)).toBe(false);
+    expect(await resolve(sealed.cid)).toEqual(sealed.ciphertext);
+    expect(cache.get(sealed.cid)).toEqual(sealed.ciphertext);   // cached → the next read is local
+  });
+});
+
+// ── THE FETCH DOOR (scale-stories-basket-one #/the-fetch-door, ruled 2026-09-11) ─────────────────────────
+// The resolver reads a cid's CLASS off its own tag: a `blake3:` cid names a SEALED body (verify = BLAKE3), a
+// bare / `sha256:` cid names a CLEARTEXT `cid/` blob (verify = sha256). A fleet peer fetches the second kind
+// over the same five messages; the verify never widens — a bare hex that matches neither digest is rejected.
+import { cidDigestClass, sha256HexBytesSync, utf8Bytes, prefetchAllows, type PrefetchCap } from "../src/index.js";
+
+describe("the fetch door — a CLEARTEXT cid crosses transit under its own verify", () => {
+  const clear = utf8Bytes("a family likeness, in the clear, shared as a public thing");
+  const clearCid = sha256HexBytesSync(clear);
+
+  test("cidDigestClass reads the tag: bare hex / sha256: → cleartext; blake3: → sealed", () => {
+    expect(cidDigestClass(clearCid)).toBe("cleartext");
+    expect(cidDigestClass(`sha256:${clearCid}`)).toBe("cleartext");
+    expect(cidDigestClass(sealed.cid)).toBe("sealed");
+  });
+
+  test("fetchCidOverTransit returns a cleartext blob whose sha256 recomputes to the cid", async () => {
+    const store = new Map([[clearCid, new Map<CasHolder, Uint8Array | null>([["fleet-A", clear]])]]);
+    expect(await fetchCidOverTransit(clearCid, makeStoreTransport(store))).toEqual(clear);
+  });
+
+  test("CONTROL: a cleartext blob whose bytes match NEITHER digest is rejected (never cached, never returned)", async () => {
+    const tampered = new Uint8Array(clear); tampered[0] ^= 1;
+    const store = new Map([[clearCid, new Map<CasHolder, Uint8Array | null>([["fleet-A", tampered]])]]);
+    expect(await fetchCidOverTransit(clearCid, makeStoreTransport(store))).toBeNull();
+  });
+
+  test("prefetch is a per-peer CAP — absent → off; declared → only its holder, only before its fence (M7: never a wall-clock expiry)", () => {
+    expect(prefetchAllows(undefined, "fleet-B", 1_000)).toBe(false);          // DEFAULT OFF
+    const cap: PrefetchCap = { tier: "VEIL", holder: "fleet-B", fence: 2_000 };
+    expect(prefetchAllows(cap, "fleet-B", 1_000)).toBe(true);
+    expect(prefetchAllows(cap, "fleet-C", 1_000)).toBe(false);                // another peer
+    expect(prefetchAllows(cap, "fleet-B", 2_001)).toBe(false);                // the peer's own fence moved past it
+  });
+});

@@ -1,0 +1,150 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/camera-mount">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+docs      = "lar:///ha.ka.ba/lararium/docs/verse-mesh"
+file-path = "bags/lararium/ha.ka.ba/lararium/api/camera-mount.mem"
+mana      = 18
+manao     = 17
+manaoio   = 17
+namespace = "&#x0950; &#x0901;"
+role      = "parse→widget→fakeDOM chain spec per camera — pairs with CameraRegistration for the full camera contract"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title     = "lar:///ha.ka.ba/lararium/api/camera-mount"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/api/camera-mount"
+```
+
+! CameraMount — Invariant
+
+!! Identity
+
+`CameraMount` specifies the static structure of one camera:
+the parse tree → widget tree → fake DOM chain that TW5 runs per view frustum.
+
+`mountCamera` constructs the widget tree once and refreshes it on wiki changes. The wiki shore owns the landing of changes across bags and the nalu engine applies them; a camera attaches to the wiki they write through `mountCamera`.
+
+!! Three-Tree Chain
+
+Each camera runs an independent three-tree chain over the shared wiki:
+
+```
+wikitext source
+    ↓  wiki.parseTiddler() / wiki.makeTranscludeWidget()
+parse tree  (ParseTreeNode[])
+    ↓  widget.makeChildWidgets()
+widget tree (Widget graph, bound to document)
+    ↓  widget.render(container, null)
+fake DOM    (TW5FakeElement tree)
+    ↓  serialize / hydrate / paint
+rendered output
+```
+
+`wiki.makeTranscludeWidget(rootTiddler, { document, parentWidget })` constructs
+the widget tree and binds it to a `document` (fake DOM target).
+Multiple cameras on the same VM slot each receive a distinct `document` instance —
+render surfaces stay separate; the wiki world graph stays shared.
+
+!! API
+
+```typescript
+interface CameraMount {
+  /** Root tiddler for this camera's parse + widget tree. */
+  rootTiddler: string;
+  /** The fake DOM document this camera renders into. */
+  document: Document | TW5FakeDocument;
+  /** The container element this camera renders into. */
+  container: TW5FakeElement | HTMLElement;
+}
+
+// On TW5Engine:
+mountCamera(mount: CameraMount): () => void
+```
+
+Returns a teardown function that removes the wiki change listener and detaches the camera's DOM nodes.
+
+!! Invariants
+
+''C-1 Structural separation.''
+`mountCamera` wires the static chain (parse → widget → fake DOM) once.
+It does not manage pacing or the landing queue.
+The wiki shore owns the landing queue and its pacing.
+
+''C-2 One document per camera.''
+Each camera receives its own `document` instance.
+Cameras do not share fake DOM trees.
+The TW5 wiki (world graph) remains shared — only the render surface separates.
+
+''C-3 View frustum in root tiddler.''
+The root tiddler's wikitext body defines the view frustum
+(e.g. `<$list filter="[tag[...]]">` or a transclusion of a story-list tiddler).
+The landing queue carries no camera filter — the widget tree's dependency graph handles
+selective refresh after each `change` dispatch.
+
+''C-4 Change listener owned by mountCamera.''
+`mountCamera` registers a wiki `change` handler that calls `widget.refresh(changes)`.
+The teardown function removes the handler and detaches the widget's DOM nodes.
+
+''C-5 Input path — no new machinery.''
+Cameras that accept user input dispatch events through the widget tree's standard
+TW5 event bus (`widget.dispatchEvent`).  Events travel up to the root widget.
+`reaction-router.ts` catches `tm-verse-event`; `IslandAdaptor.saveTiddler` handles
+outbound writes.  The input path stays identical across all cameras.
+
+''C-6 Frame grain declared at mount.''
+A camera whose document lives across a thread boundary declares its ''frame grain'' when it mounts:
+the unit of absolute state its frames key by (the whole surface, a tiddler frame, a shape).
+Every frame carries whole state for its key and a monotone revision; no frame carries a delta.
+The ruling and its reasons live at `lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-ruling`.
+
+''C-7 No engine on the main thread.''
+Every TW5 engine runs inside a worker on every platform, so a browser camera's widget tree never
+binds `window.document` directly. The camera renders into its own VM-side document; the main thread
+paints that camera's frames and returns events and sensed state.
+
+''C-8 A camera renders through the template stack; live controls belong to the page.''
+A camera's chain runs TiddlyWiki's page-template and layout layers and stops there. A layout tiddler
+serves as a camera's root (C-3). Code that reads a live document's value, selection, geometry or
+focus does not run in the island; the page supplies a native control where a template names one.
+The reasons live at `lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-layers`.
+
+!! Camera Mount
+
+```typescript
+const unmount = tw5.mountCamera({
+  rootTiddler: "lar:///ha.ka.ba/camera/canvas-root",
+  document:    tlDrawFakeDoc,
+  container:   canvasRootElement,
+});
+```
+
+!! Platform Fake DOM Targets
+
+| Camera surface | `document` type | Role |
+|---|---|---|
+| Story River (browser) | the island's VM-side document, painted main-side into a shadow root | HUD layer floating over the infinite canvas; shadow root isolates TW5 stylesheet |
+| DreamDOM canvas (browser) | ''DreamDOM'' document — DOM-hosting, never rasterising | Canvas camera below the HUD (ruling: `wikispace-canvasspace-ontology#the-surface-law`) |
+| Node SSR | `$tw.fakeDocument` | Headless render |
+| Mobile native | platform fake doc (React Native bridge) | Native surface |
+| Headless / MCP | `$tw.fakeDocument` or null render | Tool-side projection |
+
+The Story River camera renders in the worker and the main thread paints its frames as real HTML
+into the shadow pane (C-7). Canvas cameras behind it each hold their own VM-side document.
+The `mountCamera` interface stays identical. The `document` type changes; the chain does not.
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/the-layers">> ~ mounts the template layers and stops before page controls
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/page-controls">> ~ mounts camera output beside page-native controls
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;jaqlKyaq8HrutghzPEhIx9Jfet_wh3B4uOb5zlm8ViE
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,387 @@
+import { describe, test, expect } from "vitest";
+import { VerbRefusal } from "@lararium/mesh";
+import type { CompositeStore, Verb, LarTiddlerRecord } from "@lararium/mesh";
+import {
+  OUTCOME_URI_PREFIX, VERB_RESULT_KEY, VERB_URI_PREFIX, buildVerb, parseVerb, verbInputDigest,
+} from "@lararium/mesh";
+import {
+  AUDIT_ARRAY_CAP,
+  boundOutcomeOutput,
+  copyEffectOutcome,
+  dispatchVerb,
+  EFFECT_URI_PREFIX,
+  patchVerb,
+  placeVerb,
+  removeVerb,
+  writeOutcome,
+} from "../src/verb-vm.js";
+
+type TiddlerFields = Record<string, unknown>;
+
+class FakeTW5Engine {
+  private readonly records = new Map<string, TiddlerFields>();
+
+  readonly wiki = {
+    addTiddler: (tiddler: { fields?: TiddlerFields } | TiddlerFields): void => {
+      const fields = (tiddler && typeof tiddler === "object" && "fields" in tiddler && tiddler.fields)
+        ? tiddler.fields
+        : tiddler as TiddlerFields;
+      const title = typeof fields.title === "string" ? fields.title : null;
+      if (!title) throw new Error("title required");
+      this.records.set(title, { ...fields });
+    },
+    getTiddler: (title: string): { fields: TiddlerFields } | undefined => {
+      const fields = this.records.get(title);
+      return fields ? { fields: { ...fields } } : undefined;
+    },
+    deleteTiddler: (title: string): void => {
+      this.records.delete(title);
+    },
+  };
+
+  readonly $tw = {
+    Tiddler: class {
+      fields: TiddlerFields;
+      constructor(fields: TiddlerFields) { this.fields = fields; }
+    },
+    wiki: this.wiki,
+  };
+}
+
+class FakeDaemonStore {
+  readonly writes: LarTiddlerRecord[] = [];
+
+  async put(record: LarTiddlerRecord): Promise<void> {
+    this.writes.push(record);
+  }
+}
+
+function makeInvocation(overrides: Partial<Verb> = {}): Verb {
+  const fields = buildVerb({
+    verb: "sync-wiki",
+    args: { slug: "alpha" },
+    requestedBy: "did:key:test",
+    requestId: "req-test-1",
+  });
+  const parsed = parseVerb(fields);
+  if (!parsed) throw new Error("failed to build test invocation");
+  return { ...parsed, ...overrides };
+}
+
+describe("verb-vm", () => {
+  test("placeVerb writes a pending volatile invocation into the VM wiki", () => {
+    const tw5 = new FakeTW5Engine();
+
+    const requestId = placeVerb(tw5 as never, {
+      verb: "sync-wiki",
+      args: { slug: "alpha" },
+      requestedBy: "did:key:test",
+      requestId: "req-place-1",
+    });
+
+    expect(requestId).toBe("req-place-1");
+    const placed = tw5.wiki.getTiddler(`${VERB_URI_PREFIX}${requestId}`);
+    expect(placed?.fields.status).toBe("pending");
+  });
+
+  test("patchVerb mutates the existing volatile invocation fields", () => {
+    const tw5 = new FakeTW5Engine();
+    const invocation = makeInvocation();
+    tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+
+    patchVerb(tw5 as never, invocation.title, { status: "running", "started-at": "now" });
+
+    const patched = tw5.wiki.getTiddler(invocation.title);
+    expect(patched?.fields.status).toBe("running");
+    expect(patched?.fields["started-at"]).toBe("now");
+  });
+
+  test("removeVerb tombstones the volatile invocation from the VM wiki", () => {
+    const tw5 = new FakeTW5Engine();
+    const invocation = makeInvocation();
+    tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+
+    removeVerb(tw5 as never, invocation.title);
+
+    expect(tw5.wiki.getTiddler(invocation.title)).toBeUndefined();
+  });
+
+  test("writeOutcome emits a durable summary outcome", async () => {
+    const daemon = new FakeDaemonStore();
+    const invocation = makeInvocation();
+
+    await writeOutcome(daemon as unknown as CompositeStore, {
+      invocation,
+      status: "done",
+      result: { recordsIngested: 3 },
+    });
+
+    expect(daemon.writes).toHaveLength(1);
+    expect(daemon.writes[0]?.tiddler.title).toBe(`${OUTCOME_URI_PREFIX}${invocation.requestId}`);
+    const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+    expect(results[VERB_RESULT_KEY]?.ok).toBe(true);
+    expect(results[VERB_RESULT_KEY]?.output?.recordsIngested).toBe(3);
+  });
+
+  // ── audit-doc write-amplification cure (dd4da8481 class, new site: the outcome/audit bag) ────────
+  describe("writeOutcome bounds an oversized per-carrier result array (the audit-doc OOM cure)", () => {
+    const bigCarriers = (n: number): Array<Record<string, unknown>> =>
+      Array.from({ length: n }, (_, i) => ({ uri: `lar:///ha.ka.ba/bags/x/carrier-${i}`, decision: i % 3 === 0 ? "add" : "tombstone" }));
+
+    test("RED (pre-fix behavior, now GREEN): a 214-carrier ingest result stores a BOUNDED summary, not the full list", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation();
+      const carriers = bigCarriers(214);
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "done",
+        result: { sourceUri: "lar:///ha.ka.ba/bags/x", toBag: "lar:///ha.ka.ba/bags/y", changeId: "c1", carriers },
+      });
+
+      const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as
+        Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+      const output = results[VERB_RESULT_KEY]?.output;
+      // the stored field is NOT the 214-entry array — it's a bounded summary object
+      expect(Array.isArray(output?.["carriers"])).toBe(false);
+      const summary = output?.["carriers"] as { boundedArrayCount: number; tallies: Record<string, number>; sha256: string; sample: unknown[] };
+      expect(summary.boundedArrayCount).toBe(214);
+      expect(summary.tallies["add"]).toBe(Math.ceil(214 / 3));
+      expect(summary.tallies["tombstone"]).toBe(214 - Math.ceil(214 / 3));
+      expect(typeof summary.sha256).toBe("string");
+      expect(summary.sha256.length).toBeGreaterThan(0);
+      expect(summary.sample.length).toBeLessThanOrEqual(3);
+      // the serialized doc body is now bounded, not proportional to N
+      expect(String(daemon.writes[0]?.tiddler.results).length).toBeLessThan(2_000);
+      // scalar sibling fields ride through untouched
+      expect(output?.["sourceUri"]).toBe("lar:///ha.ka.ba/bags/x");
+      expect(output?.["changeId"]).toBe("c1");
+    });
+
+    test("CONTROL — a small carrier list (at/under the cap) still records FAITHFULLY, full detail intact", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-small", title: `${VERB_URI_PREFIX}req-small` });
+      const carriers = bigCarriers(5);
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "done",
+        result: { sourceUri: "lar:///ha.ka.ba/bags/x", toBag: "lar:///ha.ka.ba/bags/y", changeId: "c2", carriers },
+      });
+
+      const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as
+        Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+      const output = results[VERB_RESULT_KEY]?.output;
+      expect(Array.isArray(output?.["carriers"])).toBe(true);
+      expect((output?.["carriers"] as unknown[]).length).toBe(5);
+      expect((output?.["carriers"] as Array<{ uri: string }>)[0]?.uri).toBe(carriers[0]?.uri);
+    });
+
+    test("boundOutcomeOutput — pure unit: caps only arrays past the threshold, leaves the rest alone", () => {
+      const small = boundOutcomeOutput({ items: [1, 2, 3], note: "x" }, 32);
+      expect(small["items"]).toEqual([1, 2, 3]);
+      const big = boundOutcomeOutput({ items: Array.from({ length: 33 }, (_, i) => i), note: "x" }, 32);
+      expect(Array.isArray(big["items"])).toBe(false);
+      expect((big["items"] as { boundedArrayCount: number }).boundedArrayCount).toBe(33);
+      expect(big["note"]).toBe("x"); // non-array fields untouched
+    });
+
+    // ── A ROW A PERSON MUST ACT ON STAYS NAMED ──────────────────────────────────────────────────────
+    type Summary = { boundedArrayCount: number; tallies: Record<string, number>; held: Array<Record<string, unknown>>; heldMore: number; sample: unknown[] };
+    const row = (i: number, decision: string): Record<string, unknown> =>
+      ({ uri: `lar:///ha.ka.ba/bags/x/carrier-${i}`, decision, ...(decision === "refuse" ? { warnings: [`carrier-${i}: torn frame refused`] } : {}) });
+
+    test("a summary HOLDS every refuse and conflict row whole, and says it left none unnamed", () => {
+      const rows = Array.from({ length: 214 }, (_, i) => row(i, i === 7 || i === 150 ? "refuse" : i === 90 ? "conflict" : "ingest"));
+      const summary = boundOutcomeOutput({ carriers: rows })["carriers"] as Summary;
+      expect(summary.boundedArrayCount).toBe(214);
+      expect(summary.tallies).toEqual({ ingest: 211, refuse: 2, conflict: 1 });
+      expect(summary.held).toEqual([rows[7], rows[90], rows[150]]);
+      expect(summary.heldMore).toBe(0);
+      // The landed rows stay behind: the summary names no `ingest` row beyond its sample.
+      expect(summary.held.some((r) => r["decision"] === "ingest")).toBe(false);
+    });
+
+    test("past the cap of held rows the summary states how many it leaves unnamed, never silence", () => {
+      const rows = Array.from({ length: 100 }, (_, i) => row(i, i < 50 ? "refuse" : "ingest"));
+      const summary = boundOutcomeOutput({ carriers: rows })["carriers"] as Summary;
+      expect(summary.held.length).toBe(AUDIT_ARRAY_CAP);
+      expect(summary.held).toEqual(rows.slice(0, AUDIT_ARRAY_CAP));
+      expect(summary.heldMore).toBe(50 - AUDIT_ARRAY_CAP);
+      expect(summary.tallies).toEqual({ refuse: 50, ingest: 50 });
+    });
+
+    test("CONTROL: a wave where nothing asks for a hand holds no row", () => {
+      const summary = boundOutcomeOutput({ carriers: Array.from({ length: 40 }, (_, i) => row(i, i % 2 ? "ingest" : "noop")) })["carriers"] as Summary;
+      expect(summary.held).toEqual([]);
+      expect(summary.heldMore).toBe(0);
+    });
+
+    test("an array whose rows carry no decision tallies nothing: LOAD's titles never read `unknown`", () => {
+      const titles = Array.from({ length: 40 }, (_, i) => `lar:///ha.ka.ba/bags/x/title-${i}`);
+      const summary = boundOutcomeOutput({ titles, count: 40 })["titles"] as Summary;
+      expect(summary.boundedArrayCount).toBe(40);
+      expect(summary.tallies).toEqual({});
+      expect(summary.held).toEqual([]);
+      expect(summary.heldMore).toBe(0);
+      expect(summary.sample).toEqual(titles.slice(0, 3));
+      // A mixed array tallies the rows that carry a decision and invents none for the rest.
+      const mixed = boundOutcomeOutput({ items: [...titles, { decision: "ingest" }, { nothing: 1 }, null] })["items"] as Summary;
+      expect(mixed.tallies).toEqual({ ingest: 1 });
+      expect(mixed.boundedArrayCount).toBe(43);
+    });
+
+    test("the stored outcome stays bounded whatever the wave refuses", async () => {
+      const daemon = new FakeDaemonStore();
+      const carriers = Array.from({ length: 2000 }, (_, i) => row(i, "refuse"));
+      await writeOutcome(daemon as unknown as CompositeStore, { invocation: makeInvocation(), status: "done", result: { carriers } });
+      const stored = String(daemon.writes[0]?.tiddler.results);
+      const output = (JSON.parse(stored) as Record<string, { output?: Record<string, unknown> }>)[VERB_RESULT_KEY]?.output;
+      expect((output?.["carriers"] as Summary).held.length).toBe(AUDIT_ARRAY_CAP);
+      expect((output?.["carriers"] as Summary).heldMore).toBe(2000 - AUDIT_ARRAY_CAP);
+      // Bounded by the cap, never by the wave: the same store size as a wave of 200 refusals.
+      const daemon2 = new FakeDaemonStore();
+      await writeOutcome(daemon2 as unknown as CompositeStore, { invocation: makeInvocation(), status: "done", result: { carriers: carriers.slice(0, 200) } });
+      expect(Math.abs(stored.length - String(daemon2.writes[0]?.tiddler.results).length)).toBeLessThan(64);
+    });
+  });
+
+  test("dispatchVerb marks running, writes outcome, then removes the volatile invocation on success", async () => {
+    const tw5 = new FakeTW5Engine();
+    const daemon = new FakeDaemonStore();
+    const invocation = makeInvocation();
+    tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+
+    await dispatchVerb(
+      tw5 as never,
+      daemon as unknown as CompositeStore,
+      invocation,
+      async () => ({ status: "ok" }),
+    );
+
+    expect(tw5.wiki.getTiddler(invocation.title)).toBeUndefined();
+    expect(daemon.writes).toHaveLength(1);
+    const results = JSON.parse(String(daemon.writes[0]?.tiddler.results ?? "{}")) as Record<string, { ok: boolean; output?: Record<string, unknown> }>;
+    expect(results[VERB_RESULT_KEY]?.ok).toBe(true);
+    expect(results[VERB_RESULT_KEY]?.output?.status).toBe("ok");
+  });
+
+  test("dispatchVerb writes an error outcome and still removes the volatile invocation", async () => {
+    const tw5 = new FakeTW5Engine();
+    const daemon = new FakeDaemonStore();
+    const invocation = makeInvocation({ requestId: "req-test-2", title: `${VERB_URI_PREFIX}req-test-2` });
+    tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+
+    await dispatchVerb(
+      tw5 as never,
+      daemon as unknown as CompositeStore,
+      invocation,
+      async () => {
+        throw new Error("boom");
+      },
+    );
+
+    expect(tw5.wiki.getTiddler(invocation.title)).toBeUndefined();
+    expect(daemon.writes).toHaveLength(1);
+    expect(daemon.writes[0]?.tiddler.status).toBe("error");
+    expect(daemon.writes[0]?.tiddler["error-message"]).toBe("boom");
+  });
+
+  test("a reactor that throws a VerbRefusal concludes with its machine reason; a plain Error carries none", async () => {
+    const conclude = async (thrown: Error): Promise<Record<string, unknown>> => {
+      const tw5 = new FakeTW5Engine();
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ requestId: "req-refusal", title: `${VERB_URI_PREFIX}req-refusal` });
+      tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+      await dispatchVerb(tw5 as never, daemon as unknown as CompositeStore, invocation, async () => { throw thrown; });
+      return daemon.writes[0]!.tiddler as Record<string, unknown>;
+    };
+    const refused = await conclude(new VerbRefusal("bag-retired", "bag-retired: CLEAR of x refused"));
+    expect(refused["status"]).toBe("error");
+    expect(refused["refusal"]).toBe("bag-retired");
+    expect(refused["error-message"]).toBe("bag-retired: CLEAR of x refused");
+    // CONTROL: a plain Error stamps no reason, even when its prose names one.
+    const plain = await conclude(new Error("bag-retired: CLEAR of x refused"));
+    expect(plain["status"]).toBe("error");
+    expect(plain["refusal"]).toBeUndefined();
+  });
+
+  // ── digest-on-outcome + the effect index (D1, P2.5 iter 4) ─────────────────────────────────
+  describe("writeOutcome stamps digest-on-outcome and writes the effect index", () => {
+    test("a DONE outcome with no effectKey stamps input-digest, but writes no effect index (one write only)", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation();
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "done", result: { ok: true },
+      });
+
+      expect(daemon.writes).toHaveLength(1);
+      const stamped = daemon.writes[0]?.tiddler["input-digest"];
+      expect(typeof stamped).toBe("string");
+      expect((stamped as string).length).toBeGreaterThan(0);
+      expect(daemon.writes[0]?.tiddler["effect-key"]).toBeUndefined();
+
+      // The digest matches the SAME computation the dispatcher re-derives for arbitration —
+      // a stale/duplicated formula here would silently desync the two readers.
+      const expected = await verbInputDigest({
+        verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy,
+      });
+      expect(stamped).toBe(expected);
+    });
+
+    test("a DONE outcome WITH an effectKey writes the outcome AND the effect index (single writer, two records)", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ effectKey: "eff-vm-1" });
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "done", result: { ok: true },
+      });
+
+      expect(daemon.writes).toHaveLength(2);
+      const outcome = daemon.writes.find((w) => w.tiddler.title === `${OUTCOME_URI_PREFIX}${invocation.requestId}`);
+      expect(outcome?.tiddler["effect-key"]).toBe("eff-vm-1");
+      const fact = daemon.writes.find((w) => w.tiddler.title === `${EFFECT_URI_PREFIX}eff-vm-1`);
+      expect(fact?.tiddler["effect-key"]).toBe("eff-vm-1");
+      expect(fact?.tiddler["request-id"]).toBe(invocation.requestId);
+    });
+
+    test("MUTATION — an ERROR outcome with an effectKey stamps the outcome but indexes NOTHING (a failed effect stays retryable)", async () => {
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({ effectKey: "eff-vm-2" });
+
+      await writeOutcome(daemon as unknown as CompositeStore, {
+        invocation, status: "error", errorMessage: "boom",
+      });
+
+      expect(daemon.writes).toHaveLength(1); // outcome only — no effect index for an error
+      expect(daemon.writes[0]?.tiddler.status).toBe("error");
+      expect(daemon.writes[0]?.tiddler["effect-key"]).toBe("eff-vm-2");
+    });
+  });
+
+  describe("copyEffectOutcome — the effect-dedup shortcut write (D1, P2.5 iter 4)", () => {
+    test("writes a DONE outcome carrying effect-of + the prior results, and removes the volatile invocation", async () => {
+      const tw5 = new FakeTW5Engine();
+      const daemon = new FakeDaemonStore();
+      const invocation = makeInvocation({
+        requestId: "req-copy-1", title: `${VERB_URI_PREFIX}req-copy-1`, effectKey: "eff-copy",
+      });
+      tw5.wiki.addTiddler(invocation as unknown as TiddlerFields);
+
+      const priorResults = { [VERB_RESULT_KEY]: { ok: true, output: { recordsIngested: 3 } } };
+      await copyEffectOutcome(tw5 as never, daemon as unknown as CompositeStore, invocation, {
+        priorRequestId: "req-copy-0", priorResults, inputDigest: "sha256:deadbeef",
+      });
+
+      expect(tw5.wiki.getTiddler(invocation.title)).toBeUndefined(); // tombstoned, same as dispatchVerb
+      expect(daemon.writes).toHaveLength(1);
+      const written = daemon.writes[0];
+      expect(written?.tiddler.title).toBe(`${OUTCOME_URI_PREFIX}req-copy-1`);
+      expect(written?.tiddler.status).toBe("done");
+      expect(written?.tiddler["effect-of"]).toBe("req-copy-0");
+      expect(written?.tiddler["effect-key"]).toBe("eff-copy");
+      expect(written?.tiddler["input-digest"]).toBe("sha256:deadbeef");
+      const results = JSON.parse(String(written?.tiddler.results ?? "{}"));
+      expect(results[VERB_RESULT_KEY]?.output?.recordsIngested).toBe(3);
+    });
+  });
+});

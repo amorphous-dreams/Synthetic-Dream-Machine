@@ -1,0 +1,35 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/tiddler-text">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/mesh/tiddler-text.mem"
+heleuma   = "ba"
+mana      = 18
+manao     = 17
+manaoio   = 17
+role      = "heleuma: oracle tiddler text-field reader"
+title     = "lar:///ha.ka.ba/lararium/mesh/tiddler-text"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/tiddler-text"
+```
+
+<<~ ahu #/contract>>
+
+!! Contract
+
+`tiddlerText(record)` — accepts any `{ tiddler: { text?: unknown } } | null | undefined`, returns `string | null`.
+
+Oracle tiddlers (lararium, catalog, lares, wiki, corpus) carry their payload Automerge URL in `tiddler.text`. This helper centralises the `typeof text === "string"` guard so call sites stay one token.
+
+!! Why here
+
+One helper holds the guard on an oracle tiddler's text: a caller reads `tiddlerText(record)` rather than spelling the `typeof … === "string"` test again. It lives in `base-doc.ts` (`@lararium/mesh`), where every package reaches it.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;RKMpLQ05JyO6-cd1n14At8iHFUXmJNXlYNdoLKPR5-M
+
+<<^ code="&#x0004;" -> to="?">>

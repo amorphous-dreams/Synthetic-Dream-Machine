@@ -1,0 +1,136 @@
+/**
+ * cas-stage.test.ts — the send side of THE BLOB LAW: a verb rides a REFERENCE, never a body;
+ * KIND picks the shape, size stays a wall, `_lar_cas` is the one override.
+ *
+ * `stageBodyToCas` externalizes a body to the corpus CAS (LAR_CAS, hex-sha256-keyed) when its
+ * `type` rides as a pointer (TW5's base64 registry + the image family) OR the operator flagged it
+ * (`_lar_cas`). A utf8 body stays INLINE at any size under the 1 MiB wall — no persistent CAS blob
+ * (a meme is an inline-by-nature tiddler bundle). A pointer's CID hashes the RAW bytes, so the
+ * blob on disk IS the file. The daemon worker reads the SAME dir back via `resolveByCid` and
+ * re-verifies the hash. Here we prove the kind gate, the raw-bytes CID, and the round-trip.
+ */
+
+import { describe, test, expect, beforeAll, afterAll } from "vitest";
+import { mkdtempSync, rmSync, existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { createHash } from "node:crypto";
+
+const CAS = mkdtempSync(join(tmpdir(), "lr-cas-"));
+type Staged = { cid: string; size: number; skinny: boolean; staged: boolean };
+let stageBodyToCas: (text: string, opts?: { ext?: string; flagged?: boolean; binary?: boolean; type?: string }) => Staged;
+let declaredType: (meta?: string) => string | undefined;
+let carrierCasFlagged: (text: string, meta?: string) => boolean;
+
+beforeAll(async () => {
+  process.env["LAR_CAS"] = CAS;           // larCasDir() reads LAR_CAS first
+  ({ stageBodyToCas, carrierCasFlagged, declaredType } = await import("../src/cas-stage.js"));
+});
+afterAll(() => { rmSync(CAS, { recursive: true, force: true }); delete process.env["LAR_CAS"]; });
+
+const cidOf = (s: string) => createHash("sha256").update(Buffer.from(s, "utf8")).digest("hex");
+const cidOfBytes = (b: Buffer) => createHash("sha256").update(b).digest("hex");
+const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+
+describe("stageBodyToCas — THE BLOB LAW at the gesture (kind picks the shape, the flag overrides)", () => {
+  test("a small un-flagged body stays INLINE — no skinny, no CAS blob", () => {
+    const body = "a short carrier body";
+    const staged = stageBodyToCas(body, { ext: ".txt" });
+    expect(staged.skinny).toBe(false);
+    expect(staged.staged).toBe(false);
+    // No blob written for a small inline body — the CAS is not a per-carrier dump.
+    expect(existsSync(join(CAS, cidOf(body)))).toBe(false);
+  });
+
+  test("a `_lar_cas`-flagged small body → skinny handle + CAS blob (opt-in)", () => {
+    const body = "the operator wants this externalized despite its size";
+    const staged = stageBodyToCas(body, { ext: ".txt", flagged: true });
+    expect(staged.skinny).toBe(true);
+    expect(staged.staged).toBe(true);
+    expect(staged.cid).toBe(cidOf(body));
+    expect(existsSync(join(CAS, staged.cid))).toBe(true);
+    expect(readFileSync(join(CAS, staged.cid), "utf8")).toBe(body);
+  });
+
+  test("★ a png rides a pointer, and its CID hashes the RAW bytes — the blob on disk IS the file ★", () => {
+    const staged = stageBodyToCas(PNG.toString("base64"), { ext: ".png", binary: true });
+    expect(staged.skinny).toBe(true);
+    expect(staged.staged).toBe(true);
+    expect(staged.cid).toBe(cidOfBytes(PNG));
+    expect(staged.size).toBe(PNG.length);
+    expect(readFileSync(join(CAS, staged.cid)).equals(PNG)).toBe(true);
+  });
+
+  test("a 200 KiB application/pdf rides a pointer (kind, never size)", () => {
+    const pdf = Buffer.alloc(200 * 1024, 0x89);
+    const staged = stageBodyToCas(pdf.toString("base64"), { ext: ".pdf", binary: true });
+    expect(staged.skinny).toBe(true);
+    expect(staged.cid).toBe(cidOfBytes(pdf));
+  });
+
+  test("a 70 KiB text/markdown body rides INLINE — no size floor skins a utf8 body", () => {
+    const staged = stageBodyToCas("# md\n".repeat(70 * 1024 / 5), { ext: ".md" });
+    expect(staged.skinny).toBe(false);
+    expect(staged.staged).toBe(false);
+  });
+
+  test("an SVG rides a pointer (the image family); a `.meta` declaring text/xml rides it inline", () => {
+    const svg = "<svg xmlns=\"http://www.w3.org/2000/svg\"/>";
+    expect(stageBodyToCas(svg, { ext: ".svg" }).skinny).toBe(true);
+    expect(stageBodyToCas(svg, { ext: ".svg" }).cid).toBe(cidOf(svg));   // utf8 bytes ARE the raw bytes
+    expect(stageBodyToCas(svg, { ext: ".svg", type: "text/xml" }).skinny).toBe(false);
+  });
+
+  test("a 1 MiB + 1 utf8 body stages for transport but rides NO skinny (the island faults it); flagged → pointer", () => {
+    const body = "z".repeat(1024 * 1024 + 1);
+    expect(stageBodyToCas(body, { ext: ".txt" })).toMatchObject({ skinny: false, staged: true });
+    expect(stageBodyToCas(body, { ext: ".txt", flagged: true })).toMatchObject({ skinny: true, staged: true });
+  });
+
+  test("an oversized un-flagged TEXT body stages for transport but rides NO skinny (the island faults it)", () => {
+    const body = "Roughing It — a very long chapter.\n".repeat(120_000);
+    expect(body.length).toBeGreaterThan(4_000_000);
+    const staged = stageBodyToCas(body, { ext: ".txt" });
+    // Not a handle (text is inline by preference) — the island's oversized-inline wall faults it,
+    // steering the operator to flag it. It DOES stage so the transport arg stays skinny.
+    expect(staged.skinny).toBe(false);
+    expect(staged.staged).toBe(true);
+    expect(staged.cid).toBe(cidOf(body));
+    expect(existsSync(join(CAS, staged.cid))).toBe(true);
+  });
+
+  test("idempotent: staging the same flagged body twice mints the same cid", () => {
+    const body = "identical corpus";
+    expect(stageBodyToCas(body, { flagged: true }).cid).toBe(stageBodyToCas(body, { flagged: true }).cid);
+  });
+
+  test("the CAS holds only pointer/flagged/oversized blobs — never a small inline one", () => {
+    const files = new Set(readdirSync(CAS));
+    // The small inline body from the first test left no blob.
+    expect(files.has(cidOf("a short carrier body"))).toBe(false);
+    // Every present blob is a 64-hex content-address (no stray files).
+    for (const f of files) expect(f).toMatch(/^[0-9a-f]{64}$/);
+  });
+});
+
+describe("declaredType — the `.meta` sidecar's `type:` line (read the DECLARATION, never the path)", () => {
+  test("reads the declared type", () => {
+    expect(declaredType("title: X\ntype: text/xml\n")).toBe("text/xml");
+  });
+  test("absent sidecar or absent line → undefined", () => {
+    expect(declaredType(undefined)).toBeUndefined();
+    expect(declaredType("title: X\n")).toBeUndefined();
+  });
+});
+
+describe("carrierCasFlagged — the _lar_cas opt-in reader (no body resolve)", () => {
+  test("reads a `.meta` sidecar field (`_lar_cas: yes`)", () => {
+    expect(carrierCasFlagged("body", "title: X\n_lar_cas: yes\n")).toBe(true);
+  });
+  test("reads a per-ahu iam field (`_lar_cas = \"yes\"`)", () => {
+    expect(carrierCasFlagged('```toml iam\n_lar_cas = "yes"\n```\nbody')).toBe(true);
+  });
+  test("absent flag → false", () => {
+    expect(carrierCasFlagged("just a body", "title: X\n")).toBe(false);
+  });
+});

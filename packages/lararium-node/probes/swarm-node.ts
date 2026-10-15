@@ -1,0 +1,163 @@
+/**
+ * swarm-node — a container (or local) entrypoint that joins a mesh swarm: found a shared
+ * cabal-realm (founder) or dwell in it (joiner), the membership ceremony crossing the shore.
+ * CHANNEL-AGNOSTIC (the shore's payoff): file/POST over a shared dir, OR live-WS to a relay
+ * — chosen by env, the ceremony identical above the shore. REAL Keyhive.
+ *
+ * Env:
+ *   LAR_SWARM_ROLE   founder | joiner          (default joiner)
+ *   LAR_SWARM_RELAY  ws://host:port            (set → live-WS channel)
+ *   LAR_SWARM_DIR    shared dir/volume         (used when RELAY unset → file channel)
+ *   LAR_SWARM_ID     this vessel's label       (default = role; e.g. vessel-B)
+ *   LAR_SWARM_SEED   hex byte for the seed     (default 01; each vessel distinct)
+ *   LAR_SWARM_EXPECT founder: joiners to await (default 2)
+ *
+ * The verdict reads no roster. Each joiner PRESENTS the admit it holds, signing the founder's challenge with the
+ * key the admit names (`swarm-present`), and the founder verifies that one presented member on ask: the proof of
+ * possession, then real Keyhive (`dwellersHolding`), answering "does this one hold", never "who holds". A party
+ * presenting another party's admit holds nothing. The founder stands green once EXPECT distinct members have
+ * presented an admit that verifies, and it writes no membership list anywhere.
+ *
+ * Discovery rides the channel (a re-broadcast INVITE) — no shared realm file — so it works
+ * for the persistent file channel AND the ephemeral WS channel (a late/reconnecting joiner
+ * catches a later invite). file/POST serves a shared-dir swarm, the WS relay-service serves live sockets —
+ * two live forms of the Herm's OPEN ceremony carriage behind one shore, chosen by env.
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
+ */
+
+import { join } from "node:path";
+import { KeyhiveProvider, InMemoryEventStore, foundCabalRealm, openDwelling, dwellersHolding } from "@lararium/keyhive";
+import { MEMBERSHIP_BROADCAST, type MembershipChannel } from "@lararium/mesh";
+import { FileMembershipChannel } from "../src/file-membership-channel.js";
+import { WSMembershipChannel } from "../src/ws-membership-channel.js";
+import { loadVesselSigningSeed, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
+import { PresentVerifier, memberKey, signPresent, type SwarmAdmit } from "./swarm-present.js";
+
+const envOf = (k: string, d = ""): string => process.env[k] ?? d;
+const ROLE = envOf("LAR_SWARM_ROLE", "joiner");
+const RELAY = envOf("LAR_SWARM_RELAY");
+const DIR = envOf("LAR_SWARM_DIR");
+const ID = envOf("LAR_SWARM_ID", ROLE);
+const SEED = Number.parseInt(envOf("LAR_SWARM_SEED", "01"), 16) & 0xff;
+const EXPECT = Number.parseInt(envOf("LAR_SWARM_EXPECT", "2"), 10);
+const REALM_URI = envOf("LAR_SWARM_REALM", "lar:///crossroads.cabal.gathers/docker-swarm");
+const ROOT = envOf("LAR_SWARM_ROOT");   // a founded .lararium dataDir → use its REAL identity (else a test key)
+const TRANSPORT = RELAY ? `ws ${RELAY}` : `file ${DIR}`;
+
+/** This vessel's seed: its REAL founded identity (loadVesselSigningSeed) when LAR_SWARM_ROOT
+ *  points at a `lares vessel found`-founded dataDir; a deterministic test byte otherwise. */
+async function loadSeed(): Promise<Uint8Array> {
+  if (ROOT) {
+    await generateOrLoadVesselIdentity();   // mint this vessel's identity if absent (idempotent, = lares vessel found's mint)
+    const seed = await loadVesselSigningSeed();
+    console.log(`[swarm-node] using FOUNDED vessel identity from ${ROOT}`);
+    return seed;
+  }
+  return new Uint8Array(32).fill(SEED);
+}
+
+const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+const b64 = (u: Uint8Array): string => Buffer.from(u).toString("base64");
+
+async function openChannel(): Promise<MembershipChannel> {
+  if (RELAY) {
+    // Retry the dial — the relay container may not be listening yet at startup.
+    for (let attempt = 0; ; attempt++) {
+      try { const ws = new WSMembershipChannel(RELAY); await ws.opened(); return ws; }
+      catch (e) { if (attempt >= 30) throw e; await sleep(1000); }
+    }
+  }
+  if (!DIR) throw new Error("LAR_SWARM_DIR or LAR_SWARM_RELAY required");
+  return new FileMembershipChannel(join(DIR, "channel"));
+}
+
+async function runFounder(channel: MembershipChannel, provider: KeyhiveProvider): Promise<void> {
+  const realm = await foundCabalRealm(provider, REALM_URI, "automerge:docker-swarm-substrate");
+  console.log(`[swarm-node] FOUNDER founded realm=${realm.realmDocIdHex.slice(0, 12)}… via ${TRANSPORT}, expecting ${String(EXPECT)} joiners`);
+  const founderKeyHex = await provider.whoami();
+  const invite = { kind: "invite", from: "founder", to: MEMBERSHIP_BROADCAST, payload: { realmDocIdHex: realm.realmDocIdHex, genesisUri: REALM_URI, founderKeyHex } };
+  const verifier = new PresentVerifier(founderKeyHex);
+
+  const admitted = new Set<string>();   // the parties this founder answered, so a re-sent card opens nothing twice
+  const held = new Set<string>();       // the MEMBERS whose presented admit verified on ask, keyed by the proven key
+  for (let i = 0; i < 240 && held.size < EXPECT; i++) {
+    await channel.offer(invite);                            // re-broadcast (persists on file; catches late joiners on WS)
+    for (const c of await channel.poll("founder")) {
+      if (c.kind === "contact-card" && !admitted.has(c.from)) {
+        const { id } = await provider.receiveContactCard(new Uint8Array(Buffer.from(c.payload as string, "base64")));
+        await openDwelling(provider, realm, id);
+        admitted.add(c.from);
+        await channel.offer({ kind: "admit", from: "founder", to: c.from, payload: verifier.admit(realm.realmDocIdHex, id) });
+        console.log(`[swarm-node] FOUNDER opened ${c.from}'s dwelling (${id.slice(0, 12)}…), admit sent`);
+      } else if (c.kind === "present") {
+        const verdict = await verifier.verify(c.payload, async (hex) => (await dwellersHolding(provider, realm, [hex])).length === 1);
+        if (verdict.holds) held.add(verdict.memberIdHex);
+        await channel.offer({ kind: verdict.holds ? "holds" : "refused", from: "founder", to: c.from, payload: { memberIdHex: verdict.memberIdHex } });
+        console.log(`[swarm-node] FOUNDER ${verdict.holds ? "verified" : `REFUSED (${verdict.why ?? ""})`} ${c.from}'s presented admit on ask — ${String(held.size)}/${String(EXPECT)}`);
+      }
+    }
+    await sleep(500);
+  }
+
+  if (held.size === EXPECT) {
+    // The founder's word that the swarm formed lets each verified joiner stand down after the founder's own exit,
+    // so a compose run that stops on the first exit reads the founder's verdict.
+    await channel.offer({ kind: "formed", from: "founder", to: MEMBERSHIP_BROADCAST, payload: {} });
+    console.log(`[swarm-node] FOUNDER ✓ held=${String(held.size)}/${String(EXPECT)} — each presented admit verified on ask; the swarm formed across containers.`);
+  } else {
+    console.log(`[swarm-node] FOUNDER ✗ held=${String(held.size)}/${String(EXPECT)} — incomplete.`);
+    process.exit(1);
+  }
+}
+
+async function runJoiner(channel: MembershipChannel, provider: KeyhiveProvider, seed: Uint8Array): Promise<void> {
+  const self = memberKey(await provider.whoami());
+  let founderKeyHex = "";
+  let offered = false;
+  let verified = false;
+  for (let i = 0; i < 240; i++) {
+    for (const m of await channel.poll(ID)) {
+      if (!offered && m.kind === "invite") {
+        founderKeyHex = String((m.payload as { founderKeyHex?: string } | undefined)?.founderKeyHex ?? "");
+        await channel.offer({ kind: "contact-card", from: ID, to: "founder", payload: b64(await provider.contactCard()) });
+        offered = true;
+        console.log(`[swarm-node] JOINER ${ID} saw invite via ${TRANSPORT}, offered contact-card, awaiting admit…`);
+      } else if (offered && m.kind === "admit") {
+        // The joiner PRESENTS the admit it holds, signing the founder's challenge with the key the admit names; an
+        // admit naming any other key is not this joiner's to present.
+        const admit = m.payload as SwarmAdmit;
+        if (self === null || memberKey(admit.memberIdHex) !== self) {
+          console.log(`[swarm-node] JOINER ${ID} ✗ an admit naming another member reached it`);
+          process.exit(1);
+        }
+        await channel.offer({ kind: "present", from: ID, to: "founder", payload: await signPresent(admit, founderKeyHex, seed) });
+        console.log(`[swarm-node] JOINER ${ID} admitted (member=${(self ?? "").slice(0, 12)}…), presenting it with its proof`);
+      } else if (offered && m.kind === "holds") {
+        verified = true;
+        console.log(`[swarm-node] JOINER ${ID} ✓ its presented admit verified, awaiting the founder's word`);
+      } else if (verified && m.kind === "formed") {
+        await sleep(2000);
+        process.exit(0);
+      } else if (offered && !verified && m.kind === "refused") {
+        console.log(`[swarm-node] JOINER ${ID} ✗ its presented admit was refused`);
+        process.exit(1);
+      }
+    }
+    await sleep(500);
+  }
+  console.log(`[swarm-node] JOINER ${ID} ✗ ${verified ? "verified, but the swarm never formed" : "never verified"}`); process.exit(1);
+}
+
+async function main(): Promise<void> {
+  const channel = await openChannel();
+  const provider = new KeyhiveProvider();
+  const seed = await loadSeed();
+  await provider.init({ seed, eventStore: new InMemoryEventStore() });
+  if (ROLE === "founder") await runFounder(channel, provider);
+  else await runJoiner(channel, provider, seed);
+  if (channel instanceof WSMembershipChannel) channel.close();
+  await provider.dispose();
+}
+
+main().catch((e) => { console.error("[swarm-node] FATAL:", e); process.exit(1); });

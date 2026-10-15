@@ -1,0 +1,181 @@
+/**
+ * boot-daemon-keyhive.test.ts — the isomorphic daemon-island authn/z boot.
+ *
+ * Proves the pure `bootDaemonKeyhive` sequence that Stage 1 moves into every
+ * platform's daemon island worker:
+ *   - re-hydrates cap state from the daemon doc and clears Gates A/B/C
+ *   - registers the operator's writable bags so verify() resolves
+ *   - HALTs (throws) on a drifted identity (Gate A) or a forged binding edge (the Binding Gate)
+ *   - says, on the log and in its result, every persona-KEL event the Binding Gate set aside as unverified
+ *
+ * Runs entirely in-process (no worker) because the logic is extracted pure —
+ * that is the whole point: the worker is just the caller. Founds a real operator
+ * via runFoundingCeremony into an in-memory Repo, exactly as the host platform
+ * `loadBootstrap` does before the daemon worker spawns.
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/lararium/vessel-platform#/authn-home
+ */
+
+import { describe, test, expect, beforeAll } from "vitest";
+import { Repo } from "@automerge/automerge-repo";
+import type { AutomergeUrl } from "@automerge/automerge-repo";
+import {
+  type LarDoc, type PersonaKelEvent,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
+  materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, enrolmentDigestOf, personaEventCidOf,
+} from "@lararium/mesh";
+import {
+  KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony,
+  type BootDaemonKeyhiveInput, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+
+const SEED = new Uint8Array(32).fill(7);
+
+interface Founded {
+  verifyingKey: string;
+  eventStore:   DaemonEventStore;
+  bootArgs:     BootDaemonKeyhiveInput;
+}
+
+let founded: Founded;
+
+beforeAll(async () => {
+  const repo = new Repo();
+
+  // Derive the operator verifying key the seed resolves to (the host keypair
+  // adapter produces this; here we read it straight from a throwaway keyhive).
+  const probe = new KeyhiveProvider();
+  await probe.init({ seed: SEED, eventStore: { put: async () => {}, list: async () => [] } });
+  const did = await probe.whoami();
+  const verifyingKey = did.startsWith("0x") ? did.slice(2) : did;
+  await probe.dispose();
+
+  // Found a real operator into the in-memory repo (host pre-spawn step).
+  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(SEED)),
+    repo, vesselSeed: SEED,
+    vesselVerifyingKey: verifyingKey,
+    vesselDisplayName:  "Test Operator",
+    binding: { mode: "self-stood", signerSeed: SEED },          // self-signed (signerDid == deviceDid) for the test founder
+    hearthTrueName: "",         // hearth-agnostic in the unit test
+    nexusPubkey: verifyingKey,  // this vessel's own gate key IS its Nexus key
+  });
+
+  // Read the persona-KEL chain the founding seated on the per-Nexus board — the Binding Gate walks it.
+  const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(verifyingKey), "board:persona-kel");
+  const kelChain = personaKelChainForPrefix(kelBoard.doc(), cer.personaKelPrefix);
+  if (!kelChain) throw new Error("founding seated no persona-KEL chain");
+
+  // Build the daemon composite the worker's onEa would receive in ctx.
+  const daemonHandle = await repo.find<LarDoc>(cer.daemonUrl as AutomergeUrl);
+  const composite = new CompositeStore();
+  const daemonStore = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
+  composite.addLayer({ bagId: DAEMON_BAG_ID, store: daemonStore, writable: true });
+  daemonStore.markSyncComplete();
+
+  const eventStore = new DaemonEventStore({ daemon: composite });
+  founded = {
+    verifyingKey, eventStore,
+    bootArgs: {
+      seed: SEED, eventStore,
+      vesselVerifyingKey:  verifyingKey,
+      personaGroupId:   cer.personaGroupId,
+      meshCabalDocIdHex:     cer.meshCabalDocIdHex,
+      registerBags:          [DAEMON_BAG_ID],
+      signerDid:             cer.signerDid,
+      personaKel:            { prefix: cer.personaKelPrefix, chain: kelChain },
+      deviceEdge:            cer.founderEdge,
+    },
+  };
+});
+
+describe("bootDaemonKeyhive", () => {
+  test("clears Gate A + the Binding Gate, registers the daemon bag, and verifies operator admin", async () => {
+    const { keyhive, did } = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+
+    expect(did).toMatch(/^0x/);
+    expect(did.endsWith(founded.verifyingKey)).toBe(true);
+
+    // The operator is implicit admin of every bag it registered (generateDocument).
+    const v = await keyhive.verify({ presenter: did, bagUrl: DAEMON_BAG_ID, access: "admin" });
+    expect(v.ok).toBe(true);
+
+    await keyhive.dispose();
+  });
+
+  test("RED: a junk persona-KEL event beside the chain moves nothing at the Binding Gate, and the boot SAYS it set it aside; CONTROL: a clean chain says nothing", async () => {
+    const chain = founded.bootArgs.personaKel!.chain;
+    const head = chain[chain.length - 1]!;
+    const core = {
+      seq: head.seq + 1, prefix: head.prefix, opKeyDid: `0x${"ee".repeat(32)}`, recoverySetHash: head.recoverySetHash,
+      nextRecoverySetHash: head.nextRecoverySetHash, prevEventCid: head.eventCid, provisional: false, vetoOfCid: null,
+      enrolmentDigest: enrolmentDigestOf([]),
+    };
+    const junk: PersonaKelEvent = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
+    const warned: string[] = [];
+    const warn = console.warn;
+    console.warn = (...a: unknown[]) => { warned.push(a.map(String).join(" ")); };
+    try {
+      const planted = await bootDaemonKeyhive({ ...founded.bootArgs, personaKel: { prefix: head.prefix, chain: [...chain, junk] }, expectedEpoch: 0 });
+      expect(planted.unreadable).toMatch(/do not verify and move nothing/);
+      expect(warned.some((w) => w.includes("Binding Gate") && w.includes(junk.eventCid.slice(0, 16)))).toBe(true);
+      await planted.keyhive.dispose();
+      warned.length = 0;
+      const clean = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+      expect(clean.unreadable).toBeNull();
+      expect(warned.some((w) => w.includes("Binding Gate"))).toBe(false);
+      await clean.keyhive.dispose();
+    } finally { console.warn = warn; }
+  });
+
+  test("a device set aside cannot boot, while clear and returned devices boot", async () => {
+    await expect(bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0, dyad: "aside" })).rejects.toThrow(/SET ASIDE/);
+    const clear = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0, dyad: "clear" });
+    await clear.keyhive.dispose();
+    const returned = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0, dyad: "returned" });
+    await returned.keyhive.dispose();
+  });
+
+  test("HALTs on identity drift (Gate A)", async () => {
+    await expect(bootDaemonKeyhive({
+      ...founded.bootArgs, vesselVerifyingKey: "deadbeefdeadbeef",
+    })).rejects.toThrow(/Gate A/);
+  });
+
+  test("HALTs on a forged binding edge (Binding Gate, fail-closed)", async () => {
+    await expect(bootDaemonKeyhive({
+      ...founded.bootArgs,
+      deviceEdge: { ...founded.bootArgs.deviceEdge, signature: "00".repeat(64) },
+    })).rejects.toThrow(/Binding Gate/);
+  });
+
+  test("HALTs on an empty persona-KEL chain (the pin cannot reach a head, fail-closed)", async () => {
+    await expect(bootDaemonKeyhive({
+      ...founded.bootArgs,
+      personaKel: { prefix: founded.bootArgs.personaKel.prefix, chain: [] as PersonaKelEvent[] },
+    })).rejects.toThrow(/Binding Gate/);
+  });
+
+  test("HALTs when the local chain does not head the pinned identifier (no-global-now deny)", async () => {
+    await expect(bootDaemonKeyhive({
+      ...founded.bootArgs,
+      personaKel: { prefix: "persona-not-the-founded-one", chain: founded.bootArgs.personaKel.chain },
+    })).rejects.toThrow(/Binding Gate/);
+  });
+
+  // ── THE LEASE-EPOCH FENCE (Option 1: license off the PersonaGroup lease epoch, not the wall clock) ──────
+  // The founding edge mints `boundEpoch: 0` (a genesis founding — `effectiveLeaseEpoch` over no slots IS 0,
+  // ceremony-core.ts). Passing `expectedEpoch` to the Binding Gate must therefore ADMIT at 0 and HALT above it.
+  describe("★ the Binding Gate fences on `expectedEpoch` (the PersonaGroup lease), not the wall clock alone ★", () => {
+    test("RED-FIRST — expectedEpoch ABOVE the edge's boundEpoch HALTS; AT it, boots clean", async () => {
+      await expect(bootDaemonKeyhive({
+        ...founded.bootArgs, expectedEpoch: 1,
+      })).rejects.toThrow(/Binding Gate/);
+
+      const { keyhive } = await bootDaemonKeyhive({ ...founded.bootArgs, expectedEpoch: 0 });
+      await keyhive.dispose();
+    });
+
+    test("RED — omitting expectedEpoch refuses rather than substituting a wall-clock window", async () => {
+      await expect(bootDaemonKeyhive(founded.bootArgs)).rejects.toThrow(/current lease frontier unavailable/);
+    });
+  });
+});

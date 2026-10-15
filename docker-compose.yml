@@ -10,7 +10,7 @@
 #   qa-smoke   — stdio smoke tests against built image
 #
 # Usage:
-#   make docker-dev          # hot-reload serve + app
+#   make docker-dev          # hot-reload serve + web surface
 #   make docker-qa           # QA browser test on :4321
 #   make docker-prod         # production serve
 #   docker compose --profile mcp-qa up
@@ -34,7 +34,38 @@ x-serve-volumes-ro: &serve-volumes-ro
   - ./lares:/app/lares:ro
   - lararium-data:/app/.lararium-data
 
+x-vessel-data-env: &vessel-data-env
+  # The named volume is the vessel's durable XDG data home. The founder and
+  # server therefore resolve the same daemon doc without borrowing host state.
+  XDG_DATA_HOME: /app/.lararium-data
+  XDG_STATE_HOME: /app/.lararium-data/state
+  XDG_CACHE_HOME: /app/.lararium-data/cache
+  XDG_CONFIG_HOME: /app/.lararium-data/config
+
 services:
+
+  # ─── qa-founder — explicit founding ceremony for the fresh QA volume
+  # This is test arrangement, not an implicit production side effect. `up`
+  # waits for its receipt before the direct Node peer is allowed to boot.
+  # A founding gathers its human route (passphrase and/or paper pin) from a TTY, so found FIRST, attached:
+  #   docker compose --profile qa run --rm -it lararium-qa-founder
+  # then `docker compose --profile qa up`. Under `up` alone (no TTY) a fresh volume refuses BY NAME
+  # (CredentialTtyRefusal); a volume already founded needs no route and the founder only writes its receipt.
+  lararium-qa-founder:
+    profiles: [qa]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: build
+    volumes: *serve-volumes-rw
+    environment:
+      NODE_ENV: qa
+      <<: *vessel-data-env
+      # The image's checked-out corpus is the deliberate local QA root; the
+      # vessel state remains isolated in the XDG volume above.
+      LAR_DEV_REPO_ROOT: "1"
+      LAR_PRONAOS_FOUNDER_RECEIPT: /app/.lararium-data/pronaos-founder-receipt.json
+    command: ["sh", "-ec", "node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build; test -s /app/.lararium-data/lares/vessel/social-bootstrap.json; printf '%s\\n' '{\"kind\":\"pronaos-founder\",\"bootstrap\":\"/app/.lararium-data/lares/vessel/social-bootstrap.json\"}' > /app/.lararium-data/pronaos-founder-receipt.json"]
 
   # ─── dev — hot-reload node peer (tsx watch, full source mounted) ────────────
   lararium-dev:
@@ -49,14 +80,14 @@ services:
       LAR_PORT: "4321"
       <<: *auth-env
     command: >
-      sh -c "npm install -g pnpm &&
+      sh -c "npm install -g pnpm@11.28.5 &&
              pnpm install &&
              pnpm -r build &&
              node --import tsx/esm --watch packages/lararium-node/src/main.ts"
     ports:
       - "4321:4321"
 
-  # ─── qa — built serve image, browser QA on :4321 ───────────────────────────
+  # ─── qa — built Node vessel + explicit Pronaos composition, browser QA on :4321
   lararium-qa:
     profiles: [qa]
     build:
@@ -64,9 +95,25 @@ services:
       dockerfile: Dockerfile
       target: serve
     volumes: *serve-volumes-rw
+    depends_on:
+      lararium-qa-founder:
+        condition: service_completed_successfully
     environment:
       NODE_ENV: qa
-      <<: *auth-env
+      <<: *vessel-data-env
+      # QA's direct Node composition uses the same checked-out corpus as its
+      # founder while keeping durable vessel state in the named volume.
+      LAR_DEV_REPO_ROOT: "1"
+      # The Web shore and its finite receipt are separate explicit inputs. This
+      # profile exercises Node's composed Pronaos; it remains a direct Node vessel.
+      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
+      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
+      # This direct Node profile serves Pronaos, health, Oracle, and the relay
+      # under one explicitly declared HTTP origin; relay reach is still named
+      # separately by LAR_PUBLIC_URL when an operator supplies it.
+      LAR_SAME_ORIGIN: "true"
+      GITHUB_CLIENT_ID:     ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
     ports:
       - "4321:4321"
     healthcheck:
@@ -76,7 +123,7 @@ services:
       retries: 5
       start_period: 15s
 
-  # ─── prod — hardened, lares/ read-only, no debug ports ─────────────────────
+  # ─── prod — direct Node vessel, lares/ read-only, port policy unchanged ────
   lararium-prod:
     profiles: [prod]
     build:
@@ -86,7 +133,14 @@ services:
     volumes: *serve-volumes-ro
     environment:
       NODE_ENV: production
-      <<: *auth-env
+      <<: *vessel-data-env
+      # Production carries the same explicit finite Pronaos inputs as QA.
+      # Copying the artifact alone never widens Node's route ownership.
+      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
+      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
+      LAR_SAME_ORIGIN: "true"
+      GITHUB_CLIENT_ID:     ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
     ports:
       - "4321:4321"
     restart: unless-stopped
@@ -108,7 +162,7 @@ services:
     environment:
       NODE_ENV: development
     command: >
-      sh -c "npm install -g pnpm &&
+      sh -c "npm install -g pnpm@11.28.5 &&
              pnpm install &&
              pnpm --filter @lararium/mcp exec tsx --watch src/stdio.ts"
     stdin_open: true

@@ -1,5 +1,6 @@
-import { mkdirSync, readFileSync, rmSync } from "fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import path from "path";
+
 import { build } from "vite";
 import { discoverModules } from "./discover-modules.js";
 import { MODULE_MANIFEST, packagePath, packageRelative, ROOT, TIDDLER_SRC_DIR } from "./paths.js";
@@ -28,24 +29,132 @@ export async function buildPluginCjsTiddlers(outDir = TIDDLER_SRC_DIR): Promise<
         sourcemap: false,
         minify: false,
         rollupOptions: {
-          external: (id) => id.startsWith("$:/") || id === "tiddlywiki" || id.startsWith("tiddlywiki/"),
+          external: (id) => {
+            if (id.startsWith("$:/") || id === "tiddlywiki" || id.startsWith("tiddlywiki/")) return true;
+            // smol-toml ships as its own library tiddler; externalize in all modules except
+            // the lib-smol-toml bundle itself (which must inline it).
+            if (id === "smol-toml" && mod.name !== "smol-toml") return true;
+            // wiki-sense-fold ships ONCE as its own library tiddler; every other module requires
+            // it by URI (the smol-toml precedent) — only the fold bundle inlines its own body.
+            // The alias below rewrites the relative import to this BARE id first (a bare external
+            // emits the paths mapping verbatim; a relative external gets re-relativized by rollup).
+            if (id === "lararium-wiki-sense-fold") return true;
+            // meme-ast ships ONCE as its own library tiddler (modules/meme-ast) — the same trio:
+            // every consumer module requires it by URI instead of inlining its own copy.
+            if (id === "lararium-meme-ast") return true;
+            // place-meme ships ONCE as its own library tiddler; the route skins require it by URI.
+            if (id === "lararium-place-meme") return true;
+            // meme-laws carries every pure law over meme text ONCE; the deserializer, the placement,
+            // the projections and the face require it by URI.
+            if (id === "lararium-meme-laws") return true;
+            // THE FRAME PACKAGE ships ONCE as its own library tiddler (lib/memetic-frame) — the
+            // standalone plugin carries it exactly once, and every module requires it by URI. Only the
+            // library's own bundle inlines it (resolved to source by the alias below). The `/marks`
+            // subpath is the same package, so it rides the same tiddler.
+            if ((id === "@lararium/memetic-frame" || id === "@lararium/memetic-frame/marks") && mod.name !== "memetic-frame") return true;
+            // weave ships ONCE; the face and the projection filter require it by URI.
+            if (id === "lararium-weave") return true;
+            // meme-project ships ONCE; the face, the filter and the exporter require it by URI.
+            if (id === "lararium-meme-project") return true;
+            // the deserializer ships ONCE as its own module tiddler; the placement and the nalu engine
+            // require it by URI instead of carrying the whole reader.
+            if (id === "lararium-deserializer") return true;
+            return false;
+          },
           output: {
-            banner: mod.banner,
             esModule: false,
             exports: "named",
+            generatedCode: { symbols: false },
+            paths: (id: string) =>
+              id === "@lararium/memetic-frame" || id === "@lararium/memetic-frame/marks"
+                ? "lar:///ha.ka.ba/lararium/tw5/lib/memetic-frame"
+                : id === "lararium-wiki-sense-fold"
+                ? "lar:///ha.ka.ba/lararium/tw5/lib/wiki-sense-fold"
+                : id === "lararium-meme-ast"
+                  ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-ast"
+                : id === "lararium-place-meme"
+                  ? "lar:///ha.ka.ba/lararium/tw5/modules/place-meme"
+                : id === "lararium-meme-laws"
+                  ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-laws"
+                : id === "lararium-weave"
+                  ? "lar:///ha.ka.ba/lararium/tw5/modules/weave"
+                : id === "lararium-meme-project"
+                  ? "lar:///ha.ka.ba/lararium/tw5/modules/meme-project"
+                : id === "lararium-deserializer"
+                  ? "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
+                  : id === "smol-toml"
+                    ? "lar:///ha.ka.ba/lararium/tw5/lib/smol-toml"
+                    : id,
           },
         },
       },
       resolve: {
-        alias: {
-          "@lararium/core/meme-ast": path.resolve(ROOT, "../lararium-core/src/meme-ast/index.ts"),
-          "@lararium/core": path.resolve(ROOT, "../lararium-core/src/index.ts"),
-        },
+        alias: [
+          // the shared wiki-sense fold rides as ONE library tiddler: rewrite the relative import
+          // to a bare id (externalized + paths-mapped above) in every module EXCEPT the fold's own
+          // bundle, which must inline its body.
+          ...(mod.name !== "wiki-sense-fold"
+            ? [{ find: /^(\.\.?\/)+wiki-sense-fold(\.js)?$/, replacement: "lararium-wiki-sense-fold" }]
+            : []),
+          // meme-ast rides the same law: its runtime submodules (index/parse/ahu-scan) rewrite to ONE
+          // bare id in every module except meme-ast's own bundle — the inlined copies collapse to
+          // require() of the one library tiddler. (types.js stays type-only and erases before
+          // resolution.)
+          ...(mod.name !== "meme-ast"
+            ? [{
+                find: /^(\.\.?\/)+meme-ast\/(index|parse|ahu-scan)(\.js)?$/,
+                replacement: "lararium-meme-ast",
+              }]
+            : []),
+          // place-meme rides the same law: one library tiddler, required by URI from every skin.
+          ...(mod.name !== "place-meme"
+            ? [{ find: /^(\.\.?\/)+place-meme(\.js)?$/, replacement: "lararium-place-meme" }]
+            : []),
+          // meme-laws rides the same law: the law modules it re-exports rewrite to ONE bare id in
+          // every module except the library's own bundle, which inlines them. The list IS the
+          // library's re-export list — a module left off it would be inlined beside the library.
+          ...(mod.name !== "meme-laws"
+            ? [{
+                find: /^(\.\.?\/)+(meme-laws|meme-normalize|carrier-shape|carrier-edges|carrier-lifecycle)(\.js)?$/,
+                replacement: "lararium-meme-laws",
+              }]
+            : []),
+          ...(mod.name !== "weave"
+            ? [{ find: /^(\.\.?\/)+weave\/index(\.js)?$/, replacement: "lararium-weave" }]
+            : []),
+          ...(mod.name !== "meme-project"
+            ? [{ find: /^(\.\.?\/)+meme-project(\.js)?$/, replacement: "lararium-meme-project" }]
+            : []),
+          ...(mod.name !== "deserializer"
+            ? [{ find: /^(\.\.?\/)+deserializer(\.js)?$/, replacement: "lararium-deserializer" }]
+            : []),
+          // The frame library's own bundle inlines the package from SOURCE, so a plugin build never
+          // packs a stale dist.
+          ...(mod.name === "memetic-frame"
+            ? [{ find: /^@lararium\/memetic-frame$/, replacement: path.resolve(ROOT, "../lararium-memetic-frame/src/index.ts") }]
+            : []),
+          // harvest lives under mesh's own capture/ cell now; the generic rule below still maps
+          // every other `@lararium/mesh/*` subpath flat into mesh's src/.
+          {
+            find: /^@lararium\/mesh\/harvest$/,
+            replacement: path.resolve(ROOT, "../lararium-mesh/src/capture/harvest.ts"),
+          },
+          {
+            find: /^@lararium\/mesh\/(.+)$/,
+            replacement: `${path.resolve(ROOT, "../lararium-mesh/src")}/$1`,
+          },
+          {
+            find: "@lararium/mesh",
+            replacement: path.resolve(ROOT, "../lararium-mesh/src/index.ts"),
+          },
+        ],
       },
     });
 
     const outputPath = path.join(outDirAbs, `${mod.name}.js`);
-    const outputText = readFileSync(outputPath, "utf8");
+    const raw = readFileSync(outputPath, "utf8");
+    const outputText = mod.banner + raw;
+    writeFileSync(outputPath, outputText, "utf8");
     manifest.push({
       title: mod.fields["title"]!,
       moduleType: mod.fields["module-type"]!,

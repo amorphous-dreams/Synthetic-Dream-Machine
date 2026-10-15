@@ -1,0 +1,237 @@
+/**
+ * ahu-scan — single source of truth for ahu sigil block recognition.
+ *
+ * Three callers consume this module identically:
+ *   - `@lararium/tw5/src/deserializer.ts` (CLI / sync ingest)
+ *   - `@lararium/tw5/src/widgets/action-meme-place.ts` (TW5 UX save)
+ *   - `@lararium/tw5/src/wikirules/memetic-wikitext-sigil.ts` (render-time
+ *      parse via TW5 wikifier)
+ *
+ * One regex pair, one balanced-bracket scanner, one slot-path composer —
+ * any drift between callers is a bug, so they share this module.
+ *
+ * ── LAW: THE DECOMPOSER IS MACHINE, AND VOCABULARY NEVER DECOMPOSES ─────────────────────────────
+ * The family cut stands inside the engine window: hard-coded regexes under the memetic-frame fence
+ * mask, and nothing else. This module reads no `SharktoothSigil` tiddler and never calls
+ * `getGrammar`; the live vocabulary grades and renders text, it never decides where a record ends.
+ * The wire carries the records this cut makes, so a dialect edit can change how a meme reads but
+ * never how it decomposes. Weld: `tests/decomposer-machine-weld.test.ts`.
+ *
+ * Schema: lar:///ha.ka.ba/lares/api/lararium/schema/ahu-scan
+ */
+
+import { fencedSpans, maskedExecAll } from "@lararium/memetic-frame";
+
+/**
+ * Slot identifier — supports nested fragment paths via `/`-separated
+ * segments per memetic-wikitext spec §nested-ahu and lar-uri.md §5.6.
+ *
+ * `<<~ ahu #/parent/child/grandchild>>` opens a slot whose URI reads
+ * `parentURI#/parent/child/grandchild` — single-hash invariant; the
+ * fragment-path is the addressable hierarchy.
+ *
+ * TWO SPELLINGS, ONE SLOT FORM. The sharktooth house opens `<<~ ahu #/slot>>`; an English carrier opens
+ * `<<fragment #/slot>>`. Both name a meme holding tiddlers and scan through this
+ * shared reader. A bare `#slot` belongs to neither child-slot grammar.
+ *
+ * A SEGMENT ADMITS the Hawaiian long vowels (ā ē ī ō ū, precomposed) and the ʻokina (U+02BB) beside
+ * the base `[\w-]` — operator ruling. `normalizeMemeSource` is where NFC-folding a decomposed vowel
+ * and folding an ʻokina LOOK-ALIKE (‘ ’ ') to U+02BB happen; by the time a slot name reaches this
+ * scanner it already carries the one canonical spelling this charclass admits.
+ *
+ * ONE SPELLING OF THE PATH, exported (`SLOT_SEGMENT_SRC`, `SLOT_PATH_SRC`, `KAHEA_REF_RE`): every reader
+ * that names a slot composes from these rather than carrying its own copy of the charclass.
+ */
+export const SLOT_SEGMENT_SRC = "[\\wāēīōūʻ-]+";
+/** A rooted slot path — `#/a`, `#/a/b/c` — as a regex source, uncaptured. The ONE spelling every reader composes. */
+export const SLOT_PATH_SRC = `#\\/${SLOT_SEGMENT_SRC}(?:\\/${SLOT_SEGMENT_SRC})*`;
+export const AHU_OPEN_RE  = new RegExp(`<<(?:~[^>]*\\bahu|fragment)\\s+(${SLOT_PATH_SRC})(?:\\s+->\\s+\\S+)?\\s*>>`, "g");
+/** A kahea call naming a slot — `<<~ kahea ahu #/a/b>>` — the path captured. Global: `replace` and the masked scans reset it. */
+export const KAHEA_REF_RE = new RegExp(`<<~\\s*kahea\\s+ahu\\s+(${SLOT_PATH_SRC})\\s*>>`, "g");
+export const AHU_CLOSE_RE = /<<(?:~\/ahu|\/fragment)\s*>>/g;
+
+/**
+ * A DECLARATION OPENS A SLOT; A CALL NAMES ONE — and `AHU_OPEN_RE` matches both, because `~[^>]*\bahu`
+ * swallows the dispatch verb in `<<~ kahea ahu #/b>>` and `<<~ aka ahu #/b>>`. Every declaration in the
+ * corpus spells `<<~ ahu` with nothing between the namespace mark and the word; every call carries a verb
+ * there. So the test is the span between them: empty (or whitespace) declares, anything else calls.
+ *
+ * Both consumers read this one predicate. `findTopLevelAhuBlocks` must, or a call pushes onto the pairing
+ * stack and the real block beneath it emits at depth 1 and never as top-level; `collectAhuSlots` must, or
+ * the ahu-drop guard grades a call as structure the render owes it.
+ */
+export function isAhuDeclaration(opener: string): boolean {
+  const m = /^<<~([^>]*?)\bahu\b/.exec(opener);
+  return m === null || m[1]!.trim() === "";
+}
+
+export interface AhuBlock {
+  /** Source position of the opening `<<~` */
+  readonly openStart: number;
+  /** Position just after the opening `>>` (start of body bytes) */
+  readonly bodyStart: number;
+  /** Position of the closing `<<~/ahu` (end of body bytes) */
+  readonly bodyEnd:   number;
+  /** Position just after the closing `>>` (end of full block) */
+  readonly closeEnd:  number;
+  /** Rooted slot identifier, e.g. `#/thesis` or `#/parent/child` */
+  readonly slot:      string;
+}
+
+/**
+ * The top-level ahu blocks — `scanAhu`'s split reading. Nested ahu blocks remain inside their parent's
+ * `[bodyStart, bodyEnd)` span; callers walk recursively when they need full-depth flattening. A closer
+ * with nothing to close cuts no block; the scan names it as a fault, which the floor reads.
+ */
+export function findTopLevelAhuBlocks(text: string): AhuBlock[] {
+  return [...scanAhu(text).blocks];
+}
+
+/**
+ * Collect every ahu slot name a carrier declares — top-level and nested, across the whole text —
+ * skipping quoted (fenced/inline-code) sigils. EVERY SLOT OPENS A CHILD: the exempt-slot class retired,
+ * so a slot the disk declares is a slot the render must address. The gate reads
+ * this to guard its canonical-equivalence NOOP: a slot the disk declares that
+ * the round-trip render drops names a LOSSY shore, never a cosmetic edit —
+ * so a dropped slot MUST NOT read as canonical-equivalent (the ahu-drop guard).
+ */
+export function collectAhuSlots(text: string): Set<string> {
+  const mask = fencedSpans(text);
+  const slots = new Set<string>();
+  // The scanner admits only the rooted spelling that the address mints; an authored open is already
+  // taken AS its full address verbatim (the READ relation) — nothing composes here.
+  for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
+    if (!isAhuDeclaration(m[0])) continue;
+    slots.add(m[1] ?? "#");
+  }
+  return slots;
+}
+
+/** One balance fault the stack-pairing scanner absorbs silently today — see `findAhuBalanceFaults`. */
+export interface AhuBalanceFault {
+  /** `ahu-unbalanced-open` — an opener still on the stack at EOF; its own closer never arrived
+   *  (a nested opener below it ate the closer meant for this one instead). `ahu-orphan-close` — a
+   *  closer with nothing on the stack to match (dropped by `findTopLevelAhuBlocks`; here it closes
+   *  nothing, or, read at the composed altitude, closes an ancestor early). */
+  readonly code: "ahu-unbalanced-open" | "ahu-orphan-close";
+  /** The opener's slot, for `ahu-unbalanced-open`; empty for `ahu-orphan-close` (a closer names no slot). */
+  readonly slot: string;
+  /** Source position of the opener or closer the fault names. */
+  readonly pos: number;
+}
+
+/** One ahu scan, read two ways: the top-level blocks the split cuts, and the faults the floor fences on. */
+export interface AhuScan {
+  readonly blocks: readonly AhuBlock[];
+  readonly faults: readonly AhuBalanceFault[];
+}
+
+/**
+ * THE ONE AHU SCAN. Openers and closers, read under the fence mask (a quoted sigil is the operator
+ * SHOWING the grammar, never using it), pair on one stack: an opener pushes; a closer pops — emitting a
+ * top-level block where the stack empties, or an `ahu-orphan-close` fault where nothing stands to pop;
+ * an opener still standing at EOF is an `ahu-unbalanced-open` fault. Ties on position resolve by event
+ * order, opener before closer. The split and the quoteblock floor read this one scan, so they can never
+ * disagree on what counts as balanced.
+ */
+export function scanAhu(text: string): AhuScan {
+  const mask = fencedSpans(text);
+  const events: Array<{ kind: "open" | "close"; pos: number; end: number; slot: string }> = [];
+  for (const m of maskedExecAll(text, AHU_OPEN_RE, mask)) {
+    if (!isAhuDeclaration(m[0])) continue;
+    events.push({ kind: "open", pos: m.index, end: m.index + m[0].length, slot: m[1] ?? "#" });
+  }
+  for (const m of maskedExecAll(text, AHU_CLOSE_RE, mask)) {
+    events.push({ kind: "close", pos: m.index, end: m.index + m[0].length, slot: "" });
+  }
+  events.sort((a, b) => a.pos - b.pos);
+
+  const blocks: AhuBlock[] = [];
+  const faults: AhuBalanceFault[] = [];
+  const stack: Array<{ openStart: number; bodyStart: number; slot: string }> = [];
+  for (const ev of events) {
+    if (ev.kind === "open") {
+      stack.push({ openStart: ev.pos, bodyStart: ev.end, slot: ev.slot });
+      continue;
+    }
+    const opener = stack.pop();
+    if (!opener) {
+      faults.push({ code: "ahu-orphan-close", slot: "", pos: ev.pos });
+    } else if (stack.length === 0) {
+      blocks.push({ openStart: opener.openStart, bodyStart: opener.bodyStart, bodyEnd: ev.pos, closeEnd: ev.end, slot: opener.slot });
+    }
+  }
+  for (const opener of stack) faults.push({ code: "ahu-unbalanced-open", slot: opener.slot, pos: opener.openStart });
+  return { blocks, faults };
+}
+
+/**
+ * The balance faults — `scanAhu`'s floor reading: an opener left on the stack at EOF, and a closer that
+ * arrives with nothing on the stack to match. The split's blocks and these faults are one scan read two
+ * ways, so the two can never drift on what counts as balanced.
+ *
+ * Meant to run over a COMPOSED root (a child's edited body, recomposed inline through its parent's
+ * `<<~ ahu #/slot>>…<<~/ahu>>` wrapper) — at that altitude a child's dangling opener eats the parent's
+ * own closer (surfaces here as `ahu-unbalanced-open` on the child's opener, the parent's closer simply
+ * consumed), and a child's stray closer closes the parent early, leaving the parent's own closer an
+ * orphan (surfaces here as `ahu-orphan-close` on that trailing closer). Per #/quoteblock-floor, the
+ * backstop's child gate raises these on the same alert rail `evaluateMeme`'s diagnostics use — a
+ * REPORTING widening, never a change to the root door gate's ingest grades.
+ */
+export function findAhuBalanceFaults(text: string): AhuBalanceFault[] {
+  return [...scanAhu(text).faults];
+}
+
+/**
+ * Append a SINGLE leaf segment (or leaf path) under a prefix — the MINT relation, one of two that
+ * used to share one function (`composeSlotPath`'s overcollapse): the other, READING an authored
+ * open, takes the open's own path AS its full address, verbatim, and never calls this. This one
+ * mints a FRESH child address from a parent + a leaf (`placeMeme`/`childUri`/island-adaptor
+ * minting) — it always appends, unconditionally; it never inspects the leaf for whether it already
+ * carries the prefix, because a mint site hands it a bare leaf, never a full address to re-derive.
+ *
+ *   composeChildPath("",          "#/thesis")  → "#/thesis"         (root child, a PATH)
+ *   composeChildPath("#/parent",  "#/child")   → "#/parent/child"   (one nested, a PATH)
+ *   composeChildPath("#/a/b",     "#/c")       → "#/a/b/c"          (two nested)
+ *
+ * TWO GRAMMARS SHARE THE FRAGMENT SPACE, PARTED BY THE FIRST CHARACTER — the split JSON Schema
+ * draws between a JSON Pointer (`#/$defs/x`) and an `$anchor` (`#x`), reached here for the same
+ * reason: a reader and a parser tell them apart without lookahead.
+ *
+ *   `#/a`      a ROOTED PATH — EVERY ahu section, at every depth. `#/entry`, `#/observe/observe-ha`.
+ *   `#name`    a PLAIN-NAME ANCHOR, and the house claims none of them. The whole bare space stays
+ *              free for the anchors a live wiki renders on a page — HTML ids, and whatever else
+ *              wants to name a spot rather than a section.
+ *
+ * A section is always a path, so the slash is always there. One shape, one reading, no depth-one
+ * exception to remember.
+ *
+ * `/` rides a fragment unescaped by RFC 3986 §3.5 (`fragment = *( pchar / "/" / "?" )`), and a
+ * media type may define structure within it; `#` may not repeat, so a nested address could never
+ * have taken the `#a#b` shape.
+ */
+export function composeChildPath(prefix: string, leaf: string): string {
+  // A rooted leaf resolves against its parent as `href="/child"` resolves under a base: the path
+  // carries one `/` between segments, never an empty one.
+  const tail = (leaf.startsWith("#") ? leaf.slice(1) : leaf).replace(/^\//, "");
+  if (!prefix) return `#/${tail}`;                             // a root child is a path too
+  const rooted = prefix.startsWith("#/") ? prefix : `#/${prefix.slice(1)}`;
+  return `${rooted}/${tail}`;
+}
+
+/**
+ * A FRESH child's address under its parent's — fragment-aware, the way `carriageUri` is: a root
+ * parent gains the leaf as its fragment, a parent already carrying one composes the leaf onto that
+ * SAME fragment. `#` never repeats. MINT relation (see `composeChildPath`): `leaf` is a bare segment
+ * a caller is minting under `parent`, never an authored open's own full address — reading one of
+ * those takes it verbatim instead (deserializer.ts's `splitRecursive`/`expandRefs`, builder.ts).
+ *
+ *   childUri("lar:///x",     "#/a")  → "lar:///x#/a"
+ *   childUri("lar:///x#/a",  "#/z")  → "lar:///x#/a/z"
+ */
+export function childUri(parent: string, leaf: string): string {
+  const cut = parent.indexOf("#");
+  return cut < 0
+    ? parent + composeChildPath("", leaf)
+    : parent.slice(0, cut) + composeChildPath(parent.slice(cut), leaf);
+}

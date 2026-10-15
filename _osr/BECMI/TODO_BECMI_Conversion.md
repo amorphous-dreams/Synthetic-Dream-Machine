@@ -49,6 +49,7 @@ Base model (locked):
 - 2026-03-25 Expert lane uplift completed: all Expert `undecided` rows were resolved via evidence-lock notes and status normalization.
 - 2026-03-25 Companion lane uplift batch C1 executed: six C-lane rows were evidence-locked and promoted (`Earthquake`, `Insect Plague`, `Sword`, `Call Lightning`, `Control Temperature 10' radius`, `Faerie Fire`), reducing C-lane undecided from 13 to 7.- 2026-03-31 Pre-AD&D/Holmes pipeline hardening: `build_becmi_spell_staging_multi.py` was updated to include 11 Pre-AD&D/Holmes spells that were previously missing from the staging output. Staging file raised from 184 → 195 H2 entries; crosswalk Ch06 Import ✓ count raised from 193 → 204. Stub cards for all 11 new spells were added to Chapter 06; `import_ch06_osr.py` unblocked.
 - 2026-04-01 Chapter 06 `osr:` import pass complete: 203/204 rows `osr: imported = yes`, 1 `[needs-review]` (`Finger of Death`). Phase B gating item resolved. Ch06 alpha verification is now the active gate.
+- 2026-08-23 First full conversions landed: `Light` and `Darkness` stand as three-layer memetic-wikitext cards in Chapter 06 (metaphysics flow → card → independent Overcharge riders: scale / continual / target; P:1 mote base; classic castings priced as named spends — classic Darkness P:2, classic Continual Darkness P:4 reproduce exactly). Pending count 196 → 194. The Radiance/Shadow category headings retired from the chapter; `[shadow]`/`[light]` continue as tags. ECM ontology: `[hijack]` renamed `[control]` chapter-wide (dual-sense with the action-economy `[control]` card-tag noted for a future ruling). Continual Light / Continual Darkness card blocks intentionally untouched — their rules now fold into the base pair as riders.
 ## Lane Confidence Gate (B/E/C/M/I/RC)
 
 Current baseline from the 2026-03-27 post-audit pipeline-hardening pass. These ratings now describe regenerated staging output, not just audit observations:
@@ -327,9 +328,9 @@ The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md → ## 
 | S1 | **DONE 2026-04-03** | Seed P: values on all 196 OSR pending stubs from crosswalk `Class(es)/Spell-level` column (`max(1, min_level × 2)`) | `AnnP(Annotator)` (done; `_todo/BECMI/scripts/annotate_ch06_p_levels.py` created, fixed, and run: 195 cards annotated) |
 | S2 | **DONE 2026-04-03** | Migrate all `[high-tier]` tags: replace with `[dangerous]` where P:≥12 or editorial-[dangerous] call; remove where P:<12 utility | `TierShift(Migrator)` (done; 59 REPLACE→dangerous, 2 existing [dangerous] stripped, 3 remove-only: Commune / Pass Plant / Truesight) |
 | S3 | **DONE 2026-04-03** | Finger of Death: accept synthesized `osr:` block (Gap 3); add tags `[necromancy] [dangerous] [death] [deathly] [attack]`; P: 10 seeded by S1 | `GapFix(Annotator)` (done; crosswalk `osr: imported = yes` confirmed) |
-| S4 | **DONE 2026-04-03** | Reckless Dweomer: change `[storage:burden]` → `[storage:trait]` | `GapFix(Annotator)` (done) |
-| S5 | **TODO** | Batch migrate `[storage:item]` → `[storage:trait]` on all 194 OSR pending stubs (Doctrine F.6: [storage:trait] is the default for BECMI-sourced powers; [storage:item] is Ch05-only for item-variant cards) | `StoreFix(Migrator)` |
-| S6 | **TODO** | Shield Ward manual P: assignment — card not in crosswalk; determine correct P: from FTLS design intent and set explicitly | `Lares (Council)` |
+| S4 | **DONE 2026-04-03** | Reckless Dweomer: seat corrected burden → trait | `GapFix(Annotator)` (done) |
+| S5 | **CLOSED 2026-08-12** | Storage seating carries no ms tag — the manuscripts hold no `[storage:*]` layer; seat contracts live in the `bags/@sdm` mount-points. BECMI default seat stays trait (Doctrine F.6); item seats arrive as Ch05 variant-card work | `StoreFix(Migrator)` (closed) |
+| S6 | **DONE 2026-08-14** | Shield Ward P: 2 — operator ruling ratifies the standing value in `bags/@sdm` (module `#default` and card both carry P: 2; aligns with the x2 formula for the 1st-level `Shield` recognizer) | `Lares (Council)` (done) |
 | S7 | **TODO** | osr: recognizer sweep — run `import_ch06_osr.py check` and verify `drift: no`; ensure all recognizer lines use exact canonical Classic Name or documented alias | `DriftWatch [task[Continuity]]` → escalates to `Ink-Clerk (Lorekeeper)` |
 
 ---
@@ -353,7 +354,7 @@ The Conversion Doctrine (`TODO_BECMI_Spell_Effect_Conversion_Doctrine.md → ## 
 
 #### Spikes (open questions — needs operator ruling)
 
-- **S6 spike — Shield Ward P: determination**: `Shield Ward` is a native FTLS card with no BECMI crosswalk entry. P: needs to be established from FTLS design intent (recommended: compare to analogous BCM `Shield` / `Protec. from Normal Missiles` / Ward-type spells as a baseline). Operator ruling needed before S6 closes.
+- **S6 spike — CLOSED 2026-08-14**: Shield Ward P: 2 stands by operator ruling, ratifying the value already carried in the `bags/@sdm` module and card.
 - **P:<12 editorial [dangerous] calls (first pass)**: Polymorph Others (P:8, permanent-transform save), Conjure Elemental (P:10, creature can kill caster), Dispel Evil (P:10, banishes/destroys), Magic Jar (P:10, soul displacement), Quest (P:10, permanent magical compulsion) were tagged `[dangerous]` on editorial grounds this sprint. These are first-pass calls; card body conversion pass (Pass 3) may revise.
 - **Commune, Pass Plant, Truesight**: `[high-tier]` removed; no `[dangerous]` added. First-pass call: these are utility/divination effects without dangerous outputs at their P: tier. Revisit at N1.
 

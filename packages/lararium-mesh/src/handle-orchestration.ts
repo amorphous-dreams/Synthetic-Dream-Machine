@@ -1,0 +1,273 @@
+/**
+ * handle-orchestration — the causal-head conditioning core the handle verbs (rotate · graft · burn · attest) mirror.
+ *
+ * The WHO board holds the authoritative handle-KEL; a vessel's local record stays a thin projection (an index
+ * into the board, never the chain itself — a chain a record OWNED would read as a compiled who-is-X-of-one,
+ * which the registry filter refuses). To mint the next event, a vessel resolves one settled verified chain
+ * from the board and conditions the mutation on the head the caller previously folded.
+ *
+ * The head condition guards the common case — a local view whose head the board already changed. It does not,
+ * alone, stop a truly-concurrent partition fork (two peers extend one head across a partition); that stays
+ * caught SOVEREIGN at read by the recogniser's HandleBook (a forked/rolled-back chain loses at read) and by
+ * the equivocation gossip. So the head condition reduces forks at the writer; the reader remains the final catch — the
+ * two are one instrument reading one attack (a second present that disowns its past) at two places.
+ *
+ * Research rhyme: lar:///ha.ka.ba/lares/api/pono/field-collision
+ */
+import type { DocHandle } from "@automerge/automerge-repo";
+import { readHandleAnnounces, writeHandleAnnounce } from "./handle-announce.js";
+import { foldHandleCardsDetailed } from "./handle-card.js";
+import { mintHandleBurn, mintHandleGraft, mintHandleRotation, handleKeyDigestOf, type HandleKelEvent, type HandleMintResult, type HandleCoSigner, type OwnerHeadResolver } from "./handle-kel.js";
+import { deriveVeiledUserKey } from "./persona-identity.js";
+import { didFromVerifyingKey } from "./lar-did.js";
+import { ed25519SignerFromSeed } from "./auth-wire.js";
+import { hexToBytes } from "./crypto.js";
+import { PERSONA_GLAMOUR_CONTEXT } from "./persona-glamour.js";
+import type { HandleCard } from "./handle-card.js";
+import type { LarDoc } from "./base-doc.js";
+
+/**
+ * The heads a caller ITSELF stands behind: the presenting member and each co-signer, with the op-key each
+ * presents under. A writer extending its own Handle read those heads off its own persona logs before it
+ * called; this turns them into the resolver the chain's earlier steps get verified against. A member or key
+ * the call never named answers false.
+ */
+export function headsThisCallerPresents(
+  presenter: { readonly memberPrefix: string; readonly keyDid: string },
+  coSigners: readonly HandleCoSigner[] = [],
+): OwnerHeadResolver {
+  const heads = new Map<string, string>([[presenter.memberPrefix.toLowerCase(), presenter.keyDid.toLowerCase()]]);
+  for (const c of coSigners) heads.set(c.memberPrefix.toLowerCase(), c.keyDid.toLowerCase());
+  return async (memberPrefix, authKeyDid) => heads.get(memberPrefix.toLowerCase()) === authKeyDid.toLowerCase();
+}
+
+/**
+ * Resolve one settled verified chain from a board doc through the causal fixed point. `ownerHeadResolver`
+ * names the owners' heads; without it the fold trusts each chain's inception alone, so a Handle that rotated,
+ * grafted or took an owner-burn resolves to nothing here (`handle-rotation-unverified` at each card).
+ */
+export async function resolveOwnHandleChain(boardDoc: LarDoc, nym: string, ownerHeadResolver?: OwnerHeadResolver): Promise<HandleKelEvent[] | null> {
+  const cards = readHandleAnnounces(boardDoc).filter((c) => c.nym === nym);
+  const folded = await foldHandleCardsDetailed(cards, ownerHeadResolver);
+  if (folded.status !== "held" || !folded.card) return null;
+  return folded.card.chain as HandleKelEvent[];
+}
+
+/** The head event CID of the verified settled board projection for a nym. */
+export async function boardHeadCid(boardDoc: LarDoc, nym: string, ownerHeadResolver?: OwnerHeadResolver): Promise<string | null> {
+  const chain = await resolveOwnHandleChain(boardDoc, nym, ownerHeadResolver);
+  if (!chain || chain.length === 0) return null;
+  return chain[chain.length - 1]!.eventCid;
+}
+
+/**
+ * Extend a Handle under a causal-head condition. Resolve the board's settled chain, refuse unless its head
+ * matches `expectedHeadCid` (a stale caller never reaches the mint), then run the
+ * verb's own `mintNext` over the RESOLVED chain (never a stale local one), announce the card `buildCard`
+ * returns, and hand it back. A verb supplies only its mint + its card build; the condition + resolve + announce
+ * stay shared.
+ */
+export async function extendOwnHandle(opts: {
+  board:           DocHandle<LarDoc>;
+  nym:             string;
+  expectedHeadCid: string;
+  mintNext:        (currentChain: HandleKelEvent[]) => Promise<HandleMintResult>;
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
+  /** The owners' heads the board's chain gets verified against. Absent, a chain past its inception resolves to nothing. */
+  ownerHeadResolver?: OwnerHeadResolver;
+}): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
+  const doc = opts.board.doc();
+  if (!doc) return { ok: false, reason: "the board doc is not ready — the WHO board resolved to nothing (fail-closed)" };
+  const chain = await resolveOwnHandleChain(doc as LarDoc, opts.nym, opts.ownerHeadResolver);
+  if (!chain || chain.length === 0) {
+    return { ok: false, reason: `no chain on the board for ${opts.nym.slice(0, 16)}… — publish the Handle first` };
+  }
+  const head = chain[chain.length - 1]!;
+  if (head.eventCid !== opts.expectedHeadCid) {
+    return {
+      ok: false,
+      reason: `causal head mismatch: board head ${head.eventCid.slice(0, 12)}… differs from the expected ${opts.expectedHeadCid.slice(0, 12)}… — refold from the board and retry`,
+    };
+  }
+  const minted = await opts.mintNext(chain);
+  if (!minted.ok) return { ok: false, reason: minted.reason };
+  const newChain = [...chain, minted.event];
+  const card = await opts.buildCard(minted.event, newChain);
+  opts.board.change((d) => writeHandleAnnounce(d, card));
+  return { ok: true, card };
+}
+
+/**
+ * BURN a Handle — the first verb specialized over the causal-head conditioning core, and the template the others
+ * (rotate · graft · attest) follow: supply only the verb's mint + card-build; the condition + resolve + announce
+ * stay shared. EITHER HAND (Option C): the SEATED handle key closes its own name (`sign` — the panic
+ * self-burn, local, card-self-verifiable) OR the OWNER buries it from above (`ownerBurn` — a burn a
+ * thief-of-the-face cannot forge). Exactly one hand; supplying neither or both refuses. The burn's effect
+ * needs no valid card signature — a reader refuses a burned chain BEFORE checking the sig — so an owner-burn
+ * lands even when the seated key is lost. The mint runs over a settled verified chain, so a stale condition
+ * cannot burn a name off a head the board already changed.
+ */
+export async function burnOwnHandle(opts: {
+  board:           DocHandle<LarDoc>;
+  nym:             string;
+  expectedHeadCid: string;
+  /** THE SELF-BURN — the seated handle key signs. Mutually exclusive with `ownerBurn`. */
+  sign?:           (bytes: Uint8Array) => Promise<string>;
+  /** THE OWNER-BURN — a current member (a personal face's owning persona) buries the name from above. */
+  ownerBurn?:      { ownerAuthMemberPrefix: string; ownerAuthKeyDid: string; sign: (bytes: Uint8Array) => Promise<string> };
+  /** OWNER-BURN co-signers — DISTINCT current members BEYOND the presenter, gathered toward the current
+   *  witness threshold: burying a SHARED (k-of-n) name is a quorum act. A 1-of-1 needs none, and the
+   *  SELF-burn REFUSES them: a panic is one seated key closing its own name, and a caller who gathered
+   *  consent has confused the two gestures. */
+  coSigners?:      readonly HandleCoSigner[];
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
+  /** The owners' heads. An owner-burn defaults to the heads this call presents; a self-burn of a Handle past
+   *  its inception needs them named, since the seated key alone proves no earlier rotation. */
+  ownerHeadResolver?: OwnerHeadResolver;
+}): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
+  if ((opts.sign === undefined) === (opts.ownerBurn === undefined)) {
+    return { ok: false, reason: "a burn strikes with EXACTLY ONE hand — pass `sign` (self) or `ownerBurn` (owner), never neither nor both" };
+  }
+  // A SELF-BURN GATHERS NO QUORUM. Dropping these silently would let a caller believe they buried a shared
+  // name with the current members' consent when one key buried it alone — the same confusion the one-hand
+  // guard above refuses out loud, so it earns the same answer rather than a quiet omission.
+  if (opts.sign !== undefined && opts.coSigners !== undefined && opts.coSigners.length > 0) {
+    return { ok: false, reason: "a SELF-burn gathers no quorum — co-signers ride the `ownerBurn` hand; drop them, or bury the name from above" };
+  }
+  return extendOwnHandle({
+    board:           opts.board,
+    nym:             opts.nym,
+    expectedHeadCid: opts.expectedHeadCid,
+    mintNext:        (chain) => mintHandleBurn(
+      opts.sign !== undefined
+        ? { head: chain[chain.length - 1]!, sign: opts.sign }
+        : { head: chain[chain.length - 1]!, ownerBurn: opts.ownerBurn!, ...(opts.coSigners ? { coSigners: opts.coSigners } : {}) },   // the one-hand guard above proved it set
+    ),
+    buildCard:       opts.buildCard,
+    ...resolverOf(opts.ownerHeadResolver, opts.ownerBurn ? { memberPrefix: opts.ownerBurn.ownerAuthMemberPrefix, keyDid: opts.ownerBurn.ownerAuthKeyDid } : null, opts.coSigners),
+  });
+}
+
+/**
+ * GRAFT a Handle over the causal-head conditioning core — a prior-set member reveals the next owner set, and
+ * the name passes into (or across) a shared holding. The identifier never moves and no fresh Handle key seats:
+ * a graft turns over WHO PRESENTS, nothing else. The founding quorum stays fixed in the prefix forever.
+ *
+ * THE SUCCESSION REACHES THE PRIOR SET'S THRESHOLD, not the new one — the set being left consents to the
+ * leaving. A 1-of-1 cedes by one willing hand (Roberts to Westley); a k-of-n guild gathers k, the presenter
+ * plus `coSigners`. The mint runs over a settled verified chain, so a stale condition cannot graft a name off
+ * a head the board already changed.
+ */
+export async function graftOwnHandle(opts: {
+  board:           DocHandle<LarDoc>;
+  nym:             string;
+  expectedHeadCid: string;
+  /** The NEW current owner set this graft reveals, and the threshold IT will present under. */
+  newOwnerSetMembers:    readonly string[];
+  newOwnerSetThreshold:  number;
+  /** A PRIOR-set member presenting the graft, with its head op-key + signer — the succession authority. */
+  ownerAuthMemberPrefix: string;
+  ownerHeadOpKeyDid:     string;
+  sign:                  (bytes: Uint8Array) => Promise<string>;
+  /** DISTINCT PRIOR-set members BEYOND the presenter, gathered toward the PRIOR set's threshold. A 1-of-1
+   *  cedes with none; a 2-of-2 guild passes one. */
+  coSigners?:            readonly HandleCoSigner[];
+  nextRecoverySetHash?:  string;
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[]) => HandleCard | Promise<HandleCard>;
+  /** The owners' heads; defaults to the heads this call presents (the presenter and its co-signers). */
+  ownerHeadResolver?: OwnerHeadResolver;
+}): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
+  return extendOwnHandle({
+    board:           opts.board,
+    nym:             opts.nym,
+    expectedHeadCid: opts.expectedHeadCid,
+    mintNext:        (chain) => mintHandleGraft({
+      head:                  chain[chain.length - 1]!,
+      newOwnerSetMembers:    opts.newOwnerSetMembers,
+      newOwnerSetThreshold:  opts.newOwnerSetThreshold,
+      ownerAuthMemberPrefix: opts.ownerAuthMemberPrefix,
+      ownerHeadOpKeyDid:     opts.ownerHeadOpKeyDid,
+      sign:                  opts.sign,
+      ...(opts.coSigners ? { coSigners: opts.coSigners } : {}),
+      ...(opts.nextRecoverySetHash ? { nextRecoverySetHash: opts.nextRecoverySetHash } : {}),
+    }),
+    buildCard:       opts.buildCard,
+    ...resolverOf(opts.ownerHeadResolver, { memberPrefix: opts.ownerAuthMemberPrefix, keyDid: opts.ownerHeadOpKeyDid }, opts.coSigners),
+  });
+}
+
+/** The resolver an owner-authorized verb hands the shared core: the caller's own, else the heads the call presents. */
+function resolverOf(
+  given: OwnerHeadResolver | undefined, presenter: { memberPrefix: string; keyDid: string } | null, coSigners: readonly HandleCoSigner[] | undefined,
+): { ownerHeadResolver?: OwnerHeadResolver } {
+  if (given) return { ownerHeadResolver: given };
+  return presenter ? { ownerHeadResolver: headsThisCallerPresents(presenter, coSigners ?? []) } : {};
+}
+
+/** Count the rotations already in a chain — the context-ladder rung the NEXT rotation seats a key at. */
+function rotationCount(chain: readonly HandleKelEvent[]): number {
+  return chain.reduce((n, e) => (e.kind === "rotation" ? n + 1 : n), 0);
+}
+
+/**
+ * ROTATE a Handle over the causal-head conditioning core — a settled holder seats a fresh presentation key under the
+ * same name, the owning persona authorizing (rotate · Option A: the CONTEXT-LADDER). The fresh key derives at
+ * `deriveVeiledUserKey(seed, handleIndex, contextBase + rotationCountAfter)`, where `contextBase` is the face's
+ * inception context and `rotationCountAfter` counts this rotation — so the seated key is ALWAYS re-derivable
+ * from (seed, handleIndex, chain-rotation-count), reproducible and seed-rooted. The rotation itself commits the
+ * NEXT rung's digest (KERI pre-rotation), so a chain a thief cannot advance stays advanceable by the seed-holder.
+ *
+ * The mint is authorized by the OWNING PERSONA's head op-key — a lost handle key recovers THROUGH the persona.
+ * The card re-signs under the FRESH head handle key (a rotated head certifies the card the recogniser accepts);
+ * the mint hands that fresh signer to `buildCard`. The mint runs over a settled verified chain, so a stale
+ * condition cannot rotate a name off a head the board already changed.
+ */
+export async function rotateOwnHandle(opts: {
+  board:           DocHandle<LarDoc>;
+  nym:             string;
+  expectedHeadCid: string;
+  /** The persona master-seed the face derives from — the fresh key rides its context ladder. */
+  seed:            Uint8Array;
+  handleIndex:     number;
+  /** The face's inception context (default PERSONA_GLAMOUR_CONTEXT) — the ladder's base rung. */
+  contextBase?:    number;
+  /** The owning persona (a current owner-set member) and its head op-key + signer — the rotation authority. */
+  ownerAuthMemberPrefix: string;
+  ownerHeadOpKeyDid:     string;
+  sign:                  (bytes: Uint8Array) => Promise<string>;
+  /** ROTATION co-signers — DISTINCT current members BEYOND the presenter, toward the current witness
+   *  threshold: seating a fresh key on a SHARED (k-of-n) name is a quorum act. A 1-of-1 needs none. */
+  coSigners?:            readonly HandleCoSigner[];
+  /** The owners' heads; defaults to the heads this call presents (the presenter and its co-signers). */
+  ownerHeadResolver?: OwnerHeadResolver;
+  /** Build the renewed card; the mint yields the FRESH head handle key's signer to sign it under. */
+  buildCard:       (event: HandleKelEvent, newChain: HandleKelEvent[], freshHandleSign: (bytes: Uint8Array) => Promise<string>) => HandleCard | Promise<HandleCard>;
+}): Promise<{ ok: true; card: HandleCard } | { ok: false; reason: string }> {
+  const base = opts.contextBase ?? PERSONA_GLAMOUR_CONTEXT;
+  let freshSign: ((bytes: Uint8Array) => Promise<string>) | null = null;
+  return extendOwnHandle({
+    board:           opts.board,
+    nym:             opts.nym,
+    expectedHeadCid: opts.expectedHeadCid,
+    mintNext:        async (chain): Promise<HandleMintResult> => {
+      const head        = chain[chain.length - 1]!;
+      const nextContext = base + rotationCount(chain) + 1;   // rotation N (this one) rides context base + N
+      const fresh       = await deriveVeiledUserKey(opts.seed, opts.handleIndex, nextContext);
+      const freshHandleKeyDid = didFromVerifyingKey(fresh.verifyingKey);
+      freshSign = ed25519SignerFromSeed(hexToBytes(fresh.signingKey));
+      // Pre-commit the rung AFTER this one — the seated key here revealed the prior commitment; this commits the next.
+      const after              = await deriveVeiledUserKey(opts.seed, opts.handleIndex, nextContext + 1);
+      const nextHandleKeyDigest = handleKeyDigestOf(didFromVerifyingKey(after.verifyingKey));
+      return mintHandleRotation({
+        head, freshHandleKeyDid,
+        ownerAuthMemberPrefix: opts.ownerAuthMemberPrefix,
+        ownerHeadOpKeyDid:     opts.ownerHeadOpKeyDid,
+        sign:                  opts.sign,
+        ...(opts.coSigners ? { coSigners: opts.coSigners } : {}),
+        nextHandleKeyDigest,
+      });
+    },
+    buildCard:       (event, newChain) => opts.buildCard(event, newChain, freshSign!),
+    ...resolverOf(opts.ownerHeadResolver, { memberPrefix: opts.ownerAuthMemberPrefix, keyDid: opts.ownerHeadOpKeyDid }, opts.coSigners),
+  });
+}

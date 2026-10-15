@@ -1,0 +1,108 @@
+/**
+ * persona-petname-store.test — the node fs adapters for the two-layer pet-names.
+ *
+ * The PRIVATE own-persona label map + the PUBLIC own-published-face record, each a 0o600 JSON file in the
+ * identity home separate from the runtime store. The isomorphic logic (rename/multitude-view/glamour-mint) is
+ * proven platform-blind in @lararium/mesh; THIS exercises the node shores round-trip + the never-federates
+ * wall (nothing in the private store reaches a board) over the real fs vault.
+ */
+import { afterEach, beforeEach, describe, test, expect } from "vitest";
+import { mkdtempSync, rmSync, readdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  renameOwnPersona, clearOwnPersonaPetname, ownPersonaPetname, personaMultitudeView,
+  publishPersonaGlamour, publicHandleViewOf, type LarDoc,
+} from "@lararium/mesh";
+import {
+  makeNodePersonaPetnameStore, makeNodePublicHandleStore, makeNodeFsPersonaVault,
+  generateOrLoadPersonaGroupRoot,
+} from "../src/node-vessel-identity.js";
+import { larIdentityDir } from "../src/vessel-paths.js";
+import { seatScratchCustody } from "./custody-seat-fixture.js";
+
+const saved: Record<string, string | undefined> = {};
+const setEnv = (k: string, v: string | undefined): void => {
+  saved[k] = process.env[k];
+  if (v === undefined) delete process.env[k]; else process.env[k] = v;
+};
+
+/** A fake WHO board — just enough for announceToWhoFace (change() over an in-memory LarDoc). */
+function makeFakeBoard(): { doc(): LarDoc; change(fn: (d: LarDoc) => void): void } {
+  const d: LarDoc = { tiddlers: {} } as LarDoc;
+  return { doc: () => d, change: (fn) => fn(d) };
+}
+
+const SEED = Uint8Array.from(Array.from({ length: 32 }, (_, i) => (i * 3 + 7) & 0xff));
+// The owning persona's KEL prefix — a personal face is owned by its persona, so the mint takes it.
+const OWNER = "persona-" + "ab".repeat(32);
+
+describe("node persona pet-name stores", () => {
+  let root: string;
+  let seated: Awaited<ReturnType<typeof seatScratchCustody>>;
+  const dataDir = () => root;
+  beforeEach(async () => {
+    root = mkdtempSync(join(tmpdir(), "lares-petname-"));
+    setEnv("LAR_ROOT", undefined);
+    setEnv("XDG_STATE_HOME", join(root, "state"));
+    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    seated = await seatScratchCustody("petname-store");
+  });
+  afterEach(async () => {
+    await seated.drop();
+    for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
+    rmSync(root, { recursive: true, force: true });
+  });
+
+  test("the PRIVATE label map round-trips: rename, entries, clear — a 0o600 file, no -h suffix needed", async () => {
+    const store = await makeNodePersonaPetnameStore();
+    await renameOwnPersona(store, 0, "work");
+    await renameOwnPersona(store, 2, "veil-one");
+    expect(await ownPersonaPetname(store, 0)).toBe("work");
+    expect(await (await makeNodePersonaPetnameStore()).entries()).toEqual([[0, "work"], [2, "veil-one"]]);   // persists across store handles
+
+    // The label lives in a dedicated identity-home file, never a persona-root nor a board.
+    expect(readdirSync(larIdentityDir()).some((f) => f.startsWith(".persona-petnames"))).toBe(true);
+
+    await clearOwnPersonaPetname(store, 0);
+    expect(await ownPersonaPetname(store, 0)).toBeUndefined();
+    expect(await store.entries()).toEqual([[2, "veil-one"]]);
+  });
+
+  test("the MULTITUDE-VIEW over the real fs vault: held roots + private labels + the one federated glamour", async () => {
+    await generateOrLoadPersonaGroupRoot(0);
+    await generateOrLoadPersonaGroupRoot(1);
+    const petnames = await makeNodePersonaPetnameStore();
+    const publicStore = await makeNodePublicHandleStore();
+    await renameOwnPersona(petnames, 0, "work");
+    await publishPersonaGlamour({ board: makeFakeBoard(), seed: SEED, handleIndex: 0, glamour: "Guru-Josh", store: publicStore, ownerPersonaKelPrefix: OWNER });
+
+    const vault = await makeNodeFsPersonaVault();
+    const view = await personaMultitudeView(vault, petnames, publicHandleViewOf(publicStore));
+    const byIndex = Object.fromEntries(view.map((e) => [e.handleIndex, e]));
+    expect(view.map((e) => e.handleIndex)).toEqual([0, 1]);
+    expect(byIndex[0]).toMatchObject({ petname: "work", heldHere: true, hasPublicHandle: true, glamour: "Guru-Josh" });
+    expect(byIndex[1]).toMatchObject({ petname: null, heldHere: true, hasPublicHandle: false, glamour: null });
+  });
+
+  test("the private label never PUBLICLY federates — publishing a glamour leaves the private file off the board", async () => {
+    const petnames = await makeNodePersonaPetnameStore();
+    const publicStore = await makeNodePublicHandleStore();
+    const board = makeFakeBoard();
+    await renameOwnPersona(petnames, 0, "my-burner");
+    await publishPersonaGlamour({ board, seed: SEED, handleIndex: 0, glamour: "Anon-Wanderer", store: publicStore, ownerPersonaKelPrefix: OWNER });
+
+    expect(JSON.stringify(board.doc())).not.toContain("my-burner");
+    expect(await ownPersonaPetname(petnames, 0)).toBe("my-burner");   // untouched by the publish
+  });
+
+  test("the PUBLIC record round-trips + advances the causal frontier across store handles", async () => {
+    const board = makeFakeBoard();
+    const first = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v1", store: await makeNodePublicHandleStore(), ownerPersonaKelPrefix: OWNER });
+    const second = await publishPersonaGlamour({ board, seed: SEED, handleIndex: 3, glamour: "v2", store: await makeNodePublicHandleStore(), ownerPersonaKelPrefix: OWNER });
+    expect(first.parents).toEqual([]);
+    expect(second.parents).toEqual([first.actCid]);
+    expect(second.actCid).not.toBe(first.actCid);
+    expect(await (await makeNodePublicHandleStore()).list()).toEqual([3]);
+  });
+});

@@ -1,0 +1,745 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
+  "name": "memetic_wikitext",
+  "rules": {
+    "document": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "field_line"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_block"
+          }
+        }
+      ]
+    },
+    "_block": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "ahu_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "sigil"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "control_sigil"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "fenced_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "quote_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "style_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "typed_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "hard_break_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "pragma_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "pragma_open"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "pragma_end"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "pragma_line"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "heading"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "list_item"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "table"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "transclude_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "filtered_transclude_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "macrocall_block"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "horizontal_rule"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "html_line"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "comment"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "blank_line"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "text_line"
+        }
+      ]
+    },
+    "ahu_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "open",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_paired_sigil"
+            },
+            "named": true,
+            "value": "sigil"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_block"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "close",
+          "content": {
+            "type": "SYMBOL",
+            "name": "sigil_close"
+          }
+        }
+      ]
+    },
+    "_paired_sigil": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_pair_open"
+          },
+          "named": false,
+          "value": "<<~"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "body",
+              "content": {
+                "type": "SYMBOL",
+                "name": "sigil_body"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ">>"
+        }
+      ]
+    },
+    "sigil": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_sigil_open"
+          },
+          "named": false,
+          "value": "<<~"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "body",
+              "content": {
+                "type": "SYMBOL",
+                "name": "sigil_body"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ">>"
+        }
+      ]
+    },
+    "control_sigil": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "<<^"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "body",
+              "content": {
+                "type": "SYMBOL",
+                "name": "sigil_body"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ">>"
+        }
+      ]
+    },
+    "sigil_close": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_pair_close"
+          },
+          "named": false,
+          "value": "<<~"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "TOKEN",
+            "content": {
+              "type": "PATTERN",
+              "value": "[ \\t]*\\/"
+            }
+          },
+          "named": false,
+          "value": "/"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "body",
+              "content": {
+                "type": "SYMBOL",
+                "name": "sigil_body"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ">>"
+        }
+      ]
+    },
+    "sigil_body": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 1,
+        "content": {
+          "type": "PATTERN",
+          "value": "([^>\\n]|>[^>\\n])+"
+        }
+      }
+    },
+    "fenced_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "info",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_fence_open_tok"
+            },
+            "named": true,
+            "value": "fence_open"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "FIELD",
+            "name": "line",
+            "content": {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_fence_line_tok"
+              },
+              "named": true,
+              "value": "fence_line"
+            }
+          }
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_fence_close_tok"
+          },
+          "named": true,
+          "value": "fence_close"
+        }
+      ]
+    },
+    "quote_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "info",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "TOKEN",
+              "content": {
+                "type": "PATTERN",
+                "value": "<<<[^\\n]*\\r?\\n"
+              }
+            },
+            "named": true,
+            "value": "quote_open"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "TOKEN",
+              "content": {
+                "type": "PATTERN",
+                "value": "(<{0,2}([^<\\n][^\\n]*)?)?\\r?\\n"
+              }
+            },
+            "named": true,
+            "value": "quote_line"
+          }
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "TOKEN",
+            "content": {
+              "type": "PATTERN",
+              "value": "<<<[^\\n]*\\r?\\n?"
+            }
+          },
+          "named": true,
+          "value": "quote_close"
+        }
+      ]
+    },
+    "style_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "info",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "TOKEN",
+              "content": {
+                "type": "PATTERN",
+                "value": "@@[^@\\n]*\\r?\\n"
+              }
+            },
+            "named": true,
+            "value": "style_open"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "TOKEN",
+              "content": {
+                "type": "PATTERN",
+                "value": "(@?[^@\\n][^\\n]*|@)?\\r?\\n"
+              }
+            },
+            "named": true,
+            "value": "style_line"
+          }
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "TOKEN",
+            "content": {
+              "type": "PATTERN",
+              "value": "@@[ \\t]*\\r?\\n?"
+            }
+          },
+          "named": true,
+          "value": "style_close"
+        }
+      ]
+    },
+    "typed_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "FIELD",
+          "name": "info",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "TOKEN",
+              "content": {
+                "type": "PATTERN",
+                "value": "\\$\\$\\$[^\\n]*\\r?\\n"
+              }
+            },
+            "named": true,
+            "value": "typed_open"
+          }
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "TOKEN",
+              "content": {
+                "type": "PATTERN",
+                "value": "(\\${0,2}([^$\\n][^\\n]*)?)?\\r?\\n"
+              }
+            },
+            "named": true,
+            "value": "typed_line"
+          }
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "TOKEN",
+            "content": {
+              "type": "PATTERN",
+              "value": "\\$\\$\\$[ \\t]*\\r?\\n?"
+            }
+          },
+          "named": true,
+          "value": "typed_close"
+        }
+      ]
+    },
+    "hard_break_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "TOKEN",
+            "content": {
+              "type": "PATTERN",
+              "value": "\"\"\"[ \\t]*\\r?\\n"
+            }
+          },
+          "named": true,
+          "value": "hard_break_open"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "TOKEN",
+              "content": {
+                "type": "PATTERN",
+                "value": "(\"{0,2}([^\"\\n][^\\n]*)?)?\\r?\\n"
+              }
+            },
+            "named": true,
+            "value": "hard_break_line"
+          }
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "TOKEN",
+            "content": {
+              "type": "PATTERN",
+              "value": "\"\"\"[ \\t]*\\r?\\n?"
+            }
+          },
+          "named": true,
+          "value": "hard_break_close"
+        }
+      ]
+    },
+    "pragma_block": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "open",
+            "content": {
+              "type": "SYMBOL",
+              "name": "pragma_open"
+            }
+          },
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_block"
+            }
+          },
+          {
+            "type": "FIELD",
+            "name": "close",
+            "content": {
+              "type": "SYMBOL",
+              "name": "pragma_end"
+            }
+          }
+        ]
+      }
+    },
+    "pragma_open": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "\\\\(define|procedure|function|widget)[ \\t]+[^(\\r\\n]+\\([^)\\r\\n]*\\)[ \\t]*\\r?\\n"
+        }
+      }
+    },
+    "pragma_end": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "\\\\end[^\\n]*\\r?\\n?"
+        }
+      }
+    },
+    "pragma_line": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "\\\\[a-zA-Z][^\\n]*\\r?\\n?"
+      }
+    },
+    "heading": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "!{1,6}[ \\t][^\\n]*\\n?"
+      }
+    },
+    "list_item": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[*#;:>]+[ \\t][^\\n]*\\n?"
+      }
+    },
+    "table": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "REPEAT1",
+        "content": {
+          "type": "SYMBOL",
+          "name": "table_row"
+        }
+      }
+    },
+    "table_row": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "\\|[^\\n]*\\|[kfch]?[ \\t]*\\r?\\n?"
+      }
+    },
+    "filtered_transclude_block": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "\\{\\{\\{[^\\n]*\\}\\}\\}[^\\n]*\\r?\\n?"
+        }
+      }
+    },
+    "transclude_block": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "\\{\\{[^\\n]*\\}\\}[ \\t]*\\r?\\n?"
+      }
+    },
+    "macrocall_block": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "<<[^<~^\\s][^\\n]*>>[ \\t]*\\r?\\n?"
+      }
+    },
+    "horizontal_rule": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "-{3,}[ \\t]*\\r?\\n?"
+      }
+    },
+    "html_line": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "<[a-zA-Z$\\/][^\\n]*\\r?\\n?"
+      }
+    },
+    "field_line": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[a-zA-Z][\\w.\\-]*:[^\\n]*\\r?\\n"
+      }
+    },
+    "comment": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "<!--([^-]|-[^-]|--[^>])*-->\\n?"
+      }
+    },
+    "blank_line": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[ \\t]*\\n"
+      }
+    },
+    "text_line": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": -1,
+        "content": {
+          "type": "PATTERN",
+          "value": "[^\\n]+\\n?"
+        }
+      }
+    }
+  },
+  "extras": [],
+  "conflicts": [
+    [
+      "_block",
+      "pragma_block"
+    ]
+  ],
+  "precedences": [],
+  "externals": [
+    {
+      "type": "SYMBOL",
+      "name": "_fence_open_tok"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_fence_line_tok"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_fence_close_tok"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_sigil_open"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_pair_open"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_pair_close"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_error_sentinel"
+    }
+  ],
+  "inline": [],
+  "supertypes": [],
+  "reserved": {}
+}

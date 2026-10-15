@@ -1,0 +1,134 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pae">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/pae.mem"
+mana      = 18
+manao     = 17
+manaoio   = 16
+namespace = "&#x2299;"
+phases    = ["soh", "stx", "etx", "eot"]
+role      = "carrier phase boundary — transmission lifecycle law"
+tags      = ["api/pono/meme", "api/pono/memetic-wikitext"]
+title     = "lar:///ha.ka.ba/lares/api/pono/pae"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/pae"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Pae
+
+A carrier's phased arrival through a transmission medium.
+
+<<~/ahu>>
+
+<<~ ahu #/etymology>>
+
+!! Etymology
+
+//Pae// (Hawaiian) — to land, to come ashore; a row or tier; to drift carried by current.
+
+Primary: a canoe //pae// — it arrives after traversal. The carrier arrives at each phase boundary
+the same way: crossing water, touching shore. SOH makes first landfall. EOT makes final departure.
+STX and ETX serve as intermediate landings between stretches of open water.
+
+Secondary: a row of things arranged in sequence — a tier, a rank. The four phases SOH→STX→ETX→EOT
+form a ranked sequence; each tier unlocks the next. Streaming consumers MUST process them in order.
+
+Tertiary: to drift or ride the current — the stream CARRIES the carrier. Each `<<~\x0N>>` constitutes the
+moment of contact with a fixed point.
+
+Mythological register: In the //Kumulipo// (creation chant), creation itself unfolds as a sequence
+of //pae// — phases of emergence, each landing into the next. The chant does not describe phases;
+it enacts them. A carrier's pae nodes do the same: they do not describe lifecycle, they perform it.
+
+Navigator's meaning: wayfinders watch for //pae// — the moment you know land lies near before you can
+see it. SOH constitutes that moment: the receiver knows the carrier has begun arriving, knows its URI, before the
+content body has crossed. The streaming protocol WORKS AS a navigation instrument.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! Pae Law (Kānāwai)
+
+A carrier MUST emit exactly four pae nodes in sequence: soh → stx → etx → eot.
+A pae node MUST stay content-free. Between soh and stx, routing sits alone; the root TOML metadata, prose, edges, and sigils ride the checked body after stx.
+A streaming consumer MUST process each pae before reading the body in that phase.
+A pae node MUST sit at carrier top level, outside any ahu slot body.
+
+Phase semantics:
+
+| Phase | Sigil | Payload | Consumer action |
+|---|---|---|---|
+| `soh` | `<<^ code="&#x0001;" from="?" -> to="lar:///URI">>` | declared URI | open stub card for URI |
+| `stx` | `<<^ code="&#x0002;">>` | none | meta prelude dissolved; render identity panel |
+| `etx` | `<<^ code="&#x0003;">>` | none | content ahus committed; fire activate |
+| `eot` | `<<^ code="&#x0004;" -> to="?">>` | none | edges committed; update graph; release channel |
+
+`soh` MUST carry the carrier's URI in the `toUri` field.
+`eot` marks the return-to-caller; no payload.
+`stx` and `etx` act as pure phase pivots with no payload.
+
+<<~/ahu>>
+
+<<~ ahu #/ast>>
+
+!! AST
+
+```ts
+export type PaePhase = "soh" | "stx" | "etx" | "eot";
+
+export interface PaeNode extends AstBase {
+  kind: "Pae";
+  phase: PaePhase;
+  /** Present on soh (declared URI). */
+  toUri?: string;
+}
+```
+
+<<~/ahu>>
+
+<<~ ahu #/widget>>
+
+!! How a phase reaches the page
+
+''The FRAME MARKS carry the phase, and no widget stands between.'' A carrier writes each phase on the
+CONTROL head — `<<^ code="&#x0001;">>` opens, `&#x0002;` runs the body, `&#x0003;` closes, `&#x0004;`
+bears away — and `frame-marks.ts` holds those codes as ONE fact the readers derive from
+(`FRAME_MARKS` · `FRAME_CODES` · a lookup by code). A scan reads the mark where it stands.
+
+''The codes collapse; the scans stay apart.'' Each reader keeps its own pattern around the shared code
+set, because three scarred readings say a merged scan re-introduces the bugs the split cured.
+
+<<~/ahu>>
+
+<<~ ahu #/pae-aina>>
+
+!! Pae ʻĀina
+
+//Pae ʻāina// — archipelago, literally "row of lands." The carrier's four phases form an archipelago:
+related, sequential, each its own shore. The carrier skips no shore. The navigator knows them all.
+
+SOH arrives standing (//pae kū//) — the carrier declares itself upright.
+STX crosses the beach — identity settled, content begins flowing inland.
+ETX turns at the tree line — content done, edges begin.
+EOT pushes off — the carrier releases the channel and the current takes it.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;L_gqLU6lPdeCS7V3wl9TbItjQaSTOd0nK22jO5XtSBs
+
+<<^ code="&#x0004;" -> to="?">>

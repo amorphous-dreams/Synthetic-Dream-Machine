@@ -1,0 +1,103 @@
+// vm-grammar-boundary: exempt — reads scanner.ts (and every tracked source) as SOURCE TEXT via
+// readFileSync, walking the control-matcher regex off the files themselves — same reasoning as
+// sigil-unslashed-shelf.test.ts. It imports no value from meme-ast and drives no parse; it only
+// greps source bytes for a literal the scanner's own BOOTSTRAP_SCANS kept.
+/**
+ * A control sigil identifies by its CLASSIFIER, never by which head carries it.
+ *
+ * WHY THIS TEST EXISTS, AND WHAT IT LEARNED FROM. Splitting the sigil sets gave the frame sigils a control
+ * head while every word sigil kept the speaking one. A carrier detector that matched the speaking head
+ * alone then stopped seeing 554 of 555 framed memes — and NOTHING FAILED. A carrier that fails detection
+ * routes down a different path, so the vessel comes up and the memes arrive wrong; a green suite reported
+ * it fine because no test read detection against a swept meme.
+ *
+ * The cure generalises past the one detector: **every** control matcher stays indifferent to the head, so
+ * a future head change cannot repeat this quietly in whichever matcher nobody re-read. This test walks the
+ * matchers off SOURCE rather than from a list — a hand-kept roster would drift from the thing it names,
+ * and drift is precisely the failure mode here.
+ */
+import { describe, expect, test } from "vitest";
+import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
+
+const PKG = resolve(__dirname, "..");
+
+/** A regex literal that matches a control classifier — whatever head it happens to accept. EOT2
+ *  (`0014`) carries no scan to match here. */
+const CONTROL_MATCHER = /\/\^?<<(\\\^|\[~\^\]|~)(?:[^\n]{0,80}?)&#x\(?:?0*(?:0001|0002|0003|0004|0011)/g;
+
+/** Every tracked source file in this package that could carry one. */
+function trackedSources(): string[] {
+  const out = execFileSync("git", ["ls-files", "src", "scripts"], {
+    cwd: PKG, encoding: "utf8", maxBuffer: 16 * 1024 * 1024,
+  });
+  return out.split("\n").filter((f) => f.endsWith(".ts") && !f.includes("/dist/"));
+}
+
+describe("★ every control matcher reads the control head, and only that ★", () => {
+  const files = trackedSources();
+
+  test("the walk finds sources to check", () => {
+    expect(files.length).toBeGreaterThan(10);
+  });
+
+  /**
+   * THE FRAME LOCKS TO THE CONTROL GLYPH.
+   *
+   * The frame locks to `<<^` alone: a matcher admitting `<<~` accepts a malformed carrier in SILENCE,
+   * which is blindness, and worse here because an unmatched frame reroutes to text rather than
+   * throwing.
+   *
+   * The corpus holds one carrier in the old form, and the fence mask shows it quoted — a teaching
+   * example, not a frame. This test names the matchers still admitting `<<~`.
+   *
+   * Two of them are not leftovers and want reading before they move — `ANY_OPEN_RE` matches ANY sigil
+   * open by design, and the deserializer's namespace/SOH-code reads take a head's PARAMS rather than
+   * assert its glyph. Whichever survives review earns an exemption written where it stands.
+   */
+  test("no control matcher admits the speaking head", () => {
+    const offenders: string[] = [];
+    for (const rel of files) {
+      let src: string;
+      try { src = readFileSync(resolve(PKG, rel), "utf8"); } catch { continue; }
+      for (const m of src.matchAll(CONTROL_MATCHER)) {
+        if (m[1] !== "\\^") offenders.push(`${rel} → ${m[0].slice(0, 56)}`);
+      }
+    }
+    expect(offenders, `these matchers still admit the speaking head:\n  ${offenders.join("\n  ")}`).toEqual([]);
+  });
+
+  // THE LITERAL MATCHERS LEFT ARE THE KEPT ONES. Every other control scan now builds its code set from
+  // the frame package's declaration (`frameAlt`), so it spells no literal this walk can see. The bootstrap
+  // scanner keeps one literal row per mark BY RULING — it is frame-parity's independent recogniser — and
+  // those rows are what keep this sweep from passing vacuously.
+  test("the walk actually finds matchers — an empty sweep would pass vacuously", () => {
+    const found = files.reduce((n, rel) => {
+      try { return n + [...readFileSync(resolve(PKG, rel), "utf8").matchAll(CONTROL_MATCHER)].length; }
+      catch { return n; }
+    }, 0);
+    const scanner = [...readFileSync(resolve(PKG, "src/meme-ast/scanner.ts"), "utf8").matchAll(CONTROL_MATCHER)].length;
+    // SOH · SOH2 · STX · ETX · EOT = 5 (ETB's 0017 sits outside this matcher's range, per the
+    // comment above).
+    expect(scanner).toBeGreaterThanOrEqual(5);
+    expect(found).toBeGreaterThanOrEqual(scanner);
+  });
+});
+
+describe("the property the matchers must hold", () => {
+  // THE REAL DETECTOR, per action-handler.ts's own CARRIER_SOH: the frame locked to the control head
+  // `<<^` alone; `<<~` on a classifier names a malformed carrier now, never an older valid one.
+  const CARRIER_SOH = /<<\^[^&\n]*&#x(?:0001|0011);/;
+
+  test("only the control head opens a carrier when the classifier follows", () => {
+    expect(CARRIER_SOH.test("<<^ code=\"&#x0001;\" namespace=\"⚕\" from=\"?\" -> to=\"lar:///x\">>")).toBe(true);
+    expect(CARRIER_SOH.test("<<^ code=\"&#x0011;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>")).toBe(true);
+    expect(CARRIER_SOH.test("<<~ code=\"&#x0001;\" namespace=\"⚕\" from=\"?\" -> to=\"lar:///x\">>")).toBe(false);
+  });
+
+  test("no classifier means no carrier, under either head", () => {
+    expect(CARRIER_SOH.test("<<~ ahu #/entry>>")).toBe(false);
+    expect(CARRIER_SOH.test("<<^ code=\"&#x0002;\">>")).toBe(false);   // a frame sigil, never a carrier opener
+  });
+});

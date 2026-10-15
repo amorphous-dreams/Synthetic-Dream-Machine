@@ -1,0 +1,34 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/fake-dom">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/fake-dom.mem"
+l-space     = "lararium"
+mana        = 3
+role        = "the converter off TiddlyWiki's own fake DOM — a rendered fake-element tree read out as immutable VDomNodes or as its HTML string; it types the fake nodes it reads and builds no DOM of its own"
+source-file = "packages/lararium-tw5/src/fake-dom.ts"
+title       = "lar:///ha.ka.ba/lararium/tw5/fake-dom"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/tw5/fake-dom"
+```
+
+<<~ ahu #/contract>>
+
+! fake-dom — reading TiddlyWiki's fake DOM out
+
+`fake-dom.ts` owns ONE thing: the read-out of a tree TiddlyWiki already rendered. It builds no document and no element. TiddlyWiki ships its own fake DOM (`$tw.fakeDocument`, in `core/modules/utils/fakedom.js`); a camera renders into a container from that document, and this module converts the finished tree.
+
+* ''`tw5ElementToVdom(container)`'' returns the container's children as `VDomNode[]` — an immutable tree of `element` nodes (`tagName`, `attrs`, `children`) and `text` nodes (`text`). An element's inline style, which the fake DOM keeps as a `_style` map, flattens back into one `style` attribute string.
+* ''`tw5ElementToHtml(container)`'' returns the container's `innerHTML`, which TiddlyWiki's fake element builds natively. The island's projection reads the story surface through this call for each frame it posts (`packages/lararium-tw5/src/tw5-projection.ts`).
+* ''The types'' `TW5FakeElement`, `TW5FakeTextNode` and `TW5FakeNode` name only the fields this module reads. The `isTiddlyWikiFakeDom` flag tells an element from a text node at runtime.
+
+''What it does not own.'' Listener storage, render-id stamping and the geometry and caret answers a live widget asks of a fake node belong to the projection, which patches the fake element's prototype. The converter reads a tree and changes nothing in it, and it needs a booted `$tw`.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;b4Evo1yWYt8iAj2nGXhQdXXts3NPKCe5eEUF8K0Va8c
+
+<<^ code="&#x0004;" -> to="?">>

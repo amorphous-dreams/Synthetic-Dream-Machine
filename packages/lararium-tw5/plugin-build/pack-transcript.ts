@@ -13,21 +13,20 @@
  * acyclic: source → pack-transcript → attestation, never the reverse.
  *
  * Agent/dev note: this module stays tw5-specific. The hash primitive (sha256HexSync)
- * lives in @lararium/core. The schema versioning string and the TW5-specific
+ * lives in @lararium/mesh. The schema versioning string and the TW5-specific
  * pack-step shape live here.
  */
 
-import { sha256HexSync } from "@lararium/core";
+import { sha256HexSync } from "@lararium/mesh";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 
-export const PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript/v1";
+export const PACK_TRANSCRIPT_FORMAT = "lararium-tw5-pack-transcript/v2";
 
 export interface PackTranscript {
   format: typeof PACK_TRANSCRIPT_FORMAT;
   generatedBy: string;
-  timestamp: string;
-  /** Absolute path to the TW5 binary used. */
+  /** Stable repo-relative path to the TW5 binary used. */
   tw5BinPath: string;
   /** Version string from tiddlywiki's package.json. */
   tw5PackageVersion: string;

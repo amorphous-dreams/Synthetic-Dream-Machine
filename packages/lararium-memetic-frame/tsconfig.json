@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // THE FRAME RUNS EVERYWHERE A CARRIER TRAVELS — a node vessel, a browser island, a stock
+    // TiddlyWiki sandbox, a relay holding `pull` and not `read`. So it DECLARES NO ambient surface:
+    // a `node:` import here fails to typecheck rather than shipping into a context with no node.
+    "types": [],
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests"]
+}

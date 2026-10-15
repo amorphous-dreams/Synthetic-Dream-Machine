@@ -1,0 +1,124 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lararium/node/dev-loop">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/node/dev-loop.mem"
+l-space   = "lararium"
+mana      = 16
+manao     = 16
+manaoio   = 16
+namespace = "&#x2299;"
+role      = "the dev loop: the idempotent CLI cures after a code change (stand · stand --restart · rite refresh · rite rebuild · rite founding) + WHERE vessel state lives vs corpus (the repo). Carries the SITING LAW: three words, no synonyms — lares names the SPIRITS, lararium names the HOUSE, lar names the NAMESPACE — so the spirits' vessel, identity, seal and hearth bags stand at <lares>, the acquired shelf and the sensoriums at <lararium>, and the watermarks alone at <state>. Under LAR_ROOT every directory names an XDG kind and the two houses nest inside the data kind. The reach taxonomy + the path law + the invariants the dev loop rests on."
+title     = "lar:///ha.ka.ba/lararium/node/dev-loop"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/node/dev-loop"
+written   = "2026-06-27"
+```
+
+<<~ ahu #/head>>
+
+! The Dev Loop ~ idempotent cures after a code change
+
+A Lararium vessel boots from ''compiled dist'', founds from a ''baked genesis seed'', and runs from
+''vessel state in the operator's home''. After editing code, three things can go stale — the dist,
+the genesis blob, the on-disk vessel — and each has a cure. `stand`, `stand --restart`, `rite refresh` and `rite rebuild` run ''idempotent'':
+safe from any prior state (running · stale · none), so the loop never needs a clean-slate ritual.
+`stand --foreground` wants a free port, and `rite founding` wants no vessel standing.
+
+''The one to reach for after editing code:'' `lares vessel rite refresh`.
+
+<<~/ahu>>
+
+<<~ ahu #/commands>>
+
+!! The reach taxonomy ~ which cure, when
+
+Ordered by how much they touch — reach for the //least// that fixes your case:
+
+<<~ scale reach "stand --foreground -> stand --restart -> rite rebuild -> rite refresh -> rite founding">>
+
+<<~ has Cure refresh "after/CODE-CHANGED does/`lares vessel rite refresh` — `pnpm build` (recompile every dist + stamp the source digest) THEN stop the incumbent on the port + stand ~ THE post-edit cure">>
+<<~ has Cure restart "after/just-converge does/`lares vessel stand --restart` — stop the incumbent on the port (graceful SIGTERM waited out, by port-access, no PID file) + serve ~ no rebuild, no wipe">>
+<<~ has Cure rebuild "after/DEP-BUMP does/`lares vessel rite rebuild` — stop the incumbent + re-bake the genesis engine under current deps + serve ~ NO wipe, identity-safe (the serde-skew cure)">>
+<<~ has Cure foreground "after/boot-only does/`lares vessel stand --foreground` — run the dist node, fail-fast ~ no convergence, no rebuild">>
+<<~ has Cure founding "after/nothing-stands does/`lares vessel rite founding` — found · stand · seed, halting at the first step that refuses">>
+<<~ has Cure stand "after/standup does/`lares vessel stand` — attach when the published standing matches the face on disk, re-stand when it differs, or start detached when down; REPORT and hydrate; `--init` founds and wires every AI surface, while `lares vessel wire [--claude|--codex|--copilot|--vscode]` aims surfaces separately">>
+
+''The gap `refresh` closes:'' no other dev-loop verb compiles — none runs `pnpm build`. The island
+workers spawn from compiled `.js` siblings (a tsx-source run = a half-dead vessel: port bound, worker
+`ERR_MODULE_NOT_FOUND`). So after a TS edit, `stand --foreground` and `stand --restart` boot a STALE
+vessel. `refresh` builds dist, stamps the source digest, then stops and stands the vessel; a change to
+genesis inputs also wants a genesis bake.
+
+<<~/ahu>>
+
+<<~ ahu #/vessel-paths>>
+
+!! Where state lives ~ the two houses vs the corpus
+
+The CORPUS + code live in the ''repo'' (versioned); the vessel's RUNTIME STATE lives in the
+operator's own homes. The split renders the `@daemon` ontology as filesystem — the bound-operator's
+vessel-only worker belongs to the operator, not a checkout.
+
+''THREE WORDS, NO SYNONYMS'': ''lares'' names the SPIRITS, ''lararium'' names the
+HOUSE, ''lar'' names the NAMESPACE. Every siting answers ''whose?'':
+
+|! home |! holds |! whose |
+| `<lares>` (`~/.local/share/lares`) | `vessel/` storage · key · UDS socket · `identity/` keypair · `nexus/` seal · `repos.json` · hearth bags | the SPIRITS' — a Lar's keys ARE that Lar |
+| `<lararium>` (`~/.local/share/lararium`) | `library/` the acquired shelf · `sensoriums/` operator history + DreamNet history | the HOUSE'S — nothing here re-derives |
+| `<state>` (`~/.local/state/lares`) | `projection/` synced-tree watermark · `harvest/` · `harvest-stage/` | nobody's for long — all of it re-derives |
+
+<<~ scale corpus "repo/genesis/seed.json+cas -> repo/bags/seed-memes -> repo/packages/code">>
+
+''The resolver'' — ONE source, `@lararium/node/vessel-paths.ts` (`larHome` · `larDataDir` ·
+`larIdentityDir` · `larProjectionDir` · `larHarvest*`) over `@lararium/mempalace/xdg-base`
+(`laresDataHome` · `larariumDataHome`), so the CLI (local-connector) and the daemon (uds-channel)
+always agree on the ''UDS socket'' path. `larHome()` (`~/.lares`) carries the per-@daemon
+`config.json` alone. The guest mempalace stays `~/.mempalace` (mempalace's own home;
+`MEMPALACE_PALACE_PATH` overrides); the SOVEREIGN content plane rides `<lararium>/sensoriums/memory`.
+
+''`LAR_ROOT`'' overrides the root for ISOLATED instances (the test harness / staged pairs) — every
+home AND genesis fall under it. Each directory beneath it names an XDG ''KIND'' — data, state, cache,
+config, run — and the two HOUSES nest inside the data kind exactly as under XDG: `<root>/data/lares`
+beside `<root>/data/lararium`. ''A house never stands where a kind belongs'', so an isolated root
+reads as the real disk with a different prefix. ''Only an EXPLICIT `--root` (or the env) sets it'' —
+never a default; a `REPO_ROOT` default would resolve `larHome()` to the repo and defeat the split.
+
+<<~/ahu>>
+
+<<~ ahu #/laws>>
+
+!! The invariants the loop rests on
+
+<<~ scale law "dist-not-tsx -> genesis-before-founding -> identity-beside-substrate -> only-explicit-LAR_ROOT -> deterministic-genesis">>
+
+* ''dist, not tsx'' — island workers spawn compiled; a stale dist makes a half-dead vessel. `refresh` rebuilds.
+* ''genesis before founding'' — a founding binds the hearth to the engine CID the baked genesis names,
+  so the baked artifact must stand first.
+* ''identity beside substrate'' — `<lares>/identity` stands as a SIBLING of the `<lares>/vessel` store,
+  never a child. UNBUILT: no rite reforges the substrate; one that did would confine its wipe to
+  `<lares>/vessel` and so preserve the operator's keypair/DID. A true re-found (new DID) needs an
+  explicit identity wipe.
+* ''only explicit `--root` sets `LAR_ROOT`'' — never thread a `REPO_ROOT` default through a founding
+  (it silently relocates the vessel into the repo).
+* ''deterministic genesis'' — a re-bake with unchanged inputs yields byte-identical seed and CAS bytes
+  (no churn); a diff signals changed inputs and calls for inspection.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/node/open-node-vessel">>
+<<~ loulou "lar:///ha.ka.ba/lararium/node/node-vessel-identity">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;7iWxflWdXDnKnijNQSAY_f_FR4KFrOkVoH5j_x_uepo
+
+<<^ code="&#x0004;" -> to="?">>

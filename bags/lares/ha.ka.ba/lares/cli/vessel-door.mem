@@ -1,0 +1,273 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/cli/vessel-door">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/lares/cli/vessel-door.mem"
+l-space    = "lares"
+mana       = 15
+manao      = 15
+manaoio    = 14
+namespace  = "&#x2299;"
+role       = "The vessel door carries four primitives and one read, the card, wire, and rite sub-doors, the founding · refresh · rebuild rites, retired spellings that refuse, and the witnesses that verify the surface."
+status-why = "the door stands, the compositions ride it as rites, every caller moved and every collapsed spelling refuses; walked by the founding and contract witnesses and the founding rehearsal harness"
+tags       = ["api/pono/meme", "lararium/api/lares-lararium-binding", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/cli/vessel-door"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/cli/vessel-door"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/the-record-laws>>
+
+!! The record laws ~ what a command IS, and where a name lives
+
+Two laws the door has always obeyed and no carrier has stated.
+
+!!! Records, not RPC
+
+''A command rides as an intent RECORD; an outcome rides as a receipt RECORD.'' Neither reads as a remote
+call. Each record flows through the admin surface as a ''local-first artifact'' — authored, addressed,
+and readable after the fact by anything that can read a tiddler. A temporary record stays acceptable where
+the flow needs only a short life; a call that leaves no record does not.
+
+''What the law buys:'' an RPC leaves a trace only where someone logged one, and the log answers to a
+different grammar than the call. A record IS the trace, in the grammar everything else already reads.
+
+!!! The `lar:` locality law
+
+''Every system `id` uses the `lar:` URI scheme'' — command ids, receipt ids, audience ids, principal ids,
+session artifact ids, storage artifact ids, and any other first-class name.
+
+''The authority says who spoke; the naming CONVENTION reads as a courtesy, never a verdict:''
+
+<<~ scale locality """hostless ~ "`lar:///ha.ka.ba/lares/commands/promote/…`" — a hot, warm or cold STORAGE artifact, on-disk projections first -> hostful ~ "`lar://node.alpha.local/ha.ka.ba/bags/sessions/live/…`" — a LIVE session artifact, named at the node holding it""">>
+
+''An author following the convention hands a reader a hint, and the law stops there.'' Hostful and hostless
+name WHAT a URI names — a hostful authority states who spoke, under what grant, from where, which reads as
+a fact about the CONTENT and keeps holding for as long as the content stands
+(`lar:///ha.ka.ba/lares/docs/pono/canon-boundary#/the-promotion-boundary`).
+
+⚠ ''So a reader derives no durability from the form, and MUST NOT.'' Durability answers to the holding bag
+and the layer, never to the count of slashes: a captured session turn promoted into canon carries its
+hostful name onward and outlives every node that ever held it. A caller that gates, routes, or ranks on
+the address form reads a content property as a layer property — the failure this law names.
+
+''Provenance:'' harvested verbatim from `lar:///lares_research/research-streams/lararium/LARES-CLI-DAEMON-SPRINT-PLAN`,
+where both laws stood settled with no live carrier holding either.
+
+<<~/ahu>>
+
+<<~ ahu #/the-law>>
+
+! The Vessel Door ~ one namespace over the vessel's island
+
+''ONE NAMESPACE PER CAUSAL ISLAND; THE PLANE RIDES AS A PARAMETER, NEVER A NEW VERB.'' That law governs
+this CLI: the sensorium surface answers at two doors — one sovereign, one guest — and no legacy alias
+answers anywhere.
+
+''The vessel is a causal island and speaks through ONE name.'' Its store, its genesis artifact, its
+daemon and its corpus form one island by every test this house applies, so they answer at one door. ''A
+plane with no door has nowhere to put new capability but the top level'' — which is why the verb count
+grows back wherever the law has not reached, and where to look when it does.
+
+<<~/ahu>>
+
+<<~ ahu #/the-primitives>>
+
+!! What the door answers — four primitives and one read
+
+Every substrate motion in this CLI composes from these, and no composition earns a primitive's seat.
+
+<<~ has Primitive found "mints the vessel identity, the persona root, the social planes and the bootstrap ~ idempotent, skips what stands">>
+<<~ has Primitive stand "brings the daemon up, foreground or detached, and reports what it found ~ attach when one already answers">>
+<<~ has Primitive stop "ends a running daemon by port, signals gracefully and waits for its exit ~ never a restart in disguise">>
+<<~ has Primitive seed "plants every bags holding back into its doc, kind-routed, diff-gated ~ idempotent; a converged tree no-ops">>
+
+''The read beside them'': `read` — the pure inspection that starts nothing (bootstrap
+presence, storage size, port, seal state, personas, quorum).
+
+`build` compiles the workspace and stamps its source digest inside `rite refresh`; it names no vessel door.
+`stand` carries `--foreground`, `--with-web`, `--restart`, `--observe`, `--install`, `--init`, and `--admit <file>` postures. The sub-doors `card`, `wire`, and `rite` print the ContactCard, point machine AI surfaces at the vessel, and run the named compositions. The sub-door `unbound` lists the documents this vessel minted that no binding names, through the daemon's own read; it removes nothing.
+
+''What a stand's `ok` answers.'' `ok` reads true where the vessel stands and no organ a hand installed stands broken. The memory library keeps its own door (`lares mempalace install`) and never rides a founding, so a machine that holds none of it reads `mempalace: absent` beside a true `ok`: an absent optional organ never reads as a failed stand. A half-installed library reads `incomplete` and fails the reading (one half of the library standing without the other, or a source directory that holds files and lacks its entry), and a node that fails to answer fails the stand whatever the library says (`packages/lares-cli/src/integration-check.ts`, `mempalaceStanding`, `standOk`; `packages/lares-cli/tests/stand-ok-reads-the-vessel.test.ts`).
+
+''RE-DERIVING THE GENESIS ISLAND IS NOT A DOOR.'' Advancing the composition (the engine, the memetic-wikitext
+grammar) is a MESH act that goes out past a single vessel — it rides `nexus kahuli`, the engine/grammar
+ratchet. The LOCAL re-derive rides only as an internal step of the `rebuild` rite and the
+`build:genesis` build script; other plugins ride
+separately as `@cad` caps rather than folding into the grammar ratchet.
+
+<<~/ahu>>
+
+<<~ ahu #/the-collapse>>
+
+!! The collapse, verb by verb
+
+Each row names a RETIRED TOP-LEVEL spelling (`lares <name>`) and the vessel door or rite that carries its motion. ''No aliases survive'' — a name
+that still answers teaches that both spellings stand, and the surface regrows from there. Every spelling
+below refuses with `unknown command`, flags included: routing an unknown name to the global help would
+return 0 and print a full page, which reads exactly like a door that opened.
+
+''NO DOOR WIPES.'' Three retired spellings named a wipe of the vessel store, and no door or rite answers one
+(operator-ruled): a fresh start runs by hand, moving the old homes aside
+(<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/fresh-start">>).
+
+|! retired |! composes |! answers at |
+| `init` | found | `vessel found` |
+| `wake` | found? · stand · read | `vessel stand` (the entry point; keeps its report) |
+| `serve` | stand (foreground) | `vessel stand --foreground` |
+| `dev` | stand · vite | `vessel stand --with-web` |
+| `stop` | stop | `vessel stop` |
+| `reset` | wipe · found | no door — a fresh start runs by hand |
+| `fresh` | wipe · stand | no door — a fresh start runs by hand |
+| `reconcile` | stop · stand | `vessel stand --restart` |
+| `refresh` | build · stop · stand | `vessel rite refresh` |
+| `rebuild` | re-derive · stand | `vessel rite rebuild` |
+| `build-genesis` · `bake` | the internal re-derive, or the mesh overturn | internal step: `vessel rite rebuild` · `nexus kahuli` |
+| `regenesis` | stop · wipe · re-derive · stand · seed | no door — a fresh start runs by hand |
+| `seed` | seed | `vessel seed` |
+| `status` · `node status` | read | `vessel read` |
+
+''THE COMPOSITIONS RIDE AS RITES, NEVER VERBS.'' The rite door carries `founding`, `refresh`, and
+`rebuild` as named compositions over the primitives. A composition earns a pet-name; it gains no top-level name.
+
+''The test for a rite versus a primitive'': a primitive names one motion
+and cannot be expressed as a sequence of the others. Everything else composes.
+
+<<~/ahu>>
+
+<<~ ahu #/the-founding-rite>>
+
+!! The founding rite rides the rite-door
+
+''The founding rite composes: found · stand · seed.'' No stop and no second bake — a movement that stopped
+the daemon and re-baked genesis would tear down what the second movement built moments earlier. The only
+part a founding needs there is the seeding.
+
+''A RITE THAT NEVER RESTARTS NEVER RETURNS TO THE FLOOR.'' Every boot rests at the floor until a person
+unlocks it on a terminal, and nothing stored lifts it. A movement that RESTARTS the daemon drops the key the
+vessel held, so a person would unlock again between two movements or watch the vessel come up at the floor.
+The founding rite restarts nothing, so no second unlock stands between its movements.
+
+<<~/ahu>>
+
+<<~ ahu #/the-ripples>>
+
+!! Every caller that closes with the door
+
+''A door that leaves callers on old names has collapsed nothing.'' These surfaces name substrate verbs
+directly, so each moves in the same act as any change to the door — and each row below names what keeps it
+moved.
+
+# ''THE GENERATED MCP MIRROR.'' The CLI↔MCP↔seat isomorphism rides a GENERATED fixture, never a
+  hand-edited one. Rebuild the CLI first, then regenerate. A hand-edit here reads as a passing test over a
+  surface nobody generated — and so does a fixture nobody regenerated, which is why the weld rides a
+  witness (#/the-verifications) rather than a habit.
+# ''THE FRESH-BUILD GATE.'' Membership DERIVES from the door rather than from a remembered list of verb
+  names. A roster drifts the moment a surface changes — the very defect this door closes. The derived
+  test states its EXCEPTIONS instead, so it fails safe: a sub-door added later stays gated until someone
+  argues it out.
+# ''THE FOUNDING RUNBOOK.'' It instructs substrate verbs directly, and as the operator-instruction source a
+  stale command there fails at the worst moment a command can fail. `tools/rite-commands-witness.sh` reads
+  each instructed command at its dispatch position.
+# ''THE REHEARSAL HARNESS.'' `tools/rehearse-founding.sh` walks the rite by name; its preflight, its founding
+  step and its seed step all name the door.
+# ''THE CONTAINER BOOT + THE WITNESS SCRIPTS.'' They found and stand vessels by verb name.
+# ''THE SESSION-START HOOK.'' It calls the entry point with the observe capability. The capability must
+  survive the rename intact — a hook that gains the standing capability by accident turns looking into
+  acting.
+# ''EVERY HANDLER'S OWN HEADER.'' A handler whose docstring self-names a retired spelling carries cosmetic
+  residue; sweep it in the same pass as the name.
+
+<<~/ahu>>
+
+<<~ ahu #/what-stands>>
+
+!! What stays outside the vessel door, and why
+
+''NOT the noun-doors.'' `nexus`, `persona`, `vault`, `library`, `circle`, `cabal`, `hooks`, `sense`,
+`mempalace`, `sensorium` already obey the law. Touching them spends risk for nothing.
+
+''THE `vault` DOOR ANSWERS SEVEN VERBS.'' `status` · `unlock` · `lock` · `bind` · `unbind` · `backup` · `restore`,
+and any other word refuses as a usage error. `status` gives one reading of each standing file the carrier table
+names and prints any private file outside it; `unbind <slot-id> --rotate` moves the vessel key in the same act that
+removes the slot, and its census passes before any byte moves
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>).
+
+''THE `vault` DOOR CARRIES A FACE'S BACKUP.'' `lares vault backup --face <N> --out <file>` cuts one face's
+backup bundle through the standing vessel's custody door: it reads the vessel's own route and the bundle's new
+route on a terminal, and no flag, environment variable or pipe carries either
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>). `lares vault restore <file>` brings a face back from
+its bundle as a recovery act: it reads the bundle's route on a terminal, and the vessel takes a NEW seat under the
+face's fixed prefix (`--as <N>` names the index; `--memory` lands the bundle's content keys on that seat)
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>). Both verbs live on `vault` because they move
+nothing of the vessel's substrate: they ask the custody door, as `unlock` and `lock` do.
+
+''ONE FLAG ASKS FOR KEYHIVE'S OWN TRACE, BY NAME.'' `--keyhive-trace` on any command sets `LAR_KEYHIVE_TRACE=1`
+for that command's process, and the same variable set in a daemon's environment asks it of the daemon. Keyhive's
+tracing installs a global dispatcher, so it stands off unless this name asks for it
+(`packages/lararium-keyhive/src/keyhive-provider.ts` `KEYHIVE_TRACE_ENV`).
+
+''NOT the content verbs.'' `bag`, `wiki`, `ingest`, `act`, `edge`, `draft`, `normalize`, `repack` name the
+corpus island rather than the vessel island. They may want their own door one day; that is a separate
+reading and it does not belong in this act.
+
+''NOT the identity verbs.'' `device-admit` and `raise` name ceremonies between vessels, not motions of
+one vessel's substrate. ''An OWED capability carries no door at all'' — the Nexus invite ceremony rides
+no verb until its transport lands, the same way `cabal feed` stands built and unspelled.
+
+''A RENAME MOVES NAMES AND NOTHING ELSE.'' A change that moves a name and a behaviour together cannot get
+verified — a green suite afterward proves neither half.
+
+<<~/ahu>>
+
+<<~ ahu #/the-verifications>>
+
+!! What proves the door holds
+
+''Each of these fails loudly on a half-moved door'', and each rides a witness rather than a hand —
+because a verification an operator has to remember to run is a verification that reports on their memory.
+
+# ''The tree typechecks'' — `tools/typecheck-witness.sh`. A green build has not typechecked: the compiler
+  colorizes, so a reader grepping for the word `error` and its code matches nothing while a package
+  carries dozens. The witness reads per package and exits non-zero on any real error.
+# ''The mirror names the table the CLI carries'' — `tools/mirror-parity-witness.sh`. The generated
+  isomorphism fixture goes stale by NOT being regenerated, and the checks standing around it cannot see
+  that: the three-way guard asserts the fixture's own internal coherence (which staleness satisfies), and
+  the projection test compares live to live. ''Nothing else welds the fixture to the table.''
+# ''No old name answers.'' Every retired top-level spelling MUST fail as an unknown command, ''with or without `--help`''.
+  A surviving alias names the failure mode this door exists to prevent, and it hides perfectly behind a
+  passing suite.
+# ''The surface gets measured at the VERB, never at the door.'' A door count reports a collapse the
+  operator cannot feel: the fan-out lives one level below the number, so a surface that reads halved by
+  doors may not have moved at all. Both figures DERIVE, printed on every rite-commands run — ''the pair is
+  the reading, either alone flatters'', and a figure transcribed into prose ages silently.
+# ''The rehearsal walks its cycles green'' (`tools/rehearse-founding.sh`) — which also proves the founding
+  rite composes correctly, since the harness performs the rite rather than describing it.
+# ''The founding runbook reads end to end'' (`tools/rite-commands-witness.sh`), every instructed sub-door resolving at a DISPATCH POSITION. A
+  substring test reads the vocabulary of a file rather than its dispatch, and passes on the very line that
+  disproves it — `case "contract": … cmdContract(args, "admit")` waved a rite instructing `nexus admit`
+  straight through. A rite amended by many hands drifts fastest at exactly the commands nobody re-typed.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lares-lararium-binding">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">> · <<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> · Fresh starts move old homes aside by hand.
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> · Host shim holds the engine in a container.
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">> · Meme skins share the daemon content contract.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;mLPZorSLoBc2QWkOMbWeJ5J-U_-9FxjtiWwj4EUXP8A
+
+<<^ code="&#x0004;" -> to="?">>

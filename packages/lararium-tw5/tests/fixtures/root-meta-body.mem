@@ -1,0 +1,38 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>
+<<^ code="&#x0002;">>
+
+```toml meta
+created  = "2026-09-20"
+custom   = "root-authority"
+list     = ["one", "two"]
+tags     = ["alpha", "beta"]
+title    = "lar:///tests/root-meta-body"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "tests/root-meta-body"
+```
+
+Root prose is inside the checked body.
+
+<<~ ahu #/one>>
+```toml meta
+tags = ["child"]
+```
+
+Child prose.
+
+<<fragment #/one/two>>
+```toml meta
+custom = "nested"
+```
+
+Nested prose.
+
+<</fragment>>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;NAAmESxTN7GDY75ID5UzCg4AVQ2Wxcoo2uebJp-6lnQ
+
+<<^ code="&#x0004;" -> to="?">>

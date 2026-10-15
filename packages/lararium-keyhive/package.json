@@ -8,16 +8,27 @@
     ".": {
       "import": "./dist/src/index.js",
       "types": "./dist/src/index.d.ts"
+    },
+    "./operator-daemon-behavior": {
+      "import": "./dist/src/operator-daemon-behavior.js",
+      "types": "./dist/src/operator-daemon-behavior.d.ts"
     }
   },
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "build":     "tsc",
-    "typecheck": "tsc --noEmit"
+    "clean": "node ../../tools/clean-output.mjs dist",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@keyhive/keyhive": "0.0.0-alpha.56c",
-    "@lararium/core":  "workspace:*"
+    "@keyhive/keyhive": "0.3.0-alpha.1",
+    "@lararium/mesh": "workspace:*",
+    "@lararium/tw5": "workspace:*"
+  },
+  "devDependencies": {
+    "@automerge/automerge": "3.4.1",
+    "vitest": "5.0.3"
   }
 }

@@ -1,0 +1,1 @@
+Always load -> [noosphere-boot.mem](bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem)

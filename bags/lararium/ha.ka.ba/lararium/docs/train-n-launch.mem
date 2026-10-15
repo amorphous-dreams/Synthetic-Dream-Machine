@@ -1,0 +1,94 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-n-launch">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-n-launch.mem"
+l-space   = "adjacent"
+role      = "train N launch kit: two-founder inception, partial acts, contracts, rolls, two-root proof and file collisions"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lararium/docs/train-n-launch"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/docs/train-n-launch"
+```
+
+<<~ ahu #/head>>
+
+! Train N ~ the two-founder Nexus launch
+
+!! Contents
+
+* [[Ground and crew|#/ground]] · [[Commit walk|#/walk]] · [[Witness and red window|#/witness]] · [[Collision sheet|#/collisions]] · [[Done when|#/done]] · [[Open rulings|#/rulings]].
+
+<<~/ahu>>
+
+<<~ ahu #/ground>>
+
+!! Ground and crew
+
+The Stable founding and signed-inception reader supply the train's ground. One compose lead owns the joint charter image, the two vaults and the final acceptance reader. A ceremony builder owns open/join/seal and file courier; a mesh builder owns inception and partial images; a reviewer reads bytes, fingerprints, stale acts and independent roots. W's pure gate modules may proceed on disjoint files. The lead alone edits the shared `nexus-contract.ts` hand-off after N's partial caller passes.
+
+The Stable founding supplies the seed charter, persona zero, private charter and serving key. Keep each founder's seed unchanged; file the joint charter under its own AID through `charterHomeFor`. K12 supplies random per-Nexus face keys and their signed hand-over line. K13 supplies the PersonaGroup Keyhive group and the genesis-seat non-return rule in `verifySealRoll`. The signed-inception reader requires every genesis seat's signature and refuses an unsigned genesis. `lares nexus seal cofound open|join|seal` signs and files one joint inception across two vaults. The independent two-root import and boot witness still stands owed.
+
+<<~/ahu>>
+
+<<~ ahu #/walk>>
+
+!! Commit walk
+
+# ''Cofound ceremony stands.'' `seal cofound open --release <manifest> --out <offer>` commits A's seat, cold successor commitment, charter law and manifest addresses. Name its checksum ''offer fingerprint''. `seal cofound join <offer> --out <join>` adds B's public material and half signature, derives the joint AID and names the resulting ''final charter fingerprint''. `seal cofound seal <join> --out <inception>` adds A's signature; B files that inception with `seal cofound seal <inception>`. Each founder types the other's seat fingerprint as heard and reads back a cold successor card. Each hearth signs the one cadence inception that the joint founding cites. A seed keeps `founding: null`. An offer or B's half-signature cannot import or boot as a charter.
+# ''Acceptance law stands; two-root witness stays owed.'' `verifySealLineage` refuses an unsigned or half-signed genesis, and the seed's one signed seat supplies the control. A witness with two custody roots still owes joint import, boot and forged-display checks.
+# ''Signed inception stands.'' `wax-stamp.ts` commits the inception image to the AID and requires every seat's signature. Charter readers, import, the seed founding and fixture factories follow that law. The two-vault cofound caller signs one image through separate custody doors. The offer fingerprint never substitutes for the final charter fingerprint.
+# ''Partial law and two-vault contracts stand.'' `nexus-partial.ts` supplies separate images and subject and parent checks for Nexus admit, revoke, kapae and roll anchor. `lares nexus contract|revoke <nym> --nexus <aid> --out <file>` opens a partial; `lares nexus contract --from <file>` judges, cosigns and lands it against the receiving vault's head and board. The landing judges again against a fresh head and board before its write. The kapae and roll-anchor two-vault doors still owe file exchange and this judge. Stale head, missing parent, replay and wrong subject must write no second signature or board act.
+# ''Contracts stand; rolls wait.'' Each founder consents to their own carriage contract; both seat signatures admit it. `resolveContractIn` guards the local consent. Read both contracts from each root after courier and restart in the two-root witness. Arm and verify fresh successor cards on both roots before the add roll. The first roll reveals genesis seats; `verifySealRoll` bars every seated key from returning. Then add the third holder with possession and its contract; pass a chair in a later roll. A lost two-of-two cold card invokes the loss law.
+# ''PROOF and canon.'' Read the joint AID, contracts and final roll independently after both roots restart and unlock. Re-import one verified lineage into a dormant root. A fork remains a fork until the operator rules its resolving act. The controller folds the charter and command canon after the witness passes.
+
+<<~/ahu>>
+
+<<~ ahu #/witness>>
+
+!! Witness and red window
+
+The two-root import contract still needs a live witness. The witness supplies two different `LAR_ROOT` trees, Repos, seal homes and signing handles; its only courier carries files. It checks the same final AID and contracts after independent restart, rejects an unsigned or half-signed charter at both imports, and keeps both seeds intact. The witness must catch a one-root fixture shortcut.
+
+Signed-inception fixtures and the seed door stand. Run changed package suites, both e2e shard sets and the held-out head after each live seam; distinguish an unread held-out head from green. The two-root witness stays owed until independent boot. A later two-container witness strengthens custody separation for X.
+
+<<~/ahu>>
+
+<<~ ahu #/collisions>>
+
+!! Collision sheet
+
+| File or seam | N owner and hand-off | W owner and hand-off |
+|---|---|---|
+| `nexus-contract.ts` | N lead owns two-vault self-contract and cosign caller. | W lead waits, then moves signed admit's canon list and gate pin with all readers. |
+| `wax-stamp.ts`, charter fixture factories | N mesh builder changes inception image and all acceptance readers as one live seam. | W consumes the final AID and verified held root. |
+| `seal-ceremony.ts`, `init.ts`, `found.ts`, founding e2e | Seat lead owns them through Stable founding; N lead takes ceremony files after hand-off. | W avoids these files during N. |
+| `open-node-vessel.ts`, `open-browser-vessel.ts` | N needs import/boot proof but leaves W's socket composition alone. | One W compose lead owns both during assembled cutover. |
+| `socket-sorter.ts`, mesh and node `gate-dial-fixture.ts` | N avoids them. | W compose lead updates sorter and both fixture contracts with production callers. |
+
+Pure N image and read-back modules may run beside W's pure Noise, bundle and exchange work. Live N charter acceptance and W's admit shape share the charter/contract seam; finish N's contract before W changes its signed bytes. The controller owns canon and landing order.
+
+<<~/ahu>>
+
+<<~ ahu #/done>>
+
+!! Done when
+
+Two isolated vaults read both offer and final fingerprints, sign one fresh 2-of-2 inception, retain their seeds, exchange judged partials, import both co-signed contracts, roll with fresh successors, add and contract a third chair, pass a chair later, refuse stale/replayed/wrong-subject acts and spent keys, and independently restart under the same joint AID. A single verified lineage catches up; no claim resolves a fork.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! Open rulings
+
+Offering Antigen scope and the fork-resolve act stand as house rulings under the operator's delegation (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). The signed inception commits to the offer fingerprint, the cadence inception citation and both fresh successor commitments, and refuses a reused successor. Its AID supplies the Offering act's stable scope; the Offering act's scope field still stands owed. The seal record names a sorted predecessor set: none at genesis, one at a roll and two at a reunion. ABANDON's verifier and REUNION's image stand; a two-predecessor record refuses `REUNION_UNBUILT` until the reunion verifier lands.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;1noN8TWhAtjkZZ-ti7ziMxPsXTdRg_kbNR-1wZeaMDs
+
+<<^ code="&#x0004;" -> to="?">>

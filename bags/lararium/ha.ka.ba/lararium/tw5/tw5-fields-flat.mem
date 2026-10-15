@@ -1,0 +1,50 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-fields-flat.mem"
+heleuma    = "ka"
+mana       = 17
+manao      = 17
+manaoio    = 16
+module-ref = "lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat"
+role       = "heleuma: TW5TiddlerFields → Record<string,string> normaliser"
+title      = "lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/tw5/tw5-fields-flat"
+```
+
+<<~ ahu #/contract>>
+
+!! Contract
+
+`tw5FieldsToRecord(fields: TW5TiddlerFields): Record<string, string>`
+
+Normalises a TW5 runtime field bag to a flat string map:
+* `Date` → `toISOString()`
+* `Array` → space-joined string
+* `null | undefined` → skipped
+* all others → `String(value)`
+
+!! Why here
+
+Before this file, `wiki-handlers.ts` owned `flattenRuntimeTiddlerFields()` (skipped `bag`) and the retired `promote-handler.ts` (deleted 2026-05-31) owned `flattenPromoteFields()` (skipped nulls). Both converted `TW5TiddlerFields → Record<string,string>` before calling `adaptor.saveFields()`. The `IslandAdaptor` owns the `bag` routing decision; neither caller needed to suppress it. `tw5FieldsToRecord` covers both cases cleanly. Normalisation belongs in the tw5 package alongside `TW5TiddlerFields`.
+
+!! Promotion path
+
+`heleuma = "ka"` — this logic carries no node/DOM assumptions. Once the wikitext evaluation surface supports typed field iteration, it MAY promote to a TW5 `\function` tiddler.
+
+<<~/ahu>>
+
+<<~ ahu #/source>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/tw5-fields-flat" $mode="block"/>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;7_WoUlDEYXkM4_XZSptf84qkr2moh88E3qnd4per0zs
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,145 @@
+/**
+ * island-recipe — one-model assembly for sovereign islands.
+ *
+ * Canonical assembly:
+ *   1) `expandRecipe(recipe)` → ordered slot URIs (top of array = highest priority)
+ *   2) addLayer for each slot in cascade order (bottom-up): oracle floor first, temp last
+ *   3) temp slot uses a MemoryTiddlerStore; all other slots use AutomergeDocStore
+ *   4) IslandAdaptor projection registers
+ *   5) initial replay enters the shore landing queue; its checkpoint resolves when that queue empties
+ *
+ * Node and browser sovereign workers both call this helper so recipe behavior
+ * stays one shape across platforms.
+ */
+
+import {
+  CompositeStore,
+  AutomergeDocStore,
+  defaultWritableSlot,
+  expandRecipe,
+  slotLayerFlags,
+  wikiSlotUri,
+  type LarDoc,
+  type DocHandle,
+  type WikiRecipe,
+  type SlotUri,
+} from "@lararium/mesh";
+import { IslandAdaptor } from "./island-adaptor.js";
+import { MemoryTiddlerStore } from "./memory-store.js";
+import type { TW5Engine } from "./tw5-vm.js";
+
+export interface RecipeReadyBinding {
+  /** Slot URI from the expanded recipe. */
+  slot: SlotUri;
+  handle: DocHandle<LarDoc>;
+}
+
+export interface BuildIslandRecipeInput {
+  tw5: TW5Engine;
+  composite: CompositeStore;
+  recipe: WikiRecipe;
+  /** Resolved CRDT handles keyed by slot URI. temp has no entry. */
+  ready: readonly RecipeReadyBinding[];
+}
+
+/**
+ * Build the sovereign island recipe and return the adaptor.
+ *
+ * Cascade layering: walks `expandRecipe()` in reverse so the lowest-priority
+ * slot (oracle, the floor) registers first via `addLayer`. CompositeStore's
+ * "first wins" read order matches the slot array's top-first orientation.
+ */
+export function buildIslandRecipe(input: BuildIslandRecipeInput): {
+  adaptor: IslandAdaptor;
+  stores: Array<{ slot: SlotUri; store: AutomergeDocStore | MemoryTiddlerStore }>;
+} {
+  const { tw5, composite, recipe, ready } = input;
+
+  const handleBySlot   = new Map(ready.map((r) => [r.slot, r.handle]));
+  const slots          = expandRecipe(recipe);
+  const slug           = recipe.wikiSlug;
+  const tempSlot       = wikiSlotUri(slug, "temp");
+  const stores: Array<{ slot: SlotUri; store: AutomergeDocStore | MemoryTiddlerStore }> = [];
+
+  // Bottom-up addLayer order. Slot at index slots.length-1 (oracle, the floor) lands first.
+  let tempStore: MemoryTiddlerStore | null = null;
+  for (let i = slots.length - 1; i >= 0; i--) {
+    const slot = slots[i]!;
+    if (slot === tempSlot) {
+      tempStore = new MemoryTiddlerStore();
+      composite.addLayer({ bagId: slot, store: tempStore, ...slotLayerFlags(slot, slug) });
+      stores.push({ slot, store: tempStore });
+      continue;
+    }
+    const handle = handleBySlot.get(slot);
+    if (!handle) continue; // CRDT slot not provided — skip (cold or unmapped)
+    const store = new AutomergeDocStore(handle, slot);
+    // All CRDT slots accept writes; the in-wiki bag-paths cascade decides routing
+    // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
+    // slot's store directly, carrying the bag on the put option — never a field on the record. The
+    // default (an unbagged write or tombstone) is the working slot; without its handle no default
+    // writable stands. The ONE law `slotLayerFlags` spells for the host mount and this island alike.
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, slug) });
+    stores.push({ slot, store });
+  }
+
+  const adaptor = new IslandAdaptor(tw5, composite, recipe.wikiSlug);
+  adaptor.installLandingQueue();
+  adaptor.start();
+
+  // Per-wiki cascade reference — the default `lar:///ha.ka.ba/lararium/config/bag-paths`
+  // reads this value via `{lar:///ha.ka.ba/lararium/config/current-wiki-bag}` to
+  // resolve `lar:` writes to the wiki's live WRITE LAYER: the per-wiki working slot
+  // (`wikis/{slug}/working`, the saved live layer projecting to disk wikis/{slug}); its
+  // bags/{slug} canon rides below, published only by a residency MOVE
+  // (wiki-layer-ontology#shore-law). A recipe without a working binding has no default
+  // writable and seeds an empty write-layer pointer; the daemon attach mounts the slot.
+  // Volatile (lives in the per-wiki temp), shadows no writable fallback. The bag-paths cascade reads
+  // these to route by prefix to the wiki's OWN per-wiki live layers — the address tells
+  // the truth (no global slot names).
+  //
+  // Pointer and corpus seeds share the shore queue. A `then{pointer}` rule dereferences against `$tw.wiki`, and the
+  // temp store emits each put when it lands — to every registered projection. The adaptor carries the
+  // pointers into the wiki on the same seed wave as the corpus, ahead of the seed checkpoint;
+  // an empty write-layer pointer makes unrouted saves raise the alert-rail refusal.
+  if (tempStore) {
+    const writeLayer = handleBySlot.has(wikiSlotUri(slug, "working")) ? defaultWritableSlot(slug) : "";
+    const configSeed: Record<string, string> = {
+      "lar:///ha.ka.ba/lararium/config/current-wiki-bag":      writeLayer,
+      "lar:///ha.ka.ba/lararium/config/current-wiki-temp":     wikiSlotUri(slug, "temp"),
+      "lar:///ha.ka.ba/lararium/config/current-wiki-draft":    wikiSlotUri(slug, "draft"),
+      "lar:///ha.ka.ba/lararium/config/current-wiki-personal": wikiSlotUri(slug, "personal"),
+    };
+    for (const [title, text] of Object.entries(configSeed)) {
+      void tempStore.put({ tiddler: { title, text } }, { kind: "canon-hydrate", receipt: "recipe-boot" });
+    }
+  }
+
+  // Drive existing CRDT state through the projection bus → adaptor → shore queue.
+  for (const { store } of stores) {
+    if (store instanceof AutomergeDocStore) {
+      store.emitInitialReplay();
+      store.markSyncComplete();
+    }
+  }
+
+  const checkpoint = adaptor.armSeedCheckpoint();
+  seedCheckpoints.set(tw5, checkpoint);
+
+  return { adaptor, stores };
+}
+
+/**
+ * THE HYDRATION CHECKPOINT. Resolves once the seed wave `buildIslandRecipe` armed stands in the wiki —
+ * the corpus and the slot pointers both. The kernel awaits it between the recipe and `behavior.onEa`, so
+ * behavior arms over a resident seed and its first write finds every slot named. An engine no recipe was
+ * built over holds no checkpoint, and asking for one refuses by name: a seed nobody queued must never
+ * read as a seed that landed.
+ */
+export function seedDrained(tw5: TW5Engine): Promise<void> {
+  const checkpoint = seedCheckpoints.get(tw5);
+  if (!checkpoint) throw new Error("island-recipe: no seed checkpoint stands for this engine — build its recipe (`buildIslandRecipe`) before awaiting `seedDrained`");
+  return checkpoint;
+}
+
+const seedCheckpoints = new WeakMap<TW5Engine, Promise<void>>();

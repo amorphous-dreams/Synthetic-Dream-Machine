@@ -1,0 +1,256 @@
+/**
+ * browser-persona-vault.test.ts — the browser persona multitude over REAL IndexedDB + WebCrypto.
+ *
+ * PLURALITY PONO at the identity layer: a human wears a SET of personas, so the browser vault holds a SET
+ * of PersonaGroup-roots keyed by handle-index, WEARS one at a time, and MAY switch. These tests stand the
+ * browser adapter (makeBrowserIdbPersonaVault) against the SAME mesh core the node fs vault rides, over the
+ * origin's real IDB and WebCrypto — no mock, no fake-indexeddb.
+ *
+ * The load-bearing claims:
+ *   · a multitude of two DISTINCT roots persists + rosters over IDB, and wearing gates on custody-by-type;
+ *   · the founding mints a DISTINCT persona-root as the edge SIGNER (signerDid != deviceDid) — the
+ *     self-sign floor is gone, replaced by the two-key atom (device inits keyhive; persona-root signs the edge);
+ *   · a fresh browser founds ONE persona (not the self-signed floor), and the worn root selects which
+ *     binding feeds the worker;
+ *   · a joinee (no root) reads its persona through the anchor, never a root it lacks.
+ */
+import { describe, test, expect, afterEach } from "vitest";
+import { Repo } from "@automerge/automerge-repo";
+import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import {
+  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
+  generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed,
+  wearBrowserPersona, loadBrowserActivePersona, listBrowserPersonaRoots,
+  browserPersonaRootExists, browserJoineePersonaIndex,
+  makeBrowserIdbPersonaVault,
+} from "../src/browser-vessel-identity.js";
+import type { IdentityAnchors, DeviceDelegationTiddler, LarDid } from "@lararium/mesh";
+import { readWornPersonaMount } from "@lararium/mesh";
+
+let created = 0;
+const freshIdb = (): string => `lares:test-persona:${Date.now()}:${created++}`;
+const opened = new Set<string>();
+function idb(name?: string): string { const n = name ?? freshIdb(); opened.add(n); return n; }
+
+function deleteIdb(name: string): Promise<void> {
+  return new Promise((resolve) => {
+    const req = indexedDB.deleteDatabase(name);
+    req.onsuccess = req.onerror = req.onblocked = () => resolve();
+  });
+}
+
+afterEach(async () => {
+  for (const n of opened) await deleteIdb(n);
+  opened.clear();
+});
+
+describe("the browser persona multitude over IndexedDB", () => {
+  test("founds a multitude — two DISTINCT roots persist + roster, ascending", async () => {
+    const name = idb();
+    const h0 = await generateOrLoadBrowserPersonaRoot(name, 0);
+    const h1 = await generateOrLoadBrowserPersonaRoot(name, 1);
+    expect(h0.created).toBe(true);
+    expect(h1.created).toBe(true);
+    // DISTINCT: each root is the vessel's OWN sovereign secret (crypto.generate), never a copied key.
+    expect(h0.verifyingKey).not.toBe(h1.verifyingKey);
+    expect(await listBrowserPersonaRoots(name)).toEqual([0, 1]);
+    expect(await browserPersonaRootExists(name, 0)).toBe(true);
+    expect(await browserPersonaRootExists(name, 1)).toBe(true);
+    expect(await browserPersonaRootExists(name, 2)).toBe(false);
+  });
+
+  test("generate-or-load is idempotent per index — a re-mint LOADS, never a fresh key", async () => {
+    const name = idb();
+    const first  = await generateOrLoadBrowserPersonaRoot(name, 0);
+    const second = await generateOrLoadBrowserPersonaRoot(name, 0);
+    expect(first.created).toBe(true);
+    expect(second.created).toBe(false);
+    expect(second.verifyingKey).toBe(first.verifyingKey);
+    expect(await listBrowserPersonaRoots(name)).toEqual([0]);   // one mint → one roster mark, no dup
+  });
+
+  test("wears the second — the selector moves, the root never does", async () => {
+    const name = idb();
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 1);
+    expect(await loadBrowserActivePersona(name)).toBeUndefined();   // no inference from an empty selector
+    await wearBrowserPersona(name, 1);
+    expect(await loadBrowserActivePersona(name)).toBe(1);
+    await wearBrowserPersona(name, 0);
+    expect(await loadBrowserActivePersona(name)).toBe(0);
+    // The roster is untouched by wearing — both roots still held.
+    expect(await listBrowserPersonaRoots(name)).toEqual([0, 1]);
+  });
+
+  test("custody-by-type — wearing a persona whose root this vessel does NOT hold REFUSES", async () => {
+    const name = idb();
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await expect(wearBrowserPersona(name, 5)).rejects.toThrow(/cannot wear persona h5|no persona-root/);
+    expect(await loadBrowserActivePersona(name)).toBeUndefined();   // the refusal moved nothing
+  });
+
+  test("the seed loads only where a root is HELD; an unheld index throws", async () => {
+    const name = idb();
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    const seed = await loadBrowserPersonaRootSeed(name, 0);
+    expect(seed).toBeInstanceOf(Uint8Array);
+    expect(seed.length).toBe(32);
+    await expect(loadBrowserPersonaRootSeed(name, 9)).rejects.toThrow(/no persona-root/);
+  });
+});
+
+describe("the True Name Model — the founding mints a DISTINCT persona-root as the edge signer", () => {
+  let repo: Repo | null = null;
+  afterEach(async () => { await repo?.shutdown(); repo = null; });
+
+  test("a fresh browser founds ONE persona — signerDid is the ROOT, never the device (no self-sign floor)", async () => {
+    const name = idb();
+    repo = new Repo({ sharePolicy: async () => true });
+
+    // The exact subsequence open-browser-vessel runs on FOUND: device key inits keyhive; a distinct
+    // persona-root signs the edge; the vessel wears the founded root.
+    const device = await generateOrLoadBrowserVesselIdentity(name, "Test Operator");
+    const vesselSeed = await loadBrowserSigningSeed(name);
+    const root = await generateOrLoadBrowserPersonaRoot(name, 0);
+    const signerSeed = await loadBrowserPersonaRootSeed(name, 0);
+    await wearBrowserPersona(name, 0);
+
+    const f = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
+      repo,
+      vesselSeed,
+      vesselVerifyingKey: device.verifyingKey,
+      vesselDisplayName: "Test Operator",
+      binding: { mode: "self-stood", signerSeed },
+      hearthTrueName: "",
+      nexusPubkey: device.verifyingKey,
+    });
+
+    // signerDid = "0x" + <signer verifying-key hex>. The persona-root SIGNS, so it is the root's DID —
+    // DISTINCT from the device DID. The self-signed floor (signerDid == deviceDid) is gone.
+    expect(f.signerDid).toBe(`0x${root.verifyingKey}`);
+    expect(f.signerDid).not.toBe(`0x${device.verifyingKey}`);
+    expect(f.founderEdge.personaRootDid).toBe(f.signerDid);      // the edge chains to the root
+    expect(f.founderEdge.deviceDid).toBe(`0x${device.verifyingKey}`);  // the delegate is the device
+
+    // A fresh browser founds ONE persona, worn.
+    expect(await listBrowserPersonaRoots(name)).toEqual([0]);
+    expect(await loadBrowserActivePersona(name)).toBe(0);
+  });
+
+  test("the worn root selects which binding feeds the worker — found h0, add + wear h1", async () => {
+    const name = idb();
+    repo = new Repo({ sharePolicy: async () => true });
+
+    const device = await generateOrLoadBrowserVesselIdentity(name, "Op");
+    const vesselSeed = await loadBrowserSigningSeed(name);
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    const signer0 = await loadBrowserPersonaRootSeed(name, 0);
+    await wearBrowserPersona(name, 0);
+    await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
+      repo, vesselSeed, vesselVerifyingKey: device.verifyingKey,
+      vesselDisplayName: "Op", binding: { mode: "self-stood", signerSeed: signer0 }, hearthTrueName: "", nexusPubkey: device.verifyingKey,
+    });
+
+    // The multitude grows: mint h1 and WEAR it. The worker-reach selector (browserJoineePersonaIndex)
+    // now names h1 — the worn root the daemonAuth binding threads.
+    const h1 = await generateOrLoadBrowserPersonaRoot(name, 1);
+    expect(h1.created).toBe(true);
+    await wearBrowserPersona(name, 1);
+    expect(await browserJoineePersonaIndex(name)).toBe(1);
+    expect(await loadBrowserActivePersona(name)).toBe(1);
+    expect(await listBrowserPersonaRoots(name)).toEqual([0, 1]);
+  });
+});
+
+describe("the joinee-wear path — a joinee reads its persona through the anchor, never a root", () => {
+  test("no root held → listRoots is empty; the joinee index reads the ANCHOR", async () => {
+    const name = idb();
+    const vault = await makeBrowserIdbPersonaVault(name);
+    // A joinee's vault holds NO root (root-on-founder).
+    expect(await vault.listRoots()).toEqual([]);
+    expect(await browserJoineePersonaIndex(name)).toBeUndefined();   // neither founder nor admitted yet
+
+    // The admit lands exactly one anchor set at the admitted index — public doc-ids, no secret.
+    const anchors: IdentityAnchors = {
+      personaGroupId: "aa11", meshCabalDocIdHex: "bb22",
+    };
+    vault.anchors.save(3, anchors);
+    expect(vault.anchors.list()).toEqual([3]);      // the in-process snapshot is authoritative at once
+    expect(vault.anchors.load(3)).toEqual(anchors);
+
+    // The joinee-index read spins a FRESH vault (re-primed from IDB), so let the fire-and-forget write-
+    // through land — the real joinee reads anchors a prior admit session persisted, never a same-tick save.
+    await new Promise((r) => setTimeout(r, 50));
+    // The joinee reads "which persona am I" from the anchor — a root it never held.
+    expect(await browserJoineePersonaIndex(name)).toBe(3);
+    expect(await listBrowserPersonaRoots(name)).toEqual([]);   // still no root — custody-by-type intact
+  });
+
+  test("the anchor snapshot re-primes from IDB across a fresh vault handle (write-through persisted)", async () => {
+    const name = idb();
+    const first = await makeBrowserIdbPersonaVault(name);
+    first.anchors.save(2, { personaGroupId: "d1", meshCabalDocIdHex: "d2" });
+    // Give the fire-and-forget write-through a moment to reach IDB, then re-prime a NEW vault handle.
+    await new Promise((r) => setTimeout(r, 50));
+    const second = await makeBrowserIdbPersonaVault(name);
+    expect(second.anchors.list()).toEqual([2]);
+    expect(second.anchors.load(2)?.personaGroupId).toBe("d1");
+  });
+});
+
+/**
+ * THE WEAR-REBOOT MOUNT-SWITCH, BROWSER SIDE. The reading is mesh's, over the `PersonaVault` both vessel
+ * classes implement — so this suite proves the browser adapter answers the node's question identically.
+ * Before it, the browser read the worn index and only LOGGED it while the binding beneath stayed the
+ * founding face's: a log that claimed what the code did not do.
+ */
+describe("the worn mount over the browser IDB vault", () => {
+  const edgeFor = (rootDid: string): DeviceDelegationTiddler => ({
+    kind: "device-delegation",
+    personaRootDid: rootDid as LarDid,
+    deviceDid: "0xbb22" as LarDid,
+    deviceVerifyingKey: "cc".repeat(32),
+    hearthTrueName: "",
+    boundEpoch: "1",
+    signature: "dd".repeat(64),
+  });
+  const anchorsFor = (n: number, withMount: boolean): IdentityAnchors => ({
+    personaGroupId: `aa${n}`, meshCabalDocIdHex: `bb${n}`,
+    // A FULL MOUNT IS FOUR PINS. The veil tag joined the set: a face's founder-veil derives from
+  // (vesselSeed × tag) and the tag mints fresh per founding, so mounting a face without its own tag would
+  // leave the FOUNDING face's veil standing over it. Both vessel classes read one law, so both fixtures
+  // carry four — this file is the browser twin of lararium-node's multi-persona fixture.
+  ...(withMount ? { signerDid: `0xdid${n}`, personaKelPrefix: `EKEL${n}`, deviceEdge: edgeFor(`0xdid${n}`), veilTag: `veil-h${n}` } : {}),
+  });
+
+  test("★ a worn NON-founding persona resolves ITS OWN mount material from its anchors ★", async () => {
+    const name = idb();
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 1);
+    const vault = await makeBrowserIdbPersonaVault(name);
+    vault.anchors.save(1, anchorsFor(1, true));
+    await wearBrowserPersona(name, 1);
+
+    const worn = await readWornPersonaMount(vault);
+    expect(worn?.handleIndex).toBe(1);
+    expect(worn?.signerDid).toBe("0xdid1");
+    expect(worn?.personaKelPrefix).toBe("EKEL1");
+    expect(worn?.personaGroupId, "the switched face's OWN group").toBe("aa1");
+    expect(worn?.deviceEdge.kind).toBe("device-delegation");
+  });
+
+  test("CONTROL — the FOUNDING face resolves NO switch, and a half-anchor never re-pins", async () => {
+    const name = idb();
+    await generateOrLoadBrowserPersonaRoot(name, 0);
+    await generateOrLoadBrowserPersonaRoot(name, 1);
+    const vault = await makeBrowserIdbPersonaVault(name);
+
+    vault.anchors.save(0, anchorsFor(0, true));
+    await wearBrowserPersona(name, 0);
+    expect(await readWornPersonaMount(vault), "h0's pins already name it").toBeNull();
+
+    vault.anchors.save(1, anchorsFor(1, false));   // doc-ids only — no signer, prefix or edge
+    await wearBrowserPersona(name, 1);
+    expect(await readWornPersonaMount(vault), "a half-anchor never re-pins a mount").toBeNull();
+  });
+});

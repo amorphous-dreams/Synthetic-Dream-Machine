@@ -1,6 +1,6 @@
 /**
  * lar-sigil-shared — shared helpers for the three lar-sigil wikirule
- * modules (lar-sigil-block, lar-sigil-inline, lar-doctype-comment).
+ * modules (lar-sigil-block, lar-sigil-inline, lar-declaration).
  *
  * Each rule file lives in its own module-type:wikirule tiddler so TW5's
  * standard plugin loader registers them via the canonical
@@ -10,11 +10,30 @@
  * tiddler — Vite inlines the imports).
  */
 
-import type { GrammarRules } from "@lararium/core";
+import type { GrammarRules } from "../meme-ast/types.js";
+import type { MemeDiagnostic } from "../meme-ast/diagnostics.js";
+import { fencedSpans, inMask, type MaskSpan } from "@lararium/memetic-frame";
+
+/**
+ * A parse-tree attribute, in the shapes TiddlyWiki's own parser emits.
+ *
+ * A sigil's named parameters reach their definition through these, so the four kinds a call can bind
+ * — a plain string, a text reference, a filter, a substitution — each keep the type that makes them
+ * mean what they say. Flattening one to a string renders its source text instead of its value.
+ */
+export type ParseTreeAttribute =
+  | { type: "string";      value: string }
+  | { type: "indirect";    textReference: string }
+  | { type: "filtered";    filter: string }
+  | { type: "substituted"; rawValue: string }
+  // A `macro` value carries a parsed CALL, never text. Core spells the inner node `transclude`
+  // (`parseMacroInvocationAsTransclusion`), and this side never spells it — the parse tree is the
+  // oracle for its own shape.
+  | { type: "macro";       value: ParseTreeNode };
 
 export interface ParseTreeNode {
   readonly type:        string;
-  readonly attributes?: Record<string, { type: "string"; value: string }>;
+  readonly attributes?: Record<string, ParseTreeAttribute>;
   readonly children?:   ParseTreeNode[];
   readonly text?:       string;
 }
@@ -22,6 +41,8 @@ export interface ParseTreeNode {
 export interface WikiParser {
   source: string;
   pos:    number;
+  /** The core parse-diagnostics hook: a rule surfaces a recovery it performed rather than swallowing it. */
+  addDiagnostic?: (diagnostic: MemeDiagnostic) => void;
 }
 
 export interface RuleInstance {
@@ -32,12 +53,32 @@ export interface RuleInstance {
   attrs?:    Record<string, string>;
 }
 
-export const ANY_OPEN_RE = /<<~[^\n]*?>>/g;
+// Two opener marks, one decision on the THIRD character: `~` opens the speaking set (the sharktooth
+// carries a verb), `^` opens the CONTROL set (caret notation — `^A`=SOH, `^B`=STX, `^C`=ETX, `^D`=EOT,
+// the received way of writing exactly these characters since teletypes). One character still decides,
+// five ways: `<<~` sigil · `<<^` control · `<<!` declaration · `<<<` quote fence · `<<x` macrocall.
+// `!` never opens a macro name, so the fifth costs the one-character decision nothing.
+export const SIGIL_OPEN_MARKS = "~^";
+/** True when a sigil of EITHER set opens at `pos`. */
+export function opensSigilAt(source: string, pos: number): boolean {
+  return source.startsWith("<<~", pos) || source.startsWith("<<^", pos) || source.startsWith("<<fragment", pos);
+}
+/** The next opener of either set at or after `from`, or -1. */
+export function indexOfSigilOpen(source: string, from: number): number {
+  const a = source.indexOf("<<~", from);
+  const b = source.indexOf("<<^", from);
+  const c = source.indexOf("<<fragment", from);
+  if (a < 0) return b;
+  if (b < 0) return c < 0 ? a : Math.min(a, c);
+  if (c < 0) return Math.min(a, b);
+  return Math.min(a, b, c);
+}
+export const ANY_OPEN_RE = /<<[~^][^\n]*?>>/g;
 
 // Child-slot sigil names present at bootstrap (before grammar loads from tiddlers).
-// ahu: deserializer emits <<~ ahu … >>…<<~/ahu >> blocks; must be recognised at cold boot.
-// kau: JS widget, only appears in live wiki (post-grammar-load); grammar supplies it via kind="child-slot".
-const BUILTIN_CHILD_SLOTS = new Set<string>(["ahu"]);
+// ahu: deserializer emits <<~ ahu …>>…<<~/ahu>> blocks; must be recognised at cold boot.
+// kau: TW5 \widget tiddler (sigil-kau.tid), only appears in live wiki (post-grammar-load); grammar supplies it via kind="child-slot".
+const BUILTIN_CHILD_SLOTS = new Set<string>(["ahu", "fragment"]);
 
 /** Returns the set of child-slot sigil names from the grammar registry. */
 export function grammarChildSlotNames(grammar: GrammarRules | null): Set<string> {
@@ -55,92 +96,141 @@ export interface CompoundSigilMatch {
   readonly name:     string;        // dispatch name: "kahea~ahu" | "kahea" | "ahu" | "loulou" | …
   readonly p1:       string;        // first positional arg (slot, uri, or raw args)
   readonly closeKey: string | null; // BLOCK_CLOSERS key for body capture: word1 for compound+bare-slot, null for leaf
+  readonly hasBang:  boolean;       // opened `<<~!` — the caller gates this to pragma-kind heads
 }
 
-// Matches <<~ WORD [WORD2] ARGS >> for any simple sigil invocation.
-// Does not match pranala (arrow syntax, handled by matchPranalaOpenAt).
-// Does not match control chars or <<~! pragma forms (no leading \s+ match).
-const COMPOUND_OPEN_RE = /<<~\s+(\\?[\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
+// Matches <<~ WORD [WORD2] ARGS>> for any simple sigil invocation, and its optional `<<~!` pragma
+// spelling (group 1) — the caller GATES the bang to pragma-kind heads alone (matchCompoundSigilAt's
+// own `pragmaKindNames` parameter); a bang on any other head never reaches this dispatch.
+// Does not match pranala (arrow syntax, handled by matchPranalaOpenAt) or control chars.
+// ── AN ENGLISH MIRROR IS A PURE NAME ─────────────────────────────────────────────────────────────
+// RULED: a mirror of a sigil name reasons as a Name — `link`, never `\link`. The slashed spelling
+// named nothing of its own; it aliased TiddlyWiki's pragma punctuation into a namespace that already
+// had a word for the thing. A slashed form now reaches no definition and falls to the gradient,
+// rendering as the text an author wrote, which is what an unknown sigil owes a reader.
+const COMPOUND_OPEN_RE = /<<~(!)?\s+([\w-]+)(?:\s+([^\n]*?))?\s*>>/g;
+
+// ── A SIGIL ENDS AT ITS OWN `>>`, NEVER AT ONE ITS VALUE CARRIES ─────────────────────────────────
+// A lazy scan for the first `>>` reads a value's closer as the call's. MEASURED against the vendored
+// core: `<<nprobe alpha=<<greeting>> >>` renders `N=Aloha`, while the sigil form rendered
+// `A=&lt;&lt;greeting` and spilled the leftover `>>` into the page as an empty blockquote — the value
+// flattened AND the call truncated. Five LIVE `<<~ has …>>` sigils carry `>>` inside a quoted value
+// and lose it the same way.
+//
+// TiddlyWiki's own `parseMacroParametersAsAttributes` consumes a string literal whole and a macro
+// value through `parseMacroInvocationAsTransclusion`, so neither can close the call it sits in. This
+// walk reads to the same boundary.
+//
+// A QUOTE WITH NO PARTNER ON THE LINE IS A CHARACTER. Measured: `Phonology=don't` hands the parser
+// `don`, and a walk that took the apostrophe as a literal opener would swallow the rest of the call.
+// An opener reads on ONE line — the width every other reader here already stands on.
+/**
+ * Index just past the `>>` that closes the sigil opening at `start`, or -1 where none stands.
+ *
+ * Dispatches on the character before comparing any delimiter — this walk runs once per sigil across
+ * the whole corpus, and a per-character list scan showed up as corpus-walk time in the suite.
+ */
+export function sigilOpenEnd(source: string, start: number): number {
+  const nl      = source.indexOf("\n", start);
+  const lineEnd = nl < 0 ? source.length : nl;
+  /** Past `close` when it stands on this line, else -1. */
+  const skip = (from: number, close: string): number => {
+    const at = source.indexOf(close, from);
+    return at >= 0 && at < lineEnd ? at + close.length : -1;
+  };
+  let i = start + 2;   // past the `<<` of the sigil's own mark
+  let depth = 0;
+  while (i < lineEnd) {
+    const c = source[i]!;
+    if (c === '"' || c === "'" || c === "[" || c === "<" || c === ">") {
+      const triple = c === '"' && source.startsWith('"""', i);
+      const open   = triple ? '"""' : c === "[" ? "[[" : c === "<" ? "<<" : c === ">" ? ">>" : c;
+      // a lone `[`, `<` or `>` carries no span and no depth — an ordinary character
+      if (open.length === 2 && !source.startsWith(open, i)) { i += 1; continue; }
+      if (open === "<<") { depth += 1; i += 2; continue; }
+      if (open === ">>") {
+        if (depth === 0) return i + 2;
+        depth -= 1; i += 2; continue;
+      }
+      const past = skip(i + open.length, open === "[[" ? "]]" : open);
+      i = past >= 0 ? past : i + 1;   // no partner on the line: an ordinary character
+      continue;
+    }
+    i += 1;
+  }
+  return -1;
+}
 
 /**
- * Generic compound-sigil opener. Replaces the former matchAhuOpenAt +
- * matchUriFormSigilAt pair. Child-slot detection uses the grammar registry
+ * Generic compound-sigil opener for the matchAhuOpenAt + matchUriFormSigilAt
+ * forms. Child-slot detection uses the grammar registry
  * rather than hardcoded names, so new slot types (kau, future) require
  * only a TOML [[sigils]] entry with kind="child-slot".
  *
- *   <<~ ahu #slot >>           → name="ahu",       p1="#slot",  slotType="ahu"
- *   <<~ kahea ahu #slot >>     → name="kahea~ahu", p1="#slot",  slotType="ahu"
- *   <<~ aka   ahu #slot >>     → name="aka~ahu",   p1="#slot",  slotType="ahu"
- *   <<~ kahea lar:///uri >>    → name="kahea",     p1=uri,      slotType=null
- *   <<~ loulou lar:///uri >>   → name="loulou",    p1=uri,      slotType=null
- *   <<~ kau #dev DeviceName >> → name="kau",       p1=rest,     closeKey="kau"
- *   <<~ kahea kau #dev >>      → name="kahea~kau", p1="#dev",   closeKey="kahea"
+ *   <<~ ahu #/slot>>           → name="ahu",       p1="#/slot",  slotType="ahu"
+ *   <<~ kahea ahu #/slot>>     → name="kahea~ahu", p1="#/slot",  slotType="ahu"
+ *   <<~ aka   ahu #/slot>>     → name="aka~ahu",   p1="#/slot",  slotType="ahu"
+ *   <<~ kahea lar:///uri>>     → name="kahea",     p1=uri,       slotType=null
+ *   <<~ loulou lar:///uri>>    → name="loulou",    p1=uri,       slotType=null
+ *   <<~ kau #/dev DeviceName>> → name="kau",       p1=rest,      closeKey="kau"
+ *   <<~ kahea kau #/dev>>      → name="kahea~kau", p1="#/dev",   closeKey="kahea"
  */
 export function matchCompoundSigilAt(
-  source:         string,
-  start:          number,
-  childSlotNames: Set<string>,
+  source:          string,
+  start:           number,
+  childSlotNames:  Set<string>,
+  pragmaKindNames: Set<string> = new Set(),
 ): CompoundSigilMatch | null {
   COMPOUND_OPEN_RE.lastIndex = start;
   const m = COMPOUND_OPEN_RE.exec(source);
   if (!m || m.index !== start) return null;
-  const word1 = m[1]!.replace(/^\\/, "");
-  // pranala is a permanent JS exception: its <<~ pranala FROM -> TO >> arrow syntax
-  // is structurally distinct from <<~ WORD ARGS >> and cannot collapse into compound.
+  // The head regex names the sigil; `sigilOpenEnd` says where the CALL ends, since a value may carry
+  // a `>>` of its own.
+  const end = sigilOpenEnd(source, start);
+  if (end < 0) return null;
+  const hasBang = m[1] !== undefined;
+  const word1 = m[2]!;
+  // A `<<~!` pragma spelling reaches this dispatch ONLY for a head the grammar kinds `pragma` /
+  // `pragma-alias` (wehe/kumu/helu/widget and their mirrors) — every other head's bang never
+  // matched here before this dispatch widened to admit it, and still does not.
+  if (hasBang && !pragmaKindNames.has(word1)) return null;
+  // PRANALA CARRIES TWO TYPED ENDS. This reader hands back one undifferentiated `rest`, and an edge
+  // needs its `from` told apart from its `to`: whoever reads whichever address comes first reads the
+  // SOURCE, and a graph built on that points backwards. `matchPranalaOpenAt` types the two ends, so
+  // pranala routes there.
   if (word1 === "pranala") return null;
-  const rest = (m[2] ?? "").trim();
+  const rest = source.slice(start + m[0].indexOf(word1) + word1.length, end - 2).trim();
 
   if (childSlotNames.has(word1)) {
-    // bare child-slot: <<~ ahu #slot >> or <<~ kau #device … >>
-    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, closeKey: word1 };
+    // bare child-slot: <<~ ahu #/slot>> or <<~ kau #/device …>>
+    return { start: m.index, end, name: word1, p1: rest, closeKey: word1, hasBang };
   }
-  // peek at the first token of rest to detect a compound: <<~ kahea ahu #slot >>
+  // peek at the first token of rest to detect a compound: <<~ kahea ahu #/slot>>
   const spaceIdx  = rest.search(/\s/);
   const word2     = spaceIdx >= 0 ? rest.slice(0, spaceIdx) : rest;
   const remainder = spaceIdx >= 0 ? rest.slice(spaceIdx).trim() : "";
   if (word2 && childSlotNames.has(word2)) {
-    // closeKey = word1 (e.g. "kahea") — the compound block closes with <<~/kahea >>, not <<~/ahu >>
-    return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: `${word1}~${word2}`, p1: remainder, closeKey: word1 };
+    // closeKey = word1 (e.g. "kahea") — the compound block closes with <<~/kahea>>, not <<~/ahu>>
+    return { start: m.index, end, name: `${word1}~${word2}`, p1: remainder, closeKey: word1, hasBang };
   }
-  // simple leaf: <<~ kahea lar:///uri >> or <<~ loulou … >>
-  return { start: m.index, end: COMPOUND_OPEN_RE.lastIndex, name: word1, p1: rest, closeKey: null };
-}
-
-/**
- * Pranala-header form: `<<~ ? -> uri >>` — the carrier-to-canonical edge
- * declared at the top of a meme. Distinct from URI-form aka/kahea/loulou
- * because the leading "?" is a special token (this carrier itself), not a
- * sigil keyword.
- */
-export const PRANALA_HEADER_RE = /<<~\s*\?\s*->\s*(\S+)\s*>>/g;
-
-export interface PranalaHeaderMatch {
-  readonly start: number;
-  readonly end:   number;
-  readonly uri:   string;
-}
-
-export function matchPranalaHeaderAt(source: string, start: number): PranalaHeaderMatch | null {
-  PRANALA_HEADER_RE.lastIndex = start;
-  const m = PRANALA_HEADER_RE.exec(source);
-  if (!m || m.index !== start) return null;
-  const [, uri] = m;
-  return {
-    start: m.index,
-    end:   PRANALA_HEADER_RE.lastIndex,
-    uri:   uri!,
-  };
+  // simple leaf: <<~ kahea lar:///uri>> or <<~ loulou …>>
+  return { start: m.index, end, name: word1, p1: rest, closeKey: null, hasBang };
 }
 
 /**
  * Pranala edge sigil — explicit edge with from/to and optional slot/family/role.
  *
- * Inline form:  `<<~ pranala #name? <from> -> <to> [family:f] [role:r] >>`
- * Block form:   `<<~ pranala #name? <from> -> <to> >>body<<~/pranala >>`
+ * Inline form:  `<<~ pranala #name? from=A -> to=B [family=f] [role=r]>>`
+ * Block form:   `<<~ pranala #name? from=A -> to=B>>body<<~/pranala>>`
  *
  * The two forms share opener parsing; closer presence distinguishes them.
  */
-export const PRANALA_OPEN_RE = /<<~\s*pranala\s+(?:(#[\w-]+)\s+)?(\S+)\s*->\s*(\S+)((?:\s+\w+:[^\s>]+)*)\s*>>/g;
+// THE QUOTE IS NOT PART OF THE VALUE, AND THIS RULE STANDS ON THE RENDER PATH. TiddlyWiki types
+// `to=lar:///x` and `to="lar:///x"` identically, and the corpus writes the quoted form — an unquoted
+// `lar:///x` in a positional slot would bind a phantom parameter (tw5-calls-colon-caveat). A capture
+// that kept the pair renders the quote marks into the address a reader clicks.
+export const PRANALA_OPEN_RE =
+  /<<~\s*pranala\s+(?:(#[\w-]+)\s+)?from="?([^"\s>]+)"?\s*->\s*to="?([^"\s>]+)"?((?:\s+\w+=(?:"[^"]*"|[^\s>]+))*)\s*>>/g;
 
 export interface PranalaOpenMatch {
   readonly start:  number;
@@ -158,10 +248,12 @@ export function matchPranalaOpenAt(source: string, start: number): PranalaOpenMa
   const [, slot, from, to, tail] = m;
   const attrs: Record<string, string> = {};
   if (tail) {
-    const attrRe = /(\w+):([^\s>]+)/g;
+    // …and the trailing parameters take the same law: a quoted value hands back its interior.
+    const attrRe = /(\w+)="([^"]*)"|(\w+)=([^\s>]+)/g;
     let am: RegExpExecArray | null;
     while ((am = attrRe.exec(tail)) !== null) {
-      attrs[am[1]!] = am[2]!;
+      if (am[1] !== undefined) attrs[am[1]] = am[2]!;
+      else attrs[am[3]!] = am[4]!;
     }
   }
   return {
@@ -185,7 +277,7 @@ export function matchPranalaOpenAt(source: string, start: number): PranalaOpenMa
  * via buildClosers() + closePatternToTag() from the TOML registry.
  *
  * Boot-critical:
- *   ahu      — deserializer emits <<~ ahu … >>…<<~/ahu >> blocks at cold boot
+ *   ahu      — deserializer emits <<~ ahu …>>…<<~/ahu>> blocks at cold boot
  *   pranala  — permanent JS exception; no TOML entry; always static
  *   kahea    — kahea-invoke block form needed before grammar tiddlers load
  *
@@ -199,6 +291,56 @@ export const BLOCK_CLOSERS: Record<string, string> = {
   kahea:   "<<~/kahea",
 };
 
+// ── A CLOSER BELONGS TO ONE OPENER ───────────────────────────────────────────────────────────────
+// One scan, two readings of the same name: `<<~/name…>>` closes, `<<~ name…>>` opens. A closer
+// spells its slash TIGHT against the mark with the name immediately after — `closePatternToTag`
+// emits exactly that shape and the corpus writes 4005 of them — so `<<~/ ahu>>` names nothing. An
+// opener reads on ONE line, the width `COMPOUND_OPEN_RE` and `ANY_OPEN_RE` already read.
+const closeOrOpenRe = (name: string): RegExp =>
+  new RegExp(`<<~(?:\\/(${name})(?![\\w-])[^>]*?>>|\\s*(${name})(?![\\w-])(?:[^\\n]*?)?>>)`, "g");
+
+/** Quoted-code spans of the carrier the walk is scanning; one entry, because a parse walks one source. */
+let maskedSource: string | null = null;
+let maskedSpans: MaskSpan[] = [];
+function quotedSpansOf(source: string): MaskSpan[] {
+  if (maskedSource !== source) { maskedSource = source; maskedSpans = fencedSpans(source); }
+  return maskedSpans;
+}
+
+/**
+ * The end of the closer belonging to the opener whose own `>>` ended at `fromPos`, or null.
+ *
+ * ── WHY A WALK AND NOT AN indexOf ────────────────────────────────────────────────────────────────
+ * `indexOf` answers "where does the first closer of this name stand later in the carrier", which
+ * matches "where does THIS body end" only while a name opens at most once per carrier. The shelf
+ * declares `lar-close-pattern` on thirty-one sigils and `buildClosers` merges every one, so
+ * thirty-one names reach a body capture: a LEAF call — `<<~ meme "lar:///x">>`, no closer of its own
+ * — standing before an unrelated block of the same name took that block's closer and swallowed every
+ * byte between them into one body. The corpus does not write that shape today; chat turns, ingested
+ * documents and operator drafts reach the same rule.
+ *
+ * ── THE LAW ─────────────────────────────────────────────────────────────────────────────────────
+ * The closer that closes an opener stands at DEPTH ZERO: each further opener of the same name claims
+ * the next closer first, so a nearer opener always wins its closer and an opener whose closer another
+ * opener claimed closes nothing. Nested blocks of one kind capture correctly, which a first-match
+ * scan cannot do at all.
+ *
+ * ── AND A QUOTED SIGIL OPENS NOTHING ────────────────────────────────────────────────────────────
+ * Measured over 700 carriers: teaching docs write `<<~ ahu #example>>` and `# <<~/ahu>>` inside
+ * fences, and 15 captures ENDED at a closer the operator was merely SHOWING — a section truncated
+ * mid-body while the render read clean. Quoted spans mask, the fence-mask law every other structural
+ * scanner on this shore already keeps.
+ *
+ * `ahu-scan` holds this same pairing — masked scan, balanced stack — for the ingest and split paths.
+ * The render path spells it here; the two agree by construction, and a divergence between them
+ * would split one carrier two ways.
+ *
+ * ── WHAT THIS DELIBERATELY DOES NOT DECIDE ──────────────────────────────────────────────────────
+ * Openers and closers of OTHER names pass under the walk untouched. Reading them as structure — a
+ * foreign block's end barring the way — reads a well-formedness the corpus does not carry: 38
+ * sections hold an unpaired closer of another name in plain prose, and a walk that stopped at one
+ * dropped bodies that render correctly today.
+ */
 export function findCloseEnd(
   source: string,
   sigil: string,
@@ -207,22 +349,44 @@ export function findCloseEnd(
 ): number | null {
   const tag = closers[sigil];
   if (!tag) return null;
-  const idx = source.indexOf(tag, fromPos);
-  if (idx === -1) return null;
-  const closingEnd = source.indexOf(">>", idx + tag.length);
-  if (closingEnd === -1) return null;
-  return closingEnd + 2;
+  // The map holds the tag; the walk needs the NAME it spells, so a caller-supplied tag that names
+  // something else than its key still governs which closer counts.
+  const name = /^<<~\/([A-Za-z][\w-]*)$/.exec(tag)?.[1];
+  if (!name) return null;
+  const spans = quotedSpansOf(source);
+  const re    = closeOrOpenRe(name);
+  re.lastIndex = fromPos;
+  let depth = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(source)) !== null) {
+    // A masked match may span bytes a real token starts inside, so re-seek rather than skip past it
+    // — the same step `maskedExecAll` takes.
+    if (inMask(spans, m.index)) { re.lastIndex = m.index + 1; continue; }
+    if (m[1] !== undefined) {
+      if (depth === 0) return m.index + m[0].length;
+      depth--;
+    } else {
+      depth++;
+    }
+  }
+  return null;
 }
 
-export function findGenericOpenAt(source: string, start: number): { end: number; sigil: string | null } | null {
-  if (!source.startsWith("<<~", start)) return null;
-  ANY_OPEN_RE.lastIndex = start;
-  const m = ANY_OPEN_RE.exec(source);
-  if (!m || m.index !== start) return null;
-  const inner = source.slice(start + 3, m.index + m[0].length - 2).trim();
+export function findGenericOpenAt(
+  source: string,
+  start:  number,
+): { end: number; sigil: string | null; spaced: boolean } | null {
+  if (!opensSigilAt(source, start)) return null;
+  const end = sigilOpenEnd(source, start);
+  if (end < 0) return null;
+  const inner = source.slice(start + 3, end - 2).trim();
   const kwMatch = inner.match(/^[!⊙]?(?:&#x[0-9a-fA-F]+;)?\s*(\\?[a-zA-Z][\w-]*)?/);
   const sigil = kwMatch?.[1]?.replace(/^\\/, "") ?? null;
-  return { end: m.index + m[0].length, sigil };
+  // WHETHER A SPACE FOLLOWS THE SHARKTOOTH. TiddlyWiki reads `<<~name …>>` as its OWN macrocall — a
+  // macro named `~name` — and reads `<<~ name …>>` as nothing at all. The two forms answer to
+  // different owners, so a caller must be able to tell them apart.
+  const spaced = /^<<[~^][ \t]/.test(source.slice(start));
+  return { end, sigil, spaced };
 }
 
 
@@ -248,8 +412,13 @@ export function closePatternToTag(pattern: string): string | null {
   const unescaped = raw.replace(/\\\//g, "/");
   // strip trailing `\s*>>` or `\s+>>` or `>>` — we only need the prefix tag
   const tag = unescaped.replace(/\\s[*+]?>?>?$/, "").replace(/>>$/, "").trimEnd();
-  if (!tag.startsWith("<<~/")) return null;
-  return tag;
+  // ── A DERIVATION THAT FAILS SAYS SO ───────────────────────────────────────────────────────────
+  // `findCloseEnd` scans for this tag with `indexOf`, so anything the reduction could not reduce
+  // travels on as LITERAL TEXT to search for. A guard reading only the `<<~/` prefix passed every
+  // such residue — an optional group, an alternation, a character class — and handed back a tag no
+  // reader could ever write, which then failed silently as "this block has no closer here".
+  // A closer tag spells `<<~/` and a plain sigil name, or it does not exist.
+  return /^<<~\/[A-Za-z][\w-]*$/.test(tag) ? tag : null;
 }
 
 /**
@@ -262,22 +431,17 @@ export function closePatternToTag(pattern: string): string | null {
  * operator-added sigils extend the map at runtime.
  *
  * Name normalisation:
- *   \\name      → name  (pragma-form sigils, e.g. "\\procedure" → "procedure")
- *   kahea-invoke → kahea (TOML splits block+URI kahea into two entries; block
- *                          closer belongs under the "kahea" key that BLOCK_CLOSERS
- *                          and compound closeKey both use)
+ *   \\name → name  (pragma-form sigils, e.g. "\\procedure" → "procedure")
+ *
+ * SharktoothSigil tiddlers carry canonical names directly (e.g. "kahea"). The
+ * sigil-kahea tiddler merges both leaf and block forms under one name.
  */
-const GRAMMAR_NAME_MAP: Record<string, string> = {
-  "kahea-block": "kahea",
-};
-
 export function buildClosers(grammar: GrammarRules | null): Record<string, string> {
   if (!grammar) return BLOCK_CLOSERS;
   const extra: Record<string, string> = {};
   for (const sigil of grammar.sigils) {
     if (!sigil.closePattern) continue;
-    const rawName = sigil.name.replace(/^\\/, "");
-    const name    = GRAMMAR_NAME_MAP[rawName] ?? rawName;
+    const name = sigil.name.replace(/^\\/, "");
     if (name in BLOCK_CLOSERS) continue;
     const tag = closePatternToTag(sigil.closePattern);
     if (tag) extra[name] = tag;
@@ -289,7 +453,7 @@ export function buildClosers(grammar: GrammarRules | null): Record<string, strin
  * Returns the set of inline/edge sigil names registered in the grammar.
  * Used by the generic fallback in lar-sigil findNextMatch as a safety net for
  * <<~WORD>> forms (no space) that compound does not claim. Well-formed HUD
- * sigils use <<~ WORD … >> (space) and are consumed by matchCompoundSigilAt
+ * sigils use <<~ WORD …>> (space) and are consumed by matchCompoundSigilAt
  * before the generic path fires.
  */
 export function grammarInlineSigils(grammar: GrammarRules | null): Set<string> {

@@ -1,0 +1,93 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/the-four-tools">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/mu/the-four-tools.mem"
+l-space   = "stable"
+mana      = 16
+manao     = 17
+manaoio   = 17
+role      = "witness shelf and source braid for the four tools of Chapel Perilous"
+tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/mu/the-four-tools"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/mu/the-four-tools"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/meme-header>>
+
+! The Four Tools Witness Shelf
+
+Source matter moved here.
+Invariant reduced elsewhere.
+The braid remains recoverable here.
+
+<<~/ahu>>
+
+<<~ ahu #/provenance>>
+
+!! Provenance
+
+The tight invariant lives at:
+
+* `lar:///ha.ka.ba/lares/api/mu/the-four-tools`
+
+This shelf retains the local witness braid behind that compact surface.
+
+<<~/ahu>>
+
+<<~ ahu #/witness-texts>>
+
+!! Witness Texts
+
+* ''Robert Anton Wilson'' — Chapel Perilous / //Cosmic Trigger// witness.
+* ''Camden Benares, Count of the 5s'' — //Common Sense Tarot// witness retained by the Floating Librarians of Mu.
+
+<<~/ahu>>
+
+<<~ ahu #/source-braid>>
+
+!! Source Braid
+
+RAW supplies the peril:
+wand of intuition,
+cup of sympathy,
+sword of reason,
+pentacle of valor,
+and the agnostic exit from Chapel Perilous.
+
+The Count of 5s supplies the suit grammar:
+Wands for spirit,
+Cups for feeling,
+Swords for mind,
+Pentacles for matter,
+Major Arcana for the stronger trump current.
+
+Mu braids these into one carry-set:
+four Minor weapons,
+one Major return,
+one clean preference for model agnosticism over paranoia.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-four-tools">>
+<<~ loulou "lar:///ha.ka.ba/lares/library/discordia/mordecai-malignatus/cosmic-trigger-i/chapel-perilous-prologue">>
+<<~ loulou "lar:///ha.ka.ba/lares/library/discordia/the-count-of-5s/common-sense-tarot">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;djUJgf6LY4dWlH1ikut-fvbP4g2iIK93JRC2PNxHwVE
+
+<<^ code="&#x0004;" -> to="?">>

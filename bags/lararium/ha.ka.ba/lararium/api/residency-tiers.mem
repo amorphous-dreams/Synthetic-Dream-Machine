@@ -1,0 +1,157 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/residency-tiers">>
+<<^ code="&#x0002;">>
+
+```toml meta
+approved-on   = "2026-06-01"
+cacheable     = true
+file-path     = "bags/lararium/ha.ka.ba/lararium/api/residency-tiers.mem"
+hydrate       = true
+l-space       = "stable"
+mana          = 17
+manao         = 17
+manaoio       = 15
+namespace     = "&#x0950; &#x0901;"
+revised-on    = "2026-06-01"
+revision-note = "warm (mahana) tier CUT after adversarial+kupono+YIN research; two states (wela/anu) only"
+role          = "load-bearing architectural invariant — ONE island-owned residency model: two-state ʻōlelo thermal axis wela/anu + orthogonal pin-flag; bag residency DERIVED from referencing islands"
+status-why    = "rides the residency substrate; the tier read stands with it"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci", "lifecycle/standing"]
+title         = "lar:///ha.ka.ba/lararium/api/residency-tiers"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/core-claim>>
+
+! Residency Tiers — One Island-Owned Thermal Model
+
+The lararium node holds ''one'' residency model, owned by the ''Island Pool''. The ''island'' (one TW5 VM, one causal island, one wiki) forms the unit of residency. A bag does NOT carry an independent tier; ''a bag's residency DERIVES'' — it reads `wela` if any island whose recipe references it reads `wela`, else `anu`.
+
+''As built, ONE collector records the state.'' `BagStowage` (`packages/lararium-mesh/src/bag-residency.ts`) holds registered grains — bags or wiki islands — in one map. It heats a grain on touch, cools it on idle or cap pressure, and drives the pool through two hooks (heat → `ensureWiki`, cool → `unmountWiki`); the pool stays a pure mount mechanism. The derivation rule stands as a tested function, `deriveBagTemperature`, that no production path calls: UNBUILT as wiring.
+
+Residency decomposes into two orthogonal dimensions, the thermal axis named in ʻōlelo Hawaiʻi:
+
+# ''Temperature'' — a ''two-state'' thermal axis: ''`wela`'' (hot — live + reacting) / ''`anu`'' (cold — torn down, URL known, resume by spawn + `ea`). Names a STATE and how fast it resumes.
+# ''Pin'' — an orthogonal boolean flag. `pinned` means "exempt from cooling." Not a temperature.
+
+`pinned` therefore does NOT rank among `wela`/`anu` — it crosses a separate axis. The always-resident set (identity, admin, active wiki, Session Wiki) reads as ''pinned-wela'': live islands the cooler never touches.
+
+''Two states, not three'' (ruled 2026-06-01, after an adversarial + kupono + YIN research pass). A `warm` (mahana) middle tier stands ''cut'': a suspended Worker keeps its heap, so warm sheds none of the memory this model bounds. The model reads `wela | anu` + pin; #/third-tier-gate holds the reopening condition.
+
+Bag residency lives in the Island Pool concepts (operator ruling): one manager --- the `VesselIslandPool` --- holds the residency tiers.
+
+''"bag" stays a term.'' The collapse touches residency //authority//, not the TW5 vocabulary. A ''bag'' remains the TW5 layer/coordinate — one Automerge document, one axis of the recipe query plan (residency-model, linked in #edges). The collapse leaves ONE residency authority and never a second collector: the methods that pin, hydrate, and cool docs live in `bag-residency.ts` (`BagStowage`), a module that keeps its own name and file (#/derived-bag-residency, ruled 2026-09-18).
+
+<<~/ahu>>
+
+<<~ ahu #/thermal-axis>>
+
+!! Temperature axis — wela / anu
+
+| Tier | ʻŌlelo | Island state | Bag (handle-cache) consequence | Resume cost |
+|---|---|---|---|---|
+| ''wela'' | "hot" | live Worker thread; the TW5 engine and its reaction router running; reacting | referenced docs held in handle-cache | none — already live |
+| ''anu'' | "cold" | no thread, no engine; CRDT bytes only; URL known | handle MAY drop (no wela island references it) | dear — ''spawn + `ea`'' full re-boot (`hoʻowela`) |
+
+Two states. An island runs live (`wela`) or stands torn down (`anu`). UNBUILT: reachability wiring would hold a bag's handle while any `wela` island references it and permit a drop otherwise. The defining contrast: ''a `wela` island RUNS live; an `anu` island RESUMES by spawn.''
+
+<<~/ahu>>
+
+<<~ ahu #/pin-flag>>
+
+!! Pin — the orthogonal sticky flag
+
+`pinned` crosses the temperature axis at right angles. A pinned island stands ''exempt from the cooler'' — it stays `wela` regardless of idle time or cap pressure. `unpinned` islands face LRU + idle-sweep cooling. (Kupono-aligned with Orleans `[KeepAlive]` and Android foreground-service — a flag orthogonal to the importance/age ranking.)
+
+The always-hot set (system-pinned):
+
+* ''identity / admin'' — the operator's sovereign authority surface; the admin VM.
+* ''active wiki'' — the PrimaryWiki the operator currently works in.
+* ''Session Wiki'' — UNBUILT: the proposed `lar_playspace` coordinator would stay pinned-wela and lead recipe order.
+
+As built, each vessel pins at boot the catalog, the oracle, the daemon bag, the lares corpus when it holds one, the worn face's identities, circles and sessions planes, and its home wiki; the node also pins the lararium corpus (`open-node-vessel.ts`, `open-browser-vessel.ts`).
+
+Operator pin/unpin gestures move the flag; they do not carry a Hawaiian transition-verb name (the state change describes itself). Pin holds durable: pin state lives as tiddlers under the daemon bag and rides to operator devices on that doc's own sync surface (no RPC — web2 smell test holds). `writePinTiddler`/`removePinTiddler` (`packages/lararium-tw5/src/vessel-residency-wiring.ts`, driven off the daemon's residency-op pin/unpin branches) persist the tiddler, and `replayPinsFromDaemonDoc` begins restoring pins at boot, ahead of the sweeper's start; neither vessel awaits that replay.
+
+<<~/ahu>>
+
+<<~ ahu #/derived-bag-residency>>
+
+!! Derived bag residency — the collapse
+
+Bags do not run their own tier manager. Residency flows DOWN from islands to the bags their recipes reference — the rule names ''reachability'' (a bag stays live while reachable from a live island root):
+
+> ''A bag is `wela` if any island whose recipe references it is `wela`; otherwise `anu`.''
+
+Consequences (the rule's design, UNBUILT as wiring — no production path derives a bag's temperature from its islands):
+
+* A bag referenced by ANY `wela` island reads ''`wela`'' — its handle stays in cache.
+* A bag referenced by NO `wela` island reads ''`anu`'' — its handle MAY drop (the eviction `automerge-repo` does not do on its own; see [[issue #358|https://github.com/automerge/automerge-repo/issues/358]]).
+* ''Referenced bags inherit liveness.'' `lares` / `lararium` corpus and the session event-bus bag ride in multiple recipes; a wiki's own per-wiki live slots (`wikis/{slug}/{personal,draft,working}`) each bind one recipe. Either way, referenced by the pinned admin/primary/Session islands, they would read ''`wela` by derivation'' and keep their handles while a pinned island holds them. As built, the boot pins each such bag directly.
+
+Two disciplines survive the collapse as bag-level mechanism (driven by the pool, not an independent authority):
+
+* ''Stub-on-oracle-traversal.'' A URL found in `tiddler.text` during traversal does NOT force `find()`/hydration. The bag lands cold (URL known, doc not loaded) until something reads through it. Lazy hydration stays a bag concern; the //tier// belongs to the island.
+* ''Don't drop while syncing.'' No vessel may safely evict a bag mid-replication, even after its referencing island cooled. The handle-drop on island cool MUST check `syncActive` before releasing. As built, `BagStowage.cool` refuses a grain whose `syncActive` flag reads true, and no production caller sets that flag. The bag handle-drop itself reads UNBUILT: the bag grain's evict hook only reports the cool, pending a public eviction API in `automerge-repo` (issue #358).
+
+''Code homing — KEEP-SEPARATE'' (operator ruling 2026-09-18, closing the relocation clause of 2026-06-01). `packages/lararium-mesh/src/bag-residency.ts` stays a module under its own name. It answers ONE question — how a vessel STOWS what it holds — and never folds into the pool. The file names the hazard in its own words: //"A federation-authority doctrine once shared its file and shared none of its types, functions, or imports — a single name over two unrelated questions, which is the shape that lets a reader carry an assumption from one half into the other."// The pool's source states the matching boundary: "the ONE residency collector (BagStowage + per-grain-type dials) owns reachability + the wiki cap... so the pool stays a pure mount mechanism — one authority, no second collector" (`packages/lararium-mesh/src/vessel-island-pool-core.ts`).
+
+''The stowage axis carries its own name'' (`BagStowage`, `lares bag stats`), one of the three lawful moves `one-name-one-relation#/the-unbraiding` names. The collector reaches the pool through two hooks (onHydrate → mount, onEvict → unmount; `packages/lararium-tw5/src/vessel-residency-wiring.ts` wires both). No `causal-island.ts` stands in the tree, and no residency method lives in causal-island code. A relocation reopens only on a fresh, dated ruling.
+
+<<~/ahu>>
+
+<<~ ahu #/transition-verbs>>
+
+!! Transition verbs — Hawaiian
+
+The two transitions across the `wela`/`anu` axis wear Hawaiian per the lararium HUD doctrine:
+
+| Verb | Meaning | Transition | Carrier |
+|---|---|---|---|
+| ''hoʻoanu'' | "to cool" | wela → anu | `IslandMsg_HooAnu` worker signal (`island-protocol.ts`); `cool()` bookkeeping |
+| ''hoʻowela'' | "to heat" | anu → wela | `touch()` heats a bag back to live; resume = `repo.find()` + island `ea` handshake |
+
+Pin/unpin gestures carry no verb name (the state change describes itself). `hoʻoanu` releases the thread and — subject to `syncActive` + the reachability rule — the handles. No warm tier exists; `mahana` / `hoʻomahana` stay undefined (see #third-tier-gate).
+
+<<~/ahu>>
+
+<<~ ahu #/third-tier-gate>>
+
+!! Third tier — the gate
+
+The model holds two tiers (`wela` live / `anu` torn down). A third (warm / frozen) tier enters ONLY when BOTH hold: (a) a //measured// island resume-latency problem under real focus-rotation, AND (b) a definition that genuinely ''sheds memory'' — isolate evicted, handle-cache retained, resume re-instantiates the engine against still-warm handles and skips the `ea` handshake (the bfcache lineage done right). At that point adopt bfcache vocabulary (freeze / resume / evict), a freeze-disqualifier discipline (mid-replication may not freeze), and a second-chance reference bit on the sweeper (as built, the sweeper trims by pure age).
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+
+''Tie ~ apertures, not tiers.'' The living-grammar memory-palace ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]]) selects a
+retrieval APERTURE (turn → session → arc) where this model selects a THERMAL tier (wela/anu) — adjacent
+scale-axes, kept distinct.
+
+''Tie ~ one integrity, three grains.'' `wela`/`anu` enacts at the BAG grain the same pattern integrity
+TW5's `skinny`/`fat` enacts at the TIDDLER grain and the skinny handle enacts at the BODY grain — //carry
+the name, defer the body// ([[hydration-grain|lar:///ha.ka.ba/lararium/api/hydration-grain]]). The
+vocabularies stay distinct (they name different layers); the integrity stays legible across them. That
+reading names the rung the bag grain LACKS — a cheap read before the CRDT hydrates — which enters only
+through #third-tier-gate, and only after the research that meme charges.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;9-MKPTSQAbibdMFiUtKg7QI38S7u0nYQk1EOrT1KncE
+
+<<^ code="&#x0004;" -> to="?">>

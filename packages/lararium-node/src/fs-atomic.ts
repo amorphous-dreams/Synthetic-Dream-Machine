@@ -1,0 +1,91 @@
+/**
+ * fs-atomic — crash-safe file write via write-temp → fsync → rename → fsync-dir.
+ *
+ * A plain `writeFileSync` can be TORN by a crash mid-write, leaving a half-written file — fatal for
+ * watermark/state JSON (a torn idempotency watermark loses exactly-once tracking) and for the identity
+ * keel (anchors + keyhive archive). The cure holds two disciplines together:
+ *   - ATOMICITY: write a sibling temp then `rename` over the target — rename is atomic within one
+ *     filesystem, so a reader/crash sees the whole old file or the whole new one, never a tear.
+ *   - DURABILITY: `fsync` the temp FILE before the rename (its bytes reach disk), then `fsync` the
+ *     containing DIRECTORY after (the rename's dirent survives a crash). `rename` alone gives the
+ *     atomic pointer-swap but NOT durability — a crash can leave the swap or the bytes un-flushed.
+ *
+ * The temp rides the SAME directory as the target (so the rename stays intra-filesystem = atomic) and
+ * carries the pid, so two processes never share a temp path. A sync write runs whole before the next
+ * starts, so the pid alone parts its writers; async writes of one path overlap inside one process, so
+ * each async write's temp also carries its own random suffix.
+ */
+
+import { writeFileSync, renameSync, rmSync, openSync, fsyncSync, closeSync, mkdirSync, chmodSync } from "node:fs";
+import { open, rename, rm } from "node:fs/promises";
+import { dirname } from "node:path";
+import { randomUUID } from "node:crypto";
+
+/**
+ * Async sibling of `atomicWriteFileSync` — the same temp → fsync → rename → fsync-dir
+ * discipline over `fs.promises`, so a hot write path (the CRDT storage adapter's per-chunk
+ * `save`) stays off the sync-blocking calls while still landing every byte durably. A
+ * `FileHandle.sync()` flushes the payload before the rename exposes it; the directory sync
+ * persists the rename's dirent. Same crash-atomicity guarantee, non-blocking shape.
+ */
+export async function atomicWriteFile(path: string, data: string | Uint8Array): Promise<void> {
+  const tmp = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    const fh = await open(tmp, "w");
+    try {
+      await fh.writeFile(data);
+      await fh.sync();                 // flush the payload BEFORE the rename exposes it
+    } finally {
+      await fh.close();
+    }
+    await rename(tmp, path);           // atomic pointer swap
+    // fsync the DIRECTORY so the rename dirent survives a crash. Best-effort — rejects on
+    // some platforms (e.g. Windows), where the filesystem already lands the rename durably.
+    try {
+      const dfd = await open(dirname(path), "r");
+      try { await dfd.sync(); } finally { await dfd.close(); }
+    } catch { /* platform without dir-fsync — rename durability handled by the fs */ }
+  } catch (err) {
+    await rm(tmp, { force: true });    // never leave a stranded temp on failure
+    throw err;
+  }
+}
+
+/**
+ * Atomically + durably write `data` to `path` (temp → fsync → rename → fsync-dir). `tmp` names the sibling
+ * temp when a caller's temp spelling is part of its contract; it must sit in `path`'s directory. On any fault
+ * the temp is removed and the WRITE's error rethrows, so `path` keeps its prior bytes and nothing strands.
+ */
+export function atomicWriteFileSync(path: string, data: string | Uint8Array, tmp = `${path}.${process.pid}.tmp`): void {
+  try {
+    writeFileSync(tmp, data);
+    // fsync the FILE: flush the payload to disk BEFORE the rename exposes it.
+    const fd = openSync(tmp, "r+");
+    try { fsyncSync(fd); } finally { closeSync(fd); }
+    // Atomic pointer swap.
+    renameSync(tmp, path);
+    // fsync the DIRECTORY: persist the rename itself. Best-effort — a dir fsync rejects on some
+    // platforms (e.g. Windows), where the filesystem already lands the rename durably.
+    try {
+      const dfd = openSync(dirname(path), "r");
+      try { fsyncSync(dfd); } finally { closeSync(dfd); }
+    } catch { /* platform without dir-fsync — rename durability handled by the fs */ }
+  } catch (err) {
+    // Never leave a stranded temp on failure. A temp the remove itself cannot clear (a directory planted at
+    // the path) stays, and the write's own error still surfaces rather than the remove's.
+    try { rmSync(tmp, { force: true }); } catch { /* the write's error is the one owed */ }
+    throw err;
+  }
+}
+
+/** The operator-only directory mode: a store holding bearer material is read by its own operator alone. */
+export const OWNER_ONLY_DIR_MODE = 0o700;
+
+/**
+ * Make `dir` (and any missing parents) and hold it at the owner-only mode — RE-MODING a directory that already
+ * stands, since `mkdir`'s mode applies only to a directory it creates.
+ */
+export function ownerOnlyDir(dir: string): void {
+  mkdirSync(dir, { recursive: true, mode: OWNER_ONLY_DIR_MODE });
+  chmodSync(dir, OWNER_ONLY_DIR_MODE);
+}

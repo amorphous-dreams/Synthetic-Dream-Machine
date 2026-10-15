@@ -1,0 +1,313 @@
+/**
+ * library-store — the node-fs shore for the ACQUIRED tier: take a body in, keep it readable, verify it back.
+ *
+ * The pure half (the layout law, the reference grammar, the index) lives in `@lararium/mesh`'s library-tier.
+ * This is the disk: where the tier stands, how a body enters it, and what a verify actually reads.
+ *
+ * ── IT BELONGS TO THE HOUSE, AND THAT IS THE WHOLE POINT ─────────────────────────────────────────
+ * A shelf is the LARARIUM's, never any Lar's — a family's books outlast whoever reads them. So it homes in
+ * `<lararium>`, and everything else follows: the runtime CAS under `<lares>/vessel` is licensed for the wipe by
+ * one premise, that its blobs rebuild from the bags carriers on each seed, and that premise holds for
+ * DERIVED blobs while failing completely for acquired ones — a book regenerates from nothing. Standing in
+ * its own house rather than one directory aside from a house every rite pares is what makes that structural.
+ *
+ * ── ACQUIRING MOVES, IT DOES NOT COPY (by default) ───────────────────────────────────────────────
+ * The point of the act is to get a body OUT of a tracked tree. A copy leaves the original exactly where it
+ * was doing the harm, so `acquire` MOVES and says so; `--keep` exists for a source the operator does not own.
+ *
+ * ── VERIFY READS BYTES, NEVER RECORDS ────────────────────────────────────────────────────────────
+ * A verify that trusted a sidecar would certify its own bookkeeping. This re-digests the body and checks
+ * it against the DIRECTORY name — the one value nothing but a re-write can move — so a tampered record
+ * reads as a mismatch rather than as agreement.
+ *
+ * ── NO SIDECAR: EVERY ENTRY'S RECORD LIVES IN THE COLLECTION'S OWN INDEX ─────────────────────────
+ * Each entry's record rides as its own `#/<cid>` ahu slot INSIDE the collection's index carrier
+ * (`<collection>/index.mem`), typed as a JSON tiddler (`type = "application/json"`, body = the
+ * entry's JSON record) — the same shape `deserializer.ts`'s `splitRecursive` gives any child
+ * slot that declares its own `type` (precedent: `child-declared-type.test.ts`). `acquireIntoLibrary`
+ * reads the current index back through `carrier-render.ts`'s `metaFieldsFromBody` (the SAME fence
+ * reader the root carrier meta already goes through here — `deserializeCarrier` itself stays an
+ * internal tw5 module with no package subpath, by the same design note `carrier-canonical.ts` carries:
+ * exporting it would widen that package's public surface for one caller), upserts this entry, and
+ * renders the whole index again through `canonicalizeCarrierText` — the one door that decides a
+ * carrier's bytes. The index travels as a single coherent carrier.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution
+ */
+
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
+import {
+  parseLibraryRef, metaMatchesDir, libraryRef,
+  mediaTypeFromExt, niUriSha256FromHex, sha256HexBytesSync, type LibraryEntryMeta,
+} from "@lararium/mesh";
+import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
+import { larariumDataHome } from "./vessel-paths.js";
+import { atomicWriteFileSync } from "./fs-atomic.js";
+import { metaFenceAt } from "@lararium/tw5/root-meta";
+
+/**
+ * The acquired tier's home — `<lararium>/library`, which reads `~/.local/share/lararium/library`
+ * loose and `<root>/data/lararium/library` under LAR_ROOT. `LAR_LIBRARY` overrides both.
+ *
+ * BOTH ISOLATION ARMS MATTER. A rehearsal that set only `LAR_LIBRARY` and a rehearsal that set only
+ * `LAR_ROOT` are equally isolated; a comment naming one would send a reader to reach the operator's
+ * real shelf while believing otherwise.
+ *
+ * IT STANDS IN THE SHRINE, NOT THE SPIRIT. Runtime vessel documents and acquired bodies have different
+ * owners. The acquired tier lives under `lararium/`, outside the vessel store, so its bytes do not depend
+ * on the vessel's runtime records.
+ *
+ * The env override exists because a shelf grows without bound and an operator may want it on another
+ * disk — the one resource here likely to outgrow its default.
+ */
+export function larLibraryHome(): string {
+  return process.env["LAR_LIBRARY"] ?? join(larariumDataHome(), "library");
+}
+
+/** Where one collection's bodies stand. Resolution of a `library:<name>` reference, and the only mapping. */
+export function libraryCollectionDir(collection: string): string {
+  return join(larLibraryHome(), collection);
+}
+
+/** Where one collection's own index carrier stands — the shelf's single source of entry records. */
+export function libraryIndexPath(collection: string): string {
+  return join(libraryCollectionDir(collection), "index.mem");
+}
+
+/**
+ * Resolve a `library:<collection>` reference to a directory, or null when the value names something else.
+ * A caller that resolves nothing MUST NOT fall back to a path of its own — that fallback is how a corpus
+ * ends up somewhere nobody chose.
+ */
+export function resolveLibraryRef(ref: string): string | null {
+  const collection = parseLibraryRef(ref);
+  return collection === null ? null : libraryCollectionDir(collection);
+}
+
+/** What an acquire did. `moved` names whether the source left its old home — the reason to run this at all. */
+export interface AcquireOutcome {
+  readonly meta:  LibraryEntryMeta;
+  readonly dir:   string;
+  readonly path:  string;
+  /** True when the body already stood in the tier — a re-acquire is a no-op the caller should see, not a write. */
+  readonly held:  boolean;
+  readonly moved: boolean;
+}
+
+export interface AcquireOptions {
+  readonly collection: string;
+  readonly origin?:    string | undefined;
+  readonly licence?:   string | undefined;
+  readonly note?:      string | undefined;
+  /** Leave the source where it stands. Default MOVES, because moving is the point. */
+  readonly keep?:      boolean;
+}
+
+/**
+ * Take one body into the tier: digest it, site it under `<collection>/<cid>/<name>`, and upsert its
+ * record into the collection's own index carrier.
+ *
+ * IDEMPOTENT BY CONTENT. Acquiring the same bytes twice lands the same directory and rewrites nothing — the
+ * content address decides identity, so a repeated run costs a digest and no disk. A body whose bytes already
+ * stand there still has its SOURCE removed under a move, because the source's continued existence is the
+ * condition being cured.
+ */
+export function acquireIntoLibrary(sourcePath: string, opts: AcquireOptions): AcquireOutcome {
+  const bytes = readFileSync(sourcePath);
+  const cid   = sha256HexBytesSync(bytes);
+  const name  = basename(sourcePath);
+  const ext   = name.includes(".") ? name.slice(name.lastIndexOf(".")) : "";
+  const dir   = join(libraryCollectionDir(opts.collection), cid);
+  const path  = join(dir, name);
+
+  const meta: LibraryEntryMeta = {
+    cid, name, collection: opts.collection, size: bytes.byteLength,
+    mediaType: mediaTypeFromExt(ext),
+    integrity: niUriSha256FromHex(cid),
+    ...(opts.origin  ? { origin:  opts.origin  } : {}),
+    ...(opts.licence ? { licence: opts.licence } : {}),
+    ...(opts.note    ? { note:    opts.note    } : {}),
+  };
+
+  const held = existsSync(path);
+  if (!held) {
+    mkdirSync(dir, { recursive: true });
+    copyFileSync(sourcePath, path);
+  }
+  const entries = new Map(readLibraryIndexEntries(opts.collection));
+  entries.set(cid, meta);
+  writeLibraryIndexEntries(opts.collection, entries);
+
+  // The MOVE completes after the body stands safely in the tier — never before, so a failure mid-act leaves
+  // the operator with the original rather than with neither.
+  const moved = opts.keep !== true;
+  if (moved) rmSync(sourcePath, { force: true });
+  return { meta, dir, path, held, moved };
+}
+
+/** Read one body's record out of its collection's index, or null when the index carries none / a torn one. */
+export function readLibraryMeta(entryDir: string): LibraryEntryMeta | null {
+  const cid        = basename(entryDir);
+  const collection = basename(dirname(entryDir));
+  return readLibraryIndexEntries(collection).get(cid) ?? null;
+}
+
+/** One top-level `#/<cid>` ahu entry block, open tag through its own close — never nested (the index
+ *  mints every entry flat, one slot per body). */
+const AHU_ENTRY_RE = /<<~\s*ahu\s+#\/([0-9a-f]{64})\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
+
+/**
+ * Read a collection's index carrier back into entries, keyed by the SLOT ADDRESS (never by whatever cid
+ * the entry's own JSON claims) — through `metaFieldsFromBody`, the SAME fence reader the root carrier
+ * meta is already read through in this module, never a second hand-rolled JSON-slot grammar. (tw5's
+ * own `deserializeCarrier` stays internal to `@lararium/tw5` with no package subpath — the same
+ * "widens the public surface for one caller" reason `carrier-canonical.ts` already declines to export
+ * it for.)
+ *
+ * A slot that fails to parse as JSON, or does not carry `type: application/json`, or holds neither a
+ * `cid` nor a `name` string, reads ABSENT: it cannot describe itself.
+ */
+function readLibraryIndexEntries(collection: string): ReadonlyMap<string, LibraryEntryMeta> {
+  const path = libraryIndexPath(collection);
+  const out  = new Map<string, LibraryEntryMeta>();
+  if (!existsSync(path)) return out;
+  const text = readFileSync(path, "utf8");
+  for (const m of text.matchAll(AHU_ENTRY_RE)) {
+    const cid      = m[1]!;
+    const slotBody = m[2]!;
+    const fields   = metaFieldsFromBody(slotBody);
+    if (fields["type"] !== "application/json") continue;
+    const fence    = metaFenceAt(slotBody);
+    // `bodyEnd` is the body's own close (the `\n` before the closer); the closer itself is `\n````,
+    // four bytes, and the JSON starts past it.
+    const jsonText = fence ? slotBody.slice(fence.bodyEnd + "\n```".length) : slotBody;
+    try {
+      const parsed = JSON.parse(jsonText.trim()) as LibraryEntryMeta;
+      if (typeof parsed?.cid === "string" && typeof parsed?.name === "string") out.set(cid, parsed);
+    } catch { /* unreadable entry — reads absent */ }
+  }
+  return out;
+}
+
+/** Render + write a collection's index carrier from its full entry set — the one write path. */
+function writeLibraryIndexEntries(collection: string, entries: ReadonlyMap<string, LibraryEntryMeta>): void {
+  const path = libraryIndexPath(collection);
+  mkdirSync(dirname(path), { recursive: true });
+  atomicWriteFileSync(path, renderLibraryIndex(collection, [...entries.values()]));
+}
+
+/** Every collection standing in the tier, ascending. */
+export function listCollections(): string[] {
+  const home = larLibraryHome();
+  if (!existsSync(home)) return [];
+  return readdirSync(home).filter((n) => statSync(join(home, n)).isDirectory()).sort();
+}
+
+/** Every body in one collection, ascending by name. An index with no readable slot for it reads absent. */
+export function listCollection(collection: string): LibraryEntryMeta[] {
+  return [...readLibraryIndexEntries(collection).values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** What a verify found about one body. */
+export interface LibraryVerdict {
+  readonly collection: string;
+  readonly cid:        string;
+  readonly name:       string;
+  readonly ok:         boolean;
+  /** Absent when it verified; otherwise what disagreed. */
+  readonly why?:       string;
+}
+
+/**
+ * Re-digest every body in a collection and check it against its own DIRECTORY name — and check every
+ * directory standing in the tier has an index entry at all.
+ *
+ * It reads the bytes rather than the index's own `cid` field on purpose: checking a record's `cid`
+ * against the directory it stands in would compare two records and certify neither. The digest is the
+ * only reading nothing but a re-write can move.
+ */
+export function verifyCollection(collection: string): LibraryVerdict[] {
+  const dir     = libraryCollectionDir(collection);
+  const entries = readLibraryIndexEntries(collection);
+  const out: LibraryVerdict[] = [];
+  for (const [slotCid, meta] of entries) {
+    if (!metaMatchesDir(meta, slotCid)) { out.push({ collection, cid: slotCid, name: meta.name, ok: false, why: `index claims ${meta.cid} under slot #/${slotCid}` }); continue; }
+    const body = join(dir, slotCid, meta.name);
+    if (!existsSync(body)) { out.push({ collection, cid: slotCid, name: meta.name, ok: false, why: "the index names a body that does not stand" }); continue; }
+    const actual = sha256HexBytesSync(readFileSync(body));
+    out.push(actual === slotCid.toLowerCase()
+      ? { collection, cid: slotCid, name: meta.name, ok: true }
+      : { collection, cid: slotCid, name: meta.name, ok: false, why: `bytes digest ${actual} — the index claims ${slotCid}` });
+  }
+  // A directory standing in the tier with no index entry describing it cannot be audited alone.
+  if (existsSync(dir)) {
+    for (const cidDir of readdirSync(dir).sort()) {
+      if (cidDir === "index.mem" || entries.has(cidDir)) continue;
+      if (!statSync(join(dir, cidDir)).isDirectory()) continue;
+      out.push({ collection, cid: cidDir, name: "(no index entry)", ok: false, why: "no index entry describes this body — the body cannot describe itself" });
+    }
+  }
+  return out;
+}
+
+/**
+ * Render a library collection's INDEX — the tracked, human-readable carrier that says what a
+ * collection holds and how to verify it, with no path riding in it anywhere — through tw5's own
+ * canonical render (`carrier-render.ts`).
+ *
+ * EACH ENTRY IS ITS OWN SLOT, never a markdown table row: a `#/<cid>` ahu block TYPED AS A JSON
+ * TIDDLER (`type = "application/json"` in the slot's own leading `toml meta` fence, body = the JSON
+ * record for that entry), so `<index-uri>#/<cid>` addresses one entry directly, a reader (or
+ * `lares meme`) walks the collection the same way it walks any other carrier's children, and
+ * `deserializeCarrier` hands back that entry as an ordinary tiddler record whose `type` reads
+ * `application/json` and whose `text` parses back to these same fields — the precedent
+ * `deserializer.ts`'s `splitRecursive` already gives any child slot that declares its own `type`
+ * (`child-declared-type.test.ts`). A cid is lowercase hex, which the ahu slot grammar (`[\w-]+`)
+ * admits whole.
+ */
+function renderLibraryIndex(collection: string, entries: readonly LibraryEntryMeta[]): string {
+  const rows = [...entries].sort((a, b) => a.name.localeCompare(b.name));
+  const total = rows.reduce((n, e) => n + e.size, 0);
+  const uri = `lar:///ha.ka.ba/library/${collection}`;
+  const entryBlock = (e: LibraryEntryMeta): string => [
+    `<<~ ahu #/${e.cid}>>`,
+    "",
+    "```toml meta",
+    kv("type", "application/json"),
+    "```",
+    "",
+    JSON.stringify(e, null, 2),
+    "",
+    "<<~/ahu>>",
+  ].join("\n");
+  const body = [
+    "```toml meta",
+    kv("collection", collection),
+    kv("entries", String(rows.length)),
+    kv("bytes", String(total)),
+    "```",
+    "",
+    `! Library — ${collection}`,
+    "",
+    "The ACQUIRED bodies this collection holds. ''The bytes rest outside every tracked tree'' —",
+    "in the vessel's own library tier — so a shelf may grow without a repository growing with it.",
+    "''This index travels instead'': a reader learns what the shelf holds, and how to verify it,",
+    "without holding it.",
+    "",
+    "Each entry below is its own slot, addressable as `<index-uri>#/<cid>`, carrying the RFC-6920",
+    "anchor a stranger checks with no tooling of ours.",
+    "",
+    rows.map(entryBlock).join("\n\n"),
+    "",
+    `Reference this collection as \`${libraryRef(collection)}\` — a name that travels, never a path.`,
+  ].join("\n");
+  return renderCarrier(uri, body);
+}
+
+/** Render a collection's tracked index to a path. The bodies stay out of the repo; this goes in. */
+export function writeLibraryIndex(collection: string, indexPath: string): string {
+  mkdirSync(join(indexPath, ".."), { recursive: true });
+  writeFileSync(indexPath, renderLibraryIndex(collection, listCollection(collection)), "utf8");
+  return indexPath;
+}

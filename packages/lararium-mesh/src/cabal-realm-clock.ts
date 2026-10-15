@@ -1,0 +1,316 @@
+/**
+ * cabal-realm-clock — the CAPTURE-CLOCK: make a realm's maintenance VISIBLE, so the
+ * majority can SEE a minority out-feeding it WHILE it happens (while exit is still
+ * cheap). A pure, verdict-free read over the realm's lease slots.
+ *
+ * The persistence ≠
+ * legitimacy gap is a HARD-BOUND — legitimacy cannot live in the join-gate without the
+ * gate becoming the captured object, so the gate STAYS INERT. The buildable answer is
+ * not prevention but ESCAPE (fork-as-exit) + SIGHT. This module is the SIGHT half: it
+ * instruments who feeds the realm and how hard (free — it reads the liveness signal the
+ * epoch-lease already keeps), turning Hirschman's failure case (silent capture under
+ * apathy) into a readable surface (canon: api/pono/cabal-realm#the-unswept-corner).
+ *
+ * THE BOUNDARY — this clock SURFACES, it never JUDGES. It reports per-maintainer
+ * standing + the spread + the leading-set concentration as raw numbers; it emits NO
+ * "captured" verdict and holds NO threshold. WHAT spread or concentration counts as
+ * capture is the operator's calibration — the legitimacy call cannot be mechanized
+ * without recreating a root. The lens is here; the reading stays
+ * the operator's seat (OPEN).
+ *
+ * What it can and cannot see: the lease is a coordinator-free MAX-REGISTER (current
+ * epoch per writer, no history), so this reads a STANDING at a point in time — who
+ * maintains + how deep each has rolled — not a time-series. Capture shows as a small
+ * leading set far ahead of a trailing majority; repeated reads let the operator watch
+ * the trend. A richer fed-since-when history stands unbuilt.
+ *
+ * Platform-blind: rides ./epoch-lease + ./cabal-realm only. NO node: imports.
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
+ */
+
+import { effectiveLeaseEpoch, rolledLeaseEpoch } from "./epoch-lease.js";
+import { canonicalJsonBytes } from "./crypto.js";
+import { tiddlerText, type LarDoc } from "./base-doc.js";
+import { realmFeedPrefix, realmFeedSlotUri, type CabalRealm } from "./cabal-realm.js";
+import { verifyEd25519 } from "./ed25519-door.js";
+
+/** One maintainer's standing — the writer and how deep it has rolled the realm's lease. */
+export interface MaintainerStanding {
+  readonly writerId: string;
+  readonly epoch:    number;
+}
+
+/**
+ * A realm's maintenance provenance — a verdict-FREE snapshot of who feeds it and how
+ * hard, for the operator (or a UI) to read. Carries the raw spread + leading-set
+ * concentration; it draws NO capture conclusion (that threshold is the operator's).
+ */
+export interface CabalRealmMaintenanceProvenance {
+  /** Every maintainer with a lease slot for this realm, sorted DESC by epoch (leaders first). */
+  readonly maintainers:     readonly MaintainerStanding[];
+  /** The number of distinct maintainers feeding the realm. */
+  readonly maintainerCount: number;
+  /** The effective lease epoch = the deepest-rolled slot (max-register). 0 if unfed. */
+  readonly effectiveEpoch:  number;
+  /** The shallowest maintainer's epoch (0 when none) — the trailing edge. */
+  readonly trailingEpoch:   number;
+  /** effectiveEpoch − trailingEpoch — how far the leaders run ahead of the laggards.
+   *  A large spread with a small leadingCount is the VISIBLE capture signal (read, not judged). */
+  readonly spread:          number;
+  /** How many maintainers sit AT the effective epoch — the size of the leading set.
+   *  Few leaders far ahead of many trailers = a minority out-feeding the realm. */
+  readonly leadingCount:    number;
+}
+
+/**
+ * Read a realm's maintenance provenance from its lease slots — the capture-CLOCK.
+ *
+ * `leaseSlots` is the per-writer slot map (slotUri → epoch string) the realm's writers
+ * maintain (the same map the founding ceremony + lease rolls use). This filters to THIS
+ * realm's slots (by the realm's lease prefix), recovers each writer from its slot URI,
+ * and reports the standing. Pure + total: an empty or all-foreign map reads as an unfed
+ * realm (no maintainers, effective 0).
+ *
+ * Verdict-free by design — see the module header. It hands back numbers; the operator
+ * calibrates what they mean.
+ */
+export function cabalRealmMaintenanceProvenance(
+  realm:      CabalRealm | string,
+  leaseSlots: ReadonlyMap<string, string>,
+): CabalRealmMaintenanceProvenance {
+  // The read wants ONE thing from the realm — its doc id. A reader that holds only the id (a vessel asked
+  // about a realm it does not itself dwell in) may pass the hex, and a caller holding the whole realm may
+  // pass that. Narrowing the demand rather than demanding the whole shape for one field.
+  const realmDocIdHex = typeof realm === "string" ? realm : realm.realmDocIdHex;
+  const prefix = realmFeedPrefix(realmDocIdHex);
+  const maintainers: MaintainerStanding[] = [];
+  for (const [slotUri, value] of leaseSlots) {
+    if (!slotUri.startsWith(prefix)) continue;            // a foreign realm's slot
+    const parsed = readRealmFeedSlot(value);
+    if (!parsed) continue;                                // a malformed slot value
+    const epoch = parsed.epoch;
+    const writerId = decodeURIComponent(slotUri.slice(prefix.length));
+    maintainers.push({ writerId, epoch });
+  }
+  maintainers.sort((a, b) => b.epoch - a.epoch || a.writerId.localeCompare(b.writerId));
+
+  const effectiveEpoch = effectiveLeaseEpoch(maintainers.map((m) => String(m.epoch)));
+  const trailer        = maintainers[maintainers.length - 1];
+  const trailingEpoch  = trailer ? trailer.epoch : 0;
+  const leadingCount   = maintainers.filter((m) => m.epoch === effectiveEpoch && effectiveEpoch > 0).length;
+
+  return {
+    maintainers,
+    maintainerCount: maintainers.length,
+    effectiveEpoch,
+    trailingEpoch,
+    spread: effectiveEpoch - trailingEpoch,
+    leadingCount,
+  };
+}
+
+/**
+ * Gather a realm's per-writer lease slots OFF A BOARD — the doc→map bridge the clock's pure read wants.
+ *
+ * The slots ride as tiddlers under the realm's lease prefix, each holding one writer's epoch as text. This
+ * scans a board replica for them and hands back the map. It reads whatever the supplied doc HOLDS and never
+ * asks where the doc came from: the caller chooses the board, because which board carries a realm's feeding
+ * decides who can SEE it, and that choice belongs above this line.
+ */
+export function realmLeaseSlotsFromBoard(doc: LarDoc, realmDocIdHex: string): Map<string, string> {
+  const prefix = realmFeedPrefix(realmDocIdHex);
+  const slots  = new Map<string, string>();
+  for (const [key, record] of Object.entries(doc.tiddlers ?? {})) {
+    if (!key.startsWith(prefix)) continue;
+    const value = tiddlerText(record);
+    if (typeof value === "string") slots.set(key, value);
+  }
+  return slots;
+}
+
+/**
+ * Read a realm's maintenance provenance straight off a board replica — the composed capture-clock read.
+ *
+ * WHAT A READER MAY CONCLUDE, and it stays narrow. This reports the feeding THIS REPLICA has synced. A
+ * maintainer whose roll has not arrived reads as absent, and a realm nobody here has synced reads as unfed
+ * — indistinguishable from a realm nobody feeds. Under no-global-now those two generate identically, so the
+ * numbers name a local sighting and never a total (the same no-completeness invariant `vouch-board` holds).
+ *
+ * It still reports NO liveness verdict. Deriving //alive// or //dissolved// from these epochs would need a
+ * rate at which unfed standing erodes, and no rate stands seated — a verdict here would install the
+ * operator's calibration inside this layer and hand it back as a reading.
+ */
+export function realmMaintenanceFromBoard(doc: LarDoc, realmDocIdHex: string): CabalRealmMaintenanceProvenance {
+  return cabalRealmMaintenanceProvenance(realmDocIdHex, realmLeaseSlotsFromBoard(doc, realmDocIdHex));
+}
+
+/**
+ * Read a realm's maintenance from a SHARED board — where any dweller may write, so a seal decides which
+ * slots fold.
+ *
+ * The plain read above trusts the board that carries it, sound under a vessel's own bag. This one trusts
+ * the SIGNATURE instead: it folds a slot only when the slot proves the writer named in its uri rolled that
+ * epoch (`verifyRealmFeedSlot`). An unsealed slot, a mis-sealed slot, and a malformed slot each read as
+ * IGNORED — never folded, never fatal — so a forged high roll cannot lift the max-register the lease rides.
+ * Async, because the check is; a caller that already trusts its board keeps the sync read.
+ */
+export async function verifiedMaintenanceFromBoard(
+  doc: LarDoc,
+  realmDocIdHex: string,
+): Promise<CabalRealmMaintenanceProvenance> {
+  const prefix   = realmFeedPrefix(realmDocIdHex);
+  const verified = new Map<string, string>();
+  for (const [slotUri, value] of realmLeaseSlotsFromBoard(doc, realmDocIdHex)) {
+    const parsed = readRealmFeedSlot(value);
+    if (!parsed || parsed.sig === undefined) continue;   // a bare (unsealed) or malformed slot never folds on a shared board
+    const writer = decodeURIComponent(slotUri.slice(prefix.length));
+    if (await verifyRealmFeedSlot({ realm: realmDocIdHex, writer, epoch: parsed.epoch, sig: parsed.sig })) {
+      verified.set(slotUri, value);
+    }
+  }
+  return cabalRealmMaintenanceProvenance(realmDocIdHex, verified);
+}
+
+/** The write one writer makes to FEED a realm — its own slot, and the epoch it rolls to. */
+export interface RealmFeedWrite {
+  /** The slot tiddler this writer owns for this realm — last-writer-wins is safe inside it. */
+  readonly slotUri: string;
+  /** The epoch this feed rolls to: the effective epoch this replica can see, plus one. */
+  readonly epoch:   number;
+  /** What the effective epoch read BEFORE the roll — so a caller can report the step it took. */
+  readonly priorEffective: number;
+  /** True when this writer held no slot for this realm before — its FIRST offering. */
+  readonly first:   boolean;
+}
+
+/**
+ * Compute one writer's FEED — the offering that keeps a realm alive, as a pure function of what this replica
+ * has synced.
+ *
+ * A writer rolls only its OWN slot, so two members feeding concurrently never clobber each other and the
+ * effective epoch (the max across slots) never moves backward. Both concurrent rolls landing the same value
+ * reads as correct for a liveness lease: the realm got fed, and by how many hands the clock reports separately.
+ *
+ * THE ROLL RIDES A LOCAL SIGHTING. `priorEffective` counts the slots THIS replica holds, so a writer whose
+ * peers have not synced rolls to a lower epoch than a fully-synced replica would. Under no-global-now that
+ * reads as correct rather than as a fault — the lease is a max-register precisely so a low roll costs nothing
+ * and a high one converges.
+ */
+export function realmFeedWrite(
+  realmDocIdHex: string,
+  writerId:      string,
+  leaseSlots:    ReadonlyMap<string, string>,
+): RealmFeedWrite {
+  const slotUri = realmFeedSlotUri(realmDocIdHex, writerId);
+  const prefix  = realmFeedPrefix(realmDocIdHex);
+  const mine: string[] = [];
+  for (const [uri, value] of leaseSlots) {
+    if (uri.startsWith(prefix)) mine.push(value);
+  }
+  const priorEffective = effectiveLeaseEpoch(mine);
+  return {
+    slotUri,
+    epoch: rolledLeaseEpoch(priorEffective),
+    priorEffective,
+    first: !leaseSlots.has(slotUri),
+  };
+}
+
+// ── WHAT A SLOT HOLDS ─────────────────────────────────────────────────────────────────────────────
+
+/** One writer's roll as a slot holds it — the epoch, and the seal proving whose hand rolled it. */
+export interface RealmFeedSlotValue {
+  readonly epoch: number;
+  /** Absent where the board answers for the writer (a vessel's own bag) — see `verifyRealmFeedSlot`. */
+  readonly sig?:  string;
+}
+
+/**
+ * Write a slot's value.
+ *
+ * A bare integer where no seal rides, so a board that nobody else can write stays exactly what it was
+ * and no reader has to learn a format for a fact it already holds. Sealed rolls carry JSON.
+ */
+export function realmFeedSlotValue(value: RealmFeedSlotValue): string {
+  return value.sig ? JSON.stringify({ epoch: value.epoch, sig: value.sig }) : String(value.epoch);
+}
+
+/**
+ * Read a slot's value, in either form — or null where it holds neither.
+ *
+ * BOTH FORMS READ, and that is what lets the seal arrive without a board migration: a sealed writer can
+ * start rolling into a board full of bare integers, and every reader already folds both. A malformed
+ * slot reads null rather than throwing, so one bad entry never costs the whole fold.
+ *
+ * READING A SEAL IS NOT CHECKING ONE. This reports the seal a slot CARRIES; whether that seal verifies
+ * is `verifyRealmFeedSlot`, which is async and has no caller while the board answers for its writers.
+ * A `sig` present here is a claim, never a proof, and a gate that treated it as one would admit any
+ * string. The check becomes required at the same moment the board starts taking a peer's write.
+ */
+export function readRealmFeedSlot(text: string): RealmFeedSlotValue | null {
+  // DIGITS ONLY, and that is stricter than a Number() cast on purpose: `Number("")` is 0, so an empty
+  // slot would fold as a maintainer standing at genesis, and `Number("0x10")` is 16, so a value that
+  // is not a decimal epoch would still count. An epoch is a run of digits or it is not one.
+  if (/^\d+$/.test(text)) return { epoch: Number(text) };
+  try {
+    const parsed = JSON.parse(text) as { epoch?: unknown; sig?: unknown };
+    if (!Number.isInteger(parsed.epoch)) return null;
+    const epoch = parsed.epoch as number;
+    return typeof parsed.sig === "string" && parsed.sig.length > 0
+      ? { epoch, sig: parsed.sig }
+      : { epoch };
+  } catch { return null; }
+}
+
+// ── SEALING THE WRITE PATH ────────────────────────────────────────────────────────────────────────
+
+/** Signing domain for a realm roll — kept distinct so a seal made here presents nowhere else. */
+const REALM_FEED_DOMAIN = "lar/realm-feed" as const;
+
+/**
+ * The bytes a roll signs over — the realm, the writer and the epoch bound TOGETHER.
+ *
+ * All three travel in the seal because each alone is liftable: a roll lifted to another realm would
+ * carry maintenance a face never offered, and a roll lifted to a higher epoch could never be undone.
+ * The lease is a MAX-REGISTER, chosen so a low roll costs nothing and a high one converges — and that
+ * same property makes a forged high roll IRREVERSIBLE, since the max never decreases.
+ */
+export function realmFeedBytes(parts: { realm: string; writer: string; epoch: number }): Uint8Array {
+  return canonicalJsonBytes({
+    kind:   REALM_FEED_DOMAIN,
+    realm:  parts.realm.trim().toLowerCase(),
+    writer: parts.writer.trim().toLowerCase(),
+    epoch:  parts.epoch,
+  });
+}
+
+/** Seal a roll with the feeding face's own persona root — "a FACE feeds a realm, not a device". */
+export async function signRealmFeed(
+  parts: { realm: string; writer: string; epoch: number },
+  sign: (bytes: Uint8Array) => Promise<string>,
+): Promise<string> {
+  return sign(realmFeedBytes(parts));
+}
+
+/**
+ * Does this slot prove whose hand rolled it?
+ *
+ * Where the ledger sits under a vessel's own daemon bag this asks nothing the bag did not already
+ * answer: the only hand that can write there owns it. It becomes load-bearing the moment the ledger
+ * moves to the realm's own substrate — a doc every dweller may write, where a slot uri is guessable
+ * and the seal is the only thing tying a roll to its writer.
+ *
+ * A torn or absent seal reads FALSE rather than throwing: an unverifiable slot is IGNORED, never
+ * folded and never fatal, exactly as an antigen entry that fails its quorum is ignored.
+ */
+export async function verifyRealmFeedSlot(
+  slot: { realm: string; writer: string; epoch: number; sig: string },
+): Promise<boolean> {
+  const writer = slot.writer.trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(writer)) return false;
+  if (!/^[0-9a-f]+$/.test(slot.sig) || slot.sig.length === 0) return false;
+  const bytes = realmFeedBytes({ realm: slot.realm, writer, epoch: slot.epoch });
+  try { return verifyEd25519(slot.sig, bytes, writer); }
+  catch { return false; }
+}

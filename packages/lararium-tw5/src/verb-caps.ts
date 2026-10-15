@@ -1,0 +1,744 @@
+/**
+ * verb-caps — the node main-verb plane as a NESTED #has-cap-stack (composable-keel idiom).
+ *
+ * The four provider-heavy daemon verbs (recall · lar-telemetry · capture · worldline-compare/-trajectory)
+ * decompose here into TWO cap families a verb plane HAS:
+ *
+ *   - PROVIDER caps — one per injected platform impl (mempalace read-client, the form-vector store, the
+ *     daemon-VM worker reads, the telemetry writeback). Each cap's `build` simply returns the impl the
+ *     platform constructed and passed in; the cap makes the dependency STRUCTURAL. The provider
+ *     INTERFACES name EXACTLY the methods the verb bodies call (descriptive of node's real call-set) —
+ *     no method exists for a hypothetical future platform.
+ *   - VERB-GROUP caps — one per verb family. Each declares `requires`/`optional` over the provider
+ *     cap-ids it needs, and `build(resolve)` returns a {@link VerbContribution} that registers its
+ *     verb(s) against the resolved providers. Capability-degradation falls out of composition: a
+ *     platform that never supplies a provider cap simply never composes the verb that needs it
+ *     (`composeVessel` REFUSES a verb cap whose mandatory provider is absent — blind by structure).
+ *
+ * `composeVerbPlane(stack)` `composeVessel`s the given caps (the NESTED compose), collects each
+ * verb-group cap's contribution, and returns ONE merged contribution the host applies to its
+ * VerbTable. Platform-blind: this file imports NO node-only module — the node helpers reach these caps
+ * ONLY through the injected provider impls.
+ *
+ * Canon: lar:///ha.ka.ba/lararium/api/composable-keel
+ */
+
+import { composeVessel, readStampFilters, hitPassesStampFilters, drawerPassesStampFilters, type CapModule, type StampFilters } from "@lararium/mesh";
+import type {
+  SparseFormVector,
+  WorldlineStubWire,
+  WorldlineEdgeTriple,
+  WorldlineEdgeClose,
+} from "@lararium/mesh";
+import { VerbTable } from "./verb-dispatcher.js";
+import type {
+  DaemonWorldlineCompareInput,
+  DaemonWorldlineTrajectoryInput,
+  DaemonWorldlineTrajectoryResult,
+} from "./daemon-vm-core.js";
+
+// ── the merged registration the host applies to its registry ─────────────────────────────────────
+
+/** A verb-group cap's product: register its verb(s) into the host's VerbTable. The composed plane
+ *  merges every group's contribution into one, applied once (synchronously) by the host. */
+export type VerbContribution = (registry: VerbTable) => void;
+
+// ── cap-ids — the names the nested #has-cap-stack routes over ─────────────────────────────────────
+
+/** Provider cap-ids — one per injected platform impl. */
+export const VERB_PROVIDER = {
+  mempalace:  "provider/mempalace",
+  formPalace: "provider/formpalace",
+  daemonVm:   "provider/daemon-vm",
+  telemetry:  "provider/telemetry",
+} as const;
+
+/** Verb-group caps share this id prefix so `composeVerbPlane` collects exactly their contributions. */
+export const VERB_GROUP_PREFIX = "verb/";
+
+export const VERB_GROUP = {
+  recall:    "verb/recall",
+  telemetry: "verb/lar-telemetry",
+  capture:   "verb/capture",
+  worldline: "verb/worldline",
+} as const;
+
+// ── PROVIDER interfaces — EXACTLY the node call-set each verb body reaches ─────────────────────────
+
+/** The pooled mempalace READ client face the recall verb drives inside a `withClient` scope (the
+ *  three read ops; the verbatim PLACE-memory shore). */
+export interface RecallClient {
+  getImago(imagoId: string): Promise<Record<string, unknown>>;
+  search(args: Record<string, unknown>): Promise<Record<string, unknown>>;
+  listDrawers(args: Record<string, unknown>): Promise<Record<string, unknown>>;
+}
+
+/** A worldline trajectory stub sourced from the content graph (verbatim_sha + within-handle tick) —
+ *  the clean substrate the worldline-trajectory verb ships to the worker. */
+export interface RecalledTrajectoryStub {
+  readonly verbatimSha: string;
+  readonly tickCounter: number;
+}
+
+/** mempalace provider — the verbatim PLACE-memory reach (read-client scope + the trajectory-stub
+ *  source). The impl owns the pooled holder + the `orderHandleTurnsToStubs` ordering, node-side. */
+export interface MempalaceProvider {
+  /** Run `fn` against a warm pooled read-client (the `withMempalace` scope). */
+  withClient<T>(fn: (client: RecallClient) => Promise<T>): Promise<T>;
+  /** A handle's content-graph turns, ordered into worldline stubs (the live worldline-trajectory
+   *  source path). The impl wraps `withMempalace(client.turnsForHandle) → orderHandleTurnsToStubs`. */
+  turnsForHandleStubs(handle: string, opts: { wing?: string }): Promise<readonly RecalledTrajectoryStub[]>;
+}
+
+/** form-palace provider — the living-grammar FORM-vector store. The impl OWNS the lazy singleton
+ *  form holder (ref-counted per canonical dir), so BOTH the dual recall fuse and the worldline form
+ *  pre-fetch share ONE process, never a second. */
+export interface FormPalaceProvider {
+  /** Read one turn's move-space position by its verbatim_sha (the worldline-trajectory pre-fetch). A
+   *  miss/fault resolves null (the worker keeps the turn's TIME slot, form null). Lazily opens + shares
+   *  the singleton holder with {@link multiRecall}. */
+  getForm(sha: string): Promise<SparseFormVector | null>;
+  /** The dual/multi recall fuse: the injected CONTENT leg (the recall verb's read-client search) +
+   *  the FORM leg (the singleton holder + the in-VM markers-derive, degrading to [] on fault) fused by
+   *  reciprocal rank on the verbatim_sha. The impl carries the makeFormSearch + multiGraphRecall body
+   *  verbatim node-side; the verb body keeps its arg-coercion and passes the assembled args. */
+  multiRecall(
+    legs: { contentSearch: (a: Record<string, unknown>) => Promise<Record<string, unknown>> },
+    args: Record<string, unknown>,
+  ): Promise<Record<string, unknown>>;
+}
+
+/** A spirit's worldline edges derived from a transcript (the worldline-compare edge-DAG source). */
+export interface SubagentEdgePair {
+  readonly spawn: WorldlineEdgeTriple;
+  readonly handback: WorldlineEdgeClose;
+}
+
+/** daemon-VM provider — the sovereign-worker reads + the capture FEED. The host supplies only the
+ *  EXTERNAL data the worker can't reach (transcript edges, form-vector bytes); all COMPUTE is the
+ *  worker's. The impl proxies to the live `DaemonVmCore`. */
+export interface DaemonVerbProvider {
+  /** Send one source-stream pointer to the serialized Python capture holder. `sensoriumRoot` addresses a
+   *  specific sensorium's holder (absent → the memory default). */
+  captureSource(input: { surface: "claude" | "codex" | "copilot" | "copilot-vscode"; pointer: string; wing: string; room?: string; sessionId?: string; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** BULK backfill — capture/RECAPTURE EVERY discovered transcript into a sensorium THROUGH the serialized
+   *  capture holder, on its ONE warm stream (the holder discovers the pointers itself; no second writer).
+   *  `surface` `all` folds claude+codex+copilot; `project`/`limit` narrow. Idempotent (already-landed turns
+   *  skip). `sensoriumRoot` addresses a specific sensorium (absent → the memory default). */
+  sweep(input: { surface?: string; wing?: string; project?: string; limit?: number; room?: string; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  analyze(input: { spectral?: boolean; halves?: string; sample?: number; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  ki(input: { sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** The Li (理) gluing verdict — the Robinson li-radius + H¹-gated fuse over the sensorium's OWN sheaf
+   *  planes. `sensoriumRoot` addresses a specific sensorium (absent → the memory default). The default
+   *  single-stream cover reads as a nested-cover PLUMBING witness (flagged), never a health verdict. */
+  li(input: { sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** The Jing (勁) coherence verdict — the li∘ki square over a child-host's lobes (extend→restrict
+   *  round-trip). `sensoriumRoot` addresses a child-hosting sensorium (absent → the mesh default: the
+   *  who/authority/flow lobes the node federates onto DreamNet). Coheres ⟺ the round-trip is the identity. */
+  jing(input: { sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** The R effective-TE coupling reference (coupling.R RTransferEntropy::calc_ete) over an N-signal `rows`
+   *  matrix — the py/R twin of `ki`, computed py-side behind the causal-island boundary. Stateless
+   *  matrix→verdict; graceful coupling-skipped when R is absent. */
+  coupleR(input: { sensoriumRoot?: string; rows?: number[][]; names?: string[]; shuffles?: number; nboot?: number; seed?: number; alpha?: number }): Promise<Record<string, unknown>>;
+  /** The R early-warning plane (ews.R critical-slowing-down forecast) over an N-signal `rows` matrix →
+   *  the fired/WATCH/QUIET verdict. Computed py-side behind the causal-island boundary. */
+  forecast(input: { sensoriumRoot?: string; rows?: number[][]; window?: number; nsurr?: number; alpha?: number; minbands?: number; seed?: number }): Promise<Record<string, unknown>>;
+  /** The ki↔R coupling COMPARATOR — run the TS-hull Gaussian-CMI coupling (coupleMesh) beside the R
+   *  effective-TE (couple_r) over the SAME `rows` signals and diff the directed edges. The daemon is the one
+   *  place that reaches both hulls; a disagreement is the parity check the RUN-arc owed, made live. */
+  mismatch(input: { sensoriumRoot?: string; rows?: number[][]; names?: string[] }): Promise<Record<string, unknown>>;
+  /** THE FLOW RUNNER — run a PET-NAMED composed cap-stack (crystal · rhythm · couple) against an explicit
+   *  `rows` signal, routing each cap-step by hull (crystallize/couple TS · phase py · mismatch daemon). Bare
+   *  (no `petname`) lists the flow-set. The anti-verb-sprawl surface: new capability arrives as a new FLOW,
+   *  never another raw verb. A `--target` without a signal auto-extracts one from the target's child streams
+   *  (feature-gated: the projector runs now, empty until the re-pour lands child signals). */
+  flow(input: { petname?: string; rows?: number[][]; names?: string[]; targets?: string[]; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** RE-DERIVE the sensorium's whole derived layer (rejim rhythm · mempalace projection · worldline slots) in
+   *  ONE command, THROUGH the serialized capture holder — so it queues between capture passes and never races
+   *  the writer. `which` narrows to a single enrichment; `sensoriumRoot` addresses a sensorium (absent → memory). */
+  refreshDerived(input: { which?: string; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** Read the landed rejim (rhythm/geology) plane — the derived regimes made askable — THROUGH the holder
+   *  that owns the store. `sensoriumRoot` addresses a specific sensorium (absent → the memory default). */
+  readRejim(input: { sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** The taxonomy over a sensorium's content store — what it holds — THROUGH the holder that owns the store.
+   *  `sensoriumRoot` addresses a specific sensorium (absent → the memory default). */
+  status(input: { sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** The fork-DAG rhizome read (bitemporal AS-OF `asOf`, else whole history) — THROUGH the capture holder,
+   *  which opens a fresh worldline handle per-op. The py `dag` renders the WHOLE edge-DAG; a `selector`
+   *  narrows caller-side (the CLI skin) and never crosses the wire — only `asOf` slices the read. */
+  worldline(input: { asOf?: number | null; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** Mute a worldline branch + cascade the mute across the sensorium's content store — THROUGH the capture
+   *  holder, serialized with capture so the mutation never races the live writer. `unKapae` restores. */
+  kapae(input: { branch: string; tick: number; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** Restore a muted worldline branch across the sensorium — the reverse of `kapae`, THROUGH the holder. */
+  unKapae(input: { branch: string; tick: number; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** The cross-plane witness: ONE cid → presence across content · structure · form (honest nulls) — THROUGH
+   *  the holder that owns the store (read-only, one shared plane-query implementation). */
+  planeRecord(input: { cid: string; sensoriumRoot?: string }): Promise<Record<string, unknown>>;
+  /** REWIND (kapae) one turn's .structurepalace tally + salience down-weight, IN the daemon (warm holder).
+   *  Fire-and-forget — the convergence twin of the CLI-side worldline KG valid-close. */
+  placeStructurepalaceKapae(turnKey: string, ended?: string): void;
+  /** Derive a session transcript's spawn/handback edges (worldline-compare's edge-DAG source). The CRUNCH
+   *  now lives in python (beside the transcript data) — this provider ROUTES to the capture holder's
+   *  `subagent-edges` serve-op, so it reads async. `sensoriumRoot` addresses a holder (absent → memory). */
+  subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<readonly SubagentEdgePair[]>;
+  /** Well 1 — the concurrent-capable causal verdict between two handles, IN the daemon VM. */
+  worldlineCompare(input: DaemonWorldlineCompareInput): Promise<{ order: string }>;
+  /** Well 3 + Well 4 — a handle's worldline-ordered form-vector path (+ optional null baseline). */
+  worldlineTrajectory(input: DaemonWorldlineTrajectoryInput): Promise<DaemonWorldlineTrajectoryResult>;
+  // ── the DURABLE sensorium-lifecycle verbs — pure manifest.json reducers (no store holder), routed over
+  //    the wire so the MCP surface mirrors the CLI `lares sense <verb>` three-way. The reversibility×trust
+  //    seat gates each: reads + reversible re-settle run HOTL; promote·retire·purge cross HITL (an operator-
+  //    approval capability, the surface twin of the CLI's `--approve`). ──
+  /** ROSTER — every sensorium + its lifecycle facet (a read; HOTL). */
+  senseRoster(): Promise<Record<string, unknown>>;
+  /** INSPECT one sensorium's manifest facets by name (a read; HOTL). Throws when the name has no manifest. */
+  senseInspect(input: { name: string }): Promise<Record<string, unknown>>;
+  /** BUILD a fresh EPHEMERAL pioneer (agent self-service; a retire undoes it → HOTL). Refuses a name-collision. */
+  senseBuild(input: { name: string; halfLife?: number }): Promise<Record<string, unknown>>;
+  /** RECONCILE — re-settle one sensorium (by `name`) or `all` against evidence (idempotent, reversible → HOTL). */
+  senseReconcile(input: { name?: string; all?: boolean }): Promise<Record<string, unknown>>;
+  /** PROMOTE — climb a rung (in-place field-flip; `storeSwap` re-points an alias, gated). A designed one-way
+   *  commitment → HITL: `approve` carries the operator-approval capability, else it refuses. */
+  sensePromote(input: { name: string; approve?: unknown; storeSwap?: string }): Promise<Record<string, unknown>>;
+  /** RETIRE — a JUDGED tombstone recording MUSTIE `grounds` (NO byte-delete; move-not-delete). → HITL. */
+  senseRetire(input: { name: string; grounds?: unknown; approve?: unknown }): Promise<Record<string, unknown>>;
+  /** UN-RETIRE — restore a tombstoned sensorium to its prior state (move-not-delete; reversible → HOTL). */
+  senseUnRetire(input: { name: string }): Promise<Record<string, unknown>>;
+  /** PURGE — the irreversible byte GC (tombstone-only; explicit HITL). `approve` carries the reclaim authority. */
+  sensePurge(input: { name: string; approve?: unknown }): Promise<Record<string, unknown>>;
+}
+
+/** telemetry provider — the lar_* writeback shore. The impl owns the whole writeback +
+ *  TelemetryUnavailable→Error translation node-side (the class is node-only), returning the verb's
+ *  exact `{ wing, ...result }` shape. */
+export interface TelemetryProvider {
+  /** Project lar_* readings back onto a wing's drawers. Throws the verb's "lar-telemetry unavailable:"
+   *  Error when the writeback path is down; returns `{ wing, drawers, framed, applied, bands }`. */
+  writeback(wing: string, opts: { limit?: number }): Record<string, unknown>;
+}
+
+// ── PROVIDER caps — each `build` returns the injected impl (the dependency made structural) ────────
+
+export function mempalaceProviderCap(impl: MempalaceProvider): CapModule {
+  return { id: VERB_PROVIDER.mempalace, build: () => impl };
+}
+export function formPalaceProviderCap(impl: FormPalaceProvider): CapModule {
+  return { id: VERB_PROVIDER.formPalace, build: () => impl };
+}
+export function daemonVerbProviderCap(impl: DaemonVerbProvider): CapModule {
+  return { id: VERB_PROVIDER.daemonVm, build: () => impl };
+}
+export function telemetryProviderCap(impl: TelemetryProvider): CapModule {
+  return { id: VERB_PROVIDER.telemetry, build: () => impl };
+}
+
+// ── VERB-GROUP caps — declare the providers they route, register their verb(s) over the resolved impls ─
+
+/** Search-path stamp filtering: OVERFETCH the semantic search (×5, floor 25, cap 100 — the
+ *  holder's own limit ceiling), post-filter each hit ({@link hitPassesStampFilters}: exact
+ *  source-derived surface/agent + the sovereign gradient re-read for voice/band/drift — the
+ *  search wire carries no drawer metadata and no turn key to join on), then cut to the caller's
+ *  limit. Honest counts ride out: `scanned` (pre-filter) + `matched` (post-filter, pre-cut). */
+async function filteredSearch(
+  client: RecallClient,
+  filters: StampFilters,
+  a: { query: string; wing?: string | undefined; limit?: number | undefined },
+): Promise<Record<string, unknown>> {
+  const limit = a.limit !== undefined && Number.isFinite(a.limit) ? Math.max(1, a.limit) : 5;
+  const fetchLimit = Math.min(100, Math.max(25, limit * 5));
+  const res = await client.search({ query: a.query, ...(a.wing !== undefined ? { wing: a.wing } : {}), limit: fetchLimit });
+  const all = Array.isArray(res["results"]) ? (res["results"] as Array<Record<string, unknown>>) : [];
+  const matched = all.filter((h) => hitPassesStampFilters(filters, h));
+  return {
+    mode: "search",
+    ...res,
+    results: matched.slice(0, limit),
+    filters: filters as unknown as Record<string, unknown>,
+    scanned: all.length,
+    matched: matched.length,
+  };
+}
+
+/** List-path stamp filtering: page the drawer list (wing-scoped when given) and keep the drawers
+ *  whose stamped `lar_*` metadata passes ({@link drawerPassesStampFilters} — exact, per-drawer).
+ *  Pages the whole scope, so a caller SHOULD pass the narrowest wing it knows (the drawersWhere
+ *  discipline). Honest counts: `scanned` + `matched` ride out beside the cut list. */
+async function filteredList(
+  client: RecallClient,
+  filters: StampFilters,
+  a: { wing?: string | undefined; limit?: number | undefined },
+): Promise<Record<string, unknown>> {
+  const limit = a.limit !== undefined && Number.isFinite(a.limit) ? Math.max(1, a.limit) : 20;
+  const pageSize = 200;
+  const kept: Array<Record<string, unknown>> = [];
+  let scanned = 0;
+  let matched = 0;
+  for (let offset = 0; ; offset += pageSize) {
+    const page = await client.listDrawers({ ...(a.wing !== undefined ? { wing: a.wing } : {}), limit: pageSize, offset });
+    const imagines = Array.isArray(page["imagines"]) ? (page["imagines"] as Array<Record<string, unknown>>) : [];
+    scanned += imagines.length;
+    for (const d of imagines) {
+      const meta = (d["metadata"] as Record<string, unknown> | undefined) ?? {};
+      if (!drawerPassesStampFilters(filters, meta)) continue;
+      matched += 1;
+      if (kept.length < limit) kept.push(d);
+    }
+    const count = typeof page["count"] === "number" ? (page["count"] as number) : imagines.length;
+    const total = typeof page["total"] === "number" ? (page["total"] as number) : scanned;
+    if (count < pageSize || offset + count >= total) break;
+  }
+  return {
+    mode: "list",
+    imagines: kept,
+    total: matched,
+    filters: filters as unknown as Record<string, unknown>,
+    scanned,
+    matched,
+  };
+}
+
+/** recall — the mempalace READ shore (semantic-search | list | get | multi-graph fuse). Requires
+ *  the mempalace read-client + the form store (the dual fuse). */
+export function recallVerbCap(): CapModule {
+  return {
+    id: VERB_GROUP.recall,
+    requires: [VERB_PROVIDER.mempalace, VERB_PROVIDER.formPalace],
+    build: (resolve) => {
+      const mp   = resolve<MempalaceProvider>(VERB_PROVIDER.mempalace);
+      const form = resolve<FormPalaceProvider>(VERB_PROVIDER.formPalace);
+      return (registry: VerbTable) => {
+        registry.register("recall", async (args) => {
+          const imagoId = typeof args["imago"] === "string" ? (args["imago"] as string) : "";
+          const query    = typeof args["query"]  === "string" ? (args["query"]  as string) : "";
+          const wing     = typeof args["wing"]   === "string" ? (args["wing"]   as string) : undefined;
+          const limitRaw = args["limit"];
+          const limit    = typeof limitRaw === "number" ? limitRaw : typeof limitRaw === "string" ? Number(limitRaw) : undefined;
+          // Multi-graph recall (P4): N-ary fuse the CONTENT (verbatim mempalace) + FORM (.formpalace) +
+          // later graphs by reciprocal rank fusion on the verbatim_sha. Opt-in (`dual`/`multi`) — the FORM
+          // leg routes by query shape (bearing → structured where-filter · markers → vector · keywords →
+          // where-or-defer). The `dual` arg name stays accepted for callers; `multi` reads the same.
+          const dual         = args["dual"] === true || args["dual"] === "true"
+                            || args["multi"] === true || args["multi"] === "true";
+          const register     = typeof args["register"]     === "string" ? (args["register"]     as string) : undefined;
+          const grammarLayer = typeof args["grammarLayer"] === "string" ? (args["grammarLayer"] as string)
+                             : typeof args["grammar_layer"] === "string" ? (args["grammar_layer"] as string) : undefined;
+          const fwRaw        = args["formWeight"];
+          const formWeight   = typeof fwRaw === "number" ? fwRaw : typeof fwRaw === "string" ? Number(fwRaw) : undefined;
+          // P6 — the paragraph-scale aperture: a 0..20 grain or a band name ("paragraph"). Off when absent.
+          const agRaw        = args["apertureGrain"] ?? args["aperture_grain"] ?? args["aperture"];
+          const apertureGrain = typeof agRaw === "number" || typeof agRaw === "string" ? agRaw : undefined;
+          const awRaw        = args["apertureWidth"] ?? args["aperture_width"];
+          const apertureWidth = typeof awRaw === "number" ? awRaw : typeof awRaw === "string" && awRaw !== "" ? Number(awRaw) : undefined;
+          // STAMP FILTERS (voice · band · agent · surface · drift) — compose with the semantic
+          // query (post-filter, honest counts) or the list (exact lar_* metadata). Throws on an
+          // invalid band; the multi fuse re-shapes hits, so filters + dual refuse loud (never a
+          // silent drop) until the fuse learns them.
+          const filters = readStampFilters(args);
+          if (filters && dual) throw new Error("recall: stamp filters (--voice/--band/--agent/--surface/--drift) do not yet compose with --multi");
+          // The addressed sensorium (from `lares sense <sensorium> recall`) — picks that sensorium's recall
+          // holder up the cap ladder (absent → the memory default).
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          // Warm pooled holder (started once, reused, self-healing) — recall stays sub-second after the
+          // first cold start; this makes recall-into-wake fast.
+          return mp.withClient(async (client) => {
+            if (imagoId) return { mode: "imago", imago: await client.getImago(imagoId) };
+            if (filters && query) return filteredSearch(client, filters, { query, wing, limit });
+            if (filters) return filteredList(client, filters, { wing, limit });
+            if (dual && query) {
+              // The form-leg construction (markers→vector derive IN the daemon VM, content-only
+              // degradation on fault) + the RRF fuse ride the form provider's multiRecall impl, verbatim;
+              // the body keeps the arg-coercion and hands the content leg + the assembled args across.
+              const res = await form.multiRecall(
+                { contentSearch: (a) => client.search({ ...a, ...(sensoriumRoot ? { sensoriumRoot } : {}) }) },
+                {
+                  query,
+                  ...(wing          !== undefined ? { wing } : {}),
+                  ...(limit         !== undefined ? { limit } : {}),
+                  ...(register      !== undefined ? { register } : {}),
+                  ...(grammarLayer  !== undefined ? { grammarLayer } : {}),
+                  ...(formWeight    !== undefined ? { formWeight } : {}),
+                  ...(apertureGrain !== undefined ? { apertureGrain } : {}),
+                  ...(apertureWidth !== undefined ? { apertureWidth } : {}),
+                },
+              );
+              return { mode: "multi", ...res };
+            }
+            // Forward the recall args VERBATIM to the ONE coordinator — its `recall` signature (read through
+            // recall_session's introspective `_RECALL_KWARGS` forward + `_recall_where`) is the SINGLE filter
+            // home, so a new physics filter (a new taxonomy axis, a new stratum) narrows here with ZERO edit:
+            // the API signature IS the capability. Strip only the MODE-ROUTING keys the branches above already
+            // consumed (imago/list/dual/multi SELECT the mode — never a py content-filter); the client
+            // extracts `sensoriumRoot` itself, and the coordinator drops any arg its signature refuses. The
+            // stamp filters (voice/band/agent/surface/drift) never reach here — a present one routes to
+            // filteredSearch above — so verbatim forwarding never double-applies them.
+            if (query) {
+              const { imago: _im, list: _ls, dual: _du, multi: _mu, ...forward } = args;
+              return { mode: "search", ...(await client.search(forward)) };
+            }
+            return { mode: "list", ...(await client.listDrawers({ ...(wing !== undefined ? { wing } : {}), ...(limit !== undefined ? { limit } : {}) })) };
+          });
+        });
+      };
+    },
+  };
+}
+
+/** lar-telemetry — the mempalace WRITE shore (the lar_* gradient writeback). Requires the
+ *  telemetry writeback provider. */
+export function telemetryVerbCap(): CapModule {
+  return {
+    id: VERB_GROUP.telemetry,
+    requires: [VERB_PROVIDER.telemetry],
+    build: (resolve) => {
+      const telemetry = resolve<TelemetryProvider>(VERB_PROVIDER.telemetry);
+      return (registry: VerbTable) => {
+        registry.register("lar-telemetry", async (args) => {
+          const wing = typeof args["wing"] === "string" ? (args["wing"] as string) : "";
+          if (!wing) throw new Error("args.wing is required");
+          const limitRaw = args["limit"];
+          const limit    = typeof limitRaw === "number" ? limitRaw : typeof limitRaw === "string" ? Number(limitRaw) : undefined;
+          // The writeback + TelemetryUnavailable→Error translation + the `{ wing, ...r }` shape ride the
+          // provider impl node-side (TelemetryUnavailable is a node class); the error string is preserved.
+          return telemetry.writeback(wing, limit !== undefined ? { limit } : {});
+        });
+      };
+    },
+  };
+}
+
+/** The SOVEREIGN-HOLDER verb family — every verb the one serialized Python capture holder serves for a
+ *  palace, grouped here because they SHARE that provider (`daemonVm` → `captureFor(root)`) and its
+ *  serialization, not because they are all "capture". Three concerns ride the one holder: WRITE/derive
+ *  (`capture` the source · `refresh` the WHOLE derived layer in one command — rejim rhythm · mempalace
+ *  projection · worldline slots), READ (`status` taxonomy · `rejim` geology · `worldline` fork-DAG ·
+ *  `plane-record` cross-plane witness), and MUTATE (`kapae`/
+ *  `un-kapae` the worldline branch-mute cascade · `structurepalace-kapae` the structure-tally rewind). The
+ *  serialized pipe is WHY they cohere: reads see a consistent snapshot, mutations never race the writer.
+ *  (The group id stays `verb/capture` — the `verb/` prefix is what composeVerbPlane collects; the suffix
+ *  carries no routing, so the honest scope lives in this doc, not a churning rename.) */
+export function captureVerbCap(): CapModule {
+  return {
+    id: VERB_GROUP.capture,
+    requires: [VERB_PROVIDER.daemonVm],
+    build: (resolve) => {
+      const daemon = resolve<DaemonVerbProvider>(VERB_PROVIDER.daemonVm);
+      return (registry: VerbTable) => {
+        registry.register("capture", async (args) => {
+          const surface = typeof args["surface"] === "string" ? args["surface"] : "";
+          const pointer = typeof args["pointer"] === "string" ? args["pointer"] : "";
+          const wing = typeof args["wing"] === "string" ? args["wing"] : "";
+          const room = typeof args["room"] === "string" ? args["room"] : undefined;
+          const sessionId = typeof args["sessionId"] === "string" && args["sessionId"] ? args["sessionId"] : undefined;
+          if (surface !== "claude" && surface !== "codex" && surface !== "copilot" && surface !== "copilot-vscode") {
+            throw new Error("capture: args.surface must be claude|codex|copilot|copilot-vscode");
+          }
+          if (!pointer || !wing) throw new Error("capture: args.pointer + args.wing (non-empty strings) required");
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.captureSource({ surface, pointer, wing, ...(room ? { room } : {}), ...(sessionId ? { sessionId } : {}), ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("sweep", async (args) => {
+          // BULK backfill — the holder discovers EVERY transcript itself and captures each through its ONE
+          // warm stream (no pointer crosses; the holder owns discovery). `surface` `all` (default) folds
+          // claude+codex+copilot; `project`/`limit` narrow. The routed sweep spine `lares sense sweep` /
+          // `pour --all` / the MCP `sweep` all reach.
+          const surface = typeof args["surface"] === "string" ? args["surface"] : "all";
+          const wing = typeof args["wing"] === "string" ? args["wing"] : "";
+          if (!wing) throw new Error("sweep: args.wing (a non-empty string) required");
+          const room = typeof args["room"] === "string" ? args["room"] : undefined;
+          const project = typeof args["project"] === "string" ? (args["project"] as string) : undefined;
+          const limit = typeof args["limit"] === "number" ? (args["limit"] as number) : undefined;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.sweep({ surface, wing, ...(room ? { room } : {}), ...(project ? { project } : {}), ...(limit !== undefined ? { limit } : {}), ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("analyze", async (args) => {
+          // DETECT-ONLY: the sense_analyze change-point arms run over the poured stream THROUGH the holder
+          // that owns the store (reuses its ONE content handle; no answer key crosses the wall). `spectral`
+          // switches to the embedding-geometry surface; `halves`/`sample` tune the Foote scale prior + span.
+          const spectral = args["spectral"] === true;
+          const halves = typeof args["halves"] === "string" ? (args["halves"] as string) : undefined;
+          const sample = typeof args["sample"] === "number" ? (args["sample"] as number) : undefined;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.analyze({ ...(spectral ? { spectral } : {}), ...(halves ? { halves } : {}), ...(sample !== undefined ? { sample } : {}), ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("ki", async (args) => {
+          // The Ki (氣) corpus-coupling verdict — the H¹-gated fuse-or-hold-open over the memetic-wikitext
+          // peers, computed TS-native by the node daemon (the same hull a browser carries). Routed-only:
+          // no python standalone can compute the cohomology, so the twin reaches this daemon verb.
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.ki({ ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("li", async (args) => {
+          // The Li (理) gluing verdict — the li-radius + H¹-gated fuse-or-hold-open over the sensorium's OWN
+          // sheaf planes, computed TS-native by the node daemon (the same hull a browser carries). Routed-only:
+          // no python standalone can compute the cohomology, so the twin reaches this daemon verb.
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.li({ ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("jing", async (args) => {
+          // The Jing (勁) coherence verdict — the li∘ki square (extend→restrict round-trip) over a child-host's
+          // lobes, computed TS-native by the node daemon. Routed-only: the cohomology rides the TS hull.
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.jing({ ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("couple-r", async (args) => {
+          // The R effective-TE coupling reference (coupling.R) over the passed signal matrix — the py/R twin
+          // of `ki`, computed py-side behind the causal-island boundary (Rscript shells from the serve-op).
+          const rows = Array.isArray(args["rows"]) ? (args["rows"] as number[][]) : [];
+          const names = Array.isArray(args["names"]) ? (args["names"] as string[]) : undefined;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.coupleR({ rows, ...(names ? { names } : {}), ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("forecast", async (args) => {
+          // The R early-warning plane (ews.R critical-slowing-down forecast) over the passed signal matrix —
+          // computed py-side behind the causal-island boundary (Rscript shells from the serve-op).
+          const rows = Array.isArray(args["rows"]) ? (args["rows"] as number[][]) : [];
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.forecast({ rows, ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("mismatch", async (args) => {
+          // The ki↔R comparator — the daemon runs the TS-hull coupling (coupleMesh) beside the R couple_r
+          // serve-op over the same signals and diffs the directed edges (the parity check made live).
+          const rows = Array.isArray(args["rows"]) ? (args["rows"] as number[][]) : [];
+          const names = Array.isArray(args["names"]) ? (args["names"] as string[]) : undefined;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.mismatch({ rows, ...(names ? { names } : {}), ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("flow", async (args) => {
+          // THE FLOW RUNNER verb — run a pet-named composed cap-stack (crystal · rhythm · couple) against an
+          // explicit signal, routing each cap-step by hull. Bare (no petname) lists the flow-set. The anti-
+          // verb-sprawl surface: new capability arrives as a new FLOW, never another raw verb.
+          const petname = typeof args["petname"] === "string" ? (args["petname"] as string) : undefined;
+          const rows = Array.isArray(args["rows"]) ? (args["rows"] as number[][]) : undefined;
+          const names = Array.isArray(args["names"]) ? (args["names"] as string[]) : undefined;
+          const targets = Array.isArray(args["targets"]) ? (args["targets"] as string[]) : undefined;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.flow({
+            ...(petname ? { petname } : {}),
+            ...(rows ? { rows } : {}),
+            ...(names ? { names } : {}),
+            ...(targets ? { targets } : {}),
+            ...(sensoriumRoot ? { sensoriumRoot } : {}),
+          });
+        });
+        registry.register("refresh", async (args) => {
+          // RE-DERIVE the sensorium's whole derived layer (rejim rhythm · mempalace projection · worldline
+          // slots) in ONE command, serialized on the capture holder's pipe (rides between capture passes —
+          // no race with the writer). `which` narrows to a single enrichment; else all. The idle beat
+          // auto-drives the same registry between refreshes.
+          const which = typeof args["which"] === "string" ? (args["which"] as string) : undefined;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.refreshDerived({
+            ...(which ? { which } : {}),
+            ...(sensoriumRoot ? { sensoriumRoot } : {}),
+          });
+        });
+        registry.register("rejim", async (args) => {
+          // Read the landed rejim (rhythm/geology) plane — the derived regimes made askable (repour writes
+          // it, this reads it). An honest absence when the plane has never been repoured.
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.readRejim({ ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("status", async (args) => {
+          // The taxonomy over a sensorium's content store — what it holds — through the holder that owns it.
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.status({ ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("worldline", async (args) => {
+          // The fork-DAG rhizome read (bitemporal AS-OF `asOf`, else whole history), through the capture
+          // holder (fresh worldline handle per-op). The py `dag` renders the WHOLE edge-DAG; a `selector`
+          // narrows caller-side (the CLI skin), so it is not forwarded here — only `asOf` slices the read.
+          const asOf = typeof args["asOf"] === "number" ? (args["asOf"] as number) : undefined;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          return await daemon.worldline({
+            ...(asOf !== undefined ? { asOf } : {}),
+            ...(sensoriumRoot ? { sensoriumRoot } : {}),
+          });
+        });
+        registry.register("kapae", async (args) => {
+          // Mute a worldline branch + cascade the mute across the content store, through the capture holder —
+          // serialized with capture (the mutation never races the live writer). Reversible via `un-kapae`.
+          const branch = typeof args["branch"] === "string" ? (args["branch"] as string) : "";
+          const tick = typeof args["tick"] === "number" ? (args["tick"] as number) : NaN;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          if (!branch || Number.isNaN(tick)) throw new Error("kapae: args.branch (non-empty string) + args.tick (number) required");
+          return await daemon.kapae({ branch, tick, ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("un-kapae", async (args) => {
+          // Restore a muted worldline branch across the sensorium — the reverse of `kapae`, through the holder.
+          const branch = typeof args["branch"] === "string" ? (args["branch"] as string) : "";
+          const tick = typeof args["tick"] === "number" ? (args["tick"] as number) : NaN;
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          if (!branch || Number.isNaN(tick)) throw new Error("un-kapae: args.branch (non-empty string) + args.tick (number) required");
+          return await daemon.unKapae({ branch, tick, ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("plane-record", async (args) => {
+          // The cross-plane witness: ONE cid → presence across content · structure · form (honest nulls),
+          // through the holder that owns the store (read-only, one shared plane-query implementation).
+          const cid = typeof args["cid"] === "string" ? (args["cid"] as string) : "";
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          if (!cid) throw new Error("plane-record: args.cid (non-empty string) required");
+          return await daemon.planeRecord({ cid, ...(sensoriumRoot ? { sensoriumRoot } : {}) });
+        });
+        registry.register("structurepalace-kapae", async (args) => {
+          // REWIND one turn's .structurepalace tally (+ salience down-weight) — the convergence twin of the
+          // CLI-side worldline KG valid-close. Fire-and-forget through the daemon's warm holder.
+          const turnKey = typeof args["turnKey"] === "string" ? (args["turnKey"] as string) : "";
+          if (!turnKey) throw new Error("structurepalace-kapae: args.turnKey (non-empty string) required");
+          const ended = typeof args["ended"] === "string" && args["ended"] ? (args["ended"] as string) : undefined;
+          daemon.placeStructurepalaceKapae(turnKey, ended);
+          return { ok: true, kapae: true, turnKey };
+        });
+        // ── the DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` and routes to the
+        //    pure manifest.json reducer on the daemon. The reversibility×trust seat lives in the executor
+        //    (guardHitl): promote·retire·purge REFUSE without the operator-approval capability. ──
+        registry.register("roster", async () => await daemon.senseRoster());
+        registry.register("inspect", async (args) => {
+          const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          if (!name) throw new Error("inspect: args.name (a non-empty string) required");
+          return await daemon.senseInspect({ name });
+        });
+        registry.register("build", async (args) => {
+          const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          if (!name) throw new Error("build: args.name (a non-empty string) required");
+          const halfLife = typeof args["halfLife"] === "number" ? (args["halfLife"] as number) : undefined;
+          return await daemon.senseBuild({ name, ...(halfLife !== undefined ? { halfLife } : {}) });
+        });
+        registry.register("reconcile", async (args) => {
+          const all = args["all"] === true;
+          const name = typeof args["name"] === "string" ? (args["name"] as string) : undefined;
+          if (!all && !name) throw new Error("reconcile: args.name (a non-empty string) or args.all required");
+          return await daemon.senseReconcile({ ...(all ? { all } : {}), ...(name ? { name } : {}) });
+        });
+        registry.register("promote", async (args) => {
+          const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          if (!name) throw new Error("promote: args.name (a non-empty string) required");
+          const storeSwap = typeof args["storeSwap"] === "string" ? (args["storeSwap"] as string) : undefined;
+          return await daemon.sensePromote({ name, approve: args["approve"], ...(storeSwap ? { storeSwap } : {}) });
+        });
+        registry.register("retire", async (args) => {
+          const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          if (!name) throw new Error("retire: args.name (a non-empty string) required");
+          return await daemon.senseRetire({ name, grounds: args["grounds"], approve: args["approve"] });
+        });
+        registry.register("un-retire", async (args) => {
+          const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          if (!name) throw new Error("un-retire: args.name (a non-empty string) required");
+          return await daemon.senseUnRetire({ name });
+        });
+        registry.register("purge", async (args) => {
+          const name = typeof args["name"] === "string" ? (args["name"] as string) : "";
+          if (!name) throw new Error("purge: args.name (a non-empty string) required");
+          return await daemon.sensePurge({ name, approve: args["approve"] });
+        });
+      };
+    },
+  };
+}
+
+/** worldline — the PERMAINAN SUBSTRATE reads (worldline-compare + worldline-trajectory). Requires the
+ *  daemon-VM provider (all compute is the worker's) + the mempalace source + the form store (the
+ *  trajectory's live turn source + the form pre-fetch). */
+export function worldlineVerbCap(): CapModule {
+  return {
+    id: VERB_GROUP.worldline,
+    requires: [VERB_PROVIDER.daemonVm, VERB_PROVIDER.mempalace, VERB_PROVIDER.formPalace],
+    build: (resolve) => {
+      const daemon = resolve<DaemonVerbProvider>(VERB_PROVIDER.daemonVm);
+      const mp     = resolve<MempalaceProvider>(VERB_PROVIDER.mempalace);
+      const form   = resolve<FormPalaceProvider>(VERB_PROVIDER.formPalace);
+      return (registry: VerbTable) => {
+        // worldline-compare (Well 1, ITC LIVE-READ): two handles → the concurrent-capable causal verdict.
+        // The host derives the edge-DAG from a session `transcript` — the CRUNCH now lives in python (the
+        // capture holder's `subagent-edges` serve-op, routed through the provider) — and ships it; the
+        // WORKER projects the registry + runs the ITC tree-leq.
+        registry.register("worldline-compare", async (args) => {
+          const a = typeof args["a"] === "string" ? (args["a"] as string) : "";
+          const b = typeof args["b"] === "string" ? (args["b"] as string) : "";
+          if (!a || !b) throw new Error("worldline-compare: args.a + args.b (handles) required");
+          const transcript = typeof args["transcript"] === "string" ? (args["transcript"] as string) : "";
+          const sensoriumRoot = typeof args["sensoriumRoot"] === "string" ? (args["sensoriumRoot"] as string) : undefined;
+          const spirits = transcript
+            ? await daemon.subagentEdges(sensoriumRoot !== undefined ? { transcript, sensoriumRoot } : { transcript })
+            : [];
+          const opens = spirits.map((s) => s.spawn);
+          const closes = spirits.map((s) => s.handback);
+          try {
+            return await daemon.worldlineCompare({ a, b, opens, closes });
+          } catch (err) {
+            throw new Error(`worldline-compare: ${err instanceof Error ? err.message : String(err)} (supply a transcript that names both handles)`);
+          }
+        });
+
+        // worldline-trajectory (Well 3 + Well 4, THE CORE): a handle → its worldline-ordered form-vector
+        // path through move-space, and optionally a null baseline (shuffled order). When the caller passes
+        // no `stubs`, this sources them live from the content mempalace (turnsForHandleStubs) and feeds the
+        // worker those; an explicit `stubs` arg still overrides (tests / a transcript-driven probe).
+        registry.register("worldline-trajectory", async (args) => {
+          const handle = typeof args["handle"] === "string" ? (args["handle"] as string) : "";
+          if (!handle) throw new Error("worldline-trajectory: args.handle required");
+          const wing = typeof args["wing"] === "string" ? (args["wing"] as string) : undefined;
+          const rawStubs = Array.isArray(args["stubs"]) ? (args["stubs"] as unknown[]) : null;
+          // No explicit stubs → SOURCE FROM THE LIVE CONTENT GRAPH (the production path). A handle with no
+          // drawers yields [] → an empty trajectory (graceful). The pooled read-client stays warm.
+          const baseStubs: readonly RecalledTrajectoryStub[] = rawStubs === null
+            ? await mp.turnsForHandleStubs(handle, wing !== undefined ? { wing } : {})
+            : rawStubs
+                .filter((s): s is Record<string, unknown> => !!s && typeof s === "object")
+                .map((s, i) => ({
+                  verbatimSha: typeof s["verbatimSha"] === "string" ? (s["verbatimSha"] as string) : String(s["verbatimSha"] ?? ""),
+                  tickCounter: typeof s["tickCounter"] === "number" ? (s["tickCounter"] as number) : i,
+                }))
+                .filter((s) => s.verbatimSha);
+          const joinForm = args["joinForm"] !== false && args["joinForm"] !== "false";
+          // Pre-fetch each unique turn's move-space position from the form store (a miss/fault → null);
+          // the form provider owns the holder (REUSED with the recall form leg — one process).
+          const formByKey = new Map<string, SparseFormVector | null>();
+          if (joinForm && baseStubs.length) {
+            await Promise.all(
+              [...new Set(baseStubs.map((s) => s.verbatimSha))].map(async (sha) => {
+                formByKey.set(sha, await form.getForm(sha));
+              }),
+            );
+          }
+          const stubs: WorldlineStubWire[] = baseStubs.map((s) => ({
+            verbatimSha: s.verbatimSha,
+            tickCounter: s.tickCounter,
+            ...(joinForm ? { formVector: formByKey.get(s.verbatimSha) ?? null } : {}),
+          }));
+          const includeNull = args["null"] === true || args["null"] === "true";
+          const seed = typeof args["seed"] === "number" ? (args["seed"] as number) : undefined;
+          const windowRaw = args["window"];
+          const window = typeof windowRaw === "number" ? windowRaw : typeof windowRaw === "string" && windowRaw !== "" ? Number(windowRaw) : undefined;
+          const result = await daemon.worldlineTrajectory({
+            handle, stubs, joinForm, includeNull,
+            ...(seed   !== undefined ? { seed }   : {}),
+            ...(window !== undefined ? { window } : {}),
+          });
+          if (!includeNull) return { trajectory: result.trajectory };
+          return { trajectory: result.trajectory, nullBaseline: result.nullBaseline };
+        });
+      };
+    },
+  };
+}
+
+// ── the nested compose — wire the stack, merge every verb-group contribution into one ─────────────
+
+/**
+ * Compose the verb plane from its #has-cap-stack (provider caps + verb-group caps). `composeVessel`
+ * topologically wires the caps — building each provider, then each verb-group cap with a POLA resolver
+ * reaching only its declared providers, REFUSING the boot if a verb's mandatory provider is absent.
+ * Collects every verb-group cap's {@link VerbContribution} (by the `verb/` id prefix) and returns ONE
+ * merged contribution the host applies synchronously to its VerbTable.
+ */
+export async function composeVerbPlane(stack: readonly CapModule[]): Promise<VerbContribution> {
+  const vessel = await composeVessel(stack);
+  const contributions = vessel.order
+    .filter((id) => id.startsWith(VERB_GROUP_PREFIX))
+    .map((id) => vessel.get<VerbContribution>(id))
+    .filter((c): c is VerbContribution => typeof c === "function");
+  return (registry) => {
+    for (const c of contributions) c(registry);
+  };
+}

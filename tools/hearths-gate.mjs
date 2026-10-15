@@ -1,0 +1,200 @@
+#!/usr/bin/env node
+/**
+ * hearths-gate — refuse a commit that reaches into ANOTHER hearth's ground.
+ *
+ * One tree, several sessions. `bags/lares/ha.ka.ba/lares/docs/pono/hearths.mem#/holds` names, per hearth,
+ * the repo-relative globs that hearth holds, keyed by the `Claude-Session:` trailer its commits carry. This
+ * gate reads the ledger, reads the trailer off the commit message git is about to write, and refuses when
+ * the staged paths cross into a hold the committing hearth does not own — printing the row so the hand
+ * reads WHOSE ground it stands on and what that hearth owes.
+ *
+ * A COMMIT WITH NO TRAILER PASSES. The operator's own commits carry none, and a gate that refuses the
+ * operator on their own tree reads as an outage, never a safeguard.
+ *
+ * THE PASS NOTE SPEAKS ONLY WHEN SOMETHING IS HELD. A pass that touched held ground names that ground; a
+ * pass over ground no hold names prints nothing, so a tree with no live hold commits in silence and the
+ * one line that does print stays worth reading. A ledger whose `holds` fence the gate cannot find still
+ * speaks: that reads as the ledger diverging from the gate, never as nothing held.
+ *
+ * A TORN HOLD SPEAKS. A `[[hold]]` row that names a hold but parses without a trailer or without a glob
+ * defends nothing, so the gate cannot honour it — and a fence whose every row tore would otherwise pass in
+ * the same silence as a fence that holds nothing. The gate names each torn row on every commit until the
+ * ledger mends it: the divergence surfaces, it never blocks the tree, and it is never dropped.
+ *
+ * A path no hold names belongs to no hearth and passes silently. A path TWO hearths claim reads as a
+ * crossing already in flight, and the gate says so rather than picking a winner.
+ *
+ * `git commit --no-verify` remains the override; a crossing taken deliberately wants a row under
+ * `#/crossings` in the same ledger, which is the ledger's own law.
+ *
+ *   install:  git config core.hooksPath .githooks     (`.githooks/commit-msg` runs this)
+ *   witness:  tools/hearths-gate-witness.sh
+ *
+ * Meme: lar:///ha.ka.ba/lares/docs/pono/hearths
+ */
+import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { join } from "node:path";
+
+const LEDGER = "bags/lares/ha.ka.ba/lares/docs/pono/hearths.mem";
+
+/** Every `[[hold]]` row the `holds` fence names, whole or torn. Deliberately narrow: `[[hold]]` tables of
+ *  scalar strings plus one `globs` array; a key in any other shape reads as absent from its row. */
+function holdRows(text) {
+  const fence = /```toml holds\n([\s\S]*?)\n```/.exec(text);
+  if (!fence) return [];
+  const rows = [];
+  let cur = null;
+  let inGlobs = false;
+  for (const raw of fence[1].split("\n")) {
+    const line = raw.trim();
+    if (line === "[[hold]]") { cur = { hearth: "", trailer: "", globs: [] }; rows.push(cur); inGlobs = false; continue; }
+    if (!cur) continue;
+    if (inGlobs) {
+      if (line.startsWith("]")) { inGlobs = false; continue; }
+      const g = /^"([^"]+)"/.exec(line);
+      if (g) cur.globs.push(g[1]);
+      continue;
+    }
+    const kv = /^(\w+)\s*=\s*(.*)$/.exec(line);
+    if (!kv) continue;
+    const [, key, rest] = kv;
+    if (key === "globs") {
+      if (rest.startsWith("[") && !rest.includes("]")) { inGlobs = true; continue; }
+      for (const m of rest.matchAll(/"([^"]+)"/g)) cur.globs.push(m[1]);
+      continue;
+    }
+    const s = /^"([^"]*)"/.exec(rest);
+    if (s && (key === "hearth" || key === "trailer")) cur[key] = s[1];
+  }
+  return rows;
+}
+
+const whole = (r) => Boolean(r.trailer) && r.globs.length > 0;
+
+/** The rows the gate defends: a trailer and at least one glob. A ledger this gate cannot parse fails OPEN
+ *  — it must not block a tree — and the rows it could not read surface through `tornHolds`. */
+export function parseHolds(text) {
+  return holdRows(text).filter(whole);
+}
+
+/** The `[[hold]]` rows that name a hold yet parse without a trailer or without a glob. */
+export function tornHolds(text) {
+  return holdRows(text).filter((r) => !whole(r));
+}
+
+/** The one line a torn fence speaks, or "" when every row parses whole. */
+export function tornNote(text) {
+  const torn = tornHolds(text);
+  if (torn.length === 0) return "";
+  const named = torn.map((r) => {
+    const lack = [r.trailer ? "" : "no trailer", r.globs.length ? "" : "no globs"].filter(Boolean).join(", ");
+    return `${r.hearth ? `\`${r.hearth}\`` : "an unnamed hearth"} (${lack})`;
+  }).join("; ");
+  return `${torn.length} \`[[hold]]\` row(s) in ${LEDGER} parse incomplete and defend nothing: ${named}`;
+}
+
+/** A repo-relative glob → a regex over the whole path. `**` crosses separators, `*` never does, and a
+ *  trailing bare name matches that path and everything beneath it (a submodule reads as one entry). */
+export function globToRegExp(glob) {
+  let out = "";
+  for (let i = 0; i < glob.length; i += 1) {
+    const c = glob[i];
+    if (c === "*") {
+      if (glob[i + 1] === "*") { out += "[^]*"; i += 1; if (glob[i + 1] === "/") i += 1; }
+      else out += "[^/]*";
+      continue;
+    }
+    out += /[.+?^${}()|[\]\\]/.test(c) ? `\\${c}` : c;
+  }
+  return new RegExp(`^${out}(?:/[^]*)?$`);
+}
+
+/**
+ * The hearths a path stands on.
+ *
+ * THE LEDGER BELONGS TO NO HEARTH. A hearth crossing another's ground owes a `#/crossings` row in this
+ * very file, so a hold that reaches the ledger refuses the hand reaching for the pen — the book whose
+ * whole purpose records that somebody stepped across a line, forbidding the record. Measured once: two
+ * spirits owed rows and neither could write one, closed only by a hearth closing rather than a cure.
+ * The carve-out stands so the deadlock cannot return by a hearth claiming the docs ground,
+ * which reads as the natural claim to make.
+ *
+ * A hearth may still hold the ledger in PROSE — the row saying who tends it. What no hold may do is
+ * WITHHOLD it, so the carve-out lands here rather than in the fence a hearth writes.
+ */
+export function hearthsOf(path, rows) {
+  if (path === LEDGER) return [];
+  return rows.filter((r) => r.globs.some((g) => globToRegExp(g).test(path)));
+}
+
+/** The `session_…` name a commit message's `Claude-Session:` trailer carries, or "". */
+export function trailerOf(message) {
+  const m = /Claude-Session:.*?(session_[A-Za-z0-9]+)/.exec(message);
+  return m ? m[1] : "";
+}
+
+export function verdict({ message, paths, ledger }) {
+  if (!/```toml holds\n/.test(ledger)) return { ok: true, note: `no \`holds\` fence in ${LEDGER} — the gate stands down` };
+  const rows = parseHolds(ledger);
+  const torn = tornNote(ledger);
+  const v = verdictOver(rows, message, paths);
+  return torn ? { ...v, torn } : v;
+}
+
+function verdictOver(rows, message, paths) {
+  const held = paths.filter((p) => hearthsOf(p, rows).length > 0).length;
+  if (held === 0) return { ok: true };
+  const trailer = trailerOf(message);
+  if (!trailer) return { ok: true, note: `no \`Claude-Session:\` trailer — the gate passes ${held} held path(s) (an operator's own commit carries none)` };
+  const mine = rows.find((r) => r.trailer === trailer);
+  const crossings = [];
+  for (const p of paths) {
+    for (const r of hearthsOf(p, rows)) {
+      if (r.trailer !== trailer) crossings.push({ path: p, row: r });
+    }
+  }
+  if (crossings.length === 0) {
+    // THE NOTE STATES WHAT IT MEASURED, never what it assumed: it counts the paths on the committing
+    // hearth's own ground apart from the paths on no hold, and attributes no unheld file to a hearth.
+    const where = held === paths.length ? `\`${mine?.hearth ?? "this hearth"}\`'s own ground`
+      : `\`${mine?.hearth ?? "this hearth"}\`'s own ground, and ${paths.length - held} on no hold`;
+    return { ok: true, note: `${paths.length} path(s) stand on ${where}` };
+  }
+  return { ok: false, trailer, mine, crossings };
+}
+
+function main() {
+  const msgFile = process.argv[2];
+  if (!msgFile) { console.error("usage: hearths-gate.mjs <commit-message-file>"); return 2; }
+  const root = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
+  let ledger = "";
+  try { ledger = readFileSync(join(root, LEDGER), "utf8"); }
+  catch { console.log(`[hearths-gate] no ledger at ${LEDGER} — the gate stands down`); return 0; }
+  const message = readFileSync(msgFile, "utf8");
+  const paths = execFileSync("git", ["diff", "--cached", "--name-only", "--diff-filter=ACMR"], { cwd: root, encoding: "utf8" })
+    .split("\n").map((l) => l.trim()).filter(Boolean);
+  if (paths.length === 0) return 0;
+
+  const v = verdict({ message, paths, ledger });
+  if (v.torn) console.error(`[hearths-gate] ${v.torn}`);
+  if (v.ok) { if (v.note) console.log(`[hearths-gate] ${v.note}`); return 0; }
+
+  const byRow = new Map();
+  for (const c of v.crossings) {
+    const k = c.row.trailer;
+    if (!byRow.has(k)) byRow.set(k, { row: c.row, paths: [] });
+    byRow.get(k).paths.push(c.path);
+  }
+  console.error(`[hearths-gate] REFUSED — this commit (${v.trailer}) reaches into another hearth's ground:`);
+  for (const { row, paths: ps } of byRow.values()) {
+    console.error(`\n  ${row.hearth}  (${row.trailer})`);
+    for (const p of ps) console.error(`    ${p}`);
+  }
+  console.error(`\n  The ledger's law: a seam crossed between hearths gets a row under \`#/crossings\` in`);
+  console.error(`  ${LEDGER} BEFORE the hand starts. Write the row, or hand the`);
+  console.error(`  paths back to the hearth that holds them. \`--no-verify\` overrides.`);
+  return 1;
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) process.exit(main());

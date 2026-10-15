@@ -12,9 +12,29 @@
       "import": "./dist/node.js",
       "types": "./dist/node.d.ts"
     },
-    "./tw5-worker-script": {
-      "import": "./dist/tw5-worker-script.js",
-      "types": "./dist/tw5-worker-script.d.ts"
+    "./meme-normalize": {
+      "import": "./dist/meme-normalize.js",
+      "types": "./dist/meme-normalize.d.ts"
+    },
+    "./root-meta": {
+      "import": "./dist/root-meta.js",
+      "types": "./dist/root-meta.d.ts"
+    },
+    "./form-layer": {
+      "import": "./dist/form-layer/index.js",
+      "types": "./dist/form-layer/index.d.ts"
+    },
+    "./carrier-canonical": {
+      "import": "./dist/carrier-canonical.js",
+      "types": "./dist/carrier-canonical.d.ts"
+    },
+    "./meme-ast": {
+      "import": "./dist/meme-ast/index.js",
+      "types": "./dist/meme-ast/index.d.ts"
+    },
+    "./memetic-wikitext-sensorium": {
+      "import": "./dist/memetic-wikitext-sensorium.js",
+      "types": "./dist/memetic-wikitext-sensorium.d.ts"
     },
     "./meme-worker-script.js": {
       "import": "./dist/meme-worker-script.js",
@@ -23,32 +43,42 @@
     "./tw5-memes-root": {
       "import": "./tw5-memes-root.js",
       "types": "./tw5-memes-root.d.ts"
+    },
+    "./plugin-tiddler.generated": {
+      "import": "./dist/plugin-tiddler.generated.js",
+      "types": "./dist/plugin-tiddler.generated.d.ts"
+    },
+    "./weave": {
+      "import": "./dist/weave/index.js",
+      "types": "./dist/weave/index.d.ts"
     }
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "tsx scripts/build-tw5-vendor.ts && tsx scripts/build-plugin-tiddler.ts && tsc && tsx scripts/sync-heleuma.ts",
+    "clean": "node ../../tools/clean-output.mjs dist dist-plugin",
+    "build": "tsx scripts/build-plugin-tiddler.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "NODE_OPTIONS=--experimental-vm-modules pnpm exec jest --config jest.config.cjs"
+    "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "test": "vitest run",
+    "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts",
+    "smoke:plugin-boot": "tsx scripts/smoke-plugin-boot.ts",
+    "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts"
   },
   "dependencies": {
-    "@lararium/core": "workspace:*",
-    "@lares/core": "workspace:*",
-    "@taplo/lib": "^0.5.0",
-    "smol-toml": "^1.6.1",
-    "tiddlywiki": "^5.4.0"
+    "@lararium/memetic-frame": "workspace:*",
+    "@lararium/mesh": "workspace:*",
+    "@taplo/lib": "0.5.0",
+    "smol-toml": "1.9.0",
+    "tiddlywiki": "workspace:*"
   },
   "devDependencies": {
-    "@jest/globals": "^29.7.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.0",
-    "tsx": "^4.19.0",
-    "tw5-typed": "^1.1.5",
-    "vite": "^8.0.10"
+    "tsx": "4.23.15",
+    "tw5-typed": "1.1.5",
+    "vite": "8.3.4",
+    "vitest": "5.0.3"
   }
 }

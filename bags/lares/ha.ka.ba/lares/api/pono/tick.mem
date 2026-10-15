@@ -1,0 +1,42 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/tick">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/tick.mem"
+namespace = "&#x2299;"
+role      = "device lifecycle hook — run-block-once-per-nalu; Verse OnSimulate(StagedUpdates) entry point; DEFERRED to UE6 ~2027"
+tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tick"]
+title     = "lar:///ha.ka.ba/lares/api/pono/tick"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/tick"
+```
+
+<<~ ahu #/head>>
+
+! \tick (Deferred)
+
+Device lifecycle hook: run this block once per //nalu// (simulation tick / refresh wave).
+Verse equivalent: `OnSimulate(StagedUpdates)<suspends>` entry point.
+
+''Status: DEFERRED'' — full pono law spec and Hawaiian proper name await Visual Verse tick node
+confirmation (UE6 target ~2027). The //nalu// (wave) names the infrastructure concept below this;
+`\tick` serves as the grammar-layer hook into the nalu. See [[nalu|lar:///ha.ka.ba/lares/api/pono/nalu]] for the wave architecture.
+
+Concurrency runtime (async-first sprint) comes first as a prerequisite. Grammar registration alone stands.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;-aX5TBDHXseuzo-fQ5KRKTcUfxPsUqcceJiMpr0dqzY
+
+<<^ code="&#x0004;" -> to="?">>

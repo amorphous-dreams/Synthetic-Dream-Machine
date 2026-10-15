@@ -1,0 +1,339 @@
+---
+lang: "en"
+source: "lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext"
+source-check: "ni:///sha-256;SLK_nZU5gLIOHJHaqT11r4xDRbmFrmFrnl9dyeUGPjA"
+title: "lar:///ha.ka.ba/lares/api/pono/submissions/tiddlywiki-wikitext"
+tongue: "x-lares>en"
+variant: "GFM"
+---
+
+
+<a id="abstract"></a>
+
+# TiddlyWiki 5 Wikitext — the base syntax
+
+This document DESCRIBES an existing format: the wikitext dialect TiddlyWiki 5 parses, authored by
+Jeremy Ruston and the TiddlyWiki community, defined today by its implementation. It claims no change
+control — that belongs upstream — and it defines nothing the implementation does not already do. Its
+office follows the `text/markdown` precedent [RFC7763]: a registration-grade description of a format a
+community already writes, so that a structured-syntax suffix (`+tiddlywiki`, [RFC6839]) gains the
+normative reference every registration template demands.
+
+The format's grammar stands **open by design**: the parser composes its grammar at parse time from a
+registry of rule modules, and plugins register further rules through the same mechanism the core rules
+use. So this document enumerates the **default rule registry** and specifies the **registration
+mechanism** and the **total-parse law** — it does not, and cannot, enumerate every grammar a wiki may
+run, any more than [RFC7763] could enumerate every Markdown. No wikitext exists that fails to
+parse.
+
+<a id="status"></a>
+
+## Status
+
+A draft, enumerated against the implementation: TiddlyWiki `5.5.0-prerelease` as declared by
+`package.json`, at commit `69b98fc94` (upstream v5.4.1 lineage). Every file citation below reads
+against that commit. The behavioral claims marked **measured** ran through the engine itself
+(`node tiddlywiki.js` rendering probe inputs to HTML), and the files those behaviors live in carry no
+local modification against the upstream merge base — the measurements describe upstream behavior.
+
+The finished draft goes to the TiddlyWiki core maintainers for review before any registration cites
+it — nothing here binds anyone until it has. The document travels upstream as a rendered projection of
+this record; the record's own envelope belongs to its storage format, not to the description.
+
+<a id="the-load-bearing-property"></a>
+
+## The load-bearing property — the total parse
+
+One property of this syntax carries every dialect that rides it, and this document exists first to
+state it precisely. It has three parts, each measured against the engine:
+
+1. **The parse runs total.** No input fails to parse. Text that matches no active rule survives into the
+  parse tree as text nodes; a block run that opens no block rule wraps as an ordinary paragraph
+  (`wikiparser.js`, `parseBlock` / `pushTextWidget`). The parser defines processing for every input,
+  conformant or otherwise — the posture the HTML specification takes for unknown elements [HTML].
+1. **An unbound macro call lands harmless, and renders as nothing.** A call `<<name>>` whose name binds no
+  definition parses cleanly into a transclusion node (`parseutils.js`); at render, the missing-target
+  fallback of the transclusion widget emits no output (`transclude.js`, the `ts-missing` slot). The
+  construct injures nothing around it — and it does **not** render as its own text. A dialect relying
+  on visible passthrough of its added constructs relies on behavior the base does not provide.
+1. **Storage round-trips verbatim.** Rendering never rewrites the source: a tiddler's `text` keeps
+  every construct as written, bound or unbound, matched or unmatched. What a base parser cannot
+  interpret it preserves at rest and omits or neutralizes at render — it never destroys.
+
+Dialects that register additional parse rules ride the base as supersets BECAUSE of this law: a
+receiver holding only the base parser processes a superset document without error, preserves it
+without loss, and renders the base constructs it shares. The `+tiddlywiki` suffix earns its RFC 6839
+place — generic processing of the underlying representation — on parts 1 and 3 together with part 2's
+harmlessness.
+
+<a id="terminology"></a>
+
+## Terminology
+
+| term | reading |
+|---|---|
+| --- | --- |
+| **tiddler** | the unit of storage and addressing: a titled record of named fields, one of which (`text`) carries content. |
+| **field** | a named scalar on a tiddler; `title`, `text`, `type`, and `tags` carry conventional weight. |
+| **wikitext** | the markup dialect this document describes, carried in a tiddler's `text` under `text/vnd.tiddlywiki`. |
+| **rule** | one parser module recognising one construct; the parser composes its grammar from the rule set active for a parse. |
+| **rule set** | the rules active for one parse: the default registry, as narrowed by configuration, `\rules`, or a caller. |
+| **pragma** | a rule that runs in the prologue, before body content, shaping the parse that follows (`\define`, `\rules`, …). |
+| **macro** | a named, parameterised text substitution invoked as `<<name args>>`. |
+| **widget** | a runtime rendering node invoked as `<$name … />`; wikitext constructs compile into a widget tree. |
+| **parse tree** | the array of typed nodes a parse produces; rendering consumes it, and the conformance suite compares against it. |
+| **transclusion** | inclusion of one tiddler's content in another's rendering, `{{title}}` and its variants. |
+| **filter** | the query sub-language (`[tag[x]sort[title]]`) that selects tiddlers; opaque to this grammar, defined by its own. |
+
+<a id="lexical-structure"></a>
+
+## Lexical Structure
+
+A parse runs in one of two modes. **Block mode** recognises constructs that open at the start of a
+line and may span lines; **inline mode** recognises constructs within a line's run of text. A block
+construct's interior generally re-enters inline mode. Ahead of both stands the **pragma prologue**:
+pragma rules match only at the top of the text, each consuming its construct and the whitespace after
+it, until the first non-pragma content ends the prologue.
+
+The parser composes its grammar from **rules** — one module per construct, each declaring the modes it
+serves. The `\rules` pragma narrows the active set for the remainder of a parse, which makes the rule
+inventory below the dialect's true surface: a conforming description enumerates rules, never a fixed
+grammar, because the grammar of any given parse follows from the rules active in it.
+
+<a id="extension-mechanism"></a>
+
+## The Extension Mechanism — the rule-object contract
+
+The grammar's openness comes by design, not by accident of implementation — it forms the format's
+architecture, and this section states it normatively. **The core rules and every extension rule register through one
+mechanism** — the inventory below enumerates the default registry, never the possible grammar.
+
+A rule ships as a module of type `wikirule`. It exports exactly:
+
+- `name` — the string `\rules` and per-wiki configuration filter by. One rule, one name.
+- `types` — which of the three classes the rule serves: `pragma`, `block`, `inline`. A rule MAY serve
+  more than one.
+- `init(parser)` — bind to the parser instance; typically compiles the rule's match expression.
+- `findNextMatch(startPos)` — the position of the rule's next match at or after `startPos`, or
+  nothing.
+- `parse()` — consume the matched construct and return an array of parse-tree nodes.
+
+The parser assembles the active classes from the module registry at construction
+(`wikiparser.js`, `createClassesFromModules("wikirule", …)`), so a plugin's rule and a core rule stand
+as the same kind of object. Three narrowing surfaces then shape the set a given parse runs:
+
+1. **Per-wiki configuration**: a rule whose configuration tiddler
+  `$:/config/WikiParserRules/<class>/<name>` reads other than `enable` leaves the set
+  (`wikiparser.js`, `setupRules`; skipped entirely in safe mode).
+1. **The `\rules` pragma**: `\rules only <names>` keeps exactly the named rules; `\rules except
+  <names>` drops them — by `name`, across all three classes, for the remainder of that parse
+  (`wikiparser.js`, `amendRules`). An unrecognized keyword leaves the set unchanged, silently — the
+  total-parse posture applied to the pragma itself.
+1. **Caller injection**: an embedding application MAY hand a parse an explicit rule set, bypassing the
+  registry.
+
+**Precedence**: at each position the parser adopts the rule matching CLOSEST to the cursor; where two
+rules match at the same position, the rule registered later wins (`wikiparser.js`, the match walk).
+A description of an extension rule SHOULD state where it expects to stand relative to the core rules
+whose surface it neighbours.
+
+A dialect extends this format by registering additional rules and documenting them against this
+contract, each visibly marked as an extension relative to the default registry — the posture GFM takes
+against CommonMark [CMARK]. One such external dialect, memetic-wikitext, documents itself in a sibling
+specification [MWT] under this contract.
+
+<a id="rule-inventory"></a>
+
+## Rule Inventory — the default registry
+
+Enumerated from the implementation (`core/modules/parsers/wikiparser/rules/`, commit `69b98fc94`):
+44 distinct rule names — 8 pragma, 14 block, 25 inline, with `commentblock`, `html`, and `conditional`
+each serving two classes. Names below carry the exact `name` exports — load-bearing, because `\rules`
+and the configuration tiddlers filter by these strings.
+
+### Pragma rules
+
+| rule | construct |
+|---|---|
+| --- | --- |
+| `macrodef` | `\define name(params) … \end` — macro definition. |
+| `fnprocdef` | `\function` · `\procedure` · `\widget` definitions, `\end`-terminated. |
+| `parameters` | `\parameters(…)` — formal parameters for a procedure body. |
+| `import` | `\import <filter>` — pull definitions from the selected tiddlers. |
+| `rules` | `\rules only | except <names>` — narrow the active rule set. |
+| `parsermode` | `\parsermode block | inline` — set the mode the body parses in. |
+| `commentblock` | `<!-- … -->` at prologue position; consumed, renders nothing. Also a block rule. |
+| `whitespace` | `\whitespace trim | notrim` — whitespace handling directive. |
+
+### Block rules
+
+| rule | construct |
+|---|---|
+| --- | --- |
+| `heading` | `!` to `!!!!!!` opening a line. |
+| `list` | `*` `#` `;` `:` `>` runs — unordered, ordered, definition, quote lists; nesting by repetition. |
+| `table` | ` | `-delimited rows with alignment, header/footer/caption markers. |
+| `quoteblock` | `<<<` fenced block quotation. |
+| `codeblock` | ``` fenced verbatim block with optional language. |
+| `typedblock` | `$$$type … $$$` — a block parsed under another content type. |
+| `styleblock` | `@@` fenced block carrying CSS classes/styles. |
+| `horizrule` | `---` horizontal rule. |
+| `macrocallblock` | `<<name args>>` standing alone as a block. |
+| `transcludeblock` | `{{title | template}}` standing alone as a block. |
+| `filteredtranscludeblock` | `{{{ filter }}}` standing alone as a block. |
+| `commentblock` | `<!-- … -->` at block position. Also a pragma rule. |
+| `html` | an HTML/widget element at block position (`<$widget>`, `<div>`, …). Also an inline rule. |
+| `conditional` | `<% if … %> … <% endif %>` at block position. Also an inline rule. |
+
+### Inline rules
+
+| rule | construct |
+|---|---|
+| --- | --- |
+| `bold` | `''bold''`. |
+| `italic` | `//italic//`. |
+| `underscore` | `__underscore__`. |
+| `superscript` | `^^super^^`. |
+| `subscript` | `,,sub,,`. |
+| `strikethrough` | `~~strike~~`. |
+| `codeinline` | `` `code` `` verbatim span. |
+| `styleinline` | `@@…@@` styled span. |
+| `wikilink` | a CamelCase bare link. |
+| `wikilinkprefix` | `~Word` — suppress one CamelCase link. |
+| `prettylink` | `[[text | target]]` link. |
+| `extlink` | a bare external URL. |
+| `prettyextlink` | `[ext[text | url]]` — the bracketed external-link form. |
+| `image` | `[img[…]]` image embed. |
+| `transcludeinline` · `filteredtranscludeinline` | `{{…}}` · `{{{…}}}` within a line. |
+| `macrocallinline` | `<<name args>>` within a line. |
+| `entity` | `&name;` / `&#nnnn;` character reference. |
+| `dash` | `--` · `---` typographic dashes. |
+| `hardlinebreaks` | `"""…"""` region where line breaks render literally. |
+| `commentinline` | `<!-- … -->` within a line. |
+| `syslink` | a bare `$:/…` system-title link. |
+| `html` · `conditional` | the dual-class rules, at inline position. |
+| `mvvdisplayinline` | a macro/variable/value display form. |
+
+<a id="degradation"></a>
+
+## The Degradation Rule
+
+The total-parse law (#/the-load-bearing-property), stated as processor obligations:
+
+**A parser MUST accept every input.** Surface matching no active rule MUST survive into the parse tree
+as text; a block run opening no block rule MUST parse as an ordinary paragraph. Parsing MUST NOT fail,
+and one construct's irregularity MUST NOT alter the parse of its neighbours. The fatal-error model
+some grammars adopt has no place here — this format takes the graceful-recovery posture the HTML
+design principles name [HTML].
+
+**A parser MUST accept a macro call whose name binds no definition**, parsing it as a transclusion of
+the named variable. At render, an unbound call yields no output and injures nothing around it. A
+renderer MUST NOT treat an unbound name as an error, and MUST NOT rewrite the stored text — the call
+survives at rest as written.
+
+**Rendering MUST NOT alter storage.** The rendered projection of a tiddler and the tiddler's `text`
+stand independent; a processor that rewrites source to match what it rendered destroys content the
+next processor may understand.
+
+<a id="conformance"></a>
+
+## Conformance
+
+Conformance layers on the XML precedent of well-formed against valid, with the rule registry standing
+where the document type declaration stands [XML]:
+
+A **conforming document**: under the total-parse law every input parses, so document conformance
+reduces to well-formedness of the constructs a document uses — closed fences, terminated definitions,
+matched element tags. No input reads as invalid; a document only ever reads more or less well-formed.
+
+A **core-conforming parser** accepts every construct in the default registry (#/rule-inventory),
+honours the pragma prologue, and enforces the degradation rule (#/degradation). Because the parse runs
+total, a core-conforming parser accepts every input — the class every embedding application can rely
+on.
+
+An **extension-aware parser** conforms relative to a **declared rule set**: the default registry plus
+the extension rules it registers under the contract of #extension-mechanism, each documented and
+marked as an extension. Two extension-aware parsers agree only to the extent their declared sets
+agree — the interoperability posture RFC 7763 states for the Markdown family holds here unchanged.
+
+Normative force in this document attaches to **parsing** — input to parse tree. Rendering behavior
+enters the description only where load-bearing (the unbound-call fallback, the security gates) and otherwise left to
+implementations.
+
+<a id="test-suite"></a>
+
+## The Executable Conformance Suite
+
+The implementation carries its own conformance corpus, and this description points at it rather than
+duplicating it — the CommonMark posture, where the spec's examples double as its tests [CMARK]:
+`editions/test/` holds the parser specs (`test-wikitext-parser.js` and siblings — input string to
+expected parse tree, every node carrying its producing rule and source span) and some 274 tiddler
+fixtures under `editions/test/data/`, runnable as `node tiddlywiki.js editions/test`. A parser
+claiming core conformance SHOULD pass that suite for the constructs it implements.
+
+<a id="security"></a>
+
+## Security Considerations
+
+Wikitext reaches the browser DOM through the widget layer, and the implementation enforces three
+gates, each measured (commit `69b98fc94`):
+
+- **Unsafe-element renaming.** Element tags on the configured unsafe list (`script`, in
+  `config.js`) render renamed — `<script>` becomes `<safe-script>` — so their content displays inert
+  and never executes (`element.js`).
+- **Event-attribute suppression.** Attributes whose names begin `on` (case-insensitive) never reach
+  the DOM (`widget.js`, `assignAttributes` with event attributes excluded).
+- **Tag-charset restriction.** Element tag names strip to `[0-9a-zA-Z-]` before use (`element.js`).
+
+Unknown element names pass through as real DOM elements — the HTML unknown-element posture — styled
+and displayed but carrying no behavior. **What the renderer does not gate**: URL scheme values on
+attributes such as `href` pass unexamined (`link.js`, `widget.js` — measured as absence at this
+commit), so `javascript:` and similar scheme hazards belong to the hosting context (CSP, sandboxing),
+not to the wikitext layer. An embedding application MUST NOT treat the wikitext parser as a
+sanitizer; the gates above bound script execution through markup, not every channel a hostile
+document might use.
+
+<a id="media-type"></a>
+
+## Media Type
+
+TiddlyWiki names its wikitext `text/vnd.tiddlywiki` (`boot.js`, `registerFileType`, extension `.tid`).
+That name stands in NO IANA registry (checked against the registry 2026-08-24): it reads as an
+unregistered vendor-tree spelling, so any registration citing it starts from zero rather than from a
+standing entry. The coordination — upstream files the `vnd.` registration with this description as its
+specification reference, or chooses another vehicle — belongs to the TiddlyWiki core maintainers, with
+whom the finished draft lands first. Under RFC 6838 §3.2 the registration properly belongs to the
+producing organization; a third party may file, naming both parties, and the organization may assert
+ownership at any time.
+
+Because the grammar stands open, a registration MAY carry a `variant`-style parameter on the RFC 7763
+model: a hint naming which rule-set family the author intended, obliging no receiver. Dialects that
+register additional parse rules (memetic-wikitext [MWT] among them) would name themselves there
+rather than minting sibling types.
+
+<a id="references"></a>
+
+## References
+
+- **[RFC7763]** — The text/markdown Media Type: the registration pattern for a format family no
+  single grammar enumerates; the `variant` hint parameter.
+- **[RFC7764]** — Guidance on Markdown: the design of a lightweight variants registry over an open
+  dialect family.
+- **[RFC6838]** — Media Type Specifications and Registration Procedures; §3.2 the vendor tree.
+- **[RFC6839]** — Additional Media Type Structured Syntax Suffixes; the `+tiddlywiki` suffix's
+  generic-processing criterion.
+- **[HTML]** — the HTML standard's unknown-content posture (semantically neutral, retained, never
+  errored) and the graceful-error-recovery design principle this format shares.
+- **[XML]** — Extensible Markup Language: the well-formed/valid two-layer conformance precedent; its
+  fatal-error model cited as the posture this format rejects.
+- **[CMARK]** — the CommonMark specification and the GFM strict-superset pattern: executable examples
+  as conformance suite; extensions visibly tagged against a core.
+- **[MWT]** — memetic-wikitext, a dialect registering additional parse rules under this format's
+  extension mechanism (sibling specification): `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`.
+- **[TW5]** — the implementation: TiddlyWiki 5, `https://github.com/TiddlyWiki/TiddlyWiki5`,
+  described here at `5.5.0-prerelease`, commit `69b98fc94`.
+
+<a id="edges"></a>
+
+- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
+- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"`

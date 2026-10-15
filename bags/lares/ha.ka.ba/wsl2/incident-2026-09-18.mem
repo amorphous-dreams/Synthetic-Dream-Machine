@@ -1,0 +1,85 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/wsl2/incident-2026-09-18">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lares/ha.ka.ba/wsl2/incident-2026-09-18.mem"
+l-space    = "stable"
+mana       = 12
+manao      = 14
+manaoio    = 12
+role       = "the incident record — a background tree-sitter gate exhausted RAM and swap, the kernel thrashed for five minutes without killing, the operator shut WSL down by hand"
+status-why = "timeline from journalctl -b -1 and the session transcripts; the runaway reproduced under a 3 GB cap the same afternoon (segfault at 2.99 GB in 28 s)"
+tags       = ["api/wsl2", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/wsl2/incident-2026-09-18"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/wsl2/incident-2026-09-18"
+```
+
+<<~ ahu #/entry>>
+
+! 2026-09-18 — the fold gate that ate the VM
+
+Three agent sessions ran in parallel on the Enyalios host (64 GB, 12 threads; the VM at the default 31 GiB RAM + 8 GiB swap): two Claude sessions and one Codex session. At 14:23 PDT the Windows resource monitor spiked — disk churn, CPU pinned — and stayed there until the operator ran `wsl --shutdown` at 14:28. No process died on its own.
+
+<<~/ahu>>
+
+<<~ ahu #/timeline>>
+
+!! Timeline (PDT)
+
+|! when |! what |
+| 14:14 | Claude session `7bdba225` resumes three background agents: the ablation neutral-letter fix, the grammar follow-ups, the tree-sitter four-backtick fence fix. |
+| 14:19–14:20 | The fence agent writes a new `src/scanner.c` and regenerates `src/parser.c` in `packages/tree-sitter-memetic-wikitext`. |
+| 14:21:07 | The fence agent runs `rm -f memetic.so && pnpm run gate:fold` — the package's pytest gate, which loads the freshly built parser. The call passes its 120 s timeout and moves to the background. No memory cap. |
+| 14:23:28 | First `page allocation failure` in the kernel log, named against `Xwayland` — the process that failed to get memory, not the one holding it. |
+| 14:23–14:28 | Fifteen such warnings. Free swap reads 0 kB. `active_anon` reads 26.6 GB. No `oom-kill`, no `Killed process`. |
+| 14:28:49 | Operator shuts WSL down. |
+
+<<~/ahu>>
+
+<<~ ahu #/reproduction>>
+
+!! Reproduction
+
+Same afternoon, from the same tree, under a cap:
+
+```sh
+cd packages/tree-sitter-memetic-wikitext/host-py
+ulimit -v 3000000; timeout 100 python -m pytest -q
+```
+
+`test_memetic_lsp.py::test_diagnostics_name_a_broken_span` grew to 2 993 724 kB resident in 27.9 s of wall clock and died with a segmentation fault at the cap. About 100 MB/s, which fills 40 GB in six or seven minutes — a fit for the timeline.
+
+The fault sits in the regenerated parser with the new external scanner, fed a broken span. The likely shape: a scanner token that consumes nothing, so error recovery allocates without bound. A C parser under Python carries no heap limit of its own.
+
+<<~/ahu>>
+
+<<~ ahu #/ruled-out>>
+
+!! Ruled out
+
+* ''The ablation scratch script'' (`try-discount.js`, also backgrounded at 14:22) — node caps its heap near 4 GB; it cannot account for 40 GB.
+* ''The grammar follow-ups agent'' — reading files at the time.
+* ''Claude session `6381e425`'' — idle since 14:08.
+* ''The Codex session'' — running `git log` and `cat`.
+* ''Disk space'' — 88 GB of 1 TB used. The churn came from swap on the virtual disk, never from a full disk.
+
+<<~/ahu>>
+
+<<~ ahu #/lessons>>
+
+!! What changed because of it
+
+# ''Cap every native parser run'': `ulimit -v 4000000; timeout 120 <cmd>`. A capped run segfaults and hands the agent a red test; an uncapped run hands the operator a frozen desktop. Standing rule, kept in the agent memory as CAP NATIVE PARSER RUNS.
+# ''A restarted agent replays its last step.'' The three agents' worktrees under `~/.claude/jobs/86a17260/tmp/` survived the shutdown; resuming the fence agent without the cap would have run the same gate again.
+# ''The kernel alone will not save the VM.'' Swap gave it minutes to thrash and it took them. `earlyoom` closes that gap; `.wslconfig` tightens the ceiling it works under. Both land in [[lar:///ha.ka.ba/wsl2/setup]]; the reasoning sits in [[lar:///ha.ka.ba/wsl2/memory-guard]].
+# ''The first `.wslconfig` edit changed nothing.'' `memory=32GB` and `swap=8GB` restated the defaults the VM already ran under. A setting that matches the default reads as a change and acts as none.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Pg_AKPtNZeLGjUtskBEIApol59MTDMSu7faZtRLpFuc
+
+<<^ code="&#x0004;" -> to="?">>

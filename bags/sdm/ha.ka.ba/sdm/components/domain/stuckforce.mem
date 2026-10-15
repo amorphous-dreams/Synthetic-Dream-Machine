@@ -1,0 +1,75 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/domain/stuckforce">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+caption   = "stuckforce"
+file-path = "bags/sdm/ha.ka.ba/sdm/components/domain/stuckforce.mem"
+l-space   = "sdm"
+mana      = 13
+manao     = 16
+manaoio   = 12
+role      = "component (domain): Stuckforce — the SDM domain of applied gripping force"
+title     = "lar:///ha.ka.ba/sdm/components/domain/stuckforce"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/sdm/components/domain/stuckforce"
+```
+
+! Stuckforce
+
+<<~ ahu #/definition>>
+
+!! Definition
+
+The SDM domain of applied force that grips, lifts, and holds — telekinetic hovering, hauling, and stubborn crossing. Force that //sticks//.
+
+<<~/ahu>>
+
+<<~ ahu #/activation>>
+
+!! Activation
+
+Orients a module toward ''moving or holding mass without contact''. It carries weight, pins, or floats — the Pentacle's stubborn ground-crossing in play.
+
+<<~/ahu>>
+
+<<~ ahu #/interaction>>
+
+!! Interaction
+
+Pairs with `function/cargo` (haul a load) and `function/barrier` (hold a wall of force). Carries `hook/sustained` whenever a load must stay aloft past the instant.
+
+<<~/ahu>>
+
+<<~ ahu #/filters>>
+
+!! Filters
+
+```text
+[tag[lar:///ha.ka.ba/sdm/components/domain/stuckforce]]                       all stuckforce modules
+[tag[lar:///ha.ka.ba/sdm/components/domain/stuckforce]tag[lar:///ha.ka.ba/sdm/components/function/cargo]]  hauling stuckforce
+```
+
+<<~/ahu>>
+
+<<~ ahu #/aftermath>>
+
+!! Aftermath
+
+* Confirm the canonical SDM spelling/scope of "stuckforce" against the Powers Index telekinetic entries.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;IBgW7ezal7gZVPzMVazOD1nzfPN6VXng0OcfUuWH9AM
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,80 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/tw5-boot-gate">>
+<<^ code="&#x0002;">>
+
+```toml meta
+file-path     = "bags/lararium/ha.ka.ba/lararium/docs/tw5-boot-gate.mem"
+last-reviewed = "2026-07-18"
+mana          = 17
+manao         = 17
+manaoio       = 17
+role          = "design doc: TW5 boot module corpus-gate — 3-layer trust check for corpus-carried JS modules (layers 1–2 built; layer 3 = keyhive, UNBUILT)"
+status-date   = "2026-04-30"
+title         = "lar:///ha.ka.ba/lararium/docs/tw5-boot-gate"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/docs/tw5-boot-gate"
+```
+
+<<~ ahu #/contract>>
+
+!! TW5 Boot Gate — Contract
+
+`bootTrustedModules(tw)` (`packages/lararium-tw5/src/tw5-module-gate.ts`) runs inside `TW5Engine.boot`, in the host boot callback. It adds JavaScript tiddlers from the ''live corpus'' (tiddlers the wiki holds from `preloadTiddlers`), after TW5 completes its own module collection — so execution of a gated body during that boot reads UNBUILT. When no corpus meme passes the gate it injects nothing; the gate carries no imperative fallback of its own.
+
+```
+bootTrustedModules(tw)
+    │
+    ├─ wiki.filterTiddlers([all[tiddlers]stack:has[MODULE_COMPONENT_URI]])
+    │       │  for each matching tiddler:
+    │       ├─ Layer 1: mana ≥ 18 · manao ≥ 17 · manaoio ≥ 17 (an unparseable level fails)
+    │       ├─ skip an empty body
+    │       ├─ Layer 2: tagged SHA-256(text) equals the source-sha256 field
+    │       └─ Layer 3: keyhive capability proof — UNBUILT
+    │
+    ├─ each pass → wiki.addTiddler({ type: application/javascript, module-type, text })
+    │
+    ├─ if any passed → tw.modules.define(moduleText, "library", "lararium-tw5-modules")
+    │                  (TW5 reads the first argument as the module NAME, so the aggregate
+    │                   body does not become the library definition)
+    │
+    └─ if none passed → nothing injects; the packed plugin's own module tiddlers
+                        carry the parser, the deserializer and the widgets
+```
+
+''Why two paths?'' The corpus path names the target steady state: all logic lives as `lar:` memes, verified by hash and (UNBUILT) keyhive capability proof. The packed plugin keeps the app booting and working offline, on cold start, and before any meme passes every gate layer.
+
+<<~/ahu>>
+
+<<~ ahu #/thresholds>>
+
+!! Gate Thresholds
+
+Three signal fields must meet or exceed these floor values before the gate injects a meme as a live JS module. The constants live in `packages/lararium-tw5/src/tw5-module-gate.ts` as `MODULE_*_THRESHOLD`.
+
+| Field | Constant | Floor |
+|---|---|---|
+| `mana` | `MODULE_MANA_THRESHOLD` | 18 |
+| `manao` | `MODULE_MANAO_THRESHOLD` | 17 |
+| `manaoio` | `MODULE_MANAOIO_THRESHOLD` | 17 |
+| `confidence` | — | UNBUILT: no `MODULE_CONFIDENCE_THRESHOLD` stands, and the gate reads no `confidence` field |
+
+Additionally: `source-sha256` must verify (the tagged SHA-256 digest of the `text` field). Gate layer 3 (keyhive capability proof) reads UNBUILT; as built the gate passes on layers 1–2 alone.
+
+<<~/ahu>>
+
+<<~ ahu #/stuck-in-ts>>
+
+!! Why No Meme Can Carry This
+
+`bootTrustedModules` requires a live `$tw` reference to call `wiki.filterTiddlers()`, `wiki.addTiddler()`, and `tw.modules.define()` — runtime calls against the TW5 instance `boot()` creates. No wikitext expresses the gate logic and no tiddler loads it: the gate decides which memes become executable.
+
+''The gate queries a COMPONENT, and a meme carries that component'': `lar:///ha.ka.ba/lararium/tw5/tw5-module`. The gate asks `[stack:has[…]]` — which carriers WEAR it — never what kind a carrier claims. Any carrier wearing that component, passing the signal fields and the content hash, gets injected by the corpus path.
+
+The distinction makes the whole gate. ''Authority rides on what a carrier holds and who granted it, never on its kind'': a carrier cannot declare itself executable, it can only wear a component whose own meme states what wearing it costs, and the stack entry carries no verb of its own.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;hN6-oUq_gtt2evZmSDIBAu2fVf1-4uokXKBmmeTs4H0
+
+<<^ code="&#x0004;" -> to="?">>

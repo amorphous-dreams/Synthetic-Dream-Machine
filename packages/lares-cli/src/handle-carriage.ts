@@ -1,0 +1,85 @@
+/**
+ * handle-carriage — decode a carried, self-certifying `HandleCard` (the recogniser's front door).
+ *
+ * THE CARD IS CARRIED, NEVER FETCHED. A HandleCard is self-certifying — its `sig` verifies against the `nym` it
+ * names — so it needs no trusted channel and no reachable authority: a carrier may WITHHOLD it, never forge it.
+ * The bytes ride anything a human can hand over — a paste, a QR code held to a screen, a `#card=…` URL fragment,
+ * a file on a stick. This is the SAME posture as the hosting-invite / device-admit carriage, applied to recognition:
+ * it lets a follow admit an unmet nym without the CLI's `--card <file>`, the card arriving by paste instead.
+ *
+ * The fragment earns its place because a browser never transmits one — the card reaches the vessel and no relay
+ * or issuer sees it in transit. This module touches no platform: no `location`, no clock, no network. Same string
+ * in, same card out — which is what lets the recognition be tested without a transport.
+ *
+ * `parseHandleCardCarriage` takes the carriage as a STRING and returns a card or `null`. It only SHAPES the card
+ * (domain + the load-bearing fields present) — it does NOT verify the signature or the lineage. That trust gate
+ * stays where it belongs: `HandleBook.ingest`, which runs the full TOFU/causal reader rule and returns a named
+ * verdict. WITHHOLD-not-forge: a garbled / absent / wrong-domain carriage returns `null` (the card DID NOT
+ * ARRIVE — the operator re-carries it), never a throw, so a human's typo never reads as an attack.
+ *
+ * Platform-blind: rides @lararium/mesh's base64url helpers and `HandleCard` shape only. NO node imports — the
+ * CLI and the browser both consume it.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks
+ */
+
+import { base64UrlEncode, base64UrlDecode, utf8Bytes, HANDLE_CARD_DOMAIN, type HandleCard } from "@lararium/mesh";
+
+/** The carriage key a HandleCard rides under — `#card=<base64url>`, a distinct fragment from `#admit=`. */
+export const HANDLE_CARD_CARRIAGE_KEY = "card" as const;
+
+/**
+ * Decode `#card=<base64url>` (or a bare `card=<base64url>`, or a raw base64url token) into a HandleCard, or
+ * `null` when the carriage holds none / a malformed one / something that is not a handle-card. A refusal is
+ * never a throw. The signature is NOT checked here — `HandleBook.ingest` is the trust gate; this only shapes.
+ */
+export function parseHandleCardCarriage(carriage: string): HandleCard | null {
+  // Accept a keyed carriage (`#card=…`, `&card=…`, `card=…`) OR a bare base64url token (a raw paste).
+  const keyed = /(?:^|[#&?])card=([A-Za-z0-9_-]+)/.exec(carriage);
+  const token = keyed?.[1] ?? (/^[A-Za-z0-9_-]+$/.test(carriage.trim()) ? carriage.trim() : null);
+  if (!token) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(new TextDecoder().decode(base64UrlDecode(token)));
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object") return null;
+  const p = parsed as Record<string, unknown>;
+  // The load-bearing shape a HandleCard MUST carry — refused HERE rather than half-admitted downstream. The
+  // domain fixes what this carriage admits; the nym + semantic act + parents are what `ingest` trusts.
+  if (p["kind"] !== HANDLE_CARD_DOMAIN) return null;
+  if (typeof p["nym"] !== "string" || !p["nym"]) return null;
+  if (typeof p["sig"] !== "string" || !p["sig"]) return null;
+  if (typeof p["actCid"] !== "string" || !/^[0-9a-f]{64}$/.test(p["actCid"])) return null;
+  if (!Array.isArray(p["parents"]) || !p["parents"].every((parent) => typeof parent === "string")) return null;
+  if (!Array.isArray(p["chain"]) || p["chain"].length === 0) return null;   // the card carries its handle-KEL, or it is not one
+  return parsed as HandleCard;
+}
+
+/**
+ * THE QR CARRIAGE CEILING — named, never discovered. A QR code holds only so many bytes at a scannable
+ * density, and a handle-card's weight rides its `chain`: an inception-only or once-rotated card fits a QR a
+ * phone reads across a room; a card whose Handle has rotated/grafted many times outgrows it. Past this many
+ * handle-KEL events, the card is PASTE-OR-FILE ONLY (a `#card=` URL, a stick) — the carriage still round-trips
+ * verbatim, but a printed QR stops being the right vessel. A caller checks the boundary UP FRONT rather than
+ * discovering a dense unscannable code at the shrine.
+ */
+export const QR_CARRIAGE_MAX_EVENTS = 2 as const;
+
+/** How this card should carry: "qr" when its chain sits at or under the QR ceiling, "paste-or-file" past it. */
+export function carriageMode(card: HandleCard): "qr" | "paste-or-file" {
+  return card.chain.length <= QR_CARRIAGE_MAX_EVENTS ? "qr" : "paste-or-file";
+}
+
+/** Whether a printed QR is still the right vessel for this card — the boundary read as a boolean. */
+export function fitsQrCarriage(card: HandleCard): boolean {
+  return carriageMode(card) === "qr";
+}
+
+/** Encode a HandleCard into the carriage form the announcer prints and a recogniser pastes — the round-trip
+ *  inverse of {@link parseHandleCardCarriage}. The whole card (incl. its `sig`) rides verbatim, so `ingest`
+ *  re-verifies it on the far side. */
+export function toHandleCardCarriage(card: HandleCard): string {
+  return `#${HANDLE_CARD_CARRIAGE_KEY}=${base64UrlEncode(utf8Bytes(JSON.stringify(card)))}`;
+}

@@ -1,0 +1,82 @@
+# The CAPABILITY PROBE surface: one Node server (static page, report POST, WebSocket echo) on one port, plus a
+# disposable Playwright runner for the control. Nothing here touches the repo tree: tools/capability-probe and the
+# vendored Automerge bundle mount read-only; reports land in a host directory the operator names.
+#
+#   up      mkdir -p "${CAPABILITY_PROBE_REPORTS:-/tmp/capability-probe-reports}"
+#           docker compose -f docker-compose.capability-probe.yml up -d
+#   down    docker compose -f docker-compose.capability-probe.yml down
+#   control docker compose -f docker-compose.capability-probe.yml --profile qa run --rm qa
+#
+# Host port: CAPABILITY_PROBE_PORT (default 5484; the browser swarm's range is 5400-5499), bound to loopback so that
+# Chrome's USB port forwarding (chrome://inspect) reads the page as http://localhost:<port>, a secure context.
+# Reports: CAPABILITY_PROBE_REPORTS (host path, default /tmp/capability-probe-reports) mounts at /reports.
+# CAPABILITY_PROBE_UID/GID (default 1000) own the report files. No Docker socket reaches any container.
+# CAPABILITY_PROBE_AUTOMERGE names the host directory holding the Automerge dist/iife bundle (iife.js).
+
+name: ${CAPABILITY_PROBE_PROJECT:-lares-capability-probe}
+
+services:
+  probe:
+    image: node:24-slim
+    user: "${CAPABILITY_PROBE_UID:-1000}:${CAPABILITY_PROBE_GID:-1000}"
+    working_dir: /app
+    command: ["node", "server.mjs"]
+    init: true
+    read_only: true
+    environment:
+      PORT: "8080"
+      REPORT_DIR: /reports
+      AUTOMERGE_IIFE: /vendor/automerge/iife.js
+    volumes:
+      - type: bind
+        source: ./tools/capability-probe
+        target: /app
+        read_only: true
+      - type: bind
+        source: ${CAPABILITY_PROBE_AUTOMERGE:-./node_modules/.pnpm/@automerge+automerge@3.4.1/node_modules/@automerge/automerge/dist/iife}
+        target: /vendor/automerge
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${CAPABILITY_PROBE_REPORTS:-/tmp/capability-probe-reports}
+        target: /reports
+    tmpfs:
+      - /tmp:mode=1777
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    ports:
+      - "127.0.0.1:${CAPABILITY_PROBE_PORT:-5484}:8080"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/reports').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # The control: Chromium in the official Playwright image shares the probe's network namespace, so `localhost`
+  # inside it is the probe (a secure context by the localhost exemption).
+  qa:
+    image: mcr.microsoft.com/playwright:v1.64.0-noble
+    profiles: [qa]
+    network_mode: "service:probe"
+    depends_on:
+      probe:
+        condition: service_healthy
+    user: pwuser
+    working_dir: /repo
+    environment:
+      PROBE_URL: http://localhost:8080
+      HOME: /tmp/home
+      PROBE_CONTROL_MUTATE: ${PROBE_CONTROL_MUTATE:-}
+    volumes:
+      - type: bind
+        source: .
+        target: /repo
+        read_only: true
+    tmpfs:
+      - /tmp:mode=1777
+    shm_size: 1gb
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    entrypoint: []
+    command: ["node", "tools/capability-probe/control.mjs"]

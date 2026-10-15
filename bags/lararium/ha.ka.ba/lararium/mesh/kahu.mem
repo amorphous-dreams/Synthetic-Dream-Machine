@@ -1,0 +1,585 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/kahu">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/mesh/kahu.mem"
+l-space   = "lararium"
+mana      = 17
+manao     = 16
+manaoio   = 16
+role      = "protocol governance concept: kahu as ONE role at TWO scales — DreamNet corpus-kahu curate the living grammar; a Nexus's kahu quorum holds admit, kapae and seal for that Nexus — with the kahu quorum and the engine cadence kept as separate joints, and walking, contracting and seating kept as three admissions"
+title     = "lar:///ha.ka.ba/lararium/mesh/kahu"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/kahu"
+```
+
+! Kahu
+
+//Kahu// — Hawaiian: guardian of a field of knowledge.
+Cares for without owning. Honored for responsibility, not for power.
+
+In the DreamNet protocol layer, ''kahu'' names ONE role at TWO scales.
+
+* ''DreamNet scale — the corpus-kahu.'' A k-of-n quorum seated from the Amorphous Dreams Cabal
+  curates the living grammar and holds kahu over the corpus bags (`lararium`, `lares`, the genesis
+  artifact). The Cabal names the community; the kahu seat names the keys and the threshold it seats.
+* ''Nexus scale — the kahu quorum.'' Each Nexus seats its own k-of-n kahu quorum, which
+  holds ''admit, kapae and seal'' for that Nexus and nothing beyond it (#/nexus-scale).
+
+At DreamNet scale the role differs from every other capability level in one way: the
+corpus-kahu CURATE a grammar they never legislate. The grammar holds no versions; it lives
+and drifts by use, like a natural language. The corpus-kahu lift lived constructions into
+the formal register (`sigil-*.tid`) as lexicographers, and nothing ratifies a lift. The
+grammar enforces itself — through register collapse detection, the ABILITY_LADDER, and each
+vessel's own founding ceremony. No living authority tells a vessel what to do. The treaty does.
+
+<<~ ahu #/contract>>
+
+!! The Treaty Model
+
+The corpus bags hold the written record of DreamNet's grammar:
+
+* `lararium` — the engine and protocol package definitions
+* `lares` — the API grammar and canonical meme vocabulary
+* genesis artifact — the founding CRDT document that bootstraps every vessel
+
+These bags do not contain user content, operator wikis, or social state. They carry
+''structure'': types, laws, sigils, procedure tiddlers, architectural invariants.
+
+A kahu guardian holds `cap=admin` on these bags specifically. That capability rung matches
+the one any operator could receive on their own vessel's bags — //which bag// carries the grant
+draws the distinction, never a new rung (`CapabilityAccess` reads `"read" | "admin"`, and no verb ladder stands).
+
+''Use leads, and the record follows.'' Hearths speak the grammar, and what use entrenches the
+corpus-kahu lift into the corpus bags as curation. A vessel that syncs those bags inherits the
+record via CRDT propagation — never via a command from the corpus-kahu. Speakers lead; the kahu
+record; the protocol distributes; the vessels enforce
+(<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace#/three-registers">>).
+
+''Intelligibility between hearths runs GRADED, like dialects.'' Graceful parsing and the
+quoteblock floor carry whatever a reader does not know, so a construction one hearth lacks
+degrades to legible text rather than refusing
+(<<~ loulou "lar:///ha.ka.ba/lararium/api/graceful-parsing">>).
+
+!!! The engine cadence reads as the highest-risk lever in the whole design
+
+''AN ENGINE CADENCE STANDS AS THE ONE VERSIONED INSTRUMENT ANY HAND HOLDS, and the record
+shows it stranding federations rather than governing them.'' The worked case runs exact:
+a founding node rewrote its own protocol, the network it had convened did not follow,
+and a fork formed to keep the abandoned grammar alive.
+''No malice, no capture, no command — an authoring act, propagated as designed, that
+emptied the federation it propagated across.'' The same author later moved the successor
+grammar into a standards body, and ''that grammar outlived every implementation he
+wrote'' — which names the cure as ''move the load-bearing artifact somewhere it survives
+its author'', never as authoring more carefully.
+
+''AND A LIVING GRAMMAR MAKES DRIFT INVISIBLE UNTIL IT HAS HAPPENED.'' Grammar drift
+separates no Nexus — the engine window binds membership — so two groups of hearths drift apart in
+use, each still reading itself fluently, ''each still computing itself one Nexus'', and
+nothing anywhere reports how far their dialects stand apart. The absent roster — a shelter property everywhere else — costs
+exactly this: ''no instrument surfaces a fork.'' A lag distribution across the carriage
+board reads as the nearest available proxy and nobody has built it.
+
+''What the engine cadence therefore owes'': an engine epoch that a vessel MAY decline while
+staying reachable and syncing — the partial-conformance seat the identity plane already
+names (//not a member, not an exile, a member with reduced sovereignty//) — so the
+cadence bends rather than strands. ''Forkability protects against a drifting cadence; it
+protects nothing against a cadence shipping correctly to a mesh that cannot keep up.''
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation#/the-gauge">>
+
+!!! The engine cadence stands its own joint ~ never carriage, never the kahu quorum
+
+''THE ENGINE BINDS MEMBERSHIP, through a rolling WINDOW.'' TW5 core plus the house code, by CID,
+names a hearth's true-name (`hearthTrueName` = `engineCid`), and every device-delegation edge signs
+it. A Nexus admits a rolling window of engine epochs, never one engine CID, so its hearths need not
+all run one engine. ''A Nexus's engine cadence comes OFFERED by a cadence threshold seated apart from
+its kahu quorum'', held by those who bear the reboot cost (operators whose places run the engine), and
+that threshold advances the window (the cadence lineage, below). ''Each device moves only by its own adoption'' — a reboot onto the offered
+engine — and no act moves it for it. ''Carrying never counts'': a lamplighter runs infrastructure by
+contract, carries sealed bytes it cannot read, presents and never condemns, and carrying confers no
+share in any Nexus's cadence.
+
+''The grammar holds no ratchet.'' `grammarCid`, the grammar epoch and `kahuli grammar` stand marked
+to RETIRE in code; a scout's measurement of their consumers gates that cut
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-five">>).
+
+''The cadence never fuses with the kahu quorum.'' The hands that admit, kapae and seal for a
+Nexus (#/nexus-scale) roll no engine by holding that seat, and a cadence act never moves the admission
+price — two joints, two thresholds, two rates (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/six-joints">>).
+''And it runs PER-NEXUS: the NEXUS fences, never the cabal'' — an epoch means nothing outside the island
+that rolls it.
+
+''The window reads as a FRONTIER over a signed offer lineage.'' The cadence threshold signs offer
+events, each linked by `prev` to the one before; an engine stands while its offer sits within k hops
+of the head a hearth holds and no release-deny names it. ''k rides each offer'', owned by the cadence
+joint, never by canon or the charter. The window advances and ages only by offers — never by time,
+never by counting who runs what — and a release-deny drops an engine mid-window, monotone. Below the
+floor an edge lapses by non-renewal, and the device re-mints once it adopts. ''A Nexus offers only
+engines the corpus-kahu lineage contains'': Nexuses choose WHEN, never WHAT.
+
+!!! The cadence lineage ~ a seated threshold that governs itself
+
+''THE CADENCE THRESHOLD STANDS AS A SELF-GOVERNING LINEAGE, seated over the operator relation.'' It
+names a threshold that operators hold, never a fourth base relation beside walking, contracting and
+seating (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>). The
+lineage carries its own inception, and a Nexus's joint founding cites that inception ONCE, seating the first
+cadence set. A household seed carries no cadence inception: it serves its one holder alone, and that holder's own hand bears its reboots. From there the lineage governs itself — its own per-seat pre-rotation (#/nexus-scale), and
+its own threshold-signed seat events that seat and unseat cadence holders.
+
+''ELIGIBILITY READS AS A PRESENTATION, never a roster.'' A candidate presents a counted operator admit
+for this Nexus AID together with a device edge whose engine sits in the window — the two facts that
+make the reboot cost theirs to bear. Nothing lists who stands eligible; each candidacy proves itself.
+
+''THE TWO THRESHOLDS NEVER REACH INTO EACH OTHER.'' The kahu quorum never offers an engine, and the
+cadence threshold never admits anyone. A kahu revoke of an operator only SURFACES that operator's
+cadence seat for the cadence quorum's review — the road-(iv) shape (#/nexus-scale): the seat stands
+until the cadence quorum unseats it openly by its own seat event, and no revoke cascades across the joint.
+
+''Two letters, two counts'': ''t'' names the signing threshold (how many cadence seats sign an offer, KERI's `nt`), and
+''k'' names the window (how many hops an offer may trail the head). ''The clan default seats t = 1'': in a small
+clan one operator offers the engine, and t grows as more places bear the cost. The lineage signs the `prev`-linked engine offers the
+window above reads, and each device adopts at reboot.
+
+''EXIT RUNS BY FORK.'' Any hearth may stop following the lineage, and no act of the lineage reaches a
+hearth that declined it.
+
+''The joint founding cites the cadence inception once.'' The cadence inception image carries the first cadence
+set's keys, per-seat next-key digests and threshold. Its digest names the image's canonical bytes. A joint
+charter's genesis carries `founding: { offer, cadence }`; `cadence` cites that digest, and the charter AID
+commits the citation. The cadence image names no Nexus AID. Every holder signs the image; the charter reader
+binds those holders to the founding seats and checks each signature. A household seed carries `founding: null`
+and no cadence inception.
+
+''What the code holds'': `cadence-lineage.ts` signs and verifies the cadence inception. The joint founding cites one inception signed by both hearths; each hearth keeps its own `cadence-key` row. ''Owed in code'': cadence seat events and the offer verifier. The household seed cites none; its one holder chooses each reboot.
+
+''Still open'', each unruled:
+
+* whether one daemon may host islands at two engine epochs;
+* whether partial conformance must land before `kahuli engine` un-holds.
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/welded">>
+
+<<~/ahu>>
+
+<<~ ahu #/seed-and-nexus>>
+
+!! Seed and Nexus ~ one charter shape, two readings
+
+''ONE CHARTER SHAPE CARRIES TWO READINGS'' (operator-ruled). A Lararium that one operator founds stands as
+a ''SEED'': a household island with full machinery — its own charter, herm, leaves and hosted guests. A
+''NEXUS'' stands when two operators each seat their own key in one charter. A ''seat'' names one chair in
+a charter's k-of-n; a seat holds a key, never a person. ''The phase turns on a second operator's SEAT,
+never on a carriage contract'': a contract admits a carrier and seats nobody. A Nexus names the
+relationship between operators (quote license: //"a 'nexus' describes the operators relationship, which
+flows down through their infra's relationships with each other's nodes and leafs and herms/many-to-many"//).
+
+''The ladder'': a seed → a Nexus of two seats → an enduring Nexus of three or more.
+
+''A SEED FOUNDS IN ONE ACT, AND ITS AID NEVER MOVES.'' The Stable founding act (`lares vessel found --hearth`)
+yields, under one human route, the place, persona zero, and a PRIVATE seed charter of one seat at threshold one:
+the seat's own key, and its cold next key on one card the person reads back before the charter moves. Persona
+zero's face founds after the charter, so its fleet relations bind the seed charter's AID, the hearth's true name:
+its device edge, its dyad scope and its cabal sentinel's seed. A seed grows its chairs by the roll that card
+arms, and a re-seat over a seed charter a face binds refuses by name, since a second genesis would mint another
+AID and orphan every relation bound to the first. A face founds at a hearth alone: on a place with no seed
+charter, `persona new 0` refuses and names the act.
+
+''A NEXUS FOUNDS FRESH.'' Two founders make a fresh joint genesis beside each household's own seed, at
+threshold two of two. Nobody grows a household's own charter into a Nexus: a second operator's key seated
+there hands that partner quorum over the household. A household seed never takes a foreign seat
+(`foreignSeats`, `packages/lares-cli/src/seal-import.ts`, refuses it by fingerprint).
+
+''TWO VAULTS, CHECKED IN PERSON.'' The co-founding act takes one seat key from each founder's own vault.
+A seat's ''fingerprint'' names a short digest of its key, and each founder reads the other's fingerprint
+aloud before either signs. The ceremony claims no proof of two humans: two keys never prove two humans,
+and the house accepts that cost
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/cryptographic-individual">>).
+
+''A SEAT HOLDS ITS OWN KEY.'' A seat key stands apart from the persona root and apart from the dialing
+leaf. Each seat commits the digest of its own ''cold key'': the next key, kept on paper off the machine
+and used only to roll. The shared reserve seed and its three cards stand retired: the quorum rite prints
+none and arms no head that cannot roll (#/nexus-scale).
+
+''LOSS AT ALPHA.'' A lost cold key at a two-seat Nexus ends that Nexus: the founders found a successor and
+re-issue its admits. Guardians recover a PERSON, never a Nexus seat. A seed that loses both its node and
+its paper gets re-founded.
+
+''THE ENDURING SHAPE.'' Two seats FOUND a Nexus. A Nexus meant to endure SHOULD seat a third chair early
+and pass chairs by its own rolls before loss forces a successor. That intent adds no mechanism beyond
+Kahu admission by roll.
+
+''A SEAT NEEDS NO PUBLIC HANDLE.'' A seat carries a private chair label and a fingerprint. The exported
+charter publishes each seat's key and fingerprint, and no chair's Handle, pet-name or label
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/two-layer-petnames">>).
+
+''FOUNDERS HOLD BOTH STACKS AS TWO SIGNED EVENTS EACH'': a seat in the genesis (the Kahu stack), and a
+carriage contract that the subject signs and the seats countersign (the Lamplighter stack). A founder may
+countersign their own contract; the other seat signs too. That yields two signatures, never two
+independent reviews.
+
+''ADMISSION TAKES THE SEAT QUORUM'' (operator-ruled; quote license: //"Pono, quorum for Kahu and
+Lamplighter invites, another limit on 'user' friend invites sounds pono."//). Admitting a Kahu — a roll
+that adds a seat — and admitting a Lamplighter — a countersigned carriage contract for an operator or a
+place — each take the charter's seat quorum. No single-seat class covers either. Kapae and rolls take the
+quorum too. At two seats the quorum means both. A quorum's act over a vouch or a member edge takes the same
+quorum, and a voucher's own withdrawal takes the voucher's one signature
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands">>).
+
+''THE USER ROAD STANDS SEPARATE.'' A hosted friend's leaf under an operator's own household takes no Kahu
+quorum and carries its own bound: a user introduces, an operator admits, and the answer consumes the
+introduction. What the code holds: a clockless allowance of `min(1 + rolls survived, cap)` per hosting
+epoch (`lares host roll --cap`); a host-minted guest at floor 1; a walker-minted guest vesting at the
+host's next roll; single-use blind tokens burned at the host; revocation by a roll or by a kapae of the
+guest's leaf; no bound on the operator's own `lares host invite`. ''Owed in code'': a walker's invite
+earns standing by a roll alone, with no operator answer
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">>). The bound rides three
+dials on the hosting act, each a count and none a clock: open introductions per guest, a pre-answered
+allowance for a trusted guest, and strangers' introductions held. An introduction the operator answers
+arrives signed; a pre-answered allowance stays blind; the operator's own invite carries no bound.
+
+''A FACE CLAIMS ITS OWN HANDLE; THE NEXUS ANSWERS FOR ITS OWN TABLE.'' A Handle binds by the face's own
+announce and takes no quorum and no permission: a gate on the claim would stand as a registry
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/two-layer-petnames">>). A Nexus's public DNS
+domain presents the Handles seated at that Nexus through the Nexus's own steward-signed answer; that
+answer speaks for the Nexus's table and grants no name. The quorum removes, by kapae, and never names.
+Whoever holds the domain's DNS credential decides what the zone says, so the domain acts as its
+keeper's hand, never as a consensus.
+
+''GUARDIANS STAY OPTIONAL AND PER FACE.'' Every face starts one-of-one self. No guardian key ever serves
+two faces, and a guardian set recovers a face's key lineage, never its memory
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+
+!!! RULED for the first ceremony (operator ruling)
+
+Each line reads whole at <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>.
+
+* ''At two seats no seat signs any Kahu act alone.''
+* ''An operator's own herm'' takes one signature, scoped to one place and one Nexus, and falls with a kapae of the operator's own admit.
+* ''A seat gets ADDED, never replaced'': the standing Kahu add a holder to both cabals, and the founders keep their chairs.
+* ''Paper'': the cold-key card takes the house format — 64 hex plus a checksum, in groups of four — and prints its purpose, its chair label, its generation and a short charter fingerprint.
+* ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by one typed event on the face's own log, signed by the face's own key (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/persona-kel#/the-enrolment">>).
+* ''A per-Nexus key mints at random'', and the face's lineage re-issues one by a signed hand-over the gate verifies (#/nexus-scale).
+
+!!! OPEN ~ what the operator still owns
+
+Each item below stands unruled. Nothing in code decides one.
+
+* ''Guardian count and threshold at enrolment.'' 2-of-3 survives one lost guardian and forms the impersonation quorum; 2-of-2 ends recovery at one loss.
+* ''Guardian request authentication.'' Options: an agreed channel and a live voice · in person · a device-derived event plus a short string, named a byte check and never an identity proof.
+* ''The veto.'' Options: keep it as a house fork rule and specify it · drop it.
+* ''Death and succession of a person.'' Options: guardian recovery under the same lineage · a separate succession object · no path.
+* ''The backup bundle.'' What it holds and which verb imports it. A bundle per face keeps faces unlinked on the backup medium.
+* ''The catastrophe rite and any third key.'' Options: no rite · an opt-in, charter-native seat-recovery rite with named witnesses · an outsider's third cold key. At alpha no rite stands, and LOSS AT ALPHA governs.
+
+!!! The surface ~ where each part reads
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">> the founding acts, the fence and the build order
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">> walking, contracting and seating, and which take the quorum
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/promotion-path">> the class ladder and how an operator takes a seat
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">> guardians per face, and lineage apart from memory
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/two-layer-petnames">> Handles, pet-names and the private chair label
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/lamplighters#/office">> the Lamplighter office and its quorum grant
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/second-operator">> the household walk for a seed, then a Nexus
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/face-proof#/the-key-hierarchy">> the keys a face presents at a gate
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-wax-stamp">> the charter's epoch chain as provenance
+
+''What the code holds.'' `nexus seal show` reads SEED or NEXUS from two counts — seated keys this vault can
+produce, and seated keys it cannot (`nexus-phase.ts`) — and claims no proof of two humans; a
+seat claim takes no Handle and carries a private chair label; `nexus seal export` carries fingerprints and
+no label. A chair's key rests as a sealed seat row on the vessel whose face stood for it, minted at random
+apart from every persona root (`seat-key-store.ts`, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-table">>):
+`seal seat` mints it, prints the chair's NEXT key as a cold-key card the operator reads back before the charter
+moves, and commits one digest per chair (`nextKeyDigests`); `seal rotate` takes each card back on a terminal and
+adopts each revealed key as its chair's seat key; the quorum doors sign with the rows (`held-quorum.ts`). An
+earlier charter shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. `seal cold rehearse`
+reads a card back against the head's digests, names the chair it would roll, and moves nothing; `--cold-key`
+stands in for its terminal only on a staged root whose custody proves the published test route. The Stable founding
+act stands in code (`found-hearth.ts`, `hearth-aid.ts`): one seat, its card, the PRIVATE seed charter, persona zero's
+face binding its AID; `seal-ceremony.ts` refuses a re-seat over it (`hearth-bound`). `seal cofound open|join|seal`
+founds a joint charter with one key from each vault and one cadence inception signed by both hearths. The two-root
+import and boot witness still stands owed.
+
+<<~/ahu>>
+
+<<~ ahu #/nexus-lifecycle>>
+
+!! The Nexus lifecycle ~ born by act, lives by traffic, quiet by absence
+
+A Nexus names vessels syncing across ley lines. Liveness reads off the traffic itself; nobody declares or grants it. Nobody dissolves a Nexus; it goes quiet. A cabal realm cools to anu without deletion (`cabal-realm`); a standing lift expires without a lowering act (`lararium-canonical-model`). ''The correct admin capability here reads as NONE.''
+
+<<~ has Stage Birth "verb/nexus-seal-seat admin/none ~ a founding act seats keys in a genesis charter">>
+<<~ has Stage Advance "verb/nexus-seal-rotate admin/none ~ revealed key-set matches the prior pre-commitment">>
+<<~ has Stage Succession "verb/nexus-seal-rotate admin/none ~ the roster becomes exactly what stands">>
+<<~ has Stage Liveness "verb/none admin/none ~ ley-line traffic; nothing to build">>
+<<~ has Stage Quiet "verb/none admin/none ~ absence of traffic; no dissolution act">>
+
+Succession rides the roll law at #/seed-and-nexus and #/nexus-scale. A Kahu takes a chair by a quorum roll that seats a key; a seat needs no Handle. The reveal must match the prior epoch's pre-commitment, so no hand adds or drops a Kahu quietly. ''What the code holds'': `seal rotate` takes each revealed chair's card back on a terminal and adopts its key as that chair's seat key (`packages/lares-cli/src/commands/nexus-seal.ts`); a hearth's seed charter founds in the Stable founding act and grows only by that roll, since a re-seat over it refuses (`hearth-bound`). `seal cofound open|join|seal` founds a two-of-two charter across two vaults. ''Owed in code'': the two-vault roll that adds a seat with its new holder's contract, and a passed chair.
+
+<<~/ahu>>
+
+<<~ ahu #/nexus-scale>>
+
+!! The Nexus scale ~ a kahu quorum holds admit, kapae and seal
+
+''FOUNDING READS AS AN ACT, NEVER A FACE.'' The founding mints the Nexus's name — the genesis AID
+commits the signed inception image, whose seats, rule, successor commitments and joint offer fingerprint name one founding — and seats the first kahu quorum. Every seated key signs that image. The founder then holds a
+''kahu seat in THAT Nexus'', and nothing more: no founder face and no `found` cap outlives the act.
+`vessel found` stays a rite verb every operator runs (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/found">>).
+
+''The quorum holds three acts for its one Nexus'': ''admit'' (counter-signing an operator's or a
+place's contract-in), ''kapae'' (the quorum-signed antigen, <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/kapae-the-antigen">>)
+and ''seal'' (the k-of-n roll of the seal lineage, which seats and unseats the quorum's own members). A
+Kahu face therefore carries one cap — the Nexus-scale `quorum-share`. The engine cadence rides a separate
+threshold (#/contract), and the corpus-kahu curate at DreamNet scale.
+
+''An admit names ONE relation'': an operator or a place CONTRACTING into the Nexus mesh. A user never
+holds one — a user walks on an invite a hosting hearth or a walker it hosts hands them, redeemed at the
+host's own gate for a keyed grant — and a kahu seat never rides one — a
+member takes a seat through the seal lineage. Admitting a Lamplighter and seating a Kahu each take
+the seat quorum (#/seed-and-nexus). The three stay apart
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-three-admissions">>).
+
+!!! ★ THE SUBJECT PRESENTS ITS ADMIT ★
+
+''The admit travels WITH its subject.'' At the wire the subject PRESENTS its quorum-signed admit, and
+the carriage gate checks it against the shared ''DENY-only'' board — the kapae antigen, monotone, a
+set that only tightens. ''No folded allow roster gates carriage, at any scope'': a roster of who
+belongs names the one register the laws forbid (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
+The quorum's admits stay a shared contract RECORD; the gate never folds that record into an allow set.
+
+''What the code holds.'' `verifyPresentedAdmit` (`carriage-registry.ts`) reads a presented admit and
+its causal lineage against the deny-only board and the kapae antigen; it folds no allow roster and
+reads no clock. The wire carries the presentation (`auth-wire.ts`, `presentedAdmit`) outside the proof
+signature, and the daemon gate keeps it per socket as untrusted input, deciding nothing. A vessel
+carries a SET of Nexuses (`carried-set.ts`). No relation witness and no signing domain of its own
+stand beside the gate: an admit proves itself by its quorum signatures and its lineage.
+
+''The daemon's carriage decision rides the verifier.'' `nexus-carriage.ts` seats a peer in its leaf map
+only when the socket that peer stands on PRESENTED an admit and `verifyPresentedAdmit` reads it `held`
+against a Nexus this vessel carries; a peer presenting nothing stays a stranger, whatever the board
+records. `foldCarriageSet` reads the board's RECORD (`nexus members --list`) and no enforcement shore
+reads its answer as an allow set.
+
+''The subject stamp keys on the Nexus scope.'' An admit signed by a PersonaGroup ROOT correlates one
+human across every Nexus that admits them, so the subject stamp signs with the face's own
+key at that Nexus: 32 bytes minted at random where the face first presents there, resting sealed and cold in
+the face's row for that Nexus (`nexus-leaf.ts`), and related by no seed to the root or to the face's key at any
+other Nexus. ''The face's lineage re-issues that key'' by a hand-over the standing key and its successor both
+sign (`lares persona reissue`). The record rides the Nexus's carriage board; the admit keeps naming the key the
+Nexus admitted; a gate stands a presenter under the HEAD of that key's line alone and reads a line that forks
+as denied; and a kapae on any key of the line holds the whole line. A compromise of the key takes the face-key
+roll (a revoke and a fresh admit), never a hand-over. ''A seat holds its own key'', apart from the persona root
+and apart from the dialing key (#/seed-and-nexus), and the quorum's chairs sign with those seat keys.
+
+''The gate's shape, ruled'':
+
+* a presentation carries its lineage, and the admit travels as a carried bundle;
+* a dialer presents only the dialed island's admit;
+* a seated chair implies its Nexus stands in the carried set;
+* an unsettled deny refuses;
+* a reader learns a rotation only by re-import.
+
+!!! The seal lineage rolls by per-seat pre-rotation
+
+''EACH SEAT PRE-ROTATES ITS OWN KEY.'' The charter commits per seat: a list of next-key digests and a
+next threshold (`nextKeyDigests[]` · `nextThreshold`, KERI's `n[]` · `nt`), never one digest over a
+shared key-set. `seal seat` mints each chair's COLD next key, prints it as a cold-key card the operator
+reads back before the charter moves, and commits its digest; the next key rests on its card, never on a vessel.
+A routine roll takes k per-seat REVEALS. ''A card opens the one generation it prints'' (house reading under the
+cold-card law), so a digest left unrevealed carries forward nowhere: every roll lists fresh digests alone, and a
+chair whose card stays unrevealed leaves at that roll. It returns only as an added seat, whose key signs the roll
+as its proof of possession. ''No Guardian takes part in a routine roll.''
+
+''A KEY THE LINEAGE SEATED NEVER SEATS AGAIN, the genesis's own among them.'' A rolled epoch names its seats in its
+roll; the genesis inception image names its seats and threshold, and every seat signs that image. The FIRST roll reveals those seats and their
+threshold again, which must hash to the genesis's key-set (`roll-genesis-unrevealed`, `roll-genesis-unbound`), and no later
+roll carries them. Every roll then refuses a key any earlier epoch seated (`roll-reuses-a-seated-key`).
+
+''Built'': the charter commits `nextKeyDigests[]` · `nextThreshold` per seat (`wax-stamp.ts`), a roll takes
+each card back on a terminal (`seal rotate`), `seal cold rehearse` reads a card back and moves nothing, and an
+earlier shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing, and a roll that lists any
+digest an earlier epoch listed refuses (`roll-respends-a-digest`). The signed roll below stands in code.
+
+''THE KEYS A ROLL REVEALS SIGN IT.'' At least threshold of the revealed keys — the keys whose
+digests the prior epoch committed, which carry that epoch's authority — sign the roll over the prior
+epoch's CID, the revealed key-set, the threshold and the next commitment, under the `seal-roll` domain. A
+key a seat change adds, committed by no prior digest, signs the same bytes as its proof of possession.
+The lineage verifier checks those signatures at every step, so revealed PUBLIC keys forge nothing: an
+epoch stands only where the private halves of the committed keys signed it
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-wax-stamp">>).
+
+''THE COLD MEDIUM'': paper words carrying a checksum, read back as a proof before the digest seals; a
+hardware key stays optional. Never a passphrase-sealed file on the vessel, and never a key derived from
+the persona seed — a cold key that shares a breach with the warm one buys nothing.
+
+''FROST WITHIN A SEAT, MULTISIG ACROSS SEATS.'' One seat may spread its key across its holder's devices
+by threshold signing. Seats sign as distinct keys, because a quorum change must see WHICH seat signed.
+
+!!! The guardian stands a face apart ~ Guardians recover the PERSON
+
+''GUARDIANS RECOVER THE PERSON, never the Nexus.'' A Guardian holds a recovery key over a persona's KEL
+and, at recovery, signs that persona's rotation independently; nothing reconstructs
+(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook#/threshold-attest-recovery">>). When a seat
+holder loses their keys, their Guardians rotate the person back into continuity. Where a quorum survives
+(three or more seats), that quorum re-seats the person by its own roll (`seal reseat`). At two seats no
+quorum survives a lost cold key, and that Nexus ends (#/seed-and-nexus). ''Guardians carry no weight in the
+Nexus KEL.'' A guardian cuts a fresh key for each face they guard
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>). ''Owed in code — the
+re-found'': `seal reseat` rides the per-seat commitment and stands unbuilt.
+
+''ROAD (iv): A QUORUM CHANGE SURFACES, it never cascades.'' A seat change re-seats nothing on its own.
+The house derives, from records already on the board, which admits and offices leaned on a departed
+signer, and surfaces that set to the new quorum, which revokes openly, by name, on the deny board.
+Standing carries until then. The set derives from the board's own records, so no roster forms.
+
+''THE CATASTROPHE RITE'' stands OPEN and unbuilt (#/seed-and-nexus). At alpha a seed re-founds and a
+two-seat Nexus founds a successor. A rite, once ruled, would name its own weights and witnesses.
+
+''One human MAY hold both faces.'' The separation lives in the OBJECTS, never in the person: a recovery
+key and a quorum-share stay two keys in two custodies, so one stolen object never opens both. A SEED
+begins with one operator holding its seat and its recovery keys; a Nexus stands when two operators each
+seat their own key (#/seed-and-nexus).
+
+''Retired'': the shared reserve seed and the reserve-reveal verb.
+
+''Built — the re-found's seat half.'' The per-seat commitment and signed inception image move charter bytes, epoch CIDs and the Nexus AID. The charter carries one digest per seat; the rite prints each chair's cold-key card and
+`seal rotate` takes the cards back; the Stable founding act founds a hearth's seed charter at one seat, threshold
+one, under its card (`found-hearth.ts`). ''Owed in code'': `seal reseat` and the catastrophe rite. The field's principles for a recovery
+object and its reader rest on the shelf (<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities#/shelf">>).
+
+!!! Owed in code ~ names that blur the relations
+
+* ''The vessel key signs for two relations'' — the place's carrier seal and the wire's proof (the gate
+  key every Nexus a hearth carries shares) — where each relation wants its own face. No invite
+  rides it: the hearth's per-Nexus leaf signs its hosting act. The per-Nexus wire key rides the wire's socket cutover, where every vessel-key gate proof leaves and the floor
+  announcement signs under the wire key.
+
+The cabal ⊥ quorum split stands in code where it can:
+
+* ''`lares nexus rite quorum`'' seats the kahu QUORUM: it gives each chair that stands a seat key, seats the
+  genesis epoch, prints each chair's cold-key card, arms the genesis with one digest per chair, and mints no
+  person.
+* ''`KahuQuorumSeats`'' names the quorum's seats — a seated key-set, its threshold and the charter epoch
+  it authorizes. Keys, never people.
+* ''`sentinel/kahu-cabal`'' (`MESH_CABAL_SENTINEL_URI`) names the CABAL: a Keyhive membership document
+  whose members stand as PersonaGroups, with no threshold, AID or succession. A face founded at a hearth seeds it
+  under that hearth's seed-charter AID (`meshCabalSentinelUriFor`), so two hearths' cabals seed apart. Its digest
+  seeds the document's Keyhive ChangeId and rides Keyhive's signed events, so it renames only by a deliberate re-key.
+
+<<~/ahu>>
+
+<<~ ahu #/distinction>>
+
+!! Kahu vs. cap=admin
+
+`cap=admin` names a ''capability rung'' — what a given actor may do to a given bag.
+
+//Kahu// names a ''role'' — who carries the curatorial responsibility for the living grammar
+across the whole DreamNet, or the admission acts for one Nexus.
+
+These two live in separate registers:
+
+| Register | Term | Meaning |
+|---|---|---|
+| ABILITY_LADDER | `cap=admin` | may touch lower bag layers; may MOVE tiddlers into corpus; may grant/revoke |
+| Role / governance, DreamNet scale | corpus-kahu | curator of the living grammar — a lexicographer, never a legislator; seated from the Amorphous Dreams Cabal |
+| Role / governance, Nexus scale | kahu quorum | admit · kapae · seal for ONE Nexus; k-of-n over that Nexus's seal lineage |
+| Role / governance, Nexus scale | cadence threshold | offers ONE Nexus's engine cadence; a self-governing lineage seated apart from the kahu quorum, held by those who bear the reboot cost |
+
+An operator may hold `cap=admin` on their own cabalGroup's infrastructure bags. That
+does not make them kahu of DreamNet. Corpus-kahu attaches to the //corpus// specifically —
+`lararium`, `lares`, and the genesis artifact — and a Nexus's kahu seat attaches to that
+Nexus's seal lineage alone.
+
+<<~/ahu>>
+
+<<~ ahu #/cabal-surface>>
+
+!! The corpus-kahu ~ seated from the Amorphous Dreams Cabal
+
+The corpus-kahu hold kahu over DreamNet's protocol corpus. The Amorphous Dreams Cabal names the
+community they come from; the kahu seat names a key-set and a threshold, never the Cabal's people. In
+practice this means:
+
+* They hold `cap=admin` on the `lararium` and `lares` Keyhive bag docs.
+* Curated lifts (new sigil tiddlers, new protocol invariants, new ABILITY_LADDER rungs)
+  land in the corpus bags as a record of use, never as dispatch.
+* No vessel obeys a live command from the corpus-kahu. Vessels enforce their own founding
+  proofs and capability gates.
+* The corpus-kahu cannot reach inside an operator's vessel. Their admin grant on corpus bags
+  carries zero authority over operator content, personGroup membership, or cabalGroup
+  social structure.
+
+''The grant binds the corpus-kahu, never crowns them.'' The refined steward
+model (PROPOSED) draws that corpus `cap=admin` as a ''k-of-n threshold'' — the corpus-kahu
+structurally cannot sign as one hand — over a grammar that stays ''forkable'' by
+construction, so a drifting kahu gets forked away from rather than obeyed.
+''Legitimacy flows from the BINDING, never from trust.'' The full four-part binding
+(constitution-outside-reach · downward-accountable · k-of-n · auditable-and-forkable),
+the steward-not-ruler doctrine, and the bounded break-glass / repair authority live at
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>.
+
+The grammar lives in its speakers. The corpus-kahu keep its record. The vessels speak it.
+
+<<~/ahu>>
+
+<<~ ahu #/neighboring-hawaiian-roles>>
+
+!! Neighboring Roles
+
+Hawaiian vocabulary places kahu in a lattice of related guardianship forms.
+These may name adjacent roles as the DreamNet social layer develops:
+
+* ''Kahuna'' — expert practitioner in a field; applied to specialists, scholars, priests.
+  Maps toward domain operators who hold deep expertise in a particular kumu-device
+  or wiki namespace. Does not carry protocol-layer authority.
+* ''Kupuna'' — elder embodying aloha, pono, mālama; keeper of wisdom through lived
+  practice. Maps toward long-standing operators whose vessels carry deep cabal history.
+  Honorific, not a capability rung.
+* ''Kumu'' — source, teacher, foundation. Already in use as the kumu-device interface
+  (reactive event surface). No collision.
+
+<<~/ahu>>
+
+<<~ ahu #/ea-notes>>
+
+!! Ea Notes
+
+The Keyhive gates prove vessel identity and cabal affiliation; neither encodes kahu.
+* Boot proves IDENTITY ONLY: the vessel holds a valid Individual keypair (Gate A), and a device
+  delegation signed by its persona KEL's head key names this vessel's key (the Binding Gate).
+* Gate C — the PersonaGroup's membership in a MeshCabal — stands off the boot path. A PersonaGroup
+  belongs to many cabals or none, so membership reads as a held capability, checked at ACCESS to a
+  cabal's shared canon (`boot-daemon-keyhive.ts`). ''Owed in code'': no access path reads it yet.
+
+Gate C checks cabal MEMBERSHIP, never the quorum's seats. Who holds kahu over the corpus bags
+rides a separate claim, encoded in the Keyhive docs for `lararium` and `lares`. The genesis
+founding ceremony initializes those docs with the corpus-kahu's seated keys and threshold —
+keys, never a membership list — and needs no subsequent runtime authority transfer.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/otakiage">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/capability">>
+<<~ loulou "lar:///ha.ka.ba/lararium/keyhive/keyhive-provider">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/grammar-invariants">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/steward-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pattern-integrities">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;2cou-rE1igwl1SLhq7H-DPfegnrvqhfyMN9t583k43k
+
+<<^ code="&#x0004;" -> to="?">>

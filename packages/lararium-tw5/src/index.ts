@@ -3,10 +3,8 @@
  *
  * Primary exports:
  *   TW5Engine               — clean isomorphic TW5 VM (boot/render/tiddler mutation)
- *   MemeSyncAdaptor         — TW5 SyncAdaptor backed by LarTiddlerStore (Automerge)
+ *   IslandAdaptor           — causal-island↔TW5 wiki bridge; inbound buffer/flush + outbound writes
  *   MemoryTiddlerStore      — in-memory LarTiddlerStore (tests / fixtures)
- *   VmPool                  — generic isomorphic VM lifecycle manager
- *   DirectMemeRecipeVm      — in-process TW5Engine wrapper; bootMemeRecipeVm boot helper
  *
  * Widget tree ownership:
  *   Messaging (papalohe/kukali/lele) and kumu device instances are native
@@ -14,17 +12,121 @@
  *   builds the widgetTree and fakeDOM on each render call.
  */
 
+export {
+  WikiStoreAdapter,
+  projectWikiSensorium,
+  buildFixtureIsland,
+  runWikiConsistencyWitness,
+  GLUE_SEEDS,
+  OBSTRUCT_SEEDS,
+} from "./wiki-store-adapter.js";
+export type {
+  WikiTiddlerReading,
+  WikiSensoriumSnapshot,
+  FixtureTiddler,
+  WikiConsistencyWitness,
+} from "./wiki-store-adapter.js";
 export { TW5Engine } from "./tw5-vm.js";
+export { bagScopeOf, qualifyStackTag, stackOf } from "./has-stack.js";
+export type { StackEntry } from "./has-stack.js";
 export type { TW5CoreBootBlob } from "./tw5-vm.js";
+export {
+  ACTIVE_WIKI_URI,
+  buildActiveWikiRecord,
+  readActiveWikiSlug,
+  selectActiveWikiSlug,
+} from "./active-wiki.js";
+export type { ActiveWikiSelectionSource } from "./active-wiki.js";
+export type { CameraMount } from "./tw5-camera.js";
+export { mountCamera } from "./tw5-camera.js";
+export { mountProjection, PROJECTION_FRAME, dispatchProjectedEvent } from "./tw5-projection.js";
+export {
+  mountCoherenceProjection,
+  wireCoherenceProjection,
+  projectCoherenceIndicator,
+  COHERENCE_FRAME,
+  COHERENCE_COALESCE_MS,
+} from "./wiki-coherence-projection.js";
+export type {
+  CoherenceIndicatorFrame,
+  CoherenceStatus,
+  CoherenceProjector,
+  CoherenceProjectionShores,
+} from "./wiki-coherence-projection.js";
+export {
+  createWikiSensorium,
+  createWikiSensoriumOverReader,
+  compositeCorpusReader,
+  hasWikiSensorium,
+  runWikiSensoriumWitness,
+  letterFrequencyEmbedder,
+  SENSORIUM_FRAME,
+  SENSORIUM_SIGNAL,
+  RECALL_LIMIT,
+} from "./wiki-sensorium-cap.js";
+export type {
+  TextEmbedder,
+  WikiSensorium,
+  WikiSensoriumHandle,
+  WikiSensoriumOptions,
+  WikiCoherenceVerdict,
+  WikiCorpusReader,
+  WikiRecallQuery,
+  WikiRecallHit,
+  WikiRecallResult,
+  WikiCouplingRead,
+  WikiCouplingUnbuilt,
+  WikiSensoriumWitness,
+} from "./wiki-sensorium-cap.js";
+export { summarizeCoherence, shingles, structureSalience, FORM_SHINGLE_K } from "./wiki-sense-fold.js";
+export type { WikiSenseDoc, WikiCoherenceSummary, WikiSenseUniverse } from "./wiki-sense-fold.js";
+export {
+  createWikiSenseSupervisor,
+  registerWikiSenseVerbs,
+  buildProofRecordTiddler,
+  parseProofRecord,
+  proofLedgerPrefix,
+  proofRecordUri,
+  isProofRecordUri,
+  WIKI_SENSE_VERB,
+  LARES_PROOF_RECORD_TAG,
+} from "./wiki-sense-supervision.js";
+export type {
+  WikiSenseShores,
+  WikiSenseSupervisor,
+  WikiSenseSupervisorOptions,
+  WikiSenseCohereReading,
+  WikiSenseProofRecord,
+  WikiSenseFederateRefusal,
+} from "./wiki-sense-supervision.js";
+export { mountPanel, setPalette, setBootSplash } from "./tw5-browser-surface.js";
+export type {
+  TW5Wiki,
+  TW5Tiddler,
+  TW5TiddlerFields,
+} from "./types/tiddlywiki.d.ts";
 
-export { MemeSyncAdaptor } from "./meme-sync-adaptor.js";
+export { IslandAdaptor } from "./island-adaptor.js";
+export { buildIslandRecipe } from "./island-recipe.js";
+export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
+export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
+export type { VerbPlacement } from "./verb-vm.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
-// VmPool and MemeRecipeVm are isomorphic contracts — they live in @lararium/core.
-// Import them from there: import { VmPool, MemeRecipeVm } from "@lararium/core".
+export { getOriginBag } from "./residency-surface.js";
+export { registerActionReactors, makeActionReactorFor, makeTw5Deserializer } from "./action-handler.js";
+export type { Tw5Deserializer } from "./action-handler.js";
+export { canonicalizeNativeCarrierText } from "./native-canonical.js";
+export type { NativeCanonicalCarrier } from "./native-canonical.js";
+export { makeWikiBehavior } from "./wiki-behavior.js";
+export type { WikiBehaviorOptions } from "./wiki-behavior.js";
+export { startEngineWatch, ENGINE_WAITING_ALERT_TITLE } from "./engine-watch.js";
+export { startRecipeWatch } from "./recipe-watch.js";
+export type { ActionHandlerOptions } from "./action-handler.js";
 
-export { DirectMemeRecipeVm, bootMemeRecipeVm } from "./meme-recipe-vm.js";
-
-export { exportMemeText, buildDirectRecord } from "./meme-write.js";
+export { exportMemeText, exportCarrierFile } from "./meme-write.js";
+export type { CarrierFile } from "./meme-write.js";
+export { installLazyResolver, skinnyCid } from "./lazy-resolver.js";
+export type { CarrierResolver as LazyCarrierResolver } from "./lazy-resolver.js";
 
 export { tw5ElementToVdom, tw5ElementToHtml } from "./fake-dom.js";
 export type { VDomNode, TW5FakeElement, TW5FakeTextNode, TW5FakeNode } from "./fake-dom.js";
@@ -33,17 +135,152 @@ export { TW5_VERSION, TW5_CORE_SCRIPT_FILENAME, TW5_CORE_DIR } from "./generated
 
 export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
+export { recipeUri } from "@lararium/mesh/lar-uris";
 
+export type { IslandContext, IslandBehavior } from "./island-context.js";
+export { composeIsland } from "./island-caps.js";
+export type { IslandCap, CapTeardown } from "./island-caps.js";
+export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
+export type { CaptureCapOptions } from "./capture/has-capture.js";
+export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface } from "./verb-dispatcher.js";
+export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, SurfaceDeclared } from "./verb-dispatcher.js";
+export { heedSummons } from "./verb-summons.js";
+export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";
+export { runLocalVerb, makeCapVerify } from "./verb-local-dispatch.js";
+export type { CapVerify, RunLocalVerbOptions } from "./verb-local-dispatch.js";
+export { makeDaemonBehavior } from "./daemon-behavior.js";
+export type { DaemonBehaviorOptions } from "./daemon-behavior.js";
+export { seedDaemonUiTiddlers, makeSwitcherStateReactor, DAEMON_UI_TIDDLERS, SWITCHER_STATE_TITLE, LARES_SURFACE_STATE, LARES_SURFACE_TAG } from "./daemon-ui-tiddlers.js";
+export { seedDaemonPersonaTiddlers, makePersonaStateReactor, DAEMON_PERSONA_TIDDLERS, PERSONA_STATE_TITLE } from "./daemon-persona-tiddlers.js";
+export { seedDaemonCircleTiddlers, makeCircleStateReactor, DAEMON_CIRCLE_TIDDLERS, CIRCLE_STATE_TITLE } from "./daemon-circle-tiddlers.js";
+export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
+export { seedDaemonProtocol } from "./daemon-protocol-seed.js";
+export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE, LIFECYCLE_APPROVE_CAP } from "./daemon-roster-tiddlers.js";
 
-export { TW5WorkerProxy } from "./tw5-worker-proxy.js";
+export { IslandKernel } from "./island-kernel.js";
+export { runSovereignKernel } from "./sovereign-kernel.js";
+export type { IslandHostShore } from "./sovereign-kernel.js";
+export { addSubstrateLayer, addReadOnlyLayer, seedVesselDefaults, mountPrimaryWiki, buildWikiMountSpec } from "./vessel-steps.js";
+export type { ResolveBagHandle, PrimaryMountPool, BindingResolver, PrimaryMountInputs } from "./vessel-steps.js";
+export {
+  makeVesselResidency, writePinTiddler, removePinTiddler, replayPinsFromDaemonDoc,
+} from "./vessel-residency-wiring.js";
+export type {
+  VesselResidency, VesselResidencyPool, VesselResidencyConfig, VesselResidencyHooks,
+  VesselAlertVerbOpts, AlertDropReason, WireToPoolArgs,
+} from "./vessel-residency-wiring.js";
+export { loadCatalogCorpora } from "./load-corpora.js";
+export type { CorpusLoaderDeps } from "./load-corpora.js";
+export {
+  makeWhereReactor, makeResolveReactor, makeListWikisReactor,
+  makePinReactor, makeUnpinReactor, makeRegisterColdReactor,
+  makeWikiPinReactor, makeWikiUnpinReactor,
+  makeWardAlertReactor, fileWardRefusal,
+} from "./worker-data-verbs.js";
+export type { ResidencyOpPost } from "./worker-data-verbs.js";
+// The FOLLOW-GRAPH verbs over the sovereign @circles doc (source of truth; PRIVATE, fleet-synced
+// same-operator, NEVER federated). Both vessels register them through the shared operator-daemon-behavior.
+export {
+  makeCircleReactors, makeCircleAddReactor, makeCircleRemoveReactor, makeCircleListReactor,
+} from "./circle-verbs.js";
+export type { CircleVerbOptions, ResolveCirclesStore } from "./circle-verbs.js";
+// The OWN-PERSONA names on the persona plane — the fleet-riding pet-name + declared Handle (the `seat` claim
+// stays local to whichever node holds it). Store-level moves alone: no verb answers them, and the vessel's main
+// thread calls them from its custody door.
+export { readPersonaSelves, writePersonaSelfName } from "./persona-selves-plane.js";
+export type { PersonaSelfRow } from "./persona-selves-plane.js";
+// The CABAL-REALM verbs over @daemon — the OFFERING that feeds a realm, and the verdict-free capture-clock.
+export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
+export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";
+// Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
+export { makeInitWikiReactor, makeOpenWikiReactor }   from "./wiki-mint-handlers.js";
+export { makeDraftReactor, makePruneStaleReactor }    from "./wiki-draft-handlers.js";
+export { makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions } from "./meme-verbs.js";
+export type { MemeVerbOptions } from "./meme-verbs.js";
+// The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
+export { projectMeme, projectCarrierText, projectTargetOf, recomposeMeme, wikiResolver, PROJECT_TARGETS, MEME_TEMPLATE } from "./meme-project.js";
+export type { ProjectTarget, ProjectRoute, MemeProjection } from "./meme-project.js";
+export type { LaresMemeFace, MemeCheck } from "./types/lares-globals.js";
+export { storeMemeSink, compositeMemeSink } from "./meme-sinks.js";
+export { makeAddBagReactor, makeRemoveBagReactor }    from "./wiki-compose-handlers.js";
+export type {
+  WikiHandlerOptions, WikiMintHandlerOptions, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
+} from "./wiki-handler-options.js";
+export { makeCompactBagReactor, makeRotateRecipeReactor } from "./compaction-handlers.js";
+export type { EpochHandlerOptions, RotateRecipeOptions } from "./compaction-handlers.js";
+export { makeResidencyStatsReactor } from "./residency-handlers.js";
+export type { ResidencyHandlerOptions } from "./residency-handlers.js";
+export { makeCatalogAccessor, findOrThrow } from "./catalog-accessor.js";
+export type { CatalogAccessor } from "./catalog-accessor.js";
+export { RECIPE_PLANES, effectiveRecipe, effectiveRecipeOf } from "./recipe-planes.js";
+export type { RecipePlane, EffectiveRecipe } from "./recipe-planes.js";
+export {
+  composeCoreVessel,
+  substrateCap, daemonCap, wikiSlotCap, wikiCap, poolCap, mountCap,
+  CORE_CAP,
+} from "./core-caps.js";
+export type {
+  VesselOrchestration, VesselCoreResult, VesselDaemonVm, VesselWikiSlot,
+  WikiSlotComponent, DaemonCapDeps,
+} from "./core-caps.js";
+export { openDaemonVmCore, HostWorkingBindingRefusal } from "./daemon-vm-core.js";
+export type {
+  DaemonVmHost,
+  DaemonVmCore,
+  DaemonVmCoreOptions,
+  VesselPlaceVerbRequest,
+} from "./daemon-vm-core.js";
+export {
+  composeVerbPlane,
+  mempalaceProviderCap, formPalaceProviderCap, daemonVerbProviderCap, telemetryProviderCap,
+  recallVerbCap, telemetryVerbCap, captureVerbCap, worldlineVerbCap,
+  VERB_PROVIDER, VERB_GROUP, VERB_GROUP_PREFIX,
+} from "./verb-caps.js";
+export type {
+  VerbContribution,
+  MempalaceProvider, FormPalaceProvider, DaemonVerbProvider, TelemetryProvider,
+  RecallClient, RecalledTrajectoryStub, SubagentEdgePair,
+} from "./verb-caps.js";
 
-export { buildCeremonyTiddlers, didKeyFromVerifyingKey } from "./cold-boot-ceremony.js";
-export type { CeremonyTiddler } from "./cold-boot-ceremony.js";
-export type { WorkerFactory, AnyWorker } from "./tw5-worker-proxy.js";
+export * from "./memetic-wikitext-sensorium.js";
+export { readCarrierShape } from "./carrier-shape.js";
+// THE ONE ROOT-META LOCATOR — every reader composes onto this, so semantics agree by construction.
+export { metaFenceAt, rootMetaFence, rootMetaFields, metaValueRaw } from "./root-meta.js";
+export type { MetaFenceSpan } from "./root-meta.js";
+// THE FRAME IS ITS OWN PACKAGE. The head reader, the meta opener, the span reader and the block check
+// live in `@lararium/memetic-frame`; a consumer imports them from there, never through this barrel.
+// THE ONE FINDER of the corpus. Twenty-two readers enumerated it by hardcoded glob, in three
+// disagreeing answers, and the disagreement hid a real carrier from every gate. Read the DECLARATION,
+// never the path — see carrier-files.ts.
+export {
+  carrierFiles, readCarrierFiles, forgetCarrierFiles,
+  declaresCarrier, inSubmodule,
+  SUBMODULES,
+} from "./carrier-files.js";
+export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as DeclaredCarrierFile } from "./carrier-files.js";
+// THE ONE READER of WHICH HEADS THE GRAMMAR KNOWS. Four readers rebuilt it from four artifacts, two
+// of them off filenames — and a filename names a tiddler, never a head a call can wear. The VM answers
+// wherever a wiki holds the grammar; ONE fallback reads the packed plugin for a reader whose wiki does
+// not, and fails gracefully so a capture still records its turn.
+export { grammarHeads, grammarHeadsFromPlugin, GRAMMAR_TAG } from "./grammar-heads.js";
+export type { HeadWiki } from "./grammar-heads.js";
+export { getGrammar, resetGrammar } from "./grammar-cache.js";
 
-// ---------------------------------------------------------------------------
-// Active type re-exports
-// ---------------------------------------------------------------------------
-
-export type { TiddlerFields } from "./deserializer.js";
-export type { FilterEngineFn } from "@lararium/core";
+// THE ONE READER of a sigil's parameters — the names it binds, the SLOTS it fills, and the
+// positionals a scheme would steal.
+export {
+  readSigilAttrs, sigilAttr, sigilAttrValue, quotableAttrs,
+  positionalsOf, schemeShapedPositionals, lostPositionals,
+} from "./sigil-attrs.js";
+export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
+export type { CarrierShape, CarrierMarks } from "./carrier-shape.js";
+export { readCarrierEdges } from "./carrier-edges.js";
+export type { CarrierEdge, EdgeForm } from "./carrier-edges.js";
+// THE STAGE A GOVERNED CARRIER STANDS IN — read off `tags`, so a filter answers it in the wiki.
+export {
+  LIFECYCLE_STAGES,
+  readCarrierTags,
+  readCarrierLifecycle,
+  checkCarrierLifecycle,
+} from "./carrier-lifecycle.js";
+export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";

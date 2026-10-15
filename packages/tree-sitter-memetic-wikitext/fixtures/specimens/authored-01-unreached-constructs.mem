@@ -1,0 +1,67 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/testbed/specimens/authored-01-unreached-constructs">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "packages/tree-sitter-memetic-wikitext/fixtures/specimens/authored-01-unreached-constructs.mem"
+l-space   = "stable"
+role      = "a parity specimen for the carrier grammar — the constructs no live meme exercises, held whole so the fold reads their spellings byte for byte, including the spaced ahu closes the writer no longer emits"
+title     = "lar:///ha.ka.ba/lares/testbed/specimens/authored-01-unreached-constructs"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/testbed/specimens/authored-01-unreached-constructs"
+```
+
+<<~ ahu #/held>>
+```toml meta
+type = "text/x-memetic-wikitext"
+```
+
+````
+title: authored-01-unreached-constructs
+role: specimen — the constructs no live meme exercises
+type: text/x-memetic-wikitext
+
+<<~ ahu #open-and-close >>
+An ahu whose open and close each fold to their own kind.
+<<~/ahu >>
+
+\procedure ~Named(~Arg:"default")
+the pragma body
+\end
+
+<<macroName arg1 arg2>>
+
+{{a plain transclusion}}
+
+{{{a filtered transclusion}}}
+
+<<<quote-info-string
+a quote block whose opener carries an info string
+<<<
+
+$$$typed-info-string
+a typed block whose opener carries its dialect
+$$$
+
+@@style-info-string
+a style block whose opener carries its info
+@@
+
+```fence-info-string
+a fenced block whose opener carries an info string
+```
+
+<div>a raw html line</div>
+
+"""
+a hard-break block holds its lines verbatim
+"""
+````
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;AiJIC36dVC4A-Oxb5nKRLCqbKlRglxBLPAEjZP1ZoAU
+
+<<^ code="&#x0004;" -> to="?">>

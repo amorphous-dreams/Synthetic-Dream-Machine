@@ -1,0 +1,59 @@
+#!/usr/bin/env sh
+# pre-commit — the staged `.mem` carriers must carry a block check that covers their body, and a staged
+# submission source/pair must still re-project current. Two gates, run in sequence: `exec` on the first
+# would end the hook there and the second would never fire, so each runs and its exit is kept.
+# Enable once per clone:  git config core.hooksPath .githooks
+#
+# A gate belongs to the tree that carries it. A worktree checked out from a branch that predates a gate
+# (main, before the full merge) carries neither the gate script nor the carriers it judges, so the hook
+# names the gate absent and lets that commit through; a tree that carries the script always runs it.
+REPO="$(git rev-parse --show-toplevel)" || exit 1
+run_gate() {
+  script="$1"
+  # The INDEX, never the working tree: a staged `git rm tools/$script` beside a staged carrier must
+  # still read as absent, even while the file still sits on disk.
+  if git -C "$REPO" ls-files --cached --error-unmatch "tools/$script" >/dev/null 2>&1; then
+    "$REPO/tools/$script"; return $?
+  fi
+  if [ "$script" = "meme-check-staged.sh" ]; then
+    staged_mem="$(git -C "$REPO" diff --cached --name-only --diff-filter=ACMR -- '*.mem')"
+    if [ -n "$staged_mem" ]; then
+      echo "[pre-commit] staged .mem carrier(s) but tools/meme-check-staged.sh is absent from the index — refusing:" >&2
+      printf '%s\n' "$staged_mem" | sed 's/^/  /' >&2
+      return 1
+    fi
+  fi
+  # L7: the `.mem` carrier check above gated only `.mem` — a staged SUBMISSION source or pair (the shelf's
+  # own `.md`/`.md.meta`, or a `.mem` a staged meta names as its `source:`) still passed silently whenever
+  # `submission-currency-staged.sh` happened to be absent from the index. This gates the SAME set that
+  # script would have checked, fail-closed exactly as the `.mem` branch above does.
+  if [ "$script" = "submission-currency-staged.sh" ]; then
+    shelf="bags/lares/ha.ka.ba/lares/api/pono/submissions"
+    staged="$(git -C "$REPO" diff --cached --name-only --diff-filter=ACMR)"
+    involved="$(printf '%s\n' "$staged" | grep -F "$shelf/" || true)"
+    for meta in "$REPO/$shelf"/*.md.meta; do
+      [ -f "$meta" ] || continue
+      source_uri="$(sed -n 's/^source: //p' "$meta" | head -n 1)"
+      [ -z "$source_uri" ] && continue
+      src="bags/lares/${source_uri#lar:///}.mem"
+      if printf '%s\n' "$staged" | grep -qxF "$src"; then
+        involved="$involved
+$src"
+      fi
+    done
+    involved="$(printf '%s\n' "$involved" | sed '/^$/d')"
+    if [ -n "$involved" ]; then
+      echo "[pre-commit] staged submission source/pair file(s) but tools/submission-currency-staged.sh is absent from the index — refusing:" >&2
+      printf '%s\n' "$involved" | sed 's/^/  /' >&2
+      return 1
+    fi
+  fi
+  echo "[pre-commit] this tree carries no tools/$script — that gate does not apply here"
+  return 0
+}
+run_gate meme-check-staged.sh
+code1=$?
+run_gate submission-currency-staged.sh
+code2=$?
+[ "$code1" -ne 0 ] && exit "$code1"
+exit "$code2"

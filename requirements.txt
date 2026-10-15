@@ -1,4 +1,38 @@
 # Development dependencies for lares MCP server
-pytest
-pytest-cov
-chromadb
+# Every line names ONE version: the one `~/.venv` runs and this file is verified against. A range
+# lets two boxes stand two runtimes from one list.
+# The sensorium holder suite's own list (its instruments, the /mcp surface, the structure router's
+# tree-sitter runtime + grammars). CI stands its holder venv from that file alone.
+-r packages/lararium-sensorium/requirements.txt
+pytest-cov==7.1.0
+# Pinned: the version this line is verified against. mempalace declares a range;
+# the sensorium holders open its stores directly, so the resolved version is ours to state.
+chromadb==1.5.9
+
+# --- lares-corpus STRUCTURE-plane parse router — the prose tiers ---
+# The router (packages/lararium-sensorium/scripts/structure_router.py) takes its tree-sitter
+# runtime + grammars from the sensorium list above. Prose fallback: stanza constituency
+# (Stanford, maintained, modern-torch clean) is the live tier-1 — the nested phrase SPANS are
+# the form-induction template candidates. It REPLACES
+# benepar, which is dead against transformers>=5 (T5Tokenizer API drift). spaCy dependency
+# (en_core_web_md) is tier-2; nltk (punkt) is the segment floor.
+stanza==1.13.0
+spacy==3.8.14
+nltk==3.9.4
+
+# --- memetic-wikitext LSP (packages/tree-sitter-memetic-wikitext/host-py/) ---
+# The server rides the SAME committed grammar artifact the pipe folds with —
+# the py host lives inside the artifact bundle; pygls carries the stdio
+# JSON-RPC skin. pygls 2.x (lsprotocol types) — the 1.x API differs.
+pygls==2.1.1
+
+# --- OPTIONAL GPU compute cap (this box #has it; the QA-lab box does not) ---
+# A card is a CAP the box composes, never a dependency. On a GPU box install onnxruntime-gpu
+# (the mempalace[gpu] extra) — the content embedder (all-MiniLM / embeddinggemma, ONNX) then
+# runs on CUDA. onnxruntime-gpu HARD-requires the CUDA runtime libs on LD_LIBRARY_PATH; torch's
+# nvidia-*-cu13 wheels already ship them, and @lararium/mempalace's resolveComputeCapEnv detects
+# + injects that path per-spawn (stanza/torch self-load via torch). A card-less box installs the
+# plain CPU `onnxruntime` instead and rides CPU — the SAME sidecars, the cap resolved-not-ambient.
+# smoke-tested here: RTX 2070 Super, CUDA 13.2 driver, onnxruntime-gpu 1.27 → CUDAExecutionProvider.
+#   GPU box:  onnxruntime-gpu>=1.27   (+ set MEMPALACE_EMBEDDING_DEVICE=auto)
+#   QA  box:  onnxruntime             (CPU; no lib path needed)

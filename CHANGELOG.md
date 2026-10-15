@@ -1,411 +1,388 @@
 # Flying Triremes and Laser Swords — Changelog
 
----
-
-## [v4.1.1] — 2026-04-08
-
-Submodule registration: Kowloon stack, tldraw, and mempalace re-pointed to org forks.
-
-**Submodules registered**
-- `kowloon/` → `amorphous-dreams/kowloon` (fork of `jzellis/kowloon`)
-- `kowloon-frontend/` → `amorphous-dreams/kowloon-frontend` (fork of `jzellis/kowloon-frontend`)
-- `kowloon-client/` → `amorphous-dreams/kowloon-client` (fork of `jzellis/kowloon-client`)
-- `tldraw/` → `amorphous-dreams/tldraw` (fork of `tldraw/tldraw`)
-- `mempalace/` re-pointed from `milla-jovovich/mempalace` → `amorphous-dreams/mempalace`
-
-All five submodules now track org-owned forks under `amorphous-dreams`.
-
----
-
-## [v4.1.0] — 2026-04-08
-
-Lares node infrastructure release: URI+HUD exchange protocol finalized, micro-trace spec promoted, repo governance hardened, org transfer completed.
-
-**HUD Exchange Protocol — Validated and Operational**
-- Mandatory Exchange Format established: every operator tick opens with URI pair + HUD line, closes with updated HUD + forward-looking node URI
-- `⚡ ~NN%` mana/context-window field formalized as declared estimate; `~` prefix mandatory (approximation, not live readout); counts free-remaining from ~100%
-- `voice(s):` field: singular when one coordinator leads, plural when multiple active
-- `tick:N` field: monotonic exchange-tick counter (trackable, not estimated)
-- HUD scope ruling: full URI+HUD pair = operator exchange boundary only; internal task transitions use micro-trace tags; `--verbose`/`--debug` govern visibility of internal handoffs
-- All spec changes propagated to `AGENTS.md`, `lares/sprints/0/URI_SCHEMA.md`, `_todo/SESSION_CRYSTAL_20260408.md`
-
-**Micro-trace HUD — Promoted to Live Spec**
-- SIG-04 promoted from `builds.stuffed.failed/` draft to canonical spec: `lares/signal/micro-trace.md`
-- Sub-agent handoff rule established: every dispatch/return requires URI → URI pair (sub-agent contents are unloggable from the parent trace)
-- `.github/instructions/lares-operations.instructions.md` updated: Signal HUD two-layer model section + sub-agent handoff protocol section added
-- `AGENTS.md` updated: `### In-flow Annotation` and `### Sub-agent Handoff Rule` subsections added
-
-**Repo Governance**
-- `mempalace` registered as git submodule (`milla-jovovich/mempalace`)
-- Branch cleanup: merged local and remote branches deleted; `fetch --prune` run
-- 13 work/feature branches pushed to origin for safekeeping before org transfer
-- Branch protection applied to `main`: PR + 1 approving review required; force pushes and deletions blocked (`enforce_admins: false`)
-- CODEOWNERS retargeted for new repo architecture: `/.github/`, `/AGENTS.md`, `/lares/`, `/builds/` under full org+admin protection; `/sdm/`, `/ftls/`, `/elyncia/` under personal accounts; `/_todo/`, `/_becmi/`, `/tests/` lighter touch; `builds.stuffed.failed/` and `wtf/` intentionally uncovered
-- CODEOWNERS team slug corrected: `@amorphous-dreams/admins` (team created at `github.com/orgs/amorphous-dreams/teams/admins`)
-
-**Org Transfer**
-- Repository transferred from `joshuafontany/Synthetic-Dream-Machine` → `amorphous-dreams/Synthetic-Dream-Machine` — 2026-04-08
-- Local remote URL updated to `git@github.com:amorphous-dreams/Synthetic-Dream-Machine.git`
-- `@freyja-fontany` entries in CODEOWNERS already present; will resolve once account is set up
-
-**Session Crystal + Boot Continuity**
-- `_todo/SESSION_CRYSTAL_20260408.md` updated: Payload 5 added covering full local session (HUD validation, micro-trace promotion, branch state at close, governance, pending items)
-- `AGENTS.md` Key Decisions table updated with all local session decisions
-- `AGENTS.md` Document Map restructured to match actual post-cleanup repo layout
-- Cold-Boot Greeting updated: references Payload 5 and org transfer status
-
----
-
-## [v4.0] — 2026-04-07
-
-## [v4.0.1] — 2026-04-07
-
-Lares prompt system patch release: cold-boot HUD and trust-gate drift fix, plus release hygiene follow-through.
-
-**Cold-boot HUD fix**
-- Hardened `builds/agents/Lares_Kernel.md` so the compressed shared kernel now preserves the two-header exchange contract: input rating line (`◎`), then output Intent Header (`◇`), then post-generative trace HUD
-- Reworded `p — never silent` in the shared kernel so `p0.5` remains the default band, not a pinned literal value; uncertainty should drive `p` selection when stronger local signal exists
-
-**Trust gate fix**
-- Tightened shared kernel wording so verified identity plus shrine/libation/roleplay framing cannot be misread as `operator(admin)` escalation
-- Compressed rule now states explicitly: libations and roleplay do not count as escalation
-
-**Planning / release hygiene**
-- Logged the Codex cold-boot bug note and AE-28 shared-kernel hardening follow-up in `_todo/core/TODO_Signal_HUD_Crystal_Plan.md`
-- Re-ran `combine_agents.py` across all targets and verified alignment clean at 49/49
-
-## [v4.0] — 2026-04-07
-
-Major Lares prompt system update: Signal HUD kernel bootstrap, five-platform manifest architecture, crystal state machine draft, and version 4.0 milestone.
-
-**Epic 1 — Signal HUD kernel writes (Sprint 1b)**
-- Added `### Signal HUD` section to `builds/agents/Lares_Preferences.md` — Intent Header spec (prospective, state-setting), Micro-trace HUD spec (post-generative, annotation model), Working Defaults table, 5-band cumulative attention phase model (Law of Fives), compact `→[glyph]` syntax, transitional `--debug` target note
-- OODA-HA loop input-header: uncertain input self-parses as rated blockquotes/fenced blocks before output header (◎ Orient phase)
-- Updated `builds/agents/Lares_Kernel.md` — Operating Modes section gains Intent Header + Micro-trace HUD; `--debug`/`--verbose`/`--parse` block updated; `--parse` self-activation rule; `| p0.5` always-on trail; phase names canonical: ✶ Observe · ◎ Orient · ◇ Decide · ■ Act · ○ Aftermath (Rasa)
-- Updated `builds/agents/core/Lares_Operations.md` — `--debug` section describes HUD annotation firing thresholds per p-scale; transitional flag for debug target redirect
-- Updated `builds/agents/Lares_VSCode_Operations.md` — session init HUD-on-open note; transitional debug target flag
-- Voice consistency audit clean: stance symbols in HUD spec match voice architecture definitions
-
-**Epic 1 — Five-platform manifest architecture (Sprint 1f)**
-- Renamed `builds/manifests/browser-kernel.toml` → `builds/manifests/browser-project.toml` (ChatGPT Team project instructions tier, 8,600 byte budget)
-- Created `builds/manifests/browser-extended.toml` (Claude.ai project instructions tier, 5,400 byte budget)
-- Created `builds/agents/platform/Lares_Kernel_Claude.md` — XML-structured kernel subset (5,070 bytes): `<lares_kernel>` with `<role>`, `<architecture>`, `<trust_gate>`, `<operating_guidelines>` sections
-- Created `builds/modules/lares-kernel-claude.toml` — module registration for Claude.ai XML kernel
-- Raised `codex-root.toml` budget: `max_bytes` and `project_doc_max_bytes` both 32,768 → 36,000
-- Raised `verify_alignment.py` KERNEL_SIZE_LIMIT 8,000 → 8,192 to match actual ChatGPT platform cap
-
-**Architecture draft — Crystal state machine layer**
-- Extended `_todo/core/Signal_HUD_Tagspace-draft.md` with 7 new crystal system sections: Memory Crystals as State Machines, Machine/Thread Model, Portable Crystal Layout, Debug as Crystal Projection, HUD/Crystal Interface, Crystal Event Model, Seal Protocol, Handoff/Archive-Crystal
-- Research grounding: Temporal Workflow Execution, Martin Fowler Event Sourcing, OpenTelemetry Traces, JSONL spec
-- 12 QA/SDET findings integrated: schema versioning, sequence integrity, immutability contract, replay fidelity scope, continue-as-new analog, fork self-containment, SNAPSHOT derived-cache rule, expanded machine status taxonomy, idempotency contracts, test fixture = crystal bundle, external input tension, README = Memo layer
-- Operator alignment answers recorded: structural replay in STATE.jsonl / enriched in debug.jsonl; seal protocol alpha-contractual; schema versioning needs researcher
-
-**Implementation plan**
-- Created `_todo/core/TODO_Signal_HUD_Crystal_Plan.md` — five-epic implementation plan with dependency map, 16 tracked open decisions, sprint-level task tables, crystal draft extension plan (consolidated from session research), verification criteria, scope constraints
-
-**Operator rulings resolved**
-- OP-01: Inline-by-default confirmed; OTel SpanEvent model; `p` governs categories not salience
-- OP-02: 5-band cumulative attention phase model (Law of Fives); default band 3 at `p0.5`
-- OP-11: Browser three-tier architecture — Quick deferred; Project (8,600) approved; Extended (5,400, XML) approved
-- OP-12: Codex budget raised to 36,000
-
-**Generated platform files**
-- Rebuilt all 36 generated files from 5 manifest targets
-- `verify_alignment.py` reports clean alignment: 49/49 checks pass
-- Five platforms operational: copilot, claude, codex, browser-project, browser-extended
-
----
-
-## [v3.6.1] — 2026-04-07
-
-Lares prompt system update: downstream path migration from `_agents/` to `builds/agents/`.
-
-**`builds/agents/` source and governance docs**
-- Updated live path references in prompt architecture docs, admin module maps, pipeline notes, trust/governance docs, and licensing text to point at `builds/agents/` instead of the retired `_agents/` root
-- Corrected source-of-truth references for kernel, preferences, VS Code operations, platform wrappers, worker definitions, and module sidecars to use the new location
-- Updated helper text and examples that referenced `wc -m`, E-Prime audit targets, worker paths, and admin-module paths
-
-**Generated platform files**
-- Rebuilt root `AGENTS.md`, `.github/copilot-instructions.md`, `.claude/CLAUDE.md`, generated worker artifacts, browser render output, and verification lock/checksum files from `builds/agents/` sources
-- `verify_alignment.py` reports clean alignment after regeneration: 45/45 checks pass
-
-**Historical material**
-- Left prior changelog entries and staging snapshots unchanged where they function as historical records of the former `_agents/` layout
-
----
-
-## [v3.6] — 2026-04-06
-
-Lares prompt system update: canon promotion trust gate, Operator identity via GitHub CLI, explicit Admin escalation, and kernel re-condense.
-
-**`_agents/Lares_Preferences.md`**
-- Canon Promotion gate tightened: direct Canon now requires verified sourcing or explicit `Admin` promotion; `Operator` may propose canon and set session rulings below Canon; `User` cannot set Canon
-- Input Signal Reading gains trust-gate rule: phrasing such as `house canon` no longer overrides register assignment; single-turn surreal or Gaia-conflicting claims stay below Canon unless `Admin` explicitly promotes them
-- Collaboration Model / Reality Anchor narrowed: operator authority still governs heading and creative direction, but Canon finalization now remains Admin-only; nonsensical Gaia claims get one warning and stay provisional if the tier gate blocks Canon
-- Identity & Permissions updated: verified active GitHub CLI session may establish Operator identity for this workspace; Admin requires explicit escalation from a recognized Operator and never infers automatically from `gh`
-
-**`_agents/Lares_Kernel.md`**
-- Canon gate compressed into the kernel: Admin-only direct Canon promotion, non-Admin `house canon` stays below Canon, verified `gh` session may establish Operator, Admin requires explicit escalation
-- Re-condensed to restore compliance with the documented `<8,000` character limit after the trust-gate changes
-- Version: 3.5 → 3.6
-
-**`_agents/Lares_VSCode_Operations.md`**
-- Added GitHub CLI identity example (`gh auth status`) and clarified that it establishes Operator trust only
-- Added regression cases for User/Operator canon injection, Admin direct canon promotion, Operator recognition via `gh`, and refusal to infer Admin after `gh` verification
-- Instruction hygiene updated so permission examples consistently follow the trust gate
-
-**Generated platform files**
-- Rebuilt root `AGENTS.md`, `.github/copilot-instructions.md`, `.claude/CLAUDE.md`, and generated workers from updated `_agents/` sources
-- `combine_agents.py --check` reports all 19 generated files in sync
-
----
-
-## [v3.5.2] — 2026-04-05
-
-Lares prompt system update: Dream-Lock File, Fail-State Recovery Protocol, Unauthorized Dream Drift, Dream Artifact Files (disk-persistent Reality Anchor pairs), SHA-256 content hashing, tilde-free signal tag notation.
-
-**`_agents/Lares_Preferences.md`**
-- Dream-Lock File: `/memories/session/dream-lock-{session-id}.md` created on `--dream` entry (STATUS OPEN) and updated on `--no-dream` exit (STATUS CLOSED); records AUTH_SOURCE, AUTH_TIER, AUTH_IDENTITY, ENTRY, EXIT, GEAR_RATING fields
-- Fail-State Recovery Protocol: four-step sequence (Detect → Diagnose → Recover → Re-anchor) for unauthorized dream drift; produces visible recovery announcement; generates retrospective dream-map covering untracked content; creates dream-lock file retroactively; framed as self-correction, not self-punishment
-- Unauthorized Dream Drift: named degraded-node state — Dream Mode content produced without tracked authorization; Gatekeeper declines warmly naming tier constraint; no silent failure; no unauthorized dream content produced
-- Dream Artifact File: disk-persistent Reality Anchor for Dream Mode output; path `/memories/session/dream-anchor-{session-id}-{seq}.md` (seq zero-padded, e.g. `001`); three-section structure: slot 0a meta-anchor + `## Dream` body + `## Dream-Map` nodes
-- Slot 0a fields: session, seq, created, closed, authorizer, auth-tier, gear-rating, node-count, hash-algorithm, content-hash
-- Hash protocol: SHA-256, 64-char lowercase hex, Python `hashlib`; scope = dream body + map-nodes in document order; slot 0a excluded; UTF-8, LF-normalized, trailing whitespace stripped per line before hashing; re-hash on any content edit; optional `hash-history` (last 3 revisions)
-- Dream-lock vs. dream-artifact distinction: authorization chain (dream-lock) vs. content integrity (dream-artifact) — distinct files, complementary roles; read-into-chat rule documented
-- Tilde-free signal tag notation throughout: `[C:0.9]` not `[C:~0.9]`; 37 instances corrected; prose `~` in natural language retained
-
-**`_agents/Lares_Kernel.md`**
-- Signal tag bracket notation corrected: `[C:0.9]`, `[CS:0.80]`, `[S:0.65]`, `[SP:0.45]`, `[P:0.35]` — tilde removed from 5 instances; prose `~` in natural language retained
-
-**`_agents/Lares_VSCode_Operations.md`**
-- Regression item 21 updated: Dream Mode exit now specifies creation of dream artifact file at `/memories/session/dream-anchor-{session-id}-001.md` with slot 0a metadata; chat output may summarize or read the file; re-parsing still requires Operator/Admin collaboration
-- Regression items 23–26 added: dream-lock lifecycle (STATUS OPEN → STATUS CLOSED), Fail-State Recovery sequence (Detect → Diagnose → Recover → Re-anchor), content hash integrity verification (SHA-256 scope rules), tilde-free tag format
-- Pass criteria: 5 new bullets covering dream-lock lifecycle, dream artifact file + slot 0a, hash scope, Fail-State Recovery, and tilde-free notation
-- Tilde-free signal tag notation throughout: 19 instances corrected
-
-**19 generated platform files rebuilt — 50/50 alignment checks pass**
-
----
-
-## [v3.5.1] — 2026-04-05
-
-Lares prompt system update: resolution parameter `p`, `--verbose` flag (split from `--debug`), KAIROS p self-adjustment, never-silent principle, self-invocation terminal format.
-
-**`_agents/Lares_Preferences.md`**
-- New "Resolution Parameter (p)" section in Operating Modes: 0.0–1.0 scale with 8 named anchors (morpheme → session-arc); natural language matching ("word by word" → p0.1 etc.); KAIROS self-adjustment rules; dual-entry logging (Option A); locality rule; default p0.5
-- `--debug` refactored: now the silent data/log layer only — removes commentary from response body; sets persistent session p; logs all exchange vectors to `/memories/session/debug-vectors-{session-id}.md`
-- New `--verbose` flag: explanation layer, orthogonal to `--debug`; surfaces vector commentary block above every response; KAIROS p-shift narration inline; expanded intra-response transitions; inherits p from active `--debug`, falls back to p0.5; toggle or one-time per-exchange
-- Flag composition table added: 4-cell matrix (--debug × --verbose); all cells show dual-tag + p (none silent)
-- Never-silent principle: `| p0.5` (active p) trails every dual-tag on every substantive response regardless of flag state
-- Surface form updated: `[input] → [output] | p0.5` — p field now explicit in mandatory surface form
-- Self-activation rubric: self-invocation format updated from `[Self-activating --parse: ...]` to `lares@Enyalios:~/Synthetic-Dream-Machine$ lares --parse [p0.5] [input synopsis]` — Lares roleplays at CLI exactly as the operator can
-- `--parse` section header updated to `--parse [p0.5]`; p inheritance rule documented; output format header includes p value
-- CLI Interaction: `--verbose` and `--no-verbose` added to switch list
-
-**`_agents/Lares_Kernel.md`**
-- Operating Modes entries expanded from 3 to 5: `--debug` (silent), `--verbose` (explanation), `--parse` (annotate), `p/never-silent`, `self-activation terminal format`
-- 6 targeted compressions + 2 micro-trims to accommodate new entries within 8,000 char limit:
-  - Exchange Vectors paragraph (~110 chars saved)
-  - Signal Tags (~35 chars saved)
-  - Five Registers (~110 chars saved)
-  - Memory & Consolidation (~100 chars saved)
-  - Collaboration/CLI (~50 chars saved, also added `--verbose` to CLI list)
-  - Workers line (~25 chars saved)
-  - 2 micro-trims in new --verbose entry (8,023 → 7,988)
-- Final: 7,988 bytes (was 7,990 — 12 bytes headroom)
-
-**`_agents/Lares_VSCode_Operations.md`**
-- Golden example #9 updated: `--debug p0.3` activation now shows silent behavior (no vector commentary in response body)
-- New golden example #10.5: `--verbose` activation with full vector commentary block
-- New golden example #10.7: full instrumentation (`--parse --debug --verbose p0.2`) — shows all flags combined
-- Regression checklist: 11 → 18 items (items 12–18 cover `--verbose`, p, KAIROS, never-silent, locality rule, self-invocation terminal format)
-- Pass criteria: 10 → 17 bullets (7 new bullets for new flag behaviors)
-
-**19 generated platform files rebuilt — 50/50 alignment checks pass**
-
----
-
-## [v3.5] — 2026-04-05
-
-Lares prompt system update: Exchange Vectors, `--debug` mode, `--parse` mode, diagnostic self-activation rubric, dual-tag surface form.
-
-**`_agents/Lares_Preferences.md`**
-- New "Exchange Vectors" subsection between Signal Tags and Plurality — formalizes the displacement between input and output tags as a three-component vector (Register delta, Mode transform, Semantic displacement)
-- `--debug` switch added to Operating Modes: vector commentary every turn, debug log recording to `/memories/session/`, session path summary on consolidation
-- `--debug` / `--no-debug` added to CLI Interaction switches
-- `--parse` command added to Input Signal Reading: decomposes multi-register/multi-mode input into tagged segments without responding to content; three invocation patterns (`--parse "text"`, bare arm, block)
-- `--parse` added to CLI Interaction switches
-- New "Diagnostic Self-Activation Rubric" subsection in Operating Modes: standing operator permission for the node to invoke `--debug` or `--parse` autonomously when input reads as multi-register, mode-collision, frame-opaque, high-displacement, or surreal; five named trigger conditions; always announced; over-triggering constitutes Mode Posturing
-- Surface form rewritten: dual-tag `[input] → [output]` format mandatory on every substantive response — the exchange vector in compressed form
-- Intra-response transition marks: `→ [tag]` for mid-response voice changes that shift Register or Mode; `⊕ [tag]` for KAIROS proactive additions; same-neighborhood handoffs unmarked
-- Worker escalation provenance header now includes transition mark when escalation shifts Register or Mode
-- KAIROS proactive surfacing: `⊕ [tag]` convention documented
-- Version: 3.4 → 3.5
-
-**`_agents/Lares_Kernel.md`**
-- Exchange Vectors compressed paragraph added (input → output displacement, three-component vector, surfacing rules)
-- `--debug` added to Operating Modes and CLI switch lists
-- `--parse` added to Operating Modes and CLI switch lists
-- Self-activation rubric compressed into Operating Modes
-- Extensive compression to accommodate new content within 8,000 char limit: Signal Tags table flattened to inline format, Mode/emoji listings merged, Degraded Node States Mode entries merged into single line, Quick Orientation parenthetical register/mode lists removed (listed elsewhere)
-- Final: 7,990 chars (10 headroom under 8,000 limit)
-- Version: 3.4 → 3.5
-
-**`_agents/Lares_VSCode_Operations.md`**
-- New B8 golden example #9: `--debug` mode activation — shows exchange vector commentary format
-- New B8 golden example #10: `--parse` mode — shows multi-register input decomposition into tagged segments
-- B9 regression checklist updated: added item 10 (debug mode activation), item 11 (parse mode)
-
-**`_agents/README.md`**
-- Kernel description updated: mentions `--debug` switch and Exchange Vectors
-- CLI Invocation section: added `--debug` and `--no-debug` examples
-- Architecture Notes: added dual-tag convention and Exchange Vector summary
-
-**`tests/expected/` exemplars**
-- `Lares_Test_Prompt_and_Output_Coffee_Oracle.md`: added dual-tag header
-- `Lares_Test_Prompt_and_Output_Kid_vs_Adult.md`: updated both response headers from old `*[Mode/Register]*` format to dual-tag `→` format
-
-**19 generated platform files rebuilt — 50/50 alignment checks pass**
-
-**Version: 3.4 → 3.5** (all prompt source files)
-
----
-
-## [v3.4] — 2026-04-05
-
-Lares prompt system update: E-Prime pass on all `_agents/` source files.
-
-**`_agents/Lares_Preferences.md`**
-- Full E-Prime substitution pass (~55 changes): predication/identity "is/are" replaced with "constitutes", "reads as", "presents as", "functions as", "remains", "marks", "proves", "renders", and similar in all sections (Quick Orientation, Design Lineage, Name & Identity, Lararium archaeology, Reality Tunnels, E-Prime section, Mode Theory, Complementarity, Degraded Node States, Memory, Voice Architecture, Workers, Collaboration Model, CLI)
-- `<!-- eprime-ok -->` markers added to 11 lines: E-Prime substitution table counter-examples (×5), verbatim citations from RAW, Mal-2 (Principia Discordia), Sri Syadasti, plus E-Prime term-name lines (×2)
-- ok-mark bar (strict): verbatim external citations and E-Prime table "Avoid" column only — nothing else
-- Version: 3.3 → 3.4
-
-**`_agents/Lares_Kernel.md`**
-- Light E-Prime pass (7 substitutions: "marks a failure mode", "hold for any mode", "single-mode default", "asks whether the frame holds", "marks the recovery", "runs low", "constitute the same rules")
-- Char budget maintained: 7,986 / <8,000
-- Version: 3.3 → 3.4
-
-**`_agents/Lares_VSCode_Operations.md`**
-- Light E-Prime pass (9 substitutions: "remains unavailable" ×2, "appear incomplete", "Stay direct", "appears 'in the book'", "remains welcome", "run tighter", "constitute the behavioral guardrails", "holds structurally")
-- B8 golden examples and B9 regression test prompts left in natural voice (per plan — verbatim operator-facing text)
-
-**`AGENTS.md`** (root)
-- Rebuilt from Preferences v3.4 + Kernel v3.4 + VSCode_Operations via combine script — 80,677 chars, 959 lines
-- Version: 3.3 → 3.4
-
-**Final audit:** 71 flags remaining (24 predication / 47 likely-aux) — all justified (auxiliaries, subjunctive conditionals, quoted operator commands, verbatim citations, B8 golden examples)
-
-**Hard gate additions:** `## Quick Orientation` in both source files now opens with an explicit non-negotiable persona enforcement block (verbose in Preferences, compressed in Kernel within char budget)
-
-**Version: 3.3 → 3.4** (all three prompt files)
-
----
-
-## [v3.3] — 2026-04-05
-
-Lares prompt system update: Session Init Protocol & CLI daemon boot screen.
-
-**`_agents/Lares_Preferences.md`**
-- Added "Session Init Protocol" section (between Memory & Consolidation and Voice Architecture)
-- Defines two-path boot logic: crystals-present (orient and proceed) vs. cold-boot (help screen surfaced)
-- Specifies what counts as archive-crystals (pasted context, prior exports, handoff docs, uploads, `/memories/` files, explicit "here's where we left off" framing)
-- Includes full cold-boot screen format: status line, absence acknowledgment, context-supply options, CLI entry commands, closing idiom
-- Defines protocol constraints: does not demand context, must answer direct questions, cold boot is not an error state
-- Version: 3.2 → 3.3
-
-**`_agents/Lares_Kernel.md`**
-- Added Session Init condensed entry to Memory & Consolidation section (two-path logic; defers full format to AGENTS.md)
-- Removed standalone "On Lararium Archaeology" section (folded pointer into Name & Identity); trimmed intro footnote — net within 8,000 char budget (7,990 chars)
-- Version: 3.2 → 3.3
-
-**`AGENTS.md`** (root)
-- Rebuilt from Preferences v3.3 via combine script — Session Init Protocol section propagated; 957 lines
-- Version: 3.2 → 3.3
-
-**`_todo/lares-test-plan-v0.2.md` → renamed v0.3**
-- Added C-series (Cold-Boot / Session Init): 6 probes (C-01 through C-06) covering screen presence, format completeness, tone, crystals-present false-positive, direct-question response, partial crystal handling
-- Updated header to v0.3 with changelog summary
-- Added C-series to degraded-node coverage table and metrics dashboard
-- Added C-series to run cadence (§7.1)
-- Added v0.3 open question on cold-boot context threshold
-
-**Version: 3.2 → 3.3** (all three prompt files)
-
----
-
-## [v3.2] — 2026-04-05
-
-Lares prompt system update: Section B extraction and combine script (two-source-file architecture).
-
-**`_agents/Lares_VSCode_Operations.md`** — new source file
-- Extracted from `AGENTS.md` Section B (`## CLI Agent Context — VS Code / Repo Operations`, subsections B1–B10)
-- Standalone source file with 5-line header (stripped by the combine script at build time)
-- Edit this file (not `AGENTS.md`) when VS Code / repo operational behavior changes
-
-**`scripts/agents/combine_agents.py`** — new script
-- Combines `_agents/Lares_Preferences.md` (Section A) + `_agents/Lares_VSCode_Operations.md` (Section B) into root `AGENTS.md`
-- Usage: `python3 scripts/agents/combine_agents.py` (write) or `--check` (diff-only)
-- Verified: `--check` exits 0 against current `AGENTS.md`
-
-**`AGENTS.md`** (root) — now a generated file
-- Added generated-file comment at lines 1–4 (was already present from v3.1 planning)
-- Version: 3.1 → 3.2
-
-**`_agents/AGENTS.md`** (workflow doc)
-- Added `Lares_VSCode_Operations.md` as fourth file in architecture section
-- Updated Deterministic Update Order: Steps 1a/1b (two source files) + Step 2 now calls combine script
-- Fixed `wc -c` → `wc -m` throughout (byte count vs. Unicode character count)
-- Updated file size reference table
-- Version: 3.1 → 3.2
-
-**`_agents/README.md`**
-- Added `Lares_VSCode_Operations.md` entry to Files section
-- Updated `Lares_Preferences.md` description (no longer claims to contain the VS Code map)
-- Updated `AGENTS.md` description to reflect generated-file status
-- "three-file system" → "four-file system"
-
-**Version: 3.1 → 3.2** (all three prompt files)
-
----
-
-## [v3.1] — 2026-04-05
-
-Lares prompt system update: handoff integration from session 2026-04-05.
-
-**`_agents/Lares_Preferences.md`**
-- Added "The Captain and the Crossroads" subsection to Collaboration Model (two-metaphor framework for operator authority; Snafu Principle passage)
-- Added "Frame-Uncertainty Protocol" as new named section (three moves: Interpretation Declaration / Frame-Uncertainty Flag / Frame-Check Escalation)
-- Added Frame Imputation and Deference Drift to Degraded Node States (11 → 13 states)
-- Added Frame-Uncertainty exception to Default Behavior
-- Version: 3.0 → 3.1
-
-**`AGENTS.md`** (root)
-- Section A rebuilt verbatim from updated `Lares_Preferences.md`
-- Sections B1–B10 (CLI Agent Context / VS Code operational map) unchanged
-- Version: 3.0 → 3.1
-
-**`_agents/Lares_Kernel.md`**
-- Added Frame Imputation and Deference Drift to Degraded Node States
-- Added Frame-Uncertainty and Captain/Crossroads references to Collaboration section
-- Added Frame-Uncertainty exception to Defaults
-- Condensed prose sections to maintain <8,000 character budget (7,980 chars)
-- Version: 3.0 → 3.1
-
-**New files**
-- `CHANGELOG.md` — created (this file); Development Status migrated from `README.md`
-- `_agents/AGENTS.md` — created: Lares prompt architecture workflow documentation
-- `_todo/lares-test-plan-v0.2.md` — created: Track A probe suite including I-series (I-01–I-05)
-
-**Updated files**
-- `README.md` — Development Status section replaced with pointer to this changelog; version ref updated
-- `_agents/README.md` — `_agents/AGENTS.md` added to file index; version refs updated
-- `_todo/lares-handoff-prompt-v2.md` — converted to living sprints roadmap; architectural framing and Next Sprint section added
-
----
-
-## [v3.0] — 2026-04-05
-
-FTLS **Open Beta** baseline. Lares agent architecture established at v3.0.
-
-Active sprint: Chapter 06 (Powers) conversion from OSR source material into native sdm/FTLS rules text. See [`_todo/BECMI/TODO_BECMI_Conversion.md`](_todo/BECMI/TODO_BECMI_Conversion.md) for pipeline state.
+No release has shipped, and no version tag exists. The eras below name turns in the work, newest first. The first version number arrives with the first tagged release.
+
+## Unreleased
+
+### The working layer and the founded seat
+
+**Fixed**
+- **A retired bag takes nothing.** A wiki save, a delete or `lares shore remove` into a bag that DROP retired refuses `bag-retired` at the write door and lands nothing; the hand stays owed on the alert rail.
+- **`vault status` names a cut seal.** A floor carrier cut inside the vessel key's magic reads `torn` and a fault, and a short frame of another house seal reads `unopenable`, never bare.
+- **The custody wait refuses only for a holder that answers.** A holder that leaves mid-wait lets the contender in.
+- **A detached wiki control does nothing.** A click or keystroke on a node a re-render detached answers `stale-target` and runs no handler.
+- **No face log incepts unarmed.** The persona log's mint and every reader refuse an empty recovery commitment, so no face stands where guardians could never arrive; an event with no kind keeps its earlier bytes.
+- **A re-lit face's name stays sealed.** `lares persona new <N> --name <label>` over a face that stands lit writes the label and Handle onto their sealed rows alone, never onto the face's persona plane, whose document rests in the clear on disk; `persona new` reports `fleet: false` and says so, `lares persona sync` refuses by name until the plane's rest seals, and `persona list` reads the sealed row first.
+- **The two-vessel mesh e2e loads again.** It imported one pin twice in a line, so the whole file failed to load and its tests never ran.
+- **The household resolver refuses what would break it.** A zero-led octet refuses by name, private reverse lookups answer inside the house, the records check runs as the vessel's own user so the records file need not stay world-readable, and certificate renewal asks public resolvers (`LARES_ISSUER_RESOLVERS`), refusing any resolver inside the house.
+- **The settle word and the removal read-back tell the whole truth.** A settle waits while the view's origin sits below the bag, a later settle supersedes an earlier wait, and a cut or failed reconcile reads `stopped` or `failed`; `lares shore remove` refuses with no wiki view and names a carrier a removal only unshadowed; `lares ingest` says when no shore or mirror follows.
+- **The island-door inventory measures what it claims.** Browser islands run their own pool's spawn, a door it cannot drive reads `unmeasured`, and a spawn passed by reference or a repeated call site reads red.
+- **A first unlock leaves an exported checkout clean.** The daemon's protocol records, rewritten from source at every boot, no longer project to disk, so `git status` stops showing twelve untracked files under `wikis/daemon/`.
+- **`lares shore` lists every row.** Past 32 standoffs or pending removals the list once collapsed into a count; it now reads every page, and a list that moves between pages or comes up short refuses by name.
+- **`lares shore remove` reads the wiki back.** A carrier the wiki's view still holds stays pending, gets named, and the command exits non-zero; it once cleared on the delete door's word alone.
+- **`lares shore` reaches the daemon island.** A standoff or pending removal the daemon's own projector holds lists beside the active wiki's, tagged by island, and each answer routes to the island that holds its state.
+- **An input past the page's bound says so.** A field whose text outgrows the relay's bound raises a word beside the pane that names the field's count and the bound, and the word stays until that field relays within the bound; the page once kept the characters on screen while the wiki never received them.
+- **A standoff settles toward the disk.** `lares shore take-disk <uri> --key <key>` lands a file's words in the records under the standoff's key, as `take-records` writes the records' render over the file; the alert and `lares shore` name both doors. A key whose file or records moved since takes nothing. `lares ingest` exits 4 (`conflict`) where a conflict lands nothing; it once exited 0.
+- **`lares watch` adopts no file over differing records by itself.** A file that holds no base where the records say something else stands off at the vessel's shore (`no-base`); a person's `lares ingest` of the file still lands it. No ingest wave removes a carrier: an ambiguous rename once tombstoned its source, and the mass-delete brake leaves with that leg.
+- **`lares meme list` names every root.** A bag past 32 carriers once listed none. The listing pages and the CLI reads every page; `--recipe <wiki>` lists the roots the wiki's whole stack resolves, each row naming its bag. The MCP `meme_list` takes `after`.
+- **A carrier the wiki removed reads `not-found` through its recipe.** After `lares shore remove <uri>`, `lares meme get <uri> --recipe <wiki>` once answered the whole carrier from beneath its tombstone.
+- **A holding copy keeps its base when the wiki drops or renames its carrier.** A base leaves with its own file alone, so a later ingest of that holding directory lands nothing; it once re-landed a carrier the wiki had dropped.
+- **The shore's base tree writes each base at once.** A row rests the moment it gets recorded and a removal unlinks before it returns, so no second writer lays an older base over a newer one; a row the disk refuses gets named once and counted.
+- **`lares cancel` answers the ledger's verdict.** A cancel that reached the vessel after it committed the request once read as a withdrawal. The door reports `withdrawn: true` and exits 0 where the vessel holds the id abandoned, and `cancel-lost` with the state the vessel holds where the act already stood; that act runs on, and `lares receipt <id>` reads its outcome.
+- **A cancelled request id ages out of the receipt ring like any other.** Past the ring's count it reads `retention-gap`, where it once kept reading abandoned outside the count.
+- **A failure at the store door carries its own code in JSON.** A row's refusal reads `<verb>-refused`; a floor reads `waking-floor`; a store another holder holds reads `store-held`; a door that gave no answer reads `store-door-timeout`. The nexus, kapae, publish, cabal, persona, raise and handle commands once answered `refused` or `error` for all of them.
+- **A seal-home refold that failed says `failed`.** `lares nexus accept-carriage` and `lares nexus seal import` report `refold: failed` where the standing vessel's refold ran and did not land; `none` means no vessel stood.
+- **An ingest from a holding directory reaches the mirror.** `lares ingest --source <file>` from a directory beside a bag's mirror once left the mirror's file unchanged under a `no-base` alert, and each later scan of the holding file read `new`. The vessel keeps one base per file, so the mirror's file takes the change, nothing stands off, and the holding file's next scan reads `unchanged`. Where a hand also edited the mirror's file, the alert reads `both-moved`.
+- **`lares shore` sees a file removed while no watcher ran.** The list looks at the disk first, so a mirrored file deleted by hand under a standing vessel pends at the next `lares shore`, and `lares shore restore <uri>` writes it back.
+- **Two writers of the shore's base tree drop no row.** The tree rests one file per base under `<state>/projection/synced-tree/`, each written whole, so a projector and an ingest that write in one moment both keep what they pinned. A vessel founded earlier keeps its `synced-tree.json`, which nothing reads: its first boot pins every unchanged carrier anew and writes no file, and a file that differs from its records stands off for a person.
+- **An unlocked node vessel stands its content-key holder.** The daemon island reads its storage directory off the document it owns, so the `sealed-*` verbs answer on a standing vessel where they once refused for want of a holder. No content key mints until a session signer stands.
+- **A store's direct holder rests every write before it releases its claim.** A command that holds the store for one act closes its storage adapter before it gives the store up, so a vessel that stands next finds no save still in flight.
+- **An ingest from a directory beside the mirror keeps its source files.** `lares ingest --source <dir>` from a holding directory outside the bag's mirror once lost each source file to the projector's unlink after the carrier landed; the vessel removes only files its mirror may write.
+- **`lares vessel stand` reads `ok: false` where the host must restart the vessel.** Inside a container, a stand that asks for a restart answers `EngineHeldByHost` with `ok: false` and exit 3; the standing verdict still rides the answer for the host shim.
+- **A wiki opened while it shuts down opens.** A mount that arrives while its island tears down waits for the teardown to finish and then stands on a fresh island; it once answered success for an island that then left.
+- **The vessel removes a file only after reading it.** A file a hand edited stays where it stands when a siting rule or a filetype change moves its carrier, when the carrier leaves that bag, and when the records drop the carrier. The carrier stands off under one alert that names the paths; `lares ingest` of the edited file or `lares shore take-records` settles it. A pointer's sidecar meets the same gate, so a hand's edit to it stands off too.
+- **A file deleted by hand stays deleted until a person answers.** The vessel no longer writes it back and never tombstones its records by itself. One alert per bag names how many carriers stand pending; `lares shore restore <uri>` writes the file back and `lares shore remove <uri>` deletes the carrier in the wiki. Over more than one carrier, name the count (`--all --count <n>`). `lares watch` drops `--delete-grace` and `--delete-fraction`: no clock and no fraction decides a removal. A vessel that kept an earlier `synced-tree.json` reads every carrier as never agreed, once.
+- **A hand edit made while the vessel rested survives the next boot.** Where a file and its records say different things and no base names a last agreement, the vessel writes nothing and raises one alert that names the file and a key. Settle it by `lares ingest` of the file, by saving in the wiki until both say the same, or by `lares shore take-records <uri> --key <key>`. `lares shore` lists what stands.
+- **Unlock and lock recompose without a ten-second stall.** The daemon island's teardown handshake runs once per island; a second shutdown call reads the first answer where it once waited out its whole bound on a worker already terminated.
+- **A stand reads ok without the memory library.** `lares vessel stand` on a machine that holds no mempalace reports `mempalace: absent` beside `ok: true`; a half-installed library still reads `incomplete` and fails the reading.
+- **A title that names a speaker refuses.** A write under a `lar://alias:grant@host/…` title refuses with `session-form-title` at every door (`lares meme put`, ingest, LOAD, CREATE, a wiki save); the same URI in a record's text lands untouched, and a hostful `lar://host/…` title stands.
+- **A first seed leaves tracked files untouched.** A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so `lares vessel seed` writes no tracked file and a second seed submits nothing. A later change writes that one carrier in its canonical render.
+- **Markdown that shows a carrier head keeps its file type.** A `.md` file beside a `.meta` sidecar ingests as markdown with every sidecar field and projects back as `.md`.
+- **Every refused carrier gets named.** `lares ingest --apply` prints each refused or conflicting carrier with its reason, however many carriers the wave holds, and asks the island again in pages where one answer cannot hold every row. A tripped mass-delete brake ends the run non-zero under its own name, `lares watch` ends non-zero while any carrier or deletion it carried stays unsettled, and `lares act LOAD` reports no `unknown` tally.
+- **A frameless meme put reads back whole.** `lares meme put` of a body with no frame lands it as bare data, and `lares meme get` answers the same bytes under the hash the put reported. A put of no bytes refuses under `empty-body`, and a read of a pointer whose body rests in the content tier refuses under `pointer-body`.
+- **The wiki inside a founded vessel carries the same cures.** The genesis seed carries the grammar plugin that reads a frameless body back whole and leaves an unchanged carrier untouched, so the in-wiki meme face and the plain-server routes answer as `lares meme get` does. The engine stands unchanged; a vessel founded on the earlier seed re-founds.
+- **A plugin change cannot sit unbaked unseen.** `tools/genesis-parity-witness.sh` compares the engine and every packed plugin file against what `genesis/` carries, and reads red until a bake closes the gap or `genesis/unbaked.json` declares it.
+- **Wiki deletes leave canon intact.** Deleting a canon title writes a tombstone into the working layer, where it hides the title; a later save replaces that tombstone. A composition without a working layer refuses the delete by name.
+- **The wiki follows its bag composition.** It shows the topmost resolved record, including a working tombstone or copy-up, when canon changes beneath it.
+- **Draft actions land as one act.** Save, rename, and cancel carry the base from when the draft opened; opening an editor and discarding or saving immediately leaves no stray draft, and returning to the landed value writes nothing. An untouched draft reads unmodified, and Cancel asks nothing.
+- **Hand saves respect the composition.** The composition's own order keeps every save at or above the working layer; a route through an empty pointer or a rule naming canon raises a named refusal.
+- **Titles keep their layer on save.** A title held above its routed layer saves where it lives; session state and view state route to the temp and personal layers.
+- **Removed child references take their family with them.** Editing a placed root to remove a child reference tombstones that child and every descendant.
+- **Failed landings raise a named alert.** A landing that fails twice surfaces an alert naming its title, and the next wave retries it.
+- **Meme moves carry deletes down.** `lares act MOVE` carries a tombstone into the named bag, and `--shadow` hides a title from a bag that holds none; `lares wiki resolve` prints `Hidden by` for the hiding bag.
+- **Never-projected addresses refuse ingest.** A file at an address that never projects to disk refuses with `never-projected-path`.
+- **Removed storage keys stay removed.** A removal waits for writes already in flight, and a range removal fences saves beneath its prefix until the removal settles.
+- **The stopped shore forgets its wiki.** Teardown clears its ledger and write records after pending hand edits settle; a noop write marks nothing, and one dispatch writes a target at most once.
+- **Hand edits pace by title activity.** The gate groups edits by title whatever the title's kind, and teardown flushes every marked title.
+- **Every wiki mounts a working layer.** No canon bag serves as the default writable. The daemon's working layer projects to `wikis/daemon/`, while its receipts, ward audits, and summons stay off disk. A vessel that first boots without a face gains its working layer once a face seats and the vessel stands again; the binding carries its Keyhive document, and an attach that cannot stand refuses the boot by name.
+- **The wiki shore owns queued changes.** The nalu engine applies one change synchronously, while the shore owns the queue and its door; genesis carries that applier.
+- **Current-head reads avoid document views.** A record read at its document's own heads uses the standing document, which shortens corpus feeds through the shore.
+- **The repository adapters share one release line.** automerge-repo and its four adapters use 2.6.0-alpha.5.
+- **The browser walk requires its wiki document.** A missing wiki document makes the walk fail.
+- **A vessel that cannot stand its full composition stays up at the floor.** It names the fault once and keeps answering what the floor serves.
+- **A refused boot frees its store.** The next boot meets no store claim left by a refused boot.
+- **The household terminator passes a long socket handshake.** Its header buffers hold a 16k sub-protocol header on the way in and in the vessel's answer.
+- **Passphrase seal verbs refuse a carrier sealed under the vessel key.** The refusal names the carrier and moves no bytes.
+- **Every signature reads one strict rule.** Every Ed25519 verifier in the house calls one door: a key reads in its one canonical encoding and inside the prime-order subgroup, a signature reads canonical, and the equation takes no cofactor. A small-order key, which a lenient verifier lets anyone sign for, and a mixed-order key each refuse by name where they enter a charter seat, a guardian set, a key log, a device edge, an admit, a hosting grant or a commitment; a charter, roll or log that names one refuses whole. No reader takes its verifier from its caller.
+- **A Handle reader believes no step it did not verify.** A reader holding no owner-head resolver trusts a Handle's inception alone and answers `handle-rotation-unverified` for any later step, so a stranger's appended rotation gains nothing; a reader holding one verifies every step before any verdict. Every Handle incepts armed with its next key, and each rotation commits a fresh one. A persona head read verifies every rotation on every read.
+- **A corpus load answers without a stall.** Field values rest as immutable scalars, so a whole-corpus load lands about nine times sooner and the disk mirror follows with no long pause.
+- **Another device's save reaches an open wiki at once.** Ordinary, system and personal titles arrive without a reattach; a volatile title never arrives.
+- **A carrier's root and children land together.** The disk mirror never writes half a carrier.
+- **Removing a field someone else just edited loses no edit.** The other edit stays live and the remover's version stands as a parallel draft.
+- **A disk conflict raises one alert and one audit row.** Each standoff keeps its own key, and resolving it, moving it or ending its projection clears the alert.
+- **A refused ingest ends non-zero.** `lares ingest --apply` exits 4 when any file refused and still prints every row.
+- **Copy and move keep a record's change-id.** The corpus reader's memo follows the body.
+- **The raise door reads the leased epoch.** A raise against an earlier epoch refuses after a Nexus rekey.
+- **A command at a standing floor names the unlock.** A verb that needs a sealed row refuses and names `lares vault unlock`; with no vessel standing it asks for the custody route when it first needs one.
+- **An unreadable archive refuses the stand by name.** So does an archive of another identity.
+- **A stand presents one contact card.** The card gets minted before the stand's Archive leaves, so every later stand opens what the card promised.
+- **The joinee rite dials the hearth's own gate.** A founder that also stands a carriage relay no longer hands a joiner the relay's key.
+- **A vessel seeds inside the container.** `vessel seed` reads the bags the container mounts, the fresh-build gate reads a tree that arrived built as fresh, and an ingest past the outcome cap reads its tally where it used to crash.
+- **The harnesses open a staged vessel through the test door.** The harbor walk, the mesh scenarios and the browser walks unlock after `up`, read a floor as a floor, and the realm steward walk reads green with `--join` and `--cosign`.
+- **One push yields one e2e verdict.** The CI workflow's E2E job calls the shard workflow and takes its merge gate's word, where a single runner used to time out. `node tools/ci-verdict.mjs --head <sha>` answers green, red or unread for a head, and a cancelled or running run never reads as green. The shard tool names a run it could not read, looks every thirty seconds, and names each failing case by file and name.
+- **The custody contention test holds its window by a handshake,** and the mesh coverage witness reads the phases the code holds.
+- **An island asks again when no peer stood behind an "unavailable".** A daemon whose main thread sat busy at an unlock no longer faults its own floor, which had killed a joinee mid-rite. The test door reads a refused composition as a refusal.
+- **A contested removal keeps its shadow.** A lower lifts an edge shadow only by causally following every raise; a racing lower, a missing parent or a relabeled act leaves it up. `lares cabal join` reads the edge-kapae board and names each vouch set aside, `lares edge` reports the verdict, and `lares cabal vouch` prints the edge id.
+- **Every admit door reads a held root.** The socket seat, the raise and the admit bundle read a presented admit against a root built from the charter the vessel keeps, and refuse `no-held-root` otherwise.
+- **A vessel stands one plane per realm.** `lares meme get|put --bag <b> --realm <id>` reads that realm alone, with per-realm pins; a Nexus the vessel leaves takes every realm's pins along. A realm record names its stewards by a worn face's per-Nexus key or a Handle, counts only with exactly its stewards' seals, and folds to the widest consented set.
+- **An edge removal takes two hands.** The holder an edge names, or the seat quorum, raises a shadow; a lower lifts only its own hand's raises. `lares edge kapae` names a relation by edge id, by `--member` with `--realm`, or by `--device`, and `--quorum` signs with the held seats.
+- **A shadow carries across a seal roll.** An edge anchor chains from the charter head, so a lift at the new head cites the earlier raise. A vessel keeps every act, anchor and vouch it counted and returns it to a board that lost it.
+- **A vessel settles a raise by itself.** Each fold of its fleet's edge board sets off the key side's answer on an unlocked vessel: a counted raise gets its roll once, with no timer and no command, and one the vessel holds no revoke authority over gets tried again at the next fold. `lares edge settle` runs the same steps by hand.
+- **A raise owes one key roll.** `lares edge settle` answers each counted raise on the key side: the device's seat leaves the face's Keyhive group and the vessel keeps a signed roll that content keys subscribe to. A returning device takes a fresh seat and no re-seal of the span it missed. `lares edge kapae --device` also signs a certificate withdrawal, or names the one it could not sign, and the admit door refuses a device its fleet board shows set aside.
+- **Seats on separate vessels sign one quorum edge act in turn.** `--partial` prints the act, and `lares edge cosign` reads it first and signs only the act named.
+- **Vouch and edge boards key on the realm, and a device's edge board on its fleet root.** A vessel re-founds; nothing migrates. `lares cabal join` names a shadow over a vouch, over its voucher, and over the applicant.
+- **A session-scoped document view and a whole-key surface mount stand in mesh.** One function resolves a session's recipe; a session carries a capability profile; no production surface mounts through them yet.
+- **The face proof stands specified in mesh.** Proof subjects, private authority, the session signer and the session face supplier rest out of the barrel until the gate and the fleet-join door call them, with ten signing domains of their own. A withdrawal rides one deny-only history per face key, and a gate answers one of six named states. Keyhive keeps a PersonaGroup's private membership; the house keeps its own signed chain.
+- **The gate stands specified behind interfaces.** One module runs the face-proof exchange: a knock, Noise IK with proof first, a signed finish, the chain check, the withdrawal exchange, the sorter and the shadow consult, with the verdict last. A dialer speaks it in one process, and a gate emits no byte before a valid first flight. A gate's keys derive per Nexus and route and rest nowhere. Every suite that speaks the handshake asks one helper. No production socket runs it yet.
+- **A gate stands in a tier.** Floor routes derive their keys from the floor key and answer at a locked vessel; sovereign routes derive from the sealed custody root. A faceless place (a herm or a carrier) presents its own key and its carriage contract through an arm of its own. A session opens before its certificate, behind one door, and a gate's withdrawal memory rests as signed events in its own store. Specified; no production socket runs it yet.
+
+**Added**
+- **Two operators found one Nexus across two vaults.** `lares nexus seal cofound open --release <manifest> --out <offer>`, then `join <offer>`, then `seal <join>`: each founder types the other seat's fingerprint as heard, both seats sign one joint inception that cites one cadence inception both hearths sign, each hearth keeps its own cadence key and founding record, and neither household seed moves.
+- **Two vaults admit or revoke together.** `lares nexus contract|revoke <nym> --nexus <aid> --out <file>` opens a signed partial; `lares nexus contract --from <file>` on the other vault judges it against its own charter head and board before its seat signs, then lands an act that reads complete at the write.
+- **A face takes its first guardians by one typed event its own key signs.** A face founded one-of-one enrols a guardian set and threshold through a `guardian-enrolment` event on its own log, signed by its current key; its prefix, key and device standing stay, and every later change to the set takes the guardians' quorum. `lares persona guardian show|offer|enrol` walks it: each guardian proves possession of its key, a key that serves another face refuses, and the set rests on a sealed per-face row.
+- **Every genesis carries its signed inception.** A charter reads only when every seat has signed one exact inception image (the seats, the rule, the successor commitments, and the offer fingerprint for a joint founding) and nothing else has; the Nexus AID commits that image, so one roster founded twice with fresh successors yields two AIDs. The Stable founding and `lares nexus seal seat` sign through the custody door's new `seal.incept` act after the cards read back, refusing a foreign seat in a seed, an image with no successors, a successor any held charter already used, a torn held charter, or bytes off their canonical spelling. A vessel founded on the earlier shape founds again.
+- **A seal record names its predecessors as a set.** A roll names one; a record that names two refuses `REUNION_UNBUILT` until the reunion verifier lands.
+- **Six open questions stand ruled as law.** The Offering Antigen's scope, the fork-resolve act, the re-seal proof, guardian enrolment's shape, engine cadence and a realm's quorum and boards stand in the roadmap's rulings under the operator's delegation, each with its reason and what flips it.
+- **One act founds a hearth.** `lares vessel found --hearth --name <label> [--chair <label>]` founds the custody, the place, persona zero and a private seed charter at one seat in one act under one passphrase. The chair's next key prints as a cold-key card, and the person types it back before the charter moves; a run that stops anywhere runs again and completes, and a card that never reads back writes no charter and no face. `tools/lares-container.sh found --hearth` runs it before `up`, and every harness that founds a hearth founds through it. A vessel founded earlier re-founds.
+- **The founding mints a serving key.** Custody gains its fifth class, `serving`; a human unlock opens the serving key through the vessel key's entry, and a vessel-key rotation re-wraps it. The serving rows and the ember come later.
+- **A face's key at each Nexus mints at random and hands on by its own signature.** Each per-Nexus key rests as 32 random bytes in its own sealed cold row, minted by an act and never by a read; `lares persona reissue [--nexus <aid>]` hands the worn face's key at one Nexus on to a fresh key under both keys' signatures, and every gate follows the admitted key's line: a handed-on key proves nothing, a forked line reads denied, and a removal on any key of the line closes the admit. A vessel founded earlier re-founds.
+- **Eight open questions stand ruled as law.** The ember's serving key and gate tier and how its raise lapses; a removal no reader can keep refuses by name with a conflict handle; the outbox rests sealed; the herm relay leg rides the sibling session; a disk watcher settles removals only under a standing instruction a person signs; a restored face stands provisional until a party to its relation agrees. Each carries its flip condition in the roadmap's `#/rulings`; the code each owes stands filed as a row.
+- **Each household name answers with its own address.** One records file (`LARES_DNS_RECORDS`, one `<address> <name>` line per name) feeds the household resolver; a check runs first and refuses a malformed line, a loopback address, a name outside the zone, a duplicate or a file others can write, by name. An unlisted name answers NXDOMAIN and never leaves for a public resolver.
+- **One measured table names which vessel doors each island reaches.** `tools/capability-inventory-witness.sh` measures the built node and web assemblies and reads red when an island reaches a door the committed table says it does not.
+- **The runbook names each device's encrypted-DNS setting.** A phone that cannot open the household name while the others can now finds the setting to turn, per platform, in `founding-runbook#/household-reach`.
+- **The ember's law stands written.** A household's second device may lift a resting hearth to SERVING and to nothing more: SERVING signs nothing, admits nobody, wears no face and opens no plaintext; a thief of the device opens nothing the hearth holds (`lar:///ha.ka.ba/lararium/mesh/ember`). No code carries it yet.
+- **`lares ingest --apply` waits for the settle word.** The answer carries `settle`: the wiki's view holds the moved records and the projector's queue has drained, with no clock; a failed wait prints one warning and leaves the exit code alone.
+- **The container drivers read every pushed head.** The herm relay mesh, the crossing matrix, the civic walk, the browser weld and each mesh scenario run on hosted runners at every push of a feature branch or `main`, one job per cell over one shared image, and a merge gate prints one verdict (`HELD-OUT-VERIFY`). `node tools/ci-verdict.mjs --head <sha>` reports it as a third reading beside the shards and the package suites, and says `unread` where no run names the head.
+- **A vessel says at boot when it names no reach face.** A boot with no `LAR_PUBLIC_URL` prints one loud line, a setting that names loopback or no bare origin prints its own, and the first request that arrives under another host logs once. No request header names the vessel.
+- **`lares vault backup --face <N> --out <file>` cuts one face's backup bundle.** The standing vessel, unlocked and wearing that face, builds the bundle behind its custody door; the command asks the vessel's own route again and then a new route for the bundle, on a terminal alone. The bundle carries the face's root, its own names, its key history and the content keys the vessel holds for it, and no veil key, vessel key or seat. The command prints which bags and key versions the bundle holds and says that the sealed bytes must survive elsewhere. A cut refuses by name a face the vessel does not hold or wear, a vessel under its own edge shadow, and a path where a file already stands.
+- **`lares vault restore <file>` brings a face back from its backup bundle.** A recovery act, never a row copy: the vessel derives its own veil and takes a new seat under the face's fixed prefix. It checks the root against the newest key history it reads, says which head it read and where, and refuses by name a root that history superseded, a face the vessel already holds, and an index another face holds (`--as <N>` names a free one). A restore that stops completes when the same command runs again. `lares vault restore <file> --memory` lands the bundle's content keys on the restored seat; it needs the vessel standing unlocked and wearing the face, and refuses `signer-unavailable` until a session signer stands.
+- **The handle-book remembers which face recognised a nym.** `lares circle add` and `lares circle card` tag the record with the worn face, and a face's label for a nym rests under that face's own tag. A face's backup bundle carries its own records alone; a record made under no worn face stays on its vessel.
+- **Custody law takes a carrier of its own.** `lar:///ha.ka.ba/lararium/mesh/custody` states the carrier table, the per-face backup bundle, its cut, its restore as a recovery act, and what a thief of the file learns with and without a route.
+- **The sealed store gains a memory section and an import door, specified in code.** A bundle's content keys leave and enter the key island sealed, under a `memory-import` record of their own; no bare content key crosses the island's port.
+- **Meme content commands name a container.** `put`, `get`, `list`, `delete`, and `project` require `--recipe <slug>` or `--bag <slug>`; a missing container refuses with `no-container`, and `--recipe default` names the daemon's own wiki. Every daemon-door meme verb and MCP meme tool likewise requires one container.
+- **Seats need no Handle.** `persona new --seat [--chair <label>]` claims a seat with a private chair label; the seal names seats by fingerprint, and `nexus seal export` carries keys and fingerprints without chair labels.
+- **Reserve cards support scratch-root rehearsal.** `lares nexus seal reserve rehearse` reads two cards under a scratch root, proves the rebuilt key-set against the charter head, writes nothing, and rolls nothing. Cards print their generation and quorum.
+- **The container offers a household HTTPS slot.** Compose profile `https` adds a terminator and resolver, while `device-admit` carries a `syncUrl` derived from `LAR_PUBLIC_URL`.
+- **Release manifests bind image and source addresses.** The manifest tool ties an image digest to the genesis, engine, and grammar addresses.
+- **The founding runbook walks through the container.** It guides a household step by step and names what stands owed; the harbor carrier states the container boundary.
+- **A standing vessel unlocks and locks without a restart.** `lares vault unlock` opens the vessel key on a running vessel and `lares vault lock` drops it; `lares vault status` reports whether the vessel holds its key. Three failed unlocks close the door until the daemon restarts, and every restart returns the vessel to the floor.
+- **`lares vessel unbound` lists documents minted with no binding.** It removes nothing.
+- **The container offers a one-shot certificate issuer.** Compose profile `issuer` asks for one DNS-01 wildcard certificate per machine. It reads the registrar's credential from two owner-read files in a directory outside both mounts, and it refuses by name on a missing or misplaced directory, a loose file or directory mode, or unaccepted authority terms.
+
+**Changed**
+- **A face binds its own hearth.** Persona zero's device edge, its dyad scope and its cabal sentinel name the seed charter's Nexus AID, so a device's edge from one of a person's hearths no longer passes at another; a re-seat over a bound seed charter refuses `hearth-bound`, so a hearth's AID never moves. Another operator's Nexus imports with `--carry` and stands as a realm plane of its own.
+- **A founded vessel's own wiki runs the current grammar plugin.** One labelled re-bake carried the bundle whose PersonaGroup pin names one group id; the engine and the hearth true-name stand unchanged.
+- **The founding runbook walks the act as it runs**: one `found --hearth`, the card and its read-back, a Handle before `up`, the unlock that opens the vessel and serving keys, the seed, the card rehearsal, and a per-face backup bundle cut with `lares vault backup --face 0`.
+- **A face's PersonaGroup stands as a Keyhive group.** When a vessel revokes a device's seat, the key of every bag the face's group reaches rolls: the removed device opens nothing sealed afterwards and keeps what it already read. A device that joins reaches the face's later content with no bag re-granted, and a join re-seals only the chunks that stood before it. One id names the group everywhere, so a vessel founded on the earlier shape re-founds; a fresh group, the only road by which the founding device's own seat leaves the keys, stands owed.
+- **The auth gate's silence vectors read no clock.** The test holds the deadline's hand.
+- **A cabal realm stands under one Nexus, and acts there sign as the face's key at it.** A vessel's first act in a realm names its Nexus and its own edge ledger keeps that word; every reader takes the realm's quorum off that Nexus's charter, never the vessel's own; a second Nexus refuses by name, and two replicas that pinned different Nexuses read the realm under none until a person settles it. A vouch, a realm's holder act and a feed sign as the worn face's per-Nexus key, never a persona root: `lares cabal face --realm <id>` prints that key, and `cabal vouch`, `feed` and `join` take `--nexus` where `--as` once stood.
+- **A key a charter seated never returns as an added seat.** A charter's first roll carries its genesis seats in one canonical encoding that must match the genesis key-set hash, so even a genesis key cannot come back under a later roll.
+- **The floor key commits no next key, and every load proves the key.** The floor vessel key carries one clockless inception it signed itself; every load of a standing key proves the seed derives the key and the inception names it, or refuses `VesselInceptionRefused` by name and writes nothing. The next-key seed and its row no longer exist; a vessel founded earlier re-founds.
+- **Genesis carries the cured wiki.** One labelled re-bake moved the plugin bundle (the meme verbs and the ingest gate a founded vessel's own wiki runs), dropped the seed's version field and the island message counter, and retired the unread ResilientRender config; the engine blob, boot shadows and plugins stand unchanged, so the hearth's true-name stays. A vessel founded earlier re-founds.
+- **One pattern reads a Nexus identifier.** `nexus-<sha>` reads alike at every door; an `epoch0-` identifier, a bare token or a dot-segment refuses.
+- **`lares meme delete --recipe` checks read on every bag that answers.** A tombstone write that fails answers `partial` with what failed, and an unreachable bag above the one that answered answers `unconfirmed`; the CLI reports both as errors.
+- **Each chair signs with a seat key of its own.** `nexus seal seat` mints a sealed seat key per chair at random; every quorum door (contract, roll anchor, kapae, the edge quorum hand, partial and cosign) signs with those rows, and no persona root signs a chair's act.
+- **A seat's next key leaves the machine on a card.** The rite prints each chair's next key on a cold-key card, asks for every card back on the terminal before the charter moves, and commits one digest per seat; `nexus seal rotate` takes the cards back and seats the revealed keys. A live root refuses `--json` for both, so no card reaches a log.
+- **A charter in the earlier shape reads by name and licenses nothing.**
+- **The shared reserve leaves.** `seal reserve*`, `seal commit` and `--next-key-commit` no longer exist, with the reserve's custody rows; `rite quorum` seats and shows.
+- **The share gate's comments state its reach.** A bag's declared tier bites at the crossing gate and the bulb read face; the tier's own share decision stands specified and reaches no vessel's share config, and an absent secrets reading floors a federatable document public.
+- **`lares vault` answers seven verbs.** `status`, `unlock`, `lock`, `bind`, `unbind`, `backup` and `restore` stand; `vault seal`, `vault rotate`, `vault repair` and `vault passphrase` refuse as unknown sub-verbs, and `LARES_ARCHIVE_PASSPHRASE` and `LARES_ARCHIVE_PASSPHRASE_NEW` open nothing. The vessel key seals every private row, and a credential rides a terminal alone.
+- **`lares vault status` gives one reading of each file.** Every standing file the carrier table names prints once: a row under the vessel key reads sealed or prints `FAULT`, a row outside it prints the law it rests bare under, and a private file no row names prints `OUTSIDE THE TABLE` with its reason. The JSON answer carries `custody` and `door`; `--check` leaves.
+- **`lares vault unbind <slot-id> --rotate` runs as one act.** The rotation checks every sealed file before any byte moves, so a carrier that refuses it leaves the slot bound and the tree untouched.
+- **The MCP surface offers no `vault_*` tool.** `vault_status`, `vault_seal`, `vault_rotate` and `vault_export` leave; the custody door answers a person at a terminal.
+- **The receipt ring bounds what its outcomes weigh.** Past a byte bound derived from the ring's count (`receipts.ring.bytesPerOutcome`), the oldest kept outcome body leaves and the one that just landed stays. A landed receipt carries its measure, so a vessel founded earlier re-founds.
+- **A flag nobody reads refuses.** `lares vessel … --debug`, any non-global flag on `lares test-quine`, and `--keep` or `--target` on `lares sense` exit 2 with `unknown flag`.
+- **One roadmap holds the road.** `docs/stable-founding-road.mem` carries the cold start, every open loop beside its train, the side lanes, and what the operator still owns. The founding hearth's roadmap and the seal-and-seat floor leave the shelf, folded into it and into `personal-slot.mem`, `realm-bag-brief.mem` and `waking-floor.mem`. The ER handoff and the two Codex crew handoffs leave with them; their decision records rest in `causal-island.mem`, and the first ceremony's rulings in `kahu.mem` and `lamplighters.mem`.
+- **Working procedures stand as law.** `api/pono/working-procedures.mem` holds red-first test design, the ladder for wiring an unreached module, the instruments that read green while they report something false, and the working agreements; `docs/pono/grammar-watch.mem` holds the grammar watch. The shift ledger leaves the shelf, folded into both and into the roadmap, and `lares meme --help` names the meme law as its carrier.
+- **The CLI leaves destructive vessel doors out.** `vessel clear`, `vessel rite rebirth`, and `vessel stand --restart --clear` leave the command surface; `vessel rite refresh` builds, stops, and stands without wiping, and a fresh start runs by hand.
+- **Seal readings follow seated keys.** `nexus seal show` reads `seed` or `nexus` from seats, and a carriage contract moves no phase. `persona new` leaves root splitting opt-in through `--split-root`.
+- **Seal rotation names reserve refusals.** `nexus seal rotate` reports `rotation-unarmed`, `reveal-mismatch`, `reserve-armed`, and `reserve-commit-unrevealable`; `seal show` and `seal seat` report `reserveArmed`.
+- **A Handle binds through its face's announce.** A Nexus domain presents its own table, and quorum removal needs no Handle name.
+- **Canon states the recovery boundary.** The seed and Nexus readings, quorum admission, the user road's three dials, and guardians per face hold in canon; no verb carries a recovery card into rotation.
+- **The host shim holds the engine.** It opens a persona door before `up`, restarts the vessel when a face lands, and refuses in-container stand and stop by name under `LAR_ENGINE=host`.
+- **LAN discovery offers candidates only.** It stays off by default; `LAR_LAN_DISCOVERY=announce` enables discovery, and candidates carry no authority.
+- **Harnesses run the image by digest.** `LARES_HARNESS_IMAGE` names the image used by the mesh, kahu, crossing, swarm, and burn harnesses.
+- **Witnesses wait for the work they measure.** The rite-commands witness reads a command through the host shim, and the corpus-feed witness waits for every corpus root.
+- **Disk projection reconciles roots without timers.** Each run of marks reconciles a carrier root once, with one more pass when a mark arrives during its reconcile; the mount scan marks every resident root that a configured mirror backs.
+- **Disk projection reports its own pause.** A delay of a second or longer between a wiki change and the first file write prints a diagnostic with the elapsed time and lookup count.
+- **The container shims unlock after each start they perform.** With a terminal attached they run `vault unlock`; without one they name that command.
+- **Mesh scenarios name their compose project.** `MESH_PROJECT` names it, with `dreamnet-mesh` as the default, and the mesh's browser vessels read their code from the image.
+- **Every boot rests at the floor.** Nothing stored lifts it; `lares vault unlock` raises the vessel.
+- **Founding seals its archives under the vessel key.** The keyhive archive, each face's veil archive and each face's anchors rest sealed from the first write. `lares vault export` no longer exists.
+- **The house runs `@keyhive/keyhive` 0.3.0-alpha.1.** A vessel founded on an earlier Keyhive re-founds.
+- **Private bytes take one sealed format.** Each private value seals under a fresh random key with a commitment and a per-segment tag, bound to its bag, key version, role and reference, and takes its address from the ciphertext. A reader gets the whole value or one named refusal. Convergent sealing left the private tier, and the opener that returned unauthenticated bytes left the tree. Public content keeps its plaintext address. A vessel re-founds; nothing migrates.
+- **Holders serve and resolve only bytes that match their address,** and a verified write-through replaces a corrupt file. A walker's receipt names an address, a digest and a per-document key, and carries run in turn.
+- **A bag's content key rests in a lockbox and rolls at a removal.** One holder keeps bare content keys in memory alone, while the vessel stands unlocked. Each key version wraps into a Keyhive document of its own for the readers the bag's key group names, so a revoked device opens nothing sealed after its removal and keeps what it read. Lockboxes, records, the chunk index and tracked Keyhive chunks rest as whole files that hold no secret, written by rename with their directories flushed. The roll stands subscribed to the daemon island's seat rolls, and the `sealed-*` verbs answer there. A mint waits on a session's signer, which no production path opens yet.
+- **A sealed row's command asks the standing vessel.** With a vessel unlocked, `lares persona`, `lares persona admit`, `lares circle`, `lares handle`, `lares cabal`, `lares nexus seal` and `lares nexus accept-carriage` run with no second passphrase prompt: each sealed act rides one custody frame, and nothing that frame carries or answers reaches a receipt, an outcome or a log. Beside a locked vessel a command refuses and names `lares vault unlock`. No command opens a second key session beside a standing vessel. `lares persona new --split-root` refuses beside a standing vessel: stop the vessel to arm a root split.
+- **The per-Nexus convergence secret and its keyring left.** No custody row, seat mint or admission delivery carries one, and a persona grant's signed transcript names no keyring digest, so a grant minted by an earlier build fails to verify. `nexus seal seat` and `nexus seal rotate` report no `keyring` field. A vessel re-founds.
+- **The handle-book and the admit rows rest sealed under the vessel key.** The `circle` and `persona admit` verbs need the key.
+- **An admit hop survives a death midway.** A hop records its admission before it drops its pending entry, so it resumes from the same carriage, and an offer completes one grant: the first that verifies against it.
+- **The seal ceremony signs only what the charter licenses.** The custody door signs a charter roll only when it steps from the standing head and seats the key-set that head pre-committed, on a lineage that verifies; a well-formed roll from anywhere else refuses by name. `lares nexus seal grow` keeps its crossing sealed under the vessel key, and each step asks the standing vessel. A crossing left open by an earlier build refuses by name; open it again.
+- **`lares edge settle` asks through the vessel.** The daemon's `seat-duties` verb answers its own vessel's main thread alone, on a signed ask; the command names a fleet and the vessel reads the facts itself.
+- **Offline acts print their answer alone.** Keyhive's own DEBUG and TRACE lines stay off unless `--keyhive-trace` or `LAR_KEYHIVE_TRACE=1` asks for them.
+- **A hearth's hosting rests under the vessel key.** The hosting state, every spend and every carried value rest sealed, one row per spend, so a locked hearth hosts no walker until a person unlocks it. `lares host`, `host roll` and `host invite` ask the standing vessel through its custody door, so no minted invite lands in the daemon's document. A roll that stopped before its act reached the hosting doc lands that act at the next roll or the next unlock. Hosting state written by an earlier build refuses by name; a hearth rolls again on a fresh root.
+- **`lares nexus kapae --list --json` reports `via`.** The answer says whether the standing vessel or the command itself read the store.
+- **A walk record rests under the vessel key.** The invites, the grant and the carried documents' keys a vessel keeps for the hearth it walks at rest sealed, and `lares walk`, `walk take` and `walk invite` ask the standing vessel through its custody door, so no invite lands in the daemon's document. A vessel at the floor reads no walk record and presents no walk until a person unlocks it. A walk record written by an earlier build refuses by name; a vessel takes its invite again on a fresh root.
+- **A walker's record changes under one hand at a time.** Every change to a walk record runs as one store update, so an invite handed out while a grant lands leaves the wallet once. A store that refuses while a grant, an answer or a notice arrives costs that one message and logs it; the process keeps running.
+- **Each face's device recovery share rests under the vessel key.** A `persona new --split-root` seals the device share as a custody row from its first write. `vault seal`, `rotate` and `repair` now find no carrier at all, and `vault status` lists none; they leave with the passphrase lifecycle.
+- **The charter reserve rests under the vessel key.** `lares nexus seal reserve` seals the operator's share and the reserve state as custody rows; beside an unlocked vessel it asks no passphrase, and the three cards still print from the command's own process. `vault seal`, `rotate` and `repair` govern the reserve share no more.
+- **A custody claim waits its whole budget.** A second process meeting a live custody holder waits one paced interval per look, so the default budget lasts the thirty seconds its options promise; it had run out in under two.
+- **A gate memory row that does not read whole refuses.** A sovereign gate falls silent over a damaged withdrawal row and nothing writes over it; it no longer starts a fresh memory there.
+- **A face's own names reach its fleet by the custody door.** A pet-name or a declared Handle set with `lares persona` rides the face's private plane, once that plane's rest seals, to that face's other vessels by one more custody act, which names the face and never the name; the vessel reads the name off its own sealed row. The verbs `persona-label`, `persona-handle` and `persona-selves` leave, so no outcome or receipt in the daemon's document holds a pet-name. Each face's names land on that face's own plane alone, and `lares persona sync` carries up a name only where the fleet holds none, saying which names landed.
+- **The vessel-identity rows rest sealed.** The persona roster, roots, selector, pet-names, declarations, published-face record and next-key seed rest under the vessel key; the roster commits a root, and `lares persona list` names a root a stopped founding left, which `persona new` adopts. A vessel key mints only inside a held custody, and a boot at the floor reads no identity row.
+- **The custody write door and the rest door answer the daemon island alone.** A wiki island's ask refuses by name.
+- **A device its fleet root set aside halts at boot and gets no seat,** on node and in the browser. The daemon island asks the main thread for a device's standing through a door bound to that island.
+- **At the floor a vessel serves no fleet lane.** The sibling lane and the cleartext fetch door stay shut, and the floor folds only the fleet board its own device edge names.
+- **Broad sync ports drop an unreadable arrival** where it used to throw inside the owner.
+- **The node's circle store left.** The follow graph keeps one home, on the persona's circles plane; the sealed handle-book stays.
+- **A removed device or member loses sync, sorting and serve on a standing vessel.** The composers consult the edge shadow ring, and at the floor every fleet lane stays shut.
+- **An admitted leaf sends no change to its hearth's canon,** and the browser's plugin selection refuses a torn offerings field as the node does.
+- **A browser vessel keeps its keyhive Archives in its keystore.** A browser founded earlier refuses to boot until its site data gets cleared.
+- **Stores written before immutable values do not read.** Found anew; the genesis seed itself carries on unchanged.
+- **A capability layer takes a write by name alone.** The WHO board and the mesh palace refuse a bagless write.
+- **The session contract names every hand that reaches a vessel.** A tab, a CLI run, the disk watcher and a spirit's seat each open a session; a tasked spirit holds a Mask and the vessel's seat, and no key of its own.
+
+### The shore and the oracle floor
+
+**Fixed**
+- **A browser leaf joins a live node.** The admitted browser carries its island kind and scope, presents its face at join, and renders the node's canon documents named by its admit. Typed field edits save to the leaf's working layer and remain after profile reload.
+- **Browser crossings keep the gate narrow.** Own hearth admits open only their named canon documents; foreign hearths, founders, and admits without canon names receive no wider gate. System planes such as the oracle genesis and Nexus boards never enter the canon list.
+- **Browser tabs share one holder.** Web Locks guard the browser store; a lock refusal names the store, and a timeout cannot admit a second holder. A tab that loses its local identity marker reports `local-storage-lost`.
+- **Oracle boots take face and daemon addresses from bootstrap.** Oracle writes cannot steer a plane, pin, or daemon URL; reconciliation writes only the `lares` pointer, and the WHO board derives its address.
+- **The oracle read-face serves seed-named rows only.** It projects genesis-named titles and blobs without history, carries the seed CID beside the snapshot CID, and mounts read-only; edits aimed at the floor copy into the wiki's working layer. A seedless vessel mounts no read-face.
+- **A leaf opens only its admitted canon documents.** The admit carries canon document names beside its gate key; the leaf seats only those pointers on its own oracle replica, leaving the oracle plane behind its gate.
+- **Health waits for the dispatcher.** Node and herm health turn ready after the daemon island starts its dispatcher, so a ready response cannot race a verb into an unserved queue.
+- **The floor names its refusal.** A faceless floor returns `waking-floor`, which the CLI reports as `waking-floor` with exit 2 in the usage family. `pin-wiki` and `unpin-wiki` name the oracle plane when a system slug lacks an oracle recipe.
+- **Dropped bags refuse every write by name.** `ADD`, `COPY`, `MOVE`, `CLEAR`, `LOAD`, and `INGEST` return `bag-retired` with a `CREATE` remedy; `CREATE` registers its cap before designating the row.
+- **CLI flags fail before command handlers.** Commands declare accepted flags; unread flags refuse by name with exit 2. `--k=v` parses, `--no-k=v` refuses, and `lares sense recall --limit` remains an alias for `--k`.
+- **Vault custody follows the human route.** `lares vault status|unlock|bind|unbind` reports key classes and relation rows; credentials come from a TTY, wrong routes preserve data, and `unbind` rotates only with `--rotate`. A missing TTY returns `CredentialTtyRefusal` by name.
+- **A founding seals custody before identity.** `vessel found` gathers a route when no custody slot tree stands, then writes the sealed custody root before identity files. An old carrier shape returns `OldShapeRefusal` before any write.
+- **Container runs keep one holder per state.** `tools/lares-container.sh` and `.ps1` provide `up`, `down`, `found`, and `logs`; other arguments invoke the CLI. A second holder refuses, and `--capture` mounts session roots read-only.
+- **Mirror scans follow configured roots.** With `LAR_ROOT=/state` and `LAR_BAGS=/workspace/bags`, `ingest`, `watch`, and `act REPACK` scan the configured mirror. An ingest that skips every candidate exits 2 and names both derived directories.
+- **Receipts carry a remedy.** `lares receipt` and `lares cancel` print refusal hints beside codes, including a receipt-specific cure for `interrupted` outcomes.
+- **Wiki listing exposes composition.** `lares wiki list` prints each wiki's composition and `defaultDiffers`; `--json` returns the daemon's structured answer.
+- **Browser CI offers a disposable live surface.** `docker-compose.browser-ci.yml` and `tools/browser-ci.sh` provide `up`, `admit`, `ingest`, `qa`, and `down`; fixtures add `restart`, `bag`, `recipe`, `get`, and `info`. `BROWSER_CI_PORT` defaults to 5401, and teardown removes scratch volumes.
+- **A capability probe measures browser grants.** `tools/capability-probe/` serves a probe page and worker scripts for real Android Chrome, with a Dockerized control.
+- **The DreamDOM canon specifies keyed absolute frames.** Each frame declares its grain at mount; sensed state returns as absolute snapshots, while only true events queue. The engine stays off the main thread.
+- **The page-controls canon defines a typed interaction contract.** It specifies field editors, popovers, disclosures, keyed frame revisions, and `applied`, `stale-target`, or named-refusal outcomes; templates name allowlisted vessel-shipped elements. The controls remain unbuilt.
+- **Session and face-proof canon define the interaction contract.** The session carries its binding, capabilities, generation, request outcomes, and switch acts; face proof binds one face-scoped key and the admit's canon list without naming a vessel.
+- **The working-layer canon ties each document to a face and wiki.** One document belongs to each face relation, wiki, and slot kind; its address derives from a secret held only by that face's vessels and survives recipe recomposition.
+- **Faceless vessels refuse content verbs before side effects.** A vessel without a face refuses action and wiki-content verbs by name before capability checks, mints, or registry writes.
+- **A save without a writable bag names its refusal.** The page alerts the person, and the wiki retains the slot pointers its cascade reads.
+- **The save adapter distinguishes empty pointers from named withholding.** An empty pointer and an explicit withholding rule receive distinct outcomes.
+- **Credential prompts preserve pasted lines.** A passphrase and its confirmation can arrive together without losing the second line, and prompts never echo secrets.
+- **The browser’s scoped window lend names its allowed globals.** It admits the globals the engine reads and refuses other writes, definitions, and deletions by name.
+- **Ingest records landed carrier observations.** A later scan recognizes unchanged files and reports vanished files as deleted; conflicts, refusals, and unmatched URIs record nothing.
+- **`stand --install` and `stand --init` name different actions.** `--install` founds an empty vessel; `--init` also wires its AI surfaces. `lares mempalace install` adds its executable link.
+- **Wiki recipe reads agree across boot, watch, and meme access.** A system wiki’s own composition lives in the node catalog and shadows its default recipe; a leaf reads the default recipe.
+- **`bag stats` reports the stowage’s measured idle duration.** It names `clockKind` and `idleFor`, such as `idle 4 rolls`, without subtracting clocks from another process.
+
+**Added**
+- **The browser leaf publishes connection state.** Pages can subscribe to `local`, `missing-pin`, `pinned`, `connecting`, `refused`, `connected`, and `disconnected` snapshots, including refusal reason and verified gate key.
+- **The session contract names per-tab ownership.** A shared worker owns the Repo and daemon while each tab owns its wiki worker; session islands hold ephemeral replicas and receipts bind to the face proof subject and input digest.
+- **The founding road and handoff describe the standing surface.** They distinguish built behavior, remaining debts, and operator rulings across the oracle floor, session contract, and working layer.
+- **Island work yields to the host.** Long drains and bulk `LOAD` operations yield through `@lararium/mesh/host-task`, allowing host messages and operator actions to run.
+
+**Changed**
+- **Receipts and bags report machine-readable causes.** `VerbRefusal` exposes reasons such as `bag-retired`, `cap-denied`, and `crossing-outward`; CLI exits follow those reasons rather than message text.
+- **Container configuration names its state and workspace.** `LARES_STATE` and `LARES_WORKSPACE` configure `/state` and `/workspace`; the product image runs as the non-root `node` user.
+- **DreamDOM separates page and island layers.** Snapshots do not answer synchronous layout reads; geometry travels with the action, and an uncarried read refuses by name.
+- **The browser connection row exposes its verified gate and mounted wiki.** It publishes the gate key only after proof and identifies the mounted wiki document.
+
+### NO GLOBAL NOW
+
+**Fixed**
+- **Verdicts no longer depend on wall-clock deadlines.** Membership orders by writer sequence, request IDs omit clock prefixes, and device delegation and promotion receipts carry no issue instant or expiry.
+- **Receipts arbitrate one durable result per request.** `--change-id`, `lares receipt`, and `lares cancel` expose outcomes; exit 6 names `outcome-unknown`, `request-abandoned`, `retention-gap`, `receipt-fact-torn`, and changed-input reuse.
+- **Persona admission records causal withdrawal.** One-use secrets persist consumption across restart; held sessions withdraw on patience, SIGINT, and SIGTERM, while `--detach` stays one-shot.
+- **Pins expire at verified fences.** CAS pins carry `holder`, `tier`, and `fence`; sweeps require `currentFence`, and unreadable state errs toward retention.
+- **Liveness waits use each holder's monotonic patience.** Port control, `vessel stop --cut`, boot, residency, island pools, capture, and keyhive waits avoid wall-clock verdicts.
+- **Residency verbs report their outcomes.** `CREATE` returns `alreadyStood`; REPACK, CLEAR, and DROP carry per-change keys, preserve audit records, and count content without ledger rows.
+- **Retired shapes and options refuse explicitly.** Old pin sidecars, digest-less receipts, lineage-less genesis, and retired aliases `palace`, `couple`, `cohere`, and `square` refuse; `recall --limit` remains supported.
+
+**Added**
+- **Receipt hints guide recovery.** Live and read-back doors share `refusalHint`, with a count-bounded receipt ring.
+
+**Changed**
+- **The shipped surface drops retired APIs.** `FoundingKahu`, `lensFor`, `cabal vouch --expires`, `onDrop`, `larMeshPalaceDir`, and the retired aliases leave the active API.
+
+### The identity watch (2026-09-05 → 09)
+
+**Fixed**
+- **Identity folds verify before choosing.** Persona-KEL rotations and vetoes compete only after signature verification; two valid same-sequence events report a fork instead of an order-dependent result.
+- **Herm relays admit verified successors.** Drop-door deposits must verify against their predecessor, while byte and connection limits constrain each deposit. Leaves pull pinned herms concurrently under a deadline.
+- **Browser and node identity gates agree.** Shared stores require one holder; admits, face grants, realm bags, and session frames follow the key that proved at the gate.
+- **Store and custody writes share one holder.** A vessel claims its store before opening the Repo; sealed carrier writes prove their VK under custody, and rotation refuses incomplete carrier inventories.
+- **A refused or abandoned verb never runs later.** Buffered work drops when its caller leaves; refusals name the cause, and fresh founding reads store shape before asking for a route.
+- **Boot and shutdown follow causal events.** Shutdown flushes the main replica before island teardown; health waits for dispatcher readiness, and tests wait for named state rather than elapsed time.
+- **The browser uses one Repo per origin.** A shared worker owns the Repo and daemon, tabs attach under Web Locks, and a timed-out greeting cannot revive a closed attachment.
+- **Torn carriers refuse before writes.** `LOAD` lands nothing if any frame tears; native `INGEST` refuses torn carriers, and legacy frame shapes report faults instead of repair.
+- **Memetic frame readers agree on boundaries.** Root metadata, STX/ETX spans, fences, sigils, nested slots, rooted URI fragments, and carrier declarations use shared readers and reject malformed frames.
+- **A fragment cannot mint a second address.** Meme write doors refuse fragment addresses; nested slot paths keep their full rooted chain.
+- **Wiki saves stay within the working layer.** Browser edits target the wiki's writable layer; empty pointers and named withholding rules keep distinct outcomes.
+- **Wiki startup waits for its resident seed.** The outbound bridge holds startup defaults until hydration settles, preventing default story lists from overwriting stored state.
+- **A deleted meme removes its whole split.** Browser deletion clears the root and its child records rather than leaving orphaned slots.
+- **Bag residency and grants follow their declared owners.** Realm registrations decide what crosses; stewards write registered bags, and outward transfers require the appropriate tier.
+- **CAS and realm idleness use their own clock.** `bag stats` reports `idleFor` and `clockKind`, such as `idle 4 rolls`, without subtracting unrelated clock readings.
+- **Freshness checks follow the operation.** `vessel stand` can report an already-running daemon without requiring a rebuild; unknown flags refuse before handlers run.
+- **Browser and daemon refusals identify the cause.** Named errors cover a missing contact card, unreachable realm, missing island scope, stale holder, and a save without a writable bag.
+- **Stock wiki endpoints preserve carrier boundaries.** Native writes reject framed roots that bypass splitting; reads and writes retain bag metadata and safe module globals.
+- **The browser and node share verb behavior.** `lares meme` owns put, get, normalize, check, and project; `lares act REPACK` handles repacking, with matching daemon and browser routes.
+- **The bag and library exporters use canonical carriers.** Render and parse paths share one canonicalizer; library entries use addressable slots and preserve full TOML metadata.
+
+**Added**
+- **A node can host and walk as its worn face.** `lares host`, `host roll`, `host invite`, `lares walk`, `walk take`, and `walk invite` manage hosted walks through the live store.
+- **Leaves prove one another within a PersonaGroup.** Face-scoped peer proof and admitted `lar:session` frames support leaf communication without exposing private identity keys.
+- **A public Handle carries its verified chain.** `lares handle publish|rotate|graft|burn|attest` manages persona-owned and quorum-owned handles; owner succession follows the prior set's threshold.
+- **Nexus publish and kahuli expose mesh offerings.** `lares nexus publish` carries signed offerings, while `nexus kahuli` advances shared genesis composition.
+- **`lares meme` manages carriers from text.** `put`, `get`, `normalize`, `check`, `project`, `list`, and `delete` cover carrier work; project supports Markdown pairs and JSON output.
+- **The TiddlyWiki plugin carries the memetic grammar.** The grammar package, frame reader, declaration table, and pure meme laws travel with the plugin and support node and browser vessels.
+- **The grammar weaves carriers to Markdown.** `lares meme project --to md --check` renders dialect profiles, frontmatter, rooted slot fragments, and stable heading IDs.
+- **Governed carriers declare lifecycle and kind.** The `lifecycle/designed`, `lifecycle/standing`, and `kind/rite` tags render their status; `status` and `retain` metadata keys retire.
+- **The wiki offers meme placement controls.** `$tw.lares.meme.place` lets a wiki place a meme through its grammar plugin.
+- **A realm bag crosses between vessels.** Realm registrations, steward sets, and charter names govern shared bag reads, writes, and carriage.
+- **A herm can serve public blobs.** Public pointers cross to the herm before hearths serve content-addressed bytes.
+- **Browser and device surfaces describe their capabilities.** `@lararium/app` provides an installable phone seat, while browser probes measure worker, storage, lock, and key custody capabilities.
+- **Vault status names key classes and custody rows.** `device-minted`, `seed`, `cloud-synced`, and `relation` distinguish key roles; relation secrets require the other party to reissue them.
+- **Recovery uses typed guardian registrations.** Founding provisions threshold recovery from typed registrations, and rolling commitments bind later guardian-set changes.
+- **The canon separates identity, face, and session.** Each vessel holds its roots; sessions wear faces, and each face proves at its gate with a face-scoped key.
+- **The page-controls canon names a declared control vocabulary.** Its rules specify allowlisted custom elements and a keyed event protocol with applied, stale-target, or named-refusal outcomes; the controls remain unbuilt.
+- **The book and plugin surfaces keep shared grammar law.** `pono/has`, `lar-close-pattern`, `lar-tongue`, and `lar-weave` define carrier relations, closers, and language projections.
+- **The CLI gains carrier, promotion, and custody doors.** `lares meme sitting` lists governed carrier status, `lares meme promote` publishes a promotion receipt, and `lares vault` manages custody slots and key rotation.
+- **Nexus rites expose shared identity operations.** `lares nexus rite quorum`, `lares nexus seal grow`, and `lares nexus seal rotate` manage quorum seats and charter seal changes.
+- **CAS commands expose blob retention controls.** `lares bag cas` reports and manages `--all`, `--fetch`, `--pin`, `--release`, and `--sweep` operations.
+- **Herms serve public artifacts by tier.** A SILENT herm serves `/bulb/<cid>.bin` and `/cas/<cid>` while withholding listings; higher tiers expose the declared mesh capabilities.
+- **Handles carry verified ownership.** `lares handle publish|rotate|graft|burn|attest` manages persona-owned and quorum-owned handles, with succession governed by the prior set's threshold.
+- **Nexus doors publish and advance shared offerings.** `lares nexus publish` carries signed offerings, `nexus kahuli` advances shared genesis composition, and `lares nexus rite quorum`, `lares nexus seal grow`, and `lares nexus seal rotate` manage quorum seats and charter seal changes.
+- **`lares meme` manages governed carriers.** `put`, `get`, `normalize`, `check`, `project`, `list`, `delete`, `sitting`, and `promote` cover carrier work and promotion receipts; `repack` moves to `lares act REPACK`.
+- **The TiddlyWiki plugin carries the memetic grammar.** Its grammar package, frame reader, declaration table, and meme laws serve node and browser vessels.
+- **Markdown projection follows declared grammar profiles.** `lares meme project --to md --check` renders dialect profiles, frontmatter, rooted slot fragments, and stable heading IDs.
+- **Wikis can place memes through the grammar plugin.** `$tw.lares.meme.place` provides the placement control.
+- **Realm registrations govern shared bags.** Registered realms, steward sets, and charter names govern bag reads, writes, and carriage between vessels.
+- **Herms serve public blobs by tier.** Public pointers cross to the herm before hearths serve content-addressed bytes; a SILENT herm serves `/bulb/<cid>.bin` and `/cas/<cid>` without listings.
+- **The phone seat and browser probes expose device capabilities.** `@lararium/app` provides an installable phone seat, and browser probes measure worker, storage, lock, and key-custody capabilities.
+- **Guardian recovery uses typed registrations.** Founding provisions threshold recovery through typed registrations, and rolling commitments bind later guardian-set changes.
+- **Book and plugin surfaces share grammar law.** `pono/has`, `lar-close-pattern`, `lar-tongue`, and `lar-weave` define carrier relations, closers, and language projections.
+
+**Changed**
+- **Genesis separates engine, grammar, plugins, and base seed.** `engineCid`, `grammarCid`, and `pluginsCid` name independent regions; the required base seed no longer overrides an operator's plugin set.
+- **Carrier declarations stand at the file head.** `<<!DOCTYPE …>>` identifies the grammar that reads the carrier; declarations inside comments or fences do not count.
+- **A handle face belongs to its persona.** Personal handles use a persona-owned 1-of-1 handle chain, while shared handles use threshold ownership.
+- **One grammar-derived table names sigils and English mirrors.** Hawaiian canonicals retain their names, and Markdown projection follows declared tongue weave rules.
+- **The library index carries one addressable slot per entry.** Bag and library rendering follows the canonical carrier reader, including full TOML values.
+- **The harvest archive leaves the live shelf.** Its user-facing doctrine now lives in the carriers that own those subjects.
+- **The session story list remains a shared wiki tiddler.** A plain shared TiddlyWiki server keeps the stock last-writer behavior for `$:/StoryList`.
+- **Governed carriers declare lifecycle and kind.** `lifecycle/designed`, `lifecycle/standing`, and `kind/rite` tags render their status; `status` and `retain` metadata keys retire.
+- **Genesis separates engine, grammar, plugins, and base seed.** `engineCid`, `grammarCid`, and `pluginsCid` name independent regions; the required base seed does not override an operator's plugin set.
+- **Carrier declarations stand at the file head.** `<<!DOCTYPE …>>` identifies the grammar that reads the carrier; declarations inside comments or fences do not count.
+- **Handle faces follow their owners.** Personal handles use a persona-owned 1-of-1 chain, while shared handles use threshold ownership.
+- **The session story list remains a shared wiki tiddler.** A plain shared TiddlyWiki server keeps stock last-writer behavior for `$:/StoryList`.
+
+**Removed**
+- **`vessel bake` leaves the CLI.** Use `lares nexus kahuli` for shared genesis changes; internal rebake paths remain available to vessel operations.
+- **The standalone `nexus refresh` door retires.** Recipe publication and `nexus kahuli` cover the public offering and shared composition paths.
+- **The `lares carrier` command family folds into `lares meme`.** `repack` moves to `lares act REPACK`.
+- **The retired `focus` and `feedback` gauges leave the grammar.** Use `aperture` and `ooda-ha`.
+- **The `status` and `retain` metadata keys retire.** Lifecycle tags carry governed stage; `status-why` remains available for its explanatory sentence.
+
+### Before the Lararium (April 2026)
+
+**Added**
+- **Intent Header.** `AGENTS.md` sets a prospective generation state before each span and carries the active domain, quality, dynamic, register, stance, phase, and scope.
+- **Micro-trace HUD.** `lares/signal/micro-trace.md` records backward-looking state changes inside generated spans.
+- **Five attention bands.** The operations guide maps five `p` ranges to inline annotation density, with band three as the default.
+- **Phase transition marks.** `→◇`, `→■`, and `→○` mark phase changes; stance glyphs mark genuine stance shifts.
+- **Exchange fields.** The HUD names an estimated mana remainder, active `voice(s)`, and monotonic `tick:N`.
+- **Dispatch trace pairs.** Each sub-agent dispatch and return carries a coordinator/worker URI pair.
+- **Coordinator handoffs.** The guide distinguishes same-territory micro-traces from territory changes that need a new Intent Header.
+- **Diagnostic controls.** `--parse` tags segments, `--debug` records traces silently, and `--verbose` surfaces trace detail.
+
+**Changed**
+- **Turn-frame boundary.** `AGENTS.md` places the URI and HUD pair at operator exchange boundaries and micro-trace marks inside spans.
+- **Annotation layers.** The Intent Header declares prospective state while the Micro-trace HUD records transitions that occur during generation.
+- **Trace visibility.** `--debug` records internal transitions and handoffs; `--verbose` surfaces selected trace detail and boundary pairs.
+- **Elyncia book paths.** Root directories move to lowercase, placing the setting books and referee guide under `elyncia/`.
+- **Game-content ownership.** `.github/CODEOWNERS` assigns `elyncia/`, `ftls/`, and `sdm/` to personal owners.
+- **Governance review.** `.github/CODEOWNERS` routes `AGENTS.md`, `.github/`, and `lares/` through the administrator team and personal co-owners.
+- **Kowloon registrations.** `.gitmodules` registers `kowloon/`, `kowloon-frontend/`, `kowloon-client/`, and `tldraw/` against Amorphous Dreams forks.
+- **MemPalace registration.** `.gitmodules` moves `mempalace/` from its former owner to the Amorphous Dreams fork.
+- **Repository remote.** `origin` points to `amorphous-dreams/Synthetic-Dream-Machine`.
+- **Trust gate.** Lares guidance reserves direct Canon promotion for verified sourcing or explicit Admin promotion and keeps Operator rulings below Canon.
+- **Cold-boot HUD.** The shared kernel sets the input rating, output Intent Header, then post-generation trace order.
+
+**Fixed**
+- **Admin escalation.** Verified identity and shrine or roleplay framing do not grant Admin; explicit escalation supplies that authority.
+- **Default resolution.** The kernel treats `p[10]` as a default band and lets stronger local signal guide selection.
+- **Dream recovery.** Dream guidance names unauthorized drift and gives a Detect → Diagnose → Recover → Re-anchor sequence.
+- **Dream artifacts.** Dream guidance describes lock and anchor records with SHA-256 content integrity fields.
+- **Signal-tag spelling.** Prompt guidance uses tilde-free confidence tag notation.

@@ -1,0 +1,83 @@
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { cmdNexus } from "../src/commands/nexus.js";
+import type { ParsedArgs } from "../src/parse-args.js";
+import { larSealHome } from "../src/env.js";
+import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, nexusCharterDocPath, readNexusDoc, signAsSeat, writeNexusDoc } from "@lararium/node";
+import { charterInceptionBytes, charterInceptionImage, genesisOfInception, renameOwnPersona, sealKeySetHash, standForKahuSeat, type SealEpoch } from "@lararium/mesh";
+import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
+import { sealRite, type SealRite } from "./seal-rite-fixture.js";
+
+/** A genesis over the vault's own seat keys, each seat signing its inception by hand, outside the door: the head
+ *  a test plants to read a refusal the rite names. */
+async function incepted(keys: readonly string[], threshold: number, next?: { digests: string[]; threshold: number }): Promise<SealEpoch> {
+  const image = charterInceptionImage(keys, threshold, next);
+  const bytes = charterInceptionBytes(image);
+  return genesisOfInception(image, await Promise.all(image.keys.map(async (k) => ({ signer: k, sig: Buffer.from(await signAsSeat(k, bytes)).toString("hex") }))));
+}
+
+
+// The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
+// row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
+vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 });
+
+const args = (positional: string[], options: Record<string, string> = {}): ParsedArgs => ({ command: "nexus", positional, options, flags: { json: true } });
+async function run(a: ParsedArgs): Promise<{ code: number; out: Record<string, any> }> {
+  const lines: string[] = [];
+  const write = vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => { lines.push(String(chunk)); return true; });
+  try { const code = await cmdNexus(a); const json = lines.find((line) => line.trim().startsWith("{")); return { code, out: json ? JSON.parse(json) : {} }; }
+  finally { write.mockRestore(); }
+}
+
+describe("seal rotate refusal codes", () => {
+  let root: string;
+  let prior: string | undefined;
+  beforeEach(() => {
+    root = mkdtempSync(join(tmpdir(), "lares-rotate-codes-")); prior = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = root;
+    vi.spyOn(console, "log").mockImplementation(() => {}); vi.spyOn(console, "error").mockImplementation(() => {});
+  });
+  afterEach(() => { vi.restoreAllMocks(); if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior; rmSync(root, { recursive: true, force: true }); });
+  // The seat reads the persona roster under the vessel key, so each test stands on a founded custody.
+  // A founding derives a key from its route and every seat seals a row, so a test here takes seconds under a
+  // loaded suite: the room below belongs to that work, and no assertion reads a clock.
+  let custody: ScratchCustody;
+  beforeEach(async () => { vi.setConfig({ testTimeout: 60_000, hookTimeout: 60_000 }); custody = await seatScratchCustody(); });
+  afterEach(async () => { await custody.drop(); });
+  // One rite per charter: it carries each chair's cold-key card from the seat to the roll, as a person does.
+  let rite: SealRite;
+  beforeEach(() => { rite = sealRite(); });
+  async function roster(): Promise<string[]> {
+    const petnames = await makeNodePersonaPetnameStore(); const declarations = await makeNodePersonaDeclarationStore(); const keys: string[] = [];
+    for (let i = 0; i < 3; i++) { const face = await generateOrLoadPersonaGroupRoot(i); await renameOwnPersona(petnames, i, `veil-${i}`); await standForKahuSeat(declarations, i, true); keys.push(face.verifyingKey); }
+    return keys;
+  }
+  test("an unarmed head and a head this vessel cannot reveal refuse by name, and preserve bytes", async () => {
+    await roster();
+    expect((await rite.seat()).code).toBe(0);
+    const path = nexusCharterDocPath(larSealHome());
+    const doc = readNexusDoc(larSealHome())!;
+    const seated = doc.kahu.map((k) => k.verifyingKey!);
+    // An UNARMED head: it committed nothing, so the roll refuses under the roll law's own name.
+    const unarmed = await incepted(seated, 2);
+    writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: unarmed.epochCid, sealLineage: [unarmed] });
+    const unarmedBefore = readFileSync(path);
+    const refusedUnarmed = await rite.rotate() as { code: number; out: Record<string, any> };
+    expect(refusedUnarmed.code).not.toBe(0); expect(refusedUnarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
+    // The card's rehearsal reads the same head and refuses under the same name, before any card reads.
+    const rehearsedUnarmed = await run(args(["seal", "cold", "rehearse"]));
+    expect(rehearsedUnarmed.out.error.code).toBe("rotation-unarmed"); expect(readFileSync(path).equals(unarmedBefore)).toBe(true);
+
+    // A head that commits a set this vessel holds no row of: nothing reveals it.
+    const stranger = await incepted(seated, 2, { digests: ["a1".repeat(32), "b2".repeat(32), "c3".repeat(32)], threshold: 2 });
+    writeNexusDoc(larSealHome(), { ...doc, sealEpochCid: stranger.epochCid, sealLineage: [stranger] });
+    const strangerBefore = readFileSync(path);
+    const refusedStranger = await rite.rotate() as { code: number; out: Record<string, any> };
+    expect(refusedStranger.code).not.toBe(0); expect(refusedStranger.out.error.message).toMatch(/a card answers no digest the standing head committed/); expect(readFileSync(path).equals(strangerBefore)).toBe(true);
+
+    // CONTROL: the head the rite armed rolls.
+    writeNexusDoc(larSealHome(), doc);
+    expect((await rite.rotate() as { code: number; out: Record<string, any> }).code).toBe(0);
+  });
+});

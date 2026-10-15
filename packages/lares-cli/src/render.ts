@@ -1,0 +1,195 @@
+// @heleuma:exempt — thin presentation helper beneath the anchored command
+// grammar (bin/lares.ts). Owns no semantic boundary; it only projects a
+// command's already-computed result to the reading actor.
+
+/**
+ * render — one surface, two actors (meme: lar:///…/mesh/operator-peer #actor-parity).
+ *
+ * The same command serves a HUMAN at a terminal and an AI AGENT acting
+ * programmatically. Output renders by audience, never by forking the command:
+ *   - TTY (human)            → prose, via the caller's `human()` thunk.
+ *   - `--json` or off-TTY    → a deterministic structured payload on stdout:
+ *                              an `ok | error` union carrying the correlatable
+ *                              `requestId` (the content-addressed task handle)
+ *                              and a `data` map. Errors travel as DATA (one
+ *                              parseable object), not a stack trace.
+ *
+ * Determinism: the payload object literal builds in fixed key order, so the same
+ * result emits the same bytes — what an agent relies on.
+ */
+
+import { stdout } from "node:process";
+import type { ParsedArgs } from "./parse-args.js";
+import { floorCure, faceStandsOnDisk } from "./floor-cure.js";
+import { larBootstrapPath } from "./env.js";
+
+/**
+ * Does the actor want machine output? Explicit `--json` wins; `--no-json` forces
+ * prose even off-TTY; otherwise a non-TTY stdout (a pipe / an agent) implies JSON.
+ */
+export function wantsJson(args: ParsedArgs): boolean {
+  if (args.flags["json"] === true)  return true;
+  if (args.flags["json"] === false) return false;
+  return !stdout.isTTY;
+}
+
+/**
+ * A failure an agent can branch on: a STABLE class `code`, a human `message`,
+ * and an optional actionable `hint`. The `code` pairs with the process exit
+ * (see `exitFor`), so the machine reads the same verdict two ways. Errors travel
+ * as one parseable object on stdout, never a stack trace.
+ */
+export interface LaresError {
+  /** Stable class: usage · not-found · daemon-unreachable · conflict · verb-error · cap-denied · error. */
+  readonly code:    string;
+  readonly message: string;
+  /** One actionable sentence, when the fix is obvious; omitted otherwise (never fabricated). */
+  readonly hint?:   string;
+}
+
+/**
+ * Error class → process exit code, the single source of truth the commands
+ * return through `exitFor` so the JSON `error.code` and the exit never drift.
+ */
+export const EXIT_FOR: Readonly<Record<string, number>> = {
+  ok:                  0,
+  usage:               2,
+  "not-found":         3,
+  "daemon-unreachable": 3,
+  conflict:            4,
+  "verb-error":        4,
+  "cap-denied":        5,
+  // NEITHER "nothing answered" (3) NOR "the work faulted" (4) — the socket connected, the daemon took
+  // the verb, and THIS process merely stopped waiting to hear back; the act may have committed. Its own
+  // rank keeps a caller from retrying a gesture that simply needs longer (3's implication) or from
+  // reading a committed act as a failure (4's). `verb-timeout` (the retired predecessor, M3) is GONE —
+  // nothing produces it any longer; `outcome-unknown` is its one successor, raised from
+  // `local-connector.ts`'s `LocalWaitExpired`.
+  "outcome-unknown":   6,
+  // THE SAME EXIT FAMILY AS outcome-unknown (6), BUT A DISTINCT CODE. An `abandoned` receipt names a
+  // request THIS vessel arbitrated and refused BEFORE commit — never ran, never will under this id.
+  // That is a sharper, more actionable answer than "outcome unknown" ("it may have committed"), so it
+  // earns its own code (M3′) rather than reusing `verb-error` (which would read as a fault in the act
+  // itself — there is none, the act never started) or the bare `outcome-unknown` (which would tell a
+  // caller to keep wondering about an id this vessel has already settled).
+  "request-abandoned": 6,
+  // The CONFLICT family (4): `lares cancel` reached a ledger that already held a fact for the id. The withdrawal
+  // changed nothing and the act it met runs on (or already landed); the state the vessel holds rides beside it.
+  "cancel-lost":       4,
+  // THE SAME EXIT FAMILY (6), outcome-unknown's sharper kin: the vessel that committed this request
+  // stopped before an outcome landed, so the effect may have landed in part.
+  "request-interrupted": 6,
+  // A caller reused a requestId the vessel already arbitrated, but with CHANGED content (D1,
+  // M3″ — `uds-channel.ts`'s `request-id-reused-with-changed-input`). A fresh code (2, the
+  // USAGE family) rather than `verb-error`'s 4: the fix is "mint a new id", a USAGE correction,
+  // never a fault in the act's own handler.
+  "request-id-reused": 2,
+  // THE SAME EXIT FAMILY AS outcome-unknown/request-abandoned (6): the receipt ring (D1, M1)
+  // evicted this id's outcome past its retention bound — neither "nothing answered" (3) nor
+  // "the work faulted" (4); the vessel settled this id and then let its result go, which reads
+  // closer to "ask a different way" than to either of those.
+  "retention-gap":     6,
+  // THE SAME EXIT FAMILY (6): the ledger's own fact for this id is UNREADABLE (a torn tiddler the
+  // channel's `parseReceiptFact` refuses — G2, `uds-channel.ts`), told apart from both a genuine
+  // `abandoned` verdict and a retention-evicted one. The cure is a fresh request id, never a retry
+  // under the torn one.
+  "receipt-fact-torn": 6,
+  // The USAGE family (2): the bag was DROPped and takes no writes, so the cure is a different
+  // request (CREATE a fresh bag), never a fault in the act's own handler.
+  "bag-retired":       2,
+  // The USAGE family (2): a content verb named no container, or both; the door's message says which to pass.
+  "no-container":      2,
+  // The USAGE family (2): the vessel stands at the waking floor and holds no face; the cure is the
+  // lift the refusal names, never a retry.
+  "waking-floor":      2,
+  // The cap-denied family (5): the crossing relaxes confinement and wants the kahu quorum.
+  "crossing-outward":  5,
+  // The CONFLICT family (4): another holder holds the store this command would open: a standing vessel that
+  // answers no socket here, or another command mid-act.
+  "store-held":        4,
+  // The "nothing answered" family (3): the store door's own budgeted wait named a holder and gave up.
+  "store-door-timeout": 3,
+  error:               1,
+};
+
+/** The process exit code for an error class (unknown → 1, generic failure). */
+export function exitFor(code: string): number {
+  return EXIT_FOR[code] ?? 1;
+}
+
+/**
+ * REFUSE with a usage reading — the one refusal that used to skip the choke point.
+ *
+ * Every hand-rolled `usage()` printed prose to stderr and returned a bare code, so under `--json` — the
+ * mode that exists for agents and pipes — the caller received ZERO parseable bytes and an exit status.
+ * Measured on the built binary: `lares library bogus-verb --json` wrote nothing at all to stdout, while
+ * every ORDINARY error on the same door emitted `{ok:false,error:{…}}`. The exit vocabulary was never the
+ * gap (`EXIT_FOR.usage` is 2 and the refusals returned it); the PAYLOAD was.
+ *
+ * A human still reads the same prose, line for line. An agent reads the refusal every other error already
+ * speaks, so "unknown sub-verb" stops being the one failure it cannot see.
+ */
+export function refuseUsage(args: ParsedArgs, door: string, lines: readonly string[], detail?: string): number {
+  emit(args, {
+    ok:    false,
+    error: { code: "usage", message: `lares ${door}: ${detail ?? "unknown sub-verb"}` },
+    // BOTH HALVES, BOTH READERS. The hand-rolled refusals printed the reason and THEN the menu; routing
+    // them through the choke point moved the reason onto the machine channel alone, so a person at a
+    // terminal saw what IS valid and never what they typed. A refusal that withholds the cause is a menu.
+    human: () => {
+      if (detail) console.error(`lares ${door}: ${detail}`);
+      for (const line of lines) console.error(line);
+    },
+  });
+  return exitFor("usage");
+}
+
+export interface Emission {
+  /** The `ok | error` union — the machine-facing verdict. */
+  readonly ok:         boolean;
+  /** Correlatable handle (requestId / taskContentId) when the result rode a verb. */
+  readonly requestId?: string;
+  /** Structured result payload for an agent to reason over. */
+  readonly data?:      Record<string, unknown>;
+  /** Failure when `ok` reads false. A bare string upgrades to `{code:"error",…}`. */
+  readonly error?:     string | LaresError;
+  /** Human projection — invoked ONLY on the prose path. */
+  readonly human:      () => void;
+}
+
+/**
+ * Project an emission to the reading actor. Renders prose XOR a JSON object; the
+ * caller owns the process exit code (commands carry their own code vocabulary).
+ */
+/**
+ * Correct a floor refusal's cure before it renders, wherever the daemon's advice cannot be right.
+ *
+ * ONE CHOKE POINT, ONE NARROW CORRECTION. Every error surfaces through `emit`, and the daemon's
+ * waking-floor counsel — "light a face" — is wrong for the operator who already has three. Only that
+ * refusal is touched, and only when a face actually stands on disk; everything else keeps the
+ * daemon's own words, because a surface that re-worded errors would bury the reading under a guess.
+ *
+ * The disk is read ONLY when the message matches, so an ordinary error costs nothing.
+ */
+function withFloorCure(e: Emission): Emission {
+  const err = typeof e.error === "string" ? { code: "error", message: e.error } : e.error;
+  if (!err?.message) return e;
+  // The disk read costs nothing on an ordinary error: `floorCure` returns null on any message that is
+  // not the floor, so the probe below runs only for the refusal this correction is about.
+  if (floorCure(err.message, { faceOnDisk: true }) === null) return e;
+  let cure: string | null = null;
+  try { cure = floorCure(err.message, { faceOnDisk: faceStandsOnDisk(larBootstrapPath()) }); }
+  catch { return e; }   // a vessel whose bootstrap cannot be read keeps the daemon's own words
+  return cure === null ? e : { ...e, error: { ...err, hint: cure } };
+}
+
+export function emit(args: ParsedArgs, e0: Emission): void {
+  const e = withFloorCure(e0);
+  if (!wantsJson(args)) { e.human(); return; }
+  const payload: Record<string, unknown> = { ok: e.ok };
+  if (e.requestId !== undefined) payload["requestId"] = e.requestId;
+  if (e.data      !== undefined) payload["data"]      = e.data;
+  if (e.error     !== undefined) payload["error"]     =
+    typeof e.error === "string" ? { code: "error", message: e.error } : e.error;
+  stdout.write(JSON.stringify(payload) + "\n");
+}

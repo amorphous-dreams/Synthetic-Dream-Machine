@@ -1,0 +1,100 @@
+/**
+ * social-seed — satellite-doc factory functions for the social plane + daemon.
+ *
+ * Exports:
+ *   seedLaresDoc          — create the ba satellite doc on first boot
+ * A PLACE seeds the daemon bag alone. A FACE seeds its own four planes, each under the id its PersonaGroup's
+ * tag derives (`personaScopedBagIds`) — so the caller passes the bag id in rather than reading a constant,
+ * and a vessel holding a multitude keeps one set of relations per face instead of one per machine.
+ */
+
+import type { Repo, DocHandle }  from "@automerge/automerge-repo";
+import type { LarDoc } from "@lararium/mesh";
+import {
+  DAEMON_BAG_ID,
+  emptyLarDoc,
+  emptyIdentitiesDoc,
+  emptyCirclesDoc,
+  emptySessionsDoc,
+  storedLarRecord,
+  circleTiddlerUri,
+} from "@lararium/mesh";
+
+export function seedIdentitiesDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyIdentitiesDoc());
+  handle.change((doc) => {
+    doc.tiddlers[bagId] = storedLarRecord(bagId, { text: handle.url }, "lararium-seed");
+  });
+  console.log(`[social-seed] IdentitiesDoc seeded  url=${handle.url}`);
+  return handle;
+}
+
+// The system circles every FACE carries — adding to a circle IS the follow (Kowloon model, jzellis).
+// Membership never federates; the graph is private to the persona that holds it, and each face carries its
+// own set under its own tag. NEXUS AUTHORIZATION RINGS ARE NOT HERE: a nexus tier names who may act at a
+// Nexus, not who a person reads, so it lives on the nexus plane — one ring per Nexus, never one per mask.
+const SYSTEM_CIRCLES: Array<{ id: string; displayName: string }> = [
+  { id: "following",     displayName: "Following" },
+  { id: "all-following", displayName: "All Following" },
+  { id: "circles",       displayName: "Circles" },
+  { id: "blocked",       displayName: "Blocked" },
+  { id: "muted",         displayName: "Muted" },
+];
+
+export function seedCirclesDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyCirclesDoc());
+  handle.change((doc) => {
+    doc.tiddlers[bagId] = storedLarRecord(bagId, { text: handle.url }, "lararium-seed");
+    // The SELF-POINTER answers to the plane's own bag id; every record INSIDE it spells the NAMESPACE.
+    // A title resolves verbatim within its own document, so one internal shape serves every face and a
+    // reader never has to know which face it stands on to name a circle.
+    for (const { id, displayName } of SYSTEM_CIRCLES) {
+      const uri = circleTiddlerUri(id);
+      doc.tiddlers[uri] = storedLarRecord(uri, {
+        text: "",
+        id,
+        displayName,
+        kind: "System",
+        createdAt: "",
+      }, "lararium-seed");
+    }
+  });
+  console.log(`[social-seed] CirclesDoc seeded  url=${handle.url}  systemCircles=${SYSTEM_CIRCLES.length}`);
+  return handle;
+}
+
+export function seedSessionsDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptySessionsDoc());
+  handle.change((doc) => {
+    doc.tiddlers[bagId] = storedLarRecord(bagId, { text: handle.url }, "lararium-seed");
+  });
+  console.log(`[social-seed] SessionsDoc seeded  url=${handle.url}`);
+  return handle;
+}
+
+export function seedDaemonDoc(repo: Repo): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyLarDoc());
+  handle.change((doc) => {
+    doc.tiddlers[DAEMON_BAG_ID] = storedLarRecord(DAEMON_BAG_ID, { text: handle.url, kind: "oracle" }, "lararium-seed");
+  });
+  console.log(`[social-seed] DaemonDoc seeded  url=${handle.url}`);
+  return handle;
+}
+
+/**
+ * Seed ONE PersonaGroup's private plane, under the name that group's own material derives.
+ *
+ * `personaBagId` arrives resolved (`personaBagIdFor(personaGroupId)`) rather than derived here,
+ * because a plane must exist under its TRUE name from its first write: the capability layer hashes a bag
+ * URL to seed the document behind it, so a plane seeded under one name and renamed later would leave a
+ * document nothing can reach. The caller mints the PersonaGroup first, then seeds its plane.
+ */
+export function seedPersonaDoc(repo: Repo, personaBagId: string): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyLarDoc());
+  handle.change((doc) => {
+    doc.tiddlers[personaBagId] = storedLarRecord(personaBagId, { text: handle.url, kind: "oracle" }, "lararium-seed");
+  });
+  console.log(`[social-seed] PersonaDoc seeded url=${handle.url}`);
+  return handle;
+}
+

@@ -1,0 +1,42 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+role      = "place, below — the Low Delos megadungeon mouth where Rinia rose; three stabilized town-levels, names open"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/low-delos-mouth"
+```
+
+<<~ ahu #/head>>
+
+! The Low Delos Mouth
+
+''Stratum:'' below the constellation · ''Scale:'' Destination (megadungeon; Areas nest beneath).
+
+Where ''Rinia rose from its bed'', the exposed crater opens a megadungeon piercing deep into the
+Underdark — ''stabilized towns down to the third level'', lift-ports joining them to the sky.
+The crater-glow brightens and dims on a nineteen-minute cycle that correlates with nothing and
+has outlasted four scholarly careers. Scavenger-tier salvage economy; Path-Lares maintain the
+Underdark maps; among the deepest, most stable Nexus-to-Underdark routes known.
+
+''Live rumors:'' a "soulbound lash" said to hold Rakshasa's anger, unearthed by scavengers · a
+newly opened sublevel wanting mapping.
+
+''Open prompts:'' the three town-levels' names and trades · who holds the lift-gates at the
+bottom · what the nineteen-minute cycle breathes FOR.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;cxgI8omB6gdbBlm4_wqWlskf6VS-H5lBX3Cq509c0zY
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,426 @@
+/**
+ * carriage-caps — the ISOMORPHIC carriage machinery, on the mesh floor where every vessel reaches it.
+ *
+ * These caps wire a vessel's PUBLIC FLOW-map (the meshpalace doc) and the blind relay that carries it across
+ * the astral space — platform-blind by construction (no node http Server, no tw5 wiki). A hearth, a
+ * crossroads and a browser leaf compose the SAME pair through `carriageStack` (below) and differ only
+ * in the mesh standing each hands in. Serving that map over HTTP is a node-only act and lives in
+ * node-caps' `flowMapReadFaceCap`; carrying it is everyone's, and lives here.
+ *
+ * Layer law: `@lararium/mesh` is the LOWEST package — it CANNOT import `@lararium/tw5` (circular). So the
+ * substrate cap-id rides here as a WIRE-STRING (`SUBSTRATE_CAP_ID`), matched by VALUE to tw5's
+ * `CORE_CAP.substrate` at handshake time — cap-ids are handshake strings, matched by value, not by import.
+ *
+ * Canon: lar:///ha.ka.ba/lararium/api/composable-keel · …/mesh/vessel-caps#lares-viales
+ */
+
+import type { Repo, DocHandle } from "@automerge/automerge-repo";
+import type { CapModule } from "./cap-compose.js";
+import { AutomergeDocStore } from "./automerge-doc-store.js";
+import {
+  MESH_PALACE_BAG, emptyMeshPalaceDoc, type MeshPalaceDoc,
+  dialEntryToRecord, dialEntries, type DialEntry,
+  routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
+} from "./mesh-palace.js";
+import { pullAndVerifyOracle } from "./oracle-read-client.js";
+import type { LeafIdentity } from "./auth-wire.js";
+import { plainRecord, sameStoredRecord, type StoredTiddlers } from "./stored-value.js";
+import type { LarDoc } from "./base-doc.js";
+import type { VesselCoreAssembly } from "./open-vessel-core.js";
+import type { BagStowage } from "./bag-residency.js";
+import { storedRecord } from "./stored-record.js";
+
+/**
+ * The carriage cap-ids. A vessel's #has-cap-stack names these to wire the meshpalace FLOW-map + carriage.
+ * The substrate dependency rides as a wire-string (below) — mesh cannot import tw5's CORE_CAP (circular),
+ * so the value, not the symbol, carries the match. node-caps' `CAP` object folds these in.
+ */
+export const CARRIAGE_CAP = { meshpalace: "meshpalace", carriage: "carriage" } as const;
+
+/** The substrate cap-id this carriage depends on — a WIRE-STRING. Matches tw5's `CORE_CAP.substrate` by
+ *  VALUE (mesh can't import CORE_CAP — circular). cap-ids are handshake strings, matched by value. */
+const SUBSTRATE_CAP_ID = "substrate";
+
+// ── granular carriage caps (a writable meshpalace FLOW-map + the carriage that pulls peers) ─────────
+
+/** The composed meshpalace handle a meshpalace cap exposes. */
+export interface MeshPalaceComponent { readonly handle: DocHandle<MeshPalaceDoc>; }
+
+/** meshpalace — a writable meshpalace AutomergeDocStore layer (the vessel's own public FLOW-map) +
+ *  a residency pin. Requires substrate (the composite to layer into). */
+export function meshPalaceCap(deps: { repo: Repo; residency?: BagStowage; seed?: readonly DialEntry[]; selfCoord?: Coord }): CapModule {
+  return {
+    id: CARRIAGE_CAP.meshpalace, requires: [SUBSTRATE_CAP_ID],
+    build: async (resolve) => {
+      const assembly = resolve<VesselCoreAssembly>(SUBSTRATE_CAP_ID);
+      const handle   = deps.repo.create<MeshPalaceDoc>(emptyMeshPalaceDoc());
+      // Self-announce: a source Herm seeds its OWN dial(s) on the FLOW-map (public reachability — never
+      // others' content), and — with a self-coord — a ROUTING-SLOT per dial so peers can re-rank toward
+      // it on the hyperbolic chart. Absent = a leaf/relay that only carries what it pulls.
+      if (deps.seed && deps.seed.length > 0) {
+        handle.change((d) => {
+          for (const e of deps.seed!) {
+            const rec = dialEntryToRecord(e, "herm-self-announce");
+            d.tiddlers[rec.tiddler.title] = storedRecord(rec);
+            if (deps.selfCoord) {
+              const slot: RoutingSlot = { bearing: e.bearing, r: deps.selfCoord.r, theta: deps.selfCoord.theta };
+              const srec = routingSlotToRecord(slot, "herm-self-announce");
+              d.tiddlers[srec.tiddler.title] = storedRecord(srec);
+            }
+          }
+        });
+      }
+      assembly.composite.addLayer({
+        bagId: MESH_PALACE_BAG, store: new AutomergeDocStore(handle, MESH_PALACE_BAG),
+        // Written by NAME, never the default: the vessel alone names its working layer.
+        writable: true, defaultWritable: false,
+      });
+      await deps.residency?.pin(MESH_PALACE_BAG, "boot:meshpalace");
+      return { handle };
+    },
+  };
+}
+
+/** The carriage handle a carriage cap exposes — a manual pull + the loop's stop. */
+const PHI_INV = 0.6180339887498949;
+/**
+ * FFZ mesh-timing axis-2 (lar:///ha.ka.ba/lararium/mesh/ffz-mesh-timing #axis-desync): a per-node
+ * INCOMMENSURABLE, renewal-randomized pull delay — NEVER a global fixed interval. A synchronized
+ * global cadence is the herd / single point of failure: multi-node FlipIt proves it strictly dominated
+ * (one timing-model predicts every node's window at once). The DETERMINISTIC factor golden-rotates a
+ * hash of the node-id (coordination-free, mutually-irrational across node-ids — no shared entropy); the
+ * JITTER randomizes each interval's realization (the secret phase — a predictable phase is the exploit,
+ * not the rate). Constants PROVISIONAL/seeded, awaiting the mesh's live witness (the canon's open fork).
+ */
+export function incommensurablePullMs(seedHex: string, baseMs: number, rand: () => number): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < seedHex.length; i++) h = Math.imul(h ^ seedHex.charCodeAt(i), 16777619) >>> 0;
+  const factor = 0.7 + ((h * PHI_INV) % 1) * 0.6;   // per-node incommensurable mean-multiplier ~[0.7,1.3]
+  const jitter = 0.75 + rand() * 0.5;               // renewal realization ~[0.75,1.25] (the secret phase)
+  return Math.max(250, Math.round(baseMs * factor * jitter));
+}
+
+export interface CarriageComponent { readonly pullOnce: () => Promise<number>; readonly stop: () => void; }
+
+/**
+ * A peer the carriage pulls: its http read-face and the gate key it PINS there. The key is the peer's vessel
+ * key — the gate its oracle socket stands behind and the signer of its pointer — so a pull knocks on the path
+ * that key derives, proves to it, and reads only a map it signed. A peer known by address alone is not dialed.
+ */
+export interface MeshPeer {
+  readonly endpoint:   string;
+  readonly gatePubKey: string;
+}
+
+const PEER_KEY_RE = /^[0-9a-f]{64}$/;
+
+/**
+ * A bootstrap peer as an operator names it: `<http read-face>#<gate key hex>`. The fragment never leaves this
+ * vessel (a URL fragment rides no request); it is the pin the dial carries. An entry without a 32-byte hex key
+ * names no gate to knock on and reads null.
+ */
+export function parseMeshPeer(entry: string): MeshPeer | null {
+  const hash = entry.indexOf("#");
+  if (hash < 0) return null;
+  const endpoint = entry.slice(0, hash).trim();
+  const gatePubKey = entry.slice(hash + 1).trim().toLowerCase();
+  if (!/^https?:\/\//.test(endpoint) || !PEER_KEY_RE.test(gatePubKey)) return null;
+  return { endpoint, gatePubKey };
+}
+
+/**
+ * Self-peering federation: the carriage discovers its pull-set from the FLOW-map's DIALS (each dial
+ * advertises a reachable http read-face URL and the gate key it answers under) UNION the bootstrap peers — so
+ * the mesh grows by the dials it CARRIES (transitive discovery), never a hardcoded list. http(s) read-faces
+ * only (ws sync-endpoints skipped); a dial whose key is not a 32-byte hex key skipped (nothing to knock on);
+ * self excluded; deduped by endpoint; bounded by maxFanout. With a `selfCoord`, the carried dials are
+ * RE-RANKED by l-space proximity (the native `hyperbolicDistance` over published routing-slots — the routing
+ * chart drives WHICH dials to carry, nearest first; the embedding's re-rank stage, native side).
+ */
+export function discoverPeers(
+  doc: { tiddlers: StoredTiddlers } | undefined,
+  bootstrap: readonly MeshPeer[], selfEndpoint: string | undefined, maxFanout: number,
+  selfCoord?: Coord,
+): MeshPeer[] {
+  let dials = doc ? dialEntries(doc as LarDoc) : [];
+  if (selfCoord && doc) {
+    const coordOf = new Map<string, Coord>(routingSlots(doc as LarDoc).map((s) => [s.bearing, { r: s.r, theta: s.theta }]));
+    const distOf = (bearing: string): number => {
+      const c = coordOf.get(bearing);
+      return c ? hyperbolicDistance(selfCoord, c) : Infinity; // a coordless dial ranks last
+    };
+    dials = [...dials].sort((a, b) => distOf(a.bearing) - distOf(b.bearing)); // nearest by the chart first
+  }
+  const peers: MeshPeer[] = [];
+  const seen = new Set<string>();
+  const carried = dials.map((d) => ({ endpoint: d.endpoint, gatePubKey: d.verifyingKeyHex.toLowerCase() }));
+  for (const p of [...bootstrap, ...carried]) { // bootstrap first, then nearest dials
+    if (!p.endpoint || p.endpoint === selfEndpoint || !/^https?:\/\//.test(p.endpoint) || seen.has(p.endpoint)) continue;
+    if (!PEER_KEY_RE.test(p.gatePubKey)) continue;   // no pin, no knock
+    seen.add(p.endpoint);
+    peers.push(p);
+    if (peers.length >= maxFanout) break;
+  }
+  return peers;
+}
+
+const R_DISK = 8;     // the rim radius of the routing disk
+const R_DAMP = 0.15;  // PSO-β low-pass (Vivaldi adaptive-step analogue) — slow, non-oscillating r-drift
+const R_DEADBAND = 0.5; // re-publish the slot only when r drifts past this band (hysteresis)
+/**
+ * The carriage's radial standing damped from its LIVE degree (Krioukov `r = R−2·ln(κ/κ₀)` via
+ * `radialCoordinate`). `r` DRIFTS (low-pass γ) toward the target, never snapping — the Chart-Diver's
+ * stability layer (PSO-β popularity-fade) that keeps the degree→r→re-publish feedback from oscillating.
+ * High-degree carriage hubs drift toward center, leaves to the rim; θ never feeds back (carved cones).
+ */
+export function dampedRadius(rCurrent: number, degree: number, gamma = R_DAMP): number {
+  const rTarget = radialCoordinate(Math.max(1, degree), { R: R_DISK, minDegree: 1 });
+  return (1 - gamma) * rCurrent + gamma * rTarget;
+}
+
+// ── MeshSelf — the ONE derived mesh self-dial (the 6-param sprawl collapsed) ──────────────────────
+
+/**
+ * A vessel's mesh standing — the single bundle the options layer carries (was six scattered params:
+ * selfCoord, selfBearing, selfEndpoint, peers, maxFanout, seed). `composeHerm`/`openNodeVessel` unpack
+ * it back into the caps' granular interface; the self-announce dial DERIVES from bearing + endpoint
+ * Present → self-announce + self-peer + proximity re-rank + r-drift; absent
+ * → a leaf that only carries what it pulls.
+ */
+export interface MeshSelf {
+  /** OWN reachable http read-face URL — advertised in its dial, excluded from self-peering. ABSENT → a
+   *  LEAF: it carries-in (pulls + re-ranks by coord) but advertises no reachable dial, so it is NOT
+   *  dial-able (a browser with no listening socket). The endpoint present-vs-absent IS the leaf↔full tier. */
+  readonly endpoint?: string;
+  /** Own dial bearing — the slot the carriage re-publishes as its standing `r` drifts. */
+  readonly bearing: string;
+  readonly coord: Coord;                 // routing-chart coord (r=standing, θ=kinship), published in its slot
+  readonly peers: readonly MeshPeer[];   // bootstrap peers carried (∪ discovered dials); empty = a leaf
+  /** OWN gate key — the vessel key its read-face's oracle socket stands behind, published in its dial so a
+   *  peer can knock and pin. ABSENT → no dial is published (nothing could reach the face). */
+  readonly gatePubKey?: string;
+  readonly maxFanout?: number;           // max peers pulled per cycle
+}
+
+/** FNV-1a → [0,1): a content-blind unit hash of an address — the routing-chart θ + a fallback label. */
+export function hashUnit(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0;
+  return (h >>> 0) / 4294967296;
+}
+
+/**
+ * deriveMeshSelf — the ONE mesh self-dial derivation (was duplicated across main.ts's two branches).
+ * Every vessel is a NODE on the chart: θ = a content-blind FNV hash of the address, r = carriage standing
+ * (radius, default 1 — the node entry supplies `LAR_RADIUS`), bearing = `…/bags/oracle/node/<label>` (`LAR_SEED` label, else hash-derived).
+ */
+export function deriveMeshSelf(
+  publicUrl: string, peers: readonly MeshPeer[], opts: { label?: string; radius?: number; gatePubKey?: string } = {},
+): MeshSelf {
+  const u = hashUnit(publicUrl);
+  const label = opts.label ?? u.toString(36).slice(2, 8);
+  return {
+    endpoint: publicUrl,
+    bearing:  `lar:///ha.ka.ba/bags/oracle/node/${label}`,
+    // The radius arrives as a PARAMETER, never read from a host environment here. This module rides the
+    // isomorphic barrel, so a global read would resolve on one platform and throw on the other — and it
+    // would stay latent for exactly as long as no browser caller reached this function. The node entry
+    // reads `LAR_RADIUS` and passes it; a browser passes its own, or takes the default the leaf takes.
+    coord:    { theta: u * 2 * Math.PI, r: opts.radius ?? 1 },
+    peers,
+    ...(opts.gatePubKey ? { gatePubKey: opts.gatePubKey.toLowerCase() } : {}),
+  };
+}
+
+/**
+ * deriveMeshLeaf — a LEAF mesh standing: carries-in (peers + a coord for the proximity re-rank) but
+ * advertises NO endpoint, so it is not dial-able (a browser with no listening socket). `coordSeed` (the
+ * vessel's own identifier — origin / relay URL) hashes to the chart coord + the leaf's bearing.
+ */
+export function deriveMeshLeaf(
+  coordSeed: string, peers: readonly MeshPeer[], opts: { radius?: number } = {},
+): MeshSelf {
+  const u = hashUnit(coordSeed);
+  return {
+    bearing: `lar:///ha.ka.ba/bags/oracle/leaf/${u.toString(36).slice(2, 8)}`,
+    coord:   { theta: u * 2 * Math.PI, r: opts.radius ?? 1 },
+    peers,
+    // no endpoint → a LEAF (the Spore-Diver's one-field tier: carry-in only, not dial-able)
+  };
+}
+
+/** The self-announce dial a vessel seeds on its OWN FLOW-map — DERIVED from its MeshSelf (the `seed`
+ *  param dissolved: bearing + endpoint ARE the dial). A LEAF (no endpoint) has no dial → undefined. */
+export function meshSelfDial(self: MeshSelf): DialEntry | undefined {
+  if (!self.endpoint || !self.gatePubKey) return undefined; // a leaf, or a face with no gate key, advertises no dial
+  return { bearing: self.bearing, verifyingKeyHex: self.gatePubKey.toLowerCase(), endpoint: self.endpoint, scale: "dreamnet" };
+}
+
+/** The self-announce seed a caller hands `meshPalaceCap` — `[dial]` for a full node, `[]` for a leaf. */
+export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
+  const dial = meshSelfDial(self);
+  return dial ? [dial] : [];
+}
+
+/** carriage — the blind relay: pull each PEER's PUBLIC FLOW-map (pullAndVerifyOracle) and merge it into
+ *  this vessel's meshpalace doc, re-served by the read-face (carry-by-aggregate-reserve). Peers are
+ *  DISCOVERED from the carried dials (self-peering) ∪ the bootstrap. A peer down is no error —
+ *  feed-or-fade. Requires meshpalace (the doc to merge into + discover dials from).
+ *
+ *  PEERS PROVE FIRST: each pull proves `identity` at the peer's gate before any map crosses. A carriage
+ *  handed no identity has nothing to prove with, so it pulls nothing — it still stands its own map. */
+export function carriageCap(deps: {
+  peers: readonly MeshPeer[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
+  selfEndpoint?: string; maxFanout?: number; selfCoord?: Coord; selfBearing?: string; onLog?: (line: string) => void;
+}): CapModule {
+  return {
+    id: CARRIAGE_CAP.carriage, requires: [CARRIAGE_CAP.meshpalace],
+    build: (resolve) => {
+      const mp = resolve<MeshPalaceComponent>(CARRIAGE_CAP.meshpalace);
+      const bootstrap = new Set(deps.peers.map((p) => p.endpoint));
+      const seenDiscovered = new Set<string>();
+      let rCurrent = deps.selfCoord?.r ?? 1; // the carriage's radial standing, low-pass damped from live degree
+      let rPublished = rCurrent;
+      const identity = deps.identity;
+      if (!identity) deps.onLog?.("carriage: no identity to prove at a peer's gate — this vessel carries in nothing");
+      const pullOnce = async (): Promise<number> => {
+        let merged = 0;
+        const peers = discoverPeers(mp.handle.doc(), deps.peers, deps.selfEndpoint, deps.maxFanout ?? 16, deps.selfCoord);
+        // FFZ/Krioukov dynamic chart: damp r toward radialCoordinate(live-degree); re-publish the self-slot
+        // ONLY past the deadband (hysteresis) — degree→r→re-publish never oscillates (PSO-β low-pass).
+        if (deps.selfBearing && deps.selfCoord) {
+          rCurrent = dampedRadius(rCurrent, peers.length);
+          if (Math.abs(rCurrent - rPublished) > R_DEADBAND) {
+            rPublished = rCurrent;
+            const rec = routingSlotToRecord({ bearing: deps.selfBearing, r: rCurrent, theta: deps.selfCoord.theta }, "carriage-standing");
+            // WRITE-AMPLIFICATION GUARD (same law as the peer-merge loop below): skip the `change()`
+            // outright when the slot we're about to publish is byte-identical to what's already stored
+            // — the deadband already limits HOW OFTEN this fires, but a content check costs nothing and
+            // closes the case where damping settles back to a value already on the doc.
+            const existing = mp.handle.doc()?.tiddlers[rec.tiddler.title];
+            if (!sameStoredRecord(existing, rec)) {
+              mp.handle.change((d) => { d.tiddlers[rec.tiddler.title] = storedRecord(rec); });
+              deps.onLog?.(`carriage: standing → r=${rCurrent.toFixed(2)} (degree ${peers.length}, past the band)`);
+            }
+          }
+        }
+        if (!identity) return merged;   // nothing to prove with — nothing crosses in
+        for (const { endpoint: peer, gatePubKey } of peers) {
+          if (!bootstrap.has(peer) && !seenDiscovered.has(peer)) {
+            seenDiscovered.add(peer);
+            deps.onLog?.(`carriage: self-peering discovered ${peer} from a carried dial`);
+          }
+          let verdict;
+          try { verdict = await pullAndVerifyOracle<MeshPalaceDoc>(peer, { identity, verifyingKey: gatePubKey }); }
+          catch { continue; } // a peer down/unreachable is no error — feed-or-fade
+          if (!verdict.ok || !verdict.doc) continue;
+          const incoming = verdict.doc.tiddlers;
+          const titles = Object.keys(incoming);
+          if (titles.length === 0) continue;
+          // WRITE-AMPLIFICATION GUARD: automerge does not dedupe an identical-value re-`set` — every
+          // `change()` appends ops regardless of whether the value actually differs. A byte-identical
+          // re-merge on every pull tick ratchets the op-log unboundedly (canon: the FLOW-map OOM). So
+          // compare each incoming record to what's already stored and skip titles that are unchanged;
+          // only call `change()` at all when at least one title genuinely differs — an empty callback
+          // still costs nothing today, but this also spares that cost outright.
+          const stored = mp.handle.doc()?.tiddlers ?? {};
+          const changedTitles = titles.filter((t) => {
+            const existing = stored[t];
+            const arriving = incoming[t];
+            return arriving !== undefined && !sameStoredRecord(existing, arriving);
+          });
+          if (changedTitles.length > 0) {
+            mp.handle.change((d) => {
+              // A cross-doc copy unwraps and wraps again: Automerge refuses a value linked in another doc.
+              for (const t of changedTitles) d.tiddlers[t] = storedRecord(plainRecord(incoming[t]!));
+            });
+            merged += changedTitles.length;
+            deps.onLog?.(`carriage: merged ${changedTitles.length} FLOW records from ${peer}`);
+          }
+        }
+        return merged;
+      };
+      // FFZ axis-2: self-reschedule on a per-node INCOMMENSURABLE, renewal-randomized cadence (never a
+      // global fixed interval — the herd is the single point of failure). Each interval is drawn fresh.
+      const baseMs = deps.pullIntervalMs ?? 30_000;
+      const seed = deps.nodeSeedHex ?? "leaf";
+      let stopped = false;
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      // CRASH-HARDENING: this is a bare fire-and-forget boundary (a setTimeout callback / build-time
+      // self-fire, never `await`ed by a caller) — nothing else stands between it and the process. If
+      // the underlying automerge handle's WASM module has died (a sync-decode `rust_oom` — canon:
+      // "Module terminated"), the NEXT `.change()` throws (synchronously, or as a rejection once
+      // `pullOnce`'s `async` wraps it), and an unhandled rejection here takes the whole daemon down
+      // with it, starving the rest of a re-pave seed for a fault already contained to one doc. So the
+      // tick's OUTCOME is contained here — logged, never propagated — while `pullOnce` itself (the
+      // exposed manual-call API below) stays undecorated: a caller that awaits it still sees the throw.
+      const guardedTick = (): Promise<number> =>
+        pullOnce().catch((err) => {
+          const msg = err instanceof Error ? err.message : String(err);
+          deps.onLog?.(`carriage: tick failed (contained, not fatal) — ${msg}`);
+          return 0;
+        });
+      const schedule = (): void => {
+        if (stopped) return;
+        timer = setTimeout(() => { void guardedTick().finally(schedule); }, incommensurablePullMs(seed, baseMs, Math.random));
+        timer.unref();
+      };
+      void guardedTick().finally(schedule); // carry from the first breath, then self-reschedule incommensurably
+      return { pullOnce, stop: () => { stopped = true; if (timer) clearTimeout(timer); } };
+    },
+    dispose: (c) => (c as CarriageComponent).stop(),
+  };
+}
+
+// ── the CARRIAGE STACK — the pair every navigating vessel composes, named once ─────────────────────
+
+/**
+ * carriageStack — the two caps that let a vessel CARRY and NAVIGATE the mesh, as one ordered list.
+ *
+ * A vessel reaches the FLOW-map through exactly this pair: `meshpalace` holds the writable map,
+ * `carriage` pulls peers' public read-faces and re-ranks by l-space proximity. They are ONE unit —
+ * `carriageCap` requires `meshpalace`, so a stack declaring the second without the first REFUSES to
+ * boot. Naming the pair here keeps that indivisibility structural, and keeps a hearth, a Herm and a
+ * browser leaf composing the SAME carriage rather than three hand-copied config blocks that drift.
+ *
+ * `self` carries the vessel's mesh standing (`deriveMeshSelf` at an anchor, `deriveMeshLeaf` in a
+ * browser). PRESENT → the vessel self-announces its dial(s), seeds a routing slot, and re-ranks
+ * against its own coord; a self with no `endpoint` announces no dial and rides as a leaf that
+ * carries-in only. ABSENT → an empty FLOW-map and a carriage with no peers: the map still stands, so
+ * a cap that requires it (the Herm's public read-face) composes on a vessel that has met nobody yet.
+ *
+ * WHETHER to carry stays the door's own call — a vessel that never declares this pair routes nothing
+ * to the mesh, blind by structure. This names WHAT the pair is, never WHO takes it.
+ */
+export function carriageStack(deps: {
+  repo:            Repo;
+  residency?:      BagStowage;
+  self?:           MeshSelf;
+  nodeSeedHex:     string;
+  /** The identity each pull proves at a peer's gate. Absent → the carriage pulls nothing. */
+  identity?:       LeafIdentity;
+  pullIntervalMs?: number;
+  onLog?:          (line: string) => void;
+}): readonly CapModule[] {
+  const self = deps.self;
+  return [
+    meshPalaceCap({
+      repo: deps.repo,
+      ...(deps.residency ? { residency: deps.residency } : {}),
+      ...(self ? { seed: meshSelfSeed(self), selfCoord: self.coord } : {}),
+    }),
+    carriageCap({
+      peers:       self?.peers ?? [],
+      nodeSeedHex: deps.nodeSeedHex,   // the node-id seeds this vessel's incommensurable cadence
+      ...(deps.identity ? { identity: deps.identity } : {}),
+      ...(deps.pullIntervalMs !== undefined ? { pullIntervalMs: deps.pullIntervalMs } : {}),
+      ...(self ? {
+        ...(self.endpoint ? { selfEndpoint: self.endpoint } : {}), // absent → a leaf, not dial-able
+        selfCoord:   self.coord,
+        selfBearing: self.bearing,
+        ...(self.maxFanout !== undefined ? { maxFanout: self.maxFanout } : {}),
+      } : {}),
+      ...(deps.onLog ? { onLog: deps.onLog } : {}),
+    }),
+  ];
+}

@@ -1,0 +1,115 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/pranala-header">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/pranala-header.mem"
+mana      = 18
+manao     = 17
+manaoio   = 17
+namespace = "&#x2299;"
+role      = "the bearing a carrier declares about itself — the `?` self-token on the SOH control sigil"
+tags      = ["api/pono/pranala", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala-header"]
+title     = "lar:///ha.ka.ba/lares/api/pono/pranala-header"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/pranala-header"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Pranala-Header — the bearing a carrier declares about itself
+
+`<<^ code="&#x0001;" from="?" -> to="uri">>` stands on a carrier's head and declares the address it holds. The
+`?` token means ''this carrier itself'' — a self-reference no sigil keyword can express, since a
+keyword names a thing and this one names the speaker.
+
+The bearing reads off the SOH frame scan (the deserializer's head recogniser).
+
+<<~/ahu>>
+
+<<~ ahu #/ooda-ha>>
+
+✶ sense the `?` token — a self-reference; the carrier declares its own address, never an edge outward
+⏿ orient: the bearing rides the SOH control sigil, once per carrier, ahead of the meta block
+◇ the uri names this carrier's canonical `lar:` address; every `?` in the carrier resolves to it
+▶ read the bearing off the head; set the self-reference for all sigils in this carrier
+↺ confirm exactly one bearing per carrier and a `uri-path` that agrees with it
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! Law (Kānāwai)
+
+''The bearing rides the CONTROL head.'' A carrier declares its own address exactly once, on its SOH
+sigil, ahead of the meta block:
+
+A bearing MUST appear exactly once per carrier, on the SOH control sigil, before the meta TOML block.
+A bearing MUST carry a `lar:///` URI.
+A bearing's URI MUST match the carrier's `uri-path` meta field.
+A bearing MUST NOT appear inside an ahu slot body, and MUST NOT repeat in the body on any head.
+The `?` token stays reserved — no sigil elsewhere MAY take it as a name.
+
+''Why the control head.'' A frame mark states what the reader must do before it can read anything; a
+speaking sigil states what a carrier says. The bearing stands first among the former — a reader that
+cannot find the address cannot resolve a single `?` in the body — so it rides the head that carries the
+frame (`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing#/frame-head-lock`).
+
+<<~/ahu>>
+
+<<~ ahu #/syntax>>
+
+!! Syntax
+
+```text
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/path/to/this-carrier">>
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/path/to/this-carrier">>
+```
+
+The bearing reads off the SOH scan, which anchors on the control code and admits the namespace slot
+ahead of it. ''The tail must tolerate the arrow'': `? ->` carries a `>`, so a scan closing on `[^>\n]*`
+stops at the bearing itself and finds no head at all. Every scan in this grammar spells it
+`(?:[^>\n]|->)*` for that reason.
+
+<<~/ahu>>
+
+<<~ ahu #/schema>>
+
+!! Schema (machine-readable)
+
+''The bearing reads off the frame, never off a sigil pattern.'' The SOH scan finds the head, and the
+bearing follows its `? ->`. No pattern here holds the source of truth for that — `frame-marks.ts`
+carries the control set, and each reader keeps the scan its own context earned (a prefix stopping at
+`&` so an entity-written namespace never reads as the control code; a tail admitting `->`).
+
+```toml
+name           = "pranala-header"
+kind           = "bearing"
+rides          = "SOH control sigil"       # &#x0001; / &#x0011;
+self-token     = "?"
+once-per       = "carrier"
+agrees-with    = "uri-path"
+
+```
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;MfBD9c15jJ6b3U-PrFyDcYtRN9YdxlGNC9-_kbSrhlA
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,29 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tick
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: concurrency
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/tick
+lar-see-also: simulate
+lar-open-pattern: <<~\s*tick\s*>>
+lar-close-pattern: <<~\/tick\s*>>
+lar-example: <<~ tick>>
+type: text/vnd.tiddlywiki
+
+<!-- tick — a DEVICE LIFECYCLE HOOK: the block it opens runs once per //nalu//, the changeset wave:
+
+         <<~ tick>>
+           <<~ lele "lar:///a.b.c/x">>
+         <<~/tick>>
+
+     The nalu sits BELOW the grammar — the engine delivers the wave, and no operator emits one. tick
+     names the grammar-layer hook INTO that wave, so a block under it sees one coherent delivered
+     state per crest rather than each scattered write.
+
+     THE PROPER NAME AND THE FULL LAW STAND DEFERRED, pending Visual Verse tick-node confirmation;
+     the hook holds its grammar and its place in the family meanwhile.
+
+     THE PAGE STAYS CLEAR. A lifecycle hook governs execution and never layout, so the definition
+     hands the compile layer a data annotation naming the wave and renders nothing. -->
+
+\procedure ~tick()
+<span class="lar-tick" data-hook="nalu" hidden="true"/>
+\end

@@ -1,0 +1,180 @@
+/**
+ * bulb-kindle.test.ts — the BULB cap: a Herm serves a HELD cold-boot snapshot; a cold device kindles a SOVEREIGN hearth.
+ *
+ * End-to-end, headless, every crypto piece real:
+ *   1. SERVE + PULL — a Herm serves the bulb by cid over the PUBLIC floor (`/bulb/*`); a cold device pulls it by the
+ *      bulb CID it already holds, and `assembleBulb` re-verifies `sha256(bytes) == cid` on every blob.
+ *   2. KINDLE — the cold device materializes the oracle island from the bulb's genesis, mints its OWN Ed25519, and
+ *      builds the ceremony on THAT key → the kindled hearth's did:key derives from the DEVICE's own key.
+ *   3. SERVE FIRE, NEVER KEY (KAPU, by placement) — the bulb carries NO signing key; two devices kindling the SAME
+ *      bulb become two DISTINCT sovereigns (distinct did:keys). The Herm's process never touches either identity.
+ *
+ * REVERT-VERIFY (manual, in the handback): source the ceremony key from the bulb (Herm-supplied) → both devices
+ * collapse to ONE did → the `did1 !== did2` guard fails. Key minted ON the cold device is what that guard pins.
+ *
+ * Gate: lar:///ha.ka.ba/lararium/node/bulb#kindle
+ */
+import { afterEach, describe, test, expect } from "vitest";
+import { createServer, type Server } from "node:http";
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Repo } from "@automerge/automerge-repo";
+import {
+  buildGenesisDoc, didKeyFromVerifyingKey, identityTiddlerUri,
+  LARES_MEMETIC_WIKITEXT_PLUGIN_URI, sha256HexBytesSync, utf8Bytes,
+  type GenesisInputs, type LarDoc,
+} from "@lararium/mesh";
+import { readBulbArtifact, buildBulb, assembleBulb, bulbSeed, type BulbArtifact } from "../src/bulb.js";
+import { mountBulbReadFace } from "../src/bulb-read-face.js";
+import { pullBulb, kindleFromBulb, httpBulbTransport, type KindleResult } from "../src/kindle.js";
+import { writeCasEntriesFs } from "../src/node-cas.js";
+import { readGenesisSeed, genesisCasDir, genesisSeedFileBytes, genesisSeedCid } from "../src/genesis-artifact.js";
+import { plainField } from "@lararium/mesh";
+
+/** A fixture bulb — a fake core blob + a plugin under the Lares plugin id (validateGenesisBytes requires both). */
+function fixtureBulb(actorSeed = "abc123"): BulbArtifact {
+  const coreBlob   = utf8Bytes("fake-tw5-core-for-bulb");
+  const pluginBlob = utf8Bytes("fake-lares-memetic-wikitext-plugin");
+  const inputs: GenesisInputs = {
+    actorSeed, coreBlob, coreVersion: "5.0.0-test",
+    plugins: [{
+      id: LARES_MEMETIC_WIKITEXT_PLUGIN_URI, version: "0.1.0",
+      sha256: sha256HexBytesSync(pluginBlob), mimeType: "application/json", blob: pluginBlob,
+    }],
+  };
+  const artifact = buildGenesisDoc(inputs);
+  return { seedBytes: genesisSeedFileBytes(artifact.seed), casEntries: artifact.casEntries };
+}
+
+describe("BULB — serve a held snapshot; kindle a sovereign hearth (serve fire, never key)", () => {
+  const servers: Server[] = [];
+  const repos: Repo[] = [];
+  const dirs: string[] = [];
+  const mkDir = (t: string): string => { const d = mkdtempSync(join(tmpdir(), `lares-bulb-${t}-`)); dirs.push(d); return d; };
+  const newRepo = (): Repo => { const r = new Repo({ sharePolicy: async () => true }); repos.push(r); return r; };
+  const priorLarRoot = process.env["LAR_ROOT"];
+
+  // Kindle under a FRESH LAR_ROOT — the vessel identity home is machine-global (a cold device = one machine), so a
+  // distinct LAR_ROOT simulates a distinct cold device, each minting its OWN sovereign key. This is the honest bound:
+  // two REAL machines (or a Pi) prove the placement in the field; here one process stands in for two devices via env.
+  const kindleAsFreshDevice = async (bulb: BulbArtifact, tag: string): Promise<KindleResult> => {
+    process.env["LAR_ROOT"] = mkDir(`root-${tag}`);
+    try { return await kindleFromBulb({ bulb, repo: newRepo(), storageDir: mkDir(`store-${tag}`) }); }
+    finally { if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot; }
+  };
+
+  afterEach(async () => {
+    for (const s of servers.splice(0)) await new Promise<void>((r) => s.close(() => r()));
+    for (const r of repos.splice(0)) await r.shutdown();
+    for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* gone */ } }
+    if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot;
+  });
+
+  test("readBulbArtifact reads a genesis dir; build/assemble round-trips content-addressed", () => {
+    const genesisDir = mkDir("gd");
+    const bulb = fixtureBulb();
+    mkdirSync(genesisCasDir(genesisDir), { recursive: true });
+    writeFileSync(join(genesisDir, "seed.json"), bulb.seedBytes);
+    writeCasEntriesFs(bulb.casEntries, genesisCasDir(genesisDir));
+
+    const read = readBulbArtifact(genesisDir);
+    expect(read).not.toBeNull();
+    expect(Object.keys(read!).sort()).toEqual(["casEntries", "seedBytes"]);
+    expect(readGenesisSeed(genesisDir)?.format).toBe(bulbSeed(bulb).format);
+
+    // buildBulb → assembleBulb re-verifies every blob against its cid.
+    const { cid, blobs } = buildBulb(read!);
+    expect(cid).toBe(genesisSeedCid(bulb.seedBytes));
+    const byCid = new Map(blobs.map((b) => [b.cid, b.bytes]));
+    const back = (c: string): Uint8Array | null => byCid.get(c) ?? null;
+    const reassembled = assembleBulb(cid, back);
+    expect(bulbSeed(reassembled).actorSeed).toBe(bulbSeed(bulb).actorSeed);
+    expect(reassembled.casEntries.length).toBe(bulb.casEntries.length);
+
+    // The seed is the only CAS inventory authority: a partial or widened fire never builds.
+    expect(() => buildBulb({ ...bulb, casEntries: bulb.casEntries.slice(1) }))
+      .toThrow(/seed-derived inventory/);
+    expect(() => buildBulb({
+      ...bulb,
+      casEntries: [...bulb.casEntries, { cid: sha256HexBytesSync(utf8Bytes("unrelated")), bytes: utf8Bytes("unrelated") }],
+    })).toThrow(/seed-derived inventory/);
+
+    // A tampered blob fails the content-address (secret-free integrity).
+    expect(() => assembleBulb(cid, (c) => (c === cid ? utf8Bytes("tampered") : back(c))))
+      .toThrow(/content-address/);
+  });
+
+  test("THE SEED NAMES THE BULB: two houses on two Nexuses holding one genesis hold one bulb CID; another seed, another CID", () => {
+    // Each house sites the same genesis beside its OWN social bootstrap and its OWN charter head. Neither organ
+    // belongs to the bulb (the stolon carries joining pointers, the corm the epoch lease), so neither moves its CID.
+    const houseBulb = (tag: string, bootstrap: Record<string, unknown>, epoch: string): BulbArtifact => {
+      const genesisDir = mkDir(tag);
+      const bulb = fixtureBulb();
+      mkdirSync(genesisCasDir(genesisDir), { recursive: true });
+      writeFileSync(join(genesisDir, "seed.json"), bulb.seedBytes);
+      writeFileSync(join(genesisDir, "social-bootstrap.json"), JSON.stringify(bootstrap));
+      writeFileSync(join(genesisDir, "charter-head"), epoch);
+      writeCasEntriesFs(bulb.casEntries, genesisCasDir(genesisDir));
+      return readBulbArtifact(genesisDir)!;
+    };
+    const a = houseBulb("house-a", { identities: "automerge:house-a" }, "epoch-nexus-a");
+    const b = houseBulb("house-b", { identities: "automerge:house-b" }, "epoch-nexus-b");
+    expect(buildBulb(a).cid).toBe(buildBulb(b).cid);
+    // The served blob set is identical byte for byte — nothing house-specific rides it.
+    const served = (x: BulbArtifact): string[] => buildBulb(x).blobs.map((blob) => blob.cid).sort();
+    expect(served(a)).toEqual(served(b));
+
+    // CONTROL: a different genesis seed names a different bulb.
+    const other = fixtureBulb("def456");
+    expect(buildBulb(other).cid).not.toBe(buildBulb(a).cid);
+    expect(genesisSeedCid(other.seedBytes)).toBe(buildBulb(other).cid);
+  });
+
+  test("SERVE + PULL + KINDLE: a cold device kindles a sovereign hearth; did:key derives from its OWN key", async () => {
+    const bulb = fixtureBulb();
+    const httpServer = createServer();   // no catch-all handler — the read-face is the sole responder (as in the vessel)
+    servers.push(httpServer);
+    await new Promise<void>((r) => httpServer.listen(0, "127.0.0.1", () => r()));
+    const port = (httpServer.address() as { port: number }).port;
+    await mountBulbReadFace({ httpServer, bulb });
+
+    // PULL over real HTTP by the bulb CID the traveler brings — assembleBulb re-verifies every blob.
+    const pulled = await pullBulb(httpBulbTransport(`http://127.0.0.1:${port}`), genesisSeedCid(bulb.seedBytes));
+    expect(bulbSeed(pulled).actorSeed).toBe(bulbSeed(bulb).actorSeed);
+    expect(Object.keys(pulled).sort()).toEqual(["casEntries", "seedBytes"]);
+
+    // KINDLE — the cold device mints its OWN key; the ceremony builds on it.
+    process.env["LAR_ROOT"] = mkDir("root-serve");
+    const repo = newRepo();
+    let k: KindleResult;
+    try { k = await kindleFromBulb({ bulb: pulled, repo, storageDir: mkDir("device-a") }); }
+    finally { if (priorLarRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorLarRoot; }
+    expect(k.did).toBe(didKeyFromVerifyingKey(k.deviceVerifyingKey));
+
+    // The ceremony seeded the identity under THAT did in the device's OWN fresh social doc.
+    const idHandle = await repo.find<LarDoc>(k.identitiesUrl as Parameters<typeof repo.find>[0]);
+    const idTiddler = idHandle.doc()?.tiddlers?.[identityTiddlerUri(k.did)];
+    expect(plainField(idTiddler, "did")).toBe(k.did);
+    expect(plainField(idTiddler, "verifyingKey")).toBe(k.deviceVerifyingKey);
+  }, 30_000);
+
+  test("SERVE FIRE, NEVER KEY (KAPU): two devices kindle the SAME bulb → two DISTINCT sovereigns", async () => {
+    const bulb = fixtureBulb();
+    const kA = await kindleAsFreshDevice(bulb, "a");
+    const kB = await kindleAsFreshDevice(bulb, "b");
+
+    // Each device minted its OWN key → the dids DIFFER (a Herm-supplied key would collapse them to one).
+    expect(kA.deviceVerifyingKey).not.toBe(kB.deviceVerifyingKey);
+    expect(kA.did).not.toBe(kB.did);
+    // Each did derives from its own device key (the placement proof: device-minted, never bulb-supplied).
+    expect(kA.did).toBe(didKeyFromVerifyingKey(kA.deviceVerifyingKey));
+    expect(kB.did).toBe(didKeyFromVerifyingKey(kB.deviceVerifyingKey));
+
+    // The bulb carries NO signing-key material — the placement guarantee is structural, not conventional.
+    expect(Object.keys(bulb)).not.toContain("signerSeed");
+    expect(Object.keys(bulb)).not.toContain("readCap");
+    expect(new TextDecoder().decode(bulb.seedBytes)).not.toContain(kA.deviceVerifyingKey);
+    expect(new TextDecoder().decode(bulb.seedBytes)).not.toContain(kB.deviceVerifyingKey);
+  }, 30_000);
+});

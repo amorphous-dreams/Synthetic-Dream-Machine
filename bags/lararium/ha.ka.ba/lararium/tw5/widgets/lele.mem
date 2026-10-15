@@ -1,0 +1,62 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/widgets/lele">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable     = true
+file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/widgets/lele.mem"
+heleuma       = "ka"
+mana          = 18
+module-ref    = "lar:///ha.ka.ba/lararium/tw5/widgets/lele"
+role          = "render surface: the lele side-flow sigil — \\procedure ~lele in sigil-lele.tid, a hidden data annotation the compile layer reads"
+source-file   = "packages/lararium-tw5/tiddlers/sigil-lele.tid"
+source-symbol = "~lele"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/lele"]
+title         = "lar:///ha.ka.ba/lararium/tw5/widgets/lele"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/tw5/widgets/lele"
+```
+
+<<~ ahu #/contract>>
+
+!! Contract
+
+`<<~ lele "lar:///a.b.c/x">>` starts a SIDE FLOW at a target, and the caller carries on. //Lele// leaps and knows the tree it left: the edge emits into the message family, starts the target flow, and waits for no answer. The enclosing async context bounds the leap and cancels what remains when that context completes. `hoolele` makes the other move — it leaves the tree.
+
+''The target rides as the first positional, and it rides QUOTED.'' An unquoted address reaches nothing: `lar:///x` standing bare in a positional slot binds a parameter named `lar`, and the slot receives nothing. One pair of quotes fills it.
+
+<<~/ahu>>
+
+<<~ ahu #/render>>
+
+!! Render
+
+''The page stays clear.'' A side flow governs execution and never layout, so the procedure hands the compile layer a data annotation and renders nothing visible:
+
+```
+<span class="lar-lele" data-lele-target=<<p1>> data-bound="enclosing-scope" hidden="true"/>
+```
+
+The declaration rides in `packages/lararium-tw5/tiddlers/sigil-lele.tid` with `lar-kind: concurrency`, its match pattern, and `lar-see-also: \branch`.
+
+<<~/ahu>>
+
+<<~ ahu #/source>>
+
+!! Source
+
+<<~ pranala #source from="?" -> to="packages/lararium-tw5/tiddlers/sigil-lele.tid" family="code" role="has">>
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lele">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/widgets/kukali">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;_sU_1dXLVCvUlbs6EDPh2K6Kd1vM-s81sg-DFppl0cY
+
+<<^ code="&#x0004;" -> to="?">>

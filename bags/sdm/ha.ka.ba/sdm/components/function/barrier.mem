@@ -1,0 +1,75 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/sdm/components/function/barrier">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+caption   = "barrier"
+file-path = "bags/sdm/ha.ka.ba/sdm/components/function/barrier.mem"
+l-space   = "sdm"
+mana      = 13
+manao     = 16
+manaoio   = 12
+role      = "component (function): Barrier — raising a physical or force wall"
+title     = "lar:///ha.ka.ba/sdm/components/function/barrier"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/sdm/components/function/barrier"
+```
+
+! Barrier
+
+<<~ ahu #/definition>>
+
+!! Definition
+
+Raising a physical or force wall — a held surface that blocks passage, line, or blow.
+
+<<~/ahu>>
+
+<<~ ahu #/activation>>
+
+!! Activation
+
+Manifests a span of barrier sized to P. It occupies space and must be sustained or anchored to persist past the instant.
+
+<<~/ahu>>
+
+<<~ ahu #/interaction>>
+
+!! Interaction
+
+Pairs with `domain/abjuration` (defensive intent) and `domain/stuckforce` (a wall of force). Runs `hook/sustained` to hold, or `hook/imbued` to lock it up. A cargo floor is a barrier turned flat.
+
+<<~/ahu>>
+
+<<~ ahu #/filters>>
+
+!! Filters
+
+```text
+[tag[lar:///ha.ka.ba/sdm/components/function/barrier]]                          all barrier modules
+[tag[lar:///ha.ka.ba/sdm/components/function/barrier]tag[lar:///ha.ka.ba/sdm/components/domain/abjuration]]  defensive barriers
+```
+
+<<~/ahu>>
+
+<<~ ahu #/aftermath>>
+
+!! Aftermath
+
+* Distinguish a momentary barrier (one blow) from a standing wall via hook, not a separate function.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/sdm/templates/components/tag">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;0AkVa3-CLm8gzHiHLhOEtzMbmkk-ETB6RTedddvhtpI
+
+<<^ code="&#x0004;" -> to="?">>

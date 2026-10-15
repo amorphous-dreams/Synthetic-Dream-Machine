@@ -51,7 +51,7 @@ Other Signer factories surfaced:
 6. signedDelegation is a `SignedDelegation` ready for transport.
 ```
 
-**Mapping to our bag model:** each Lararium bag (Automerge doc URL) IS a Keyhive `Document`. Members of a bag-doc carry caps over that bag. `cap=infrastructure` for own devices = `addMember(device, adminBag.toMembered(), "admin")`. `cap=promote` on a specific corpus bag = `addMember(peer, corpusBag.toMembered(), "admin"|"write")` — depends on what abilities Keyhive's `Access` enum offers (we tried only "admin"; need to enumerate).
+**Mapping to our bag model:** each Lararium bag (Automerge doc URL) IS a Keyhive `Document`. Members of a bag-doc carry caps over that bag. `cap=admin` for own devices = `addMember(device, adminBag.toMembered(), "admin")`. `cap=promote` on a specific corpus bag = `addMember(peer, corpusBag.toMembered(), "admin"|"write")` — depends on what abilities Keyhive's `Access` enum offers (we tried only "admin"; need to enumerate).
 
 **Pitfalls discovered:**
 - `ChangeId` has a public `constructor(bytes: Uint8Array)`, NOT a static `fromBytes`. The probe's first iteration assumed `fromBytes` — failed silently.
@@ -72,7 +72,7 @@ For incremental sync (peer-to-peer, not full state shipment), Keyhive exposes:
 - `kh.eventHashesForAgent(agent)` → Array<hash>
 - `kh.pendingEventHashes()` → Set<hash>
 
-This is the seam for our admin-doc storage: persist the archive (or the event log) as tiddlers under `lar:///ha.ka.ba/@lararium/@admin/cap/...`. **D.4 design recommendation:** store events one-per-tiddler keyed by hash; reconstruct via `ingestEventsBytes` on daemon boot. Avoids serializing/deserializing the whole archive on every change.
+This is the shore for our admin-doc storage: persist the archive (or the event log) as tiddlers under `lar:///ha.ka.ba/lararium/@admin/cap/...`. **D.4 design recommendation:** store events one-per-tiddler keyed by hash; reconstruct via `ingestEventsBytes` on daemon boot. Avoids serializing/deserializing the whole archive on every change.
 
 ## Q5 — Bundle / startup time
 
@@ -102,7 +102,7 @@ Bundle size: 8.8 MB unpacked. Acceptable for a Node daemon. Browser bundle will 
 
 - **Adopt `@keyhive/keyhive` as our cap layer.** Pre-alpha is workable for our scale.
 - **Bag = Keyhive Document.** Each Automerge bag URL becomes a Keyhive scope document.
-- **Persist via incremental events, not full archive replays.** Store events as tiddlers under `lar:///ha.ka.ba/@lararium/@admin/cap/<hash>`; reconstruct by `ingestEventsBytes` at boot.
+- **Persist via incremental events, not full archive replays.** Store events as tiddlers under `lar:///ha.ka.ba/lararium/@admin/cap/<hash>`; reconstruct by `ingestEventsBytes` at boot.
 - **Pin our version.** Treat upgrades as planned breaking changes per operator's stated migration policy.
 - **Install `setPanicHook`** at every process boot (daemon + future browser).
 - **D.2 `CapabilityProvider` interface** wraps roughly: `init(seed)`, `delegate(audienceContactCard, bagUrl, ability)`, `revoke(delegation)`, `verify(delegation, ability, bagUrl)`, `serializeEvents()`, `ingestEvents(bytes)`. Narrower than the 10-method UCAN-shape — Keyhive does more in fewer calls.
@@ -161,7 +161,7 @@ Per event: `event.variant: string` + `event.toBytes(): Uint8Array` +
 `tryIntoSignedDelegation()` / `tryIntoSignedRevocation()`.
 
 **Implications for D.4 (cap state persistence):**
-- Persist each event as one tiddler under `lar:///ha.ka.ba/@lararium/@admin/cap/<eventHash>`.
+- Persist each event as one tiddler under `lar:///ha.ka.ba/lararium/@admin/cap/<eventHash>`.
 - Tiddler `text` field carries base64 of `event.toBytes()`.
 - Tiddler fields: `variant` (PREKEY_ROTATED|CGKA_OPERATION|DELEGATED|REVOKED|…), `bytes-len`, `is-delegated`, `is-revoked`.
 - On daemon boot, walk these tiddlers, sort by causality (TBD how), call `keyhive.ingestEventsBytes([…])` to restore state.
@@ -209,3 +209,117 @@ export interface EventStore {
 The application `ABILITY_LADDER` (promote/write/etc.) checks happen
 at a layer ABOVE this interface — in the promote-handler, gated on
 the Keyhive admin proof being present.
+
+## cross-peer-decrypt — the sealed-box is REDUNDANT for Model B (running-code verdict)
+
+Probe: `cross-peer-decrypt.ts` (keyhive 0.1.0-alpha.3, `forward_secrecy=false`).
+
+A DISTINCT-identity device (its own seed — Model B) decrypted a group's `Encrypted` content
+holding ONLY: (a) its own locally-generated prekey secret, and (b) the PUBLIC bytes keyhive routes
+to it (`eventsForAgent` → serialized StaticEvent bytes) plus the content blob. `leafSecrets` (72B,
+produced by the non-FS auto-rekey) was WITHHELD. `tryDecrypt` SUCCEEDED.
+
+Conclusion: `addMember` seals the group secret to the joinee's OWN prekey (clean TreeKEM). `leafSecrets`
+is the SAME-identity sibling path (a tab ↔ its SharedWorker), NOT needed by a per-device joinee. So the
+cross-device crossing (flow 1: vessel → PersonaGroup) is a TRANSPORT problem, not a crypto one — no
+libsodium sealed-box, no X25519. Ship public CGKA/membership ops + the `Encrypted` blob over our relay;
+the joinee decrypts. The design note's "envelope key-handoff (sealed-box)" was provisional; retire it for flow 1.
+
+API grains the probe pinned: `Encrypted.serialize()` (not `toBytes()`) pairs with `Encrypted.fromBytes`;
+`DocumentId` must be rebuilt from bytes on the joinee (WASM objects do not cross instances);
+`ingestEventsBytes` returns a result array (not an applied-count — read `reachableDocs()` for truth).
+
+### CAVEAT — this verdict is alpha.3; the join API was reworked at alpha.4–6
+
+A tarball `.d.ts` diff (alpha.2→.6) shows the crossing mechanism changed AFTER alpha.3:
+- alpha.4 DROPPED the `Keyhive.init(..., forward_secrecy)` parameter.
+- alpha.5 changed `addMember` return `AddMemberUpdate → SignedDelegation` and DELETED `AddMemberUpdate.leafSecrets`
+  — so the "withhold leafSecrets" posture is not expressible on alpha.5/.6.
+- alpha.6 ADDED `tryEncryptKeyed`/`tryDecryptKeyed`, `Encrypted.decryptWithKey(key)`, `symmetricEncrypt/Decrypt`.
+- Unchanged: `eventsForAgent`, `ingestEventsBytes`, `tryEncrypt/tryDecrypt`, `Encrypted.serialize/fromBytes`, `Archive`, `CiphertextStore`.
+No Beelay / JS doc-sync exposed in any alpha (still Rust-only `beelay-core`) → the transport stays ours to build.
+
+BEFORE shipping transport: bump to alpha.6, migrate the init/addMember API, and RE-RUN this probe adapted to the
+new `SignedDelegation` + `*Keyed` surface to re-establish the read-scope guarantee. Do not assume alpha.3's result holds.
+
+### alpha.6 RE-VERIFY — the alpha.3 crossing does NOT hold as-is; read-scope reworked
+
+Bumped to alpha.6, migrated the provider (init drops forward_secrecy; addMember→SignedDelegation), re-ran
+the probe. Result: `tryDecrypt` → **"Key not found"**. The distinct-identity joinee, shipped the same public
+events that worked on alpha.3, cannot decrypt. The rework (no leafSecrets, "secrecy of concurrent and future
+chunks") changed what a newly-admitted member can read. Migration is SOUND (keyhive typecheck clean; node
+boot-daemon-keyhive + admit-ceremony 6/6). The OPEN question is the alpha.6 cross-peer content pattern:
+ship the `tryEncrypt` `update_op`? use `tryEncryptKeyed` + `Encrypted.decryptWithKey(key)`? is read now
+forward-only (a new member reads future chunks, not pre-join content)? — UNRESOLVED, spirit dispatched.
+
+### alpha.6 RESOLVED — add-before-encrypt; crossing stays transport-not-crypto (route A)
+
+The "Key not found" was OUR ordering bug: the probe encrypted before adding the member. keyhive read is
+FORWARD-ONLY — a member reads content encrypted AT OR AFTER its add (keyhive core tests
+`test_cannot_decrypt_content_from_before_joining` asserts the failure, `test_encrypt_to_added_member` +
+`test_dual_instance_with_added_member_decrypt` assert the fix). REORDER: addMember FIRST → tryEncrypt →
+capture `eventsForAgent` AFTER the encrypt (it carries the PCS update op keying to the joinee's leaf).
+
+Re-run on alpha.6: `tryDecrypt` SUCCEEDS from public bytes + the joinee's own prekey secret, exit 0. So the
+crossing stays a TRANSPORT problem — no sealed channel — for content encrypted after the join.
+
+Pre-existing content (a device joining a PersonaGroup with older docs) takes ROUTE A: the founder RE-ENCRYPTS
+each existing chunk after the add (ships only public ops + ciphertext, still no secret in transit). ROUTE B
+(the `*Keyed` shortcut: hand the joinee the 32-byte applicationSecret) DOES ship a secret and DOES need a
+sealed channel — an opt-in escape hatch, not the default.
+
+---
+
+# Probe readings — @keyhive/keyhive 0.3.0-alpha.1 (2026-10-12)
+
+> Run each: `pnpm exec tsx packages/lararium-keyhive/probes/<name>.ts`
+
+## Access and events (`access-enum-and-events`)
+
+`Access.tryFromString` accepts exactly four values: `relay → Relay`, `read → Read`, `edit → Edit`,
+`admin → Admin`, ordered `relay < read < edit < admin` (`Access.atLeast`, `.level`). The D.1.5 candidate
+list above never offered `relay` or `edit`, so its "exactly two" read the list, not the enum:
+0.1.0-alpha.8 parses the same four. `pull` parses under neither.
+
+The delegate ceremony emits 11 events: 6 `PREKEY_ROTATED`, 3 `CGKA_OPERATION`, 2 `DELEGATED`.
+`Event` exposes `asSignedDelegation()` / `asSignedRevocation()`, with `variant`, `toBytes()`,
+`isDelegated`, `isRevoked`. A revocation's subject reads at `SignedRevocation.delegation.subjectId`.
+
+## Operator delegation (`operator-delegate-device`)
+
+`receiveContactCard` returns an `IndividualId`; `generateDocument` returns a `DocumentId`. Membership
+names an `Identifier` and a `MemberedId` (`IndividualId.toIdentifier()`, `MemberedId.document(docId)`);
+`addMember` returns the `SignedDelegation`.
+
+## Co-parent at birth (`tests/g1-scope.probe.test.ts`, DOOR 1)
+
+`generateDocument([coparentIdentifier], …)` RESOLVES, and the co-parent rides the CGKA from the first
+epoch beside the creator (`cgkaMembers()` lists both; `members()` shows both at Admin). The co-parent
+arrives with no `addMember` and so no delegation event of its own.
+
+## Cross-peer decrypt (`cross-peer-decrypt`)
+
+The distinct-identity joinee decrypts the founder's ciphertext from public events and its own prekey
+secret. The content path: `tryEncrypt(docId, …).encryptedContent().toBytes()` and
+`tryDecrypt(docId, Encrypted.fromBytes(bytes))`.
+
+## Prekey persistence and archive (`prekey-persist-reboot`)
+
+- Reading 0, live joinee: decrypt succeeds.
+- Reading 1, same-seed reboot without import: decrypt throws `Key not found`.
+- Reading 2, reboot after importing the earlier prekey secrets: decrypt succeeds.
+- Q3, a rebooted and imported identity: `getExistingContactCard()` and a fresh `contactCard()` both
+  differ from the original card.
+- Q1b, `toArchive()` then `Archive.tryToKeyhive()`: decryption restores; the restored identity does
+  not re-expose the original contact card.
+
+Every reading above matches what the same probe reads on 0.1.0-alpha.8, save the event count of the
+admission (16 public events there, 15 here).
+
+## Archive across versions
+
+An Archive and an event carry no format tag: bytes `@keyhive/keyhive@0.1.0-alpha.8` wrote refuse under 0.3.0-alpha.1 (`new Archive(bytes)` answers `signature error: VerifyingKey must be 32 bytes in length`), so a version move re-founds every vessel that holds keyhive state, and a stand that meets such bytes refuses by name (`tests/archive-unreadable-refuses.test.ts`).
+
+## An Archive against later acts (`tests/archive-trails-the-act.probe.test.ts`)
+
+A creator restored from an Archive taken BEFORE it created a document, with the cap events replayed, opens and seals that document: 24 of 24 stands. The same replay with no Archive leaves the document known and its CGKA empty (`Cgka is not initialized`). A contact card minted between the Archive and the document changes the reading: with one `contactCard()` between, 12 of 24 stands refused `Key not found`; with four, 24 of 24 refused. `contactCard()` mints a prekey the earlier Archive never held, and a later document may key its creator to it. An Archive therefore serves every act up to the next card its holder mints; `KeyhiveProvider.holdsHand(bagUrl)` reads which side of that line a document fell on, and it answered false in every refusing stand.

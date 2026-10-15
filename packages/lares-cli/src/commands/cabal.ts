@@ -1,0 +1,275 @@
+/**
+ * `lares cabal <face | vouch | join | feed | clock>` — the doors onto a cabal-realm: name the worn face's key
+ * there, stake standing on a joiner, cross, make the offering that keeps a realm alive, and read who feeds it.
+ *
+ * ONE KEY ACTS IN A REALM: the key the WORN face presents at the Nexus the realm stands under
+ * (cabal-realm#/the-steward-signer). No verb here names a persona index; a person wears the face that acts
+ * (`lares persona wear N`). `--nexus <aid>` names the Nexus at this vessel's first act in a realm; the vessel's
+ * own ledger keeps that word, and every later act answers to it.
+ *
+ * `face --realm <realm-doc-id>` — stand the worn face in the realm and print its key there: the joiner nym a
+ * voucher names.
+ *
+ * `vouch <joiner-nym> --realm <realm-doc-id>` — the JOIN axis's write side: the worn face stakes its OWN standing
+ * on one joiner, onto the realm's vouch board.
+ *
+ * THE CONTRAST WITH `nexus contract`. Contracting a vessel into carriage needs the kahu quorum AND the
+ * joiner's own consent — a Nexus may not conscript, and no single kahu seats a carrier alone. A vouch runs the
+ * other axis entirely: ONE hand, its OWN standing, no steward asked. The two relations run orthogonal — a
+ * human may contract without joining, join without contracting, hold both, or neither.
+ *
+ * IT ADMITS NOBODY. A vouch rides as signal-2 on the lineage and grants nothing by itself; the crossing prices it
+ * later. The vouching itself already paid the cost: the voucher's score SPLITS across everyone they
+ * vouch for, so each vouch dilutes the hand that made it. That carries the whole payment, and it needs no ledger.
+ *
+ * `feed --realm <id>` — THE OFFERING. A realm lives by being fed: members roll a per-realm lease
+ * epoch, one slot per writer, and the realm's liveness reads off that max-register. A FACE feeds, never a
+ * device, so adding vessels never inflates a standing. Feeding twice rolls twice — the clock measures how hard
+ * each hand feeds, so a repeated offering SHOULD register.
+ *
+ * `clock --realm <id>` — THE CAPTURE-CLOCK, and it surfaces rather than judges. It reports who feeds and how
+ * deep, the spread between leaders and trailers, and how many sit at the leading edge — raw numbers, no
+ * "captured" verdict. A minority out-feeding a realm becomes VISIBLE while exit still costs little, which is
+ * the whole answer available here: sight plus fork-as-exit, never a gate. The gate would become the captured
+ * object.
+ *
+ * WHAT THE NUMBERS CANNOT SAY. Both verbs read what THIS REPLICA has synced. A maintainer whose roll has not
+ * arrived reads as absent, and a realm nobody here has synced reads as unfed — under no-global-now those two
+ * generate identically, so the reading names a local sighting and never a total.
+ */
+
+import { realmStanding } from "@lararium/mesh";
+import {
+  CabalVouchError, CabalJoinError, CabalFaceError,
+  type CabalVouchResult, type CabalJoinResult, type CabalFaceResult,
+} from "@lararium/node";
+import { storeVerb, storeFailure } from "../store-door.js";
+import type { ParsedArgs } from "../parse-args.js";
+import { vesselDid } from "../env.js";
+import { runVerb } from "../verb-call.js";
+import { summaryOutput } from "../verb-result.js";
+import { emit, exitFor, refuseUsage } from "../render.js";
+import { helpLines } from "../command-help.js";
+
+function usage(args: ParsedArgs, detail?: string): number {
+  return refuseUsage(args, "cabal", helpLines("cabal"), detail);
+}
+
+/** `lares cabal …` — the realm doors: the JOIN axis, the offering, and the clock. */
+export async function cmdCabal(args: ParsedArgs): Promise<number> {
+  switch (args.positional[0]) {
+    case "face":  return await cmdFace(args);
+    case "vouch": return await cmdVouch(args);
+    case "join":  return await cmdJoin(args);
+    case "feed":  return await cmdFeed(args);
+    case "clock": return await cmdClock(args);
+    default:      return usage(args, args.positional[0] ? `unknown sub-verb "${args.positional[0]}"` : undefined);
+  }
+}
+
+class CabalUsageError extends Error {}
+
+/** The realm doc id, fail-closed — a stray value never becomes a lease prefix. */
+function realmOf(args: ParsedArgs): string {
+  const realm = (args.options["realm"] ?? "").trim().toLowerCase();
+  if (!/^[0-9a-f]{64}$/.test(realm)) {
+    throw new CabalUsageError("--realm expects a 64-hex cabal-realm doc id");
+  }
+  return realm;
+}
+
+/** The Nexus a first act in a realm names (`--nexus`), absent where the caller named none. */
+function nexusOf(args: ParsedArgs): Record<string, string> {
+  const raw = args.options["nexus"];
+  return typeof raw === "string" && raw.trim().length > 0 ? { nexusAid: raw.trim().toLowerCase() } : {};
+}
+
+/**
+ * WHICH FACE ACTS — the key the WORN face presents at the Nexus the realm stands under, read by the vessel's own
+ * door and never typed by the caller. `present` stands the face there (an act: a feed, a face named to a voucher);
+ * without it the door only reads, and a face that holds no key there refuses by name.
+ */
+async function actingFace(args: ParsedArgs, realm: string, present: boolean): Promise<CabalFaceResult> {
+  return (await storeVerb("cabal-face", { realm, present, ...nexusOf(args) }, CabalFaceError)).output as unknown as CabalFaceResult;
+}
+
+/** `lares cabal face` — stand the worn face in a realm and print its key there: the nym a voucher names. */
+async function cmdFace(args: ParsedArgs): Promise<number> {
+  try {
+    const realm = realmOf(args);
+    const face = await actingFace(args, realm, true);
+    emit(args, {
+      ok: true,
+      data: face,
+      human: () => {
+        console.log(face.face);
+        console.log(`  realm:  ${face.realm}`);
+        console.log(`  nexus:  ${face.nexusAid}  (the Nexus this realm stands under here)`);
+        console.log("  (a voucher names this key: `lares cabal vouch <key> --realm <realm-doc-id>`)");
+      },
+    });
+    return 0;
+  } catch (err) {
+    return cabalFailure(args, "face", err);
+  }
+}
+
+/** Drive one realm verb through the daemon, surfacing its refusal as itself. */
+async function realmVerb(verb: string, verbArgs: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const r = await runVerb(verb, verbArgs, await vesselDid());
+  if (r.status === "error") throw new Error(r.errorMessage ?? `${verb} failed`);
+  return summaryOutput(r) ?? {};
+}
+
+/**
+ * `lares cabal feed` — make the offering. The realm's liveness rides a max-register, so this rolls only THIS
+ * face's own slot; two members feeding concurrently never clobber each other.
+ */
+async function cmdFeed(args: ParsedArgs): Promise<number> {
+  try {
+    const realm  = realmOf(args);
+    // A FEED PRESENTS THE FACE: the worn face's key at the realm's Nexus, stood there by this act.
+    const writer = (await actingFace(args, realm, true)).face;
+    const out = await realmVerb("realm-feed", { realm, writer });
+    emit(args, {
+      ok: true,
+      data: out,
+      human: () => {
+        console.log(out["first"] === true ? "FED (your first offering to this realm)" : "FED");
+        console.log(`  realm:  ${realm}`);
+        console.log(`  face:   ${writer}`);
+        console.log(`  epoch:  ${out["priorEffective"]} -> ${out["epoch"]}`);
+        console.log(`  (the roll counts the slots THIS replica has synced — a peer may hold deeper ones)`);
+      },
+    });
+    return 0;
+  } catch (err) {
+    return cabalFailure(args, "feed", err);
+  }
+}
+
+/**
+ * `lares cabal clock` — read who feeds the realm. It hands back numbers and draws no conclusion: what spread
+ * or concentration counts as capture stays the operator's calibration.
+ */
+async function cmdClock(args: ParsedArgs): Promise<number> {
+  try {
+    const realm = realmOf(args);
+    const out = await realmVerb("realm-clock", { realm });
+    const maintainers = Array.isArray(out["maintainers"])
+      ? (out["maintainers"] as Array<{ writerId: string; epoch: number }>) : [];
+    // THE STANDING SITS BESIDE THE CLOCK, NEVER INSIDE IT. The clock stays verdict-free by
+    // construction — a verdict baked into that read would become the captured object.
+    //
+    // AND IT STOPS WHERE THE DATA STOPS. The slots carry FACES, not loci: a human feeding from
+    // several of their own faces reads as the Sybil-of-one, which this plane prices socially and
+    // never in crypto. So this names one face as a VISIT and several as MANY-FACES, and never
+    // converts a face count into the mutual hold that constitutes a realm.
+    const standing = realmStanding(maintainers.map((m) => ({ writer: m.writerId, epoch: m.epoch })));
+    emit(args, {
+      ok: true,
+      data: { ...out, standing },
+      human: () => {
+        console.log(`realm ${realm}`);
+        if (maintainers.length === 0) {
+          console.log("  nobody feeds it here — which reads the same as a realm this replica has never synced.");
+          return;
+        }
+        console.log(`  maintainers: ${out["maintainerCount"]}   effective epoch: ${out["effectiveEpoch"]}`);
+        console.log(`  spread:      ${out["spread"]} (leaders ${out["leadingCount"]} at the edge, trailing at ${out["trailingEpoch"]})`);
+        for (const m of maintainers) console.log(`    ${String(m.epoch).padStart(6)}  ${m.writerId}`);
+        console.log(`  standing:    ${standing.standing.toUpperCase()} — ${standing.reading}`);
+        console.log("  no CAPTURE verdict rides here — what these numbers mean stays your calibration.");
+      },
+    });
+    return 0;
+  } catch (err) {
+    return cabalFailure(args, "clock", err);
+  }
+}
+
+function cabalFailure(args: ParsedArgs, verb: string, err: unknown): number {
+  const msg  = err instanceof Error ? err.message : String(err);
+  const failure = err instanceof CabalUsageError ? { code: "usage", message: msg } : storeFailure(err);
+  emit(args, { ok: false, error: failure, human: () => console.error(`lares cabal ${verb}: ${msg}`) });
+  return exitFor(failure.code);
+}
+
+async function cmdVouch(args: ParsedArgs): Promise<number> {
+  const joiner = args.positional[1];
+  const realm  = args.options["realm"];
+  // The words for this door live in the registry alone; the refusal names only what THIS call lacks.
+  if (!joiner || !realm) return usage(args, `vouch wants ${!joiner ? "<joiner-nym>" : "--realm <realm-doc-id>"}`);
+
+  try {
+    const r = (await storeVerb("cabal-vouch", { joiner, realm, ...nexusOf(args) }, CabalVouchError)).output as unknown as CabalVouchResult;
+    console.log(r.reMinted ? "RE-VOUCHED (one edge, not two)" : "VOUCHED");
+    console.log(`  voucher:   ${r.voucherDid}  (the worn face's key at ${r.nexusAid.slice(0, 22)}…)`);
+    console.log(`  joiner:    ${r.joiner}`);
+    console.log(`  realm:     ${r.realm}`);
+    console.log(`  bound at:  epoch ${r.boundEpoch}  (the fence — the only thing that lapses a vouch)`);
+    console.log(`  board:     ${r.boardUrl}`);
+    console.log(`  edge:      ${r.edgeId}  (\`lares edge kapae\` with this id sets the vouch aside)`);
+    // The number that matters to the voucher — stated as a FLOOR, because it counts what this replica has
+    // synced. A peer may hold edges we have not seen, so real dilution reads at or above this.
+    console.log(`  out-degree: at least ${r.outDegreeFloor}  (this replica sees your standing split ${r.outDegreeFloor} way${r.outDegreeFloor === 1 ? "" : "s"} — a peer may hold more)`);
+    return 0;
+  } catch (err) {
+    if (err instanceof CabalVouchError) { console.error(`refused: ${err.message}`); return 1; }
+    throw err;
+  }
+}
+
+/** `lares cabal join` — the applicant's half. Reads only; a refusal anergizes and bans nobody. */
+async function cmdJoin(args: ParsedArgs): Promise<number> {
+  try {
+    const realm = realmOf(args);
+    // Names a face outright, else the worn face's key at the realm's Nexus, read and never minted — a steward
+    // reads a crossing for a face they do not hold.
+    const applicant = (args.options["applicant"] ?? (await actingFace(args, realm, false)).face).trim().toLowerCase();
+    const capRaw = args.options["cap"];
+    const cap = capRaw === undefined ? undefined : Number(capRaw);
+    if (cap !== undefined && !Number.isInteger(cap)) {
+      throw new CabalUsageError(`--cap expects an integer out-degree ceiling, got "${capRaw}"`);
+    }
+
+    const v = (await storeVerb("cabal-join", {
+      realm, applicant,
+      ...(cap !== undefined ? { maxVouchesPerVoucher: cap } : {}),
+    }, CabalJoinError)).output as unknown as CabalJoinResult;
+
+    emit(args, {
+      ok: true,
+      data: { admitted: v.admitted, refusal: v.refusal, voucherDid: v.voucherDid, capped: v.capped.length, setAside: v.setAside, memberSetAside: v.memberSetAside },
+      human: () => {
+        if (v.admitted) {
+          console.log("ADMITTED");
+          console.log(`  applicant: ${applicant}`);
+          console.log(`  realm:     ${realm}`);
+          console.log(`  voucher:   ${v.voucherDid}  (the hand the co-pay falls on)`);
+        } else {
+          console.log(`REFUSED — ${v.refusal}`);
+          console.log(`  applicant: ${applicant}`);
+          console.log(`  realm:     ${realm}`);
+          console.log("  nothing was written; the applicant stands where it stood.");
+        }
+        // The fold's budget, stated rather than trusted.
+        if (v.capped.length > 0) console.log(`  capped:    ${v.capped.length} edge(s) the per-voucher choke turned away`);
+        // The shadows this crossing met, each with its reading — a fork shows as a fork, for people to settle.
+        const reading = (verdict: string, who: string): string => verdict === "held" ? `${who} set it aside`
+          : verdict === "unsettled" ? `FORK — a raise and a lower stand unordered; the shadow holds until ${who} decides`
+          : "its record reads incomplete here; no lift stands proven";
+        for (const s of v.setAside) {
+          const who = s.over === "vouch" ? "a hand that holds the vouch" : "the seat quorum (over the voucher's own place in the realm)";
+          console.log(`  set aside: ${s.edgeId}  voucher ${s.voucherDid.slice(0, 16)}… → joiner ${s.joinerIdentityHex.slice(0, 16)}…  (${reading(s.verdict, who)})`);
+        }
+        if (v.memberSetAside) {
+          console.log(`  member:    ${v.memberSetAside.edgeId}  the applicant's own place in this realm stands aside (${reading(v.memberSetAside.verdict, "the seat quorum")}); no vouch lifts it`);
+        }
+      },
+    });
+    return v.admitted ? 0 : 1;
+  } catch (err) {
+    return cabalFailure(args, "join", err);
+  }
+}

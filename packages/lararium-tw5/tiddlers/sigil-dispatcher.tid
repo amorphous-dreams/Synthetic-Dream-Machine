@@ -1,7 +1,28 @@
-title: lar:///ha.ka.ba/@lararium/tw5/tiddlers/sigil-dispatcher
-tags: $:/tags/Global $:/tags/LarariumGrammar
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-dispatcher
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: edge-sugar
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/dispatcher
 type: text/vnd.tiddlywiki
 
-\widget ~(name p1:"" p2:"" p3:"" p4:"" p5:"")
-<$transclude $variable={{{ [<name>addprefix[~]] }}} p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>>/>
+<!-- THE GRADIENT'S FLOOR. A transclude renders its CHILDREN where the target resolves to nothing, so
+     `src` — the sigil's own verbatim text, handed down by the wikirule — goes to the page when this
+     wiki has never seen the procedure. A sigil a reader typed never disappears.
+
+     It rides through `<$text>` and NOT through `<<src>>`: the verbatim IS sigil syntax, so rendering
+     it as wikitext would re-enter the rule that produced it. Literal text ends the recursion.
+
+     AND AN EMPTY NAME NAMES NOTHING. Definitions compose by handing this widget a name they were
+     given — `~if` renders the sigil its second slot names. An empty slot would make `addprefix` yield
+     the bare `~`, THIS WIDGET'S OWN NAME, and the transclude would re-enter itself until the stack
+     ended. `!is[blank]` empties the variable instead, and an empty variable resolves to nothing —
+     which lands on the floor already standing here.
+
+     A SLOT AND A RUN ANSWER DIFFERENT QUESTIONS. `p1 … p5` hold positional slots — one value each,
+     delimiters stripped, `name=value` pairs stepped over. `args` carries the argument run exactly as
+     written, for the definitions that read a SHAPE rather than an arity: an edge annotation whose
+     from, arrow and to are one assertion, and `kau`, which runs its own parse over `#fragment name
+     props`. Neither derives from the other here, so neither can be got subtly wrong there. -->
+
+\widget ~(name p1:"" p2:"" p3:"" p4:"" p5:"" args:"" src:"")
+<$transclude $variable={{{ [<name>!is[blank]addprefix[~]] }}} p1=<<p1>> p2=<<p2>> p3=<<p3>> p4=<<p4>> p5=<<p5>> args=<<args>>><$text text=<<src>>/></$transclude>
 \end

@@ -1,22 +1,18 @@
 /**
- * @deprecated web2-era — all functions dead. See node-host.web2.ts for the original.
- * Rebuild target: meme-node-host.ts
- *   readCarrier        → readMeme (parseMemeText from @lararium/core/meme-ast)
- *   compileCarrierIndex → compileMemeIndex (MemeRecord not CarrierRecord)
- *   compileBootArtifact → compileBootArtifact (same shape; new parser)
- *   loadGrammarRules   → grammarRulesFromText (@lararium/core/meme-grammar)
+ * node-host — path roots and structural contracts for the lararium node daemon.
  */
 
-import { join } from "path";
-import { laresRoot, repoRoot } from "@lares/core";
+import { repoRoot } from "@lararium/mesh/node";
+import { daemonBagsDir } from "./lares-config.js";
 
-// Path roots — no carrier dependency; kept verbatim.
-export const LARES_ROOT        = laresRoot;
-export const BAGS_ROOT         = join(repoRoot, "bags");
-export const LARES_MEMES_ROOT  = join(BAGS_ROOT, "@lares");  // legacy alias
-export const REPO_ROOT         = repoRoot;
+export const REPO_ROOT        = repoRoot;
 
-// CorpusSource — structural contract used by serve.ts; no carrier dependency.
+/** The daemon's bags root — resolves through the composable bags cap (`LAR_BAGS` → config → repo-relative
+ *  `<corpus>/bags`). A FUNCTION, not a const, so a per-daemon `~/.lares/config.json` override carries. */
+export function bagsRoot(): string {
+  return daemonBagsDir();
+}
+
 export interface CorpusSource {
   name:   string;
   path:   string;

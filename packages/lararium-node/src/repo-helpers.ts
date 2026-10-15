@@ -1,28 +1,16 @@
 /**
  * Repo helpers shared between VM openers.
  *
- * waitHandleLocal: race whenReady() against a short fallback so a
- * repo.find() against an URL the local store doesn't yet have doesn't hang
- * boot. Used by both openNodeLarPeer (room VM) and openAdminVm (admin VM).
+ * `waitHandle` reaches here from mesh, where one implementation serves both vessels — which is what lets
+ * the keel's "unified strategy" mean something a reader can check: it races local readiness against a
+ * short window and merges a late remote into the fallback rather than dropping it.
+ *
+ * The tideline-class boot resolver (resolveBootDoc / StillJoining) lives in @lararium/mesh too, so the
+ * vessel keel (open-vessel-core) can reach it — mesh cannot import this node package. Re-exported here
+ * for the node-side callers that import it from this module.
  */
 
-import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
+export { resolveBootDoc, isStillJoining } from "@lararium/mesh";
+export type { Tideline, StillJoining, MeshScale } from "@lararium/mesh";
 
-const LOCAL_READY_MS = 3000;
-
-export async function waitHandleLocal<T>(
-  repo: Repo,
-  url: AutomergeUrl,
-  fallbackFn: () => DocHandle<T>,
-): Promise<DocHandle<T>> {
-  const progress = repo.findWithProgress<T>(url);
-  const handle = progress.handle;
-  const localReady = await Promise.race([
-    handle.whenReady().then(() => true),
-    new Promise<false>((r) => setTimeout(() => r(false), LOCAL_READY_MS)),
-  ]);
-  if (localReady) return handle;
-  const fresh = fallbackFn();
-  handle.whenReady().then(() => { fresh.merge(handle); }).catch(() => { /* remote never came */ });
-  return fresh;
-}
+export { waitHandle, LOCAL_READY_MS } from "@lararium/mesh";

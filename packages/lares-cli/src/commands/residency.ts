@@ -1,17 +1,30 @@
 /**
- * `lares pin <url> [--reason <text>]`
- * `lares unpin <url>`
- * `lares residency`
+ * `lares bag pin <url> [--reason <text>]`
+ * `lares bag unpin <url>`
+ * `lares bag stats`
+ *
+ * THE DOORS CARRY `bag` AS THEIR AXIS, and the qualifier is the whole point. `residency` names four
+ * things in this tree (`one-name-one-relation#/the-words-that-carry-more-than-one-thing` ranks it first
+ * of them), so the STOWAGE axis takes its name in the surface an operator types: `bag stats`, never a
+ * bare `residency`. `cmdResidency` below stays an internal spelling behind that door, and `"residency"`
+ * survives as the daemon's wire verb. A header naming top-level `lares pin` / `lares residency` would
+ * send a reader to type three commands that resolve nowhere.
  *
  * Operator-driven residency control. Pin guarantees a bag stays hot;
  * unpin demotes (the LRU may then evict if pressure rises). residency
- * prints the current pinned/hot/cold snapshot.
+ * prints the current pinned / wela / anu snapshot.
  *
- * Phase 1 (C.1): instrumentation only — no eviction yet, so unpin is
- * essentially a no-op outside of stats reporting until C.2 lands.
+ * unpin demotes standing synchronously, but does NOT force an immediate LRU
+ * trim: the collector's background sweeper (wired at boot, default tick
+ * 30s — bag-residency.ts's startSweeper/sweepOnce) is what actually evicts
+ * an over-cap unpinned bag, on its next tick. So unpin's own report never
+ * shows an eviction it just caused; a real one lands within one sweep tick.
  */
 
-import { connectAdminPeer, submitCommand } from "../admin-peer.js";
+import { vesselDid } from "../env.js";
+import { summaryOutput } from "../verb-result.js";
+import { runVerb, verbFailure } from "../verb-call.js";
+import { exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 export async function cmdPin(args: ParsedArgs): Promise<number> {
@@ -36,8 +49,9 @@ export async function cmdUnpin(args: ParsedArgs): Promise<number> {
 /**
  * `lares register-cold <bag-url>` — mark a URL as known-but-not-loaded.
  * Oracle traversal calls this for URLs it discovers but doesn't need to
- * fetch yet. C.4 will wire hydrate-on-read so the first read through the
- * URL via composite triggers repo.find().
+ * fetch yet. Hydrate-on-read is wired: composite-store.ts's `attachResidency`
+ * hook bumps `residency.touch()` on every read that resolves through a
+ * layer, so the first read through this URL via composite hydrates it.
  */
 export async function cmdRegisterCold(args: ParsedArgs): Promise<number> {
   const url = args.positional[0];
@@ -48,64 +62,72 @@ export async function cmdRegisterCold(args: ParsedArgs): Promise<number> {
   return await runResidencyCommand("register-cold", { url });
 }
 
-export async function cmdResidency(_args: ParsedArgs): Promise<number> {
-  const peer = await tryConnect();
-  if (!peer) return 3;
-  try {
-    const r = await submitCommand(peer, "residency", {}, "lares-cli");
-    if (r.status === "error") {
-      console.error(`residency query failed: ${r.errorMessage ?? "unknown"}`);
-      return 4;
-    }
-    const stats = r.result ?? {};
-    const pinned = (stats["pinned"] ?? []) as string[];
-    const hot    = (stats["hot"]    ?? []) as Array<{ url: string; lastTouched: number; syncActive?: boolean }>;
-    const coldCount = stats["coldCount"] as number;
-    const hotCap    = stats["hotCap"]    as number;
+/**
+ * The stowage measures its own idleness and answers a duration with its clock's kind; this process shares
+ * no instant with it, so it reads no timestamp and calls no clock. Rolls print as rolls, the monotonic wall
+ * floor's milliseconds as seconds or minutes, and anything else as unknown.
+ */
+function idleText(idleFor: unknown, clockKind: unknown): string {
+  if (typeof idleFor !== "number" || !Number.isFinite(idleFor)) return "unknown";
+  if (clockKind === "realm") return `${idleFor} rolls`;
+  if (clockKind !== "wall-floor") return "unknown";
+  return idleFor < 60_000 ? `${Math.round(idleFor / 1000)}s` : `${Math.round(idleFor / 60_000)}m`;
+}
 
-    console.log("");
-    console.log(`pinned (${pinned.length}):`);
-    for (const u of pinned) console.log(`  ${u}`);
-    console.log("");
-    console.log(`hot (${hot.length}/${hotCap}):`);
-    for (const e of hot) {
-      const age   = Date.now() - e.lastTouched;
-      const human = age < 60_000 ? `${Math.round(age/1000)}s ago` : `${Math.round(age/60_000)}m ago`;
-      const sync  = e.syncActive ? "  (syncing)" : "";
-      console.log(`  ${e.url}  — touched ${human}${sync}`);
-    }
-    console.log("");
-    console.log(`cold count: ${coldCount}`);
-    console.log("");
-    return 0;
-  } finally {
-    await peer.disconnect();
+export async function cmdResidency(_args: ParsedArgs): Promise<number> {
+  // UDS fast path, WS fallback (the lares↔lararium binding).
+  let r;
+  try {
+    r = await runVerb("residency", {}, await vesselDid());
+  } catch (err) {
+    // M3′: a LOCAL WAIT ENDING is not an absent daemon — told apart by the error's own TYPE.
+    const f = verbFailure(err);
+    console.error(`lares: ${f.message}`);
+    if (f.hint !== undefined) console.error(`  ${f.hint}`);
+    return exitFor(f.code);
   }
+  if (r.status === "error") {
+    console.error(`residency query failed: ${r.errorMessage ?? "unknown"}`);
+    return 4;
+  }
+  const stats = summaryOutput(r) ?? {};
+  const pinned = (stats["pinned"] ?? []) as string[];
+  const wela   = (stats["wela"]   ?? []) as Array<{ url: string; idleFor?: unknown; syncActive?: boolean }>;
+  const clockKind = stats["clockKind"];
+  const anuCount = stats["anuCount"] as number;
+  const hotCap   = stats["hotCap"]   as number;
+
+  console.log("");
+  console.log(`pinned (${pinned.length}):`);
+  for (const u of pinned) console.log(`  ${u}`);
+  console.log("");
+  console.log(`wela (${wela.length}/${hotCap}):`);
+  for (const e of wela) {
+    const sync  = e.syncActive ? "  (syncing)" : "";
+    console.log(`  ${e.url}  — idle ${idleText(e.idleFor, clockKind)}${sync}`);
+  }
+  console.log("");
+  console.log(`anu count: ${anuCount}`);
+  console.log("");
+  return 0;
 }
 
 async function runResidencyCommand(name: string, args: Record<string, unknown>): Promise<number> {
-  const peer = await tryConnect();
-  if (!peer) return 3;
+  // UDS fast path, WS fallback (the lares↔lararium binding).
+  let r;
   try {
-    const r = await submitCommand(peer, name, args, "lares-cli");
-    if (r.status === "error") {
-      console.error(`${name} failed: ${r.errorMessage ?? "unknown"}`);
-      return 4;
-    }
-    console.log(`${name}: ${JSON.stringify(r.result, null, 2)}`);
-    return 0;
-  } finally {
-    await peer.disconnect();
-  }
-}
-
-async function tryConnect() {
-  try {
-    return await connectAdminPeer({});
+    r = await runVerb(name, args, await vesselDid());
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`lares: ${msg}`);
-    console.error("  Start the daemon with `lares serve` and try again.");
-    return null;
+    // M3′: a LOCAL WAIT ENDING is not an absent daemon — told apart by the error's own TYPE.
+    const f = verbFailure(err);
+    console.error(`lares: ${f.message}`);
+    if (f.hint !== undefined) console.error(`  ${f.hint}`);
+    return exitFor(f.code);
   }
+  if (r.status === "error") {
+    console.error(`${name} failed: ${r.errorMessage ?? "unknown"}`);
+    return 4;
+  }
+  console.log(`${name}: ${JSON.stringify(summaryOutput(r) ?? {}, null, 2)}`);
+  return 0;
 }

@@ -1,9 +1,9 @@
 import { createLarariumRuntime, LARES_ROOT, compileCarrierIndex } from "./src/node-host.js";
 import { renderAllViews } from "@lararium/tldraw";
-import { parsePranalaEdges } from "@lararium/core";
+import { parsePranalaEdges } from "@lararium/mesh";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
-import { resolveLarUri } from "@lararium/core";
+import { resolveLarUri } from "@lararium/mesh";
 
 const runtime = createLarariumRuntime(LARES_ROOT);
 const artifact = runtime.compileBoot();

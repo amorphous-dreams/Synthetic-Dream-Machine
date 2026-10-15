@@ -1,0 +1,19 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-law
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: edge-alias
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/kanawai
+lar-mirror-of: kanawai
+lar-tongue: en
+lar-weave: primary
+lar-see-also: kanawai
+lar-pattern: <<~\s*law\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
+lar-example: <<~ law "lar:///a.b.c/x">>
+type: text/vnd.tiddlywiki
+
+<!-- law — RULED (operator): kānāwai's primary English weave — the BINDING pin, `kanawai`'s own
+     sigil, never a delegation to aka or kahea. `pin` weaves `aka` (informative); `law` weaves
+     `kanawai` (binding). -->
+
+\procedure ~law(p1:"")
+<$transclude $variable="~kanawai" p1=<<p1>>/>
+\end

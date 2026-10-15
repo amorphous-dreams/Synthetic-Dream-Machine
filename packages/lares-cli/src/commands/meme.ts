@@ -1,0 +1,1147 @@
+/**
+ * `lares meme` — ONE FAMILY FOR EVERY LAW OVER MEME TEXT.
+ *
+ *   put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]
+ *   get <uri> (--recipe <slug> | --bag <slug>)
+ *   list (--recipe <slug> | --bag <slug>) [--tree]
+ *   delete <uri> (--recipe <slug> | --bag <slug>) [--if-match <hash>]
+ *   normalize <file.mem ...> [--grammar]
+ *   check <file.mem ...> [--gradient | --edges | --grammar]
+ *   project <file.mem> --to md [--out <path>]
+ *   project <file.mem | lar:uri> --to <mem|md|html|tid|json> (--recipe <slug> | --bag <slug>) [--out <path>]
+ *   project <file.mem> --to md [--dialect CommonMark|GFM|kramdown-rfc2629]   — RFC 7764 variant; CommonMark default
+ *   project <file.mem> --to md [--tongue <bcp47>]   — weave sigil head names through their tongue's primary mirror; canonical default
+ *   project --to md --check <file.md | dir>   — prove currency by re-projection alone; writes nothing
+ *   promote <docs/…/x.mem> [--dest-bag <lar:uri>] [--corpus <glob>]
+ *
+ * A VERB DECLARES ITS SEAT. `normalize` · `check` · `project --to md` over a file run LOCAL — they open a
+ * path, read its bytes, and (normalize, project) write bytes back: no daemon, no store, no cap gate, no
+ * effect record. The offline re-stamp of a stale block check keeps working with no socket. `put` · `get`
+ * · `list` · `delete` · `project` over a `lar:` uri or to any rendered target ride the daemon verb
+ * (`meme-put` · `meme-get` · `meme-list` · `meme-delete` · `meme-project`) — the one placement function,
+ * the one removal, the one listing and the island's own renderers, reached from a terminal.
+ *
+ * THE CONTAINER LAW (every store-backed seat):
+ *   · no target        — `no-container` refusal before file reads, socket dials or daemon starts.
+ *   · --recipe default — the daemon's own wiki (`recipes/default`), its cascade routing
+ *                        the records to the top bag as an in-wiki edit would.
+ *   · --recipe <slug>  — an edit AS that wiki: its designated writable bag, write-then-sync.
+ *   · --bag <slug>     — a residency placement into that bag; a bag the island cannot write refuses.
+ *   · --realm <id>     — beside --bag: the realm whose registration that bag resolves through; it reads that realm alone.
+ *   · --base <hash>    — (put) the canonical hash the writer read (`meme get` reports it); records that
+ *                        moved past it read as a CONFLICT and nothing lands.
+ *   · --if-match <hash>— (delete) the same base, spelled as the route's header: stale → CONFLICT, nothing moves.
+ *   · --tree           — (list) nest each root's slot tree beneath it; roots + canonical hash alone otherwise.
+ *
+ * `list` names EVERY root its seat holds. `--bag` lists that one bag's records; `--recipe <slug>` lists the
+ * roots the wiki's whole stack resolves, as `get --recipe` reads them (a tombstone in the working layer
+ * shadows canon, so a carrier the wiki removed lists nowhere), each row naming the bag that answered.
+ *
+ * Slugs ride bare (`sdm`, `lares`). Exit classes: a conflict exits `conflict`; an island refusal `verb-error`;
+ * a missing or doubled container exits `no-container` (2);
+ * an absent meme on `get` exits `not-found`; drift under `check` exits 1 for a CI gate.
+ *
+ * ── THE LOCAL LAWS ──────────────────────────────────────────────────────────────────────────────
+ * `normalize` canonicalizes a carrier's framing so the round-trip lens laws hold (meme-corpus-roundtrip:
+ * single-closer · content-whole · idempotent). Corpus files stand "non-canonical at rest until a
+ * deliberate normalization commit" (wiki-layer-ontology): author freely, run this before committing. A
+ * carrier's meta-declared `namespace` homes into its SOH opener as literal glyphs; a declaration naming the
+ * grammar's address and not its name takes the current one. The transform stays pure + idempotent
+ * (`@lararium/tw5/meme-normalize`), and the block check re-stamps over the body it follows.
+ *
+ * TWO AUTHORITIES, ONE VERB, NEVER ONE CHANNEL. FRAME clauses (the envelope the house mints and owns —
+ * DOCTYPE address, sigil spellings, child-slot roots, meta columns, the block check) carry exactly one
+ * right answer and ALWAYS apply. GRAMMAR clauses (authored bytes — today, only the named-parameter
+ * separator: a call site's `:` vs `=`) are a PREFERENCE, never an answer — both spellings build the
+ * identical attribute — so they apply ONLY with `--grammar`; by default they are named per site
+ * ("N call site(s) would take the equals sign — rerun with --grammar to apply") and move no byte.
+ *
+ * `check` reads the same law and writes nothing: FRAME drift alone exits 1 (CI / pre-commit); GRAMMAR
+ * drift is reported as a named preference and never fails the gate. Its other readings share the seat —
+ * read alone, write nothing — so they ride it as flags:
+ *   --gradient  how far down the ingest gradient each file sits: the KIND a file declares itself to be,
+ *               and the marks that kind requires and lacks. Graceful parsing hides files — a carrier
+ *               missing its address, declaration or body frame still parses, renders and round-trips,
+ *               as something smaller than a meme, and every `if (!uri) continue` gate skips it. This
+ *               reading fails on a fault, never on a kind.
+ *   --edges     the addresses these carriers point AT, and which of them answer. A `lar:` uri names and
+ *               does not fetch, so a carrier whose target moved keeps passing every other gate. Run it
+ *               before a move and after: equal counts prove the weld held.
+ *
+ * `project --to md` over a file renders the submission pair — `<name>.md` + `<name>.md.meta`, beside the
+ * source or under `--out <dir>` — through `projectSubmission` (`@lararium/tw5/weave`), the one
+ * mouth the in-VM face (`$tw.lares.meme.project`) and the `meme-project` verb also call, so a pair
+ * projected from any door carries identical bytes. No clock rides the meta: currency proves by re-projecting, never by a stamp.
+ *
+ * `project --to md --check <file.md | dir>` RUNS THAT PROOF, folded off `tools/submission-parity.mjs`
+ * (now retired) and into this one door: re-project each named pair's source in memory through the same
+ * `projectSubmission`, compare against the pair on disk and its meta's `source-check`, and exit non-zero
+ * naming each pair whose source moved (`source-check` disagrees), vanished, or whose bytes drifted from
+ * a hand edit. Local, read-alone — it writes nothing, exactly like `check` over a `.mem` file.
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/pono/meme
+ */
+
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { stdin, stdout } from "node:process";
+import { basename, dirname, isAbsolute, join } from "node:path";
+import { repoRoot } from "@lararium/mesh/node";
+import { normalizeMemeSource } from "@lararium/tw5/meme-normalize";
+import { projectSubmission, PROFILES, profileOf, recordedTargetOf, resolveWeaveTarget, type WeaveProfile } from "@lararium/tw5/weave";
+import { readCarrierShape, readCarrierEdges, readCarrierLifecycle, checkCarrierLifecycle } from "@lararium/tw5";
+import { verifyBcc, verdict, classifyPostEot, stampCarrier } from "@lararium/memetic-frame";
+import { newChangeId, ed25519SignerFromSeed } from "@lararium/mesh";
+import { loadVesselSigningSeed, loadVesselVerifyingKey } from "@lararium/node";
+import { vesselDid } from "../env.js";
+import { containerArgs } from "../container-target.js";
+import { runVerb, verbFailure } from "../verb-call.js";
+import { LocalWaitExpired } from "../local-connector.js";
+import { readVerbOutcome, summaryOutput } from "../verb-result.js";
+import { emit, exitFor } from "../render.js";
+import { helpLines } from "../command-help.js";
+import { promoteCarrier, type PromotionSeat, type PromotionMove } from "./meme-promote.js";
+import type { ParsedArgs } from "../parse-args.js";
+
+class UsageError extends Error {}
+
+export interface MemePlan {
+  readonly verb: "meme-put" | "meme-get" | "meme-list" | "meme-delete";
+  /** The verb args as the daemon receives them — `text` joins on put once the body is read. */
+  readonly args: Record<string, string>;
+}
+
+/** The targets `project --to` renders. `md` over a file seats local; every other pairing rides the daemon. */
+export const PROJECT_TARGETS = ["mem", "md", "html", "tid", "json"] as const;
+export type ProjectTarget = typeof PROJECT_TARGETS[number];
+
+export interface ProjectPlan {
+  /** Where the verb runs: `local` reads a file and renders in-process; `daemon` rides `meme-project`. */
+  readonly seat: "local" | "daemon";
+  readonly to: ProjectTarget;
+  /** The file source (local seat, or a daemon seat riding by its declared address). */
+  readonly file?: string;
+  /** The `lar:` uri the daemon renders — given, or read off the file's declared `uri-path`. */
+  readonly uri?: string;
+  readonly container: Record<string, string>;
+}
+
+const SUBS = ["put", "get", "list", "delete", "normalize", "check", "sitting", "project", "promote"] as const;
+type Sub = typeof SUBS[number];
+
+function usage(): void { for (const line of helpLines("meme")) console.error(line); }
+
+/** The verb and its args for a sub-verb — the argument law, with no daemon in reach. */
+export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemePlan {
+  const uri = args.positional[1];
+  if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/... --recipe <slug>\`)`);
+  const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, sub === "put" || sub === "delete" ? "write" : "read") };
+  if (sub === "put") {
+    const base = typeof args.options["base"] === "string" ? args.options["base"].trim() : "";
+    if (base) out["base"] = base;
+    return { verb: "meme-put", args: out };
+  }
+  if (sub === "delete") {
+    // The route spells the base as `If-Match`; the verb reads it as `base` — one hash, two spellings.
+    const base = typeof args.options["if-match"] === "string" ? args.options["if-match"].trim() : "";
+    if (base) out["base"] = base;
+    return { verb: "meme-delete", args: out };
+  }
+  return { verb: "meme-get", args: out };
+}
+
+/** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
+export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean> } {
+  const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list") };
+  if (args.flags["tree"]) out["tree"] = true;
+  return { verb: "meme-list", args: out };
+}
+
+/** The meme body: `--file`, else the whole of stdin. */
+async function readBody(args: ParsedArgs): Promise<string> {
+  const file = args.options["file"];
+  if (typeof file === "string" && file) return readFileSync(file, "utf8");
+  if (stdin.isTTY) throw new UsageError("no meme text: pass --file <path> or pipe the meme on stdin");
+  const chunks: Buffer[] = [];
+  for await (const chunk of stdin) chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+/**
+ * The seat law for `project` — decided from the argument shape alone, with no daemon in reach.
+ *
+ * A source spelled `lar:` names a record only the island holds, so it rides the daemon whatever the
+ * target. A file with `--to md` renders in-process. A file with any other target rides the daemon by its
+ * DECLARED address (`uri-path`), read here so the plan carries it; the island renders the record it holds
+ * at that address, which a file still unsent may differ from.
+ */
+export function projectPlan(args: ParsedArgs): ProjectPlan {
+  const source = args.positional[1];
+  if (!source) throw new UsageError("a source is required: a file, or a lar: uri");
+  const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "";
+  if (!(PROJECT_TARGETS as readonly string[]).includes(to)) {
+    throw new UsageError(`--to names the target, one of ${PROJECT_TARGETS.join(" · ")}${to ? ` (got "${to}")` : ""}`);
+  }
+  const target = to as ProjectTarget;
+  const needsStore = source.startsWith("lar:") || target !== "md";
+  if (!needsStore && (args.options["recipe"] !== undefined || args.options["bag"] !== undefined)) {
+    containerArgs(args, "meme project");
+  }
+  const cont = needsStore ? containerArgs(args, "meme project") : {};
+  if (source.startsWith("lar:")) return { seat: "daemon", to: target, uri: source, container: cont };
+  if (target === "md") return { seat: "local", to: target, file: source, container: cont };
+  return { seat: "daemon", to: target, file: source, container: cont };
+}
+
+export async function cmdMeme(args: ParsedArgs): Promise<number> {
+  const sub = args.positional[0];
+  if (!(SUBS as readonly string[]).includes(sub ?? "")) {
+    if (sub) console.error(`lares meme: unknown sub-verb "${sub}"`);
+    usage();
+    return 2;
+  }
+  try {
+    switch (sub as Sub) {
+      case "put":       return await memePut(args);
+      case "get":       return await memeGet(args);
+      case "list":      return await memeList(args);
+      case "delete":    return await memeDelete(args);
+      case "normalize": return normalizeFiles(args, true);
+      case "check":     return checkFiles(args);
+      case "sitting":   return surveySitting(namedFiles(args, "sitting"));
+      case "project":   return await memeProject(args);
+      case "promote":   return await memePromote(args);
+    }
+  } catch (err) {
+    if (typeof err === "object" && err !== null && (err as { code?: unknown }).code === "no-container") {
+      const msg = err instanceof Error ? err.message : String(err);
+      emit(args, { ok: false, error: { code: "no-container", message: msg }, human: () => console.error(msg) });
+      return 2;
+    }
+    if (err instanceof UsageError) {
+      const msg = err.message;
+      emit(args, { ok: false, error: { code: "usage", message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
+      return exitFor("usage");
+    }
+    // M3: a LOCAL WAIT ENDING (LocalWaitExpired, including the vessel's own folded-in
+    // {status:"unknown"}) is told apart from a genuinely absent daemon, never sniffed by message.
+    if (err instanceof LocalWaitExpired) {
+      const f = verbFailure(err);
+      emit(args, {
+        ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+        error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+        human: () => console.error(`lares meme ${sub}: ${f.message}`),
+      });
+      return exitFor(f.code);
+    }
+    // M3′: the remaining fallback told a daemon-unreachable fault apart from everything else by
+    // SNIFFING the error's message text (`/no lares daemon/`) — a message a real `DaemonUnreachable`
+    // happens to carry today, but never a type check. `verbFailure` tells it apart by the error's own
+    // TYPE instead, same as the LocalWaitExpired branch just above.
+    const f = verbFailure(err);
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => console.error(`lares meme ${sub}: ${f.message}`),
+    });
+    return exitFor(f.code);
+  }
+}
+
+async function memePut(args: ParsedArgs): Promise<number> {
+  const plan = memePlan("put", args);
+  const text = await readBody(args);
+  const result = await runVerb(plan.verb, { ...plan.args, text }, await vesselDid());
+  const outcome = readVerbOutcome(result);
+  if (!outcome.ok) {
+    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme put: ${outcome.error}`) });
+    return exitFor(code);
+  }
+  const receipt = outcome.output;
+  const decision = String(receipt["decision"] ?? "");
+  const landed = Array.isArray(receipt["landed"]) ? (receipt["landed"] as string[]) : [];
+  const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
+  const warnings = Array.isArray(receipt["warnings"]) ? (receipt["warnings"] as string[]) : [];
+  const ok = decision === "ingest" || decision === "noop";
+  const code = ok ? "ok" : decision === "conflict" ? "conflict" : "verb-error";
+  emit(args, {
+    ok,
+    requestId: result.requestId,
+    data: receipt,
+    ...(ok ? {} : { error: { code, message: `${decision}: ${warnings[0] ?? receipt["reason"] ?? plan.args["uri"]}` } }),
+    human: () => {
+      console.log(`${decision}: ${plan.args["uri"]}`);
+      if (decision === "ingest") console.log(`  landed ${landed.length} · tombstoned ${tombstoned.length}`);
+      if (decision === "noop" && receipt["reason"]) console.log(`  ${receipt["reason"]}`);
+      for (const w of warnings) console.log(`  ! ${w}`);
+      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
+    },
+  });
+  return exitFor(code);
+}
+
+async function memeGet(args: ParsedArgs): Promise<number> {
+  const plan = memePlan("get", args);
+  const result = await runVerb(plan.verb, plan.args, await vesselDid());
+  const outcome = readVerbOutcome(result);
+  if (!outcome.ok) {
+    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme get: ${outcome.error}`) });
+    return exitFor(code);
+  }
+  const meme = outcome.output["meme"] as { text: string; canonicalHash: string } | null | undefined;
+  if (!meme) {
+    emit(args, { ok: false, requestId: result.requestId, error: { code: "not-found", message: `no meme at ${plan.args["uri"]}` }, human: () => console.error(`lares meme get: no meme at ${plan.args["uri"]}`) });
+    return exitFor("not-found");
+  }
+  emit(args, {
+    ok: true,
+    requestId: result.requestId,
+    data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash },
+    // The text alone reaches stdout, so `lares meme get <uri> --recipe <slug> > file` carries the meme; the base rides stderr.
+    human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); },
+  });
+  return 0;
+}
+
+/** One listed root, as the verb answers it. */
+interface ListedRoot { uri: string; canonicalHash: string; bag?: string; slots?: ListedSlot[] }
+interface ListedSlot { slot: string; uri: string; slots: ListedSlot[] }
+
+/**
+ * THE LISTING ARRIVES IN PAGES. One outcome carries a bounded number of rows, so the verb answers a page
+ * and names the cursor of the next (`next`); this door hands each cursor back as `after` until none
+ * remains, and a person reads every root. An answer whose `roots` holds no array (an outcome that carried
+ * a count where the rows belong) refuses by name: an empty listing over a full seat would state a thing
+ * nobody measured. A cursor that fails to advance refuses the same way.
+ */
+async function memeList(args: ParsedArgs): Promise<number> {
+  const plan = listPlan(args);
+  const did = await vesselDid();
+  const roots: ListedRoot[] = [];
+  let head: Record<string, unknown> = {};
+  let requestId = "";
+  const refuse = (code: "cap-denied" | "verb-error", message: string): number => {
+    emit(args, { ok: false, requestId, error: { code, message }, human: () => console.error(`lares meme list: ${message}`) });
+    return exitFor(code);
+  };
+  for (let after: string | null = null; ;) {
+    const result = await runVerb(plan.verb, after === null ? plan.args : { ...plan.args, after }, did);
+    requestId = result.requestId;
+    const outcome = readVerbOutcome(result);
+    if (!outcome.ok) return refuse(/cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error", outcome.error ?? "the verb refused");
+    const page = outcome.output["roots"];
+    if (!Array.isArray(page)) {
+      const count = (page as { boundedArrayCount?: unknown } | null | undefined)?.boundedArrayCount;
+      return refuse("verb-error", typeof count === "number"
+        ? `the listing arrived as a count of ${count} roots and named none of them; this vessel answers an unpaged listing`
+        : "the listing named no roots array");
+    }
+    roots.push(...(page as ListedRoot[]));
+    if (after === null) head = outcome.output;
+    const next = outcome.output["next"];
+    if (typeof next !== "string" || next === "") break;
+    if (after !== null && next <= after) return refuse("verb-error", `the listing's cursor stood still at ${next}`);
+    after = next;
+  }
+  const slotLines = (slots: ListedSlot[] | undefined, depth: number): void => {
+    for (const s of slots ?? []) { console.log(`${"  ".repeat(depth)}${s.slot}`); slotLines(s.slots, depth + 1); }
+  };
+  // The seat as the verb named it: one bag, or a recipe with the bags its stack read and any it could not reach.
+  const seat: Record<string, unknown> = {};
+  for (const key of ["bag", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
+  const unreached = Array.isArray(head["unreached"]) ? (head["unreached"] as string[]) : [];
+  emit(args, {
+    ok: true,
+    requestId,
+    data: { ...seat, roots },
+    // One root per line — the base first so a shell reads it, the uri after; slots indent beneath.
+    human: () => {
+      for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); }
+      for (const bag of unreached) console.error(`lares meme list: ${bag} stands unreached; its roots stay unlisted`);
+    },
+  });
+  return 0;
+}
+
+async function memeDelete(args: ParsedArgs): Promise<number> {
+  const plan = memePlan("delete", args);
+  const result = await runVerb(plan.verb, plan.args, await vesselDid());
+  const outcome = readVerbOutcome(result);
+  if (!outcome.ok) {
+    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme delete: ${outcome.error}`) });
+    return exitFor(code);
+  }
+  const receipt = outcome.output;
+  const decision = String(receipt["decision"] ?? "");
+  const tombstoned = Array.isArray(receipt["tombstoned"]) ? (receipt["tombstoned"] as string[]) : [];
+  const code = decision === "removed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
+  const message = decision === "conflict" ? `conflict: the records moved past ${plan.args["base"] ?? "the base"} — read again and hand back the live hash`
+                : decision === "absent" ? `no meme at ${plan.args["uri"]}` : `${decision}: ${plan.args["uri"]}`;
+  emit(args, {
+    ok: code === "ok",
+    requestId: result.requestId,
+    data: receipt,
+    ...(code === "ok" ? {} : { error: { code, message } }),
+    human: () => {
+      if (code !== "ok") { console.error(`lares meme delete: ${message}`); return; }
+      console.log(`removed: ${plan.args["uri"]}`);
+      console.log(`  tombstoned ${tombstoned.length}`);
+      if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);
+    },
+  });
+  return exitFor(code);
+}
+
+// ── the local laws: normalize · check ──────────────────────────────────────────────────────────
+
+/** The files a local sub-verb names — every positional past the sub-verb. */
+function namedFiles(args: ParsedArgs, sub: Sub): string[] {
+  const files = args.positional.slice(1);
+  if (files.length === 0) throw new UsageError(`lares meme ${sub} <file.mem ...> — name the carriers to read`);
+  return files;
+}
+
+function readNamed(f: string): string {
+  const abs = isAbsolute(f) ? f : join(process.cwd(), f);
+  try {
+    return readFileSync(abs, "utf8");
+  } catch {
+    throw new UsageError(`cannot read ${f}`);
+  }
+}
+
+/**
+ * `check`: the normalize law read alone, or one of its two sibling readings.
+ *
+ * parse-args reads `--gradient` as a boolean only when the next token is another option or the end;
+ * `--gradient <file>` binds the file as its value instead. Read each reading from both, and recover any
+ * file it ate, so flag position stays free.
+ */
+function checkFiles(args: ParsedArgs): number {
+  const reading = (name: "gradient" | "edges" | "sitting"): { on: boolean; ate?: string } => {
+    const opt = args.options[name];
+    return typeof opt === "string" ? { on: true, ate: opt } : { on: name in args.flags };
+  };
+  const gradient = reading("gradient");
+  const edges = reading("edges");
+  const sitting = reading("sitting");
+  const ate = [gradient.ate, edges.ate, sitting.ate].filter((f): f is string => typeof f === "string");
+  const files = [...(ate.length > 0 ? args.positional.slice(1) : namedFiles(args, "check")), ...ate];
+  if (gradient.on) return surveyGradient(files);
+  if (edges.on) return surveyEdges(files);
+  if (sitting.on) return surveySitting(files);
+  return normalizeFiles(args, false);
+}
+
+/**
+ * The normalize law over the named files — `write` seals the result to disk; read-alone reports it.
+ *
+ * ── AND IT NAMES WHAT IT DID NOT STAMP ─────────────────────────────────────────────────────────
+ * Stamping SEALS a carrier's bytes. Doing it while OTHER carriers sit dirty and unread is how one hand
+ * seals another hand's half-finished work — the check goes over whatever stands, and afterwards nothing
+ * distinguishes a body its author finished from a body someone else caught mid-edit. Refusing a glob
+ * stops a blanket sweep; it says nothing about the carriers a NAMED run passes over. Measured live: two
+ * carriers stamped through this door while a third stood dirty and unnamed, and the door reported
+ * success. A dirty carrier nobody named reads two ways — yours and forgotten, or nobody's — and this
+ * door cannot tell which. So it NAMES them and carries on: a warning a caller can weigh, never a
+ * refusal that would block a legitimate partial sweep.
+ */
+function normalizeFiles(args: ParsedArgs, write: boolean): number {
+  // `--grammar` applies GRAMMAR-authority clauses (authored bytes — e.g. a call site's `:` vs `=`
+  // separator) alongside the FRAME clauses that always apply. Default: grammar clauses are
+  // PROPOSED, named per site, and move no byte — parse-args eats a following bare token as the
+  // flag's value the same way `--gradient`/`--edges`/`--sitting` do, so recover it the same way.
+  const grammarOpt = args.options["grammar"];
+  const grammar = typeof grammarOpt === "string" ? true : Boolean(args.flags["grammar"]);
+  const files = [
+    ...(typeof grammarOpt === "string" ? args.positional.slice(1) : namedFiles(args, write ? "normalize" : "check")),
+    ...(typeof grammarOpt === "string" ? [grammarOpt] : []),
+  ];
+  let drifted = 0;
+  let grammarDrifted = 0;
+  let flagged = 0;
+  let faulted = 0;
+
+  // Named under BOTH seats: the read-alone run is the one a caller reads before deciding to stamp.
+  let unnamed: string[] = [];
+  try {
+    const dirty = String(execFileSync("git", ["diff", "--name-only", "--", "*.mem"], { encoding: "utf8" }))
+      .split("\n").filter(Boolean);
+    unnamed = dirty.filter((d: string) => !files.some((p) => p.endsWith(d) || d.endsWith(p)));
+  } catch { /* not a git tree, or git absent — the naming rule carries alone */ }
+
+  for (const f of files) {
+    const src = readNamed(f);
+    // BARE DATA IS NOT A MEME. No head, no text frame, no release: normalizing it would frame bytes
+    // nobody framed, so both seats NAME it and move none of its bytes. A reading, never a fault — the
+    // stage law below still reads whatever meta it declares.
+    const frame = verdict(src);
+    if (frame.kind === "bare") {
+      console.log(`bare: ${f}`);
+      console.log("  ⚠ bare data — no frame stands (no head, no STX/ETX, no release); not a meme. WARNING: UNSTABLE");
+    }
+    const res = frame.kind === "bare"
+      ? { text: src, changed: false, notes: [], flags: [], grammarChanged: false, grammarNotes: [], faults: [] }
+      : normalizeMemeSource(src, { grammar });
+
+    // GRAMMAR-authority drift reads and reports SEPARATELY from FRAME drift — a preference named
+    // aloud, never a failure. `res.grammarNotes` already carries the per-site "would take the
+    // equals sign — rerun with --grammar to apply" wording (or, with --grammar on, the applied
+    // wording) from the clause itself.
+    if (res.grammarChanged) {
+      grammarDrifted++;
+      console.log(`${grammar ? "grammar applied" : "grammar preference"}: ${f}`);
+      for (const gn of res.grammarNotes) console.log(`  ~ ${gn}`);
+    }
+
+    // Flags surface whether or not the carrier rewrote — advisory triage the law will NOT auto-fix
+    // (e.g. a register value off the band ladder).
+    if (res.flags.length > 0) {
+      flagged++;
+      console.log(`flagged: ${f}`);
+      for (const fl of res.flags) console.log(`  ⚠ ${fl}`);
+    }
+
+    // THE STAGE LAW BINDS ONLY WHERE THE TAG STANDS. An untagged carrier — law, record, reference,
+    // 669 of 726 of them — declines the ladder, and this reading answers nothing new for it. A fault
+    // here is a REFUSAL rather than a drift: no gesture can auto-close an open lean or invent a fold
+    // target, so the door names what the stage owes and hands it back to a hand.
+    const stage = checkCarrierLifecycle(src);
+    if (stage.length > 0) {
+      faulted++;
+      console.log(`stage: ${f}`);
+      for (const fault of stage) console.log(`  ✗ ${fault}`);
+    }
+
+    // THE CHECK COVERS THE BODY, SO IT IS PART OF BEING CANONICAL. Framing rides inside the checked
+    // span: canonicalizing a carrier and leaving its prior check standing hands the next door a carrier
+    // this gesture just made non-canonical. STAMPED AFTER FRAMING, never before: the bytes the check
+    // covers are the ones normalize leaves.
+    // A TORN FRAME FAILS THE READ-ALONE SEAT, and says why. Reported BEFORE the no-change exit, because
+    // a tear changes no byte: `stampCarrier` cannot stamp it and normalize cannot close it, so the door that
+    // stayed silent here reported `canonical` over a carrier whose frame opens and never closes — the
+    // exact silence a torn carrier passed the pre-commit gate through. No gesture can close a tear; the
+    // door names it and hands it to a hand.
+    // A FRAME FAULT is no drift a gesture closes — a meta fence above STX, a second ETX — so the door
+    // names each and hands the carrier to a hand, stamping nothing over it.
+    // AN ERROR-GRADE FAULT no gesture closes — a meta fence defining a key twice, which TOML forbids and
+    // whose meaning normalize cannot choose — reads non-canonical on both seats and stamps nothing.
+    if (res.faults.length > 0) {
+      faulted++;
+      console.log(`fault: ${f}`);
+      for (const fault of res.faults) console.log(`  ✗ ${fault.code}: ${fault.message}`);
+      continue;
+    }
+
+    if (frame.kind === "torn") {
+      faulted++;
+      console.log(`torn: ${f}`);
+      for (const fault of frame.faults) {
+        console.log(fault.kind === "no-etx"
+          ? "  ✗ the frame opens and never closes — no block check can cover an unbounded span; close the frame by hand"
+          : `  ✗ ${fault.message}`);
+      }
+      continue;
+    }
+
+    // EOT closes the carrier. Bytes after it are outside every recoverable frame boundary and may
+    // be prose, a second control mark, or a truncated neighboring carrier. A check over the earlier
+    // span cannot attest to them, so both seats refuse to call the source canonical; normalization
+    // leaves the bytes untouched for a hand to separate rather than guessing which boundary moved.
+    const afterEot = classifyPostEot(res.text);
+    if (afterEot?.kind === "foreign") {
+      faulted++;
+      console.log(`boundary: ${f}`);
+      console.log("  ✗ content follows the terminating EOT mark — separate the carrier by hand; normalization refused to guess");
+      continue;
+    }
+
+    const standing = verifyBcc(res.text);
+    const stamped  = stampCarrier(res.text);
+    const changed  = res.changed || stamped !== res.text;
+    if (!changed) continue;
+    drifted++;
+
+    if (write) {
+      writeFileSync(isAbsolute(f) ? f : join(process.cwd(), f), stamped);
+      console.log(`normalized: ${f}`);
+    } else {
+      console.log(`would normalize: ${f}`);
+    }
+    for (const n of res.notes) console.log(`  - ${n}`);
+    if (stamped !== res.text) {
+      // MINTED and RE-STAMPED are different facts, and a reader owes the difference: one carrier held a
+      // stale check, the other held none at all.
+      const act = standing === "unchecked"
+        ? (write ? "minted over the body it follows" : "would mint over the body it follows")
+        : (write ? "re-stamped over the body it follows" : "would re-stamp over the body it follows");
+      console.log(`  - block check ${act}`);
+      if (frame.kind === "stale") console.log(`  - stale: stored ${frame.stored} · computed ${frame.computed}`);
+    }
+  }
+
+  if (unnamed.length > 0) {
+    console.log("\n  ⚠ dirty and NOT named on this run — read each before stamping it:");
+    for (const u of unnamed) console.log(`      ${u}`);
+  }
+
+  const tail = (flagged > 0 ? ` (${flagged} flagged for triage)` : "")
+    + (faulted > 0 ? ` (${faulted} standing off its declared stage)` : "")
+    + (grammarDrifted > 0 ? ` (${grammarDrifted} carrying a grammar preference${grammar ? "" : " — rerun with --grammar to apply"})` : "");
+  if (drifted === 0) {
+    console.log(faulted === 0
+      ? `all ${files.length} carrier(s) canonical.${tail}`
+      : `no carrier(s) normalized; ${faulted} boundary/stage fault(s) remain.${tail}`);
+    // A STAGE FAULT FAILS THE READ-ALONE SEAT even where every byte reads canonical — the two say
+    // different things, and a gate that passed a `folded` carrier still holding its argument would
+    // let the fire take a carrier whose content lives nowhere else. GRAMMAR drift NEVER fails this
+    // seat — a carrier keeping a deliberate spelling reads as a held preference, not a fault, so it
+    // never trips a CI gate or pre-commit hook forever.
+    return faulted === 0 ? 0 : 1;
+  }
+  console.log(`${drifted} of ${files.length} carrier(s) drifted.${tail}`);
+  // Read alone, FRAME drift fails loud so a CI gate or pre-commit hook catches un-normalized
+  // carriers. Flags stay advisory (needs-triage); GRAMMAR drift is a preference, never a gate
+  // failure — `drifted` above counts only FRAME-authority changes (frame clauses + the block-check
+  // re-stamp), since a grammar-only carrier never enters this branch: `changed` on its result is
+  // false unless `--grammar` applied it, and its grammar note surfaces through the `grammar
+  // preference` line above regardless.
+  return faulted === 0 && (write || drifted === 0) ? 0 : 1;
+}
+
+/**
+ * The gradient reading: one line per file, the marks each carrier carries and what it still owes.
+ *
+ * Prints a carrier tally even when nothing faults, because a run that read nothing must never look
+ * like a run that found nothing — the failure this whole reading exists to catch.
+ */
+function surveyGradient(files: string[]): number {
+  let carriers = 0;
+  let sidecarMembers = 0;
+  let faulted = 0;
+
+  // THE SIDECAR PAIR IS A CARRIER IN TWO FILES. A content file with a `.meta` beside it declares
+  // itself in the sidecar, so the paired content bytes carry their metadata beside them. This pairing
+  // reads from the named file list rather than from either file's bytes alone.
+  const declared = new Set(files.filter((f) => f.endsWith(".meta")).map((f) => f.slice(0, -".meta".length)));
+
+  for (const f of files) {
+    if (declared.has(f) || f.endsWith(".meta")) {
+      sidecarMembers++;
+      continue;
+    }
+    const shape = readCarrierShape(readNamed(f));
+    carriers++;
+    if (shape.faults.length === 0) continue;
+    faulted++;
+    console.log(`carrier: ${f}`);
+    for (const fault of shape.faults) console.log(`  ⚠ ${fault}`);
+  }
+
+  const sidecars = sidecarMembers > 0 ? ` · sidecar member ${sidecarMembers}` : "";
+  console.log(`gradient: ${files.length} read — carrier ${carriers}${sidecars}`);
+  if (faulted === 0) {
+    console.log("every carrier stands at its full floor.");
+    return 0;
+  }
+  console.log(`${faulted} carrier(s) below the full floor.`);
+  return 1;
+}
+
+/**
+ * The graph reading: which addresses these carriers name, and which of those any of them holds.
+ *
+ * The corpus passed IS the universe — an edge answers only if one of the files read declares that
+ * address. So a partial file list reads as a broken graph, and the summary always states how many
+ * carriers were read so a narrow run cannot be mistaken for a corpus-wide one.
+ */
+function surveyEdges(files: string[]): number {
+  const held = new Set<string>();
+  const texts = new Map<string, string>();
+  for (const f of files) {
+    const src = readNamed(f);
+    texts.set(f, src);
+    const uri = /^uri-path\s*=\s*"([^"]+)"/m.exec(readCarrierShape(src).marks.meta ? src : "")?.[1];
+    if (uri) held.add(uri);
+  }
+
+  const dangling = new Map<string, { form: string; from: string[] }>();
+  let total = 0, unaddressed = 0;
+  for (const [f, src] of texts) {
+    for (const e of readCarrierEdges(src)) {
+      total++;
+      // AN EDGE WITH NO ADDRESS NAMES A FILE, not a carrier. It cannot dangle, because it never
+      // pointed at an address to begin with — it is counted apart so a sweep can find the class
+      // without a resolver guessing which carrier a file became.
+      if (e.address === null) { unaddressed++; continue; }
+      if (held.has(e.address)) continue;
+      const seen = dangling.get(e.address) ?? { form: e.form, from: [] };
+      seen.from.push(f);
+      dangling.set(e.address, seen);
+    }
+  }
+
+  const ranked = [...dangling].sort((a, b) => b[1].from.length - a[1].from.length);
+  for (const [address, { form, from }] of ranked) {
+    console.log(`${from.length}× ${form}  lar:///${address}`);
+    for (const f of from.slice(0, 3)) console.log(`     from ${f}`);
+    if (from.length > 3) console.log(`     … and ${from.length - 3} more`);
+  }
+  const n = [...dangling.values()].reduce((a, d) => a + d.from.length, 0);
+  const tail = unaddressed > 0 ? ` · ${unaddressed} naming a FILE rather than an address` : "";
+  console.log(`edges: ${files.length} carrier(s) read · ${held.size} address(es) held · ${total} edge(s) · ${n} naming nothing${tail}`);
+  return n === 0 ? 0 : 1;
+}
+
+/**
+ * The sitting: every carrier the fire COULD take, named — and nothing burned.
+ *
+ * ── THE FIRE IS CALLED, NEVER SCHEDULED ─────────────────────────────────────────────────────────
+ * The rite this reads for refuses a calendar, and so does the field it borrows its name from: Sagichō
+ * runs "usually held around the fifteenth of January" with "a fair amount of regional variation in the
+ * date". A sweep that burned on its own reading would decide an ending on a ratio, and the house has
+ * already ruled the other way everywhere it touches this — a realm DISSOLVES BY COOLING and no party
+ * holds a dissolving act. So this reading names candidates and stops. The operator calls the sitting.
+ *
+ * ── THE WELD COMES FIRST AND THE FIRE SECOND, ALWAYS ────────────────────────────────────────────
+ * A carrier any other carrier still names is HELD, however the stage reads. Measured on this tree:
+ * moving three carriers without the weld left 66 references naming addresses that no longer answered;
+ * folding 37 weld-first broke none. The corpus passed IS the universe here, exactly as it is for the
+ * edges reading — so a narrow run reads as a graph with holes, and the summary states the count read.
+ *
+ * ── AND THE HARVEST ROOM'S EMPTINESS IS THE WITNESS ─────────────────────────────────────────────
+ * A `lifecycle/harvest` carrier names the living bag its materials fold into. It stands in the list as
+ * long as it stands at all; the rite completes when the room reports empty.
+ */
+function surveySitting(files: string[]): number {
+  const texts = new Map<string, string>();
+  const addressOf = new Map<string, string>();
+  for (const f of files) {
+    const src = readNamed(f);
+    texts.set(f, src);
+    const uri = /^uri-path\s*=\s*"([^"]+)"/m.exec(src)?.[1];
+    if (uri) addressOf.set(f, uri);
+  }
+
+  // Who names whom — read over every carrier in the run, in every form the grammar spells a reference.
+  const inbound = new Map<string, string[]>();
+  for (const [f, src] of texts) {
+    for (const e of readCarrierEdges(src)) {
+      if (e.address === null) continue;
+      // A carrier naming ITSELF is not a reader holding it.
+      if (addressOf.get(f) === e.address) continue;
+      (inbound.get(e.address) ?? inbound.set(e.address, []).get(e.address)!).push(f);
+    }
+  }
+
+  let candidates = 0, held = 0, rooms = 0;
+  for (const [f, src] of texts) {
+    const life = readCarrierLifecycle(src);
+    if (life.stage === "harvest") {
+      rooms++;
+      console.log(`harvest room: ${f}`);
+      console.log(`     materials fold to ${life.harvestTo ?? "— NO harvest-to; name the living bag"}`);
+      continue;
+    }
+    if (life.stage !== "folded" && life.stage !== "retiring") continue;
+    const addr = addressOf.get(f);
+    const namers = addr ? inbound.get(addr) ?? [] : [];
+    if (namers.length > 0) {
+      held++;
+      console.log(`held — ${namers.length} carrier(s) still name lar:///${addr}: ${f}`);
+      for (const n of namers.slice(0, 3)) console.log(`     from ${n}`);
+      if (namers.length > 3) console.log(`     … and ${namers.length - 3} more`);
+      continue;
+    }
+    candidates++;
+    console.log(`candidate (${life.stage}) ${f}`);
+    if (life.stage === "folded") console.log("     every slot points, nothing names it — the fold stands welded");
+  }
+
+  const room = rooms > 0 ? ` · ${rooms} harvest room(s) still standing` : " · the harvest room stands empty";
+  console.log(`sitting: ${files.length} carrier(s) read · ${candidates} candidate(s) · ${held} held${room}`);
+  // THE READING NEVER FAILS. It reports a state; the operator decides what the state means, and an
+  // exit code that called a candidate an error would make the reading un-runnable from a hook.
+  return 0;
+}
+
+// ── project: the seat law decides local or daemon ──────────────────────────────────────────────
+
+async function memeProject(args: ParsedArgs): Promise<number> {
+  if ("check" in args.options || args.flags["check"] !== undefined) return projectMdCheck(args);
+  const plan = projectPlan(args);
+  if (plan.seat === "local") return projectMdLocal(args, plan.file as string);
+
+  let uri = plan.uri;
+  if (!uri) {
+    const declared = /^uri-path\s*=\s*"([^"]+)"/m.exec(readNamed(plan.file as string))?.[1];
+    if (!declared) throw new UsageError(`${plan.file} declares no uri-path — a rendered target needs the address the island holds it at`);
+    uri = `lar:///${declared}`;
+  }
+  const result = await runVerb("meme-project", { ...plan.container, uri, to: plan.to }, await vesselDid());
+  const outcome = readVerbOutcome(result);
+  if (!outcome.ok) {
+    const code = /cap-denied/.test(outcome.error ?? "") ? "cap-denied" : "verb-error";
+    emit(args, { ok: false, requestId: result.requestId, error: { code, message: outcome.error ?? "the verb refused" }, human: () => console.error(`lares meme project: ${outcome.error}`) });
+    return exitFor(code);
+  }
+  const text = String(outcome.output["text"] ?? "");
+  // ── THE COMPOSITION READING, AT THE ONE PLACE A HUMAN STANDS WAITING ──────────────────────────────
+  //
+  // A `mem` projection RENDERS A CARRIER — the composed one, the join `expandRefs` makes out of a root
+  // and its slot children. That join is where a whole class of fault comes into being and nowhere else:
+  // the child's bytes read as a legal carrier, the root's bytes read as a legal carrier, and the two
+  // together carry TWO text frames where only the first verifies. A guest's paste GRADES CLEAN at every
+  // content instrument in the tree (`child-grade-decision.mem` #/measured row 11) and the shape reading
+  // catches it (row 13) — the `--gradient` survey carries the same reading.
+  // So the cost routed from the actor's present to a stranger's future: four months on, a reader on
+  // another peer meets a carrier with two heads and no author left to ask.
+  //
+  // Projection is where a human waits on a command they just typed, so this is where the reading lands.
+  const shape = plan.to === "mem" ? readCarrierShape(text) : null;
+  const out = typeof args.options["out"] === "string" ? args.options["out"] : "";
+  if (out) writeFileSync(out, text, "utf8");
+  // THE SIDECAR PAIR IS A CARRIER IN TWO FILES: an `md` projection rides its `.meta` in the reply, and it
+  // lands beside the content file exactly as the local seat writes it.
+  const meta = outcome.output["meta"];
+  if (out && typeof meta === "string") writeFileSync(`${out}.meta`, meta, "utf8");
+  emit(args, {
+    ok: true,
+    requestId: result.requestId,
+    // The pair rides the reply whole: `text` (or the `out` path it landed at) AND the `.meta` sidecar when
+    // the target carries one — a JSON consumer reads both halves without a disk beside it.
+    data: {
+      uri, to: plan.to, contentType: outcome.output["contentType"],
+      ...(out ? { out, ...(typeof meta === "string" ? { outMeta: `${out}.meta` } : {}) } : { text }),
+      ...(typeof meta === "string" ? { meta } : {}),
+      // The reading rides the machine channel whole — carrier status AND faults — so an agent reads the same
+      // verdict a person does. Absent for every target whose render is not a carrier: an html page has
+      // no carrier shape, and inventing one would be a reading over bytes the question does not fit.
+      ...(shape ? { shape: { check: shape.marks.check, faults: shape.faults } } : {}),
+    },
+    // The rendered text alone reaches stdout, so `lares meme project <uri> --recipe <slug> --to html > file` carries it.
+    // THE READING GOES TO STDERR, and that placement is load-bearing: stdout is the operator's artifact
+    // — the redirect they typed — and a verdict written into it would corrupt the very carrier it warns
+    // about. The two streams are the two facts.
+    human: () => {
+      if (out) console.log(`projected ${uri} -> ${out} (${plan.to})`); else stdout.write(text);
+      if (!shape || shape.faults.length === 0) return;
+      console.error(`\n⚠ the composed carrier stands below its full floor (check ${shape.marks.check}):`);
+      for (const fault of shape.faults) console.error(`  ⚠ ${fault}`);
+      console.error("  the bytes above are what the island composed — read the fault before you carry them anywhere.");
+    },
+  });
+  // ── REPORT, NEVER REFUSE — and the doctrine that decided it ────────────────────────────────────────
+  //
+  // THREE STANDING RULINGS point one way, and none of them is close.
+  //
+  //   · WRITE-OPEN, READ-CERTIFIED (`child-grade-decision.mem` #/standing-law, on `handle-card.mem`
+  //     #/public-by-design): let the act land, and carry the verdict on the read. The precedent is the
+  //     announce board, which admits any nym's card and certifies nothing at write.
+  //   · THE DIAGNOSTICS LADDER (`diagnostics.ts:38-46`): `error` names the one fault that costs the
+  //     operator their bytes, and every recovery grades below the line BECAUSE refusing a recovery would
+  //     drop bytes to protect the grammar. Exactly two faults reach `error`, and a composition fault is
+  //     neither. A projection that withheld a render would be that forbidden drop, at a door whose whole
+  //     job is to hand over bytes.
+  //   · A CONFLICT SURFACES RATHER THAN ONE STREAM DROWNING ANOTHER, and auto-arbitration reads
+  //     anti-pono (talk-story conflict law). A door that refused here would ARBITRATE — deciding on its
+  //     own reading that the operator may not have the render they asked for — over a carrier whose
+  //     every byte an author wrote on purpose. Refusing is the move this house does not make.
+  //
+  // AND THE FAULT IS A COMPOSITION FAULT, WHICH MEANS THE FIX IS NOT HERE. Two legal carriers joined into
+  // an illegal one: no byte of the projection is wrong, and nothing this door could refuse would repair
+  // the records behind it. Refusing would withhold the one artifact that SHOWS the operator the join.
+  //
+  // SO THE EXIT CODE CARRIES THE READING AND `ok` CARRIES THE ACT. The projection happened — `ok: true`,
+  // the text in the payload, the `--out` file on disk — and the exit says a reading faulted, so a hook,
+  // a CI gate or a script catches it without a human reading prose. Two facts, two channels, neither
+  // answering for the other.
+  //
+  // MY EXIT DISCIPLINE AGREES WITH `--gradient`, and the reported divergence does not reproduce:
+  // `meme check --gradient` over a faulted file exits 1, measured on the built binary. The "exits 0 while
+  // printing 1 carrier(s) below the full floor" reading came from `$?` after a pipe, which reports the
+  // LAST stage's status — the instrument lie, not a defect in the door. `surveySitting` keeps 0 by its own
+  // ruling (a candidate is a state, not a fault); a carrier below the full floor IS a fault, so it
+  // exits non-zero here exactly as it does there.
+  return shape && shape.faults.length > 0 ? 1 : 0;
+}
+
+/**
+ * `profileOf` (`@lararium/tw5/weave`) names an RFC 7764 variant or throws a plain Error; this wraps
+ * that Error in `UsageError` at the CALL SITE so `--dialect foo` exits `usage` here — the CLI is the
+ * one door that turns a thrown Error into the `usage` exit class, and the weave module (read by the
+ * filter and the verb too) has no exit classes of its own.
+ */
+function profileForCli(name: string): WeaveProfile {
+  try { return profileOf(name); } catch (err) { throw new UsageError((err as Error).message); }
+}
+
+/**
+ * A READ-ONLY resolver over the repo's own `bags/lares` corpus — the same address law
+ * `projectMdCheck` already uses to find a pair's `source:` on disk (`bags/lares/<path>.mem`), so a
+ * frozen `aka` edge (`lar:///ha.ka.ba/...`) can PIN its target's current text rather than always
+ * falling back unresolved. The fragment (`#/slot`) is stripped — `aka` inlines the whole target
+ * carrier, never one slot alone, matching how it already reads in-house. Reads only; never writes,
+ * never reaches past `bags/lares`, and answers `null` (the weave's own unresolved fallback) for
+ * anything outside it or missing.
+ */
+export function bagsResolver(root: string): (uri: string) => string | null {
+  return (uri: string): string | null => {
+    if (!uri.startsWith("lar:///")) return null;
+    const path = uri.slice("lar:///".length).split("#")[0];
+    if (!path) return null;
+    const filePath = join(root, "bags/lares", `${path}.mem`);
+    if (!existsSync(filePath)) return null;
+    try { return readFileSync(filePath, "utf8"); } catch { return null; }
+  };
+}
+
+/** The submission pair, in-process: `<name>.md` + `<name>.md.meta` beside the source or under `--out`
+ * — or, under a standalone `--dialect` (GFM, kramdown-rfc2629), `<name>.md` alone, frontmatter carried
+ * inside it per RFC 7763.
+ *
+ * A BARE RE-PROJECT KEEPS THE PAIR'S OWN TARGET. `--dialect`/`--tongue` win when given; absent, a pair
+ * already standing at this exact path (beside the source, or under this `--out`) names its own target
+ * through its `.md.meta`'s `variant:`/`tongue:` fields — the same record `--check` reads back — so a
+ * re-project with no flags reproduces what is already there rather than silently falling to CommonMark
+ * and clobbering a standalone profile's frontmatter + normative list. A pair with no recorded meta (a
+ * first projection) falls to the CommonMark/no-tongue default.
+ */
+function projectMdLocal(args: ParsedArgs, file: string): number {
+  const out = args.options["out"];
+  if (out) mkdirSync(out, { recursive: true });
+  const text = readNamed(file);
+  const base = basename(file).replace(/\.mem$/, "");
+  const dir = out ?? dirname(file);
+  const mdPath = join(dir, `${base}.md`);
+  // The existing pair's OWN target record, read back off its `.md.meta` sidecar — the same two
+  // keys `projectMdCheck` already reads (#/the-woven-dialect's placement law: the sidecar is the
+  // target record). Absent the sidecar or a key, `recordedTargetOf` answers `undefined` for it —
+  // never a guess — so a first-time projection keeps today's CommonMark/no-tongue default.
+  const metaPath = `${mdPath}.meta`;
+  const recordedMetaText = existsSync(metaPath) ? (() => { try { return readFileSync(metaPath, "utf8"); } catch { return ""; } })() : "";
+  const recorded = recordedMetaText ? recordedTargetOf(recordedMetaText) : {};
+
+  const dialectFlag = typeof args.options["dialect"] === "string" ? args.options["dialect"] : "";
+  // BCP 47 — absent both the flag and the pair's own record, every sigil head name weaves canonical,
+  // unchanged (#/the-woven-dialect's Tongue clause).
+  const tongueFlag = typeof args.options["tongue"] === "string" ? args.options["tongue"] : undefined;
+  let profile: WeaveProfile;
+  let tongue: string | undefined;
+  try {
+    ({ profile, tongue } = resolveWeaveTarget({ dialect: dialectFlag, tongue: tongueFlag ?? null, recorded }));
+  } catch (err) {
+    throw new UsageError((err as Error).message);
+  }
+
+  // The pair's title is the weave's own default — `submissions/<name>` on the shelf (operator ruling).
+  const p = projectSubmission(text, {
+    profile,
+    resolve: bagsResolver(repoRoot),
+    ...(tongue ? { tongue } : {}),
+  });
+  writeFileSync(mdPath, p.markdown);
+  // Every profile keeps the `.md.meta` sidecar, frontmatter or not (TW5 loads it, and the
+  // currency gate reads its `variant`/`tongue` back to know what target to re-project with — the
+  // placement law `projectSubmission` states: the sidecar is the target record, the frontmatter is
+  // the standalone-travel identity).
+  writeFileSync(`${mdPath}.meta`, p.meta);
+  if (p.standalone) {
+    console.log(`projected ${p.uri} -> ${mdPath} (+.meta, ${profile.dialect}, frontmatter, source-check ${p.check})`);
+  } else {
+    console.log(`projected ${p.uri} -> ${mdPath} (+.meta, source-check ${p.check})`);
+  }
+  return 0;
+}
+
+/**
+ * `project --to md --check <file.md|dir>` — THE FOLD of `tools/submission-parity.mjs` into this door.
+ *
+ * A projected pair proves its currency by RE-PROJECTION, never by a stamp: the meta carries no clock,
+ * so the only way a pair reads current is that projecting its source again produces the same bytes.
+ * This mode runs that proof — over one named pair, or every `<name>.md` + `.md.meta` pair in a named
+ * directory — through `projectSubmission`, the same mouth `project --to md` itself calls: no second
+ * projector. It reads and writes NOTHING; a hand edit, a moved source, or a gone source each name
+ * themselves and the run exits 1. Green means every pair on the target re-projects byte-identical.
+ *
+ * `--root <dir>` OVERRIDES where the source resolves from. `repoRoot` (`@lararium/mesh/node`) anchors
+ * on the built module's OWN on-disk location — it walks up from `import.meta.url` to the first
+ * `pnpm-workspace.yaml`, never from `cwd` or an env var — so it always answers the real checkout no
+ * matter where this process runs from. A pre-commit gate that mirrors staged blobs into a scratch tree
+ * (so it judges what the commit carries, never a dirty working file) needs the source read from THAT
+ * mirror, not the real tree beside it; `--root` is the one door for it, read-alone like the rest of
+ * this seat.
+ */
+function projectMdCheck(args: ParsedArgs): number {
+  // `--check` rides either spelling `checkFiles`'s `--gradient`/`--edges` already use: a bare flag
+  // with the target in the normal source position (`project <dir> --to md --check`), or an eaten
+  // value (`--check <dir>`) when it lands last on the line — parse-args cannot tell a flag from an
+  // option apart from what follows it, so both spellings answer the same target.
+  const checkOpt = args.options["check"];
+  const target = typeof checkOpt === "string" ? checkOpt : args.positional[1];
+  if (!target) throw new UsageError("lares meme project --to md --check <file.md|dir> — name a projected pair or a shelf of them");
+  const to = typeof args.options["to"] === "string" ? args.options["to"].trim() : "md";
+  if (to !== "md") throw new UsageError(`--check proves the md pair's currency alone; got --to ${to}`);
+  const root = typeof args.options["root"] === "string" ? args.options["root"] : repoRoot;
+
+  const abs = isAbsolute(target) ? target : join(process.cwd(), target);
+  let dir: string;
+  let mdFiles: string[];
+  if (existsSync(abs) && statSync(abs).isDirectory()) {
+    dir = abs;
+    mdFiles = readdirSync(abs).filter((f) => f.endsWith(".md")).sort();
+  } else if (abs.endsWith(".md")) {
+    dir = dirname(abs);
+    mdFiles = [basename(abs)];
+  } else {
+    throw new UsageError(`${target}: name a projected <name>.md pair, or a directory holding some`);
+  }
+  if (mdFiles.length === 0) {
+    console.log(`[meme project --check] ${target} holds no .md pair — nothing to prove`);
+    return 1;
+  }
+
+  let failed = 0;
+  for (const md of mdFiles) {
+    const name = md.replace(/\.md$/, "");
+    const mdPath = join(dir, md);
+    const metaPath = `${mdPath}.meta`;
+    if (!existsSync(metaPath)) { console.log(`  ${name}: no .md.meta beside it`); failed += 1; continue; }
+    const meta = readFileSync(metaPath, "utf8");
+    const title = /^title: (\S+)$/m.exec(meta)?.[1];
+    const source = /^source: (\S+)$/m.exec(meta)?.[1];
+    const claimedCheck = /^source-check: (\S+)$/m.exec(meta)?.[1];
+    // THE PAIR READS AS PROJECTED: the meta's OWN `variant`/`tongue` name the target this pair was
+    // woven for — no flag at check time, the recorded sidecar IS the instruction. Absent either
+    // key, the pair stays CommonMark with no tongue (the default both channels share).
+    const { variant, tongue: recordedTongue } = recordedTargetOf(meta);
+    const profile = variant ? profileForCli(variant) : PROFILES.CommonMark;
+    if (!source) { console.log(`  ${name}: the meta names no source`); failed += 1; continue; }
+    const srcPath = join(root, "bags/lares", source.replace(/^lar:\/\/\//, "") + ".mem");
+    if (!existsSync(srcPath)) { console.log(`  ${name}: source GONE — ${source}`); failed += 1; continue; }
+    const p = projectSubmission(readFileSync(srcPath, "utf8"), {
+      ...(title ? { title } : {}),
+      profile,
+      resolve: bagsResolver(root),
+      ...(recordedTongue ? { tongue: recordedTongue } : {}),
+    });
+    if (p.check !== claimedCheck) {
+      console.log(`  ${name}: source MOVED — carrier check ${p.check} ≠ meta ${claimedCheck}; re-project`);
+      failed += 1; continue;
+    }
+    const mdNow = readFileSync(mdPath, "utf8");
+    if (p.markdown !== mdNow) { console.log(`  ${name}: markdown DRIFTED from its re-projection; re-project (hand edits do not survive)`); failed += 1; continue; }
+    if (p.meta !== meta) { console.log(`  ${name}: meta DRIFTED from its re-projection`); failed += 1; continue; }
+  }
+  console.log(`[meme project --check] ${mdFiles.length} pair(s) · ${failed} out of step`);
+  return failed === 0 ? 0 : 1;
+}
+
+
+/**
+ * `promote` — THE PRIESTHOOD ACT AT A TERMINAL. The crossing itself lives in `meme-promote.ts`, injectable
+ * whole; this door supplies the SEAT, and every reading in that seat comes from the daemon.
+ *
+ * THE DAEMON HOLDS BOTH ANSWERS, so the CLI asks rather than derives. Residency and capability both read off
+ * the CRDT replica the daemon owns; a terminal that answered either from the disk projection would be
+ * reading a copy and calling it the record.
+ *
+ *   · RESIDENCY — the `where` verb (`worker-data-verbs.ts:87`) answers //which bags hold this title// across
+ *     every registered bag on both planes. That is the residency question, asked of residency.
+ *   · CAPABILITY — no verb answers `cap("admin", bag)` on its own, and the daemon's real reading sits one
+ *     line inside the residency verbs (`action-handler.ts:422`). A `--dry-run` MOVE reaches exactly that
+ *     line: the cap gate runs BEFORE the capturing executor, so the daemon answers with its own
+ *     `cap-denied: admin on <bag> required (…)` and nothing commits. The rehearsal IS the cap reading.
+ *   · THE MOVE — the same verb without `--dry-run`. `executeMove` performs the whole-carrier-group transfer;
+ *     this door builds no second mover.
+ *
+ * IT STILL REFUSES WHEN THE CAP IS ABSENT, and that refusal now carries the daemon's own words rather than
+ * this door's confession. Promotion-down stays the kahu-cabal's act, operator-triggered first: an AI nym
+ * holding no admin on the canon bag meets the same closed gate it met before.
+ */
+async function memePromote(args: ParsedArgs): Promise<number> {
+  const file = args.positional[1];
+  if (!file) throw new UsageError("lares meme promote <…/x.mem> [--from-bag <b>] [--dest-bag <b>] — name the carrier to cross");
+  const root = process.cwd();
+  const destBag = typeof args.options["dest-bag"] === "string" ? args.options["dest-bag"].trim() : undefined;
+  const fromBag = typeof args.options["from-bag"] === "string" ? args.options["from-bag"].trim() : undefined;
+
+  const did     = await vesselDid();
+  const seedKey = await loadVesselVerifyingKey();
+  // The record's title, read once for the CAP REHEARSAL — the crossing re-reads the carrier for itself, and
+  // a rehearsal needs a title to name. An unreadable carrier falls through to the crossing's own refusal.
+  const abs   = isAbsolute(file) ? file : join(root, file);
+  const title = (() => { try { return `lar:///${/^uri-path\s*=\s*"([^"]+)"/m.exec(readFileSync(abs, "utf8"))?.[1] ?? ""}`; } catch { return ""; } })();
+
+  /** One MOVE summons, rehearsed or committed. The daemon's answer comes back whole, error text and all. */
+  const summonMove = async (m: PromotionMove, dry: boolean): Promise<{ ok: true } | { ok: false; reason: string }> => {
+    const verbArgs: Record<string, unknown> = {
+      title: m.title, "from-bag": m.fromBag, "to-bag": m.toBag, "change-id": newChangeId(),
+      ...(dry ? { "dry-run": true } : {}),
+    };
+    const r = await runVerb("MOVE", verbArgs, did);
+    return r.status === "error" ? { ok: false, reason: r.errorMessage ?? "MOVE failed with no reason" } : { ok: true };
+  };
+
+  const seat: PromotionSeat = {
+    proposerNym: did, approverNym: did, approverKeyDid: seedKey,
+    // THE CAP READING, taken from the daemon's own gate through a rehearsal that moves nothing. Any other
+    // failure — an absent record, an unreachable bag — reads as NOT-a-cap-refusal and lets the residency
+    // refusals downstream name it precisely, so a missing record never masquerades as a missing cap.
+    holdsAdmin: async (_nym, bag) => {
+      const r = await summonMove({ title, fromBag: fromBag ?? bag, toBag: bag }, true);
+      return r.ok || !/^cap-denied/.test(r.reason);
+    },
+    // THE RESIDENCY READING — `where`, unchanged and unmediated.
+    residencyOf: async (title) => {
+      const r = await runVerb("where", { tiddler: title }, did);
+      if (r.status === "error") throw new Error(`where ${title}: ${r.errorMessage ?? "unknown"}`);
+      const bags = (summaryOutput(r) ?? {})["bags"];
+      return Array.isArray(bags) ? (bags as string[]) : [];
+    },
+    move: async (m) => {
+      const r = await summonMove(m, false);
+      return r.ok ? { ok: true, moved: 1 } : { ok: false, reason: r.reason };
+    },
+    sign: ed25519SignerFromSeed(await loadVesselSigningSeed()),
+  };
+
+  let outcome;
+  try {
+    outcome = await promoteCarrier({ root, file, ...(fromBag ? { fromBag } : {}), ...(destBag ? { destBag } : {}) }, seat);
+  } catch (err) {
+    // M3: told apart by the error's own TYPE, never folded into `daemon-unreachable` wholesale.
+    const f = verbFailure(err);
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => { console.error(`lares meme promote: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+    });
+    return exitFor(f.code);
+  }
+  if (!outcome.ok) {
+    const code = /admin/.test(outcome.reason) ? "cap-denied" : "verb-error";
+    emit(args, {
+      ok: false, error: { code, message: outcome.reason },
+      human: () => {
+        console.error(`lares meme promote: ${outcome.reason}`);
+        if (code === "cap-denied") console.error("  promotion-down is the kahu-cabal's act — nothing moved, and the carrier stands where it stood");
+      },
+    });
+    return exitFor(code);
+  }
+  emit(args, {
+    ok: true, data: outcome,
+    human: () => {
+      console.log(`promoted: ${outcome.title}`);
+      console.log(`  residency: ${outcome.fromBag} → ${outcome.toBag}  (${outcome.moved} record(s))`);
+      console.log(`  subject:   ${outcome.subjectUri}  (unchanged — the crossing assigns no address)`);
+      console.log(`  carrier:   ${outcome.carrierFile}  (unmoved — an address is stable)`);
+      console.log(`  receipt:   ${outcome.receiptPath}`);
+    },
+  });
+  return exitFor("ok");
+}

@@ -10,9 +10,9 @@ Run after every change to `lararium-browser-host.ts`, `LarariumShell.tsx`,
 # Start the node server
 pnpm --filter @lararium/node dev
 
-# Build the app (or use vite dev server)
-pnpm --filter @lararium/app build
-# or: pnpm --filter @lararium/app dev
+# Build the web surface (or use the Vite dev server)
+pnpm --filter @lararium/web build
+# or: pnpm --filter @lararium/web dev
 ```
 
 Open browser devtools console before loading the page.

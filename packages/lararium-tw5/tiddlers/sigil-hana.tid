@@ -1,0 +1,21 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-hana
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: guest-grammar
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/hana
+lar-see-also: task
+lar-open-pattern: <<~\s*hana\s+([^\n>]+?)\s*>>
+lar-close-pattern: <<~\/hana\s*>>
+lar-example: <<~ hana "toml" "a = 1">>
+type: text/vnd.tiddlywiki
+
+<!-- hana — bounded guest-grammar block; grammar-key selects the interpreter.
+     p1 = grammar-key; p2 = body. Looks up hana-interpreter-<key> tiddler;
+     fallback renders body as labelled code block. -->
+
+\widget ~hana(p1:"" p2:"")
+<$set name="_h-candidate" filter="[<p1>addprefix[lar:///ha.ka.ba/lararium/hana-interpreter/]]">
+<$set name="_h-interp" filter="[all[shadows+tiddlers+system]field:title<_h-candidate>!is[draft]first[]]">
+<%if [<_h-interp>!match[]]%><$transclude $tiddler=<<_h-interp>> hana-key=<<p1>> hana-body=<<p2>>/><%else%><pre class="lar-hana" data-hana-key=<<p1>>><code><<p2>></code></pre><%endif%>
+</$set>
+</$set>
+\end

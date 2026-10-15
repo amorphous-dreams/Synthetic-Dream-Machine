@@ -1,0 +1,9 @@
+title: lar:///ha.ka.ba/lararium/exporters/memetic-wikitext
+tags: $:/tags/Exporter
+description: memetic-wikitext — each selected meme recomposed whole (.mem)
+extension: .mem
+file-type: text/memetic-wikitext+tiddlywiki
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+<$list filter="[subfilter<exportFilter>lar-uri:bare[]unique[]meme-project[mem]]" variable="carrier"><$text text=<<carrier>>/></$list>

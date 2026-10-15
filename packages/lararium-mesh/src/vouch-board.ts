@@ -1,0 +1,160 @@
+/**
+ * vouch-board — the DOC face of the JOIN axis: the issued `CabalInvite`s a realm has minted, from which the
+ * seed-rooted lineage folds. The board keys on the realm's own id (`realmVouchBoardDocUrl`) and crosses to
+ * that realm's members alone; it answers WHO VOUCHED FOR WHOM inside one realm.
+ *
+ * A vouch RIDES a board precisely because it carries attribution — a cabal-invite names its `voucherDid` in
+ * the clear, and an invite nobody can attribute holds nobody to anything. The hosting invite draws the
+ * deliberate contrast: it names no voucher, manufactures no social graph, and never gains a board record.
+ *
+ * ── THE VERIFY RIDES MANDATORY, WHICH IS WHY NO UNVERIFIED READ EXISTS ───────────────────────────────────
+ * `vouchDagFromInvites` states its precondition plainly: the invites arrive ALREADY VERIFIED. A reader that
+ * handed back whatever tiddlers a board carried would break that precondition silently — and the break cuts
+ * deeper than cosmetics: every invite reaching the DAG becomes a VOUCH EDGE, so anyone able to write the
+ * board could mint unbounded lineage mass and price their own crossing to nothing. The carriage board can afford a
+ * permissive extractor because its forgeries die at a quorum fold downstream; a vouch has no such second gate.
+ *
+ * So this module exposes ONE read, and that read takes a verifier. No `invitesFromBoard()` stands beside it
+ * to reach for by mistake — designation carries authority, the same discipline the rest of the mesh
+ * holds. A signature that fails against the `voucherDid` the invite itself names DROPS, and a
+ * dropped invite reads as one that never arrived (withhold, never forge).
+ *
+ * STORAGE CONVENTION (mirrors carriage-board): each invite rides ONE tiddler whose `text` carries the invite
+ * JSON. Keyed by realm/voucher/joiner, so distinct vouchers vouching the SAME joiner accrete as the distinct
+ * edges they carry, while one voucher re-issuing to one joiner stays idempotent — a voucher cannot inflate its
+ * own out-degree by re-minting, which would otherwise dilute its other children for free.
+ *
+ * ── INVARIANT: NO READ HERE MAY EVER CLAIM COMPLETENESS ──────────────────────────────────────────────
+ * Under no-global-now a replica reads only as-of-its-last-sync, so a tie WITHHELD and a tie merely UNSYNCED
+ * generate identically. That equivalence does load-bearing work rather than merely describing a limitation:
+ * a custodian who declines to write a tie performs no detectable act, because nobody can distinguish the
+ * absence from ordinary partition. Every trust network that survived hostile pressure kept that discretion —
+ * to enter a false record, refuse a true one, or silently fail to write — and a board that vouched for its
+ * own completeness would hand it away in one sentence.
+ *
+ * So: no read in this module, and nothing built on one, may report a count as TOTAL, a set as COMPLETE, or a
+ * board as current "as of epoch N". `verifiedVouchesFromBoard` hands back what THIS replica happens to hold
+ * and vows nothing whatever about what exists. The property costs nothing to keep and no later hand recovers it
+ * once spent — a single completeness claim anywhere downstream makes refusal legible again, everywhere.
+ *
+ * Platform-blind: rides ./base-doc + ./cabal-invite only. NO node: imports — the repo resolution of the board
+ * handle lives in the node holder, which hands a read `LarDoc` in.
+ * Meme: lar:///ha.ka.ba/lares/api/pono/admission-on-a-lineage#/the-standing
+ */
+
+import { VOUCH_EDGE_DOMAIN } from "./domains.js";
+import type { LarDoc } from "./base-doc.js";
+import { tiddlerText } from "./base-doc.js";
+import { CABAL_INVITE_DOMAIN, cabalInviteBytes, type CabalInvite } from "./cabal-invite.js";
+import { sha256HexSync, canonicalJson } from "./crypto.js";
+import { storedLarRecord } from "./stored-record.js";
+import type { StoredLarRecord } from "./stored-value.js";
+
+/**
+ * The relationship id a vouch presents to the kāpae plane — the voucher→joiner edge inside one realm.
+ *
+ * A voucher WITHDRAWING a vouch raises a shadow over this id. That reads differently from an EXPIRY: an
+ * expired vouch simply no longer stands and a fresh one may replace it, while a withdrawn one stays set
+ * aside, so re-minting the same edge cannot resurrect the standing it once carried.
+ */
+export function vouchEdgeId(invite: Pick<CabalInvite, "realmDocIdHex" | "voucherDid" | "joinerIdentityHex">): string {
+  // ONE KEY, ONE SPELLING. Each end reads lower-case with no `0x`, so an invite re-minted under another spelling
+  // of the same keys names the SAME edge and meets the shadow that stands over it.
+  const bare = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
+  return sha256HexSync(canonicalJson({
+    kind: VOUCH_EDGE_DOMAIN,
+    realmDocIdHex:     bare(invite.realmDocIdHex),
+    voucherDid:        bare(invite.voucherDid),
+    joinerIdentityHex: bare(invite.joinerIdentityHex),
+  }));
+}
+
+/** The tiddler-key prefix every issued vouch rides under — on the DreamNet plane, namespaced apart. */
+export const VOUCH_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/vouch-registry/" as const;
+
+/**
+ * The tiddler key one vouch rides under. Realm + voucher + joiner: two vouchers vouching one joiner land on
+ * DISTINCT keys and both survive (two real edges), while one voucher re-issuing to one joiner lands on the
+ * SAME key and stays one edge — re-minting must never buy out-degree.
+ */
+export function vouchEntryKey(realmDocIdHex: string, voucherDid: string, joinerIdentityHex: string): string {
+  return `${VOUCH_ENTRY_PREFIX}${realmDocIdHex}/${voucherDid}/${joinerIdentityHex}`;
+}
+
+/**
+ * Land a signed invite onto a board draft — the EXACT shape `verifiedVouchesFromBoard` reads back. Call
+ * INSIDE a `handle.change()` callback. The signature rides inside the JSON, so re-carrying never re-signs;
+ * this write adjudicates nothing, exactly as the read trusts nothing it has yet to verify.
+ */
+export function writeVouch(draft: LarDoc, invite: CabalInvite): void {
+  const key = vouchEntryKey(invite.realmDocIdHex, invite.voucherDid, invite.joinerIdentityHex);
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(invite) }, invite.realmDocIdHex);
+}
+
+/** A parsed payload reads as an invite only at the exact FLOOR shape — else null. Extra fields are dropped. */
+function coerceInvite(parsed: unknown): CabalInvite | null {
+  if (typeof parsed !== "object" || parsed === null) return null;
+  const p = parsed as Record<string, unknown>;
+  if (p["kind"] !== CABAL_INVITE_DOMAIN) return null;                  // not a vouch tiddler → skip
+  for (const field of ["realmDocIdHex", "joinerIdentityHex", "voucherDid", "boundEpoch", "sig"]) {
+    const v = p[field];
+    if (typeof v !== "string" || v.length === 0) return null;          // any missing/torn field → skip whole
+  }
+  return {
+    kind:              CABAL_INVITE_DOMAIN,
+    realmDocIdHex:     p["realmDocIdHex"] as string,
+    joinerIdentityHex: p["joinerIdentityHex"] as string,
+    voucherDid:        p["voucherDid"] as string,
+    boundEpoch:        p["boundEpoch"] as string,
+    sig:               p["sig"] as string,
+  };
+}
+
+/**
+ * Every invite the board carries WHOSE SIGNATURE VERIFIES against the voucherDid it names — the only read,
+ * because an unverified vouch grants unbounded mass (see the header). A torn, foreign, or forged tiddler
+ * DROPS in silence: it means the invite did not arrive, never that an attack occurred.
+ *
+ * `realm` scopes the fold to one cabal-realm, so a board carrying several realms' vouches yields only the
+ * lineage of the realm the applicant crosses — an invite into somewhere else evidences nothing here.
+ *
+ * The result feeds `vouchDagFromInvites` with its precondition already satisfied.
+ */
+export async function verifiedVouchesFromBoard(
+  doc: LarDoc | undefined | null,
+  realm: string,
+  verify: (bytes: Uint8Array, sigHex: string, voucherDid: string) => Promise<boolean>,
+  shadowed: ReadonlySet<string> = new Set(),
+): Promise<CabalInvite[]> {
+  const tiddlers = doc?.tiddlers;
+  if (!tiddlers) return [];                                            // absent board → no lineage, fail-closed
+  return verifiedVouchesFromRecords(Object.values(tiddlers), realm, verify, shadowed);
+}
+
+/** The verifying read over some stored records — the board's own, or the rows a vessel kept in its ledger. */
+export async function verifiedVouchesFromRecords(
+  records: Iterable<StoredLarRecord>,
+  realm: string,
+  verify: (bytes: Uint8Array, sigHex: string, voucherDid: string) => Promise<boolean>,
+  shadowed: ReadonlySet<string> = new Set(),
+): Promise<CabalInvite[]> {
+  const candidates: CabalInvite[] = [];
+  for (const record of records) {
+    const text = tiddlerText(record);
+    if (text === null) continue;
+    let parsed: unknown;
+    try { parsed = JSON.parse(text); } catch { continue; }             // a non-JSON tiddler is not a vouch
+    const invite = coerceInvite(parsed);
+    if (invite !== null && invite.realmDocIdHex === realm) candidates.push(invite);
+  }
+  // Verify each against the voucher the invite ITSELF names — a forged tiddler naming a real voucher fails
+  // here, and one naming a key it does hold simply carries that voucher's own edge, the honest reading.
+  const verdicts = await Promise.all(candidates.map((inv) => {
+    const { sig: _sig, ...unsigned } = inv;
+    return verify(cabalInviteBytes(unsigned), inv.sig, inv.voucherDid).catch(() => false);
+  }));
+  // A withdrawn vouch drops even when its signature verifies — a voucher who sets a vouch aside removes the
+  // MASS it lent to the lineage, which the price walks. Leaving it standing would let withdrawn standing keep
+  // discounting a crossing forever.
+  return candidates.filter((c, i) => verdicts[i] === true && !shadowed.has(vouchEdgeId(c)));
+}

@@ -1,0 +1,161 @@
+/**
+ * browser-genesis — browser genesis byte SOURCE (the OPFS CAS byte plane).
+ *
+ * The oracle CRDT itself rides the ONE isomorphic intake (`materializeGenesisIsland`
+ * in @lararium/mesh `genesis-intake`): the browser vessel materializes it FRESH from
+ * the plain-data seed under the deterministic doc id, or reloads the persisted one by
+ * find-first from IndexedDB — node-parity, no binary import, no merge-into-
+ * stale reconcile. This file keeps ONLY the genuinely-
+ * browser byte SOURCE: the OPFS content-addressed store (engine + plugin bytes by CID,
+ * fetched over HTTP by the seed-derived inventory, read by the worker via resolveByCid).
+ *
+ * Meme: lar:///ha.ka.ba/lararium/browser/browser-genesis
+ */
+
+import {
+  cidV1Sha256,
+  casBlobEntries, type CasBlobLike,
+  type GenesisCasManifest,
+  sha256HexBytesSync,
+} from "@lararium/mesh";
+
+// ── OPFS content-addressed store (CAS) — engine + plugin bytes by CID ──────────
+//
+// The breath path: heavy immutable engine bytes (TW5 core + plugin tiddlers) live here,
+// keyed by sha256 (CID), written once by the vessel on genesis-load and pulled by each
+// worker via resolveByCid — NEVER CRDT-synced over the port. OPFS is origin-shared, so a
+// worker reads what the main thread wrote. Canon: lararium-identity#the-oracle-plane.
+
+const OPFS_CAS_DIR = "cas";
+
+/** Write each blob entry to the OPFS CAS, keyed by its sha256 (CID). No-ops if OPFS is
+ *  unavailable. Returns the count written. */
+export async function writeBlobsToCasOpfs(
+  blobs: Record<string, CasBlobLike>,
+): Promise<number> {
+  let written = 0;
+  try {
+    const root = await navigator.storage.getDirectory();
+    const cas  = await root.getDirectoryHandle(OPFS_CAS_DIR, { create: true });
+    for (const { cid, bytes } of casBlobEntries(blobs)) {
+      const fileH = await cas.getFileHandle(cid, { create: true });
+      const w = await (fileH as FileSystemFileHandle & {
+        createWritable(): Promise<FileSystemWritableFileStream>;
+      }).createWritable();
+      await w.write(bytes.slice());
+      await w.close();
+      written += 1;
+    }
+    console.log(`[browser-genesis] OPFS CAS: wrote ${written} blob(s) by CID`);
+  } catch {
+    // OPFS unavailable — the worker falls back to oracle-doc blobs.
+  }
+  return written;
+}
+
+/**
+ * Fetch each CAS blob named by the seed-derived logical inventory over HTTP (`baseUrl`/cas/<cid>)
+ * and write it to the OPFS CAS — the browser face of the byte SOURCE the genesis CRDT
+ * no longer carries (mirrors the node `mirrorGenesisCasFs`). The genesis static host
+ * serves genesis/seed.json + genesis/cas/<cid>; the worker later resolves each by
+ * the SAME cid via readCasBlobFromOpfs. Existing files are re-verified before reuse;
+ * fetched bytes are verified before they enter OPFS. A missing, unavailable, or
+ * tampered named byte rejects boot. Returns the count written.
+ */
+export async function fetchGenesisCasToOpfs(
+  manifest: GenesisCasManifest,
+  baseUrl:  string,
+): Promise<number> {
+  let written = 0;
+  const base = baseUrl.replace(/\/$/, "");
+  const root = await navigator.storage.getDirectory();
+  const cas  = await root.getDirectoryHandle(OPFS_CAS_DIR, { create: true });
+  for (const { cid } of manifest.blobs) {
+    let existing: Uint8Array | null = null;
+    try { existing = await readCasFileBytes(await cas.getFileHandle(cid)); } catch { /* absent → fetch below */ }
+    if (existing && sha256HexBytesSync(existing) === cid) continue;
+    const res = await fetch(`${base}/cas/${cid}`);
+    if (!res.ok) throw new Error(`[browser-genesis] genesis CAS fetch ${cid} → HTTP ${res.status}`);
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    if (sha256HexBytesSync(bytes) !== cid) {
+      throw new Error(`[browser-genesis] genesis CAS fetch ${cid} failed content-address verification`);
+    }
+    const fileH = await cas.getFileHandle(cid, { create: true });
+    const w = await (fileH as FileSystemFileHandle & {
+      createWritable(): Promise<FileSystemWritableFileStream>;
+    }).createWritable();
+    await w.write(bytes.slice());
+    await w.close();
+    written += 1;
+  }
+  console.log(`[browser-genesis] OPFS CAS: fetched ${written} blob(s) by CID from ${base}/cas`);
+  return written;
+}
+
+/** The slice of a FileSystemFileHandle the CAS read touches. `createSyncAccessHandle` exists only inside
+ *  a dedicated worker; on the main thread and on older engines the property reads absent. */
+export interface CasFileHandleLike {
+  getFile(): Promise<{ arrayBuffer(): Promise<ArrayBuffer> }>;
+  createSyncAccessHandle?(): Promise<{
+    getSize(): number;
+    read(buffer: ArrayBufferView, options?: { at?: number }): number;
+    close(): void;
+  }>;
+}
+
+/** Read content-addressed bytes by CID from the OPFS CAS. Null if absent/unavailable.
+ *  This IS the worker's resolveByCid shore (OPFS origin-shared, no IPC). */
+export async function readCasBlobFromOpfs(cid: string): Promise<Uint8Array | null> {
+  try {
+    const root  = await navigator.storage.getDirectory();
+    const cas   = await root.getDirectoryHandle(OPFS_CAS_DIR);
+    const fileH = await cas.getFileHandle(cid);
+    return await readCasFileBytes(fileH as unknown as CasFileHandleLike);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Read one CAS file's bytes — the sync leg where the handle offers it, the async read where it does not.
+ *
+ * Inside the island's dedicated worker `createSyncAccessHandle` reads the immutable blob straight into a
+ * buffer with no lock dance and no File object. The main thread, and an engine without the handle, take
+ * `getFile().arrayBuffer()`. A sync handle the platform refuses (another writer holds the file, a private
+ * window) falls to the same async read: the floor stands under both legs, and the CID proves the bytes.
+ */
+export async function readCasFileBytes(fileH: CasFileHandleLike): Promise<Uint8Array | null> {
+  if (typeof fileH.createSyncAccessHandle === "function") {
+    let sync: Awaited<ReturnType<NonNullable<CasFileHandleLike["createSyncAccessHandle"]>>> | null = null;
+    try {
+      sync = await fileH.createSyncAccessHandle();
+    } catch {
+      sync = null;
+    }
+    if (sync) {
+      try {
+        const out = new Uint8Array(sync.getSize());
+        let at = 0;
+        while (at < out.byteLength) {
+          const n = sync.read(out.subarray(at), { at });
+          if (n <= 0) break;
+          at += n;
+        }
+        return at === out.byteLength ? out : out.subarray(0, at);
+      } finally {
+        sync.close();
+      }
+    }
+  }
+  const file = await fileH.getFile();
+  return new Uint8Array(await file.arrayBuffer());
+}
+
+// ── CID helper ────────────────────────────────────────────────────────────────
+
+/**
+ * Derive a CIDv1 (sha2-256, raw, base32) from bytes — a content-addressed cache key.
+ */
+export function genesisCidFromBytes(bytes: Uint8Array): string {
+  return cidV1Sha256(bytes);
+}

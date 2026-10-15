@@ -1,0 +1,11 @@
+title: lar:///ha.ka.ba/lararium/templates/meme/html/root
+type: text/vnd.tiddlywiki
+
+\whitespace trim
+\import [subfilter{$:/core/config/GlobalImportFilter}]
+<$vars storyTiddler=<<currentTiddler>>>
+<div data-tiddler-title=<<currentTiddler>> class="tc-tiddler-frame tc-tiddler-view-frame" role="article">
+<div class="tc-tiddler-title tc-clearfix"><h2 class="tc-title"><$view field="caption"><$view field="title"/></$view></h2></div>
+<div class="tc-tiddler-body tc-clearfix"><$transclude tiddler=<<currentTiddler>> mode="block"/></div>
+</div>
+</$vars>

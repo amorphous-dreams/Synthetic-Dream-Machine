@@ -1,9 +1,15 @@
 /**
  * sync-heleuma.ts — drift check, patch, and corpus-promotion scan.
  *
+ * THE WINDOW LAW. An anchor's `#source` slot holds a `<$transclude>` facing the code-file tiddler
+ * `module-ref` names — the one home for the code, shipped by the plugin, ingested through the TW5
+ * filetype registry, or minted at promotion. Drift between the wiki's code tiddler and the live TS
+ * belongs to --sync-modules (source-sha256 over the module body); the default check asks reference
+ * integrity alone: ref declared, window standing, window facing the ref.
+ *
  * Modes (mutually exclusive flags):
- *   (none)            Dry-run: report drift/missing, write nothing.
- *   --commit          Patch #source slots in-place to match live TS source.
+ *   (none)            Dry-run: window integrity + module source-sha256, write nothing.
+ *   --commit          Build plugin tiddlers, then re-check windows.
  *   --scan            Scan packages/ for exported symbols that lack a heleuma pair.
  *   --scan-promote    Scan packages/ for pure-data constants that should become
  *                     first-class corpus memes in lares/ (not heleuma anchors —
@@ -14,7 +20,7 @@
  *
  * heleuma modes:
  *   ha — body/structure anchor: permanent compiled-in territory, no promotion path.
- *   ka — soul/fire anchor: promotion-eligible; #source + body-sha256 track readiness; keyhive proof is layer 3 (planned).
+ *   ka — soul/fire anchor: promotion-eligible; #source + source-sha256 track readiness; keyhive proof is layer 3 (planned).
  *   ba — psyche/path anchor: quine-only; #source slot sufficient for reconstruction.
  *
  * Decorator file conventions (--scan-decorators):
@@ -32,15 +38,22 @@
 
 import { readFileSync, writeFileSync, readdirSync, statSync, mkdirSync, existsSync } from "fs";
 import { execSync } from "child_process";
-import { createHash } from "crypto";
 import { resolve, relative, dirname } from "path";
 import { fileURLToPath } from "url";
-import { repoRoot } from "@lares/core";
+import { repoRoot } from "@lararium/mesh/node";
+import { formatDigest, digestsEqual } from "@lararium/mesh/agile-digest";
+import { sha256HexSync } from "@lararium/mesh";
+import { frameCarrier, headUriOf } from "@lararium/memetic-frame";
+import { moduleBodyDigest, applySourceSha256Patch } from "./heleuma-digest.js";
+import { rootMetaFields } from "../src/root-meta.js";
 
 const root     = repoRoot;
 const pkgsRoot = resolve(root, "packages");
 /** Canonical bag mirror for @lararium/tw5 memes. */
-const tw5MemesRoot = resolve(root, "bags", "@lararium", "tw5");
+// THE CORPUS SITS UNDER ITS NAMESPACE, not directly under the bag. A bag holds
+// `ha.ka.ba/<namespace>/…`, so `bags/lararium/tw5` names a directory that has never stood —
+// the marker retirement made that visible without causing it.
+const tw5MemesRoot = resolve(root, "bags", "lararium", "ha.ka.ba", "lararium", "tw5");
 
 const args             = process.argv.slice(2);
 const COMMIT           = args.includes("--commit");
@@ -53,19 +66,16 @@ const SYNC_MODULES     = args.includes("--sync-modules");
 // Regex patterns
 // ---------------------------------------------------------------------------
 
-const SOH_URI_RE     = /<<~[^>]*&#x0001;[^>]*\?\s*->\s*([^\s>]+)\s*>>/;
-const TOML_RE        = /```toml([\s\S]*?)```/;
-const SOURCE_SLOT_RE = /<<~ ahu #source >>([\s\S]*?)<<~\/ahu >>/;
+const SOURCE_SLOT_RE = /<<~ ahu #\/source\s*>>([\s\S]*?)<<~\/ahu\s*>>/;
 const FENCE_RE       = /```[^\n]*\n([\s\S]*?)\n```/;
 
-function parseToml(block: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const line of block.split("\n")) {
-    const m = line.match(/^([\w-]+)\s*=\s*(.+)$/);
-    if (!m) continue;
-    out[m[1]!] = m[2]!.trim().replace(/^"|"$/g, "");
-  }
-  return out;
+/**
+ * Every root-meta field this script reads is authored as a quoted scalar. `rootMetaFields` widens
+ * to `string[]` for a TOML array, which none of these fields are in the heleuma corpus — this
+ * narrows back to the scalar these call sites have always held.
+ */
+function asStr(v: string | string[] | undefined): string {
+  return typeof v === "string" ? v : Array.isArray(v) ? (v[0] ?? "") : "";
 }
 
 // ---------------------------------------------------------------------------
@@ -125,42 +135,17 @@ function extractSymbol(srcPath: string, symbol: string): string | null {
 // Drift check
 // ---------------------------------------------------------------------------
 
-function checkDrift(memeSlot: string, liveSource: string): string | null {
-  const fenceMatch = FENCE_RE.exec(memeSlot);
-  const stripped   = fenceMatch ? fenceMatch[1]!.trim() : memeSlot.trim();
-  const live       = liveSource.trim();
-  if (stripped === live) return null;
-  return `meme has ${stripped.split("\n").length} lines, live has ${live.split("\n").length} lines`;
-}
 
 // ---------------------------------------------------------------------------
-// Commit: patch #source slot and/or body-sha256 in one write
+// Commit: patch #/source slot and/or source-sha256 in one write
 // ---------------------------------------------------------------------------
 
-// Returns patched content, or null if the #source slot is missing/unparseable.
-function applySourcePatch(content: string, liveCode: string): string | null {
-  const slotM = SOURCE_SLOT_RE.exec(content);
-  if (!slotM) return null;
-  const fenceM = FENCE_RE.exec(slotM[1]!);
-  if (!fenceM) return null;
 
-  const fenceStart = content.indexOf(fenceM[0], slotM.index);
-  const fenceEnd   = fenceStart + fenceM[0].length;
-  const lang       = fenceM[0].match(/^```([^\n]*)/)![1] ?? "typescript";
-  const newFence   = "```" + lang + "\n" + liveCode + "\n```";
-  return content.slice(0, fenceStart) + newFence + content.slice(fenceEnd);
-}
-
-// Patches body-sha256 in the first ```toml block (the root toml iam prelude).
-// Adds the field if absent; replaces it if stale.
-function applyBodySha256Patch(content: string, sha256: string): string {
-  const SHA_FIELD = /^body-sha256\s*=\s*"[^"]*"/m;
-  if (SHA_FIELD.test(content)) {
-    return content.replace(SHA_FIELD, `body-sha256 = "${sha256}"`);
-  }
-  // Insert before the closing ``` of the first toml fence
-  return content.replace(/(```toml[\s\S]*?)(\n```)/, `$1\nbody-sha256 = "${sha256}"$2`);
-}
+// Patches source-sha256 in the first ```toml block (the root toml meta prelude).
+// Adds the field if absent; replaces it if stale. The emitted value rides
+// ALGORITHM-TAGGED (`sha256:<hex>`) — `verifySha256` (the runtime cold-boot reader)
+// and this script's own drift check both compare via `digestsEqual`, which refuses a
+// bare value: a field stored bare reads as drift, and the next commit rewrites it tagged.
 
 // ---------------------------------------------------------------------------
 // --scan: find candidates in packages/ lacking a heleuma pair
@@ -169,14 +154,13 @@ function applyBodySha256Patch(content: string, sha256: string): string {
 function runScan(): void {
   // Collect all URIs that already have a heleuma API meme
   const existingUris = new Set<string>();
-  for (const mdPath of walkExt(tw5MemesRoot, ".md")) {
+  for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
     const content = readFileSync(mdPath, "utf8");
-    const tomlM   = TOML_RE.exec(content);
-    if (!tomlM) continue;
-    const toml = parseToml(tomlM[1]!);
+    const toml = rootMetaFields(content);
+    if (Object.keys(toml).length === 0) continue;
     if (toml["heleuma"]) {
-      const sf = toml["source-file"] ?? "";
-      const ss = toml["source-symbol"] ?? "";
+      const sf = asStr(toml["source-file"]);
+      const ss = asStr(toml["source-symbol"]);
       if (sf) existingUris.add(`${sf}::${ss}`);
     }
   }
@@ -270,17 +254,16 @@ function runScanPromote(): void {
   // Collect names already present as corpus memes in lararium-tw5/memes/.
   // Checks: uri-path basename, source-symbol, and TOML keys in any #schema slot.
   const existingNames = new Set<string>();
-  const VOCAB_SLOT_RE = /<<~ ahu #schema >>([\s\S]*?)<<~\/ahu >>/g;
+  const VOCAB_SLOT_RE = /<<~ ahu #schema\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
 
-  for (const mdPath of walkExt(tw5MemesRoot, ".md")) {
+  for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
     const content = readFileSync(mdPath, "utf8");
-    const tomlM   = TOML_RE.exec(content);
-    if (!tomlM) continue;
-    const toml = parseToml(tomlM[1]!);
+    const toml = rootMetaFields(content);
+    if (Object.keys(toml).length === 0) continue;
     // Match by uri-path basename and by source-symbol
-    const uriBase = (toml["uri-path"] ?? "").split("/").pop() ?? "";
+    const uriBase = asStr(toml["uri-path"]).split("/").pop() ?? "";
     if (uriBase) existingNames.add(uriBase.toLowerCase());
-    const ss = toml["source-symbol"] ?? "";
+    const ss = asStr(toml["source-symbol"]);
     if (ss)   existingNames.add(ss.toLowerCase());
 
     // Also extract TOML keys from #vocab slots — these are promoted constants
@@ -407,46 +390,37 @@ function runScanPromote(): void {
 
 // ---------------------------------------------------------------------------
 // --sync-modules: walk lares/ for anchors with module-ref, verify/patch
-//   body-sha256 against the actual module tiddler body (between STX and ETX).
+//   source-sha256 against the module record's text — the bytes the boot gate verifies.
 //   In --commit mode: also re-extracts and strips TypeScript source from
 //   source-file/source-symbol, injects into module tiddler body if drifted.
 // ---------------------------------------------------------------------------
 
-/** Extract the body text between <<~\x02>> and <<~\x03>> from a module tiddler. */
-function extractModuleBody(content: string): string | null {
-  // STX marker may be raw \x02 or the HTML entity form
-  const stxRe = /<<~(?:&#x0002;|[\x02])>>/;
-  const etxRe = /<<~(?:&#x0003;|[\x03])>>/;
-  const stxM = stxRe.exec(content);
-  const etxM = etxRe.exec(content);
-  if (!stxM || !etxM) return null;
-  const start = stxM.index + stxM[0].length;
-  const end   = etxM.index;
-  if (end <= start) return null;
-  return content.slice(start, end);
-}
 
 
 function runSyncModules(): { drift: number; missing: number; patched: number } {
   let drift = 0, missing = 0, patched = 0;
 
-  for (const mdPath of walkExt(tw5MemesRoot, ".md")) {
+  for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
     const content = readFileSync(mdPath, "utf8");
-    const tomlM   = TOML_RE.exec(content);
-    if (!tomlM) continue;
-    const toml = parseToml(tomlM[1]!);
+    const toml = rootMetaFields(content);
+    if (Object.keys(toml).length === 0) continue;
 
-    const moduleRef = toml["module-ref"];
+    const moduleRef = asStr(toml["module-ref"]);
     if (!moduleRef) continue;
 
-    // Convert lar URI to file path: lar:///ha.ka.ba/@lararium/tw5/{rest} -> tw5MemesRoot/{rest}.md
+    // Convert lar URI to file path: lar:///ha.ka.ba/lararium/tw5/{rest} -> tw5MemesRoot/{rest}.md
     const uriTrimmed = moduleRef.replace(/^lar:\/\/\//, "");
     const parts      = uriTrimmed.split("/");
-    // Strip ha.ka.ba/@lararium/tw5 prefix (4 segments)
-    const rest       = (parts[0] === "ha.ka.ba" && parts[1] === "@lararium" && parts[2] === "tw5")
+    // Strip ha.ka.ba/lararium/tw5 prefix (4 segments)
+    const rest       = (parts[0] === "ha.ka.ba" && parts[1] === "lararium" && parts[2] === "tw5")
       ? parts.slice(3).join("/")
       : parts.slice(2).join("/"); // legacy fallback
-    const modPath    = resolve(tw5MemesRoot, `${rest}.md`);
+    // Module carriers ride the corpus as `.mem`; `.md` stays as the fallback spelling.
+    const modPathMem = resolve(tw5MemesRoot, `${rest}.mem`);
+    const modPath    = existsSync(modPathMem) ? modPathMem : resolve(tw5MemesRoot, `${rest}.md`);
+    // A SELF-SEAT — an anchor standing AT its module's own address — would hash its own body and
+    // report the tautology as health. The seat fills at promotion; until then there is nothing to diff.
+    if (resolve(modPath) === resolve(mdPath)) { console.log(`[sync-modules] seat  ${moduleRef} (anchor IS the seat — fills at promotion)`); continue; }
 
     let modContent: string;
     try {
@@ -458,27 +432,30 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
       continue;
     }
 
-    const modBody = extractModuleBody(modContent);
-    if (modBody === null) {
-      console.warn(`[sync-modules] MISSING STX/ETX markers  ${moduleRef}`);
+    // THE GATE'S OWN HASH: SHA-256 of the module record's `text`, read through the deserializer that
+    // hands the gate its tiddler — never the STX..ETX span, which carries the module carrier's meta.
+    const liveHash = moduleBodyDigest(modContent, moduleRef);
+    if (liveHash === null) {
+      console.warn(`[sync-modules] MISSING module record  ${moduleRef}`);
       missing++;
       continue;
     }
+    const existingHash = asStr(toml["source-sha256"]);
+    // `existingHash` rides tagged (`sha256:…`) like every carrier digest; `digestsEqual`
+    // reads the canonical `:` and SRI `-` spellings as one. Empty or bare existing →
+    // not-equal → drift (the commit writes it tagged).
+    const hashDrift    = !digestsEqual(liveHash, existingHash);
 
-    const liveHash     = createHash("sha256").update(modBody, "utf8").digest("hex");
-    const existingHash = toml["body-sha256"] ?? "";
-    const hashDrift    = liveHash !== existingHash;
-
-    const anchorUri = toml["uri-path"] ?? mdPath;
+    const anchorUri = toml["uri-path"] !== undefined ? asStr(toml["uri-path"]) : mdPath;
 
     if (COMMIT && hashDrift) {
-      const patched_content = applyBodySha256Patch(content, liveHash);
+      const patched_content = applySourceSha256Patch(content, liveHash);
       writeFileSync(mdPath, patched_content, "utf8");
-      console.log(`[sync-modules] patched  ${anchorUri}  body-sha256 ${existingHash ? "updated" : "added"}`);
+      console.log(`[sync-modules] patched  ${anchorUri}  source-sha256 ${existingHash ? "updated" : "added"}`);
       patched++;
     } else if (!COMMIT && hashDrift) {
       console.warn(`[sync-modules] DRIFT  ${anchorUri}`);
-      console.warn(`               anchor body-sha256: ${existingHash || "(missing)"}`);
+      console.warn(`               anchor source-sha256: ${existingHash || "(missing)"}`);
       console.warn(`               module body sha256: ${liveHash}`);
       drift++;
     } else {
@@ -500,7 +477,7 @@ function runSyncModules(): { drift: number; missing: number; patched: number } {
 // (by scanning lares/ for a meme with source-file pointing to this file).
 //
 // With --commit: scaffolds missing memes with correct TOML, source-file,
-// source-symbol, body-sha256, and a #source slot containing verbatim source.
+// source-symbol, source-sha256, and a #source slot containing verbatim source.
 // ---------------------------------------------------------------------------
 
 interface DecoratorFile {
@@ -563,7 +540,7 @@ function collectDecoratorFiles(): DecoratorFile[] {
         }
 
         const memeDir   = resolve(tw5MemesRoot, memeSubDir);
-        const uriPrefix = `ha.ka.ba/@lararium/tw5/${uriSub}`;
+        const uriPrefix = `ha.ka.ba/lararium/tw5/${uriSub}`;
         results.push({ relPath, absPath, slug, kind, symbols, memeDir, uriPrefix, pkgName });
       }
     }
@@ -575,13 +552,12 @@ function decoratorMemeExists(decoratorFile: DecoratorFile): string | null {
   // Returns the meme file path if a matching meme exists, null otherwise.
   // Matches by source-file field in meme TOML.
   let memeFiles: string[] = [];
-  try { memeFiles = walkExt(decoratorFile.memeDir, ".md"); } catch { return null; }
+  try { memeFiles = walkExt(decoratorFile.memeDir, ".mem"); } catch { return null; }
 
   for (const mdPath of memeFiles) {
     const content = readFileSync(mdPath, "utf8");
-    const tomlM   = TOML_RE.exec(content);
-    if (!tomlM) continue;
-    const toml = parseToml(tomlM[1]!);
+    const toml = rootMetaFields(content);
+    if (Object.keys(toml).length === 0) continue;
     if (toml["source-file"] === decoratorFile.relPath) return mdPath;
   }
   return null;
@@ -598,65 +574,57 @@ function scaffoldDecoratorMeme(d: DecoratorFile): void {
   const srcSym    = d.symbols.join(" ");
   const bodies    = d.symbols.map(s => extractSymbol(d.relPath, s) ?? "").filter(Boolean);
   const joined    = bodies.join("\n\n");
-  const bodyHash  = createHash("sha256").update(joined, "utf8").digest("hex");
+  const bodyHash  = formatDigest("sha256", sha256HexSync(joined));
   const kindLabel   = d.kind === "filter-operator" ? "TW5 filter operator" : "TW5 widget";
   // ka handles a single symbol; ba handles multiple space-separated symbols
   const heleumaMode = d.symbols.length === 1 ? "ka" : "ba";
 
-  const meme = `<!-- <<~ !DOCTYPE = lar:///ha.ka.ba/@lares/api/v0.1/pono/memetic-wikitext >> -->
-
-<<~&#x0001; ? -> lar:///${uriPath} >>
-\`\`\`toml iam
+  // THE FRAME WRITER MINTS THE FRAME — declaration, head, STX/ETX, check, release. This scaffold
+  // writes only the body: the root meta first, then the slots.
+  const meme = frameCarrier({
+    head: { uri: `lar:///${uriPath}` },
+    body: `\`\`\`toml meta
 uri-path    = "${uriPath}"
 file-path   = "${filePath}"
-type        = "text/x-memetic-wikitext"
-register    = "CS"
-confidence  = 0.70
-mana        = 0.70
-manao       = 0.68
-manaoio     = 0.66
-tagspace    = "lararium"
+type        = "text/memetic-wikitext+tiddlywiki"
+mana        = 14
+manao       = 14
+manaoio     = 13
+l-space     = "lararium"
 role        = "${kindLabel}: ${d.slug} — scaffolded by sync-heleuma --scan-decorators --commit"
 heleuma     = "${heleumaMode}"
+module-ref  = "lar:///${uriPath}"
 source-file = "${d.relPath}"
 source-symbol = "${srcSym}"
-body-sha256 = "${bodyHash}"
+source-sha256 = "${bodyHash}"
 cacheable   = true
 status-date = "${new Date().toISOString().slice(0, 10)}"
 \`\`\`
 
-<<~&#x0002;>>
-
-<<~ ahu #head >>
+<<~ ahu #/head>>
 
 # ${d.slug}
 
 ${kindLabel} from \`${d.pkgName}\`.
 
-<<~/ahu >>
+<<~/ahu>>
 
-<<~ ahu #contract >>
+<<~ ahu #/contract>>
 
 Exported symbols: \`${d.symbols.join("`, `")}\`.
 
-<<~/ahu >>
+<<~/ahu>>
 
-<<~ ahu #source >>
+<<~ ahu #/source>>
 
-\`\`\`typescript
-${joined}
-\`\`\`
+<$transclude $tiddler="lar:///${uriPath}" $mode="block"/>
 
-<<~/ahu >>
+<<~/ahu>>
 
-<<~ ahu #edges >>
+<<~ ahu #/edges>>
 
-<<~/ahu >>
-
-<<~&#x0003;>>
-
-<<~&#x0004; -> ? >>
-`;
+<<~/ahu>>`,
+  });
 
   writeFileSync(memePath, meme, "utf8");
   console.log(`[heleuma/decorators] scaffolded  ${uriPath}`);
@@ -686,7 +654,7 @@ function runScanDecorators(): void {
   }
   console.log(`\n[heleuma/decorators] ${found} decorator file(s) — ${missing} missing`);
   if (COMMIT && scaffolded > 0) {
-    console.log(`[heleuma/decorators] scaffolded ${scaffolded} meme(s) — run build:heleuma --commit to patch #source slots`);
+    console.log(`[heleuma/decorators] scaffolded ${scaffolded} meme(s) — each #source holds a window on its module-ref`);
   } else if (!COMMIT && missing > 0) {
     console.log(`[heleuma/decorators] run with --scan-decorators --commit to scaffold missing memes`);
   }
@@ -712,14 +680,14 @@ if (SCAN_DECORATORS) {
 }
 
 if (SYNC_MODULES) {
-  console.log("[sync-modules] checking anchor body-sha256 against module tiddler bodies\n");
+  console.log("[sync-modules] checking anchor source-sha256 against module tiddler bodies\n");
   const { drift, missing, patched } = runSyncModules();
   if (COMMIT) {
     console.log(`\n[sync-modules] patched ${patched}, missing ${missing}`);
   } else {
     console.log(`\n[sync-modules] ${drift} drift, ${missing} missing`);
     if (drift > 0 || missing > 0) {
-      console.warn("[sync-modules] run with --sync-modules --commit to update body-sha256 fields");
+      console.warn("[sync-modules] run with --sync-modules --commit to update source-sha256 fields");
     }
   }
   process.exit(drift > 0 || missing > 0 ? 1 : 0);
@@ -731,7 +699,7 @@ if (COMMIT) {
   const scriptsDir = dirname(fileURLToPath(import.meta.url));
   console.log("[heleuma] --commit: building plugin CJS tiddlers and patching anchor hashes…\n");
   execSync(`tsx ${resolve(scriptsDir, "build-plugin-tiddler.ts")}`, { stdio: "inherit" });
-  console.log("\n[heleuma] --commit: patching #source slots to match live TS source\n");
+  console.log("\n[heleuma] --commit: checking #source windows (reference integrity — the code-file tiddler holds the source)\n");
 } else {
   console.log("[heleuma] dry-run (pass --commit to patch, --scan to find candidates, --scan-promote to find corpus candidates)\n");
 }
@@ -741,150 +709,57 @@ let totalDrift   = 0;
 let totalMissing = 0;
 let totalPatched = 0;
 
-for (const mdPath of walkExt(tw5MemesRoot, ".md")) {
+for (const mdPath of walkExt(tw5MemesRoot, ".mem")) {
   const content = readFileSync(mdPath, "utf8");
 
-  const tomlM = TOML_RE.exec(content);
-  if (!tomlM) continue;
-  const toml = parseToml(tomlM[1]!);
+  const toml = rootMetaFields(content);
+  if (Object.keys(toml).length === 0) continue;
 
   const mode = toml["heleuma"];
   if (mode !== "ha" && mode !== "ka" && mode !== "ba") continue;
 
-  const uriM = SOH_URI_RE.exec(content);
-  const uri  = uriM?.[1] ?? mdPath;
+  // The address the head names, read by the frame's one head reader — quotes stripped, fences masked.
+  const uri  = headUriOf(content) ?? mdPath;
 
   totalChecked++;
 
-  // ba — quine-only: verify #source slot exists.
-  // When source-symbol is declared, drift-check and hash exactly like ka.
-  if (mode === "ba") {
-    const slotM = SOURCE_SLOT_RE.exec(content);
-    if (!slotM) {
-      console.warn(`[heleuma/ba] MISSING #source slot  ${uri}`);
-      totalMissing++;
-      continue;
-    }
-
-    const baSrcFile = toml["source-file"];
-    const baSrcSym  = toml["source-symbol"];
-
-    if (!baSrcFile || !baSrcSym) {
-      // No symbol — quine-only, no drift check needed
-      console.log(`[heleuma/ba] ok   ${uri}`);
-      continue;
-    }
-
-    // ba may declare multiple space-separated symbols; extract each and join
-    const baSymbols = baSrcSym.trim().split(/\s+/);
-    const baExtracted: string[] = [];
-    for (const sym of baSymbols) {
-      const extracted = extractSymbol(baSrcFile, sym);
-      if (extracted) baExtracted.push(extracted.trim());
-    }
-    if (baExtracted.length === 0) {
-      console.warn(`[heleuma/ba] SYMBOL NOT FOUND: ${baSrcSym} in ${baSrcFile}  (${uri})`);
-      totalMissing++;
-      continue;
-    }
-
-    const baLiveCode  = baExtracted.join("\n\n");
-    const baDrift     = checkDrift(slotM[1]!, baLiveCode);
-    const baLiveHash  = createHash("sha256").update(baLiveCode, "utf8").digest("hex");
-    const baExistHash = toml["body-sha256"] ?? "";
-    const baHashDrift = baExistHash !== baLiveHash;
-
-    if (COMMIT && (baDrift || baHashDrift)) {
-      let working: string = content;
-      if (baDrift) {
-        const patched = applySourcePatch(working, baLiveCode);
-        if (patched) working = patched;
-      }
-      working = applyBodySha256Patch(working, baLiveHash);
-      writeFileSync(mdPath, working, "utf8");
-
-      const parts: string[] = [];
-      if (baDrift)     parts.push(`source: ${baDrift}`);
-      if (baHashDrift) parts.push(baExistHash ? "body-sha256 updated" : "body-sha256 added");
-      console.log(`[heleuma/ba] patched  ${uri} (${baSrcSym}): ${parts.join("; ")}`);
-      totalPatched++;
-    } else if (!COMMIT && baDrift) {
-      console.warn(`[heleuma/ba] DRIFT  ${uri} (${baSrcSym}): ${baDrift}`);
-      console.warn(`           live: ${resolve(root, baSrcFile)}`);
-      totalDrift++;
-    } else {
-      console.log(`[heleuma/ba] ok   ${uri} (${baSrcSym})`);
-    }
-
-    if (!COMMIT && baHashDrift) {
-      console.log(`[heleuma/ba] body-sha256 ${baExistHash ? "stale" : "missing"}  ${uri}`);
-    }
-    continue;
-  }
-
-  // ha/ka — drift check against live source
-  const srcFile = toml["source-file"];
-  const srcSym  = toml["source-symbol"];
-
-  if (!srcFile || !srcSym) {
-    console.warn(`[heleuma/${mode}] MISSING source-file/source-symbol  ${uri}`);
-    totalMissing++;
-    continue;
-  }
-
-  const liveSource = extractSymbol(srcFile, srcSym);
-  if (!liveSource) {
-    console.warn(`[heleuma/${mode}] SYMBOL NOT FOUND: ${srcSym} in ${srcFile}  (${uri})`);
-    totalMissing++;
-    continue;
-  }
-
+  // ── THE WINDOW CHECK ──────────────────────────────────────────────────────────────────────────
+  // The code-file tiddler holds the source — shipped by the plugin, ingested through the filetype
+  // registry, or minted at promotion. A #source slot holds a `<$transclude>` facing `module-ref`;
+  // a copy there makes a second home, and two homes for one source drift apart. Drift lives where the
+  // source lives — --sync-modules hashes the module tiddler body — so this check asks REFERENCE
+  // INTEGRITY alone: the ref is declared, the window stands, and it faces the ref.
+  const moduleRef = toml["module-ref"];
   const slotM = SOURCE_SLOT_RE.exec(content);
+
+  if (!moduleRef) {
+    console.warn(`[heleuma/${mode}] MISSING module-ref  ${uri}`);
+    totalMissing++;
+    continue;
+  }
   if (!slotM) {
     console.warn(`[heleuma/${mode}] MISSING #source slot  ${uri}`);
-    if (COMMIT) {
-      console.warn(`[heleuma/${mode}]   cannot patch — add <<~ ahu #source >> block first`);
-    }
     totalMissing++;
     continue;
   }
-
-  const liveCode  = liveSource.trim();
-  const drift     = checkDrift(slotM[1]!, liveCode);
-
-  // For ka memes: also track whether body-sha256 is current.
-  // sha256(liveCode) is the quine integrity anchor for DreamNet cold-boot verification.
-  const liveHash     = mode === "ka" ? createHash("sha256").update(liveCode, "utf8").digest("hex") : null;
-  const existingHash = mode === "ka" ? (toml["body-sha256"] ?? "") : null;
-  const hashDrift    = liveHash !== null && existingHash !== liveHash;
-
-  if (COMMIT && (drift || hashDrift)) {
-    let working: string = content;
-    if (drift) {
-      const patched = applySourcePatch(working, liveCode);
-      if (patched) working = patched;
-    }
-    if (liveHash !== null) {
-      working = applyBodySha256Patch(working, liveHash);
-    }
-    writeFileSync(mdPath, working, "utf8");
-
-    const parts: string[] = [];
-    if (drift)     parts.push(`source: ${drift}`);
-    if (hashDrift) parts.push(existingHash ? "body-sha256 updated" : "body-sha256 added");
-    console.log(`[heleuma/${mode}] patched  ${uri} (${srcSym}): ${parts.join("; ")}`);
-    totalPatched++;
-  } else if (!COMMIT && drift) {
-    console.warn(`[heleuma/${mode}] DRIFT  ${uri} (${srcSym}): ${drift}`);
-    console.warn(`           live: ${resolve(root, srcFile)}`);
+  const slot = slotM[1]!;
+  if (/```/.test(slot)) {
+    console.warn(`[heleuma/${mode}] COPY in #source — the slot holds `+"`<$transclude>`"+` facing module-ref  ${uri}`);
     totalDrift++;
-  } else {
-    console.log(`[heleuma/${mode}] ok   ${uri} (${srcSym})`);
+    continue;
   }
-
-  if (!COMMIT && mode === "ka" && hashDrift) {
-    console.log(`[heleuma/ka] body-sha256 ${existingHash ? "stale" : "missing"}  ${uri}`);
+  const transM = /<\$transclude\s+[^>]*\$tiddler="([^"]+)"/.exec(slot);
+  if (!transM) {
+    console.warn(`[heleuma/${mode}] #source holds no <$transclude> window  ${uri}`);
+    totalMissing++;
+    continue;
   }
+  if (transM[1] !== moduleRef) {
+    console.warn(`[heleuma/${mode}] window faces ${transM[1]} but module-ref names ${moduleRef}  ${uri}`);
+    totalDrift++;
+    continue;
+  }
+  console.log(`[heleuma/${mode}] ok   ${uri} → window on ${moduleRef}`);
 }
 
 if (COMMIT) {
@@ -892,15 +767,15 @@ if (COMMIT) {
 } else {
   console.log(`\n[heleuma] checked ${totalChecked} — ${totalDrift} drift, ${totalMissing} missing`);
   if (totalDrift > 0 || totalMissing > 0) {
-    console.warn("[heleuma] run with --commit to patch #source slots");
+    console.warn("[heleuma] a red above wants a hand — the slot transcludes the code-file tiddler");
   }
 }
 
 // Always run module-sync check in dry-run pass (not in --commit, which only patches #source slots)
 if (!COMMIT) {
-  console.log("\n[sync-modules] checking anchor body-sha256 against module tiddler bodies");
+  console.log("\n[sync-modules] checking anchor source-sha256 against module tiddler bodies");
   const modResult = runSyncModules();
   if (modResult.drift > 0 || modResult.missing > 0) {
-    console.warn(`[sync-modules] run with --sync-modules --commit to update body-sha256 fields`);
+    console.warn(`[sync-modules] run with --sync-modules --commit to update source-sha256 fields`);
   }
 }

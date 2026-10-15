@@ -1,0 +1,17 @@
+title: lar:///ha.ka.ba/lararium/config/bag-paths
+tags: $:/tags/Global lar:///ha.ka.ba/tags/LarariumConfig
+type: text/vnd.tiddlywiki
+
+[match[$:/core]then[]]
+[match[$:/library/sjcl.js]then[]]
+[prefix[$:/temp/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[prefix[$:/status/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[prefix[$:/boot/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[prefix[$:/HistoryList]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[match[$:/isEncrypted]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[status[pending]plugin-type[import]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[lar-kind[]match[personal]then{lar:///ha.ka.ba/lararium/config/current-wiki-personal}]
+[prefix[$:/state/]then{lar:///ha.ka.ba/lararium/config/current-wiki-temp}]
+[is[draft]then{lar:///ha.ka.ba/lararium/config/current-wiki-draft}]
+[prefix[lar:]then{lar:///ha.ka.ba/lararium/config/current-wiki-bag}]
+[regexp[.]then{lar:///ha.ka.ba/lararium/config/current-wiki-bag}]

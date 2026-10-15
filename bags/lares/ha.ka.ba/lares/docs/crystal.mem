@@ -1,0 +1,57 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/crystal">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/crystal.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 16
+manaoio   = 16
+role      = "parent docs shelf for archive crystals, continuity mechanisms, prospective MemPalace work, and MCP-backed session carry"
+tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/crystal"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/crystal"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/meme-header>>
+
+! Crystal Docs
+
+Not invariant law.
+This shelf holds session-continuity work, archive-crystal mechanics, and future memory-system integrations.
+
+<<~/ahu>>
+
+<<~ ahu #/tree>>
+
+!! Tree
+
+Use this branch for:
+
+* archive crystal mechanics
+* session carry and continuity
+* MemPalace-facing work
+* MCP server work that supports long-range memory and graph resolution
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/lararium">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/config">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Ouv_LQ5Wvw1CURvQ_kPq2HX2IZUIbeKmBrwle-cST_g
+
+<<^ code="&#x0004;" -> to="?">>

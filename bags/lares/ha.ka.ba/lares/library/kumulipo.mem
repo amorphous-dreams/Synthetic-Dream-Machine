@@ -1,0 +1,34 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/library/kumulipo">>
+<<^ code="&#x0002;">>
+
+```toml meta
+bytes      = 505433
+collection = "kumulipo"
+entries    = 2
+namespace  = "&#x2299;"
+title      = "lar:///ha.ka.ba/lares/library/kumulipo"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/library/kumulipo"
+```
+
+! Library — kumulipo
+
+The ACQUIRED bodies this collection holds. ''The bytes rest outside every tracked tree'' —
+in the vessel's own library tier — so a shelf may grow without a repository growing with it.
+''This index travels instead'': a reader learns what the shelf holds, and how to verify it,
+without holding it.
+
+Each row carries the RFC-6920 anchor a stranger checks with no tooling of ours.
+
+| Name | Bytes | Anchor | Origin |
+|---|---|---|---|
+| kumulipo-beckwith.mem | 396621 | `ni:///sha-256;e7lDUCr_M-WlLu5EF-lXFUjaMDdO9U6AwkicGK87hzY` | Beckwith / Liliʻuokalani translations |
+| kumulipo-liliuokalani.mem | 108812 | `ni:///sha-256;FkVQ7mmsSbud5tUMKwkXwIVPK7ik9MCmhv0vHP5Mpq0` | Beckwith / Liliʻuokalani translations |
+
+Reference this collection as `library:kumulipo` — a name that travels, never a path.
+
+<<^ code="&#x0003;">>ni:///sha-256;_ni6-EZCBrx3sEpmsDFMeLcbyWLpbk_9DK9e8CYHJmA
+
+<<^ code="&#x0004;" -> to="?">>

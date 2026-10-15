@@ -1,0 +1,466 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/api/sensorium-runbook">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/api/sensorium-runbook.mem"
+hydrate    = true
+l-space    = "lararium"
+mana       = 15
+manao      = 15
+manaoio    = 14
+namespace  = "&#x2695;"
+role       = "the TENDING rite — the sensorium's operational lifecycle, sibling to the founding rite and deliberately NOT it. Stand up · feed · read · survive catastrophe · tear down and re-sweep · know the ceiling · hand it to a stranger. The founding's cardinal sin loses a KEY; this rite's loses a BASELINE. Carries the measure-first law (one clean before/after boundary per re-pour), six catastrophe drills each with a detector, and the honest-limits section that names what a reading CANNOT claim. The two surfaces SLICE DIFFERENTLY and neither is a subset of the other: `lares sense` holds one wide door over one sensorium, while the MCP roster spans several CLI doors at once (vault_* · wiki · kapae answer at `lares vault`/`wiki`/`edge`). Alignment means naming the slicing rather than widening one to match — and a name shared is not a motion shared, so a door and its tool agree on what they WRITE. The movement runs as `lares sense pour --all`; the destroying step stays the operator's own hand. Carries the SITING LAW (#/the-planes): three words, no synonyms — lares names the SPIRITS, lararium names the HOUSE, lar names the NAMESPACE — and a sensorium holds operator history and DreamNet history, so it belongs to the HOUSE and stands at `<lararium>/sensoriums/<name>` (`larariumDataHome()` / `_lararium_data_home()`, one string in both tongues). Under LAR_ROOT every directory names an XDG KIND and the two houses nest inside the data kind, so an isolated root reads as the real disk with a different prefix. The teardown preflight names the one reach that stays INTENDED: the operator's own hand."
+status-why = "the tending rite; its verb surface stands verified against the live roster"
+tags       = ["api/pono/li-ki-integrities", "api/pono/sensorium-machina", "lararium/mesh/founding-runbook", "api/pono/causal-islands", "api/lararium/living-grammar-palace", "kind/rite"]
+title      = "lar:///ha.ka.ba/lararium/api/sensorium-runbook"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/api/sensorium-runbook"
+written    = "2026-08-04"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! The Sensorium Runbook ~ the tending rite
+
+> Status: PROPOSED. The verb surface below stands VERIFIED against the MCP roster (2026-08-04); the
+> command spellings stand PARTLY verified and each one says which. No end-to-end tending cycle has run
+> against this document. ''Where a run contradicts a movement here, the run wins'' and the movement gets
+> rewritten — the same self-amending law the founding rite carries.
+
+''October 2026 intake redesign.'' The source and content frontiers, scoped coverage receipts, and host-to-container ingress remain planned at <<~ loulou "lar:///ha.ka.ba/lararium/api/mempalace-integration#/redesign-plan">>. Until its witnesses land, a green `pour` or an empty source scan cannot certify complete capture, and the movement below remains a proposed rite rather than a deployed drain guarantee.
+
+The one-operator alpha trial at #/alpha-trial precedes any `pour --all`. Its bounded frozen evidence now travels as an explicit repository test fixture, and the trial has landed `/state` intake receipts and content frontiers for that pair. Neither witness claims complete native history or a founded memory Sensorium.
+
+''Two rites stand, and they never merge.'' The founding rite consecrates: irreversible, once, governed by
+quorum and custody and succession. This rite tends: repeatable, operational, governed by measurement and
+cadence and capacity.
+
+''The distinction that keeps them apart reads as a difference in
+cardinal sin.'' A founding's worst outcome ''loses a key'' and nothing recovers it. A sensorium's worst
+outcome ''loses a baseline'' — and while the corpus always re-pours from its sources, ''a measurement never
+taken cannot be taken later''. A rite built around irreversibility teaches the wrong reflexes for a thing
+whose recovery move reads //do it again, watching//.
+
+''The lore already names this rite.'' A lararium stabilizes THROUGH USE — fed daily at the shrine, food and
+drink and incense and coin; a fed node hums and a neglected one flickers (`noosphere-boot.mem`). The founding rite runs
+the consecration. ''This one runs the daily offering.''
+
+<<~/ahu>>
+
+<<~ ahu #/alpha-trial>>
+
+!! The bounded alpha trial ~ inventory, freeze, probe
+
+''Choose the event-time interval first.'' `trial_inventory.py` reads Claude JSONL under an explicit native root and writes a private manifest outside both the history tree and repository. Its half-open interval selects row timestamps, never file modification times. The scan includes main and `subagents/agent-*.jsonl` files as separate sources. Rows without an outer timestamp and malformed rows remain counted unknowns; a selected row carries its native offset, length and SHA-256, with no transcript text in the manifest. Name the interval, host and surface before inspecting the counts.
+
+''Freeze only a declared pair.'' `trial_freeze.py` verifies each selected row against its native bytes and writes one source into a new private trial root; `trial_freeze_linked.py` does that for one main session and one child beneath its native `<session>/subagents/` path. It checks the child's `sessionId` and `agentId` against the native folder and filename, preserves that folder shape for the parser's sub-agent source key, and receipts each evidence hash separately. All timestamped row types remain in evidence; the current Claude content parser projects only `user` and `assistant`. A cross-window main session receives a partial-session verdict, and a changed source refuses the freeze. Native history stays read-only and outside every trial root.
+
+''Probe the source-declared link.'' `trial_link_probe.py` verifies both frozen hashes and requires an assistant `Agent` tool-use ID, a user tool result with the same ID and parent UUID, a labeled `agentId` in that result, and matching child record IDs. A free-text mention never creates that edge. The probe receipts only what the frozen pair shows; it cannot certify the omitted session prefix, other sub-agents, or full history.
+
+''Carry the frozen pair into cloud trials.'' `packages/lararium-sensorium/fixtures/claude-week-2026-10-07/` now holds the exact selected JSONL bytes and a portable `manifest.json` with relative paths, row counts, scopes, sizes and SHA-256 hashes. The parent file holds 3,813 selected rows from a cross-window session; the child holds its whole 46-row source. The fixture carries transcript text, so handle the branch as conversation-bearing material. `python3 packages/lararium-sensorium/scripts/trial_fixture_replay.py --trial-root /tmp/sensorium-fixture-run-1 --source-host fixture-claude-week` verifies the manifest, copies the pair into a fresh disposable handoff, lands both observations and projects their typed blocks. Name a new trial root on every clean run; the `fixture-` namespace prevents a fixture from claiming a native producer host. The fixture receipt carries its own provenance kind and source locator, never a fabricated native-history path. Three separate host processes and fresh state roots returned identical receipts: two observations, 1,717 blocks (1,697 parent and 20 child), content frontier 1 per source, and SQLite `quick_check=ok`. This host repeat does not stand in for three product-image builds or a live hook reconciliation. The manifest neither licenses a source-completeness claim nor stands in for the native chat-history archive. The product `serve` image excludes this fixture from its build context; cloud sessions may mount a verified copy read-only when they need it.
+
+''Take custody as one transaction.'' `trial_intake.py` reads only a verified frozen receipt and its private evidence copy. It derives the source key from an explicit execution-host namespace plus native `sessionId` and, for a child, `agentId`; the path remains provenance. A provisional trial host label cannot silently become the founded machine identity. One SQLite BLOB transaction commits the source, immutable byte revision, source manifest, observation, exact-intent receipt, frozen-evidence observation frontier and pending projection intent. A replayed intent returns its prior receipt after re-verifying stored bytes; a changed source or scope under the same intent refuses. A→B→A keeps three observations and two byte revisions. The observation frontier never claims a native tail offset or successful content projection. The first trial caps one evidence copy at 32 MiB and uses rollback `DELETE` with `synchronous=EXTRA`; the actual `/state` mount still needs the built-image fault witness.
+
+''Cross one source into a trial container.'' `trial_handoff.py` verifies a frozen receipt and copies only that source's selected bytes into a fresh private handoff directory. It writes a readiness marker last; intake refuses an incomplete handoff. Its receipt uses a relative evidence path, so mounting that directory read-only at `/handoff` preserves the evidence identity. `docker-compose.sensorium-trial.yml` builds the small `sensorium-trial` target from a pinned Python 3.12 image, disables its network and root filesystem writes, and mounts only `/handoff:ro` plus a disposable `/state:rw` under the host owner's UID/GID. The built-image main-session witness committed 9,848,331 evidence bytes with revision `c84088c89fdd5e07af0c49e2c630e095a64e9cc1adf8ccf1670e0c7d3a94662a` as one observation. That witness proves bounded raw custody inside this one-shot image; it does not package the Node-supervised holder, MemPalace, R, or content projection. Keep the handoff and state directories outside native history and the repository, and keep both until their repeat and crash probes finish.
+
+These scripts live under `packages/lararium-sensorium/scripts/`. Trial manifests and ledgers live in private disposable directories, with fresh outputs on each run; the selected text evidence also has the explicitly committed fixture above. Keep a trial's exact bytes and receipts together until its named repeat and crash tests finish. A pending projection intent never counts as a projected block. The next integration gate moves this trial contract into an owned Sensorium root and a model-backed derived view. No trial root becomes the founded memory palace by renaming it.
+
+''Seat the CPU holder in the product image.'' The `serve` target now copies an installed Python 3.12 seat, the clean pinned MemPalace source and Sensorium scripts beside its Node output. `requirements-image.lock` records the 119 resolved Python distributions from the direct Sensorium manifest plus MemPalace, Chroma and CPU ONNX runtime; both image bases carry exact digests, and the build checks dependency consistency with `pip check`. The image uses Debian Bookworm on both sides, installs Python's required shared libraries into the Node base, sets `LARES_PYTHON` explicitly and routes writable caches under `/state`. The built image verified Node's holder resolution, a real content-holder ping/put/get and fresh-container get on disposable `/state`, and an MCP v2 stdio list of 31 tools plus `status` using an injected deterministic probe embedder. For the normal standalone path, `model-assets.json` names the MiniLM model, dimension 384, Chroma version and SHA-256 hashes of its archive and ONNX file; `trial_model_check.py` verifies those bytes under the mounted state before use. With a verified cached model in disposable `/state`, the rebuilt image started its actual standalone MCP coordinator with `--network none`, listed 31 tools and answered `status`. `HOME=/state` keeps Chroma's model cache on the mounted state volume. The image does not embed model bytes, so a fresh machine needs an explicit verified asset provision step. `Rscript` remains absent; R engines remain unclaimed. The version lock does not yet carry per-wheel hashes.
+
+''Project the frozen bytes as typed verbatim ground.'' `trial_project.py` reads only the committed intake BLOB and reuses the Claude block parser on those bytes. A block's address binds source key, byte revision, parser version and block ordinal; separate observation links let A→B→A reuse the first revision's content while retaining three observations. One SQLite transaction lands typed text and flat metadata, a projection receipt, and a content frontier that crosses only a contiguous run of landed observations. A parse fault quarantines the projection intent; a process death before commit leaves the intent pending, and retry verifies stored typed rows against their receipt. Semantic vectors and Chroma remain a later derived view. In the bounded seven-day parent/child pair, the main frozen source projected 1,697 blocks from 3,813 rows and the child projected 20 from 46; each source reached content frontier 1. The main receipt names 340 empty thinking rows and one nontext `tool_reference` result as eligible rows without text blocks; the child names three empty thinking rows. The restricted intake container accepted each source through its own read-only handoff; the built `serve` image projected both from their mounted `/state` BLOBs with no native-history or handoff mount. The parent returned the same receipt after restart. That state held two sources, two observations, 1,717 typed blocks and two content frontiers; SQLite `quick_check` passed. This is a trial ledger witness; the final memory Sensorium still needs the owned-root handoff and its semantic/model proof.
+
+<<~/ahu>>
+
+<<~ ahu #/the-planes>>
+
+!! Ⓐ Stand it up ~ sources become planes
+
+''A sensorium holds planes, and a plane holds nothing until something feeds it.'' The instruments read
+whatever stands; against an unfed plane they answer honestly and say nothing, which reads identical to a
+broken instrument unless the operator knows which planes carry weight.
+
+!!! Where a sensorium stands ~ the house's own home
+
+''THREE WORDS, AND NONE OF THEM ARE SYNONYMS'': ''lares'' names the SPIRITS (agents, personas — their
+identity, and the vessel substrate they run on), ''lararium'' names the HOUSE (the acquired shelf, the
+sensoriums, the history), and ''lar'' names the NAMESPACE, the `lar:///…` URIs and every resolver in the
+stack. ''Every siting answers one question — whose is this?'' A sensorium holds operator history and
+DreamNet history, so it belongs to the HOUSE, and it stands in the house's home:
+
+|! form |! the sensorium root |! resolver |
+| the operator's disk | `~/.local/share/lararium/sensoriums/<name>` | `larariumDataHome()` · `_lararium_data_home()` |
+| an isolated root (`LAR_ROOT`) | `<root>/data/lararium/sensoriums/<name>` | the same two, re-prefixed |
+
+Under an isolated root each directory names an XDG ''KIND'' — data, state, cache, config, run — and the two
+HOUSES nest inside the data kind exactly as they do under XDG: `<root>/data/lares` beside
+`<root>/data/lararium`. ''A house never stands where a kind belongs'', so an isolated root reads as the real
+disk with a different prefix and a rehearsal never reaches the operator's own planes. Both tongues resolve
+the same string — the TypeScript `larariumDataHome()` and the Python `_lararium_data_home()` — so a holder
+started from either side opens the same store.
+
+''What a rite re-makes decides nothing here; whose home holds a thing decides everything.''
+A sensorium stands in the house's own home, apart from the spirits' home, so no founding and no vessel rite
+reaches it. That it survives every founding reads as the ''CONSEQUENCE'' of belonging to the house, never the
+reason — and belonging makes the protection STRUCTURAL: a tier kept safe by its absence from a removal list
+stays safe until somebody widens the list by one path segment, while a tier standing in its own house leaves
+no edge to widen.
+
+!!! What feeds what ~ four planes over four bases
+
+''Read this table off `plane_base.PLANE_BASE`, never off memory.'' The roster below states what that map
+declares as of 2026-08-04; a plane absent from it ''has no declared base, and no instrument may read it
+cross-plane'' — which the code enforces rather than requests.
+
+| plane | eats | keys on | stands as |
+|---|---|---|---|
+| ''content'' | transcripts, project files, guest harvests | a drawer cid (RECORD) | a sheaf — what a RECORD says |
+| ''form'' | the same streams, encoded by shape | a drawer cid (RECORD) | a sheaf — a membership subset of the induced constructicon |
+| ''structure'' | parse trees (`.structurepalace`) | a structural hash (PATTERN) | a cosheaf-shaped registry — what a SHAPE does across the corpus |
+| ''persistence'' | testimony claims | a claim cid (CLAIM) | a sheaf over the claim base |
+
+''A structure row and a content row live over different
+universes.'' A sup-norm between them reads a distance between two worlds and returns a number anyway.
+''The only road across'' runs the extension map — a structure row's provenance lists the records
+exhibiting that pattern, and the pushforward carries two facts an ad-hoc crossing hides: ''the fiber
+reads as a SET'' (one record may exhibit many patterns, so a caller wanting one must say which and eat
+the loss aloud), and ''the map runs lossy by design'' (provenance truncates past a cap, so a hot
+pattern pushes forward onto strictly fewer records than exhibit it).
+
+''`require_base()` refuses a restriction set that mixes bases or omits one'', so the wrong comparison
+stops type-checking rather than returning a plausible figure.
+
+<<~ set hud="yield" drift-ward="! · ⚠ · this table stood hand-written in an earlier draft, with a plane the code does not
+declare and a base it does · ↻ L-Prime">>
+
+!!! The order that matters
+
+# ''Sources first, and verified present.'' Every drawer must trace to a source that still stands on disk.
+  A pour from a source set that lost a member yields a corpus whose gaps read as SIGNAL to every
+  instrument downstream.
+# ''Content plane before structure.'' Structure keys on a parse of what content holds; a structure pour
+  ahead of its content produces hashes with nothing to bind to.
+# ''Stamp the embedder identity at birth.'' A palace that carries no recorded embedder id cannot be
+  checked against a later one. See #catastrophe, the embedder-mismatch drill — this stamp reads as the
+  cheapest cure in the whole rite and it stays available ''only at pour time''.
+# ''Measure before the first byte lands.'' #teardown carries the law.
+
+<<~/ahu>>
+
+<<~ ahu #/feed>>
+
+!! Ⓑ Feed it ~ the cadence, and what starvation looks like first
+
+''Live capture and a bulk sweep race each other.'' The rite therefore pauses live capture before a bulk
+pour and resumes it after — a sweep that runs against a moving source set produces a corpus no second run
+reproduces, which quietly destroys the comparability the whole instrument rests on.
+
+''A starved plane looks HEALTHY before it looks broken.'' Its instruments keep answering; the answers just
+narrow. The tells, in the order they appear:
+
+* ''Entity counts plateau'' while sessions keep landing — the extractor stopped reaching new ground.
+* ''Cross-plane queries collapse to one plane's hits'' — the widening finds nothing to widen INTO.
+* ''Coupling reads honest-insufficient'' rather than low — the instrument names its own starvation, and an
+  operator who reads that as a coupling VERDICT has read a missing plane as a finding.
+
+''Honest-insufficient reads as the instrument working.'' It carries more
+information than a number would; a gauge that returned 0.0 against an unfed plane would have lied.
+
+<<~/ahu>>
+
+<<~ ahu #/read>>
+
+!! Ⓒ Read it ~ what a figure claims, and over what
+
+''Every reading names a plane and a grain, or it names nothing.'' The verbs verified on the MCP roster
+(2026-08-04): `li` · `ki` · `jing` · `pour` · `sweep` · `recall` · `analyze` · `rejim` · `worldline` ·
+`flow` · `forecast` · `couple_r` · `mismatch` · `plane_record` · `reconcile` · `status`.
+
+!!! The reading families
+
+* ''SHAPE'' — `status` (wings · rooms · entities · totals: what landed) · `plane_record` (a plane's own
+  ledger). The first question after any pour.
+* ''RECALL'' — `recall` and search across lenses; a single lens reads one stratum, a cross-plane lens
+  WIDENS one hit across content ∪ form ∪ structure.
+* ''GEOLOGY'' — `rejim` (detected rhythm and regimes) · `analyze` (change-point arms: where content
+  changes hands). Both read the POURED corpus, so both want running after a sweep completes rather than
+  during.
+* ''COUPLING'' — `li` · `ki` · `couple_r` · `mismatch`. These carry the entropy/negentropy reading the
+  outside tooling wants, and they read ACROSS planes — so each one answers only as well as its thinnest
+  plane is fed.
+* ''SELF'' — `jing` extends the lobes to a reconciled self, restricts back, and coheres iff the round-trip
+  equals the identity. A round-trip that fails names a real incoherence rather than a bug.
+* ''LINEAGE'' — `worldline` (the fork-DAG: parent → spirit spawn → handback).
+
+!!! The one instruction that governs all of them
+
+''Name the plane and the grain before reading the number.'' A figure detached from its partition reads as a
+fact about the world when it names a fact about a choice (#/capacity).
+
+<<~/ahu>>
+
+<<~ ahu #/catastrophe>>
+
+!! Ⓓ Catastrophe & recovery ~ six drills, each with its detector
+
+''A drill without a detector reads as reassurance.'' Each entry below names how the operator SEES it, then
+what to do — and the seeing comes first, because every one of these presents as //the sensorium feels
+slightly off// long before it presents as a failure.
+
+!!! ① The poisoned pour ~ one bad source contaminates every plane
+
+* ''Detector'' — an entity or wing whose counts sit orders off its neighbours; a regime boundary that lands
+  exactly on an ingest boundary rather than on anything in the content.
+* ''Cure'' — identify the source, drop its drawers by `source_file`, re-pour that source alone. The pour
+  runs idempotent, so a narrowed re-run skips what already landed.
+* ''The trap'' — a re-pour of EVERYTHING to be safe destroys the before/after boundary that would have
+  proven the cure worked.
+
+!!! ② The wedged holder ~ handles accumulate until nothing opens
+
+* ''Detector'' — open file handles climbing across a long run while work does not. Sample the count
+  periodically DURING a pour; a leak reveals itself as a slope, never as a value.
+* ''Cure'' — drain the holders and restart them; the corpus takes no harm.
+* ''Live'' — this stack currently carries a measured leak (a peak of 593
+  against 1245 at an older wedge point) whose route stands UNKNOWN. A hypothesis that named one file
+  rested on that file's own docstring rather than on its code, and dissolved on reading. ''Treat the next
+  long pour as the experiment that finds it.''
+
+!!! ③ The corrupted index ~ the vectors disagree with the record
+
+* ''Detector'' — searches return hits whose payloads do not match their queries; counts diverge between
+  the record and the index.
+* ''Cure'' — ''sqlite stands as source-of-truth''; rebuild the index from it. The index reads as derived
+  and therefore disposable.
+* ''The trap'' — repairing the record to match the index inverts the authority and makes the corruption
+  canonical.
+
+!!! ④ The embedder mismatch ~ two vector spaces, silently incomparable
+
+* ''Detector'' — a warning that a collection carries no recorded embedder id, or a recorded id that
+  differs from the driver's. ''Recall quality degrades without any error at all'' — this failure has no
+  loud form.
+* ''Cure'' — re-pour under a single declared embedder, stamping identity at birth.
+* ''Live'' — the standing content palace warns `EmbedderIdentityUnknownWarning`; its guards (`expected_dim`,
+  `expected_model`, the palace model-history assertion) have ''nothing to check against''. The
+  same-dimension different-model swap clears a dimension check while corrupting recall, which is
+  precisely why the model pin exists beside the dimension pin.
+
+!!! ⑤ The interrupted sweep ~ a partial pour that reads complete
+
+* ''Detector'' — per-surface tallies that stop short of their source counts; a wing whose newest drawer
+  predates the newest source.
+* ''Cure'' — re-run; the pour skips what landed. ''Chunk by surface'' when a single call outruns its
+  caller's patience — the work continues in the holder even when the caller returns early, so ''a caller
+  timeout NEVER proves the work stopped''.
+* ''The trap'' — reading a caller's early return as a failure and clearing the store to start clean.
+
+!!! ⑥ The lost baseline ~ the only one that does not recover
+
+* ''Detector'' — none. By construction. It presents as a question nobody can answer later.
+* ''Cure'' — none after the fact. ''Prevention only'': take the reading before the change.
+* ''Why it ranks first in severity and last in visibility'' — every other entry here recovers by
+  re-pouring. This one names the class of loss the corpus's re-derivability cannot cover, and it is the
+  reason this rite exists apart from the founding rite at all.
+
+<<~/ahu>>
+
+<<~ ahu #/teardown>>
+
+!! Ⓔ Tear down & re-sweep ~ the deliberate reset
+
+''A teardown reads as a legitimate move, not a failure.'' A corpus accumulates provenance debt — mixed
+embedders, half-migrated schemas, sources long since renamed — and past some point a fresh pour under one
+declared regime costs less than reconciling the drift.
+
+!!! The measure-first law
+
+''ONE clean before/after boundary exists per re-pour, and it opens
+exactly once.'' Instrument BEFORE the teardown or the comparison never becomes available. A pour
+instrumented after the fact requires a second pour to measure, which costs the whole run again and still
+lacks the original state to compare against.
+
+!!! The preflight ~ what a teardown makes unrecoverable
+
+Run every check before the first deletion:
+
+# ''Sources present.'' Every stream the corpus drew from still stands on disk, at its expected size.
+# ''Nothing authored-only.'' Any derived artifact (hallway graphs, entity links, co-occurrence records)
+  MUST carry a marker distinguishing auto-derived entries from hand-authored ones. ''Auto-derived
+  re-pours; hand-authored does not.'' A store that cannot answer this question has not earned a teardown.
+# ''The write log drained.'' Confirm the log holds COMPLETED operations (records carrying results) rather
+  than a pending queue. A pending entry names work that never landed anywhere else.
+# ''The old provenance kept.'' Copy the write log out before the teardown — not for recovery, but as the
+  baseline the new pour gets compared against. It costs kilobytes.
+# ''The operator's hand named the store.'' `lares sense teardown`, `purge` and `rederive.py` reach into
+  `<lararium>/sensoriums` ''on purpose'' — a dev-time re-pour wants exactly that, and no guard belongs on
+  them. The structural protection covers the machine's rites, never the operator's own hand, so the reading
+  the operator must not lose stands at #catastrophe ⑥: capture the machine took once and cannot take again.
+
+!!! The movement
+
+''THE MOVEMENT RUNS AS ONE COMMAND, and the steps that land
+nothing are the reason it is one.'' `lares sense pour --all` walks the sequence below; the steps stand
+here because a reader tending a sensorium by hand needs to know what each one buys, and because a step
+skipped silently is what the single door exists to prevent.
+
+# ''Pause live capture'' — a bulk sweep and a live hook racing produce an unreproducible corpus.
+# ''Take the baseline'' — the before-reading, while it can still be taken (#catastrophe ⑥).
+# ''Drain the holders'' before removing anything, so no process holds a handle into a store about to
+  vanish.
+# ''Remove the store directory'' for a bare slate — a drain releases the holders and leaves every byte
+  in place, so a drain alone re-pours ON TOP of what stands. ''This step stays the operator's own hand'':
+  it is the one move that destroys, and the rite carries it, never a flag.
+# ''Sweep'', detached — a full structure parse across every session runs long, and the per-op budget is
+  sized for it rather than for a short read. Per-surface tallies land at the end.
+# ''Stamp the bearing'' onto the drawers that landed, then ''re-derive the projection'' over them. The
+  order is a dependency: the stamp reads what the sweep wrote.
+# ''Verify the shape'' — counts against source counts, before trusting any reading.
+# ''Resume live capture'', on every path out. A pass that halted holding the hooks down leaves the
+  machine quietly not remembering, which reads as calm rather than as fault.
+# ''Take the new baseline'' immediately, against the kept old one.
+
+<<~/ahu>>
+
+<<~ ahu #/capacity>>
+
+!! Ⓕ Capacity & honest limits ~ what a reading CANNOT claim
+
+''This section names the failures the instrument invites when it works correctly.'' A grimoire that omits
+the working's limits invites the operator to ask for what it cannot give and to believe the answer.
+
+!!! The ceiling
+
+''`I(target; plane) ≤ H(plane)`'' — exact, and it forbids manufacture. A
+plane cannot report more about a target than the plane itself carries. So ''a low reading names a
+capacity limit OR an absence, and the figure alone never distinguishes them.'' An operator who reads a
+ceiling-bound figure as a finding about the world has read the instrument's own entropy.
+
+!!! The grain law
+
+''Store fine, index coarse — and the bin width stands as an ANALYSIS parameter, never a property of the
+data.'' The modifiable areal unit problem holds here exactly: ''the unit manufactures the finding.'' Two
+honest analysts partitioning the same corpus differently will report different couplings, both correct
+within their partition. Hence #read's rule: name the plane and the grain, or name nothing.
+
+!!! Planes do not share a base space
+
+A cross-plane figure describes a RELATION between differently-typed observations, never a measurement in
+one common space. ''Reading it as a single scalar over one substrate mistypes the instrument.''
+
+!!! What no reading claims
+
+* ''Causation.'' A change point names where content changed hands, never why.
+* ''Completeness.'' Absence of a finding and absence of looking generate identically.
+* ''A verdict on a person.'' The corpus holds acts and faces; a standing gets EVALUATED from a vantage and
+  never PUBLISHED as a property (`identity-enacts-relation.mem`).
+* ''Reproducibility across a re-pour with different sources.'' Comparability requires a fixed source set;
+  a corpus poured from a moved target measures the move.
+* ''Its own ground, by name.'' The stores carry no identity for the pour
+  a reading stands over — no `pour_id`, no corpus version, nothing a second reading could match against.
+  So ''two readings taken across a re-pour compare nothing'', however faithfully each got recorded, and
+  the gap sits UPSTREAM of any ledger: a baseline needs a ground it can name before it needs a place to
+  live. The pono shape reads DERIVED rather than assigned — the content plane already
+  content-addresses its drawers, so a pour's identity can fall out of its own ground (the source set and
+  their hashes, a fold over the drawer cids) with nothing declared by fiat and no network consulted.
+
+<<~ set hud="aim" drift-ward="_ · L-Prime · crossing: generation-talk, where federation vocabulary drifts local">>
+
+''AND THE WORDS FOR THIS STAY LOCAL.'' A sensorium's stores ''never federate'' — content, form, structure
+and persistence each say so outright; only the meshpalace takes a feed from the network, and an operator
+Act alone crosses any of them to a federated surface. So the lifecycle here speaks ''pour · re-pour ·
+teardown · sweep'', never //epoch// and never //burn//. An ''epoch'' names a charter's or engine's
+shared regime, ratcheting DreamNet-wide. A ''burn'' destroys an identity overlay or a spent credential:
+burning an overlay drops a vessel back to anon ''with its own content whole'', and it ''cuts
+future-not-history''. A teardown inverts that on every axis — the content dies, the identity stands
+untouched, the history goes and the future does not. Borrowing either word imports a topology these
+stores do not have, and //burn// imports the opposite of what a teardown performs.
+
+<<~/ahu>>
+
+<<~ ahu #/reconstitution>>
+
+!! Ⓖ Reconstitution ~ what a stranger needs to stand this cold
+
+''The bus factor applies here as it does at the founding.'' A sensorium held in one operator's head reads
+as a single point of failure regardless of how well the stores replicate. The reconstitution kit rides as
+a movement of this rite rather than a later courtesy:
+
+# ''The source inventory'' — which streams feed which planes, and where they live.
+# ''The declared embedder'' — name and dimension, so a rebuild lands in the same vector space.
+# ''The partition of record'' — the grain every published figure was computed at. Without it, no prior
+  reading can get reproduced or challenged.
+# ''The baseline set'' — the readings taken at each pour boundary, kept as the comparison series.
+# ''This document'', which names what the instruments claim and what they refuse.
+
+<<~/ahu>>
+
+<<~ ahu #/surface-drift>>
+
+!! The two surfaces ~ how they slice
+
+''NEITHER SURFACE IS A SUBSET OF THE OTHER, and alignment means naming the
+slicing rather than widening one to match.'' `lares sense` holds ONE door over one sensorium and carries
+its whole lifecycle — stand up, feed, read, tend the holders, the durable seats, the instrument set. The
+MCP roster spans SEVERAL CLI doors at once: `vault_*` answers at `lares vault`, `wiki` at `lares wiki`,
+`kapae` at `lares edge`. A tool absent from `sense` is not a gap where its own door holds it.
+
+''One rule does hold in one direction'': every MCP tool answers to SOME CLI door, because a tool an agent
+may call and an operator may not is a surface the operator cannot audit by hand. The converse stays
+deliberately false — the key-holding ceremonies (founding, persona minting, the charter quorum, the vault
+beyond a status read) keep the operator's own hand, since MCP speaks stdio-per-client and N sessions would
+put N unsynchronised holders on one operator's keys.
+
+''A NAME SHARED IS NOT A MOTION SHARED.'' The two surfaces may spell one verb alike and mean different
+work by it, and a witness that matches rosters passes cleanly over exactly that. So a door and its tool
+agree on WHAT THEY WRITE, or the difference stands declared where a reader meets it.
+
+!!! The rite's second job ~ a friction detector, not merely a document
+
+''Every command spelling here reads as a TESTABLE CLAIM about a surface.'' That makes this document an
+instrument in its own right: walk it end to end against a live node, and each step either runs or names a
+friction — a verb reachable at one surface and not another, a flag an operator would reasonably expect,
+a flow demanding three doors where the shape wants one.
+
+''So the drift section grows by USE rather than by audit.'' A walked rite that completes without amendment
+reports the surfaces aligned; a walked rite that stalls reports exactly where, in the operator's own
+vocabulary rather than the implementer's. Two properties follow, and both matter more than the prose:
+
+* ''The findings re-find themselves.'' A surface that drifts back apart surfaces at the same step on the
+  next walk — no separate conformance suite to keep in step, and no second hand-kept list to go stale.
+* ''The vocabulary stays the operator's.'' A friction named as //this rite could not proceed// carries the
+  gap an implementer's inventory of exported symbols never shows: a verb may exist at every layer and
+  still leave a flow unwalkable.
+
+''A roster read off source finds what EXISTS and stays blind to what a
+flow REQUIRES'' — absence of finding and absence of looking generate identically. So no count stands
+transcribed here: `tools/surface-parity-witness.sh` derives both rosters, and the movement below is what
+reports whether they carry a flow between them.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/sensorium-machina">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/li-ki-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;UZmJJNhRRdp9F9JuhDVom7QXN4lufm7oFS-psgZwo7w
+
+<<^ code="&#x0004;" -> to="?">>

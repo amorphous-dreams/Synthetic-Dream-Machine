@@ -1,0 +1,59 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/tw5/tw5-browser-surface.mem"
+l-space     = "lararium"
+mana        = 17
+role        = "Named TW5 projection adapter: the file holding TW5 DOM/RootTemplate references at the browser shore"
+source-file = "packages/lararium-tw5/src/tw5-browser-surface.ts"
+title       = "lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/tw5/tw5-browser-surface"
+```
+
+<<~ ahu #/contract>>
+
+!! Contract
+
+`tw5-browser-surface.ts` defines the ''named TW5 projection adapter'' for the browser vessel.
+
+It carries the `HTMLElement`, `shadowRoot`, and `window.document` references required to attach
+TW5's worker-produced projection to a host-owned surface. The `@lararium/web` page shell may use
+its own DOM for composition and interaction relays; that shell does not own TW5 state or run a second
+engine. No worker-side TW5 authority may import these types without an explicit entry in
+`deletion-map.md`.
+
+''What it owns:''
+
+* `mountPanel(engine, container: HTMLElement)` — mounts a TW5 wiki into a host-owned DOM container. Currently uses `$:/core/ui/RootTemplate`; this body holds ''Quarantine'' class pending S4/S8 rewrite to the Lararium root contract.
+* `setPalette(engine, paletteName)` — writes the active palette tiddler. No DOM dependency. ''Constitutional'' class; may migrate to `@lararium/browser` projection helpers.
+* `setBootSplash(engine, active)` — writes/deletes the boot-splash state tiddler. No DOM dependency. ''Constitutional'' class.
+
+''What it does NOT own:''
+
+* Island authority boot or lifecycle.
+* Automerge or sync state.
+* Any TW5Engine state beyond reading `engine.$tw`.
+* Any shore that crosses the worker boundary.
+
+''RootTemplate status:''
+
+`mountPanel` currently transcluded `$:/core/ui/RootTemplate` because that followed the established TW5 browser story river path. This marks the strongest remaining RootTemplate dependency in the stack. The S4/S8 sprints replace it with a Lararium-owned root/frame contract. Until then, the dependency lives here and nowhere else.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/browser/deletion-map">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;WRI-ydVBSpTDHHiShtnK4weN_AbD60s7aG_38DJKhFs
+
+<<^ code="&#x0004;" -> to="?">>

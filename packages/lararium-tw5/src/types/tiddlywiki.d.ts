@@ -3,7 +3,7 @@
  *
  * **Coexistence with `tw5-typed`:**
  *
- * As of E.10.10, `tw5-typed` (linonetwo / tiddly-gittly) ships as a dev
+ * `tw5-typed` (linonetwo / tiddly-gittly) ships as a dev
  * dep and lives in `tsconfig.json::types`. It exports types under
  * upstream-canonical names (`Widget`, `ITiddlyWiki`, `IParseTreeNode`,
  * etc.) inside `declare module 'tiddlywiki'`. Our hand-rolled types
@@ -42,6 +42,19 @@
  *     LarariumTW5.registerKukaliHook() so KukaliWidget can read it without a cast.
  */
 
+import type {
+  ITW5TiddlerInputFields,
+  TW5TiddlerInputFields,
+  ITW5TiddlerFields,
+  TW5TiddlerFields,
+} from "@lararium/mesh";
+export type {
+  ITW5TiddlerInputFields,
+  TW5TiddlerInputFields,
+  ITW5TiddlerFields,
+  TW5TiddlerFields,
+} from "@lararium/mesh";
+
 // ---------------------------------------------------------------------------
 // Parse tree nodes (produced by parsers, consumed by widget engine)
 // ---------------------------------------------------------------------------
@@ -75,24 +88,6 @@ export interface TW5ParseTreeNode {
   [prop: string]:     unknown;
 }
 
-// ---------------------------------------------------------------------------
-// Tiddler
-// ---------------------------------------------------------------------------
-
-export interface TW5TiddlerFields {
-  title:     string;
-  text?:     string;
-  tags?:     string | string[];
-  type?:     string;
-  created?:  Date | string;
-  modified?: Date | string;
-  creator?:  string;
-  modifier?: string;
-  revision?: string;
-  list?:     string | string[];
-  [field: string]: unknown;
-}
-
 export interface TW5Tiddler {
   readonly fields: Readonly<TW5TiddlerFields>;
   readonly cache:  Record<string, unknown>;
@@ -111,7 +106,7 @@ export interface TW5Tiddler {
 
 /** Constructor for `new tw.Tiddler(fields?, ...mergeFields)`. */
 export interface TW5TiddlerConstructor {
-  new (...fieldObjects: Array<TW5TiddlerFields | Record<string, unknown>>): TW5Tiddler;
+  new (...fieldObjects: Array<TW5TiddlerInputFields | Record<string, unknown>>): TW5Tiddler;
   prototype: TW5Tiddler;
 }
 
@@ -216,7 +211,7 @@ export interface TW5WikiStatic {
   /** Tiddler deserializer registry keyed by MIME type. */
   tiddlerDeserializerModules: Record<
     string,
-    (text: string, fields: Record<string, unknown>) => TW5TiddlerFields[]
+    (text: string, fields: Record<string, unknown>) => TW5TiddlerInputFields[]
   >;
 }
 
@@ -227,7 +222,7 @@ export interface TW5WikiStatic {
 export interface TW5Wiki {
   // ── Tiddler CRUD ────────────────────────────────────────────────────────
 
-  addTiddler(tiddler: TW5Tiddler | TW5TiddlerFields | Record<string, unknown>): void;
+  addTiddler(tiddler: TW5Tiddler | TW5TiddlerInputFields | Record<string, unknown>): void;
   deleteTiddler(title: string): void;
   getTiddler(title: string): TW5Tiddler | undefined;
   tiddlerExists(title: string): boolean;
@@ -264,15 +259,15 @@ export interface TW5Wiki {
 
   getTiddlerText(title: string, defaultText?: string): string | undefined;
   getTiddlerData(title: string, defaultData?: unknown): unknown;
-  setTiddlerData(title: string, data: unknown, fields?: TW5TiddlerFields, options?: { suppressTimestamp?: boolean }): void;
+  setTiddlerData(title: string, data: unknown, fields?: TW5TiddlerInputFields, options?: { suppressTimestamp?: boolean }): void;
   getTiddlerDataCached(title: string, defaultData?: unknown): unknown;
   getTiddlerAsJson(title: string): string;
   getTiddlersAsJson(filter: string, spaces?: number): string;
 
   // ── Field generation ─────────────────────────────────────────────────────
 
-  getCreationFields(): Partial<TW5TiddlerFields>;
-  getModificationFields(): Partial<TW5TiddlerFields>;
+  getCreationFields(): Partial<TW5TiddlerInputFields>;
+  getModificationFields(): Partial<TW5TiddlerInputFields>;
 
   // ── Title helpers ─────────────────────────────────────────────────────────
 
@@ -297,6 +292,8 @@ export interface TW5Wiki {
   // ── Filter engine ─────────────────────────────────────────────────────────
 
   filterTiddlers(filterExpr: string, widget?: TW5WidgetInstance, source?: TW5FilterSource): string[];
+  /** Build a filter source iterator over an explicit title list. */
+  makeTiddlerIterator(titles: string[]): TW5FilterSource;
   compileFilter(filterExpr: string): TW5CompiledFilter;
   parseFilter(filterExpr: string): TW5FilterRunSpec[];
 
@@ -355,7 +352,7 @@ export interface TW5Wiki {
     text:     string,
     fields?:  Record<string, unknown>,
     options?: Record<string, unknown>,
-  ): TW5TiddlerFields[];
+  ): TW5TiddlerInputFields[];
 
   // ── Links and transclusions ──────────────────────────────────────────────
 
@@ -412,7 +409,7 @@ export interface TW5Wiki {
   getSizeOfTiddlerEventQueue(): number;
 
   // ── Lararium projection bus ───────────────────────────────────────────────
-  // KukaliWidget fires "tm-lararium-event"; consumers wire via registerProjectionBus().
+  // KukaliWidget fires "tm-verse-event"; consumers wire via onVerseEvent().
 }
 
 // ---------------------------------------------------------------------------
@@ -591,6 +588,8 @@ export interface TW5Utils {
   trim(str: string): string;
   trimPrefix(str: string, unwanted: string): string;
   trimSuffix(str: string, unwanted: string): string;
+  /** Transliterate non-ASCII to ASCII (filesystem path sanitization). */
+  transliterate(str: string): string;
   toSentenceCase(str: string): string;
   toTitleCase(str: string): string;
   escapeRegExp(str: string): string;
@@ -723,7 +722,7 @@ export interface TW5SyncAdaptor {
   /** Load a tiddler by title (lazy loading). */
   loadTiddler(
     title:    string,
-    callback: (err: Error | null, tiddlerFields?: TW5TiddlerFields) => void,
+    callback: (err: Error | null, tiddlerFields?: TW5TiddlerInputFields) => void,
   ): void;
 
   /** Tombstone a tiddler. */
@@ -740,7 +739,7 @@ export interface TW5SyncAdaptor {
   getTiddlerRevision(title: string): string | undefined;
 
   /** List of tiddlers without text (for lazy loading). */
-  getSkinnyTiddlers(callback: (err: Error | null, tiddlers?: TW5TiddlerFields[]) => void): void;
+  getSkinnyTiddlers(callback: (err: Error | null, tiddlers?: TW5TiddlerInputFields[]) => void): void;
 
   /** Optional: subscribe to server-push changes for a title. */
   subscribeToTiddlerChange?(
@@ -767,6 +766,7 @@ export interface TW5Config {
   maxEditFileSize:    number;
   contentTypeInfo:    Record<string, TW5ContentTypeInfo>;
   fileExtensionInfo:  Record<string, { type: string }>;
+  preferences?:       { jsonSpaces?: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -818,8 +818,8 @@ export interface TW5Instance {
 // Module export — `import("tiddlywiki")`
 //
 // TW5 npm package exports `{ TiddlyWiki }` in both CJS and ESM forms.
-// The dynamic import dance in loadNodeTiddlyWiki() (node-host.ts) handles
-// the CJS default wrapping; the shim types only the resolved factory.
+// The blob-eval in tw5-host-bridge.ts (makeNodeBootEnv) handles the CJS default
+// wrapping; the shim types only the resolved factory.
 // ---------------------------------------------------------------------------
 
 declare module "tiddlywiki" {

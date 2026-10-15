@@ -1,0 +1,293 @@
+#!/usr/bin/env bash
+# hearths-gate-witness — the cross-hearth gate, driven in a throwaway repo. Red first, then the CONTROLs.
+#
+# A gate only ever shown passing is no gate, so the CROSSING goes first: a commit trailing one hearth's
+# session that stages a file another hearth holds, and the gate must refuse naming the row. Then the
+# CONTROLs: the SAME file under the HOLDING hearth's trailer passes; a commit carrying NO trailer passes
+# (the operator's own commits carry none); a path no hold names passes silently.
+#
+# THE PASS NOTE SPEAKS ONLY WHEN SOMETHING IS HELD, and the witness pins both halves: a pass over held
+# ground prints the note naming it, and a pass over ground no hold names prints NOTHING. A gate that
+# chatters on every commit trains the hand to stop reading the one line that matters.
+#
+# The ledger under test is the real one — a witness against a fixture ledger proves the parser and not
+# the rows the tree actually stands on.
+#
+# ONE HEARTH CANNOT PRODUCE A CROSSING, AND THAT MUST NOT READ AS A GREEN GATE. When the ledger's live
+# `holds` fence carries a single row, no path in the tree can cross, so the arming vectors would pass by
+# having nothing to refuse — a gate wearing a check it never earned. In that case those vectors run
+# against a FIXTURE ledger built from THIS ledger's own rows (every `[[hold]]` block it carries, live and
+# closed, gathered into one live fence), which is exactly the shape the tree takes the moment a second
+# hearth opens. The script SAYS when it fell back, and the pass-through CONTROLs keep reading the real
+# ledger so the header's law still holds for them.
+#
+# A LIVE FENCE WITH NO HOLD STANDS THE GATE DOWN, and the real-ledger CONTROLs then witness exactly that:
+# a path a closed hearth held passes under the very trailer the arming vector refused, in SILENCE, because
+# a closed hearth defends nothing and nothing stands held. A ledger with no `holds` fence at all still
+# speaks its stand-down note: that names the ledger diverging from the gate, never nothing held. A fence
+# whose `[[hold]]` rows parse incomplete names each torn row, so a fence that tore whole never reads as one
+# that holds nothing.
+#
+# Runs under `${TMPDIR:-/tmp}`; touches no repo of the operator's.
+set -uo pipefail
+cd "$(dirname "$0")/.." || exit 1
+REPO_ROOT="$(pwd)"
+GATE="$REPO_ROOT/tools/hearths-gate.mjs"
+LEDGER="bags/lares/ha.ka.ba/lares/docs/pono/hearths.mem"
+
+FAILED=0
+step() { printf '  %-62s' "$*"; }
+ok()   { printf '\033[32mok\033[0m\n'; }
+bad()  { printf '\033[31mFAILED (%s)\033[0m\n' "$1"; FAILED=$((FAILED + 1)); }
+
+[ -f "$REPO_ROOT/$LEDGER" ] || { echo "hearths-gate-witness: no ledger at $LEDGER" >&2; exit 1; }
+
+# THE GATE'S OWN PARSER ANSWERS BOTH QUESTIONS. A grep over `trailer = "…"` reads the closed fence too and
+# would pair a live hearth with a retired one; `parseHolds` reads exactly what the gate reads.
+# THE GATE PATH RIDES AN ENV VAR, NEVER `argv[1]`. The gate self-executes on
+# `import.meta.url === file://${process.argv[1]}`, so handing it its own path as the first argument makes
+# a READ of the module run its `main()` and exit before the reader prints anything.
+holds_count() {
+  GATE_URL="file://$GATE" LEDGER_FILE="$1" node --input-type=module -e '
+    const { parseHolds } = await import(process.env.GATE_URL);
+    const { readFileSync } = await import("node:fs");
+    // `String(...)`: node inspects a bare number with ANSI colour, and the caller compares it as an integer.
+    console.log(String(parseHolds(readFileSync(process.env.LEDGER_FILE, "utf8")).length));
+  '
+}
+# A PROBE IS A LITERAL PATH EXACTLY ONE ROW OF THE GIVEN LEDGER HOLDS, printed with that row's trailer.
+# A hand-picked path goes stale the moment the `#/holds` fence moves, and a path two rows name (a live row
+# beside the closed row it succeeded) reads as a crossing for both — so every probe reads off the ledger it
+# runs against, skipping any trailer already in use.
+unique_probe() {
+  GATE_URL="file://$GATE" LEDGER_FILE="$1" SKIP_TRAILER="${2:-}" node --input-type=module -e '
+    const { parseHolds, hearthsOf } = await import(process.env.GATE_URL);
+    const { readFileSync } = await import("node:fs");
+    const rows = parseHolds(readFileSync(process.env.LEDGER_FILE, "utf8"));
+    for (const row of rows) {
+      if (row.trailer === process.env.SKIP_TRAILER) continue;
+      for (const g of row.globs || []) {
+        if (g.includes("*")) continue;
+        if (hearthsOf(g, rows).length === 1) { console.log(`${g} ${row.trailer}`); process.exit(0); }
+      }
+    }
+  '
+}
+
+UNHELD="tools/a-path-no-hold-names.txt"
+
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/hearths-gate-witness-XXXXXX")" || exit 1
+trap 'rm -rf "$WORK"' EXIT
+git -C "$WORK" init -q
+git -C "$WORK" config user.email witness@example.invalid
+git -C "$WORK" config user.name witness
+# ONLY the commit-msg hook installs here: the pre-commit gate resolves its own script through the
+# COMMITTING repo's toplevel, so a throwaway repo would make it exec a path that does not exist and the
+# red would read as this gate refusing when nothing of this gate ever ran.
+mkdir -p "$WORK/.hooks"
+printf '#!/usr/bin/env sh\nexec node "%s" "$1"\n' "$GATE" > "$WORK/.hooks/commit-msg"
+chmod +x "$WORK/.hooks/commit-msg"
+git -C "$WORK" config core.hooksPath "$WORK/.hooks"
+mkdir -p "$WORK/$(dirname "$LEDGER")"
+cp "$REPO_ROOT/$LEDGER" "$WORK/$LEDGER"
+git -C "$WORK" add -A >/dev/null
+git -C "$WORK" commit -q -m "seed the ledger" --no-verify
+
+cp "$REPO_ROOT/$LEDGER" "$WORK/real-ledger.mem"
+# The fixture: every `[[hold]]` block this ledger carries, in one LIVE fence.
+{ echo '```toml holds'
+  awk '/^```toml holds/ { inf = 1; next } inf && /^```$/ { inf = 0; next } inf' "$REPO_ROOT/$LEDGER"
+  echo '```'
+} > "$WORK/fixture-ledger.mem"
+
+LIVE_HOLDS="$(holds_count "$REPO_ROOT/$LEDGER")"
+if [ "${LIVE_HOLDS:-0}" -ge 2 ]; then
+  ARMED_LEDGER="$WORK/real-ledger.mem"; ARMED_WHY="the live ledger ($LIVE_HOLDS holds)"
+else
+  ARMED_LEDGER="$WORK/fixture-ledger.mem"
+  ARMED_WHY="a fixture of this ledger's own rows — the live fence carries $LIVE_HOLDS hold, which can cross nothing"
+fi
+use_ledger() { cp "$1" "$WORK/$LEDGER"; }
+
+read -r HELD_BY_A OWNER_A <<EOF2
+$(unique_probe "$ARMED_LEDGER")
+EOF2
+read -r HELD_BY_B OWNER_B <<EOF2
+$(unique_probe "$ARMED_LEDGER" "$OWNER_A")
+EOF2
+read -r HELD_LIVE LIVE_OWNER <<EOF2
+$(unique_probe "$WORK/real-ledger.mem")
+EOF2
+
+
+stage() { mkdir -p "$WORK/$(dirname "$1")"; date +%s%N > "$WORK/$1"; git -C "$WORK" add "$1" >/dev/null; }
+attempt() { git -C "$WORK" commit -F - > "$WORK/out.txt" 2>&1; }
+
+echo "hearths-gate-witness — a commit may not reach into another hearth's ground"
+echo "  ledger: $LEDGER"
+echo "  arming vectors read: $ARMED_WHY"
+echo "  $HELD_BY_A → $OWNER_A"
+echo "  $HELD_BY_B → $OWNER_B"
+
+step "the arming ledger names two DIFFERENT hearths for the two paths"
+if [ -n "$OWNER_A" ] && [ -n "$OWNER_B" ] && [ "$OWNER_A" != "$OWNER_B" ]; then ok
+else bad "the vectors below would measure nothing: A='$OWNER_A' B='$OWNER_B'"; fi
+
+use_ledger "$ARMED_LEDGER"
+
+step "★ RED: an $OWNER_B commit stages another hearth's file"
+stage "$HELD_BY_A"
+printf 'lar:///a.b.c — a crossing\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_B" | attempt
+if [ $? -eq 0 ]; then bad "the gate let the crossing through"
+elif grep -q "REFUSED" "$WORK/out.txt" && grep -q "$HELD_BY_A" "$WORK/out.txt" && grep -q "$OWNER_A" "$WORK/out.txt"; then ok
+else bad "refused without naming the file and the row"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
+
+step "CONTROL: the SAME file under the HOLDING hearth's trailer passes"
+printf 'lar:///a.b.c — the holder writes\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -eq 0 ]; then ok; else bad "the holding hearth was refused its own ground"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
+
+# The note's two halves, both on the ARMED ledger so a held path exists to speak about.
+step "★ SPEAKS: a pass over HELD ground prints the note naming it"
+stage "$HELD_BY_A"
+printf 'lar:///a.b.c — the holder writes again\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "the holding hearth was refused its own ground"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "\[hearths-gate\] 1 path(s) stand on .*own ground" "$WORK/out.txt"; then ok
+else bad "passed held ground without the note"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+
+step "★ SPEAKS: a trailer-less pass over HELD ground prints the operator note"
+stage "$HELD_BY_A"
+printf 'the operator writes held ground, carrying no trailer\n' | attempt
+if [ $? -ne 0 ]; then bad "a trailer-less commit was refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "no \`Claude-Session:\` trailer" "$WORK/out.txt"; then ok
+else bad "passed without the note"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+
+step "★ QUIET: a pass over ground NO hold names prints nothing"
+stage "$UNHELD"
+printf 'lar:///a.b.c — unheld ground\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "unheld ground refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "hearths-gate" "$WORK/out.txt"; then bad "the gate spoke with nothing held"; sed 's/^/      /' "$WORK/out.txt" | head -4
+else ok; fi
+
+step "★ QUIET: a trailer-less pass over unheld ground prints nothing"
+stage "$UNHELD"
+printf 'the operator writes unheld ground, carrying no trailer\n' | attempt
+if [ $? -ne 0 ]; then bad "a trailer-less commit was refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "hearths-gate" "$WORK/out.txt"; then bad "the gate spoke with nothing held"; sed 's/^/      /' "$WORK/out.txt" | head -4
+else ok; fi
+
+# A ledger with no `holds` fence cannot say what is held, so the gate stands down ALOUD.
+printf 'a ledger whose holds fence went missing\n' > "$WORK/fenceless-ledger.mem"
+use_ledger "$WORK/fenceless-ledger.mem"
+step "CONTROL: a ledger with NO holds fence stands the gate down aloud"
+stage "$UNHELD"
+printf 'lar:///a.b.c — fenceless\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "a fenceless ledger blocked the tree"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "no \`holds\` fence .* the gate stands down" "$WORK/out.txt"; then ok
+else bad "stood down in silence over a fenceless ledger"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+
+# A FENCE WHOSE EVERY ROW TORE MUST NOT PASS AS AN EMPTY ONE. Each row below names a hold, yet one lacks a
+# quoted trailer and the other lacks a glob, so neither parses whole and the gate can defend neither. The
+# commit still passes (a ledger the gate cannot read never blocks a tree), but the gate names both rows.
+cat > "$WORK/torn-ledger.mem" <<'TORN'
+```toml holds
+[[hold]]
+hearth  = "Torn Trailer"
+trailer = session_UNQUOTED
+globs   = ["tools/a-path-no-hold-names.txt"]
+
+[[hold]]
+hearth  = "Torn Globs"
+trailer = "session_TORNGLOBS"
+```
+TORN
+use_ledger "$WORK/torn-ledger.mem"
+step "★ SPEAKS: a fence whose every row parses incomplete names each torn row"
+stage "$UNHELD"
+printf 'lar:///a.b.c — over a torn fence\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "a torn fence blocked the tree"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "2 \`\[\[hold\]\]\` row(s) .* parse incomplete" "$WORK/out.txt" \
+  && grep -q "Torn Trailer\` (no trailer)" "$WORK/out.txt" && grep -q "Torn Globs\` (no globs)" "$WORK/out.txt"; then ok
+else bad "a torn fence passed without naming its rows"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+use_ledger "$ARMED_LEDGER"
+
+step "CONTROL: a fence whose rows parse whole names no torn row"
+stage "$UNHELD"
+printf 'lar:///a.b.c — over a whole fence\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_A" | attempt
+if [ $? -ne 0 ]; then bad "unheld ground refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "parse incomplete" "$WORK/out.txt"; then bad "a whole fence read as torn"; sed 's/^/      /' "$WORK/out.txt" | head -4
+else ok; fi
+
+step "CONTROL: the committing hearth's OWN ground passes"
+stage "$HELD_BY_B"
+printf 'lar:///a.b.c — own ground\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_B" | attempt
+if [ $? -eq 0 ]; then ok; else bad "own ground refused"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
+
+step "CONTROL: a nonsense trailer owns nothing — every held path reads as a crossing"
+stage "$HELD_BY_B"
+printf 'lar:///a.b.c — a stranger\n\nClaude-Session: https://claude.ai/code/session_NOBODYHOLDSTHIS\n' | attempt
+if [ $? -eq 0 ]; then bad "a stranger wrote a held file unchallenged"
+elif grep -q "REFUSED" "$WORK/out.txt"; then ok
+else bad "refused for the wrong reason"; sed 's/^/      /' "$WORK/out.txt" | head -6; fi
+
+# THE LEDGER BELONGS TO NO HEARTH — a hold that reached it would refuse the hand owing a crossing row,
+# and the ledger's own law demands that row BEFORE the hand starts. These vectors read a fixture where a
+# hearth claims the docs ground (the natural claim to make), because the live fence claims it today by
+# nobody and a vector over that proves only the accident.
+sed 's|^  "packages/lares-cli/src/commands/persona.ts",|  "packages/lares-cli/src/commands/persona.ts",\n  "bags/lares/ha.ka.ba/lares/docs/pono/**",|' \
+  "$WORK/fixture-ledger.mem" > "$WORK/claimed-ledger.mem"
+use_ledger "$WORK/claimed-ledger.mem"
+
+step "★ RED-TURNED-GREEN: a FOREIGN hearth writes its own crossing row into the claimed ledger"
+stage "$LEDGER"
+printf 'lar:///a.b.c — a crossing row\n\nClaude-Session: https://claude.ai/code/session_SECONDHEARTHWRITES\n' | attempt
+if [ $? -eq 0 ]; then ok
+else bad "the ledger refused the hand its own law sends to it — the carve-out in hearthsOf is gone"
+     sed 's/^/      /' "$WORK/out.txt" | head -8; fi
+
+# `stage` writes a timestamp over whatever it names, so the vector above left the work tree's ledger
+# unparseable — and an unparseable ledger stands the gate DOWN, which would pass every vector below by
+# having nothing to refuse. Re-seat it. (The control beneath caught exactly this when it was missing.)
+use_ledger "$WORK/claimed-ledger.mem"
+
+step "CONTROL: the carve-out frees the LEDGER ALONE — a sibling under the same glob still refuses"
+stage "bags/lares/ha.ka.ba/lares/docs/pono/otakiage.mem"
+printf 'lar:///a.b.c — a neighbour\n\nClaude-Session: https://claude.ai/code/session_SECONDHEARTHWRITES\n' | attempt
+if [ $? -eq 0 ]; then bad "the carve-out widened past the ledger — every docs/pono path now passes"
+elif grep -q "REFUSED" "$WORK/out.txt"; then ok
+else bad "refused for the wrong reason"; sed 's/^/      /' "$WORK/out.txt" | head -6; fi
+
+# THE PASS-THROUGH CONTROLS READ THE REAL LEDGER. They assert what the gate does to a commit it must NOT
+# refuse, and that answer must come off the rows the tree actually stands on, single hearth or not.
+use_ledger "$WORK/real-ledger.mem"
+
+if [ -n "$LIVE_OWNER" ]; then
+step "CONTROL: a commit with NO trailer over live held ground passes, with a printed note"
+stage "$HELD_LIVE"
+printf 'the operator writes, carrying no trailer\n' | attempt
+if [ $? -ne 0 ]; then bad "a trailer-less commit was refused"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "no \`Claude-Session:\` trailer" "$WORK/out.txt"; then ok
+else bad "passed without the note"; sed 's/^/      /' "$WORK/out.txt" | head -4; fi
+fi
+
+step "CONTROL: a path NO hold names passes"
+stage "$UNHELD"
+printf 'lar:///a.b.c — unheld ground\n\nClaude-Session: https://claude.ai/code/%s\n' "${LIVE_OWNER:-session_NOBODYHOLDSTHIS}" | attempt
+if [ $? -eq 0 ]; then ok; else bad "unheld ground refused"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
+
+if [ -n "$LIVE_OWNER" ]; then
+step "CONTROL: a live hearth writes its OWN ground on the real ledger"
+stage "$HELD_LIVE"
+printf 'lar:///a.b.c — the live hearth writes\n\nClaude-Session: https://claude.ai/code/%s\n' "$LIVE_OWNER" | attempt
+if [ $? -eq 0 ]; then ok; else bad "the standing hearth was refused its own ground"; sed 's/^/      /' "$WORK/out.txt" | head -8; fi
+else
+step "CONTROL: no live hold — the arming crossing passes, in silence"
+stage "$HELD_BY_A"
+printf 'lar:///a.b.c — closed ground\n\nClaude-Session: https://claude.ai/code/%s\n' "$OWNER_B" | attempt
+if [ $? -ne 0 ]; then bad "a closed hearth's former ground was defended"; sed 's/^/      /' "$WORK/out.txt" | head -8
+elif grep -q "hearths-gate" "$WORK/out.txt"; then bad "the gate spoke over a ledger holding nothing"; sed 's/^/      /' "$WORK/out.txt" | head -4
+else ok; fi
+fi
+
+echo
+if [ "$FAILED" -eq 0 ]; then printf '\033[32mhearths-gate-witness: all vectors stand\033[0m\n'; exit 0; fi
+printf '\033[31mhearths-gate-witness: %d vector(s) failed\033[0m\n' "$FAILED"; exit 1

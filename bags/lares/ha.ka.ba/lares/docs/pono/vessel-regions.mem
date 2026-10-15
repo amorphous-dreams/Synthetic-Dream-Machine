@@ -1,0 +1,149 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/vessel-regions">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = false
+file-path  = "bags/lares/ha.ka.ba/lares/docs/pono/vessel-regions.mem"
+l-space    = "stable"
+mana       = 13
+manao      = 15
+manaoio    = 14
+revised-on = "2026-10-12"
+role       = "the region plan for open-node-vessel.ts — the file read as seven regions with their shared mutable cells named, what each could become as a module the browser vessel composes too, the red that pins the boot order BEFORE any line moves, and spirit-hours per region. A plan, never a patch: nothing here moves a line."
+status-why = "the founding hearth owes this plan to the meme hearth (docs/pono/hearths); first measured 2026-09-12, re-measured 2026-10-12 by symbol over the two-phase boot (`standNodeFloor` · `SovereignReaders`); every lift it names stands unbuilt"
+tags       = ["docs/pono/plan", "lifecycle/standing"]
+title      = "lar:///ha.ka.ba/lares/docs/pono/vessel-regions"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lares/docs/pono/vessel-regions"
+```
+
+<<~ ahu #/the-reading>>
+
+! The reading
+
+One closure in `packages/lararium-node/src/open-node-vessel.ts` — `prepareNodeBootOn` — holds about three quarters of the file (measured 2026-10-12). `prepareNodeBoot` wraps it: the wrapper takes a floor or stands its own, keeps the list of what stood, and tears that list down backward when a composition refuses. Two doors open over it: `openNodeVessel` composing a hearth through `composeNodeVesselOn`, `openNodeHerm` composing a place through `composeNodeHermOn`.
+
+''This carrier names every region by SYMBOL, never by line.'' The file moves under an active boot rewrite, and a symbol survives a move that a line number does not.
+
+''The boot stands in two phases, and the plan reads on top of them.'' `standNodeFloor` claims the store before any Repo opens and returns a `NodeFloor`; the floor reads no private row. `SovereignReaders` gathers the boot's named private-row reads behind one seam (other private reads, such as the persona-root seed, keep their own custody paths): a composition handed readers stands sovereign, and a composition handed none stands at the floor and runs no reader. `packages/lararium-node/src/main.ts` stands the floor once and composes over it (`composeStanding` · `composeOrFloor` · `recompose`).
+
+''The closure reads as seven regions.'' Three lifts come out of ③, ⑥ and ⑦; ⑤ stands apart as the Herm shore; and regions ①–④ share ONE object the closure hides — a share-verdict authority — which this plan exists to name. A split that cuts anywhere else moves lines and buys nothing.
+
+The browser's counterpart (`packages/lararium-browser/src/open-browser-vessel.ts`) carried, by the 2026-09-12 measure, a counterpart for four regions, a partial for two, and NOTHING for the rest. `composeLararium` and `composeBrowser` both alias `composeCoreVessel` (`node-caps.ts` · `browser-caps.ts`) — the same function under two names; each substrate supplies its own orchestration object and its own extra caps. So a region extracted as a module stands within reach of both substrates and still wants wiring on each; a region that stays inline reaches neither.
+
+<<~/ahu>>
+
+<<~ ahu #/the-seven-regions>>
+
+!! The seven regions, by symbol
+
+!!! ① The boot window · ''MUST NOT MOVE''
+
+The sovereign seam read · `readHearthDialPin` · the worn mount, read through the seam (`sovereign.wornMount`) · `emit("boot")`, and then ''the forward declarations whose initial values ENACT the denial'': `antigenRing = null` · `selfSlotFedGate = null` · `realmPlane = null` · `nexusMembership = null` · `sealRegistry = makeSealedPlaneRegistry()` — empty, so DENY-ALL, beside the sibling cells `siblings = null` and `siblingGate = null`.
+
+The closure constructs the Repo (`new Repo`) after those declarations, and the holders that fill the cells stand later in the closure. ''The window between stays deliberately inert for the outside lanes'': the unarmed federation and sibling gates deny their lanes until their holders stand, while the antigen ring and the in-process island lane keep their own rules (a null antigen ring denies nobody). Posture holds no cell here; `ownPlacePosture` (`socket-sorter.ts`) reads it fresh.
+
+Two things the window once held stand in the floor phase: the store claim (`standNodeFloor`) and the private-row reads (`SovereignReaders`).
+
+!!! ② Repo + the share verdict + reverdict
+
+`DaemonAuthGate` · `ListeningWSServerAdapter` · the five peer maps (`peerIdentifierMap` · `peerClassMap` · `peerWalkerBoard` · `peerContractNymMap` · `peerBindings`) and the `peer-candidate` microtask that fills four of them · `new Repo({ shareConfig: … })` · the `doc-metrics` wire probe · `reverdict`, which calls `repo.shareConfigChanged()`.
+
+''The verdict closure (the `selfSlotShareDecision` call) reads the denial cells, the sibling cells, the peer maps and the vessel's own carriage and hosting boards'', and several regions write them. This region does not split.
+
+!!! ③ The dial — fleet · contract · pin
+
+The carriage serve-loop over Socket B, the carriage relay stand, the fetch door and its ''process-global'' `setCasDoor`, and the dial CONFIG read. Both reconnect sites call `afterRoll`, the one hook that refolds membership, refreshes the realm plane and then reverdicts.
+
+''The dial itself fires far later'' (`maybeStartNexusClientDial`), inside `openDaemon`, after `registerCrossroadsInOracle` and the realm plane, and it must: a `find` a connected peer answers "unavailable" settles ahead of the local materialize, measured as a fatal `slot bags/crossroads unavailable`. ''Nothing but the physical position of that call enforces the order.''
+
+!!! ④ The planes — oracle · realm · crossroads
+
+`loadGenesis` — the oracle materialize, the core-blob check, the bootstrap parse, and the persona-plane resolution it hands to `bootFacePlanes` and `bootDaemonUrl` (`boot-face-planes.ts`) — and five boot HALTs. `registerCrossroadsInOracle`. The realm plane, which stands `realmPlane` and ''RE-ASSIGNS'' `selfSlotFedGate = realmPlane.gate` — the second write to a cell the verdict already reads. The PersonaGroup ring writes that cell a third time (`ring.compose(selfSlotFedGate)`).
+
+!!! ⑤ The Herm shore
+
+`openNodeHerm` and its body `composeNodeHermOn`: the httpServer guard, `hermCrossroads`, `composeHerm` with `publicCasShore` and its realm lane. It reaches back into the prepared boot through two thunks — `p.realmStanding()` and `p.daemonVm()` — and through the handles the preparation returns (`p.repo` · `p.bulb` · `p.openDaemon` · `p.wireVerbs` · `p.afterDaemon` · `p.teardown` among them). By the 2026-09-12 measure it reached back through one thunk; the reach has widened, so R5 wants a fresh reading before anyone calls this shore almost a module.
+
+!!! ⑥ The daemon wiring — sweep · stowage · cas
+
+`afterDaemon` (including `authGate.arm`), `makePool` (sole writer of `vmManager` · `wikiActivation` · `mailbox` · `eventBus`), `afterLive`. Five forward references, ONE writer each — the cleanest dependency shape in the file after ⑦.
+
+!!! ⑦ The verbs, and the providers behind them
+
+`wireVerbs` registers its own literal verbs, the whole `storeDoorReactors` table (`store-door-verbs.ts`), and `cas-sweep` through `installCasSweep`. Behind them stand four verb-plane provider implementations that `openDaemon` composes through `composeVerbPlane`: mempalace · form · daemon · telemetry. ''The provider bundle reads `daemonVm` and the recall and capture helpers beside it, and reads none of the verdict cells.''
+
+<<~/ahu>>
+
+<<~ ahu #/what-becomes-a-module>>
+
+!! What each region could become
+
+''Three lifts come out of ③, ⑥ and ⑦. Regions ①–④ share one object. ⑤ stands apart.'' Every lift below stands UNBUILT: the tree carries no `makeNodeVerbProviders`, no `NodeCasDoor`, no `NodePool` and no share-verdict authority object.
+
+!!! Lifts cleanly
+
+* ''⑦ the verb-provider bundle'' → `makeNodeVerbProviders`, taking `daemonVm` and the recall and capture helpers as injected readings, with ZERO coupling to the verdict cells. The browser registers none of `wiki-act` · `realm-bag` · `realm-bags` · `nexus-rekey` · `nexus-reshare` · `cas-fetch` · `cad-seal`, and it composes six verbs the node does (`sync-wiki` · `residency` · `wiki-switch` · `wiki-hold` · `wiki-release` · `wiki-active`). The provider extraction leaves those six registrations separate (`wireVerbs` holds the node's); a further shared wiring step could give the six ONE spelling and leave each substrate its own.
+* ''③ the CAS / fetch-door'' (`cidDir` · `resolveCidThroughDoor` · `carriageLoop` · `fleetHolders` · `casBagTracker`) → a `NodeCasDoor` holder. It couples to the verdict cluster through `sealRegistry`, and `carriageLoop` also takes `nexusMembership`, `antigenRing` and `selfSlotFedGate`, while the fleet reads consult `peerIdentifierMap` and `peerClassMap`; the module would take each as an injected cell rather than close over it. ''Its `setCasDoor` writes a process global.'' The two-phase boot names that global's teardown (the fetch door, on the stood list); a module would make the write as visible.
+* ''⑥ the pool / mailbox wiring'' → a `NodePool` holder over `vmManager` · `wikiActivation` · `mailbox` · `eventBus`. The residency wiring reads these cells before `makePool` writes them; a holder turns four forward-declared `let`s into one constructed thing.
+
+!!! Does NOT split — and naming it makes the point
+
+Regions ①②③④ co-own the verdict cells: `antigenRing` · `selfSlotFedGate` · `realmPlane` · `nexusMembership` · `sealRegistry` · `siblings` · `siblingGate` · `peerIdentifierMap` · `peerClassMap` · `peerWalkerBoard` · `ownCarriageBoard` · `ownHostingDocs`. `peerContractNymMap` and `charterHearthPeers` feed the realm charter consult (`makeRealmCharterConsult`) beside them.
+
+''The object hiding in this file stands as a SHARE-VERDICT AUTHORITY'' holding those cells, and it wants ONE mutation protocol: every verdict-changing write reaches `reverdict()`. Named paths already reverdict: reconnects and the store-door rows funnel through `afterRoll`, the membership and realm holders reverdict through their `onRefold` callbacks, and the `realm-bag` verb calls it directly. The `cad-seal` verb registers a sealed plane with no reverdict after it, so the protocol does not yet hold for every writer. Existing tests pin the realm callback, the Repo's stale-verdict behaviour and the after-roll call shape (`realm-refold-reverdict.test.ts` · `requested-doc-stale-verdict.test.ts` · `after-roll-awaited.test.ts`, under `packages/lararium-node/tests/`), and a comment states the rule beside `reverdict`. No type holds it. ''Extracting the authority converts that invariant from a habit into an API'' (a setter that reverdicts, never a public field), which gives the whole return on the region work.
+
+''The browser holds none of the holders this authority gathers'' — no antigen ring holder, no membership board, no seal registry, no realm plane, and no `shareConfigChanged` path — though it carries a federation gate, a sibling gate and a share config of its own (`open-browser-vessel.ts`). So the authority extracts as a NODE module first and reaches the browser only when a browser vessel gains any of those holders. The three clean lifts reach both substrates immediately.
+
+<<~/ahu>>
+
+<<~ ahu #/the-red-that-goes-first>>
+
+!! The red that pins the boot order — BEFORE any line moves
+
+''No test pins the WHOLE boot order of this file.'' The file does not export `prepareNodeBoot`. Tests do reach its doors: `wire-daemon-bootstrap.test.ts` runs `openNodeVessel`, `rest-door.test.ts` covers `restInStore`, and `tools/two-phase-boot.test.mjs` runs the built package through the floor and the sovereign phase.
+
+Four orderings bear load. The first three stand unpinned as orderings, and the fourth already throws. A region plan that moves a line before the reds stand amounts to a rewrite with no instrument.
+
+# ''THE ADMISSION LANDS FIRST.'' The share verdict awaits a microtask before reading `network.sockets[peerId]`, because the WS adapter emits `peer-candidate` BEFORE it keys the socket, and the Repo resolves the verdict synchronously inside that emit. Without the yield a WS peer reads as an in-process house member and every private plane the vessel holds at that instant syncs. ''RED'' (UNBUILT): a staged WS peer that never passed the gate asks for a private plane on its FIRST verdict and draws `false`; ''CONTROL'': the same peer after `peer-candidate` lands draws the same `false` for a different reason (unadmitted), and an in-process island peer draws `true`. The red must fail once the `queueMicrotask` yield goes — collide it by removing the line and re-running.
+# ''THE DIAL FIRES AFTER THE BOARDS'' (`maybeStartNexusClientDial` after `registerCrossroadsInOracle` and the realm plane). ''RED'' (UNBUILT): a boot with a `LAR_JOIN_SYNC` naming a live peer reaches `phase → live` and the crossroads slot resolves; with the dial hoisted ahead of `registerCrossroadsInOracle` the same boot dies on `slot bags/crossroads unavailable — the peer answered WITHOUT doc`. The witness wants the hoist as a deliberate arm, so the witness measures the order rather than asserting it.
+# ''EVERY WRITER REVERDICTS''. ''RED'': for each verdict cell, a write followed by a verdict read answers the NEW value. The three tests named under #/what-becomes-a-module pin the realm callback, the Repo's stale-verdict behaviour and the after-roll call shape; the per-cell verdict reds stand UNBUILT. The red makes an extraction safe, since a missed `reverdict` in a refactor reads as a peer that syncs what it should not and shows up nowhere else.
+# ''THE PREFAB ORDER.'' `openDaemon` writes `pendingVerbContribution` and `wireVerbs` reads it, throwing when it finds none. This one already throws; the other three want that shape.
+
+''Both doors emit `vessel-ready` and `live`, from two different files.'' `composeNodeHermOn` emits both in this file; the hearth emits them through the keel's phase hook (`wikiCap` and `mountCap`, `packages/lararium-tw5/src/core-caps.ts`). A phase witness reads both doors and finds each emit where its door puts it.
+
+<<~/ahu>>
+
+<<~ ahu #/spirit-hours>>
+
+!! Spirit-hours
+
+A tasked spirit's walk at this codebase's grain, never a human's; the hours stand as estimated 2026-09-12. ''The reds come first, and nothing makes them optional'' — the region work without them amounts to an unwitnessed rewrite of the vessel's only boot.
+
+|!step |!hours |!what |!standing |
+|R0 · the boot-order reds | 6 | the microtask yield · the dial-after-boards · a reverdict red per cell. Nothing moves; every red must fail when a hand deliberately breaks its ordering. | UNBUILT |
+|R1 · ⑦ the verb-provider bundle | 5 | `makeNodeVerbProviders`, the four provider implementations out of `openDaemon`, `daemonVm` and the recall and capture helpers injected. The six shared verb registrations wait on a further wiring step. | UNBUILT |
+|R2 · ⑥ the pool holder | 4 | four forward-declared cells become one constructed holder; the residency wiring takes it as a parameter. | UNBUILT |
+|R3 · ③ the CAS door | 4 | `NodeCasDoor` with `sealRegistry` and the other verdict cells it reads injected; `setCasDoor`'s process-global scope named at the module edge. | UNBUILT |
+|R4 · the share-verdict authority | 10 | the verdict cells behind setters that reverdict; ①②③④ read it rather than close over it. Gated on R0 — without the reverdict reds nothing can show this step correct. | UNBUILT; `afterRoll` and the `onRefold` callbacks already gather the roll and refold writers |
+|R5 · the Herm shore | 3 | `publicCasShore`'s wiring out of `composeNodeHermOn`, taking `realmStanding` and `daemonVm` as injected readings. | UNBUILT; the body already stands apart from its door |
+
+''Order matters and R0 gates everything.'' R1–R3 separate cleanly and each lands alone. R4 wants R0 whole. R5, the smallest, may run any time after R0.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/lararium-canonical-model">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;_3QxEZjYYC7rCY50LzFP4qK3pkTlezWwBAgkuP8YnsA
+
+<<^ code="&#x0004;" -> to="?">>

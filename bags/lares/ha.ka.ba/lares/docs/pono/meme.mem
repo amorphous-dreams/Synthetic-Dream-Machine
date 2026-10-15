@@ -1,0 +1,131 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/meme">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/meme.mem"
+l-space   = "stable"
+mana      = 16
+manao     = 17
+manaoio   = 15
+role      = "extended documentation surface for meme examples, lifecycle table, resolution notes, and migration residue"
+tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/meme"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/meme"
+```
+
+<<~ ahu #/meme-header>>
+
+! Meme — Extended Docs
+
+This file does not bind invariant law.
+Law lives in `lar:///ha.ka.ba/lares/api/pono/meme`.
+This surface carries examples, tables, and split residue.
+
+<<~/ahu>>
+
+<<~ ahu #/required-shape-reference>>
+
+!! Required Shape Reference
+
+| surface | why it matters |
+|---|---|
+| doctype | marks the carrier as memetic-wikitext before active sigils appear |
+| opener | declares the live address of the carrier |
+| `#meta` | names identity, ratings, and role |
+| title + opening scope | tells the reader what governs here and what does not |
+| body thresholds | marks active semantic span |
+| six-glyph phase map | binds the working loop compactly |
+| edges | exposes adjacency explicitly |
+| return throat | leaves residue honest |
+
+Filled optional depth sharpens a meme.
+It does not replace these surfaces.
+
+<<~/ahu>>
+
+<<~ ahu #/lifecycle-table>>
+
+!! Lifecycle Table
+
+| posture | reading |
+|---|---|
+| Noise | signal appears, but the copy-shape does not yet bind it |
+| Data | machine-usable structure appears, but meme law still does not fully hold |
+| Meme | minimum lawful shape now holds |
+| Typed Meme | one or more outward type laws now bind the carrier |
+| Canon Typed Meme | external ratification confirms the type bundle |
+
+`confidence` reports the operator-facing band.
+`mana`, `manao`, and `manaoio` keep their own jobs.
+
+<<~/ahu>>
+
+<<~ ahu #/resolution-notes>>
+
+!! Resolution Notes
+
+When a meme declares depth through named `pranala` sugar such as `loulou`, keep these states distinct:
+
+| state | meaning | effect |
+|---|---|---|
+| resolved | target yields lawful content | raises trust in the outward claim |
+| declared-unresolved | target named, but not yet yielding | creates explicit backlog pressure |
+| absent | no outward claim declared | keeps the carrier shallow but honest |
+
+Do not use outward depth callouts to restate a local anchor.
+Do not treat decorative motion as structural depth.
+
+<<~/ahu>>
+
+<<~ ahu #/example-skeleton>>
+
+!! Example Skeleton Reading
+
+The copy-ready skeleton lives in `lar:///ha.ka.ba/lares/api/pono/meme/SKILL` because it functions as working procedure, not invariant law.
+Use that skeleton when you need a fresh lawful parent.
+Then tighten its role, edges, and phase map for the actual carrier you are drafting.
+
+<<~/ahu>>
+
+<<~ ahu #/migration-note>>
+
+!! Migration Note
+
+This docs companion formed during the 2026-04-21 yin split/refine/clean pass.
+The old parent mixed invariant law, phase-by-phase procedure, skeleton blocks, resolution detail, and research backlog.
+The current shape keeps:
+
+* parent invariant at `lar:///ha.ka.ba/lares/api/pono/meme`
+* operational procedure at `lar:///ha.ka.ba/lares/api/pono/meme/SKILL`
+* extended guidance here
+
+Research backlog and subtype-specific detail should deepen into their own outward loci rather than re-swelling the parent.
+
+<<~/ahu>>
+
+<<~ ahu #/the-dual-zoom-audit>>
+
+!! The dual-zoom audit ~ read a slot at two zooms at once
+
+''A slot audit that reads at one zoom finds one class of fault.'' Zoom IN on the slot's own loop — Ha: does it name its address, its boundary and what it depends on · Ka: does it carry the charge and register it claims · Ba: does it name its motion and where it hands off. Zoom OUT on the whole span at the same time, looking for slot-leakage ''in reverse'': whether the Ka and Ba prose has quietly started defining territory that belongs to Ha.
+
+''The reverse direction is the one a single-zoom read cannot see.'' A slot that over-reaches downward reads correct in isolation — its own loop closes — and the drift shows only as the parent's Ha thinning into a pointer at its own children. Both zooms run in one pass, because a reader who does them in sequence has already forgotten the first when the second would have caught it.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;RqEn7FYQn8jsjvd6KYi-RaolYP4hiohZLgpn-N7Wmb8
+
+<<^ code="&#x0004;" -> to="?">>

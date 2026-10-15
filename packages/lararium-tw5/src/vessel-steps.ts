@@ -1,0 +1,213 @@
+/**
+ * vessel-steps — shared cascade steps for the vessel boot.
+ *
+ * Pair 3/5 collapses the two vessel factories (open-node-vessel ⇆
+ * open-browser-vessel) NOT into one monolithic core but into a CASCADE of
+ * composable steps each factory sequences — the vessel IS a recipe. Genuinely
+ * divergent stations (node WS relay office, browser IDB batching / genesis,
+ * the node verb-registry) stay platform steps; only the shared spine extracts
+ * here, by subtraction.
+ *
+ * Office divergence rides IN as composition, never as a branch: e.g. the social
+ * plane's seed policy (a node relay FINDS-never-seeds; a browser keeper may
+ * SEED) arrives as the caller's `resolveHandle`, not an `if (platform)`.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/tw5/vessel-steps
+ */
+
+import {
+  AutomergeDocStore,
+  computeRecipeFingerprint,
+  LARES_DOC_URI, LARARIUM_DOC_URI,
+  wikiBagUri, wikiSlotUri,
+  type DocHandle,
+  type AutomergeUrl,
+  type LarDoc,
+  type LarTiddlerRecord,
+  type CompositeStore,
+  type SlotUri,
+  type WikiRecipe,
+  type WikiMountSpec,
+  type IslandGrants,
+} from "@lararium/mesh";
+import type { VerbTable } from "./verb-dispatcher.js";
+import { effectiveRecipe } from "./recipe-planes.js";
+
+/** Resolve one bag's doc handle. Encodes the platform/office seed policy
+ *  (node relay → throw on miss; browser keeper → create blank). */
+export type ResolveBagHandle = (
+  url: AutomergeUrl,
+  bag: string,
+) => Promise<DocHandle<LarDoc>>;
+
+// ── Layer-role vocabulary ─────────────────────────────────────────────────────
+// A vessel composite IS a cascade of typed layer-roles. These name the shared
+// config intent so it cannot drift across factories; handle RESOLUTION (genesis
+// sourcing etc.) stays a platform concern, passed in as the resolved handle.
+
+/**
+ * Canon layer (the lararium and lares bags): writable so residency actions can land
+ * tiddlers, but `defaultWritable:false` so unbagged TW5 saves keep routing to
+ * the wiki — only an explicit `record.bag === bagId` write lands here.
+ */
+export function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
+  composite.addLayer({
+    bagId,
+    store:           new AutomergeDocStore(handle, bagId),
+    writable:        true,
+    defaultWritable: false,
+  });
+}
+
+/** Read-only layer (catalog registry, corpus bags): synced for reads, never written. */
+export function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
+  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
+}
+
+/**
+ * Seed the base verbs every vessel answers, regardless of platform or office.
+ * Office-specific powers (node's residency/wiki reactors, etc.) compose ON TOP
+ * by registering further verbs — the base set stays shared.
+ */
+export function seedVesselDefaults(registry: VerbTable): void {
+  // echo — universal protocol smoke verb.
+  if (!registry.has("echo")) {
+    registry.register("echo", async (args) => ({ echoed: args }));
+  }
+}
+
+// ── Primary wiki mount — the isomorphic keystone step ─────────────────────────
+
+/** Any vessel island pool: one isomorphic mount signature (pair 1 cc24f3b9).
+ *  `opts.pinned` is a node residency capability; a pool without residency
+ *  ignores it (composition by capability, never a per-platform branch). */
+export interface PrimaryMountPool {
+  mountWiki(id: string, spec: WikiMountSpec, opts?: { pinned?: boolean }): Promise<void>;
+}
+
+/** Any daemon vessel that can resolve the operator's personal/draft/working
+ *  binding — island-side, where keyhive lives. Both vessels expose this (pair 2). */
+export interface BindingResolver {
+  resolveBinding(
+    fingerprint: string,
+    recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
+    wikiSlug: string,
+  ): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+}
+
+export interface PrimaryMountInputs {
+  activeWikiId: string;
+  wikiSlug:     string;
+  coreHash:     string | null;
+  /** lararium island doc url. */
+  islandUrl:    string;
+  /** primary wiki doc url. */
+  wikiUrl:      string;
+  /** catalog registry doc url — the island's ACCESS grant (recipe-watch + library
+   *  resolution live island-side; without this the island cannot watch its recipe). */
+  catalogUrl:   string;
+  /** The library bags the wiki's recipe RECORD names (`recipeFromRecord`), top-first — laid at boot
+   *  exactly where recipe-watch keeps them live, so the boot path and the live path name one stack. */
+  libraryBags?: readonly SlotUri[];
+  /** The ordered signed plugin-offering CIDs this wiki's recipe RECORD names (`recipeFromRecord`,
+   *  R3 — "plugins load by recipe"). Threaded straight into the mount spec's `WikiRecipe`; the pool
+   *  resolves it through the selector + CAS before any manifest ever carries a CID. */
+  pluginOfferings?: readonly string[];
+  /** M2 — this wiki's recipe RECORD named a `plugin-offerings` field `recipeFromRecord` could not
+   *  honestly parse. Threaded straight into the mount spec's `WikiRecipe` alongside `pluginOfferings`
+   *  (never derived here): the resolver refuses ONLY this wiki's plugin resolution by name, while
+   *  everything else this mount carries — library bags, the grain swap, `meme get` — stays unaffected. */
+  pluginOfferingsFault?: string;
+}
+
+/** The recipe record a wiki stands on: the vessel's own composition (catalog) shadowing a system
+ *  wiki's default (oracle) — the SAME two planes recipe-watch reads, through the same reader. */
+export function recipeRecordOf(
+  planes: { islandHandle: DocHandle<LarDoc>; catalogHandle: DocHandle<LarDoc> },
+  slug: string,
+): LarTiddlerRecord | null {
+  return effectiveRecipe(slug, (plane, title) =>
+    (plane === "oracle" ? planes.islandHandle : planes.catalogHandle).doc()?.tiddlers?.[title],
+  )?.record ?? null;
+}
+
+/** Canonical disk-mirror DESIGNATION (system canon). A pool's held grant decides
+ *  whether it actually mirrors (node holds a disk grant; browser's empty grant
+ *  ignores). The per-wiki working layer + own canon append at mount (slug-scoped). */
+const PRIMARY_MIRROR_BAGS: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
+
+/**
+ * buildWikiMountSpec — the reusable resolver: per-wiki inputs → a WikiMountSpec
+ * plus the sovereign binding urls. Generalized OUT of mountPrimaryWiki so the SAME
+ * fingerprint → resolveBinding → IslandGrants → WikiRecipe machinery serves BOTH
+ * boot's pinned primary AND activation-on-reference of ANY wiki (resolveWikiSpec,
+ * the true multi-wiki swap). No side effects (no mount, no catalog write) — a pure
+ * resolve; the caller mounts (boot pins; a reference activates unpinned).
+ */
+/**
+ * Resolve a wiki's three instance-slot docs through the daemon's resolver — the ONE call every
+ * site makes (the host wiki mount, the island mount spec), so host and island bind one doc per slot.
+ * personal + draft + working bind TOGETHER per recipe-fingerprint (Q11). The fingerprint covers
+ * wikiDocId + libraryBags only (the lares and lararium bags excluded per Q4); the live wiki carries
+ * no libraryBags in its trace, so it keys on the wiki doc url alone.
+ */
+export async function resolveSlotDocs(
+  binding: BindingResolver,
+  wiki: { wikiSlug: string; wikiUrl: string },
+): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+  const recipeTrace = { wikiDocId: wiki.wikiUrl, libraryBagDocIds: [] as readonly string[] };
+  const fingerprint = await computeRecipeFingerprint(recipeTrace);
+  return binding.resolveBinding(fingerprint, recipeTrace, wiki.wikiSlug);
+}
+
+export async function buildWikiMountSpec(
+  binding: BindingResolver,
+  inputs:  PrimaryMountInputs,
+): Promise<{ spec: WikiMountSpec; personalUrl: string; draftUrl: string; workingUrl: string }> {
+  const { personalUrl, draftUrl, workingUrl } = await resolveSlotDocs(binding, inputs);
+
+  // Typed structural grants — no slot dictionary. Library bags never ride the
+  // mount: the island resolves them from the catalog registry itself (boot = first reconcile),
+  // so the live composition path and the boot path can never diverge.
+  const grants: IslandGrants = {
+    islandUrl:  inputs.islandUrl,
+    catalogUrl: inputs.catalogUrl,
+    wikiUrl:    inputs.wikiUrl,
+    ...(personalUrl     ? { personalUrl } : {}),
+    ...(draftUrl        ? { draftUrl    } : {}),
+    ...(workingUrl      ? { workingUrl  } : {}),
+  };
+  // Designate the wiki's OWN canon (@{slug}) for disk projection alongside the
+  // primaries. The pool's self-canon grant authorizes a minted user wiki to
+  // bags/{slug}; for the system wikis (lares/lararium) the slug-bag already
+  // sits in PRIMARY via a literal grant, so resolveDiskMirrors skips the dup.
+  const recipe: WikiRecipe = {
+    wikiSlug: inputs.wikiSlug,
+    ...(inputs.libraryBags?.length ? { libraryBags: inputs.libraryBags } : {}),
+    ...(inputs.pluginOfferings?.length ? { pluginOfferings: inputs.pluginOfferings } : {}),
+    ...(inputs.pluginOfferingsFault !== undefined ? { pluginOfferingsFault: inputs.pluginOfferingsFault } : {}),
+    mirrorBags: [...PRIMARY_MIRROR_BAGS, wikiSlotUri(inputs.wikiSlug, "working"), wikiBagUri(inputs.wikiSlug)],
+  };
+
+  return { spec: { coreHash: inputs.coreHash, recipe, grants }, personalUrl, draftUrl, workingUrl };
+}
+
+/**
+ * Mount the primary wiki island — the isomorphic keystone both vessels run.
+ *
+ * Every keeper, on every platform, binds its sovereign personal/draft slots
+ * (resolved island-side per recipe-fingerprint) and mounts a pinned primary.
+ * Persona/office divergence lives only in DATA + held capability: mirrorBags is
+ * a universal designation a pool's disk-grant may or may not honor; pinned is a
+ * residency capability a pool may or may not implement. No per-platform branch.
+ */
+export async function mountPrimaryWiki(
+  pool:    PrimaryMountPool,
+  binding: BindingResolver,
+  inputs:  PrimaryMountInputs,
+): Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }> {
+  const { spec, personalUrl, draftUrl, workingUrl } = await buildWikiMountSpec(binding, inputs);
+  await pool.mountWiki(inputs.activeWikiId, spec, { pinned: true });
+  return { personalUrl, draftUrl, workingUrl };
+}
+

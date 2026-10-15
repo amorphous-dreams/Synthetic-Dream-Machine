@@ -1,0 +1,460 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⚚" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/lamplighters">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/mesh/lamplighters.mem"
+l-space   = "lararium"
+mana      = 15
+manao     = 15
+manaoio   = 14
+namespace = "&#x269A;"
+role      = "the Lamplighters' Union (the MECHANISM half; the faction carrier holds the Elyncia reading) and the OFFICE (kuleana) that seats a civic standing — who tends a faceless crossroads, what authority a tender holds, and how that authority ends. Carries the immune coupling (PRESENTATION ⊥ CONDEMNATION: tenders present, only a quorum condemns), the ZERO-WEIGHT ruling on presentation (a count of presenters needs a roster, and a roster carries a global now), the REACH split on tending caps (never a claimed body-location), and DEATH-AND-REBIRTH on physical touch. Grounded 2026-08-14 against Tor bad-relays, Ethereum slashing, CT, TUF, PeerReview, EigenTrust's Sybil collapse, the IPMI/BMC record, TCG physical-presence and FIDO user-presence. Carries the 2026-10-11 rulings that a herm stands under every operator-class Lararium, gossips on the DreamNet side as its own voice apart from its operator-parent, and that an operator stands a Lararium before seeding other infrastructure. Holds two questions the operator has not ruled: whether island-admin tending reaches the herm's own signing key, and whether condemnation-relevant, federation-facing statements need a threshold key."
+tags      = ["mesh/identity-classes", "mesh/carry-contract", "mesh/epoch-binding-surfaces", "api/pono/waking-floor", "api/pono/meme"]
+title     = "lar:///ha.ka.ba/lararium/mesh/lamplighters"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/mesh/lamplighters"
+written   = "2026-08-14"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! The Lamplighters' Union
+
+''A herm stands where nobody watches.'' It carries, it serves the public shelf, it holds every sovereign act closed — and canon gives it no tender at all: a lost or soured Herm ''re-establishes from its operator'' (`identity-classes#herm-establishment`). That leaves two holes the mesh feels before it feels anything else.
+
+''The first hole reads ABANDONMENT.'' An operator who walks away strands a crossroads, because re-establishment runs through that one hand.
+
+''The second reads GRAY FAILURE, and it costs more.'' `waking-floor#the-open-question` prices it: a power-cutter holds a ''permanent deniable veto'' — silent capability suppression rather than a legible outage — and peers ''cannot distinguish a vessel at the floor from one compromised and imitating it''. A lone herm cannot surface its own suppression.
+
+''The Union answers both with many hands and no owner.'' Lamplighters patrol, notice, and repair. They hold no read-cap, no persona, and no verdict.
+
+''The Lamplighter face holds three caps'': `carry`, `tend/island`, `tend/reach` (#/reach). Like every face it composes on its holder's persona beside any other the holder wears (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-two-stacks">>).
+
+!!! The myth carried it, warning included
+
+Rome's ''collegia compitalicia'' tended the crossroads shrines, drawn from freedmen and slaves — and the Senate suppressed them, because a network of people who keep neighbourhood infrastructure alive holds real power. Athens learned the other half in 415 BC, on the eve of the Sicilian expedition: in ''one night'' most of the city's stone herms — the square pillars that stood in the doorways of private houses and temples alike — had their faces mutilated (Thucydides, //History of the Peloponnesian War// 6.27), and no one knew who had done it: a marker that stands before every door draws no one's particular watch. The Athenians read the act as an omen against the fleet and as a conspiracy against the democracy, and the inquiry ran on informers: Alcibiades, implicated beside it in mock celebrations of the Mysteries, offered to stand trial before he sailed, sailed with the charge still open (6.28–6.29), and the //Salaminia// came to summon him home from Sicily (6.53, 6.61). One informer, Andocides, gave his own account in //On the Mysteries//, the defence he spoke some fifteen years later. The Roman particular still rides memory rather than an opened source and wants a citation before it hardens; the design reading survives either way.
+
+''So the Union expects attack as infrastructure.'' Its resilience reads as ''nothing to seize'': no read-caps, no roster, no central register of who tends what.
+
+
+!!! ★ THE FICTION AND THE MECHANISM WELD, and they agree ★
+
+<<~ loulou "lar:///ha.ka.ba/elyncia/factions/lamplighters-union">> holds the Elyncia reading — soot-cloaked walkers who relight a toppled herm, a cold wayside lararium, a flickering crossroads, carrying ledgers of every dark stretch. This carrier holds the MECHANISM half; both name one body.
+
+''The faction canon states the Union holds infrastructure BEYOND ANY ONE NEXUS, and that agrees with the fence rather than straining it.'' The Union spans the mesh SOCIALLY; every grant it produces binds to exactly ONE Nexus, because an epoch means nothing outside the island that rolls it. So a lamplighter tending crossroads in three Nexuses holds ''three'' grants, each countersigned in its own island, each lapsing on its own roll, none reading the others. ''Social span ⊥ authority scope'' — and therefore no one act sweeps a bad lamplighter from the whole mesh, nor can that lamplighter carry a seating from one island into another.
+
+''Multi-Nexus carriage reads as a SET of separate contract-ins on one daemon.'' Each contract-in names its one Nexus, and the carried set names ''Nexus ids, never member nyms'' — so a daemon carrying for three Nexuses holds three consents and no list of anybody (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract#/the-three-tiers">>).
+
+''And carriage ⊥ the cadence.'' A lamplighter carries sealed bytes it cannot read, and carrying confers ''no share in the engine cadence'' of any Nexus — the cadence stands its own joint, offered by a cadence threshold seated apart from the kahu quorum and held by those who bear the reboot cost (operators whose places run the engine), and each device moves only by its own adoption (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>). ''Founding reads as an ACT, never a face'': a lamplighter who founds a Nexus holds a kahu seat in THAT Nexus alone, and its grants elsewhere gain nothing from it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+
+''Their ledger names DARK STRETCHES, never tenders.'' A record of places wanting light holds no roster of who may light them, so it crosses the no-roster law untouched.
+
+<<~/ahu>>
+
+<<~ ahu #/the-offering>>
+
+!! The first thing a tender tends ~ an OFFERING
+
+''An operator publishes their own plugin collection, and a taker settles it alone.'' `pluginsCid` folds
+THIS operator's collection; it layers on the required blobs and overturns nobody else's reading. The
+record carries ONE signature and no steward set, because a taker verifies the blobs BY HASH against the
+declared region — nothing stands for a second hand to attest that the hash has not already settled.
+''Publishing reads as a gift, and a gift takes no quorum.''
+
+''The verify RECOMPUTES.'' A signature says //this offeror wrote these bytes//, never //these blobs fold
+to the region these bytes declare//. So the taker folds them through the same function the genesis bake
+runs. A perfectly-signed offering whose blobs someone swapped after the region's declaration refuses — that
+forgery reads valid to a signature check alone, and it names exactly the unattested claim the hash retires.
+
+!!! Where the Union stands in it
+
+''The three layers hold, unsoftened.'' A tender PRESENTS what it noticed — its own record, its own domain
+— and the fold that decides standing ''never reads one''. The arithmetic carries no term for tenders, so
+five honest presentations move a verdict exactly as far as none, and the quorum keeps its full k. A
+captured Union therefore holds no blocking power, and the quorum retains its ability to self-present and
+condemn ''with no tender at all''.
+
+''The offering board stands apart from the presenter board.'' `kapae-antigen` shadows an identity; the
+offering board shadows a COLLECTION. Separate domains, so a signature over one can never verify as the
+other — and condemning a collection says nothing whatever about the operator who offered it.
+
+''No roster accrues.'' A presentation names the dark stretch and its own presenter and gathers nowhere.
+Nothing to seize, exactly as the Union's resilience requires.
+
+''The governance sits OPT-IN per Nexus'' and touches no ratchet: a condemned offering still overturns
+nobody's grammar. Built at `@lararium/mesh` · `plugin-offering` · `offering-antigen`; the door reads at
+`lares nexus publish plugins`.
+
+<<~/ahu>>
+
+<<~ ahu #/office>>
+
+!! Kuleana ~ the OFFICE, and why not "residency"
+
+''The word `residency` stands spoken for three times over'' — thermal stowage (`wela`/`anu`), tiddler residency across bags, and which bag a carrier's file lives in. A fourth sense guarantees misroute. ''Name it `OFFICE` (`kuleana`)'': right and burden arriving on one name, and the house already speaks it (`hookupu-the-flow`, `convergent-mesh`).
+
+''An office attaches to the PLACE, never to the person.'' Rome's ''vicomagistri'' held a college seat at a ''compitum''; the office belonged to the vicus, the person rotated through, and the shrine kept standing.
+
+<<~ has Office Grant "what/a-quorum-countersigns subject/the-vessel's-PLACE-DID requires/the-vessel's-own-contractSig ~ bilateral; a Nexus conscripts nobody">>
+<<~ has Office Fence "what/boundEpoch >= effectiveLeaseEpoch scope/per-PLACE writer/the-place-alone ~ the same comparison device-delegation makes, on the place's own lease resource (#/welded)">>
+<<~ has Office Ending "how/non-renewal-of-the-place's-lease ~ a seal roll asks only the holder to re-consent; only a quorum act on the deny board ends an office on purpose (#/welded)">>
+<<~ has Office Exception "when/a-malicious-self-renew rides/convergent-removal + kapae ~ never the counter">>
+
+''Admitting a Lamplighter takes the charter's seat quorum'' (operator-ruled), whether the subject stands as an operator or as a place. The two founders of a Nexus each hold the Lamplighter stack by a contract they sign and both seats countersign (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
+
+!!! ★ THE KULEANA FACE RUNS TWO HALVES, AT TWO ADDRESSES ★
+
+''`lararium-canonical-model` rules that `kuleana` REQUIRES a published face, because the burden half needs somewhere to land'', and `hookupu-the-flow` seconds it: //you cannot be an accountable monitor anonymously//. That reads against a faceless civic vessel until the two faces separate.
+
+''Read the requirement precisely: the burden half needs AN ADDRESS, never a person.'' A Place DID supplies exactly that — //a somewhere: addressable, vouchable, carriage-contractable//. So the vessel already carries one half. The other half answers a different question, and `hookupu-the-flow` names it: //you cannot be an accountable monitor anonymously//. ''A place holds an address and can never stand answerable.''
+
+<<~moves kuleana/where -> the-vessel's-Place-DID on/the-office-plane ~ the address the burden lands on>>
+<<~moves kuleana/who -> the-holder's-declared-Handle on/their-own-plane ~ the name that answers for it>>
+
+''So an office publishes BOTH, sited apart, and the pair carries the vicomagistri property'': named, accountable people holding a term at a shrine that carries no name of its own. The vessel seats no persona root through either half, so a stolen civic disk still yields nothing of anybody's person — ''a published face ⊥ a seated root'', and only the second one a thief can carry away.
+
+''And the declaration defaults to the floor of its own plane'' (`lararium-canonical-model`), so neither half rides at a tier its plane did not already stand.
+
+!!! ★ THE QUORUM SEATS; THE QUORUM MUST NOT RENEW ★
+
+''`attestation-plane` already rules the shape, and the naive transposition dies on it'':
+
+> ''a quorum gates the rare, slow, high-power act, and automation carries the frequent, fast, low-power one. A quorum placed in the renewal path gets bypassed inside one outage, and the bypass becomes permanent.''
+
+So the quorum ''seats'' an office (rare) and the ''renewal rides the place's own lease'' (frequent), which the place alone advances (#/welded). Rome ran it the same way: the election seats the magistri; tending the compitum daily needs no college.
+
+!!! And the office reaches NO archive
+
+`waking-floor#the-raise-is-a-vessel-layer-act` holds: a quorum's acts sit at ③ and reach ''no vessel's archive'', because a kahu holding shares becomes the collector. An office grant therefore opens nothing by itself.
+
+''The ① answer that survives: an OFFICE KEY, never a persona key.'' A civic vessel mints a Place-DID-rooted office key at establishment; its archive holds that and no human's root. Opening it rides the raise door already standing — the vessel emits a nonce bound to its own epoch head, ''any current office-holder'' signs that, nothing touches disk. A human, yes; ''never THE operator''. That difference carries the whole vicomagistri property.
+
+''What it forfeits — unattended sovereign acts — a civic vessel mostly does not need.'' The civic FLOOR runs far larger than a hearth's: relay, public shelf, bulb, map-publish and segment-repair all stand with ''zero secret''. A district's service survives the power cut; only signing waits for a holder.
+
+<<~/ahu>>
+
+<<~ ahu #/welded>>
+
+!! ★ THE WELD — what this model OWES the rest of the mesh ★
+
+''Designed in a corner across many turns, this carrier re-derived five things the DreamNet already stands.'' Each correction below lands the design INSIDE what ships rather than beside it.
+
+!!! ① The office grant rides as a carriage entry
+
+''`Office Grant` restates `CarriageEntry` field-for-field'' — quorum countersignature, the subject's own `contractSig`, charter-epoch root, monotone-per-nym fold, fail-closed at every shore. It even borrows the literal field name. ''So an office seats as a CARRIAGE ENTRY whose cap reads //may tend this place about X, until epoch N//'', never as a second registry. `membership-doctrine` rules that payload //the floor and nothing above it//, and a fresh record type would breach a ceiling the house already set.
+
+!!! ② CAP ⊥ STANDING — and only one of them rides a device
+
+<<~ scale cap "what-may-I-do -> flows-DOWN-by-delegation -> signed-scoped-EXPIRING -> carried-on-a-device/YES">>
+<<~ scale standing "what-do-I-count-as -> flows-UP-by-conferral -> a-live-query-never-a-stored-number -> carried-on-a-device/NEVER">>
+
+''//May tend this crossroads// rides as a CAP. //Belongs to the Union// stands as a STANDING'', and a standing carried on a device rebuilds the apex this house removed. So the Union holds no members anywhere — ''a lamplighter carries what they may do, and what they count as answers live, or not at all''.
+
+!!! ③ The repair verbs already stand
+
+`siege-resilience` types the maintainer's verb-set and `steward-doctrine` bounds the steward's break-glass hand — including the edge this carrier needed and never stated: ''it cannot change who signs''. Tending composes with those rather than replacing them. And `siege-resilience` holds that a Herm self-stabilizes transient corruption ''without a maintainer touching it'', so the Union answers ''ABANDONMENT and WITNESS'', never routine repair.
+
+!!! ④ REACH names something else
+
+The `reach` plane already owns that word for foreign app credentials, at ''inverted risk polarity'' — weak and disposable there, dangerous and remote here. `tend.island` keeps its grounding; the network-reachable half wants a word this house has not spent.
+
+!!! ⑤ ★ THE KAHU HOLD NO ADJUDICATIVE POWER ★
+
+`kahu.mem` stands at Synthesis-Canon and rules it plainly: ''//No living authority tells a vessel what to do. The treaty does//'' — the grammar lives by use and enforces itself, and ''an engine cadence stands as the one versioned instrument any hand holds''. A model seating them as the only condemning body writes a lower register over a higher one. ''Condemnation wants re-siting.''
+
+''And `kahu.mem` names a seat this Union could fill'' — //no instrument surfaces a fork… a lag distribution across the carriage board reads as the nearest available proxy and nobody has built it//. A sensor reporting DIVERGENCE reaches no verdict and needs no adjudicative power at all. ''But the seat as stated sits one notch off, and the proposed proxy carries three death certificates.''
+
+!!!! ★ FORK SURFACING SURVIVES THE NO-ROSTER LAW; FORK SIZING DOES NOT ★
+
+''Bilateral divergence measures ride roster-free, clock-free, and SHIPPED'' — `git rev-list --left-right --count` returns ahead/behind from two head hashes alone; Automerge head-exchange gives the same primitive over the hash-DAG; XMPP's caps-hash gives it for GRAMMAR, a peer publishing a hash over its own feature surface so a mismatch reads //we parse differently// with no roster anywhere. So //no instrument surfaces a fork// overstates: ''the accurate loss reads NO INSTRUMENT SIZES ONE.''
+
+''Mazieres-Shasha names the law under it'': a forked view becomes permanent and surfaces ''only when the forked parties MEET''. No local computation reaches it, and every fork-linearizable construction ''BLOCKS'' — no wait-free version exists, which strains causal-islands harder than the roster law does. Going from //you and I diverged// to //we are two Nexuses now// ranges over the population, and that ''makes a roster wearing another name''.
+
+!!!! ⚠ AND THE LAG PROXY FAILS IN THE WRONG DIRECTION
+
+''Under a real schism the two groups stop meeting: lag never lengthens, THE SAMPLE VANISHES'' — and silence reads identically to health, the Sword's own law restated. ''The proxy runs blindest exactly where the schism sits.''
+
+Three shipped verdicts: ''Lifeguard'' exists because delay-based suspicion ran 50x false-positive under ordinary CPU and network stress · ''Bitcoin Core DELETED'' its version-distribution fork warning as //completely useless// against miners writing garbage into version bits, and never replaced it · ''RFC 8145'' trust-anchor telemetry fired, read ~4% of resolvers stale, ''postponed the DNS root KSK rollover a full year'', and the data proved corrupted at the source.
+
+''What a Union genuinely buys, and its ceiling'': a sampled ''grammar-hash histogram'' pooled from MEETINGS (never memberships) · pooled ''divergence DEPTH in the DAG, never delay in time'' · and ''GREASE-shaped continuous probing'' — seeding a well-formed unknown sigil into ordinary traffic so a peer's tolerance of an unknown revision surfaces every meeting, asked before a cadence ships rather than after.
+
+''The ceiling reads EPIDEMIOLOGY, never CENSUS.'' Detection runs bounded by the mixing rate of the meeting graph, and a schism that partitions that graph — the ordinary case, since groups that stop agreeing stop talking — drives sampling toward zero ''precisely as the divergence completes''. The Union converts a blind spot into a SLOW spot; it never converts it into sight.
+
+<<~ set drift-ward="? · the fork between a cheap BILATERAL divergence instrument (shipped elsewhere, honest, already-solved) and a union-scale SCHISM sensor (structurally capped, blind where it matters most) belongs to the operator.">>
+
+!!! ★ THE OFFICE KEYS ON ITS PLACE ~ road (iii) ★
+
+''The built fence refuses both naive keyings.'' One lease fence carries ''every raise and every device edge''; `lease-rekey` states in its own header that rolling an epoch ''STALES every outstanding grant on that resource at once''; and `rolledLeaseEpoch` writes `effective + 1` into a NAMED WRITER's slot — so ''the roll acts as a lowering, and it carries a signer''. Keyed per Nexus, non-renewal mass-stales the whole island; keyed per office with the holder in a writer slot, the holder self-renews forever.
+
+''Road (iii) splits the two halves an office carries, and gives each its own carrier.''
+
+<<~moves office/fence -> the-PLACE's-own-lease on/the-built-fence do/the-place-alone-writes-and-mints-it>>
+<<~moves office/seating -> the-Nexus's-seal-lineage if/the-issuing-seal-epoch-stands-an-ancestor-of-the-head do/the-seating-carries-across-the-roll>>
+
+''The fence keys on the PLACE.'' The lease resource reads `office/<nexusId>/<placeDid>`, and the place stands as its sole writer and sole minter. No holder holds a slot in it, so no holder self-renews; no Nexus-wide roll touches it, so no island-wide mass-stale reaches it.
+
+''The seating rides LINEAGE, never the head.'' The quorum's half carries across a seal roll by ancestry: the seal epoch it issued under MUST stand an ancestor of the current head. The holder re-consents over the new head. A seating rooted on a forked or non-ancestor branch dies.
+
+''Three endings, and only one on purpose.'' The place's lease ends an office by non-renewal; a seal roll asks only the holder to re-consent; a quorum act on the deny board — revoke, uncarry or kapae — ends it on purpose. ''Road (iv) answers a change in the quorum's MEMBERSHIP'', never a routine key rotation — and it SURFACES rather than re-seats: the house derives from the board's own records which offices and admits leaned on a departed signer, and the new quorum revokes openly, by name, on the deny board, while standing carries until then (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+
+> ''INVARIANT —'' //Its place fences an office and its Nexus's lineage seats it: the place's lease ends it by non-renewal, a seal roll asks only the holder to re-consent, and only a quorum act on the deny board ends it on purpose.//
+
+''A presented admit carries across a roll by ANCHORED ancestry'': it counts at an ancestor epoch only when it already stood in the board's causal past at the roll, walked through the roll anchors (`verifyPresentedAdmit`). ''Owed in code'': the registry's entry count still compares an entry's `sealEpochCid` to the roster head by EQUALITY and refuses with `wrong-charter-epoch` (`packages/lararium-mesh/src/carriage-registry.ts`), so an office seating owes the same ancestry walk, and the fence owes the place-keyed lease resource.
+
+''The field ships the split.'' KERI anchors an issuance in the key event log, and the issuance survives a later rotation. Canon law c.184 §2 keeps an office standing when the conferrer's authority lapses. The Demise of the Crown Act 1901 keeps an office held under the Crown from vacating on the sovereign's death. Viewstamped Replication and Vertical Paxos carry committed state across a view or configuration change rather than ending it. And Kleppmann's fencing tokens site the fence AT THE RESOURCE, which the place-keyed lease reproduces.
+
+''What the epoch rulings settle, and road (iii) honours'': the LEASE epoch (a scalar per-writer max-register) ''fences''; the SEAL epoch (a CID chain) ''records lineage''; ''the two never fuse''; the rolling-window reading stands ''STRUCK'' — a set answers //is this listed// and never //is this newer//, and a list of markers reads as a roster of moments; and ''the NEXUS fences, never the cabal'' — an epoch means nothing outside the island that rolls it.
+
+<<~/ahu>>
+
+<<~ ahu #/immune>>
+
+!! The immune coupling ~ innate, adaptive, memory
+
+<<~ has Layer Innate "organ/lamplighters acts/patrol · notice · repair holds/tend caps ONLY ~ presents, never condemns">>
+<<~ has Layer Adaptive "organ/kahu-quorum acts/seat-a-presented-candidate holds/quorum-signature ~ the only condemning body">>
+<<~ has Layer Memory "organ/the-antigen shape/durable · convergent · per-Nexus ~ the emergency brake, never the default death">>
+
+!!! ★ PRESENTATION ⊥ CONDEMNATION ★
+
+''A tender that could write the antigen turns the mesh against its own healthy nodes.'' The Union runs as the most distributed and least-vetted body in the model — so it reads as the likeliest thing to get captured, and it therefore holds the ''sensor'' and never the ''verdict''. An autoimmune mesh costs more than a slow one.
+
+!!! ★ UNIFORM REFUSAL CONSTITUTES THE LOWERING — and PRESENTATION ⊥ CONDEMNATION does not stop it ★
+
+''A lamplighter declining to tend one crossroads costs nothing.'' Forty lamplighters quietly declining the same one costs everything, and `lararium-canonical-model` prices it in its own words:
+
+> ⚠ ''uniform refusal to hear, to carry, and to vouch CONSTITUTES the lowering with nobody performing it. Fuse the verbs in implementation and this law falls silently.''
+
+''That routes AROUND the quorum entirely.'' No antigen gets seated, no condemnation gets voted, no party performs a lowering act — and a herm goes dark exactly as if one had. The innate layer reaches the outcome the adaptive layer exists to gate, by ''declining in unison''. So the Union's own restraint carries no protection here: refusing reads as a non-act, and non-acts compose.
+
+<<~moves refusal-to-TEND -> MUST-stay-apart-from loss-of-STANDING if/refusals-converge do/surface-them-as-presentations>>
+
+''The cure keeps the verbs apart rather than forbidding refusal.'' A lamplighter MUST keep the freedom to decline — conscription reads worse than silence. But converging declines MUST surface as ''presentations'' the quorum can read, so the mesh sees a crossroads going dark by consensus and names it, rather than watching it fade with nobody accountable.
+
+''This holds ZERO-WEIGHT intact.'' Surfaced refusals steer ATTENTION, exactly as corroboration does (#/zero-weight); they lower no threshold and condemn nobody. The quorum still needs its full k. What changes: no act nobody performs can bypass the quorum.
+
+!!!! ★ STRUCK — the herm CANNOT witness its own neglect ★
+
+''A draft cured this by having the herm testify //nobody has tended me//, and the field refuses it twice over.'' The herm reads as ''the least credible witness'' to its own neglect AND as ''the exact asset a captured tender holds'' — so that testimony falsifies in both directions: suppression hides real neglect, fabrication manufactures it against a rival crossroads.
+
+''NEVER PROVE THE NEGATIVE — invert the direction and let absence stay local'':
+
+# ''Tending emits a POSITIVE, WITNESSED RECEIPT'' into the herm's append-only log — signed by the tender, cosigned by a peer (Sigsum-shaped). Presence proofs stay cheap and unforgeable; absence proofs never do.
+# ''Each observer forms its OWN suspicion at its own island'', //as of my last sync//. No node emits a global claim that a herm went untended — pure causal-islands, and it needs no roster.
+# ''Non-inclusion WITHOUT enumeration.'' A sparse-Merkle / prefix tree proves //no tending entry in epoch E// without listing who could have tended; CONIKS ships that shape.
+# ''Peers and passers-by carry the testimony, never the herm.'' This also disarms the tending-cap compromise: a captured tender holding the herm's channel still cannot manufacture the peers' silence.
+
+!!!! ⚠ AND THE ACCRUAL IMPOSSIBILITY DOES NOT YIELD
+
+''//Too long untended// names a DURATION'', and Chandra-Toueg holds: nothing distinguishes a crashed process from a very slow one under asynchrony. Worse, ''a logical epoch cannot accrue silence at all'' — a per-writer max-register advances only when somebody writes, so ''the neglected herm's counter stops at exactly the moment neglect begins''. Any clockless accrual MUST ride a monotone quantity driven by parties other than the neglected one.
+
+!!!! ORDERING ⊥ NOW survives, and it changes nothing here
+
+''A witnessed partial order rides third-party signatures with no shared present'', and `attestation-plane` already carries that ruling: //what the timestamp bought reads as non-repudiable ORDERING, surgical SCOPING, and third-party WITNESS, and all three want a witnessed partial order rather than a shared now//.
+
+''But ordering does not yield ACCRUAL, and the field settled that in 1997.'' The Heartbeat failure detector (Aguilera-Chen-Toueg) emits precisely the proposed instrument — an unbounded monotone counter advanced by witnessed arrivals, no timeouts anywhere — and ''no threshold can apply to it'': every correct party exceeds any fixed bound eventually, so the counter discriminates nothing at a decision point. It buys quiescent reliable communication and derives no failure detector at all.
+
+''The counter proves THE WORLD MOVED; it never proves THIS NODE FELL BEHIND'' — and //behind// names a rate, which names a duration. Turning a count into a verdict needs //a willing tender could have acted within R//, which asserts a bound on real elapsed time (Dwork-Lynch-Stockmeyer partial synchrony). ''The threshold lives outside the protocol in every system surveyed'', so under this house's laws it lands with the operator, per contract, bilaterally — never as a mesh-wide law.
+
+''What survives, and ONLY under one reading'': an ''undeniable ordering claim'' — //the world signed R rounds this node's log never joined// — third-party checkable cold, undisputable by the node it names.
+
+⚠ ''A draft called this //accuracy without completeness//, and that reads BACKWARDS.'' Compare a counter against the maximum observed rather than against a clock and the map yields ''COMPLETENESS WITHOUT ACCURACY'' — a crashed peer's counter freezes and the gap eventually exceeds any K, while a correct-but-slow or partitioned peer lags arbitrarily under asynchrony. That sits in the class already occupied by the detector //suspect everyone, always//: it derives nothing.
+
+''So the boundary carries the entire load: a FACT ABOUT THE LOG survives; a fact about the NODE does not.'' //R rounds passed that this log never joined// stands accurate and complete about the log. The instant anyone reads it as this node's health, standing, or intent, it degrades to the trivial detector. Attention: clean. Verdict: never — and not by our restraint, ''by the model''.
+
+''ONE ROAD STANDS, and the concession carries no fork'' — the three legs a draft posed as a choice resolve to a single admissible one, and the two refusals keep their reasoning here so a later hand re-reads the ground rather than re-proposing the road:
+
+* ★ ''(b) — THE ROAD THE HOUSE WALKS.'' The ban holds ABSOLUTE, and ''neglect never accrues by itself'': a kahu quorum must NOTICE, and the humans become the clock. Structurally cheap, since condemnation already seats with the quorum; it costs the ambition that neglect surfaces on its own, and that cost stands paid.
+* ''(a) REFUSED'' — relaxing the ban to ''no LOCAL wall-clock duration'', admitting witnessed third-party signed time. ⚠ ''A draft priced this as free by asserting Roughtime already stood in the house. It does not.'' A repo-wide grep returns exactly one hit: that sentence itself. Option (a) therefore reads as a proposal to ''ADOPT'' an unbuilt subsystem — plus its own specification's explicitly-unsolved server-list problem, which that spec calls essential for security. Refused besides on its own merits: the operator ruled the no-global-now law absolute.
+* ''(c) REFUSED'' — a roster, by standing ruling: a compiled-about registry at ANY scope rejects the fork (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>).
+
+''The counter-argument, stated fairly'': the inversion moves the failure from ''forgeable'' to ''silent''. Under (b), many lamplighters quietly declining one crossroads produces no accrual and no alarm. The inversion makes neglect ''honest'' rather than ''detected''.
+
+!!!! ★ AND THAT HOLE CLOSES BY THEOREM, never by a design we have not found yet ★
+
+''ACCOUNTABLE LIVENESS'' (Neu et al., ACM CCS 2025) proves it: //no optimally-resilient protocol can be accountably live under partial synchrony//, and no protocol holds safety under partial synchrony while carrying accountable liveness under synchrony. The asymmetry names why: ''liveness violations involve ABSENT messages'' — harder to prove guilt — ''while safety violations involve CONTRADICTORY messages''.
+
+''This house's law sits strictly WEAKER than partial synchrony.'' Therefore ''who neglected this crossroads'' names a ''REFUSED question, never an underspecified one''. Nothing waits for invention here, and a future sweep re-opening it burns a campaign on a proven impossibility.
+
+''What the field ships instead attenuates without accusing.'' Ethereum's inactivity leak restores a quorum ''by lowering the absent rather than by naming the guilty'' — no accusation anywhere, purely behavioural, self-healing as the score decays, superlinear in PERSISTENCE rather than in severity. As shipped it needs an epoch clock and a validator registry, so it ''does not transpose''. Its SHAPE does: signed rounds where it reads epochs, ''the contracts this hearth already holds'' where it reads a registry, attenuation-only, decaying, computed locally and per-relationship.
+
+⚠ ''THE FOURTH OPTION — OPEN (2026-09-09), and it realizes exactly THIS shape.'' The federated-mesh collision (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/field-collision">> #/the-mesh-field) brings the Θ-model + time-free query-response failure detector — liveness read off a RATIO of progresses, "a constraint on the LOGICAL time, not physical." Read as a NEGLECT-VERDICT about a node it stays REFUSED by the theorem above. Read as this paragraph's own blessed shape — ''attenuation-only, decaying, computed locally and per-relationship,'' over a LOG-FACT (//the world moved R while this realm's log stood still//) — it survives, because it accuses no node; it attenuates a standing. The `ahi-ka.ts` reading sits precisely here: ahi kā / ahi tere / ahi mātaotao as a decaying local score against an INDEPENDENT ambient (carriage-liveness · cross-realm rolls), never a guilt-claim. ''RULED (operator, 2026-09-11): READ FREE, ACT BY CONTRACT.'' The reading stays a log-fact + attenuation ALWAYS — canon, clockless, accusing no one. The `:206` count→verdict objection stands wherever a CONSEQUENCE hurts a party (dispossession · name-release · eviction · resource-reclaim): such an act rides a bound R the sharing PARTIES AGREE BEFOREHAND, bilaterally — never fired off the pure ratio, never a mesh-wide law. So attenuation costs nothing; the R lives in the parties' own contract, exactly where `:206` said the threshold lands. Deferred deeper (real user stories) until real cabals have real things at stake — <<~ loulou "lar:///ha.ka.ba/lares/api/pono/live-equivocation">> #elyncia-as-qa holds the fiction-QA path.
+
+''The ceiling that shape reaches, and it reads as the honest one'': under converging decline every island attenuates the same contract at once and the neglected node still reads a frozen count — but the lowering becomes ''a number the RELATIONSHIP itself carries'', legible at both ends and attributable to neither. ⚠ And any surface rendering that number as //this node's standing// fuses map to territory: each island holds its own reckoning, and two islands never reconcile theirs.
+
+''The twenty-year-old demonstration'': BitTorrent's tit-for-tat runs local, pairwise, roster-free — and Piatek et al. showed strategic clients degrading whole-swarm performance while reciprocity detected nothing. ''Local reciprocity runs blind to converging decline'', in a deployed system, since 2007.
+
+!!! The antigen stays the emergency brake
+
+RFC 2693 §7 rules the ordinary ending: //"under SPKI one does not declare a key to be bad but rather stops empowering it and instead empowers some other key"//. So ''non-renewal'' carries every ordinary death. The antigen answers the ONE case non-renewal cannot: a party ''actively renewing itself'' faster than waiting-out can reach.
+
+!!! Herms present
+
+''A herm stands a minimal `@daemon` carrying the Voice and a `@meshpalace` network vector store'' (operator ruling). So it holds a signing key, a publish surface on its own bearing, and a vector memory of its own network experience — and the ''victim testifies''. Gray failure gains its best sensor, because a herm under suppression or probing reads as the one party that always knows.
+
+''Presentations therefore carry a PROVENANCE-KIND.'' A tender saw from outside, a herm from inside; the two carry different capture profiles, and a quorum reads which arrived even at equal weight.
+
+<<~/ahu>>
+
+<<~ ahu #/zero-weight>>
+
+!! ★ PRESENTATION CARRIES ZERO THRESHOLD WEIGHT ★
+
+''The quorum needs its full k, always.'' N tenders converging lowers nothing.
+
+!!! What the field does
+
+''Nothing that carries durable, convergent consequence weights reports into a threshold.''
+
+* ''Tor bad-relays'' — anyone reports; a fixed ''majority'' of directory authorities decides, whatever the volume.
+* ''Ethereum slashing'' — any whistleblower presents; the protocol acts on ''cryptographic evidence'' (two conflicting signatures). One valid proof suffices; a hundred reports never do.
+* ''Certificate Transparency'' — misbehaviour rides a ''consistency-proof failure'', a self-verifying artifact.
+* ''TUF'' — thresholds stay static by design.
+* ''PeerReview'' — evidence by log replay, ''irrefutable''; a correct node can always defend against false accusation.
+
+''The one domain that DOES weight reads content moderation'' — and it ships ''report-brigading'' as its standing pathology. It survives there because a takedown ''reverses cheaply''. An antigen reverses at quorum cost, so the analogy does not transfer.
+
+''Reputation-weighting collapses under Sybil pressure, measured rather than theorized'': EigenTrust falls to feedback-cliques, and the collaborative-IDS literature names the same shape ''poisoning''.
+
+!!! ★ And the structural argument closes it independent of security ★
+
+''Counting N distinct presenters needs a tender set, and a tender set reads as a ROSTER.'' "Three tenders agreed" presupposes an agreed set at an agreed moment — a roster ''and'' a global now, both forbidden. Weighting does not merely risk capture here: ''it costs leverage no observer can price''.
+
+⚠ ''A draft called this a STRUCTURAL impossibility, and that reads FALSE against the substrate.'' `nexus-carriage` already folds a per-island contracted-operator set, and `lares nexus members list` prints it sorted — ''N stands well-defined and island-local'', pono, no global now. The security leg above survives untouched; the impossibility leg does not. The presented-admit ruling retires that fold as the carriage GATE (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>) and leaves the quorum's signed admits standing as an island-local record, so N stays countable and the correction holds. ''Naming a policy choice a theorem means the next reader never re-opens it when the security argument shifts.''
+
+''What holds the threshold out reads as DOCTRINE, never arithmetic'': `membership-doctrine`'s ''un-thresholded attestor bundle'' — members sign independently, the count crosses, and ''the sufficiency rule stays structurally absent''. The threshold never went homeless; the house ''deliberately declines to seat one''.
+
+!!! What recovers the speed instead
+
+# ''Move the burden from COUNT to CONTENT.'' A presentation SHOULD carry a self-verifying artifact wherever the fault admits one — a signed contradiction, a lease-epoch violation, a replayable log excerpt. ''The report reads as TRANSPORT; the artifact reads as evidence.'' The quorum's k stays fixed because it now verifies rather than believes.
+# ''Corroboration MAY steer ATTENTION, never the threshold.'' Which candidate a quorum reads first — priority ⊥ verdict.
+# ''A necessary-presentation gate hands a captured Union BLOCKING power.'' If presentation ever becomes required, the quorum MUST retain the ability to self-present and condemn with no tender at all. Otherwise the design trades autoimmunity for ''immunodeficiency''.
+
+!!! The counter-argument, stated fairly
+
+//A fixed k gives the emergency brake a fixed latency — the quorum's assembly time — and an adversary who measures it operates inside it. Under a fast-moving compromise, N independent tenders converging carries real Bayesian evidence, and refusing to spend it refuses information the mesh paid to collect.//
+
+''The refusal holds because the discount's value scales with tender INDEPENDENCE'' — exactly the quantity a capture destroys and a roster-free substrate cannot measure. The mesh would pay with leverage an adversary can acquire, for a speed-up it cannot verify it received.
+
+<<~/ahu>>
+
+<<~ ahu #/reach>>
+
+!! The tending caps ~ split by REACH, never by body-location
+
+''No design binds a cap to //a human body stood at the box//.'' SPIFFE proves ''which node'', never where a hand acted; TPM quotes measure software state and carry no location; TCG physical-presence ships ''software'' methods of asserting the bit; FIDO user-presence proves ''someone touched'', never who. Anything claiming otherwise reads as theatre.
+
+''So the split rides two caps named by REACH'':
+
+<<~moves tend/island -> exercisable-over/a-path-with-no-remote-transport scope/this-herm>>
+<<~moves tend/reach -> exercisable-over/the-network scope/this-herm>>
+
+!!! Why the cap, and not the ceremony alone
+
+# ''A ceremony leaves no artifact to non-renew.'' The default death runs by non-renewal, which needs a thing that expires. One cap with two admission rites yields one lease, and no one can decline the remote half.
+# ''The BMC record shows physical-adjacent planes silently becoming remote planes.'' IPMI, Redfish and the web console frequently share ''one user database''; a 2004-era authentication flaw still exposes hashes pre-authentication on tens of thousands of internet-reachable BMCs, and the field now calls IPMI a //sanctioned backdoor//. One "tend" cap distinguished only by rite reproduces that collapse the first time anyone deploys out-of-band management.
+# ''A cap persists as an auditable, presentable object'', where ceremony evidence dies at the moment performed.
+
+''The ceremony still matters, riding ON TOP.'' It sets ''who may hold''; the cap sets ''what reach opens''. Both, in that order.
+
+!!! ★ PHYSICAL TENDING READS AS DEATH AND REBIRTH, NEVER CONTINUITY ★
+
+Physical access defeats confidentiality and forward integrity of a box outright — evil-maid on the unencrypted pre-boot path, DMA over Thunderbolt/PCIe, cold-boot key recovery from DRAM residue.
+
+''So a herm a hand touched emerges as a NEW identity'' — new key, new epoch — presented for re-admission through the ordinary path. This lands inside the house rather than against it: non-renewal stays the default death, and a re-admission needs no antigen.
+
+''What the design still holds after a touch'':
+
+* ''`carry ⊥ read`'' — a herm holds no read-cap, so a toucher harvests ciphertext. The correct physical-access defence, and it needs no hardware.
+* ''Other islands'' — per-Nexus scope means a touched herm forges nothing about anyone else's history.
+* ''The monotone lease epoch'' — non-renewal requires ''zero cooperation'' from the captured box.
+* ''Evidence already published elsewhere'' — off-box tamper-evident logs stay probative.
+
+''What the design MUST stop pretending to hold'':
+
+* that a physical repair leaves prior key material uncompromised — treat every touched herm as ''key-disclosed'';
+* that a post-touch attestation distinguishes a repaired herm from a re-imaged impostor — a toucher who reflashes the measurement root produces a well-formed quote of an attacker-chosen state;
+* that physical presence implies authorization.
+
+<<~/ahu>>
+
+<<~ ahu #/under-every-lararium>>
+
+!! The herm under every Lararium ~ its own voice, and the seeding order (operator rulings, 2026-10-11)
+
+''A herm cap sits underneath every operator-class Lararium.'' Quote license: //"that herm cap sits underneath every operator-class lararium, contracted into a mesh (Nexus) and a super-mesh-environment (DreamNet)."// The layering reads upward: a herm that carries and never reads · a face lit above it, which makes a Lararium · Lararia contracted into a Nexus · Nexuses into the DreamNet. The relay floor already states the bottom of it (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-relay-floor">>).
+
+''The herm gossips on the DreamNet side as its OWN voice, separate from its operator-parent.'' Quote license: //"Pono, identity as relation and an operator should have a lararium stood up before they grow their rhizome, herms must also serve as the gossipers on the dreamnet side separate from their operator-parent."// The herm's signing identity never collapses into its operator's persona, and DreamNet-side gossip belongs to the herm. That agrees with the establishment law, where no civic identity mints into a herm (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes#/herm-establishment">>). The house read the sentence as //a herm signs its local-carry statements under its own single key//, and the operator answered that reading //"Yes"//. The two questions that sentence left to a later ruling stand answered at #/open.
+
+''The seeding order.'' Quote license: //"Yes, and an operator should have a node vessel stand into a lararium (herm -> lararium) before seeding any other physical infra like other herms or larariums they 'control'."//
+
+* An operator's FIRST act stands one node vessel up into a Lararium: found, then light a face (herm → Lararium).
+* Only then does that operator grow a rhizome: inviting friends, and seeding further herms or Lararia they control.
+* No operator stands a fleet of herms with no home Lararium behind them.
+* ''A seeded vessel names its origin as a relation between two vessels, never in a roster.'' The origin rides the contract edge the seeding vessel signs, as establishment already runs it; no list of an operator's vessels forms anywhere.
+
+''OWED'': no seeding tool or ceremony yet checks for, and names, the operator's stood Lararium as the origin of what it seeds.
+
+''DEFERRED — cloud-hosted infrastructure.'' Quote license: //"by 'cloud backup' I think I just mean 'cloud infra' so folk that want operator caps later on, when I have civic level resources, don't have to have metal in their closet."// The phrase names hosted infrastructure for a human who wants operator caps without owning hardware, never a backup copy of someone's Lararium. Its design waits until the operator can deploy there (quote license: //"We'll design those open questions around Cloud larariums once I can deploy there, gotta get this 'local first' thing off the ground first."//). One tension rides into that design, unruled: #/open strikes `operate ⊥ sign` and rules that tending reaches a herm's key, so a hosted operator's custody owes an honest statement of what the host could do.
+
+<<~/ahu>>
+
+<<~ ahu #/open>>
+
+!! ★ The voice-capture question ~ both halves ruled ★
+
+> ''RULED (operator ruling, 2026-10-11).'' Quote license: //"Approve the story leans; a user introduces, an operator admits."// The leans that sentence approved answer both questions this section held: whose signatures a condemnation needs, and whether tending reaches the herm's key.
+
+* ''A herm always may refuse at its own gate, in its own voice.'' It speaks on the DreamNet side as its OWN voice, separate from its operator-parent, and signs its local-carry statements under its own key (#/under-every-lararium).
+* ''A statement asking OTHERS to refuse needs co-signers counted over DISTINCT OPERATORS, never over shares.'' In a Nexus of fewer than three operators no honest threshold forms, so condemnation does not travel there.
+* ''Tending reaches the herm's key: ACCEPTED and NAMED.'' Whoever runs a machine can use its keys. A herm's statement carries, attached and outside the signature, who tends it at that moment. A herm tended by the accused's own house reads as the least credible witness.
+
+''`tend.repair` scoped as admin over the herm's own island reaches that island's `@daemon` SIGNING KEY.'' A tender can then ''speak as the herm'' — and the innate layer can ''synthesize presentations that read as herm self-testimony'', which costs the mesh the independent sensor of `#/immune`.
+
+''The Union holds no read-cap over carried traffic and holds the herm's VOICE.'' The ruling accepts that and names it. Isolating the daemon signing key from the tending cap's reach would claim a separation that no box a hand can reach delivers (below). The price gets paid in the open: the tender's name rides every herm statement, so a reader weighs each witness by who tends it.
+
+!!!! ★ STRUCK — `operate ⊥ sign` DOES NOT HOLD ★
+
+''The field separates EXTRACTION from USE, and never USE from OPERATE.'' HSM, TPM, KMS and Vault transit all sell non-extraction; ''none withholds key USE from whoever runs the box''. Kubernetes states it flatly — a compromised node yields its own kubeconfig. PKCS#11 role separation falls to attribute manipulation (Clulow, CHES 2003); an HSM's own management surface fell to remote unauthenticated RCE (Black Hat 2019); FIPS 140-3 made the User role ''optional'', so the separation itself became elective.
+
+''And confidential computing rescues nothing on a box a hand can reach.'' TEE.fail (2025) recovers ECDSA attestation keys from Intel's Provisioning Certification Enclave with a sub-$1000 DDR5 interposer, forging quotes that pass attestation. ''A herm stands at a crossroads — physical reach names its job description.''
+
+''So the cure runs the other way: scope CONDEMNATION away from any single island, never repair away from signing.'' A statement that asks others to refuse carries co-signatures from the herms of distinct operators, so a lone tender's forgery fails ''by construction'' rather than by detection-after-the-fact.
+
+''The count runs over operators, never over shares.'' Tending reaches every key on a machine its operator runs, so a threshold counted over key shares forms no honest quorum wherever one operator's hands reach several of them.
+
+''The split holds.'' A herm's refusal at its own gate and its local carry stay single-signed: a partitioned herm speaks alone, and carry needs no identity at all. Only a statement asking others to refuse takes co-signers.
+
+▢ ''OWED — the co-signature's mechanism.'' The ruling fixes whom the count runs over and names no mechanism. A threshold signature (FROST, RFC 9591) fits only where each share rests with a distinct operator; each herm co-signing under its own key meets the count as it reads. That comparison stands as a house reading, and no mechanism stands ruled. Likewise owed: the attached field that names a herm's tender, and the reader that weighs it.
+
+''STOP CLAIMING'' that a tending cap withholds the herm's signing identity, and stop claiming any attested-repair trust boundary on a physically reachable civic box.
+
+!!! Also owed
+
+
+* ''Grammar agreement GRADES intelligibility; it never gates belonging.'' A node belongs to a Nexus by ''contract'' and by an ''engine'' its device edges sign, inside the Nexus's admitted window; the grammar lives and drifts like a dialect, and graceful parsing carries what a reader does not know (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/contract">>). Every grant this carrier designs rides the contract half; the engine half rides the delegation edge.
+* ''Cross-Nexus gossip DEFERRED to post-founding'' (operator ruling). When it comes, the herm carries it as its own voice (#/under-every-lararium). Keys run per-Nexus and no //act as a visitor// path stands, so a tender walking to another Nexus arrives carrying nothing and contracts in from zero; that contract-in joins its daemon's carried set as one more Nexus id (#/head).
+* ''Nothing in the field welds place-anchored authority to term-bounded office.'' The nearest misses: CT's `previous_operators` (resolves the office-holder ''at the time of the act'', yet only to attribute), Kubernetes bound ServiceAccount tokens (term = the life of a place, no succession), DNSSEC root TCRs (real term-bounded office, ''procedural and legal, never cryptographic''), and SPKI §7.7 (held the whole vocabulary in 1999, shipped nothing).
+
+!!! RULED ~ an operator's own herm
+
+An operator contracts their OWN herm with one signature, scoped to one place and one Nexus, and it falls with a kapae of the operator's own admit (operator ruling; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings">>). Cost, accepted: a stolen leaf places herms until a denial arrives. The verb that carries it stays owed (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>).
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/carry-contract">> · <<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/convergent-mesh">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;dh-ruO3foaXibea8DFauz-42DZxXXSqfLLAqUGl1SRY
+
+<<^ code="&#x0004;" -> to="?">>

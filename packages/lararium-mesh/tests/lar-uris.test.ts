@@ -1,0 +1,305 @@
+/**
+ * lar-uris — petname l-space region predicates.
+ *
+ * Realizes the ruled capability-is-identity + petname model in code. Petnames /
+ * TW5 titles ride the lar: grammar as a NAMING layer, classifying an address by
+ * name-stability only: STABLE (ha.ka.ba — canonical, permanent) vs UNSTABLE (any
+ * other three-term attitude root — a session/per-place local name). This naming
+ * layer is ORTHOGONAL to federation (the residency bag controls that, not the
+ * namespace) and to persistence (every meme persists but volatile-VM scratch).
+ *
+ * Meme: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/capability-and-petnames
+ */
+
+import { describe, test, expect } from "vitest";
+import * as uris from "../src/lar-uris.js";
+import {
+  larRoot,
+  isStableLarUri,
+  isUnstablePetnameUri,
+  isPersistableLarUri,
+  isVolatileVmUri,
+  stableLarUri,
+  volatileVmUri,
+  STABLE_L_SPACE,
+  MESH_SCALES,
+  parseMeshScale,
+  bagUri,
+  wikiUri,
+  cidUri,
+  nexusRegistryUri,
+  nexusHandlesUri,
+  NEXUS_DOC_URI,
+  CROSSROADS_DOC_URI,
+  CATALOG_DOC_URI,
+  ORACLE_DOC_URI,
+  BAG_IDS,
+  identitySlug,
+} from "../src/lar-uris.js";
+
+describe("lar-uris petname regions", () => {
+  const stable = stableLarUri("oracle"); // lar:///ha.ka.ba/bags/oracle
+  const stableBare = `lar:///${STABLE_L_SPACE}`; // root, no trailing path
+  const volatile = volatileVmUri("scratch/x"); // lar:///lararium.local.vm/scratch/x
+  const unstable = "lar:///threshold.uncertain.opens/peer/handle"; // a living local petname
+  const session = "lar://alias:grant@host/some/path"; // session-form, capability-bearing
+
+  test("larRoot extracts the authority-less root, undefined for session-form", () => {
+    expect(larRoot(stable)).toBe("ha.ka.ba");
+    expect(larRoot(stableBare)).toBe("ha.ka.ba");
+    expect(larRoot(volatile)).toBe("lararium.local.vm");
+    expect(larRoot(unstable)).toBe("threshold.uncertain.opens");
+    expect(larRoot(session)).toBeUndefined();
+    expect(larRoot("not-a-lar-uri")).toBeUndefined();
+  });
+
+  test("the stable region is ha.ka.ba alone", () => {
+    expect(isStableLarUri(stable)).toBe(true);
+    expect(isStableLarUri(stableBare)).toBe(true);
+    expect(isStableLarUri(volatile)).toBe(false);
+    expect(isStableLarUri(unstable)).toBe(false);
+    expect(isStableLarUri(session)).toBe(false);
+  });
+
+  test("unstable petnames are any non-stable, non-volatile-VM local root", () => {
+    expect(isUnstablePetnameUri(unstable)).toBe(true);
+    expect(isUnstablePetnameUri(stable)).toBe(false);
+    expect(isUnstablePetnameUri(volatile)).toBe(false); // reserved scratch, not a petname
+    expect(isUnstablePetnameUri(session)).toBe(false); // session-form has no local root
+  });
+
+  test("persistence is LOCAL — every meme persists except volatile-VM scratch", () => {
+    // We persist all memes. Stable AND unstable petnames write to the local store;
+    // only pure volatile-VM scratch never persists. (Federation — what crosses to
+    // peers — is controlled by the RESIDENCY BAG + capability, not by this naming axis.)
+    expect(isPersistableLarUri(stable)).toBe(true);
+    expect(isPersistableLarUri(unstable)).toBe(true); // local petname persists locally, even though it never federates
+    expect(isPersistableLarUri(volatile)).toBe(false); // the one non-persistable region
+  });
+
+  test("the three regions stay mutually exclusive", () => {
+    for (const uri of [stable, volatile, unstable]) {
+      const flags = [isStableLarUri(uri), isVolatileVmUri(uri), isUnstablePetnameUri(uri)];
+      expect(flags.filter(Boolean)).toHaveLength(1);
+    }
+  });
+});
+
+describe("parseMeshScale — federation scale declared on a residency entry", () => {
+  test("accepts each of the five scales verbatim", () => {
+    for (const s of MESH_SCALES) expect(parseMeshScale(s)).toBe(s);
+    expect(MESH_SCALES).toHaveLength(5);
+  });
+
+  test("returns undefined for absent or unrecognized — caller defaults patience", () => {
+    expect(parseMeshScale(undefined)).toBeUndefined();
+    expect(parseMeshScale(null)).toBeUndefined();
+    expect(parseMeshScale("")).toBeUndefined();
+    expect(parseMeshScale("planet")).toBeUndefined();
+    expect(parseMeshScale("Vessel")).toBeUndefined(); // case-sensitive, exact match
+  });
+});
+
+describe("bag / wiki identity — the two kinds the catalog tracks", () => {
+  test("bagUri / wikiUri mint the kind into the first path segment", () => {
+    expect(bagUri("elyncia")).toBe("lar:///ha.ka.ba/bags/elyncia");
+    expect(wikiUri("elyncia")).toBe("lar:///ha.ka.ba/wikis/elyncia");
+  });
+
+  test("a leading @ on the slug never doubles", () => {
+    expect(bagUri("lares")).toBe("lar:///ha.ka.ba/bags/lares");
+    expect(wikiUri("lares")).toBe("lar:///ha.ka.ba/wikis/lares");
+  });
+
+  test("the two kinds NEVER collide for one slug", () => {
+    expect(bagUri("lares")).not.toBe(wikiUri("lares"));
+  });
+
+
+  test("identitySlug reads the slug from BOTH kind-planes, and demands one", () => {
+    // THE SEGMENT IS THE MARKER. `bags/` and `wikis/` say what a name is; the name itself carries nothing.
+    // So the prefix is MANDATORY rather than optional — without it the pattern would match any
+    // single-segment stable address (`lar:///ha.ka.ba/state`, `…/tags`) and hand back a slug for a thing
+    // that names no entity at all.
+    expect(identitySlug(bagUri("sdm"))).toBe("sdm");
+    expect(identitySlug(wikiUri("sdm"))).toBe("sdm");
+    expect(identitySlug("lar:///ha.ka.ba/sdm")).toBeNull();   // no kind-plane, no identity
+  });
+
+  test("identitySlug returns null for a nested path — a bare identity carries none", () => {
+    expect(identitySlug("lar:///ha.ka.ba/wikis/lares/drafts/did%3Aweb")).toBeNull();
+    expect(identitySlug("lar:///ha.ka.ba/lares/api/noosphere-boot")).toBeNull();
+    expect(identitySlug("lar:///threshold.uncertain.opens")).toBeNull();
+  });
+
+  test("a meme URI keeps its ha.ka.ba root arity — rehoming the path never touches it", () => {
+    // The LAW governs the ROOT: exactly three dot-separated terms. Path depth stays free, so a meme
+    // that moves between bags keeps its arity — an earlier shape counted slash-segments instead, and
+    // a rehoming turned that count into a false witness for a law it was never measuring.
+    const meme = "lar:///ha.ka.ba/lares/api/noosphere-boot";
+    expect(identitySlug(meme)).toBeNull();                        // not an identity
+    const [root] = meme.replace("lar:///", "").split("/");
+    expect(root.split(".")).toHaveLength(3);                      // ha · ka · ba — the arity under law
+  });
+});
+
+describe("cid — the /ipfs/ immutable-artifact plane", () => {
+  test("cidUri names an artifact by its content hash, no petname @", () => {
+    expect(cidUri("bafkreihi4cyml3fjm3pdjbxr44mjgae6aahz6275bpurvsfw42oxw6w3pq"))
+      .toBe("lar:///ha.ka.ba/cid/bafkreihi4cyml3fjm3pdjbxr44mjgae6aahz6275bpurvsfw42oxw6w3pq");
+    expect(cidUri("bafkreihi4cyml3fjm3pdjbxr44mjgae6aahz6275bpurvsfw42oxw6w3pq")).not.toContain("@");
+  });
+
+  test("the cid plane never collides with bags/ or wikis/ for a same-string slug", () => {
+    // A contrived overlap: the three planes stay disjoint by their segment.
+    expect(cidUri("x")).not.toBe(bagUri("x"));
+    expect(cidUri("x")).not.toBe(wikiUri("x"));
+  });
+
+  test("the same hash mints the same name — immutability by construction", () => {
+    const h = "bafkreiayqszi37beu6bgewomlwrj5ko7hjjxjs6nzp6qbntic4ufk4uehq";
+    expect(cidUri(h)).toBe(cidUri(h));
+  });
+});
+
+describe("nexus — the confederation plane, scoped per causal island", () => {
+  const NX = "abcdef0123456789";
+
+  test("the registry and the handles-face are DISTINCT docs, siblings under one nexus-pubkey", () => {
+    expect(nexusRegistryUri(NX)).toBe(`${NEXUS_DOC_URI}/${NX}`);
+    expect(nexusHandlesUri(NX)).toBe(`${NEXUS_DOC_URI}/${NX}/handles`);
+    // WHO ⊥ the members roster — the two faces never collapse to one doc
+    expect(nexusHandlesUri(NX)).not.toBe(nexusRegistryUri(NX));
+    expect(nexusHandlesUri(NX).startsWith(nexusRegistryUri(NX))).toBe(true);   // sibling under the same root
+  });
+
+  test("each Nexus scopes to its own island — a different pubkey is a different WHO face", () => {
+    expect(nexusHandlesUri("nexusA")).not.toBe(nexusHandlesUri("nexusB"));
+    // the reach lives in the doc URI (per nexus); the identity KIND lives in the tiddler key (portable)
+    expect(nexusHandlesUri("nexusA")).toContain("nexusA");
+  });
+});
+
+describe("crossroads — the public oracle plane (three-plane model)", () => {
+  test("the three oracle planes are distinct bags — system, private, public never collapse", () => {
+    expect(CROSSROADS_DOC_URI).toBe(bagUri("crossroads"));
+    // oracle (system-island) ⊥ catalog (private OCAP) ⊥ crossroads (public)
+    expect(new Set([ORACLE_DOC_URI, CATALOG_DOC_URI, CROSSROADS_DOC_URI]).size).toBe(3);
+    expect(BAG_IDS.crossroads).toBe(CROSSROADS_DOC_URI);
+  });
+
+  test("the WHO face's oracle-key rides a DISTINCT plane from its own doc URI (pointer ⊥ target)", () => {
+    // the per-nexus WHO doc lives under the nexus plane; its oracle-pointer lives under crossroads — two planes,
+    // one names the doc, the other publishes where to find it to a stranger.
+    expect(nexusHandlesUri("nx").startsWith(NEXUS_DOC_URI)).toBe(true);
+    expect(nexusHandlesUri("nx").startsWith(CROSSROADS_DOC_URI)).toBe(false);
+  });
+});
+
+// ── THE THREE SLOTS — an address names each once, and a builder answers to its own stem ──────────────
+//
+// Every fault in this family looked identical from inside: a builder moved, a consumer did not, and the
+// mismatch FOLDED EMPTY or ROUTED WRONG rather than throwing. `circle-list` returned no circles; a record's
+// `bag` field carried a title stem. Neither raised. These vectors make the pairing structural.
+describe("★ an inner path names its own record, never the entity holding it ★", () => {
+  const { IDENTITIES_INNER, CIRCLES_INNER, SESSIONS_INNER,
+          IDENTITIES_NAMESPACE, CIRCLES_NAMESPACE, SESSIONS_NAMESPACE } = uris;
+  // A VACUOUS GREEN WOULD BE WORSE THAN THE FAULT: an absent export reads `undefined`, every
+  // `not.toContain("@")` passes on it, and the whole describe blesses nothing. Prove they exist first.
+  test("the six constants this block reasons over actually stand", () => {
+    for (const v of [IDENTITIES_INNER, CIRCLES_INNER, SESSIONS_INNER,
+                     IDENTITIES_NAMESPACE, CIRCLES_NAMESPACE, SESSIONS_NAMESPACE]) {
+      expect(typeof v).toBe("string");
+      expect(v.startsWith("lar:///")).toBe(true);
+    }
+  });
+
+  test("every title builder extends ITS OWN stem — the one a lister folds by", () => {
+    // A lister folds by the stem; a builder that stopped extending it makes that fold return nothing,
+    // silently. Pair them here so the two can never drift apart unobserved.
+    expect(uris.identityTiddlerUri("did:key:zX").startsWith(`${IDENTITIES_INNER}/`)).toBe(true);
+    expect(uris.circleTiddlerUri("following").startsWith(`${CIRCLES_INNER}/`)).toBe(true);
+    expect(uris.sessionTiddlerUri("s1").startsWith(`${SESSIONS_INNER}/`)).toBe(true);
+    expect(uris.sessionEventLogUri("s1").startsWith(`${SESSIONS_INNER}/`)).toBe(true);
+    expect(uris.deviceDelegationUri("did:key:zA", "did:key:zB").startsWith(`${IDENTITIES_INNER}/`)).toBe(true);
+    expect(uris.nexusTrustUri("ab".repeat(32)).startsWith(`${IDENTITIES_INNER}/`)).toBe(true);
+  });
+
+  test("no title names the ENTITY that holds it — the relation, not a character", () => {
+    // THE INVARIANT IS RELATIONAL AND OUTLIVES ANY SPELLING. A title carrying its own bag ties a record to
+    // the plane that happened to hold it when it was written, so the same record read from another face
+    // resolves nowhere. What makes that wrong is the REPETITION, never the punctuation: fencing `@` here
+    // would fence a character that means nothing once entities spell plainly, and a did with an email
+    // local-part or a handle used as a record key would trip a guard with no reason to fire — and the next
+    // reader would take its refusal for law. `/bags/` marks an entity address either way.
+    for (const title of [
+      uris.identityTiddlerUri("did:key:zX"),
+      uris.circleTiddlerUri("following"),
+      uris.sessionTiddlerUri("s1"),
+      uris.sessionEventLogUri("s1"),
+      uris.deviceDelegationUri("did:key:zA", "did:key:zB"),
+      uris.nexusTrustUri("ab".repeat(32)),
+    ]) {
+      expect(title).not.toContain("/bags/");
+      expect(title).not.toContain("/wikis/");
+      for (const entity of [IDENTITIES_NAMESPACE, CIRCLES_NAMESPACE, SESSIONS_NAMESPACE]) {
+        expect(title.startsWith(entity)).toBe(false);   // never its own bag, nor any other's
+      }
+    }
+  });
+
+  test("the stem and the entity stay DIFFERENT strings — one slot each, never fused", () => {
+    // The fault this fences: a single constant serving both slots. A record's `bag` then carries a title
+    // stem, and every consumer routing by that field sends it somewhere else without complaint.
+    expect(IDENTITIES_INNER).not.toBe(IDENTITIES_NAMESPACE);
+    expect(CIRCLES_INNER).not.toBe(CIRCLES_NAMESPACE);
+    expect(SESSIONS_INNER).not.toBe(SESSIONS_NAMESPACE);
+    for (const entity of [IDENTITIES_NAMESPACE, CIRCLES_NAMESPACE, SESSIONS_NAMESPACE]) {
+      expect(entity).toContain("/bags/");       // an entity address, named by its slot
+    }
+    for (const stem of [IDENTITIES_INNER, CIRCLES_INNER, SESSIONS_INNER]) {
+      // A stem stands where no entity does. Checked by the SLOT it occupies, so the vector still holds
+      // when entities stop spelling themselves with a leading character.
+      expect(stem).not.toContain("/bags/");
+      expect(stem).not.toContain("/wikis/");
+    }
+  });
+});
+
+describe("a slot fragment's RECORD FORM percent-encodes its Hawaiian letters (RFC 3986, UTF-8)", () => {
+  // Operator ruling, slot-grammar-orthography. A slot name's CANON spelling (the record's own
+  // title/fragment) carries the letter itself — a `lar:` URI title is a TiddlyWiki title, and a
+  // title holds raw Unicode. The WIRE form (any transport that reads a `lar:` URI as an RFC 3986
+  // URI reference, never as a title) percent-encodes every non-ASCII octet of its UTF-8 encoding;
+  // this is the platform's own `encodeURIComponent`, exercised here against the exact fragment
+  // shapes `meme-normalize` mints, so a drift in either direction is caught at the seam.
+  test("ʻokina (U+02BB) encodes to its two UTF-8 octets, %CA%BB, and decodes back", () => {
+    const frag = "#/hawaiʻi";
+    const encoded = encodeURIComponent(frag);
+    expect(encoded).toContain("%CA%BB");
+    expect(decodeURIComponent(encoded)).toBe(frag);
+  });
+
+  test("each Hawaiian long vowel round-trips through percent-encode/decode", () => {
+    for (const letter of ["ā", "ē", "ī", "ō", "ū"]) {
+      const frag = `#/kanawai${letter}`;
+      const encoded = encodeURIComponent(frag);
+      expect(encoded).not.toBe(frag); // the letter itself moved to %-octets
+      expect(decodeURIComponent(encoded)).toBe(frag);
+    }
+  });
+
+  test("a full lar: URI carrying a kahakō + ʻokina fragment round-trips through URL's own fragment reader", () => {
+    const uri = "lar:///ha.ka.ba/x/y#/hawaiʻi/kānāwai";
+    const [base, frag] = uri.split("#");
+    const wire = `${base}#${encodeURIComponent(frag!)}`;
+    expect(wire).toBe("lar:///ha.ka.ba/x/y#%2Fhawai%CA%BBi%2Fk%C4%81n%C4%81wai");
+    const decoded = `${wire.split("#")[0]}#${decodeURIComponent(wire.split("#")[1]!)}`;
+    expect(decoded).toBe(uri);
+  });
+
+  test("CONTROL: an ASCII-only slot segment (letters/digits/hyphen) is untouched by percent-encoding", () => {
+    const seg = "plain-slot";
+    expect(encodeURIComponent(seg)).toBe(seg);
+  });
+});

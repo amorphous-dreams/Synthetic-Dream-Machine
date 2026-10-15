@@ -1,0 +1,87 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma/ka">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma/ka.mem"
+mana      = 18
+manao     = 17
+manaoio   = 17
+namespace = "&#x2299;"
+role      = "invariant capability: heleuma-ka — soul/fire anchor; promotion-eligible compiled artifact with quine record and ceremony path"
+tags      = ["api/pono/heleuma"]
+title     = "lar:///ha.ka.ba/lares/api/pono/heleuma/ka"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/heleuma/ka"
+```
+
+<<~ ahu #/head>>
+
+! Heleuma-Ka (Soul / Fire)
+
+''Ka'': soul, fire, drive, energy, thrust, movement. The animating charge. In motion toward state-change.
+
+A heleuma-ka anchor exists outside the corpus ''by current necessity, not by nature''. It has vitality. It stands eligible for promotion into a first-class corpus meme via the boot gate ceremony. The compiled-in code waits as a chrysalis.
+
+<<~/ahu>>
+
+<<~ ahu #/ooda-ha>>
+
+✶ locate the compiled artifact and its extractable symbol; confirm it has a standalone function boundary.
+⏿ orient: could `_bootModules()` load this function from a corpus meme? If yes, this counts as ka.
+◇ declare `heleuma = "ka"`, `source-symbol`; confirm the symbol has a standalone declaration.
+▶ write `#source` slot with the verbatim extracted function; close the quine record.
+↺ verify: `sync-heleuma` resolves the symbol, compares, reports clean; signal fields approach ceremony thresholds; the anchor lives. The soul moves. Ceremony awaits.
+
+<<~/ahu>>
+
+<<~ ahu #/required-fields>>
+
+!! Required Fields (SHALL)
+
+A meme that carries `heleuma-ka` SHALL declare in `#meta` TOML:
+
+```toml
+heleuma       = "ka"
+source-symbol = "<standalone function or export name>"
+```
+
+It SHALL hold a `#source` slot with the ''complete verbatim'' body of the named symbol (the quine property). Partial captures violate the quine. If a larger function embeds the natural unit, extract the unit to a named function first.
+
+It MAY declare `source-sha256` when ready for promotion:
+
+```toml
+source-sha256 = "<sha256 hex of #source slot content>"
+```
+
+This forms gate layer 2 (content integrity). `sync-heleuma --commit` writes it once the source stabilizes.
+
+Gate layer 3 (operator authorization) will take the form of a ''keyhive capability proof'' — an Ed25519-signed capability from a keyhive principal authorizing corpus injection. Layer 3 stands planned, unbuilt; as built, the gate passes on layers 1–2 only.
+
+Signal fields (`mana`, `manao`, `manaoio`) SHALL approach 16 / 16 / 15 as the source matures. The boot gate reads these fields directly.
+
+<<~/ahu>>
+
+<<~ ahu #/promotion-path>>
+
+!! Promotion Path
+
+When `source-sha256` stands present and the signals meet every threshold, `_bootModules()` loads this meme as a live JS module, replacing the compiled-in fallback. (When keyhive lands, the gate will also require a capability proof — gate layer 3.) At that point:
+
+* `heleuma = "ka"` SHALL drop away
+* The meme pair becomes a standard corpus meme pair
+* The doc meme `source` field MAY stay as provenance
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;c9fXfl_-XupfUInZetXmP0KUJadyqrzFmAfNz-_z9M0
+
+<<^ code="&#x0004;" -> to="?">>

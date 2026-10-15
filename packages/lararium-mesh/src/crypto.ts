@@ -1,0 +1,319 @@
+/**
+ * The crypto boundary for Lararium.
+ *
+ * Doctrine (lives here — the old CRYPTO.md pointer dangled and drops):
+ *   - Lararium defines needs; it does not implement primitives.
+ *   - Portable code depends on this module's shores, never on Node crypto or hand-rolled code.
+ *   - Callers must supply canonical bytes, never raw objects.
+ *
+ * Two digest paths, both platform-blind, both full-hex sha256 (the single-cid-gate isomorphism):
+ *   - The SYNC family (sha256BytesSync / sha256HexBytesSync / sha256HexSync) rides
+ *     @noble/hashes/sha2 directly — audited, zero-dep, browser-shippable. The live runtime
+ *     digest: tw5's action-handler render-hash, persona-hd, genesis-doc, and the tw5
+ *     memetic-wikitext reader's sourceCidOf all carry it.
+ *   - The ASYNC shore (sha256Hex(bytes, provider) over CryptoProvider/SubtleCrypto) stays the
+ *     home for callers that INJECT their digest (auditability, HSM/worker routing) or
+ *     already live async.
+ */
+import { sha256 as nobleSha256 } from "@noble/hashes/sha2.js";
+import { formatDigest } from "./agile-digest.js";
+
+// ---------------------------------------------------------------------------
+// Provider interfaces
+// ---------------------------------------------------------------------------
+
+export type DigestAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
+
+export interface DigestProvider {
+  digest(algorithm: DigestAlgorithm, data: Uint8Array): Promise<Uint8Array>;
+}
+
+export interface RandomProvider {
+  // The view MUST sit over a plain ArrayBuffer: every provider behind this port fills through Web
+  // Crypto, which refuses a SharedArrayBuffer-backed view. Uint8Array carries its backing buffer as a
+  // type parameter, so an unconstrained `T extends Uint8Array` lets a caller hand over a shared view the
+  // implementation will reject at runtime — the port would promise a fill nobody performs.
+  getRandomValues<T extends Uint8Array<ArrayBuffer>>(array: T): T;
+  randomUUID(): string;
+}
+
+export interface CryptoProvider extends DigestProvider, RandomProvider {}
+
+// ---------------------------------------------------------------------------
+// Platform Web Crypto implementation (Node 19+ and all modern browsers)
+// ---------------------------------------------------------------------------
+
+export async function webDigest(
+  algorithm: DigestAlgorithm,
+  data: Uint8Array,
+): Promise<Uint8Array> {
+  const subtle = globalThis.crypto?.subtle;
+  if (!subtle) throw new Error("Web Crypto SubtleCrypto unavailable in this runtime");
+  return new Uint8Array(await subtle.digest(algorithm, data.buffer as ArrayBuffer));
+}
+
+// The buffer type rides the constraint: Web Crypto fills a view over a plain ArrayBuffer and REFUSES a
+// SharedArrayBuffer-backed one. A bare `T extends Uint8Array` admits either, since Uint8Array carries its
+// backing buffer as a type parameter — so the signature promised a fill the runtime declines to perform.
+export function webGetRandomValues<T extends Uint8Array<ArrayBuffer>>(array: T): T {
+  const fn = globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
+  if (!fn) throw new Error("crypto.getRandomValues unavailable in this runtime");
+  return fn(array);
+}
+
+export function webRandomUUID(): string {
+  const fn = globalThis.crypto?.randomUUID?.bind(globalThis.crypto);
+  if (!fn) throw new Error("crypto.randomUUID unavailable in this runtime");
+  return fn();
+}
+
+/** Default platform provider — uses globalThis.crypto (Node 19+, all modern browsers). */
+export const defaultCryptoProvider: CryptoProvider = {
+  digest:          webDigest,
+  getRandomValues: webGetRandomValues,
+  randomUUID:      webRandomUUID,
+};
+
+// ---------------------------------------------------------------------------
+// Canonical bytes helpers (CRYPTO.md policy)
+// ---------------------------------------------------------------------------
+
+/** Encode a string to UTF-8 bytes. Always use this, never Buffer.from(str). */
+export function utf8Bytes(text: string): Uint8Array {
+  return new TextEncoder().encode(text);
+}
+
+/**
+ * Stable JSON serialization with sorted keys.
+ * Rejects undefined, functions, symbols, BigInt, non-finite numbers, and class instances
+ * unless they have a well-typed JSON representation.
+ */
+export function canonicalJson(value: unknown): string {
+  return JSON.stringify(value, (_, v) => {
+    if (v === undefined) return undefined;
+    if (typeof v === "function" || typeof v === "symbol" || typeof v === "bigint") {
+      throw new TypeError(`canonicalJson: non-serializable value type ${typeof v}`);
+    }
+    if (typeof v === "number" && !isFinite(v)) {
+      throw new TypeError(`canonicalJson: non-finite number ${v}`);
+    }
+    if (v !== null && typeof v === "object" && !Array.isArray(v)) {
+      // Sort object keys for stability
+      return Object.fromEntries(
+        Object.entries(v as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+      );
+    }
+    return v;
+  });
+}
+
+/** `canonicalJson` encoded as UTF-8 bytes. */
+export function canonicalJsonBytes(value: unknown): Uint8Array {
+  return utf8Bytes(canonicalJson(value));
+}
+
+/** Encode a Uint8Array as a lowercase hex string. */
+export function hex(bytes: Uint8Array): string {
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Decode a lowercase/uppercase hex string into bytes. Inverse of `hex`.
+ * Throws on odd length or non-hex characters — callers pass already-validated
+ * hex (e.g. an ed25519 key or signature whose length the caller guards first).
+ */
+export function hexToBytes(hexStr: string): Uint8Array {
+  if (hexStr.length % 2 !== 0) {
+    throw new TypeError(`hexToBytes: odd-length hex (${hexStr.length})`);
+  }
+  const out = new Uint8Array(hexStr.length / 2);
+  for (let i = 0; i < out.length; i++) {
+    const byte = Number.parseInt(hexStr.slice(i * 2, i * 2 + 2), 16);
+    if (Number.isNaN(byte)) throw new TypeError(`hexToBytes: non-hex at offset ${i * 2}`);
+    out[i] = byte;
+  }
+  return out;
+}
+
+/**
+ * SHA-256 digest of bytes, returned as lowercase hex.
+ * Requires a DigestProvider (use defaultCryptoProvider for platform Web Crypto).
+ */
+export async function sha256Hex(bytes: Uint8Array, provider: DigestProvider): Promise<string> {
+  return hex(await provider.digest("SHA-256", bytes));
+}
+
+/**
+ * Synchronous SHA-256 of bytes.
+ *
+ * SCOPE (the live law):
+ * @noble/hashes/sha2 serves as the platform-blind SYNC digest — it ships to browser runtimes and
+ * already carries tw5's action-handler render-hash, persona-hd, genesis-doc, and the tw5
+ * memetic-wikitext reader's sourceCidOf. Reach for sha256Hex(bytes, provider) instead only where a
+ * caller INJECTS its digest (the CryptoProvider shore: auditability, HSM/worker routing) or already
+ * lives async. Both paths produce the same full-hex sha256 (the single-cid-gate isomorphism).
+ */
+export function sha256BytesSync(bytes: Uint8Array): Uint8Array {
+  return nobleSha256(bytes);
+}
+
+/**
+ * Synchronous SHA-256 of bytes, returned as lowercase hex (same live-law scope as sha256BytesSync).
+ */
+export function sha256HexBytesSync(bytes: Uint8Array): string {
+  return hex(sha256BytesSync(bytes));
+}
+
+/**
+ * Synchronous SHA-256 of a UTF-8 string, returned as lowercase hex.
+ *
+ * SCOPE (the live law):
+ * @noble/hashes/sha2 serves as the platform-blind SYNC digest — it ships to browser runtimes and
+ * already carries tw5's action-handler render-hash, persona-hd, genesis-doc, and the tw5
+ * memetic-wikitext reader's sourceCidOf. Reach for sha256Hex(bytes, provider) instead only where a
+ * caller INJECTS its digest (the CryptoProvider shore: auditability, HSM/worker routing) or already
+ * lives async. Both paths produce the same full-hex sha256 (the single-cid-gate isomorphism).
+ */
+export function sha256HexSync(text: string): string {
+  return sha256HexBytesSync(utf8Bytes(text));
+}
+
+/**
+ * The carrier observation hash the Confluence echo gate keys on — the SAME digest on
+ * every side of the disk shore (the ingest gesture's `diskHash`, the
+ * projector's Synced-tree value, the in-VM gate's current/candidate render). It
+ * folds the `.meta` sidecar in, because `.meta` holds LIVE metadata for a
+ * bag/wiki entity: an edit to a carrier's FIELDS alone must read as CHANGED and
+ * re-ingest, which a body-only hash let slip past the echo gate. A carrier with
+ * The join reads TW5-native — it reconstructs the carrier's canonical `.tid`
+ * form (the field block, a blank line, then the text: exactly how TW5 serializes
+ * a tiddler to a single file). The first blank line is TW5's own field/text
+ * delimiter, so the boundary stays unambiguous with no out-of-band separator. A
+ * carrier with NO sidecar (every `.mem`/`.tid`) hashes body-only — the same bytes
+ * the body-only `contentHash` folds, so the digest surface stays stable.
+ *
+ * The output rides ALGORITHM-TAGGED (`sha256:<hex>`, the agile-digest canonical
+ * form), so a `carrierHash` value carries its own scheme and can sit beside a
+ * future digest algorithm. Readers compare through `digestsEqual`; a stored bare
+ * hex names no algorithm and matches nothing.
+ */
+export function carrierHash(body: string, meta?: string): string {
+  const hex = meta === undefined ? sha256HexSync(body) : sha256HexSync(`${meta}\n\n${body}`);
+  return formatDigest("sha256", hex);
+}
+
+/**
+ * CID design note:
+ * - Use CIDv1 raw SHA-256 for content identity where a stable address is needed.
+ * - Avoid the full multiformats dependency by emitting only the raw SHA-256
+ *   multicodec prefix + content digest, encoded as lowercase base32.
+ * - Early alpha intent: canonize CIDs now and avoid preserving hex-only SHA-256
+ *   as a long-lived legacy surface.
+ */
+const BASE32_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
+
+function base32Encode(bytes: Uint8Array): string {
+  let bits = 0;
+  let value = 0;
+  let output = "";
+  for (const byte of bytes) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += BASE32_ALPHABET[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    output += BASE32_ALPHABET[(value << (5 - bits)) & 31];
+  }
+  return output;
+}
+
+function parseHexDigest(hexDigest: string): Uint8Array {
+  if (hexDigest.length !== 64) {
+    throw new TypeError(`parseHexDigest: expected 64-char lowercase hex, got ${hexDigest.length}`);
+  }
+  const result = new Uint8Array(32);
+  for (let i = 0; i < 32; i++) {
+    result[i] = Number.parseInt(hexDigest.slice(i * 2, i * 2 + 2), 16);
+  }
+  return result;
+}
+
+/**
+ * Encode a 64-byte SHA-256 hex digest as CIDv1 raw SHA-256.
+ */
+export function cidV1Sha256FromHex(hexDigest: string): string {
+  const digest = parseHexDigest(hexDigest);
+  const prefix = new Uint8Array([0x01, 0x55, 0x12, 0x20]);
+  const cidBytes = new Uint8Array(prefix.length + digest.length);
+  cidBytes.set(prefix, 0);
+  cidBytes.set(digest, prefix.length);
+  return `b${base32Encode(cidBytes)}`;
+}
+
+/**
+ * CIDv1 raw SHA-256 of content bytes.
+ */
+export function cidV1Sha256(content: Uint8Array): string {
+  return cidV1Sha256FromHex(sha256HexBytesSync(content));
+}
+
+/** Encode bytes as base64url (RFC-4648 §5), no padding — isomorphic, no Buffer. The carriage form a HandleCard
+ *  (or any small self-certifying capability) rides for a paste / QR / URL-fragment hand-off. */
+export function base64UrlEncode(bytes: Uint8Array): string {
+  return base64UrlNoPad(bytes);
+}
+
+/**
+ * Decode base64url back to bytes — the inverse of {@link base64UrlEncode}, tolerant of a carried string: it
+ * IGNORES every char outside the base64url alphabet (a `#card=` prefix, whitespace from a paste, `=` padding, a
+ * trailing newline), so a hand-carried token decodes without pre-trimming. Length-invalid tail bits are dropped
+ * (a `& 0xff` guards each emitted byte), so a truncated paste yields a short buffer the caller's JSON parse then
+ * rejects — never a throw here (WITHHOLD-not-forge: a garbled carriage means the card DID NOT ARRIVE).
+ */
+export function base64UrlDecode(s: string): Uint8Array {
+  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const lookup = new Int16Array(128).fill(-1);
+  for (let i = 0; i < A.length; i++) lookup[A.charCodeAt(i)] = i;
+  const out: number[] = [];
+  let buffer = 0;
+  let bits = 0;
+  for (let i = 0; i < s.length; i++) {
+    const code = s.charCodeAt(i);
+    const v = code < 128 ? lookup[code]! : -1;
+    if (v < 0) continue;                       // skip padding / whitespace / fragment prefix chars
+    buffer = (buffer << 6) | v;
+    bits += 6;
+    if (bits >= 8) { bits -= 8; out.push((buffer >> bits) & 0xff); }
+  }
+  return Uint8Array.from(out);
+}
+
+/** base64url (RFC-4648 §5), no padding — isomorphic, no Buffer. */
+function base64UrlNoPad(bytes: Uint8Array): string {
+  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  let out = "";
+  for (let i = 0; i < bytes.length; i += 3) {
+    const b0 = bytes[i]!;
+    const b1 = i + 1 < bytes.length ? bytes[i + 1]! : 0;
+    const b2 = i + 2 < bytes.length ? bytes[i + 2]! : 0;
+    const n = (b0 << 16) | (b1 << 8) | b2;
+    out += A[(n >> 18) & 63]! + A[(n >> 12) & 63]!;
+    if (i + 1 < bytes.length) out += A[(n >> 6) & 63]!;
+    if (i + 2 < bytes.length) out += A[n & 63]!;
+  }
+  return out;
+}
+
+/**
+ * RFC-6920 named-information URI for a SHA-256 digest: `ni:///sha-256;<base64url>`.
+ * A self-describing, foreign-legible content integrity name — a stranger fetches the bytes
+ * and verifies them against this id without any local context. The algorithm rides IN the
+ * name (`sha-256`), so a future digest (BLAKE3, …) stays parseable beside it. The public
+ * plane's addressing mode (content-resolution.mem #cad-storage).
+ */
+export function niUriSha256FromHex(hexDigest: string): string {
+  return `ni:///sha-256;${base64UrlNoPad(parseHexDigest(hexDigest))}`;
+}

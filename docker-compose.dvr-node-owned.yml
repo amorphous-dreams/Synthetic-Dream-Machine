@@ -1,0 +1,18 @@
+# Dedicated deployment loop for the Node daemon-owned D-VR-C receipt.
+# It is deliberately separate from docker-compose.mesh.yml's `nexus` scenario.
+name: dvr-node-owned
+
+services:
+  dvr-node-owned:
+    image: node:24-slim
+    working_dir: /app
+    volumes:
+      - ".:/app:ro"
+      - "dvr-node-owned-data:/run/dvr"
+    environment:
+      DVR_STORAGE_ROOT: /run/dvr
+    command: ["sh", "-ec", "node --import tsx/esm tools/daemon-dvr-node-receipt.mjs"]
+    restart: "no"
+
+volumes:
+  dvr-node-owned-data:

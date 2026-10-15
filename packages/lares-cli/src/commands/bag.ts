@@ -5,82 +5,97 @@
  * one sync surface). Wiki-level operations (whole-recipe pins, composition,
  * Epoch-on-the-stack) live under `lares wiki <verb>`; bag-level lives here.
  *
+ * TWO HALVES, and they answer different questions. The RUNTIME half (pin · unpin · stats · register-cold ·
+ * epoch) answers //is this doc in RAM//. The LIFECYCLE half (list · show · declare · home · repo) answers
+ * what a bag IS, who may read it, where it belongs, and how to move it — none of which a bag could answer
+ * about itself until it carried a declaration of its own.
+ *
  * Verbs:
  *   pin <url> [--reason <text>]   — never evict this bag from RAM
- *   unpin <url>                   — demote pinned bag to hot LRU
- *   stats                         — pinned / hot / cold residency snapshot
- *   register-cold <url>           — mark URL as known-but-not-loaded (oracle stub)
- *
- * E.1 ships these four; E.8 adds `bag epoch <url>` (DXOS-style snapshot-restart).
+ *   unpin <url>                   — remove the cooling exemption (bag rejoins the LRU sweep)
+ *   stats                         — pinned / wela / anu residency snapshot
+ *   register-cold <url>           — mark URL as known-but-not-loaded (the oracle entry alone)
+ *   compact <url>                 — DXOS-style snapshot-restart; bounds history
+ *   cas [--all] [--fetch <cid>] [--pin <cid>] [--release <cid>] [--sweep [--dry-run]]
+ *                                 — the cid/ CAS tier: blobs · referenced · unreferenced · bytes; fetch · pin · release · sweep
+ *   list                          — every bag: declared tier + home, and whether it sits where it belongs
+ *   show <bag>                    — one bag's declaration, resolved on this vessel
+ *   declare <bag> --tier --home   — write/amend the declaration (moves no bytes)
+ *   home <bag> --to <home> --approve  — MOVE the bytes and re-anchor the declaration together
+ *   repo <list|add|drop>          — the repo registry; bags name IDs, never paths
  */
 
-import { join } from "node:path";
-import { loadOperatorVerifyingKey } from "@lararium/node";
-import { repoRoot } from "@lares/core";
+import { vesselDid } from "../env.js";
 import {
   cmdPin, cmdUnpin, cmdRegisterCold, cmdResidency,
 } from "./residency.js";
-import { connectAdminPeer, submitCommand } from "../admin-peer.js";
+import {
+  cmdBagList, cmdBagShow, cmdBagDeclare, cmdBagHome, cmdBagRepo, bagLifecycle,
+} from "./bag-declare-cmd.js";
+import { cmdCas } from "./cas.js";
+import { summaryOutput } from "../verb-result.js";
+import { runVerb, verbFailure } from "../verb-call.js";
+import { exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
-async function operatorDid(): Promise<string> {
-  const root    = process.env["LAR_ROOT"] ?? join(repoRoot, "packages", "lararium-node");
-  const dataDir = join(root, ".lararium");
-  return "0x" + (await loadOperatorVerifyingKey(dataDir));
-}
-
-async function tryConnect() {
-  try {
-    const root = process.env["LAR_ROOT"];
-    const extra = root ? { bootstrapPath: join(root, "genesis", "social-bootstrap.json") } : {};
-    return await connectAdminPeer(extra);
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error(`lares bag: ${msg}`);
-    console.error("  Start the daemon with `lares serve` and try again.");
-    return null;
-  }
-}
-
-/** `lares bag epoch <bag-url>` — DXOS-style snapshot-restart on one bag. */
-export async function cmdBagEpoch(args: ParsedArgs): Promise<number> {
+/** `lares bag compact <bag-url>` — DXOS-style snapshot-restart on one bag.
+ *
+ *  NAMED FOR WHAT IT DOES, and for whose word it borrows. The ceremony is DXOS's, and `epoch` in this
+ *  house is RESERVED for the monotone fencing frontier a grant binds to. A compaction CUTS history and
+ *  fences nobody, so it carries the qualifier and leaves the bare word to the fence
+ *  (lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/whose-word-is-it). */
+export async function cmdBagCompact(args: ParsedArgs): Promise<number> {
   const bagUrl = args.positional[0];
   if (!bagUrl) {
-    console.error("usage: lares bag epoch <bag-url>");
+    console.error("usage: lares bag compact <bag-url>");
     return 2;
   }
-  const did  = await operatorDid().catch(() => "lares-cli");
-  const peer = await tryConnect();
-  if (!peer) return 3;
+  const did = await vesselDid();
+  let r;
   try {
-    const r = await submitCommand(peer, "bag-epoch", { bagUrl }, did, { timeoutMs: 30_000 });
-    if (r.status === "error") {
-      console.error(`bag epoch failed: ${r.errorMessage ?? "unknown"}`);
-      return 4;
-    }
-    const result = r.result ?? {};
-    console.log("");
-    console.log(`bag epoch: ${result["bagUrl"]}`);
-    console.log(`  old doc:  ${result["oldDocUrl"]}`);
-    console.log(`  new doc:  ${result["newDocUrl"]}`);
-    console.log(`  tiddlers: ${result["tiddlerCount"]}  tombstones: ${result["tombstoneCount"]}`);
-    console.log(`  layer:    ${result["layerSwapped"] ? "swapped in composite" : "not mounted"}`);
-    if (result["note"]) console.log(`  note:     ${result["note"]}`);
-    console.log("");
-    return 0;
-  } finally {
-    await peer.disconnect();
+    // UDS fast path, WS fallback (the lares↔lararium binding).
+    r = await runVerb("bag-compact", { bagUrl }, did, { timeoutMs: 30_000 });
+  } catch (err) {
+    // M3′: told apart by the error's own TYPE — a LOCAL WAIT ENDING (the write door `watch --apply`
+    // uses this verb through) is not an absent daemon.
+    const f = verbFailure(err);
+    console.error(`lares bag: ${f.message}`);
+    if (f.hint !== undefined) console.error(`  ${f.hint}`);
+    return exitFor(f.code);
   }
+  if (r.status === "error") {
+    console.error(`bag compact failed: ${r.errorMessage ?? "unknown"}`);
+    return 4;
+  }
+  const result = summaryOutput(r) ?? {};
+  console.log("");
+  console.log(`bag compact: ${result["bagUrl"]}`);
+  console.log(`  old doc:  ${result["oldDocUrl"]}`);
+  console.log(`  new doc:  ${result["newDocUrl"]}`);
+  console.log(`  tiddlers: ${result["tiddlerCount"]}  tombstones: ${result["tombstoneCount"]}`);
+  console.log(`  layer:    ${result["layerSwapped"] ? "swapped in composite" : "not mounted"}`);
+  if (result["note"]) console.log(`  note:     ${result["note"]}`);
+  console.log("");
+  return 0;
 }
 
 type BagSubcommand = (args: ParsedArgs) => Promise<number>;
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: string }>> = {
-  "pin":           { handler: cmdPin,          summary: "Pin a bag URL — daemon never evicts it. Needs `lares serve`." },
-  "unpin":         { handler: cmdUnpin,        summary: "Unpin a bag URL — demotes from pinned to hot LRU. Needs `lares serve`." },
-  "stats":         { handler: cmdResidency,    summary: "Print the daemon's bag residency snapshot. Needs `lares serve`." },
-  "register-cold": { handler: cmdRegisterCold, summary: "Mark a bag URL as known-but-not-loaded (oracle stub). Needs `lares serve`." },
-  "epoch":         { handler: cmdBagEpoch,     summary: "DXOS-style snapshot-restart on one bag. Bounds history; lossy by design." },
+  "pin":           { handler: cmdPin,          summary: "Pin a bag URL — daemon never evicts it. Needs `lares vessel stand --foreground`." },
+  "unpin":         { handler: cmdUnpin,        summary: "Unpin a bag URL — removes the cooling exemption; the bag rejoins the LRU sweep. Needs `lares vessel stand --foreground`." },
+  "stats":         { handler: cmdResidency,    summary: "Print the daemon's bag residency snapshot. Needs `lares vessel stand --foreground`." },
+  "register-cold": { handler: cmdRegisterCold, summary: "Mark a bag URL as known-but-not-loaded — the oracle entry alone, no tiddlers loaded. Needs `lares vessel stand --foreground`." },
+  "compact":       { handler: cmdBagCompact,     summary: "DXOS-style snapshot-restart on one bag. Bounds history; lossy by design." },
+  "cas":           { handler: async (a) => cmdCas(a), summary: "The cleartext cid/ CAS tier: blobs · referenced · unreferenced · bytes (references derived from the projection; --all lists each blob). Local read, no daemon. --fetch <cid> reads ONE cid through the running vessel's fetch door (fleet holders over Socket B). --pin <cid> [--tier <t>] [--holder <name>] holds a blob past the grace until released; --release <cid> frees it. --sweep [--dry-run] sweeps the unreferenced blobs past their grace where the composite stands (dry: names them, moves nothing)." },
+  // ── The LIFECYCLE half. Everything above answers a RUNTIME question (is this doc in RAM); these answer
+  // what a bag IS, who may read it, where it belongs, and how to move it — the questions a bag could not
+  // answer about itself at all until it carried a declaration.
+  "list":          { handler: bagLifecycle(cmdBagList),    summary: "Every bag: its declared cap-tier + home, and whether it sits where it says it belongs." },
+  "show":          { handler: bagLifecycle(cmdBagShow),    summary: "One bag's declaration, and where that resolves on THIS vessel." },
+  "declare":       { handler: bagLifecycle(cmdBagDeclare), summary: "Write/amend a bag's own declaration (--tier --home --repo --role). Moves no bytes." },
+  "home":          { handler: bagLifecycle(cmdBagHome),    summary: "MOVE a bag to a home (--to, --repo). Plans by default; --approve performs it." },
+  "repo":          { handler: bagLifecycle(cmdBagRepo),    summary: "The repo registry: `list` | `add <id> --root <path>` | `drop <id>`. Bags name IDs, never paths." },
 };
 
 function printBagHelp(): void {

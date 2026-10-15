@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "bed": "pidgin-sessions",
+  "root": "<abide>/sensoriums/pidgin-sessions",
+  "wing": "wing_testbed",
+  "room": "corpus",
+  "min_support": 2,
+  "max_forms": 64,
+  "flow": {
+    "sources": [
+      "_HELD_see_held_forks.ground"
+    ],
+    "exclusions": [],
+    "record_unit": {
+      ".jsonl": "turn"
+    }
+  },
+  "worldline": {
+    "real": [
+      "in-file",
+      "turn-sequence"
+    ],
+    "arbitrary": [
+      "walk-order"
+    ]
+  },
+  "twins": {
+    "grain": "in-file-token",
+    "size_matched": true,
+    "seed": 5
+  },
+  "apertures": [
+    {
+      "name": "path-address",
+      "provenance": "given"
+    },
+    {
+      "name": "declared-fields",
+      "extractor": "turn-role+ordinal",
+      "provenance": "given"
+    },
+    {
+      "name": "planes",
+      "provenance": "induced"
+    }
+  ],
+  "predictions": {
+    "sheet": "packages/lararium-mempalace/docs/EMERGENCE-PREREG.md",
+    "anchor": "bed-pidgin-sessions"
+  },
+  "held_forks": {
+    "ground": {
+      "held": "WAL (the capture write-ahead ground \u2014 ground-vs-derived purity)",
+      "alternative": "the drawer store (convenient, but derived)",
+      "at": "operator"
+    }
+  },
+  "operatorAct": {
+    "who": "operator (Joshua Fontany)",
+    "date": "2026-07-15",
+    "ruling": "IaC for the Sensorium Palace \u2014 'Pono. Enact.' Wiki content crosses into sensorium work only by this explicit act (the separation law)."
+  }
+}

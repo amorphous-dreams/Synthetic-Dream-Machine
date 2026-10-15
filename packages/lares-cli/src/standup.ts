@@ -1,0 +1,129 @@
+/**
+ * found — the idempotent founding orchestration behind `lares vessel stand --install`.
+ *
+ * Stands up the vessel from a (mostly) fresh pull — node build, social-plane init,
+ * genesis, then the global `lares` link — by COMPOSING the existing commands, each
+ * FOUND-IF-ABSENT and a NO-OP-IF-PRESENT. Running it twice is a pure no-op.
+ *
+ * Reach law: the founding runs before anything reaches outside LAR_ROOT. A refused
+ * or failed init returns before genesis and before the link, so a refusal leaves
+ * HOME untouched. The mempalace sidecar is no part of a founding; its door is
+ * `lares mempalace install`.
+ *
+ * Safety law (identity and founding stay separate):
+ *  - the plan is computed by file PRESENCE alone (read-only); only absent steps run;
+ *  - the operator keypair is load-or-create — never wiped (node-vessel-identity.ts);
+ *  - `lares vessel found` self-guards on the bootstrap (skips the ceremony if present);
+ *  - genesis is BUILD-IF-ABSENT ONLY — a rebuild can shift the CID and diverge a
+ *    founded identity, so a rebuild stays a separate operation, never
+ *    a stand. `--install` never passes `--force`.
+ */
+
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { repoRoot } from "@lararium/mesh/node";
+import { runCommand } from "./spawn.js";
+import { cmdFound } from "./commands/found.js";
+import { cmdBake } from "./commands/scripted.js";
+import { linkLaresGlobal } from "./link-bin.js";
+import type { ParsedArgs } from "./parse-args.js";
+
+const NODE_DIST_MAIN = join(repoRoot, "packages", "lararium-node", "dist", "src", "main.js");
+
+export type FoundAction = "skip" | "ran" | "failed";
+
+export interface FoundStep {
+  readonly step: string;
+  readonly action: FoundAction;
+  readonly detail: string;
+}
+
+export interface FoundContext {
+  /** Instance root (LAR_ROOT). */
+  readonly root: string;
+  /** The social-bootstrap path — `<lares>/vessel`, resolved by larBootstrapPath. */
+  readonly bootstrap: string;
+}
+
+/** One planned step: whether its artifact is already present, and what running it would do. */
+export interface PlanStep {
+  readonly step: string;
+  readonly present: boolean;
+  readonly wouldRun: string;
+}
+
+/**
+ * PLAN (read-only, safe to witness anywhere): which founding steps are already
+ * satisfied vs would run, by file presence alone. No side effects.
+ */
+export function planFounding(ctx: FoundContext): PlanStep[] {
+  const genesisSeed = join(ctx.root, "genesis", "seed.json");
+  return [
+    { step: "build", present: existsSync(NODE_DIST_MAIN), wouldRun: "pnpm install && pnpm -r build" },
+    { step: "init", present: existsSync(ctx.bootstrap), wouldRun: "lares vessel found (keypair load-or-create; founding ceremony only if absent)" },
+    { step: "genesis", present: existsSync(genesisSeed), wouldRun: "build-genesis (BUILD-IF-ABSENT; never rebuilds a founded shrine)" },
+  ];
+}
+
+/**
+ * EXECUTE the founding: run only the absent steps, in dependency order, each a
+ * no-op when already present. Thin glue over already-witnessed commands; the
+ * safety (which steps run) lives in {@link planFounding}, which this honors.
+ */
+export async function foundIfAbsent(args: ParsedArgs, ctx: FoundContext): Promise<FoundStep[]> {
+  const plan = planFounding(ctx);
+  const present = (step: string): boolean => plan.find((p) => p.step === step)?.present ?? false;
+  const steps: FoundStep[] = [];
+
+  // 1. Build — the node dist must exist before the daemon can boot. (The CLI itself is already built;
+  //    it had to be, to run this. A truly cold pull bootstraps the CLI with one
+  //    manual `pnpm install && pnpm -r build` first.)
+  if (present("build")) {
+    steps.push({ step: "build", action: "skip", detail: "node dist present" });
+  } else {
+    const inst = await runCommand("pnpm", ["install"], repoRoot);
+    const built = inst === 0 ? await runCommand("pnpm", ["-r", "build"], repoRoot) : inst;
+    steps.push({
+      step: "build",
+      action: built === 0 ? "ran" : "failed",
+      detail: built === 0 ? "pnpm install && pnpm -r build" : `build exited ${built}`,
+    });
+    if (built !== 0) return steps; // nothing downstream can serve without dist
+  }
+
+  // 2. Init — FOUND a new PersonaGroup, or JOIN an existing one when an admit payload
+  //    is provided (--admit FILE → cmdFound routes admitPayloadPath). Self-guards on the
+  //    bootstrap (idempotent: already founded/joined → skip); the keypair is never wiped.
+  if (present("init")) {
+    steps.push({ step: "init", action: "skip", detail: "bootstrap present — already founded/joined; keypair intact" });
+  } else {
+    const admit = args.options["admit"];
+    const code = await cmdFound(args);
+    const detail =
+      code !== 0
+        ? `init exited ${code}`
+        : admit
+          ? `JOINED PersonaGroup via admit payload (${admit}) — own keypair, same group`
+          : "lares vessel found (founded a new PersonaGroup)";
+    steps.push({ step: "init", action: code === 0 ? "ran" : "failed", detail });
+    if (code !== 0) return steps;
+  }
+
+  // 3. Genesis — BUILD-IF-ABSENT ONLY. The identity-safety line: never rebuild.
+  if (present("genesis")) {
+    steps.push({ step: "genesis", action: "skip", detail: "genesis present — NOT rebuilt (CID/identity preserved)" });
+  } else {
+    const code = await cmdBake(args);
+    steps.push({ step: "genesis", action: code === 0 ? "ran" : "failed", detail: code === 0 ? "build-genesis (founded)" : `build-genesis exited ${code}` });
+  }
+
+  // 4. Global link — make `lares` runnable from anywhere (symlink into a user bin on Unix, a .cmd shim
+  //    on Windows). It reaches HOME, so it runs last: only a vessel that stands earns it. Idempotent;
+  //    non-fatal.
+  {
+    const r = linkLaresGlobal();
+    steps.push({ step: "link", action: r.ok ? "ran" : "failed", detail: r.detail });
+  }
+
+  return steps;
+}

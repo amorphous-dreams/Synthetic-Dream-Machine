@@ -1,0 +1,693 @@
+/**
+ * CompositeStore — recipe-ordered overlay of LarTiddlerStore layers.
+ *
+ * Layers ordered lowest → highest priority (wiki overrides corpus overrides core).
+ * Standard TW5 recipe law: same title in multiple bags → highest priority bag wins.
+ *
+ * Put/tombstone always route to the designated writable store (wiki bag by default).
+ * Read paths (get, listVisible) fan out across all layers; highest priority wins.
+ * Subscribe fans out to all layers; callers must check origin to avoid echo loops.
+ *
+ * Layers may be added dynamically after construction — corpus islands arrive async.
+ * Callers should subscribe BEFORE addLayer to ensure no change events are missed,
+ * or trigger a refresh after addLayer returns.
+ */
+
+import type {
+  LarTiddlerStore,
+  LarTiddlerRecord,
+  LarTiddlerChange,
+  ChangeOrigin,
+  MemeProjection,
+  LarWriteOptions,
+} from "./tiddler-store.js";
+import {
+  corpusLarUri,
+} from "./lar-uris.js";
+import { headsEqual } from "./wiki-recipe.js";
+import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
+
+/** Two flat field bags hold the same keys and the same values (each value read as its string). */
+function sameFields(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((k) => Object.prototype.hasOwnProperty.call(b, k) && String(a[k]) === String(b[k]));
+}
+import { VerbRefusal } from "./verb-refusal.js";
+import type { WikiRecipe, BagPinState } from "./wiki-recipe.js";
+
+// Re-export so callers get bag IDs and URI helpers from a single import.
+export { corpusLarUri as corpusBagId };
+// BAG_IDS lives in lar-uris.ts; re-exported from the package index via `export * from "./lar-uris.js"`.
+
+export interface CompositeLayer {
+  readonly bagId:        string;
+  readonly store:        LarTiddlerStore;
+  readonly writable:     boolean;
+  /**
+   * THE WORKING ROLE. When true (default), this layer takes the composite's working role on
+   * registration: a bagless write routes here. A vessel names ONE layer for that role (its wiki's
+   * working layer). Every other writable layer passes false: a substrate bag, a capability module's
+   * board, a named slot. Such a layer accepts a write that names its bag and never takes a bagless
+   * one; with no layer in the role a bagless write refuses by name (`NoWorkingLayerRefusal`).
+   */
+  readonly defaultWritable?: boolean;
+  /**
+   * Optional read-access policy expression from the bag's BagTiddler descriptor.
+   * Carried here so callers can inspect policy without another tiddler lookup.
+   * Default interpretation: "public" when absent.
+   */
+  readonly readPolicy?:  string;
+  /**
+   * Optional write-access policy expression from the bag's BagTiddler descriptor.
+   * Default interpretation: derived from `writable` flag when absent.
+   */
+  readonly writePolicy?: string;
+}
+
+/** A bagless write has no destination until its wiki working layer is mounted. */
+export class NoWorkingLayerRefusal extends Error {
+  readonly code = "NO_WORKING_LAYER";
+
+  /** `write` names the refused write; `remedy` is the one sentence saying what to do. */
+  constructor(write: string, remedy = "Mount the wiki working layer before writing, or name the target bag.") {
+    super(`${write} refused: no default writable layer stands. ${remedy}`);
+    this.name = "NoWorkingLayerRefusal";
+  }
+}
+
+/** Minimal residency-touch shape — kept structural so composite-store
+ *  doesn't depend on the BagStowage class directly (avoids
+ *  circular imports). The daemon binds it via attachResidency(). */
+export interface ResidencyTouch {
+  touch(bagUrl: string): Promise<void> | void;
+}
+
+/**
+ * One causal-stamped entry the composite resolves — a title's TOPMOST live manifestation plus the
+ * bag that answered and the causal coordinates (Automerge heads + changeId) it read AS-OF. The
+ * snapshot unit a wiki-sensorium projection folds over. See {@link CompositeStore.entries}.
+ */
+export interface CompositeEntry {
+  readonly title:    string;
+  readonly bagId:    string;
+  readonly record:   LarTiddlerRecord;
+  /** the answering layer's Automerge heads at read time, or null for a store with no CRDT backing. */
+  readonly heads:    readonly string[] | null;
+  /** the record's causal-history change-id, or null when unstamped. */
+  readonly changeId: string | null;
+}
+
+/** One layer's answer for a title: its record (a tombstone included) and, where the layer has them, its heads. */
+type LayerReading = { record: LarTiddlerRecord | null; heads?: readonly string[] };
+
+export class CompositeStore implements LarTiddlerStore {
+  // Ordered lowest-priority → highest-priority.
+  private readonly layers:      CompositeLayer[] = [];
+  private readonly listeners:   Set<(change: LarTiddlerChange) => void> = new Set();
+  private readonly unsubs:      Map<LarTiddlerStore, () => void> = new Map();
+  /** Active projections — fanned to every layer and to layers added in the future. */
+  private readonly projections: Map<MemeProjection, Array<() => void>> = new Map();
+
+  /** The single writable store — must be registered via addLayer with writable:true. */
+  private writableStore: LarTiddlerStore | null = null;
+
+  /** Residency-touch hook — set via attachResidency(). C.4: composite.get
+   *  bumps lastTouched on the bag whose layer answered the read. Cold-
+   *  promote-mid-get (i.e. hydrate a stub URL when something reads through
+   *  it) is reserved for a later refinement; see HANDOFF "Don't re-decide". */
+  private residency: ResidencyTouch | null = null;
+
+  /** Bind a residency manager. Calling twice replaces the binding. */
+  attachResidency(residency: ResidencyTouch): void {
+    this.residency = residency;
+  }
+
+  hasBag(bagId: string): boolean {
+    return this.layers.some((l) => l.bagId === bagId);
+  }
+
+  /** Index of a layer in the cascade (lowest-priority = 0), or -1. */
+  layerIndexOf(bagId: string): number {
+    return this.layers.findIndex((l) => l.bagId === bagId);
+  }
+
+  /** `at` splices the layer into the cascade at that priority index (live
+   *  recipe reconcile); omitted = push to top (boot-time bottom-up order). */
+  addLayer(layer: CompositeLayer, at?: number): void {
+    if (this.hasBag(layer.bagId)) throw new Error(`CompositeStore: bag "${layer.bagId}" already registered`);
+    if (at !== undefined && at >= 0 && at < this.layers.length) this.layers.splice(at, 0, layer);
+    else this.layers.push(layer);
+    // defaultWritable defaults to true. Set false for layers that accept
+    // explicit-bag-routed writes but shouldn't override the default writable
+    // store (the projection layer).
+    if (layer.writable && layer.defaultWritable !== false) this.writableStore = layer.store;
+
+    // Forward future change events from this layer to our subscribers.
+    const unsub = layer.store.subscribe((change) => {
+      this.listeners.forEach((fn) => fn(change));
+    });
+    this.unsubs.set(layer.store, unsub);
+
+    // Fan any active projections to this new layer (dynamic registration law).
+    for (const [projection, unsubs] of this.projections) {
+      const layerUnsub = typeof layer.store.addProjection === "function"
+        ? layer.store.addProjection(projection)
+        : layer.store.subscribe((change) => projection.onUriChanged(change));
+      unsubs.push(layerUnsub);
+    }
+
+    // Emit synthetic "put" events for tiddlers already in the arriving layer
+    // so projections (IslandAdaptor) see existing content.
+    if (this.listeners.size > 0) {
+      layer.store.listVisible().then((titles) => {
+        for (const title of titles) {
+          this._readWithHeads(layer.store, title).then(({ record: rec, heads }) => {
+            if (!rec) return;
+            const change: LarTiddlerChange = { title, record: rec, origin: { kind: "canon-hydrate", receipt: layer.bagId }, bag: layer.bagId, ...(heads !== undefined ? { heads } : {}) };
+            this.listeners.forEach((fn) => fn(change));
+          });
+        }
+      });
+    }
+  }
+
+  removeLayer(bagId: string): void {
+    const idx = this.layers.findIndex((l) => l.bagId === bagId);
+    if (idx === -1) return;
+    const removed = this.layers.splice(idx, 1)[0];
+    if (!removed) return;
+    this.unsubs.get(removed.store)?.();
+    this.unsubs.delete(removed.store);
+    if (this.writableStore === removed.store) this.writableStore = null;
+  }
+
+  /**
+   * Remove a layer from a LIVE composite and surface the consequences: for
+   * every title the removed layer held visible, emit a synthetic change
+   * carrying what now resolves beneath it — the unshadowed lower record, or
+   * `record: null` (a tombstone) when nothing remains. Projections
+   * (IslandAdaptor) and subscribers both hear it, so the wiki view sheds the
+   * departed bag without a reboot. Plain removeLayer stays the teardown path.
+   */
+  async removeLayerLive(bagId: string): Promise<void> {
+    const layer = this.layers.find((l) => l.bagId === bagId);
+    if (!layer) return;
+    const titles = await layer.store.listVisible();
+    this.removeLayer(bagId);
+    const origin: ChangeOrigin = { kind: "canon-hydrate", receipt: `layer-removed:${bagId}` };
+    for (const title of titles) {
+      const resolved = await this._resolveLayerRecord(title);
+      const remaining = resolved?.record ?? null;
+      const answeredBy = resolved?.layer ?? layer;
+      const heads = resolved?.heads;
+      const change: LarTiddlerChange = { title, record: remaining, origin, bag: answeredBy.bagId, ...(heads !== undefined ? { heads } : {}) };
+      this.listeners.forEach((fn) => fn(change));
+      for (const projection of this.projections.keys()) projection.onUriChanged(change);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // LarTiddlerStore impl
+  // ---------------------------------------------------------------------------
+
+  async listVisible(): Promise<string[]> {
+    // Iterate from highest to lowest priority, deduplicating by title.
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const titles = await this.layers[i]!.store.listVisible();
+      for (const t of titles) {
+        if (!seen.has(t)) { seen.add(t); result.push(t); }
+      }
+    }
+    return result;
+  }
+
+  async get(title: string): Promise<LarTiddlerRecord | null> {
+    // Highest priority first.
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const rec   = await layer.store.get(title);
+      if (rec !== null) {
+        // C.4 — bump residency lastTouched on the bag that answered. Fire-
+        // and-forget; we don't block the read on the touch handler.
+        if (this.residency) void Promise.resolve(this.residency.touch(layer.bagId));
+        return rec;
+      }
+    }
+    return null;
+  }
+
+  async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
+    this._requireBagForBase(options, "put");
+    const store = this._writeTargetFor(options?.bag, "put");
+    const retired = this._refuseRetired(store, [record], "put");
+    if (retired) await retired;
+    return store.put(record, origin, this._writeOptionsFor(options, store, "put"));
+  }
+
+  /**
+   * Write a meme family through the SAME routing `put` uses — the explicit bag's writable layer, a
+   * read-only bag's copy-up into the default writable, a loud refusal for an unmounted bag — and hand
+   * the whole family to that ONE layer store, so the root, its children and its orphans' tombstones
+   * share one doc. A layer store that writes atomically (`writeFamily`) takes it as one change; any
+   * other takes it member by member.
+   */
+  async writeFamily(
+    puts:       readonly LarTiddlerRecord[],
+    tombstones: readonly string[],
+    origin:     ChangeOrigin,
+    options?:   LarWriteOptions,
+  ): Promise<void> {
+    this._requireBagForBase(options, "writeFamily");
+    const store = this._writeTargetFor(options?.bag, "writeFamily");
+    const retired = this._refuseRetired(store, puts, "writeFamily", tombstones);
+    if (retired) await retired;
+    const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
+    if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
+    for (const record of puts) await store.put(record, origin, writeOptions);
+    for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
+  }
+
+  /**
+   * The layer store a write lands in — the overlayfs decision tree (wiki-layer-ontology#write-law),
+   * read by `put` and `writeFamily` alike. With an explicit target bag:
+   *  a) a matching WRITABLE layer → that layer (the upper). Serves only genuinely-mounted writable
+   *     layers the wiki owns — the projection layer, the daemon bag, draft routing. Residency-target
+   *     writes into a DEEP bag reach the bag's own doc by access (catalog-accessor.storeOf) +
+   *     write-then-sync, mounting nothing (action-handler resolveBagStores).
+   *  b) a READ-ONLY layer for that bag IS mounted → shadow-up (copy-up): an edit seen through a
+   *     read-only library lands in the default writable (Law 4 / overlayfs copy-up).
+   *  c) NO layer at all → an explicit write to an unmounted bag. Never guess a default — that is the
+   *     confused-deputy / silent-misroute bug. Fail loud; the caller must reach the bag by access
+   *     (registry) first (overlayfs EROFS / git pathspec-did-not-match).
+   * Without a target, the default writable.
+   */
+  private _writeTargetFor(bag: string | undefined, verb: string): LarTiddlerStore {
+    if (bag) {
+      const writableLayer = this.layers.find((l) => l.bagId === bag && l.writable);
+      if (writableLayer) return writableLayer.store;
+      if (!this.layers.some((l) => l.bagId === bag)) {
+        throw new Error(
+          `CompositeStore.${verb}: explicit target bag "${bag}" has no layer — ` +
+          `reach it by access (registry) before writing, or it is unregistered. ` +
+          `Refusing to fall through to the default writable (no silent misroute).`,
+        );
+      }
+    }
+    if (!this.writableStore) throw new NoWorkingLayerRefusal(`The bagless ${verb}`);
+    return this.writableStore;
+  }
+
+  /**
+   * A RETIRED BAG TAKES NO LANDING (action-handler#/retired). The island's own writes reach a bag through
+   * this door, never through the residency verbs' gate, so the door reads the target layer's retirement
+   * marker itself: ONE keyed read in that layer's own doc, before anything lands. A layer that reads
+   * synchronously (`readNow`) answers with no await, so a write keeps its place in the island's dispatch;
+   * only a layer with no synchronous reader takes one awaited `get` (every production layer reads
+   * synchronously; a layer that cannot leaves a DROP landing between that read and the write unordered).
+   * A write that only ADDS records to the bag's own residency ledger passes, so the record that retires the
+   * bag lands: every member a live put of an effect record that names this bag and carries no field beside
+   * the ledger builder's own (`buildEffectRecordTiddler`), at an effect-record title
+   * under this bag's ledger, never the marker's own title, at a title the layer holds no record for. No tombstone, no removal, no overwrite
+   * and no deleting put passes, so nothing through this door lifts a retirement or rewrites an audit
+   * record. A copy-up lands in the working layer and reads THAT layer's marker.
+   */
+  private _refuseRetired(store: LarTiddlerStore, puts: readonly LarTiddlerRecord[], verb: string, drops: readonly string[] = []): Promise<void> | undefined {
+    const layer = this.layers.find((l) => l.store === store);
+    if (!layer) return undefined;
+    const ledger = effectLedgerPrefix(layer.bagId);
+    const markerTitle = effectRecordUri(layer.bagId, RETIRED_EVENT_ID);
+    const titles = puts.map((r) => r.tiddler.title as string);
+    const ledgerAdd = drops.length === 0 && puts.length > 0 && puts.every((r, i) => {
+      const title = titles[i]!;
+      if (r.meta?.deleted || title === markerTitle || !title.startsWith(ledger) || !isEffectRecordUri(title)) return false;
+      // The record must read back as the one the ledger's own builder writes: no field beside the record's own.
+      const parsed = parseEffectRecord(r.tiddler as Record<string, unknown>);
+      return parsed?.bag === layer.bagId && sameFields(buildEffectRecordTiddler(parsed).tiddler, r.tiddler as Record<string, unknown>);
+    });
+    const refuse = (): never => {
+      throw new VerbRefusal("bag-retired",
+        `CompositeStore.${verb}: bag "${layer.bagId}" stands retired (DROP); a retired bag takes no landing, and nothing landed`);
+    };
+    const reader = (store as LarTiddlerStore & { readNow?: (title: string) => LayerReading }).readNow;
+    if (typeof reader === "function") {
+      const read = (title: string): LarTiddlerRecord | null => reader.call(store, title).record;
+      if (ledgerAdd && titles.every((title) => read(title) === null)) return undefined;
+      if (isRetirementMarker(read(markerTitle)?.tiddler as Record<string, unknown> | undefined, layer.bagId)) refuse();
+      return undefined;
+    }
+    return (async () => {
+      if (ledgerAdd && (await Promise.all(titles.map((title) => store.get(title)))).every((rec) => rec === null)) return;
+      if (await storeIsRetired(store, layer.bagId)) refuse();
+    })();
+  }
+
+  private _writeOptionsFor(options: LarWriteOptions | undefined, target: LarTiddlerStore, verb: string): LarWriteOptions | undefined {
+    if (!options?.base) return options;
+    if (!options.bag) throw new Error(`CompositeStore.${verb}: base requires a named bag`);
+    const namedLayer = this.layers.find((layer) => layer.bagId === options.bag);
+    if (namedLayer?.store === target) return options;
+    const { base: _base, ...copyUpOptions } = options;
+    return copyUpOptions;
+  }
+
+  private _requireBagForBase(options: LarWriteOptions | undefined, verb: string): void {
+    if (options?.base !== undefined && options.bag === undefined) {
+      throw new Error(`CompositeStore.${verb}: a base requires a named bag`);
+    }
+  }
+
+  /**
+   * One layer's record for `title` (a tombstone included), with the heads it was read at. A layer store
+   * that offers `readNow` (a CRDT doc store, the memory store) answers record and heads in one synchronous
+   * stretch, so the pair can never straddle a write, and a layer holding no entry reads no heads. A store
+   * without it answers its record alone, through its awaited `get`.
+   */
+  private async _readWithHeads(store: LarTiddlerStore, title: string): Promise<LayerReading> {
+    const reader = store as LarTiddlerStore & { readNow?: (title: string) => LayerReading };
+    if (typeof reader.readNow === "function") return reader.readNow(title);
+    return { record: await store.get(title) };
+  }
+
+  /**
+   * The topmost layer holding any record for `title` (a tombstone included), with the heads it was read at.
+   * When every layer offers `readNow` the walk runs top-down with no await between layers and answers
+   * before this call's first await: the answer is one state of the composition, the state that stood at
+   * the call. A layer without `readNow` is read through its awaited `get`.
+   */
+  private async _resolveLayerRecord(title: string): Promise<{ layer: CompositeLayer; record: LarTiddlerRecord; heads?: readonly string[] } | null> {
+    const readers = this.layers.map((layer) => (layer.store as LarTiddlerStore & { readNow?: (title: string) => LayerReading }).readNow?.bind(layer.store));
+    const synchronous = readers.every((reader) => reader !== undefined);
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const read = synchronous ? readers[i]!(title) : await this._readWithHeads(layer.store, title);
+      if (read.record !== null) return { layer, record: read.record, ...(read.heads !== undefined ? { heads: read.heads } : {}) };
+    }
+    return null;
+  }
+
+  async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    this._requireBagForBase(options, "tombstone");
+    if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless tombstone");
+    const retired = this._refuseRetired(this.writableStore, [], "tombstone", [title]);
+    if (retired) await retired;
+    return this.writableStore.tombstone(title, origin, this._writeOptionsFor(options, this.writableStore, "tombstone"));
+  }
+
+  async remove(title: string, origin: ChangeOrigin): Promise<void> {
+    if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless remove");
+    const retired = this._refuseRetired(this.writableStore, [], "remove", [title]);
+    if (retired) await retired;
+    return this.writableStore.remove(title, origin);
+  }
+
+  /**
+   * Tombstone a tiddler in a specific writable bag — used by ceremonies that
+   * need to delete from a non-default writable layer (e.g. the MOVE residency
+   * ACTION removes the source-bag copy after writing the destination copy).
+   * Throws when the named bag is absent or not writable.
+   */
+  async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
+    const store = this._writableLayerOf(bagId);
+    const retired = this._refuseRetired(store, [], "tombstoneInBag", [title]);
+    if (retired) await retired;
+    return store.tombstone(title, origin, options);
+  }
+
+  /** HARD-remove a title from one bag (ABSENT — falls through), distinct from
+   *  tombstoneInBag's kāpae hide. The retract a MOVE/promotion uses on its source. */
+  async removeInBag(bagId: string, title: string, origin: ChangeOrigin): Promise<void> {
+    const store = this._writableLayerOf(bagId);
+    const retired = this._refuseRetired(store, [], "removeInBag", [title]);
+    if (retired) await retired;
+    return store.remove(title, origin);
+  }
+
+  /** The bag's WRITABLE layer store, or a throw naming the bag — a residency action, never a copy-up. */
+  private _writableLayerOf(bagId: string): LarTiddlerStore {
+    const store = this.writableStoreForBag(bagId);
+    if (!store) throw new Error(`CompositeStore: no writable layer for bag "${bagId}"`);
+    return store;
+  }
+
+  /** True when a writable layer for the given bag is registered. */
+  hasWritableBag(bagId: string): boolean {
+    return this.layers.some((l) => l.bagId === bagId && l.writable);
+  }
+
+  /** The store of ANY registered layer for the bag (writable or read-only), or
+   *  null. Reads a specific bag's own Manifestation — the no-`reach` wiki-island
+   *  residency READ path (a source bag MAY be a read-only library layer). */
+  storeForBag(bagId: string): LarTiddlerStore | null {
+    return this.layers.find((l) => l.bagId === bagId)?.store ?? null;
+  }
+
+  /** The store of the bag's WRITABLE layer, or null — the no-`reach` wiki-island
+   *  residency WRITE path. A residency write to a bag with no writable layer
+   *  resolves null: the executor fails loud (a residency ACTION MUST NOT shadow
+   *  up to the default writable — that is the misroute, distinct from a user
+   *  edit's Law-4 copy-up which still rides put()'s case-(b)). */
+  writableStoreForBag(bagId: string): LarTiddlerStore | null {
+    return this.layers.find((l) => l.bagId === bagId && l.writable)?.store ?? null;
+  }
+
+  /** BagId of the layer that receives unbagged writes — i.e. the last-
+   *  registered layer with `writable:true` AND `defaultWritable !== false`.
+   *  Returns null when no default writable layer is registered. */
+  defaultWritableBagId(): string | null {
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const l = this.layers[i]!;
+      if (l.writable && l.defaultWritable !== false) return l.bagId;
+    }
+    return null;
+  }
+
+  /** Read the highest-priority LIVE (non-tombstoned) record for a title.
+   *  Standard composite.get() returns the first non-null result including
+   *  tombstones — useful when a caller needs to know about deletions.
+   *  getLive() is the variant ceremonies use when "is the tiddler actually
+   *  there right now" matters (MOVE source-detection, draft-from).
+   *
+   *  Residency Model — **kāpae semantics**: a tombstone in a
+   *  higher-priority bag stops the cascade rather than falling through. A
+   *  tombstone-in-HIGH means "intentionally hidden at this priority"; lower
+   *  bags do not surface. Anti-pattern #3 defense (kāpae resurrection —
+   *  OverlayFS / Docker layer pattern adapted to multi-bag CRDT). */
+  async getLive(title: string): Promise<LarTiddlerRecord | null> {
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const rec = await layer.store.get(title);
+      if (rec === null) continue;          // truly absent — fall through
+      if (rec.meta?.deleted) return null;  // tombstone — intentionally hidden, stop
+      if (this.residency) void Promise.resolve(this.residency.touch(layer.bagId));
+      return rec;
+    }
+    return null;
+  }
+
+  /** Bag ids of every layer currently holding a non-tombstoned record for the
+   *  given title. Highest-priority bag appears first (recipe-presence order).
+   *  Used by the `where` ceremony — recipe-presence preview before promotion. */
+  async listBagsHolding(title: string): Promise<string[]> {
+    const out: string[] = [];
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const rec = await layer.store.get(title);
+      if (rec && !rec.meta?.deleted) out.push(layer.bagId);
+    }
+    return out;
+  }
+
+  /**
+   * Residency Model — return every (bagId, record) pair holding a
+   * non-tombstoned manifestation of `title`, ordered highest-priority first.
+   *
+   * Surfaces multi-bag residency for operator inspection (lares wiki resolve)
+   * and for downstream tooling that needs the full set of Manifestations.
+   * Pairs with resolveTopmost() which returns only the winning pair.
+   *
+   * Meme: lar:///ha.ka.ba/lararium/api/residency-model
+   */
+  async resolveAll(title: string): Promise<Array<{ bagId: string; record: LarTiddlerRecord }>> {
+    const out: Array<{ bagId: string; record: LarTiddlerRecord }> = [];
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const rec = await layer.store.get(title);
+      if (rec && !rec.meta?.deleted) out.push({ bagId: layer.bagId, record: rec });
+    }
+    return out;
+  }
+
+  /**
+   * Residency Model — return the winning (bagId, record) pair for `title`
+   * per recipe priority, or null when no live residency exists.
+   *
+   * Equivalent to getLive() but carries the source bag for operator-visible
+   * coordinate surface. The CSS DevTools Computed-panel analog at the data
+   * layer; consumers surface origin-bag in the read path (IslandAdaptor +
+   * getOriginBag).
+   *
+   * Residency Model — **kāpae semantics**: tombstone in a
+   * higher-priority bag stops the cascade and returns null. Anti-pattern #3
+   * defense (kāpae resurrection). For multi-residency presence-reporting
+   * that ignores the shadow, call `resolveAll(title)` instead.
+   *
+   * Meme: lar:///ha.ka.ba/lararium/api/residency-model
+   */
+  async resolveTopmost(title: string): Promise<{ bagId: string; record: LarTiddlerRecord } | null> {
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const rec = await layer.store.get(title);
+      if (rec === null) continue;          // truly absent — fall through
+      if (rec.meta?.deleted) return null;  // tombstone — intentionally hidden, stop
+      if (this.residency) void Promise.resolve(this.residency.touch(layer.bagId));
+      return { bagId: layer.bagId, record: rec };
+    }
+    return null;
+  }
+
+  /**
+   * The record the composition resolves for `title`, a tombstone INCLUDED: the topmost layer holding any
+   * record for it, with the bag and the heads that record was read at (kāpae: a tombstone above shadows
+   * every live record below). Null when no layer holds a record. A reader the wiki shore lands waves from,
+   * so a lower layer's record never lands over a higher layer's.
+   */
+  async resolveLayered(title: string): Promise<{ bagId: string; record: LarTiddlerRecord; heads?: readonly string[] } | null> {
+    const found = await this._resolveLayerRecord(title);
+    return found ? { bagId: found.layer.bagId, record: found.record, ...(found.heads !== undefined ? { heads: found.heads } : {}) } : null;
+  }
+
+  /**
+   * Residency Model — list bag IDs that explicitly tombstone `title`,
+   * ordered highest-priority first. Sibling of resolveAll (presence report);
+   * surfaces the kāpae hides for operator-visible coordinate
+   * inspection. A title may BOTH appear in resolveAll (live in lower bags)
+   * AND in listKapaeBags (hidden by upper-bag kāpae) when an
+   * operator deaccessions in a high-priority bag while lower bags retain
+   * their copies — that combination signals "topmost reader sees nothing
+   * but the union catalog still holds the title."
+   */
+  async listKapaeBags(title: string): Promise<string[]> {
+    const out: string[] = [];
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      const layer = this.layers[i]!;
+      const rec = await layer.store.get(title);
+      if (rec && rec.meta?.deleted) out.push(layer.bagId);
+    }
+    return out;
+  }
+
+  /**
+   * Residency Model — audit per-bag pin state against the recipe's `bagPins`.
+   *
+   * Returns a Map keyed by bagId carrying one BagPinState per pinned bag.
+   * Default policy: **audit-only**. Operators read the audit; downstream
+   * consumers MAY refuse, time-travel via `view(pinnedHeads)`, or warn. Loud
+   * silent refusal at the read path stays out of scope per the deferred-
+   * enactment design (modal-view reader belongs to a follow-up sprint with
+   * explicit "detached" operator UX, modelled on Loro's checkout cycle).
+   *
+   * Heads comparison uses `headsEqual` (set-semantics) — Automerge Heads form
+   * a mathematical set; order across save/load or implementations stays
+   * non-contractual. See wiki-recipe.headsEqual for sources.
+   *
+   * Bags whose store omits `getHeads()` (e.g. MemoryTiddlerStore) report
+   * `{ state: "opaque" }` rather than `matched` or `drifted` — the audit
+   * surfaces uninspectable layers honestly instead of asserting matches it
+   * cannot verify.
+   *
+   * Anti-pattern #5 defense (recipe-drift poisoning).
+   * Meme: lar:///ha.ka.ba/lararium/api/residency-model
+   */
+  async auditPins(recipe: WikiRecipe): Promise<Map<string, BagPinState>> {
+    const out = new Map<string, BagPinState>();
+    const pins = recipe.bagPins;
+    if (!pins || pins.size === 0) return out;
+    for (const [bagId, pinned] of pins) {
+      const layer = this.layers.find((l) => l.bagId === bagId);
+      if (!layer) { out.set(bagId, { state: "absent" }); continue; }
+      const getHeads = layer.store.getHeads;
+      if (typeof getHeads !== "function") {
+        out.set(bagId, { state: "opaque" });
+        continue;
+      }
+      const current = await getHeads.call(layer.store);
+      if (current === null) {
+        out.set(bagId, { state: "opaque" });
+        continue;
+      }
+      out.set(bagId, headsEqual(pinned, current)
+        ? { state: "matched", heads: current }
+        : { state: "drifted", pinned, current });
+    }
+    return out;
+  }
+
+  subscribe(fn: (change: LarTiddlerChange) => void): () => void {
+    this.listeners.add(fn);
+    return () => { this.listeners.delete(fn); };
+  }
+
+  /**
+   * Register a MemeProjection across all layers.
+   *
+   * Fans the projection to each layer's `addProjection?` (AutomergeDocStore
+   * routes through MemeProvider — debounce, changeset, onSyncComplete).
+   * Layers without `addProjection` fall back to their plain `subscribe()`.
+   *
+   * Returns a combined unsubscribe function.
+   *
+   * Causal-islands law: each island (doc) delivers changes through its own
+   * MemeProvider so debounce and onSyncComplete remain per-island — a slow
+   * corpus island cannot gate a fast wiki island.
+   */
+  addProjection(p: MemeProjection): () => void {
+    const unsubs: Array<() => void> = this.layers.map((layer) =>
+      typeof layer.store.addProjection === "function"
+        ? layer.store.addProjection(p)
+        : layer.store.subscribe((change) => p.onUriChanged(change)),
+    );
+    // Store so future addLayer() calls fan this projection to new layers.
+    this.projections.set(p, unsubs);
+    return () => {
+      for (const u of unsubs) u();
+      this.projections.delete(p);
+    };
+  }
+
+  get layerCount(): number { return this.layers.length; }
+  get layerIds(): string[] { return this.layers.map((l) => l.bagId); }
+
+  /**
+   * Fold the island's OWN resolved surface into causal-stamped entries — a THIN pass over the
+   * existing `listVisible` → `resolveTopmost` cascade, no new iterator abstraction. Each title
+   * resolves to its TOPMOST live manifestation (kāpae-honored: a higher-bag tombstone stops the
+   * cascade, so a hidden title never surfaces), and each entry carries the answering bag plus a
+   * causal stamp — the layer's Automerge `getHeads()` (null for stores with no CRDT backing) and
+   * the record's `changeId` — so a snapshot reader knows AS-OF-WHICH-log it read (no global now).
+   *
+   * The read scopes to THIS composite's registered bagStack alone (local-first): it never reaches
+   * across islands. A wiki-sensorium projection folds this into its per-tiddler planes.
+   */
+  async entries(): Promise<CompositeEntry[]> {
+    const titles = await this.listVisible();
+    const out: CompositeEntry[] = [];
+    for (const title of titles) {
+      const top = await this.resolveTopmost(title);
+      if (!top) continue;   // a title tombstoned at the top drops out (kāpae) — never surfaced
+      const layer = this.layers.find((l) => l.bagId === top.bagId);
+      const getHeads = layer?.store.getHeads;
+      const heads = typeof getHeads === "function" ? await getHeads.call(layer!.store) : null;
+      out.push({
+        title,
+        bagId: top.bagId,
+        record: top.record,
+        heads,
+        changeId: top.record.meta?.changeId ?? null,
+      });
+    }
+    return out;
+  }
+}

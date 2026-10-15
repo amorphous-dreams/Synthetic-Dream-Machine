@@ -1,0 +1,1717 @@
+/**
+ * openBrowserVessel — local-first browser vessel factory.
+ *
+ * A thin RECIPE over the composable vessel keel — the BROWSER
+ * carries the SAME capabilities as node; only the SUBSTRATE differs. The browser must NOT
+ * drift thin via easy-path shortcuts (coreless boot, no residency manager, no corpus, a
+ * LarVessel wrapper) — it holds the full keel. Genuine browser
+ * substrate (the ONLY divergence): IndexedDB storage, WebCrypto keys, founding-via-ceremony
+ * (vs node's lares-init), Web Worker spawn, NO WS-server inbound gate (a browser cannot
+ * listen on a socket), genesis-via-bytes/IDB/OPFS/peer. Capabilities held in common: the
+ * BagStowage mechanism, corpus loading, the verb plane, presence.
+ *
+ * Genesis REQUIRED (no coreless boot). The not-yet-held axis sits at anon↔keeper
+ * (PersonaGroup/admin), not genesis — see project-sovereign-worker-model.
+ */
+
+import { Repo }                              from "@automerge/automerge-repo";
+import { IndexedDBStorageAdapter }           from "@automerge/automerge-repo-storage-indexeddb";
+import type { DocHandle, AutomergeUrl, PeerId } from "@automerge/automerge-repo";
+import {
+  emptyLarDoc, storedLarRecord, storedRecord,
+  CATALOG_DOC_URI, DAEMON_BAG_ID,
+  ENGINE_CORE_ID,
+  resolveRecipePluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
+  personaMultitudeView, renameOwnPersona,
+  DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
+  GatedSyncLeg, oneWayDocumentsGate,
+  ed25519SignerFromSeed, LarWSClientAdapter, type LeafIdentity,
+  standSiblingChannel, siblingRefusalLine, groupSecretOpenerFromSeed, groupSecretSealTitle, verifyGroupSecretSeal,
+  leaseEpochPrefix, effectiveLeaseEpoch, tiddlerText, type SiblingNetworkAdapter, type SiblingShare, type SiblingChannelStatus,
+  pullAndVerifyOracle, type OraclePullResult,
+  BAG_IDS, slugFromUri, verbArgsFromPayload, bagStackFromRec, recipeHostFacets, type WikiActivationCap,
+  carriageStack, deriveMeshLeaf, type MeshPeer,
+  materializeGenesisIsland, genesisCasManifestFromSeed, genesisCasCidsFromOracle, sha256HexBytesSync,
+  whoFaceCap, materializeSharedLarDoc, crossroadsDocUrl, registerCrossroadsInOracle,
+  personaKelBoardDocUrl, personaKelChainForPrefix, PERSONA_KEL_PREFIX_TIDDLER,
+  deriveRegisterBags, catalogNamedBags, personaSiblingBagIds,
+  handleClaimFrom, HANDLE_CLAIM_SURFACES,
+  nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, admittedJoineeIsland, type NexusIdentityAt,
+  climbNexusBoards, carryPersonaKelUpTheGradient,
+  readLedgeredEdgeBoard, fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, edgeStandingOf, raisesSeenThrough, type EdgeReading,
+  type CapModule,
+  type LarDoc, type LarariumVesselOptions, type VesselResult,
+  type VesselBootstrap, type VesselCoreAssembly, type DeviceDelegationTiddler,
+  type GenesisSeed,
+  takeInvite, walkIdentity, walkOver, popInvite, watchCarryNotice, carryDocument, fetchDocument, hostingActOn, hostingDocUrl,
+  type WalkRecord, type WalkFault, type HostingAct, type CarryOutcome,
+}                                            from "@lararium/mesh";
+import { relayPinFor } from "./browser-relay-pin.js";
+import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
+import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
+import { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
+import type { BrowserConnectionState } from "./browser-connection-state.js";
+import { browserWalkStore, browserWalkLeaf, requireAdmittedFaceIsland } from "./browser-walk.js";
+import {
+  MemoryTiddlerStore,
+  selectActiveWikiSlug,
+  loadCatalogCorpora, seedVesselDefaults,
+  makeResidencyStatsReactor,
+  makeVesselResidency, type VesselResidency,
+  replayPinsFromDaemonDoc,
+  PROJECTION_FRAME,
+  COHERENCE_FRAME,
+  SENSORIUM_FRAME,
+  createWikiSenseSupervisor, registerWikiSenseVerbs,
+  makeCatalogAccessor, effectiveRecipe,
+}                                            from "@lararium/tw5";
+import type { WikiSenseSupervisor }          from "@lararium/tw5";
+import type { CoherenceStatus } from "@lararium/tw5";
+import type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
+import { composeBrowser }                    from "./browser-caps.js";
+import type { VesselWikiSlot, DaemonVmCore } from "@lararium/tw5";
+import { runFoundingCeremony, runApplyAdmitPayload, assemblePersonaGroupRing, mintDeviceMintedKey, veilFromDeviceKey } from "@lararium/keyhive";
+import {
+  loadBrowserKeyhiveArchive, requireBrowserKeyhiveArchive, saveBrowserKeyhiveArchive, saveBrowserVeilArchive,
+} from "./browser-keyhive-archive.js";
+import { vesselDyads, verifiedFleetOfGroup, type LarDid } from "@lararium/mesh";
+import type { CarriedAdmitPayload } from "@lararium/keyhive";
+import type { LarOpenPhase }                 from "@lararium/mesh";
+import { readWornPersonaMount }              from "@lararium/mesh";
+import {
+  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed,
+  generateOrLoadBrowserPersonaRoot, loadBrowserPersonaRootSeed, wearBrowserPersona,
+  listBrowserPersonaRoots, loadBrowserActivePersona,
+  makeBrowserIdbPersonaVault, makeBrowserPersonaPetnameStore,
+  openVesselIdb, idbGet, idbPut,
+}                                            from "./browser-vessel-identity.js";
+import type { BrowserVesselIdentity }        from "./browser-vessel-identity.js";
+import { personaPanelStateArgs }             from "./persona-panel-state.js";
+import { BrowserVesselIslandPool }           from "./browser-vessel-island-pool.js";
+import { publishHandleBrowser }              from "./browser-handle-publish.js";
+import { burnFaceBrowser, attestFaceBrowser } from "./browser-handle-verbs.js";
+
+/** Browser advertises the MINIMAL grant (constrained vessel): a small live-wiki set
+ *  (the daemon bag always + a couple more on reference) and ONE rotatable pin besides the daemon bag.
+ *  The resolver honors this smaller grant — the same cap, a lower point on the spectrum. */
+const BROWSER_WIKI_ACTIVATION_CAP = 2;
+const BROWSER_WIKI_PIN_BUDGET     = 1;
+
+/** The founding persona's handle-index. A fresh browser founds its FIRST persona here (never the self-
+ *  signed floor); the multitude adds h1, h2, … each with its own root (a stage-4+ UX). Kept explicit so
+ *  the founding + the worker-reach selector name the SAME index. */
+const FOUNDING_PERSONA_INDEX = 0;
+import {
+  fetchGenesisCasToOpfs,
+  readCasBlobFromOpfs,
+}                                            from "./browser-genesis.js";
+import {
+  openBrowserDaemonVm,
+}                                            from "./open-browser-daemon-vm.js";
+import type { WikiRecipe }                   from "@lararium/mesh";
+
+import { waitHandle } from "@lararium/mesh";
+import { holdVesselLock, ambientLocks } from "./vessel-lock.js";
+import { attachSharedHolder, holderWorkerHandle } from "./shared-holder.js";
+import { browserSpawnWorker } from "./worker-handle.js";
+import { attachBrowserDyadDoor, type BrowserDyadDoor } from "./browser-dyad-door.js";
+// ── Bootstrap artifact (IDB-persisted) ──────────────────────────────────────────
+
+const BOOTSTRAP_KEY  = "social-bootstrap";
+
+
+interface BrowserBootstrap extends VesselBootstrap {
+  personaGroupId:   string;
+  meshCabalDocIdHex:     string;
+  /** The signer DID — provenance only (the founding op-key = the persona-KEL inception op-key). */
+  signerDid:             string;
+  /** The persona-KEL identifier PREFIX (AID) the Binding Gate PINS — stable across every op-key rotation.
+   *  The gate walks the per-Nexus KEL board to this prefix's current head and verifies the edge against it. */
+  personaKelPrefix:      string;
+  /** This vessel's self-signed device-delegation edge — the public binding the Binding Gate verifies. */
+  deviceEdge:            DeviceDelegationTiddler;
+  /** Cached self-certifying ContactCard JSON (founding) — the leaf identity for the V3 peer gate. */
+  contactCard?:          string;
+  /** The HEARTH's daemon url — the door this vessel knocks on for its seat. Null/absent when it founded
+   *  its own face; such a vessel IS the hearth. Persisted at admission, re-read on every later boot. */
+  hearthDaemonUrl?:      string | null;
+  /** The gate key of the HEARTH that admitted this vessel, as its admit named it. Null/absent when the vessel
+   *  founded its own face. A crossing pinned to this key reaches the vessel's own hearth (`hearth-canon`). */
+  hearthGatePubKey?:     string | null;
+  /** The canon documents that hearth's admit named (canon title → document url). A crossing to the vessel's
+   *  own hearth federates exactly these, and the vessel's oracle replica points at them. */
+  hearthCanonDocs?:      HearthCanonDocs;
+}
+
+// The oracle doc no longer needs an IDB rendezvous key: it lives under the DETERMINISTIC
+// doc id (oracleGenesisDocUrl), so a reboot RELOADS it by find-first from IndexedDB and
+// a peer SYNCS the same address — no stored island-doc-url, mirroring the node path.
+interface BootKeyReads {
+  bootstrap:       BrowserBootstrap | undefined;
+  catalogUrl:      string | undefined;
+}
+
+async function readBootKeys(idbName: string): Promise<BootKeyReads> {
+  const idb = await openVesselIdb(idbName);
+  try {
+    const [bootstrap, catalogUrl] = await Promise.all([
+      idbGet<BrowserBootstrap>(idb, "bootstrap", BOOTSTRAP_KEY),
+      idbGet<string>(idb, "keystore", "catalog-url"),
+    ]);
+    return { bootstrap, catalogUrl };
+  } finally {
+    idb.close();
+  }
+}
+
+interface BootKeyWrites { bootstrap?: BrowserBootstrap; catalogUrl?: string }
+
+async function writeBootKeys(idbName: string, writes: BootKeyWrites): Promise<void> {
+  if (!writes.bootstrap && !writes.catalogUrl) return;
+  const idb = await openVesselIdb(idbName);
+  try {
+    await Promise.all([
+      ...(writes.bootstrap  ? [idbPut(idb, "bootstrap", BOOTSTRAP_KEY,  writes.bootstrap)]  : []),
+      ...(writes.catalogUrl ? [idbPut(idb, "keystore",  "catalog-url",  writes.catalogUrl)] : []),
+    ]);
+  } finally {
+    idb.close();
+  }
+}
+
+// ── Options / Result ────────────────────────────────────────────────────────────
+
+export interface BrowserVesselOptions extends LarariumVesselOptions {
+  idbName?:        string;
+  displayName?:    string;
+  /**
+   * The PLAIN-DATA genesis seed (seed.json) — the oracle doc's initial state the
+   * boot MATERIALIZES fresh under the deterministic doc id (the node-parity materialize-fresh
+   * path; the retired binary import is gone). REQUIRED on first boot; a reboot
+   * reloads the persisted oracle doc by find-first, a peer syncs it — neither needs the seed.
+   */
+  genesisSeed?:    GenesisSeed;
+  /** Base URL the genesis static host serves (seed + cas/ live under it). */
+  genesisCasBaseUrl?:   string;
+  /** Relay gate URL (ws://host:port/ws) to dial for the node↔browser spore crossing. When set (and
+   *  a founding card is cached), the vessel composes the V3 leaf transport (LarWSClientAdapter) and
+   *  adds it to the Repo — the browser's outbound crossing. */
+  relayUrl?:       string;
+  /**
+   * The relay gate's verifying-key hex — the gate-binding the V3 proof commits to (anti-relay;
+   * known OUT-OF-BAND, NEVER trusted from the wire). For a cross-operator crossing this is the
+   * NODE daemon's gate key (so the proof clears against the node's own key). Absent → defaults to
+   * this vessel's own verifying key (the same-operator leaf, the prior behavior — back-compat).
+   */
+  relayGatePubKey?: string;
+  /**
+   * The pinned relay addresses of the HERMS this vessel's PersonaGroup siblings meet through
+   * (`ws://host:port#<gate key hex>`, two or more under distinct gate keys for tolerance) — leaf kind 3, a fleet in which no
+   * vessel listens (`docs/pono/identity-slot-policy#/the-leaf-taxonomy`). PRESENT and a face stands → the vessel
+   * stands its sibling channel (`standSiblingChannel`, the one composition the node vessel calls too): siblings
+   * prove their device edges to each other through every herm and sync over the session the proof binds, and
+   * every herm carries the KEL successor drops the leaf catches up from. ONE herm stands it DEGRADED: withholding
+   * cannot be tolerated through one herm, said on every dial and in `siblingChannel()`. An address that pins no gate
+   * key refuses the channel, said alike. Either way the rest of the vessel boots. ABSENT → no sibling channel stands.
+   */
+  siblingHerms?: readonly string[];
+  /**
+   * A `device-admit/v1` payload — this vessel JOINS an existing PersonaGroup instead of FOUNDING its
+   * own. The founder's root signed it, so it is self-verifying and CARRIAGE-AGNOSTIC: it may arrive by
+   * QR, by paste, by a URL fragment (which never reaches a server), by a file on a stick. It is DATA,
+   * never a fetch — a vessel that had to ASK a server for its own admission would be a client
+   * petitioning an authority, and it would need that authority REACHABLE at the moment of asking, which
+   * is a global now this house does not have.
+   *
+   * Absent, the vessel founds its own group (an anon at the floor) — which is a correct outcome, not a
+   * failure. Present, `runApplyAdmitPayload` seeds this vessel's OWN sovereign social docs and adopts
+   * the founder's persona doc (membership crosses; the daemon bag stays sovereign-per-vessel).
+   */
+  admit?:           CarriedAdmitPayload;
+  /**
+   * A carried hosting invite (`lar-invite:…`, membership-doctrine #/the-invite) — a bearer token minted by the
+   * hearth at `relayGatePubKey`, CARRIED and never fetched (paste, QR, URL fragment). It is written to this
+   * vessel's own IndexedDB BEFORE any dial and redeemed at that hearth's OWN gate, which burns it; the grant
+   * the hearth pushes back is kept, and the invite settles once a dial presenting that grant stands. Later
+   * boots present the grant. An invite for another gate, or a torn string, is no invite. ABSENT, a vessel
+   * holding a grant for the dialed hearth walks on it; holding none, it crosses only as its own credentials
+   * stand there (a fleet edge), and otherwise meets silence and stays at its own floor.
+   */
+  walkInvite?:      string;
+  /** URL of the compiled browser daemon island Worker script. */
+  daemonWorkerUrl?: URL;
+  /**
+   * URL of the compiled shared-holder SharedWorker script (shared-holder.worker.ts). PRESENT and the engine offers
+   * `SharedWorker` → the daemon island stands ONCE per origin inside the holder and this tab ATTACHES over a
+   * MessagePort; the holder holds the Web Lock, so a second tab attaches rather than refusing. ABSENT, or an
+   * engine without SharedWorker → the floor: the dedicated-worker path exactly as before.
+   */
+  sharedHolderUrl?: URL;
+  /** URL of the compiled browser wiki Worker script. */
+  workerScriptUrl?: URL;
+  /** Projection-nalu sink: a `projection:frame` (rendered HTML+CSS) from the hot wiki island.
+   *  The web surface applies it to a shadow root — the live wiki made visible. */
+  onProjection?:   (frame: ProjectionSurfaceFrame) => void;
+  /** Coherence-nalu sink: a `coherence:frame` (the wiki's own consistency-radius read as an indicator
+   *  frame) from the hot wiki island. The web surface applies it to a DOM coherence indicator via
+   *  The web surface's DOM sink may render it over the tiddler-view. */
+  onCoherence?:    (frame: CoherenceFrameWithRev) => void;
+  /**
+   * Mesh-LEAF standing — the browser carries-in the FLOW-map as a LEAF: it navigates
+   * the mesh (pulls peers' public meshpalace docs + re-ranks by l-space proximity) WITHOUT serving or
+   * dialing. A browser holds no listening socket, so a leaf advertises NO endpoint and seeds no
+   * self-dial (`deriveMeshLeaf` → no endpoint; `meshSelfSeed` → []). The mirror of the node's `meshSelf`,
+   * the leaf tier. ABSENT → the browser composes NO carriage (exactly today's behavior). PRESENT → it
+   * carries-in via the read-face fetch (isomorphic global `fetch`; the peers' read-faces serve CORS `*`).
+   */
+  meshLeaf?: {
+    /** A stable self-identifier (the vessel's origin / relay URL) hashed to the leaf's chart coord +
+     *  bearing — content-blind, names where this leaf sits on the routing chart. */
+    coordSeed: string;
+    /** Bootstrap peers the leaf carries-in from — each read-face base URL (`https://…`) with the gate key it
+     *  pins there; the carriage UNIONs these with the dials it discovers off the carried FLOW-map. */
+    peers:     readonly MeshPeer[];
+    /** Optional radial standing override (default 1 — a rim leaf). */
+    radius?:   number;
+    /** Max peer read-faces pulled per carriage cycle (default 16). */
+    maxFanout?: number;
+  };
+}
+
+/** The surface id the daemon owns in the uniform pin-selector — distinct from any pool wiki slug. Pass it to
+ *  `setActiveSurface` to summon the daemon; pass a wiki slug to surface that wiki. It's all the same VM. */
+// THE SENTINEL IS THE SLUG — one string, no decoding at any boundary, so no call site can decode it
+// wrongly. A sentinel that differs from the slug buys a translation everywhere the two must meet.
+export const DAEMON_SURFACE_ID = "daemon";
+
+/**
+ * A rendered frame as the page receives it: whole HTML and CSS, the emitting surface's own revision, and the
+ * SURFACE that emitted it. Each surface counts revisions on its own, and every event a person raises on the
+ * painted frame returns to that surface (`surface-return-leg`).
+ */
+export interface ProjectionSurfaceFrame {
+  readonly html: string;
+  readonly css:  string;
+  readonly rev:  number;
+  readonly surface: string;
+}
+
+/** The ONE shared VesselResult (no vessel-by-type) + browser's one substrate extra. */
+export interface BrowserVesselResult extends VesselResult<BrowserVesselIslandPool, DaemonVmCore> {
+  /** The public identity receipt composed by this vessel. Private signing material never leaves the vessel. */
+  identity: BrowserVesselIdentity;
+  /**
+   * Has this vessel crossed? True once the hearth it dials answered with a verdict signed by the pinned gate key
+   * (a fleet device, a contracted member, or a walker); false while it has not — never pinned, unanswered, or
+   * met with silence. Either way the vessel booted: standing at its own floor is a correct outcome.
+   */
+  crossed: () => boolean;
+  /** Reactive crossing snapshot for the served page; peer identity carries the pinned gate key. */
+  connectionState: BrowserConnectionState;
+  /** The sibling channel as it stands — null when no channel was configured, its refusal when it refuses to stand. */
+  siblingChannel: () => SiblingChannelStatus | null;
+  /**
+   * Hand out one invite from this walker's wallet at the hearth it dials — the oldest unspent token, removed
+   * before it returns, as the one `lar-invite:` string to carry. Null when the wallet holds none (or this vessel
+   * walks nowhere). Nothing records whom it went to.
+   */
+  handOutInvite: () => Promise<string | null>;
+  /**
+   * Hand the hearth this walker dials one document to CARRY, sealed under the walker's own carry secret: the
+   * hearth holds ciphertext it cannot open, and the receipt stays on this device. Carriage is a convenience the
+   * hearth may reclaim under its own pressure (with notice first) — this vessel's own PersonaGroup holds the
+   * durable copy. Null when this vessel walks nowhere or the hearth answers nothing in `withinMs`.
+   */
+  carryAtHearth: (plaintext: Uint8Array, withinMs: number) => Promise<CarryOutcome>;
+  /** Fetch a carried document back by its cid and open it; null when the hearth answers nothing in `withinMs`. */
+  fetchFromHearth: (cid: string, withinMs: number) => Promise<Uint8Array | null>;
+  /** Read a peer's oracle read-face at `baseUrl`, proving this vessel's own key at the peer's gate first (peers
+   *  prove first; a stranger reads nothing). The signing seed never leaves the vessel. */
+  readOracle: <T = unknown>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
+  /** Relay a main-thread DOM event to the surface that PAINTED its target (interactivity RETURN leg): `surface`
+   *  names the frame's own source, and the event routes to that island whatever surface stands active now.
+   *  A surface this vessel does not hold answers `surface-unknown` and nothing is posted. */
+  sendDomEvent: (surface: string, renderId: string, eventType: string, fields: Record<string, number | boolean>) => ReturnLegVerdict;
+  /** The RETURN leg's TEXT half — a relayed input/change carrying the field's whole bounded value, routed to
+   *  its source surface exactly as the click leg routes. Its own message kind, so the click channel keeps its
+   *  primitives-only allowlist. */
+  sendDomInput: (surface: string, renderId: string, eventType: string, value: string) => ReturnLegVerdict;
+  /** The uniform pin-selector: flip which VM owns the singleton #projection sink. DAEMON_SURFACE_ID summons the
+   *  daemon; a wiki slug surfaces that wiki. LIVE (synchronous gate flip); the durable bags/daemon/active-wiki
+   *  marker persists fire-and-forget, consulted only at next cold boot ("live process state is the boundary"). */
+  setActiveSurface: (surfaceId: string) => void;
+}
+
+/**
+ * Load a PREVIOUSLY-FOUNDED catalog doc by its persisted url — and never re-found it SILENTLY. A stored
+ * catalogUrl means this vessel already founded + persisted a catalog; a find() rejection here means the
+ * LOCAL copy is gone (IndexedDB quota eviction under storage pressure, or corruption). Re-founding a
+ * BLANK catalog in that case is data-amnesia — every registered wiki/recipe vanishes from local view
+ * with no trace. So we surface the loss LOUD (never a bare `catch`→blank) before recovering with a fresh
+ * blank catalog, so the vessel still boots but the operator SEES the amnesia. (First boot — no stored
+ * url — never reaches here; that founding is legitimate.)
+ */
+export async function loadFoundedCatalogOrWarn<T>(
+  repo: Repo,
+  url: string,
+  refound: () => DocHandle<T>,
+  onLoud: (msg: string) => void = (m) => console.error(m),
+): Promise<DocHandle<T>> {
+  try {
+    return await repo.find<T>(url as AutomergeUrl);
+  } catch (err) {
+    onLoud(
+      `[lararium-browser] DATA-AMNESIA: the persisted catalog doc (${url}) FAILED to load — its local ` +
+      `copy is gone (IndexedDB quota eviction or corruption). Founding a BLANK catalog so the vessel ` +
+      `boots; previously-registered wikis/recipes are ABSENT locally until a peer re-sync restores ` +
+      `them. This is NOT a silent discard — repair or re-admit before relying on local catalog state: ${String(err)}`,
+    );
+    return refound();
+  }
+}
+
+/**
+ * A browser wiki-alert had no live target and no durable mailbox — surface the drop LOUD. The browser
+ * holds no park (unlike node), so an un-deliverable operator alert would otherwise vanish invisibly.
+ * The console is the browser's observability floor: a warn keeps the drop legible.
+ */
+export function warnDroppedBrowserAlert(
+  wikiSlug: string,
+  message: string,
+  cause: string | undefined,
+  reason: string,
+  onWarn: (msg: string) => void = (m) => console.warn(m),
+): void {
+  onWarn(
+    `[lararium-browser] wiki-alert DROPPED (${reason}) for "${wikiSlug}" — no durable browser mailbox: ` +
+    `${message}${cause ? ` (cause: ${cause})` : ""}`,
+  );
+}
+
+/**
+ * R4 — "plugins load by recipe" (browser). Resolves ONE island's final manifest `pluginCids`:
+ * the fixed boot-set floor (grammar + boot shadows, read off the island/oracle doc's own blobs)
+ * UNION this wiki's own recipe's verified, byte-checked offering selection. The browser's exact
+ * mirror of node's `resolveNodeIslandPluginCids` — same selector, same CAS-bytes codes — over the
+ * ONE substrate divergence: the byte check reads OPFS (`readCasBlobFromOpfs`, inherently async),
+ * so this resolver verifies through `verifyCasBytesAsync` rather than node's sync form.
+ *
+ * Fail-closed throughout, in order: an offering this lookup cannot find, a lying lookup, a
+ * boot-set-collision or cross-offering duplicate claim, or any `verifyPluginOffering` code
+ * (`selectPluginBlobs`) refuses first; only THEN does a selected CID's bytes get checked against
+ * the local OPFS CAS — missing or corrupt bytes refuse by name, never silently as an empty or
+ * trimmed set. Retires the worker's pre-R3 blanket floor on the browser too (M6): the daemon VM
+ * and the island pool both resolve THROUGH this function now, never `pluginCidsFromIslandBlobs`.
+ */
+export async function resolveBrowserIslandPluginCids(opts: {
+  readonly islandBlobs: Record<string, { readonly id?: string; readonly sha256?: string; readonly mimeType?: string }> | undefined;
+  readonly recipe: WikiRecipe;
+  readonly lookup: OfferingLookup;
+}): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
+  // The selection itself stands in mesh (`resolveRecipePluginCids`), the one function the node door and the
+  // surface mount's resolver read too; this door hands it the browser's own inputs: the island document's
+  // blobs, the Crossroads lookup and the origin's OPFS content store.
+  return resolveRecipePluginCids(opts.recipe, { islandBlobs: opts.islandBlobs, lookup: opts.lookup, readBytes: readCasBlobFromOpfs });
+}
+
+/** Build the browser Crossroads board's offering lookup (R4): a verified selection re-verifies
+ *  every offering it resolves (`selectPluginBlobs` → `verifyPluginOffering`), so this lookup
+ *  stays a shape-only projection (`offeringAnnouncesFromDoc`) — never a second, redundant certify
+ *  pass. The exact mirror of node's `nodeOfferingLookup`. */
+export function browserOfferingLookup(crossroadsDoc: LarDoc | undefined | null): OfferingLookup {
+  const byOfferingCid = new Map(offeringAnnouncesFromDoc(crossroadsDoc).map((a) => [a.offeringCid, a.offering]));
+  return (cid) => byOfferingCid.get(cid);
+}
+
+export async function openBrowserVessel(opts: BrowserVesselOptions): Promise<BrowserVesselResult> {
+  const {
+    wikiId,
+    idbName = "lares:vessel", displayName, onPhase,
+    genesisSeed,
+    genesisCasBaseUrl,
+    daemonWorkerUrl, sharedHolderUrl, workerScriptUrl, onProjection, onCoherence, relayUrl, relayGatePubKey,
+    meshLeaf, admit, walkInvite, siblingHerms,
+  } = opts;
+  const emit = (p: LarOpenPhase) => onPhase?.(p);
+
+  emit("boot");
+
+  // ── One holder per store — the single-owner law across tabs ─────────────────
+  // A second tab on this origin would stand a second repo and a second keyhive provider over ONE
+  // IndexedDB store and ONE OPFS CAS. The Web Lock refuses that open LOUD, naming the holder; it stays
+  // held for this page's life and the browser lets go when the page does. An engine without Web Locks
+  // refuses the open by name (`holdVesselLock`): one holder per store cannot be proven there. `steal` never passes.
+  //
+  // THE HOUSE BEHIND THE LOCK (opt-in): with a shared holder configured and `SharedWorker` on the engine, the
+  // holder owns the one daemon island and the lock; this tab attaches. The one refusal that opens is a lock
+  // held by THAT holder — any other client still refuses loud.
+  const holder = (sharedHolderUrl && daemonWorkerUrl)
+    ? await attachSharedHolder({ holderUrl: sharedHolderUrl })
+    : null;
+  if (holder?.kind === "floor") console.log(`[vessel] shared holder floor: ${holder.why}`);
+  const lockHold = await holdVesselLock(idbName, ambientLocks(), { attachToHolder: holder?.kind === "attached" ? holder.hello.lockClientId : null });
+  if (lockHold.attached) console.log(`[vessel] attached to the shared holder (${lockHold.holder}); island boots ${holder?.kind === "attached" ? holder.hello.islandBoots : "?"}, tabs ${holder?.kind === "attached" ? holder.hello.tabs : "?"}`);
+
+  // ── Repo — IndexedDB-backed (substrate) ────────────────────────────────────
+  // The federation ring split. This vessel's own islands (daemon + wiki workers) sync over
+  // MessageChannel and are house members — they share freely. The spore crossing (below) may add
+  // a WS *relay* adapter reaching the wider Nexus; a relay peer must NOT be volunteered every
+  // sovereign doc. `relayPeers` tags exactly the peers that arrive via the relay adapter (the
+  // adapter-scoped peer-candidate is unambiguous — no socket-map inference), and `fedGate`
+  // (a DENY-BY-DEFAULT FederationGate) is armed ONLY for a cross-operator crossing. Absent a
+  // gate the relay is the operator's OWN node (same-operator leaf, own DID) → full device sync.
+  const relayPeers = new Set<string>();
+  let   fedGate: FederationGate | null = null;
+  // THE SIBLINGS — peers this face's sibling channel PROVED (below, once the KEL is walked). A sibling holds
+  // standing, never the house: it never shares freely, and only `siblingGate` (the ring's sibling path over the
+  // public boards) decides what reaches it. Null denies every doc.
+  let   siblings: SiblingNetworkAdapter | null = null;
+  let   siblingGate: FederationGate | null = null;
+  // ONE SOCKET, ONE RING. The PersonaGroup identity ring composes ONTO `fedGate` itself (the assembly
+  // below, once the daemon island boots), so the share verdict reads one gate and the ring has no second
+  // socket to stand empty in.
+  // The fleet's shadows as this leaf last read them. Null until the first read lands: a sibling then reads as
+  // aside (fail closed), and no sibling channel stands that early.
+  let fleetShadows: { readonly root: string; readonly readings: ReadonlyMap<string, EdgeReading>; readonly rolled: ReadonlySet<string> } | null = null;
+  let fleetBoardFollowed = false;
+  // THE DYAD DOOR (kapae#/reach): the daemon island's gates ask this leaf what one device's edge reads on the
+  // fleet board of the face it wears. The door answers from the leaf's own read of that board, taken before the
+  // island boots; it answers `aside` for any other fleet, and while no read stands.
+  const bareKey = (key: string): string => key.trim().toLowerCase().replace(/^0x/, "");
+  // THE READING GOES DARK THE MOMENT THE BOARD MOVES: the last read may predate the very act that just arrived, so
+  // every consult answers closed until a fresh read lands, and a read the board's next move overtook publishes
+  // nothing. An ask that meets a dark reading waits on the read in flight, never on a clock.
+  let fleetRead: Promise<void> | null = null;
+  let fleetMoves = 0;
+  const dyadDoor: BrowserDyadDoor = async (fleetRoot, deviceKey) => {
+    if (!fleetShadows && fleetRead) await fleetRead.catch(() => undefined);
+    if (!fleetShadows || bareKey(fleetRoot) !== bareKey(fleetShadows.root)) return "aside";
+    return edgeStandingOf(fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, bareKey(deviceKey))), fleetShadows.rolled);
+  };
+  const siblingAside = (peerId: string): boolean => {
+    const key = siblings?.provenKeyOf(peerId as PeerId);
+    if (!key) return false;                       // no sibling behind this id: the sibling lane never reads it
+    if (!fleetShadows) return true;
+    return fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, key))?.stands === true;
+  };
+  const repo = new Repo({
+    storage:     new IndexedDBStorageAdapter(`${idbName}:repo`),
+    // The verdict seats on announce AND access (the announce-only lie the node measured in
+    // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
+    // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.
+    shareConfig: browserShareConfig(relayPeers, () => fedGate, {
+      isSibling: (peerId) => Boolean(siblings?.provenKeyOf(peerId as PeerId)),
+      gate: () => siblingGate,
+      // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
+      aside: (peerId) => siblingAside(peerId),
+    }),
+  });
+  emit("repo-open");
+
+  // ── Keypair (WebCrypto substrate) + founding (the personaGroup capability) ───
+  const vesselIdentity = await generateOrLoadBrowserVesselIdentity(idbName, displayName);
+  const vesselSeed     = await loadBrowserSigningSeed(idbName);
+  const vesselVerifyingKey      = vesselIdentity.verifyingKey;
+
+  // ── THE ISLAND THIS LEAF STANDS IN — the SAME mesh ruling the node composes ──────────────────────────
+  // Isomorphic by intent (`nexusIdentity`, @lararium/mesh): one ruling, every vessel class. A leaf supplies an
+  // ANCHOR and never a charter — structurally, not by choice: seating a charter reaches a SEAL HOME on disk and
+  // a leaf keeps none — so the anchor term decides here and the ordering never gets to argue. The three states
+  // read the same as they do on a node: an anchor dialled → the hearth's island; NO anchor → this vessel's own
+  // key as a PRIVATE NEXUS OF ONE (coherent — stage one of a lifecycle, since crossing later is a first-class
+  // flow); an anchor key that reads as no key → TORN, and the resolver refuses rather than quietly composing a
+  // private board under the name of the crossroads.
+  //
+  // ⚠ CONNECTING MOVES THE BOARD, and this leaf BRICKED on it. `nexusScopeMoved` names the shape: climbing
+  // re-keys every per-Nexus board and nothing carries across on its own. The gate below
+  // ("a chain the replica does not carry HALTS the boot") REFUSES rather than degrades, so the ordinary
+  // leaf walk — found offline at a private nexus of one, then configure the hearth the page dials, then
+  // reload — left a vessel that never opened again. The leaf is the WORSE half of the pair the node
+  // measured: a node operator holds `--force` and a re-found, while a leaf's anchor key arrives from the
+  // page's own configuration, so no knob exists for the operator to turn.
+  //
+  // ONE statement of the inputs, for the reason the node boot records: the resolution reads them and so do
+  // both CARRIES below, and a second copy of this object would drift from the first the day a term is
+  // added — the carries would then read a gradient the boot does not stand on.
+  //
+  // A LEAF PASSES THREE TERMS AND NO MORE. It supplies `explicitScope` off the Nexus it WALKS in — a carried
+  // invite, or a grant it already holds for the hearth it dials — the only shore that does, which makes this the
+  // only boot whose gradient runs three rungs deep (own → anchor → explicit). It passes NO `genesisEpochCid`
+  // and NO `charterStands`: seating a charter reaches a SEAL HOME on disk and a leaf keeps none, so those terms
+  // are structurally absent rather than merely unset.
+  //
+  // THE WALK, read before the island resolves. The pin comes first: a relay URL with no gate key is refused
+  // aloud — the relay answers only on the knock its own key derives, so a dial under any other key (this
+  // vessel's own included) would reach no gate and sit dark. A carried invite for the pinned hearth is written
+  // DURABLY to this vessel's own store before any dial; otherwise the record this vessel already holds for that
+  // hearth, if any.
+  const relayPin = relayPinFor(relayUrl, relayGatePubKey);
+  if (!relayPin.dial && relayPin.reason) console.warn(`[lararium-browser] ${relayPin.reason}`);
+  const walkStore = browserWalkStore(idbName);
+  const walk: WalkRecord | null = relayPin.dial ? await (async () => {
+    if (walkInvite) {
+      const taken = await takeInvite(walkStore, walkInvite);
+      if (taken && taken.gatePubKey === relayPin.gatePubKey) return taken.record;
+      console.warn("[lararium-browser] the carried invite names another hearth, or none — it is not this dial's");
+    }
+    return walkStore.read(relayPin.gatePubKey);
+  })() : null;
+  const nexusStandsAt: NexusIdentityAt = {
+    explicitScope: walk?.nexusAid ?? null,
+    anchorGateKey: relayGatePubKey ?? null,
+    ownVesselKey:  vesselVerifyingKey,
+  };
+  // AN ADMIT CARRIES THE FOUNDER'S RESOLVED ISLAND — a SNAPSHOT (`hearthIslandKind`/`hearthIslandScope`,
+  // `aa15cfb3b`) of what the founder itself stood on at mint time. Read it here, not inferred from
+  // `relayGatePubKey` alone: `relayGatePubKey` is the page's OWN independent `?gate=` param (see
+  // `main.ts`) and stays exactly what it always was — the DIAL binding `nexusStandsAt.anchorGateKey`
+  // composes for the FOUNDING (no-admit) branch below. Without this branch, a CLIMBED founder's admitted
+  // leaf always resolved `kind: "anchor"` off the raw gate key — the identical defect the node closed at
+  // its own admit door (`admittedJoineeIsland`, `@lararium/mesh`) — landing this leaf on a board disjoint
+  // from the one its founder actually stands on. `admittedJoineeIsland` is PURE and platform-blind, so
+  // this leaf composes the SAME ruling the node's `init.ts` does, not a second reading of it.
+  let nexusPubkey: string;
+  if (admit) {
+    // The node must carry the island relation it resolved at admission. Without both fields this
+    // browser would silently derive its own island and mount a private recipe plane under a face
+    // that the hearth believes joined its shared one.
+    requireAdmittedFaceIsland(admit);
+    nexusPubkey = admittedJoineeIsland({
+      hearthGatePubKey:  admit.hearthGatePubKey,
+      hearthIslandKind:  admit.hearthIslandKind,
+      hearthIslandScope: admit.hearthIslandScope,
+      ownVesselKey:      vesselVerifyingKey,
+    });
+    console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (admitted — the founder's resolved `
+      + `island at mint time, kind=${admit.hearthIslandKind})`);
+  } else {
+    const nexusStanding = nexusIdentity(nexusStandsAt);
+    nexusPubkey = nexusScopeOrThrow(nexusStanding);
+    console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (${nexusStanding.kind}${nexusStanding.shared ? ", shared" : ""}) — ${nexusStanding.reading}`);
+  }
+
+  // ── THE CLIMB, at the leaf — the boards a moved island would otherwise leave behind ──────────────────
+  // `climbNexusBoards` lives in `@lararium/mesh` so both shores share it: a browser leaf climbing from its own
+  // island to the anchor it dials composes the identical call. The ANTIGEN fails OPEN when it mints blank —
+  // "an empty antigen bans nobody" means a Kapae'd presenter gets RE-ADMITTED — so the boot carries it.
+  // An edge shadow rides no Nexus key (a realm's board, a fleet's board), so a climb re-keys none of them.
+  //
+  // THE CROSSROADS RE-ANNOUNCE STANDS INERT HERE, and that reads as the leaf's shape rather than a gap:
+  // `nexusAidOf(readNexusDoc(sealHome))` has no analogue, because a leaf keeps no seal home and so
+  // holds no charter, and a realm exists only where a charter does. `reAnnounceRealmBooksAtIsland` answers
+  // "a vessel outside every realm announces nothing — it registers nothing either", so `null` states the
+  // fact. Borrowing some other id would announce ANOTHER realm's books onto this island, which is exactly
+  // the foreign-realm laundering the re-announce exists to refuse.
+  //
+  // WHO and carriage stay exactly where they are — `nexus-board-climb`'s header carries each reason,
+  // and the first is sharpest AT A LEAF: a leaf's own island IS a private nexus of one, so re-landing a card
+  // announced there would DISCLOSE a face to strangers the operator never published to. Passing a fourth
+  // board here compiles an about-set at a new address; read that header before adding one.
+  //
+  // UNCONDITIONAL and at the boot's own depth, deliberately outside every face guard: a faceless leaf holds
+  // shadows and an antigen too. It also runs ahead of any network adapter, so nothing leaves this vessel.
+  // Climb-only and idempotent by construction — every source comes from `nexusIslandsBelow` (empty at the
+  // bottom, empty when torn), and every act writes only what the destination LACKS.
+  await climbNexusBoards({
+    repo, nexusPubkey,
+    priorIslands: nexusIslandsBelow(nexusStandsAt),
+    realmId:      null,   // a leaf keeps no seal home → no charter → no realm to re-announce
+  });
+
+  const bootKeys = await readBootKeys(idbName);
+  const bootKeyWrites: BootKeyWrites = {};
+  let bootstrap = bootKeys.bootstrap;
+  // AN ADMIT SUPERSEDES AN ANON BOOTSTRAP. A vessel MUST boot anon first — it needs a key before anyone
+  // can admit that key — so the admit ALWAYS arrives at a vessel that already founded its own group. The
+  // anon founding is not a competing state; it is the FLOOR the admit lifts the vessel from. Gating the
+  // admit behind `!bootstrap` therefore ignores every admit that will ever arrive.
+  // A FOUNDED VESSEL STANDS ONLY OVER ITS ARCHIVE. A bootstrap with no Archive beside it names a vessel whose
+  // individual could seal nothing into what it created; the boot refuses by row name before anything composes.
+  // An admit replaces the bootstrap and writes the row itself, so it passes.
+  if (bootstrap && !admit) await requireBrowserKeyhiveArchive(idbName);
+  if (admit) {
+    // JOIN. The founder's root already signed this vessel's edge, so the ceremony here ADOPTS a binding
+    // rather than minting one: `runApplyAdmitPayload` seeds this vessel's OWN sovereign social docs and
+    // takes the founder's persona doc (membership crosses; the daemon bag stays sovereign-per-vessel), then writes
+    // the oracle tiddlers and cap events the boot gates read.
+    //
+    // The payload arrived as DATA — carried, never fetched — so this path runs with no network, no clock
+    // and no server, which is also what makes it a pure function of its bytes and therefore testable.
+    // It fails closed on a missing binding field: a half-bound daemon doc is the confused-deputy hole.
+    const keptArchive = await loadBrowserKeyhiveArchive(idbName);
+    const a = await runApplyAdmitPayload({
+      repo,
+      vesselSeed,
+      vesselVerifyingKey: vesselIdentity.verifyingKey,
+      vesselDisplayName:  displayName ?? "Browser Operator",
+      payload:              admit,
+      // The ISLAND this leaf crosses into keys the KEL board — an admitted leaf seeds its inception onto the
+      // board its HEARTH stands, never onto one only it resolves (a leaf alone on a board reads as agreement).
+      nexusPubkey,
+      // A browser leaf holds no sealed custody root: its veil root is its device-minted key.
+      deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
+      // AN ADMIT OVER A KEPT ARCHIVE RESTORES FROM IT. The vessel founded on its own before any admit could
+      // reach it, so an Archive already rests here; the individual stands again from it and what the admit
+      // hands back still holds every prekey secret the kept one held.
+      ...(keptArchive ? { archiveBytes: keptArchive } : {}),
+    });
+    // The Archive rests before the bootstrap that names this admit: a boot that finds the bootstrap finds it.
+    await saveBrowserKeyhiveArchive(idbName, a.archive);
+    bootstrap = {
+      identitiesUrl: a.identitiesUrl, circlesUrl: a.circlesUrl, sessionsUrl: a.sessionsUrl,
+      daemonUrl: a.daemonUrl, personaUrl: a.personaUrl, personaBagId: a.personaBagId,
+      // The compartments this vessel carries. An admitted browser joins one today; the shape takes the
+      // family so a second admission adds an entry rather than re-typing the boot path.
+      personaPlanes: [{ personaGroupId: admit.personaGroupId, url: a.personaUrl }],
+      personaGroupId: admit.personaGroupId,
+      meshCabalDocIdHex: admit.meshCabalDocIdHex,
+      // The PINNED identifier and the SIGNED edge ride from the payload, never from this vessel: an admitted
+      // leaf presents a binding it could not have written for itself, and that is the whole difference
+      // between joining a group and declaring one. The gate walks the KEL prefix to the current head.
+      signerDid: admit.signerDid, personaKelPrefix: admit.personaKelPrefix, deviceEdge: admit.deviceEdge,
+      contactCard: a.contactCardJson,
+      hearthDaemonUrl: a.hearthDaemonUrl,
+      hearthGatePubKey: admit.hearthGatePubKey ?? null,
+      hearthCanonDocs: admittedCanonDocs(admit.hearthCanonDocs, nexusPubkey),
+    };
+    bootKeyWrites.bootstrap = bootstrap;
+  } else if (!bootstrap) {
+    // FOUND. No admit — the vessel raises its own PersonaGroup and founds its FIRST persona (never the
+    // self-signed floor). The two-key atom: the DEVICE key (vesselSeed) inits keyhive as the Individual;
+    // a DISTINCT PersonaGroup ROOT signs the device-delegation edge. Mint that root founder-side (root-on-
+    // founder), load its seed as the signer, and WEAR it — mirroring node's `lares vessel found` (init.ts: mint
+    // generateOrLoadPersonaGroupRoot → loadPersonaGroupRootSeed → runFoundingCeremony{signerSeed}).
+    await generateOrLoadBrowserPersonaRoot(idbName, FOUNDING_PERSONA_INDEX);
+    const signerSeed = await loadBrowserPersonaRootSeed(idbName, FOUNDING_PERSONA_INDEX);
+    await wearBrowserPersona(idbName, FOUNDING_PERSONA_INDEX);   // the selector points at the founded root
+    const f = await runFoundingCeremony({
+      repo, vesselSeed,
+      vesselVerifyingKey: vesselIdentity.verifyingKey,
+      vesselDisplayName:  displayName ?? "Browser Operator",
+      // The persona-root SIGNS (signerDid == the root DID, DISTINCT from deviceDid). The self-signed anon
+      // (signerSeed == vesselSeed) survives ONLY as an explicit named floor tier, never the default.
+      binding: { mode: "self-stood", signerSeed },
+      hearthTrueName: "",          // hearth-agnostic: an anon is not yet bound to a place; it binds on upgrade
+      // The island this leaf stands in keys the KEL board. A FOUNDING leaf dials no anchor, so this resolves to
+      // its own key — a private nexus of one, the same value by a different derivation.
+      nexusPubkey,
+      // A browser leaf holds no sealed custody root: its veil root is its device-minted key.
+      deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(vesselSeed)),
+    });
+    // THE FOUNDING'S ARCHIVES REST BEFORE ITS BOOTSTRAP. The ceremony's providers left with the act; the key
+    // agreement state of what they created lives in these bytes alone. Veil first, then the vessel's own, then
+    // (later, with the boot keys) the bootstrap that commits the founding: a founding that stops before its
+    // bootstrap runs again whole and replaces both rows.
+    await saveBrowserVeilArchive(idbName, FOUNDING_PERSONA_INDEX, f.veilArchive);
+    await saveBrowserKeyhiveArchive(idbName, f.archive);
+    bootstrap = {
+      identitiesUrl: f.identitiesUrl, circlesUrl: f.circlesUrl, sessionsUrl: f.sessionsUrl, daemonUrl: f.daemonUrl, personaUrl: f.personaUrl, personaBagId: f.personaBagId,
+      personaPlanes: [{ personaGroupId: f.personaGroupId, url: f.personaUrl }],
+      personaGroupId: f.personaGroupId, meshCabalDocIdHex: f.meshCabalDocIdHex,
+      signerDid: f.signerDid, personaKelPrefix: f.personaKelPrefix, deviceEdge: f.founderEdge,
+      contactCard: f.contactCardJson,
+      hearthDaemonUrl: null,   // a vessel that founded its own face IS the hearth
+    };
+    bootKeyWrites.bootstrap = bootstrap;
+  }
+  const social = bootstrap;   // narrowed (defined past this point)
+  // A pin chooses which gate to knock; the local contact card supplies peer proof. Name the missing
+  // proof here instead of leaving the page pinned while no adapter can stand.
+  const connectionState = createBrowserConnectionState(relayPin, Boolean(social.contactCard));
+  // THE OWN-HEARTH CROSSING: the pinned gate names the hearth whose admit this vessel carries. Such a leaf
+  // takes that hearth's base canon (`hearth-canon`); every other crossing reads the public boards alone.
+  const crossing = hearthCrossingOf({
+    pinnedGatePubKey: relayPin.dial ? relayPin.gatePubKey : null,
+    hearthGatePubKey: social.hearthGatePubKey,
+    holdsDeviceEdge:  Boolean(social.deviceEdge),
+    hearthCanonDocs:  social.hearthCanonDocs,
+    relayGatePubKey,
+    nexusPubkey,
+  });
+  const { ownHearth } = crossing;
+  // The canon documents the admit named. The own-hearth gate opens exactly these, and this vessel's own oracle
+  // replica points at them; the oracle plane itself stays behind the gate.
+  const { hearthCanon } = crossing;
+  // The oracle doc as this boot holds it: the recipe reader reads a system wiki's default recipe off it. Null
+  // until genesis loads.
+  let oracleAtBoot: DocHandle<LarDoc> | null = null;
+  if (relayPin.dial && !social.contactCard) {
+    console.warn("[lararium-browser] no social contact card is available for the pinned relay crossing");
+  }
+  // THE PROOF THIS VESSEL CARRIES TO A PEER'S ORACLE. Peers prove first: an oracle map crosses only a socket
+  // whose dialer passed the peer's gate, so the carriage and the page's reader prove this vessel's own key and
+  // founding card there. The seed stays inside this closure. No card cached → nothing to prove with.
+  const oracleProof: LeafIdentity | undefined = social.contactCard
+    ? { contactCard: social.contactCard, peerPubKey: vesselVerifyingKey, sign: ed25519SignerFromSeed(vesselSeed) }
+    : undefined;
+
+  // ── THE RELATIONSHIPS THIS VESSEL HOLDS — read live at boot (dyad read path) ────────────────
+  // The SAME observation node's `openDaemon` makes, through the same platform-blind door
+  // (`vesselDyads`, mesh): the ceremony-minted slots are the only source, and a face standing
+  // beside zero slots is a doc minted before the ruling — said aloud here, warned never thrown.
+  // Every vessel class inherits this read verbatim; the pattern integrity is the ONE door.
+  // The daemon doc AS THIS BOOT READS IT, kept for the sibling channel's enrolment seal and lease epoch below.
+  let bootDaemonDoc: LarDoc | undefined;
+  try {
+    const dhandle = await repo.find<LarDoc>(social.daemonUrl as never);
+    bootDaemonDoc = dhandle.doc();
+    const dyads = vesselDyads(dhandle.doc());
+    if (social.deviceEdge && dyads.length === 0) {
+      console.log("[dyad] a face stands and no dyad slot is minted — a pre-ruling daemon doc; re-found or admit to mint the derived veil.");
+    } else if (dyads.length > 0) {
+      const boundCount = dyads.filter((d) => d.binding !== null).length;
+      // THE DYAD SCOPE READS HERE: a binding counts as this hearth's only where it verifies under the fleet root the
+      // leaf's edge names AND roots on the hearth that edge binds.
+      const edge = social.deviceEdge;
+      const atHearth = edge?.personaRootDid && edge.hearthTrueName
+        ? (await verifiedFleetOfGroup(dyads, edge.personaRootDid as LarDid, new Set(), edge.hearthTrueName)).length
+        : 0;
+      console.log(`[dyad] this vessel holds ${dyads.length} relationship(s), ${boundCount} bound, ${atHearth} verified at this hearth.`);
+    }
+  } catch { /* the observation never blocks a boot — a torn read stays a torn read */ }
+
+  // ── The spore crossing — the outbound V3 leaf transport (opt-in via relayUrl) ──────────────
+  // When a relay URL is given AND a founding card is cached, compose the platform-blind
+  // LarWSClientAdapter and add it to the Repo: the browser dials the node's gate, runs the V3
+  // handshake on the socket, and — on a passing verdict — syncs shared docs (the second spore).
+  // FLOW ⊥ AUTHORITY: this is pure authority+sync; the nalu servo / ea-backpressure rides later.
+  // NOTE: the gate admits a peer holding cap=admin on the node's daemon bag, OR one the
+  // operator device-admitted that carries a valid device-delegation edge pinned to the node's
+  // hearth root. The leaf rides its own device edge (social.deviceEdge) so the in-worker keyholder
+  // can admit it at the operator's-own-device tier. The node's gate key is PROVISIONED out-of-band
+  // (relayGatePubKey) and is the only key the dial knocks with and the verdict is read under; absent,
+  // the vessel does not cross (`relayPinFor`). An un-admitted anon dials and meets silence and stays at its own
+  // floor — a correct outcome, never a throw.
+  // A WALKER presents its walk instead (the token while its invite is unsettled, else its grant), under its own
+  // per-Nexus leaf, and the walk client keeps what the hearth pushes back.
+  let relayAdapter: LarWSClientAdapter | null = null;
+  let walkLeaf: Awaited<ReturnType<typeof browserWalkLeaf>> | null = null;
+  if (relayPin.dial && relayUrl && social.contactCard) {
+    const base: LeafIdentity = { contactCard: social.contactCard, peerPubKey: vesselVerifyingKey, sign: ed25519SignerFromSeed(vesselSeed) };
+    // A walker is a person: it walks under the leaf of the face this vessel WEARS, never one picked for it. A
+    // vessel wearing no face walks nowhere, and says so.
+    const worn = walk ? await loadBrowserActivePersona(idbName) : undefined;
+    walkLeaf = walk && worn !== undefined ? await browserWalkLeaf(idbName, walk.nexusAid, worn).catch(() => null) : null;
+    if (walk && worn === undefined) console.warn("[lararium-browser] a walk record stands for this hearth, but this vessel wears no face — wear one to walk");
+    const walking = walk && walkLeaf ? walkIdentity(base, walk, walkLeaf) : null;
+    const leaf: LeafIdentity = walking ?? (social.deviceEdge ? { ...base, edge: social.deviceEdge } : base);
+    const adapter = new LarWSClientAdapter({
+      url: relayUrl, identity: leaf, aud: DAEMON_BAG_ID, gatePubKey: relayPin.gatePubKey,
+    });
+    observeRelayConnection(connectionState, adapter);
+    relayAdapter = adapter;
+    if (walking && walkLeaf && walk) {
+      // The wallet fills against the hearth's signed act for the grant's epoch, read off that hearth's hosting doc
+      // — the doc the Nexus and the pinned gate key name, the one every walker of it reads — and verified under the
+      // act's own leaf.
+      const walkDoc = hostingDocUrl(walk.nexusAid, relayPin.gatePubKey);
+      const actFor = async (epochCid: string): Promise<HostingAct | null> => {
+        const doc = await materializeSharedLarDoc(repo, walkDoc, "hosting").catch(() => null);
+        return doc ? hostingActOn(doc, epochCid, 15_000) : null;
+      };
+      // A store that refuses under the walk costs that one message; the next presentation recovers a lost grant.
+      const onFault = (fault: WalkFault): void => {
+        console.warn(`[lararium-browser] the walk dropped one ${fault.at} message: ${fault.error instanceof Error ? fault.error.message : String(fault.error)}`);
+      };
+      walkOver({ transport: adapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, base, actFor, onFault });
+      watchCarryNotice(adapter, walkStore, relayPin.gatePubKey, onFault);
+    }
+    // Tag the relay ring: every peer reached through this adapter enters `relayPeers`, so the
+    // sharePolicy gates them while the in-process island peers keep sharing freely. Listeners
+    // attach BEFORE addNetworkAdapter so a peer is classified before any doc is announced to it.
+    adapter.on("peer-candidate",    ({ peerId }: { peerId: PeerId }) => { relayPeers.add(peerId); });
+    adapter.on("peer-disconnected", ({ peerId }: { peerId: PeerId }) => { relayPeers.delete(peerId); });
+    // Arm the deny-by-default gate ONLY for a cross-operator crossing (relayGatePubKey names a
+    // foreign Nexus, and its deterministic crossroads doc + WHO board are the whole public surface).
+    // Absent a gate key the relay is the operator's own node: fedGate stays null → full device sync.
+    fedGate = crossing.gate;
+    // CANON CROSSES HEARTH TO LEAF ALONE. The gate above decides which documents this leaf FETCHES from its
+    // hearth; it says nothing about which way a change travels. The leg reads every sync message this Repo
+    // sends toward the hearth and keeps back any that carries a change to a canon document the admit named.
+    const canonIds = hearthCanonDocIds(hearthCanon);
+    repo.networkSubsystem.addNetworkAdapter(
+      canonIds.size > 0 ? new GatedSyncLeg(adapter, oneWayDocumentsGate({ receiveOnly: canonIds })) : adapter,
+    );
+  }
+
+  // ── Catalog ────────────────────────────────────────────────────────────────
+  const blankCatalog = (): DocHandle<LarDoc> => {
+    const h = repo.create<LarDoc>(emptyLarDoc());
+    h.change((doc) => { doc.tiddlers[CATALOG_DOC_URI] = storedLarRecord(CATALOG_DOC_URI, { text: h.url }, "browser-boot"); });
+    return h;
+  };
+  let catalogHandle: DocHandle<LarDoc>;
+  if (bootKeys.catalogUrl) {
+    // A catalog was previously founded + persisted — a load failure is DATA-AMNESIA, surfaced LOUD
+    // (never a silent blank re-founding). See loadFoundedCatalogOrWarn.
+    catalogHandle = await loadFoundedCatalogOrWarn<LarDoc>(repo, bootKeys.catalogUrl, blankCatalog);
+  } else {
+    catalogHandle = blankCatalog();
+    bootKeyWrites.catalogUrl = catalogHandle.url;
+  }
+  emit("catalog-ready");
+
+  // The uniform pin-selector's ONE live pointer (BA·HA braid): which VM surface owns the singleton #projection
+  // sink right now. Defaults to the pinned wiki at boot; setActiveSurface flips it live (a pure gate flip, no
+  // reboot). Pin ⊥ active — the frame gate admits only this surface's frames, keyed on the transport id.
+  let activeSurfaceId = "";
+
+  // ── Residency MECHANISM (parity with node — a tab has finite memory too) ────
+  let vmManager!: BrowserVesselIslandPool;   // set in makePool
+  let wikiActivation!: WikiActivationCap;     // set in makePool — activation-on-reference cap (minimal grant)
+  let daemon!:     DaemonVmCore;      // set in openDaemon
+  let wikiSense!:  WikiSenseSupervisor;   // set in wireVerbs (post-daemon)
+  let slotActiveWikiId = "";
+  // R4 — the Crossroads board this vessel materializes ONCE, read by every later per-island
+  // plugin-offering resolution (the daemon VM's own recipe, and the pool's resolver). Mirrors
+  // node's `crossroadsOfferingsHandle`.
+  let crossroadsOfferingsHandle: DocHandle<LarDoc> | undefined;
+
+  // Push the live switcher state INTO the daemon widget (main → local, reactive — never
+  // a poll): the switcher-state worker verb writes $:/temp/lares/switcher (volatile, local)
+  // so the daemon's projected list re-renders. Called on every activation change and on
+  // summon. Fire-and-forget — a lost push self-heals on the next change or summon.
+  const pushSwitcherState = (): void => {
+    if (!daemon || !vmManager || !wikiActivation) return;
+    const active = vmManager.inspect().filter((s) => s.temperature === "wela").map((s) => s.wikiId);
+    // The recipe surface edits the vessel's HOME wiki (always present) — read its bag-stack through the ONE
+    // recipe reader (the vessel's own composition in the catalog shadows a system wiki's default in the
+    // oracle), so the widget paints the stack the mount and the live watch stand on.
+    const recipeSlug = slotActiveWikiId ? slugFromUri(slotActiveWikiId) : "";
+    let recipe: string[] = [];
+    if (recipeSlug) {
+      const rec = effectiveRecipe(recipeSlug, (plane, title) =>
+        (plane === "oracle" ? oracleAtBoot : catalogHandle)?.doc()?.tiddlers?.[title])?.record;
+      if (rec) recipe = bagStackFromRec(rec);
+    }
+    // Add-candidates: the daemon-resolvable system library bags not already in this
+    // recipe. The projection round-trip relays CLICKS only (never text input), so
+    // recipe-add rides click-to-add candidates rather than a typed URI.
+    const inRecipe = new Set(recipe);
+    const availableBags = [BAG_IDS.lares, BAG_IDS.lararium, BAG_IDS.crossroads]
+      .filter((b) => !inRecipe.has(b));
+    void daemon.placeVerb({
+      verb: "switcher-state",
+      args: {
+        active:        active.join(" "),
+        held:          [...wikiActivation.held()].join(" "),
+        surface:       activeSurfaceId,
+        recipeSlug,
+        recipe:        recipe.join(" "),
+        availableBags: availableBags.slice(0, 8).join(" "),
+      },
+      requestedBy: "switcher",
+    });
+  };
+  // Push the live PERSONA multitude INTO the daemon persona surface (main → local, reactive):
+  // main HOLDS the IDB persona vault, so it reads the multitude-view here + writes it through the
+  // `persona-state` worker verb onto the volatile $:/temp/lares/personas. PRIVATE-all: the view is
+  // built with NO public-handle view, so every persona reads private-only — no glamour federates
+  // off this push. Fired after a mint/wear + on daemon summon. Fire-and-forget (a lost push self-
+  // heals on the next mint/wear or summon), mirroring pushSwitcherState.
+  const pushPersonaState = async (): Promise<void> => {
+    if (!daemon) return;
+    const vault    = await makeBrowserIdbPersonaVault(idbName);
+    const petnames = await makeBrowserPersonaPetnameStore(idbName);
+    const view     = await personaMultitudeView(vault, petnames);   // no publicView → private-only
+    const active   = await loadBrowserActivePersona(idbName);
+    void daemon.placeVerb({
+      verb:        "persona-state",
+      args:        personaPanelStateArgs(view, active),
+      requestedBy: "persona",
+    });
+  };
+  // The default circle the daemon follow panel paints — the primary system circle seedCirclesDoc plants.
+  const CIRCLE_PANEL_DEFAULT = "following";
+  // RENDER the daemon follow surface FROM the sovereign circles doc (the follow-graph's SOURCE OF TRUTH). The
+  // daemon WORKER holds the circles doc by access, so `circle-list` reads the membership there and writes the volatile
+  // $:/temp/lares/circles itself — main only TRIGGERS. The circles doc is PRIVATE + fleet-synced same-operator (a follow
+  // shows on ALL the operator's own devices) and NEVER federates. Petname/glamour ride blank until the handle-
+  // book co-moves onto the circles doc (the open fork). Fired on a follow/unfollow + daemon summon; fire-and-forget.
+  const pushCircleState = (circleId = CIRCLE_PANEL_DEFAULT): void => {
+    if (!daemon) return;
+    void daemon.placeVerb({ verb: "circle-list", args: { circle: circleId }, requestedBy: "circle" });
+  };
+  // The ONE residency collector + pool-wiring, composed through the SHARED factory (both vessels
+  // call it). Browser advertises the MINIMAL grant (a small live-wiki set + one rotatable pin
+  // besides the daemon bag) and supplies its vessel-specific hooks: it stays SILENT on a cool (node
+  // narrates the cool) and holds NO durable mailbox, so an undeliverable alert WARNS + drops
+  // best-effort (node parks it durably). getPool reads vmManager lazily (the forward-ref pattern).
+  const residencyWiring: VesselResidency = makeVesselResidency(
+    () => vmManager,
+    { wikiActivationCap: BROWSER_WIKI_ACTIVATION_CAP, wikiPinBudget: BROWSER_WIKI_PIN_BUDGET },
+    {
+      onUndeliverableAlert: (wikiId, verbOpts, reason) =>
+        warnDroppedBrowserAlert(
+          wikiId,
+          String(verbOpts.args["message"] ?? ""),
+          (verbOpts.args["cause"] as string) || undefined,
+          reason,
+        ),
+    },
+  );
+  const residency = residencyWiring.residency;
+
+  // ── The mesh carriage as a LEAF ───────────────────────────────
+  // PRESENT → derive the leaf standing and compose the carriage ALONGSIDE the wiki core: meshpalace
+  // (a writable meshpalace FLOW-map, seeded with NO self-dial — `meshSelfSeed([leaf])` is [] for a
+  // leaf) + carriage (pulls peers' public read-faces, re-ranks by l-space proximity). A LEAF has no
+  // endpoint → it carries-in but is NOT dial-able (a browser holds no listening socket). ABSENT → [],
+  // the browser composes no carriage (today's behavior, unchanged). The mirror of openNodeVessel.
+  const meshExtraCaps = meshLeaf ? (() => {
+    const leaf = deriveMeshLeaf(
+      meshLeaf.coordSeed, meshLeaf.peers,
+      ...(meshLeaf.radius !== undefined ? [{ radius: meshLeaf.radius }] : []),
+    );
+    // The SAME pair a node hearth and a Herm compose — a leaf differs only in the standing it hands in.
+    // `deriveMeshLeaf` yields a self with NO endpoint, so the stack seeds no dial and announces nothing:
+    // this vessel carries-in and is never dial-able (the endpoint-absent leaf↔full tier).
+    return [...carriageStack({
+      repo, residency, self: leaf,
+      nodeSeedHex: vesselVerifyingKey,   // the per-vessel cadence seed (browser-safe hex string, no Buffer)
+      ...(oracleProof ? { identity: oracleProof } : {}),
+      onLog: (l) => console.log(`[lararium-browser] ${l}`),
+    })];
+  })() : [];
+
+  // ── The WHO plane as a LEAF — RESOLVE the per-Nexus crossroads board; announce NOTHING ──
+  // Networked only: the board needs the relay to sync, and the confederation key (relayGatePubKey) scopes the
+  // causal island so a human's two vessels resolve the SAME board. Boot composes whoFaceCap with NO card: it
+  // resolves the island's WHO board through the deterministic crossroads address and layers it writable so
+  // the relay syncs, giving this vessel RECOGNITION (it reads every peer's card) while publishing none of its
+  // own. The identity sibling of the carriage leaf above (WHO ⊥ WHERE, the two-key atom). No relay/gate → [].
+  //
+  // NO BOOT-TIME FACE, by construction rather than by gate. Canon never collapses binding-the-vessels into
+  // announcing-the-identity, so publishing rides a deliberate holder act through the component's `announce` —
+  // the ONLY thing that ever federates stays a glamour the human consciously posts, never a boot side-effect.
+  // (A boot-minted card also had to name SOME key, and the only key at hand is this vessel's own — publishing
+  // it would put the substrate key on the social board, the one co-surface the two-key atom forbids.)
+  const whoExtraCaps: CapModule[] = relayPin.dial ? await (async () => {
+    const crossroadsHandle = await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+    return [whoFaceCap({ repo, crossroadsHandle, nexusPubkey, residency })];
+  })() : [];
+
+  const result = await composeBrowser<BrowserVesselIslandPool>({
+    keel: {
+      repo,
+      catalogHandle,
+      waitHandle: <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => waitHandle<T>(repo, url, fallback),
+
+      // Genesis is required only for a first materialization or a source-backed byte fetch. The oracle island is a LIVE
+      // CRDT under the DETERMINISTIC doc id (oracleGenesisDocUrl): materializeGenesisIsland
+      // does find-FIRST (a prior boot persisted it to IndexedDB → reload intact; a peer
+      // synced it → adopt) ELSE materializes it fresh from the plain-data seed and imports
+      // it under that id. No binary import, no merge-into-stale reconcile. One
+      // call, isomorphic with the node loadOrMaterializeOracle.
+      loadGenesis: async () => {
+        await writeBootKeys(idbName, bootKeyWrites);
+        const islandHandle = await materializeGenesisIsland(repo, genesisSeed, "browser-genesis");
+        oracleAtBoot = islandHandle;
+        if (ownHearth) {
+          // The admit names the canon this leaf opens. Seated on this vessel's own oracle replica, the keel and
+          // every island mount the hearth's documents through the reading every vessel shares.
+          seatHearthCanon(islandHandle, hearthCanon);
+          const named = Object.keys(hearthCanon);
+          console.log(named.length > 0
+            ? `[lararium-browser] hearth canon named by the admit — this leaf mounts ${named.join(", ")}`
+            : "[lararium-browser] the admit names no hearth canon — this leaf mounts a wiki document of its own; take a fresh admit from the hearth to open its wiki");
+        }
+        const coreHash = islandHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.sha256 ?? null;
+        if (!coreHash) throw new Error("[openBrowserVessel] genesis island missing ENGINE_CORE_ID blob metadata");
+        // Populate the OPFS CAS — the worker pulls engine + plugin bytes by CID from here
+        // (the breath path), never CRDT-syncing the bytes over the port. The genesis CRDT now
+        // carries METADATA only; the bytes ship as genesis/cas/<cid> files. Fetch them over HTTP
+        // by the seed-derived inventory (the browser face of the node mirrorGenesisCasFs). Once in OPFS they
+        // persist (write-once-read-many), so later/replica boots need no separate inventory file.
+        const casManifest = genesisSeed ? genesisCasManifestFromSeed(genesisSeed) : undefined;
+        const casCids = casManifest
+          ? casManifest.blobs.map(({ cid }) => cid)
+          : genesisCasCidsFromOracle(islandHandle.doc()!);
+        // The seed is the immutable authorization for a remote CAS fetch. A persisted
+        // mutable Oracle may name continuity members for a local restart, but it may
+        // never widen the remote byte request.
+        if (genesisCasBaseUrl && casManifest) await fetchGenesisCasToOpfs(casManifest, genesisCasBaseUrl);
+        const missing = (await Promise.all(casCids.map(async (cid) => {
+          const bytes = await readCasBlobFromOpfs(cid);
+          return bytes && sha256HexBytesSync(bytes) === cid ? null : cid;
+        }))).filter((cid): cid is string => cid !== null);
+        if (missing.length > 0) {
+          throw new Error(
+            `[openBrowserVessel] genesis CAS member(s) unavailable: ${missing.join(", ")} — ` +
+            "provide the immutable genesis seed/CAS source before starting a worker",
+          );
+        }
+        return { islandHandle, coreHash, bootstrap: social };
+      },
+
+      tempStore: () => new MemoryTiddlerStore(),
+
+      // Corpus capability (parity — browser syncs corpus bags too; shared loader).
+      loadCorpora: (composite) => loadCatalogCorpora({
+        repo, catalogHandle,
+        mintLocalHandle: (docUrl) => waitHandle<LarDoc>(repo, docUrl, () => repo.create<LarDoc>(emptyLarDoc())),
+        source: "browser-boot",
+      }, composite),
+
+      ...(onPhase ? { onPhase } : {}),
+    },
+
+    wikiSlot: (_assembly: VesselCoreAssembly): VesselWikiSlot => {
+      const sel = selectActiveWikiSlug(wikiId, undefined);
+      slotActiveWikiId = sel.slug;
+      activeSurfaceId  = sel.slug;   // the pinned wiki owns #projection at boot; summon flips it live
+      const facets = recipeHostFacets(slugFromUri(sel.slug));
+      return {
+        activeWikiId: sel.slug, wikiSlug: facets.wikiSlug,
+        wikiKey: facets.wikiKey, wikiBagId: facets.wikiBagId,
+        draftBagId: facets.draftBagId, workingBagId: facets.workingBagId,
+      };
+    },
+
+    openDaemon: async ({ assembly, slot }) => {
+      if (!daemonWorkerUrl) throw new Error("[openBrowserVessel] daemonWorkerUrl REQUIRED (genesis present → sovereign daemon island)");
+      // Register the per-Nexus crossroads (public oracle plane) into the oracle plane so the daemon recipe resolves
+      // it. Isomorphic: node + browser share registerCrossroadsInOracle, and the daemon core splices
+      // the crossroads bag into the recipe + registerBags for either vessel — only the nexus key differs (here the
+      // relay's gate key, so a human's two vessels register the SAME crossroads doc).
+      if (relayGatePubKey) await registerCrossroadsInOracle(repo, assembly.islandHandle, nexusPubkey);
+      // The worker boots on the WORN persona's binding. The two-key atom: `seed` is the DEVICE key —
+      // it inits keyhive as the Individual, and NEVER derives the persona-root — while `signerDid` +
+      // `deviceEdge` carry the WORN PersonaGroup root's founder-signed binding (the Binding Gate pins
+      // that root). The selector chooses WHICH root, and `readWornPersonaMount` is what reads it —
+      // over the PersonaVault both vessel classes implement, so the node and browser boots cannot drift
+      // on the answer (a founder's worn/founding root, or a joinee's admitted anchor index — the
+      // anchor/edge path, never a held root the joinee lacks).
+      //
+      // THE FACE THE OPERATOR WORE. Wearing moves ONLY the selector; the bootstrap's social record was
+      // written by the FOUNDING face and never moves again — so this worker booted on the founding face's
+      // binding whatever mask was on, while the line it logged claimed the opposite. The switched face's
+      // mount material lives in its OWN anchors, and the READING is mesh's, shared with the node vessel
+      // over the `PersonaVault` both implement, so the two classes cannot drift on it again.
+      const wornMount = await readWornPersonaMount(
+        await makeBrowserIdbPersonaVault(idbName),
+        (why) => console.warn(`[lararium-browser] ${why}`),
+      );
+      if (wornMount) {
+        console.log(`[lararium-browser] worn h${wornMount.handleIndex} — the binding re-pins from its OWN anchors`);
+      }
+      // STILL A FORK, narrowed: the five MOUNT pins switch, and the per-persona SOCIAL PLANE does not. The
+      // browser bootstrap holds ONE founding's social docs (the plane urls, the contact card), so a second
+      // persona whose own PersonaGroup + daemon docs feed the worker still means founding those per persona
+      // and keying the bootstrap by index. Those are per-founding social documents, correctly NOT part of a
+      // mount — folding them in is the whole-social-plane fork, and it stays the operator's call.
+      const personaKelPrefix = wornMount?.personaKelPrefix ?? social.personaKelPrefix;
+      // THE PERSONA-KEL PIN — the continuity anchor the Binding Gate walks. Read the pinned identifier's
+      // seq-sorted key-event-log from the per-Nexus KEL board of the ISLAND this vessel stands in,
+      // against the LOCAL replica "as of last sync" (no-global-now). FAIL-CLOSED: a chain the replica does not
+      // carry HALTS the boot (never a global lookup, never a fall-through to the raw signer pin).
+      //
+      // ── THE CLIMB'S CARRY — run BEFORE the gate walks, which is the whole cure ──────────────────
+      // A founding leaf seats this inception on the board keyed by the island resolved AT THAT MOMENT,
+      // and for a leaf that dials no anchor that island is its OWN key (the founding call above says so
+      // in as many words). Configuring the hearth this page dials re-keys the board, and this gate
+      // REFUSES rather than degrades — so the leaf walk found-offline → configure-the-anchor → reload
+      // left a vessel that never booted again, and unlike the node's operator this one holds no remedy
+      // at all. The carry moves the pinned chain onto the island this boot resolved, reading only the
+      // islands BELOW it (`nexusIslandsBelow` is empty at the bottom and empty when torn, so nothing
+      // ever descends). Idempotent: a destination that already carries it writes nothing, which is
+      // every later boot. The gate is untouched — the events land verbatim, their own cids and their own
+      // rotation signatures, and the same verifier judges them exactly as on the board they came off.
+      await carryPersonaKelUpTheGradient({
+        repo, nexusPubkey, prefix: personaKelPrefix,
+        priorIslands: nexusIslandsBelow(nexusStandsAt),
+      });
+      const kelBoard = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+      const personaKelChain = personaKelChainForPrefix(kelBoard.doc(), personaKelPrefix);
+      if (!personaKelChain || personaKelChain.length === 0) {
+        throw new Error(`[lararium-browser] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from the local board — the Binding Gate cannot reach a head (fail-closed).`);
+      }
+      const standingArchive = await requireBrowserKeyhiveArchive(idbName);
+      const daemonAuth = {
+        seed: vesselSeed, vesselVerifyingKey: vesselIdentity.verifyingKey,
+        // THE VESSEL'S OWN ARCHIVE, as its founding or its admit left it in the keystore. The island's keyhive
+        // restores from it and then replays the cap events, so this individual still seals into every
+        // document it created.
+        archiveBytes: standingArchive,
+        // A BROWSER VESSEL HOLDS NO SEALED IDENTITY HOME, so the archive-write door's reading is
+        // vacuously open here: no seal stands that could hold it shut.
+        // It stays INERT regardless: this entry injects no `persistArchive`/`persistVeilArchive`, so
+        // the door has no writer to call and the island's per-boot export never lands; the keystore keeps
+        // the Archive each founding act handed out. The field rides
+        // REQUIRED so a populator that answers nothing fails at the compiler rather than at review.
+        archiveOpens: true,
+        personaGroupId: wornMount?.personaGroupId   ?? social.personaGroupId,
+        meshCabalDocIdHex: wornMount?.meshCabalDocIdHex      ?? social.meshCabalDocIdHex,
+        // Derived, never enumerated — the same derivation the node vessel runs, so neither can drift on
+        // which bags a cap check can resolve. This vessel had been carrying neither the shared substrate
+        // bag nor any bag its own catalog named, which no test could see and no throw announced.
+        registerBags: deriveRegisterBags({
+          // EVERY compartment registers; exactly one mounts. The two verbs part company here.
+          fleets: social.personaPlanes.map((pl) => ({
+            personaGroupId: pl.personaGroupId,
+            catalogNamed: pl.personaGroupId === (wornMount?.personaGroupId ?? social.personaGroupId) ? catalogNamedBags(catalogHandle.doc()) : [],
+          })),
+          wikiBags: [slot.wikiBagId, slot.workingBagId, slot.draftBagId],
+        }),
+        // The WORN persona-root's binding (founder-signed): the gate pins personaKel.prefix and walks the KEL
+        // to the current head; deviceEdge is the signed device→hearth edge. From the single bootstrap.
+        signerDid: wornMount?.signerDid ?? social.signerDid,
+        personaKel: { prefix: personaKelPrefix, chain: personaKelChain },
+        deviceEdge: wornMount?.deviceEdge ?? social.deviceEdge,
+      };
+      // R4 — the daemon VM resolves its plugins through the SAME selector + OPFS CAS path every
+      // wiki island does (`resolveBrowserIslandPluginCids`), never the retired vessel-wide hand-
+      // off. The daemon's own one-recipe-model record names no offerings today, so this call is
+      // the floor alone in practice — but it is the floor PROVEN through the selector, not
+      // assumed past it.
+      crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+      const daemonPluginResolution = await resolveBrowserIslandPluginCids({
+        islandBlobs: assembly.islandHandle.doc()?.blobs,
+        recipe:      { wikiSlug: "daemon" },
+        lookup:      browserOfferingLookup(crossroadsOfferingsHandle.doc()),
+      });
+      if (!daemonPluginResolution.ok) {
+        throw new Error(`[openBrowserVessel] the daemon island's plugin resolution refused: ${daemonPluginResolution.error}`);
+      }
+      const pluginCids = daemonPluginResolution.pluginCids;
+      // THE LEAF READS ITS FLEET'S BOARD BEFORE ITS ISLAND BOOTS, through the read every shore shares, so the
+      // Binding Gate's ask at the dyad door reads a landed fold, and it re-reads the board whenever it changes. A
+      // faceless leaf wears no edge, reads no board and gets asked nothing.
+      const fleetRootOfFace = daemonAuth.deviceEdge?.personaRootDid;
+      if (fleetRootOfFace) {
+        const scope = bareKey(fleetRootOfFace);
+        const readFleet = async (): Promise<void> => {
+          const startedAt = fleetMoves;
+          const read = await readLedgeredEdgeBoard({
+            repo, scope, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRootOfFace), label: "board:edge-kapae",
+            vesselKey: vesselIdentity.verifyingKey, authorityFor: fleetEdgeAuthority(fleetRootOfFace),
+          });
+          if (!fleetBoardFollowed) {
+            fleetBoardFollowed = true;
+            read.handle.on("change", () => {
+              fleetShadows = null;
+              fleetMoves += 1;
+              fleetRead = readFleet();
+              void fleetRead.then(() => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }, () => undefined);
+            });
+          }
+          if (startedAt !== fleetMoves) return;                  // overtaken: the read the move set off lands instead
+          fleetShadows = { root: fleetRootOfFace, readings: read.readings, rolled: raisesSeenThrough(read.ledger.doc(), scope) };
+        };
+        fleetRead = readFleet();
+        await fleetRead;
+      }
+      daemon = await openBrowserDaemonVm({
+        repo, daemonUrl: social.daemonUrl, coreHash: assembly.coreHash, ownedDocument: true,
+        // The persona plane rides only when a face stands. A browser vessel normally holds one — it IS
+        // a person's face — so absence here names an unfinished founding rather than a crossroads, and
+        // the VM stands faceless instead of resolving a document nobody founded.
+        ...(social.personaUrl ? { personaUrl: social.personaUrl } : {}),
+        ...(social.personaBagId ? { personaBagId: social.personaBagId } : {}),
+        ...(pluginCids.length ? { pluginCids } : {}),
+        workerScriptUrl: daemonWorkerUrl,
+        // The holder path: the island already stands once per origin; this tab's handle IS its port.
+        // The dyad door rides the DAEMON island's handle alone: this spawn seam stands as the one place that
+        // handle gets made, on either path.
+        spawnWorker: (url) => {
+          const handle = holder?.kind === "attached" ? holderWorkerHandle(holder.port) : browserSpawnWorker(url);
+          attachBrowserDyadDoor(handle, () => dyadDoor);
+          return handle;
+        },
+        recipe: { wikiSlug: "daemon" } satisfies WikiRecipe,
+        grants: {
+          islandUrl: assembly.islandHandle.url,
+          // The daemon island's OWN bag (daemon = wikiBagUri("daemon"), one-recipe model).
+          wikiUrl:   social.daemonUrl,
+          // ACCESS grant, not a LOAD slot — the worker reaches the catalog registry via the accessor.
+          catalogUrl: catalogHandle.url,
+        },
+        daemonAuth,
+      });
+
+      // ── THE PERSONAGROUP IDENTITY-SLOT RING (docs/pono/identity-slot-policy, arm B) ─────────────────
+      // The ONE assembly the node vessel composes (`assemblePersonaGroupRing`), over the face this boot
+      // wears, its pinned root and the KEL chain the Binding Gate just walked. Only the PROOF SOURCE differs:
+      // a leaf dials out, so the key it reads for a peer is the key that peer PROVED to this leaf — the gate
+      // key that signed this leaf's verdict on the relay socket — never a key the wire named. It widens the
+      // cross-operator gate by the face's own planes and nothing else; with no cross-operator gate armed the
+      // relay is the operator's own node and every doc already syncs, so there is nothing to widen.
+      //
+      // The SAME ring decides for this face's SIBLINGS by its own path (`composeSiblings`), reading the device
+      // key each one proved over the sibling session: the face's own planes and the public boards, never the
+      // @daemon, never another face's planes.
+      const ringRelay = relayAdapter;
+      const ringRoot = daemonAuth.deviceEdge?.personaRootDid;
+      if (ringRoot && daemonAuth.personaKel) {
+        const ring = await assemblePersonaGroupRing({
+          catalog: makeCatalogAccessor(repo, catalogHandle.url),
+          personaGroupId: daemonAuth.personaGroupId,
+          personaRootDid: ringRoot,
+          personaKel: daemonAuth.personaKel,
+          provenKeyOf: (peerId) => ringRelay?.provenKeyOf(peerId) ?? null,
+          siblingKeyOf: (peerId) => siblings?.provenKeyOf(peerId) ?? null,
+          // THE DYAD'S SHADOW at the face-grant seat and the sibling lane (kapae#/reach): a device the fleet root
+          // set aside holds no seat here. Until this leaf's first read of the fleet board lands, every key reads aside.
+          deviceAside: (vesselKey) => !fleetShadows || fleetShadows.readings.get(deviceEdgeId(fleetShadows.root, vesselKey))?.stands === true,
+        });
+        if (fedGate && ringRelay) fedGate = ring.compose(fedGate);
+        // THE FLEET'S EDGE BOARD rides the sibling lane beside the public boards, so the root's raise reaches every
+        // device; this leaf read it before its island booted (above) and re-reads it whenever it changes.
+        const fleetBoardUrl = fleetEdgeBoardDocUrl(ringRoot);
+        siblingGate = ring.composeSiblings(new DeterministicFederationGate(nexusPubkey, [fleetBoardUrl]));
+      }
+
+      // ── THE SIBLING CHANNEL (leaf kind 3, docs/pono/identity-slot-policy#/the-leaf-taxonomy) ────────
+      // The ONE composition the node vessel calls (`standSiblingChannel`). This face's siblings — devices
+      // its own PersonaGroup delegated — prove their edges to each other through every pinned herm against the
+      // KEL chain the Binding Gate just walked, under the PersonaGroup secret the root sealed to this device at
+      // enrolment and the lease epoch this vessel holds, and sync over the session that proof binds. Each herm
+      // carries sealed frames and reads none; every pinned herm carries the KEL drops this leaf pulls before it
+      // joins. Herms the channel cannot stand over refuse the channel alone, never the vessel. The seed stays in
+      // these closures.
+      const siblingEdge = daemonAuth.deviceEdge;
+      if (siblingHerms && siblingHerms.length > 0 && siblingEdge && siblingGate) {
+        const group = daemonAuth.personaGroupId;
+        const sealText = tiddlerText(bootDaemonDoc?.tiddlers?.[groupSecretSealTitle(group)]);
+        let sealRaw: unknown = null;
+        try { sealRaw = sealText ? JSON.parse(sealText) : null; } catch { sealRaw = null; }
+        const seal = await verifyGroupSecretSeal(sealRaw);
+        if (!seal) {
+          console.warn("[sibling] this face holds no PersonaGroup secret sealed to this device — its enrolment delivered none, so no sibling channel stands.");
+        } else {
+          const leasePrefix = leaseEpochPrefix(group);
+          const leaseSlots = Object.entries(bootDaemonDoc?.tiddlers ?? {})
+            .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
+          siblings = await standSiblingChannel({
+            repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
+            deviceKey: vesselIdentity.verifyingKey, sign: ed25519SignerFromSeed(vesselSeed),
+            enrolment: { edge: siblingEdge, seal }, open: groupSecretOpenerFromSeed(vesselSeed),
+            expectedEpoch: effectiveLeaseEpoch(leaseSlots),
+            onRefusal: (r) => console.warn(`[sibling] ${siblingRefusalLine(r)}`),
+          });
+        }
+      }
+      return { workerEa: daemon.workerEa, mountMainVerbs: daemon.mountMainVerbs, resolveBinding: daemon };
+    },
+
+    wireVerbs: (registry, _assembly) => {
+      seedVesselDefaults(registry);
+      // Thin main verb plane (node parity). Every catalog/recipe/residency-mutating
+      // daemon verb lives in the worker now (wireWorkerVerbs) — access≠load, write-then-sync.
+      // Main keeps only sync-wiki (commands the pool's active wiki) + residency stats (a read).
+      registry.register("sync-wiki", async (args, ctx) => {
+        await wikiActivation.ensureActive(slotActiveWikiId);   // reference wakes a cold grain (home wiki: no-op)
+        return vmManager.placeWikiVerb(slotActiveWikiId, {
+          verb: "sync-wiki", args: args as Record<string, unknown>, requestedBy: ctx.invocation.requestedBy,
+        });
+      });
+      registry.register("residency", makeResidencyStatsReactor({ residency }));
+
+      // ── The wiki-SWITCHER surface (the FACE over the activation cap) ────────────
+      // The LIVE swap (distinct from boot-time `open-wiki`): ACTIVATE the grain
+      // (resolveWikiSpec wakes ANY registered wiki cold, single-flight) THEN flip the
+      // singleton #projection gate to it — the summon, mount-then-flip. Persist the
+      // choice fire-and-forget to the boot pointer (read only at next cold boot).
+      registry.register("wiki-switch", async (args) => {
+        // slug rides as a structured `slug` arg — from the CLI / MCP, OR from a DOM
+        // verse-event whose `arg-slug` field the reaction-router lifted into the args
+        // payload (#48 unified the DOM path onto the CLI's structured-args contract).
+        const slug = String(args["slug"] ?? "");
+        if (!slug) throw new Error("wiki-switch: `slug` required");
+        const active = await wikiActivation.ensureActive(slug);
+        if (active) {
+          activeSurfaceId = slug;   // flip the projection gate to the now-live wiki
+          void daemon.placeVerb({ verb: "open-wiki", args: { slug }, requestedBy: "wiki-switch" });
+          pushSwitcherState();      // reflect the new surface into the daemon widget
+        }
+        return { verb: "wiki-switch", slug, active, held: [...wikiActivation.held()] };
+      });
+      // wiki-hold / wiki-release — the ROTATABLE active-wiki pin (budget-enforced by the
+      // cap: the daemon bag always + pinBudget rotatable; browser grant = one). The switcher's pin.
+      registry.register("wiki-hold", async (args) => {
+        const slug = String(args["slug"] ?? "");
+        if (!slug) throw new Error("wiki-hold: `slug` required");
+        const held = await wikiActivation.hold(slug);
+        pushSwitcherState();
+        return { verb: "wiki-hold", slug, held, holds: [...wikiActivation.held()], budget: wikiActivation.grant.pinBudget };
+      });
+      registry.register("wiki-release", async (args) => {
+        const slug = String(args["slug"] ?? "");
+        if (!slug) throw new Error("wiki-release: `slug` required");
+        wikiActivation.release(slug);
+        pushSwitcherState();
+        return { verb: "wiki-release", slug, holds: [...wikiActivation.held()] };
+      });
+      // wiki-active — the live switcher state: which wikis run now + which are held +
+      // which surface holds the projection. The daemon widget's state-tiddler reads this.
+      registry.register("wiki-active", async () => {
+        const active = vmManager.inspect().filter((s) => s.temperature === "wela").map((s) => s.wikiId);
+        return {
+          verb: "wiki-active", active, held: [...wikiActivation.held()], activeSurface: activeSurfaceId,
+          activationCap: wikiActivation.grant.activationCap, pinBudget: wikiActivation.grant.pinBudget,
+        };
+      });
+
+      // ── The PERSONA surface (the multitude-of-one door) ─────────────────────────
+      // The isomorphic mirror of the wiki-switcher: main holds the IDB persona vault, so
+      // these verbs DRIVE it (list / mint / wear) and reflect the fresh state into the
+      // daemon persona surface via pushPersonaState. A projected click routes here exactly
+      // as wiki-switch does (worker delegates the unknown verb to the main registry).
+
+      // persona-refresh — repaint the surface from the live vault (idempotent read + push).
+      registry.register("persona-refresh", async () => {
+        void pushPersonaState();
+        const roster = await listBrowserPersonaRoots(idbName);
+        const active = await loadBrowserActivePersona(idbName);
+        return { verb: "persona-refresh", roster, ...(active !== undefined ? { active } : {}) };
+      });
+
+      // persona-mint — mint a new persona-root at the NEXT index and set its DEFAULT private
+      // pet-name (PRIVATE-all — the label never PUBLICLY federates; only a publicly announced Handle
+      // binds a persona to a glamour, and that stays a SEPARATE explicit act, never auto-fired here).
+      // The mint names the face for the human, who renames it through the pet-name store's own private
+      // bag: a label typed into a projected field would travel a render surface with no way to tell a fleet
+      // peer from a stranger, and the label is PRIVATE. Next index = max(held) + 1, or 0 when the
+      // vessel holds no root (a joinee founding its first face).
+      registry.register("persona-mint", async () => {
+        const roster = await listBrowserPersonaRoots(idbName);
+        const nextIndex = roster.length ? Math.max(...roster) + 1 : 0;
+        const root = await generateOrLoadBrowserPersonaRoot(idbName, nextIndex);
+        const petnames = await makeBrowserPersonaPetnameStore(idbName);
+        await renameOwnPersona(petnames, nextIndex, `persona-h${nextIndex}`);
+        void pushPersonaState();
+        return { verb: "persona-mint", index: nextIndex, created: root.created };
+      });
+
+      // persona-wear — don the face at `index` (reboot-to-switch, one-face-to-mesh). FAIL CLOSED
+      // on custody: wearBrowserPersona REFUSES when this vessel holds no root at that index (the
+      // custody-by-type wall — sign only as a persona whose sovereign secret this vessel carries).
+      // Wearing moves only the selector pointer; the worker BINDS the worn persona at boot
+      // (`readWornPersonaMount` reads the selector and re-pins the mount), so the switch lands on the
+      // next reboot —
+      // rebootRequired names that for the web shell (the reboot itself is the caller's act).
+      registry.register("persona-wear", async (args) => {
+        const index = Number(args["index"]);
+        if (!Number.isSafeInteger(index) || index < 0) throw new Error("persona-wear: valid `index` required");
+        await wearBrowserPersona(idbName, index);   // custody-gated — throws when no root held
+        void pushPersonaState();
+        return { verb: "persona-wear", index, rebootRequired: true };
+      });
+
+      // ── The FACE surface (the public "here I am" door) ──────────────────────────
+      // The browser twins of the node `handle` adapters (publish · burn · attest), surfaced as DELIBERATE
+      // holder acts — a face NEVER federates as a boot side-effect; only an explicit invocation here posts a
+      // glamour. Each resolves the per-Nexus WHO board off the crossroads address the who-plane already reads,
+      // seats the persona index (the arg, else the worn persona, else the founding index), and calls the
+      // shared act. WITHHELD boots hold no public board, so a face verb fails closed with an honest reason.
+      const resolveFaceIndex = async (args: Record<string, unknown>): Promise<number> => {
+        if (args["persona"] !== undefined) return Number(args["persona"]);
+        return (await loadBrowserActivePersona(idbName)) ?? FOUNDING_PERSONA_INDEX;
+      };
+      const resolveWhoBoard = async (verb: string): Promise<DocHandle<LarDoc>> => {
+        if (!relayGatePubKey || !relayAdapter?.session) {
+          throw new Error(`[face-${verb}] this vessel holds no public WHO board — it has not crossed to a hearth, so it has no board to name a face on.`);
+        }
+        return materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+      };
+      // The daemon doc the publish core reads for the owner prefix — the persona-KEL prefix IS the only field
+      // it consults, and `social` carries it authoritatively; a faceless boot has none, so publish fails closed.
+      const ownerDaemonDoc = (): LarDoc => {
+        const d: LarDoc = { tiddlers: {} } as LarDoc;
+        if (social.personaKelPrefix) {
+          d.tiddlers[PERSONA_KEL_PREFIX_TIDDLER] = storedRecord({
+            tiddler: { title: PERSONA_KEL_PREFIX_TIDDLER, text: social.personaKelPrefix, kind: "persona-kel-prefix" },
+          });
+        }
+        return d;
+      };
+
+      // face-publish — announce a persona-anchored glamour onto the WHO board (fail-closed on absent prefix,
+      // in the shared core). Returns the announced card for the UI to reflect.
+      registry.register("face-publish", async (args) => {
+        const glamour = String(args["glamour"] ?? "").trim();
+        if (!glamour) throw new Error("face-publish: a `glamour` (display name) is required");
+        const handleIndex = await resolveFaceIndex(args);
+        const board = await resolveWhoBoard("publish");
+        const card = await publishHandleBrowser({ daemonDoc: ownerDaemonDoc(), board, handleIndex, glamour, idbName });
+        return { verb: "face-publish", nym: card.nym, glamour: card.glamour, actCid: card.actCid, parents: card.parents };
+      });
+
+      // face-burn — bury the name. SELF-burn by default (the seated handle key); `from-persona` buries it from
+      // ABOVE (the owning persona's head op-key), resolving the owner head off the per-Nexus persona-KEL board.
+      registry.register("face-burn", async (args) => {
+        const handleIndex = await resolveFaceIndex(args);
+        const board = await resolveWhoBoard("burn");
+        const fromPersona = args["from-persona"] === true || args["from-persona"] === "true";
+        const burnOpts: Parameters<typeof burnFaceBrowser>[0] = { board, handleIndex, idbName };
+        if (fromPersona) {
+          burnOpts.fromPersona = true;
+          burnOpts.daemonDoc   = ownerDaemonDoc();
+          burnOpts.kelBoard    = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");
+        }
+        const card = await burnFaceBrowser(burnOpts);
+        return { verb: "face-burn", nym: card.nym, actCid: card.actCid, parents: card.parents, burned: true, hand: fromPersona ? "owner" : "self" };
+      });
+
+      // face-attest — sign a claim under the face's head, carried ON the card, verified reader-locally. Not a
+      // chain event; writes nothing to the board.
+      registry.register("face-attest", async (args) => {
+        // THE STRUCTURED EDGE, at the browser door: a named surface + the foreign subject it names. The verb
+        // reaches the adapter family through the SAME mapping the CLI uses (`handleClaimFrom`), so a new
+        // adapter opens on both doors at once and neither door learns a new argument.
+        const claim = handleClaimFrom(
+          String(args["surface"] ?? ""), String(args["subject"] ?? ""),
+          args["return-locator"] === undefined ? undefined : String(args["return-locator"]),
+        );
+        if (!claim) throw new Error(`[face-attest] no adapter answers that claim — name a surface (${HANDLE_CLAIM_SURFACES.join(" · ")}) and its subject.`);
+        const handleIndex = await resolveFaceIndex(args);
+        const board = await resolveWhoBoard("attest");
+        const statement = await attestFaceBrowser({ board, handleIndex, claim, idbName });
+        return { verb: "face-attest", prefix: statement.prefix, headEventCid: statement.headEventCid, claim: statement.claim, sig: statement.sig };
+      });
+
+      // ── The FOLLOW surface (the IoC social-graph door) ──────────────────────────
+      // The follow-graph's SOURCE OF TRUTH rides the sovereign circles doc, held in the daemon WORKER: the
+      // FOLLOW-GRAPH verbs (circle-add / circle-remove / circle-list) live there (registered by the shared
+      // operator-daemon-behavior), reaching the circles doc by access and writing-then-syncing. The circles doc is PRIVATE +
+      // fleet-synced same-operator (a follow shows on ALL the operator's own devices) and NEVER federates. A
+      // projected unfollow click carries the row's nym + circle straight to the WORKER `circle-remove` verb
+      // (verse-event → placeVerb → the worker dispatcher, which shadows any main reactor); it self-renders the
+      // surface from the circles doc. FOLLOWING a NEW nym needs a nym + a self-certifying card (recognition, fail-
+      // closed) — the `lares circle` CLI / the exported composeFollow, never a projected text field.
+
+      // circle-refresh — repaint the follow surface FROM the circles doc (the worker `circle-list` reads + renders it).
+      registry.register("circle-refresh", async (args) => {
+        const circleId = String(args["circle"] ?? CIRCLE_PANEL_DEFAULT) || CIRCLE_PANEL_DEFAULT;
+        pushCircleState(circleId);
+        return { verb: "circle-refresh", circle: circleId, federated: false };
+      });
+
+      // wiki-sense (the supervision reads) — the daemon's supervision READ-verbs over the islands this vessel's pool
+      // actually holds. The shores ARE the supervision grant: designation resolves through the pool
+      // alone (confused-deputy ward — a name outside the pool fails loud at both ends), and the
+      // proof-hold writes into the daemon's OWN daemon layer (local, self-sovereign). The daemon
+      // worker reaches these verbs over its existing delegate loop.
+      wikiSense = createWikiSenseSupervisor(
+        {
+          supervises: (island) => vmManager.has(island),
+          sendSignal: (island, msg) => vmManager.placeSensoriumSignal(island, msg),
+        },
+        { proofStore: daemon.composite, proofBag: DAEMON_BAG_ID },
+      );
+      registerWikiSenseVerbs(registry, wikiSense);
+    },
+
+    afterDaemon: (_a, assembly) => {
+      void residency.pin(BAG_IDS.catalog,    "boot:catalog");
+      void residency.pin(BAG_IDS.oracle,   "boot:lararium-island");
+      if (assembly.laresHandle) void residency.pin(BAG_IDS.lares, "boot:lares-corpus");
+      // A face's planes pin under the face's own names — the vessel pins what it actually mounted.
+      const pinFace = social.personaBagId ? personaSiblingBagIds(social.personaBagId) : null;
+      if (pinFace) {
+        void residency.pin(pinFace.identities, "boot:identities");
+        void residency.pin(pinFace.circles,    "boot:circles");
+        void residency.pin(pinFace.sessions,   "boot:sessions");
+      }
+      void residency.pin(DAEMON_BAG_ID,       "boot:daemon");
+      // Durable pin replay — BEFORE the sweeper starts, so a replayed pin never races the first
+      // idle-cool tick. Recovers whatever an operator pin persisted under the daemon doc across a
+      // restart (residency-tiers.mem#/pin-flag; see writePinTiddler/replayPinsFromDaemonDoc).
+      void replayPinsFromDaemonDoc(daemon.daemonHandle, residency);
+      residency.startSweeper();
+      assembly.composite.attachResidency(residency);
+      // NB: no inbound WS gate — a browser cannot listen on a socket (substrate floor).
+    },
+
+    makePool: (_a, assembly) => {
+      // R4 — TWO WIKIS IN ONE VESSEL: each mount resolves its OWN recipe's plugin-offerings
+      // through the selector + OPFS CAS (`resolveBrowserIslandPluginCids`), never one vessel-wide
+      // floor. The Crossroads board materializes once (lazily,
+      // shared with the daemon VM's own resolution above) and is read fresh per mount.
+      vmManager = new BrowserVesselIslandPool({
+        mainRepo: repo,
+        resolvePluginCids: async (recipe) => {
+          crossroadsOfferingsHandle ??= await materializeSharedLarDoc(repo, crossroadsDocUrl(nexusPubkey), "board:crossroads");
+          return resolveBrowserIslandPluginCids({
+            islandBlobs: assembly.islandHandle.doc()?.blobs,
+            recipe,
+            lookup: browserOfferingLookup(crossroadsOfferingsHandle.doc()),
+          });
+        },
+        onWorkerEvent: (_id, msg) => {
+          // Projection-nalu frames route to the display, not the verb plane — but ONLY from the ACTIVE surface.
+          // The frame gate keys on the transport id (never a payload claim), so a summon that flips
+          // activeSurfaceId auto-supersedes the previous surface's frames with no explicit teardown (the
+          // wlroots seat / tmux active-pane rhyme: one sink, N emitters, one gate).
+          if (msg.listenable === PROJECTION_FRAME) {
+            if (_id !== activeSurfaceId) return;   // not the active surface → drop
+            onProjection?.({
+              html: String(msg.payload["html"] ?? ""),
+              css:  String(msg.payload["css"]  ?? ""),
+              rev:  Number(msg.payload["rev"]  ?? 0),
+              surface: _id,   // the transport id names the source, never a payload claim
+            });
+            return;
+          }
+          // Coherence-nalu frame → the DOM coherence indicator. `obstructing` rode the wire as JSON
+          // (the event payload admits only scalars); parse it back for the sink.
+          if (msg.listenable === COHERENCE_FRAME) {
+            let obstructing: string[] = [];
+            try { obstructing = JSON.parse(String(msg.payload["obstructing"] ?? "[]")) as string[]; }
+            catch { obstructing = []; }
+            onCoherence?.({
+              status:      String(msg.payload["status"] ?? "indeterminate") as CoherenceStatus,
+              radius:      Number(msg.payload["radius"] ?? 0),
+              glues:       Boolean(msg.payload["glues"]),
+              vacuous:     Boolean(msg.payload["vacuous"]),
+              obstructing,
+              lociTotal:   Number(msg.payload["lociTotal"] ?? obstructing.length),
+              label:       String(msg.payload["label"] ?? ""),
+              rev:         Number(msg.payload["rev"] ?? 0),
+            });
+            return;
+          }
+          // Sensorium-nalu frame → the wiki-sense supervisor's return leg. The FRAME's island id
+          // (the pool's wikiId, not any payload claim) pins the answer to the ask's designation.
+          if (msg.listenable === SENSORIUM_FRAME) {
+            wikiSense.acceptFrame(_id, msg.payload);
+            return;
+          }
+          const verb    = typeof msg.payload["verb"]    === "string" ? msg.payload["verb"]    : undefined;
+          const fromUri = typeof msg.payload["fromUri"] === "string" ? msg.payload["fromUri"] : undefined;
+          if (!verb) return;
+          daemon.placeVerb({
+            verb, args: verbArgsFromPayload(msg.payload),   // structured args off the `verb-args` JSON (#48)
+            requestedBy: typeof msg.payload["requestedBy"] === "string" ? msg.payload["requestedBy"] : msg.listenable,
+            listenable: msg.listenable, ...(fromUri ? { fromUri } : {}),
+          });
+        },
+        ...(workerScriptUrl ? { workerScriptUrl } : {}),
+      });
+      // Wire the pool through the SHARED residency factory: resolveWikiSpec (the UNKNOWN-grain
+      // branch of the true multi-wiki swap) + the activation-on-reference cap (browser's minimal
+      // grant) + the sovereign-worker residency binding (daemon evict routes THROUGH the ONE
+      // collector) + wiki-alert delivery (the resolver-as-activator single-flight orchestration;
+      // browser's hook WARNS + drops best-effort — no durable mailbox). The pool keys a slot by
+      // its BARE SLUG (`slotActiveWikiId = sel.slug`), and the shared wiring keys the alert on
+      // that same bare slug — never `${hostId}:${wikiSlug}`, which would fork the keyspace and
+      // lose every alert. Browser resolves within its minimal grant exactly like node.
+      wikiActivation = residencyWiring.wireToPool({
+        daemon,
+        pool:          vmManager,
+        coreHash:      assembly.coreHash,
+        islandUrl:     assembly.islandHandle.url,
+        catalogHandle: assembly.catalogHandle,
+      });
+      // The daemon inherits the render cap (dormant-mounted at boot). Forward its frames into the SAME
+      // #projection sink the pool wikis use — gated on the active-surface pointer, so a summoned daemon paints
+      // and otherwise its frames drop. One sink, the daemon a peer surface among the wikis (KA·BA braid).
+      daemon.onProjection((frame) => {
+        if (activeSurfaceId === DAEMON_SURFACE_ID) onProjection?.({ ...frame, surface: DAEMON_SURFACE_ID });
+      });
+      // The daemon's OWN verb OUT-path (a projected switcher click → wiki-switch /
+      // add-bag / remove-bag): re-enter the dispatcher via placeVerb so the verb runs on
+      // the main registry. LOOP-SAFE as of #48: the reaction-router fires a verb
+      // verse-event ONLY on a tiddler carrying the `lares-dispatch` marker, which the verb
+      // machinery's own invocation/outcome writes never set — so re-forwarding cannot loop.
+      // Summon args ride the structured `verb-args` payload, not the URI (bearing-only).
+      const DAEMON_SURFACE_VERBS_LIVE = true;   // #48 loop-safe dispatch — live
+      if (DAEMON_SURFACE_VERBS_LIVE) {
+        daemon.onVerbEvent((e) => {
+          void daemon.placeVerb({
+            verb: e.verb, args: e.args, requestedBy: "daemon-surface",
+            ...(e.fromUri ? { fromUri: e.fromUri } : {}),
+            ...(e.listenable ? { listenable: e.listenable } : {}),
+          });
+        });
+      }
+      return vmManager;
+    },
+
+    afterLive: ({ wikiHandle }) => {
+      // Presence — ephemeral, does not travel via CRDT. The PLACE announces itself, never a face:
+      // being-as-place costs nothing civic, so a vessel key is the right thing to be seen by here.
+      // Carried in the canonical DID form (`0x` + verifying key) so the field holds what it names.
+      wikiHandle.broadcast({ did: `0x${vesselVerifyingKey}` });
+      // Boot DEMOTED to a pin (browser gradient): the daemon surface stays always-live
+      // on its own; the home wiki registers in the ONE collector as a PINNED `wiki` grain
+      // (the single rotatable pin this constrained vessel grants besides the daemon bag).
+      // mountPrimaryWiki already mounted + spec-retained it → onHydrate no-ops.
+      if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
+    },
+  }, [...meshExtraCaps, ...whoExtraCaps]);
+
+  const returnLeg = makeSurfaceReturnLeg({
+    daemonSurfaceId: DAEMON_SURFACE_ID,
+    daemon: () => daemon,
+    pool:   () => vmManager,
+  });
+
+  // The connection snapshot carries the actual mounted document alongside the crossing verdict, so a
+  // served page can report which node wiki it rendered instead of treating a live socket as mount proof.
+  connectionState.setWikiDocUrl(result.wikiHandle.url);
+
+  return {
+    identity: vesselIdentity,
+    pool: result.pool,
+    repo,
+    store: result.assembly.composite,
+    daemon,
+    activeWikiId:     slotActiveWikiId,
+    activeWikiSource: "boot-arg",
+    wikiDocUrl:       result.wikiHandle.url,
+    catalogHandleUrl: catalogHandle.url,
+    daemonDocUrl:     social.daemonUrl,
+    hearthDaemonUrl:  social.hearthDaemonUrl ?? null,
+    oracleDocUrl:     result.assembly.islandHandle.url,
+    larariumDocUrl:   result.assembly.larariumHandle?.url ?? null,
+    phase:            "live",
+    crossed: () => relayAdapter?.session != null,
+    connectionState,
+    siblingChannel: () => siblings?.status() ?? null,
+    handOutInvite: () => relayPin.dial ? popInvite(walkStore, relayPin.gatePubKey, relayUrl) : Promise.resolve(null),
+    carryAtHearth: (plaintext, withinMs) => relayPin.dial && relayAdapter && walkLeaf
+      ? carryDocument({ transport: relayAdapter, store: walkStore, gatePubKey: relayPin.gatePubKey, leaf: walkLeaf, plaintext, withinMs })
+      : Promise.resolve(null),
+    fetchFromHearth: (cid, withinMs) => relayPin.dial && relayAdapter
+      ? fetchDocument({ transport: relayAdapter, store: walkStore, gatePubKey: relayPin.gatePubKey, cid, withinMs })
+      : Promise.resolve(null),
+    readOracle: <T>(baseUrl: string, gatePubKey: string) => oracleProof
+      ? pullAndVerifyOracle<T>(baseUrl, { identity: oracleProof, verifyingKey: gatePubKey })
+      : Promise.resolve<OraclePullResult<T>>({ ok: false, reason: "this vessel holds no card to prove at a peer's gate" }),
+    // The return leg routes each event to the surface that painted its target; the active pointer plays no
+    // part, so a switch between the person's act and its arrival never moves the event to another island.
+    sendDomEvent: returnLeg.sendDomEvent,
+    sendDomInput: returnLeg.sendDomInput,
+    // The uniform pin-selector: flip the live gate synchronously (mount-then-flip — daemon + the pinned wiki
+    // are already mounted), then persist the choice fire-and-forget to bags/daemon/active-wiki (read only at next
+    // cold boot). No reboot — an active-surface change is a projection-gate flip, not a manifest rebuild.
+    setActiveSurface: (surfaceId: string) => {
+      activeSurfaceId = surfaceId;
+      void daemon.placeVerb({
+        verb: "open-wiki",
+        args: { slug: surfaceId },
+        requestedBy: "summon",
+      });
+      // Summoning the daemon: seed its switcher list + persona multitude with the live state so
+      // the projected widgets paint a current view the moment the daemon becomes the surface.
+      if (surfaceId === DAEMON_SURFACE_ID) { pushSwitcherState(); void pushPersonaState(); void pushCircleState(); }
+    },
+  };
+}
+
+/**
+ * The browser's share verdict on both hooks — one decision, announce and access alike.
+ *
+ * `fedGateOf` reads the federation gate AT EACH DECISION. The Repo takes this config before the spore
+ * crossing arms the gate, so a gate passed by value holds the pre-crossing `null` for the vessel's life —
+ * and a null gate reads a cross-operator relay as the operator's own node (full device sync).
+ *
+ * The gate it reads is the whole verdict: the PersonaGroup ring composes onto that gate, never beside it.
+ * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
+ * sibling gate, the ring's sibling path, and nothing else reaches it.
+ */
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null) {
+  // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
+  return shareConfigOf((peerId, documentId) => federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null));
+}

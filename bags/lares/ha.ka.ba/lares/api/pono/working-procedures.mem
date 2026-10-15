@@ -1,0 +1,167 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/working-procedures">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem"
+hydrate   = true
+l-space   = "stable"
+role      = "working procedures — the standing law for any hand that tests, wires or measures in this tree: red-first test design in eight moves, the ladder for wiring a module that stands designed, tested and unreached, the instruments that read green while they report something false, the traps this tree paid for, and the working agreements that bind every spirit"
+title     = "lar:///ha.ka.ba/lares/api/pono/working-procedures"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/api/pono/working-procedures"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+<<~ ahu #/head>>
+
+! Working procedures ~ how a hand tests, wires and measures here
+
+Each block below states a procedure that cost this tree measured hours to learn. A hand reads the block
+that names its act before it writes a vector, a wire or a count. The named failure modes these procedures
+guard against read at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states#/index">>, each with its
+own measured instance and diagnostic.
+
+<<~/ahu>>
+
+<<~ ahu #/grounds-before-wins>>
+
+!! Grounds before wins ~ how work gets ranked
+
+Rank work by ''what inherits shape from what'', never by confidence in the next wire. The standing order
+runs: canon, then the identity substrate, then the key-event grammar, then the face a person wears, then
+the gatherings, then the humans who arrive. A layer whose bytes still move re-founds everything above it,
+so a layer settles whole before the layer that inherits from it builds. Two changes to one signed grammar
+land as ONE settlement.
+
+<<~/ahu>>
+
+<<~ ahu #/red-first>>
+
+!! Red-first test design ~ the procedure, never the slogan
+
+"Vector first, fix second" names a discipline that fails silently when run loosely. Run it as eight
+ordered moves; a skipped move turns the whole thing into decoration.
+
+# ''Write the vector before the cure.'' The vector names the hole. A vector written after the cure tests the cure's shape, never the hole's.
+# ''Watch it fail, and READ the failure text.'' A vector that passes on its first run measured nothing: the hole never existed, or the vector misses it. Both readings demand work before any cure gets written.
+# ''Check the red fails for the stated reason.'' Read the message, never the colour. A vector that reds on a typo, a missing fixture or an unrelated throw looks identical to one that reds on the defect.
+# ''Run the nonsense control.'' Feed the gate something that MUST fail: a nonsense verb, a mangled digest, an address nothing holds. A control that passes proves the gate reads nothing, and a green from that gate carries no information.
+# ''Assert the setup took.'' A fixture that mutates a live carrier MUST assert its own mutation landed (`.not.toBe(source)`). A silent no-op replace leaves disk, synced and canonical equal, and four vectors then agree with each other about nothing.
+# ''Match at a dispatch position.'' Assert against the value the code branches on, never against a string that merely appears nearby. A mention satisfies a grep; only a dispatch satisfies a caller.
+# ''Cure, re-run, and check BOTH marks move.'' The vector goes green AND the nonsense control stays red. One without the other names a cure that widened the gate where it should have closed the hole.
+# ''A red that clears with no edit names shared state, never a cure.'' `dist/` and `bags/` carry other writers, usually the operator. Read `git status` before believing any red, and before believing any green that follows one.
+
+''Where a red belongs when nothing can cure it yet.'' A law the models imply and no code enforces gets
+DECLARED in the red register (`packages/lararium-mesh/tests/unbuilt-laws.test.ts`), skipped, one law per
+entry. `tools/unbuilt-laws-witness.sh` strips the skips and reports any red that GREENED, which catches a
+system that started keeping a law by accident. A declared red counts as work landed, never as work
+deferred.
+
+<<~/ahu>>
+
+<<~ ahu #/wiring-an-unreached-module>>
+
+!! Wiring a module that stands designed, tested and unreached
+
+A module that passes its own tests while no production path calls it tempts a hand to "just call it".
+That skips the move that matters. Walk the ladder:
+
+# ''Census before anything.'' A grep counts MENTIONS. Follow the call. A hit inside a comment saying "this gate cannot reach it" reads to `grep` exactly like a caller.
+# ''Name what the module needs that nothing supplies.'' Every unreached module sits unreached for a reason, and the reason lives UPSTREAM of the call site. Write that missing input down as a first question before touching a call site.
+# ''Where that question resolves to an operator ruling, STOP and say so.'' Never default the absence. A defaulted absence reads as correct WITHIN an axis and as a fabricated verdict ACROSS one, and a wiring choice made to unblock a task quietly rules the design question the operator held open.
+# ''Red-first at the CALL SITE, never in the module's own test.'' The module's tests already pass; that fact defines the problem. The new vector asserts that the production path produces the module's effect, and it MUST red before the wire lands, for the reason "nothing calls it".
+# ''Wire the read path before the write path.'' A read-path wire gets observed without changing state, so a wrong reading surfaces as a wrong answer and never as corrupted durable data. Land it, watch it in a real run, then wire the write.
+# ''Land the module behind its existing signature.'' Widening a type to fit the first caller lets the caller's shape leak into the model. Where the caller cannot supply what the signature asks, return to the second move: the missing input never went away.
+# ''Re-run the suite AND the built binary.'' Typecheck reads `src/`; the binary reads `dist/`. A cross-package wire passes typecheck and dies at runtime whenever `dist/` lags.
+# ''Retire the "specified" label in the SAME commit that wires it.'' A census that keeps naming something already wired teaches the next spirit to distrust the census.
+
+''Naming law.'' Until a production path calls it, a module stands ''specified in code'': never "built",
+never "done", never "ready". A pure library names the commit that consumes it and stays out of its
+package barrel until then.
+
+<<~/ahu>>
+
+<<~ ahu #/instruments-that-lie>>
+
+!! Instruments that read green while they report something false
+
+Collide each before trusting it.
+
+!!! Checks and counts
+* ''A digest gate'' answers "do these bytes match this hash", never "do these bytes belong here".
+* ''A fixture pins the grammar; only the corpus pins the reader.'' A hand-written fixture can agree with itself and disagree with every file on the shelf.
+* ''A grep for callers counts mentions'', including comments that say the caller does not exist. Follow the call; never grep the door.
+* ''A grep over sigils written with `[^>]` stops at the bearing arrow.'' Use `(?:[^>\n]|>(?!>))`, and fence the boundary the claim names.
+* ''A `git ls-files '*.mem'` sweep reaches frozen fixtures'' under `packages/tree-sitter-memetic-wikitext/fixtures/specimens/` and `packages/lararium-sensorium/scripts/fixtures/`. Their standing in an older carrier form marks them as frozen, never as stragglers; sweep `bags/` by name.
+* ''A blanket re-stamp signs edits nobody authored.'' `lares meme normalize` names its files and takes no glob, and it NAMES every dirty carrier a run passed over.
+* ''Derive, never enumerate'': a quoted count drifts.
+* ''A commit subject claims; it proves nothing.'' A reader stricter than the parser still lies.
+* ''A receipt from one layer greens no claim another layer holds.'' A pure scenario proves grammar; a docker run proves a process and a storage boundary; neither decides authority. Record what each receipt leaves unproven.
+
+!!! Test design
+* ''A control set made only of negatives reads satisfied by inertness.'' An empty input killed a carry outright while every behavioural vector stayed green. Pin the call's own arguments.
+* ''A red that proves the hole proves no fix.'' Add a pin that bites a WEAKENING: a census of the calls, the named argument, the boards asserted absent, the nesting.
+* ''An ordering assertion over an absent call passes vacuously'': `indexOf` answers −1, and −1 sits below everything. An ordering clause wants a presence clause beside it.
+* ''A fixture that DECLARES reads as a carrier.'' The finder reads the DOCTYPE or `type` line, never the path; assemble the declaration at read time, and control that the finder reads false.
+* ''A unit fake without the live shape hides the defect.'' A rebuild from the wrong source kept every unit test green; only a vector over a document a real ceremony wrote caught it.
+* ''A case that sleeps against a counted budget measures the machine.'' A wait loop whose look returns early spends its count at the speed of the box, and the case reads red on the FASTER runner. Hold a contention window by a handshake: the holder says it holds, the contender starts, the holder says a contender reached it and leaves on that word. A suite never makes its own load.
+
+!!! Source-reading welds
+* ''A source-reading weld proves no behaviour.'' One weld went green over a loop that only warns, because its text window reached past the loop's close.
+* ''Strip comments first, and pin the strip'': a docblock that names an old spelling to explain it reads to a raw-source weld exactly like the defect. Assert the strip left something.
+* ''Prefer a census'': a rename cannot green `calls.length === N`; it can green a token match.
+
+!!! Reading and reasoning
+* ''A law whose stated reason measurement refutes erodes'': the next reader corrects the reason and keeps the conclusion. Re-ground the law, or retire it on a named condition.
+* ''A conjunction argues; it measures nothing.'' Name the samples and their provenance, and let the test re-derive the figure.
+* ''The pin-reader law'': null means "no default owed", never "something went wrong". Ask of every default whether it STATES a fact or LOSES one.
+* ''Measure both sides of a boundary.'' A wire that drops a field may not lose it, since the receiver re-derives; under a first-writer-wins store, read order carries load.
+* ''A ruling's own vocabulary stands as the deliverable.'' Coined shorthand drifts from the ruled words; canon carries the operator's words.
+
+!!! Tree and run
+* ''Most often the operator wrote the other change.'' Parallel sessions share this tree. A dirty file of unknown provenance gets REPORTED and copied aside, never reverted and never committed.
+* ''Know what an import resolves to.'' `@lararium/mesh` resolves to source under the node package's test aliases and to `dist` under the CLI's, so one symbol reading "missing" may name a stale `dist`. A revert-verify that swaps source alone reads vacuous against a run of `dist`.
+* ''`lares vessel stand` detaches.'' Readiness reads from the node's own log: `phase → vessel-ready`, or `fatal:` on a boot fault. Read `<lares>/vessel/stand.log` from the byte offset the run starts at, never the launcher's pipe.
+* ''`witness-all`'s last line misleads; capture `$?`.'' The held-out roster prints after the per-witness runs, and a pipe's status belongs to its last stage.
+* ''A shard-green head holds half a verdict.'' The shard lane runs the e2e sets alone; the package suites, the witness fleet and the tool self-tests answer only in the full CI workflow, and a newer push cancels that workflow's run before it reports. A cancelled run measured nothing. Read the head with `node tools/ci-verdict.mjs --head <sha>`: it answers green, red or unread, and unread never reads as green.
+* ''`LAR_ROOT` alone isolates every XDG home''; it leaves `~/.mempalace` (the destructive `mempalace repave` among its readers), `~/.venv`, `~/.local/bin` and the harness homes untouched. Never touch `~/.local/share/lares`, and never read the passphrase file.
+* ''Check `pgrep -af vitest` and `pgrep -af witness` before a run that stages vessels''; bisect a red in a worktree, never by guessing. A lone red that clears standalone names suspect shared state before it names a defect.
+
+!!! Characters and renames
+* ''Weld test before any rename'': grep the signing domains first, since a rename that moves a signing domain changes bytes every peer verifies.
+* ''A tamper probe moves DECODED bytes'': assert the encoding changed first.
+* ''A character sweep hits four classes'': fence the relation, and re-stamp the block checks afterward.
+
+<<~/ahu>>
+
+<<~ ahu #/working-agreements>>
+
+!! Working agreements ~ what binds every spirit
+
+* ''Commits'': a subject starts `lar:///word.word.word — summary`; every commit names its paths (`git commit -F <msg> --only -- <paths>`), and no hand commits blind. The guard between hands reads at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths#/law">>.
+* ''Vocabulary law'': OCI nouns name structure and residency verbs name motion; a version-control verb MUST NOT name a model operation. `ea` names the breath, never a "heartbeat"; `nalu` names the wave. Web2 vocabulary reads as crud. Prose in `api/` and in a spirit's own telling keeps L-Prime (<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>).
+* ''Build new, then retire.'' A retired term stays reserved and never gets reused for a changed thing (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme#/retirement">>).
+* ''Mechanism at choke-points, policy in cascades.'' A capability stands as a manifest grant, never as a flag a cascade can set.
+* ''Prove by witness, never by assertion.'' A change that crosses a vessel proves itself against a staged vessel; a failing vector NAMES a hole.
+* ''A burr gets taken when it appears'', or it gets a line with its wake condition in the roadmap (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>).
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> the named failure modes these procedures guard against
+<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">> the roadmap's cold start names the instruments
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/hearths">> the hearths ledger names which session holds which ground
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;JOCpqVN8s83N4iXZWaLryGxrGgi5bmP8qOb-D2-Q0fU
+
+<<^ code="&#x0004;" -> to="?">>

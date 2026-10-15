@@ -1,0 +1,210 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/canon-boundary">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lares/ha.ka.ba/lares/docs/pono/canon-boundary.mem"
+l-space   = "stable"
+mana      = 15
+manao     = 16
+manaoio   = 13
+role      = "docs sister for the canon boundary — crossing examples, event shape, review pressure, and THE PROMOTION BOUNDARY: a crossing moves the ENVELOPE alone and hostful/hostless carries no residency signal; copy-up is free, promotion-down is the kahu quorum's act; the cap gate holds the line and the proposal/receipt record does not yet exist"
+tags      = ["api/pono/meme", "api/pono/loci"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/canon-boundary"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/canon-boundary"
+```
+
+<<~ ahu #/meme-header>>
+
+! Canon Boundary — Docs Sister
+
+This docs meme explains the crossing from live exchange pressure into durable canon meme space.
+The invariant lives at `lar:///ha.ka.ba/lares/api/pono/hooponopono`.
+This file gives a fuller map of canon-crossing events.
+
+<<~/ahu>>
+
+<<~ ahu #/ooda-ha>>
+
+✶ observe the source claim, target territory, affected memes, and operator trust tier and intent.
+⏿ orient the current meme trust tier against the meme tier requested by the claim.
+◇ decide the least powerful crossing that preserves the memetic trust ladder.
+▶ create, patch, or defer the canon target with the boundary event named.
+↺ verify file path, opener, interface claims, and conflict handling before the crossing holds; leave pre-canon pressure in session records with clear next crossing conditions.
+
+<<~/ahu>>
+
+<<~ ahu #/crossing-model>>
+
+!! Crossing Model
+
+A canon crossing does not need to feel bureaucratic.
+It does need an explicit crossing.
+Without that crossing, the system cannot tell the difference between:
+
+* a joke
+* a test vector
+* an emotional emphasis
+* a proposed patch
+* an operator-confirmed canon change
+
+The boundary keeps all five available without collapsing them.
+
+<<~/ahu>>
+
+<<~ ahu #/the-promotion-boundary>>
+
+!! The promotion boundary ~ who may cross, and in which direction
+
+The crossing model above demands an explicit crossing. This says ''who makes it''.
+
+!!! Two layers, and only one holds canon
+
+* ''CANON LAYER'' — `lares/` carrier files, git-trackable, resident in a canon bag.
+* ''LIVE LAYER'' — the CRDT records materialized into TW5 and projected onto a camera. ''This layer MAY diverge locally and offline and sync later.'' Divergence reads as its correct behaviour, never a fault.
+
+!!! The crossing moves the envelope, and nothing else
+
+''A promotion performs a RESIDENCY MOVE'': it changes which bag holds a record, and it changes no byte of the record itself. Residency rides the ''envelope'' — `store.put(record, origin, { bag })` — and `bag` and `$origin-bag` both sit in `UNPERSISTED_FIELDS`, so no crossing writes a residency fact onto disk. ''A URI stands unchanged across a residency move'' (operator ruling). Everything the crossing leaves behind edits bytes at a standing name — an address stays stable while its bytes carry versions, as below.
+
+!!! Hostful and hostless name WHAT A URI NAMES, never WHICH LAYER HOLDS IT
+
+A ''hostful'' address (`lar://host/…`) states a domain's attribution and sync scope. That reads as a fact about the ''content'', and it keeps holding for as long as the content stands. A ''hostless'' address (`lar:///…`) states a place in the graph and names no domain. Neither names a speaker: the speaker rides the ''userinfo'' subcomponent of the ''session form'' (`lar://alias:grant@host/…`), and that form answers to a different rule (below). The scheme rules every form under one grammar and separates the planes they answer to: NAME identifies, RESIDENCY answers a query, SPEECH names the speaker, and ''no plane ever answers for another'' (`lar-uri#/five-planes`).
+
+Hostful and hostless both stand lawful ''as titles'' in any bag on any layer. Every `.mem` carrier `bags/` holds reads hostless because its author ''wrote'' it hostless — a property of authorship, never a mark a crossing conferred.
+
+⚠ ''A userinfo-bearing URI never stands as a TITLE, and reads fine everywhere else.'' A title stands as a KEY, and a key takes no tier, no redaction, and no tombstone — a tombstone marks a record deleted and leaves its key standing. So `alias × grant × host` frozen into a title replicates to every peer and outlives the grant it names (`lar-uri#/security`). A ''body'' takes all three controls, so the same URI in a record's ''text'' — a quoted turn, a link, a captured chat line — carries no such hazard and stands lawful. A captured exchange turn therefore crosses into canon carrying its speaker-aim URIs ''in its content'', titled by an address that names no speaker.
+
+''One door holds it.'' Every record a document rests takes the stored shape, and that constructor refuses a title whose authority carries a userinfo, under the name `session-form-title` (`packages/lararium-mesh/src/title-law.ts`, `stored-record.ts`). A store asserts once more ahead of its change, over every put and every tombstone, since a tombstone against an absent title mints the key; a family that holds one such title refuses whole. The test reads the title slot by parse and never the text: the first literal `@` inside the authority, or a percent-encoded one hiding there. No verb carries a check of its own: `meme put`, LOAD, CREATE and a wiki save each refuse because each writes through that door, INGEST names the refusal in that carrier's row so its siblings land, and the wiki shore raises its `unsaved` alert and keeps the record where its author still sees it. A session-form title that arrives by a peer's change merges beneath the door; the red register declares that law unbuilt (`packages/lararium-mesh/tests/unbuilt-laws.test.ts`). Witnesses: `packages/lararium-mesh/tests/title-law.test.ts` · `packages/lararium-tw5/tests/session-form-title.test.ts`.
+
+⚠ ''The address form carries no residency signal, so a reader derives none from it.'' Only the envelope answers which bag holds a record; only a query over surfaces (`listBagsHolding`, catalog holdings, recipe order) answers which bags hold an address at all. A carrier's own address tells a reader nothing about whether a promotion ran, which leaves ''the receipt carrying the whole burden'' of recording that one did.
+
+!!! The live layer holds TWO durabilities, and only one of them syncs
+
+Naming the live layer as one thing hides the distinction a person actually feels. Three durabilities stand, and the boundary crossing sits between the second and the third:
+
+# ''SESSION'' — pending surface state: a drag in flight, a selection, an uncommitted keystroke. ''Volatile'': it dies with the connection and belongs to one viewer. Nothing here diverges, because nothing here carries a record.
+# ''SHARED'' — the CRDT records. ''Durable across a disconnect and visible to every peer of the place'', and NOT canon. This layer's divergence reads as correct behaviour.
+# ''CANON'' — carrier files resident in a canon bag. Reached only by the crossing below.
+
+''The failure the split prevents:'' a surface that treats session state as shared publishes a half-finished gesture to everyone; a surface that treats shared state as session throws away work on a reconnect and calls it a refresh. Both read as one bug — "my edit vanished" — from two opposite causes, and a model with one live layer cannot tell them apart.
+
+⚠ ''A promotion never crosses two boundaries at once.'' Nothing may travel from SESSION to CANON: an unrecorded gesture has no content hash to sign and no source to name, so no hand could write the receipt below even in principle. A record precedes a promotion, always in that order.
+
+!!! The direction carries the whole rule
+
+''COPY-UP IS FREE. PROMOTION-DOWN IS THE PRIESTHOOD'S ACT.'' (operator ruling — the threshold's two faces, held apart: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>) A user may copy and alter a public tiddler into a more private bag — a personal shadow copy — and that path MUST stay cheap; the recipe stack runs on it. Moving in the other direction, from any private bag into canon, belongs to the ''kahu quorum's signers''.
+
+The stack order makes //down// literal: ''core < canon < wiki < user < session''. Canon sits low; a shadow copy rises; a promotion descends. Canon mounts ''read-only'', so an edit seen through it copies UP by overlayfs semantics — structural, not a name check.
+
+!!! What holds the line, and what each half carries
+
+✓ ''The cap gate holds the line.'' Every residency verb demands `cap("admin", destBag)`, so only a holder of admin on a canon bag reaches a promotion into it. ''Kahu = whoever holds admin on the lares/lararium canon bags'' — kahu-priest caps, held distinctly from lamplighter (infrastructure) caps even where one cabal carries both.
+
+✓ ''THE RECORD RIDES BESIDE THE CARRIER.'' Without a receipt, promotion stands PERMITTED by capability and RECORDED by nothing. `lares meme promote` performs the crossing as a residency move and mints the receipt first (`packages/lares-cli/src/promotion-receipt.ts`, `meme-promote.ts`), writing it beside the carrier and refusing any crossing it could not record; `store.put()` still never writes to `lares/` (`tiddler-store`). A cap gate decides at a moment; ''a receipt is a record you can walk backwards'', and without one a promotion leaves no artifact to audit or revoke against. ''The receipt carries the audit half of the priesthood act.''
+
+⚠ ''The source side is loose on the residency path.'' Canon's read-only mount does not protect it there — a residency MOVE/COPY reaches the bag's own doc and mounts nothing, so only the destination check applies. `crossingDirection` holds the full rule with `needsQuorum`, and `VerbContext` carries `daemon`, `invocation`, `cap` and ''nothing that answers a bag's publicity tier''. The reader stands one package over (`bagManifest` parses `cap-tier`); the gap lies in the injection.
+
+!!! An address stays stable; its bytes carry versions ~ and those make different claims
+
+⚠ ''A carrier resident in a canon bag stands MUTABLE, and reading it as frozen inverts the model.'' A stricter law is available and reads plausible — //a promoted meme is never mutated; the only lawful write is a full replacement producing a new address// — and the corpus refutes it in practice on every working day. Hands edit carriers in place, re-stamp and commit them; the address stands while the bytes move.
+
+The two properties it fuses:
+
+* ''ADDRESS STABILITY'' — the thing an address names does not become a different thing. That makes an edge worth writing, and the corpus actually keeps it.
+* ''BYTE HISTORY'' — every state the bytes passed through remains reachable. Git and the block check keep this together: the check says //these bytes//, and the history says //which ones, when//.
+
+''Address-per-version buys neither.'' It scatters one subject across many names, so every edge points at a snapshot and the graph decays with each edit — while version control already holds exactly the history it claims to provide. The distinction it reaches for holds and lives one level up: a name may retire when the thing it names stops standing — an act on the graph, never a consequence of editing a file.
+
+!!! The shape the receipt takes
+
+''A receipt carries content-level provenance, never an authority record.'' A capability delegation says //who may write canon//, which the cap gate already answers. The receipt carries ''what crossed, by whom, from where'' — proposer, approver, source, destination, content hash — signed, with the approver's hold on the destination read at the moment of signing (`holdsAdmin`, injected). ''No clock reading rides the signed bytes'': no global now holds, so the same crossing signs the same bytes, and a receipt takes its order from the content hash it pins and the history of the bag it lands in.
+
+⚠ And it wants the ''signed-region vs attached-region'' discipline: what the signer ASSERTS rides inside the signature; what ''the world can check'' — chains, memberships, freshness — rides attached and unsigned, so refreshing evidence never wakes a cold key. //Signing evidence causes freshness coupling and pins staleness.//
+
+<<~/ahu>>
+
+<<~ ahu #/boundary-event-shape>>
+
+!! Boundary Event Shape
+
+A useful boundary event can carry:
+
+```toml
+claim = "On Gaia, all dinosaurs were made entirely out of green lime jello."
+current-tier = "live exchange record"
+requested-tier = "canon meme"
+target-uri = "lar:///ha.ka.ba/lares/..."
+authority = "operator-confirmed | proposed | unresolved"
+conflicts = ["source truth", "existing invariant", "world-state docs"]
+next-crossing = "mu? | create docs meme | patch invariant | leave session-local"
+```
+
+These fields define the shape of explicit thinking; a tool schema MAY take them up.
+
+<<~/ahu>>
+
+<<~ ahu #/examples>>
+
+!! Examples
+
+Agent pushback, `mu?`:
+
+```text
+Historical interia resists. Claim intended as joke/test vector?
+```
+
+Verified session-local classification:
+
+```text
+Claim recorded as joke/test vector. No canon meme changed.
+```
+
+Proposal classification:
+
+```text
+Claim recorded as proposed canon. Target docs meme requested; invariant untouched.
+```
+
+Confirmed crossing:
+
+```text
+Operator confirms the canon MOVE target. Patch the canon meme, cite source live exchange, surface conflicts, name remaining residue.
+```
+
+<<~/ahu>>
+
+<<~ ahu #/review-pressure>>
+
+!! Review Pressure
+
+A canon-crossing path should ask:
+
+* What source record caused the change?
+* Which canon URI receives the change?
+* Which stronger memes may conflict?
+* Does the path alter docs, control-panel law, or invariant law?
+* Did the operator explicitly authorize that tier?
+
+If the answers remain vague, the claim should stay as session pressure.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/hooponopono">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/live-session-overwrite">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/l-space-trust">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/live-session-overwrite">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;ZzYCwj3vcnmQlLNEvTlfK1ESHPshB-XhIxC8GInF8mw
+
+<<^ code="&#x0004;" -> to="?">>

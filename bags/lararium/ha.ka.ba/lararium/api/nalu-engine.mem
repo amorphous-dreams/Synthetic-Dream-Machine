@@ -1,0 +1,156 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/nalu-engine">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable      = true
+docs           = "lar:///ha.ka.ba/lares/api/pono/nalu"
+file-path      = "bags/lararium/ha.ka.ba/lararium/api/nalu-engine.mem"
+implementation = "packages/lararium-tw5/src/modules/nalu-engine.ts"
+mana           = 18
+manao          = 18
+manaoio        = 17
+namespace      = "&#x0950; &#x0901;"
+role           = "TW5 startup module — the in-wiki applier of the nalu wave: applyNalu lands ONE inbound change synchronously and isApplyingNalu reads true while it does; the wiki shore owns the queue, its door and the pacing"
+tags           = ["lar:///ha.ka.ba/lares/api/pono/meme"]
+title          = "lar:///ha.ka.ba/lararium/api/nalu-engine"
+type           = "text/memetic-wikitext+tiddlywiki"
+uri-path       = "ha.ka.ba/lararium/api/nalu-engine"
+```
+
+! nalu-engine — Invariant
+
+!! Identity
+
+`nalu-engine` is a TW5 `module-type: startup` module written in TS, compiled into the
+plugin bundle, and evaluated inside the wiki at boot. It installs the `$tw.lares.*` API
+that the TS-side `IslandAdaptor` calls across the shore.
+
+The wiki IS the reactive engine (yin-collapse law, lar:///ha.ka.ba/lares/api/pono/nalu).
+This module lands the nalu wave in the wiki. It answers HOW one change lands; the wiki shore answers
+WHEN (`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`).
+
+!! $tw.lares.* surface
+
+| Method | Caller | Role |
+|---|---|---|
+| `applyNalu(change)` | the wiki shore (`IslandAdaptor`), once per landed change | Land ONE change synchronously: a tombstone or an absent record deletes the title; any other record adds the tiddler `toWikiFields` builds from the envelope |
+| `isApplyingNalu()` | a synchronous caller | True while an `applyNalu` call runs |
+
+`$tw.lares.enqueueNalu` belongs to the wiki shore. The shore installs its queue door there and removes
+it at teardown; this module never holds one.
+
+!! Position in the stack
+
+```
+TS shore (irreducible — Automerge, network, crypto, storage)
+  AutomergeDocStore → MemeProvider → projection bus → IslandAdaptor.onUriChanged
+  the landing queue (WaveLanding) → IslandAdaptor lands one change
+                              → $tw.lares.applyNalu(change)
+───────────────────────────────────────────────────────────────────────
+TW5 startup module (this spec)
+  applyNalu(change)                       ← wiki.addTiddler / wiki.deleteTiddler
+  _applying flag                          ← read through isApplyingNalu()
+```
+
+!! Invariants
+
+''N-1 One applier per wiki.''
+The module holds one wiki and one `_applying` flag at module level. Every inbound change enters the
+shore's queue, whatever its origin kind; the shore calls `applyNalu` when the value it resolved
+differs from the value the wiki holds, and every such write passes through this one applier.
+
+''N-2 One change, one synchronous stretch.''
+`applyNalu` lands exactly one change and returns. The engine holds no queue, no timer and no frame,
+and it wraps nothing in a transaction: TW5 gathers changed titles until its own scheduled
+`nextTick` dispatch, and that dispatch delivers the nalu to the widgets. The dispatch boundary
+follows TW5's scheduling, never the shore's slices.
+
+''N-3 The queue belongs to the shore, one shore per engine.''
+The wiki shore owns the ordered queue, its slices, the host-task pacing between them and the seed
+checkpoint. It installs its door only where `applyNalu` already stands (else
+`LandingDoorUnavailableError`), and a second shore on an engine whose door stands occupied refuses by
+`LandingDoorOccupiedError`.
+
+''N-4 The apply flag covers the call, never the dispatch.''
+`_applying` reads `true` for the length of one `applyNalu` call and returns to the value it found in a
+`finally`, so an apply that begins inside another leaves the outer one raised. TW5 dispatches `change`
+on `nextTick`, after the flag lowered, so a `change` listener never reads it raised. The wiki shore
+therefore tells a wave from a hand by WHAT STANDS: its landed ledger holds the value each wave left
+under each title, and a notification that repeats that value reads as foam
+([[outbound-bridge|lar:///ha.ka.ba/lares/docs/pono/outbound-bridge]] #/the-shore-law).
+
+''N-5 Tiddler fields = record.tiddler + title + `$origin-bag`.''
+For a non-tombstone change, the engine builds the wiki fields from `{ ...change.record.tiddler }`,
+restores `title` from `change.title`, and stamps `$origin-bag` from `change.bag` when the envelope
+names one. `bag` stays the author's own field and rides through untouched.
+For a tombstone (`record === null` or `record.meta?.deleted === true`), the engine
+calls `wiki.deleteTiddler(change.title)`.
+
+''N-6 No wiki, no apply.''
+An `applyNalu` call with no wiki under it throws `NaluWikiUnavailableError`, which names the title.
+
+''N-7 Idempotent startup.''
+`startup()` reads `$tw.lares ?? {}`, installs the two functions, writes back. Safe to
+run more than once in tests; subsequent invocations overwrite with identical refs.
+
+!! The seed
+
+The recipe (`buildIslandRecipe`) installs the shore's landing queue, then drives
+`emitInitialReplay()` per bag: every existing record enters that queue as an ordinary change. The
+shore's seed checkpoint resolves once its queue and its tracked work settle (a seed landing that
+fails twice rejects it), and the kernel awaits it before it arms the
+island's behavior. Seed and live changes share one road; the engine sees no difference between them.
+
+<<~ ahu #/gate-families-shore>>
+
+!! The gate-families shore ~ runtime ≠ physics
+
+ONE shore queue holds the changes of every bag (N-3). Upstream,
+`projection-nalu` (`lar:///ha.ka.ba/lararium/api/projection-nalu`) stands a `KeyedCoalesceGate`
+''per bag''. Both stand; they sit at OPPOSITE ENDS of the one shape `SOURCE → gate → SINK`, never
+the same layer.
+
+<<~ scale shore "UPSTREAM/provider-coalesce-per-key -> DOWNSTREAM/shore-landing-queue-per-slice -> ENGINE/apply-one">>
+
+* ''UPSTREAM — the provider gates (physics).'' `MemeProvider` (the TS-side, before the
+  wiki shore) draws the coalesce gates: a per-URI debounce collapses the replay patches a fresh
+  vessel-connect fires for one URI down to ONE latest-state change, and the `_changesetGate`
+  (`meme-provider.ts`) coalesces a storm of large Automerge transactions to ONE
+  `onChangeset(union)` per bag. This names the ''coalesce'' family — intermediates lawfully DROP,
+  newest-per-key wins. The drop happens HERE, before a change ever reaches the landing queue.
+* ''DOWNSTREAM — the landing queue (runtime).'' Each surviving change reaches
+  the island adaptor and joins the shore's ONE queue in arrival order, a changeset as one family. The
+  shore processes whole families, up to 200 queued changes per slice, and yields to the host between slices; each
+  landing resolves its title through the composition, and the shore calls `applyNalu` when that
+  value differs from the value the wiki holds. A landing that fails twice stays owed for a later
+  wave; a standing shore coalesces NOTHING further.
+
+So "one queue, all bags" governs the DELIVERY runtime — the shore refuses to re-shard its queue per
+bag. The per-key coalesce gates do not contradict it, because they live UPSTREAM, shaping the stream
+BEFORE it reaches the queue. ''The shore and the engine carry the runtime; the gate-families carry the''
+''physics it enacts'' (`role = capability ≠ platform`). The three compose end-to-end:
+coalesce-per-key (drop intermediates) → one queue (preserve order) → apply one (land). WITNESSED: the
+applier (`modules/nalu-engine.ts`) + the queue (`wave-landing.ts`, `island-adaptor.ts`) + the provider
+gates (`mesh/meme-provider.ts`, `mesh/projection-nalu.ts`).
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/meme-provider">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
+<<~ loulou "lar:///ha.ka.ba/lararium/docs/verse-mesh">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;LYlSwNedLFFXQdXuHuUfciy-C76CRBcTIYJaP3tf9CQ
+
+<<^ code="&#x0004;" -> to="?">>

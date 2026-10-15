@@ -1,0 +1,495 @@
+/*\
+title: lar:///ha.ka.ba/lararium/tw5/modules/place-meme
+type: application/javascript
+module-type: library
+\*/
+/**
+ * place-meme — a meme arrives as text and lands as its records.
+ *
+ * ONE FUNCTION, EVERY SKIN. The plain TW5 server route (`PUT /recipes/:recipe/memes/:uri`), the
+ * island's INGEST verb, and any MCP or CLI door that carries meme text all call `placeMeme`. The
+ * placement law lives here once:
+ *
+ *   1. the meme's current GROUP in the sink — root · `uri#slot` · `uri/path` (the carrier-group law),
+ *   2. the Confluence gate (`decideIngest`) over the group's present render vs the new text,
+ *   3. land every fresh record, tombstone every group member the new text no longer declares.
+ *
+ * A `MemeSink` is the only thing a skin supplies: four verbs over whatever holds tiddlers — a live
+ * `$tw.wiki` (`wikiMemeSink`), a bag store behind BagAccess, a Map in a test. The split itself runs
+ * through the deserializer, so it happens inside the engine on every skin (the in-VM parse law).
+ *
+ * THE BASE HASH. A writer that read the meme before editing hands back the canonical hash it read
+ * (`baseHash`, the route's `If-Match`). The gate treats it as the merge base: records that moved
+ * past it read as a CONFLICT, never a silent overwrite. No base = a fresh adoption — the gate lands
+ * it unless the records already carry an equivalent render (a noop).
+ *
+ * ONE RAW `#`, EVER. A `lar:` URI never carries a second raw `#` (bags/lares/ha.ka.ba/lares/docs/pono/
+ * child-grade-decision.mem row 16): `placeMeme` may land against ANY group member's own address, not
+ * only a founding's — a slot child of a slot child places by calling `placeMeme` with a slot URI
+ * (already carrying `#/a`) as the root. A nested slot then composes onto the fragment the root
+ * ALREADY HAS (`#/a/z`), never opens a second one beside it (`#/a#/z`). The deserializer's split
+ * reads the fragment off the given root — not a bare `""` prefix — before it recurses, so the one
+ * fragment a URI carries stays the only one it ever carries.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/tw5/place-meme
+ */
+
+import { conflictWhy, decideIngest, QUOTEBLOCKED_CODE } from "./ingest-gate.js";
+import type { MemeDiagnostic } from "./meme-ast/diagnostics.js";
+import { gradeOf, MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
+import type { TiddlerFields } from "./deserializer.js";
+import { expandMemeRefs } from "./deserializer.js";
+import type { TW5Wiki } from "./types/tiddlywiki.js";
+
+import { carrierMarkPattern, headUriOf, maskedExec } from "@lararium/memetic-frame";
+import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { carrierHash } from "@lararium/mesh/crypto";
+
+type MaybePromise<T> = T | Promise<T>;
+
+/** The four verbs a placement needs over whatever holds tiddlers. Every verb may answer sync or async. */
+export interface MemeSink {
+  /** Every live title the sink holds (the placement filters the meme's group out of it). */
+  titles(): MaybePromise<readonly string[]>;
+  /** The fields under one title, or undefined. */
+  read(title: string): MaybePromise<TiddlerFields | undefined>;
+  /** Land one record (create or replace under its title). */
+  land(fields: TiddlerFields): MaybePromise<void>;
+  /** Remove one title. */
+  tombstone(title: string): MaybePromise<void>;
+  /**
+   * THE ALERT RAIL, where the sink has one: raise (or, with `null`, clear) the one coalesced alert a
+   * meme root carries. A live wiki has it (`wikiMemeSink`); a bag store does not, and its placements
+   * carry the finding on the receipt alone.
+   */
+  surface?(root: string, finding: MemeAlertFinding | null): MaybePromise<void>;
+}
+
+// ---------------------------------------------------------------------------
+// THE ALERT RAIL — one coalesced alert per meme root
+// ---------------------------------------------------------------------------
+
+/** TW5's built-in alert tag — tiddlers carrying it surface in the alerts area. */
+const TW5_ALERT_TAG = "$:/tags/Alert";
+
+/** The one coalesced alert a root carries — stable per root, so a burst of saves (or two checks grading
+ *  the same root) updates one tiddler rather than piling up a new one each time. */
+export function memeAlertTitle(root: string): string {
+  return `$:/temp/lares/alert/meme-child-gate/${root}`;
+}
+
+/** One finding the rail raises: the record whose write earned it (the root itself for a whole-chunk
+ *  fence, a slot child for the child gate), and the codes + prose a reader sees. */
+export interface MemeAlertFinding {
+  readonly child: string;
+  readonly codes: readonly string[];
+  readonly why: string;
+}
+
+/** The wiki surface the rail writes through. */
+export interface MemeAlertWiki {
+  getTiddler(title: string): unknown;
+  addTiddler(fields: Record<string, unknown>): void;
+  deleteTiddler(title: string): void;
+}
+
+/**
+ * THE RAIL every meme check shares — the backstop's child gate (the in-place ahu grain) and the
+ * placement's quoteblock floor (the whole-chunk grain) raise and clear it alike. The LAST call standing
+ * wins the slot, same as any other `$:/temp/…` alert in this house. Clearing touches only an alert that
+ * stands, so a clean placement writes nothing. Never lands or refuses a record — surfacing, not gating.
+ */
+export function surfaceMemeAlert(wiki: MemeAlertWiki, root: string, finding: MemeAlertFinding | null): void {
+  const alertTitle = memeAlertTitle(root);
+  if (!finding) {
+    if (wiki.getTiddler(alertTitle)) wiki.deleteTiddler(alertTitle);
+    return;
+  }
+  const codes = finding.codes.join(", ");
+  wiki.addTiddler({
+    title: alertTitle,
+    text: finding.child === root
+      ? `${root} arrived un-decomposable (${codes}): ${finding.why}`
+      : `${finding.child} moved ${root} out of frame (${codes}): ${finding.why}`,
+    tags: TW5_ALERT_TAG,
+    "alert-kind": "meme-child-gate",
+    root,
+    child: finding.child,
+    codes,
+    ts: new Date().toISOString(),
+  });
+}
+
+export interface PlaceMemeInput {
+  /** The meme's root lar: URI — the title its parent record carries. */
+  readonly uri: string;
+  /** The whole meme text, framed. */
+  readonly text: string;
+  /** The canonical hash the writer last read (the merge base); null/absent = fresh adoption. */
+  readonly baseHash?: string | null;
+  /** The base's RECORDS side, where a disk gesture's base holds two hashes (the disk stood in a
+   *  framing the render would normalize). Null/absent = `baseHash` names both sides. */
+  readonly baseRecordsHash?: string | null;
+  /** The digest the gate compares by; defaults to the tagged sha256 every other shore uses. */
+  readonly hash?: (text: string) => string;
+  /** True where no person stands behind the placement (a watcher's wave): with no base it never adopts
+   *  over records that say something else, and answers `conflict`, `no-base` (`ingest-gate`, rule 4½). */
+  readonly unattended?: boolean;
+}
+
+export interface PlaceMemeReceipt {
+  readonly uri: string;
+  readonly decision: "ingest" | "noop" | "refuse" | "conflict";
+  readonly grade: "clean" | MemeDiagnostic["severity"];
+  /** The gate's reason on a noop, and on a conflict (`both-moved` · `no-base`). */
+  readonly reason?: string;
+  /** Titles landed (ingest only). */
+  readonly landed: readonly string[];
+  /** Group members removed because the new text no longer declares them (ingest only). */
+  readonly tombstoned: readonly string[];
+  /** Hash of the canonical render the records now carry — the next writer's base. */
+  readonly canonicalHash?: string;
+  readonly warnings: readonly string[];
+  readonly diagnostics: readonly MemeDiagnostic[];
+}
+
+/**
+ * THE WIRE PATH — the meme's URI projected onto an HTTP path, a sibling of the native
+ * `/{recipes|bags}/:name/tiddlers/:title` collection: `<scheme>:///<path>` ⇄ `/memes/<scheme>/<path>`.
+ * Groups: container kind · container name · scheme · uri-path.
+ */
+export const MEME_PATH = /^\/(recipes|bags)\/([^/]+)\/memes\/([a-z][a-z0-9+.-]*)\/(.+)$/;
+
+/** The URI a matched `MEME_PATH` names, or null when a segment carries a malformed escape. */
+export function memeUriOfParams(params: readonly string[]): string | null {
+  const scheme = params[2];
+  const rest = params[3];
+  if (!scheme || !rest) return null;
+  try { return `${scheme}:///${rest.split("/").map(decodeURIComponent).join("/")}`; } catch { return null; }
+}
+
+/** The path a meme's URI projects to, under one container. Null for a URI with an authority. */
+export function memePathOf(uri: string, container: { kind: "bags" | "recipes"; name: string }): string | null {
+  const m = /^([a-z][a-z0-9+.-]*):\/\/\/(.+)$/.exec(uri);
+  if (!m) return null;
+  return `/${container.kind}/${container.name}/memes/${m[1]}/${m[2]!.split("/").map(encodeURIComponent).join("/")}`;
+}
+
+/**
+ * A FRAMED ROOT — a record the ROOT LAW names (`isMemeRoot`) whose text still opens with a SOH head
+ * (masked: a head shown inside a fence opens nothing). The whole meme sits in one record, unsplit; the
+ * placement law never ran over it. A split root carries a `<<~ kahea …>>` body and no head, so it never
+ * reads as framed. Answers the URI the head names (else the title), or null.
+ *
+ * THE MARK IS NOT THE THING. A slot child carries the carrier type by construction and its text is the
+ * author's, so a child into which someone pasted a whole framed carrier wears every mark a founding
+ * wears. Reading the mark alone, this answered the CHILD's own address — and three doors believed it:
+ * the charm re-addressed a fragment to `/memes/` and the split once minted `uri#/a#/z`, a title the
+ * group law admits and the address grammar forbids (ROW 16 — one raw `#`, ever, see above); the native
+ * door's gate answered 422 over the same record,
+ * which stalls the stock syncer's queue permanently; the backstop took a child for a founding. So the
+ * root law arrives FIRST, in the one spelling `isMemeRoot` already carries — a second copy of it would
+ * drift the day one of them moved, which is exactly how this seam opened.
+ *
+ * What the child's frame then IS, is authored text: it lands verbatim through the native door and the
+ * grade speaks where a child's save re-places its root (the backstop).
+ */
+export function framedRootOf(fields: Record<string, unknown>): string | null {
+  const title = typeof fields["title"] === "string" ? fields["title"] : "";
+  if (!isMemeRoot(title, fields as TiddlerFields)) return null;
+  const text = typeof fields["text"] === "string" ? fields["text"] : "";
+  if (!maskedExec(text, carrierMarkPattern("head", "g"))) return null;
+  return headUriOf(text) ?? (title || null);
+}
+
+/** The carrier-group law: the root, its `#slot` fragments, its `/path` children. */
+export function groupOfMeme(titles: readonly string[], uri: string): string[] {
+  return titles.filter((t) => t === uri || t.startsWith(`${uri}#`) || t.startsWith(`${uri}/`));
+}
+
+const defaultHash = (text: string): string => carrierHash(text);
+
+/** The meme's group in the sink and its present render — the text the records carry now. */
+async function currentRender(
+  uri: string, sink: Pick<MemeSink, "titles" | "read">,
+): Promise<{ group: string[]; text: string }> {
+  const group = groupOfMeme(await sink.titles(), uri);
+  const current = new Map<string, TiddlerFields>();
+  for (const title of group) {
+    const fields = await sink.read(title);
+    if (fields) current.set(title, fields);
+  }
+  return { group, text: expandMemeRefs((t) => current.get(t), uri) ?? heldText(current.get(uri)) };
+}
+
+/**
+ * A HELD RECORD RENDERS AS ITS OWN BYTES. The recompose answers a carrier alone; a record under the URI
+ * that no frame reads as a meme (bare data, the gate's verbatim hold) carries nothing to recompose, and
+ * its text stands as its canonical render. The gate's bare leg compares the arriving bytes against this
+ * render, a writer's base hashes it, and the read half answers it: one reading for all three, so the
+ * bytes a person put read back as the bytes a person gets.
+ */
+function heldText(root: TiddlerFields | undefined): string {
+  return typeof root?.text === "string" ? root.text : "";
+}
+
+/**
+ * A POINTER'S BODY RESTS ELSEWHERE. True where the record under the URI names its bytes by content address
+ * and holds none of them in this sink. `readMeme` stays total over such a record (the gate, the listing
+ * and the backstop read through it); a door that hands a person the TEXT asks here first and refuses by
+ * name, since an empty answer would state bytes nobody wrote.
+ */
+export async function holdsUnreadPointer(uri: string, sink: Pick<MemeSink, "read">): Promise<boolean> {
+  const root = await sink.read(uri);
+  return root !== undefined && typeof root.text !== "string"
+    && (root["_is_skinny"] === "yes" || typeof root["textCid"] === "string");
+}
+
+/** The code a read of an unread pointer refuses under. */
+export const POINTER_BODY_CODE = "pointer-body";
+
+/** The code a put that carries no bytes refuses under. */
+export const EMPTY_BODY_CODE = "empty-body";
+
+/** The Confluence gate's own verdict, read once — shared by `placeMeme` (which lands it) and
+ *  `evaluateMeme` (which never does). Internal: callers get the two typed entry points below. */
+async function evaluate(
+  input: PlaceMemeInput, sink: Pick<MemeSink, "titles" | "read">,
+): Promise<{ group: readonly string[]; decision: ReturnType<typeof decideIngest<TiddlerFields>>; currentRenderHash: string }> {
+  const { uri, text } = input;
+  const hash = input.hash ?? defaultHash;
+  const baseHash = input.baseHash ?? null;
+
+  const { group, text: currentText } = await currentRender(uri, sink);
+  const currentRenderHash = hash(currentText);
+
+  // A PUT THAT CARRIES NO BYTES REFUSES BY NAME. An empty text and an address nothing holds hash alike,
+  // so the bare leg would answer "the records already say this" over a title that holds no record.
+  if (text === "") {
+    const wall: MemeDiagnostic = {
+      from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code: EMPTY_BODY_CODE,
+      message: `${uri}: the put carries no bytes; nothing lands (a removal rides the delete verb)`,
+    };
+    return { group, decision: { kind: "refuse", warnings: [wall.message], diagnostics: [wall] }, currentRenderHash };
+  }
+
+  const decision = decideIngest({
+    uri,
+    diskText: text,
+    diskHash: hash(text),
+    syncedHash: baseHash,
+    syncedRecordsHash: input.baseRecordsHash ?? null,
+    currentRenderHash,
+    hash,
+    ...(input.unattended === true ? { unattended: true } : {}),
+    recordsAbsent: !group.includes(uri),
+  });
+  return { group, decision, currentRenderHash };
+}
+
+function receiptOfNonIngest(
+  uri: string, currentRenderHash: string, decision: Exclude<ReturnType<typeof decideIngest<TiddlerFields>>, { kind: "ingest" }>,
+): PlaceMemeReceipt {
+  if (decision.kind === "noop") {
+    return { uri, decision: "noop", grade: "clean", reason: decision.reason, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [], diagnostics: [] };
+  }
+  const grade = gradeOf(decision.diagnostics);
+  if (decision.kind === "refuse") {
+    return { uri, decision: "refuse", grade, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: decision.warnings, diagnostics: decision.diagnostics };
+  }
+  return { uri, decision: "conflict", grade, reason: decision.reason, landed: [], tombstoned: [], canonicalHash: currentRenderHash, warnings: [conflictWhy(uri, decision.reason)], diagnostics: decision.diagnostics };
+}
+
+/**
+ * Place one meme into a sink through the Confluence gate. Never throws on a bad meme — the receipt
+ * carries the refusal; a sink verb that throws propagates.
+ */
+export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<PlaceMemeReceipt> {
+  const { uri } = input;
+  const hash = input.hash ?? defaultHash;
+  const { group, decision, currentRenderHash } = await evaluate(input, sink);
+
+  if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
+  const grade = gradeOf(decision.diagnostics);
+
+  const landed: string[] = [];
+  for (const fields of decision.records) {
+    const title = typeof fields.title === "string" ? fields.title : "";
+    if (!title) throw new Error(`placeMeme: ${uri} produced a record without a title`);
+    await sink.land(fields);
+    landed.push(title);
+  }
+  const fresh = new Set(landed);
+  const tombstoned: string[] = [];
+  for (const title of group) {
+    if (fresh.has(title)) continue;
+    await sink.tombstone(title);
+    tombstoned.push(title);
+  }
+  // THE QUOTEBLOCK FLOOR SURFACES (`ahu.mem#/quoteblock-floor`): a fence nobody sees reads as a drop
+  // wearing a cure's face. The finding rides the receipt's warnings on every door, and the sink's rail
+  // where it has one; a placement that decomposes clean clears the root's standing alert.
+  const fenced = decision.diagnostics.filter((d) => d.code === QUOTEBLOCKED_CODE);
+  const warnings = fenced.map((d) => d.message);
+  await sink.surface?.(uri, fenced.length === 0 ? null : { child: uri, codes: [QUOTEBLOCKED_CODE], why: warnings.join("; ") });
+  return { uri, decision: "ingest", grade, landed, tombstoned, canonicalHash: hash(decision.canonicalText), warnings, diagnostics: decision.diagnostics };
+}
+
+/**
+ * Read the Confluence gate's verdict WITHOUT landing or tombstoning anything — `placeMeme`'s read
+ * half, for a caller that must grade a meme (surface an alert, refuse a save) but never write on its
+ * own account. An `ingest`-graded verdict still answers `decision: "ingest"` with its diagnostics and
+ * the canonical hash the records WOULD carry; `landed`/`tombstoned` stand empty always, because this
+ * call never reaches `sink.land`/`sink.tombstone` at all — the grading and the writing are two
+ * different acts, and a caller that wants only the first must never be handed a sink verb that writes.
+ */
+export async function evaluateMeme(
+  input: PlaceMemeInput, sink: Pick<MemeSink, "titles" | "read">,
+): Promise<PlaceMemeReceipt> {
+  const { uri } = input;
+  const hash = input.hash ?? defaultHash;
+  const { decision, currentRenderHash } = await evaluate(input, sink);
+  if (decision.kind !== "ingest") return receiptOfNonIngest(uri, currentRenderHash, decision);
+  const grade = gradeOf(decision.diagnostics);
+  return { uri, decision: "ingest", grade, landed: [], tombstoned: [], canonicalHash: hash(decision.canonicalText), warnings: [], diagnostics: decision.diagnostics };
+}
+
+/** The read half: the whole meme as text (children recomposed inline) and the canonical hash a
+ *  writer hands back as its base. `null` when the sink holds no record under the URI. */
+export async function readMeme(
+  uri: string, sink: Pick<MemeSink, "titles" | "read">, hash: (text: string) => string = defaultHash,
+): Promise<{ text: string; canonicalHash: string } | null> {
+  const { group, text } = await currentRender(uri, sink);
+  if (!group.includes(uri)) return null;
+  return { text, canonicalHash: hash(text) };
+}
+
+/**
+ * THE REMOVAL — the meme's whole group (root · `#slot` fragments · `/path` children) tombstones
+ * through the sink. The same base law as a placement: a `baseHash` that fails to match the standing
+ * render answers `conflict` and removes nothing. `absent` when no root stands under the URI.
+ */
+export async function removeMeme(
+  input: { readonly uri: string; readonly baseHash?: string | null; readonly hash?: (text: string) => string },
+  sink: MemeSink,
+): Promise<{ decision: "removed" | "absent" | "conflict"; tombstoned: readonly string[]; canonicalHash?: string }> {
+  const hash = input.hash ?? defaultHash;
+  const { group, text } = await currentRender(input.uri, sink);
+  if (!group.includes(input.uri)) return { decision: "absent", tombstoned: [] };
+  const canonicalHash = hash(text);
+  if (input.baseHash && input.baseHash !== canonicalHash) return { decision: "conflict", tombstoned: [], canonicalHash };
+  for (const title of group) await sink.tombstone(title);
+  return { decision: "removed", tombstoned: group, canonicalHash };
+}
+
+/**
+ * THE ROOT LAW, one spelling. A root reads as a record of the carrier type with no `#` in its title and
+ * no `$fragment-parent`; a slot child carries the parent, a carriage part carries a `$`-opening `$slot`,
+ * and a plain tiddler carries neither the type nor the parent. The listing reads it, and so does the
+ * native delete door — a second spelling of it would drift the day one of them moved.
+ */
+export function isMemeRoot(title: string, fields: TiddlerFields | undefined): boolean {
+  return fields?.["type"] === CARRIER_TYPE && !title.includes("#") && fields["$fragment-parent"] === undefined;
+}
+
+/** One slot of a listed meme's tree: the slot name, the record's title, the slots it holds. */
+export interface MemeSlotNode {
+  readonly slot: string;
+  readonly uri: string;
+  readonly slots: readonly MemeSlotNode[];
+}
+
+/** One listed meme: its root URI, the hash a writer hands back as its base, the slot tree on request. */
+export interface MemeListing {
+  readonly uri: string;
+  readonly canonicalHash: string;
+  readonly slots?: readonly MemeSlotNode[];
+}
+
+/**
+ * THE LISTING — every meme ROOT the sink holds, with the canonical hash a writer hands back as its base;
+ * `tree` nests each root's `uri#/slot` children beneath it, at their own depth.
+ *
+ * A root reads as a record of the carrier type with no `$fragment-parent` and no `#` in its title. A
+ * slot child carries `$fragment-parent`; a carriage part (`$preamble` · `$postamble`) carries a `$slot`
+ * that opens with `$`; a plain tiddler carries neither the type nor the parent. None of those lists as a
+ * root, and a slot nests under the parent its own record names — never under a neighbour whose title it
+ * merely extends. Roots answer in title order.
+ */
+export async function listMemes(
+  sink: Pick<MemeSink, "titles" | "read">, opts: { readonly tree?: boolean } = {}, hash: (text: string) => string = defaultHash,
+): Promise<MemeListing[]> {
+  return (await listMemePage(sink, opts, hash)).roots;
+}
+
+/** One page of a listing: the roots it carries, and the cursor the next page takes (null where none remains). */
+export interface MemeListPage {
+  readonly roots: MemeListing[];
+  /** The last root this page names where more roots stand behind it; a caller hands it back as `after`. */
+  readonly next: string | null;
+}
+
+/**
+ * THE LISTING, ONE PAGE AT A TIME. Roots answer in title order, so a root's own URI serves as the cursor:
+ * `after` names the last root a caller read, `limit` bounds the page, and `next` names the cursor of the
+ * page behind it. With neither, the page holds every root (`listMemes`). A door whose answer rides a
+ * bounded channel pages here, so a seat that holds more roots than one answer carries still names each.
+ *
+ * The sink's titles get read once for the whole page. A root's title carries no `#`, so the root law reads
+ * the records under such titles alone; a page then reads the groups of the roots it names and no other.
+ */
+export async function listMemePage(
+  sink: Pick<MemeSink, "titles" | "read">,
+  opts: { readonly tree?: boolean; readonly after?: string | null; readonly limit?: number } = {},
+  hash: (text: string) => string = defaultHash,
+): Promise<MemeListPage> {
+  const titles = [...await sink.titles()].sort();
+  const once: Pick<MemeSink, "titles" | "read"> = { titles: () => titles, read: (title) => sink.read(title) };
+  const after = opts.after ?? null;
+  const limit = opts.limit !== undefined && opts.limit > 0 ? opts.limit : Infinity;
+  const roots: MemeListing[] = [];
+  let next: string | null = null;
+  for (const uri of titles) {
+    if (uri.includes("#") || (after !== null && uri <= after)) continue;
+    if (!isMemeRoot(uri, await sink.read(uri))) continue;
+    if (roots.length >= limit) { next = roots[roots.length - 1]!.uri; break; }
+    const listed = await listOneMeme(uri, once, opts.tree === true, hash);
+    if (listed) roots.push(listed);
+  }
+  return { roots, next };
+}
+
+/**
+ * One root as a listing answers it: its URI, the hash of its present render, and on request its slot tree.
+ * A slot nests under the parent its own record names, so the tree reads the root's group and nothing else.
+ * Null where the sink holds no record under the URI.
+ */
+export async function listOneMeme(
+  uri: string, sink: Pick<MemeSink, "titles" | "read">, tree: boolean, hash: (text: string) => string = defaultHash,
+): Promise<MemeListing | null> {
+  const meme = await readMeme(uri, sink, hash);
+  if (!meme) return null;
+  if (!tree) return { uri, canonicalHash: meme.canonicalHash };
+  const fields = new Map<string, TiddlerFields>();
+  for (const title of groupOfMeme(await sink.titles(), uri)) {
+    const f = await sink.read(title);
+    if (f && f["type"] === CARRIER_TYPE) fields.set(title, f);
+  }
+  const childrenOf = (parent: string): MemeSlotNode[] =>
+    [...fields.entries()]
+      .filter(([, f]) => f["$fragment-parent"] === parent && typeof f["$slot"] === "string" && !String(f["$slot"]).startsWith("$"))
+      .map(([title, f]) => ({ slot: String(f["$slot"]), uri: title, slots: childrenOf(title) }));
+  return { uri, canonicalHash: meme.canonicalHash, slots: childrenOf(uri) };
+}
+
+/** The `$tw.wiki` skin — a live wiki, on the plain server or inside the island. Its rail is the wiki's
+ *  own alerts area. */
+export function wikiMemeSink(wiki: Pick<TW5Wiki, "allTitles" | "getTiddler" | "addTiddler" | "deleteTiddler">): MemeSink {
+  return {
+    titles: () => wiki.allTitles(),
+    read: (title) => (wiki.getTiddler(title) as { fields?: TiddlerFields } | undefined)?.fields,
+    land: (fields) => { wiki.addTiddler(fields as Record<string, unknown>); },
+    tombstone: (title) => { wiki.deleteTiddler(title); },
+    surface: (root, finding) => { surfaceMemeAlert(wiki, root, finding); },
+  };
+}

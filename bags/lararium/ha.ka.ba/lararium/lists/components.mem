@@ -1,0 +1,47 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/lists/components">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/lists/components.mem"
+mana      = 13
+manao     = 16
+role      = "TW5 procedure: render the current tiddler's has-stack as clickable tag-pills (stack filter; captions from definition memes)"
+tags      = ["$:/tags/Global"]
+title     = "lar:///ha.ka.ba/lararium/lists/components"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/lists/components"
+```
+
+<<~ ahu #/contract>>
+
+!! Contract
+
+`<<components>>` reads the rendering context's current tiddler, resolves its has-stack through the `stack` filter operator (relative tags qualify against the carrier's own bag scope; `lar:` tags pass through; system tags stay outside), and renders each component as a clickable pill via the `tag-pill` procedure. It takes no argument — composition lives once in the tiddler's tags; this macro renders the stack.
+
+<<~/ahu>>
+
+<<~ ahu #/source>>
+
+\procedure components()
+<span class="sdm-component-list">
+<$list filter="[all[current]stack[]]" variable="tag">
+<$transclude $variable="tag-pill" target=<<tag>>/>
+</$list>
+</span>
+\end
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/sdm/procedures/tag-pill">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/ui/meta-panel">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Swmur-fULzw8anzPnNlVX_U1FswX2Qubg5g9uU97bVc
+
+<<^ code="&#x0004;" -> to="?">>

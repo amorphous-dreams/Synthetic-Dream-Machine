@@ -1,0 +1,54 @@
+# docker-compose.kahu-recovery.yml — the civic-custody crown's RECOVERY half (S3): a KAHU node that
+# HOLDS a citizen's recovery escrow share cannot RECOVER (become) the citizen alone. The recovery quorum
+# IS the impersonation quorum (Camenisch-Lysyanskaya), made a container exit code. The recovery twin of
+# the kahu-custody (S1) family: S1 = can't read; S3 = can't recover. Delivery-Service, never Auth-Root.
+#
+#   kahu-rec-citizen  splits its root 2-of-3 {device, recorded-code, escrow-peer}, hands the KAHU only
+#                     the escrow share, and recovers from its OWN two custodians.
+#   kahu-rec-node     holds the ONE escrow share and CANNOT assemble a quorum (single custodian). Its exit
+#                     code IS the verdict (0 = the custodian cannot recover the citizen alone).
+#
+# One scenario:  docker compose -f docker-compose.kahu-recovery.yml up --abort-on-container-exit --exit-code-from kahu-rec-node
+# Or via the civic suite:  tools/civic-witness.sh
+# Down:  docker compose -f docker-compose.kahu-recovery.yml down -v
+
+name: dreamnet-kahu-recovery
+
+# Node services require the product image digest in LARES_HARNESS_IMAGE.
+
+services:
+  kahu-rec-citizen:
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
+    volumes:
+      - "kahu-rec-citizen-state:/state"
+      - "kahu-rec-run:/workspace"
+    networks: [kahurec]
+    restart: "no"
+    environment:
+      LAR_ROOT: "/state"
+      LAR_KAHU_ROLE:   "citizen"
+      LAR_KAHU_SHARED: "/workspace"
+    entrypoint: ["node", "packages/lararium-node/dist/probes/kahu-recovery-node.js"]
+
+  kahu-rec-node:
+    image: "${LARES_HARNESS_IMAGE:?name the built image by digest — tools/harness-image.sh prints it}"
+    volumes:
+      - "kahu-rec-node-state:/state"
+      - "kahu-rec-run:/workspace"
+    networks: [kahurec]
+    restart: "no"
+    environment:
+      LAR_ROOT: "/state"
+      LAR_KAHU_ROLE:   "kahu"
+      LAR_KAHU_SHARED: "/workspace"
+    entrypoint: ["node", "packages/lararium-node/dist/probes/kahu-recovery-node.js"]
+    depends_on: [kahu-rec-citizen]
+
+networks:
+  kahurec:
+    driver: bridge
+
+volumes:
+  kahu-rec-citizen-state:
+  kahu-rec-node-state:
+  kahu-rec-run:      # the split/escrow ceremony; wiped by `down -v`

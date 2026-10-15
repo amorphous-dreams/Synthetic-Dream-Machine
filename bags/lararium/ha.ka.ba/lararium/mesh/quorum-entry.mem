@@ -1,0 +1,121 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/quorum-entry">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/quorum-entry.mem"
+l-space     = "lararium"
+mana        = 13
+role        = "invariant law: the ONE canonical byte-image every quorum-signed steward entry signs over — shared beneath the Kapae antigen board and the members set. Names the subtraction, the domain-stays-first-and-required separation, and the deliberate refusal to carry a verdict (fold + quorum stay board-local, so a shared verifier cannot turn admission into conscription)."
+source-file = "packages/lararium-mesh/src/quorum-entry.ts"
+title       = "lar:///ha.ka.ba/lararium/mesh/quorum-entry"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/mesh/quorum-entry"
+```
+
+<<~ ahu #/head>>
+
+! quorum-entry ~ one byte-image, two boards, no drift
+
+The Kapae antigen board (`kapae-antigen`) and the members set (`membership-registry`) stand the SAME structure:
+a monotone per-nym CRDT of quorum-signed steward acts. Their signed bytes carry the identical five fields in
+the identical order — only the `kind` DOMAIN separates them. This module holds that common image once, so the
+two boards can never drift a field apart while both claiming a quorum verified them.
+
+<<~/ahu>>
+
+<<~ ahu #/the-subtraction>>
+
+!! The subtraction ~ the shared act beneath two boards
+
+`QuorumEntryFields` names the steward act every quorum board carries: `kind` (the signing domain), `nym` (the
+subject's verifying-key hex — an identity, never a doc), `action` (the board-local act — `kapae`/`un_kapae`,
+`admit`/`revoke`), `version` (monotone per nym; a higher verified version supersedes a lower), and
+`sealEpochCid` (the charter epoch the act roots on — an entry citing an unknown epoch is IGNORED).
+
+`quorumEntryBytes` canonicalises exactly those five, sorted-key stable. ''The signatures ride OUTSIDE the
+signed content'', so re-carrying an entry never re-signs it.
+
+<<~/ahu>>
+
+<<~ ahu #/domain-first>>
+
+!! The domain stays first and stays required ~ the cross-board separation
+
+`kind` rides as the FIRST canonical field and every caller supplies its own domain constant — ''that value IS
+the cross-board separation.'' An antigen signature and a membership signature cover different bytes because
+they cover different domains, so no signature raised on one board can ever be re-presented on the other. A
+shared image with an optional or defaulted domain would dissolve exactly that guarantee; this signature keeps
+the domain un-defaultable.
+
+<<~/ahu>>
+
+<<~ ahu #/refuses-a-verdict>>
+
+!! What this module refuses ~ bytes only, never a verdict
+
+The module carries the BYTES ONLY. The two boards gate DIFFERENTLY on purpose: the members set additionally
+requires the operator's OWN accepts-carriage contract token (`carriageContractBytes`), and the antigen
+requires no such consent. ''A shared verifier that forgot that token would turn admission into conscription.''
+So the fold and the quorum verdicts stay board-local, deliberately — this module names the common bytes and
+declines every judgment about them.
+
+<<~/ahu>>
+
+<<~ ahu #/the-one-door>>
+
+!! The one door ~ every Ed25519 signature and every key reads one strict rule
+
+Every verifier in the house calls `verifyEd25519`, and every place a public key enters standing state calls
+`acceptEd25519Key`. Both live in `ed25519-door.ts`, and no other source file calls a curve library's
+`verify`: a census test reads the whole source tree and turns red on the first one that does.
+
+The rule takes no option:
+
+* a key reads as 32 bytes, in its ONE canonical encoding, on the curve, and INSIDE the prime-order subgroup.
+  A small-order key holds no secret, so under a lenient rule ''everyone signs for it''; the door refuses it
+  by name, `key-small-order`. A mixed-order key (a prime-order point plus a torsion point) refuses
+  `key-mixed-order`: no honest key generation yields one, and it stands as the one key whose signatures two
+  lawful verifiers may read differently. The check costs one scalar multiplication per key.
+* a signature reads as 64 bytes `R ‖ S`, with `S` below the group order and `R` canonical and on the curve.
+  ''A small-order `R` refuses'' (`signature-point-small-order`), as libsodium and dalek's strict verify
+  refuse it, though RFC 8032 alone would let it pass.
+* the equation reads COFACTORLESS, the sufficient form RFC 8032 §5.1.7 states: `[S]B = R + [k]A`. No factor
+  of eight forgives a torsion component.
+* ''hex reads bare and lower-case alone.'' One key holds one spelling wherever a seat set or a signer dedup
+  compares strings; an upper-case or `0x`-prefixed copy of a key names nobody at the door.
+
+''A key refuses where it ENTERS, by name'': a charter seat, a roll's seated and revealed sets, a guardian
+registration, a persona inception's op-key and each rotation's fresh one, a Handle key, both keys a device
+edge names, the device key an admit names. A charter, a roll or a log that names a refused key refuses WHOLE.
+Dropping the one seat would move a threshold nobody signed for.
+
+''A weak key hidden inside a commitment refuses at its reveal, and the charter or face that committed it
+re-founds'': the reveal refuses whole, no roll or rotation can ever name that set lawfully, and nothing
+rescues the seat by counting it for nothing. So a committer checks before it hides: `seatNextDigest`, the
+guardian registration card and each minter pass the key through the door before any digest covers it.
+
+No verifier takes its verify as a parameter where it can call the door itself: a function handed its verifier
+verifies as leniently as its caller chose.
+
+The door changes which signatures and keys get ACCEPTED. It moves no signing domain and no signed byte: every
+producer the house uses (noble, Node `crypto`, WebCrypto with a non-extractable key) signs by RFC 8032 and
+passes.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ pranala #source from="?" -> to="packages/lararium-mesh/src/quorum-entry.ts" family="code" role="has">>
+<<~ pranala #the-door from="?" -> to="packages/lararium-mesh/src/ed25519-door.ts" family="code" role="has">>
+
+<<~/ahu>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/registry-filter">>
+
+<<^ code="&#x0003;">>ni:///sha-256;9fhrVYzF4M1iAJNY6xgspLCJXTBpNlqS6YnuTF8oM20
+
+<<^ code="&#x0004;" -> to="?">>

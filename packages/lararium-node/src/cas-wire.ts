@@ -1,0 +1,198 @@
+/**
+ * cas-wire — the cad WIRE CONSUMER: a member CARRIES a sealed ciphertext body peer-to-peer over a real
+ * request-response hop, gated by the member blind-transit lane, and the immune denial draws Mu on the same hop.
+ *
+ * THE TRANSPORT. The request-response rides the swappable `MembershipChannel` (offer/poll, deliver-once,
+ * vessel→vessel) — the InMemory impl stands a real two-vessel hop for the proof; a live-WS impl drops in behind
+ * the SAME interface, so the wire logic here never changes. A member `want-block(cid)`s a holder; the holder
+ * answers a `cas-block` (the ciphertext) or `cas-mu` (the void).
+ *
+ * THE GATE (carry ⊥ read ⊥ contract). On a `want-block`, the server consults `carrierShareDecision` over the
+ * cid's docId (`docIdForCiphertextCid`): a proven Nexus MEMBER over a PROVABLY-sealed plane opens the carry lane
+ * and the server serves the CIPHERTEXT; a STRANGER, a NON-member, or a KAPAE'd presenter draws Mu. The server
+ * serves ciphertext only — the read-cap NEVER rides this shore (a bag's content key reaches its readers through the sealed store's lockboxes), so a member
+ * carries what it may not be able to read (carry ⊥ read), and the requester re-verifies `BLAKE3(ciphertext)==cid`
+ * SECRET-FREE (verify-cap) before trusting a byte.
+ *
+ * MU BYTE-INDISTINGUISHABILITY (denial ≡ satiety). The server draws the IDENTICAL `muVoidBytes()` for BOTH a
+ * DENIED presenter (non-member / Kapae'd) AND a NOTHING-TO-SERVE peer (the cid is not held / already caught up).
+ * An adversary reading the wire cannot tell "you are banned" from "there is nothing here" — the void closes the
+ * surveillance shore at the same stroke it closes the immune one. A successful carry (`cas-block`) is naturally
+ * different bytes — the indistinguishability is between DENY and CAUGHT-UP, never between deny and a served body.
+ *
+ * NO-GLOBAL-NOW: the antigen the gate consults is a local replica read as-of-last-sync — a partitioned peer sees
+ * a ban only after re-sync (bounded, never instant). The antigen MUST be quorum-signed (the gate's `AntigenRing`
+ * folds only quorum-verified bans) — never a lone-node censorship weapon.
+ *
+ * Meme: lar:///ha.ka.ba/lararium/node/cas-wire
+ */
+
+import {
+  carrierShareDecision, muVoidBytes, verifyCidBytes, cidDigestClass,
+  type MembershipChannel, type MembershipEnvelope,
+  type AntigenRing, type FederationGate, type NexusMembership, type PlaneSeal,
+} from "@lararium/mesh";
+import type { DocumentId } from "@automerge/automerge-repo";
+import type { ShadowConsult } from "@lararium/mesh";
+import { docIdForCiphertextCid } from "./ciphertext-cas-seal.js";
+import { readVerifiedCasBlobFromFs } from "./node-cas.js";
+
+/** The wire message kinds — a served ciphertext block, a want-block ask, or the byte-identical void. */
+export const CAS_WANT_BLOCK = "cas-want-block" as const;
+export const CAS_BLOCK      = "cas-block" as const;
+export const CAS_MU         = "cas-mu" as const;
+/** The DISCOVERY announce leg (RE-SHARE): a holder broadcasts `cas-have(cid)`; a member asks `cas-want-have(cid)`.
+ *  The relay SNIFFS `cas-have` into its DHT-free bag-tracker (cid → holders), so discovery answers from a live
+ *  index. The tracker stays a HINT — a member re-verifies `verifyCiphertextCid` on every fetched byte (verify-cap
+ *  ⊥ read-cap), so the announce never becomes an authority on the bytes, only on WHERE to ask. */
+export const CAS_HAVE       = "cas-have" as const;
+export const CAS_WANT_HAVE  = "cas-want-have" as const;
+
+/** The carry-lane gate + the served bytes the server composes on each request. */
+export interface CasWireServerDeps {
+  /** The cad ciphertext tier the server serves bytes from (`readVerifiedCasBlobFromFs`: bytes that fail their address never leave). */
+  readonly cadDir:     string;
+  /** The live sealed-plane oracle — only a PROVABLY-sealed docId carries (fail-closed: unknown → deny → Mu). */
+  readonly seal:       PlaneSeal;
+  /** The nexus-doc MEMBER consult — a STRANGER / non-member draws Mu (fail-closed: unconsultable → not a member). */
+  readonly membership: NexusMembership;
+  /** The Kapae antigen — a quorum-signed-banned presenter draws Mu (never a lone-node ban). */
+  readonly antigen:    AntigenRing;
+  /** The federatable-public floor gate — a sealed docId falls OUTSIDE it, so the member lane decides. */
+  readonly fedGate:    FederationGate;
+  /** THE FETCH DOOR (basket-one #/the-fetch-door): the CLEARTEXT `cid/` tier a FLEET peer may fetch from. Absent →
+   *  a cleartext ask draws Mu (the door stays shut; only the sealed member lane answers). */
+  readonly cidDir?:    string;
+  /** The FLEET class predicate — does this proven peer key stand as a same-operator device of this vessel (the
+   *  vessel that dialed in under a signed device edge)? Absent → nobody is fleet → a cleartext ask draws Mu. A
+   *  CONTRACT member is NOT fleet: it fetches `@cad` only. */
+  readonly fleet?:     (peerId: string) => boolean | Promise<boolean>;
+  /** The edge-shadow consult (kapae#/reach): a device set aside from the fleet draws Mu on the fetch door and
+   *  on the sealed lane alike. Absent → nobody reads as aside. */
+  readonly shadow?:    ShadowConsult;
+  /** The MEMBER shadow at the sealed lane (kapae#/reach): does a shadow set this peer aside from the realm this
+   *  document belongs to? A member set aside fetches none of the realm's blocks, sealed or not, and draws the
+   *  same Mu a miss draws. Absent → no document reads as closed to anyone by a realm's shadow. */
+  readonly realmAside?: (peerId: string, documentId: DocumentId) => boolean;
+}
+
+/**
+ * Decide + serve ONE want-block: the member-lane gate over the cid's docId, then serve the ciphertext or the void.
+ * Returns the RESPONSE PAYLOAD BYTES the server offers back — a served ciphertext, or `muVoidBytes()`. The void is
+ * byte-identical whether the peer is DENIED or the cid is simply not held (denial ≡ satiety). Serves ciphertext
+ * ONLY; the read-cap never rides here.
+ */
+export async function decideAndServeWantBlock(
+  deps: CasWireServerDeps,
+  peerId: string,
+  cid: string,
+): Promise<{ kind: typeof CAS_BLOCK; cid: string; bytes: Uint8Array } | { kind: typeof CAS_MU; bytes: Uint8Array }> {
+  // THE FETCH DOOR — a CLEARTEXT cid (bare sha256 / `sha256:`) rides the FLEET gate, never the member lane: a
+  // same-operator device fetches the `cid/` blob its pointer names; a CONTRACT member / a stranger draws the
+  // SAME Mu (a contracted cabal reaches `@cad` ciphertext only — cleartext never crosses an operator boundary).
+  // THE EDGE SHADOW reads FIRST: a device set aside draws the same Mu a miss draws, on either tier.
+  if (deps.shadow?.aside(peerId)) return { kind: CAS_MU, bytes: muVoidBytes() };
+  if (cidDigestClass(cid) === "cleartext") {
+    if (!deps.cidDir || !deps.fleet) return { kind: CAS_MU, bytes: muVoidBytes() };   // door shut → Mu
+    if (!(await deps.fleet(peerId)))  return { kind: CAS_MU, bytes: muVoidBytes() };   // not fleet → Mu (≡ satiety)
+    const clear = readVerifiedCasBlobFromFs(cid, deps.cidDir);
+    if (!clear) return { kind: CAS_MU, bytes: muVoidBytes() };                          // not held, or altered at rest → the SAME Mu
+    return { kind: CAS_BLOCK, cid, bytes: clear };
+  }
+  let docId: DocumentId;
+  try { docId = docIdForCiphertextCid(cid); } catch { return { kind: CAS_MU, bytes: muVoidBytes() }; }
+  // A member set aside from the realm this block belongs to draws Mu, ahead of the carry lane.
+  if (deps.realmAside?.(peerId, docId)) return { kind: CAS_MU, bytes: muVoidBytes() };
+  // The carry-lane gate: a proven MEMBER over a PROVABLY-sealed plane, not Kapae'd. A relay peer is gated (in the
+  // relayPeers set); a STRANGER / non-member / Kapae'd draws `false` — the SAME `false` a caught-up peer draws.
+  const mayCarry = await carrierShareDecision(
+    new Set<string>([peerId]),   // the requester is a gated relay peer
+    deps.fedGate,                // the sealed docId is not federatable → the floor denies → the member lane decides
+    deps.antigen,                // a Kapae'd presenter → Mu
+    null,                        // the self-slot inner ring stays inert (identity = null), as everywhere
+    deps.membership,             // MEMBER vs STRANGER
+    deps.seal,                   // PROVABLY-sealed only
+    peerId,
+    docId,
+    deps.shadow ?? null,         // a device set aside → Mu
+  );
+  if (!mayCarry) return { kind: CAS_MU, bytes: muVoidBytes() };            // DENY → Mu (byte-identical to satiety)
+  const bytes = readVerifiedCasBlobFromFs(cid, deps.cadDir);
+  if (!bytes) return { kind: CAS_MU, bytes: muVoidBytes() };              // NOTHING TO SERVE, or altered at rest → the SAME Mu (satiety)
+  return { kind: CAS_BLOCK, cid, bytes };                                  // MEMBER + sealed + held → carry the ciphertext
+}
+
+/**
+ * Drain every pending `want-block` addressed to `serverAddr` and offer back the decided response. One pass (a
+ * caller loops / schedules it). A server never interprets a read-cap — it serves ciphertext or the void, nothing
+ * else crosses. Returns how many requests it answered (audit / test).
+ */
+export async function serveCasWire(
+  channel: MembershipChannel,
+  serverAddr: string,
+  deps: CasWireServerDeps,
+): Promise<number> {
+  return serveCasWireEnvelopes(await channel.poll(serverAddr), channel, serverAddr, deps);
+}
+
+/**
+ * Serve ONE polled batch — the poll and the serve split so a caller that polls ONE inbox for two purposes (the
+ * serve loop answers want-blocks AND settles its own pending fetches) drains once and routes each envelope.
+ */
+export async function serveCasWireEnvelopes(
+  inbound: readonly MembershipEnvelope[],
+  channel: MembershipChannel,
+  serverAddr: string,
+  deps: CasWireServerDeps,
+): Promise<number> {
+  let answered = 0;
+  for (const env of inbound) {
+    if (env.kind !== CAS_WANT_BLOCK) continue;
+    const cid = typeof (env.payload as { cid?: unknown })?.cid === "string" ? (env.payload as { cid: string }).cid : "";
+    if (!cid) continue;
+    const response = await decideAndServeWantBlock(deps, env.from, cid);
+    await channel.offer({ kind: response.kind, from: serverAddr, to: env.from, payload: { ...response, cid } });   // the cid rides the envelope so a fetcher correlates a void to ITS ask
+    answered += 1;
+  }
+  return answered;
+}
+
+/** The carried outcome of a wire fetch: the verified ciphertext (carry-cap held), or `null` (Mu / no verify). */
+export interface CasWireFetch {
+  /** The verified ciphertext bytes (BLAKE3==cid re-checked secret-free), or null on Mu / a mis-verify. */
+  readonly ciphertext: Uint8Array | null;
+  /** True when the response was the void (denied OR nothing-to-serve — the requester cannot tell which). */
+  readonly drewMu:     boolean;
+}
+
+/**
+ * FETCH a sealed cid over the hop: offer a `want-block`, run the server a turn, poll the response. On a `cas-block`
+ * the requester re-verifies `BLAKE3(ciphertext)==cid` SECRET-FREE before trusting it (a mis-verifying block is
+ * rejected → null); on `cas-mu` it drew the void (denied or nothing — indistinguishable). The read-cap is NOT used
+ * here: this returns CIPHERTEXT (the carry). Reading (decrypt) is a SEPARATE step, only for a holder of the bag's content key.
+ */
+export async function fetchSealedCidOverWire(args: {
+  readonly channel:    MembershipChannel;
+  readonly requester:  string;
+  readonly serverAddr: string;
+  readonly cid:        string;
+  readonly serverDeps: CasWireServerDeps;
+}): Promise<CasWireFetch> {
+  await args.channel.offer({ kind: CAS_WANT_BLOCK, from: args.requester, to: args.serverAddr, payload: { cid: args.cid } });
+  await serveCasWire(args.channel, args.serverAddr, args.serverDeps);   // the server answers the pending want-block
+  const responses = await args.channel.poll(args.requester);
+  for (const env of responses) {
+    if (env.kind === CAS_BLOCK) {
+      const bytes = (env.payload as { bytes?: Uint8Array }).bytes;
+      if (bytes && verifyCidBytes(bytes, args.cid)) return { ciphertext: bytes, drewMu: false };   // class-aware verify holds
+      return { ciphertext: null, drewMu: false };   // a mis-verifying block is rejected (a hostile holder cannot poison)
+    }
+    if (env.kind === CAS_MU) return { ciphertext: null, drewMu: true };   // the void — denied OR nothing (indistinguishable)
+  }
+  return { ciphertext: null, drewMu: true };   // no response → the same void (the requester learns nothing more)
+}
+
+/** The exact bytes the server puts on the wire for a void response — for a byte-identical-Mu proof across reasons. */
+export function muWireBytes(): Uint8Array {
+  return muVoidBytes();
+}

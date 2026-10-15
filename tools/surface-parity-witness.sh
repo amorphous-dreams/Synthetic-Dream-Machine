@@ -1,0 +1,229 @@
+#!/usr/bin/env bash
+# surface-parity-witness — every MCP tool answers to a CLI door, and neither surface enumerates the other.
+#
+# ── THE INVARIANT ───────────────────────────────────────────────────────────────────────────────
+# The MCP seat and the CLI reach the same vessel, so a tool an agent may call and an operator may not is a
+# surface the operator cannot audit by hand. Every MCP tool therefore answers to a CLI door — as its own
+# verb, or as a sub-verb of one.
+#
+# The converse does NOT hold, and that asymmetry is the ruling rather than a gap. The CLI carries the
+# KEY-HOLDING ceremonies — founding, persona minting, the charter quorum, the vault beyond a status read,
+# the raise. MCP speaks stdio-per-client, so N sessions run N processes; handing that surface a signing
+# verb would put N unsynchronised holders on one operator's keys. The operator's hand keeps those.
+#
+# ── WHY THIS WITNESS EXISTS AT ALL ──────────────────────────────────────────────────────────────
+# Both descriptions of the MCP surface had drifted, each in the same direction: `mcp-resolve.ts` named
+# nine verbs and `mcp-tool-registry.mem` named ten, while the live surface carried THIRTY. A hand-written
+# list cannot notice what it missed, and both lists read as authoritative to anyone who found them. So the
+# count is DERIVED here and nowhere transcribed.
+#
+# Exit 0 = every MCP tool has a CLI door.
+set -uo pipefail
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY'
+import pathlib, re, subprocess, sys
+
+MCP = pathlib.Path("packages/lararium-sensorium/scripts/lares_mcp.py")
+CLI = pathlib.Path("packages/lares-cli/dist/src/bin/lares.js")
+
+# A VANISHED SUBJECT IS A RED, NEVER A CLEAN RUN. This read `nothing to compare` and exited 0, so the
+# day the MCP surface moved or was renamed, the one witness that welds an agent's reach to an operator's
+# would have reported the cleanest run it has ever produced — over a comparison it never made. The CLI
+# half of this same file already keeps the law (`or not doors` → exit 1); the MCP half enforces it too.
+if not MCP.exists():
+    print(f"[surface-parity] NO MCP SURFACE AT {MCP} — parity is unmeasurable, not clean.")
+    print( "      An agent's reach and an operator's reach go uncompared until this file answers.")
+    print( "      If the surface lives elsewhere, re-aim MCP here; remove this witness when the surface is absent by design.")
+    sys.exit(1)
+if not CLI.exists():
+    print(f"[surface-parity] no built CLI at {CLI} — run `pnpm build` first"); sys.exit(1)
+
+tools = [t.replace("_", "-") for t in
+         re.findall(r'@mcp\.tool\(\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
+
+# A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool()` with EMPTY parentheses, so the
+# ordinary act of giving one tool a `name=` or `description=` argument would drop it from this reading —
+# and a reading that drops every tool leaves `missing` empty and the run green. The set the whole witness
+# walks must be asserted before anything is asserted about its members.
+if not tools:
+    print(f"[surface-parity] {MCP} DECLARES NO TOOLS to this reader — the walk below has no members.")
+    print( "      The probe binds `@mcp.tool()` with empty parentheses; a decorator carrying an argument")
+    print( "      reads as absent, and every check here then passes by having nothing to check.")
+    sys.exit(1)
+
+# The CLI's own answer, never a transcription of it: the top-level listing, plus each parent verb's own
+# help. A door counts whether it stands at the top or one level in.
+proc = subprocess.run(["node", str(CLI), "help"], capture_output=True, text=True)
+top  = proc.stdout
+doors = set(re.findall(r'^\s+(?:\S\s+)?([a-z][a-z0-9-]*)\s{2,}\S', top, re.M))
+
+# A BINARY THAT CANNOT START MUST SAY SO, not shrink the count. This witness invokes the real CLI, which
+# is exactly why it catches what a source-only check cannot — a rename can leave every package
+# typecheck-clean while a STALE DIST in a sibling package breaks the import graph, and the binary then
+# dies before printing a single verb. Read as a door count, that failure looks like missing parity;
+# read here, it names itself.
+if proc.returncode != 0 or not doors:
+    print("[surface-parity] the built CLI did not answer `help` — parity is unmeasurable until it does.")
+    tail = (proc.stderr or proc.stdout).strip().splitlines()
+    for line in tail[:6]:
+        print(f"      {line}")
+    print("      A stale dist in a sibling package is the usual cause: `pnpm build`.")
+    sys.exit(1)
+
+# THE SUB-VERB MAP COMES FROM SOURCE, NEVER FROM INVOKING ANYTHING. A first draft discovered sub-verbs by
+# running each parent verb with no arguments — which is both slow and RECKLESS: `vessel stand` and
+# `reset` are not questions, and a witness that mutates the vessel it audits is worse than no witness.
+# So the sub-verbs get read out of each command module's own dispatch instead.
+CMDS = pathlib.Path("packages/lares-cli/src/commands")
+subverbs: set[str] = set()
+for f in CMDS.glob("*.ts"):
+    text = f.read_text()
+    # THREE DISPATCH SHAPES, because the CLI genuinely uses three. A witness that read only the one it
+    # first met would report a door missing that stands — which is how the surface came to be described
+    # wrong in the first place.
+    subverbs |= set(re.findall(r'case\s+"([a-z][a-z0-9_-]*)"', text))                    # switch
+    subverbs |= set(re.findall(r'sub\s*(?:===|!==)\s*"([a-z][a-z0-9_-]*)"', text))       # explicit compare
+    subverbs |= set(re.findall(r'^\s{2,}"?([a-z][a-z0-9_-]*)"?:\s*cmd[A-Z]\w*,', text, re.M))  # verb→handler map
+    subverbs |= set(re.findall(r'^\s{2,}"?([a-z][a-z0-9_-]*)"?:\s*\{\s*(?:summary|composes|run|handler)\b',
+                               text, re.M))                                              # verb→dispatch record
+    # A hyphenated verb rides as a QUOTED key (`"couple-r": cmdCoupleR`) because the bare form is no
+    # identifier. Reading only the bare spelling reported three standing doors missing.
+    #
+    # AND A DOOR MAY CARRY A RECORD RATHER THAN A BARE HANDLER. `vessel.ts` and `carrier.ts` write
+    # `name: { summary, run }`, which the handler shape above cannot see — a blind spot that stayed
+    # invisible only while no MCP tool answered at such a sub-door. It stopped being invisible the day
+    # one did.
+subverbs = {s.replace("_", "-") for s in subverbs}
+
+def has_door(tool: str) -> str | None:
+    if tool in doors:    return "top-level"
+    if tool in subverbs: return "sub-verb"
+    base = tool.split("-")[0]
+    if base in doors:    return f"sub-verb of `{base}`"
+    return None
+
+# AN EXEMPTION MUST STATE WHY, AND IT PRINTS EVERY RUN. A silent allow-list decays into a surface nobody
+# audits; a permanently-red witness trains a reader to skip it. Both failures end the same way, so an
+# exemption stays visible and carries its reason where the next reader meets it.
+EXEMPT: dict[str, str] = {
+    # Empty by intent. `plane-record` sat here until its door landed — the daemon verb had stood all
+    # along and only the CLI side was missing, so the exemption bought a build rather than excusing one.
+    # A future entry states WHY where the next reader meets it, never in a commit message.
+}
+
+# ── THE SECOND AXIS: A NAME SHARED IS NOT A MOTION SHARED ───────────────────────────────────────
+# Matching rosters proves a tool has a door. It proves nothing about what either one DOES, and two
+# opposite motions wearing one word pass a name check cleanly — measured: `pour` named the bearing
+# harvest on the CLI and the drawer capture at MCP, while every witness stayed green over it.
+#
+# The motion is DERIVED, not declared: which daemon verb does each side reach? Both surfaces route
+# through the same @daemon, so the verb each invokes is the honest signature of what it writes. A
+# same-named pair reaching different daemon verbs is either drift or a slicing — and a slicing states
+# itself below, where the next reader meets it.
+
+def daemon_verbs_mcp(name: str) -> set:
+    """The daemon verbs an MCP tool routes to — read off its own `_call(...)`."""
+    body = re.search(rf'@mcp\.tool\(\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
+                     MCP.read_text(), re.S)
+    found = set(re.findall(r'_call\(\s*"(\w+)"', body.group(0))) if body else set()
+    return {v.replace("_", "-") for v in found}
+
+def daemon_verbs_cli(name: str) -> set:
+    """The daemon verbs a CLI sense verb routes to — read off the handler its dispatch names."""
+    sense = (CMDS / "sense.ts").read_text()
+    m = re.search(rf'^\s{{2,}}"?{re.escape(name)}"?:\s*(cmd[A-Z]\w*)', sense, re.M)
+    if not m: return set()
+    handler = m.group(1)
+    for f in CMDS.glob("*.ts"):
+        text = f.read_text()
+        fn = re.search(rf'export async function {handler}\b.*?(?=\nexport |\Z)', text, re.S)
+        if fn: return {v.replace("_", "-") for v in re.findall(r'runVerb\(\s*"([\w-]+)"', fn.group(0))}
+    return set()
+
+# A SLICING STATES ITSELF. Each entry names a verb the two surfaces spell alike and mean differently,
+# and says what each one writes — so a reader meeting either door learns the difference here rather
+# than by running both and comparing stores.
+SLICING: dict[str, str] = {
+    "pour": ("CLI `pour` harvests ONE pointer's bearing gradient into the harvest index that "
+             "`sense worldline` joins; `pour --all` walks the whole tending movement. The MCP tool "
+             "captures one pointer's DRAWERS, and its `all` rides the same sweep spine the CLI's "
+             "drawers leg reaches. Both fill a sensorium; they enter at different legs."),
+}
+
+drift = []
+for tool in tools:
+    name = tool.replace("-", "_")
+    mcp_v, cli_v = daemon_verbs_mcp(name), daemon_verbs_cli(tool)
+    if not mcp_v or not cli_v:      continue      # one side routes locally — nothing to compare
+    if mcp_v & cli_v:               continue      # they meet at a shared daemon verb
+    if tool in SLICING:             continue
+    drift.append((tool, sorted(mcp_v), sorted(cli_v)))
+
+if SLICING:
+    print("[surface-parity] declared slicings — one name, two motions, each stated:")
+    for k, why in SLICING.items():
+        print(f"      {k}: {why}")
+
+if drift:
+    print("[surface-parity] SAME NAME, DIFFERENT MOTION — and no slicing declared:")
+    for tool, m, c in drift:
+        print(f"      {tool}: MCP reaches {m or ['(nothing)']} · CLI reaches {c or ['(nothing)']}")
+    print("      Either route them to one daemon verb, or state the slicing in SLICING with what each writes.")
+    sys.exit(1)
+
+missing = [t for t in tools if not has_door(t) and t not in EXEMPT]
+exempt  = [t for t in tools if not has_door(t) and t in EXEMPT]
+
+# ── THE PORT, WHICH BOTH SURFACES ACTUALLY SPEAK THROUGH ────────────────────────────────────────────────
+# The two lists above are the THIN surfaces. Under them stands the daemon verb registry — the port a CLI
+# door and an MCP tool both reach the same reactor through — and nothing had ever counted it. A witness
+# comparing two adapters to each other reports parity while the thing they adapt goes unmeasured, and the
+# larger set is the one where a verb can stand with no way for an operator to reach it.
+#
+# So every registered verb sorts into a NAMED bucket. `orphan` is not a failure — this house builds
+# daemon-side before it builds doors — but it must be COUNTED, because an uncounted verb is a capability
+# nobody chose to leave unreachable.
+REG = re.compile(r'registry\.register\(\s*"([a-z][a-z0-9_.-]*)"')
+registered: set[str] = set()
+for f in pathlib.Path("packages").rglob("src/**/*.ts"):
+    if "/dist/" in str(f): continue
+    registered |= set(REG.findall(f.read_text(errors="ignore")))
+registered = {r.replace("_", "-") for r in registered}
+
+# AND A FLOOR ON THE PORT. `registry.register("verb")` is one hand-written spelling of a call the daemon
+# makes in many places; a refactor to `registerVerb(...)` or a registration built from a table would empty
+# this set, and all four buckets below would then read 0 with the run still green. The buckets are the
+# only place an UNREACHED daemon capability is ever counted, so an empty port erases the count rather
+# than reporting zero of it.
+if not registered:
+    print("[surface-parity] THE DAEMON REGISTRY READS EMPTY — the port buckets below counted nothing.")
+    print("      The probe binds `registry.register(\"verb\")`; a registration written any other way")
+    print("      reads as absent, and 'unreached daemon capability' then has no set to be counted in.")
+    sys.exit(1)
+
+both      = sorted(v for v in registered if v in tools and has_door(v))
+cli_only  = sorted(v for v in registered if v not in tools and has_door(v))
+mcp_only  = sorted(v for v in registered if v in tools and not has_door(v))
+orphan    = sorted(v for v in registered if v not in tools and not has_door(v))
+
+print(f"[surface-parity] MCP tools: {len(tools)}   CLI doors reachable: {len(tools) - len(missing) - len(exempt)}")
+print(f"[surface-parity] daemon registry: {len(registered)} verbs  "
+      f"→ all-three {len(both)} · cli-only {len(cli_only)} · mcp-only {len(mcp_only)} · unreached {len(orphan)}")
+# A COUNT THAT NEVER MOVES IS A COUNT NOBODY READS. The unreached set prints in full so its growth shows.
+if orphan:
+    print(f"  UNREACHED by either surface ({len(orphan)}) — daemon-side capability with no operator door:")
+    for v in orphan: print(f"    {v}")
+if mcp_only:
+    print(f"  MCP-only ({len(mcp_only)}) — an agent may call what an operator cannot:")
+    for v in mcp_only: print(f"    {v}")
+
+for t in exempt:
+    print(f"  EXEMPT  {t}")
+    print(f"          {EXEMPT[t]}")
+if missing:
+    print("  MCP tools with NO CLI door — an agent may call what an operator cannot:")
+    for t in missing: print(f"    {t}")
+    sys.exit(1)
+print("  every MCP tool answers to a CLI door")
+PY

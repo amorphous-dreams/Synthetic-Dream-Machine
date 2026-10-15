@@ -1,0 +1,45 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/elyncia/ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair.mem"
+l-space   = "stable"
+mana      = 13
+manao     = 13
+manaoio   = 12
+rating    = "ano"
+role      = "place, sea-level ring — the Salt-Stair market lararium; scene canon seated, host-town unnamed"
+title     = "lar:///ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/elyncia/nexuses/new-delos/places/salt-stair"
+```
+
+<<~ ahu #/head>>
+
+! The Salt-Stair
+
+''Stratum:'' the sea-level ring — ''host town unnamed (prompt)'' · ''Scale:'' Site (one room).
+
+A small market lararium ''three alleys down from the harbor steps'' — one room wide, smelling
+of roasted beans and low tide. The dish over the lintel steams for ordinary guests and flares
+blue-white for extraordinary ones. A deep booth further in from the door carries a privacy ward
+older than the shop — the booth ward "predates the log, predates the shop, possibly predates
+warding." A faerie corner booth runs long campaign nights with their own Lares, streaming to
+Cabal-realm nakama. A shelf takes hole-drilled coins; the house keeps them where the light
+lands first.
+
+''Scene canon:'' the Patroness took the deep booth here on the eve of the company's sailing
+(`lar:///ha.ka.ba/elyncia/campaign/salt-stair-booth`, referee-side).
+
+''Open at the counter:'' MUG-SMOKE keeps the Spice Quarter compitale, and something wearing the
+same manner pours here. One spirit working two rooms, a lineage sharing a name, or two spirits
+who have never met — the Salt-Stair declines to say, and MUG-SMOKE has never been asked directly.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Tm0pNE3uq0XEFlwP51sGGlSwLekdRxyYoo6QDia-TQ4
+
+<<^ code="&#x0004;" -> to="?">>

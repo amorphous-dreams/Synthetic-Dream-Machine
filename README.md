@@ -26,6 +26,49 @@ Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt
 
 ---
 
+## Specifications
+
+This repository holds the **source of record** for several specifications. Their normative text lives in the meme graph under [`bags/lares/`](bags/lares/), addressed by `lar:` URI rather than by file path, and every implementation — in this repository or outside it — consumes that text rather than restating it.
+
+The graph classifies its own contents. A **specification** states a contract for readers outside the system. An **invariant law** states something the system must not violate. A **doctrine** states a stance the design proceeds from. A **capability** states what a component must be able to do.
+
+### The specification uses the language it specifies
+
+Every meme opens with a doctype naming the dialect it uses, and the specification of that dialect names itself:
+
+```
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+```
+
+Reading the specification requires an implementation of what it specifies. The reference parser versions with the graph.
+
+### Principal specifications
+
+| `lar:` address | states |
+|---|---|
+| `lar:///ha.ka.ba/lares/api/pono/lar-uri` | the `lar:` URI scheme — abstract, ABNF, five-planes reading. Submission-grade |
+| `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext` | `text/memetic-wikitext` — abstract, conformance under RFC 2119, lexis |
+| `lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing` | the memetic carrier frame — the declaration and control set |
+| `lar:///ha.ka.ba/lares/api/pono/tiddlywiki-wikitext` | TiddlyWiki 5 wikitext base syntax — the normative reference the dialect extends |
+
+### Reading a meme
+
+Each carries a TOML metadata block after its doctype. `uri-path` gives its address — the address, not the path, identifies it. `role` states in one line what the meme holds. `register` names the standing it claims — `Canon`, `Synthesis-Canon`, `Synthesis` or `Provisional-Synthesis`. `tags` link it into families, and modal force follows RFC 2119 throughout.
+
+### Implementations that consume these
+
+| implementation | where | consumes |
+|---|---|---|
+| reference parser, two independent hosts | [`packages/tree-sitter-memetic-wikitext`](packages/tree-sitter-memetic-wikitext) | the dialect and its sigil set |
+| language server | `packages/tree-sitter-memetic-wikitext/host-py` | the same |
+| runtime and vessel | `packages/lararium-*`, `packages/lares-cli` | causal islands, tiddler record, capabilities |
+| editor grammars | [`VSCode-TW5-Syntax`](VSCode-TW5-Syntax) (submodule) | TiddlyWiki wikitext and the dialect |
+| substrate | [`TiddlyWiki5`](TiddlyWiki5) (submodule) | TiddlyWiki wikitext |
+
+Two independent parser hosts read the same bytes, and a gate requires them to agree.
+
+---
+
 ## Repository Structure
 
 ### SDM Game Rules
@@ -100,6 +143,18 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 | `_todo/` | Pipeline operations, conversion tracking, design docs |
 | `_todo/BECMI/scripts/` | Automation scripts for BECMI conversion pipeline |
 | `_becmi/` | BECMI source extractions (conversion pipeline input) |
+
+### Lares Infrastructure
+
+| Directory | Contents |
+|---|---|
+| [`bags/lares/`](bags/lares/) | the meme graph — the source of record for the specifications above |
+| [`noosphere-boot.mem`](bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem) | the boot seed: the attractor a woken node hydrates the house from |
+| `packages/tree-sitter-memetic-wikitext/` | the reference parser, in two independent hosts, with a language server |
+| `packages/lararium-*/` | the runtime — node, browser, mesh, sensorium, keyhive, mempalace, tw5 |
+| `packages/lares-cli/` | the vessel door |
+| `TiddlyWiki5/`, `VSCode-TW5-Syntax/`, `mempalace/`, `kowloon*/` | submodules the reference deployment runs on |
+
 
 ---
 

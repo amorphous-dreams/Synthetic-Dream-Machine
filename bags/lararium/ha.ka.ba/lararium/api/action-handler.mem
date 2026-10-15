@@ -1,0 +1,145 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/action-handler">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable   = true
+file-path   = "bags/lararium/ha.ka.ba/lararium/api/action-handler.mem"
+l-space     = "stable"
+mana        = 16
+manao       = 16
+manaoio     = 15
+namespace   = "&#x0950; &#x0901;"
+role        = "source-of-truth: the Residency Model ACTION verb handler family — six verbs, withEffectRecord wrapping, cap-gate law, dispatch shore (Sprint 5)"
+source-file = "packages/lararium-tw5/src/action-handler.ts"
+status-date = "2026-06-01"
+status-why  = "the TW5 action handler stands live"
+tags        = ["api/residency-model", "lifecycle/standing"]
+title       = "lar:///ha.ka.ba/lararium/api/action-handler"
+type        = "text/memetic-wikitext+tiddlywiki"
+uri-path    = "ha.ka.ba/lararium/api/action-handler"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! ACTION Verb Handler Family
+
+The operator-facing residency gesture surface. Six ACTION verbs dispatch through one handler family, each wrapped in
+`withEffectRecord` so no bag mutation lands without an indelible audit trace.
+
+Source of truth: `packages/lararium-tw5/src/action-handler.ts`. Handlers run
+''wiki-scope inside the TW5 VM'' (not `@lararium/node`) — registered via
+`@lararium/node`'s `island-behaviors.ts`, invoked through the dispatch shore,
+operated from the CLI by `lares act`.
+
+<<~/ahu>>
+
+<<~ ahu #/verbs>>
+
+!! The verb family
+
+Six residency verbs (SPARQL set-algebra) + a ''non-residency tier'' (INGEST, CREATE, and RECONCILE in design) that rides the same rail.
+
+| Verb | Effect | Effect record(s) | Required args |
+|---|---|---|---|
+| ''ADD'' | read `from-bag`'s record for title; write into `to-bag` preserving change-id | accession (`to-bag`) | title, from-bag, to-bag, change-id |
+| ''COPY'' | read `from-bag`'s record; overwrite `to-bag`'s version preserving change-id | accession (`to-bag`) | title, from-bag, to-bag, change-id |
+| ''MOVE'' | For a live source, land its whole carrier group in `to-bag` + RETRACT (hard-remove → //absent//) the group in `from-bag` (falls through to a canon copy beneath; never a kāpae); for a tombstone source, carry the title's delete into `to-bag`, with the delete of each tombstoned member of its group that `to-bag` holds live, then retract the carried tombstones from `from-bag` (a member `to-bag` lacks stays a tombstone in the source and the answer names it); `to-bag` must hold the title live unless `shadow` asks, and `shadow` carries every member | live source: transfer pair, accession (`to-bag`) + deaccession (`from-bag`); tombstone source: two deaccessions, one per bag, no accession | title, from-bag, to-bag, change-id, optional shadow |
+| ''CLEAR'' | enumerate live titles in bag, tombstone each | disposition (bag-level) | bag |
+| ''DROP'' | tombstone every live title in bag + write the retirement marker into the bag's own doc; the registry row stays (see Handler Law 6) | disposition (`bag-retired`, under the fixed marker id) | bag |
+| ''LOAD'' | land operator-supplied carriers into `to-bag` (carrier-borne; islands never fetch — `source-uri` = provenance) | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
+| ''INGEST'' | disk→records through the Confluence — the three-way reconcile gate (disk · synced · records meet; replace-by-group, NFC; + whole-carrier `deletions`; surface-never-overwrite) — the non-residency precedent | accession (`to-bag`) | source-uri, to-bag, change-id, carriers |
+| ''CREATE'' | mint a new record into a PLANE rather than move one between bags — the plane grades the cap: the catalog plane (household) takes `read`, the oracle plane (temple) takes `admin`. Handled in the REACTOR, never `executeAction`, because the gate must read the plane before the mint | accession (the plane's doc) | plane, title, and the record to mint |
+| ''RECONCILE'' //(design)// | fold a newer engine genesis forward into `@oracle` (operator-admin engine rite; preview → conflict-surface → confirm → idempotent) | engine-version record (`@oracle` ledger) | see residency-model #non-residency-verbs |
+
+ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''never version control''. ''INGEST, CREATE + RECONCILE'' form the non-residency tier — the same VERB → SUMMONS → OUTCOME rail, `withEffectRecord` audit, and cap-gate, with no tiddler-between-bags move. See [[residency-model|lar:///ha.ka.ba/lararium/api/residency-model]] `#action-verb-surface` + `#non-residency-verbs`.
+
+<<~/ahu>>
+
+<<~ ahu #/law>>
+
+!! Handler Law
+
+# ''No mutation without audit.'' `executeAction(action, composite)` runs inside
+   `withEffectRecord(action, composite, …)` — mutate-then-log order, so a failed
+   mutation produces no effect record. The archival audit (Sprint 4) is not
+   optional decoration; it is the gate.
+# ''Cap before mutate.'' Every verb verifies `cap("admin", toBag)` before any
+   write. ''MOVE additionally'' verifies `cap("admin", fromBag)` — deaccession
+   authority over the source. A denied cap throws before `withEffectRecord` runs,
+   so a gated verb leaves zero effect records.
+# ''Change-id preservation'' (Anti-pattern #1 defense). ADD / COPY / live-source MOVE carry
+   the source record's `change-id` into the destination Manifestation — the Work
+   keeps its causal identity across bags.
+   ''The id names a title's lineage; the gesture's id names the act.'' The handler reads the source
+   record's own `meta.changeId` and lands it on the destination (`lineageOf`,
+   `packages/lararium-tw5/src/action-handler.ts`): ADD and COPY on the landed record, a live-source
+   MOVE on the root and on each child of the group. The `change-id` argument (`lares act` mints a
+   fresh one where the caller passes none) rides the receipt and the effect record, and lands on a
+   record only where the source carries none. Derived text never keys on this id: it survives an
+   edit (`wiki-corpus-reader.ts` memos on the body). <<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/anti-patterns">>
+# ''Kāpae or retract, never silent delete'' (Anti-pattern #3 defense). CLEAR /
+   DROP raise a ''kāpae'' tombstone (shadows lower bags — resurrection-prevention);
+   A live-source MOVE ''retracts'' its source to //absent// (hard-remove → falls through, so the
+   canonical copy beneath surfaces — never a kāpae, else promotion `@working → canon`
+   would shadow its own target). `resolveAll` reports live presence; `listKapaeBags`
+   surfaces which bags explicitly hide a title. (the toggleable shadow-vs-fall-through
+   cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]])
+# ''Parse-or-reject.'' `parseResidencyAction(invocation)` validates verb
+   membership + per-verb required args; malformed input throws before dispatch.
+# ''A retired bag takes no landing.'' DROP writes one `bag-retired` disposition at a
+   fixed title (`<bag>/ledger/residency/retired`) in the bag's own doc, and a second DROP
+   keeps the first marker. The registry row STAYS, the name's only pointer to the retired
+   doc and its ledger. Every verb that writes a bag (ADD, COPY, MOVE, CLEAR, LOAD and INGEST,
+   a watcher's unattended wave among them; `writesBag` in the residency verb table) reads the
+   marker on its destination and refuses by name (`bag-retired: …`), pointing at CREATE; a
+   preview refuses the same. A wiki island's own writes reach a bag through the composite's
+   write door instead (`CompositeStore`: a save, a delete, the delete `lares shore remove`
+   makes, a write into a named bag), and that door reads the target layer's marker before
+   anything lands: a write into a retired bag refuses by the same name, lands nothing, and the
+   island holds the hand owed on its alert rail. A write that only adds new live effect records naming that
+   bag, exactly as the ledger's own builder writes them, to its own residency ledger passes, so the record that retires the bag lands; no tombstone,
+   removal, overwrite or write of the marker's own title passes. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
+   row, so a retirement always names the doc the row pointed at when DROP ran. A wiki's
+   recipe slot belongs to the wiki (`lares wiki remove-bag`), never to a bag verb.
+
+<<~/ahu>>
+
+<<~ ahu #/dispatch>>
+
+!! Dispatch Shore
+
+```
+lares act <VERB> …            ← @lares/cli/src/commands/act.ts (operator surface)
+  → verb-tiddler placed in the admin VM
+    → VerbDispatcher tick → runLocalVerb(invocation, { admin, registry, verifier })
+      → registry.get(invocation.verb)            (registerActionReactors filled it)
+      → makeCapVerify(verifier, requestedBy)     (CapabilityVerifier → cap())
+      → handler(args, { admin, invocation, cap })
+        → cap("admin", toBag)  [+ cap("admin", fromBag) for MOVE]
+        → withEffectRecord(action, composite, () => executeAction(...))
+```
+
+`registerActionReactors(table, { composite })` fills the `VerbTable` with all six
+verbs. Browser and Node vessels share this exact registration — `action-handler.ts`
+is shared, not duplicated (Sprint 6 parity).
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model#/effect-record-surface">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;mYRNiS_1pgBR_-6d0EQp-Ga-osWWOHMB9QCK5w-JHTI
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,9 +1,44 @@
 {
   "compilerOptions": {
     "target": "ES2022",
+    "noEmitOnError": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "paths": {
+      "@lararium/mesh": [
+        "./packages/lararium-mesh/src/index.ts"
+      ],
+      "@lararium/mesh/*": [
+        "./packages/lararium-mesh/*",
+        "./packages/lararium-mesh/src/*"
+      ],
+      "@lararium/tw5": [
+        "./packages/lararium-tw5/src/index.ts"
+      ],
+      "@lararium/tw5/*": [
+        "./packages/lararium-tw5/*",
+        "./packages/lararium-tw5/src/*.ts",
+        "./packages/lararium-tw5/src/*/index.ts"
+      ],
+      "@lararium/mesh/meme-ast": [
+        "./packages/lararium-mesh/src/meme-ast/index.ts"
+      ],
+      "@lararium/memetic-frame": [
+        "./packages/lararium-memetic-frame/src/index.ts"
+      ],
+      "@lararium/memetic-frame/*": [
+        "./packages/lararium-memetic-frame/src/*.ts"
+      ],
+      "@lararium/mesh/node": [
+        "./packages/lararium-mesh/src/node.ts"
+      ],
+      "@lararium/mesh/harvest": [
+        "./packages/lararium-mesh/src/capture/harvest.ts"
+      ]
+    },
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
@@ -11,7 +46,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "skipLibCheck": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "isolatedModules": true
   }
 }

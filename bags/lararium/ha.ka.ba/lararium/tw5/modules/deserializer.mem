@@ -1,0 +1,65 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
+<<^ code="&#x0002;">>
+
+```toml meta
+source-sha256 = "sha256:d689443fc704d96b7c2e3802de2f76541b33cd3f9fe422199387a4bd1ce74b21"
+file-path     = "bags/lararium/ha.ka.ba/lararium/tw5/modules/deserializer.mem"
+heleuma       = "ka"
+mana          = 18
+manao         = 17
+manaoio       = 16
+module-ref    = "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
+role          = "heleuma ka: TW5 tiddlerdeserializer for text/memetic-wikitext"
+source-symbol = "*"
+status-date   = "2026-05-01"
+tags          = ["lar:///ha.ka.ba/lares/api/pono/heleuma/ka"]
+title         = "lar:///ha.ka.ba/lararium/tw5/modules/deserializer"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lararium/tw5/modules/deserializer"
+```
+
+<<~ ahu #/contract>>
+
+!! Deserializer — Contract
+
+TW5 `module-type = "tiddlerdeserializer"` module keyed to `text/memetic-wikitext`.
+
+When TW5 encounters a tiddler with that content-type, it calls:
+
+```
+deserializer(text: string, fields: Record<string, unknown>) → TiddlerFields[]
+```
+
+Carrier model — one file, one carrier (`memetic-wikitext-framing#/frame-security`):
+* ''Framed'': the live heading opens the carrier and the span reader (`readFrame`) closes it; it becomes `[parent, ...children]`, with the prologue and postamble as carriage records under the parent.
+* ''Torn'' (no ETX after STX, a second heading or text frame, a mark out of spine order): held verbatim as ONE `text/plain` record carrying `$torn`; the Confluence gate refuses it.
+* ''Bare body'' (no SOH framing): treated as a single carrier with `fields.title` as URI.
+* A stream of carriers belongs to the SYN-framed profile, never to this deserializer.
+
+Parent tiddler: `text = original carrier text`, `type = "text/memetic-wikitext+tiddlywiki"`.
+Child tiddlers (ahu slots): `text = ahu body text`, also `type = "text/memetic-wikitext+tiddlywiki"`.
+No AST→string reconstruction. MemeticParser owns all rendering for both levels.
+
+Compiled artifact: `packages/lararium-tw5/tiddlers/src/memetic-wikitext-deserializer.js`
+Build: `pnpm --filter @lararium/tw5 build:plugin`
+
+<<~/ahu>>
+
+<<~ ahu #/source>>
+
+<$transclude $tiddler="lar:///ha.ka.ba/lararium/tw5/modules/deserializer" $mode="block"/>
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/carrier-split">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/deserializer">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;iNtHOmGDFWfkq5L2pYDdmHh1VVf5bmZWRstVgMhFBXA
+
+<<^ code="&#x0004;" -> to="?">>

@@ -1,0 +1,578 @@
+# The SURFACE deployment: ONE vessel in the product image, on any host (Gaia parent/daughter, Linux box, Pi,
+# VPS herm, Elyncia's portable figure). The image carries the executable spirit (daemon + CLI + genesis + web);
+# everything that belongs to a household arrives as environment and two host mounts. Per-surface differences
+# are ENVIRONMENT, never another file.
+#
+#   /state      one durable per-vessel host directory: the vessel's homes AND its custody (keys).
+#               Back it up separately. It never rides an image layer, a build arg or an env var.
+#   /workspace  the editable corpus (bags/, wikis/) the disk projection reads and writes.
+#
+# Required (no default, so a forgotten one fails loud instead of siting state in the wrong place):
+#   LARES_STATE       host path mounted at /state      (put it on a LOCAL LINUX filesystem; on Win11 keep it
+#                     inside the WSL distro, never /mnt/c — see the hazards below)
+#   LARES_WORKSPACE   host path mounted at /workspace
+# Optional:
+#   LARES_UID / LARES_GID   the uid:gid the vessel runs as (default 1000:1000). Match the host operator, so
+#                           files in both mounts stay editable from the host. CLI and daemon share it.
+#   LARES_PORT        published relay/web port (default 4321)       LARES_BIND  host interface (default 127.0.0.1;
+#                     set 0.0.0.0 or a LAN address to serve the house)
+#   LARES_IMAGE       image reference (default lares-surface:local)  LAR_PUBLIC_URL  the REACHABLE face of this
+#                     vessel (the name a browser or peer dials; HTTPS needs a WSS-capable name)
+#   LAR_PEERS         pinned peers, `<url>#<gate key>` comma-separated (empty: a sovereign hearth alone)
+#   LAR_LAN_DISCOVERY `announce` answers mDNS questions for `_lararium._tcp` with a bare service and port (empty: off).
+#                     A candidate grants nothing; the gate key reaches a device by a carried admission. THE NETWORK
+#                     DECIDES ITS REACH: on this file's bridge network an announcement reaches the containers of this
+#                     compose project and nothing on the household LAN. Reaching the LAN takes host networking
+#                     (`network_mode: host` in an override file: the container then shares the host's interfaces, the
+#                     `ports:` map stops applying and LARES_BIND no longer fences the listener) or a macvlan/ipvlan
+#                     attachment (needs a parent interface; the host itself usually cannot reach the container).
+#                     Neither stands on by default. Without multicast, the admit's QR code or `lar:` URI carries
+#                     the address.
+#
+# Optional household HTTPS slot (off by default), in two profiles. Both stay off until the operator turns them.
+#
+#   --profile https    the TLS terminator and the split-horizon resolver. The operator supplies LARES_TLS_NAME (for
+#                      example hearth.home.example.test), LARES_TLS_ZONE (for example home.example.test), the host
+#                      paths LARES_TLS_CERT and LARES_TLS_KEY, LARES_DNS_RECORDS (below), and a router DHCP setting
+#                      that gives household devices the resolver's address. Stand it with
+#                        docker compose -f docker-compose.surface.yml --profile https up -d
+#                      Set LAR_PUBLIC_URL=https://<LARES_TLS_NAME> and keep LARES_BIND on loopback. Both services
+#                      publish on loopback until the operator names the LAN interface (LARES_TLS_BIND,
+#                      LARES_DNS_BIND): a resolver published on every interface of a multi-homed host would forward
+#                      for strangers. The terminator reaches `lares` on the compose network at lares:4321, never
+#                      through its published port.
+#                      ONE RESOLVER, ONE RECORD PER NAME. The resolver stands on the always-on node alone and reads
+#                      LARES_DNS_RECORDS, the host path of a plain file with one `<LAN address> <name>` line per
+#                      household name (blank lines and `#` lines skip), so two hearths answer with two addresses:
+#                        192.168.1.10 hearth.home.example.test
+#                        192.168.1.11 parlour.home.example.test
+#                      A name under the zone that the file lists answers with its address; one it does not list
+#                      answers "no such name" and never leaves the house; a reverse lookup of a private or link-local
+#                      address answers "no such name" inside the house too; every other name forwards to
+#                      LARES_DNS_UPSTREAM (default 1.1.1.1). The one-shot `records` check reads the file first, as
+#                      LARES_UID, and refuses by name a line that names no IPv4 LAN address (an octet led by a zero
+#                      included), a name outside the zone, a name on two lines, and a file LARES_UID cannot read or
+#                      others can write: mode 0600 owned by LARES_UID serves. It renders the zone the resolver
+#                      serves, and the resolver stands only once that check passed. After an edit to the file, run the check, and once it
+#                      passes restart the resolver; a refused edit leaves the resolver answering the last zone the
+#                      check passed (a forced recreate of both would stop the resolver on a refusal):
+#                        docker compose -f docker-compose.surface.yml --profile https run --rm records
+#                        docker compose -f docker-compose.surface.yml --profile https restart resolver
+#                      A second machine runs its own terminator alone (`--profile https up -d terminator`) and gets
+#                      its line in the always-on node's file.
+#   --profile issuer   one ACME client, one-shot, on the household's always-on node:
+#                        docker compose -f docker-compose.surface.yml --profile issuer run --rm issuer
+#                      It asks the certificate authority for ONE WILDCARD certificate over LARES_TLS_ZONE and proves
+#                      control of the zone by a TXT record written through the DNS host's API (DNS-01), so nothing
+#                      reaches inward to the house. A run issues, and a later run renews. It asks PUBLIC resolvers
+#                      (LARES_ISSUER_RESOLVERS, default 1.1.1.1:53,9.9.9.9:53) for the zone's apex and the challenge
+#                      record, never the household resolver, which answers every name under the zone itself: through
+#                      it the issuer would find the house's own apex, no name server and no challenge record. The
+#                      issuer refuses by name a resolver it reads as inside the house (a private, loopback,
+#                      link-local or shared address, the resolver's service name, a local name or a name under the
+#                      zone); a LAN resolver under another name stays the operator's to keep out. So a public
+#                      record under the zone stays
+#                      out of reach inside the house, by design. The operator supplies
+#                      LARES_TLS_ZONE, LARES_TLS_DIR (a host directory the issuer writes), LARES_DNS_CREDENTIAL_DIR
+#                      and LARES_ACME_ACCEPT_TOS=yes (the operator, never this file, accepts the authority's terms).
+#                      Optional: LARES_TLS_CERT_NAME (default household; one name per machine), LARES_ACME_SERVER,
+#                      LARES_ISSUER_IMAGE.
+#                      THE CREDENTIAL RESTS AS TWO FILES in LARES_DNS_CREDENTIAL_DIR, a host directory outside both
+#                      mounts and outside any repository (mode 0700): `porkbun-api-key` and `porkbun-secret-api-key`,
+#                      each mode 0400 and owned by the uid the issuer runs as. The issuer alone mounts that
+#                      directory, read-only, and refuses by name a directory inside LARES_STATE or LARES_WORKSPACE,
+#                      a relative or dotted path, and a file or directory others can read. It compares path
+#                      strings and cannot see a symlink on the host: keep the directory a real directory. No
+#                      credential VALUE enters this file, an environment variable, the image, /state or /workspace;
+#                      the vessel mounts and names none of it.
+#                      The issuer writes certificates/<name>.crt and certificates/<name>.key under LARES_TLS_DIR;
+#                      point LARES_TLS_CERT and LARES_TLS_KEY at that pair. After a renewal, confirm the
+#                      certificate changed, then restart the terminator so it reads the new bytes; recreate it
+#                      (`up -d --force-recreate terminator`) when a hand replaced either file with a new one, since
+#                      a single-file bind holds the file it met at start. ONE CERTIFICATE PER MACHINE: a run under another
+#                      LARES_TLS_CERT_NAME issues a second certificate with its own key, which a human carries to
+#                      that machine. A wildcard publishes only the wildcard to the public transparency logs; a
+#                      per-name certificate would publish that name.
+#                      Proof with no real credential, domain or zone: tools/household-https-witness.sh.
+#
+# THE ONE HOLDER LAW. One standing vessel owns the store at /state. The store takes its own claim at
+# /state/.holder, a socket on the state mount, so a second container on the same /state refuses with StoreHeld
+# through any entrypoint. Reach a standing vessel through exec; with none standing, the offline CLI door owns
+# the store for one act and refuses by name if a vessel holds it. The CLI reports a needed re-stand while
+# LAR_ENGINE=host leaves restart authority with the host shim. The standing vessel's CLI door is
+#   docker compose -f docker-compose.surface.yml exec lares node packages/lares-cli/bin/lares.mjs <verb…>
+# so the CLI shares the daemon's /tmp (the UDS rendezvous), uid and environment. The UDS lives in the
+# container's own tmpfs /tmp: never bind it to the host, never share it between two containers, never put it
+# on a Windows share (its claim hard-links a staging socket, which a 9P/SMB filesystem may refuse).
+#
+# FOUNDING is an offline act on the store:
+#   docker compose -f docker-compose.surface.yml --profile offline run --rm offline vessel found --skip-build --root /state --genesis /app/genesis
+# The founding gathers the human route (a passphrase and/or a paper pin) on a TTY: `run` attaches one when the
+# host terminal has one, and `run -T`, a pipe or a detached `up` has none, so the CLI refuses by name
+# (CredentialTtyRefusal). No flag and no env var carries a credential. After the founding, `lares vault status`,
+# `unlock`, `bind` and `unbind` read theirs the same way, through the shim: `tools/lares-container.sh vault status`.
+# The host shims (tools/lares-container.sh, tools/lares-container.ps1) wrap up, down, found, logs and the exec.
+# The engine has no Docker socket and gets none: engine control stays with the host.
+#
+# WSL2/hosts: bind mounts from /mnt/c (9P) are slow and change ownership/metadata semantics; keep both mounts on
+# ext4 inside the distro. Durability of the store rests on the host disk honoring fsync — a VM, network
+# filesystem or controller cache can lie, and the daemon cannot tell.
+
+name: lares-surface
+
+x-vessel: &vessel
+  image: ${LARES_IMAGE:-lares-surface:local}
+  build:
+    context: .
+    dockerfile: Dockerfile
+    target: serve
+  user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
+  volumes:
+    - type: bind
+      source: ${LARES_STATE:?set LARES_STATE to the per-vessel state directory on the host}
+      target: /state
+    - type: bind
+      source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the corpus directory on the host}
+      target: /workspace
+  # The explicit roots. The image bakes the same four; they are restated so a reader of THIS file sees the
+  # contract. LAR_BAGS alone does not isolate the projection mirrors — the daemon also takes --root /workspace.
+  environment: &roots
+    LAR_ROOT: /state
+    LAR_BAGS: /workspace/bags
+    LAR_WIKIS: /workspace/wikis
+    LAR_GENESIS: /app/genesis
+    LAR_PORT: "4321"
+    LAR_ENGINE: host
+  # The UDS rendezvous (/tmp/lares-<uid>/…) stays INSIDE this container.
+  tmpfs:
+    - /tmp:mode=1777
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  # The standing vessel. Unprofiled: `docker compose up` stands it.
+  lares:
+    <<: *vessel
+    environment:
+      <<: *roots
+      LAR_PUBLIC_URL: ${LAR_PUBLIC_URL:-http://localhost:${LARES_PORT:-4321}}
+      LAR_PEERS: ${LAR_PEERS:-}
+      LAR_LAN_DISCOVERY: ${LAR_LAN_DISCOVERY:-}
+      # The relay, oracle and Web surface share the one HTTP origin this vessel serves; a vessel that leaves
+      # its Web origin undeclared refuses to boot.
+      LAR_SAME_ORIGIN: "true"
+      # The Web shore and its finite receipt ride as two explicit inputs; copying the bytes alone never widens
+      # Node's route ownership. Only a Lararium (a vessel with a lit face) mounts them — see `herm` below.
+      LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
+      LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
+    command: ["--root", "/workspace", "--genesis", "/app/genesis"]
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 20s
+    ports:
+      - "${LARES_BIND:-127.0.0.1}:${LARES_PORT:-4321}:4321"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4321/api/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+
+  # The offline CLI door owns the store for one act and refuses by name while a vessel stands.
+  offline:
+    <<: *vessel
+    profiles: [offline]
+    entrypoint: ["node", "packages/lares-cli/bin/lares.mjs"]
+    stdin_open: true   # the route prompt reads the attached terminal; `run` allocates the TTY itself
+    command: ["help"]
+    restart: "no"
+
+  # The VPS-herm surface: the same image standing wiki-less (the carriage crossroads). A herm handed any
+  # LAR_PRONAOS_* input refuses to boot, so it is its own service. It takes the SAME /state as `lares` would, so
+  # run ONE of the two (the one-holder law refuses the second); a host picks its surface by `up lares` or
+  # `--profile herm up herm`.
+  herm:
+    <<: *vessel
+    profiles: [herm]
+    environment:
+      <<: *roots
+      LAR_RECIPE: herm
+      LAR_HERM_RELAY_PORT: "8090"
+      LAR_PUBLIC_URL: ${LAR_PUBLIC_URL:-http://localhost:${LARES_PORT:-4321}}
+      LAR_PEERS: ${LAR_PEERS:-}
+      LAR_LAN_DISCOVERY: ${LAR_LAN_DISCOVERY:-}
+      LAR_SAME_ORIGIN: "true"
+    command: ["--root", "/workspace", "--genesis", "/app/genesis"]
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 20s
+    ports:
+      - "${LARES_BIND:-127.0.0.1}:${LARES_PORT:-4321}:4321"
+      - "${LARES_BIND:-127.0.0.1}:${LARES_RELAY_PORT:-8090}:8090"
+
+  # The optional TLS edge. Host-supplied certificate files are read-only; the vessel remains plaintext on
+  # the private compose network and keeps its published port on loopback.
+  terminator:
+    profiles: [https]
+    image: ${LARES_TLS_IMAGE:-nginx:1.30-alpine}
+    # The terminator runs as the vessel's own uid: the operator's key file stays readable by its owner alone, and
+    # the listener binds an unprivileged port inside, so the service holds no capability at all.
+    user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
+    # Each required value refuses BY NAME, here, when it stands empty. Compose interpolates every service whether
+    # or not its profile runs, so a required-variable form in this slot would break the default `up`.
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        refuse() { echo "household-https: $$1" >&2; exit 2; }
+        [ -n "$$LARES_TLS_NAME" ] || refuse 'LARES_TLS_NAME stands unset — name the household host (for example hearth.home.example.test)'
+        [ -n "$$LARES_TLS_CERT" ] || refuse 'LARES_TLS_CERT stands unset — supply the host path of the certificate file'
+        [ -n "$$LARES_TLS_KEY" ]  || refuse 'LARES_TLS_KEY stands unset — supply the host path of the key file'
+        [ -n "$$LARES_TLS_ZONE" ] || refuse 'LARES_TLS_ZONE stands unset — name the zone the certificate covers (for example home.example.test)'
+        case "$$LARES_TLS_NAME" in *".$$LARES_TLS_ZONE") ;; *) refuse "LARES_TLS_NAME ($$LARES_TLS_NAME) lies outside LARES_TLS_ZONE ($$LARES_TLS_ZONE) — the zone's wildcard would never cover it" ;; esac
+        exec nginx -g 'daemon off;'
+    environment:
+      LARES_TLS_NAME: ${LARES_TLS_NAME:-}
+      LARES_TLS_CERT: ${LARES_TLS_CERT:-}
+      LARES_TLS_KEY: ${LARES_TLS_KEY:-}
+      LARES_TLS_ZONE: ${LARES_TLS_ZONE:-}
+    # Healthy once the listener accepts.
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "8443"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    ports:
+      - "${LARES_TLS_BIND:-127.0.0.1}:${LARES_TLS_PORT:-443}:8443"
+    volumes:
+      - type: bind
+        source: ${LARES_TLS_CERT:-/dev/null}
+        target: /run/tls/tls.crt
+        read_only: true
+      - type: bind
+        source: ${LARES_TLS_KEY:-/dev/null}
+        target: /run/tls/tls.key
+        read_only: true
+    configs:
+      - source: household-terminator-nginx-main
+        target: /etc/nginx/nginx.conf
+      - source: household-terminator-nginx
+        target: /etc/nginx/conf.d/default.conf
+    # Compose writes inline config content into the container's own filesystem at create, so the root filesystem
+    # stays writable; the service holds no capability and no privilege to use that with.
+    tmpfs:
+      - /var/cache/nginx:rw,noexec,nosuid,size=16m,mode=1777
+      - /var/run:rw,noexec,nosuid,size=4m,mode=1777
+      - /var/log/nginx:rw,noexec,nosuid,size=4m,mode=1777
+      - /tmp:rw,noexec,nosuid,size=8m
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      - lares
+    restart: unless-stopped
+
+  # The zone volume's owner: one-shot, before the records check. It hands the zone volume to LARES_UID, so the check
+  # renders the zone and reads the records file as that uid, holding no privilege. It holds no network and the one
+  # capability a change of owner needs.
+  zone-owner:
+    profiles: [https]
+    image: ${LARES_TLS_IMAGE:-nginx:1.30-alpine}
+    user: "0:0"
+    network_mode: none
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        case "$$LARES_UID:$$LARES_GID" in *[!0-9:]*|:*|*:|*:*:*) echo "household-zone: LARES_UID and LARES_GID ($$LARES_UID:$$LARES_GID) read as no numeric uid and gid" >&2; exit 2 ;; esac
+        chown "$$LARES_UID:$$LARES_GID" /zone
+    environment:
+      LARES_UID: ${LARES_UID:-1000}
+      LARES_GID: ${LARES_GID:-1000}
+    volumes:
+      - type: volume
+        source: household-zone
+        target: /zone
+    cap_drop: [ALL]
+    cap_add: [CHOWN]
+    security_opt: ["no-new-privileges:true"]
+    restart: "no"
+
+  # The records check: one-shot, before the resolver. It reads the household's records file, refuses by name what
+  # the resolver would answer wrongly or never, and renders the zone the resolver serves into one volume, which is
+  # its only write. It holds no network and no capability, and runs as LARES_UID: it reads the records file as that
+  # uid, so a file only LARES_UID reads (mode 0600) serves.
+  records:
+    profiles: [https]
+    image: ${LARES_TLS_IMAGE:-nginx:1.30-alpine}
+    user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
+    network_mode: none
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        refuse() { echo "household-records: $$1" >&2; exit 2; }
+        set -f
+        [ -n "$$LARES_TLS_ZONE" ] || refuse 'LARES_TLS_ZONE stands unset — name the zone the resolver answers (for example home.example.test)'
+        case "$$LARES_TLS_ZONE" in *[!a-z0-9.-]*|.*|*.|*..*) refuse "LARES_TLS_ZONE ($$LARES_TLS_ZONE) reads as no DNS zone — lowercase letters, digits, hyphens and dots" ;; esac
+        [ -n "$$LARES_DNS_RECORDS" ] || refuse 'LARES_DNS_RECORDS stands unset — give the host path of the records file, one "<LAN address> <name>" line per household name'
+        file=/run/records/household.records
+        [ -f "$$file" ] && [ -s "$$file" ] || refuse 'LARES_DNS_RECORDS names no file, or an empty one — one "<LAN address> <name>" line per household name'
+        mode=$$(stat -c %a "$$file")
+        [ -r "$$file" ] || refuse "LARES_DNS_RECORDS file mode ($$mode) keeps the check out — it reads the file as LARES_UID ($$(id -u)); let that uid read it (mode 0600 owned by LARES_UID)"
+        [ $$((0$$mode & 022)) -eq 0 ] || refuse "LARES_DNS_RECORDS file mode ($$mode) lets group or other write — set mode 0600"
+        next=/zone/.next
+        rm -f "$$next"
+        printf '$$ORIGIN %s.\n@ 60 IN SOA resolver.%s. hostmaster.%s. 1 3600 600 86400 60\n' "$$LARES_TLS_ZONE" "$$LARES_TLS_ZONE" "$$LARES_TLS_ZONE" > "$$next"
+        names=' '; count=0
+        while IFS= read -r line || [ -n "$$line" ]; do
+          set -- $$line
+          [ "$$#" -gt 0 ] || continue
+          case "$$1" in '#'*) continue ;; esac
+          [ "$$#" -eq 2 ] || refuse "the line \"$$line\" holds no \"<LAN address> <name>\" pair"
+          address=$$1; name=$$2
+          printf '%s\n' "$$address" | grep -Eq '^([0-9]{1,3}\.){3}[0-9]{1,3}$$' || refuse "$$address (for $$name) reads as no IPv4 address"
+          for octet in $$(printf '%s' "$$address" | tr . ' '); do
+            case "$$octet" in 0?*) refuse "$$address (for $$name) holds an octet led by a zero — the resolver loads no zone that holds one; write each octet with no leading zero" ;; esac
+            [ "$$octet" -le 255 ] || refuse "$$address (for $$name) reads as no IPv4 address"
+          done
+          case "$$address" in 0.*|127.*|255.*) refuse "$$address (for $$name) names no device on the LAN" ;; esac
+          case "$$name" in *[!a-z0-9.-]*|.*|*.|*..*) refuse "$$name reads as no household name — lowercase letters, digits, hyphens and dots" ;; esac
+          case "$$name" in *".$$LARES_TLS_ZONE") ;; *) refuse "$$name lies outside LARES_TLS_ZONE ($$LARES_TLS_ZONE) — the resolver would never answer it" ;; esac
+          # A zone the resolver cannot load stands no resolver at all, so the lengths DNS allows get checked here.
+          [ "$${#name}" -le 253 ] || refuse "$$name runs past 253 characters — DNS holds no such name"
+          for label in $$(printf '%s' "$$name" | tr . ' '); do [ "$${#label}" -le 63 ] || refuse "$$name holds a label past 63 characters — DNS holds no such name"; done
+          case "$$names" in *" $$name "*) refuse "$$name stands on two lines — one name answers with one address" ;; esac
+          printf '%s. 60 IN A %s\n' "$$name" "$$address" >> "$$next"
+          names="$$names$$name "; count=$$((count + 1))
+        done < "$$file"
+        [ "$$count" -gt 0 ] || refuse 'LARES_DNS_RECORDS holds no record — one "<LAN address> <name>" line per household name'
+        chmod 644 "$$next"
+        mv -f "$$next" /zone/db.household
+        echo "household-records: $$count name(s) under $$LARES_TLS_ZONE"
+    environment:
+      LARES_TLS_ZONE: ${LARES_TLS_ZONE:-}
+      LARES_DNS_RECORDS: ${LARES_DNS_RECORDS:-}
+    volumes:
+      - type: bind
+        source: ${LARES_DNS_RECORDS:-/dev/null}
+        target: /run/records/household.records
+        read_only: true
+        # A path that names nothing refuses at create; the engine never makes a directory in its place.
+        bind:
+          create_host_path: false
+      - type: volume
+        source: household-zone
+        target: /zone
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=1m
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      zone-owner:
+        condition: service_completed_successfully
+    restart: "no"
+
+  # One split-horizon DNS answer per household name; every name outside the zone follows the configured upstream.
+  resolver:
+    profiles: [https]
+    image: ${LARES_DNS_IMAGE:-coredns/coredns:1.12.1}
+    # The CoreDNS image holds no shell, so it checks nothing itself: the `records` check refuses an unset zone and
+    # every malformed record by name and renders the zone, and this service starts only once that check passed.
+    # Its binary carries the bind-service file capability, so the service runs as root holding that ONE capability
+    # and no other; with new privileges forbidden, an exec that would have to GAIN it refuses.
+    user: "0:0"
+    command: ["-conf", "/etc/coredns/Corefile"]
+    environment:
+      LARES_TLS_ZONE: ${LARES_TLS_ZONE:-}
+      LARES_DNS_UPSTREAM: ${LARES_DNS_UPSTREAM:-1.1.1.1}
+    ports:
+      - "${LARES_DNS_BIND:-127.0.0.1}:${LARES_DNS_PORT:-53}:1053/udp"
+      - "${LARES_DNS_BIND:-127.0.0.1}:${LARES_DNS_PORT:-53}:1053/tcp"
+    configs:
+      - source: household-resolver-corefile
+        target: /etc/coredns/Corefile
+    volumes:
+      - type: volume
+        source: household-zone
+        target: /zone
+        read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=8m
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      records:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # The one-shot certificate issuer (lego, an ACME client). INVARIANTS:
+  #   · It alone reads the DNS credential: two owner-read files in a host directory the operator names, bound
+  #     read-only at /run/dns and handed to the DNS provider through its `_FILE` names. No variable of any service
+  #     carries a credential value.
+  #   · It proves control of the zone by a TXT record through the DNS host's API, so nothing reaches inward.
+  #   · It asks for the wildcard alone and writes into LARES_TLS_DIR, the one directory it may write.
+  #   · It shares no mount with the vessel, and refuses a credential directory that lies inside either vessel mount.
+  # Sources: provider `porkbun`, variables PORKBUN_API_KEY and PORKBUN_SECRET_API_KEY, "The environment variable
+  # names can be suffixed by _FILE to reference a file instead of a value": https://go-acme.github.io/lego/dns/porkbun/
+  # Image goacme/lego, tag v5.5.2: https://hub.docker.com/r/goacme/lego/tags
+  issuer:
+    profiles: [issuer]
+    image: ${LARES_ISSUER_IMAGE:-goacme/lego:v5.5.2}
+    user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=4m
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        refuse() { echo "household-issuer: $$1" >&2; exit 2; }
+        [ -n "$$LARES_TLS_ZONE" ] || refuse 'LARES_TLS_ZONE stands unset — name the household DNS zone'
+        case "$$LARES_TLS_ZONE" in *[!a-z0-9.-]*|.*|*.|*..*) refuse "LARES_TLS_ZONE ($$LARES_TLS_ZONE) reads as no DNS zone — lowercase letters, digits, hyphens and dots" ;; esac
+        [ -n "$$LARES_TLS_DIR" ] || refuse 'LARES_TLS_DIR stands unset — supply the host certificate directory'
+        [ -n "$$LARES_DNS_CREDENTIAL_DIR" ] || refuse 'LARES_DNS_CREDENTIAL_DIR stands unset — supply the host directory holding the two DNS credential files'
+        [ "$$LARES_ACME_ACCEPT_TOS" = yes ] || refuse 'LARES_ACME_ACCEPT_TOS stands unset — set it to yes after accepting the authority terms'
+        [ -n "$$LARES_TLS_CERT_NAME" ] || refuse 'LARES_TLS_CERT_NAME stands unset — name this machine certificate'
+        case "$$LARES_TLS_CERT_NAME" in *[!a-z0-9-]*) refuse 'LARES_TLS_CERT_NAME stands invalid — use only lowercase letters, digits, and hyphens' ;; esac
+        # Each host path reads absolute and plain (no `.` or `..` segment, no doubled slash), so the prefix checks
+        # below compare like with like; a trailing slash drops first. A symlink stays invisible from in here: the
+        # operator keeps the credential directory a real directory.
+        plain() {
+          p=$$2; while [ "$$p" != / ] && [ "$${p%/}" != "$$p" ]; do p=$${p%/}; done
+          case "$$p" in /*) ;; *) refuse "$$1 ($$2) stands relative — give an absolute host path" ;; esac
+          case "$$p/" in *//*|*/./*|*/../*) refuse "$$1 ($$2) holds a dot segment or a doubled slash — give the plain absolute path" ;; esac
+          printf '%s' "$$p"
+        }
+        credential=$$(plain LARES_DNS_CREDENTIAL_DIR "$$LARES_DNS_CREDENTIAL_DIR")
+        certificates=$$(plain LARES_TLS_DIR "$$LARES_TLS_DIR")
+        [ -z "$$LARES_STATE" ] || state=$$(plain LARES_STATE "$$LARES_STATE")
+        [ -z "$$LARES_WORKSPACE" ] || workspace=$$(plain LARES_WORKSPACE "$$LARES_WORKSPACE")
+        [ -z "$${state:-}" ] || case "$$credential/" in "$$state/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_STATE — place it outside the state mount' ;; esac
+        [ -z "$${workspace:-}" ] || case "$$credential/" in "$$workspace/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_WORKSPACE — place it outside the workspace mount' ;; esac
+        case "$$credential/" in "$$certificates/"*) refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_TLS_DIR — keep the credential apart from the certificates' ;; esac
+        [ "$$(stat -c %d:%i /run/dns)" != "$$(stat -c %d:%i /certs)" ] || refuse 'LARES_DNS_CREDENTIAL_DIR and LARES_TLS_DIR name one directory — keep the credential apart from the certificates'
+        [ -d /run/dns ] || refuse 'LARES_DNS_CREDENTIAL_DIR names no directory'
+        mode=$$(stat -c %a /run/dns)
+        case "$$mode" in 700|500) ;; *) refuse "LARES_DNS_CREDENTIAL_DIR mode ($$mode) lets group or other in — set mode 0700" ;; esac
+        for pair in 'PORKBUN_API_KEY_FILE:/run/dns/porkbun-api-key' 'PORKBUN_SECRET_API_KEY_FILE:/run/dns/porkbun-secret-api-key'; do
+          name=$${pair%%:*}; file=$${pair#*:}
+          [ -s "$$file" ] || refuse "$$name reads missing or empty — place $${file##*/} in LARES_DNS_CREDENTIAL_DIR"
+          [ "$$(stat -c %u "$$file")" = "$$(id -u)" ] || refuse "$$name file belongs to another user — the issuer's own uid must own it"
+          mode=$$(stat -c %a "$$file")
+          [ "$$mode" = 400 ] || refuse "$$name file mode ($$mode) reads wider than its owner — set mode 0400"
+        done
+        # The issuer asks PUBLIC resolvers for the zone's apex and the challenge record. The household resolver answers
+        # every name under the zone itself, so through it the issuer would find the house's apex and no name server.
+        # It refuses, by name, a resolver it reads as inside the house: a private, loopback, link-local or shared
+        # (CGNAT) address in either family, the household resolver's own service name, a local name, or a name
+        # under the zone. A LAN resolver under any other public-looking name stays the operator's to keep out.
+        set -f
+        [ -n "$$LARES_ISSUER_RESOLVERS" ] || refuse 'LARES_ISSUER_RESOLVERS stands unset — name public resolvers as host:port, comma-separated'
+        resolvers=$$(printf '%s' "$$LARES_ISSUER_RESOLVERS" | tr 'A-Z' 'a-z')
+        case ",$$resolvers," in *,,*) refuse "LARES_ISSUER_RESOLVERS ($$LARES_ISSUER_RESOLVERS) holds an empty entry" ;; esac
+        for resolver in $$(printf '%s' "$$resolvers" | tr , ' '); do
+          case "$$resolver" in ?*:[0-9]*) ;; *) refuse "LARES_ISSUER_RESOLVERS entry $$resolver names no host:port" ;; esac
+          case "$${resolver%:*}" in *[!a-z0-9.:\[\]-]*) refuse "LARES_ISSUER_RESOLVERS entry $$resolver reads as no host" ;; esac
+          case "$${resolver%:*}" in
+            0.*|10.*|127.*|169.254.*|192.168.*|172.1[6-9].*|172.2[0-9].*|172.3[01].*|100.6[4-9].*|100.[7-9][0-9].*|100.1[01][0-9].*|100.12[0-7].*|\
+            \[::*|\[fc*|\[fd*|\[fe[89ab]*|\
+            localhost|*.localhost|resolver|*.local|*.lan|*.internal|*.home.arpa|"$$LARES_TLS_ZONE"|*".$$LARES_TLS_ZONE")
+              refuse "LARES_ISSUER_RESOLVERS entry $$resolver names a resolver inside the house — the issuer asks public resolvers, never the household zone" ;;
+          esac
+        done
+        exec /lego run --accept-tos --account-id household --server "$$LARES_ACME_SERVER" --path /certs --dns "$$LARES_ISSUER_DNS" --dns.resolvers "$$resolvers" --cert.name "$$LARES_TLS_CERT_NAME" -d "*.$$LARES_TLS_ZONE"
+    environment:
+      LARES_TLS_ZONE: ${LARES_TLS_ZONE:-}
+      LARES_TLS_DIR: ${LARES_TLS_DIR:-}
+      LARES_DNS_CREDENTIAL_DIR: ${LARES_DNS_CREDENTIAL_DIR:-}
+      LARES_TLS_CERT_NAME: ${LARES_TLS_CERT_NAME:-household}
+      LARES_ACME_ACCEPT_TOS: ${LARES_ACME_ACCEPT_TOS:-}
+      LARES_ACME_SERVER: ${LARES_ACME_SERVER:-https://acme-v02.api.letsencrypt.org/directory}
+      LARES_ISSUER_DNS: ${LARES_ISSUER_DNS:-porkbun}
+      LARES_ISSUER_RESOLVERS: ${LARES_ISSUER_RESOLVERS:-1.1.1.1:53,9.9.9.9:53}
+      LARES_STATE: ${LARES_STATE:-}
+      LARES_WORKSPACE: ${LARES_WORKSPACE:-}
+      PORKBUN_API_KEY_FILE: /run/dns/porkbun-api-key
+      PORKBUN_SECRET_API_KEY_FILE: /run/dns/porkbun-secret-api-key
+    volumes:
+      - type: bind
+        source: ${LARES_DNS_CREDENTIAL_DIR:-/dev/null}
+        target: /run/dns
+        read_only: true
+      - type: bind
+        source: ${LARES_TLS_DIR:-/dev/null}
+        target: /certs
+    restart: "no"
+
+# The zone the records check renders and the resolver serves: derived, rewritten whole by every check.
+volumes:
+  household-zone:
+
+configs:
+  household-terminator-nginx-main:
+    content: |
+      worker_processes auto;
+      pid /var/run/nginx.pid;
+      error_log /dev/stderr warn;
+      events { worker_connections 1024; }
+      http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        access_log /dev/stdout;
+        sendfile on;
+        keepalive_timeout 65;
+        # The browser's first gate message rides Sec-WebSocket-Protocol, and one header line must fit one buffer.
+        # nginx documents a default of `4 8k`; a measured tablet sends 8192 bytes in that one header, which with
+        # its name overflows 8k and draws 400. Set at the http level, so the default server cannot shadow it.
+        # https://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers
+        large_client_header_buffers 4 16k;
+        include /etc/nginx/conf.d/*.conf;
+      }
+  household-terminator-nginx:
+    content: |
+      # A request for any other name gets no certificate and no vessel: the handshake refuses.
+      server {
+        listen 8443 ssl default_server;
+        ssl_reject_handshake on;
+      }
+      server {
+        listen 8443 ssl;
+        server_name ${LARES_TLS_NAME:-unset.invalid};
+        ssl_certificate /run/tls/tls.crt;
+        ssl_certificate_key /run/tls/tls.key;
+        location / {
+          proxy_pass http://lares:4321;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $$http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $$http_host;
+          proxy_set_header X-Forwarded-Proto https;
+          proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+          # A relay socket rests idle between changes. The proxy's idle timers bound transport alone, at the edge
+          # of the vessel: they decide no admission and no lapse, and a dropped socket simply dials again.
+          # The vessel answers an upgrade by echoing the chosen subprotocol, so the response head carries the same
+          # long header back. nginx reads a response head into one buffer of one memory page (4k or 8k) by default
+          # and answers 502 past it; the buffer set must hold what the request side admits.
+          # https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_buffer_size
+          proxy_buffer_size 16k;
+          proxy_buffers 8 16k;
+          proxy_read_timeout 1h;
+          proxy_send_timeout 1h;
+          # A carrier save may exceed the proxy's default body bound; the vessel sets its own.
+          client_max_body_size 0;
+        }
+      }
+  household-resolver-corefile:
+    content: |
+      # The rendered zone answers for every name under it: a listed name with its one address, any other name
+      # "no such name", and no household name leaves the house. It loads once at start (reload 0), after the check.
+      # A reverse lookup of a private, loopback, link-local or unspecified address (RFC 6303) answers "no such name"
+      # here and never leaves the house either.
+      .:1053 {
+        errors
+        template ANY ANY 0.in-addr.arpa 10.in-addr.arpa 127.in-addr.arpa 254.169.in-addr.arpa 16.172.in-addr.arpa 17.172.in-addr.arpa 18.172.in-addr.arpa 19.172.in-addr.arpa 20.172.in-addr.arpa 21.172.in-addr.arpa 22.172.in-addr.arpa 23.172.in-addr.arpa 24.172.in-addr.arpa 25.172.in-addr.arpa 26.172.in-addr.arpa 27.172.in-addr.arpa 28.172.in-addr.arpa 29.172.in-addr.arpa 30.172.in-addr.arpa 31.172.in-addr.arpa 168.192.in-addr.arpa 255.255.255.255.in-addr.arpa d.f.ip6.arpa 8.e.f.ip6.arpa 9.e.f.ip6.arpa a.e.f.ip6.arpa b.e.f.ip6.arpa 1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa 0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.ip6.arpa {
+          rcode NXDOMAIN
+        }
+        file /zone/db.household ${LARES_TLS_ZONE:-unset.invalid} {
+          reload 0
+        }
+        forward . ${LARES_DNS_UPSTREAM:-1.1.1.1}
+      }

@@ -1,0 +1,232 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/peer-coordination">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = true
+file-path = "bags/lararium/ha.ka.ba/lararium/docs/peer-coordination.mem"
+mana      = 18
+manao     = 18
+manaoio   = 17
+role      = "Peer rendezvous + doc coordination doctrine — derived doc addresses, the pinned first boot, minted pointers on the oracle, the Keyhive path as built, reaction write-back invariants as design law"
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/local-first"]
+title     = "lar:///ha.ka.ba/lararium/docs/peer-coordination"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/docs/peer-coordination"
+```
+
+! Peer Coordination — Automerge Rendezvous Doctrine
+
+!! The Yjs / Automerge Difference
+
+In Yjs, room name = doc identity. Two peers calling `new Y.Doc()` with the same
+provider room string rendezvous automatically — the provider maps name → CRDT state.
+
+In `@automerge/automerge-repo`, a random UUID (`AutomergeUrl`) carries doc identity.
+Two `repo.create()` calls always produce two ''separate, non-merging documents''.
+`Repo.import(binary)` does NOT produce a deterministic URL from content — it
+generates a new random UUID per import. The library ships no native content-addressed
+rendezvous primitive.
+
+''Corollary:'' any system that lets two peers independently create "the same wiki"
+without sharing a URL produces two hermetic worlds that never merge.
+Patching this at the reaction layer treats a coordination failure as an
+application concern — wrong layer.
+
+!! The UEFN Lesson: Author-Time Identity
+
+UEFN/Verse handles island-level shared state through ''device identity assigned''
+''at author-time (edit-time), not at boot-time''. The author places devices in the island
+editor, each device receives a stable UUID from the editor, and the project checks those IDs in.
+The island file SERVES AS the rendezvous — runtime code never calls "create new
+device"; it calls "find device at this author-assigned ID."
+
+''The lesson for predefined wikis (UNBUILT):'' the island author MUST assign each wiki docUrl in a
+committed island definition before boot. Peers join that URL; they never create predefined wiki docs.
+What the house built instead follows.
+
+!! Canonical Architecture
+
+''Oracle and board addresses derive from shared seeds; other shared bag URLs come from `repo.create()`''
+''and travel as pointer records on the oracle or the catalog.''
+`deterministicDocUrl(seed)` takes the first 16 bytes of `sha256(seed)` as the doc id
+(`packages/lararium-mesh/src/deterministic-doc.ts`). Two families ride it:
+
+* the ''oracle plane'' — `oracleGenesisDocUrl` derives its address from a well-known seed, so every
+  vessel materializes the same doc under one stable id;
+* the ''per-Nexus boards'' — crossroads, WHO, Kapae antigen, carriage, vouch, edge-kapae and
+  persona-KEL derive from the Nexus key; each hosting doc derives from both the Nexus and a hearth key.
+  Vessels given the same inputs resolve the same address.
+
+```
+seed (a well-known string, or a URI + the Nexus key)
+        │  deterministicDocUrl
+        ▼
+All peers: materializeSharedLarDoc(repo, url)  ←  find first; else import the pinned blank under that id
+        │
+        ▼
+one CRDT truth per board  ←  each vessel writes its own entries under its own actor
+```
+
+''The first-boot race converges by construction.'' `materializeSharedLarDoc` finds the doc when a prior
+boot or a synced peer holds it. Otherwise the vessel imports a blank doc under the deterministic id, and
+`pinnedDoc` pins both the actor and the clock of that blank (`packages/lararium-mesh/src/pinned-doc.ts`) —
+so two vessels racing to stand first import byte-identical bytes, share one history, and merge.
+
+''The rest mint at random.'' A vessel's private docs come from `repo.create()`, so no peer derives their
+ids. The shared lares and lararium corpus docs mint the same way in the node's genesis office, which records
+each URL on the oracle doc; two node homes federating one oracle may race that mint, LWW settles it, and
+each re-reads and adopts the winner (`packages/lararium-node/src/genesis-artifact.ts`).
+
+''UNBUILT: the committed island file.'' No `lararium-island.ts`, no `ISLAND.catalogDocUrl` and no
+`ISLAND.wikis` table stand in source. Derivation carries the author-time rendezvous instead.
+
+!! Dynamic Wiki Bootstrap Protocol
+
+''UNBUILT.'' The design below covers a wiki that two peers may each create at runtime under one name. No
+source implements it: no `contentDocUrl` field stands in code.
+
+```
+1. repo.find(catalogDocUrl) → catalogHandle
+   (waitHandleLocal: serve from NodeFS/IndexedDB first; merge remote opportunistically)
+
+2. canonicalUrl = catalogHandle.doc().wikis[wikiId]?.contentDocUrl
+
+3a. if present → repo.find(canonicalUrl)  [fast path, no race]
+
+3b. if absent →
+      myHandle = repo.create({})
+      catalogHandle.change(doc => {
+        doc.wikis[wikiId] = { contentDocUrl: myHandle.url }
+      })
+      await tick  // let Automerge resolve concurrent writes by actor-ID + Lamport clock
+      canonicalUrl = catalogHandle.doc().wikis[wikiId].contentDocUrl
+      if canonicalUrl !== myHandle.url →
+        // lost the CRDT race — migrate writes and discard orphan
+        Automerge.merge(canonicalDoc, myHandle.doc())  // rebase local changes
+        repo.find(canonicalUrl)                        // join canonical
+      else →
+        myHandle  // won the race
+```
+
+Automerge's LWW map resolves concurrent `wikis[wikiId]` writes deterministically
+by actor-ID + Lamport timestamp. The losing peer migrates via `Automerge.merge()`
+(valid because both docs share intended content), then discards its orphan URL.
+
+!! Keyhive Path
+
+Keyhive (Ink & Switch — Zelenka, Mumm, Good) builds Automerge-native access control.
+
+* ''Doc IDs never serve as Ed25519 public keys.'' Some docs receive random IDs; the oracle and the
+  per-Nexus boards derive theirs from stable seeds. Their URLs keep the `automerge:<base58-id>` form.
+  Keyhive adds an access-control layer ON TOP — it does not change the URL scheme.
+* ''Individuals'' have stable Ed25519 keypairs → DIDs. ''Documents'' have their own
+  Keyhive group structure (separate from the individual's key).
+* ''"Add member"'' commits a signed operation to the doc's Keyhive ACL log,
+  referencing the new peer's Ed25519 public key. No separate invite token — the
+  signed "add" entry SERVES AS the invitation artifact, delivered out-of-band then
+  applied when the peer connects.
+* ''Convergent Capabilities'' replace UCAN JWTs with CRDT-compatible capability
+  tokens. Concurrent delegation and revocation resolve without coordination.
+* ''Group Management CRDT'' handles wiki membership (who can write) as Automerge
+  ops — self-certifying, no server vote required.
+* ''Beelay'' (automerge/beelay) accompanies Keyhive as its sync protocol. It operates over
+  ciphertext only (servers never see plaintext). Peers authenticate the connection
+  and advertise which docs they hold capability for — the catalog problem dissolves
+  into capability propagation.
+
+''As built.'' The house pins `@keyhive/keyhive` at `0.3.0-alpha.1`, a pre-alpha, behind a narrow
+`CapabilityProvider` (`packages/lararium-keyhive/src/capability-provider.ts`). The node vessel's
+`sharePolicy` runs a class-keyed verdict (`packages/lararium-node/src/self-slot-share.ts`), never the open
+`async () => true` stub. `sharePolicy` stays ADVISORY: it decides which docs a repo volunteers, and a private
+plane's random 16-byte id carries its confidentiality against a peer that cannot guess it
+(`packages/lararium-mesh/src/federation-gate.ts`). No Beelay provider stands.
+
+''UNBUILT: the Keyhive-gated wiki join.'' In that design ''only the island author creates wiki docs; every other peer''
+''receives an "add member" signed op referencing its Ed25519 key, then joins''
+''via `repo.find(url)`, with the url exchanged out-of-band (invitation link, DID''
+''service endpoint, or social graph record)'', and a Keyhive capability check answers `sharePolicy`.
+`KeyhiveIdentitySlot` stands specified in code and tested as that check, out of its package barrel; no
+production call site constructs it, and both vessels fill the inner ring with the PersonaGroup ring
+(`packages/lararium-keyhive/src/keyhive-identity-slot.ts`).
+
+!! Reaction Write-Back Invariants
+
+A reaction runs per peer, and some reactions write back to the shared CRDT store. No `ReactionEngine`
+class stands: dispatch lives in the `reaction-router` TW5 startup module over `ReactionGraph`
+(`packages/lararium-tw5/src/modules/reaction-router.ts`, `packages/lararium-mesh/src/reaction-graph.ts`).
+Five invariants keep write-back safe. ''As a set they read as design law'': no wiki gate state, no
+reaction-level idempotence check and no `authoritativeReactions` capability stand in code; the store does
+skip a record whose content already stands (`packages/lararium-mesh/src/automerge-doc-store.ts`).
+
+''1. Canonical URL confirmed before any write-back.''  
+A peer must resolve a wiki's canonical address before accepting writes for it.
+UNBUILT: wikis MUST gate on `BOOTSTRAPPING → RESOLVING → OPEN`, and write-back MUST run only
+in `OPEN`.
+
+''2. Output identities MUST derive from content (idempotent).''  
+`store.put(record)` only. Never `store.append()`, never counter increments.
+Two peers firing the same reaction on the same input must produce
+identical `store.put()` calls — Automerge deduplicates naturally.
+If output depends on peer-local state (timestamp, random ID), the reaction counts as
+non-idempotent and must sit behind a capability gate (see #4).
+
+''3. A write to an orphan docUrl re-routes or drops; it never lands.''  
+After catalog resolution, a peer either re-routes any write targeted at a losing docUrl
+to the canonical URL or drops it with a logged error. A write to an
+orphan stays invisible to the canonical doc, and no peer may accept one silently.
+
+''4. Non-idempotent reactions gated to the authoritative peer.''  
+UNBUILT: a peer capability named `authoritativeReactions` MUST gate every non-idempotent reaction
+(generate a summary tiddler, send a notification). The node peer would hold that capability and a browser
+peer would not, so each such reaction fires exactly once — on the node peer — never N times across N
+browser peers.
+
+''5. Stable actorId per node, not per boot.''  
+Automerge's LWW conflict resolution uses actor IDs + Lamport timestamps. If a
+reaction writes as "the system," that actor must carry a persistent identity
+derived from the node's keypair — never regenerated per boot. Unstable actor IDs
+cause spurious conflicts and make LWW resolution non-deterministic across restarts.
+`KeyhiveIdentitySlot.deriveActorId` derives a stable actor id from the identity's DID, and no production
+call site invokes it.
+
+!! Automerge-Repo: What the Official Docs Say
+
+The Automerge team's canonical pattern for multi-peer root docs
+(`automerge.org/docs/tutorial/persist-root-doc/`):
+
+```ts
+let rootDocUrl = localStorage.rootDocUrl
+if (!rootDocUrl) {
+  const handle = repo.create()
+  localStorage.rootDocUrl = rootDocUrl = handle.url
+}
+const root = repo.find(rootDocUrl)
+```
+
+`repo.import(binary, docId)` can merge orphan docs but ''only if they share''
+''history'' — the docs explicitly warn against assigning the same ID to documents
+that never shared any history. So the library offers no native content-addressed
+rendezvous, and the house supplies the shared history itself: for a per-Nexus board, every vessel
+imports the same pinned blank under the derived id; for the oracle, every vessel imports bytes built
+from the genesis seed under its derived id.
+
+`automerge-repo-bundles` (Repo 2.0, May 2025) allows serializing multiple docs
+with their IDs as a single import payload — relevant for shipping an initial
+doc bundle to new nodes.
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/island">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/keyhive">>
+<<~ loulou "lar:///ha.ka.ba/lararium/tw5/beelay">>
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;RJxTx9znYbRKdMcGWE2jJFuyAlx5wh5g9hTa-D8vjBY
+
+<<^ code="&#x0004;" -> to="?">>

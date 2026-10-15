@@ -1,0 +1,47 @@
+/**
+ * vm-manager-echo.mjs — lightweight island fixture for NodeVmManager lifecycle tests.
+ *
+ * Implements the lar-wiki-worker protocol without TW5 or ReactionEngine:
+ *   manifest        → ea
+ *   wiki:place-verb → wiki:verb-result (echo)
+ *   teardown/demote → teardown:ack
+ *
+ * NOT production code — fixture only.
+ */
+
+import { parentPort } from "node:worker_threads";
+
+let wikiUri = null;
+
+parentPort.on("message", (msg) => {
+  if (typeof msg !== "object" || msg === null) {
+    parentPort.postMessage({ type: "fault", wikiUri: wikiUri ?? "", error: "bad schema" });
+    return;
+  }
+
+  if (msg.type === "manifest") {
+    wikiUri = msg.wikiUri;
+    parentPort.postMessage({ type: "ea", wikiUri });
+    // Close the transferred syncPort if present — fixture doesn't use Repo.
+    msg.syncPort?.close?.();
+    return;
+  }
+
+  if (msg.type === "wiki:place-verb") {
+    // Echo verb back as result for testing wiki:place-verb / wiki:verb-result round-trip.
+    if (msg.requestId) {
+      parentPort.postMessage({
+        type: "wiki:verb-result",
+        requestId: msg.requestId,
+        result: { verb: msg.verb, echoed: true },
+      });
+    }
+    return;
+  }
+
+  if (msg.type === "teardown" || msg.type === "hooanu") {
+    wikiUri = null;
+    parentPort.postMessage({ type: "teardown:ack" });
+    return;
+  }
+});

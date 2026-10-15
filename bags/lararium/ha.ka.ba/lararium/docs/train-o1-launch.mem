@@ -1,0 +1,88 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/train-o1-launch">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable = false
+file-path = "bags/lararium/ha.ka.ba/lararium/docs/train-o1-launch.mem"
+l-space   = "adjacent"
+role      = "train O1 launch kit: face-scoped working address, production surfaces, receipts and session switch"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lararium/docs/train-o1-launch"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lararium/docs/train-o1-launch"
+```
+
+<<~ ahu #/head>>
+
+! Train O1 ~ one face's sessions
+
+!! Contents
+
+* [[Ground and crew|#/ground]] · [[Commit walk|#/walk]] · [[Witness and red window|#/witness]] · [[Collision sheet|#/collisions]] · [[Done when|#/done]] · [[Rulings|#/rulings]].
+
+<<~/ahu>>
+
+<<~ ahu #/ground>>
+
+!! Ground and crew
+
+Start the live session callers after W hands over verified face sessions and its vessel composers. One compose lead owns node and browser mount sites. Narrow builders own working-address derivation, receipts and the control leg. The lead alone moves both callers through the scoped view. The session contract, `session-document-view.ts`, `resolveSurfaceRecipe` and `mountSurface` already supply the pure seam.
+
+The working address derives from three inputs: a verified face secret scoped to its Nexus, the canonical wiki relation, and the slot kind. O1's lead fixes the exact input encoding, domain label, key treatment and output address before a module or caller mints any byte. Two offline vessels holding the same face secret and relation converge; another face, relation or slot diverges. The address reveals neither the face secret nor a roster. An unavailable face secret refuses attach. This contract waits on identity material from N and W; no stand-alone `working-address.ts` lands ahead of that choice.
+
+<<~/ahu>>
+
+<<~ ahu #/walk>>
+
+!! Commit walk
+
+# ''PURE: address and receipt vectors.'' Fix the working-address image with N's identity lead, then derive offline convergence and separation vectors. Define a durability receipt on the authenticated session carrying `docUrl`, the stored heads and the holder's boot epoch; send it only after the holder commits those heads, with no clock in the frame. Keep receipt truth behind the vessel owner's storage acknowledgement.
+# ''LIVE: scoped surface mounts.'' Open the verified session, resolve its recipe once, construct its face facets and call `mountSurface` from node and browser production sites. The share verdict guards the offered facet list. The leaf and hearth each wear their one-way canon gate. A catalog ask and a content read cross the same view as document fetch, write and announce.
+# ''LIVE: hands and controls.'' Move node verbs, watcher, seat, effect index and outcome reader to session scope. Give the browser holder unicast replies and one control-event leg for keys, files, drops, Escape, Ctrl-Enter and import. Bind parallel-draft attribution to the authenticated session face.
+# ''LIVE: switch and fleet.'' Switch one tab's session without ending another. Retire the vessel-wide selector and the last `mountWiki` production caller. Expose the person's fleet view and removal through the verified session door.
+
+<<~/ahu>>
+
+<<~ ahu #/witness>>
+
+!! Witness and red window
+
+The working address takes a behavioural witness, never a declared red that pins an export name: open the same face secret, wiki relation and slot on two independent offline vessels and expect one address; vary each input alone and expect a different one; refuse an attach without the secret. Unskip `PRODUCTION_SURFACES_USE_SCOPED_VIEW` when both callers mount surfaces. Keep the broad-port red until the last interactive `mountWiki` path leaves. Prove that two faces cannot fetch each other's document or catalog name, two offline vessels derive one working address, restart reads a persisted receipt, and one tab's switch leaves the second tab live. A failed attach refuses boot visibly.
+
+<<~/ahu>>
+
+<<~ ahu #/collisions>>
+
+!! Collision sheet
+
+| Seam | O1 hand-off |
+|---|---|
+| N | Consume final face identity and joint AID; leave charter and inception bytes with N. |
+| W | Take `open-node-vessel.ts` and `open-browser-vessel.ts` session hunks after W's socket cutover; leave W's wire and gate proof intact. |
+| S8 | Consume sealed selves rows; leave `persona-selves-plane.ts` and `sealed-acts.ts` with S8. |
+| Sealed-store step 3 | Hand over verified face, signer and scoped fetch path before storage hydration changes. |
+| H and X | H consumes the worn face's hosting authority through its own delegation. X consumes O1's live browser and node legs; neither edits O1's address bytes. |
+
+<<~/ahu>>
+
+<<~ ahu #/done>>
+
+!! Done when
+
+Every interactive node and browser surface mounts under a verified face and scoped view. One address follows each face, wiki relation and slot kind. Receipts survive restart. Two tabs hold independent sessions; controls, verbs, drafts, fleet removal and catalog reads follow the face. No enabled production caller opens a broad wiki port.
+
+<<~/ahu>>
+
+<<~ ahu #/rulings>>
+
+!! Rulings
+
+The roadmap's ONE FACE path and `F1`–`F12` name the session debt (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-loops">>; <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>). Its standing law keeps the face at the session capability (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/decisions">>). O1 fixes no address bytes before the identity input contract lands. A change to that contract needs an explicit identity ruling.
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;Bg6xhePRLL1WsfVKIwkyPdVU3JqWV6x7w2Yb027fdGQ
+
+<<^ code="&#x0004;" -> to="?">>

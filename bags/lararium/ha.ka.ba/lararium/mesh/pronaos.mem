@@ -1,0 +1,413 @@
+<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+
+<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/pronaos">>
+<<^ code="&#x0002;">>
+
+```toml meta
+cacheable  = true
+file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/pronaos.mem"
+hydrate    = true
+l-space    = "lararium"
+mana       = 15
+manao      = 15
+manaoio    = 14
+namespace  = "&#x2695;"
+role       = "PROPOSED first-reach architecture and intimate mythic binding. A Pronaos gives one locally sovereign Lararium its address-facing first face; a herm climbs only the silent and waymark rungs below it: local DNS/domain/LAN reach, browser secure-context origin, exact public arrival and genesis bytes, declared public routes, bounded live introductions, delivery policy, and explicit refusals. It composes Web and Node shores under one operator-held reach configuration without making either a client or server. It carries no peer identity, persona, document, library, general CAS read, VEIL read scope, admission, merge, or Oracle authority. A name grants rendezvous; a secure origin enables browser features; a peer key proves identity; a route delivers; a capability permits. The public Librarium remains a later, separate public-book crossroads concern."
+status-why = "researched myth-plus-engineering plan re-framed from Propylaeum, 2026-09-22; production contract NOT built"
+tags       = ["mesh/cap-tier", "mesh/secure-context", "mesh/nexus-topology", "api/pono/causal-islands", "lifecycle/designed"]
+title      = "lar:///ha.ka.ba/lararium/mesh/pronaos"
+type       = "text/memetic-wikitext+tiddlywiki"
+uri-path   = "ha.ka.ba/lararium/mesh/pronaos"
+written    = "2026-09-22"
+```
+
+<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+
+
+
+<<~ ahu #/head>>
+
+! Pronaos ~ the house's first face, without a landlord
+
+> Status: PROPOSED — design carrier, not an implementation receipt. The operator chose the composed
+> Pronaos as the production target on 2026-09-21. Node-owned and separate-static arrangements remain
+> contract witnesses, never competing vessel ontologies; no composed carrier deployment receipt stands here.
+
+Greek *pronaos* names the front hall or fore-porch immediately before a temple's inner house. Pausanias names
+Athena and Hermes among the *Pronaoi* standing before the Ismenian Apollo sanctuary at Thebes; that narrow
+evidence supports a local threshold figure, never a universal Hermes-Pronaos cult. The Pronaos carries the
+relation into DreamNet: a particular Lararium's truthful first face. It gives a traveler public
+orientation and declared crossings while the local house retains its own identity, archive, judgment, and keys.
+
+Sources: LSJ, https://atlas.perseus.tufts.edu/dictionaries/entry/urn%3Acite2%3Ascaife-viewer%3Adictionaries.v1%3Alsj-n88071/
+and Pausanias 9.10.2, https://www.theoi.com/Text/Pausanias9A.html. The architectural rhyme of public sight
+without cella access remains a studied possibility, not a runtime claim.
+
+<<~/ahu>>
+
+<<~ ahu #/mythic-binding>>
+
+!! The mythic binding ~ a forecourt for one house, not another road tier
+
+Greek ''pronaos'' names the front hall or fore-porch immediately before a temple's inner house. The narrow
+Theban evidence places Athena and Hermes among the *Pronaoi* before the Ismenian Apollo sanctuary; it supports
+the image of a local threshold presence, never a universal Hermes-Pronaos cult. The architectural term carries
+the useful relation: a traveler stands before this house, receives its declared bearings, and still has not
+entered its inner authority.
+
+The Elyncian Lares Viales already hold the road and the Herm already marks the turning. The Pronaos therefore
+names neither carriage nor crossroads. It names the ''intimate first face'' of one composition:
+
+```text
+Compitum       roads meet
+Herm           carriage and public crossing stand
+Pronaos        this house presents its declared first face
+Lararium       persona, documents, keys, and held local material remain within
+```
+
+Hermes in this binding names escort and threshold relation, not a gatekeeper who owns the visitor or the house.
+The Pronaos may present a public route toward a peer; it cannot turn that presentation into identity, admission,
+read authority, or document ownership. The English ''veil'' remains the read-scope ladder; the Pronaos remains the
+place where a local composition makes a truthful outward face.
+
+<<~/ahu>>
+
+<<~ ahu #/the-placement>>
+
+!! The placement ~ the forecourt attached to a particular house
+
+```
+worldly name / LAN name / link / QR
+  → Compitum / crossroads: roads meet
+  → Herm floor: carriage, public floor, peer crossing
+  → Pronaos: this local composition's first face and declared public paths
+  → Lararium inner house: persona, owned documents, held local material
+```
+
+The Herm remains the floor every vessel may stand on. The Lararium remains the optional lift that seats a
+persona and its document sovereignty. The Pronaos forms neither a third vessel type nor a new peer identity. It
+names the first face a local composition may light from held public capabilities. A Node process, static artifact
+shore, reverse proxy, container composition, or future carrier may realize it; no physical placement changes the
+capability relation.
+
+''Only a lararium lights a Pronaos'' (operator-ruled). The temple rung belongs to the house: the arrival page, the
+arrival descriptor, the first-arrival kindle, and the house's face. A herm stands on the lower rungs of the ladder
+below (#/the-rung-ladder): it hands over the bulb by name and, at most, posts a waymark. A herm handed any Pronaos
+input refuses before a face listens.
+
+''A herm MIRRORS BY CID'' (operator-ruled). A herm may carry a house's PUBLISHED Pronaos bytes by CID, as
+carriage — for availability, never trust: the arrival page, a seed, an offered edition, one artifact an operator's
+publication record names. A mirror presents no face, lights no Pronaos, and signs no public claim. Trust stays
+with the house: a mirror the descriptor lists never kindles, and first arrival trusts the house's own origin
+(`packages/lararium-node/src/kindle.ts`). So one law reads in three places: the FACE belongs to the lararium; the
+publication record governs CARRIAGE of one named artifact; and the mirror carries bytes a house already published.
+
+The public Librarium — a public crossroads shrine of books, images, media, and deliberately offered editions —
+waits outside this carrier. A Pronaos may later route an explicit Librarium projection. It never turns the
+house-held `library:` collection or arbitrary CAS bytes public.
+
+<<~/ahu>>
+
+<<~ ahu #/the-rung-ladder>>
+
+!! The rung ladder ~ household, crossroads, temple
+
+How much a vessel says about itself to a stranger climbs three rungs, the same three tiers Elyncia keeps:
+a household shrine, a crossroads marker, a temple. ''Each rung opts in above the one below; the default stays
+silent.'' Grounds: <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire#/legibility">> — a
+self-description reads as the two-finger sign, cheap to read at a distance — and
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience#/the-active-prober">> — any surface that answers a
+stranger distinguishably reads as an oracle, so the client proves first.
+
+```
+SILENT    herm (default)   hands over the bulb BY NAME: /bulb/<cid>.bin, /cas/<cid>; describes nothing
+WAYMARK   herm (opt-in)    + one UNSIGNED descriptor at /.well-known/lar: format, route shapes, bulb CID
+TEMPLE    lararium only    its own Pronaos: the arrival page and the arrival descriptor (#/the-first-arrival)
+ORACLE    every vessel     NO rung: the floor carries seed-named rows; the porch answer names its CID per Nexus
+```
+
+''SILENT.'' The traveler brings the name. The bulb names itself by its genesis seed's CID, which re-derives from
+the published build, so a traveler arrives already knowing it, and most Nexuses start from the stock bulb.
+''One seed, one CID'': the CID hashes the `seed.json` bytes as the genesis build publishes them, the herm hands over
+those exact bytes at `/bulb/<cid>.bin`, and a temple names the same bytes `seedCid` at `/genesis/seed.json`, so a
+traveler holding the stock seed CID finds the same coal at either door. No route lists, indexes or describes what
+the herm holds; a listing answers only a CID the client names. Every unknown, withheld or refused request — a
+path no face claims, a CID the herm never held, a wrong method, the well-known name itself — draws ''one
+indistinguishable closed door'': the same status, headers and body, carrying no text that names what answered.
+
+''WAYMARK.'' A herm that chooses discovery sets `herm.waymark` in its node config
+(`~/.lares/config.json`) and serves one minimal descriptor: its format, its route shapes and its bulb CID. It names
+no kindle pointer, no mirror and no carried Nexus. ''A herm never signs anything public'' — a public signature
+under a carrier's key would correlate the place with every Nexus it carries. The waymark and the temple's
+descriptor hold one dispatcher key, so one vessel can never answer the well-known name twice.
+
+''TEMPLE.'' The lararium's own Pronaos keeps its arrival descriptor whole (#/the-first-arrival). A lararium handed
+the waymark knob refuses: its arrival rides its Pronaos. Its readiness answer, `/api/health`, binds on a lararium
+alone; on a herm that path draws the closed door, since a readiness answer describes the self.
+
+''THE ORACLE STANDS ON NO RUNG.'' The floor carries the shared system rows named by its genesis seed. Its read-face projects those rows alone as a history-free content-addressed snapshot. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road.
+
+LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape; R-WIRE owes answer carriage. The vessel's own gate still admits only proven peers to its oracle socket.
+
+''THE BULB CARRIES THE COAL ALONE'' (operator-ruled; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/the-five-caps">>).
+The bulb carries the genesis seed and the CAS blobs that seed names, and nothing that names a house or a Nexus —
+so two houses holding one genesis hold one bulb CID. The corm holds the charter epoch as its freshness lease; a house's
+joining pointers ride the stolon, the invite. Neither rides the bulb.
+
+<<~/ahu>>
+
+<<~ ahu #/the-five-relations>>
+
+!! Five relations ~ reach, browser trust, identity, delivery, authority
+
+```
+name          grants a rendezvous hint
+secure origin grants browser-secure-context eligibility
+peer key      proves peer identity
+route         selects a declared delivery target
+capability    permits a particular action
+```
+
+No relation grants the next. DNS and certificate custody can withhold or alter an outward signpost; they cannot
+claim a peer key, read a private bag, resolve a merge, or admit a member. A peer key survives a name move. Cache
+presence carries a previously acquired response, never authority, membership, freshness truth, or causal order.
+
+<<~/ahu>>
+
+<<~ ahu #/the-cap-stack>>
+
+!! The Pronaos cap stack ~ the forecourt holds public delivery, never inner reach
+
+```
+#has {origin-attestation}       — local DNS/domain/LAN reach and browser TLS boundary
+#has {arrival-projection}       — exact public Web and worker artifact inventory
+#has {bootstrap-delivery}       — `seed.json` and seed-named, CID-checked CAS members
+#has {public-route-map}         — declared paths, methods, targets, and refusal shapes
+#has {delivery-policy}          — CSP, SRI where browser subresources use it, scope, cache, headers
+#has {transport-introduction}   — a bounded public live path, if declared
+
+#has-NOT {peer-identity}
+#has-NOT {persona}
+#has-NOT {document-write}
+#has-NOT {general-cas-read}
+#has-NOT {library-traversal}
+#has-NOT {VEIL-read}
+#has-NOT {oracle-authority}
+#has-NOT {merge-authority}
+#has-NOT {admission-authority}
+```
+
+The existing `VEIL ⊂ PERSONAGROUP ⊂ CONTRACT ⊂ PUBLIC` ladder controls read scope. The Pronaos controls this
+house's first-reach presentation and delivery. Their rhyme grants no license to fuse them.
+
+<<~/ahu>>
+
+<<~ ahu #/the-declared-path>>
+
+!! The declared path ~ a route never grants ambient reach
+
+Every outward path carries a positive declaration: a finite prepared artifact inventory, a seed-derived CAS
+member, one explicit public projection, or one bounded live introduction. No route says "serve a directory," "read
+any CID," or "fall through to the application." Public cache copies may hold only already-declared public bytes.
+
+```
+GET /                        → selected index bytes
+GET /assets/<declared>       → selected worker or Web artifact bytes
+GET /genesis/seed.json       → selected seed bytes
+GET /genesis/cas/<cid>       → seed-named CID-checked bytes
+GET /public/<declared>       → separately declared public projection
+GET /live/<declared> upgrade → bounded transport introduction
+```
+
+SRI verifies direct browser subresources where the browser consumes it. Seed and CAS members rest on the
+project's own CID/hash verification. A WebSocket `Origin` check protects a browser-facing introduction; it never
+replaces the later peer-key handshake or the served vessel's capability decision.
+
+<<~/ahu>>
+
+<<~ ahu #/the-procession>>
+
+!! The forecourt ~ first reach unfolds in four local acts
+
+# ''Reach.'' A human or leaf vessel follows a local name, contracted domain, LAN answer, QR, or remembered hint.
+# ''Stand before.'' The Pronaos returns only declared public arrival material and public route information.
+# ''Verify.'' The leaf checks CIDs and expected peer keys; domain and certificate remain reach witnesses, never peer proof.
+# ''Cross.'' The leaf dials a declared transport. The served vessel separately proves the peer relation and permits or refuses the requested action.
+
+This sequence keeps the user's leaf vessel sovereign. It does not ask the person to log into a server; it gives the
+local vessel enough truthful material to choose its next crossing.
+
+<<~/ahu>>
+
+<<~ ahu #/the-first-arrival>>
+
+!! The first arrival ~ the house's own origin serves the kindle (RULED, BUILT)
+
+''The first arrival trusts the lararium's own origin'' (operator-ruled). A device that has never booted a
+vessel holds nothing to check bytes against; whatever origin it first reaches decides what it runs. So that
+origin MUST stand as the house itself: ''the lararium's own Pronaos serves the kindle'' — the arrival page, the
+worker, `genesis/seed.json`, and the seed-named CAS members. Household operators reach it through
+DNS→home-LAN integrations, so the name a household types resolves to its own house on its own network.
+
+''Hash-pinned static copies stand as MIRRORS, never as the arrival.'' Each mirror rests on ''its own origin
+per CID'', and a mirror never shares an origin with the house or with another CID's mirror. Three facts of
+the browser close the other reading:
+
+* ''A phone cannot hash-check a top-level page.'' The browser runs whatever bytes the navigated origin
+  returns; no user-held pin gates the document itself.
+* ''SRI covers subresources only'' — scripts and stylesheets a page already trusts — never the page that
+  declares the integrity attributes.
+* ''Signed Exchanges (SXG)'', the one standard that let a page's bytes prove themselves apart from their
+  origin, ended (2026-09-30). No browser path remains to make a static copy speak with the house's authority.
+
+So a mirror names a CID-checked copy a vessel already kindled may fetch and verify; it never kindles one.
+
+''The arrival descriptor stands at a well-known URI'' (RFC 8615, `/.well-known/…`) on the house's origin, so
+any client finds it without a route map. ''Content negotiation stays an extra door'' onto the same
+descriptor, never the only one, and never a second source of truth.
+
+''The arrival page answers at the floor.'' A lararium standing at its waking floor still serves its arrival
+page: liveness ⊥ readiness. A house that cannot yet open its archive stays reachable and says what it cannot
+do (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-arrival-page">>).
+
+''Built.'' The descriptor answers at `/.well-known/lar` — `lar` names the namespace, so the one name covers every
+vessel — as `application/vnd.lar.arrival+json`, canonical JSON derived from the route receipt alone: the arrival
+page, the seed and its CID, each worker asset and seed-named CAS member, and the mirrors by CID. A request for `/`
+naming that media type reaches the identical bytes; a wildcard or an HTML navigation still reads the page
+(`lararium-node/src/pronaos-adapter.ts`). A mirror list (`LAR_PRONAOS_MIRRORS`) refuses before mount when a mirror
+names a CID the receipt does not, stands on any origin the house answers on, or shares its origin with another
+entry (`pronaos-composition.ts`). `main.ts` feeds it every origin the house answers on through `houseOriginsOf`:
+each reach face's origin on every standing, plus each composed Web, relay and oracle origin. The kindle reads the
+descriptor, the seed and every seed-named member off the house's own origin, verifies each against its CID, never
+dials a mirror, and mints the device's own key (`kindle.ts#pullArrival`). `pullArrival` stands as a LIBRARY call,
+exported beside `pullBulb`; no CLI verb carries it. The composition reads no standing and no archive and runs
+before the boot reads either, so a house at its waking floor serves all of it.
+
+''The descriptor never carries the floor's announcement.'' That announcement speaks to PEERS over the socket or
+relay, once per carried Nexus, and never at `/.well-known/lar`
+(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-announcement">>). So the bytes a floor serves here
+equal the bytes a raised hearth serves.
+
+<<~/ahu>>
+
+<<~ ahu #/refusal-and-loss>>
+
+!! Refusal and loss ~ named outward failure, detailed local witness
+
+Undeclared, private, traversal, and missing requests receive one uniform outward refusal shape so the boundary
+does not become an existence oracle. A known public integrity mismatch names an integrity failure. A known public
+live target that cannot answer names temporary unavailability. Browser and operator diagnostics may carry the
+specific local cause; external responses do not reveal whether a private object exists.
+
+Integrity-addressable bytes may still carry `no-store`. Each route declares `immutable`, `revalidate`, or `no-store`
+as its delivery class; a CID or hash never infers an HTTP cache policy. Selectors, discovery, and mutable public
+declarations carry explicit revalidation or `no-store` policy. No `Date.now()`, cache timestamp, certificate date, or
+other wall-clock witness may decide shared ordering, membership, integrity, admission, or authority.
+
+<<~/ahu>>
+
+<<~ ahu #/the-production-shape>>
+
+!! The production shape ~ one house's forecourt, while every shore keeps its proof
+
+The production direction composes a static Web arrival shore and a live Node shore as one operator-held house's
+Pronaos. Each shore retains its own capability stack and exact response witness. Node-owned serving and a
+separate static shore remain test arrangements that must produce the same route, integrity, refusal, and
+peer-symmetry observations. They prevent the composition root from becoming an untested metaphysical claim.
+
+The route and delivery receipt belongs to the operator-held deployment configuration. A smaller public arrival
+declaration may announce safe public facts. It carries no private routes, DNS credentials, broad artifact access,
+or peer-identity substitution. Origin-attestation custody and delegated-DNS governance remain a separate crossed
+design wave; they may configure reach and never create document or peer authority.
+
+<<~/ahu>>
+
+<<~ ahu #/the-red-witness>>
+
+!! The red witness ~ prove the approach before machinery grows
+
+The first witness attributes `/`, one worker, `genesis/seed.json`, and one seed-named CAS member to their named
+serving process, compares each response with expected bytes, and asserts the declared cache class independently of
+the integrity receipt. The current byte shore keeps `/` and `genesis/seed.json` `no-store`; selected assets and CAS
+members may receive `immutable` only through explicit route policy. It then weakens one boundary at a time:
+
+* widen the route inventory, traverse a path, or request an undeclared CID;
+* return HTML for a worker, seed, CAS, or missing route;
+* substitute wrong bytes under a valid-looking CID;
+* broaden worker scope without an explicit declaration;
+* derive `ws` from an HTTPS arrival or use a stale configured self-URL;
+* accept a disallowed browser Origin;
+* infer peer identity from DNS, TLS, or host text;
+* infer an HTTP cache class from a CID or hash;
+* let a cache hit serve an undeclared/private route;
+* turn downstream loss into a successful SPA fallback;
+* use a wall-clock value as authority or shared order.
+
+Every weakening MUST read red. The positive path proves secure-context boot, explicit worker scope, a bounded live
+introduction, separate peer-key proof, and separate capability/admission refusal.
+
+<<~/ahu>>
+
+<<~ ahu #/operator-stories>>
+
+!! Operator stories ~ Gaia and Elyncia
+
+**Operators on Gaia, Earth circa 2026, SHALL need** a household, library, cooperative, school, clinic, or civic
+AI practice to offer a secure local arrival surface through a LAN name or contracted domain while documents,
+identity keys, and causal state remain local and portable.
+
+**Operators on Gaia SHALL need** browser boot through HTTPS and WAN loss without device-installed CAs,
+account-centric hosting, or silent hosted authority.
+
+**Operators on Elyncia, the Orichalcum Mythpunk RPG, SHALL need** an approach where a traveler recognizes a
+shrine, receives declared bearings, verifies a crossing, and retains sovereignty over their own leaf vessel.
+
+**Operators on Elyncia SHALL need** independent shrines and Nexuses to raise approaches toward one another
+without making any approach keeper of every archive, persona, or causal island it reaches.
+
+<<~/ahu>>
+
+<<~ ahu #/next-cuts>>
+
+!! Next cuts ~ one contract before deployment variants
+
+# Write pure route-inventory and uniform-refusal controls.
+# Re-home the present boot-byte adapter under arrival/bootstrap projection language; retain its current code name only until tests cover the new contract.
+# Add process attribution and exact byte/CID controls for index, worker, seed, and seed-named CAS members.
+# Add secure-context, request-derived scheme/self-URL, worker-scope, CSP, and SRI controls.
+# Add one same-origin bounded live introduction with Origin refusal, peer-key proof, and separate capability/admission decision.
+# Run the common witness through Node-owned, separate-static, and composed-Pronaos arrangements.
+# Exercise a persona-less Herm floor and persona-bearing Lararium lift against the same public arrival projection while proving separate authority.
+# Exercise a domain move, split-horizon LAN reach, and cached-public-byte continuity; leave DNS/ACME implementation on its crossed governance lane.
+# After every major cut, run Aftermath, Evergreen, L-Prime, and reality-alpha cleanup before the next integration wave.
+
+<<~/ahu>>
+
+<<~ ahu #/edges>>
+
+!! Edges
+
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/vessel-caps#/lares-viales">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/nexus-topology#/the-severability-law">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/bounded-reach-contract">>
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/publish-a-face">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
+<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/elyncia">>
+<<~ loulou "lar:///ha.ka.ba/elyncia/concepts/lares-viales">>
+
+
+<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate">> — serves seed bytes and history-free floor rows
+<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — carries answer authority without herm signatures
+<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model">> — presents the steward-signed per-Nexus answer
+
+<<~/ahu>>
+
+<<^ code="&#x0003;">>ni:///sha-256;F-pmgdPZq_gtz-AQFIlqrhdkePxYpGUkQ-svFnZUmNk
+
+<<^ code="&#x0004;" -> to="?">>
