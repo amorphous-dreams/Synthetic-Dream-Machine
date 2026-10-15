@@ -170,7 +170,7 @@ its own carrier, and this carrier points there.
 * ''The cold-key card'': the house format — 64 hex plus a checksum, in groups of four — printing its purpose, chair label, generation and a short charter fingerprint.
 * ''The DNS credential'': the registrar's credential rests as two files on the first operator's always-on node, outside both mounts, read by the one-shot issuer. That node issues one wildcard per machine, and the second machine receives its certificate by hand.
 * ''A browser leaf holds a passphrase or paper slot before it holds a persona root''; the mint refuses without one.
-* ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by a rotation on the face's own log.
+* ''No guardians on the day'': each face starts one-of-one on its own paper, and enrolment comes later by one typed first-enrolment event the face's own current key signs on its own log.
 * ''Shore saves, as built'': a rename onto a standing title proceeds as an ordinary write at field grain; a tombstone moved into a bag that lacks the title refuses unless the hand asks to shadow.
 * ''A seat gets ADDED, never replaced.'' The long-span act adds a holder to BOTH cabals — a Kahu seat and a Lamplighter contract — and the founders keep their chairs; one founding Kahu may hold seats across many Nexuses. The road proves the roll that adds a seat, and the new holder's carriage contract, first. A passed chair stays a possible act. A Kahu who works far from the other seats needs a co-signature for every quorum act, so the partial-and-cosign door carries a partial act across a relay and back with no clock.
 * ''Per-Nexus identifiers'': an admit names a per-Nexus identifier, a random leaf no other Nexus can link. The face's lineage may re-issue it by a signed hand-over the gate verifies, and per-Nexus keys mint at random, never from the persona seed.
@@ -490,7 +490,7 @@ the row; a line number drifts, so none rests here. Train letters: ''S'' the cust
 * `H8` A walker's grant that checks under a public half (#/rulings, the ember's key at rest; <<~ loulou "lar:///ha.ka.ba/lararium/mesh/ember#/the-tiers">>). The serving tier holds no minting secret, so a serving hearth checks a grant with no key that could mint one. Owed: the grant's signed shape and its public-half check, and the roll that derives the public halves for the serving rows, inside the hosting act's one re-cut and before E's walker arm (`hosting.ts`, `hosting-store.ts`). H.
 
 !!! RECOVERY
-* `V2` Guardian enrolment, with the per-face key refusal; the library stands (`recovery-keel-core.ts`). Operator (count and threshold, #/open). V.
+* `V2` Guardian enrolment: the typed first event and its verifier stand; the command `lares persona guardian show|offer|enrol`, its sealed per-face `guardian-set` row and its act rows stay owed (a held patch on the composer's ground). Operator (count and threshold, #/open). V.
 * `V3` The memory-card reader. V.
 * `V4` The guardian recovery door, the request check, the veto, succession. Operator (#/open). Off this road unless ruled.
 * `V5` A restore onto a fresh hearth lands the face beside persona zero, never AS persona zero: the hearth's own founding stands its persona zero first, and the restore's preflight refuses an index where a root already stands, so a persona-zero bundle restores only under `--as <N>` at a free index (`face-bundle-restore.ts`). A person who lost their one machine meets a second face where they expected their own. Lean: a restore road through the founding act itself (`found --hearth` from a bundle), so the restored face stands as persona zero and binds the fresh seed charter. House. V.
@@ -646,7 +646,7 @@ Each step names the commits that hold it, as pointers into git.
 ''Riskiest'': ports 53 and 443 and multicast on the first operator's machine stand unmeasured.
 
 !!! V ~ recovery's owed verbs (after S; beside N)
-# Guardian enrolment.
+# Guardian enrolment's command and its sealed row (its typed first event stands).
 # The memory-card reader.
 
 !!! B ~ the browser rungs and the leaves
@@ -779,6 +779,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;cMUXvD6RQwdBTPN2zZuFvdA4ji192dvBbN_2JX_4DvE
+<<^ code="&#x0003;">>ni:///sha-256;FD3L33EdgPe-Ek3VEPUtaOO660TFdz7Eeoho2LFWzIM
 
 <<^ code="&#x0004;" -> to="?">>
