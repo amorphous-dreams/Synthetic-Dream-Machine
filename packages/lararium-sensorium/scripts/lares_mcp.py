@@ -1,5 +1,5 @@
 """lares_mcp — the /mcp surface mirroring the `lares` CLI (ISOMORPHIC verb parity: CLI commands <-> MCP
-tools, one verb-ontology across two surfaces). A fresh py FastMCP server routing to the lares house's own
+tools, one verb-ontology across two surfaces). A fresh py MCPServer routing to the lares house's own
 py sensorium backend (capture_session · content_io · worldline_io). The coordinator-seat ruling: the MCP
 verb-surface lives py; the TS @daemon supervises the fleet + keeps the surface-wiring. The vendored
 mempalace mcp_server.py stays for the upstream nakama on their causal island — this serves the lares house.
@@ -650,7 +650,7 @@ class LaresCoordinator:
 
 
 def build_mcp(coordinator: LaresCoordinator):
-    """Wrap the coordinator in a FastMCP server — one @tool per lifecycle verb, each a thin skin that
+    """Wrap the coordinator in an MCPServer — one @tool per lifecycle verb, each a thin skin that
     routes straight to the coordinator (the isomorphism holds because both surfaces share it).
 
     HITL-GATE PIN (6b): the six lifecycle tools below all seat HOTL, so `guard_hitl` no-ops on them.
@@ -658,9 +658,9 @@ def build_mcp(coordinator: LaresCoordinator):
     `guard_hitl(verb, approval)` before executing — the grid SEATS them HITL, but nothing structurally
     forces the gate until the tool calls it. The @daemon (holding this cap in its wiki-island VM worker)
     supplies the approval capability out-of-band (ask→confirm→cap→wiki-audit)."""
-    from mcp.server.fastmcp import FastMCP
+    from mcp.server.mcpserver import MCPServer
 
-    mcp = FastMCP("lares")
+    mcp = MCPServer("lares")
 
     # The addressed-sensorium shore: an AI names a sensorium; the tool resolves the name to its root and
     # threads it up the @daemon cap-ladder (the routed recall/capture/refresh verbs pick the holder by

@@ -16,8 +16,8 @@ bocd==0.1.2
 # The loci graph read (loci_io).
 networkx==3.6.1
 
-# The /mcp verb surface (scripts/lares_mcp.py) rides FastMCP from the official python SDK.
-mcp==1.28.1
+# The /mcp verb surface (scripts/lares_mcp.py) rides MCPServer from the official python SDK.
+mcp==2.3.0
 
 # The STRUCTURE-plane parse router (scripts/structure_router.py). The runtime loads the committed
 # carrier grammar (tree-sitter-memetic-wikitext) and refuses on an ABI outside its range. The

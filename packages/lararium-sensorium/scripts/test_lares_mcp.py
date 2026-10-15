@@ -1,6 +1,6 @@
 """Phase-6a witness — lares_mcp: the isomorphic /mcp surface. The LaresCoordinator round-trips the
 lifecycle verbs over a real ephemeral palace (pour->recall->status, kapae->recall-excludes->un_kapae-
-restores), and the FastMCP tool-set MIRRORS the CLI lifecycle verbs exactly (the isomorphism contract).
+restores), and the MCPServer tool-set MIRRORS the CLI lifecycle verbs exactly (the isomorphism contract).
 
     PYTHONPATH=mempalace ./.venv/bin/python -m pytest packages/lararium-sensorium/scripts/test_lares_mcp.py -q
 """
@@ -238,7 +238,7 @@ def test_recall_tool_args_are_isomorphic_with_the_recall_api(tmp_path):
     import inspect
     mcp = build_mcp(_coord(tmp_path))
     tools = {t.name: t for t in asyncio.run(mcp.list_tools())}
-    tool_args = set(tools["recall"].inputSchema.get("properties", {}))
+    tool_args = set(tools["recall"].input_schema.get("properties", {}))
     api_args = set(inspect.signature(LaresCoordinator.recall).parameters) - {"self"}
     taxonomy = {"speaker", "channel", "function", "pair"}
     assert taxonomy <= tool_args, "the recall TOOL is missing a taxonomy filter"
