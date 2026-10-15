@@ -28,7 +28,7 @@ describe("a reissued face opens its local session", () => {
     expect("face" in supplySessionFace({ chain: checked.chain, vesselFaceKey: c.vessel.key, admit: current, grant })).toBe(true);
   });
 
-  red("REISSUED_FACE_OPENS_LOCAL_SESSION: admitted old nym plus verified new head supplies the new face", async () => {
+  test("REISSUED_FACE_OPENS_LOCAL_SESSION: admitted old nym plus verified new head supplies the new face", async () => {
     const c = await chain("reissue-current", NEXUS);
     const old = await pair("reissue-prior");
     const record = await signNexusKeyHandOver({ nexus: NEXUS, from: old.key, to: c.face.key },
@@ -43,6 +43,9 @@ describe("a reissued face opens its local session", () => {
       head: line.head, nexus: NEXUS, admitRef: "admit-ref", revision: "board-head" };
     const grant = { personaGroup: GROUP, faceKey: c.scope.faceKey, nexus: NEXUS, revision: "grant-head" };
     expect("face" in supplySessionFace({ chain: checked.chain, vesselFaceKey: c.vessel.key, admit, grant })).toBe(true);
+    // CONTROL: the same admit read as if the nym answered (head left at the old key) refuses.
+    expect(supplySessionFace({ chain: checked.chain, vesselFaceKey: c.vessel.key, admit: { ...admit, head: old.key }, grant }))
+      .toEqual({ refusal: "admit-other-face" });
   });
 
   red("JOINED_VESSEL_CERTIFIES_OWN_KEY: a borrowed face certificate cannot open a local session", async () => {

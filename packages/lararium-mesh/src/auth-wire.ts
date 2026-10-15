@@ -99,7 +99,8 @@ function isCarriageEntryShape(v: unknown): v is CarriageEntry {
     Array.isArray(x["parents"]) && x["parents"].every((p) => typeof p === "string") &&
     typeof x["sealEpochCid"] === "string" && x["sealEpochCid"].length > 0 &&
     Array.isArray(x["signatures"]) && x["signatures"].every(isQuorumSignatureShape) &&
-    (x["contractSig"] === undefined || isQuorumSignatureShape(x["contractSig"]));
+    (x["contractSig"] === undefined || isQuorumSignatureShape(x["contractSig"])) &&
+    (x["carriageCommit"] === undefined || (x["action"] === "admit" && typeof x["carriageCommit"] === "string" && /^[0-9a-f]{64}$/.test(x["carriageCommit"])));
 }
 
 /**

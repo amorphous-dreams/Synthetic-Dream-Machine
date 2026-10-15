@@ -29,7 +29,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as ed from "@noble/ed25519";
 import {
-  hex, nexusAidOf, signCarriageQuorum, signCarriageContract, signCarrierContract, makeMultiSigQuorumVerifier,
+  hex, nexusAidOf, signCarriageQuorum, signCarriageContract, admitCarriageCommit, signCarrierContract, makeMultiSigQuorumVerifier,
   carriageEntryActCid, carriageDocUrl, writeCarriageEntry, emptyLarDoc, heldNexusRoot,
   type NexusDoc, type CarriageEntry, type LarDoc,
 } from "@lararium/mesh";
@@ -52,6 +52,8 @@ const P_KAHU = [seed(1), seed(2), seed(3)];
 const Q_KAHU = [seed(4), seed(5), seed(6)];
 const LEAF = seed(21), OTHER_KEY = seed(22), VESSEL = seed(30), PLACE = seed(31);
 const GATE = "ee".repeat(32), NONCE = "ab".repeat(32);
+/** The opening every admit here commits to: the pin its bundle names, under a fixed test salt. */
+const OPENING = { carriage: { gatePin: GATE, canon: {} }, salt: "5a".repeat(32) };
 
 async function charter(kahu: Uint8Array[]): Promise<NexusDoc> {
   const keys = await Promise.all(kahu.map(pubOf));
@@ -61,7 +63,8 @@ async function act(doc: NexusDoc, kahu: Uint8Array[], action: "admit" | "revoke"
   const nym = await pubOf(LEAF), epoch = doc.sealEpochCid!;
   const quorum = await Promise.all(kahu.slice(0, 2).map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const consent = action === "admit" ? await signCarriageContract(nym, epoch, signerOf(LEAF)) : undefined;
-  return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch }, quorum, consent);
+  const carriage = action === "admit" ? { carriageCommit: admitCarriageCommit(OPENING) } : {};   // the pin its bundle names
+  return signCarriageQuorum({ nym, action, parents, sealEpochCid: epoch, ...carriage }, quorum, consent);
 }
 /** A carried reading over a REAL held root: the charter filed under its own genesis, with a deny board. */
 function readingOf(doc: NexusDoc, denyBoard: CarriageEntry[] = []): CarriedNexusReading {
@@ -137,7 +140,7 @@ describe("the held root at the take, on a real seal home", () => {
     const P = await charter(P_KAHU), Q = await charter(Q_KAHU);
     writeNexusDoc(sealHome, P);
     const aidQ = nexusAidOf(Q)!;
-    const bundle: AdmitBundle = { aid: aidQ, gatePubKey: GATE, admit: await act(Q, Q_KAHU, "admit"), lineage: [] };
+    const bundle: AdmitBundle = { aid: aidQ, gatePubKey: GATE, opening: OPENING, admit: await act(Q, Q_KAHU, "admit"), lineage: [] };
     const take = () => takeAdmitBundle({ sealHome, raw: JSON.stringify(bundle), leaves });
     await expect(take()).rejects.toThrow(AdmitBundleError);
     await expect(take()).rejects.toThrow(/^no-held-root \(no-charter\)/);
@@ -152,14 +155,14 @@ describe("the held root at the take, on a real seal home", () => {
 
   test("N4 the offline check reads a bundle against its own charter alone", async () => {
     const P = await charter(P_KAHU), Q = await charter(Q_KAHU);
-    const bundle: AdmitBundle = { aid: nexusAidOf(Q)!, gatePubKey: GATE, admit: await act(Q, Q_KAHU, "admit"), lineage: [] };
+    const bundle: AdmitBundle = { aid: nexusAidOf(Q)!, gatePubKey: GATE, opening: OPENING, admit: await act(Q, Q_KAHU, "admit"), lineage: [] };
     expect(await admitBundleHolds(bundle, null)).toBe(false);
     expect(await admitBundleHolds(bundle, undefined)).toBe(false);
     expect(await admitBundleHolds(bundle, P)).toBe(false);                      // another Nexus's charter
     expect(await admitBundleHolds({ ...bundle, aid: nexusAidOf(P)! }, P)).toBe(false);   // P's name, Q's quorum
     expect(await admitBundleHolds(bundle, Q)).toBe(true);                       // CONTROL
     // A bundle filed under ANOTHER name than the charter's own never holds, though P's quorum signed its admit.
-    const ownP: AdmitBundle = { aid: nexusAidOf(P)!, gatePubKey: GATE, admit: await act(P, P_KAHU, "admit"), lineage: [] };
+    const ownP: AdmitBundle = { aid: nexusAidOf(P)!, gatePubKey: GATE, opening: OPENING, admit: await act(P, P_KAHU, "admit"), lineage: [] };
     expect(await admitBundleHolds(ownP, P)).toBe(true);                         // CONTROL
     expect(await admitBundleHolds({ ...ownP, aid: "a-borrowed-name" }, P)).toBe(false);
   });

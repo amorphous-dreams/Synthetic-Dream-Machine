@@ -740,8 +740,11 @@ export class KeyhiveProvider implements CapabilityProvider {
    *                      that seat; a peer seated beside the party holds none, admin or not, and a junior never
    *                      revokes the founder (`tests/persona-group-substrate.test.ts`).
    *
-   * Any other fault rides out. The founder's own departure while it seated others throws, and its seat still
-   * leaves (the same file's canary): no door asks it.
+   * A THROW AFTER THE GROUP MOVED READS AS DONE. The founder's own departure while it seated others throws, and its
+   * seat still leaves (the same file's canary, G8). So any other fault reads the seat again: a direct seat that
+   * left answers `revoked`, and the roll the removal owes still reaches its subscribers
+   * (`persona-group-founder-removal.test.ts`); a seat that still stands names a refusal before any mutation, and
+   * the fault rides out.
    */
   async revokeGroupSeat(memberIdentifierHex: string, groupId: string): Promise<{ how: "revoked" | "gone" | "no-authority" }> {
     const kh = this.requireKh();
@@ -756,8 +759,16 @@ export class KeyhiveProvider implements CapabilityProvider {
     } catch (err) {
       const said = err instanceof Error ? err.message : String(err);
       if (/proof missing/i.test(said)) return { how: "no-authority" };
+      if (!(await this.directSeatStands(identifier, groupId))) return { how: "revoked" };
       throw err;
     }
+  }
+
+  /** Whether `identifier` holds a DIRECT seat in the group on this replica: a seat through a member group reads no. */
+  private async directSeatStands(identifier: KH.Identifier, groupId: string): Promise<boolean> {
+    const { group } = await this.requireGroup(groupId);
+    const want = bytesToHex(identifier.toBytes());
+    return (await group.members()).some(({ who }) => bytesToHex(who.id.toBytes()) === want);
   }
 
   /** Whether an agent reaches a group, directly or through a member group, on this replica. A group this replica
