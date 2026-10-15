@@ -20,7 +20,7 @@ uri-path  = "ha.ka.ba/lares/docs/pono/controller-handoff"
 
 A session that holds the CONTROLLER's seat drives the build toward the roadmap's attractor (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-attractor">>): it briefs lanes, routes their handbacks, pushes green heads, keeps canon and the changelog true, and brings the operator only what changes authority, custody at rest or identity bytes. This carrier holds what a session needs to take that seat: the practice, the state, and the way two live sessions pass the seat while both stand.
 
-Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>), the roadmap's cold start (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">>), then the session folder named in #/state.
+Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>), the roadmap's cold start (<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">>), then #/the-lane-law.
 
 <<~/ahu>>
 
@@ -52,21 +52,54 @@ Read with it, in order: the boot seed (<<~ loulou "lar:///ha.ka.ba/lares/api/noo
 
 <<~/ahu>>
 
+<<~ ahu #/the-lane-law>>
+
+!! The lane law ~ what every lead's brief points at, so a session on any machine reads it here
+
+A session reads this carrier and the roadmap alone; no note outside the repository binds a lane. A lead's brief stays short, names its ground, the ground it leaves alone and where it stops, and points here.
+
+!!! The crew
+* One Claude Opus lead (the Episkopos) per lane. A `gpt-6-luna` and a `gpt-6-sol` spirit co-build, each on a narrow one-module brief with a fixed type contract and its vectors; after each flow the lead runs Sol read-only as the aftermath sweep, and closes or answers each finding before the next flow. A lane closes its span with one more sweep over everything it landed.
+* Codex launches from the repository root: a builder with `codex exec -m <model> -c model_reasoning_effort=medium -s workspace-write --worktree -o <out> -` (it stands inside its own worktree already, so its brief forbids `git worktree add` and every git write); a reviewer with `-s read-only --ephemeral`; `--search` before `exec` for web research. A resume names its model again (`-c model=<id>`). Every Codex brief carries the git and refusal lines below.
+* A lane hands back plainly: one `<<~ status "…">>` line, then what a person can do (each act BUILT, SPECIFIED with its named caller, or OWED), commits, shards, Sol's findings and how each closed, suites, house readings, canon still stale, changelog bullets owed, slips and refusals, and its span's start, end, commits, rows closed and shards for the speed ledger.
+
+!!! Git
+* A git command that writes runs alone on its line. Never `git stash` in any form, `git stash list` included; never `--no-verify`; never touch `.git/config`; never push `feature/*` or `main` (the controller pushes); never `git worktree remove --force`.
+* A lead works in its own worktree (`node tools/provision-worktree.mjs <empty-dir>` provisions one: inputs copied, every package built and stamped, no link left pointing into the main tree), and checks `git config core.bare` reads `false` before and after.
+* A lead lands from the main tree: it rebuilds and re-stamps every package whose source it touched (`node tools/stamp-build.mjs . --pkg <dir>`), confirms the built CLI answers, reads `git status --porcelain -- <paths>` and `git diff -- <paths>` showing only its lines, then commits with `git commit -F <msg> --only -- <paths>`. It never commits or reverts a line another hand wrote. A subject reads `lar:///ha.ka.ba/<pkg-or-bag>/<area>/<w1.w2.w3> — plain summary`; `-F`, never `-m`.
+
+!!! Refusals and waiting
+* A refused or denied command stops that step. Never retry it, reshape it, split it, switch tools for it or hand it to another spirit; save the work as a patch and hand back at once. The controller surfaces it to the operator.
+* No foreground `sleep`, alone or chained. A long run goes in the foreground with a long timeout, or in the background with its completion notice.
+
+!!! Bursts, then shards
+* A lane lands a burst of commits, each with its package suites, the typecheck witness and the witnesses it could move run locally, then pushes ONE shard lane over the burst's head (`node tools/e2e-shards.mjs push <lane>`) and reports its `MERGE-VERIFY` line. A red burst gets bisected (`node tools/burst-bisect.mjs <lane> <good> <bad>`), never guessed. A live commit says so in its message and ends a burst only where later work builds on its bytes. No e2e file runs locally; the controller alone runs the whole witness fleet.
+* Suites run from source under a scratch `HOME` and a scratch `LAR_ROOT`, with `LAR_BAGS` unset. Never `pnpm install` in the main tree. Before landing a test file, the charter and gate-dial funnels and the unbuilt-laws witness run.
+* No standing test code produces load; a race gets pinned by a handshake between the parties.
+
+!!! Canon and genesis
+* Each commit carries its canon lines; law lives in one carrier and the roadmap points at it. Prose keeps L-Prime and stays evergreen. A carrier re-stamps with `lares meme normalize <file>`, one file per call, never piped. Identity keys in a first fence never change. Never edit `bags/elyncia*`, `ftls`, `sdm`, `wtf`, the boot seed, or the submission-guarded carriers.
+* A change that moves a plugin bundle rebuilds and commits the bundle and declares the gap in `genesis/unbaked.json`; only a labelled `GENESIS RE-BAKE` folds it, on the controller's word. A step that would move bytes a genesis artifact carries stops and reports which bytes move.
+* Custody, vault and sealed writes count as destroy-class: scratch roots alone, synthetic names and keys only, never the operator's homes.
+
+<<~/ahu>>
+
 <<~ ahu #/state>>
 
 !! State ~ the controller trues this section at every handoff
 
-''As of 2026-10-15, early.'' Branch `feature/lararium-node-5`; the controller pushes shard-green heads in bursts (#/the-practice).
+''As of 2026-10-15.'' The road lands on `main` by one merge commit from `feature/lararium-node-5`, and the next span runs on `feature/green-jello-dinosaur-5` as cloud sessions; this carrier, the roadmap and git hold every state a session needs.
 
-* ''Closed'': the custody seal train; the disk shore; truthful receipts; container drivers on every push; the seat train (K); side lane S8, where a face's names rest only on sealed rows until its plane's rest seals.
-* ''The seal record's shape stands closed.'' Every genesis carries its signed inception, the Nexus AID commits that image, and seal records name a predecessor set. The operator founds the persistent node vessel after the roadmap's work and its aftermath land (operator ruling), by hand, on a TTY; no spirit founds it.
-* ''In flight'': train N's second span (the cofound verbs with the joint founding's cadence citation, the two-root witness, the live partials, contracts and rolls). Train W's pure step stands landed; its live admit and socket cutover wait on N's two-vault contract seam.
-* ''Ready to fire'': launch kits for every train ahead (<<~ loulou "lar:///ha.ka.ba/lararium/docs/train-o1-launch">>, <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-s3-launch">>, <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-h-launch">>, <<~ loulou "lar:///ha.ka.ba/lararium/docs/train-x-launch">>) beside N's and W's, with their reds declared in the unbuilt-laws register.
-* ''Rulings'': fourteen questions stand ruled under the operator's delegation (roadmap `#/rulings`), each with what flips it; the rest stay in `#/open`.
-* ''Open rows beside the trains'': `A13`, `V5`, `P17`, `K12`-`K14`; guardian enrolment's command and sealed row (`V2`; its typed first event stands); the joint founding's cadence inception (`K9`).
-* ''Waiting on the operator'': the o-takiage ask list; a hardware choice for unattended ember raises; HARBOR's live steps and the two-hearth ceremony, by hand, when the road reaches them.
-* ''The session folder'': `~/.claude/projects/-home-joshu-Synthetic-Dream-Machine/handoff-2026-10-12/` holds the shared lane law (`wave-law.md`), every lane's resume sheet, the rulings and research waves, the census, and the controller's running sheet (`CONTROLLER-HANDOFF.md`). It lives outside the repository and outside any clone: a session on another machine reads this carrier and the roadmap alone.
-
+* ''Closed'': the custody seal train; the disk shore; truthful receipts; container drivers on every push; the seat train (K); side lane S8.
+* ''Train N'': the seal record's shape stands closed (every genesis carries its signed inception, the Nexus AID commits it, seal records name a predecessor set); two operators found one Nexus across two vaults with `lares nexus seal cofound open|join|seal`; two vaults admit and revoke through one judged partial. Owed: the kapae and roll-anchor two-vault doors, the two-root witness, rolls with fresh successors and chairs, the Offering act's scope field (roadmap `#/the-trains`, N).
+* ''Train W'': its pure step stands (the measured browser envelope, the gate's fixed silences). Its live admit and the assembled socket cutover stand unblocked, since N's contract seam landed; the cutover stays the largest single item on the road.
+* ''Train V'': guardian enrolment's typed event and its command stand. Owed: a bundle that carries an enrolled set and its restore (a held patch waits on a rebase), the root-card reader, a restore as persona zero through the founding act.
+* ''Ground'': the residue lane closed its free rows; the rest wait on held ground, each named with its owner.
+* ''Kits ready'': launch kits for O1, sealed-store step three, H and X beside N's and W's, their reds declared in the unbuilt-laws register.
+* ''Rulings'': seventeen questions stand ruled under the operator's delegation (roadmap `#/rulings`), each with what flips it.
+* ''The pace'': two lanes run at once, by the operator's word, so a speed reading with bursts, co-building and the lane tools stays legible. One wave of three lanes landed 18 commits in about two and a half hours, over 10 shards with no red burst.
+* ''The operator's own founding'': the persistent node vessel founds after the roadmap's work and its aftermath land, by hand, on a TTY; no spirit founds it. The two-hearth ceremony, HARBOR's live steps and the hardware choice for unattended ember raises stay the operator's hands.
+* ''Notes outside the repository'': a laptop session also keeps a session folder of resume sheets, research waves and patches under `~/.claude/projects/`; nothing there binds a lane, and a cloud session runs without it.
 <<~/ahu>>
 
 <<~ ahu #/the-live-handoff>>
@@ -77,13 +110,13 @@ A session can close and a fresh one boot from carriers; a ''live'' handoff lets 
 
 # ''One controller at a time.'' Only the seat-holder pushes the feature branch, fills lane slots and commits to `CHANGELOG.md` or the roadmap. The other session reads, asks, and works only lanes the seat-holder hands it by name.
 # ''The outgoing seat trues #/state'' in this carrier, commits it, and names its lanes in flight: which will finish under it, and which pass to the incoming seat with their resume sheets.
-# ''The incoming seat reads first'': the boot seed, the roadmap's cold start, this carrier, the session folder's `wave-law.md` and `CONTROLLER-HANDOFF.md`. Then it asks the outgoing seat, by session name over the message channel, whatever stays unclear: a lane's intent, a house reading's reason, a red that looked like a flake.
+# ''The incoming seat reads first'': the boot seed, the roadmap's cold start, and this carrier whole, #/the-lane-law included. Then it asks the outgoing seat, by session name over the message channel, whatever stays unclear: a lane's intent, a house reading's reason, a red that looked like a flake.
 # ''The seat passes by message.'' The outgoing seat sends "the seat passes to <session>" once no push stands in flight and every lane it keeps has a named owner; the incoming seat answers "the seat holds". Until that answer, the outgoing seat still holds it.
 # ''Lanes keep their spirit.'' A running lane answers the session that launched it. A lane that passes gets a new lead launched by the incoming seat from its resume sheet, never a message to a subagent of another session.
 # ''Questions flow both ways after the pass''; the outgoing session may keep a lane to finish, and reports its handback to the new seat-holder as a lane would.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;nEl2h9sqJt2slHEdN6T64E5QYI_UFctSjPg-RptqZU4
+<<^ code="&#x0003;">>ni:///sha-256;ag3MqTh6Au7nujYVjJWVqoUTIQSeaOnsqsRsY7cQIeo
 
 <<^ code="&#x0004;" -> to="?">>
