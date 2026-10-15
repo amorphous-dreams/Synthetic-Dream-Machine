@@ -18,7 +18,8 @@
  */
 import {
   openBrowserVessel,
-  parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage,
+  parseAdmitCarriage, parseAdmitPaste, toAdmitCarriage,
+  browserFleetJoinRequest, browserFleetJoinLand, BrowserFleetJoinRefused,
   DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
 } from "@lararium/browser";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
@@ -152,9 +153,20 @@ function takeStashedAdmit(): DeviceAdmitPayload | null {
   return payload;
 }
 
+/** The fleet-join file a paste carries, by its `kind`: an offer to request against, an answer to land, or neither. */
+function fleetJoinFileOf(text: string): { readonly kind: "fleet-join-offer" | "fleet-join-answer"; readonly value: unknown } | null {
+  let value: unknown;
+  try { value = JSON.parse(text.trim()); } catch { return null; }
+  const kind = typeof value === "object" && value !== null ? (value as { kind?: unknown }).kind : undefined;
+  return kind === "fleet-join-offer" || kind === "fleet-join-answer" ? { kind, value } : null;
+}
+
 /**
- * Mount the identity + admit surface: this vessel names its own key, writes the command that admits it,
- * and takes the answer back as a paste.
+ * Mount the identity + admit surface: this vessel names its own key, writes the command that starts a fleet join,
+ * and takes the files back as pastes. THE FLEET-JOIN DOOR: the root holder's offer pastes in, and this browser
+ * answers with its request (its face-scoped keys mint here); the root holder's answer pastes in, and this browser
+ * lands it and re-enters boot on the admit it carried. A bare `#admit=` carriage still reads until that door
+ * retires.
  *
  * The alternative path costs a human a devtools console on a phone. The key, the command, and the door
  * all live on the page instead — the vessel says the one thing only it holds, and reads back the one
@@ -166,7 +178,7 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
   const paste = document.getElementById("admit-paste") as HTMLTextAreaElement | null;
   const apply = document.getElementById("admit-apply") as HTMLButtonElement | null;
   keyEl.textContent = verifyingKeyHex;
-  cmdEl.textContent = formatAdmitCommand(verifyingKeyHex);
+  cmdEl.textContent = "lares fleet join offer --out offer.json";
 
   // Copy where the platform grants a clipboard; SELECT where it does not (an insecure origin, an older
   // browser). A selected span is a thumb away from the OS copy affordance, so the path never dead-ends.
@@ -190,23 +202,50 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
   }
 
   if (!paste || !apply) return;
-  apply.addEventListener("click", () => {
-    const payload = parseAdmitPaste(paste.value);
-    if (!payload) {
-      statusEl.textContent = "✗ no admit read in that paste — carry the whole `#admit=…` line from the node.";
-      statusEl.className = "err";
-      return;
-    }
-    statusEl.textContent = `✓ admit read — signed by ${payload.signerDid.slice(0, 12)}… · re-entering boot`;
-    statusEl.className = "ok";
-    paste.value = "";
-    try { sessionStorage.setItem(ADMIT_STASH_KEY, toAdmitCarriage(payload)); }
+  const stashAndReboot = (carriage: string): void => {
+    try { sessionStorage.setItem(ADMIT_STASH_KEY, carriage); }
     catch {
       statusEl.textContent = "✗ this browser withholds sessionStorage — the admit cannot be handed to boot here.";
       statusEl.className = "err";
       return;
     }
     location.reload();
+  };
+  apply.addEventListener("click", () => {
+    const file = fleetJoinFileOf(paste.value);
+    if (file) {
+      void (async () => {
+        try {
+          if (file.kind === "fleet-join-offer") {
+            const request = await browserFleetJoinRequest({ offer: file.value });
+            paste.value = JSON.stringify(request, null, 2);
+            paste.select();
+            statusEl.textContent = "✓ request minted — carry it back to the root holder: `lares fleet join answer <request-file>`, then paste the answer here.";
+            statusEl.className = "ok";
+            return;
+          }
+          const { admit } = await browserFleetJoinLand({ answer: file.value });
+          statusEl.textContent = `✓ answer landed — signed by ${admit.signerDid.slice(0, 12)}… · re-entering boot`;
+          statusEl.className = "ok";
+          paste.value = "";
+          stashAndReboot(toAdmitCarriage(admit));
+        } catch (err) {
+          statusEl.textContent = err instanceof BrowserFleetJoinRefused ? `✗ refused — ${err.message}` : `✗ ${String(err)}`;
+          statusEl.className = "err";
+        }
+      })();
+      return;
+    }
+    const payload = parseAdmitPaste(paste.value);
+    if (!payload) {
+      statusEl.textContent = "✗ nothing read in that paste — carry the whole fleet-join offer or answer file.";
+      statusEl.className = "err";
+      return;
+    }
+    statusEl.textContent = `✓ admit read — signed by ${payload.signerDid.slice(0, 12)}… · re-entering boot`;
+    statusEl.className = "ok";
+    paste.value = "";
+    stashAndReboot(toAdmitCarriage(payload));
   });
 }
 
@@ -291,7 +330,7 @@ async function bootVessel(): Promise<void> {
     mountAdmitSurface(result.identity.verifyingKey);
     if (relayUrl) {
       console.log(`[vessel] this leaf's key: ${did}`);
-      console.log(`[vessel] to admit it, on the node:  ${formatAdmitCommand(did)}`);
+      console.log("[vessel] to join a face's fleet, on the root holder: lares fleet join offer --out offer.json, then paste the offer here");
     }
     void readOracle(result.readOracle);         // the vessel stands, so it can prove at the peer's gate
     // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.

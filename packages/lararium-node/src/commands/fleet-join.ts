@@ -22,18 +22,18 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  */
-import { generateKeyPairSync, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import * as ed25519 from "@noble/ed25519";
 import {
-  PERSONA_GROUP_ID_TIDDLER, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, fleetJoinRequestImage,
-  foldWithdrawals, hex, issueCertificate, mintVesselFaceKey, readFleetJoinAnswer, readFleetJoinOffer,
-  readFleetJoinRequest, requestCertificate, sealAddressSecret,
+  PERSONA_GROUP_ID_TIDDLER, composeFleetJoinRequest, faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer,
+  fleetJoinSealPair, foldWithdrawals, hex, issueCertificate, mintVesselFaceKey, readFleetJoinAnswer, readFleetJoinOffer,
+  readFleetJoinRequest, sealAddressSecret,
   type FaceKeyGrant, type FaceScope, type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest,
-  type VesselFaceCertificate, type VesselFaceCertificateRequest,
+  type VesselFaceCertificate,
 } from "@lararium/mesh";
-import type { CarriedAdmitPayload, DeviceAdmitPayload } from "@lararium/keyhive";
+import { carriedAdmitOfFleetJoin } from "@lararium/keyhive";
 import { primaryNexusAid, readCarriedCharters } from "../carried-set.js";
 import { nexusKeyPublicOf, nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readNexusKey, storeVesselFaceKey } from "../face-key-custody.js";
 import {
@@ -163,14 +163,6 @@ export async function runFleetJoinAnswer(opts: FleetJoinAnswerOptions): Promise<
 
 // ── The joining vessel ───────────────────────────────────────────────────────────────────────────
 
-/** An X25519 key pair through the platform: the raw 32-byte secret and the public key's hex. */
-function sealPair(): { secret: Uint8Array; key: string } {
-  const { privateKey, publicKey } = generateKeyPairSync("x25519");
-  const d = (privateKey.export({ format: "jwk" }) as { d: string }).d;
-  const x = (publicKey.export({ format: "jwk" }) as { x: string }).x;
-  return { secret: new Uint8Array(Buffer.from(d, "base64url")), key: Buffer.from(x, "base64url").toString("hex") };
-}
-
 /**
  * The joining vessel's request over an offer it carried. Its face-scoped keys mint here and rest in its own
  * custody; the join stays pending until its answer lands. The same offer again answers the request already kept;
@@ -186,22 +178,21 @@ export async function runFleetJoinRequest(opts: { readonly offer: unknown }): Pr
     throw new FleetJoinRefused("join-pending", "another fleet join stands pending here; land its answer, or abandon it (`lares fleet join abandon`).");
   }
   const vesselKey = (await loadVesselVerifyingKey()).toLowerCase();
-  const apart = [vesselKey, offer.rootKey];
-  const requests: VesselFaceCertificateRequest[] = [];
-  for (const scope of offer.scopes) {
-    const minted = await mintVesselFaceKey();
-    try { await storeVesselFaceKey(scope, minted.secret); } finally { minted.secret.fill(0); }
-    const asked = await requestCertificate({ scope, vesselFaceKey: minted.publicKey, apart, custody: nodeVesselFaceKeyCustody });
-    if (!("request" in asked)) throw new FleetJoinRefused(asked.refusal, `no certificate request at ${scope.nexus}.`);
-    requests.push(asked.request);
-  }
-  const seal = sealPair();
-  const body = { nonce: offer.nonce, vesselKey, sealKey: seal.key, requests };
+  const seal = fleetJoinSealPair();
   const seed = await loadVesselSigningSeed();
-  let signature: string;
-  try { signature = await signHex(fleetJoinRequestImage(body), seed); } finally { seed.fill(0); }
-  const request = readFleetJoinRequest({ kind: "fleet-join-request", ...body, signature }, offer, [offer.rootKey]);
-  if (isRefusal(request)) { seal.secret.fill(0); throw new FleetJoinRefused(request.refusal, "the request this vessel signed does not read back."); }
+  let request;
+  try {
+    request = await composeFleetJoinRequest({
+      offer, vesselKey, sealKey: seal.key, custody: nodeVesselFaceKeyCustody,
+      mintFaceKey: async (scope) => {
+        const minted = await mintVesselFaceKey();
+        try { await storeVesselFaceKey(scope, minted.secret); } finally { minted.secret.fill(0); }
+        return minted.publicKey;
+      },
+      sign: (image) => signHex(image, seed),
+    });
+  } finally { seed.fill(0); }
+  if (isRefusal(request)) { seal.secret.fill(0); throw new FleetJoinRefused(request.refusal, "the request this vessel composed does not read back."); }
   try { await keepPendingFleetJoin({ request, offer, sealSecret: hex(seal.secret) }); } finally { seal.secret.fill(0); }
   return request;
 }
@@ -211,26 +202,6 @@ export async function runFleetJoinAbandon(): Promise<boolean> {
   const pending = await readPendingFleetJoin();
   const nonce = (pending?.request as { nonce?: unknown } | undefined)?.nonce;
   return typeof nonce === "string" ? clearPendingFleetJoin(nonce) : false;
-}
-
-const ISLAND_KINDS = new Set(["own", "anchor", "charter", "explicit"]);
-
-/** The admit the answer carried, as `vessel found --admit` reads one: the signed edge, with the signed pin, canon
- *  and reach beside it. */
-function carriedAdmit(answer: FleetJoinAnswer): CarriedAdmitPayload {
-  const edge = answer.edge as DeviceAdmitPayload;
-  if (typeof edge !== "object" || edge === null || edge.kind !== "device-admit/v1") throw new FleetJoinRefused("edge-malformed", "the answer carries no device edge.");
-  if (edge.personaGroupId !== answer.personaGroup) throw new FleetJoinRefused("edge-other-face", "the device edge names another face than the answer.");
-  const { islandKind, islandScope, syncUrl } = answer.reach;
-  if (islandKind !== null && !ISLAND_KINDS.has(islandKind)) throw new FleetJoinRefused("reach-malformed", `the answer names an island kind no vessel resolves (${islandKind}).`);
-  return {
-    ...edge,
-    syncUrl,
-    hearthGatePubKey: answer.carriage.gatePin,
-    hearthCanonDocs:  answer.carriage.canon,
-    ...(islandKind !== null ? { hearthIslandKind: islandKind as NonNullable<CarriedAdmitPayload["hearthIslandKind"]> } : {}),
-    ...(islandScope !== null ? { hearthIslandScope: islandScope } : {}),
-  };
 }
 
 /**
@@ -252,7 +223,8 @@ export async function runFleetJoinLand(opts: { readonly repo: Repo; readonly ans
   } finally { sealSecret.fill(0); }
   if (isRefusal(verified)) throw new FleetJoinRefused(verified.refusal, "the answer does not read against the request this vessel sent.");
   const { answer, addressSecret } = verified;
-  const admit = carriedAdmit(answer);
+  const admit = carriedAdmitOfFleetJoin(answer);
+  if ("refusal" in admit) throw new FleetJoinRefused(admit.refusal, "the answer's device edge does not found this face.");
   try { await landFaceAddressSecret(answer.personaGroup, addressSecret); } finally { addressSecret.fill(0); }
   await keepFaceJoinRecord({ personaGroup: answer.personaGroup, rootKey: offer.rootKey, certificates: answer.certificates, grants: answer.grants });
   await runInit({ repo: opts.repo, force: true, admitPayload: admit, custody: { slots: [] } });

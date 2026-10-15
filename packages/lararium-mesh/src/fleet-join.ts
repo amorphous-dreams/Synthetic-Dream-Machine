@@ -26,7 +26,9 @@
  *     record a session's face reads (`session-face` `FaceGrantReading`).
  *
  * Pure: no custody, no I/O, no clock. The secret seal draws fresh randomness through `sealed-box`.
- * The node's fleet-join door (`commands/fleet-join`) composes it.
+ * `composeFleetJoinRequest` builds the joinee's request over doors the vessel hands it (a key's mint and custody,
+ * its vessel key's signature), so the node's door (`commands/fleet-join`) and the browser's
+ * (`browser-fleet-join`) spell one request alike.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-chain · lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings
  * (the working address: the fleet-join door delivers the face address secret).
@@ -34,16 +36,17 @@
 import { x25519 } from "@noble/curves/ed25519.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { readAdmitCarriage, type AdmitCarriage } from "./carriage-registry.js";
-import { canonicalJson, canonicalJsonBytes, hex, hexToBytes, utf8Bytes } from "./crypto.js";
+import { canonicalJson, canonicalJsonBytes, hex, hexToBytes, utf8Bytes, webGetRandomValues } from "./crypto.js";
 import {
   FACE_KEY_GRANT_DOMAIN, FLEET_JOIN_ANSWER_DOMAIN, FLEET_JOIN_EDGE_DOMAIN, FLEET_JOIN_REQUEST_DOMAIN,
   FLEET_JOIN_SECRET_INFO,
 } from "./domains.js";
 import { acceptEd25519Key, readEd25519 } from "./ed25519-door.js";
+import { requestCertificate, type VesselFaceKeyCustody } from "./face-authority.js";
 import {
   own, readCertificate, readCertificateRequest, readFaceScope, sameFaceScope,
   type FaceProofRefusal, type FaceScope, type KeysHeldApart, type VesselFaceCertificate,
-  type VesselFaceCertificateRequest,
+  type VesselFaceCertificateRequest, type VesselFaceKey,
 } from "./face-proof-subjects.js";
 import { openFromSender, sealToRecipient } from "./sealed-box.js";
 
@@ -425,4 +428,41 @@ export function readFleetJoinAnswer(value: unknown, args: {
     });
     return { answer, addressSecret };
   });
+}
+
+// ── The joinee's request, composed ──────────────────────────────────────────────────────────────
+
+/** A fresh X25519 key pair for the answer's seal: the 32-byte secret and the public key's hex. The caller keeps
+ *  the secret beside its pending join and zero-fills its own copy. */
+export function fleetJoinSealPair(): { readonly secret: Uint8Array; readonly key: string } {
+  const secret = webGetRandomValues(new Uint8Array(32));
+  return { secret, key: hex(x25519.getPublicKey(secret)) };
+}
+
+/**
+ * The joining vessel's request over an offer it read, composed over the vessel's own doors.
+ *
+ * `mintFaceKey` mints one face-scoped key for a scope INTO the vessel's custody and answers its public half;
+ * `custody` signs each certificate request under that key; `sign` signs the request's image under the vessel key.
+ * The request reads back through `readFleetJoinRequest` before it answers, so a door that signed under another
+ * key refuses here by name and never leaves the vessel.
+ */
+export async function composeFleetJoinRequest(args: {
+  offer: FleetJoinOffer; vesselKey: string; sealKey: string;
+  mintFaceKey: (scope: FaceScope) => Promise<string>;
+  custody: VesselFaceKeyCustody;
+  sign: (image: Uint8Array) => Promise<string>;
+}): Promise<FleetJoinRequest | FleetJoinRefusal> {
+  const vesselKey = args.vesselKey.toLowerCase();
+  const apart = [vesselKey, args.offer.rootKey];
+  const requests: VesselFaceCertificateRequest[] = [];
+  for (const scope of args.offer.scopes) {
+    const vesselFaceKey = (await args.mintFaceKey(scope)).toLowerCase() as VesselFaceKey;
+    const asked = await requestCertificate({ scope, vesselFaceKey, apart, custody: args.custody });
+    if (!("request" in asked)) return refuse("certificate-request-refused", asked.cause);
+    requests.push(asked.request);
+  }
+  const body = { nonce: args.offer.nonce, vesselKey, sealKey: args.sealKey, requests };
+  const signature = await args.sign(fleetJoinRequestImage(body));
+  return readFleetJoinRequest({ kind: "fleet-join-request", ...body, signature }, args.offer, [args.offer.rootKey]);
 }

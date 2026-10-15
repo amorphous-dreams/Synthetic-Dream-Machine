@@ -51,7 +51,7 @@ export function browserIdentityContinuityKey(idbName: string): string {
 // social bootstrap (the founding floor); the persona-multitude stores mirror the node fs vault's
 // per-index files. Every store bumps the DB version together, so a reboot upgrades additively (the
 // device key + bootstrap survive; the new stores appear empty until a persona founds).
-const IDB_VERSION       = 8;
+const IDB_VERSION       = 9;
 const PERSONA_ROOTS_STORE  = "persona-roots";     // per-index persona-root keypairs (self-sovereign secret)
 const PERSONA_ROSTER_STORE = "persona-roster";    // the EXPLICIT held-root record (never a keys()-scan)
 const ACTIVE_PERSONA_STORE = "active-persona";    // the worn-mask pointer (one handle-index)
@@ -74,6 +74,11 @@ export const SEED_WRAP_STORE        = "seed-wrap";           // handleIndex → 
 // v8 additive: each face's PER-NEXUS KEY, 32 bytes minted at random (never derived from the persona seed), keyed
 // `h${N}:${nexusAid}`. It rests beside the face's root and in the root's own class.
 export const NEXUS_KEY_STORE        = "nexus-keys";          // `h${N}:${aid}` → Uint8Array(32)
+// v9 additive: the fleet-join door's rows. A joined vessel's OWN face-scoped key per (face key, Nexus), minted here
+// and never carried; and the join itself: the pending request beside its seal secret, the face's record, and the
+// face's address secret the answer delivered.
+export const VESSEL_FACE_KEY_STORE  = "vessel-face-keys";    // `${nexus}|${faceKey}` → Uint8Array(32)
+export const FLEET_JOIN_STORE       = "fleet-join";          // "pending" · `record:${group}` · `secret:${group}`
 const ROSTER_RECORD        = "roster";            // the single key both roster stores write under
 const ACTIVE_RECORD        = "active";            // the single key the selector writes under
 
@@ -127,6 +132,9 @@ export function openVesselIdb(idbName: string): Promise<IDBDatabase> {
       if (db.objectStoreNames.contains("boot-invite-burned"))    db.deleteObjectStore("boot-invite-burned");
       // v8: each face's per-Nexus key, minted at random where a face first presents at a Nexus.
       if (!db.objectStoreNames.contains(NEXUS_KEY_STORE))        db.createObjectStore(NEXUS_KEY_STORE);
+      // v9: the fleet-join door's two stores, empty until this browser joins a face's fleet.
+      if (!db.objectStoreNames.contains(VESSEL_FACE_KEY_STORE))  db.createObjectStore(VESSEL_FACE_KEY_STORE);
+      if (!db.objectStoreNames.contains(FLEET_JOIN_STORE))       db.createObjectStore(FLEET_JOIN_STORE);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror   = () => reject(req.error);

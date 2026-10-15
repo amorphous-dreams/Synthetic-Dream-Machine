@@ -1,7 +1,9 @@
 /** The fleet-join door's three files: an offer, a request bound to it, an answer bound to the request. */
 import { x25519 } from "@noble/curves/ed25519.js";
 import { describe, expect, test } from "vitest";
+import * as ed25519 from "@noble/ed25519";
 import {
+  composeFleetJoinRequest, fleetJoinSealPair,
   faceKeyGrantImage, fleetJoinAnswerImage, fleetJoinOffer, fleetJoinRequestImage, readFaceKeyGrant,
   readFleetJoinAnswer, readFleetJoinOffer, readFleetJoinRequest, sealAddressSecret,
   type FleetJoinAnswer, type FleetJoinOffer, type FleetJoinRequest,
@@ -238,5 +240,30 @@ describe("the fleet-join door's files", () => {
     Object.defineProperty(throwing, "scopes", { get() { throw new Error("boom"); }, enumerable: true });
     expect(readFleetJoinOffer(throwing)).toEqual({ refusal: "offer-malformed" });
     expect(readFleetJoinOffer(JSON.parse(`{"kind":"fleet-join-offer","personaGroup":"${GROUP}","rootKey":"${w.root.key}","nonce":"${NONCE}","scopes":[],"__proto__":{}}`))).toEqual({ refusal: "offer-malformed" });
+  });
+
+  test("THE JOINEE COMPOSES ITS REQUEST over its own doors: a key per scope, each request under it, the whole under the vessel key", async () => {
+    const w = await world();
+    const minted = new Map<string, Pair>();
+    let n = 0;
+    const doors = {
+      mintFaceKey: async (scope: FaceScope) => { const p = await pair(`composed ${n++}`); minted.set(p.key, p); void scope; return p.key; },
+      custody: { signAsVesselFace: (_s: FaceScope, key: string, image: Uint8Array) => ed25519.signAsync(image, minted.get(key)!.secret) },
+      sign: async (image: Uint8Array) => signHex(image, w.joinee),
+    };
+    const seal = fleetJoinSealPair();
+    expect(seal.key).toBe(hex(x25519.getPublicKey(seal.secret)));
+    const request = await composeFleetJoinRequest({ offer: w.offer, vesselKey: w.joinee.key, sealKey: seal.key, ...doors });
+    if ("refusal" in request) throw new Error(request.refusal);
+    expect(request.requests.map((q) => q.scope)).toEqual(w.offer.scopes);
+    expect(new Set(request.requests.map((q) => q.vesselFaceKey)).size).toBe(w.offer.scopes.length);
+    expect(readFleetJoinRequest(JSON.parse(JSON.stringify(request)), w.offer)).toEqual(request);
+    // A custody door that signs under another key refuses before the request exists.
+    const astray = { signAsVesselFace: (_s: FaceScope, _k: string, image: Uint8Array) => ed25519.signAsync(image, w.joinee.secret) };
+    expect(await composeFleetJoinRequest({ offer: w.offer, vesselKey: w.joinee.key, sealKey: seal.key, ...doors, custody: astray }))
+      .toMatchObject({ refusal: "certificate-request-refused" });
+    // A vessel signature under another key reads back refused, so it never leaves the vessel.
+    expect(await composeFleetJoinRequest({ offer: w.offer, vesselKey: w.joinee.key, sealKey: seal.key, ...doors, sign: async (image) => signHex(image, w.root) }))
+      .toEqual({ refusal: "request-unsigned" });
   });
 });
