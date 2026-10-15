@@ -449,8 +449,9 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
     expect(mesh.verifySealLineage([{ ...bare, inception: { ...inception!, signatures: inception!.signatures.slice(0, 1) } }])).toBe(false);
     expect(mesh.verifySealLineage([{ ...bare, inception }])).toBe(true);
   });
-  test.skip("A HOUSEHOLD SEED NEVER BECOMES A JOINT NEXUS — COFOUND_OFFER_IS_NOT_A_CHARTER; nexus-cofound-law.test.ts. The pending two-root door must keep both seed charter homes byte-identical while a fresh AID receives both founders' signatures.", () => {
-    expect(Object.keys(mesh)).toContain("readCofoundOffer");
+  test("A HOUSEHOLD SEED NEVER BECOMES A JOINT NEXUS — COFOUND_OFFER_IS_NOT_A_CHARTER; nexus-cofound-law.test.ts. The cofound door keeps both seed charter homes byte-identical while the joint charter files under its own AID (node cofound-ceremony.test.ts W1, CLI seal-cofound.test.ts C1).", () => {
+    for (const name of ["readCofoundOffer", "cofoundCharterDoc", "verifyCadenceInception"]) expect(Object.keys(mesh)).toContain(name);
+    expect(mesh.readCofoundOffer({ kind: "cofound-offer" })).toBeNull();
   });
   test.skip("A NEXUS QUORUM PARTIAL IS JUDGED BEFORE A SECOND SEAT SIGNS — PARTIAL_COSIGN_JUDGES_BEFORE_SIGNING; nexus-partial-law.test.ts. The edge primitive stands; admission, revocation, kapae and roll-anchor callers must each judge their own exact image and causal fence.", () => {
     expect(Object.keys(mesh)).toContain("judgeNexusActPartial");

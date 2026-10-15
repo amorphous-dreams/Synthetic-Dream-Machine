@@ -13,6 +13,7 @@ import {
   charterInceptionBytes, charterInceptionImage, genesisCharterEpoch, genesisOfInception, readSealLineage, verifyInception,
   verifySealLineage, type SealRollSigner,
 } from "../src/wax-stamp.js";
+import { cadenceNextDigest } from "../src/cadence-lineage.js";
 import { cofoundGenesis, cofoundJoin, cofoundOffer, composeCharterInception, sealCofound } from "../src/cofound.js";
 import { seatedCharter } from "./charter-fixture.js";
 
@@ -25,11 +26,11 @@ const LAW = "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus";
 
 /** Two founders' joint inception, both signatures, as the pure act yields it. */
 async function joint() {
-  const a = { seat: await key(71), next: (await coldKeyFromSeed(seedOf(73))).digest };
-  const b = { seat: await key(72), next: (await coldKeyFromSeed(seedOf(74))).digest };
+  const a = { seat: await key(71), next: (await coldKeyFromSeed(seedOf(73))).digest, cadence: { key: await key(86), next: cadenceNextDigest(await key(87)) } };
+  const b = { seat: await key(72), next: (await coldKeyFromSeed(seedOf(74))).digest, cadence: { key: await key(88), next: cadenceNextDigest(await key(89)) } };
   const offer = cofoundOffer({ ...a, charterLaw: LAW, manifest: MANIFEST });
-  const join = await cofoundJoin(offer, b, seatFingerprint(a.seat), await hand(72));
-  const inception = await sealCofound(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }, await hand(71));
+  const join = await cofoundJoin(offer, b, seatFingerprint(a.seat), await hand(72), await hand(88));
+  const inception = await sealCofound(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }, await hand(71), await hand(86));
   return { a, b, offer, inception, genesis: cofoundGenesis(inception) };
 }
 
@@ -63,7 +64,7 @@ describe("N's joint genesis", () => {
 
   test("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: two signatures over different images fail the charter lineage reader", async () => {
     const { a, genesis } = await joint();
-    const split = { ...genesis.inception!.image, founding: { offer: "ab".repeat(32) } };
+    const split = { ...genesis.inception!.image, founding: { ...genesis.inception!.image.founding!, offer: "ab".repeat(32) } };
     const aHand = await hand(71);
     const signatures = [...genesis.inception!.signatures.filter((s) => s.signer !== a.seat), { signer: a.seat, sig: await aHand.sign(charterInceptionBytes(split)) }];
     expect(readSealLineage([{ ...genesis, inception: { ...genesis.inception!, signatures } }])).toBe("inception-signature-invalid");
@@ -91,6 +92,12 @@ describe("N's joint genesis", () => {
     expect(readSealLineage([genesisOfInception(image)])).toBe("inception-unsigned");
     const signed = genesisOfInception(image, [{ signer: seat.signer, sig: await seat.sign(charterInceptionBytes(image)) }]);
     expect(verifySealLineage([signed])).toBe(true);
+    // A HOUSEHOLD SEED CITES NO CADENCE: a seed's inception that carries one reads malformed, and a joint one without
+    // its cadence reads malformed too.
+    const { genesis } = await joint();
+    expect(readSealLineage([{ ...signed, inception: { ...signed.inception!, cadence: genesis.inception!.cadence! } }])).toBe("inception-malformed");
+    const { cadence: _c, ...bareJoint } = genesis.inception!;
+    expect(readSealLineage([{ ...genesis, inception: bareJoint }])).toBe("inception-malformed");
   });
 
   test("COFOUND_OFFER_IS_NOT_A_CHARTER: a genesis composed from an offer's material alone fails the charter lineage reader", async () => {
@@ -102,8 +109,8 @@ describe("N's joint genesis", () => {
 
   test("SAME ROSTER, TWO FOUNDINGS: one roster and rule, founded twice with fresh successors, mints two AIDs", async () => {
     const { a, b, genesis } = await joint();
-    const again = composeCharterInception(cofoundOffer({ seat: a.seat, next: (await coldKeyFromSeed(seedOf(83))).digest, charterLaw: LAW, manifest: MANIFEST }),
-      { seat: b.seat, next: (await coldKeyFromSeed(seedOf(84))).digest });
+    const again = composeCharterInception(cofoundOffer({ seat: a.seat, next: (await coldKeyFromSeed(seedOf(83))).digest, cadence: a.cadence, charterLaw: LAW, manifest: MANIFEST }),
+      { seat: b.seat, next: (await coldKeyFromSeed(seedOf(84))).digest, cadence: b.cadence });
     expect(again.keys).toEqual(genesis.inception!.image.keys);
     expect(again.threshold).toBe(genesis.inception!.image.threshold);
     expect(genesisOfInception(again).epochCid).not.toBe(genesis.epochCid);

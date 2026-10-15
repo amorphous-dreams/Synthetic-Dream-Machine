@@ -6,30 +6,36 @@
  * household seed moves. The act crosses between the vaults as files alone, and no clock decides any step.
  *
  * ── THE THREE FILES ─────────────────────────────────────────────────────────────────────────────
- *   · THE OFFER (A → B): A's seat key, the digest of A's cold successor, the charter law the Nexus adopts and
- *     the release manifest's four addresses. It signs nothing. Its checksum names the OFFER FINGERPRINT.
- *   · THE JOIN (B → A): the offer as B read it, B's seat key, the digest of B's cold successor, and B's HALF
- *     SIGNATURE over the inception image the two seats compose. B signs only after typing A's seat
- *     fingerprint as heard.
- *   · THE INCEPTION (A → B): the offer and the same image, signed by both seats. A signs only after typing B's
- *     seat fingerprint as heard. The image's checksum names the FINAL CHARTER FINGERPRINT.
+ *   · THE OFFER (A → B): A's seat key, the digest of A's cold successor, A's hearth's cadence key and its next
+ *     key's digest, the charter law the Nexus adopts and the release manifest's four addresses. It signs
+ *     nothing. Its checksum names the OFFER FINGERPRINT.
+ *   · THE JOIN (B → A): the offer as B read it, B's seat key, the digest of B's cold successor, B's hearth's
+ *     cadence material, B's HALF SIGNATURE over the inception image the two seats compose, and B's cadence
+ *     signature over the cadence inception that image cites. B signs only after typing A's seat fingerprint
+ *     as heard.
+ *   · THE INCEPTION (A → B): the offer and the same image, signed by both seats, with the cadence inception
+ *     signed by both hearths. A signs only after typing B's seat fingerprint as heard. The image's checksum
+ *     names the FINAL CHARTER FINGERPRINT.
  *
  * ── THE INVARIANTS ──────────────────────────────────────────────────────────────────────────────
- *   · ONE IMAGE, ONE AID. The inception image (wax-stamp's) commits the offer fingerprint and both founders' fresh
- *     successor commitments, and the AID content-addresses it: each side composes it from the public material
+ *   · ONE IMAGE, ONE AID. The inception image (wax-stamp's) commits the offer fingerprint, both founders' fresh
+ *     successor commitments and the one cadence inception the founding seats, and the AID content-addresses it: each side composes it from the public material
  *     alone and derives one AID, neither holds the other's signer, and two foundings by one roster never alias.
  *   · TWO FINGERPRINTS, NEVER ONE FOR THE OTHER. The offer fingerprint names A's half; the final charter
  *     fingerprint names the joint image. Each digests under its own domain, so neither ever equals the other.
  *   · A JUDGE RUNS BEFORE EVERY SIGNATURE. A misheard fingerprint, a join over another offer, or a half
  *     signature that fails its bytes refuses before the signer runs.
- *   · EVERY SEATED KEY SIGNS THE INCEPTION (`verifyInception` in wax-stamp, the law every genesis meets).
+ *   · EVERY SEATED KEY SIGNS THE INCEPTION (`verifyInception` in wax-stamp, the law every genesis meets), and
+ *     every cadence holder signs the cadence inception it cites (`cadence-lineage`).
+ *   · TWO JOINTS, NEVER ONE. The cadence names each founder's HEARTH at two of two, apart from the seats: a
+ *     cadence key that equals a seat key refuses, so the cadence never fuses with the kahu quorum.
  *   · A LABEL NEVER DECIDES. A cold card's printed fields aid the person; its key code alone answers whether
  *     it opens the seat's committed successor.
  *   · STRICT READERS. Each file reads at its exact shape, one encoding (lower-case hex), no extra field; an
  *     offer and a join never read as an inception, and none of the three reads as a charter doc.
  *
- * SPECIFIED, NEVER CALLED. No production path reaches this module, and it stays out of the package barrel. Its
- * callers stand owed: `lares nexus seal cofound open|join|seal` (`packages/lares-cli/src/commands/nexus-seal.ts`).
+ * Callers: the cofound ceremony behind the custody door (`packages/lararium-node/src/cofound-ceremony.ts`), which
+ * `lares nexus seal cofound open|join|seal` drives (`packages/lares-cli/src/commands/nexus-seal.ts`).
  *
  * Pure: no I/O, no clock, no log. Platform-blind.
  * Meme: lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus
@@ -39,7 +45,11 @@ import { COFOUND_OFFER_DOMAIN } from "./domains.js";
 import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 import { coldKeyFromSeed, coldKeySeedFromCode, seatNextDigest } from "./cold-key-card.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
-import { seatFingerprint } from "./nexus-seal-seed.js";
+import { NEXUS_DOC_DOMAIN, seatFingerprint, type NexusDoc } from "./nexus-seal-seed.js";
+import {
+  cadenceInceptionBytes, cadenceInceptionDigest, cadenceInceptionImage, readCadenceHolder,
+  type CadenceHolder, type CadenceInception, type CadenceInceptionImage,
+} from "./cadence-lineage.js";
 import {
   charterInceptionBytes, charterInceptionImage, genesisOfInception, inceptionImageDigest, readCharterInception,
   readCharterInceptionImage, verifyInception,
@@ -63,7 +73,8 @@ export class CofoundRefusal extends Error {
 export type CofoundRefusalCode =
   | "cofound-offer-malformed" | "cofound-seat-malformed" | "cofound-same-seat" | "cofound-same-commitment"
   | "cofound-seat-is-committed" | "cofound-fingerprint-unheard" | "cofound-offer-mismatch"
-  | "cofound-join-malformed" | "cofound-hand-mismatch" | "cofound-image-mismatch";
+  | "cofound-join-malformed" | "cofound-hand-mismatch" | "cofound-image-mismatch" | "cofound-cadence-malformed"
+  | "cofound-cadence-is-a-seat";
 
 /** The four addresses a release manifest binds: the image digest and the genesis, engine and grammar CIDs. */
 export interface ReleaseManifestAddresses {
@@ -73,10 +84,11 @@ export interface ReleaseManifestAddresses {
   readonly grammar: string;
 }
 
-/** A founder's public seat material: the seat key and the digest of its cold successor. */
+/** A founder's public material: the seat key, the digest of its cold successor, and its hearth's cadence key. */
 export interface CofoundSeat {
-  readonly seat: string;
-  readonly next: string;
+  readonly seat:    string;
+  readonly next:    string;
+  readonly cadence: CadenceHolder;
 }
 
 /** A's public half, carried to B. */
@@ -86,19 +98,21 @@ export interface CofoundOffer extends CofoundSeat {
   readonly manifest:   ReleaseManifestAddresses;
 }
 
-/** B's answer, carried to A. */
+/** B's answer, carried to A: B's half signature over the charter image and B's hearth's over the cadence image. */
 export interface CofoundJoin extends CofoundSeat {
-  readonly kind:      typeof COFOUND_JOIN_KIND;
-  readonly offer:     CofoundOffer;
-  readonly signature: QuorumSignature;
+  readonly kind:             typeof COFOUND_JOIN_KIND;
+  readonly offer:            CofoundOffer;
+  readonly signature:        QuorumSignature;
+  readonly cadenceSignature: QuorumSignature;
 }
 
-/** The offer, the image and its signatures, carried to B. */
-export interface CharterInception {
+/** The offer, the image and its signatures, and the cadence inception the image cites, carried to B. */
+export interface CofoundInception {
   readonly kind:       typeof CHARTER_INCEPTION_KIND;
   readonly offer:      CofoundOffer;
   readonly image:      CharterInceptionImage;
   readonly signatures: readonly QuorumSignature[];
+  readonly cadence:    CadenceInception;
 }
 
 const HEX64 = /^[0-9a-f]{64}$/;
@@ -139,7 +153,8 @@ function readManifest(v: unknown): ReleaseManifestAddresses | null {
 }
 
 function readSeat(r: Record<string, unknown>): CofoundSeat | null {
-  return isSeatKey(r["seat"]) && isDigest(r["next"]) ? { seat: r["seat"], next: r["next"] } : null;
+  const cadence = readCadenceHolder(r["cadence"]);
+  return isSeatKey(r["seat"]) && isDigest(r["next"]) && cadence ? { seat: r["seat"], next: r["next"], cadence } : null;
 }
 
 // ── the offer ────────────────────────────────────────────────────────────────────────────────
@@ -147,19 +162,19 @@ function readSeat(r: Record<string, unknown>): CofoundSeat | null {
 /** Read an offer at its exact shape, from parsed JSON; null for anything else. */
 export function readCofoundOffer(parsed: unknown): CofoundOffer | null {
   const r = record(parsed);
-  if (!r || !exactKeys(r, ["kind", "seat", "next", "charterLaw", "manifest"]) || r["kind"] !== COFOUND_OFFER_DOMAIN) return null;
+  if (!r || !exactKeys(r, ["kind", "seat", "next", "cadence", "charterLaw", "manifest"]) || r["kind"] !== COFOUND_OFFER_DOMAIN) return null;
   const seat = readSeat(r);
   const manifest = readManifest(r["manifest"]);
   const law = r["charterLaw"];
-  if (!seat || !manifest || typeof law !== "string" || !CHARTER_LAW.test(law)) return null;
-  return { kind: COFOUND_OFFER_DOMAIN, seat: seat.seat, next: seat.next, charterLaw: law, manifest };
+  if (!seat || !manifest || typeof law !== "string" || !CHARTER_LAW.test(law) || seat.cadence.key === seat.seat) return null;
+  return { kind: COFOUND_OFFER_DOMAIN, seat: seat.seat, next: seat.next, cadence: seat.cadence, charterLaw: law, manifest };
 }
 
 /** Compose A's offer; refuses material its reader would refuse. */
 export function cofoundOffer(input: CofoundSeat & { readonly charterLaw: string; readonly manifest: ReleaseManifestAddresses }): CofoundOffer {
-  const offer = readCofoundOffer({ kind: COFOUND_OFFER_DOMAIN, seat: input.seat, next: input.next,
+  const offer = readCofoundOffer({ kind: COFOUND_OFFER_DOMAIN, seat: input.seat, next: input.next, cadence: input.cadence,
     charterLaw: input.charterLaw, manifest: input.manifest });
-  if (!offer) throw refuse("cofound-offer-malformed", "the offer needs a seat key the Ed25519 door accepts, a successor digest, a lar: charter law and the four release addresses, in lower-case hex");
+  if (!offer) throw refuse("cofound-offer-malformed", "the offer needs a seat key the Ed25519 door accepts, a successor digest, a hearth cadence key apart from the seat with its next key's digest, a lar: charter law and the four release addresses, in lower-case hex");
   return offer;
 }
 
@@ -192,17 +207,31 @@ export function inceptionAid(image: CharterInceptionImage): string {
 }
 
 /**
+ * The cadence inception a joint founding seats: both founders' hearths, at two of two. Refuses a cadence key that
+ * equals any seat key (the two joints never fuse), and holders that repeat a key or a next-key digest.
+ */
+export function composeCadenceInception(offer: CofoundOffer, joiner: CofoundSeat): CadenceInceptionImage {
+  const seats = new Set([offer.seat, joiner.seat]);
+  if (seats.has(offer.cadence.key) || seats.has(joiner.cadence.key)) {
+    throw refuse("cofound-cadence-is-a-seat", "a cadence key equals a seat key — the cadence keeps its own keys, apart from the kahu quorum");
+  }
+  try { return cadenceInceptionImage([offer.cadence, joiner.cadence], COFOUND_THRESHOLD); }
+  catch { throw refuse("cofound-cadence-malformed", "both hearths name one cadence key or one next-key digest, or a cadence key equals a committed next key"); }
+}
+
+/**
  * Compose the joint inception image from A's offer and B's seat. Both founders run this on the same public
- * material and reach the same bytes. It commits the offer fingerprint and both successors. Refuses a seat both
- * sides share, a successor both commit, and a seat key whose own digest either side committed as a successor
- * (its reveal would re-seat a seated key and stall the Nexus at its first roll).
+ * material and reach the same bytes. It commits the offer fingerprint, both successors and the cadence inception's
+ * digest. Refuses a seat both sides share, a successor both commit, a seat key whose own digest either side
+ * committed as a successor (its reveal would re-seat a seated key and stall the Nexus at its first roll), and a
+ * cadence the two hearths cannot seat.
  */
 export function composeCharterInception(offer: CofoundOffer, joiner: CofoundSeat): CharterInceptionImage {
   const own = readCofoundOffer(offer);
   if (!own) throw refuse("cofound-offer-malformed", "the offer does not read at its exact shape");
   const r = record(joiner);
-  const b = r && exactKeys(r, ["seat", "next"]) ? readSeat(r) : null;
-  if (!b) throw refuse("cofound-seat-malformed", "the joining seat needs a key the Ed25519 door accepts and a successor digest, in lower-case hex");
+  const b = r && exactKeys(r, ["seat", "next", "cadence"]) ? readSeat(r) : null;
+  if (!b) throw refuse("cofound-seat-malformed", "the joining seat needs a key the Ed25519 door accepts, a successor digest and a hearth cadence key with its next key's digest, in lower-case hex");
   if (b.seat === own.seat) throw refuse("cofound-same-seat", "both founders name one seat key — each seat holds its own key");
   if (b.next === own.next) throw refuse("cofound-same-commitment", "both founders commit one successor — each seat commits its own cold key");
   const committed = new Set([own.next, b.next]);
@@ -211,9 +240,11 @@ export function composeCharterInception(offer: CofoundOffer, joiner: CofoundSeat
       throw refuse("cofound-seat-is-committed", "a seat key equals a committed successor — its reveal would re-seat a seated key");
     }
   }
+  const cadence = composeCadenceInception(own, b);
   const pairs = [own, b].map((s) => ({ seat: s.seat, next: s.next })).sort((x, y) => x.seat < y.seat ? -1 : 1);
   return charterInceptionImage(pairs.map((p) => p.seat), COFOUND_THRESHOLD,
-    { digests: pairs.map((p) => p.next), threshold: COFOUND_THRESHOLD }, { offer: offerFingerprint(own) });
+    { digests: pairs.map((p) => p.next), threshold: COFOUND_THRESHOLD },
+    { offer: offerFingerprint(own), cadence: cadenceInceptionDigest(cadence) });
 }
 
 /** The final charter fingerprint: 64 lower hex over the inception image's canonical bytes. */
@@ -233,35 +264,45 @@ function readSignature(v: unknown): QuorumSignature | null {
 // ── the join ─────────────────────────────────────────────────────────────────────────────────
 
 /**
- * B joins: B types A's seat fingerprint as heard, composes the image, and half-signs it. Every refusal lands
- * before the signer runs.
+ * B joins: B types A's seat fingerprint as heard, composes the image, half-signs it with the seat, and signs the
+ * cadence inception it cites with the hearth's cadence key. Every refusal lands before either signer runs.
  */
-export async function cofoundJoin(offer: CofoundOffer, joiner: CofoundSeat, heardOfferSeat: string, hand: SealRollSigner): Promise<CofoundJoin> {
+export async function cofoundJoin(offer: CofoundOffer, joiner: CofoundSeat, heardOfferSeat: string, hand: SealRollSigner,
+  cadenceHand: SealRollSigner): Promise<CofoundJoin> {
   const own = readCofoundOffer(offer);
   if (!own) throw refuse("cofound-offer-malformed", "the offer does not read at its exact shape");
   if (!heardSeatFingerprint(heardOfferSeat, own.seat)) throw refuse("cofound-fingerprint-unheard", "the fingerprint typed as heard names another seat than the offer's");
   if (typeof hand?.signer !== "string" || hand.signer.toLowerCase() !== joiner.seat) throw refuse("cofound-hand-mismatch", "the hand that signs holds another key than the joining seat");
+  if (typeof cadenceHand?.signer !== "string" || cadenceHand.signer.toLowerCase() !== joiner.cadence?.key) throw refuse("cofound-hand-mismatch", "the hearth's hand holds another key than the joining cadence key");
   const image = composeCharterInception(own, joiner);
+  const cadence = composeCadenceInception(own, joiner);
   const sig = await hand.sign(charterInceptionBytes(image));
-  return { kind: COFOUND_JOIN_KIND, offer: own, seat: joiner.seat, next: joiner.next, signature: { signer: joiner.seat, sig } };
+  const cadenceSig = await cadenceHand.sign(cadenceInceptionBytes(cadence));
+  return { kind: COFOUND_JOIN_KIND, offer: own, seat: joiner.seat, next: joiner.next, cadence: { ...joiner.cadence },
+    signature: { signer: joiner.seat, sig }, cadenceSignature: { signer: joiner.cadence.key, sig: cadenceSig } };
 }
 
-/** Read a join at its exact shape: the offer, B's seat, and a half signature that verifies over the image both compose. */
-export function readCofoundJoin(parsed: unknown): { readonly join: CofoundJoin; readonly image: CharterInceptionImage } | null {
+/**
+ * Read a join at its exact shape: the offer, B's seat and hearth, a half signature that verifies over the image both
+ * compose, and B's hearth's signature over the cadence image it cites.
+ */
+export function readCofoundJoin(parsed: unknown): { readonly join: CofoundJoin; readonly image: CharterInceptionImage; readonly cadence: CadenceInceptionImage } | null {
   const r = record(parsed);
-  if (!r || r["kind"] !== COFOUND_JOIN_KIND || !exactKeys(r, ["kind", "offer", "seat", "next", "signature"])) return null;
+  if (!r || r["kind"] !== COFOUND_JOIN_KIND || !exactKeys(r, ["kind", "offer", "seat", "next", "cadence", "signature", "cadenceSignature"])) return null;
   const offer = readCofoundOffer(r["offer"]);
   const seat = readSeat(r);
   const signature = readSignature(r["signature"]);
-  if (!offer || !seat || !signature || signature.signer !== seat.seat) return null;
-  let image: CharterInceptionImage;
-  try { image = composeCharterInception(offer, seat); } catch { return null; }
+  const cadenceSignature = readSignature(r["cadenceSignature"]);
+  if (!offer || !seat || !signature || !cadenceSignature || signature.signer !== seat.seat || cadenceSignature.signer !== seat.cadence.key) return null;
+  let image: CharterInceptionImage, cadence: CadenceInceptionImage;
+  try { image = composeCharterInception(offer, seat); cadence = composeCadenceInception(offer, seat); } catch { return null; }
   if (!verifyEd25519(signature.sig, charterInceptionBytes(image), seat.seat)) return null;
-  return { join: { kind: COFOUND_JOIN_KIND, offer, seat: seat.seat, next: seat.next, signature }, image };
+  if (!verifyEd25519(cadenceSignature.sig, cadenceInceptionBytes(cadence), seat.cadence.key)) return null;
+  return { join: { kind: COFOUND_JOIN_KIND, offer, seat: seat.seat, next: seat.next, cadence: seat.cadence, signature, cadenceSignature }, image, cadence };
 }
 
 export type CofoundJudgement =
-  | { readonly ok: true; readonly join: CofoundJoin; readonly image: CharterInceptionImage }
+  | { readonly ok: true; readonly join: CofoundJoin; readonly image: CharterInceptionImage; readonly cadence: CadenceInceptionImage }
   | { readonly ok: false; readonly code: CofoundRefusalCode; readonly why: string };
 
 /** A judges B's join against the offer A made and B's seat fingerprint as A heard it. */
@@ -277,33 +318,56 @@ export function judgeCofoundJoin(parsed: unknown, mine: { readonly offer: Cofoun
   return { ok: true, ...read };
 }
 
-/** A seals: the judge runs first, then A's seat signs the same image B half-signed. */
+const bySigner = (a: QuorumSignature, b: QuorumSignature): number => a.signer < b.signer ? -1 : 1;
+
+/** A seals: the judge runs first, then A's seat signs the same image B half-signed, and A's hearth the cadence image. */
 export async function sealCofound(parsedJoin: unknown, mine: { readonly offer: CofoundOffer; readonly heardJoinSeat: string },
-  hand: SealRollSigner): Promise<CharterInception> {
+  hand: SealRollSigner, cadenceHand: SealRollSigner): Promise<CofoundInception> {
   const judged = judgeCofoundJoin(parsedJoin, mine);
   if (!judged.ok) throw refuse(judged.code, judged.why);
   if (typeof hand?.signer !== "string" || hand.signer.toLowerCase() !== mine.offer.seat) throw refuse("cofound-hand-mismatch", "the hand that signs holds another key than the offer's seat");
+  if (typeof cadenceHand?.signer !== "string" || cadenceHand.signer.toLowerCase() !== mine.offer.cadence.key) throw refuse("cofound-hand-mismatch", "the hearth's hand holds another key than the offer's cadence key");
   const sig = await hand.sign(charterInceptionBytes(judged.image));
-  const signatures = [judged.join.signature, { signer: mine.offer.seat, sig }].sort((a, b) => a.signer < b.signer ? -1 : 1);
-  return { kind: CHARTER_INCEPTION_KIND, offer: judged.join.offer, image: judged.image, signatures };
+  const cadenceSig = await cadenceHand.sign(cadenceInceptionBytes(judged.cadence));
+  const signatures = [judged.join.signature, { signer: mine.offer.seat, sig }].sort(bySigner);
+  const cadenceSignatures = [judged.join.cadenceSignature, { signer: mine.offer.cadence.key, sig: cadenceSig }].sort(bySigner);
+  return { kind: CHARTER_INCEPTION_KIND, offer: judged.join.offer, image: judged.image, signatures,
+    cadence: { image: judged.cadence, signatures: cadenceSignatures } };
 }
 
 // ── the inception ────────────────────────────────────────────────────────────────────────────
 
-/** Read a signed inception file at its exact shape: the offer, an image whose founding names that offer, and
- *  signatures read as shapes (`verifyCharterInception` judges them). */
-export function readCofoundInception(parsed: unknown): CharterInception | null {
+/**
+ * Read a signed inception file at its exact shape: the offer, an image whose founding names that offer, a cadence
+ * inception that seats the offer's hearth, and signatures read as shapes (`verifyCharterInception` judges them).
+ */
+export function readCofoundInception(parsed: unknown): CofoundInception | null {
   const r = record(parsed);
-  if (!r || r["kind"] !== CHARTER_INCEPTION_KIND || !exactKeys(r, ["kind", "offer", "image", "signatures"])) return null;
+  if (!r || r["kind"] !== CHARTER_INCEPTION_KIND || !exactKeys(r, ["kind", "offer", "image", "signatures", "cadence"])) return null;
   const offer = readCofoundOffer(r["offer"]);
-  const read = readCharterInception({ image: r["image"], signatures: r["signatures"] });
-  if (!offer || !read || read.image.founding?.offer !== offerFingerprint(offer)) return null;
-  return { kind: CHARTER_INCEPTION_KIND, offer, image: read.image, signatures: read.signatures };
+  const read = readCharterInception({ image: r["image"], signatures: r["signatures"], cadence: r["cadence"] });
+  if (!offer || !read || !read.cadence || read.image.founding?.offer !== offerFingerprint(offer)) return null;
+  const at = read.cadence.image.keys.indexOf(offer.cadence.key);
+  if (at < 0 || read.cadence.image.nextKeyDigests[at] !== offer.cadence.next) return null;
+  return { kind: CHARTER_INCEPTION_KIND, offer, image: read.image, signatures: read.signatures, cadence: read.cadence };
 }
 
-/** The genesis an inception file seats, signatures and all (`verifyInception` judges it). */
-export function cofoundGenesis(inception: CharterInception): SealEpoch {
-  return genesisOfInception(inception.image, inception.signatures);
+/** The genesis an inception file seats, signatures and cadence inception and all (`verifyInception` judges it). */
+export function cofoundGenesis(inception: CofoundInception): SealEpoch {
+  return genesisOfInception(inception.image, inception.signatures, inception.cadence);
+}
+
+/**
+ * The charter doc a verified joint inception founds: its genesis alone, at two of two, each chair named by its seat's
+ * fingerprint (the export convention: no private label crosses). Both founders write the same bytes from the same
+ * inception, filed under the joint AID beside each seed, which stays as it stands.
+ */
+export function cofoundCharterDoc(inception: CofoundInception): NexusDoc {
+  const genesis = cofoundGenesis(inception);
+  return {
+    kind: NEXUS_DOC_DOMAIN, threshold: inception.image.threshold, sealEpochCid: genesis.epochCid, sealLineage: [genesis],
+    kahu: inception.image.keys.map((key) => ({ chairLabel: seatFingerprint(key), verifyingKey: key })),
+  };
 }
 
 /**
@@ -317,7 +381,7 @@ export function verifyCharterInception(parsed: unknown): InceptionRefusal | null
 
 /** B judges the sealed inception A carried back against the image B composed: the same bytes, every seat signed. */
 export function judgeCharterInception(parsed: unknown, expected: CharterInceptionImage):
-  { readonly ok: true; readonly inception: CharterInception } | { readonly ok: false; readonly code: CofoundRefusalCode | InceptionRefusal } {
+  { readonly ok: true; readonly inception: CofoundInception } | { readonly ok: false; readonly code: CofoundRefusalCode | InceptionRefusal } {
   const inception = readCofoundInception(parsed);
   if (!inception) return { ok: false, code: "inception-malformed" };
   if (!sameImage(inception.image, expected)) return { ok: false, code: "cofound-image-mismatch" };
@@ -342,9 +406,10 @@ export function cofoundReadBack(offer: CofoundOffer, image: CharterInceptionImag
     `final charter fingerprint: ${fingerprintGroups(finalCharterFingerprint(read))}`,
     `nexus: ${inceptionAid(read)}`,
     `rule: ${read.threshold} of ${read.keys.length}`,
+    `cadence: ${COFOUND_THRESHOLD} of ${COFOUND_THRESHOLD} hearths, inception ${fingerprintGroups(read.founding!.cadence)}`,
   ];
   for (const key of read.keys) lines.push(`${key === own.seat ? "offer seat" : "joining seat"}: ${seatFingerprint(key)} key ${key}`);
-  lines.push(`charter law: ${own.charterLaw}`,
+  lines.push(`offer hearth cadence key: ${own.cadence.key}`, `charter law: ${own.charterLaw}`,
     `release: image ${own.manifest.image} genesis ${own.manifest.genesis} engine ${own.manifest.engine} grammar ${own.manifest.grammar}`);
   return lines;
 }

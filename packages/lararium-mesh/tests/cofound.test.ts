@@ -9,8 +9,9 @@ import { cidV1Sha256, hex } from "../src/crypto.js";
 import { coldKeyCardLines, coldKeyCode, coldKeyFromSeed } from "../src/cold-key-card.js";
 import { seatFingerprint } from "../src/nexus-seal-seed.js";
 import { charterInceptionImage, genesisCharterEpoch, verifyInception, verifySealLineage, type SealRollSigner } from "../src/wax-stamp.js";
+import { cadenceInceptionBytes, cadenceInceptionDigest, cadenceInceptionImage, cadenceNextDigest } from "../src/cadence-lineage.js";
 import {
-  CofoundRefusal, cofoundJoin, cofoundOffer, cofoundReadBack, coldCardOpens, composeCharterInception, finalCharterFingerprint,
+  CofoundRefusal, cofoundCharterDoc, cofoundJoin, composeCadenceInception, cofoundOffer, cofoundReadBack, coldCardOpens, composeCharterInception, finalCharterFingerprint,
   cofoundGenesis, inceptionAid, judgeCharterInception, judgeCofoundJoin, offerFingerprint, readCofoundInception, readCharterInceptionImage,
   readCofoundJoin, readCofoundOffer, sealCofound, seatCommitment, verifyCharterInception, charterInceptionBytes,
   type CofoundOffer, type CharterInceptionImage,
@@ -26,19 +27,22 @@ const cidOf = (text: string): string => cidV1Sha256(new TextEncoder().encode(tex
 const MANIFEST = { image: `sha256:${"ab".repeat(32)}`, genesis: cidOf("genesis"), engine: cidOf("engine"), grammar: cidOf("grammar") };
 const LAW = "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus";
 
-/** Founder A: seat 11, cold 12. Founder B: seat 21, cold 22. */
+/** A hearth's cadence material: key `n`, next key `n + 1`. */
+const cadenceOf = async (n: number) => ({ key: await keyOf(n), next: cadenceNextDigest(await keyOf(n + 1)) });
+
+/** Founder A: seat 11, cold 12, cadence 16 (next 17). Founder B: seat 21, cold 22, cadence 26 (next 27). */
 async function founders() {
   const [aCold, bCold] = await Promise.all([coldKeyFromSeed(seedOf(12)), coldKeyFromSeed(seedOf(22))]);
-  const a = { seat: await keyOf(11), next: aCold.digest };
-  const b = { seat: await keyOf(21), next: bCold.digest };
+  const a = { seat: await keyOf(11), next: aCold.digest, cadence: await cadenceOf(16) };
+  const b = { seat: await keyOf(21), next: bCold.digest, cadence: await cadenceOf(26) };
   const offer = cofoundOffer({ ...a, charterLaw: LAW, manifest: MANIFEST });
-  return { a, b, offer, aCold, bCold, aHand: await handOf(11), bHand: await handOf(21) };
+  return { a, b, offer, aCold, bCold, aHand: await handOf(11), bHand: await handOf(21), aCad: await handOf(16), bCad: await handOf(26) };
 }
 
 async function sealed() {
   const f = await founders();
-  const join = courier(await cofoundJoin(courier(f.offer) as CofoundOffer, f.b, seatFingerprint(f.offer.seat), f.bHand));
-  const inception = courier(await sealCofound(join, { offer: f.offer, heardJoinSeat: seatFingerprint(f.b.seat) }, f.aHand));
+  const join = courier(await cofoundJoin(courier(f.offer) as CofoundOffer, f.b, seatFingerprint(f.offer.seat), f.bHand, f.bCad));
+  const inception = courier(await sealCofound(join, { offer: f.offer, heardJoinSeat: seatFingerprint(f.b.seat) }, f.aHand, f.aCad));
   return { ...f, join, inception, image: composeCharterInception(f.offer, f.b) };
 }
 
@@ -74,10 +78,10 @@ describe("the offer", () => {
 describe("the join", () => {
   test("each side composes one image and one AID; the AID names neither seed, and the two fingerprints differ", async () => {
     const { a, b, offer, image } = await sealed();
-    const fromB = readCofoundJoin(courier(await cofoundJoin(offer, b, seatFingerprint(a.seat), await handOf(21))))!;
+    const fromB = readCofoundJoin(courier(await cofoundJoin(offer, b, seatFingerprint(a.seat), await handOf(21), await handOf(26))))!;
     expect(fromB.image).toEqual(image);
     expect(inceptionAid(image)).toMatch(/^nexus-[0-9a-f]{64}$/);
-    expect(image.founding).toEqual({ offer: offerFingerprint(offer) });
+    expect(image.founding).toEqual({ offer: offerFingerprint(offer), cadence: cadenceInceptionDigest(composeCadenceInception(offer, b)) });
     for (const seedSeat of [a.seat, b.seat]) expect(genesisCharterEpoch([seedSeat], 1).epochCid).not.toBe(inceptionAid(image));
     expect(finalCharterFingerprint(image)).toMatch(/^[0-9a-f]{64}$/);
     expect(finalCharterFingerprint(image)).not.toBe(offerFingerprint(offer));
@@ -89,8 +93,8 @@ describe("the join", () => {
   test("one roster founding twice mints two AIDs: each founding commits fresh successors and its own offer", async () => {
     const { a, b, image } = await sealed();
     const [aCold2, bCold2] = await Promise.all([coldKeyFromSeed(seedOf(15)), coldKeyFromSeed(seedOf(25))]);
-    const again = composeCharterInception(cofoundOffer({ seat: a.seat, next: aCold2.digest, charterLaw: LAW, manifest: MANIFEST }),
-      { seat: b.seat, next: bCold2.digest });
+    const again = composeCharterInception(cofoundOffer({ seat: a.seat, next: aCold2.digest, cadence: a.cadence, charterLaw: LAW, manifest: MANIFEST }),
+      { seat: b.seat, next: bCold2.digest, cadence: b.cadence });
     expect(again.keys).toEqual(image.keys);
     expect(again.threshold).toBe(image.threshold);
     expect(inceptionAid(again)).not.toBe(inceptionAid(image));
@@ -105,21 +109,35 @@ describe("the join", () => {
   test("B's signer never runs on a misheard fingerprint or a foreign hand", async () => {
     const { a, b, offer } = await founders();
     const calls = { n: 0 };
-    const hand = await handOf(21, calls);
-    await expect(cofoundJoin(offer, b, seatFingerprint(b.seat), hand)).rejects.toMatchObject({ code: "cofound-fingerprint-unheard" });
-    await expect(cofoundJoin(offer, b, seatFingerprint(a.seat), await handOf(31, calls))).rejects.toMatchObject({ code: "cofound-hand-mismatch" });
+    const hand = await handOf(21, calls), cad = await handOf(26, calls);
+    await expect(cofoundJoin(offer, b, seatFingerprint(b.seat), hand, cad)).rejects.toMatchObject({ code: "cofound-fingerprint-unheard" });
+    await expect(cofoundJoin(offer, b, seatFingerprint(a.seat), await handOf(31, calls), cad)).rejects.toMatchObject({ code: "cofound-hand-mismatch" });
+    await expect(cofoundJoin(offer, b, seatFingerprint(a.seat), hand, await handOf(16, calls))).rejects.toMatchObject({ code: "cofound-hand-mismatch" });
     expect(calls.n).toBe(0);
-    // CONTROL: the same hand signs once the fingerprint reads as heard, in any spacing and case.
-    await cofoundJoin(offer, b, ` ${seatFingerprint(a.seat).toUpperCase().replace(/-/g, " ")} `, hand);
-    expect(calls.n).toBe(1);
+    // CONTROL: the same hands sign once the fingerprint reads as heard, in any spacing and case: the seat and the hearth.
+    await cofoundJoin(offer, b, ` ${seatFingerprint(a.seat).toUpperCase().replace(/-/g, " ")} `, hand, cad);
+    expect(calls.n).toBe(2);
   });
 
   test("a seat both share, a successor both commit, or a seat that equals a committed successor refuses", async () => {
-    const { a, offer, aCold } = await founders();
-    expect(() => composeCharterInception(offer, { seat: a.seat, next: "cd".repeat(32) })).toThrow(/cofound-same-seat/);
-    expect(() => composeCharterInception(offer, { seat: aCold.verifyingKey, next: "cd".repeat(32) })).toThrow(/cofound-seat-is-committed/);
+    const { a, b, offer, aCold } = await founders();
+    expect(() => composeCharterInception(offer, { seat: a.seat, next: "cd".repeat(32), cadence: b.cadence })).toThrow(/cofound-same-seat/);
+    expect(() => composeCharterInception(offer, { seat: aCold.verifyingKey, next: "cd".repeat(32), cadence: b.cadence })).toThrow(/cofound-seat-is-committed/);
     const other = await keyOf(41);
-    expect(() => composeCharterInception(offer, { seat: other, next: a.next })).toThrow(/cofound-same-commitment/);
+    expect(() => composeCharterInception(offer, { seat: other, next: a.next, cadence: b.cadence })).toThrow(/cofound-same-commitment/);
+    // CONTROL: the same joining seat with its own successor and hearth composes.
+    expect(composeCharterInception(offer, b).keys).toHaveLength(2);
+  });
+
+  test("TWO JOINTS: a cadence key that equals a seat, or one hearth named twice, refuses; the offer reader refuses a cadence key that equals its seat", async () => {
+    const { a, b, offer } = await founders();
+    expect(() => composeCharterInception(offer, { ...b, cadence: { key: a.seat, next: b.cadence.next } })).toThrow(/cofound-cadence-is-a-seat/);
+    expect(() => composeCharterInception(offer, { ...b, cadence: { key: b.seat, next: b.cadence.next } })).toThrow(/cofound-cadence-is-a-seat/);
+    expect(() => composeCharterInception(offer, { ...b, cadence: a.cadence })).toThrow(/cofound-cadence-malformed/);
+    expect(() => composeCharterInception(offer, { ...b, cadence: { key: b.cadence.key, next: a.cadence.next } })).toThrow(/cofound-cadence-malformed/);
+    expect(readCofoundOffer({ ...courier(offer) as object, cadence: { key: a.seat, next: a.cadence.next } })).toBeNull();
+    expect(readCofoundOffer({ ...courier(offer) as object, cadence: { key: a.cadence.key } })).toBeNull();
+    expect(readCofoundOffer(courier(offer))).toEqual(offer);
   });
 
   test("the join reader refuses a half signature over any other image", async () => {
@@ -131,6 +149,10 @@ describe("the join", () => {
     expect(readCofoundJoin({ ...j, signature: { ...j.signature, sig: flipped } })).toBeNull();
     expect(readCofoundJoin({ ...j, offer: { ...j.offer, charterLaw: `${LAW}-other` } })).toBeNull();
     expect(readCofoundJoin({ ...j, signature: { ...j.signature, signer: j.offer.seat } })).toBeNull();
+    const cadFlipped = j.cadenceSignature.sig.replace(/^./, (c: string) => (c === "0" ? "1" : "0"));
+    expect(cadFlipped).not.toBe(j.cadenceSignature.sig);
+    expect(readCofoundJoin({ ...j, cadenceSignature: { ...j.cadenceSignature, sig: cadFlipped } })).toBeNull();
+    expect(readCofoundJoin({ ...j, cadenceSignature: { ...j.cadenceSignature, signer: j.offer.cadence.key } })).toBeNull();
     expect(readCofoundJoin({ ...j, extra: true })).toBeNull();
   });
 
@@ -142,8 +164,10 @@ describe("the join", () => {
     expect(judgeCofoundJoin(join, { offer: otherOffer, heardJoinSeat: seatFingerprint(b.seat) })).toMatchObject({ ok: false, code: "cofound-offer-mismatch" });
     expect(judgeCofoundJoin(join, { offer, heardJoinSeat: seatFingerprint(a.seat) })).toMatchObject({ ok: false, code: "cofound-fingerprint-unheard" });
     expect(judgeCofoundJoin(courier(offer), { offer, heardJoinSeat: seatFingerprint(b.seat) })).toMatchObject({ ok: false, code: "cofound-join-malformed" });
-    await expect(sealCofound(join, { offer: otherOffer, heardJoinSeat: seatFingerprint(b.seat) }, hand)).rejects.toMatchObject({ code: "cofound-offer-mismatch" });
-    await expect(sealCofound(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }, await handOf(21, calls))).rejects.toMatchObject({ code: "cofound-hand-mismatch" });
+    const cad = await handOf(16, calls);
+    await expect(sealCofound(join, { offer: otherOffer, heardJoinSeat: seatFingerprint(b.seat) }, hand, cad)).rejects.toMatchObject({ code: "cofound-offer-mismatch" });
+    await expect(sealCofound(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }, await handOf(21, calls), cad)).rejects.toMatchObject({ code: "cofound-hand-mismatch" });
+    await expect(sealCofound(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }, hand, await handOf(26, calls))).rejects.toMatchObject({ code: "cofound-hand-mismatch" });
     expect(calls.n).toBe(0);
     expect(judgeCofoundJoin(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }).ok).toBe(true);
   });
@@ -156,7 +180,7 @@ describe("the inception", () => {
     expect(verifyInception(cofoundGenesis(readCofoundInception(inception)!))).toBeNull();
     expect(verifySealLineage([cofoundGenesis(readCofoundInception(inception)!)])).toBe(true);
     expect(judgeCharterInception(inception, image).ok).toBe(true);
-    const other = { ...image, founding: { offer: "ab".repeat(32) } } as CharterInceptionImage;
+    const other = { ...image, founding: { ...image.founding!, offer: "ab".repeat(32) } } as CharterInceptionImage;
     expect(judgeCharterInception(inception, other)).toMatchObject({ ok: false, code: "cofound-image-mismatch" });
   });
 
@@ -168,7 +192,7 @@ describe("the inception", () => {
     expect(verifyCharterInception({ ...i, signatures: [s0] })).toBe("inception-short-of-seats");
     expect(verifyCharterInception({ ...i, signatures: [s0, s0] })).toBe("inception-foreign-signer");
     expect(verifyCharterInception({ ...i, signatures: [s0, s1, s0] })).toBe("inception-foreign-signer");
-    const split = { ...image, founding: { offer: "ab".repeat(32) } };
+    const split = { ...image, founding: { ...image.founding!, offer: "ab".repeat(32) } };
     const aOnSplit = { signer: aHand.signer, sig: await aHand.sign(charterInceptionBytes(split)) };
     const bSig = [s0, s1].find((s) => s.signer !== aHand.signer);
     expect(verifyCharterInception({ ...i, signatures: [bSig, aOnSplit] })).toBe("inception-signature-invalid");
@@ -176,11 +200,12 @@ describe("the inception", () => {
     const foreignSig = { signer: foreign.signer, sig: await foreign.sign(charterInceptionBytes(image)) };
     expect(verifyCharterInception({ ...i, signatures: [bSig, foreignSig] })).toBe("inception-foreign-signer");
     expect(verifyCharterInception({ ...i, signatures: [s0, s1, foreignSig] })).toBe("inception-foreign-signer");
-    // A seed's one seat signs its own inception under the same law; only the founder's judge holds the two-of-two shape.
+    // One seat under a joint founding signs its image whole, and the genesis still refuses: a joint founding seats one
+    // hearth per seat, and this image cites two hearths for one seat. The founder's judge refuses it first.
     const lone = await handOf(61);
     const loneImage = charterInceptionImage([lone.signer], 1, { digests: [image.nextKeyDigests[0]!], threshold: 1 }, image.founding);
-    const loneInception = { kind: i.kind, offer: i.offer, image: loneImage, signatures: [{ signer: lone.signer, sig: await lone.sign(charterInceptionBytes(loneImage)) }] };
-    expect(verifyCharterInception(loneInception)).toBeNull();
+    const loneInception = { kind: i.kind, offer: i.offer, image: loneImage, signatures: [{ signer: lone.signer, sig: await lone.sign(charterInceptionBytes(loneImage)) }], cadence: i.cadence };
+    expect(verifyCharterInception(loneInception)).toBe("inception-cadence-unbound");
     expect(judgeCharterInception(loneInception, image)).toMatchObject({ ok: false, code: "cofound-image-mismatch" });
   });
 
@@ -199,7 +224,14 @@ describe("the inception", () => {
     for (const wrong of [join, inception, image]) expect(readCofoundOffer(courier(wrong))).toBeNull();
     for (const wrong of [offer, inception, image]) expect(readCofoundJoin(courier(wrong))).toBeNull();
     const i = inception as Record<string, any>;
-    expect(readCofoundInception({ ...i, image: { ...i.image, founding: { offer: "00".repeat(32) } } })).toBeNull();
+    expect(readCofoundInception({ ...i, image: { ...i.image, founding: { ...i.image.founding, offer: "00".repeat(32) } } })).toBeNull();
+    expect(readCofoundInception({ ...i, image: { ...i.image, founding: { offer: i.image.founding.offer } } })).toBeNull();
+    const { cadence: _c, ...noCadence } = i;
+    expect(readCofoundInception(noCadence)).toBeNull();
+    // A cadence inception that seats another hearth than the offer's reads nowhere, before any signature counts.
+    const other = await founders();
+    const elsewhere = cadenceInceptionImage([other.b.cadence, { key: await keyOf(36), next: cadenceNextDigest(await keyOf(37)) }], 2);
+    expect(readCofoundInception({ ...i, cadence: { image: elsewhere, signatures: i.cadence.signatures } })).toBeNull();
     expect(readCofoundInception({ ...i, image: { ...i.image, founding: null } })).toBeNull();
     expect(readCofoundInception({ ...i, image: { ...i.image, keys: [...i.image.keys].reverse() } })).toBeNull();
     expect(readCofoundInception({ ...i, extra: 1 })).toBeNull();
@@ -227,7 +259,7 @@ describe("the read-back", () => {
     expect(text).toContain(`joining seat: ${seatFingerprint(b.seat)} key ${b.seat}`);
     expect(() => cofoundReadBack(cofoundOffer({ ...a, charterLaw: `${LAW}-other`, manifest: MANIFEST }), image)).toThrow(/cofound-image-mismatch/);
     // An image that keeps A's seat and swaps A's successor never reads back under A's offer.
-    const swapped = composeCharterInception(cofoundOffer({ seat: a.seat, next: (await coldKeyFromSeed(seedOf(14))).digest, charterLaw: LAW, manifest: MANIFEST }), b);
+    const swapped = composeCharterInception(cofoundOffer({ seat: a.seat, next: (await coldKeyFromSeed(seedOf(14))).digest, cadence: a.cadence, charterLaw: LAW, manifest: MANIFEST }), b);
     expect(swapped.keys).toContain(a.seat);
     expect(() => cofoundReadBack(offer, swapped)).toThrow(/cofound-image-mismatch/);
     // A three-seat image around A's seat and successor never reads back as the two-founder act.
@@ -248,6 +280,57 @@ describe("the read-back", () => {
     expect(labelled.join("\n")).toContain(finalCharterFingerprint(image).slice(0, 8));
     expect(await coldCardOpens(digest, coldKeyCode(forged))).toBe("another-key");
     expect(await coldCardOpens(digest, "0000-1111")).toBe("unreadable");
+  });
+});
+
+describe("the cadence", () => {
+  test("the inception cites ONE cadence inception both hearths sign at two of two, apart from the seats", async () => {
+    const { inception, a, b } = await sealed();
+    const i = readCofoundInception(inception)!;
+    expect(i.cadence.image.keys).toEqual([a.cadence.key, b.cadence.key].sort());
+    expect(i.cadence.image.threshold).toBe(2);
+    expect(i.cadence.image.keys.some((k) => i.image.keys.includes(k))).toBe(false);
+    expect(i.image.founding!.cadence).toBe(cadenceInceptionDigest(i.cadence.image));
+    expect(verifyInception(cofoundGenesis(i))).toBeNull();
+  });
+
+  test("a cadence inception short a hearth, signed twice, signed over another image, or swapped for another refuses the genesis", async () => {
+    const { inception, aCad } = await sealed();
+    const i = readCofoundInception(inception)!;
+    const [c0, c1] = i.cadence.signatures;
+    const with_ = (cadence: unknown) => verifyCharterInception({ ...(inception as object), cadence });
+    expect(with_({ ...i.cadence, signatures: [] })).toBe("cadence-unsigned");
+    expect(with_({ ...i.cadence, signatures: [c0] })).toBe("cadence-short-of-holders");
+    expect(with_({ ...i.cadence, signatures: [c0, c0] })).toBe("cadence-foreign-signer");
+    const otherImage = { ...i.cadence.image, threshold: 1, nextThreshold: 1 };
+    const aOnOther = { signer: aCad.signer, sig: await aCad.sign(cadenceInceptionBytes(otherImage)) };
+    expect(with_({ ...i.cadence, signatures: [c0, c1].map((s) => (s!.signer === aCad.signer ? aOnOther : s)) })).toBe("cadence-signature-invalid");
+    // An image the founding never cited reads unbound, however well signed.
+    const signedOther = { image: otherImage, signatures: [aOnOther, { signer: c0!.signer === aCad.signer ? c1!.signer : c0!.signer, sig: "00".repeat(64) }] };
+    expect(with_(signedOther)).toBe("inception-cadence-unbound");
+    // CONTROL: the cadence as sealed reads whole.
+    expect(with_(i.cadence)).toBeNull();
+  });
+
+  test("a joint genesis seats one hearth per seat at the seats' rule: a one-hearth cadence both seats cite still refuses", async () => {
+    const { a, aCad, aHand, bHand, offer, image } = await sealed();
+    const lone = cadenceInceptionImage([a.cadence], 1);
+    const cited = { ...image, founding: { offer: offerFingerprint(offer), cadence: cadenceInceptionDigest(lone) } };
+    const bytes = charterInceptionBytes(cited);
+    const signatures = [{ signer: aHand.signer, sig: await aHand.sign(bytes) }, { signer: bHand.signer, sig: await bHand.sign(bytes) }];
+    const cadence = { image: lone, signatures: [{ signer: aCad.signer, sig: await aCad.sign(cadenceInceptionBytes(lone)) }] };
+    expect(verifyInception(cofoundGenesis({ kind: "charter-inception", offer, image: cited, signatures, cadence } as never))).toBe("inception-cadence-unbound");
+  });
+
+  test("the joint charter doc both founders file carries the genesis, two chairs by fingerprint, and reads one AID", async () => {
+    const { inception, a, b } = await sealed();
+    const i = readCofoundInception(inception)!;
+    const doc = cofoundCharterDoc(i);
+    expect(doc.threshold).toBe(2);
+    expect(doc.sealEpochCid).toBe(inceptionAid(i.image));
+    expect(doc.kahu.map((k) => k.chairLabel).sort()).toEqual([seatFingerprint(a.seat), seatFingerprint(b.seat)].sort());
+    expect(verifySealLineage(doc.sealLineage!)).toBe(true);
+    expect(cofoundCharterDoc(readCofoundInception(courier(inception))!)).toEqual(doc);
   });
 });
 

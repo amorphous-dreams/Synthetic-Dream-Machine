@@ -347,6 +347,9 @@ export * from "./holder-continuity.js";
 export * from "./anergy-ledger.js";
 export * from "./recovery-seat.js";
 export * from "./wax-stamp.js";
+// The two-founder act and the engine cadence it seats (kahu#/seed-and-nexus, kahu#/contract); the cofound ceremony calls them.
+export * from "./cadence-lineage.js";
+export * from "./cofound.js";
 export * from "./cold-key-card.js";
 export * from "./persona-kel.js";
 // The Handle's SIBLING chain — burn · rotate · attest under an owner-bound prefix (identity-classes#the-handle-chain).

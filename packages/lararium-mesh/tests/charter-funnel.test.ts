@@ -45,6 +45,7 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "packages/lararium-mesh/tests/wax-stamp-genesis-seats.test.ts":       "roll-law",
   "packages/lararium-mesh/tests/nexus-cofound-law.test.ts":             "roll-law",
   "packages/lararium-mesh/tests/cofound.test.ts":                       "roll-law",
+  "packages/lararium-mesh/tests/cadence-lineage.test.ts":               "roll-law",
   "packages/lararium-mesh/tests/seal-fork.test.ts":                     "roll-law",
   "packages/lararium-mesh/tests/charter-fixture.test.ts":               "roll-law",
   "packages/lararium-node/tests/seal-ceremony.test.ts":                 "roll-law",
@@ -54,6 +55,8 @@ const OUTSIDE: Readonly<Record<string, Outside>> = {
   "packages/lararium-node/tests/seat-arming.test.ts":                   "rite-law",
   // What the Stable founding act writes: one seat at threshold one, committing its card's digest.
   "packages/lararium-node/tests/found-hearth.test.ts":                  "rite-law",
+  // What the two-founder act writes and refuses: the successor commitments a founding may not reuse.
+  "packages/lararium-node/tests/cofound-ceremony.test.ts":              "rite-law",
   // The charter doc's reader and writer, a torn doc among the vectors.
   "packages/lararium-mesh/tests/nexus-seal-seed.test.ts":               "doc-law",
   "packages/lararium-node/tests/nexus-doc.test.ts":                     "doc-law",

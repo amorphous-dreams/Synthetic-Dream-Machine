@@ -48,6 +48,9 @@ import {
   federationPostureFromDoc,
   type NexusDoc, type NexusCharterKahu, type SealEpoch, type KahuQuorumSeats, type RotateResult,
   type CharterSealState, seatFingerprint,
+  CHARTER_INCEPTION_KIND, COFOUND_JOIN_KIND, cidV1Sha256FromHex, cofoundReadBack, composeCharterInception, fingerprintGroups,
+  inceptionAid, offerFingerprint, readCofoundInception, readCofoundJoin, readCofoundOffer,
+  type CofoundInception, type CofoundJoin, type CofoundOffer, type ReleaseManifestAddresses,
 } from "@lararium/mesh";
 import { rosterStanding } from "../roster-standing.js";
 import { nexusPhase } from "../nexus-phase.js";
@@ -59,8 +62,8 @@ import { emit, exitFor, refuseUsage } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { sealedAct } from "../sealed-act-door.js";
-import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-rows.js";
-import { canPromptSecret, promptSecret } from "../prompt-secret.js";
+import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn, readPersonaRoots } from "../sealed-rows.js";
+import { canPromptSecret, promptLine, promptSecret } from "../prompt-secret.js";
 import { CardReadBackRefused, readBack as printAndReadBack, type ColdCard } from "../cold-card-readback.js";
 
 /** A refusal the operator can fix by retyping — rendered as `usage`, never as an internal error. */
@@ -99,7 +102,7 @@ function sealedCharterOrRefuse(sealHome: string, act: string): { doc: NexusDoc; 
 }
 
 const SEAL_USAGE: readonly string[] = [
-  "usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse>",
+  "usage: lares nexus seal <seat | rotate | show | export | import | grow | cold rehearse | cofound>",
   "",
   "  seat    form the roster from the personas that STOOD for a chair, give each chair a seat key",
   "          of its own, and establish the GENESIS epoch over those keys. Each chair's NEXT key mints",
@@ -117,6 +120,15 @@ const SEAL_USAGE: readonly string[] = [
   "  import <file>          land a charter at the primary path — only where none stands, or the same one",
   "  import --carry <file>  land a PARTNER's charter beside yours, under its Nexus AID; a re-import for",
   "                         that AID lands only when its seal lineage extends the held head",
+  "  cofound open --release <manifest> --out <offer>   found a Nexus with a second operator, two of two:",
+  "          a seat key for your face and your hearth's cadence key mint here, your chair's next key prints",
+  "          on a card you type back, and the offer file goes to the other founder. [--face <i>] [--charter-law <lar:>]",
+  "  cofound join <offer> --out <join>   answer an offer: type the offer seat's fingerprint as you heard it",
+  "          (--heard <fp>), and your own seat, cadence key and card mint; the join half-signs the inception",
+  "  cofound seal <join> --out <inception>   the offering founder: type the joining seat's fingerprint as you",
+  "          heard it (--heard <fp>); both signatures land, and the joint charter files under its own AID",
+  "  cofound seal <inception>   the joining founder: the inception reads against the image you joined, and",
+  "          the joint charter files under its own AID. Neither household seed moves.",
 ];
 
 /**
@@ -169,6 +181,7 @@ export async function cmdSeal(args: ParsedArgs): Promise<number> {
       case "import":  return await sealImport(args);
       case "grow":    return await sealGrow(args);
       case "cold":    return await sealCold(args);
+      case "cofound": return await sealCofoundVerb(args);
       default:
         return refuseUsage(args, "nexus seal", SEAL_USAGE, sub ? `unknown sub-verb "${sub}"` : undefined);
     }
@@ -869,4 +882,197 @@ async function sealShow(args: ParsedArgs): Promise<number> {
     },
   });
   return 0;
+}
+
+// ── THE TWO-FOUNDER ACT — `seal cofound open|join|seal` ─────────────────────────────────────────────
+//
+// Two founders, each from their own vault, seat one key each in a FRESH joint genesis at two of two, and each hearth
+// holds one cadence key in the cadence inception the genesis cites. Files are the only courier: the offer (A → B),
+// the join (B → A) and the inception (A → B). Each person types the other seat's fingerprint as heard before their
+// own seat signs; every signature and every key stays behind the custody door (`cofound.*`). Neither seed moves:
+// the joint charter files under its own AID beside it.
+
+const COFOUND_USAGE = "usage: lares nexus seal cofound <open --release <manifest> --out <offer> | join <offer> --out <join> | seal <join|inception> [--out <inception>]>";
+const DEFAULT_CHARTER_LAW = "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus";
+
+/** A founding step on the custody door; the ceremony's own refusal reads as a usage refusal here. */
+async function cofoundStep<T>(act: "cofound.open" | "cofound.join" | "cofound.seal" | "cofound.accept", args: Record<string, unknown>): Promise<T> {
+  try { return await sealedAct<T>(act, args); }
+  catch (err) {
+    if (err instanceof SealedActRefused && err.reason === "act-refused") throw new UsageError(err.message);
+    throw err;
+  }
+}
+
+/** Parse one founding file a person carried. */
+function readFoundingFile(path: string | undefined, what: string): Record<string, unknown> {
+  if (!path) throw new UsageError(`${what} file needed — ${COFOUND_USAGE}`);
+  let parsed: unknown;
+  try { parsed = JSON.parse(readFileSync(path, "utf8")); }
+  catch { throw new UsageError(`cannot read ${path} as a founding file`); }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new UsageError(`${path} holds no founding file`);
+  return parsed as Record<string, unknown>;
+}
+
+/** Write one founding file the other founder carries; it holds public material alone. */
+function writeFoundingFile(path: string | undefined, file: unknown): string {
+  if (!path) throw new UsageError(`--out <file> names where the file for the other founder lands — ${COFOUND_USAGE}`);
+  atomicWriteFileSync(path, `${JSON.stringify(file, null, 2)}\n`, `${path}.writing`);
+  return path;
+}
+
+/**
+ * The release a founding offer names, read off the house's release manifest record (`tools/release-manifest.mjs`):
+ * the image digest, and the genesis seed, engine and grammar addresses. The seed's sha-256 digest spells as a raw
+ * CIDv1, the encoding the offer reads every address in (house reading: the same digest, one spelling).
+ */
+function readReleaseAddresses(path: string | undefined): ReleaseManifestAddresses {
+  if (!path) throw new UsageError("--release <manifest> names the release manifest record the Nexus adopts (tools/release-manifest.mjs emit)");
+  let m: Record<string, any>;
+  try { m = JSON.parse(readFileSync(path, "utf8")) as Record<string, any>; }
+  catch { throw new UsageError(`cannot read ${path} as a release manifest`); }
+  const seed = m?.["genesis"]?.["seedCid"];
+  if (m?.["format"] !== "lararium-release-manifest/v1" || typeof seed !== "string" || !/^[0-9a-f]{64}$/.test(seed)) {
+    throw new UsageError(`${path} reads as no release manifest record (lararium-release-manifest/v1)`);
+  }
+  return { image: String(m["image"]?.["digest"] ?? ""), genesis: cidV1Sha256FromHex(seed), engine: String(m["engine"]?.["cid"] ?? ""), grammar: String(m["grammar"]?.["cid"] ?? "") };
+}
+
+/** The face whose seat stands: `--face <i>`, else the face this vessel wears. */
+async function foundingFace(args: ParsedArgs): Promise<number> {
+  const raw = args.options["face"];
+  if (raw !== undefined) {
+    const n = Number(raw);
+    if (!Number.isSafeInteger(n) || n < 0) throw new UsageError(`--face expects a handle-index, got "${raw}"`);
+    return n;
+  }
+  const worn = (await readPersonaRoots()).active;
+  if (worn === null) throw new UsageError("no face stands worn — name the face whose seat stands: --face <i>, or `lares persona wear <i>` first");
+  return worn;
+}
+
+/** A fingerprint typed as heard: `--heard <fp>`, else asked on the terminal. */
+async function heardFingerprint(args: ParsedArgs, whose: string): Promise<string> {
+  const flagged = args.options["heard"];
+  if (flagged !== undefined) return flagged;
+  if (!canPromptSecret()) throw new UsageError(`type ${whose} seat fingerprint as you heard it: --heard <fingerprint>, or run on a terminal`);
+  return (await promptLine(`${whose} seat fingerprint, as you heard it: `)).trim();
+}
+
+/** Mint this chair's cold next key as a card, print it, and read it back before anything moves. */
+async function cofoundCard(args: ParsedArgs, label: string): Promise<{ readonly digest: string; readonly printed: Array<Record<string, string>> }> {
+  const cold = await mintColdKey();
+  const card: ColdCard = { chair: label, seed: cold.seed, digest: cold.digest };
+  const printed = await readBack(args, [card], 1, "");
+  return { digest: cold.digest, printed };
+}
+
+async function sealCofoundVerb(args: ParsedArgs): Promise<number> {
+  const step = args.positional[2];
+  switch (step) {
+    case "open": return await cofoundOpenVerb(args);
+    case "join": return await cofoundJoinVerb(args);
+    case "seal": return await cofoundSealVerb(args);
+    default: throw new UsageError(step ? `unknown cofound step "${step}" — ${COFOUND_USAGE}` : COFOUND_USAGE);
+  }
+}
+
+async function cofoundOpenVerb(args: ParsedArgs): Promise<number> {
+  const manifest = readReleaseAddresses(args.options["release"]);
+  const charterLaw = args.options["charter-law"] ?? DEFAULT_CHARTER_LAW;
+  const out = args.options["out"];
+  if (!out) throw new UsageError(`--out <file> names where the offer lands — ${COFOUND_USAGE}`);
+  const face = await foundingFace(args);
+  const { digest, printed } = await cofoundCard(args, "your seat in the joint Nexus");
+  const { offer, fingerprint } = await cofoundStep<{ offer: CofoundOffer; fingerprint: string }>("cofound.open", { face, next: digest, charterLaw, manifest });
+  const path = writeFoundingFile(out, offer);
+  emit(args, {
+    ok: true,
+    data: { path, offerFingerprint: fingerprint, seat: offer.seat, seatFingerprint: seatFingerprint(offer.seat), cadence: offer.cadence.key, cards: printed },
+    human: () => {
+      console.log(`cofound offer → ${path}`);
+      console.log(`  offer fingerprint: ${fingerprintGroups(fingerprint)}`);
+      console.log(`  your seat:         ${seatFingerprint(offer.seat)}   ← read this aloud to the other founder`);
+      console.log(`  your hearth's cadence key: ${offer.cadence.key}`);
+      console.log("  carry the offer file to the other founder; they answer with `lares nexus seal cofound join`.");
+    },
+  });
+  return 0;
+}
+
+async function cofoundJoinVerb(args: ParsedArgs): Promise<number> {
+  const offerFile = readFoundingFile(args.positional[3], "the offer");
+  const offer = readCofoundOffer(offerFile);
+  if (!offer) throw new UsageError(`${args.positional[3]} reads as no cofound offer`);
+  const out = args.options["out"];
+  if (!out) throw new UsageError(`--out <file> names where the join lands — ${COFOUND_USAGE}`);
+  if (!wantsQuiet(args)) {
+    console.error(`  offer fingerprint: ${fingerprintGroups(offerFingerprint(offer))}`);
+    console.error(`  charter law:       ${offer.charterLaw}`);
+    console.error(`  release:           image ${offer.manifest.image} genesis ${offer.manifest.genesis} engine ${offer.manifest.engine} grammar ${offer.manifest.grammar}`);
+  }
+  const heard = await heardFingerprint(args, "the offering founder's");
+  const face = await foundingFace(args);
+  const { digest, printed } = await cofoundCard(args, "your seat in the joint Nexus");
+  const { join } = await cofoundStep<{ join: CofoundJoin }>("cofound.join", { face, offer: offerFile, heard, next: digest });
+  const path = writeFoundingFile(out, join);
+  const image = composeCharterInception(offer, { seat: join.seat, next: join.next, cadence: join.cadence });
+  const lines = cofoundReadBack(offer, image);
+  emit(args, {
+    ok: true,
+    data: { path, offerFingerprint: offerFingerprint(offer), seat: join.seat, seatFingerprint: seatFingerprint(join.seat), aid: inceptionAid(image), readBack: lines, cards: printed },
+    human: () => {
+      console.log(`cofound join → ${path}`);
+      for (const line of lines) console.log(`  ${line}`);
+      console.log(`  your seat:  ${seatFingerprint(join.seat)}   ← read this aloud to the offering founder`);
+      console.log("  carry the join file back; they seal with `lares nexus seal cofound seal <join>`.");
+    },
+  });
+  return 0;
+}
+
+async function cofoundSealVerb(args: ParsedArgs): Promise<number> {
+  const file = readFoundingFile(args.positional[3], "the join or inception");
+  if (file["kind"] === CHARTER_INCEPTION_KIND) return await cofoundAcceptVerb(args, file);
+  if (file["kind"] !== COFOUND_JOIN_KIND) throw new UsageError(`${args.positional[3]} reads as neither a cofound join nor a sealed inception`);
+  const read = readCofoundJoin(file);
+  if (!read) throw new UsageError(`${args.positional[3]} reads as no cofound join whose signatures hold`);
+  const out = args.options["out"];
+  if (!out) throw new UsageError(`--out <file> names where the inception lands — ${COFOUND_USAGE}`);
+  if (!wantsQuiet(args)) for (const line of cofoundReadBack(read.join.offer, read.image)) console.error(`  ${line}`);
+  const heard = await heardFingerprint(args, "the joining founder's");
+  const sealed = await cofoundStep<{ inception: CofoundInception; charter: { aid: string; path: string; outcome: string } }>("cofound.seal", { join: file, heard });
+  const path = writeFoundingFile(out, sealed.inception);
+  const refold = await pokeSealHomeRefold();
+  emit(args, {
+    ok: true,
+    data: { path, aid: sealed.charter.aid, charter: sealed.charter.path, outcome: sealed.charter.outcome, refold },
+    human: () => {
+      console.log(`cofound sealed → ${path}`);
+      console.log(`  nexus:   ${sealed.charter.aid}`);
+      console.log(`  charter: ${sealed.charter.path} (${sealed.charter.outcome}); your household seed stands untouched`);
+      console.log("  carry the inception file back; the joining founder files it with `lares nexus seal cofound seal <inception>`.");
+    },
+  });
+  return 0;
+}
+
+async function cofoundAcceptVerb(args: ParsedArgs, file: Record<string, unknown>): Promise<number> {
+  if (!readCofoundInception(file)) throw new UsageError(`${args.positional[3]} reads as no sealed inception`);
+  const accepted = await cofoundStep<{ charter: { aid: string; path: string; outcome: string } }>("cofound.accept", { inception: file });
+  const refold = await pokeSealHomeRefold();
+  emit(args, {
+    ok: true,
+    data: { aid: accepted.charter.aid, charter: accepted.charter.path, outcome: accepted.charter.outcome, refold },
+    human: () => {
+      console.log(`cofound accepted — nexus ${accepted.charter.aid}`);
+      console.log(`  charter: ${accepted.charter.path} (${accepted.charter.outcome}); your household seed stands untouched`);
+    },
+  });
+  return 0;
+}
+
+/** Whether the run answers in JSON alone: then the read-back lines ride the answer, not the terminal. */
+function wantsQuiet(args: ParsedArgs): boolean {
+  return args.flags["json"] === true;
 }

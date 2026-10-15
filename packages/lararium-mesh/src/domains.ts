@@ -118,6 +118,13 @@ export const CHARTER_ABANDON_DOMAIN = mint("charter-abandon");
 /** A REUNION: one image naming the scope AID, both held branch heads and the new seats, signed by each branch's
  *  quorum at its head over identical bytes. Its own name: a reunion never verifies as a roll. */
 export const CHARTER_REUNION_DOMAIN = mint("charter-reunion");
+/** A Nexus's ENGINE CADENCE inception: the hearth keys that bear the reboot, their rule and their next-key
+ *  commitments, signed by every holder; a joint founding cites its digest once. Its own name: a cadence inception
+ *  never verifies as a charter's inception or a roll, and the cadence never fuses with the seat quorum. */
+export const CADENCE_INCEPTION_DOMAIN = mint("cadence-inception");
+/** A cadence holder's NEXT-KEY commitment: the digest of the hearth's next cadence key. Its own name: a cadence
+ *  commitment never reads as a seat's. */
+export const CADENCE_NEXT_KEY_DOMAIN = mint("cadence-next-key");
 
 // ── CUSTODY: THE VK, ITS KEYSLOTS, AND THE VESSEL KEL ───────────────────────────────────────────
 /** The floor key's own inception: the key signed by itself, committing no next key. */

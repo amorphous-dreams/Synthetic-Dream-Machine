@@ -213,7 +213,7 @@ describe("an inception signs only where its image licenses it", () => {
     expect(await why(incept(charterInceptionImage([k0!, foreign], 2, await commitOf([k0!, foreign], [n0!, n1!], 2))))).toMatch(/^act-refused: a household seed seats only keys this vessel holds/);
     expect(await why(incept(charterInceptionImage([k0!, k1!], 2)))).toMatch(/^act-refused: the inception commits no successor/);
     // A joint founding signs only for an offer this vessel recorded and judged; none stands, so none signs.
-    expect(await why(incept(charterInceptionImage([k0!, foreign], 2, await commitOf([k0!, foreign], [n0!, n1!], 2), { offer: "ab".repeat(32) })))).toMatch(/^act-refused: this vessel holds no judged offer for that joint founding/);
+    expect(await why(incept(charterInceptionImage([k0!, foreign], 2, await commitOf([k0!, foreign], [n0!, n1!], 2), { offer: "ab".repeat(32), cadence: "cd".repeat(32) })))).toMatch(/^act-refused: this vessel holds no judged offer for that joint founding/);
     expect(await why(incept(image, (await seats(3))[2]!))).toMatch(/^act-refused: that seat sits outside the inception's key-set/);
     const notCanonical = Buffer.from(JSON.stringify(image, null, 1)).toString("hex");
     expect(await why(act("seal.incept", { seat: k0!, image: notCanonical }))).toMatch(/^act-refused: this door signs a charter inception in its canonical spelling/);

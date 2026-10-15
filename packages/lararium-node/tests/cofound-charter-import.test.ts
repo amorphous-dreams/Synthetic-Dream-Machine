@@ -15,6 +15,7 @@ import { cidV1Sha256, coldKeyFromSeed, foundingRoster, hex, seatFingerprint, typ
 import {
   charterInceptionBytes, cofoundGenesis, cofoundJoin, cofoundOffer, sealCofound,
 } from "../../lararium-mesh/src/cofound.js";
+import { cadenceNextDigest } from "../../lararium-mesh/src/cadence-lineage.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { CarriedCharterError, importCarriedCharter } from "../src/carried-set.js";
 import { parseNexusDoc, renderNexusDoc } from "../src/nexus-doc.js";
@@ -39,10 +40,11 @@ afterEach(() => {
 /** The founders' act, and a charter doc whose lineage holds the joint genesis it sealed. */
 async function act() {
   const [aCold, bCold] = await Promise.all([coldKeyFromSeed(seedOf(83)), coldKeyFromSeed(seedOf(84))]);
-  const a = { seat: await key(81), next: aCold.digest }, b = { seat: await key(82), next: bCold.digest };
+  const a = { seat: await key(81), next: aCold.digest, cadence: { key: await key(85), next: cadenceNextDigest(await key(86)) } };
+  const b = { seat: await key(82), next: bCold.digest, cadence: { key: await key(87), next: cadenceNextDigest(await key(88)) } };
   const offer = cofoundOffer({ ...a, charterLaw: LAW, manifest: MANIFEST });
-  const join = await cofoundJoin(offer, b, seatFingerprint(a.seat), await hand(82));
-  const inception = await sealCofound(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }, await hand(81));
+  const join = await cofoundJoin(offer, b, seatFingerprint(a.seat), await hand(82), await hand(87));
+  const inception = await sealCofound(join, { offer, heardJoinSeat: seatFingerprint(b.seat) }, await hand(81), await hand(85));
   const genesis = cofoundGenesis(inception);
   const seats = heldCharter({ keys: [a.seat, b.seat], threshold: 2 }).doc();
   const docOf = (g: SealEpoch): NexusDoc => ({ ...seats, sealEpochCid: g.epochCid, sealLineage: [g] });
@@ -89,7 +91,7 @@ describe("the node's charter doors meet a joint genesis", () => {
   test("COFOUND_REQUIRES_TWO_INCEPTION_SIGNATURES: two signatures over different images, a doubled or a foreign signer land nowhere", async () => {
     const { a, genesis, docOf } = await act();
     const signed = genesis.inception!.signatures;
-    const split = { ...genesis.inception!.image, founding: { offer: "ab".repeat(32) } };
+    const split = { ...genesis.inception!.image, founding: { ...genesis.inception!.image.founding!, offer: "ab".repeat(32) } };
     const foreign = await hand(89);
     const cases = [
       [...signed.filter((s) => s.signer !== a.seat), { signer: a.seat, sig: await (await hand(81)).sign(charterInceptionBytes(split)) }],

@@ -24,9 +24,11 @@
  *
  * ── EVERY GENESIS CARRIES ITS SEATS' INCEPTION ──────────────────────────────────────────────────
  * A genesis reads as a charter only with its INCEPTION: one exact image (the seats, the rule, the successor
- * commitments, and for a joint founding the offer fingerprint) signed by every seat it seats, and by nothing
- * else. The AID content-addresses that image, so it names one founding statement, never a roster: two foundings
- * by one roster commit fresh successors and mint two AIDs.
+ * commitments, and for a joint founding the offer fingerprint and the one cadence inception it cites) signed by
+ * every seat it seats, and by nothing else. The AID content-addresses that image, so it names one founding
+ * statement, never a roster: two foundings by one roster commit fresh successors and mint two AIDs. A joint
+ * founding's inception carries the cadence inception its image cites, signed by every cadence holder
+ * (`cadence-lineage`); a household seed cites none, since its one holder bears its own reboots.
  *
  * ── A FORK STAYS A FORK ─────────────────────────────────────────────────────────────────────────
  * No clock, no longest chain and no third-party quorum picks a branch; every reader names the branch it follows.
@@ -39,6 +41,7 @@ import { CHARTER_ABANDON_DOMAIN, CHARTER_INCEPTION_DOMAIN, CHARTER_REUNION_DOMAI
 import { seatNextDigest } from "./cold-key-card.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import { acceptEd25519Key, verifyEd25519, type Ed25519KeyRefusal } from "./ed25519-door.js";
+import { cadenceInceptionDigest, readCadenceInception, verifyCadenceInception, type CadenceInception, type CadenceRefusal } from "./cadence-lineage.js";
 
 /** A key-set and the quorum rule over it — the preimage `sealKeySetHash` digests. */
 export interface SealKeySet { readonly keys: readonly string[]; readonly threshold: number }
@@ -54,8 +57,11 @@ export interface SealRoll {
   readonly keys: readonly string[]; readonly threshold: number; readonly signatures: readonly QuorumSignature[];
   readonly genesis?: SealKeySet;
 }
-/** What a joint founding adds to its inception: the fingerprint of the offer one founder made the other. */
-export interface CharterFounding { readonly offer: string }
+/**
+ * What a joint founding adds to its inception: the fingerprint of the offer one founder made the other, and the
+ * digest of the ONE cadence inception the founding seats (`cadence-lineage`). A household seed carries none.
+ */
+export interface CharterFounding { readonly offer: string; readonly cadence: string }
 /** The exact image every seat of a genesis signs. Keys sorted, distinct and lower-case; one digest per key. */
 export interface CharterInceptionImage {
   readonly kind:           typeof CHARTER_INCEPTION_DOMAIN;
@@ -65,10 +71,14 @@ export interface CharterInceptionImage {
   readonly nextThreshold:  number;
   readonly founding:       CharterFounding | null;
 }
-/** A genesis's inception: its image and its seats' signatures over the image's bytes. */
+/**
+ * A genesis's inception: its image and its seats' signatures over the image's bytes. A joint founding's carries the
+ * cadence inception its image cites, and no other inception carries one.
+ */
 export interface CharterInception {
   readonly image:      CharterInceptionImage;
   readonly signatures: readonly QuorumSignature[];
+  readonly cadence?:   CadenceInception;
 }
 /** One epoch binds its seated quorum, positional cold-key commitments and predecessor links. */
 export interface SealEpoch {
@@ -154,9 +164,15 @@ export function charterInceptionImage(keys: readonly string[], threshold: number
   if (weak) throw new Error(`charter-seats-a-weak-key — a founding seat refuses (${weak.refusal}): ${weak.key}`);
   const distinct = normKeys(keys);
   if (!isThreshold(threshold) || threshold > distinct.length || !validNext(next, distinct.length, threshold)) throw new Error("roll-malformed");
-  if (founding !== null && (!record(founding) || !exactKeys(founding as unknown as Record<string, unknown>, ["offer"]) || !isLowerDigest(founding.offer))) throw new Error("roll-malformed");
+  if (founding !== null && readFounding(founding) === null) throw new Error("roll-malformed");
   return { kind: CHARTER_INCEPTION_DOMAIN, keys: distinct, threshold, nextKeyDigests: [...next.digests], nextThreshold: next.threshold,
-    founding: founding === null ? null : { offer: founding.offer } };
+    founding: founding === null ? null : { offer: founding.offer, cadence: founding.cadence } };
+}
+/** A joint founding at its exact shape: the offer fingerprint and the cadence citation, each 64 lower hex. */
+function readFounding(v: unknown): CharterFounding | null {
+  const f = record(v);
+  return f && exactKeys(f, ["offer", "cadence"]) && isLowerDigest(f["offer"]) && isLowerDigest(f["cadence"])
+    ? { offer: f["offer"], cadence: f["cadence"] } : null;
 }
 /** The bytes every seat of a genesis signs: the image's canonical JSON. */
 export function charterInceptionBytes(image: CharterInceptionImage): Uint8Array {
@@ -165,7 +181,7 @@ export function charterInceptionBytes(image: CharterInceptionImage): Uint8Array 
 /**
  * Read an inception image at its exact shape: seats sorted, distinct and accepted by the Ed25519 door; one
  * distinct successor digest per seat under the seats' own threshold, or none; no seat key whose digest a seat committed (its reveal would re-seat a seated key); a founding of
- * the offer fingerprint alone, or none.
+ * the offer fingerprint and the cadence citation, or none.
  */
 export function readCharterInceptionImage(parsed: unknown): CharterInceptionImage | null {
   const r = record(parsed);
@@ -180,28 +196,30 @@ export function readCharterInceptionImage(parsed: unknown): CharterInceptionImag
     ? nextThreshold === 0 : nextKeyDigests.length === keys.length && new Set(nextKeyDigests).size === keys.length && nextThreshold === threshold)) return null;
   const seats = keys as string[], digests = nextKeyDigests as string[];
   if (seats.some((k) => digests.includes(seatNextDigest(k)))) return null;
-  let readFounding: CharterFounding | null = null;
-  if (founding !== null) {
-    const f = record(founding);
-    if (!f || !exactKeys(f, ["offer"]) || !isLowerDigest(f["offer"])) return null;
-    readFounding = { offer: f["offer"] };
-  }
-  return { kind: CHARTER_INCEPTION_DOMAIN, keys: [...seats], threshold, nextKeyDigests: [...digests], nextThreshold: nextThreshold as number, founding: readFounding };
+  const read = founding === null ? null : readFounding(founding);
+  if (founding !== null && read === null) return null;
+  return { kind: CHARTER_INCEPTION_DOMAIN, keys: [...seats], threshold, nextKeyDigests: [...digests], nextThreshold: nextThreshold as number, founding: read };
 }
-/** Read an inception at its exact shape; its signatures read as shapes, and `verifyInception` judges them. */
+/**
+ * Read an inception at its exact shape; its signatures read as shapes, and `verifyInception` judges them. A joint
+ * founding's carries its cadence inception, and an inception with no founding carries none.
+ */
 export function readCharterInception(parsed: unknown): CharterInception | null {
   const r = record(parsed);
-  if (!r || !exactKeys(r, ["image", "signatures"])) return null;
+  if (!r || !(exactKeys(r, ["image", "signatures"]) || exactKeys(r, ["image", "signatures", "cadence"]))) return null;
   const image = readCharterInceptionImage(r["image"]);
   const raw = r["signatures"];
   if (!image || !Array.isArray(raw) || raw.length > 256) return null;
+  if ((image.founding !== null) !== Object.hasOwn(r, "cadence")) return null;
+  const cadence = image.founding !== null ? readCadenceInception(r["cadence"]) : null;
+  if (image.founding !== null && cadence === null) return null;
   const signatures: QuorumSignature[] = [];
   for (const s of raw) {
     const q = record(s);
     if (!q || !exactKeys(q, ["signer", "sig"]) || !isLowerDigest(q["signer"]) || !isLowerHex128(q["sig"])) return null;
     signatures.push({ signer: q["signer"], sig: q["sig"] });
   }
-  return { image, signatures };
+  return cadence ? { image, signatures, cadence } : { image, signatures };
 }
 /** The seats whose signature verifies over the image's bytes, one per seat, sorted. */
 export function inceptionSeatsSigned(image: CharterInceptionImage, signatures: readonly QuorumSignature[]): string[] {
@@ -216,12 +234,14 @@ export function inceptionSeatsSigned(image: CharterInceptionImage, signatures: r
 }
 export type InceptionRefusal =
   | "inception-absent" | "inception-malformed" | "inception-unbound" | "inception-unsigned" | "inception-foreign-signer"
-  | "inception-signature-invalid" | "inception-short-of-seats";
+  | "inception-signature-invalid" | "inception-short-of-seats" | "inception-cadence-unbound" | CadenceRefusal;
 /**
  * Does this genesis carry its inception: every seated key's signature over the one image its address commits, and
  * nothing else? Null when it does; else the first refusal. An inception holds exact bytes: zero signatures, a
  * signer outside the seats or named twice, a signature that fails the image, or a seat that did not sign each
- * refuses. The law holds for every genesis, a household seed's one seat and a joint founding's two alike.
+ * refuses. The law holds for every genesis, a household seed's one seat and a joint founding's two alike. A joint
+ * founding's cadence inception must hash to the citation its image carries, seat one hearth per seat at the seats'
+ * own threshold, and carry every holder's signature.
  */
 export function verifyInception(genesis: SealEpoch): InceptionRefusal | null {
   if (genesis.inception === undefined) return "inception-absent";
@@ -239,12 +259,23 @@ export function verifyInception(genesis: SealEpoch): InceptionRefusal | null {
   }
   if (inceptionSeatsSigned(image, inception.signatures).length !== named.size) return "inception-signature-invalid";
   if (named.size < image.keys.length) return "inception-short-of-seats";
+  if (image.founding !== null) {
+    // Each founder's hearth holds one cadence key, at the founding's own rule: as many holders as seats, the seats' threshold.
+    const cadence = inception.cadence;
+    if (!cadence || cadenceInceptionDigest(cadence.image) !== image.founding.cadence ||
+        cadence.image.keys.length !== image.keys.length || cadence.image.threshold !== image.threshold) return "inception-cadence-unbound";
+    return verifyCadenceInception(inception.cadence);
+  }
   return null;
 }
-/** The genesis an inception seats, with the signatures it carries (none verified here). */
-export function genesisOfInception(image: CharterInceptionImage, signatures: readonly QuorumSignature[] = []): SealEpoch {
+/** The genesis an inception seats, with the signatures and cadence inception it carries (none verified here). */
+export function genesisOfInception(image: CharterInceptionImage, signatures: readonly QuorumSignature[] = [],
+  cadence?: CadenceInception): SealEpoch {
+  const sorted = [...signatures].sort((a, b) => a.signer < b.signer ? -1 : 1);
   return mintCharterEpoch({ keySetHash: sealKeySetHash(image.keys, image.threshold), nextKeyDigests: [...image.nextKeyDigests],
-    nextThreshold: image.nextThreshold, predecessors: [] }, undefined, { image, signatures: [...signatures].sort((a, b) => a.signer < b.signer ? -1 : 1) });
+    nextThreshold: image.nextThreshold, predecessors: [] }, undefined,
+    cadence ? { image, signatures: sorted, cadence: { image: cadence.image, signatures: [...cadence.signatures].sort((a, b) => a.signer < b.signer ? -1 : 1) } }
+      : { image, signatures: sorted });
 }
 /** An UNSIGNED genesis of these seats: its inception carries no signature, so no reader takes it as a charter. */
 export function genesisCharterEpoch(keys: readonly string[], threshold: number, next: SealNext = UNARMED,

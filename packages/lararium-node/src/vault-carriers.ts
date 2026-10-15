@@ -333,6 +333,10 @@ function buildTable(): readonly CarrierRow[] {
           custody: "hot", keyClass: null, writer: "seal-ceremony" }),
     row({ row: "transitions", home: "seal", under: "", match: file("transitions.json"),
           custody: "hot", keyClass: null, writer: "seal-ceremony" }),
+    // One joint founding's record (`cofound-record`): the offer this vessel made or answered, its seat and hearth
+    // cadence keys' public halves, and the image it judged. The inception door licenses a joint signature by it.
+    row({ row: "cofound", home: "seal", under: "", match: /^cofound-([0-9a-f]{64})\.json$/,
+          custody: "hot", keyClass: null, writer: "cofound-record" }),
 
     // ── cold: sealed under the VK, opened per act ──────────────────────────────────────────────
     id({ row: "persona-root", match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
@@ -346,6 +350,10 @@ function buildTable(): readonly CarrierRow[] {
     // bundle carries no key of any seat.
     id({ row: "seat-key", match: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
          writer: "seat-key-store", name: (m) => `seat-key-h${m[1]}-${m[2]}`, face: faceOf }),
+    // A hearth's own cadence key and its next key, minted at random on the device for one joint founding
+    // (`cadence-key-store`): apart from every root, leaf, seat and serving or floor key. It stays on its vessel.
+    id({ row: "cadence-key", match: /^cadence-key-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "device-minted",
+         writer: "cadence-key-store", name: (m) => `cadence-key-${m[1]}` }),
     // A restore's own commit row: everything one restore will land, sealed in ONE write before any row moves. It
     // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
     id({ row: "restore-pending", match: file(RESTORE_PENDING_FILE), custody: "cold", keyClass: "seed",

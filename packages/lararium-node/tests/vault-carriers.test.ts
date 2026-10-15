@@ -73,6 +73,7 @@ const SOWN: Record<string, string> = {
   "identity/recovery-device-share-h0.bin":      "x",
   [`identity/face-proof-key-h0-${"ab".repeat(16)}.bin`]: "x",
   [`identity/seat-key-h0-${"9e".repeat(16)}.bin`]:       "x",
+  [`identity/cadence-key-${"7c".repeat(16)}.bin`]:       "x",
   "identity/.restore-pending.json": "x",
   [`identity/vessel-face-key-${"cd".repeat(16)}.bin`]:   "x",
   "identity/.persona-enroll-pending.json":      "{}",
@@ -103,6 +104,7 @@ const SOWN: Record<string, string> = {
   "nexus/nexus/key-line/AID1.json":             "[]",
   "nexus/transition-pending.json":              "{}",
   "nexus/transitions.json":                     "{}",
+  [`nexus/cofound-${"5a".repeat(32)}.json`]:     "{}",
 };
 
 /** The ruled class of every row (refound K7, K12, K15 and the custody plan's hot and cold lists). */
@@ -123,6 +125,10 @@ const RULED: Record<string, CustodyClass> = {
   "vessel-face-key": "hot", "face-proof-key": "cold",
   // A seat's own key: it opens for one signature (kahu#/seed-and-nexus).
   "seat-key": "cold",
+  // A hearth's own cadence key and its next key: they open for one act (kahu#/contract, engine cadence ruling).
+  "cadence-key": "cold",
+  // One joint founding's record: public material and the judged image, read at each joint signature.
+  "cofound": "hot",
   // A restore's own commit row: one act writes it, one act removes it (custody#/the-restore).
   "restore-pending": "cold",
 };
@@ -166,6 +172,8 @@ describe("the carrier table", () => {
       expect(at("seal", "nexus/carriage-admit/AID1.json")?.row).toBe("carriage-admit");
       expect(at("seal", "nexus/key-line/AID1.json")?.row).toBe("nexus-key-line");
       expect(at("seal", "transitions.json")?.custody).toBe("hot");
+      expect(at("seal", `cofound-${"5a".repeat(32)}.json`)).toMatchObject({ row: "cofound", custody: "hot", face: "vessel" });
+      expect(at("identity", `cadence-key-${"7c".repeat(16)}.bin`)).toMatchObject({ row: "cadence-key", custody: "cold", face: "vessel", keyClass: "device-minted" });
       expect(at("identity", "keyhive-archive.bin")).toMatchObject({ row: "keyhive-archive", face: "vessel", bare: null });
       expect(at("identity", "veil-archive-h0.bin")).toMatchObject({ row: "veil-archive", face: 0, bare: null });
       expect(at("storage", "sealed/lockbox/aa.bb-cc")?.row).toBe("sealed-rest");

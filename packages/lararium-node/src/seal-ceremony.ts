@@ -55,6 +55,7 @@ import {
 } from "./reserve-transition.js";
 import { larSealHome } from "./vessel-paths.js";
 import { aFaceBinds } from "./hearth-aid.js";
+import { recordedJointImage, sameInceptionImage } from "./cofound-record.js";
 
 /** The row a crossing stands open in (it prepares), relative to the seal home. */
 export const TRANSITION_PENDING_FILE = "transition-pending.json";
@@ -468,7 +469,7 @@ export async function signLicensedSealRoll(verifyingKey: string, image: Uint8Arr
  * Every successor commitment a charter this vessel holds has made: the primary's and each carried charter's. A
  * charter that stands and reads torn hides its commitments, so it refuses the reading rather than reading empty.
  */
-function successorsHeldHere(): Set<string> {
+export function successorsHeldHere(): Set<string> {
   const sealHome = larSealHome();
   const homes = [sealHome];
   const carried = join(sealHome, "carried");
@@ -489,8 +490,9 @@ function successorsHeldHere(): Set<string> {
  * inception image's bytes in their one canonical spelling. The door signs only:
  *   · an image that reads at its exact shape, seats this signer, and arms every seat (no genesis arms itself blind);
  *   · a household seed (no founding) whose every seat this vessel holds: a seed never takes a foreign seat;
- *   · no joint founding yet: a joint inception signs only for an offer this vessel recorded and judged, and the
- *     cofound verbs that record one stand owed (`lares nexus seal cofound open|join|seal`);
+ *   · a joint founding only for an offer this vessel recorded (`cofound-record`), as the seat that row names, over
+ *     exactly the image the row holds as judged: the image this vessel composed when it joined, or the one a join
+ *     it judged composes (`cofound-ceremony`);
  *   · an image whose every successor commitment no charter this vessel holds has made: a reused card would let
  *     two foundings share a successor, and the AID names one founding statement.
  * Every refusal names its reason and signs nothing.
@@ -512,7 +514,10 @@ export async function signLicensedInception(verifyingKey: string, image: Uint8Ar
     throw refuse("seed-takes-a-foreign-seat", "a household seed seats only keys this vessel holds; a partner founds a Nexus fresh, beside the seed");
   }
   if (read.founding !== null) {
-    throw refuse("cofound-offer-unrecorded", "this vessel holds no judged offer for that joint founding, so no seat signs its inception");
+    const recorded = await recordedJointImage(read.founding.offer);
+    if (recorded === null || recorded.seat !== signer || !sameInceptionImage(recorded.image, read)) {
+      throw refuse("cofound-offer-unrecorded", "this vessel holds no judged offer for that joint founding under that seat and image, so no seat signs its inception");
+    }
   }
   const used = successorsHeldHere();
   if (read.nextKeyDigests.some((d) => used.has(d))) {

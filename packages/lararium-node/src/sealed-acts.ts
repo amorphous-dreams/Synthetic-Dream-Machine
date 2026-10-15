@@ -39,7 +39,8 @@ import {
   HandleBook, ed25519SignerFromSeed,
   type HandleBookSnapshot, type PersonaDeclaration, type PersonaRef,
 } from "@lararium/mesh";
-import { carriedReadings } from "./carried-set.js";
+import { CarriedCharterError, carriedReadings } from "./carried-set.js";
+import { acceptCofound, joinCofound, openCofound, sealCofoundAct } from "./cofound-ceremony.js";
 import { NexusContractError, runNexusAcceptCarriage } from "./commands/nexus-contract.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
 import { clearPersonaAdmitPending, listAdmittedPersonas } from "./node-persona-admit-store.js";
@@ -223,6 +224,18 @@ const bundleKey: Kind<Uint8Array> = {
   label: "a bundle key, 64 lower hex",
   read: (v) => (typeof v === "string" && /^[0-9a-f]{64}$/.test(v) ? Uint8Array.from(Buffer.from(v, "hex")) : undefined),
 };
+/** A successor commitment: the digest of a cold key, 64 lower hex. */
+const digest: Kind<string> = { label: "a successor digest, 64 lower hex", read: (v) => (typeof v === "string" && HEX64.test(v) ? v : undefined) };
+/** One founding file a person carried between vaults, as parsed JSON: a plain object, its spelling bounded. */
+const foundingFile: Kind<Record<string, unknown>> = {
+  label: `a founding file as parsed JSON (an object), ${TEXT_ARG_LIMIT} characters of JSON at most`,
+  read: (v) => {
+    if (!v || typeof v !== "object" || Array.isArray(v)) return undefined;
+    let spelled: string;
+    try { spelled = JSON.stringify(v); } catch { return undefined; }
+    return spelled.length <= TEXT_ARG_LIMIT ? (v as Record<string, unknown>) : undefined;
+  },
+};
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
 
 type Shape = Readonly<Record<string, Kind<unknown>>>;
@@ -276,6 +289,12 @@ async function ceremonyOrRefuse<T>(run: Promise<T>): Promise<T> {
   catch (err) { if (err instanceof SealCeremonyRefusal) throw refuse(err.message); throw err; }
 }
 
+/** A founding step's refusal keeps its words and crosses as the act's refusal: the ceremony's own, or the charter's import. */
+async function foundingOrRefuse<T>(run: Promise<T>): Promise<T> {
+  try { return await run; }
+  catch (err) { if (err instanceof SealCeremonyRefusal || err instanceof CarriedCharterError) throw refuse(err.message); throw err; }
+}
+
 /** A hosting door's own refusal keeps its words and crosses as the act's refusal. */
 async function hostOrRefuse<T>(run: Promise<T>): Promise<T> {
   try { return await run; }
@@ -309,6 +328,13 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   seal.sign             sign one charter roll as the seat a public key names, when the charter that stands
  *                         licenses it: the roll steps from the standing head, the head pre-committed a key-set this
  *                         roll reveals, and the seat sits in the roll or in that set; every other image refuses by name
+ *   cofound.open          the two-founder act's offer: mint this face's seat key and the hearth's cadence key, compose
+ *                         the offer around the successor digest the command's card read back, and record it
+ *   cofound.join          answer an offer: check the offer's seat fingerprint as heard before any key mints, mint the
+ *                         seat and cadence keys, record the composed image as judged, half-sign it and sign its cadence
+ *   cofound.seal          judge a join against the recorded offer and the joining seat's fingerprint as heard, record
+ *                         the judged image, sign as the seat and the hearth, and file the joint charter under its AID
+ *   cofound.accept        judge a sealed inception against the image this vessel joined, and file the joint charter
  *   crossing.*            the growth rite's steps over the crossing that stands open: state, open, bind, sign,
  *                         witness, seal. A hand names itself; the row reads what it signs off its own sealed row
  *   carriage.accept       sign this operator's own consent to one Nexus's carriage, under the face's leaf for it
@@ -374,6 +400,20 @@ export const SEALED_ACTS = Object.freeze({
   // seat armed, a seed's seats all held here, a joint founding at two of two, and no successor a held charter used.
   "seal.incept": act({ seat: seatKey, image }, async (a) => ({
     ...(await ceremonyOrRefuse(signLicensedInception(a.seat, Uint8Array.from(Buffer.from(a.image, "hex"))))),
+  })),
+  // THE TWO-FOUNDER ACT (`cofound-ceremony`). Each step mints, signs and records behind this door; the files a
+  // person carries between vaults hold public material alone, and every signature waits on a recorded, judged offer.
+  "cofound.open": act({ face: index, next: digest, charterLaw: label, manifest: foundingFile }, async (a) => ({
+    ...(await foundingOrRefuse(openCofound({ face: a.face, next: a.next, charterLaw: a.charterLaw, manifest: a.manifest as never }))),
+  })),
+  "cofound.join": act({ face: index, offer: foundingFile, heard: label, next: digest }, async (a) => ({
+    ...(await foundingOrRefuse(joinCofound({ face: a.face, offer: a.offer, heardOfferSeat: a.heard, next: a.next }))),
+  })),
+  "cofound.seal": act({ join: foundingFile, heard: label }, async (a) => ({
+    ...(await foundingOrRefuse(sealCofoundAct({ join: a.join, heardJoinSeat: a.heard }))),
+  })),
+  "cofound.accept": act({ inception: foundingFile }, async (a) => ({
+    ...(await foundingOrRefuse(acceptCofound({ inception: a.inception }))),
   })),
   "crossing.state": act({}, async () => {
     const { pending, kept } = await readCrossing();
