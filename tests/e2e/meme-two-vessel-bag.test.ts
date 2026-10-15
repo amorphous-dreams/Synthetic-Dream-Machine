@@ -41,7 +41,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { joinedDeviceEdge, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -264,9 +264,8 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     const cardFile = readdirSync(idDir).find((f) => f.startsWith(".vessel-card"));
     expect(cardFile, `no vessel card under ${idDir}`).toBeDefined();
     const contactCard = readFileSync(join(idDir, cardFile!), "utf8");
-    const payload = JSON.parse(readFileSync(join(rootB, "admit.json"), "utf8")) as Record<string, unknown>;
-    const deviceEdge = payload["deviceEdge"] ?? (JSON.parse(Buffer.from(String(payload["admit"] ?? ""), "base64url").toString("utf8") || "{}") as Record<string, unknown>)["deviceEdge"];
-    expect(deviceEdge, `admit.json carries no deviceEdge: ${Object.keys(payload).join(",")}`).toBeDefined();
+    const deviceEdge = joinedDeviceEdge(pair!);
+    expect(deviceEdge, "the join carried no device edge").toBeDefined();
     // A seats B — the verb runs where A's booted provider lives; the record lands on the plane.
     const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
       `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as

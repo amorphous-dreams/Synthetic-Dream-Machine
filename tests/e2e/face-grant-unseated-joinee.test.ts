@@ -22,7 +22,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance } from "../harness/instance.js";
+import { joinedDeviceEdge, openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance } from "../harness/instance.js";
 import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -99,8 +99,7 @@ describe.skipIf(gaps.length > 0)("★ the later grant, to a joinee that dialed b
     const idDir = join(rootB, "data/lares/identity");
     const cardFile = readdirSync(idDir).find((f) => f.startsWith(".vessel-card"))!;
     const contactCard = readFileSync(join(idDir, cardFile), "utf8");
-    const payload = JSON.parse(readFileSync(join(rootB, "admit.json"), "utf8")) as Record<string, unknown>;
-    const deviceEdge = payload["deviceEdge"] ?? (JSON.parse(Buffer.from(String(payload["admit"] ?? ""), "base64url").toString("utf8") || "{}") as Record<string, unknown>)["deviceEdge"];
+    const deviceEdge = joinedDeviceEdge(pair!);
     const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
       `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
       { results?: { summary?: { output?: Record<string, unknown> } } };

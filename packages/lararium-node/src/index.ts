@@ -294,14 +294,6 @@ export { makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
 // The IoC follow — the node-fs LOCAL adapters for the private circle-graph + the recogniser's handle-book.
 // Both under the identity home, sealed under the vessel key, never federated (the `lares circle` door drives them via composeFollow).
 export { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE } from "./node-circle-store.js";
-// The persona-admission PER-VESSEL multitude-view (never fleet-syncs) and the airgapped ceremony's pending state:
-// three rows sealed under the vessel key, which the `lares persona admit` door drives.
-export {
-  recordAdmittedPersona, listAdmittedPersonas, isPersonaAdmitted,
-  stashEnrollmentSecret, bindEnrollmentToGrant, takeEnrollmentSecret, peekEnrollmentSecrets, stashSentMemo, peekSentMemo, takeSentMemo, clearPersonaAdmitPending,
-  withdrawAdmitOffer, withdrawAdmitGrant, PENDING_OFFER_LIMIT, SENT_MEMO_LIMIT,
-  ADMISSIONS_FILE, PENDING_ENROLL_FILE, PENDING_GRANT_FILE,
-} from "./node-persona-admit-store.js";
 // QR transport — GENERATE a scannable carriage QR (terminal / PNG / SVG / matrix, ECC H) + DECODE a still PNG
 // through an injected decoder shore (the headless node scanner + the browser camera both plug in behind it).
 export {
@@ -309,15 +301,8 @@ export {
   pngToImageData, decodeQrPng, HANDSHAKE_QR_ECC,
 } from "./qr-transport.js";
 export type { QrImageDecoder } from "./qr-transport.js";
-// The airgapped persona-admission ORCHESTRATION — the 5 flow functions the `lares persona admit` CLI thin-wraps
-// (mint/seal/open/ack composing the ceremony + the per-vessel store + the QR render), plus the §2a withdrawal
-// pair + M12's KEL-seq resolver.
-export {
-  offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
-  makeLocalPersonaKelHeadResolver, makeLocalPersonaKelHeadSeqResolver,
-  withdrawOfferFlow, withdrawGrantFlow,
-} from "./persona-admit-flow.js";
-export type { HopRender } from "./persona-admit-flow.js";
+// THIS vessel's local persona-KEL board, read: a KEL's head and its sequence off one board read.
+export { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 // The `bags/nexus` charter DOC adapter — the antigen roster's authority home read/written on disk (#66).
 export {
   readNexusDoc, parseNexusDoc, writeNexusDoc, renderNexusDoc, writeNexusSeal, writeNexusKahu, writeNexusPractice,

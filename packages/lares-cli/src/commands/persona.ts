@@ -22,7 +22,7 @@
  * fleet; `--handle` declares what that persona answers to outward; `lares handle publish` announces it. The label and
  * the Handle MAY read identical and stay two acts, so a human whose compartment reads "the-burner" can still
  * stand under any declared Handle — nothing joins them but the human's own say-so. Founder-side: `new` mints an
- * operator-root this vessel holds — a joining vessel receives a root by admit, never mints one here.
+ * operator-root this vessel holds — a joining vessel takes its face by `lares fleet join`, never mints a root here.
  */
 
 import {
@@ -33,7 +33,6 @@ import {
   declarePersonaHandle, standForKahuSeat,
   refuseSlot, personaSlotCeiling, defaultChairLabel, type VesselClass,
 } from "@lararium/mesh";
-import { cmdPersonaAdmit } from "./persona-admit-cmd.js";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { vesselStanding } from "../custody-door.js";
@@ -99,7 +98,6 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
       case "wear":  return await personaWear(args);
       case "list":  return await personaList(args);
       case "sync":  return await personaSync(args);
-      case "admit": return await cmdPersonaAdmit(args);
       case "reissue": return await personaReissue(args);
       case "guardian": return await personaGuardian(args);
       default:

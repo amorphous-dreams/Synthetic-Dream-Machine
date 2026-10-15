@@ -153,7 +153,7 @@ import { repoPersonaSelvesPlane }          from "./persona-selves-plane.js";
 import { makeSeatSettler, type SeatDutiesAnswer } from "./seat-settle.js";
 import { askIslandMemory, askSeatDuties, type IslandAsk } from "./island-verb-ask.js";
 import type { BackupDoor }                from "./face-bundle-cut.js";
-import { readLocalPersonaKelChain }       from "./persona-admit-flow.js";
+import { readLocalPersonaKelChain }       from "./local-persona-kel.js";
 import { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError } from "./commands/edge-seats.js";
 import type { PersonaSelvesPlane, SealedActContext } from "./sealed-acts.js";
 

@@ -437,14 +437,14 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>…>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>…>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
       "`lares handle publish` performs the announce); the SEAT stands it for a Kahu chair on this node and " +
       "needs no Handle and carries a private chair label. `--split-root` opts into recovery shares. `wear` switches the active persona (reboot-to-switch — one face to the " +
-      "mesh). Local-first: a write lands on this node first and rides up when a hearth answers. A joinee " +
-      "receives a root by admit and never mints here.",
+      "mesh). Local-first: a write lands on this node first and rides up when a hearth answers. A joining " +
+      "vessel takes a face by `lares fleet join` and never mints its root here.",
     examples: [
       "lares persona new 0 --name '<label>' --seat [--chair '<chair label>']",
       "lares persona new 1 --name '<label>' --seat [--chair '<chair label>']",
@@ -463,7 +463,6 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--seat             (new) stand it for a Kahu chair on THIS node (no Handle needed)",
       "--chair <label>    (new) private label for a seat claim; pass with --seat",
       "--split-root       (new) opt into arming the 2-of-3 recovery split",
-      "admit <sub>        offer | grant | open | accept | list — airgapped device-to-device hand-off (QR 3-hop)",
       "reissue            the worn face's key at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
       "--nexus <aid>      (reissue) the Nexus; absent, this vessel's own charter",
       "guardian show      the face's prefix, which a guardian's offer names, and the set it holds",

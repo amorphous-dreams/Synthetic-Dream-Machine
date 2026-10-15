@@ -42,7 +42,7 @@ function read(rel: string): string {
 const SITES: Array<{ file: string; door: RegExp; count: number }> = [
   { file: "commands/handle.ts",         door: /whoBoardDocUrl\(([^)]*)\)/g,        count: 2 },
   { file: "commands/handle.ts",         door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 2 },
-  { file: "persona-admit-flow.ts",      door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
+  { file: "local-persona-kel.ts",       door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
   { file: "commands/nexus-kapae.ts",    door: /kapaeAntigenDocUrl\(([^)]*)\)/g,    count: 1 },
   { file: "commands/nexus-contract.ts", door: /carriageDocUrl\(([^)]*)\)/g,        count: 3 },
 ];
@@ -69,7 +69,7 @@ describe("CLI island-scoped board sites use the island resolved at boot", () => 
   }
 
   test("CONTROL - the module composes `nodeNexusIsland`, imported from nexus-standing", () => {
-    for (const file of ["commands/handle.ts", "persona-admit-flow.ts", "commands/nexus-kapae.ts",
+    for (const file of ["commands/handle.ts", "local-persona-kel.ts", "commands/nexus-kapae.ts",
                          "commands/nexus-contract.ts"]) {
       const src = read(file);
       expect(src, `${file} does not import nodeNexusIsland`).toMatch(/nodeNexusIsland/);

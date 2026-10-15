@@ -26,7 +26,7 @@
  *   handle-publish · handle-burn · handle-rotate · handle-attest
  *                                                the WHO board (`commands/handle`)
  *   persona-new                                  a face onto a standing place (`commands/init`)
- *   persona-kel-head                             a persona-KEL head off the local board (`persona-admit-flow`)
+ *   persona-kel-head                             a persona-KEL head off the local board (`local-persona-kel`)
  *   nexus-publish                                the Crossroads offering (`commands/nexus-publish`)
  *   nexus-offering-inspect                       one carried offering, read off the Crossroads board
  *                                                (`commands/nexus-offering-inspect`)
@@ -73,7 +73,7 @@ import { runFoundTheFace } from "./commands/init.js";
 import { runNexusPublishPlugins, NexusPublishError } from "./commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/nexus-offering-inspect.js";
 import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
-import { makeLocalPersonaKelHeadAndSeqResolver } from "./persona-admit-flow.js";
+import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 import { ownedStore } from "./owned-store.js";
 import { larDataDir } from "./vessel-paths.js";
 import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
@@ -368,12 +368,8 @@ function storeDoorRows(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])) })),
     })),
     // M12′/L11: the SAME board resolves BOTH the head op-key and that head's KEL seq, off ONE materialize
-    // (`makeLocalPersonaKelHeadAndSeqResolver`) — a caller that needs the seq (`persona-admit-cmd.ts` `open`,
-    // feeding `JoinRecord.granterSeq` for the per-vessel view's causal supersede order) never stands up a
-    // second board read, and head/seq can never straddle a sync landing between two separate materializes
-    // (the gap the prior two-builder shape left open despite its comment claiming one read). `seq` is
-    // ADVISORY-ONLY end to end — omitted when the resolver found none; the caller folds it in only as a hint,
-    // never a verdict.
+    // (`makeLocalPersonaKelHeadAndSeqResolver`), so head and seq never straddle a sync landing between two
+    // reads. `seq` is ADVISORY-ONLY end to end: omitted when the resolver found none, a hint and never a verdict.
     "persona-kel-head": (args) => answer("persona-kel-head", async () => {
       const prefix = need("persona-kel-head", args, "prefix");
       const { head, seq } = await (await makeLocalPersonaKelHeadAndSeqResolver(repo))(prefix);

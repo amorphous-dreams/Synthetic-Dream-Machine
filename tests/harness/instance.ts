@@ -23,7 +23,7 @@ import { createServer } from "node:net";
 import { rendezvousPath } from "../../packages/lararium-mesh/src/rendezvous-path.js";
 import { ed25519VerifyingKeyFromSeed } from "../../packages/lararium-mesh/src/auth-wire.js";
 import { randomBytes } from "node:crypto";
-import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, writeFileSync, appendFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, existsSync, cpSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { performance } from "node:perf_hooks";
 
 /**
@@ -677,6 +677,11 @@ export interface JoineeOptions {
 
 /** Where the fleet-join door's three files rest under B's root. */
 export interface FleetJoinFiles { readonly offer: string; readonly request: string; readonly answer: string }
+/** The device edge B's join carried: the signed edge inside the fleet-join answer, or the one the old admit file named. */
+export function joinedDeviceEdge(pair: Pick<StagedJoinee, "fleet" | "rootB">): unknown {
+  if (pair.fleet) return (JSON.parse(readFileSync(pair.fleet.answer, "utf8")) as { edge?: { deviceEdge?: unknown } }).edge?.deviceEdge;
+  return (JSON.parse(readFileSync(join(pair.rootB, "admit.json"), "utf8")) as { deviceEdge?: unknown }).deviceEdge;
+}
 export interface StagedJoinee {
   readonly A: LarInstance;
   /** null when B never reached live (its boot line rides in `joinGate`) or `bootB: false`. */
@@ -721,7 +726,7 @@ export async function openStagedJoinee(opts: JoineeOptions = {}): Promise<Staged
         // B founds by A's genesis, copied whole: `vessel found --admit` reads the hearth true-name off
         // `<root>/genesis`, and A's founding derived it (the re-derive is an internal rite step).
         cpSync(join(rootA, "genesis"), join(rootB, "genesis"), { recursive: true });
-        if (opts.door === "fleet-join") {
+        if ((opts.door ?? "fleet-join") === "fleet-join") {
           // THE FLEET-JOIN DOOR: B stands as a place first, so its own custody holds the keys it mints for the face.
           const place = await cliB(["vessel", "found", "--skip-build"]);
           if (place.code !== 0) throw new Error(`B: vessel found (a place) failed (${place.code})\n${place.stderr.slice(-2500)}`);

@@ -36,21 +36,16 @@
  * Node-main only: a worker never imports this module.
  */
 import {
-  HandleBook, ed25519SignerFromSeed,
-  type HandleBookSnapshot, type PersonaDeclaration, type PersonaRef,
+  HandleBook,
+  type HandleBookSnapshot, type PersonaDeclaration,
 } from "@lararium/mesh";
 import { CarriedCharterError, carriedReadings } from "./carried-set.js";
 import { acceptCofound, joinCofound, openCofound, sealCofoundAct } from "./cofound-ceremony.js";
 import { abandonRollCircleAct, cardOf, fileRollCircleAct, joinRollCircleAct, openRollCircleAct, signRollCircleAct } from "./roll-circle-ceremony.js";
 import { NexusContractError, runNexusAcceptCarriage } from "./commands/nexus-contract.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
-import { clearPersonaAdmitPending, listAdmittedPersonas } from "./node-persona-admit-store.js";
 import {
-  acceptAdmitFlow, grantAdmitFlow, offerAdmitFlow, openAdmitFlow, withdrawGrantFlow, withdrawOfferFlow,
-} from "./persona-admit-flow.js";
-import {
-  listPersonaRosterLines, loadActivePersonaIndex, loadPersonaGroupRootSeed, loadVesselSigningSeed,
-  loadVesselVerifyingKey, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots, wearPersona,
+  listPersonaRosterLines, loadActivePersonaIndex, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots, wearPersona,
 } from "./node-vessel-identity.js";
 import type { Repo } from "@automerge/automerge-repo";
 import type { BackupDoor } from "./face-bundle-cut.js";
@@ -69,7 +64,8 @@ import { larSealHome } from "./vessel-paths.js";
 export interface SealedActContext {
   /**
    * One read of a persona KEL's head off the local board: its operating key and its sequence, both null when the
-   * board holds no such KEL. `null` where no board stands to read (a vessel at its herm floor).
+   * board holds no such KEL. `null` where no board stands to read (a vessel at its herm floor). No act reads it since
+   * the persona admission retired (`lares fleet join` took its place); it leaves with the context's next cut.
    */
   readonly kelHead: ((prefix: string) => Promise<{ readonly head: string | null; readonly seq: number | null }>) | null;
   /**
@@ -322,11 +318,6 @@ async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
   }
 }
 
-function orRefuse<T extends object>(r: T | { readonly error: string }): T {
-  if ("error" in r && typeof (r as { error: unknown }).error === "string") throw refuse((r as { error: string }).error);
-  return r as T;
-}
-
 /**
  * THE TABLE. Each row: the arguments it takes, and the act. A row answers what its command prints.
  *
@@ -377,7 +368,6 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   host.state            what this hearth hosts: per Nexus, the live epochs, the cap and the redemption counts
  *   host.roll             roll the hosting epoch in one Nexus and land the new act on this hearth's hosting doc
  *   host.invite           mint this hearth's own invite at the current epoch; the answer returns to the one caller
- *   admit.*               the persona admission's hops and its pending rows
  *   handle-book.load|save the recogniser's private memory, as one snapshot
  *   bundle.restore        bring ONE face back from its backup bundle, as a recovery act: the row takes the bundle's
  *                         body still sealed and the bundle key, opens the body behind this door, and lands the face
@@ -595,56 +585,6 @@ export const SEALED_ACTS = Object.freeze({
     if (!store) throw refuse("no store stands here to read the face's key history from");
     return { ...(await enrolOrRefuse(store.withRepo((repo) => guardianStanding(repo, a.handleIndex)))) };
   }),
-
-  "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({
-    ...(await offerAdmitFlow({
-      deviceVerifyingKey: await loadVesselVerifyingKey(),
-      ...(a.maxPendingOffers !== undefined ? { maxPendingOffers: a.maxPendingOffers } : {}),
-    })),
-  })),
-  "admit.grant": act({ offerCarriage: text, prefix: text, handleIndex: index }, async (a) => {
-    // A grant SIGNS with a held root; it never stands one up. An index this vessel holds no root for refuses.
-    const line = (await listPersonaRosterLines()).find((l) => l.handleIndex === a.handleIndex);
-    if (!line) throw refuse(`this vessel holds no persona root at h${a.handleIndex} — a grant signs only as a persona it carries`);
-    const personaRef: PersonaRef = { prefix: a.prefix, verifyingKey: line.verifyingKey };
-    const seed = await loadPersonaGroupRootSeed(a.handleIndex);
-    try {
-      return { ...orRefuse(await grantAdmitFlow({ offerCarriage: a.offerCarriage, personaRef, personaSigner: ed25519SignerFromSeed(seed) })) };
-    } finally { seed.fill(0); }
-  }),
-  "admit.open": act({ grantCarriage: text, onlyEphemeral: optional(text) }, async (a, ctx) => {
-    const kelHead = ctx.kelHead;
-    if (!kelHead) throw refuse("no board stands here to read the persona's KEL head from, so a grant cannot be checked against it");
-    // ONE board read per verification: the head read keeps the sequence the same read carried, and the sequence
-    // resolver hands that one back, so a head never pairs with the sequence of a later key.
-    const seqOf = new Map<string, number | null>();
-    const seed = await loadVesselSigningSeed();
-    try {
-      return { ...orRefuse(await openAdmitFlow({
-        grantCarriage: a.grantCarriage,
-        deviceSigner: ed25519SignerFromSeed(seed),
-        resolveHeadOpKey: async (prefix) => {
-          const read = await kelHead(prefix);
-          seqOf.set(prefix, read.seq);
-          return read.head;
-        },
-        resolveHeadSeq: async (prefix) => {
-          const seq = seqOf.get(prefix) ?? null;
-          seqOf.delete(prefix);
-          return seq;
-        },
-        ...(a.onlyEphemeral !== undefined ? { onlyEphemeral: a.onlyEphemeral } : {}),
-      })) };
-    } finally { seed.fill(0); }
-  }),
-  "admit.accept": act({ ackCarriage: text }, async (a) => ({ ...orRefuse(await acceptAdmitFlow({ ackCarriage: a.ackCarriage })) })),
-  "admit.list": act({}, async () => ({ admitted: (await listAdmittedPersonas()).map((j) => ({ ...j })) })),
-  "admit.reset": act({}, async () => {
-    await clearPersonaAdmitPending();
-    return { reset: true };
-  }),
-  "admit.withdraw-offer": act({ target: text }, async (a) => ({ withdrawn: await withdrawOfferFlow(a.target) })),
-  "admit.withdraw-grant": act({ nonceA: text }, async (a) => ({ withdrawn: await withdrawGrantFlow(a.nonceA) })),
 
   "handle-book.load": act({}, async () => ({ snapshot: (await loadNodeHandleBook()).snapshot() })),
   "handle-book.save": act({ snapshot }, async (a) => {

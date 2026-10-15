@@ -62,7 +62,7 @@ import { seatCustody } from "./custody-seat.js";
 import { custodyFrameHandler } from "./custody-frames.js";
 import { runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
-import { makeLocalPersonaKelHeadAndSeqResolver } from "./persona-admit-flow.js";
+import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";

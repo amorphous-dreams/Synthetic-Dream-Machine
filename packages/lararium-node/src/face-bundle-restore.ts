@@ -57,7 +57,7 @@ import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
 import {
   landPersonaRoot, listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRootKey,
 } from "./node-vessel-identity.js";
-import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./persona-admit-flow.js";
+import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./local-persona-kel.js";
 import { RESTORE_PENDING_FILE } from "./vault-carriers.js";
 import { hearthAid } from "./hearth-aid.js";
 import { larBootstrapPath } from "./vessel-paths.js";

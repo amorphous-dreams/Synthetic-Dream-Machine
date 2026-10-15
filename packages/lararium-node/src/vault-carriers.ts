@@ -290,12 +290,14 @@ function buildTable(): readonly CarrierRow[] {
          writer: "identity-anchors" }),
     id({ row: "veil-archive", match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
          writer: "identity-anchors", name: (m) => `veil-archive-h${m[1]}`, face: faceOf }),
+    // THE PERSONA ADMISSION'S THREE ROWS. `lares fleet join` retired the door that wrote them; the rows stay named so a
+    // vessel that still holds one reads it as a known carrier at its unlock, and nothing writes them again.
     id({ row: "enroll-pending", match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
-         writer: "node-persona-admit-store" }),
+         writer: "retired (the persona admission)" }),
     id({ row: "grant-pending", match: file(".persona-grant-pending.json"), custody: "hot", keyClass: "relation",
-         writer: "node-persona-admit-store" }),
+         writer: "retired (the persona admission)" }),
     id({ row: "admissions", match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
-         writer: "node-persona-admit-store" }),
+         writer: "retired (the persona admission)" }),
     id({ row: "anchors", match: /^anchors-h(\d+)\.json$/, custody: "hot", keyClass: null,
          writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf, bundle: "lines" }),
     id({ row: "anchor-roster", match: file("anchor-roster.json"), custody: "hot", keyClass: null,

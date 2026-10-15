@@ -142,8 +142,7 @@ describe("the sealed-act table", () => {
     const calls: Array<[Parameters<typeof runSealedAct>[0], Record<string, unknown>]> = [
       ["persona.roots", {}], ["persona.wear", { handleIndex: 0 }],
       ["crossing.state", {}],
-      ["petname.entries", {}], ["declaration.entries", {}], ["admit.offer", {}], ["admit.list", {}], ["admit.reset", {}],
-      ["admit.withdraw-offer", { target: "all" }], ["handle-book.load", {}],
+      ["petname.entries", {}], ["declaration.entries", {}], ["handle-book.load", {}],
     ];
     for (const [name, args] of calls) answers[name as string] = await runSealedAct(name, args, ctx);
     const spoken = JSON.stringify(answers).toLowerCase();

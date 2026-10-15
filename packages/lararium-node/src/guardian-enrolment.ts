@@ -30,7 +30,7 @@ import {
 import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { listPersonaRosterLines, loadPersonaGroupRootSeed } from "./node-vessel-identity.js";
-import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./persona-admit-flow.js";
+import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./local-persona-kel.js";
 
 /** One face's guardian-set record: its sealed row's filename. */
 export const GUARDIAN_SET_FILE = /^guardian-set-h(\d+)\.json$/;
