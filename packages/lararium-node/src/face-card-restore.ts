@@ -27,8 +27,9 @@
  * keeps. Content keys stay random and wrap under the vessel key or a bundle's own key; no key the root derives opens
  * memory. A person recovers memory through a bundle (`lares vault restore <file> --memory`).
  *
- * Node-main only: a worker never imports this module. No door carries a card to this module yet; the caller owed
- * is `lares vault restore --cards`, which reads each card on a terminal by the custody prompt's law.
+ * Node-main only: a worker never imports this module. The door `lares vault restore --cards` reads each card on a
+ * terminal by the custody prompt's law, builds the body in the person's own process, and hands it to the vessel
+ * sealed under a fresh key, through the same `bundle.restore` act a bundle rides.
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
 import { createPrivateKey, createPublicKey } from "node:crypto";

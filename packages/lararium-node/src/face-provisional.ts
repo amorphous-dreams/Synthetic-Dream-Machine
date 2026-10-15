@@ -18,14 +18,15 @@
  *   · a GUARDIAN: a key in the set the face's own sealed `guardian-set` row holds, under the face's prefix;
  *   · a SEATED CHAIR: a key a charter this vessel keeps seats, and that no seat row of this vessel holds (a chair
  *     this vessel holds speaks for this vessel, never as another party);
- *   · a SIBLING DEVICE: owed. The face's root signs every device edge, and the restorer holds that root, so an edge
- *     alone proves no sibling apart from the restorer; the view refuses `party-unread` until a door reads one.
+ *   · a SIBLING DEVICE: unread. The face's root signs every device edge, and the restorer holds that root, so an
+ *     edge alone proves no sibling apart from the restorer; the view refuses `party-unread`, and no door reads one.
  * A view that disagrees keeps the mark (`view-disagrees`) and says which head the party holds. The residue stays
  * stated: one agreeing party may itself sit stale.
  *
  * ── WHERE NO PARTY ANSWERS ──────────────────────────────────────────────────────────────────────
  * The guardians' recovery path answers, under the impersonation quorum (a rotation the guardians sign), and never the
- * local read alone. That path rides `V4` (stable-founding-road#/the-loops); this module names it and builds none.
+ * local read alone. The guardians' rotation carries that path (stable-founding-road#/the-loops); this module names
+ * it and builds none.
  *
  * Node-main only. Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
@@ -70,7 +71,7 @@ export type ConfirmRefusal =
   | "view-unsigned"         // the view's signature fails under the key it names
   | "view-disagrees"        // the view names another head than the one the mark holds
   | "party-not-standing"    // the key stands as no party of the kind it claims, on this vessel's rows
-  | "party-unread";         // no door reads that kind of party yet (a sibling device)
+  | "party-unread";         // no door reads that kind of party (a sibling device)
 
 export class ConfirmRefused extends Error {
   override readonly name = "ConfirmRefused";
@@ -124,7 +125,7 @@ export async function couldConfirm(handleIndex: number): Promise<string[]> {
   const set = await readGuardianSet(handleIndex);
   if (set && set.prefix === mark.prefix) for (const g of set.guardians) out.push(`a guardian of this face (${g.recoveryPubKey.slice(0, 16)}…), with its own view`);
   out.push("a chair seated in a charter this face stands in, with its own view");
-  out.push("a sibling device of the same human (owed: no door reads one yet)");
+  out.push("a sibling device of the same human (unread: an edge alone proves no sibling apart from the restorer)");
   out.push("where none answers: the guardians' recovery path, under their quorum");
   return out;
 }
@@ -150,7 +151,7 @@ async function partyStands(handleIndex: number, prefix: string, party: FaceLogVi
     return set !== null && set.prefix === prefix && set.guardians.some((g) => g.recoveryPubKey.toLowerCase() === key);
   }
   if (party === "chair") return seatedChairKeys().has(key) && heldSeatKey(key) === null;
-  return refuse("party-unread", "no door reads a sibling device's standing yet: the face's root signs every device edge, and a restorer holds that root, so an edge alone proves no sibling apart from it. Nothing moved.");
+  return refuse("party-unread", "no door reads a sibling device's standing: the face's root signs every device edge, and a restorer holds that root, so an edge alone proves no sibling apart from it. Nothing moved.");
 }
 
 /**
@@ -178,15 +179,24 @@ export async function confirmProvisional(input: { readonly handleIndex: number; 
 }
 
 /**
+ * The head of a face's key history as this vessel's own board holds it: the head a party's view names. Refuses where
+ * the board holds no history for the face, or a history that forks: a party shows only a head it holds.
+ */
+export async function boardHeadOf(repo: Repo, prefix: string): Promise<{ readonly seq: number; readonly eventCid: string }> {
+  const fold = foldPersonaContests((await readLocalPersonaKelEvents(repo, prefix)).sort((a, b) => a.seq - b.seq));
+  const head = fold.kel[fold.kel.length - 1];
+  if (!head || fold.fork !== null) {
+    throw new Error(`this vessel's board holds ${fold.fork ? `a history that forks at sequence ${fold.fork.seq}` : "no history"} for ${prefix.slice(0, 24)}…: a party shows only a head it holds`);
+  }
+  return { seq: head.seq, eventCid: head.eventCid };
+}
+
+/**
  * A CHAIR'S OWN VIEW: this vessel reads the face's head off its own board and signs that head with the seat key
  * `seatKey` names, under the log view's own domain. Refuses where the board holds no unforked history for the face.
  */
 export async function chairLogView(input: { readonly repo: Repo; readonly prefix: string; readonly seatKey: string }): Promise<FaceLogView> {
-  const fold = foldPersonaContests((await readLocalPersonaKelEvents(input.repo, input.prefix)).sort((a, b) => a.seq - b.seq));
-  const head = fold.kel[fold.kel.length - 1];
-  if (!head || fold.fork !== null) {
-    throw new Error(`this vessel's board holds ${fold.fork ? `a history that forks at sequence ${fold.fork.seq}` : "no history"} for ${input.prefix.slice(0, 24)}…: a chair shows only a head it holds`);
-  }
+  const head = await boardHeadOf(input.repo, input.prefix);
   const key = input.seatKey.toLowerCase();
   const unsigned = { prefix: input.prefix, seq: head.seq, eventCid: head.eventCid, party: "chair" as const, key };
   return { ...unsigned, sig: Buffer.from(await signAsSeat(key, faceLogViewImage(unsigned))).toString("hex") };

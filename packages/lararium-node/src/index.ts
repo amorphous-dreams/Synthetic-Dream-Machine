@@ -183,6 +183,9 @@ export { guardianOffer } from "./guardian-enrolment.js";
 // THE STABLE FOUNDING ACT: place, persona zero, the one-seat seed charter and the face that binds its AID — see `found-hearth`.
 export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./commands/found-hearth.js";
 export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./commands/found-hearth.js";
+// THE ROOT-CARD READER: the split-root cards build a face's body in the person's own process — see `face-card-restore`.
+export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-restore.js";
+export type { CardRefusal, FaceNamed, PresentedCard } from "./face-card-restore.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";
 export type { InitOptions, InitResult, FoundFaceOptions, FoundFaceResult } from "./commands/init.js";

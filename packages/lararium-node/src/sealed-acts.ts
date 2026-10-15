@@ -59,7 +59,7 @@ import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./command
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import { NexusKeyReissueRefused, runNexusKeyReissue } from "./nexus-key-reissue.js";
 import { GuardianEnrolmentRefused, guardianStanding, runGuardianEnrolment } from "./guardian-enrolment.js";
-import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, couldConfirm, readProvisionalMark, refuseWhileProvisional } from "./face-provisional.js";
+import { ConfirmRefused, FaceProvisional, boardHeadOf, chairLogView, confirmProvisional, couldConfirm, readProvisionalMark, refuseWhileProvisional } from "./face-provisional.js";
 import {
   SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
   sealCrossing, signCrossing, signLicensedInception, signLicensedSealRoll, witnessCrossing,
@@ -606,6 +606,12 @@ export const SEALED_ACTS = Object.freeze({
   "persona.confirm": act({ handleIndex: index, view: text }, async (a) => {
     try { return { ...(await confirmProvisional({ handleIndex: a.handleIndex, view: a.view })) }; }
     catch (err) { if (err instanceof ConfirmRefused) throw refuse(`${err.reason}: ${err.message}`); throw err; }
+  }),
+  // The head a guardian's own view names, off this vessel's own board; the guardian signs it in its own process.
+  "persona.head": act({ prefix: text }, async (a, ctx) => {
+    const store = ctx.hosting;
+    if (!store) throw refuse("no store stands here to read the face's key history from");
+    return { prefix: a.prefix, ...(await store.withRepo((repo) => boardHeadOf(repo, a.prefix))) };
   }),
   "persona.view": act({ prefix: text, seat: seatKey }, async (a, ctx) => {
     const store = ctx.hosting;

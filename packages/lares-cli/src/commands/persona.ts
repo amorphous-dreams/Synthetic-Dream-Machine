@@ -31,8 +31,10 @@ import {
 import {
   renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
   declarePersonaHandle, standForKahuSeat,
-  refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, type VesselClass,
+  refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
 } from "@lararium/mesh";
+import { requireTty } from "../custody-prompt.js";
+import { promptSecret } from "../prompt-secret.js";
 import { cmdPersonaAdmit } from "./persona-admit-cmd.js";
 import { storeVerb, storeFailure } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
@@ -290,8 +292,37 @@ async function personaGuardian(args: ParsedArgs): Promise<number> {
     });
     return 0;
   }
+  if (verb === "view") {
+    // THE GUARDIAN'S OWN VIEW of a face's head: this vessel's board supplies the head, and the guardian's card signs
+    // it in this process alone; the card's seed crosses no socket and zero-fills before the line prints.
+    const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
+    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona guardian view` names the face it speaks for: --prefix persona-<64 hex>");
+    const head = await sealedAct("persona.head", { prefix });
+    const code = await readGuardianCard();
+    const seed = coldKeySeedFromCode(code);
+    let line: string;
+    try {
+      line = faceLogViewLine(await signFaceLogView({ prefix, seq: Number(head["seq"]), eventCid: String(head["eventCid"]), party: "guardian", seed }));
+    } finally { seed.fill(0); }
+    emit(args, {
+      ok: true, data: { prefix, seq: head["seq"], eventCid: head["eventCid"], view: line },
+      human: () => {
+        console.log(`[lares persona guardian view] your view of ${prefix.slice(0, 24)}…: head ${String(head["seq"])}, off this vessel's own board`);
+        console.log("  hand the restored face's holder this line (`lares persona confirm <index> <line>`):");
+        console.log(`  ${line}`);
+      },
+    });
+    return 0;
+  }
   return usage(args, "guardian");
 }
+
+/** The guardian's card, read hidden on a terminal; a test installs its own. */
+let readGuardianCard: () => Promise<string> = async () => {
+  requireTty("lares persona guardian view");
+  return (await promptSecret("your guardian card (hidden): ")).trim();
+};
+export function setGuardianCardPrompt(read: () => Promise<string>): void { readGuardianCard = read; }
 
 async function personaNew(args: ParsedArgs): Promise<number> {
   const index = parseIndex(args.positional[1]);

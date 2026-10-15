@@ -621,8 +621,12 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(await confirmOf(await viewOf({ seq: 0, eventCid: kel[0]!.eventCid }))).toBe("view-disagrees");
     expect(await readProvisionalMark(1), "every refusal keeps the mark").toEqual({ prefix: a.prefix, head, from: "bundle" });
 
-    // A GUARDIAN'S OWN AGREEING VIEW lifts the mark; a second confirm finds none.
-    expect(await runSealedAct("persona.confirm", { handleIndex: 1, view: await viewOf({}) }, ctx)).toMatchObject({ handleIndex: 1, party: "guardian", head });
+    // A GUARDIAN'S OWN AGREEING VIEW lifts the mark: the head its view names comes off a board (`persona.head`), and
+    // its card signs it; a second confirm finds none.
+    const boardHead = await runSealedAct("persona.head", { prefix: a.prefix }, ctx);
+    expect(boardHead).toEqual({ prefix: a.prefix, ...head });
+    const guardianView = await viewOf({ seq: Number(boardHead["seq"]), eventCid: String(boardHead["eventCid"]) });
+    expect(await runSealedAct("persona.confirm", { handleIndex: 1, view: guardianView }, ctx)).toMatchObject({ handleIndex: 1, party: "guardian", head });
     expect(await readProvisionalMark(1)).toBeNull();
     expect(await confirmOf(await viewOf({}))).toBe("not-provisional");
     await expect(refuseWhileProvisional(1, "guardian enrolment")).resolves.toBeUndefined();

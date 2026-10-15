@@ -16,9 +16,9 @@ import {
 } from "@lararium/node";
 import { openVk, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
-import { gatherBundleRoute, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
+import { gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
-import { importLines, restoreFromBundle, restoreLines } from "../vault-restore.js";
+import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
 import { udsAlive } from "../local-connector.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
@@ -272,6 +272,7 @@ async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number>
  * needs the vessel standing unlocked and wearing the face.
  */
 async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  if (args.flags["cards"] === true) return vaultRestoreCards(args);
   const file = args.positional[1];
   if (!file) throw new UsageError("restore needs the bundle's file: `lares vault restore <file> [--as <N>] [--memory]`");
   const asRaw = args.options["as"];
@@ -294,6 +295,29 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
     return 1;
   }
   emit(args, { ok: true, data: { ...result }, human: () => { for (const line of result.kind === "restore" ? restoreLines(result) : importLines(result)) console.log(line); } });
+  return 0;
+}
+
+/**
+ * `vault restore --cards --face <key|prefix> --as <N>`: rebuild a face's root from its split cards. The command reads
+ * each card on a terminal, builds the face's body in its own process and hands it, sealed under a fresh key, to the
+ * same act a bundle rides. Paper restores a root, never memory: a bundle carries the memory (`--memory`).
+ */
+async function vaultRestoreCards(args: ParsedArgs): Promise<number> {
+  if (args.positional[1] !== undefined || args.flags["memory"] === true) throw new UsageError("--cards reads the cards on a terminal and takes no bundle file and no --memory: paper restores a root, never memory");
+  const asRaw = args.options["as"];
+  if (asRaw === undefined || !/^(0|[1-9]\d*)$/.test(asRaw) || !Number.isSafeInteger(Number(asRaw))) throw new UsageError("--cards needs the free handle-index the face lands at: `lares vault restore --cards --face <key|prefix> --as <N>`");
+  const named = typeof args.options["face"] === "string" ? args.options["face"].trim() : "";
+  if (named.length === 0) throw new UsageError("--cards needs the face the cards should rebuild, by its root's public key or its prefix: `--face <key|persona-…>`");
+  const face = named.startsWith("persona-") ? { prefix: named } : { verifyingKey: named };
+  if (!wantsJson(args)) console.log("The split's cards: for each, the custodian it came from, then its code (hidden).");
+  const cards = await gatherCards("lares vault restore --cards");
+  const result = await restoreFromCards({ cards, face, as: Number(asRaw), run: (act, actArgs) => sealedActVia(act, actArgs) });
+  if (!result.ok) {
+    emit(args, { ok: false, error: { code: result.reason, message: result.message }, data: { reason: result.reason }, human: () => console.error(`lares vault restore --cards: ${result.reason}: ${result.message}`) });
+    return 1;
+  }
+  emit(args, { ok: true, data: { ...result }, human: () => { for (const line of restoreLines(result)) console.log(line); } });
   return 0;
 }
 

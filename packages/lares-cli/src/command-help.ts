@@ -437,7 +437,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>…>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>… | guardian view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
@@ -459,6 +459,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares persona provisional 1              # a restored face: the head its restore read, and who could confirm it",
       "lares persona confirm 1 <lar-log-view:…>  # one party's own view of that head confirms the face",
       "lares persona view <persona-…> --seat-key <key>   # a chair this vessel holds signs its view of a face's head",
+      "lares persona guardian view --prefix <persona-…>  # a guardian signs its own view of a face's head with its card",
     ],
     flags: [
       "--name <petname>   (new) the PRIVATE label at that handle-index",
@@ -479,7 +480,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory]> [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>]> [--passphrase | --paper] [--rotate]",
     synopsis:
       "The VESSEL KEY custody door (status, unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
@@ -502,6 +503,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares vault backup --face <N> --out <file>   # cut ONE face's backup bundle, sealed under a route of its own",
       "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",
       "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked, wearing the face)",
+      "lares vault restore --cards --face <key|persona-…> --as 1   # rebuild a face's root from two split cards: a root, never memory",
     ],
     flags: [
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
@@ -510,6 +512,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--out <file>       (backup) the bundle file to write; a file already standing there refuses",
       "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
       "--memory           (restore) import the bundle's memory section instead of its lineage",
+      "--cards            (restore) read a root split's cards on the terminal instead of a bundle; needs --face and --as",
+      "--face <key|pfx>   (restore --cards) the face the cards should rebuild: its root's public key or its prefix",
       "unlock | bind | unbind | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
     ],
     next: ["lares vault status", "lares vault unlock"],
