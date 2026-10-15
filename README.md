@@ -75,12 +75,12 @@ Two independent parser hosts read the same bytes, and a gate requires them to ag
 
 | File | Contents |
 |---|---|
-| [Quickstart](Synthetic_Dream_Machine_01_Quickstart.md) | SDM core rules — the Quickstart entry point |
-| [Paths Index](Synthetic_Dream_Machine_02_Paths_Index.md) | Paths index |
-| [Traits Index](Synthetic_Dream_Machine_03_Traits_Index.md) | Traits index |
-| [Powers Index](Synthetic_Dream_Machine_04_Powers_Index.md) | Powers index |
-| [Gear Index](Synthetic_Dream_Machine_05_Gear_Index.md) | Gear index |
-| [Campaign Regions](Synthetic_Dream_Machine_06_Campaign_Regions.md) | Campaign regions |
+| [Quickstart](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Quickstart.md) | SDM core rules — the Quickstart entry point |
+| [Paths Index](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_02_Paths_Index.md) | Paths index |
+| [Traits Index](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_03_Traits_Index.md) | Traits index |
+| [Powers Index](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_04_Powers_Index.md) | Powers index |
+| [Gear Index](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_05_Gear_Index.md) | Gear index |
+| [Campaign Regions](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_06_Campaign_Regions.md) | Campaign regions |
 
 ### FTLS Game Rules
 
@@ -111,12 +111,12 @@ Two independent parser hosts read the same bytes, and a gate requires them to ag
 
 | Region | Contents |
 |---|---|
-| [Neo-Thracia — Region Worksheet](elyncia/Neo-Thracia/Neo-Thracia_Region_Worksheet.md) | Region overview and worksheet |
-| [Neo-Thracia — Session Zero](elyncia/Neo-Thracia/Session_Zero.md) | Session zero materials |
+| [Neo-Thracia — Region Worksheet](bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet.mem) | Region overview and worksheet |
+| [Neo-Thracia — Session Zero](bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero.mem) | Session zero materials |
 | [The Caverns of Thracia](elyncia/Neo-Thracia/The%20Caverns%20of%20Thracia/The_Caverns_of_Thracia.md) | Dungeon supplement — Caverns of Thracia |
 | [New Delos — Market District Live Feed](elyncia/New%20Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md) | New Delos market district encounter material |
-| [Shattered Isles — Faerie Ring Strandbeest Shrine](elyncia/Shattered%20Isles/Faerie_Ring_Strandbeest_Shrine_Sheet.md) | Shrine sheet — Faerie Ring Strandbeest |
-| [Shattered Isles — Powered Symbiote & Ichi Construct](elyncia/Shattered%20Isles/Powered_Symbiote_Trait_and_Ichi_Construct_Golem.md) | Trait and construct golem supplement |
+| [Shattered Isles — Faerie Ring Strandbeest Shrine](bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem) | Shrine sheet — Faerie Ring Strandbeest |
+| [Shattered Isles — Powered Symbiote & Ichi Construct](bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/ichi.mem) | Trait and construct golem supplement |
 
 ### Reference Material (SDM Third Party)
 
@@ -162,7 +162,7 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 **New to FTLS?** Start with [Flying Triremes and Laser Swords — Introduction](ftls/Flying_Triremes_and_Laser_Swords_01_Title_Introduction.md).
 
-**New to SDM?** Start with [SDM Quickstart](Synthetic_Dream_Machine_01_Quickstart.md).
+**New to SDM?** Start with [SDM Quickstart](sdm/Synthetic_Dream_Machine/Synthetic_Dream_Machine_01_Quickstart.md).
 
 **Exploring the setting?** Start with [Elyncia: A Broken World](elyncia/Elyncia_01_A_Broken_World.md).
 
@@ -184,7 +184,7 @@ The short version: you can make Fan Works (house rules, supplements, fiction, AI
 
 ### SDM Third Party License
 
-The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands Guidebook, Our Golden Age) by Luka Rejec is used under the **[Synthetic Dream Machine Third Party License](Synthetic-Dream-Machine-3rd-Party-License.md)**.
+The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands Guidebook, Our Golden Age) by Luka Rejec is used under the **[Synthetic Dream Machine Third Party License](sdm/Synthetic_Dream_Machine/Synthetic-Dream-Machine-3rd-Party-License.md)**.
 
 > *Flying Triremes and Laser Swords* is an independent production by Amorphous Dreams Cabal and is not affiliated with Luka Rejec or WTF Studio. It is published under the Synthetic Dream Machine Third Party License.
 >
