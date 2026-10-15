@@ -119,7 +119,7 @@ describe("the act reader — the seat's delegation and the hosting key's signatu
     expect(readDelegatedHostingAct(null)).toEqual({ ok: false, refusal: "act-malformed" });
   });
 
-  test("RED: a hosting seed that is not the delegated key mints nothing", async () => {
+  test("RED: a hosting seed other than the delegated key mints nothing", async () => {
     const { first } = await founded();
     await expect(mintDelegatedHostingAct({ hostingSeed: OTHER, delegation: delegationOf(first.act), prev: null, dials: DIALS }))
       .rejects.toThrow(/hosting-key-mismatch/);

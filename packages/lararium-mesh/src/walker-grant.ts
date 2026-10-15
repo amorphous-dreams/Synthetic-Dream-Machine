@@ -41,7 +41,7 @@ const normAid = (aid: string): string => aid.trim().toLowerCase();
 export interface WalkerGrant {
   readonly kind:     typeof HOSTING_WALKER_GRANT_DOMAIN;
   readonly nexusAid: string;
-  /** The epoch (delegated hosting act CID) the grant was issued at. */
+  /** The epoch (delegated hosting act CID) that issued the grant. */
   readonly epoch:    string;
   /** The walker's per-Nexus leaf (hex) — the key that proves over each socket the grant rides. */
   readonly leaf:     string;

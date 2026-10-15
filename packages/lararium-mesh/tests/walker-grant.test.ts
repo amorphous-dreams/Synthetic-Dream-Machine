@@ -8,7 +8,7 @@
  *   · EPOCH — a grant re-labelled to another epoch refuses;
  *   · LEAF and LINEAGE — either moved refuses;
  *   · ROLL — a grant from the epoch before refuses under the rolled half; its renewal reads there, one epoch more
- *     survived, and no longer under the old half;
+ *     survived, while the old half refuses it;
  *   · REVOCATION — a grant whose leaf the reader holds revoked refuses by name, and the same grant reads without it;
  *   · the serving checker holds no minting secret: the half carries three public fields and nothing else.
  *

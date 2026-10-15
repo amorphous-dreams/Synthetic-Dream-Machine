@@ -86,7 +86,7 @@ describe("CLI island-scoped board sites use the island resolved at boot", () => 
 
   test("CONTROL - nexus-contract.ts reads the vessel key once per board feed, once for the carry-for nym and once for the edge ledger", () => {
     // Three reads FEED the island resolution (the admit write, the roll-anchor write, the members-list read);
-    // one is the carry-for nym, a bystander that names a place rather than a board, and one names the vessel's own
+    // one reads the carry-for nym, a bystander that names a place rather than a board, and one names the vessel's own
     // edge ledger for the realm edge anchors, which addresses no carriage board. Pinned so a refactor that
     // adds a bare read updates this test rather than silently drifting the count.
     const code = stripComments(read("commands/nexus-contract.ts"));
