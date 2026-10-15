@@ -453,7 +453,7 @@ describe("⑩ removal's reach, past the gates that stand built", () => {
     for (const name of ["readCofoundOffer", "cofoundCharterDoc", "verifyCadenceInception"]) expect(Object.keys(mesh)).toContain(name);
     expect(mesh.readCofoundOffer({ kind: "cofound-offer" })).toBeNull();
   });
-  test.skip("A NEXUS QUORUM PARTIAL IS JUDGED BEFORE A SECOND SEAT SIGNS — PARTIAL_COSIGN_JUDGES_BEFORE_SIGNING; nexus-partial-law.test.ts. The edge primitive stands; admission, revocation, kapae and roll-anchor callers must each judge their own exact image and causal fence.", () => {
+  test("A NEXUS QUORUM PARTIAL IS JUDGED BEFORE A SECOND SEAT SIGNS — PARTIAL_COSIGN_JUDGES_BEFORE_SIGNING; nexus-partial-law.test.ts. The edge primitive stands; admission, revocation, kapae and roll-anchor callers must each judge their own exact image and causal fence.", () => {
     expect(Object.keys(mesh)).toContain("judgeNexusActPartial");
   });
   test.skip("TWO VAULTS SIGN EACH FOUNDER'S SELF-CONTRACT — TWO_VAULT_SELF_CONTRACTS; nexus-contract-two-root design only until K14 releases nexus-contract.ts and its tests: each root consents once, neither holds two seat seeds, both sign the same act, and both independently fold both contracts after file courier and restart.", () => {
