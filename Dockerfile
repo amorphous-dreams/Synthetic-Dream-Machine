@@ -88,12 +88,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=sensorium-python-seat /usr/local /usr/local
 COPY --from=sensorium-python-seat /app/mempalace/mempalace ./mempalace/mempalace
 COPY --from=build /app/packages/lararium-sensorium/scripts ./packages/lararium-sensorium/scripts
+COPY --from=build /app/packages/lararium-sensorium/model-assets.json ./packages/lararium-sensorium/model-assets.json
 ENV LARES_PYTHON=/usr/local/bin/python3 \
     PYTHONPATH=/app/mempalace \
     XDG_CACHE_HOME=/state/cache \
     HF_HOME=/state/cache/huggingface
 RUN PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/content_io.py --help >/dev/null && \
     PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_project.py --help >/dev/null && \
+    PYTHONPATH=/app/mempalace python3 /app/packages/lararium-sensorium/scripts/trial_model_check.py --help >/dev/null && \
     PYTHONPATH=/app/mempalace python3 -c 'import chromadb, mempalace; from mcp.server.mcpserver import MCPServer'
 
 COPY --from=build /app/node_modules                         ./node_modules
@@ -149,8 +151,10 @@ ENV LAR_ROOT=/state \
     LAR_BAGS=/workspace/bags \
     LAR_WIKIS=/workspace/wikis \
     LAR_GENESIS=/app/genesis
-# A HOME for an arbitrary runtime uid (`user:` in compose) that has no passwd entry.
-ENV HOME=/tmp
+# A HOME for an arbitrary runtime uid (`user:` in compose) with no passwd entry.
+# Chroma's MiniLM cache derives from HOME rather than XDG_CACHE_HOME; keeping
+# HOME under the mounted state makes model bytes survive holder restarts.
+ENV HOME=/state
 # THE HOST HOLDS THE ENGINE. The daemon runs as this container's main process, so the CLI inside reports a
 # standing verdict and never stops or spawns a daemon; the host shim restarts the container.
 ENV LAR_ENGINE=host
