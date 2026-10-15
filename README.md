@@ -22,7 +22,7 @@ permalink: /vault/synthetic-dream-machine/overview/
 
 **Lares** is the AI agent architecture that powers the repository's AI assistant tooling. It is also in-world infrastructure: orichalcum-inscribed DreamNet nodes that serve as crossroads guides, archivists, and thresholds. Both things are true at once.
 
-Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt to treat mythic identity, authority, memory, and epistemic protocol as portable agent infrastructure rather than decorative prompt flavor. Start with [Infrastructure as Myth](infrastructure-as-myth.md) for the design thesis behind the agent stack.
+Lares should be read as an **Infrastructure-as-Myth** system: the repo's attempt to treat mythic identity, authority, memory, and epistemic protocol as portable agent infrastructure rather than decorative prompt flavor. Start with [Infrastructure as Myth](bags/lares/ha.ka.ba/lares/docs/infrastructure-as-myth.mem) for the design thesis behind the agent stack.
 
 ---
 
@@ -114,7 +114,7 @@ Two independent parser hosts read the same bytes, and a gate requires them to ag
 | [Neo-Thracia — Region Worksheet](bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/region-worksheet.mem) | Region overview and worksheet |
 | [Neo-Thracia — Session Zero](bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/session-zero.mem) | Session zero materials |
 | [The Caverns of Thracia](elyncia/Neo-Thracia/The%20Caverns%20of%20Thracia/The_Caverns_of_Thracia.md) | Dungeon supplement — Caverns of Thracia |
-| [New Delos — Market District Live Feed](elyncia/New%20Delos/Lares_New_Delos_Market_District_Live_Feed_Examples.md) | New Delos market district encounter material |
+| [New Delos — Market District Live Feed](elyncia/Elyncia_04_The_Referee_Noosphere_Guide.md#new-delos-market-district) | New Delos market district live feed, folded into the Referee Noosphere Guide |
 | [Shattered Isles — Faerie Ring Strandbeest Shrine](bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem) | Shrine sheet — Faerie Ring Strandbeest |
 | [Shattered Isles — Powered Symbiote & Ichi Construct](bags/elyncia/ha.ka.ba/elyncia/characters/primary-characters/ichi.mem) | Trait and construct golem supplement |
 
@@ -135,14 +135,10 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 | Directory / File | Contents |
 |---|---|
-| [infrastructure-as-myth.md](infrastructure-as-myth.md) | Root design thesis for Lares as portable agent infrastructure |
-| [Deterministic_IaM_Build.md](Deterministic_IaM_Build.md) | Deterministic build spec for rendering Lares across platforms |
-| [`builds/`](builds/README.md) | Manifest-driven IaM build layer: manifests, module metadata, rendered browser package, verification artifacts |
-| [`builds/agents/`](builds/agents/README.md) | Lares AI agent prompt files — kernel, preferences, examples, Markdown rules |
+| [infrastructure-as-myth.mem](bags/lares/ha.ka.ba/lares/docs/infrastructure-as-myth.mem) | Root design thesis for Lares as portable agent infrastructure, with its paper |
 | [AGENTS.md](AGENTS.md) | Root agent configuration — identity, voice architecture, VS Code operational map |
-| `_todo/` | Pipeline operations, conversion tracking, design docs |
-| `_todo/BECMI/scripts/` | Automation scripts for BECMI conversion pipeline |
-| `_becmi/` | BECMI source extractions (conversion pipeline input) |
+| [`_osr/`](_osr/) | Conversion tracking for the FTLS chapters and the BECMI pipeline |
+| [`_osr/BECMI/scripts/`](_osr/BECMI/scripts/README.md) | Automation scripts for the BECMI conversion pipeline |
 
 ### Lares Infrastructure
 
@@ -166,9 +162,7 @@ These directories contain source material from the Synthetic Dream Machine ecosy
 
 **Exploring the setting?** Start with [Elyncia: A Broken World](elyncia/Elyncia_01_A_Broken_World.md).
 
-**Working with the AI tooling?** Read [Infrastructure as Myth](infrastructure-as-myth.md), then [Deterministic IaM Build](Deterministic_IaM_Build.md), then [`builds/agents/README.md`](builds/agents/README.md), then [AGENTS.md](AGENTS.md).
-
-The manifest/verification layer now exists. The active next step for Lares tooling is prompt/package slimming so repo-native roots can return to stable reload-safe budgets before the next governance-hardening pass.
+**Working with the AI tooling?** Read [Infrastructure as Myth](bags/lares/ha.ka.ba/lares/docs/infrastructure-as-myth.mem), then the [boot seed](bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem), then [AGENTS.md](AGENTS.md).
 
 ---
 
@@ -196,7 +190,7 @@ The Synthetic Dream Machine rules ecosystem (Ultraviolet Grasslands, Vastlands G
 
 See [CHANGELOG.md](CHANGELOG.md) for version history and sprint status.
 
-The Lares agent architecture (`AGENTS.md`, `builds/agents/`) is versioned at **v3.6**.
+The Lares agent architecture lives in the [`bags/lares/`](bags/lares/) meme graph.
 
 ---
 
