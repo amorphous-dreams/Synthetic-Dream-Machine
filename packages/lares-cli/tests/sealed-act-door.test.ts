@@ -297,7 +297,7 @@ describe("a command beside a standing vessel", () => {
   test("D7 — persona sync fills, and says which names landed and which the fleet kept", async () => {
     await stage();
     const vessel = await standVessel({ unlocked: true, table: (act, args) => {
-      if (act === "selves.read") return { selves: [{ handleIndex: 1, petname: "a-fleet-mates-newer-name" }] };
+      if (act === "selves.read") return { selves: [{ handleIndex: 1, petname: "a-fleet-mates-newer-name" }], rest: "sealed" };
       if (act === "petname.entries") return { entries: [[0, "the-work-face"], [1, "an-old-local-name"]] };
       if (act === "declaration.entries") return { entries: [] };
       if (act === "selves.carry") return { carried: (args as { handleIndex: number }).handleIndex === 0 };   // the plane keeps h1's name
