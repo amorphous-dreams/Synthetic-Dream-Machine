@@ -95,9 +95,15 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
 # ''A retired bag takes no landing.'' DROP writes one `bag-retired` disposition at a
    fixed title (`<bag>/ledger/residency/retired`) in the bag's own doc, and a second DROP
    keeps the first marker. The registry row STAYS, the name's only pointer to the retired
-   doc and its ledger. ADD, COPY, MOVE, LOAD and INGEST read the marker on their
-   destination and refuse by name (`bag-retired: …`), pointing at CREATE; a preview refuses
-   the same. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
+   doc and its ledger. Every verb that writes a bag (ADD, COPY, MOVE, CLEAR, LOAD and INGEST,
+   a watcher's unattended wave among them; `writesBag` in the residency verb table) reads the
+   marker on its destination and refuses by name (`bag-retired: …`), pointing at CREATE; a
+   preview refuses the same. A wiki island's own writes reach a bag through the composite's
+   write door instead (`CompositeStore`: a save, a delete, the delete `lares shore remove`
+   makes, a write into a named bag), and that door reads the target layer's marker before
+   anything lands: a write into a retired bag refuses by the same name, lands nothing, and the
+   island holds the hand owed on its alert rail. A write that names only the bag's own
+   residency ledger passes, so the record that retires the bag lands. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
    row, so a retirement always names the doc the row pointed at when DROP ran. A wiki's
    recipe slot belongs to the wiki (`lares wiki remove-bag`), never to a bag verb.
 
@@ -133,6 +139,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;i04JgK9OtPSAciiGnIib-0Qat3TM5MEkR5yHqgCmipE
+<<^ code="&#x0003;">>ni:///sha-256;iNcgIPBznUcm_2ZBUorFReVY0xGqVCJnvevrfJGeetA
 
 <<^ code="&#x0004;" -> to="?">>

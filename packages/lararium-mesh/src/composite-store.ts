@@ -25,6 +25,8 @@ import {
   corpusLarUri,
 } from "./lar-uris.js";
 import { headsEqual } from "./wiki-recipe.js";
+import { effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
+import { VerbRefusal } from "./verb-refusal.js";
 import type { WikiRecipe, BagPinState } from "./wiki-recipe.js";
 
 // Re-export so callers get bag IDs and URI helpers from a single import.
@@ -233,6 +235,8 @@ export class CompositeStore implements LarTiddlerStore {
   async put(record: LarTiddlerRecord, origin: ChangeOrigin, options?: LarWriteOptions): Promise<void> {
     this._requireBagForBase(options, "put");
     const store = this._writeTargetFor(options?.bag, "put");
+    const retired = this._refuseRetired(store, [record], "put");
+    if (retired) await retired;
     return store.put(record, origin, this._writeOptionsFor(options, store, "put"));
   }
 
@@ -251,6 +255,8 @@ export class CompositeStore implements LarTiddlerStore {
   ): Promise<void> {
     this._requireBagForBase(options, "writeFamily");
     const store = this._writeTargetFor(options?.bag, "writeFamily");
+    const retired = this._refuseRetired(store, puts, "writeFamily", tombstones);
+    if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
     if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
     for (const record of puts) await store.put(record, origin, writeOptions);
@@ -285,6 +291,46 @@ export class CompositeStore implements LarTiddlerStore {
     }
     if (!this.writableStore) throw new NoWorkingLayerRefusal(`The bagless ${verb}`);
     return this.writableStore;
+  }
+
+  /**
+   * A RETIRED BAG TAKES NO LANDING (action-handler#/retired). The island's own writes reach a bag through
+   * this door, never through the residency verbs' gate, so the door reads the target layer's retirement
+   * marker itself: ONE keyed read in that layer's own doc, before anything lands. A layer that reads
+   * synchronously (`readNow`) answers with no await, so a write keeps its place in the island's dispatch;
+   * only a layer with no synchronous reader takes one awaited `get` (every production layer reads
+   * synchronously; a layer that cannot leaves a DROP landing between that read and the write unordered).
+   * A write that only ADDS records to the bag's own residency ledger passes, so the record that retires the
+   * bag lands: every member a live put, at an effect-record title under this bag's ledger, never the
+   * marker's own title, at a title the layer holds no record for. No tombstone, no removal, no overwrite
+   * and no deleting put passes, so nothing through this door lifts a retirement or rewrites an audit
+   * record. A copy-up lands in the working layer and reads THAT layer's marker.
+   */
+  private _refuseRetired(store: LarTiddlerStore, puts: readonly LarTiddlerRecord[], verb: string, drops: readonly string[] = []): Promise<void> | undefined {
+    const layer = this.layers.find((l) => l.store === store);
+    if (!layer) return undefined;
+    const ledger = effectLedgerPrefix(layer.bagId);
+    const markerTitle = effectRecordUri(layer.bagId, RETIRED_EVENT_ID);
+    const titles = puts.map((r) => r.tiddler.title as string);
+    const ledgerAdd = drops.length === 0 && puts.length > 0 && puts.every((r, i) => {
+      const title = titles[i]!;
+      return !r.meta?.deleted && title !== markerTitle && title.startsWith(ledger) && isEffectRecordUri(title);
+    });
+    const refuse = (): never => {
+      throw new VerbRefusal("bag-retired",
+        `CompositeStore.${verb}: bag "${layer.bagId}" stands retired (DROP); a retired bag takes no landing, and nothing landed`);
+    };
+    const reader = (store as LarTiddlerStore & { readNow?: (title: string) => LayerReading }).readNow;
+    if (typeof reader === "function") {
+      const read = (title: string): LarTiddlerRecord | null => reader.call(store, title).record;
+      if (ledgerAdd && titles.every((title) => read(title) === null)) return undefined;
+      if (isRetirementMarker(read(markerTitle)?.tiddler as Record<string, unknown> | undefined, layer.bagId)) refuse();
+      return undefined;
+    }
+    return (async () => {
+      if (ledgerAdd && (await Promise.all(titles.map((title) => store.get(title)))).every((rec) => rec === null)) return;
+      if (await storeIsRetired(store, layer.bagId)) refuse();
+    })();
   }
 
   private _writeOptionsFor(options: LarWriteOptions | undefined, target: LarTiddlerStore, verb: string): LarWriteOptions | undefined {
@@ -334,11 +380,15 @@ export class CompositeStore implements LarTiddlerStore {
   async tombstone(title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
     this._requireBagForBase(options, "tombstone");
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless tombstone");
+    const retired = this._refuseRetired(this.writableStore, [], "tombstone", [title]);
+    if (retired) await retired;
     return this.writableStore.tombstone(title, origin, this._writeOptionsFor(options, this.writableStore, "tombstone"));
   }
 
   async remove(title: string, origin: ChangeOrigin): Promise<void> {
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless remove");
+    const retired = this._refuseRetired(this.writableStore, [], "remove", [title]);
+    if (retired) await retired;
     return this.writableStore.remove(title, origin);
   }
 
@@ -349,13 +399,19 @@ export class CompositeStore implements LarTiddlerStore {
    * Throws when the named bag is absent or not writable.
    */
   async tombstoneInBag(bagId: string, title: string, origin: ChangeOrigin, options?: { base?: readonly string[] }): Promise<void> {
-    return this._writableLayerOf(bagId).tombstone(title, origin, options);
+    const store = this._writableLayerOf(bagId);
+    const retired = this._refuseRetired(store, [], "tombstoneInBag", [title]);
+    if (retired) await retired;
+    return store.tombstone(title, origin, options);
   }
 
   /** HARD-remove a title from one bag (ABSENT — falls through), distinct from
    *  tombstoneInBag's kāpae hide. The retract a MOVE/promotion uses on its source. */
   async removeInBag(bagId: string, title: string, origin: ChangeOrigin): Promise<void> {
-    return this._writableLayerOf(bagId).remove(title, origin);
+    const store = this._writableLayerOf(bagId);
+    const retired = this._refuseRetired(store, [], "removeInBag", [title]);
+    if (retired) await retired;
+    return store.remove(title, origin);
   }
 
   /** The bag's WRITABLE layer store, or a throw naming the bag — a residency action, never a copy-up. */

@@ -430,6 +430,24 @@ describe("DROP handler", () => {
     expect((await effectRecordsIn(composite)).length).toBe(beforeRecords);
   });
 
+  test("a watcher's unattended INGEST into a DROPped bag refuses bag-retired and lands nothing — CONTROL: a standing bag takes it", async () => {
+    const composite = makeComposite();
+    const table = new VerbTable();
+    registerActionReactors(table, { composite });
+    await table.get("DROP")!({ bag: BAG_MID }, makeContext(composite, "DROP", { bag: BAG_MID }));
+    const uri = "lar:///ha.ka.ba/x/watched";
+    const wave = (bag: string): Record<string, unknown> => ({
+      "source-uri": "watch", "to-bag": bag, "change-id": "c-w", unattended: true,
+      carriers: [{ uri, text: "watched", diskHash: "d", syncedHash: null }],
+    });
+    const err = await table.get("INGEST")!(wave(BAG_MID), makeContext(composite, "INGEST", wave(BAG_MID))).then(() => null, (e: unknown) => e);
+    expect(isVerbRefusal(err)).toBe(true);
+    expect((err as { reason: string }).reason).toBe("bag-retired");
+    expect(await composite.storeForBag(BAG_MID)!.get(uri)).toBeNull();
+    await table.get("INGEST")!(wave(BAG_HIGH), makeContext(composite, "INGEST", wave(BAG_HIGH)));
+    expect(await composite.storeForBag(BAG_HIGH)!.get(uri)).not.toBeNull();
+  });
+
   test("a refused ADD into a DROPped bag is a VerbRefusal named bag-retired", async () => {
     const composite = makeComposite();
     const table = new VerbTable();

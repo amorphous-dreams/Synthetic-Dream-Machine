@@ -75,6 +75,29 @@ export function effectRecordUri(bagUri: string, eventId: string): string {
   return `${effectLedgerPrefix(bagUri)}${eventId}`;
 }
 
+/**
+ * THE RETIREMENT MARKER. DROP writes its `bag-retired` disposition under ONE fixed event id, so the
+ * marker sits at a title every reader can name: `<bag>/ledger/residency/retired`. A reader asks "is
+ * this bag retired?" with ONE keyed read, never a scan of the doc's tiddlers. It lives in the bag's
+ * own doc beside the rest of the ledger (an effect-record URI, so CLEAR/DROP never tombstone it and
+ * the projector never writes it to disk), and it belongs to THAT doc: a re-stood bag is a NEW doc, so
+ * a retirement always names the doc the registry row pointed at when DROP ran.
+ */
+export const RETIRED_EVENT_ID = "retired";
+
+/** True when `fields` hold DROP's retirement marker for `bag`. */
+export function isRetirementMarker(fields: Record<string, unknown> | undefined, bag: string): boolean {
+  if (!fields) return false;
+  const parsed = parseEffectRecord(fields);
+  return !!parsed && parsed.bag === bag && parsed.disposition === "bag-retired";
+}
+
+/** True when a store holds the bag's retirement marker (one `get`). */
+export async function storeIsRetired(store: Pick<LarTiddlerStore, "get">, bag: string): Promise<boolean> {
+  const rec = await store.get(effectRecordUri(bag, RETIRED_EVENT_ID));
+  return isRetirementMarker(rec?.tiddler as Record<string, unknown> | undefined, bag);
+}
+
 /** True when a title sits in any bag's or slot's residency ledger. */
 export function isEffectRecordUri(title: string): boolean {
   // The `/ledger/residency/<event-id>` TAIL marks an effect record; the prefix

@@ -52,7 +52,7 @@ import {
   ORIGINAL_TIDDLER_HASHES, parseHashes, serializeHashes, recordPackHashes, hashOfMember,
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
-  isEffectRecordUri, parseEffectRecord, effectRecordUri,
+  isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
   writesBag, VerbRefusal,
   neverProjects, NeverProjectedPathRefusal,
   yieldToHost,
@@ -612,28 +612,6 @@ async function resolveCarrierText(
   const got = sha256HexBytesSync(bytes);
   if (got !== cid) throw new Error(`carrier ${label}: CAS integrity fault — textCid ${cid} != hash(bytes) ${got}`);
   return new TextDecoder().decode(bytes);
-}
-
-/**
- * THE RETIREMENT MARKER. DROP writes its `bag-retired` disposition under ONE fixed event id, so the
- * marker sits at a title every reader can name: `<bag>/ledger/residency/retired`. A reader asks "is
- * this bag retired?" with ONE keyed read, never a scan of the doc's tiddlers. It lives in the bag's
- * own doc beside the rest of the ledger (an effect-record URI, so CLEAR/DROP never tombstone it and
- * the projector never writes it to disk), and it belongs to THAT doc: a re-stood bag is a NEW doc, so
- * a retirement always names the doc the registry row pointed at when DROP ran.
- */
-const RETIRED_EVENT_ID = "retired";
-
-function isRetirementMarker(fields: Record<string, unknown> | undefined, bag: string): boolean {
-  if (!fields) return false;
-  const parsed = parseEffectRecord(fields);
-  return !!parsed && parsed.bag === bag && parsed.disposition === "bag-retired";
-}
-
-/** True when a store holds the bag's retirement marker (one `get`). */
-async function storeIsRetired(store: LarTiddlerStore, bag: string): Promise<boolean> {
-  const rec = await store.get(effectRecordUri(bag, RETIRED_EVENT_ID));
-  return isRetirementMarker(rec?.tiddler as Record<string, unknown> | undefined, bag);
 }
 
 /**
